@@ -1,0 +1,33 @@
+# --- Secrets / credentials (NEVER commit) ---
+# start_commands.txt contains the live DeepSeek API key + Discord bot token
+start_commands.txt
+# .env holds real secrets; use .env.example as the template
+.env
+*.env
+!.env.example
+
+# --- Runtime logs (contain Discord user IDs + question history) ---
+logs/*.jsonl
+
+# --- Local tooling / editor ---
+.claude/settings.local.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db

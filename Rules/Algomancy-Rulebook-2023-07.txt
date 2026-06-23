@@ -1,0 +1,584 @@
+Gameplay
+In the game of Algomancy, you are an Algomancer vying for control over an AI simulated world. By manipulating source code
+with your Algomantic powers, you are able to summon armies, cast spells, and modify game objects to expand their capabilities
+or infect viruses onto the opposition.
+
+How to Win
+In order to win a game of Algomancy, you must eliminate all of your opponents by reducing their life total to zero. In team
+games, you must elimiate the entire opposing team.
+
+Flexible Game Options
+Algomancy is an incredibly flexible game with a variety of game options. You can pair any of the game modes with any of the
+player configurations. For the first game we recommend 1v1 or free for all. A brief summary of these is given below:
+Game Modes
+• Live Draft (Standard Algomancy): Players share one deck and draft cards from it during the game.
+• Pre-Draft: You draft a complete deck of a minimum 30 cards before the game begins, and play games of constructed with it.
+• Constructed: You build a deck with a minimum size of 30 cards and a maximum of 2 copies of each card ahead of time and
+ bring that to your games.
+• Team draft: Your team builds a large deck of 100 cards and a maximum of 2 copies of each card ahead of time and your team
+ drafts from that deck during the game.
+Player Configurations
+• 1v1: A heads up game between two players that uses the initative system for more of a competitive aspect.
+• 3v3: The standard team structure for algomancy. Teams of 3 battle it out to see which can come out on top.
+• Free For All: A fun and casual experience for 2 to 9 players (and expandible to infinite players if more copies of the game are
+ available).
+• 2v1: An archenemy style game where one player with bonus cards and resources faces off against two weaker opponents.
+Quick Start Guide
+The best way to learn Algomancy is by playing it. This rulebook is designed to guide you through the basic
+concepts of the game as you would encounter them in a first playthrough, so we recommend setting up a
+game and learning as you go. To get started:
+                                                                                       Wood and Fire cards
+•Select which factions you wish to play with (For a first game,
+ we suggest Fire and Wood). If you are not experienced, remove
+ all of the rare cards from the decks (gold set symbol). Shuffle the
+ cards from the chosen factions together. This is the deck.
+
+
+
+                                                                    All cards in the deck have
+                                                                    this cardback.
+
+
+                                                          •Place all of the resources and tokens in a
+                                                           convienient location where you can access
+                                                           them during the game.
+
+
+
+
+  •Randomly determine a player to have
+   the initiative.
+  •Set life totals to 30.
+  •Deal 16 cards and 2 Mana converters
+   to each player.
+  •Begin the game!
+
+                                                Assign at random       x16 in hand          x2 in play
+                           Anatomy of an Algomancy Card
+Cards
+Algomancy cards each have the following characteristics:                                       1
+                                                                                      2                          4          5
+▪ All cards have a name (1).
+▪ A mana cost (2) that must be paid in order to be played.
+▪ Threshold (3) denotes how much affinity is required to play a card.                 3
+▪ Some cards will have special timing icons (4), which modify when and how
+ you can play them.
+▪ Stats (5) which denote power and health, respectively.
+▪ Attributes (6) describe the qualities of the card, including some combat abili-
+ ties, denoted in bold.
+▪ Most cards have Abilities (7), which describe the card’s effects.
+▪ They also have a set symbol (8) which indicates the expansion and its color
+ denotes the complexity of the card.
+Units                                                                                 6                                      8
+Units are permanents, meaning when summoned, they will stay in play until re-
+moved. They can be easily recognized by the existence of stats on the card (5).
+                                                                                                          7
+                                   9
+                                                      Spells
+                                           10         Generally, spells provide temporary effects and are used to interact
+                                                      with other players. When a spell resolves, it goes directly to your dis-
+                                    11
+                                                      card.
+                                                      The most important aspect of a spell to pay attention to is the
+                                                      timing indicator (4), which lets you know if the spell can be used
+                                                      during combat or not.
+                                                      Timing
+                                                      ▪ Cards with no icon (9) can only be played during the main
+                                                       phase.
+                                                      ▪ Cards with the haste icon (10) can be played during the mana step
+                                                       and the main phase.
+                                                      ▪ Cards with the battle icon (11) can only be played when in combat
+                                                       with another player (and not during the main phase!)
+                                                      ▪ The virus icon (4) allows you to augment cards from hand during
+                                                       combat (for more information, see Augment).
+
+                                                      There are also spell units, which have a one time effect like spells but
+                                                      also have stats (5) and enter play rather than the discard as they re-
+                                                      solve.
+    Resources
+    Resources are the essential source of mana in Algomancy and are required in
+    order to play your cards. They have the following characteristics:
+    ▪ They have an affinity (1), which allows you to meet the threshold require-
+     ments on cards.
+    ▪ Attributes (2) which tell you the type of resource it is.
+    ▪ Abilities (3) that describe any special effects of the resource.
+    ▪ A set symbol (4), which tells you which expansion of the game they came
+     from.
+
+    All resources have the ability to be expended (turned sideways) for 1 mana once                    2
+    per turn. This is how you pay for the mana cost of cards and abilities.
+                                                                                      1                                        4
+
+5
+
+                                                                                                             3
+                                                                  Tokens
+                                                                  Tokens are temporary cards that are created directly into play
+                                                                  during the game. If they leave play or enter a zone such as a
+                                                                  hand or discard, they are erased from the game and returned to
+                                                                  the token pile.
+
+                                                                  In addition to the standard card attributes, tokens have the fol-
+                                                                  lowing unique characteristics:
+                                                                   ▪ While tokens do have a mana cost (5), it often 0, meaning
+                                                                    you can play the cards “for free”. This specifically applies to
+                             6                                      spell tokens (see below).
+                                                                   ▪ Spell tokens have an attribute, Burst (6), which requires you
+                                                                    to cast all of your tokens with the same name at the same
+                                                                    time. They are still unique spells, but they are cast together.
+                                                                   ▪ Many tokens have an X value (7), which is determined by the
+                                 7                                  card that created them. For example “Create a Crystal 3”
+                                                                    would set the X value of the created token as 3.
+Spell Tokens
+When you create a spell token, it is put directly into play in the region it was created in. Spell tokens are unique as they are the
+only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may
+only cast spell tokens in the region the token is in. To get around this, spell tokens can be brought into other regions during the
+attack step if they have units to guide them. This move is irreversible though, so plan carefully where you want to direct your
+resources!
+The magic captured in a spell token is limited, and any remaining spell tokens are erased from the game during re-
+group, so be sure to use them before they go away!
+The Turn
+Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step. This process
+will look slightly different depending on wheither you are playing a free for all or team based game (1v1 counts as a team game).
+The simplest structure to understand is free for all, where each phase is truly shared by all players at once and intent tokens are
+used to declare simultaneous attacks.
+                                                          Free For All                        Team                       Legend
+
+Initiative                                                                                                              Initiative
+Team games utilize an initiative system, where
+                                                           Untap                             Untap
+teams trade off having the initative every turn                                                                       Non-Initiative
+cycle. When a team has the initiative, they act
+together and are required to act first in all situa-        Draw                              Draw                        All
+tions. For example, during the mana and main
+phases, the initiative team must make all of their
+plays first while the non-intiative gets to wait            Draft                             Draft
+and see what they do before taking their actions.
+
+Because of this, the initiative combat step hap-            Mana                Mana                      Mana
+pens in two phases:
+▪ First, the initiative team declares their attacks,
+ sending units into non-initiative regions. After          Attack              Attack                     Attack
+ a priority window for interaction, the non ini-
+ tiative team declare their blocking formations
+                                                                               Block/
+ while also having the opportunity to send at-              Block                                         Block
+                                                                               Attack
+ tacking units for a counterattack. The counter
+ attacking units leave the region at this time,
+ but their attack step takes place after the first        Damage              Damage                     Damage
+ combat has completely finished. After the
+ block/counter attack step, combat in the
+                                                           After               After                      After
+ non-initiative regions resolves as normal, with
+                                                          Combat              Combat                     Combat
+ a damage step and an after combat step.
+▪ Second, the counterattacking units are put
+                                                          Regroup                           Regroup
+ into formation and the entire combat sequence
+ takes place again with the non-initative attack-
+ ers. Each team only gets one chance to attack,             Main                Main                      Main
+ so there are no additional counter attacks here.
+
+ Ending a Turn
+ After the main phase, the turn is over. The initiative and any draft packs are passed to the next player in a clockwise direction
+ and the entire process is repeated again.
+                                          Draw and Draft Steps
+Draw
+Players draw 2 cards during the draw step on every turn after the first.
+
+Drafting
+Drafting is the process of selecting cards from “Packs” of cards. The main algomancy format uses a live draft throughout the
+game as the source of cards. This all takes place during the draft step.
+Packs
+At the start of a game or when the draft is refreshed (see below), each player is dealt a Pack of cards. Packs in Algomancy always
+have 10 cards in them when they are dealt or passed to other players. Packs may only be interacted with and looked at during
+the draft step, and players may not look at the packs of other players. When a player is eliminated, their pack is recycled (put on
+the bottom of the deck in a random order).
+
+Complete Flexibility
+During the draft step, players combine all of the non-token, non-resource cards in their hand with the pack and can draft a
+completely new hand of cards. The only limitation is that they must pass a full pack of 10 cards at the end of the drafting step.
+Effectively this means you should end up with as many cards as you started with in hand. So if you begin a draft step with 4
+cards in hand, you will end the draft step with 4 cards in hand. But if you are unsure or lose track of how many cards you had,
+you just need to make sure you are leaving 10 cards in the pack when you pass it.
+This means you have complete flexibility and control of what cards you want during the drafting process. If you like your seven
+card hand, you can just keep all seven of those cards and take nothing new. If your dislike your hand, you can completely ex-
+change your entire hand for a completely new set of cards, or anything in-between!
+
+Passing the Pack
+Once you have finished a draft portion, you will pass your pack clockwise to the next player as an indicator that you are fin-
+ished. Once all players have passed their packs, the draft step is complete.
+
+Refreshing the packs
+After N+1 turns, where N is the number of players, all of the packs are recycled (put on the bottom of the deck in a random
+order) and each player is dealt a new pack of cards. For 1v1, this happens after the third turn, right before the fourth draft.
+
+Team Draft
+For team draft, a team of players will bring a pre-constructed deck of cards that the entire team will draft from. Rather than
+passing their packs clockwise to the nearest player when finished, they pass it to the nearest teammate. Additionally, packs are
+never refreshed in team drafts. All the other draft rules apply.
+
+Constructed
+In constructed, there is no deck to draft from, so the draft step and the draw step are combined into one draw phase. During
+the draw phase in constructed, players draw 4 cards, then select 2 cards from their hand and put them on the bottom of the
+deck in any order. This mimics the flexibility of the draft step while keeping the essence of a constructed format.
+                                                The Mana Step
+Resources
+The mana step is when players have the ability to take and play resources, as well as
+play cards with Haste timing. During this step, most resources are freely available
+and can be picked up from outside the game by recycling a card in your hand (put-
+ting it on the bottom of the deck). There is no player interaction during this step.
+
+Players may play a maximum of two resources per turn, but are not limited in how
+many resources they can take during the mana step. Additionally, each player
+begins the game with two Mana Converters in play, which count as their two re-
+sources for the turn. They may be exhanged with other resources if desired or held
+onto for later.
+
+
+
+
+  Shards and Affinity Bonuses
+  All of the basic elemental resources have the ability “When I enter play, if you have at least three of my affinity, take a
+  shard”. Shards are a resource that adds no affinity, but can still be expended for mana. This rewards you for sticking to one
+  color by giving you additional mana! As an example above, when the third water is played, a shard can be put into hand
+  for free (and played immediately). Any future waters that are played will also provide this benefit.
+                                      Regions and Local Effects
+Regions
+All gameplay in Algomancy takes place inside of “Regions”. Each region is completely self-contained and isolated from all
+other regions, meaning nothing that happens inside of one region will affect anything in another region. This is per-
+haps the single most important rule of Algomancy: Every single effect is specific to its region. “Destroy all units” means “De-
+stroy all units in this region” because as far as the effect is concerned, the units in the region are all the units that exist. “Each
+player takes 1 damage” means “Each player in this region takes 1 damage” for the same reason. An effect that says “Delete target
+unit” really means “Delete target unit in this region” because it cannot see the units in other regions. The only exception to
+this rule is with the attack step, where players can enter neighboring regions by sending units over to battle.
+
+Each player exists in their own unique region. This means that outside of the combat phase, there is absolutely no player inter-
+action because there are no opponents to interact with. The player regions are arranged in a large circle, so each player has two
+neighboring regions, except in the case of 1v1, where there is only one neighboring region. For team games, each player should
+start with an opponent on either side of them.
+
+When a player is eliminated, their adjacent regions become connected and the game continues. If playing a team game, after
+their nearby opponents are eliminated, players may send attacks through allied regions into the nearest enemy region.
+
+
+                                                                                       This player was eliminated.
+                        Region
+
+
+
+
+   Region        A Four Player Game           Region                          Region       A Three Player Game          Region
+
+
+
+                                                          Player Eliminated
+
+
+
+                        Region                                                                     Region
+
+
+
+            Starting Configuration                                                        New Configuration
+   If playing a team game, players sit as shown for the                    If playing a team game, after their nearby opponents are
+     red and black teams, surrounded by opponents.                       eliminated, players may send attacks through allied regions
+                                                                                         into the nearest enemy region.
+Attacking
+In order to interact with other players, you’ll need to enter their region or have them enter yours. This takes place during the
+attack step as the beginning of the combat portion of a turn. During this step, you select a set of units and other cards such as
+spell tokens that you wish to bring with you into a new region. Then you simply declare them as attackers by bringing them
+into that region. By doing so, you and your units that you attacked with are now in the new region, and can be interacted with
+as such.
+
+
+Attacking in Free For All
+In a free for all game, all players declare their attacks simultaneously using the “Intent” cards. Simply place an intent card face
+down in front of each of your units and other cards such as spell tokens with your intended action. Once all players have finished
+this, all of the cards are flipped up and the chosen attacks take place instantly!
+
+There is a lot of freedom in how you can do this, so feel free to get creative. You can group units together behind one intent card
+or even place multiple intent cards of the same type on different units in an attempt to hide your intentions!
+
+
+
+
+Attacking in Teams
+Team games utilize an initiative system where teams trade off having to act first. We say the team designated to act first each
+turn has the initiative. The attack process is in this game mode is broken into multiple steps.
+• First, the team with initiative declares all of their attacks at once.
+• Then, after a priority window where players can interact, the defending team gets the opportunity for a counter-attack while
+ they also declare their defending formations (more information on formations later).
+• Combat is first resolved completely in the regions that were initially attacked by the initiative team.
+• Then, combat in the counter-attacking regions is resolved.
+A short way to remember it is that combat in team games has an attack -> counter attack flow to it, in contrast to the single
+global attack step in free for all games.
+                                                          Combat                                                      1       2
+
+
+Units and Stats
+Units are the basis of combat, as they are used to attack opponents, enter new re-
+gions and defend yourself against invaders. Each unit has a set of stats (1,2) that indi-
+cate their utility in combat. The two numbers represent the Power (1) and Health
+(2) of the unit, respectively. Power indicates how much damage the unit will do in
+combat, and health is a measure of how much damage a unit can take before it dies.
+
+
+Combat Formations
+When units attack or block, they are placed in a “Formation” just like soldiers lining
+up for battle. Formations can be infinitely large in width, but only a maximum of
+two units deep, as there is a front and back row. Attacking formations are set during
+the attack step and defensive formations are set during the block step. Once a forma-
+tion is set, the units are locked in position and are considered Adjacent to their left,
+right, front and back neighbors until regroup.
+
+Unlimited Columns
+
+
+                                                                                            Hold the Line
+                                                                                            Like in real combat, in Algomancy it is
+                                                                                            imperative to maintain a solid front-
+                                                                                            line of combat. This is upheld by the
+                                                                                            following rules:
+                                                                                            • The front row of a column must be
+                                                                                             filled first before a unit can be placed
+                                                                                             in a back row.
+                                                                                            • If a unit is removed from a forma-
+                                                                                             tion, any units behind it move to the
+                                                                                             front row and take its place.
+                                                                                            • If the last unit in a column is re-
+                                                                                             moved from an attacking formation
+                                                                                             before blocks, the columns to its left
+                                                                                             and right close in to fill the gap.
+
+
+                                                                              Max of 2 rows
+Blocking
+When a player is attacked by a formation, they get an opportunity to defend during the block step. To do so, they may place
+units in front of the formation that is attacking them. The resulting group of defending units is also called a Formation, but
+unlike offensive formations, the defending formation can have some missing columns.
+                                                                                               Blocked
+
+Blocked
+Once a defensive unit has been placed in front of an attacking
+column, that entire column is considered “Blocked”. Blocked
+units won’t deal combat damage to you, even if the units blocking
+them are removed!
+
+Damage
+After all of the blocks have been
+declared and both players have
+passed priority, we move to the
+damage step. During the damage
+step, all of the follwing damage        Attacking
+processes happen simultaneously,        Formation
+unless modified by an ability.
+
+Each column of attacking units in       Defending
+                                                                                             Missing
+a formation deals damage equal to       Formation                                            columns
+the combined power of each unit                                                              are fine in
+within that column.                                                                          a defensive
+                                                                                             formation
+Unblocked attacking damage is dealt to the defending player’s life
+total, blocked attacking damage is dealt to the defending column.
+
+Similarly, each column of defending units deals damage equal to
+the combined power of each unit within its column to the attack-
+ing column it has blocked.
+
+When a column of units takes combat damage, they recieve
+damage from front to back. First, the front row recieves damage.
+If the amount of damage recieved would be enough to kill the front row, any excess damage is dealt to the unit in the
+back row. Excess damage beyond the health of the back row unit does not carry over to the player, unless the damage
+comes from a unit with the Piercing attribute.
+
+All damage on units goes away during the regroup step.
+Attributes
+In addition to stats, some units have Attributes (1), which can change how they engage
+in combat. All of the units with attributes have a reminder text in italics to help you re-
+member what each attribute does. Smoke Ghost here has the Flying attribute, which
+says “Only flying units can block flying units.”
+
+Units in the same column of a formation share attributes, meaning that if Smoke
+Ghost attacks with another unit in front or behind it, both of those units have the
+Flying attribute and the entire column cannot be blocked unless the defending player
+also has flying units. Note that this only applies to columns. If Smoke ghost attacks to
+the left or the right of another unit, it will not gain Flying.
+                                                                                                 1
+But be careful! If a unit with attributes is removed, all other units in its column will im-
+mediately lose access to any attributes it had been sharing. This means if you attack
+with Smoke Ghost and a plain 1/1 token, if the opponent kills the Smoke Ghost before
+combat, they can block the token without flying units because the token would no
+longer have flying!
+
+
+
+                                                                                        Attribute Combos
+                                                                                        This ability to share attributes is an incredi-
+                                                                                        bly powerful aspect of Algomancy, so keep
+                                                                                        your eyes open for any powerful combos
+                                                                                        that this may unlock!
+
+                                                                                        For example, if we attack with Malformed
+                                                                                        Monstrosity in a column with Reality
+                                                                                        Bender, Malformed Monstrosity would
+                                                                                        gain the “Inverted” attribute, which revers-
+                                                                                        es its stat changes. Because the Monstrosity
+                                                                                        has an ability that gives it -7/-7, it becomes
+                                                                                        inverted to +7/+7, turning it into a 17/16!
+
+                                                                                        Similarly, Spike has the “Ranged” attribute,
+                                                                                        which allows it to deal combat damage first
+                                                                                        and block fliers. If we pair it with Big Eye,
+                                                                                        who has the “Deadly” attribute, we can in-
+                                                                                        stantly kill anything before it has a chance
+                                                                                        to fight back!
+                               Priority and Player Interaction
+Priority
+The term priority denotes the ability of a player to perform game actions such as casting spells or activating abilities. A player
+with priority has the ability to do these things, while players without priority do not. In team games, all players on a team share
+priority and can take actions in whichever order they choose amongst themselves.
+
+Priority Window
+A priority window is a sequence where players or teams
+each recieve priority in order. In Algomancy, the attack,
+block, damage and after combat steps all have a priority               I want to take                               I want to take
+window, giving the players the opportunity to interact                    an action                                    an action
+with eachother. The resolution of an effect, such as a
+spell or ability also creates a priority window.          Begin Priority
+                                                              Window       Initiative                                 Non Initia-
+                                                                                          I don’t want to take
+Within a priority window, first the initiative player will                  Priority                                 tive Priority
+                                                                                            any more actions.
+recieve priority. Then if they decline to do anything, pri-
+ority will be passed clockwise to the next non-initiative                                I don’t want to take any
+player in the region. This process is repeated until all                                   more actions either.
+players or teams have passed priority.
+
+
+Interaction                                                              Resolve the
+                                                                                        No
+                                                                                               Is the stack
+                                                                                                              Yes
+                                                                                                                       Go to next
+If a player does use their priority to take game actions,                 top layer
+                                                                                                 empty?
+                                                                                                                         phase
+they may maintain their priority to continue taking game
+actions. Once they pass priority after taking an action,
+each other player will recieve priority again to get a
+chance to respond to their action. This process continues
+until all players pass priority.
+
+
+Example
+In a 1v1 game Player A has the initiative and attacks player B. There is a priority window during the attack step, so player A re-
+cieves priority first. They can play spells or activate abilities at this time.
+• If player A passes priority and player B passes priority, the phase ends and we move directly to the block/counterattack step.
+ Notice how you cannot respond to an opponent passing priority. Once you pass, you may not get another chance to act.
+• If player A passes priority and player B casts a spell, Player A will recieve priority again.
+• If player A casts a spell and player B passes priority, player A’s spell will resolve, creating another priority window.
+• If player A casts a spell, and player B responds with a spell, player A will recieve priority again to react to player B’s spell.
+                                                      The Stack
+ First in, Last Out
+ All interaction in Algomancy uses the stack, which abides by the concept of “First in, last out”. Visually you can see this by
+ placing any new effects on top of any other existing effects on the stack. Then when its time to resolve a spell, you resolve them
+ in order from top to bottom. Whatever spell or effect happened last will resolve first. Look at the example below.
+
+
+
+
+I play Flame of history. My                They respond to Flame of His-                      I respond to Boon of Protection
+opponent has a chance to                   tory with Boon of Protection,                      with Arc Lightning, putting it on
+respond.                                   putting it on top of the stack.                    top of the stack.
+
+
+
+
+                                                                                                  Null Drone resolves first as the top
+All players pass priority. Arc            New spells can be added on top of an active             card of the stack, negating Boon of
+Lightning resolves first, because         stack even after it has started resolving. I cast       Protection. If both players pass pri-
+it was on top of the stack.               Null Drone targeting Boon of Protection.                ority, finally, Flame of History can
+                                                      Modifications
+Augment
+Some cards have a little “+” symbol (1) at the beginning of a line in their text box (or
+type line). This symbol denotes the Augment mechanic, which allows you to take all
+of the text in the paragraph following the augment symbol and add it onto other
+cards. For example, Big Flower has the augmentable effect “I gain +1/+1 for each
+other ally.”
+To apply an Augment, you must meet its threshold requirements. Then you pay its
+mana cost and select a target to apply the augment onto. Place your augment card
+beneath the targeted card, with the textbox visible beneath it to demonstrate the ad-
+ditional line of text. You may augment cards onto any legal target and can
+apply augments both from your hand and from your discard. Typically, Aug-
+ment can only be done during the main phase so you can only augment onto your
+own units (unless the card is a virus, more on that later).
+There is no restriction on the number of times a card can be augmented, so go wild!
+
+                                                                                                    1
+
+
+                                                                             Control and Language
+                                                                             When a card is modified, it is simply treated as if it
+                                                                             were a single card with all of the additional text from
+                                                                             its modifications. The augmented cards are not sepa-
+                                                                             rate from the base card.
+This token has                                                               This means that if you augment a card onto an oppo-
+                                                                             nent’s unit, they control that modification and all of
+been augmented                                                               that text applies to their card as if it were their own.
+with the ranged
+attribute as well
+                                                                             Permadeath
+                                                                             When a modified card dies or is erased (both Aug-
+as the ability from                                                          ment and Graft, which we will discuss next, are mod-
+Big Flower.                                                                  ifications), the card and all of its modifications are
+                                                                             erased (permanantly removed from the game). So
+                                                                             choose carefully when and how you use your modifi-
+                                                                             cations because they can be lost forever!
+
+                                                                             If a modified card would leave play but did not die or
+                                                                             get erased (for example, if it was put into your hand
+                                                                             from play), all of its modifications are put back into
+                                                                             the discard.
+Graft
+The second modification in Algomancy is Graft, which is denoted by the two arrows
+in a hexagon shape (1). All graft cards follow the template of “Cause ->(Graft) Effect”.
+In the example of Sprouter, the cause is “Sacrifice me” and the effect is “Create a
+Poison 1”. What the graft mechanic does, is allow you to add additional effects onto a
+cause. Then the resulting card is read as “Cause -> Effect1 AND Effect2 AND Ef-
+fect3...etc”. There is no limit to how many effects can be grafted onto a single card.
+The resulting ability is treated as a single ability, so it will all resolve at once, from top
+to bottom, and the entire thing can be countered by a single spell.
+
+In the example on the right, we have grafted the card Overbloom onto sprouter. Now
+sprouter reads “Sacrifice me: Create a Poison 1 AND (once per turn) Target unit gains                   1
++7/+7 until regroup.” The small 1 inside of the graft symbol of Overbloom (2) is
+called a limited graft, which means that ability only triggers once per turn. Additional-
+ly, if the cause of a card is limited, as in Moosh below, the entire graft effect is limited
+to trigger that number of times. So even though “Create a Poison 1” is an unbounded
+graft, this grafted ability will only trigger when it sees the first enemy die. It reads as
+“Whenever an enemy dies (once per turn), Create a 2/2 unit AND Create a Poison 1.”
+                                                                                                       2
+
+                                                      Applying a graft follows the same cost and timing setup as augments (play
+                                                      from hand or discard during the main phase, pay the card’s cost and meet
+                                                      threshold requirements in order to do so), with the additional requirement
+                                                      that both cards must have the graft symbol in order to be able to apply a
+                                                      graft. To put it another way, you can’t simply graft an effect onto a non
+                                                      graft card, because there is no cause to trigger that effect. Grafts can only go
+                                                      onto other graft cards.
+
+                                                      Grafted effects are read from top to bottom in order, so when applying a
+                                                      new graft, you may insert the new effect at any position within the graft
+                                                      stack below the original card, but you may not re-order the rest of the graft-
+                                                      ed abilities.
+
+                                                      If you have an unbounded graft cause and a mixture of bounded and un-
+                                                      bounded effects, the graft cause will trigger an unlimited number of times,
+                                                      but each of the bounded effects will only trigger a limited number of times.
+
+                                                      If you have a bounded graft cause, the entire effect will only trigger a limit-
+                                                      ed number of times.
+

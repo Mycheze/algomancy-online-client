@@ -1,0 +1,1152 @@
+_ RULEBOOK
+                                                                                                                                                   _ TABLE OF CONTENTS
+
+
+                                                                                                                                                   _ WELCOME TO ALGOMANCY                 _ BATTLE
+                                                                                                                                                    5    Game components                   20   Attacking
+                                                                                                                                                    6    Introduction                      21   Timing
+                                                                                                                                                    6    Game formats and Player setups    22   Formations
+                                                                                                                                                    7    Game structure                    23   Blocking
+                                                                                                                                                                                           23   Damage
+                                                                                                                                                                                           24   Attributes
+                                                                                                                                                   _ SETUP
+                                                                                                                                                    8    The elements
+                                                                                                                                                    10   Get started                      _ REGROUP AND DEPLOYMENT
+                                                                                                                                                    11   Element selection                 26 Regroup
+                                                                                                                                                    11   Player preparation                26 Deployment
+                                                                                                                                                                                           27 The Turn
+
+                                                                                                                                                   _ ANATOMY OF AN ALGOMANCY CARD
+Game design, concept and visual design                                                                                                              12   Cards                            _ THE STACK
+Caleb Gannon                                                                                                                                        13   UNIT                              84 First in, Last Out
+                                                                                                                                                    13   SPELLS
+Rulebook and back box design                                                                                                                        13   SPELL UNITS
+butter am brot / Morten Svendsen                                                                                                                    13   TIMING
+                                                                                                                                                    14   Resources
+                                                                                                                                                                                          _ PRIORITY AND PLAYER INTERACTION
+Rulebook text editing                                                                                                                                                                      30 Priority
+                                                                                                                                                    15   Tokens
+Theis Hollensberg Svendsen                                                                                                                          15   SPELl TOKENS                      30 Interaction
+                                                                                                                                                    15   Unit tokens
+Worldbuilding and lore
+Caleb Weaver                                                                                                                                                                              _ MODIFICATIONS
+                                                                                                                                                   _ DRAW AND DRAFT STEP                   32 Augment
+Cardback design                                                                                                                                                                            33 Graft
+                                                                                                                                                    16   Draw step
+Will Zhao                                                                                                                                                                                  34 Viruses
+                                                                                                                                                    16   Refreshing the Pack
+                                                                                                                                                    16   Drafting
+Complexity Symbol
+                                                                                                                                                    16   Constructed
+Cyrcle                                                                                                                                                                                    _ MULTIPLAYER
+                                                                                                                                                                                           36   FFA
+I want to extend a special thank you to members of my discord, including
+Shadyshores, Redearth, Maxwell, Elitheduck, Ravaen, Nardolphin, Mylemonlime, Poke, Amagicturbot, Zault, Isilee Milton, Mehseenbetter,              _ THE PLANNING PHASE                    37   Intent cards
+                                                                                                                                                    18 Resources                           38   Teams
+Vash115, Vongore, MimberyEarth, Paul, Technetium, Happy Cabbage, Seth Masters, Naca4010, AkuraRaya, Tabby Like a Cat, CallofCthuwu,
+                                                                                                                                                    18 Shards and Affinity Bonuses         39   Cube draft
+EllitBoz, Azurinel, Ash, Placeholder, Missa, Zarathustra, Elpoquitolama, LordZZX, Rodanaw, Alektryon, drty_muffin, tolgolodh, Maximillian, Beeb,
+SpaceYeti, Yaguziman, Bottle Gnome, Bear, Chatt_Nooga, Tapeworm711, Ionalien and hundreds of others who have been especially helpful and
+engaged with this project through playtesting, chatting and offering ideas.
+                                                                                                                                                   _ REGIONS AND LOCAL EFFECTS            _ ADDITIONAL RESOURCES
+Additionally, I want to thank everyone who supported this game on kickstarter                                                                       19 Regions                             40 Miscellaneous
+4,046 of you believed in this project to bring it to life. It wouldn’t have been possible without all of you!                                                                              42 Q&A
+
+
+
+
+                                                                                                                                                                                                     Game Components_ algomancy   3
+_ GAME COMPONENTS
+                              RESOURCE CARDS                                        ADD. CARDS
+
+
+
+
+ earth       Fire     metal        wood     water    shards       Prismites   information             Blank
+                                                                                 cards               Backups
+  27         27       27           27          27      27           10
+                                                                                 10                    9
+
+
+
+                      TOKEN CARDS
+
+
+
+
+                                                                                        _ RULEBOOK
+
+
+
+
+“Stolen”    Effect    Spell        Unit    Intent   initiative
+  cards    Tracker   Tokens       tokens   Tokens    tokens
+
+  10        10        35           40       30          1
+
+                                                                                      RULEBOOK
+                                                                                          1
+
+
+                     FACTION CARDS
+
+
+
+
+                                                                                        DICE
+                                                                                         10
+  FIRE      Wood     Water        Metal    Earth     hybrid
+  54        54        54           54       54        50
+
+
+                                                                 Game Components_
+                                                                       xxxxxxxxx_ algomancy                    5
+_ WELCOME TO ALGOMANCY
+
+
+
+
+INTRODUCTION                                                              GAME FORMATS                                                GAME STRUCTURE                                            INITIATIVE
+Algomancy is a strategic card game set in the frag-                          ive Draft: A dynamic format where players create a
+                                                                            L                                                         The core of Algomancy revolves around its global turn     Due to the global turn structure, Algomancy uses a
+mented realms of Endewën, a digital universe crafted                        shared deck from selected elements and draft cards        system, divided into the following sequence of phases:    rotating initiative system to establish the order players
+by the AI Echelon to escape from the dying human                            in real-time. Ideal for smaller groups or 1v1.                                                                      must act. In 1v1 and team games, the initiative system
+world. In this game, players assume the role of Algo-                       Constructed: Players bring pre-constructed decks to      1. Planning Phase: Players prepare for the turn ahead    gives the turn structure an attack-counterattack flow,
+mancers—beings capable of manipulating the source                           the game. The standard format allows up to 2 copies          by curating their hands and preparing their resourc-   whereas FFA games feature simultaneous attack decla-
+code of reality itself. Each player’s goal is to strategi-                  of each card, with a minimum deck size of 30.                es. This phase sets the stage for the upcoming         rations using the intent cards.
+cally draft cards, deploy units, and cast spells to out-                     Cube Draft: A combination of draft and constructed         battle, allowing players to strategize and position
+maneuver opponents and emerge victorious in a battle                        where players draft decks before gameplay begins,            themselves effectively.
+of wits and creativity to be the last one standing.                         and then play constructed matches with those decks.
+                                                                            Ideal for larger groups (6+ players).                     2. Battle Phase: The sole interactive phase of the
+GAME OVERVIEW                                                                 Team Draft: Each team brings a constructed deck           game where players manage units across the
+The game unfolds in a series of global turns, each                          including 30 cards per player on the team with up to         regions of battle. Units may be moved into other
+composed of distinct phases that dictate the flow of                        2 copies of each card. Their team will live draft from       regions through attacks or reserved to defend from
+play. Players navigate through these phases together,                       that deck during the game.                                   invaders. During this phase, players engage with
+utilizing their cards’ unique abilities, elemental affin-                                                                                other players and their units, utilizing the unique
+ities, and strategic foresight to gain advantages over                    PLAYER SETUPS                                                  effects of their cards in a back and forth dynamic
+their opponents. The game emphasizes tactical deci-                       The above formats can be played in a wide variety of           exchange to shape the battlefield in their favor.
+sion-making, with a focus on how and when to deploy                       player setups, including:
+resources, execute attacks, and harness the utility of                      1v1: The recommended starting setup.                     3. Regroup Phase: Serving as a clean-up step, this
+each card.                                                                   FFA: All players fight to be the last one standing.        phase allows players and their units to return to
+                                                                              Teams: 2v2 or 3v3, can be played either as split          their respective regions. Damage on units is reset,
+HOW TO WIN                                                                  teams (multiple regions) or joint players sharing            temporary stat changes are removed, and units
+Each player begins with 30 life. Eliminate all of your                      a single region (effectively a 1v1 game with more            leave their formation.
+opponents by bringing their life to 0.                                      players).
+                                                                               Archenemy: Typically 2v1, the single player gets to   4. Deployment Phase: Players play most of their cards       NOTE
+                                                                            take 1-2 turns before the other 2 begin the game.            and apply modifications in preparation for the next
+    NOTE                                                                                                                                                                                           Many terms in this rulebook are explained by the player help cards,
+                                                                                                                                         turn’s battle. This phase is crucial for building a
+                                                                                                                                                                                                   which may be useful to have nearby while reading the rulebook.
+    Visit algomancy.io for how to play videos and additional resources.                                                                  strong offensive or defensive strategy for the up-
+                                                                                                                                         coming turns.
+
+
+6     alGomancy_Welcome to algomancy                                                                                                                                                               Welcome to algomancy_ algomancy                                       7
+_ SETUP
+
+           ELEMENTS
+           Algomancy consists of 5 Elements, which all offer different ways to play and interact
+           with the game. Below is a quick description of the elements and their characteristics.
+
+
+
+           FIRE
+           Forged in the fiery heart of the Molten Caldera, the Fire element radiates aggression and transformation. Fire
+           strategists wield the destructive power of flames to incinerate the opposition while leveraging the sacrificial
+           essence of the occult for powerful, game-changing effects.
+
+
+
+
+           WATER
+           Beneath the mysterious waves of the Benthic Reaches, the Water element thrives on adaptability and subter-
+           fuge. Water players navigate the depths of strategy with sneaky, resilient forces, mastering the ebb and flow of
+           battle through cunning and elusive maneuvers.
+
+
+
+
+           EARTH
+           Rooted in the steadfast expanse of the Jagged Steppes, the Earth element embodies unyielding endurance and
+           transformative might. Earth strategists excel in absorbing damage and augmenting the capabilities of units,
+           showcasing the indomitable spirit and adaptive resilience of the land.
+
+
+
+
+           WOOD
+           In the ever-growing expanse of the Verdant Rift, where life and decay weave an eternal cycle, the Wood element
+           flourishes. Players channelling Wood harness the unchecked vitality of nature to grow massive armies or infect
+           their foes with toxic poisons and game altering parasites.
+
+
+
+
+           METAL
+           Amid the gleaming horizons of the Alloyed Plains, the Metal element stands as a testament to precision and inno-
+           vation. Metal players deploy formidable forces with surgical accuracy, dismantling opponents’ strategies through
+           direct interaction and compounding synergies.
+
+
+
+
+8   alGomancy_setup                                                                                                           setuP_ algomancy   9
+_ SETUP
+                                                                                                                                       ELEMENT SELECTION                                          STARTING SEATING
+                                                                                                                                       In the live draft game mode, players use a shared deck     In 1v1 players sit across from each other. In multiplayer
+     GET STARTED                                                                                                                       comprised of multiple elements. Games begin by se-         games, players will sit in a circle so each player has
+     Below is the starting game layout for the 1v1 live draft game format, which is the suggested format for learning                  lecting the elements to build the deck. For 2-3 players,   someone to their left and right. In team games, players
+     Algomancy. Notice that each player has their own region. This can either be divided as regions around each player as              use 3 elements. For 4-6 players use 4 elements. For 6      will sit between two opponents.
+     shown below, or split side to side as in the included playmat, depending on player preference.                                    or more players we recommend doing a cube draft with
+                                                                                                                                       all 5 elements instead of a live draft.                    PLAYER PREPARATION
+     In constructed formats, there will be no shared deck and players’ individual decks will go in the location of their “pack”.                                                                     (Optional) Give each player two double sided help
+                                                                                                                                       In casual games, players can alternate choosing ele-       cards for easy access to game information.
+                                                                                                                                       ments to include in the game or assign them random-           Randomly assign a player The Initiative. Give this
+                                                                                                                                       ly. For the most up to date competitive rules for this     player the Initiative Token.
+                                                                                                                                       process, please see Algomancy.io.                             Deal 2 prismites to each player face down (dormant).
+                                 DISCARD ZONE
+                          STARTING PRISMITES                                                                                                                                                      These are their starting resources.
+                                                                            BIN              HELP CARDS
+                         (THEY START DORMANT)
+                                                                                                                                       Once the elements are selected, shuffle them together         Deal each player 16 cards: 4 for their starting hand,
+       PLAYER 2 REGION
+
+
+
+
+                                                                                                                                       to form the deck, including the hybrid cards for the       10 for their pack and 2 for their first draw step of the
+                                                                                                                                       selected combinations as well.                             first turn. This is a shortcut, but these cards will all be
+                                                                                                                                                                                                  combined into a pile of 16 for drafting when the game
+                                                                                                                                        54             54                54          15           begins anyway.
+                                                                                                                                        fIre          Wood           Water          hybrid
+                                                                                                                                       cards          cards          cards          cards
+                                                                     10 CARD “PACK”
+
+
+
+
+                                                                                                                RESOURCES AND TOKENS
+                                                                                               THE SHARED
+                                                                                                  DECK
+       PLAYER 1 REGION
+
+
+
+
+                                                                                                                                                              shuffLe
+                                                                      10 CARD “PACK”
+
+                                                                                                                                                                                                         16                   2                   the
+                                                                                                                                                                                                     cards from           Prismites            Initiative
+                                                                                                                                                                                                      the deck                                   token
+
+
+
+
+                          STARTING PRISMITES                                BIN              HELP CARDS
+                         (THEY START DORMANT)
+
+                                                                                                                                                              the deck
+
+
+
+
+10    alGomancy_setup                                                                                                                                                                                                         setup_ algomancy              11
+_ ANATOMY OF AN ALGOMANCY CARD                                                 UNITS
+                                                                               Units are permanents, meaning when played, they will
+                                                                                                                                              TIMING
+                                                                                                                                              While most cards are played during deployment, some
+                                                                               stay in play until removed. Units are what players use         have special timing capabilities or restrictions, show-
+                                                                               to build armies, attack and defend in Algomancy. When          cased in the top right corner of the card.
+                                                                               a unit dies or is deleted, it is placed in the bin (discard
+                                              CARDS                            zone).
+                                                                               Units have a specified power, which denotes how much
+                                              ALGOMANCY CARDS CAN              damage they deal in combat as well as a defense value,
+                                              HAVE THE FOLLOWING
+                                                                               which denotes how much damage they can sustain in
+                                              CHARACTERISTICS:
+                                                                               battle before dying. A unit dealt a total amount of dam-
+                                               ARD NAME
+                                              C                                age that is greater than or equal to its defense during
+                                              All cards have a card name.      battle will die.
+                                               ANA COST
+                                              M
+                                              This many resources must be      SPELLS                                                         HASTE
+                                                                                                                                              Haste cards can also
+                                                                                                                                                                       BATTLE
+                                                                                                                                                                       Battle cards can
+                                                                                                                                                                                                 VIRUS
+                                                                                                                                                                                                 Virus cards can
+                                              paid in order to be played.      Spells provide one-time effects and are used to inter-         be played during the     only be played            also be applied as
+                                               FFINITY
+                                              A                                act, create or modify certain aspects of the game.             haste step.              while in battle with      augments from your
+                                              Resource types needed to be      When a spell resolves, it goes directly to the player’s                                 another player.           hand during battle.
+                                              present among your resources
+                                              to be able to play the card.
+
+                                               TATS
+                                              S
+                                              Denote the power and defense                                                                      NOTE
+                                              of a unit, demonstrating how
+                                              much damage they deal and                                                                         Cards with no icon can only be played during deployment.
+                                              can receive, respectively.
+
+                                               IMING
+                                              T
+                                              An icon here modifies when
+                                              and how a card can be played.
+                                              Cards with no icon can be                                                                       PLAYING A CARD
+                                              played during deployment.
+                                                                                   SPELL EFFECT
+                                                                                                                                                Affinity: To have the ability to play a card, a player
+                                              TYPES AND ATTRIBUTES                   When this spell                                            must meet the affinity requirement of the card they
+                                              Describes the qualities of the        resolves, two 1/1                                           wish to play. If this criteria is met, the player has the
+                                              card, including some combat      units will be created,
+                                              modifiers, denoted in bold                                                                        ability to play the card.
+                                                                                    and Accelerated
+                                              yellow or purple.                                                                                  Mana cost: To play a card, a player must expend a
+                                                                                Germination will be
+                                                                                   placed in the bin.                                           number of un-expended resources equal to the card’s
+                                               BILITIES
+                                              A
+                                              Most cards have abilities,                                                                        mana cost.
+                                              which describe the card’s                                                                           Targets: If the card mentions targets, these are
+                                              effects.                                                                                          recipients for certain actions of the card. The targets
+                                              SET SYMBOL                       SPELL UNITS                                                      must be selected as the card is being played.
+                                              Indicates the expansion and      Some spells also have the unit type. Rather than being              Additional costs: Some cards also have brackets “[]”
+                                              its color denotes the com-       placed in the bin when they resolve, spell units spawn           in their textboxes. Whatever is inside of the brackets
+                                              plexity of the card (gold =
+                                              complex).                        into play as units. If the spell unit is prevented from          must be resolved in order to play a card. This can be
+                                                                               resolving, for example due to its targets being made             additional actions that are paid as a cost or modes
+                                                                               invalid, the unit will not spawn and will enter the bin.         that must be selected.
+
+
+12   alGomancy_Ana
+              _xxxxxxxxx
+                  tomy of an Algomancy Card                                                                                               Anatomy of an Algomancy
+                                                                                                                                                            xxxxxxxxx_
+                                                                                                                                                                  Card_ algomancy 13
+_ ANATOMY OF AN ALGOMANCY CARD                                                                                   TOKENS
+                                                                                                                 Tokens are temporary cards that are created directly
+                                                                                                                                                                                                      SPELL TOKENS
+                                                                                                                                                                                                      A spell token is a temporary spell that may be played
+                                                                                                                 into play. If they leave play for any reason, they are                               from the battlefield.
+RESOURCES                                                                                                        erased from the game and returned to the token pile.                                 When spell tokens spawn they are put directly into play
+Resources are the essential source of mana in Algo-                                                                                                                                                   in the region they were created. Spell tokens may only
+mancy and are required in order to play your cards. Most                                                                                                                                              be played in the region they are in.
+resources also have an affinity towards a unique element.                                                                                                                                             During the attack step, spell tokens can be brought
+Resources are also permanents and remain in play.                                                                                                                                                     into other regions through combat. They cannot do
+                                                                                                                                                                                                      so on their own, however and must follow at least one
+     fIre     Earth       Water       Metal       Wood                                                                                                                                                other unit into battle.
+
+
+                                                                                                                                                                                                        NOTE
+
+                                                                                                                                                                                                        Spell tokens spawned in enemy regions during combat can be used
+                                                                                                                                                                                                        there immediately.
+
+
+
+
+                                                                                                                                                                                                      Spell tokens have a limited lifetime. This means that
+                                                                                                                                                                                                      any remaining spell tokens in play are erased from the
+                                                                                                                                                                                                      game after battle during regroup. This includes unused
+                                                                                                                                                                                                      spell tokens in a player’s own region as well.
+
+
+
+
+                                                                                                                                                                                                      UNIT TOKENS
+                                                                                                                                                                                                      Unit tokens function identically to regular units with the
+                                                                                                                                                                                                      exception that when they leave play, they are placed back
+                                                                                                                   TOKEN CARDS MAY INCLUDE ONE OR MORE                                                into the token pile instead of the hand or bin.
+                                                                                                                     OF THE FOLLOWING CHARACTERISTICS
+                                                                                                                                                                                                      Just like spell tokens, unit tokens spawn directly into
+                                                                                                                                                                                                      play in the region they were created.
+
+                                                                                                                    MANA COST                        BURST                        TOKENS
+                                                                                                                    Can often be                 ATTRIBUTE                      WITH AN X             Unlike spell tokens, unit tokens persist through re-
+                                                                       RESOURCE CARDS HAVE THE                     played without           Requires the player to            X is determined         group.
+                                                                      FOLLOWING CHARACTERISTICS                   expending Mana.           play all tokens with the          by the card that
+                                                                                                                                             same name at once.                created them.
+                                                                                                                                                                                                        NOTE
+EXPENDED RESOURCES
+All resources have the ability to be expended for 1
+mana once per turn in order to pay for the mana cost          AFFINITY           ABILITIES       SET SYMBOL       NOTE                                                                                  If a unit spawns during battle, it is placed outside
+of cards and abilities. This is done by turning the card     Allows you to         Describe        Indicates                                                                                            of formation (meaning it is not attacking or block-
+                                                            play cards with      any special     expansion and    Multiple spell tokens played with burst are still individual spells, but they
+sideways.                                                   affinity require-   effects of the    complexity.     are played at the same time.
+                                                                                                                                                                                                        ing), but still in the same region.
+Expended resources refresh at the beginning of a turn.      ments on cards.       resource.
+
+
+
+14   alGomancy_Ana
+              _xxxxxxxxx
+                  tomy of an Algomancy Card                                                                                                                                                       Anatomy of an Algomancy Card_ algomancy 15
+_ DRAW AND DRAFT STEP
+                                                                                                                                                            DRAFTING
+
+                                                                                                                                                                           ALWAYS LEAVE 10 CARDS IN THE PACK
+DRAW STEP                                                                  DRAFTING
+Players draw 2 cards during the draw step on every                         Drafting is the process where players curate their
+turn. To speed up the initial setup, players are typically                 hands for the upcoming turns. During the draft step of
+dealt their draws for the first turn of the game with                      the live draft mode, players combine the cards in their
+
+
+
+
+                                                                                                                                                      THE PACK
+their opening hand, in which case they should not draw                     hand with the cards in their pack. Then they are able
+additional cards during the first turn.                                    to freely select which cards from the resulting pile they
+                                                                           wish to keep in their hand and which cards should go
+Players draw cards and are dealt packs from the                            back into the pack. Players must always leave exactly
+shared deck clockwise starting with the initiative                         10 cards in the pack at the end of this step, so they will
+player.                                                                    exit the draft step with the same number of cards in
+                                                                           hand that they began with.
+CREATING & REFRESHING THE PACK
+At the start of the game, each player is dealt a pile of                   Once a player has finished drafting, they should make
+10 cards face down. This pile is referred to as a “pack”.                  sure the pack contains 10 cards and pass it clockwise
+                                                                           to the next player as an indicator that they are finished.                               FREELY EXCHANGE CARDS FROM THE PACK AND HAND
+Additionally, after each cycle of N+1 turns, where N
+is the number of players, all of the existing packs are                    DRAFTING IN CONSTRUCTED
+recycled (put on the bottom of the deck) and each                          In the constructed game mode, players bring their own
+player is dealt a new pack of 10 cards. This means each                    pre-built decks to the game with up to 2 copies of each
+player will draft a second time from the pack they were                    card and a minimum of 30 cards in their decks.
+initially dealt before refreshing the packs. For exam-
+ple in a 1v1 game, players will draft for 3 turns before                   In this mode, there are no packs or shared deck. During
+getting new packs.                                                         the draft step in constructed, players simply draw 2
+Once all players have passed their pack, the draft step                    cards from their own deck and recycle 2 cards from
+
+
+
+
+                                                                                                                                                      PLAYER HAND
+is complete.                                                               their hand instead of drafting from packs and passing
+                                                                           them between players. This takes place immediately
+  NOTE                                                                     after the draw step, so players often combine these
+                                                                           two steps by drawing 4 cards, then recycling 2.
+  When a player is eliminated, their pack is recycled (put on the bottom
+  of the deck).
+
+                                                                             NOTE
+
+                                                                             Packs may only be interacted with and looked at during the draft step,
+                                                                             and players may not look at the packs of other players.
+
+
+
+
+16   alGomancy_xxxxxxxxx
+              _draw and draft step                                                                                                                                                           draw and draft step_ algomancy 17
+_ THE PLANNING PHASE                                                                                                    _ REGIONS AND LOCAL EFFECTS
+
+RESOURCES                                                                                                               REGIONS                                                      player has entered a new region, they can now interact
+The resource step of the planning phase is when players have the ability to cre-                                        All gameplay in Algomancy takes place inside of re-          inside of it for the remainder of the battle phase, even
+ate and activate resources. During this step, any resource can be created from                                          gions, with one region for each player. Each region is       if the units they’ve sent into the region are removed.
+outside the game by recycling a card from hand (putting it on the bottom of the                                         a location that is completely isolated from the other        This means interacting with opponents and their units
+deck).                                                                                                                  regions. This means there is zero information or inter-      can only be done during the battle phase.
+All resources spawn dormant (come into play face down). Players may activate a                                          action between regions.
+maximum of two resources per turn by turning them face up. There is no limit to                                                                                                      Additionally, if a player enters a region, their bin, hand,
+how many resources can be created, though there is little advantage to creating                                         Every single effect is specific to the region it takes       resources, and even the player themself can be interact-
+more than the 2 that can be activated each turn.                                                                        place in, meaning it will never impact anything in any       ed with.
+Additionally, each player begins the game with two dormant Prismites, which                                             other region. For example “Delete target unit” means
+typically receive the two activations for the first turn. Active Prismites may be      THE PRISMITE CARD                “Delete target unit in this region”. “Each player sac-       The regions are arranged in a large circle. Each player
+exchanged for other resources, meaning players essentially get to pick their two                                        rifices two units” means “Each player in this region         has two neighboring regions to their left and right
+starting resources for free.                                                                                            sacrifices two units in this region”.                        (except in 1v1 games, where players only have one
+The planning phase ends when all players have created and activated their de-                                                                                                        neighboring region). When a player is eliminated, their
+sired resources.                                                                     NOTE                               Players can enter neighboring regions during the battle      neighboring regions move next to each other and the
+                                                                                                                        phase by sending attacks at the players left or right of     game continues.
+                                                                                     Since Prismites are resources,
+HASTE                                                                                they can be expended for mana.     them, and will remain present in those regions until the
+After the resource step is the very short haste step, where players can only play    Sometimes it can be advantageous   regroup phase in addition to their own region. Once a
+haste cards (with the     symbol). This step ends when all players have played all   to delay exchanging them.
+
+the haste cards they wanted to play (which can be none).
+                                                                                                                            PLAYER ELIMINATION
+
+
+
+SHARDS AND                                                                                                                                     PLAYER 2
+                                                                                                                                                                                                           PLAYER 2 PLAYER 1
+                                                                                                                                                                                                                    WAS ELIMINATED
+                                                                                                                                               REGION                                                              REGION
+AFFINITY BONUSES
+The elemental resources can
+provide free Shards when they are
+activated if the player has at least                                                                                                          A FOUR
+three affinity towards that resource.                                                                                                      PLAYER GAME
+                                                                                                                               PLAYER 1                         PLAYER 3                        PLAYER 1                             PLAYER 3
+Shards are a resource that adds no                                                                                            REGION                           REGION          PLAYER          REGION                                REGION
+                                                                                                                                                                             ELIMINATED
+affinity, but can still be expended                                                                                                                                                                               A THREE
+for mana like all other resources.                                                                                                                                                                              PLAYER GAME
+
+
+
+ NOTE                                                                                                                                          PLAYER 4                                                            PLAYER 4
+                                                                                                                                               REGION                                                             REGION
+ Activating a shard counts towards a player’s
+ limit of 2 activations per turn.               RESOURCE   RESOURCE   3RD RESOURCE              CREATED SHARD
+                                                IN PLAY    IN PLAY    PLAYED
+
+
+
+18   alGomancy_the planning phase                                                                                                                                                    Regions and Local Effects_ algomancy 19
+_ BATTLE
+The battle phase is the heart of Algomancy and is                            INITIATIVE                                                                  TIMING
+where most of the gameplay happens. Battle is broken                         Teams always act together in all situations and phases of                   Once players have begun inter-         BATTLE RESOLUTION ORDER A FOUR PLAYER GAME
+down into the following steps: Attack, Block, Combat,                        the game . The Initiative-Team (IT) must make all of their                  acting inside of a region, all steps
+and After Combat which will all take place uniquely in-                      plays first, allowing the Non-initiative-Team (NIT) to act                  of battle will be completed inside
+side of each region (with the exception of regions that                      later. In 1v1, players are considered their own teams.                      of that region before those play-                               REGION WITH INITIATIVE RESOLVES LAST
+did not get attacked, in which case combat and after                                                                                                     ers can interact elsewhere.
+combat will be skipped).                                                     Therefore, the battle phase in team games (and 1v1)                                                                                                                  PLAYER 4
+                                                                             takes place in two phases:                                                  There is a specific order in which                                                      REGION
+
+ATTACKING                                                                                                                                                combat will unfold across the re-
+During the Attack Step, players select a set of units                        Phase 1                                                                     gions to ensure a player will only
+and other cards in play, such as spell tokens, to bring                      1. T
+                                                                                 he IT declare their attacks, sending units into NIT                    ever be interacting in a single
+into a neighboring enemy region for battle. These                               regions.                                                                 region at a given time. This order
+cards will remain in the new region(s) until the regroup                     2. There is a priority window for interaction.                              is clockwise starting to the left      RESOLVE THIS             PLAYER 3                                         PLAYER 1      RESOLVE THIS
+                                                                                                                                                                                                REGION THIRD            REGION                                           REGION         REGION FIRST
+phase.                                                                       3. The NIT declare their blocking formations while also                    of the initiative player, meaning
+                                                                                 having the opportunity to send attacking units for                      the region of the initiative player
+Once a player has sent attacking units into an enemy                             a counter-attack. The counter-attacking units leave                     will resolve last. (And when
+region, they can now interact with things in that region                         the region and are treated as if they don’t exist until                 players become comfortable
+using spells and effects.                                                        phase 1 finishes.                                                       with the game, regions that have
+                                                                                                                                                                                                                                                  PLAYER 2
+                                                                             4. There is a priority window for interaction.                              zero overlapping players can be                                                         REGION
+                                                                             5. Combat Step happens - All units in formation deal                       resolved simultaneously.)
+                                                                                 combat damage simultaneously.
+                                                                                                                                                                                                                               RESOLVE THIS REGION SECOND
+                                                                             6 After Combat Step - This is the last priority window                     In the case of 1v1, when the IT
+                                                                                for interaction in this region before Regroup.                           attacks into the NIT’s region, they
+                                                                                                                                                         will exclusively be interacting in
+                                                                             Phase 2                                                                     that region until all of the stages                     EVERYTHING IS REGION LIMITED
+                                                                             1. T
+                                                                                 he NIT puts their attacking units into formation.                      of battle have been completed in                     PLAYER 3 REGION                                      PLAYER 4 REGION
+                                                                             2. There is a priority window for interaction.                              that region. All of their units that
+                                                                             3. The IT declare their blocking formation.                                 stayed back in their own region
+                                                                             4. There is a priority window for interaction.                              (as well as the enemy units that
+                                                                             5. Combat Step happens - All units in formation deal                       were sent for a counter-attack)
+                                                                                 combat damage simultaneously.                                           will be treated as if they don’t
+                                                                             6. After Combat Step - This is the last priority window.                   exist.
+                                                                                 for interaction in this region before regroup.                                                                                   PLAYS                                                  CONTROLS
+                                                                                                                                                         Once battle has been completed                      MAW OF DAMNATION                                           SPARKWRAITH
+                                                                                                                                                         in the attacking region, if there
+                                                                                                                                                         was a counter-attack, the players       EXAMPLE
+ NOTE                                                                                                                                                    will move to IT’s region and            Battle is resolving in Player 3‘s region, where player 4 plays Maw of Damnation. Player 4 controls
+                                                                               NOTE                                                                                                              Sparkwraith in their own region (region 4). Sparkwraith does not trigger from casting of Maw of
+                                                                                                                                                         resolve battle in that region in its    Damnation, and it is not able to be sacrificed either. Since it is in a different region, it is treated as
+ Units attack players directly. They do not attack individual units unless
+ directed by a spell (such as Battle above).                                   The NIT can still declare attacks even if the IT decides not to attack.   entirety, treating the units in the     though it doesn´t exist while battle in Player 3’s region is being resolved.
+                                                                                                                                                         other region as if they don’t exist.
+
+
+20 alGomancy_bATTLE                                                                                                                                                                                                                                                  bATTLE_ algomancy 21
+_ BATTLE                                                                                                                                         BLOCKING
+                                                                                                                                                 When a player is attacked, they get an opportunity to
+                                                                                                                                                 defend during the block step. To do so, they may place
+
+
+
+
+                                                                                                                                                                                                                           DEFENDING FORMATION
+FORMATIONS                                                                            UNLIMITED COLUMNS
+                                                                                                                                                 units in front of the formation that is attacking them.
+Units are the basis of combat: they are used to attack op-                                                                                       The resulting group of defending units is also called a
+ponents, enter new regions and defend against invaders.                                                                                          formation, but unlike offensive formations, the defend-                                         BLOCKED                    BLOCKED
+                                                                                                                                                 ing formation is allowed to be assigned with empty
+When units attack or block, they are placed in a formation,                                                                                      columns. Units may even be placed blocking in slots
+
+
+
+
+                                                                                                                             MAXIMUM OF 2 ROWS
+just like soldiers lining up for battle. Formations have a front                                                                                 where attackers aren’t, which can be beneficial for
+                                                                                                                                                                                                                                                              PLAYER                      PLAYER
+and back row but can scale infinitely in width. Attacking for-                                                                                   adjacency matters cards.                                                                                                   3 DAMAGE      TAKES 2
+                                                                                                                                                                                                                                                              TAKES 2
+mations are set during the attack step while the defensive                                                                                                                                                                                                    DAMAGE                      DAMAGE
+formations are set during the block step. Once a formation                                                                                       BLOCKED
+is set, the units are locked in position and are considered                                                                                      Once a defending unit has been placed in front of an at-                                                    UNBLOCKED                   UNBLOCKED
+adjacent to their left, right, front and back neighbors until                                                                                    tacking column, that entire column is considered blocked.
+regroup where they all leave formation.                                                                                                          Blocked units do not deal combat damage to you.
+
+                                                                                                                                                   NOTE
+
+
+
+
+                                                                                                                                                                                                                           ATTACKING FORMATION
+                                                                                                                                                                                                                                                 2 DAMAGE
+                                                                                                                                                  The column is considered blocked even if the defending unit is removed
+                                                                                                                                                  during combat!
+HOLD THE LINE
+In Algomancy it is imperative to maintain a solid front-line of combat. This is upheld by the following rules
+which dictate how units move within their formation between the attack and block step:
+                                                                                                                                                 DAMAGE
+                                                                                                                                                 Each column of attacking and defending units in a
+                                                                                                                                                 formation deals damage equal to the combined power
+   he front row of a column must be filled first before a unit can be placed in a back row.
+  T
+                                                                                                                                                 of each unit within that column.
+  If a unit is removed from a formation, any units behind it move to the front row and take its place.
+   If the last unit in a column is removed from a formation, the columns on its sides will close in to fill the gap. This
+                                                                                                                                                 During the damage step all of the following damage
+  only happens before blocks are declared. After blocks, columns will not move to fill gaps.
+                                                                                                                                                 processes happen simultaneously, unless modified by
+                                                                                                                                                 an ability:
+ORIGINAL FORMATION WITH UNITS REMOVED                               NEW FORMATION AFTER UNIT REMOVAL                                                                                                                                         Every damage exchange happens at the same time
+                                                                                                                                                 Unblocked units deal combat damage to the defend-                                           during combat, but it can be broken down as follows:
+                                                                                                                                                 ing player. If a column is blocked, the attacking and                                        The column of Living Forge and A Pile of Rubbish
+                                                                                                                                                 defending formations in those columns deal combat                                             deal a combined 3 damage to the Tiderunner Initi-
+                                                                                                                                                 damage to each other.                                                                         ate blocking them. It deals 2 damage back, which is
+                                                                                                                                                                                                                                               all dealt to Living Forge because it is in the front.
+                                                                                                                                                 When a column of units takes combat damage, they                                              The two unblocked columns each deal 2 damage to
+                                                                                                                                                 receive damage from front to back. The front row re-                                           the defending player.
+                                                                                                                                                 ceives damage first. If the amount of damage received                                          The column of Recyclable Sentinel and Jelly deal a
+                                                                                                                                                 would be enough to kill the front row, any excess dam-                                          combined 3 damage to Mirage Walker, and it deals
+                                                                                                                                                 age is dealt to the unit in the back row. Excess damage                                         2 damage back. 1 damage is dealt to the Sentinel in
+                                                                                                                                                 beyond the health of the back row unit does not carry                                           the front. The excess 1 damage is carried to Jelly in
+                                                                                                                                                 over to the player.                                                                             the back.
+
+
+22 alGomancy_battle                                                                                                                                                                                                                                                   Battle_ Algomancy 23
+_ BATTLE
+ATTRIBUTES
+Some units have attributes, which can modify how they
+                                                                                                #1 #2
+                                                                                DEFENDING PLAYER KILLS   DEFENDING PLAYER
+                                                                                                                                  ATTRIBUTE COMBOS
+                                                                                                                                  The ability to share attributes is incredibly powerful
+                                                                                                                                                                                               NON-COMBAT ATTRIBUTES
+                                                                                                                                                                                               Some attributes, like burst and unstable, are written in a
+engage in combat. These cards have a reminder text in                              BLOODWIND REVENANT    BLOCKS NON-FLYING UNIT   and players should keep their eyes open for any power-       purple text. These attributes are referred to as non-com-
+italics to help players remember what each attribute                                                                              ful combos that this may unlock.                             bat attributes, since they generally have nothing to do
+does.                                                                                                                                                                                          with combat.
+                                                                                                                                  In this example the attacking player has placed Mal-
+Combat attributes (denoted in gold text) are shared by                                                                            formed Monstrosity and Reality Bender in the first           These attributes are not shared in formation, and simply
+units in the same column of a formation. For example,                                                                             column and Tidepool Terror and Dune Drifter in the           exist to modify cards. For example, the unstable attribute
+if Bloodwind Revenant (shown below) attacks with an-                                                                              second column.                                               is often given to cards that have been played from the bin
+other unit in front or behind it, both of those units have                                                                                                                                     as a way to prevent them from being used more than one
+                                                                                                          DEFENDING FORMATION
+the Flying attribute and the entire column can not be                                                                             Malformed Monstrosity would gain the “Inverted”              time, such as Abyssal Evocation below.
+blocked unless the blocking unit has flying.                                                                                      attribute, which reverses its stat changes. It’s -7/-7
+                                                                                                                                  ability now becomes +7/+7 turning it into a 17/16.
+When a unit with attributes is removed from a column,
+all other units in its column immediately lose access to                                                                          Dune Drifter has the “Swift” attribute, which allows it to
+any attributes which that unit may have been sharing.                                                                             deal combat damage first. Paired with Tidepool Terror,
+                                                                                                                                  who has the “Deadly” attribute, they can instantly kill
+  NOTE                                                                                                                            anything before it has a chance to fight back.
+                                                                                                                                               UNITS SHARING ATTRIBUTES
+  Combat attributes are not shared by units to the left or to the right, they
+  are only shared in their columns.
+
+
+
+
+                                                                                ATTACKING FORMATION        ATTACKING FORMATION
+
+
+
+
+                                                                                                                                                               DEADLY & SWIFT
+                                                                                                                                   INVERTED
+                                                                                                                                                                                                                 ABYSSAL EVOCATION
+                                                                                                                                                                                                                 USES THE UNSTABLE
+                                                                                                                                                                                                                ATTRIBUTE AS A WAY TO
+                                                                                                                                                                                                                  LIMIT RECURSION
+                                                                                ABOVE, THE DEFENDING PLAYER REMOVES BLOOD-
+                                                                                WIND REVENANT IN ORDER TO BLOCK THE COLUMN
+                         ATTRIBUTES
+                                                                                           WITH A NON-FLYING UNIT.
+
+
+
+
+24 alGomancy_battle                                                                                                                                                                                                       battle_ algomancy 25
+_ REGROUP AND DEPLOYMENT                                                                                                 _ THE TURN
+                                                                                                                         LEGEND                 SIMULTANEOUSLY              ONLY IN ATTACKED REGIONS             IT FIRST, THEN NIT
+REGROUP                                                       DEPLOYMENT PHASE
+Regroup is a global step that takes place when battle has     The deployment phase is the final phase of each turn
+ended in every region. Players do not gain priority or take   cycle. During this phase, players build up their forces
+any game actions during this step. The regroup step sim-      in preparation for the following combat. They do so by      FREE FOR ALL (FFA)                                          TEAMS/1V1
+ply functions as a way to reset the game between battles.     playing cards, activating abilities and modifying cards
+During regroup, five important things take place.             with graft and augment.                                     PLANNING                                                    PLANNING
+                                                                                                                          1. Refresh resources                                        1. Refresh resources
+  All units and players return to their regions               Any card can be played during this phase, with the          2. Draw 2 cards                                             2. Draw 2 cards
+  All damage on units is removed                              exception of battle cards, which can only be played in      3. Draft (Draw 2 recycle 2 in constructed)                  3. Draft (Draw 2 recycle 2 in constructed)
+  All temporary stat changes are removed                      the battle phase.                                           4. Gather and activate resources                            4. Gather and activate resources
+  All Spell Tokens are erased                                                                                             5. Play    cards                                            5. Play    cards
+  All units leave formation                                   Each player is in their own region during the deploy-
+                                                              ment phase, meaning it is not possible to interact with     BATTLE ( , only as mods from hand)                          BATTLE         (   , only as mods from hand)
+Importantly, regroup takes place before the deployment        other players or their units in the deployment phase.       1. Attack into other regions using intent cards
+phase and not at the end of the turn. This means that                                                                     2. Priority window                                          PHASE 1 (NIT REGIONS)
+created spell tokens or any stat changes made during the      END OF TURN                                                 3. Declare blocks                                           1. IT attack into NIT regions
+deployment phase will persist until the following combat.     The end of turn is a special step after deployment          4. Priority window                                          2. Priority window
+For example, Overbloom can be played during the deploy-       finishes where some cards have effects.                     5. Combat damage		                                          3. NIT declare blocks/send units to attack
+ment phase and the bonus will last until the end of the                                                                   6. After combat priority window                             4. Priority window
+following battle when regroup happens.                        This step is exclusively for resolving card abilities as                                                                5. Combat damage		
+                                                              a special action, players cannot play cards after or in     REGROUP                                                     6. After combat priority window
+                                                              response to these end of turn triggers.                     Return to your region
+                                                                                                                          Reset unit damage and buffs                                 PHASE 2 (IT REGIONS)
+                                                              ENDING A TURN                                               Erase all spell tokens                                      1. NIT attack IT regions with units sent in Phase 1
+                                                              After the deployment and end of turn, the turn is over.                                                                 2. Priority window
+                                                              The initiative token and any draft packs are passed to      DEPLOYMENT                                                  3. IT declare blocks
+                                                              the next player in a clockwise direction and the entire     1. Play cards, apply mods from hand and/or bin              4. Priority window
+                                                              turn structure is repeated again, starting in the plan-     2. End of turn                                              5. Combat damage		
+                                                              ning phase.                                                                                                             6. After combat priority window
+
+                                                                                                                                                                                      REGROUP
+                                                                                                                                                                                      Return to your region
+                                                                                                                                                                                      Reset unit damage and buffs
+                                                                                                                                                                                      Erase all spell tokens
+
+                                                                                                                                                                                      DEPLOYMENT
+                                                                                                                                                                                      1. Play cards, apply mods from hand and/or bin
+             OVERBLOOM CAN
+            BUFF YOUR UNITS
+                                                                                                                                                                                      2. End of turn
+
+
+26 alGomancy_Regroup and deployment                                                                                                                                                                      the turn_ algomancy 27
+_ THE STACK
+  FIRST IN,
+  LAST OUT
+  Interaction between
+  players during the
+  battle phase uses the
+  stack, which abides by
+  the concept of “First in,
+  last out”. Whenever a
+  card gets played or an
+  ability is activated or
+  triggered, it is added to
+  the stack as an “effect”.
+  This means it does not
+  resolve immediately,
+  giving other players in      1
+  the region a chance to                                             2                                                  3                                                     4
+  respond.                     Player A plays Flame of
+                               history. This enters                   Player B responds to Flame of History with Boon   Player A responds to Boon of Protection with Arc      Both players pass priority. Arc Lightning resolves
+                               the stack and Player B has a          of Protection, putting it on top of the stack.     Lightning, putting it on top of the stack.            first, because it was on top of the stack.
+  Visually this is done by     chance to respond.
+  placing new effects on
+  top of any other exist-
+  ing effects on the stack.
+  Then when it’s time to
+  resolve an effect, the
+  top effect of the stack
+  resolves first. This pro-
+  cess is repeated until all
+  items in the stack have
+  resolved.
+
+  This example shows           5
+                                                                                                                                                                              7
+  how the stack un-            New spells can be added on top                                                           6
+  folds in an interaction      of an active stack even after it                                                                                                               Both players pass priority, finally, Flame of History
+  between two players,         has started resolving. Now player A                                                      Both players pass priority and Null Drone resolves,   can resolve. If they pass priority again, we move to
+  during a priority window     plays Null Drone targeting Boon                                                          negating Boon of Protection.                          the next step of the turn, otherwise more cards can
+                               of Protection.                                                                                                                                 be played.
+  of the battle phase.
+
+
+
+
+28 alGomancy_The Stack                                                                                                                                                                                    The Stack_ algomancy 29
+_ PRIORITY AND PLAYER INTERACTION
+                                                                                                                                                                    PRIORITY WINDOW
+
+
+                                                                                                                                                                    Description
+                                                                                                                                                                    The priority window structure gives players the chance to play cards
+                                                                                                                                                                    or use abilities before other effects resolve. This creates a dynamic
+                                                                                                                                                                    system of back and forth interaction.
+PRIORITY                                                                           INTERACTION
+The term priority denotes the ability of a player to per-                          If a player does use their priority to take game actions,
+form game actions such as playing cards or activating                              they may maintain their priority to continue taking
+abilities. A player with priority has the ability to do these                      game actions. All of these cards or abilities will go onto
+things, while players without priority do not. All players                         the stack as effects, they do not happen immediately.                                                I want to take                                             I want to take
+on a team share priority and can take actions in which-                            Once a player passes priority after taking one or more                                                  an action                                                  an action
+ever order they choose amongst themselves. Teams pass                              actions, each other player will receive priority to get a
+priority and receive priority collectively.                                        chance to respond to their actions. This process con-
+                                                                                   tinues until all players pass priority.
+PRIORITY WINDOW
+A priority window is a sequence where players or teams                             When all players pass priority, the effect on the top of
+each receive priority in order. The following steps are                            the stack (which was played last) will resolve immedi-
+followed by a priority window inside of each region:                               ately. Then all players gain priority in order again. This
+                                                                                                                                                                                                                                                        Non
+                                                                                   process is repeated until all players pass priority with                        begin priority          Initiative
+                                                                                                                                                                                                                      i don´t want to take           Initiative
+  Attack step                                                                      an empty stack, which will move them to the next step                                                    Priority
+                                                                                                                                                                           window                                       any more actions              Priority
+  Block step                                                                       of the turn.
+  After Combat step
+
+Within a priority window, first the initiative player will receive                   NOTE                                                                                                                          We all don’t want to take
+priority. Then if they decline to do anything, priority will be                                                                                                                                                        any more actions
+                                                                                     It is very rare for a player to take more than one action when holding pri-
+passed clockwise to the next non-initiative player in the                            ority (the exception being burst spell tokens), so interaction in Algomancy
+region. If the initiative player is not present in the region,                       often has a back and forth flow.
+priority begins with the player nearest to the initiative player,
+clockwise.
+                                                                                                                                                                                                                   no                        yes
+                                                                                                                                                                                            Resolve                            is the                  go to
+  NOTE
+                                                                                                                                                                                            the top                             stack                the next
+  It is common to declare you are doing something “In response” to an                                                                                                                        layer                             empty?                 phase
+  action of an opponent during a priority window. For example if the oppo-
+  nent plays a removal spell on one of your units, you can play a protection
+  spell during your priority before their spell resolves in response to it being
+  played. Your opponent can then respond to your protection spell with
+  something else, which you can then respond to again, and so on.
+
+
+
+
+30 alGomancy_Priority and Player Interaction                                                                                                                                                                            Priority and Player Interaction_ algomancy 31
+_ MODIFICATIONS
+
+                                                                                         TWO AUGMENTS APPLIED TO TIDAL
+TWO TYPES OF MODIFICATIONS                                                                                                 GRAFT
+                                                                                                   MENACE
+Some cards have one of two modification (or mod) symbols,                                                                  The graft mechanic in Algomancy, denoted by the
+either Augment ￼ or Graft  ￼ . Modification (or modding) en-                                                               or    symbol on a card, is a modification that allows for
+ables the player to change card abilities by combining cards                                                               the combination of multiple effects into a single cause,
+together in certain ways. Modification is a special action that                                                            allowing players to mix and match cards together into
+players can perform during the deployment phase.                                                                           potent combinations.
+
+
+ NOTE
+                                                                                                                           COMBINING EFFECTS
+                                                                                                                           All graft cards follow the template of cause and effect,
+ Modification is independent of timing modifiers that aren’t virus, so battle cards                                        separated by      or . In the example of Oracle of the
+ cannot be used as mods during battle, for example.                                                                        Flame, the cause is “Sacrifice me” and the effect is
+                                                                                                                           “Create a Fireball 1”.
+
+                                                                                                                           When something is grafted onto another card, it is
+                                                                                                                           adding additional effects onto the cause of the top-
+                                                                                                                                                                                                            TWO GRAFT CARDS
+                                                                                                                           most card. The resulting card is read as
+AUGMENT                                                                                                                    “Cause — effect1 AND effect2 AND effect3... etc.”
+The Augment mechanic allows players to take all of the text                                                                The resulting ability is treated as a single ability, so it
+in the paragraph following the augment symbol and add it                                                                   will all resolve at once, from top to bottom, and the
+onto other cards. The Augment symbol can appear either in a                                                                entire effect can be negated by a single spell. There         In this example, if Accelerated Germination was grafted
+unit’s ability text box or before attributes in the type line.                                                             is no limit to how many effects can be grafted onto a         onto Oracle of the Flame, the resulting card would read
+                                                                                                                           single card.                                                  “Sacrifice me: Create a Fireball 1 AND (once per turn)
+Since modding is only allowed during the deployment phase,                                                                                                                               create two 1/1 units.”
+augmenting is typically only possible to do with a player’s own                                                            BOUNDED AND UNBOUNDED GRAFT
+units - unless the mod being applied is a Virus (see page 34                                                               There are two different forms of the graft symbol,            REQUIREMENTS AND RESTRICTIONS
+for more on Viruses).                                                                                                      denotes an unbounded graft, which can trigger an un-          Applying a graft follows the same cost and timing
+When a card is augmented, it is treated as if it were a single                                                             limited number of times, whereas      is limited to only      setup as augments (play from hand or bin during
+card with all of the additional text from its mods. There is no                                                            trigger once per turn.                                        deployment, pay the card’s cost and meet affinity
+restriction on the number of times a card can be augmented.                                                                                                                              requirements in order to do so), with the additional re-
+                                                                                                                           If you have an unbounded graft cause and a mixture of         quirement that both cards must have the graft symbol
+APPLY AUGMENT                                                                                                              bounded and unbounded effects, the graft cause will trig-     in order to be able to apply a graft.
+To apply an augment, the player must first meet its affinity                                                               ger an unlimited number of times, but each of the bound-
+requirement, followed by paying its mana cost and selecting                                                                ed effects will only trigger a limited number of times.       Grafted effects resolve as one ability from top to
+a target to apply the augment onto. Place the augment card                            NOTE                                 If you have a bounded graft cause, the entire effect will     bottom in order. When applying a new graft, you may
+beneath the targeted card, with the textbox visible beneath it                                                             only trigger a limited number of times, even if un-           insert the new effect at any position within the graft
+                                                                                      Modifications can be applied from
+to demonstrate the additional line of text. Augments can be                           the bin as well as from your hand.
+                                                                                                                           bounded effects are grafted onto it.                          stack below the original card, but you may not re-order
+applied from either the hand or from the bin.                                                                                                                                            the rest of the grafted abilities.
+
+
+32 alGomancy_Modifications                                                                                                                                                                                Modifications_ algomancy 33
+_ MODIFICATIONS
+
+VIRUSES                                                                                                                                                     INTERACTIVE OPTIONS
+Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and aug-                                    Not all viruses are detrimental. Rampart Guardian
+mentable normally during the deployment phase. This gives them significantly more flexibility, allowing viruses to be used                                  for example can be augmented to grant the “Tough”
+as interactive or reactive plays similar to spells. They are marked by the virus symbol in the top right of the card.                                       attribute to an ally in the middle of combat, saving it
+                                                                                                                                                            from damage that might otherwise kill it.
+
+
+TURNING DRAWBACKS INTO WEAPONS                                                 CHANGE OF CONTROL
+Since they can be augmented during combat, viruses                             When a card is augmented onto an opposing unit, they
+
+
+
+
+                                                                                                                                                            DEFENDING FORMATION
+also are able to augment onto opposing units. This is                          will control the augment and its new ability. For exam-
+most commonly done with cards that have drawbacks                              ple, if you augment Pathogenic Enclave onto an enemy
+like Smouldering Inferno, which turns the card into a                          unit, when that unit despawns, all of their tokens will
+removal spell.                                                                 be deleted, not yours. There are many clever tricks you
+                                                                               can play to take advantage of this!
+
+
+
+
+                                                                                                                                                                                                                      PERMADEATH
+                                                                                                                                                                                                                      As long as a card is modded, it has the unstable attrib-
+                                                                                                                                                                                                                      ute, meaning when it dies or is erased, it and all of its
+                                                                                                                                                                                                                      mods are erased with it. This means that even though
+                                                                                                                                                                                                                      mods can be applied from the bin, they are generally
+                                                                                                                                                                                                                      only able to be applied once. Players should always
+
+
+
+
+                                                                                                                                                            ATTACKING FORMATION
+                                                                                                                                                                                                                      consider the risk and reward when using modification
+                                                                                                                                                                                                                      to gain the greatest result.
+                                             Augment Smouldering                                                           Use Pathogenic Enclave to
+                                             Inferno onto an opposing                                                      delete all your opponent’s
+                                                                                                                                                                                                                      If a modded card would leave play but did not die or
+                                             unit to force it to sacrifice                                                 token allies by augmenting
+                                             itself after combat.                                                          it onto one of their units.                                                                get erased, for example if it was put into a player’s
+                                                                                                                                                                                                                      hand from play, all of its mods are put back into the
+                                                                                                                                                                                                                      bin, while the base card goes to the hand.
+  NOTE
+
+  Augmenting with viruses uses the stack, just like any other card and          NOTE                                                                                                                                    NOTE
+  effect, so it can be interacted with and negated. If a virus is negated or
+  its target becomes invalid, it is placed into the bin, and cannot be used     If a virus is in a bin, it can be applied as normal during deployment but                                                               Cards with the augment and graft abilities still function as written, even
+  as a virus again, since the virus ability only works from hand.               cannot be used as a mod during battle.                                                                                                  if they are not applied as mods.
+
+
+
+
+34 alGomancy_Modifications                                                                                                                                                                                                                    Modifications_ algomancy 35
+_ MULTIPLAYER
+FREE FOR ALL (FFA)                                                              THREE PLAYERS IN ONE REGION                                                    INTENT CARDS
+The FFA battle structure is simpler than the teams/1v1                          In multiplayer games when two players attack the
+structure since there is no attack/counter-attack. After                        same player, all three of the players take part in that                        In FFA, players declare their attacks simultaneously by placing intent cards face down in front of each
+a simultaneous attack declaration, each region follows                          battle together in one region. The defending play-                             of their units and other cards such as spell tokens with their intended action. Once all players have
+the steps of:                                                                   er now is able to defend against the two incoming                              finished this, all of the cards are flipped up and the chosen attacks take place instantly!
+  The attacker sets their units into Formation.                                attacking formations, and all three players are able to
+   There is a priority window for interaction.                                  interact with each other and their units in that region.
+   Defender sets their blocking formation.
+   There is a priority window for interaction.
+   Combat Step happens - All units in formation deal                           MULTIPLAYER PRIORITY
+  combat damage simultaneously.                                                 The stack functions identically in 3 player situations as
+    After Combat Step - This is the last priority window                       it does in 1v1, but priority is passed in a circle instead
+  for interaction in this region before Regroup.                                of back and forth. The player closest to the initiative
+                                                                                player in a clockwise direction gains priority first and
+                                                                                priority is passed from that player clockwise during
+                                                                                each priority window.
+SIMULTANEOUS TURNS
+Aside from battle which is semi-simultaneous, every
+phase of a FFA game can be completed by all players
+at the same time, meaning players can create re-
+sources in the planning phase and deploy units during
+deployment all at once if they are comfortable enough
+with the game. As players are learning or if they are
+playing competitively, they can perform their phases in
+order clockwise from the initiative player if they wish.
+
+
+
+
+  NOTE
+
+ There are no counterattacks in FFA, which gives this format a different feel
+ to teams/1v1.
+                                                                                                                                                              NOTE
+
+                                                                                                                                                              The intent cards can be used in many ways. Players can group up
+                                                                                                                                                              multiple units behind one intent card for simplicity, or can even get
+                                                                                  NOTE
+                                                                                                                                                              a little tricky by placing multiple different copies of the same intent
+                                                                                                                                                              card in front of multiple units.
+                                                                                  In situations with three players in one region, symmetric effects such as
+                                                                                  maw of damnation above can become extremely powerful. Keep these
+                                                                                  cards handy to protect yourself when things get dire!
+
+
+
+
+36 alGomancy_multiplayer                                                                                                                                                                                                                 multiplayer_ algomancy 37
+_ MULTIPLAYER
+
+
+
+
+TEAM GAMES                                                TEAM BATTLE STRUCTURE                                        CUBE DRAFT                                                ALGOMANCY CUBE DRAFT
+The turn structure for team games is identical to that    The battle structure in team games is identical to that      Cube draft is a format suited for large groups (6-10+)    Deal each player a pack of 10 cards. Players will then
+of 1v1, but the increased number of players adds some     of 1v1, meaning it has the same attack-counter attack        where players create decks through a drafting process     complete the following process a total of 15 times, until
+additional complexity.                                    flow to it. The only difference is that now, attacks and     before the game and use those decks to play con-          each player has finished with a 30 card deck:
+                                                          blocks take place across multiple regions, so there are      structed matches. This is often done in a 1v1 tourna-       Each player draws 2 cards from the cube
+TEAM INITIATIVE                                           multiple separated priority windows to resolve between       ment bracket.                                                Players may combine their hands with the packs
+Whichever team the player with the initiative token is    each step.                                                                                                                Players choose 10 cards from their combined hand/
+on has the initiative. Teams act together in all situa-                                                                MAKING THE CUBE                                             pack and pass that as a new pack clockwise to their
+tions, meaning during the deployment phase, teams         In a 2v2 game, there are two Non-Initiative (NIT)            Shuffle all of the game cards including hybrids to-         neighbor.
+will deploy units in any order they wish before passing   regions and two Initiative (IT) regions, so what was a       gether. This is called a “cube” and should be 320 cards
+to the non-initiative team that will all do the same.     single priority window in 1v1 becomes two separate pri-      in total when using a single box of Algomancy. When       Players then use these 30 card decks they have draft-
+                                                          ority windows, one in each region. The battle structure      playing in groups larger than 8, two complete sets of     ed for constructed matches.
+                                                          of the attack phase is now:                                  the game cards should be used so there is enough for
+                                                            IT declare their attacks all at once into multiple        each player (for 640 total cards).                        TRADITIONAL CUBE DRAFT
+                                                            regions                                                                                                              Deal each player three packs of 13 to 15 cards (15 cards
+                                                             Priority windows in each of the NIT regions, resolving     54      54         54      54      54        50         for 6 players, 13 for 8 players). Players will each look
+                                                            in order clockwise from the IT player.                      Earth   Metal      fIre    Wood    Water    hybrid       at their packs and take one card from it before passing
+                                                                                                                        cards   cards     cards    cards   cards    cards
+                                                              NIT declare their blocks and counter attacks all at                                                               it to their neighbor and repeat until the first pack is
+                                                            once into multiple regions.                                                                                          empty. This process is repeated a total of three times,
+                                                            At this point, the battles in each region just need to                                                               alternating passing directions (left, right, left) until
+                                                            be resolved (there will be a priority window, com-                                                                   players have each drafted a pile of cards.
+                                                            bat damage, and an after combat damage priority
+                                                            window).                                                                                                             From their drafted piles, players each build a 30 card
+                                                               Finish resolving battle in the NIT regions in order                         shuffLe                              deck to use for the following constructed matches.
+                                                            clockwise from the IT player.
+                                                                Finish resolving battle in the IT regions in order
+                                                            clockwise from the IT player.
+
+
+                                                                                                                                             the cube
+
+
+
+
+38 alGomancy_multiplayer                                                                                                                                                                            multiplayer_ algomancy 39
+_ MISCELLANEOUS
+STAT CHANGES AND COUNTERS                                                                                                                      SACRIFICE                                                                    TRIGGERED ABILITIES
+If an effect says that a unit gains +1/+1 or -1/-1, this                                                                                       Sacrifice is a term denoting that a player will take a per-                  “When” and “Whenever” denote triggered abilities, which
+denotes a temporary change to the unit’s stats (power                                                                                          manent of their choice and put it into their bin, causing it                 are effects that happen when something else takes place.
+and defense, respectively). For example a 1/1 unit that                                                                                        to die. This is often used as a cost players pay to activate                 Triggered abilities may also take place at specified times,
+gains +2/+0 will become a 3/1. Negative stat changes will                                                                                      abilities and effects, like Soul Swallower below which                       like “After combat” or “At the end of turn”.
+decrease a units stats. A unit with 0 or less defense will                                                                                     sacrifices units to grow its stats.
+immediately die.
+                                                                                                                                               You cannot sacrifice something you don’t control. You can
+A +1/+1 or -1/-1 counter denotes a permanent change to                                                                                         make an opponent sacrifice something they control, but
+the unit’s stats, and dice are often used to denote these                                                                                      they would get to decide what to sacrifice.
+changes on units. If both a +1/+1 counter and -1/-1 coun-
+ter are placed on a unit, the two cancel out and will both                                                                                       NOTE
+be removed.
+                                                                                                                                                 You cannot sacrifice units that are in a different region, even if they
+                                                                                                                                                 are yours. This can be beneficial, for example if you have no units in a
+                                                                                                                                                 region and play the effect “Each player sacrifices a unit”.
+
+                                                                               AMBUSH
+                                                                               The ambush ability allows units to be played as an ef-                                                                                       STATIC ABILITIES
+                                                                               fect during battle that will recall an allied unit, placing     ACTIVATED ABILITIES                                                          Static abilities declare a change that a card is contin-
+                                                                               the ambushing unit directly into their position in play.        Some units have “Activated Abilities”. You can identify                      uously making to the game as long as it is in play, like
+                                                                               This is a great strategic option for surprising oppo-           an activated ability by a colon “:”. Everything before the                   Prickly Protector’s static increase to its stats and Flux
+                                                                               nents and saving your units from harm.                          colon is a cost that must be paid to activate the ability,                   Resonator’s counter boosting replacement effect.
+                                                                                                                                               which will grant you the effect stated after the colon.
+                                                                               The battle symbol in front of the ability denotes that                                                                                       REPLACEMENT EFFECTS
+                                                                               you can play cards as an ambush during battle, even if          Activated abilities can be used any time a player has                        Abilities like Flux Resonator’s using the templating “If...
+                                                                               the card itself doesn’t have battle timing.                     priority during battle and deployment, as many times as                      Instead” are called replacement effects. Unlike trig-
+                                                                                                                                               they wish, as long as they are able to pay the cost.                         gered abilities, replacement effects don’t use the stack
+                                                                               If a unit is the target of an effect, like a removal spell, a                                                                                and modify events as they happen, instead of trigger-
+                                                                               player can use ambush to recall the targeted unit and                                                                                        ing in response to events.
+           THE -1/-1 COUNTERS FROM POISON
+           PERMANENTLY CRIPPLE WHATEVER                                        save it. The spell will not change targets to the new
+             UNITS THEY ARE PLACED ON.                                         unit, and will fail to resolve (fizzle). This makes ambush
+                                                                               an excellent defensive option.
+
+  NOTE                                                                         However, the risk of ambush goes both ways! Ambush
+                                                                               is a targeted effect, meaning if the target is removed
+  If a card doesn’t specifically say “place counters” when mentioning stat
+                                                                               the ability will fizzle and the ambushing unit will be put
+  changes, its stat changes are temporary. This can either be a limited
+  effect that would say “until regroup” or from a static ability by a unit
+                                                                               into the bin. So be careful when you ambush or you
+  which would last as long as that units ability is in play for that region.   could find yourself losing both units to a well-timed
+                                                                               removal spell!                                                        TWO UNITS WITH ACTIVATED ABILITIES
+
+
+
+40 alGomancy_Miscellaneous                                                                                                                                                                                                                  Miscellaneous_ algomancy 41
+_ Q&A
+
+
+
+
+REGIONS                                                          UNITS                                                         INTERACTION                                                     MISC.
+
+Q: Is there interaction between regions?                         Q: What does “base 3/3” or “base 5/0” mean?                   Q: If a spell unit spawns but was not played (e.g. if it was   Q: Is the text written after the “Augment” and “Graft”
+A: There is zero interaction between regions. Each              A: This means the units base stats are changed to be             resurrected, does its spell effect happen?                      symbols active even if the card was not played as
+   region treats the players and cards in other regions             3/3 or 5/0, before any other modifiers like +1/+1 and      A: No, spell effects only happen when the card is                  a mod?
+   as if they don’t exist.                                          -1/-1 counters apply.                                         played.                                                      A: Yes, the text is active on cards played normally.
+
+Q: D
+    oes Prickly Protector count my total units in all           Q: W hat happens to a unit that is both “Tough” and          Q: If targets for a spell are removed, what happens?            Q: Can units that spawn during battle attack?
+   regions to determine its stats?                                   “Balanced”?                                               A: If some but not all of the targets are removed, the         A: Yes! Algomancy has no summoning sickness. As
+A: No, it only sees the units in the region it’s in.             A: Attributes apply in order from top to bottom. So if          spell will attempt to resolve as best as it can. For            long as a unit is in play, it can attack/block.
+                                                                    “Tough” is augmented onto a “Balanced” unit, or if a          example, if one of the two Twin Flame targets is re-
+Q: C
+    an I sacrifice units that I have in another region to          tough unit attacks with a Balanced unit behind it, it         moved, the other will still receive damage. However,         Q: D
+                                                                                                                                                                                                   o “After combat” triggers happen in regions where
+   pay a cost in my current region?                                 will have its defense doubled, then its stats balanced.       if one of the targets for a fight or an exchange is re-         a battle didn’t take place?
+A: No.                                                              If “Tough” is applied to a “Balanced” unit, it will have      moved, the effect will not be able to happen (it takes       A: No, because a battle did not happen.
+                                                                    its stats balanced, then its defense doubled.                 two units to fight or for an exchange to take place).
+Q: If I play a spell in one region, will that trigger effects                                                                                                                                 Q: How does a unit with Swift and Sluggish work?
+    of units in another region?                                  Q: H ow does Tough interact with -1/-1 and +1/+1 counters?      Additionally, if all of the targets for a spell are re-      A: It deals combat damage twice, going first and last,
+A: No.                                                           A: Stats have 6 layers to them, which are applied in            moved, the spell will fail to resolve (fizzle) and be           with normal damage from other units happening
+                                                                    sequence. 1. Printed stats are what’s shown on the            placed into the bin. This is especially important to            in-between.
+Q: If an effect says “each opponent loses 1 life”, who             card, 2. Base stats, which can be changed to be               keep in mind for spell units like Leaping Lillik.
+    does that refer to?                                             different from what’s printed on the card, 3. Stat                                                                         Q: C an you assign more than lethal damage to a unit
+A: That refers to each opponent in your current region.            changes, like temporary +2/+2 bonuses and +1/+1            Q: W here do spell units spawn when they are played                in the frontline?
+   Meaning if you have this effect during deployment,               counters, 4. Attributes like Tough, 5. Inverted, 6.Un-         during the battle phase?                                    A: Yes, the player dealing damage may choose to
+   it would not hit any other players.                              aware                                                      A: They spawn in the region but not in formation unless           assign additional damage beyond lethal to a unit
+                                                                                                                                  they specifically say so.                                       if they wish. For example, if Lithoghul is the unit in
+Q: Can I interact with my opponents at all during the              This means that the impact of -1/-1 counters take                                                                             front, you may want to deal extra damage to it rath-
+    deployment phase?                                               place before the defense is doubled, so a 0/4 tough        Q: W hat happens when multiple abilities trigger simul-           er than hit something in the back row.
+A: No you cannot. Due to the region mechanic, each                 unit with a -1/-1 counter on it would become a -1/6.           taneously?
+   player exists in separate regions during the deploy-                                                                        A: Each player decides the order their effects go on           Q: C an I re-order the mods on my units?
+   ment phase. During that portion of the turn you               Q: What happens when a unit has negative power?                  the stack. NIT effects will enter the stack last and         A: No, but you can place new mods in-between old
+   treat all other players as if they don’t exist.               A: It deals 0 damage.                                            resolve resolve before IT effects.                              ones.
+
+
+
+
+42 alGomancy_q&a                                                                                                                                                                                                             q&a_ algomancy 43
+ADDITIONAL RESOURCES
+
+                                               HOW TO PLAY VIDEOS
+                                               We have a growing collection of how to play
+                                               videos, tips and tricks as well as gameplay for
+                                               a variety of formats to help get you started!
+
+
+                                               CARD RULINGS DATABASE
+                                               A searchable database with all of the Algomancy
+                                               cards, as well as specific rulings and answers to
+                                               commonly asked questions for each one.
+
+
+
+                                               COMPREHENSIVE RULES
+                                                                                                   SCAN THE
+7.3 Targeting 7.4 Restric- 7.4.3 If a
+with Augment tions and        card with
+7.3.1 The targetInteractions
+                 for          Augment also
+
+
+                                               A reference manual for all of the game
+an Augment must 7.4.1 Cards with
+                              has other
+                Augment can abilities
+                               be      or
+
+
+
+
+                                                                                                   QR-CODE
+be a card in play.
+                played normally,
+Both cards in hand            attributes not
+                and  when  they
+                              following the
+
+                                               rules and terminology in Algomancy.
+and cards in the
+                are,
+bin (discard pile)   their    [Augment]
+can be used to Augmentable symbol,
+
+
+
+
+                                                                                                     AND GET ACCES
+                                               KEEP UP TO DATE                                     TO ALL ADDITIONAL
+                                               Follow us on social media, @Algomancy for             RESOURCES ON
+                                               information on all the exciting things we’re          ALGOMANCY.IO
+                                               working on!
+
