@@ -30,9 +30,38 @@
   #status { font-size: 13px; color: var(--muted); }
   #status.ok { color: var(--good); } #status.err { color: var(--bad); }
 
-  .cols { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 16px; padding: 16px; align-items: start; }
-  @media (max-width: 1080px) { .cols { grid-template-columns: 1fr; } }
+  /* Three columns: what the puzzle SAYS on the left, the board in the middle, and
+     the tools you use on it (pick a card, adjust a card) immediately to its right
+     — so placing a card is a short sideways glance, not a scroll to the bottom of
+     the page and back. The tools column sticks to the viewport for the same
+     reason: it has to still be there when you've scrolled down to the far side of
+     the board. */
+  .cols {
+    display: grid; gap: 16px; padding: 16px; align-items: start;
+    grid-template-columns: minmax(0, 380px) minmax(0, 1fr) minmax(0, 340px);
+    grid-template-areas: "meta board tools";
+  }
   .pane { min-width: 0; }
+  .pane.meta { grid-area: meta; }
+  .pane.board { grid-area: board; }
+  .pane.tools {
+    grid-area: tools; position: sticky; top: 74px;
+    /* Pinned to the viewport, a taller-than-screen rail would have its bottom
+       (the Remove button, the warnings) permanently out of reach. */
+    max-height: calc(100vh - 90px); overflow-y: auto;
+  }
+  /* Too narrow for three: the tools drop under the board, still next to nothing
+     they'd have to compete with. */
+  @media (max-width: 1400px) {
+    .cols {
+      grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+      grid-template-areas: "meta board" "meta tools";
+    }
+    .pane.tools { position: static; max-height: none; overflow: visible; }
+  }
+  @media (max-width: 1080px) {
+    .cols { grid-template-columns: 1fr; grid-template-areas: "board" "tools" "meta"; }
+  }
 
   fieldset {
     border: 1px solid var(--line); border-radius: 10px; margin: 0 0 14px;
@@ -97,7 +126,7 @@
   .col { position: relative; }
 
   /* ---- card palette ---- */
-  .palette { border: 1px solid var(--accent); border-radius: 10px; padding: 11px; background: var(--panel); margin-top: 12px; }
+  .palette { border: 1px solid var(--accent); border-radius: 10px; padding: 11px; background: var(--panel); margin-bottom: 12px; }
   .palette.idle { border-color: var(--line); }
   .palette .phead { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
   .palette .ptarget { font-size: 13px; font-weight: 600; color: var(--accent); }
@@ -114,7 +143,7 @@
   .quick { font-size: 12px; color: var(--muted); }
 
   /* ---- inspector ---- */
-  .inspector { border: 1px solid var(--good); border-radius: 10px; padding: 11px; background: var(--panel); margin-top: 12px; }
+  .inspector { border: 1px solid var(--good); border-radius: 10px; padding: 11px; background: var(--panel); margin-bottom: 12px; }
   .inspector .ihead { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; flex-wrap: wrap; }
   .inspector .iname { font-weight: 700; }
   .inspector .iwhere { font-size: 12px; color: var(--muted); }
@@ -126,7 +155,7 @@
   .tokhint { font-size: 11px; color: var(--muted); margin-top: 7px; }
   .iacts { display: flex; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
 
-  .warns { margin-top: 12px; padding: 10px 12px; border-radius: 9px; background: #2a2416;
+  .warns { padding: 10px 12px; border-radius: 9px; background: #2a2416;
            border: 1px solid var(--weird); font-size: 13px; color: #e8d79a; }
   .warns ul { margin: 6px 0 0; padding-left: 18px; }
   .hintrow { display: flex; gap: 6px; margin-bottom: 6px; }
@@ -159,7 +188,7 @@
 
 <div class="cols">
   <!-- ---------------- the puzzle ---------------- -->
-  <div class="pane">
+  <div class="pane meta">
     <fieldset>
       <legend>THE PUZZLE</legend>
       <div class="f"><label>Title</label><input type="text" id="title" placeholder="Lethal on board?"></div>
@@ -197,34 +226,38 @@
   </div>
 
   <!-- ---------------- the board ---------------- -->
-  <div class="pane">
+  <div class="pane board">
     <fieldset>
       <legend>THE BOARD — click a slot, then pick a card</legend>
       <p class="tip">Columns line up: <b>column N blocks column N opposite it</b>, and a column
         deals the <b>combined power</b> of everything in it. The row nearest the middle
-        is the front row. Click a card you've placed to change it.</p>
+        is the front row. Click a card you've placed to change it, and
+        <b>hold the middle mouse button</b> on any card to read it.</p>
       <div class="boardwrap"><div id="board" class="wtp"></div></div>
       <div class="row tight" style="margin-top:10px;justify-content:flex-start">
         <button id="totals" class="mini" style="flex:none">🧮 Column totals</button>
         <button id="playlink" class="mini" style="flex:none">🔗 Copy play link</button>
         <span id="pid" style="font-size:12px;color:var(--muted);align-self:center;flex:none"></span>
       </div>
-
-      <!-- palette: search + click to place -->
-      <div id="palette" class="palette idle">
-        <div class="phead">
-          <span id="ptarget" class="ptarget none">Click an empty slot on the board to place a card</span>
-          <button id="pcancel" class="mini hidden">✕ Cancel</button>
-        </div>
-        <input type="search" id="psearch" placeholder="Search cards — by name, or by what they do (“2/2 that draws when it dies”)">
-        <div id="results" class="results"></div>
-      </div>
-
-      <!-- inspector: shown when a placed card is selected -->
-      <div id="inspector" class="inspector hidden"></div>
-
-      <div id="warns" class="warns hidden"></div>
     </fieldset>
+  </div>
+
+  <!-- ---------------- the tools, right where the board is ---------------- -->
+  <div class="pane tools">
+    <!-- palette: search + click to place -->
+    <div id="palette" class="palette idle">
+      <div class="phead">
+        <span id="ptarget" class="ptarget none">Click an empty slot on the board to place a card</span>
+        <button id="pcancel" class="mini hidden">✕ Cancel</button>
+      </div>
+      <input type="search" id="psearch" placeholder="Search — by name, or by what it does (“2/2 that draws when it dies”)">
+      <div id="results" class="results"></div>
+    </div>
+
+    <!-- inspector: shown when a placed card is selected -->
+    <div id="inspector" class="inspector hidden"></div>
+
+    <div id="warns" class="warns hidden"></div>
   </div>
 </div>
 
@@ -246,6 +279,9 @@ const escAttr = s => String(s == null ? '' : s).replace(/[&<>"']/g,
 
 let ICONS = {}, CARD_LIST = [], X_CARDS = new Set(), EDIT_KEY_REQUIRED = false;
 let RESOURCE_KINDS = [], CARDBACK_URL = '';
+// kind -> the resource card's real art, so a dormant resource (drawn face down on
+// the board, correctly) can still be READ by the designer who put it there.
+let RES_ART = {};
 const isToken = name => X_CARDS.has((name || '').trim().toLowerCase());
 
 // Where the next picked card will go: {side, col, row} on the board, or
@@ -442,6 +478,7 @@ function resourceRow(key, side, payloadSide) {
     const cls = 'rc' + (r.state === 'expended' ? ' tapped' : r.state === 'dormant' ? ' dormant' : '')
       + (same(at, SEL) ? ' sel' : '');
     return `<div class="${cls}" data-at='${escAttr(JSON.stringify(at))}'
+      data-kind="${escAttr(r.kind)}" data-full="${escAttr(RES_ART[r.kind] || pr.art_url || '')}"
       title="${escAttr(r.kind)} — ${escAttr(r.state)} · click to change">
       <img src="${escAttr(pr.art_url || '')}" alt="${escAttr(r.kind)}">
       ${r.state === 'dormant' ? `<span class="rtag">${escAttr(r.kind[0].toUpperCase())}</span>` : ''}
@@ -935,6 +972,14 @@ document.addEventListener('keydown', e => {
   if (ARMED || SEL) { ARMED = SEL = null; renderBoard(); renderPalette(); renderInspector(); }
 });
 
+// Hold the middle button over any card — on the board, in a hand, in the palette
+// — to read it. Installed on the document, not the board, so it covers the
+// palette too: you often want to check a card BEFORE you place it.
+// Guarded: the editor draws its own board, so it owes nothing to board.js but
+// this one convenience — and a convenience shouldn't be able to take the editor
+// down with it if the file doesn't load.
+if (window.WtpBoard) WtpBoard.holdZoom(document);
+
 function syncAll() {
   syncers.forEach(fn => fn());
   renderWho(); renderHints(); renderBoard(); renderPalette(); renderInspector();
@@ -946,6 +991,7 @@ function syncAll() {
   const cfg = await fetch('/api/wtp/config').then(r => r.json()).catch(() => ({}));
   CARD_LIST = cfg.cards || [];
   RESOURCE_KINDS = cfg.resource_kinds || [];
+  RESOURCE_KINDS.forEach(r => { RES_ART[r.kind] = r.art_url; });
   CARDBACK_URL = cfg.cardback_url || '';
   X_CARDS = new Set((cfg.x_cards || []).map(n => n.toLowerCase()));
   ICONS = cfg.icons || {};

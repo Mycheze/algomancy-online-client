@@ -319,6 +319,12 @@
 <!-- The puzzle-board renderer, shared with the editor (see board.js). -->
 <script src="/static/board.js"></script>
 <script>
+  // Hold the middle mouse button over a card to read it full-size, anywhere on the
+  // page. Clicking still opens the lightbox — this is the no-commitment version,
+  // for when you just want to check what a unit does mid-puzzle.
+  WtpBoard.holdZoom(document);
+</script>
+<script>
 const wrap = document.getElementById('wrap');
 const logEl = document.getElementById('log');
 const form = document.getElementById('form');

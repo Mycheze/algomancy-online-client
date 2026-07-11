@@ -12,6 +12,7 @@
  * Exposes: window.WtpBoard.render(el, puzzle, opts)
  *   opts.onZoom(src, name)  — called when a card is clicked (open a lightbox)
  *   opts.totals             — start with column totals shown
+ * and window.WtpBoard.holdZoom(root) — middle-button hold to read a card.
  */
 (function () {
   'use strict';
@@ -209,5 +210,54 @@
     return el.querySelector('.wtp-board');
   }
 
-  window.WtpBoard = { render, statusLine, boardHtml };
+  // ---- hold-to-read ----
+  // The cards on the board are too small to read, and a puzzle usually turns on a
+  // line of rules text. Hold the MIDDLE mouse button over any card — on the board,
+  // in a hand, in the palette — and it comes up full size; let go and it's gone.
+  // A hold rather than a click because reading a card isn't an edit: you don't
+  // want it to select the card, arm a slot, or leave a dialog to dismiss.
+  function holdZoom(root, opts) {
+    opts = opts || {};
+    root = root || document;
+    let box = null;
+
+    const close = () => { if (box) { box.remove(); box = null; } };
+
+    function open(src, name) {
+      close();
+      box = document.createElement('div');
+      box.className = 'holdzoom';
+      box.innerHTML = `<figure><img src="${esc(src)}" alt="${esc(name || '')}">
+        ${name ? `<figcaption>${esc(name)}</figcaption>` : ''}</figure>`;
+      document.body.appendChild(box);
+    }
+
+    root.addEventListener('mousedown', e => {
+      if (e.button !== 1) return;                       // middle button only
+      const tile = e.target.closest('.wu, .rc, .rescard');
+      if (!tile) return;
+      const img = tile.querySelector('img');
+      // data-full is the card's true art even when the tile is showing something
+      // else (a dormant resource is drawn face down, but the designer holding the
+      // button wants to see what it IS).
+      const src = tile.getAttribute('data-full') || (img && img.getAttribute('src'));
+      if (!src) return;
+      // Middle-click is autoscroll in Chrome and paste on X11 — neither is what
+      // "let me read this card" should do.
+      e.preventDefault();
+      open(src, tile.dataset.card || tile.dataset.name || tile.dataset.kind
+        || (img && img.alt) || '');
+    });
+
+    // Release ANYWHERE puts it away — on the window, not the board, or letting go
+    // past the edge of the card would leave you staring at art you can't dismiss.
+    // Same for tabbing away mid-hold.
+    window.addEventListener('mouseup', close);
+    window.addEventListener('blur', close);
+    root.addEventListener('auxclick', e => { if (e.button === 1) e.preventDefault(); });
+
+    return { close };
+  }
+
+  window.WtpBoard = { render, statusLine, boardHtml, holdZoom };
 })();

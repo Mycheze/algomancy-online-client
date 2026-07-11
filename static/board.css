@@ -224,6 +224,23 @@
   border: 1px dashed var(--weird); border-radius: 9px; font-size: 14px;
 }
 
+/* Hold-to-read: up only while the middle button is down, so it must not eat the
+   mouseup that dismisses it — hence pointer-events: none. */
+.holdzoom {
+  position: fixed; inset: 0; z-index: 200; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .74); padding: 24px;
+}
+.holdzoom figure { margin: 0; }
+.holdzoom img {
+  display: block; max-height: 82vh; max-width: 92vw; border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .65);
+}
+.holdzoom figcaption {
+  text-align: center; margin-top: 9px; font-size: 14px; color: #e7e9f0;
+  text-shadow: 0 1px 3px #000;
+}
+
 @media (max-width: 560px) {
   .wtp { --cw: 84px; --gap: 6px; }
   .wtp .pt { font-size: 12px; }
