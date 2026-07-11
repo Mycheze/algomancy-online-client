@@ -537,6 +537,20 @@ def _puzzle_error(exc) -> HTTPException:
 # the element's name instead of a broken image.
 WTP_ICONS = {e: f"/icons/{e}.webp" for e in wtp.ELEMENTS if e in AVAILABLE_ICONS}
 
+# What the editor autocompletes over. NOT CARD_NAMES_WITH_ART: that list exists to
+# decide what to linkify in *prose*, so it drops the reference cards — and with
+# them "Generic Unit", which is a real, playable token and in fact the only truly
+# vanilla body in the game (a printed X/X, no attribute, no text). Exactly what you
+# want to build a combat-math puzzle out of. So the editor gets its own list: every
+# card with art, minus the components nobody can put on a board.
+WTP_CARD_NAMES = sorted(
+    n for n in core.cards.names
+    if core.cards.art_path(n) and n not in (cards.NON_CARD_NAMES - {"Generic Unit"}))
+
+# Tokens made at a chosen size — the page marks their X field as required.
+WTP_X_CARDS = sorted(n for n in WTP_CARD_NAMES
+                     if wtp.needs_x(core.cards.cards.get(n)))
+
 
 def _wtp_payload(p, *, solution=False):
     return {**wtp.payload(p, core.cards, art_url=_art_url, solution=solution),
@@ -552,9 +566,11 @@ def editor():
 @app.get("/api/wtp/config")
 def api_wtp_config():
     """What the editor needs before it can draw anything: whether saving needs a
-    key, and the element icons (it labels the resource inputs with them)."""
+    key, the element icons (it labels the resource inputs with them), and the card
+    names it autocompletes over (incl. tokens, and which of those need an X)."""
     return {"edit_key_required": bool(EDIT_KEY), "icons": WTP_ICONS,
-            "phases": list(wtp.PHASES), "elements": list(wtp.ELEMENTS)}
+            "phases": list(wtp.PHASES), "elements": list(wtp.ELEMENTS),
+            "cards": WTP_CARD_NAMES, "x_cards": WTP_X_CARDS}
 
 
 @app.get("/api/wtp/list")

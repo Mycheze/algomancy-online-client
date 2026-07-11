@@ -395,6 +395,38 @@ Anything the model can't say ("assume they have no tricks") goes in free-text no
 **Column totals are hidden by default, on purpose** — adding up a column is the
 exercise. A 🧮 button reveals them when you want to check yourself.
 
+### Tokens (and why they're the best puzzle material)
+
+Algomancy has essentially **no vanilla cards** — of 370, exactly one unit has no
+combat attribute and no rules text (Tidal Menace). Even innocuous-looking bodies
+turn out to carry {Piercing}, {Deadly}, {Sluggish} or {Flying}, any of which
+changes the math. (Careful: `{Virus}`, `{Battle}`, `{Haste}`, `{Burst}` and
+`{Unstable}` in a type line are **markers, not combat attributes** — don't filter on
+them.)
+
+**Tokens are the exception, and the cleanest bodies in the game:**
+
+| token | body |
+| --- | --- |
+| **Generic Unit** | printed **X/X** — the only genuinely vanilla body there is |
+| **Robot** | printed 0/0, "spawns with X +1/+1 counters" — also an **X/X** |
+| **Wisp** | 0/1, {Feeble} (can't block) |
+
+The first two are made at a chosen size, so a unit has an **`x`** field: a *Robot 2*
+is a 2/2, a *Generic Unit 6* is a 6/6, and `power`/`toughness` modifiers stack on
+top of that. Which cards need an X is read off the card data (`wtp.needs_x`), not
+hardcoded, so a new token of the same shape works for free — and the editor grows an
+X input the moment you type one of their names. A token with no X warns, because it
+would be a 0/0.
+
+Note the board *has* to overlay the resolved stats: the art on a Robot literally
+reads `0/0` and a Generic Unit reads `X/X`, so the stat strip is the only thing that
+tells you what's actually standing there.
+
+The editor autocompletes over its own **playable-cards** list rather than the one the
+prose linkifier uses — that one drops "Generic Unit" as a reference card, which is
+precisely the card you most want to build a puzzle out of.
+
 ### Editing (`/editor`)
 
 A form on the left, a **live preview on the right** — and the preview is rendered
@@ -432,7 +464,7 @@ Endpoints: `/api/wtp/list`, `/api/wtp/next`, `/api/wtp/<id>`, `/api/wtp/<id>/
 solution`, `/api/wtp/<id>/board.png`, `POST /api/wtp/{save,preview,attempt}`,
 `DELETE /api/wtp/<id>`. Deep-link `/?wtp=<id>` opens an exact puzzle.
 
-Tested in **`test_wtp.py`** (`.venv/bin/python test_wtp.py`) — 101 offline checks:
+Tested in **`test_wtp.py`** (`.venv/bin/python test_wtp.py`) — 119 offline checks:
 schema, card resolution, the column-power arithmetic the seed puzzles turn on,
 validation, disk round-trip, `pick_next`, payloads (asserting the solution never
 leaks into the board), mods, image rendering, and every endpoint including the

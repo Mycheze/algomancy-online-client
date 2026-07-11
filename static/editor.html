@@ -77,7 +77,11 @@
   .unit-box .uhead .rowlabel { font-size: 10px; color: var(--muted); letter-spacing: .05em; font-weight: 700; width: 42px; flex: none; }
   .unit-box .uhead input { flex: 1; }
   .unit-box .ugrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .unit-box .ugrid.tok { grid-template-columns: repeat(5, 1fr); }
   .unit-box .ugrid label { font-size: 10px; }
+  .unit-box .xlab { color: var(--accent); font-weight: 700; }
+  .unit-box .ugrid.tok input[data-key="x"] { border-color: var(--accent); }
+  .tokhint { font-size: 11px; color: var(--muted); margin-top: 5px; }
 
   .warns { margin: 0 0 14px; padding: 10px 12px; border-radius: 9px; background: #2a2416;
            border: 1px solid var(--weird); font-size: 13px; color: #e8d79a; }
@@ -187,6 +191,13 @@ const $ = id => document.getElementById(id);
 const statusEl = $('status');
 let ICONS = {};
 let EDIT_KEY_REQUIRED = false;
+
+// Tokens made at a chosen size (Robot, Generic Unit) — they need an X before
+// they're anything at all, so their unit form grows an extra field. The list
+// comes from the server (it reads it off the card data), so a new token of the
+// same shape needs no change here.
+let X_CARDS = new Set();
+const isToken = name => X_CARDS.has((name || '').trim().toLowerCase());
 
 // The puzzle being edited IS the state. It's the same JSON that lands on disk,
 // so there's no mapping layer to get out of step — the form edits the file.
@@ -306,7 +317,10 @@ function unitFormHtml(key, ci, ri, u, label) {
         data-act="ucard" data-side="${key}" data-col="${ci}" data-row="${ri}">
       <button class="mini danger" data-act="uremove" data-side="${key}" data-col="${ci}" data-row="${ri}">✕</button>
     </div>
-    <div class="ugrid">
+    <div class="ugrid${isToken(u.card) ? ' tok' : ''}">
+      ${isToken(u.card) ? `<div><label class="xlab">X (its size)</label>
+        <input type="number" min="0" value="${u.x || 0}"
+          data-act="u" data-key="x" data-side="${key}" data-col="${ci}" data-row="${ri}"></div>` : ''}
       <div><label>power ±</label><input type="number" value="${u.power || 0}"
         data-act="u" data-key="power" data-side="${key}" data-col="${ci}" data-row="${ri}"></div>
       <div><label>tough ±</label><input type="number" value="${u.toughness || 0}"
@@ -317,6 +331,8 @@ function unitFormHtml(key, ci, ri, u, label) {
         ${ROLES.map(([v, l]) => `<option value="${v}" ${u.role === v ? 'selected' : ''}>${l}</option>`).join('')}
       </select></div>
     </div>
+    ${isToken(u.card) ? `<div class="tokhint">Made at a chosen size — a Robot 2 is a
+      <b>2/2</b>. Set X, then use power/tough ± for anything on top of that.</div>` : ''}
     <div class="row" style="margin-top:6px">
       <div><label>mods under it (comma-separated)</label>
         <input type="text" value="${escAttr((u.mods || []).join(', '))}" list="cardnames"
@@ -370,7 +386,20 @@ $('sides').addEventListener('input', e => {
     const n = Math.max(0, +el.value || 0);
     if (n) s.resources[elem] = n; else delete s.resources[elem];
   } else if (act === 'zone') s[zone] = el.value.split(',').map(x => x.trim()).filter(Boolean);
-  else if (act === 'ucard') u.card = el.value;
+  else if (act === 'ucard') {
+    const was = isToken(u.card);
+    u.card = el.value;
+    // Typing a token's name grows an X field (and clearing it takes it away), so
+    // the form has to be rebuilt — but only on the transition, or the caret would
+    // jump out of the box on every keystroke.
+    if (isToken(u.card) !== was) {
+      renderSides(); schedulePreview();
+      const again = document.querySelector(
+        `#sides input[data-act="ucard"][data-side="${side}"][data-col="${col}"][data-row="${row}"]`);
+      if (again) { again.focus(); again.setSelectionRange(again.value.length, again.value.length); }
+      return;
+    }
+  }
   else if (act === 'urole') u.role = el.value;
   else if (act === 'unote') u.note = el.value;
   else if (act === 'umods') u.mods = el.value.split(',').map(x => x.trim()).filter(Boolean);
@@ -382,7 +411,7 @@ $('sides').addEventListener('change', e => {
   if (e.target.dataset.act === 'urole') schedulePreview();
 });
 
-const newUnit = () => ({ card: '', power: 0, toughness: 0, damage: 0, role: '', mods: [], note: '' });
+const newUnit = () => ({ card: '', power: 0, toughness: 0, damage: 0, role: '', mods: [], note: '', x: 0 });
 
 // ---- hints ----
 function renderHints() {
@@ -528,6 +557,7 @@ function sideFromPayload(s) {
     columns: (s.columns || []).map(col => col.map(u => ({
       card: u.card, power: u.buff_p || 0, toughness: u.buff_t || 0,
       damage: u.damage || 0, role: u.role || '', mods: u.mods || [], note: u.note || '',
+      x: u.x || 0,
     }))),
   };
 }
@@ -558,13 +588,13 @@ function syncAll() {
 
 // ---- boot ----
 (async function boot() {
-  const [names, cfg] = await Promise.all([
-    fetch('/api/cardnames').then(r => r.json()).catch(() => ({ names: [] })),
-    fetch('/api/wtp/config').then(r => r.json()).catch(() => ({})),
-  ]);
-  // Autocomplete over every card that has art — the editor is mostly typing card
+  const cfg = await fetch('/api/wtp/config').then(r => r.json()).catch(() => ({}));
+  // Autocomplete over every playable card — the editor is mostly typing card
   // names, and a typo silently renders an empty box, so make them hard to typo.
-  $('cardnames').innerHTML = (names.names || []).map(n => `<option value="${escAttr(n)}">`).join('');
+  // This list includes the TOKENS (Robot, Wisp, Generic Unit), which the prose
+  // linkifier's name list deliberately drops but a board is built out of.
+  $('cardnames').innerHTML = (cfg.cards || []).map(n => `<option value="${escAttr(n)}">`).join('');
+  X_CARDS = new Set((cfg.x_cards || []).map(n => n.toLowerCase()));
   ICONS = cfg.icons || {};
   EDIT_KEY_REQUIRED = !!cfg.edit_key_required;
   await loadList();

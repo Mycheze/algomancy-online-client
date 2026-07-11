@@ -113,6 +113,27 @@ def normalize_id(pid):
 
 # --- the board -----------------------------------------------------------
 
+# A token whose size is chosen when it's created ("Create a Robot 2"). Two cards
+# spell that out in different ways and both land in the same place — an X/X:
+#
+#   Generic Unit   printed X/X — the set's only genuinely vanilla body
+#   Robot          printed 0/0, "I spawn with X +1/+1 counters on me"
+#
+# So `Unit.x` is just "the number the token was made with", and a token that has
+# one is an X/X. Detected from the card data, not by name, so a new token that
+# works the same way is picked up for free.
+_X_COUNTERS_RE = re.compile(r"spawns? with X \+1/\+1 counters", re.I)
+
+
+def needs_x(card):
+    """Does this card's body depend on an X chosen at creation time?"""
+    if not card:
+        return False
+    if str(card.get("power")).upper() == "X" or str(card.get("toughness")).upper() == "X":
+        return True
+    return bool(_X_COUNTERS_RE.search(_cards.plain_text(card.get("text") or "")))
+
+
 @dataclass
 class Unit:
     """A unit in play: a card, plus everything that's happened to it.
@@ -121,6 +142,10 @@ class Unit:
     themselves — one field covers +1/+1 counters, a buff spell and a Virus's
     -7/-7 alike, and it keeps the printed card as the source of truth (so the
     board still reads right if a card is ever errata'd).
+
+    `x` is for tokens made at a chosen size (a Robot 2, a Generic Unit 3) — see
+    needs_x(). Tokens are the cleanest bodies in the game for a combat-math
+    puzzle, because they're the only ones with no ability text muddying the sum.
     """
     card: str                                   # card name (fuzzy-matched on load)
     power: int = 0                              # stat modifier, may be negative
@@ -129,6 +154,7 @@ class Unit:
     role: str = ""                              # "" | attacking | blocking
     mods: list = field(default_factory=list)    # cards grafted/augmented UNDER it
     note: str = ""                              # anything else ("shared Flying")
+    x: int = 0                                  # a token's X ("Create a Robot 2")
 
     def resolved(self, index=CARDS):
         """(canonical_name, card) for this unit, or (name, None) if no such card.
@@ -140,17 +166,27 @@ class Unit:
         card, matched, _ = index.lookup(self.card)
         return (matched, card) if card else (self.card, None)
 
-    def stats(self, index=CARDS):
-        """Effective (power, toughness) — printed stats plus modifiers — or None
-        for a card with no printed stats (a resource, a non-unit token)."""
+    def base_stats(self, index=CARDS):
+        """The body this unit starts from, before any modifiers — or None for a
+        card that has no body at all (a resource, a spell token)."""
         _name, card = self.resolved(index)
         if not card:
             return None
+        if needs_x(card):
+            # However the card words it, a token made with X is an X/X: Generic
+            # Unit is printed X/X, and a Robot is a 0/0 carrying X +1/+1 counters.
+            return self.x, self.x
         try:
-            base_p, base_t = int(card.get("power")), int(card.get("toughness"))
+            return int(card.get("power")), int(card.get("toughness"))
         except (TypeError, ValueError):
             return None                          # not a unit: nothing to add to
-        return base_p + self.power, base_t + self.toughness
+
+    def stats(self, index=CARDS):
+        """Effective (power, toughness) — the body plus every modifier on it."""
+        base = self.base_stats(index)
+        if base is None:
+            return None
+        return base[0] + self.power, base[1] + self.toughness
 
     def dead(self, index=CARDS):
         """Is this unit already lethally damaged? A board can't legally be in this
@@ -235,12 +271,13 @@ def _unit_from_json(d):
         card=d["card"].strip(),
         power=_int(d.get("power")), toughness=_int(d.get("toughness")),
         damage=max(0, _int(d.get("damage"))), role=role,
-        mods=mod_names, note=(d.get("note") or "").strip())
+        mods=mod_names, note=(d.get("note") or "").strip(),
+        x=max(0, _int(d.get("x"))))
 
 
 def _unit_to_json(u):
     d = {"card": u.card}
-    for key in ("power", "toughness", "damage"):
+    for key in ("power", "toughness", "damage", "x"):
         if getattr(u, key):
             d[key] = getattr(u, key)
     if u.role:
@@ -376,6 +413,12 @@ def validate(p, index=CARDS):
                 if not card:
                     warnings.append(f"{who}, column {i}: no card called “{u.card}”.")
                     continue
+                # A token with no X is a 0/0 — almost always a forgotten field
+                # rather than something anyone meant to put on a board.
+                if needs_x(card) and not u.x:
+                    warnings.append(
+                        f"{who}: “{name}” is a token made at a chosen size — give it "
+                        f"an X (a Robot 2 is a 2/2). With no X it's a 0/0.")
                 if u.stats(index) is None and (u.power or u.toughness or u.damage):
                     warnings.append(
                         f"{who}: “{name}” has no printed stats, so its "
@@ -497,6 +540,7 @@ def pick_next(puzzles, seen_ids, exclude=None, rng=None):
 def _unit_payload(u, index, art_url):
     name, card = u.resolved(index)
     st = u.stats(index)
+    base = u.base_stats(index)
     combined = None
     if u.mods:
         # What the stack actually reads as, so a grafted unit shows its real
@@ -511,11 +555,14 @@ def _unit_payload(u, index, art_url):
         "art_url": art_url(name) if card else None,
         "power": st[0] if st else None,
         "toughness": st[1] if st else None,
-        "base": (f"{card.get('power')}/{card.get('toughness')}"
-                 if card and st else None),
+        # The body before modifiers. For a token that's its X (a Robot 2 is a 2/2),
+        # so a buffed Robot reads "3/3 (2/2)" rather than the meaningless "(0/0)".
+        "base": f"{base[0]}/{base[1]}" if base else None,
         "buff_p": u.power, "buff_t": u.toughness,
         "damage": u.damage,
         "role": u.role,
+        "x": u.x,
+        "token": needs_x(card),
         "mods": list(u.mods),
         "text": combined if combined is not None else ((card or {}).get("text") or ""),
         "type": (card or {}).get("type", ""),

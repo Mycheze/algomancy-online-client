@@ -89,6 +89,39 @@ def main():
     virus = wtp.Unit(card="Bumblecrab", power=-7, toughness=-7)
     check("a Virus's -7/-7 shrinks it", virus.stats() == (-5, -4), virus.stats())
 
+    section("tokens — the only text-free bodies in the game")
+    # Two cards word it differently and both land on an X/X: Generic Unit is
+    # printed X/X, a Robot is printed 0/0 and spawns with X +1/+1 counters.
+    check("Generic Unit needs an X", wtp.needs_x(wtp.CARDS.cards["Generic Unit"]))
+    check("Robot needs an X (its counters)", wtp.needs_x(wtp.CARDS.cards["Robot"]))
+    check("a normal unit doesn't", not wtp.needs_x(wtp.CARDS.cards["Tidal Menace"]))
+    check("Wisp is a token but has a printed body, so no X",
+          not wtp.needs_x(wtp.CARDS.cards["Wisp"]))
+    check("these are the only two", sorted(
+        n for n in wtp.CARDS.names if wtp.needs_x(wtp.CARDS.cards[n])
+    ) == ["Generic Unit", "Robot"])
+
+    check("a Generic Unit 3 is a 3/3",
+          wtp.Unit(card="Generic Unit", x=3).stats() == (3, 3))
+    check("a Robot 2 is a 2/2", wtp.Unit(card="Robot", x=2).stats() == (2, 2))
+    check("a Robot 2 with a +1/+1 on it is a 3/3",
+          wtp.Unit(card="Robot", x=2, power=1, toughness=1).stats() == (3, 3))
+    check("its BASE reads as the token's size, not the printed 0/0",
+          wtp.Unit(card="Robot", x=2, power=1).base_stats() == (2, 2))
+    check("Wisp keeps its printed 0/1", wtp.Unit(card="Wisp").stats() == (0, 1))
+
+    robot0 = wtp.from_json({**SAMPLE, "you": {"columns": [[{"card": "Robot"}]]}})
+    check("a token with no X warns (it'd be a 0/0)",
+          any("give it an X" in w for w in wtp.validate(robot0)))
+    robot2 = wtp.from_json({**SAMPLE, "you": {"columns": [[{"card": "Robot", "x": 2}]]}})
+    check("a Robot 2 is clean", not any("give it an X" in w for w in wtp.validate(robot2)))
+    check("x survives serialisation",
+          wtp.to_json(robot2)["you"]["columns"][0][0] == {"card": "Robot", "x": 2},
+          wtp.to_json(robot2)["you"]["columns"][0][0])
+    rp = wtp.payload(robot2)["you"]["columns"][0][0]
+    check("the payload flags it as a token", rp["token"] is True and rp["x"] == 2)
+    check("and carries its computed body", (rp["power"], rp["toughness"]) == (2, 2))
+
     section("resources are mana AND affinity")
     check("mana is the resource count", p.opponent.mana == 3, p.opponent.mana)
     check("affinity is per element", p.opponent.affinity("earth") == 2)
@@ -289,7 +322,17 @@ def main():
         check("unknown puzzle 404s", r.status_code == 404)
 
         r = c.get("/api/wtp/config")
-        check("GET config", r.status_code == 200 and "edit_key_required" in r.json())
+        cfg = r.json()
+        check("GET config", r.status_code == 200 and "edit_key_required" in cfg)
+        # The editor autocompletes over PLAYABLE cards, which is not the same list
+        # the prose linkifier uses — that one drops "Generic Unit" as a reference
+        # card, and it's the only vanilla body in the game.
+        check("editor autocomplete includes the tokens",
+              {"Robot", "Wisp", "Generic Unit"} <= set(cfg["cards"]))
+        check("but not the components (Cardback, Turn Structure)",
+              not ({"Cardback", "Turn Structure"} & set(cfg["cards"])))
+        check("and it says which cards need an X",
+              cfg["x_cards"] == ["Generic Unit", "Robot"], cfg["x_cards"])
 
         # Editing behind a key: the public-tunnel case.
         webapp.EDIT_KEY = "s3cret"
