@@ -11,6 +11,13 @@ The two rules (Manual, "Modifications"; Glossary, "Augment" / "Graft"):
                   it had all the text in B's (+) paragraph. Only that paragraph
                   transfers — a card's non-augment text stays behind.
 
+                  The (+) can also sit on the TYPE line rather than in the text
+                  box ("The Augment symbol can appear either in a unit's ability
+                  text box or before attributes in the type line" — Manual,
+                  "Augment"). There the paragraph it heads *is* the type line, so
+                  what transfers is the attributes: Chitin Shredder has no rules
+                  text at all, and augmenting it makes its host {Powerful}.
+
   Graft (switch)  Pay B's cost, put B under A. Both cards must carry the graft
                   symbol. Graft abilities are templated "Cause -> Effect", and
                   grafting adds B's *effect* onto A's cause; the result reads
@@ -41,6 +48,18 @@ ANCHORS_JSON = CARDS_DIR / "mod_anchors.json"
 # augment paragraph at all.
 AUGMENT_RE = re.compile(r"(?:^|\{/n\})\s*\[Augment\]")
 SWITCH_RE = re.compile(r"\[Switch1?\]")
+
+# The type line's own (+), which heads the attributes instead of a paragraph of
+# text. Twenty cards are augments this way and have no rules text whatsoever, so
+# a source that reads only the text box calls them unaugmentable.
+TYPE_AUGMENT_RE = re.compile(r"\[Augment\]")
+ATTRIBUTE_RE = re.compile(r"\{([A-Za-z]+\d*)\}")
+
+# {Virus} is written into the type string, but it is not printed on the type line
+# — it's the icon in the card's top-right corner ("They are marked by the virus
+# symbol in the top right of the card"). It says how this card may be *applied*
+# (from hand, mid-combat), not how its host fights, so it never transfers.
+NOT_GRANTED = {"Virus"}
 
 # A word broken across a printed line ("non- {/n}token"). The card data carries
 # the card's *layout*, so its line breaks fall mid-word; the combined text is a
@@ -83,6 +102,22 @@ def augment_ability(card):
     return text[text.index("[Augment]", m.start()):]
 
 
+def augment_attributes(card):
+    """The attributes a type-line (+) grants — ['Powerful'] — or [] if it has none.
+
+    Only what the symbol precedes, and only the attributes: the subtypes (Insect,
+    Rock Beast) and "Unit" describe the card sitting underneath, not the one in
+    play, and nothing in the pool reads a subtype anyway. The manual's own example
+    is Rampart Guardian, which "can be augmented to grant the 'Tough' attribute".
+    """
+    type_line = card.get("type") or ""
+    m = TYPE_AUGMENT_RE.search(type_line)
+    if not m:
+        return []
+    return [a for a in ATTRIBUTE_RE.findall(type_line[m.end():])
+            if a not in NOT_GRANTED]
+
+
 def graft_effect(card):
     """The text after the card's graft symbol — the effect a graft transfers.
 
@@ -100,8 +135,12 @@ def has_graft_symbol(card):
 
 
 def mod_kind(card):
-    """How this card behaves when placed *under* another one, or None."""
-    if augment_ability(card):
+    """How this card behaves when placed *under* another one, or None.
+
+    An augment carries a (+) paragraph, or type-line attributes, or both — the
+    text box is only half of where the symbol can appear.
+    """
+    if augment_ability(card) or augment_attributes(card):
         return "augment"
     if has_graft_symbol(card):
         return "graft"
@@ -155,6 +194,34 @@ def combined_text(host, mods):
     return "\n".join(ln for ln in lines if ln)
 
 
+def combined_type(host, mods):
+    """The modified card's type line: the host's, plus every attribute its
+    augments grant.
+
+    This is the only place an attribute augment shows up at all — a card like
+    Chitin Shredder has no rules text, so if the type line didn't change, the
+    combination would render identically to the host and look like nothing
+    happened. Granted attributes go in front, which keeps a host's *own* (+)
+    still sitting directly in front of the attributes *it* grants.
+
+    An attribute the host already has is dropped: augmenting {Flying} onto a
+    flier grants nothing, and printing it twice would imply otherwise.
+    """
+    type_line = (host.get("type") or "").strip()
+    have = set(ATTRIBUTE_RE.findall(type_line))
+    granted = []
+    for _, card, kind in mods:
+        if kind != "augment":
+            continue
+        for attr in augment_attributes(card):
+            if attr not in have:
+                have.add(attr)
+                granted.append(attr)
+    if not granted:
+        return type_line
+    return " ".join(f"{{{a}}}" for a in granted) + " " + type_line
+
+
 # --- parsing and legality --------------------------------------------------
 
 class ComboError(Exception):
@@ -168,6 +235,7 @@ class Combo:
         self.mods = mods                     # [(name, card, kind)]
         self.swapped = swapped
         self.text = combined_text(host, mods)
+        self.type = combined_type(host, mods)
 
     @property
     def names(self):
@@ -184,14 +252,25 @@ class Combo:
     def describe(self, bold=lambda s: s):
         """One line naming what was done, so nobody reads the image as just the
         top card. `bold` styles the card names for the caller's front-end (Discord
-        markdown, HTML, or plain by default)."""
+        markdown, HTML, or plain by default).
+
+        An attribute augment says what it granted. It has no rules text, so this
+        sentence and the type line are the only places the player can see what
+        the modification actually did. The attributes are named in plain words,
+        not as {Powerful}: this line is prose, and neither front-end runs it
+        through the icon renderer.
+        """
         bits = []
         for name, card, kind in self.mods:
             if kind == "graft":
                 word = "bounded graft" if is_bounded(card) else "graft"
                 bits.append(f"{bold(name)} grafted onto {bold(self.host_name)} ({word})")
-            else:
-                bits.append(f"{bold(name)} augmenting {bold(self.host_name)}")
+                continue
+            line = f"{bold(name)} augmenting {bold(self.host_name)}"
+            granted = augment_attributes(card)
+            if granted:
+                line += f", granting {' and '.join(granted)}"
+            bits.append(line)
         return " · ".join(bits)
 
 

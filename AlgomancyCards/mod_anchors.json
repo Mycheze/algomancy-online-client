@@ -79,6 +79,14 @@
   "cut": 904,
   "score": 0.9334
  },
+ "Ambling Mountaintop": {
+  "icon": "augment",
+  "x": 76,
+  "y": 856,
+  "size": 30,
+  "cut": 855,
+  "score": 0.9176
+ },
  "Amphivore": {
   "icon": "bounded_graft",
   "x": 258,
@@ -231,6 +239,22 @@
   "cut": 839,
   "score": 0.8741
  },
+ "Bubb": {
+  "icon": "augment",
+  "x": 76,
+  "y": 826,
+  "size": 30,
+  "cut": 824,
+  "score": 0.8966
+ },
+ "Bumblecrab": {
+  "icon": "augment",
+  "x": 76,
+  "y": 826,
+  "size": 30,
+  "cut": 825,
+  "score": 0.9011
+ },
  "Burgeon": {
   "icon": "bounded_graft",
   "x": 78,
@@ -246,6 +270,14 @@
   "size": 32,
   "cut": 871,
   "score": 0.9193
+ },
+ "Carapace Devourer": {
+  "icon": "augment",
+  "x": 78,
+  "y": 824,
+  "size": 28,
+  "cut": 822,
+  "score": 0.9236
  },
  "Celestial Fluxmorph": {
   "icon": "augment",
@@ -278,6 +310,22 @@
   "size": 34,
   "cut": 904,
   "score": 0.9145
+ },
+ "Child of Aether": {
+  "icon": "augment",
+  "x": 76,
+  "y": 824,
+  "size": 30,
+  "cut": 823,
+  "score": 0.9191
+ },
+ "Chitin Shredder": {
+  "icon": "augment",
+  "x": 76,
+  "y": 856,
+  "size": 30,
+  "cut": 855,
+  "score": 0.9183
  },
  "Colossal Construction": {
   "icon": "bounded_graft",
@@ -326,6 +374,22 @@
   "size": 32,
   "cut": 838,
   "score": 0.9429
+ },
+ "Crumbling Ancient": {
+  "icon": "augment",
+  "x": 76,
+  "y": 856,
+  "size": 30,
+  "cut": 856,
+  "score": 0.9151
+ },
+ "Curio Drifter": {
+  "icon": "augment",
+  "x": 76,
+  "y": 856,
+  "size": 30,
+  "cut": 855,
+  "score": 0.9393
  },
  "Death Greeter": {
   "icon": "augment",
@@ -390,6 +454,14 @@
   "size": 32,
   "cut": 870,
   "score": 0.9422
+ },
+ "Dune Drifter": {
+  "icon": "augment",
+  "x": 76,
+  "y": 856,
+  "size": 30,
+  "cut": 855,
+  "score": 0.907
  },
  "Earnest Defender": {
   "icon": "augment",
@@ -470,6 +542,14 @@
   "size": 28,
   "cut": 846,
   "score": 0.8983
+ },
+ "Ephemeral Skywalker": {
+  "icon": "augment",
+  "x": 76,
+  "y": 856,
+  "size": 30,
+  "cut": 855,
+  "score": 0.9348
  },
  "Evolutionary Experiment": {
   "icon": "augment",
@@ -983,6 +1063,14 @@
   "cut": 871,
   "score": 0.924
  },
+ "Nebula Drifter": {
+  "icon": "augment",
+  "x": 76,
+  "y": 856,
+  "size": 30,
+  "cut": 855,
+  "score": 0.9129
+ },
  "Nimbus Eel": {
   "icon": "bounded_graft",
   "x": 450,
@@ -998,6 +1086,14 @@
   "size": 28,
   "cut": 908,
   "score": 0.9522
+ },
+ "Noxious Sporefiend": {
+  "icon": "augment",
+  "x": 76,
+  "y": 794,
+  "size": 30,
+  "cut": 793,
+  "score": 0.9309
  },
  "Ominous Growth": {
   "icon": "augment",
@@ -1135,6 +1231,14 @@
   "cut": 872,
   "score": 0.8689
  },
+ "Rampart Guardian": {
+  "icon": "augment",
+  "x": 76,
+  "y": 856,
+  "size": 30,
+  "cut": 855,
+  "score": 0.919
+ },
  "Ravenous Fireslinger": {
   "icon": "graft",
   "x": 76,
@@ -1142,6 +1246,14 @@
   "size": 34,
   "cut": 902,
   "score": 0.919
+ },
+ "Reality Bender": {
+  "icon": "augment",
+  "x": 78,
+  "y": 824,
+  "size": 28,
+  "cut": 822,
+  "score": 0.922
  },
  "Recall": {
   "icon": "bounded_graft",
@@ -1166,6 +1278,14 @@
   "size": 32,
   "cut": 874,
   "score": 0.9282
+ },
+ "Resonant Form": {
+  "icon": "augment",
+  "x": 76,
+  "y": 790,
+  "size": 30,
+  "cut": 789,
+  "score": 0.9319
  },
  "Restitution": {
   "icon": "augment",
@@ -1334,6 +1454,14 @@
   "size": 32,
   "cut": 871,
   "score": 0.9134
+ },
+ "Slink": {
+  "icon": "augment",
+  "x": 78,
+  "y": 824,
+  "size": 28,
+  "cut": 822,
+  "score": 0.9505
  },
  "Smouldering Inferno": {
   "icon": "augment",
@@ -1543,6 +1671,14 @@
   "cut": 904,
   "score": 0.9135
  },
+ "Tempest Wrangler": {
+  "icon": "augment",
+  "x": 76,
+  "y": 790,
+  "size": 30,
+  "cut": 790,
+  "score": 0.9339
+ },
  "Tenebrous Bulborb": {
   "icon": "augment",
   "x": 76,
@@ -1583,6 +1719,14 @@
   "cut": 902,
   "score": 0.913
  },
+ "Tidepool Terror": {
+  "icon": "augment",
+  "x": 78,
+  "y": 824,
+  "size": 28,
+  "cut": 822,
+  "score": 0.9508
+ },
  "Towering Colossus": {
   "icon": "augment",
   "x": 76,
@@ -1614,6 +1758,14 @@
   "size": 28,
   "cut": 868,
   "score": 0.9381
+ },
+ "Trashling": {
+  "icon": "augment",
+  "x": 76,
+  "y": 826,
+  "size": 30,
+  "cut": 824,
+  "score": 0.907
  },
  "Twin Flame": {
   "icon": "bounded_graft",
@@ -1718,6 +1870,14 @@
   "size": 34,
   "cut": 872,
   "score": 0.8879
+ },
+ "Whispering Mantid": {
+  "icon": "augment",
+  "x": 76,
+  "y": 860,
+  "size": 30,
+  "cut": 859,
+  "score": 0.9316
  },
  "Wither and Bloom": {
   "icon": "bounded_graft",

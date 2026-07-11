@@ -72,6 +72,13 @@ blocked by Flying units.
 DISCARD/bin (never your hand), paying its cost, onto a creature, which then gains the \
 added text. Graft can only target creatures that themselves have the graft symbol; \
 Augment can target any creature.
+- The augment symbol can sit EITHER at the start of a line in the text box OR at the \
+start of the TYPE LINE, in front of the attributes. A type-line (+) grants those \
+ATTRIBUTES rather than any text — Chitin Shredder ("[Augment] {Powerful} Insect Unit") \
+has no rules text at all, and augmenting it makes its host Powerful. So a card with an \
+empty text box can still be a perfectly good augment, and you must never say a card \
+cannot be augmented without checking its type line for the (+). The subtypes (Insect, \
+Rock Beast) and the {Virus} icon do NOT transfer — only the attributes.
 - Graft placement and source. Like all modifications, a graft is played from your HAND or \
 your bin during the deployment phase (pay the card's cost, meet affinity). It goes onto a \
 card that has BOTH a graft symbol and a trigger, and it always goes UNDER that card — the \

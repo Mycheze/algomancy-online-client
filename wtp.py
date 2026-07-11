@@ -689,14 +689,16 @@ def _unit_payload(u, index, art_url):
     name, card = u.resolved(index)
     st = u.stats(index)
     base = u.base_stats(index)
-    combined = None
+    combo = None
     if u.mods:
-        # What the stack actually reads as, so a grafted unit shows its real
-        # ability on the board instead of just the host's.
+        # What the stack actually reads as, so a modified unit shows its real
+        # ability on the board instead of just the host's — and its real type
+        # line, since an augment can grant attributes ({Piercing}) rather than
+        # text, and the type line is the only place those show up.
         try:
-            combined = mods.build(" + ".join([name] + list(u.mods)), index).text
+            combo = mods.build(" + ".join([name] + list(u.mods)), index)
         except mods.ComboError:
-            combined = None
+            combo = None
     return {
         "card": name,
         "known": card is not None,
@@ -721,8 +723,8 @@ def _unit_payload(u, index, art_url):
         "x": u.x,
         "token": needs_x(card),
         "mods": list(u.mods),
-        "text": combined if combined is not None else ((card or {}).get("text") or ""),
-        "type": (card or {}).get("type", ""),
+        "text": combo.text if combo else ((card or {}).get("text") or ""),
+        "type": combo.type if combo else (card or {}).get("type", ""),
         "cost": (card or {}).get("cost", ""),
         "note": u.note,
     }

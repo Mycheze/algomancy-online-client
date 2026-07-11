@@ -315,9 +315,10 @@ def build_combo_embed(combo, attach_name=None):
     # Titled with BOTH names, so nobody reads the image as just the top card.
     embed = discord.Embed(title=combo.title, color=cards.color(host))
 
-    type_line = (host.get("type") or "").strip()
-    if type_line:
-        embed.description = f"*{render_card_text(type_line)}*"
+    # The combo's type line, not the host's: an augment can grant attributes, and
+    # this is where they show up.
+    if combo.type:
+        embed.description = f"*{render_card_text(combo.type)}*"
 
     cost = render_cost(host.get("cost") or "—")
     total = host.get("total_cost")

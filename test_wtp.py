@@ -349,9 +349,17 @@ def main():
           "Rockfall" in mu["text"], mu["text"][:80])
     check("host keeps its own stats (it stays the main card)",
           (mu["power"], mu["toughness"]) == (0, 4), (mu["power"], mu["toughness"]))
+    # A graft onto a host with no graft symbol. (Not Sprouter + Bumblecrab, which
+    # this used to be: Sprouter HAS the graft symbol, and Bumblecrab's (+) is on
+    # its type line — that stack is a legal augment granting Piercing.)
     illegal = wtp.from_json({**SAMPLE, "you": {"columns": [
-        [{"card": "Sprouter", "mods": ["Bumblecrab"]}]]}})
+        [{"card": "Aetherflux Golem", "mods": ["Spectrogenesis"]}]]}})
     check("an illegal graft warns", bool(wtp.validate(illegal)))
+    # An attribute augment is a legal stack, and the board shows what it granted.
+    attr = wtp.from_json({**SAMPLE, "you": {"columns": [
+        [{"card": "Sprouter", "mods": ["Bumblecrab"]}]]}})
+    check("a type-line augment is a legal stack", not wtp.validate(attr),
+          wtp.validate(attr))
 
     section("board image")
     png = wtp.render_board_image(p)

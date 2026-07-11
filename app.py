@@ -284,8 +284,10 @@ def _combo_payload(query: str):
                  f"so it goes on top.")
     return {
         "name": combo.title,
-        "type": host.get("type", ""),
-        "type_html": render_card_text_html(host.get("type", "")),
+        # combo.type, not the host's: an augment can grant attributes, and the
+        # type line is where they land.
+        "type": combo.type,
+        "type_html": render_card_text_html(combo.type),
         "cost": host.get("cost", ""),
         "cost_html": render_cost_html(host.get("cost", "")),
         "total_cost": host.get("total_cost", ""),

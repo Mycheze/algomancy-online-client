@@ -54,9 +54,17 @@ AUGMENT_RE = re.compile(r"(?:^|\{/n\})\s*\[Augment\]")
 SWITCH_RE = re.compile(r"\[Switch1?\]")
 
 
-def icon_for(text):
-    """The icon that marks this card's transferable ability, or None."""
-    if AUGMENT_RE.search(text):
+def icon_for(card):
+    """The icon that marks this card's transferable ability, or None.
+
+    The augment symbol can head the TYPE line instead of a line of rules text,
+    in which case it grants the attributes it precedes (Chitin Shredder, and 19
+    others, whose text box is empty). Those cards carry the glyph on their type
+    bar, so the search finds it in exactly the same way — the peek then reveals
+    the type bar, which is the ability.
+    """
+    text = card.get("text") or ""
+    if AUGMENT_RE.search(text) or "[Augment]" in (card.get("type") or ""):
         return "augment"
     if "[Switch1]" in text:
         return "bounded_graft"
@@ -155,8 +163,8 @@ def find_icon(art_path, icon):
 
 
 def _one(args):
-    name, text = args
-    icon = icon_for(text)
+    name, card = args
+    icon = icon_for(card)
     if not icon:
         return name, None
     art = CARDS_DIR / (name.replace(" ", "-") + ".jpg")
@@ -179,7 +187,7 @@ def _one(args):
 def main():
     data = json.loads(ORACLE_JSON.read_text())
     cards = {n: f[0] for n, f in data.items() if f}
-    todo = [(n, c.get("text") or "") for n, c in cards.items() if icon_for(c.get("text") or "")]
+    todo = [(n, c) for n, c in cards.items() if icon_for(c)]
     print(f"{len(todo)} cards carry a graft/augment ability; locating each icon…")
 
     anchors = {}
