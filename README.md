@@ -17,7 +17,11 @@ Algomancy/
 ├── cards.py          → card index: fuzzy name matching, description search, art
 ├── mods.py           → graft/augment combinations (&card A + B): rules + stacked art
 ├── combos.py         → which 3-colour decks you've played + what to play next
+├── draft.py          → pack-1-pick-X draft practice (reproducible packs from a seed)
+├── wtp.py            → "What's the play?" puzzles: a board, a question, a solution
+├── puzzles/          → the puzzles themselves, one hand-editable JSON per puzzle
 ├── bot.py            → Discord bot (&ask RAG + &card/&search lookup, DeepSeek-powered)
+├── app.py            → web app (the same brain in a browser, + the puzzle editor)
 └── corpus/           → generated: algomancy_corpus.jsonl (run build_corpus.py to (re)build)
 ```
 
@@ -357,6 +361,82 @@ Endpoint: `GET /api/draft?mode=p1p1|p1p6&seed=` → the pack as JSON (slots with
 URLs, elements, code). Offline-tested end to end in `test_draft.py`
 (`.venv/bin/python test_draft.py`) — pool counts, seeded determinism, preset
 rules, codes, image rendering, and the endpoint.
+
+## "What's the play?" puzzles (`wtp.py`)
+
+A board, a question, and a hidden solution. You design a scenario in the web
+editor ("you're at 5, they're swinging with both columns, you have one blocker —
+what do you block?"), and it becomes a puzzle anyone can pull up in the bot or on
+the site, answer, and then reveal to check themselves. Built for drilling the
+things a new player has to grind: **combat math**, blocking, when to hold a trick.
+
+### The board is the game's board
+
+The model isn't a generic card-game one — getting the geometry wrong would get the
+answers wrong:
+
+- Units sit in **columns**, at most **two deep** (a formation "has a front and back
+  row but can scale infinitely in width"). A column is the unit of combat, and both
+  renderers lay the two sides out as **one aligned grid**, so column *N* faces
+  column *N* — because a defending column blocks the attacking column opposite it.
+- The **front row of each side is the row nearest the middle line**, the way it
+  sits on the table. A lone unit stands in the front row.
+- **Resources are per-element counts**, because in Algomancy that one number is
+  both your **mana** (how many you have) and your **affinity** (which elements they
+  are). A puzzle that just said "5 mana" couldn't tell you whether the card in your
+  hand is castable.
+- A unit carries stat **modifiers** (not stats): one field covers a +1/+1 counter, a
+  buff, and a Virus's -7/-7 alike, with the printed card as the source of truth.
+  Damage marked, formation role, and grafted/augmented cards underneath it are all
+  on the board too.
+
+Anything the model can't say ("assume they have no tricks") goes in free-text notes.
+
+**Column totals are hidden by default, on purpose** — adding up a column is the
+exercise. A 🧮 button reveals them when you want to check yourself.
+
+### Editing (`/editor`)
+
+A form on the left, a **live preview on the right** — and the preview is rendered
+from the *server's* payload through the same `board.js` a player's browser uses, so
+it can't lie about what they'll see. Card names autocomplete over the whole set, and
+validation warns about the mistakes that would otherwise render as an empty grey box
+(typo'd card name, an already-dead unit, an illegal graft, a missing solution).
+
+Puzzles are plain JSON in **`puzzles/<id>.json`**, one per file, hand-editable and
+committed like any other content. Both front-ends re-read them per request, so a
+puzzle saved on the site is live in the bot immediately, with no restart.
+
+Editing is gated by **`WTP_EDIT_KEY`**: set it and the editor asks once and
+remembers; leave it unset and editing is open (right for a LAN, not for a public
+tunnel). *Playing* is never gated.
+
+### Playing
+
+- **`&wtp` / `/wtp`** — a puzzle you haven't seen (`&wtp <id>` for a specific one,
+  `&wtp list` for all of them). Which puzzles you've seen is remembered **per
+  Discord user and per browser**, in one shared log — so one you solved on the site
+  won't come back at you in Discord.
+- The answer is **revealed only when you ask for it**, from its own endpoint — it's
+  never sitting in the page while you're supposed to be thinking. In Discord the
+  reveal is **ephemeral**, so one person checking themselves doesn't spoil the
+  thread; a 📣 button on it posts the answer to the whole thread once everyone's had
+  a go. Optional **hints** come one at a time before the answer.
+- What you typed in the answer box is saved **before** the reveal (`logs/
+  wtp_attempts.jsonl`) — for a learner, *why* they got it wrong is the whole lesson.
+- Discord gets the board as a rendered **PNG** (Pillow), the web gets the live HTML
+  board; both come from the same payload, so a puzzle looks like itself either way.
+  `GET /api/wtp/<id>/board.png` serves that image anywhere.
+
+Endpoints: `/api/wtp/list`, `/api/wtp/next`, `/api/wtp/<id>`, `/api/wtp/<id>/
+solution`, `/api/wtp/<id>/board.png`, `POST /api/wtp/{save,preview,attempt}`,
+`DELETE /api/wtp/<id>`. Deep-link `/?wtp=<id>` opens an exact puzzle.
+
+Tested in **`test_wtp.py`** (`.venv/bin/python test_wtp.py`) — 101 offline checks:
+schema, card resolution, the column-power arithmetic the seed puzzles turn on,
+validation, disk round-trip, `pick_next`, payloads (asserting the solution never
+leaks into the board), mods, image rendering, and every endpoint including the
+edit-key gate.
 
 ## Web app (`app.py`)
 

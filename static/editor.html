@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What's the Play? · Editor</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🧩</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<link rel="stylesheet" href="/static/board.css">
+<style>
+  :root {
+    --bg: #14161c; --panel: #1c1f29; --panel-2: #232735; --line: #2f3445;
+    --text: #e7e9f0; --muted: #9aa0b4; --accent: #7c89ff; --accent-2: #5865F2;
+    --good: #3ba55d; --weird: #c9a227; --bad: #d83c3c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text); min-height: 100vh;
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 5; display: flex; align-items: center;
+    gap: 12px; padding: 10px 16px; background: var(--panel);
+    border-bottom: 1px solid var(--line); flex-wrap: wrap;
+  }
+  header h1 { font-size: 16px; margin: 0; }
+  header .sub { font-size: 12px; color: var(--muted); }
+  header .spacer { flex: 1; }
+  #status { font-size: 13px; color: var(--muted); }
+  #status.ok { color: var(--good); } #status.err { color: var(--bad); }
+
+  .cols { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; padding: 16px; align-items: start; }
+  @media (max-width: 1000px) { .cols { grid-template-columns: 1fr; } }
+  .pane { min-width: 0; }
+  .pane.preview { position: sticky; top: 62px; }
+  @media (max-width: 1000px) { .pane.preview { position: static; } }
+
+  fieldset {
+    border: 1px solid var(--line); border-radius: 10px; margin: 0 0 14px;
+    padding: 12px 14px 14px; background: var(--panel);
+  }
+  legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; font-weight: 700; padding: 0 6px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  input, select, textarea, button { font: inherit; }
+  input[type=text], input[type=number], select, textarea {
+    width: 100%; background: #0c0e14; color: var(--text); border: 1px solid var(--line);
+    border-radius: 7px; padding: 7px 9px;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  textarea { resize: vertical; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 0; }
+  .row.tight > * { flex: none; }
+  .f { margin-bottom: 10px; }
+
+  button {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 7px; padding: 6px 11px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent-2); border-color: var(--accent-2); color: #fff; }
+  button.danger:hover { border-color: var(--bad); color: var(--bad); }
+  button.mini { padding: 2px 7px; font-size: 12px; line-height: 1.5; }
+
+  .side { border: 1px solid var(--line); border-radius: 9px; padding: 10px; margin-bottom: 10px; background: var(--panel-2); }
+  .side > h4 { margin: 0 0 8px; font-size: 13px; color: var(--accent); }
+  .res-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .res-grid label { text-transform: capitalize; display: flex; align-items: center; gap: 3px; }
+  .res-grid img { width: 14px; height: 14px; }
+
+  .column-box { border: 1px dashed var(--line); border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+  .column-box > .chead { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
+  .column-box > .chead .cn { font-size: 12px; color: var(--muted); font-weight: 700; flex: 1; }
+  .unit-box { background: #0c0e14; border: 1px solid var(--line); border-radius: 7px; padding: 7px; margin-bottom: 6px; }
+  .unit-box .uhead { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+  .unit-box .uhead .rowlabel { font-size: 10px; color: var(--muted); letter-spacing: .05em; font-weight: 700; width: 42px; flex: none; }
+  .unit-box .uhead input { flex: 1; }
+  .unit-box .ugrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .unit-box .ugrid label { font-size: 10px; }
+
+  .warns { margin: 0 0 14px; padding: 10px 12px; border-radius: 9px; background: #2a2416;
+           border: 1px solid var(--weird); font-size: 13px; color: #e8d79a; }
+  .warns ul { margin: 6px 0 0; padding-left: 18px; }
+  .warns li { margin: 2px 0; }
+  .hintrow { display: flex; gap: 6px; margin-bottom: 6px; }
+  .puzzlelist { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.86); display: flex;
+              align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .lightbox img { max-width: 100%; max-height: 100%; border-radius: 10px; }
+  .hidden { display: none !important; }
+  code { background: #0c0e14; padding: 1px 5px; border-radius: 5px; font-size: .9em; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🧩 What's the Play? — Editor</h1>
+    <div class="sub">Build a scenario, write the answer, share the puzzle.</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="puzzlelist">
+    <select id="open" style="width:auto"><option value="">— open a puzzle —</option></select>
+    <button id="new">＋ New</button>
+    <button id="save" class="primary">💾 Save</button>
+    <button id="del" class="danger">🗑</button>
+  </div>
+  <span id="status"></span>
+</header>
+
+<div class="cols">
+  <!-- ---------------- form ---------------- -->
+  <div class="pane">
+    <fieldset>
+      <legend>THE PUZZLE</legend>
+      <div class="f"><label>Title</label><input type="text" id="title" placeholder="Lethal on board?"></div>
+      <div class="f"><label>Question — what are you asking them?</label>
+        <textarea id="question" rows="2" placeholder="You're at 4 and they're swinging with both columns. What do you block, and do you live?"></textarea></div>
+      <div class="row">
+        <div class="f"><label>Difficulty</label>
+          <select id="difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div>
+        <div class="f"><label>Author</label><input type="text" id="author" placeholder="Bena"></div>
+        <div class="f"><label>Tags (comma-separated)</label><input type="text" id="tags" placeholder="combat math, blocking"></div>
+      </div>
+      <div class="f"><label>Board notes — anything the board can't say</label>
+        <textarea id="notes" rows="2" placeholder="Assume they have no tricks left."></textarea></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>GAME STATE</legend>
+      <div class="row">
+        <div class="f"><label>Phase</label><select id="phase"></select></div>
+        <div class="f"><label>Whose turn</label><select id="turn"></select></div>
+        <div class="f"><label>Initiative</label><select id="initiative"></select></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>BOARD</legend>
+      <div id="sides"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>SOLUTION</legend>
+      <div class="f"><label>The answer (markdown) — revealed when they ask for it</label>
+        <textarea id="solution" rows="7" placeholder="Block column 1 with …&#10;&#10;A column deals damage equal to the **combined power** of every unit in it, so…"></textarea></div>
+      <label>Hints — shown one at a time, before the answer</label>
+      <div id="hints"></div>
+      <button id="addhint" class="mini">＋ Add hint</button>
+    </fieldset>
+  </div>
+
+  <!-- ---------------- preview ---------------- -->
+  <div class="pane preview">
+    <div id="warns" class="warns hidden"></div>
+    <fieldset>
+      <legend>PREVIEW — exactly what a player sees</legend>
+      <div id="preview" class="wtp"></div>
+      <div class="row tight" style="margin-top:10px">
+        <button id="totals" class="mini">🧮 Toggle column totals</button>
+        <button id="playlink" class="mini">🔗 Copy play link</button>
+        <span id="pid" style="font-size:12px;color:var(--muted);align-self:center"></span>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>SOLUTION PREVIEW</legend>
+      <div id="solprev" style="font-size:14px"></div>
+    </fieldset>
+  </div>
+</div>
+
+<datalist id="cardnames"></datalist>
+<div id="lightbox" class="lightbox hidden"><img alt=""></div>
+
+<script src="/static/board.js"></script>
+<script>
+'use strict';
+
+const PHASES = ['Planning', 'Battle', 'Regroup', 'Deployment'];
+const ELEMENTS = ['fire', 'water', 'earth', 'metal', 'wood'];
+const ROLES = [['', '—'], ['attacking', 'attacking'], ['blocking', 'blocking']];
+const COLUMN_DEPTH = 2;
+
+const $ = id => document.getElementById(id);
+const statusEl = $('status');
+let ICONS = {};
+let EDIT_KEY_REQUIRED = false;
+
+// The puzzle being edited IS the state. It's the same JSON that lands on disk,
+// so there's no mapping layer to get out of step — the form edits the file.
+function blankPuzzle() {
+  return {
+    title: '', question: '', difficulty: 'medium', author: localStorage.getItem('wtp_author') || '',
+    tags: [], notes: '', phase: 'Battle', turn: 'you', initiative: 'you',
+    solution: '', hints: [],
+    you: { name: 'You', life: 30, resources: {}, columns: [], hand: [], bin: [] },
+    opponent: { name: 'Opponent', life: 30, resources: {}, columns: [], hand: [], bin: [], hand_count: 0 },
+  };
+}
+let P = blankPuzzle();
+
+function setStatus(msg, kind) {
+  statusEl.textContent = msg;
+  statusEl.className = kind || '';
+  if (kind === 'ok') setTimeout(() => { if (statusEl.textContent === msg) statusEl.textContent = ''; }, 2500);
+}
+
+// ---- form -> state ----
+function bindField(id, get, set) {
+  const el = $(id);
+  el.addEventListener('input', () => { set(el.value); schedulePreview(); });
+  return () => { el.value = get(); };
+}
+
+const syncers = [];
+function field(id, key, parse) {
+  syncers.push(bindField(id, () => P[key], v => { P[key] = parse ? parse(v) : v; }));
+}
+
+field('title', 'title');
+field('question', 'question');
+field('difficulty', 'difficulty');
+field('author', 'author');
+field('notes', 'notes');
+field('solution', 'solution');
+field('tags', 'tags', v => v.split(',').map(s => s.trim()).filter(Boolean));
+syncers.push(() => { $('tags').value = (P.tags || []).join(', '); });
+
+PHASES.forEach(p => $('phase').add(new Option(p, p)));
+[['you', 'You'], ['opponent', 'Opponent']].forEach(([v, l]) => {
+  $('turn').add(new Option(l, v)); $('initiative').add(new Option(l, v));
+});
+field('phase', 'phase');
+field('turn', 'turn');
+field('initiative', 'initiative');
+
+// ---- the board form ----
+// Rebuilt wholesale on structural changes (add/remove a unit or column). Text
+// inputs are NOT rebuilt while you type — only the preview refreshes — so the
+// caret never jumps out from under you mid-word.
+
+function sideHtml(key, s) {
+  const isOpp = key === 'opponent';
+  const cols = (s.columns || []).map((col, ci) => {
+    const units = [0, 1].map(ri => {
+      const u = col[ri];
+      if (!u) return '';
+      // The front row is the one nearest the middle line — where the fighting is.
+      // "The front row of a column must be filled first before a unit can be
+      // placed in a back row", so index 0 is always the front.
+      return unitFormHtml(key, ci, ri, u, ri === 0 ? 'FRONT' : 'BACK');
+    }).join('');
+    const addFront = !col[0]
+      ? `<button class="mini" data-act="addunit" data-side="${key}" data-col="${ci}">＋ unit</button>` : '';
+    const addBack = (col[0] && !col[1])
+      ? `<button class="mini" data-act="addunit" data-side="${key}" data-col="${ci}">＋ back row</button>` : '';
+    return `<div class="column-box">
+      <div class="chead">
+        <span class="cn">Column ${ci + 1}</span>
+        <button class="mini" data-act="colleft" data-side="${key}" data-col="${ci}" title="move left">◀</button>
+        <button class="mini" data-act="colright" data-side="${key}" data-col="${ci}" title="move right">▶</button>
+        <button class="mini" data-act="colswap" data-side="${key}" data-col="${ci}" title="swap front/back">⇅</button>
+        <button class="mini danger" data-act="colremove" data-side="${key}" data-col="${ci}" title="remove column">✕</button>
+      </div>
+      ${units}${addFront}${addBack}
+    </div>`;
+  }).join('');
+
+  const res = ELEMENTS.map(e => `<div>
+    <label>${ICONS[e] ? `<img src="${ICONS[e]}" alt="${e}">` : ''}${e}</label>
+    <input type="number" min="0" max="20" value="${(s.resources || {})[e] || 0}"
+      data-act="res" data-side="${key}" data-el="${e}">
+  </div>`).join('');
+
+  return `<div class="side">
+    <h4>${isOpp ? '🔻 Opponent (top of the board)' : '🔺 You (bottom of the board)'}</h4>
+    <div class="row">
+      <div class="f"><label>Name</label>
+        <input type="text" value="${escAttr(s.name)}" data-act="sname" data-side="${key}"></div>
+      <div class="f"><label>Life</label>
+        <input type="number" value="${s.life}" data-act="slife" data-side="${key}"></div>
+      ${isOpp ? `<div class="f"><label>Cards in hand (face-down)</label>
+        <input type="number" min="0" value="${s.hand_count || 0}" data-act="shandcount" data-side="${key}"></div>` : ''}
+    </div>
+    <div class="f"><label>Resources in play — this is both their mana and their affinity</label>
+      <div class="res-grid">${res}</div></div>
+    <div class="f"><label>Formation — column N blocks column N opposite it</label>
+      ${cols || '<div style="color:var(--muted);font-size:13px;margin-bottom:6px">No units in play.</div>'}
+      <button class="mini" data-act="addcol" data-side="${key}">＋ Add column</button></div>
+    <div class="f"><label>Hand (face-up cards, comma-separated)</label>
+      <input type="text" value="${escAttr((s.hand || []).join(', '))}" list="cardnames"
+        data-act="zone" data-side="${key}" data-zone="hand" placeholder="Growth, Fireball"></div>
+    <div class="f"><label>Bin (graft/augment fodder, comma-separated)</label>
+      <input type="text" value="${escAttr((s.bin || []).join(', '))}"
+        data-act="zone" data-side="${key}" data-zone="bin"></div>
+  </div>`;
+}
+
+function unitFormHtml(key, ci, ri, u, label) {
+  return `<div class="unit-box">
+    <div class="uhead">
+      <span class="rowlabel">${label}</span>
+      <input type="text" value="${escAttr(u.card)}" list="cardnames" placeholder="card name"
+        data-act="ucard" data-side="${key}" data-col="${ci}" data-row="${ri}">
+      <button class="mini danger" data-act="uremove" data-side="${key}" data-col="${ci}" data-row="${ri}">✕</button>
+    </div>
+    <div class="ugrid">
+      <div><label>power ±</label><input type="number" value="${u.power || 0}"
+        data-act="u" data-key="power" data-side="${key}" data-col="${ci}" data-row="${ri}"></div>
+      <div><label>tough ±</label><input type="number" value="${u.toughness || 0}"
+        data-act="u" data-key="toughness" data-side="${key}" data-col="${ci}" data-row="${ri}"></div>
+      <div><label>damage</label><input type="number" min="0" value="${u.damage || 0}"
+        data-act="u" data-key="damage" data-side="${key}" data-col="${ci}" data-row="${ri}"></div>
+      <div><label>role</label><select data-act="urole" data-side="${key}" data-col="${ci}" data-row="${ri}">
+        ${ROLES.map(([v, l]) => `<option value="${v}" ${u.role === v ? 'selected' : ''}>${l}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <div><label>mods under it (comma-separated)</label>
+        <input type="text" value="${escAttr((u.mods || []).join(', '))}" list="cardnames"
+          data-act="umods" data-side="${key}" data-col="${ci}" data-row="${ri}"></div>
+      <div><label>note</label><input type="text" value="${escAttr(u.note || '')}" placeholder="shared Flying"
+        data-act="unote" data-side="${key}" data-col="${ci}" data-row="${ri}"></div>
+    </div>
+  </div>`;
+}
+
+const escAttr = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function renderSides() {
+  $('sides').innerHTML = sideHtml('opponent', P.opponent) + sideHtml('you', P.you);
+}
+
+// One delegated handler for the whole board form. Structural actions (add/remove)
+// re-render the form; value edits only touch the state and refresh the preview.
+$('sides').addEventListener('click', e => {
+  const b = e.target.closest('button[data-act]');
+  if (!b) return;
+  const { act, side, col, row } = b.dataset;
+  const s = P[side];
+  const ci = +col, ri = +row;
+  if (act === 'addcol') s.columns.push([]);
+  else if (act === 'addunit') s.columns[ci].push(newUnit());
+  else if (act === 'uremove') s.columns[ci].splice(ri, 1);
+  else if (act === 'colremove') s.columns.splice(ci, 1);
+  else if (act === 'colswap') s.columns[ci].reverse();
+  else if (act === 'colleft' && ci > 0) s.columns.splice(ci - 1, 0, s.columns.splice(ci, 1)[0]);
+  else if (act === 'colright' && ci < s.columns.length - 1) s.columns.splice(ci + 1, 0, s.columns.splice(ci, 1)[0]);
+  else return;
+  // A column with nothing in it isn't a column — but keep a just-added empty one
+  // so there's somewhere to put the first unit.
+  if (act !== 'addcol') s.columns = s.columns.filter(c => c.length);
+  renderSides(); schedulePreview();
+});
+
+$('sides').addEventListener('input', e => {
+  const el = e.target;
+  const { act, side, col, row, key, zone, el: elem } = el.dataset;
+  if (!act) return;
+  const s = P[side];
+  const u = (act === 'u' || act === 'ucard' || act === 'urole' || act === 'umods' || act === 'unote')
+    ? s.columns[+col][+row] : null;
+  if (act === 'sname') s.name = el.value;
+  else if (act === 'slife') s.life = +el.value || 0;
+  else if (act === 'shandcount') s.hand_count = Math.max(0, +el.value || 0);
+  else if (act === 'res') {
+    const n = Math.max(0, +el.value || 0);
+    if (n) s.resources[elem] = n; else delete s.resources[elem];
+  } else if (act === 'zone') s[zone] = el.value.split(',').map(x => x.trim()).filter(Boolean);
+  else if (act === 'ucard') u.card = el.value;
+  else if (act === 'urole') u.role = el.value;
+  else if (act === 'unote') u.note = el.value;
+  else if (act === 'umods') u.mods = el.value.split(',').map(x => x.trim()).filter(Boolean);
+  else if (act === 'u') u[key] = +el.value || 0;
+  else return;
+  schedulePreview();
+});
+$('sides').addEventListener('change', e => {
+  if (e.target.dataset.act === 'urole') schedulePreview();
+});
+
+const newUnit = () => ({ card: '', power: 0, toughness: 0, damage: 0, role: '', mods: [], note: '' });
+
+// ---- hints ----
+function renderHints() {
+  $('hints').innerHTML = (P.hints || []).map((h, i) => `<div class="hintrow">
+    <input type="text" value="${escAttr(h)}" data-hint="${i}" placeholder="Count the whole column, not just the front row.">
+    <button class="mini danger" data-delhint="${i}">✕</button></div>`).join('');
+}
+$('hints').addEventListener('input', e => {
+  const i = e.target.dataset.hint;
+  if (i != null) { P.hints[+i] = e.target.value; schedulePreview(); }
+});
+$('hints').addEventListener('click', e => {
+  const i = e.target.dataset.delhint;
+  if (i != null) { P.hints.splice(+i, 1); renderHints(); schedulePreview(); }
+});
+$('addhint').addEventListener('click', () => { P.hints.push(''); renderHints(); });
+
+// ---- preview ----
+// Rendered from the SERVER's payload, not from the form state: card names are
+// fuzzy-matched, stats are computed, and mods are combined by the same code that
+// will serve the puzzle to a player. So the preview can't lie about what they'll see.
+let timer = null, showTotals = false;
+function schedulePreview() { clearTimeout(timer); timer = setTimeout(preview, 250); }
+
+async function preview() {
+  try {
+    const res = await fetch('/api/wtp/preview', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ puzzle: P }),
+    });
+    const d = await res.json();
+    if (!res.ok) {
+      $('warns').classList.remove('hidden');
+      $('warns').innerHTML = `<b>⚠️ ${escAttr(d.detail || 'Not a valid puzzle yet.')}</b>`;
+      return;
+    }
+    WtpBoard.render($('preview'), d, { icons: ICONS, totals: showTotals, onZoom: openLightbox });
+    $('solprev').innerHTML = d.solution
+      ? DOMPurify.sanitize(marked.parse(d.solution))
+      : '<span style="color:var(--muted)">No solution written yet.</span>';
+    const w = d.warnings || [];
+    $('warns').classList.toggle('hidden', !w.length);
+    if (w.length) {
+      $('warns').innerHTML = '<b>Worth a look:</b><ul>' +
+        w.map(x => `<li>${escAttr(x)}</li>`).join('') + '</ul>';
+    }
+  } catch (e) { /* keep the last good preview */ }
+}
+
+$('totals').addEventListener('click', () => {
+  showTotals = !showTotals;
+  const b = document.querySelector('#preview .wtp-board');
+  if (b) b.classList.toggle('totals', showTotals);
+});
+
+function openLightbox(src, name) {
+  const lb = $('lightbox');
+  lb.querySelector('img').src = src;
+  lb.querySelector('img').alt = name || '';
+  lb.classList.remove('hidden');
+}
+$('lightbox').addEventListener('click', () => $('lightbox').classList.add('hidden'));
+
+// ---- save / load ----
+function editKey() {
+  let k = localStorage.getItem('wtp_edit_key') || '';
+  if (EDIT_KEY_REQUIRED && !k) {
+    k = prompt('Edit key (set by WTP_EDIT_KEY on the server):') || '';
+    if (k) localStorage.setItem('wtp_edit_key', k);
+  }
+  return k;
+}
+
+$('save').addEventListener('click', async () => {
+  if (!P.title.trim() || !P.question.trim()) {
+    setStatus('Needs a title and a question.', 'err');
+    return;
+  }
+  setStatus('Saving…');
+  const res = await fetch('/api/wtp/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Edit-Key': editKey() },
+    body: JSON.stringify({ puzzle: P }),
+  });
+  const d = await res.json();
+  if (!res.ok) {
+    if (res.status === 403) localStorage.removeItem('wtp_edit_key');
+    setStatus(d.detail || 'Save failed.', 'err');
+    return;
+  }
+  P.id = d.id;                      // the server mints the id on first save
+  if (P.author) localStorage.setItem('wtp_author', P.author);
+  setStatus('Saved ' + d.id, 'ok');
+  showId();
+  await loadList();
+  $('open').value = d.id;
+});
+
+$('new').addEventListener('click', () => {
+  if (!confirm('Start a new puzzle? Unsaved changes are lost.')) return;
+  P = blankPuzzle();
+  syncAll();
+});
+
+$('del').addEventListener('click', async () => {
+  if (!P.id) { setStatus('Nothing saved to delete.', 'err'); return; }
+  if (!confirm('Delete ' + P.id + '?')) return;
+  const res = await fetch('/api/wtp/' + encodeURIComponent(P.id), {
+    method: 'DELETE', headers: { 'X-Edit-Key': editKey() },
+  });
+  if (!res.ok) { setStatus('Delete failed.', 'err'); return; }
+  P = blankPuzzle(); syncAll(); await loadList();
+  setStatus('Deleted.', 'ok');
+});
+
+$('open').addEventListener('change', async () => {
+  const id = $('open').value;
+  if (!id) return;
+  // The play endpoint hides the solution, so the editor pulls it separately —
+  // you can't edit an answer you can't see.
+  const [board, sol] = await Promise.all([
+    fetch('/api/wtp/' + encodeURIComponent(id) + '?session_id=editor').then(r => r.json()),
+    fetch('/api/wtp/' + encodeURIComponent(id) + '/solution?session_id=editor').then(r => r.json()),
+  ]);
+  // Rebuild the editable puzzle from what the API gives back. Units come back
+  // with computed stats, so strip them to the modifiers we actually store.
+  P = {
+    id: board.id, title: board.title, question: board.question,
+    difficulty: board.difficulty, author: board.author, tags: board.tags || [],
+    notes: board.notes || '', phase: board.phase, turn: board.turn,
+    initiative: board.initiative, solution: sol.solution || '', hints: sol.hints || [],
+    you: sideFromPayload(board.you), opponent: sideFromPayload(board.opponent),
+  };
+  syncAll();
+  setStatus('Opened ' + board.id, 'ok');
+});
+
+function sideFromPayload(s) {
+  return {
+    name: s.name, life: s.life, resources: Object.assign({}, s.resources),
+    hand: (s.hand || []).map(c => c.card), bin: (s.bin || []).map(c => c.card),
+    hand_count: s.hand_count || 0,
+    columns: (s.columns || []).map(col => col.map(u => ({
+      card: u.card, power: u.buff_p || 0, toughness: u.buff_t || 0,
+      damage: u.damage || 0, role: u.role || '', mods: u.mods || [], note: u.note || '',
+    }))),
+  };
+}
+
+async function loadList() {
+  const d = await fetch('/api/wtp/list').then(r => r.json());
+  const sel = $('open');
+  sel.innerHTML = '<option value="">— open a puzzle —</option>';
+  (d.puzzles || []).forEach(p => sel.add(new Option(`${p.title} (${p.id})`, p.id)));
+}
+
+function showId() {
+  $('pid').textContent = P.id ? P.id : '(unsaved)';
+}
+
+$('playlink').addEventListener('click', () => {
+  if (!P.id) { setStatus('Save it first.', 'err'); return; }
+  const url = location.origin + '/?wtp=' + encodeURIComponent(P.id);
+  navigator.clipboard?.writeText(url).then(
+    () => setStatus('Play link copied', 'ok'),
+    () => setStatus(url, 'ok'));
+});
+
+function syncAll() {
+  syncers.forEach(fn => fn());
+  renderSides(); renderHints(); showId(); preview();
+}
+
+// ---- boot ----
+(async function boot() {
+  const [names, cfg] = await Promise.all([
+    fetch('/api/cardnames').then(r => r.json()).catch(() => ({ names: [] })),
+    fetch('/api/wtp/config').then(r => r.json()).catch(() => ({})),
+  ]);
+  // Autocomplete over every card that has art — the editor is mostly typing card
+  // names, and a typo silently renders an empty box, so make them hard to typo.
+  $('cardnames').innerHTML = (names.names || []).map(n => `<option value="${escAttr(n)}">`).join('');
+  ICONS = cfg.icons || {};
+  EDIT_KEY_REQUIRED = !!cfg.edit_key_required;
+  await loadList();
+  const want = new URLSearchParams(location.search).get('id');
+  if (want) { $('open').value = want; $('open').dispatchEvent(new Event('change')); }
+  else syncAll();
+})();
+</script>
+</body>
+</html>

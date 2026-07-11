@@ -26,6 +26,7 @@ RESPONSES = LOG_DIR / "responses.jsonl"
 FEEDBACK = LOG_DIR / "feedback.jsonl"
 GENERAL_FEEDBACK = LOG_DIR / "general_feedback.jsonl"
 GAMES = LOG_DIR / "games.jsonl"
+WTP = LOG_DIR / "wtp_attempts.jsonl"
 
 _lock = threading.Lock()
 
@@ -144,3 +145,59 @@ def read_games(user_id=None):
                 if want is None or record.get("user_id") == want:
                     games.append(record)
     return games
+
+
+# --- "What's the play?" puzzle attempts (wtp.py) --------------------------
+# Which puzzles a person has been served, what they answered, and whether they
+# revealed the solution. Two jobs: the bot/site use it to hand you a puzzle you
+# haven't seen (like read_games feeds combos.suggest), and the answers are worth
+# reading afterwards — for a learner, WHY they got it wrong is the whole lesson.
+# Same key space as games.jsonl: a Discord user id or a web session id, as a str.
+
+def log_wtp(puzzle_id, event, user_id, *, answer=None, channel_id=None, source=None):
+    """Record one puzzle event. `event` is served | answered | revealed | hint."""
+    _append(WTP, {
+        "ts": _now(),
+        "puzzle_id": puzzle_id,
+        "event": event,
+        "user_id": str(user_id),
+        "answer": answer,               # what they wrote, on an "answered" event
+        "channel_id": channel_id,
+        "source": source,               # "discord" | "web"
+    })
+
+
+def read_wtp(user_id=None, puzzle_id=None):
+    """Puzzle events, oldest first — filtered to a user and/or a puzzle.
+
+    Re-read per call, like read_games: the file is one line per puzzle opened, so
+    it stays small, and a puzzle solved in Discord counts as seen on the website
+    immediately (the two front-ends can be separate processes).
+    """
+    if not WTP.exists():
+        return []
+    want_user = None if user_id is None else str(user_id)
+    events = []
+    with _lock:
+        with WTP.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if want_user is not None and record.get("user_id") != want_user:
+                    continue
+                if puzzle_id is not None and record.get("puzzle_id") != puzzle_id:
+                    continue
+                events.append(record)
+    return events
+
+
+def wtp_seen(user_id):
+    """Puzzle ids this person has been served, oldest first (duplicates kept, so
+    wtp.pick_next can tell which one they saw longest ago)."""
+    return [e["puzzle_id"] for e in read_wtp(user_id)
+            if e.get("event") == "served" and e.get("puzzle_id")]

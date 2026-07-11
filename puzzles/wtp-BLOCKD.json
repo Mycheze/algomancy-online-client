@@ -1,0 +1,67 @@
+{
+  "id": "wtp-BLOCKD",
+  "title": "Is it lethal?",
+  "question": "You attacked, they've declared their block, and nobody has anything left to play. They're at 9. Are they dead?",
+  "difficulty": "medium",
+  "phase": "Battle",
+  "turn": "you",
+  "initiative": "you",
+  "you": {
+    "name": "You",
+    "life": 14,
+    "resources": {
+      "water": 6
+    },
+    "columns": [
+      [
+        {
+          "card": "Tidal Menace",
+          "role": "attacking"
+        }
+      ],
+      [
+        {
+          "card": "Eldritch Reclaimer",
+          "role": "attacking"
+        },
+        {
+          "card": "Delver of Mysteries",
+          "role": "attacking"
+        }
+      ],
+      [
+        {
+          "card": "Lonely Forager",
+          "role": "attacking"
+        }
+      ]
+    ]
+  },
+  "opponent": {
+    "name": "Opponent",
+    "life": 9,
+    "resources": {
+      "metal": 3
+    },
+    "columns": [
+      [
+        {
+          "card": "Cosmic Conspirator",
+          "role": "blocking"
+        }
+      ]
+    ]
+  },
+  "solution": "**Yes — exactly lethal.** They take **9** and they're at 9.\n\nThe trap is column 1. Once a defending unit is placed in front of an attacking column, **that entire column is blocked, and blocked units deal no combat damage to you**. Tidal Menace's 7 power goes into Cosmic Conspirator, not into their face. It contributes **0** to the kill.\n\nWhat actually gets through:\n- **Column 2** — unblocked: Eldritch Reclaimer (4) + Delver of Mysteries (2) = **6**\n- **Column 3** — unblocked: Lonely Forager = **3**\n\n**6 + 3 = 9.** They're at 9. Dead, exactly.\n\n(Column 1 still resolves on the side: Tidal Menace deals 7 to Cosmic Conspirator (3/3), which dies; the 4 excess has no back row to spill into and does *not* carry on to the player. Conspirator deals 3 back into your 7/2 Tidal Menace, which dies. An even trade, and irrelevant to whether they're dead.)",
+  "hints": [
+    "Their blocker is in front of column 1. What does that do to column 1's damage — all of it?",
+    "Add up only the columns that are getting through."
+  ],
+  "notes": "Blocks are locked in. Count it up before you look.",
+  "author": "Bena",
+  "tags": [
+    "combat math",
+    "lethal"
+  ],
+  "created": "2026-07-11T17:25:23+00:00"
+}

@@ -12,6 +12,11 @@ Commands
                       it's called. Ranks the whole set and shows the best match.
   &colors             Suggest a fresh 3-colour deck; ✅ to record that you played it.
   &played <colors>    Record a combo you played, e.g. `&played fire earth wood`.
+  &p1p1 / &p1p6       Draft practice: a reproducible pack, tap to pick.
+  &wtp [id]           "What's the play?" — a designed board + a question, with a
+                      thread to work it out in and a private 🔑 reveal. Puzzles are
+                      built in the web editor (app.py's /editor) and shared by both
+                      front-ends, so what you solve here counts as seen there.
   &feedback [text]    Share feedback about the bot.
 
 The RAG brain (retrieval, primer, DeepSeek call, citations) lives in `core.py`
@@ -41,6 +46,7 @@ import core
 import draft
 import mods
 import store
+import wtp
 from cards import FACTION_COLOR, FACTION_EMOJI, plain_text
 from core import (ICON_NAMES, ICON_TOKEN_RE, RESOURCE_NAMES, answer_question,
                   cards, cited_card_paths, friendly_source, render_citations,
@@ -980,6 +986,278 @@ async def p1p6_cmd(ctx, *, seed: str = None):
     await run_draft(ctx, "p1p6", seed)
 
 
+# --- "What's the play?" puzzles ------------------------------------------
+# `&wtp` posts a board someone designed in the web editor, with the question, and
+# opens a thread to argue about it in. The answer is revealed privately (an
+# ephemeral message, so one person checking themselves doesn't spoil the thread
+# for everyone else) — or deliberately to the whole thread, once the discussion
+# has run its course.
+#
+# Which puzzles you've seen is remembered per Discord user, so a bare `&wtp` keeps
+# handing you new ones. It's the same log the website writes, keyed on the same
+# ids, so a puzzle you solved on the site won't come back at you in Discord.
+
+# (message_id, user_id) -> how many hints that person has asked for. In-memory
+# like DRAFT_PICKS: a restart just means hints start from the top again.
+WTP_HINTS: dict[tuple[int, int], int] = {}
+
+_DIFF_COLOR = {"easy": 0x3BA55D, "medium": 0xC9A227, "hard": 0xD83C3C}
+
+
+def wtp_embed(p):
+    e = discord.Embed(
+        title=f"🧩 {p.title}",
+        description=f"**{p.question}**",
+        color=_DIFF_COLOR.get(p.difficulty, 0x5865F2))
+    e.add_field(name="Board", value=wtp.status_line(p), inline=False)
+
+    # Life and resources in words as well as in the picture: the numbers are the
+    # puzzle, and they should be copy-pasteable into the thread.
+    for side in (p.opponent, p.you):
+        e.add_field(
+            name=side.name,
+            value=f"**{side.life}** life · {_resource_text(side)}",
+            inline=True)
+    if p.notes:
+        e.add_field(name="Notes", value=p.notes[:1000], inline=False)
+
+    e.set_image(url="attachment://board.png")
+    bits = [p.difficulty]
+    bits += list(p.tags)
+    if p.author:
+        bits.append(f"by {p.author}")
+    e.set_footer(text=f"{p.id} · " + " · ".join(bits))
+    return e
+
+
+def _resource_text(side):
+    """'4 mana (🔥2 🌿2)' — custom emojis when the guild has them, words if not."""
+    if not side.resources:
+        return "no resources"
+    bits = " ".join(
+        f"{_emoji(e, FACTION_EMOJI.get(e, ''))}{side.resources[e]}".strip()
+        for e in wtp.ELEMENTS if side.resources.get(e))
+    return f"**{side.mana}** mana ({bits})"
+
+
+class RevealButton(
+        discord.ui.DynamicItem[discord.ui.Button],
+        template=r"wr:(?P<pid>wtp-[0-9A-Z]+)"):
+
+    def __init__(self, pid):
+        super().__init__(discord.ui.Button(
+            label="Reveal the answer", emoji="🔑",
+            style=discord.ButtonStyle.primary, custom_id=f"wr:{pid}"))
+        self.pid = pid
+
+    @classmethod
+    async def from_custom_id(cls, interaction, item, match):
+        return cls(match["pid"])
+
+    async def callback(self, interaction):
+        try:
+            p = wtp.load(self.pid)
+        except wtp.PuzzleError as exc:
+            await interaction.response.send_message(f"⚠️ {exc}", ephemeral=True)
+            return
+        store.log_wtp(p.id, "revealed", interaction.user.id,
+                      channel_id=interaction.channel_id, source="discord")
+        # Ephemeral: one person checking their answer mustn't spoil it for
+        # everyone else still thinking. "Post to thread" is the deliberate way to
+        # put it in front of the room.
+        await interaction.response.send_message(
+            embed=solution_embed(p), view=PostSolutionView(p.id), ephemeral=True)
+
+
+class HintButton(
+        discord.ui.DynamicItem[discord.ui.Button],
+        template=r"wh:(?P<pid>wtp-[0-9A-Z]+)"):
+
+    def __init__(self, pid):
+        super().__init__(discord.ui.Button(
+            label="Hint", emoji="💡",
+            style=discord.ButtonStyle.secondary, custom_id=f"wh:{pid}"))
+        self.pid = pid
+
+    @classmethod
+    async def from_custom_id(cls, interaction, item, match):
+        return cls(match["pid"])
+
+    async def callback(self, interaction):
+        try:
+            p = wtp.load(self.pid)
+        except wtp.PuzzleError as exc:
+            await interaction.response.send_message(f"⚠️ {exc}", ephemeral=True)
+            return
+        if not p.hints:
+            await interaction.response.send_message(
+                "No hints for this one — you're on your own. 🙂", ephemeral=True)
+            return
+        key = (interaction.message.id, interaction.user.id)
+        i = WTP_HINTS.get(key, 0)
+        if i >= len(p.hints):
+            await interaction.response.send_message(
+                "That's every hint I've got. Hit 🔑 when you want the answer.",
+                ephemeral=True)
+            return
+        WTP_HINTS[key] = i + 1
+        store.log_wtp(p.id, "hint", interaction.user.id,
+                      channel_id=interaction.channel_id, source="discord")
+        await interaction.response.send_message(
+            f"💡 **Hint {i + 1}/{len(p.hints)}** — {p.hints[i]}", ephemeral=True)
+
+
+class PostSolutionButton(
+        discord.ui.DynamicItem[discord.ui.Button],
+        template=r"wp:(?P<pid>wtp-[0-9A-Z]+)"):
+    """On the ephemeral reveal: put the answer in front of the whole thread."""
+
+    def __init__(self, pid):
+        super().__init__(discord.ui.Button(
+            label="Post the answer to the thread", emoji="📣",
+            style=discord.ButtonStyle.secondary, custom_id=f"wp:{pid}"))
+        self.pid = pid
+
+    @classmethod
+    async def from_custom_id(cls, interaction, item, match):
+        return cls(match["pid"])
+
+    async def callback(self, interaction):
+        try:
+            p = wtp.load(self.pid)
+        except wtp.PuzzleError as exc:
+            await interaction.response.send_message(f"⚠️ {exc}", ephemeral=True)
+            return
+        # The ephemeral message this button sits on has no thread of its own, so
+        # post to the channel we're in — inside a puzzle thread, that IS the thread.
+        target = interaction.channel
+        try:
+            await target.send(
+                content=f"📣 **{interaction.user.display_name}** revealed the answer "
+                        f"to **{p.title}**:",
+                embed=solution_embed(p))
+        except discord.HTTPException:
+            await interaction.response.send_message(
+                "I couldn't post here.", ephemeral=True)
+            return
+        await interaction.response.send_message("📣 Posted.", ephemeral=True)
+
+
+class PostSolutionView(discord.ui.View):
+    def __init__(self, pid):
+        super().__init__(timeout=None)
+        self.add_item(PostSolutionButton(pid))
+
+
+def solution_embed(p):
+    # Solutions quote card text ("[Switch1] Put a +1/+1 counter on me"), so run
+    # them through the same icon pass as an answer: uncode first, because Discord
+    # won't expand a custom emoji inside a code span at all.
+    body = p.solution or "_No solution was written for this one._"
+    e = discord.Embed(
+        title=f"🔑 {p.title} — the answer",
+        description=render_icons(uncode_icon_tokens(body), _emoji)[:4000],
+        color=0x3BA55D)
+    e.set_footer(text=p.id)
+    return e
+
+
+class NextPuzzleButton(
+        discord.ui.DynamicItem[discord.ui.Button],
+        template=r"wn:(?P<pid>wtp-[0-9A-Z]+)"):
+    """Serve the clicker a puzzle they haven't seen — theirs, not the poster's."""
+
+    def __init__(self, pid):
+        super().__init__(discord.ui.Button(
+            label="Another puzzle", emoji="➡️",
+            style=discord.ButtonStyle.secondary, custom_id=f"wn:{pid}"))
+        self.pid = pid
+
+    @classmethod
+    async def from_custom_id(cls, interaction, item, match):
+        return cls(match["pid"])
+
+    async def callback(self, interaction):
+        await interaction.response.defer()
+        await send_puzzle(interaction.channel, interaction.user,
+                          exclude=self.pid, reply_to=None)
+
+
+bot.add_dynamic_items(RevealButton, HintButton, PostSolutionButton, NextPuzzleButton)
+
+
+def wtp_view(p):
+    view = discord.ui.View(timeout=None)
+    view.add_item(RevealButton(p.id))
+    if p.hints:
+        view.add_item(HintButton(p.id))
+    view.add_item(NextPuzzleButton(p.id))
+    return view
+
+
+async def send_puzzle(channel, user, *, puzzle=None, exclude=None, reply_to=None):
+    """Post a puzzle: the board image, the question, and the buttons. Opens a
+    thread so people can argue about it without spoiling the answer."""
+    if puzzle is None:
+        puzzles = wtp.load_all()
+        if not puzzles:
+            await channel.send(
+                "No puzzles yet — build one in the web editor (`/editor`).")
+            return
+        puzzle, _why = wtp.pick_next(puzzles, store.wtp_seen(user.id), exclude=exclude)
+
+    store.log_wtp(puzzle.id, "served", user.id,
+                  channel_id=getattr(channel, "id", None), source="discord")
+    png = await _render(wtp.render_board_image, puzzle, cards)
+    send = reply_to.reply if reply_to else channel.send
+    msg = await send(embed=wtp_embed(puzzle),
+                     file=discord.File(io.BytesIO(png), filename="board.png"),
+                     view=wtp_view(puzzle))
+    try:
+        thread = await msg.create_thread(
+            name=f"WTP · {puzzle.title}"[:90], auto_archive_duration=1440)
+        await thread.send(
+            "🧵 **What's the play?** Work it out here — say what you'd do and why. "
+            "🔑 shows you the answer privately (so you can check yourself without "
+            "spoiling it for anyone else), and there's a 📣 button on that to put "
+            "it in front of the thread when everyone's had a go.")
+    except discord.HTTPException:
+        pass  # DMs, or somewhere threads aren't allowed
+
+
+@bot.command(name="wtp", aliases=["puzzle", "whatstheplay"])
+async def wtp_cmd(ctx, *, arg: str = None):
+    arg = (arg or "").strip()
+
+    if arg.lower() in ("list", "ls"):
+        puzzles = wtp.load_all()
+        if not puzzles:
+            await ctx.reply("No puzzles yet — build one in the web editor.")
+            return
+        seen = set(store.wtp_seen(ctx.author.id))
+        lines = [
+            f"{'✅' if p.id in seen else '🆕'} **{p.title}** · `{p.id}` "
+            f"· {p.difficulty}" + (f" · {', '.join(p.tags)}" if p.tags else "")
+            for p in puzzles[:25]]
+        e = discord.Embed(
+            title="🧩 What's the Play? — puzzles",
+            description="\n".join(lines), color=0x5865F2)
+        e.set_footer(text="&wtp <id> for a specific one · &wtp for one you haven't seen")
+        await ctx.reply(embed=e)
+        return
+
+    puzzle = None
+    if arg:
+        try:
+            puzzle = wtp.load(arg)
+        except wtp.PuzzleError as exc:
+            await ctx.reply(f"⚠️ {exc}")
+            return
+
+    async with ctx.typing():
+        await send_puzzle(ctx.channel, ctx.author, puzzle=puzzle, reply_to=ctx.message)
+
+
 @bot.command(name="help")
 async def help_cmd(ctx):
     e = discord.Embed(title="Algomancy Rules Bot", color=0x5865F2, description=(
@@ -1002,6 +1280,10 @@ async def help_cmd(ctx):
         "**`&p1p6 [seed]`** — A turn-1 live-draft pile of 16 from three random elements; "
         "keep 6. Tap buttons to pick, and I'll post your picks to the thread. Add a "
         "`seed` to replay or share an exact pack.\n\n"
+        "**`&wtp [id]`** — “What's the play?” Posts a board someone built, with a "
+        "question (can you win this turn? what do you block?) and a thread to work it "
+        "out in. 🔑 reveals the answer privately so you can check yourself. `&wtp list` "
+        "shows them all; a bare `&wtp` gives you one you haven't seen.\n\n"
         "**`&feedback [text]`** — Share feedback about the bot. With text, it's logged "
         "right away; with no text I open a thread where every message you send is recorded.\n\n"
         "**`&help`** — Show this message."
