@@ -837,6 +837,14 @@ def resource_line(side):
 
 _CARD_W = 176
 _CARD_H = round(_CARD_W * 1000 / 720)
+# The stat strip lives BELOW the art, not across the bottom of it — the bottom of
+# a card is its rules text, and the rules text is usually the puzzle. So a unit's
+# tile is taller than its card.
+_STRIP_H = 34
+_TILE_H = _CARD_H + _STRIP_H
+# The card's printed title bar (cost, name, power/toughness) as a fraction of its
+# height. Badges start below it so they never cover the numbers you're adding up.
+_TITLE_H = round(_CARD_H * 0.155)
 _HAND_W = 132
 _HAND_H = round(_HAND_W * 1000 / 720)
 _GAP = 12
@@ -930,8 +938,16 @@ def _die(draw, x, y, n):
 
 
 def _unit_tile(u, index, draw_on, x, y):
-    """Paste one unit's art at (x, y) and overlay its state: effective stats, the
-    damage it's marked with, its formation role, and anything under it."""
+    """Draw one unit at (x, y): its art, then a strip UNDER the art carrying the
+    state we've added (effective stats, damage), plus the badges that have to sit
+    on the card itself (its role, the counters on it, the cards under it).
+
+    Nothing we add is allowed to cover anything the card printed. The stat strip
+    goes below the art rather than across the bottom of it, because that's where
+    the rules text lives — and a puzzle usually turns on the rules text. The
+    badges start below the card's title bar, which is where the printed cost, name
+    and power/toughness are.
+    """
     from PIL import Image, ImageDraw
     name, card = u.resolved(index)
     canvas, draw = draw_on
@@ -944,13 +960,19 @@ def _unit_tile(u, index, draw_on, x, y):
         draw.rectangle([x, y, x + _CARD_W - 1, y + _CARD_H - 1],
                        outline=_ACCENT, width=3)
 
-    # Stat strip along the bottom: what the unit actually is right now.
+    # The strip, below the art. Its own dark panel, not an overlay.
     st = u.stats(index)
-    strip_h = 30
     if st:
-        sy = y + _CARD_H - strip_h
-        overlay = Image.new("RGBA", (_CARD_W, strip_h), (0, 0, 0, 205))
-        canvas.paste(overlay, (x, sy), overlay)
+        sy = y + _CARD_H
+        draw.rectangle([x, sy, x + _CARD_W - 1, sy + _STRIP_H - 1], fill=(12, 14, 20))
+
+        # Damage as a bar across the top of the strip as well as a number, so
+        # "nearly dead" reads at a glance when you're counting a whole board.
+        if u.damage:
+            frac = min(1.0, u.damage / max(1, st[1]))
+            draw.rectangle([x, sy, x + _CARD_W - 1, sy + 4], fill=(60, 20, 20))
+            draw.rectangle([x, sy, x + int((_CARD_W - 1) * frac), sy + 4], fill=_RED)
+
         font = _font(18)
         # Colour the stats if this unit ISN'T what its art says — from counters or
         # from a temporary buff, either way the printed number is now a lie.
@@ -959,40 +981,30 @@ def _unit_tile(u, index, draw_on, x, y):
             u.power < 0 or u.toughness < 0 or n < 0)
         colour = _GREEN if up and not down else _RED if down and not up else (
             _ACCENT if up else _TEXT)     # pulled both ways: just say "not printed"
-        draw.text((x + 7, sy + 5), f"{st[0]}/{st[1]}", font=font, fill=colour)
+        draw.text((x + 7, sy + 8), f"{st[0]}/{st[1]}", font=font, fill=colour)
         if u.damage:
             label = f"{u.damage} dmg"
             f2 = _font(14)
-            draw.text((x + _CARD_W - 7 - _text_w(draw, label, f2), sy + 8),
+            draw.text((x + _CARD_W - 7 - _text_w(draw, label, f2), sy + 11),
                       label, font=f2, fill=_RED)
-    elif not card:
-        pass                                     # placeholder already shows the name
 
-    # Damage is also drawn as a red bar across the card, so "nearly dead" reads at
-    # a glance — the number alone is easy to miss when you're counting a board.
-    if st and u.damage:
-        frac = min(1.0, u.damage / max(1, st[1]))
-        bar_y = y + _CARD_H - strip_h - 6
-        draw.rectangle([x, bar_y, x + _CARD_W - 1, bar_y + 5], fill=(60, 20, 20))
-        draw.rectangle([x, bar_y, x + int((_CARD_W - 1) * frac), bar_y + 5], fill=_RED)
-
-    # Role pill, top-left. Abbreviated to keep it off the card's printed name.
+    # Badges start below the card's printed title bar — the cost, the name and the
+    # printed power/toughness all live up there, and covering the stats we're
+    # asking you to add up would be a particularly silly thing to do.
+    top = y + _TITLE_H
     if u.role:
-        _pill(draw, x + 6, y + 6, ROLE_TAG[u.role], size=12,
+        _pill(draw, x + 7, top, ROLE_TAG[u.role], size=12,
               bg=_ATTACK if u.role == "attacking" else _BLOCK)
 
-    # Counters, top-right, drawn as the die you'd actually put on the unit — and
-    # kept visually apart from the mod pill below it, because a counter is a
-    # permanent thing on the board and a mod is a card underneath it.
-    top = y + 6
+    # Counters, drawn as the die you'd actually put on the unit, with the mod pill
+    # stacked under it — a counter sits ON the unit, a mod sits UNDER it.
     n = u.counter_count(index)
     if n:
-        top += _die(draw, x + _CARD_W - 6 - _DIE, top, n) + 4
-    # Mod count, under it.
+        top += _die(draw, x + _CARD_W - 7 - _DIE, top, n) + 4
     if u.mods:
         label = f"+{len(u.mods)}"
         w = _text_w(draw, label, _font(15)) + 12
-        _pill(draw, x + _CARD_W - 6 - w, top, label, bg=_ACCENT)
+        _pill(draw, x + _CARD_W - 7 - w, top, label, bg=_ACCENT)
 
 
 def _side_block(side, index, draw_on, x0, y0, *, flip, depth):
@@ -1010,7 +1022,7 @@ def _side_block(side, index, draw_on, x0, y0, *, flip, depth):
         rows = list(col) if not flip else list(reversed(col))
         pad_top = (depth - len(rows)) if flip else 0
         for i, u in enumerate(rows):
-            y = y0 + (i + pad_top) * (_CARD_H + _GAP)
+            y = y0 + (i + pad_top) * (_TILE_H + _GAP)
             _unit_tile(u, index, draw_on, x, y)
         x += _CARD_W + _GAP
     return x
@@ -1145,9 +1157,9 @@ def render_board_image(p, index=CARDS):
          + zone(p.opponent.hand or p.opponent.hand_count)
          + bar_h + _GAP
          + zone(p.opponent.resources)
-         + (opp_rows * _CARD_H + max(0, opp_rows - 1) * _GAP if opp_rows else 40)
+         + (opp_rows * _TILE_H + max(0, opp_rows - 1) * _GAP if opp_rows else 40)
          + mid_h
-         + (you_rows * _CARD_H + max(0, you_rows - 1) * _GAP if you_rows else 40)
+         + (you_rows * _TILE_H + max(0, you_rows - 1) * _GAP if you_rows else 40)
          + zone(p.you.resources)
          + _GAP + bar_h
          + zone(p.you.hand))
@@ -1183,7 +1195,7 @@ def render_board_image(p, index=CARDS):
 
     if opp_rows:
         _side_block(p.opponent, index, draw_on, _PAD, y, flip=True, depth=opp_rows)
-        y += opp_rows * _CARD_H + (opp_rows - 1) * _GAP
+        y += opp_rows * _TILE_H + (opp_rows - 1) * _GAP
     else:
         draw.text((_PAD + 4, y + 10), "no units in play",
                   font=_font(16, bold=False), fill=_MUTED)
@@ -1204,7 +1216,7 @@ def render_board_image(p, index=CARDS):
     # --- your side, from the middle back towards you ---
     if you_rows:
         _side_block(p.you, index, draw_on, _PAD, y, flip=False, depth=you_rows)
-        y += you_rows * _CARD_H + (you_rows - 1) * _GAP
+        y += you_rows * _TILE_H + (you_rows - 1) * _GAP
     else:
         draw.text((_PAD + 4, y + 10), "no units in play",
                   font=_font(16, bold=False), fill=_MUTED)

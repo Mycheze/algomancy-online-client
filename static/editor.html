@@ -113,6 +113,10 @@
   .slot.armed { border-color: var(--accent); border-style: solid; color: var(--accent);
                 background: rgba(124,137,255,.16); box-shadow: 0 0 0 3px rgba(124,137,255,.18); }
   .slot small { font-size: 9px; display: block; text-align: center; line-height: 1.2; }
+  /* A slot in a formation stands as tall as a placed unit (card + stat strip), so
+     the rows keep lining up across columns whether a column is full or empty —
+     column N facing column N is the whole point of the board. */
+  .formation .slot { height: var(--tile); aspect-ratio: auto; }
   /* A whole extra column you can start by dropping a card into it. */
   .col.newcol { opacity: .75; }
   .col.newcol:hover { opacity: 1; }
@@ -450,7 +454,7 @@ function unitTile(u, at) {
   const note = u.note ? `<span class="unote">${escAttr(u.note)}</span>` : '';
   const cls = 'wu' + ((u.mods && u.mods.length) ? ' modded' : '') + (same(at, SEL) ? ' sel' : '');
   return `<div class="${cls}" data-at='${escAttr(JSON.stringify(at))}' title="${escAttr(u.card)} — click to edit">
-    ${art}${role}${badges}${note}${bar}${stats}</div>`;
+    <div class="art">${art}${role}${badges}${note}</div>${bar}${stats}</div>`;
 }
 
 const slot = (at, label) =>

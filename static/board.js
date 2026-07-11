@@ -87,8 +87,11 @@
     const badges = (dieHtml(u.counters) || modn)
       ? `<div class="badges">${dieHtml(u.counters)}${modn}</div>` : '';
 
+    // The art, with only the badges that HAVE to sit on it, and then the strip
+    // below it. Nothing we add covers anything the card printed: the bottom of a
+    // card is its rules text, and the rules text is usually the puzzle.
     return `<div class="${cls}" data-card="${esc(u.card)}" data-full="${esc(u.art_url || '')}" title="${esc(tip)}">
-      ${art}${role}${badges}${note}${bar}${stats}</div>`;
+      <div class="art">${art}${role}${badges}${note}</div>${bar}${stats}</div>`;
   }
 
   // A face-up card in a hand or bin — same tile, no combat state.
