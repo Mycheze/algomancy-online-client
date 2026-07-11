@@ -122,10 +122,55 @@ def main():
     check("the payload flags it as a token", rp["token"] is True and rp["x"] == 2)
     check("and carries its computed body", (rp["power"], rp["toughness"]) == (2, 2))
 
-    section("resources are mana AND affinity")
-    check("mana is the resource count", p.opponent.mana == 3, p.opponent.mana)
-    check("affinity is per element", p.opponent.affinity("earth") == 2)
-    check("an element you have none of is 0 affinity", p.opponent.affinity("water") == 0)
+    section("resources are CARDS with a state")
+    # Manual, "The Planning Phase" + Glossary, "Resources":
+    #   dormant  = face down: no affinity, no mana
+    #   open     = face up, un-expended: affinity AND 1 mana
+    #   expended = spent this turn: "still count towards threshold requirements,
+    #              but cannot be expended for mana again"
+    # Sorted into game order (fire, water, earth, metal, wood) rather than however
+    # the JSON happened to list them, so two identical boards produce identical files.
+    check("the old {\"earth\": 3} shorthand still loads (the seed puzzles use it)",
+          [r.kind for r in p.opponent.resources] == ["fire", "earth", "earth"],
+          [(r.kind, r.state) for r in p.opponent.resources])
+    check("and they come in open", all(r.state == "open" for r in p.opponent.resources))
+
+    s = wtp.from_json({**SAMPLE, "you": {"resources": [
+        "earth", "earth", "earth:expended", "water:dormant", "shard"]}}).you
+    check("mana counts ONLY the open ones", s.mana == 3, s.mana)
+    check("an expended resource still gives affinity", s.affinity("earth") == 3,
+          s.affinity("earth"))
+    check("a dormant one gives none", s.affinity("water") == 0)
+    check("a shard gives no affinity, ever", s.affinity("shard") == 0)
+    check("but a shard still gives mana", any(r.kind == "shard" and r.mana for r in s.resources))
+    check("resource_counts is what's on the table, whatever state",
+          s.resource_counts() == {"earth": 3, "water": 1, "shard": 1}, s.resource_counts())
+    check("the line reads right", wtp.resource_line(s)
+          == "3 mana open · 1 water, 3 earth, 1 shard (1 expended, 1 dormant)",
+          wtp.resource_line(s))
+
+    check("a dormant resource shows its FACE DOWN card",
+          wtp.payload(wtp.from_json({**SAMPLE, "you": {"resources": ["fire:dormant"]}}),
+                      art_url=lambda n: n)["you"]["resources"][0]["art_url"] == wtp.CARDBACK)
+    check("an open one shows its own card",
+          wtp.payload(wtp.from_json({**SAMPLE, "you": {"resources": ["fire"]}}),
+                      art_url=lambda n: n)["you"]["resources"][0]["art_url"] == "Fire Resource")
+    check("every resource kind maps to a real card",
+          all(wtp.CARDS.lookup(wtp.RESOURCE_CARD[k])[0] for k in wtp.RESOURCE_KINDS),
+          [k for k in wtp.RESOURCE_KINDS if not wtp.CARDS.lookup(wtp.RESOURCE_CARD[k])[0]])
+    check("and there IS a cardback card to draw face-down cards with",
+          wtp.CARDS.art_path(wtp.CARDBACK) is not None)
+
+    check("resources serialise to the terse form", wtp.to_json(
+        wtp.from_json({**SAMPLE, "you": {"resources": ["earth", "earth:expended"]}})
+    )["you"]["resources"] == ["earth", "earth:expended"])
+    for bad, why in [(["lava"], "bad kind"), (["earth:sideways"], "bad state")]:
+        try:
+            wtp.from_json({**SAMPLE, "you": {"resources": bad}})
+            check(f"rejects {why}", False)
+        except wtp.PuzzleError:
+            check(f"rejects {why}", True)
+
     check("elements track combos.COLORS (expansion-ready)",
           wtp.ELEMENTS == ("fire", "water", "earth", "metal", "wood"), wtp.ELEMENTS)
 

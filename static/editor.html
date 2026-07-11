@@ -90,10 +90,10 @@
   .wu.sel { outline: 2px solid var(--good); outline-offset: -2px; }
   .wu { cursor: pointer; }
   .zone .slot { width: calc(var(--cw) * .82); flex: none; }
-  .rowtag {
-    position: absolute; left: 3px; bottom: 3px; font-size: 8px; letter-spacing: .05em;
-    color: var(--muted); background: rgba(0,0,0,.6); padding: 1px 3px; border-radius: 3px;
-  }
+  /* A resource slot is the size of a resource card, not a unit card. */
+  .rzone .slot.rslot { width: 62px; height: 86px; aspect-ratio: auto; font-size: 16px; }
+  .rc { cursor: pointer; }
+  .rc.sel { outline: 2px solid var(--good); outline-offset: 2px; }
   .col { position: relative; }
 
   /* ---- card palette ---- */
@@ -245,6 +245,7 @@ const escAttr = s => String(s == null ? '' : s).replace(/[&<>"']/g,
   c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 let ICONS = {}, CARD_LIST = [], X_CARDS = new Set(), EDIT_KEY_REQUIRED = false;
+let RESOURCE_KINDS = [], CARDBACK_URL = '';
 const isToken = name => X_CARDS.has((name || '').trim().toLowerCase());
 
 // Where the next picked card will go: {side, col, row} on the board, or
@@ -264,8 +265,8 @@ function blankPuzzle() {
     author: localStorage.getItem('wtp_author') || '',
     tags: [], notes: '', phase: 'Battle', turn: 'you', initiative: 'you',
     solution: '', hints: [],
-    you: { name: 'You', life: 30, resources: {}, columns: [], hand: [], bin: [] },
-    opponent: { name: 'Opponent', life: 30, resources: {}, columns: [], hand: [], bin: [], hand_count: 0 },
+    you: { name: 'You', life: 30, resources: [], columns: [], hand: [], bin: [] },
+    opponent: { name: 'Opponent', life: 30, resources: [], columns: [], hand: [], bin: [], hand_count: 0 },
   };
 }
 let P = blankPuzzle();
@@ -303,39 +304,33 @@ field('turn', 'turn');
 field('initiative', 'initiative');
 
 // ---- who: life + resources (mana AND affinity) ----
+// Name, life, and how many cards they're holding. Resources are NOT here any
+// more — they're cards, so you place them on the board like everything else, and
+// the bar shows what they add up to.
 function whoHtml(key, s) {
-  const res = ELEMENTS.map(e => `<div>
-    <label>${ICONS[e] ? `<img src="${ICONS[e]}" alt="${e}">` : ''}${e.slice(0, 5)}</label>
-    <input type="number" min="0" max="20" value="${(s.resources || {})[e] || 0}"
-      data-w="res" data-side="${key}" data-el="${e}"></div>`).join('');
   return `<div class="whobox">
     <h4>${key === 'opponent' ? '🔻 Opponent (top)' : '🔺 You (bottom)'}</h4>
     <div class="row">
       <div class="f"><label>Name</label>
         <input type="text" value="${escAttr(s.name)}" data-w="name" data-side="${key}"></div>
-      <div class="f" style="max-width:80px"><label>Life</label>
+      <div class="f" style="max-width:90px"><label>Life</label>
         <input type="number" value="${s.life}" data-w="life" data-side="${key}"></div>
+      ${key === 'opponent' ? `<div class="f" style="max-width:110px"><label>Cards in hand</label>
+        <input type="number" min="0" value="${s.hand_count || 0}" data-w="handcount" data-side="${key}"></div>` : ''}
     </div>
-    ${key === 'opponent' ? `<div class="f"><label>Cards in hand (face-down)</label>
-      <input type="number" min="0" value="${s.hand_count || 0}" data-w="handcount" data-side="${key}"></div>` : ''}
-    <label>Resources in play — their mana <i>and</i> their affinity</label>
-    <div class="res-grid">${res}</div>
   </div>`;
 }
 function renderWho() { $('who2').innerHTML = whoHtml('opponent', P.opponent) + whoHtml('you', P.you); }
 
 $('who2').addEventListener('input', e => {
-  const { w, side, el: elem } = e.target.dataset;
+  const { w, side } = e.target.dataset;
   if (!w) return;
   const s = P[side];
   if (w === 'name') s.name = e.target.value;
   else if (w === 'life') s.life = +e.target.value || 0;
   else if (w === 'handcount') s.hand_count = Math.max(0, +e.target.value || 0);
-  else if (w === 'res') {
-    const n = Math.max(0, +e.target.value || 0);
-    if (n) s.resources[elem] = n; else delete s.resources[elem];
-  }
-  schedule();
+  else return;
+  renderBoard(); schedule();
 });
 
 // ---- hints ----
@@ -421,20 +416,43 @@ function formationHtml(sideKey, side, payloadSide, cols, flip) {
   return `<div class="formation ${flip ? 'opp' : 'you'}" style="--cols:${cols}">${cells.join('')}</div>`;
 }
 
-function resHtml(side) {
-  const bits = ELEMENTS.filter(e => (side.resources || {})[e]).map(e =>
-    `<span class="res">${ICONS[e] ? `<img src="${ICONS[e]}" alt="${e}">` : e}${side.resources[e]}</span>`);
-  if (!bits.length) return '<span class="hidden-hand">no resources</span>';
-  const mana = ELEMENTS.reduce((n, e) => n + (side.resources[e] || 0), 0);
-  return `<span class="mana">${mana} mana</span>` + bits.join('');
+// Mana and affinity are computed by the server, so the bar always agrees with the
+// cards sitting on the table.
+function resHtml(key, side) {
+  const pay = LAST && LAST[key];
+  if (!side.resources.length) return '<span class="hidden-hand">no resources</span>';
+  const aff = (pay && pay.affinity) || {};
+  const bits = Object.keys(aff).map(e =>
+    `<span class="res">${ICONS[e] ? `<img src="${ICONS[e]}" alt="${e}">` : e}${aff[e]}</span>`);
+  return `<span class="mana">${(pay && pay.mana) || 0} mana</span>` + bits.join('');
 }
 
 function pbarHtml(key, side) {
-  const hand = key === 'opponent' && side.hand_count
-    ? `<span class="hidden-hand">${side.hand_count} in hand</span>` : '';
   return `<div class="pbar"><span class="pname">${escAttr(side.name)}</span>
-    <span class="life">${side.life}<small> life</small></span>${hand}
-    <span class="spacer"></span>${resHtml(side)}</div>`;
+    <span class="life">${side.life}<small> life</small></span>
+    <span class="spacer"></span>${resHtml(key, side)}</div>`;
+}
+
+// A resource is a CARD on the table with a state: open (1 mana), expended (tapped
+// — still gives affinity, can't be spent again), or dormant (face down — nothing).
+function resourceRow(key, side, payloadSide) {
+  const tiles = side.resources.map((r, i) => {
+    const at = { side: key, zone: 'resources', i };
+    const pr = (payloadSide && payloadSide.resources && payloadSide.resources[i]) || {};
+    const cls = 'rc' + (r.state === 'expended' ? ' tapped' : r.state === 'dormant' ? ' dormant' : '')
+      + (same(at, SEL) ? ' sel' : '');
+    return `<div class="${cls}" data-at='${escAttr(JSON.stringify(at))}'
+      title="${escAttr(r.kind)} — ${escAttr(r.state)} · click to change">
+      <img src="${escAttr(pr.art_url || '')}" alt="${escAttr(r.kind)}">
+      ${r.state === 'dormant' ? `<span class="rtag">${escAttr(r.kind[0].toUpperCase())}</span>` : ''}
+    </div>`;
+  }).join('');
+  return `<div class="zone"><div class="zlabel">RESOURCES</div>
+    <div class="rzone">${tiles}
+      <div class="slot rslot${same({ side: key, zone: 'resources', i: side.resources.length }, ARMED) ? ' armed' : ''}"
+        data-at='${escAttr(JSON.stringify({ side: key, zone: 'resources', i: side.resources.length }))}'>
+        <span>＋</span></div>
+    </div></div>`;
 }
 
 function zoneHtml(label, sideKey, zone, names, payloadCards) {
@@ -451,22 +469,51 @@ function zoneHtml(label, sideKey, zone, names, payloadCards) {
     <div class="zrow">${tiles}${slot({ side: sideKey, zone, i: names.length })}</div></div>`;
 }
 
+// The opponent's face-down hand: the number you set, drawn as card backs.
+function backsHtml(n) {
+  if (!n) return '';
+  return `<div class="backs">${Array.from({ length: Math.min(n, 12) },
+    () => `<img src="${escAttr(CARDBACK_URL)}" alt="face-down card">`).join('')}</div>`;
+}
+
 function renderBoard() {
-  const pay = LAST || { you: { columns: [], hand: [], bin: [] }, opponent: { columns: [], hand: [], bin: [] } };
+  const empty = { columns: [], hand: [], bin: [], resources: [] };
+  const pay = LAST || { you: empty, opponent: empty };
   // One extra column per side: the empty one you can start.
   const cols = Math.max(P.you.columns.length, P.opponent.columns.length) + 1;
+  const oppName = (P.opponent.name || 'Opponent').toUpperCase();
   const status = `${P.phase} phase · ${P.turn === 'you' ? 'Your turn' : escAttr(P.opponent.name) + "'s turn"}`
     + ` · ${P.initiative === 'you' ? 'You have' : escAttr(P.opponent.name) + ' has'} initiative`;
 
+  // Laid out like the table: their hand at the far edge, then their life, their
+  // resources, their formation; the middle line; then yours coming back towards
+  // you. Bins off to the side, where a discard pile actually sits.
   $('board').innerHTML = `<div class="wtp-board${showTotals ? ' totals' : ''}"><div class="wtp-inner">
-    ${pbarHtml('opponent', P.opponent)}
-    ${formationHtml('opponent', P.opponent, pay.opponent, cols, true)}
-    <div class="midline"><span>${status}</span></div>
-    ${formationHtml('you', P.you, pay.you, cols, false)}
-    ${pbarHtml('you', P.you)}
-    ${zoneHtml('YOUR HAND', 'you', 'hand', P.you.hand, pay.you.hand)}
-    ${zoneHtml('YOUR BIN', 'you', 'bin', P.you.bin, pay.you.bin)}
-    ${zoneHtml("OPPONENT'S BIN", 'opponent', 'bin', P.opponent.bin, pay.opponent.bin)}
+    <div class="wtp-main">
+      <div class="zone"><div class="zlabel">${escAttr(oppName)}'S HAND</div>
+        <div class="zrow">
+          ${P.opponent.hand.map((n, i) => {
+            const at = { side: 'opponent', zone: 'hand', i };
+            const c = (pay.opponent.hand && pay.opponent.hand[i]) || { card: n };
+            return `<div class="wu${same(at, SEL) ? ' sel' : ''}" data-at='${escAttr(JSON.stringify(at))}'
+              title="${escAttr(c.card)} — face up to the solver"><img src="${escAttr(c.art_url || '')}" alt=""></div>`;
+          }).join('')}
+          ${slot({ side: 'opponent', zone: 'hand', i: P.opponent.hand.length })}
+          ${backsHtml(P.opponent.hand_count)}
+        </div></div>
+      ${pbarHtml('opponent', P.opponent)}
+      ${resourceRow('opponent', P.opponent, pay.opponent)}
+      ${formationHtml('opponent', P.opponent, pay.opponent, cols, true)}
+      <div class="midline"><span>${status}</span></div>
+      ${formationHtml('you', P.you, pay.you, cols, false)}
+      ${resourceRow('you', P.you, pay.you)}
+      ${pbarHtml('you', P.you)}
+      ${zoneHtml('YOUR HAND', 'you', 'hand', P.you.hand, pay.you.hand)}
+    </div>
+    <div class="wtp-rail">
+      ${zoneHtml(oppName + "'S BIN", 'opponent', 'bin', P.opponent.bin, pay.opponent.bin)}
+      ${zoneHtml('YOUR BIN', 'you', 'bin', P.you.bin, pay.you.bin)}
+    </div>
   </div></div>`;
 }
 
@@ -482,8 +529,8 @@ $('board').addEventListener('click', e => {
     if (ARMED) $('psearch').focus();
     return;
   }
-  const u = e.target.closest('.wu');
-  if (u) {
+  const u = e.target.closest('.wu, .rc');
+  if (u && u.dataset.at) {
     const at = JSON.parse(u.dataset.at);
     SEL = same(at, SEL) ? null : at;
     ARMED = null;
@@ -498,15 +545,42 @@ function placeLabel(at) {
   return `${who} · column ${at.col + 1} · ${at.row === 0 ? 'front row' : 'back row'}`;
 }
 
+const armedResources = () => ARMED && ARMED.zone === 'resources';
+
+// The palette shows either the card search or the seven resources. Its contents
+// are only rebuilt when it switches between the two — rebuilding on every click
+// would replace the very card you're clicking (so "click Earth three times" would
+// land only the first), and would throw away your scroll position in the results.
+let PMODE = null;
+
 function renderPalette() {
   const pal = $('palette');
   pal.classList.toggle('idle', !ARMED);
   $('pcancel').classList.toggle('hidden', !ARMED);
+  // A resource row takes resource cards and nothing else, so there's no point
+  // searching the whole set for a Fire Resource.
+  const res = !!armedResources();
+  $('psearch').classList.toggle('hidden', res);
   const t = $('ptarget');
   t.classList.toggle('none', !ARMED);
   t.textContent = ARMED
-    ? `Placing into: ${placeLabel(ARMED)}`
+    ? (res
+      ? `Adding resources to ${P[ARMED.side].name || ARMED.side} — click one per resource`
+      : `Placing into: ${placeLabel(ARMED)}`)
     : 'Click an empty slot on the board to place a card';
+
+  const mode = res ? 'resources' : 'cards';
+  if (mode === PMODE) return;
+  PMODE = mode;
+  if (res) renderResourcePicks(); else runSearch();
+}
+
+// The seven things that can be a resource: the five elements, plus Shard and
+// Prismite (which expend for mana like any other but give no affinity).
+function renderResourcePicks() {
+  $('results').innerHTML = RESOURCE_KINDS.map(r => `<div class="rescard" data-kind="${escAttr(r.kind)}">
+    <img src="${escAttr(r.art_url || '')}" alt="${escAttr(r.card)}" loading="lazy">
+    <div class="rname">${escAttr(r.kind)}</div></div>`).join('');
 }
 
 $('pcancel').addEventListener('click', () => {
@@ -554,9 +628,16 @@ function renderResults(names) {
 $('results').addEventListener('click', e => {
   const card = e.target.closest('.rescard');
   if (!card) return;
-  const name = card.dataset.name;
   if (!ARMED) { setStatus('Click a slot on the board first.', 'err'); return; }
-  place(ARMED, name);
+  if (armedResources()) {
+    // Click Earth four times, get four earths — that's the fast way to lay out a
+    // resource row, so the slot stays armed.
+    P[ARMED.side].resources.splice(ARMED.i, 0, { kind: card.dataset.kind, state: 'open' });
+    ARMED = { ...ARMED, i: ARMED.i + 1 };
+    renderBoard(); renderPalette(); schedule();
+    return;
+  }
+  place(ARMED, card.dataset.name);
 });
 
 function place(at, name) {
@@ -589,6 +670,29 @@ function renderInspector() {
   const box = $('inspector');
   if (!SEL) { box.classList.add('hidden'); box.innerHTML = ''; return; }
   box.classList.remove('hidden');
+
+  // A resource: what it's worth depends entirely on its state, so that's the
+  // whole inspector.
+  if (SEL.zone === 'resources') {
+    const r = P[SEL.side].resources[SEL.i];
+    if (!r) { SEL = null; box.classList.add('hidden'); return; }
+    const STATES = [
+      ['open', 'Open', '1 mana, gives affinity'],
+      ['expended', 'Expended (tapped)', 'spent this turn — still gives affinity, no mana'],
+      ['dormant', 'Dormant (face down)', 'no affinity, no mana'],
+    ];
+    box.innerHTML = `<div class="ihead">
+        <span class="iname">${escAttr(r.kind)} resource</span>
+        <span class="iwhere">${escAttr(P[SEL.side].name)}</span></div>
+      <div class="iacts">
+        ${STATES.map(([v, l, why]) => `<button data-i="state" data-v="${v}"
+          class="${r.state === v ? 'primary' : ''}" title="${escAttr(why)}">${l}</button>`).join('')}
+      </div>
+      <div class="tokhint">${escAttr(STATES.find(s => s[0] === r.state)[2])}</div>
+      <div class="iacts"><button class="danger" data-i="remove">🗑 Remove</button>
+        <button data-i="close">Done</button></div>`;
+    return;
+  }
 
   if (SEL.zone) {
     const name = P[SEL.side][SEL.zone][SEL.i];
@@ -656,6 +760,11 @@ $('inspector').addEventListener('click', e => {
   const act = b.dataset.i;
   const s = P[SEL.side];
 
+  if (act === 'state') {
+    s.resources[SEL.i].state = b.dataset.v;
+    renderBoard(); renderInspector(); schedule();
+    return;
+  }
   if (act === 'close') SEL = null;
   else if (act === 'remove') {
     if (SEL.zone) s[SEL.zone].splice(SEL.i, 1);
@@ -792,7 +901,8 @@ $('open').addEventListener('change', async () => {
 // next save.
 function sideFrom(s) {
   return {
-    name: s.name, life: s.life, resources: { ...s.resources },
+    name: s.name, life: s.life,
+    resources: (s.resources || []).map(r => ({ kind: r.kind, state: r.state })),
     hand: (s.hand || []).map(c => c.card), bin: (s.bin || []).map(c => c.card),
     hand_count: s.hand_count || 0,
     columns: (s.columns || []).map(col => col.map(u => ({
@@ -835,6 +945,8 @@ function syncAll() {
 (async function boot() {
   const cfg = await fetch('/api/wtp/config').then(r => r.json()).catch(() => ({}));
   CARD_LIST = cfg.cards || [];
+  RESOURCE_KINDS = cfg.resource_kinds || [];
+  CARDBACK_URL = cfg.cardback_url || '';
   X_CARDS = new Set((cfg.x_cards || []).map(n => n.toLowerCase()));
   ICONS = cfg.icons || {};
   ELEMENTS = cfg.elements || ELEMENTS;

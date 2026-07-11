@@ -94,26 +94,48 @@
     return `<div class="formation ${flip ? 'opp' : 'you'}" style="--cols:${cols}">${cells.join('')}</div>`;
   }
 
+  // The numbers still belong on the bar even though the resource CARDS are on the
+  // board now — you shouldn't have to count a row of art to find out how much
+  // mana is open. Mana = the un-expended ones; affinity = every one that isn't
+  // face down (an expended resource still counts towards a card's element
+  // requirement, it just can't be spent again).
   function resHtml(side, icons) {
-    const bits = Object.keys(side.resources || {}).map(e => {
+    const aff = side.affinity || {};
+    const bits = Object.keys(aff).map(e => {
       const ic = icons && icons[e];
       const label = ic ? `<img src="${esc(ic)}" alt="${esc(e)}">` : esc(titleCase(e));
-      return `<span class="res" title="${esc(e)} affinity">${label}${side.resources[e]}</span>`;
+      return `<span class="res" title="${esc(e)} affinity — expended resources still count">${label}${aff[e]}</span>`;
     });
-    if (!bits.length) return '<span class="hidden-hand">no resources</span>';
-    // Mana and affinity are the same fact: how many resources you have is your
-    // mana; which elements they are is your affinity. Show both together.
-    return `<span class="mana" title="total mana available">${side.mana} mana</span>` + bits.join('');
+    if (!side.resources || !side.resources.length) {
+      return '<span class="hidden-hand">no resources</span>';
+    }
+    return `<span class="mana" title="mana open right now (un-expended resources)">${side.mana} mana</span>` + bits.join('');
   }
 
-  function pbarHtml(side, icons, opts) {
-    const hand = opts.showHandCount && side.hand_count
-      ? `<span class="hidden-hand">${side.hand_count} in hand</span>` : '';
+  function pbarHtml(side, icons) {
     return `<div class="pbar">
       <span class="pname">${esc(side.name)}</span>
       <span class="life">${side.life}<small> life</small></span>
-      ${hand}<span class="spacer"></span>${resHtml(side, icons)}
+      <span class="spacer"></span>${resHtml(side, icons)}
     </div>`;
+  }
+
+  // A resource card. Tapped sideways if it's been expended, face down if dormant.
+  function resourceHtml(r) {
+    const cls = 'rc' + (r.state === 'expended' ? ' tapped' : r.state === 'dormant' ? ' dormant' : '');
+    const tip = r.state === 'expended' ? `${r.kind} — expended (still gives affinity, no mana)`
+      : r.state === 'dormant' ? `${r.kind} — dormant (face down: no affinity, no mana)`
+        : `${r.kind} — open (1 mana)`;
+    return `<div class="${cls}" data-kind="${esc(r.kind)}" data-state="${esc(r.state)}" title="${esc(tip)}">
+      <img src="${esc(r.art_url || '')}" alt="${esc(r.card)}" loading="lazy">
+      ${r.state === 'dormant' ? `<span class="rtag">${esc(r.kind[0].toUpperCase())}</span>` : ''}
+    </div>`;
+  }
+
+  function resourceRow(side) {
+    if (!side.resources || !side.resources.length) return '';
+    return `<div class="zone"><div class="zlabel">RESOURCES</div>
+      <div class="rzone">${side.resources.map(resourceHtml).join('')}</div></div>`;
   }
 
   function zoneHtml(label, cards) {
@@ -122,18 +144,39 @@
       <div class="zrow">${cards.map(cardHtml).join('')}</div></div>`;
   }
 
+  // The opponent's hand: what you can actually see of it — any cards the puzzle
+  // says are face up, then the rest as backs.
+  function handHtml(label, side) {
+    const backs = side.hand_count
+      ? `<div class="backs">${Array.from({ length: Math.min(side.hand_count, 12) },
+          () => `<img src="${esc(side.cardback_url || '')}" alt="face-down card">`).join('')}</div>`
+      : '';
+    const faceUp = (side.hand || []).map(cardHtml).join('');
+    if (!backs && !faceUp) return '';
+    return `<div class="zone"><div class="zlabel">${esc(label)}</div>
+      <div class="zrow">${faceUp}${backs}</div></div>`;
+  }
+
   function boardHtml(p, opts) {
     const icons = opts.icons || {};
     const cols = Math.max(p.you.columns.length, p.opponent.columns.length, 1);
+    const oppName = (p.opponent.name || 'Opponent').toUpperCase();
     return `<div class="wtp-board${opts.totals ? ' totals' : ''}"><div class="wtp-inner">
-      ${pbarHtml(p.opponent, icons, { showHandCount: true })}
-      ${formationHtml(p.opponent, cols, true)}
-      <div class="midline"><span>${esc(p.status || '')}</span></div>
-      ${formationHtml(p.you, cols, false)}
-      ${pbarHtml(p.you, icons, {})}
-      ${zoneHtml('YOUR HAND', p.you.hand)}
-      ${zoneHtml('YOUR BIN', p.you.bin)}
-      ${zoneHtml((p.opponent.name || 'OPPONENT').toUpperCase() + "'S BIN", p.opponent.bin)}
+      <div class="wtp-main">
+        ${handHtml(oppName + "'S HAND", p.opponent)}
+        ${pbarHtml(p.opponent, icons)}
+        ${resourceRow(p.opponent)}
+        ${formationHtml(p.opponent, cols, true)}
+        <div class="midline"><span>${esc(p.status || '')}</span></div>
+        ${formationHtml(p.you, cols, false)}
+        ${resourceRow(p.you)}
+        ${pbarHtml(p.you, icons)}
+        ${zoneHtml('YOUR HAND', p.you.hand)}
+      </div>
+      <div class="wtp-rail">
+        ${zoneHtml(oppName + "'S BIN", p.opponent.bin)}
+        ${zoneHtml('YOUR BIN', p.you.bin)}
+      </div>
     </div></div>`;
   }
 

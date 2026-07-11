@@ -31,11 +31,57 @@
 .wtp .tag.hard   { color: #f08a8a; border-color: #6d3535; }
 
 /* --- the board --- */
+/* Laid out like the table: their hand at the far edge, then their life, their
+   resources, their formation; the middle line; then yours coming back towards
+   you, ending in your hand. The bins sit off to the side, where a discard pile
+   actually sits. */
 .wtp-board {
   background: #10121a; border: 1px solid var(--line); border-radius: 12px;
   padding: 12px; overflow-x: auto;
 }
-.wtp-inner { min-width: min-content; }
+.wtp-inner {
+  min-width: min-content;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px;
+  align-items: stretch;
+}
+.wtp-main { min-width: 0; }
+/* The side rail: their bin at the top of the table, yours at the bottom. */
+.wtp-rail {
+  display: flex; flex-direction: column; justify-content: space-between;
+  gap: 12px; border-left: 1px solid var(--line); padding-left: 12px;
+}
+.wtp-rail:empty { display: none; }
+.wtp-rail .zone { margin: 0; }
+.wtp-rail .zrow { flex-direction: column; }
+
+/* A hand held face-down — the opponent's. Overlapped, the way you hold cards. */
+.backs { display: flex; }
+.backs img {
+  width: calc(var(--cw) * .72); border-radius: 6px; display: block;
+  margin-right: calc(var(--cw) * -.42); box-shadow: -2px 0 4px rgba(0,0,0,.5);
+}
+.backs img:last-child { margin-right: 0; }
+
+/* Resources, as the cards they are. An expended one is TAPPED (turned sideways)
+   — that's the game's own way of showing it's been spent — and a dormant one is
+   face down, because that is literally what it is on the table. */
+.rzone { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; margin: 7px 0; }
+.rc { position: relative; width: 62px; height: 86px; flex: none; border-radius: 5px; }
+.rc img { width: 62px; height: 86px; border-radius: 5px; display: block; }
+.rc.tapped { width: 86px; height: 62px; }
+/* Rotating a 62×86 card about its centre leaves an 86×62 footprint; this nudge
+   lands that footprint exactly on the (now landscape) box. */
+.rc.tapped img { position: absolute; left: 12px; top: -12px; transform: rotate(90deg); }
+.rc.dormant img { opacity: .6; }
+.rc.dormant::after {
+  content: "dormant"; position: absolute; inset: auto 0 4px; text-align: center;
+  font-size: 8px; letter-spacing: .04em; color: #cfd3e0;
+  background: rgba(0,0,0,.7); padding: 1px 0;
+}
+.rc .rtag {
+  position: absolute; top: 3px; left: 3px; font-size: 8px; font-weight: 800;
+  background: rgba(0,0,0,.72); color: #fff; padding: 1px 3px; border-radius: 3px;
+}
 
 /* Player status bar: life, mana, affinity. Mana and affinity are the same fact
    in Algomancy (resources in play), so they're shown together. */

@@ -375,22 +375,55 @@ things a new player has to grind: **combat math**, blocking, when to hold a tric
 The model isn't a generic card-game one — getting the geometry wrong would get the
 answers wrong:
 
+It's laid out like the table, and everything on it is a card:
+
+```
+  their hand (face down)                    │
+  them:  life · mana                        │   their bin
+  their resources  (tapped = expended)      │
+  their formation                           │
+  ──────────────  the phase  ───────────    │
+  your formation                            │
+  your resources                            │
+  you:   life · mana                        │   your bin
+  your hand (face up)                       │
+```
+
 - Units sit in **columns**, at most **two deep** (a formation "has a front and back
   row but can scale infinitely in width"). A column is the unit of combat, and both
   renderers lay the two sides out as **one aligned grid**, so column *N* faces
   column *N* — because a defending column blocks the attacking column opposite it.
 - The **front row of each side is the row nearest the middle line**, the way it
   sits on the table. A lone unit stands in the front row.
-- **Resources are per-element counts**, because in Algomancy that one number is
-  both your **mana** (how many you have) and your **affinity** (which elements they
-  are). A puzzle that just said "5 mana" couldn't tell you whether the card in your
-  hand is castable.
 - A unit carries stat **modifiers** (not stats): one field covers a +1/+1 counter, a
   buff, and a Virus's -7/-7 alike, with the printed card as the source of truth.
   Damage marked, formation role, and grafted/augmented cards underneath it are all
   on the board too.
 
 Anything the model can't say ("assume they have no tricks") goes in free-text notes.
+
+### Resources are cards, and their state is the whole point
+
+A resource isn't a number on a scoresheet — it's a card on the table with a state
+(Manual, "The Planning Phase"; Glossary, "Resources"):
+
+| state | what it's worth | how it's drawn |
+| --- | --- | --- |
+| **open** | affinity **and** 1 mana | face up |
+| **expended** | "still count towards threshold requirements, but cannot be expended for mana again" — affinity, **no** mana | **tapped** (turned sideways), which is the game's own convention |
+| **dormant** | face down: **no** affinity, **no** mana | face down (the actual Cardback) |
+
+So **mana = the open ones**, and **affinity = every one that isn't dormant**. Shards
+and Prismites expend for mana like any other but give **no affinity**, so they're
+kinds alongside the five elements.
+
+Collapsing this to a single number would make a whole class of puzzle unaskable —
+"you've already spent three, can you *still* cast it?" is most of what makes a play
+tight. The bar still shows the totals, because you shouldn't have to count a row of
+art to find out how much mana is open.
+
+In a puzzle file they're terse: `"resources": ["earth", "earth", "earth:expended",
+"shard"]`. The old `{"earth": 3}` shorthand still loads (it means three open earths).
 
 **Column totals are hidden by default, on purpose** — adding up a column is the
 exercise. A 🧮 button reveals them when you want to check yourself.
@@ -431,13 +464,14 @@ precisely the card you most want to build a puzzle out of.
 
 You build the board by pointing at it, not by describing it:
 
-1. **Click an empty slot** — a front row, a back row, a new column, the hand, a bin.
+1. **Click an empty slot** — a front row, a back row, a new column, a hand, a bin,
+   or the resource row.
 2. **Search** by name, or by what the card *does* ("2/2 that draws when it dies" —
    name matching is local and instant; longer queries also hit the card search).
 3. **Click a card** and it's there.
 4. **Click a placed card** to adjust it: X (for tokens), ±power/±toughness, damage,
    formation role, mods underneath it, a note. Or move its column, swap front/back,
-   remove it.
+   remove it. Click a **resource** to set it open / expended / dormant.
 
 There's no separate preview pane, because **the board you're editing is the board a
 player sees** — it's rendered from the *server's* payload (`POST /api/wtp/preview`),
@@ -445,8 +479,9 @@ so card names are resolved and stats computed by the same code that will serve t
 puzzle. It cannot lie about what they'll get. Empty columns are never stored; the
 "＋ column" slot is just an offer, so what's on disk is always a legal board.
 
-Life, resources, phase and initiative stay as plain form fields — they aren't cards,
-so there's nothing to point at.
+Life, hand size, phase and initiative stay as plain form fields — they aren't cards,
+so there's nothing to point at. Everything that *is* a card, including resources,
+you put on the board.
 
 Validation warns about the mistakes that would otherwise render as an empty grey box
 (typo'd card name, an already-dead unit, an illegal graft, a token with no X, a
@@ -481,7 +516,7 @@ Endpoints: `/api/wtp/list`, `/api/wtp/next`, `/api/wtp/<id>`, `/api/wtp/<id>/
 solution`, `/api/wtp/<id>/board.png`, `POST /api/wtp/{save,preview,attempt}`,
 `DELETE /api/wtp/<id>`. Deep-link `/?wtp=<id>` opens an exact puzzle.
 
-Tested in **`test_wtp.py`** (`.venv/bin/python test_wtp.py`) — 119 offline checks:
+Tested in **`test_wtp.py`** (`.venv/bin/python test_wtp.py`) — 132 offline checks:
 schema, card resolution, the column-power arithmetic the seed puzzles turn on,
 validation, disk round-trip, `pick_next`, payloads (asserting the solution never
 leaks into the board), mods, image rendering, and every endpoint including the

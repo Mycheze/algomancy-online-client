@@ -568,9 +568,20 @@ def api_wtp_config():
     """What the editor needs before it can draw anything: whether saving needs a
     key, the element icons (it labels the resource inputs with them), and the card
     names it autocompletes over (incl. tokens, and which of those need an X)."""
-    return {"edit_key_required": bool(EDIT_KEY), "icons": WTP_ICONS,
-            "phases": list(wtp.PHASES), "elements": list(wtp.ELEMENTS),
-            "cards": WTP_CARD_NAMES, "x_cards": WTP_X_CARDS}
+    return {
+        "edit_key_required": bool(EDIT_KEY), "icons": WTP_ICONS,
+        "phases": list(wtp.PHASES), "elements": list(wtp.ELEMENTS),
+        "cards": WTP_CARD_NAMES, "x_cards": WTP_X_CARDS,
+        # The resources you can put on the table, as the actual cards they are —
+        # the five elements plus Shard and Prismite, which expend for mana like
+        # any other but give no affinity.
+        "resource_kinds": [
+            {"kind": k, "card": wtp.RESOURCE_CARD[k],
+             "art_url": _art_url(wtp.RESOURCE_CARD[k])}
+            for k in wtp.RESOURCE_KINDS],
+        "resource_states": list(wtp.RESOURCE_STATES),
+        "cardback_url": _art_url(wtp.CARDBACK),
+    }
 
 
 @app.get("/api/wtp/list")

@@ -195,29 +195,87 @@ class Unit:
         return bool(st) and self.damage >= st[1]
 
 
+# --- resources -----------------------------------------------------------
+# Resources are CARDS on the table, not a number on a scoresheet, and they carry
+# a state that decides what they're currently worth (Manual, "The Planning Phase";
+# Glossary, "Resources"):
+#
+#   dormant    face down. Provides NO affinity and NO mana. Everything spawns
+#              this way; you may activate two a turn, flipping them face up.
+#   open       face up, un-expended. Affinity AND 1 mana.
+#   expended   spent for mana this turn. "Expended resources still count towards
+#              threshold requirements, but cannot be expended for mana again."
+#              They refresh at the start of a turn. The game's own convention for
+#              showing this is TAPPING the card, so that's how we draw it.
+#
+# So: mana = the open ones; affinity = every one that isn't dormant. A puzzle that
+# collapsed this to a single number couldn't ask "you've already spent three —
+# can you still cast it?", which is most of what makes a play tight.
+RESOURCE_STATES = ("open", "expended", "dormant")
+
+# Shards and Prismites are resources that can be expended for mana like any other
+# but "add no affinity" — so they're kinds, not elements.
+RESOURCE_KINDS = ELEMENTS + ("shard", "prismite")
+RESOURCE_CARD = {
+    **{e: f"{e.title()} Resource" for e in ELEMENTS},
+    "shard": "Shard Resource",
+    "prismite": "Prismite",
+}
+# The face-down back — the actual card the game puts on the table for a dormant
+# resource, and for a card in an opponent's hand.
+CARDBACK = "Cardback"
+
+
+@dataclass
+class Resource:
+    kind: str                          # an element, or shard / prismite
+    state: str = "open"                # open | expended | dormant
+
+    @property
+    def card(self):
+        return RESOURCE_CARD.get(self.kind, self.kind)
+
+    @property
+    def mana(self):
+        return 1 if self.state == "open" else 0
+
+    def gives_affinity(self, element):
+        # Dormant gives nothing; shards and prismites never give affinity, however
+        # face-up they are.
+        return self.kind == element and self.state != "dormant" and element in ELEMENTS
+
+
 @dataclass
 class Side:
     """One player's half of the region."""
     name: str = "You"
     life: int = 30
-    # element -> number of that resource in play. Total = mana available;
-    # per-element = affinity. See the module docstring.
-    resources: dict = field(default_factory=dict)
-    columns: list = field(default_factory=list)  # [[Unit, ...], ...] — max 2 deep
-    hand: list = field(default_factory=list)     # card names (yours: shown)
-    bin: list = field(default_factory=list)      # card names (graft/augment fodder)
-    hand_count: int = 0                          # for the opponent: cards, unseen
+    resources: list = field(default_factory=list)  # [Resource] — cards in play
+    columns: list = field(default_factory=list)    # [[Unit, ...], ...] — max 2 deep
+    hand: list = field(default_factory=list)       # card names (yours: shown)
+    bin: list = field(default_factory=list)        # card names (graft/augment fodder)
+    hand_count: int = 0                            # opponent's unseen cards
 
     @property
     def mana(self):
-        return sum(self.resources.values())
+        """Mana available right now — the un-expended, face-up resources."""
+        return sum(r.mana for r in self.resources)
 
     @property
     def units(self):
         return [u for col in self.columns for u in col]
 
     def affinity(self, element):
-        return self.resources.get(element, 0)
+        """Affinity towards an element. Expended resources still count; dormant
+        ones don't; shards and prismites never do."""
+        return sum(1 for r in self.resources if r.gives_affinity(element))
+
+    def resource_counts(self):
+        """kind -> how many of that resource are on the table, whatever state."""
+        counts = {}
+        for r in self.resources:
+            counts[r.kind] = counts.get(r.kind, 0) + 1
+        return counts
 
 
 @dataclass
@@ -289,6 +347,57 @@ def _unit_to_json(u):
     return d
 
 
+MAX_RESOURCES = 20
+
+
+def _resource_from_json(r):
+    """A resource from `"earth"`, `"earth:expended"`, or `{kind, state}`.
+
+    The terse string form is what gets written, because a resource row is mostly
+    "four earths and a shard" and a puzzle file should read like that rather than
+    like a database dump.
+    """
+    if isinstance(r, str):
+        kind, _, state = r.partition(":")
+        r = {"kind": kind, "state": state or "open"}
+    if not isinstance(r, dict):
+        raise PuzzleError(f"“{r}” isn't a resource.")
+    kind = str(r.get("kind") or "").strip().lower()
+    state = (str(r.get("state") or "open")).strip().lower()
+    if kind not in RESOURCE_KINDS:
+        raise PuzzleError(f"“{kind}” isn't a resource — use an element, "
+                          f"shard, or prismite.")
+    if state not in RESOURCE_STATES:
+        raise PuzzleError(f"“{state}” isn't a resource state — use "
+                          f"{', '.join(RESOURCE_STATES)}.")
+    return Resource(kind=kind, state=state)
+
+
+def _resources_from_json(raw):
+    """Resources from a list — or from the old `{"earth": 3}` shorthand, which is
+    still the quickest way to say "three earths, all open" by hand."""
+    if not raw:
+        return []
+    if isinstance(raw, dict):
+        out = []
+        for kind, n in raw.items():
+            kind = str(kind).strip().lower()
+            if kind not in RESOURCE_KINDS:
+                raise PuzzleError(f"“{kind}” isn't a resource.")
+            out += [Resource(kind=kind) for _ in range(max(0, _int(n)))]
+    else:
+        out = [_resource_from_json(r) for r in raw]
+    if len(out) > MAX_RESOURCES:
+        raise PuzzleError(f"That's more than {MAX_RESOURCES} resources on one side.")
+    # Grouped by kind in game order so a row reads left-to-right the way the
+    # elements always do, and two identical boards produce identical files.
+    return sorted(out, key=lambda r: RESOURCE_KINDS.index(r.kind))
+
+
+def _resource_to_json(r):
+    return r.kind if r.state == "open" else f"{r.kind}:{r.state}"
+
+
 def _side_from_json(d, default_name):
     d = d or {}
     columns = []
@@ -303,14 +412,6 @@ def _side_from_json(d, default_name):
     if len(columns) > MAX_COLUMNS:
         raise PuzzleError(f"That's more than {MAX_COLUMNS} columns on one side.")
 
-    resources = {}
-    for element, n in (d.get("resources") or {}).items():
-        element = str(element).strip().lower()
-        if element not in ELEMENTS:
-            raise PuzzleError(f"“{element}” isn't an element.")
-        if _int(n) > 0:
-            resources[element] = _int(n)
-
     hand = [str(c).strip() for c in (d.get("hand") or []) if str(c).strip()]
     bin_ = [str(c).strip() for c in (d.get("bin") or []) if str(c).strip()]
     if len(hand) > MAX_HAND or len(bin_) > MAX_HAND:
@@ -318,16 +419,16 @@ def _side_from_json(d, default_name):
 
     return Side(
         name=(d.get("name") or default_name).strip() or default_name,
-        life=_int(d.get("life"), 30), resources=resources, columns=columns,
+        life=_int(d.get("life"), 30),
+        resources=_resources_from_json(d.get("resources")),
+        columns=columns,
         hand=hand, bin=bin_, hand_count=max(0, _int(d.get("hand_count"))))
 
 
 def _side_to_json(s):
     d = {"name": s.name, "life": s.life}
     if s.resources:
-        # Written in game order, not insertion order, so two puzzles with the same
-        # resources produce byte-identical files (nice diffs, no churn).
-        d["resources"] = {e: s.resources[e] for e in ELEMENTS if s.resources.get(e)}
+        d["resources"] = [_resource_to_json(r) for r in s.resources]
     if s.columns:
         d["columns"] = [[_unit_to_json(u) for u in col] for col in s.columns]
     if s.hand:
@@ -585,17 +686,33 @@ def _card_payload(name, index, art_url):
     }
 
 
+def _resource_payload(r, index, art_url):
+    return {
+        "kind": r.kind,
+        "state": r.state,
+        "card": r.card,
+        # A dormant resource is face DOWN on the table, so that's what it looks
+        # like. The element is still on the payload, because the person building
+        # the puzzle has to know which one it is.
+        "art_url": art_url(CARDBACK if r.state == "dormant" else r.card),
+        "mana": r.mana,
+    }
+
+
 def _side_payload(s, index, art_url):
     return {
         "name": s.name,
         "life": s.life,
         "mana": s.mana,
-        "resources": {e: s.resources[e] for e in ELEMENTS if s.resources.get(e)},
+        "resources": [_resource_payload(r, index, art_url) for r in s.resources],
+        "affinity": {e: s.affinity(e) for e in ELEMENTS if s.affinity(e)},
+        "resource_counts": s.resource_counts(),
         "columns": [[_unit_payload(u, index, art_url) for u in col]
                     for col in s.columns],
         "hand": [_card_payload(c, index, art_url) for c in s.hand],
         "bin": [_card_payload(c, index, art_url) for c in s.bin],
         "hand_count": s.hand_count,
+        "cardback_url": art_url(CARDBACK),
     }
 
 
@@ -641,13 +758,18 @@ def status_line(p):
 
 
 def resource_line(side):
-    """'4 mana · 🔥2 🌿2' — as plain text, with each element spelled out. Callers
-    that have icons (both of ours do) swap the words for pictures themselves."""
+    """'4 mana open · 2 earth, 1 water (1 expended)' — in words. Callers that have
+    icons (both front-ends do) swap the element words for pictures themselves."""
     if not side.resources:
         return "no resources"
-    bits = " · ".join(f"{side.resources[e]} {e}" for e in ELEMENTS
-                      if side.resources.get(e))
-    return f"{side.mana} mana ({bits})"
+    counts = side.resource_counts()
+    bits = ", ".join(f"{counts[k]} {k}" for k in RESOURCE_KINDS if counts.get(k))
+    spent = sum(1 for r in side.resources if r.state == "expended")
+    dormant = sum(1 for r in side.resources if r.state == "dormant")
+    extra = [f"{n} {label}" for n, label in
+             ((spent, "expended"), (dormant, "dormant")) if n]
+    tail = f" ({', '.join(extra)})" if extra else ""
+    return f"{side.mana} mana open · {bits}{tail}"
 
 
 # --- image rendering -----------------------------------------------------
@@ -808,7 +930,7 @@ def _side_block(side, index, draw_on, x0, y0, *, flip, depth):
 
 
 def _hand_row(names, index, draw_on, x0, y0, w):
-    """A row of face-up cards (a hand or a bin), scaled down."""
+    """A row of face-up cards (a hand), scaled down."""
     canvas, _draw = draw_on
     x = x0
     for name in names:
@@ -821,107 +943,210 @@ def _hand_row(names, index, draw_on, x0, y0, w):
     return x
 
 
-def _bar(draw, x, y, w, h, side, *, index, align_right=False):
-    """A player's status bar: name, life, and their resources as element counts."""
+def _backs_row(n, index, draw_on, x0, y0, w):
+    """Face-down cards — an opponent's hand. The card's own back, not a rectangle."""
+    canvas, _draw = draw_on
+    x = x0
+    for _ in range(n):
+        canvas.paste(_thumb(CARDBACK, index, _HAND_W, _HAND_H), (x, y0))
+        x += _HAND_W // 2 + 6                    # overlapped, the way a hand is held
+        if x + _HAND_W > x0 + w:
+            break
+    return x
+
+
+def _resource_row(side, index, draw_on, x0, y0):
+    """A player's resources as the cards they are.
+
+    An expended resource is drawn TAPPED (rotated) — that's the game's own way of
+    showing it's been spent (Glossary, "Resources"). A dormant one is drawn face
+    down, because that is literally what it is on the table.
+    """
+    from PIL import Image
+    canvas, draw = draw_on
+    x = x0
+    for r in side.resources:
+        name = CARDBACK if r.state == "dormant" else r.card
+        img = _thumb(name, index, _HAND_W, _HAND_H)
+        if r.state == "expended":
+            img = img.rotate(90, expand=True)     # tapped
+            canvas.paste(img, (x, y0 + (_HAND_H - _HAND_W) // 2))
+            x += _HAND_H + _GAP
+        else:
+            if r.state == "dormant":
+                img = Image.eval(img, lambda v: v * 2 // 3)
+            canvas.paste(img, (x, y0))
+            x += _HAND_W + _GAP
+    return x
+
+
+def _resource_row_w(side):
+    """How wide that row will be — needed before the canvas exists."""
+    if not side.resources:
+        return 0
+    return sum((_HAND_H if r.state == "expended" else _HAND_W) + _GAP
+               for r in side.resources) - _GAP
+
+
+def _bar(draw, x, y, w, h, side):
+    """A player's status bar: name, life, and what their resources add up to. The
+    numbers stay even though the cards are on the board now — you shouldn't have
+    to count a row of art to find out how much mana is open."""
     draw.rounded_rectangle([x, y, x + w, y + h], radius=9, fill=_PANEL,
                            outline=_LINE, width=1)
     name_f, life_f, res_f = _font(19), _font(24), _font(16)
     draw.text((x + 14, y + 8), _safe(side.name), font=name_f, fill=_MUTED)
-    life = f"{side.life} life"
-    draw.text((x + 14, y + 30), life, font=life_f, fill=_TEXT)
+    draw.text((x + 14, y + 30), f"{side.life} life", font=life_f, fill=_TEXT)
 
-    # Resources on the right of the bar: "4 mana" and the per-element breakdown,
-    # because affinity is what decides whether the card in hand is castable.
     label = f"{side.mana} mana" if side.resources else "no resources"
     lw = _text_w(draw, label, life_f)
     draw.text((x + w - 14 - lw, y + 8), label, font=life_f, fill=_ACCENT)
-    bits = "  ".join(f"{side.resources[e]} {e}" for e in ELEMENTS
-                     if side.resources.get(e))
+    # Affinity, not just a resource count: it's what decides whether the card in
+    # hand is castable at all, and expended resources still provide it.
+    bits = "  ".join(f"{side.affinity(e)} {e}" for e in ELEMENTS if side.affinity(e))
     if bits:
         bw = _text_w(draw, bits, res_f)
-        draw.text((x + w - 14 - bw, y + 38), bits, font=res_f, fill=_MUTED)
+        draw.text((x + w - 14 - bw, y + 38), _safe(bits), font=res_f, fill=_MUTED)
+
+
+def _rail(names, index, draw_on, x0, y0, label):
+    """A bin, stacked down the side of the table the way a discard pile sits."""
+    canvas, draw = draw_on
+    draw.text((x0, y0), label, font=_font(12), fill=_MUTED)
+    y = y0 + 18
+    for name in names[:6]:
+        card, matched, _ = index.lookup(name)
+        canvas.paste(_thumb(matched if card else name, index, _HAND_W, _HAND_H),
+                     (x0, y))
+        y += _HAND_H + 6
+    return y
 
 
 def render_board_image(p, index=CARDS):
-    """The whole board as a PNG: opponent's formation, the middle line with the
-    phase, your formation, then your hand. Bytes, ready to attach."""
+    """The whole board as a PNG, laid out like the table it is.
+
+        opponent's hand (face down)                │
+        opponent: life, mana                       │  their bin
+        opponent's resources (tapped = expended)   │
+        opponent's formation                       │
+        ─────────── the phase ───────────          │
+        your formation                             │
+        your resources                             │
+        you: life, mana                            │  your bin
+        your hand (face up)                        │
+
+    Bytes, ready to attach.
+    """
     from PIL import Image, ImageDraw
 
-    opp_cols = max(len(p.opponent.columns), 0)
-    you_cols = max(len(p.you.columns), 0)
-    board_cols = max(opp_cols, you_cols, 1)
+    board_cols = max(len(p.opponent.columns), len(p.you.columns), 1)
     # Formation depth: a side with no two-deep column only needs one row of height.
     opp_rows = max((len(c) for c in p.opponent.columns), default=0)
     you_rows = max((len(c) for c in p.you.columns), default=0)
 
-    hand = list(p.you.hand)
-    bin_ = list(p.you.bin)
-    hand_rows = (1 if hand else 0) + (1 if bin_ else 0)
-
-    bar_h = 66
-    mid_h = 44
-    zone_label_h = 24
+    bar_h, mid_h, label_h = 66, 44, 22
+    zone = lambda on: (label_h + _HAND_H + _GAP) if on else 0
 
     inner_w = max(board_cols * _CARD_W + (board_cols - 1) * _GAP,
-                  len(hand) * (_HAND_W + _GAP), len(bin_) * (_HAND_W + _GAP),
+                  len(p.you.hand) * (_HAND_W + _GAP),
+                  _resource_row_w(p.you), _resource_row_w(p.opponent),
                   620)
-    W = _PAD * 2 + inner_w
-    H = (_PAD * 2 + bar_h + _GAP
+    rail_on = bool(p.you.bin or p.opponent.bin)
+    rail_w = (_HAND_W + _PAD) if rail_on else 0
+
+    H = (_PAD * 2
+         + zone(p.opponent.hand or p.opponent.hand_count)
+         + bar_h + _GAP
+         + zone(p.opponent.resources)
          + (opp_rows * _CARD_H + max(0, opp_rows - 1) * _GAP if opp_rows else 40)
          + mid_h
          + (you_rows * _CARD_H + max(0, you_rows - 1) * _GAP if you_rows else 40)
+         + zone(p.you.resources)
          + _GAP + bar_h
-         + (hand_rows * (zone_label_h + _HAND_H + _GAP) if hand_rows else 0))
+         + zone(p.you.hand))
+    # The rail must not be taller than the table it sits beside.
+    H = max(H, _PAD * 2 + 2 * (18 + min(3, max(len(p.you.bin), len(p.opponent.bin)))
+                               * (_HAND_H + 6)))
 
+    W = _PAD * 2 + inner_w + rail_w
     canvas = Image.new("RGB", (W, H), _BG)
     draw = ImageDraw.Draw(canvas)
     draw_on = (canvas, draw)
 
+    def band(label, y):
+        draw.text((_PAD, y + 4), label, font=_font(12), fill=_MUTED)
+        return y + label_h
+
     y = _PAD
-    _bar(draw, _PAD, y, inner_w, bar_h, p.opponent, index=index)
+
+    # --- their side, from the far edge of the table inwards ---
+    if p.opponent.hand or p.opponent.hand_count:
+        y = band(f"{_safe(p.opponent.name).upper()}'S HAND", y)
+        x = _hand_row(p.opponent.hand, index, draw_on, _PAD, y, inner_w)
+        _backs_row(p.opponent.hand_count, index, draw_on, x, y, _PAD + inner_w - x)
+        y += _HAND_H + _GAP
+
+    _bar(draw, _PAD, y, inner_w, bar_h, p.opponent)
     y += bar_h + _GAP
+
+    if p.opponent.resources:
+        y = band("RESOURCES", y)
+        _resource_row(p.opponent, index, draw_on, _PAD, y)
+        y += _HAND_H + _GAP
 
     if opp_rows:
         _side_block(p.opponent, index, draw_on, _PAD, y, flip=True, depth=opp_rows)
         y += opp_rows * _CARD_H + (opp_rows - 1) * _GAP
     else:
-        draw.text((_PAD + 4, y + 10), "no units in play", font=_font(16, bold=False),
-                  fill=_MUTED)
+        draw.text((_PAD + 4, y + 10), "no units in play",
+                  font=_font(16, bold=False), fill=_MUTED)
         y += 40
 
-    # The middle line: the border between the two halves of the region, labelled
-    # with the phase — the single most load-bearing fact on the board.
+    # --- the middle line: the border between the halves, carrying the phase ---
     draw.line([(_PAD, y + mid_h // 2), (_PAD + inner_w, y + mid_h // 2)],
               fill=_LINE, width=2)
     label = _safe(status_line(p))
     font = _font(16)
     lw = _text_w(draw, label, font)
-    draw.rectangle([_PAD + inner_w // 2 - lw // 2 - 12, y + mid_h // 2 - 13,
-                    _PAD + inner_w // 2 + lw // 2 + 12, y + mid_h // 2 + 13],
-                   fill=_BG)
-    draw.text((_PAD + inner_w // 2 - lw // 2, y + mid_h // 2 - 9), label,
-              font=font, fill=_ACCENT)
+    cx = _PAD + inner_w // 2
+    draw.rectangle([cx - lw // 2 - 12, y + mid_h // 2 - 13,
+                    cx + lw // 2 + 12, y + mid_h // 2 + 13], fill=_BG)
+    draw.text((cx - lw // 2, y + mid_h // 2 - 9), label, font=font, fill=_ACCENT)
     y += mid_h
 
+    # --- your side, from the middle back towards you ---
     if you_rows:
         _side_block(p.you, index, draw_on, _PAD, y, flip=False, depth=you_rows)
         y += you_rows * _CARD_H + (you_rows - 1) * _GAP
     else:
-        draw.text((_PAD + 4, y + 10), "no units in play", font=_font(16, bold=False),
-                  fill=_MUTED)
+        draw.text((_PAD + 4, y + 10), "no units in play",
+                  font=_font(16, bold=False), fill=_MUTED)
         y += 40
 
+    if p.you.resources:
+        y = band("RESOURCES", y)
+        _resource_row(p.you, index, draw_on, _PAD, y)
+        y += _HAND_H + _GAP
+
     y += _GAP
-    _bar(draw, _PAD, y, inner_w, bar_h, p.you, index=index)
+    _bar(draw, _PAD, y, inner_w, bar_h, p.you)
     y += bar_h
 
-    for label, names in (("YOUR HAND", hand), ("YOUR BIN", bin_)):
-        if not names:
-            continue
-        draw.text((_PAD, y + 6), label, font=_font(14), fill=_MUTED)
-        y += zone_label_h
-        _hand_row(names, index, draw_on, _PAD, y, inner_w)
+    if p.you.hand:
+        y = band("YOUR HAND", y)
+        _hand_row(p.you.hand, index, draw_on, _PAD, y, inner_w)
         y += _HAND_H + _GAP
+
+    # --- the bins, off to the side, the way they sit on a table ---
+    if rail_on:
+        rx = _PAD + inner_w + _PAD - 4
+        if p.opponent.bin:
+            _rail(p.opponent.bin, index, draw_on, rx, _PAD,
+                  f"{_safe(p.opponent.name).upper()}'S BIN")
+        if p.you.bin:
+            depth = 18 + min(len(p.you.bin), 6) * (_HAND_H + 6)
+            _rail(p.you.bin, index, draw_on, rx, max(_PAD, H - _PAD - depth),
+                  "YOUR BIN")
 
     import io
     buf = io.BytesIO()
