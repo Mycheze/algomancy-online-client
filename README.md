@@ -427,13 +427,30 @@ The editor autocompletes over its own **playable-cards** list rather than the on
 prose linkifier uses — that one drops "Generic Unit" as a reference card, which is
 precisely the card you most want to build a puzzle out of.
 
-### Editing (`/editor`)
+### Editing (`/editor`) — the board *is* the editor
 
-A form on the left, a **live preview on the right** — and the preview is rendered
-from the *server's* payload through the same `board.js` a player's browser uses, so
-it can't lie about what they'll see. Card names autocomplete over the whole set, and
-validation warns about the mistakes that would otherwise render as an empty grey box
-(typo'd card name, an already-dead unit, an illegal graft, a missing solution).
+You build the board by pointing at it, not by describing it:
+
+1. **Click an empty slot** — a front row, a back row, a new column, the hand, a bin.
+2. **Search** by name, or by what the card *does* ("2/2 that draws when it dies" —
+   name matching is local and instant; longer queries also hit the card search).
+3. **Click a card** and it's there.
+4. **Click a placed card** to adjust it: X (for tokens), ±power/±toughness, damage,
+   formation role, mods underneath it, a note. Or move its column, swap front/back,
+   remove it.
+
+There's no separate preview pane, because **the board you're editing is the board a
+player sees** — it's rendered from the *server's* payload (`POST /api/wtp/preview`),
+so card names are resolved and stats computed by the same code that will serve the
+puzzle. It cannot lie about what they'll get. Empty columns are never stored; the
+"＋ column" slot is just an offer, so what's on disk is always a legal board.
+
+Life, resources, phase and initiative stay as plain form fields — they aren't cards,
+so there's nothing to point at.
+
+Validation warns about the mistakes that would otherwise render as an empty grey box
+(typo'd card name, an already-dead unit, an illegal graft, a token with no X, a
+missing solution).
 
 Puzzles are plain JSON in **`puzzles/<id>.json`**, one per file, hand-editable and
 committed like any other content. Both front-ends re-read them per request, so a
