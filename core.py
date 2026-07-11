@@ -68,10 +68,18 @@ are shared between creatures in the same column ("vertically adjacent") — e.g.
 creature in front of a Poisonous one makes the whole column Flying AND Poisonous; if \
 one leaves combat its column-mate loses the shared attribute. Flying units can only be \
 blocked by Flying units.
-- Modifications: both Augment (+) and Graft (switch-arrows) attach a card from your \
-DISCARD/bin (never your hand), paying its cost, onto a creature, which then gains the \
-added text. Graft can only target creatures that themselves have the graft symbol; \
-Augment can target any creature.
+- Modifications: both Augment (+) and Graft (switch-arrows) are special actions taken \
+during the DEPLOYMENT phase. You play the mod card from EITHER your hand OR your \
+bin/discard — both are legal, and the card does NOT have to be in the bin — paying its \
+cost and meeting affinity, and put it under a creature, which then gains the added text \
+(or attributes; see the next bullet). If the glossary's Augment/Graft entries say "the \
+card must be in your discard", that wording is outdated: the rulebook says you "can apply \
+augments both from your hand and from your discard". Graft can only target creatures that \
+themselves have the graft symbol; Augment can go on a creature whether or not it carries \
+any symbol. Either way you may only modify YOUR OWN units, because deployment has no \
+interaction across regions. The one exception is a Virus, which may additionally be \
+augmented from your HAND during battle — that is the only time a mod can land on an \
+OPPONENT's unit, and they then control the added text as if it were their own.
 - The augment symbol can sit EITHER at the start of a line in the text box OR at the \
 start of the TYPE LINE, in front of the attributes. A type-line (+) grants those \
 ATTRIBUTES rather than any text — Chitin Shredder ("[Augment] {Powerful} Insect Unit") \
