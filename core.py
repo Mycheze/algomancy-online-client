@@ -463,10 +463,12 @@ def render_citations(answer, hits):
 ICON_NAMES = {
     "[augment]": "augment", "[switch1]": "bounded_graft", "[switch]": "graft",
     "[virus]": "virus", "[battle]": "battle", "[haste]": "haste",
+    "[once]": "once",
     "{virus}": "virus", "{battle}": "battle", "{haste}": "haste",
 }
-# Affinity/cost letters -> faction icon (verified from card data). Used only on the
-# COST line — in card TEXT, {g}/{p} are attribute colours, not factions.
+# Affinity/cost letters -> faction icon (verified from card data). Used on the COST
+# line and inside a [cost] token in card text (see below) — but NOT for a {braced}
+# token, where {g}/{p} are attribute colours, not factions.
 # NOTE: `p` = colorless (the Prismite resource); intentionally unmapped (no icon
 # yet), so it renders as the literal "p".
 RESOURCE_NAMES = {
@@ -475,19 +477,56 @@ RESOURCE_NAMES = {
 }
 ICON_TOKEN_RE = re.compile(r"\[[^\[\]]+\]|\{[^{}]+\}")
 
+# --- cost tokens ----------------------------------------------------------
+# A cost printed inside card text: an amount ([one], [x]), a resource ([e]), or both
+# at once ([4bb] — "pay four, and two water"). One token can therefore be SEVERAL
+# icons, which is why these can't live in ICON_NAMES; cost_token_icons() expands a
+# token into the icons that draw it.
+#
+# Amounts are spelled out as words on the cards, and that is worth preserving: it
+# means no cost token is ever a bare number, so none of this can collide with a
+# footnote-ish "[1]" when the same matching runs over an LLM's prose. The compound
+# form keeps that property by requiring at least one resource letter.
+COST_WORDS = {
+    "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4", "five": "5",
+    "six": "6", "seven": "7", "eight": "8", "nine": "9", "x": "x",
+    # Lurking Slimebeast prints an amount and a resource as one word; nothing else does.
+    "three_blue": "3b",
+}
+AMOUNT_NAMES = {c: f"cost_{c}" for c in "0123456789x"}
+_COMPOUND_COST_RE = re.compile(r"[0-9]*[rmbeg]+")   # [e], [4bb], [2be]
+
+
+def cost_token_icons(tok):
+    """The icons that draw a [cost] token from card text, or None if it isn't one.
+
+    Returns [(icon name, the character it draws)] so a front-end can fall back to
+    readable text per icon, exactly as it does on the cost line: [one] -> [('cost_1',
+    '1')], [4bb] -> [('cost_4', '4'), ('water', 'b'), ('water', 'b')].
+    """
+    body = tok[1:-1].lower()
+    if body in COST_WORDS:                            # [one], [x], [three_blue]
+        body = COST_WORDS[body]
+    elif not _COMPOUND_COST_RE.fullmatch(body):       # [4bb], [e]
+        return None                                   # anything else isn't a cost
+    return [(AMOUNT_NAMES.get(c) or RESOURCE_NAMES[c], c) for c in body]
+
+
 # Prose icons. Answers quote card text back at the reader ("[Switch1] triggers
 # once per turn"), so the same tokens need rendering in an LLM answer, not just in
 # a card embed. This regex matches ONLY the tokens we have an icon for — unlike
 # ICON_TOKEN_RE, which matches any bracketed text and is safe only over card text,
 # where every bracket is a game token. In prose, brackets belong to markdown links
 # and to our own [source:tag] citations, so anything unknown must be left alone.
-ICON_PROSE_RE = re.compile(
-    "|".join(re.escape(t) for t in sorted(ICON_NAMES, key=len, reverse=True)),
-    re.IGNORECASE)
+ICON_PROSE_RE = re.compile("|".join([
+    *(re.escape(t) for t in sorted(ICON_NAMES, key=len, reverse=True)),
+    r"\[(?:%s)\]" % "|".join(sorted(COST_WORDS, key=len, reverse=True)),
+    r"\[[0-9]*[rmbeg]+\]",
+]), re.IGNORECASE)
 
 
 def render_icons(text, render):
-    """Swap game-icon tokens in prose ([Switch1], {Battle}, …) for icons.
+    """Swap game-icon tokens in prose ([Switch1], {Battle}, [one], …) for icons.
 
     `render(icon_name, fallback)` is the front-end's renderer — the same signature
     the two front-ends already use for card text — so the bot gets custom emojis
@@ -500,8 +539,13 @@ def render_icons(text, render):
 
     def sub(m):
         tok = m.group(0)
-        fallback = tok[1:-1] if tok[0] == "{" else tok
-        return render(ICON_NAMES[tok.lower()], fallback)
+        name = ICON_NAMES.get(tok.lower())
+        if name:
+            fallback = tok[1:-1] if tok[0] == "{" else tok
+            return render(name, fallback)
+        # A cost token, then — the only other thing ICON_PROSE_RE matches. Each icon
+        # degrades to the character it draws, so [4bb] reads as "4bb" if any is absent.
+        return "".join(render(n, c) for n, c in cost_token_icons(tok))
 
     return ICON_PROSE_RE.sub(sub, text)
 

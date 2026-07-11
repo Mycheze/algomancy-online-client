@@ -49,8 +49,8 @@ import store
 import wtp
 from cards import FACTION_COLOR, FACTION_EMOJI, plain_text
 from core import (ICON_NAMES, ICON_TOKEN_RE, RESOURCE_NAMES, answer_question,
-                  cards, cited_card_paths, friendly_source, render_citations,
-                  render_icons, retriever, uncode_icon_tokens)
+                  cards, cited_card_paths, cost_token_icons, friendly_source,
+                  render_citations, render_icons, retriever, uncode_icon_tokens)
 
 PREFIX = "&"
 
@@ -219,9 +219,16 @@ def _sub_token(m):
     name = ICON_NAMES.get(tok.lower())
     if name:
         return _emoji(name, fallback)
+    if not is_brace_attr:
+        # A [cost]: one token, but possibly several emojis ([4bb] is a "4" then two
+        # water drops). Each falls back to the character it draws, so a missing emoji
+        # leaves "4bb" — the same way the cost line degrades.
+        icons = cost_token_icons(tok)
+        if icons:
+            return "".join(_emoji(n, c) for n, c in icons)
     if is_brace_attr:                # unknown {Attribute} -> drop braces
         return tok[1:-1]
-    return tok                       # unknown [ability]/cost token -> leave as-is
+    return tok                       # unknown [ability] -> leave as-is
 
 
 def render_card_text(text):

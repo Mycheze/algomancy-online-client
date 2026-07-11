@@ -1069,7 +1069,7 @@ function isCardMention(matched, canonical, before, after) {
 // a code span's contents are escaped, so the <img> would print as raw source.
 // Walking text nodes reaches inside <code>, where an <img> renders fine.
 let ICON_RE = null;
-const ICON_URL = {};                         // lowercase token -> /icons/x.webp
+const ICON_URL = {};                         // lowercase token -> [/icons/x.webp, ...]
 
 fetch('/api/icons').then(r => {
   if (!r.ok) throw new Error('GET /api/icons -> ' + r.status);
@@ -1112,11 +1112,14 @@ function renderIcons(root) {
     const frag = document.createDocumentFragment(); let last = 0, m;
     while (m = ICON_RE.exec(text)) {
       if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
-      const img = document.createElement('img');
-      img.className = 'icon';
-      img.src = ICON_URL[m[0].toLowerCase()];
-      img.alt = m[0];
-      frag.appendChild(img);
+      // One token can be several icons: a cost like [4bb] is a "4" and two water drops.
+      for (const url of ICON_URL[m[0].toLowerCase()]) {
+        const img = document.createElement('img');
+        img.className = 'icon';
+        img.src = url;
+        img.alt = m[0];
+        frag.appendChild(img);
+      }
       last = m.index + m[0].length;
     }
     if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));

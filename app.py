@@ -167,9 +167,15 @@ def _sub_token_html(m):
     name = core.ICON_NAMES.get(tok.lower())
     if name:
         return _icon_img(name, fallback)
+    if not is_brace_attr:
+        # A [cost] is one token but possibly several icons ([4bb] is a "4" then two
+        # water drops), each degrading to the character it draws.
+        icons = core.cost_token_icons(tok)
+        if icons:
+            return "".join(_icon_img(n, c) for n, c in icons)
     if is_brace_attr:                # unknown {Attribute} -> drop braces
         return escape(tok[1:-1])
-    return escape(tok)               # unknown [ability]/cost token -> leave as text
+    return escape(tok)               # unknown [ability] -> leave as text
 
 
 def render_card_text_html(text):
@@ -363,9 +369,26 @@ def api_search(q: str, limit: int = 8):
     }
 
 
+def _cost_tokens():
+    """Every [cost] token the page might meet, mapped to the icons that draw it.
+
+    The keyword tokens are a fixed list, but the costs are not: [one] and [x] are
+    spelled out in core, while the compound ones ([4bb], [2be]) are whatever the set
+    happens to print. So harvest those off the cards themselves — the page needs
+    literal tokens to build its regex from, and an answer only ever quotes a cost
+    that some card prints.
+    """
+    tokens = {f"[{w}]" for w in core.COST_WORDS}
+    for card in core.cards.cards.values():
+        for tok in core.ICON_TOKEN_RE.findall(card.get("text") or ""):
+            if core.cost_token_icons(tok):
+                tokens.add(tok.lower())
+    return tokens
+
+
 @app.get("/api/icons")
 def api_icons():
-    """Game-icon tokens ([Augment], {Battle}, …) mapped to their image.
+    """Game-icon tokens ([Augment], {Battle}, [one], …) mapped to their images.
 
     The page swaps these in on the DOM *after* it renders an answer's markdown,
     rather than us baking <img> into the answer text here. Answers quote card text,
@@ -373,10 +396,20 @@ def api_icons():
     renderer escapes, so pre-baked HTML prints as source. Substituting on the DOM
     puts the icon inside the code span instead of the tag's text. The token->name
     mapping still lives in core, so both front-ends agree on what a token means.
+
+    Each token maps to a LIST of images, because a cost token can be more than one:
+    [4bb] draws a "4" and two water drops. A token whose icons aren't all on disk is
+    left out entirely, so the page leaves it as text rather than drawing half a cost.
     """
-    return {"tokens": {tok: f"/icons/{name}.webp"
-                       for tok, name in core.ICON_NAMES.items()
-                       if name in AVAILABLE_ICONS}}
+    def urls(names):
+        if not all(n in AVAILABLE_ICONS for n in names):
+            return None
+        return [f"/icons/{n}.webp" for n in names]
+
+    tokens = {tok: urls([name]) for tok, name in core.ICON_NAMES.items()}
+    tokens |= {tok: urls([n for n, _ in core.cost_token_icons(tok)])
+               for tok in _cost_tokens()}
+    return {"tokens": {tok: u for tok, u in tokens.items() if u}}
 
 
 @app.get("/api/cardnames")

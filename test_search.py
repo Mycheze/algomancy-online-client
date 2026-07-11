@@ -161,4 +161,48 @@ with TestClient(webapp.app) as client:
           len(client.get("/api/search",
                          params={"q": "unit", "limit": 3}).json()["results"]) == 3)
 
+# --- cost icons -----------------------------------------------------------
+# The costs printed inside card text ([once], [one], [4bb]) get icons like every
+# other token. They're the awkward ones: a single token can be several icons, and
+# the same matching runs over LLM prose, where a bracket is usually NOT a game token.
+print("\ncost icons")
+
+import core  # noqa: E402
+
+check("a spelled-out amount is its numeral",
+      core.cost_token_icons("[one]") == [("cost_1", "1")])
+check("a compound cost is an amount then its resources",
+      core.cost_token_icons("[4bb]")
+      == [("cost_4", "4"), ("water", "b"), ("water", "b")])
+check("[three_blue] is the same thing spelled as one word",
+      core.cost_token_icons("[three_blue]") == [("cost_3", "3"), ("water", "b")])
+check("a bare number is NOT a cost — no card prints one, and an LLM's footnote does",
+      core.cost_token_icons("[1]") is None and core.cost_token_icons("[4]") is None)
+check("prose isn't a cost either",
+      core.cost_token_icons("[sacrifice a unit]") is None)
+check("every icon a token maps to exists on disk",
+      all(n in webapp.AVAILABLE_ICONS for n in core.ICON_NAMES.values())
+      and all(n in webapp.AVAILABLE_ICONS
+              for tok in [f"[{w}]" for w in core.COST_WORDS]
+              for n, _ in core.cost_token_icons(tok)))
+
+slag = webapp.render_card_text_html(cards.cards["Slag Spewer"]["text"])
+check("Slag Spewer's [once] [one] render as icons, not as brackets",
+      'src="/icons/once.webp"' in slag and 'src="/icons/cost_1.webp"' in slag
+      and "[" not in slag)
+check("an ambush cost draws every part of itself",
+      webapp.render_card_text_html(cards.cards["Good Whale"]["text"]).count(
+          '<img class="icon"') == 4)      # [Battle], then the 4 and two water of [4bb]
+
+icons = client.get("/api/icons").json()["tokens"]
+check("the page gets a list of images per token, so it can draw a whole cost",
+      icons["[4bb]"] == ["/icons/cost_4.webp", "/icons/water.webp", "/icons/water.webp"])
+
+prose = core.render_icons("Pay [once] [one] or [4bb]. See [manual:0023], note [1], "
+                          "and a [link](url).", lambda n, f: f"<{n}>")
+check("prose costs become icons",
+      "<once> <cost_1> or <cost_4><water><water>" in prose)
+check("a citation, a footnote and a markdown link survive the same pass",
+      "[manual:0023]" in prose and "[1]" in prose and "[link](url)" in prose)
+
 print(f"\n{PASS} checks passed ✅")
