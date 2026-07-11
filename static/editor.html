@@ -152,6 +152,30 @@
   .igrid input, .igrid select { padding: 5px 6px; }
   .xfield label { color: var(--accent); font-weight: 700; }
   .xfield input { border-color: var(--accent); }
+
+  /* Counters get their own box, above the ± fields and visibly apart from them.
+     They are not the same kind of thing: a counter is a PERMANENT change to the
+     body (tracked with a die at the table), a ± is a temporary one that wears
+     off. Putting them in one grid of look-alike number boxes would say they're
+     interchangeable, and a puzzle can turn on the difference. */
+  .ctrbox {
+    border: 1px solid var(--line); border-left: 3px solid var(--good);
+    border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; background: #0c0e14;
+  }
+  .ctrhead { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .ctrhead label { margin: 0; font-weight: 700; color: var(--text); font-size: 12px; }
+  .ctrwhy { font-size: 11px; color: var(--muted); }
+  .ctrrow { display: flex; align-items: center; gap: 7px; margin-top: 6px; }
+  .ctrrow button.mini { min-width: 30px; font-size: 15px; line-height: 1.2; }
+  /* The die, same as the one drawn on the unit. */
+  .ctrval {
+    min-width: 44px; height: 30px; border-radius: 6px; display: flex;
+    align-items: center; justify-content: center; font-weight: 800; font-size: 15px;
+    background: var(--panel-2); border: 1.5px solid var(--line); color: var(--muted);
+  }
+  .ctrval.up { background: var(--good); border-color: #fff; color: #fff; }
+  .ctrval.down { background: var(--bad); border-color: #fff; color: #fff; }
+  .ctrkind { font-size: 12px; color: var(--muted); font-weight: 700; }
   .tokhint { font-size: 11px; color: var(--muted); margin-top: 7px; }
   .iacts { display: flex; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
 
@@ -278,6 +302,9 @@ const escAttr = s => String(s == null ? '' : s).replace(/[&<>"']/g,
   c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 let ICONS = {}, CARD_LIST = [], X_CARDS = new Set(), EDIT_KEY_REQUIRED = false;
+// Tokens whose X arrives as +1/+1 counters (a Robot) rather than as a printed
+// body (a Generic Unit) — they get one control instead of two.
+let COUNTER_TOKENS = new Set();
 let RESOURCE_KINDS = [], CARDBACK_URL = '';
 // kind -> the resource card's real art, so a dormant resource (drawn face down on
 // the board, correctly) can still be READ by the designer who put it there.
@@ -389,7 +416,10 @@ $('addhint').addEventListener('click', () => { P.hints.push(''); renderHints(); 
 // combined by the same code that will serve the puzzle) with empty slots layered
 // on top. So the thing you click on is literally the thing a player will see.
 
-const newUnit = card => ({ card, power: 0, toughness: 0, damage: 0, role: '', mods: [], note: '', x: 0 });
+const newUnit = card => ({
+  card, power: 0, toughness: 0, counters: 0, damage: 0,
+  role: '', mods: [], note: '', x: 0,
+});
 
 const same = (a, b) => a && b && a.side === b.side && a.col === b.col
   && a.row === b.row && a.zone === b.zone && a.i === b.i;
@@ -402,8 +432,10 @@ function unitTile(u, at) {
     : `<div class="noart">${escAttr(u.card)}<br><small>no card by that name</small></div>`;
   let stats = '';
   if (u.power != null) {
-    const dir = (u.buff_p > 0 || u.buff_t > 0) ? 'up' : (u.buff_p < 0 || u.buff_t < 0) ? 'down' : '';
-    const base = (u.buff_p || u.buff_t) ? `<span class="base">(${escAttr(u.base)})</span>` : '';
+    const up = u.buff_p > 0 || u.buff_t > 0 || u.counters > 0;
+    const down = u.buff_p < 0 || u.buff_t < 0 || u.counters < 0;
+    const dir = up && !down ? 'up' : down && !up ? 'down' : up ? 'both' : '';
+    const base = dir ? `<span class="base">(${escAttr(u.base)})</span>` : '';
     const dmg = u.damage ? `<span class="dmg">${u.damage} dmg</span>` : '';
     stats = `<div class="wstats"><b class="pt ${dir}">${u.power}/${u.toughness}</b>${base}${dmg}</div>`;
   }
@@ -411,10 +443,14 @@ function unitTile(u, at) {
     ? `<div class="dmgbar"><i style="width:${Math.min(100, Math.round(100 * u.damage / u.toughness))}%"></i></div>` : '';
   const role = u.role ? `<span class="role ${escAttr(u.role)}">${u.role === 'attacking' ? 'ATK' : 'BLK'}</span>` : '';
   const modn = (u.mods && u.mods.length) ? `<span class="modn">+${u.mods.length}</span>` : '';
+  // The counter die comes from the shared renderer, so the board you're building
+  // is drawn by exactly the same rule as the board they'll be shown.
+  const die = WtpBoard.dieHtml(u.counters || 0);
+  const badges = (die || modn) ? `<div class="badges">${die}${modn}</div>` : '';
   const note = u.note ? `<span class="unote">${escAttr(u.note)}</span>` : '';
   const cls = 'wu' + ((u.mods && u.mods.length) ? ' modded' : '') + (same(at, SEL) ? ' sel' : '');
   return `<div class="${cls}" data-at='${escAttr(JSON.stringify(at))}' title="${escAttr(u.card)} — click to edit">
-    ${art}${role}${modn}${note}${bar}${stats}</div>`;
+    ${art}${role}${badges}${note}${bar}${stats}</div>`;
 }
 
 const slot = (at, label) =>
@@ -743,14 +779,37 @@ function renderInspector() {
   const u = unitAt(SEL);
   if (!u) { SEL = null; box.classList.add('hidden'); return; }
   const tok = isToken(u.card);
+  // A Robot's X IS its pile of +1/+1 counters — the card says so outright ("I
+  // spawn with X +1/+1 counters on me. If the number of counters changes, so does
+  // X."). So it gets ONE control, the counter stepper, writing to x. A Generic
+  // Unit is printed X/X, so its X is a body and it gets both.
+  const xctr = COUNTER_TOKENS.has((u.card || '').trim().toLowerCase());
+  const cfield = xctr ? 'x' : 'counters';
+  const n = u[cfield] || 0;
   const col = P[SEL.side].columns[SEL.col];
   box.innerHTML = `
     <div class="ihead">
       <span class="iname">${escAttr(u.card)}</span>
       <span class="iwhere">${escAttr(placeLabel(SEL))}</span>
     </div>
+
+    <div class="ctrbox">
+      <div class="ctrhead">
+        <label>${xctr ? '+1/+1 counters — this is its X' : 'counters'}</label>
+        <span class="ctrwhy">permanent · they change the body itself</span>
+      </div>
+      <div class="ctrrow">
+        <button class="mini" data-c="-1" title="a -1/-1 counter">−</button>
+        <span class="ctrval ${n > 0 ? 'up' : n < 0 ? 'down' : ''}"
+          >${n > 0 ? '+' : ''}${n}</span>
+        <button class="mini" data-c="1" title="a +1/+1 counter">＋</button>
+        <span class="ctrkind">${n > 0 ? '+1/+1' : n < 0 ? '−1/−1' : ''}</span>
+        ${n ? '<button class="mini" data-c="0" title="take them all off">clear</button>' : ''}
+      </div>
+    </div>
+
     <div class="igrid">
-      ${tok ? `<div class="xfield"><label>X (its size)</label>
+      ${tok && !xctr ? `<div class="xfield"><label>X (its printed size)</label>
         <input type="number" min="0" value="${u.x || 0}" data-i="x"></div>` : ''}
       <div><label>power ±</label><input type="number" value="${u.power || 0}" data-i="power"></div>
       <div><label>tough ±</label><input type="number" value="${u.toughness || 0}" data-i="toughness"></div>
@@ -759,8 +818,14 @@ function renderInspector() {
         ${ROLES.map(([v, l]) => `<option value="${v}" ${u.role === v ? 'selected' : ''}>${l}</option>`).join('')}
       </select></div>
     </div>
-    ${tok ? `<div class="tokhint">Made at a chosen size — a Robot 2 is a <b>2/2</b>.
-      Set X, then use power/tough ± for anything on top.</div>` : ''}
+    <div class="tokhint">
+      ${xctr ? `A Robot is a <b>0/0</b> carrying X <b>+1/+1 counters</b> — a Robot 2 is a 2/2.
+        Its counters and its X are the same number.<br>` : ''}
+      ${tok && !xctr ? 'Made at a chosen size — a Generic Unit 2 is printed <b>2/2</b>.<br>' : ''}
+      <b>power/tough ±</b> is a <b>temporary</b> change (a buff until regroup, a static
+      ability, a Virus). Counters are <b>permanent</b>. If a card doesn't say
+      “counters”, it's a ±.
+    </div>
     <div class="row" style="margin-top:8px">
       <div><label>mods under it (comma-separated)</label>
         <input type="text" value="${escAttr((u.mods || []).join(', '))}" data-i="mods" placeholder="Spectrogenesis"></div>
@@ -785,13 +850,31 @@ $('inspector').addEventListener('input', e => {
   else if (k === 'role') u.role = e.target.value;
   else if (['x', 'power', 'toughness', 'damage'].includes(k)) u[k] = +e.target.value || 0;
   else return;
-  schedule();
+  schedule();       // the die and the stats are both server-computed; refresh redraws
 });
 $('inspector').addEventListener('change', e => {
   if (e.target.dataset.i === 'role') { renderBoard(); }
 });
 
+// The counter stepper. One signed number, because that's the rule: "if both a
+// +1/+1 counter and a -1/-1 counter are placed on a unit, the two cancel out and
+// will both be removed." So ＋ on a unit holding -1/-1 counters takes one OFF —
+// which is exactly what putting a +1/+1 counter on it would do at the table.
 $('inspector').addEventListener('click', e => {
+  const c = e.target.closest('button[data-c]');
+  const u = unitAt(SEL);
+  if (c && u) {
+    const xctr = COUNTER_TOKENS.has((u.card || '').trim().toLowerCase());
+    const key = xctr ? 'x' : 'counters';
+    const step = +c.dataset.c;
+    // A Robot's counters live in x, which is a size and can't go below zero: a
+    // Robot with no counters left is a 0/0, not a negative one.
+    u[key] = step === 0 ? 0
+      : Math.max(xctr ? 0 : -99, Math.min(99, (u[key] || 0) + step));
+    renderInspector(); schedule();
+    return;
+  }
+
   const b = e.target.closest('button[data-i]');
   if (!b || !SEL) return;
   const act = b.dataset.i;
@@ -936,6 +1019,12 @@ $('open').addEventListener('change', async () => {
 // The API hands back COMPUTED stats; what we store are the MODIFIERS. Getting
 // this backwards would bake a buff into the body and then buff it again on the
 // next save.
+//
+// Same trap with counters, one level deeper: `u.counters` is everything ON the
+// unit, INCLUDING the X a Robot was created with. Read that back into the
+// counters field and a saved Robot 3 would reopen as a 3/3 body carrying three
+// more counters — a 6/6. `counters_own` is the field the designer actually set,
+// which is the one to load.
 function sideFrom(s) {
   return {
     name: s.name, life: s.life,
@@ -944,6 +1033,7 @@ function sideFrom(s) {
     hand_count: s.hand_count || 0,
     columns: (s.columns || []).map(col => col.map(u => ({
       card: u.card, power: u.buff_p || 0, toughness: u.buff_t || 0,
+      counters: u.counters_own || 0,
       damage: u.damage || 0, role: u.role || '', mods: u.mods || [],
       note: u.note || '', x: u.x || 0,
     }))),
@@ -975,10 +1065,7 @@ document.addEventListener('keydown', e => {
 // Hold the middle button over any card — on the board, in a hand, in the palette
 // — to read it. Installed on the document, not the board, so it covers the
 // palette too: you often want to check a card BEFORE you place it.
-// Guarded: the editor draws its own board, so it owes nothing to board.js but
-// this one convenience — and a convenience shouldn't be able to take the editor
-// down with it if the file doesn't load.
-if (window.WtpBoard) WtpBoard.holdZoom(document);
+WtpBoard.holdZoom(document);
 
 function syncAll() {
   syncers.forEach(fn => fn());
@@ -994,6 +1081,7 @@ function syncAll() {
   RESOURCE_KINDS.forEach(r => { RES_ART[r.kind] = r.art_url; });
   CARDBACK_URL = cfg.cardback_url || '';
   X_CARDS = new Set((cfg.x_cards || []).map(n => n.toLowerCase()));
+  COUNTER_TOKENS = new Set((cfg.counter_tokens || []).map(n => n.toLowerCase()));
   ICONS = cfg.icons || {};
   ELEMENTS = cfg.elements || ELEMENTS;
   EDIT_KEY_REQUIRED = !!cfg.edit_key_required;

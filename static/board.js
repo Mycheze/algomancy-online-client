@@ -26,10 +26,29 @@
   // bot posts and on the board the website draws.
   const ROLE_TAG = { attacking: 'ATK', blocking: 'BLK' };
 
+  // Counters on a unit, drawn as the die you'd sit on it at the table (the
+  // manual's own convention). Signed: +3 is three +1/+1 counters, -2 is two
+  // -1/-1. It's one number because the rules make it one — "if both a +1/+1
+  // counter and a -1/-1 counter are placed on a unit, the two cancel out and
+  // will both be removed" — so a unit is never holding some of each.
+  //
+  // Deliberately NOT the same badge as a temporary buff: a counter is permanent,
+  // and whether a 4/4 is still a 4/4 next turn can be the whole puzzle.
+  function dieHtml(n) {
+    if (!n) return '';
+    const kind = n > 0 ? '+1/+1' : '-1/-1';
+    return `<span class="ctr ${n > 0 ? 'up' : 'down'}"
+      title="${Math.abs(n)} ${kind} counter${Math.abs(n) === 1 ? '' : 's'} — permanent"
+      >${n > 0 ? '+' : '−'}${Math.abs(n)}</span>`;
+  }
+
+  const counterTip = n => !n ? ''
+    : `${Math.abs(n)} ${n > 0 ? '+1/+1' : '-1/-1'} counter${Math.abs(n) === 1 ? '' : 's'}`;
+
   // A unit tile: art, plus every modifier that's been applied to it. The stat
-  // strip shows the EFFECTIVE stats (printed + buffs), because that's the number
-  // you'd have to work out at the table and getting it wrong is the whole reason
-  // this tool exists.
+  // strip shows the EFFECTIVE stats (printed + counters + buffs), because that's
+  // the number you'd have to work out at the table and getting it wrong is the
+  // whole reason this tool exists.
   function unitHtml(u) {
     const art = u.art_url
       ? `<img src="${esc(u.art_url)}" alt="${esc(u.card)}" loading="lazy">`
@@ -37,11 +56,12 @@
 
     let stats = '';
     if (u.power != null) {
-      // Buffed up, shrunk, or as printed — colour it so a modified unit is
-      // obviously modified and nobody reads the printed stats off the art.
-      const dir = (u.buff_p > 0 || u.buff_t > 0) ? 'up'
-        : (u.buff_p < 0 || u.buff_t < 0) ? 'down' : '';
-      const base = (u.buff_p || u.buff_t) ? `<span class="base">(${esc(u.base)})</span>` : '';
+      // Bigger, smaller, or as printed — colour it so a changed unit is obviously
+      // changed and nobody reads the printed stats off the art.
+      const up = u.buff_p > 0 || u.buff_t > 0 || u.counters > 0;
+      const down = u.buff_p < 0 || u.buff_t < 0 || u.counters < 0;
+      const dir = up && !down ? 'up' : down && !up ? 'down' : up ? 'both' : '';
+      const base = dir ? `<span class="base">(${esc(u.base)})</span>` : '';
       const dmg = u.damage ? `<span class="dmg">${u.damage} dmg</span>` : '';
       stats = `<div class="wstats"><b class="pt ${dir}">${u.power}/${u.toughness}</b>${base}${dmg}</div>`;
     }
@@ -58,11 +78,17 @@
       ? `<span class="modn" title="${esc(u.mods.join(' + '))}">+${u.mods.length}</span>` : '';
     const note = u.note ? `<span class="unote">${esc(u.note)}</span>` : '';
     const cls = 'wu' + ((u.mods && u.mods.length) ? ' modded' : '');
-    const tip = [u.card, u.mods && u.mods.length ? '+ ' + u.mods.join(' + ') : '', u.note]
+    const tip = [u.card, counterTip(u.counters),
+      u.mods && u.mods.length ? '+ ' + u.mods.join(' + ') : '', u.note]
       .filter(Boolean).join(' · ');
 
+    // The badges stack down the right edge: the counters on the unit, then the
+    // cards under it. Two different things, so they don't share a corner.
+    const badges = (dieHtml(u.counters) || modn)
+      ? `<div class="badges">${dieHtml(u.counters)}${modn}</div>` : '';
+
     return `<div class="${cls}" data-card="${esc(u.card)}" data-full="${esc(u.art_url || '')}" title="${esc(tip)}">
-      ${art}${role}${modn}${note}${bar}${stats}</div>`;
+      ${art}${role}${badges}${note}${bar}${stats}</div>`;
   }
 
   // A face-up card in a hand or bin — same tile, no combat state.
@@ -259,5 +285,5 @@
     return { close };
   }
 
-  window.WtpBoard = { render, statusLine, boardHtml, holdZoom };
+  window.WtpBoard = { render, statusLine, boardHtml, holdZoom, dieHtml, counterTip };
 })();

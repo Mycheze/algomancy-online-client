@@ -134,8 +134,9 @@
   display: flex; align-items: baseline; gap: 5px; padding: 3px 5px;
 }
 .wu .pt { font-size: 14px; font-weight: 800; }
-.wu .pt.up { color: #6fe39b; }        /* buffed */
-.wu .pt.down { color: #ff8f8f; }      /* shrunk (a Virus, a -1/-1) */
+.wu .pt.up { color: #6fe39b; }        /* bigger than printed */
+.wu .pt.down { color: #ff8f8f; }      /* smaller (a Virus, -1/-1 counters) */
+.wu .pt.both { color: #9fb4ff; }      /* pulled both ways — just "not printed" */
 .wu .base { font-size: 10px; color: #9aa0b4; }
 .wu .dmg { margin-left: auto; font-size: 11px; font-weight: 700; color: #ff7676; }
 
@@ -151,11 +152,28 @@
 }
 .wu .role.attacking { background: #d85c3c; }
 .wu .role.blocking { background: #488cd8; }
-.wu .modn {
-  position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 800;
-  padding: 2px 5px; border-radius: 4px; background: var(--accent); color: #fff;
-  line-height: 1.4;
+/* Badges stack down the right edge: the counters ON the unit, then the cards
+   UNDER it. Different things, so they don't fight over one corner. */
+.wu .badges {
+  position: absolute; top: 4px; right: 4px; display: flex;
+  flex-direction: column; align-items: flex-end; gap: 3px;
 }
+.wu .modn {
+  font-size: 9px; font-weight: 800; padding: 2px 5px; border-radius: 4px;
+  background: var(--accent); color: #fff; line-height: 1.4;
+}
+/* A counter is a DIE on the unit — that's how it's tracked at the table, and the
+   manual says so. Square, not a pill, so it never reads as "a buff": a counter
+   is permanent and a buff wears off, and that difference decides puzzles. */
+.wu .ctr {
+  min-width: 22px; height: 22px; padding: 0 3px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; line-height: 1; color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, .85);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .55);
+}
+.wu .ctr.up { background: var(--good); }
+.wu .ctr.down { background: var(--bad); }
 .wu .unote {
   position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
   background: rgba(0,0,0,.75); color: #fff; font-size: 10px; line-height: 1.3;

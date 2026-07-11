@@ -104,23 +104,79 @@ def main():
     check("a Generic Unit 3 is a 3/3",
           wtp.Unit(card="Generic Unit", x=3).stats() == (3, 3))
     check("a Robot 2 is a 2/2", wtp.Unit(card="Robot", x=2).stats() == (2, 2))
-    check("a Robot 2 with a +1/+1 on it is a 3/3",
+    check("a Robot 2 with a temporary +1/+1 is a 3/3",
           wtp.Unit(card="Robot", x=2, power=1, toughness=1).stats() == (3, 3))
-    check("its BASE reads as the token's size, not the printed 0/0",
-          wtp.Unit(card="Robot", x=2, power=1).base_stats() == (2, 2))
     check("Wisp keeps its printed 0/1", wtp.Unit(card="Wisp").stats() == (0, 1))
+
+    # The two tokens get to an X/X by DIFFERENT routes, and the difference is real
+    # rather than a wording quirk: a Robot's X is a pile of counters sitting on a
+    # 0/0 ("If the number of counters changes, so does X"), a Generic Unit's X is
+    # its printed body. Other cards can move a Robot's counters; nothing can move
+    # a Generic Unit's body.
+    check("a Robot's X is COUNTERS, not its body",
+          wtp.x_is_counters(wtp.CARDS.cards["Robot"]))
+    check("a Generic Unit's X is its body, not counters",
+          not wtp.x_is_counters(wtp.CARDS.cards["Generic Unit"]))
+    check("so a Robot 2's printed body is the 0/0 the card actually says",
+          wtp.Unit(card="Robot", x=2).base_stats() == (0, 0))
+    check("with two +1/+1 counters on it",
+          wtp.Unit(card="Robot", x=2).counter_count() == 2)
+    check("while a Generic Unit 2's body IS 2/2, carrying no counters",
+          wtp.Unit(card="Generic Unit", x=2).base_stats() == (2, 2)
+          and wtp.Unit(card="Generic Unit", x=2).counter_count() == 0)
 
     robot0 = wtp.from_json({**SAMPLE, "you": {"columns": [[{"card": "Robot"}]]}})
     check("a token with no X warns (it'd be a 0/0)",
-          any("give it an X" in w for w in wtp.validate(robot0)))
+          any("made at a chosen size" in w for w in wtp.validate(robot0)))
+    check("and a Robot is told about it in COUNTERS, which is what its X is",
+          any("+1/+1 counters" in w for w in wtp.validate(robot0)),
+          wtp.validate(robot0))
     robot2 = wtp.from_json({**SAMPLE, "you": {"columns": [[{"card": "Robot", "x": 2}]]}})
-    check("a Robot 2 is clean", not any("give it an X" in w for w in wtp.validate(robot2)))
+    check("a Robot 2 is clean",
+          not any("made at a chosen size" in w for w in wtp.validate(robot2)))
     check("x survives serialisation",
           wtp.to_json(robot2)["you"]["columns"][0][0] == {"card": "Robot", "x": 2},
           wtp.to_json(robot2)["you"]["columns"][0][0])
     rp = wtp.payload(robot2)["you"]["columns"][0][0]
     check("the payload flags it as a token", rp["token"] is True and rp["x"] == 2)
     check("and carries its computed body", (rp["power"], rp["toughness"]) == (2, 2))
+    check("its counters are on the payload for the die to draw", rp["counters"] == 2)
+    # The editor loads `counters_own` back into its counters field. If it loaded
+    # `counters` (the total) instead, a saved Robot 2 would reopen carrying two
+    # MORE counters and quietly become a 4/4 on the next save.
+    check("but counters_own stays 0 — the X is not double-counted on reload",
+          rp["counters_own"] == 0)
+
+    section("+1/+1 and -1/-1 counters")
+    # Manual, "Stat Changes and Counters": a counter is a PERMANENT change to the
+    # unit's stats; a bare +1/+1 that doesn't say "counter" is TEMPORARY. Both are
+    # modifiers on the printed body, but they are not the same fact, so a puzzle
+    # keeps them apart.
+    tm = lambda **kw: wtp.Unit(card="Tidal Menace", **kw)          # printed 7/2
+    check("two +1/+1 counters on a 7/2 make it a 9/4", tm(counters=2).stats() == (9, 4))
+    check("two -1/-1 counters make it a 5/0", tm(counters=-2).stats() == (5, 0))
+    check("counters and a temporary buff stack",
+          tm(counters=2, power=1, toughness=1).stats() == (10, 5))
+    check("a unit with no counters is exactly what's printed", tm().stats() == (7, 2))
+    check("counters survive serialisation",
+          wtp._unit_to_json(tm(counters=-2)) == {"card": "Tidal Menace", "counters": -2})
+    check("and reload", wtp._unit_from_json({"card": "Tidal Menace", "counters": -2})
+          .stats() == (5, 0))
+    check("no counters, no key on disk", "counters" not in wtp._unit_to_json(tm()))
+
+    # "A unit with 0 or less defense will immediately die." Counters can put a
+    # board into a state that can't legally exist, so the designer hears about it.
+    dying = wtp.from_json({**SAMPLE, "you": {
+        "columns": [[{"card": "Tidal Menace", "counters": -2}]]}})
+    check("a unit that counters have taken to 0 toughness is flagged",
+          any("dies immediately" in w for w in wtp.validate(dying)), wtp.validate(dying))
+    check("a healthy one isn't",
+          not any("dies immediately" in w for w in wtp.validate(robot2)))
+
+    cp = wtp.payload(dying)["you"]["columns"][0][0]
+    check("the payload keeps counters apart from the temporary buff",
+          (cp["counters"], cp["buff_p"], cp["buff_t"]) == (-2, 0, 0), cp)
+    check("and shows the printed body it started from", cp["base"] == "7/2")
 
     section("resources are CARDS with a state")
     # Manual, "The Planning Phase" + Glossary, "Resources":
@@ -306,6 +362,18 @@ def main():
     check("emoji in a player name doesn't crash the renderer",
           wtp.render_board_image(wtp.from_json(
               {**SAMPLE, "you": {"name": "You 🔥🌿", "life": 4}}))[:4] == b"\x89PNG")
+    # A unit can be carrying counters AND mods AND a role AND damage all at once,
+    # and every one of those draws a badge into the same top corner.
+    loaded = wtp.from_json({**SAMPLE, "you": {"columns": [[
+        {"card": "Tidal Menace", "counters": 3, "mods": ["Bumblecrab"],
+         "role": "attacking", "damage": 1},
+        {"card": "Robot", "x": 2, "counters": -1}]]}})
+    check("a unit stacked with counters, mods, a role and damage renders",
+          wtp.render_board_image(loaded)[:4] == b"\x89PNG")
+    check("and its arithmetic is right (7/2, +3 counters, 1 damage)",
+          loaded.you.columns[0][0].stats() == (10, 5))
+    check("a Robot 2 that's taken a -1/-1 counter is a 1/1",
+          loaded.you.columns[0][1].stats() == (1, 1))
 
     section("web endpoints")
     from fastapi.testclient import TestClient
@@ -378,6 +446,10 @@ def main():
               not ({"Cardback", "Turn Structure"} & set(cfg["cards"])))
         check("and it says which cards need an X",
               cfg["x_cards"] == ["Generic Unit", "Robot"], cfg["x_cards"])
+        # A Robot's X *is* its counters, so the editor gives it one control rather
+        # than two that would mean the same number.
+        check("and which of those carry their X as counters",
+              cfg["counter_tokens"] == ["Robot"], cfg["counter_tokens"])
 
         # Editing behind a key: the public-tunnel case.
         webapp.EDIT_KEY = "s3cret"

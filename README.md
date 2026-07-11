@@ -442,19 +442,56 @@ them.)
 | token | body |
 | --- | --- |
 | **Generic Unit** | printed **X/X** — the only genuinely vanilla body there is |
-| **Robot** | printed 0/0, "spawns with X +1/+1 counters" — also an **X/X** |
+| **Robot** | printed 0/0, "I spawn with X +1/+1 **counters** on me" |
 | **Wisp** | 0/1, {Feeble} (can't block) |
 
 The first two are made at a chosen size, so a unit has an **`x`** field: a *Robot 2*
-is a 2/2, a *Generic Unit 6* is a 6/6, and `power`/`toughness` modifiers stack on
-top of that. Which cards need an X is read off the card data (`wtp.needs_x`), not
-hardcoded, so a new token of the same shape works for free — and the editor grows an
-X input the moment you type one of their names. A token with no X warns, because it
-would be a 0/0.
+and a *Generic Unit 2* are both 2/2s. But they get there by **different routes, and
+the difference is real** — a Generic Unit's X is its printed body, while a Robot's X
+is a pile of +1/+1 **counters** sitting on a 0/0. The card says so itself: *"If the
+number of counters changes, so does X."* Other cards can move, add and remove a
+Robot's counters; nothing can move a Generic Unit's body. So `wtp.x_is_counters()`
+tells them apart, a Robot's X feeds `counter_count()`, and the editor gives a Robot
+**one** control (the counter stepper *is* its X) instead of two meaning the same
+number.
+
+Which cards need an X is read off the card data (`wtp.needs_x`), not hardcoded, so a
+new token of the same shape works for free. A token with no X warns, because it would
+be a 0/0.
 
 Note the board *has* to overlay the resolved stats: the art on a Robot literally
 reads `0/0` and a Generic Unit reads `X/X`, so the stat strip is the only thing that
 tells you what's actually standing there.
+
+### Counters vs buffs — two different things
+
+The manual is explicit about this ("Stat Changes and Counters"), and a puzzle can turn
+on it, so a unit keeps them in **separate fields**:
+
+| field | what it is | lasts |
+| --- | --- | --- |
+| **`counters`** | +1/+1 counters — signed, so `-2` means two **-1/-1** counters | **permanent** — it changes the body |
+| **`power`/`toughness`** | everything that *isn't* counters: a buff until regroup, a static ability's +2/+0, a Virus's -7/-7 | **temporary** |
+
+> *"If a card doesn't specifically say 'place counters' when mentioning stat changes,
+> its stat changes are temporary."*
+
+`counters` is **one signed number rather than two piles**, because that is literally
+the rule: *"if both a +1/+1 counter and a -1/-1 counter are placed on a unit, the two
+cancel out and will both be removed."* A unit is never holding some of each, so the
+net is all there is — which is why the editor's **−** button on a unit with +1/+1
+counters takes one *off* rather than starting a second pile.
+
+Counters are drawn as a **die** on the unit (green for +, red for −) on both the web
+board and the PNG the bot posts — dice are how they're tracked at the table, and the
+badge is deliberately *not* shaped like the mod pill it stacks with. The payload
+carries `counters` (everything on the unit, a Robot's X included — this is what gets
+drawn) and `counters_own` (just the designer's field). The editor must read back
+`counters_own`: load the total and a saved *Robot 2* reopens carrying two *more*
+counters and quietly becomes a 4/4.
+
+A unit whose counters take it to **0 or less toughness** warns — *"a unit with 0 or
+less defense will immediately die"*, so that board can't legally exist.
 
 The editor autocompletes over its own **playable-cards** list rather than the one the
 prose linkifier uses — that one drops "Generic Unit" as a reference card, which is
@@ -469,9 +506,18 @@ You build the board by pointing at it, not by describing it:
 2. **Search** by name, or by what the card *does* ("2/2 that draws when it dies" —
    name matching is local and instant; longer queries also hit the card search).
 3. **Click a card** and it's there.
-4. **Click a placed card** to adjust it: X (for tokens), ±power/±toughness, damage,
-   formation role, mods underneath it, a note. Or move its column, swap front/back,
-   remove it. Click a **resource** to set it open / expended / dormant.
+4. **Click a placed card** to adjust it: its **counters** (a −/＋ stepper, set apart
+   from the rest because they're permanent), X (for a Generic Unit), ±power/±toughness
+   (temporary), damage, formation role, mods underneath it, a note. Or move its
+   column, swap front/back, remove it. Click a **resource** to set it open / expended
+   / dormant.
+
+**Hold the middle mouse button** over any card — on the board, in a hand or bin, or in
+the palette before you've even placed it — to read it full size. It's a hold rather
+than a click because reading a card isn't an edit: it mustn't select the card, arm a
+slot, or leave a dialog to dismiss. (The mousedown calls `preventDefault`, which is
+what suppresses Chrome's autoscroll and X11's middle-click paste.) Players get it too,
+on the puzzle board.
 
 There's no separate preview pane, because **the board you're editing is the board a
 player sees** — it's rendered from the *server's* payload (`POST /api/wtp/preview`),

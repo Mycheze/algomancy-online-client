@@ -551,6 +551,13 @@ WTP_CARD_NAMES = sorted(
 WTP_X_CARDS = sorted(n for n in WTP_CARD_NAMES
                      if wtp.needs_x(core.cards.cards.get(n)))
 
+# Of those, the ones whose X arrives as +1/+1 COUNTERS rather than as a printed
+# body — a Robot is a 0/0 that "spawns with X +1/+1 counters", a Generic Unit is
+# printed X/X. The editor gives a Robot one control (its counters ARE its X, as
+# the card says) instead of two that would mean the same thing.
+WTP_COUNTER_TOKENS = sorted(n for n in WTP_X_CARDS
+                            if wtp.x_is_counters(core.cards.cards.get(n)))
+
 
 def _wtp_payload(p, *, solution=False):
     return {**wtp.payload(p, core.cards, art_url=_art_url, solution=solution),
@@ -572,6 +579,7 @@ def api_wtp_config():
         "edit_key_required": bool(EDIT_KEY), "icons": WTP_ICONS,
         "phases": list(wtp.PHASES), "elements": list(wtp.ELEMENTS),
         "cards": WTP_CARD_NAMES, "x_cards": WTP_X_CARDS,
+        "counter_tokens": WTP_COUNTER_TOKENS,
         # The resources you can put on the table, as the actual cards they are —
         # the five elements plus Shard and Prismite, which expend for mana like
         # any other but give no affinity.

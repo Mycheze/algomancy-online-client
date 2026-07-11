@@ -114,15 +114,29 @@ def normalize_id(pid):
 # --- the board -----------------------------------------------------------
 
 # A token whose size is chosen when it's created ("Create a Robot 2"). Two cards
-# spell that out in different ways and both land in the same place — an X/X:
+# spell that out in different ways, and the difference is REAL — not a wording
+# quirk to paper over:
 #
 #   Generic Unit   printed X/X — the set's only genuinely vanilla body
-#   Robot          printed 0/0, "I spawn with X +1/+1 counters on me"
+#   Robot          printed 0/0, "I spawn with X +1/+1 counters on me.
+#                  (If the number of counters changes, so does X.)"
 #
-# So `Unit.x` is just "the number the token was made with", and a token that has
-# one is an X/X. Detected from the card data, not by name, so a new token that
-# works the same way is picked up for free.
+# A Robot 3 is a 0/0 carrying three +1/+1 COUNTERS. It ends up a 3/3 either way,
+# but the counters are a thing on the board that other cards can move, add to and
+# remove — the card's own reminder text says X *is* the counter count. So a
+# Robot's X becomes counters, and a Generic Unit's X becomes its printed body.
+#
+# Detected from the card data, not by name, so a new token that works either way
+# is picked up for free.
 _X_COUNTERS_RE = re.compile(r"spawns? with X \+1/\+1 counters", re.I)
+
+
+def x_is_counters(card):
+    """Is this token's X a pile of +1/+1 counters (a Robot) rather than its
+    printed body (a Generic Unit)?"""
+    if not card:
+        return False
+    return bool(_X_COUNTERS_RE.search(_cards.plain_text(card.get("text") or "")))
 
 
 def needs_x(card):
@@ -131,25 +145,41 @@ def needs_x(card):
         return False
     if str(card.get("power")).upper() == "X" or str(card.get("toughness")).upper() == "X":
         return True
-    return bool(_X_COUNTERS_RE.search(_cards.plain_text(card.get("text") or "")))
+    return x_is_counters(card)
 
 
 @dataclass
 class Unit:
     """A unit in play: a card, plus everything that's happened to it.
 
-    `power`/`toughness` are MODIFIERS on the printed stats, not the stats
-    themselves — one field covers +1/+1 counters, a buff spell and a Virus's
-    -7/-7 alike, and it keeps the printed card as the source of truth (so the
-    board still reads right if a card is ever errata'd).
+    The two ways a unit's stats can change are DIFFERENT THINGS, and the manual
+    is explicit about it ("Stat Changes and Counters"):
+
+      `counters`  permanent. A signed count of +1/+1 counters — negative means
+                  -1/-1 counters. One field, not two, because that IS the rule:
+                  "if both a +1/+1 counter and a -1/-1 counter are placed on a
+                  unit, the two cancel out and will both be removed." So a unit
+                  can never be holding some of each; the net is all there is.
+                  Tracked with dice at the table, so we draw it as a die.
+
+      `power`/`toughness`  temporary. Everything that ISN'T counters: a buff that
+                  lasts until regroup, a static ability granting +2/+0 while its
+                  source is in play, a Virus's -7/-7. "If a card doesn't
+                  specifically say 'place counters' when mentioning stat changes,
+                  its stat changes are temporary."
+
+    Both are MODIFIERS on the printed stats rather than replacements, so the
+    printed card stays the source of truth. The distinction matters to a solver:
+    a puzzle can turn on whether a unit is still a 4/4 next turn.
 
     `x` is for tokens made at a chosen size (a Robot 2, a Generic Unit 3) — see
     needs_x(). Tokens are the cleanest bodies in the game for a combat-math
     puzzle, because they're the only ones with no ability text muddying the sum.
     """
     card: str                                   # card name (fuzzy-matched on load)
-    power: int = 0                              # stat modifier, may be negative
+    power: int = 0                              # TEMPORARY stat change, may be negative
     toughness: int = 0
+    counters: int = 0                           # PERMANENT: +n = +1/+1, -n = -1/-1
     damage: int = 0                             # damage marked this battle
     role: str = ""                              # "" | attacking | blocking
     mods: list = field(default_factory=list)    # cards grafted/augmented UNDER it
@@ -172,21 +202,29 @@ class Unit:
         _name, card = self.resolved(index)
         if not card:
             return None
-        if needs_x(card):
-            # However the card words it, a token made with X is an X/X: Generic
-            # Unit is printed X/X, and a Robot is a 0/0 carrying X +1/+1 counters.
-            return self.x, self.x
+        if str(card.get("power")).upper() == "X" or str(card.get("toughness")).upper() == "X":
+            return self.x, self.x                # a Generic Unit's X is its body
         try:
+            # A Robot's X is NOT its body — it's printed 0/0 and the X arrives as
+            # counters (see counter_count).
             return int(card.get("power")), int(card.get("toughness"))
         except (TypeError, ValueError):
             return None                          # not a unit: nothing to add to
 
+    def counter_count(self, index=CARDS):
+        """How many +1/+1 counters are on this unit (negative = -1/-1 counters),
+        including the ones a Robot was created with."""
+        _name, card = self.resolved(index)
+        return self.counters + (self.x if x_is_counters(card) else 0)
+
     def stats(self, index=CARDS):
-        """Effective (power, toughness) — the body plus every modifier on it."""
+        """Effective (power, toughness) — the body, plus the counters on it, plus
+        whatever temporary buff it's under."""
         base = self.base_stats(index)
         if base is None:
             return None
-        return base[0] + self.power, base[1] + self.toughness
+        n = self.counter_count(index)
+        return base[0] + n + self.power, base[1] + n + self.toughness
 
     def dead(self, index=CARDS):
         """Is this unit already lethally damaged? A board can't legally be in this
@@ -328,6 +366,7 @@ def _unit_from_json(d):
     return Unit(
         card=d["card"].strip(),
         power=_int(d.get("power")), toughness=_int(d.get("toughness")),
+        counters=_int(d.get("counters")),        # signed: -n means n × -1/-1
         damage=max(0, _int(d.get("damage"))), role=role,
         mods=mod_names, note=(d.get("note") or "").strip(),
         x=max(0, _int(d.get("x"))))
@@ -335,7 +374,7 @@ def _unit_from_json(d):
 
 def _unit_to_json(u):
     d = {"card": u.card}
-    for key in ("power", "toughness", "damage", "x"):
+    for key in ("power", "toughness", "counters", "damage", "x"):
         if getattr(u, key):
             d[key] = getattr(u, key)
     if u.role:
@@ -517,15 +556,23 @@ def validate(p, index=CARDS):
                 # A token with no X is a 0/0 — almost always a forgotten field
                 # rather than something anyone meant to put on a board.
                 if needs_x(card) and not u.x:
+                    how = ("give it some +1/+1 counters"
+                           if x_is_counters(card) else "give it an X")
                     warnings.append(
-                        f"{who}: “{name}” is a token made at a chosen size — give it "
-                        f"an X (a Robot 2 is a 2/2). With no X it's a 0/0.")
-                if u.stats(index) is None and (u.power or u.toughness or u.damage):
+                        f"{who}: “{name}” is a token made at a chosen size — {how} "
+                        f"(a Robot 2 is a 2/2). At zero it's a 0/0.")
+                if u.stats(index) is None and (u.power or u.toughness
+                                               or u.counters or u.damage):
                     warnings.append(
                         f"{who}: “{name}” has no printed stats, so its "
-                        f"buffs/damage won't show.")
-                if u.dead(index):
-                    st = u.stats(index)
+                        f"counters/buffs/damage won't show.")
+                st = u.stats(index)
+                if st and st[1] <= 0:
+                    # "A unit with 0 or less defense will immediately die."
+                    warnings.append(
+                        f"{who}: “{name}” is a {st[0]}/{st[1]} — a unit with 0 or "
+                        f"less toughness dies immediately, so it can't be on the board.")
+                elif u.dead(index):
                     warnings.append(
                         f"{who}: “{name}” has {u.damage} damage but only {st[1]} "
                         f"toughness — it would already be dead.")
@@ -656,9 +703,18 @@ def _unit_payload(u, index, art_url):
         "art_url": art_url(name) if card else None,
         "power": st[0] if st else None,
         "toughness": st[1] if st else None,
-        # The body before modifiers. For a token that's its X (a Robot 2 is a 2/2),
-        # so a buffed Robot reads "3/3 (2/2)" rather than the meaningless "(0/0)".
+        # The printed body, before the counters on it and before any buff — so a
+        # unit that's been changed reads "5/5 (3/3)" and you can see both numbers.
         "base": f"{base[0]}/{base[1]}" if base else None,
+        # Counters and buffs are kept apart all the way to the renderer, because
+        # they aren't the same fact: counters are permanent, a buff wears off.
+        #
+        # `counters` is what's actually ON the unit — a Robot's X included, since
+        # that X *is* a pile of +1/+1 counters. `counters_own` is only the field
+        # the designer set, which is what the editor has to read back: load the
+        # total into that field and a Robot 3 would come back as a 6/6.
+        "counters": u.counter_count(index),
+        "counters_own": u.counters,
         "buff_p": u.power, "buff_t": u.toughness,
         "damage": u.damage,
         "role": u.role,
@@ -854,6 +910,25 @@ def _pill(draw, x, y, text, *, bg, fg=(255, 255, 255), size=15, pad=6):
     return w
 
 
+_DIE = 30                                        # counter die, px
+
+
+def _die(draw, x, y, n):
+    """The +1/+1 (or -1/-1) counters on a unit, drawn as the die you'd sit on it
+    at the table — green for +, red for -. `n` is signed and never zero here; the
+    sign is shown, because a bare "3" doesn't say which kind of counter it is.
+    Returns its height, so callers can stack under it."""
+    up = n > 0
+    draw.rounded_rectangle([x, y, x + _DIE, y + _DIE], radius=6,
+                           fill=_GREEN if up else _RED,
+                           outline=(255, 255, 255), width=2)
+    label = f"+{n}" if up else str(n)            # str(-2) already carries its sign
+    font = _font(16)
+    draw.text((x + (_DIE - _text_w(draw, label, font)) // 2, y + 5),
+              label, font=font, fill=(255, 255, 255))
+    return _DIE
+
+
 def _unit_tile(u, index, draw_on, x, y):
     """Paste one unit's art at (x, y) and overlay its state: effective stats, the
     damage it's marked with, its formation role, and anything under it."""
@@ -877,9 +952,13 @@ def _unit_tile(u, index, draw_on, x, y):
         overlay = Image.new("RGBA", (_CARD_W, strip_h), (0, 0, 0, 205))
         canvas.paste(overlay, (x, sy), overlay)
         font = _font(18)
-        buffed = u.power or u.toughness
-        colour = _GREEN if (u.power > 0 or u.toughness > 0) else (
-            _RED if buffed else _TEXT)
+        # Colour the stats if this unit ISN'T what its art says — from counters or
+        # from a temporary buff, either way the printed number is now a lie.
+        n = u.counter_count(index)
+        up, down = (u.power > 0 or u.toughness > 0 or n > 0), (
+            u.power < 0 or u.toughness < 0 or n < 0)
+        colour = _GREEN if up and not down else _RED if down and not up else (
+            _ACCENT if up else _TEXT)     # pulled both ways: just say "not printed"
         draw.text((x + 7, sy + 5), f"{st[0]}/{st[1]}", font=font, fill=colour)
         if u.damage:
             label = f"{u.damage} dmg"
@@ -901,11 +980,19 @@ def _unit_tile(u, index, draw_on, x, y):
     if u.role:
         _pill(draw, x + 6, y + 6, ROLE_TAG[u.role], size=12,
               bg=_ATTACK if u.role == "attacking" else _BLOCK)
-    # Mod count, top-right.
+
+    # Counters, top-right, drawn as the die you'd actually put on the unit — and
+    # kept visually apart from the mod pill below it, because a counter is a
+    # permanent thing on the board and a mod is a card underneath it.
+    top = y + 6
+    n = u.counter_count(index)
+    if n:
+        top += _die(draw, x + _CARD_W - 6 - _DIE, top, n) + 4
+    # Mod count, under it.
     if u.mods:
         label = f"+{len(u.mods)}"
         w = _text_w(draw, label, _font(15)) + 12
-        _pill(draw, x + _CARD_W - 6 - w, y + 6, label, bg=_ACCENT)
+        _pill(draw, x + _CARD_W - 6 - w, top, label, bg=_ACCENT)
 
 
 def _side_block(side, index, draw_on, x0, y0, *, flip, depth):
