@@ -7,6 +7,9 @@ Commands
   &ask <question>     RAG answer over the rules corpus, with source citations.
                       Opens a thread; ask follow-ups there and context is kept.
   &card <name>        Fuzzy-matched card lookup with art, stats, and rulings.
+  &search <text>      The same card lookup, but from a DESCRIPTION instead of a
+                      name — for when you remember what a card does, not what
+                      it's called. Ranks the whole set and shows the best match.
   &colors             Suggest a fresh 3-colour deck; ✅ to record that you played it.
   &played <colors>    Record a combo you played, e.g. `&played fire earth wood`.
   &feedback [text]    Share feedback about the bot.
@@ -37,7 +40,7 @@ import combos
 import core
 import draft
 import store
-from cards import FACTION_COLOR, FACTION_EMOJI
+from cards import FACTION_COLOR, FACTION_EMOJI, plain_text
 from core import (ICON_NAMES, ICON_TOKEN_RE, RESOURCE_NAMES, answer_question,
                   cards, cited_card_paths, friendly_source, render_citations,
                   render_icons, retriever)
@@ -216,10 +219,10 @@ def render_card_text(text):
     and swap game-icon tokens for custom emojis (falls back to text if absent)."""
     if not text:
         return text
-    t = text.replace("{/n}", "\n")
-    t = re.sub(r"\{/?i\d*\}", "", t)              # italic markers {i} {i1} {/i}
-    t = t.replace("{g}", "").replace("{p}", "")   # attribute colour markers (gold/purple)
-    return ICON_TOKEN_RE.sub(_sub_token, t)
+    # cards.plain_text resolves the JSON's formatting codes ({/n}, {i}, {g}) and
+    # leaves the game tokens for us to render — the same pass the search index and
+    # the web app use, so a new code is handled once, not three times.
+    return ICON_TOKEN_RE.sub(_sub_token, plain_text(text))
 
 
 def render_cost(cost):
@@ -287,6 +290,121 @@ def build_card_embed(card, matched, alts, attach_name=None):
         file = discord.File(str(art), filename=attach_name)
         embed.set_image(url=f"attachment://{attach_name}")
     return embed, file
+
+
+# --- card search ----------------------------------------------------------
+# `&search <description>` is `&card` for when you remember what a card DOES but
+# not what it's called ("that wood unit that draws when it dies"). The ranking
+# lives in cards.CardIndex.search; this is just the Discord skin for it, and it
+# deliberately ends in the same place `&card` does — the best match rendered as a
+# full card embed — with the runners-up one click away in a dropdown.
+
+SEARCH_RESULTS = 6          # candidates ranked per search
+EMBED_FIELD_MAX = 1024      # Discord's cap on a single embed field's value
+_TOKEN_BRACKETS_RE = re.compile(r"[\[{]([^\]}]+)[\]}]")
+
+
+def _bare(text):
+    """Game tokens stripped to bare words ([Switch1] -> Switch1) for the places
+    Discord won't render an emoji anyway — dropdown labels and descriptions."""
+    return _TOKEN_BRACKETS_RE.sub(r"\1", text or "")
+
+
+class CardSelect(discord.ui.DynamicItem[discord.ui.Select], template=r"cardsel:v1"):
+    """Dropdown of the other cards a search matched; picking one shows it in full.
+
+    Persistent across restarts, and cheaply so: the option's *value* is the card
+    name, and Discord sends the message's options back with the interaction. So
+    the callback needs to remember nothing about the search that built it — it
+    just looks the chosen name up, exactly as `&card` would.
+    """
+
+    def __init__(self, hits):
+        super().__init__(discord.ui.Select(
+            custom_id="cardsel:v1",
+            placeholder="Not the one? Pick another match…",
+            options=[
+                discord.SelectOption(
+                    label=h.name[:100],
+                    value=h.name[:100],
+                    description=_bare(h.snippet(90))[:100] or None,
+                    emoji=FACTION_EMOJI.get(next(iter(cards.factions(h.card)), ""), None),
+                )
+                for h in hits[:25]
+            ],
+        ))
+
+    @classmethod
+    async def from_custom_id(cls, interaction, item, match):
+        # The options come back on the message itself, and the pick arrives in
+        # `values` — so an empty item here is enough to service the callback.
+        return cls([])
+
+    async def callback(self, interaction: discord.Interaction):
+        name = self.item.values[0]
+        card, matched, _alts = cards.lookup(name)
+        if not card:
+            await interaction.response.send_message(
+                f"I can't find **{name}** any more.", ephemeral=True)
+            return
+        embed, file = build_card_embed(card, matched, [], attach_name="card.jpg")
+        embed.set_author(name="🔍 from your search")
+        # Swap the shown card in place, keeping the dropdown so you can keep
+        # browsing the same result set. attachments= replaces the old art (and
+        # clears it for a card that has none).
+        await interaction.response.edit_message(
+            embed=embed, attachments=[file] if file else [])
+
+
+bot.add_dynamic_items(CardSelect)
+
+
+def search_results_field(hits):
+    """The 'Other matches' body: the runners-up, with the line that matched.
+
+    Drops whole lines that don't fit rather than slicing the joined text at
+    Discord's field cap — an icon token renders as `<:bounded_graft:123…>`, so a
+    blind cut can land mid-tag and leave a dangling `<:bounded_graft:12` on show.
+    Returns (body, shown) so the caller's header can't claim more than it lists.
+    """
+    lines, used = [], 0
+    for h in hits:
+        line = f"**{h.name}** — {render_card_text(h.snippet(110))}"
+        if used + len(line) + 1 > EMBED_FIELD_MAX:
+            break
+        lines.append(line)
+        used += len(line) + 1
+    return "\n".join(lines), len(lines)
+
+
+@bot.command(name="search", aliases=["find"])
+async def search_cmd(ctx, *, query: str = None):
+    if not query:
+        await ctx.reply(
+            "Usage: `&search <what you remember>` — I'll find the card from a "
+            "description, so you don't need the name.\n"
+            "e.g. `&search wood unit that draws a card when it dies` · "
+            "`&search counter a spell` · `&search 2/1 fire unit with haste`")
+        return
+
+    hits = cards.search(query, limit=SEARCH_RESULTS)
+    if not hits:
+        await ctx.reply(
+            f"Nothing matched **{query}**. Try describing what the card *does* "
+            "(“deals damage to every unit”, “recall a unit from the bin”), or "
+            "look it up by name with `&card`.")
+        return
+
+    top, rest = hits[0], hits[1:]
+    embed, file = build_card_embed(top.card, top.name, [], attach_name="card.jpg")
+    embed.set_author(name=f"🔍 search: {query}"[:256])
+    if rest:
+        body, shown = search_results_field(rest)
+        if shown:
+            embed.add_field(name=f"Other matches ({shown})", value=body, inline=False)
+    view = discord.ui.View(timeout=None)
+    view.add_item(CardSelect(hits))          # every hit, incl. the one shown
+    await ctx.reply(embed=embed, file=file, view=view)
 
 
 @bot.command(name="card")
@@ -798,6 +916,11 @@ async def help_cmd(ctx):
         "rules corpus with citations, then open a thread for follow-ups.\n\n"
         "**`&card <name>`** — Look up a card (fuzzy matched) with art, stats, and rulings. "
         "Look up several at once with commas: `&card Sprouter, Overbloom, Plodding Pebble`.\n\n"
+        "**`&search <description>`** — Can't remember the name? Describe the card and I'll "
+        "find it: `&search wood unit that draws a card when it dies`, `&search counter a "
+        "spell`, `&search 2/1 fire unit with haste`. Searches oracle text, type, keywords "
+        "(“trample” finds {Piercing}), elements and stats — then shows the best match as a "
+        "full card, with the runners-up in a dropdown.\n\n"
         "**`&ruling <card>`** — List the judge/designer rulings that mention a card, "
         "straight from the corpus (no AI), with links to the full threads.\n\n"
         "**`&colors`** — Suggest three colours to play, favouring combos you've never "

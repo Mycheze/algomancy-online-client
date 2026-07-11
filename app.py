@@ -15,6 +15,7 @@ Endpoints
   GET  /api/colors       suggest a fresh 3-colour deck + this session's coverage
   POST /api/colors/played {colors, session_id} -> record a combo as played
   GET  /api/card?name=   fuzzy card lookup (stats, oracle text, rulings, art url)
+  GET  /api/search?q=    find cards from a description (oracle text, keywords, stats)
   GET  /art/{name}       card art image
   /icons/...             game icon images (Icons/)
 
@@ -159,13 +160,12 @@ def render_card_text_html(text):
     codes handled, and known game-icon tokens swapped for <img> icons."""
     if not text:
         return ""
-    # Escape first; the formatting codes ({/n}, {i}, [augment], …) contain no
-    # HTML-special characters, so they survive escaping intact and we can match
-    # them next. Icon <img> tags are injected afterward, so they stay live.
-    t = escape(text)
-    t = t.replace("{/n}", "<br>")
-    t = re.sub(r"\{/?i\d*\}", "", t)              # italic markers {i} {i1} {/i}
-    t = t.replace("{g}", "").replace("{p}", "")   # attribute colour markers
+    # cards.plain_text resolves the JSON's formatting codes ({/n} -> a newline,
+    # {i}, {g}) — the same pass the bot and the search index use, so a new code is
+    # handled in one place. Escape after it, and before injecting any <img>: the
+    # game tokens it leaves behind ([Switch], {Haste}) contain no HTML-special
+    # characters, so they survive escaping intact for the icon pass below.
+    t = escape(cards.plain_text(text)).replace("\n", "<br>")
     return core.ICON_TOKEN_RE.sub(_sub_token_html, t)
 
 
@@ -263,6 +263,35 @@ def api_card(name: str):
         "complexity": card.get("complexity", ""),
         "art_url": _art_url(matched),
         "alts": alts,
+    }
+
+
+@app.get("/api/search")
+def api_search(q: str, limit: int = 8):
+    """Find cards from a free-text DESCRIPTION — the web twin of `&search`.
+
+    Same ranking as the bot (cards.CardIndex.search); the page shows the best
+    match as a full card panel, identical to `/card`, and lists the runners-up
+    with the line of text that matched.
+    """
+    query = (q or "").strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="Empty search.")
+    hits = core.cards.search(query, limit=max(1, min(limit, 20)))
+    return {
+        "query": query,
+        "results": [{
+            "name": h.name,
+            "type_html": render_card_text_html(h.card.get("type", "")),
+            "cost_html": render_cost_html(h.card.get("cost", "")),
+            "power": h.card.get("power", ""),
+            "toughness": h.card.get("toughness", ""),
+            "factions_html": render_factions_html(core.cards.factions(h.card)),
+            # The line that made this a candidate — rendered like any card text,
+            # so [Switch1] / {Haste} come through as icons in the result list too.
+            "snippet_html": render_card_text_html(h.snippet()),
+            "art_url": _art_url(h.name),
+        } for h in hits],
     }
 
 

@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+"""
+test_search.py — offline tests for card search (cards.CardIndex.search, behind
+`&search` / `/search`). Run: `.venv/bin/python test_search.py`. No network, no
+Discord token, no DeepSeek key needed.
+
+Covers: the ranking cases that justify each part of the design — Algomancy's own
+vocabulary (delete/negate/recall, not destroy/counter/return), keyword-meaning
+indexing (Slink is the only {Thieving} card and the word "draw" appears nowhere
+on it), the structured cues (element, P/T, cost, spell-vs-unit), typo repair, and
+name queries still behaving like `&card`.
+
+These are ranking assertions, so they're the regression net for the tuning
+constants in cards.py: if a weight or boost is changed, the ones that break tell
+you what that change actually cost.
+"""
+
+from cards import CardIndex
+
+PASS = 0
+cards = CardIndex()
+
+
+def check(name, cond):
+    global PASS
+    assert cond, f"FAIL: {name}"
+    PASS += 1
+    print(f"  ok  {name}")
+
+
+def rank(query, name, limit=370):
+    """1-based rank of `name` in the results for `query`, or None if unranked."""
+    for i, hit in enumerate(cards.search(query, limit=limit), 1):
+        if hit.name == name:
+            return i
+    return None
+
+
+def top(query):
+    hits = cards.search(query, limit=1)
+    return hits[0].name if hits else None
+
+
+# --- a name typed into search still behaves like `&card` -----------------
+# The whole promise of the command is "find the card whether or not you remember
+# what it's called", so the name path must not regress in service of the rest.
+print("names")
+check("exact name wins", top("Fireball") == "Fireball")
+check("exact name wins (lowercase)", top("wisp") == "Wisp")
+check("partial name wins", top("scrapyard") == "Scrapyard Custodian")
+check("misspelled name still lands", top("firebal") == "Fireball")
+
+
+# --- Algomancy's vocabulary, not the player's ----------------------------
+# No card in the game says "destroy", "counter a spell", or "return to hand" —
+# they say delete, negate, recall. Without alias expansion these find nothing,
+# however good the ranking is.
+print("\nvocabulary")
+check("'destroy' finds a Delete card",
+      "Delete" in (cards.search("destroy all units with -1/-1 counters")[0]
+                   .card.get("text") or ""))
+check("'counter a spell' finds a Negate card (not a +1/+1 counter card)",
+      "Negate" in (cards.search("counter a spell")[0].card.get("text") or ""))
+check("bare 'counters' still means +1/+1 counters",
+      "counter" in (cards.search("put counters on my units")[0]
+                    .card.get("text") or "").lower())
+check("'return to my hand' finds a Recall card",
+      any("ecall" in (h.card.get("text") or "")
+          for h in cards.search("return a unit from the bin to my hand", limit=4)))
+check("'creature' finds units", "Unit" in cards.search("big creature")[0].card["type"])
+
+
+# --- keyword-meaning indexing --------------------------------------------
+# A card is findable by what its attributes DO. Slink is the game's only
+# {Thieving} unit and the word "draw" appears nowhere on it — it can only be
+# found by a description if the index knows Thieving *means* "draw on damage".
+print("\nkeyword meanings")
+slink = cards.cards["Slink"]
+check("Slink never says 'draw'", "draw" not in (slink.get("text") or "").lower())
+check("…but 'draws a card when it hits the player' finds it",
+      (rank("unit that draws a card when it hits the player", "Slink") or 99) <= 3)
+check("'trample' finds a {Piercing} card",
+      "{Piercing}" in cards.search("unit with trample")[0].card["type"])
+check("'first strike' finds a {Swift} card",
+      "{Swift}" in cards.search("first strike unit")[0].card["type"])
+check("'can't be blocked' finds a {Sneaky} card",
+      "{Sneaky}" in cards.search("unit that cant be blocked")[0].card["type"])
+check("'deathtouch' finds a {Deadly} card",
+      any("{Deadly}" in h.card["type"] for h in cards.search("deathtouch", limit=3)))
+
+
+# --- structured cues ------------------------------------------------------
+print("\ncues")
+check("element word floats that element",
+      "wood" in cards.factions(cards.search("green unit that draws a card")[0].card))
+check("colour alias works (red -> fire)",
+      "fire" in cards.factions(cards.search("red unit with haste")[0].card))
+check("a remembered P/T re-ranks the field",
+      (rank("fire 2/1 with haste", "Cinder Scuttler") or 99) <= 2)
+check("'spell' prefers an actual Spell over a Unit that mentions damage",
+      "Spell" in cards.search("spell that deals damage to any target")[0].card["type"])
+check("the digits of a 2/1 aren't searched as words",
+      # "2" and "1" must not drag in every card that deals 2 damage: the top hit
+      # for a bare stat line is a card that actually has those stats.
+      (cards.search("2/1")[0].card.get("power"),
+       cards.search("2/1")[0].card.get("toughness")) == ("2", "1"))
+
+
+# --- typos ----------------------------------------------------------------
+print("\ntypos")
+check("'poisonus' -> {Poisonous}",
+      "{Poisonous}" in cards.search("poisonus unit")[0].card["type"])
+check("'flyng' -> {Flying}",
+      any("{Flying}" in h.card["type"] for h in cards.search("flyng unit", limit=3)))
+
+
+# --- hygiene --------------------------------------------------------------
+print("\nhygiene")
+check("empty query returns nothing", cards.search("") == [] and cards.search("   ") == [])
+check("gibberish doesn't crash", isinstance(cards.search("zzxqwv"), list))
+check("limit is honoured", len(cards.search("unit", limit=5)) == 5)
+check("components/reference cards are never results",
+      all(h.name != "Cardback" for h in cards.search("cardback", limit=370)))
+check("results carry a snippet", all(isinstance(h.snippet(), str)
+                                     for h in cards.search("draw a card", limit=5)))
+check("scores are sorted descending",
+      [round(h.score, 6) for h in cards.search("fire unit", limit=8)]
+      == sorted((round(h.score, 6) for h in cards.search("fire unit", limit=8)),
+                reverse=True))
+
+# --- web endpoint ---------------------------------------------------------
+# The bot and the page must agree, so the endpoint is tested against the same
+# ranking the checks above pin down.
+print("\nweb endpoint")
+
+from fastapi.testclient import TestClient  # noqa: E402
+
+import app as webapp  # noqa: E402
+
+with TestClient(webapp.app) as client:
+    r = client.get("/api/search", params={"q": "wood unit that draws a card when it dies"})
+    check("200 for a description", r.status_code == 200)
+    body = r.json()
+    check("endpoint agrees with the index",
+          [x["name"] for x in body["results"]][:3]
+          == [h.name for h in cards.search(body["query"], limit=8)][:3])
+    check("results carry art + a rendered snippet",
+          all(x["art_url"] and x["snippet_html"] for x in body["results"][:3]))
+    check("game icons are rendered in the snippet, as on a card",
+          any('<img class="icon"' in x["snippet_html"]
+              for x in client.get("/api/search",
+                                  params={"q": "graft create a robot"}).json()["results"]))
+    check("the top hit resolves through /api/card, so search ends where &card ends",
+          client.get("/api/card",
+                     params={"name": body["results"][0]["name"]}).status_code == 200)
+    check("empty query is a 400",
+          client.get("/api/search", params={"q": "  "}).status_code == 400)
+    check("no match is an empty list, not an error",
+          client.get("/api/search", params={"q": "zzxqwv"}).json()["results"] == [])
+    check("limit is honoured",
+          len(client.get("/api/search",
+                         params={"q": "unit", "limit": 3}).json()["results"]) == 3)
+
+print(f"\n{PASS} checks passed ✅")

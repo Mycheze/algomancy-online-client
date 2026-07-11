@@ -14,9 +14,9 @@ Algomancy/
 ├── build_corpus.py   → builds the embeddings-ready chunk corpus from the two dirs above
 ├── retriever.py      → shared TF-IDF retrieval core (used by ask.py and the bot)
 ├── ask.py            → keyword search over the corpus (test data quality / ask rules Qs)
-├── cards.py          → card index: fuzzy name matching + art resolution
+├── cards.py          → card index: fuzzy name matching, description search, art
 ├── combos.py         → which 3-colour decks you've played + what to play next
-├── bot.py            → Discord bot (&ask RAG + &card lookup, DeepSeek-powered)
+├── bot.py            → Discord bot (&ask RAG + &card/&search lookup, DeepSeek-powered)
 └── corpus/           → generated: algomancy_corpus.jsonl (run build_corpus.py to (re)build)
 ```
 
@@ -109,6 +109,9 @@ OpenAI-compatible API) for generation.
   with a "Did you mean…" hint when the match is ambiguous. (No AI → no logging.)
   Look up several at once with commas — `&card Sprouter, Overbloom, Plodding Pebble`
   — up to 10 per message (no card name contains a comma, so it's a safe separator).
+- **`&search <description>`** — the same lookup for when you *can't* name the card
+  (see below). `&search wood unit that draws a card when it dies` → the best match
+  as a full card embed, runners-up in a dropdown. (No AI → no logging.)
 - **`&colors`** — suggests three colours to play next (see below). `&colors stats`
   shows your coverage; `&played fire earth wood` records a game directly.
 - **`&p1p1` / `&p1p6`** — pack-1-pick-X draft practice (see below). Posts a
@@ -142,6 +145,53 @@ Both credentials are positional arguments; either can instead come from the
 overrides the model, which defaults to `deepseek-v4-flash` (cheapest).
 Requires the **Message Content Intent** enabled on the Discord application.
 Generation is the only networked/paid part — retrieval and card lookup are local.
+
+## Card search (`cards.py` → `&search` / `/search`)
+
+`&card` needs the name. `&search` is for the much more common situation — you
+remember what a card *did*, not what it was called:
+
+```
+&search wood unit that draws a card when it dies
+&search counter a spell
+&search 2/1 fire unit with haste
+&search unit with trample
+```
+
+It ends where `&card` ends: the best match rendered as a full card (art, stats,
+oracle text, rulings), with the runners-up one tap away — a Discord dropdown, or a
+tap-to-swap list on the web. The ranking lives in `cards.CardIndex.search`, so both
+front-ends get the same results from one implementation. No AI and no network: 370
+cards is small enough to score the whole set on every query, in memory.
+
+It's BM25 over each card's fields, but the ranking is only half the problem. Three
+things do the actual work:
+
+- **The game's vocabulary, not the player's.** No Algomancy card says *destroy*
+  (they say **delete**), *counter a spell* (**negate**), *return to hand*
+  (**recall**), *enters play* (**spawn**), *creature* (**unit**), or *graveyard*
+  (**bin**). Those queries retrieve nothing however well they're ranked, so the
+  typed word is expanded to the printed one — while keeping the typed one, since
+  "discard" is both a synonym for the bin and a thing two cards literally do.
+  Idioms are matched as phrases, because *"counter a spell"* means negate while a
+  bare *"counter"* means a +1/+1 counter and must be left alone.
+- **What keywords mean, not just what they're called.** Each card is indexed with
+  the *definitions* of its attributes. `Slink` is the only `{Thieving}` card in the
+  game and the word "draw" appears nowhere on it — "unit that draws a card when it
+  hits the player" can only find it because the index knows Thieving **is** that
+  sentence. Same trick maps trample → `{Piercing}`, deathtouch → `{Deadly}`,
+  "can't be blocked" → `{Sneaky}`.
+- **The details you half-remember.** An element (`green`, or `red` → fire), a stat
+  line (`2/1`), a cost (`costs 3`), spell-vs-unit. These *lift* the cards that fit
+  rather than filtering out the ones that don't, so a wrong guess re-ranks the
+  field instead of emptying it — and a cue can be the whole query (`2/1` alone is a
+  perfectly good search). Typos are repaired against the card vocabulary, so
+  `flyng` and `poisonus` still land.
+
+Ranking is a tuning problem, so the tuning has a regression net: `test_search.py`
+asserts the *rank* of the expected card for each of these cases
+(`.venv/bin/python test_search.py`, 28 checks, offline). Change a weight and the
+checks that break tell you what it cost.
 
 ## Colour-combo suggestions (`combos.py`)
 
@@ -248,7 +298,7 @@ card art, real game icons, markdown answers, and conversation follow-ups kept in
 the browser. Same 👍/🤔/👎 feedback and training-data logging as the bot.
 
 Endpoints: `GET /` (the chat UI), `POST /api/ask`, `POST /api/feedback`,
-`GET /api/card?name=`, `GET /api/colors`, `POST /api/colors/played`,
+`GET /api/card?name=`, `GET /api/search?q=`, `GET /api/colors`, `POST /api/colors/played`,
 `GET /api/draft?mode=&seed=`, `GET /art/{name}`, and `/icons/...`. The page is a single static file
 (`static/index.html`, vanilla JS — no build step).
 
@@ -260,8 +310,9 @@ python3 app.py <DEEPSEEK_API_KEY>
 # → serves on http://0.0.0.0:8000  (--host/--port to change; --model to override)
 ```
 
-In the UI, ask a rules question normally, type `/card <name>` to look one up, or
-`/colors` for a fresh 3-colour deck suggestion.
+In the UI, ask a rules question normally, type `/card <name>` to look one up,
+`/search <description>` to find a card you can't name (tap any result to swap the
+card shown), or `/colors` for a fresh 3-colour deck suggestion.
 
 ### Share it publicly (Cloudflare Tunnel)
 
