@@ -29,6 +29,48 @@ FACTION_EMOJI = {
     "fire": "🔥", "water": "💧", "earth": "⛰️", "metal": "⚙️", "wood": "🌿",
 }
 
+# --- auto-linking card names in prose ------------------------------------
+# The web app turns every card name it finds in an answer into a hover-preview
+# link. Two families of name break that, because they are also ordinary words in
+# any sentence about the rules — and an answer about the battle phase should not
+# be strewn with links to a card called Battle.
+
+# 1. Components and reference cards. In the index because they have art, but no
+# one wants a preview of the cardback, and they'd match constantly. Never linked.
+NON_CARD_NAMES = {
+    "Cardback", "Blank Card", "Generic Unit", "Turn Structure",
+    "1v1 Turn Structure", "Initiative Back", "Player Icons Card",
+    "Player Keywords Card",
+} | {f"Stolen Card {i}" for i in range(1, 11)}
+
+# 2. Real cards whose names double as everyday Algomancy vocabulary. These link
+# only when BOTH hold: the text uses the card's exact capitalisation (so "the
+# battle phase" and "you recall a unit" are left alone), AND the word isn't
+# hemmed in by one of the rules words below — "during Battle" and "the Battle
+# phase" are the phase, not the card, however they're capitalised. Extend this
+# list whenever a card name starts showing up as noise; it's just vocabulary.
+AMBIGUOUS_NAMES = {
+    "Battle", "Fight", "Initiative", "Recall", "Poison", "Crystal", "Intent",
+    "Left", "Right", "Stay", "Robot", "Jelly", "Overwhelm", "Discharge",
+    "Download", "Perish", "Squish", "Formless", "Foretell", "Rebalance",
+    "Reconfigure", "Resurrect", "Unmake", "Abduct", "Manufacture",
+    "Dormant Resource", "Shard Resource", "Fire Resource", "Water Resource",
+    "Earth Resource", "Wood Resource", "Metal Resource",
+}
+# A word immediately BEFORE an ambiguous name that marks it as game-speak.
+LINK_VETO_BEFORE = {
+    "during", "in", "into", "throughout", "before", "after", "each", "every",
+    "this", "that", "your", "their", "our", "my", "no", "any",
+}
+# …and immediately AFTER ("Battle phase", "Poison counters", "Initiative team").
+LINK_VETO_AFTER = {
+    "phase", "phases", "step", "steps", "damage", "spell", "spells", "token",
+    "tokens", "counter", "counters", "attribute", "attributes", "keyword",
+    "keywords", "ability", "abilities", "team", "teams", "player", "players",
+    "order", "symbol", "icon", "zone", "timing", "window", "windows", "rule",
+    "rules",
+}
+
 
 def _norm(s):
     """Lowercase and collapse non-alphanumerics for forgiving comparison."""

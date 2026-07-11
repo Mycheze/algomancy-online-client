@@ -460,6 +460,36 @@ RESOURCE_NAMES = {
 }
 ICON_TOKEN_RE = re.compile(r"\[[^\[\]]+\]|\{[^{}]+\}")
 
+# Prose icons. Answers quote card text back at the reader ("[Switch1] triggers
+# once per turn"), so the same tokens need rendering in an LLM answer, not just in
+# a card embed. This regex matches ONLY the tokens we have an icon for — unlike
+# ICON_TOKEN_RE, which matches any bracketed text and is safe only over card text,
+# where every bracket is a game token. In prose, brackets belong to markdown links
+# and to our own [source:tag] citations, so anything unknown must be left alone.
+ICON_PROSE_RE = re.compile(
+    "|".join(re.escape(t) for t in sorted(ICON_NAMES, key=len, reverse=True)),
+    re.IGNORECASE)
+
+
+def render_icons(text, render):
+    """Swap game-icon tokens in prose ([Switch1], {Battle}, …) for icons.
+
+    `render(icon_name, fallback)` is the front-end's renderer — the same signature
+    the two front-ends already use for card text — so the bot gets custom emojis
+    and the web app gets <img> tags from one pass here. The fallback it receives if
+    the icon is missing keeps [Switch1] bracketed (the brackets read as a keyword)
+    but bares a {Battle} attribute, matching how card text degrades.
+    """
+    if not text:
+        return text
+
+    def sub(m):
+        tok = m.group(0)
+        fallback = tok[1:-1] if tok[0] == "{" else tok
+        return render(ICON_NAMES[tok.lower()], fallback)
+
+    return ICON_PROSE_RE.sub(sub, text)
+
 
 def cited_card_paths(answer, hits, limit=10):
     """For each *card* the answer actually cited (and that has art), return

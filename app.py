@@ -52,6 +52,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+import cards
 from cards import FACTION_COLOR
 
 ROOT = Path(__file__).resolve().parent
@@ -114,9 +115,12 @@ def _art_url(title: str) -> str | None:
 
 # Card names that have art — sent to the page so it can detect card mentions in
 # answer text and show hover/tap previews. Computed once (art presence is static);
-# names < 3 chars are dropped to avoid spurious matches inside ordinary words.
+# names < 3 chars are dropped to avoid spurious matches inside ordinary words, and
+# so are the components/reference cards (Cardback, Turn Structure, …), which are in
+# the index for their art but are never worth linking mid-sentence.
 CARD_NAMES_WITH_ART = sorted(
-    (n for n in core.cards.names if len(n) >= 3 and core.cards.art_path(n)),
+    (n for n in core.cards.names
+     if len(n) >= 3 and n not in cards.NON_CARD_NAMES and core.cards.art_path(n)),
     key=len, reverse=True)
 
 
@@ -217,6 +221,10 @@ async def api_ask(req: AskRequest):
     return {
         "response_id": rid,
         "answer": display,                  # markdown with citation superscripts
+        # Same text with icon tokens ([Switch1], [Augment], …) swapped for <img>
+        # icons — for display only. `answer` stays plain because the page sends it
+        # back as conversation history, and history should carry no markup.
+        "answer_display": core.render_icons(display, _icon_img),
         "sources": _sources_payload(sources),
         "cited_cards": cited_cards,
         "reasoning": reasoning,
@@ -260,8 +268,15 @@ def api_card(name: str):
 
 @app.get("/api/cardnames")
 def api_cardnames():
-    """Names of cards that have art, for in-text hover/tap previews on the page."""
-    return {"names": CARD_NAMES_WITH_ART}
+    """Names of cards that have art, for in-text hover/tap previews on the page,
+    plus the rules for the ones whose names are also ordinary words (see
+    cards.AMBIGUOUS_NAMES) — the page matches names, so it needs the vocabulary."""
+    return {
+        "names": CARD_NAMES_WITH_ART,
+        "ambiguous": sorted(cards.AMBIGUOUS_NAMES),
+        "veto_before": sorted(cards.LINK_VETO_BEFORE),
+        "veto_after": sorted(cards.LINK_VETO_AFTER),
+    }
 
 
 # Curated example questions for the greeting suggestion (one shown at random per

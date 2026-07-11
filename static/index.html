@@ -393,7 +393,10 @@ async function ask(question, ctx) {
       bubble.innerHTML = `<span class="err">⚠️ ${esc(detail)}</span>`; scroll(); return;
     }
     const data = await res.json();
-    bubble.innerHTML = md(data.answer) + sourcesHtml(data.sources) + cardsHtml(data.cited_cards)
+    // answer_display has the game icons as <img>; data.answer stays plain text and
+    // is what we send back as history (below), so no markup leaks into the model.
+    bubble.innerHTML = md(data.answer_display || data.answer)
+                     + sourcesHtml(data.sources) + cardsHtml(data.cited_cards)
                      + feedbackHtml(data.response_id, data.model, data.reasoning);
     wireFeedback(botEl);
     linkifyCards(botEl);
@@ -763,17 +766,40 @@ let tipName = null;
 
 const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+// Cards whose names are also ordinary rules words (Battle, Fight, Recall …) —
+// see cards.AMBIGUOUS_NAMES. Matched case-insensitively like everything else, but
+// only *kept* by isCardMention() below.
+const AMBIGUOUS = new Set();                 // lowercase names needing the extra test
+const VETO_BEFORE = new Set(), VETO_AFTER = new Set();
+
 // Fetch the card-name list once, then build a single boundary-anchored regex
 // (longest names first so multi-word names win over any shorter name inside them).
 fetch('/api/cardnames').then(r => r.json()).then(d => {
   const names = d.names || [];
   CARD_LIST = names;
   names.forEach(n => NAME_MAP[n.toLowerCase()] = n);
+  (d.ambiguous || []).forEach(n => AMBIGUOUS.add(n.toLowerCase()));
+  (d.veto_before || []).forEach(w => VETO_BEFORE.add(w));
+  (d.veto_after || []).forEach(w => VETO_AFTER.add(w));
   const alt = [...names].sort((a, b) => b.length - a.length).map(escapeRe).join('|');
   if (alt) CARD_RE = new RegExp('(?<![\\w])(?:' + alt + ')(?![\\w])', 'gi');
   linkifyCards(wrap);                        // process anything already on screen
   pickSuggestions();                       // now we can suggest a real card
 }).catch(() => {});
+
+const wordBefore = s => (s.match(/([\w'-]+)[^\w]*$/) || [])[1] || '';
+const wordAfter  = s => (s.match(/^[^\w]*([\w'-]+)/) || [])[1] || '';
+
+// Is this match a real mention of the card, or just the English word? Ordinary
+// names always pass. An ambiguous one (Battle, Fight, …) has to be written with
+// the card's own capitalisation AND not sit next to a word that gives it away as
+// rules-speak — "the Battle phase" and "during Battle" are the phase, not the card.
+function isCardMention(matched, canonical, before, after) {
+  if (!AMBIGUOUS.has(canonical.toLowerCase())) return true;
+  if (matched !== canonical) return false;
+  return !VETO_BEFORE.has(wordBefore(before).toLowerCase())
+      && !VETO_AFTER.has(wordAfter(after).toLowerCase());
+}
 
 // Wrap every card-name mention in `root` with a <span class="cardlink">. Walks
 // text nodes only, skipping code/links/buttons and already-wrapped names.
@@ -795,16 +821,21 @@ function linkifyCards(root) {
     const text = t.nodeValue; CARD_RE.lastIndex = 0;
     if (!CARD_RE.test(text)) continue;
     CARD_RE.lastIndex = 0;
-    const frag = document.createDocumentFragment(); let last = 0, m;
+    const frag = document.createDocumentFragment(); let last = 0, m, linked = false;
     while (m = CARD_RE.exec(text)) {
+      const canonical = NAME_MAP[m[0].toLowerCase()] || m[0];
+      if (!isCardMention(m[0], canonical, text.slice(0, m.index),
+                         text.slice(m.index + m[0].length))) continue;  // just the word
       if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
       const span = document.createElement('span');
       span.className = 'cardlink';
-      span.dataset.card = NAME_MAP[m[0].toLowerCase()] || m[0];
+      span.dataset.card = canonical;
       span.textContent = m[0];
       frag.appendChild(span);
       last = m.index + m[0].length;
+      linked = true;
     }
+    if (!linked) continue;                    // every match was an ordinary word
     if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
     t.parentNode.replaceChild(frag, t);
   }
