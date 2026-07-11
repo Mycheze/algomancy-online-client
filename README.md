@@ -15,6 +15,7 @@ Algomancy/
 ├── retriever.py      → shared TF-IDF retrieval core (used by ask.py and the bot)
 ├── ask.py            → keyword search over the corpus (test data quality / ask rules Qs)
 ├── cards.py          → card index: fuzzy name matching + art resolution
+├── combos.py         → which 3-colour decks you've played + what to play next
 ├── bot.py            → Discord bot (&ask RAG + &card lookup, DeepSeek-powered)
 └── corpus/           → generated: algomancy_corpus.jsonl (run build_corpus.py to (re)build)
 ```
@@ -80,6 +81,20 @@ python3 ask.py "can I target opponents during deployment" -k 8
 python3 ask.py "graft timing" --type rulebook,glossary --full
 ```
 
+## Front-ends share one brain (`core.py`)
+
+The RAG core — retrieval, the verified rules **primer**, the system prompt, the
+DeepSeek call with the "math-mode" reasoning router, and citation rendering —
+lives in **`core.py`** and knows nothing about Discord or HTTP. Two front-ends
+import it, so there is a single brain behind both and edits to the primer/prompt
+apply everywhere:
+
+- **`bot.py`** — the Discord bot.
+- **`app.py`** — the web app (use it without Discord; share a link).
+
+Both also reuse **`store.py`**, so every answer and 👍/🤔/👎 rating is logged to
+the same `logs/` files for training, no matter which front-end produced it.
+
 ## Discord bot (`bot.py`)
 
 A Discord rules bot that pairs the TF-IDF retriever with **DeepSeek** (cheap,
@@ -94,6 +109,11 @@ OpenAI-compatible API) for generation.
   with a "Did you mean…" hint when the match is ambiguous. (No AI → no logging.)
   Look up several at once with commas — `&card Sprouter, Overbloom, Plodding Pebble`
   — up to 10 per message (no card name contains a comma, so it's a safe separator).
+- **`&colors`** — suggests three colours to play next (see below). `&colors stats`
+  shows your coverage; `&played fire earth wood` records a game directly.
+- **`&p1p1` / `&p1p6`** — pack-1-pick-X draft practice (see below). Posts a
+  reproducible pack as one numbered image with tap-to-pick buttons and a
+  discussion thread. `&p1p6 <seed>` replays or shares an exact pack.
 
 **Training data + feedback.** Every AI answer (`&ask` and thread follow-ups) is
 logged append-only to `logs/responses.jsonl` — self-contained for offline training:
@@ -122,6 +142,155 @@ Both credentials are positional arguments; either can instead come from the
 overrides the model, which defaults to `deepseek-v4-flash` (cheapest).
 Requires the **Message Content Intent** enabled on the Discord application.
 Generation is the only networked/paid part — retrieval and card lookup are local.
+
+## Colour-combo suggestions (`combos.py`)
+
+A deck is three of the game's colours mixed together. With the base five that's
+**10 distinct combos** — few enough that a playgroup drifts back to the same
+handful without noticing. This tracks what you've played and steers you toward
+what you haven't.
+
+The rule has two layers. **Coverage** decides which combos are eligible;
+**freshness** decides which eligible one you actually get.
+
+- **Coverage.** While you have never-played combos left, only those are eligible —
+  so you always see all of them before repeating any. Once they're all played,
+  the **stalest third** (longest untouched) becomes eligible instead.
+- **Freshness.** Among the eligible combos, it picks the one whose *colours* you've
+  used least recently, breaking ties at random. Coverage alone doesn't keep things
+  fresh: Fire·Earth·Metal followed by Fire·Earth·Wood is a brand-new trio, but it's
+  the same game two nights running. Freshness pushes the pick away from the colours
+  in your recent games (`FRESHNESS_HORIZON` = how many games back that looks).
+
+With 5 colours and 3 per deck, consecutive games *must* share at least one colour
+(3 + 3 > 5), so the goal is minimising overlap, not eliminating it. Over a full
+10-game cycle this takes the average overlap from **1.67 colours down to 1.06**
+(the floor is 1.00) and the longest run of one colour from **6 games down to 3**.
+Under the expansion's 7 colours a fully disjoint follow-up becomes possible, and
+it finds one: average overlap drops to **0.10**.
+
+**Nothing is recorded until you confirm.** `&colors` (Discord) or `/colors` (web)
+only *suggests*; the combo is logged when you hit ✅ **We played this**, so
+re-rolling a suggestion you don't fancy never pollutes your history. Re-rolling
+also avoids handing you back the combo you just declined. A repeat confirm within
+six hours is treated as a double-click, not a second game.
+
+History is **per person**, appended to `logs/games.jsonl` and keyed by Discord
+user id or — on the web — the same stable per-browser id already used for feedback,
+so nobody needs an account. Both front-ends read the one file, so a game logged in
+Discord shows up on the website immediately.
+
+```
+&colors                     → 🎲 Fire · Earth · Wood, "you've never played this one",
+                              a 3/10 progress bar, and the list of untouched combos
+&colors stats               → your full history: counts, last-played dates, what's left
+&played fire earth wood     → record a game directly (aliases work: `&played r e g`)
+```
+
+On the web, `/colors`, `/colors stats`, and `/colors fire earth wood` do the same.
+
+### When the expansion lands
+
+Light and Dark take this from 10 combos to **35** (`C(7,3)`). The only change
+needed is appending them to `COLORS` in `combos.py` — the combo list, coverage,
+progress bar, parsing, and both UIs all derive from that tuple. Existing history
+stays valid. (New icons for the two colours would need adding to `Icons/` and the
+Discord guild separately; a missing icon degrades to the colour's name as text.)
+
+## Pack-1-pick-X draft practice (`draft.py`)
+
+Draft practice that follows Algomancy's real live-draft rules, on both front-ends.
+Framework-agnostic like `combos.py`; the pure engine has no third-party deps and
+image rendering (Pillow) is imported lazily.
+
+- **`&p1p1` / `/p1p1`** — a standard **10-card pack, pick 1**, from the whole
+  draftable set (the 5 elements + all 10 two-colour hybrid pairs). The classic
+  "what's the best card here?" exercise.
+- **`&p1p6` / `/p1p6`** — a **turn-1 live-draft scenario**. The Manual deals each
+  player 16 cards on turn 1 (4 opening hand + 10 pack + 2 first draw), combined
+  into a pile of 16 to draft, keeping 6. So this is a **16-card pack you pick 6
+  from**, built from **3 randomly chosen elements** plus the 3 hybrid pairs among
+  them (live draft for 2-3 players uses 3 elements).
+
+The **draftable pool** is filtered to exactly the real drafted deck — **54 cards
+per element** (matching the Manual) + 50 hybrids = 320 cards. Colourless Prismite/
+Shard resources, Kickstarter Glitch cards, tokens, help cards, and card backs are
+excluded.
+
+**Seeds.** Every pack has a short **code** like `p1p6-7GK2QX`. The same code
+always reproduces the same three elements and same cards, so you can save a pack,
+replay it, paste it into the other front-end, or send it to a friend. A bare
+command mints a fresh random code; `&p1p6 <seed>` (any string) forces one. On the
+web, packs also carry a **deep-link URL** (`/?draft=p1p6-7GK2QX`) that loads the
+exact pack, and a copy-seed / copy-link button.
+
+**Discord.** The pack is one composite image with numbered slots and a row of
+tap-to-pick **buttons** (per-user, tracked privately). The moment someone
+completes their picks, their chosen cards are rendered as an image into an
+auto-opened **discussion thread** ("what would you keep, and why?"). Buttons carry
+the pack code in their `custom_id`, so they survive restarts.
+
+**Web.** The pack renders as an interactive **tap-to-highlight grid** with a live
+`n/6` counter, a corner 🔍 zoom on each card, and dimming of the un-picked cards
+once you've chosen your set — no server round trip, all client-side.
+
+Endpoint: `GET /api/draft?mode=p1p1|p1p6&seed=` → the pack as JSON (slots with art
+URLs, elements, code). Offline-tested end to end in `test_draft.py`
+(`.venv/bin/python test_draft.py`) — pool counts, seeded determinism, preset
+rules, codes, image rendering, and the endpoint.
+
+## Web app (`app.py`)
+
+A small **FastAPI** chat website over the same `core.py` brain — for using the
+bot at the table without Discord, and for handing a plain link to people you're
+teaching (no "join a server"). It's actually a nicer surface than Discord: inline
+card art, real game icons, markdown answers, and conversation follow-ups kept in
+the browser. Same 👍/🤔/👎 feedback and training-data logging as the bot.
+
+Endpoints: `GET /` (the chat UI), `POST /api/ask`, `POST /api/feedback`,
+`GET /api/card?name=`, `GET /api/colors`, `POST /api/colors/played`,
+`GET /api/draft?mode=&seed=`, `GET /art/{name}`, and `/icons/...`. The page is a single static file
+(`static/index.html`, vanilla JS — no build step).
+
+```
+pip install -r requirements.txt
+
+# DeepSeek key on the command line, or from DEEPSEEK_API_KEY env / .env:
+python3 app.py <DEEPSEEK_API_KEY>
+# → serves on http://0.0.0.0:8000  (--host/--port to change; --model to override)
+```
+
+In the UI, ask a rules question normally, type `/card <name>` to look one up, or
+`/colors` for a fresh 3-colour deck suggestion.
+
+### Share it publicly (Cloudflare Tunnel)
+
+The app binds to `0.0.0.0`, so anyone on your home Wi-Fi can already reach it at
+`http://192.168.100.5:8000`. To hand a link to people **anywhere** — no
+port-forwarding, no exposing your IP, free — put a Cloudflare Tunnel in front:
+
+```
+# one-time install (Debian/Ubuntu); see Cloudflare docs for other distros
+# https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
+cloudflared --version
+
+# quick, throwaway public URL (prints a https://<random>.trycloudflare.com link):
+cloudflared tunnel --url http://localhost:8000
+
+# …or a stable named tunnel on your own domain (survives restarts):
+#   cloudflared tunnel login
+#   cloudflared tunnel create algomancy
+#   cloudflared tunnel route dns algomancy rules.yourdomain.com
+#   cloudflared tunnel run --url http://localhost:8000 algomancy
+```
+
+Run `app.py` and `cloudflared` side by side on the server (the same box the
+Discord bot runs on). The quick `trycloudflare.com` URL is perfect for a game
+night; the named tunnel gives a memorable address you can reuse.
+
+> ⚠️ A public link means anyone with it can spend your DeepSeek credits. The
+> trycloudflare URL is random and unlisted, but for a long-lived public deploy
+> consider a simple access gate (Cloudflare Access, or a shared passphrase).
 
 ## TODO / next steps (picking back up tomorrow)
 
