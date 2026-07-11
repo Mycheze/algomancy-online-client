@@ -44,7 +44,7 @@ import store
 from cards import FACTION_COLOR, FACTION_EMOJI, plain_text
 from core import (ICON_NAMES, ICON_TOKEN_RE, RESOURCE_NAMES, answer_question,
                   cards, cited_card_paths, friendly_source, render_citations,
-                  render_icons, retriever)
+                  render_icons, retriever, uncode_icon_tokens)
 
 PREFIX = "&"
 
@@ -130,7 +130,10 @@ def answer_embed(question, answer, hits, reasoning=False):
     # Icon tokens the model quoted from card text ([Switch1], [Augment], …) become
     # the guild's custom emojis, so an answer reads like the cards do. `_emoji`
     # degrades to the literal token if the guild is missing that emoji.
-    display = render_icons(display, _emoji)
+    # uncode_icon_tokens first: Discord shows a custom emoji inside a code span as
+    # its raw <:name:id> source, and the model likes to quote card text in
+    # backticks — so the code formatting has to go for the emoji to survive.
+    display = render_icons(uncode_icon_tokens(display), _emoji)
     e = discord.Embed(
         title=f"❓ {question[:240]}",
         description=display[:4096],

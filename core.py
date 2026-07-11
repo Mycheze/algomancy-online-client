@@ -491,6 +491,35 @@ def render_icons(text, render):
     return ICON_PROSE_RE.sub(sub, text)
 
 
+# A markdown code span/fence renders its contents *literally*, which is exactly
+# what an icon has to avoid: whatever render_icons substitutes in would be shown as
+# its own source. Models quote card text constantly, and quoted card text is where
+# the tokens live, so this lands often. Matches a fenced block (with or without an
+# info string) or a single-backtick span; double-backtick spans are rare enough in
+# LLM prose to leave alone.
+CODE_RE = re.compile(r"```[^\n]*\n(?P<fence>.*?)```|`(?P<span>[^`\n]+)`", re.S)
+
+
+def uncode_icon_tokens(text):
+    """Drop the code formatting from any code span/fence that quotes an icon token.
+
+    For front-ends that cannot show an icon inside code. The web page doesn't need
+    this — it substitutes on the DOM after its markdown renderer has run, so the
+    <img> lands *inside* the <code> element — but Discord will not expand a custom
+    emoji inside a code span at all, and there is no markup that makes it. So the
+    bot trades the monospace for the icon: same information, formatted the only way
+    the platform allows. Spans with no icon token in them keep their formatting.
+    """
+    if not text:
+        return text
+
+    def sub(m):
+        inner = m.group("fence") if m.group("fence") is not None else m.group("span")
+        return inner if ICON_PROSE_RE.search(inner) else m.group(0)
+
+    return CODE_RE.sub(sub, text)
+
+
 def cited_card_paths(answer, hits, limit=10):
     """For each *card* the answer actually cited (and that has art), return
     (footnote_number, card_title, art_Path). Framework-agnostic — Discord wraps

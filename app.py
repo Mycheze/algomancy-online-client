@@ -220,12 +220,12 @@ async def api_ask(req: AskRequest):
         history=history, reasoning=reasoning, engine_version=core.ENGINE_VERSION)
 
     return {
+        # Markdown with citation superscripts, icon tokens ([Switch1], [Augment], …)
+        # left as-is: the page renders the markdown and then swaps the tokens for
+        # <img> icons on the DOM (see /api/icons). It's also what the page sends
+        # back as conversation history, so no markup leaks into the model.
         "response_id": rid,
-        "answer": display,                  # markdown with citation superscripts
-        # Same text with icon tokens ([Switch1], [Augment], …) swapped for <img>
-        # icons — for display only. `answer` stays plain because the page sends it
-        # back as conversation history, and history should carry no markup.
-        "answer_display": core.render_icons(display, _icon_img),
+        "answer": display,
         "sources": _sources_payload(sources),
         "cited_cards": cited_cards,
         "reasoning": reasoning,
@@ -343,6 +343,22 @@ def api_search(q: str, limit: int = 8):
             "art_url": _art_url(h.name),
         } for h in hits],
     }
+
+
+@app.get("/api/icons")
+def api_icons():
+    """Game-icon tokens ([Augment], {Battle}, …) mapped to their image.
+
+    The page swaps these in on the DOM *after* it renders an answer's markdown,
+    rather than us baking <img> into the answer text here. Answers quote card text,
+    and the model often quotes it inside a code span — whose contents a markdown
+    renderer escapes, so pre-baked HTML prints as source. Substituting on the DOM
+    puts the icon inside the code span instead of the tag's text. The token->name
+    mapping still lives in core, so both front-ends agree on what a token means.
+    """
+    return {"tokens": {tok: f"/icons/{name}.webp"
+                       for tok, name in core.ICON_NAMES.items()
+                       if name in AVAILABLE_ICONS}}
 
 
 @app.get("/api/cardnames")
