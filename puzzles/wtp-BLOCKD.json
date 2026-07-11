@@ -2,16 +2,21 @@
   "id": "wtp-BLOCKD",
   "title": "Is it lethal?",
   "question": "You attacked, they've declared their block, and nobody has anything left to play. They're at 9. Are they dead?",
-  "difficulty": "medium",
+  "difficulty": "easy",
   "phase": "Battle",
   "turn": "you",
   "initiative": "you",
   "you": {
     "name": "You",
     "life": 14,
-    "resources": {
-      "water": 6
-    },
+    "resources": [
+      "water",
+      "water",
+      "water",
+      "water",
+      "water",
+      "water"
+    ],
     "columns": [
       [
         {
@@ -40,9 +45,11 @@
   "opponent": {
     "name": "Opponent",
     "life": 9,
-    "resources": {
-      "metal": 3
-    },
+    "resources": [
+      "metal",
+      "metal",
+      "metal"
+    ],
     "columns": [
       [
         {
@@ -63,5 +70,5 @@
     "combat math",
     "lethal"
   ],
-  "created": "2026-07-11T17:25:23+00:00"
+  "created": "2026-07-11T20:02:20+00:00"
 }
