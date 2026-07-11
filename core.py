@@ -1,0 +1,478 @@
+#!/usr/bin/env python3
+"""
+core.py — the shared Algomancy rules "brain".
+
+This is the framework-agnostic RAG core: retrieval (BM25 over the rules corpus),
+the verified rules primer, the system prompt, the DeepSeek call with the "math
+mode" reasoning router, and citation rendering. It knows nothing about Discord or
+HTTP — both `bot.py` (Discord) and `app.py` (web) import from here so there is a
+single brain behind every front-end.
+
+Call `init_client(api_key, ...)` once at startup before `answer_question`.
+"""
+
+import hashlib
+import os
+import re
+from pathlib import Path
+
+from openai import AsyncOpenAI
+
+from cards import CardIndex
+import retriever as retr
+from retriever import CORPUS, Retriever
+
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
+DEEPSEEK_BASE = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+MAX_HISTORY = 8        # how many prior turns to resend as conversation context
+# 10, not 6: the rulings corpus is dense enough that 6 slots could be swept
+# entirely by edge-case rulings, leaving no room for the base rule they modify.
+# 10 slots + retriever's FOUNDATION_FLOOR keeps both on the table.
+TOP_K = 10             # chunks retrieved per question
+
+# "Math mode": stat/arithmetic questions (combat damage, buffs, Electric arcing,
+# Fireball-vs-Growth, regroup math) benefit from DeepSeek's thinking mode. We
+# auto-detect them and enable thinking only then, so the cost hits just the
+# questions that need it. DEEPSEEK_REASONING: "auto" (detect) | "off" | "always".
+REASONING_MODE = os.getenv("DEEPSEEK_REASONING", "auto").lower()
+REASONING_EFFORT = os.getenv("DEEPSEEK_REASONING_EFFORT", "high")
+
+# Verified core-rules digest, always supplied to the model so it has reliable
+# footing even when retrieval misses. Grounded in the Manual + Rules Glossary;
+# keep edits factual. Facts here are background — the model states them without a
+# [tag] (only retrieved passages get cited).
+PRIMER = """Core Algomancy primer (verified basic rules — always reliable background):
+- Algomancy is a live-draft card game by Caleb Gannon. Five elemental factions — \
+Fire, Water, Earth, Wood, Metal — plus colorless (faction-neutral) cards. Resources \
+of an element pay a card's mana cost AND satisfy that element's threshold requirement.
+- Goal: eliminate every opponent by reducing their life to zero (in team games, the \
+whole opposing team). Players typically start at 30 life.
+- A turn has four phases IN THIS ORDER: (1) Planning — refresh/untap resources, draw, \
+and draft cards; (2) Battle — declare attacks and blocks into formations and deal \
+combat damage; (3) Regroup; (4) Deployment — play cards and apply mods, then end the \
+turn. Regroup happens BEFORE Deployment, not at the very end of the turn.
+- Regroup is a clean-up step with no player actions: units return to their region, ALL \
+combat damage on units is removed, ALL temporary stat changes end (anything "until \
+regroup"), ALL Spell Tokens are erased, and all units leave their formation. So a 1/1 \
+buffed to 3/3 "until regroup" that took 1 damage goes back to a healthy 1/1 — the \
+damage is cleared at the same moment the buff ends; it does NOT become 1/0.
+- Tokens: Spell Tokens are temporary and erased at Regroup. Ordinary unit tokens are \
+NOT erased by Regroup — they persist like normal units until killed or removed. \
+"Leaving formation" is only a positional reset at Regroup; it is NOT leaving play / \
+being removed.
+- Combat: each spot where one player's attackers meet a defender is a Skirmish (at most \
+one per player). Creatures fight in Formations made of columns; a column holds at most \
+2 creatures (front and back). Creatures are Adjacent only orthogonally (left/right/ \
+front/back), never diagonally. Attributes (Flying, Poisonous, Electric, Deadly, etc.) \
+are shared between creatures in the same column ("vertically adjacent") — e.g. a Flying \
+creature in front of a Poisonous one makes the whole column Flying AND Poisonous; if \
+one leaves combat its column-mate loses the shared attribute. Flying units can only be \
+blocked by Flying units.
+- Modifications: both Augment (+) and Graft (switch-arrows) attach a card from your \
+DISCARD/bin (never your hand), paying its cost, onto a creature, which then gains the \
+added text. Graft can only target creatures that themselves have the graft symbol; \
+Augment can target any creature.
+- Graft placement and source. Like all modifications, a graft is played from your HAND or \
+your bin during the deployment phase (pay the card's cost, meet affinity). It goes onto a \
+card that has BOTH a graft symbol and a trigger, and it always goes UNDER that card — the \
+original card stays on top as the "main" card, keeping its name and stats, and ITS trigger \
+fires the combined effect. You canNOT graft a card on top to make it the new main creature. \
+The only choice you get is WHERE among the already-grafted cards the new one sits: if you \
+graft C onto a unit that reads A/B, you may make it A/B/C or A/C/B — but A stays on top, \
+and once placed the order is fixed for good. Grafts also only go on YOUR OWN units (unlike \
+a Virus): an opponent's units aren't available to target during your deployment. If the \
+glossary's Graft entry says you can put the card "on top or beneath", that wording is \
+outdated — under only.
+- Bounded vs unbounded graft (the switch-arrow shown as [Switch]/[Switch1] in a card's \
+ability text): this symbol caps how often that triggered effect can fire IN A TURN. The \
+UNBOUNDED form ([Switch]) can trigger an unlimited number of times per turn; the BOUNDED \
+form ([Switch1]) triggers at most ONCE PER TURN. So a unit whose trigger is bounded \
+(e.g. "When I become targeted, [Switch1] Create ...") cannot loop infinitely — it \
+produces its effect only once per turn no matter how many times it is re-triggered.
+- Conjure makes a spell token cast at a set time. In combat it casts immediately; \
+outside combat it casts in the next combat — offensive conjured spells just after \
+attackers are declared, then defensive ones (which resolve before the offensive ones). \
+An unspecified X on a conjured spell is 1.
+- Targeting: you can only target things in a Skirmish with you, so you cannot target an \
+opponent's cards during your own main phase (outside combat).
+- Initiative (1v1/team games): the Initiative team acts first each turn, creating an \
+attack-counterattack flow; free-for-all games declare attacks simultaneously.
+- Square brackets on a card mean ONE of two different things, and they are easy to \
+confuse because the card text you are shown writes both the same way. (a) An ICON: on \
+the printed card this is a picture, and the text renders it as a bracketed word — \
+[Switch], [Switch1], [Augment], [Battle], [Virus], [Haste]. These are symbols, NOT \
+costs, and nothing is paid for them. (b) An ADDITIONAL COST: any OTHER bracketed text \
+(e.g. "[Sacrifice a unit]") is a cost that must be resolved in order to play the card. \
+So [Switch] on a card is the graft symbol, not something you pay.
+
+Keyword glossary — attributes appear in {bold} before the type line; ability keywords \
+appear in [brackets] in card text. These definitions are reliable:
+- Flying — can only be blocked by other Flying units.
+- Piercing — excess combat damage beyond a blocked unit's health carries over to the \
+defending player. This is Algomancy's equivalent of "trample" from other card games.
+- Electric — excess damage from an Electric source is redirected to an adjacent \
+creature, and can chain across a row of small creatures.
+- Deadly — any amount of combat damage it deals destroys the unit it hits (like \
+"deathtouch" elsewhere).
+- Poisonous — a Poisonous source damages units in the form of -1/-1 counters (not \
+ordinary combat damage).
+- Swift — deals its combat damage first; Sluggish — deals its combat damage last (a \
+unit that is both deals damage twice, going first and last).
+- Tough — its defense/toughness is doubled.
+- Haste — may be played during the haste step (instant speed in that window).
+- Virus — may also be applied as a modification (augment) from your hand during battle, \
+not only played normally.
+- Burst — a non-combat attribute; can be cast any time, but you must play all Burst \
+spells of the same type at once.
+- Unstable — a non-combat attribute; if the card would go to the bin/discard it is \
+erased instead (used to limit recursion).
+- Battle — a timing attribute: the card can only be used during an actual fight. The \
+Battle phase starts every turn, but every chance to act in it (priority windows, casting \
+Battle spells) opens only AFTER attackers are declared. If no one attacks into a region \
+involving you, there is no skirmish, the combat steps are skipped, and the phase just \
+passes with nothing to do. You can play a Battle card when a fight involving you is \
+happening: you attack, you counter-attack, or you are attacked.
+- Ambush — play the unit during battle, recalling one of your units and placing the \
+ambusher into that unit's position in play.
+- Powerful — a Powerful source deals double damage.
+- Reaping — when a Reaping source kills one or more units, its controller draws a card.
+- Thieving — when a Thieving source deals combat damage to an opponent, draw a card.
+- Resonant — when a Resonant source deals damage to a unit, it also deals that much \
+damage to that unit's controller.
+- Vulnerable — a Vulnerable card/unit receives double damage.
+- Feeble — Feeble units can't block.
+- Sneaky — a Sneaky unit can't be blocked if it is attacking alone.
+- Evasive — an Evasive unit requires two blockers.
+- Alluring — when an Alluring column attacks, the targeted enemy can't attack and must \
+block it this combat if able.
+- Unaware — Unaware cards (and the units they interact with) ignore all stat changes.
+- Balanced — a Balanced unit's power and defense both become the greater of the two.
+- Inverted — reverses a unit's stat changes (a -7/-7 effect instead gives +7/+7).
+- Augment (+), Graft (switch-arrows), Conjure — see the Modifications and Conjure notes above.
+Note: "Devastating" is not a current attribute (it appears only in old example text); the \
+live keyword for excess combat damage going to the player is Piercing."""
+
+SYSTEM_PROMPT = """You are the Algomancy Rules Bot, an expert assistant for the \
+card game Algomancy by Caleb Gannon. Answer using TWO trusted sources only: (1) the \
+Core Primer of basic rules below — verified and always reliable; and (2) the retrieved \
+passages provided with each question, which cover the specifics. Do not use outside \
+knowledge about other card games or invent rules beyond these two sources.
+
+Grounding and citations:
+- The primer is general background: state it freely WITHOUT a [tag]. Attach a [tag] only \
+to a claim drawn DIRECTLY from a retrieved passage, e.g. "Grafts can only go onto other \
+graft cards [rulebook23:0026]."
+- If you are reasoning or inferring something neither the primer nor the passages state \
+explicitly, present it as an inference ("the rules don't state this directly, but…") and \
+do NOT attach a citation.
+- A card's own text in the passages is authoritative for what THAT card does — read it \
+carefully and apply it literally before reaching for general rules.
+- When sources disagree, prefer the LOWER authority number — that is the more \
+trustworthy source. The ladder: 0 = a Discord ruling (an answer given in the game's \
+official Discord, by the designer or an experienced judge), which is DEFINITIVE and \
+overrides every other source, including the rulebook; 1 = primary rulebook, card text, \
+and official judge write-ups; 2 = official glossary; 3 = the older 2023 rulebook; \
+4-5 = web write-ups and design blogs, which are frequently outdated. The primer is \
+reliable for basics. A Discord ruling that contradicts an older rulebook means the game \
+CHANGED, not that the ruling is wrong — follow the ruling and say so.
+- If neither the primer nor the retrieved passages cover the question, say you don't \
+have that in the rules rather than inventing an answer. A clear "the rules provided \
+don't cover this" is a good answer.
+
+Do not be led by the question:
+- The user may state or imply a rule, often as a leading question ("…right?", \
+"otherwise it'll be X"). Treat every such assumption as UNVERIFIED. Check it against the \
+passages and correct it if they disagree or are silent — never just agree to be agreeable.
+- Distinguish carefully between similar-but-distinct terms. For example, "Spell Tokens" \
+are erased at regroup but ordinary unit tokens are not; "leaving formation" is a \
+positional reset, NOT the same as leaving play / being removed.
+
+In threads (follow-up questions):
+- Answer the MOST RECENT question. Earlier turns are background only; do not let a \
+previous question's topic pull your answer off-course — if the new question is about \
+something else, switch fully to it.
+- The passages attached to the current question are the authoritative context for THIS \
+answer. Prior answers may have relied on different passages; do not cite from memory.
+
+Style: be concise, use clean markdown, keep answers under ~250 words."""
+
+# --- engine version stamp ------------------------------------------------
+# Every logged answer is stamped with ENGINE_VERSION so we can tell, after the
+# fact, exactly which rules brain produced it — essential when triaging feedback
+# ("is this 👎 from the old prompt or the current one?"). The version is a
+# hand-bumped date plus content hashes of the two things that actually change an
+# answer: the prompt+primer (generation behaviour) and the corpus (retrieval
+# data). Any edit to either flips its hash automatically, so a stale stamp can't
+# survive an un-bumped date, and a `p…` change (prompt) is distinguishable from a
+# `c…` change (data) at a glance. Bump ENGINE_DATE + add a line to
+# ENGINE_CHANGELOG.md whenever you make a real behavioural change. See that file
+# for the history; responses logged before this field existed have no stamp.
+ENGINE_DATE = "2026-07-11"
+
+
+# Prepended to the final user turn in a thread. The earlier turns are context for
+# resolving pronouns and "wait, so…" — they are not open questions.
+FOLLOWUP_NOTE = (
+    "This is a follow-up in an ongoing thread. The earlier turns are BACKGROUND "
+    "ONLY — do NOT re-answer an earlier question. The passages above were retrieved "
+    "for the CURRENT question below; answer only that question, directly.\n\n"
+)
+
+
+def _sig(*parts):
+    """Short stable content hash of the given text/bytes parts."""
+    h = hashlib.sha256()
+    for p in parts:
+        h.update(p if isinstance(p, bytes) else str(p).encode("utf-8"))
+    return h.hexdigest()[:8]
+
+
+PROMPT_SIG = _sig(SYSTEM_PROMPT, PRIMER, FOLLOWUP_NOTE)
+try:
+    CORPUS_SIG = _sig(Path(CORPUS).read_bytes())
+except OSError:
+    CORPUS_SIG = "nocorpus"
+# Retrieval knobs are a third axis of behaviour: the same prompt over the same
+# corpus answers differently if the slate it sees changes. Hashing them means a
+# tuning change (TOP_K, authority boosts, the foundational floor) is visible in
+# the logs instead of masquerading as an unchanged engine.
+RETRIEVAL_SIG = _sig(TOP_K, retr.BM25_K1, retr.BM25_B, retr.OUTDATED_PENALTY,
+                     retr.FUZZY_CUTOFF, retr.FUZZY_WEIGHT, retr.FOUNDATION_FLOOR,
+                     sorted(retr.AUTH_BOOST.items()),
+                     sorted(retr.FOUNDATION_TYPES))
+ENGINE_VERSION = f"{ENGINE_DATE}.p{PROMPT_SIG}.c{CORPUS_SIG}.r{RETRIEVAL_SIG}"
+
+# --- indexes & client (loaded once at startup) ---------------------------
+retriever = Retriever()
+cards = CardIndex()
+# The DeepSeek client is built by init_client() once the API key is resolved (CLI
+# arg or env), so this module can be imported without a key present (e.g. tests).
+ai: AsyncOpenAI | None = None
+
+
+def init_client(api_key, base_url=DEEPSEEK_BASE, model=None):
+    """Build the DeepSeek client (and optionally override the model). Call once at
+    startup before answer_question. Returns the client."""
+    global ai, DEEPSEEK_MODEL
+    ai = AsyncOpenAI(api_key=api_key, base_url=base_url)
+    if model:
+        DEEPSEEK_MODEL = model
+    return ai
+
+
+# --- RAG plumbing --------------------------------------------------------
+
+def build_context(hits):
+    blocks = []
+    for _score, r in hits:
+        blocks.append(
+            f"[{r['id']}] (authority {r['authority']} — {r['authority_label']}; "
+            f"source: {r['source']})\n{r['text']}")
+    return "\n\n---\n\n".join(blocks)
+
+
+# Citation tags look like [prefix:suffix] (e.g. [manual:0023], [card:Wisp]); card
+# text uses tagless brackets like [Augment], so requiring a colon leaves those alone.
+_HIST_CITE_RE = re.compile(r"\s*\[[^\[\]]*:[^\[\]]*\]")
+
+
+def strip_citations(text):
+    """Remove our [tag] citations from text fed back as conversation history —
+    those tags point at passages no longer in context and only confuse the model."""
+    return re.sub(r"[ \t]{2,}", " ", _HIST_CITE_RE.sub("", text)).strip()
+
+
+# --- "math mode" detection ------------------------------------------------
+# Stat block like 1/1, +2/+2, 3/4 — the strongest signal a question is numeric.
+_STAT_RE = re.compile(r"[+\-]?\d+\s*/\s*[+\-]?\d+")
+_NUM_RE = re.compile(r"[+\-]?\d+")
+# Combat/arithmetic vocabulary; presence alongside numbers implies real math.
+_MATH_WORDS = {
+    "damage", "deal", "deals", "dealt", "take", "takes", "power", "toughness",
+    "life", "mana", "cost", "buff", "buffed", "debuff", "excess", "remaining",
+    "leftover", "overkill", "lethal", "survive", "survives", "kill", "kills",
+    "die", "dies", "arc", "arcs", "split", "divide", "spread", "heal", "prevent",
+    "fireball", "growth", "conjure", "electric", "trample", "regroup", "counter",
+}
+_QUANT_PHRASES = ("how much", "how many", "left over", "leftover", "add up",
+                  "end up with", "1/0", "at regroup")
+
+
+def needs_reasoning(question):
+    """Heuristic: does this look like a numeric/combat-math question worth
+    enabling DeepSeek thinking for? Conservative — a false positive just spends
+    a little more on an easy question; a false negative falls back to normal."""
+    ql = question.lower()
+    if _STAT_RE.search(ql):                       # explicit stat/buff block
+        return True
+    nums = len(_NUM_RE.findall(ql))
+    signals = sum(bool(re.search(rf"\b{w}\b", ql)) for w in _MATH_WORDS)
+    signals += sum(p in ql for p in _QUANT_PHRASES)
+    return (nums >= 1 and signals >= 2) or (nums >= 2 and signals >= 1)
+
+
+def _use_reasoning(question):
+    if REASONING_MODE == "always":
+        return True
+    if REASONING_MODE == "off":
+        return False
+    return needs_reasoning(question)
+
+
+async def answer_question(question, history):
+    """Retrieve, call DeepSeek, return (answer_text, hits, reasoning_used)."""
+    if ai is None:
+        raise RuntimeError("DeepSeek client not initialised — call core.init_client() first")
+    hits = retriever.search(question, k=TOP_K)
+    context = build_context(hits) if hits else "(no relevant passages found)"
+    messages = [{"role": "system", "content": f"{SYSTEM_PROMPT}\n\n{PRIMER}"}]
+    # Prior assistant turns are resent with their citation tags stripped (the
+    # passages they referenced aren't in this call's context).
+    for m in history[-MAX_HISTORY:]:
+        if m["role"] == "assistant":
+            messages.append({"role": "assistant",
+                             "content": strip_citations(m["content"])})
+        else:
+            messages.append(m)
+    # The current question goes LAST, after the passages and the anti-drift note.
+    # It used to sit before the note, and ~1 in 4 follow-ups drifted into
+    # re-answering the previous turn instead — the retrieved passages for a
+    # follow-up still look a lot like the prior question's, so whatever the model
+    # read last won. Ending on the actual question anchors it.
+    messages.append({
+        "role": "user",
+        "content": (f"Retrieved passages:\n{context}\n\n"
+                    f"{FOLLOWUP_NOTE if history else ''}"
+                    f"Current question: {question}"),
+    })
+    reasoning = _use_reasoning(question)
+    params = {"model": DEEPSEEK_MODEL, "messages": messages}
+    if reasoning:
+        # v4-flash counts hidden reasoning tokens against max_tokens, so the budget
+        # must cover the chain-of-thought AND the visible answer. Thinking mode
+        # ignores temperature.
+        params["max_tokens"] = 4000
+        params["reasoning_effort"] = REASONING_EFFORT
+        params["extra_body"] = {"thinking": {"type": "enabled"}}
+    else:
+        # v4-flash is a hybrid model that reasons BY DEFAULT. Without an explicit
+        # disable it silently spends the whole token budget on hidden reasoning and
+        # returns empty content (finish_reason=length), so thinking must be turned
+        # off for the cheap path — not merely left unrequested.
+        params["max_tokens"] = 900
+        params["temperature"] = 0.2
+        params["extra_body"] = {"thinking": {"type": "disabled"}}
+    resp = await ai.chat.completions.create(**params)
+    answer = (resp.choices[0].message.content or "").strip()
+    if not answer:
+        # Don't return a blank answer silently; surface why instead.
+        raise RuntimeError(
+            f"model returned an empty answer (finish_reason={resp.choices[0].finish_reason})")
+    return answer, hits, reasoning
+
+
+# --- citation rendering --------------------------------------------------
+# Friendly display names for sources, keyed by the chunk's `source` filename.
+SOURCE_NAMES = {
+    "Algomancy-Manual": "Official Manual",
+    "Algomancy-Rulebook-2023-07": "2023 Rulebook",
+    "Algomancy-Rules-Glossary.md": "Rules Glossary",
+    "The-Rules-of-Algomancy.md": "The Rules of Algomancy (web)",
+    "Mastering-Initiative-Strategy-Guide.md": "Mastering Initiative (guide)",
+    "The-Making-of-Algomancy.md": "The Making of Algomancy (dev-log)",
+    "AlgomancyCards-OracleText.json": "Card data",
+}
+_SUPERSCRIPT = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+# Bracketed citation groups: [tag], [tag; tag2], [a, b] — anything inside [].
+_CITE_RE = re.compile(r"\[([^\[\]]+)\]")
+
+
+def _sup(n):
+    return str(n).translate(_SUPERSCRIPT)
+
+
+def friendly_source(r):
+    """A clean, human-readable name for a retrieved chunk's source."""
+    if r["source_type"] == "card":
+        return f"Card: {r['title']}"
+    if r["source_type"] == "glossary":
+        return f"Glossary: {r['title']}"
+    stem = r["source"].rsplit("/", 1)[-1]
+    return SOURCE_NAMES.get(stem, stem.rsplit(".", 1)[0].replace("-", " "))
+
+
+def render_citations(answer, hits):
+    """Turn the model's `[source:tag]` citations into clean footnote superscripts.
+
+    Returns (display_text, ordered_sources) where ordered_sources is a list of
+    (number, row) for the sources actually cited, in first-appearance order.
+    Brackets that don't contain a known tag are left untouched.
+    """
+    by_id = {r["id"]: r for _s, r in hits}
+    # Number by source *document* (friendly name) so multiple chunks of e.g. the
+    # 2023 Rulebook share one footnote instead of cluttering the legend.
+    order, number, rep = [], {}, {}
+
+    def repl(m):
+        nums = []
+        for t in [x.strip() for x in re.split(r"[;,]", m.group(1))]:
+            r = by_id.get(t)
+            if r is None:
+                continue
+            key = friendly_source(r)
+            if key not in number:
+                order.append(key)
+                number[key] = len(order)
+                rep[key] = r
+            nums.append(number[key])
+        if not nums:
+            return m.group(0)  # not one of our citations — leave it alone
+        return "".join(_sup(n) for n in sorted(dict.fromkeys(nums)))
+
+    text = _CITE_RE.sub(repl, answer)
+    text = re.sub(r"\s+([.,;:)])", r"\1", text)   # tidy space left before punctuation
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    sources = [(number[k], rep[k]) for k in order]
+    return text.strip(), sources
+
+
+# --- game-icon vocabulary (shared by both front-ends) --------------------
+# Maps card-text/cost tokens to an icon NAME. Each front-end renders that name its
+# own way: the Discord bot as a guild custom emoji (<:name:id>), the web app as an
+# <img> from Icons/<name>.webp. Keeping the mapping here means both stay in sync.
+#
+# Card-text tokens: [..] are ability keywords, {..} are attributes. Only these
+# keywords actually have an icon — most attributes (Flying, Deadly, Poisonous, …)
+# have NO image and just render as their plain word. Each name maps to an
+# Icons/<name>.webp file (and a same-named Discord guild emoji).
+ICON_NAMES = {
+    "[augment]": "augment", "[switch1]": "bounded_graft", "[switch]": "graft",
+    "[virus]": "virus", "[battle]": "battle", "[haste]": "haste",
+    "{virus}": "virus", "{battle}": "battle", "{haste}": "haste",
+}
+# Affinity/cost letters -> faction icon (verified from card data). Used only on the
+# COST line — in card TEXT, {g}/{p} are attribute colours, not factions.
+# NOTE: `p` = colorless (the Prismite resource); intentionally unmapped (no icon
+# yet), so it renders as the literal "p".
+RESOURCE_NAMES = {
+    "r": "fire", "m": "metal", "b": "water",
+    "e": "earth", "g": "wood",
+}
+ICON_TOKEN_RE = re.compile(r"\[[^\[\]]+\]|\{[^{}]+\}")
+
+
+def cited_card_paths(answer, hits, limit=10):
+    """For each *card* the answer actually cited (and that has art), return
+    (footnote_number, card_title, art_Path). Framework-agnostic — Discord wraps
+    these in discord.File, the web app serves them as image URLs."""
+    _display, sources = render_citations(answer, hits)
+    out = []
+    for n, r in sources:
+        if r["source_type"] != "card":
+            continue
+        art = cards.art_path(r["title"])
+        if art:
+            out.append((n, r["title"], art))
+        if len(out) >= limit:
+            break
+    return out
