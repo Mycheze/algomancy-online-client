@@ -1,0 +1,1738 @@
+{
+ "A Fast Pile of Rocks": {
+  "icon": "graft",
+  "x": 254,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9013
+ },
+ "A Pile of Rubbish": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9333
+ },
+ "A Pile of Runes": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9613
+ },
+ "Aberrant Populace": {
+  "icon": "bounded_graft",
+  "x": 452,
+  "y": 874,
+  "size": 32,
+  "cut": 872,
+  "score": 0.8772
+ },
+ "Aberrant Statweaver": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 30,
+  "cut": 905,
+  "score": 0.9225
+ },
+ "Accelerated Germination": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9135
+ },
+ "Adversary of the Deep": {
+  "icon": "augment",
+  "x": 76,
+  "y": 878,
+  "size": 30,
+  "cut": 877,
+  "score": 0.942
+ },
+ "Aether Channeler": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.962
+ },
+ "Aethercap Siphoner": {
+  "icon": "augment",
+  "x": 78,
+  "y": 882,
+  "size": 26,
+  "cut": 880,
+  "score": 0.8844
+ },
+ "Aetherflux Golem": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9334
+ },
+ "Amphivore": {
+  "icon": "bounded_graft",
+  "x": 258,
+  "y": 872,
+  "size": 34,
+  "cut": 870,
+  "score": 0.7808
+ },
+ "Ancient One": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9638
+ },
+ "Animated Spark": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9635
+ },
+ "Arcane Concentrator": {
+  "icon": "augment",
+  "x": 78,
+  "y": 874,
+  "size": 30,
+  "cut": 874,
+  "score": 0.8816
+ },
+ "Arcane Echo": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9141
+ },
+ "Astral Painseeker": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 902,
+  "score": 0.9142
+ },
+ "Astral Tidewraith": {
+  "icon": "bounded_graft",
+  "x": 414,
+  "y": 840,
+  "size": 32,
+  "cut": 839,
+  "score": 0.931
+ },
+ "Astralith": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 32,
+  "cut": 905,
+  "score": 0.9232
+ },
+ "Automaton of Abundance": {
+  "icon": "augment",
+  "x": 76,
+  "y": 850,
+  "size": 30,
+  "cut": 850,
+  "score": 0.9272
+ },
+ "Awoken Tomb": {
+  "icon": "augment",
+  "x": 78,
+  "y": 878,
+  "size": 28,
+  "cut": 876,
+  "score": 0.8961
+ },
+ "Bellowing Boulder": {
+  "icon": "graft",
+  "x": 392,
+  "y": 872,
+  "size": 34,
+  "cut": 872,
+  "score": 0.884
+ },
+ "Biomass Devourer": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9397
+ },
+ "Biotoxicity": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9135
+ },
+ "Bloated Manablub": {
+  "icon": "bounded_graft",
+  "x": 290,
+  "y": 908,
+  "size": 28,
+  "cut": 907,
+  "score": 0.9195
+ },
+ "Bloodwind Revenant": {
+  "icon": "bounded_graft",
+  "x": 210,
+  "y": 876,
+  "size": 30,
+  "cut": 874,
+  "score": 0.9417
+ },
+ "Bloomcaster": {
+  "icon": "augment",
+  "x": 78,
+  "y": 908,
+  "size": 28,
+  "cut": 907,
+  "score": 0.9635
+ },
+ "Body Swap": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9191
+ },
+ "Boreal Wanderer": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 902,
+  "score": 0.9146
+ },
+ "Bripp": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 840,
+  "size": 34,
+  "cut": 839,
+  "score": 0.8741
+ },
+ "Burgeon": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.918
+ },
+ "Burning Vengeance": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9193
+ },
+ "Celestial Fluxmorph": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 869,
+  "score": 0.9588
+ },
+ "Celestial Shifter": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9306
+ },
+ "Channeled Amalgam": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 839,
+  "score": 0.9165
+ },
+ "Channeled Boon": {
+  "icon": "graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9145
+ },
+ "Colossal Construction": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9191
+ },
+ "Conduit of Pain": {
+  "icon": "augment",
+  "x": 78,
+  "y": 844,
+  "size": 30,
+  "cut": 843,
+  "score": 0.9271
+ },
+ "Construct Overseer": {
+  "icon": "graft",
+  "x": 272,
+  "y": 906,
+  "size": 32,
+  "cut": 904,
+  "score": 0.9111
+ },
+ "Corroded Alchemy": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9124
+ },
+ "Corrupting Blight": {
+  "icon": "augment",
+  "x": 78,
+  "y": 878,
+  "size": 28,
+  "cut": 876,
+  "score": 0.8968
+ },
+ "Crevice Lurker": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9429
+ },
+ "Death Greeter": {
+  "icon": "augment",
+  "x": 78,
+  "y": 842,
+  "size": 32,
+  "cut": 841,
+  "score": 0.9285
+ },
+ "Deathglow Strider": {
+  "icon": "augment",
+  "x": 78,
+  "y": 874,
+  "size": 32,
+  "cut": 873,
+  "score": 0.9144
+ },
+ "Decay Distributor": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9587
+ },
+ "Demon of the Depths": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 872,
+  "score": 0.9542
+ },
+ "Discharge": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 872,
+  "size": 34,
+  "cut": 872,
+  "score": 0.8791
+ },
+ "Dispatch Courier": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9622
+ },
+ "Dreadspawn Horror": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9305
+ },
+ "Dreamfloat Drifter": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 870,
+  "score": 0.9422
+ },
+ "Earnest Defender": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9634
+ },
+ "Earthbound Replicator": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 840,
+  "score": 0.9214
+ },
+ "Eldritch Dreamtender": {
+  "icon": "augment",
+  "x": 78,
+  "y": 852,
+  "size": 28,
+  "cut": 851,
+  "score": 0.9413
+ },
+ "Ember of Life": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9119
+ },
+ "Emberflame Enlightener": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9601
+ },
+ "Embermaw Fledgling": {
+  "icon": "augment",
+  "x": 76,
+  "y": 842,
+  "size": 32,
+  "cut": 842,
+  "score": 0.9246
+ },
+ "Eminence of the Barrens": {
+  "icon": "augment",
+  "x": 76,
+  "y": 850,
+  "size": 30,
+  "cut": 850,
+  "score": 0.9276
+ },
+ "Engorged Caudex": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 902,
+  "score": 0.9121
+ },
+ "Enigmatic Warder": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 30,
+  "cut": 905,
+  "score": 0.8661
+ },
+ "Envoy of Lightning": {
+  "icon": "augment",
+  "x": 78,
+  "y": 848,
+  "size": 28,
+  "cut": 846,
+  "score": 0.8983
+ },
+ "Evolutionary Experiment": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9556
+ },
+ "Fight": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 842,
+  "size": 32,
+  "cut": 841,
+  "score": 0.8769
+ },
+ "Flame Juggle": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9141
+ },
+ "Flamebreath Initiate": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 840,
+  "score": 0.9313
+ },
+ "Flourishing Flora": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9538
+ },
+ "Flowstone Arcanite": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 908,
+  "size": 28,
+  "cut": 904,
+  "score": 0.8611
+ },
+ "Flux Constructor": {
+  "icon": "augment",
+  "x": 76,
+  "y": 842,
+  "size": 32,
+  "cut": 842,
+  "score": 0.9222
+ },
+ "Flux Resonator": {
+  "icon": "augment",
+  "x": 78,
+  "y": 842,
+  "size": 32,
+  "cut": 841,
+  "score": 0.9294
+ },
+ "Forager of the Fallen": {
+  "icon": "bounded_graft",
+  "x": 358,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.8577
+ },
+ "Foretell": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 844,
+  "size": 32,
+  "cut": 843,
+  "score": 0.8983
+ },
+ "Formless": {
+  "icon": "graft",
+  "x": 398,
+  "y": 852,
+  "size": 28,
+  "cut": 852,
+  "score": 0.8856
+ },
+ "Fungal Gardener": {
+  "icon": "graft",
+  "x": 84,
+  "y": 904,
+  "size": 34,
+  "cut": 902,
+  "score": 0.9283
+ },
+ "Galerider Eel": {
+  "icon": "graft",
+  "x": 422,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9186
+ },
+ "General Smof": {
+  "icon": "bounded_graft",
+  "x": 254,
+  "y": 906,
+  "size": 30,
+  "cut": 906,
+  "score": 0.8934
+ },
+ "Geode": {
+  "icon": "graft",
+  "x": 356,
+  "y": 906,
+  "size": 32,
+  "cut": 905,
+  "score": 0.9354
+ },
+ "Ghord": {
+  "icon": "bounded_graft",
+  "x": 432,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9188
+ },
+ "Glowhaven Elder": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 32,
+  "cut": 904,
+  "score": 0.9321
+ },
+ "Graxxlid": {
+  "icon": "augment",
+  "x": 78,
+  "y": 874,
+  "size": 30,
+  "cut": 872,
+  "score": 0.8831
+ },
+ "Growing Plague": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 870,
+  "score": 0.9626
+ },
+ "Guardian of the Grotto": {
+  "icon": "graft",
+  "x": 392,
+  "y": 872,
+  "size": 34,
+  "cut": 872,
+  "score": 0.8849
+ },
+ "Harbinger of Immolation": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 32,
+  "cut": 902,
+  "score": 0.9261
+ },
+ "Hearthwood Ancient": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9644
+ },
+ "Hexbane Shiitake": {
+  "icon": "augment",
+  "x": 78,
+  "y": 812,
+  "size": 30,
+  "cut": 810,
+  "score": 0.8842
+ },
+ "Hooba-Bot": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9577
+ },
+ "Hooba-Lan": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 851,
+  "score": 0.9505
+ },
+ "Hooba-Lin": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9541
+ },
+ "Hooba-Nan": {
+  "icon": "augment",
+  "x": 76,
+  "y": 878,
+  "size": 30,
+  "cut": 878,
+  "score": 0.9394
+ },
+ "Hooba-Pon": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 840,
+  "score": 0.9318
+ },
+ "Ignis Sprite": {
+  "icon": "graft",
+  "x": 354,
+  "y": 906,
+  "size": 32,
+  "cut": 905,
+  "score": 0.944
+ },
+ "Immolate": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9156
+ },
+ "Infernal Cultivator": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 30,
+  "cut": 905,
+  "score": 0.9032
+ },
+ "Infernal Grovekeeper": {
+  "icon": "augment",
+  "x": 76,
+  "y": 876,
+  "size": 32,
+  "cut": 876,
+  "score": 0.9187
+ },
+ "Infernal Wispweaver": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 30,
+  "cut": 905,
+  "score": 0.9207
+ },
+ "Insidious Invitation": {
+  "icon": "bounded_graft",
+  "x": 254,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9067
+ },
+ "Inspiration": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9357
+ },
+ "Instrument of Reassignment": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9556
+ },
+ "Invasive Species": {
+  "icon": "augment",
+  "x": 76,
+  "y": 874,
+  "size": 32,
+  "cut": 874,
+  "score": 0.9132
+ },
+ "Jollyglop": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9166
+ },
+ "Leaping Lillik": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9075
+ },
+ "Linked Extinction": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9191
+ },
+ "Lithoghul": {
+  "icon": "augment",
+  "x": 78,
+  "y": 874,
+  "size": 32,
+  "cut": 873,
+  "score": 0.9282
+ },
+ "Living Forge": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9339
+ },
+ "Lord of Buddies": {
+  "icon": "augment",
+  "x": 76,
+  "y": 874,
+  "size": 32,
+  "cut": 874,
+  "score": 0.9142
+ },
+ "Lost Guardian": {
+  "icon": "bounded_graft",
+  "x": 266,
+  "y": 874,
+  "size": 32,
+  "cut": 872,
+  "score": 0.8418
+ },
+ "Lumengrove Lurker": {
+  "icon": "bounded_graft",
+  "x": 272,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9027
+ },
+ "Luminary Leader": {
+  "icon": "bounded_graft",
+  "x": 236,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9371
+ },
+ "Malformed Monstrosity": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9328
+ },
+ "Malicious Hardware": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9638
+ },
+ "Manufacture": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 908,
+  "size": 28,
+  "cut": 896,
+  "score": 0.8962
+ },
+ "Megadeath": {
+  "icon": "bounded_graft",
+  "x": 282,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9375
+ },
+ "Metamorphic Luminary": {
+  "icon": "graft",
+  "x": 372,
+  "y": 908,
+  "size": 28,
+  "cut": 906,
+  "score": 0.8523
+ },
+ "Might of the Grove": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 874,
+  "size": 32,
+  "cut": 873,
+  "score": 0.8819
+ },
+ "Mindspore Fiend": {
+  "icon": "bounded_graft",
+  "x": 258,
+  "y": 874,
+  "size": 32,
+  "cut": 874,
+  "score": 0.8587
+ },
+ "Mindwarp Sporefrog": {
+  "icon": "augment",
+  "x": 78,
+  "y": 874,
+  "size": 32,
+  "cut": 873,
+  "score": 0.9226
+ },
+ "Minor Kraken": {
+  "icon": "bounded_graft",
+  "x": 282,
+  "y": 872,
+  "size": 34,
+  "cut": 871,
+  "score": 0.9225
+ },
+ "Mirage Scuttler": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9619
+ },
+ "Mirage Walker": {
+  "icon": "bounded_graft",
+  "x": 226,
+  "y": 908,
+  "size": 28,
+  "cut": 906,
+  "score": 0.9088
+ },
+ "Mischievous Reclaimer": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 902,
+  "score": 0.9142
+ },
+ "Mohruung": {
+  "icon": "bounded_graft",
+  "x": 380,
+  "y": 908,
+  "size": 28,
+  "cut": 907,
+  "score": 0.8847
+ },
+ "Molten Riftbreaker": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 30,
+  "cut": 906,
+  "score": 0.9226
+ },
+ "Molten Tormentor": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 872,
+  "score": 0.949
+ },
+ "Molten Upheaval": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9142
+ },
+ "Morphic Mentor": {
+  "icon": "graft",
+  "x": 170,
+  "y": 906,
+  "size": 32,
+  "cut": 906,
+  "score": 0.9015
+ },
+ "Mycelial Mentor": {
+  "icon": "bounded_graft",
+  "x": 422,
+  "y": 872,
+  "size": 34,
+  "cut": 871,
+  "score": 0.924
+ },
+ "Nimbus Eel": {
+  "icon": "bounded_graft",
+  "x": 450,
+  "y": 844,
+  "size": 30,
+  "cut": 842,
+  "score": 0.9194
+ },
+ "Noxious Deathcap": {
+  "icon": "augment",
+  "x": 78,
+  "y": 908,
+  "size": 28,
+  "cut": 908,
+  "score": 0.9522
+ },
+ "Ominous Growth": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9336
+ },
+ "Omniwield Evoker": {
+  "icon": "graft",
+  "x": 124,
+  "y": 906,
+  "size": 32,
+  "cut": 904,
+  "score": 0.9083
+ },
+ "Oorblak": {
+  "icon": "augment",
+  "x": 76,
+  "y": 874,
+  "size": 32,
+  "cut": 874,
+  "score": 0.9196
+ },
+ "Oracle of the Flame": {
+  "icon": "graft",
+  "x": 252,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9379
+ },
+ "Origon": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 872,
+  "score": 0.9519
+ },
+ "Overbloom": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9133
+ },
+ "Overwhelm": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 874,
+  "size": 32,
+  "cut": 873,
+  "score": 0.8839
+ },
+ "Pack Leader": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.8674
+ },
+ "Pathogenic Enclave": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 32,
+  "cut": 903,
+  "score": 0.9256
+ },
+ "Pernicious Photosynthesis": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 844,
+  "size": 30,
+  "cut": 842,
+  "score": 0.9184
+ },
+ "Pestilent Mycelion": {
+  "icon": "augment",
+  "x": 78,
+  "y": 876,
+  "size": 30,
+  "cut": 874,
+  "score": 0.9241
+ },
+ "Plague Bellower": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9435
+ },
+ "Plodding Pebble": {
+  "icon": "bounded_graft",
+  "x": 422,
+  "y": 872,
+  "size": 32,
+  "cut": 870,
+  "score": 0.9232
+ },
+ "Powerforge Synergist": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 870,
+  "score": 0.9339
+ },
+ "Prickly Protector": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9341
+ },
+ "Protective Adaptations": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 838,
+  "size": 34,
+  "cut": 838,
+  "score": 0.9098
+ },
+ "Ralph": {
+  "icon": "bounded_graft",
+  "x": 122,
+  "y": 874,
+  "size": 32,
+  "cut": 872,
+  "score": 0.8689
+ },
+ "Ravenous Fireslinger": {
+  "icon": "graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 902,
+  "score": 0.919
+ },
+ "Recall": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 906,
+  "size": 30,
+  "cut": 905,
+  "score": 0.8974
+ },
+ "Recyclable Sentinel": {
+  "icon": "bounded_graft",
+  "x": 358,
+  "y": 906,
+  "size": 32,
+  "cut": 905,
+  "score": 0.9516
+ },
+ "Refuse Reclaimer": {
+  "icon": "augment",
+  "x": 76,
+  "y": 874,
+  "size": 32,
+  "cut": 874,
+  "score": 0.9282
+ },
+ "Restitution": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9625
+ },
+ "Resurrect": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9184
+ },
+ "Rider of the Tides": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 872,
+  "score": 0.9421
+ },
+ "Riftwalker": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9046
+ },
+ "Rippleback Skulker": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9293
+ },
+ "Rook": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 872,
+  "score": 0.9513
+ },
+ "Rotspore Herald": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 872,
+  "score": 0.9537
+ },
+ "Roving Quillback": {
+  "icon": "augment",
+  "x": 76,
+  "y": 876,
+  "size": 32,
+  "cut": 876,
+  "score": 0.9122
+ },
+ "Ruinbringer": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 30,
+  "cut": 904,
+  "score": 0.9454
+ },
+ "Rune Channeler": {
+  "icon": "bounded_graft",
+  "x": 520,
+  "y": 872,
+  "size": 34,
+  "cut": 871,
+  "score": 0.9226
+ },
+ "Sacrificial Burst": {
+  "icon": "graft",
+  "x": 76,
+  "y": 872,
+  "size": 34,
+  "cut": 871,
+  "score": 0.9033
+ },
+ "Sandstone Defender": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9301
+ },
+ "Saprophytic Oracle": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9607
+ },
+ "Scavenging Sentry": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9565
+ },
+ "Scrap For Parts": {
+  "icon": "graft",
+  "x": 76,
+  "y": 872,
+  "size": 34,
+  "cut": 872,
+  "score": 0.8963
+ },
+ "Scrapyard Custodian": {
+  "icon": "bounded_graft",
+  "x": 138,
+  "y": 906,
+  "size": 32,
+  "cut": 902,
+  "score": 0.9189
+ },
+ "Seabed Shellcaster": {
+  "icon": "bounded_graft",
+  "x": 216,
+  "y": 906,
+  "size": 32,
+  "cut": 903,
+  "score": 0.8891
+ },
+ "Self-Assembly": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9132
+ },
+ "Shoreline Specter": {
+  "icon": "augment",
+  "x": 76,
+  "y": 874,
+  "size": 32,
+  "cut": 874,
+  "score": 0.9112
+ },
+ "Skybreaker": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 32,
+  "cut": 904,
+  "score": 0.9228
+ },
+ "Slag Spewer": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9134
+ },
+ "Smouldering Inferno": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 30,
+  "cut": 905,
+  "score": 0.9442
+ },
+ "Soul Reaver": {
+  "icon": "augment",
+  "x": 78,
+  "y": 874,
+  "size": 32,
+  "cut": 873,
+  "score": 0.9103
+ },
+ "Soul Siphon": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 838,
+  "size": 34,
+  "cut": 838,
+  "score": 0.9085
+ },
+ "Soul Swallower": {
+  "icon": "augment",
+  "x": 76,
+  "y": 874,
+  "size": 32,
+  "cut": 874,
+  "score": 0.9268
+ },
+ "Soulforger": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9621
+ },
+ "Sparkwraith": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 872,
+  "score": 0.9477
+ },
+ "Spawning Ground": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9603
+ },
+ "Spawntender": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9134
+ },
+ "Spectrogenesis": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 876,
+  "size": 32,
+  "cut": 876,
+  "score": 0.8771
+ },
+ "Spewing Mushroom": {
+  "icon": "graft",
+  "x": 392,
+  "y": 872,
+  "size": 34,
+  "cut": 872,
+  "score": 0.8782
+ },
+ "Spirit of Nature": {
+  "icon": "bounded_graft",
+  "x": 248,
+  "y": 906,
+  "size": 30,
+  "cut": 906,
+  "score": 0.8573
+ },
+ "Spirit of Vengeance": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9634
+ },
+ "Spiteful Shadow": {
+  "icon": "graft",
+  "x": 234,
+  "y": 906,
+  "size": 30,
+  "cut": 905,
+  "score": 0.9001
+ },
+ "Sporebloom Siren": {
+  "icon": "graft",
+  "x": 240,
+  "y": 872,
+  "size": 34,
+  "cut": 870,
+  "score": 0.9063
+ },
+ "Sprouter": {
+  "icon": "graft",
+  "x": 252,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9343
+ },
+ "Squish": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9175
+ },
+ "Stasis Sentry": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.958
+ },
+ "Static Courier": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9615
+ },
+ "Stellarspore Harvester": {
+  "icon": "augment",
+  "x": 76,
+  "y": 878,
+  "size": 30,
+  "cut": 878,
+  "score": 0.9485
+ },
+ "Stoneborn Progenitor": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 902,
+  "score": 0.9139
+ },
+ "Stormsowing Nimbus": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9565
+ },
+ "Structural Collapse": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 844,
+  "size": 30,
+  "cut": 843,
+  "score": 0.8904
+ },
+ "Sudden Bloom": {
+  "icon": "graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9087
+ },
+ "Surly Stalker": {
+  "icon": "bounded_graft",
+  "x": 458,
+  "y": 874,
+  "size": 32,
+  "cut": 873,
+  "score": 0.9016
+ },
+ "Synaptic Energizer": {
+  "icon": "bounded_graft",
+  "x": 272,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9426
+ },
+ "Technological Superiority": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9135
+ },
+ "Tenebrous Bulborb": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.935
+ },
+ "The Silent": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9256
+ },
+ "The World Shepherd": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9406
+ },
+ "Throwing Boulder": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.9377
+ },
+ "Tidelurker": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 902,
+  "score": 0.913
+ },
+ "Towering Colossus": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9341
+ },
+ "Tranquility": {
+  "icon": "augment",
+  "x": 78,
+  "y": 906,
+  "size": 30,
+  "cut": 905,
+  "score": 0.9389
+ },
+ "Transmogrifant": {
+  "icon": "augment",
+  "x": 78,
+  "y": 874,
+  "size": 32,
+  "cut": 873,
+  "score": 0.9251
+ },
+ "Transmutide Enigma": {
+  "icon": "augment",
+  "x": 78,
+  "y": 880,
+  "size": 28,
+  "cut": 868,
+  "score": 0.9381
+ },
+ "Twin Flame": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9195
+ },
+ "Unfinished Creation": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9322
+ },
+ "Unstable Apparition": {
+  "icon": "augment",
+  "x": 78,
+  "y": 874,
+  "size": 30,
+  "cut": 873,
+  "score": 0.9004
+ },
+ "Unstable Form": {
+  "icon": "augment",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9333
+ },
+ "Unstable Singularity": {
+  "icon": "bounded_graft",
+  "x": 240,
+  "y": 904,
+  "size": 34,
+  "cut": 904,
+  "score": 0.9314
+ },
+ "Vaporweave Eidolon": {
+  "icon": "bounded_graft",
+  "x": 124,
+  "y": 906,
+  "size": 32,
+  "cut": 904,
+  "score": 0.898
+ },
+ "Verdant Necrophage": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9488
+ },
+ "Verdant Vengeance": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 872,
+  "size": 34,
+  "cut": 872,
+  "score": 0.9018
+ },
+ "Void Memory": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 876,
+  "size": 30,
+  "cut": 874,
+  "score": 0.9076
+ },
+ "Volatile Toxicity": {
+  "icon": "graft",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 839,
+  "score": 0.9316
+ },
+ "Voltwrath Behemoth": {
+  "icon": "augment",
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9625
+ },
+ "Wandering Blightshell": {
+  "icon": "bounded_graft",
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 902,
+  "score": 0.9116
+ },
+ "Warbloom Herald": {
+  "icon": "graft",
+  "x": 392,
+  "y": 872,
+  "size": 34,
+  "cut": 872,
+  "score": 0.8879
+ },
+ "Wither and Bloom": {
+  "icon": "bounded_graft",
+  "x": 78,
+  "y": 876,
+  "size": 30,
+  "cut": 875,
+  "score": 0.9161
+ },
+ "Xenopod Progenitor": {
+  "icon": "augment",
+  "x": 78,
+  "y": 842,
+  "size": 32,
+  "cut": 841,
+  "score": 0.9259
+ }
+}

@@ -15,6 +15,7 @@ Algomancy/
 ├── retriever.py      → shared TF-IDF retrieval core (used by ask.py and the bot)
 ├── ask.py            → keyword search over the corpus (test data quality / ask rules Qs)
 ├── cards.py          → card index: fuzzy name matching, description search, art
+├── mods.py           → graft/augment combinations (&card A + B): rules + stacked art
 ├── combos.py         → which 3-colour decks you've played + what to play next
 ├── bot.py            → Discord bot (&ask RAG + &card/&search lookup, DeepSeek-powered)
 └── corpus/           → generated: algomancy_corpus.jsonl (run build_corpus.py to (re)build)
@@ -109,6 +110,9 @@ OpenAI-compatible API) for generation.
   with a "Did you mean…" hint when the match is ambiguous. (No AI → no logging.)
   Look up several at once with commas — `&card Sprouter, Overbloom, Plodding Pebble`
   — up to 10 per message (no card name contains a comma, so it's a safe separator).
+- **`&card <host> + <mod>`** — a **grafted or augmented** card: what the stack
+  actually reads as, with the art stacked (see below). `&card General Smof +
+  Spectrogenesis`.
 - **`&search <description>`** — the same lookup for when you *can't* name the card
   (see below). `&search wood unit that draws a card when it dies` → the best match
   as a full card embed, runners-up in a dropdown. (No AI → no logging.)
@@ -163,6 +167,71 @@ oracle text, rulings), with the runners-up one tap away — a Discord dropdown, 
 tap-to-swap list on the web. The ranking lives in `cards.CardIndex.search`, so both
 front-ends get the same results from one implementation. No AI and no network: 370
 cards is small enough to score the whole set on every query, in memory.
+
+## Grafted / augmented cards (`mods.py` → `&card A + B`)
+
+Modifications are the fun part of Algomancy and the hard part to talk about: "I
+put Spectrogenesis under General Smof" makes everyone go and look up two cards and
+assemble the result in their head. So `&card` takes a `+`:
+
+```
+&card General Smof + Spectrogenesis      → the graft
+&card Aetherflux Golem + A Pile of Rubbish  → the augment
+&card Amphivore + Spectrogenesis + Accelerated Germination   → up to 4 mods
+```
+
+The first card is the **host** (the one in play); the rest go under it. No card
+name contains a `+`, so the separator needs no escaping.
+
+**What it works out for you.** Which of the two rules applies, whether it's legal,
+and what the result reads as:
+
+- **Augment (+)** — pay B's cost, put B under any unit. The host is then treated as
+  if it had the text in B's `(+)` paragraph. *Only that paragraph* transfers, so a
+  card like Stellarspore Harvester contributes its augment line and leaves its
+  first paragraph behind.
+- **Graft (switch)** — **both** cards need the graft symbol. Graft abilities are
+  templated *Cause → Effect*, and grafting adds B's **effect** onto A's cause, so
+  the result reads "Cause → effect1 AND effect2". B's own cause is dropped — the
+  host's is the one that fires. Graft Plodding Pebble onto something and it
+  contributes "Put a +1/+1 counter on me", *not* "When I am dealt damage".
+
+No card carries both symbols, so the second card alone says which rule is in play —
+you never have to tell it which you meant. Illegal combinations explain themselves
+("Aetherflux Golem has no graft symbol, so nothing can be grafted onto it"), and if
+you name the cards the wrong way round it does the legal one and says so, rather
+than bouncing you.
+
+Both icons are kept in the combined text instead of being flattened into "and":
+the symbol is what tells you an effect is *bounded* (once per turn), and a bounded
+effect stays bounded after it's grafted on.
+
+### Stacking the art
+
+The image is the two cards overlapped, the modification sliding out from under its
+host far enough to show the ability it contributes — the way it looks on the table.
+The catch is that "far enough" is different on every card: the ability sits on a
+different line depending on how much other text the card has.
+
+So `build_anchors.py` finds it. Every graft/augment ability is printed next to its
+icon, and we already ship those icons (`Icons/*.webp`), so it template-matches the
+glyph against each card's own art (normalized cross-correlation, `numpy`) and
+records where it landed in `AlgomancyCards/mod_anchors.json` — 217 cards, run once
+at build time, so the bot just reads an offset. Two details earned their keep:
+
+- The template is **luminance premultiplied by alpha**. The augment glyph is a white
+  hexagon with a black plus *cut into it*, and that plus lives in the RGB channel,
+  not the alpha — match on alpha alone and you're matching a blank hexagon.
+- The correlation is **not masked** to the glyph, so the template's transparent
+  border still demands a dark surround. Without it, the white complexity diamond in
+  the type bar is a perfectly good match for a white arrow.
+
+The peek then cuts at the **blank gap above the icon's line**, not a fixed offset:
+cards' text lines sit close together, and a blind offset leaves a readable sliver of
+the line above — which on Stellarspore Harvester is its *non-augment* paragraph.
+Showing it would claim text transfers that doesn't.
+
+Run `python3 build_anchors.py` if the card art is ever re-exported.
 
 It's BM25 over each card's fields, but the ranking is only half the problem. Three
 things do the actual work:

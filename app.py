@@ -46,10 +46,11 @@ mimetypes.add_type("image/webp", ".webp")
 import combos
 import core
 import draft
+import mods
 import store
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -240,8 +241,57 @@ def api_feedback(req: FeedbackRequest):
     return {"ok": True}
 
 
+# mods.ComboError phrases its reasons in Discord markdown (**Card Name**). The page
+# escapes whatever it's given, so the markers would show up as literal asterisks —
+# drop them rather than teach mods.py about two front-ends' markup.
+_EMPHASIS_RE = re.compile(r"\*{1,2}")
+
+
+def _combo_error(exc) -> HTTPException:
+    return HTTPException(status_code=400, detail=_EMPHASIS_RE.sub("", str(exc)))
+
+
+def _combo_payload(query: str):
+    """A grafted/augmented card, shaped exactly like a plain card payload so the
+    page renders it through the same panel — plus the line saying what was done."""
+    try:
+        combo = mods.build(query, core.cards)
+    except mods.ComboError as exc:
+        raise _combo_error(exc)
+    host = combo.host
+    factions = core.cards.factions(host)
+    # The card names are the only untrusted part of the sentence, so they're the
+    # only part that needs escaping; the rest is our own prose.
+    note = combo.describe(bold=lambda s: f"<b>{escape(s)}</b>")
+    if combo.swapped:
+        note += (f" — {escape(combo.host_name)} has to be the one in play, "
+                 f"so it goes on top.")
+    return {
+        "name": combo.title,
+        "type": host.get("type", ""),
+        "type_html": render_card_text_html(host.get("type", "")),
+        "cost": host.get("cost", ""),
+        "cost_html": render_cost_html(host.get("cost", "")),
+        "total_cost": host.get("total_cost", ""),
+        "power": host.get("power", ""),
+        "toughness": host.get("toughness", ""),
+        "factions": factions,
+        "factions_html": render_factions_html(factions),
+        "text": combo.text,
+        "text_html": render_card_text_html(combo.text),
+        "rulings": [],
+        "complexity": host.get("complexity", ""),
+        "art_url": "/stack?q=" + quote(" + ".join(combo.names)),
+        "mod_html": note,
+        "alts": [],
+    }
+
+
 @app.get("/api/card")
 def api_card(name: str):
+    # No card name contains a '+', so it unambiguously means "stack these".
+    if "+" in name:
+        return _combo_payload(name)
     card, matched, alts = core.cards.lookup(name)
     if not card:
         raise HTTPException(status_code=404, detail=f"No card matching {name!r}.")
@@ -417,6 +467,20 @@ def art(name: str):
     if not path:
         raise HTTPException(status_code=404, detail="No art for that card.")
     return FileResponse(str(path), media_type="image/jpeg")
+
+
+@app.get("/stack")
+def stack(q: str):
+    """The art for `A + B`: the cards stacked, each modification peeking out from
+    under its host with the ability it contributes on show."""
+    try:
+        combo = mods.build(q, core.cards)
+    except mods.ComboError as exc:
+        raise _combo_error(exc)
+    art = mods.render_stack(combo, core.cards)
+    if not art:
+        raise HTTPException(status_code=404, detail="No art for that card.")
+    return Response(content=art, media_type="image/jpeg")
 
 
 if __name__ == "__main__":

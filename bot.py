@@ -39,6 +39,7 @@ load_dotenv()
 import combos
 import core
 import draft
+import mods
 import store
 from cards import FACTION_COLOR, FACTION_EMOJI, plain_text
 from core import (ICON_NAMES, ICON_TOKEN_RE, RESOURCE_NAMES, answer_question,
@@ -292,6 +293,63 @@ def build_card_embed(card, matched, alts, attach_name=None):
     return embed, file
 
 
+# --- grafted / augmented cards -------------------------------------------
+# `&card A + B` shows what A reads as once B is stacked under it. The rules and
+# the art stacking live in mods.py; this is just the Discord skin, and it lands
+# in the same shape as a plain `&card` so a combination doesn't look like a
+# different kind of object.
+
+
+def build_combo_embed(combo, attach_name=None):
+    """Embed for a modified card: the stacked art, and the text it now reads as."""
+    host = combo.host
+    # Titled with BOTH names, so nobody reads the image as just the top card.
+    embed = discord.Embed(title=combo.title, color=cards.color(host))
+
+    type_line = (host.get("type") or "").strip()
+    if type_line:
+        embed.description = f"*{render_card_text(type_line)}*"
+
+    cost = render_cost(host.get("cost") or "—")
+    total = host.get("total_cost")
+    embed.add_field(
+        name="Cost", value=f"{cost} (total {total})" if total else str(cost), inline=True)
+    embed.add_field(
+        name="Power / Toughness",
+        value=f"{host.get('power', '?')}/{host.get('toughness', '?')}", inline=True)
+    embed.add_field(name="Factions", value=render_faction_label(host), inline=True)
+
+    if combo.text:
+        embed.add_field(name="Oracle Text",
+                        value=render_card_text(combo.text)[:1024], inline=False)
+
+    # You pay the modification's own cost to apply it, so it's worth showing.
+    applied = " · ".join(
+        f"**{name}** {render_cost(card.get('cost') or '—')}"
+        for name, card, _ in combo.mods)
+    note = combo.describe(bold=lambda s: f"**{s}**")
+    embed.add_field(name="Modification", value=f"{note}\nApplied for: {applied}",
+                    inline=False)
+
+    footer = []
+    if combo.swapped:
+        # They named the cards the other way round. Say so — which card is on top
+        # is the whole difference between "A grafted with B" and "B grafted with A".
+        footer.append(f"{combo.host_name} has to be the one in play, so it goes on top")
+    if host.get("complexity"):
+        footer.append(f"Complexity: {host['complexity']}")
+    if footer:
+        embed.set_footer(text=" · ".join(footer))
+
+    file = None
+    if attach_name:
+        art = mods.render_stack(combo, cards)
+        if art:
+            file = discord.File(io.BytesIO(art), filename=attach_name)
+            embed.set_image(url=f"attachment://{attach_name}")
+    return embed, file
+
+
 # --- card search ----------------------------------------------------------
 # `&search <description>` is `&card` for when you remember what a card DOES but
 # not what it's called ("that wood unit that draws when it dies"). The ranking
@@ -410,7 +468,8 @@ async def search_cmd(ctx, *, query: str = None):
 @bot.command(name="card")
 async def card_cmd(ctx, *, name: str = None):
     if not name:
-        await ctx.reply("Usage: `&card <card name>`  ·  or several: `&card Name1, Name2, Name3`")
+        await ctx.reply("Usage: `&card <card name>`  ·  several: `&card Name1, Name2` "
+                        "·  grafted/augmented: `&card General Smof + Spectrogenesis`")
         return
 
     # No card name contains a comma, so it's a safe separator for multi-lookup.
@@ -420,25 +479,34 @@ async def card_cmd(ctx, *, name: str = None):
                         f"Showing the first {MAX_CARDS}.")
         queries = queries[:MAX_CARDS]
 
-    embeds, files, not_found = [], [], []
+    embeds, files, not_found, illegal = [], [], [], []
     for i, q in enumerate(queries):
-        card, matched, alts = cards.lookup(q)
-        if not card:
-            not_found.append(q)
-            continue
-        embed, file = build_card_embed(card, matched, alts, attach_name=f"card{i}.jpg")
+        # No card name contains a '+' either, so it unambiguously means "stack these".
+        if "+" in q:
+            try:
+                combo = mods.build(q, cards)
+            except mods.ComboError as exc:
+                illegal.append(str(exc))
+                continue
+            embed, file = build_combo_embed(combo, attach_name=f"card{i}.jpg")
+        else:
+            card, matched, alts = cards.lookup(q)
+            if not card:
+                not_found.append(q)
+                continue
+            embed, file = build_card_embed(card, matched, alts, attach_name=f"card{i}.jpg")
         embeds.append(embed)
         if file:
             files.append(file)
 
-    if not embeds:
-        await ctx.reply(f"No card found matching **{name}**.")
-        return
-
-    content = None
+    notes = illegal[:]
     if not_found:
-        content = "Couldn't find: " + ", ".join(f"**{n}**" for n in not_found)
-    await ctx.reply(content=content, embeds=embeds, files=files)
+        notes.append("Couldn't find: " + ", ".join(f"**{n}**" for n in not_found))
+
+    if not embeds:
+        await ctx.reply("\n".join(notes) or f"No card found matching **{name}**.")
+        return
+    await ctx.reply(content="\n".join(notes) or None, embeds=embeds, files=files)
 
 
 # --- rulings lookup -------------------------------------------------------

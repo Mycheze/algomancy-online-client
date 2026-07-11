@@ -124,6 +124,10 @@
   .card-panel .info h3 { margin: 0 0 4px; }
   .card-panel .info .tl { color: var(--muted); font-style: italic; margin-bottom: 8px; }
   .card-panel .info .row { font-size: 14px; margin-bottom: 4px; }
+  /* A stacked (grafted/augmented) card is taller than one card, so give it more
+     room than a plain card's thumbnail or it shrinks to a sliver. */
+  .card-panel img.art.stack { height: 300px; }
+  .card-panel .mod { margin-top: 6px; color: var(--muted); }
   .card-panel .rul { font-size: 13px; color: var(--muted); }
   .card-panel .rul ul { margin: 4px 0 0; padding-left: 18px; }
   .card-panel .rul li { margin-bottom: 4px; }
@@ -466,7 +470,7 @@ function cardPanelHtml(c) {
   const alts = (c.alts || []).length ? `<div class="rul">Did you mean: ${c.alts.map(esc).join(', ')}</div>` : '';
   return `<div class="card-panel">
     <div class="card-head">
-      ${c.art_url ? `<img class="art" src="${c.art_url}" data-full="${c.art_url}" alt="${esc(c.name)}">` : ''}
+      ${c.art_url ? `<img class="art${c.mod_html ? ' stack' : ''}" src="${c.art_url}" data-full="${c.art_url}" alt="${esc(c.name)}">` : ''}
       <div class="info">
         <h3>${esc(c.name)}</h3>
         <div class="tl">${c.type_html || ''}</div>
@@ -474,6 +478,7 @@ function cardPanelHtml(c) {
         ${pt ? `<div class="row"><b>P/T:</b> ${pt}</div>` : ''}
         <div class="row"><b>Factions:</b> ${c.factions_html || '—'}</div>
         ${c.text_html ? `<div class="row cardtext">${c.text_html}</div>` : ''}
+        ${c.mod_html ? `<div class="row mod"><b>Modification:</b> ${c.mod_html}</div>` : ''}
       </div>
     </div>
     ${rulings}${alts}</div>`;
