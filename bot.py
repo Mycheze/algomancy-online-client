@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-bot.py — Algomancy rules Discord bot.
+bot.py — Algomancy rules Discord bot (one of two front-ends over `core.py`).
 
 Commands
 --------
   &ask <question>     RAG answer over the rules corpus, with source citations.
                       Opens a thread; ask follow-ups there and context is kept.
   &card <name>        Fuzzy-matched card lookup with art, stats, and rulings.
+  &colors             Suggest a fresh 3-colour deck; ✅ to record that you played it.
+  &played <colors>    Record a combo you played, e.g. `&played fire earth wood`.
+  &feedback [text]    Share feedback about the bot.
 
-Retrieval is the dependency-free TF-IDF search in `retriever.py`; generation is
-DeepSeek via its OpenAI-compatible API (cheap `deepseek-v4-flash` by default).
+The RAG brain (retrieval, primer, DeepSeek call, citations) lives in `core.py`
+and is shared with the web app (`app.py`); this file is only the Discord layer.
 
 Setup
 -----
@@ -18,169 +21,28 @@ Setup
   python3 bot.py
 """
 
+import asyncio
+import io
 import os
 import re
 
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
 
-import store
-from cards import CardIndex, FACTION_EMOJI
-from retriever import Retriever
-
+# Load .env before importing core, which reads DEEPSEEK_* config at import time.
 load_dotenv()
 
+import combos
+import core
+import draft
+import store
+from cards import FACTION_COLOR, FACTION_EMOJI
+from core import (ICON_NAMES, ICON_TOKEN_RE, RESOURCE_NAMES, answer_question,
+                  cards, cited_card_paths, friendly_source, render_citations,
+                  retriever)
+
 PREFIX = "&"
-DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
-DEEPSEEK_BASE = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
-MAX_HISTORY = 8        # how many prior thread messages to resend as context
-TOP_K = 6              # chunks retrieved per question
-
-# "Math mode": stat/arithmetic questions (combat damage, buffs, Electric arcing,
-# Fireball-vs-Growth, regroup math) benefit from DeepSeek's thinking mode. We
-# auto-detect them and enable thinking only then, so the cost hits just the
-# questions that need it. DEEPSEEK_REASONING: "auto" (detect) | "off" | "always".
-REASONING_MODE = os.getenv("DEEPSEEK_REASONING", "auto").lower()
-REASONING_EFFORT = os.getenv("DEEPSEEK_REASONING_EFFORT", "high")
-
-# Verified core-rules digest, always supplied to the model so it has reliable
-# footing even when retrieval misses. Grounded in the Manual + Rules Glossary;
-# keep edits factual. Facts here are background — the model states them without a
-# [tag] (only retrieved passages get cited).
-PRIMER = """Core Algomancy primer (verified basic rules — always reliable background):
-- Algomancy is a live-draft card game by Caleb Gannon. Five elemental factions — \
-Fire, Water, Earth, Wood, Metal — plus colorless (faction-neutral) cards. Resources \
-of an element pay a card's mana cost AND satisfy that element's threshold requirement.
-- Goal: eliminate every opponent by reducing their life to zero (in team games, the \
-whole opposing team). Players typically start at 30 life.
-- A turn has four phases IN THIS ORDER: (1) Planning — refresh/untap resources, draw, \
-and draft cards; (2) Battle — declare attacks and blocks into formations and deal \
-combat damage; (3) Regroup; (4) Deployment — play cards and apply mods, then end the \
-turn. Regroup happens BEFORE Deployment, not at the very end of the turn.
-- Regroup is a clean-up step with no player actions: units return to their region, ALL \
-combat damage on units is removed, ALL temporary stat changes end (anything "until \
-regroup"), ALL Spell Tokens are erased, and all units leave their formation. So a 1/1 \
-buffed to 3/3 "until regroup" that took 1 damage goes back to a healthy 1/1 — the \
-damage is cleared at the same moment the buff ends; it does NOT become 1/0.
-- Tokens: Spell Tokens are temporary and erased at Regroup. Ordinary unit tokens are \
-NOT erased by Regroup — they persist like normal units until killed or removed. \
-"Leaving formation" is only a positional reset at Regroup; it is NOT leaving play / \
-being removed.
-- Combat: each spot where one player's attackers meet a defender is a Skirmish (at most \
-one per player). Creatures fight in Formations made of columns; a column holds at most \
-2 creatures (front and back). Creatures are Adjacent only orthogonally (left/right/ \
-front/back), never diagonally. Attributes (Flying, Poisonous, Electric, Deadly, etc.) \
-are shared between creatures in the same column ("vertically adjacent") — e.g. a Flying \
-creature in front of a Poisonous one makes the whole column Flying AND Poisonous; if \
-one leaves combat its column-mate loses the shared attribute. Flying units can only be \
-blocked by Flying units.
-- Modifications: both Augment (+) and Graft (switch-arrows) attach a card from your \
-DISCARD/bin (never your hand), paying its cost, onto a creature, which then gains the \
-added text. Graft can only target creatures that themselves have the graft symbol; \
-Augment can target any creature.
-- Conjure makes a spell token cast at a set time. In combat it casts immediately; \
-outside combat it casts in the next combat — offensive conjured spells just after \
-attackers are declared, then defensive ones (which resolve before the offensive ones). \
-An unspecified X on a conjured spell is 1.
-- Targeting: you can only target things in a Skirmish with you, so you cannot target an \
-opponent's cards during your own main phase (outside combat).
-- Initiative (1v1/team games): the Initiative team acts first each turn, creating an \
-attack-counterattack flow; free-for-all games declare attacks simultaneously.
-
-Keyword glossary — attributes appear in {bold} before the type line; ability keywords \
-appear in [brackets] in card text. These definitions are reliable:
-- Flying — can only be blocked by other Flying units.
-- Piercing — excess combat damage beyond a blocked unit's health carries over to the \
-defending player. This is Algomancy's equivalent of "trample" from other card games.
-- Electric — excess damage from an Electric source is redirected to an adjacent \
-creature, and can chain across a row of small creatures.
-- Deadly — any amount of combat damage it deals destroys the unit it hits (like \
-"deathtouch" elsewhere).
-- Poisonous — a Poisonous source damages units in the form of -1/-1 counters (not \
-ordinary combat damage).
-- Swift — deals its combat damage first; Sluggish — deals its combat damage last (a \
-unit that is both deals damage twice, going first and last).
-- Tough — its defense/toughness is doubled.
-- Haste — may be played during the haste step (instant speed in that window).
-- Virus — may also be applied as a modification (augment) from your hand during battle, \
-not only played normally.
-- Burst — a non-combat attribute; can be cast any time, but you must play all Burst \
-spells of the same type at once.
-- Unstable — a non-combat attribute; if the card would go to the bin/discard it is \
-erased instead (used to limit recursion).
-- Battle — a timing attribute: the card can only be used during an actual fight. The \
-Battle phase starts every turn, but every chance to act in it (priority windows, casting \
-Battle spells) opens only AFTER attackers are declared. If no one attacks into a region \
-involving you, there is no skirmish, the combat steps are skipped, and the phase just \
-passes with nothing to do. You can play a Battle card when a fight involving you is \
-happening: you attack, you counter-attack, or you are attacked.
-- Ambush — play the unit during battle, recalling one of your units and placing the \
-ambusher into that unit's position in play.
-- Powerful — a Powerful source deals double damage.
-- Reaping — when a Reaping source kills one or more units, its controller draws a card.
-- Thieving — when a Thieving source deals combat damage to an opponent, draw a card.
-- Resonant — when a Resonant source deals damage to a unit, it also deals that much \
-damage to that unit's controller.
-- Vulnerable — a Vulnerable card/unit receives double damage.
-- Feeble — Feeble units can't block.
-- Sneaky — a Sneaky unit can't be blocked if it is attacking alone.
-- Evasive — an Evasive unit requires two blockers.
-- Alluring — when an Alluring column attacks, the targeted enemy can't attack and must \
-block it this combat if able.
-- Unaware — Unaware cards (and the units they interact with) ignore all stat changes.
-- Balanced — a Balanced unit's power and defense both become the greater of the two.
-- Inverted — reverses a unit's stat changes (a -7/-7 effect instead gives +7/+7).
-- Augment (+), Graft (switch-arrows), Conjure — see the Modifications and Conjure notes above.
-Note: "Devastating" is not a current attribute (it appears only in old example text); the \
-live keyword for excess combat damage going to the player is Piercing."""
-
-SYSTEM_PROMPT = """You are the Algomancy Rules Bot, an expert assistant for the \
-card game Algomancy by Caleb Gannon. Answer using TWO trusted sources only: (1) the \
-Core Primer of basic rules below — verified and always reliable; and (2) the retrieved \
-passages provided with each question, which cover the specifics. Do not use outside \
-knowledge about other card games or invent rules beyond these two sources.
-
-Grounding and citations:
-- The primer is general background: state it freely WITHOUT a [tag]. Attach a [tag] only \
-to a claim drawn DIRECTLY from a retrieved passage, e.g. "Grafts can only go onto other \
-graft cards [rulebook23:0026]."
-- If you are reasoning or inferring something neither the primer nor the passages state \
-explicitly, present it as an inference ("the rules don't state this directly, but…") and \
-do NOT attach a citation.
-- A card's own text in the passages is authoritative for what THAT card does — read it \
-carefully and apply it literally before reaching for general rules.
-- When sources disagree, prefer the higher-authority one (authority 1 = primary \
-rulebook, most trustworthy; higher numbers less so; the primer is reliable for basics) \
-and note the conflict if it matters.
-- If neither the primer nor the retrieved passages cover the question, say you don't \
-have that in the rules rather than inventing an answer. A clear "the rules provided \
-don't cover this" is a good answer.
-
-Do not be led by the question:
-- The user may state or imply a rule, often as a leading question ("…right?", \
-"otherwise it'll be X"). Treat every such assumption as UNVERIFIED. Check it against the \
-passages and correct it if they disagree or are silent — never just agree to be agreeable.
-- Distinguish carefully between similar-but-distinct terms. For example, "Spell Tokens" \
-are erased at regroup but ordinary unit tokens are not; "leaving formation" is a \
-positional reset, NOT the same as leaving play / being removed.
-
-In threads (follow-up questions):
-- Answer the MOST RECENT question. Earlier turns are background only; do not let a \
-previous question's topic pull your answer off-course — if the new question is about \
-something else, switch fully to it.
-- The passages attached to the current question are the authoritative context for THIS \
-answer. Prior answers may have relied on different passages; do not cite from memory.
-
-Style: be concise, use Discord-friendly markdown, keep answers under ~250 words."""
-
-# --- clients & indexes (loaded once at startup) --------------------------
-retriever = Retriever()
-cards = CardIndex()
-# The DeepSeek client is built in __main__ once the API key is resolved (CLI arg
-# or env), so the module can be imported without a key present (e.g. for tests).
-ai: AsyncOpenAI | None = None
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -243,179 +105,13 @@ def feedback_view(rid: str) -> discord.ui.View:
 bot.add_dynamic_items(FeedbackButton)
 
 
-# --- RAG plumbing --------------------------------------------------------
-
-def build_context(hits):
-    blocks = []
-    for _score, r in hits:
-        blocks.append(
-            f"[{r['id']}] (authority {r['authority']} — {r['authority_label']}; "
-            f"source: {r['source']})\n{r['text']}")
-    return "\n\n---\n\n".join(blocks)
-
-
-# Citation tags look like [prefix:suffix] (e.g. [manual:0023], [card:Wisp]); card
-# text uses tagless brackets like [Augment], so requiring a colon leaves those alone.
-_HIST_CITE_RE = re.compile(r"\s*\[[^\[\]]*:[^\[\]]*\]")
-
-
-def _strip_citations(text):
-    """Remove our [tag] citations from text fed back as thread history — those
-    tags point at passages no longer in context and only confuse the model."""
-    return re.sub(r"[ \t]{2,}", " ", _HIST_CITE_RE.sub("", text)).strip()
-
-
-# --- "math mode" detection ------------------------------------------------
-# Stat block like 1/1, +2/+2, 3/4 — the strongest signal a question is numeric.
-_STAT_RE = re.compile(r"[+\-]?\d+\s*/\s*[+\-]?\d+")
-_NUM_RE = re.compile(r"[+\-]?\d+")
-# Combat/arithmetic vocabulary; presence alongside numbers implies real math.
-_MATH_WORDS = {
-    "damage", "deal", "deals", "dealt", "take", "takes", "power", "toughness",
-    "life", "mana", "cost", "buff", "buffed", "debuff", "excess", "remaining",
-    "leftover", "overkill", "lethal", "survive", "survives", "kill", "kills",
-    "die", "dies", "arc", "arcs", "split", "divide", "spread", "heal", "prevent",
-    "fireball", "growth", "conjure", "electric", "trample", "regroup", "counter",
-}
-_QUANT_PHRASES = ("how much", "how many", "left over", "leftover", "add up",
-                  "end up with", "1/0", "at regroup")
-
-
-def needs_reasoning(question):
-    """Heuristic: does this look like a numeric/combat-math question worth
-    enabling DeepSeek thinking for? Conservative — a false positive just spends
-    a little more on an easy question; a false negative falls back to normal."""
-    ql = question.lower()
-    if _STAT_RE.search(ql):                       # explicit stat/buff block
-        return True
-    nums = len(_NUM_RE.findall(ql))
-    signals = sum(bool(re.search(rf"\b{w}\b", ql)) for w in _MATH_WORDS)
-    signals += sum(p in ql for p in _QUANT_PHRASES)
-    return (nums >= 1 and signals >= 2) or (nums >= 2 and signals >= 1)
-
-
-def _use_reasoning(question):
-    if REASONING_MODE == "always":
-        return True
-    if REASONING_MODE == "off":
-        return False
-    return needs_reasoning(question)
-
-
-async def answer_question(question, history):
-    """Retrieve, call DeepSeek, return (answer_text, hits, reasoning_used)."""
-    hits = retriever.search(question, k=TOP_K)
-    context = build_context(hits) if hits else "(no relevant passages found)"
-    messages = [{"role": "system", "content": f"{SYSTEM_PROMPT}\n\n{PRIMER}"}]
-    # Prior assistant turns are resent with their citation tags stripped (the
-    # passages they referenced aren't in this call's context).
-    for m in history[-MAX_HISTORY:]:
-        if m["role"] == "assistant":
-            messages.append({"role": "assistant",
-                             "content": _strip_citations(m["content"])})
-        else:
-            messages.append(m)
-    # Freshly retrieved passages for THIS question; the closing instruction keeps
-    # follow-ups anchored on the current question rather than the thread's history.
-    followup_note = (
-        "\n\nThese passages were retrieved for the CURRENT question only — answer it "
-        "directly using them, and don't assume earlier passages still apply."
-        if history else "")
-    messages.append({
-        "role": "user",
-        "content": (f"Retrieved passages:\n{context}\n\n"
-                    f"Current question: {question}{followup_note}"),
-    })
-    reasoning = _use_reasoning(question)
-    params = {"model": DEEPSEEK_MODEL, "messages": messages, "max_tokens": 900}
-    if reasoning:
-        # Thinking mode ignores temperature; ask for chain-of-thought reasoning.
-        params["reasoning_effort"] = REASONING_EFFORT
-        params["extra_body"] = {"thinking": {"type": "enabled"}}
-    else:
-        params["temperature"] = 0.2
-    resp = await ai.chat.completions.create(**params)
-    return resp.choices[0].message.content.strip(), hits, reasoning
-
-
-# Friendly display names for sources, keyed by the chunk's `source` filename.
-SOURCE_NAMES = {
-    "Algomancy-Manual": "Official Manual",
-    "Algomancy-Rulebook-2023-07": "2023 Rulebook",
-    "Algomancy-Rules-Glossary.md": "Rules Glossary",
-    "The-Rules-of-Algomancy.md": "The Rules of Algomancy (web)",
-    "Mastering-Initiative-Strategy-Guide.md": "Mastering Initiative (guide)",
-    "The-Making-of-Algomancy.md": "The Making of Algomancy (dev-log)",
-    "AlgomancyCards-OracleText.json": "Card data",
-}
-_SUPERSCRIPT = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
-# Bracketed citation groups: [tag], [tag; tag2], [a, b] — anything inside [].
-_CITE_RE = re.compile(r"\[([^\[\]]+)\]")
-
-
-def _sup(n):
-    return str(n).translate(_SUPERSCRIPT)
-
-
-def friendly_source(r):
-    """A clean, human-readable name for a retrieved chunk's source."""
-    if r["source_type"] == "card":
-        return f"Card: {r['title']}"
-    if r["source_type"] == "glossary":
-        return f"Glossary: {r['title']}"
-    stem = r["source"].rsplit("/", 1)[-1]
-    return SOURCE_NAMES.get(stem, stem.rsplit(".", 1)[0].replace("-", " "))
-
-
-def render_citations(answer, hits):
-    """Turn the model's `[source:tag]` citations into clean footnote superscripts.
-
-    Returns (display_text, ordered_sources) where ordered_sources is a list of
-    (number, row) for the sources actually cited, in first-appearance order.
-    Brackets that don't contain a known tag are left untouched.
-    """
-    by_id = {r["id"]: r for _s, r in hits}
-    # Number by source *document* (friendly name) so multiple chunks of e.g. the
-    # 2023 Rulebook share one footnote instead of cluttering the legend.
-    order, number, rep = [], {}, {}
-
-    def repl(m):
-        nums = []
-        for t in [x.strip() for x in re.split(r"[;,]", m.group(1))]:
-            r = by_id.get(t)
-            if r is None:
-                continue
-            key = friendly_source(r)
-            if key not in number:
-                order.append(key)
-                number[key] = len(order)
-                rep[key] = r
-            nums.append(number[key])
-        if not nums:
-            return m.group(0)  # not one of our citations — leave it alone
-        return "".join(_sup(n) for n in sorted(dict.fromkeys(nums)))
-
-    text = _CITE_RE.sub(repl, answer)
-    text = re.sub(r"\s+([.,;:)])", r"\1", text)   # tidy space left before punctuation
-    text = re.sub(r"[ \t]{2,}", " ", text)
-    sources = [(number[k], rep[k]) for k in order]
-    return text.strip(), sources
-
+# --- cited-card art ------------------------------------------------------
 
 def cited_card_files(answer, hits, limit=10):
-    """discord.File art for each *card* the answer actually cited (with art),
-    so the images can be posted in the thread for easy reference."""
-    _display, sources = render_citations(answer, hits)
-    files = []
-    for n, r in sources:
-        if r["source_type"] != "card":
-            continue
-        art = cards.art_path(r["title"])
-        if art:
-            files.append(discord.File(str(art), filename=f"cite{n}.jpg"))
-        if len(files) >= limit:
-            break
-    return files
+    """discord.File art for each *card* the answer cited (with art), so the
+    images can be posted in the thread for easy reference."""
+    return [discord.File(str(p), filename=f"cite{n}.jpg")
+            for n, _title, p in cited_card_paths(answer, hits, limit=limit)]
 
 
 async def post_cited_cards(channel, answer, hits):
@@ -439,7 +135,7 @@ def answer_embed(question, answer, hits, reasoning=False):
         lines = [f"**{n}.** {friendly_source(r)} · *{r['authority_label']}*"
                  for n, r in sources]
         e.add_field(name="Sources", value="\n".join(lines)[:1024], inline=False)
-    mode = f"{DEEPSEEK_MODEL} · 🧠 thinking" if reasoning else DEEPSEEK_MODEL
+    mode = f"{core.DEEPSEEK_MODEL} · 🧠 thinking" if reasoning else core.DEEPSEEK_MODEL
     e.set_footer(text=f"Answered by {mode} · rate below to help train the model")
     return e
 
@@ -459,9 +155,9 @@ async def ask_cmd(ctx, *, question: str = None):
             return
 
     rid = store.new_response_id()
-    store.log_response(rid, "ask", question, answer, hits, DEEPSEEK_MODEL,
+    store.log_response(rid, "ask", question, answer, hits, core.DEEPSEEK_MODEL,
                        user_id=ctx.author.id, channel_id=ctx.channel.id,
-                       reasoning=reasoning)
+                       reasoning=reasoning, engine_version=core.ENGINE_VERSION)
     reply = await ctx.reply(embed=answer_embed(question, answer, hits, reasoning),
                             view=feedback_view(rid))
 
@@ -486,23 +182,9 @@ MAX_CARDS = 10
 # Filled at on_ready from the bot's guilds: emoji name -> "<:name:id>".
 EMOJI: dict[str, str] = {}
 
-# Card-text tokens -> custom-emoji NAME. [..] tokens are ability keywords,
-# {..} tokens are attributes. (Edit these if the guild's emoji names differ —
-# on_ready prints how many were loaded.)
-ICON_NAMES = {
-    "[augment]": "augment", "[switch1]": "bounded_graft", "[switch]": "graft",
-    "[virus]": "virus", "[battle]": "battle", "[haste]": "haste",
-    "{virus}": "virus", "{battle}": "battle", "{haste}": "haste",
-}
-# Affinity/cost letters -> faction emoji (verified from card data). Used only on
-# the COST line — in card TEXT, {g}/{p} are attribute colours, not factions.
-# NOTE: `p` = colorless (the Prismite resource); intentionally unmapped until the
-# correct emoji name is confirmed (it is NOT `dark`), so it renders as "p" for now.
-RESOURCE_NAMES = {
-    "r": "fire", "m": "metal", "b": "water",
-    "e": "earth", "g": "wood",
-}
-_TOKEN_RE = re.compile(r"\[[^\[\]]+\]|\{[^{}]+\}")
+# The token->icon-name maps (ICON_NAMES, RESOURCE_NAMES) and the token regex live
+# in core.py so the web app renders the same icons. The guild's custom emojis must
+# be named to match the icon names (augment, bounded_graft, graft, fire, …).
 
 
 def _emoji(name, fallback):
@@ -533,7 +215,7 @@ def render_card_text(text):
     t = text.replace("{/n}", "\n")
     t = re.sub(r"\{/?i\d*\}", "", t)              # italic markers {i} {i1} {/i}
     t = t.replace("{g}", "").replace("{p}", "")   # attribute colour markers (gold/purple)
-    return _TOKEN_RE.sub(_sub_token, t)
+    return ICON_TOKEN_RE.sub(_sub_token, t)
 
 
 def render_cost(cost):
@@ -637,6 +319,474 @@ async def card_cmd(ctx, *, name: str = None):
     await ctx.reply(content=content, embeds=embeds, files=files)
 
 
+# --- rulings lookup -------------------------------------------------------
+# `&ruling <card>` lists every community/judge/designer ruling that mentions a
+# card, straight from the corpus (no LLM). Rulings are tagged with their cards
+# at build time (build_rulings._detect_cards), so this is a plain filter.
+
+_PART_RE = re.compile(r"\s*\(part \d+\)\s*$")
+_AUTH_LABEL = {0: "🟣 Discord ruling", 1: "🔵 Judge write-up", 2: "⚪ Community"}
+
+
+def _ruling_snippet(row, width=230):
+    """First slice of a ruling's body (drop the title line + trailing tails)."""
+    text = row["text"]
+    # body is everything after the "title\n\n" heading we prepend at build time
+    body = text.split("\n\n", 1)[1] if "\n\n" in text else text
+    for cut in ("\nRelated cards:", "\n\n(Source:", "\n\n(Answered by"):
+        i = body.find(cut)
+        if i != -1:
+            body = body[:i]
+    body = " ".join(body.split())
+    return body[:width] + "…" if len(body) > width else body
+
+
+def find_card_rulings(matched_name):
+    """Ruling rows that mention `matched_name`, deduped by thread, best-authority first."""
+    word = re.compile(rf"(?<!\w){re.escape(matched_name)}(?!\w)")
+    best = {}
+    for r in retriever.rows:
+        if r["source_type"] != "ruling":
+            continue
+        md = r.get("metadata", {})
+        if matched_name not in md.get("cards", []) and not word.search(r["text"]):
+            continue
+        base = r["id"].split("#")[0]                       # collapse multi-part threads
+        if base not in best or r["authority"] < best[base]["authority"]:
+            best[base] = r
+    rows = list(best.values())
+    rows.sort(key=lambda r: (r["authority"], r["title"]))
+    return rows
+
+
+@bot.command(name="ruling", aliases=["rulings", "raq"])
+async def ruling_cmd(ctx, *, name: str = None):
+    if not name:
+        await ctx.reply("Usage: `&ruling <card name>` — lists judge/designer rulings that mention a card.")
+        return
+
+    card, matched, alts = cards.lookup(name)
+    if not card:
+        hint = f" Did you mean: {', '.join(alts)}?" if alts else ""
+        await ctx.reply(f"No card found matching **{name}**.{hint}")
+        return
+
+    hits = find_card_rulings(matched)
+    if not hits:
+        msg = f"No rulings mention **{matched}** yet."
+        if alts:
+            msg += f"  (Close names: {', '.join(alts)}.)"
+        await ctx.reply(msg)
+        return
+
+    e = discord.Embed(
+        title=f"⚖️ Rulings mentioning {matched}",
+        color=0x5865F2,
+        description=f"{len(hits)} thread{'s' if len(hits) != 1 else ''} found · highest authority first",
+    )
+    for r in hits[:10]:
+        title = _PART_RE.sub("", r["title"])
+        md = r.get("metadata", {})
+        label = _AUTH_LABEL.get(r["authority"], "ruling")
+        url = md.get("url")
+        who = md.get("answered_by") or ""
+        date = md.get("date") or ""
+        link = f"\n[full thread →]({url})" if url else ""
+        foot = " · ".join(x for x in (who, date) if x)
+        value = f"{_ruling_snippet(r)}{link}"
+        if foot:
+            value += f"\n*{foot}*"
+        e.add_field(name=f"{label} · {title}"[:256], value=value[:1024], inline=False)
+    if len(hits) > 10:
+        e.set_footer(text=f"…and {len(hits) - 10} more. Ask `&ask` for a specific interaction.")
+    await ctx.reply(embed=e)
+
+
+# --- colour-combo suggestions --------------------------------------------
+# `&colors` suggests three colours to play, biased toward combos you've never
+# tried. Nothing is recorded until you confirm with the ✅ button (or `&played`),
+# so re-rolling a suggestion you don't fancy never pollutes your history.
+
+def combo_icons(combo):
+    """The combo's faction emojis (custom if the guild has them, else Unicode)."""
+    return " ".join(_emoji(c, FACTION_EMOJI.get(c, "")) for c in combo)
+
+
+def _combo_lines(items, cov=None, limit=12):
+    """Bullet list of combos, truncated so it always fits an embed field."""
+    shown = items[:limit]
+    lines = []
+    for combo in shown:
+        line = f"• {combos.label(combo)}"
+        if cov:
+            count = cov["counts"].get(combo, 0)
+            when = (cov["last"].get(combo) or "")[:10]      # YYYY-MM-DD
+            line += f" — {count}×, last {when}" if when else ""
+        lines.append(line)
+    if len(items) > limit:
+        lines.append(f"…and {len(items) - limit} more")
+    return "\n".join(lines)
+
+
+def suggestion_embed(user, combo, reason, cov):
+    done, total = total_played(cov), cov["total"]
+    blurb = ("You've **never played this one**." if reason == "new" else
+             "You've played everything — this is the one you've gone longest without.")
+    e = discord.Embed(
+        title=f"🎲 {combos.label(combo)}",
+        description=f"{combo_icons(combo)}\n\n{blurb}\n\n"
+                    f"`{combos.progress_bar(done, total)}` **{done}/{total}** combos explored",
+        color=FACTION_COLOR.get(combo[0], 0x5865F2),
+    )
+    if cov["unplayed"]:
+        e.add_field(name=f"Never played ({len(cov['unplayed'])})",
+                    value=_combo_lines(cov["unplayed"])[:1024], inline=False)
+    e.set_footer(text=f"Suggested for {user.display_name} · "
+                      "hit ✅ once you've actually played it, or 🎲 to re-roll")
+    return e
+
+
+def stats_embed(user, cov):
+    done, total = total_played(cov), cov["total"]
+    e = discord.Embed(
+        title=f"🎨 {user.display_name}'s colour history",
+        description=f"`{combos.progress_bar(done, total)}` **{done}/{total}** combos explored",
+        color=0x5865F2,
+    )
+    if cov["played"]:
+        e.add_field(name=f"Played ({done})",
+                    value=_combo_lines(cov["played"], cov)[:1024], inline=False)
+    if cov["unplayed"]:
+        e.add_field(name=f"Never played ({len(cov['unplayed'])})",
+                    value=_combo_lines(cov["unplayed"])[:1024], inline=False)
+    else:
+        e.set_footer(text="You've played every combo — nice. Suggestions now "
+                          "pick whatever you've left alone the longest.")
+    return e
+
+
+def total_played(cov):
+    return len(cov["played"])
+
+
+def record_game(combo, user_id, channel_id):
+    """Log a played combo for one person. Returns (recorded, coverage-after).
+
+    `recorded` is False when they already logged this combo in the last few hours
+    (a double-tapped button), in which case nothing is written.
+    """
+    games = store.read_games(user_id)
+    if combos.logged_recently(games, combo):
+        return False, combos.coverage(games)
+    store.log_game(combo, user_id, channel_id=channel_id, source="discord")
+    return True, combos.coverage(store.read_games(user_id))
+
+
+def confirmation(combo, recorded, cov):
+    """The message shown after a combo is logged (or re-logged)."""
+    done, total, left = total_played(cov), cov["total"], len(cov["unplayed"])
+    if not recorded:
+        return (f"Already recorded **{combos.label(combo)}** for you today — "
+                f"you're at **{done}/{total}**.")
+    tail = (f"{left} combo{'s' if left != 1 else ''} still untouched."
+            if left else "That's every combo played — the full set. 🎉")
+    return f"✅ Recorded **{combos.label(combo)}**. You're at **{done}/{total}**. {tail}"
+
+
+def combo_view(user_id, combo) -> discord.ui.View:
+    view = discord.ui.View(timeout=None)
+    view.add_item(PlayedButton(combos.key(combo)))
+    view.add_item(RerollButton(str(user_id), combos.key(combo)))
+    return view
+
+
+# Like the feedback buttons, these carry their state in the custom_id (a combo
+# key such as "fire-earth-wood"), so they keep working across bot restarts.
+
+class PlayedButton(
+        discord.ui.DynamicItem[discord.ui.Button],
+        template=r"co:played:(?P<key>[a-z\-]+)"):
+
+    def __init__(self, key: str):
+        super().__init__(discord.ui.Button(
+            label="We played this", emoji="✅",
+            style=discord.ButtonStyle.success, custom_id=f"co:played:{key}"))
+        self.key = key
+
+    @classmethod
+    async def from_custom_id(cls, interaction, item, match):
+        return cls(match["key"])
+
+    async def callback(self, interaction: discord.Interaction):
+        try:
+            combo = combos.from_key(self.key)
+        except combos.ComboError as exc:      # stale button from an older colour set
+            await interaction.response.send_message(f"⚠️ {exc}", ephemeral=True)
+            return
+        recorded, cov = record_game(combo, interaction.user.id, interaction.channel_id)
+        await interaction.response.send_message(
+            confirmation(combo, recorded, cov), ephemeral=True)
+
+
+class RerollButton(
+        discord.ui.DynamicItem[discord.ui.Button],
+        template=r"co:roll:(?P<uid>\d+):(?P<key>[a-z\-]+)"):
+
+    def __init__(self, uid: str, key: str):
+        super().__init__(discord.ui.Button(
+            label="Re-roll", emoji="🎲",
+            style=discord.ButtonStyle.secondary, custom_id=f"co:roll:{uid}:{key}"))
+        self.uid = uid
+        self.key = key
+
+    @classmethod
+    async def from_custom_id(cls, interaction, item, match):
+        return cls(match["uid"], match["key"])
+
+    async def callback(self, interaction: discord.Interaction):
+        user = interaction.user
+        games = store.read_games(user.id)
+        try:
+            current = combos.from_key(self.key)
+        except combos.ComboError:
+            current = None                    # unknown key: just don't exclude anything
+        combo, reason = combos.suggest(games, exclude=current)
+        embed = suggestion_embed(user, combo, reason, combos.coverage(games))
+        view = combo_view(user.id, combo)
+        # Only the person the suggestion was made for edits it in place; anyone
+        # else gets their own suggestion, drawn from their own history, privately.
+        if str(user.id) == self.uid:
+            await interaction.response.edit_message(embed=embed, view=view)
+        else:
+            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+
+
+bot.add_dynamic_items(PlayedButton, RerollButton)
+
+STATS_WORDS = {"stats", "history", "list", "coverage"}
+
+
+async def log_played(ctx, text):
+    """Shared by `&played <colors>` and `&colors <colors>`."""
+    try:
+        combo = combos.parse_combo(text)
+    except combos.ComboError as exc:
+        await ctx.reply(f"⚠️ {exc}")
+        return
+    recorded, cov = record_game(combo, ctx.author.id, ctx.channel.id)
+    await ctx.reply(confirmation(combo, recorded, cov))
+
+
+@bot.command(name="colors", aliases=["colours", "combo"])
+async def colors_cmd(ctx, *, arg: str = None):
+    arg = (arg or "").strip()
+
+    if arg.lower() in STATS_WORDS:
+        await ctx.reply(embed=stats_embed(ctx.author, combos.coverage(store.read_games(ctx.author.id))))
+        return
+    if arg:  # `&colors fire earth wood` — an explicit log, same as `&played`
+        await log_played(ctx, arg)
+        return
+
+    games = store.read_games(ctx.author.id)
+    combo, reason = combos.suggest(games)
+    await ctx.reply(embed=suggestion_embed(ctx.author, combo, reason, combos.coverage(games)),
+                    view=combo_view(ctx.author.id, combo))
+
+
+@bot.command(name="played")
+async def played_cmd(ctx, *, text: str = None):
+    if not text:
+        await ctx.reply("Usage: `&played fire earth wood` — records a combo you've played.")
+        return
+    await log_played(ctx, text)
+
+
+# --- pack-1-pick-X draft practice ----------------------------------------
+# `&p1p1` / `&p1p6` post a reproducible pack as one numbered image with a row of
+# tap-to-pick buttons, and open a discussion thread. Each person's picks are kept
+# privately (per message, per user); the moment someone completes a set, their
+# picks are rendered as an image into the thread. Everything replays from the seed
+# shown on the embed, so a pack can be shared, saved, or sent to a friend.
+
+# (message_id, user_id) -> that person's ordered slot picks, and the last set we
+# posted for them (so re-completing the same picks doesn't spam the thread).
+# In-memory like THREADS: a restart forgets in-progress picks, but every button
+# carries the pack's code, so the pack itself is always rebuildable.
+DRAFT_PICKS: dict[tuple[int, int], list[int]] = {}
+DRAFT_POSTED: dict[tuple[int, int], frozenset] = {}
+
+
+async def _render(fn, *args):
+    """Run a Pillow render off the event loop (it's CPU-bound)."""
+    return await asyncio.to_thread(fn, *args)
+
+
+def _draft_file(png, name):
+    return discord.File(io.BytesIO(png), filename=name)
+
+
+def _slots_str(slots):
+    return ", ".join(str(s) for s in sorted(slots)) or "none"
+
+
+def _element_line(elements):
+    """'🔥 Fire · ⚙️ Metal · 🌿 Wood' using custom emojis when available."""
+    return " · ".join(
+        f"{_emoji(e, FACTION_EMOJI.get(e, ''))} {e.title()}".strip() for e in elements)
+
+
+def draft_embed(pack):
+    e = discord.Embed(
+        title=f"🃏 {pack.spec.label}",
+        description=(f"{pack.spec.blurb}\n\n"
+                     f"**Pick {pack.picks}.** Tap the numbered buttons below — I'll "
+                     f"confirm your picks privately and post them to the thread once "
+                     f"you've chosen {pack.picks}."),
+        color=0x5865F2,
+    )
+    if pack.spec.elements:
+        e.add_field(name="Elements", value=_element_line(pack.elements), inline=False)
+    e.add_field(name="Seed",
+                value=f"`{pack.code}` — replay anywhere with `&{pack.mode} {pack.seed}`",
+                inline=False)
+    e.set_image(url="attachment://pack.png")
+    e.set_footer(text="Your picks are private until you complete a set · the seed is shareable")
+    return e
+
+
+# Like the feedback/combo buttons, these carry their state (the pack's code and the
+# slot number) in the custom_id, so they keep working across bot restarts.
+
+class PickButton(
+        discord.ui.DynamicItem[discord.ui.Button],
+        template=r"dp:(?P<slot>\d+):(?P<code>.+)"):
+
+    def __init__(self, slot, code, row=0):
+        super().__init__(discord.ui.Button(
+            label=str(slot), style=discord.ButtonStyle.secondary,
+            custom_id=f"dp:{slot}:{code}", row=row))
+        self.slot = int(slot)
+        self.code = code
+
+    @classmethod
+    async def from_custom_id(cls, interaction, item, match):
+        return cls(int(match["slot"]), match["code"])
+
+    async def callback(self, interaction):
+        await handle_pick(interaction, self.code, self.slot)
+
+
+class PickClearButton(
+        discord.ui.DynamicItem[discord.ui.Button],
+        template=r"dpx:(?P<code>.+)"):
+
+    def __init__(self, code):
+        super().__init__(discord.ui.Button(
+            label="Clear my picks", emoji="🧹",
+            style=discord.ButtonStyle.danger, custom_id=f"dpx:{code}", row=4))
+        self.code = code
+
+    @classmethod
+    async def from_custom_id(cls, interaction, item, match):
+        return cls(match["code"])
+
+    async def callback(self, interaction):
+        key = (interaction.message.id, interaction.user.id)
+        DRAFT_PICKS.pop(key, None)
+        DRAFT_POSTED.pop(key, None)
+        await interaction.response.send_message(
+            "🧹 Cleared your picks — tap the cards to start again.", ephemeral=True)
+
+
+bot.add_dynamic_items(PickButton, PickClearButton)
+
+
+def pick_view(pack):
+    view = discord.ui.View(timeout=None)
+    per_row = 4 if len(pack.slots) > 12 else 5      # 4×4 for 16, 5×2 for 10
+    for slot in range(1, len(pack.slots) + 1):
+        view.add_item(PickButton(slot, pack.code, row=(slot - 1) // per_row))
+    view.add_item(PickClearButton(pack.code))
+    return view
+
+
+async def handle_pick(interaction, code, slot):
+    try:
+        pack = draft.pack_from_code(code)
+    except draft.DraftError:
+        await interaction.response.send_message(
+            "⚠️ I couldn't read this pack's code — it may be from an older version.",
+            ephemeral=True)
+        return
+
+    key = (interaction.message.id, interaction.user.id)
+    picks = DRAFT_PICKS.setdefault(key, [])
+    if slot in picks:
+        picks.remove(slot)                          # tap again to unpick
+    elif len(picks) >= pack.picks:
+        await interaction.response.send_message(
+            f"You've already got your {pack.picks} ({_slots_str(picks)}). "
+            "Tap one of those to swap it out first.", ephemeral=True)
+        return
+    else:
+        picks.append(slot)
+
+    if len(picks) == pack.picks:
+        chosen = frozenset(picks)
+        if DRAFT_POSTED.get(key) != chosen:         # avoid re-posting the same set
+            DRAFT_POSTED[key] = chosen
+            png = await _render(draft.render_picks_image, pack, list(picks))
+            target = interaction.message.thread or interaction.channel
+            try:
+                await target.send(
+                    content=f"🎴 **{interaction.user.display_name}'s picks** "
+                            f"(`{pack.code}`) — slots {_slots_str(picks)}",
+                    file=_draft_file(png, "picks.png"))
+            except discord.HTTPException:
+                pass
+        await interaction.response.send_message(
+            f"✅ That's your {pack.picks} ({_slots_str(picks)}) — posted to the "
+            "thread. Tap any card to change your mind.", ephemeral=True)
+    else:
+        need = pack.picks - len(picks)
+        await interaction.response.send_message(
+            f"Picked {_slots_str(picks)} — **{len(picks)}/{pack.picks}**. "
+            f"Choose {need} more.", ephemeral=True)
+
+
+async def run_draft(ctx, mode, seed):
+    try:
+        pack = draft.resolve(mode, seed)
+    except draft.DraftError as exc:
+        await ctx.reply(f"⚠️ {exc}")
+        return
+    async with ctx.typing():
+        png = await _render(draft.render_pack_image, pack)
+    msg = await ctx.reply(embed=draft_embed(pack),
+                          file=_draft_file(png, "pack.png"), view=pick_view(pack))
+    # Open a discussion thread with a neutral, human prompt (no AI take).
+    try:
+        thread = await msg.create_thread(
+            name=f"{pack.spec.label} · {pack.code}"[:90], auto_archive_duration=1440)
+        await thread.send(
+            f"🧵 Pack's up — **what {pack.picks} would you keep, and why?** Tap the "
+            "numbered buttons on the pack to lock in your picks and I'll post them "
+            f"here. Everyone can play the same pack: `&{pack.mode} {pack.seed}`.")
+    except discord.HTTPException:
+        pass  # e.g. DMs / places threads aren't allowed
+
+
+@bot.command(name="p1p1")
+async def p1p1_cmd(ctx, *, seed: str = None):
+    await run_draft(ctx, "p1p1", seed)
+
+
+@bot.command(name="p1p6")
+async def p1p6_cmd(ctx, *, seed: str = None):
+    await run_draft(ctx, "p1p6", seed)
+
+
 @bot.command(name="help")
 async def help_cmd(ctx):
     e = discord.Embed(title="Algomancy Rules Bot", color=0x5865F2, description=(
@@ -644,6 +794,16 @@ async def help_cmd(ctx):
         "rules corpus with citations, then open a thread for follow-ups.\n\n"
         "**`&card <name>`** — Look up a card (fuzzy matched) with art, stats, and rulings. "
         "Look up several at once with commas: `&card Sprouter, Overbloom, Plodding Pebble`.\n\n"
+        "**`&ruling <card>`** — List the judge/designer rulings that mention a card, "
+        "straight from the corpus (no AI), with links to the full threads.\n\n"
+        "**`&colors`** — Suggest three colours to play, favouring combos you've never "
+        "tried. Hit ✅ when you've actually played it (or `&played fire earth wood`). "
+        "`&colors stats` shows how much of the game you've explored.\n\n"
+        "**`&p1p1 [seed]`** — A standard 10-card pack from the whole set: which one do "
+        "you take? Tap a button to lock your pick.\n\n"
+        "**`&p1p6 [seed]`** — A turn-1 live-draft pile of 16 from three random elements; "
+        "keep 6. Tap buttons to pick, and I'll post your picks to the thread. Add a "
+        "`seed` to replay or share an exact pack.\n\n"
         "**`&feedback [text]`** — Share feedback about the bot. With text, it's logged "
         "right away; with no text I open a thread where every message you send is recorded.\n\n"
         "**`&help`** — Show this message."
@@ -703,10 +863,10 @@ async def on_message(message: discord.Message):
                 await message.reply(f"⚠️ Couldn't reach the model: `{exc}`")
                 return
         rid = store.new_response_id()
-        store.log_response(rid, "followup", message.content, answer, hits, DEEPSEEK_MODEL,
+        store.log_response(rid, "followup", message.content, answer, hits, core.DEEPSEEK_MODEL,
                            user_id=message.author.id, channel_id=message.channel.parent_id,
                            thread_id=message.channel.id, history=list(history),
-                           reasoning=reasoning)
+                           reasoning=reasoning, engine_version=core.ENGINE_VERSION)
         history.append({"role": "user", "content": message.content})
         history.append({"role": "assistant", "content": answer})
         await message.reply(embed=answer_embed(message.content, answer, hits, reasoning),
@@ -720,7 +880,7 @@ async def on_message(message: discord.Message):
 async def on_ready():
     # Cache custom emojis from every guild the bot is in, by name, for card icons.
     EMOJI.update({e.name: str(e) for e in bot.emojis})
-    print(f"Logged in as {bot.user} · model={DEEPSEEK_MODEL} · "
+    print(f"Logged in as {bot.user} · model={core.DEEPSEEK_MODEL} · "
           f"{len(retriever.rows)} chunks, {len(cards.names)} cards, "
           f"{len(EMOJI)} custom emojis loaded")
 
@@ -735,7 +895,7 @@ if __name__ == "__main__":
                     help="DeepSeek API key (overrides the DEEPSEEK_API_KEY env var)")
     ap.add_argument("discord_token", nargs="?",
                     help="Discord bot token (overrides the DISCORD_TOKEN env var)")
-    ap.add_argument("--model", help=f"DeepSeek model id (default: {DEEPSEEK_MODEL})")
+    ap.add_argument("--model", help=f"DeepSeek model id (default: {core.DEEPSEEK_MODEL})")
     args = ap.parse_args()
 
     deepseek_key = args.deepseek_key or os.getenv("DEEPSEEK_API_KEY")
@@ -744,8 +904,6 @@ if __name__ == "__main__":
         raise SystemExit(
             "Usage: python3 bot.py <DEEPSEEK_API_KEY> <DISCORD_TOKEN>\n"
             "(either value may instead come from DEEPSEEK_API_KEY / DISCORD_TOKEN env vars).")
-    if args.model:
-        DEEPSEEK_MODEL = args.model
 
-    ai = AsyncOpenAI(api_key=deepseek_key, base_url=DEEPSEEK_BASE)
+    core.init_client(deepseek_key, model=args.model)
     bot.run(token)

@@ -1,3 +1,7 @@
-discord.py>=2.4,<3
+discord.py>=2.4,<3  # Discord front-end (bot.py)
 openai>=1.40        # OpenAI-compatible client, pointed at the DeepSeek API
 python-dotenv>=1.0
+fastapi>=0.110      # web front-end (app.py)
+uvicorn>=0.29       # ASGI server for the web app
+Pillow>=10.0        # pack-image rendering for the draft commands (draft.py)
+pymupdf>=1.24       # build-time only: column-aware PDF extraction in build_corpus.py
