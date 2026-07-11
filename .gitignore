@@ -9,6 +9,19 @@ start_commands.txt
 # --- Runtime logs (contain Discord user IDs + question history) ---
 logs/*.jsonl
 
+# --- Discord extraction (tooling + raw dumps + intermediate batches) ---
+#     Only the CURATED rulings are committed:
+#       rulings/seed_rulings.jsonl       (hand-transcribed)
+#       rulings/generated_rulings.jsonl  (Sonnet-curated designer Q&A)
+#     Everything used to PRODUCE them is reproducible and stays out of git:
+#     the vendored DiscordChatExporter binary (29 MB, fetch from its GitHub
+#     releases), the raw channel dumps + their media, the per-batch work files,
+#     and the image-only messages we chose not to OCR.
+discord_extractor/
+rulings/exports/
+rulings/work/
+rulings/needs_ocr.jsonl
+
 # --- Local tooling / editor ---
 .claude/settings.local.json
 
