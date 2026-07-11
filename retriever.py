@@ -28,8 +28,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CORPUS = ROOT / "corpus" / "algomancy_corpus.jsonl"
 
-# Authority tier -> score multiplier (tier 1 = most authoritative).
-AUTH_BOOST = {1: 1.30, 2: 1.20, 3: 1.05, 4: 0.95, 5: 0.85}
+# Authority tier -> score multiplier (tier 0 = designer's word, most authoritative).
+AUTH_BOOST = {0: 1.40, 1: 1.30, 2: 1.20, 3: 1.05, 4: 0.95, 5: 0.85}
 # Extra penalty for chunks flagged as likely outdated (experimental dev notes,
 # old web write-ups). Keeps stale "right now I'm testing…" text from outranking
 # the current rulebook/glossary.
@@ -45,6 +45,20 @@ BM25_B = 0.5
 FUZZY_CUTOFF = 0.74
 # Fuzzy-matched terms are slightly discounted to reflect the uncertainty.
 FUZZY_WEIGHT = 0.85
+
+# --- foundational floor ---------------------------------------------------
+# Rulings are short and phrased as questions, which is exactly what BM25 scores
+# highest — and at ~45% of the corpus (and authority 0) they can sweep every
+# slot, even on questions the Manual answers outright. That cost us two real
+# answers: "how much life do you start with" (the Manual's "each player begins
+# with 30 life" ranked #12) and "why is card text in [brackets]" (the Manual's
+# additional-costs rule didn't even make the top 25) — in both cases the model
+# saw only edge-case rulings and either abstained or over-generalised one.
+#
+# So the slate reserves a floor for the sources that state base rules. Rulings
+# still take every slot they earn above the floor; they just can't take them all.
+FOUNDATION_TYPES = {"rulebook", "glossary", "card"}
+FOUNDATION_FLOOR = 4
 
 TOKEN_RE = re.compile(r"[a-z0-9]+")
 STOP = set("a an the of to in on at is are be can do does what when how why "
@@ -139,6 +153,28 @@ def score(query, rows, index, types=None):
     return results
 
 
+def apply_foundation_floor(ranked, k, floor=FOUNDATION_FLOOR):
+    """Take the best `k` of `ranked`, but guarantee at least `floor` of them come
+    from FOUNDATION_TYPES (promoting the next-best foundational chunks and
+    dropping the weakest non-foundational ones to make room). Returns results in
+    score order. A no-op when the natural top-k already clears the floor."""
+    top = ranked[:k]
+    is_found = lambda x: x[1]["source_type"] in FOUNDATION_TYPES
+    need = min(floor, k) - sum(1 for x in top if is_found(x))
+    if need <= 0:
+        return top
+    promoted = [x for x in ranked[k:] if is_found(x)][:need]
+    if not promoted:
+        return top
+    kept = [x for x in top if is_found(x)]
+    others = [x for x in top if not is_found(x)]
+    # Drop the weakest non-foundational entries (they're score-sorted) to fit.
+    others = others[:len(others) - len(promoted)]
+    out = kept + others + promoted
+    out.sort(key=lambda x: -x[0])
+    return out
+
+
 def snippet(text, query, width=300):
     """Window the text around the first matched query term."""
     terms = tokenize(query)
@@ -157,6 +193,12 @@ class Retriever:
         self.rows = load(corpus_path)
         self.index = build_index(self.rows)
 
-    def search(self, query, k=6, types=None):
-        """Return up to `k` (score, row) tuples, best first."""
-        return score(query, self.rows, self.index, types)[:k]
+    def search(self, query, k=6, types=None, floor=FOUNDATION_FLOOR):
+        """Return up to `k` (score, row) tuples, best first.
+
+        Unless `types` already narrows the slate, at least `floor` of the results
+        are foundational (rulebook/glossary/card) — see FOUNDATION_FLOOR."""
+        ranked = score(query, self.rows, self.index, types)
+        if types or not floor:
+            return ranked[:k]
+        return apply_foundation_floor(ranked, k, floor)

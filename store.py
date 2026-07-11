@@ -8,7 +8,10 @@ model OFFLINE: the question, the answer, the full retrieved chunks (text + score
 the model used, and the conversation history. User feedback (👍/👎) lands in
 `logs/feedback.jsonl`, linked back by `response_id`. Absence of feedback = neutral.
 
-Both files are append-only JSONL — safe to tail, easy to join on `response_id`.
+A third file, `logs/games.jsonl`, records which 3-colour decks each person has
+played, which is what `combos.py` reads to suggest a fresh combo.
+
+All files are append-only JSONL — safe to tail, easy to join on `response_id`.
 """
 
 import json
@@ -22,6 +25,7 @@ LOG_DIR = ROOT / "logs"
 RESPONSES = LOG_DIR / "responses.jsonl"
 FEEDBACK = LOG_DIR / "feedback.jsonl"
 GENERAL_FEEDBACK = LOG_DIR / "general_feedback.jsonl"
+GAMES = LOG_DIR / "games.jsonl"
 
 _lock = threading.Lock()
 
@@ -44,7 +48,7 @@ def new_response_id():
 
 def log_response(response_id, kind, question, answer, hits, model,
                  *, user_id, channel_id, thread_id=None, history=None,
-                 reasoning=False):
+                 reasoning=False, engine_version=None):
     """Persist one AI answer with its full retrieval context for later training."""
     record = {
         "response_id": response_id,
@@ -52,6 +56,7 @@ def log_response(response_id, kind, question, answer, hits, model,
         "kind": kind,                       # "ask" | "followup"
         "model": model,
         "reasoning": reasoning,             # True if "math mode" thinking was on
+        "engine_version": engine_version,   # which prompt+primer+corpus produced it
 
         "user_id": user_id,
         "channel_id": channel_id,
@@ -95,3 +100,47 @@ def log_general_feedback(text, user_id, *, channel_id=None, thread_id=None):
         "channel_id": channel_id,
         "thread_id": thread_id,
     })
+
+
+# --- played colour combos (combos.py) ------------------------------------
+# Which 3-colour decks a person has played, so the bot can suggest fresh ones.
+# `user_id` is a Discord user id or a web session id; stored as a string so the
+# two surfaces share one key space and one file.
+
+def log_game(colors, user_id, *, channel_id=None, source=None):
+    """Record that someone played a colour combo. `colors` should already be in
+    canonical order (combos.canonical) so records compare cleanly by eye."""
+    _append(GAMES, {
+        "ts": _now(),
+        "user_id": str(user_id),
+        "colors": list(colors),
+        "channel_id": channel_id,
+        "source": source,               # "discord" | "web"
+    })
+
+
+def read_games(user_id=None):
+    """Every logged game, oldest first — or just `user_id`'s if given.
+
+    Re-read per call rather than cached: the file holds one line per game played,
+    so it stays tiny, and a fresh read means a game logged from Discord shows up
+    on the website immediately (both front-ends can even be separate processes).
+    Malformed lines are skipped rather than crashing a suggestion.
+    """
+    if not GAMES.exists():
+        return []
+    want = None if user_id is None else str(user_id)
+    games = []
+    with _lock:
+        with GAMES.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if want is None or record.get("user_id") == want:
+                    games.append(record)
+    return games

@@ -40,14 +40,37 @@ OVERLAP_CHARS = 200
 # Authority registry: lower number = prefer when sources conflict.
 # Mirrors Rules/README.md "Authority & recency" ranking.
 AUTHORITY = {
-    "card":        (1, "canonical card data"),
-    "manual":      (1, "primary rulebook"),
-    "glossary":    (2, "official glossary"),
-    "rulebook23":  (3, "secondary rulebook (2023)"),
-    "rules_web":   (4, "designer web write-up"),
-    "strategy":    (4, "official strategy guide"),
-    "devlog":      (5, "design blog (may be outdated)"),
+    "discord_ruling": (0, "Discord ruling (definitive)"),
+    "card":          (1, "canonical card data"),
+    "manual":        (1, "primary rulebook"),
+    "judge_ruling":  (1, "official judge ruling"),
+    "glossary":      (2, "official glossary"),
+    "community_ruling": (2, "community Q&A (judge-confirmed)"),
+    "rulebook23":    (3, "secondary rulebook (2023)"),
+    "rules_web":     (4, "designer web write-up"),
+    "strategy":      (4, "official strategy guide"),
+    "devlog":        (5, "design blog (may be outdated)"),
 }
+
+# Ideas the designer floated in a write-up and then SCRAPPED. They read like rules
+# and retrieve like rules, so leaving them in means the bot confidently teaches a
+# rule that does not exist — the graft-on-top text below did exactly that, and it
+# outranked the real "grafts go underneath" rule often enough to flip the answer.
+# Each entry is matched literally and cut from the text at build time.
+SCRAPPED_RULES = [
+    # Grafts go UNDER the target card, full stop. Placing one on top so the unit
+    # "becomes whatever is on top" was an experiment that never shipped.
+    "(Right now I am testing allowing players to graft cards beneath or on top of "
+    "other cards. If you graft on top, the creature essentially becomes whatever "
+    "is on top.)",
+]
+
+
+def drop_scrapped(text):
+    """Cut any SCRAPPED_RULES passage out of a chunk's text (see above)."""
+    for dead in SCRAPPED_RULES:
+        text = text.replace(dead, "")
+    return re.sub(r"[ \t]{2,}", " ", text).strip()
 
 approx_tokens = lambda s: len(s) // 4
 
@@ -58,7 +81,7 @@ approx_tokens = lambda s: len(s) // 4
 def make_record(cid, text, source, source_type, auth_key, title,
                 metadata=None, outdated_risk=False):
     authority, label = AUTHORITY[auth_key]
-    text = text.strip()
+    text = drop_scrapped(text)
     return {
         "id": cid,
         "text": text,
@@ -282,19 +305,98 @@ def build_markdown(path, source_type, auth_key, outdated_risk, id_prefix):
 
 
 # --------------------------------------------------------------------------- #
-# Rulebook PDFs — clean reading-order re-extraction + size chunking
+# Rulebook PDFs — column-aware re-extraction + size chunking
 # --------------------------------------------------------------------------- #
+# The Manual is a dense multi-column layout (up to 3 body columns plus callout
+# boxes). Plain reading-order `pdftotext` interleaves those columns and shatters
+# paragraphs mid-sentence — e.g. the "Additional costs: … brackets …" rule was
+# split across a column boundary and made unretrievable. We instead extract with
+# PyMuPDF at the *block* (paragraph) level and sort blocks column-aware: cluster
+# by x-position into column bands, read each band top-to-bottom, bands
+# left-to-right. That keeps every paragraph intact even on infographic pages.
+try:
+    import fitz  # PyMuPDF — build-time only (not needed by the running bot)
+except ImportError:
+    fitz = None
+
+# Leftover page furniture after block extraction: page numbers, running
+# headers/footers ("… alGomancy …", "_Running Header_"), decorative bars.
 NOISE_RE = re.compile(
     r"^\s*(\d{1,3}|alGomancy.*|.*_ ?algomancy.*|[A-Z][a-z]+ ?_ ?algomancy.*)\s*$"
 )
+FURNITURE_RE = re.compile(
+    r"^[_\sxX]+$"                       # decorative bars like "_xxxxxxxxx_"
+    r"|^_.*_$"                          # running header/footer wrapped in "_"
+    r"|algomancy\s+Game\s+Components",  # page footer "N algomancy Game Components_"
+    re.I)
+# A contents/index block: several "<page-no> <Heading>" pairs and no real prose.
+TOC_RE = re.compile(r"\b\d{1,3}\s+[A-Z][a-z]+")
+COLUMN_GAP = 55           # pt; an x0 gap wider than this starts a new column band
 
 
-def extract_pdf_text(pdf_path):
-    """pdftotext in reading order (no -layout), with light noise filtering."""
+def _clean_block(txt):
+    """Normalise one extracted block: rejoin soft-hyphen line breaks (dam­\\nage
+    -> damage), drop control glyphs and the decorative leading "_" section marker,
+    collapse the block onto flowing lines."""
+    txt = re.sub(r"\xad\s*", "", txt)                              # soft hyphens
+    txt = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", txt)     # control glyphs
+    txt = txt.replace("\n", " ")
+    txt = re.sub(r"^_+\s*", "", txt)                              # decorative "_ "
+    return re.sub(r"[ \t]{2,}", " ", txt).strip()
+
+
+def _is_furniture(block):
+    """True for non-content blocks: decorative bars, running headers/footers, and
+    table-of-contents / index listings (which otherwise outrank real rules text).
+    TOC blocks are "<page-no> <Heading>" runs with no sentence punctuation — the
+    period test keeps real combat-math prose (which also has numbers) safe."""
+    if not block or FURNITURE_RE.match(block) or NOISE_RE.match(block):
+        return True
+    return len(TOC_RE.findall(block)) >= 3 and block.count(".") <= 1
+
+
+def _columns_sorted(page):
+    """Text blocks of a page in column-aware reading order (column, then y)."""
+    tb = [b for b in page.get_text("blocks")
+          if (len(b) < 7 or b[6] == 0) and b[4].strip()]
+    if not tb:
+        return []
+    xs = sorted({round(b[0]) for b in tb})
+    bands = [[xs[0]]]
+    for x in xs[1:]:
+        if x - bands[-1][-1] > COLUMN_GAP:
+            bands.append([])
+        bands[-1].append(x)
+
+    def band_of(x):
+        rx = round(x)
+        for i, band in enumerate(bands):
+            if band[0] - 1 <= rx <= band[-1] + 1:
+                return i
+        return len(bands)
+
+    return sorted(tb, key=lambda b: (band_of(b[0]), b[1]))
+
+
+def _extract_pdf_pymupdf(pdf_path):
+    doc = fitz.open(str(pdf_path))
+    blocks = []
+    for page in doc:
+        for b in _columns_sorted(page):
+            block = _clean_block(b[4])
+            if _is_furniture(block):
+                continue
+            blocks.append(block)
+    doc.close()
+    return re.sub(r"\n{3,}", "\n\n", "\n\n".join(blocks))
+
+
+def _extract_pdf_pdftotext(pdf_path):
+    """Fallback: pdftotext in reading order (no -layout), light noise filtering.
+    Interleaves multi-column pages — only used if PyMuPDF isn't installed."""
     out = subprocess.run(
         ["pdftotext", str(pdf_path), "-"],
         capture_output=True, text=True, check=True).stdout
-    # Strip control chars (PDF bullet/ligature glyphs) except tab/newline.
     out = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", out)
     kept = []
     for ln in out.splitlines():
@@ -305,9 +407,16 @@ def extract_pdf_text(pdf_path):
         if NOISE_RE.match(s):
             continue
         kept.append(s)
-    text = "\n".join(kept)
-    text = re.sub(r"\n{3,}", "\n\n", text)
-    return text
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(kept))
+
+
+def extract_pdf_text(pdf_path):
+    """Column-aware PDF text (PyMuPDF); falls back to pdftotext if unavailable."""
+    if fitz is not None:
+        return _extract_pdf_pymupdf(pdf_path)
+    print("  [warn] PyMuPDF not installed — falling back to pdftotext "
+          "(multi-column pages may be garbled). `pip install pymupdf` to fix.")
+    return _extract_pdf_pdftotext(pdf_path)
 
 
 def build_rulebook(pdf_path, source_name, auth_key, id_prefix, outdated_risk=False):
@@ -321,7 +430,7 @@ def build_rulebook(pdf_path, source_name, auth_key, id_prefix, outdated_risk=Fal
                     auth_key, source_name, {}, outdated_risk)
         for i, ch in enumerate(chunks, 1)
     ]
-    print(f"  {pdf_path.name}: {len(records)} chunks (reading-order re-extraction)")
+    print(f"  {pdf_path.name}: {len(records)} chunks (column-aware re-extraction)")
     return records
 
 
@@ -354,6 +463,9 @@ def main():
         all_records += build_markdown(dl, "devlog", "devlog", True, dl.stem.lower())
     all_records += build_markdown(
         RULES / "The-Making-of-Algomancy.md", "devlog", "devlog", True, "making-of")
+
+    from build_rulings import build_rulings  # local import avoids circular load
+    all_records += build_rulings()
 
     with OUT_FILE.open("w") as f:
         for r in all_records:
