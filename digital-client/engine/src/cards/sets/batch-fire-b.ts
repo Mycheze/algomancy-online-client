@@ -1,0 +1,507 @@
+/* batch-fire-b — owned by one card-scripting agent; see sets/index.ts for
+ * ordering rules. Cards are being scripted here from printed.json data
+ * (never hand-copied); printed text quoted in comments for review.
+ *
+ * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
+ *
+ * Rulings referenced: R1 (conditions at event time, amounts at resolution —
+ * plus the "if I am still in formation" explicit resolution-time recheck),
+ * R6 (payments are part of resolution, via ctx.choose), R9 (bounded budgets
+ * per card), R12/R25 ("each opponent/player" is region-scoped), R26 ("play"
+ * excludes token creation — the nontoken gate doubles as the loop guard).
+ *
+ * PARKED (needs an engine primitive that does not exist):
+ *  - Nimbus Eel's FLYING GRANT. "Target unit gains +2/+0 and flying until
+ *    regroup" — the engine has temp stats (Entity.tempPower/tempToughness,
+ *    wiped at regroup) but no temp-ATTRIBUTE channel: attrs come only from the
+ *    card's printed list plus augment mods (E.ownAttrs), and mods are
+ *    permanent objects, not until-regroup effects. The +2/+0 half is
+ *    implemented and tested; the flying half is a todo test.
+ *
+ * Approximations (existing primitives, semantics slightly reshaped — each
+ * flagged ⚠ at the card):
+ *  - Costs the DSL cannot express as costs ("Sacrifice a unit:" on a spell,
+ *    "Sacrifice another unit:" on an activated ability, Wildfire's X) are
+ *    handled mid-resolution via ctx.choose, R6-style.
+ *  - "target ... in your bin" (Resurrect, Reclaimer of Secrets, Rousing
+ *    Spirit) is a mid-resolution choice, not engine targeting: the bin is
+ *    not a targetable zone (TargetSpec covers units/players/stack only).
+ */
+import type { Entity, EntityId, Seat } from '../../types.ts';
+import type { E } from '../../engine.ts';
+import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+
+// ─────────────────────────── shared helpers ───────────────────────────
+
+/** the entity carrying the running ability (the host when donated/grafted) */
+const selfOf = (g: E, ctx: EffectCtx): Entity | undefined =>
+  ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+
+/** [name, binIndex] pairs of ctx.controller's bin cards passing a filter */
+const binMatches = (g: E, seat: Seat, ok: (name: string) => boolean): [string, number][] =>
+  g.player(seat).bin.map((n, i) => [n, i] as [string, number]).filter(([n]) => ok(n));
+
+/** "unit with cost 2 or less": unit-kind cards with numeric mana <= 2 */
+const isCheapUnit = (name: string): boolean => {
+  const c = getCard(name);
+  return (c.kind === 'unit' || c.kind === 'spellUnit') && typeof c.mana === 'number' && c.mana <= 2;
+};
+
+/** "spell": spell-kind cards (a spell unit is played as a spell) */
+const isSpellCard = (name: string): boolean => {
+  const k = getCard(name).kind;
+  return k === 'spell' || k === 'spellUnit';
+};
+
+// ───────────────────────────── the cards ──────────────────────────────
+
+// "When I spawn, create two Fireball 1. [Augment] When I despawn, negate all
+// allied spells." — rr/2 3/2 Infernal Horror {Virus} Unit. The spawn trigger
+// is a normal ability; the despawn clause is text-box [Augment] (live when
+// played normally, donated when it Virus-augments a host — the DOWNSIDE lands
+// on the host's controller: "allied" is read from the carrier's side).
+// Despawn = ANY leave-play: 'died' + 'despawned' (the Bloated Manablub
+// reading). "All allied spells" = every un-negated spell-effect item the
+// carrier's controller has on the stack (same kinds as stackSpell targeting).
+card('Molten Riftbreaker', {
+  abilities: [{
+    type: 'triggered', events: ['spawned'], self: true,
+    label: 'create two Fireball 1',
+    effect: {
+      run: (g, ctx) => {
+        for (let i = 0; i < 2; i++) g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region);
+      },
+    },
+  }],
+  augmentText: [{
+    type: 'triggered', events: ['died', 'despawned'], self: true,
+    label: 'negate all allied spells (when I despawn)',
+    effect: {
+      run: (g, ctx) => {
+        for (const it of g.s.stack) {
+          if (it.negated) continue;
+          if ((it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'spellToken' || it.kind === 'ambush')
+            && it.controller === ctx.controller) g.negate(it.id);
+        }
+      },
+    },
+  }],
+});
+
+// "When you play a token spell, [Switch1] Target unit gains +2/+0 and
+// {g}flying until regroup." — r/2 2/1. Token-spell gate is the inverse of the
+// usual nontoken one (R26 family: the spellPlayed event carries token:true for
+// spell tokens). Bounded graft ([Switch1], R9).
+// PARKED: the flying grant — no temp-attribute primitive (see header). Only
+// the +2/+0 half runs.
+const eelBuff: EffectDef = {
+  targets: { what: 'unit', prompt: 'Nimbus Eel: target unit gains +2/+0 (and flying) until regroup' },
+  run: (g, ctx) => {
+    const t = ctx.targets[0];
+    if (t && 'id' in (t as object)) g.addTemp(t as Entity, 2, 0);
+  },
+};
+card('Nimbus Eel', {
+  abilities: [{
+    type: 'triggered', events: ['spellPlayed'], bounded: true, graftCause: true,
+    label: 'target unit gains +2/+0 and flying until regroup',
+    when: (g, self, ev) => ev.data?.seat === self.controller && ev.data?.token === true,
+    effect: eelBuff,
+  }],
+  graftEffect: { bounded: true, effect: eelBuff },
+});
+
+// "Whenever you play a nontoken spell, [Switch] I gain +1/-1 until regroup."
+// — rr/4 4/3. Unbounded graft; grafted onto a host, "I" = the host
+// (ctx.sourceId is the composite's source). The -1 side can kill (state-based
+// check runs after the part).
+const slingerSurge: EffectDef = {
+  run: (g, ctx) => {
+    const self = selfOf(g, ctx);
+    if (self) g.addTemp(self, 1, -1);
+  },
+};
+card('Ravenous Fireslinger', {
+  abilities: [{
+    type: 'triggered', events: ['spellPlayed'], graftCause: true,
+    label: 'I gain +1/-1 until regroup',
+    when: (g, self, ev) => ev.data?.seat === self.controller && !ev.data?.token,
+    effect: slingerSurge,
+  }],
+  graftEffect: { bounded: false, effect: slingerSurge },
+});
+
+// "When I die, you may pay [two] to recall target spell in your bin." — rr/2
+// 4/1. R6 pattern: the payment and the pick are mid-resolution choices; the
+// bin is not a targetable zone (⚠ header note), so "target spell" is a
+// ctx.choose over the bin's spell cards. Its own card is already in the bin
+// when the trigger resolves (destroy bins before firing 'died') but it is a
+// unit, so it never shows up as an option.
+card('Reclaimer of Secrets', {
+  abilities: [{
+    type: 'triggered', events: ['died'], self: true,
+    label: 'you may pay [two] to recall a spell from your bin',
+    effect: {
+      run: (g, ctx) => {
+        const spells = binMatches(g, ctx.controller, isSpellCard);
+        if (!spells.length || g.openMana(ctx.controller) < 2) return;
+        const pays = ctx.choose('pay', {
+          kind: 'payOrDecline', seat: ctx.controller,
+          prompt: 'Reclaimer of Secrets: pay [two] to recall a spell from your bin?',
+          options: [{ label: 'Pay [two]', value: true }, { label: 'Decline', value: false }],
+        });
+        if (!pays) return;
+        const idx = spells.length === 1 ? spells[0]![1] : ctx.choose('which', {
+          kind: 'payOrDecline', seat: ctx.controller,
+          prompt: 'Reclaimer of Secrets: recall which spell?',
+          options: spells.map(([n, i]) => ({ label: n, value: i })),
+        }) as number;
+        g.payMana(ctx.controller, 2);
+        const [name] = g.player(ctx.controller).bin.splice(idx, 1);
+        if (name !== undefined) {
+          g.player(ctx.controller).hand.push(name);
+          g.ev('info', `Reclaimer of Secrets: ${name} recalled to ${g.pname(ctx.controller)}'s hand.`);
+        }
+      },
+    },
+  }],
+});
+
+// "[Switch1] Put target unit with cost 2 or less from your bin into play." —
+// r/2 Occult Spell. Bin pick via ctx.choose (⚠ header note); auto-picked when
+// only one card qualifies. spawnUnit fires the unit's spawn triggers, exactly
+// as if it entered play. Bounded graft ([Switch1], R9).
+const resurrectEffect: EffectDef = {
+  run: (g, ctx) => {
+    const units = binMatches(g, ctx.controller, isCheapUnit);
+    if (!units.length) return;
+    const idx = units.length === 1 ? units[0]![1] : ctx.choose('which', {
+      kind: 'payOrDecline', seat: ctx.controller,
+      prompt: 'Resurrect: put which unit (cost 2 or less) into play?',
+      options: units.map(([n, i]) => ({ label: n, value: i })),
+    }) as number;
+    const [name] = g.player(ctx.controller).bin.splice(idx, 1);
+    if (name !== undefined) g.spawnUnit(ctx.controller, name, ctx.region);
+  },
+};
+card('Resurrect', {
+  spellEffect: resurrectEffect,
+  graftEffect: { bounded: true, effect: resurrectEffect },
+});
+
+// "When I attack, if I am still in formation, you may put target unit with
+// cost 2 or less from your bin into the empty slot behind me." — rrr/4 4/3
+// {Haste}. "If I am still in formation" is the R1 explicit exception: a
+// RESOLUTION-time recheck, encoded per card. "The empty slot behind me" =
+// I am the front unit of my column and its back slot is free (columns hold
+// 1-2 units). "You may" + the bin pick are mid-resolution choices.
+card('Rousing Spirit', {
+  abilities: [{
+    type: 'triggered', events: ['attacked'], self: true,
+    label: 'put a unit with cost 2 or less from your bin into the slot behind me',
+    effect: {
+      run: (g, ctx) => {
+        const self = selfOf(g, ctx);
+        if (!self) return;
+        const col = g.columnOf(self.id);            // R1 recheck: still in formation?
+        if (!col || col.indexOf(self.id) !== 0 || col.length !== 1) return;   // no empty slot behind me
+        const units = binMatches(g, ctx.controller, isCheapUnit);
+        if (!units.length) return;
+        const pick = ctx.choose('pick', {
+          kind: 'payOrDecline', seat: ctx.controller,
+          prompt: 'Rousing Spirit: put a unit from your bin into the slot behind me?',
+          options: [
+            ...units.map(([n, i]) => ({ label: n, value: i })),
+            { label: 'Decline', value: null },
+          ],
+        });
+        if (pick === null) return;
+        const [name] = g.player(ctx.controller).bin.splice(pick as number, 1);
+        if (name === undefined) return;
+        const u = g.spawnUnit(ctx.controller, name, ctx.region);
+        col.push(u.id);                             // straight into the slot behind me
+      },
+    },
+  }],
+});
+
+// "[Switch] /[Sacrifice a unit]: I deal 4 damage to any target." — r/1
+// {Battle} Occult Spell. ⚠ The sacrifice is printed as a COST; the DSL has no
+// sacrifice-cost slot for spells, so it is paid mid-resolution (R6-style):
+// the controller picks one of their units in the region, it is sacrificed,
+// then the 4 damage lands. No unit to sacrifice → the effect does nothing.
+// Unbounded graft ([Switch]) — the grafted copy demands the same sacrifice.
+const burstEffect: EffectDef = {
+  targets: { what: 'any', prompt: 'Sacrificial Burst deals 4 damage to any target' },
+  run: (g, ctx) => {
+    const mine = g.unitsOf(ctx.controller, ctx.region);
+    if (!mine.length) return;                       // cannot pay the sacrifice
+    const sacId = mine.length === 1 ? mine[0]!.id : ctx.choose('sac', {
+      kind: 'payOrDecline', seat: ctx.controller,
+      prompt: 'Sacrificial Burst: sacrifice which unit?',
+      options: mine.map(u => ({ label: u.card, value: u.id })),
+    }) as EntityId;
+    const sac = g.entity(sacId);
+    if (sac) g.destroy(sac, 'is sacrificed');
+    g.dealEffectDamage(ctx, ctx.targets[0]!, 4);
+  },
+};
+card('Sacrificial Burst', {
+  spellEffect: burstEffect,
+  graftEffect: { bounded: false, effect: burstEffect },
+});
+
+// "[Augment] Sacrifice another unit: I gain +2/+2 until regroup." — r/2 2/1.
+// An ACTIVATED ability inside the [Augment] text box: activatable on the card
+// played normally (via 'augment') and on a host it augments (via {mod}).
+// ⚠ "Sacrifice another unit" is printed as a COST; the DSL's activated costs
+// are mana/sacrificeSelf only, so the victim is the ability's TARGET and dies
+// at resolution instead (picking the carrier itself — not "another" — no-ops).
+const swallowerFeast: EffectDef = {
+  targets: { what: 'allyUnit', prompt: 'Soul Swallower: sacrifice another unit (+2/+2 until regroup)' },
+  run: (g, ctx) => {
+    const self = selfOf(g, ctx);
+    const t = ctx.targets[0];
+    if (!self || !t || !('id' in (t as object))) return;
+    const victim = t as Entity;
+    if (victim.id === self.id) return;              // "another unit"
+    g.destroy(victim, 'is sacrificed');
+    g.addTemp(self, 2, 2);
+  },
+};
+card('Soul Swallower', {
+  augmentText: [{
+    type: 'activated', cost: {},
+    label: 'Sacrifice another unit: I gain +2/+2 until regroup',
+    effect: swallowerFeast,
+  }],
+});
+
+// "The controller of target effect may pay [one]. If they don't, negate that
+// effect and draw a card." — r/1 {Battle} Arcane Spell. The exact R6 pattern:
+// the payment is part of resolution (pay-or-decline for the TARGET's
+// controller, no priority window); decline → negate + Soul Tithe's controller
+// draws. Paying is only offered when they have the mana.
+card('Soul Tithe', {
+  spellEffect: {
+    targets: { what: 'stackSpell', prompt: "Soul Tithe: target effect is negated unless its controller pays [one]" },
+    run: (g, ctx) => {
+      const t = ctx.targets[0];
+      if (!t || !('stack' in (t as object))) return;
+      const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
+      if (!item || item.negated) return;
+      const options = [{ label: "Don't pay", value: false }];
+      if (g.openMana(item.controller) >= 1) options.unshift({ label: 'Pay [one]', value: true });
+      const pays = ctx.choose('pay', {
+        kind: 'payOrDecline', seat: item.controller,
+        prompt: `Soul Tithe: pay [one] or ${item.label} is negated`,
+        options,
+      });
+      if (pays) { g.payMana(item.controller, 1); return; }
+      g.negate(item.id);
+      g.draw(ctx.controller, 1);
+    },
+  },
+});
+
+// "[Augment] Whenever you play a spell, put a +1/+1 counter on me." — r/1
+// 0/1. Text-box [Augment]. "A spell" has no nontoken qualifier, so token
+// spells count too (only the when-seat gate applies). "Me" = the carrier
+// (the host when donated).
+card('Sparkwraith', {
+  augmentText: [{
+    type: 'triggered', events: ['spellPlayed'],
+    label: 'put a +1/+1 counter on me',
+    when: (g, self, ev) => ev.data?.seat === self.controller,
+    effect: {
+      run: (g, ctx) => {
+        const self = selfOf(g, ctx);
+        if (self) g.addCounters(self, 1);
+      },
+    },
+  }],
+});
+
+// "[Augment] Whenever a unit dies, I deal 1 damage to each opponent." — rr/2
+// 2/1. Text-box [Augment]. ANY unit death (either side, tokens included, its
+// own death included) — region-scoped by fireEvent (R12). "Each opponent" is
+// the region's present seats minus the controller (R25).
+card('Spirit of Vengeance', {
+  augmentText: [{
+    type: 'triggered', events: ['died'],
+    label: 'I deal 1 damage to each opponent',
+    effect: {
+      run: (g, ctx) => {
+        for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+          if (seat !== ctx.controller) g.dealEffectDamage(ctx, { player: seat as Seat }, 1);
+        }
+      },
+    },
+  }],
+});
+
+// "When I die, [Switch] Each player sacrifices a unit." — r/1 0/1 {Haste}.
+// "Each player" is region-scoped (R25): every seat present in the event's
+// region with a unit there picks one and it dies — all picks are made first
+// (choose-before-mutate), then all sacrifices happen. A seat with exactly one
+// unit has no choice to make. Unbounded graft ([Switch]).
+const eachPlayerSacrifices: EffectDef = {
+  run: (g, ctx) => {
+    const picks: EntityId[] = [];
+    for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
+      const mine = g.unitsOf(seat as Seat, ctx.region);
+      if (!mine.length) continue;
+      const id = mine.length === 1 ? mine[0]!.id : ctx.choose(`sac:${seat}`, {
+        kind: 'payOrDecline', seat: seat as Seat,
+        prompt: 'Spiteful Shadow: sacrifice which unit?',
+        options: mine.map(u => ({ label: u.card, value: u.id })),
+      }) as EntityId;
+      picks.push(id);
+    }
+    for (const id of picks) {
+      const u = g.entity(id);
+      if (u) g.destroy(u, 'is sacrificed');
+    }
+  },
+};
+card('Spiteful Shadow', {
+  abilities: [{
+    type: 'triggered', events: ['died'], self: true, graftCause: true,
+    label: 'each player sacrifices a unit',
+    effect: eachPlayerSacrifices,
+  }],
+  graftEffect: { bounded: false, effect: eachPlayerSacrifices },
+});
+
+// "[Augment] When I die, create a Fireball X, where X is my power." — r/3
+// 3/2. Text-box [Augment]. R1 nuance: a dead unit has no live state to read
+// at resolution, so "my power" is its LAST-KNOWN value — captured into the
+// event snapshot by when() (which runs at event time, while the dying entity
+// is still readable: counters/temp stats included).
+card('Static Courier', {
+  augmentText: [{
+    type: 'triggered', events: ['died'], self: true,
+    label: 'create a Fireball X (X = my power)',
+    when: (g, self, ev) => {
+      (ev.data ?? (ev.data = {})).courierPower = g.effStats(self)[0];
+      return true;
+    },
+    effect: {
+      run: (g, ctx) => {
+        const x = (ctx.event?.data?.courierPower as number | undefined) ?? 0;
+        if (x > 0) g.createSpellToken(ctx.controller, 'Fireball', x, ctx.region);
+      },
+    },
+  }],
+});
+
+// "[Augment] Whenever you play a nontoken spell, create a 1/1 unit." — rr/3
+// 2/3. Text-box [Augment]; the Bloomcaster family (R26): the nontoken gate is
+// on the SPELL (token spells don't count), and the created 1/1 is a unit
+// token whose spawn is not a "play" — no loop.
+card('Stormsowing Nimbus', {
+  augmentText: [{
+    type: 'triggered', events: ['spellPlayed'],
+    label: 'create a 1/1 unit',
+    when: (g, self, ev) => ev.data?.seat === self.controller && !ev.data?.token,
+    effect: {
+      run: (g, ctx) => {
+        g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] });
+      },
+    },
+  }],
+});
+
+// "[Switch1] I deal 2 damage to each of up to two target units." — rr/3
+// {Battle} Mystic Elemental Spell. ⚠ The cast machinery collects ONE target
+// per part, so the second (optional — "up to two") target is a mid-resolution
+// choice among the region's other units. Both hits are 2 damage each.
+// Bounded graft ([Switch1], R9).
+const twinFlame: EffectDef = {
+  targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units' },
+  run: (g, ctx) => {
+    const t1 = ctx.targets[0];
+    if (!t1 || !('id' in (t1 as object))) return;
+    const first = t1 as Entity;
+    const others = g.unitsIn(ctx.region).filter(u => u.id !== first.id);
+    let secondId: EntityId | null = null;
+    if (others.length) {
+      const pick = ctx.choose('second', {
+        kind: 'payOrDecline', seat: ctx.controller,
+        prompt: 'Twin Flame: a second target unit? (up to two)',
+        options: [
+          ...others.map(u => ({ label: u.card, value: u.id })),
+          { label: 'No second target', value: null },
+        ],
+      });
+      if (pick !== null) secondId = pick as EntityId;
+    }
+    g.dealEffectDamage(ctx, first, 2);
+    const second = secondId !== null ? g.entity(secondId) : undefined;
+    if (second) g.dealEffectDamage(ctx, second, 2);
+  },
+};
+card('Twin Flame', {
+  spellEffect: twinFlame,
+  graftEffect: { bounded: true, effect: twinFlame },
+});
+
+// "[Augment][once] When you play a nontoken spell, create a Fireball X, where
+// X is the spell's cost." — rr/3 3/3. Text-box [Augment], [once] = bounded
+// (R9). X = the played spell's mana cost, read from the event snapshot (R1);
+// 'X'-cost spells report 0 → no Fireball.
+card('Unstable Apparition', {
+  augmentText: [{
+    type: 'triggered', events: ['spellPlayed'], bounded: true,   // [once]
+    label: "create a Fireball X (X = the spell's cost)",
+    when: (g, self, ev) => ev.data?.seat === self.controller && !ev.data?.token,
+    effect: {
+      run: (g, ctx) => {
+        const name = ctx.event?.data?.card as string | undefined;
+        const mana = name ? getCard(name).mana : 0;
+        const x = typeof mana === 'number' ? mana : 0;
+        if (x > 0) g.createSpellToken(ctx.controller, 'Fireball', x, ctx.region);
+      },
+    },
+  }],
+});
+
+// "[Augment] Whenever you play a spell, I deal 1 damage to any target." —
+// rr/6 5/4. Text-box [Augment]; "a spell" includes token spells (no nontoken
+// qualifier). A TARGETED trigger: the controller picks any target when the
+// trigger goes to resolve.
+card('Voltwrath Behemoth', {
+  augmentText: [{
+    type: 'triggered', events: ['spellPlayed'],
+    label: 'I deal 1 damage to any target',
+    when: (g, self, ev) => ev.data?.seat === self.controller,
+    effect: {
+      targets: { what: 'any', prompt: 'Voltwrath Behemoth deals 1 damage to any target' },
+      run: (g, ctx) => { g.dealEffectDamage(ctx, ctx.targets[0]!, 1); },
+    },
+  }],
+});
+
+// "I deal X damage to any target." — rr/X {Battle} Infernal Spell. ⚠ The
+// engine has no play-time X selection (canPayCard treats 'X' as 0 mana), so X
+// is chosen AND paid mid-resolution: any amount up to the controller's open
+// mana, expended on the spot (R6-style). Responses thus happen before X is
+// fixed — flagged as an engine call.
+card('Wildfire', {
+  spellEffect: {
+    targets: { what: 'any', prompt: 'Wildfire deals X damage to any target' },
+    run: (g, ctx) => {
+      let x = ctx.x;
+      if (x === undefined) {
+        const max = g.openMana(ctx.controller);
+        x = ctx.choose('x', {
+          kind: 'payOrDecline', seat: ctx.controller,
+          prompt: 'Wildfire: choose X (paid now)',
+          options: Array.from({ length: max + 1 }, (_, i) => ({ label: `X = ${i}`, value: i })),
+        }) as number;
+        g.payMana(ctx.controller, x);
+      }
+      g.dealEffectDamage(ctx, ctx.targets[0]!, x);
+    },
+  },
+});

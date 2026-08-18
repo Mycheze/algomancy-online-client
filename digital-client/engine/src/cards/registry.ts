@@ -363,5 +363,9 @@ import './sets/index.ts';
  * registration order (deterministic — deck order feeds the seeded shuffle) */
 export const DECK_LIST: string[] = allCardNames().filter(n => {
   const c = getCard(n);
+  // Resource card faces ("[r] Fire Resource" etc.) are scripted for preview/
+  // completeness but are NOT deck cards — without this they leak in as
+  // phantom units (found when the fire-a batch registered Fire Resource).
+  if (/\bResource\b/.test(c.type)) return false;
   return !/Token/.test(c.type) && (c.kind === 'unit' || c.kind === 'spell' || c.kind === 'spellUnit');
 });
