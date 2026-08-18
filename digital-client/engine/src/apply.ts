@@ -811,7 +811,11 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
     return out;
   }
 
-  if (s.phase === 'deploy' && s.deployPlayer === seat) {
+  // simultaneous deployment: EVERY not-yet-done seat gets its options (the
+  // playtest bug: this still gated on the derived initiative-first
+  // deployPlayer, so the other seat saw nothing playable until the first
+  // finished — the engine accepted the plays, but they were never offered)
+  if (e.deploying(seat)) {
     const region = e.homeRegion(seat);
     out.push({ type: 'doneDeploying', seat });
     e.player(seat).hand.forEach((name, i) => {

@@ -236,6 +236,32 @@ test('multi-target validation: no duplicate targets, done only after the minimum
   assert.equal(h.state.decision, null, 'cast complete with a single target');
 });
 
+test('legalActions OFFERS deploy plays to both seats at once (not just initiative)', () => {
+  const h = new Harness(2112);
+  h.state.initiative = 0;
+  const nit: Seat = 1;   // the seat that was starved in the live game
+  giveResources(h, nit, 'fire', 2);
+  give(h, nit, 'Ignis Sprite');
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);
+  h.do({ type: 'declareAttack', seat: 0, columns: [] });
+  h.do({ type: 'declareAttack', seat: 1, columns: [] });
+  assert.equal(h.state.phase, 'deploy');
+  assert.equal(h.state.deployPlayer, 0, 'initiative marker points at seat 0');
+  for (const seat of [0, 1] as Seat[]) {
+    const legal = legalActions(h.state, seat);
+    assert.ok(legal.some(a => a.type === 'doneDeploying'), `seat ${seat} can finish`);
+  }
+  const nitLegal = legalActions(h.state, nit);
+  assert.ok(nitLegal.some(a => a.type === 'playCard'),
+    'the NON-initiative seat is offered its affordable plays immediately');
+  // and once done, no more offers
+  h.do({ type: 'doneDeploying', seat: nit });
+  assert.equal(legalActions(h.state, nit).length, 0, 'a done seat gets nothing');
+  assert.ok(legalActions(h.state, 0).some(a => a.type === 'doneDeploying'), 'the other seat still acts');
+});
+
 test('deployPlayer stays a valid sequential marker for old drivers', () => {
   const h = new Harness(2109);
   toBattle(h, 1);
