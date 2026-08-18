@@ -181,6 +181,61 @@ test('both seats deploy at once: NIT may act and finish before IT', () => {
   assert.equal(h.state.turn, turn + 1, 'both done → next turn');
 });
 
+// ── Swift trigger timing (R3 sub-step drain) ──────────────────────────
+
+test('Flowstone Arcanite: Swift-step counters land BEFORE normal combat damage', () => {
+  const h = new Harness(2110);
+  const A: Seat = 0, D: Seat = 1;
+  h.state.initiative = A;
+  const arc = spawn(h, A, 'Flowstone Arcanite');   // {Swift} 1/3
+  const ally = spawn(h, A, 'Unit Token');          // 1/1 — becomes 2/2 mid-combat
+  const blocker = spawn(h, D, 'Unit Token');       // 1/1 — blocks the ally
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);
+  h.do({ type: 'declareAttack', seat: A, columns: [[arc], [ally]] });
+  h.do({ type: 'passPriority', seat: h.state.priority! });
+  h.do({ type: 'passPriority', seat: h.state.priority! });
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [blocker] } });
+  let guard = 12;
+  while (h.state.phase === 'battle' && guard-- > 0) {
+    h.do({ type: 'passPriority', seat: h.state.priority! });
+  }
+  // Swift: the Arcanite hits the player → trigger resolves at once → the ally
+  // is a 2/2 when NORMAL damage happens: it kills the 1/1 blocker and lives.
+  assert.equal(h.state.entities[ally]!.counters, 1, 'the ally got its counter mid-combat');
+  assert.ok(h.state.entities[ally], 'the buffed 2/2 survived the 1/1 blocker');
+  assert.ok(!h.state.entities[blocker], 'the blocker died to the buffed 2 power');
+});
+
+// ── multi-target casts ────────────────────────────────────────────────
+
+test('multi-target validation: no duplicate targets, done only after the minimum', () => {
+  const h = new Harness(2111);
+  const A: Seat = 0, D: Seat = 1;
+  h.state.initiative = A;
+  const u1 = spawn(h, A, 'Unit Token');
+  const u2 = spawn(h, A, 'Bubb');
+  giveResources(h, D, 'fire', 3);
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);
+  h.do({ type: 'declareAttack', seat: A, columns: [[u1], [u2]] });
+  h.do({ type: 'passPriority', seat: A });
+  const i = h.state.players[D]!.hand.push('Twin Flame') - 1;
+  h.do({ type: 'playCard', seat: D, handIndex: i });
+  const first = h.state.decision!;
+  assert.ok(!first.options.some(o => o.label === 'No more targets'), 'no done before the min');
+  h.do({ type: 'decide', seat: D, choice: 0 });
+  const second = h.state.decision!;
+  const firstVal = JSON.stringify(first.options[0]!.value);
+  assert.ok(!second.options.some(o => JSON.stringify(o.value) === firstVal), 'no duplicate targets');
+  assert.ok(second.options.some(o => o.label === 'No more targets'), 'done offered after the min');
+  const done = second.options.findIndex(o => o.label === 'No more targets');
+  h.do({ type: 'decide', seat: D, choice: done });   // stop at one target
+  assert.equal(h.state.decision, null, 'cast complete with a single target');
+});
+
 test('deployPlayer stays a valid sequential marker for old drivers', () => {
   const h = new Harness(2109);
   toBattle(h, 1);

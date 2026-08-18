@@ -53,7 +53,8 @@ test('Animated Spark: each nontoken spell played in battle gives your units +1/+
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[spark], [ally]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Immolate') });
-  pass(h); pass(h);                                  // Spark trigger resolves first
+  // STATIC: the bonus is live the moment the spell is PLAYED (ledger bump) —
+  // no trigger, no stack round-trip
   assert.deepEqual(effStats(h, spark), [1, 1], 'Spark itself +1/+0');
   assert.deepEqual(effStats(h, ally), [3, 1], 'ally +1/+0 per nontoken spell');
   pass(h); pass(h);                                  // Immolate resolves → choice
@@ -73,9 +74,8 @@ test('Bloodwind Revenant: unblocked combat damage to opponent → may sacrifice 
   h.do({ type: 'declareAttack', seat: A, columns: [[rev], [fodder]] });
   pass(h); pass(h);                                  // → blocks
   h.do({ type: 'declareBlocks', seat: 1 - A, blocks: {} });
-  pass(h); pass(h);                                  // combat: opponent takes 3 → trigger
   const handBefore = h.state.players[A]!.hand.length;
-  pass(h); pass(h);                                  // resolve the trigger → choice
+  pass(h); pass(h);   // combat: opponent takes 3 → trigger resolves at once (R3 sub-step drain)
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, A, 'the controller chooses the sacrifice');
   pick(h, fodder);                                   // sacrifice the fodder

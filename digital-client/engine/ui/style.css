@@ -210,3 +210,23 @@ button:disabled { opacity: .4; cursor: default; }
   .netmode .side { max-height: calc(100vh - 161px); }
 }
 .reschip.shard { background: linear-gradient(135deg, #b39ddb, #5e35b1); }
+
+/* base vs effective P/T: live number colored, printed base shown small */
+.card .stats .statup { color: #7fdc7f; }
+.card .stats .statdown { color: #ff8a8a; }
+.card .stats .basestat { display: block; font-size: 9px; font-weight: 400; color: var(--dim); text-align: right; }
+.prevstats { margin: 6px 0 2px; font-size: 14px; }
+.prevstats .statup { color: #7fdc7f; }
+.prevstats .statdown { color: #ff8a8a; }
+.prevstats .basestat { color: var(--dim); font-size: 11px; }
+
+/* composed modded card in the focus viewer: each mod slides under the base,
+   showing its text-box strip (the physical table look) */
+.modstrip { position: relative; width: 100%; max-width: 260px; margin: -6px auto 0;
+  aspect-ratio: 720 / 260; overflow: hidden; border-radius: 0 0 10px 10px;
+  box-shadow: 0 -2px 6px rgba(0,0,0,.5); }
+.modstrip img { width: 100%; display: block; transform: translateY(-74%); }
+.modtag { position: absolute; top: 2px; left: 4px; background: rgba(10,12,16,.85);
+  border: 1px solid var(--accent); color: var(--accent); border-radius: 3px;
+  font-size: 10px; padding: 0 4px; }
+.preview .modtext { border-left: 2px solid var(--accent); padding-left: 6px; margin: 2px 8px; text-align: left; }

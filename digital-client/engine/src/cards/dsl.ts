@@ -61,6 +61,11 @@ export interface EffectCtx {
 export interface TargetSpec {
   what: 'unit' | 'allyUnit' | 'any' | 'stackSpell';
   prompt: string;
+  /** maximum number of targets chosen AT CAST TIME (default 1). Distinct
+   * targets; the chooser gets a "done" option once `min` are picked. */
+  count?: number;
+  /** minimum targets before "done" is offered (default 1) */
+  min?: number;
 }
 
 export interface EffectDef {
@@ -113,8 +118,12 @@ export interface StaticMod {
 
 export interface CardBehavior {
   abilities?: Ability[];
-  /** continuous stat/attr projections while this card is a unit in play */
+  /** continuous stat/attr projections while this card is a unit in play OR
+   * an augment mod (text-box [Augment] statics transfer with the card) */
   statics?: StaticMod[];
+  /** the card can be applied as an augment even without augmentAttrs or
+   * augmentText — its [Augment] text is implemented via `statics` */
+  augmentable?: boolean;
   /** effect of a spell / spell unit / spell token when played */
   spellEffect?: EffectDef;
   /** the [Switch]-marked effect that transfers when this card is grafted */
@@ -227,5 +236,5 @@ export function graftCauseIndex(name: string): number {
 /** A card can augment iff it grants type-line attrs or has [Augment] text. */
 export function isAugment(name: string): boolean {
   const def = getCard(name);
-  return def.augmentAttrs.length > 0 || (def.augmentText?.length ?? 0) > 0;
+  return def.augmentAttrs.length > 0 || (def.augmentText?.length ?? 0) > 0 || !!def.augmentable;
 }

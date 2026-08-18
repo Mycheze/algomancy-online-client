@@ -116,8 +116,7 @@ test("Rippleback Skulker: my column connects to a player → take a card from th
   h.do({ type: 'declareAttack', seat: A, columns: [[sk]] });
   pass(h); pass(h);                                        // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
-  pass(h); pass(h);                                        // combat: unblocked, D loses 2 → trigger stacked
-  pass(h); pass(h);                                        // resolve → bin pick
+  pass(h); pass(h);   // combat: unblocked, D loses 2 → trigger resolves at once → bin pick
   const dec = h.state.decision!;
   assert.equal(dec.seat, A, 'the ability controller picks');
   decide(h, l => l === 'Jelly');

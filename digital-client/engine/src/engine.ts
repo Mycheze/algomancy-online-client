@@ -149,9 +149,19 @@ export class E {
     this.inStatics = true;
     try {
       for (const holder of Object.values(this.s.entities)) {
-        if (holder.kind !== 'unit' || holder.region !== target.region) continue;
+        // statics radiate from units in play AND from augment mods (text-box
+        // [Augment] statics transfer with the card — Animated Spark, Sandstone
+        // Defender). A mod's static is anchored on its HOST: the transferred
+        // text reads from the host's perspective ("your OTHER units" excludes
+        // the host, controller/region are the host's).
+        let anchor: Entity | undefined;
+        if (holder.kind === 'unit') anchor = holder;
+        else if (holder.kind === 'mod' && holder.appliedAs === 'augment' && holder.modOf !== undefined) {
+          anchor = this.entity(holder.modOf);
+        }
+        if (!anchor || anchor.region !== target.region) continue;
         for (const mod of this.card(holder.card).statics ?? []) {
-          if (mod.affects(this, holder, target)) out.push({ holder, mod });
+          if (mod.affects(this, anchor, target)) out.push({ holder: anchor, mod });
         }
       }
     } finally { this.inStatics = false; }
@@ -603,21 +613,33 @@ export class E {
     }
   }
 
-  /** Ask for targets for every part that needs them. Suspends via 'cast'. */
+  /** Ask for targets for every part that needs them — ALL at cast time
+   * (multi-target specs included). Suspends via 'cast'. */
   collectTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
     for (let pi = 0; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
       if (part.spent) continue;
       const def = effectByKey(part.effectKey);
       if (!def.targets) continue;
-      while (part.targets.length < 1) {   // pool target specs are all count 1
-        const cands = this.targetCandidates(def.targets, item.region, item.id, item.controller);
+      const max = def.targets.count ?? 1;
+      const min = Math.min(def.targets.min ?? 1, max);
+      while (!part.targetsDone && part.targets.length < max) {
+        const chosen = new Set(part.targets.map(t => JSON.stringify(t)));
+        const cands = this.targetCandidates(def.targets, item.region, item.id, item.controller)
+          .filter(c => !chosen.has(JSON.stringify(c)));
         if (!cands.length) break;         // composite part with nothing to aim at: skipped at resolution
+        const options: { label: string; value: unknown }[] =
+          cands.map(c => ({ label: this.targetLabel(c), value: c }));
+        if (part.targets.length >= min) {
+          options.push({ label: 'No more targets', value: { doneTargets: true } });
+        }
+        const n = part.targets.length;
         this.suspend(
-          { type: 'cast', item, partIndex: pi, targetIndex: part.targets.length, then, moreItems },
+          { type: 'cast', item, partIndex: pi, targetIndex: n, then, moreItems },
           {
-            seat: item.controller, kind: 'targets', prompt: def.targets.prompt,
-            options: cands.map(c => ({ label: this.targetLabel(c), value: c })),
+            seat: item.controller, kind: 'targets',
+            prompt: max > 1 ? `${def.targets.prompt} (target ${n + 1} of up to ${max})` : def.targets.prompt,
+            options: options as { label: string; value: TargetRef }[],
           },
         );
       }
@@ -632,6 +654,10 @@ export class E {
       }
     }
     if (item.kind === 'spell' || item.kind === 'spellUnit' || item.kind === 'spellToken') {
+      // "spells you've played this battle" ledger (Animated Spark's static)
+      if (this.s.phase === 'battle' && item.kind !== 'spellToken') {
+        this.bumpBattleCounter(item.region, `spellsPlayed:${item.controller}`);
+      }
       const ev = this.ev('spellPlayed',
         `${this.pname(item.controller)} plays ${item.label}${then === 'push' ? ' → stack' : ''}.`,
         { seat: item.controller, card: item.card, token: item.kind === 'spellToken', region: item.region });
@@ -890,7 +916,9 @@ export class E {
       }
       // 2. next trigger: battle → stack entry order IT(reversed) then NIT(reversed);
       //    immediate → resolution order NIT first (equivalent outcomes, R2)
-      const battleMode = this.s.phase === 'battle';
+      // between combat sub-steps triggers resolve IMMEDIATELY — special
+      // actions, no priority (R3); otherwise battle triggers use the stack
+      const battleMode = this.s.phase === 'battle' && !this.s.battle?.damageStep;
       const itQ = this.s.triggerQueue.filter(t => t.controller === this.initiative);
       const nitQ = this.s.triggerQueue.filter(t => t.controller === this.nit);
       const next = battleMode
@@ -912,7 +940,14 @@ export class E {
   settle(): void {
     for (let i = 0; i < 100; i++) {
       this.checkDeaths();
-      if (!this.s.triggerQueue.length) { this.finishTurnEnd(); return; }
+      if (!this.s.triggerQueue.length) {
+        // resume a suspended combat-damage pump (R3 sub-step interleaving)
+        if (this.s.battle?.damageStep && !this.pumping && !this.s.decision && !this.s.stack.length) {
+          this.pumpCombatDamage();
+        }
+        this.finishTurnEnd();
+        return;
+      }
       this.processTriggerQueue();
     }
     throw new Error('settle() did not stabilize — trigger loop?');
@@ -947,26 +982,46 @@ export class E {
       b.step = 'blocks';
       this.ev('phase', `${this.pname(b.defender)} declares blocks.`, { step: 'blocks' });
     } else if (b.step === 'blockWindow') {
-      this.resolveCombatDamage();
-      const ev = this.ev('afterCombat', 'After-combat step.', { region: b.region });
-      this.fireEvent('afterCombat', ev);
-      this.openPriority('afterWindow');
-      this.settle();
+      this.ev('combatDamage', 'Combat damage (simultaneous):', { region: b.region });
+      b.damageStep = 'Swift';
+      this.pumpCombatDamage();
     } else if (b.step === 'afterWindow') {
       this.endBattleRound();
     }
   }
 
   // ── combat ──────────────────────────────────────────────────────────
-  /** simultaneous damage in three sub-steps: Swift → normal → Sluggish.
-   * Formation changes recalc between sub-steps but nobody gets priority (R3). */
-  resolveCombatDamage(): void {
-    const b = this.s.battle!;
-    this.ev('combatDamage', 'Combat damage (simultaneous):', { region: b.region });
-    for (const sub of ['Swift', 'normal', 'Sluggish'] as const) {
-      this.combatSubStep(sub);
-      this.checkDeaths();   // deaths + promotion between sub-steps, no priority (R3)
-    }
+  private pumping = false;
+
+  /** Simultaneous damage in three sub-steps: Swift → normal → Sluggish.
+   * Formation changes recalc between sub-steps but nobody gets priority (R3).
+   * Triggers fired by a sub-step resolve immediately (special actions) before
+   * the next one — a Swift unit's "when my column deals combat damage" riders
+   * land before normal damage. A trigger decision suspends the pump; settle()
+   * resumes it (same pattern as finishTurnEnd). */
+  pumpCombatDamage(): void {
+    if (this.pumping) return;
+    this.pumping = true;
+    try {
+      const b = this.s.battle;
+      if (!b) return;
+      while (b.damageStep) {
+        if (this.s.decision || this.s.stack.length) return;
+        if (this.s.triggerQueue.length) { this.settle(); continue; }
+        if (b.damageStep === 'after') {
+          b.damageStep = null;
+          const ev = this.ev('afterCombat', 'After-combat step.', { region: b.region });
+          this.fireEvent('afterCombat', ev);
+          this.openPriority('afterWindow');
+          this.settle();
+          return;
+        }
+        const sub = b.damageStep;
+        this.combatSubStep(sub);
+        this.checkDeaths();   // deaths + promotion between sub-steps, no priority (R3)
+        b.damageStep = sub === 'Swift' ? 'normal' : sub === 'normal' ? 'Sluggish' : 'after';
+      }
+    } finally { this.pumping = false; }
   }
 
   private scheduled(colIds: EntityId[], sub: 'Swift' | 'normal' | 'Sluggish'): boolean {

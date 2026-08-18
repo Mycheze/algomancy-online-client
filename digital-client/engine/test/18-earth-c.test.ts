@@ -60,7 +60,7 @@ test('Ruinbringer: [Augment] after combat, delete ALL units in the region (both 
   assert.ok(h.state.players[D]!.bin.includes('Curio Drifter'), "bystander → its owner's bin");
 });
 
-test('Sandstone Defender: 0/3 body; the augment applies crash-free (donated static PARKED, adds nothing)', () => {
+test('Sandstone Defender: 0/3 body; the augment DONATES the static (mod-carried, host-anchored)', () => {
   const h = new Harness(1802);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -71,8 +71,10 @@ test('Sandstone Defender: 0/3 body; the augment applies crash-free (donated stat
   giveResources(h, p, 'earth', 3);                      // e / 2
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Sandstone Defender'), hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1, 'the augment attached');
-  assert.deepEqual(effStats(h, host), [1, 3],
-    'PARKED: the augment-DONATED static needs mod-carried statics — the mod itself adds nothing');
+  // mod-carried statics are LIVE now, anchored on the host: "your OTHER
+  // units" excludes the host itself but reaches the in-play Defender
+  assert.deepEqual(effStats(h, host), [1, 3], 'the host never buffs itself with its own donated text');
+  assert.deepEqual(effStats(h, sd), [0, 5], 'the donated static reaches the OTHER unit (+0/+2)');
 });
 
 test('Sandstone Defender: "Your other units gain +0/+2" — a live static on allies, never itself', () => {

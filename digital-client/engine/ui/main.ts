@@ -194,12 +194,20 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean } =
     if (m) badges.push({ t: (m.appliedAs === 'graft' ? '⑂' : '+') + m.card.split(' ')[0], mod: true });
   }
   if (u.absent) badges.push({ t: 'sent', mod: true });
+  // base vs effective P/T: when they differ, color the live number and show
+  // the printed base underneath it (playtest: base stats matter to the game)
+  let base: [number, number] = u.tokenStats ?? [0, 0];
+  try { const c = getCard(u.card); base = u.tokenStats ?? [c.power, c.toughness]; } catch { /* unknown */ }
+  const changed = p !== base[0] || t !== base[1];
+  const stats = changed
+    ? `<span class="${p + t >= base[0] + base[1] ? 'statup' : 'statdown'}">${p}/${t}</span><span class="basestat">${base[0]}/${base[1]}</span>`
+    : `${p}/${t}`;
   return cardHtml(u.card, {
-    stats: `${p}/${t}`, dmg: u.damage ? `−${u.damage}` : '', badges,
+    stats, dmg: u.damage ? `−${u.damage}` : '', badges,
     candidate: isCandidate({ unit: u.id }),
     selected: opts.selected, carrying: ui.carrying === u.id,
     playable: opts.clickable,
-    data: `data-act="unit" data-id="${u.id}"`,
+    data: `data-act="unit" data-id="${u.id}" data-previd="${u.id}"`,
   });
 }
 
@@ -299,14 +307,22 @@ function battleHtml(): string {
       <div class="cols">${cols}${extra}</div></div>`;
   }
 
+  // table orientation: YOUR units sit BELOW the vs-line, the opponent's above
+  // (net mode; hotseat keeps attacker-on-top). Default layout has the
+  // attacker on top — flip when the viewer IS the attacker.
+  const flip = NET ? NET.seat === b.attacker : false;
   const attackCols = b.columns.map((col, ci) => {
     const blockers = b.blocks[ci] ?? [];
     const blockBuild = (b.step === 'blocks') ? blockBuilderHtml(ci) :
       blockers.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('');
+    const atkSide = col.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('') || '<div class="slot">gone</div>';
+    const blkSide = blockBuild || '<div class="slot">unblocked</div>';
+    const top = flip ? blkSide : atkSide;
+    const bottom = flip ? atkSide : blkSide;
     return `<div class="col"><div class="collabel">column ${ci + 1}</div>
-      ${col.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('') || '<div class="slot">gone</div>'}
+      ${top}
       <div class="vs" style="width:100%"></div>
-      ${blockBuild || '<div class="slot">unblocked</div>'}
+      ${bottom}
     </div>`;
   }).join('');
   const sendZone = (b.step === 'blocks' && b.round === 1)
@@ -480,13 +496,24 @@ function menuHtml(): string {
   return `<div class="menu" style="left:${ui.menu.x}px;top:${ui.menu.y}px">${items}<button data-btn="menuclose">cancel</button></div>`;
 }
 
-/** Phase track (docs/07 §4.5): every phase visible, the current one lit. */
+/** Phase track (docs/07 §4.5): every phase visible, the current one lit —
+ * including the battle SUB-step (playtest: "impossible to tell the sub phase"). */
 function phaseTrackHtml(): string {
   const s = h.state;
+  const subStep = (): string => {
+    const b = s.battle;
+    if (!b) return 'battle';
+    if (b.damageStep) return `battle·r${s.battleRound}·damage`;
+    const sub: Record<string, string> = {
+      declare: 'attack?', attackWindow: 'responses', blocks: 'blocks?',
+      blockWindow: 'responses', afterWindow: 'after-combat',
+    };
+    return `battle·r${s.battleRound}·${sub[b.step] ?? b.step}`;
+  };
   const steps: { key: string; label: string; cur: boolean }[] = [
-    { key: 'planning', label: 'plan', cur: s.phase === 'planning' && !s.hasteDone },
+    { key: 'planning', label: s.mode === 'draft' && s.draftDone ? 'plan·draft' : 'plan', cur: s.phase === 'planning' && !s.hasteDone },
     { key: 'haste', label: 'haste', cur: s.phase === 'planning' && !!s.hasteDone },
-    { key: 'battle', label: s.battle ? `battle·r${s.battleRound}` : 'battle', cur: s.phase === 'battle' },
+    { key: 'battle', label: subStep(), cur: s.phase === 'battle' },
     { key: 'regroup', label: 'regroup', cur: s.phase === 'regroup' },
     { key: 'deploy', label: 'deploy', cur: s.phase === 'deploy' },
   ];
@@ -657,16 +684,52 @@ const saveHomeName = (): void => {
 };
 
 // ── interaction ───────────────────────────────────────────────────────
+/** the focus viewer for a live unit: composed modded card (base art + each
+ * mod's text strip, like the physical slide-under), live vs base stats,
+ * counters, damage, attrs — the Discord bot's combine, in HTML */
+function previewEntityHtml(id: EntityId): string {
+  const u = h.state.entities[id];
+  if (!u) return '';
+  const e = q();
+  const [p, t] = e.effStats(u);
+  let base: [number, number] = u.tokenStats ?? [0, 0];
+  let text = '';
+  try { const c = getCard(u.card); base = u.tokenStats ?? [c.power, c.toughness]; text = c.text; } catch { /* unknown */ }
+  const modStrips = u.mods.map(mid => {
+    const m = h.state.entities[mid];
+    if (!m) return '';
+    let mtext = '';
+    try { mtext = getCard(m.card).text; } catch { /* unknown */ }
+    return `<div class="modstrip"><img src="${art(m.card)}" alt="">
+      <span class="modtag">${m.appliedAs === 'graft' ? '⑂ grafted' : '+ augment'} · ${esc(m.card)}</span></div>
+      <div class="hint modtext">${esc(mtext)}</div>`;
+  }).join('');
+  const changed = p !== base[0] || t !== base[1];
+  const bits = [
+    `<b class="${changed ? (p + t >= base[0] + base[1] ? 'statup' : 'statdown') : ''}">${p}/${t}</b>${changed ? ` <span class="basestat">base ${base[0]}/${base[1]}</span>` : ''}`,
+    u.counters ? `${u.counters > 0 ? '+' : ''}${u.counters}/${u.counters > 0 ? '+' : ''}${u.counters} counters` : '',
+    u.damage ? `${u.damage} damage` : '',
+  ].filter(Boolean).join(' · ');
+  const attrs = [...e.ownAttrs(u)].join(' · ');
+  return `<img src="${art(u.card)}" alt="">${modStrips}
+    <div class="prevstats">${bits}</div>
+    ${attrs ? `<div class="hint">${esc(attrs)}</div>` : ''}
+    <div class="hint">${esc(text)}</div>`;
+}
+
 document.addEventListener('mouseover', e => {
-  const t = (e.target as HTMLElement).closest('[data-prev]') as HTMLElement | null;
+  const t = (e.target as HTMLElement).closest('[data-prev], [data-previd]') as HTMLElement | null;
   if (!t) return;
   const prev = document.getElementById('preview');
-  if (prev) {
-    const name = t.dataset['prev']!;
-    let text = '';
-    try { text = getCard(name).text; } catch { /* unknown card */ }
-    prev.innerHTML = `<img src="${art(name)}" alt=""><div class="hint">${esc(text)}</div>`;
+  if (!prev) return;
+  if (t.dataset['previd']) {
+    const html = previewEntityHtml(Number(t.dataset['previd']));
+    if (html) { prev.innerHTML = html; return; }
   }
+  const name = t.dataset['prev']!;
+  let text = '';
+  try { text = getCard(name).text; } catch { /* unknown card */ }
+  prev.innerHTML = `<img src="${art(name)}" alt=""><div class="hint">${esc(text)}</div>`;
 });
 
 document.addEventListener('click', e => {
@@ -978,6 +1041,12 @@ function demoBattle(): void {
   h.state.initiative = A;
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
+  // decline the haste step if a drawn haste card engaged it (seed-dependent)
+  for (const seat of [0, 1] as Seat[]) {
+    if (h.state.phase === 'planning' && h.state.hasteDone && !h.state.hasteDone[seat]) {
+      h.do({ type: 'doneHaste', seat });
+    }
+  }
   h.do({ type: 'declareAttack', seat: A, columns: [[whale.id], [sky.id]] });
   h.do({ type: 'passPriority', seat: A });
   h.state.players[D]!.hand.push('Jelly');

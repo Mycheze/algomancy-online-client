@@ -32,9 +32,8 @@ test('A Fast Pile of Rocks: dies in combat → Rockfall 4 (each present player p
   h.do({ type: 'declareAttack', seat: A, columns: [[pile], [bubbA]] });
   pass(h); pass(h);                                   // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
-  pass(h); pass(h);                                   // combat: pile & blocker trade → Rockfall queued
+  pass(h); pass(h);   // combat: pile & blocker trade → Rockfall resolves at once: A auto-picks…
   assert.ok(!ent(h, pile) && !ent(h, blocker), 'pile and its blocker died in combat');
-  pass(h); pass(h);                                   // resolve the trigger: A auto-picks (one unit)…
   pick(h, ent(h, bubbD)!.id);                         // …D chooses Bubb over the token
   assert.equal(ent(h, bubbA)!.damage, 4, "A's auto-picked unit took 4");
   assert.equal(ent(h, bubbD)!.damage, 4, "D's chosen unit took 4");
@@ -57,7 +56,7 @@ test('Aetherflux Golem: +2/+2 for itself when played normally; +2/+2 to the host
   assert.deepEqual(effStats(h, golem), [3, 3], 'the in-play Golem did not double-fire on the attach');
 });
 
-test('Battle: two target units fight (mutual power damage; second unit picked at resolution)', () => {
+test('Battle: two target units fight (mutual power damage; both targets at cast)', () => {
   const h = new Harness(1602);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -68,8 +67,9 @@ test('Battle: two target units fight (mutual power damage; second unit picked at
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                            // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Battle') });
-  pick(h, { unit: atk });                             // first target
-  pass(h); pass(h);                                   // resolve — Bubb is the only other unit (auto)
+  pick(h, { unit: atk });                             // first target (at cast)
+  pick(h, { unit: bubbD });                           // second target (at cast — count: 2)
+  pass(h); pass(h);                                   // resolve
   assert.ok(!ent(h, atk), "the 1/1 died to Bubb's 5 power");
   assert.equal(ent(h, bubbD)!.damage, 1, "Bubb took the 1/1's 1 power back");
   finishBattle(h);
@@ -138,17 +138,15 @@ test('Eminence of the Barrens: dealt damage → may pay [one] to fight another t
   h.do({ type: 'declareAttack', seat: A, columns: [[tok], [bubbA]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [emin] } });
-  pass(h); pass(h);                                   // combat: tok deals 1 to Eminence → trigger
+  pass(h); pass(h);   // combat: tok deals 1 to Eminence → trigger resolves at once
   pick(h, { unit: bubbA });                           // trigger target: "another target unit"
-  pass(h); pass(h);                                   // resolve → payment decision
-  pick(h, true);                                      // pay [one]
+  pick(h, true);                                      // pay [one] → the fight happens
   assert.ok(!ent(h, bubbA), 'Bubb died to the 6-power fight');
   assert.equal(ent(h, emin)!.damage, 6, '1 combat + 5 from the fight');
   assert.equal(h.state.players[D]!.resources.filter(r => r.state === 'expended').length, 1, 'the [one] was paid');
   // "whenever": the fight's 5 damage re-triggered the ability — the only
   // remaining unit is the Eminence itself, so it resolves as a no-op
   pick(h, { unit: emin });
-  pass(h); pass(h);
   assert.ok(h.log.some(m => m.includes('cannot fight myself')), 'self-target no-op ("another target unit")');
   finishBattle(h);
 });
@@ -296,8 +294,7 @@ test('Lithoghul: dealt damage → deals that much damage to its controller', () 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [lith] } });
-  pass(h); pass(h);                                   // combat → afterWindow, trigger on the stack
-  pass(h); pass(h);                                   // resolve the trigger
+  pass(h); pass(h);   // combat → trigger resolves at once (R3 sub-step drain)
   assert.ok(!ent(h, atk), 'the attacker died to the 4-power block');
   assert.equal(ent(h, lith)!.damage, 1, 'Lithoghul took 1 combat damage (pre-regroup)');
   assert.equal(h.state.players[D]!.life, lifeD - 1, 'its controller took the mirrored 1');

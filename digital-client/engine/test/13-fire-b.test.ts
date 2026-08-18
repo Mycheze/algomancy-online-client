@@ -142,9 +142,8 @@ test('Reclaimer of Secrets: on death, pay [two] to recall a bin spell to hand', 
   h.do({ type: 'declareAttack', seat: A, columns: [[whale]] });
   pass(h); pass(h);                                  // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [rec] } });
-  pass(h); pass(h);                                  // combat: Reclaimer dies
+  pass(h); pass(h);   // combat: Reclaimer dies; death trigger resolves at once → payment
   assert.ok(!ent(h, rec), 'Reclaimer died blocking');
-  pass(h); pass(h);                                  // death trigger resolves → payment
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, D);
   pick(h, true);                                     // pay [two]; single spell auto-picked
@@ -348,9 +347,8 @@ test('Spiteful Shadow: my death makes each player sacrifice a unit', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[shadow], [whale]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
-  pass(h); pass(h);                                  // combat: the 0/1 Shadow dies
+  pass(h); pass(h);   // combat: the 0/1 Shadow dies; death trigger resolves at once
   assert.ok(!ent(h, shadow));
-  pass(h); pass(h);                                  // death trigger resolves
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, D, 'D has two units in the region — D picks');
   pick(h, extra);
@@ -406,11 +404,12 @@ test('Twin Flame: 2 damage to each of up to two target units', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[sprite], [whale]] });
   pass(h);                                           // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Twin Flame') });
+  // BOTH targets at cast time now (count: 2, min: 1) with a done-option
   pick(h, { unit: sprite });                         // first target
-  pass(h); pass(h);                                  // resolve → second-target choice
-  assert.equal(h.state.decision?.kind, 'payOrDecline');
-  assert.ok(h.state.decision!.options.some(o => o.label === 'No second target'), '"up to two"');
-  pick(h, whale);                                    // second target
+  assert.equal(h.state.decision?.kind, 'targets', 'second target asked at CAST');
+  assert.ok(h.state.decision!.options.some(o => o.label === 'No more targets'), '"up to two"');
+  pick(h, { unit: whale });                          // second target
+  pass(h); pass(h);                                  // resolve
   assert.ok(!ent(h, sprite), 'the 1/1 died to 2 damage');
   assert.equal(ent(h, whale)!.damage, 2, 'the second target took its own 2');
   finishBattle(h);

@@ -72,10 +72,9 @@ test('Mirrorback Ambusher: [once] dealt combat damage → deals that much to tar
   h.do({ type: 'declareAttack', seat: A, columns: [[sentry]] });
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [amb] } });
-  pass(h); pass(h);                                           // combat: amb dealt 1 (lethal assignment), dies
+  pass(h); pass(h);   // combat: amb dealt 1 (lethal assignment), dies; trigger at once
   assert.ok(!ent(h, amb), 'the 1/1 died to combat damage');
   pick(h, { unit: sentry });                                  // the trigger targets the attacker
-  pass(h); pass(h);                                           // resolve it
   assert.equal(ent(h, sentry)!.damage, 2, '1 from the block + 1 mirrored = 2');
   finishBattle(h);
 });
@@ -259,8 +258,7 @@ test('Molten Tormentor: surviving N damage → each opponent sacrifices N units'
   h.do({ type: 'declareAttack', seat: A, columns: [[tokA1], [tokA2]] });
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [torm] } });
-  pass(h); pass(h);                                           // combat: torm dealt 1, survives; tokA1 dies
-  pass(h); pass(h);                                           // resolve the sacrifice trigger
+  pass(h); pass(h);   // combat: torm dealt 1, survives; the trigger resolves at once
   assert.ok(!ent(h, tokA1), 'the blocked attacker died in combat');
   assert.ok(!ent(h, tokA2), 'the surviving attacker was sacrificed (N = 1)');
   assert.equal(ent(h, torm)!.damage, 1, 'the Tormentor survived 1 damage');

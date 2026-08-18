@@ -63,7 +63,7 @@ test('Lost Guardian: after combat, each attached graft triggers twice as one tri
   finishBattle(h);
 });
 
-test('Malformed Monstrosity: a true -7/-7 static on itself; counters -7/-7 to an augmented host (⚠)', () => {
+test('Malformed Monstrosity: a true -7/-7 static in BOTH forms (mod-carried, host-anchored)', () => {
   const h = new Harness(1701);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -78,13 +78,13 @@ test('Malformed Monstrosity: a true -7/-7 static on itself; counters -7/-7 to an
   e.addCounters(ent(h, mm)!, 2); e.settle();
   assert.deepEqual(effStats(h, mm), [5, 4], '3/2 + two +1/+1 counters = 5/4, static intact');
   assert.equal(ent(h, mm)!.counters, 2, 'the counter pile holds only the +2');
-  // augmented: the host takes the -7/-7 when the mod lands — still the
-  // counters approximation (⚠ mod-carried statics don't exist)
+  // augmented: the mod CARRIES the static, anchored on the host — a live
+  // -7/-7 with no counters involved (un-parked)
   const host = spawnToken(h, p, 9, 9);
   giveResources(h, p, 'earth', 3);                    // ee / 3
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Malformed Monstrosity'), hostId: host });
   assert.deepEqual(effStats(h, host), [2, 2], '9/9 host with -7/-7 = 2/2');
-  assert.equal(ent(h, host)!.counters, -7, '⚠ augment half: permanent -1/-1 counters (mod-carried statics PARKED)');
+  assert.equal(ent(h, host)!.counters, 0, 'a true mod-carried static — no counters');
   assert.ok(ent(h, host), 'the big host survives its new drawback');
 });
 

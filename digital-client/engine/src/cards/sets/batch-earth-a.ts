@@ -152,22 +152,19 @@ card('Aetherflux Golem', {
 });
 
 // "Two target units fight. (They deal damage to each other equal to their
-// power.)" — ee/4 {Battle} Bedlam Spell. ⚠ header approximation: the first
-// unit is the cast-time target; the second is a mid-resolution pick among the
-// region's other units (auto when only one). R5: the fight needs both — a
-// gone first target fizzles the part; no second unit → no fight.
+// power.)" — ee/4 {Battle} Bedlam Spell. Both units are cast-time targets
+// (count: 2, min: 2). R5: the fight needs both — a gone target fizzles.
 card('Battle', {
   spellEffect: {
-    targets: { what: 'unit', prompt: 'Battle: first of two target units (they fight)' },
+    targets: { what: 'unit', prompt: 'Battle: two target units — they fight', count: 2, min: 2 },
+    allOrNothing: true,
     run: (g, ctx) => {
-      const t = ctx.targets[0];
-      if (!isEnt(t) || !g.entity(t.id)) return;
-      const others = g.unitsIn(ctx.region).filter(u => u.id !== t.id);
-      const second = inEndOfTurn(g) ? (others[0] ?? null)
-        : chooseUnit(g, ctx, 'second', ctx.controller, others,
-          `Battle: the second unit (it fights ${t.card})`);
-      if (!second) { g.ev('info', 'Battle: no second unit — no fight.'); return; }
-      fight(g, ctx, t, second);
+      const [a, b] = ctx.targets;
+      if (!isEnt(a) || !isEnt(b) || !g.entity(a.id) || !g.entity(b.id)) {
+        g.ev('info', 'Battle: a fighter is gone — no fight.');
+        return;
+      }
+      fight(g, ctx, a, b);
     },
   },
 });

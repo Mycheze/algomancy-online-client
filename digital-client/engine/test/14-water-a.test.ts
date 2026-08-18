@@ -39,8 +39,7 @@ test('Amphivore: combat damage to an opponent triggers grafts thrice (one trigge
   h.do({ type: 'declareAttack', seat: A, columns: [[amph]] });
   pass(h); pass(h);                                         // → blocks
   h.do({ type: 'declareBlocks', seat: 1 - A, blocks: {} });
-  pass(h); pass(h);                                         // combat: 2 dmg → trigger queued
-  pass(h); pass(h);                                         // resolve the trigger
+  pass(h); pass(h);   // combat: 2 dmg → trigger resolves at once (R3 sub-step drain)
   const fires = tokensOf(h, A).filter(t => t.card === 'Fireball');
   assert.equal(fires.length, 3, 'unbounded untargeted graft ran three times (3 Fireballs)');
   assert.ok(fires.every(f => f.x === 1));
@@ -127,7 +126,7 @@ test('Cosmic Reversal: recalls all other spell effects on the stack to hands', (
 
 // ── Dreadspawn Horror ────────────────────────────────────────────────────
 
-test('Dreadspawn Horror: 7/5 on an empty hand; Virus-augments a host in battle (donated static PARKED)', () => {
+test('Dreadspawn Horror: 7/5 on an empty hand; the virus augment DONATES the live static', () => {
   const h = new Harness(1405);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -137,16 +136,19 @@ test('Dreadspawn Horror: 7/5 on an empty hand; Virus-augments a host in battle (
   const host = spawn(h, A, 'Unit Token');
   giveResources(h, A, 'water', 4);                          // bb/2 Virus
   toNextBattle(h, A);                                       // new turn: both players draw 2
+  h.state.players[A]!.hand.length = 0;                      // empty again — the host must survive
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Dreadspawn Horror'), hostId: host });
   pass(h); pass(h);                                         // resolve the virus
   const hostEnt = ent(h, host)!;
   assert.equal(hostEnt.mods.length, 1, 'virus augment attached in battle');
   assert.equal(ent(h, hostEnt.mods[0]!)!.card, 'Dreadspawn Horror');
-  assert.deepEqual(effStats(h, host), [1, 1],
-    'PARKED: the augment-DONATED static needs mod-carried statics — the mod donates nothing');
-  const hand = h.state.players[A]!.hand.length;             // 2 turn draws, the augment spent
-  assert.deepEqual(effStats(h, ds), [7 - hand, 5 - hand], 'the in-play copy tracks the hand meanwhile');
+  assert.deepEqual(effStats(h, host), [1, 1], 'empty hand: the donated static subtracts nothing');
+  // the mod-carried static reads the hand LIVE, anchored on the host
+  h.state.players[A]!.hand.push('Jelly');
+  assert.deepEqual(effStats(h, host), [0, 0], 'one card in hand → the host is a 0/0');
+  assert.deepEqual(effStats(h, ds), [6, 4], 'the in-play copy tracks the same hand');
+  h.state.players[A]!.hand.length = 0;                      // let both survive the battle
   finishBattle(h);
 });
 

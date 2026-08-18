@@ -107,6 +107,23 @@ counter badges, dormant resources greyed + a "you still have activations"
 confirm, clamped context menus, game-element-only recycle menu, stack card
 art, and a "Pass all" priority button that disarms when the stack grows.
 
+**Playtest round 2 (same evening):** cast-time MULTI-TARGETING
+(`TargetSpec.count/min`, dedup, "No more targets" after the min — Twin Flame
+and Battle now pick every target at cast); Animated Spark rebuilt as a true
+static over a new per-battle `spellsPlayed:<seat>` ledger; **mod-carried
+statics un-parked** (statics radiate from augment mods, anchored on the HOST —
+Sandstone Defender, Dreadspawn Horror, Malformed Monstrosity, Towering
+Colossus all fully live; `augmentable: true` flags statics-only augments);
+**combat sub-step trigger drain** (`battle.damageStep` + `pumpCombatDamage()`,
+resumable via settle like the turn-end pattern): triggers fired by a damage
+sub-step resolve immediately — special actions, no priority (R3) — before the
+next sub-step, so Flowstone Arcanite's Swift counters land before normal
+damage. UI: battle sub-step in the phase track, table orientation (your units
+below the vs-line), base-vs-effective P/T (colored live stats + printed base
+on board cards and the focus viewer), and the focus viewer composes modded
+units — base art + each mod's text-box strip, like the physical slide-under.
+Suite 289 / 0 fail; 1000-game fuzz clean on the new combat pump.
+
 ## M5 — Beyond v1 — open-ended
 - More elements → full 5-element draft; FFA intents (commit-reveal); teams; spectators;
   replay viewer; puzzle mode (load `puzzles/*.json` as scenarios — free synergy with the

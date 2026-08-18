@@ -407,32 +407,17 @@ card('Stormsowing Nimbus', {
 });
 
 // "[Switch1] I deal 2 damage to each of up to two target units." — rr/3
-// {Battle} Mystic Elemental Spell. ⚠ The cast machinery collects ONE target
-// per part, so the second (optional — "up to two") target is a mid-resolution
-// choice among the region's other units. Both hits are 2 damage each.
+// {Battle} Mystic Elemental Spell. Both targets are chosen AT CAST TIME
+// (count: 2, min: 1 — "up to two"); each surviving target takes 2.
 // Bounded graft ([Switch1], R9).
 const twinFlame: EffectDef = {
-  targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units' },
+  targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units', count: 2, min: 1 },
   run: (g, ctx) => {
-    const t1 = ctx.targets[0];
-    if (!t1 || !('id' in (t1 as object))) return;
-    const first = t1 as Entity;
-    const others = g.unitsIn(ctx.region).filter(u => u.id !== first.id);
-    let secondId: EntityId | null = null;
-    if (others.length) {
-      const pick = ctx.choose('second', {
-        kind: 'payOrDecline', seat: ctx.controller,
-        prompt: 'Twin Flame: a second target unit? (up to two)',
-        options: [
-          ...others.map(u => ({ label: u.card, value: u.id })),
-          { label: 'No second target', value: null },
-        ],
-      });
-      if (pick !== null) secondId = pick as EntityId;
+    for (const t of ctx.targets) {
+      if (t && 'id' in (t as object) && g.entity((t as Entity).id)) {
+        g.dealEffectDamage(ctx, t, 2);
+      }
     }
-    g.dealEffectDamage(ctx, first, 2);
-    const second = secondId !== null ? g.entity(secondId) : undefined;
-    if (second) g.dealEffectDamage(ctx, second, 2);
   },
 };
 card('Twin Flame', {

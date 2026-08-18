@@ -395,15 +395,13 @@ card('Throwing Boulder', {
 // entering its region grow; its controller's units never do). The
 // augment-DONATED form is still PARKED (see header: mod-carried statics);
 // inert augmentText keeps it recognised as an augment / battle Virus.
+// mod-carried statics are live (host-anchored), so the same static covers the
+// augment-donated form too (un-parked 2026-08-18)
 card('Towering Colossus', {
+  augmentable: true,
   statics: [{
     affects: (g, self, t) => t.kind === 'unit' && t.controller !== self.controller,
     dp: 2, dt: 2,
-  }],
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — mod-carried statics
-    label: 'enemies gain +2/+2 (augment-donated form not implemented)',
-    effect: { run: () => { /* PARKED */ } },
   }],
 });
 

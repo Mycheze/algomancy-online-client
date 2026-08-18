@@ -99,26 +99,16 @@ card('Abyssal Evocation', {
 });
 
 // "[Augment] Your units gain +1/+0 for each nontoken spell you've played in
-// this battle." — r/1 0/1 Anima Unit. Text-box [Augment]. APPROXIMATED as a
-// trigger: each nontoken spell the controller plays during battle gives all
-// their units in that region (R12) +1/+0 until regroup — cumulatively equal
-// to the printed count. Deviations from a true static aura: units arriving
-// after a spell miss its increment, spells played before the Spark arrived
-// don't count, and the bonus outlives the Spark if it leaves play.
-const sparkSurge: EffectDef = {
-  run: (g, ctx) => {
-    for (const u of g.unitsOf(ctx.controller, ctx.region)) g.addTemp(u, 1, 0);
-  },
-};
+// this battle." — r/1 0/1 Anima Unit. Text-box [Augment].
+// STATIC, not a trigger (playtest fix): the bonus is a live count of the
+// battle's nontoken-spell ledger — it never touches the stack, applies to
+// units that arrive mid-battle, and drops when the Spark leaves.
 card('Animated Spark', {
-  augmentText: [{
-    type: 'triggered', events: ['spellPlayed'],
-    label: 'your units gain +1/+0 (per nontoken spell played this battle)',
-    when: (g, self, ev) =>
-      g.s.phase === 'battle' &&
-      ev.data?.seat === self.controller &&
-      !ev.data?.token,
-    effect: sparkSurge,
+  augmentable: true,   // text-box [Augment]: the static transfers when augmented
+  statics: [{
+    affects: (g, self, target) =>
+      g.s.phase === 'battle' && target.kind === 'unit' && target.controller === self.controller,
+    dp: (g, self) => g.s.battleCounters[self.region]?.[`spellsPlayed:${self.controller}`] ?? 0,
   }],
 });
 

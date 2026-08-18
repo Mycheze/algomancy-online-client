@@ -109,30 +109,12 @@ card('Lost Guardian', {
 // [Augment] text is live when played normally (R26 / Manual Q&A): the UNIT
 // form is a true self-affecting static — the spawned 10/9 is a live 3/2 with
 // ZERO counters, so later +1/+1 counters no longer pairwise-cancel the
-// printed drawback. ⚠ The augment-DONATED form still needs mod-carried
-// statics (statics run only while the holder is a UNIT in play — see
-// header), so a host takes the -7/-7 once as permanent -1/-1 counters when
-// the mod lands (a host with net toughness ≤ 7 dies of it); THAT half keeps
-// the pairwise-cancel deviation.
-const monstrosityShrink: EffectDef = {
-  run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-    if (self) g.addCounters(self, -7);
-  },
-};
+// printed drawback.
+// the -7/-7 is a true static in BOTH forms now: host-anchored when carried by
+// the augment mod (un-parked 2026-08-18; the counters approximation is gone)
 card('Malformed Monstrosity', {
+  augmentable: true,
   statics: [{ affects: (g, self, t) => t.id === self.id, dp: -7, dt: -7 }],
-  augmentText: [
-    {   // applied as an augment: the host gains -7/-7 when the mod lands
-        // (⚠ counters approximation — mod-carried statics don't exist)
-      type: 'triggered', events: ['modApplied'],
-      label: 'I gain -7/-7 (augment applied)',
-      when: (g, self, ev) =>
-        ev.data?.host === self.id &&
-        g.entity(ev.data?.mod as EntityId)?.card === 'Malformed Monstrosity',
-      effect: monstrosityShrink,
-    },
-  ],
 });
 
 // "When I attack or block, [Switch] Create a Crystal 1." — ee/2 2/2 Mystic

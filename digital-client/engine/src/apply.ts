@@ -607,8 +607,12 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
 
   if (sus.type === 'cast') {
     e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
-    const ref = dec.options[choice]!.value as TargetRef;
-    sus.item.parts[sus.partIndex]!.targets.push(ref);
+    const val = dec.options[choice]!.value as TargetRef | { doneTargets: true };
+    if (typeof val === 'object' && val !== null && 'doneTargets' in val) {
+      sus.item.parts[sus.partIndex]!.targetsDone = true;
+    } else {
+      sus.item.parts[sus.partIndex]!.targets.push(val as TargetRef);
+    }
     let chain = sus.moreItems;
     e.collectTargets(sus.item, sus.then, chain);   // may suspend again
     e.commitItem(sus.item, sus.then);

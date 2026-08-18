@@ -105,6 +105,12 @@ export interface BattleState {
   attackerPool: EntityId[] | null;
   /** an attack was declared (gates "after combat" triggers) */
   happened: boolean;
+  /** combat damage in progress: the next sub-step to run ('after' = run the
+   * after-combat tail). Triggers fired by a sub-step resolve IMMEDIATELY
+   * (special actions, no priority — R3) before the next sub-step, so Swift
+   * riders like Flowstone Arcanite land before normal damage. Survives
+   * suspension: settle() resumes the pump once decisions drain. */
+  damageStep?: 'Swift' | 'normal' | 'Sluggish' | 'after' | null;
 }
 
 // ── the stack ─────────────────────────────────────────────────────────
@@ -123,6 +129,8 @@ export interface EffectPart {
   /** registry lookup: which EffectDef runs (see cards/dsl.ts resolveEffectKey) */
   effectKey: string;
   targets: TargetRef[];
+  /** multi-target spec: the caster said "done" before reaching the max */
+  targetsDone?: boolean;
   /** the mod entity this part came from (bounded budget bookkeeping, R9) */
   fromMod?: EntityId;
   /** skip at resolution (bounded graft effect already used this turn) */

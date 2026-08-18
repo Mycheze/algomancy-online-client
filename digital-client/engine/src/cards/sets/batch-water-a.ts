@@ -206,16 +206,14 @@ card('Cosmic Reversal', {
 // death check. The augment-DONATED form is still PARKED (see header:
 // mod-carried statics); the inert augmentText entry below keeps isAugment()
 // true so the Virus mode works.
+// the static is host-anchored when mod-carried, so the same def covers both
+// the unit form and the augment-donated form (un-parked 2026-08-18)
 card('Dreadspawn Horror', {
+  augmentable: true,
   statics: [{
     affects: (g, self, t) => t.id === self.id,
     dp: (g, self) => -g.player(self.controller).hand.length,
     dt: (g, self) => -g.player(self.controller).hand.length,
-  }],
-  augmentText: [{
-    type: 'triggered', events: [],
-    label: 'I gain -1/-1 for each card in your hand (augment-donated form PARKED: mod-carried statics)',
-    effect: { run: () => { /* PARKED — see batch header */ } },
   }],
 });
 
