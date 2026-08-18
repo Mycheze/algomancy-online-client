@@ -1,0 +1,14 @@
+{
+  "name": "algomancy-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "M2 slice: server-authoritative 1v1 Algomancy over WebSockets.",
+  "scripts": {
+    "start": "node main.ts",
+    "test-drive": "node test-drive.ts"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "_note": "Bena's hand-authored reference layouts from the layout editor (2026-07-17). Views are FOCUS-DRIVEN. Battle = attacking the opponent's region (their region+combat is the giant focus; your region is small because your attackers moved out into their region). Planning == Deploy: solo 'goldfish' phases — opponent shrunk to a glanceable strip, your board huge, Ctrl+Z undo, opponent's turn shown as a replay afterward. Other views (defending / round-2 counter / the other seat) are MIRRORS of these. rects are % of the board; scale = card px in that zone.",
+  "Planning": {
+    "phase": {"x":0,"y":0,"w":100,"h":5,"scale":26},
+    "oppInfo": {"x":0,"y":5,"w":13,"h":12,"scale":26},
+    "oppRes": {"x":14,"y":5,"w":19,"h":12,"scale":24},
+    "oppHand": {"x":34,"y":5,"w":34,"h":12,"scale":32},
+    "oppBin": {"x":69,"y":5,"w":15,"h":12,"scale":30},
+    "oppRegion": {"x":0,"y":17,"w":84,"h":15,"scale":36},
+    "yourHand": {"x":0,"y":34,"w":84,"h":24,"scale":40},
+    "stack": {"x":62,"y":33,"w":18,"h":25,"scale":42},
+    "yourRegion": {"x":0,"y":57,"w":84,"h":14,"scale":40},
+    "yourRes": {"x":0,"y":60,"w":84,"h":26,"scale":46},
+    "yourBin": {"x":70,"y":72,"w":14,"h":19,"scale":34},
+    "actionBar": {"x":0,"y":92,"w":84,"h":8,"scale":26},
+    "rail": {"x":85,"y":5,"w":15,"h":94,"scale":30}
+  },
+  "Battle": {
+    "phase": {"x":0,"y":0,"w":100,"h":5,"scale":26},
+    "oppInfo": {"x":0,"y":5,"w":9,"h":8,"scale":26},
+    "oppRes": {"x":9,"y":5,"w":26,"h":8,"scale":45},
+    "oppHand": {"x":35,"y":5,"w":34,"h":8,"scale":32},
+    "oppBin": {"x":69,"y":5,"w":15,"h":8,"scale":30},
+    "combat": {"x":0,"y":13,"w":69,"h":44,"scale":120},
+    "oppRegion": {"x":69,"y":13,"w":15,"h":44,"scale":112},
+    "actionBar": {"x":0,"y":57,"w":84,"h":8,"scale":26},
+    "yourRegion": {"x":0,"y":65,"w":69,"h":14,"scale":40},
+    "yourBin": {"x":70,"y":66,"w":13,"h":31,"scale":34},
+    "stack": {"x":1,"y":28,"w":18,"h":25,"scale":99},
+    "yourRes": {"x":0,"y":79,"w":24,"h":19,"scale":78},
+    "yourHand": {"x":24,"y":79,"w":45,"h":19,"scale":95},
+    "rail": {"x":85,"y":5,"w":15,"h":94,"scale":30}
+  },
+  "Deploy": {
+    "phase": {"x":0,"y":0,"w":100,"h":5,"scale":26},
+    "oppInfo": {"x":0,"y":5,"w":13,"h":12,"scale":26},
+    "oppRes": {"x":13,"y":5,"w":15,"h":12,"scale":24},
+    "oppHand": {"x":28,"y":5,"w":15,"h":12,"scale":32},
+    "oppBin": {"x":43,"y":5,"w":15,"h":12,"scale":30},
+    "oppRegion": {"x":58,"y":5,"w":26,"h":12,"scale":40},
+    "actionBar": {"x":0,"y":17,"w":84,"h":7,"scale":26},
+    "yourRegion": {"x":0,"y":24,"w":69,"h":43,"scale":120},
+    "yourBin": {"x":69,"y":24,"w":15,"h":43,"scale":111},
+    "stack": {"x":76,"y":49,"w":18,"h":25,"scale":98},
+    "yourRes": {"x":0,"y":67,"w":34,"h":26,"scale":91},
+    "yourHand": {"x":34,"y":67,"w":50,"h":26,"scale":117},
+    "rail": {"x":85,"y":5,"w":15,"h":94,"scale":30}
+  }
+}

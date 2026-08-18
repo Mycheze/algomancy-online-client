@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algomancy — board layout editor</title>
+<style>
+:root{
+  --bg:#0d1013; --panel:#171b22; --line:#2e3742; --text:#d6dde6; --dim:#8794a3; --accent:#d9a441;
+  --felt:radial-gradient(ellipse 120% 80% at 50% 42%, #1b2129 0%, #12151a 60%, #0d1013 100%);
+  --disp:'Bahnschrift','DIN Alternate','Arial Narrow',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;height:100vh;display:flex;background:var(--bg);color:var(--text);
+  font:13px/1.4 system-ui,sans-serif;overflow:hidden}
+button{font:inherit;color:var(--text);background:#20262f;border:1px solid var(--line);border-radius:7px;
+  padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.pri{background:linear-gradient(180deg,#40632f,#33512a);border-color:#5b8747;color:#eaf3e2;font-weight:600}
+h1,h2{font-family:var(--disp);letter-spacing:.04em;margin:0}
+
+#wrap{flex:1;min-width:0;display:flex;flex-direction:column}
+#bar{display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+#bar h1{font-size:16px;color:var(--accent)}
+#views{display:flex;gap:4px;background:#0d1013;border:1px solid var(--line);border-radius:9px;padding:3px}
+#views button{border:none;background:transparent;padding:5px 13px;border-radius:6px;font-family:var(--disp);
+  letter-spacing:.05em;text-transform:uppercase;font-size:11px;color:var(--dim)}
+#views button.on{background:var(--accent);color:#1a1206;font-weight:700}
+#bar .hint{color:var(--dim);font-size:11px;flex:1;min-width:180px}
+
+#stagepad{flex:1;min-height:0;padding:14px;display:flex}
+#stage{flex:1;position:relative;background:var(--felt);border:1px solid var(--line);border-radius:12px;
+  overflow:hidden;box-shadow:inset 0 0 60px rgba(0,0,0,.4)}
+#stage .grid{position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:5% 5%}
+
+.zone{position:absolute;border:1px solid rgba(255,255,255,.18);border-radius:10px;overflow:hidden;
+  background:rgba(20,24,30,.5);backdrop-filter:blur(1px);display:flex;flex-direction:column;
+  box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.zone.sel{border-color:var(--accent);box-shadow:0 0 0 2px rgba(217,164,65,.5),0 6px 20px rgba(0,0,0,.5);z-index:20}
+.zone .zh{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:3px 8px;cursor:grab;user-select:none;
+  font-family:var(--disp);letter-spacing:.04em;font-size:11px;background:rgba(0,0,0,.35);white-space:nowrap;overflow:hidden}
+.zone .zh:active{cursor:grabbing}
+.zone .zh .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.zone .zh .co{margin-left:auto;color:var(--dim);font-size:10px;font-variant-numeric:tabular-nums}
+.zone .zb{flex:1;min-height:0;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;
+  gap:4px;padding:5px;overflow:hidden}
+.zone.floating{border-style:dashed;background:rgba(217,164,65,.06)}
+.zone .rz{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;
+  background:linear-gradient(135deg,transparent 50%,var(--accent) 50%);border-bottom-right-radius:10px;z-index:2}
+
+.mc{width:var(--mini,44px);aspect-ratio:63/88;border-radius:4px;object-fit:cover;flex:0 0 auto;
+  box-shadow:0 1px 3px rgba(0,0,0,.5);display:block}
+.mc.back{background:repeating-linear-gradient(48deg,#243049 0 6px,#2b3a56 6px 12px)}
+.mc.res{width:calc(var(--mini,44px)*.72);position:relative;overflow:hidden}
+.mc.res img{width:100%;height:100%;object-fit:cover;border-radius:4px}
+.mc.res.exp{transform:rotate(90deg)}
+.mc.res.hid{filter:brightness(.7)}
+.pile{display:flex}
+.pile .mc{margin-left:calc(var(--mini,44px)*-.62)}
+.pile .mc:first-child{margin-left:0}
+.grp{display:flex;gap:3px;padding:3px;border-radius:6px}
+.grp.atk{box-shadow:inset 0 0 0 1px rgba(226,80,59,.45)}
+.grp.blk{box-shadow:inset 0 0 0 1px rgba(111,139,192,.45)}
+.grp.col{flex-direction:column}
+.chips{font-family:var(--disp);letter-spacing:.05em;color:var(--text);text-align:center;font-size:12px;padding:4px}
+.chips b{color:var(--accent)}
+
+#panel{width:276px;flex:0 0 auto;background:var(--panel);border-left:1px solid var(--line);
+  display:flex;flex-direction:column;overflow-y:auto}
+#panel .sec{padding:12px 14px;border-bottom:1px solid var(--line)}
+#panel h2{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px}
+.row{display:flex;align-items:center;gap:8px;margin:6px 0}
+.row label{flex:1;font-size:12px}
+input[type=range]{accent-color:var(--accent);width:100%}
+#selname{font-family:var(--disp);color:var(--accent);font-size:14px}
+.zlist label{display:flex;align-items:center;gap:7px;font-size:12px;padding:3px 0;cursor:pointer}
+.zlist .sw{width:10px;height:10px;border-radius:2px;flex:0 0 auto}
+#io{width:100%;height:120px;background:#0d1013;border:1px solid var(--line);border-radius:7px;color:#b9c4d0;
+  font:11px/1.4 ui-monospace,monospace;padding:8px;resize:vertical}
+.btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.small{font-size:11px;color:var(--dim);margin-top:6px}
+select{background:#20262f;color:var(--text);border:1px solid var(--line);border-radius:6px;padding:5px;width:100%}
+.muted{color:var(--dim);font-size:12px}
+</style>
+</head>
+<body>
+
+<div id="wrap">
+  <div id="bar">
+    <h1>Board layout editor</h1>
+    <div id="views"></div>
+    <span class="hint">Arrange EACH view separately · drag a zone by its title · gold corner resizes the zone · select a zone to resize its cards · double-click hides</span>
+  </div>
+  <div id="stagepad"><div id="stage"><div class="grid"></div></div></div>
+</div>
+
+<div id="panel">
+  <div class="sec">
+    <h2>Selected zone</h2>
+    <div id="selname" class="muted">— click a zone —</div>
+    <div id="selctl" style="display:none">
+      <div class="row"><label>Card size in this zone</label></div>
+      <input type="range" id="scale" min="18" max="120" value="44">
+      <div class="btns"><button id="hidezone">Hide this zone</button></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>This view</h2>
+    <div class="row"><label>Snap to grid</label><input type="checkbox" id="snap" checked></div>
+    <div class="btns"><button id="reset">Reset this view</button><button id="copyfrom" title="copy another view's arrangement into this one">Copy from…</button></div>
+    <select id="copysrc" style="display:none;margin-top:8px"></select>
+  </div>
+
+  <div class="sec">
+    <h2>Zones in this view</h2>
+    <div class="zlist" id="zlist"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Export / import (all views)</h2>
+    <div class="small">Arrange every view, then <b>Export</b> and paste the text back to me — I'll build the real client to match. Or <b>Download</b> and say it's in ~/Downloads.</div>
+    <textarea id="io" spellcheck="false"></textarea>
+    <div class="btns">
+      <button class="pri" id="export">Export ▸ text</button>
+      <button id="copy">Copy</button>
+      <button id="download">Download</button>
+      <button id="import">Apply pasted</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CARD=n=>`<img class="mc" src="../../../AlgomancyCards/${n}.jpg" title="${n}" alt="${n}">`;
+const BACK=n=>Array.from({length:n},()=>`<div class="mc back"></div>`).join('');
+const RES=(n,c='')=>`<div class="mc res ${c}"><img src="../../../AlgomancyCards/${n}.jpg" alt=""></div>`;
+const PILE=(...ns)=>`<div class="pile">${ns.map(CARD).join('')}</div>`;
+
+// every zone: label, colour, floats?, and sample content
+const ZCFG={
+  phase:    {label:'Phase track',        color:'#d9a441', body:`<div class="chips">PLAN · HASTE · <b>BATTLE</b> · REGROUP · DEPLOY · <b>Round 1</b></div>`},
+  oppInfo:  {label:'Opponent info',      color:'#6f8bc0', body:`<div class="chips">Rho ⭐<br>♥ 22</div>`},
+  oppHand:  {label:'Opponent hand',      color:'#6f8bc0', body:BACK(5)},
+  oppRes:   {label:'Opponent resources', color:'#6f8bc0', body:RES('Fire-Resource')+RES('Fire-Resource')+RES('Water-Resource')+RES('Dormant-Resource','hid')+RES('Dormant-Resource','hid')},
+  oppRegion:{label:"Opponent's region (units in play)", color:'#6f8bc0', body:CARD('Rune-Channeler')+CARD('Aether-Channeler')},
+  oppBin:   {label:"Opponent's bin",     color:'#5f7085', body:PILE('Curio-Drifter','Dune-Drifter')},
+  combat:   {label:'Combat / battlefield', color:'#e2503b', body:
+     `<div class="grp atk col">${CARD('Ephemeral-Skywalker')}${CARD('Good-Whale')}</div>`+
+     `<div class="grp blk col">${CARD('Ignis-Sprite')}</div>`+
+     `<div class="grp atk col">${CARD('Curio-Drifter')}</div>`},
+  yourRegion:{label:'Your region (units in play)', color:'#6fc36f', body:CARD('Slag-Spewer')+CARD('A-Fast-Pile-of-Rocks')+CARD('Crystal')+CARD('Fireball')},
+  stack:    {label:'The stack', floating:true, color:'#d9a441', body:CARD('Jelly')+CARD('Fireball')},
+  yourHand: {label:'Your hand',          color:'#6fc36f', body:CARD('Ignis-Sprite')+CARD('Fireball')+CARD('Dune-Drifter')+CARD('Nebula-Drifter')},
+  yourRes:  {label:'Your resources',     color:'#6fc36f', body:RES('Fire-Resource')+RES('Fire-Resource')+RES('Earth-Resource','exp')+RES('Wood-Resource')+RES('Dormant-Resource')+RES('Prismite')},
+  yourBin:  {label:'Your bin',           color:'#4e8a3d', body:PILE('Jelly','Ignis-Sprite','Fireball')},
+  actionBar:{label:'Action bar (priority)', color:'#d9a441', body:`<div class="chips">● You have priority — both pass → resolve · <b>[ Pass ]</b></div>`},
+  rail:     {label:'Log · card preview', color:'#8794a3', body:`<div class="chips">game log ⋯<br>card preview</div>`},
+};
+
+// a base table layout: {x,y,w,h,scale}. scale = mini-card px in that zone.
+const R=(x,y,w,h,s=42)=>({x,y,w,h,scale:s});
+const BASE={
+  phase:R(0,0,100,5,26), oppInfo:R(0,5,13,12,26),
+  oppRes:R(14,5,19,12,24), oppHand:R(34,5,34,12,32), oppBin:R(69,5,15,12,30),
+  oppRegion:R(0,17,84,16,40),
+  combat:R(0,34,84,22,44),
+  yourRegion:R(0,57,84,14,40),
+  yourRes:R(0,72,24,19,34), yourHand:R(25,72,44,19,40), yourBin:R(70,72,14,19,34),
+  actionBar:R(0,92,84,8,26),
+  rail:R(85,5,15,94,30),
+  stack:R(62,33,18,25,42),
+};
+// per-view starting layouts (you'll rearrange each). Combat only shows in Battle.
+function derive(mods){const l=structuredClone(BASE);for(const k in mods)l[k]={...(l[k]||R(5,5,20,18)),...mods[k]};return l;}
+const PRESETS={
+  Planning:derive({combat:{hidden:true}, yourRes:R(0,60,84,26,46), yourHand:R(0,34,84,24,40), oppRegion:R(0,17,84,15,36)}),
+  Battle:  derive({}),
+  Deploy:  derive({combat:{hidden:true}, yourRegion:R(0,40,84,26,46), yourHand:R(0,66,84,22,40)}),
+};
+
+const stage=document.getElementById('stage');
+let views=structuredClone(PRESETS), cur='Battle', sel=null, snap=true;
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const snapv=v=>snap?Math.round(v):Math.round(v*10)/10;
+const L=()=>views[cur];
+
+function buildViews(){
+  const el=document.getElementById('views');
+  el.innerHTML=Object.keys(views).map(v=>`<button data-v="${v}" class="${v===cur?'on':''}">${v}</button>`).join('');
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=b.dataset.v;sel=null;buildViews();render();buildList();selPanel();});
+}
+function render(){
+  [...stage.querySelectorAll('.zone')].forEach(z=>z.remove());
+  const lay=L();
+  for(const k of Object.keys(ZCFG)){
+    const r=lay[k]; if(!r||r.hidden) continue;
+    const cfg=ZCFG[k];
+    const el=document.createElement('div');
+    el.className='zone'+(cfg.floating?' floating':'')+(sel===k?' sel':'');
+    el.style.cssText=`left:${r.x}%;top:${r.y}%;width:${r.w}%;height:${r.h}%;--mini:${r.scale||42}px`;
+    el.innerHTML=`<div class="zh"><span class="dot" style="background:${cfg.color}"></span>${cfg.label}
+      <span class="co">${Math.round(r.x)},${Math.round(r.y)} · ${Math.round(r.w)}×${Math.round(r.h)}</span></div>
+      <div class="zb">${cfg.body}</div><div class="rz"></div>`;
+    stage.appendChild(el); wire(el,k);
+  }
+}
+function wire(el,k){
+  el.addEventListener('mousedown',()=>{sel=k;selPanel();markSel();});
+  el.addEventListener('dblclick',e=>{if(e.target.closest('.rz'))return;L()[k].hidden=true;sel=null;render();buildList();selPanel();});
+  drag(el.querySelector('.zh'),k,'move');
+  drag(el.querySelector('.rz'),k,'size');
+}
+function markSel(){stage.querySelectorAll('.zone').forEach(z=>z.classList.remove('sel'));
+  const i=[...Object.keys(ZCFG)].filter(k=>{const r=L()[k];return r&&!r.hidden;}).indexOf(sel);
+  const z=stage.querySelectorAll('.zone')[i]; if(z)z.classList.add('sel');}
+function drag(handle,k,mode){
+  handle.addEventListener('mousedown',e=>{
+    e.preventDefault();e.stopPropagation();sel=k;selPanel();
+    const sr=stage.getBoundingClientRect();const r=L()[k];const sx=e.clientX,sy=e.clientY,o={...r};
+    function mv(ev){
+      const dx=(ev.clientX-sx)/sr.width*100, dy=(ev.clientY-sy)/sr.height*100;
+      if(mode==='move'){ r.x=clamp(snapv(o.x+dx),0,100-r.w); r.y=clamp(snapv(o.y+dy),0,100-r.h); }
+      else { r.w=clamp(snapv(o.w+dx),5,100-r.x); r.h=clamp(snapv(o.h+dy),5,100-r.y); }
+      render();markSel();
+    }
+    function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);buildList();}
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+}
+function selPanel(){
+  const nm=document.getElementById('selname'), ctl=document.getElementById('selctl');
+  if(!sel||!L()[sel]||L()[sel].hidden){nm.textContent='— click a zone —';nm.className='muted';ctl.style.display='none';return;}
+  nm.textContent=ZCFG[sel].label;nm.className='';ctl.style.display='';
+  document.getElementById('scale').value=L()[sel].scale||42;
+}
+function buildList(){
+  const el=document.getElementById('zlist'),lay=L();
+  el.innerHTML=Object.keys(ZCFG).map(k=>{
+    const on=lay[k]&&!lay[k].hidden;
+    return `<label><input type="checkbox" data-k="${k}" ${on?'checked':''}>
+      <span class="sw" style="background:${ZCFG[k].color}"></span>${ZCFG[k].label}</label>`;}).join('');
+  el.querySelectorAll('input').forEach(cb=>cb.onchange=()=>{
+    const k=cb.dataset.k, lay=L();
+    if(cb.checked){ if(!lay[k])lay[k]=R(5,5,22,18); lay[k].hidden=false; }
+    else { if(lay[k])lay[k].hidden=true; if(sel===k){sel=null;selPanel();} }
+    render();});
+}
+function exportJSON(){
+  const out={};
+  for(const v in views){out[v]={};
+    for(const k of Object.keys(ZCFG)){const r=views[v][k];if(r&&!r.hidden)
+      out[v][k]={x:+r.x.toFixed(1),y:+r.y.toFixed(1),w:+r.w.toFixed(1),h:+r.h.toFixed(1),scale:Math.round(r.scale||42)};}}
+  document.getElementById('io').value=JSON.stringify(out,null,1);
+}
+
+document.getElementById('scale').oninput=e=>{if(sel&&L()[sel]){L()[sel].scale=+e.target.value;render();markSel();}};
+document.getElementById('hidezone').onclick=()=>{if(sel){L()[sel].hidden=true;sel=null;render();buildList();selPanel();}};
+document.getElementById('snap').onchange=e=>snap=e.target.checked;
+document.getElementById('reset').onclick=()=>{views[cur]=structuredClone(PRESETS[cur]);sel=null;render();buildList();selPanel();};
+document.getElementById('copyfrom').onclick=()=>{const s=document.getElementById('copysrc');
+  s.style.display=s.style.display==='none'?'':'none';
+  s.innerHTML=Object.keys(views).filter(v=>v!==cur).map(v=>`<option>${v}</option>`).join('');};
+document.getElementById('copysrc').onchange=e=>{views[cur]=structuredClone(views[e.target.value]);render();buildList();};
+document.getElementById('export').onclick=exportJSON;
+document.getElementById('copy').onclick=()=>{exportJSON();navigator.clipboard.writeText(document.getElementById('io').value);};
+document.getElementById('download').onclick=()=>{exportJSON();
+  const b=new Blob([document.getElementById('io').value],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='algo-layout.json';a.click();};
+document.getElementById('import').onclick=()=>{
+  try{const o=JSON.parse(document.getElementById('io').value);
+    for(const v in o){views[v]=views[v]||{};for(const k in o[v])views[v][k]={...o[v][k],hidden:false};}
+    buildViews();render();buildList();}
+  catch(err){alert('Could not parse that layout JSON: '+err.message);}
+};
+
+buildViews();render();buildList();selPanel();
+</script>
+</body>
+</html>
