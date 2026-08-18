@@ -302,3 +302,38 @@ button:disabled { opacity: .4; cursor: default; }
 .elchip.fire.on { border-color: var(--fire); } .elchip.water.on { border-color: var(--water); }
 .elchip.earth.on { border-color: #8a6b3d; } .elchip.wood.on { border-color: #4e8a3d; }
 .elchip.metal.on { border-color: #9aa5b0; }
+
+/* ── hotfixes: bins-in-region, help/judge, main-only overlays ───────── */
+/* overlays that leave the side column (focus viewer) usable */
+.overlay.mainonly { right: clamp(250px, 24vw, 320px); }
+@media (max-width: 900px) { .overlay.mainonly { right: 0; } }
+
+/* the bin lives in its player's region, right side, mini until opened */
+.regionrow { display: flex; gap: 10px; align-items: stretch; }
+.regionmain { flex: 1; min-width: 0; }
+.regionbin { width: 96px; flex-shrink: 0; border-left: 1px dashed var(--line); padding-left: 8px;
+  cursor: pointer; border-radius: 4px; }
+.regionbin:hover { background: var(--panel2); }
+.regionbinthumbs { position: relative; height: 72px; }
+.regionbinthumbs .card { width: 46px; position: absolute; top: 0; }
+.regionbinthumbs .card:nth-child(1) { left: 0; }
+.regionbinthumbs .card:nth-child(2) { left: 14px; top: 4px; }
+.regionbinthumbs .card:nth-child(3) { left: 28px; top: 8px; }
+.binempty { color: var(--dim); font-size: 11px; }
+.binbox .bindialog { max-height: 60vh; overflow-y: auto; }
+.bindialog .card { width: 92px; }
+
+/* help + judge */
+.helpbox, .judgebox { width: min(92vw, 640px); }
+.helpscroll { overflow-y: auto; }
+.helpscroll h4 { margin: 10px 0 4px; color: var(--accent); text-transform: uppercase; font-size: 12px; letter-spacing: .08em; }
+.helprow { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px dotted #232a33; }
+.helprow b { width: 110px; flex-shrink: 0; color: var(--text); }
+.helprow span { color: var(--dim); }
+.judgescroll { overflow-y: auto; max-height: 50vh; display: flex; flex-direction: column; gap: 6px; }
+.judgeq { color: var(--accent); font-weight: 700; }
+.judgea { background: var(--panel2); border-radius: 6px; padding: 6px 10px; white-space: normal; }
+.judgea .hint span { text-decoration: underline dotted; cursor: help; }
+.judgerow { display: flex; gap: 8px; }
+.judgerow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 6px 10px; }

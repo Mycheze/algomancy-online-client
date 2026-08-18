@@ -71,6 +71,31 @@ const server = createServer(async (req, res) => {
     return res.end(JSON.stringify({ code: freshRoomCode() }));
   }
 
+  // the in-game judge popup: proxy to the rules bot (same box, :8000) so the
+  // client needs no CORS and no second origin
+  if (path === '/api/judge' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (c: Buffer) => { body += c; });
+    req.on('end', async () => {
+      try {
+        const { question } = JSON.parse(body || '{}') as { question?: string };
+        const upstream = await fetch('http://127.0.0.1:8000/api/ask', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ question: String(question ?? '').slice(0, 2000), history: [] }),
+          signal: AbortSignal.timeout(60000),
+        });
+        const json = await upstream.text();
+        res.writeHead(upstream.status, { 'content-type': 'application/json' });
+        res.end(json);
+      } catch (err) {
+        res.writeHead(502, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ answer: `the judge is unreachable: ${err instanceof Error ? err.message : err}` }));
+      }
+    });
+    return;
+  }
+
   // card art: the UI asks for /AlgomancyCards/<Name>.jpg
   if (path.startsWith('/AlgomancyCards/')) {
     const rel = normalize(path.slice('/AlgomancyCards/'.length)).replace(/^(\.\.[/\\])+/, '');

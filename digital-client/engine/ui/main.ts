@@ -377,6 +377,13 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   const handZone = opts.omitHand || hiddenHand ? '' :
     `<div class="zonelabel">Hand (${pl.hand.length})</div><div class="zone">${handZoneHtml(p)}</div>`;
 
+  // the bin lives IN its player's region: a mini stack on the right that
+  // opens a full dialog (bin-play clicks work from the dialog)
+  const binMini = `<div class="regionbin" data-btn="binopen" data-p="${p}" title="open ${esc(pl.name)}'s bin">
+      <div class="zonelabel">bin (${pl.bin.length})</div>
+      <div class="regionbinthumbs">${pl.bin.slice(-3).map(n => cardHtml(n)).join('') || '<span class="binempty">empty</span>'}</div>
+    </div>`;
+
   return `<div class="player region ${acting ? '' : 'inactive'} ${focus}">
     <div class="pheader">
       <span class="pname">${esc(pl.name)}${s.initiative === p ? ' ⭐' : ''}</span>
@@ -385,33 +392,150 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
         <span style="color:var(--dim)">(${e.openMana(p)} mana open${s.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
       </span>
       ${miniHand}
-      <span class="binline">deck ${s.sharedDeck.length}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''} · bin ${pl.bin.length}</span>
+      <span class="binline">deck ${s.sharedDeck.length}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''}</span>
     </div>
     ${seenStrip}
-    <div class="zonelabel">Region of ${esc(pl.name)}${focus === 'battlefocus' ? ' — ⚔ the battle is here' : focus === 'battledim' ? ' — outside this battle' : ''}</div>
-    <div class="zone">${ownHere}</div>
-    ${invaderHtml}
-    ${sentStrip}
+    <div class="regionrow">
+      <div class="regionmain">
+        <div class="zonelabel">Region of ${esc(pl.name)}${focus === 'battlefocus' ? ' — ⚔ the battle is here' : focus === 'battledim' ? ' — outside this battle' : ''}</div>
+        <div class="zone">${ownHere}</div>
+        ${invaderHtml}
+        ${sentStrip}
+      </div>
+      ${binMini}
+    </div>
     ${handZone}
   </div>`;
 }
 
-/** B4: both bins live in the side column as compact scans (bin-play clicks
- * keep their data-act attributes) */
-function binsHtml(topSeat: Seat, botSeat: Seat): string {
-  const blocks = [topSeat, botSeat].map(p => {
-    const pl = h.state.players[p]!;
-    if (!pl.bin.length) return '';
-    const legal = legalFor(p);
-    const items = pl.bin.map((n, i) => {
-      const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
-      return cardHtml(n, { playable: usable, data: `data-act="bin" data-p="${p}" data-i="${i}"` });
-    }).join('');
-    return `<details class="binblock" open><summary>${esc(pl.name)}'s bin (${pl.bin.length})</summary>
-      <div class="zone binzone">${items}</div></details>`;
+/** the full-bin dialog (opened from a region's mini bin) — bin cards keep
+ * their data-act so augment/graft-from-bin still works from here */
+let binView: Seat | null = null;
+function binDialogHtml(): string {
+  if (binView === null) return '';
+  const p = binView;
+  const pl = h.state.players[p]!;
+  const legal = legalFor(p);
+  const items = pl.bin.map((n, i) => {
+    const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
+    return cardHtml(n, { playable: usable, data: `data-act="bin" data-p="${p}" data-i="${i}"` });
   }).join('');
-  if (!blocks) return '';
-  return `<div class="binspanel"><h3>Bins</h3>${blocks}</div>`;
+  return `<div class="overlay mainonly"><div class="overlaybox binbox">
+    <h3>${esc(pl.name)}'s bin (${pl.bin.length})</h3>
+    <div class="zone binzone bindialog">${items || '<span class="binempty">empty</span>'}</div>
+    <button data-btn="binclose">Close</button>
+  </div></div>`;
+}
+
+// (bins moved into their players' region panels — see regionPanelHtml/binDialogHtml)
+
+/** what happens when both players pass the current battle window */
+function nextBattleStepName(): string {
+  const s = h.state;
+  const b = s.battle;
+  if (!b) return 'the next step';
+  if (b.step === 'attackWindow') return `${esc(s.players[b.defender]!.name)} declares blocks`;
+  if (b.step === 'blockWindow') return 'combat damage';
+  if (b.step === 'afterWindow') {
+    return s.battleRound === 1 ? 'round 2 (the counterattack)' : 'regroup & deployment';
+  }
+  return 'the next step';
+}
+
+// ── rules reference + judge (in-game help) ────────────────────────────
+
+let helpOpen = false;
+let judgeOpen = false;
+let judgeBusy = false;
+const judgeLog: { q: string; a: string; cards: { title: string }[] }[] = [];
+
+const KEYWORDS: [string, string][] = [
+  ['Flying', 'Its column can only be blocked by a column with Flying.'],
+  ['Evasive', 'Needs two blockers — a single unit cannot block it.'],
+  ['Sneaky', 'If it is the only attacking unit, it cannot be blocked at all.'],
+  ['Alluring', 'Defenders that are able to block it must block it.'],
+  ['Piercing', 'Excess damage from its blocked column carries through to the defending player (automatic).'],
+  ['Electric', 'Excess damage arcs to an adjacent unit in the formation — the controller picks the path.'],
+  ['Deadly', 'Any amount of damage it deals destroys the damaged unit.'],
+  ['Swift', 'Its column deals combat damage before normal units; triggers from that damage resolve before normal damage.'],
+  ['Sluggish', 'Its column deals combat damage after normal units.'],
+  ['Tough', 'Its defense is doubled.'],
+  ['Balanced', 'Its power and defense each become the higher of the two.'],
+  ['Powerful', 'It deals double damage.'],
+  ['Vulnerable', 'It takes double damage.'],
+  ['Feeble', 'It cannot block.'],
+  ['Poisonous', 'Damage it deals becomes permanent −1/−1 counters instead of marked damage.'],
+  ['Resonant', 'When it damages a unit, that unit’s controller also loses that much life.'],
+  ['Thieving', 'When its column deals combat damage to a player, its controller draws a card.'],
+  ['Reaping', 'When it kills a unit, its controller draws a card.'],
+  ['Inverted', 'Its stat CHANGES are reversed (a −7/−7 becomes +7/+7).'],
+  ['Unaware', 'Everything counts as interacting with it.'],
+  ['Burst', 'Casting one of your burst spell tokens casts all of them in that region at once.'],
+  ['Unstable', 'A modded unit that dies is erased (with its mods) instead of going to a bin.'],
+  ['Virus', 'May be augmented onto an ENEMY unit during battle.'],
+  ['Ambush', 'An alternative battle-time cost: recall a target ally and take its position in play.'],
+];
+
+const PHASE_GUIDE: [string, string][] = [
+  ['Planning', 'Refresh resources · draw 2 · (draft: merge hand+pack, leave exactly 10, pass) · recycle cards into dormant resources · activate up to 2 resources (3+ affinity of an element when activating it grants a free dormant Shard) · exchange active Prismites.'],
+  ['Haste', 'Only {Haste} cards may be played; they resolve immediately. Skipped when nobody can.'],
+  ['Battle round 1', 'Initiative attacks: build columns (max 2 units each; column-mates SHARE combat attributes) → response window → defender declares blocks AND may send counterattackers (they cease to exist until round 2) → response window → combat damage (Swift → normal → Sluggish; triggers resolve between steps, no priority) → after-combat window.'],
+  ['Battle round 2', 'The counterattack, in the other region: only units sent in round 1 (or a fresh attack if round 1 didn’t happen). Same steps.'],
+  ['Regroup', 'Automatic: everyone returns home · damage cleared · temporary changes cleared · spell tokens erased · formations dissolve. Deployment buffs persist into NEXT battle.'],
+  ['Deployment', 'Simultaneous and hidden: play cards, augment/graft (from hand or bin), activate abilities — alone in your region. Battle-timing cards unplayable. Reveals when both are done; then end-of-turn triggers (no responses) and initiative passes.'],
+];
+
+function helpOverlayHtml(): string {
+  return `<div class="overlay mainonly"><div class="overlaybox helpbox">
+    <h3>Rules reference</h3>
+    <div class="helpscroll">
+      <h4>The turn</h4>
+      ${PHASE_GUIDE.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${v}</span></div>`).join('')}
+      <h4>Keywords</h4>
+      ${KEYWORDS.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${v}</span></div>`).join('')}
+      <h4>Quick reminders</h4>
+      <div class="helprow"><b>Augment (+)</b><span>Slide under a unit from hand or bin: donates type-line attributes and text-box [Augment] text to the host.</span></div>
+      <div class="helprow"><b>Graft (⇄)</b><span>Insert into a graft-cause unit’s stack: the [Switch] effects join its trigger as one ability. [Switch1] = once per turn per card.</span></div>
+      <div class="helprow"><b>Resources</b><span>Each grants 1 affinity of its element even while expended (dormant ones grant nothing); expend for 1 mana, refresh each turn. Shards: mana only, no affinity.</span></div>
+      <div class="helprow"><b>Undo</b><span>Ctrl+Z or the ↶ button — your own last action, during planning and deployment.</span></div>
+    </div>
+    <button data-btn="helpclose">Close</button>
+  </div></div>`;
+}
+
+function judgeOverlayHtml(): string {
+  const rows = judgeLog.map(e => `
+    <div class="judgeq">Q: ${esc(e.q)}</div>
+    <div class="judgea">${esc(e.a).replace(/\n/g, '<br>')}${e.cards.length
+      ? `<div class="hint">cards: ${e.cards.map(c => `<span data-prev="${esc(c.title)}">${esc(c.title)}</span>`).join(' · ')}</div>` : ''}</div>`).join('');
+  return `<div class="overlay mainonly"><div class="overlaybox judgebox">
+    <h3>⚖ Judge — ask the rules bot</h3>
+    <div class="judgescroll">${rows || '<div class="hint">Ask anything — answers come from the rules corpus (Manual, rulebook, designer Q&A).</div>'}
+      ${judgeBusy ? '<div class="hint">thinking…</div>' : ''}</div>
+    <div class="judgerow">
+      <input id="judge-q" placeholder="e.g. can a Feeble unit be sent to counterattack?" ${judgeBusy ? 'disabled' : ''}>
+      <button class="primary" data-btn="judgeask" ${judgeBusy ? 'disabled' : ''}>Ask</button>
+    </div>
+    <button data-btn="judgeclose">Close</button>
+  </div></div>`;
+}
+
+function askJudge(question: string): void {
+  judgeBusy = true;
+  render();
+  fetch('/api/judge', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ question }),
+  }).then(r => r.json()).then((r: { answer?: string; cited_cards?: { title: string }[]; detail?: string }) => {
+    judgeLog.push({ q: question, a: r.answer ?? r.detail ?? 'no answer', cards: r.cited_cards ?? [] });
+  }).catch(err => {
+    judgeLog.push({ q: question, a: `could not reach the judge: ${err}`, cards: [] });
+  }).finally(() => {
+    judgeBusy = false;
+    render();
+    const box = document.querySelector('.judgescroll');
+    if (box) box.scrollTop = box.scrollHeight;
+  });
 }
 
 function battleHtml(): string {
@@ -604,7 +728,7 @@ function promptHtml(): string {
       you have priority — play a battle card / cast a token / virus-augment, or
       <button class="primary" data-btn="pass">Pass</button>
       ${NET ? `<button data-btn="passall" title="keep passing until the battle ends or something new is played">Pass all</button>` : ''}
-      <span style="color:var(--dim)">(both pass: ${s.stack.length ? 'resolve top of stack' : 'next step'})</span>${err}</div>`;
+      <span style="color:var(--dim)">(both pass: ${s.stack.length ? 'resolve top of stack' : `move to ${nextBattleStepName()}`})</span>${err}</div>`;
   }
   if (s.phase === 'deploy') {
     if (ui.modding) {
@@ -755,8 +879,10 @@ function render(): void {
         ${ui.autopass ? '<button class="passallchip" data-btn="passallstop" title="click to stop passing">auto-passing… ✕ stop</button>' : ''}
         ${NET ? `<button data-btn="autopasstoggle" class="aptoggle ${autoPref ? 'on' : ''}"
           title="when ON: automatically pass whenever passing is your only legal action">auto-pass: ${autoPref ? 'on' : 'off'}</button>` : ''}
-        ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)" style="margin-left:auto">↶ undo</button>' : ''}
-        ${NET ? '' : '<button data-btn="restart" style="margin-left:auto">New game</button>'}
+        <button data-btn="helpopen" title="rules reference: phases + keywords" style="margin-left:auto">? rules</button>
+        <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
+        ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
+        ${NET ? '' : '<button data-btn="restart">New game</button>'}
       </div>
       ${shareBannerHtml()}
       ${promptHtml()}
@@ -768,18 +894,34 @@ function render(): void {
     <div class="side">
       <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
       ${stackHtml()}
-      ${binsHtml(topSeat, botSeat)}
       <div class="logpanel" id="log"><h3>Game log</h3>${logItems}</div>
     </div>
     ${NET ? `<div class="handdock"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})</div>
       <div class="zone">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${menuHtml()}
+    ${binDialogHtml()}
+    ${helpOpen ? helpOverlayHtml() : ''}
+    ${judgeOpen ? judgeOverlayHtml() : ''}
     ${pendingReveal ? revealOverlayHtml() : ''}`;
   const log = document.getElementById('log')!;
   log.scrollTop = log.scrollHeight;
   clampMenu();
   maybeAutopass();
+  // judge input: submit on Enter, survive re-renders mid-typing
+  const jq = document.getElementById('judge-q') as HTMLInputElement | null;
+  if (jq) {
+    if (judgeDraft) { jq.value = judgeDraft; jq.focus(); jq.setSelectionRange(jq.value.length, jq.value.length); }
+    jq.addEventListener('input', () => { judgeDraft = jq.value; });
+    jq.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') {
+        judgeDraft = '';
+        (document.querySelector('[data-btn="judgeask"]') as HTMLElement | null)?.click();
+      }
+    });
+  }
 }
+/** the judge question being typed (survives server-push re-renders) */
+let judgeDraft = '';
 
 // ── deployment reveal interstitial (C2) ───────────────────────────────
 /** longest word-sequence in `msg` that names a known card, if any */
@@ -799,8 +941,11 @@ function revealOverlayHtml(): string {
     const name = findCardName(msg);
     return `<div class="revealline">${name ? cardHtml(name) : '<span class="revealspacer"></span>'}<span>${esc(msg)}</span></div>`;
   }).join('');
-  return `<div class="overlay"><div class="overlaybox">
+  // 'mainonly' leaves the side column (focus viewer!) uncovered so the
+  // revealed cards can be read by hovering them
+  return `<div class="overlay mainonly"><div class="overlaybox">
     <h3>Your opponent's deployment</h3>
+    <div class="hint">hover a card to read it in the focus viewer →</div>
     <div class="reveallist">${lines}</div>
     <button class="primary" data-btn="revealdone">Continue</button>
   </div></div>`;
@@ -1090,6 +1235,17 @@ function handleButton(btn: HTMLElement): void {
       act({ type: 'decide', seat: s.decision!.seat, choice });
     }
   }
+  if (b === 'binopen') { binView = Number(btn.dataset['p']) as Seat; }
+  if (b === 'binclose') binView = null;
+  if (b === 'helpopen') helpOpen = true;
+  if (b === 'helpclose') helpOpen = false;
+  if (b === 'judgeopen') judgeOpen = true;
+  if (b === 'judgeclose') judgeOpen = false;
+  if (b === 'judgeask') {
+    const inp = document.getElementById('judge-q') as HTMLInputElement | null;
+    const question = inp?.value.trim();
+    if (question && !judgeBusy) { if (inp) inp.value = ''; judgeDraft = ''; askJudge(question); return; }
+  }
   if (b === 'modcancel') ui.modding = null;
   if (b === 'menuitem') { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); }
   if (b === 'menuclose') ui.menu = null;
@@ -1221,6 +1377,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
   if (kind === 'bin') {
     const p = Number(t.dataset['p']) as Seat, i = Number(t.dataset['i']);
     const legal = legalFor(p).filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
+    if (legal.length) binView = null;   // close the bin dialog so the host pick is visible
     startModding(p, 'bin', i, legal, e);
   }
   render();
