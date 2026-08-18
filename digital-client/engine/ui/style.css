@@ -347,3 +347,8 @@ button:disabled { opacity: .4; cursor: default; }
 .inspecttext { color: var(--text); white-space: pre-wrap; }
 .rulingrow { background: var(--panel2); border-left: 3px solid var(--accent); border-radius: 4px;
   padding: 6px 10px; margin-bottom: 6px; color: var(--text); }
+
+/* real game icons inline (menus, chips, topbar trio) */
+.elicon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 5px; }
+.topbar .elicon { width: 18px; height: 18px; margin-right: 2px; }
+.elchip .elicon { margin-right: 6px; }

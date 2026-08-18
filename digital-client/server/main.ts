@@ -35,6 +35,7 @@ const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json',
   '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
 };
 
 async function serveFile(res: import('node:http').ServerResponse, path: string): Promise<void> {
@@ -116,6 +117,11 @@ const server = createServer(async (req, res) => {
   if (path.startsWith('/AlgomancyCards/')) {
     const rel = normalize(path.slice('/AlgomancyCards/'.length)).replace(/^(\.\.[/\\])+/, '');
     return serveFile(res, join(ART_DIR, rel));
+  }
+  // the game's real icon set (element pips, cost circles, markers)
+  if (path.startsWith('/Icons/')) {
+    const rel = normalize(path.slice('/Icons/'.length)).replace(/^(\.\.[/\\])+/, '');
+    return serveFile(res, join(HERE, '..', '..', 'Icons', rel));
   }
   // everything else is the client bundle in engine/ui
   const rel = normalize(path).replace(/^(\.\.[/\\])+/, '');

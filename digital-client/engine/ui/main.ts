@@ -94,7 +94,7 @@ interface UiState {
   /** spell tokens riding along with the attack being built (C1) */
   spellTokens: EntityId[];
   modding: { from: 'hand' | 'bin'; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
-  menu: { x: number; y: number; items: { label: string; go: () => void }[] } | null;
+  menu: { x: number; y: number; items: { label: string; icon?: string; go: () => void }[] } | null;
   orderPicked: number[];
   /** draft step: pile indices (into hand.concat(pack)) marked "leave in pack" */
   draftPack: number[] | null;
@@ -150,6 +150,9 @@ const art = (name: string): string => {
   } catch { /* not a registry card (resource faces etc.) — fall through */ }
   return ART + name.replace(/ /g, '-') + '.jpg';
 };
+/** the game's REAL icon (element pip, cost circle, marker) as an inline img */
+const elIcon = (name: string): string =>
+  `<img class="elicon" src="/Icons/${name}.webp" alt="${name}" onerror="this.style.display='none'">`;
 const q = () => new E(h.state);
 
 function act(a: Action): void {
@@ -762,6 +765,7 @@ function promptHtml(): string {
     const b = s.battle!;
     if (b.step === 'declare') {
       return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> build your attack
+        <button data-btn="attackall" title="every eligible unit joins, one per column — adjust before confirming">⚔ Attack with everything</button>
         <button class="primary" data-btn="confirmattack" ${ui.columns.some(c => c.length) ? '' : 'disabled'}>Attack!</button>
         <button data-btn="skipattack">Don't attack</button>${err}</div>`;
     }
@@ -824,7 +828,8 @@ function tgtLabel(t: TargetRef): string {
 
 function menuHtml(): string {
   if (!ui.menu) return '';
-  const items = ui.menu.items.map((it, i) => `<button data-btn="menuitem" data-i="${i}">${esc(it.label)}</button>`).join('');
+  const items = ui.menu.items.map((it, i) =>
+    `<button data-btn="menuitem" data-i="${i}">${it.icon ? elIcon(it.icon) : ''}${esc(it.label)}</button>`).join('');
   return `<div class="menu" style="left:${ui.menu.x}px;top:${ui.menu.y}px">${items}<button data-btn="menuclose">cancel</button></div>`;
 }
 
@@ -931,7 +936,7 @@ function render(): void {
   $app.innerHTML = `
     <div class="main">
       <div class="topbar">
-        <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.join('+')}` : ''}</span>
+        <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.map(el => elIcon(el)).join('')}` : ''}</span>
         ${phaseTrackHtml()}
         <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
         ${netTag}
@@ -1083,7 +1088,7 @@ function renderHome(): void {
       <div class="elpicker">
         <div class="zonelabel">Live draft — pick exactly 3 elements</div>
         <div class="elrow">${(['fire', 'water', 'earth', 'wood', 'metal'] as const).map(el =>
-          `<button class="elchip ${el} ${ui.homeEls.includes(el) ? 'on' : ''}" data-btn="eltoggle" data-el="${el}">${el}</button>`).join('')}
+          `<button class="elchip ${el} ${ui.homeEls.includes(el) ? 'on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
           <button data-btn="elrandom" title="pick a random trio">🎲</button>
         </div>
         <button class="primary" data-btn="newgame" data-mode="draft" ${ui.homeEls.length === 3 ? '' : 'disabled'}>
@@ -1271,6 +1276,20 @@ function handleButton(btn: HTMLElement): void {
   if (b === 'revealdone') pendingReveal = null;
   if (b === 'donedeploy') act({ type: 'doneDeploying', seat: Number(btn.dataset['p']) });
   if (b === 'skipattack') { act({ type: 'declareAttack', seat: s.battle!.attacker, columns: [] }); ui.columns = []; ui.carrying = null; ui.spellTokens = []; }
+  if (b === 'attackall') {
+    // one click for the whole army: every eligible unit fronts its own
+    // column (still adjustable before "Attack!"; playtest: 100 token clicks)
+    const bt = s.battle!;
+    const e = q();
+    const from = bt.round === 1 || bt.attackerPool === null ? e.homeRegion(bt.attacker) : bt.region;
+    const placed = new Set(ui.columns.flat());
+    for (const u of e.unitsOf(bt.attacker, from)) {
+      if (placed.has(u.id)) continue;
+      if (bt.attackerPool && !bt.attackerPool.includes(u.id)) continue;
+      ui.columns.push([u.id]);
+    }
+    ui.carrying = null;
+  }
   if (b === 'confirmattack') {
     const cols = ui.columns.filter(c => c.length);
     act({ type: 'declareAttack', seat: s.battle!.attacker, columns: cols, spellTokens: ui.spellTokens.slice() });
@@ -1343,6 +1362,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
         x: e.clientX, y: e.clientY,
         items: opts.map(a => ({
           label: a.type === 'activateResource' ? 'Activate' : `Exchange → ${(a as { element: string }).element}`,
+          icon: a.type === 'exchangePrismite' ? (a as { element: string }).element : undefined,
           go: () => { act(a); render(); },
         })),
       };
@@ -1464,6 +1484,7 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
       // only the elements actually in this game (a fwe draft offers no wood/metal)
       items: s.elements.map(el => ({
         label: `Recycle → ${el} resource`,
+        icon: el,
         go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: el }); render(); },
       })),
     };
