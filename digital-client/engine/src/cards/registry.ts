@@ -352,7 +352,8 @@ card('Fireball', {
 registerSynthetic({
   name: 'Unit Token', cost: '', mana: 0, power: 1, toughness: 1,
   type: 'Unit Token', kind: 'unit', timing: 'deploy', attrs: [],
-  virus: false, burst: false, augmentAttrs: [], text: '', image: '',
+  virus: false, burst: false, augmentAttrs: [], text: '',
+  image: 'Generic-Unit.jpg',   // the box's generic-unit token card
 }, {});
 
 // batch modules register themselves on import (side-effect card() calls);

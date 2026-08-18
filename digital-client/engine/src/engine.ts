@@ -85,7 +85,7 @@ export class E {
   }
   tokensOf(seat: Seat, region?: number): Entity[] {
     return Object.values(this.s.entities).filter(e =>
-      e.kind === 'spellToken' && e.controller === seat &&
+      e.kind === 'spellToken' && e.controller === seat && !e.absent &&
       (region === undefined || e.region === region));
   }
 
@@ -159,7 +159,9 @@ export class E {
         else if (holder.kind === 'mod' && holder.appliedAs === 'augment' && holder.modOf !== undefined) {
           anchor = this.entity(holder.modOf);
         }
-        if (!anchor || anchor.region !== target.region) continue;
+        // a sent counterattacker "doesn't exist until phase 1 finishes"
+        // (Manual p.20) — it radiates nothing in the region it left
+        if (!anchor || anchor.absent || anchor.region !== target.region) continue;
         for (const mod of this.card(holder.card).statics ?? []) {
           if (mod.affects(this, anchor, target)) out.push({ holder: anchor, mod });
         }
@@ -260,6 +262,15 @@ export class E {
   }
   recycleToBottom(name: CardName): void {
     this.s.sharedDeck.push(name);
+  }
+
+  /** `viewer` looks at `owner`'s hand (Bripp etc.): snapshot it so the client
+   * can keep showing what was seen — nobody should need pen and paper. The
+   * snapshot goes stale (cleared) when the owner's hand next mixes unknowably
+   * (their draft-step merge). */
+  revealHandTo(viewer: Seat, owner: Seat): void {
+    this.s.seenHand[viewer] = { turn: this.s.turn, cards: [...this.player(owner).hand] };
+    this.ev('info', `${this.pname(viewer)} looks at ${this.pname(owner)}'s hand.`);
   }
 
   // ── units, tokens, damage, death ────────────────────────────────────

@@ -52,7 +52,7 @@ function glimpse(g: E, ctx: EffectCtx, seat: Seat, n: number): void {
   const pick = ctx.choose('glimpse', {
     kind: 'payOrDecline', seat,
     prompt: `Glimpse ${count}: choose a card to cache (engine: it goes to your hand)`,
-    options: top.map((name, i) => ({ label: name, value: i })),
+    options: top.map((name, i) => ({ label: name, value: i, card: name })),
   }) as number;
   g.s.sharedDeck.splice(0, count);
   const keptIdx = top[pick] !== undefined ? pick : 0;
@@ -127,11 +127,13 @@ const brippEffect: EffectDef = {
     const who = (t as { player: Seat }).player;
     const hand = g.player(who).hand;
     g.ev('info', `Bripp reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
+    // the looker keeps what they saw (client-side note-taking strip)
+    if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);
     if (!hand.length) return;
     const pick = ctx.choose('brippPick', {
       kind: 'payOrDecline', seat: ctx.controller,
       prompt: `Bripp: recycle a card from ${g.pname(who)}'s hand? (they then draw)`,
-      options: [{ label: 'decline', value: -1 }, ...hand.map((name, i) => ({ label: name, value: i }))],
+      options: [{ label: 'decline', value: -1 }, ...hand.map((name, i) => ({ label: name, value: i, card: name }))],
     }) as number;
     if (pick < 0 || hand[pick] === undefined) return;
     const [name] = hand.splice(pick, 1);
@@ -274,7 +276,7 @@ card('Eldritch Reclaimer', {
     run: (g, ctx) => {
       const bin = g.player(ctx.controller).bin;
       const options = bin
-        .map((name, i) => ({ label: name, value: i }))
+        .map((name, i) => ({ label: name, value: i, card: name }))
         .filter(o => { const k = getCard(o.label).kind; return k === 'unit' || k === 'spellUnit'; });
       if (!options.length) { g.ev('info', 'Eldritch Reclaimer: no unit in the bin.'); return; }
       const pick = ctx.choose('reclaim', {
@@ -389,10 +391,10 @@ card('Hooba-Pon', {
         if (!grid.some(hasRoom)) return;   // no open position
         const seat = ctx.controller;
         const hand = g.player(seat).hand;
-        const options = [{ label: 'decline', value: -1 }];
+        const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
         hand.forEach((name, i) => {
           if (getCard(name).kind === 'unit' && g.canPayCard(seat, name)) {
-            options.push({ label: name, value: i });
+            options.push({ label: name, value: i, card: name });
           }
         });
         if (options.length === 1) return;
@@ -423,10 +425,10 @@ const insidiousInvite: EffectDef = {
     const seats: Seat[] = [ctx.controller, ...g.s.players.map(p => p.seat).filter(s => s !== ctx.controller)];
     for (const seat of seats) {
       const hand = g.player(seat).hand;
-      const options = [{ label: 'decline', value: -1 }];
+      const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
       hand.forEach((name, i) => {
         if (getCard(name).kind === 'unit' && g.canPayCard(seat, name)) {
-          options.push({ label: name, value: i });
+          options.push({ label: name, value: i, card: name });
         }
       });
       if (options.length === 1) continue;

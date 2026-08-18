@@ -148,7 +148,7 @@ card('Reclaimer of Secrets', {
         const idx = spells.length === 1 ? spells[0]![1] : ctx.choose('which', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: 'Reclaimer of Secrets: recall which spell?',
-          options: spells.map(([n, i]) => ({ label: n, value: i })),
+          options: spells.map(([n, i]) => ({ label: n, value: i, card: n })),
         }) as number;
         g.payMana(ctx.controller, 2);
         const [name] = g.player(ctx.controller).bin.splice(idx, 1);
@@ -172,7 +172,7 @@ const resurrectEffect: EffectDef = {
     const idx = units.length === 1 ? units[0]![1] : ctx.choose('which', {
       kind: 'payOrDecline', seat: ctx.controller,
       prompt: 'Resurrect: put which unit (cost 2 or less) into play?',
-      options: units.map(([n, i]) => ({ label: n, value: i })),
+      options: units.map(([n, i]) => ({ label: n, value: i, card: n })),
     }) as number;
     const [name] = g.player(ctx.controller).bin.splice(idx, 1);
     if (name !== undefined) g.spawnUnit(ctx.controller, name, ctx.region);
@@ -205,7 +205,7 @@ card('Rousing Spirit', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: 'Rousing Spirit: put a unit from your bin into the slot behind me?',
           options: [
-            ...units.map(([n, i]) => ({ label: n, value: i })),
+            ...units.map(([n, i]) => ({ label: n, value: i, card: n })),
             { label: 'Decline', value: null },
           ],
         });

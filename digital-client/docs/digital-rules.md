@@ -217,3 +217,35 @@ Same reading applies to future "in my formation" counts. (Engine 2026-07-16.)
   of done; the tests are also the regression suite that keeps updates from breaking the game).
 - **Distribution**: internal use / personal curiosity for now; nothing publishes without
   Caleb's approval (deferred, not forgotten).
+
+## R28 ⚠ — Created units arrive in their controller's region (playtest ruling)
+A triggered/spell effect that "creates" a UNIT without naming a place puts it
+in its controller's home region — NOT the battle region where the effect
+resolved (Tidelurker's 2/2 minted mid-attack must be home to block the
+counterattack). Cards that say "in my formation" or similar override this.
+Spell tokens (Fireballs etc.) still appear where the effect resolves — they
+are battle materiel. ⚠ Engine call from the 2026-08-18 playtest; currently
+applied to Tidelurker only — confirm whether it should be the global default.
+
+## R29 ⚠ — "An open spot in your formation" (Tiderunner Initiate)
+Requires an EXISTING formation of yours (you attacked, or you declared
+blocks): join behind a lone survivor, take over an emptied column, or — as
+the attacker — front a fresh column beside the formation. With no formation
+declared there is nothing to join and no prompt. Joining is optional ("may").
+
+## R30 ⚠ — "Each player recalls a unit and loses 2 life" (Recall)
+The life loss is unconditional per present player: a player with no unit to
+recall still loses 2. (Do as much as you can; the two clauses are not linked
+by "if you do".)
+
+## R31 ⚠ — Triggers between combat damage sub-steps
+Triggered abilities fired by a damage sub-step (Swift/normal/Sluggish)
+resolve IMMEDIATELY — as special actions, no priority window (R3) — before
+the next sub-step. A Swift unit's "when my column deals combat damage" rider
+therefore lands before normal damage (Flowstone Arcanite's counters).
+
+## R32 — Sent counterattackers don't exist anywhere (Manual p.20, clarified)
+While "sent" (between block declaration and the end of round 1) a
+counterattacker is in NO region: it radiates no statics, is no legal target,
+and its spell tokens can't be cast. It reappears in the enemy region when
+round 2 begins.

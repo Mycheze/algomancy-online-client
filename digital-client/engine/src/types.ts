@@ -169,6 +169,9 @@ export interface DecisionOption {
   label: string;
   /** payload the UI/fuzzer sends back as the choice */
   value: unknown;
+  /** when the option IS a card (hand looks, deck tops, bin picks), its name —
+   * the client renders the real scan instead of a text label */
+  card?: CardName;
 }
 
 export interface Decision {
@@ -293,6 +296,11 @@ export interface GameState {
    * seat has committed their hand↔pack merge this turn. Cleared (null) once
    * everyone commits and the packs pass. Always null in 'shared'. */
   draftDone: boolean[] | null;
+  /** seenHand[viewer] = the opponent's hand as `viewer` last SAW it (a hand-
+   * reveal effect like Bripp), with the turn it happened — honest note-taking
+   * so nobody needs pen and paper. Cleared when the owner's hand next mixes
+   * unknowably (their draft-step merge). null = never seen / stale. */
+  seenHand: ({ turn: number; cards: CardName[] } | null)[];
   players: PlayerState[];
   regions: Region[];
   entities: Record<EntityId, Entity>;

@@ -319,7 +319,7 @@ card('The Bonesculptor', {
             && !d.graftEffect && !d.spellEffect && !d.ambush;
         };
         const opts = bin
-          .map((n, i) => ({ label: n, value: i }))
+          .map((n, i) => ({ label: n, value: i, card: n }))
           .filter(o => vanilla(bin[o.value]!) && g.canPayCard(ctx.controller, bin[o.value]!));
         if (!opts.length) {
           g.ev('info', 'The Bonesculptor: no playable ability-free unit in your bin.');

@@ -49,7 +49,7 @@ export function createGame(
   const state: GameState = {
     seed, rngState, actionCount: 0, turn: 0, phase: 'planning',
     initiative: initRoll < 0.5 ? 0 : 1, winner: null, nextId: 1,
-    mode, packs: [[], []], draftDone: null,
+    mode, packs: [[], []], draftDone: null, seenHand: [null, null],
     elements: mode === 'draft' ? [...DRAFT_TRIO] : ['fire', 'water', 'earth', 'wood', 'metal'],
     sharedDeck: deck,
     players: names.map((name, seat) => ({
@@ -156,6 +156,8 @@ function doDraftCommit(e: E, seat: Seat, packIndices: number[]): void {
   }
   e.s.packs[seat] = packIndices.map(i => pile[i]!);
   p.hand = pile.filter((_, i) => !seen.has(i));
+  // this hand just mixed with a pack — anything the opponent SAW of it is stale
+  e.s.seenHand[other(seat)] = null;
   e.s.draftDone[seat] = true;
   e.ev('draft', `${e.pname(seat)} finishes drafting and passes their pack.`, { seat });
   if (e.s.draftDone.every(Boolean)) e.passPacks();

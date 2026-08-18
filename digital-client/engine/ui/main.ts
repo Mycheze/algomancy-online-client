@@ -50,7 +50,7 @@ class NetBackend implements Backend {
   undo(): void { this.ws.send(JSON.stringify({ t: 'undo' })); }
   private onMsg(m: {
     t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
-    events?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
+    events?: { msg: string }[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
   }): void {
     if (m.t === 'joined') {
       this.joined = true; this.seat = m.seat!; this.state = m.view!;
@@ -63,6 +63,13 @@ class NetBackend implements Backend {
       if (m.events) for (const e of m.events) this.log.push(e.msg);
       if (m.legal) this.legal = m.legal;
       if (m.peers) this.peers = m.peers;
+      // deploy-end reveal: what the opponent secretly did during deployment.
+      // Only worth an interstitial when there's more than the bare "is done
+      // deploying" line. The state underneath applies normally — only the
+      // view is gated behind the overlay's Continue button.
+      if (m.reveal && m.reveal.some(ev => !/is done deploying/i.test(ev.msg))) {
+        pendingReveal = m.reveal.map(ev => ev.msg);
+      }
       render(); return;
     }
     if (m.t === 'kicked') {
@@ -84,6 +91,8 @@ interface UiState {
   carrying: EntityId | null;
   columns: EntityId[][];
   send: EntityId[];
+  /** spell tokens riding along with the attack being built (C1) */
+  spellTokens: EntityId[];
   modding: { from: 'hand' | 'bin'; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
   menu: { x: number; y: number; items: { label: string; go: () => void }[] } | null;
   orderPicked: number[];
@@ -98,24 +107,43 @@ interface UiState {
   autopassAt: number;
   /** stack height when autopass was armed — growth disarms it */
   autopassStack: number;
+  /** actionCount the auto-pass TOGGLE (C4) last sent a pass for */
+  autopassPrefAt: number;
   /** "done planning" pressed with dormant resources + activations left: which
    * seat is being asked "are you sure?" */
   confirmDone: Seat | null;
+  /** Pass pressed with castable spell tokens during battle (C5): which pass
+   * button is being confirmed */
+  confirmPass: 'pass' | 'passall' | null;
 }
 let ui: UiState = {
-  carrying: null, columns: [], send: [], modding: null, menu: null, orderPicked: [],
-  draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0, confirmDone: null,
+  carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
+  draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0,
+  autopassPrefAt: -1, confirmDone: null, confirmPass: null,
 };
+/** deploy-end reveal waiting behind the interstitial (C2) — messages to show */
+let pendingReveal: string[] | null = null;
 const resetUi = () => {
   ui = {
-    carrying: null, columns: [], send: [], modding: null, menu: null, orderPicked: [],
-    draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0, confirmDone: null,
+    carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
+    draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0,
+    autopassPrefAt: -1, confirmDone: null, confirmPass: null,
   };
+  pendingReveal = null;
 };
 
 const $app = document.getElementById('app')!;
 const esc = (s: unknown) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
-const art = (name: string) => ART + name.replace(/ /g, '-') + '.jpg';
+/** art path for a card: the registry's per-card image when it has one
+ * (fixes e.g. 'Unit Token' → 'Generic-Unit.jpg'), else derived from the name
+ * (resource faces and other non-registry art) */
+const art = (name: string): string => {
+  try {
+    const img = getCard(name).image;
+    if (img) return ART + img;
+  } catch { /* not a registry card (resource faces etc.) — fall through */ }
+  return ART + name.replace(/ /g, '-') + '.jpg';
+};
 const q = () => new E(h.state);
 
 function act(a: Action): void {
@@ -158,6 +186,13 @@ function legalFor(seat: Seat): Action[] {
   return legalActions(h.state, seat);
 }
 
+/** distinct spell tokens `seat` could cast right now (C5 pass guard) */
+function castableTokenCount(seat: Seat): number {
+  return new Set(legalFor(seat)
+    .filter(a => a.type === 'castSpellToken')
+    .map(a => (a as { entityId: EntityId }).entityId)).size;
+}
+
 // ── rendering ─────────────────────────────────────────────────────────
 function cardHtml(name: string, opts: {
   playable?: boolean; candidate?: boolean; selected?: boolean; carrying?: boolean;
@@ -170,7 +205,8 @@ function cardHtml(name: string, opts: {
   if (opts.carrying) cls.push('carrying');
   const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''}">${esc(b.t)}</span>`).join('');
   return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}">
-    <img src="${art(name)}" alt="${esc(name)}">
+    <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
+    <div class="artfallback">${esc(name)}</div>
     ${badges ? `<div class="badges">${badges}</div>` : ''}
     ${opts.stats ? `<div class="stats">${opts.stats}</div>` : ''}
     ${opts.dmg ? `<div class="dmg">${opts.dmg}</div>` : ''}
@@ -182,7 +218,7 @@ function backHtml(): string {
   return `<div class="card back" title="hidden card"></div>`;
 }
 
-function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean } = {}): string {
+function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; inert?: boolean } = {}): string {
   const [p, t] = q().effStats(u);
   const badges: { t: string; mod?: boolean; ctr?: boolean }[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
   if (u.counters) {
@@ -204,10 +240,11 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean } =
     : `${p}/${t}`;
   return cardHtml(u.card, {
     stats, dmg: u.damage ? `−${u.damage}` : '', badges,
-    candidate: isCandidate({ unit: u.id }),
+    candidate: !opts.inert && isCandidate({ unit: u.id }),
     selected: opts.selected, carrying: ui.carrying === u.id,
     playable: opts.clickable,
-    data: `data-act="unit" data-id="${u.id}" data-previd="${u.id}"`,
+    // inert (B2): absent "sent" units are not targets and take no clicks
+    data: opts.inert ? `data-previd="${u.id}"` : `data-act="unit" data-id="${u.id}" data-previd="${u.id}"`,
   });
 }
 
@@ -244,54 +281,131 @@ function handZoneHtml(p: Seat): string {
   }).join('');
 }
 
-function playerHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
-  const pl = h.state.players[p]!;
+/** what clicking a spell token does during formation building (C1):
+ * 'ride' = toggle bring-along during my attack declare, 'send' = toggle
+ * counterattack-send during my round-1 blocks, null = normal (cast). */
+function tokenToggleMode(t: Entity): 'ride' | 'send' | null {
+  const s = h.state, b = s.battle;
+  if (!b || s.decision) return null;
+  if (NET && t.controller !== NET.seat) return null;
+  if (b.step === 'declare' && t.controller === b.attacker) {
+    const fromRegion = b.round === 1 || b.attackerPool === null ? q().homeRegion(b.attacker) : b.region;
+    if (t.region === fromRegion && (!b.attackerPool || b.attackerPool.includes(t.id))) return 'ride';
+    return null;
+  }
+  if (b.step === 'blocks' && b.round === 1 && t.controller === b.defender) return 'send';
+  return null;
+}
+
+function tokenHtml(t: Entity): string {
+  const riding = ui.spellTokens.includes(t.id);
+  const castable = legalFor(t.controller).some(a => a.type === 'castSpellToken' && a.entityId === t.id);
+  return cardHtml(t.card, {
+    stats: 'X=' + t.x,
+    playable: castable || tokenToggleMode(t) !== null,
+    selected: riding || ui.send.includes(t.id),
+    badges: riding ? [{ t: '⚔ riding', mod: true }] : [],
+    data: `data-act="token" data-id="${t.id}"`,
+  });
+}
+
+/** B1: one REGION panel — every in-play unit/spell token standing in this
+ * region (owner's first, then invaders marked), with the region owner's
+ * identity row attached. Absent ("sent") units sit in their own strip (B2). */
+function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
+  const s = h.state;
+  const pl = s.players[p]!;
   const legal = legalFor(p);
   const acting = legal.length > 0;
   const e = q();
+  const region = e.homeRegion(p);
+  const b = s.battle;
   const inFormation = new Set<EntityId>();
-  const b = h.state.battle;
   if (b) {
     for (const col of b.columns) col.forEach(id => inFormation.add(id));
     for (const col of Object.values(b.blocks)) col.forEach(id => inFormation.add(id));
   }
   for (const col of ui.columns) col.forEach(id => inFormation.add(id));
-  const units = Object.values(h.state.entities)
-    .filter(en => en.kind === 'unit' && en.controller === p && !inFormation.has(en.id));
-  const tokens = e.tokensOf(p);
-  const canDeclareHere = !!b && ((b.step === 'declare' && b.attacker === p) || (b.step === 'blocks' && b.defender === p))
-    && (!NET || p === NET.seat);   // in network mode I only build MY own formations
+  ui.send.forEach(id => inFormation.add(id));
 
-  // opponent's hidden hand: a compact stack of mini-backs, not a full row
+  const here = Object.values(s.entities).filter(en =>
+    (en.kind === 'unit' || en.kind === 'spellToken') && !en.absent &&
+    en.region === region && !inFormation.has(en.id));
+  const canClick = (u: Entity): boolean => !!b && (!NET || u.controller === NET.seat) &&
+    ((b.step === 'declare' && u.controller === b.attacker) ||
+      (b.step === 'blocks' && u.controller === b.defender));
+  const entHtml = (en: Entity): string => en.kind === 'spellToken'
+    ? tokenHtml(en)
+    : unitHtml(en, { clickable: canClick(en) });
+  const ownHere = here.filter(en => en.controller === p).map(entHtml).join('');
+  const invaders = here.filter(en => en.controller !== p);
+  const invaderHtml = invaders.length
+    ? `<div class="invaders"><div class="zonelabel invaderlabel">⚔ Invaders — ${esc(s.players[invaders[0]!.controller]!.name)}'s units standing here</div>
+        <div class="zone">${invaders.map(entHtml).join('')}</div></div>`
+    : '';
+
+  // B2: counterattackers in transit — out of the region rows, inert
+  const sent = Object.values(s.entities).filter(en =>
+    (en.kind === 'unit' || en.kind === 'spellToken') && en.controller === p && en.absent);
+  const sentStrip = sent.length
+    ? `<div class="sentstrip"><div class="zonelabel">counterattacking — arrives next round</div>
+        <div class="zone">${sent.map(en => en.kind === 'spellToken'
+          ? cardHtml(en.card, { stats: 'X=' + en.x })
+          : unitHtml(en, { inert: true })).join('')}</div></div>`
+    : '';
+
+  // B3: during a battle only state.battle.region is "real"
+  const focus = s.phase === 'battle' && b ? (b.region === region ? 'battlefocus' : 'battledim') : '';
+
+  // B5: opponent's hidden hand lives in their identity row; seen-hand memory strip
   const hiddenHand = pl.hand.length > 0 && pl.hand.every(n => n === HIDDEN_CARD);
-  const handCards = hiddenHand
-    ? `<span class="minihand">${pl.hand.map(() => '<span class="miniback"></span>').join('')}</span>`
-    : handZoneHtml(p);
-  const binItems = pl.bin.map((n, i) => {
-    const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
-    return cardHtml(n, { playable: usable, data: `data-act="bin" data-p="${p}" data-i="${i}"` });
-  }).join('');
+  const miniHand = hiddenHand
+    ? `<span class="minihand" title="hand: ${pl.hand.length} cards">${pl.hand.map(() => '<span class="miniback"></span>').join('')}</span><span style="color:var(--dim)">hand ${pl.hand.length}</span>`
+    : '';
+  const seen = NET && p === other(NET.seat) ? s.seenHand?.[NET.seat] : null;
+  const seenStrip = seen
+    ? `<div class="seenhand"><span class="seenlabel">👁 You saw their hand (turn ${seen.turn}) — memory aid, cards may have been played since:</span>
+        <span class="seencards">${seen.cards.map(n => cardHtml(n)).join('')}</span></div>`
+    : '';
 
-  return `<div class="player ${acting ? '' : 'inactive'}">
+  const handZone = opts.omitHand || hiddenHand ? '' :
+    `<div class="zonelabel">Hand (${pl.hand.length})</div><div class="zone">${handZoneHtml(p)}</div>`;
+
+  return `<div class="player region ${acting ? '' : 'inactive'} ${focus}">
     <div class="pheader">
-      <span class="pname">${esc(pl.name)}${h.state.initiative === p ? ' ⭐' : ''}</span>
+      <span class="pname">${esc(pl.name)}${s.initiative === p ? ' ⭐' : ''}</span>
       <span class="life ${isCandidate({ player: p }) ? 'candidate' : ''}" data-act="player" data-p="${p}">♥ ${pl.life}</span>
       <span class="resrow">${pl.resources.map((r, i) => resHtml(r, p, i)).join('')}
-        <span style="color:var(--dim)">(${e.openMana(p)} mana open${h.state.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
+        <span style="color:var(--dim)">(${e.openMana(p)} mana open${s.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
       </span>
-      <span class="binline">deck ${h.state.sharedDeck.length}${h.state.mode === 'draft' ? ` · pack ${h.state.packs[p]!.length}` : ''} · bin ${pl.bin.length}</span>
+      ${miniHand}
+      <span class="binline">deck ${s.sharedDeck.length}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''} · bin ${pl.bin.length}</span>
     </div>
-    <div class="zonelabel">In play — region of ${esc(pl.name)}</div>
-    <div class="zone">${units.map(u => unitHtml(u, { clickable: canDeclareHere && u.controller === p })).join('')
-    }${tokens.map(t => cardHtml(t.card, {
-      stats: 'X=' + t.x,
-      playable: legal.some(a => a.type === 'castSpellToken' && a.entityId === t.id),
-      data: `data-act="token" data-id="${t.id}"`,
-    })).join('')}</div>
-    ${opts.omitHand ? '' : `<div class="zonelabel">Hand (${pl.hand.length})</div>
-    <div class="zone ${hiddenHand ? 'hiddenhand' : ''}">${handCards}</div>`}
-    ${pl.bin.length ? `<div class="zonelabel">Bin (${pl.bin.length})</div><div class="zone binzone">${binItems}</div>` : ''}
+    ${seenStrip}
+    <div class="zonelabel">Region of ${esc(pl.name)}${focus === 'battlefocus' ? ' — ⚔ the battle is here' : focus === 'battledim' ? ' — outside this battle' : ''}</div>
+    <div class="zone">${ownHere}</div>
+    ${invaderHtml}
+    ${sentStrip}
+    ${handZone}
   </div>`;
+}
+
+/** B4: both bins live in the side column as compact scans (bin-play clicks
+ * keep their data-act attributes) */
+function binsHtml(topSeat: Seat, botSeat: Seat): string {
+  const blocks = [topSeat, botSeat].map(p => {
+    const pl = h.state.players[p]!;
+    if (!pl.bin.length) return '';
+    const legal = legalFor(p);
+    const items = pl.bin.map((n, i) => {
+      const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
+      return cardHtml(n, { playable: usable, data: `data-act="bin" data-p="${p}" data-i="${i}"` });
+    }).join('');
+    return `<details class="binblock" open><summary>${esc(pl.name)}'s bin (${pl.bin.length})</summary>
+      <div class="zone binzone">${items}</div></details>`;
+  }).join('');
+  if (!blocks) return '';
+  return `<div class="binspanel"><h3>Bins</h3>${blocks}</div>`;
 }
 
 function battleHtml(): string {
@@ -303,7 +417,8 @@ function battleHtml(): string {
     const cols = ui.columns.map((col, ci) => colBuilderHtml(col, ci)).join('');
     const extra = colBuilderHtml([], ui.columns.length);
     return `<div class="battle"><h3>⚔ ${esc(A)} declares an attack — round ${b.round}${b.attackerPool ? ' (sent units only)' : ''}</h3>
-      <div style="color:var(--dim);margin-bottom:6px">Click one of your units, then a slot. Front row first, 2 max per column.</div>
+      <div style="color:var(--dim);margin-bottom:6px">Click one of your units, then a slot. Front row first, 2 max per column.
+        Click your spell tokens to bring them along.${ui.spellTokens.length ? ` <b>${ui.spellTokens.length} token${ui.spellTokens.length === 1 ? '' : 's'} riding.</b>` : ''}</div>
       <div class="cols">${cols}${extra}</div></div>`;
   }
 
@@ -325,9 +440,16 @@ function battleHtml(): string {
       ${bottom}
     </div>`;
   }).join('');
+  const sendEntHtml = (id: EntityId): string => {
+    const en = h.state.entities[id];
+    if (!en) return '';
+    return en.kind === 'spellToken'
+      ? cardHtml(en.card, { stats: 'X=' + en.x, selected: true, data: `data-act="token" data-id="${en.id}"` })
+      : unitHtml(en, { selected: true });
+  };
   const sendZone = (b.step === 'blocks' && b.round === 1)
     ? `<div class="col"><div class="collabel">send to counterattack</div>
-        ${ui.send.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!, { selected: true }) : '').join('')}
+        ${ui.send.map(sendEntHtml).join('')}
         <div class="slot ${ui.carrying ? 'open' : ''}" data-act="sendslot">send</div></div>`
     : '';
   const stepLabel: Record<string, string> = {
@@ -369,20 +491,33 @@ function promptHtml(): string {
   const dec = s.decision;
   if (dec) {
     const who = esc(s.players[dec.seat]!.name);
+    // A2: options that ARE cards (hand looks, deck tops, bin picks) render as
+    // clickable scans; the rest stay ordinary buttons after them
+    const isRef = (v: unknown): boolean => !!v && typeof v === 'object' &&
+      ('unit' in (v as object) || 'player' in (v as object) || 'stack' in (v as object));
+    const cardRow = (btn: string, skip?: (i: number) => boolean): string => {
+      const cards = dec.options.map((o, i) => (o.card && !skip?.(i))
+        ? cardHtml(o.card, { playable: true, data: `data-btn="${btn}" data-i="${i}"` }) : '').join('');
+      return cards ? `<div class="deccards">${cards}</div>` : '';
+    };
     if (dec.kind === 'targets') {
+      const hasRefs = dec.options.some(o => isRef(o.value));
+      // A1: every non-board-target option (e.g. "No more targets") gets a real button
+      const btns = dec.options.map((o, i) => (isRef(o.value) || o.card) ? ''
+        : `<button data-btn="decide" data-i="${i}">${esc(o.label)}</button>`).join(' ');
       return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${esc(dec.prompt)} — click a highlighted target${err}</div>`;
+        ${esc(dec.prompt)}${hasRefs ? ' — click a highlighted target' : ''} ${cardRow('decide')} ${btns}${err}</div>`;
     }
     if (dec.kind === 'orderTriggers') {
       const btns = dec.options.map((o, i) => ui.orderPicked.includes(i)
         ? `<span style="color:var(--dim)">${ui.orderPicked.indexOf(i) + 1}. ${esc(o.label)}</span>`
-        : `<button data-btn="orderpick" data-i="${i}">${esc(o.label)}</button>`).join(' ');
+        : o.card ? '' : `<button data-btn="orderpick" data-i="${i}">${esc(o.label)}</button>`).join(' ');
       return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${esc(dec.prompt)} — ${btns}${err}</div>`;
+        ${esc(dec.prompt)} — ${cardRow('orderpick', i => ui.orderPicked.includes(i))} ${btns}${err}</div>`;
     }
-    // payOrDecline / electricPath: plain option buttons
-    const btns = dec.options.map((o, i) => `<button data-btn="decide" data-i="${i}">${esc(o.label)}</button>`).join(' ');
-    return `<div class="promptbar pending"><span class="who">${who}:</span> ${esc(dec.prompt)} ${btns}${err}</div>`;
+    // payOrDecline / electricPath / insertGraft: cards then plain option buttons
+    const btns = dec.options.map((o, i) => o.card ? '' : `<button data-btn="decide" data-i="${i}">${esc(o.label)}</button>`).join(' ');
+    return `<div class="promptbar pending"><span class="who">${who}:</span> ${esc(dec.prompt)} ${cardRow('decide')} ${btns}${err}</div>`;
   }
   // network mode: if the current control belongs to the opponent, show a wait
   // banner instead of the opponent's buttons (their turn is theirs to drive).
@@ -451,6 +586,14 @@ function promptHtml(): string {
         pick a host unit for ${esc(s.players[ui.modding.seat]![ui.modding.from][ui.modding.index] ?? '?')}
         <button data-btn="modcancel">cancel</button>${err}</div>`;
     }
+    if (ui.confirmPass !== null) {
+      // C5: passing away castable spell tokens wants a second look
+      const n = castableTokenCount(s.priority!);
+      return `<div class="promptbar pending"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
+        you still have <b>${n} castable spell token${n === 1 ? '' : 's'}</b> — pass anyway?
+        <button data-btn="passcancel">Go back</button>
+        <button class="primary" data-btn="passconfirm">Pass anyway</button>${err}</div>`;
+    }
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
       you have priority — play a battle card / cast a token / virus-augment, or
       <button class="primary" data-btn="pass">Pass</button>
@@ -477,7 +620,7 @@ function stackHtml(): string {
     const targets = it.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
     return `<div class="stackitem ${it.negated ? 'negated' : ''} ${isCandidate({ stack: it.id }) ? 'candidate' : ''}"
       data-act="stackitem" data-id="${it.id}" ${it.card ? `data-prev="${esc(it.card)}"` : ''}>
-      ${it.card ? `<img class="stackthumb" src="${art(it.card)}" alt="">` : ''}
+      ${it.card ? `<img class="stackthumb" src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
       <div class="stackmain">${esc(it.label)}
       <div class="by">${esc(h.state.players[it.controller]!.name)} · ${it.kind}${it.parts.length > 1 ? ` · ${it.parts.length} grafted parts` : ''}${targets ? ' → ' + targets : ''}</div></div>
     </div>`;
@@ -593,6 +736,9 @@ function render(): void {
   const netTag = NET ? `<span class="init">room ${esc(NET.room)} · you are ${esc(h.state.players[NET.seat]!.name)}</span>
     <span class="presence ${oppOn ? 'on' : 'off'}">● ${oppOn ? 'opponent connected' : 'opponent offline'}</span>` : '';
   const canUndo = NET && (h.state.phase === 'planning' || h.state.phase === 'deploy');
+  if (ui.confirmPass !== null && (h.state.phase !== 'battle' || h.state.priority === null ||
+    castableTokenCount(h.state.priority) === 0)) ui.confirmPass = null;   // stale confirm
+  const autoPref = localStorage.getItem('algoAutopass') === '1';
   $app.innerHTML = `
     <div class="main">
       <div class="topbar">
@@ -600,28 +746,58 @@ function render(): void {
         ${phaseTrackHtml()}
         <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
         ${netTag}
+        ${ui.autopass ? '<button class="passallchip" data-btn="passallstop" title="click to stop passing">auto-passing… ✕ stop</button>' : ''}
+        ${NET ? `<button data-btn="autopasstoggle" class="aptoggle ${autoPref ? 'on' : ''}"
+          title="when ON: automatically pass whenever passing is your only legal action">auto-pass: ${autoPref ? 'on' : 'off'}</button>` : ''}
         ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)" style="margin-left:auto">↶ undo</button>' : ''}
         ${NET ? '' : '<button data-btn="restart" style="margin-left:auto">New game</button>'}
       </div>
       ${shareBannerHtml()}
       ${promptHtml()}
       ${draftPanelHtml()}
-      ${playerHtml(topSeat)}
+      ${regionPanelHtml(topSeat)}
       ${battleHtml()}
-      ${playerHtml(botSeat, { omitHand: !!NET })}
+      ${regionPanelHtml(botSeat, { omitHand: !!NET })}
     </div>
     <div class="side">
       <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
       ${stackHtml()}
+      ${binsHtml(topSeat, botSeat)}
       <div class="logpanel" id="log"><h3>Game log</h3>${logItems}</div>
     </div>
     ${NET ? `<div class="handdock"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})</div>
       <div class="zone">${handZoneHtml(botSeat)}</div></div>` : ''}
-    ${menuHtml()}`;
+    ${menuHtml()}
+    ${pendingReveal ? revealOverlayHtml() : ''}`;
   const log = document.getElementById('log')!;
   log.scrollTop = log.scrollHeight;
   clampMenu();
   maybeAutopass();
+}
+
+// ── deployment reveal interstitial (C2) ───────────────────────────────
+/** longest word-sequence in `msg` that names a known card, if any */
+function findCardName(msg: string): string | null {
+  const words = msg.split(/\s+/).map(w => w.replace(/[.,!:;()'"]/g, ''));
+  for (let len = Math.min(6, words.length); len >= 1; len--) {
+    for (let i = 0; i + len <= words.length; i++) {
+      const cand = words.slice(i, i + len).join(' ');
+      try { getCard(cand); return cand; } catch { /* not a card */ }
+    }
+  }
+  return null;
+}
+
+function revealOverlayHtml(): string {
+  const lines = (pendingReveal ?? []).map(msg => {
+    const name = findCardName(msg);
+    return `<div class="revealline">${name ? cardHtml(name) : '<span class="revealspacer"></span>'}<span>${esc(msg)}</span></div>`;
+  }).join('');
+  return `<div class="overlay"><div class="overlaybox">
+    <h3>Your opponent's deployment</h3>
+    <div class="reveallist">${lines}</div>
+    <button class="primary" data-btn="revealdone">Continue</button>
+  </div></div>`;
 }
 
 /** keep a context menu fully inside the viewport (playtest: the recycle menu
@@ -637,14 +813,47 @@ function clampMenu(): void {
 /** "Pass all": keep passing my priority windows until the battle ends or the
  * stack grows (someone played something — then it's worth a look). */
 function maybeAutopass(): void {
-  if (!NET || !ui.autopass) return;
+  if (!NET) return;
+  if (ui.autopass) {
+    const s = h.state;
+    if (s.phase !== 'battle' || !s.battle) ui.autopass = false;
+    else if (s.stack.length > ui.autopassStack) ui.autopass = false;
+    else {
+      ui.autopassStack = s.stack.length;
+      if (!s.decision && s.priority === NET.seat) {
+        // C5: never skip through castable spell tokens — disarm and let the
+        // player decide (the confirm bar shows on their next manual Pass)
+        if (castableTokenCount(NET.seat) > 0) ui.autopass = false;
+        else if (s.actionCount !== ui.autopassAt) {
+          ui.autopassAt = s.actionCount;
+          NET.do({ type: 'passPriority', seat: NET.seat });
+          return;
+        }
+      }
+    }
+    if (!ui.autopass) renderChipOff();
+  }
+  maybeAutoPassPref();
+}
+
+/** the "auto-passing…" chip was drawn this render but the arm just dropped —
+ * repaint it away without re-entering the full pipeline recursively */
+let chipRepainting = false;
+function renderChipOff(): void {
+  if (chipRepainting) return;
+  chipRepainting = true;
+  try { render(); } finally { chipRepainting = false; }
+}
+
+/** C4: the persistent auto-pass TOGGLE — pass automatically whenever passing
+ * is my ONLY legal action (independent of "Pass all"). */
+function maybeAutoPassPref(): void {
+  if (!NET || localStorage.getItem('algoAutopass') !== '1') return;
   const s = h.state;
-  if (s.phase !== 'battle' || !s.battle) { ui.autopass = false; return; }
-  if (s.stack.length > ui.autopassStack) { ui.autopass = false; return; }
-  ui.autopassStack = s.stack.length;
-  if (s.decision || s.priority !== NET.seat) return;
-  if (s.actionCount === ui.autopassAt) return;   // one send per server state
-  ui.autopassAt = s.actionCount;
+  if (s.decision || s.phase === 'gameover') return;
+  if (!NET.legal.length || !NET.legal.every(a => a.type === 'passPriority')) return;
+  if (s.actionCount === ui.autopassPrefAt) return;   // one send per server state
+  ui.autopassPrefAt = s.actionCount;
   NET.do({ type: 'passPriority', seat: NET.seat });
 }
 
@@ -711,7 +920,7 @@ function previewEntityHtml(id: EntityId): string {
     u.damage ? `${u.damage} damage` : '',
   ].filter(Boolean).join(' · ');
   const attrs = [...e.ownAttrs(u)].join(' · ');
-  return `<img src="${art(u.card)}" alt="">${modStrips}
+  return `<img src="${art(u.card)}" alt="" onerror="this.style.display='none'">${modStrips}
     <div class="prevstats">${bits}</div>
     ${attrs ? `<div class="hint">${esc(attrs)}</div>` : ''}
     <div class="hint">${esc(text)}</div>`;
@@ -729,7 +938,7 @@ document.addEventListener('mouseover', e => {
   const name = t.dataset['prev']!;
   let text = '';
   try { text = getCard(name).text; } catch { /* unknown card */ }
-  prev.innerHTML = `<img src="${art(name)}" alt=""><div class="hint">${esc(text)}</div>`;
+  prev.innerHTML = `<img src="${art(name)}" alt="" onerror="this.style.display='none'"><div class="hint">${esc(text)}</div>`;
 });
 
 document.addEventListener('click', e => {
@@ -790,25 +999,47 @@ function handleButton(btn: HTMLElement): void {
   }
   if (b === 'doneplancancel') ui.confirmDone = null;
   if (b === 'donehaste') act({ type: 'doneHaste', seat: Number(btn.dataset['p']) });
-  if (b === 'pass') act({ type: 'passPriority', seat: s.priority! });
-  if (b === 'passall') {
+  const armPassAll = (): void => {
     ui.autopass = true;
     ui.autopassStack = s.stack.length;
     ui.autopassAt = s.actionCount;
-    act({ type: 'passPriority', seat: s.priority! });
+  };
+  if (b === 'pass' || b === 'passall') {
+    // C5: passing away castable spell tokens during battle wants a confirm
+    if (s.phase === 'battle' && s.priority !== null && castableTokenCount(s.priority) > 0) {
+      ui.confirmPass = b;
+      render();
+      return;
+    }
   }
+  if (b === 'pass') act({ type: 'passPriority', seat: s.priority! });
+  if (b === 'passall') { armPassAll(); act({ type: 'passPriority', seat: s.priority! }); }
+  if (b === 'passcancel') ui.confirmPass = null;
+  if (b === 'passconfirm') {
+    const mode = ui.confirmPass;
+    ui.confirmPass = null;
+    if (mode) {
+      if (mode === 'passall') armPassAll();
+      act({ type: 'passPriority', seat: s.priority! });
+    }
+  }
+  if (b === 'passallstop') ui.autopass = false;
+  if (b === 'autopasstoggle') {
+    localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
+  }
+  if (b === 'revealdone') pendingReveal = null;
   if (b === 'donedeploy') act({ type: 'doneDeploying', seat: Number(btn.dataset['p']) });
-  if (b === 'skipattack') { act({ type: 'declareAttack', seat: s.battle!.attacker, columns: [] }); ui.columns = []; ui.carrying = null; }
+  if (b === 'skipattack') { act({ type: 'declareAttack', seat: s.battle!.attacker, columns: [] }); ui.columns = []; ui.carrying = null; ui.spellTokens = []; }
   if (b === 'confirmattack') {
     const cols = ui.columns.filter(c => c.length);
-    act({ type: 'declareAttack', seat: s.battle!.attacker, columns: cols });
-    if (!uiError) { ui.columns = []; ui.carrying = null; }
+    act({ type: 'declareAttack', seat: s.battle!.attacker, columns: cols, spellTokens: ui.spellTokens.slice() });
+    if (!uiError) { ui.columns = []; ui.carrying = null; ui.spellTokens = []; }
   }
   if (b === 'confirmblocks') {
     const blocks: Record<number, EntityId[]> = {};
     ui.columns.forEach((col, ci) => { if (col && col.length) blocks[ci] = col; });
     act({ type: 'declareBlocks', seat: s.battle!.defender, blocks, send: ui.send });
-    if (!uiError) { ui.columns = []; ui.send = []; ui.carrying = null; }
+    if (!uiError) { ui.columns = []; ui.send = []; ui.carrying = null; ui.spellTokens = []; }
   }
   if (b === 'draftcommit' && ui.draftPack) {
     act({ type: 'draftCommit', seat: Number(btn.dataset['p']) as Seat, packIndices: ui.draftPack.slice() });
@@ -873,7 +1104,19 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
 
   if (kind === 'token') {
     const tok = s.entities[Number(t.dataset['id'])];
-    if (tok && (!NET || tok.controller === NET.seat)) act({ type: 'castSpellToken', seat: tok.controller, entityId: tok.id });
+    if (tok && (!NET || tok.controller === NET.seat)) {
+      // C1: during formation building a click toggles ride-along / send
+      const mode = tokenToggleMode(tok);
+      if (mode === 'ride') {
+        const at = ui.spellTokens.indexOf(tok.id);
+        if (at >= 0) ui.spellTokens.splice(at, 1); else ui.spellTokens.push(tok.id);
+      } else if (mode === 'send') {
+        const at = ui.send.indexOf(tok.id);
+        if (at >= 0) ui.send.splice(at, 1); else ui.send.push(tok.id);
+      } else {
+        act({ type: 'castSpellToken', seat: tok.controller, entityId: tok.id });
+      }
+    }
   }
 
   if (kind === 'unit') {

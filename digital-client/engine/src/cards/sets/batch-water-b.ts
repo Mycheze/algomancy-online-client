@@ -231,7 +231,7 @@ card('Rippleback Skulker', {
         const idx = bin.length === 1 ? 0 : ctx.choose('pick', {
           kind: 'electricPath', seat: ctx.controller,
           prompt: `Rippleback Skulker: put a card from ${g.pname(victim)}'s bin into your hand`,
-          options: bin.map((n, i) => ({ label: n, value: i })),
+          options: bin.map((n, i) => ({ label: n, value: i, card: n })),
         }) as number;
         const [taken] = bin.splice(idx, 1);
         if (taken !== undefined) {
@@ -354,7 +354,7 @@ card('Spell Excavation', {
         return true;
       };
       const opts = bin
-        .map((n, i) => ({ label: n, value: i }))
+        .map((n, i) => ({ label: n, value: i, card: n }))
         .filter(o => playable(bin[o.value]!));
       if (!opts.length) return;
       const pick = ctx.choose('pick', {
@@ -434,9 +434,13 @@ card('Tidal Reversion', {
 // "When a player is dealt combat damage, [Switch1] Create a 2/2 unit." —
 // bb/3 1/4. Fires on 'lifeLost' with why 'combat' (ANY player; the event is
 // region-scoped in battle, R12). Bounded (R9); the 2/2 is the bounded graft.
+// The 2/2 is created in its CONTROLLER'S region, not the battle region
+// (playtest ruling: a token minted while Tidelurker attacks must be home to
+// block the counterattack — created units default to your region unless the
+// card says "in my formation" or similar).
 const makeTwoTwo: EffectDef = {
   run: (g, ctx) => {
-    g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [2, 2] });
+    g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller), { token: true, tokenStats: [2, 2] });
   },
 };
 card('Tidelurker', {
@@ -456,18 +460,30 @@ card('Tidelurker', {
 // attacker, blocking columns as the defender). ⚠ reading: "open spot" = the
 // empty second slot of a column that has exactly one living unit; it does not
 // open brand-new columns. Declining is allowed ("you may").
-const tiderunnerOpenSpots = (g: E, seat: Seat): { col: EntityId[]; label: string }[] => {
+// An "open spot in your formation": any of your formation columns with fewer
+// than 2 living members (join behind the survivor / take over an emptied
+// column), plus — provisional ruling — a fresh column alongside an EXISTING
+// formation. No formation at all (nothing declared) = nothing to join.
+const tiderunnerOpenSpots = (g: E, seat: Seat): { col: EntityId[] | null; label: string }[] => {
   const b = g.s.battle;
   if (!b) return [];
-  const grid = seat === b.attacker ? b.columns
+  const attacker = seat === b.attacker;
+  const grid = attacker ? b.columns
     : seat === b.defender ? Object.values(b.blocks) : [];
-  const out: { col: EntityId[]; label: string }[] = [];
+  const anyAlive = grid.some(col => col.some(id => g.entity(id)));
+  if (!anyAlive) return [];
+  const out: { col: EntityId[] | null; label: string }[] = [];
   grid.forEach((col, i) => {
     const alive = col.filter(id => g.entity(id));
     if (alive.length === 1) {
       out.push({ col, label: `column ${i + 1}, behind ${g.entity(alive[0]!)?.card ?? '?'}` });
+    } else if (alive.length === 0) {
+      out.push({ col, label: `column ${i + 1} (emptied)` });
     }
   });
+  // the attacker's formation can widen by a column; a blocker grid is keyed
+  // to attacking columns, so no new columns there
+  if (attacker) out.push({ col: null, label: 'a new column' });
   return out;
 };
 card('Tiderunner Initiate', {
@@ -493,7 +509,8 @@ card('Tiderunner Initiate', {
         }) as number;
         const s = pick >= 0 ? spots[pick] : undefined;
         if (!s) return;
-        s.col.push(self.id);
+        if (s.col) s.col.push(self.id);
+        else b.columns.push([self.id]);   // a fresh column alongside the formation
         g.ev('info', `Tiderunner Initiate joins the formation (${s.label}).`);
       },
     },
@@ -520,7 +537,7 @@ card('Tides of the Cosmos', {
       let budget = 8;
       for (let k = 0; k < 2; k++) {
         const opts = top
-          .map((n, i) => ({ label: `${n} [${manaOf(n)}]`, value: i }))
+          .map((n, i) => ({ label: `${n} [${manaOf(n)}]`, value: i, card: n }))
           .filter(o => !picks.includes(o.value) && manaOf(top[o.value]!) <= budget);
         if (!opts.length) break;
         const pick = ctx.choose(`pick${k}`, {

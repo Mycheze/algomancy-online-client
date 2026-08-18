@@ -124,6 +124,29 @@ on board cards and the focus viewer), and the focus viewer composes modded
 units — base art + each mod's text-box strip, like the physical slide-under.
 Suite 289 / 0 fail; 1000-game fuzz clean on the new combat pump.
 
+**Playtest round 3 (second live game, 2026-08-18):** Engine — absent
+counterattackers now exist NOWHERE (no statics radiation, no token
+enumeration — R32; the live Towering Colossus case); Tidelurker's 2/2 arrives
+at HOME (R28 ⚠ — created units default to the controller's region; global
+default still to confirm); Tiderunner Initiate's open-spot prompt broadened
+(behind a survivor / emptied column / a NEW attacker column — R29); Recall's
+unconditional 2 life documented as R30; combat sub-step trigger timing is
+R31; seenHand (Bripp looks are remembered until the owner's draft merge);
+DecisionOption.card (hand/deck/bin picks carry the card for real scans).
+Twin Flame's engine was CORRECT — the UI's 'targets' decisions rendered no
+button for non-board options, so "No more targets" was unreachable.
+UI (rebuilt) — region-PHYSICAL board: units render in the region they're in
+(invaders marked, absent units in a dimmed "counterattacking" strip, the
+battle region ringed and the other dimmed); bins moved to the side panel;
+opponent's hand lives in their identity row; seen-hand memory strip; sticky
+topbar; Unit Token uses Generic-Unit.jpg + art() honors printed images with
+an onerror fallback; decision options render as clickable card scans;
+spell-token ride-along UI for attacks and counterattack sends; deployment
+reveal interstitial ("Your opponent's deployment" + Continue); pass-all is
+visible/cancelable; a real auto-pass TOGGLE (passes only when pass is the
+only legal action); end-of-combat guard when castable spell tokens remain.
+Suite 296 / 0 fail.
+
 ## M5 — Beyond v1 — open-ended
 - More elements → full 5-element draft; FFA intents (commit-reveal); teams; spectators;
   replay viewer; puzzle mode (load `puzzles/*.json` as scenarios — free synergy with the

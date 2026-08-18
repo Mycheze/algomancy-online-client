@@ -230,3 +230,65 @@ button:disabled { opacity: .4; cursor: default; }
   border: 1px solid var(--accent); color: var(--accent); border-radius: 3px;
   font-size: 10px; padding: 0 4px; }
 .preview .modtext { border-left: 2px solid var(--accent); padding-left: 6px; margin: 2px 8px; text-align: left; }
+
+/* ── region-board overhaul + playtest round 2 (2026-08-18) ──────────── */
+
+/* B6: the topbar pins to the viewport top */
+.topbar { position: sticky; top: 0; z-index: 45; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+
+/* A3: missing art never shows a broken-image glyph */
+.artfallback { display: none; }
+.card img.noart { display: none; }
+.card img.noart + .artfallback { display: flex; aspect-ratio: 63 / 88; align-items: center; justify-content: center;
+  text-align: center; background: linear-gradient(160deg, #232a36, #14181f); border: 1px solid var(--line);
+  border-radius: 5px; font-size: 10px; padding: 4px; color: var(--text); overflow: hidden; }
+
+/* A2: decision options rendered as real card scans in the promptbar */
+.deccards { display: flex; gap: 6px; flex-wrap: wrap; max-width: 100%; overflow-x: auto; padding: 2px; }
+
+/* B1: invaders (enemy units standing in this region) read as foreign */
+.invaders { border: 1px solid var(--danger); background: rgba(217,84,84,.07); border-radius: 6px;
+  padding: 2px 8px 8px; margin-top: 8px; }
+.invaderlabel { color: var(--danger); }
+.invaders .card img { box-shadow: 0 0 0 1px var(--danger); border-radius: 5px; }
+
+/* B2: absent ("sent") counterattackers in transit — inert, heavily dimmed */
+.sentstrip { border: 1px dashed var(--line); border-radius: 6px; padding: 2px 8px 8px; margin-top: 8px;
+  opacity: .45; filter: grayscale(.6); }
+.sentstrip .card { cursor: default; }
+
+/* B3: during a battle only state.battle.region is "real" */
+.player.battlefocus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.player.battledim { opacity: .55; filter: saturate(.3); }
+
+/* B5: seen-hand memory strip */
+.seenhand { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: rgba(63,143,217,.08);
+  border: 1px dashed var(--water); border-radius: 6px; padding: 4px 8px; margin: 2px 0 6px; }
+.seenlabel { color: var(--water); font-size: 11px; }
+.seencards { display: flex; gap: 4px; flex-wrap: wrap; }
+.seenhand .card { width: 44px; }
+
+/* B4: bins live in the side column as compact scans */
+.binspanel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+.binspanel h3 { margin: 0 0 6px; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; }
+.binblock summary { cursor: pointer; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.binblock .binzone { max-height: 180px; overflow-y: auto; }
+.binspanel .card { width: 48px; }
+
+/* C3: the armed "Pass all" is visible and cancelable */
+.passallchip { background: #33270f; border-color: #7a5e1e; color: var(--accent); font-weight: 700; }
+
+/* C4: persistent auto-pass toggle */
+.aptoggle.on { border-color: var(--glow); color: var(--glow); }
+
+/* C2: deployment reveal interstitial */
+.overlay { position: fixed; inset: 0; z-index: 60; background: rgba(6,8,11,.72);
+  display: flex; align-items: center; justify-content: center; }
+.overlaybox { background: var(--panel); border: 1px solid var(--accent); border-radius: 10px; padding: 18px 22px;
+  width: min(92vw, 560px); max-height: 80vh; display: flex; flex-direction: column; gap: 12px; }
+.overlaybox h3 { margin: 0; color: var(--accent); }
+.reveallist { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.revealline { display: flex; align-items: center; gap: 10px; }
+.revealline .card { width: 54px; flex-shrink: 0; }
+.revealspacer { width: 54px; flex-shrink: 0; }
+.overlaybox > button { align-self: flex-end; }

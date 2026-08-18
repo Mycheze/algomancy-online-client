@@ -104,6 +104,22 @@ function sendUpdate(room: Room, seat: Seat, events: import('../engine/src/types.
   });
 }
 
+/** The deploy-end flush: like sendUpdate, but the opponent's held (hidden)
+ * deploy events travel in a separate `reveal` field so the client can show
+ * a "here is what your opponent did" interstitial before play continues. */
+function sendReveal(room: Room, seat: Seat, revealEvents: import('../engine/src/types.ts').EngineEvent[], tailEvents: import('../engine/src/types.ts').EngineEvent[]): void {
+  const sock = room.sockets[seat] as unknown as WebSocket | null;
+  if (!sock) return;
+  send(sock, {
+    t: 'update',
+    view: viewFor(room.state, seat, room.deploySnapshot),
+    reveal: revealEvents.map(e => redactEvent(e, seat, room.names)),
+    events: [...revealEvents, ...tailEvents].map(e => redactEvent(e, seat, room.names)),
+    legal: legalActions(room.state, seat),
+    peers: peersOf(room),
+  });
+}
+
 /** Push the current authoritative state to one seat as a redacted resync. */
 function pushView(room: Room, seat: Seat): void {
   sendUpdate(room, seat, []);
@@ -207,13 +223,18 @@ wss.on('connection', ws => {
           sendUpdate(room, conn.seat, events);
           sendUpdate(room, (conn.seat === 0 ? 1 : 0) as Seat, []);
         } else if (wasDeploy && !isDeploy) {
-          // deployment just ended: flush each seat's held opponent events —
-          // the "replay" — together with the turn-end events
-          const mine = [...room.heldDeploy[conn.seat], ...events];
-          const theirs = [...room.heldDeploy[(conn.seat === 0 ? 1 : 0) as Seat]];
+          // deployment just ended: flush each seat's held opponent events as
+          // a REVEAL (the client shows them as "what your opponent did" and
+          // waits for acknowledgement) followed by the turn-end events
+          const opp = (conn.seat === 0 ? 1 : 0) as Seat;
+          // the actor's own final events (incl. turn end) are the tail of the
+          // opponent's held queue; split them out so the reveal holds only
+          // the ACTOR's hidden deploy moves
+          const theirsHeld = room.heldDeploy[opp].filter(e => !events.includes(e));
+          const mineHeld = [...room.heldDeploy[conn.seat]];
           clearDeployHold(room);
-          sendUpdate(room, conn.seat, mine);
-          sendUpdate(room, (conn.seat === 0 ? 1 : 0) as Seat, theirs);
+          sendReveal(room, conn.seat, mineHeld, events);
+          sendReveal(room, opp, theirsHeld, events);
         } else {
           broadcastAfterAction(room, events);
         }
