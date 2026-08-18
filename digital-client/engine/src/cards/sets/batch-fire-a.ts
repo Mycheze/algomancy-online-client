@@ -38,10 +38,8 @@
  *    there is no 'Shard' resource kind. Registered as printed (which leaks it
  *    into DECK_LIST as a phantom 2/0 that dies on arrival — flagged for the
  *    maintainer; every element's Resource card shares this).
- *  - Gravitational Correction (X half): there is no cast-time "choose and pay
- *    X" primitive (canPayCard treats X as 0), so item.x is undefined → 0 when
- *    played from hand. The pay-or-retarget machinery is fully implemented and
- *    tested with x set white-box.
+ *  - Gravitational Correction (X half): UN-PARKED (R35) — X is now chosen and
+ *    paid at cast; item.x is set before the spell hits the stack.
  *  - Harbinger of Immolation (augment half): "your spell tokens stay through
  *    regroup" needs a regroup-replacement hook (startRegroup erases all spell
  *    tokens unconditionally). The end-of-turn Fireball trigger is fully done.
@@ -326,11 +324,11 @@ card('Ghord', {
 });
 
 // "Change the targets of target effect unless its controller pays [x]." —
-// rr/X 2/1 {Battle} Temporal Cosmic Spell. R6 payment: the targeted item's
-// controller pays x mid-resolution (offered only if affordable) or the
-// Correction's controller re-picks every declared target from the current
-// legal candidates. All choices happen before any mutation. PARKED half (see
-// header): no cast-time X primitive, so x is 0 unless set white-box.
+// rr/X 2/1 {Battle} Temporal Cosmic Spell. X is chosen and paid AT CAST
+// (R35) and stored on the item. R6 payment: the targeted item's controller
+// pays x mid-resolution (offered only if affordable) or the Correction's
+// controller re-picks every declared target from the current legal
+// candidates. All choices happen before any mutation.
 card('Gravitational Correction', {
   spellEffect: {
     targets: { what: 'stackSpell', prompt: 'Gravitational Correction: change the targets of target effect' },
@@ -419,10 +417,17 @@ card('Hooba-Lin', {
 });
 
 // "[Switch1] /[Sacrifice a unit]: Draw a card." — r/1 {Battle} Occult Spell.
-// The bracketed cost is paid at resolution as a mid-resolution choice (an
-// approximation: strictly a cost would be paid before responses). Shares the
-// sacrifice-to-draw machinery with Bloodwind Revenant; bounded graft (R9).
-const immolateEffect = sacrificeToDraw('Immolate');
+// The bracketed sacrifice is a CAST COST (R35): chosen and paid before the
+// spell reaches the stack — no unit, no cast. Grafted, the rider's cost is
+// paid (or declined) when the composite collects its cast-time decisions,
+// exactly where graft targeting happens. Bounded graft ([Switch1], R9).
+const immolateEffect: EffectDef = {
+  castCost: { kind: 'sacrificeUnit' },
+  run: (g, ctx) => {
+    if (!ctx.costPaid?.sacrificed) return;   // rider declined / unpayable
+    g.draw(ctx.controller, 1);
+  },
+};
 card('Immolate', {
   spellEffect: immolateEffect,
   graftEffect: { bounded: true, effect: immolateEffect },

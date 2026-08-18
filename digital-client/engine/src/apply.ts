@@ -167,6 +167,9 @@ function doDraftCommit(e: E, seat: Seat, packIndices: number[]): void {
   }
   e.s.packs[seat] = packIndices.map(i => pile[i]!);
   p.hand = pile.filter((_, i) => !seen.has(i));
+  // pack identity bookkeeping (additive): one more merge committed on this pack
+  const meta = e.s.packMeta?.[seat];
+  if (meta) meta.commits++;
   // this hand just mixed with a pack — anything the opponent SAW of it is stale
   e.s.seenHand[other(seat)] = null;
   e.s.draftDone[seat] = true;
@@ -245,10 +248,15 @@ function doDoneHaste(e: E, seat: Seat): void {
 
 function timingAllowsDeploy(c: CardDef): boolean { return c.timing === 'deploy' || c.timing === 'haste'; }
 
-/** targeted casts need at least one candidate up front */
+/** targeted casts need at least one candidate up front; a spell with a
+ * bracketed cast cost (R35) needs the cost to be payable — the cost is part
+ * of casting, so with no unit to sacrifice the cast is ILLEGAL */
 function castable(e: E, c: CardDef, region: number, seat: Seat): boolean {
-  if (!c.spellEffect?.targets) return true;
-  return e.targetCandidates(c.spellEffect.targets, region, undefined, seat).length > 0;
+  const eff = c.spellEffect;
+  if (!eff) return true;
+  if (eff.castCost?.kind === 'sacrificeUnit' && e.unitsOf(seat, region).length === 0) return false;
+  if (eff.targets && e.targetCandidates(eff.targets, region, undefined, seat).length === 0) return false;
+  return true;
 }
 
 /** the [Battle] Ambush alternative cost: <mana> with <pips> affinity */
@@ -620,8 +628,18 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
 
   if (sus.type === 'cast') {
     e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
-    const val = dec.options[choice]!.value as TargetRef | { doneTargets: true };
-    if (typeof val === 'object' && val !== null && 'doneTargets' in val) {
+    const val = dec.options[choice]!.value;
+    if (sus.stage === 'x') {
+      // cast-time X (R35): store it, pay it — fixed before anyone responds
+      const x = val as number;
+      sus.item.x = x;
+      sus.item.label = `${sus.item.card} (X=${x})`;
+      e.payMana(sus.item.controller, x);
+      e.ev('info', `${e.pname(seat)} chooses X = ${x} for ${sus.item.card} and pays it.`);
+    } else if (sus.stage === 'cost') {
+      // cast-time bracketed cost (R35): paid now, before the stack push
+      e.payCastCost(sus.item, sus.partIndex, val);
+    } else if (typeof val === 'object' && val !== null && 'doneTargets' in val) {
       sus.item.parts[sus.partIndex]!.targetsDone = true;
     } else {
       sus.item.parts[sus.partIndex]!.targets.push(val as TargetRef);
@@ -673,6 +691,15 @@ export function forcedAction(state: GameState): Action | null {
     const eligible = e.unitsOf(b.attacker, from)
       .filter(u => !b.attackerPool || b.attackerPool.includes(u.id));
     if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };
+    // round-2 counterattack with EXACTLY one sent unit and no sent spell
+    // token that could ride along: the only sensible formation is that unit
+    // alone — auto-declare it (the player already committed it at block time)
+    if (b.round === 2 && b.attackerPool !== null && eligible.length === 1) {
+      const ridableTokens = e.tokensOf(b.attacker, from).filter(t => b.attackerPool!.includes(t.id));
+      if (!ridableTokens.length) {
+        return { type: 'declareAttack', seat: b.attacker, columns: [[eligible[0]!.id]] };
+      }
+    }
   }
   if (b.step === 'blocks' && !e.unitsOf(b.defender, b.region).length) {
     return { type: 'declareBlocks', seat: b.defender, blocks: {} };

@@ -220,23 +220,15 @@ card('Rousing Spirit', {
 });
 
 // "[Switch] /[Sacrifice a unit]: I deal 4 damage to any target." — r/1
-// {Battle} Occult Spell. ⚠ The sacrifice is printed as a COST; the DSL has no
-// sacrifice-cost slot for spells, so it is paid mid-resolution (R6-style):
-// the controller picks one of their units in the region, it is sacrificed,
-// then the 4 damage lands. No unit to sacrifice → the effect does nothing.
-// Unbounded graft ([Switch]) — the grafted copy demands the same sacrifice.
+// {Battle} Occult Spell. The sacrifice is a CAST COST (R35): chosen and paid
+// before the spell reaches the stack — no unit, no cast. Unbounded graft
+// ([Switch]) — the grafted rider's cost is paid (or declined) when the
+// composite collects its cast-time decisions.
 const burstEffect: EffectDef = {
+  castCost: { kind: 'sacrificeUnit' },
   targets: { what: 'any', prompt: 'Sacrificial Burst deals 4 damage to any target' },
   run: (g, ctx) => {
-    const mine = g.unitsOf(ctx.controller, ctx.region);
-    if (!mine.length) return;                       // cannot pay the sacrifice
-    const sacId = mine.length === 1 ? mine[0]!.id : ctx.choose('sac', {
-      kind: 'payOrDecline', seat: ctx.controller,
-      prompt: 'Sacrificial Burst: sacrifice which unit?',
-      options: mine.map(u => ({ label: u.card, value: u.id })),
-    }) as EntityId;
-    const sac = g.entity(sacId);
-    if (sac) g.destroy(sac, 'is sacrificed');
+    if (!ctx.costPaid?.sacrificed) return;          // rider declined / unpayable
     g.dealEffectDamage(ctx, ctx.targets[0]!, 4);
   },
 };
@@ -461,26 +453,15 @@ card('Voltwrath Behemoth', {
   }],
 });
 
-// "I deal X damage to any target." — rr/X {Battle} Infernal Spell. ⚠ The
-// engine has no play-time X selection (canPayCard treats 'X' as 0 mana), so X
-// is chosen AND paid mid-resolution: any amount up to the controller's open
-// mana, expended on the spot (R6-style). Responses thus happen before X is
-// fixed — flagged as an engine call.
+// "I deal X damage to any target." — rr/X {Battle} Infernal Spell. X is
+// chosen AND paid AT CAST (R35): the caster picks an affordable X before the
+// spell reaches the stack, it is stored on the item, and responses happen
+// with X already fixed (the playtest "paid 0" confusion is impossible now).
 card('Wildfire', {
   spellEffect: {
     targets: { what: 'any', prompt: 'Wildfire deals X damage to any target' },
     run: (g, ctx) => {
-      let x = ctx.x;
-      if (x === undefined) {
-        const max = g.openMana(ctx.controller);
-        x = ctx.choose('x', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Wildfire: choose X (paid now)',
-          options: Array.from({ length: max + 1 }, (_, i) => ({ label: `X = ${i}`, value: i })),
-        }) as number;
-        g.payMana(ctx.controller, x);
-      }
-      g.dealEffectDamage(ctx, ctx.targets[0]!, x);
+      g.dealEffectDamage(ctx, ctx.targets[0]!, ctx.x ?? 0);
     },
   },
 });

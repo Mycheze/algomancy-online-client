@@ -48,6 +48,9 @@ export interface EffectCtx {
   region: number;
   targets: ResolvedTarget[];
   x?: number;
+  /** receipt of this part's cast-time [cost] payment (R35) — e.g. the unit
+   * sacrificed to cast, with its stats snapshotted at payment time */
+  costPaid?: { sacrificed?: { card: CardName; power: number; defense: number } };
   /** R1: the event snapshot for triggered abilities (conditions were checked at
    * event time; amounts must be computed here, at resolution, from live state) */
   event: EngineEvent | null;
@@ -68,8 +71,21 @@ export interface TargetSpec {
   min?: number;
 }
 
+/** A bracketed additional cost ("[Sacrifice a unit]: …") chosen and PAID AT
+ * CAST, before the item reaches the stack (R35). Extensible: sacrificing a
+ * unit is the only kind so far. */
+export interface CastCost {
+  kind: 'sacrificeUnit';
+}
+
 export interface EffectDef {
   targets?: TargetSpec;
+  /** cast-time additional cost (R35). On a spell: paying is part of casting —
+   * with nothing to pay the cast is illegal. On a graft part joining a
+   * composite: the carrier's controller pays (or declines — the rider is then
+   * skipped) when the composite collects its cast-time decisions, exactly
+   * where graft targeting happens. The receipt lands in ctx.costPaid. */
+  castCost?: CastCost;
   /** R5: if true, all targets invalid at resolution fizzles the whole effect.
    * Default: resolve partially against remaining legal targets. */
   allOrNothing?: boolean;
@@ -117,6 +133,9 @@ export interface StaticMod {
 }
 
 export interface CardBehavior {
+  /** X-cost cards only: the smallest legal X ("X can't be zero" → 1).
+   * Casting requires (and X options start at) this much open mana. */
+  xMin?: number;
   abilities?: Ability[];
   /** continuous stat/attr projections while this card is a unit in play OR
    * an augment mod (text-box [Augment] statics transfer with the card) */
@@ -130,6 +149,13 @@ export interface CardBehavior {
   graftEffect?: { bounded: boolean; effect: EffectDef };
   /** text-box [Augment] abilities that transfer when this card augments */
   augmentText?: Ability[];
+  /** UI-only PURE query (playtest #5): the amount a state-derived X spell
+   * (e.g. Burning Vengeance's "units that died this battle") would use if it
+   * resolved RIGHT NOW for `seat`, with `region` the active battle region.
+   * Never called by the engine, apply(), or any replay-affecting path — the
+   * client shows it as an "X = N right now" badge on hand cards during
+   * battle. null = no meaningful number right now. */
+  xPreview?: (g: E, seat: Seat, region: number) => number | null;
 }
 
 export type CardDef = Printed & CardBehavior;

@@ -203,6 +203,8 @@ const selfAssemble: EffectDef = {
 card('Self-Assembly', {
   spellEffect: selfAssemble,
   graftEffect: { bounded: true, effect: selfAssemble },
+  // UI preview (#5): the Robot's size if it resolved right now
+  xPreview: (g, seat) => g.affinity(seat, 'metal'),
 });
 
 // "[Augment] [one], Remove X +1/+1 counters from me: I deal X damage to

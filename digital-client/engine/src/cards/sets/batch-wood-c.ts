@@ -417,6 +417,8 @@ const vengeance: EffectDef = {
 card('Verdant Vengeance', {
   spellEffect: vengeance,
   graftEffect: { bounded: true, effect: vengeance },
+  // UI preview (#5): the damage it would deal if it resolved right now
+  xPreview: (g, seat, region) => g.unitsOf(seat, region).length,
 });
 
 // "When you put a counter on an enemy, [Switch1] Draw a card." — g/2 1/2

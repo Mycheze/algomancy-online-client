@@ -133,8 +133,13 @@ export interface EffectPart {
   targetsDone?: boolean;
   /** the mod entity this part came from (bounded budget bookkeeping, R9) */
   fromMod?: EntityId;
-  /** skip at resolution (bounded graft effect already used this turn) */
+  /** skip at resolution (bounded graft effect already used this turn, or a
+   * cast-time [cost] that was unpayable / declined — R35) */
   spent?: boolean;
+  /** receipt of the part's cast-time [cost] payment (R35): what was paid,
+   * snapshotted at payment so the resolution can read it (e.g. Volatile
+   * Toxicity's "X is the defense of the sacrificed unit") */
+  costPaid?: { sacrificed?: { card: CardName; power: number; defense: number } };
 }
 
 export interface StackItem {
@@ -187,7 +192,10 @@ export interface Decision {
 /** Why the engine is paused, and how to resume. All serializable data. */
 export type Suspension =
   | {
-      /** collecting targets for a stack-item-under-construction */
+      /** collecting cast-time decisions for a stack-item-under-construction:
+       * choose X (stage 'x'), pay a part's [cost] (stage 'cost'), or — the
+       * default, stage absent — pick a target (R35: X and bracketed costs are
+       * chosen and paid AT CAST, before the item reaches the stack) */
       type: 'cast';
       item: StackItem;
       partIndex: number;
@@ -196,6 +204,7 @@ export type Suspension =
       then: 'push' | 'resolve';
       /** rest of a multi-item cast chain (Burst tokens) */
       moreItems: StackItem[];
+      stage?: 'x' | 'cost';
     }
   | {
       /** ordering simultaneous triggers for one seat (R2) */
@@ -296,6 +305,16 @@ export interface GameState {
    * seat has committed their hand↔pack merge this turn. Cleared (null) once
    * everyone commits and the packs pass. Always null in 'shared'. */
   draftDone: boolean[] | null;
+  /** mode 'draft' (additive; optional so older serialized states still load):
+   * packMeta[seat] = identity of the PHYSICAL pack currently in packs[seat].
+   * Stamped at deal time and travelling with the pack when packs pass.
+   * serial = 1-based deal order across the whole game (generation g of a
+   * 2-player game deals serials 2g-1 and 2g, initiative player first);
+   * originalSize = cards dealt into it; commits = how many hand↔pack merges
+   * have been committed on this pack since it was dealt. */
+  packMeta?: ({ serial: number; originalSize: number; commits: number } | null)[];
+  /** running counter behind packMeta serials (additive) */
+  packSerial?: number;
   /** seenHand[viewer] = the opponent's hand as `viewer` last SAW it (a hand-
    * reveal effect like Bripp), with the turn it happened — honest note-taking
    * so nobody needs pen and paper. Cleared when the owner's hand next mixes

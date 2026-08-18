@@ -30,12 +30,12 @@
  *    resolution against the item's collected targets on the stack (no-op
  *    info line when it doesn't target me). "Nonunit" = kind spell/spellToken
  *    (spellUnits and ambushes excluded).
- *  - Ember of Life: 'damage' events carry no controller, so "one of YOUR
- *    spell effects deals damage" is read as "a spell-kind card's effect
- *    damaged a unit in my region" and attributed to the carrier's controller
- *    (an opponent's spell in the region also fires it). Combat damage never
- *    counts (its event has no source); damage dealt to PLAYERS (lifeLost) is
- *    not counted either. [once] bounds the error to one firing per turn.
+ *  - Ember of Life: FIXED (playtest 2026-08-18) — 'damage' events now carry
+ *    the effect's controller and spell-effect damage to PLAYERS emits a
+ *    damage event too (engine dealEffectDamage), so "one of YOUR spell
+ *    effects deals damage" is exact: my spells only, face hits included.
+ *    Combat damage never counts (its event has no source). The 1/1s spawn
+ *    in the CARRIER's region (R33, refining R28).
  *  - Scrapyard Custodian: 'countersChanged' carries no actor, so "when YOU
  *    put counters on an ally" is read as "counters (either sign) were put on
  *    a unit you control, by anyone". Robots spawning with counters do NOT
@@ -110,6 +110,7 @@ const NONUNIT_SPELL_KINDS = new Set(['spell', 'spellToken']);
 function runSpellCopy(
   g: E, ctx: EffectCtx, cardName: CardName, controller: Seat,
   x: number | undefined, targets: ResolvedTarget[],
+  costPaid?: EffectCtx['costPaid'],
 ): void {
   const def = getCard(cardName).spellEffect;
   if (!def) { g.ev('info', `${ctx.sourceName}: ${cardName} has no spell effect to copy.`); return; }
@@ -120,7 +121,9 @@ function runSpellCopy(
   g.ev('info', `${ctx.sourceName}: ${g.pname(controller)} copies ${cardName}.`);
   def.run(g, {
     controller, sourceName: cardName, sourceId: undefined, region: ctx.region,
-    targets, x, event: null,
+    // a COPY is not cast: its cast cost is not paid again — it inherits the
+    // original's payment receipt (R35), like it inherits the original's X
+    targets, x, costPaid, event: null,
     choose: (key, dec) => ctx.choose(`copy:${key}`, dec),
   });
 }
@@ -144,6 +147,9 @@ const buildRobot: EffectDef = {
 card('Colossal Construction', {
   spellEffect: buildRobot,
   graftEffect: { bounded: true, effect: buildRobot },
+  // UI preview (#5): the Robot's size if it resolved right now
+  xPreview: (g, seat, region) =>
+    g.unitsOf(seat, region).reduce((m, u) => Math.max(m, g.effStats(u)[1]), 0),
 });
 
 // "Augment target unit and all of its mods onto another target unit. (The
@@ -326,7 +332,7 @@ card('Earthbound Replicator', {
           g.ev('info', `Earthbound Replicator: ${name} does not target me (or already left the stack) — no copy.`);
           return;
         }
-        runSpellCopy(g, ctx, name, seat, it.x, [self]);
+        runSpellCopy(g, ctx, name, seat, it.x, [self], it.parts[0]?.costPaid);
       },
     },
   }],
@@ -409,7 +415,7 @@ card('Maelstrom Charger', {
           }
         }
         g.destroy(self, 'is sacrificed');
-        runSpellCopy(g, ctx, name, seat, it.x, targets);
+        runSpellCopy(g, ctx, name, seat, it.x, targets, it.parts[0]?.costPaid);
       },
     },
   }],
@@ -547,16 +553,19 @@ card('Soulforger', {
 
 // "[Augment][once] When one of your spell effects deals damage, create that
 // many 1/1 units." — rg/4 2/2 Plant Elemental Unit. Text-box [Augment].
-// ⚠ header: the damage event carries no controller — any spell-kind card's
-// effect damage to a unit in my region fires it, attributed to the carrier's
-// controller; combat damage and player damage never count. "That many" =
-// the event's amount (one event per damaged unit; [once] takes the first).
-// Created UNITS spawn in the controller's HOME region (R28).
+// Damage events now carry the effect's CONTROLLER (dealEffectDamage), so
+// "one of YOUR spell effects" = the event's controller is my controller —
+// an opponent's spell never fires me. Spell-effect damage to a PLAYER also
+// emits a damage event (face hits count; "deals damage" is unqualified);
+// combat damage never counts (no source on the event). "That many" = the
+// event's amount (one event per damaged victim; [once] takes the first).
+// Created UNITS spawn in the CARRIER's region (R33, refining R28).
 card('Ember of Life', {
   augmentText: [{
     type: 'triggered', events: ['damage'], bounded: true,   // [once]
-    label: 'create that many 1/1 units (a spell effect dealt damage)',
+    label: 'create that many 1/1 units (one of your spell effects dealt damage)',
     when: (g, self, ev) => {
+      if (ev.data?.controller !== self.controller) return false;   // "one of YOUR spell effects"
       const src = ev.data?.source;
       if (typeof src !== 'string') return false;   // combat damage has no source
       try {
@@ -568,7 +577,7 @@ card('Ember of Life', {
       run: (g, ctx) => {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
         for (let i = 0; i < n; i++) {
-          g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller),
+          g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
             { token: true, tokenStats: [1, 1] });
         }
       },

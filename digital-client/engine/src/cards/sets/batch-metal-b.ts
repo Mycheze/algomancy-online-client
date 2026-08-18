@@ -278,23 +278,18 @@ card('Invasive Reassignment', {
 });
 
 // "[Switch1] /[Sacrifice a unit]: Each opponent sacrifices a unit." — m/1
-// {Battle} Technology Spell. The slash cost is the caster's own sacrifice:
-// no unit of yours → the cost cannot be paid, nothing happens. "Each
+// {Battle} Technology Spell. The slash cost is a CAST COST (R35): the
+// caster's sacrifice is chosen and paid before the spell reaches the stack —
+// no unit of yours IN THE REGION, no cast (R35 scopes cast costs to the
+// item's region, superseding this batch's old any-region note). "Each
 // opponent" is region-scoped (R25): opponents present in the effect's region
-// sacrifice one of their units THERE (none there → nothing for them). The
-// caster's own sacrifice may come from any of their units (a cost, not
-// region-bound — header note). Bounded graft ([Switch1], R9).
+// sacrifice one of their units THERE (none there → nothing for them).
+// Bounded graft ([Switch1], R9) — the rider pays (or declines) at composite
+// cast time.
 const linkedExtinction: EffectDef = {
+  castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
-    const mine = g.unitsOf(ctx.controller);
-    if (!mine.length) { g.ev('info', 'Linked Extinction: no unit to sacrifice — the cost cannot be paid.'); return; }
-    const myId = mine.length === 1 ? mine[0]!.id : ctx.choose('leCost', {
-      kind: 'payOrDecline', seat: ctx.controller,
-      prompt: 'Linked Extinction: sacrifice a unit (the cost)',
-      options: mine.map(u => ({ label: u.card, value: u.id, card: u.card })),
-    }) as EntityId;
-    const my = g.entity(myId);
-    if (my) g.destroy(my, 'is sacrificed');
+    if (!ctx.costPaid?.sacrificed) return;   // rider declined / unpayable
     for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
       if (seat === ctx.controller) continue;
       const units = g.unitsOf(seat, ctx.region);

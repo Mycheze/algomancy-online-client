@@ -256,10 +256,11 @@ test('Frosted Denial: controller cannot pay X → the effect is negated', () => 
   pick(h, { unit: tok });
   const owId = h.state.stack[0]!.id;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Frosted Denial') });
+  assert.equal(h.state.decision!.seat, A, 'caster picks X at cast (R35)');
+  assert.equal(h.state.decision!.options[0]!.label, 'X = 1', "X can't be zero (xMin 1)");
+  pick(h, 1);                                               // X = 1, paid at cast
   pick(h, { stack: owId });
-  pass(h); pass(h);                                         // resolve Frosted Denial
-  assert.equal(h.state.decision!.seat, A, 'caster picks X');
-  pick(h, 1);                                               // X = 1; D has 0 open → auto-negate
+  pass(h); pass(h);                                         // resolve; D has 0 open → auto-negate
   assert.equal(h.state.decision, null, 'no pay decision when the opponent cannot pay');
   pass(h); pass(h);                                         // negated Overwhelm resolves → bin
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
@@ -284,10 +285,10 @@ test('Frosted Denial: controller pays X → the effect survives and you draw', (
   pick(h, { unit: whale });
   const owId = h.state.stack[0]!.id;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Frosted Denial') });
+  pick(h, 2);                                               // A chooses X = 2 at cast (R35), paid now
   pick(h, { stack: owId });
   const aHand = h.state.players[A]!.hand.length;
   pass(h); pass(h);                                         // resolve Frosted Denial
-  pick(h, 2);                                               // A chooses X = 2
   assert.equal(h.state.decision!.seat, D, 'controller may pay');
   pick(h, 1);                                               // D pays 2
   assert.equal(h.state.players[A]!.hand.length, aHand + 1, 'they paid → you draw');

@@ -164,8 +164,8 @@ test('Biomass Devourer: pay [two] to erase a dead nontoken unit and grow', () =>
   pass(h); pass(h);                                         // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blk] } });
   pass(h); pass(h);                                         // combat: both 1/1s die → two triggers (R31)
-  assert.equal(h.state.decision!.kind, 'orderTriggers');
-  h.do({ type: 'decide', seat: A, choice: [0, 1] });        // A's own token's death first
+  // R34: the two triggers are IDENTICAL (same card/ability/label) — no
+  // ordering decision; they enqueue in event order (A's own token's death first)
   assert.equal(h.state.decision!.kind, 'payOrDecline');
   pick(h, 1);                                               // pay 2 → erase it from A's bin
   // the second trigger (the blocker's death) auto-declined: no mana left
@@ -452,8 +452,9 @@ test('Evolutionary Experiment: +2 counters when applied as a mod and on every la
   assert.equal(ent(h, host)!.counters, 2, 'its own application counts as "applied as a mod"');
   assert.deepEqual(effStats(h, host), [3, 3]);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Evolutionary Experiment'), hostId: host });
-  assert.equal(h.state.decision!.kind, 'orderTriggers', 'both donated texts fire on the second mod');
-  h.do({ type: 'decide', seat: A, choice: [0, 1] });
+  // R34: both donated texts fire on the second mod, but they are IDENTICAL
+  // (same card/ability/label) — no ordering decision, both resolve in order
+  assert.equal(h.state.decision, null, 'identical triggers skip the ordering decision (R34)');
   assert.equal(ent(h, host)!.counters, 6, '2 + (2 from each of the two mods)');
   assert.deepEqual(effStats(h, host), [7, 7]);
 });

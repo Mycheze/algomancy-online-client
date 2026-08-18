@@ -238,15 +238,19 @@ test('Linked Extinction: you sacrifice a unit; each opponent here sacrifices one
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[a1]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Linked Extinction') });
-  pass(h); pass(h);                                         // resolve → the caster's cost pick
-  assert.equal(h.state.decision!.seat, A, 'the caster picks the sacrifice cost first');
-  pick(h, a2);                                              // pay with the home Slimebeast
+  // cast cost (R35): paid BEFORE the stack push, region-scoped — the home
+  // Slimebeast (a2) is not in the battle region and cannot pay
+  assert.equal(h.state.decision!.seat, A, 'the caster pays the sacrifice cost at cast');
+  assert.ok(!h.state.decision!.options.some(o => JSON.stringify(o.value) === JSON.stringify({ unit: a2 })),
+    'home units are outside the battle region — not offered as the cost (R35)');
+  pick(h, { unit: a1 });                                    // pay with the attacker
+  assert.ok(!ent(h, a1), 'the cost was paid at cast');
+  pass(h); pass(h);                                         // resolve
   // D has exactly one unit in the region → sacrificed without a choice
-  assert.ok(!ent(h, a2), 'the cost was paid');
   assert.ok(!ent(h, d1), 'the opponent sacrificed too');
-  assert.ok(h.state.players[A]!.bin.includes('Lurking Slimebeast'), 'caster\'s unit → bin');
+  assert.ok(h.state.players[A]!.bin.includes('Unit Token'), 'caster\'s unit → bin');
   assert.ok(h.state.players[D]!.bin.includes('Lurking Slimebeast'), 'opponent\'s unit → bin');
-  assert.ok(ent(h, a1), 'the attacker survived (only one sacrifice each)');
+  assert.ok(ent(h, a2), 'the home unit survived (only one sacrifice each)');
   finishBattle(h);
 });
 

@@ -12,6 +12,7 @@
  *   PORT=9000 node main.ts                 # custom port
  */
 import { createServer } from 'node:http';
+import { appendFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,8 +21,8 @@ import type { Action, Seat } from '../engine/src/types.ts';
 import { forcedAction, legalActions, IllegalAction } from '../engine/src/apply.ts';
 import { viewFor, redactEvent, redactLog } from './view.ts';
 import {
-  applyToRoom, clearDeployHold, getOrCreateRoom, getRoom, renameSeat, restoreRooms,
-  undoActionAt, undoLastAction, type Room, type Socket,
+  applyToRoom, clearDeployHold, clockSnapshot, getOrCreateRoom, getRoom, renameSeat,
+  restoreRooms, settleClock, undoActionAt, undoLastAction, type Room, type Socket,
 } from './rooms.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -70,6 +71,36 @@ const server = createServer(async (req, res) => {
   if (path === '/api/new') {
     res.writeHead(200, { 'content-type': 'application/json' });
     return res.end(JSON.stringify({ code: freshRoomCode() }));
+  }
+
+  // playtest feedback: append one JSON line per report to server/issues.jsonl.
+  // actionIndex = the room's action count at report time, so the moment can be
+  // replayed later (replay-room.ts + slicing the action log).
+  if (path === '/api/report' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (c: Buffer) => { body += c; });
+    req.on('end', () => {
+      try {
+        const { room, seat, note } = JSON.parse(body || '{}') as { room?: string; seat?: number; note?: string };
+        const code = String(room ?? '').toUpperCase().trim();
+        const r = getRoom(code);   // unknown room: still log it (actionIndex null)
+        const entry = {
+          ts: new Date().toISOString(),
+          room: code,
+          seat: seat === 0 || seat === 1 ? seat : null,
+          note: String(note ?? '').slice(0, 4000),
+          actionIndex: r ? r.actions.length : null,
+        };
+        appendFileSync(join(HERE, 'issues.jsonl'), JSON.stringify(entry) + '\n');
+        console.log(`[report] ${entry.room || '(no room)'} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'}: ${entry.note}`);
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (err) {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: String(err instanceof Error ? err.message : err) }));
+      }
+    });
+    return;
   }
 
   // right-click card inspector: card info + recorded rulings from the bot
@@ -148,6 +179,7 @@ function sendUpdate(room: Room, seat: Seat, events: import('../engine/src/types.
     ...(events.length ? { events: events.map(e => redactEvent(e, seat, room.names)) } : {}),
     legal: legalActions(room.state, seat),
     peers: peersOf(room),
+    clock: clockSnapshot(room),
   });
 }
 
@@ -164,6 +196,7 @@ function sendReveal(room: Room, seat: Seat, revealEvents: import('../engine/src/
     events: [...revealEvents, ...tailEvents].map(e => redactEvent(e, seat, room.names)),
     legal: legalActions(room.state, seat),
     peers: peersOf(room),
+    clock: clockSnapshot(room),
   });
 }
 
@@ -229,6 +262,7 @@ wss.on('connection', ws => {
       if (name) renameSeat(room, seat, name);
       room.sockets[seat] = ws as unknown as Socket;
       conns.set(ws, { room, seat });
+      settleClock(room);   // a connected seat with pending work goes on the clock
       send(ws, {
         t: 'joined',
         room: code, seat,
@@ -237,6 +271,7 @@ wss.on('connection', ws => {
         legal: legalActions(room.state, seat),
         peers: peersOf(room),
         names: room.names,
+        clock: clockSnapshot(room),
       });
       // let the other seat know a peer arrived (fresh view refreshes presence)
       const otherSeat = (seat === 0 ? 1 : 0) as Seat;
@@ -301,8 +336,16 @@ wss.on('connection', ws => {
       if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
       const room = conn.room;
       const phase = room.state.phase;
-      if (phase !== 'planning' && phase !== 'deploy') {
-        return send(ws, { t: 'error', msg: 'undo only works during planning and deploy' });
+      // A pending PRE-COMMIT cast chain of the requester's own (X / cost /
+      // target stages, R35) is undoable in ANY phase: while their decision
+      // pends nobody else can act, so the log's tail is provably theirs and
+      // splicing it takes nothing away from the opponent. The client chains
+      // one undo per state until the suspension clears (cast-cancel, docs/07).
+      const sus = room.state.suspension, dec = room.state.decision;
+      const castChain = !!dec && !!sus && sus.type === 'cast' && sus.item.kind !== 'triggered'
+        && dec.seat === conn.seat && sus.item.controller === conn.seat;
+      if (phase !== 'planning' && phase !== 'deploy' && !castChain) {
+        return send(ws, { t: 'error', msg: 'undo only works during planning and deploy (or while your own cast is awaiting X, costs or targets)' });
       }
       if (phase === 'deploy') {
         // simultaneous deployment: your last action may not be the last one
@@ -333,6 +376,7 @@ wss.on('connection', ws => {
           log: visibleLog(room, s),   // full log replace: lines were removed
           legal: legalActions(room.state, s),
           peers: peersOf(room),
+          clock: clockSnapshot(room),
         });
       }
       return;
@@ -346,6 +390,7 @@ wss.on('connection', ws => {
     if (!conn) return;
     if (conn.room.sockets[conn.seat] === (ws as unknown as Socket)) {
       conn.room.sockets[conn.seat] = null;
+      settleClock(conn.room);   // a disconnected seat is not billed
     }
     const otherSeat = (conn.seat === 0 ? 1 : 0) as Seat;
     if (conn.room.sockets[otherSeat]) pushView(conn.room, otherSeat);

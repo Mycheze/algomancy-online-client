@@ -53,12 +53,11 @@ test('Animated Spark: each nontoken spell played in battle gives your units +1/+
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[spark], [ally]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Immolate') });
+  pick(h, { unit: ally });                           // cast cost (R35): sacrifice the ally NOW
   // STATIC: the bonus is live the moment the spell is PLAYED (ledger bump) —
   // no trigger, no stack round-trip
   assert.deepEqual(effStats(h, spark), [1, 1], 'Spark itself +1/+0');
-  assert.deepEqual(effStats(h, ally), [3, 1], 'ally +1/+0 per nontoken spell');
-  pass(h); pass(h);                                  // Immolate resolves → choice
-  pick(h, false);                                    // decline the sacrifice
+  pass(h); pass(h);                                  // Immolate resolves → draw
   finishBattle(h);
 });
 
@@ -296,16 +295,16 @@ test('Ghord: sacrificing a unit makes each present opponent sacrifice a nontoken
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[ghord], [fodder]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Immolate') });
-  pass(h); pass(h);                                  // Immolate resolves → choice
-  const handBefore = h.state.players[A]!.hand.length;
-  pick(h, fodder);                                   // A sacrifices → Ghord triggers
+  pick(h, { unit: fodder });                         // cast cost (R35): sacrificed NOW → Ghord triggers
   assert.ok(h.state.players[A]!.bin.includes('Conduit of Pain'), 'sacrificed → bin');
-  assert.equal(h.state.players[A]!.hand.length, handBefore + 1, 'Immolate drew');
-  pass(h); pass(h);                                  // resolve Ghord's trigger
+  pass(h); pass(h);                                  // Ghord's trigger (above Immolate) resolves
   assert.equal(h.state.decision?.seat, D, 'the opponent picks their sacrifice');
   pick(h, whale);
   assert.ok(!ent(h, whale), 'opponent sacrificed a nontoken unit');
   assert.ok(h.state.players[D]!.bin.includes('Good Whale'));
+  const handBefore = h.state.players[A]!.hand.length;
+  pass(h); pass(h);                                  // Immolate resolves → draw
+  assert.equal(h.state.players[A]!.hand.length, handBefore + 1, 'Immolate drew');
   assert.ok(ent(h, ghord), 'Ghord still in play');
   finishBattle(h);
 });
@@ -326,9 +325,8 @@ test('Gravitational Correction: retargets the effect unless its controller pays 
   pick(h, { unit: whale });
   const arcId = h.state.stack.find(i => i.card === 'Luminous Arc')!.id;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Gravitational Correction') });
+  pick(h, 2);                                        // X = 2, chosen and paid AT CAST (R35)
   pick(h, { stack: arcId });
-  // no cast-time X primitive (PARKED half): set X = 2 white-box on the item
-  h.state.stack.find(i => i.card === 'Gravitational Correction')!.x = 2;
   pass(h); pass(h);                                  // resolve the Correction
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, A, "the EFFECT's controller decides (R6)");
@@ -399,11 +397,11 @@ test('Immolate: sacrifice a unit to draw a card', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Immolate') });
-  pass(h); pass(h);                                  // resolve → choice
   const handBefore = h.state.players[A]!.hand.length;
-  pick(h, atk);
-  assert.ok(!ent(h, atk), 'unit sacrificed');
+  pick(h, { unit: atk });                            // cast cost (R35): paid BEFORE the stack push
+  assert.ok(!ent(h, atk), 'unit sacrificed at cast');
   assert.ok(h.state.players[A]!.bin.includes('Conduit of Pain'), 'sacrifice → bin');
+  pass(h); pass(h);                                  // resolve → draw
   assert.ok(h.state.players[A]!.bin.includes('Immolate'), 'the spell → bin');
   assert.equal(h.state.players[A]!.hand.length, handBefore + 1, 'drew a card');
   finishBattle(h);

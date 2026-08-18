@@ -289,6 +289,7 @@ test('Malevolent Machinations: sacrifice X units → negate up to X target effec
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Structural Collapse') });
+  pick(h, { unit: atk });                                     // Collapse's cast cost (R35): paid up front
   const collapseId = h.state.stack.find(i => i.card === 'Structural Collapse')!.id;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Malevolent Machinations') });
   pass(h); pass(h);                                           // resolve Malevolent (top of stack)
@@ -300,7 +301,7 @@ test('Malevolent Machinations: sacrifice X units → negate up to X target effec
   assert.ok(h.log.some(m => m.includes('is negated')), 'the effect was negated');
   pass(h); pass(h);                                           // the negated Collapse resolves
   assert.ok(h.state.players[A]!.bin.includes('Structural Collapse'), 'negated spell → bin');
-  assert.ok(ent(h, atk), 'the negated Collapse sacrificed nothing');
+  assert.ok(!ent(h, atk), 'the Collapse cast cost stays paid (R35) — negation does not refund it');
   finishBattle(h);
 });
 
@@ -398,7 +399,8 @@ test('Ember of Life: [once] a spell effect deals N damage → create N 1/1 units
   assert.ok(!ent(h, a1), 'the Fireball killed the 1/1');
   const minted = unitsOf(h, D).filter(u => u.card === 'Unit Token');
   assert.equal(minted.length, 1, 'one 1/1 created (N = 1)');
-  assert.equal(minted[0]!.region, new E(h.state).homeRegion(D), 'created UNIT arrives home (R28)');
+  assert.equal(minted[0]!.region, unitsOf(h, D).find(u => u.card === 'Ember of Life')!.region,
+    "created UNIT arrives in the carrier's region (R33; here = D's home, where Ember stands)");
   // [once]: a second spell-damage event this turn mints nothing
   pass(h);                                                    // priority → D again
   whiteBox(h, e => { fb2 = e.createSpellToken(D, 'Fireball', 1, h.state.battle!.region).id; });

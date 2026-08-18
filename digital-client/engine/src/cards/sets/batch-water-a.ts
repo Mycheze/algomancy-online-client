@@ -295,12 +295,12 @@ card('Eldritch Reclaimer', {
 
 // "The controller of target enemy effect may pay [x]. If they do, you draw a
 // card. Otherwise, negate that effect. X can't be zero." — b/X {Battle} Ice
-// Spell. R6: the payment is a mid-resolution decision. ⚠ approximation: the
-// engine has no X-at-cast collection for played cards (item.x is only set
-// for spell tokens), so the caster picks X (1..their open mana) and pays it
-// at RESOLUTION; with no open mana X can't be nonzero → no effect. If the
-// target's controller cannot pay X, it is negated without a decision.
+// Spell. X is chosen and paid AT CAST (R35); "X can't be zero" → xMin 1, so
+// the cast is illegal with no open mana. R6: the target's controller's
+// ransom payment stays a mid-resolution decision, skipped (→ negated) when
+// they cannot pay X.
 card('Frosted Denial', {
+  xMin: 1,   // "X can't be zero."
   spellEffect: {
     targets: { what: 'stackSpell', prompt: 'Frosted Denial: target enemy effect (its controller may pay X)' },
     run: (g, ctx) => {
@@ -310,15 +310,8 @@ card('Frosted Denial', {
       if (!item) return;
       if (item.controller === ctx.controller) { g.ev('info', 'Frosted Denial: not an enemy effect — no effect.'); return; }
       const me = ctx.controller;
-      const myOpen = g.openMana(me);
-      if (myOpen < 1) { g.ev('info', "Frosted Denial: X can't be zero and no mana is open — no effect."); return; }
-      const xOpts = [];
-      for (let x = 1; x <= myOpen; x++) xOpts.push({ label: `X = ${x}`, value: x });
-      const x = ctx.choose('fdX', {
-        kind: 'payOrDecline', seat: me,
-        prompt: 'Frosted Denial: choose X (paid now — engine approximation)',
-        options: xOpts,
-      }) as number;
+      const x = ctx.x ?? 0;
+      if (x < 1) { g.ev('info', "Frosted Denial: X can't be zero — no effect."); return; }
       const opp = item.controller;
       let paid = false;
       if (g.openMana(opp) >= x) {
@@ -328,7 +321,6 @@ card('Frosted Denial', {
           options: [{ label: `pay ${x}`, value: 1 }, { label: 'decline', value: 0 }],
         }) as number === 1;
       }
-      g.payMana(me, x);
       if (paid) {
         g.payMana(opp, x);
         g.ev('info', `${g.pname(opp)} pays ${x} — ${item.label} survives.`);
@@ -578,6 +570,8 @@ card('Premonition', {
       glimpse(g, ctx, ctx.controller, x);
     },
   },
+  // UI preview (#5): the Glimpse depth if it resolved right now
+  xPreview: (g, seat) => g.affinity(seat, 'water'),
 });
 
 // "[Switch1] Target unit gains +1/+1 and piercing until regroup." — b/1

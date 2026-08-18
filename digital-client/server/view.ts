@@ -25,14 +25,39 @@ export const HIDDEN_CARD = '__HIDDEN__';
 
 const other = (seat: Seat): Seat => (seat === 0 ? 1 : 0);
 
+/** Draft-mode pack metadata for the pack `seat` is currently looking at
+ * (additive; present in the view only while the draft step is open, i.e.
+ * draftDone !== null — after the packs pass, packs[seat] is next turn's pack
+ * and describing it would mislead). */
+export interface PackInfo {
+  /** 1-based deal serial of this physical pack (which dealt pack this is) */
+  packNumber: number;
+  /** cards dealt into it (10, unless the deck ran short) */
+  originalSize: number;
+  /** cards in it right now (the commit invariant conserves size, so this
+   * normally equals originalSize — kept for the UI and for future rules) */
+  remaining: number;
+  /** hand↔pack merges already committed on this pack since it was dealt —
+   * how picked-over it is (your own commit counts once you've made it) */
+  picksMade: number;
+  /** true = after your current commit this pack never returns to you before
+   * it is recycled. 1v1 pack cycle (see engine.ts startDraftStep/passPacks):
+   * fresh packs on turns 1, 4, 7, … — you hold your own dealt pack on cycle
+   * turn 0, the opponent's on turn 1, your own again on turn 2, then all
+   * packs are recycled. Only cycle turn 0 sees the pack again. */
+  lastLook: boolean;
+}
+
+export type SeatView = GameState & { packInfo?: PackInfo };
+
 /** The redacted GameState that `seat` is allowed to receive.
  *
  * `frozenOpp`: during SIMULTANEOUS deployment, each seat's view of the
  * opponent is served from the deploy-start snapshot — the opponent's live
  * moves stay invisible until both players are done (main.ts then flushes the
  * held events as the reveal). */
-export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | null): GameState {
-  const v = structuredClone(state) as GameState;
+export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | null): SeatView {
+  const v = structuredClone(state) as SeatView;
 
   if (frozenOpp && state.phase === 'deploy') {
     const o = other(seat);
@@ -80,6 +105,23 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
   if (v.decision && v.decision.seat !== seat) {
     v.decision = null;
     v.suspension = null;
+  }
+
+  // draft mode: identify the pack this seat is looking at (additive field —
+  // older clients ignore it). Only while the draft step is running: once the
+  // packs pass, packs[seat] belongs to NEXT turn's look.
+  if (state.mode === 'draft' && state.draftDone !== null) {
+    const meta = state.packMeta?.[seat];
+    if (meta) {
+      const cycle = state.players.length + 1;   // deals on turns 1, 1+cycle, …
+      v.packInfo = {
+        packNumber: meta.serial,
+        originalSize: meta.originalSize,
+        remaining: state.packs[seat]!.length,
+        picksMade: meta.commits,
+        lastLook: (state.turn - 1) % cycle !== 0,
+      };
+    }
   }
 
   return v;

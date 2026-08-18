@@ -4,7 +4,7 @@
  * Both hands are visible: this is the M1 test rig, not the product. */
 import { Harness } from '../src/harness.ts';
 import { forcedAction, legalActions, IllegalAction } from '../src/apply.ts';
-import { getCard } from '../src/cards/dsl.ts';
+import { getCard, graftCauseIndex } from '../src/cards/dsl.ts';
 import { E } from '../src/engine.ts';
 import type { Action, Entity, EntityId, GameState, Seat, TargetRef } from '../src/types.ts';
 
@@ -12,6 +12,12 @@ const ART = '../../../AlgomancyCards/';
 /** placeholder name the server sends for a hidden card (opp hand / deck) — see server/view.ts */
 const HIDDEN_CARD = '__HIDDEN__';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
+
+/** chess-clock snapshot the server attaches to every state broadcast (#6);
+ * absent on an older server → the topbar clocks simply stay hidden.
+ * rx = local Date.now() at receipt (fallback anchor when clocks are skewed). */
+interface ClockSnap { ms: [number, number]; running: [boolean, boolean]; at: number }
+let clockSnap: (ClockSnap & { rx: number }) | null = null;
 
 /** minimal backend contract the UI renders against — Harness (hotseat) or NetBackend (remote) */
 interface Backend { state: GameState; log: string[]; do(a: Action): void; }
@@ -51,7 +57,9 @@ class NetBackend implements Backend {
   private onMsg(m: {
     t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
     events?: { msg: string }[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
+    clock?: ClockSnap;
   }): void {
+    if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };
     if (m.t === 'joined') {
       this.joined = true; this.seat = m.seat!; this.state = m.view!;
       this.log = m.log ?? []; this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
@@ -79,7 +87,7 @@ class NetBackend implements Backend {
         <button data-btn="gohome">home</button></div>`;
       return;
     }
-    if (m.t === 'error') { uiError = m.msg ?? 'error'; render(); return; }
+    if (m.t === 'error') { ui.cancelling = false; uiError = m.msg ?? 'error'; render(); return; }
   }
 }
 
@@ -109,6 +117,17 @@ interface UiState {
   autopassStack: number;
   /** actionCount the auto-pass TOGGLE (C4) last sent a pass for */
   autopassPrefAt: number;
+  /** #1: activateAbility keys that were already legal when Pass-all was armed —
+   * a NEW key appearing (a resolution granted an ability) disarms the chip */
+  autopassSig: string[];
+  /** #2: actionCount the auto-yield-to-triggers pass was last sent for */
+  yieldAt: number;
+  /** #4: a chained cast-cancel is in progress (net: one undo per server state) */
+  cancelling: boolean;
+  /** actionCount the last cancel-chain undo was sent for */
+  cancelAt: number;
+  /** one-shot guard for the round-2 single-counterattacker prefill */
+  prefillFor: string;
   /** "done planning" pressed with dormant resources + activations left: which
    * seat is being asked "are you sure?" */
   confirmDone: Seat | null;
@@ -122,20 +141,19 @@ const savedEls = (): string[] => {
   try { return JSON.parse(localStorage.getItem('algoEls') ?? '') as string[]; }
   catch { return ['fire', 'water', 'earth']; }
 };
-let ui: UiState = {
+const freshUi = (): UiState => ({
   carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
   draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0,
-  autopassPrefAt: -1, confirmDone: null, confirmPass: null, homeEls: savedEls(),
-};
+  autopassPrefAt: -1, autopassSig: [], yieldAt: -1, cancelling: false, cancelAt: -1,
+  prefillFor: '', confirmDone: null, confirmPass: null, homeEls: savedEls(),
+});
+let ui: UiState = freshUi();
 /** deploy-end reveal waiting behind the interstitial (C2) — messages to show */
 let pendingReveal: string[] | null = null;
 const resetUi = () => {
-  ui = {
-    carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
-    draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0,
-    autopassPrefAt: -1, confirmDone: null, confirmPass: null, homeEls: savedEls(),
-  };
+  ui = freshUi();
   pendingReveal = null;
+  snaps = [];
 };
 
 const $app = document.getElementById('app')!;
@@ -153,7 +171,58 @@ const art = (name: string): string => {
 /** the game's REAL icon (element pip, cost circle, marker) as an inline img */
 const elIcon = (name: string): string =>
   `<img class="elicon" src="/Icons/${name}.webp" alt="${name}" onerror="this.style.display='none'">`;
+
+// ── card-text icons (ported from the RAG front-end's token mapping) ────
+/** [..] / {..} keywords that have a real icon (Icons/<name>.webp) */
+const TEXT_ICON: Record<string, string> = {
+  augment: 'augment', switch1: 'bounded_graft', switch: 'graft',
+  virus: 'virus', battle: 'battle', haste: 'haste', once: 'once',
+};
+/** amounts are spelled out on the cards ([one], [x]); three_blue is Lurking
+ * Slimebeast's amount+resource-in-one-word special */
+const COST_WORD: Record<string, string> = {
+  zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5',
+  six: '6', seven: '7', eight: '8', nine: '9', x: 'x', three_blue: '3b',
+};
+/** cost letters → faction icon; 'p' (prismite/colorless) has NO icon — left as text */
+const PIP_EL: Record<string, string> = { r: 'fire', m: 'metal', b: 'water', e: 'earth', g: 'wood' };
+/** a text-line game icon; if the file is missing it degrades to `fallback` */
+const txtIcon = (name: string, fallback: string): string =>
+  `<img class="txticon" src="/Icons/${name}.webp" alt="${fallback}" onerror="this.outerHTML=this.alt">`;
+/** Swap game tokens in card text / prose ([Switch1], {Battle}, [one], [4bb], …)
+ * for the real icons. Escapes FIRST — always feed it RAW text, never pre-escaped
+ * HTML. Unknown [tokens] stay bracketed; unknown {attrs} bare their word;
+ * {/n}/{i}/{/i} formatting tokens become markup. */
+function iconizeText(raw: string): string {
+  return esc(raw).replace(/\[([^\[\]]+)\]|\{([^{}]+)\}/g, (tok, br?: string, bc?: string) => {
+    if (br !== undefined) {
+      const body = br.toLowerCase();
+      const icon = TEXT_ICON[body];
+      if (icon) return txtIcon(icon, tok);          // fallback KEEPS the brackets
+      const cost = COST_WORD[body] ?? (/^[0-9]*[rmbeg]+$/.test(body) ? body : undefined);
+      if (cost !== undefined) {
+        return [...cost].map(c => {
+          const el = PIP_EL[c];
+          return el ? txtIcon(el, c) : txtIcon(`cost_${c}`, c);
+        }).join('');
+      }
+      return tok;                                    // unknown [token]: untouched
+    }
+    const body = bc!.toLowerCase();
+    if (body === '/n') return '<br>';
+    if (body === 'i' || body === 'i1') return '<i>';
+    if (body === '/i') return '</i>';
+    const icon = TEXT_ICON[body];
+    if (icon) return txtIcon(icon, bc!);             // fallback bares the word
+    return bc!;                                      // {Swift} → Swift
+  });
+}
 const q = () => new E(h.state);
+
+/** #4 hotseat undo snapshots: one per local act() call, taken BEFORE the
+ * action — cancelling a cast restores the snapshot from before the chain's
+ * originating action (structuredClone; capped, chains are short) */
+let snaps: { state: GameState; logLen: number; actionsLen: number }[] = [];
 
 function act(a: Action): void {
   if (NET) {
@@ -164,6 +233,8 @@ function act(a: Action): void {
     uiError = '';
     return;
   }
+  snaps.push({ state: structuredClone(h.state), logLen: h.log.length, actionsLen: (h as Harness).actions.length });
+  if (snaps.length > 60) snaps.shift();
   try {
     h.do(a);
     // local mode: drain forced steps (empty boards attack/block by themselves;
@@ -175,9 +246,76 @@ function act(a: Action): void {
     }
     uiError = '';
   } catch (err) {
+    snaps.pop();   // state unchanged — drop the pre-action snapshot
     if (err instanceof IllegalAction) uiError = err.message;
     else throw err;
   }
+}
+
+// ── #4: always-cancelable casting ─────────────────────────────────────
+/** The pending decision belongs to a PRE-COMMIT cast chain of the viewer's
+ * own (X / cast cost / target stages before the item reaches the stack, plus
+ * pre-resolve haste/deploy casts). While it is pending nobody else can act,
+ * so unwinding the chain (the originating play/cast/activate action and the
+ * decide answers so far) takes nothing away from the opponent. Trigger
+ * targeting (kind 'triggered') is mandatory — never cancelable. */
+function cancelableCast(): boolean {
+  const s = h.state;
+  const sus = s.suspension, dec = s.decision;
+  if (!dec || !sus || sus.type !== 'cast') return false;
+  if (sus.item.kind === 'triggered') return false;
+  const seat = NET ? NET.seat : dec.seat;
+  return dec.seat === seat && sus.item.controller === seat;
+}
+/** net mode rewinds via the server undo — the solo phases, plus any pending
+ * pre-commit cast chain of your own (the server verifies the same predicate) */
+const cancelWorksHere = (): boolean => true;
+/** hotseat: the snapshot window still covers the chain's originating action */
+function hotseatCancelIndex(): number {
+  const H = h as Harness;
+  let i = snaps.length - 1;
+  while (i > 0 && H.actions[snaps[i]!.actionsLen]?.type === 'decide') i--;
+  const a = snaps[i] ? H.actions[snaps[i]!.actionsLen] : undefined;
+  return a && a.type !== 'decide' ? i : -1;
+}
+function canCancelNow(): boolean {
+  if (!cancelableCast()) return false;
+  return NET ? cancelWorksHere() : hotseatCancelIndex() >= 0;
+}
+function startCastCancel(): void {
+  if (!canCancelNow()) return;
+  if (!NET) {
+    const i = hotseatCancelIndex();
+    const snap = snaps[i]!;
+    h.state = snap.state;
+    h.log.length = snap.logLen;
+    (h as Harness).actions.length = snap.actionsLen;
+    snaps.length = i;
+    uiError = '';
+    return;
+  }
+  // net: the server undoes ONE of my actions per message — chain them until
+  // the whole pre-commit cast is unwound (maybeCancelChain drives the rest)
+  ui.cancelling = true;
+  ui.cancelAt = h.state.actionCount;
+  NET.undo();
+}
+/** one follow-up undo per received server state while a cast-cancel runs */
+function maybeCancelChain(): void {
+  if (!NET || !ui.cancelling) return;
+  if (!cancelableCast() || !cancelWorksHere()) { ui.cancelling = false; return; }
+  if (h.state.actionCount === ui.cancelAt) return;   // still waiting on the last undo
+  ui.cancelAt = h.state.actionCount;
+  NET.undo();
+}
+/** the ✕ Cancel button for the current pre-commit cast decision, if any */
+function castCancelBtnHtml(): string {
+  if (!cancelableCast()) return '';
+  if (!NET) {
+    return hotseatCancelIndex() >= 0
+      ? `<button data-btn="castcancel" title="take back the whole cast — nothing has resolved yet">✕ Cancel (esc)</button>` : '';
+  }
+  return `<button data-btn="castcancel" title="takes back your own pending cast via the server undo — your opponent cannot have acted while this decision was open">✕ Cancel (esc)</button>`;
 }
 
 // ── decision helpers ──────────────────────────────────────────────────
@@ -188,11 +326,36 @@ function decisionOptionIndex(ref: TargetRef): number {
 }
 const isCandidate = (ref: TargetRef) => decisionOptionIndex(ref) >= 0;
 
+/** #3: when a decision option refers to a LIVE entity, its button/card pings
+ * that unit on the board on hover (data-ping) and feeds the focus preview
+ * (data-previd). Options without a live entity degrade to nothing. */
+function pingAttrs(o: { value: unknown }): string {
+  const v = o.value;
+  let id: EntityId | null = null;
+  if (v !== null && typeof v === 'object' && 'unit' in (v as object)) id = (v as { unit: EntityId }).unit;
+  // electricPath options carry the raw entity id (other kinds use numbers for
+  // non-entity payloads like X amounts — never ping those)
+  else if (typeof v === 'number' && h.state.decision?.kind === 'electricPath') id = v;
+  if (id === null || !h.state.entities[id]) return '';
+  return ` data-ping="${id}" data-previd="${id}"`;
+}
+
 function legalFor(seat: Seat): Action[] {
   // network mode: the server computes and pushes MY legal actions (avoids
   // redaction problems client-side); the opponent's are unknown to me → none.
   if (NET) return seat === NET.seat ? NET.legal : [];
   return legalActions(h.state, seat);
+}
+
+/** hosts the in-progress mod (ui.modding) could legally land on — computed
+ * once per render(); unitHtml highlights them (bin/hand mod affordance) */
+let modHostCache = new Set<EntityId>();
+function moddingHosts(): Set<EntityId> {
+  const m = ui.modding;
+  if (!m) return new Set();
+  return new Set(legalFor(m.seat)
+    .filter(a => a.type === m.mode && (a as { from?: string }).from === m.from && (a as { index?: number }).index === m.index)
+    .map(a => (a as unknown as { hostId: EntityId }).hostId));
 }
 
 /** distinct spell tokens `seat` could cast right now (C5 pass guard) */
@@ -202,17 +365,154 @@ function castableTokenCount(seat: Seat): number {
     .map(a => (a as { entityId: EntityId }).entityId)).size;
 }
 
+/** #1: identity keys of every activateAbility currently legal for `seat` —
+ * Pass-all snapshots these on arming; a key that was NOT in the snapshot
+ * means a resolution granted a new ability, and the chip must disarm. */
+function abilityKeys(seat: Seat): string[] {
+  return legalFor(seat)
+    .filter(a => a.type === 'activateAbility')
+    .map(a => {
+      const aa = a as Extract<Action, { type: 'activateAbility' }>;
+      const via = aa.via === undefined ? 'own' : aa.via === 'augment' ? 'aug' : `mod${aa.via.mod}`;
+      return `${aa.entityId}:${aa.abilityIndex}:${via}`;
+    });
+}
+
+// ── #2: auto-yield to a unit's triggers (MTGO-style) ──────────────────
+/** entity id → card name (display) of units whose triggers I auto-yield to;
+ * persisted per room so a refresh keeps the setting */
+let yieldMap = new Map<EntityId, string>();
+const yieldStoreKey = (): string | null => (NET ? `algoYield:${NET.room}` : null);
+function loadYield(): void {
+  const k = yieldStoreKey();
+  if (!k) return;
+  try { yieldMap = new Map(JSON.parse(localStorage.getItem(k) ?? '[]') as [EntityId, string][]); }
+  catch { yieldMap = new Map(); }
+}
+function saveYield(): void {
+  const k = yieldStoreKey();
+  if (k) localStorage.setItem(k, JSON.stringify([...yieldMap]));
+}
+/** When I hold priority with no pending decision and EVERY unresolved stack
+ * item is a trigger sourced from an auto-yielded unit, pass automatically —
+ * anything else on the stack (spells, other triggers) keeps the window open. */
+function maybeAutoYield(): void {
+  if (!NET || !yieldMap.size) return;
+  const s = h.state;
+  if (s.phase !== 'battle' || s.decision || s.priority !== NET.seat) return;
+  if (!s.stack.length) return;
+  if (!s.stack.every(it => it.kind === 'triggered' && it.sourceId !== undefined && yieldMap.has(it.sourceId))) return;
+  if (s.actionCount === ui.yieldAt) return;   // one send per server state
+  if (!NET.legal.some(a => a.type === 'passPriority')) return;
+  ui.yieldAt = s.actionCount;
+  NET.do({ type: 'passPriority', seat: NET.seat });
+}
+
+// ── #6: chess clocks (display only) ───────────────────────────────────
+/** remaining ms for a seat, extrapolated locally from the last snapshot.
+ * Anchor on the server's settle stamp; if the two clocks disagree wildly
+ * (>5s skew) fall back to receipt time so the display never jumps. */
+function clockDisplayMs(seat: Seat): number {
+  const c = clockSnap!;
+  const anchor = Math.abs(c.rx - c.at) > 5000 ? c.rx : c.at;
+  return Math.max(0, c.ms[seat]! - (c.running[seat] ? Date.now() - anchor : 0));
+}
+function fmtClock(ms: number): string {
+  const t = Math.max(0, Math.ceil(ms / 1000));
+  const hh = Math.floor(t / 3600), mm = Math.floor((t % 3600) / 60), ss = t % 60;
+  const p = (n: number): string => String(n).padStart(2, '0');
+  return hh > 0 ? `${hh}:${p(mm)}:${p(ss)}` : `${mm}:${p(ss)}`;
+}
+function clocksHtml(): string {
+  if (!NET || !clockSnap) return '';
+  const cell = (seat: Seat, who: string): string => {
+    const ms = clockDisplayMs(seat);
+    const cls = `clocktime ${clockSnap!.running[seat] && ms > 0 ? 'run' : ''} ${ms <= 0 ? 'exp' : ''}`;
+    return `<span class="clockcell" title="${esc(h.state.players[seat]!.name)}'s clock (display only)">${who}
+      <span class="${cls}" data-clkseat="${seat}">${fmtClock(ms)}</span></span>`;
+  };
+  return `<span class="clocks" title="chess clocks (display only)">⏱ ${cell(NET.seat, 'you')} · ${cell(other(NET.seat), 'opp')}</span>`;
+}
+/** 1s ticker: patches ONLY the clock time nodes — never a full re-render */
+setInterval(() => {
+  if (!clockSnap || !NET) return;
+  for (const el of document.querySelectorAll('.clocktime[data-clkseat]')) {
+    const seat = Number((el as HTMLElement).dataset['clkseat']) as Seat;
+    const ms = clockDisplayMs(seat);
+    el.textContent = fmtClock(ms);
+    el.classList.toggle('run', !!clockSnap.running[seat] && ms > 0);
+    el.classList.toggle('exp', ms <= 0);
+  }
+}, 1000);
+
+// ── #7: report-issue button ───────────────────────────────────────────
+let reportOpen = false;
+let reportBusy = false;
+/** the note being typed (survives server-push re-renders, like judgeDraft) */
+let reportDraft = '';
+let toastMsg: string | null = null;
+let toastTimer = 0;
+function showToast(msg: string): void {
+  toastMsg = msg;
+  clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => { toastMsg = null; render(); }, 4000);
+}
+function reportOverlayHtml(): string {
+  return `<div class="overlay"><div class="overlaybox reportbox">
+    <h3>🐛 Report an issue</h3>
+    <div class="hint">What happened? The server stores your note with the room's exact action
+      count, so this precise moment can be replayed later.</div>
+    <textarea id="report-note" rows="4" placeholder="what happened?" ${reportBusy ? 'disabled' : ''}></textarea>
+    <div class="judgerow">
+      <button data-btn="reportclose">Cancel (esc)</button>
+      <button class="primary" data-btn="reportsend" ${reportBusy || !reportDraft.trim() ? 'disabled' : ''}>${reportBusy ? 'sending…' : 'Send report'}</button>
+    </div>
+  </div></div>`;
+}
+function sendReport(): void {
+  if (!NET || reportBusy) return;
+  const note = reportDraft.trim();
+  if (!note) return;
+  reportBusy = true;
+  render();
+  fetch('/api/report', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ room: NET.room, seat: NET.seat, note }),
+  }).then(r => r.json()).then((r: { ok?: boolean }) => {
+    if (r.ok) {
+      reportOpen = false;
+      reportDraft = '';
+      showToast('logged — thanks, we can replay this exact moment');
+    } else uiError = 'the report was not accepted';
+  }).catch(() => { uiError = 'could not reach the server to file the report'; })
+    .finally(() => { reportBusy = false; render(); });
+}
+
+/** #5: the value a state-derived X spell would use if it resolved right now
+ * (xPreview is a pure per-card query — see engine/src/cards/dsl.ts) */
+function xPreviewFor(name: string, seat: Seat): number | null {
+  const s = h.state;
+  if (s.phase !== 'battle' || !s.battle) return null;
+  try {
+    const f = getCard(name).xPreview;
+    if (!f) return null;
+    const v = f(q(), seat, s.battle.region);
+    return typeof v === 'number' && Number.isFinite(v) ? v : null;
+  } catch { return null; }
+}
+
 // ── rendering ─────────────────────────────────────────────────────────
 function cardHtml(name: string, opts: {
-  playable?: boolean; candidate?: boolean; selected?: boolean; carrying?: boolean;
-  badges?: { t: string; mod?: boolean; ctr?: boolean }[]; stats?: string; dmg?: string; data?: string;
+  playable?: boolean; candidate?: boolean; selected?: boolean; carrying?: boolean; modhost?: boolean;
+  badges?: { t: string; mod?: boolean; ctr?: boolean; html?: boolean }[]; stats?: string; dmg?: string; data?: string;
 } = {}): string {
   const cls = ['card'];
   if (opts.playable) cls.push('playable');
   if (opts.candidate) cls.push('candidate');
   if (opts.selected) cls.push('selected');
   if (opts.carrying) cls.push('carrying');
-  const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''}">${esc(b.t)}</span>`).join('');
+  if (opts.modhost) cls.push('modhost');
+  const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''}">${b.html ? b.t : esc(b.t)}</span>`).join('');
   return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}">
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
     <div class="artfallback">${esc(name)}</div>
@@ -229,16 +529,21 @@ function backHtml(): string {
 
 function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; inert?: boolean } = {}): string {
   const [p, t] = q().effStats(u);
-  const badges: { t: string; mod?: boolean; ctr?: boolean }[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
+  const badges: { t: string; mod?: boolean; ctr?: boolean; html?: boolean }[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
   if (u.counters) {
     const sign = u.counters > 0 ? '+' : '';
     badges.unshift({ t: `${sign}${u.counters}/${sign}${u.counters}`, ctr: true });
   }
   for (const modId of u.mods) {
     const m = h.state.entities[modId];
-    if (m) badges.push({ t: (m.appliedAs === 'graft' ? '⑂' : '+') + m.card.split(' ')[0], mod: true });
+    if (m) badges.push({
+      t: txtIcon(m.appliedAs === 'graft' ? 'graft' : 'augment', m.appliedAs === 'graft' ? '⇄' : '+') + esc(m.card.split(' ')[0]),
+      mod: true, html: true,
+    });
   }
   if (u.absent) badges.push({ t: 'sent', mod: true });
+  // #2: auto-yield indicator — this unit's triggers get passed automatically
+  if (NET && yieldMap.has(u.id)) badges.push({ t: '⏩ auto-yield', mod: true });
   // base vs effective P/T: when they differ, color the live number and show
   // the printed base underneath it (playtest: base stats matter to the game)
   let base: [number, number] = u.tokenStats ?? [0, 0];
@@ -252,6 +557,7 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     candidate: !opts.inert && isCandidate({ unit: u.id }),
     selected: opts.selected, carrying: ui.carrying === u.id,
     playable: opts.clickable,
+    modhost: !opts.inert && modHostCache.has(u.id),
     // inert (B2): absent "sent" units are not targets and take no clicks
     data: opts.inert ? `data-previd="${u.id}"` : `data-act="unit" data-id="${u.id}" data-previd="${u.id}"`,
   });
@@ -286,7 +592,13 @@ function handZoneHtml(p: Seat): string {
       (a.type === 'augment' && a.from === 'hand' && a.index === i) ||
       (a.type === 'graft' && a.from === 'hand' && a.index === i) ||
       (h.state.phase === 'planning' && a.type === 'recycleForResource' && a.handIndex === i));
-    return cardHtml(n, { playable, data: `data-act="hand" data-p="${p}" data-i="${i}"` });
+    // #5: live X preview during battle for state-derived X spells
+    const xnow = xPreviewFor(n, p);
+    const badges = xnow !== null ? [{ t: `X=${xnow} now`, ctr: true }] : [];
+    return cardHtml(n, {
+      playable, badges,
+      data: `data-act="hand" data-p="${p}" data-i="${i}"${xnow !== null ? ` data-xnow="${xnow}"` : ''}`,
+    });
   }).join('');
 }
 
@@ -313,7 +625,7 @@ function tokenHtml(t: Entity): string {
     stats: 'X=' + t.x,
     playable: castable || tokenToggleMode(t) !== null,
     selected: riding || ui.send.includes(t.id),
-    badges: riding ? [{ t: '⚔ riding', mod: true }] : [],
+    badges: riding ? [{ t: `${txtIcon('battle', '[battle]')} riding`, mod: true, html: true }] : [],
     data: `data-act="token" data-id="${t.id}"`,
   });
 }
@@ -347,10 +659,12 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     ? tokenHtml(en)
     : unitHtml(en, { clickable: canClick(en) });
   const ownHere = here.filter(en => en.controller === p).map(entHtml).join('');
+  // #1: invaders sit as a compact strip at the SIDE of the region's space —
+  // visually subordinate to the owner's formation, not front-and-center
   const invaders = here.filter(en => en.controller !== p);
   const invaderHtml = invaders.length
-    ? `<div class="invaders"><div class="zonelabel invaderlabel">⚔ Invaders — ${esc(s.players[invaders[0]!.controller]!.name)}'s units standing here</div>
-        <div class="zone">${invaders.map(entHtml).join('')}</div></div>`
+    ? `<div class="invaders"><div class="zonelabel invaderlabel">${txtIcon('battle', '[battle]')} invaders — ${esc(s.players[invaders[0]!.controller]!.name)}</div>
+        <div class="zone invaderzone">${invaders.map(entHtml).join('')}</div></div>`
     : '';
 
   // B2: counterattackers in transit — out of the region rows, inert
@@ -381,10 +695,13 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     `<div class="zonelabel">Hand (${pl.hand.length})</div><div class="zone">${handZoneHtml(p)}</div>`;
 
   // the bin lives IN its player's region: a mini stack on the right that
-  // opens a full dialog (bin-play clicks work from the dialog)
-  const binMini = `<div class="regionbin" data-btn="binopen" data-p="${p}" title="open ${esc(pl.name)}'s bin">
+  // opens a full dialog (bin-play clicks work from the dialog).
+  // #4: when bin cards are legally usable as mods right now, say so loudly.
+  const binUsable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin');
+  const binMini = `<div class="regionbin ${binUsable ? 'hasmods' : ''}" data-btn="binopen" data-p="${p}" title="open ${esc(pl.name)}'s bin">
       <div class="zonelabel">bin (${pl.bin.length})</div>
       <div class="regionbinthumbs">${pl.bin.slice(-3).map(n => cardHtml(n)).join('') || '<span class="binempty">empty</span>'}</div>
+      ${binUsable ? `<div class="binmodhint">${txtIcon('augment', '+')}${txtIcon('graft', '[Switch]')} playable as mods</div>` : ''}
     </div>`;
 
   return `<div class="player region ${acting ? '' : 'inactive'} ${focus}">
@@ -400,11 +717,11 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     ${seenStrip}
     <div class="regionrow">
       <div class="regionmain">
-        <div class="zonelabel">Region of ${esc(pl.name)}${focus === 'battlefocus' ? ' — ⚔ the battle is here' : focus === 'battledim' ? ' — outside this battle' : ''}</div>
+        <div class="zonelabel">Region of ${esc(pl.name)}${focus === 'battlefocus' ? ` — ${txtIcon('battle', '[battle]')} the battle is here` : focus === 'battledim' ? ' — outside this battle' : ''}</div>
         <div class="zone">${ownHere}</div>
-        ${invaderHtml}
         ${sentStrip}
       </div>
+      ${invaderHtml}
       ${binMini}
     </div>
     ${handZone}
@@ -419,12 +736,22 @@ function binDialogHtml(): string {
   const p = binView;
   const pl = h.state.players[p]!;
   const legal = legalFor(p);
+  let anyUsable = false;
   const items = pl.bin.map((n, i) => {
-    const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
-    return cardHtml(n, { playable: usable, data: `data-act="bin" data-p="${p}" data-i="${i}"` });
+    // #4: bin cards that can be applied as mods RIGHT NOW carry a badge and glow
+    const canAug = legal.some(a => a.type === 'augment' && a.from === 'bin' && a.index === i);
+    const canGraft = legal.some(a => a.type === 'graft' && a.from === 'bin' && a.index === i);
+    const usable = canAug || canGraft;
+    anyUsable ||= usable;
+    const badge = usable ? [{
+      t: `${canAug ? txtIcon('augment', '+') : ''}${canGraft ? txtIcon('graft', '[Switch]') : ''} usable as mod`,
+      mod: true, html: true,
+    }] : [];
+    return cardHtml(n, { playable: usable, badges: badge, data: `data-act="bin" data-p="${p}" data-i="${i}"` });
   }).join('');
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
     <h3>${esc(pl.name)}'s bin (${pl.bin.length})</h3>
+    ${anyUsable ? `<div class="binmodbanner">${txtIcon('augment', '+')} Glowing cards can be applied to a unit as a mod right now — click one, then pick a host.</div>` : ''}
     <div class="zone binzone bindialog">${items || '<span class="binempty">empty</span>'}</div>
     <button data-btn="binclose">Close</button>
   </div></div>`;
@@ -493,12 +820,12 @@ function helpOverlayHtml(): string {
     <h3>Rules reference</h3>
     <div class="helpscroll">
       <h4>The turn</h4>
-      ${PHASE_GUIDE.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${v}</span></div>`).join('')}
+      ${PHASE_GUIDE.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${iconizeText(v)}</span></div>`).join('')}
       <h4>Keywords</h4>
-      ${KEYWORDS.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${v}</span></div>`).join('')}
+      ${KEYWORDS.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${iconizeText(v)}</span></div>`).join('')}
       <h4>Quick reminders</h4>
-      <div class="helprow"><b>Augment (+)</b><span>Slide under a unit from hand or bin: donates type-line attributes and text-box [Augment] text to the host.</span></div>
-      <div class="helprow"><b>Graft (⇄)</b><span>Insert into a graft-cause unit’s stack: the [Switch] effects join its trigger as one ability. [Switch1] = once per turn per card.</span></div>
+      <div class="helprow"><b>Augment ${txtIcon('augment', '(+)')}</b><span>${iconizeText('Slide under a unit from hand or bin: donates type-line attributes and text-box [Augment] text to the host.')}</span></div>
+      <div class="helprow"><b>Graft ${txtIcon('graft', '(⇄)')}</b><span>${iconizeText('Insert into a graft-cause unit’s stack: the [Switch] effects join its trigger as one ability. [Switch1] = once per turn per card.')}</span></div>
       <div class="helprow"><b>Resources</b><span>Each grants 1 affinity of its element even while expended (dormant ones grant nothing); expend for 1 mana, refresh each turn. Shards: mana only, no affinity.</span></div>
       <div class="helprow"><b>Undo</b><span>Ctrl+Z or the ↶ button — your own last action, during planning and deployment.</span></div>
     </div>
@@ -549,10 +876,11 @@ function inspectorHtml(): string {
       ? inspect.rulings.map(r => `<div class="rulingrow">${esc(r)}</div>`).join('')
       : `<div class="hint">no recorded rulings for this card${inspect.error ? ` (${esc(inspect.error)})` : ''}</div>`;
   return `<div class="overlay mainonly"><div class="overlaybox inspectbox">
-    <h3>${esc(name)} <span class="hint">${esc(type)}</span></h3>
+    <h3>${esc(name)} <span class="hint">${iconizeText(type)}</span></h3>
     <div class="inspectscroll">
       <div class="inspecttop"><img src="${art(name)}" alt="" onerror="this.style.display='none'">
-        <div class="inspecttext">${esc(text)}</div></div>
+        <div class="inspecttext">${iconizeText(text)}</div></div>
+      ${u ? graftComposedHtml(u) : ''}
       <h4>Attributes${u ? ' (current, shared/granted included)' : ' (printed)'}</h4>
       ${attrRows}
       <h4>Rulings</h4>
@@ -608,7 +936,7 @@ function battleHtml(): string {
   if (b.step === 'declare') {
     const cols = ui.columns.map((col, ci) => colBuilderHtml(col, ci)).join('');
     const extra = colBuilderHtml([], ui.columns.length);
-    return `<div class="battle"><h3>⚔ ${esc(A)} declares an attack — round ${b.round}${b.attackerPool ? ' (sent units only)' : ''}</h3>
+    return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} declares an attack — round ${b.round}${b.attackerPool ? ' (sent units only)' : ''}</h3>
       <div style="color:var(--dim);margin-bottom:6px">Click one of your units, then a slot. Front row first, 2 max per column.
         Click your spell tokens to bring them along.${ui.spellTokens.length ? ` <b>${ui.spellTokens.length} token${ui.spellTokens.length === 1 ? '' : 's'} riding.</b>` : ''}</div>
       <div class="cols">${cols}${extra}</div></div>`;
@@ -618,6 +946,9 @@ function battleHtml(): string {
   // (net mode; hotseat keeps attacker-on-top). Default layout has the
   // attacker on top — flip when the viewer IS the attacker.
   const flip = NET ? NET.seat === b.attacker : false;
+  // #2: fronts stay on one shared line — each side lives in a fixed-height
+  // half anchored against the vs line; extra depth grows AWAY from the front
+  // (.bhalf.top is column-reverse, so the FIRST unit — the front — hugs the line)
   const attackCols = b.columns.map((col, ci) => {
     const blockers = b.blocks[ci] ?? [];
     const blockBuild = (b.step === 'blocks') ? blockBuilderHtml(ci) :
@@ -627,9 +958,9 @@ function battleHtml(): string {
     const top = flip ? blkSide : atkSide;
     const bottom = flip ? atkSide : blkSide;
     return `<div class="col"><div class="collabel">column ${ci + 1}</div>
-      ${top}
+      <div class="bhalf top">${top}</div>
       <div class="vs" style="width:100%"></div>
-      ${bottom}
+      <div class="bhalf bot">${bottom}</div>
     </div>`;
   }).join('');
   const sendEntHtml = (id: EntityId): string => {
@@ -648,7 +979,7 @@ function battleHtml(): string {
     attackWindow: 'response window (attack)', blocks: `${esc(D)} declares blocks & counterattackers`,
     blockWindow: 'response window (blocks)', afterWindow: 'after combat',
   };
-  return `<div class="battle"><h3>⚔ ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>
+  return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>
     <div class="cols">${attackCols}${sendZone}</div></div>`;
 }
 
@@ -671,6 +1002,19 @@ function blockBuilderHtml(ci: number): string {
   return front + back;
 }
 
+/** #4: the mod-in-progress banner — spells out card, source zone and mode,
+ * and points at the highlighted legal hosts (modHostCache glows them) */
+function moddingBarHtml(err: string): string {
+  const m = ui.modding!;
+  const card = h.state.players[m.seat]![m.from][m.index] ?? '?';
+  const icon = txtIcon(m.mode === 'graft' ? 'graft' : 'augment', m.mode === 'graft' ? '[Switch]' : '[Augment]');
+  const nHosts = modHostCache.size;
+  return `<div class="promptbar pending"><span class="who">${esc(h.state.players[m.seat]!.name)}:</span>
+    applying <b>${esc(card)}</b> from ${m.from === 'bin' ? 'the bin' : 'hand'} as ${icon} <b>${m.mode}</b>
+    — pick a glowing host unit${nHosts ? ` (${nHosts} legal)` : ''}
+    <button data-btn="modcancel">✕ cancel (esc)</button>${err}</div>`;
+}
+
 function promptHtml(): string {
   const s = h.state;
   const err = uiError ? `<span style="color:var(--bad)"> ✗ ${esc(uiError)}</span>` : '';
@@ -689,27 +1033,27 @@ function promptHtml(): string {
       ('unit' in (v as object) || 'player' in (v as object) || 'stack' in (v as object));
     const cardRow = (btn: string, skip?: (i: number) => boolean): string => {
       const cards = dec.options.map((o, i) => (o.card && !skip?.(i))
-        ? cardHtml(o.card, { playable: true, data: `data-btn="${btn}" data-i="${i}"` }) : '').join('');
+        ? cardHtml(o.card, { playable: true, data: `data-btn="${btn}" data-i="${i}"${pingAttrs(o)}` }) : '').join('');
       return cards ? `<div class="deccards">${cards}</div>` : '';
     };
     if (dec.kind === 'targets') {
       const hasRefs = dec.options.some(o => isRef(o.value));
       // A1: every non-board-target option (e.g. "No more targets") gets a real button
       const btns = dec.options.map((o, i) => (isRef(o.value) || o.card) ? ''
-        : `<button data-btn="decide" data-i="${i}">${esc(o.label)}</button>`).join(' ');
+        : `<button data-btn="decide" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`).join(' ');
       return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${esc(dec.prompt)}${hasRefs ? ' — click a highlighted target' : ''} ${cardRow('decide')} ${btns}${err}</div>`;
+        ${iconizeText(dec.prompt)}${hasRefs ? ' — click a highlighted target' : ''} ${cardRow('decide')} ${btns} ${castCancelBtnHtml()}${err}</div>`;
     }
     if (dec.kind === 'orderTriggers') {
       const btns = dec.options.map((o, i) => ui.orderPicked.includes(i)
-        ? `<span style="color:var(--dim)">${ui.orderPicked.indexOf(i) + 1}. ${esc(o.label)}</span>`
-        : o.card ? '' : `<button data-btn="orderpick" data-i="${i}">${esc(o.label)}</button>`).join(' ');
+        ? `<span style="color:var(--dim)">${ui.orderPicked.indexOf(i) + 1}. ${iconizeText(o.label)}</span>`
+        : o.card ? '' : `<button data-btn="orderpick" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`).join(' ');
       return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${esc(dec.prompt)} — ${cardRow('orderpick', i => ui.orderPicked.includes(i))} ${btns}${err}</div>`;
+        ${iconizeText(dec.prompt)} — ${cardRow('orderpick', i => ui.orderPicked.includes(i))} ${btns}${err}</div>`;
     }
     // payOrDecline / electricPath / insertGraft: cards then plain option buttons
-    const btns = dec.options.map((o, i) => o.card ? '' : `<button data-btn="decide" data-i="${i}">${esc(o.label)}</button>`).join(' ');
-    return `<div class="promptbar pending"><span class="who">${who}:</span> ${esc(dec.prompt)} ${cardRow('decide')} ${btns}${err}</div>`;
+    const btns = dec.options.map((o, i) => o.card ? '' : `<button data-btn="decide" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`).join(' ');
+    return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)} ${cardRow('decide')} ${btns} ${castCancelBtnHtml()}${err}</div>`;
   }
   // network mode: if the current control belongs to the opponent, show a wait
   // banner instead of the opponent's buttons (their turn is theirs to drive).
@@ -733,7 +1077,7 @@ function promptHtml(): string {
   const doneRow = (done: boolean[], btn: string, label: string): string =>
     ([0, 1] as Seat[]).map(p => (done[p] || (NET && p !== NET.seat))
       ? `<span style="color:var(--dim)">${esc(s.players[p]!.name)} ${done[p] ? 'ready ✓' : '…'}</span>`
-      : `<button data-btn="${btn}" data-p="${p}">${esc(s.players[p]!.name)}: ${label}</button>`).join(' ');
+      : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${label} (enter)</button>`).join(' ');
   if (s.phase === 'planning' && s.hasteDone) {
     return `<div class="promptbar"><span class="who">Haste step</span>
       Play haste cards (they resolve immediately). ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
@@ -755,8 +1099,8 @@ function promptHtml(): string {
       return `<div class="promptbar pending"><span class="who">${esc(pl.name)}:</span>
         you still have <b>${pl.activationsLeft} activation${pl.activationsLeft === 1 ? '' : 's'}</b> and
         <b>${dormant} dormant resource${dormant === 1 ? '' : 's'}</b> — activate them this turn?
-        <button data-btn="doneplancancel">Go back</button>
-        <button class="primary" data-btn="doneplanconfirm" data-p="${p}">Really done</button>${err}</div>`;
+        <button data-btn="doneplancancel">Go back (esc)</button>
+        <button class="primary" data-btn="doneplanconfirm" data-p="${p}">Really done (enter)</button>${err}</div>`;
     }
     return `<div class="promptbar"><span class="who">Planning</span>
       Click a hand card to recycle it into a resource; click dormant resources to activate (max 2). ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
@@ -764,41 +1108,37 @@ function promptHtml(): string {
   if (s.phase === 'battle') {
     const b = s.battle!;
     if (b.step === 'declare') {
+      const built = ui.columns.some(c => c.length) || ui.spellTokens.length > 0;
       return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> build your attack
-        <button data-btn="attackall" title="every eligible unit joins, one per column — adjust before confirming">⚔ Attack with everything</button>
-        <button class="primary" data-btn="confirmattack" ${ui.columns.some(c => c.length) ? '' : 'disabled'}>Attack!</button>
-        <button data-btn="skipattack">Don't attack</button>${err}</div>`;
+        <button data-btn="attackall" title="every eligible unit joins, one per column — adjust before confirming">${txtIcon('battle', '[battle]')} Attack with everything</button>
+        <button class="primary" data-btn="confirmattack" ${ui.columns.some(c => c.length) ? '' : 'disabled'}>Attack! (enter)</button>
+        <button data-btn="skipattack">Don't attack</button>
+        ${built ? '<button data-btn="clearform" title="empty the formation being built">✕ Clear (esc)</button>' : ''}${err}</div>`;
     }
     if (b.step === 'blocks') {
+      const built = ui.columns.some(c => c && c.length) || ui.send.length > 0;
       return `<div class="promptbar"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
         assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}
-        <button class="primary" data-btn="confirmblocks">Confirm</button>${err}</div>`;
+        <button class="primary" data-btn="confirmblocks">Confirm (enter)</button>
+        ${built ? '<button data-btn="clearform" title="empty the blocks/send being built">✕ Clear (esc)</button>' : ''}${err}</div>`;
     }
-    if (ui.modding) {
-      return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.modding.seat]!.name)}:</span>
-        pick a host unit for ${esc(s.players[ui.modding.seat]![ui.modding.from][ui.modding.index] ?? '?')}
-        <button data-btn="modcancel">cancel</button>${err}</div>`;
-    }
+    if (ui.modding) return moddingBarHtml(err);
     if (ui.confirmPass !== null) {
       // C5: passing away castable spell tokens wants a second look
       const n = castableTokenCount(s.priority!);
       return `<div class="promptbar pending"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
         you still have <b>${n} castable spell token${n === 1 ? '' : 's'}</b> — pass anyway?
         <button data-btn="passcancel">Go back</button>
-        <button class="primary" data-btn="passconfirm">Pass anyway</button>${err}</div>`;
+        <button class="primary" data-btn="passconfirm">Pass anyway (space)</button>${err}</div>`;
     }
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
       you have priority — play a battle card / cast a token / virus-augment, or
-      <button class="primary" data-btn="pass">Pass</button>
+      <button class="primary" data-btn="pass">Pass (space)</button>
       ${NET ? `<button data-btn="passall" title="keep passing until the battle ends or something new is played">Pass all</button>` : ''}
       <span style="color:var(--dim)">(both pass: ${s.stack.length ? 'resolve top of stack' : `move to ${nextBattleStepName()}`})</span>${err}</div>`;
   }
   if (s.phase === 'deploy') {
-    if (ui.modding) {
-      return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.modding.seat]!.name)}:</span>
-        pick a host unit to ${ui.modding.mode} with ${esc(s.players[ui.modding.seat]![ui.modding.from][ui.modding.index] ?? '?')}
-        <button data-btn="modcancel">cancel</button>${err}</div>`;
-    }
+    if (ui.modding) return moddingBarHtml(err);
     const dd = s.deployDone ?? s.players.map(() => true);
     return `<div class="promptbar"><span class="who">Deployment</span>
       both players deploy at the same time — moves stay hidden until everyone is done.
@@ -814,7 +1154,7 @@ function stackHtml(): string {
     return `<div class="stackitem ${it.negated ? 'negated' : ''} ${isCandidate({ stack: it.id }) ? 'candidate' : ''}"
       data-act="stackitem" data-id="${it.id}" ${it.card ? `data-prev="${esc(it.card)}"` : ''}>
       ${it.card ? `<img class="stackthumb" src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
-      <div class="stackmain">${esc(it.label)}
+      <div class="stackmain">${iconizeText(it.label)}
       <div class="by">${esc(h.state.players[it.controller]!.name)} · ${it.kind}${it.parts.length > 1 ? ` · ${it.parts.length} grafted parts` : ''}${targets ? ' → ' + targets : ''}</div></div>
     </div>`;
   }).join('');
@@ -829,7 +1169,7 @@ function tgtLabel(t: TargetRef): string {
 function menuHtml(): string {
   if (!ui.menu) return '';
   const items = ui.menu.items.map((it, i) =>
-    `<button data-btn="menuitem" data-i="${i}">${it.icon ? elIcon(it.icon) : ''}${esc(it.label)}</button>`).join('');
+    `<button data-btn="menuitem" data-i="${i}">${it.icon ? elIcon(it.icon) : ''}${iconizeText(it.label)}</button>`).join('');
   return `<div class="menu" style="left:${ui.menu.x}px;top:${ui.menu.y}px">${items}<button data-btn="menuclose">cancel</button></div>`;
 }
 
@@ -893,6 +1233,26 @@ function ensureDraftUi(): void {
   }
 }
 
+/** per-seat pack metadata the server adds to draft-mode views (additive —
+ * absent on older servers and in hotseat, so consume defensively) */
+interface PackInfo {
+  packNumber?: number; originalSize?: number; remaining?: number;
+  picksMade?: number; lastLook?: boolean;
+}
+
+/** #5: "Pack #N · pick M (X of Y cards left)" + the last-look warning */
+function packInfoHtml(): string {
+  const pi = (h.state as GameState & { packInfo?: PackInfo }).packInfo;
+  if (!pi || typeof pi !== 'object' || typeof pi.packNumber !== 'number') return '';
+  const pick = typeof pi.picksMade === 'number' ? ` · pick ${pi.picksMade + 1}` : '';
+  const count = typeof pi.remaining === 'number' && typeof pi.originalSize === 'number'
+    ? ` (${pi.remaining} of ${pi.originalSize} cards left)` : '';
+  const last = pi.lastLook === true
+    ? `<div class="lastlook">your <b>last look</b> at this pack — after this commit it never comes back to you; your opponent will see whatever you leave in it</div>`
+    : '';
+  return `<div class="packrow"><span class="packinfo">Pack #${pi.packNumber}${pick}${count}</span>${last}</div>`;
+}
+
 function draftPanelHtml(): string {
   const seat = draftSeat();
   if (seat === null || !ui.draftPack) return '';
@@ -906,10 +1266,11 @@ function draftPanelHtml(): string {
   const packIdx = pile.map((_, i) => i).filter(i => inPack.has(i));
   const ok = packIdx.length === need;
   return `<div class="draftpanel">
+    ${packInfoHtml()}
     <div class="drafthead"><span class="who">${esc(s.players[seat]!.name)} — draft step</span>
       Click cards to move them between hand and pack. Leave exactly ${need} in the pack.
       <button class="primary" data-btn="draftcommit" data-p="${seat}" ${ok ? '' : 'disabled'}>
-        Keep ${handIdx.length} · pass the pack</button>
+        Keep ${handIdx.length} · pass the pack (enter)</button>
       ${ok ? '' : `<span style="color:var(--bad)">pack has ${packIdx.length}/${need}</span>`}</div>
     <div class="zonelabel">Your hand after drafting (${handIdx.length})</div>
     <div class="zone draftkeep">${cardRow(handIdx)}</div>
@@ -918,11 +1279,28 @@ function draftPanelHtml(): string {
   </div>`;
 }
 
+/** One-liner from playtest: a round-2 counterattack whose sent pool is exactly
+ * one unit (but spell tokens could ride, so the engine deliberately does NOT
+ * auto-declare) starts with that unit prefilled — the player just confirms. */
+function ensureCounterPrefill(): void {
+  const s = h.state, b = s.battle;
+  if (s.phase !== 'battle' || !b || b.step !== 'declare' || b.round !== 2 || !b.attackerPool) return;
+  if (NET && b.attacker !== NET.seat) return;
+  const key = `${s.turn}:r2:${b.attacker}`;
+  if (ui.prefillFor === key) return;   // once per counterattack — removals stick
+  ui.prefillFor = key;
+  if (ui.columns.some(c => c.length)) return;
+  const eligible = q().unitsOf(b.attacker, b.region).filter(u => b.attackerPool!.includes(u.id));
+  if (eligible.length === 1) ui.columns = [[eligible[0]!.id]];
+}
+
 function render(): void {
   if (NET && (NET.dead || !NET.joined)) { if (!NET.dead) renderConnecting(); return; }
   $app.classList.toggle('netmode', !!NET);   // net mode: sticky hand dock at the bottom
   ensureDraftUi();
-  const logItems = h.log.slice(-80).map(l => `<div>${esc(l)}</div>`).join('');
+  ensureCounterPrefill();
+  modHostCache = moddingHosts();   // #4: legal hosts for a mod-in-progress glow
+  const logItems = h.log.slice(-80).map(l => `<div>${iconizeText(l)}</div>`).join('');
   // in network mode keep MY seat at the bottom (opponent on top)
   const topSeat: Seat = NET ? other(NET.seat) : 1;
   const botSeat: Seat = NET ? NET.seat : 0;
@@ -940,11 +1318,13 @@ function render(): void {
         ${phaseTrackHtml()}
         <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
         ${netTag}
+        ${clocksHtml()}
         ${ui.autopass ? '<button class="passallchip" data-btn="passallstop" title="click to stop passing">auto-passing… ✕ stop</button>' : ''}
         ${NET ? `<button data-btn="autopasstoggle" class="aptoggle ${autoPref ? 'on' : ''}"
           title="when ON: automatically pass whenever passing is your only legal action">auto-pass: ${autoPref ? 'on' : 'off'}</button>` : ''}
         <button data-btn="helpopen" title="rules reference: phases + keywords" style="margin-left:auto">? rules</button>
         <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
+        ${NET ? '<button data-btn="reportopen" title="report an issue — the server logs this exact game moment">🐛</button>' : ''}
         ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
         ${NET ? '' : '<button data-btn="restart">New game</button>'}
       </div>
@@ -967,11 +1347,15 @@ function render(): void {
     ${helpOpen ? helpOverlayHtml() : ''}
     ${inspectorHtml()}
     ${judgeOpen ? judgeOverlayHtml() : ''}
-    ${pendingReveal ? revealOverlayHtml() : ''}`;
+    ${pendingReveal ? revealOverlayHtml() : ''}
+    ${reportOpen ? reportOverlayHtml() : ''}
+    ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
   const log = document.getElementById('log')!;
   log.scrollTop = log.scrollHeight;
   clampMenu();
   maybeAutopass();
+  maybeAutoYield();
+  maybeCancelChain();
   // judge input: submit on Enter, survive re-renders mid-typing
   const jq = document.getElementById('judge-q') as HTMLInputElement | null;
   if (jq) {
@@ -982,6 +1366,17 @@ function render(): void {
         judgeDraft = '';
         (document.querySelector('[data-btn="judgeask"]') as HTMLElement | null)?.click();
       }
+    });
+  }
+  // report note: keep the draft across re-renders, live-toggle the send button
+  const rn = document.getElementById('report-note') as HTMLTextAreaElement | null;
+  if (rn) {
+    rn.value = reportDraft;
+    if (!reportBusy) { rn.focus(); rn.setSelectionRange(rn.value.length, rn.value.length); }
+    rn.addEventListener('input', () => {
+      reportDraft = rn.value;
+      const send = document.querySelector('[data-btn="reportsend"]') as HTMLButtonElement | null;
+      if (send) send.disabled = reportBusy || !reportDraft.trim();
     });
   }
 }
@@ -1012,7 +1407,7 @@ function revealOverlayHtml(): string {
     <h3>Your opponent's deployment</h3>
     <div class="hint">hover a card to read it in the focus viewer →</div>
     <div class="reveallist">${lines}</div>
-    <button class="primary" data-btn="revealdone">Continue</button>
+    <button class="primary" data-btn="revealdone">Continue (enter)</button>
   </div></div>`;
 }
 
@@ -1034,6 +1429,9 @@ function maybeAutopass(): void {
     const s = h.state;
     if (s.phase !== 'battle' || !s.battle) ui.autopass = false;
     else if (s.stack.length > ui.autopassStack) ui.autopass = false;
+    // #1: a resolution granted me a NEW activateAbility (e.g. a negate) that
+    // wasn't legal when the chip was armed — disarm so the window is mine
+    else if (abilityKeys(NET.seat).some(k => !ui.autopassSig.includes(k))) ui.autopass = false;
     else {
       ui.autopassStack = s.stack.length;
       if (!s.decision && s.priority === NET.seat) {
@@ -1120,6 +1518,34 @@ const saveHomeName = (): void => {
 /** the focus viewer for a live unit: composed modded card (base art + each
  * mod's text strip, like the physical slide-under), live vs base stats,
  * counters, damage, attrs — the Discord bot's combine, in HTML */
+/** #7: a host's graft-cause trigger + its grafted [Switch] effects, rendered
+ * as the single composed ability they actually are (Manual p.33): the host's
+ * trigger clause (its text up to the [Switch] marker), then the host's own
+ * effect and each grafted card's [Switch] effect in mod order — each keeping
+ * its [switch]/[switch1] marker so iconizeText prefixes the right icon. */
+function graftComposedHtml(u: Entity): string {
+  const grafts = u.mods
+    .map(id => h.state.entities[id])
+    .filter((m): m is Entity => !!m && m.appliedAs === 'graft');
+  if (!grafts.length) return '';
+  let hostText = '';
+  try { if (graftCauseIndex(u.card) < 0) return ''; hostText = getCard(u.card).text; } catch { return ''; }
+  const sw = /\[switch1?\]/i;
+  const clean = (s: string): string => s.replace(/\{\/n\}/g, ' ').replace(/\s+/g, ' ').trim();
+  const m = sw.exec(hostText);
+  const head = clean(m ? hostText.slice(0, m.index) : hostText);
+  const parts: string[] = m ? [clean(hostText.slice(m.index))] : [];
+  for (const g of grafts) {
+    let t = '';
+    try { t = getCard(g.card).text; } catch { /* unknown */ }
+    if (!t) continue;
+    const gm = sw.exec(t);
+    parts.push(clean(gm ? t.slice(gm.index) : t));
+  }
+  return `<div class="grafted"><span class="grafttag">${txtIcon('graft', '[Switch]')} grafted — one ability</span>
+    <div class="graftbody">${iconizeText(head)} ${parts.map(p => iconizeText(p)).join(' ')}</div></div>`;
+}
+
 function previewEntityHtml(id: EntityId): string {
   const u = h.state.entities[id];
   if (!u) return '';
@@ -1133,9 +1559,11 @@ function previewEntityHtml(id: EntityId): string {
     if (!m) return '';
     let mtext = '';
     try { mtext = getCard(m.card).text; } catch { /* unknown */ }
+    const tag = m.appliedAs === 'graft'
+      ? `${txtIcon('graft', '[Switch]')} grafted` : `${txtIcon('augment', '+')} augment`;
     return `<div class="modstrip"><img src="${art(m.card)}" alt="">
-      <span class="modtag">${m.appliedAs === 'graft' ? '⑂ grafted' : '+ augment'} · ${esc(m.card)}</span></div>
-      <div class="hint modtext">${esc(mtext)}</div>`;
+      <span class="modtag">${tag} · ${esc(m.card)}</span></div>
+      <div class="hint modtext">${iconizeText(mtext)}</div>`;
   }).join('');
   const changed = p !== base[0] || t !== base[1];
   const bits = [
@@ -1145,12 +1573,19 @@ function previewEntityHtml(id: EntityId): string {
   ].filter(Boolean).join(' · ');
   const attrs = [...e.ownAttrs(u)].join(' · ');
   return `<img src="${art(u.card)}" alt="" onerror="this.style.display='none'">${modStrips}
+    ${graftComposedHtml(u)}
     <div class="prevstats">${bits}</div>
     ${attrs ? `<div class="hint">${esc(attrs)}</div>` : ''}
-    <div class="hint">${esc(text)}</div>`;
+    <div class="hint">${iconizeText(text)}</div>`;
 }
 
 document.addEventListener('mouseover', e => {
+  // #3: hovering a decision button that refers to a live entity pings that
+  // unit's card(s) on the board
+  const ping = (e.target as HTMLElement).closest('[data-ping]') as HTMLElement | null;
+  if (ping) {
+    for (const el of document.querySelectorAll(`[data-id="${ping.dataset['ping']}"]`)) el.classList.add('pinghl');
+  }
   const t = (e.target as HTMLElement).closest('[data-prev], [data-previd]') as HTMLElement | null;
   if (!t) return;
   const prev = document.getElementById('preview');
@@ -1159,10 +1594,20 @@ document.addEventListener('mouseover', e => {
     const html = previewEntityHtml(Number(t.dataset['previd']));
     if (html) { prev.innerHTML = html; return; }
   }
-  const name = t.dataset['prev']!;
+  const name = t.dataset['prev'];
+  if (!name) return;
   let text = '';
   try { text = getCard(name).text; } catch { /* unknown card */ }
-  prev.innerHTML = `<img src="${art(name)}" alt="" onerror="this.style.display='none'"><div class="hint">${esc(text)}</div>`;
+  // #5: hand cards carry their live X preview into the focus viewer
+  const xnow = t.dataset['xnow'] !== undefined
+    ? `<div class="xnow">X = ${esc(t.dataset['xnow'])} right now</div>` : '';
+  prev.innerHTML = `<img src="${art(name)}" alt="" onerror="this.style.display='none'">${xnow}<div class="hint">${iconizeText(text)}</div>`;
+});
+
+document.addEventListener('mouseout', e => {
+  const ping = (e.target as HTMLElement).closest('[data-ping]') as HTMLElement | null;
+  if (!ping) return;
+  for (const el of document.querySelectorAll('.pinghl')) el.classList.remove('pinghl');
 });
 
 document.addEventListener('click', e => {
@@ -1249,6 +1694,9 @@ function handleButton(btn: HTMLElement): void {
     ui.autopass = true;
     ui.autopassStack = s.stack.length;
     ui.autopassAt = s.actionCount;
+    // #1: remember which activateAbility keys were ALREADY legal — a new one
+    // appearing later (granted by a resolution) disarms the chip
+    ui.autopassSig = NET ? abilityKeys(NET.seat) : [];
   };
   if (b === 'pass' || b === 'passall') {
     // C5: passing away castable spell tokens during battle wants a confirm
@@ -1333,6 +1781,11 @@ function handleButton(btn: HTMLElement): void {
     if (question && !judgeBusy) { if (inp) inp.value = ''; judgeDraft = ''; askJudge(question); return; }
   }
   if (b === 'modcancel') ui.modding = null;
+  if (b === 'castcancel') startCastCancel();
+  if (b === 'clearform') { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null; }
+  if (b === 'reportopen') reportOpen = true;
+  if (b === 'reportclose') reportOpen = false;
+  if (b === 'reportsend') { sendReport(); return; }
   if (b === 'menuitem') { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); }
   if (b === 'menuclose') ui.menu = null;
   render();
@@ -1589,6 +2042,65 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// ── #3 hotkeys: Space = pass, Enter = primary confirm, Esc = cancel ────
+/** primary "done/confirm" buttons Enter may trigger, most specific first —
+ * presence in the DOM ⇒ the action is legal right now (render() guarantees) */
+const ENTER_BTNS = [
+  '[data-btn="revealdone"]', '[data-btn="passconfirm"]', '[data-btn="doneplanconfirm"]',
+  '[data-btn="confirmattack"]', '[data-btn="confirmblocks"]', '[data-btn="draftcommit"]',
+  '[data-btn="donedeploy"]', '[data-btn="doneplan"]', '[data-btn="donehaste"]',
+];
+document.addEventListener('keydown', e => {
+  if (!inGame) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.repeat) return;   // held key must not machine-gun actions
+  const el = e.target as HTMLElement | null;
+  const inField = !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+
+  if (e.key === 'Escape') {
+    // close whatever is on top first; game-state cancels only come after every
+    // overlay is gone — and never while typing (the field just blurs/closes)
+    if (inField) el!.blur();
+    if (ui.menu) { ui.menu = null; render(); return; }
+    if (reportOpen) { reportOpen = false; render(); return; }
+    if (inspect) { inspect = null; render(); return; }
+    if (judgeOpen) { judgeOpen = false; render(); return; }
+    if (helpOpen) { helpOpen = false; render(); return; }
+    if (binView !== null) { binView = null; render(); return; }
+    if (pendingReveal) { pendingReveal = null; render(); return; }
+    if (inField) return;
+    if (ui.modding) { ui.modding = null; render(); return; }
+    if (canCancelNow()) { startCastCancel(); render(); return; }
+    if (ui.carrying !== null) { ui.carrying = null; render(); return; }
+    if (ui.columns.some(c => c && c.length) || ui.send.length || ui.spellTokens.length) {
+      ui.columns = []; ui.send = []; ui.spellTokens = []; render(); return;
+    }
+    return;
+  }
+
+  if (inField) return;   // never fire game hotkeys while typing
+  const overlayUp = reportOpen || judgeOpen || helpOpen || !!inspect || binView !== null || !!ui.menu;
+
+  if (e.key === ' ') {
+    if (overlayUp) return;
+    const btn = document.querySelector('[data-btn="pass"], [data-btn="passconfirm"]') as HTMLButtonElement | null;
+    if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }   // consumed: no page scroll
+    return;
+  }
+
+  if (e.key === 'Enter') {
+    // the reveal interstitial's Continue outranks everything; other overlays
+    // swallow Enter so it cannot confirm game actions behind them
+    if (!pendingReveal && overlayUp) return;
+    for (const sel of ENTER_BTNS) {
+      const btn = document.querySelector(sel) as HTMLButtonElement | null;
+      if (btn && !btn.disabled) { e.preventDefault(); btn.click(); return; }
+      if (pendingReveal) return;   // reveal open: only Continue is eligible
+    }
+    return;
+  }
+});
+
 // right-click any card (board, hand, bin, preview, reveal) → inspector menu
 document.addEventListener('contextmenu', e => {
   if (!inGame) return;   // never paint game UI over the home screen
@@ -1599,17 +2111,43 @@ document.addEventListener('contextmenu', e => {
   const name = id !== undefined ? h.state.entities[id]?.card : t.dataset['prev'];
   if (!name || name === HIDDEN_CARD) return;
   const me = e as MouseEvent;
-  ui.menu = {
-    x: me.clientX, y: me.clientY,
-    items: [
-      { label: `📖 ${name} — details, attributes & rulings`, go: () => openInspector(name, id) },
-      { label: `⚖ Ask the judge about ${name}`, go: () => {
-          judgeOpen = true;
-          judgeDraft = `I have a question about ${name}. `;
+  const items: { label: string; go: () => void }[] = [
+    { label: `📖 ${name} — details, attributes & rulings`, go: () => openInspector(name, id) },
+    { label: `⚖ Ask the judge about ${name}`, go: () => {
+        judgeOpen = true;
+        judgeDraft = `I have a question about ${name}. `;
+        render();
+      } },
+  ];
+  // #2: auto-yield toggle — on units, and on TRIGGER items on the stack
+  // (keyed by the trigger's source entity id; net games only, stored per room)
+  if (NET) {
+    let yid: EntityId | undefined;
+    let yname = name;
+    const en = id !== undefined ? h.state.entities[id] : undefined;
+    if (en && en.kind === 'unit') yid = en.id;
+    else if (t.dataset['act'] === 'stackitem') {
+      const it = h.state.stack.find(i => i.id === Number(t.dataset['id']));
+      if (it && it.kind === 'triggered' && it.sourceId !== undefined) {
+        yid = it.sourceId;
+        yname = h.state.entities[it.sourceId]?.card ?? it.card ?? name;
+      }
+    }
+    if (yid !== undefined) {
+      const on = yieldMap.has(yid);
+      const target = yid;
+      items.push({
+        label: on ? `⏩ Stop auto-yielding to ${yname}'s triggers`
+                  : `⏩ Auto-yield to ${yname}'s triggers`,
+        go: () => {
+          if (on) yieldMap.delete(target); else yieldMap.set(target, yname);
+          saveYield();
           render();
-        } },
-    ],
-  };
+        },
+      });
+    }
+  }
+  ui.menu = { x: me.clientX, y: me.clientY, items };
   render();
 });
 
@@ -1623,6 +2161,7 @@ if (params.has('room') && params.get('room')!.trim()) {
   const urlEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean);
   NET = new NetBackend(room, seat, params.get('mode') ?? undefined, urlEls?.length ? urlEls : undefined);
   h = NET;
+  loadYield();   // #2: per-room auto-yield choices survive a refresh
   renderConnecting();
 } else if (params.has('hotseat')) {
   if (params.get('mode') === 'draft') {

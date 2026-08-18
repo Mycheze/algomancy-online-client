@@ -226,6 +226,7 @@ counterattack). Cards that say "in my formation" or similar override this.
 Spell tokens (Fireballs etc.) still appear where the effect resolves — they
 are battle materiel. ⚠ Engine call from the 2026-08-18 playtest; currently
 applied to Tidelurker only — confirm whether it should be the global default.
+(See R33: Ember of Life's units arrive in the CARRIER's region instead.)
 
 ## R29 ⚠ — "An open spot in your formation" (Tiderunner Initiate)
 Requires an EXISTING formation of yours (you attacked, or you declared
@@ -249,3 +250,55 @@ While "sent" (between block declaration and the end of round 1) a
 counterattacker is in NO region: it radiates no statics, is no legal target,
 and its spell tokens can't be cast. It reappears in the enemy region when
 round 2 begins.
+
+## R33 ⚠ — Ember of Life's 1/1s arrive in the CARRIER's region (playtest ruling)
+"When one of your spell effects deals damage, create that many 1/1 units":
+the created units arrive **where the carrier (the augmented unit / the unit
+with the text) is**, not in the controller's home region — refining R28,
+whose home-region default came from Tidelurker and remains **unconfirmed as
+a global rule** (⚠ still needs Bena: is R28 the default and R33 a per-card
+exception, or is "the effect's region" the real default?). Two related
+clarifications from the same playtest game: "one of YOUR spell effects"
+means spells controlled by the carrier's controller (damage events now carry
+the effect's controller), and "deals damage" is unqualified — spell-effect
+damage **to a player's face counts** (a damage event is emitted for player
+hits from effects; combat damage still never counts). (Bena 2026-08-18.)
+
+## R34 — Identical simultaneous triggers are not ordered
+When ALL of a seat's simultaneously queued triggers are identical — same
+card, same ability/label, same composed parts (e.g. Flourishing Flora
+queuing three copies of its trigger, or two token copies queuing the same
+text) — the ordering decision (R2) is skipped and they enqueue in the order
+they fired: the choice could not be expressed (the options would be
+indistinguishable labels) and the outcome multiset is the same. Triggers
+from different cards/abilities, or composites whose parts differ (a spent
+bounded graft), still ask. (Bena 2026-08-18.)
+
+## R35 — Bracketed [costs] and X on spells are chosen and PAID AT CAST
+A spell's bracketed additional cost ("/[Sacrifice a unit]: …") and a spell's
+X are cast-time payments: the caster picks the sacrifice / the X value (only
+affordable values are offered) BEFORE the spell reaches the stack, the
+payment happens on the spot (not respondable), and responses see the fixed
+X / the already-paid cost. With no unit to sacrifice — or less open mana
+than the smallest legal X ("X can't be zero" → 1) — the cast is ILLEGAL.
+Negation does not refund a paid cast cost. The payment receipt is
+snapshotted at payment (Volatile Toxicity / Structural Collapse read the
+sacrificed unit's defense as it was then), the cost is region-scoped (the
+caster's units where the spell is cast — supersedes the old Linked
+Extinction any-region note), and a spell COPY inherits the original's
+receipt and X instead of paying again. GRAFTED riders pay the same cost when
+the composite collects its cast-time decisions (exactly where graft
+targeting happens); a rider may be declined — that part is then skipped —
+and an unpayable rider is skipped the same way. Rationale: costs are part of
+casting (the playtest bugs: Immolate reached the stack unpaid; Wildfire's
+mid-resolution X read as "paid 0"). Activated-ability rider costs
+(Hearthwood Ancient, Infernal Cultivator, Throwing Boulder, Auric Ascendant)
+are a separate parked theme and still resolve-time. (Playtest fix
+2026-08-18.)
+
+## R36 — A lone sent counterattacker auto-forms in round 2
+When a round-2 counterattack pool holds EXACTLY one unit and no spell token
+that could ride along, the only-unit formation is auto-declared (a forced
+action, logged like any other). Rationale: the player already committed the
+unit at block time; the only real choice left — whether a sent spell token
+rides — suppresses the forcing when present. (Playtest request 2026-08-18.)

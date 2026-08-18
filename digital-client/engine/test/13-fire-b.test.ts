@@ -202,13 +202,14 @@ test('Sacrificial Burst: sacrifice a unit, deal 4 to any target', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atkr]] });
   pass(h);                                           // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Sacrificial Burst') });
-  pick(h, { player: A });                            // the 4 damage target
-  pass(h); pass(h);                                  // resolve → sacrifice choice
-  assert.equal(h.state.decision?.kind, 'payOrDecline');
+  // cast cost FIRST (R35): the sacrifice is paid before the spell hits the stack
+  assert.equal(h.state.decision?.kind, 'targets');
   assert.equal(h.state.decision!.seat, D, 'the controller picks the sacrifice');
-  pick(h, fodder);
-  assert.ok(!ent(h, fodder), 'the sacrifice died');
+  pick(h, { unit: fodder });
+  assert.ok(!ent(h, fodder), 'the sacrifice died at cast');
   assert.ok(h.state.players[D]!.bin.includes('Curio Drifter'));
+  pick(h, { player: A });                            // then the 4 damage target
+  pass(h); pass(h);                                  // resolve
   assert.ok(ent(h, whale), 'the other unit was not touched');
   assert.equal(h.state.players[A]!.life, 26, '4 damage to A');
   finishBattle(h);
@@ -443,7 +444,7 @@ test('Voltwrath Behemoth: [Augment] text — my spell lets me deal 1 to any targ
   assert.equal(ent(h, fodder)!.damage, 1, '1 damage delivered');
 });
 
-test('Wildfire: X is chosen and paid at resolution, then dealt to any target', () => {
+test('Wildfire: X is chosen and paid AT CAST (R35), then dealt to any target', () => {
   const h = new Harness(1321);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -453,12 +454,14 @@ test('Wildfire: X is chosen and paid at resolution, then dealt to any target', (
   h.do({ type: 'declareAttack', seat: A, columns: [[whale]] });
   pass(h);                                           // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wildfire') });
-  pick(h, { player: A });
-  pass(h); pass(h);                                  // resolve → choose X
+  // X comes FIRST, at cast — paid on the spot, fixed before any response
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   assert.equal(h.state.decision!.options.length, 6, 'X ranges 0..open mana (5)');
   pick(h, 4);                                        // X = 4
+  assert.equal(new E(h.state).openMana(D), 1, 'X was paid at cast');
+  pick(h, { player: A });
+  assert.equal(h.state.stack.find(i => i.card === 'Wildfire')!.x, 4, 'X stored on the stack item');
+  pass(h); pass(h);                                  // resolve — X already fixed
   assert.equal(h.state.players[A]!.life, 26, '4 damage to A');
-  assert.equal(new E(h.state).openMana(D), 1, 'X was paid on the spot');
   finishBattle(h);
 });

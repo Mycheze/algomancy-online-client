@@ -115,13 +115,15 @@ test('Origon: negates each player’s FIRST spell in this battle only (R14)', ()
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   // A's FIRST spell this battle → Origon negates it
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Structural Collapse') });
+  pick(h, { unit: atk });                                     // cast cost (R35): paid before the push
   pass(h); pass(h);                                           // resolve the negation trigger
   pass(h); pass(h);                                           // resolve the (negated) spell
   assert.ok(h.log.some(m => m.includes('Structural Collapse is negated')), 'first spell negated');
   assert.ok(h.state.players[A]!.bin.includes('Structural Collapse'), 'negated spell → bin');
-  assert.ok(ent(h, atk), 'the negated spell sacrificed nothing');
-  // A's SECOND spell resolves normally (X=0 from hand → harmless no-op)
+  assert.ok(!ent(h, atk), 'the cast COST was still paid (R35) — negation does not refund it');
+  // A's SECOND spell resolves normally (X = 0 chosen at cast → harmless no-op)
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Torrential Reclamation') });
+  pick(h, 0);                                                 // X = 0 at cast (R35)
   pass(h); pass(h);
   assert.ok(h.state.players[A]!.bin.includes('Torrential Reclamation'), 'second spell resolved → bin');
   assert.equal(h.log.filter(m => m.includes('is negated')).length, 1, 'only the first was negated');
@@ -219,7 +221,7 @@ test('Death Greeter: your spell in battle → each player sacrifices a unit with
 
 // ── Channel Through ──────────────────────────────────────────────────────
 
-test('Channel Through: X=0 from hand is a no-op (PARKED cast-time X); X=1 white-box works', () => {
+test('Channel Through: X is chosen at cast (R35) — X=0 is a no-op, X=1 works', () => {
   const h = new Harness(1909);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -230,15 +232,16 @@ test('Channel Through: X=0 from hand is a no-op (PARKED cast-time X); X=1 white-
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tokA]] });
   pass(h);                                                    // priority → D
-  // from hand: no cast-time X collection → x = 0 → nothing happens
+  // X = 0 chosen at cast → nothing happens
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
+  pick(h, 0);                                                 // X = 0 at cast (R35)
   pass(h); pass(h);
   assert.ok(ent(h, tokA) && ent(h, tokD), 'X = 0: nobody was damaged');
-  // white-box x = 1: 2 damage to the (auto-picked) ally, 2 distributed onto
+  // X = 1: 2 damage to the (auto-picked) ally, 2 distributed onto
   // the (auto-picked) opponent unit — both 1/1s die
   pass(h);                                                    // priority → D again
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
-  h.state.stack[h.state.stack.length - 1]!.x = 1;             // PARKED: set X white-box
+  pick(h, 1);                                                 // X = 1 at cast (R35), paid now
   pass(h); pass(h);
   assert.ok(!ent(h, tokD), 'the targeted ally took 2 and died');
   assert.ok(!ent(h, tokA), 'the distributed 2 killed the opponent’s 1/1');
@@ -307,11 +310,11 @@ test('Structural Collapse: sacrifice a unit → opponents sacrifice up to its de
   h.do({ type: 'declareAttack', seat: A, columns: [[t1], [t2], [t3]] });
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Structural Collapse') });
+  pick(h, { unit: sentry });                                  // cast cost (R35): the 2/4 dies NOW (bar = 4)
+  assert.ok(!ent(h, sentry), 'the caster’s unit is sacrificed at cast');
   pass(h); pass(h);                                           // resolve
-  pick(h, sentry);                                            // D sacrifices the 2/4 (bar = 4)
   pick(h, t1);                                                // A picks sacrifices toward the bar…
   pick(h, t2);                                                // …third pick is forced (auto)
-  assert.ok(!ent(h, sentry), 'the caster’s unit is sacrificed');
   assert.ok(!ent(h, t1) && !ent(h, t2) && !ent(h, t3),
     'A sacrificed all three 1/1s (total defense 3 < 4 — ran out)');
   finishBattle(h);
@@ -392,7 +395,7 @@ test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifice
   pass(h);                                                    // priority → D
   const lifeD = h.state.players[D]!.life;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Torrential Reclamation') });
-  h.state.stack[h.state.stack.length - 1]!.x = 1;             // PARKED: set X white-box
+  pick(h, 1);                                                 // X = 1 at cast (R35), paid now
   pass(h); pass(h);                                           // resolve
   pick(h, sentry);                                            // D recalls the Sentry (nontoken pick)
   pick(h, a1);                                                // A's sacrifice pick (D's is forced)

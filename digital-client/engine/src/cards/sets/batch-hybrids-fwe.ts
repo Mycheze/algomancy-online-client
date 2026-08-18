@@ -266,8 +266,8 @@ card('Tempest Oracle', {
 
 // "Recall X target nontoken allies. Then each player sacrifices a unit and
 // you lose 1 life for each ally recalled this way." — br/X 1/3 {Battle}
-// Elemental Spell. ⚠ X half PARKED (see header): x = 0 from hand; tested
-// with x set white-box. The "for each" distributes over both clauses: per
+// Elemental Spell. X is chosen and paid AT CAST (R35) and read from item.x
+// here. The "for each" distributes over both clauses: per
 // recalled ally, each present player (R25) sacrifices a unit and the caster
 // loses 1 life. Picks are mid-resolution chooses (⚠ header); everything is
 // planned before any mutation (plan-then-commit) — sacrifice pools exclude
@@ -275,7 +275,7 @@ card('Tempest Oracle', {
 card('Torrential Reclamation', {
   spellEffect: {
     run: (g, ctx) => {
-      const x = ctx.x ?? 0;   // PARKED: no cast-time X collection
+      const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       if (x <= 0) { g.ev('info', 'Torrential Reclamation: X = 0 — no effect.'); return; }
       // plan the recalls: up to X of the caster's nontoken units in-region
       const recalled: Entity[] = [];
@@ -314,8 +314,8 @@ card('Torrential Reclamation', {
 
 // "I deal 2 damage to each of X target allies. For each ally damaged this
 // way, distribute 2 damage among target opponent's units." — eer/X 0/6
-// {Battle} Elemental Spell. ⚠ X half PARKED (see header): x = 0 from hand;
-// tested with x set white-box. The ally picks and the per-point distribution
+// {Battle} Elemental Spell. X is chosen and paid AT CAST (R35) and read from
+// item.x here. The ally picks and the per-point distribution
 // are mid-resolution chooses (⚠ header, auto when forced), all planned
 // before any damage commits; the 2 distributed damage is committed in
 // 1-point increments to the chosen opponent units (a point aimed at a unit
@@ -323,7 +323,7 @@ card('Torrential Reclamation', {
 card('Channel Through', {
   spellEffect: {
     run: (g, ctx) => {
-      const x = ctx.x ?? 0;   // PARKED: no cast-time X collection
+      const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       if (x <= 0) { g.ev('info', 'Channel Through: X = 0 — no effect.'); return; }
       // plan: pick up to X allies
       const picked: Entity[] = [];
@@ -440,26 +440,20 @@ card('Slag Spewer', {
 
 // "[Switch1] /[Sacrifice a unit]: Each opponent sacrifices units until their
 // total defense is at least equal to the defense of your sacrificed unit."
-// — eer/3 1/6 {Battle} Elemental Structure Spell. The bracketed cost is paid
-// at resolution as a mid-resolution choice (⚠ the Immolate approximation of
-// a cost — declining is allowed, nothing then happens). Defenses are live
-// effStats at resolution (R1). "Each opponent" region-scoped (R25); each
-// keeps picking until their picked total defense reaches the bar or they run
-// out. Plan-then-commit; bounded graft ([Switch1], R9).
+// — eer/3 1/6 {Battle} Elemental Structure Spell. The bracketed sacrifice is
+// a CAST COST (R35): chosen and paid before the spell reaches the stack (a
+// grafted rider pays — or declines — at composite cast time). The bar is the
+// sacrificed unit's defense SNAPSHOTTED at payment (it is gone by
+// resolution). Opponents' defenses are live effStats at resolution (R1).
+// "Each opponent" region-scoped (R25); each keeps picking until their picked
+// total defense reaches the bar or they run out. Plan-then-commit; bounded
+// graft ([Switch1], R9).
 const collapseSacrifice: EffectDef = {
+  castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
-    const mine = g.unitsOf(ctx.controller, ctx.region);
-    if (!mine.length || inEndOfTurn(g)) return;
-    const sacId = ctx.choose('sac', {
-      kind: 'payOrDecline', seat: ctx.controller,
-      prompt: 'Structural Collapse: sacrifice a unit?',
-      options: [...mine.map(u => ({ label: u.card, value: u.id })), { label: 'Decline', value: false }],
-    });
-    if (sacId === false) return;
-    const sac = g.entity(sacId as EntityId);
-    if (!sac) return;
-    const bar = g.effStats(sac)[1];
-    const picks: EntityId[] = [sac.id];
+    const bar = ctx.costPaid?.sacrificed?.defense ?? 0;
+    if (bar <= 0) return;   // rider declined / unpayable, or a 0-defense cost
+    const picks: EntityId[] = [];
     for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
       if (seat === ctx.controller) continue;
       let total = 0;

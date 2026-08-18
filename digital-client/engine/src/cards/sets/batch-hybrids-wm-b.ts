@@ -16,17 +16,15 @@
  * R31 (combat-damage-sub-step triggers resolve immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - RESOLUTION-TIME COSTS (Auric Ascendant's "Recall another ally", Volatile
- *    Toxicity's "/[Sacrifice a unit]", Abduct's "unless its controller pays
- *    [x]"): bracketed/rider costs are paid as mid-resolution choices (the
- *    Immolate/Structural Collapse precedent) — with nothing to pay, the
- *    effect resolves without effect.
- *  - X SPELLS (Abduct, Floral Singularity): no cast-time "choose and pay X"
- *    primitive exists (canPayCard treats X as 0), so item.x is undefined → 0
- *    from hand and the X clauses are no-ops. The resolution machinery is
- *    implemented and tested with x set white-box (Gravitational Correction
- *    precedent). Abduct's "with cost [x] or less" target restriction is
- *    checked at RESOLUTION (TargetSpec cannot read x at cast time).
+ *  - RESOLUTION-TIME COSTS (Auric Ascendant's "Recall another ally", and
+ *    Abduct's "unless its controller pays [x]" ransom): rider costs on
+ *    ACTIVATED abilities / R6 ransoms are still mid-resolution choices —
+ *    with nothing to pay, the effect resolves without effect. Volatile
+ *    Toxicity's "/[Sacrifice a unit]" is a true CAST COST now (R35).
+ *  - X SPELLS (Abduct, Floral Singularity): X is chosen and paid AT CAST
+ *    (R35) and stored on the item. Abduct's "with cost [x] or less" target
+ *    restriction is still checked at RESOLUTION (TargetSpec cannot read x
+ *    at cast time).
  *  - GAIN CONTROL (Abduct, Mindwarp Sporefrog): flipping Entity.controller.
  *    The flipped unit LEAVES any formation it fought in (it fights for
  *    neither side for the rest of the battle) and walks to its new
@@ -188,25 +186,16 @@ card('Rotspore Herald', {
 
 // "[Switch] /[Sacrifice a unit]: Create a Poison X and a Fireball X, where X
 // is the defense of the sacrificed unit." — rg/2 4/2 {Battle} Infernal
-// Blight Spell. The bracketed cost is paid at resolution as a mid-resolution
-// choice (⚠ the Structural Collapse approximation — declining is allowed,
-// nothing then happens). X = the sacrificed unit's LIVE defense (effStats,
-// R1) read before it dies; the spell tokens appear at the resolution region
-// (R28: spell tokens are battle materiel). Unbounded graft ([Switch]).
+// Blight Spell. The bracketed sacrifice is a CAST COST (R35): chosen and
+// paid before the spell reaches the stack (a grafted rider pays — or
+// declines — at composite cast time). X = the sacrificed unit's defense
+// SNAPSHOTTED at payment (effStats then); the spell tokens appear at the
+// resolution region (R28: spell tokens are battle materiel). Unbounded
+// graft ([Switch]).
 const toxicityBrew: EffectDef = {
+  castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
-    const mine = g.unitsOf(ctx.controller, ctx.region);
-    if (!mine.length || inEndOfTurn(g)) return;
-    const sacId = ctx.choose('sac', {
-      kind: 'payOrDecline', seat: ctx.controller,
-      prompt: 'Volatile Toxicity: sacrifice a unit?',
-      options: [...mine.map(u => ({ label: u.card, value: u.id })), { label: 'Decline', value: false }],
-    });
-    if (sacId === false) return;
-    const sac = g.entity(sacId as EntityId);
-    if (!sac) return;
-    const x = g.effStats(sac)[1];
-    g.destroy(sac, 'is sacrificed');
+    const x = ctx.costPaid?.sacrificed?.defense ?? 0;
     if (x > 0) {
       g.createSpellToken(ctx.controller, 'Poison', x, ctx.region);
       g.createSpellToken(ctx.controller, 'Fireball', x, ctx.region);
@@ -330,17 +319,17 @@ card('Transmutide Enigma', {
 // ─────────────────────── WOOD / METAL (gm) ────────────────────────────
 
 // "Gain control of target unit with cost [x] or less unless its controller
-// pays [x]." — gm/X 2/2 {Battle} Alien Spell. ⚠ X half PARKED-style (see
-// header): x = 0 from hand; tested with x set white-box. The cost
-// restriction is checked at RESOLUTION (⚠ header); the ransom is a
-// mid-resolution pay-or-decline (R6) for the target's controller, skipped
-// when they cannot pay (x more than their open mana). Control flip per the
-// header's gain-control approximation.
+// pays [x]." — gm/X 2/2 {Battle} Alien Spell. X is chosen and paid AT CAST
+// (R35). The cost restriction is checked at RESOLUTION (⚠ header — the
+// TargetSpec cannot read x at cast time); the ransom is a mid-resolution
+// pay-or-decline (R6) for the target's controller, skipped when they cannot
+// pay (x more than their open mana). Control flip per the header's
+// gain-control approximation.
 card('Abduct', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Abduct: gain control of target unit (cost [x] or less)' },
     run: (g, ctx) => {
-      const x = ctx.x ?? 0;   // PARKED: no cast-time X collection
+      const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       const t = ctx.targets[0];
       if (!t || !('id' in (t as object))) return;
       const u = t as Entity;
@@ -367,15 +356,15 @@ card('Abduct', {
 });
 
 // "/[Create X 1/1 units {i1}or your units become base X/X until regroup]."
-// — ggm/X 2/2 Cosmic Flower Spell (deploy timing). ⚠ X half PARKED-style
-// (header): x = 0 from hand → no-op; tested with x driven white-box. Modal:
-// the caster picks. Created UNITS arrive in the controller's HOME region
-// (R28). "Become base X/X" is the temp-stat approximation (header), applied
-// to your units in the resolution region (R12).
+// — ggm/X 2/2 Cosmic Flower Spell (deploy timing). X is chosen and paid AT
+// CAST (R35). Modal: the caster picks. Created UNITS arrive in the
+// controller's HOME region (R28). "Become base X/X" is the temp-stat
+// approximation (header), applied to your units in the resolution region
+// (R12).
 card('Floral Singularity', {
   spellEffect: {
     run: (g, ctx) => {
-      const x = ctx.x ?? 0;   // PARKED: no cast-time X collection
+      const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       if (x <= 0) { g.ev('info', 'Floral Singularity: X = 0 — no effect.'); return; }
       const mode = ctx.choose('mode', {
         kind: 'electricPath', seat: ctx.controller,

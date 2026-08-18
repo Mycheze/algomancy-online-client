@@ -103,10 +103,10 @@ test('Volatile Toxicity: sacrifice a unit → Poison X and Fireball X, X = its d
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Volatile Toxicity') });
-  pass(h); pass(h);                                           // resolve
-  pick(h, sentry);                                            // sacrifice the 2/4 (Decline offered)
-  assert.ok(!ent(h, sentry), 'the unit is sacrificed');
+  pick(h, { unit: sentry });                                  // cast cost (R35): the 2/4 dies NOW, X = 4
+  assert.ok(!ent(h, sentry), 'the unit is sacrificed at cast');
   assert.ok(h.state.players[D]!.bin.includes('Stasis Sentry'), 'sacrificed nontoken → bin');
+  pass(h); pass(h);                                           // resolve
   const toks = tokensOf(h, D);
   assert.ok(toks.some(t => t.card === 'Poison' && t.x === 4), 'a Poison 4 is created');
   assert.ok(toks.some(t => t.card === 'Fireball' && t.x === 4), 'a Fireball 4 is created');
@@ -212,28 +212,29 @@ test('Transmutide Enigma: another ally spawning in battle gets power or defense 
 
 // ── Abduct ───────────────────────────────────────────────────────────────
 
-test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (white-box x)', () => {
+test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (X at cast)', () => {
   const h = new Harness(3008);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const sentry = spawn(h, A, 'Stasis Sentry');                // cost 3 — the real target
   const atk = spawn(h, A, 'Unit Token');                      // cost 0 — the x=0 target
   giveResources(h, D, 'wood', 1);
-  giveResources(h, D, 'metal', 1);                            // gm / X (X pays 0 from hand)
+  giveResources(h, D, 'metal', 3);                            // gm affinity + mana for X = 3
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[sentry], [atk]] });
   pass(h);                                                    // priority → D
-  // from hand: x = 0 (PARKED cast-time X) — A ransoms the token for [0]
+  // X = 0 chosen at cast (R35) — A ransoms the token for [0]
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Abduct') });
+  pick(h, 0);                                                 // X = 0
   pick(h, { unit: atk });
   pass(h); pass(h);                                           // resolve
   pick(h, true);                                              // A pays [0] to keep it
   assert.equal(ent(h, atk)!.controller, A, 'ransom paid — the token stays');
-  // white-box x = 3: A has no open mana → cannot pay → the Sentry is abducted
+  // X = 3: A has no open mana → cannot pay → the Sentry is abducted
   pass(h);                                                    // priority → D again
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Abduct') });
+  pick(h, 3);                                                 // X = 3 at cast — the Sentry (cost 3) qualifies
   pick(h, { unit: sentry });
-  h.state.stack[h.state.stack.length - 1]!.x = 3;             // PARKED: set X white-box
   pass(h); pass(h);                                           // resolve — no ransom possible
   assert.equal(ent(h, sentry)!.controller, D, 'D gains control of the Sentry');
   assert.ok(!h.state.battle!.columns.flat().includes(sentry), 'the flipped unit left the formation');
@@ -351,8 +352,9 @@ test('Aethercap Siphoner: spawns with three -1/-1; a nontoken spell moves one on
   assert.deepEqual(effStats(h, siph), [1, 1], 'a 1/1 for now');
   const tok = spawn(h, p, 'Unit Token');                      // the counter's destination
   giveResources(h, p, 'wood', 2);
-  giveResources(h, p, 'metal', 1);                            // Floral Singularity ggm / X (pays 0)
+  giveResources(h, p, 'metal', 1);                            // Floral Singularity ggm / X
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Floral Singularity') });
+  pick(h, 0);                                                 // X = 0 at cast (R35) — a harmless no-op
   pick(h, tok);                                               // may move a counter → onto the token
   assert.equal(ent(h, siph)!.counters, -2, 'one -1/-1 moved off the Siphoner');
   assert.ok(!ent(h, tok), 'the 1/1 token died to the moved -1/-1');

@@ -58,6 +58,9 @@ const burningVengeance: EffectDef = {
 card('Burning Vengeance', {
   spellEffect: burningVengeance,
   graftEffect: { bounded: true, effect: burningVengeance },
+  // UI preview (#5): the damage it would deal if it resolved right now
+  xPreview: (g, _seat, region) =>
+    g.battleCounter(region, 'allyDeaths:0') + g.battleCounter(region, 'allyDeaths:1'),
 });
 
 // "[Augment] When I attack or block, create a Fireball X+1, where X is the

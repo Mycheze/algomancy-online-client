@@ -12,7 +12,7 @@ import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Action, Element, EngineEvent, GameMode, GameState } from '../engine/src/types.ts';
-import { apply, createGame, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { apply, createGame, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const GAMES_DIR = join(HERE, 'games');
@@ -43,6 +43,50 @@ export interface Room {
   /** index into `actions` where the current deploy phase began (-1 outside
    * deploy) — undo may splice a seat's own actions at/after this point */
   deployStartIndex: number;
+  /** chess clock (MTGO-style, display only): remaining ms per seat */
+  clockMs: [number, number];
+  /** Date.now() of the last clock settle — elapsed since then is still
+   * unbilled and belongs to the seats in clockRun */
+  clockStamp: number;
+  /** which seats' clocks have been RUNNING since clockStamp */
+  clockRun: [boolean, boolean];
+}
+
+/** Chess-clock starting bank per player (40 minutes). */
+export const CLOCK_START_MS = 40 * 60 * 1000;
+
+/** Which seats' clocks should run right now: the game is waiting on a seat
+ * iff it has at least one legal action (covers pending decisions, priority,
+ * draft picks, and the simultaneous planning/deploy done-flags — both clocks
+ * may run at once during simultaneous phases, which is correct). Clocks only
+ * run while BOTH players are connected (casual client: waiting alone for an
+ * opponent, a dropped tab, or a room restored after a server restart must
+ * not silently drain anybody), and a finished game stops both clocks. */
+export function clockRunning(room: Room): [boolean, boolean] {
+  if (room.state.winner !== null || room.state.phase === 'gameover') return [false, false];
+  if (!room.sockets[0] || !room.sockets[1]) return [false, false];
+  return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0) as [boolean, boolean];
+}
+
+/** Bill the time elapsed since the last settle to whichever seats were
+ * running, clamp at zero (display only — no enforcement), and recompute the
+ * running set from the current state + connections. Call after anything that
+ * changes either (action applied, undo, join, leave). */
+export function settleClock(room: Room): void {
+  const now = Date.now();
+  const dt = Math.max(0, now - room.clockStamp);
+  for (const s of [0, 1] as const) {
+    if (room.clockRun[s]) room.clockMs[s] = Math.max(0, room.clockMs[s] - dt);
+  }
+  room.clockStamp = now;
+  room.clockRun = clockRunning(room);
+}
+
+/** The clock snapshot attached to every state broadcast: clients extrapolate
+ * locally from `at` using `running` until the next message arrives. */
+export function clockSnapshot(room: Room): { ms: [number, number]; running: [boolean, boolean]; at: number } {
+  settleClock(room);
+  return { ms: [...room.clockMs], running: [...room.clockRun], at: room.clockStamp };
 }
 
 const rooms = new Map<string, Room>();
@@ -113,6 +157,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
   const room: Room = {
     code, seed, mode, els: trio, names, state, actions: [], events, sockets: [null, null],
     deploySnapshot: null, heldDeploy: [[], []], deployStartIndex: -1,
+    clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
   };
   rooms.set(code, room);
   persist(room);
@@ -128,6 +173,7 @@ export function getOrCreateRoom(code: string, mode: GameMode = 'shared', els?: E
 /** Apply an action to the room's authoritative state and record it. Throws
  * whatever the engine throws (IllegalAction) — caller reports it to the actor. */
 export function applyToRoom(room: Room, action: Action): EngineEvent[] {
+  settleClock(room);   // bill elapsed time to whoever WAS on the clock
   const wasDeploy = room.state.phase === 'deploy';
   const r = apply(room.state, action);
   room.state = r.state;
@@ -141,6 +187,7 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
     room.deployStartIndex = room.actions.length;
   }
   if (wasDeploy) room.heldDeploy[action.seat === 0 ? 1 : 0].push(...r.events);
+  settleClock(room);   // recompute who is on the clock under the NEW state
   persist(room);
   return r.events;
 }
@@ -162,6 +209,7 @@ export function undoLastAction(room: Room): void {
  * may remove what; deploy-phase actions are seat-independent, so splicing a
  * seat's own action out of the middle of the deploy segment is sound. */
 export function undoActionAt(room: Room, index: number): void {
+  settleClock(room);   // bill up to the undo; the rebuild changes who runs
   room.actions.splice(index, 1);
   const { state, events, deploySnapshot, heldDeploy, deployStartIndex } =
     rebuild(room.seed, room.names, room.actions, room.mode, room.els);
@@ -170,6 +218,7 @@ export function undoActionAt(room: Room, index: number): void {
   room.deploySnapshot = deploySnapshot;
   room.heldDeploy = heldDeploy;
   room.deployStartIndex = deployStartIndex;
+  settleClock(room);
   persist(room);
 }
 
@@ -187,7 +236,12 @@ function persist(room: Room): void {
   try {
     mkdirSync(GAMES_DIR, { recursive: true });
     const path = join(GAMES_DIR, `${room.code}.json`);
-    writeFileSync(path, JSON.stringify({ seed: room.seed, mode: room.mode, els: room.els, names: room.names, actions: room.actions }));
+    // clockMs is persisted too: elapsed time cannot be reconstructed from a
+    // replay. (Additive field — older files without it restore at 40:00.)
+    writeFileSync(path, JSON.stringify({
+      seed: room.seed, mode: room.mode, els: room.els, names: room.names,
+      actions: room.actions, clockMs: room.clockMs,
+    }));
   } catch (err) {
     console.error(`[rooms] could not persist ${room.code}:`, err);
   }
@@ -207,15 +261,21 @@ export function restoreRooms(): void {
     const code = f.replace(/\.json$/, '');
     try {
       const raw = JSON.parse(readFileSync(join(GAMES_DIR, f), 'utf8')) as {
-        seed: number; mode?: GameMode; els?: Element[]; names?: [string, string]; actions: Action[];
+        seed: number; mode?: GameMode; els?: Element[]; names?: [string, string];
+        actions: Action[]; clockMs?: [number, number];
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const mode = raw.mode ?? 'shared';
       const els = sanitizeTrio(raw.els);
       const { state, events, deploySnapshot, heldDeploy, deployStartIndex } = rebuild(raw.seed, names, raw.actions, mode, els);
+      const clockMs: [number, number] = Array.isArray(raw.clockMs) && raw.clockMs.length === 2
+        ? [Math.max(0, Number(raw.clockMs[0]) || 0), Math.max(0, Number(raw.clockMs[1]) || 0)]
+        : [CLOCK_START_MS, CLOCK_START_MS];
       rooms.set(code, {
         code, seed: raw.seed, mode, els, names, state, actions: raw.actions, events,
         sockets: [null, null], deploySnapshot, heldDeploy, deployStartIndex,
+        // nobody is connected right after a restart, so no clock runs yet
+        clockMs, clockStamp: Date.now(), clockRun: [false, false],
       });
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions)`);
     } catch (err) {

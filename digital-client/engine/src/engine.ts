@@ -114,7 +114,9 @@ export class E {
   }
   canPayCard(seat: Seat, name: CardName): boolean {
     const c = this.card(name);
-    const mana = c.mana === 'X' ? 0 : c.mana;
+    // X spells: X is chosen and paid at cast (R35); castability needs only the
+    // smallest legal X to be affordable (xMin, e.g. "X can't be zero" → 1)
+    const mana = c.mana === 'X' ? (c.xMin ?? 0) : c.mana;
     if (this.openMana(seat) < mana) return false;
     for (const [el, n] of Object.entries(affinityPips(c.cost))) {
       if (this.affinity(seat, el) < n) return false;
@@ -365,7 +367,16 @@ export class E {
     // once, before Electric distribution or Vulnerable's receive-side doubling.
     if (srcAttrs.has('Powerful')) n *= 2;
     if ('player' in (target as object)) {
-      this.loseLife((target as { player: Seat }).player, n, ctx.sourceName);
+      const seat = (target as { player: Seat }).player;
+      // spell-effect damage to a PLAYER is still damage: emit a 'damage' event
+      // (with the effect's controller, R33) so triggers hear face hits too.
+      // Fired before loseLife — a lethal hit ends the game mid-throw and the
+      // queued trigger is moot. Combat face damage does NOT come through here
+      // (pumpCombatDamage → loseLife directly) and stays trigger-silent.
+      const ev = this.ev('damage', `${ctx.sourceName} deals ${n} to ${this.pname(seat)}.`,
+        { player: seat, n, source: ctx.sourceName, controller: ctx.controller, region: ctx.region });
+      this.fireEvent('damage', ev);
+      this.loseLife(seat, n, ctx.sourceName);
       return;
     }
     const first = target as Entity;
@@ -418,7 +429,8 @@ export class E {
         if (!this.entity(u.id)) killed.push(u);
       } else {
         u.damage += received;
-        const ev = this.ev('damage', `${ctx.sourceName} deals ${received} to ${u.card}.`, { unit: u.id, n: received, source: ctx.sourceName });
+        const ev = this.ev('damage', `${ctx.sourceName} deals ${received} to ${u.card}.`,
+          { unit: u.id, n: received, source: ctx.sourceName, controller: ctx.controller });
         this.fireEvent('damage', ev);   // "when I am dealt damage" (Awoken Tomb)
         const [, t] = this.effStats(u);
         // R21: Deadly — any nonzero damage kills, regardless of toughness
@@ -624,9 +636,86 @@ export class E {
     }
   }
 
-  /** Ask for targets for every part that needs them — ALL at cast time
+  /** Cast-time X selection (R35): a spell played from hand with mana 'X'
+   * asks its caster to pick X NOW — it is paid on the answer, stored on the
+   * item, and fixed before anyone can respond. Suspends via 'cast'/'x'. */
+  private collectX(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+    if (item.x !== undefined || !item.card) return;
+    if (item.kind !== 'spell' && item.kind !== 'spellUnit') return;
+    const c = this.card(item.card);
+    if (c.mana !== 'X') return;
+    const min = c.xMin ?? 0;
+    const max = this.openMana(item.controller);   // canPayCard guaranteed max >= min
+    const options: DecisionOption[] = [];
+    for (let x = min; x <= max; x++) options.push({ label: `X = ${x}`, value: x });
+    this.suspend(
+      { type: 'cast', stage: 'x', item, partIndex: 0, targetIndex: 0, then, moreItems },
+      {
+        seat: item.controller, kind: 'payOrDecline',
+        prompt: `${item.card}: choose X (paid now)`, options,
+      },
+    );
+  }
+
+  /** Cast-time bracketed costs (R35): every part whose effect declares a
+   * castCost gets it chosen and PAID here, before the item reaches the stack.
+   * Spell parts must pay (castability already required a payable cost); graft
+   * parts riding a composite may decline — the rider is then skipped. An
+   * unpayable cost skips the part the same way. Suspends via 'cast'/'cost'. */
+  private collectCastCosts(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+    for (let pi = 0; pi < item.parts.length; pi++) {
+      const part = item.parts[pi]!;
+      if (part.spent || part.costPaid) continue;
+      const def = effectByKey(part.effectKey);
+      if (!def.castCost) continue;
+      // kind 'sacrificeUnit' — the only cost kind so far
+      const mine = this.unitsOf(item.controller, item.region);
+      if (!mine.length) {
+        part.spent = true;   // unpayable: the part never resolves
+        this.ev('info', `${item.label}: no unit to sacrifice — the [cost] cannot be paid.`);
+        continue;
+      }
+      // grafted riders are opt-in; the spell's own cost is part of casting it
+      const optional = part.effectKey.startsWith('graft:');
+      const options: DecisionOption[] = mine.map(u => ({ label: u.card, value: { unit: u.id }, card: u.card }));
+      if (optional) options.push({ label: "Don't pay — skip this effect", value: { declineCost: true } });
+      this.suspend(
+        { type: 'cast', stage: 'cost', item, partIndex: pi, targetIndex: 0, then, moreItems },
+        {
+          seat: item.controller, kind: 'targets',
+          prompt: `${item.label}: sacrifice a unit (additional cost${optional ? ' — optional' : ''})`,
+          options,
+        },
+      );
+    }
+  }
+
+  /** Pay a chosen cast-time cost (R35): a COST, not an effect — paid before
+   * the item hits the stack, not respondable. The receipt (with the victim's
+   * stats snapshotted now) lands on the part for resolution to read. */
+  payCastCost(item: StackItem, partIndex: number, val: unknown): void {
+    const part = item.parts[partIndex]!;
+    if (val !== null && typeof val === 'object' && 'declineCost' in val) {
+      part.spent = true;
+      this.ev('info', `${item.label}: the [cost] is declined — that effect is skipped.`);
+      return;
+    }
+    const id = (val as { unit: EntityId }).unit;
+    const u = this.entity(id);
+    this.need(u && u.kind === 'unit' && u.controller === item.controller && !u.absent
+      && u.region === item.region, 'bad cost choice');
+    const [p, t] = this.effStats(u);
+    part.costPaid = { sacrificed: { card: u.card, power: p, defense: t } };
+    this.ev('info', `${this.pname(item.controller)} sacrifices ${u.card} — the cost of ${item.label}.`);
+    this.destroy(u, 'is sacrificed');
+  }
+
+  /** Ask for every cast-time decision, in order: X (R35), bracketed costs
+   * (R35), then targets for every part that needs them — ALL at cast time
    * (multi-target specs included). Suspends via 'cast'. */
   collectTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+    this.collectX(item, then, moreItems);
+    this.collectCastCosts(item, then, moreItems);
     for (let pi = 0; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
       if (part.spent) continue;
@@ -764,6 +853,7 @@ export class E {
         region: item.region,
         targets: resolved,
         x: item.x,
+        costPaid: part.costPaid,
         event: item.event ?? null,
         choose: (key, dec) => {
           if (key in answers) return answers[key];
@@ -903,15 +993,30 @@ export class E {
     return queued;
   }
 
+  /** Two queued triggers are interchangeable for ordering purposes: same card,
+   * same ability, same label AND same composed parts (a graftCause composite
+   * whose bounded graft was already spent differs in parts and still asks).
+   * Deliberately NOT keyed on the source entity — two token copies queuing the
+   * same trigger read identically in the ordering UI (options are labels), so
+   * asking would be a blind, meaningless choice. Event snapshots may differ
+   * (each firing resolves its own event); the multiset of outcomes is the same. */
+  private sameTrigger(a: import('./types.ts').PendingTrigger, b: import('./types.ts').PendingTrigger): boolean {
+    return a.sourceCard === b.sourceCard && a.abilityIndex === b.abilityIndex
+      && a.label === b.label && JSON.stringify(a.parts) === JSON.stringify(b.parts);
+  }
+
   /** Drain the trigger queue. In battle, triggers become stack items (owner
    * orders their own; NIT's enter last so they resolve first — R2). Outside
-   * battle they resolve immediately in the order the stack would produce. */
+   * battle they resolve immediately in the order the stack would produce.
+   * A seat whose queued triggers are ALL identical (sameTrigger) skips the
+   * ordering decision — the order cannot matter or even be expressed. */
   processTriggerQueue(): void {
     while (this.s.triggerQueue.length) {
       // 1. per-seat ordering decisions (the chosen order = resolution order)
       for (const seat of [this.initiative, this.nit]) {
         const mine = this.s.triggerQueue.filter(t => t.controller === seat);
-        if (mine.length >= 2 && !this.s.triggerOrderedSeats.includes(seat)) {
+        if (mine.length >= 2 && !this.s.triggerOrderedSeats.includes(seat)
+          && !mine.every(t => this.sameTrigger(t, mine[0]!))) {
           this.suspend(
             { type: 'orderTriggers', seat },
             {
@@ -1197,8 +1302,15 @@ export class E {
   }
 
   dealPacks(): void {
+    this.s.packMeta ??= this.s.players.map(() => null);
     for (const seat of this.dealOrder()) {
       this.s.packs[seat] = this.s.sharedDeck.splice(0, 10);
+      this.s.packSerial = (this.s.packSerial ?? 0) + 1;
+      this.s.packMeta[seat] = {
+        serial: this.s.packSerial,
+        originalSize: this.s.packs[seat]!.length,
+        commits: 0,
+      };
     }
   }
 
@@ -1223,6 +1335,10 @@ export class E {
     const old = this.s.packs;
     const n = old.length;
     this.s.packs = old.map((_, seat) => old[(seat - 1 + n) % n]!);
+    if (this.s.packMeta) {
+      const oldMeta = this.s.packMeta;
+      this.s.packMeta = oldMeta.map((_, seat) => oldMeta[(seat - 1 + n) % n] ?? null);
+    }
     this.ev('draft', 'Everyone has drafted — the packs are passed on.');
   }
 

@@ -246,10 +246,15 @@ button:disabled { opacity: .4; cursor: default; }
 /* A2: decision options rendered as real card scans in the promptbar */
 .deccards { display: flex; gap: 6px; flex-wrap: wrap; max-width: 100%; overflow-x: auto; padding: 2px; }
 
-/* B1: invaders (enemy units standing in this region) read as foreign */
-.invaders { border: 1px solid var(--danger); background: rgba(217,84,84,.07); border-radius: 6px;
-  padding: 2px 8px 8px; margin-top: 8px; }
-.invaderlabel { color: var(--danger); }
+/* B1 (reworked, playtest): invaders (enemy units standing in this region) sit
+   as a compact, visually subordinate strip at the SIDE of the region — smaller
+   cards, out of the owner's formation space */
+.invaders { width: 140px; flex-shrink: 0; align-self: flex-start;
+  border: 1px solid rgba(217,84,84,.55); background: rgba(217,84,84,.06); border-radius: 6px;
+  padding: 2px 6px 6px; margin-top: 8px; }
+.invaderlabel { color: var(--danger); font-size: 10px; margin-top: 4px; }
+.invaders .invaderzone { gap: 4px; }
+.invaders .card { width: 52px; }
 .invaders .card img { box-shadow: 0 0 0 1px var(--danger); border-radius: 5px; }
 
 /* B2: absent ("sent") counterattackers in transit — inert, heavily dimmed */
@@ -352,3 +357,70 @@ button:disabled { opacity: .4; cursor: default; }
 .elicon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 5px; }
 .topbar .elicon { width: 18px; height: 18px; margin-right: 2px; }
 .elchip .elicon { margin-right: 6px; }
+
+/* ── playtest round 3 (2026-08-18): icons, combat alignment, mod flow ── */
+
+/* game icons sitting on a TEXT line (card text, prompts, labels, help) */
+.txticon { width: 15px; height: 15px; vertical-align: -3px; margin: 0 1px; }
+.battle h3 .txticon, .promptbar .txticon { width: 16px; height: 16px; }
+.card .badge .txticon { width: 10px; height: 10px; vertical-align: -2px; margin: 0 2px 0 0; }
+.zonelabel .txticon, .invaderlabel .txticon { width: 12px; height: 12px; vertical-align: -2px; }
+.helprow b .txticon { vertical-align: -3px; }
+
+/* #2: combat fronts share one line — each side is a fixed-height half anchored
+   against the vs line; .top is column-reverse so its FIRST child (the front
+   unit) hugs the line and extra depth grows AWAY (up for the top side, down
+   for the bottom) */
+.bhalf { display: flex; flex-direction: column; gap: 4px; align-items: center; width: 100%;
+  justify-content: flex-start; min-height: calc(var(--cw) * 2.8 + 4px); }
+.bhalf.top { flex-direction: column-reverse; }
+.col .vs { margin: 4px 0; }
+
+/* #3: hovering a decision option pings the unit it refers to */
+.card.pinghl { outline: 3px solid #e86fd8; box-shadow: 0 0 12px rgba(232,111,216,.75); }
+
+/* #4: bin-mod affordance — usable bin cards glow, the mini-bin advertises,
+   and legal hosts pulse while a mod placement is in progress */
+.regionbin.hasmods { border-left-color: var(--glow); box-shadow: inset 2px 0 0 var(--glow); }
+.binmodhint { color: var(--glow); font-size: 10px; margin-top: 4px; }
+.binmodbanner { background: rgba(111,195,111,.1); border: 1px solid var(--glow); border-radius: 5px;
+  color: var(--glow); font-size: 12px; padding: 5px 8px; }
+@keyframes modpulse { 50% { box-shadow: 0 0 14px rgba(111,195,111,.95); } }
+.card.modhost { outline: 3px solid var(--glow); cursor: pointer;
+  box-shadow: 0 0 8px rgba(111,195,111,.5); animation: modpulse 1.1s ease-in-out infinite; }
+
+/* #5: draft pack indicator + the "last look" warning */
+.packrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.packinfo { color: var(--accent); font-weight: 700; }
+.lastlook { background: #33270f; border: 1px solid #7a5e1e; border-radius: 5px;
+  color: var(--accent); padding: 3px 8px; font-size: 12px; }
+
+/* ── playtest round 4 (2026-08-18): clocks, report, hotkeys, X preview ── */
+
+/* #6: chess clocks in the topbar (display only, ticked by textContent patch) */
+.clocks { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); }
+.clockcell { white-space: nowrap; }
+.clocktime { font: 700 13px/1 ui-monospace, monospace; color: var(--dim); padding: 1px 5px;
+  border: 1px solid transparent; border-radius: 4px; }
+.clocktime.run { color: var(--glow); border-color: var(--glow); background: rgba(111,195,111,.08); }
+.clocktime.exp { color: var(--danger); border-color: var(--danger); background: rgba(217,84,84,.1); }
+.clocktime.exp::after { content: " expired"; font-size: 10px; font-weight: 400; }
+
+/* #7: report-issue dialog + confirmation toast */
+.reportbox { width: min(92vw, 460px); }
+.reportbox textarea { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 8px 10px; font: inherit; resize: vertical; }
+.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 90;
+  background: #1d2b1a; border: 1px solid var(--glow); color: var(--glow); border-radius: 8px;
+  padding: 10px 18px; font-weight: 700; box-shadow: 0 4px 18px rgba(0,0,0,.5); }
+.netmode .toast { bottom: 178px; }   /* above the hand dock */
+
+/* #5: live X preview badge on hand cards + focus viewer line */
+.xnow { color: var(--glow); font-weight: 700; margin: 4px 0; }
+
+/* #7: grafted abilities composed into the one ability they really are */
+.grafted { background: var(--panel2); border-left: 3px solid var(--accent); border-radius: 4px;
+  padding: 6px 8px; margin: 6px 4px; text-align: left; }
+.grafttag { display: block; color: var(--accent); font-size: 10px; text-transform: uppercase;
+  letter-spacing: .06em; margin-bottom: 3px; }
+.graftbody { color: var(--text); font-size: 12px; }
