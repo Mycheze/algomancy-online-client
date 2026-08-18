@@ -292,3 +292,13 @@ button:disabled { opacity: .4; cursor: default; }
 .revealline .card { width: 54px; flex-shrink: 0; }
 .revealspacer { width: 54px; flex-shrink: 0; }
 .overlaybox > button { align-self: flex-end; }
+
+/* ── home-screen element picker (draft trio) ────────────────────────── */
+.elpicker { display: flex; flex-direction: column; gap: 6px; background: var(--panel2);
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+.elrow { display: flex; gap: 6px; flex-wrap: wrap; }
+.elchip { text-transform: capitalize; padding: 5px 10px; opacity: .55; border-width: 2px; }
+.elchip.on { opacity: 1; font-weight: 700; outline: 2px solid var(--accent); }
+.elchip.fire.on { border-color: var(--fire); } .elchip.water.on { border-color: var(--water); }
+.elchip.earth.on { border-color: #8a6b3d; } .elchip.wood.on { border-color: #4e8a3d; }
+.elchip.metal.on { border-color: #9aa5b0; }

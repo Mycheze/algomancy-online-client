@@ -30,15 +30,15 @@ class NetBackend implements Backend {
   /** set when the server hands this seat to a newer connection — stop rendering game UI */
   dead = false;
   ws: WebSocket;
-  constructor(room: string, seat: Seat | null, mode?: string) {
+  constructor(room: string, seat: Seat | null, mode?: string, els?: string[]) {
     if (seat != null) this.seat = seat;
     this.room = room;
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     this.ws = new WebSocket(`${proto}://${location.host}`);
     const name = (localStorage.getItem('algoName') ?? '').trim();
-    // mode only matters when this join creates the room (the creator's link
-    // carries it) — the server ignores it for existing rooms
-    this.ws.onopen = () => this.ws.send(JSON.stringify({ t: 'join', room, seat, name, mode }));
+    // mode + chosen trio only matter when this join creates the room (the
+    // creator's link carries them) — the server ignores them for existing rooms
+    this.ws.onopen = () => this.ws.send(JSON.stringify({ t: 'join', room, seat, name, mode, els }));
     this.ws.onmessage = ev => this.onMsg(JSON.parse(String(ev.data)));
     this.ws.onclose = () => {
       if (this.dead) return;
@@ -115,11 +115,17 @@ interface UiState {
   /** Pass pressed with castable spell tokens during battle (C5): which pass
    * button is being confirmed */
   confirmPass: 'pass' | 'passall' | null;
+  /** home screen: the draft trio being picked (persisted per browser) */
+  homeEls: string[];
 }
+const savedEls = (): string[] => {
+  try { return JSON.parse(localStorage.getItem('algoEls') ?? '') as string[]; }
+  catch { return ['fire', 'water', 'earth']; }
+};
 let ui: UiState = {
   carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
   draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0,
-  autopassPrefAt: -1, confirmDone: null, confirmPass: null,
+  autopassPrefAt: -1, confirmDone: null, confirmPass: null, homeEls: savedEls(),
 };
 /** deploy-end reveal waiting behind the interstitial (C2) — messages to show */
 let pendingReveal: string[] | null = null;
@@ -127,7 +133,7 @@ const resetUi = () => {
   ui = {
     carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
     draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0,
-    autopassPrefAt: -1, confirmDone: null, confirmPass: null,
+    autopassPrefAt: -1, confirmDone: null, confirmPass: null, homeEls: savedEls(),
   };
   pendingReveal = null;
 };
@@ -742,7 +748,7 @@ function render(): void {
   $app.innerHTML = `
     <div class="main">
       <div class="topbar">
-        <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ' · live draft' : ''}</span>
+        <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.join('+')}` : ''}</span>
         ${phaseTrackHtml()}
         <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
         ${netTag}
@@ -869,7 +875,15 @@ function renderHome(): void {
     <h1 class="homelogo">ALGOMANCY</h1>
     <label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>
     <div class="homebtns">
-      <button class="primary" data-btn="newgame" data-mode="draft">New live draft</button>
+      <div class="elpicker">
+        <div class="zonelabel">Live draft — pick exactly 3 elements</div>
+        <div class="elrow">${(['fire', 'water', 'earth', 'wood', 'metal'] as const).map(el =>
+          `<button class="elchip ${el} ${ui.homeEls.includes(el) ? 'on' : ''}" data-btn="eltoggle" data-el="${el}">${el}</button>`).join('')}
+          <button data-btn="elrandom" title="pick a random trio">🎲</button>
+        </div>
+        <button class="primary" data-btn="newgame" data-mode="draft" ${ui.homeEls.length === 3 ? '' : 'disabled'}>
+          New live draft${ui.homeEls.length === 3 ? ` · ${ui.homeEls.join(' + ')}` : ` (${ui.homeEls.length}/3 picked)`}</button>
+      </div>
       <button data-btn="newgame" data-mode="shared">New constructed game</button>
       <div class="joinrow">
         <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
@@ -954,11 +968,33 @@ document.addEventListener('click', e => {
 
 function handleButton(btn: HTMLElement): void {
   const b = btn.dataset['btn'];
+  if (b === 'eltoggle') {
+    const el = btn.dataset['el']!;
+    if (ui.homeEls.includes(el)) ui.homeEls = ui.homeEls.filter(x => x !== el);
+    else if (ui.homeEls.length < 3) ui.homeEls.push(el);
+    else { ui.homeEls.shift(); ui.homeEls.push(el); }   // full: rotate the oldest out
+    localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
+    renderHome();
+    return;
+  }
+  if (b === 'elrandom') {
+    const all = ['fire', 'water', 'earth', 'wood', 'metal'];
+    ui.homeEls = [];
+    while (ui.homeEls.length < 3) {
+      const pick = all[Math.floor(Math.random() * all.length)]!;
+      if (!ui.homeEls.includes(pick)) ui.homeEls.push(pick);
+    }
+    localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
+    renderHome();
+    return;
+  }
   if (b === 'newgame') {
     saveHomeName();
     const mode = btn.dataset['mode'] === 'draft' ? 'draft' : 'shared';
+    const els = mode === 'draft' && ui.homeEls.length === 3
+      ? `&els=${encodeURIComponent(ui.homeEls.join(','))}` : '';
     fetch('/api/new').then(r => r.json()).then((r: { code: string }) => {
-      location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0&mode=${mode}`;
+      location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0&mode=${mode}${els}`;
     }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
     return;
   }
@@ -1315,11 +1351,15 @@ if (params.has('room') && params.get('room')!.trim()) {
   const room = params.get('room')!.toUpperCase().trim();
   const sp = params.get('seat');
   const seat: Seat | null = sp === '0' ? 0 : sp === '1' ? 1 : null;
-  NET = new NetBackend(room, seat, params.get('mode') ?? undefined);
+  const urlEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean);
+  NET = new NetBackend(room, seat, params.get('mode') ?? undefined, urlEls?.length ? urlEls : undefined);
   h = NET;
   renderConnecting();
 } else if (params.has('hotseat')) {
-  if (params.get('mode') === 'draft') h = new Harness(Math.floor(Math.random() * 1e6), undefined, 'draft');
+  if (params.get('mode') === 'draft') {
+    const hotEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean) as import('../src/types.ts').Element[] | undefined;
+    h = new Harness(Math.floor(Math.random() * 1e6), undefined, 'draft', hotEls);
+  }
   render();
 } else if (params.has('demo')) {
   demoBattle();

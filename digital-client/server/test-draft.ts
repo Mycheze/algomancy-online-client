@@ -54,8 +54,8 @@ class Client {
     const i = this.waiters.findIndex(w => w.pred(m));
     if (i >= 0) this.waiters.splice(i, 1)[0]!.resolve(m);
   }
-  next(pred: (m: Msg) => boolean, timeoutMs = 5000): Promise<Msg> {
-    const past = this.msgs.find(pred);
+  next(pred: (m: Msg) => boolean, timeoutMs = 5000, after = 0): Promise<Msg> {
+    const past = this.msgs.slice(after).find(pred);
     if (past) return Promise.resolve(past);
     return new Promise((res, rej) => {
       this.waiters.push({ pred, resolve: res });
@@ -132,9 +132,11 @@ try {
   ok(u.view.draftDone?.[0] === false && u.view.draftDone?.[1] === true, 'undo re-opened seat 0 draft step');
   ok(u.view.packs[0].every((c: string) => c !== HIDDEN), 'pack visible again after undo');
   // re-commit: seat 1's earlier commit still stands, so packs pass again.
-  // seat 1's post-pass pack must be seat 0's old pack (the 1v1 swap).
+  // Only match messages arriving AFTER the send — the first pass-packs update
+  // has the identical shape and a stale match would race the server kill.
+  const mark = c0.msgs.length;
   c0.send({ t: 'action', action: noopCommit(c0.view, 0) });
-  await c0.next(m => m.t === 'update' && m.view?.draftDone === null && !m.log);
+  await c0.next(m => m.t === 'update' && m.view?.draftDone === null && !m.log, 5000, mark);
   ok(true, 're-commit after undo passes the packs again');
   void seat1PackBefore;
 
@@ -151,7 +153,7 @@ try {
   c2.send({ t: 'join', room: ROOM, seat: 0 });
   await c2.next(m => m.t === 'joined');
   ok(c2.view.mode === 'draft' && c2.view.draftDone === null && c2.view.turn === 1,
-    'restart restored the draft room mid-planning');
+    `restart restored the draft room mid-planning (got mode=${c2.view.mode} draftDone=${JSON.stringify(c2.view.draftDone)} turn=${c2.view.turn})`);
 
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {

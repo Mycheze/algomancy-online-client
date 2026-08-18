@@ -147,6 +147,23 @@ visible/cancelable; a real auto-pass TOGGLE (passes only when pass is the
 only legal action); end-of-combat guard when castable spell tokens remain.
 Suite 296 / 0 fail.
 
+## THE FULL SET (2026-08-18, late): all five elements scripted
+
+Eight parallel scripting agents added the remaining 130 wood/metal/hybrid
+cards: **DECK_LIST = 320 = the whole draftable box** (54×5 mono + 50
+hybrids), all **10 trios Manual-exact at 177** (test/31-trios gate). Draft
+rooms take a CHOSEN TRIO end to end: `createGame(seed, names, mode, els)` +
+`sanitizeTrio`, rooms persist `els`, the join carries it, and the home
+screen has a 3-of-5 element picker (colored chips + random die, persisted
+per browser). Suite 453 / 0 fail / 30 todo; 200 fuzz games across all 10
+trios + the 320-card shared deck clean. New parking-lot themes from the
+batches (for a future primitives session): control-change primitive
+(approximated per-batch as `giveControl`), copy/transform machinery,
+attribute/ability suppression layer, damage prevention/replacement, cast-time
+X payment, died-event token/counter snapshots, `tokenCreated`/`targeted`/
+`resourceActivated` not dispatched to trigger listeners, play-permission and
+cost-modifier layers (Rook, The Silent, Dispatch Courier, Worldbender).
+
 ## M5 — Beyond v1 — open-ended
 - More elements → full 5-element draft; FFA intents (commit-reveal); teams; spectators;
   replay viewer; puzzle mode (load `puzzles/*.json` as scenarios — free synergy with the

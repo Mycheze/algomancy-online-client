@@ -11,8 +11,8 @@
 import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Action, EngineEvent, GameMode, GameState } from '../engine/src/types.ts';
-import { apply, createGame, IllegalAction } from '../engine/src/apply.ts';
+import type { Action, Element, EngineEvent, GameMode, GameState } from '../engine/src/types.ts';
+import { apply, createGame, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const GAMES_DIR = join(HERE, 'games');
@@ -25,6 +25,8 @@ export interface Room {
   code: string;
   seed: number;
   mode: GameMode;
+  /** draft mode: the chosen trio (sanitized); ignored in 'shared' */
+  els: Element[];
   names: [string, string];
   state: GameState;
   actions: Action[];
@@ -46,8 +48,8 @@ export interface Room {
 const rooms = new Map<string, Room>();
 
 /** Build a fresh game and its initial event list. */
-function fresh(seed: number, names: [string, string], mode: GameMode): { state: GameState; events: EngineEvent[] } {
-  const r = createGame(seed, names, mode);
+function fresh(seed: number, names: [string, string], mode: GameMode, els: Element[]): { state: GameState; events: EngineEvent[] } {
+  const r = createGame(seed, names, mode, els);
   return { state: r.state, events: r.events };
 }
 
@@ -65,8 +67,8 @@ interface Rebuilt {
  * newer) engine now rejects is skipped with a warning instead of killing the
  * whole room — a personal server should never eat a live game over a rules
  * tweak. */
-function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode): Rebuilt {
-  let { state, events } = fresh(seed, names, mode);
+function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[]): Rebuilt {
+  let { state, events } = fresh(seed, names, mode, els);
   const all = [...events];
   let deploySnapshot: GameState | null = null;
   let deployStartIndex = -1;
@@ -105,10 +107,11 @@ export function getRoom(code: string): Room | undefined {
   return rooms.get(code);
 }
 
-export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared'): Room {
-  const { state, events } = fresh(seed, names, mode);
+export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[]): Room {
+  const trio = sanitizeTrio(els);
+  const { state, events } = fresh(seed, names, mode, trio);
   const room: Room = {
-    code, seed, mode, names, state, actions: [], events, sockets: [null, null],
+    code, seed, mode, els: trio, names, state, actions: [], events, sockets: [null, null],
     deploySnapshot: null, heldDeploy: [[], []], deployStartIndex: -1,
   };
   rooms.set(code, room);
@@ -116,10 +119,10 @@ export function createRoom(code: string, seed: number, names: [string, string] =
   return room;
 }
 
-/** `mode` only matters when the room doesn't exist yet (the creator's first
- * join carries it); joining an existing room ignores it. */
-export function getOrCreateRoom(code: string, mode: GameMode = 'shared'): Room {
-  return rooms.get(code) ?? createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode);
+/** `mode`/`els` only matter when the room doesn't exist yet (the creator's
+ * first join carries them); joining an existing room ignores them. */
+export function getOrCreateRoom(code: string, mode: GameMode = 'shared', els?: Element[]): Room {
+  return rooms.get(code) ?? createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, els);
 }
 
 /** Apply an action to the room's authoritative state and record it. Throws
@@ -161,7 +164,7 @@ export function undoLastAction(room: Room): void {
 export function undoActionAt(room: Room, index: number): void {
   room.actions.splice(index, 1);
   const { state, events, deploySnapshot, heldDeploy, deployStartIndex } =
-    rebuild(room.seed, room.names, room.actions, room.mode);
+    rebuild(room.seed, room.names, room.actions, room.mode, room.els);
   room.state = state;
   room.events = events;
   room.deploySnapshot = deploySnapshot;
@@ -184,7 +187,7 @@ function persist(room: Room): void {
   try {
     mkdirSync(GAMES_DIR, { recursive: true });
     const path = join(GAMES_DIR, `${room.code}.json`);
-    writeFileSync(path, JSON.stringify({ seed: room.seed, mode: room.mode, names: room.names, actions: room.actions }));
+    writeFileSync(path, JSON.stringify({ seed: room.seed, mode: room.mode, els: room.els, names: room.names, actions: room.actions }));
   } catch (err) {
     console.error(`[rooms] could not persist ${room.code}:`, err);
   }
@@ -204,13 +207,14 @@ export function restoreRooms(): void {
     const code = f.replace(/\.json$/, '');
     try {
       const raw = JSON.parse(readFileSync(join(GAMES_DIR, f), 'utf8')) as {
-        seed: number; mode?: GameMode; names?: [string, string]; actions: Action[];
+        seed: number; mode?: GameMode; els?: Element[]; names?: [string, string]; actions: Action[];
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const mode = raw.mode ?? 'shared';
-      const { state, events, deploySnapshot, heldDeploy, deployStartIndex } = rebuild(raw.seed, names, raw.actions, mode);
+      const els = sanitizeTrio(raw.els);
+      const { state, events, deploySnapshot, heldDeploy, deployStartIndex } = rebuild(raw.seed, names, raw.actions, mode, els);
       rooms.set(code, {
-        code, seed: raw.seed, mode, names, state, actions: raw.actions, events,
+        code, seed: raw.seed, mode, els, names, state, actions: raw.actions, events,
         sockets: [null, null], deploySnapshot, heldDeploy, deployStartIndex,
       });
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions)`);

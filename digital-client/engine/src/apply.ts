@@ -23,21 +23,32 @@ const ELEMENTS: ResourceKind[] = ['fire', 'water', 'earth', 'wood', 'metal'];
 
 // ── game creation ─────────────────────────────────────────────────────
 
-/** The fully-scripted live-draft trio. Each further finished element adds
- * more playable trios; for now a draft game is always fire+water+earth. */
+export const ALL_ELEMENTS: Element[] = ['fire', 'water', 'earth', 'wood', 'metal'];
+
+/** the default trio when none is chosen (the first fully-scripted one) */
 export const DRAFT_TRIO: Element[] = ['fire', 'water', 'earth'];
+
+/** Sanitize a requested draft trio: exactly 3 distinct real elements, in
+ * canonical order — anything else falls back to the default trio. */
+export function sanitizeTrio(els: unknown): Element[] {
+  if (!Array.isArray(els)) return [...DRAFT_TRIO];
+  const picked = ALL_ELEMENTS.filter(e => els.includes(e));
+  return picked.length === 3 ? picked : [...DRAFT_TRIO];
+}
 
 export function createGame(
   seed: number,
   names: [string, string] = ['Player 1', 'Player 2'],
   mode: GameMode = 'shared',
+  draftElements?: Element[],
 ): ApplyResult {
   let rngState = seed >>> 0;
+  const trio = sanitizeTrio(draftElements ?? DRAFT_TRIO);
   const deckCards: CardName[] = [];
   if (mode === 'draft') {
     // the physical live-draft deck: one copy of each card of the chosen trio
     // (54 per element + 5 per hybrid pair = 177 for a trio)
-    deckCards.push(...draftDeckList(DRAFT_TRIO));
+    deckCards.push(...draftDeckList(trio));
   } else {
     for (const n of DECK_LIST) deckCards.push(n, n);
   }
@@ -50,7 +61,7 @@ export function createGame(
     seed, rngState, actionCount: 0, turn: 0, phase: 'planning',
     initiative: initRoll < 0.5 ? 0 : 1, winner: null, nextId: 1,
     mode, packs: [[], []], draftDone: null, seenHand: [null, null],
-    elements: mode === 'draft' ? [...DRAFT_TRIO] : ['fire', 'water', 'earth', 'wood', 'metal'],
+    elements: mode === 'draft' ? trio : [...ALL_ELEMENTS],
     sharedDeck: deck,
     players: names.map((name, seat) => ({
       seat, name, life: 30, hand: [], bin: [],
@@ -101,8 +112,8 @@ export function apply(state: GameState, action: Action): ApplyResult {
 }
 
 /** Replay = seed + action log (docs/04 §1). */
-export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode): ApplyResult {
-  let r = createGame(seed, names, mode);
+export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode, draftElements?: Element[]): ApplyResult {
+  let r = createGame(seed, names, mode, draftElements);
   for (const a of actions) r = { ...apply(r.state, a), events: r.events };
   return r;
 }

@@ -3898,5 +3898,2531 @@
   "augmentAttrs": [],
   "text": "Recall X target nontoken allies. Then each player sacrifices a unit and you lose 1 life for each ally recalled this way.",
   "image": "Torrential-Reclamation.jpg"
+ },
+ "Abduct": {
+  "name": "Abduct",
+  "factions": [
+   "wood",
+   "metal"
+  ],
+  "cost": "gm",
+  "mana": "X",
+  "power": 2,
+  "toughness": 2,
+  "type": "{Battle} Alien Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Gain control of target unit with cost [x] or less unless its controller pays  [x].",
+  "image": "Abduct.jpg"
+ },
+ "Floral Singularity": {
+  "name": "Floral Singularity",
+  "factions": [
+   "wood",
+   "metal"
+  ],
+  "cost": "ggm",
+  "mana": "X",
+  "power": 2,
+  "toughness": 2,
+  "type": "Cosmic Flower Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "/[Create X 1/1 units {i1}or your units become base X/X until regroup].",
+  "image": "Floral-Singularity.jpg"
+ },
+ "Ominous Growth": {
+  "name": "Ominous Growth",
+  "factions": [
+   "wood",
+   "metal"
+  ],
+  "cost": "gm",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Alien Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] After combat, delete all tokens.",
+  "image": "Ominous-Growth.jpg"
+ },
+ "The World Shepherd": {
+  "name": "The World Shepherd",
+  "factions": [
+   "wood",
+   "metal"
+  ],
+  "cost": "gm",
+  "mana": 1,
+  "power": 2,
+  "toughness": 3,
+  "type": "Robot Fungus {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever a unit token is created, put a -1/-1 counter on me. If you do, put +1/+1 counter on that token.",
+  "image": "The-World-Shepherd.jpg"
+ },
+ "Wither and Bloom": {
+  "name": "Wither and Bloom",
+  "factions": [
+   "wood",
+   "metal"
+  ],
+  "cost": "gm",
+  "mana": 3,
+  "power": 1,
+  "toughness": 2,
+  "type": "{Battle} Arcane Druid Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] /[Put a -1/-1 counter on each enemy or{i1} put a{/n} +1/+1 counter on each of your units.]",
+  "image": "Wither-and-Bloom.jpg"
+ },
+ "Aberrant Statweaver": {
+  "name": "Aberrant Statweaver",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 3,
+  "power": 3,
+  "toughness": 3,
+  "type": "{Virus} {Unstable} Luminary Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Your units are base 3/3.",
+  "image": "Aberrant-Statweaver.jpg"
+ },
+ "Ancient One": {
+  "name": "Ancient One",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 2,
+  "power": 1,
+  "toughness": 1,
+  "type": "Ancient Mimic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] I have all abilities of adjacent allies. {/n}{i}(This includes modded abilities.)",
+  "image": "Ancient-One.jpg"
+ },
+ "Arcane Echo": {
+  "name": "Arcane Echo",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Battle} Arcane Mimic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Create a copy of target token.",
+  "image": "Arcane-Echo.jpg"
+ },
+ "Automaton of Abundance": {
+  "name": "Automaton of Abundance",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 5,
+  "power": 2,
+  "toughness": 6,
+  "type": "Automaton Construct Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] If you would create one or more unit tokens, instead create those tokens plus an additional copy of each unique token you created.",
+  "image": "Automaton-of-Abundance.jpg"
+ },
+ "Biomass Devourer": {
+  "name": "Biomass Devourer",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 3,
+  "toughness": 2,
+  "type": "Alien Robot Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever a nontoken unit dies, you may pay  [two] to erase it and put two +1/+1 counters on me.",
+  "image": "Biomass-Devourer.jpg"
+ },
+ "Body Swap": {
+  "name": "Body Swap",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Battle} Arcane Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Exchange the base stats of two target units until regroup. {i}(With each other.)",
+  "image": "Body-Swap.jpg"
+ },
+ "Borrower of Forms": {
+  "name": "Borrower of Forms",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mmm",
+  "mana": 7,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Battle} Squid Mimic Spell Unit",
+  "kind": "spellUnit",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Erase target unit. I become an exact copy of that unit. {i}(I copy all stat changes, counters, card text and mods).",
+  "image": "Borrower-of-Forms.jpg"
+ },
+ "Celestial Fluxmorph": {
+  "name": "Celestial Fluxmorph",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 1,
+  "toughness": 1,
+  "type": "Cosmic Spirit {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I spawn or become modded, put a +1/+1 counter on each of your units. {/n}[Augment] When I despawn, remove all counters from your units.",
+  "image": "Celestial-Fluxmorph.jpg"
+ },
+ "Celestial Shifter": {
+  "name": "Celestial Shifter",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Haste} Cosmic Alien Unit",
+  "kind": "unit",
+  "timing": "haste",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment]  [x]: I become base X/X until regroup.",
+  "image": "Celestial-Shifter.jpg"
+ },
+ "Containment Protocol": {
+  "name": "Containment Protocol",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 3,
+  "power": 4,
+  "toughness": 1,
+  "type": "{Battle} Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Negate all activated and triggered effects.",
+  "image": "Containment-Protocol.jpg"
+ },
+ "Cosmic Conspirator": {
+  "name": "Cosmic Conspirator",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 3,
+  "power": 3,
+  "toughness": 3,
+  "type": "Luminary Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "If you would create a Robot, Poison, Crystal or Fireball, you may instead create a token of any of these types. {i}(With the same X value.)",
+  "image": "Cosmic-Conspirator.jpg"
+ },
+ "Deformant": {
+  "name": "Deformant",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Robot Spirit Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Sacrifice me and another ally: Delete all units with cost equal to the total number of counters on us.",
+  "image": "Deformant.jpg"
+ },
+ "Discharge": {
+  "name": "Discharge",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Elemental Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] /[Remove X +1/+1 counters from allies]: I deal X damage to target unit.",
+  "image": "Discharge.jpg"
+ },
+ "Dispatch Courier": {
+  "name": "Dispatch Courier",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "Robot Horse Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Each turn, you may play a unit during the mana step as if it had  [Haste].",
+  "image": "Dispatch-Courier.jpg"
+ },
+ "Download": {
+  "name": "Download",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 1,
+  "power": 4,
+  "toughness": 3,
+  "type": "{Battle} Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Gain control of target token. You may choose new targets for spells controlled this way.",
+  "image": "Download.jpg"
+ },
+ "Eldritch Dreamtender": {
+  "name": "Eldritch Dreamtender",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "{Haste} {Evasive} Cosmic Alien Unit",
+  "kind": "unit",
+  "timing": "haste",
+  "attrs": [
+   "Evasive"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When my column deals combat damage to an opponent, sacrifice me. If you do, look at that player's hand and discard a card from it.",
+  "image": "Eldritch-Dreamtender.jpg"
+ },
+ "Evolutionary Experiment": {
+  "name": "Evolutionary Experiment",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 0,
+  "toughness": 1,
+  "type": "Technology Strider {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever I am modded or applied as a mod, put two +1/+1 counters on me.",
+  "image": "Evolutionary-Experiment.jpg"
+ },
+ "Flux Constructor": {
+  "name": "Flux Constructor",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 3,
+  "power": 3,
+  "toughness": 3,
+  "type": "Alien Robot Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever one of your units with one or more counters on it dies, you may put those counters onto another target unit.",
+  "image": "Flux-Constructor.jpg"
+ },
+ "Flux Resonator": {
+  "name": "Flux Resonator",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Technology Construct Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] If one or more counters would be put on a unit by an allied source, put that many counters plus one instead.",
+  "image": "Flux-Resonator.jpg"
+ },
+ "Foretell": {
+  "name": "Foretell",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 1,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Battle} Cosmic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Glimpse 1 {i}(Reveal the top card of the deck {/n}and cache it. Until end of turn, you may play it {/n}as if it was in your hand, ignoring affinity.)",
+  "image": "Foretell.jpg"
+ },
+ "Formless": {
+  "name": "Formless",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 3,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Flying} Cloud Avatar Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Flying"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block,  [Switch] Target unit be- {/n}comes a base 4/4 and loses all attributes until regroup. {i}(This removes attributes from its column.)",
+  "image": "Formless.jpg"
+ },
+ "Hooba-Bot": {
+  "name": "Hooba-Bot",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 3,
+  "power": 1,
+  "toughness": 2,
+  "type": "Hooba Robot Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When I attack or block, create a Robot 2 in my formation.",
+  "image": "Hooba-Bot.jpg"
+ },
+ "Instrument of Reassignment": {
+  "name": "Instrument of Reassignment",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 2,
+  "power": 3,
+  "toughness": 1,
+  "type": "Spirit Construct Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment]  [x], Sacrifice another nontoken unit: Create a Robot X. X can't be 0.",
+  "image": "Instrument-of-Reassignment.jpg"
+ },
+ "Interdiction Rift": {
+  "name": "Interdiction Rift",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 2,
+  "power": 4,
+  "toughness": 3,
+  "type": "{Battle}AI Cosmic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Target opponent negates an effect they control.",
+  "image": "Interdiction-Rift.jpg"
+ },
+ "Invasive Reassignment": {
+  "name": "Invasive Reassignment",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 2,
+  "power": 1,
+  "toughness": 1,
+  "type": "{Battle} {Reaping} Occult Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [
+   "Reaping"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Switch the power and defense of target unit until regroup.",
+  "image": "Invasive-Reassignment.jpg"
+ },
+ "Linked Extinction": {
+  "name": "Linked Extinction",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 1,
+  "power": 4,
+  "toughness": 3,
+  "type": "{Battle} Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] /[Sacrifce a unit]: Each opponent sacrifices a unit.",
+  "image": "Linked-Extinction.jpg"
+ },
+ "Living Forge": {
+  "name": "Living Forge",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 4,
+  "power": 2,
+  "toughness": 4,
+  "type": "Robot Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment]  [three]: Create a Robot 2.",
+  "image": "Living-Forge.jpg"
+ },
+ "Manufacture": {
+  "name": "Manufacture",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mmm",
+  "mana": 6,
+  "power": 1,
+  "toughness": 3,
+  "type": "Robot Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Create a Robot 3, a Robot 2 and a Robot 1.",
+  "image": "Manufacture.jpg"
+ },
+ "Monke": {
+  "name": "Monke",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "{Battle} Bedlam Alien Monkey Unit",
+  "kind": "unit",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "If I spawned this turn, other units lose all attributes and abilities during battle.",
+  "image": "Monke.jpg"
+ },
+ "Nebula Drifter": {
+  "name": "Nebula Drifter",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "[Augment] {Flying} Alien Cloud {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Flying"
+  ],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [
+   "Flying"
+  ],
+  "text": "",
+  "image": "Nebula-Drifter.jpg"
+ },
+ "Omniwield Evoker": {
+  "name": "Omniwield Evoker",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mmm",
+  "mana": 3,
+  "power": 2,
+  "toughness": 1,
+  "type": "Cosmic Robot Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[three]:   [Switch] Put a +1/+1 counter on me.",
+  "image": "Omniwield-Evoker.jpg"
+ },
+ "Perish": {
+  "name": "Perish",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 4,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Battle} Occult Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Each player sacrifices half of their units, rounded up.",
+  "image": "Perish.jpg"
+ },
+ "Powerforge Synergist": {
+  "name": "Powerforge Synergist",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "Robot Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "I spawn with two +1/+1 counters. {/n} [Augment] When I despawn, you may move my counters onto target unit.",
+  "image": "Powerforge-Synergist.jpg"
+ },
+ "Reforge the Dead": {
+  "name": "Reforge the Dead",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 3,
+  "power": 5,
+  "toughness": 6,
+  "type": "{Battle} Occult Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Your units gain \"When I die, create a Robot 3.\" until regroup.",
+  "image": "Reforge-the-Dead.jpg"
+ },
+ "Refuse Reclaimer": {
+  "name": "Refuse Reclaimer",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "Occult Scrap Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever another unit dies, put a +1/+1 counter on me.",
+  "image": "Refuse-Reclaimer.jpg"
+ },
+ "Riftwalker": {
+  "name": "Riftwalker",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 4,
+  "toughness": 2,
+  "type": "Cosmic Strider {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment][once]  [one]: Switch my position with another target ally in my formation.",
+  "image": "Riftwalker.jpg"
+ },
+ "Scavenging Sentry": {
+  "name": "Scavenging Sentry",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Occult Scrap Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Sacrifice another unit: Put a +1/+1 counter on me.",
+  "image": "Scavenging-Sentry.jpg"
+ },
+ "Scrap For Parts": {
+  "name": "Scrap For Parts",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Battle} Scrap Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch] Move all counters from target unit onto another target unit.",
+  "image": "Scrap-For-Parts.jpg"
+ },
+ "Self-Assembly": {
+  "name": "Self-Assembly",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 1,
+  "toughness": 3,
+  "type": "Scrap Technology Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Create a Robot X, where X is your  [m].",
+  "image": "Self-Assembly.jpg"
+ },
+ "Soul Reaver": {
+  "name": "Soul Reaver",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 3,
+  "power": 2,
+  "toughness": 3,
+  "type": "Demon Technology {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment]  [one], Remove X +1/+1 counters from me: I deal X damage to target unit.",
+  "image": "Soul-Reaver.jpg"
+ },
+ "Suppression Field": {
+  "name": "Suppression Field",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 1,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Battle} Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Target unit loses all attributes and abilities until regroup. Erase all of its mods and negate all of its effects.",
+  "image": "Suppression-Field.jpg"
+ },
+ "Synaptic Energizer": {
+  "name": "Synaptic Energizer",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 2,
+  "power": 0,
+  "toughness": 1,
+  "type": "Scrap Construct Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "After combat, [Switch1] Put a +1/+1 counter on each of your units.",
+  "image": "Synaptic-Energizer.jpg"
+ },
+ "Technological Superiority": {
+  "name": "Technological Superiority",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Duplicate each counter on target unit.",
+  "image": "Technological-Superiority.jpg"
+ },
+ "Transmogrifant": {
+  "name": "Transmogrifant",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 4,
+  "power": 4,
+  "toughness": 3,
+  "type": "Alien {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Your other units gain +2/+2 and lose all attributes and abilities.",
+  "image": "Transmogrifant.jpg"
+ },
+ "Trashling": {
+  "name": "Trashling",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "[Augment] {Unaware} Scrap Robot {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Unaware"
+  ],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [
+   "Unaware"
+  ],
+  "text": "",
+  "image": "Trashling.jpg"
+ },
+ "Unmake": {
+  "name": "Unmake",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Battle} Occult Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Delete target unit with base power 2 or less.",
+  "image": "Unmake.jpg"
+ },
+ "Unstable Refactor": {
+  "name": "Unstable Refactor",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 1,
+  "toughness": 2,
+  "type": "{Battle} Cosmic Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Target unit becomes base 5/0 until regroup.",
+  "image": "Unstable-Refactor.jpg"
+ },
+ "Unstable Singularity": {
+  "name": "Unstable Singularity",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 3,
+  "power": 0,
+  "toughness": 1,
+  "type": "Cosmic Anima Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I die, [Switch1] Delete target unit.",
+  "image": "Unstable-Singularity.jpg"
+ },
+ "Void Memory": {
+  "name": "Void Memory",
+  "factions": [
+   "metal"
+  ],
+  "cost": "m",
+  "mana": 2,
+  "power": 0,
+  "toughness": 1,
+  "type": "{Battle} Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Each opponent discards a /[unit {i1}or spell] if {/n}able. Otherwise, they reveal their hand.",
+  "image": "Void-Memory.jpg"
+ },
+ "Worldbender": {
+  "name": "Worldbender",
+  "factions": [
+   "metal"
+  ],
+  "cost": "mm",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Feeble} Cosmic Robot Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Feeble"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Skip your draft step. When you do, draw a card. You also lose 3 life if playing a constructed format.",
+  "image": "Worldbender.jpg"
+ },
+ "Aether Channeler": {
+  "name": "Aether Channeler",
+  "factions": [
+   "earth",
+   "wood"
+  ],
+  "cost": "eg",
+  "mana": 2,
+  "power": 2,
+  "toughness": 3,
+  "type": "Plant Primordial Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever another nontoken ally spawns, create a Crystal 1.",
+  "image": "Aether-Channeler.jpg"
+ },
+ "Corroded Alchemy": {
+  "name": "Corroded Alchemy",
+  "factions": [
+   "earth",
+   "wood"
+  ],
+  "cost": "eg",
+  "mana": 1,
+  "power": 0,
+  "toughness": 7,
+  "type": "Arcane Blight Crystal Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Create a Crystal 1 and a Poison 1.",
+  "image": "Corroded-Alchemy.jpg"
+ },
+ "Decay Distributor": {
+  "name": "Decay Distributor",
+  "factions": [
+   "earth",
+   "wood"
+  ],
+  "cost": "eg",
+  "mana": 4,
+  "power": 0,
+  "toughness": 7,
+  "type": "{Haste} Primordial Blight Unit",
+  "kind": "unit",
+  "timing": "haste",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever I am dealt damage, put that many -1/-1 counters on target unit.",
+  "image": "Decay-Distributor.jpg"
+ },
+ "Earthbound Replicator": {
+  "name": "Earthbound Replicator",
+  "factions": [
+   "wood",
+   "earth"
+  ],
+  "cost": "ge",
+  "mana": 2,
+  "power": 1,
+  "toughness": 3,
+  "type": "Primordial Elemental Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever a player plays a nonunit spell targeting me, they copy it and may choose new targets for the copy.",
+  "image": "Earthbound-Replicator.jpg"
+ },
+ "Spirit of Nature": {
+  "name": "Spirit of Nature",
+  "factions": [
+   "earth",
+   "wood"
+  ],
+  "cost": "eg",
+  "mana": 3,
+  "power": 2,
+  "toughness": 3,
+  "type": "Plant Crystal Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "After combat, [Switch1] Create a /[Poison {i1}or Crystal] 2.",
+  "image": "Spirit-of-Nature.jpg"
+ },
+ "Aethercap Siphoner": {
+  "name": "Aethercap Siphoner",
+  "factions": [
+   "wood",
+   "water"
+  ],
+  "cost": "gb",
+  "mana": 3,
+  "power": 4,
+  "toughness": 4,
+  "type": "Cosmic Fungus Blight Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "I spawn with three -1/-1 counters on me. {/n}[Augment] Whenever you play a nontoken spell, you may move a counter from me onto another target unit.",
+  "image": "Aethercap-Siphoner.jpg"
+ },
+ "Galactic Germination": {
+  "name": "Galactic Germination",
+  "factions": [
+   "water",
+   "wood"
+  ],
+  "cost": "bg",
+  "mana": 3,
+  "power": 5,
+  "toughness": 1,
+  "type": "{Battle} Alien Fungus Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Create a 1/1 unit for each unit in target formation.",
+  "image": "Galactic-Germination.jpg"
+ },
+ "Invasive Species": {
+  "name": "Invasive Species",
+  "factions": [
+   "water",
+   "wood"
+  ],
+  "cost": "bg",
+  "mana": 1,
+  "power": 4,
+  "toughness": 4,
+  "type": "Alien Parasite Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] At the start of deployment, recall all your other units.",
+  "image": "Invasive-Species.jpg"
+ },
+ "Lumengrove Lurker": {
+  "name": "Lumengrove Lurker",
+  "factions": [
+   "water",
+   "wood"
+  ],
+  "cost": "bg",
+  "mana": 2,
+  "power": 3,
+  "toughness": 2,
+  "type": "Mystic Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "After combat, [Switch1] Recall up to one target unit with cost less than or equal to the number of units in my formation.",
+  "image": "Lumengrove-Lurker.jpg"
+ },
+ "Mindwarp Sporefrog": {
+  "name": "Mindwarp Sporefrog",
+  "factions": [
+   "water",
+   "wood"
+  ],
+  "cost": "bg",
+  "mana": 3,
+  "power": 5,
+  "toughness": 6,
+  "type": "Alien Frog Parasite {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever you are dealt combat damage, target opponent gains control of me.",
+  "image": "Mindwarp-Sporefrog.jpg"
+ },
+ "All-Consuming Blight": {
+  "name": "All-Consuming Blight",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 4,
+  "power": 1,
+  "toughness": 2,
+  "type": "Ancient Blight Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Create a Poison 1 for each of your units.",
+  "image": "All-Consuming-Blight.jpg"
+ },
+ "Bioremediation": {
+  "name": "Bioremediation",
+  "factions": [
+   "wood"
+  ],
+  "cost": "ggg",
+  "mana": 4,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Battle} Fungus Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Target player reveals their hand. You choose {/n}a card from it and put it into your hand.",
+  "image": "Bioremediation.jpg"
+ },
+ "Boon of Protection": {
+  "name": "Boon of Protection",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 1,
+  "power": 1,
+  "toughness": 5,
+  "type": "{Battle} Druid Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Negate target effect that targets an allied effect, player or unit.",
+  "image": "Boon-of-Protection.jpg"
+ },
+ "Burgeon": {
+  "name": "Burgeon",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 2,
+  "power": 5,
+  "toughness": 5,
+  "type": "{Battle} Druid Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Double the /[power {i1}or defense] of target unit until regroup.",
+  "image": "Burgeon.jpg"
+ },
+ "Corrupting Blight": {
+  "name": "Corrupting Blight",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 1,
+  "power": 4,
+  "toughness": 4,
+  "type": "Blight Parasite {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] After combat, a player of your choice who doesn't control me gains control of me.",
+  "image": "Corrupting-Blight.jpg"
+ },
+ "Earnest Defender": {
+  "name": "Earnest Defender",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 3,
+  "power": 1,
+  "toughness": 3,
+  "type": "{Haste} Flower Guardian Unit",
+  "kind": "unit",
+  "timing": "haste",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever an ally becomes the target of an enemy spell, create a 1/1 unit.",
+  "image": "Earnest-Defender.jpg"
+ },
+ "Fungal Gardener": {
+  "name": "Fungal Gardener",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 2,
+  "power": 1,
+  "toughness": 2,
+  "type": "Fungus Druid Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Whenever a nontoken enemy dies, {/n}  [Switch] Create a 1/1 unit.",
+  "image": "Fungal-Gardener.jpg"
+ },
+ "Glowhaven Elder": {
+  "name": "Glowhaven Elder",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 3,
+  "power": 3,
+  "toughness": 3,
+  "type": "Mystic Tree {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Your other units gain +1/+1.",
+  "image": "Glowhaven-Elder.jpg"
+ },
+ "Growing Plague": {
+  "name": "Growing Plague",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "Alien Slime Parasite {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I spawn, draw a card. {/n}[Augment] When I despawn, each other player draws two cards.",
+  "image": "Growing-Plague.jpg"
+ },
+ "Hexbane Shiitake": {
+  "name": "Hexbane Shiitake",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 4,
+  "power": 3,
+  "toughness": 3,
+  "type": "Arcane Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment][once] Whenever another player plays a spell, you may exchange control of me for that spell. If you do, you may choose new targets for that spell.",
+  "image": "Hexbane-Shiitake.jpg"
+ },
+ "Hooba-Nan": {
+  "name": "Hooba-Nan",
+  "factions": [
+   "wood"
+  ],
+  "cost": "ggg",
+  "mana": 4,
+  "power": 5,
+  "toughness": 4,
+  "type": "Hooba Banana Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When I attack, if I am still in formation, create a 1/1 unit in all my empty adjacent slots.",
+  "image": "Hooba-Nan.jpg"
+ },
+ "Hush Mush": {
+  "name": "Hush Mush",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 2,
+  "power": 3,
+  "toughness": 1,
+  "type": "{Battle} Arcane Fungus Spell Unit",
+  "kind": "spellUnit",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Negate target effect. Its controller gains control of me.",
+  "image": "Hush-Mush.jpg"
+ },
+ "Inspiration": {
+  "name": "Inspiration",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 2,
+  "power": 3,
+  "toughness": 2,
+  "type": "Mystic Flower {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Your units adjacent to me gain +2/+2.",
+  "image": "Inspiration.jpg"
+ },
+ "Invigorate": {
+  "name": "Invigorate",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 1,
+  "power": 1,
+  "toughness": 3,
+  "type": "{Battle} Mystic Druid Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Target unit gains +0/+1 until regroup. Draw a card.",
+  "image": "Invigorate.jpg"
+ },
+ "Jollyglop": {
+  "name": "Jollyglop",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 3,
+  "power": 0,
+  "toughness": 4,
+  "type": "Alien Insect Plant Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment][once] When I am dealt damage, create that many 1/1 units.",
+  "image": "Jollyglop.jpg"
+ },
+ "Luminary Leader": {
+  "name": "Luminary Leader",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 3,
+  "power": 3,
+  "toughness": 3,
+  "type": "Plant Luminary Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack in a formation of four or more units,  [Switch1] Draw a card.",
+  "image": "Luminary-Leader.jpg"
+ },
+ "Megadeath": {
+  "name": "Megadeath",
+  "factions": [
+   "wood"
+  ],
+  "cost": "ggg",
+  "mana": 4,
+  "power": 5,
+  "toughness": 3,
+  "type": "Blight Beast Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack, [Switch1] Create a Poison 5.",
+  "image": "Megadeath.jpg"
+ },
+ "Might of the Grove": {
+  "name": "Might of the Grove",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 2,
+  "power": 3,
+  "toughness": 4,
+  "type": "{Battle}Tree Tree Druid Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Target unit gains +1/+1 for each of your units until regroup.",
+  "image": "Might-of-the-Grove.jpg"
+ },
+ "Mindspore Fiend": {
+  "name": "Mindspore Fiend",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "Alien Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "After combat, [Switch1] You may give an opponent control of target ally. If you do, draw a card.",
+  "image": "Mindspore-Fiend.jpg"
+ },
+ "Mycelial Mentor": {
+  "name": "Mycelial Mentor",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 1,
+  "power": 2,
+  "toughness": 1,
+  "type": "Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When you create a token, [Switch1] Target ally gains +3/+3 until regroup.",
+  "image": "Mycelial-Mentor.jpg"
+ },
+ "Noxious Deathcap": {
+  "name": "Noxious Deathcap",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 3,
+  "power": 4,
+  "toughness": 2,
+  "type": "Blight Fungus {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When I die, put a -1/-1 counter on each unit.",
+  "image": "Noxious-Deathcap.jpg"
+ },
+ "Noxious Demise": {
+  "name": "Noxious Demise",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 1,
+  "power": 1,
+  "toughness": 2,
+  "type": "{Battle} {Reaping} Arcane Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [
+   "Reaping"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Put a -1/-1 counter on target unit.",
+  "image": "Noxious-Demise.jpg"
+ },
+ "Organic Exchange": {
+  "name": "Organic Exchange",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 3,
+  "power": 4,
+  "toughness": 5,
+  "type": "{Battle} Fungus Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Exchange control of two target units and swap their positions.",
+  "image": "Organic-Exchange.jpg"
+ },
+ "Overbloom": {
+  "name": "Overbloom",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 2,
+  "power": 1,
+  "toughness": 2,
+  "type": "Flower Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Target unit gains +7/+7 until regroup.",
+  "image": "Overbloom.jpg"
+ },
+ "Pack Leader": {
+  "name": "Pack Leader",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 6,
+  "power": 4,
+  "toughness": 4,
+  "type": "Plant Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment][two]: Create a 1/1 unit.",
+  "image": "Pack-Leader.jpg"
+ },
+ "Pathogenic Enclave": {
+  "name": "Pathogenic Enclave",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 2,
+  "power": 2,
+  "toughness": 3,
+  "type": "Fungus Parasite {Virus} Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I spawn, create two 1/1 units. {/n}[Augment] When I despawn, delete all token allies.",
+  "image": "Pathogenic-Enclave.jpg"
+ },
+ "Pernicious Photosynthesis": {
+  "name": "Pernicious Photosynthesis",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 4,
+  "power": 1,
+  "toughness": 5,
+  "type": "Alien Druid Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Your units gain +2/+2 and {g}piercing until regroup. {i}(Excess damage from piercing sources is dealt to the recipient's controller.)",
+  "image": "Pernicious-Photosynthesis.jpg"
+ },
+ "Pestilent Mycelion": {
+  "name": "Pestilent Mycelion",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 2,
+  "power": 1,
+  "toughness": 3,
+  "type": "{Poisonous} Blight Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Poisonous"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever one or more -1/-1 counters are {/n}put on a unit, each opponent loses 1 life.",
+  "image": "Pestilent-Mycelion.jpg"
+ },
+ "Phytochemical Protection": {
+  "name": "Phytochemical Protection",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 2,
+  "power": 3,
+  "toughness": 4,
+  "type": "{Battle} Plant Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Until regroup, prevent all damage that {/n}would be dealt to target unit. Put a +1/+1 {/n}counter on it for each damage prevented {/n}this way.",
+  "image": "Phytochemical-Protection.jpg"
+ },
+ "Plague Bellower": {
+  "name": "Plague Bellower",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Insect Plant Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment]  [three]: Each opponent chooses one of their units. Put a -1/-1 counter on each of the chosen units.",
+  "image": "Plague-Bellower.jpg"
+ },
+ "Prickly Protector": {
+  "name": "Prickly Protector",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 1,
+  "power": 0,
+  "toughness": 1,
+  "type": "Plant Beast Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] I gain +1/+1 for each other ally.",
+  "image": "Prickly-Protector.jpg"
+ },
+ "Ralph": {
+  "name": "Ralph",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 1,
+  "power": 2,
+  "toughness": 1,
+  "type": "Apple Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[one]:   [Switch1] Give target opponent control of me. If you do, create three 1/1 units.",
+  "image": "Ralph.jpg"
+ },
+ "Rebalance": {
+  "name": "Rebalance",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Battle} Arcane Fungus Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Each player gives an opponent control of one of their units.",
+  "image": "Rebalance.jpg"
+ },
+ "Saprophytic Oracle": {
+  "name": "Saprophytic Oracle",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 3,
+  "power": 2,
+  "toughness": 3,
+  "type": "Fungus Oracle Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever a nontoken unit dies, create a 1/1 unit.",
+  "image": "Saprophytic-Oracle.jpg"
+ },
+ "Spawning Ground": {
+  "name": "Spawning Ground",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 1,
+  "power": 0,
+  "toughness": 2,
+  "type": "Blight Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] At the end of turn, you lose 1 life and create a Poison 1.",
+  "image": "Spawning-Ground.jpg"
+ },
+ "Spewing Mushroom": {
+  "name": "Spewing Mushroom",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 2,
+  "power": 1,
+  "toughness": 3,
+  "type": "Fungus Slime Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block, [Switch] Create a Poison X, where X is my power.",
+  "image": "Spewing-Mushroom.jpg"
+ },
+ "Sporebloom Siren": {
+  "name": "Sporebloom Siren",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 4,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Poisonous} Blight Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Poisonous"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I die,  [Switch] Delete all units with -1/-1 counters on them.",
+  "image": "Sporebloom-Siren.jpg"
+ },
+ "Sprouter": {
+  "name": "Sprouter",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Sacrifice me: [Switch] Create a Poison 1.",
+  "image": "Sprouter.jpg"
+ },
+ "Stellarspore Harvester": {
+  "name": "Stellarspore Harvester",
+  "factions": [
+   "wood"
+  ],
+  "cost": "ggg",
+  "mana": 5,
+  "power": 3,
+  "toughness": 5,
+  "type": "Cosmic Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "After combat, gain control of target unit if it has a -1/-1 counter on it. {/n}[Augment] When I die, give each unit you control with {/n}a -1/-1 counter on it to target opponent.",
+  "image": "Stellarspore-Harvester.jpg"
+ },
+ "Sudden Bloom": {
+  "name": "Sudden Bloom",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 1,
+  "power": 0,
+  "toughness": 1,
+  "type": "{Battle} Flower Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch] Your units gain +1/+1 until regroup.",
+  "image": "Sudden-Bloom.jpg"
+ },
+ "Sylvan Sprouting": {
+  "name": "Sylvan Sprouting",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 3,
+  "power": 5,
+  "toughness": 5,
+  "type": "Plant Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Create a 1/1 unit for each of your [g].",
+  "image": "Sylvan-Sprouting.jpg"
+ },
+ "Verdant Necrophage": {
+  "name": "Verdant Necrophage",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 3,
+  "power": 2,
+  "toughness": 4,
+  "type": "Fungus Slime Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I spawn, create a Poison 6. {/n}[Augment] When I despawn, each opponent recalls a unit from their bin.",
+  "image": "Verdant-Necrophage.jpg"
+ },
+ "Verdant Vengeance": {
+  "name": "Verdant Vengeance",
+  "factions": [
+   "wood"
+  ],
+  "cost": "gg",
+  "mana": 2,
+  "power": 1,
+  "toughness": 1,
+  "type": "{Battle} Bedlam Plant Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] I deal damage to target unit equal to the number of units you control.",
+  "image": "Verdant-Vengeance.jpg"
+ },
+ "Wandering Blightshell": {
+  "name": "Wandering Blightshell",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 2,
+  "power": 1,
+  "toughness": 2,
+  "type": "Blight Turtle Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When you put a counter on an enemy,  {/n}[Switch1] Draw a card.",
+  "image": "Wandering-Blightshell.jpg"
+ },
+ "Warbloom Herald": {
+  "name": "Warbloom Herald",
+  "factions": [
+   "wood"
+  ],
+  "cost": "g",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "Flower Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block, [Switch] Your units gain +1/+0 until regroup.",
+  "image": "Warbloom-Herald.jpg"
+ },
+ "Woodland Warding": {
+  "name": "Woodland Warding",
+  "factions": [
+   "wood"
+  ],
+  "cost": "ggg",
+  "mana": 3,
+  "power": 1,
+  "toughness": 2,
+  "type": "{Battle} Druid Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Negate all enemy effects targeting allied effects, players or units.",
+  "image": "Woodland-Warding.jpg"
+ },
+ "Auric Ascendant": {
+  "name": "Auric Ascendant",
+  "factions": [
+   "water",
+   "metal"
+  ],
+  "cost": "bm",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "Mystic Avatar Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[once]  [one], Recall another ally: I gain {g}flying and +2/+0 until regroup. {i}(Only flying units can block flying units.)",
+  "image": "Auric-Ascendant.jpg"
+ },
+ "Dematerialize": {
+  "name": "Dematerialize",
+  "factions": [
+   "water",
+   "metal"
+  ],
+  "cost": "bm",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Battle} Cosmic Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Negate target effect. Its controller Glimpses 3. {i}(They reveal the top three cards of their deck and cache one. Until end of turn, they may play it as if it was in their hand, ignoring affinity. Recycle the rest.)",
+  "image": "Dematerialize.jpg"
+ },
+ "Temporal Rift": {
+  "name": "Temporal Rift",
+  "factions": [
+   "water",
+   "metal"
+  ],
+  "cost": "bmm",
+  "mana": 4,
+  "power": 1,
+  "toughness": 2,
+  "type": "{Battle} Temporal Arcane Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "End this battle. Erase this spell. {i}(Negate all effects, this battle is over.)",
+  "image": "Temporal-Rift.jpg"
+ },
+ "Transmutide Enigma": {
+  "name": "Transmutide Enigma",
+  "factions": [
+   "water",
+   "metal"
+  ],
+  "cost": "bm",
+  "mana": 4,
+  "power": 5,
+  "toughness": 4,
+  "type": "Jellyfish Oracle Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever another ally spawns during battle, double its /[power {i1}or defense] until regroup.",
+  "image": "Transmutide-Enigma.jpg"
+ },
+ "Colossal Construction": {
+  "name": "Colossal Construction",
+  "factions": [
+   "earth",
+   "metal"
+  ],
+  "cost": "em",
+  "mana": 3,
+  "power": 2,
+  "toughness": 4,
+  "type": "Primordial Technology Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Create a Robot X, where X is the greatest defense among your units.",
+  "image": "Colossal-Construction.jpg"
+ },
+ "Reconfigure": {
+  "name": "Reconfigure",
+  "factions": [
+   "earth",
+   "metal"
+  ],
+  "cost": "em",
+  "mana": 4,
+  "power": 1,
+  "toughness": 2,
+  "type": "{Battle} Primordial Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Augment target unit and all of its mods onto another target unit. {i}(The first target must have{/i}  [Augment] {i}to be able to be augmented.)",
+  "image": "Reconfigure.jpg"
+ },
+ "Rook": {
+  "name": "Rook",
+  "factions": [
+   "metal",
+   "earth"
+  ],
+  "cost": "me",
+  "mana": 4,
+  "power": 4,
+  "toughness": 4,
+  "type": "Polyform Crab Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] You may augment cards from hand and bin during battle as if they were  [Virus].",
+  "image": "Rook.jpg"
+ },
+ "Scrapyard Custodian": {
+  "name": "Scrapyard Custodian",
+  "factions": [
+   "metal",
+   "earth"
+  ],
+  "cost": "me",
+  "mana": 3,
+  "power": 3,
+  "toughness": 3,
+  "type": "Robot Druid Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When you put one or more counters on an ally,  [Switch1] Draw a card.",
+  "image": "Scrapyard-Custodian.jpg"
+ },
+ "The Silent": {
+  "name": "The Silent",
+  "factions": [
+   "earth",
+   "metal"
+  ],
+  "cost": "em",
+  "mana": 3,
+  "power": 3,
+  "toughness": 4,
+  "type": "Cosmic Arcane Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Spells cost each player  [two] more to play {/n}for each spell their team has previously {/n}played in this battle.",
+  "image": "The-Silent.jpg"
+ },
+ "Ember of Life": {
+  "name": "Ember of Life",
+  "factions": [
+   "fire",
+   "wood"
+  ],
+  "cost": "rg",
+  "mana": 4,
+  "power": 2,
+  "toughness": 2,
+  "type": "Plant Elemental Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment][once] When one of your spell effects deals damage, create that many 1/1 units.",
+  "image": "Ember-of-Life.jpg"
+ },
+ "Hearthwood Ancient": {
+  "name": "Hearthwood Ancient",
+  "factions": [
+   "fire",
+   "wood"
+  ],
+  "cost": "rg",
+  "mana": 4,
+  "power": 0,
+  "toughness": 4,
+  "type": "Ancient Tree Structure Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Sacrifice another unit: Your units gain +1/+1 until regroup.",
+  "image": "Hearthwood-Ancient.jpg"
+ },
+ "Infernal Grovekeeper": {
+  "name": "Infernal Grovekeeper",
+  "factions": [
+   "fire",
+   "wood"
+  ],
+  "cost": "rg",
+  "mana": 4,
+  "power": 3,
+  "toughness": 5,
+  "type": "Infernal Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] After combat, put a -1/-1 counter on each {/n}unit, then I deal 2 damage to each player.",
+  "image": "Infernal-Grovekeeper.jpg"
+ },
+ "Rotspore Herald": {
+  "name": "Rotspore Herald",
+  "factions": [
+   "wood",
+   "fire"
+  ],
+  "cost": "gr",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Blight Spider Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Everything is {g}deadly. {i}(Any damage from a deadly source will kill a unit.)",
+  "image": "Rotspore-Herald.jpg"
+ },
+ "Volatile Toxicity": {
+  "name": "Volatile Toxicity",
+  "factions": [
+   "fire",
+   "wood"
+  ],
+  "cost": "rg",
+  "mana": 2,
+  "power": 4,
+  "toughness": 2,
+  "type": "{Battle} Infernal Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch] /[Sacrifice a unit]: Create a Poison X and a Fireball X, where X is the defense of the sacrificed unit.",
+  "image": "Volatile-Toxicity.jpg"
+ },
+ "Maelstrom Charger": {
+  "name": "Maelstrom Charger",
+  "factions": [
+   "fire",
+   "metal"
+  ],
+  "cost": "rm",
+  "mana": 3,
+  "power": 4,
+  "toughness": 2,
+  "type": "Elemental Maelstrom Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "As you play a nonunit spell, you may sacrifice me. If you do, copy that spell and you may choose new targets for the copy.",
+  "image": "Maelstrom-Charger.jpg"
+ },
+ "Malevolent Machinations": {
+  "name": "Malevolent Machinations",
+  "factions": [
+   "fire",
+   "metal"
+  ],
+  "cost": "rrm",
+  "mana": 2,
+  "power": 5,
+  "toughness": 3,
+  "type": "{Battle} Occult Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "/[Sacrifice X units]: Negate up to X target effects.",
+  "image": "Malevolent-Machinations.jpg"
+ },
+ "Malicious Hardware": {
+  "name": "Malicious Hardware",
+  "factions": [
+   "metal",
+   "fire"
+  ],
+  "cost": "mmr",
+  "mana": 5,
+  "power": 5,
+  "toughness": 6,
+  "type": "Robot Insect Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever one of your units dies, each opponent sacrifices a unit.",
+  "image": "Malicious-Hardware.jpg"
+ },
+ "Maw of Damnation": {
+  "name": "Maw of Damnation",
+  "factions": [
+   "fire",
+   "metal"
+  ],
+  "cost": "rm",
+  "mana": 4,
+  "power": 5,
+  "toughness": 3,
+  "type": "{Battle} Bedlam Maelstrom Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Each player sacrifices two units. If four or more units were sacrificed this way, repeat this.",
+  "image": "Maw-of-Damnation.jpg"
+ },
+ "Soulforger": {
+  "name": "Soulforger",
+  "factions": [
+   "fire",
+   "metal"
+  ],
+  "cost": "rrm",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Demon Robot Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever one of your nontoken units dies, create a Fireball 1.",
+  "image": "Soulforger.jpg"
  }
 }
