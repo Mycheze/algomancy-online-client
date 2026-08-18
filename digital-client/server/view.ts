@@ -25,12 +25,30 @@ export const HIDDEN_CARD = '__HIDDEN__';
 
 const other = (seat: Seat): Seat => (seat === 0 ? 1 : 0);
 
-/** The redacted GameState that `seat` is allowed to receive. */
-export function viewFor(state: GameState, seat: Seat): GameState {
+/** The redacted GameState that `seat` is allowed to receive.
+ *
+ * `frozenOpp`: during SIMULTANEOUS deployment, each seat's view of the
+ * opponent is served from the deploy-start snapshot — the opponent's live
+ * moves stay invisible until both players are done (main.ts then flushes the
+ * held events as the reveal). */
+export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | null): GameState {
   const v = structuredClone(state) as GameState;
 
+  if (frozenOpp && state.phase === 'deploy') {
+    const o = other(seat);
+    // the opponent's half of the world, exactly as deployment began
+    v.players[o] = structuredClone(frozenOpp.players[o]!);
+    for (const key of Object.keys(v.entities)) {
+      if (v.entities[Number(key)]!.controller === o) delete v.entities[Number(key)];
+    }
+    for (const [key, en] of Object.entries(frozenOpp.entities)) {
+      if (en.controller === o) v.entities[Number(key)] = structuredClone(en);
+    }
+    // done-flags stay live: "opponent finished deploying" is public
+  }
+
   // deck order is hidden (and derivable from the seed) — send a count only.
-  v.sharedDeck = state.sharedDeck.map(() => HIDDEN_CARD);
+  v.sharedDeck = v.sharedDeck.map(() => HIDDEN_CARD);
 
   // packs are face-down (Manual p.17: "packs may only be interacted with and
   // looked at during the draft step, and players may not look at the packs of

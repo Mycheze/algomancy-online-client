@@ -17,11 +17,11 @@ import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
 import type { Action, Seat } from '../engine/src/types.ts';
-import { legalActions, IllegalAction } from '../engine/src/apply.ts';
+import { forcedAction, legalActions, IllegalAction } from '../engine/src/apply.ts';
 import { viewFor, redactEvent, redactLog } from './view.ts';
 import {
-  applyToRoom, getOrCreateRoom, getRoom, renameSeat, restoreRooms, undoLastAction,
-  type Room, type Socket,
+  applyToRoom, clearDeployHold, getOrCreateRoom, getRoom, renameSeat, restoreRooms,
+  undoActionAt, undoLastAction, type Room, type Socket,
 } from './rooms.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -90,31 +90,35 @@ const send = (ws: WebSocket, obj: unknown): void => {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
 };
 
-/** Push the current authoritative state to one seat as a redacted resync. */
-function pushView(room: Room, seat: Seat): void {
+/** Push an update to one seat: redacted view (+optional events). During
+ * deployment the opponent's half of the view comes from the freeze. */
+function sendUpdate(room: Room, seat: Seat, events: import('../engine/src/types.ts').EngineEvent[]): void {
   const sock = room.sockets[seat] as unknown as WebSocket | null;
   if (!sock) return;
   send(sock, {
     t: 'update',
-    view: viewFor(room.state, seat),
+    view: viewFor(room.state, seat, room.deploySnapshot),
+    ...(events.length ? { events: events.map(e => redactEvent(e, seat, room.names)) } : {}),
     legal: legalActions(room.state, seat),
     peers: peersOf(room),
   });
 }
 
+/** Push the current authoritative state to one seat as a redacted resync. */
+function pushView(room: Room, seat: Seat): void {
+  sendUpdate(room, seat, []);
+}
+
 /** Push freshly-produced events + new state to both seats (per-seat redacted). */
 function broadcastAfterAction(room: Room, rawEvents: import('../engine/src/types.ts').EngineEvent[]): void {
-  for (const seat of [0, 1] as Seat[]) {
-    const sock = room.sockets[seat] as unknown as WebSocket | null;
-    if (!sock) continue;
-    send(sock, {
-      t: 'update',
-      view: viewFor(room.state, seat),
-      events: rawEvents.map(e => redactEvent(e, seat, room.names)),
-      legal: legalActions(room.state, seat),
-      peers: peersOf(room),
-    });
-  }
+  for (const seat of [0, 1] as Seat[]) sendUpdate(room, seat, rawEvents);
+}
+
+/** The log lines `seat` is currently allowed to see (opponent deploy moves
+ * still hidden this phase are filtered out — they arrive with the reveal). */
+function visibleLog(room: Room, seat: Seat): string[] {
+  const held = new Set(room.heldDeploy[seat]);
+  return redactLog(room.events.filter(e => !held.has(e)), seat, room.names);
 }
 
 const peersOf = (room: Room): [boolean, boolean] => [!!room.sockets[0], !!room.sockets[1]];
@@ -164,8 +168,8 @@ wss.on('connection', ws => {
       send(ws, {
         t: 'joined',
         room: code, seat,
-        view: viewFor(room.state, seat),
-        log: redactLog(room.events, seat, room.names),
+        view: viewFor(room.state, seat, room.deploySnapshot),
+        log: visibleLog(room, seat),
         legal: legalActions(room.state, seat),
         peers: peersOf(room),
         names: room.names,
@@ -186,8 +190,33 @@ wss.on('connection', ws => {
         return send(ws, { t: 'error', msg: `you are seat ${conn.seat}, not seat ${action.seat}` });
       }
       try {
-        const events = applyToRoom(conn.room, action);
-        broadcastAfterAction(conn.room, events);
+        const room = conn.room;
+        const wasDeploy = room.state.phase === 'deploy';
+        const events = applyToRoom(room, action);
+        // drain forced steps (an empty board "attacks"/"blocks" by itself)
+        for (let guard = 0; guard < 8; guard++) {
+          const f = forcedAction(room.state);
+          if (!f) break;
+          events.push(...applyToRoom(room, f));
+        }
+        const isDeploy = room.state.phase === 'deploy';
+        if (wasDeploy && isDeploy) {
+          // hidden simultaneous deployment: the actor sees their own events;
+          // the opponent gets a view refresh only (their half is frozen, but
+          // the done-flags are public)
+          sendUpdate(room, conn.seat, events);
+          sendUpdate(room, (conn.seat === 0 ? 1 : 0) as Seat, []);
+        } else if (wasDeploy && !isDeploy) {
+          // deployment just ended: flush each seat's held opponent events —
+          // the "replay" — together with the turn-end events
+          const mine = [...room.heldDeploy[conn.seat], ...events];
+          const theirs = [...room.heldDeploy[(conn.seat === 0 ? 1 : 0) as Seat]];
+          clearDeployHold(room);
+          sendUpdate(room, conn.seat, mine);
+          sendUpdate(room, (conn.seat === 0 ? 1 : 0) as Seat, theirs);
+        } else {
+          broadcastAfterAction(room, events);
+        }
       } catch (err) {
         if (err instanceof IllegalAction) send(ws, { t: 'error', msg: err.message });
         else { console.error('[ws] apply error:', err); send(ws, { t: 'error', msg: 'internal error' }); }
@@ -206,10 +235,23 @@ wss.on('connection', ws => {
       if (phase !== 'planning' && phase !== 'deploy') {
         return send(ws, { t: 'error', msg: 'undo only works during planning and deploy' });
       }
-      const last = room.actions[room.actions.length - 1];
-      if (!last) return send(ws, { t: 'error', msg: 'nothing to undo' });
-      if (last.seat !== conn.seat) return send(ws, { t: 'error', msg: 'your opponent acted since — nothing of yours to undo' });
-      undoLastAction(room);
+      if (phase === 'deploy') {
+        // simultaneous deployment: your last action may not be the last one
+        // overall (the opponent acts in parallel, hidden). Deploy actions are
+        // seat-independent, so your own most recent action WITHIN the deploy
+        // segment can be spliced out safely.
+        let i = room.actions.length - 1;
+        while (i >= room.deployStartIndex && i >= 0 && room.actions[i]!.seat !== conn.seat) i--;
+        if (i < room.deployStartIndex || i < 0 || room.deployStartIndex < 0) {
+          return send(ws, { t: 'error', msg: 'nothing of yours to undo this phase' });
+        }
+        undoActionAt(room, i);
+      } else {
+        const last = room.actions[room.actions.length - 1];
+        if (!last) return send(ws, { t: 'error', msg: 'nothing to undo' });
+        if (last.seat !== conn.seat) return send(ws, { t: 'error', msg: 'your opponent acted since — nothing of yours to undo' });
+        undoLastAction(room);
+      }
       room.events.push({
         type: 'note', msg: `${room.names[conn.seat]} undid their last action.`, data: {},
       } as unknown as import('../engine/src/types.ts').EngineEvent);
@@ -218,8 +260,8 @@ wss.on('connection', ws => {
         if (!sock) continue;
         send(sock, {
           t: 'update',
-          view: viewFor(room.state, s),
-          log: redactLog(room.events, s, room.names),   // full log replace: lines were removed
+          view: viewFor(room.state, s, room.deploySnapshot),
+          log: visibleLog(room, s),   // full log replace: lines were removed
           legal: legalActions(room.state, s),
           peers: peersOf(room),
         });

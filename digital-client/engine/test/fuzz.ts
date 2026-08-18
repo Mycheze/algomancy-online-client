@@ -82,7 +82,7 @@ function maybeRandomFormation(state: GameState, rand: () => number): Action | nu
       .filter(e => e.kind === 'unit' && e.controller === seat && !e.absent && e.region === region)
       .map(e => e.id);
   if (b.step === 'declare') {
-    const from = b.round === 1
+    const from = b.round === 1 || b.attackerPool === null
       ? state.regions.findIndex(r => r.owner === b.attacker)
       : b.region;
     let pool = units(b.attacker, from);

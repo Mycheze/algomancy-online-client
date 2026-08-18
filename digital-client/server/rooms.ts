@@ -12,7 +12,7 @@ import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Action, EngineEvent, GameMode, GameState } from '../engine/src/types.ts';
-import { apply, createGame } from '../engine/src/apply.ts';
+import { apply, createGame, IllegalAction } from '../engine/src/apply.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const GAMES_DIR = join(HERE, 'games');
@@ -32,6 +32,15 @@ export interface Room {
   events: EngineEvent[];
   /** connected client per seat (null = nobody there) */
   sockets: [Socket | null, Socket | null];
+  /** simultaneous deployment: the state as of deploy start — each seat's view
+   * of the OPPONENT is served from this freeze until both are done */
+  deploySnapshot: GameState | null;
+  /** events each seat has NOT yet been shown (their opponent's hidden deploy
+   * moves); flushed as the "replay" when deployment ends */
+  heldDeploy: [EngineEvent[], EngineEvent[]];
+  /** index into `actions` where the current deploy phase began (-1 outside
+   * deploy) — undo may splice a seat's own actions at/after this point */
+  deployStartIndex: number;
 }
 
 const rooms = new Map<string, Room>();
@@ -42,17 +51,54 @@ function fresh(seed: number, names: [string, string], mode: GameMode): { state: 
   return { state: r.state, events: r.events };
 }
 
+interface Rebuilt {
+  state: GameState;
+  events: EngineEvent[];
+  deploySnapshot: GameState | null;
+  heldDeploy: [EngineEvent[], EngineEvent[]];
+  deployStartIndex: number;
+}
+
 /** Re-run seed + actions, accumulating the full event history (the engine's
- * own replay() keeps only the last events, so we accumulate here). */
-function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode): { state: GameState; events: EngineEvent[] } {
+ * own replay() keeps only the last events, so we accumulate here) and the
+ * deploy-phase hidden-info bookkeeping. Tolerant: an action the (possibly
+ * newer) engine now rejects is skipped with a warning instead of killing the
+ * whole room — a personal server should never eat a live game over a rules
+ * tweak. */
+function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode): Rebuilt {
   let { state, events } = fresh(seed, names, mode);
   const all = [...events];
-  for (const a of actions) {
-    const r = apply(state, a);
+  let deploySnapshot: GameState | null = null;
+  let deployStartIndex = -1;
+  const heldDeploy: [EngineEvent[], EngineEvent[]] = [[], []];
+  for (let i = 0; i < actions.length; i++) {
+    const a = actions[i]!;
+    const wasDeploy = state.phase === 'deploy';
+    let r;
+    try {
+      r = apply(state, a);
+    } catch (err) {
+      if (err instanceof IllegalAction) {
+        console.warn(`[rooms] replay skipped now-illegal action ${a.type}: ${err.message}`);
+        continue;
+      }
+      throw err;
+    }
     state = r.state;
     all.push(...r.events);
+    if (state.phase === 'deploy' && !deploySnapshot) {
+      deploySnapshot = structuredClone(state);
+      deployStartIndex = i + 1;
+    }
+    if (wasDeploy) heldDeploy[a.seat === 0 ? 1 : 0].push(...r.events);
+    if (state.phase !== 'deploy') {
+      deploySnapshot = null;
+      deployStartIndex = -1;
+      heldDeploy[0] = [];
+      heldDeploy[1] = [];
+    }
   }
-  return { state, events: all };
+  return { state, events: all, deploySnapshot, heldDeploy, deployStartIndex };
 }
 
 export function getRoom(code: string): Room | undefined {
@@ -61,7 +107,10 @@ export function getRoom(code: string): Room | undefined {
 
 export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared'): Room {
   const { state, events } = fresh(seed, names, mode);
-  const room: Room = { code, seed, mode, names, state, actions: [], events, sockets: [null, null] };
+  const room: Room = {
+    code, seed, mode, names, state, actions: [], events, sockets: [null, null],
+    deploySnapshot: null, heldDeploy: [[], []], deployStartIndex: -1,
+  };
   rooms.set(code, room);
   persist(room);
   return room;
@@ -76,21 +125,48 @@ export function getOrCreateRoom(code: string, mode: GameMode = 'shared'): Room {
 /** Apply an action to the room's authoritative state and record it. Throws
  * whatever the engine throws (IllegalAction) — caller reports it to the actor. */
 export function applyToRoom(room: Room, action: Action): EngineEvent[] {
+  const wasDeploy = room.state.phase === 'deploy';
   const r = apply(room.state, action);
   room.state = r.state;
   room.actions.push(action);
   room.events.push(...r.events);
+  // simultaneous-deploy bookkeeping: freeze a snapshot the moment deployment
+  // starts, and hold every deploy-phase event back from the actor's opponent
+  // (main.ts flushes the reveal; clearDeployHold() resets after the flush).
+  if (room.state.phase === 'deploy' && !room.deploySnapshot) {
+    room.deploySnapshot = structuredClone(room.state);
+    room.deployStartIndex = room.actions.length;
+  }
+  if (wasDeploy) room.heldDeploy[action.seat === 0 ? 1 : 0].push(...r.events);
   persist(room);
   return r.events;
+}
+
+/** Deployment ended and the reveal has been sent — drop the freeze. */
+export function clearDeployHold(room: Room): void {
+  room.deploySnapshot = null;
+  room.heldDeploy = [[], []];
+  room.deployStartIndex = -1;
 }
 
 /** Undo the most recent action (single-step, docs/07 §15): pop it and rebuild
  * state by replaying seed + remaining actions. Caller enforces who/when. */
 export function undoLastAction(room: Room): void {
-  room.actions.pop();
-  const { state, events } = rebuild(room.seed, room.names, room.actions, room.mode);
+  undoActionAt(room, room.actions.length - 1);
+}
+
+/** Undo the action at `index` (splice + full rebuild). Callers enforce who
+ * may remove what; deploy-phase actions are seat-independent, so splicing a
+ * seat's own action out of the middle of the deploy segment is sound. */
+export function undoActionAt(room: Room, index: number): void {
+  room.actions.splice(index, 1);
+  const { state, events, deploySnapshot, heldDeploy, deployStartIndex } =
+    rebuild(room.seed, room.names, room.actions, room.mode);
   room.state = state;
   room.events = events;
+  room.deploySnapshot = deploySnapshot;
+  room.heldDeploy = heldDeploy;
+  room.deployStartIndex = deployStartIndex;
   persist(room);
 }
 
@@ -132,8 +208,11 @@ export function restoreRooms(): void {
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const mode = raw.mode ?? 'shared';
-      const { state, events } = rebuild(raw.seed, names, raw.actions, mode);
-      rooms.set(code, { code, seed: raw.seed, mode, names, state, actions: raw.actions, events, sockets: [null, null] });
+      const { state, events, deploySnapshot, heldDeploy, deployStartIndex } = rebuild(raw.seed, names, raw.actions, mode);
+      rooms.set(code, {
+        code, seed: raw.seed, mode, names, state, actions: raw.actions, events,
+        sockets: [null, null], deploySnapshot, heldDeploy, deployStartIndex,
+      });
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions)`);
     } catch (err) {
       console.error(`[rooms] could not restore ${code}:`, err instanceof Error ? err.message : err);

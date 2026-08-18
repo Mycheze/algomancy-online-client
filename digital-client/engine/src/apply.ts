@@ -6,7 +6,7 @@
  * caller keeps the old state.
  */
 import type {
-  Action, ApplyResult, CardName, Decision, EffectPart, EntityId, GameMode, GameState,
+  Action, ApplyResult, CardName, Decision, EffectPart, Element, EntityId, GameMode, GameState,
   ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
 import { E, GameEnded, IllegalAction, Suspended, other } from './engine.ts';
@@ -25,7 +25,7 @@ const ELEMENTS: ResourceKind[] = ['fire', 'water', 'earth', 'wood', 'metal'];
 
 /** The fully-scripted live-draft trio. Each further finished element adds
  * more playable trios; for now a draft game is always fire+water+earth. */
-export const DRAFT_TRIO = ['fire', 'water', 'earth'];
+export const DRAFT_TRIO: Element[] = ['fire', 'water', 'earth'];
 
 export function createGame(
   seed: number,
@@ -50,6 +50,7 @@ export function createGame(
     seed, rngState, actionCount: 0, turn: 0, phase: 'planning',
     initiative: initRoll < 0.5 ? 0 : 1, winner: null, nextId: 1,
     mode, packs: [[], []], draftDone: null,
+    elements: mode === 'draft' ? [...DRAFT_TRIO] : ['fire', 'water', 'earth', 'wood', 'metal'],
     sharedDeck: deck,
     players: names.map((name, seat) => ({
       seat, name, life: 30, hand: [], bin: [],
@@ -64,7 +65,7 @@ export function createGame(
     regions: [0, 1].map(owner => ({ owner, presentSeats: [owner] })),
     entities: {}, stack: [], battle: null, battleRound: 0,
     battleCounters: [{}, {}], priority: null, passes: 0,
-    planningDone: [false, false], hasteDone: null, deployPlayer: null,
+    planningDone: [false, false], hasteDone: null, deployDone: null, deployPlayer: null,
     triggerQueue: [], triggerOrderedSeats: [], suspension: null, decision: null,
   };
   const e = new E(state);
@@ -163,7 +164,7 @@ function doDraftCommit(e: E, seat: Seat, packIndices: number[]): void {
 function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
-  e.need(ELEMENTS.includes(element), 'not an element');
+  e.need((e.s.elements as string[]).includes(element), 'not an element of this game');
   const card = e.player(seat).hand[handIndex];
   e.need(card !== undefined, 'no such card in hand');
   e.player(seat).hand.splice(handIndex, 1);
@@ -181,12 +182,26 @@ function doActivateResource(e: E, seat: Seat, index: number): void {
   r.state = 'open';
   e.player(seat).activationsLeft--;
   e.ev('resourceActivated', `${e.pname(seat)} activates a ${r.kind} resource.`, { seat, kind: r.kind });
+  maybeGrantShard(e, seat, r.kind);
+}
+
+/** Manual p.18 (Shards and Affinity Bonuses): "The elemental resources can
+ * provide free Shards when they are activated if the player has at least
+ * three affinity towards that resource." The shard arrives dormant like any
+ * created resource and gives no affinity — mana only. */
+function maybeGrantShard(e: E, seat: Seat, kind: ResourceKind): void {
+  if (kind === 'prismite' || kind === 'shard') return;
+  if (e.affinity(seat, kind) < 3) return;
+  e.player(seat).resources.push({ kind: 'shard', state: 'dormant' });
+  e.ev('resourceActivated',
+    `${e.pname(seat)} has ${e.affinity(seat, kind)} ${kind} affinity — a free Shard appears (dormant).`,
+    { seat, kind: 'shard' });
 }
 
 function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKind): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
-  e.need(ELEMENTS.includes(element), 'not an element');
+  e.need((e.s.elements as string[]).includes(element), 'not an element of this game');
   const r = e.player(seat).resources[index];
   e.need(r && r.kind === 'prismite', 'not a prismite');
   // only ACTIVE (face-up) prismites can be exchanged (Manual p.18) — the
@@ -194,6 +209,9 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
   e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');
   r.kind = element;
   e.ev('resourceActivated', `${e.pname(seat)} exchanges a Prismite for a ${element} resource.`, { seat, kind: element });
+  // the exchange turns an already-activated resource into this element, so
+  // the p.18 shard bonus applies just as if it had been activated as one
+  maybeGrantShard(e, seat, element);
 }
 
 function doDonePlanning(e: E, seat: Seat): void {
@@ -254,7 +272,7 @@ function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush'): void 
     e.payCard(seat, name);
     e.castChain([baseItem(e, c, seat, region)], 'resolve');
   } else if (e.s.phase === 'deploy') {
-    e.need(e.s.deployPlayer === seat, 'not your deployment');
+    e.need(e.deploying(seat), 'not your deployment');
     e.need(timingAllowsDeploy(c), 'battle cards can only be played during battle');
     const region = e.homeRegion(seat);
     e.need(castable(e, c, region, seat), 'no legal targets');
@@ -309,7 +327,7 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId): void {
     region = e.s.battle!.region;
     then = 'push';
   } else if (e.s.phase === 'deploy') {
-    e.need(e.s.deployPlayer === seat, 'not your deployment');
+    e.need(e.deploying(seat), 'not your deployment');
     e.need(timingAllowsDeploy(c), 'battle spell tokens can only be cast during battle');
     e.need(tok.region === e.homeRegion(seat), 'spell tokens are castable only in their region');
     region = tok.region;
@@ -357,7 +375,7 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
     e.need(u.region === e.s.battle!.region, 'that unit is in another region');
     region = u.region; then = 'push';
   } else if (e.s.phase === 'deploy') {
-    e.need(e.s.deployPlayer === seat, 'not your deployment');
+    e.need(e.deploying(seat), 'not your deployment');
     e.need(u.region === e.homeRegion(seat), 'that unit is in another region');
     region = u.region; then = 'resolve';
   } else {
@@ -409,7 +427,7 @@ function doAugment(e: E, seat: Seat, from: 'hand' | 'bin', index: number, hostId
     e.pushItem(item);
     e.settle();
   } else if (e.s.phase === 'deploy') {
-    e.need(e.s.deployPlayer === seat, 'not your deployment');
+    e.need(e.deploying(seat), 'not your deployment');
     e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
     e.player(seat)[from].splice(index, 1);
     e.payCard(seat, name);
@@ -423,7 +441,7 @@ function doAugment(e: E, seat: Seat, from: 'hand' | 'bin', index: number, hostId
 }
 
 function doGraft(e: E, seat: Seat, from: 'hand' | 'bin', index: number, hostId: EntityId, position: number): void {
-  e.need(e.s.phase === 'deploy' && e.s.deployPlayer === seat, 'grafting is a deployment action');
+  e.need(e.deploying(seat), 'grafting is a deployment action');
   const name = e.player(seat)[from][index];
   e.need(name !== undefined, `no such card in ${from}`);
   e.need(isGraftable(name), 'that card has no graft symbol');
@@ -468,7 +486,12 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
     e.endBattleRound();
     return;
   }
-  const fromRegion = b.round === 1 ? e.homeRegion(seat) : b.region;
+  // round 1: attack out of your home region. Round 2 after a real round-1
+  // battle: only the counterattackers, already standing in the region. Round 2
+  // when round 1 didn't happen (attackerPool null): a FRESH attack from home —
+  // the units still have to travel (found live: "unit is in another region"
+  // whenever the initiative player had nothing to attack with in round 1).
+  const fromRegion = b.round === 1 || b.attackerPool === null ? e.homeRegion(seat) : b.region;
   validFormation(e, seat, columns, fromRegion, b.attackerPool);
   for (const id of spellTokens) {
     const t = e.entity(id);
@@ -559,14 +582,17 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
 // ── deployment done / end of turn ─────────────────────────────────────
 
 function doDoneDeploying(e: E, seat: Seat): void {
-  e.need(e.s.phase === 'deploy' && e.s.deployPlayer === seat, 'not your deployment');
-  if (seat === e.initiative) {
-    e.s.deployPlayer = other(seat);
-    e.ev('phase', `Deployment: ${e.pname(other(seat))}.`);
-  } else {
+  e.need(e.deploying(seat), 'not your deployment');
+  e.s.deployDone![seat] = true;
+  e.ev('phase', `${e.pname(seat)} is done deploying.`);
+  if (e.s.deployDone!.every(Boolean)) {
+    e.s.deployDone = null;
     e.s.deployPlayer = null;
     e.endTurn();
+    return;
   }
+  // derived sequential marker: initiative-ordered first seat still deploying
+  e.s.deployPlayer = [e.initiative, other(e.initiative)].find(s => !e.s.deployDone![s]) ?? null;
 }
 
 // ── decisions ─────────────────────────────────────────────────────────
@@ -611,6 +637,30 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   e.resolveParts(sus.item, sus.partIndex, sus.answers);
   e.afterParts(sus.item);
   e.finishResolutionTail();
+}
+
+// ── forced actions ────────────────────────────────────────────────────
+
+/** The action a player is FORCED to take because they literally have no
+ * choice: "attack" with no eligible units, "declare blocks" with no units in
+ * the region. The server and the local UI auto-submit these so nobody is
+ * asked to confirm an empty board; they still go through apply() and into
+ * the action log, so replays stay explicit. Returns null when someone has a
+ * real decision to make. */
+export function forcedAction(state: GameState): Action | null {
+  if (state.decision || state.phase !== 'battle' || !state.battle) return null;
+  const b = state.battle;
+  const e = new E(structuredClone(state));   // queries only
+  if (b.step === 'declare') {
+    const from = b.round === 1 || b.attackerPool === null ? e.homeRegion(b.attacker) : b.region;
+    const eligible = e.unitsOf(b.attacker, from)
+      .filter(u => !b.attackerPool || b.attackerPool.includes(u.id));
+    if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };
+  }
+  if (b.step === 'blocks' && !e.unitsOf(b.defender, b.region).length) {
+    return { type: 'declareBlocks', seat: b.defender, blocks: {} };
+  }
+  return null;
 }
 
 // ── legalActions ──────────────────────────────────────────────────────
@@ -677,7 +727,7 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       return out;
     }
     for (let i = 0; i < hand.length; i++) {
-      for (const el of ELEMENTS) out.push({ type: 'recycleForResource', seat, handIndex: i, element: el });
+      for (const el of s.elements) out.push({ type: 'recycleForResource', seat, handIndex: i, element: el });
     }
     if (e.player(seat).activationsLeft > 0) {
       e.player(seat).resources.forEach((r, i) => {
@@ -686,7 +736,7 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
     }
     e.player(seat).resources.forEach((r, i) => {
       if (r.kind === 'prismite' && r.state !== 'dormant') {
-        for (const el of ELEMENTS) out.push({ type: 'exchangePrismite', seat, index: i, element: el });
+        for (const el of s.elements) out.push({ type: 'exchangePrismite', seat, index: i, element: el });
       }
     });
     out.push({ type: 'donePlanning', seat });
@@ -697,7 +747,7 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
     const b = s.battle;
     if (b.step === 'declare' && seat === b.attacker) {
       out.push({ type: 'declareAttack', seat, columns: [] });
-      const fromRegion = b.round === 1 ? e.homeRegion(seat) : b.region;
+      const fromRegion = b.round === 1 || b.attackerPool === null ? e.homeRegion(seat) : b.region;
       const mine = e.unitsOf(seat, fromRegion).filter(u => !b.attackerPool || b.attackerPool.includes(u.id));
       for (const u of mine) out.push({ type: 'declareAttack', seat, columns: [[u.id]] });
       if (mine.length > 1) out.push({ type: 'declareAttack', seat, columns: mine.map(u => [u.id]) });

@@ -162,3 +162,51 @@ button:disabled { opacity: .4; cursor: default; }
 .draftpanel .zone { min-height: 40px; }
 .draftpanel .draftkeep { border-left: 3px solid var(--glow); padding-left: 6px; }
 .draftpanel .draftleave { border-left: 3px solid var(--dim); padding-left: 6px; opacity: .85; }
+
+/* ── playtest UX fixes (2026-08-18) ─────────────────────────────────── */
+/* dormant resources are clearly face-down: dimmed + desaturated */
+.rescard.dormant img { filter: grayscale(.7) brightness(.55); }
+.rescard.dormant { outline: 1px dashed #444; border-radius: 4px; }
+
+/* +1/+1 (and −1/−1) counter badge on units */
+.card .badge.ctr { border-color: var(--glow); color: var(--glow); font-weight: 700; }
+
+/* opponent's hidden hand: compact overlapping mini-backs */
+.minihand { display: flex; align-items: center; }
+.miniback { width: 30px; height: 42px; border-radius: 3px; margin-right: -18px;
+  background: linear-gradient(135deg, #2a3140, #1a1f29); border: 1px solid #3a4356; }
+.zone.hiddenhand { min-height: 44px; }
+
+/* bins as real (small) card scans */
+.binzone .card { width: 58px; }
+
+/* stack items show the card art */
+.stackitem { display: flex; gap: 6px; align-items: flex-start; }
+.stackthumb { width: 34px; border-radius: 3px; flex-shrink: 0; }
+.stackmain { min-width: 0; }
+
+/* context menus never run off screen (clamped in JS too) */
+.menu { max-height: min(70vh, 480px); overflow-y: auto; }
+
+/* the side panel (preview + stack + log) stays on screen while the board scrolls */
+.side { position: sticky; top: 8px; align-self: flex-start; max-height: calc(100vh - 16px); overflow-y: auto; }
+
+/* net mode: your hand is docked to the bottom of the viewport */
+.netmode .main { padding-bottom: 170px; }
+.netmode .side { max-height: calc(100vh - 186px); }
+.handdock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  background: color-mix(in srgb, var(--panel) 92%, transparent); backdrop-filter: blur(4px);
+  border-top: 2px solid var(--accent); padding: 4px 10px 8px; }
+.handdock .zone { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+.handdock .card { width: 92px; }
+
+/* smaller screens: shrink cards instead of forcing horizontal scrolling */
+@media (max-width: 1100px) {
+  :root { --cw: 62px; }
+  #app { grid-template-columns: 1fr 220px; }
+  .preview img { max-width: 190px; }
+  .handdock .card { width: 74px; }
+  .netmode .main { padding-bottom: 145px; }
+  .netmode .side { max-height: calc(100vh - 161px); }
+}
+.reschip.shard { background: linear-gradient(135deg, #b39ddb, #5e35b1); }

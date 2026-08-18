@@ -1246,8 +1246,14 @@ export class E {
 
   startDeployment(): void {
     this.s.phase = 'deploy';
-    this.s.deployPlayer = this.initiative;   // IT deploys everything first
-    this.ev('phase', `Deployment: ${this.pname(this.initiative)} first.`);
+    this.s.deployDone = this.s.players.map(() => false);
+    this.s.deployPlayer = this.initiative;
+    this.ev('phase', 'Deployment: both players deploy at the same time — moves are revealed when everyone is done.');
+  }
+
+  /** `seat` may take deployment actions right now (simultaneous model) */
+  deploying(seat: Seat): boolean {
+    return this.s.phase === 'deploy' && this.s.deployDone !== null && !this.s.deployDone[seat];
   }
 
   endTurn(): void {

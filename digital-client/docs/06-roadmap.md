@@ -90,6 +90,23 @@ pack", commit gated on exactly 10) and an "opponent is still drafting…" state.
 - **v1 ships here: 1v1 live draft (fwe trio) + 1v1 constructed.** Each further
   scripted element multiplies the available draft trios (wood/metal → 10).
 
+**First human playtest fixes (2026-08-18 evening):** the round-2 FRESH-attack
+bug (units attack from home when round 1 didn't happen — "that unit is in
+another region"); `forcedAction()` (server+UI auto-submit "don't attack"/"no
+blocks" for empty boards); **Shards** (Manual p.18: element activation at ≥3
+affinity grants a dormant Shard; mana, no affinity; prismite-exchange counts);
+`state.elements` (draft games only offer/accept the trio's resources);
+**simultaneous hidden deployment** (house rule: `deployDone[]` in the engine —
+`deployPlayer` kept as a derived sequential marker for old drivers; the server
+freezes each seat's view of the opponent at deploy start, holds the opponent's
+events, and flushes them as a "replay" when both are done; undo can splice
+your own action out of the deploy segment); tolerant room replay (now-illegal
+logged actions are skipped, not fatal). UI: sticky bottom hand dock + sticky
+side panel (net mode), compact opponent hand, bins as card scans, +N/+N
+counter badges, dormant resources greyed + a "you still have activations"
+confirm, clamped context menus, game-element-only recycle menu, stack card
+art, and a "Pass all" priority button that disarms when the stack grows.
+
 ## M5 — Beyond v1 — open-ended
 - More elements → full 5-element draft; FFA intents (commit-reveal); teams; spectators;
   replay viewer; puzzle mode (load `puzzles/*.json` as scenarios — free synergy with the

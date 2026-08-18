@@ -20,7 +20,7 @@ test('draft deck: the fire+water+earth trio is Manual-exact — 54 per element +
   for (const n of deck) {
     const f = [...(getCard(n).factions ?? [])].sort().join('+');
     byFaction[f] = (byFaction[f] ?? 0) + 1;
-    assert.ok((getCard(n).factions ?? []).every(el => DRAFT_TRIO.includes(el)), `${n} outside the trio`);
+    assert.ok((getCard(n).factions ?? []).every(el => (DRAFT_TRIO as string[]).includes(el)), `${n} outside the trio`);
   }
   assert.equal(byFaction['fire'], 54);
   assert.equal(byFaction['water'], 54);

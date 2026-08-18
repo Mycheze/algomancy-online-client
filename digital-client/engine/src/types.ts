@@ -13,7 +13,9 @@ export type EntityId = number;
 export type CardName = string;
 
 export type Element = 'fire' | 'water' | 'earth' | 'wood' | 'metal';
-export type ResourceKind = Element | 'prismite';
+/** 'shard': Manual p.18 — no affinity, still expendable for mana; granted
+ * free when an element resource is activated at ≥3 affinity of its element */
+export type ResourceKind = Element | 'prismite' | 'shard';
 
 export type Phase = 'planning' | 'battle' | 'regroup' | 'deploy' | 'gameover';
 
@@ -272,6 +274,9 @@ export interface GameState {
   winner: Seat | null;
   nextId: number;
   mode: GameMode;
+  /** the elements in this game (draft: the trio) — resources outside this
+   * list cannot be created and the UI never offers them */
+  elements: Element[];
   sharedDeck: CardName[];
   /** mode 'draft': packs[seat] = that seat's face-down pack (normally 10 cards;
    * viewable only by its holder during their draft step). Empty in 'shared'. */
@@ -295,6 +300,12 @@ export interface GameState {
   /** haste step (Manual p.18): non-null while it runs; true = done playing
    * haste cards. Skipped entirely when nobody has a legal haste play. */
   hasteDone: boolean[] | null;
+  /** deployment is SIMULTANEOUS (house rule; regions can't interact anyway):
+   * per-seat done flags, null outside the deploy phase. The server keeps each
+   * player's deploy actions hidden from the other until both are done. */
+  deployDone: boolean[] | null;
+  /** derived convenience: the initiative-ordered first seat still deploying
+   * (null when deployment is over). Kept for sequential drivers/tests. */
   deployPlayer: Seat | null;
   /** triggers waiting to be ordered/targeted/stacked, in collection order */
   triggerQueue: PendingTrigger[];

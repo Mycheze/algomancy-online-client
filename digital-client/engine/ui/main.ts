@@ -3,7 +3,7 @@
  * Harness.do(action); pending decisions render as highlights or a prompt.
  * Both hands are visible: this is the M1 test rig, not the product. */
 import { Harness } from '../src/harness.ts';
-import { legalActions, IllegalAction } from '../src/apply.ts';
+import { forcedAction, legalActions, IllegalAction } from '../src/apply.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import { E } from '../src/engine.ts';
 import type { Action, Entity, EntityId, GameState, Seat, TargetRef } from '../src/types.ts';
@@ -91,9 +91,27 @@ interface UiState {
   draftPack: number[] | null;
   /** which turn+seat draftPack was built for (re-init on change) */
   draftFor: string;
+  /** keep passing my priority windows until the battle ends or something new
+   * hits the stack (net mode only) */
+  autopass: boolean;
+  /** actionCount the last autopass was sent for (never double-send) */
+  autopassAt: number;
+  /** stack height when autopass was armed — growth disarms it */
+  autopassStack: number;
+  /** "done planning" pressed with dormant resources + activations left: which
+   * seat is being asked "are you sure?" */
+  confirmDone: Seat | null;
 }
-let ui: UiState = { carrying: null, columns: [], send: [], modding: null, menu: null, orderPicked: [], draftPack: null, draftFor: '' };
-const resetUi = () => { ui = { carrying: null, columns: [], send: [], modding: null, menu: null, orderPicked: [], draftPack: null, draftFor: '' }; };
+let ui: UiState = {
+  carrying: null, columns: [], send: [], modding: null, menu: null, orderPicked: [],
+  draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0, confirmDone: null,
+};
+const resetUi = () => {
+  ui = {
+    carrying: null, columns: [], send: [], modding: null, menu: null, orderPicked: [],
+    draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0, confirmDone: null,
+  };
+};
 
 const $app = document.getElementById('app')!;
 const esc = (s: unknown) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -111,6 +129,13 @@ function act(a: Action): void {
   }
   try {
     h.do(a);
+    // local mode: drain forced steps (empty boards attack/block by themselves;
+    // the server does the same for network games)
+    for (let g = 0; g < 8; g++) {
+      const f = forcedAction(h.state);
+      if (!f) break;
+      h.do(f);
+    }
     uiError = '';
   } catch (err) {
     if (err instanceof IllegalAction) uiError = err.message;
@@ -136,14 +161,14 @@ function legalFor(seat: Seat): Action[] {
 // ── rendering ─────────────────────────────────────────────────────────
 function cardHtml(name: string, opts: {
   playable?: boolean; candidate?: boolean; selected?: boolean; carrying?: boolean;
-  badges?: { t: string; mod?: boolean }[]; stats?: string; dmg?: string; data?: string;
+  badges?: { t: string; mod?: boolean; ctr?: boolean }[]; stats?: string; dmg?: string; data?: string;
 } = {}): string {
   const cls = ['card'];
   if (opts.playable) cls.push('playable');
   if (opts.candidate) cls.push('candidate');
   if (opts.selected) cls.push('selected');
   if (opts.carrying) cls.push('carrying');
-  const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''}">${esc(b.t)}</span>`).join('');
+  const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''}">${esc(b.t)}</span>`).join('');
   return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}">
     <img src="${art(name)}" alt="${esc(name)}">
     ${badges ? `<div class="badges">${badges}</div>` : ''}
@@ -159,7 +184,11 @@ function backHtml(): string {
 
 function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean } = {}): string {
   const [p, t] = q().effStats(u);
-  const badges: { t: string; mod?: boolean }[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
+  const badges: { t: string; mod?: boolean; ctr?: boolean }[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
+  if (u.counters) {
+    const sign = u.counters > 0 ? '+' : '';
+    badges.unshift({ t: `${sign}${u.counters}/${sign}${u.counters}`, ctr: true });
+  }
   for (const modId of u.mods) {
     const m = h.state.entities[modId];
     if (m) badges.push({ t: (m.appliedAs === 'graft' ? '⑂' : '+') + m.card.split(' ')[0], mod: true });
@@ -192,7 +221,22 @@ function resHtml(r: { kind: string; state: string }, p: Seat, i: number): string
     data-act="res" data-p="${p}" data-i="${i}" data-prev="${face}"><img src="${art(face)}" alt="">${chip}</span>`;
 }
 
-function playerHtml(p: Seat): string {
+/** one seat's hand row (also used by the sticky bottom dock in net mode) */
+function handZoneHtml(p: Seat): string {
+  const pl = h.state.players[p]!;
+  const legal = legalFor(p);
+  return pl.hand.map((n, i) => {
+    if (n === HIDDEN_CARD) return backHtml();
+    const playable = legal.some(a =>
+      (a.type === 'playCard' && a.handIndex === i) ||
+      (a.type === 'augment' && a.from === 'hand' && a.index === i) ||
+      (a.type === 'graft' && a.from === 'hand' && a.index === i) ||
+      (h.state.phase === 'planning' && a.type === 'recycleForResource' && a.handIndex === i));
+    return cardHtml(n, { playable, data: `data-act="hand" data-p="${p}" data-i="${i}"` });
+  }).join('');
+}
+
+function playerHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   const pl = h.state.players[p]!;
   const legal = legalFor(p);
   const acting = legal.length > 0;
@@ -210,20 +254,15 @@ function playerHtml(p: Seat): string {
   const canDeclareHere = !!b && ((b.step === 'declare' && b.attacker === p) || (b.step === 'blocks' && b.defender === p))
     && (!NET || p === NET.seat);   // in network mode I only build MY own formations
 
-  const handCards = pl.hand.map((n, i) => {
-    if (n === HIDDEN_CARD) return backHtml();   // opponent's hidden hand (network mode)
-    const playable = legal.some(a =>
-      (a.type === 'playCard' && a.handIndex === i) ||
-      (a.type === 'augment' && a.from === 'hand' && a.index === i) ||
-      (a.type === 'graft' && a.from === 'hand' && a.index === i) ||
-      (h.state.phase === 'planning' && a.type === 'recycleForResource' && a.handIndex === i));
-    return cardHtml(n, { playable, data: `data-act="hand" data-p="${p}" data-i="${i}"` });
-  }).join('');
+  // opponent's hidden hand: a compact stack of mini-backs, not a full row
+  const hiddenHand = pl.hand.length > 0 && pl.hand.every(n => n === HIDDEN_CARD);
+  const handCards = hiddenHand
+    ? `<span class="minihand">${pl.hand.map(() => '<span class="miniback"></span>').join('')}</span>`
+    : handZoneHtml(p);
   const binItems = pl.bin.map((n, i) => {
     const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
-    return `<span class="badge ${usable ? 'mod' : ''}" style="cursor:${usable ? 'pointer' : 'default'}"
-      data-act="bin" data-p="${p}" data-i="${i}" data-prev="${esc(n)}">${esc(n)}</span>`;
-  }).join(' ');
+    return cardHtml(n, { playable: usable, data: `data-act="bin" data-p="${p}" data-i="${i}"` });
+  }).join('');
 
   return `<div class="player ${acting ? '' : 'inactive'}">
     <div class="pheader">
@@ -241,9 +280,9 @@ function playerHtml(p: Seat): string {
       playable: legal.some(a => a.type === 'castSpellToken' && a.entityId === t.id),
       data: `data-act="token" data-id="${t.id}"`,
     })).join('')}</div>
-    <div class="zonelabel">Hand (${pl.hand.length})</div>
-    <div class="zone">${handCards}</div>
-    ${pl.bin.length ? `<div class="zonelabel">Bin</div><div class="zone">${binItems}</div>` : ''}
+    ${opts.omitHand ? '' : `<div class="zonelabel">Hand (${pl.hand.length})</div>
+    <div class="zone ${hiddenHand ? 'hiddenhand' : ''}">${handCards}</div>`}
+    ${pl.bin.length ? `<div class="zonelabel">Bin (${pl.bin.length})</div><div class="zone binzone">${binItems}</div>` : ''}
   </div>`;
 }
 
@@ -339,10 +378,13 @@ function promptHtml(): string {
       (s.phase === 'battle' && b?.step === 'declare') ? b.attacker === seat :
       (s.phase === 'battle' && b?.step === 'blocks') ? b.defender === seat :
       (s.phase === 'battle') ? s.priority === seat :
-      (s.phase === 'deploy') ? s.deployPlayer === seat : false;
+      (s.phase === 'deploy') ? !!s.deployDone && !s.deployDone[seat] : false;
     if (!mine) {
       const note = NET.peers[other(seat)] ? '' : ' <span style="color:var(--dim)">(opponent not connected yet)</span>';
-      return `<div class="promptbar"><span class="who">Waiting for opponent…</span>${note}${err}</div>`;
+      const flavor = s.phase === 'deploy'
+        ? 'Waiting — your opponent is still deploying (hidden). Their moves will be revealed when they finish.'
+        : 'Waiting for opponent…';
+      return `<div class="promptbar"><span class="who">${flavor}</span>${note}${err}</div>`;
     }
   }
   const doneRow = (done: boolean[], btn: string, label: string): string =>
@@ -363,6 +405,16 @@ function promptHtml(): string {
       Combine your hand and pack below, then leave exactly 10 cards in the pack.${err}</div>`;
   }
   if (s.phase === 'planning') {
+    if (ui.confirmDone !== null) {
+      const p = ui.confirmDone;
+      const pl = s.players[p]!;
+      const dormant = pl.resources.filter(r => r.state === 'dormant').length;
+      return `<div class="promptbar pending"><span class="who">${esc(pl.name)}:</span>
+        you still have <b>${pl.activationsLeft} activation${pl.activationsLeft === 1 ? '' : 's'}</b> and
+        <b>${dormant} dormant resource${dormant === 1 ? '' : 's'}</b> — activate them this turn?
+        <button data-btn="doneplancancel">Go back</button>
+        <button class="primary" data-btn="doneplanconfirm" data-p="${p}">Really done</button>${err}</div>`;
+    }
     return `<div class="promptbar"><span class="who">Planning</span>
       Click a hand card to recycle it into a resource; click dormant resources to activate (max 2). ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
   }
@@ -386,6 +438,7 @@ function promptHtml(): string {
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
       you have priority — play a battle card / cast a token / virus-augment, or
       <button class="primary" data-btn="pass">Pass</button>
+      ${NET ? `<button data-btn="passall" title="keep passing until the battle ends or something new is played">Pass all</button>` : ''}
       <span style="color:var(--dim)">(both pass: ${s.stack.length ? 'resolve top of stack' : 'next step'})</span>${err}</div>`;
   }
   if (s.phase === 'deploy') {
@@ -394,9 +447,11 @@ function promptHtml(): string {
         pick a host unit to ${ui.modding.mode} with ${esc(s.players[ui.modding.seat]![ui.modding.from][ui.modding.index] ?? '?')}
         <button data-btn="modcancel">cancel</button>${err}</div>`;
     }
-    return `<div class="promptbar"><span class="who">${esc(s.players[s.deployPlayer!]!.name)} deploying:</span>
-      play cards, mod units (augment/graft from hand or bin), activate abilities
-      <button class="primary" data-btn="donedeploy">Done deploying</button>${err}</div>`;
+    const dd = s.deployDone ?? s.players.map(() => true);
+    return `<div class="promptbar"><span class="who">Deployment</span>
+      both players deploy at the same time — moves stay hidden until everyone is done.
+      Play cards, mod units (augment/graft from hand or bin), activate abilities.
+      ${doneRow(dd, 'donedeploy', 'done deploying')}${err}</div>`;
   }
   return `<div class="promptbar">${esc(s.phase)}${err}</div>`;
 }
@@ -405,9 +460,10 @@ function stackHtml(): string {
   const items = [...h.state.stack].reverse().map(it => {
     const targets = it.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
     return `<div class="stackitem ${it.negated ? 'negated' : ''} ${isCandidate({ stack: it.id }) ? 'candidate' : ''}"
-      data-act="stackitem" data-id="${it.id}">
-      ${esc(it.label)}
-      <div class="by">${esc(h.state.players[it.controller]!.name)} · ${it.kind}${it.parts.length > 1 ? ` · ${it.parts.length} grafted parts` : ''}${targets ? ' → ' + targets : ''}</div>
+      data-act="stackitem" data-id="${it.id}" ${it.card ? `data-prev="${esc(it.card)}"` : ''}>
+      ${it.card ? `<img class="stackthumb" src="${art(it.card)}" alt="">` : ''}
+      <div class="stackmain">${esc(it.label)}
+      <div class="by">${esc(h.state.players[it.controller]!.name)} · ${it.kind}${it.parts.length > 1 ? ` · ${it.parts.length} grafted parts` : ''}${targets ? ' → ' + targets : ''}</div></div>
     </div>`;
   }).join('');
   return `<div class="stackpanel"><h3>Stack (top first)</h3>${items || '<div class="stackempty">empty</div>'}</div>`;
@@ -500,6 +556,7 @@ function draftPanelHtml(): string {
 
 function render(): void {
   if (NET && (NET.dead || !NET.joined)) { if (!NET.dead) renderConnecting(); return; }
+  $app.classList.toggle('netmode', !!NET);   // net mode: sticky hand dock at the bottom
   ensureDraftUi();
   const logItems = h.log.slice(-80).map(l => `<div>${esc(l)}</div>`).join('');
   // in network mode keep MY seat at the bottom (opponent on top)
@@ -524,16 +581,44 @@ function render(): void {
       ${draftPanelHtml()}
       ${playerHtml(topSeat)}
       ${battleHtml()}
-      ${playerHtml(botSeat)}
+      ${playerHtml(botSeat, { omitHand: !!NET })}
     </div>
     <div class="side">
       <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
       ${stackHtml()}
       <div class="logpanel" id="log"><h3>Game log</h3>${logItems}</div>
     </div>
+    ${NET ? `<div class="handdock"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})</div>
+      <div class="zone">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${menuHtml()}`;
   const log = document.getElementById('log')!;
   log.scrollTop = log.scrollHeight;
+  clampMenu();
+  maybeAutopass();
+}
+
+/** keep a context menu fully inside the viewport (playtest: the recycle menu
+ * ran off the bottom of smaller screens) */
+function clampMenu(): void {
+  const el = document.querySelector('.menu') as HTMLElement | null;
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  if (r.bottom > innerHeight - 8) el.style.top = `${Math.max(8, innerHeight - r.height - 8)}px`;
+  if (r.right > innerWidth - 8) el.style.left = `${Math.max(8, innerWidth - r.width - 8)}px`;
+}
+
+/** "Pass all": keep passing my priority windows until the battle ends or the
+ * stack grows (someone played something — then it's worth a look). */
+function maybeAutopass(): void {
+  if (!NET || !ui.autopass) return;
+  const s = h.state;
+  if (s.phase !== 'battle' || !s.battle) { ui.autopass = false; return; }
+  if (s.stack.length > ui.autopassStack) { ui.autopass = false; return; }
+  ui.autopassStack = s.stack.length;
+  if (s.decision || s.priority !== NET.seat) return;
+  if (s.actionCount === ui.autopassAt) return;   // one send per server state
+  ui.autopassAt = s.actionCount;
+  NET.do({ type: 'passPriority', seat: NET.seat });
 }
 
 function renderConnecting(): void {
@@ -627,10 +712,29 @@ function handleButton(btn: HTMLElement): void {
   if (b === 'undo') { NET?.undo(); return; }
   const s = h.state;
   if (b === 'restart' && !NET) { h = new Harness(Math.floor(Math.random() * 1e6), undefined, h.state.mode); resetUi(); uiError = ''; }
-  if (b === 'doneplan') act({ type: 'donePlanning', seat: Number(btn.dataset['p']) });
+  if (b === 'doneplan') {
+    const p = Number(btn.dataset['p']) as Seat;
+    const pl = s.players[p]!;
+    const dormant = pl.resources.filter(r => r.state === 'dormant').length;
+    // guard against accidentally skipping activations (playtest feedback: a
+    // dormant board looks deceptively "ready")
+    if (pl.activationsLeft > 0 && dormant > 0) ui.confirmDone = p;
+    else act({ type: 'donePlanning', seat: p });
+  }
+  if (b === 'doneplanconfirm') {
+    ui.confirmDone = null;
+    act({ type: 'donePlanning', seat: Number(btn.dataset['p']) });
+  }
+  if (b === 'doneplancancel') ui.confirmDone = null;
   if (b === 'donehaste') act({ type: 'doneHaste', seat: Number(btn.dataset['p']) });
   if (b === 'pass') act({ type: 'passPriority', seat: s.priority! });
-  if (b === 'donedeploy') act({ type: 'doneDeploying', seat: s.deployPlayer! });
+  if (b === 'passall') {
+    ui.autopass = true;
+    ui.autopassStack = s.stack.length;
+    ui.autopassAt = s.actionCount;
+    act({ type: 'passPriority', seat: s.priority! });
+  }
+  if (b === 'donedeploy') act({ type: 'doneDeploying', seat: Number(btn.dataset['p']) });
   if (b === 'skipattack') { act({ type: 'declareAttack', seat: s.battle!.attacker, columns: [] }); ui.columns = []; ui.carrying = null; }
   if (b === 'confirmattack') {
     const cols = ui.columns.filter(c => c.length);
@@ -791,7 +895,8 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
   if (s.phase === 'planning' && !s.planningDone[p]) {
     ui.menu = {
       x: e.clientX, y: e.clientY,
-      items: (['fire', 'water', 'earth', 'wood', 'metal'] as const).map(el => ({
+      // only the elements actually in this game (a fwe draft offers no wood/metal)
+      items: s.elements.map(el => ({
         label: `Recycle → ${el} resource`,
         go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: el }); render(); },
       })),
