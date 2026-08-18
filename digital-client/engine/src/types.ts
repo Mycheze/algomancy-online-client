@@ -57,6 +57,8 @@ export interface Entity {
   counters: number;
   tempPower: number;
   tempToughness: number;
+  /** attributes granted "until regroup" (cleared with temp stats, R11 step 3) */
+  tempAttrs?: Attr[];
   /** ordered mod stack; index 0 sits directly under the base card */
   mods: EntityId[];
   /** for kind 'mod': the host entity */
@@ -253,6 +255,10 @@ export interface GameState {
   actionCount: number;
   turn: number;
   phase: Phase;
+  /** end-of-turn is in progress: EOT triggers ran, the turn flip is pending.
+   * Lets a mid-EOT decision suspension resume into the turn flip (settle()
+   * finishes it) instead of stranding the game — found by the fuzzer. */
+  turnEnding?: boolean;
   initiative: Seat;
   winner: Seat | null;
   nextId: number;

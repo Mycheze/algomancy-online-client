@@ -92,9 +92,9 @@ export class E {
   battleCounter(region: number, key: string): number {
     return this.s.battleCounters[region]?.[key] ?? 0;
   }
-  bumpBattleCounter(region: number, key: string): number {
+  bumpBattleCounter(region: number, key: string, by = 1): number {
     const c = this.s.battleCounters[region] ?? (this.s.battleCounters[region] = {});
-    c[key] = (c[key] ?? 0) + 1;
+    c[key] = (c[key] ?? 0) + by;
     return c[key]!;
   }
 
@@ -176,6 +176,7 @@ export class E {
   /** attrs on the card itself + type-line attrs granted by augment/virus mods */
   ownAttrs(e: Entity): Set<string> {
     const set = new Set<string>(this.card(e.card).attrs);
+    for (const a of e.tempAttrs ?? []) set.add(a);
     for (const id of e.mods) {
       const m = this.entity(id);
       if (m && m.appliedAs === 'augment') {
@@ -215,7 +216,13 @@ export class E {
       this.player(seat).hand.push(c);
       got++;
     }
-    if (!silent && got > 0) this.ev('draw', `${this.pname(seat)} draws ${got}.`, { seat, n: got });
+    if (!silent && got > 0) {
+      const ev = this.ev('draw', `${this.pname(seat)} draws ${got}.`, { seat, n: got });
+      // dispatch to trigger listeners only during battle: every current
+      // "card enters a hand" consumer is battle-scoped, and turn-start draws
+      // firing triggers outside any settle() window would be unsound.
+      if (this.s.battle) this.fireEvent('draw', ev);
+    }
   }
   recycleToBottom(name: CardName): void {
     this.s.sharedDeck.push(name);
@@ -276,9 +283,17 @@ export class E {
     this.ev('statChanged', `${target.card} gets ${sign(dp)}/${sign(dt)} until regroup.`, { unit: target.id, dp, dt });
   }
 
+  /** grant an attribute until regroup (cleared with temp stats, R11 step 3) */
+  addTempAttr(target: Entity, attr: import('./types.ts').Attr): void {
+    (target.tempAttrs ??= []).push(attr);
+    this.ev('statChanged', `${target.card} gains {${attr}} until regroup.`, { unit: target.id, attr });
+  }
+
   loseLife(seat: Seat, n: number, why: string): void {
     const p = this.player(seat);
     p.life -= n;
+    // per-battle life-loss ledger (R14 battle counters; read by e.g. Soul Siphon)
+    if (this.s.battle) this.bumpBattleCounter(this.s.battle.region, `lifeLost:${seat}`, n);
     const ev = this.ev('lifeLost', `${p.name} loses ${n} life (${why}) → ${p.life}.`,
       { seat, n, why, ...(this.s.battle ? { region: this.s.battle.region } : {}) });
     this.fireEvent('lifeLost', ev);   // "when a player loses life" triggers (region-scoped in battle, R12)
@@ -873,7 +888,7 @@ export class E {
   settle(): void {
     for (let i = 0; i < 100; i++) {
       this.checkDeaths();
-      if (!this.s.triggerQueue.length) return;
+      if (!this.s.triggerQueue.length) { this.finishTurnEnd(); return; }
       this.processTriggerQueue();
     }
     throw new Error('settle() did not stabilize — trigger loop?');
@@ -1147,7 +1162,7 @@ export class E {
     // (2) all damage on units is removed
     for (const e of Object.values(this.s.entities)) if (e.kind === 'unit') e.damage = 0;
     // (3) all temporary stat changes are removed (counters are NOT temporary)
-    for (const e of Object.values(this.s.entities)) { e.tempPower = 0; e.tempToughness = 0; }
+    for (const e of Object.values(this.s.entities)) { e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs; }
     // (4) units leave formation — battle state is already gone
     // (+) spell tokens are erased
     for (const e of Object.values(this.s.entities)) {
@@ -1164,8 +1179,18 @@ export class E {
 
   endTurn(): void {
     const ev = this.ev('endOfTurn', 'End of turn.');
+    this.s.turnEnding = true;   // settle() completes the flip via finishTurnEnd()
     this.fireEvent('endOfTurn', ev);
     this.settle();   // EOT triggers resolve as special actions — no responses
+  }
+
+  /** Complete a pending end-of-turn once every trigger/decision has drained.
+   * Runs from settle() so a mid-EOT suspension (fuzzer find: a ctx.choose in
+   * an EOT trigger stranded the game) resumes into the turn flip naturally. */
+  finishTurnEnd(): void {
+    if (!this.s.turnEnding) return;
+    if (this.s.decision || this.s.stack.length || this.s.triggerQueue.length) return;
+    this.s.turnEnding = false;
     this.s.initiative = this.nit;
     this.startTurn();
   }
