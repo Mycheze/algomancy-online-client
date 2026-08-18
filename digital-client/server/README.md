@@ -33,16 +33,37 @@ Same `room` code = same game. `seat` is optional (omit it to take the first
 free seat). Opening the plain URL with no `?ws=`/`?room=` is the old **hotseat**
 client (both hands visible) — still works, unchanged.
 
+## Deployed (2026-08-18, home LAN)
+
+Live on the home server (`benshomeserver.local`, 192.168.0.5 — the router
+re-addressed the LAN from 192.168.100.x at some point) at
+**http://192.168.0.5:5000**. Port matters: the box's firewall silently drops
+8080 (no sudo access to open it), but **5000 is allowed**, hence `PORT=5000`.
+Started with:
+
+```bash
+cd ~/Documents/Algomancy/digital-client/server
+PORT=5000 setsid nohup ~/node-v22/bin/node main.ts > gameserver.log 2>&1 < /dev/null &
+```
+
+Survives SSH logout, **not** a reboot — restart by hand (or add a systemd user
+unit later). Deploy = `git pull`, `npm install` + `npm run build:ui` in
+`engine/` if the UI changed, `npm install` in `server/` if deps changed, then
+kill the 5000 listener (find its PID via `ss -tlnp | grep 5000`) and rerun the
+line above. Verified 2026-08-18: two WebSocket clients from a laptop played 80
+actions into turn 5 with zero redaction leaks (`test-drive.ts` also ALL PASS on
+the box itself).
+
 ## Play together remotely
 
-Runs fine on the home server box (192.168.100.5, node at `~/node-v22`):
+Runs fine on the home server box (see above):
 
 ```bash
 git pull
-cd digital-client/server && ~/node-v22/bin/node main.ts
+cd digital-client/server && PORT=5000 ~/node-v22/bin/node main.ts
 ```
 
-Then give the remote player a route to port 8080. Easiest options, no TLS
+Then give the remote player a route to port 5000. Easiest options, no TLS
 needed:
 
 - **Tailscale** (recommended): install on the server and on the other player's
