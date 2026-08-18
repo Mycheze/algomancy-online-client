@@ -30,13 +30,15 @@ class NetBackend implements Backend {
   /** set when the server hands this seat to a newer connection — stop rendering game UI */
   dead = false;
   ws: WebSocket;
-  constructor(room: string, seat: Seat | null) {
+  constructor(room: string, seat: Seat | null, mode?: string) {
     if (seat != null) this.seat = seat;
     this.room = room;
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     this.ws = new WebSocket(`${proto}://${location.host}`);
     const name = (localStorage.getItem('algoName') ?? '').trim();
-    this.ws.onopen = () => this.ws.send(JSON.stringify({ t: 'join', room, seat, name }));
+    // mode only matters when this join creates the room (the creator's link
+    // carries it) — the server ignores it for existing rooms
+    this.ws.onopen = () => this.ws.send(JSON.stringify({ t: 'join', room, seat, name, mode }));
     this.ws.onmessage = ev => this.onMsg(JSON.parse(String(ev.data)));
     this.ws.onclose = () => {
       if (this.dead) return;
@@ -85,9 +87,13 @@ interface UiState {
   modding: { from: 'hand' | 'bin'; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
   menu: { x: number; y: number; items: { label: string; go: () => void }[] } | null;
   orderPicked: number[];
+  /** draft step: pile indices (into hand.concat(pack)) marked "leave in pack" */
+  draftPack: number[] | null;
+  /** which turn+seat draftPack was built for (re-init on change) */
+  draftFor: string;
 }
-let ui: UiState = { carrying: null, columns: [], send: [], modding: null, menu: null, orderPicked: [] };
-const resetUi = () => { ui = { carrying: null, columns: [], send: [], modding: null, menu: null, orderPicked: [] }; };
+let ui: UiState = { carrying: null, columns: [], send: [], modding: null, menu: null, orderPicked: [], draftPack: null, draftFor: '' };
+const resetUi = () => { ui = { carrying: null, columns: [], send: [], modding: null, menu: null, orderPicked: [], draftPack: null, draftFor: '' }; };
 
 const $app = document.getElementById('app')!;
 const esc = (s: unknown) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -226,7 +232,7 @@ function playerHtml(p: Seat): string {
       <span class="resrow">${pl.resources.map((r, i) => resHtml(r, p, i)).join('')}
         <span style="color:var(--dim)">(${e.openMana(p)} mana open${h.state.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
       </span>
-      <span class="binline">deck ${h.state.sharedDeck.length} · bin ${pl.bin.length}</span>
+      <span class="binline">deck ${h.state.sharedDeck.length}${h.state.mode === 'draft' ? ` · pack ${h.state.packs[p]!.length}` : ''} · bin ${pl.bin.length}</span>
     </div>
     <div class="zonelabel">In play — region of ${esc(pl.name)}</div>
     <div class="zone">${units.map(u => unitHtml(u, { clickable: canDeclareHere && u.controller === p })).join('')
@@ -347,6 +353,15 @@ function promptHtml(): string {
     return `<div class="promptbar"><span class="who">Haste step</span>
       Play haste cards (they resolve immediately). ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
   }
+  if (s.phase === 'planning' && s.mode === 'draft' && s.draftDone) {
+    if (NET && s.draftDone[NET.seat]) {
+      return `<div class="promptbar"><span class="who">Draft</span>
+        You passed your pack — your opponent is still drafting… You can keep planning meanwhile.
+        ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
+    }
+    return `<div class="promptbar pending"><span class="who">Draft step</span>
+      Combine your hand and pack below, then leave exactly 10 cards in the pack.${err}</div>`;
+  }
   if (s.phase === 'planning') {
     return `<div class="promptbar"><span class="who">Planning</span>
       Click a hand card to recycle it into a resource; click dormant resources to activate (max 2). ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
@@ -427,15 +442,65 @@ function phaseTrackHtml(): string {
 /** Share banner: shown while the opponent's seat is empty in network mode. */
 function shareBannerHtml(): string {
   if (!NET || NET.peers[other(NET.seat)]) return '';
-  const link = `${location.origin}/?ws=1&room=${encodeURIComponent(NET.room)}&seat=${other(NET.seat)}`;
+  const link = `${location.origin}/?ws=1&room=${encodeURIComponent(NET.room)}&seat=${other(NET.seat)}&mode=${h.state.mode}`;
   return `<div class="sharebar">Waiting for your opponent — send them the room code
     <b>${esc(NET.room)}</b> or this link:
     <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
     <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>`;
 }
 
+// ── live draft (M4) ───────────────────────────────────────────────────
+
+/** the seat whose draft step this client should render, or null.
+ * Network mode: my seat while uncommitted. Hotseat: first uncommitted seat. */
+function draftSeat(): Seat | null {
+  const s = h.state;
+  if (s.mode !== 'draft' || s.phase !== 'planning' || !s.draftDone) return null;
+  if (NET) return s.draftDone[NET.seat] ? null : NET.seat;
+  const pending = s.draftDone.findIndex(d => !d);
+  return pending === -1 ? null : (pending as Seat);
+}
+
+/** (re)build the tentative pack marks when the draft step (re)opens */
+function ensureDraftUi(): void {
+  const seat = draftSeat();
+  if (seat === null) { ui.draftPack = null; return; }
+  const key = `${h.state.turn}:${seat}`;
+  if (ui.draftFor !== key || !ui.draftPack) {
+    const H = h.state.players[seat]!.hand.length;
+    ui.draftPack = h.state.packs[seat]!.map((_, i) => H + i);   // keep hand as-is
+    ui.draftFor = key;
+  }
+}
+
+function draftPanelHtml(): string {
+  const seat = draftSeat();
+  if (seat === null || !ui.draftPack) return '';
+  const s = h.state;
+  const pile = [...s.players[seat]!.hand, ...s.packs[seat]!];
+  const need = s.packs[seat]!.length;
+  const inPack = new Set(ui.draftPack);
+  const cardRow = (indices: number[]): string => indices.map(i =>
+    cardHtml(pile[i]!, { playable: true, data: `data-act="draftcard" data-i="${i}"` })).join('');
+  const handIdx = pile.map((_, i) => i).filter(i => !inPack.has(i));
+  const packIdx = pile.map((_, i) => i).filter(i => inPack.has(i));
+  const ok = packIdx.length === need;
+  return `<div class="draftpanel">
+    <div class="drafthead"><span class="who">${esc(s.players[seat]!.name)} — draft step</span>
+      Click cards to move them between hand and pack. Leave exactly ${need} in the pack.
+      <button class="primary" data-btn="draftcommit" data-p="${seat}" ${ok ? '' : 'disabled'}>
+        Keep ${handIdx.length} · pass the pack</button>
+      ${ok ? '' : `<span style="color:var(--bad)">pack has ${packIdx.length}/${need}</span>`}</div>
+    <div class="zonelabel">Your hand after drafting (${handIdx.length})</div>
+    <div class="zone draftkeep">${cardRow(handIdx)}</div>
+    <div class="zonelabel">Left in the pack — passes to your opponent (${packIdx.length}/${need})</div>
+    <div class="zone draftleave">${cardRow(packIdx)}</div>
+  </div>`;
+}
+
 function render(): void {
   if (NET && (NET.dead || !NET.joined)) { if (!NET.dead) renderConnecting(); return; }
+  ensureDraftUi();
   const logItems = h.log.slice(-80).map(l => `<div>${esc(l)}</div>`).join('');
   // in network mode keep MY seat at the bottom (opponent on top)
   const topSeat: Seat = NET ? other(NET.seat) : 1;
@@ -447,7 +512,7 @@ function render(): void {
   $app.innerHTML = `
     <div class="main">
       <div class="topbar">
-        <span>Turn ${h.state.turn}</span>
+        <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ' · live draft' : ''}</span>
         ${phaseTrackHtml()}
         <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
         ${netTag}
@@ -456,6 +521,7 @@ function render(): void {
       </div>
       ${shareBannerHtml()}
       ${promptHtml()}
+      ${draftPanelHtml()}
       ${playerHtml(topSeat)}
       ${battleHtml()}
       ${playerHtml(botSeat)}
@@ -482,7 +548,8 @@ function renderHome(): void {
     <h1 class="homelogo">ALGOMANCY</h1>
     <label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>
     <div class="homebtns">
-      <button class="primary" data-btn="newgame">New online game</button>
+      <button class="primary" data-btn="newgame" data-mode="draft">New live draft</button>
+      <button data-btn="newgame" data-mode="shared">New constructed game</button>
       <div class="joinrow">
         <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
           spellcheck="false" style="text-transform:uppercase">
@@ -532,8 +599,9 @@ function handleButton(btn: HTMLElement): void {
   const b = btn.dataset['btn'];
   if (b === 'newgame') {
     saveHomeName();
+    const mode = btn.dataset['mode'] === 'draft' ? 'draft' : 'shared';
     fetch('/api/new').then(r => r.json()).then((r: { code: string }) => {
-      location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0`;
+      location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0&mode=${mode}`;
     }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
     return;
   }
@@ -558,7 +626,7 @@ function handleButton(btn: HTMLElement): void {
   }
   if (b === 'undo') { NET?.undo(); return; }
   const s = h.state;
-  if (b === 'restart' && !NET) { h = new Harness(Math.floor(Math.random() * 1e6)); resetUi(); uiError = ''; }
+  if (b === 'restart' && !NET) { h = new Harness(Math.floor(Math.random() * 1e6), undefined, h.state.mode); resetUi(); uiError = ''; }
   if (b === 'doneplan') act({ type: 'donePlanning', seat: Number(btn.dataset['p']) });
   if (b === 'donehaste') act({ type: 'doneHaste', seat: Number(btn.dataset['p']) });
   if (b === 'pass') act({ type: 'passPriority', seat: s.priority! });
@@ -574,6 +642,10 @@ function handleButton(btn: HTMLElement): void {
     ui.columns.forEach((col, ci) => { if (col && col.length) blocks[ci] = col; });
     act({ type: 'declareBlocks', seat: s.battle!.defender, blocks, send: ui.send });
     if (!uiError) { ui.columns = []; ui.send = []; ui.carrying = null; }
+  }
+  if (b === 'draftcommit' && ui.draftPack) {
+    act({ type: 'draftCommit', seat: Number(btn.dataset['p']) as Seat, packIndices: ui.draftPack.slice() });
+    if (!uiError) { ui.draftPack = null; }
   }
   if (b === 'decide') act({ type: 'decide', seat: s.decision!.seat, choice: Number(btn.dataset['i']) });
   if (b === 'orderpick') {
@@ -593,6 +665,15 @@ function handleButton(btn: HTMLElement): void {
 function handleAction(t: HTMLElement, e: MouseEvent): void {
   const kind = t.dataset['act'];
   const s = h.state;
+
+  if (kind === 'draftcard') {
+    if (!ui.draftPack) return;
+    const i = Number(t.dataset['i']);
+    const at = ui.draftPack.indexOf(i);
+    if (at >= 0) ui.draftPack.splice(at, 1); else ui.draftPack.push(i);
+    render();
+    return;
+  }
 
   if (kind === 'res') {
     const p = Number(t.dataset['p']) as Seat, i = Number(t.dataset['i']);
@@ -705,6 +786,8 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
   const name = s.players[p]!.hand[i];
   if (!name || name === HIDDEN_CARD || s.decision) return;
 
+  // during an open draft step the hand is drafted from the panel, not recycled
+  if (s.mode === 'draft' && s.draftDone && !s.draftDone[p]) return;
   if (s.phase === 'planning' && !s.planningDone[p]) {
     ui.menu = {
       x: e.clientX, y: e.clientY,
@@ -815,10 +898,11 @@ if (params.has('room') && params.get('room')!.trim()) {
   const room = params.get('room')!.toUpperCase().trim();
   const sp = params.get('seat');
   const seat: Seat | null = sp === '0' ? 0 : sp === '1' ? 1 : null;
-  NET = new NetBackend(room, seat);
+  NET = new NetBackend(room, seat, params.get('mode') ?? undefined);
   h = NET;
   renderConnecting();
 } else if (params.has('hotseat')) {
+  if (params.get('mode') === 'draft') h = new Harness(Math.floor(Math.random() * 1e6), undefined, 'draft');
   render();
 } else if (params.has('demo')) {
   demoBattle();

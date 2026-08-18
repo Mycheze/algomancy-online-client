@@ -65,12 +65,30 @@ replacement. **M4 (live draft) is unblocked.**
 - Run a constructed league on the growing pool while it lands.
 - Weird-card parking lot for the stack exotica; ship without them.
 
-## M4 — Live draft (the v1 identity feature) — 2-4 weeks once M3's trio is done
-- Draft loop as a planning-phase subsystem: hand↔pack merge with the leave-exactly-10
-  invariant, clockwise pack passing, N+1-turn pack refresh, recycle-to-bottom.
-- Reuse `draft.py` pool logic (mono pools + hybrid pairs, seeded shuffles).
-- Simultaneity UX: draft step is a commitment window with a timer; "opponent is drafting…"
-- **v1 ships here: 1v1 live draft (3 elements) + 1v1 constructed.**
+## M4 — Live draft (the v1 identity feature) — DONE 2026-08-18
+
+**Shipped**: `mode: 'draft'` through the whole stack. The deck is the physical
+box for the fire+water+earth trio — `draftDeckList()` filters the registry by
+oracle factions to exactly the Manual's 54 per element + 5 per hybrid pair =
+**177 cards, one copy each**. Game start deals 6-card hands (opening 4 + turn-1
+draws, Manual p.16) and 10-card packs, clockwise from initiative. Every
+planning phase opens a **draft step**: merge hand+pack, `draftCommit` names the
+pile indices that stay in the pack (leave-exactly-10 enforced), both commits
+pass the packs clockwise (1v1: swap). Packs **refresh every N+1 turns**
+(1v1: turns 4, 7, …): recycled to the bottom of the deck in seeded-random
+order, fresh 10s dealt. Packs are redacted like the Manual says: your own only
+during your open draft step, the opponent's never. The server takes
+`mode: 'draft'` on the room-creating join (home screen: "New live draft"),
+persists it, and replays it on restart; undo covers draft commits. The client
+gets a draft panel (click cards between "hand after drafting" and "left in the
+pack", commit gated on exactly 10) and an "opponent is still drafting…" state.
+- Tests: `test/20-draft.test.ts` (12 cases), draft-mode fuzz (25 games +
+  replay determinism) in 06-fuzz, `server/test-draft.ts` (19 checks:
+  redaction, passing, undo, persistence/restart). Suite: 277 / 0 fail.
+- Simultaneity note: no timer — personal scope; the commitment window +
+  "opponent is drafting…" is enough for two people who trust each other.
+- **v1 ships here: 1v1 live draft (fwe trio) + 1v1 constructed.** Each further
+  scripted element multiplies the available draft trios (wood/metal → 10).
 
 ## M5 — Beyond v1 — open-ended
 - More elements → full 5-element draft; FFA intents (commit-reveal); teams; spectators;

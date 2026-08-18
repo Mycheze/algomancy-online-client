@@ -1106,9 +1106,58 @@ export class E {
     for (const p of this.s.players) {
       for (const r of p.resources) if (r.state === 'expended') r.state = 'open';
       p.activationsLeft = 2;
-      this.draw(p.seat, 2);
+      // draft mode: turn 1's draws were dealt with the opening hand (Manual
+      // p.16), and later draws go clockwise from initiative like the packs
+      if (this.s.mode !== 'draft') this.draw(p.seat, 2);
+    }
+    if (this.s.mode === 'draft' && this.s.turn > 1) {
+      for (const seat of this.dealOrder()) this.draw(seat, 2);
     }
     for (const e of Object.values(this.s.entities)) e.budgets = {};
+    if (this.s.mode === 'draft') this.startDraftStep();
+  }
+
+  // ── live draft (Manual p.16-17) ─────────────────────────────────────
+  /** clockwise from the initiative player — draw/pack deal order */
+  dealOrder(): Seat[] {
+    const n = this.s.players.length;
+    return this.s.players.map((_, i) => ((this.s.initiative + i) % n) as Seat);
+  }
+
+  /** `seat` still has to commit their hand↔pack merge this turn */
+  draftPending(seat: Seat): boolean {
+    return this.s.mode === 'draft' && this.s.phase === 'planning'
+      && this.s.draftDone !== null && !this.s.draftDone[seat];
+  }
+
+  dealPacks(): void {
+    for (const seat of this.dealOrder()) {
+      this.s.packs[seat] = this.s.sharedDeck.splice(0, 10);
+    }
+  }
+
+  /** Open the draft step. After each cycle of N+1 turns (N = players; 1v1:
+   * turns 4, 7, …) all packs are first recycled — bottom of the deck in
+   * random order — and fresh packs of 10 dealt. */
+  startDraftStep(): void {
+    const n = this.s.players.length;
+    if (this.s.turn > 1 && (this.s.turn - 1) % (n + 1) === 0) {
+      const recycled = this.shuffle(this.s.packs.flat());
+      this.s.sharedDeck.push(...recycled);
+      this.dealPacks();
+      this.ev('draft', 'Packs are recycled; everyone is dealt a fresh pack of 10.');
+    }
+    this.s.draftDone = this.s.players.map(() => false);
+    this.ev('draft', 'Draft step: combine your hand and pack, then leave exactly 10 cards in the pack.');
+  }
+
+  /** Everyone committed: packs pass clockwise (1v1: they swap). */
+  passPacks(): void {
+    this.s.draftDone = null;
+    const old = this.s.packs;
+    const n = old.length;
+    this.s.packs = old.map((_, seat) => old[(seat - 1 + n) % n]!);
+    this.ev('draft', 'Everyone has drafted — the packs are passed on.');
   }
 
   /** Manual p.18: after the resource step comes the very short haste step —

@@ -136,13 +136,15 @@ const wss = new WebSocketServer({ server });
 
 wss.on('connection', ws => {
   ws.on('message', raw => {
-    let msg: { t: string; room?: string; seat?: number; name?: string; action?: Action };
+    let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; action?: Action };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     if (msg.t === 'join') {
       const code = (msg.room ?? '').toUpperCase().trim();
       if (!code) return send(ws, { t: 'error', msg: 'a room code is required' });
-      const room = getOrCreateRoom(code);
+      // mode only applies when this join CREATES the room (the creator's link
+      // carries it); an existing room keeps whatever it was created as.
+      const room = getOrCreateRoom(code, msg.mode === 'draft' ? 'draft' : 'shared');
       const picked = pickSeat(room, msg.seat);
       if (picked === null) {
         return send(ws, { t: 'error', msg: 'room is full (2 players) — ask your opponent for their seat link, or use a new room' });

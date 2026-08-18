@@ -55,6 +55,10 @@ for (const name of POOL) {
   const ambushM = (e.text ?? '').match(/\[Battle\]\s*Ambush\s*\[(\d*)([rbegm]*)\]/);
   out[name] = {
     name,
+    // element factions from the oracle DB ("fire", or ["fire","water"] for a
+    // hybrid; [] for colorless) — drives draft pool construction
+    factions: Array.isArray(e.factions) && e.factions[0] !== 'Unknown' && e.factions[0] !== 'colorless'
+      ? e.factions : [],
     cost,                                   // affinity pips, e.g. "rr"
     mana: e.total_cost === 'X' ? 'X' : Number(e.total_cost),
     power: Number(e.power) || 0,

@@ -17,6 +17,11 @@ export type ResourceKind = Element | 'prismite';
 
 export type Phase = 'planning' | 'battle' | 'regroup' | 'deploy' | 'gameover';
 
+/** 'shared' = the constructed-ish default (shared deck, draw 2, no packs);
+ * 'draft' = live draft (Manual p.16-17): per-player 10-card packs, a draft
+ * step each planning phase, clockwise passing, N+1-turn pack refresh. */
+export type GameMode = 'shared' | 'draft';
+
 export type Attr =
   | 'Flying' | 'Deadly' | 'Swift' | 'Sluggish' | 'Tough' | 'Balanced'
   | 'Inverted' | 'Unaware' | 'Powerful' | 'Vulnerable' | 'Feeble' | 'Evasive'
@@ -197,7 +202,7 @@ export type Suspension =
 // ── events ────────────────────────────────────────────────────────────
 
 export type EventType =
-  | 'phase' | 'turn' | 'draw' | 'recycle' | 'resourceActivated'
+  | 'phase' | 'turn' | 'draw' | 'draft' | 'recycle' | 'resourceActivated'
   | 'spawned' | 'died' | 'despawned' | 'erased'
   | 'spellPlayed' | 'stackPushed' | 'resolved' | 'negated' | 'fizzled'
   | 'triggered' | 'targeted' | 'modApplied' | 'grafted'
@@ -221,6 +226,10 @@ export type Action =
   /** planning: swap an ACTIVE Prismite for a resource of any element (R17) */
   | { type: 'exchangePrismite'; seat: Seat; index: number; element: ResourceKind }
   | { type: 'donePlanning'; seat: Seat }
+  /** draft step (mode 'draft'): commit the hand↔pack merge. packIndices are
+   * indices into the merged pile hand.concat(pack) — exactly pack.length of
+   * them (normally 10) go back to the pack; the rest become the new hand. */
+  | { type: 'draftCommit'; seat: Seat; packIndices: number[] }
   /** haste step (between planning and battle): done playing haste cards */
   | { type: 'doneHaste'; seat: Seat }
   /** mode 'ambush': play a [Battle] Ambush card during battle (recall target
@@ -262,7 +271,15 @@ export interface GameState {
   initiative: Seat;
   winner: Seat | null;
   nextId: number;
+  mode: GameMode;
   sharedDeck: CardName[];
+  /** mode 'draft': packs[seat] = that seat's face-down pack (normally 10 cards;
+   * viewable only by its holder during their draft step). Empty in 'shared'. */
+  packs: CardName[][];
+  /** mode 'draft': non-null while the draft step runs; draftDone[seat] = that
+   * seat has committed their hand↔pack merge this turn. Cleared (null) once
+   * everyone commits and the packs pass. Always null in 'shared'. */
+  draftDone: boolean[] | null;
   players: PlayerState[];
   regions: Region[];
   entities: Record<EntityId, Entity>;

@@ -6,7 +6,7 @@
  * caller keeps the old state.
  */
 import type {
-  Action, ApplyResult, CardName, Decision, EffectPart, EntityId, GameState,
+  Action, ApplyResult, CardName, Decision, EffectPart, EntityId, GameMode, GameState,
   ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
 import { E, GameEnded, IllegalAction, Suspended, other } from './engine.ts';
@@ -14,7 +14,7 @@ import {
   affinityPips, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
   type CardDef,
 } from './cards/dsl.ts';
-import { DECK_LIST } from './cards/registry.ts';
+import { DECK_LIST, draftDeckList } from './cards/registry.ts';
 import { rngShuffle, rngNext } from './rng.ts';
 
 export { IllegalAction };
@@ -23,10 +23,24 @@ const ELEMENTS: ResourceKind[] = ['fire', 'water', 'earth', 'wood', 'metal'];
 
 // ── game creation ─────────────────────────────────────────────────────
 
-export function createGame(seed: number, names: [string, string] = ['Player 1', 'Player 2']): ApplyResult {
+/** The fully-scripted live-draft trio. Each further finished element adds
+ * more playable trios; for now a draft game is always fire+water+earth. */
+export const DRAFT_TRIO = ['fire', 'water', 'earth'];
+
+export function createGame(
+  seed: number,
+  names: [string, string] = ['Player 1', 'Player 2'],
+  mode: GameMode = 'shared',
+): ApplyResult {
   let rngState = seed >>> 0;
   const deckCards: CardName[] = [];
-  for (const n of DECK_LIST) deckCards.push(n, n);
+  if (mode === 'draft') {
+    // the physical live-draft deck: one copy of each card of the chosen trio
+    // (54 per element + 5 per hybrid pair = 177 for a trio)
+    deckCards.push(...draftDeckList(DRAFT_TRIO));
+  } else {
+    for (const n of DECK_LIST) deckCards.push(n, n);
+  }
   let deck: CardName[];
   [deck, rngState] = rngShuffle(deckCards, rngState);
   let initRoll: number;
@@ -35,6 +49,7 @@ export function createGame(seed: number, names: [string, string] = ['Player 1', 
   const state: GameState = {
     seed, rngState, actionCount: 0, turn: 0, phase: 'planning',
     initiative: initRoll < 0.5 ? 0 : 1, winner: null, nextId: 1,
+    mode, packs: [[], []], draftDone: null,
     sharedDeck: deck,
     players: names.map((name, seat) => ({
       seat, name, life: 30, hand: [], bin: [],
@@ -53,7 +68,14 @@ export function createGame(seed: number, names: [string, string] = ['Player 1', 
     triggerQueue: [], triggerOrderedSeats: [], suspension: null, decision: null,
   };
   const e = new E(state);
-  for (const seat of [0, 1]) e.draw(seat, 5, true);
+  if (mode === 'draft') {
+    // Manual p.16: opening hand (4) is dealt together with turn 1's draws (2),
+    // then each player gets a pack of 10 — clockwise from initiative.
+    for (const seat of e.dealOrder()) e.draw(seat, 6, true);
+    e.dealPacks();
+  } else {
+    for (const seat of [0, 1]) e.draw(seat, 5, true);
+  }
   e.startTurn();
   return { state: e.s, events: e.events, pendingDecisions: [] };
 }
@@ -78,8 +100,8 @@ export function apply(state: GameState, action: Action): ApplyResult {
 }
 
 /** Replay = seed + action log (docs/04 §1). */
-export function replay(seed: number, actions: Action[], names?: [string, string]): ApplyResult {
-  let r = createGame(seed, names);
+export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode): ApplyResult {
+  let r = createGame(seed, names, mode);
   for (const a of actions) r = { ...apply(r.state, a), events: r.events };
   return r;
 }
@@ -95,6 +117,7 @@ function dispatch(e: E, action: Action): void {
     case 'activateResource': return doActivateResource(e, action.seat, action.index);
     case 'exchangePrismite': return doExchangePrismite(e, action.seat, action.index, action.element);
     case 'donePlanning': return doDonePlanning(e, action.seat);
+    case 'draftCommit': return doDraftCommit(e, action.seat, action.packIndices);
     case 'doneHaste': return doDoneHaste(e, action.seat);
     case 'playCard': return doPlayCard(e, action.seat, action.handIndex, action.mode);
     case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId);
@@ -111,8 +134,35 @@ function dispatch(e: E, action: Action): void {
 
 // ── planning ──────────────────────────────────────────────────────────
 
+/** Draft step (mode 'draft', Manual p.16-17): commit the hand↔pack merge.
+ * The merged pile is hand.concat(pack); the player names which pile indices
+ * go back to the pack — exactly as many as the pack held (the leave-exactly-10
+ * invariant), so hand size is conserved. */
+function doDraftCommit(e: E, seat: Seat, packIndices: number[]): void {
+  e.need(e.s.mode === 'draft', 'not a draft game');
+  e.need(e.s.phase === 'planning' && e.s.draftDone !== null, 'not the draft step');
+  e.need(!e.s.draftDone[seat], 'you already finished drafting');
+  const p = e.player(seat);
+  const pack = e.s.packs[seat]!;
+  const pile = [...p.hand, ...pack];
+  e.need(Array.isArray(packIndices) && packIndices.length === pack.length,
+    `you must leave exactly ${pack.length} cards in the pack`);
+  const seen = new Set<number>();
+  for (const i of packIndices) {
+    e.need(Number.isInteger(i) && i >= 0 && i < pile.length && !seen.has(i),
+      'bad pack selection');
+    seen.add(i);
+  }
+  e.s.packs[seat] = packIndices.map(i => pile[i]!);
+  p.hand = pile.filter((_, i) => !seen.has(i));
+  e.s.draftDone[seat] = true;
+  e.ev('draft', `${e.pname(seat)} finishes drafting and passes their pack.`, { seat });
+  if (e.s.draftDone.every(Boolean)) e.passPacks();
+}
+
 function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(ELEMENTS.includes(element), 'not an element');
   const card = e.player(seat).hand[handIndex];
   e.need(card !== undefined, 'no such card in hand');
@@ -124,6 +174,7 @@ function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): 
 
 function doActivateResource(e: E, seat: Seat, index: number): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  e.need(!e.draftPending(seat), 'finish drafting first');
   const r = e.player(seat).resources[index];
   e.need(r && r.state === 'dormant', 'not a dormant resource');
   e.need(e.player(seat).activationsLeft > 0, 'max 2 activations per turn');
@@ -134,6 +185,7 @@ function doActivateResource(e: E, seat: Seat, index: number): void {
 
 function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKind): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(ELEMENTS.includes(element), 'not an element');
   const r = e.player(seat).resources[index];
   e.need(r && r.kind === 'prismite', 'not a prismite');
@@ -146,6 +198,7 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
 
 function doDonePlanning(e: E, seat: Seat): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
+  e.need(!e.draftPending(seat), 'finish drafting first');
   e.s.planningDone[seat] = true;
   if (e.s.planningDone.every(Boolean)) e.startHasteStep();
 }
@@ -607,6 +660,22 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
 
   if (s.phase === 'planning' && !s.planningDone[seat]) {
     const hand = e.player(seat).hand;
+    // draft step first: nothing else until this seat commits their merge.
+    // Options are representative (like formations): the no-op keep plus every
+    // single hand↔pack swap; the UI builds arbitrary merges interactively and
+    // apply() validates whatever it sends.
+    if (e.draftPending(seat)) {
+      const pack = s.packs[seat]!;
+      const H = hand.length;
+      const noop = Array.from({ length: pack.length }, (_, i) => H + i);
+      out.push({ type: 'draftCommit', seat, packIndices: noop });
+      for (let h = 0; h < H; h++) {
+        for (let p = 0; p < pack.length; p++) {
+          out.push({ type: 'draftCommit', seat, packIndices: noop.map((v, j) => (j === p ? h : v)) });
+        }
+      }
+      return out;
+    }
     for (let i = 0; i < hand.length; i++) {
       for (const el of ELEMENTS) out.push({ type: 'recycleForResource', seat, handIndex: i, element: el });
     }

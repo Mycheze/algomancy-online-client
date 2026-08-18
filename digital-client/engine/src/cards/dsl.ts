@@ -19,6 +19,8 @@ import printedJson from './printed.json' with { type: 'json' };
 
 export interface Printed {
   name: string;
+  /** element factions ("fire"; two for hybrids; [] / absent for synthetics) */
+  factions?: string[];
   cost: string;                     // affinity pips, e.g. "rr"
   mana: number | 'X';
   power: number;

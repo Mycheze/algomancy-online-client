@@ -369,3 +369,16 @@ export const DECK_LIST: string[] = allCardNames().filter(n => {
   if (/\bResource\b/.test(c.type)) return false;
   return !/Token/.test(c.type) && (c.kind === 'unit' || c.kind === 'spell' || c.kind === 'spellUnit');
 });
+
+/** The live-draft shared deck for a set of elements: every deck card whose
+ * factions lie entirely within the set — the chosen monos plus the hybrid
+ * pairs among them, ONE copy each (the physical box has one of each card;
+ * Manual: "54 <element> cards" per element + 5 per hybrid pair). Registration
+ * order, like DECK_LIST, so the seeded shuffle is deterministic. */
+export function draftDeckList(elements: string[]): string[] {
+  const chosen = new Set(elements);
+  return DECK_LIST.filter(n => {
+    const f = getCard(n).factions ?? [];
+    return f.length > 0 && f.every(el => chosen.has(el));
+  });
+}

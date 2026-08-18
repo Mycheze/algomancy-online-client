@@ -31,6 +31,15 @@ export function viewFor(state: GameState, seat: Seat): GameState {
 
   // deck order is hidden (and derivable from the seed) — send a count only.
   v.sharedDeck = state.sharedDeck.map(() => HIDDEN_CARD);
+
+  // packs are face-down (Manual p.17: "packs may only be interacted with and
+  // looked at during the draft step, and players may not look at the packs of
+  // other players") — a seat sees their OWN pack only while their draft step
+  // is open (uncommitted); counts are always public.
+  const draftOpen = state.mode === 'draft' && state.phase === 'planning'
+    && state.draftDone !== null && !state.draftDone[seat];
+  v.packs = state.packs.map((pack, s) =>
+    s === seat && draftOpen ? [...pack] : pack.map(() => HIDDEN_CARD));
   // seed/rngState would let a client reconstruct the deck order.
   v.seed = 0;
   v.rngState = 0;

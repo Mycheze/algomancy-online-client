@@ -153,3 +153,12 @@ button:disabled { opacity: .4; cursor: default; }
 .joinrow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 6px 8px; letter-spacing: .2em; font-weight: 700; text-align: center; }
 .joinrow button { flex: 1; }
+
+/* ── live draft panel (M4) ──────────────────────────────────────────── */
+.draftpanel { background: var(--panel); border: 1px solid var(--accent); border-radius: 6px;
+  padding: 8px 10px; margin-bottom: 8px; }
+.drafthead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.drafthead .who { color: var(--accent); font-weight: 700; }
+.draftpanel .zone { min-height: 40px; }
+.draftpanel .draftkeep { border-left: 3px solid var(--glow); padding-left: 6px; }
+.draftpanel .draftleave { border-left: 3px solid var(--dim); padding-left: 6px; opacity: .85; }

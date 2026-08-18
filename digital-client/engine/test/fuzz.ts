@@ -14,12 +14,12 @@ export interface FuzzResult {
   state: GameState;
 }
 
-export function fuzzGame(seed: number, maxActions = 3000): FuzzResult {
+export function fuzzGame(seed: number, maxActions = 3000, mode: 'shared' | 'draft' = 'shared'): FuzzResult {
   let rng = (seed * 2654435761) >>> 0;
   const rand = () => { const [v, next] = rngNext(rng); rng = next; return v; };
   const pickFrom = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)]!;
 
-  let { state } = createGame(seed);
+  let { state } = createGame(seed, undefined, mode);
   const actions: Action[] = [];
 
   for (let i = 0; i < maxActions && state.phase !== 'gameover'; i++) {
@@ -34,7 +34,7 @@ export function fuzzGame(seed: number, maxActions = 3000): FuzzResult {
 
     // sometimes replace a formation action with a random-shaped one
     let action: Action = pickFrom(legal).a;
-    const custom = maybeRandomFormation(state, rand);
+    const custom = maybeRandomFormation(state, rand) ?? maybeRandomDraft(state, rand);
     if (custom && rand() < 0.5) {
       try {
         const r = apply(state, custom);
@@ -59,6 +59,18 @@ export function fuzzGame(seed: number, maxActions = 3000): FuzzResult {
   }
   checkInvariants(state);
   return { seed, actions, finished: state.phase === 'gameover', turns: state.turn, state };
+}
+
+/** random hand↔pack merges beyond legalActions' single-swap set */
+function maybeRandomDraft(state: GameState, rand: () => number): Action | null {
+  if (state.mode !== 'draft' || state.phase !== 'planning' || !state.draftDone || state.decision) return null;
+  const seats = ([0, 1] as Seat[]).filter(s => !state.draftDone![s]);
+  if (!seats.length) return null;
+  const seat = seats[Math.floor(rand() * seats.length)]!;
+  const pack = state.packs[seat]!;
+  const pileLen = state.players[seat]!.hand.length + pack.length;
+  const packIndices = shuffle(Array.from({ length: pileLen }, (_, i) => i), rand).slice(0, pack.length);
+  return { type: 'draftCommit', seat, packIndices };
 }
 
 /** random attack/block shapes beyond legalActions' representative set */
@@ -142,6 +154,12 @@ export function checkInvariants(s: GameState): void {
     }
   }
   for (const c of s.sharedDeck) if (!KNOWN.has(c)) die(`unknown card in deck: ${c}`);
+  for (const pack of s.packs) {
+    for (const c of pack) if (!KNOWN.has(c)) die(`unknown card in pack: ${c}`);
+  }
+  if (s.mode === 'draft' && s.draftDone !== null && s.phase !== 'planning') {
+    die('draft step open outside planning');
+  }
   if (s.decision) {
     if (!s.suspension) die('decision without suspension');
     if (!s.decision.options.length) die('decision with no options');

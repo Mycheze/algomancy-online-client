@@ -11,7 +11,7 @@
 import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Action, EngineEvent, GameState } from '../engine/src/types.ts';
+import type { Action, EngineEvent, GameMode, GameState } from '../engine/src/types.ts';
 import { apply, createGame } from '../engine/src/apply.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -24,6 +24,7 @@ export interface Socket {
 export interface Room {
   code: string;
   seed: number;
+  mode: GameMode;
   names: [string, string];
   state: GameState;
   actions: Action[];
@@ -36,15 +37,15 @@ export interface Room {
 const rooms = new Map<string, Room>();
 
 /** Build a fresh game and its initial event list. */
-function fresh(seed: number, names: [string, string]): { state: GameState; events: EngineEvent[] } {
-  const r = createGame(seed, names);
+function fresh(seed: number, names: [string, string], mode: GameMode): { state: GameState; events: EngineEvent[] } {
+  const r = createGame(seed, names, mode);
   return { state: r.state, events: r.events };
 }
 
 /** Re-run seed + actions, accumulating the full event history (the engine's
  * own replay() keeps only the last events, so we accumulate here). */
-function rebuild(seed: number, names: [string, string], actions: Action[]): { state: GameState; events: EngineEvent[] } {
-  let { state, events } = fresh(seed, names);
+function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode): { state: GameState; events: EngineEvent[] } {
+  let { state, events } = fresh(seed, names, mode);
   const all = [...events];
   for (const a of actions) {
     const r = apply(state, a);
@@ -58,16 +59,18 @@ export function getRoom(code: string): Room | undefined {
   return rooms.get(code);
 }
 
-export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2']): Room {
-  const { state, events } = fresh(seed, names);
-  const room: Room = { code, seed, names, state, actions: [], events, sockets: [null, null] };
+export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared'): Room {
+  const { state, events } = fresh(seed, names, mode);
+  const room: Room = { code, seed, mode, names, state, actions: [], events, sockets: [null, null] };
   rooms.set(code, room);
   persist(room);
   return room;
 }
 
-export function getOrCreateRoom(code: string): Room {
-  return rooms.get(code) ?? createRoom(code, (Math.random() * 1e9) >>> 0);
+/** `mode` only matters when the room doesn't exist yet (the creator's first
+ * join carries it); joining an existing room ignores it. */
+export function getOrCreateRoom(code: string, mode: GameMode = 'shared'): Room {
+  return rooms.get(code) ?? createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode);
 }
 
 /** Apply an action to the room's authoritative state and record it. Throws
@@ -85,7 +88,7 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
  * state by replaying seed + remaining actions. Caller enforces who/when. */
 export function undoLastAction(room: Room): void {
   room.actions.pop();
-  const { state, events } = rebuild(room.seed, room.names, room.actions);
+  const { state, events } = rebuild(room.seed, room.names, room.actions, room.mode);
   room.state = state;
   room.events = events;
   persist(room);
@@ -105,7 +108,7 @@ function persist(room: Room): void {
   try {
     mkdirSync(GAMES_DIR, { recursive: true });
     const path = join(GAMES_DIR, `${room.code}.json`);
-    writeFileSync(path, JSON.stringify({ seed: room.seed, names: room.names, actions: room.actions }));
+    writeFileSync(path, JSON.stringify({ seed: room.seed, mode: room.mode, names: room.names, actions: room.actions }));
   } catch (err) {
     console.error(`[rooms] could not persist ${room.code}:`, err);
   }
@@ -125,11 +128,12 @@ export function restoreRooms(): void {
     const code = f.replace(/\.json$/, '');
     try {
       const raw = JSON.parse(readFileSync(join(GAMES_DIR, f), 'utf8')) as {
-        seed: number; names?: [string, string]; actions: Action[];
+        seed: number; mode?: GameMode; names?: [string, string]; actions: Action[];
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
-      const { state, events } = rebuild(raw.seed, names, raw.actions);
-      rooms.set(code, { code, seed: raw.seed, names, state, actions: raw.actions, events, sockets: [null, null] });
+      const mode = raw.mode ?? 'shared';
+      const { state, events } = rebuild(raw.seed, names, raw.actions, mode);
+      rooms.set(code, { code, seed: raw.seed, mode, names, state, actions: raw.actions, events, sockets: [null, null] });
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions)`);
     } catch (err) {
       console.error(`[rooms] could not restore ${code}:`, err instanceof Error ? err.message : err);

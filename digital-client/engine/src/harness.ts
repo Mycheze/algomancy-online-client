@@ -14,9 +14,9 @@ export class Harness {
 
   seed: number;
 
-  constructor(seed: number, names?: [string, string]) {
+  constructor(seed: number, names?: [string, string], mode?: 'shared' | 'draft') {
     this.seed = seed;
-    const r = createGame(seed, names);
+    const r = createGame(seed, names, mode);
     this.state = r.state;
     this.absorb(r.events);
   }

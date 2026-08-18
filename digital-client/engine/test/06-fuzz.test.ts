@@ -14,11 +14,29 @@ test('fuzz: 40 random games hold all invariants', () => {
   assert.ok(finished > 0, 'at least some random games actually end');
 });
 
+test('fuzz: 25 random DRAFT games hold all invariants', () => {
+  let finished = 0;
+  for (let seed = 101; seed <= 125; seed++) {
+    const r = fuzzGame(seed, 2500, 'draft');
+    if (r.finished) finished++;
+  }
+  assert.ok(finished > 0, 'at least some random draft games actually end');
+});
+
 test('replay determinism: seed + action log reproduces the exact final state', () => {
   for (const seed of [3, 17, 29]) {
     const r = fuzzGame(seed, 1500);
     const replayed = replay(seed, r.actions);
     assert.equal(JSON.stringify(replayed.state), JSON.stringify(r.state),
       `seed ${seed}: replay diverged`);
+  }
+});
+
+test('replay determinism holds in draft mode too', () => {
+  for (const seed of [104, 111]) {
+    const r = fuzzGame(seed, 1500, 'draft');
+    const replayed = replay(seed, r.actions, undefined, 'draft');
+    assert.equal(JSON.stringify(replayed.state), JSON.stringify(r.state),
+      `seed ${seed}: draft replay diverged`);
   }
 });
