@@ -23,19 +23,29 @@ class NetBackend implements Backend {
   state: GameState = null as unknown as GameState;
   log: string[] = [];
   seat: Seat = 0;
+  room: string;
   legal: Action[] = [];
   peers: [boolean, boolean] = [false, false];
   joined = false;
+  /** set when the server hands this seat to a newer connection — stop rendering game UI */
+  dead = false;
   ws: WebSocket;
   constructor(room: string, seat: Seat | null) {
     if (seat != null) this.seat = seat;
+    this.room = room;
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     this.ws = new WebSocket(`${proto}://${location.host}`);
-    this.ws.onopen = () => this.ws.send(JSON.stringify({ t: 'join', room, seat }));
+    const name = (localStorage.getItem('algoName') ?? '').trim();
+    this.ws.onopen = () => this.ws.send(JSON.stringify({ t: 'join', room, seat, name }));
     this.ws.onmessage = ev => this.onMsg(JSON.parse(String(ev.data)));
-    this.ws.onclose = () => { uiError = 'disconnected from server — refresh to reconnect'; if (this.joined) render(); };
+    this.ws.onclose = () => {
+      if (this.dead) return;
+      uiError = 'disconnected from server — refresh to reconnect';
+      if (this.joined) render();
+    };
   }
   do(a: Action): void { this.ws.send(JSON.stringify({ t: 'action', action: a })); }
+  undo(): void { this.ws.send(JSON.stringify({ t: 'undo' })); }
   private onMsg(m: {
     t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
     events?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
@@ -47,10 +57,18 @@ class NetBackend implements Backend {
     }
     if (m.t === 'update') {
       if (m.view) this.state = m.view;
+      if (m.log) this.log = m.log;               // full log resync (undo shrank it)
       if (m.events) for (const e of m.events) this.log.push(e.msg);
       if (m.legal) this.legal = m.legal;
       if (m.peers) this.peers = m.peers;
       render(); return;
+    }
+    if (m.t === 'kicked') {
+      this.dead = true;
+      $app.innerHTML = `<div class="joinscreen"><h2>Algomancy</h2>
+        <p>${esc(m.msg ?? 'another connection took over this seat')}</p>
+        <button data-btn="gohome">home</button></div>`;
+      return;
     }
     if (m.t === 'error') { uiError = m.msg ?? 'error'; render(); return; }
   }
@@ -153,8 +171,19 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean } =
 function resHtml(r: { kind: string; state: string }, p: Seat, i: number): string {
   const canact = legalFor(p).some(a =>
     (a.type === 'activateResource' || a.type === 'exchangePrismite') && a.index === i);
-  return `<span class="res ${r.kind} ${r.state} ${canact ? 'canact' : ''}" title="${r.kind} (${r.state})"
-    data-act="res" data-p="${p}" data-i="${i}"></span>`;
+  // docs/07 §9.2 (decided): literal resource-card scans. Dormant = the face-down
+  // back (your own gets a small element chip — you know what's under it; the
+  // opponent's kind arrives redacted as 'hidden'), open = element card face-up,
+  // expended = turned sideways, prismite = its own card.
+  const face =
+    r.state === 'dormant' || r.kind === 'hidden' ? 'Dormant-Resource' :
+    r.kind === 'prismite' ? 'Prismite' :
+    r.kind.charAt(0).toUpperCase() + r.kind.slice(1) + '-Resource';
+  const chip = r.state === 'dormant' && r.kind !== 'hidden'
+    ? `<span class="reschip ${r.kind}">${r.kind === 'prismite' ? 'P' : r.kind.charAt(0).toUpperCase()}</span>` : '';
+  const title = r.kind === 'hidden' ? 'dormant (element hidden)' : `${r.kind} (${r.state})`;
+  return `<span class="rescard ${r.state} ${canact ? 'canact' : ''}" title="${title}"
+    data-act="res" data-p="${p}" data-i="${i}" data-prev="${face}"><img src="${art(face)}" alt="">${chip}</span>`;
 }
 
 function playerHtml(p: Seat): string {
@@ -380,22 +409,52 @@ function menuHtml(): string {
   return `<div class="menu" style="left:${ui.menu.x}px;top:${ui.menu.y}px">${items}<button data-btn="menuclose">cancel</button></div>`;
 }
 
+/** Phase track (docs/07 §4.5): every phase visible, the current one lit. */
+function phaseTrackHtml(): string {
+  const s = h.state;
+  const steps: { key: string; label: string; cur: boolean }[] = [
+    { key: 'planning', label: 'plan', cur: s.phase === 'planning' && !s.hasteDone },
+    { key: 'haste', label: 'haste', cur: s.phase === 'planning' && !!s.hasteDone },
+    { key: 'battle', label: s.battle ? `battle·r${s.battleRound}` : 'battle', cur: s.phase === 'battle' },
+    { key: 'regroup', label: 'regroup', cur: s.phase === 'regroup' },
+    { key: 'deploy', label: 'deploy', cur: s.phase === 'deploy' },
+  ];
+  if (s.phase === 'gameover') return `<span class="phasetrack"><span class="ph cur">game over</span></span>`;
+  return `<span class="phasetrack">${steps.map(p =>
+    `<span class="ph ${p.cur ? 'cur' : ''}">${p.label}</span>`).join('<span class="phsep">▸</span>')}</span>`;
+}
+
+/** Share banner: shown while the opponent's seat is empty in network mode. */
+function shareBannerHtml(): string {
+  if (!NET || NET.peers[other(NET.seat)]) return '';
+  const link = `${location.origin}/?ws=1&room=${encodeURIComponent(NET.room)}&seat=${other(NET.seat)}`;
+  return `<div class="sharebar">Waiting for your opponent — send them the room code
+    <b>${esc(NET.room)}</b> or this link:
+    <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
+    <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>`;
+}
+
 function render(): void {
-  if (NET && !NET.joined) { renderConnecting(); return; }
+  if (NET && (NET.dead || !NET.joined)) { if (!NET.dead) renderConnecting(); return; }
   const logItems = h.log.slice(-80).map(l => `<div>${esc(l)}</div>`).join('');
   // in network mode keep MY seat at the bottom (opponent on top)
   const topSeat: Seat = NET ? other(NET.seat) : 1;
   const botSeat: Seat = NET ? NET.seat : 0;
-  const netTag = NET ? `<span class="init">you are ${esc(h.state.players[NET.seat]!.name)} (seat ${NET.seat})</span>` : '';
+  const oppOn = NET ? NET.peers[other(NET.seat)] : true;
+  const netTag = NET ? `<span class="init">room ${esc(NET.room)} · you are ${esc(h.state.players[NET.seat]!.name)}</span>
+    <span class="presence ${oppOn ? 'on' : 'off'}">● ${oppOn ? 'opponent connected' : 'opponent offline'}</span>` : '';
+  const canUndo = NET && (h.state.phase === 'planning' || h.state.phase === 'deploy');
   $app.innerHTML = `
     <div class="main">
       <div class="topbar">
         <span>Turn ${h.state.turn}</span>
-        <span class="phase">${h.state.phase}${h.state.battle ? ' · round ' + h.state.battleRound : ''}</span>
+        ${phaseTrackHtml()}
         <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
         ${netTag}
+        ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)" style="margin-left:auto">↶ undo</button>' : ''}
         ${NET ? '' : '<button data-btn="restart" style="margin-left:auto">New game</button>'}
       </div>
+      ${shareBannerHtml()}
       ${promptHtml()}
       ${playerHtml(topSeat)}
       ${battleHtml()}
@@ -416,20 +475,34 @@ function renderConnecting(): void {
     <p>${uiError ? esc(uiError) : 'Connecting to the server…'}</p></div>`;
 }
 
-/** tiny join screen (?ws=1 with no room) */
-function renderJoin(): void {
-  $app.innerHTML = `<div class="joinscreen">
-    <h2>Algomancy — join a game</h2>
-    <label>Room code <input id="j-room" value="ROOM" autocapitalize="characters"></label>
-    <div class="seats">Seat:
-      <label><input type="radio" name="j-seat" value=""checked> auto</label>
-      <label><input type="radio" name="j-seat" value="0"> 0</label>
-      <label><input type="radio" name="j-seat" value="1"> 1</label>
+/** Home screen (docs/07 §2): new game / join / hotseat / practice. */
+function renderHome(): void {
+  const name = localStorage.getItem('algoName') ?? '';
+  $app.innerHTML = `<div class="joinscreen home">
+    <h1 class="homelogo">ALGOMANCY</h1>
+    <label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>
+    <div class="homebtns">
+      <button class="primary" data-btn="newgame">New online game</button>
+      <div class="joinrow">
+        <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
+          spellcheck="false" style="text-transform:uppercase">
+        <button data-btn="joincode">Join game</button>
+      </div>
+      <button data-btn="hotseat">Local hotseat</button>
+      <button data-btn="practice">Practice demo</button>
     </div>
-    <button data-btn="joingame">Join</button>
-    <p class="hint">Share the same room code with your opponent; each of you takes a seat.</p>
+    <p class="hint">One of you starts a new game and sends the other the room code or link.</p>
   </div>`;
+  const codeInput = document.getElementById('h-code') as HTMLInputElement | null;
+  codeInput?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') (document.querySelector('[data-btn="joincode"]') as HTMLElement).click();
+  });
 }
+
+const saveHomeName = (): void => {
+  const inp = document.getElementById('h-name') as HTMLInputElement | null;
+  if (inp) localStorage.setItem('algoName', inp.value.trim());
+};
 
 // ── interaction ───────────────────────────────────────────────────────
 document.addEventListener('mouseover', e => {
@@ -447,6 +520,9 @@ document.addEventListener('mouseover', e => {
 document.addEventListener('click', e => {
   const btn = (e.target as HTMLElement).closest('[data-btn]') as HTMLElement | null;
   if (btn) { handleButton(btn); return; }
+  // outside a game (home screen / kicked screen) a stray click must not
+  // trigger the game render() — it would paint the hotseat board over the UI.
+  if (!inGame) return;
   const t = (e.target as HTMLElement).closest('[data-act]') as HTMLElement | null;
   if (!t) { ui.menu = null; render(); return; }
   handleAction(t, e as MouseEvent);
@@ -454,12 +530,33 @@ document.addEventListener('click', e => {
 
 function handleButton(btn: HTMLElement): void {
   const b = btn.dataset['btn'];
-  if (b === 'joingame') {
-    const room = (document.getElementById('j-room') as HTMLInputElement).value.trim().toUpperCase() || 'ROOM';
-    const seat = (document.querySelector('input[name="j-seat"]:checked') as HTMLInputElement).value;
-    location.search = `?ws=1&room=${encodeURIComponent(room)}${seat ? `&seat=${seat}` : ''}`;
+  if (b === 'newgame') {
+    saveHomeName();
+    fetch('/api/new').then(r => r.json()).then((r: { code: string }) => {
+      location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0`;
+    }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
     return;
   }
+  if (b === 'joincode') {
+    saveHomeName();
+    const code = (document.getElementById('h-code') as HTMLInputElement).value.trim().toUpperCase();
+    if (!code) return;
+    location.search = `?ws=1&room=${encodeURIComponent(code)}`;
+    return;
+  }
+  if (b === 'hotseat') { saveHomeName(); location.search = '?hotseat=1'; return; }
+  if (b === 'practice') { saveHomeName(); location.search = '?demo=1'; return; }
+  if (b === 'gohome') { location.href = location.pathname; return; }
+  if (b === 'copylink') {
+    const link = btn.dataset['link']!;
+    // clipboard API needs a secure context; plain-http LAN needs the fallback
+    void navigator.clipboard?.writeText(link).catch(() => {});
+    const inp = document.querySelector('.sharelink') as HTMLInputElement | null;
+    if (inp) { inp.select(); document.execCommand('copy'); }
+    btn.textContent = 'copied ✓';
+    return;
+  }
+  if (b === 'undo') { NET?.undo(); return; }
   const s = h.state;
   if (b === 'restart' && !NET) { h = new Harness(Math.floor(Math.random() * 1e6)); resetUi(); uiError = ''; }
   if (b === 'doneplan') act({ type: 'donePlanning', seat: Number(btn.dataset['p']) });
@@ -702,20 +799,30 @@ function demoBattle(): void {
   h.do({ type: 'decide', seat: dec.seat, choice: idx });
 }
 
-// ── bootstrap: hotseat by default, network mode via ?ws=1 / ?room=… ─────
-const params = new URLSearchParams(location.search);
-if (params.get('ws') === '1' || params.has('room')) {
-  const room = (params.get('room') ?? '').toUpperCase().trim();
-  if (!room) {
-    renderJoin();   // tiny join screen: ask for a room code + seat
-  } else {
-    const sp = params.get('seat');
-    const seat: Seat | null = sp === '0' ? 0 : sp === '1' ? 1 : null;
-    NET = new NetBackend(room, seat);
-    h = NET;
-    renderConnecting();
+// ── bootstrap: home screen by default; ?ws=1&room=… network game,
+//    ?hotseat=1 local hotseat, ?demo scripted mid-battle ─────────────────
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && NET) {
+    e.preventDefault();
+    NET.undo();
   }
-} else {
-  if (params.has('demo')) demoBattle();
+});
+
+const params = new URLSearchParams(location.search);
+/** false on the home screen — the game click-fallback must not fire there */
+const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.has('hotseat') || params.has('demo');
+if (params.has('room') && params.get('room')!.trim()) {
+  const room = params.get('room')!.toUpperCase().trim();
+  const sp = params.get('seat');
+  const seat: Seat | null = sp === '0' ? 0 : sp === '1' ? 1 : null;
+  NET = new NetBackend(room, seat);
+  h = NET;
+  renderConnecting();
+} else if (params.has('hotseat')) {
   render();
+} else if (params.has('demo')) {
+  demoBattle();
+  render();
+} else {
+  renderHome();
 }

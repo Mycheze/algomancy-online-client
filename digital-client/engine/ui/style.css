@@ -112,3 +112,44 @@ button:disabled { opacity: .4; cursor: default; }
 .joinscreen .seats label { display: inline; }
 .joinscreen button { font-size: 16px; padding: 8px; }
 .joinscreen .hint { color: var(--dim); font-size: 12px; margin: 0; }
+
+/* ── resource cards (docs/07 §9.2: literal scans, not dots) ─────────── */
+.rescard { position: relative; width: 34px; border-radius: 3px; flex-shrink: 0; display: inline-block; line-height: 0; }
+.rescard img { width: 100%; border-radius: 3px; display: block; }
+.rescard.expended { opacity: .45; }
+.rescard.expended img { transform: rotate(90deg) scale(.82); }
+.rescard.dormant { cursor: pointer; }
+.rescard.canact { outline: 2px solid var(--glow); border-radius: 3px; }
+.reschip { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%;
+  font: 700 9px/14px system-ui; text-align: center; color: #fff; border: 1px solid #0008; }
+.reschip.fire { background: var(--fire); } .reschip.water { background: var(--water); }
+.reschip.earth { background: #8a6b3d; } .reschip.wood { background: #4e8a3d; } .reschip.metal { background: #9aa5b0; color: #222; }
+.reschip.prismite { background: linear-gradient(135deg, #eee, #b8c6ff); color: #223; }
+
+/* ── phase track ────────────────────────────────────────────────────── */
+.phasetrack { display: inline-flex; align-items: center; gap: 3px; }
+.phasetrack .ph { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: 11px; padding: 1px 6px; border-radius: 8px; }
+.phasetrack .ph.cur { color: #1a1206; background: var(--accent); font-weight: 700; }
+.phasetrack .phsep { color: var(--dim); font-size: 9px; }
+
+/* ── presence + share ───────────────────────────────────────────────── */
+.presence.on { color: var(--glow); }
+.presence.off { color: var(--danger); }
+.sharebar { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--accent);
+  border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; }
+.sharebar b { color: var(--accent); letter-spacing: .1em; }
+.sharelink { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 4px 8px; font: 12px monospace; min-width: 120px; }
+
+/* ── home screen ────────────────────────────────────────────────────── */
+.joinscreen.home { max-width: 340px; }
+.homelogo { color: var(--accent); letter-spacing: .3em; text-align: center; margin: 6px 0 18px; }
+.namerow { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--dim); }
+.namerow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; }
+.homebtns { display: flex; flex-direction: column; gap: 8px; }
+.homebtns button { padding: 9px; font-size: 14px; }
+.homebtns .primary { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.joinrow { display: flex; gap: 8px; }
+.joinrow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 6px 8px; letter-spacing: .2em; font-weight: 700; text-align: center; }
+.joinrow button { flex: 1; }

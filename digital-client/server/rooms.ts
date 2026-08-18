@@ -81,6 +81,24 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   return r.events;
 }
 
+/** Undo the most recent action (single-step, docs/07 §15): pop it and rebuild
+ * state by replaying seed + remaining actions. Caller enforces who/when. */
+export function undoLastAction(room: Room): void {
+  room.actions.pop();
+  const { state, events } = rebuild(room.seed, room.names, room.actions);
+  room.state = state;
+  room.events = events;
+  persist(room);
+}
+
+/** Rename a seat. Names are cosmetic: they live in room.names (persisted, used
+ * by replay) and in the live state's player slot for rendering. */
+export function renameSeat(room: Room, seat: 0 | 1, name: string): void {
+  room.names[seat] = name;
+  room.state.players[seat]!.name = name;
+  persist(room);
+}
+
 // ── persistence ───────────────────────────────────────────────────────
 
 function persist(room: Room): void {

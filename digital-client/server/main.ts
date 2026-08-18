@@ -20,7 +20,8 @@ import type { Action, Seat } from '../engine/src/types.ts';
 import { legalActions, IllegalAction } from '../engine/src/apply.ts';
 import { viewFor, redactEvent, redactLog } from './view.ts';
 import {
-  applyToRoom, getOrCreateRoom, getRoom, restoreRooms, type Room, type Socket,
+  applyToRoom, getOrCreateRoom, getRoom, renameSeat, restoreRooms, undoLastAction,
+  type Room, type Socket,
 } from './rooms.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -47,10 +48,28 @@ async function serveFile(res: import('node:http').ServerResponse, path: string):
   }
 }
 
+/** Room codes: 4 letters, skipping easily-confused ones. */
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+function freshRoomCode(): string {
+  for (let tries = 0; tries < 100; tries++) {
+    let code = '';
+    for (let i = 0; i < 4; i++) code += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+    if (!getRoom(code)) return code;
+  }
+  return 'R' + Date.now().toString(36).toUpperCase().slice(-4);
+}
+
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
   let path = decodeURIComponent(url.pathname);
   if (path === '/' || path === '') path = '/index.html';
+
+  // home screen asks here for an unused room code (the room itself is only
+  // created when the first player joins it over WS).
+  if (path === '/api/new') {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    return res.end(JSON.stringify({ code: freshRoomCode() }));
+  }
 
   // card art: the UI asks for /AlgomancyCards/<Name>.jpg
   if (path.startsWith('/AlgomancyCards/')) {
@@ -100,12 +119,16 @@ function broadcastAfterAction(room: Room, rawEvents: import('../engine/src/types
 
 const peersOf = (room: Room): [boolean, boolean] => [!!room.sockets[0], !!room.sockets[1]];
 
-function pickSeat(room: Room, requested: number | undefined): Seat | null {
+/** Pick a seat for a joiner. A specifically-requested seat is granted even if
+ * occupied (the old connection is kicked): with two known players, a stale tab
+ * must never dead-end the real person behind "seat taken". Auto-join (no seat
+ * requested) only takes a free seat. */
+function pickSeat(room: Room, requested: number | undefined): { seat: Seat; kicked: Socket | null } | null {
   if (requested === 0 || requested === 1) {
-    return room.sockets[requested] ? null : (requested as Seat);
+    return { seat: requested as Seat, kicked: room.sockets[requested] };
   }
-  if (!room.sockets[0]) return 0;
-  if (!room.sockets[1]) return 1;
+  if (!room.sockets[0]) return { seat: 0, kicked: null };
+  if (!room.sockets[1]) return { seat: 1, kicked: null };
   return null;
 }
 
@@ -113,17 +136,27 @@ const wss = new WebSocketServer({ server });
 
 wss.on('connection', ws => {
   ws.on('message', raw => {
-    let msg: { t: string; room?: string; seat?: number; action?: Action };
+    let msg: { t: string; room?: string; seat?: number; name?: string; action?: Action };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     if (msg.t === 'join') {
       const code = (msg.room ?? '').toUpperCase().trim();
       if (!code) return send(ws, { t: 'error', msg: 'a room code is required' });
       const room = getOrCreateRoom(code);
-      const seat = pickSeat(room, msg.seat);
-      if (seat === null) {
-        return send(ws, { t: 'error', msg: msg.seat != null ? `seat ${msg.seat} is taken` : 'room is full (2 players)' });
+      const picked = pickSeat(room, msg.seat);
+      if (picked === null) {
+        return send(ws, { t: 'error', msg: 'room is full (2 players) — ask your opponent for their seat link, or use a new room' });
       }
+      const seat = picked.seat;
+      if (picked.kicked) {
+        send(picked.kicked as unknown as WebSocket, {
+          t: 'kicked', msg: `another connection took over seat ${seat} — this tab is done (close it, or rejoin)`,
+        });
+        (picked.kicked as unknown as WebSocket).close();
+        console.log(`[ws] ${code}: seat ${seat} taken over by a new connection`);
+      }
+      const name = typeof msg.name === 'string' ? msg.name.trim().slice(0, 24) : '';
+      if (name) renameSeat(room, seat, name);
       room.sockets[seat] = ws as unknown as Socket;
       conns.set(ws, { room, seat });
       send(ws, {
@@ -156,6 +189,38 @@ wss.on('connection', ws => {
       } catch (err) {
         if (err instanceof IllegalAction) send(ws, { t: 'error', msg: err.message });
         else { console.error('[ws] apply error:', err); send(ws, { t: 'error', msg: 'internal error' }); }
+      }
+      return;
+    }
+
+    if (msg.t === 'undo') {
+      // single-step undo (docs/07 §15): only during the solo phases, and only
+      // when the most recent action in the whole log is yours — anything the
+      // opponent has acted on top of stays put.
+      const conn = conns.get(ws);
+      if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
+      const room = conn.room;
+      const phase = room.state.phase;
+      if (phase !== 'planning' && phase !== 'deploy') {
+        return send(ws, { t: 'error', msg: 'undo only works during planning and deploy' });
+      }
+      const last = room.actions[room.actions.length - 1];
+      if (!last) return send(ws, { t: 'error', msg: 'nothing to undo' });
+      if (last.seat !== conn.seat) return send(ws, { t: 'error', msg: 'your opponent acted since — nothing of yours to undo' });
+      undoLastAction(room);
+      room.events.push({
+        type: 'note', msg: `${room.names[conn.seat]} undid their last action.`, data: {},
+      } as unknown as import('../engine/src/types.ts').EngineEvent);
+      for (const s of [0, 1] as Seat[]) {
+        const sock = room.sockets[s] as unknown as WebSocket | null;
+        if (!sock) continue;
+        send(sock, {
+          t: 'update',
+          view: viewFor(room.state, s),
+          log: redactLog(room.events, s, room.names),   // full log replace: lines were removed
+          legal: legalActions(room.state, s),
+          peers: peersOf(room),
+        });
       }
       return;
     }
