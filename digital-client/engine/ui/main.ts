@@ -503,6 +503,65 @@ function helpOverlayHtml(): string {
   </div></div>`;
 }
 
+// ── right-click card inspector ────────────────────────────────────────
+let inspect: {
+  name: string;
+  id?: EntityId;
+  rulings: string[] | null;   // null = still loading
+  error?: string;
+} | null = null;
+
+function openInspector(name: string, id?: EntityId): void {
+  inspect = { name, id, rulings: null };
+  render();
+  fetch(`/api/cardinfo?name=${encodeURIComponent(name)}`)
+    .then(r => r.json())
+    .then((r: { rulings?: unknown[]; error?: string }) => {
+      if (!inspect || inspect.name !== name) return;
+      inspect.rulings = (r.rulings ?? []).map(x => String(x));
+      inspect.error = r.error;
+      render();
+    })
+    .catch(() => { if (inspect?.name === name) { inspect.rulings = []; inspect.error = 'rulings unavailable (judge offline?)'; render(); } });
+}
+
+function inspectorHtml(): string {
+  if (!inspect) return '';
+  const name = inspect.name;
+  let text = '', type = '', printedAttrs: string[] = [];
+  try { const c = getCard(name); text = c.text; type = c.type; printedAttrs = c.attrs; } catch { /* unknown */ }
+  // a live unit shows its CURRENT attributes (shared/temp/static included);
+  // otherwise the printed ones
+  const u = inspect.id !== undefined ? h.state.entities[inspect.id] : undefined;
+  const attrs = u ? [...q().ownAttrs(u)] : printedAttrs;
+  const attrRows = attrs.length
+    ? attrs.map(a => {
+        const def = KEYWORDS.find(([k]) => k === a)?.[1] ?? 'see the rules reference';
+        return `<div class="helprow"><b>${esc(a)}</b><span>${esc(def)}</span></div>`;
+      }).join('')
+    : '<div class="hint">no attributes</div>';
+  const rulings = inspect.rulings === null
+    ? '<div class="hint">loading rulings…</div>'
+    : inspect.rulings.length
+      ? inspect.rulings.map(r => `<div class="rulingrow">${esc(r)}</div>`).join('')
+      : `<div class="hint">no recorded rulings for this card${inspect.error ? ` (${esc(inspect.error)})` : ''}</div>`;
+  return `<div class="overlay mainonly"><div class="overlaybox inspectbox">
+    <h3>${esc(name)} <span class="hint">${esc(type)}</span></h3>
+    <div class="inspectscroll">
+      <div class="inspecttop"><img src="${art(name)}" alt="" onerror="this.style.display='none'">
+        <div class="inspecttext">${esc(text)}</div></div>
+      <h4>Attributes${u ? ' (current, shared/granted included)' : ' (printed)'}</h4>
+      ${attrRows}
+      <h4>Rulings</h4>
+      ${rulings}
+    </div>
+    <div class="judgerow">
+      <button data-btn="inspectjudge" data-name="${esc(name)}">⚖ Ask the judge about ${esc(name)}</button>
+      <button data-btn="inspectclose">Close</button>
+    </div>
+  </div></div>`;
+}
+
 function judgeOverlayHtml(): string {
   const rows = judgeLog.map(e => `
     <div class="judgeq">Q: ${esc(e.q)}</div>
@@ -901,6 +960,7 @@ function render(): void {
     ${menuHtml()}
     ${binDialogHtml()}
     ${helpOpen ? helpOverlayHtml() : ''}
+    ${inspectorHtml()}
     ${judgeOpen ? judgeOverlayHtml() : ''}
     ${pendingReveal ? revealOverlayHtml() : ''}`;
   const log = document.getElementById('log')!;
@@ -1241,6 +1301,13 @@ function handleButton(btn: HTMLElement): void {
   if (b === 'helpclose') helpOpen = false;
   if (b === 'judgeopen') judgeOpen = true;
   if (b === 'judgeclose') judgeOpen = false;
+  if (b === 'inspectclose') inspect = null;
+  if (b === 'inspectjudge') {
+    const name = btn.dataset['name'] ?? inspect?.name ?? '';
+    inspect = null;
+    judgeOpen = true;
+    judgeDraft = `I have a question about ${name}. `;
+  }
   if (b === 'judgeask') {
     const inp = document.getElementById('judge-q') as HTMLInputElement | null;
     const question = inp?.value.trim();
@@ -1499,6 +1566,30 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     NET.undo();
   }
+});
+
+// right-click any card (board, hand, bin, preview, reveal) → inspector menu
+document.addEventListener('contextmenu', e => {
+  if (!inGame) return;   // never paint game UI over the home screen
+  const t = (e.target as HTMLElement).closest('[data-prev], [data-previd]') as HTMLElement | null;
+  if (!t) return;
+  e.preventDefault();
+  const id = t.dataset['previd'] !== undefined ? Number(t.dataset['previd']) : undefined;
+  const name = id !== undefined ? h.state.entities[id]?.card : t.dataset['prev'];
+  if (!name || name === HIDDEN_CARD) return;
+  const me = e as MouseEvent;
+  ui.menu = {
+    x: me.clientX, y: me.clientY,
+    items: [
+      { label: `📖 ${name} — details, attributes & rulings`, go: () => openInspector(name, id) },
+      { label: `⚖ Ask the judge about ${name}`, go: () => {
+          judgeOpen = true;
+          judgeDraft = `I have a question about ${name}. `;
+          render();
+        } },
+    ],
+  };
+  render();
 });
 
 const params = new URLSearchParams(location.search);

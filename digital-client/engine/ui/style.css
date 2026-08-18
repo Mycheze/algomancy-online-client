@@ -337,3 +337,13 @@ button:disabled { opacity: .4; cursor: default; }
 .judgerow { display: flex; gap: 8px; }
 .judgerow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 6px 10px; }
+
+/* right-click card inspector */
+.inspectbox { width: min(92vw, 620px); }
+.inspectscroll { overflow-y: auto; }
+.inspectscroll h4 { margin: 10px 0 4px; color: var(--accent); text-transform: uppercase; font-size: 12px; letter-spacing: .08em; }
+.inspecttop { display: flex; gap: 12px; align-items: flex-start; }
+.inspecttop img { width: 150px; border-radius: 8px; flex-shrink: 0; }
+.inspecttext { color: var(--text); white-space: pre-wrap; }
+.rulingrow { background: var(--panel2); border-left: 3px solid var(--accent); border-radius: 4px;
+  padding: 6px 10px; margin-bottom: 6px; color: var(--text); }

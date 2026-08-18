@@ -71,6 +71,22 @@ const server = createServer(async (req, res) => {
     return res.end(JSON.stringify({ code: freshRoomCode() }));
   }
 
+  // right-click card inspector: card info + recorded rulings from the bot
+  if (path === '/api/cardinfo') {
+    const name = url.searchParams.get('name') ?? '';
+    try {
+      const upstream = await fetch(`http://127.0.0.1:8000/api/card?name=${encodeURIComponent(name)}`, {
+        signal: AbortSignal.timeout(10000),
+      });
+      const json = await upstream.text();
+      res.writeHead(upstream.status, { 'content-type': 'application/json' });
+      return res.end(json);
+    } catch (err) {
+      res.writeHead(502, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ rulings: [], error: String(err instanceof Error ? err.message : err) }));
+    }
+  }
+
   // the in-game judge popup: proxy to the rules bot (same box, :8000) so the
   // client needs no CORS and no second origin
   if (path === '/api/judge' && req.method === 'POST') {
