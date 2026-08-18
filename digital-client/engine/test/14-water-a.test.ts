@@ -4,11 +4,13 @@
  *
  * Covers: a tripling graft cause (Amphivore), hand disruption (Bripp), erase
  * + Glimpse (Celestial Purge, ⚠ glimpse approximation — cached card goes to
- * hand), stack recall (Cosmic Reversal), a parked static (Dreadspawn Horror),
- * targeted draw trigger (Dreamfloat Drifter), battle-scoped life-loss
- * bookkeeping (Echo of Despair, Null Drone; R14), bin recall (Eldritch
- * Reclaimer), R6 payments (Frosted Denial), recall-triggered pump (Galerider
- * Eel), playing units mid-battle (Hooba-Pon, Insidious Invitation), ambush
+ * hand), stack recall (Cosmic Reversal), a live hand-size static (Dreadspawn
+ * Horror; its augment-donated form stays parked — mod-carried statics),
+ * targeted draw trigger (Dreamfloat Drifter), the engine's per-battle
+ * life-loss ledger (Echo of Despair, Null Drone; R14), bin recall (Eldritch
+ * Reclaimer), R6 payments (Frosted Denial), hand-entry pump — recalls AND
+ * battle draws (Galerider Eel), playing units mid-battle (Hooba-Pon,
+ * Insidious Invitation), ambush
  * (Mirage Walker, R22; Lurking Slimebeast parked — no printed ambush data),
  * targeted recall (Minor Kraken), deployment-idle tracking (Mirage Walker),
  * Glimpse spells (Oracle of Foretelling, Premonition) and until-regroup
@@ -17,6 +19,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
+import { E } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
@@ -124,27 +127,45 @@ test('Cosmic Reversal: recalls all other spell effects on the stack to hands', (
 
 // ── Dreadspawn Horror ────────────────────────────────────────────────────
 
-test('Dreadspawn Horror: 7/5, Virus-augments a host in battle (static is parked)', () => {
+test('Dreadspawn Horror: 7/5 on an empty hand; Virus-augments a host in battle (donated static PARKED)', () => {
   const h = new Harness(1405);
   toDeployment(h);
   const A = h.state.deployPlayer!;
+  h.state.players[A]!.hand.length = 0;                      // the static reads the hand LIVE
   const ds = spawn(h, A, 'Dreadspawn Horror');
-  assert.deepEqual(effStats(h, ds), [7, 5], 'plays as a 7/5');
+  assert.deepEqual(effStats(h, ds), [7, 5], 'empty hand → the full 7/5');
   const host = spawn(h, A, 'Unit Token');
   giveResources(h, A, 'water', 4);                          // bb/2 Virus
-  toNextBattle(h, A);
+  toNextBattle(h, A);                                       // new turn: both players draw 2
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Dreadspawn Horror'), hostId: host });
   pass(h); pass(h);                                         // resolve the virus
   const hostEnt = ent(h, host)!;
   assert.equal(hostEnt.mods.length, 1, 'virus augment attached in battle');
   assert.equal(ent(h, hostEnt.mods[0]!)!.card, 'Dreadspawn Horror');
-  assert.deepEqual(effStats(h, host), [1, 1], 'no attrs/stats donated (text-box augment)');
+  assert.deepEqual(effStats(h, host), [1, 1],
+    'PARKED: the augment-DONATED static needs mod-carried statics — the mod donates nothing');
+  const hand = h.state.players[A]!.hand.length;             // 2 turn draws, the augment spent
+  assert.deepEqual(effStats(h, ds), [7 - hand, 5 - hand], 'the in-play copy tracks the hand meanwhile');
   finishBattle(h);
 });
 
-test('Dreadspawn Horror: continuous "-1/-1 per card in your hand" (needs a static-modifier primitive)', { todo: true }, () => {
-  // PARKED: effStats() has no card-text hook for continuous modifiers.
+test('Dreadspawn Horror: "-1/-1 for each card in your hand" tracks the hand live', () => {
+  const h = new Harness(1428);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  h.state.players[A]!.hand.length = 0;
+  const ds = spawn(h, A, 'Dreadspawn Horror');
+  assert.deepEqual(effStats(h, ds), [7, 5], 'empty hand: 7/5');
+  give(h, A, 'Bripp'); give(h, A, 'Bripp'); give(h, A, 'Bripp');
+  assert.deepEqual(effStats(h, ds), [4, 2], '3 cards in hand: a live 4/2 — no action in between');
+  h.state.players[A]!.hand.length = 1;
+  assert.deepEqual(effStats(h, ds), [6, 4], 'cards leaving the hand give the stats back');
+  for (let i = 0; i < 4; i++) give(h, A, 'Bripp');          // 5 cards → toughness 0
+  const e = new E(h.state);
+  e.checkDeaths(); e.settle();
+  assert.ok(!ent(h, ds), 'a 5+ card hand kills it at the next death check (toughness ≤ 0)');
+  assert.ok(h.state.players[A]!.bin.includes('Dreadspawn Horror'), 'it dies to its own drawback → bin');
 });
 
 // ── Dreamfloat Drifter ───────────────────────────────────────────────────
@@ -291,15 +312,32 @@ test('Galerider Eel: a card recalled to my hand during battle → +4/+4 until re
   pick(h, { unit: ally });                                  // recall the ally → my hand
   pass(h); pass(h);                                         // resolve the ambush
   pass(h); pass(h);                                         // resolve the Eel trigger
-  assert.deepEqual(effStats(h, eel), [4, 8], '0/4 + 4/4 (flying grant is parked)');
+  assert.deepEqual(effStats(h, eel), [4, 8], '0/4 + 4/4');
+  assert.ok(ownAttrs(h, eel).has('Flying'), 'flying granted (addTempAttr)');
   assert.ok(h.state.players[A]!.hand.includes('Unit Token'), 'the recall reached my hand');
   finishBattle(h);
   assert.deepEqual(effStats(h, eel), [0, 4], 'the pump ends at regroup');
+  assert.ok(!ownAttrs(h, eel).has('Flying'), 'the flying grant ends at regroup');
 });
 
-test('Galerider Eel: DRAWS entering the hand + the flying grant (needs fireEvent(draw) and temp attrs)', { todo: true }, () => {
-  // PARKED: E.draw() never fireEvent()s, so draws are invisible to triggers;
-  // Entity has no temporary-attribute field for the flying grant.
+test('Galerider Eel: a battle DRAW entering my hand triggers it (+4/+4 and flying)', () => {
+  const h = new Harness(1425);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const eel = spawn(h, A, 'Galerider Eel');                 // 0/4
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[eel]] });
+  {
+    const e = new E(h.state);                               // a card enters my hand: a draw
+    e.draw(A, 1);                                           // battle draws fire 'draw' events
+    e.settle();
+  }
+  pass(h); pass(h);                                         // resolve the trigger
+  assert.deepEqual(effStats(h, eel), [4, 8], '0/4 + 4/4');
+  assert.ok(ownAttrs(h, eel).has('Flying'), 'flying granted');
+  finishBattle(h);
+  assert.deepEqual(effStats(h, eel), [0, 4], 'gone at regroup');
+  assert.ok(!ownAttrs(h, eel).has('Flying'), 'gone at regroup');
 });
 
 // ── Hooba-Pon ────────────────────────────────────────────────────────────
@@ -443,7 +481,7 @@ test('Null Drone: negates a spell costing ≤ the greatest life lost this battle
   const h = new Harness(1420);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
-  const drone = spawn(h, A, 'Null Drone');                  // 2/1; tracks life loss in play
+  const drone = spawn(h, A, 'Null Drone');                  // 2/1
   giveResources(h, A, 'water', 3);                          // the Null Drone spell: b/2
   giveResources(h, D, 'water', 1);                          // Overwhelm: b/1
   toNextBattle(h, A);
@@ -466,9 +504,33 @@ test('Null Drone: negates a spell costing ≤ the greatest life lost this battle
   finishBattle(h);
 });
 
-test('Null Drone: life-loss seen without a tracker unit in play (needs engine-level tracking)', { todo: true }, () => {
-  // PARKED: loseLife() records nothing per battle; the batch bookkeeping only
-  // sees life lost while an Echo of Despair / Null Drone unit is in-region.
+test('Null Drone: life loss is ledgered engine-side — no tracker unit needed in play', () => {
+  // E.loseLife bumps battleCounter `lifeLost:<seat>` itself, so life lost
+  // BEFORE any Null Drone existed still counts.
+  const h = new Harness(1426);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');                    // 1/1 — no life-loss listener anywhere
+  giveResources(h, A, 'water', 3);                          // the Null Drone spell: b/2
+  giveResources(h, D, 'water', 1);                          // Overwhelm: b/1
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);                                         // combat: D loses 1 (engine ledger)
+  assert.equal(h.state.players[D]!.life, 29);
+  pass(h);                                                  // afterWindow: A passes → D
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Overwhelm') });
+  pick(h, { unit: atk });
+  const owId = h.state.stack[0]!.id;
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Null Drone') });
+  pick(h, { stack: owId });
+  pass(h); pass(h);                                         // resolve Null Drone: cost 1 ≤ 1 lost
+  assert.ok(h.log.some(l => l.includes('is negated')), 'Overwhelm negated');
+  pass(h); pass(h);                                         // negated Overwhelm resolves → bin
+  assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
+  assert.deepEqual(effStats(h, atk), [1, 1], 'the token was never shrunk');
+  finishBattle(h);
 });
 
 // ── Oracle of Foretelling ────────────────────────────────────────────────
@@ -536,7 +598,7 @@ test('Premonition: Glimpse X where X is your water affinity (at resolution)', ()
 
 // ── Protective Adaptations ───────────────────────────────────────────────
 
-test('Protective Adaptations: target unit gains +1/+1 until regroup (piercing parked)', () => {
+test('Protective Adaptations: target unit gains +1/+1 until regroup', () => {
   const h = new Harness(1424);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -552,7 +614,18 @@ test('Protective Adaptations: target unit gains +1/+1 until regroup (piercing pa
   assert.deepEqual(effStats(h, tok), [1, 1], 'temporary — gone at regroup');
 });
 
-test('Protective Adaptations: the "gains piercing until regroup" half (needs temp attrs)', { todo: true }, () => {
-  // PARKED: Entity has only tempPower/tempToughness — no temporary attribute
-  // grants, so the piercing part of the buff cannot be modeled yet.
+test('Protective Adaptations: the target also gains piercing until regroup', () => {
+  const h = new Harness(1427);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const tok = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'water', 1);                          // b/1
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Protective Adaptations') });
+  pick(h, { unit: tok });
+  pass(h); pass(h);                                         // resolve (addTempAttr)
+  assert.ok(ownAttrs(h, tok).has('Piercing'), 'gains piercing');
+  finishBattle(h);
+  assert.ok(!ownAttrs(h, tok).has('Piercing'), 'temporary — gone at regroup');
 });

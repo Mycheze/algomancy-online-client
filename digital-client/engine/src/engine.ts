@@ -139,11 +139,34 @@ export class E {
 
   // ── stats & attributes (six-layer projection; layers 5-6 have no pool cards
   //    yet but the seams are here: see docs/03 §4) ──────────────────────
+  /** reentrancy guard for static-modifier evaluation (see StaticMod docs) */
+  private inStatics = false;
+
+  /** every StaticMod projected onto `target` by in-play units in its region */
+  private staticsFor(target: Entity): { holder: Entity; mod: import('./cards/dsl.ts').StaticMod }[] {
+    if (this.inStatics) return [];
+    const out: { holder: Entity; mod: import('./cards/dsl.ts').StaticMod }[] = [];
+    this.inStatics = true;
+    try {
+      for (const holder of Object.values(this.s.entities)) {
+        if (holder.kind !== 'unit' || holder.region !== target.region) continue;
+        for (const mod of this.card(holder.card).statics ?? []) {
+          if (mod.affects(this, holder, target)) out.push({ holder, mod });
+        }
+      }
+    } finally { this.inStatics = false; }
+    return out;
+  }
+
   effStats(e: Entity): [number, number] {
     const c = this.card(e.card);
     const base = e.tokenStats ?? [c.power, c.toughness];       // layer 1 (+2 base-set later)
     let p = base[0]! + e.counters + e.tempPower;               // layer 3
     let t = base[1]! + e.counters + e.tempToughness;
+    for (const { holder, mod } of this.staticsFor(e)) {        // layer 3: continuous projections
+      p += typeof mod.dp === 'function' ? mod.dp(this, holder, e) : (mod.dp ?? 0);
+      t += typeof mod.dt === 'function' ? mod.dt(this, holder, e) : (mod.dt ?? 0);
+    }
     // layer 4: Tough / Balanced in application order (R19); duplicates don't stack
     for (const a of this.layer4Attrs(e)) {
       if (a === 'Tough') t *= 2;
@@ -177,6 +200,7 @@ export class E {
   ownAttrs(e: Entity): Set<string> {
     const set = new Set<string>(this.card(e.card).attrs);
     for (const a of e.tempAttrs ?? []) set.add(a);
+    for (const { mod } of this.staticsFor(e)) for (const a of mod.attrs ?? []) set.add(a);
     for (const id of e.mods) {
       const m = this.entity(id);
       if (m && m.appliedAs === 'augment') {

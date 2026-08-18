@@ -10,14 +10,6 @@
  * per card), R12/R25 ("each opponent/player" is region-scoped), R26 ("play"
  * excludes token creation — the nontoken gate doubles as the loop guard).
  *
- * PARKED (needs an engine primitive that does not exist):
- *  - Nimbus Eel's FLYING GRANT. "Target unit gains +2/+0 and flying until
- *    regroup" — the engine has temp stats (Entity.tempPower/tempToughness,
- *    wiped at regroup) but no temp-ATTRIBUTE channel: attrs come only from the
- *    card's printed list plus augment mods (E.ownAttrs), and mods are
- *    permanent objects, not until-regroup effects. The +2/+0 half is
- *    implemented and tested; the flying half is a todo test.
- *
  * Approximations (existing primitives, semantics slightly reshaped — each
  * flagged ⚠ at the card):
  *  - Costs the DSL cannot express as costs ("Sacrifice a unit:" on a spell,
@@ -91,14 +83,16 @@ card('Molten Riftbreaker', {
 // "When you play a token spell, [Switch1] Target unit gains +2/+0 and
 // {g}flying until regroup." — r/2 2/1. Token-spell gate is the inverse of the
 // usual nontoken one (R26 family: the spellPlayed event carries token:true for
-// spell tokens). Bounded graft ([Switch1], R9).
-// PARKED: the flying grant — no temp-attribute primitive (see header). Only
-// the +2/+0 half runs.
+// spell tokens). Bounded graft ([Switch1], R9). The flying grant uses
+// E.addTempAttr (until-regroup attribute, cleared with temp stats).
 const eelBuff: EffectDef = {
-  targets: { what: 'unit', prompt: 'Nimbus Eel: target unit gains +2/+0 (and flying) until regroup' },
+  targets: { what: 'unit', prompt: 'Nimbus Eel: target unit gains +2/+0 and flying until regroup' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (t && 'id' in (t as object)) g.addTemp(t as Entity, 2, 0);
+    if (t && 'id' in (t as object)) {
+      g.addTemp(t as Entity, 2, 0);
+      g.addTempAttr(t as Entity, 'Flying');
+    }
   },
 };
 card('Nimbus Eel', {

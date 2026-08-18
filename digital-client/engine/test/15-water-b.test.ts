@@ -90,6 +90,22 @@ test('Rider of the Tides: a card entering a hand during battle → +2/+2 until r
   assert.deepEqual(effStats(h, rider), [2, 2], 'temp change gone at regroup');
 });
 
+test('Rider of the Tides: a battle DRAW also triggers the pump', () => {
+  const h = new Harness(1522);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const rider = spawn(h, A, 'Rider of the Tides');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[rider]] });
+  const e = new E(h.state);
+  e.draw(A, 1);                                            // battle draws now fire 'draw' events
+  e.settle();
+  pass(h); pass(h);                                        // resolve the trigger
+  assert.deepEqual(effStats(h, rider), [4, 4], '2/2 + 2/2 = 4/4');
+  finishBattle(h);
+  assert.deepEqual(effStats(h, rider), [2, 2], 'gone at regroup');
+});
+
 test("Rippleback Skulker: my column connects to a player → take a card from that player's bin", () => {
   const h = new Harness(1503);
   toDeployment(h);
@@ -163,7 +179,7 @@ test('Shoreline Specter: after combat, may recall target ally → each opponent 
   finishBattle(h);
 });
 
-test('Soul Siphon: resolves cleanly; X reads the (parked) per-battle life-loss counter → 0 today', () => {
+test('Soul Siphon: no life lost yet → X = 0, resolves cleanly, no unit', () => {
   const h = new Harness(1506);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -181,9 +197,27 @@ test('Soul Siphon: resolves cleanly; X reads the (parked) per-battle life-loss c
   finishBattle(h);
 });
 
-test('Soul Siphon: X = life the target player lost THIS battle (PARKED: engine keeps no lifeLost battle counter)', { todo: true }, () => {
-  // needs loseLife() to bump battleCounter(`lifeLost:<seat>`) during battle;
-  // the card already reads that key, so this test lights up with the engine change.
+test('Soul Siphon: X = life the target player lost THIS battle (engine lifeLost ledger)', () => {
+  const h = new Harness(1516);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Good Whale');                   // 7/5
+  giveResources(h, D, 'water', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);                                        // combat: D loses 7 (ledgered by loseLife)
+  assert.equal(h.state.players[D]!.life, 23);
+  pass(h);                                                 // afterWindow: A passes → D
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Siphon') });
+  pass(h); pass(h);                                        // resolve → target player pick
+  decide(h, (_, v) => v === D);                            // X = life D lost this battle
+  const made = unitsOf(h, D).filter(u => u.card === 'Unit Token');
+  assert.equal(made.length, 1, 'a unit was created');
+  assert.deepEqual(effStats(h, made[0]!.id), [7, 7], 'X = 7 → a 7/7');
+  assert.ok(h.state.players[D]!.bin.includes('Soul Siphon'), 'spell → bin');
+  finishBattle(h);
 });
 
 test('Spawntender: creates an 8/8, then its own 2/2 body spawns (spell unit)', () => {
@@ -448,5 +482,24 @@ test('Xenopod Progenitor: another card enters a hand in battle → may pay [1] f
   assert.equal(made.length, 1, 'paid [1] → a 2/2');
   assert.equal(new E(h.state).openMana(D), 0, 'the [1] was paid');
   assert.ok(ent(h, xp), 'Xenopod still in play');
+  finishBattle(h);
+});
+
+test('Xenopod Progenitor: a battle DRAW also triggers it (pay [1] → 2/2)', () => {
+  const h = new Harness(1523);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const xp = spawn(h, A, 'Xenopod Progenitor');
+  giveResources(h, A, 'water', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[xp]] });
+  const e = new E(h.state);
+  e.draw(A, 1);                                            // a drawn card is never the carrier
+  e.settle();
+  pass(h); pass(h);                                        // resolve the trigger
+  assert.equal(h.state.decision!.kind, 'payOrDecline');
+  decide(h, (_, v) => v === true);
+  const made = unitsOf(h, A).filter(u => u.card === 'Unit Token' && u.tokenStats?.[0] === 2);
+  assert.equal(made.length, 1, 'paid [1] → a 2/2');
   finishBattle(h);
 });

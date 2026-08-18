@@ -95,8 +95,24 @@ export interface ActivatedAbility {
 
 export type Ability = TriggeredAbility | ActivatedAbility;
 
+/** A continuous ("static") modification a card projects while it is a unit in
+ * play: "+X/+Y to matching units", granted attributes, or both. Evaluated live
+ * inside effStats/ownAttrs (engine stat layer 3). affects() runs for units in
+ * the SAME REGION as the holder (R12) — return true to include the holder
+ * itself. IMPORTANT: affects/dp/dt must not call effStats (reentrancy guard
+ * makes nested statics vanish); read raw fields (counters, hand sizes, card
+ * data) instead. */
+export interface StaticMod {
+  affects: (g: E, self: Entity, target: Entity) => boolean;
+  dp?: number | ((g: E, self: Entity, target: Entity) => number);
+  dt?: number | ((g: E, self: Entity, target: Entity) => number);
+  attrs?: Attr[];
+}
+
 export interface CardBehavior {
   abilities?: Ability[];
+  /** continuous stat/attr projections while this card is a unit in play */
+  statics?: StaticMod[];
   /** effect of a spell / spell unit / spell token when played */
   spellEffect?: EffectDef;
   /** the [Switch]-marked effect that transfers when this card is grafted */

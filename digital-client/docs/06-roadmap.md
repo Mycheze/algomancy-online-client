@@ -44,6 +44,17 @@ Constructed first purely because it needs fewer scripted cards than draft.
   can read the log and see exactly why everything happened.**
 
 ## M3 — Card burn-down, element by element — 6-12 weeks
+
+**2026-08-18: the first trio is DONE.** Fire+water+earth is fully scripted — all
+183 trio cards (3×~56 mono + 3×5 hybrids) plus the earlier wood/metal cards:
+registry 199, playable deck 190, suite 263 tests / 0 fail / 15 todo, 1000 fuzz
+games clean. Eight parallel scripting agents + two unpark waves; the engine
+gained temp-attr grants, battle-draw events, a per-battle life-loss ledger, a
+continuous static-modifier layer, and an end-of-turn suspension fix along the
+way. The 15 todos are the parking lot: cast-time X costs, damage replacement,
+cost modifiers, mod-carried statics, spell-effect attr projection, trigger
+suppression, Shard resources, bin-play/bin-resident triggers, regroup
+replacement. **M4 (live draft) is unblocked.**
 - B7 resolved: all five elements are valid; a live draft uses any 3 per game. So the target
   is the whole set, but **draft unlocks per fully-scripted trio** — completing any 3 elements
   (~175-190 cards: 3×54 mono + that trio's hybrids) makes M4 shippable, and each further

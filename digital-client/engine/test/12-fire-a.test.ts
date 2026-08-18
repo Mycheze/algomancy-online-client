@@ -15,7 +15,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -164,17 +164,37 @@ test('Delver of Mysteries: recalls a chosen spell from the bin, then spawns 2/2'
 
 // ── Emberflame Enlightener ───────────────────────────────────────────────
 
-test('Emberflame Enlightener: plays as a 0/5 (Powerful aura PARKED)', () => {
+test('Emberflame Enlightener: 0/5; your units in its region gain Powerful (live static)', () => {
   const h = new Harness(1206);
   toDeployment(h);
-  const p = h.state.deployPlayer!;
-  const ee = spawn(h, p, 'Emberflame Enlightener');
-  assert.deepEqual(effStats(h, ee), [0, 5], '0/5 body');
+  const A = h.state.initiative, D = 1 - A;
+  const ee = spawn(h, A, 'Emberflame Enlightener');
+  assert.deepEqual(effStats(h, ee), [0, 5], '0/5 body — Powerful changes no stats');
+  const ally = spawn(h, A, 'Unit Token');
+  const enemy = spawn(h, D, 'Unit Token');
+  assert.ok(ownAttrs(h, ally).has('Powerful'), 'an allied unit gains Powerful');
+  assert.ok(ownAttrs(h, ee).has('Powerful'), '"your units" includes itself');
+  assert.ok(!ownAttrs(h, enemy).has('Powerful'), "the opponent's unit (another region) gains nothing");
+  // the aura is continuous: it ends the moment the Enlightener leaves play
+  const e = new E(h.state);
+  e.destroy(ent(h, ee)!, 'dies'); e.settle();
+  assert.ok(!ownAttrs(h, ally).has('Powerful'), 'the aura ends with the Enlightener');
 });
 
-test('Emberflame Enlightener: your units and spells gain Powerful', { todo: true }, () => {
-  // PARKED: global attribute aura — the engine reads attrs only from a card's
-  // own printed data and its own augment mods; no aura layer exists.
+test('Emberflame Enlightener: a Powerful column deals double combat damage (spells half PARKED)', () => {
+  const h = new Harness(1218);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const ee = spawn(h, A, 'Emberflame Enlightener');   // 0/5 — attacks along to carry the aura (R12)
+  const tok = spawn(h, A, 'Unit Token');              // 1/1
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[tok, ee]] });
+  pass(h); pass(h);                                   // → blocks
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  finishBattle(h);
+  assert.equal(h.state.players[D]!.life, 28, 'the 1-power column output is DOUBLED (Powerful units)');
+  // "and spells" stays PARKED: dealEffectDamage reads the source CARD's
+  // printed attrs — statics project onto in-play units only.
 });
 
 // ── Envoy of Lightning ───────────────────────────────────────────────────
@@ -188,8 +208,10 @@ test('Envoy of Lightning: plays as a 3/2 (Electric aura PARKED)', () => {
 });
 
 test('Envoy of Lightning: your single-target spell effects are Electric', { todo: true }, () => {
-  // PARKED: same missing aura/replacement layer (dealEffectDamage reads the
-  // source CARD's printed attrs only).
+  // PARKED even with the statics layer: statics project only onto in-play
+  // UNITS, while this must attach {Electric} to spell EFFECTS —
+  // dealEffectDamage reads the source CARD's printed attrs, with no
+  // projection seam for in-play modifiers.
 });
 
 // ── Fire Resource ────────────────────────────────────────────────────────
@@ -422,10 +444,26 @@ test('Infernal Wispweaver: [Augment] end of turn → create a Wisp', () => {
   const wisp = unitsOf(h, p).find(u => u.card === 'Wisp');
   assert.ok(wisp, 'a Wisp is created at end of turn');
   assert.ok(wisp!.token, 'the Wisp is a token');
-  assert.deepEqual(effStats(h, wisp!.id), [0, 1]);
+  assert.deepEqual(effStats(h, wisp!.id), [2, 2], 'the weaver in play: its 0/1 Wisp is a live 2/2');
 });
 
-test('Infernal Wispweaver: wisps +2/+1 and skip their after-combat sacrifice', { todo: true }, () => {
-  // PARKED: needs a stat aura layer plus suppression of another card's
-  // trigger (the Wisp token's own after-combat self-sacrifice).
+test('Infernal Wispweaver: your Wisps in its region gain +2/+1 (live static)', () => {
+  const h = new Harness(1219);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const weaver = spawn(h, A, 'Infernal Wispweaver');
+  const wisp = spawn(h, A, 'Wisp');
+  assert.deepEqual(effStats(h, wisp), [2, 2], 'a 0/1 Wisp is a live 2/2');
+  const foeWisp = spawn(h, D, 'Wisp');
+  assert.deepEqual(effStats(h, foeWisp), [0, 1], "an enemy Wisp (another region) is untouched");
+  assert.deepEqual(effStats(h, weaver), [2, 1], 'the weaver is no Wisp itself');
+  const e = new E(h.state);
+  e.destroy(ent(h, weaver)!, 'dies'); e.settle();
+  assert.deepEqual(effStats(h, wisp), [0, 1], 'the static ends with the weaver');
+});
+
+test('Infernal Wispweaver: wisps do not sacrifice themselves after combat', { todo: true }, () => {
+  // PARKED: needs a way to suppress ANOTHER card's trigger — the Wisp
+  // token's own after-combat self-sacrifice (registry.ts) fires
+  // unconditionally. The +2/+1 half of the line is implemented (see above).
 });

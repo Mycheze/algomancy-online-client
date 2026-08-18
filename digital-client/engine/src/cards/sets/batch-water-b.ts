@@ -10,23 +10,12 @@
  * region-battle).
  *
  * PARKED (needs engine machinery that does not exist yet):
- *  - Soul Siphon: "X = the life target player lost in this battle" needs a
- *    per-battle life-loss ledger. loseLife() fires 'lifeLost' but bumps no
- *    battleCounter, and a spell has no in-play listener to keep its own count.
- *    The card reads battleCounter(`lifeLost:<seat>`), which nothing bumps yet
- *    (one-line engine addition in loseLife would light it up) — so today it
- *    resolves cleanly and creates nothing (X = 0).
  *  - Water Resource: "When I activate, if you have at least [b][b][b], create
  *    a Shard" needs (a) resource cards modelled as playable resources (the
  *    engine's resources are anonymous ResourceState entries made by
  *    recycleForResource), (b) 'resourceActivated' dispatched to trigger
  *    listeners (apply.ts only logs it), and (c) a 'Shard' resource kind.
  *    Registered as printed data only so lookups never crash.
- *  - PARTIAL — Rider of the Tides / Xenopod Progenitor: "a card enters a
- *    player's hand during battle" is heard via 'despawned' (recall → hand),
- *    but draw() only logs its event — 'draw' is never dispatched to trigger
- *    listeners, so mid-battle draws don't trigger these two. Engine addition
- *    needed: fireEvent('draw', ...) in E.draw().
  */
 import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -186,16 +175,19 @@ card('Recall', {
 
 // "[Augment] Whenever a card enters a player's hand during battle, I gain
 // +2/+2 until regroup." — b/1 2/2 Fish Unit. Text-box [Augment]. Cards enter
-// hands mid-battle via recall ('despawned', nontoken → owner's hand); a token
-// recall is erased instead, filtered by card type (see isNontokenCard).
-// ⚠ PARTIAL: 'draw' events are not dispatched to listeners (see header), so
-// mid-battle draws don't trigger this yet.
+// hands mid-battle via recall ('despawned', nontoken → owner's hand; a token
+// recall is erased instead, filtered by card type — see isNontokenCard) or a
+// battle DRAW (E.draw fires 'draw' during battle only; drawn cards are deck
+// cards, always nontoken; the event carries no region, so the when() pins the
+// listener to the battle region, R12).
 card('Rider of the Tides', {
   augmentText: [{
-    type: 'triggered', events: ['despawned'],
+    type: 'triggered', events: ['despawned', 'draw'],
     label: 'I gain +2/+2 until regroup (a card entered a hand)',
     when: (g, self, ev) =>
-      g.s.phase === 'battle' && isNontokenCard(ev.data?.card),
+      g.s.phase === 'battle' &&
+      (ev.type === 'draw' ? g.s.battle?.region === self.region
+        : isNontokenCard(ev.data?.card)),
     effect: {
       run: (g, ctx) => {
         const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
@@ -306,11 +298,9 @@ card('Shoreline Specter', {
 });
 
 // "[Switch1] Create an X/X unit, where X is the life target player lost in
-// this battle." — b/2, {Battle} Occult Horror Spell.
-// PARKED (see header): the engine keeps no per-battle life-loss counter. The
-// effect reads battleCounter(`lifeLost:<seat>`) — the key a future one-line
-// loseLife() addition would bump — so today X is always 0 and the spell
-// resolves without creating anything.
+// this battle." — b/2, {Battle} Occult Horror Spell. X reads the engine's
+// per-battle life-loss ledger (E.loseLife bumps battleCounter
+// `lifeLost:<seat>`; reset per battle, R14; amount at resolution, R1).
 const soulSiphonMake: EffectDef = {
   run: (g, ctx) => {
     const seats = presentSeats(g, ctx.region);
@@ -320,7 +310,7 @@ const soulSiphonMake: EffectDef = {
       prompt: 'Soul Siphon: target player (X = life they lost this battle)',
       options: seats.map(s => ({ label: g.pname(s), value: s })),
     })) as Seat;
-    const x = g.battleCounter(ctx.region, `lifeLost:${seat}`);   // PARKED: never bumped yet
+    const x = g.battleCounter(ctx.region, `lifeLost:${seat}`);   // engine ledger (loseLife)
     if (x > 0) g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
     else g.ev('info', 'Soul Siphon: X = 0 — no unit created.');
   },
@@ -621,18 +611,20 @@ card('Water Resource', {});
 
 // "[Augment] Whenever one or more other cards enter a player's hand during
 // battle, you may pay [one] to create a 2/2 unit." — b/5 3/3. Text-box
-// [Augment]. Same 'despawned' channel as Rider of the Tides ("other" excludes
-// the carrier's own recall; ⚠ PARTIAL: draws not dispatched — see header).
-// The [one] payment is a mid-resolution pay-or-decline (R6), skipped outright
-// when the controller cannot pay.
+// [Augment]. Same channels as Rider of the Tides: recall ('despawned' — where
+// "other" excludes the carrier's own recall) and battle DRAWS ('draw', fired
+// by E.draw during battle only; a drawn card is never the carrier, and a
+// multi-card draw is ONE event, matching "one or more"). The [one] payment is
+// a mid-resolution pay-or-decline (R6), skipped outright when the controller
+// cannot pay.
 card('Xenopod Progenitor', {
   augmentText: [{
-    type: 'triggered', events: ['despawned'],
+    type: 'triggered', events: ['despawned', 'draw'],
     label: 'you may pay [one] to create a 2/2 unit (a card entered a hand)',
     when: (g, self, ev) =>
       g.s.phase === 'battle' &&
-      ev.data?.unit !== self.id &&
-      isNontokenCard(ev.data?.card),
+      (ev.type === 'draw' ? g.s.battle?.region === self.region
+        : ev.data?.unit !== self.id && isNontokenCard(ev.data?.card)),
     effect: {
       run: (g, ctx) => {
         if (g.openMana(ctx.controller) < 1) return;

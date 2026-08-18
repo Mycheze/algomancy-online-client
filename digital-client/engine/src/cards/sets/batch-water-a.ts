@@ -17,26 +17,13 @@
  *    player CHOOSES one via ctx.choose, it goes to their HAND, the rest are
  *    recycled to the bottom. Slightly stronger (kept past end of turn),
  *    slightly weaker (playing it needs affinity).
- *  - LIFE-LOST-THIS-BATTLE tracking (Echo of Despair / Null Drone): the
- *    engine does not record per-battle life loss. A synchronous bookkeeping
- *    hook (a `when()` that always returns false, shared by Echo of Despair
- *    and Null Drone units) accumulates lifeLost amounts into battleCounters
- *    (`wa:lifeLost:<seat>`, per region, R14) at event time, deduped per
- *    event. Fidelity limit: life loss is only recorded while such a unit is
- *    in play in the battle region.
  *
  * PARKED (needs engine primitives that do not exist; subsets implemented):
- *  - Dreadspawn Horror: "[Augment] I gain -1/-1 for each card in your hand"
- *    is a CONTINUOUS stat modifier; effStats() has no card-text hook (layers
- *    5/6 are seamed but not scriptable). Registered so it plays as a 7/5
- *    Virus augment; the static does nothing.
- *  - Galerider Eel: (a) card draws never reach triggers — E.draw() emits a
- *    'draw' event but never fireEvent()s it, so "cards enter your hand"
- *    only sees battle RECALLS ('despawned' to hand); (b) "gains flying
- *    until regroup" needs a temporary-attribute primitive (Entity has only
- *    tempPower/tempToughness). Subset: +4/+4 on a recall-to-my-hand.
- *  - Protective Adaptations: "gains piercing until regroup" — same missing
- *    temp-attr primitive. Subset: the +1/+1 works.
+ *  - Dreadspawn Horror (augment-donated form only): the unit form is a live
+ *    self-static now (-1/-1 per card in the controller's hand, computed live
+ *    in effStats), but the augment-DONATED form needs mod-carried statics —
+ *    statics run only while the holder is a UNIT in play, so as a mod on a
+ *    host it donates nothing.
  *  - Lurking Slimebeast: printed.json has NO ambush field for it — the
  *    extractor does not parse the word-form "[three_blue]" cost (Mirage
  *    Walker's "[4bb]" parses fine). printed.json is not this batch's to
@@ -47,13 +34,10 @@
  *    base part (3 copies total); bounded grafts correctly run once ([Switch1]
  *    budget, R9). Extra copies of TARGETED graft effects can't collect extra
  *    targets (composeParts collects one set per part) — those run once.
- *  - Null Drone: full fidelity needs engine-level life-loss tracking (see
- *    above) — with no tracker unit present it sees 0 life lost and negates
- *    nothing.
  */
 import type { Entity, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type Ability, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -78,29 +62,10 @@ function glimpse(g: E, ctx: EffectCtx, seat: Seat, n: number): void {
   g.ev('info', `${g.pname(seat)} caches ${kept} and recycles the rest.`);
 }
 
-/** ⚠ Synchronous bookkeeping hook (see header): accumulates life lost per
- * seat per region-battle into battleCounters. The when() mutates counters at
- * event time and always returns false, so no trigger ever queues. Deduped
- * per event via a data flag (several carrier units, one bump). */
-const lifeLostTracker: Ability = {
-  type: 'triggered', events: ['lifeLost'],
-  label: '(bookkeeping) track life lost this battle',
-  when: (g, _self, ev) => {
-    const d = ev.data;
-    if (d && typeof d.region === 'number' && typeof d.seat === 'number'
-      && typeof d.n === 'number' && !d['waLLTracked']) {
-      d['waLLTracked'] = true;
-      const c = g.s.battleCounters[d.region] ?? (g.s.battleCounters[d.region] = {});
-      const key = `wa:lifeLost:${d.seat}`;
-      c[key] = (c[key] ?? 0) + d.n;
-    }
-    return false;
-  },
-  effect: { run: () => { /* never queues */ } },
-};
-
+/** life a seat lost in this region's battle — the engine's per-battle ledger
+ * (E.loseLife bumps battleCounter `lifeLost:<seat>`; reset per battle, R14) */
 const lifeLostThisBattle = (g: E, region: number, seat: Seat): number =>
-  g.s.battleCounters[region]?.[`wa:lifeLost:${seat}`] ?? 0;
+  g.battleCounter(region, `lifeLost:${seat}`);
 
 // ───────────────────────────── the cards ──────────────────────────────
 
@@ -234,13 +199,22 @@ card('Cosmic Reversal', {
 });
 
 // "[Augment] I gain -1/-1 for each card in your hand." — bb/2 7/5 Alien
-// Horror {Virus} Unit. PARKED: a continuous stat modifier (see header) —
-// effStats() has no card-text hook. The augmentText entry below never fires
-// (no events); it exists so isAugment() is true and the Virus mode works.
+// Horror {Virus} Unit. Text-box [Augment], live when played normally: a
+// self-affecting static whose dp/dt are computed live from the controller's
+// hand size (raw hand array — statics must never call effStats, reentrancy
+// guard). At 5+ cards in hand its toughness hits 0 and it dies at the next
+// death check. The augment-DONATED form is still PARKED (see header:
+// mod-carried statics); the inert augmentText entry below keeps isAugment()
+// true so the Virus mode works.
 card('Dreadspawn Horror', {
+  statics: [{
+    affects: (g, self, t) => t.id === self.id,
+    dp: (g, self) => -g.player(self.controller).hand.length,
+    dt: (g, self) => -g.player(self.controller).hand.length,
+  }],
   augmentText: [{
     type: 'triggered', events: [],
-    label: 'I gain -1/-1 for each card in your hand (PARKED: continuous modifier)',
+    label: 'I gain -1/-1 for each card in your hand (augment-donated form PARKED: mod-carried statics)',
     effect: { run: () => { /* PARKED — see batch header */ } },
   }],
 });
@@ -268,12 +242,12 @@ card('Dreamfloat Drifter', {
 
 // "After combat, if a player lost life in this battle, create a copy of me."
 // — b/4 3/2 Mimic Horror Unit. The condition is checked at event time (R1)
-// against the batch's life-loss counters (⚠ header approximation; R14:
-// per-region battle scope). "Create" = a token copy (erased on leaving play,
-// survives regroup); the copy carries the same abilities.
+// against the engine's per-battle life-loss ledger (E.loseLife → battleCounter
+// `lifeLost:<seat>`; R14: per-region battle scope). "Create" = a token copy
+// (erased on leaving play, survives regroup); the copy carries the same
+// abilities.
 card('Echo of Despair', {
   abilities: [
-    lifeLostTracker,
     {
       type: 'triggered', events: ['afterCombat'],
       label: 'create a copy of me (a player lost life this battle)',
@@ -367,27 +341,30 @@ card('Frosted Denial', {
 });
 
 // "Whenever one or more other cards enter your hand during battle, [Switch]
-// I gain +4/+4 and flying until regroup." — bb/3 0/4 Eel Unit. PARKED
-// subsets (see header): draws are invisible to triggers, so only battle
-// RECALLS to my hand fire it; the flying grant needs a temp-attr primitive.
-// The recalled card goes to its OWNER's hand — the event only carries the
-// controller (≈ owner in this pool). Token recalls are erased, not handed:
-// filtered on the event message (the data carries no token flag).
+// I gain +4/+4 and flying until regroup." — bb/3 0/4 Eel Unit. Cards enter
+// my hand mid-battle via recall ('despawned' to hand) or a battle DRAW
+// (E.draw fires 'draw' during battle only — a multi-card draw is ONE event,
+// matching "one or more"). Flying via E.addTempAttr (until regroup).
+// Recall path: the recalled card goes to its OWNER's hand — the event only
+// carries the controller (≈ owner in this pool). Token recalls are erased,
+// not handed: filtered on the event message (the data carries no token flag).
+// Draw path: the 'draw' event carries no region, so the when() pins the
+// listener to the battle region itself (R12).
 const galeriderSurge: EffectDef = {
   run: (g, ctx) => {
     const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-    if (self) g.addTemp(self, 4, 4);   // PARKED: "+ flying until regroup"
+    if (self) { g.addTemp(self, 4, 4); g.addTempAttr(self, 'Flying'); }
   },
 };
 card('Galerider Eel', {
   abilities: [{
-    type: 'triggered', events: ['despawned'], graftCause: true,
-    label: 'I gain +4/+4 (and flying — parked) until regroup',
-    when: (g, self, ev) =>
-      g.s.phase === 'battle' &&
-      ev.data?.seat === self.controller &&
-      ev.data?.unit !== self.id &&
-      ev.msg.includes('hand'),
+    type: 'triggered', events: ['despawned', 'draw'], graftCause: true,
+    label: 'I gain +4/+4 and flying until regroup',
+    when: (g, self, ev) => {
+      if (g.s.phase !== 'battle' || ev.data?.seat !== self.controller) return false;
+      if (ev.type === 'draw') return g.s.battle?.region === self.region;
+      return ev.data?.unit !== self.id && ev.msg.includes('hand');
+    },
     effect: galeriderSurge,
   }],
   graftEffect: { bounded: false, effect: galeriderSurge },
@@ -548,10 +525,9 @@ card('Mirage Walker', {
 // "Negate target spell effect if its cost is less than or equal to the
 // greatest amount of life lost by a player in this battle." — b/2 2/1
 // {Battle} Sprite Horror Spell Unit. Cost = printed mana (a token's is 0; an
-// X spell's is its X). Life lost read from the batch counters at resolution
-// (R1 amount; R14 region scope) — PARKED fidelity limit, see header: only
-// tracked while a tracker unit (Echo of Despair / Null Drone) was in play
-// in-region; otherwise 0 → nothing negated.
+// X spell's is its X). Life lost read at resolution from the engine's
+// per-battle ledger (E.loseLife → battleCounter `lifeLost:<seat>`; R1 amount,
+// R14 region scope).
 card('Null Drone', {
   spellEffect: {
     targets: { what: 'stackSpell', prompt: 'Null Drone: negate target spell effect (cost ≤ greatest life lost this battle)' },
@@ -567,7 +543,6 @@ card('Null Drone', {
       else g.ev('info', `Null Drone: ${item.label} costs ${cost} > ${lost} life lost — not negated.`);
     },
   },
-  abilities: [lifeLostTracker],   // the unit tracks life loss once in play
 });
 
 // "Glimpse 5" — b/3 4/1 Polyform Oracle Spell Unit. ⚠ header approximation.
@@ -606,13 +581,13 @@ card('Premonition', {
 });
 
 // "[Switch1] Target unit gains +1/+1 and piercing until regroup." — b/1
-// {Battle} Druid Spell. Bounded graft. PARKED: the piercing grant needs a
-// temporary-attribute primitive (see header); the +1/+1 works.
+// {Battle} Druid Spell. Bounded graft. Piercing via E.addTempAttr (until
+// regroup, cleared with the temp stats).
 const protectiveBuff: EffectDef = {
-  targets: { what: 'unit', prompt: 'Protective Adaptations: target unit gains +1/+1 (piercing grant parked) until regroup' },
+  targets: { what: 'unit', prompt: 'Protective Adaptations: target unit gains +1/+1 and piercing until regroup' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (isEnt(t) && g.entity(t.id)) g.addTemp(t, 1, 1);   // PARKED: "+ piercing"
+    if (isEnt(t) && g.entity(t.id)) { g.addTemp(t, 1, 1); g.addTempAttr(t, 'Piercing'); }
   },
 };
 card('Protective Adaptations', {

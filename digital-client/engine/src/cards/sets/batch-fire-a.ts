@@ -22,12 +22,17 @@
  *    instead" is a damage REPLACEMENT; dealEffectDamage has no replacement
  *    hooks. Registered with an inert augmentText entry so the card is still
  *    recognised as an augment (Astralith precedent).
- *  - Emberflame Enlightener: "your units and spells gain Powerful" is a global
- *    attr aura; the engine only reads attrs from a card's own printed data +
- *    its OWN augment mods (no aura layer). Inert augmentText entry only.
+ *  - Emberflame Enlightener (spells half + augment form): the UNITS half is a
+ *    live static ({Powerful} to your units in its region), but "your SPELLS
+ *    gain Powerful" still needs a spell-effect attr projection (statics only
+ *    project onto in-play UNITS; dealEffectDamage reads the source CARD's
+ *    printed attrs), and the augment-donated form needs mod-carried statics
+ *    (statics run only while the holder is a unit in play).
  *  - Envoy of Lightning: "your single-target spell effects are Electric" —
- *    same missing aura/replacement layer (dealEffectDamage reads the source
- *    CARD's printed attrs). Inert augmentText entry only.
+ *    still out of reach even with the statics layer: statics project only
+ *    onto in-play UNITS, while this must attach {Electric} to spell EFFECTS
+ *    (dealEffectDamage reads the source CARD's printed attrs, no seam for
+ *    in-play modifiers). Inert augmentText entry only.
  *  - Fire Resource: resource cards aren't modelled — resources are plain
  *    ResourceState (no entities), doActivateResource doesn't fireEvent, and
  *    there is no 'Shard' resource kind. Registered as printed (which leaks it
@@ -40,9 +45,11 @@
  *  - Harbinger of Immolation (augment half): "your spell tokens stay through
  *    regroup" needs a regroup-replacement hook (startRegroup erases all spell
  *    tokens unconditionally). The end-of-turn Fireball trigger is fully done.
- *  - Infernal Wispweaver (static half): "your wisps gain +2/+1 and do not
- *    sacrifice themselves after combat" needs a stat aura layer plus a way to
- *    suppress another card's trigger. The [Augment] end-of-turn wisp is done.
+ *  - Infernal Wispweaver (sacrifice half): "+2/+1 to your wisps" is a live
+ *    static now, but "do not sacrifice themselves after combat" still needs a
+ *    way to suppress ANOTHER card's trigger (the Wisp token's after-combat
+ *    self-sacrifice lives in registry.ts and fires unconditionally). The
+ *    [Augment] end-of-turn wisp is done.
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -193,18 +200,27 @@ card('Delver of Mysteries', {
 });
 
 // "[Augment] Your units and spells gain {g}powerful. (Powerful sources deal
-// double damage)." — rrr/4 0/5. PARKED (see header): global attr aura layer
-// missing. Inert augmentText keeps it recognised as an augment.
+// double damage)." — rrr/4 0/5. Text-box [Augment], live when played
+// normally: the UNITS half is a static — your units in its region (itself
+// included) gain {Powerful}, which combat reads through ownAttrs/colAttrs so
+// their columns' output doubles. PARKED remainder (see header): the SPELLS
+// half and the augment-donated form.
 card('Emberflame Enlightener', {
+  statics: [{
+    affects: (g, self, t) => t.kind === 'unit' && t.controller === self.controller,
+    attrs: ['Powerful'],
+  }],
   augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'your units and spells gain Powerful (not implemented)',
+    type: 'triggered', events: [],   // PARKED — spells half / mod-carried statics
+    label: 'your units and spells gain Powerful (spells half + augment form not implemented)',
     effect: { run: () => { /* PARKED */ } },
   }],
 });
 
 // "[Augment] Your spell effects with a single target are {g}Electric." —
-// rr/2 3/2. PARKED (see header): same missing aura/replacement layer.
+// rr/2 3/2. PARKED (see header): even the statics layer can't reach this —
+// statics project onto in-play UNITS only, while this must make spell
+// EFFECTS Electric (dealEffectDamage reads the source CARD's printed attrs).
 card('Envoy of Lightning', {
   augmentText: [{
     type: 'triggered', events: [],   // PARKED — never fires
@@ -457,10 +473,18 @@ card('Infernal Cultivator', {
 });
 
 // "Your wisps gain +2/+1 and do not sacrifice themselves after combat.
-// [Augment] At the end of turn, create a wisp." — rr/2 2/1. The static first
-// line is PARKED (see header). The [Augment] end-of-turn wisp is implemented:
-// live normally and donated to hosts.
+// [Augment] At the end of turn, create a wisp." — rr/2 2/1. The +2/+1 is a
+// live static on your Wisps in its region (main-text, so unit-form only —
+// correct, since only the [Augment] line transfers to hosts). The
+// no-sacrifice clause is PARKED (see header: another card's trigger can't be
+// suppressed). The [Augment] end-of-turn wisp is implemented: live normally
+// and donated to hosts.
 card('Infernal Wispweaver', {
+  statics: [{
+    affects: (g, self, t) =>
+      t.kind === 'unit' && t.card === 'Wisp' && t.controller === self.controller,
+    dp: 2, dt: 1,
+  }],
   augmentText: [{
     type: 'triggered', events: ['endOfTurn'],
     label: 'create a Wisp (end of turn)',

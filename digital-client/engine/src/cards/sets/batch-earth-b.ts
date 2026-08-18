@@ -1,5 +1,358 @@
 /* batch-earth-b — owned by one card-scripting agent; see sets/index.ts for
  * ordering rules. Cards are being scripted here from printed.json data
  * (never hand-copied); printed text quoted in comments for review.
+ *
+ * Graft markers: [Switch] = unbounded graft, [Switch1] = bounded (once/turn).
+ *
+ * Rulings referenced: R1 (conditions at event time, amounts at resolution),
+ * R9 (bounded / [once] budgets per card), R12/R25 ("each player/opponent"
+ * reads the event region's present seats), R21 (Deadly), R26 (own [Augment]
+ * text live when played normally).
+ *
+ * PARKED (needs engine machinery that does not exist yet):
+ *  - Oorblak: "If combat damage would be dealt to you, that damage is dealt
+ *    to me instead" needs damage replacement hooks (combatSubStep calls
+ *    loseLife directly, with no replacement seam). Registered with a no-op
+ *    [Augment] text so it can still be applied as a (blank) virus augment.
+ *  - Malformed Monstrosity (augment-donated form only): the unit form is a
+ *    true self-affecting static (-7/-7, live in effStats) now. The
+ *    augment-DONATED form needs mod-carried statics — statics run only while
+ *    the holder is a UNIT in play — so a host still takes the -7/-7 once as
+ *    permanent -1/-1 counters when the mod lands (pairwise-cancels with
+ *    +1/+1 counters; the known deviation, now confined to that half).
+ *  - PARTIAL — Mohruung: "when I become targeted" is heard for augment /
+ *    virus / graft targeting (apply.ts dispatches those 'targeted' events),
+ *    but engine.ts commitItem only LOGS 'targeted' for spell/ability targets
+ *    without dispatching, so spell targeting does not trigger it yet.
+ *  - PARTIAL — Reality Bender: registered on printed data ({Inverted} attr +
+ *    type-line [Augment] grant); the Inverted stat swap itself is the
+ *    unimplemented effStats layer 5 (the seam exists in engine.ts).
  */
-export {};
+import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
+import type { E } from '../../engine.ts';
+import { card, getCard, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+
+// ─────────────────────────── shared helpers ───────────────────────────
+
+/** present seats of a region, initiative player first (stable order) */
+const presentSeats = (g: E, region: number): Seat[] => {
+  const present = g.s.regions[region]!.presentSeats;
+  return [g.initiative, g.nit].filter(s => present.includes(s));
+};
+
+/** `chooser` picks one of `candidates` (auto-picked when only one). Returns
+ * null when there is nothing to pick. Deterministic replay: keys stable. */
+const chooseUnit = (
+  g: E, ctx: EffectCtx, key: string, chooser: Seat, candidates: Entity[], prompt: string,
+): Entity | null => {
+  if (!candidates.length) return null;
+  if (candidates.length === 1) return candidates[0]!;
+  const id = ctx.choose(key, {
+    kind: 'electricPath', seat: chooser, prompt,
+    options: candidates.map(u => ({ label: u.card, value: u.id })),
+  }) as EntityId;
+  return g.entity(id) ?? null;
+};
+
+// ────────────────────────────── the cards ──────────────────────────────
+
+// "After combat, [Switch1][Switch1] {i}(Trigger two copies of this graft
+// ability as one single trigger.)" — e/4 0/3 Cosmic Guardian Unit. The card
+// contributes no effect of its own: its afterCombat cause runs every attached
+// graft effect TWICE within one trigger. The engine's composeParts already
+// includes each graft once; this base effect supplies the second copy by
+// running each graft-applied mod's effect once more inline (targets picked
+// mid-resolution via ctx.choose, playInline-style). ⚠ ordering: the base part
+// runs first, so the "second copy" precedes the composite's graft parts —
+// harmless inside one single trigger. Grafted onto ANOTHER host, the same
+// effect doubles the host's other grafts (never itself — no doubling a
+// doubler). Bounded ([Switch1], R9): once per turn as a cause and as a graft.
+const doubleGrafts: EffectDef = {
+  run: (g, ctx) => {
+    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    if (!self) return;
+    for (const modId of [...self.mods]) {
+      const mod = g.entity(modId);
+      if (!mod || mod.appliedAs !== 'graft' || mod.card === 'Lost Guardian') continue;
+      const eff = getCard(mod.card).graftEffect?.effect;
+      if (!eff) continue;
+      let targets: ResolvedTarget[] = [];
+      if (eff.targets) {
+        const cands = g.targetCandidates(eff.targets, ctx.region, undefined, ctx.controller);
+        if (!cands.length) continue;
+        const ref = (cands.length === 1 ? cands[0]! : ctx.choose(`lg:${modId}`, {
+          kind: 'electricPath', seat: ctx.controller, prompt: eff.targets.prompt,
+          options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
+        })) as TargetRef;
+        const r = g.resolveTargetRef(ref);
+        if (!r) continue;
+        targets = [r];
+      }
+      eff.run(g, {
+        controller: ctx.controller, sourceName: mod.card, sourceId: self.id,
+        region: ctx.region, targets, event: ctx.event,
+        choose: (k, d) => ctx.choose(`lg:${modId}:${k}`, d),
+      });
+    }
+  },
+};
+card('Lost Guardian', {
+  abilities: [{
+    type: 'triggered', events: ['afterCombat'], bounded: true, graftCause: true,
+    label: 'trigger two copies of each grafted ability (one single trigger)',
+    effect: doubleGrafts,
+  }],
+  graftEffect: { bounded: true, effect: doubleGrafts },
+});
+
+// "[Augment] I gain -7/-7." — ee/3 10/9 Elemental Horror {Virus} Unit. Own
+// [Augment] text is live when played normally (R26 / Manual Q&A): the UNIT
+// form is a true self-affecting static — the spawned 10/9 is a live 3/2 with
+// ZERO counters, so later +1/+1 counters no longer pairwise-cancel the
+// printed drawback. ⚠ The augment-DONATED form still needs mod-carried
+// statics (statics run only while the holder is a UNIT in play — see
+// header), so a host takes the -7/-7 once as permanent -1/-1 counters when
+// the mod lands (a host with net toughness ≤ 7 dies of it); THAT half keeps
+// the pairwise-cancel deviation.
+const monstrosityShrink: EffectDef = {
+  run: (g, ctx) => {
+    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    if (self) g.addCounters(self, -7);
+  },
+};
+card('Malformed Monstrosity', {
+  statics: [{ affects: (g, self, t) => t.id === self.id, dp: -7, dt: -7 }],
+  augmentText: [
+    {   // applied as an augment: the host gains -7/-7 when the mod lands
+        // (⚠ counters approximation — mod-carried statics don't exist)
+      type: 'triggered', events: ['modApplied'],
+      label: 'I gain -7/-7 (augment applied)',
+      when: (g, self, ev) =>
+        ev.data?.host === self.id &&
+        g.entity(ev.data?.mod as EntityId)?.card === 'Malformed Monstrosity',
+      effect: monstrosityShrink,
+    },
+  ],
+});
+
+// "When I attack or block, [Switch] Create a Crystal 1." — ee/2 2/2 Mystic
+// Luminary Unit. Unbounded graft shares the Crystal-making effect.
+const createCrystal1: EffectDef = {
+  run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Crystal', 1, ctx.region); },
+};
+card('Metamorphic Luminary', {
+  abilities: [{
+    type: 'triggered', events: ['attacked', 'blocked'], self: true, graftCause: true,
+    label: 'create a Crystal 1',
+    effect: createCrystal1,
+  }],
+  graftEffect: { bounded: false, effect: createCrystal1 },
+});
+
+// "Rockfall 3 three times. {i}(To rockfall 3: Each player chooses one of
+// their units. I deal 3 damage to each of the chosen units.)" — e/4 {Battle}
+// Cosmic Rock Spell. "Each player" = the region's present seats (R12/R25);
+// each player picks their own unit. Rockfalls are sequential: each one plans
+// all picks first, then commits the damage, so deaths from an earlier
+// rockfall shrink the later candidate pools (R1: live state at resolution).
+card('Meteor Shower', {
+  spellEffect: {
+    run: (g, ctx) => {
+      for (let i = 0; i < 3; i++) {
+        const picks: Entity[] = [];
+        for (const seat of presentSeats(g, ctx.region)) {
+          const u = chooseUnit(g, ctx, `rf${i}:${seat}`, seat,
+            g.unitsOf(seat, ctx.region), `Meteor Shower (rockfall ${i + 1}): choose one of your units`);
+          if (u) picks.push(u);
+        }
+        for (const u of picks) g.dealEffectDamage(ctx, u, 3);
+      }
+    },
+  },
+});
+
+// "[Augment] Whenever I survive damage, put that many +1/+1 counters on me."
+// — e/1 0/2 Sand Crab Unit. Text-box [Augment]. The 'damage' event fires
+// after the damage is marked but before deaths are processed, so "survive" is
+// checked at event time (R1): marked damage still below toughness. "That
+// many" is the event's damage amount (a fact of the event), granted at
+// resolution if I'm still around.
+card('Mirage Scuttler', {
+  augmentText: [{
+    type: 'triggered', events: ['damage'], self: true,
+    label: 'put that many +1/+1 counters on me (survived damage)',
+    when: (g, self) => self.damage < g.effStats(self)[1],   // survived so far
+    effect: {
+      run: (g, ctx) => {
+        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const n = (ctx.event?.data?.n as number | undefined) ?? 0;
+        if (self && n > 0) g.addCounters(self, n);
+      },
+    },
+  }],
+});
+
+// "When I become targeted, [Switch1] Create a Crystal 2." — e/4 1/5 Cosmic
+// Rock Unit. ⚠ PARTIAL (see header): augment/virus/graft targeting dispatches
+// 'targeted' (apply.ts) and triggers this; spell/ability targeting is only
+// logged by engine.ts commitItem, so it does not trigger yet. Bounded
+// ([Switch1], R9); the Crystal 2 is the bounded graft.
+const createCrystal2: EffectDef = {
+  run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Crystal', 2, ctx.region); },
+};
+card('Mohruung', {
+  abilities: [{
+    type: 'triggered', events: ['targeted'], self: true, bounded: true, graftCause: true,
+    label: 'create a Crystal 2 (I became targeted)',
+    effect: createCrystal2,
+  }],
+  graftEffect: { bounded: true, effect: createCrystal2 },
+});
+
+// "Whenever you apply an augment during battle, [Switch] I gain +2/+2 until
+// regroup." — ee/2 2/3 Mystic Luminary Unit. The modApplied event carries no
+// region (fireEvent falls back to all listeners), so when() scopes manually:
+// battle phase, an AUGMENT application (not a graft), applied by my
+// controller ("you" — the mod's owner is the applier), and in my region
+// (R12). Unbounded graft: on a host, the host gains the +2/+2.
+const mentorBuff: EffectDef = {
+  run: (g, ctx) => {
+    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    if (self) g.addTemp(self, 2, 2);
+  },
+};
+card('Morphic Mentor', {
+  abilities: [{
+    type: 'triggered', events: ['modApplied'], graftCause: true,
+    label: 'I gain +2/+2 until regroup (you applied an augment in battle)',
+    when: (g, self, ev) =>
+      g.s.phase === 'battle' &&
+      ev.data?.appliedAs === 'augment' &&
+      g.entity(ev.data?.mod as EntityId)?.owner === self.controller &&
+      g.entity(ev.data?.host as EntityId)?.region === self.region,
+    effect: mentorBuff,
+  }],
+  graftEffect: { bounded: false, effect: mentorBuff },
+});
+
+// "[once] When another ally with greater defense than power spawns, draw a
+// card." — e/3 1/3 Bird Insect Oracle Unit. This is R1's own textbook
+// condition: defense > power is checked at EVENT time on the spawned unit.
+// "Another ally": same controller, not me. [once] = once per turn, tracked
+// per card (R9) → bounded. Region auto-scoped (R12).
+card('Nectar Ridge Oracle', {
+  abilities: [{
+    type: 'triggered', events: ['spawned'], bounded: true,
+    label: 'draw a card (ally spawned with defense > power)',
+    when: (g, self, ev) => {
+      if (ev.data?.seat !== self.controller || ev.data?.unit === self.id) return false;
+      const u = g.entity(ev.data?.unit as EntityId);
+      if (!u) return false;
+      const [p, t] = g.effStats(u);
+      return t > p;
+    },
+    effect: { run: (g, ctx) => g.draw(ctx.controller, 1) },
+  }],
+});
+
+// "[Augment] If combat damage would be dealt to you, that damage is dealt to
+// me instead." — eee/4 2/4 {Unstable} Luminary Strider {Virus} Unit.
+// PARKED (see header): damage replacement hooks. Registered with a no-op
+// [Augment] text (events: [] never fires) so the card still spawns as a 2/4
+// and can be applied as a virus augment — the redirection itself does
+// nothing until the engine grows a replacement seam.
+card('Oorblak', {
+  augmentText: [{
+    type: 'triggered', events: [],   // PARKED: damage replacement hooks missing
+    label: 'combat damage to you is dealt to me instead (PARKED)',
+    effect: { run: () => { /* no replacement seam in the engine yet */ } },
+  }],
+});
+
+// "Whenever a mod is applied to me, create {/n}an X/X unit, where X is the
+// mod's cost." — e/1 1/3 Structure Unit. Condition at event time: the mod
+// landed on me. X = the mod card's total (corner) cost, read at RESOLUTION
+// from the live mod entity (R1); the cost is printed data, so it cannot have
+// changed — if the mod is somehow gone by resolution, nothing is created.
+// (No graft cause on this card, so mods arrive via augment/virus only.)
+card('Perpetual Construct', {
+  abilities: [{
+    type: 'triggered', events: ['modApplied'],
+    label: "create an X/X unit (X = the mod's cost)",
+    when: (g, self, ev) => ev.data?.host === self.id,
+    effect: {
+      run: (g, ctx) => {
+        const mod = g.entity(ctx.event?.data?.mod as EntityId);
+        if (!mod) return;
+        const mana = getCard(mod.card).mana;
+        const x = mana === 'X' ? 0 : mana;
+        if (x > 0) g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
+      },
+    },
+  }],
+});
+
+// "When I am dealt damage, [Switch1] Put a +1/+1 counter on me." — ee/2 0/4
+// {Sluggish} Rock Beast Unit. 'damage' event, self-scoped. Bounded
+// ([Switch1], R9); the counter is the bounded graft (on a host it grows the
+// host).
+const pebbleGrow: EffectDef = {
+  run: (g, ctx) => {
+    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    if (self) g.addCounters(self, 1);
+  },
+};
+card('Plodding Pebble', {
+  abilities: [{
+    type: 'triggered', events: ['damage'], self: true, bounded: true, graftCause: true,
+    label: 'put a +1/+1 counter on me (dealt damage)',
+    effect: pebbleGrow,
+  }],
+  graftEffect: { bounded: true, effect: pebbleGrow },
+});
+
+// "[Augment] {Inverted} Ancient Anima {Virus} Unit" — e/2 2/3. Type-line
+// [Augment] grants {Inverted}; printed.augmentAttrs carries it, and
+// printed.attrs keeps it live when played normally. ⚠ PARTIAL (see header):
+// the Inverted stat swap is effStats layer 5, unimplemented — the attribute
+// is tracked but does not yet flip power/defense.
+card('Reality Bender', {});
+
+// "[Augment] Whenever I am I dealt damage, I deal that much damage to each
+// opponent." — e/4 4/4 Occult Avatar Unit (printed typo "I am I" preserved
+// above). Text-box [Augment]. 'damage' event, self-scoped; the amount is the
+// event's damage figure; "each opponent" = the event region's present seats
+// other than my controller (R25), read at resolution.
+card('Restitution', {
+  augmentText: [{
+    type: 'triggered', events: ['damage'], self: true,
+    label: 'I deal that much damage to each opponent (I was dealt damage)',
+    effect: {
+      run: (g, ctx) => {
+        const n = (ctx.event?.data?.n as number | undefined) ?? 0;
+        if (n <= 0) return;
+        const opponents = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
+        for (const s of opponents) g.dealEffectDamage(ctx, { player: s }, n);
+      },
+    },
+  }],
+});
+
+// "Negate all effects. Erase all mods." — eee/4 {Battle} Druid Spell. At
+// resolution this spell is already off the stack, so "all effects" = every
+// remaining stack item (spells, spell units, tokens, ambushes, triggered and
+// activated abilities alike). "All mods" is region-scoped (R12): every mod on
+// every unit in this region is ERASED — deleted outright, entering no bin.
+card('Return to Nature', {
+  spellEffect: {
+    run: (g, ctx) => {
+      for (const it of g.s.stack) g.negate(it.id);
+      for (const u of g.unitsIn(ctx.region)) {
+        if (!u.mods.length) continue;
+        for (const id of u.mods) delete g.s.entities[id];
+        g.ev('info', `Return to Nature erases ${u.mods.length} mod(s) from ${u.card}.`);
+        u.mods = [];
+      }
+    },
+  },
+});

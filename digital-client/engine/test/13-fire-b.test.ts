@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -92,9 +92,30 @@ test('Nimbus Eel: token spell → target gains +2/+0 ([Switch1]: once per turn)'
   finishBattle(h);
 });
 
-test('Nimbus Eel: flying grant — PARKED (no temp-attribute primitive)', { todo: true }, () => {
-  assert.fail('"gains … flying until regroup" needs a temp-attribute channel; '
-    + 'the engine only has temp stats + permanent mods. Only +2/+0 is implemented.');
+test('Nimbus Eel: token spell → the target also gains flying until regroup', () => {
+  const h = new Harness(1304);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const eel = spawn(h, D, 'Nimbus Eel');             // 2/1, no printed flying
+  const whale = spawn(h, A, 'Good Whale');
+  {
+    const e = new E(h.state);                        // a castable token spell for D
+    e.createSpellToken(D, 'Fireball', 1, e.homeRegion(D));
+  }
+  toNextBattle(h, A);
+  const tok = tokensOf(h, D).find(t => t.card === 'Fireball')!;
+  h.do({ type: 'declareAttack', seat: A, columns: [[whale]] });
+  pass(h);                                           // priority → D
+  h.do({ type: 'castSpellToken', seat: D, entityId: tok.id });
+  pick(h, { player: A });                            // Fireball's own target
+  pick(h, { unit: eel });                            // Eel trigger's target
+  assert.ok(!ownAttrs(h, eel).has('Flying'), 'not flying before the trigger resolves');
+  pass(h); pass(h);                                  // trigger resolves (addTempAttr)
+  assert.ok(ownAttrs(h, eel).has('Flying'), 'gains flying until regroup');
+  assert.deepEqual(effStats(h, eel), [4, 1], '…alongside the +2/+0');
+  pass(h); pass(h);                                  // Fireball resolves
+  finishBattle(h);
+  assert.ok(!ownAttrs(h, eel).has('Flying'), 'the flying grant ends at regroup');
 });
 
 test('Ravenous Fireslinger: each of my nontoken spells gives +1/-1 (unbounded)', () => {
