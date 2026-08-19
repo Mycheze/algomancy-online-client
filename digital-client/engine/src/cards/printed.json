@@ -6424,5 +6424,3242 @@
   "augmentAttrs": [],
   "text": "[Augment] Whenever one of your nontoken units dies, create a Fireball 1.",
   "image": "Soulforger.jpg"
+ },
+ "Abyssal Extortionist": {
+  "name": "Abyssal Extortionist",
+  "factions": [
+   "light",
+   "fire"
+  ],
+  "cost": "lr",
+  "mana": 5,
+  "power": 5,
+  "toughness": 3,
+  "type": "Cosmic Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block, [Switch1] Sacrifice a unit. If you do, I deal damage equal to its power to any target. You gain life equal to the damage dealt this way.",
+  "image": "Abyssal-Extortionist.jpg"
+ },
+ "Afflicting Anima": {
+  "name": "Afflicting Anima",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 0,
+  "toughness": 1,
+  "type": "Alien Anima Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I am trashed, [Switch1] You may pay [1] to create a Wraith.",
+  "image": "Afflicting-Anima.jpg"
+ },
+ "Air Plant": {
+  "name": "Air Plant",
+  "factions": [
+   "light",
+   "wood"
+  ],
+  "cost": "lg",
+  "mana": 7,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Flying} Cosmic Plant Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Flying"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "prophecy": {
+   "mana": 2,
+   "condition": "Your units have four unique costs."
+  },
+  "text": "{i}(Only flying units can block flying units.){/n}[Augment] Your other units gain +2/+2 and Flying.",
+  "image": "Air-Plant.jpg"
+ },
+ "Angel of Anguish": {
+  "name": "Angel of Anguish",
+  "factions": [
+   "light",
+   "dark"
+  ],
+  "cost": "ld",
+  "mana": 4,
+  "power": 5,
+  "toughness": 5,
+  "type": "Cosmic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "prophecy": {
+   "mana": 1,
+   "condition": "Two Turns Pass"
+  },
+  "text": "I can be prophesied from your bin.",
+  "image": "Angel-of-Anguish.jpg"
+ },
+ "Apex Prime": {
+  "name": "Apex Prime",
+  "factions": [
+   "light",
+   "metal"
+  ],
+  "cost": "lm",
+  "mana": 4,
+  "power": 4,
+  "toughness": 4,
+  "type": "Technology God Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When I attack or block, if your life total is odd, you may have all of your units become a copy of target unit until regroup.",
+  "image": "Apex-Prime.jpg"
+ },
+ "Arbiter of Armistice": {
+  "name": "Arbiter of Armistice",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Haste} {Switch} Holy Unit",
+  "kind": "unit",
+  "timing": "haste",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Cards played during battle gain [Pay 2 life].",
+  "image": "Arbiter-of-Armistice.jpg"
+ },
+ "Arbiter of Vitality": {
+  "name": "Arbiter of Vitality",
+  "factions": [
+   "light",
+   "fire"
+  ],
+  "cost": "lr",
+  "mana": 8,
+  "power": 6,
+  "toughness": 3,
+  "type": "Cosmic Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Double all life gain and life loss. {i}(Damage causes loss of life.)",
+  "image": "Arbiter-of-Vitality.jpg"
+ },
+ "Aurozoa": {
+  "name": "Aurozoa",
+  "factions": [
+   "light",
+   "water"
+  ],
+  "cost": "lb",
+  "mana": 3,
+  "power": 4,
+  "toughness": 1,
+  "type": "{Virus} Cosmic Jellyfish Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Pay 1 life: Recall me.",
+  "image": "Aurozoa.jpg"
+ },
+ "Banishment": {
+  "name": "Banishment",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 3,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Holy Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Erase all units that spawned this turn. {i}(This includes units that spawned during [Haste].)",
+  "image": "Banishment.jpg"
+ },
+ "Big Glimpse Card": {
+  "name": "Big Glimpse Card",
+  "factions": [
+   "light",
+   "water"
+  ],
+  "cost": "lb",
+  "mana": 4,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Cosmic Horror Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "prophecy": {
+   "mana": 4,
+   "condition": "Two Turns Pass"
+  },
+  "text": "Reveal the top 7 cards of the deck. Target opponent splits them into two piles. Cache one pile. You may play those cards until end of turn, ignoring affinity. Recycle the other pile.",
+  "image": "Big-Glimpse-Card.jpg"
+ },
+ "Blessed Thing": {
+  "name": "Blessed Thing",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Virus} [Augment] {Blessed} Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Blessed"
+  ],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [
+   "Blessed"
+  ],
+  "text": "{i}(Damage dealt by a blessed source causes its controller to gain that much life.)",
+  "image": "Blessed-Thing.jpg"
+ },
+ "Blight's End": {
+  "name": "Blight's End",
+  "factions": [
+   "wood",
+   "dark"
+  ],
+  "cost": "gd",
+  "mana": "X",
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Augment a Wight onto X target units.",
+  "image": "Blight's-End.jpg"
+ },
+ "Blightmound": {
+  "name": "Blightmound",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 4,
+  "power": 4,
+  "toughness": 3,
+  "type": "{Poisonous} Blight Zombie Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Poisonous"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "{i}(Poisonous sources damage units in the form of -1/-1 counters.){/n}When I deal combat damage or die, [Switch1] Each opponent gains 1 rot.",
+  "image": "Blightmound.jpg"
+ },
+ "Blightsea Polyp": {
+  "name": "Blightsea Polyp",
+  "factions": [
+   "water",
+   "dark"
+  ],
+  "cost": "bd",
+  "mana": 2,
+  "power": 1,
+  "toughness": 2,
+  "type": "{Virus} Spirit Blight Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Columns deal combat damage to players as 1 rot. {i}(For example, a column of a 4/4 unit and 2/2 unit would give the opponent 1 rot, without changing their life total.)",
+  "image": "Blightsea-Polyp.jpg"
+ },
+ "Blightwalker": {
+  "name": "Blightwalker",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 3,
+  "power": 2,
+  "toughness": 2,
+  "type": "Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I am trashed, [Switch1] You may pay [2] to recall another target unit from your bin.",
+  "image": "Blightwalker.jpg"
+ },
+ "Blob of the Dark Order": {
+  "name": "Blob of the Dark Order",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 3,
+  "power": 3,
+  "toughness": 4,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Pay 1 life: I gain piercing until regroup.",
+  "image": "Blob-of-the-Dark-Order.jpg"
+ },
+ "Bloppert": {
+  "name": "Bloppert",
+  "factions": [
+   "light",
+   "wood"
+  ],
+  "cost": "lg",
+  "mana": 2,
+  "power": 5,
+  "toughness": 5,
+  "type": "{Virus} Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] After combat, the player with the highest life total gains control of me, then loses 5 life.",
+  "image": "Bloppert.jpg"
+ },
+ "Blurf": {
+  "name": "Blurf",
+  "factions": [
+   "light"
+  ],
+  "cost": "lll",
+  "mana": 5,
+  "power": 2,
+  "toughness": 3,
+  "type": "Spirit Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] At the end of turn, cache the top card of the deck. It gains 'Prophecy: 1 turn passes'. You gain debt equal to its cost.",
+  "image": "Blurf.jpg"
+ },
+ "Brough": {
+  "name": "Brough",
+  "factions": [
+   "light",
+   "earth"
+  ],
+  "cost": "le",
+  "mana": 4,
+  "power": 0,
+  "toughness": 4,
+  "type": "Cosmic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Everything is balanced. {i}(The power and defense of balanced units are equal to the greater of the two.)",
+  "image": "Brough.jpg"
+ },
+ "Buffer Overflow": {
+  "name": "Buffer Overflow",
+  "factions": [
+   "metal",
+   "dark"
+  ],
+  "cost": "md",
+  "mana": 4,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Technology Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Double all counters on units and players.",
+  "image": "Buffer-Overflow.jpg"
+ },
+ "Burden of Life": {
+  "name": "Burden of Life",
+  "factions": [
+   "light",
+   "earth"
+  ],
+  "cost": "le",
+  "mana": 4,
+  "power": 20,
+  "toughness": 20,
+  "type": "{Virus} Cosmic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] I gain -X/-X, where X is your life total.",
+  "image": "Burden-of-Life.jpg"
+ },
+ "Burn the Blight": {
+  "name": "Burn the Blight",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 3,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Remove all counters from units and players.",
+  "image": "Burn-the-Blight.jpg"
+ },
+ "Cadaverous Cultivator": {
+  "name": "Cadaverous Cultivator",
+  "factions": [
+   "wood",
+   "dark"
+  ],
+  "cost": "gd",
+  "mana": 6,
+  "power": 3,
+  "toughness": 3,
+  "type": "Mystic Flower Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Battle] Discard a card: [Switch]",
+  "image": "Cadaverous-Cultivator.jpg"
+ },
+ "Calming Force": {
+  "name": "Calming Force",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Nature Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "I can't be played from your hand.{/n}Negate all other effects.",
+  "image": "Calming-Force.jpg"
+ },
+ "Capture": {
+  "name": "Capture",
+  "factions": [
+   "water",
+   "dark"
+  ],
+  "cost": "bd",
+  "mana": 4,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Mystic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Put target unit into your hand, then discard a card.",
+  "image": "Capture.jpg"
+ },
+ "Cerebrox": {
+  "name": "Cerebrox",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 5,
+  "power": 3,
+  "toughness": 3,
+  "type": "Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever another card is trashed, each other unit gains -1/-1 until regroup.",
+  "image": "Cerebrox.jpg"
+ },
+ "Chombot": {
+  "name": "Chombot",
+  "factions": [
+   "metal",
+   "dark"
+  ],
+  "cost": "md",
+  "mana": 3,
+  "power": 1,
+  "toughness": 5,
+  "type": "Structure Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block, [Switch1] You may move up to two counters from target unit onto another target unit.",
+  "image": "Chombot.jpg"
+ },
+ "Collect Remains": {
+  "name": "Collect Remains",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Put target card in a bin into your hand.{/n}Erase me.",
+  "image": "Collect-Remains.jpg"
+ },
+ "Colony of the Interworld": {
+  "name": "Colony of the Interworld",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 3,
+  "power": 2,
+  "toughness": 2,
+  "type": "Spirit Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When you gain or lose life during battle, [Switch1] Put three +1/+1 counters on me.",
+  "image": "Colony-of-the-Interworld.jpg"
+ },
+ "Combustible Bogwalker": {
+  "name": "Combustible Bogwalker",
+  "factions": [
+   "fire",
+   "dark"
+  ],
+  "cost": "rd",
+  "mana": 6,
+  "power": 5,
+  "toughness": 7,
+  "type": "Spirit Anima Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment][once] Sacrifice a nontoken unit or discard a card: Recall target unit in your bin.",
+  "image": "Combustible-Bogwalker.jpg"
+ },
+ "Cosmic Devourer": {
+  "name": "Cosmic Devourer",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 1,
+  "power": 0,
+  "toughness": 1,
+  "type": "Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] At the end of turn, create a Wraith and gain 1 Rot.",
+  "image": "Cosmic-Devourer.jpg"
+ },
+ "Counter Theif": {
+  "name": "Counter Theif",
+  "factions": [
+   "metal",
+   "dark"
+  ],
+  "cost": "md",
+  "mana": 4,
+  "power": 0,
+  "toughness": 5,
+  "type": "{Virus} Infection Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] If one or more counters would be placed on one or more units during battle, those counters are placed on me instead.",
+  "image": "Counter-Theif.jpg"
+ },
+ "Covenant of the Damned": {
+  "name": "Covenant of the Damned",
+  "factions": [
+   "light",
+   "dark"
+  ],
+  "cost": "ld",
+  "mana": 3,
+  "power": 0,
+  "toughness": 0,
+  "type": "Cosmic Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Put target unit from your bin into play. You gain debt equal to its cost.",
+  "image": "Covenant-of-the-Damned.jpg"
+ },
+ "Cthyrian Culler": {
+  "name": "Cthyrian Culler",
+  "factions": [
+   "dark"
+  ],
+  "cost": "ddd",
+  "mana": 4,
+  "power": 2,
+  "toughness": 5,
+  "type": "Polyform Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Whenever a player trashes a card, each opponent loses 1 life.{/n}[Augment] After combat, each player discards a card.",
+  "image": "Cthyrian-Culler.jpg"
+ },
+ "Cthyrian Rector": {
+  "name": "Cthyrian Rector",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 0,
+  "toughness": 1,
+  "type": "{Virus} Blight Zombie Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When you trash another card, sacrifice me. If you do, recall that card from your bin.",
+  "image": "Cthyrian-Rector.jpg"
+ },
+ "Cull": {
+  "name": "Cull",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Each player sacrifices a unit.",
+  "image": "Cull.jpg"
+ },
+ "Darkblast": {
+  "name": "Darkblast",
+  "factions": [
+   "fire",
+   "dark"
+  ],
+  "cost": "rd",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Arcane Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] [Discard a card] I deal 5 damage to any target.",
+  "image": "Darkblast.jpg"
+ },
+ "Deathcoil Construct": {
+  "name": "Deathcoil Construct",
+  "factions": [
+   "light",
+   "metal"
+  ],
+  "cost": "lm",
+  "mana": 3,
+  "power": 3,
+  "toughness": 3,
+  "type": "Cosmic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When you gain or lose life, [Switch1] Put a +1/+1 counter on each of your units.",
+  "image": "Deathcoil-Construct.jpg"
+ },
+ "Debt Blep": {
+  "name": "Debt Blep",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "Caterpillar Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment][once] Gain 2 debt: I gain +3/+3 until regroup.",
+  "image": "Debt-Blep.jpg"
+ },
+ "Debt Plant": {
+  "name": "Debt Plant",
+  "factions": [
+   "light",
+   "wood"
+  ],
+  "cost": "lg",
+  "mana": 3,
+  "power": 3,
+  "toughness": 2,
+  "type": "Cosmic Plant Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] At the end of [Haste], your units gain +1/+1 until regroup for every 2 expended resources you have.",
+  "image": "Debt-Plant.jpg"
+ },
+ "Deferral Drone": {
+  "name": "Deferral Drone",
+  "factions": [
+   "light",
+   "metal"
+  ],
+  "cost": "lm",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment][once] Gain 4 debt: The next card you play this turn costs [3] less.",
+  "image": "Deferral-Drone.jpg"
+ },
+ "Delver of the Ephemeral": {
+  "name": "Delver of the Ephemeral",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 2,
+  "power": 0,
+  "toughness": 1,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "After combat, cache up to one target card with cost 1 from your bin. You may play it until end of turn.",
+  "image": "Delver-of-the-Ephemeral.jpg"
+ },
+ "Divine Foresight": {
+  "name": "Divine Foresight",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Cosmic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Look at target opponent's hand and choose a card from it. They cache that card. It gains 'Prophecy — Three Turns Pass'.",
+  "image": "Divine-Foresight.jpg"
+ },
+ "Divine Intervention": {
+  "name": "Divine Intervention",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 5,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Nature Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "prophecy": {
+   "mana": 1,
+   "condition": "Your life is 5 or less [Haste]"
+  },
+  "text": "You may change the targets of target effect.",
+  "image": "Divine-Intervention.jpg"
+ },
+ "Dragnol": {
+  "name": "Dragnol",
+  "factions": [
+   "light",
+   "fire"
+  ],
+  "cost": "lr",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Cosmic Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever you play a spell during battle, you may pay [2]. If you do, each opponent loses 2 life and you gain 2 life.",
+  "image": "Dragnol.jpg"
+ },
+ "Dream Lapse": {
+  "name": "Dream Lapse",
+  "factions": [
+   "water",
+   "dark"
+  ],
+  "cost": "bd",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Mystic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Recall target spell effect, then its controller discards a card.",
+  "image": "Dream-Lapse.jpg"
+ },
+ "Dropslime": {
+  "name": "Dropslime",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 2,
+  "power": 1,
+  "toughness": 1,
+  "type": "Blight Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "discardMe": {
+   "cost": "",
+   "mana": 1
+  },
+  "text": "When I am trashed, [Switch1] I deal damage equal to the number of cards trashed in this battle to any target.",
+  "image": "Dropslime.jpg"
+ },
+ "Entropic Entity": {
+  "name": "Entropic Entity",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 3,
+  "power": 0,
+  "toughness": 3,
+  "type": "Alien Anima Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When a unit with counters on it despawns, [Switch1] Draw a card.",
+  "image": "Entropic-Entity.jpg"
+ },
+ "Equilibriate": {
+  "name": "Equilibriate",
+  "factions": [
+   "light",
+   "wood"
+  ],
+  "cost": "lg",
+  "mana": 5,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Cosmic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch] Set all players' life totals equal to their average. {i}(Rounded down.)",
+  "image": "Equilibriate.jpg"
+ },
+ "Exhume": {
+  "name": "Exhume",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "Occult Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Put a unit with cost X or less from your bin into play, where X is your [d].",
+  "image": "Exhume.jpg"
+ },
+ "Feed to Hooba": {
+  "name": "Feed to Hooba",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Hooba Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Erase target unit. Its controller creates a 3/3 unit in its position in play.",
+  "image": "Feed-to-Hooba.jpg"
+ },
+ "Fester": {
+  "name": "Fester",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Target player gains a rot.",
+  "image": "Fester.jpg"
+ },
+ "Finality": {
+  "name": "Finality",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 5,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Negate all other effects. Erase all cards in bins.",
+  "image": "Finality.jpg"
+ },
+ "Flesh Tithe": {
+  "name": "Flesh Tithe",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 4,
+  "power": 0,
+  "toughness": 0,
+  "type": "Horror Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] [Pay X life], create an X/X unit.",
+  "image": "Flesh-Tithe.jpg"
+ },
+ "Flzzz": {
+  "name": "Flzzz",
+  "factions": [
+   "light"
+  ],
+  "cost": "lll",
+  "mana": 4,
+  "power": 1,
+  "toughness": 3,
+  "type": "{Blessed} Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Blessed"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "prophecy": {
+   "mana": 2,
+   "condition": "Two Turns Pass"
+  },
+  "text": "{i}(Damage dealt by a blessed source causes its controller to gain that much life.){/n}[Augment] Whenever you gain life, each opponent loses that much life.",
+  "image": "Flzzz.jpg"
+ },
+ "Gatekeeper of Souls": {
+  "name": "Gatekeeper of Souls",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 4,
+  "power": 0,
+  "toughness": 7,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When a player selects targets for an effect during battle, I must be targeted if able.",
+  "image": "Gatekeeper-of-Souls.jpg"
+ },
+ "Glararr": {
+  "name": "Glararr",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 5,
+  "power": 4,
+  "toughness": 5,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Pay 9 life: [Switch1] Erase target unit.",
+  "image": "Glararr.jpg"
+ },
+ "Glook": {
+  "name": "Glook",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 2,
+  "power": 1,
+  "toughness": 3,
+  "type": "Alien Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[once] Discard X cards: Glimpse 1, X times.",
+  "image": "Glook.jpg"
+ },
+ "Glutton of Absolution": {
+  "name": "Glutton of Absolution",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 3,
+  "power": 7,
+  "toughness": 7,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block, [Switch1] You gain 3 debt.",
+  "image": "Glutton-of-Absolution.jpg"
+ },
+ "Godray": {
+  "name": "Godray",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} {Blessed} Cosmic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [
+   "Blessed"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "{i}(Damage dealt by a blessed source causes its controller to gain that much life.){/n}I deal 3 damage to any target.",
+  "image": "Godray.jpg"
+ },
+ "Greed Angel": {
+  "name": "Greed Angel",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 2,
+  "power": 3,
+  "toughness": 4,
+  "type": "{Flying} Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Flying"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "{i}(Only flying units can block flying units.){/n}When I spawn, you gain 3 debt and draw a card.",
+  "image": "Greed-Angel.jpg"
+ },
+ "Gridxlan": {
+  "name": "Gridxlan",
+  "factions": [
+   "earth",
+   "dark"
+  ],
+  "cost": "ed",
+  "mana": 4,
+  "power": 3,
+  "toughness": 4,
+  "type": "Structure Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] If your hand is empty, you may play one unit from your bin during deployment.",
+  "image": "Gridxlan.jpg"
+ },
+ "Grim Bargain": {
+  "name": "Grim Bargain",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": "X",
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "For each [3] spent to play me, each player sacrifices a unit. Draw a card for each nontoken unit you sacrifice this way.",
+  "image": "Grim-Bargain.jpg"
+ },
+ "Grob": {
+  "name": "Grob",
+  "factions": [
+   "light"
+  ],
+  "cost": "lll",
+  "mana": 4,
+  "power": 5,
+  "toughness": 3,
+  "type": "Spirit Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack, [Switch1] Up to one target unit's controller caches it. It gains 'Prophecy — One Battle Passes'.",
+  "image": "Grob.jpg"
+ },
+ "Grox": {
+  "name": "Grox",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Battle] Erase two cards in your bin: [Switch]",
+  "image": "Grox.jpg"
+ },
+ "Hammer of Justice": {
+  "name": "Hammer of Justice",
+  "factions": [
+   "light",
+   "earth"
+  ],
+  "cost": "le",
+  "mana": 6,
+  "power": 10,
+  "toughness": 3,
+  "type": "{Blessed} {Piercing} Structure Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Blessed",
+   "Piercing"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "",
+  "image": "Hammer-of-Justice.jpg"
+ },
+ "Hand Peeper": {
+  "name": "Hand Peeper",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 0,
+  "toughness": 2,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Pay 3 life: Look at target player's hand.",
+  "image": "Hand-Peeper.jpg"
+ },
+ "Haunting Memories": {
+  "name": "Haunting Memories",
+  "factions": [
+   "light",
+   "dark"
+  ],
+  "cost": "ld",
+  "mana": 8,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Cosmic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Target player's life total becomes equal to twice the number of cards in all bins.",
+  "image": "Haunting-Memories.jpg"
+ },
+ "Hooba-God": {
+  "name": "Hooba-God",
+  "factions": [
+   "light"
+  ],
+  "cost": "lll",
+  "mana": 8,
+  "power": 2,
+  "toughness": 2,
+  "type": "Hooba God Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block, create a token that's a copy of me in my formation.",
+  "image": "Hooba-God.jpg"
+ },
+ "Hooba-Mon": {
+  "name": "Hooba-Mon",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "Occult Hooba Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When I attack, you may exchange me for target unit in your bin with cost 3 or less.",
+  "image": "Hooba-Mon.jpg"
+ },
+ "Hyper Beam": {
+  "name": "Hyper Beam",
+  "factions": [
+   "light",
+   "fire"
+  ],
+  "cost": "lr",
+  "mana": 4,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Cosmic Horror Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "gainDebt": 4,
+  "text": "I deal 8 damage to target unit. Draw a card.",
+  "image": "Hyper-Beam.jpg"
+ },
+ "Inexorable Miasma": {
+  "name": "Inexorable Miasma",
+  "factions": [
+   "wood",
+   "dark"
+  ],
+  "cost": "gd",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Target unit gains poisonous until regroup.{/n}After combat, if I am in your bin you may remove a -1/-1 counter from a unit to recall me.",
+  "image": "Inexorable-Miasma.jpg"
+ },
+ "Insatiable Want": {
+  "name": "Insatiable Want",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Nature Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Each player with an even life total sacrifices a unit. Each player with an odd life total draws a card.",
+  "image": "Insatiable-Want.jpg"
+ },
+ "Its Dark Bubb": {
+  "name": "Its Dark Bubb",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 4,
+  "power": 4,
+  "toughness": 6,
+  "type": "{Inverted} Slime Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Inverted"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "{i}(Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2.)",
+  "image": "Its-Dark-Bubb.jpg"
+ },
+ "Iyngstra": {
+  "name": "Iyngstra",
+  "factions": [
+   "light",
+   "earth"
+  ],
+  "cost": "le",
+  "mana": 3,
+  "power": 3,
+  "toughness": 6,
+  "type": "Holy Structure Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever another ally spawns, you gain life equal to their defense.",
+  "image": "Iyngstra.jpg"
+ },
+ "Just a Unit": {
+  "name": "Just a Unit",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 2,
+  "power": 2,
+  "toughness": 3,
+  "type": "{Virus} {Pure} Spirit Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Pure"
+  ],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "{i}(Pure cards and cards they are interacting with ignore all other attributes.)",
+  "image": "Just-a-Unit.jpg"
+ },
+ "Keeper of Tithes": {
+  "name": "Keeper of Tithes",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 5,
+  "power": 3,
+  "toughness": 3,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] At the end of [Haste], if X is not 0, create an X/X unit, where X is the number of expended resources you have.",
+  "image": "Keeper-of-Tithes.jpg"
+ },
+ "Leave None Pure": {
+  "name": "Leave None Pure",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Delete target unit with no stat changes.",
+  "image": "Leave-None-Pure.jpg"
+ },
+ "Legion of the Depths": {
+  "name": "Legion of the Depths",
+  "factions": [
+   "dark"
+  ],
+  "cost": "ddd",
+  "mana": 8,
+  "power": 0,
+  "toughness": 8,
+  "type": "Polyform Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When I spawn, attack, block or die, create two Wraiths and gain 2 Rot.",
+  "image": "Legion-of-the-Depths.jpg"
+ },
+ "Life Channel": {
+  "name": "Life Channel",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Nature Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "You gain 3 life, then [Switch1] Target unit gains +X/+X until regroup, where X is the life you've gained in this battle.",
+  "image": "Life-Channel.jpg"
+ },
+ "Life Leech": {
+  "name": "Life Leech",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 2,
+  "power": 1,
+  "toughness": 1,
+  "type": "{Virus} Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Pay 5 life: I gain +3/+3 until regroup.",
+  "image": "Life-Leech.jpg"
+ },
+ "Life Plant": {
+  "name": "Life Plant",
+  "factions": [
+   "light",
+   "wood"
+  ],
+  "cost": "lg",
+  "mana": 7,
+  "power": 7,
+  "toughness": 3,
+  "type": "Cosmic Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment][once] When you gain or lose life, create that many 1/1 units. {i}(Damage causes loss of life)",
+  "image": "Life-Plant.jpg"
+ },
+ "Gublin": {
+  "name": "Gublin",
+  "factions": [
+   "earth",
+   "dark"
+  ],
+  "cost": "ed",
+  "mana": 9,
+  "power": 1,
+  "toughness": 4,
+  "type": "{Lethal} Insect Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Lethal"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "{i}(Any combat damage from a lethal unit will kill a player.)",
+  "image": "Gublin.jpg"
+ },
+ "Gzxyclop": {
+  "name": "Gzxyclop",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 1,
+  "toughness": 2,
+  "type": "{Virus} Blight Zombie Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I spawn, draw a card.{/n}[Augment] When I despawn, discard two cards.",
+  "image": "Gzxyclop.jpg"
+ },
+ "Life Power Dude": {
+  "name": "Life Power Dude",
+  "factions": [
+   "light",
+   "metal"
+  ],
+  "cost": "lm",
+  "mana": 4,
+  "power": 2,
+  "toughness": 3,
+  "type": "{Virus} Cosmic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] As long as your life total is odd, all units gain -2/-0. Otherwise they gain +2/+0.",
+  "image": "Life-Power-Dude.jpg"
+ },
+ "Lifebound Seer": {
+  "name": "Lifebound Seer",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "Spirit Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block, [Switch1] Glimpse 2.",
+  "image": "Lifebound-Seer.jpg"
+ },
+ "Lilbot": {
+  "name": "Lilbot",
+  "factions": [
+   "metal",
+   "dark"
+  ],
+  "cost": "md",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Occult Technology Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] [once] Discard a card or sacrifice another nontoken unit: Glimpse 2.",
+  "image": "Lilbot.jpg"
+ },
+ "Living Vault": {
+  "name": "Living Vault",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] At the end of turn, you may pay [x] and cache a card in your hand with cost [x]. It gains 'Prophecy — One Turn Passes'.",
+  "image": "Living-Vault.jpg"
+ },
+ "Lurking Dread": {
+  "name": "Lurking Dread",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 8,
+  "power": 8,
+  "toughness": 8,
+  "type": "Polyform Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "After combat, you may sacrifice two non-token units to put me into play from your bin or from cache.",
+  "image": "Lurking-Dread.jpg"
+ },
+ "Maw of Despair": {
+  "name": "Maw of Despair",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 2,
+  "toughness": 1,
+  "type": "Bedlam Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I am trashed, [Switch1] Glimpse 2.",
+  "image": "Maw-of-Despair.jpg"
+ },
+ "Mindburn": {
+  "name": "Mindburn",
+  "factions": [
+   "fire",
+   "dark"
+  ],
+  "cost": "rd",
+  "mana": "X",
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Mystic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Each player sacrifices a nontoken unit or discards a card. Repeat this X times.",
+  "image": "Mindburn.jpg"
+ },
+ "Muck Rummager": {
+  "name": "Muck Rummager",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 3,
+  "power": 2,
+  "toughness": 3,
+  "type": "Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When you trash a card during battle, [Switch1] Draw a card.",
+  "image": "Muck-Rummager.jpg"
+ },
+ "Murkdrop Distiller": {
+  "name": "Murkdrop Distiller",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 3,
+  "power": 2,
+  "toughness": 3,
+  "type": "Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[once] When you trash another card, you may cache it. If you do, you may play it until end of turn.",
+  "image": "Murkdrop-Distiller.jpg"
+ },
+ "Murkstalker": {
+  "name": "Murkstalker",
+  "factions": [
+   "light",
+   "dark"
+  ],
+  "cost": "ld",
+  "mana": 3,
+  "power": 2,
+  "toughness": 2,
+  "type": "Cosmic Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When you trash another card, [Switch1] Each opponent loses 3 life and you gain 3 life.",
+  "image": "Murkstalker.jpg"
+ },
+ "Möbius's Corruption": {
+  "name": "Möbius's Corruption",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 5,
+  "toughness": 3,
+  "type": "{Virus} Polyform Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] After combat, put two -1/-1 counters on me.",
+  "image": "Möbius's-Corruption.jpg"
+ },
+ "Necromantic Rebuke": {
+  "name": "Necromantic Rebuke",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Erase X cards from your bin] Negate up to one target effect unless its controller erases X cards from their bin.",
+  "image": "Necromantic-Rebuke.jpg"
+ },
+ "Necromorph": {
+  "name": "Necromorph",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 3,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Occult Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Exchange target unit in play for target unit with cost less than or equal to it in its controller's bin.",
+  "image": "Necromorph.jpg"
+ },
+ "No Hand Killer": {
+  "name": "No Hand Killer",
+  "factions": [
+   "fire",
+   "dark"
+  ],
+  "cost": "rd",
+  "mana": 6,
+  "power": 6,
+  "toughness": 8,
+  "type": "Bedlam Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] [once] Discard X cards: Each opponent sacrifices X units.",
+  "image": "No-Hand-Killer.jpg"
+ },
+ "Nothyr": {
+  "name": "Nothyr",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 2,
+  "power": 3,
+  "toughness": 1,
+  "type": "Alien Anima Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "discardMe": {
+   "cost": "d",
+   "mana": 2,
+   "timing": "battle"
+  },
+  "text": "When I am trashed, negate up to one target nonspell effect.",
+  "image": "Nothyr.jpg"
+ },
+ "Nullbringer": {
+  "name": "Nullbringer",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 3,
+  "power": 3,
+  "toughness": 3,
+  "type": "{Virus} Spirit Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] If a player would gain life, they lose that much life instead.",
+  "image": "Nullbringer.jpg"
+ },
+ "Pale Tormentor": {
+  "name": "Pale Tormentor",
+  "factions": [
+   "light",
+   "dark"
+  ],
+  "cost": "ld",
+  "mana": 3,
+  "power": 1,
+  "toughness": 6,
+  "type": "Cosmic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] After combat, each player with an even life total gains two rot.",
+  "image": "Pale-Tormentor.jpg"
+ },
+ "Palewing": {
+  "name": "Palewing",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 3,
+  "toughness": 4,
+  "type": "{Flying} Alien Anima Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Flying"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block, [Switch1] Discard a card.",
+  "image": "Palewing.jpg"
+ },
+ "Pallid Gorger": {
+  "name": "Pallid Gorger",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 2,
+  "power": 1,
+  "toughness": 1,
+  "type": "{Virus} Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Discard a card or sacrifice a nontoken unit: I gain +2/+2 until regroup.",
+  "image": "Pallid-Gorger.jpg"
+ },
+ "Penance": {
+  "name": "Penance",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Nature Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Any number of target players each lose 1 life. Draw a card.",
+  "image": "Penance.jpg"
+ },
+ "Pestilent Titan": {
+  "name": "Pestilent Titan",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 4,
+  "power": 3,
+  "toughness": 4,
+  "type": "Blight Zombie Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block, [Switch1] Put a -1/-1 counter on each unit. Each player gains a rot.",
+  "image": "Pestilent-Titan.jpg"
+ },
+ "Plague Ritual": {
+  "name": "Plague Ritual",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Each player discards a card, gains a rot and Augments a Wraith on one of their units.",
+  "image": "Plague-Ritual.jpg"
+ },
+ "Ploosh": {
+  "name": "Ploosh",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Virus} Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] After combat, you gain 3 life and draw a card if your life total is odd. Otherwise, sacrifice me and you lose 3 life.",
+  "image": "Ploosh.jpg"
+ },
+ "Prediction Prophet": {
+  "name": "Prediction Prophet",
+  "factions": [
+   "light"
+  ],
+  "cost": "lll",
+  "mana": 3,
+  "power": 1,
+  "toughness": 3,
+  "type": "Spirit Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "During [Haste], predict your life total. At the start of deployment, create a 5/5 unit if you matched the prediction.",
+  "image": "Prediction-Prophet.jpg"
+ },
+ "Primordial Coalescence": {
+  "name": "Primordial Coalescence",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 3,
+  "power": 0,
+  "toughness": 0,
+  "type": "Primordial Occult Spell",
+  "kind": "spell",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Create three Wraiths and gain 2 Rot.",
+  "image": "Primordial-Coalescence.jpg"
+ },
+ "Prismatic Observer": {
+  "name": "Prismatic Observer",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 3,
+  "toughness": 1,
+  "type": "Cosmic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Sacrifice me: [Switch1] Recall up to one target cached card. You gain 3 life.",
+  "image": "Prismatic-Observer.jpg"
+ },
+ "Proliferating Slime": {
+  "name": "Proliferating Slime",
+  "factions": [
+   "wood",
+   "dark"
+  ],
+  "cost": "gd",
+  "mana": 2,
+  "power": 1,
+  "toughness": 2,
+  "type": "{Virus} Blight Slime Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] If one or more counters would be put on an enemy unit or player, put that many counters plus one instead.",
+  "image": "Proliferating-Slime.jpg"
+ },
+ "Proph": {
+  "name": "Proph",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When you play a card from anywhere other than your hand, [Switch1] Draw a card.",
+  "image": "Proph.jpg"
+ },
+ "Prophecy Bug": {
+  "name": "Prophecy Bug",
+  "factions": [
+   "light",
+   "water"
+  ],
+  "cost": "lb",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "Cosmic Jellyfish Spell Unit",
+  "kind": "spellUnit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Cache a card in your hand. It gains 'Prophecy — X Turns Pass', where X is half of its cost, rounded up.",
+  "image": "Prophecy-Bug.jpg"
+ },
+ "Reality Siphoner": {
+  "name": "Reality Siphoner",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 2,
+  "toughness": 2,
+  "type": "{Virus} Polyform Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] At the end of turn, recycle your bin. Put a +1/+1 counter on me for each card recycled this way.",
+  "image": "Reality-Siphoner.jpg"
+ },
+ "Reap the Due": {
+  "name": "Reap the Due",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Cosmic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Erase target unit unless its controller gains debt equal to twice your [d].",
+  "image": "Reap-the-Due.jpg"
+ },
+ "Reclaim the Fallen": {
+  "name": "Reclaim the Fallen",
+  "factions": [
+   "earth",
+   "dark"
+  ],
+  "cost": "ed",
+  "mana": 3,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Occult Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Put all unit mods applied to target unit into play under their controller's control.",
+  "image": "Reclaim-the-Fallen.jpg"
+ },
+ "Retribution Thing": {
+  "name": "Retribution Thing",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Nature Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "I deal X damage to target unit, where X is the life you've [lost or gained] in this battle.",
+  "image": "Retribution-Thing.jpg"
+ },
+ "Riftspawn Remnant": {
+  "name": "Riftspawn Remnant",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 0,
+  "toughness": 5,
+  "type": "{Virus} Cosmic Nebula Sprite Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] If you have gained or lost life in this battle, I gain +4/-4.",
+  "image": "Riftspawn-Remnant.jpg"
+ },
+ "Rime Wraith": {
+  "name": "Rime Wraith",
+  "factions": [
+   "light",
+   "water"
+  ],
+  "cost": "lb",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Virus} [Augment] {Swift}{Sluggish} Spirit Anima Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Swift",
+   "Sluggish"
+  ],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [
+   "Swift",
+   "Sluggish"
+  ],
+  "text": "{i}(Swift units deal combat damage first. Sluggish units deal combat damage last.)",
+  "image": "Rime-Wraith.jpg"
+ },
+ "Rotbeast": {
+  "name": "Rotbeast",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 2,
+  "power": 1,
+  "toughness": 4,
+  "type": "{Virus} Blight Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] After combat, move all my other Augments onto one or more enemies.",
+  "image": "Rotbeast.jpg"
+ },
+ "Rotling": {
+  "name": "Rotling",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 2,
+  "toughness": 1,
+  "type": "Blight Zombie Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I leave your bin, [Switch1] You may pay [1] to draw a card and gain 1 rot.",
+  "image": "Rotling.jpg"
+ },
+ "Rotwall": {
+  "name": "Rotwall",
+  "factions": [
+   "earth",
+   "dark"
+  ],
+  "cost": "ed",
+  "mana": 3,
+  "power": 0,
+  "toughness": 5,
+  "type": "Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever I am dealt damage, each opponent gains a rot.",
+  "image": "Rotwall.jpg"
+ },
+ "Sacrifice Dude": {
+  "name": "Sacrifice Dude",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 2,
+  "toughness": 1,
+  "type": "Blight Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "discardMe": {
+   "cost": "d",
+   "mana": 2
+  },
+  "text": "When I enter your bin, you may pay [2]. If you do, each opponent sacrifices a nontoken unit.",
+  "image": "Sacrifice-Dude.jpg"
+ },
+ "Sarcophage": {
+  "name": "Sarcophage",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 3,
+  "power": 2,
+  "toughness": 4,
+  "type": "{Virus} Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Whenever a unit deals combat damage to a player, remove all counters from it.",
+  "image": "Sarcophage.jpg"
+ },
+ "Scholar of the Void": {
+  "name": "Scholar of the Void",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 1,
+  "power": 0,
+  "toughness": 2,
+  "type": "{Haste} Blight Unit",
+  "kind": "unit",
+  "timing": "haste",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] At the start of deployment, you may discard your hand and transform me into Beyond, Codex Incarnate.",
+  "image": "Scholar-of-the-Void.jpg"
+ },
+ "Scuttling Abomination": {
+  "name": "Scuttling Abomination",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Polyform Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I attack or block, [Switch1] Draw a card, then discard a card.",
+  "image": "Scuttling-Abomination.jpg"
+ },
+ "Seer of Empty Spaces": {
+  "name": "Seer of Empty Spaces",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 0,
+  "toughness": 1,
+  "type": "{Haste} Alien Unit",
+  "kind": "unit",
+  "timing": "haste",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I spawn or die, [Switch1] Glimpse 1.",
+  "image": "Seer-of-Empty-Spaces.jpg"
+ },
+ "Shard Sprite": {
+  "name": "Shard Sprite",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Battle} Friend Unit",
+  "kind": "unit",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I spawn, [Switch1] You gain 3 life.",
+  "image": "Shard-Sprite.jpg"
+ },
+ "Shib": {
+  "name": "Shib",
+  "factions": [
+   "light",
+   "water"
+  ],
+  "cost": "lb",
+  "mana": 6,
+  "power": 7,
+  "toughness": 4,
+  "type": "{Blessed} Cosmic Jellyfish Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [
+   "Blessed"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "ambush": {
+   "cost": "",
+   "mana": 4
+  },
+  "text": "[4] Ambush [Battle]{/n}{i}(Damage dealt by a blessed source causes its controller to gain that much life.)",
+  "image": "Shib.jpg"
+ },
+ "Siphon Life": {
+  "name": "Siphon Life",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": "X",
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Nature Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Target player [gains or loses] X life.",
+  "image": "Siphon-Life.jpg"
+ },
+ "Skittering Blight": {
+  "name": "Skittering Blight",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "Blight Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I spawn, gain a rot. [Augment] If rot would deal damage to you, instead put that many +1/+1 counters on me.",
+  "image": "Skittering-Blight.jpg"
+ },
+ "Slurpr": {
+  "name": "Slurpr",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] You can apply other mods during [Haste] as if it was deployment.",
+  "image": "Slurpr.jpg"
+ },
+ "Spellbind": {
+  "name": "Spellbind",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} {Modular} Arcane Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [
+   "Modular"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "{i}(You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs.){/n}[Switch1] You gain one rot.",
+  "image": "Spellbind.jpg"
+ },
+ "Splort": {
+  "name": "Splort",
+  "factions": [
+   "fire",
+   "dark"
+  ],
+  "cost": "rd",
+  "mana": 2,
+  "power": 2,
+  "toughness": 2,
+  "type": "Mystic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When another card is trashed, [Switch1] I deal 2 damage to any target.",
+  "image": "Splort.jpg"
+ },
+ "Spore of Regenesis": {
+  "name": "Spore of Regenesis",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 3,
+  "power": 0,
+  "toughness": 1,
+  "type": "Blight Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I die, you may erase me to put all units with cost [1] from your bin into play.",
+  "image": "Spore-of-Regenesis.jpg"
+ },
+ "Stalwart Sentinel": {
+  "name": "Stalwart Sentinel",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 1,
+  "toughness": 1,
+  "type": "Nature Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When you play a card from anywhere other than your hand, put two +1/+1 counters on me.",
+  "image": "Stalwart-Sentinel.jpg"
+ },
+ "Stellar Fission": {
+  "name": "Stellar Fission",
+  "factions": [
+   "light"
+  ],
+  "cost": "lll",
+  "mana": 3,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Cosmic Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Erase target unit. Its controller gains life equal to its power plus its defense.",
+  "image": "Stellar-Fission.jpg"
+ },
+ "Suspend": {
+  "name": "Suspend",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 2,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Nature Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Target player's life total can't change during this battle. Erase me.",
+  "image": "Suspend.jpg"
+ },
+ "Swarmling": {
+  "name": "Swarmling",
+  "factions": [
+   "metal",
+   "dark"
+  ],
+  "cost": "md",
+  "mana": 3,
+  "power": 2,
+  "toughness": 1,
+  "type": "Infection Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Whenever you discard me or another card, you may pay [1] to create a copy of me.",
+  "image": "Swarmling.jpg"
+ },
+ "The Everywhere": {
+  "name": "The Everywhere",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 4,
+  "power": 3,
+  "toughness": 3,
+  "type": "{Haste} Spirit Unit",
+  "kind": "unit",
+  "timing": "haste",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] During [Haste] name a card. My last named card loses all abilities. {i}(As long as I am in their region.)",
+  "image": "The-Everywhere.jpg"
+ },
+ "The Foretold": {
+  "name": "The Foretold",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 3,
+  "power": 3,
+  "toughness": 3,
+  "type": "Primordial Alien Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "prophecy": {
+   "mana": 0,
+   "condition": "One Turn Passes"
+  },
+  "text": "",
+  "image": "The-Foretold.jpg"
+ },
+ "The Mighty Doot": {
+  "name": "The Mighty Doot",
+  "factions": [
+   "light",
+   "earth"
+  ],
+  "cost": "le",
+  "mana": 5,
+  "power": 3,
+  "toughness": 3,
+  "type": "{Virus} Cosmic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Your units gain +1/+1 for every 3 life an opponent has more than you.",
+  "image": "The-Mighty-Doot.jpg"
+ },
+ "The Omniphage": {
+  "name": "The Omniphage",
+  "factions": [
+   "earth",
+   "dark"
+  ],
+  "cost": "ed",
+  "mana": 8,
+  "power": 5,
+  "toughness": 5,
+  "type": "Ancient Primordial Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] I gain all attributes of units in your bin.",
+  "image": "The-Omniphage.jpg"
+ },
+ "Thought Extraction": {
+  "name": "Thought Extraction",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Look at target player's hand and discard a card from it. You gain 1 rot.",
+  "image": "Thought-Extraction.jpg"
+ },
+ "Thoughtripper": {
+  "name": "Thoughtripper",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 2,
+  "power": 1,
+  "toughness": 1,
+  "type": "Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I am trashed, you may pay [2]. If you do, each opponent discards a card.",
+  "image": "Thoughtripper.jpg"
+ },
+ "Tilling the Graves": {
+  "name": "Tilling the Graves",
+  "factions": [
+   "dark"
+  ],
+  "cost": "dd",
+  "mana": 4,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Alien Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Recall two target units in your bin, then discard a card.",
+  "image": "Tilling-the-Graves.jpg"
+ },
+ "Tithe Enforcer": {
+  "name": "Tithe Enforcer",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 7,
+  "power": 4,
+  "toughness": 6,
+  "type": "{Haste} {Flying} Angel Spirit Unit",
+  "kind": "unit",
+  "timing": "haste",
+  "attrs": [
+   "Flying"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "prophecy": {
+   "mana": 2,
+   "condition": "End [Haste] with used mana"
+  },
+  "text": "",
+  "image": "Tithe-Enforcer.jpg"
+ },
+ "Trench Stalker": {
+  "name": "Trench Stalker",
+  "factions": [
+   "water",
+   "dark"
+  ],
+  "cost": "bd",
+  "mana": 2,
+  "power": 6,
+  "toughness": 2,
+  "type": "{Battle} Alien Unit",
+  "kind": "unit",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Discard two cards]{/n}I can be played directly into formation, and played from your bin.",
+  "image": "Trench-Stalker.jpg"
+ },
+ "Triskaidekaphage": {
+  "name": "Triskaidekaphage",
+  "factions": [
+   "light"
+  ],
+  "cost": "lll",
+  "mana": 3,
+  "power": 0,
+  "toughness": 13,
+  "type": "{Virus} Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When I attack or block, your life total becomes 13.",
+  "image": "Triskaidekaphage.jpg"
+ },
+ "Uglk": {
+  "name": "Uglk",
+  "factions": [
+   "wood",
+   "dark"
+  ],
+  "cost": "gd",
+  "mana": 3,
+  "power": 3,
+  "toughness": 4,
+  "type": "Mystic Fungus Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] After combat, each player puts a unit from their bin into play under an opponent's control.",
+  "image": "Uglk.jpg"
+ },
+ "Umbral Decay": {
+  "name": "Umbral Decay",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} {Afflicting} Blight Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [
+   "Afflicting"
+  ],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "{i}(When an afflicting source kills one or more units, those units' controllers gain a rot.) Put two -1/-1 counters on target unit.",
+  "image": "Umbral-Decay.jpg"
+ },
+ "Unrelenting Horror": {
+  "name": "Unrelenting Horror",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 2,
+  "power": 3,
+  "toughness": 3,
+  "type": "Alien Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I spawn, discard a card.{/n}When you trash a card, [Switch1] I gain +2/+2 and piercing until regroup.",
+  "image": "Unrelenting-Horror.jpg"
+ },
+ "Vengeance": {
+  "name": "Vengeance",
+  "factions": [
+   "light",
+   "fire"
+  ],
+  "cost": "lr",
+  "mana": 13,
+  "power": 7,
+  "toughness": 9,
+  "type": "Occult Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Cards your opponents play during battle gain '[Sacrifice a unit]'.",
+  "image": "Vengeance.jpg"
+ },
+ "Visage of Ruin": {
+  "name": "Visage of Ruin",
+  "factions": [
+   "light"
+  ],
+  "cost": "lll",
+  "mana": 6,
+  "power": 4,
+  "toughness": 5,
+  "type": "Spirit Anima Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When I attack or block, each player loses half of their life total, rounded up.",
+  "image": "Visage-of-Ruin.jpg"
+ },
+ "Visionary Construct": {
+  "name": "Visionary Construct",
+  "factions": [
+   "light",
+   "metal"
+  ],
+  "cost": "lm",
+  "mana": 4,
+  "power": 2,
+  "toughness": 1,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] Pay 3 life: Glimpse 1. {i}(Reveal the top card of the deck and cache it. Until end of turn, you may play it as if it was in your hand, ignoring affinity.)",
+  "image": "Visionary-Construct.jpg"
+ },
+ "Void Mandible": {
+  "name": "Void Mandible",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 2,
+  "power": 2,
+  "toughness": 1,
+  "type": "{Haste} Alien Anima Unit",
+  "kind": "unit",
+  "timing": "haste",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When a nontoken card is played during battle, sacrifice me. If you do, negate that effect. {i}(This is not optional.)",
+  "image": "Void-Mandible.jpg"
+ },
+ "Vroot": {
+  "name": "Vroot",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 1,
+  "power": 4,
+  "toughness": 4,
+  "type": "{Virus} Cosmic Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": true,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When my column deals combat damage, each opponent gains that much life.",
+  "image": "Vroot.jpg"
+ },
+ "Wake the Dead": {
+  "name": "Wake the Dead",
+  "factions": [
+   "dark"
+  ],
+  "cost": "ddd",
+  "mana": 8,
+  "power": 0,
+  "toughness": 0,
+  "type": "{Battle} Occult Spell",
+  "kind": "spell",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "Play up to two units in any bin with total cost [8] or less now, for free.",
+  "image": "Wake-the-Dead.jpg"
+ },
+ "Waxen Witness": {
+  "name": "Waxen Witness",
+  "factions": [
+   "light"
+  ],
+  "cost": "lll",
+  "mana": 4,
+  "power": 3,
+  "toughness": 3,
+  "type": "{Battle} Spirit Horror Spell Unit",
+  "kind": "spellUnit",
+  "timing": "battle",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Switch1] Cache target unit. It gains 'Prophecy — One Battle Passes'.",
+  "image": "Waxen-Witness.jpg"
+ },
+ "Witness of the Crossing": {
+  "name": "Witness of the Crossing",
+  "factions": [
+   "light"
+  ],
+  "cost": "ll",
+  "mana": 4,
+  "power": 0,
+  "toughness": 3,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When your life total becomes 1 or 13 during battle, [Switch1][Switch1][Switch1]",
+  "image": "Witness-of-the-Crossing.jpg"
+ },
+ "Writhing Host": {
+  "name": "Writhing Host",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 3,
+  "toughness": 1,
+  "type": "Horror Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "If I am in your bin, you may play a unit as if it had [Haste] by erasing me as an additional cost to play that unit.",
+  "image": "Writhing-Host.jpg"
+ },
+ "Xzydris": {
+  "name": "Xzydris",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 1,
+  "power": 2,
+  "toughness": 1,
+  "type": "Blight Zombie Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "At the start of deployment you may Augment a Wraith onto a unit to recall me from your bin.",
+  "image": "Xzydris.jpg"
+ },
+ "Zephyrzoa": {
+  "name": "Zephyrzoa",
+  "factions": [
+   "water",
+   "dark"
+  ],
+  "cost": "bd",
+  "mana": 4,
+  "power": 1,
+  "toughness": 1,
+  "type": "Spirit Cloud Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] When my column deals combat damage to an opponent, recall your bin and erase me.",
+  "image": "Zephyrzoa.jpg"
  }
 }

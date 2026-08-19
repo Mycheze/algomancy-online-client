@@ -149,6 +149,12 @@ export function checkInvariants(s: GameState): void {
     if (!Number.isFinite(p.life)) die('life is not a number');
     if (p.activationsLeft < 0) die('negative activations');
     for (const c of [...p.hand, ...p.bin]) if (!KNOWN.has(c)) die(`unknown card: ${c}`);
+    // R41: the cache is a real zone — its contents are held to the same
+    // standard as hand and bin, and a prophecy must carry its anchors
+    for (const cc of p.cache ?? []) {
+      if (!KNOWN.has(cc.card)) die(`unknown card in cache: ${cc.card}`);
+      if (cc.prophecy && !Number.isInteger(cc.prophecy.turn)) die(`cached ${cc.card} has an unanchored prophecy`);
+    }
     for (const r of p.resources) {
       if (!['dormant', 'open', 'expended'].includes(r.state)) die('bad resource state');
     }

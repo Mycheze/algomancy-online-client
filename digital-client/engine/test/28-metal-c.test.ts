@@ -364,7 +364,7 @@ test('Unstable Singularity: dies in combat → immediately deletes target unit (
 
 // ── Void Memory ──────────────────────────────────────────────────────────
 
-test('Void Memory: each opponent discards a card of their choice; empty hand → reveal', () => {
+test('Void Memory: each opponent discards a card of their choice (a TRASH by them, R40); empty hand → reveal', () => {
   const h = new Harness(2817);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -379,6 +379,13 @@ test('Void Memory: each opponent discards a card of their choice; empty hand →
   pick(h, 1);                                               // discard Self-Assembly
   assert.deepEqual(h.state.players[D]!.hand, ['Trashling'], 'one card left');
   assert.ok(h.state.players[D]!.bin.includes('Self-Assembly'), 'discarded → bin');
+  // R40: the discard is routed through E.discardFromHand, so it TRASHES —
+  // attributed to D (whose bin it enters), never to Void Memory's caster
+  const discard = h.events.filter(ev => ev.type === 'trashed')
+    .find(ev => ev.data?.['card'] === 'Self-Assembly');
+  assert.ok(discard, 'discarding from hand fires trashed (R40)');
+  assert.equal(discard!.data!['seat'], D, 'trashed BY the discarding player, not the caster');
+  assert.equal(discard!.data!['from'], 'hand');
   // an empty hand is revealed instead of discarding
   h.state.players[D]!.hand = [];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Void Memory') });

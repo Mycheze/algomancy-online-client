@@ -9,7 +9,7 @@
  */
 import type { EngineEvent, Seat } from '../types.ts';
 import {
-  allCardNames, card, getCard, registerSynthetic,
+  allCardNames, card, getCard, registerAlias, registerSynthetic,
   type EffectCtx, type EffectDef,
 } from './dsl.ts';
 import type { E } from '../engine.ts';
@@ -355,6 +355,61 @@ registerSynthetic({
   virus: false, burst: false, augmentAttrs: [], text: '',
   image: 'Generic-Unit.jpg',   // the box's generic-unit token card
 }, {});
+
+// R47 — the Wraith token (retired name: "Wight"). Not in the oracle pool (it
+// is a token card), so it is synthetic like Unit Token. The printed card image
+// still shows the OLD title, which is where these stats come from:
+//
+//   "Wight — 0 mana, 4/4, Blight Zombie Token Unit"
+//    [Augment] When I attack or block, put a -1/-1 counter on me.
+//              When I die, augment me onto target ally."
+//
+// A free 4/4 that shrinks every time it fights and, when it finally dies,
+// re-attaches itself as an augment on an ally instead of being erased —
+// donating the shrink-on-fight text to its new host. Both engine entry points
+// (E.createWraith / E.augmentWraith) produce this one card.
+registerSynthetic({
+  name: 'Wraith', cost: '', mana: 0, power: 4, toughness: 4,
+  type: 'Blight Zombie Token Unit', kind: 'unit', timing: 'deploy', attrs: [],
+  virus: false, burst: false, augmentAttrs: [],
+  text: '[Augment] When I attack or block, put a -1/-1 counter on me.{/n}When I die, augment me onto target ally.',
+  image: 'Generic-Unit.jpg',   // no printed art for the token in the card set yet
+}, {
+  // The leading [Augment] marks the shrink-on-fight line as the text that
+  // TRANSFERS to the host when the Wraith is applied as a mod (R47: "donating
+  // the shrink-on-fight text to its new host"). A card's own [Augment] text is
+  // also live while it is a unit in play, so a Wraith body shrinks itself.
+  augmentText: [{
+    type: 'triggered', events: ['attacked', 'blocked'], self: true,
+    label: 'put a -1/-1 counter on me',
+    effect: {
+      run: (g, ctx) => {
+        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        if (self) g.addCounters(self, -1);
+      },
+    },
+  }],
+  // "When I die, augment me onto target ally" is the Wraith's OWN ability, not
+  // donated text: R47 names only the shrink text as travelling with it, and a
+  // host that dies with mods on it is erased outright (Unstable) anyway. With
+  // no legal ally the trigger finds no target, fizzles, and the token is gone
+  // for good — the one way a Wraith really ceases to exist.
+  abilities: [{
+    type: 'triggered', events: ['died'], self: true,
+    label: 'augment me onto target ally',
+    effect: {
+      targets: { what: 'allyUnit', prompt: 'Wraith: augment me onto target ally' },
+      run: (g, ctx) => {
+        const t = ctx.targets[0];
+        if (t && 'id' in (t as object)) g.augmentWraith(t as never, ctx.controller);
+      },
+    },
+  }],
+});
+
+// R47: the token was renamed Wight -> Wraith. Six cards already say "Wraith";
+// `Blight's End` still carries the retired name. One card, two printed names.
+registerAlias('Wight', 'Wraith');
 
 // batch modules register themselves on import (side-effect card() calls);
 // each owns its own file so parallel card work never collides here

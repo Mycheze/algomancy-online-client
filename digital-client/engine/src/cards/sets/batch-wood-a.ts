@@ -148,6 +148,7 @@ card('Boon of Protection', {
       const allied = item.parts.some(p => !p.spent && p.targets.some(tr => {
         if ('unit' in tr) return g.entity(tr.unit)?.controller === ctx.controller;
         if ('player' in tr) return tr.player === ctx.controller;
+        if (!('stack' in tr)) return false;   // a cached-card target is nobody's effect
         const aimed = g.s.stack.find(i => i.id === tr.stack);
         return !!aimed && aimed.controller === ctx.controller;
       }));

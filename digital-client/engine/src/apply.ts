@@ -6,24 +6,24 @@
  * caller keeps the old state.
  */
 import type {
-  Action, ApplyResult, CardName, Decision, EffectPart, Element, EntityId, GameMode, GameState,
-  ResourceKind, Seat, StackItem, TargetRef,
+  Action, ApplyResult, CardName, Decision, EffectPart, Element, Entity, EntityId, GameMode,
+  GameState, ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
 import { E, GameEnded, IllegalAction, Suspended, other } from './engine.ts';
 import {
   affinityPips, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
-  type CardDef,
+  type AbilityCost, type CardDef,
 } from './cards/dsl.ts';
 import { DECK_LIST, draftDeckList } from './cards/registry.ts';
 import { rngShuffle, rngNext } from './rng.ts';
 
 export { IllegalAction };
 
-const ELEMENTS: ResourceKind[] = ['fire', 'water', 'earth', 'wood', 'metal'];
+const ELEMENTS: ResourceKind[] = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
 
 // ── game creation ─────────────────────────────────────────────────────
 
-export const ALL_ELEMENTS: Element[] = ['fire', 'water', 'earth', 'wood', 'metal'];
+export const ALL_ELEMENTS: Element[] = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
 
 /** the default trio when none is chosen (the first fully-scripted one) */
 export const DRAFT_TRIO: Element[] = ['fire', 'water', 'earth'];
@@ -111,11 +111,17 @@ export function createGame(
         { kind: 'prismite', state: 'dormant' },
       ],
       activationsLeft: 2,
+      // Light & Dark player counters (R38/R39) and the cache zone (R41).
+      // Optional on the type so pre-expansion saved games still load; new
+      // games start them explicitly.
+      rot: 0, debt: 0, cache: [],
     })),
     regions: [0, 1].map(owner => ({ owner, presentSeats: [owner] })),
     entities: {}, stack: [], battle: null, battleRound: 0,
     battleCounters: [{}, {}], priority: null, passes: 0,
     planningDone: [false, false], hasteDone: null, deployDone: null, deployPlayer: null,
+    // R43 forward-counting anchors for prophecy conditions (additive)
+    hasteManaSpent: [0, 0], battlesCompleted: 0,
     triggerQueue: [], triggerOrderedSeats: [], suspension: null, decision: null,
   };
   const e = new E(state);
@@ -176,6 +182,8 @@ function dispatch(e: E, action: Action): void {
     case 'doneHaste': return doDoneHaste(e, action.seat);
     case 'bottomCards': return doBottomCards(e, action.seat, action.handIndices);
     case 'playCard': return doPlayCard(e, action.seat, action.handIndex, action.mode);
+    case 'prophesy': return doProphesy(e, action.seat, action.from, action.index);
+    case 'playCached': return doPlayCached(e, action.seat, action.index);
     case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId);
     case 'activateAbility': return doActivateAbility(e, action.seat, action.entityId, action.abilityIndex, action.via);
     case 'augment': return doAugment(e, action.seat, action.from, action.index, action.hostId);
@@ -303,7 +311,12 @@ function doDonePlanning(e: E, seat: Seat): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
+  // R39: debt is paid HERE — the last thing in the resource step. planningDone
+  // is set first on purpose: every resource action (recycleForResource,
+  // activateResource, exchangePrismite) requires !planningDone[seat], so by
+  // the time the mana leaves it is structurally impossible to activate more.
   e.s.planningDone[seat] = true;
+  e.payDebt(seat);
   if (e.s.planningDone.every(Boolean)) e.startHasteStep();
 }
 
@@ -319,13 +332,22 @@ function doDoneHaste(e: E, seat: Seat): void {
 function timingAllowsDeploy(c: CardDef): boolean { return c.timing === 'deploy' || c.timing === 'haste'; }
 
 /** targeted casts need at least one candidate up front; a spell with a
- * bracketed cast cost (R35) needs the cost to be payable — the cost is part
- * of casting, so with no unit to sacrifice the cast is ILLEGAL */
-function castable(e: E, c: CardDef, region: number, seat: Seat): boolean {
+ * bracketed cast cost (R35/R49) needs the cost to be payable — the cost is
+ * part of casting, so with nothing to sacrifice / discard, too little life, or
+ * (R49) not enough life to SURVIVE paying, the cast is ILLEGAL. A printed
+ * "[Gain N debt]" line (Printed.gainDebt, Hyper Beam) is a real cast cost too,
+ * and one that is always payable. */
+function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | 'cache' | 'bin' = 'hand'): boolean {
+  // the card is still in the hand this check reads, and a spell cannot discard
+  // ITSELF to pay its own [Discard a card] cost
+  const reserve = from === 'hand' ? 1 : 0;
+  if (c.gainDebt !== undefined && !e.canPayCastCost(seat, { kind: 'gainDebt', n: c.gainDebt }, region, reserve)) return false;
   const eff = c.spellEffect;
   if (!eff) return true;
-  if (eff.castCost?.kind === 'sacrificeUnit' && e.unitsOf(seat, region).length === 0) return false;
-  if (eff.targets && e.targetCandidates(eff.targets, region, undefined, seat).length === 0) return false;
+  if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, reserve)) return false;
+  // an "up to N" spec (min 0) may legally be cast at nothing
+  if (eff.targets && (eff.targets.min ?? 1) > 0
+    && e.targetCandidates(eff.targets, region, undefined, seat).length === 0) return false;
   return true;
 }
 
@@ -339,49 +361,150 @@ function canPayAmbush(e: E, seat: Seat, c: CardDef): boolean {
   return true;
 }
 
-function baseItem(e: E, c: CardDef, seat: Seat, region: number): StackItem {
+function baseItem(e: E, c: CardDef, seat: Seat, region: number, from?: 'hand' | 'cache' | 'bin'): StackItem {
   const parts: EffectPart[] = c.spellEffect ? [{ effectKey: `spell:${c.name}`, targets: [] }] : [];
   return {
     id: e.s.nextId++, kind: c.kind, card: c.name, label: c.name,
     controller: seat, region, negated: false, parts,
+    // R49: the zone this card is being played out of, carried into the
+    // 'spellPlayed' / 'spawned' events (Proph, Stalwart Sentinel)
+    ...(from ? { from } : {}),
   };
 }
 
-function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush'): void {
-  const name = e.player(seat).hand[handIndex];
-  e.need(name !== undefined, 'no such card in hand');
-  const c = e.card(name);
-  if (mode === 'ambush') return doAmbush(e, seat, handIndex, c);
-  e.need(e.canPayCard(seat, name), 'cannot pay for that');
+/**
+ * The phase/timing gate every "play this card" shares, whatever zone the card
+ * comes from. `timing` is the timing the card is played AT — normally its
+ * printed timing, but a prophecy release marked [Haste] overrides it for a
+ * cache release (R42). `take` pulls the card out of its zone and `pay` pays
+ * for it; both run only once the play is known to be legal.
+ */
+function playAtTiming(
+  e: E, seat: Seat, c: CardDef, timing: CardDef['timing'],
+  take: () => void, pay: () => void, from: 'hand' | 'cache' | 'bin',
+): void {
+  const canCast = (region: number) => castable(e, c, region, seat, from);
+  /** R49: the printed "[Gain N debt]" bracketed line (Hyper Beam) is a real
+   * additional CAST cost — taken here, with the rest of the payment, before
+   * the item exists. A negated Hyper Beam therefore still cost its caster the
+   * debt, which is the whole point of a cost. It applies on every route into
+   * play, cache releases included: a fulfilled prophecy waives the MANA, not
+   * a separate bracketed cost. */
+  const payAll = () => {
+    pay();
+    if (c.gainDebt) {
+      e.ev('info', `${e.pname(seat)} gains ${c.gainDebt} debt — the [cost] of ${c.name}.`, { seat, card: c.name });
+      e.gainDebt(seat, c.gainDebt);
+    }
+  };
   if (e.s.phase === 'planning') {
     // haste step (R18): only haste cards, resolving immediately
     e.need(e.s.hasteDone !== null && !e.s.hasteDone[seat], 'not your haste step');
-    e.need(c.timing === 'haste', 'only haste cards during the haste step');
+    e.need(timing === 'haste', 'only haste cards during the haste step');
     const region = e.homeRegion(seat);
-    e.need(castable(e, c, region, seat), 'no legal targets');
-    e.player(seat).hand.splice(handIndex, 1);
-    e.payCard(seat, name);
-    e.castChain([baseItem(e, c, seat, region)], 'resolve');
+    e.need(canCast(region), 'no legal targets or an unpayable [cost]');
+    take();
+    payAll();
+    e.castChain([baseItem(e, c, seat, region, from)], 'resolve');
   } else if (e.s.phase === 'deploy') {
     e.need(e.deploying(seat), 'not your deployment');
-    e.need(timingAllowsDeploy(c), 'battle cards can only be played during battle');
+    e.need(timing === 'deploy' || timing === 'haste', 'battle cards can only be played during battle');
     const region = e.homeRegion(seat);
-    e.need(castable(e, c, region, seat), 'no legal targets');
-    e.player(seat).hand.splice(handIndex, 1);
-    e.payCard(seat, name);
-    e.castChain([baseItem(e, c, seat, region)], 'resolve');
+    e.need(canCast(region), 'no legal targets or an unpayable [cost]');
+    take();
+    payAll();
+    e.castChain([baseItem(e, c, seat, region, from)], 'resolve');
   } else if (e.s.phase === 'battle') {
     e.need(e.s.priority === seat, 'you do not have priority');
-    e.need(c.timing === 'battle', 'only battle cards can be played now');
+    e.need(timing === 'battle', 'only battle cards can be played now');
     const region = e.s.battle!.region;
-    e.need(castable(e, c, region, seat), 'no legal targets');
-    e.player(seat).hand.splice(handIndex, 1);
-    e.payCard(seat, name);
-    e.castChain([baseItem(e, c, seat, region)], 'push');
+    e.need(canCast(region), 'no legal targets or an unpayable [cost]');
+    take();
+    payAll();
+    e.castChain([baseItem(e, c, seat, region, from)], 'push');
     e.settle();
   } else {
     e.illegal('cards are played during deployment or battle');
   }
+}
+
+function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'discardMe'): void {
+  const name = e.player(seat).hand[handIndex];
+  e.need(name !== undefined, 'no such card in hand');
+  const c = e.card(name);
+  if (mode === 'ambush') return doAmbush(e, seat, handIndex, c);
+  if (mode === 'discardMe') return doDiscardMe(e, seat, handIndex, c);
+  e.need(e.canPayCard(seat, name), 'cannot pay for that');
+  playAtTiming(e, seat, c, c.timing,
+    () => { e.player(seat).hand.splice(handIndex, 1); },
+    () => { e.payCard(seat, name); },
+    'hand');
+}
+
+/**
+ * R42: prophesy — cache a card with a printed prophecy banner, paying the
+ * banner's mana. DEPLOYMENT ONLY (Caleb 2025-05-09: "Only during deployment"),
+ * and the cost is a plain number: no affinity pips are required, which is why
+ * this pays through payMana() rather than payCard().
+ *
+ * The source zone is 'hand' unless the card itself grants otherwise — "I can
+ * be prophesied from your bin" (Angel of Anguish, CardBehavior.prophesyFromBin).
+ * No card may be prophesied from the bin without that text.
+ */
+function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin', index: number): void {
+  e.need(e.deploying(seat), 'prophesying is a deployment action');
+  const zone = from === 'bin' ? e.player(seat).bin : e.player(seat).hand;
+  const name = zone[index];
+  e.need(name !== undefined, `no such card in ${from}`);
+  const c = e.card(name);
+  const banner = c.prophecy;
+  e.need(banner, 'that card has no prophecy banner');
+  e.need(from === 'hand' || c.prophesyFromBin, 'that card cannot be prophesied from your bin');
+  e.need(e.openMana(seat) >= banner.mana, 'cannot pay the prophecy cost');
+  zone.splice(index, 1);
+  e.payMana(seat, banner.mana);   // R42: plain mana, no affinity
+  const ev = e.ev('prophesied',
+    `${e.pname(seat)} prophesies ${name} from ${from} for [${banner.mana}].`,
+    { seat, card: name, from, mana: banner.mana, condition: banner.condition });
+  e.fireEvent('prophesied', ev);
+  e.cacheCard(seat, name, from, { prophecy: banner.condition });
+  e.settle();
+}
+
+/**
+ * R42/R45: play a card out of your cache. Permission is the whole point — a
+ * cached card with neither a fulfilled prophecy nor a live glimpse stamp
+ * cannot be played at all (Caleb 2024-12-03).
+ *
+ *  - via a fulfilled prophecy: FREE, and "for free" also ignores affinity
+ *    (Caleb 2024-10-28). A [Haste] release marker on the banner moves the
+ *    release into the haste step.
+ *  - via glimpse: pay the mana cost (Caleb 2023-08-13), ignore affinity.
+ *
+ * In both cases normal TIMING applies — the card is played "as if it were in
+ * your hand", so a unit still needs deployment and a {Battle} spell still
+ * needs battle (Caleb 2025-12-28).
+ */
+function doPlayCached(e: E, seat: Seat, index: number): void {
+  const cc = e.cache(seat)[index];
+  e.need(cc !== undefined, 'no such cached card');
+  const via = e.cachePermission(seat, index);
+  e.need(via, 'you have no permission to play that cached card');
+  const c = e.card(cc.card);
+  const free = via === 'prophecy';
+  // affinity is ignored either way; only the glimpse route still needs mana
+  e.need(free || e.canPayManaOnly(seat, cc.card), 'cannot pay for that');
+  playAtTiming(e, seat, c, e.cachedTiming(seat, index, via),
+    () => { e.uncache(seat, index); },
+    () => {
+      if (free) {
+        e.ev('info', `${cc.card} is released from ${e.pname(seat)}'s cache for FREE (prophecy fulfilled: ${cc.prophecy!.condition}).`);
+      } else {
+        e.payCard(seat, cc.card);
+        e.ev('info', `${cc.card} is played from ${e.pname(seat)}'s cache, ignoring affinity.`);
+      }
+    },
+    'cache');
 }
 
 /** [Battle] Ambush (Manual p.40): play the unit during battle as an effect —
@@ -397,12 +520,55 @@ function doAmbush(e: E, seat: Seat, handIndex: number, c: CardDef): void {
     id: e.s.nextId++, kind: 'ambush', card: c.name,
     label: `${c.name} (Ambush)`, controller: seat, region,
     negated: false, parts: [{ effectKey: `ambush:${c.name}`, targets: [] }],
+    from: 'hand',   // R49: an Ambush is the card being played, out of the hand
   };
   e.need(e.targetCandidates({ what: 'allyUnit', prompt: '' }, region, undefined, seat).length > 0,
     'no ally to ambush');
   e.player(seat).hand.splice(handIndex, 1);
   e.payMana(seat, c.ambush!.mana);
   e.castChain([item], 'push');
+  e.settle();
+}
+
+/** the printed "Discard me" cost line: <mana> at <pips> affinity */
+function canPayDiscardMe(e: E, seat: Seat, c: CardDef): boolean {
+  if (!c.discardMe) return false;
+  if (e.openMana(seat) < c.discardMe.mana) return false;
+  for (const [el, n] of Object.entries(affinityPips(c.discardMe.cost))) {
+    if (e.affinity(seat, el) < n) return false;
+  }
+  return true;
+}
+
+/**
+ * R40: the "Discard me" play mode (Dropslime's "1 Discard me", Nothyr's
+ * "2 [d] Discard Me. {Battle}") — pay the printed cost line, discard the card
+ * from your hand, and the resulting TRASH fires the card's own "when I am
+ * trashed" trigger. Modelled on Ambush (doAmbush): an alternative cost and an
+ * alternative mode of the same playCard action.
+ *
+ * Nothing goes on the stack: the discard is the whole action, and what reaches
+ * the stack (in battle) or resolves immediately (in deployment) is the trash
+ * TRIGGER, through the ordinary trigger machinery.
+ *
+ * TIMING comes from the cost line itself when it carries a marker — Nothyr's
+ * {Battle} sits on the discard-me line while the card is a deploy unit — and
+ * otherwise from the card (Dropslime: a deploy unit, so a deployment discard).
+ */
+function doDiscardMe(e: E, seat: Seat, handIndex: number, c: CardDef): void {
+  e.need(c.discardMe, 'that card has no "Discard me" mode');
+  e.need(canPayDiscardMe(e, seat, c), 'cannot pay the discard cost');
+  const timing = c.discardMe!.timing ?? c.timing;
+  if (timing === 'battle') {
+    e.need(e.s.phase === 'battle', 'that mode is a battle action');
+    e.need(e.s.priority === seat, 'you do not have priority');
+  } else {
+    e.need(e.deploying(seat), 'not your deployment');
+  }
+  e.payMana(seat, c.discardMe!.mana);
+  e.ev('info', `${e.pname(seat)} pays [${c.discardMe!.mana}${c.discardMe!.cost}] to discard ${c.name}.`,
+    { seat, card: c.name });
+  e.discardFromHand(seat, handIndex);   // trashes it → fires its own trashed trigger
   e.settle();
 }
 
@@ -453,6 +619,24 @@ function activationSource(e: E, u: { card: CardName; id: EntityId; mods: EntityI
   return { list: getCard(mod.card).augmentText, prefix: 'augment', viaCard: mod.card };
 }
 
+/**
+ * R49: every non-mana activation cost an ability can carry, checked as a
+ * GATE — an ability whose cost cannot be paid is neither offered nor accepted.
+ * `u` is the source, excluded from a "sacrifice another" count.
+ */
+function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, region: number): boolean {
+  if (e.openMana(seat) < (cost.mana ?? 0)) return false;
+  if (cost.life !== undefined && !e.canPayLife(seat, cost.life)) return false;
+  if (cost.discard !== undefined && e.player(seat).hand.length < cost.discard) return false;
+  if (cost.sacrificeOther !== undefined
+    && e.unitsOf(seat, region).filter(o => o.id !== u.id).length < cost.sacrificeOther) return false;
+  if (cost.discardOrSacrifice !== undefined) {
+    const sacs = e.unitsOf(seat, region).filter(o => o.id !== u.id && !o.token).length;
+    if (e.player(seat).hand.length + sacs < cost.discardOrSacrifice) return false;
+  }
+  return true;
+}
+
 function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: number, via?: 'augment' | { mod: EntityId }): void {
   const u = e.entity(entityId);
   e.need(u && u.kind === 'unit' && u.controller === seat && !u.absent, 'not your unit');
@@ -464,21 +648,23 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   if (e.s.phase === 'battle') {
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(u.region === e.s.battle!.region, 'that unit is in another region');
+    // R49: a printed {Battle}/{Deployment} marker on the ABILITY (Grox,
+    // Cadaverous Cultivator) — enforced here, at activation, not at resolution
+    e.need(ability.timing !== 'deploy', 'that ability is a deployment ability');
     region = u.region; then = 'push';
   } else if (e.s.phase === 'deploy') {
     e.need(e.deploying(seat), 'not your deployment');
     e.need(u.region === e.homeRegion(seat), 'that unit is in another region');
+    e.need(ability.timing !== 'battle', 'that ability can only be activated during battle');
     region = u.region; then = 'resolve';
   } else {
     e.illegal('abilities are activated during battle or deployment');
   }
-  const mana = ability.cost.mana ?? 0;
-  e.need(e.openMana(seat) >= mana, 'cannot pay the mana cost');
+  const cost = ability.cost;
+  e.need(canPayAbilityCost(e, seat, cost, u, region), 'cannot pay the activation cost');
   // compose BEFORE paying costs: a spent bounded cause makes this illegal
   const parts = e.composeParts(u, abilityIndex, prefix, viaCard);
   e.need(parts, 'that ability was already used this turn');
-  e.payMana(seat, mana);
-  if (ability.cost.sacrificeSelf) e.destroy(u, 'is sacrificed');   // cost, not respondable
   const srcCard = viaCard ?? u.card;
   const item: StackItem = {
     id: e.s.nextId++, kind: 'activated', card: srcCard,
@@ -486,18 +672,65 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
     controller: seat, region,
     negated: false, parts, sourceId: u.id, event: null,
   };
+  // R49: choice-free costs are charged right here, in the order printed on the
+  // cards (mana, life, debt, sacrifice-self); the ones that carry a choice ride
+  // on the item and are collected in the cast window — still before the item
+  // reaches the stack, so nothing can respond between cost and effect.
+  e.payMana(seat, cost.mana ?? 0);
+  if (cost.life) {
+    e.ev('info', `${e.pname(seat)} pays ${cost.life} life — the cost of ${item.label}.`);
+    e.loseLife(seat, cost.life, `${item.label} (cost)`);
+  }
+  if (cost.debt) {
+    e.ev('info', `${e.pname(seat)} gains ${cost.debt} debt — the cost of ${item.label}.`);
+    e.gainDebt(seat, cost.debt);
+  }
+  const pending: NonNullable<StackItem['pendingCosts']> = [];
+  if (cost.discard) pending.push({ kind: 'discard', n: cost.discard });
+  if (cost.sacrificeOther) pending.push({ kind: 'sacrificeOther', n: cost.sacrificeOther });
+  if (cost.discardOrSacrifice) pending.push({ kind: 'discardOrSacrifice', n: cost.discardOrSacrifice });
+  if (pending.length) item.pendingCosts = pending;
+  if (cost.sacrificeSelf) e.destroy(u, 'is sacrificed');   // cost, not respondable
   e.castChain([item], then);
   e.settle();
 }
 
 // ── mods ──────────────────────────────────────────────────────────────
 
-function doAugment(e: E, seat: Seat, from: 'hand' | 'bin', index: number, hostId: EntityId): void {
-  const name = e.player(seat)[from][index];
+/** R41: the three zones a mod can be applied from. The cache is one of them —
+ * "you can augment or graft from cache" (Caleb 2024-12-02) — but it holds
+ * CachedCard records rather than bare names, so the zone access goes through
+ * these two helpers instead of indexing PlayerState directly. */
+type ModZone = 'hand' | 'bin' | 'cache';
+
+function zonePeek(e: E, seat: Seat, from: ModZone, index: number): CardName | undefined {
+  return from === 'cache' ? e.cache(seat)[index]?.card : e.player(seat)[from][index];
+}
+
+function zoneTake(e: E, seat: Seat, from: ModZone, index: number): void {
+  if (from === 'cache') e.uncache(seat, index);
+  else e.player(seat)[from].splice(index, 1);
+}
+
+/**
+ * R42: what applying the mod at `from`/`index` costs.
+ * A FULFILLED prophecy makes the graft or augment free as well, not only the
+ * play (Caleb 2024-12-03) — and "for free" ignores affinity. Modding out of
+ * the cache WITHOUT a fulfilled prophecy is still allowed (Caleb 2024-12-02)
+ * and costs the mod's normal price: a glimpse's "ignoring affinity" is a
+ * permission to PLAY, and applying a mod is not playing (R37).
+ */
+function modIsFree(e: E, seat: Seat, from: ModZone, index: number): boolean {
+  return from === 'cache' && e.cachePermission(seat, index) === 'prophecy';
+}
+
+function doAugment(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityId): void {
+  const name = zonePeek(e, seat, from, index);
   e.need(name !== undefined, `no such card in ${from}`);
   const c = e.card(name);
   e.need(isAugment(name), 'that card is not an augment');
-  e.need(e.canPayCard(seat, name), 'cannot pay for that');
+  const free = modIsFree(e, seat, from, index);
+  e.need(free || e.canPayCard(seat, name), 'cannot pay for that');
   const host = e.entity(hostId);
   e.need(host && host.kind === 'unit' && !host.absent, 'no such unit');
 
@@ -520,8 +753,9 @@ function doAugment(e: E, seat: Seat, from: 'hand' | 'bin', index: number, hostId
   } else if (e.s.phase === 'deploy') {
     e.need(e.deploying(seat), 'not your deployment');
     e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
-    e.player(seat)[from].splice(index, 1);
-    e.payCard(seat, name);
+    zoneTake(e, seat, from, index);
+    if (free) e.ev('info', `${name} augments for FREE — its prophecy is fulfilled.`);
+    else e.payCard(seat, name);
     const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
     e.fireEvent('targeted', ev);
     e.attachMod(host, name, seat, 'augment');
@@ -531,9 +765,9 @@ function doAugment(e: E, seat: Seat, from: 'hand' | 'bin', index: number, hostId
   }
 }
 
-function doGraft(e: E, seat: Seat, from: 'hand' | 'bin', index: number, hostId: EntityId, position: number): void {
+function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityId, position: number): void {
   e.need(e.deploying(seat), 'grafting is a deployment action');
-  const name = e.player(seat)[from][index];
+  const name = zonePeek(e, seat, from, index);
   e.need(name !== undefined, `no such card in ${from}`);
   e.need(isGraftable(name), 'that card has no graft symbol');
   const host = e.entity(hostId);
@@ -541,11 +775,13 @@ function doGraft(e: E, seat: Seat, from: 'hand' | 'bin', index: number, hostId: 
   e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
   // both cards must carry the graft symbol: the host needs its own graft cause
   e.need(graftCauseIndex(host.card) >= 0, 'the target has no graft cause');
-  e.need(e.canPayCard(seat, name), 'cannot pay for that');
+  const free = modIsFree(e, seat, from, index);
+  e.need(free || e.canPayCard(seat, name), 'cannot pay for that');
   // new grafts insert anywhere below the base card, never reorder the rest
   e.need(Number.isInteger(position) && position >= 0 && position <= host.mods.length, 'bad graft position');
-  e.player(seat)[from].splice(index, 1);
-  e.payCard(seat, name);
+  zoneTake(e, seat, from, index);
+  if (free) e.ev('info', `${name} grafts for FREE — its prophecy is fulfilled.`);
+  else e.payCard(seat, name);
   const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
   e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)
   e.attachMod(host, name, seat, 'graft', position);
@@ -706,9 +942,16 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
       sus.item.label = `${sus.item.card} (X=${x})`;
       e.payMana(sus.item.controller, x);
       e.ev('info', `${e.pname(seat)} chooses X = ${x} for ${sus.item.card} and pays it.`);
+    } else if (sus.stage === 'mods') {
+      // {Modular}: a mod applied as the card is played — an additional cast
+      // cost, paid now, riding on the stack with the spell (R35)
+      e.payModularMod(sus.item, val);
     } else if (sus.stage === 'cost') {
       // cast-time bracketed cost (R35): paid now, before the stack push
       e.payCastCost(sus.item, sus.partIndex, val);
+    } else if (sus.stage === 'itemCost') {
+      // R49: an activation cost that carries a choice — same window, same rule
+      e.payItemCost(sus.item, val);
     } else if (typeof val === 'object' && val !== null && 'doneTargets' in val) {
       sus.item.parts[sus.partIndex]!.targetsDone = true;
     } else {
@@ -819,6 +1062,7 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
         out.push({ type: 'playCard', seat, handIndex: i });
       }
     });
+    pushCachedPlays(e, seat, t => t === 'haste', e.homeRegion(seat), out);
     return out;
   }
 
@@ -926,10 +1170,15 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
           && e.targetCandidates({ what: 'allyUnit', prompt: '' }, b.region, undefined, seat).length > 0) {
           out.push({ type: 'playCard', seat, handIndex: i, mode: 'ambush' });
         }
+        // R40: a "Discard me" line whose own marker makes it battle timing (Nothyr)
+        if (c.discardMe && (c.discardMe.timing ?? c.timing) === 'battle' && canPayDiscardMe(e, seat, c)) {
+          out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
+        }
         if (c.virus && isAugment(name) && e.canPayCard(seat, name)) {
           for (const host of e.unitsIn(b.region)) out.push({ type: 'augment', seat, from: 'hand', index: i, hostId: host.id });
         }
       });
+      pushCachedPlays(e, seat, t => t === 'battle', b.region, out);
       for (const t of e.tokensOf(seat, b.region)) out.push({ type: 'castSpellToken', seat, entityId: t.id });
       pushActivatedOptions(e, seat, b.region, out);
       return out;
@@ -949,10 +1198,33 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       if (timingAllowsDeploy(c) && e.canPayCard(seat, name) && castable(e, c, region, seat)) {
         out.push({ type: 'playCard', seat, handIndex: i });
       }
+      // R40: the "Discard me" mode (Dropslime) — a deployment action unless
+      // its own cost line carries a {Battle} marker
+      if (c.discardMe && (c.discardMe.timing ?? c.timing) !== 'battle' && canPayDiscardMe(e, seat, c)) {
+        out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
+      }
     });
+    // R42: prophesying is a deployment action, and the banner cost is plain
+    // mana — no affinity pips, so this checks openMana rather than canPayCard.
+    // 'bin' only for a card that says it may be (Angel of Anguish).
     for (const from of ['hand', 'bin'] as const) {
       e.player(seat)[from].forEach((name, i) => {
-        if (!getCard(name) || !e.canPayCard(seat, name)) return;
+        const c = getCard(name);
+        if (!c.prophecy) return;
+        if (from === 'bin' && !c.prophesyFromBin) return;
+        if (e.openMana(seat) < c.prophecy.mana) return;
+        out.push({ type: 'prophesy', seat, from, index: i });
+      });
+    }
+    // R42/R45: releasing a permitted cached card at deployment timing
+    pushCachedPlays(e, seat, t => t === 'deploy' || t === 'haste', region, out);
+    // R41: mods may come from the cache as well as hand and bin
+    for (const from of ['hand', 'bin', 'cache'] as const) {
+      const names = from === 'cache' ? e.cache(seat).map(cc => cc.card) : e.player(seat)[from];
+      names.forEach((name, i) => {
+        // a fulfilled prophecy makes the mod free (R42); otherwise pay normally
+        const affordable = modIsFree(e, seat, from, i) || e.canPayCard(seat, name);
+        if (!getCard(name) || !affordable) return;
         if (isAugment(name)) {
           for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
         }
@@ -976,13 +1248,37 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
   return out;
 }
 
+/**
+ * R42/R45: the cached cards `seat` may release right now, at `timing`.
+ *
+ * Offered ONLY with permission — a fulfilled prophecy or a live glimpse stamp
+ * (E.cachePermission). Mirrors the hand's own gate: the timing has to match
+ * (a cached unit still needs deployment), the mana has to be there (free via
+ * a prophecy, printed cost via a glimpse; affinity is ignored on both paths),
+ * and a targeted cast still needs a candidate.
+ */
+function pushCachedPlays(e: E, seat: Seat, allowed: (t: CardDef['timing']) => boolean, region: number, out: Action[]): void {
+  e.cache(seat).forEach((cc, i) => {
+    const via = e.cachePermission(seat, i);
+    if (!via) return;
+    if (!allowed(e.cachedTiming(seat, i, via))) return;
+    if (via === 'glimpse' && !e.canPayManaOnly(seat, cc.card)) return;
+    if (!castable(e, e.card(cc.card), region, seat, 'cache')) return;
+    out.push({ type: 'playCached', seat, index: i });
+  });
+}
+
 function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): void {
+  const battle = e.s.phase === 'battle';
   for (const u of e.unitsOf(seat, region)) {
     const offer = (list: ReturnType<typeof getCard>['abilities'], prefix: 'ability' | 'augment',
       budgetCard: CardName, via?: 'augment' | { mod: EntityId }) => {
       (list ?? []).forEach((ab, i) => {
         if (ab.type !== 'activated') return;
-        if ((ab.cost.mana ?? 0) > e.openMana(seat)) return;
+        // R49: a per-ability {Battle}/{Deployment} marker, and the full
+        // activation cost (life, discard, sacrifice-another, debt) as a gate
+        if (ab.timing !== undefined && ab.timing !== (battle ? 'battle' : 'deploy')) return;
+        if (!canPayAbilityCost(e, seat, ab.cost, u, region)) return;
         if (ab.bounded && (u.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });
       });

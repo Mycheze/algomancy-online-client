@@ -11,11 +11,12 @@
  * home region unless the text is battle-local — "in my formation" is),
  * R31 (triggers between combat damage sub-steps resolve immediately).
  *
+ * GLIMPSE (Foretell) is REAL as of Light & Dark: E.glimpse (R45) reveals the
+ * top card, CACHES it, and makes it playable until end of turn ignoring
+ * affinity (mana and timing still apply). It replaced an approximation that
+ * put the card straight into the glimpser's hand, permanently.
+ *
  * ⚠ ENGINE APPROXIMATIONS in this batch:
- *  - GLIMPSE (Foretell): no cache zone / "play ignoring affinity" machinery
- *    (same call as the water-a batch). Glimpse 1 = the top card is revealed
- *    (info event) and goes to the glimpser's HAND. Slightly stronger (kept
- *    past end of turn), slightly weaker (playing it needs affinity).
  *  - Flux Resonator: a REPLACEMENT effect approximated as a post-hoc trigger
  *    on 'countersChanged'. "By an allied source" is unknowable (the event
  *    carries no source) — read as "counters put on an allied unit", positive
@@ -122,15 +123,10 @@ card('Flux Resonator', {
 
 // "[Switch1] Glimpse 1 (Reveal the top card of the deck and cache it. Until
 // end of turn, you may play it as if it was in your hand, ignoring
-// affinity.)" — m/1 {Battle} Cosmic Spell. ⚠ Glimpse: header approximation —
-// the revealed card goes to the glimpser's hand. Bounded graft ([Switch1]).
+// affinity.)" — m/1 {Battle} Cosmic Spell. The reminder text IS R45 verbatim,
+// and E.glimpse does exactly that. Bounded graft ([Switch1]).
 const foretellGlimpse: EffectDef = {
-  run: (g, ctx) => {
-    const top = g.deckOf(ctx.controller).shift();
-    if (top === undefined) { g.ev('info', 'Foretell: the deck is empty — Glimpse 0.'); return; }
-    g.player(ctx.controller).hand.push(top);
-    g.ev('info', `${g.pname(ctx.controller)} Glimpses 1: ${top} is cached (engine: to their hand).`);
-  },
+  run: (g, ctx) => { g.glimpse(ctx.controller, 1); },
 };
 card('Foretell', {
   spellEffect: foretellGlimpse,

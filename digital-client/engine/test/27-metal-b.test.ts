@@ -3,7 +3,8 @@
  * parallel card registration can't shift assertions; seeds are 2700-2799.
  *
  * Covers: counter-bonus trigger in both forms (Flux Resonator), Glimpse 1
- * (Foretell, ⚠ approximation — cached card to hand), base-4/4 reshaping
+ * (Foretell — R45: the top card is CACHED and playable until end of turn
+ * ignoring affinity, never put into hand), base-4/4 reshaping
  * (Formless; the attribute-loss half is parked), a battle-local Robot
  * (Hooba-Bot), resolution-paid X + sacrifice costs (Instrument of
  * Reassignment), opponent-chosen negation (Interdiction Rift), stat swapping
@@ -25,6 +26,10 @@ import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
+import type { CachedCard, Seat } from '../src/types.ts';
+
+/** R41: the cache zone — optional field, so read it through here. */
+const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
 
 const homeOf = (h: Harness, seat: number): number =>
   h.state.regions.findIndex(r => r.owner === seat);
@@ -82,23 +87,36 @@ test('Flux Resonator: the donated [Augment] text boosts allied counters via the 
 
 // ── Foretell ─────────────────────────────────────────────────────────────
 
-test('Foretell: Glimpse 1 — the top card is cached (to hand, ⚠ approximation)', () => {
+test('Foretell: Glimpse 1 — the top card goes to the CACHE, playable this turn ignoring affinity', () => {
   const h = new Harness(2704);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   const tok = spawn(h, A, 'Unit Token');
-  giveResources(h, A, 'metal', 1);                          // m/1
+  giveResources(h, A, 'metal', 2);                          // Foretell m/1 + 1 spare, ZERO water affinity
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
-  const top = h.state.sharedDeck[0]!;
-  const deckLen = h.state.sharedDeck.length;
-  const handAfter = h.state.players[A]!.hand.length + 1;    // +1: give, -1 played, +1 cached
+  h.q.deckOf(A).unshift('Premonition');                     // b/1 {Battle} — needs water affinity from hand
+  const top = h.q.deckOf(A)[0]!;
+  const deckLen = h.q.deckOf(A).length;
+  const handBefore = [...h.state.players[A]!.hand];
+  const inHand = give(h, A, 'Premonition');
+  assert.ok(!h.legal(A).some(a => a.type === 'playCard' && a.handIndex === inHand),
+    'baseline: with no water affinity the copy IN HAND cannot be played');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Foretell') });
   pass(h); pass(h);                                         // resolve
-  assert.equal(h.state.players[A]!.hand.length, handAfter, 'played one, cached one');
-  assert.equal(h.state.players[A]!.hand[handAfter - 1], top, 'the top card was cached');
-  assert.equal(h.state.sharedDeck.length, deckLen - 1, 'it left the deck');
+  assert.ok(!h.state.decision, 'Glimpse 1 asks nothing — no suspension');
+  assert.deepEqual(cacheOf(h, A).map(c => c.card), [top], 'the top card is CACHED, not drawn');
+  assert.deepEqual(h.state.players[A]!.hand, [...handBefore, 'Premonition'],
+    'nothing reached hand beyond the copy the test put there');
+  assert.equal(h.q.deckOf(A).length, deckLen - 1, 'it left the deck');
   assert.ok(h.state.players[A]!.bin.includes('Foretell'), 'the spell resolved → bin');
+  assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn (R45)');
+  const mana = h.q.openMana(A);
+  assert.ok(h.legal(A).some(a => a.type === 'playCached' && a.index === 0),
+    'the cached copy IS offered — glimpse ignores affinity');
+  h.do({ type: 'playCached', seat: A, index: 0 });
+  assert.equal(h.q.openMana(A), mana - 1, 'the mana cost is still paid');
+  assert.equal(cacheOf(h, A).length, 0, 'it left the cache');
   finishBattle(h);
 });
 
@@ -354,11 +372,14 @@ test('Omniwield Evoker: [three] puts a counter on me; a grafted Foretell rides t
   giveResources(h, p, 'metal', 4);                          // Foretell m/1 + the [three]
   h.do({ type: 'graft', seat: p, from: 'hand', index: give(h, p, 'Foretell'), hostId: ev, position: 0 });
   assert.equal(ent(h, ev)!.mods.length, 1, 'Foretell grafted onto the cause');
-  const top = h.state.sharedDeck[0]!;
+  const top = h.q.deckOf(p)[0]!;
   h.do({ type: 'activateAbility', seat: p, entityId: ev, abilityIndex: 0 });
   assert.equal(ent(h, ev)!.counters, 1, 'a +1/+1 counter on me');
   assert.deepEqual(effStats(h, ev), [3, 2]);
-  assert.ok(h.state.players[p]!.hand.includes(top), 'the grafted Foretell Glimpsed the top card');
+  assert.deepEqual(cacheOf(h, p).map(c => c.card), [top],
+    'the grafted Foretell Glimpsed the top card into the cache (R45), not into hand');
+  assert.ok(!h.state.players[p]!.hand.includes(top), 'and it is NOT in hand');
+  assert.equal(h.q.cachePermission(p, 0), 'glimpse');
   assert.equal(h.state.players[p]!.resources.filter(r => r.state === 'open').length, 0, '1 + 3 paid');
 });
 

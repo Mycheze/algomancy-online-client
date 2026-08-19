@@ -123,8 +123,25 @@ const playInline = (g: E, ctx: EffectCtx, name: string, key: string): 'unit' | '
 // nontoken victim goes to the CASTER's bin (not its owner's), and a modded
 // victim's card + mods land in the caster's bin instead of being erased
 // (Unstable). destroy() is still used so death triggers / battle counters /
-// formation cleanup all behave; the cards are rerouted afterwards. A token
-// victim is simply erased (there is no card to move).
+// formation cleanup all behave; the unmodded case is redirected AT SOURCE with
+// destroy()'s `binTo`, the modded case is binned here. A token victim — and a
+// token MOD — is simply erased (there is no card to move).
+//
+// R40 (trashing) is satisfied by `destroy(u, verb, { binTo })`, which routes
+// the single bin push AND the single trash attribution at the caster in one
+// decision — a card is trashed by the owner of the bin it enters:
+//
+//  - unmodded victim, whoever owns it: destroy({ binTo: caster }) puts the card
+//    in the CASTER's bin and fires exactly one trashed(caster). No reroute.
+//    (Rerouting after the fact was impossible: destroy() fires 'trashed'
+//    synchronously — queueing its triggers and bumping the per-battle ledger —
+//    before card code regains control, and a compensating second
+//    trashed(caster) would double-count the ledger and double-fire "when I am
+//    trashed".)
+//  - modded victim: destroy() erases everything (Unstable) and bins nothing, so
+//    `binTo` never applies and Pull Under owns the whole move. It uses
+//    E.toBin(caster, …, 'play'), which trashes each card by the caster.
+//  - token victim (or a token MOD): erased, no bin, no trash.
 card('Pull Under', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Pull Under: delete target unit — it and its mods go to your bin' },
@@ -135,21 +152,21 @@ card('Pull Under', {
       if (!u) return;
       const wasToken = !!u.token;
       const name = u.card;
-      const owner = u.owner;
+      // R40: a token mod has no card and is never trashed — it is erased with
+      // the body, exactly as recall()/cacheUnit() erase one.
       const modCards = u.mods
-        .map(id => g.entity(id)?.card)
-        .filter((n): n is string => n !== undefined);
-      g.destroy(u, 'is deleted');
+        .map(id => g.entity(id))
+        .filter((m): m is Entity => !!m && !m.token)
+        .map(m => m.card);
+      const hadMods = u.mods.length > 0;
+      g.destroy(u, 'is deleted', { binTo: ctx.controller });
       if (wasToken) return;   // erased — nothing enters a bin
-      if (modCards.length === 0) {
-        // destroy() binned it to its owner — reroute to the caster's bin
-        const ob = g.player(owner).bin;
-        const i = ob.lastIndexOf(name);
-        if (i !== -1) ob.splice(i, 1);
-        g.player(ctx.controller).bin.push(name);
-      } else {
-        // destroy() erased base + mods (Unstable); Pull Under bins them all
-        g.player(ctx.controller).bin.push(name, ...modCards);
+      if (hadMods) {
+        // destroy() erased base + mods (Unstable) and fired no trash, so the
+        // whole move is ours: everything enters the CASTER's bin from play,
+        // and R40 trashes each one in the caster's name.
+        g.toBin(ctx.controller, name, 'play');
+        for (const m of modCards) g.toBin(ctx.controller, m, 'play');
       }
       g.ev('info', `Pull Under: ${name}${modCards.length ? ` and ${modCards.length} mod(s)` : ''} → ${g.pname(ctx.controller)}'s bin.`);
     },

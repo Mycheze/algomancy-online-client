@@ -15,9 +15,9 @@
  *    permission in doPlayCard (it only reads the hand) plus an "unstable until
  *    regroup" marker on cards so played. The spell resolves as a no-op (info
  *    event) and is binned normally.
- *  - Cinder Scuttler (trigger half): "if I am in your bin, recall me" needs
- *    bin-resident trigger listeners — fireEvent only scans in-play units.
- *    The card works fully as a {Haste} 2/1 body.
+ *  - Cinder Scuttler: UN-PARKED (R51) — "if I am in your bin, recall me" is a
+ *    `zone: 'bin'` trigger, dispatched to the card while it sits in a bin on a
+ *    detached stand-in owned by that bin's seat.
  *  - Conduit of Pain: "an allied source would deal noncombat damage ... plus 1
  *    instead" is a damage REPLACEMENT; dealEffectDamage has no replacement
  *    hooks. Registered with an inert augmentText entry so the card is still
@@ -142,9 +142,41 @@ card('Bloodwind Revenant', {
 });
 
 // "When you deal combat damage to an opponent, if I am in your bin, recall
-// me. (Put me into your hand.)" — r/1 2/1 {Haste}. PARKED (see header): the
-// recall trigger needs bin listeners. Plays fully as a haste 2/1.
-card('Cinder Scuttler', {});
+// me. (Put me into your hand.)" — r/1 2/1 {Haste}. UNPARKED by R51: a
+// `zone: 'bin'` trigger is dispatched to the card while it SITS IN A BIN,
+// anchored on a detached stand-in entity (id -1) whose controller is the bin's
+// owner — so "if I am in YOUR bin" is ctx.controller throughout.
+//
+// "You deal combat damage to an opponent" is read off the aggregated combat
+// 'lifeLost' event, the batch-wide convention (Bloodwind Revenant): why ===
+// 'combat' and the seat losing life is NOT the bin's owner. In 1v1 combat
+// damage to a player can only come from the other side's columns, so "an
+// opponent lost combat life" and "you dealt it" are the same statement — the
+// bin has no column to check, and this is as close as a bin-resident card can
+// get. ⚠ In a multiplayer game a third player's damage would also fire it.
+//
+// R51: one firing per zone however many copies sit in the bin — right here,
+// since the printed text is a standing "if I am in your bin", not per-copy.
+// The recall is unconditional ("recall me", no "may"), so it raises no
+// decision; leaving a bin is not trashing (R40), so no trash event fires.
+card('Cinder Scuttler', {
+  abilities: [{
+    type: 'triggered', events: ['lifeLost'], zone: 'bin',
+    label: 'recall me from your bin (you dealt combat damage to an opponent)',
+    when: (_g, self, ev) =>
+      ev.data?.['why'] === 'combat' && ev.data?.['seat'] !== self.controller,
+    effect: {
+      run: (g, ctx) => {
+        const bin = g.player(ctx.controller).bin;
+        const i = bin.lastIndexOf('Cinder Scuttler');
+        if (i === -1) return;                        // left the bin before this resolved
+        bin.splice(i, 1);
+        g.player(ctx.controller).hand.push('Cinder Scuttler');
+        g.ev('info', `Cinder Scuttler is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
+      },
+    },
+  }],
+});
 
 // "[Augment] If an allied source would deal noncombat damage, it deals that
 // much damage plus 1 instead." — rr/2 2/1. PARKED (see header): damage

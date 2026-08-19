@@ -657,11 +657,10 @@ card('Eldritch Dreamtender', {
           prompt: `Eldritch Dreamtender: discard a card from ${g.pname(who)}'s hand`,
           options: hand.map((name, i) => ({ label: name, value: i, card: name })),
         }) as number;
-        const name = hand[pick];
-        if (name === undefined) return;
-        hand.splice(pick, 1);
-        g.player(who).bin.push(name);
-        g.ev('info', `${name} is discarded from ${g.pname(who)}'s hand.`);
+        if (hand[pick] === undefined) return;
+        // R40: discarding from hand is TRASHING, and the trasher is the owner
+        // of the bin the card enters — `who`, not the Dreamtender's controller.
+        g.discardFromHand(who, pick);
       },
     },
   }],

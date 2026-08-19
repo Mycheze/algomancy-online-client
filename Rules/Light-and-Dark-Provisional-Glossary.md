@@ -12,23 +12,39 @@ of three places, named inline in the entry:
   the strongest evidence available and is quoted verbatim.
 - **designer (Discord)** — a message from Caleb Gannon in the Algomancy Discord,
   with its date.
+- **relayed ruling** — an official designer answer relayed into this repo by the
+  repo owner, with its date. Treated as authoritative, but not quotable verbatim
+  from an export the way the two above are.
 - **community (Discord)** — a player's explanation that the designer did not
   contradict. Weakest; flagged as such.
 
 Where the exact rule is not pinned down by any of those, the entry says so
-rather than guessing. Replace this file when the official release ships.
+rather than guessing. Several entries that were marked UNCONFIRMED in earlier
+revisions (rot's timing, the definition of trashing, the Wraith token's text,
+the exact debt payment) have since been sourced and are no longer hedged — they
+are still provisional only in the sense that no rulebook has shipped. Replace
+this file when the official release ships.
 
 Blessed: An attribute. Card text: "Damage dealt by a blessed source causes its
 controller to gain that much life." So a blessed source both deals its damage
-and lifegains its controller for the same amount. Per the designer (Discord,
-2025-03-18) "blessed gain and damage happen on the same game state check" —
-i.e. the life gain is simultaneous with the damage, not a separate trigger that
-uses the stack. Cards: Blessed Thing, Flzzz, Godray, Hammer of Justice, Shib.
+and lifegains its controller for the same amount. The life gain is SIMULTANEOUS
+with the damage, not a separate trigger that uses the stack: the designer
+(Discord, 2024-09-15 and again 2025-03-18) said "blessed gain and damage happen
+on the same game state check" and compared it to "lifelink in mtg". Because
+both land on the same game-state check, the gain is applied BEFORE the lethal
+check — so a blessed source cannot kill its own controller with its own damage,
+even if that damage exceeds their life total. Cards: Blessed Thing, Flzzz,
+Godray, Hammer of Justice, Shib.
 
 Afflicting: An attribute. Card text: "When an afflicting source kills one or
 more units, those units' controllers gain a rot." Note it triggers once per
 kill event regardless of how many units died, and the rot goes to the dead
-units' controller, not to the afflicting player. Card: Umbral Decay.
+units' controller, not to the afflicting player. "Kills" is NOT limited to
+damage — it also covers killing a unit with -1/-1 counters: the designer
+(Discord, 2024-09-10) explained that "we check damage and stats of units that
+were interacted with during spell resolutions". That matters because the only
+afflicting card, Umbral Decay, kills purely by putting -1/-1 counters on units;
+if afflicting were damage-only it would never trigger. Card: Umbral Decay.
 
 Lethal: An attribute. Card text: "Any combat damage from a lethal unit will
 kill a player." A player struck by any amount of combat damage from a lethal
@@ -58,11 +74,27 @@ column of a 4/4 unit and 2/2 unit would give the opponent 1 rot, without
 changing their life total.)" Rot's source is controlled by its holder: the
 designer (Discord, 2024-08-20) said "Your rot is a source you control. But if
 you give an opponent rot, that won't be a source you control damaging them."
-UNCONFIRMED: the exact moment in the turn when rot deals its damage. No
-designer statement or card text found pins this down; do not assert a timing.
+TIMING: rot deals its damage AT THE START OF DEPLOYMENT. Card text on the Rot
+Counter card in the designer's own $card bot library (posted to Discord,
+2026-01-15): "At the start of deployment, you take damage equal to the number
+of rot you have. Rot does not go away." So the damage is not a one-off on the
+turn you gain the rot — every rot you hold hits you again at the start of every
+deployment phase, for as long as you hold it (and you always hold it). Two
+supporting designer statements: rot's damage lands in the same window as
+regroup triggers (Discord, 2024-04-06), and there is no priority during
+deployment (Discord, 2024-10-23) — so rot damage cannot be responded to.
 
-Debt: An accumulating cost that is paid off with mana, unlike rot. The designer
-(Discord, 2024-12-02) corrected a player's "instead of refreshing a resource
+Debt: An accumulating cost that is paid off with mana, unlike rot. The full
+rule comes from the designer's Light-element announcement (Discord,
+2024-09-10): "After the resources step, for each debt you have, you must pay 1
+mana and the debt is removed. If you cannot pay for all of the debt, then only
+what you can pay for is removed." So: 1 debt costs exactly 1 MANA (of any
+element); paying is MANDATORY, not optional; PARTIAL payment is allowed if you
+cannot cover it all, and each mana you spend clears one debt; and any debt you
+could not pay simply STAYS and carries over to the next turn, to be charged
+again. There is NO life loss, damage, or other penalty for failing to pay —
+unpaid debt just remains as debt. The designer
+(Discord, 2024-12-02) refined the timing, correcting a player's "instead of refreshing a resource
 you must remove a debt counter" with: "Debt technically doesn't replace
 refresh. It happens at the end of the resource step. The difference is you
 can't activate mana after paying debt." So debt is paid at the END of the
@@ -75,12 +107,25 @@ the Due).
 
 Prophecy: An alternate cost printed on a second banner beneath the card's title
 bar, in the form "Prophecy — <condition>" (e.g. "Two Turns Pass", "Your life is
-5 or less", "13 Units Die", "One Battle Passes"). A card is first PROPHESIED —
-paying the small prophecy cost shown on that banner — which caches it; once the
-stated condition is later fulfilled, the card may be played from cache for
-free. The designer (Discord, 2024-10-28) settled the wording as playing it
-"without paying their cost", and (2024-09-22) confirmed the card "needs to be
-prophecied beforehand". Community explanation (Discord, 2024-12-02, not
+5 or less", "13 Units Die", "One Battle Passes"). The printed reminder text
+defines it: "To prophecy, cache this card during deployment by paying its
+prophecy cost. You may play it for free, as if it were in your hand, if the
+prophecy has been fulfilled." So a card is first PROPHESIED — paying the small
+prophecy cost shown on that banner — which caches it; once the stated condition
+is later fulfilled, the card may be played from cache for free. Confirmed
+details: prophesying is legal ONLY DURING THE DEPLOYMENT PHASE (card text
+above; designer, Discord, 2025-05-09). Fulfilment counts FORWARD from the
+moment you prophesy — it does not look backwards at conditions already met, so
+you cannot prophesy a card whose condition is already satisfied and play it
+immediately (designer, 2024-09-22: "It needs to be prophecied beforehand…
+Same way that 'Four turns pass' can't just be played on turn 5"). In 1v1, BOTH
+battles in a turn tick "One Battle Passes" (designer, 2024-09-24). Playing it
+"for free" means without paying its cost AND IGNORING AFFINITY (designer,
+2024-10-28 — he changed his mind mid-thread, and this was his final word);
+2024-10-28 is also where he settled the wording as playing it "without paying
+their cost". If a unit already in play is cached (by a prophecy effect or
+otherwise), ITS MODS GO TO THE BIN rather than travelling with it into cache
+(designer, 2024-09-15). Community explanation (Discord, 2024-12-02, not
 contradicted by the designer): "Some times either an alternate cost or card is
 Prophesized by another effect. Then once the Prophecy is fulfilled the card can
 be played for free at any time that you are able to play it." Effects can also
@@ -112,21 +157,51 @@ affinity") but that you still pay the card's cost (2023-08-13: "you pay the
 cost for glimpse cards"), and that glimpsed cards still obey timing
 restrictions (2025-12-28).
 
-Trash / Trashed: A new verb used by the Dark cards, distinct from discarding,
-dying, or erasing. Many Dark cards trigger "When I am trashed" or "Whenever
-another card is trashed" (Afflicting Anima, Blightwalker, Cerebrox, Cthyrian
-Culler, Cthyrian Rector, Dropslime, Maw of Despair, Muck Rummager, and others).
-UNCONFIRMED: no card carries reminder text defining what trashing is, and no
-designer statement was found. Do not assert its precise definition or how it
-differs from discard/erase until the official rules ship.
+Trash / Trashed: A verb used by the Dark cards, distinct from discarding as
+such, and distinct from erasing. Definition, from printed reminder text: "A
+nontoken card entering a bin from anywhere other than the stack is trashed."
+(This reminder text is on Void Scavenger, a February-2025 playtest card that
+has since been cut or renamed, so the card name may not appear in the current
+set — but the reminder text is the designer's own wording.) The designer
+confirmed it the same day (Discord, 2025-02-01): trashing is "basically when a
+card enters your bin but wasn't played". Scope, confirmed as an official
+finding relayed by the repo owner (2026-08-19): DISCARDING, SACRIFICING,
+MILLING, and a unit DYING IN COMBAT all count as trashing, because in each case
+a nontoken card reaches a bin without coming off the stack. It does NOT include
+a spell going to the bin after it resolves — that card comes FROM the stack, so
+resolving (or negating) a spell is not trashing it. It does not include tokens
+(the reminder text says "nontoken"). And it does not include erasing, because
+an erased card never touches a bin at all: the designer (Discord, 2025-12-06)
+described erased as permanently out of the game. A card is trashed by the OWNER
+OF THE BIN it enters. Many Dark cards trigger on this: "When I am trashed" or
+"Whenever another card is trashed" (Afflicting Anima, Blightwalker, Cerebrox,
+Cthyrian Culler, Cthyrian Rector, Dropslime, Maw of Despair, Muck Rummager, and
+others).
 
 Wraith: A token created by several Dark cards (Cosmic Devourer, Legion of the
-Depths, Plague Ritual, Primordial Coalescence, Afflicting Anima). Notably a
-Wraith is AUGMENTED onto a unit rather than placed as a standalone unit —
-Plague Ritual: "Each player discards a card, gains a rot and Augments a Wraith
-on one of their units"; Xzydris: "At the start of deployment you may Augment a
-Wraith onto a unit to recall me from your bin." UNCONFIRMED: the Wraith token's
-own printed text and stats are not in the card data available.
+Depths, Plague Ritual, Primordial Coalescence, Afflicting Anima). The token was
+RENAMED: it used to be called a WIGHT, and some card text in this set still
+prints the old name (Blight's End: "Augment a Wight onto X target units"). The
+printed token card, under that old name, reads: "Wight — 0 mana, 4/4, Blight
+Zombie Token Unit. [Augment] When I attack or block, put a -1/-1 counter on me.
+When I die, augment me onto target ally." So a Wraith is a real 4/4 BODY, not
+merely a mod — a 0-cost 4/4 Blight Zombie token unit that carries the [Augment]
+symbol. It shrinks by a -1/-1 counter every time it attacks or blocks, so it
+wears down as it fights; and when it dies it augments itself onto a target
+ally, donating that same text to its new host (which then also shrinks when it
+fights and re-augments itself onward when it dies). Because it carries the
+[Augment] symbol it can equally be created directly as an augment on a unit,
+which is how most cards use it — Plague Ritual: "Each player discards a card,
+gains a rot and Augments a Wraith on one of their units"; Xzydris: "At the
+start of deployment you may Augment a Wraith onto a unit to recall me from your
+bin."
+
+Wight: The former name of the Wraith token — Wight and Wraith are the same
+token, renamed. Some cards in this set still print the old name (Blight's End:
+"Augment a Wight onto X target units") while most use the new one. Its printed
+card reads: "Wight — 0 mana, 4/4, Blight Zombie Token Unit. [Augment] When I
+attack or block, put a -1/-1 counter on me. When I die, augment me onto target
+ally." See the Wraith entry for the full explanation.
 
 Light: One of the two new elements. Its cost pip is a cream/white yin-yang
 style ball. Light cards cluster around Prophecy, cache manipulation, glimpse,

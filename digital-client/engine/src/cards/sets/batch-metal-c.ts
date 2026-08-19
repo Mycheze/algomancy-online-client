@@ -378,7 +378,8 @@ card('Unstable Singularity', {
 // "[Switch1] Each opponent discards a unit or spell if able. Otherwise, they
 // reveal their hand." — m/2 {Battle} Technology Spell. ⚠ every pool card is
 // a unit or a spell (header), so "if able" = nonempty hand; the discarding
-// player picks the card (→ their bin). An empty hand is revealed instead.
+// player picks the card (→ their bin, and R40 TRASHES it, attributed to them
+// as the bin's owner). An empty hand is revealed instead.
 const voidMemory: EffectDef = {
   run: (g, ctx) => {
     for (const p of g.s.players) {
@@ -394,9 +395,9 @@ const voidMemory: EffectDef = {
         options: p.hand.map((name, i) => ({ label: name, value: i, card: name })),
       }) as number;
       const idx = p.hand[pick] !== undefined ? pick : 0;
-      const [name] = p.hand.splice(idx, 1);
-      p.bin.push(name!);
-      g.ev('info', `${g.pname(p.seat)} discards ${name} to Void Memory.`);
+      // R40: a discard from hand is a TRASH, by the hand's owner (the bin the
+      // card enters is theirs) — never by Void Memory's caster.
+      g.discardFromHand(p.seat, idx);
     }
   },
 };

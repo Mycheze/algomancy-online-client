@@ -224,9 +224,10 @@ in its controller's home region — NOT the battle region where the effect
 resolved (Tidelurker's 2/2 minted mid-attack must be home to block the
 counterattack). Cards that say "in my formation" or similar override this.
 Spell tokens (Fireballs etc.) still appear where the effect resolves — they
-are battle materiel. ⚠ Engine call from the 2026-08-18 playtest; currently
-applied to Tidelurker only — confirm whether it should be the global default.
-(See R33: Ember of Life's units arrive in the CARRIER's region instead.)
+are battle materiel. ⚠ Engine call from the 2026-08-18 playtest.
+**Confirmed as the global default by R52 (2026-08-19)**, which also closes
+R33's open question: R33 (Ember of Life) is a per-card exception, not a rival
+default.
 
 ## R29 ⚠ — "An open spot in your formation" (Tiderunner Initiate)
 Requires an EXISTING formation of yours (you attacked, or you declared
@@ -255,9 +256,10 @@ round 2 begins.
 "When one of your spell effects deals damage, create that many 1/1 units":
 the created units arrive **where the carrier (the augmented unit / the unit
 with the text) is**, not in the controller's home region — refining R28,
-whose home-region default came from Tidelurker and remains **unconfirmed as
-a global rule** (⚠ still needs Bena: is R28 the default and R33 a per-card
-exception, or is "the effect's region" the real default?). Two related
+whose home-region default came from Tidelurker. **That open question is now
+CLOSED by R52 (2026-08-19): R28 is the default and R33 is a per-card
+exception**, kept only because Ember of Life's printed text ties the creation
+to the carrier. Two related
 clarifications from the same playtest game: "one of YOUR spell effects"
 means spells controlled by the carrier's controller (damage events now carry
 the effect's controller), and "deals damage" is unqualified — spell-effect
@@ -314,3 +316,264 @@ play-matters cards (per Discord discussion); the current published rulings
 are unclear, so this stands as a provisional local errata until Caleb ships
 the official Light & Dark release/errata. Affected base-set cards carry a
 provisional-errata note in their oracle `rulings`. (Bena 2026-08-19.)
+
+## R38 — Rot: start of deployment, damage equal to your rot, never decays
+`PlayerState.rot`. At the start of the deployment phase each player takes
+damage equal to their own rot total, in initiative order. Rot never
+decreases on its own. The damage's source is the damaged player's own rot
+(Caleb 2024-08-20: "Your rot is a source you control"), it lands in the same
+window as regroup triggers, and because there is no priority during
+deployment it cannot be responded to. Rot damage must run through a
+replacement hook — Skittering Blight converts it to +1/+1 counters on
+itself. (Printed: the Rot Counter card, Caleb's card library 2026-01-15; via
+Bena 2026-08-19.)
+
+## R39 — Debt: mandatory, automatic, paid at the end of the resource step
+`PlayerState.debt`. When a player finishes their planning resource step they
+must pay 1 mana per debt, each mana removing one debt. Partial payment is
+allowed and the remainder carries to the next turn; there is no other
+penalty for being unable to pay. It is not a choice and needs no action —
+it is deliberately the LAST thing in the resource step so that no further
+mana can be activated afterwards, and the mana spent is unavailable for
+casting this turn. (Caleb 2024-09-10, refined 2024-12-02; via Bena 2026-08-19.)
+
+## R40 — Trashing: a nontoken card entering a bin from anywhere but the stack
+Discarding, sacrificing, milling and dying in combat all trash. A spell or
+ability going to the bin after resolving does NOT (it comes from the stack),
+so negating a spell is not trashing; tokens are never trashed; erasing never
+touches the bin and so is not trashing. The trasher is the owner of the bin
+the card enters. A per-battle trash count is required (Dropslime, Muck
+Rummager). (Printed: Void Scavenger reminder text; Caleb 2025-02-01;
+broadened by Bena 2026-08-19.)
+
+**Bin redirection (2026-08-19).** A card that redirects a dying unit into
+someone else's bin (Pull Under: "delete target unit; it and its mods go to
+YOUR bin") passes `E.destroy(u, verb, { binTo: seat })`. The bin push and the
+trash attribution are ONE decision — "trashed by the owner of the bin it
+enters" — so they cannot be split: `destroy()` fires `trashed` synchronously,
+queueing that event's triggers and bumping the per-battle ledger, long before
+card code regains control, and a compensating second `trashed(caster)` would
+double-count the ledger and double-fire "when I am trashed" (Dropslime,
+Nothyr, Murkstalker). Exactly one trash event fires, naming the seat whose bin
+received the card.
+
+## R41 ⚠ — Cache is public information
+Both players can see every cached card and which prophecy is attached to it.
+Rationale: glimpse reveals the card as it caches, and Prismatic Observer
+targets a cached card, so the zone has to be visible to be playable; Caleb
+calls cache "a neutral zone like the hand and bin" (2024-02-25). Consequence:
+no server-side redaction for cache. (Bena's call 2026-08-19 — overturn if
+prophesied cards turn out to be face-down.)
+
+## R42 — Prophecy: cache during deployment for the banner cost, then play free
+Prophesying is legal ONLY during the deployment phase (Caleb 2025-05-09) and
+costs the banner's plain mana number, no affinity. The card moves to cache
+with its prophecy attached. Only a card that says so may be prophesied from
+the bin (Angel of Anguish). Once the condition is fulfilled the card may be
+played from cache for free — and "for free" also ignores affinity (Caleb
+2024-10-28) — but normal TIMING still applies, since it is played "as if it
+were in your hand". A fulfilled prophecy equally permits grafting or
+augmenting the card for free (Caleb 2024-12-03). (Printed reminder text via
+Bena 2026-08-19.)
+
+## R43 — Prophecy conditions count forward from the moment of prophesying
+"Two Turns Pass" means two turns after this card was prophesied, not two
+turns of the game. Caleb 2024-09-22: "It needs to be prophecied beforehand …
+Same way that 'Four turns pass' can't just be played on turn 5." In 1v1 both
+battles in a turn tick "One Battle Passes" (Caleb 2024-09-24).
+
+## R44 ⚠ — A fulfilled prophecy latches
+Once a prophecy's condition has been met it stays fulfilled, even if the
+state that fulfilled it goes away — a card prophesied on "your life is 5 or
+less" remains playable after you gain life back. Rationale: the reminder
+text says the card may be played "if the prophecy has been fulfilled" and
+Caleb's announcement says "anytime after the condition has been met", both
+of which read as a one-way latch. (Bena's call 2026-08-19.)
+
+## R45 — Glimpse N: reveal N, cache ONE, recycle the rest
+Glimpse N reveals the top N cards of the deck, caches exactly **one** of the
+glimpser's choice, and recycles the other N-1 to the bottom of the deck.
+Until end of turn the cached card may be played as if it were in the
+glimpser's hand, **ignoring affinity** (Caleb 2024-10-28) but still paying its
+mana cost (Caleb 2023-08-13) and still obeying timing restrictions (Caleb
+2025-12-28). The permission expires at end of turn; the card stays in cache,
+inert.
+
+**CORRECTION 2026-08-19**: this ruling first read "caches all N". That was
+wrong, and five base-set cards were migrated to it before the error was
+caught. The printed reminder text on every card that glimpses more than one
+says "Reveal the top X cards of the deck and **cache one** … **Recycle the
+rest**" (Premonition, Oracle of Foretelling, Celestial Purge, Dematerialize).
+The N=1 cards read "reveal the top card and cache it" only because cache-one
+and cache-all coincide at N=1. Glook's "Glimpse 1, X times" is X separate
+one-card glimpses, not one Glimpse X. `Big Glimpse Card` is a deliberate
+variant and says so explicitly ("Cache one **pile** … Recycle the other
+pile"). (Printed reminder text; correction by Claude 2026-08-19.)
+
+**Implemented 2026-08-19.** `E.glimpse(seat, n)` now reveals N, raises the
+choose-one decision through the resolving part's own `ctx.choose` (a new
+`E.partChoose` seam, so no card code had to change), caches the pick with the
+until-end-of-turn stamp and recycles the rest to the bottom of the deck in
+revealed order. N = 1 raises no decision. A glimpse called with no resolving
+part to hang a decision on — an engine-internal or white-box call — caches the
+top card deterministically and says so in the log.
+
+## R46 — Mods do not follow a card into cache
+When a unit in play is cached, the mods attached to it go to the bin rather
+than travelling with it. (Caleb 2024-09-15.)
+
+## R47 ⚠ — A dying Wraith re-attaches instead of being erased
+The Wraith token (renamed FROM "Wight"; the printed token card still shows the
+retired title, and `Blight's End` is the one card still printing it) is a 0-mana
+4/4 Blight Zombie Token Unit reading "[Augment] When I attack or block, put
+a -1/-1 counter on me. When I die, augment me onto target ally." Unlike
+every other unit token it is not erased on death — its own trigger applies
+it as an augment mod to a chosen ally, donating the shrink-on-fight text to
+its new host. It ceases to exist only when no legal ally remains. "Create a
+Wraith" spawns the body; "Augment a Wraith onto a unit" creates the same
+token directly as a mod. A Wraith dying is not trashing (tokens are excluded,
+R40). (Printed token card via Bena 2026-08-19; the no-erase carve-out is
+Bena's reading of the printed text.)
+
+## R48 — Blessed is simultaneous; Afflicting fires on counter kills
+Blessed life gain happens on the same game-state check as the damage, not as
+a trigger on the stack, so it applies before the lethal check and a blessed
+source cannot kill its own controller through its own damage (Caleb
+2024-09-15, 2025-03-18: "similar to lifelink in mtg"). Afflicting fires when
+its source kills units by -1/-1 counters as well as by damage (Caleb
+2024-09-10) — which is the only way Umbral Decay, the sole afflicting card,
+kills anything. ⚠ One rot per affected controller per kill event, however
+many of their units died, is Bena's reading of the reminder text; no
+designer statement was found.
+
+## R49 ⚠ — Non-mana costs are paid when you pay them, not when they resolve
+A bracketed cast cost and an activated ability's cost are now modelled for
+real, beyond the old sacrifice-a-unit / mana / sacrifice-self pair. A spell may
+carry `[Pay N life]`, `[Discard N cards]` or `[Gain N debt]` (including the
+printed `Printed.gainDebt` line, which the engine itself charges — a negated
+Hyper Beam still costs its caster the debt); an activated ability may cost
+life, debt, N discards, N *other* units, or the printed either/or "discard a
+card **or** sacrifice a nontoken unit". Every one of them **gates the action**:
+an unpayable cost makes the cast or activation ILLEGAL (R35), `legalActions`
+never offers it, and `apply()` refuses it — instead of the old behaviour, where
+the action was legal and the effect silently fizzled at resolution. Costs that
+carry no choice (life, debt) are charged on the spot; costs that carry one
+(which card, which unit) are chosen in the cast window, still **before** the
+item reaches the stack, so no one may respond between a cost and its effect.
+A spell may not discard **itself** to pay its own `[Discard a card]`.
+
+⚠ **May a life cost be paid if it would kill you? No.** You may pay N life only
+while you have **more** than N — paying your last life is refused too. Life
+reaching 0 ends the game inside `loseLife`, so paying at cast would hand the
+opponent the win before the spell resolved; R35 already makes an unpayable cost
+an illegal cast, and nothing in the pool reads like a suicide button. No
+designer statement was found either way — this is the engine's ruling
+(2026-08-19), and every affected card (Blob of the Dark Order, Glararr, Hand
+Peeper, Life Leech, Aurozoa, Visionary Construct, Flesh Tithe) follows it.
+
+Two smaller pieces ride along. `ActivatedAbility.timing` carries a printed
+`{Battle}` / `{Deployment}` marker on the ability itself (Grox, Cadaverous
+Cultivator), enforced at activation rather than fudged at resolution. And two
+fields the card pool had been asking for: `Entity.spawnedTurn` (stamped for
+every entity, behind "erase all units that spawned this turn") and a `from`
+zone — `'hand' | 'cache' | 'bin'` — carried on the `spellPlayed` and `spawned`
+events, so "when you play a card from anywhere other than your hand" is a field
+read rather than a log scan. A unit *created* by an effect carries no `from` at
+all, which is what keeps effect-made tokens out of "played" triggers (R37 keeps
+mods out for the same reason). Still not expressible: a cost whose amount the
+payer chooses (Flesh Tithe's `[Pay X life]`, No Hand Killer's "discard X
+cards") and a zone cost (Grox's "erase two cards in your bin") — those stay at
+resolution and are flagged on the cards.
+
+## R50 — The haste step ends, and deployment starts, with a real event
+Two turn-structure seams had no dispatched event, so no card could hook them.
+Both now fire inside a proper `settle()` window.
+
+**`endOfHaste`** fires in `startBattlePhase()` **before** `hasteDone` is nulled,
+so "At the end of [Haste], …" (Keeper of Tithes, Debt Plant) sees the step it is
+closing. The order matters twice over: R43's `hasteWithUsedMana` prophecy sweep
+requires `hasteDone === null`, so firing first means a trigger's own spending
+can never latch that prophecy early, and only after the window drains is
+`hasteDone` cleared, the prophecy swept and the mana tally zeroed. The event
+fires even when R18 **skipped** the step outright — the haste step is part of
+the turn whether or not anyone had a card for it, and an optimisation must not
+be observable. Because a trigger may suspend on a decision, the phase flip is
+deferred through `GameState.hasteEnding` and completed by `finishHasteEnd()`
+from `settle()`, exactly the way `turnEnding` defers the turn flip.
+
+**`startOfDeployment`** fires in `startDeployment()` **after** R38's rot damage
+has settled. ⚠ That order is a ruling: nothing in the printed rules sequences
+them, and rot damage is treated as part of the step *opening* — an automatic
+charge, not a trigger — so a start-of-deployment trigger cannot pre-empt it.
+The visible consequence is that rot which kills you kills you before your own
+trigger resolves. (Bena's engine, 2026-08-19; no designer statement found.)
+
+## R51 ⚠ — A card in a bin or a cache can listen
+`fireEvent()` scans units in play, so "If I am in your bin, after combat …"
+(Lurking Dread, Inexorable Miasma, Xzydris, and the base set's Cinder Scuttler)
+had no trigger surface at all. A triggered ability may now declare
+`zone: 'bin' | 'cache'`, and those are dispatched separately, anchored on a
+**detached stand-in entity** with id -1 — the same device R40 already uses for a
+trashed card's own trigger. The stand-in is never in `s.entities`: it cannot be
+targeted, radiates no statics and appears in no other scan. Its
+`owner`/`controller` is the seat whose zone holds the card, so "if I am in
+*your* bin" is that seat throughout, and its region is that seat's action
+region. Dispatch is indexed by event type, so an event nobody listens for from
+a zone costs one failed map lookup.
+
+Two deliberate limits. ⚠ **One firing per zone, not per copy**: the printed
+texts are standing permissions ("if I am in your bin"), not per-copy triggers,
+so three copies in a bin fire once. And a `[Switch1]` budget (R9) on a zone
+trigger lives only for the one firing, because a stand-in has nowhere to keep
+it — flagged rather than faked.
+
+⚠ Two things this deliberately does **not** solve. There is still **no "a card
+left a bin" event** — bins are spliced directly by a dozen card effects and by
+engine code, with no choke point — so Rotling stays parked. And **a trash
+trigger can never carry a graft rider** (Blightwalker, Afflicting Anima, Maw of
+Despair print theirs as `[Switch1]`). That one is structural, not a missing
+hook: a *modded* unit that dies is ERASED (Unstable) and never reaches a bin at
+all, so a card that IS trashed provably carries no mods, and the ghost's empty
+`mods: []` is the correct answer rather than a limitation to route around. The
+graft CAUSE still works normally while the card is a unit in play; only the
+trash firing itself can never have riders.
+
+## R52 ⚠ — A created unit arrives in its CONTROLLER's home region (R28 is the default)
+"Create a unit / create a Wraith / create that many 1/1 units", with no place
+named, puts the unit in its **controller's home region** — never the battle
+region the effect happened to resolve in. This closes **R33's open question**
+("is R28 the default and R33 a per-card exception, or is 'the effect's region'
+the real default?") in favour of **R28**: R28 is the general rule, and R33
+(Ember of Life's 1/1s arriving where the *carrier* is) is a **per-card
+exception**, justified only because that card's printed text ties the creation
+to the carrier. Cards whose text names a place — "in my formation" (Hooba-God),
+"in its position in play" (Feed to Hooba) — likewise override it, and **spell
+tokens** (Fireballs, Poisons) are unaffected: they are battle materiel and
+still appear where the effect resolves.
+
+Rationale, from R28's own playtest finding: a unit minted mid-attack must be
+home to block the counterattack, otherwise "create a unit" mid-battle reads as
+a combat trick the printed text does not promise. The alternative default —
+the effect's region — would make the same card behave differently depending on
+which trigger happened to fire it, which is exactly the inconsistency this
+ruling exists to remove.
+
+Applied uniformly across the Light & Dark pool: **Flesh Tithe**, **Keeper of
+Tithes**, **Afflicting Anima**, **Cosmic Devourer**, **Life Plant** and
+**Swarmling** moved from the effect's region to the controller's home region;
+**Legion of the Depths** and **Primordial Coalescence** already did this.
+"Put into play from a bin" (Exhume, Covenant of the Damned, Uglk, Gridxlan,
+Wake the Dead) is **not** creating and is deliberately untouched.
+
+⚠ Known follow-up, deliberately out of this pass's scope: **the base set is
+not uniform either.** A dozen base-set cards still create units in the
+effect's region — Perpetual Construct, Squish, Channeled Amalgam, Astralith,
+Stormsowing Nimbus, Flamebreath Initiate, Engorged Caudex, Forager of the
+Fallen, Spawntender, Spell Excavation, Echo of Despair, Mirage Walker,
+Gravitational Correction, Infernal Cultivator — while Tidelurker (R28's own
+source), Ancient One, Pack Leader, Pathogenic Enclave, Scrap For Parts, Floral
+Singularity and Galactic Germination already use the home region. R52 is
+the rule they should all follow, but the base-set migration wants its own
+coordinated sweep: several of those cards' tests pin the current region, and
+one of them (Ember of Life) is R33's named exception and must NOT move.
+(Engine 2026-08-19.)

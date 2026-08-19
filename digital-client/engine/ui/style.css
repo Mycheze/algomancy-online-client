@@ -2,7 +2,16 @@
 :root {
   --bg: #12151a; --panel: #1a1f27; --panel2: #20262f; --line: #2e3742;
   --text: #d6dde6; --dim: #8794a3; --accent: #d9a441; --danger: #d95454;
-  --glow: #6fc36f; --target: #e0b93c; --fire: #d95436; --water: #3f8fd9;
+  --glow: #6fc36f; --target: #e0b93c;
+  /* the seven elements, in ALL_ELEMENTS order. Light & Dark are the yin-yang
+     pair: Light is a warm cream (12.7:1 against --panel2, so it needs DARK ink
+     on it — see --light-ink), Dark is a slate grey, deliberately NOT charcoal,
+     because true charcoal on a #20262f panel is invisible. At #6a7382 it still
+     reads as "the dark one" next to cream while clearing 3:1 against the panel
+     and 4.8:1 for white text on top. */
+  --fire: #d95436; --water: #3f8fd9; --earth: #8a6b3d; --wood: #4e8a3d;
+  --metal: #9aa5b0; --light: #f2ead6; --dark: #6a7382;
+  --light-ink: #2b2417; --dark-ink: #ffffff; --metal-ink: #222222;
   --cw: 78px; /* card thumb width; jpgs are ~63:88 */
 }
 * { box-sizing: border-box; }
@@ -37,7 +46,10 @@ button:disabled { opacity: .4; cursor: default; }
 .resrow { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
 .res { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #555; cursor: default; }
 .res.fire { background: var(--fire); } .res.water { background: var(--water); }
-.res.earth { background: #8a6b3d; } .res.wood { background: #4e8a3d; } .res.metal { background: #9aa5b0; }
+.res.earth { background: var(--earth); } .res.wood { background: var(--wood); } .res.metal { background: var(--metal); }
+/* Light & Dark: yin-yang pips — cream with a dark rim, slate with a light rim */
+.res.light { background: radial-gradient(circle at 32% 30%, #fffdf3, var(--light)); border-color: #6b6250; }
+.res.dark { background: radial-gradient(circle at 32% 30%, #8b95a5, #3a4049); border-color: #99a3b2; }
 .res.prismite { background: linear-gradient(135deg, #eee, #b8c6ff); }
 .res.expended { opacity: .35; transform: rotate(45deg); }
 .res.dormant { filter: grayscale(1) brightness(.5); border-style: dashed; cursor: pointer; }
@@ -123,8 +135,28 @@ button:disabled { opacity: .4; cursor: default; }
 .reschip { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%;
   font: 700 9px/14px system-ui; text-align: center; color: #fff; border: 1px solid #0008; }
 .reschip.fire { background: var(--fire); } .reschip.water { background: var(--water); }
-.reschip.earth { background: #8a6b3d; } .reschip.wood { background: #4e8a3d; } .reschip.metal { background: #9aa5b0; color: #222; }
+.reschip.earth { background: var(--earth); } .reschip.wood { background: var(--wood); }
+.reschip.metal { background: var(--metal); color: var(--metal-ink); }
+/* cream needs dark ink for the same reason metal does */
+.reschip.light { background: radial-gradient(circle at 32% 30%, #fffdf3, var(--light)); color: var(--light-ink); border-color: #0009; }
+.reschip.dark { background: radial-gradient(circle at 32% 30%, #8b95a5, #3a4049); color: var(--dark-ink); border-color: #ccd3dc; }
 .reschip.prismite { background: linear-gradient(135deg, #eee, #b8c6ff); color: #223; }
+
+/* Light and Dark have no resource-card SCAN in AlgomancyCards/ yet: the <img>
+   404s, main.ts tags the wrapper .noart, and this coloured plate stands in. */
+.rescard .resplate { display: none; }
+.rescard.noart img { display: none; }
+.rescard.noart .resplate { display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 48px; border-radius: 3px; border: 1px solid #0007;
+  font: 700 8px/1 system-ui; text-transform: capitalize; letter-spacing: .02em;
+  background: var(--panel2); color: var(--text); }
+.rescard.noart.fire .resplate { background: var(--fire); color: #fff; }
+.rescard.noart.water .resplate { background: var(--water); color: #fff; }
+.rescard.noart.earth .resplate { background: var(--earth); color: #fff; }
+.rescard.noart.wood .resplate { background: var(--wood); color: #fff; }
+.rescard.noart.metal .resplate { background: var(--metal); color: var(--metal-ink); }
+.rescard.noart.light .resplate { background: linear-gradient(160deg, #fffdf3, var(--light)); color: var(--light-ink); }
+.rescard.noart.dark .resplate { background: linear-gradient(160deg, #7d8797, #3a4049); color: var(--dark-ink); border-color: #99a3b2; }
 
 /* ── phase track ────────────────────────────────────────────────────── */
 .phasetrack { display: inline-flex; align-items: center; gap: 3px; }
@@ -320,8 +352,13 @@ button:disabled { opacity: .4; cursor: default; }
 .elchip { text-transform: capitalize; padding: 5px 10px; opacity: .55; border-width: 2px; }
 .elchip.on { opacity: 1; font-weight: 700; outline: 2px solid var(--accent); }
 .elchip.fire.on { border-color: var(--fire); } .elchip.water.on { border-color: var(--water); }
-.elchip.earth.on { border-color: #8a6b3d; } .elchip.wood.on { border-color: #4e8a3d; }
-.elchip.metal.on { border-color: #9aa5b0; }
+.elchip.earth.on { border-color: var(--earth); } .elchip.wood.on { border-color: var(--wood); }
+.elchip.metal.on { border-color: var(--metal); }
+/* Light & Dark. A cream border alone would read as "selected" even when off,
+   so both selected states also tint the chip's own face and ink: cream ink on
+   a warm-black face for Light, pale ink on a slate face for Dark. */
+.elchip.light.on { border-color: var(--light); background: #2e2a20; color: var(--light); }
+.elchip.dark.on { border-color: var(--dark); background: #262c35; color: #cfd6e0; }
 
 /* ── hotfixes: bins-in-region, help/judge, main-only overlays ───────── */
 /* overlays that leave the side column (focus viewer) usable */
@@ -439,3 +476,61 @@ button:disabled { opacity: .4; cursor: default; }
 .grafttag { display: block; color: var(--accent); font-size: 10px; text-transform: uppercase;
   letter-spacing: .06em; margin-bottom: 3px; }
 .graftbody { color: var(--text); font-size: 12px; }
+
+/* ═══ Light & Dark (docs/08) ═══════════════════════════════════════════ */
+
+/* ── R38/R39: rot & debt on the player identity row ──────────────────── */
+/* Both sit next to life and BOTH are hidden at zero, so a base-set game's
+   header is byte-identical to what it was before the expansion. */
+.pcount { border-radius: 12px; padding: 2px 10px; font-weight: 700; font-size: 12px;
+  border: 1px solid; cursor: help; }
+.pcount.rot { background: #2a1c22; border-color: #7d3b52; color: #e79ab2; }
+.pcount.debt { background: #2a2418; border-color: #7d6a2f; color: #e2c778; }
+
+/* ── R41: the cache — a fourth zone, rendered next to the bin ─────────── */
+.regioncache { width: 96px; flex-shrink: 0; border-left: 1px dashed #5b6ea8; padding-left: 8px;
+  cursor: pointer; border-radius: 4px; }
+.regioncache:hover { background: var(--panel2); }
+.regioncache.hasplay { border-left-color: var(--glow); box-shadow: inset 2px 0 0 var(--glow); }
+.cachehint { color: var(--glow); font-size: 10px; margin-top: 4px; }
+.cachewait { color: var(--dim); font-size: 10px; margin-top: 4px; }
+.cachebox .hint { text-align: left; max-width: 62ch; margin: 0 auto 8px; }
+.cachezone { align-items: flex-start; gap: 10px; }
+.cacheentry { width: 116px; }
+.cacheentry .card { width: 116px; }
+.cachecond { font-size: 10px; color: #b9abec; line-height: 1.3; margin-top: 3px; }
+.cachecond.met { color: var(--glow); }
+.cachepay { font-size: 10px; color: var(--accent); margin-top: 2px; }
+.cachepay.free { color: var(--glow); font-weight: 700; }
+.cachepay.none { color: var(--dim); }
+
+/* cache badges: the prophecy condition, whether it is fulfilled, the glimpse
+   window, and how the card would be paid for. `.cond` wraps onto its own line
+   under the scan because conditions are sentences, not labels. */
+.card .badge.proph { border-color: #9a8ad9; color: #b9abec; }
+.card .badge.proph.on { border-color: var(--glow); color: var(--glow); }
+.card .badge.glimpse { border-color: #5b9ed9; color: #93c6ef; }
+.card .badge.glimpse.on { border-color: #7fc0ff; color: #cfe6ff; }
+.card .badge.free { border-color: var(--glow); color: #0f1a0f; background: var(--glow); font-weight: 700; }
+.card .badge.paid { border-color: var(--accent); color: var(--accent); }
+.freetag { color: var(--glow); font-weight: 700; }
+
+/* ── {Modular}: mods riding on a stack item ──────────────────────────── */
+.stackitem .modthumb { opacity: .85; margin-left: -6px; }
+.stackmods { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
+.stackmods .badge { background: rgba(20,24,30,.9); border: 1px solid var(--accent); color: var(--accent);
+  border-radius: 3px; font-size: 10px; padding: 0 4px; }
+.stackmods .modfrom { color: var(--dim); font-weight: 400; }
+
+/* ── log lines for the new events ────────────────────────────────────── */
+/* Same tint vocabulary the rest of the client uses: gold = a cost/upkeep,
+   green = something became available, red = damage/loss. The specificity here
+   matches `.logpanel div:last-child`, and these rules come after it, so the
+   newest line keeps its colour too. */
+.logpanel div.ev-cache { color: #b9abec; border-left: 2px solid #6d5fa8; padding-left: 5px; }
+.logpanel div.ev-prophecy { color: var(--glow); border-left: 2px solid var(--glow); padding-left: 5px; font-weight: 700; }
+.logpanel div.ev-rot { color: #e79ab2; border-left: 2px solid #7d3b52; padding-left: 5px; }
+.logpanel div.ev-debt { color: #e2c778; border-left: 2px solid #7d6a2f; padding-left: 5px; }
+.logpanel div.ev-debtpaid { color: #c9b477; border-left: 2px dotted #7d6a2f; padding-left: 5px; }
+.logpanel div.ev-trash { color: #b9a08c; border-left: 2px solid #6b4f3a; padding-left: 5px; }
+.logpanel div.ev-life { color: #9fe0a4; border-left: 2px solid #3f7a45; padding-left: 5px; }

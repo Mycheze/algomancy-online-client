@@ -9,8 +9,8 @@
  * Singularity — direct-run with a scripted ctx), token-birth taxes (The
  * World Shepherd), modal counter sweeps (Wither and Bloom), counter movement
  * (Aethercap Siphoner), formation-counting creation/recall (Galactic
- * Germination, Lumengrove Lurker). The PARKED Invasive Species
- * start-of-deployment trigger has a todo test.
+ * Germination, Lumengrove Lurker) and the start-of-deployment mass recall
+ * (Invasive Species, R50).
  * States are built explicitly (give/spawn/giveResources) so parallel card
  * registration can't shift assertions. Seeds: 3000-3099.
  */
@@ -19,11 +19,14 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard, type EffectCtx } from '../src/cards/dsl.ts';
-import type { Seat } from '../src/types.ts';
+import type { CachedCard, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
-  spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  skipHasteStep, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
+
+/** R41: the cache zone — optional field, so read it through here. */
+const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
 
 /** run engine mutations white-box; a trigger's decision may suspend —
  * the suspension is recorded in state and answered via h.do('decide'). */
@@ -134,7 +137,7 @@ test('Auric Ascendant: [once] [one] + recall another ally → Flying and +2/+0 u
 
 // ── Dematerialize ────────────────────────────────────────────────────────
 
-test('Dematerialize: negates a target stack effect; its controller Glimpses 3', () => {
+test('Dematerialize: negates a target stack effect; its controller Glimpses 3 — ONE cached, no trash', () => {
   const h = new Harness(3005);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -151,13 +154,26 @@ test('Dematerialize: negates a target stack effect; its controller Glimpses 3', 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Dematerialize') });
   pick(h, { stack: fbStackId });                              // negate target effect
   const lifeD = h.state.players[D]!.life;
-  const handA = h.state.players[A]!.hand.length;
-  const deckLen = h.state.sharedDeck.length;
+  const handA = [...h.state.players[A]!.hand];
+  const top3 = h.q.deckOf(A).slice(0, 3);
+  const deckLen = h.q.deckOf(A).length;
+  const trashesBefore = h.events.filter(ev => ev.type === 'trashed').length;
   pass(h); pass(h);                                           // resolve Dematerialize
-  pick(h, 0);                                                 // A caches the first revealed card
+  // R45: the GLIMPSER chooses — here the negated effect's controller, A
+  const dec = h.state.decision!;
+  assert.equal(dec.seat, A, "the negated effect's controller glimpses, so A chooses");
+  assert.deepEqual(dec.options.map(o => o.card), top3, 'the three revealed cards are the options');
+  h.do({ type: 'decide', seat: A, choice: 1 });               // cache the middle one
   assert.ok(h.log.some(m => m.includes('is negated')), 'the Fireball is negated');
-  assert.equal(h.state.players[A]!.hand.length, handA + 1, 'the glimpsing player cached a card');
-  assert.equal(h.state.sharedDeck.length, deckLen - 1, 'two of the three glimpsed cards recycled');
+  assert.deepEqual(cacheOf(h, A).map(c => c.card), [top3[1]],
+    'exactly ONE of the three is cached (R45), the glimpser\'s pick');
+  assert.deepEqual(h.state.players[A]!.hand, handA, 'nothing reaches hand');
+  assert.equal(h.q.deckOf(A).length, deckLen - 1, 'the other two are still in the deck');
+  assert.deepEqual(h.q.deckOf(A).slice(-2), [top3[0], top3[2]],
+    'recycled to the BOTTOM, in revealed order');
+  assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn, ignoring affinity');
+  assert.equal(h.events.filter(ev => ev.type === 'trashed').length, trashesBefore,
+    'R40: negating is not trashing — the negated card comes off the STACK');
   pass(h); pass(h);                                           // the negated Fireball resolves
   assert.equal(h.state.players[D]!.life, lifeD, 'the negated Fireball dealt nothing');
   finishBattle(h);
@@ -385,13 +401,56 @@ test('Galactic Germination: a 1/1 per unit in target formation — arriving HOME
 
 // ── Invasive Species ─────────────────────────────────────────────────────
 
-test('Invasive Species: at the start of deployment, recall all your other units', { todo: true }, () => {
-  // PARKED: no start-of-deployment event exists — startDeployment fires no
-  // fireEvent, and 'endOfTurn' is after deployment (the recalled units would
-  // wrongly miss the next battle). See the batch header.
+test('Invasive Species: at the start of deployment, recall all your OTHER units (R50)', () => {
+  const h = new Harness(3017);
+  toDeployment(h);
+  const P = h.state.deployPlayer!, O = 1 - P;
+  const inv = spawn(h, P, 'Invasive Species');
+  const mine = spawn(h, P, 'Good Whale');                     // an ally — recalled
+  const tok = spawn(h, P, 'Unit Token');
+  h.state.entities[tok]!.token = true;                        // a token — erased
+  const theirs = spawn(h, O, 'Good Whale');                   // not mine — untouched
+  const handBefore = h.state.players[P]!.hand.filter(c => c === 'Good Whale').length;
+  // end deployment → planning → skip haste → decline both battle rounds →
+  // next deployment, which is where 'startOfDeployment' fires
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);
+  finishBattle(h);
+  assert.equal(h.state.phase, 'deploy', 'we are at the start of the next deployment');
+  assert.ok(ent(h, inv), 'Invasive Species itself stays — "your OTHER units"');
+  assert.ok(!ent(h, mine), 'the ally was recalled');
+  assert.equal(h.state.players[P]!.hand.filter(c => c === 'Good Whale').length, handBefore + 1,
+    "…to its owner's hand");
+  assert.ok(!ent(h, tok), 'the token left play too');
+  assert.ok(!h.state.players[P]!.hand.includes('Unit Token'), 'but a token is erased, not recalled');
+  assert.ok(ent(h, theirs), "the opponent's units are untouched");
 });
 
-test('Invasive Species: plays as a 4/4; augments (donating nothing yet)', () => {
+test('Invasive Species: donated by [Augment] — the HOST\'s controller recalls, host excluded', () => {
+  const h = new Harness(3018);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const host = spawn(h, P, 'Good Whale');
+  const ally = spawn(h, P, 'Curio Drifter');
+  giveResources(h, P, 'water', 1);
+  giveResources(h, P, 'wood', 1);                             // bg / 1
+  h.do({ type: 'augment', seat: P, from: 'hand', index: give(h, P, 'Invasive Species'), hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'donated onto the host');
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);
+  finishBattle(h);
+  assert.ok(ent(h, host), '"I" is now the host — it is the excluded unit');
+  assert.ok(!ent(h, ally), 'and every OTHER ally is recalled');
+  assert.ok(h.state.players[P]!.hand.includes('Curio Drifter'));
+});
+
+test('Invasive Species: plays as a 4/4; augments', () => {
   const h = new Harness(3015);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -401,7 +460,7 @@ test('Invasive Species: plays as a 4/4; augments (donating nothing yet)', () => 
   giveResources(h, p, 'water', 1);
   giveResources(h, p, 'wood', 1);                             // bg / 1
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Invasive Species'), hostId: host });
-  assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment (inert donation)');
+  assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment');
 });
 
 // ── Lumengrove Lurker ────────────────────────────────────────────────────

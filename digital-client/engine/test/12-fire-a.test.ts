@@ -4,7 +4,8 @@
  * the R6 choose model), bin recall (Delver of Mysteries), retargeting with a
  * payment out (Gravitational Correction), end-of-turn triggers (Harbinger of
  * Immolation, Infernal Wispweaver), formation token creation (Hooba-Lin), a
- * trigger-approximated aura (Animated Spark), a haste body (Cinder Scuttler)
+ * trigger-approximated aura (Animated Spark), a haste body plus a bin-resident
+ * recall trigger (Cinder Scuttler, R51)
  * and the PARKED cards (todo tests state exactly what's missing). States are
  * built explicitly (give/spawn/giveResources) so parallel card registration
  * can't shift assertions. Seeds: 1200-1299.
@@ -116,9 +117,50 @@ test('Cinder Scuttler: playable in the haste step as a 2/1', () => {
   assert.equal(h.state.phase, 'battle', 'battle follows the haste step');
 });
 
-test('Cinder Scuttler: recalled from the bin on combat damage to an opponent', { todo: true }, () => {
-  // PARKED: "if I am in your bin, recall me" needs bin-resident trigger
-  // listeners — fireEvent only scans in-play units.
+test('Cinder Scuttler: recalled from the bin on combat damage to an opponent (R51)', () => {
+  const h = new Harness(1213);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Good Whale');             // 7/5, trigger-free beater
+  h.state.players[A]!.bin.push('Cinder Scuttler');   // it is in A's bin
+  h.state.players[D]!.bin.push('Cinder Scuttler');   // and in D's
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const scutsA = () => h.state.players[A]!.hand.filter(c => c === 'Cinder Scuttler').length;
+  const scutsD = () => h.state.players[D]!.hand.filter(c => c === 'Cinder Scuttler').length;
+  const beforeA = scutsA(), beforeD = scutsD();
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });   // unblocked → D takes 7
+  pass(h); pass(h);
+  assert.ok(h.state.players[D]!.life < 30, 'D took combat damage');
+  assert.ok(!h.state.players[A]!.bin.includes('Cinder Scuttler'), "it left the DEALER's bin");
+  assert.equal(scutsA(), beforeA + 1, "and is in the dealer's hand");
+  assert.ok(h.state.players[D]!.bin.includes('Cinder Scuttler'),
+    "the VICTIM's copy stays put — they dealt nothing");
+  assert.equal(scutsD(), beforeD, 'and none reached their hand');
+  assert.ok(!h.events.some(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Cinder Scuttler'),
+    'leaving a bin is not trashing (R40)');
+  finishBattle(h);
+});
+
+test('Cinder Scuttler: one firing per bin, not per copy (R51)', () => {
+  const h = new Harness(1214);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Good Whale');
+  h.state.players[A]!.bin.push('Cinder Scuttler', 'Cinder Scuttler', 'Cinder Scuttler');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const scuts = () => h.state.players[A]!.hand.filter(c => c === 'Cinder Scuttler').length;
+  const before = scuts();
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);
+  assert.equal(scuts(), before + 1,
+    'three copies in the bin, ONE recall — the text is a standing permission (R51)');
+  assert.equal(h.state.players[A]!.bin.filter(c => c === 'Cinder Scuttler').length, 2,
+    'the other two stay in the bin');
+  finishBattle(h);
 });
 
 // ── Conduit of Pain ──────────────────────────────────────────────────────

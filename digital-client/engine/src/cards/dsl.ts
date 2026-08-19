@@ -34,12 +34,34 @@ export interface Printed {
   augmentAttrs: Attr[];             // type-line [Augment] grants (mods.py rule)
   /** "[Battle] Ambush [4bb]" alternative play mode: mana + affinity pips */
   ambush?: { cost: string; mana: number };
+  /** Light & Dark: the printed "[2] Prophecy — Two Turns Pass" banner beneath
+   * the title — an alternative cost + the condition that releases it. Stripped
+   * out of `text` by the extractor. A prophecy GRANTED by rules text (e.g.
+   * "It gains 'Prophecy — One Turn Passes'") is not a printed banner. */
+  prophecy?: { mana: number; condition: string };
+  /** Light & Dark: a printed "[Gain 4 debt]" bracketed additional cast cost
+   * (its own line in the text box). Stripped out of `text`. */
+  gainDebt?: number;
+  /** R40: the printed "Discard me" cost line — an alternative play mode like
+   * Ambush ("1 Discard me" on Dropslime, "2 [d] Discard Me. {Battle}" on
+   * Nothyr): pay this cost, discard the card from hand, and the resulting
+   * TRASH fires the card's own "when I am trashed" trigger. `timing` is the
+   * timing of THIS MODE when the line carries its own marker — Nothyr's
+   * {Battle} sits on the discard-me line while the card itself is a deploy
+   * unit. Stripped out of `text` by the extractor. */
+  discardMe?: { cost: string; mana: number; timing?: 'battle' };
   text: string;
   image: string;
 }
 
-/** Resolved target passed to effect run(): an entity, a player, or a stack item id. */
-export type ResolvedTarget = Entity | { player: Seat } | { stack: number };
+/** A resolved 'cachedCard' target: the entry is looked up by its stable uid at
+ * RESOLUTION, so `card` is what is actually sitting there now. Effects act on
+ * it through E.cacheIndexOf(seat, uid). */
+export interface ResolvedCached { cached: { seat: Seat; uid: number; card: CardName } }
+
+/** Resolved target passed to effect run(): an entity, a player, a stack item
+ * id, or a cached card. */
+export type ResolvedTarget = Entity | { player: Seat } | { stack: number } | ResolvedCached;
 
 export interface EffectCtx {
   controller: Seat;
@@ -51,6 +73,10 @@ export interface EffectCtx {
   /** receipt of this part's cast-time [cost] payment (R35) — e.g. the unit
    * sacrificed to cast, with its stats snapshotted at payment time */
   costPaid?: { sacrificed?: { card: CardName; power: number; defense: number } };
+  /** {Modular}: the mods applied to this card as it was played (Spellbind).
+   * Their graft effects already ride as extra parts; this is the readable
+   * list, for text that wants to know what is attached. */
+  mods?: CardName[];
   /** R1: the event snapshot for triggered abilities (conditions were checked at
    * event time; amounts must be computed here, at resolution, from live state) */
   event: EngineEvent | null;
@@ -62,7 +88,10 @@ export interface EffectCtx {
 }
 
 export interface TargetSpec {
-  what: 'unit' | 'allyUnit' | 'any' | 'stackSpell';
+  /** 'cachedCard' (R41): a card in EITHER player's cache — the zone is public
+   * information, so both are legal targets, and it is not region-scoped.
+   * (Prismatic Observer: "Recall up to one target cached card".) */
+  what: 'unit' | 'allyUnit' | 'any' | 'stackSpell' | 'cachedCard';
   prompt: string;
   /** maximum number of targets chosen AT CAST TIME (default 1). Distinct
    * targets; the chooser gets a "done" option once `min` are picked. */
@@ -71,12 +100,21 @@ export interface TargetSpec {
   min?: number;
 }
 
-/** A bracketed additional cost ("[Sacrifice a unit]: …") chosen and PAID AT
- * CAST, before the item reaches the stack (R35). Extensible: sacrificing a
- * unit is the only kind so far. */
-export interface CastCost {
-  kind: 'sacrificeUnit';
-}
+/**
+ * A bracketed additional cost ("[Sacrifice a unit]: …", "[Pay 3 life]",
+ * "[Discard a card]", "[Gain 4 debt]") chosen and PAID AT CAST, before the
+ * item reaches the stack (R35). An unpayable cost makes the cast ILLEGAL;
+ * on a grafted rider it is optional and declining skips that part.
+ *
+ * `n` is the amount, and means nothing for 'sacrificeUnit' (always one unit).
+ * 'payLife' is governed by R49: you may pay N life only while you have MORE
+ * than N — a cost you cannot survive is not payable.
+ */
+export type CastCost =
+  | { kind: 'sacrificeUnit' }
+  | { kind: 'payLife'; n: number }
+  | { kind: 'discardCard'; n: number }
+  | { kind: 'gainDebt'; n: number };
 
 export interface EffectDef {
   targets?: TargetSpec;
@@ -97,6 +135,22 @@ export interface TriggeredAbility {
   events: EventType[];
   /** only fire when the event's source is this entity */
   self?: boolean;
+  /**
+   * R51: the trigger listens while the CARD SITS IN THIS ZONE rather than
+   * while it is a unit in play ("If I am in your bin, after combat …" —
+   * Lurking Dread, Inexorable Miasma, Cinder Scuttler). fireEvent() scans
+   * entities in play and a card in a bin is not one, so these are dispatched
+   * separately, anchored on a DETACHED stand-in entity with id -1 (exactly
+   * like R40's fireOwnTrashTrigger): `self` is not a real unit, it cannot be
+   * targeted, it radiates no statics and its bounded budget lives only for
+   * the one firing. `when` receives that stand-in with `owner`/`controller`
+   * set to the zone's seat, so "if I am in YOUR bin" is ctx.controller.
+   *
+   * Only ONE copy of the card fires per zone per event even if the zone holds
+   * several — the printed cards are all "if I am in your bin", a single
+   * standing permission, not a per-copy trigger.
+   */
+  zone?: 'bin' | 'cache';
   /** R1: condition — evaluated once, at event time */
   when?: (g: E, self: Entity, ev: EngineEvent) => boolean;
   label: string;
@@ -107,9 +161,45 @@ export interface TriggeredAbility {
   effect: EffectDef;
 }
 
+/**
+ * R49: what activating an ability costs. Every one of these GATES the
+ * activation — an ability whose cost cannot be paid is not offered by
+ * legalActions and is refused by apply() — instead of fizzling at resolution.
+ *
+ *  - mana / life / debt / sacrificeSelf carry no choice, so doActivateAbility
+ *    pays them outright, before the item is built.
+ *  - discard / sacrificeOther carry a choice, so they ride on the item as
+ *    `pendingCosts` and are chosen in the cast window, still before the item
+ *    reaches the stack: no one may respond between cost and effect.
+ *
+ * `life` obeys R49: payable only while you have MORE life than it costs.
+ */
+export interface AbilityCost {
+  mana?: number;
+  sacrificeSelf?: boolean;
+  /** "Pay N life:" */
+  life?: number;
+  /** "Gain N debt:" */
+  debt?: number;
+  /** "Discard a card:" — N cards from your hand */
+  discard?: number;
+  /** "Sacrifice a unit:" — N units you control OTHER than the source */
+  sacrificeOther?: number;
+  /** "Discard a card OR sacrifice a nontoken unit:" — N payments, each of
+   * which may be either a hand card or another NONTOKEN unit you control.
+   * The one either/or shape the pool actually prints (Pallid Gorger,
+   * Combustible Bogwalker, Lilbot); a general cost algebra is not worth it. */
+  discardOrSacrifice?: number;
+}
+
 export interface ActivatedAbility {
   type: 'activated';
-  cost: { mana?: number; sacrificeSelf?: boolean };
+  cost: AbilityCost;
+  /** R49: a printed "{Battle}" / "{Deployment}" marker ON THE ABILITY (Grox,
+   * Cadaverous Cultivator). doActivateAbility gates by PHASE, so without this
+   * a battle-only ability was activatable during deployment too. Absent = the
+   * ability may be activated in either window, the standing behaviour. */
+  timing?: 'battle' | 'deploy';
   label: string;
   bounded?: boolean;
   graftCause?: boolean;
@@ -143,12 +233,47 @@ export interface CardBehavior {
   /** the card can be applied as an augment even without augmentAttrs or
    * augmentText — its [Augment] text is implemented via `statics` */
   augmentable?: boolean;
+  /** R42: this card may be prophesied out of its owner's BIN as well as their
+   * hand ("I can be prophesied from your bin" — Angel of Anguish). No card may
+   * be prophesied from the bin unless it says so, so this defaults to false
+   * and the `prophesy` action's `from: 'bin'` is refused without it. */
+  prophesyFromBin?: boolean;
   /** effect of a spell / spell unit / spell token when played */
   spellEffect?: EffectDef;
   /** the [Switch]-marked effect that transfers when this card is grafted */
   graftEffect?: { bounded: boolean; effect: EffectDef };
   /** text-box [Augment] abilities that transfer when this card augments */
   augmentText?: Ability[];
+  /** R38 replacement effect: rot is about to deal `amount` damage to `seat`.
+   * Return true to REPLACE the damage (do whatever the card does instead —
+   * Skittering Blight: "instead put that many +1/+1 counters on me"), false to
+   * let it through. Called from E.rotDamage() at the start of deployment,
+   * before the damage event exists. `self` is the unit the text is anchored on
+   * — the card itself when it is a unit in play, or the HOST when the text
+   * arrives via an augment mod (Skittering Blight prints it under [Augment];
+   * same anchoring rule as StaticMod). Deliberately a one-off hook, not a
+   * replacement framework: rot damage is the only replaceable event in the
+   * engine (see E.replaceRotDamage). */
+  replaceRotDamage?: (g: E, self: Entity, seat: Seat, amount: number) => boolean;
+  /** R38 replacement effect, the second and last one: a COLUMN is about to
+   * deal `amount` combat damage to `seat`. Return true to REPLACE the damage
+   * (Blightsea Polyp: "[Augment] Columns deal combat damage to players as 1
+   * rot" — the card gains the victim 1 rot and returns true), false to let it
+   * through. Asked once PER COLUMN, which is why the reminder text's "a column
+   * of a 4/4 and a 2/2 would give the opponent 1 rot" holds whatever the
+   * column's power is.
+   *
+   * ⚠ Replacing the damage does NOT unmake it: Caleb ruled (2024-10-24) the
+   * damage still counts as having been DEALT, so {Lethal} still kills through
+   * it, {Thieving} still draws, and {Blessed} still gains. Only the life total
+   * is spared.
+   *
+   * Anchored like replaceRotDamage (a mod's hook reads from its HOST), but NOT
+   * restricted to one seat's cards: the printed text says "columns", plural
+   * and unowned, so every holder in play is offered the replacement and the
+   * card itself decides whose columns it cares about. */
+  replaceCombatDamageToPlayer?: (g: E, self: Entity, seat: Seat, amount: number,
+    info: { attacker: Seat; region: number }) => boolean;
   /** UI-only PURE query (playtest #5): the amount a state-derived X spell
    * (e.g. Burning Vengeance's "units that died this battle") would use if it
    * resolved RIGHT NOW for `seat`, with `region` the active battle region.
@@ -167,15 +292,39 @@ export function card(name: string, behavior: CardBehavior): void {
   const printed = PRINTED[name];
   if (!printed) throw new Error(`No printed data for "${name}" — add it to scripts/extract-printed.mjs POOL`);
   REGISTRY.set(name, { ...printed, ...behavior });
+  ZONE_INDEX = null;   // R51: a new registration may add a zone trigger
 }
 
 /** Register a card that is not in the oracle pool (unit tokens, test cards). */
 export function registerSynthetic(printed: Printed, behavior: CardBehavior): void {
   REGISTRY.set(printed.name, { ...printed, ...behavior });
+  ZONE_INDEX = null;
+}
+
+/**
+ * R47: a second printed NAME for one registered card. The Wraith token is the
+ * only case: the token was renamed FROM "Wight" TO "Wraith", and the printed
+ * data is mid-transition in the other direction — six cards already read
+ * "Wraith" while `Blight's End` still carries the OLD name ("Augment a Wight
+ * onto X target units"). Both must resolve to ONE card, so the current name
+ * `Wraith` is canonical and the retired `Wight` is its alias.
+ *
+ * Aliases resolve in getCard() only; they are deliberately NOT in
+ * allCardNames(), so nothing downstream (DECK_LIST, the draft pool, the card
+ * browser) can ever see the two names as two things. State always stores the
+ * canonical name — the alias exists for lookups, never for storage.
+ */
+const ALIASES = new Map<string, string>();
+export function registerAlias(alias: string, target: string): void {
+  ALIASES.set(alias, target);
+}
+/** the registered name `name` refers to (itself, unless it is an alias) */
+export function canonicalCardName(name: string): string {
+  return ALIASES.get(name) ?? name;
 }
 
 export function getCard(name: string): CardDef {
-  const def = REGISTRY.get(name);
+  const def = REGISTRY.get(name) ?? REGISTRY.get(canonicalCardName(name));
   if (!def) throw new Error(`Unknown card "${name}"`);
   return def;
 }
@@ -234,7 +383,7 @@ export function ambushEffect(name: CardName): EffectDef {
 
 /** affinity pips of a cost string, e.g. "rr" -> { fire: 2 } */
 export const ELEMENT_OF_PIP: Record<string, string> = {
-  r: 'fire', b: 'water', e: 'earth', g: 'wood', m: 'metal',
+  r: 'fire', b: 'water', e: 'earth', g: 'wood', m: 'metal', l: 'light', d: 'dark',
 };
 export function affinityPips(cost: string): Record<string, number> {
   const pips: Record<string, number> = {};
@@ -243,6 +392,34 @@ export function affinityPips(cost: string): Record<string, number> {
     if (el) pips[el] = (pips[el] ?? 0) + 1;
   }
   return pips;
+}
+
+/**
+ * R51: index of the zone-resident triggers in the pool, keyed by event type.
+ * fireEvent() consults it on EVERY event, so it must be a map lookup and not
+ * a scan: built once, lazily (the registry fills as the batch modules import),
+ * and invalidated by card()/registerSynthetic() so a late registration is
+ * still seen. An event type nobody listens for costs one failed Map.get().
+ */
+export interface ZoneTrigger { card: string; abilityIndex: number; zone: 'bin' | 'cache' }
+let ZONE_INDEX: Map<EventType, ZoneTrigger[]> | null = null;
+function buildZoneIndex(): Map<EventType, ZoneTrigger[]> {
+  const idx = new Map<EventType, ZoneTrigger[]>();
+  for (const [name, def] of REGISTRY) {
+    (def.abilities ?? []).forEach((ab, abilityIndex) => {
+      if (ab.type !== 'triggered' || !ab.zone) return;
+      for (const type of ab.events) {
+        const list = idx.get(type) ?? [];
+        list.push({ card: name, abilityIndex, zone: ab.zone });
+        idx.set(type, list);
+      }
+    });
+  }
+  return idx;
+}
+export function zoneTriggersFor(type: EventType): ZoneTrigger[] {
+  ZONE_INDEX ??= buildZoneIndex();
+  return ZONE_INDEX.get(type) ?? [];
 }
 
 export function isTriggered(a: Ability): a is TriggeredAbility { return a.type === 'triggered'; }

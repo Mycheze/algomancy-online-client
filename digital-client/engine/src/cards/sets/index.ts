@@ -20,3 +20,13 @@ import './batch-metal-b.ts';
 import './batch-metal-c.ts';
 import './batch-hybrids-wm-a.ts';
 import './batch-hybrids-wm-b.ts';
+// ── Light & Dark expansion ──
+import './batch-light-a.ts';
+import './batch-light-b.ts';
+import './batch-light-c.ts';
+import './batch-dark-a.ts';
+import './batch-dark-b.ts';
+import './batch-dark-c.ts';
+import './batch-hybrids-ld-a.ts';
+import './batch-hybrids-ld-b.ts';
+import './batch-hybrids-ld-c.ts';

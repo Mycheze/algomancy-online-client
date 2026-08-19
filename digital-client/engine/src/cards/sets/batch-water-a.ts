@@ -10,13 +10,12 @@
  * region-scoped), R14 ("this battle" counters are per region-battle),
  * R22 (ambush details).
  *
- * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - GLIMPSE (Celestial Purge / Oracle of Foretelling / Premonition): the
- *    engine has no cache zone or "play ignoring affinity until end of turn"
- *    machinery. Approximated as: reveal top N (info event), the glimpsing
- *    player CHOOSES one via ctx.choose, it goes to their HAND, the rest are
- *    recycled to the bottom. Slightly stronger (kept past end of turn),
- *    slightly weaker (playing it needs affinity).
+ * GLIMPSE (Celestial Purge / Oracle of Foretelling / Premonition) is REAL as
+ * of the Light & Dark expansion: E.glimpse (R45) reveals the top N, caches
+ * exactly ONE of the glimpser's choice and recycles the other N-1 to the
+ * bottom of the deck; the cached card is playable until end of turn — pay the
+ * mana, ignore affinity, obey timing. It replaced a pre-cache approximation
+ * that put the kept card permanently into HAND instead of the cache.
  *
  * PARKED (needs engine primitives that do not exist; subsets implemented):
  *  - Dreadspawn Horror (augment-donated form only): the unit form is a live
@@ -37,29 +36,19 @@
  */
 import type { Entity, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, getCard, type EffectDef } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
 const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
 
-/** Glimpse N for a seat — ⚠ approximation, see the header note. */
-function glimpse(g: E, ctx: EffectCtx, seat: Seat, n: number): void {
-  const count = Math.min(n, g.deckOf(seat).length);
-  if (count <= 0) return;
-  const top = g.deckOf(seat).slice(0, count);
-  g.ev('info', `${g.pname(seat)} Glimpses ${count}: ${top.join(', ')}.`);
-  const pick = ctx.choose('glimpse', {
-    kind: 'payOrDecline', seat,
-    prompt: `Glimpse ${count}: choose a card to cache (engine: it goes to your hand)`,
-    options: top.map((name, i) => ({ label: name, value: i, card: name })),
-  }) as number;
-  g.deckOf(seat).splice(0, count);
-  const keptIdx = top[pick] !== undefined ? pick : 0;
-  const kept = top[keptIdx]!;
-  g.player(seat).hand.push(kept);
-  top.forEach((name, i) => { if (i !== keptIdx) g.recycleToBottom(seat, name); });
-  g.ev('info', `${g.pname(seat)} caches ${kept} and recycles the rest.`);
+/** Glimpse N for a seat (R45) — reveal the top N, cache exactly ONE of the
+ * glimpser's choice and recycle the rest to the bottom of the deck; until end
+ * of turn the cached card may be played as if in hand, ignoring affinity but
+ * still paying the mana and still obeying timing. N > 1 raises the choose-one
+ * decision inside E.glimpse, so this CAN suspend. */
+function glimpse(g: E, seat: Seat, n: number): void {
+  g.glimpse(seat, n);
 }
 
 /** life a seat lost in this region's battle — the engine's per-battle ledger
@@ -149,7 +138,8 @@ card('Bripp', {
 
 // "Erase target unit. Its controller Glimpses 3." — bb/1 {Battle} Cosmic
 // Spell. Erase = remove from the game entirely: no bin, no died/despawned
-// triggers; its mods are erased with it. Glimpse: ⚠ header approximation.
+// triggers; its mods are erased with it. The Glimpse is real (R45) and goes
+// to the ERASED unit's controller — a consolation the opponent usually gets.
 card('Celestial Purge', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Celestial Purge: erase target unit (its controller Glimpses 3)' },
@@ -169,7 +159,7 @@ card('Celestial Purge', {
         if (si !== -1) b.sentAttackers.splice(si, 1);
       }
       g.ev('erased', `${t.card} is ERASED (no bin, no death).`, { unit: t.id, card: t.card, seat: who });
-      glimpse(g, ctx, who, 3);
+      glimpse(g, who, 3);
     },
   },
 });
@@ -537,9 +527,11 @@ card('Null Drone', {
   },
 });
 
-// "Glimpse 5" — b/3 4/1 Polyform Oracle Spell Unit. ⚠ header approximation.
+// "Glimpse 5" — b/3 4/1 Polyform Oracle Spell Unit. R45: five are revealed,
+// ONE is cached (playable this turn ignoring affinity) and four are recycled;
+// the body still spawns.
 card('Oracle of Foretelling', {
-  spellEffect: { run: (g, ctx) => glimpse(g, ctx, ctx.controller, 5) },
+  spellEffect: { run: (g, ctx) => glimpse(g, ctx.controller, 5) },
 });
 
 // "[Switch1] Target unit gains -1/-1 until regroup for each card in your
@@ -561,13 +553,13 @@ card('Overwhelm', {
 
 // "Glimpse X, where X is your [b]." — b/1 {Battle} Mystic Spell. X = water
 // affinity at resolution (R1); expended resources still count, prismites
-// don't (R17). ⚠ Glimpse: header approximation.
+// don't (R17). Glimpse is real (R45).
 card('Premonition', {
   spellEffect: {
     run: (g, ctx) => {
       const x = g.affinity(ctx.controller, 'water');
       if (x <= 0) { g.ev('info', 'Premonition: no water affinity — Glimpse 0.'); return; }
-      glimpse(g, ctx, ctx.controller, x);
+      glimpse(g, ctx.controller, x);
     },
   },
   // UI preview (#5): the Glimpse depth if it resolved right now

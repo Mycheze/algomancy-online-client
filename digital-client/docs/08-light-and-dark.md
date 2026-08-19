@@ -1,0 +1,388 @@
+# 08 — Light & Dark: mechanics spec
+
+**This file is the contract for the expansion.** Every agent scripting a Light or Dark
+card codes against it, and every rule here should end up as a test. Rulings are numbered
+in [digital-rules.md](digital-rules.md) (R38–R48); this doc is the readable version with
+the card inventory attached.
+
+## Provenance
+
+Unlike the base set there is no official Light & Dark rulebook — the Manual PDF has not
+changed since 2024-05. Everything below has one of three sources, named per rule:
+
+- **printed** — reminder/banner text on the cards themselves.
+- **Caleb** — a designer statement, with date, from the Discord exports in
+  `../../rulings/exports/` or relayed by Bena.
+- **Bena** — a local adjudication where the above run out.
+
+Bena supplied the rot, debt, trash, prophecy and Wight rulings on 2026-08-19 as official
+findings from Caleb; they are treated as authoritative here, not provisional.
+
+## The two elements
+
+`light` (pip `l`) and `dark` (pip `d`) join fire/water/earth/wood/metal. Canonical order
+is `fire, water, earth, wood, metal, light, dark` everywhere (`ALL_ELEMENTS`).
+
+163 new cards: 54 mono-light, 54 mono-dark, 55 hybrids (11 new pairs × 5, including
+light/dark). Totals become **7 elements, 21 hybrid pairs, 483 draftable cards, C(7,3) =
+35 draft trios**, each trio still exactly 177 cards (3 × 54 + 3 × 5).
+
+---
+
+## Rot
+
+A counter accumulated by a **player**, not a unit. `PlayerState.rot: number`.
+
+> **At the start of deployment, you take damage equal to the number of rot you have.**
+> Rot never decreases on its own.
+
+*Source: printed (the Rot Counter card from Caleb's own card library, 2026-01-15);
+confirmed by Bena 2026-08-19.*
+
+- Every player takes this damage each turn, in initiative order for determinism.
+- It is **damage**, so it interacts with everything damage does.
+- The source is the damaged player's own rot: *"Your rot is a source you control. But if
+  you give an opponent rot, that won't be a source you control damaging them"* (Caleb,
+  2024-08-20). So the rot damage a player takes is from a source **they** control.
+- It lands in the same window as regroup triggers (Caleb, 2024-04-06), and since there is
+  no priority during deployment (Caleb, 2024-10-23) **it cannot be responded to**.
+- Gaining rot is not damage and is not a trigger of its own beyond `rotGained`.
+
+**Replacement — Skittering Blight**: "If rot would deal damage to you, instead put that
+many +1/+1 counters on me." So the start-of-deployment rot damage must run through a
+replacement hook, not be applied inline.
+
+**Replacement — Blightsea Polyp**: "[Augment] Columns deal combat damage to players as 1
+rot. *(For example, a column of a 4/4 unit and 2/2 unit would give the opponent 1 rot,
+without changing their life total.)*" — per **column**, regardless of the column's total
+power. Critically, Caleb ruled (2024-10-24) that the damage **still counts as having been
+dealt**, so a `{Lethal}` unit in such a column still kills the player.
+
+**Cards (15):** Blightmound, Blightsea Polyp, Cosmic Devourer, Fester, Legion of the
+Depths, Pale Tormentor, Pestilent Titan, Plague Ritual, Primordial Coalescence, Rotling,
+Rotwall, Skittering Blight, Spellbind, Thought Extraction, Umbral Decay.
+
+---
+
+## Debt
+
+A counter accumulated by a **player**. `PlayerState.debt: number`.
+
+> **After the planning phase's resource step, you must pay 1 mana per debt you have.
+> Each mana paid removes one debt. If you cannot pay it all, the remainder carries over
+> to the next turn.** You cannot activate mana after paying debt.
+
+*Source: Caleb 2024-09-10 (the Light element announcement), refined 2024-12-02
+("Debt technically doesn't replace refresh. It happens at the end of the resource step");
+confirmed by Bena 2026-08-19.*
+
+- 1 debt = 1 mana. Payment is **mandatory** and automatic — it is not a player choice and
+  needs no new action.
+- Partial payment is fine; leftover debt simply stays.
+- There is **no** other penalty for being unable to pay (no life loss).
+- Paying happens at the very end of the resource step — i.e. when the player finishes
+  planning — precisely so no further mana can be activated afterwards. The mana paid is
+  expended and is therefore unavailable for casting this turn, which is the whole cost:
+  *"essentially, you lose X mana on your following turn when you gain X debt."*
+- Debt goes away as it is paid, unlike rot: *"Rot stays debt goes [away]"* (Caleb,
+  2025-03-19).
+
+**Cards (8):** Blurf, Covenant of the Damned, Debt Blep, Deferral Drone, Glutton of
+Absolution, Greed Angel, Hyper Beam, Reap the Due. `Hyper Beam` prints `[Gain 4 debt]` as
+a bracketed cast-time cost (extracted as `printed.gainDebt`); the rest gain debt through
+rules text or an activated-ability cost.
+
+---
+
+## Cache
+
+A fourth zone alongside hand, bin and deck. Caleb: *"basically exile with the intent to be
+referenced later"*, *"a neutral zone like the hand and bin"* (2024-02-25).
+
+- **Cache is public information** (⚠ R41, Bena's call): glimpse reveals, and Prismatic
+  Observer targets a cached card, so both players can see it. No server-side redaction.
+- A cached card **stays cached** if never used. It is not discarded, binned or erased.
+- Being in cache does **not** by itself permit playing: *"You can only play cached cards
+  that allow you to play them (like glimpse)"* (Caleb, 2024-12-03). Permission comes from
+  a fulfilled prophecy or from a glimpse-style "you may play it until end of turn".
+- You **can** augment or graft from cache (Caleb, 2024-12-02).
+- When a card in play with mods on it is cached, **the mods go to the bin**, they do not
+  travel with it (Caleb, 2024-09-15).
+
+**Cards (12 L&D):** Big Glimpse Card, Blurf, Delver of the Ephemeral, Divine Foresight,
+Grob, Living Vault, Lurking Dread, Murkdrop Distiller, Prismatic Observer, Prophecy Bug,
+Visionary Construct, Waxen Witness.
+**Base-set cards already using cache (5):** Celestial Purge, Dematerialize, Foretell,
+Oracle of Foretelling, Premonition — these currently have no real cache to go to and
+should be revisited once the zone exists.
+
+---
+
+## Prophecy
+
+Printed reminder text:
+
+> **To prophecy, cache this card during deployment by paying its prophecy cost. You may
+> play it for free, as if it were in your hand, if the prophecy has been fulfilled.**
+
+*Source: printed, relayed by Bena 2026-08-19. Matches Caleb's 2024-09-10 announcement:
+"Cache the card from your hand for its prophecy cost. Then anytime after the condition has
+been met, you may play it for free as if it was in your hand."*
+
+The banner is a second bar under the title: `[2] Prophecy — Two Turns Pass`. The
+extractor emits it as `printed.prophecy = { mana, condition }`.
+
+**Prophesying** is a new action, legal **only during the deployment phase** (Caleb,
+2025-05-09: *"Only during deployment"*). It costs the banner's mana — a plain number, no
+affinity pips — and moves the card from hand to cache with the prophecy attached.
+`Angel of Anguish` prints "I can be prophesied from your bin", so the action takes a
+source zone; **no card may be prophesied from the bin unless it says so.**
+
+**Fulfilment counts forward from the moment of prophesying** (Caleb, 2024-09-22:
+*"It needs to be prophecied beforehand … Same way that 'Four turns pass' can't just be
+played on turn 5"*). ⚠ R44 (Bena's call): once fulfilled, a prophecy **latches** —
+"anytime after the condition has been met" reads as permanent, so a card prophesied on
+"your life is 5 or less" stays playable even if you gain life back.
+
+**Playing from cache** is free — and "for free" **also ignores affinity** (Caleb,
+2024-10-28, after changing his mind mid-thread: *"it is easier if 'for free' also ignores
+affinity across the board"*). "As if it were in your hand" means normal **timing** still
+applies: a unit needs deployment, a `{Battle}` spell needs battle, and so on.
+
+A fulfilled prophecy also lets you **graft or augment the card for free** (Caleb,
+2024-12-03), not only play it.
+
+**Conditions to implement**, with their cards:
+
+| condition | cards | evaluation |
+|---|---|---|
+| `One Turn Passes` / `Two Turns Pass` / `Three Turns Pass` / `X Turns Pass` | The Foretold, Angel of Anguish, Big Glimpse Card, Flzzz, Blurf, Divine Foresight, Living Vault, Prophecy Bug | turns elapsed since prophesying ≥ N |
+| `One Battle Passes` | Grob, Waxen Witness | battles **completed** since prophesying ≥ 1. In 1v1 both the initiative battle and the counterattack each tick it (Caleb, 2024-09-24) |
+| `Your life is 5 or less` | Divine Intervention | live check, then latched |
+| `Your units have four unique costs.` | Air Plant | count distinct printed mana costs among your units in play ≥ 4 |
+| `End [Haste] with used mana` | Tithe Enforcer | at the end of the haste step, you spent ≥ 1 mana **during that haste step** — i.e. you must haste something *else* to fulfil it (Bena, 2026-08-19) |
+
+The trailing `[Haste]` on Divine Intervention's banner is a **timing marker on the
+release**, not part of the condition — split it off.
+
+Six cards **grant** a prophecy to another card via rules text rather than printing a
+banner, so the engine must be able to attach a prophecy to an arbitrary card as it is
+cached: Blurf, Divine Foresight, Grob, Living Vault, Prophecy Bug, Waxen Witness. Note
+`Prophecy Bug`'s "X Turns Pass, where X is half of its cost, rounded up" and `Blurf`'s
+inconsistent transcription `'Prophecy: 1 turn passes'` — normalise both.
+
+**Counterplay:** `Prismatic Observer` ("Recall up to one target cached card") exists
+specifically to answer a nearly-fulfilled prophecy (Caleb, 2025-12-06).
+
+**Cards printing a banner (7):** Air Plant, Angel of Anguish, Big Glimpse Card, Divine
+Intervention, Flzzz, The Foretold, Tithe Enforcer.
+
+---
+
+## Glimpse
+
+> *(Reveal the top X cards of the deck and **cache one**. Until end of turn, you may play
+> it as if it was in your hand, ignoring affinity. **Recycle the rest**.)* — printed on
+> Premonition, Oracle of Foretelling, Celestial Purge and Dematerialize
+
+*Glimpse predates the expansion but has never been implemented correctly.*
+
+- **Glimpse N reveals the top N cards, caches exactly ONE (the glimpser's choice), and
+  recycles the other N−1.** ⚠ An earlier draft of this spec said "caches them all"; that
+  was wrong. Every card that prints the N>1 reminder text says "cache one … recycle the
+  rest", and the N=1 cards ("reveal the top card and cache it") are simply the degenerate
+  case where those two readings coincide. Glook's "Glimpse 1, X times" is X separate
+  one-card glimpses, not a single Glimpse X.
+- Ignores affinity (Caleb, 2024-10-28) but **you still pay the mana cost** (Caleb,
+  2023-08-13), and **timing restrictions still apply** (Caleb, 2025-12-28).
+- The permission expires at end of turn; the cached card remains in cache afterwards, inert.
+- **`Big Glimpse Card` is a deliberate variant, not a counterexample**: it says "Cache one
+  **pile**" and "Recycle the other pile" — it spells out pile-wise wording precisely
+  because it departs from the one-card default.
+
+**Cards (6 L&D):** Glook, Lifebound Seer, Lilbot, Maw of Despair, Seer of Empty Spaces,
+Visionary Construct. Plus the 5 base-set cache cards above.
+
+---
+
+## Trash
+
+> **A nontoken card entering a bin from anywhere other than the stack is trashed.**
+
+*Source: printed reminder text (Void Scavenger, a Feb-2025 playtest card), Caleb the same
+day (2025-02-01: "basically when a card enters your bin but wasn't played"), confirmed and
+broadened by Bena 2026-08-19.*
+
+**Counts as trashing:** discarding from hand, sacrificing, milling from the deck, and a
+unit **dying in combat** (Caleb confirmed a unit dying is trashed, 2025-02-01).
+
+**Does not count:** a spell or ability going to the bin after resolving (that is the stack,
+which is explicitly excluded — so countering/negating a spell is not trashing either);
+**tokens** of any kind ("a *nontoken* card"); **erasing**, which never touches the bin at
+all and is a permanent one-way zone (Caleb, 2025-12-06).
+
+The card is trashed **by the owner of the bin it enters**. "When you trash a card" means
+your own bin; "when another card is trashed" excludes the trigger source itself.
+
+**Per-battle counter required:** `Dropslime` deals damage equal to "the number of cards
+trashed **in this battle**" and `Muck Rummager` triggers "when you trash a card **during
+battle**". Use the existing `battleCounters` mechanism.
+
+**Cards (14):** Afflicting Anima, Blightwalker, Cerebrox, Cthyrian Culler, Cthyrian
+Rector, Dropslime, Maw of Despair, Muck Rummager, Murkdrop Distiller, Murkstalker, Nothyr,
+Splort, Thoughtripper, Unrelenting Horror.
+
+⚠ Note `Dropslime` ("1 Discard me") and `Nothyr` ("2 `[d]` Discard Me. `{Battle}`") print a
+**discard-me cost line**: pay the mana, discard the card from hand, which trashes it and so
+fires its own "when I am trashed" trigger. This is a new play mode, like Ambush.
+
+*Grep warning: `Trashling` is an unrelated base-set Metal virus.*
+
+---
+
+## The Wraith (retired name: Wight)
+
+The token was **renamed FROM "Wight" TO "Wraith"** (Bena, 2026-08-19). The printed token
+card still shows the retired title, which is where these stats come from. Register it
+under the CURRENT name **`Wraith`** and alias the retired `Wight` to it, so an old
+printing still looks up but state only ever stores `Wraith`.
+
+```
+Wight — 0 mana, 4/4, Blight Zombie Token Unit   [printed title is the RETIRED name]
+[Augment] When I attack or block, put a -1/-1 counter on me.
+          When I die, augment me onto target ally.
+```
+
+This is the subtle one. It is a **real 4/4 body**, not merely a mod — a free 4/4 that
+shrinks every time it fights and then re-attaches itself as an augment when it finally
+dies, donating that same shrink-on-fight text to its new host (the leading `[Augment]`
+means the text transfers).
+
+Engine consequences:
+
+- "**Create** a Wraith" spawns it as a unit token.
+- "**Augment** a Wraith on/onto a unit" creates it directly as an augment mod on that unit
+  — the same token, applied rather than spawned.
+- ⚠ R47: a Wraith that dies is **not erased** the way tokens normally are; its own trigger
+  re-attaches it as a mod. It only ceases to exist when there is no legal ally to augment.
+- A Wraith dying is **not** trashing (tokens are excluded).
+
+**Cards (7):** Afflicting Anima, Blight's End, Cosmic Devourer, Legion of the Depths,
+Plague Ritual, Primordial Coalescence, Xzydris.
+
+⚠ The printed data is mid-transition: six cards already print the current **"Wraith"**,
+while **`Blight's End` still carries the retired "Wight"** ("Augment a Wight onto X target
+units"). Both must resolve to the same token — canonical `Wraith`, alias `Wight` — and a
+card-name lookup must never treat them as two things.
+
+---
+
+## New attributes
+
+| attribute | reminder text | cards |
+|---|---|---|
+| `{Blessed}` | Damage dealt by a blessed source causes its controller to gain that much life. | Blessed Thing, Flzzz, Godray, Hammer of Justice, Shib |
+| `{Afflicting}` | When an afflicting source kills one or more units, those units' controllers gain a rot. | Umbral Decay |
+| `{Lethal}` | Any combat damage from a lethal unit will kill a player. | Gublin |
+| `{Pure}` | Pure cards and cards they are interacting with ignore all other attributes. | Just a Unit — **PARKED**, see below |
+| `{Modular}` | You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs. | Spellbind |
+
+**Blessed** is lifelink, and it is *simultaneous*: Caleb, 2024-09-15 — *"Simultaneous"*;
+2025-03-18 — *"blessed gain and damage happen on the same game state check"*, *"(similar
+to lifelink in mtg)"*, and explicitly yes to "if it would deal lethal damage to you, do
+you heal before you die". So the life gain applies **before** the lethal state check; a
+blessed source cannot kill its own controller through its own damage.
+
+**Afflicting** fires on **-1/-1 counter kills**, not only damage kills — Caleb, 2024-09-10:
+*"we check damage and stats of units that were interacted with during spell resolutions"*.
+This matters because Umbral Decay's own effect *is* two -1/-1 counters. Per the reminder
+text it is one rot per affected controller per kill event, however many units died.
+⚠ R48 marks that last point as Bena's reading; no designer statement was found.
+
+**Lethal** kills a player outright on any combat damage. Note the Blightsea Polyp
+interaction above: rot replacing the column's damage still counts as damage dealt, so
+Lethal still kills.
+
+**Modular** mods are attached at cast time and ride on the stack with the spell — Caleb,
+2025-02-07: *"spellbind is an additional cost so it shows up on the stack with all it's
+mods"*, and a copy of the spell would copy the mods too.
+
+**`{Pure}` is PARKED** (Bena's standing precedent). It needs the attribute-suppression
+layer already parked for the base-set cards Monke, Suppression Field and Transmogrifant,
+and Pure's bidirectional "and cards they are interacting with" variant is needed by
+nothing else. `Just a Unit` registers with its printed body and a `todo` test, exactly like
+those three. Revisit if a suppression-layer session ever happens.
+
+---
+
+## Playing vs applying (recap of R37)
+
+Only **units and spells** are played. Applying a mod — Virus, graft or augment, from hand,
+bin or cache — is **not** playing a card, so "when(ever) you play a …" triggers do not
+fire. This matters most for the Light cards that care about playing cards. Bena's
+provisional local errata, 2026-08-19.
+
+---
+
+## Deliberately out of scope
+
+- `{Pure}` / attribute suppression (above).
+- The general cost-modifier layer. `Deferral Drone` ("the next card you play this turn
+  costs `[3]` less") needs a narrow version of the parked layer; implement the narrow case
+  only if it falls out cheaply, otherwise park the card and say so.
+- Multiplayer prophecy counting (per-player turn vs table round) — 1v1 only, so
+  unambiguous here.
+
+---
+
+## Engine wave D (2026-08-19): what the nine card batches asked for, and got
+
+All nine batch agents independently reported the same short list of missing
+primitives. They are built; the rulings are R49–R51 in `docs/digital-rules.md`.
+
+**Built.** A `lifeGained:<seat>` battle ledger mirroring `lifeLost` (Life
+Channel, Riftspawn Remnant, Retribution Thing). An `endOfHaste` event, fired
+before the R43 mana-tally sweep (Keeper of Tithes, Debt Plant). A
+`startOfDeployment` event, fired after R38's rot damage (Xzydris, Scholar of the
+Void, Prediction Prophet, and the base set's Invasive Species). Real non-mana
+costs on both spells (`payLife` / `discardCard` / `gainDebt`, plus the printed
+`gainDebt` line) and activated abilities (life / debt / discard N /
+sacrifice-another N / the printed either-or), all of which **gate** the action
+instead of fizzling at resolution. Per-ability `{Battle}` / `{Deployment}`
+timing (Grox, Cadaverous Cultivator). `Entity.spawnedTurn` (Banishment). A
+source `from` zone on the play events (Proph, Stalwart Sentinel). Zone-resident
+trigger listeners for cards sitting in a bin or a cache (Lurking Dread,
+Inexorable Miasma, Xzydris, and the base set's Cinder Scuttler).
+
+**Deliberately not built**, and still parked by decision: the copy layer, the
+attribute-suppression layer (`{Pure}`), the general cost-modifier layer, and a
+general replacement framework. Additionally still missing, each flagged on its
+own card: a "a card LEFT a bin" event (Rotling), transform machinery (Scholar of
+the Void), a "predict a number" player action (Prediction Prophet), a
+play-from-bin action and a play-into-formation mode (Trench Stalker, Writhing
+Host), a cost whose amount the payer chooses (Flesh Tithe, No Hand Killer,
+Glook) and a bin-zone cost (Grox).
+
+## Engine wave G (2026-08-19): the repair pass
+
+Four fixes, all cross-file, made once the whole repo was held by a single
+agent:
+
+1. **`E.glimpse` now implements R45 as corrected** — reveal N, cache exactly
+   ONE of the glimpser's choice, recycle the other N-1 to the bottom of the
+   deck. The choose-one is raised through the resolving part's own
+   `ctx.choose` via a new `E.partChoose` seam, so every one of the eleven
+   callers (`Celestial Purge`, `Oracle of Foretelling`, `Premonition`,
+   `Dematerialize`, `Foretell`, `Lifebound Seer`, `Maw of Despair`, `Lilbot`,
+   `Glook`, `Seer of Empty Spaces`, `Visionary Construct`) became correct with
+   **no card-code change**. `Big Glimpse Card` is untouched — it is the
+   deliberate pile variant.
+2. **`E.destroy(u, verb, { binTo })`** — R40's "trashed by the owner of the bin
+   it enters" needed the bin push and the trash attribution to be one
+   decision. `Pull Under`'s reroute-after-the-fact block is gone.
+3. **Two base-set cards unparked** by the R50/R51 primitives: `Invasive
+   Species` (a `startOfDeployment` trigger) and `Cinder Scuttler` (a
+   `zone: 'bin'` trigger). `Abyssal Evocation` stays parked — it needs a
+   bin-play permission in `doPlayCard`, a different gap.
+4. **R52** settles where created units arrive (the controller's home region),
+   closing R33's open question in favour of R28. Six Light & Dark cards moved.

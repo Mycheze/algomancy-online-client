@@ -50,6 +50,113 @@ test('Pull Under: deletes the target; it and its mods land in YOUR bin (not eras
   finishBattle(h);
 });
 
+test('Pull Under: a MODDED victim and its mods are trashed by the CASTER (R40 — the bin they enter is his)', () => {
+  const h = new Harness(1550);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Curio Drifter');                // opens the battle
+  const whale = spawn(h, D, 'Good Whale');                 // modded victim, owned by D
+  new E(h.state).attachMod(h.state.entities[whale]!, 'Ephemeral Skywalker', D, 'augment');
+  giveResources(h, A, 'water', 6);                         // bb + 4
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Pull Under') });
+  pick(h, { unit: whale });
+  pass(h); pass(h);
+  const trashes = h.events.filter(ev => ev.type === 'trashed');
+  // before the funnel fix this branch fired NO trash at all: destroy() erases
+  // an Unstable modded unit, and Pull Under pushed the cards into the bin by
+  // hand. Both now enter through E.toBin(caster, …, 'play').
+  const body = trashes.find(ev => ev.data?.['card'] === 'Good Whale');
+  const mod = trashes.find(ev => ev.data?.['card'] === 'Ephemeral Skywalker');
+  assert.ok(body, 'the victim fires trashed');
+  assert.ok(mod, 'its mod fires trashed');
+  assert.equal(body!.data!['seat'], A, "trashed by the CASTER — it entered the caster's bin, not D's");
+  assert.equal(mod!.data!['seat'], A, "the mod likewise: caster's bin, caster trashes");
+  assert.equal(body!.data!['from'], 'play');
+  assert.equal(trashes.filter(ev => ev.data?.['card'] === 'Good Whale').length, 1, 'exactly one trash, no double count');
+  finishBattle(h);
+});
+
+test('Pull Under: deleting YOUR OWN unmodded unit trashes it in your name, exactly once', () => {
+  const h = new Harness(1551);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const atk = spawn(h, A, 'Curio Drifter');                // opens the battle
+  const mine = spawn(h, A, 'Good Whale');                  // the caster's own victim
+  giveResources(h, A, 'water', 6);
+  toNextBattle(h, A);
+  // send both, so the caster's own unit is in the battle region and targetable
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk, mine]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Pull Under') });
+  pick(h, { unit: mine });
+  pass(h); pass(h);
+  assert.ok(!ent(h, mine));
+  assert.equal(h.state.players[A]!.bin.filter(c => c === 'Good Whale').length, 1, "one copy, in the caster's bin");
+  const trashes = h.events.filter(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Good Whale');
+  assert.equal(trashes.length, 1, 'exactly one trash event');
+  assert.equal(trashes[0]!.data!['seat'], A);
+  assert.equal(trashes[0]!.data!['from'], 'play');
+  finishBattle(h);
+});
+
+test('Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once (R40, binTo)', () => {
+  // R40: the trasher is the owner of the bin the card enters, and Pull Under
+  // puts it in the CASTER's bin — so the event must name A, not D.
+  //
+  // This used to be a KNOWN GAP: destroy() pushed the card into the OWNER's
+  // bin and fired trashed(owner) synchronously (queueing that event's
+  // triggers, bumping the per-battle ledger) before Pull Under's effect
+  // regained control, and card code can neither suppress nor re-attribute an
+  // event that has already fired. destroy() now takes a bin-destination
+  // override — `destroy(u, verb, { binTo: Seat })` — so the single bin push
+  // and the single trash attribution are one decision.
+  //
+  // The "exactly one trash event" assertion below is the guard against the
+  // WRONG fix (a compensating second trashed(caster), which would double-count
+  // the ledger and re-fire "when I am trashed"). Keep it.
+  const h = new Harness(1552);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Curio Drifter');
+  const plain = spawn(h, D, 'Good Whale');                 // unmodded, owned by D
+  giveResources(h, A, 'water', 6);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Pull Under') });
+  pick(h, { unit: plain });
+  pass(h); pass(h);
+  assert.ok(h.state.players[A]!.bin.includes('Good Whale'), "the CARD is in the right bin (the caster's)");
+  assert.deepEqual(h.state.players[D]!.bin, [], 'and not in the owner\'s');
+  const trashes = h.events.filter(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Good Whale');
+  assert.equal(trashes.length, 1, 'exactly one trash event — never doubled up to paper over the attribution');
+  assert.equal(trashes[0]!.data!['seat'], A,
+    "trashed by the CASTER — R40: the trasher is the owner of the bin it entered");
+  assert.equal(trashes[0]!.data!['from'], 'play');
+  finishBattle(h);
+});
+
+test('Pull Under: a TOKEN victim is erased — no bin, no trash (R40 excludes tokens)', () => {
+  const h = new Harness(1553);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Curio Drifter');
+  const tok = spawn(h, D, 'Unit Token');
+  h.state.entities[tok]!.token = true;
+  giveResources(h, A, 'water', 6);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Pull Under') });
+  pick(h, { unit: tok });
+  pass(h); pass(h);
+  assert.ok(!ent(h, tok), 'the token is gone');
+  assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'nothing entered the caster\'s bin');
+  assert.ok(!h.state.players[D]!.bin.includes('Unit Token'), 'nor the owner\'s');
+  assert.ok(!h.events.some(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Unit Token'),
+    'a token is never trashed (R40)');
+  finishBattle(h);
+});
+
 test('Recall: each player recalls a unit and loses 2 life (region-scoped, R25)', () => {
   const h = new Harness(1501);
   toDeployment(h);

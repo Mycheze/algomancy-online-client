@@ -173,28 +173,33 @@ block it this combat if able.
 Note: "Devastating" is not a current attribute (it appears only in old example text); the \
 live keyword for excess combat damage going to the player is Piercing.
 
-Light & Dark expansion (163 cards, two new elements). IMPORTANT: this expansion has NOT \
-had an official rules release — there is no rulebook or errata for it yet. The card text \
-is transcribed from card images and the definitions below are PROVISIONAL, drawn from \
-printed reminder text and the designer's Discord messages. Say so when you rely on them, \
-and never present them as settled rules.
+Light & Dark expansion (163 cards, two new elements). IMPORTANT: no official rulebook or \
+errata has shipped for it. Card text is transcribed from card images, and the definitions \
+below are PROVISIONAL — drawn from printed reminder text and the designer's Discord \
+messages. Say so when you rely on them; they are sourced, but not settled rules.
 - Light — new element; cream/white pip. Themes: Prophecy, cache, glimpse, life gain, \
 Blessed, and debt as a price for strong effects.
 - Dark — new element; grey pip. Themes: rot, trashing, bin recursion, -1/-1 counters, \
 sacrifice, Afflicting.
-- Rot — a persistent harm that accumulates on a PLAYER, not a unit. Rot deals damage to \
-the player holding it, equal to the amount of rot held. It is never removed once gained \
-("Rot stays", designer, 2025-03-19). Some effects convert combat damage into rot instead \
-of life loss. Your own rot counts as a source you control. UNCONFIRMED: exactly when in \
-the turn rot deals its damage — do not state a timing.
-- Debt — an accumulating cost paid off with mana, unlike rot. Debt is paid at the END of \
-the resource step, and you cannot activate mana after paying it (designer, 2024-12-02). \
-Paid debt goes away.
+- Rot — a persistent harm that accumulates on a PLAYER, not a unit. Card text (Rot \
+Counter): "At the start of deployment, you take damage equal to the number of rot you \
+have." Rot is never removed once gained, so it hits you again every deployment, and \
+deployment has no priority, so the damage cannot be responded to. Some effects convert \
+combat damage into rot instead of life loss. Your own rot is a source you control.
+- Debt — an accumulating cost paid off with mana, unlike rot. After the resources step \
+you MUST pay 1 mana per debt and that debt is removed; if you cannot pay for all of it, \
+only what you can pay is removed and the rest carries over to the next turn. There is no \
+life loss or other penalty for unpaid debt. It happens at the END of the resource step \
+and you cannot activate mana after paying it (designer, 2024-12-02).
 - Prophecy — an alternate cost on a second banner under the title, reading \
-"Prophecy — <condition>" (e.g. "Two Turns Pass", "Your life is 5 or less"). You first \
-prophesy the card by paying that small cost, which caches it; once the condition is met \
-you may play it from cache for free ("without paying their cost", designer, 2024-10-28). \
-Effects can attach a prophecy to an opponent's card too.
+"Prophecy — <condition>" (e.g. "Two Turns Pass", "Your life is 5 or less"). Card text: \
+"To prophecy, cache this card during deployment by paying its prophecy cost. You may \
+play it for free, as if it were in your hand, if the prophecy has been fulfilled." \
+Prophesying is legal only during DEPLOYMENT, and fulfilment counts forward from that \
+moment — it never looks backwards at a condition already met. "For free" means without \
+paying its cost AND ignoring affinity. In 1v1 both battles in a turn tick "One Battle \
+Passes". Caching a unit that is in play sends its mods to the bin. Effects can attach a \
+prophecy to an opponent's card too.
 - Cache — a neutral holding zone separate from hand, bin and deck ("basically exile with \
 the intent to be referenced later", designer). Cards stay cached if unused. Being cached \
 does NOT by itself let you play a card — only effects that say so (like glimpse) do — but \
@@ -202,18 +207,27 @@ you CAN augment or graft from cache.
 - Glimpse — reveal the top card of the deck and cache it; until end of turn you may play \
 it as if it were in hand, ignoring affinity. You still pay its cost and obey timing.
 - Blessed — damage dealt by a blessed source also gains its controller that much life, \
-simultaneously with the damage.
+simultaneously with the damage (the same game-state check, like lifelink). The gain \
+therefore lands before the lethal check, so a blessed source cannot kill its own \
+controller with its own damage.
 - Afflicting — when an afflicting source kills one or more units, those units' \
-CONTROLLERS gain a rot.
+CONTROLLERS gain a rot. "Kills" includes killing with -1/-1 counters, not only with \
+damage — which is how Umbral Decay, the only afflicting card, works.
 - Lethal — any combat damage from a lethal unit kills a player outright.
 - Pure — pure cards, and the cards they interact with, ignore all other attributes.
 - Modular — you may apply mods to a modular card from hand and/or bin as it is played, \
 paying each mod's cost.
-- Wraith — a token made by several Dark cards; it is AUGMENTED onto a unit rather than \
-placed as its own unit. Its printed text is not in our data — say so if asked.
-- Trash / trashed — a verb used by many Dark cards ("When I am trashed"). UNCONFIRMED: \
-no card or designer statement defines how trashing differs from discarding or erasing. \
-Do not invent a definition; say it is not yet documented."""
+- Wraith (renamed from WIGHT — some cards still print "Wight"; they are the same token) \
+— a 0-cost 4/4 Blight Zombie Token Unit carrying [Augment], reading "When I attack or \
+block, put a -1/-1 counter on me. When I die, augment me onto target ally." It is a real \
+body, not merely a mod, but it carries the augment symbol, which is why most cards create \
+it directly as an augment on a unit.
+- Trash / trashed — card text: "A nontoken card entering a bin from anywhere other than \
+the stack is trashed" — i.e. a card reaches a bin without having been played. \
+Discarding, sacrificing, milling and dying in combat are ALL trashing. NOT trashing: a \
+spell going to the bin after resolving (it comes from the stack, so negating a spell is \
+not trashing it), tokens, or erasing (an erased card never touches a bin at all). The \
+owner of the bin the card enters is the one who trashes it."""
 
 SYSTEM_PROMPT = """You are the Algomancy Rules Bot, an expert assistant for the \
 card game Algomancy by Caleb Gannon. Answer using TWO trusted sources only: (1) the \
@@ -246,9 +260,11 @@ transcribed from card images, and any passage labelled "Light & Dark provisional
 glossary" — or a primer line marked provisional — is a best reading from printed \
 reminder text and the designer's Discord messages, NOT settled rules. When you rely on \
 one, say plainly that it is provisional and may change when the official release ships. \
-Where such a source marks a point UNCONFIRMED (for example exactly when rot deals its \
-damage, or what "trashed" means), do not fill the gap with a guess — say it is not \
-documented yet.
+Where such a source explicitly marks a point UNCONFIRMED, do not fill the gap with a \
+guess — say it is not documented yet. But where it DOES state a rule and names its \
+source (card text or a dated designer message), answer it directly: rot's timing, what \
+"trashed" means, the Wraith/Wight token, prophecy and debt are all sourced now, so flag \
+them as provisional but do NOT hedge them as unknown.
 
 Do not be led by the question:
 - The user may state or imply a rule, often as a leading question ("…right?", \
@@ -278,7 +294,7 @@ Style: be concise, use clean markdown, keep answers under ~250 words."""
 # `c…` change (data) at a glance. Bump ENGINE_DATE + add a line to
 # ENGINE_CHANGELOG.md whenever you make a real behavioural change. See that file
 # for the history; responses logged before this field existed have no stamp.
-ENGINE_DATE = "2026-07-11"
+ENGINE_DATE = "2026-08-19"
 
 
 # Prepended to the final user turn in a thread. The earlier turns are context for

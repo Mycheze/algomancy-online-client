@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { forcedAction, IllegalAction, legalActions } from '../src/apply.ts';
+import { ALL_ELEMENTS, forcedAction, IllegalAction, legalActions } from '../src/apply.ts';
 import { give, giveResources, skipHasteStep, spawn, unitsOf } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
@@ -149,12 +149,13 @@ test('a fwe draft game refuses wood/metal resources and never offers them', () =
     .filter(a => a.type === 'recycleForResource')
     .map(a => (a as { element: string }).element));
   assert.deepEqual([...els].sort(), ['earth', 'fire', 'water']);
-  // shared games still offer all five
+  // shared games still offer every element (7 since Light & Dark)
   const shared = new Harness(2107);
   const els2 = new Set(legalActions(shared.state, 0)
     .filter(a => a.type === 'recycleForResource')
     .map(a => (a as { element: string }).element));
-  assert.equal(els2.size, 5);
+  assert.deepEqual([...els2].sort(), [...ALL_ELEMENTS].sort());
+  assert.equal(els2.size, ALL_ELEMENTS.length);
 });
 
 // ── simultaneous deployment ───────────────────────────────────────────

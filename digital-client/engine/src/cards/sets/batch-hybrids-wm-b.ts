@@ -43,9 +43,10 @@
  *    erase-own-card hook (afterParts bins it after the effect runs).
  *  - DEMATERIALIZE's "target effect" = the engine's 'stackSpell' targets
  *    (spells, spell units, spell tokens, ambushes) — triggered/activated
- *    items are not targetable (Frosted Denial precedent). Glimpse 3 is the
- *    batch-water-a approximation: reveal 3, the glimpsing player caches one
- *    TO HAND, the rest recycle to the bottom.
+ *    items are not targetable (Frosted Denial precedent). Glimpse 3 is real
+ *    (R45, E.glimpse): three are revealed, ONE of the glimpser's choice is
+ *    cached (playable until end of turn, ignoring affinity) and the other two
+ *    are recycled — it used to keep one card, permanently, in hand.
  *  - AETHERCAP SIPHONER "spawns with" its three -1/-1 counters via an
  *    on-spawn self trigger — the counters land immediately after the spawn
  *    event rather than being on the unit as it spawns.
@@ -60,13 +61,14 @@
  *  - "EACH ENEMY" / "each unit" / "all tokens" are region-scoped (R12/R25):
  *    only the event region's units/players are touched.
  *
- * PARKED (needs engine machinery that does not exist yet):
+ * UNPARKED by the R49/R50/R51 engine wave:
  *  - Invasive Species: "At the start of deployment, recall all your other
- *    units" — NO start-of-deployment event exists (startDeployment fires no
- *    fireEvent; 'endOfTurn' is after deployment and changes who defends the
- *    next battle, so it is not an honest stand-in). Registered with an inert
- *    augmentText entry (Stasis Sentry precedent) so it still plays as a 4/4
- *    and is recognised as an augment.
+ *    units" is a plain triggered ability on R50's 'startOfDeployment' event,
+ *    which fires inside a settle() window after R38's rot damage.
+ *
+ * PARKED (needs engine machinery that does not exist yet):
+ *  - no whole card is parked in this batch any more; the remaining gaps are
+ *    the per-card approximations listed above.
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -128,23 +130,12 @@ const formationOf = (g: E, id: EntityId): EntityId[][] | null => {
   return null;
 };
 
-/** Glimpse N for a seat — ⚠ the batch-water-a approximation (see header). */
-function glimpse(g: E, ctx: EffectCtx, seat: Seat, n: number): void {
-  const count = Math.min(n, g.deckOf(seat).length);
-  if (count <= 0) return;
-  const top = g.deckOf(seat).slice(0, count);
-  g.ev('info', `${g.pname(seat)} Glimpses ${count}: ${top.join(', ')}.`);
-  const pick = ctx.choose('glimpse', {
-    kind: 'payOrDecline', seat,
-    prompt: `Glimpse ${count}: choose a card to cache (engine: it goes to your hand)`,
-    options: top.map((name, i) => ({ label: name, value: i, card: name })),
-  }) as number;
-  g.deckOf(seat).splice(0, count);
-  const keptIdx = top[pick] !== undefined ? pick : 0;
-  const kept = top[keptIdx]!;
-  g.player(seat).hand.push(kept);
-  top.forEach((name, i) => { if (i !== keptIdx) g.recycleToBottom(seat, name); });
-  g.ev('info', `${g.pname(seat)} caches ${kept} and recycles the rest.`);
+/** Glimpse N for a seat (R45) — reveal the top N, cache exactly ONE of the
+ * glimpser's choice (playable until end of turn ignoring affinity; mana and
+ * timing still apply) and recycle the rest to the bottom of the deck. N > 1
+ * raises the choose-one decision inside E.glimpse, so this CAN suspend. */
+function glimpse(g: E, seat: Seat, n: number): void {
+  g.glimpse(seat, n);
 }
 
 // ─────────────────────── FIRE / WOOD (rg) ─────────────────────────────
@@ -242,9 +233,10 @@ card('Auric Ascendant', {
 
 // "Negate target effect. Its controller Glimpses 3." — bm/2 2/1 {Battle}
 // Cosmic Technology Spell. ⚠ "target effect" = stack spells/spell units/
-// spell tokens/ambushes (header); the Glimpse is the batch-water-a
-// approximation. The Glimpse goes to the negated item's controller, whoever
-// that is (it can be the caster's own effect).
+// spell tokens/ambushes (header); the Glimpse is the real R45 one. It goes to
+// the negated item's controller, whoever that is (it can be the caster's own
+// effect). R40: negating is not trashing — the negated card comes off the
+// STACK — so no 'trashed' fires for the card Dematerialize answers.
 card('Dematerialize', {
   spellEffect: {
     targets: { what: 'stackSpell', prompt: 'Dematerialize: negate target effect' },
@@ -255,7 +247,7 @@ card('Dematerialize', {
       const it = g.s.stack.find(i => i.id === stackId);
       if (!it) return;
       g.negate(stackId);
-      glimpse(g, ctx, it.controller, 3);
+      glimpse(g, it.controller, 3);
     },
   },
 });
@@ -548,14 +540,39 @@ card('Galactic Germination', {
 });
 
 // "[Augment] At the start of deployment, recall all your other units." —
-// bg/1 4/4 Alien Parasite Unit. PARKED (see header): no start-of-deployment
-// event exists. The inert augmentText entry keeps the card recognised as an
-// augment (Stasis Sentry precedent); it plays as a vanilla 4/4 meanwhile.
+// bg/1 4/4 Alien Parasite Unit. UNPARKED by R50's 'startOfDeployment' event,
+// which fires inside a settle() window right after R38's rot damage.
+//
+// Text-box [Augment]: live while the card is a unit in play, donated to the
+// host when it augments — so "your other units" is always the HOLDER's
+// controller (ctx.controller), and "other" excludes the holder itself, host
+// included. There is no "may": it recalls unconditionally, which is the whole
+// drawback of a 1-mana 4/4.
+//
+// Region-scoped (R12/R25) via ctx.region, which at the start of deployment is
+// the controller's home region — where all of their units are.
+//
+// Recall order is the entity-table order, taken as a snapshot BEFORE the first
+// recall so the list cannot shift underneath the loop; each recall puts a
+// nontoken unit in its owner's hand and erases a token (E.recall), and a
+// recalled unit's mods go to their owners' bins and are trashed there (R40).
 card('Invasive Species', {
   augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'at the start of deployment, recall all your other units (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
+    type: 'triggered', events: ['startOfDeployment'],
+    label: 'at the start of deployment, recall all your other units',
+    effect: {
+      run: (g, ctx) => {
+        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const others = g.unitsOf(ctx.controller, ctx.region)
+          .filter(u => u.id !== self?.id);
+        if (!others.length) {
+          g.ev('info', 'Invasive Species: no other units to recall.');
+          return;
+        }
+        g.ev('info', `Invasive Species recalls ${others.length} of ${g.pname(ctx.controller)}'s other units.`);
+        for (const u of others) g.recall(u);
+      },
+    },
   }],
 });
 

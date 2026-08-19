@@ -3,8 +3,9 @@
  * parallel card registration can't shift assertions; seeds are 1400-1499.
  *
  * Covers: a tripling graft cause (Amphivore), hand disruption (Bripp), erase
- * + Glimpse (Celestial Purge, ⚠ glimpse approximation — cached card goes to
- * hand), stack recall (Cosmic Reversal), a live hand-size static (Dreadspawn
+ * + Glimpse (Celestial Purge — R45: reveal N, cache exactly ONE of the
+ * glimpser's choice and recycle the rest; the cached one is playable
+ * until end of turn ignoring affinity), stack recall (Cosmic Reversal), a live hand-size static (Dreadspawn
  * Horror; its augment-donated form stays parked — mod-carried statics),
  * targeted draw trigger (Dreamfloat Drifter), the engine's per-battle
  * life-loss ledger (Echo of Despair, Null Drone; R14), bin recall (Eldritch
@@ -24,6 +25,10 @@ import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
+import type { CachedCard, Seat } from '../src/types.ts';
+
+/** R41: the cache zone — optional field, so read it through here. */
+const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
 
 // ── Amphivore ────────────────────────────────────────────────────────────
 
@@ -75,7 +80,7 @@ test('Bripp: look at target player\'s hand, recycle a card, they draw; 4/2 Feebl
 
 // ── Celestial Purge ──────────────────────────────────────────────────────
 
-test('Celestial Purge: erases target unit (no bin), its controller Glimpses 3', () => {
+test('Celestial Purge: erases target unit (no bin); its controller Glimpses 3 — ONE cached, the other two recycled', () => {
   const h = new Harness(1403);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -86,17 +91,27 @@ test('Celestial Purge: erases target unit (no bin), its controller Glimpses 3', 
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Celestial Purge') });
   pick(h, { unit: slime });
-  const top3 = h.state.sharedDeck.slice(0, 3);
-  const dHandBefore = h.state.players[D]!.hand.length;
-  pass(h); pass(h);                                         // resolve → erase + glimpse decision
-  assert.equal(h.state.decision!.seat, D, 'the erased unit\'s controller glimpses');
-  pick(h, 1);                                               // cache the middle card
+  const top3 = h.q.deckOf(D).slice(0, 3);
+  const deckBefore = h.q.deckOf(D).length;
+  const dHandBefore = [...h.state.players[D]!.hand];
+  pass(h); pass(h);                                         // resolve → erase + glimpse
+  // R45: the GLIMPSER chooses which one to cache — here the erased unit's
+  // controller, D, not the caster
+  const dec = h.state.decision!;
+  assert.equal(dec.seat, D, 'the glimpser chooses, and the glimpser is D');
+  assert.deepEqual(dec.options.map(o => o.card), top3, 'the three revealed cards are the options');
+  h.do({ type: 'decide', seat: D, choice: 1 });             // cache the MIDDLE one
   assert.ok(!ent(h, slime), 'unit erased');
   assert.ok(!h.state.players[D]!.bin.includes('Lurking Slimebeast'), 'erase, not bin');
-  assert.equal(h.state.players[D]!.hand.length, dHandBefore + 1, 'cached card in hand (approximation)');
-  assert.equal(h.state.players[D]!.hand[dHandBefore], top3[1]);
-  const deck = h.state.sharedDeck;
-  assert.deepEqual(deck.slice(-2), [top3[0], top3[2]], 'the rest recycled to the bottom');
+  assert.deepEqual(cacheOf(h, D).map(c => c.card), [top3[1]],
+    'exactly ONE card is cached — the chosen one (R45)');
+  assert.deepEqual(h.state.players[D]!.hand, dHandBefore, 'nothing reaches hand');
+  assert.equal(h.q.deckOf(D).length, deckBefore - 1, 'only the cached card left the deck');
+  assert.deepEqual(h.q.deckOf(D).slice(-2), [top3[0], top3[2]],
+    'the other two are recycled to the BOTTOM, in revealed order');
+  assert.equal(h.q.cachePermission(D, 0), 'glimpse', 'it carries the until-end-of-turn permission');
+  assert.equal(cacheOf(h, D)[0]!.prophecy, undefined, 'glimpse attaches no prophecy');
+  assert.ok(h.events.some(ev => ev.type === 'glimpsed'), 'and the reveal is public (R41)');
   finishBattle(h);
 });
 
@@ -538,22 +553,42 @@ test('Null Drone: life loss is ledgered engine-side — no tracker unit needed i
 
 // ── Oracle of Foretelling ────────────────────────────────────────────────
 
-test('Oracle of Foretelling: Glimpse 5 (cache one — to hand — recycle the rest), 4/1 spawns', () => {
+test('Oracle of Foretelling: Glimpse 5 caches ONE of the five; it is playable IGNORING AFFINITY, 4/1 spawns', () => {
   const h = new Harness(1421);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  giveResources(h, p, 'water', 4);                          // b/3
-  const top5 = h.state.sharedDeck.slice(0, 5);
-  const handBefore = h.state.players[p]!.hand.length + 1;   // +1: the give below
-  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Oracle of Foretelling') });
-  assert.equal(h.state.decision!.options.length, 5, 'five cards revealed');
-  pick(h, 2);                                               // cache the third
-  assert.equal(h.state.players[p]!.hand.length, handBefore, 'played one, cached one');
-  assert.equal(h.state.players[p]!.hand[handBefore - 1], top5[2], 'the cached card (approximation: to hand)');
-  assert.deepEqual(h.state.sharedDeck.slice(-4), [top5[0], top5[1], top5[3], top5[4]],
-    'the other four recycled to the bottom in order');
+  giveResources(h, p, 'water', 5);                          // b/3 + 2 spare mana, ZERO fire affinity
+  h.q.deckOf(p).unshift('Ignis Sprite');                    // r/1 deploy unit — needs fire affinity from hand
+  const top5 = h.q.deckOf(p).slice(0, 5);
+  const deckBefore = h.q.deckOf(p).length;
+  const spriteInHand = give(h, p, 'Ignis Sprite');
+  assert.ok(!h.legal(p).some(a => a.type === 'playCard' && a.handIndex === spriteInHand),
+    'baseline: with no fire affinity the copy IN HAND cannot be played');
+  const oracleIdx = give(h, p, 'Oracle of Foretelling');
+  const handBefore = h.state.players[p]!.hand.filter((_, i) => i !== oracleIdx);
+  h.do({ type: 'playCard', seat: p, handIndex: oracleIdx });
+  // R45: reveal 5, cache exactly ONE of the glimpser's choice, recycle 4
+  const dec = h.state.decision!;
+  assert.equal(dec.seat, p);
+  assert.deepEqual(dec.options.map(o => o.card), top5, 'all five are offered, in deck order');
+  h.do({ type: 'decide', seat: p, choice: 0 });             // keep the Ignis Sprite on top
+  assert.deepEqual(cacheOf(h, p).map(c => c.card), ['Ignis Sprite'], 'exactly one cached');
+  assert.deepEqual(h.state.players[p]!.hand, handBefore, 'and nothing reaches hand');
+  assert.equal(h.q.deckOf(p).length, deckBefore - 1, 'only the cached card left the deck');
+  assert.deepEqual(h.q.deckOf(p).slice(-4), top5.slice(1),
+    'the other four are on the BOTTOM, in revealed order');
   const oracle = unitsOf(h, p).find(u => u.card === 'Oracle of Foretelling')!;
   assert.deepEqual(effStats(h, oracle.id), [4, 1]);
+  // R45's whole point: the SAME card that is unplayable from hand is playable
+  // from the cache, because the glimpse permission ignores affinity.
+  assert.equal(h.q.cachePermission(p, 0), 'glimpse');
+  assert.ok(h.legal(p).some(a => a.type === 'playCached' && a.index === 0),
+    'the cached Ignis Sprite IS offered — glimpse ignores affinity');
+  const mana = h.q.openMana(p);
+  h.do({ type: 'playCached', seat: p, index: 0 });
+  assert.equal(h.q.openMana(p), mana - 1, 'but the mana cost is still paid (Caleb 2023-08-13)');
+  assert.ok(unitsOf(h, p).some(u => u.card === 'Ignis Sprite'), 'and it really enters play');
+  assert.deepEqual(cacheOf(h, p).map(c => c.card), [], 'it left the cache');
 });
 
 // ── Overwhelm ────────────────────────────────────────────────────────────
@@ -579,7 +614,7 @@ test('Overwhelm: target unit gains -1/-1 per card in your hand, until regroup', 
 
 // ── Premonition ──────────────────────────────────────────────────────────
 
-test('Premonition: Glimpse X where X is your water affinity (at resolution)', () => {
+test('Premonition: Glimpse X where X is your water affinity; the permission dies with the turn, the card stays', () => {
   const h = new Harness(1423);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -587,16 +622,27 @@ test('Premonition: Glimpse X where X is your water affinity (at resolution)', ()
   giveResources(h, A, 'water', 3);                          // affinity 3 (expended still counts)
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
-  const top3 = h.state.sharedDeck.slice(0, 3);
-  const handBefore = h.state.players[A]!.hand.length + 1;   // +1: the give below
+  const top3 = h.q.deckOf(A).slice(0, 3);
+  const deckBefore = h.q.deckOf(A).length;
+  const handBefore = [...h.state.players[A]!.hand];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Premonition') });
   pass(h); pass(h);                                         // resolve
-  assert.equal(h.state.decision!.options.length, 3, 'X = 3 water affinity → Glimpse 3');
-  pick(h, 0);
-  assert.equal(h.state.players[A]!.hand.length, handBefore, 'played one, cached one');
-  assert.ok(h.state.players[A]!.hand.includes(top3[0]!));
-  assert.deepEqual(h.state.sharedDeck.slice(-2), [top3[1], top3[2]], 'rest recycled');
+  const dec = h.state.decision!;
+  assert.equal(dec.options.length, 3, 'X = 3 water affinity → Glimpse 3, so three options');
+  h.do({ type: 'decide', seat: A, choice: 2 });             // cache the LAST of the three
+  assert.deepEqual(cacheOf(h, A).map(c => c.card), [top3[2]], 'exactly one cached (R45)');
+  assert.deepEqual(h.state.players[A]!.hand, handBefore, 'nothing to hand');
+  assert.equal(h.q.deckOf(A).length, deckBefore - 1, 'the other two stayed in the deck');
+  assert.deepEqual(h.q.deckOf(A).slice(-2), [top3[0], top3[1]],
+    'recycled to the BOTTOM, in revealed order');
+  assert.equal(h.q.cachePermission(A, 0), 'glimpse');
   finishBattle(h);
+  // R45: the permission expires at end of turn — the card stays cached, inert
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  assert.deepEqual(cacheOf(h, A).map(c => c.card), [top3[2]], 'still in the cache next turn');
+  assert.equal(h.q.cachePermission(A, 0), null, 'but no longer playable');
+  assert.ok(!h.legal(A).some(a => a.type === 'playCached'));
 });
 
 // ── Protective Adaptations ───────────────────────────────────────────────

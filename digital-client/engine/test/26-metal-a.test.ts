@@ -416,7 +416,7 @@ test('Download: steals a chosen enemy token; a stolen Fireball recasts with new 
 
 // ── Eldritch Dreamtender ─────────────────────────────────────────────────
 
-test('Eldritch Dreamtender: connects → sacrifices itself to discard from that hand', () => {
+test('Eldritch Dreamtender: connects → sacrifices itself to discard from that hand; both are TRASHES (R40)', () => {
   const h = new Harness(2616);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -437,6 +437,19 @@ test('Eldritch Dreamtender: connects → sacrifices itself to discard from that 
   assert.equal(h.state.players[D]!.hand.length, dHand.length - 1, 'one card discarded');
   assert.ok(h.state.players[D]!.bin.includes(dHand[0]!), 'to its owner\'s bin');
   assert.ok(h.state.seenHand[A], 'the look is remembered client-side');
+  // R40: the discard is routed through E.discardFromHand, so it TRASHES —
+  // attributed to the hand's owner (the bin the card enters is theirs), NOT
+  // to the Dreamtender's controller who chose the card.
+  const trashes = h.events.filter(ev => ev.type === 'trashed');
+  const discard = trashes.find(ev => ev.data?.['card'] === dHand[0]);
+  assert.ok(discard, 'the discard fired a trashed event');
+  assert.equal(discard!.data!['seat'], D, 'trashed BY the hand\'s owner, not by the attacker');
+  assert.equal(discard!.data!['from'], 'hand');
+  // and the self-sacrifice is a trash too, by the Dreamtender's own owner
+  const sac = trashes.find(ev => ev.data?.['card'] === 'Eldritch Dreamtender');
+  assert.ok(sac, 'sacrificing is trashing (R40)');
+  assert.equal(sac!.data!['seat'], A);
+  assert.equal(sac!.data!['from'], 'play');
   finishBattle(h);
 });
 

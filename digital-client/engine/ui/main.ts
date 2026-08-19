@@ -3,10 +3,10 @@
  * Harness.do(action); pending decisions render as highlights or a prompt.
  * Both hands are visible: this is the M1 test rig, not the product. */
 import { Harness } from '../src/harness.ts';
-import { forcedAction, legalActions, IllegalAction } from '../src/apply.ts';
-import { getCard, graftCauseIndex } from '../src/cards/dsl.ts';
+import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/apply.ts';
+import { getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import { E } from '../src/engine.ts';
-import type { Action, Entity, EntityId, GameState, Seat, TargetRef } from '../src/types.ts';
+import type { Action, CachedCard, Entity, EntityId, EventType, GameState, Seat, TargetRef } from '../src/types.ts';
 
 const ART = '../../../AlgomancyCards/';
 /** placeholder name the server sends for a hidden card (opp hand / deck) — see server/view.ts */
@@ -28,6 +28,9 @@ interface Backend { state: GameState; log: string[]; do(a: Action): void; }
 class NetBackend implements Backend {
   state: GameState = null as unknown as GameState;
   log: string[] = [];
+  /** EventType per log line, index-aligned with `log` (log styling). Lines
+   * that arrived as a bare full-log resync have no type and stay unstyled. */
+  logTypes: (EventType | undefined)[] = [];
   seat: Seat = 0;
   room: string;
   legal: Action[] = [];
@@ -74,7 +77,7 @@ class NetBackend implements Backend {
   undo(): void { this.ws.send(JSON.stringify({ t: 'undo' })); }
   private onMsg(m: {
     t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
-    events?: { msg: string }[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
+    events?: { msg: string; type?: EventType }[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
     clock?: ClockSnap; waiting?: { have: [boolean, boolean] }; names?: [string, string];
   }): void {
     if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };
@@ -85,14 +88,15 @@ class NetBackend implements Backend {
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? [false, false]; uiError = ''; render(); return; }
       this.waiting = null;
       this.state = m.view!;
-      this.log = m.log ?? []; this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
+      this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
+      this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
       resetUi(); uiError = ''; render(); return;
     }
     if (m.t === 'update') {
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? this.peers; render(); return; }
       if (m.view) this.state = m.view;
-      if (m.log) this.log = m.log;               // full log resync (undo shrank it)
-      if (m.events) for (const e of m.events) this.log.push(e.msg);
+      if (m.log) { this.log = m.log; this.logTypes = m.log.map(() => undefined); }   // full resync (undo shrank it)
+      if (m.events) for (const e of m.events) { this.log.push(e.msg); this.logTypes.push(e.type); }
       if (m.legal) this.legal = m.legal;
       if (m.peers) this.peers = m.peers;
       // deploy-end reveal: what the opponent secretly did during deployment.
@@ -119,13 +123,18 @@ let NET: NetBackend | null = null;
 let h: Backend = new Harness(Math.floor(Math.random() * 1e6));
 let uiError = '';
 
+/** the zones a mod (augment/graft) can be applied from — R41 added the cache */
+type ModZone = 'hand' | 'bin' | 'cache';
+
 interface UiState {
   carrying: EntityId | null;
   columns: EntityId[][];
   send: EntityId[];
   /** spell tokens riding along with the attack being built (C1) */
   spellTokens: EntityId[];
-  modding: { from: 'hand' | 'bin'; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
+  /** R41: 'cache' is a third mod source — "you CAN augment or graft from
+   * cache" (Caleb 2024-12-02) — so the in-progress mod has to name it too. */
+  modding: { from: ModZone; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
   menu: { x: number; y: number; items: { label: string; icon?: string; go: () => void }[] } | null;
   orderPicked: number[];
   /** draft step: pile indices (into hand.concat(pack)) marked "leave in pack" */
@@ -165,9 +174,17 @@ interface UiState {
   /** which turn+seat bottomPick was built for (re-init on change) */
   bottomFor: string;
 }
+/** C(|ALL_ELEMENTS|, 3) — the number of live-draft trios the picker reaches.
+ * Derived, never written down: adding an element to the engine moves it. */
+const TRIO_COUNT = (n => (n * (n - 1) * (n - 2)) / 6)(ALL_ELEMENTS.length);
+/** the persisted trio, filtered against the engine's element list so a stale
+ * or hand-edited localStorage entry can never smuggle in a non-element */
 const savedEls = (): string[] => {
-  try { return JSON.parse(localStorage.getItem('algoEls') ?? '') as string[]; }
-  catch { return ['fire', 'water', 'earth']; }
+  try {
+    const raw = JSON.parse(localStorage.getItem('algoEls') ?? '') as string[];
+    const clean = (Array.isArray(raw) ? raw : []).filter(el => (ALL_ELEMENTS as string[]).includes(el));
+    return clean.length ? [...new Set(clean)].slice(0, 3) : ['fire', 'water', 'earth'];
+  } catch { return ['fire', 'water', 'earth']; }
 };
 const freshUi = (): UiState => ({
   carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
@@ -240,8 +257,12 @@ const COST_WORD: Record<string, string> = {
   zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5',
   six: '6', seven: '7', eight: '8', nine: '9', x: 'x', three_blue: '3b',
 };
-/** cost letters → faction icon; 'p' (prismite/colorless) has NO icon — left as text */
-const PIP_EL: Record<string, string> = { r: 'fire', m: 'metal', b: 'water', e: 'earth', g: 'wood' };
+/** cost letters → faction icon; 'p' (prismite/colorless) has NO icon — left as
+ * text. Taken straight from the engine (l = light, d = dark) so a new element
+ * can never leave the UI with a stale copy of the pip table. */
+const PIP_EL: Record<string, string> = ELEMENT_OF_PIP;
+/** the same pip letters as a character class, for the [4bb]-style cost token */
+const COST_TOKEN_RE = new RegExp(`^[0-9]*[${Object.keys(PIP_EL).join('')}]+$`);
 /** a text-line game icon; if the file is missing it degrades to `fallback` */
 const txtIcon = (name: string, fallback: string): string =>
   `<img class="txticon" src="/Icons/${name}.webp" alt="${fallback}" onerror="this.outerHTML=this.alt">`;
@@ -255,7 +276,7 @@ function iconizeText(raw: string): string {
       const body = br.toLowerCase();
       const icon = TEXT_ICON[body];
       if (icon) return txtIcon(icon, tok);          // fallback KEEPS the brackets
-      const cost = COST_WORD[body] ?? (/^[0-9]*[rmbeg]+$/.test(body) ? body : undefined);
+      const cost = COST_WORD[body] ?? (COST_TOKEN_RE.test(body) ? body : undefined);
       if (cost !== undefined) {
         return [...cost].map(c => {
           const el = PIP_EL[c];
@@ -274,6 +295,19 @@ function iconizeText(raw: string): string {
   });
 }
 const q = () => new E(h.state);
+
+// ── R41: the cache zone ───────────────────────────────────────────────
+/** `seat`'s cache. The field is optional/additive (older saves have none), so
+ * it is always read through the engine query rather than off PlayerState. */
+const cacheOf = (seat: Seat): CachedCard[] => q().cache(seat);
+/** the card name at `index` of `seat`'s `zone` — the cache holds ENTRIES, not
+ * bare names, so every cross-zone read goes through here */
+function zoneCardName(seat: Seat, zone: ModZone, index: number): string | undefined {
+  if (zone === 'cache') return cacheOf(seat)[index]?.card;
+  return h.state.players[seat]![zone][index];
+}
+/** human name of a mod source zone, for prompts */
+const zoneLabel = (z: ModZone): string => (z === 'bin' ? 'the bin' : z === 'cache' ? 'the cache' : 'hand');
 
 /** #4 hotseat undo snapshots: one per local act() call, taken BEFORE the
  * action — cancelling a cast restores the snapshot from before the chain's
@@ -560,7 +594,7 @@ function xPreviewFor(name: string, seat: Seat): number | null {
 // ── rendering ─────────────────────────────────────────────────────────
 function cardHtml(name: string, opts: {
   playable?: boolean; candidate?: boolean; selected?: boolean; carrying?: boolean; modhost?: boolean;
-  badges?: { t: string; mod?: boolean; ctr?: boolean; html?: boolean }[]; stats?: string; dmg?: string; data?: string;
+  badges?: { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[]; stats?: string; dmg?: string; data?: string;
 } = {}): string {
   const cls = ['card'];
   if (opts.playable) cls.push('playable');
@@ -568,7 +602,7 @@ function cardHtml(name: string, opts: {
   if (opts.selected) cls.push('selected');
   if (opts.carrying) cls.push('carrying');
   if (opts.modhost) cls.push('modhost');
-  const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''}">${b.html ? b.t : esc(b.t)}</span>`).join('');
+  const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''} ${b.cls ?? ''}">${b.html ? b.t : esc(b.t)}</span>`).join('');
   return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}">
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
     <div class="artfallback">${esc(name)}</div>
@@ -633,8 +667,13 @@ function resHtml(r: { kind: string; state: string }, p: Seat, i: number): string
   const chip = r.state === 'dormant' && r.kind !== 'hidden'
     ? `<span class="reschip ${r.kind}">${r.kind === 'prismite' ? 'P' : r.kind.charAt(0).toUpperCase()}</span>` : '';
   const title = r.kind === 'hidden' ? 'dormant (element hidden)' : `${r.kind} (${r.state})`;
-  return `<span class="rescard ${r.state} ${canact ? 'canact' : ''}" title="${title}"
-    data-act="res" data-p="${p}" data-i="${i}" data-prev="${face}"><img src="${art(face)}" alt="">${chip}</span>`;
+  // Light and Dark have no resource-card scan in AlgomancyCards/ yet, so the
+  // face 404s. Degrade to a coloured element plate rather than a broken image:
+  // `onerror` tags the wrapper and CSS swaps the plate in.
+  return `<span class="rescard ${r.state} ${r.kind} ${canact ? 'canact' : ''}" title="${title}"
+    data-act="res" data-p="${p}" data-i="${i}" data-prev="${face}"><img src="${art(face)}" alt=""
+      onerror="this.closest('.rescard').classList.add('noart')"
+    ><span class="resplate">${esc(r.kind === 'hidden' ? '?' : r.kind)}</span>${chip}</span>`;
 }
 
 /** one seat's hand row (also used by the sticky bottom dock in net mode) */
@@ -647,10 +686,19 @@ function handZoneHtml(p: Seat): string {
       (a.type === 'playCard' && a.handIndex === i) ||
       (a.type === 'augment' && a.from === 'hand' && a.index === i) ||
       (a.type === 'graft' && a.from === 'hand' && a.index === i) ||
+      (a.type === 'prophesy' && a.from === 'hand' && a.index === i) ||
       (h.state.phase === 'planning' && a.type === 'recycleForResource' && a.handIndex === i));
     // #5: live X preview during battle for state-derived X spells
+    const badges: { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[] = [];
     const xnow = xPreviewFor(n, p);
-    const badges = xnow !== null ? [{ t: `X=${xnow} now`, ctr: true }] : [];
+    if (xnow !== null) badges.push({ t: `X=${xnow} now`, ctr: true });
+    // R42: this card can be prophesied RIGHT NOW — the banner cost, up front
+    const proph = legal.find(a => a.type === 'prophesy' && a.from === 'hand' && a.index === i);
+    if (proph) {
+      let mana: number | undefined;
+      try { mana = getCard(n).prophecy?.mana; } catch { /* unknown */ }
+      badges.push({ t: `📜 prophesy${mana === undefined ? '' : ` [${mana}]`}`, cls: 'proph on' });
+    }
     return cardHtml(n, {
       playable, badges,
       data: `data-act="hand" data-p="${p}" data-i="${i}"${xnow !== null ? ` data-xnow="${xnow}"` : ''}`,
@@ -753,17 +801,30 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   // the bin lives IN its player's region: a mini stack on the right that
   // opens a full dialog (bin-play clicks work from the dialog).
   // #4: when bin cards are legally usable as mods right now, say so loudly.
-  const binUsable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin');
+  const binUsable = legal.some(a =>
+    ((a.type === 'augment' || a.type === 'graft') && a.from === 'bin') ||
+    (a.type === 'prophesy' && a.from === 'bin'));
   const binMini = `<div class="regionbin ${binUsable ? 'hasmods' : ''}" data-btn="binopen" data-p="${p}" title="open ${esc(pl.name)}'s bin">
       <div class="zonelabel">bin (${pl.bin.length})</div>
       <div class="regionbinthumbs">${pl.bin.slice(-3).map(n => cardHtml(n)).join('') || '<span class="binempty">empty</span>'}</div>
       ${binUsable ? `<div class="binmodhint">${txtIcon('augment', '+')}${txtIcon('graft', '[Switch]')} playable as mods</div>` : ''}
     </div>`;
 
+  // R38/R39: rot and debt are per-player counters that bite every single turn
+  // (rot damages you at the start of deployment and never decays; debt eats
+  // mana at the end of your next resource step). They live next to life, and
+  // ONLY when non-zero, so a base-set game's identity row looks unchanged.
+  // Both are optional fields on PlayerState — always read through E.
+  const rot = e.rot(p), debt = e.debt(p);
+  const counters =
+    (rot ? `<span class="pcount rot" title="R38: at the start of every deployment you take ${rot} damage from your own rot. Rot never decreases on its own.">☠ rot ${rot}</span>` : '') +
+    (debt ? `<span class="pcount debt" title="R39: at the very END of your next resource step you must pay 1 mana per debt (${debt} mana). Whatever you cannot pay carries over.">⛓ debt ${debt}</span>` : '');
+
   return `<div class="player region ${acting ? '' : 'inactive'} ${focus}">
     <div class="pheader">
       <span class="pname">${esc(pl.name)}${s.initiative === p ? ' ⭐' : ''}</span>
       <span class="life ${isCandidate({ player: p }) ? 'candidate' : ''}" data-act="player" data-p="${p}">♥ ${pl.life}</span>
+      ${counters}
       <span class="resrow">${pl.resources.map((r, i) => resHtml(r, p, i)).join('')}
         <span style="color:var(--dim)">(${e.openMana(p)} mana open${s.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
       </span>
@@ -779,6 +840,7 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
       </div>
       ${invaderHtml}
       ${binMini}
+      ${regionCacheHtml(p)}
     </div>
     ${handZone}
   </div>`;
@@ -797,13 +859,20 @@ function binDialogHtml(): string {
     // #4: bin cards that can be applied as mods RIGHT NOW carry a badge and glow
     const canAug = legal.some(a => a.type === 'augment' && a.from === 'bin' && a.index === i);
     const canGraft = legal.some(a => a.type === 'graft' && a.from === 'bin' && a.index === i);
-    const usable = canAug || canGraft;
+    // R42: "I can be prophesied from your bin" (Angel of Anguish) — the only
+    // way a bin card leaves the bin without being a mod
+    const canProph = legal.some(a => a.type === 'prophesy' && a.from === 'bin' && a.index === i);
+    const usable = canAug || canGraft || canProph;
     anyUsable ||= usable;
-    const badge = usable ? [{
-      t: `${canAug ? txtIcon('augment', '+') : ''}${canGraft ? txtIcon('graft', '[Switch]') : ''} usable as mod`,
-      mod: true, html: true,
-    }] : [];
-    return cardHtml(n, { playable: usable, badges: badge, data: `data-act="bin" data-p="${p}" data-i="${i}"` });
+    const badges: { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[] = [];
+    if (canAug || canGraft) {
+      badges.push({
+        t: `${canAug ? txtIcon('augment', '+') : ''}${canGraft ? txtIcon('graft', '[Switch]') : ''} usable as mod`,
+        mod: true, html: true,
+      });
+    }
+    if (canProph) badges.push({ t: '📜 prophesy from bin', cls: 'proph on' });
+    return cardHtml(n, { playable: usable, badges, data: `data-act="bin" data-p="${p}" data-i="${i}"` });
   }).join('');
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
     <h3>${esc(pl.name)}'s bin (${pl.bin.length})</h3>
@@ -814,6 +883,129 @@ function binDialogHtml(): string {
 }
 
 // (bins moved into their players' region panels — see regionPanelHtml/binDialogHtml)
+
+// ── R41: the cache — a fourth zone, and a PUBLIC one ──────────────────
+//
+// Both players see every cached card and the prophecy attached to it (R41), so
+// this renders identically for either seat and the server does no redaction.
+// Being cached is NOT permission to play: an entry is playable only through a
+// FULFILLED prophecy (free, ignoring affinity — R42) or a live glimpse stamp
+// (pay the mana, ignoring affinity — R45), and everything else just sits there.
+
+/** the seat whose cache the full dialog is showing, or null */
+let cacheView: Seat | null = null;
+
+/** the badges one cache entry wears: its prophecy condition, whether that
+ * prophecy is fulfilled, the glimpse window, and how it would be paid for */
+function cacheBadges(p: Seat, i: number): { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[] {
+  const e = q();
+  const cc = e.cache(p)[i];
+  if (!cc) return [];
+  const out: { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[] = [];
+  const via = e.cachePermission(p, i);
+  const pr = cc.prophecy;
+  if (pr) {
+    // R44: fulfilment latches, so "fulfilled" here never goes back to "not yet"
+    const met = !!pr.fulfilled || via === 'prophecy';
+    out.push({ t: met ? '✓ fulfilled' : '⏳ not yet', cls: met ? 'proph on' : 'proph' });
+  }
+  if (cc.playableUntilTurn !== undefined) {
+    // R45: the glimpse permission expires at end of turn; the card stays
+    const live = h.state.turn <= cc.playableUntilTurn;
+    out.push({ t: live ? '👁 until end of turn' : '👁 expired', cls: live ? 'glimpse on' : 'glimpse' });
+  }
+  // how it would be paid for right now — the one thing a player must not guess
+  if (via === 'prophecy') out.push({ t: 'FREE', cls: 'free' });
+  else if (via === 'glimpse') out.push({ t: 'pay mana', cls: 'paid' });
+  return out;
+}
+
+/** one cache entry: the real scan, its short status chips, and — under the
+ * card, where a sentence can actually be read — the prophecy condition. */
+function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): string {
+  const cc = cacheOf(p)[i]!;
+  const via = q().cachePermission(p, i);
+  // R41: a cached card is a legal TARGET (Prismatic Observer) — in BOTH
+  // players' caches, so the highlight is not gated on whose zone this is
+  const candidate = cc.uid !== undefined && isCandidate({ cached: { seat: p, uid: cc.uid } });
+  const pr = cc.prophecy;
+  const met = !!pr?.fulfilled || via === 'prophecy';
+  // R42/R45: permission is not the whole story — a cached card is still played
+  // "as if it were in your hand", so its TIMING gate applies on top. Say which
+  // it is, rather than letting a permitted-but-unplayable card look broken.
+  const playableNow = legalFor(p).some(a => a.type === 'playCached' && a.index === i);
+  const TIMING_WORD: Record<string, string> = { deploy: 'deployment', battle: 'battle', haste: 'the haste step' };
+  const when = via ? TIMING_WORD[q().cachedTiming(p, i, via)] ?? '' : '';
+  const stale = !!via && !!opts.clickable && !playableNow && when
+    ? `<div class="cachepay none">…but only during ${when}</div>` : '';
+  const meta = [
+    pr ? `<div class="cachecond ${met ? 'met' : ''}">📜 ${esc(pr.condition)}${pr.release === 'haste' ? ' <i>(released at haste)</i>' : ''}</div>` : '',
+    via === 'prophecy' ? '<div class="cachepay free">free · ignores affinity</div>' :
+      via === 'glimpse' ? '<div class="cachepay">pay its mana · ignores affinity</div>' :
+        '<div class="cachepay none">not playable from here</div>',
+    stale,
+  ].join('');
+  const card = cardHtml(cc.card, {
+    badges: cacheBadges(p, i),
+    playable: !!opts.clickable && (via !== null || cacheModActions(p, i).length > 0),
+    candidate,
+    data: `data-act="cache" data-p="${p}" data-i="${i}"`,
+  });
+  return `<div class="cacheentry">${card}${meta}</div>`;
+}
+
+/** the augment/graft actions available from `seat`'s cache entry `i` (R41:
+ * "you CAN augment or graft from cache") */
+function cacheModActions(seat: Seat, i: number): Action[] {
+  return legalFor(seat).filter(a =>
+    (a.type === 'augment' || a.type === 'graft') && a.from === 'cache' && a.index === i);
+}
+
+/** the mini cache panel that lives in a player's region next to their bin.
+ * Rendered only when the zone is non-empty, so a base-set game is unchanged. */
+function regionCacheHtml(p: Seat): string {
+  const cache = cacheOf(p);
+  if (!cache.length) return '';
+  const legal = legalFor(p);
+  const mine = !NET || NET.seat === p;   // net mode knows no legal actions for the opponent
+  // "permitted" (a fulfilled prophecy or a live glimpse) and "playable right
+  // now" are different things — normal TIMING applies on top — so the summary
+  // line says which one it means rather than over-promising.
+  const permitted = cache.filter((_, i) => q().cachePermission(p, i) !== null).length;
+  const now = new Set(legal.filter(a => a.type === 'playCached').map(a => (a as { index: number }).index)).size;
+  const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'cache');
+  const hot = now > 0 || usable;
+  const note = mine && now ? `<div class="cachehint">${now} playable now</div>`
+    : permitted ? `<div class="cachewait">${permitted} ready${mine ? ' — not this step' : ''}</div>`
+      : `<div class="cachewait">${cache.length} waiting</div>`;
+  return `<div class="regioncache ${hot ? 'hasplay' : ''}" data-btn="cacheopen" data-p="${p}"
+      title="R41: the cache is public — both players see every cached card. Click to open.">
+    <div class="zonelabel">cache (${cache.length})</div>
+    <div class="regionbinthumbs">${cache.slice(-3).map(cc => cardHtml(cc.card)).join('')}</div>
+    ${note}
+  </div>`;
+}
+
+/** the full cache dialog — the zone is public, so this opens for either seat */
+function cacheDialogHtml(): string {
+  if (cacheView === null) return '';
+  const p = cacheView;
+  const pl = h.state.players[p]!;
+  const cache = cacheOf(p);
+  const mine = !NET || NET.seat === p;
+  const items = cache.map((_, i) => cacheCardHtml(p, i, { clickable: mine })).join('');
+  const anyPlayable = cache.some((_, i) => q().cachePermission(p, i) !== null);
+  return `<div class="overlay mainonly"><div class="overlaybox binbox cachebox">
+    <h3>${esc(pl.name)}'s cache (${cache.length})</h3>
+    <div class="hint">The cache is public information (R41) — you both see every card here.
+      Being cached is not permission to play: a card is playable only while its prophecy is
+      fulfilled (free, ignoring affinity) or a glimpse still allows it this turn (pay the mana,
+      ignoring affinity). Normal timing still applies. You may also augment or graft from here.</div>
+    ${anyPlayable && mine ? '<div class="binmodbanner">Glowing cards can be used right now — click one.</div>' : ''}
+    <div class="zone binzone bindialog cachezone">${items || '<span class="binempty">empty</span>'}</div>
+    <button data-btn="cacheclose">Close</button>
+  </div></div>`;
+}
 
 /** what happens when both players pass the current battle window */
 function nextBattleStepName(): string {
@@ -860,6 +1052,23 @@ const KEYWORDS: [string, string][] = [
   ['Unstable', 'A modded unit that dies is erased (with its mods) instead of going to a bin.'],
   ['Virus', 'May be augmented onto an ENEMY unit during battle.'],
   ['Ambush', 'An alternative battle-time cost: recall a target ally and take its position in play.'],
+  // Light & Dark (docs/08). Kept here so the card inspector can explain them
+  // instead of falling back to "see the rules reference".
+  ['Blessed', 'Damage dealt by a blessed source makes its controller gain that much life — simultaneously, so it applies before the lethal check.'],
+  ['Afflicting', 'When an afflicting source kills one or more units — by damage OR by −1/−1 counters — those units’ controllers each gain a rot.'],
+  ['Lethal', 'Any combat damage from a lethal unit kills a player outright.'],
+  ['Modular', 'You may apply mods from your hand and/or bin to this card as it is played, paying their costs; they ride on the stack with it.'],
+  ['Pure', 'Pure cards and cards they interact with ignore all other attributes. (Not implemented — parked with the attribute-suppression layer.)'],
+];
+
+/** the Light & Dark zone/counter concepts, explained in the rules reference */
+const EXPANSION_GUIDE: [string, string][] = [
+  ['Rot ☠', 'A counter on the PLAYER. At the start of every deployment you take damage equal to your rot. It never decreases on its own.'],
+  ['Debt ⛓', 'A counter on the PLAYER. At the very end of your next resource step you must pay 1 mana per debt; each mana removes one. Anything you cannot pay carries over, and the mana spent is gone for the turn.'],
+  ['Cache 📜', 'A fourth zone beside hand, bin and deck — and a PUBLIC one: you both see every cached card. Being cached is not permission to play it.'],
+  ['Prophecy', 'During DEPLOYMENT, pay a card’s banner cost to cache it with its condition attached. Once the condition has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity — normal timing still applies.'],
+  ['Glimpse', 'Reveal the top N cards of your deck and cache them. Until end of turn you may play them as if they were in hand, ignoring affinity but still paying their mana. Afterwards they stay cached, inert.'],
+  ['Trash', 'A nontoken card entering a bin from anywhere but the stack is trashed — discarding, sacrificing, milling and dying in combat all count. A resolved spell going to the bin does not.'],
 ];
 
 const PHASE_GUIDE: [string, string][] = [
@@ -879,6 +1088,8 @@ function helpOverlayHtml(): string {
       ${PHASE_GUIDE.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${iconizeText(v)}</span></div>`).join('')}
       <h4>Keywords</h4>
       ${KEYWORDS.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${iconizeText(v)}</span></div>`).join('')}
+      <h4>Light &amp; Dark</h4>
+      ${EXPANSION_GUIDE.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${iconizeText(v)}</span></div>`).join('')}
       <h4>Quick reminders</h4>
       <div class="helprow"><b>Augment ${txtIcon('augment', '(+)')}</b><span>${iconizeText('Slide under a unit from hand or bin: donates type-line attributes and text-box [Augment] text to the host.')}</span></div>
       <div class="helprow"><b>Graft ${txtIcon('graft', '(⇄)')}</b><span>${iconizeText('Insert into a graft-cause unit’s stack: the [Switch] effects join its trigger as one ability. [Switch1] = once per turn per card.')}</span></div>
@@ -1062,11 +1273,14 @@ function blockBuilderHtml(ci: number): string {
  * and points at the highlighted legal hosts (modHostCache glows them) */
 function moddingBarHtml(err: string): string {
   const m = ui.modding!;
-  const card = h.state.players[m.seat]![m.from][m.index] ?? '?';
+  const card = zoneCardName(m.seat, m.from, m.index) ?? '?';
   const icon = txtIcon(m.mode === 'graft' ? 'graft' : 'augment', m.mode === 'graft' ? '[Switch]' : '[Augment]');
   const nHosts = modHostCache.size;
+  // R42: a fulfilled prophecy makes the graft/augment free too, not only the play
+  const free = m.from === 'cache' && q().cachePermission(m.seat, m.index) === 'prophecy'
+    ? ' <span class="freetag">FREE — fulfilled prophecy</span>' : '';
   return `<div class="promptbar pending"><span class="who">${esc(h.state.players[m.seat]!.name)}:</span>
-    applying <b>${esc(card)}</b> from ${m.from === 'bin' ? 'the bin' : 'hand'} as ${icon} <b>${m.mode}</b>
+    applying <b>${esc(card)}</b> from ${zoneLabel(m.from)}${free} as ${icon} <b>${m.mode}</b>
     — pick a glowing host unit${nHosts ? ` (${nHosts} legal)` : ''}
     <button data-btn="modcancel">✕ cancel (esc)</button>${err}</div>`;
 }
@@ -1204,14 +1418,53 @@ function promptHtml(): string {
   return `<div class="promptbar">${esc(s.phase)}${err}</div>`;
 }
 
+// ── game log styling ──────────────────────────────────────────────────
+/** EventType per log line, index-aligned with `h.log`. Hotseat reads the
+ * Harness's parallel event list (absorb() pushes both in lockstep); network
+ * mode reads the types the server attached to each pushed event. */
+function logTypeAt(i: number): EventType | undefined {
+  if (NET) return NET.logTypes[i];
+  return (h as Harness).events[i]?.type;
+}
+/** The event types that earn their own colour in the log. Everything else
+ * keeps the default dim line — the point is that the Light & Dark bookkeeping
+ * (a zone and two counters nobody is used to watching) cannot slip past. */
+const LOG_EVENT_CLASS: Partial<Record<EventType, string>> = {
+  cached: 'ev-cache',
+  prophesied: 'ev-cache',
+  glimpsed: 'ev-cache',
+  prophecyFulfilled: 'ev-prophecy',
+  rotGained: 'ev-rot',
+  debtGained: 'ev-debt',
+  debtPaid: 'ev-debtpaid',
+  trashed: 'ev-trash',
+  lifeGained: 'ev-life',
+};
+
 function stackHtml(): string {
   const items = [...h.state.stack].reverse().map(it => {
     const targets = it.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
+    // {Modular}: mods applied as the card was PLAYED ride on the stack with it
+    // (Caleb 2025-02-07). it.label already names them, but the label is one
+    // line of text — the mods get their own scans + chips so they read as the
+    // separate cards they are, and can be hovered/right-clicked like any card.
+    const mods = it.mods ?? [];
+    const modChips = mods.length
+      ? `<div class="stackmods">${mods.map(m =>
+          `<span class="badge mod" data-prev="${esc(m.card)}">${txtIcon('graft', '[Switch]')}${esc(m.card)}
+            <span class="modfrom">from ${esc(m.from)}</span></span>`).join('')}</div>`
+      : '';
+    const modThumbs = mods.map(m =>
+      `<img class="stackthumb modthumb" src="${art(m.card)}" alt="" data-prev="${esc(m.card)}" onerror="this.style.display='none'">`).join('');
+    // a modular item's extra parts ARE its mods' [Switch] effects — don't
+    // double-count them as "grafted parts"
+    const extraParts = it.parts.length - 1 - mods.length;
     return `<div class="stackitem ${it.negated ? 'negated' : ''} ${isCandidate({ stack: it.id }) ? 'candidate' : ''}"
       data-act="stackitem" data-id="${it.id}" ${it.card ? `data-prev="${esc(it.card)}"` : ''}>
       ${it.card ? `<img class="stackthumb" src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
-      <div class="stackmain">${iconizeText(it.label)}
-      <div class="by">${esc(h.state.players[it.controller]!.name)} · ${it.kind}${it.parts.length > 1 ? ` · ${it.parts.length} grafted parts` : ''}${targets ? ' → ' + targets : ''}</div></div>
+      ${modThumbs}
+      <div class="stackmain">${iconizeText(it.label)}${modChips}
+      <div class="by">${esc(h.state.players[it.controller]!.name)} · ${it.kind}${extraParts > 0 ? ` · ${extraParts + 1} grafted parts` : ''}${mods.length ? ` · ${mods.length} {Modular} mod${mods.length === 1 ? '' : 's'}` : ''}${targets ? ' → ' + targets : ''}</div></div>
     </div>`;
   }).join('');
   return `<div class="stackpanel"><h3>Stack (top first)</h3>${items || '<div class="stackempty">empty</div>'}</div>`;
@@ -1219,6 +1472,11 @@ function stackHtml(): string {
 function tgtLabel(t: TargetRef): string {
   if ('unit' in t) return esc(h.state.entities[t.unit]?.card ?? 'gone');
   if ('player' in t) return esc(h.state.players[t.player]!.name);
+  // R41: a card in someone's cache (Prismatic Observer) — the zone is public
+  if ('cached' in t) {
+    const cc = (h.state.players[t.cached.seat]!.cache ?? []).find(c => c.uid === t.cached.uid);
+    return esc(cc ? `${cc.card} (cache)` : 'gone');
+  }
   return esc(h.state.stack.find(i => i.id === t.stack)?.label ?? 'gone');
 }
 
@@ -1401,7 +1659,12 @@ function render(): void {
   ensureBottomUi();
   ensureCounterPrefill();
   modHostCache = moddingHosts();   // #4: legal hosts for a mod-in-progress glow
-  const logItems = h.log.slice(-80).map(l => `<div>${iconizeText(l)}</div>`).join('');
+  const logFrom = Math.max(0, h.log.length - 80);
+  const logItems = h.log.slice(-80).map((l, i) => {
+    const t = logTypeAt(logFrom + i);
+    const cls = t ? LOG_EVENT_CLASS[t] ?? '' : '';
+    return `<div class="${cls}">${iconizeText(l)}</div>`;
+  }).join('');
   // in network mode keep MY seat at the bottom (opponent on top)
   const topSeat: Seat = NET ? other(NET.seat) : 1;
   const botSeat: Seat = NET ? NET.seat : 0;
@@ -1446,6 +1709,7 @@ function render(): void {
       <div class="zone">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${menuHtml()}
     ${binDialogHtml()}
+    ${cacheDialogHtml()}
     ${helpOpen ? helpOverlayHtml() : ''}
     ${inspectorHtml()}
     ${judgeOpen ? judgeOverlayHtml() : ''}
@@ -1650,10 +1914,11 @@ function renderHome(): void {
     <label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>
     <div class="homebtns">
       <div class="elpicker">
-        <div class="zonelabel">Live draft — pick exactly 3 elements</div>
-        <div class="elrow">${(['fire', 'water', 'earth', 'wood', 'metal'] as const).map(el =>
+        <div class="zonelabel">Live draft — pick exactly 3 of the ${ALL_ELEMENTS.length} elements
+          (${TRIO_COUNT} trios)</div>
+        <div class="elrow">${ALL_ELEMENTS.map(el =>
           `<button class="elchip ${el} ${ui.homeEls.includes(el) ? 'on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
-          <button data-btn="elrandom" title="pick a random trio">🎲</button>
+          <button data-btn="elrandom" title="pick a random trio — any of the ${TRIO_COUNT}">🎲</button>
         </div>
         <button class="primary" data-btn="newgame" data-mode="draft" ${ui.homeEls.length === 3 ? '' : 'disabled'}>
           New live draft${ui.homeEls.length === 3 ? ` · ${ui.homeEls.join(' + ')}` : ` (${ui.homeEls.length}/3 picked)`}</button>
@@ -1839,10 +2104,11 @@ function handleButton(btn: HTMLElement): void {
     return;
   }
   if (b === 'elrandom') {
-    const all = ['fire', 'water', 'earth', 'wood', 'metal'];
+    // every element the ENGINE knows about, so the die reaches all C(n,3)
+    // trios — 35 of them with Light & Dark in
     ui.homeEls = [];
     while (ui.homeEls.length < 3) {
-      const pick = all[Math.floor(Math.random() * all.length)]!;
+      const pick = ALL_ELEMENTS[Math.floor(Math.random() * ALL_ELEMENTS.length)]!;
       if (!ui.homeEls.includes(pick)) ui.homeEls.push(pick);
     }
     localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
@@ -1995,6 +2261,9 @@ function handleButton(btn: HTMLElement): void {
   }
   if (b === 'binopen') { binView = Number(btn.dataset['p']) as Seat; }
   if (b === 'binclose') binView = null;
+  // R41: the cache is public — either seat's zone opens for either player
+  if (b === 'cacheopen') { cacheView = Number(btn.dataset['p']) as Seat; }
+  if (b === 'cacheclose') cacheView = null;
   if (b === 'helpopen') helpOpen = true;
   if (b === 'helpclose') helpOpen = false;
   if (b === 'judgeopen') judgeOpen = true;
@@ -2156,9 +2425,27 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
   }
   if (kind === 'bin') {
     const p = Number(t.dataset['p']) as Seat, i = Number(t.dataset['i']);
-    const legal = legalFor(p).filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
-    if (legal.length) binView = null;   // close the bin dialog so the host pick is visible
-    startModding(p, 'bin', i, legal, e);
+    const legal = legalFor(p);
+    // R42: Angel of Anguish prints "I can be prophesied from your bin" — the
+    // bin is a prophesy source too, so a bin card can offer both.
+    const proph = legal.filter(a => a.type === 'prophesy' && a.from === 'bin' && a.index === i);
+    const mods = legal.filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
+    if (proph.length) {
+      const name = h.state.players[p]!.bin[i] ?? '?';
+      const items: { label: string; go: () => void }[] = [
+        { label: prophesyLabel(name), go: () => { binView = null; act(proph[0]!); render(); } },
+      ];
+      if (mods.some(a => a.type === 'augment')) items.push({ label: `Augment a unit with ${name}`, go: () => { binView = null; ui.modding = { seat: p, from: 'bin', index: i, mode: 'augment' }; render(); } });
+      if (mods.some(a => a.type === 'graft')) items.push({ label: `Graft ${name} under a unit`, go: () => { binView = null; ui.modding = { seat: p, from: 'bin', index: i, mode: 'graft' }; render(); } });
+      if (items.length === 1) items[0]!.go();
+      else ui.menu = { x: e.clientX, y: e.clientY, items };
+    } else {
+      if (mods.length) binView = null;   // close the bin dialog so the host pick is visible
+      startModding(p, 'bin', i, mods, e);
+    }
+  }
+  if (kind === 'cache') {
+    handleCacheClick(Number(t.dataset['p']) as Seat, Number(t.dataset['i']), e);
   }
   render();
 }
@@ -2188,10 +2475,22 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
   const legal = legalFor(p);
   const playActions = legal.filter(a => a.type === 'playCard' && a.handIndex === i);
   const modActions = legal.filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'hand' && a.index === i);
+  const prophesyActions = legal.filter(a => a.type === 'prophesy' && a.from === 'hand' && a.index === i);
   const items: { label: string; go: () => void }[] = [];
   for (const a of playActions) {
-    const label = a.type === 'playCard' && a.mode === 'ambush' ? `Ambush with ${name}` : `Play ${name}`;
+    const mode = a.type === 'playCard' ? a.mode : undefined;
+    // R40: "1 Discard me" is a whole alternative play mode like Ambush — pay
+    // the cost line, discard the card, which TRASHES it and fires its own
+    // "when I am trashed" trigger (Dropslime, Nothyr, Sacrifice Dude).
+    const label = mode === 'ambush' ? `Ambush with ${name}`
+      : mode === 'discardMe' ? discardMeLabel(name)
+      : `Play ${name}`;
     items.push({ label, go: () => { act(a); render(); } });
+  }
+  // R42: prophesying is a DEPLOYMENT-only action; legalActions already knows
+  // that, and which cards may come from the bin, so this just renders it.
+  for (const a of prophesyActions) {
+    items.push({ label: prophesyLabel(name), go: () => { act(a); render(); } });
   }
   if (modActions.some(a => a.type === 'augment')) {
     items.push({ label: `Augment a unit with ${name}`, go: () => { ui.modding = { seat: p, from: 'hand', index: i, mode: 'augment' }; render(); } });
@@ -2203,7 +2502,76 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
   else if (items.length > 1) { ui.menu = { x: e.clientX, y: e.clientY, items }; render(); }
 }
 
-function startModding(p: Seat, from: 'hand' | 'bin', i: number, legal: Action[], e: MouseEvent): void {
+/** a plain mana amount as the bracketed WORD the cards print ([two]), so
+ * iconizeText swaps in the real cost icon; big/odd numbers stay as digits */
+const MANA_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+const manaTok = (n: number): string => `[${MANA_WORDS[n] ?? n}]`;
+
+/** R42: the prophesy menu entry. The banner cost is a PLAIN number — no
+ * affinity pips — and the condition is what the payment actually buys. */
+function prophesyLabel(name: string): string {
+  let mana: number | undefined;
+  let condition = '';
+  try {
+    const pr = getCard(name).prophecy;
+    if (pr) { mana = pr.mana; condition = pr.condition; }
+  } catch { /* not a registry card */ }
+  return `Prophesy ${name}${mana === undefined ? '' : ` for ${manaTok(mana)}`} — cache it` +
+    (condition ? `, free once “${condition}”` : '');
+}
+
+/** R40: the "Discard me" cost line, spelled out (it is a cost, not an effect).
+ * A cost with affinity pips (Nothyr's `2 [d]`) has to stay in DIGITS — the
+ * spelled-out `[two]` form only iconizes on its own, `[twod]` matches nothing. */
+function discardMeLabel(name: string): string {
+  let cost = '';
+  try {
+    const dm = getCard(name).discardMe;
+    if (dm) cost = ` for [${dm.cost ? `${dm.mana}${dm.cost}` : MANA_WORDS[dm.mana] ?? dm.mana}]`;
+  } catch { /* not a registry card */ }
+  return `Discard ${name}${cost} — pay and trash it (fires its own trashed trigger)`;
+}
+
+/** R41/R42/R45: clicking a cached card — play it (free via a fulfilled
+ * prophecy, or for its mana via a live glimpse), or apply it as a mod. Cached
+ * cards in EITHER cache are also legal targets (Prismatic Observer). */
+function handleCacheClick(p: Seat, i: number, e: MouseEvent): void {
+  const s = h.state;
+  const cc = cacheOf(p)[i];
+  if (!cc) return;
+  if (s.decision) {
+    if (cc.uid === undefined) return;   // cached before uids existed: untargetable
+    const idx = decisionOptionIndex({ cached: { seat: p, uid: cc.uid } });
+    if (idx >= 0) act({ type: 'decide', seat: s.decision.seat, choice: idx });
+    return;
+  }
+  if (NET && p !== NET.seat) return;   // I can look at their cache, not play from it
+  const via = q().cachePermission(p, i);
+  const plays = legalFor(p).filter(a => a.type === 'playCached' && a.index === i);
+  const mods = cacheModActions(p, i);
+  const items: { label: string; go: () => void }[] = [];
+  for (const a of plays) {
+    items.push({
+      label: via === 'prophecy'
+        ? `Play ${cc.card} — FREE (fulfilled prophecy; ignores affinity)`
+        : `Play ${cc.card} — pay its mana (glimpse; ignores affinity)`,
+      go: () => { cacheView = null; act(a); render(); },
+    });
+  }
+  // R42: a fulfilled prophecy makes grafting/augmenting free as well
+  const free = via === 'prophecy' ? ' — free' : '';
+  if (mods.some(a => a.type === 'augment')) {
+    items.push({ label: `Augment a unit with ${cc.card}${free}`, go: () => { cacheView = null; ui.modding = { seat: p, from: 'cache', index: i, mode: 'augment' }; render(); } });
+  }
+  if (mods.some(a => a.type === 'graft')) {
+    items.push({ label: `Graft ${cc.card} under a unit${free}`, go: () => { cacheView = null; ui.modding = { seat: p, from: 'cache', index: i, mode: 'graft' }; render(); } });
+  }
+  if (!items.length) return;
+  if (items.length === 1) items[0]!.go();
+  else ui.menu = { x: e.clientX, y: e.clientY, items };
+}
+
+function startModding(p: Seat, from: ModZone, i: number, legal: Action[], e: MouseEvent): void {
   const modes: ('augment' | 'graft')[] = [];
   if (legal.some(a => a.type === 'augment')) modes.push('augment');
   if (legal.some(a => a.type === 'graft')) modes.push('graft');
@@ -2308,6 +2676,7 @@ document.addEventListener('keydown', e => {
     if (judgeOpen) { judgeOpen = false; render(); return; }
     if (helpOpen) { helpOpen = false; render(); return; }
     if (binView !== null) { binView = null; render(); return; }
+    if (cacheView !== null) { cacheView = null; render(); return; }
     if (pendingReveal) { pendingReveal = null; render(); return; }
     if (inField) return;
     if (ui.modding) { ui.modding = null; render(); return; }
@@ -2320,7 +2689,7 @@ document.addEventListener('keydown', e => {
   }
 
   if (inField) return;   // never fire game hotkeys while typing
-  const overlayUp = reportOpen || judgeOpen || helpOpen || !!inspect || binView !== null || !!ui.menu;
+  const overlayUp = reportOpen || judgeOpen || helpOpen || !!inspect || binView !== null || cacheView !== null || !!ui.menu;
 
   if (e.key === ' ') {
     if (overlayUp) return;
@@ -2420,3 +2789,5 @@ if (params.has('room') && params.get('room')!.trim()) {
 } else {
   renderHome();
 }
+
+
