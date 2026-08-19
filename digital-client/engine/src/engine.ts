@@ -206,6 +206,20 @@ export class E {
     }
     return n;
   }
+  /**
+   * "Create a Shard." (Manual p.18) A Shard is its own ResourceKind, NOT a
+   * prismite: it arrives dormant, gives one generic mana once activated, gives
+   * NO affinity, and — the difference that matters — can never be exchanged
+   * for an element during planning the way a prismite can (R17). Cards that
+   * make Shards used to push prismites, which quietly handed the player the
+   * strongest resource in the game.
+   */
+  createShard(seat: Seat, n = 1, source?: string): void {
+    for (let i = 0; i < n; i++) this.player(seat).resources.push({ kind: 'shard', state: 'dormant' });
+    this.ev('resourceActivated',
+      `${this.pname(seat)} creates ${n === 1 ? 'a Shard' : `${n} Shards`}${source ? ` (${source})` : ''} — dormant.`,
+      { seat, kind: 'shard' });
+  }
   openMana(seat: Seat): number {
     return this.player(seat).resources.filter(r => r.state === 'open').length;
   }
@@ -1918,10 +1932,20 @@ export class E {
   }
 
   commitItem(item: StackItem, then: 'push' | 'resolve'): void {
-    // "targeted" is an event (Mohruung-style triggers; none in pool yet)
+    // "When I become targeted" (Mohruung). PLAYTEST BUG: this logged the event
+    // but never DISPATCHED it, so a spell aimed at Mohruung created no Crystal.
+    // Modding already fired it (doAugment/doGraft) — only the stack path was
+    // deaf. Dispatch carries the region so region-scoped listeners resolve;
+    // the targeted unit's own region is the authority (the item's region and
+    // the target's agree for every legal target, and `self: true` listeners
+    // match on `unit` anyway).
     for (const part of item.parts) {
       for (const t of part.targets) {
-        if ('unit' in t) this.ev('targeted', `${item.label} targets ${this.targetLabel(t)}.`, { item: item.id, unit: t.unit });
+        if (!('unit' in t)) continue;
+        const u = this.s.entities[t.unit];
+        const ev = this.ev('targeted', `${item.label} targets ${this.targetLabel(t)}.`,
+          { item: item.id, unit: t.unit, ...(u ? { region: u.region } : {}) });
+        this.fireEvent('targeted', ev);
       }
     }
     if (item.kind === 'spell' || item.kind === 'spellUnit' || item.kind === 'spellToken') {

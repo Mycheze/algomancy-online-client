@@ -23,9 +23,12 @@
  *    original item is still ON the stack (found by id / by the Origon
  *    bottom-most-match pattern) — a deploy-phase spell that already resolved
  *    is not copyable (info line instead).
- *  - Earthbound Replicator: spell-cast 'targeted' events are logged but not
- *    fired to listeners (only doAugment fires them), so the trigger listens
- *    to 'spellPlayed' instead — the event carries no targets, so it queues
+ *  - Earthbound Replicator: written when spell-cast 'targeted' events were
+ *    logged but never dispatched, so the trigger listens to 'spellPlayed'
+ *    instead. Playtest 2026-08-19 FIXED that dispatch (R53) — this card could
+ *    now listen to 'targeted' directly, which would be exact rather than
+ *    approximate. Left as-is for now: the current path is correct, just
+ *    roundabout. The event carries no targets, so it queues
  *    on EVERY nonunit spell in the region and checks "targeting me" at
  *    resolution against the item's collected targets on the stack (no-op
  *    info line when it doesn't target me). "Nonunit" = kind spell/spellToken
@@ -155,8 +158,14 @@ card('Colossal Construction', {
 // "Augment target unit and all of its mods onto another target unit. (The
 // first target must have [Augment] to be able to be augmented.)" — em/4 1/2
 // {Battle} Primordial Technology Spell. Two targets collected at cast (the
-// multi-target TargetSpec; distinct by construction): the FIRST pick moves
-// onto the SECOND. At resolution the first target must be an [Augment] card
+// multi-target TargetSpec, which picks them distinct): the FIRST pick moves
+// onto the SECOND. "Another" is re-checked at RESOLUTION (Minor Kraken
+// precedent) — distinctness at cast is NOT an invariant, because Enigmatic
+// Warder ("change a target of target effect to me") can redirect a target
+// afterwards and can do it twice, collapsing both onto one unit. Resolving
+// that augmented the unit onto ITSELF: the entity was deleted and then made a
+// mod pointing at its own dead id, an orphan the fuzz caught at seed 1132.
+// At resolution the first target must be an [Augment] card
 // (else info, no effect); it leaves play silently (⚠ header — moved, not
 // despawned), becomes an augment mod on the host via attachMod (modApplied
 // fires), and its existing mod entities move along, budgets intact.
@@ -170,6 +179,13 @@ card('Reconfigure', {
       if (ctx.targets.length < 2) { g.ev('info', 'Reconfigure: a target is gone — no effect.'); return; }
       const [a, b] = [ctx.targets[0], ctx.targets[1]];
       if (!isEnt(a) || !isEnt(b)) return;
+      // "onto ANOTHER target unit" — a redirect can have collapsed the two
+      // onto one unit since the cast, and augmenting a unit onto itself would
+      // delete the entity and leave its own mod orphaned.
+      if (a.id === b.id) {
+        g.ev('info', `Reconfigure: both targets are ${a.card} — it cannot augment onto itself, no effect.`);
+        return;
+      }
       if (!isAugment(a.card)) {
         g.ev('info', `Reconfigure: ${a.card} has no [Augment] — no effect.`);
         return;

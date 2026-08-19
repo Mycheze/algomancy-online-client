@@ -577,3 +577,103 @@ the rule they should all follow, but the base-set migration wants its own
 coordinated sweep: several of those cards' tests pin the current region, and
 one of them (Ember of Life) is R33's named exception and must NOT move.
 (Engine 2026-08-19.)
+
+---
+
+## R53 — "When I become targeted" fires on every targeting path
+
+*(Playtest round 5, 2026-08-19. Engine bug, not a rules question.)*
+
+Targeting a unit fires a `targeted` event **wherever the targeting comes
+from**: a spell or ability resolving off the stack, a virus, an augment, or a
+graft. All four are targeting.
+
+The engine had two separate targeting paths and only one of them dispatched.
+`apply.ts` (doAugment / doGraft / the virus push) called `fireEvent`, but
+`engine.ts` `commitItem` — the path every spell and ability takes — built the
+event, wrote it to the log, and never dispatched it. The event was visible in
+the game log, so the bug looked like a card bug rather than a routing bug.
+Consequence: **no spell in the game could trigger a "when I become targeted"
+ability** — Mohruung's Crystal 2 never appeared. Found at the table.
+
+The dispatch carries the targeted unit's own `region`, so region-scoped
+listeners (R12) resolve against the region the unit is actually in. It fires
+at commit time, before the item is pushed, so the queued trigger settles onto
+the stack **above** the spell that targeted — the trigger resolves first.
+
+Downstream: **Earthbound Replicator** was written to listen to `spellPlayed`
+and re-derive targets precisely because this path was deaf; it still works and
+is left alone. **Earnest Defender** scrapes `targeted` entries out of the
+event-log tail — unaffected, the log entries are unchanged. **Ancient One**
+already listed `targeted` among the events it mimics and now genuinely
+receives it.
+
+## R54 — A Shard is not a Prismite
+
+*(Playtest round 5, 2026-08-19.)*
+
+"Create a Shard" creates a resource of kind **`shard`**: it arrives dormant,
+gives **one generic mana** once activated, gives **no affinity**, and **cannot
+be exchanged** for an element during planning.
+
+That last clause is the whole ruling. R17's planning exchange — trade an
+active Prismite for a resource of any element — is the Prismite's entire
+value, and Shard-making cards had been approximated as making Prismites, which
+silently upgraded every one of them into a free colour-fixer. `openMana`
+counts both identically, so nothing in play revealed the difference until
+planning. Found at the table (Swirling Shardform).
+
+Shards now go through `E.createShard(seat, n, source)` and nothing else; card
+files may not push into `player.resources` directly (guarded by a test). The
+affinity bonus in `apply.ts` (Manual p.18 — three affinity in an element grants
+a free Shard when you activate it) already created real Shards and is unchanged.
+
+**Live:** Swirling Shardform (two on spawn), Hooba-Lan (one per attack or
+block — unparked by this). Still parked for a different reason: the `[element]
+Resource` card faces, whose "when I activate" trigger needs resource cards to
+be playable cards at all.
+
+## R55 — Printed `[Augment]` is a permission, not a payload
+
+*(Playtest round 5, 2026-08-19.)*
+
+If a card prints the `[Augment]` marker in its text box, it **can be applied as
+an augment** — from hand, from bin, or from cache — regardless of whether its
+donated text is implemented.
+
+The engine derives "is this an augment?" from behaviour: type-line
+`augmentAttrs`, scripted `augmentText`, or the explicit `augmentable` flag. A
+card whose `[Augment]` text is implemented as a **static** has none of the
+three unless the author sets `augmentable: true`, and four cards
+(**Brough**, **Air Plant**, **Life Power Dude**, **The Omniphage**) did not —
+so they could not be slid under a unit at all. Found at the table: Brough sat
+in a bin and the client would not offer it.
+
+The marker is the permission and the text is a separate question. A guard test
+now asserts that every card in `DECK_LIST` printing a text-box `[Augment]`
+marker satisfies `isAugment()`. The marker opens a text segment (start of the
+text or just after a `{/n}`); a mid-sentence mention inside `{i}(...)` reminder
+text is **not** a marker — that is what keeps **Reconfigure**, a spell that
+moves augments around, from being treated as one.
+
+## R56 — "Another target" is re-checked at resolution, never assumed from cast
+
+*(Fuzz seed 1132, 2026-08-19. Engine bug, pre-existing.)*
+
+A card that collects two targets gets them **distinct at cast**. That is not an
+invariant that survives to resolution: **Enigmatic Warder** ("[two]: change a
+target of target effect to me") redirects a target afterwards, and two
+activations collapse *both* of a two-target spell's slots onto one unit.
+
+Any effect whose printed text says "**another**" must therefore re-check
+distinctness when it resolves. **Scrap For Parts** already did (`from.id ===
+to.id`); **Reconfigure** did not, and its comment recorded the cast-time
+distinctness as "distinct by construction". Resolving it with both targets
+equal deleted the entity and then re-attached it as a mod pointing at its own
+dead id — an **orphan mod**, a corrupt entity table, which is a crash risk
+rather than a rules error. Reconfigure now emits an info line and does nothing
+when the targets have collapsed.
+
+The general rule: cast-time target *selection* constrains what can be chosen,
+never what will still be true later. Redirection, death, region changes and
+zone changes all happen in between. Re-validate at resolution.

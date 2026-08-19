@@ -771,14 +771,21 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
         <div class="zone invaderzone">${invaders.map(entHtml).join('')}</div></div>`
     : '';
 
-  // B2: counterattackers in transit — out of the region rows, inert
-  const sent = Object.values(s.entities).filter(en =>
-    (en.kind === 'unit' || en.kind === 'spellToken') && en.controller === p && en.absent);
-  const sentStrip = sent.length
-    ? `<div class="sentstrip"><div class="zonelabel">counterattacking — arrives next round</div>
-        <div class="zone">${sent.map(en => en.kind === 'spellToken'
+  // B2 / playtest: counterattackers in transit. They used to sit under their
+  // OWNER's formation, which is the one region they are provably not in. They
+  // are heading HERE, so they render in the destination panel — a compact,
+  // greyed, inert column beside the bin, the same visual weight as the bin
+  // itself. Next round they stop being absent and drop back into the normal
+  // formation rows where you declare with them.
+  const incoming = Object.values(s.entities).filter(en =>
+    (en.kind === 'unit' || en.kind === 'spellToken') && en.controller !== p && en.absent);
+  const sentStrip = incoming.length
+    ? `<div class="sentstrip" title="${esc(s.players[incoming[0]!.controller]!.name)} sent these to counterattack — they arrive in this region next round and cannot be interacted with until then">
+        <div class="zonelabel">${txtIcon('battle', '[battle]')} incoming — ${esc(s.players[incoming[0]!.controller]!.name)}</div>
+        <div class="zone sentzone">${incoming.map(en => en.kind === 'spellToken'
           ? cardHtml(en.card, { stats: 'X=' + en.x })
-          : unitHtml(en, { inert: true })).join('')}</div></div>`
+          : unitHtml(en, { inert: true })).join('')}</div>
+        <div class="sentfoot">arrives next round</div></div>`
     : '';
 
   // B3: during a battle only state.battle.region is "real"
@@ -836,9 +843,9 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
       <div class="regionmain">
         <div class="zonelabel">Region of ${esc(pl.name)}${focus === 'battlefocus' ? ` — ${txtIcon('battle', '[battle]')} the battle is here` : focus === 'battledim' ? ' — outside this battle' : ''}</div>
         <div class="zone">${ownHere}</div>
-        ${sentStrip}
       </div>
       ${invaderHtml}
+      ${sentStrip}
       ${binMini}
       ${regionCacheHtml(p)}
     </div>

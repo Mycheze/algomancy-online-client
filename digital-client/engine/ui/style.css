@@ -304,10 +304,17 @@ button:disabled { opacity: .4; cursor: default; }
 .invaders .card { width: 52px; }
 .invaders .card img { box-shadow: 0 0 0 1px var(--danger); border-radius: 5px; }
 
-/* B2: absent ("sent") counterattackers in transit — inert, heavily dimmed */
-.sentstrip { border: 1px dashed var(--line); border-radius: 6px; padding: 2px 8px 8px; margin-top: 8px;
-  opacity: .45; filter: grayscale(.6); }
-.sentstrip .card { cursor: default; }
+/* B2 + playtest: counterattackers in transit, shown in the region they are
+   heading INTO, beside that region's bin. Column-shaped and bin-sized so it
+   reads as a holding pen rather than part of the formation; dimmed and inert
+   until they arrive next round and rejoin the normal rows. */
+.sentstrip { width: 96px; flex-shrink: 0; border: 1px dashed var(--danger); border-radius: 6px;
+  padding: 2px 6px 6px; margin-left: 4px; align-self: flex-start;
+  opacity: .5; filter: grayscale(.55); }
+.sentstrip .zonelabel { color: var(--danger); font-size: 10px; margin-top: 4px; }
+.sentstrip .sentzone { gap: 3px; }
+.sentstrip .card { width: 40px; cursor: default; }
+.sentfoot { color: var(--dim); font-size: 9px; margin-top: 3px; line-height: 1.2; }
 
 /* B3: during a battle only state.battle.region is "real" */
 .player.battlefocus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }

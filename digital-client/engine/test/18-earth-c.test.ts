@@ -184,7 +184,11 @@ test('Stoneborn Progenitor: one of your units survives damage → a 2/2 (once pe
     '[Switch1]: no second 2/2 this turn');
 });
 
-test('Swirling Shardform: spawning creates two dormant Shards (⚠ engine: prismites)', () => {
+test('Swirling Shardform: spawning creates two dormant Shards', () => {
+  // This test used to assert the PRISMITE approximation, which is how the bug
+  // survived to the table: a prismite is exchangeable for any element during
+  // planning (R17) and a Shard is not, so the "approximation" was handing out
+  // the strongest resource in the game. See 48-playtest-hotfix.
   const h = new Harness(1807);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -193,8 +197,8 @@ test('Swirling Shardform: spawning creates two dormant Shards (⚠ engine: prism
   const res = h.state.players[p]!.resources;
   assert.equal(res.length, before + 2, 'two resources appeared');
   const shards = res.slice(before);
-  assert.ok(shards.every(r => r.kind === 'prismite' && r.state === 'dormant'),
-    'both spawn dormant (⚠ approximated as prismites — no Shard ResourceKind yet)');
+  assert.ok(shards.every(r => r.kind === 'shard' && r.state === 'dormant'),
+    'both are Shards and both spawn dormant');
 });
 
 test('Tenebrous Bulborb: played normally, its own "[Augment] I gain -2/-2" makes it 3/2', () => {

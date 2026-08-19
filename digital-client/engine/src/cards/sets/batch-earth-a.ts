@@ -400,17 +400,14 @@ card('Haboob', {
 
 // "[Augment] When I attack or block, create a Shard. (It will spawn
 // dormant.)" — eee/3 3/4 Hooba Rock Unit. Text-box [Augment]; the trigger
-// wiring is done, the payload is PARKED (see header: no 'Shard'
-// ResourceKind / resource-creation primitive). Fires an info event only.
+// wiring was already done and only the payload was parked for want of a Shard
+// primitive. E.createShard exists now, so this is LIVE: the Shard goes to the
+// carrier's controller ("you"), dormant, once per attack or block.
 card('Hooba-Lan', {
   augmentText: [{
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
-    label: 'create a Shard (creation parked)',
-    effect: {
-      run: (g, ctx) => {
-        g.ev('info', `${ctx.sourceName}: PARKED — Shard resources are not modelled yet; no Shard created.`);
-      },
-    },
+    label: 'create a Shard (dormant)',
+    effect: { run: (g, ctx) => { g.createShard(ctx.controller, 1, ctx.sourceName); } },
   }],
 });
 

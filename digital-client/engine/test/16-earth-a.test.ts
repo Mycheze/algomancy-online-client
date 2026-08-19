@@ -267,19 +267,23 @@ test('Haboob: deals 1 damage to each unit in the battle region (both sides)', ()
   finishBattle(h);
 });
 
-test('Hooba-Lan: attack/block trigger fires crash-free (Shard creation PARKED)', { todo: true }, () => {
+test('Hooba-Lan: attacking creates a real dormant Shard for its controller', () => {
+  // Was TODO while there was no Shard primitive; E.createShard exists now, so
+  // the payload is live. The Shard is dormant and gives mana only — see
+  // 48-playtest-hotfix for what separates it from a prismite.
   const h = new Harness(1613);
   toDeployment(h);
   const A = h.state.initiative;
   const hooba = spawn(h, A, 'Hooba-Lan');             // 3/4
+  const before = h.state.players[A]!.resources.length;
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[hooba]] });
-  pass(h); pass(h);                                   // resolve the trigger (info only)
-  assert.ok(h.log.some(m => m.includes('Hooba-Lan') && m.includes('PARKED')),
-    'the trigger fired and logged the parked payload');
+  pass(h); pass(h);                                   // resolve the trigger
+  const made = h.state.players[A]!.resources.slice(before);
+  assert.equal(made.length, 1, 'exactly one Shard per attack');
+  assert.equal(made[0]!.kind, 'shard');
+  assert.equal(made[0]!.state, 'dormant', 'printed "(It will spawn dormant.)"');
   finishBattle(h);
-  // TODO(parked): "create a Shard" needs a 'Shard' ResourceKind /
-  // resource-creation primitive (same gap as the Resource card faces).
 });
 
 test('Lithoghul: dealt damage → deals that much damage to its controller', () => {

@@ -236,23 +236,14 @@ card('Stoneborn Progenitor', {
 });
 
 // "When I spawn, create two Shards. {i}(Dormant)" — e/2 2/1 Primordial
-// Maelstrom Unit. ⚠ APPROXIMATION (see header): no 'Shard' ResourceKind
-// exists, so the Shards are dormant PRISMITES — 1 mana when activated, no
-// affinity, spawn dormant; the prismite planning exchange (R17) is a
-// fidelity leak a real Shard kind would close.
+// Maelstrom Unit. PLAYTEST FIX: this used to push dormant PRISMITES, which is
+// a straight upgrade — a prismite can be exchanged for any element during
+// planning (R17). Real Shards (E.createShard) give mana only.
 card('Swirling Shardform', {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
     label: 'create two Shards (dormant)',
-    effect: {
-      run: (g, ctx) => {
-        g.player(ctx.controller).resources.push(
-          { kind: 'prismite', state: 'dormant' },
-          { kind: 'prismite', state: 'dormant' },
-        );
-        g.ev('info', `Swirling Shardform: ${g.pname(ctx.controller)} gets two dormant Shards (⚠ engine: prismites).`);
-      },
-    },
+    effect: { run: (g, ctx) => { g.createShard(ctx.controller, 2, 'Swirling Shardform'); } },
   }],
 });
 

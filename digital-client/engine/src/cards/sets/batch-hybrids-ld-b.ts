@@ -124,6 +124,7 @@ const ALL_ATTRS: Attr[] = [
 // the HOST when donated (staticsFor), which is exactly what "your other units"
 // wants. Region-scoped by the engine (R12).
 card('Air Plant', {
+  augmentable: true,   // text-box [Augment] implemented as a static
   statics: [{
     affects: (_g, self, target) =>
       target.kind === 'unit' && target.controller === self.controller && target.id !== self.id,
@@ -231,6 +232,7 @@ card('Vengeance', {
 // granting it through a static lands in ownAttrs, which layer4Attrs reads, so
 // the max-of-the-two rewrite happens in the right layer for free.
 card('Brough', {
+  augmentable: true,   // text-box [Augment] implemented as a static (see below)
   statics: [{
     affects: (_g, _self, target) => target.kind === 'unit',
     attrs: ['Balanced'],
@@ -266,6 +268,7 @@ card('Rime Wraith', {});
 // flips the whole board. dp must not call effStats (reentrancy guard) — it
 // reads the raw life total, which is safe.
 card('Life Power Dude', {
+  augmentable: true,   // text-box [Augment] implemented as a static
   statics: [{
     affects: (_g, _self, target) => target.kind === 'unit',
     dp: (g, self) => (Math.abs(g.player(self.controller).life % 2) === 1 ? -2 : 2),
@@ -630,6 +633,7 @@ const binGrants = (g: E, seat: Seat, attr: Attr): boolean =>
 // carrier's controller's (the HOST's when donated, statics being anchored on
 // the host); "I" is the carrier itself, so each row only affects self.
 card('The Omniphage', {
+  augmentable: true,   // text-box [Augment] implemented as statics
   statics: ALL_ATTRS.map(attr => ({
     affects: (g: E, self: Entity, target: Entity) =>
       target.id === self.id && binGrants(g, self.controller, attr),

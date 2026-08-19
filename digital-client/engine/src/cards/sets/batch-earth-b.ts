@@ -20,10 +20,10 @@
  *    the holder is a UNIT in play — so a host still takes the -7/-7 once as
  *    permanent -1/-1 counters when the mod lands (pairwise-cancels with
  *    +1/+1 counters; the known deviation, now confined to that half).
- *  - PARTIAL — Mohruung: "when I become targeted" is heard for augment /
- *    virus / graft targeting (apply.ts dispatches those 'targeted' events),
- *    but engine.ts commitItem only LOGS 'targeted' for spell/ability targets
- *    without dispatching, so spell targeting does not trigger it yet.
+ *  - Mohruung: "when I become targeted" is now heard on EVERY targeting path.
+ *    It was partial — apply.ts dispatched 'targeted' for augment/virus/graft
+ *    but engine.ts commitItem only LOGGED it for spell and ability targets,
+ *    so no spell in the game could trigger it. Playtest 2026-08-19 (R53).
  *  - PARTIAL — Reality Bender: registered on printed data ({Inverted} attr +
  *    type-line [Augment] grant); the Inverted stat swap itself is the
  *    unimplemented effStats layer 5 (the seam exists in engine.ts).
@@ -175,10 +175,9 @@ card('Mirage Scuttler', {
 });
 
 // "When I become targeted, [Switch1] Create a Crystal 2." — e/4 1/5 Cosmic
-// Rock Unit. ⚠ PARTIAL (see header): augment/virus/graft targeting dispatches
-// 'targeted' (apply.ts) and triggers this; spell/ability targeting is only
-// logged by engine.ts commitItem, so it does not trigger yet. Bounded
-// ([Switch1], R9); the Crystal 2 is the bounded graft.
+// Rock Unit. Every targeting path fires it: augment/virus/graft (apply.ts)
+// and spells/abilities off the stack (engine.ts commitItem — R53, the
+// playtest fix). Bounded ([Switch1], R9); the Crystal 2 is the bounded graft.
 const createCrystal2: EffectDef = {
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Crystal', 2, ctx.region); },
 };
