@@ -414,6 +414,19 @@ button:disabled { opacity: .4; cursor: default; }
 
 /* game icons sitting on a TEXT line (card text, prompts, labels, help) */
 .txticon { width: 15px; height: 15px; vertical-align: -3px; margin: 0 1px; }
+
+/* Containers that hold a card SCAN stretch a bare <img> to fill themselves —
+ * `.preview img`, `.card img`, `.modstrip img` are all width:100%, and
+ * `.inspecttop img` is 150px. Those rules are (0,1,1), the same specificity as
+ * a bare `.txticon` class is (0,1,0) — so they WIN, and an inline icon inside
+ * the focus viewer or the card inspector stretches to the panel width while
+ * keeping its 15px height (found in the focus viewer, 2026-08-19: [Augment]
+ * and [1] rendered as flat white bars the width of the side panel).
+ * Matching on `img.<class>` lifts these to (0,1,1) too, and they sit LATER in
+ * the file, so they win on source order. The size overrides below stay ahead
+ * of this on specificity, so they are unaffected. */
+img.txticon { width: 15px; height: 15px; max-width: none; }
+img.elicon { width: 16px; height: 16px; max-width: none; }
 .battle h3 .txticon, .promptbar .txticon { width: 16px; height: 16px; }
 .card .badge .txticon { width: 10px; height: 10px; vertical-align: -2px; margin: 0 2px 0 0; }
 .zonelabel .txticon, .invaderlabel .txticon { width: 12px; height: 12px; vertical-align: -2px; }
