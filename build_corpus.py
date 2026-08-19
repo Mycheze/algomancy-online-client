@@ -45,6 +45,7 @@ AUTHORITY = {
     "manual":        (1, "primary rulebook"),
     "judge_ruling":  (1, "official judge ruling"),
     "glossary":      (2, "official glossary"),
+    "expansion_provisional": (2, "Light & Dark provisional glossary (unofficial)"),
     "community_ruling": (2, "community Q&A (judge-confirmed)"),
     "rulebook23":    (3, "secondary rulebook (2023)"),
     "rules_web":     (4, "designer web write-up"),
@@ -251,6 +252,35 @@ def build_glossary():
     return records
 
 
+def build_expansion_glossary():
+    """Light & Dark terms — same Term: definition shape, but provisional.
+
+    The intro prose above the first term is skipped; only "Term: ..." paragraphs
+    become chunks, each tagged so the bot can say the definition is unofficial.
+    """
+    path = RULES / "Light-and-Dark-Provisional-Glossary.md"
+    if not path.exists():
+        return []
+    raw = path.read_text()
+    term_re = re.compile(r"^([A-Z][A-Za-z /+()-]{1,40}):\s")
+    records = []
+    for para in re.split(r"\n\s*\n", raw):
+        para = " ".join(para.strip().split())
+        m = term_re.match(para)
+        if not m:
+            continue
+        term = m.group(1).strip()
+        cid = "ld-glossary:" + re.sub(r"[^A-Za-z0-9]+", "-", term).strip("-").lower()
+        records.append(make_record(
+            cid, para, "Light-and-Dark-Provisional-Glossary.md",
+            "glossary", "expansion_provisional",
+            f"{term} (Light & Dark, provisional)",
+            {"term": term, "expansion": "Light & Dark", "provisional": True},
+            outdated_risk=True))
+    print(f"  L&D glossary: {len(records)} terms")
+    return records
+
+
 # --------------------------------------------------------------------------- #
 # Markdown docs — heading-aware
 # --------------------------------------------------------------------------- #
@@ -446,6 +476,7 @@ def main():
     print("Building corpus…")
     all_records += build_cards()
     all_records += build_glossary()
+    all_records += build_expansion_glossary()
 
     all_records += build_rulebook(
         RULES / "Algomancy-Manual.pdf", "Algomancy-Manual", "manual", "manual")

@@ -302,3 +302,15 @@ that could ride along, the only-unit formation is auto-declared (a forced
 action, logged like any other). Rationale: the player already committed the
 unit at block time; the only real choice left — whether a sent spell token
 rides — suppresses the forcing when present. (Playtest request 2026-08-18.)
+
+## R37 ⚠ — "Playing" a card means units and spells only; mods are APPLIED, not played
+Only units and spells are "played" (from whatever zone — hand, bin, or
+elsewhere). Applying a modification — attaching a Virus, graft, or augment,
+whether it comes from your hand, your bin, or a glimpse — is NOT "playing a
+card". Consequently, abilities that trigger on "when(ever) you play a
+unit/spell/card" do NOT trigger when a mod is applied, even a mod applied
+from the bin. This is the intended reading behind the Light element's
+play-matters cards (per Discord discussion); the current published rulings
+are unclear, so this stands as a provisional local errata until Caleb ships
+the official Light & Dark release/errata. Affected base-set cards carry a
+provisional-errata note in their oracle `rulings`. (Bena 2026-08-19.)
