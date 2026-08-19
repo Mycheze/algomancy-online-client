@@ -98,6 +98,12 @@ and once placed the order is fixed for good. Grafts also only go on YOUR OWN uni
 a Virus): an opponent's units aren't available to target during your deployment. If the \
 glossary's Graft entry says you can put the card "on top or beneath", that wording is \
 outdated — under only.
+- "Playing" vs "applying a mod" (provisional clarification, pending official Light & Dark \
+errata): only UNITS and SPELLS are "played". Applying a modification — attaching a Virus, \
+graft, or augment, whether it comes from your hand, your bin, or a glimpse — is NOT \
+"playing a card". So abilities that trigger "when you play a unit/spell/card" do NOT \
+trigger when a mod is applied, even one applied from the bin. This matters especially for \
+Light-element cards that care about playing cards.
 - Bounded vs unbounded graft (the switch-arrow shown as [Switch]/[Switch1] in a card's \
 ability text): this symbol caps how often that triggered effect can fire IN A TURN. The \
 UNBOUNDED form ([Switch]) can trigger an unlimited number of times per turn; the BOUNDED \
@@ -165,7 +171,49 @@ block it this combat if able.
 - Inverted — reverses a unit's stat changes (a -7/-7 effect instead gives +7/+7).
 - Augment (+), Graft (switch-arrows), Conjure — see the Modifications and Conjure notes above.
 Note: "Devastating" is not a current attribute (it appears only in old example text); the \
-live keyword for excess combat damage going to the player is Piercing."""
+live keyword for excess combat damage going to the player is Piercing.
+
+Light & Dark expansion (163 cards, two new elements). IMPORTANT: this expansion has NOT \
+had an official rules release — there is no rulebook or errata for it yet. The card text \
+is transcribed from card images and the definitions below are PROVISIONAL, drawn from \
+printed reminder text and the designer's Discord messages. Say so when you rely on them, \
+and never present them as settled rules.
+- Light — new element; cream/white pip. Themes: Prophecy, cache, glimpse, life gain, \
+Blessed, and debt as a price for strong effects.
+- Dark — new element; grey pip. Themes: rot, trashing, bin recursion, -1/-1 counters, \
+sacrifice, Afflicting.
+- Rot — a persistent harm that accumulates on a PLAYER, not a unit. Rot deals damage to \
+the player holding it, equal to the amount of rot held. It is never removed once gained \
+("Rot stays", designer, 2025-03-19). Some effects convert combat damage into rot instead \
+of life loss. Your own rot counts as a source you control. UNCONFIRMED: exactly when in \
+the turn rot deals its damage — do not state a timing.
+- Debt — an accumulating cost paid off with mana, unlike rot. Debt is paid at the END of \
+the resource step, and you cannot activate mana after paying it (designer, 2024-12-02). \
+Paid debt goes away.
+- Prophecy — an alternate cost on a second banner under the title, reading \
+"Prophecy — <condition>" (e.g. "Two Turns Pass", "Your life is 5 or less"). You first \
+prophesy the card by paying that small cost, which caches it; once the condition is met \
+you may play it from cache for free ("without paying their cost", designer, 2024-10-28). \
+Effects can attach a prophecy to an opponent's card too.
+- Cache — a neutral holding zone separate from hand, bin and deck ("basically exile with \
+the intent to be referenced later", designer). Cards stay cached if unused. Being cached \
+does NOT by itself let you play a card — only effects that say so (like glimpse) do — but \
+you CAN augment or graft from cache.
+- Glimpse — reveal the top card of the deck and cache it; until end of turn you may play \
+it as if it were in hand, ignoring affinity. You still pay its cost and obey timing.
+- Blessed — damage dealt by a blessed source also gains its controller that much life, \
+simultaneously with the damage.
+- Afflicting — when an afflicting source kills one or more units, those units' \
+CONTROLLERS gain a rot.
+- Lethal — any combat damage from a lethal unit kills a player outright.
+- Pure — pure cards, and the cards they interact with, ignore all other attributes.
+- Modular — you may apply mods to a modular card from hand and/or bin as it is played, \
+paying each mod's cost.
+- Wraith — a token made by several Dark cards; it is AUGMENTED onto a unit rather than \
+placed as its own unit. Its printed text is not in our data — say so if asked.
+- Trash / trashed — a verb used by many Dark cards ("When I am trashed"). UNCONFIRMED: \
+no card or designer statement defines how trashing differs from discarding or erasing. \
+Do not invent a definition; say it is not yet documented."""
 
 SYSTEM_PROMPT = """You are the Algomancy Rules Bot, an expert assistant for the \
 card game Algomancy by Caleb Gannon. Answer using TWO trusted sources only: (1) the \
@@ -193,6 +241,14 @@ CHANGED, not that the ruling is wrong — follow the ruling and say so.
 - If neither the primer nor the retrieved passages cover the question, say you don't \
 have that in the rules rather than inventing an answer. A clear "the rules provided \
 don't cover this" is a good answer.
+- The Light & Dark expansion has NO official rules release yet. Its card text was \
+transcribed from card images, and any passage labelled "Light & Dark provisional \
+glossary" — or a primer line marked provisional — is a best reading from printed \
+reminder text and the designer's Discord messages, NOT settled rules. When you rely on \
+one, say plainly that it is provisional and may change when the official release ships. \
+Where such a source marks a point UNCONFIRMED (for example exactly when rot deals its \
+damage, or what "trashed" means), do not fill the gap with a guess — say it is not \
+documented yet.
 
 Do not be led by the question:
 - The user may state or imply a rule, often as a leading question ("…right?", \
@@ -474,6 +530,9 @@ ICON_NAMES = {
 RESOURCE_NAMES = {
     "r": "fire", "m": "metal", "b": "water",
     "e": "earth", "g": "wood",
+    # Light & Dark expansion. "p" stays unmapped on purpose — colourless has no
+    # icon by design and renders as plain text.
+    "l": "light", "d": "dark",
 }
 ICON_TOKEN_RE = re.compile(r"\[[^\[\]]+\]|\{[^{}]+\}")
 
@@ -494,7 +553,12 @@ COST_WORDS = {
     "three_blue": "3b",
 }
 AMOUNT_NAMES = {c: f"cost_{c}" for c in "0123456789x"}
-_COMPOUND_COST_RE = re.compile(r"[0-9]*[rmbeg]+")   # [e], [4bb], [2be]
+# [e], [4bb], [2be] — and l/d for the Light & Dark elements ([d], [4dd]).
+_COMPOUND_COST_RE = re.compile(r"[0-9]*[rmbegld]+")
+# The Light & Dark cards print plain numeric costs ("pay [1]") where the base set
+# spells them ([one]). Card text is safe to expand digit-only tokens in; prose is
+# NOT (see ICON_PROSE_RE below — "[1]" there is far more likely a footnote).
+_PLAIN_AMOUNT_RE = re.compile(r"[0-9]+")
 
 
 def cost_token_icons(tok):
@@ -507,7 +571,9 @@ def cost_token_icons(tok):
     body = tok[1:-1].lower()
     if body in COST_WORDS:                            # [one], [x], [three_blue]
         body = COST_WORDS[body]
-    elif not _COMPOUND_COST_RE.fullmatch(body):       # [4bb], [e]
+    elif _PLAIN_AMOUNT_RE.fullmatch(body):            # [1], [12]
+        pass
+    elif not _COMPOUND_COST_RE.fullmatch(body):       # [4bb], [e], [d]
         return None                                   # anything else isn't a cost
     return [(AMOUNT_NAMES.get(c) or RESOURCE_NAMES[c], c) for c in body]
 
@@ -521,7 +587,7 @@ def cost_token_icons(tok):
 ICON_PROSE_RE = re.compile("|".join([
     *(re.escape(t) for t in sorted(ICON_NAMES, key=len, reverse=True)),
     r"\[(?:%s)\]" % "|".join(sorted(COST_WORDS, key=len, reverse=True)),
-    r"\[[0-9]*[rmbeg]+\]",
+    r"\[[0-9]*[rmbegld]+\]",
 ]), re.IGNORECASE)
 
 

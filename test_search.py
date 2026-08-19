@@ -176,8 +176,15 @@ check("a compound cost is an amount then its resources",
       == [("cost_4", "4"), ("water", "b"), ("water", "b")])
 check("[three_blue] is the same thing spelled as one word",
       core.cost_token_icons("[three_blue]") == [("cost_3", "3"), ("water", "b")])
-check("a bare number is NOT a cost — no card prints one, and an LLM's footnote does",
-      core.cost_token_icons("[1]") is None and core.cost_token_icons("[4]") is None)
+check("a bare number IS a cost in card text — the Light & Dark cards print them",
+      core.cost_token_icons("[1]") == [("cost_1", "1")]
+      and core.cost_token_icons("[4]") == [("cost_4", "4")])
+check("a bare number is still NOT an icon in prose — an LLM's footnote looks the same",
+      core.render_icons("see [1] and [12]", lambda n, c: "ICON") == "see [1] and [12]")
+check("the new elements read as resources",
+      core.cost_token_icons("[d]") == [("dark", "d")]
+      and core.cost_token_icons("[4ll]")
+      == [("cost_4", "4"), ("light", "l"), ("light", "l")])
 check("prose isn't a cost either",
       core.cost_token_icons("[sacrifice a unit]") is None)
 check("every icon a token maps to exists on disk",
