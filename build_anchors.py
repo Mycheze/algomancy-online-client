@@ -120,24 +120,44 @@ def find_icon(art_path, icon):
     graft symbols (Amphivore has three); the ability text begins at the topmost
     one, so peaks are gathered and the highest on the card wins, not the
     strongest-scoring one.
+
+    Polarity: base-set frames draw the glyph white on a dark box, which is what
+    the template looks like. The Light element's frames are the other way round —
+    a dark glyph on a cream box — and since _ncc is zero-mean normalised, that
+    inverted pattern scores about -1 instead of +1. So when the normal polarity
+    finds nothing, the search is retried against the negated score grid. Positive
+    polarity is always tried first, so every previously-anchored card keeps the
+    exact anchor it had.
     """
     g = np.asarray(Image.open(art_path).convert("L"), dtype=np.float32) / 255.0
     region = g[SEARCH_TOP:, :]
     src = Image.open(ICONS_DIR / f"{icon}.webp").convert("RGBA")
 
-    best = None
+    grids = []
     for size in SIZES:
         t = np.asarray(src.resize((size, size), Image.LANCZOS), dtype=np.float32) / 255.0
         alpha = t[:, :, 3]
         lum = 0.299 * t[:, :, 0] + 0.587 * t[:, :, 1] + 0.114 * t[:, :, 2]
         tpl = np.pad(lum * alpha, PAD)
         grid = _ncc(region[::2, ::2], tpl[::2, ::2])
-        if grid is None:
-            continue
-        peak = float(grid.max())
-        if best is None or peak > best[0]:
-            best = (peak, size, grid)
+        if grid is not None:
+            grids.append((size, grid))
+    if not grids:
+        return None
 
+    best = None
+    for sign in (1.0, -1.0):
+        cand = None
+        for size, grid in grids:
+            sgrid = grid * sign
+            peak = float(sgrid.max())
+            if cand is None or peak > cand[0]:
+                cand = (peak, size, sgrid)
+        if cand and cand[0] >= MIN_SCORE:
+            best = cand
+            break
+        if best is None:
+            best = cand
     if best is None:
         return None
     peak, size, grid = best
