@@ -17,12 +17,14 @@ import { readFile } from 'node:fs/promises';
 import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
-import type { Action, Seat } from '../engine/src/types.ts';
-import { forcedAction, legalActions, IllegalAction } from '../engine/src/apply.ts';
+import type { Action, CardName, Seat } from '../engine/src/types.ts';
+import { checkDeck, forcedAction, legalActions, IllegalAction } from '../engine/src/apply.ts';
 import { viewFor, redactEvent, redactLog } from './view.ts';
+import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
   applyToRoom, clearDeployHold, clockSnapshot, getOrCreateRoom, getRoom, renameSeat,
-  restoreRooms, settleClock, undoActionAt, undoLastAction, type Room, type Socket,
+  restoreRooms, roomWaiting, setRoomDeck, settleClock, undoActionAt, undoLastAction,
+  type Room, type Socket,
 } from './rooms.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -103,6 +105,33 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  // constructed: the bundled test decks (attributed to their builders)
+  if (path === '/api/deck/defaults') {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    return res.end(JSON.stringify({ decks: defaultDecks() }));
+  }
+
+  // constructed: turn an algomancer.cc link or a pasted list into engine
+  // card names — { url } or { text } in, DeckInfo out (problems included)
+  if (path === '/api/deck/import' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (c: Buffer) => { body += c; });
+    req.on('end', async () => {
+      try {
+        const { url, text } = JSON.parse(body || '{}') as { url?: string; text?: string };
+        const deck = url
+          ? await importDeckUrl(String(url))
+          : importDeckText(String(text ?? ''));
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, deck }));
+      } catch (err) {
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: String(err instanceof Error ? err.message : err) }));
+      }
+    });
+    return;
+  }
+
   // right-click card inspector: card info + recorded rulings from the bot
   if (path === '/api/cardinfo') {
     const name = url.searchParams.get('name') ?? '';
@@ -168,11 +197,22 @@ const send = (ws: WebSocket, obj: unknown): void => {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
 };
 
+/** Constructed lobby state, attached to every message while the room waits
+ * for decks: which seats have brought one. undefined once the game is real. */
+function waitingInfo(room: Room): { have: [boolean, boolean] } | undefined {
+  return roomWaiting(room) ? { have: [!!room.decks[0], !!room.decks[1]] } : undefined;
+}
+
 /** Push an update to one seat: redacted view (+optional events). During
  * deployment the opponent's half of the view comes from the freeze. */
 function sendUpdate(room: Room, seat: Seat, events: import('../engine/src/types.ts').EngineEvent[]): void {
   const sock = room.sockets[seat] as unknown as WebSocket | null;
   if (!sock) return;
+  // still waiting for decks: no game to show — just the lobby state
+  if (roomWaiting(room)) {
+    send(sock, { t: 'update', waiting: waitingInfo(room), peers: peersOf(room), names: room.names });
+    return;
+  }
   send(sock, {
     t: 'update',
     view: viewFor(room.state, seat, room.deploySnapshot),
@@ -236,22 +276,40 @@ const wss = new WebSocketServer({ server });
 
 wss.on('connection', ws => {
   ws.on('message', raw => {
-    let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[]; action?: Action };
+    let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[]; deck?: unknown; action?: Action };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     if (msg.t === 'join') {
       const code = (msg.room ?? '').toUpperCase().trim();
       if (!code) return send(ws, { t: 'error', msg: 'a room code is required' });
+      // a deck riding on the join (constructed): validate it up front — the
+      // client sends its selected deck with every join and the server uses it
+      // only where it matters (creating a constructed room / a waiting seat)
+      let deckCards: CardName[] | null = null;
+      if (msg.deck !== undefined) {
+        const c = checkDeck(msg.deck);
+        if (c.ok) deckCards = c.cards;
+        else if (msg.mode === 'constructed' && !getRoom(code)) {
+          return send(ws, { t: 'error', msg: `that deck is not playable: ${c.error}` });
+        }
+      }
       // mode + chosen trio only apply when this join CREATES the room (the
       // creator's link carries them); an existing room keeps its own.
-      const room = getOrCreateRoom(code, msg.mode === 'draft' ? 'draft' : 'shared',
-        Array.isArray(msg.els) ? (msg.els as import('../engine/src/types.ts').Element[]) : undefined);
+      const mode = msg.mode === 'draft' ? 'draft' : msg.mode === 'constructed' ? 'constructed' : 'shared';
+      if (mode === 'constructed' && !getRoom(code) && !deckCards) {
+        return send(ws, { t: 'error', msg: 'a constructed game needs a deck — pick one on the home screen first' });
+      }
+      const room = getOrCreateRoom(code, mode,
+        Array.isArray(msg.els) ? (msg.els as import('../engine/src/types.ts').Element[]) : undefined,
+        deckCards ?? undefined);
       const picked = pickSeat(room, msg.seat);
       if (picked === null) {
         return send(ws, { t: 'error', msg: 'room is full (2 players) — ask your opponent for their seat link, or use a new room' });
       }
       const seat = picked.seat;
-      if (picked.kicked) {
+      // a re-join on the SAME connection (waiting room: "here is my deck now")
+      // must not kick itself
+      if (picked.kicked && picked.kicked !== (ws as unknown as Socket)) {
         send(picked.kicked as unknown as WebSocket, {
           t: 'kicked', msg: `another connection took over seat ${seat} — this tab is done (close it, or rejoin)`,
         });
@@ -262,21 +320,34 @@ wss.on('connection', ws => {
       if (name) renameSeat(room, seat, name);
       room.sockets[seat] = ws as unknown as Socket;
       conns.set(ws, { room, seat });
+      // constructed lobby: register this seat's deck; when it completes the
+      // pair the real game is dealt and BOTH seats get a fresh 'joined'
+      const gameJustStarted = roomWaiting(room) && deckCards
+        ? setRoomDeck(room, seat as 0 | 1, deckCards) : false;
       settleClock(room);   // a connected seat with pending work goes on the clock
-      send(ws, {
-        t: 'joined',
-        room: code, seat,
-        view: viewFor(room.state, seat, room.deploySnapshot),
-        log: visibleLog(room, seat),
-        legal: legalActions(room.state, seat),
-        peers: peersOf(room),
-        names: room.names,
-        clock: clockSnapshot(room),
-      });
-      // let the other seat know a peer arrived (fresh view refreshes presence)
+      const joinedMsg = (s: Seat): unknown => roomWaiting(room)
+        ? {
+            t: 'joined', room: code, seat: s,
+            waiting: waitingInfo(room), peers: peersOf(room), names: room.names,
+          }
+        : {
+            t: 'joined', room: code, seat: s,
+            view: viewFor(room.state, s, room.deploySnapshot),
+            log: visibleLog(room, s),
+            legal: legalActions(room.state, s),
+            peers: peersOf(room),
+            names: room.names,
+            clock: clockSnapshot(room),
+          };
+      send(ws, joinedMsg(seat));
+      // let the other seat know a peer arrived (fresh view refreshes presence;
+      // on game start they need the full reset, i.e. their own 'joined')
       const otherSeat = (seat === 0 ? 1 : 0) as Seat;
-      if (room.sockets[otherSeat]) pushView(room, otherSeat);
-      console.log(`[ws] ${code}: seat ${seat} joined`);
+      if (room.sockets[otherSeat]) {
+        if (gameJustStarted) send(room.sockets[otherSeat] as unknown as WebSocket, joinedMsg(otherSeat));
+        else pushView(room, otherSeat);
+      }
+      console.log(`[ws] ${code}: seat ${seat} joined${roomWaiting(room) ? ' (waiting for decks)' : gameJustStarted ? ' (constructed game started)' : ''}`);
       return;
     }
 
@@ -284,6 +355,7 @@ wss.on('connection', ws => {
       const conn = conns.get(ws);
       if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
       const action = msg.action;
+      if (roomWaiting(conn.room)) return send(ws, { t: 'error', msg: 'the game has not started — waiting for both decks' });
       if (!action || typeof action !== 'object') return send(ws, { t: 'error', msg: 'no action' });
       if (action.seat !== conn.seat) {
         return send(ws, { t: 'error', msg: `you are seat ${conn.seat}, not seat ${action.seat}` });
@@ -335,6 +407,7 @@ wss.on('connection', ws => {
       const conn = conns.get(ws);
       if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
       const room = conn.room;
+      if (roomWaiting(room)) return send(ws, { t: 'error', msg: 'the game has not started — nothing to undo' });
       const phase = room.state.phase;
       // A pending PRE-COMMIT cast chain of the requester's own (X / cost /
       // target stages, R35) is undoable in ANY phase: while their decision

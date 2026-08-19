@@ -154,6 +154,21 @@ button:disabled { opacity: .4; cursor: default; }
   border-radius: 5px; padding: 6px 8px; letter-spacing: .2em; font-weight: 700; text-align: center; }
 .joinrow button { flex: 1; }
 
+/* ── constructed deck picker + waiting lobby ────────────────────────── */
+.deckselect { width: 100%; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 7px 8px; font-size: 13px; }
+.deckinfo { color: var(--dim); font-size: 12px; }
+.deckinfo a { color: var(--accent); }
+.deckimport input { letter-spacing: normal; font-weight: 400; text-align: left; font-size: 12px; }
+.deckimport button { flex: 0 0 auto; padding: 6px 14px; }
+.deckpaste summary { color: var(--dim); font-size: 12px; cursor: pointer; }
+.deckpaste textarea { width: 100%; box-sizing: border-box; margin: 6px 0; background: var(--panel2);
+  color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; font: 12px monospace; }
+.deckmsg { color: var(--accent); font-size: 12px; }
+.waitstatus { display: flex; flex-direction: column; gap: 6px; background: var(--panel2);
+  border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 14px; }
+.joinscreen .sharebar { flex-wrap: wrap; margin-bottom: 0; }
+
 /* ── live draft panel (M4) ──────────────────────────────────────────── */
 .draftpanel { background: var(--panel); border: 1px solid var(--accent); border-radius: 6px;
   padding: 8px 10px; margin-bottom: 8px; }

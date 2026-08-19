@@ -45,20 +45,20 @@ const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' 
 
 /** Glimpse N for a seat — ⚠ approximation, see the header note. */
 function glimpse(g: E, ctx: EffectCtx, seat: Seat, n: number): void {
-  const count = Math.min(n, g.s.sharedDeck.length);
+  const count = Math.min(n, g.deckOf(seat).length);
   if (count <= 0) return;
-  const top = g.s.sharedDeck.slice(0, count);
+  const top = g.deckOf(seat).slice(0, count);
   g.ev('info', `${g.pname(seat)} Glimpses ${count}: ${top.join(', ')}.`);
   const pick = ctx.choose('glimpse', {
     kind: 'payOrDecline', seat,
     prompt: `Glimpse ${count}: choose a card to cache (engine: it goes to your hand)`,
     options: top.map((name, i) => ({ label: name, value: i, card: name })),
   }) as number;
-  g.s.sharedDeck.splice(0, count);
+  g.deckOf(seat).splice(0, count);
   const keptIdx = top[pick] !== undefined ? pick : 0;
   const kept = top[keptIdx]!;
   g.player(seat).hand.push(kept);
-  top.forEach((name, i) => { if (i !== keptIdx) g.recycleToBottom(name); });
+  top.forEach((name, i) => { if (i !== keptIdx) g.recycleToBottom(seat, name); });
   g.ev('info', `${g.pname(seat)} caches ${kept} and recycles the rest.`);
 }
 
@@ -137,7 +137,7 @@ const brippEffect: EffectDef = {
     }) as number;
     if (pick < 0 || hand[pick] === undefined) return;
     const [name] = hand.splice(pick, 1);
-    g.recycleToBottom(name!);
+    g.recycleToBottom(who, name!);
     g.ev('info', `Bripp recycles ${name} from ${g.pname(who)}'s hand.`);
     g.draw(who, 1);
   },

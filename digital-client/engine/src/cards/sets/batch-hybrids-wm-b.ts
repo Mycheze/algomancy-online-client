@@ -130,20 +130,20 @@ const formationOf = (g: E, id: EntityId): EntityId[][] | null => {
 
 /** Glimpse N for a seat — ⚠ the batch-water-a approximation (see header). */
 function glimpse(g: E, ctx: EffectCtx, seat: Seat, n: number): void {
-  const count = Math.min(n, g.s.sharedDeck.length);
+  const count = Math.min(n, g.deckOf(seat).length);
   if (count <= 0) return;
-  const top = g.s.sharedDeck.slice(0, count);
+  const top = g.deckOf(seat).slice(0, count);
   g.ev('info', `${g.pname(seat)} Glimpses ${count}: ${top.join(', ')}.`);
   const pick = ctx.choose('glimpse', {
     kind: 'payOrDecline', seat,
     prompt: `Glimpse ${count}: choose a card to cache (engine: it goes to your hand)`,
     options: top.map((name, i) => ({ label: name, value: i, card: name })),
   }) as number;
-  g.s.sharedDeck.splice(0, count);
+  g.deckOf(seat).splice(0, count);
   const keptIdx = top[pick] !== undefined ? pick : 0;
   const kept = top[keptIdx]!;
   g.player(seat).hand.push(kept);
-  top.forEach((name, i) => { if (i !== keptIdx) g.recycleToBottom(name); });
+  top.forEach((name, i) => { if (i !== keptIdx) g.recycleToBottom(seat, name); });
   g.ev('info', `${g.pname(seat)} caches ${kept} and recycles the rest.`);
 }
 

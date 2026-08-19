@@ -246,10 +246,16 @@ export class E {
   }
 
   // ── zones ───────────────────────────────────────────────────────────
+  /** the deck `seat` draws from / recycles to: their own in constructed,
+   * the communal one otherwise */
+  deckOf(seat: Seat): CardName[] {
+    if (this.s.mode === 'constructed') return this.s.decks![seat]!;
+    return this.s.sharedDeck;
+  }
   draw(seat: Seat, n: number, silent = false): void {
     let got = 0;
     for (let i = 0; i < n; i++) {
-      const c = this.s.sharedDeck.shift();
+      const c = this.deckOf(seat).shift();
       if (c === undefined) break;
       this.player(seat).hand.push(c);
       got++;
@@ -262,8 +268,8 @@ export class E {
       if (this.s.battle) this.fireEvent('draw', ev);
     }
   }
-  recycleToBottom(name: CardName): void {
-    this.s.sharedDeck.push(name);
+  recycleToBottom(seat: Seat, name: CardName): void {
+    this.deckOf(seat).push(name);
   }
 
   /** `viewer` looks at `owner`'s hand (Bripp etc.): snapshot it so the client
@@ -1278,14 +1284,34 @@ export class E {
       for (const r of p.resources) if (r.state === 'expended') r.state = 'open';
       p.activationsLeft = 2;
       // draft mode: turn 1's draws were dealt with the opening hand (Manual
-      // p.16), and later draws go clockwise from initiative like the packs
-      if (this.s.mode !== 'draft') this.draw(p.seat, 2);
+      // p.16), and later draws go clockwise from initiative like the packs.
+      // constructed: the combined draw phase (draw 4, bottom 2) is below.
+      if (this.s.mode === 'shared') this.draw(p.seat, 2);
     }
     if (this.s.mode === 'draft' && this.s.turn > 1) {
       for (const seat of this.dealOrder()) this.draw(seat, 2);
     }
     for (const e of Object.values(this.s.entities)) e.budgets = {};
     if (this.s.mode === 'draft') this.startDraftStep();
+    if (this.s.mode === 'constructed') this.startConstructedDraw();
+  }
+
+  /** Constructed draw phase (Manual "Constructed"): everyone draws 4, then
+   * each player puts 2 cards from hand on the bottom of their own deck in any
+   * order (the bottomCards action). A seat with nothing to put back (empty
+   * deck ran the hand dry) is auto-done. */
+  startConstructedDraw(): void {
+    for (const seat of this.dealOrder()) this.draw(seat, 4);
+    const done = this.s.players.map(p => p.hand.length === 0);
+    if (done.every(Boolean)) { this.s.bottomDone = null; return; }
+    this.s.bottomDone = done;
+    this.ev('phase', 'Draw phase: select 2 cards to put on the bottom of your deck.');
+  }
+
+  /** `seat` still has to put back their 2 cards this turn */
+  bottomPending(seat: Seat): boolean {
+    return this.s.mode === 'constructed' && this.s.phase === 'planning'
+      && this.s.bottomDone != null && !this.s.bottomDone[seat];
   }
 
   // ── live draft (Manual p.16-17) ─────────────────────────────────────

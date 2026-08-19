@@ -36,11 +36,33 @@ export function sanitizeTrio(els: unknown): Element[] {
   return picked.length === 3 ? picked : [...DRAFT_TRIO];
 }
 
+/** Constructed deck rules (Manual: min 30 cards, max 2 copies) against the
+ * scripted pool. Returns the cleaned list or a human-readable error. */
+export function checkDeck(cards: unknown): { ok: true; cards: CardName[] } | { ok: false; error: string } {
+  if (!Array.isArray(cards) || cards.some(c => typeof c !== 'string')) {
+    return { ok: false, error: 'a deck must be a list of card names' };
+  }
+  const list = cards as CardName[];
+  const pool = new Set(DECK_LIST);
+  const unknown = [...new Set(list.filter(n => !pool.has(n)))];
+  if (unknown.length) {
+    return { ok: false, error: `not in the scripted pool: ${unknown.slice(0, 5).join(', ')}${unknown.length > 5 ? ` (+${unknown.length - 5} more)` : ''}` };
+  }
+  if (list.length < 30) return { ok: false, error: `a constructed deck needs at least 30 cards (got ${list.length})` };
+  const counts = new Map<string, number>();
+  for (const n of list) counts.set(n, (counts.get(n) ?? 0) + 1);
+  const over = [...counts.entries()].filter(([, c]) => c > 2).map(([n]) => n);
+  if (over.length) return { ok: false, error: `max 2 copies of each card: ${over.slice(0, 5).join(', ')}` };
+  return { ok: true, cards: [...list] };
+}
+
 export function createGame(
   seed: number,
   names: [string, string] = ['Player 1', 'Player 2'],
   mode: GameMode = 'shared',
   draftElements?: Element[],
+  /** mode 'constructed': each seat's deck list (validate with checkDeck first) */
+  decks?: [CardName[], CardName[]],
 ): ApplyResult {
   let rngState = seed >>> 0;
   const trio = sanitizeTrio(draftElements ?? DRAFT_TRIO);
@@ -49,11 +71,27 @@ export function createGame(
     // the physical live-draft deck: one copy of each card of the chosen trio
     // (54 per element + 5 per hybrid pair = 177 for a trio)
     deckCards.push(...draftDeckList(trio));
-  } else {
+  } else if (mode !== 'constructed') {
     for (const n of DECK_LIST) deckCards.push(n, n);
   }
   let deck: CardName[];
   [deck, rngState] = rngShuffle(deckCards, rngState);
+  // constructed: per-player decks, each shuffled with the seeded RNG (seat 0
+  // first — deterministic, so replay = seed + decks + actions)
+  let seatDecks: CardName[][] | undefined;
+  if (mode === 'constructed') {
+    if (!decks || decks.length !== 2) throw new Error('constructed mode needs a deck per player');
+    for (const d of decks) {
+      const check = checkDeck(d);
+      if (!check.ok) throw new Error(check.error);
+    }
+    seatDecks = [];
+    for (const d of decks) {
+      let shuffled: CardName[];
+      [shuffled, rngState] = rngShuffle(d, rngState);
+      seatDecks.push(shuffled);
+    }
+  }
   let initRoll: number;
   [initRoll, rngState] = rngNext(rngState);
 
@@ -63,6 +101,7 @@ export function createGame(
     mode, packs: [[], []], draftDone: null, seenHand: [null, null],
     elements: mode === 'draft' ? trio : [...ALL_ELEMENTS],
     sharedDeck: deck,
+    ...(seatDecks ? { decks: seatDecks, bottomDone: null } : {}),
     players: names.map((name, seat) => ({
       seat, name, life: 30, hand: [], bin: [],
       // starting Prismites are dealt face-down (Manual: "they start dormant");
@@ -85,6 +124,10 @@ export function createGame(
     // then each player gets a pack of 10 — clockwise from initiative.
     for (const seat of e.dealOrder()) e.draw(seat, 6, true);
     e.dealPacks();
+  } else if (mode === 'constructed') {
+    // opening hand 4 (like draft); turn 1's draw phase (draw 4, bottom 2)
+    // comes with startTurn, netting the same 6-card start
+    for (const seat of [0, 1]) e.draw(seat, 4, true);
   } else {
     for (const seat of [0, 1]) e.draw(seat, 5, true);
   }
@@ -111,9 +154,9 @@ export function apply(state: GameState, action: Action): ApplyResult {
   };
 }
 
-/** Replay = seed + action log (docs/04 §1). */
-export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode, draftElements?: Element[]): ApplyResult {
-  let r = createGame(seed, names, mode, draftElements);
+/** Replay = seed + action log (docs/04 §1; constructed also needs the decks). */
+export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode, draftElements?: Element[], decks?: [CardName[], CardName[]]): ApplyResult {
+  let r = createGame(seed, names, mode, draftElements, decks);
   for (const a of actions) r = { ...apply(r.state, a), events: r.events };
   return r;
 }
@@ -131,6 +174,7 @@ function dispatch(e: E, action: Action): void {
     case 'donePlanning': return doDonePlanning(e, action.seat);
     case 'draftCommit': return doDraftCommit(e, action.seat, action.packIndices);
     case 'doneHaste': return doDoneHaste(e, action.seat);
+    case 'bottomCards': return doBottomCards(e, action.seat, action.handIndices);
     case 'playCard': return doPlayCard(e, action.seat, action.handIndex, action.mode);
     case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId);
     case 'activateAbility': return doActivateAbility(e, action.seat, action.entityId, action.abilityIndex, action.via);
@@ -177,14 +221,37 @@ function doDraftCommit(e: E, seat: Seat, packIndices: number[]): void {
   if (e.s.draftDone.every(Boolean)) e.passPacks();
 }
 
+/** Constructed draw phase: put exactly 2 cards (fewer only when the hand is
+ * shorter) on the bottom of your own deck, in the order given. */
+function doBottomCards(e: E, seat: Seat, handIndices: number[]): void {
+  e.need(e.s.mode === 'constructed', 'not a constructed game');
+  e.need(e.bottomPending(seat), 'not your draw phase');
+  const p = e.player(seat);
+  const required = Math.min(2, p.hand.length);
+  e.need(Array.isArray(handIndices) && handIndices.length === required,
+    `select exactly ${required} cards to put back`);
+  const seen = new Set<number>();
+  for (const i of handIndices) {
+    e.need(Number.isInteger(i) && i >= 0 && i < p.hand.length && !seen.has(i), 'bad card selection');
+    seen.add(i);
+  }
+  const putBack = handIndices.map(i => p.hand[i]!);
+  p.hand = p.hand.filter((_, i) => !seen.has(i));
+  for (const name of putBack) e.recycleToBottom(seat, name);
+  e.s.bottomDone![seat] = true;
+  e.ev('draw', `${e.pname(seat)} puts ${putBack.length} card${putBack.length === 1 ? '' : 's'} on the bottom of their deck.`, { seat, n: putBack.length });
+  if (e.s.bottomDone!.every(Boolean)) e.s.bottomDone = null;
+}
+
 function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
+  e.need(!e.bottomPending(seat), 'finish your draw phase first');
   e.need((e.s.elements as string[]).includes(element), 'not an element of this game');
   const card = e.player(seat).hand[handIndex];
   e.need(card !== undefined, 'no such card in hand');
   e.player(seat).hand.splice(handIndex, 1);
-  e.recycleToBottom(card);
+  e.recycleToBottom(seat, card);
   e.player(seat).resources.push({ kind: element, state: 'dormant' });
   e.ev('recycle', `${e.pname(seat)} recycles ${card} for a dormant resource.`, { seat });
 }
@@ -192,6 +259,7 @@ function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): 
 function doActivateResource(e: E, seat: Seat, index: number): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
+  e.need(!e.bottomPending(seat), 'finish your draw phase first');
   const r = e.player(seat).resources[index];
   e.need(r && r.state === 'dormant', 'not a dormant resource');
   e.need(e.player(seat).activationsLeft > 0, 'max 2 activations per turn');
@@ -217,6 +285,7 @@ function maybeGrantShard(e: E, seat: Seat, kind: ResourceKind): void {
 function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKind): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
+  e.need(!e.bottomPending(seat), 'finish your draw phase first');
   e.need((e.s.elements as string[]).includes(element), 'not an element of this game');
   const r = e.player(seat).resources[index];
   e.need(r && r.kind === 'prismite', 'not a prismite');
@@ -233,6 +302,7 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
 function doDonePlanning(e: E, seat: Seat): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
+  e.need(!e.bottomPending(seat), 'finish your draw phase first');
   e.s.planningDone[seat] = true;
   if (e.s.planningDone.every(Boolean)) e.startHasteStep();
 }
@@ -766,6 +836,22 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       for (let h = 0; h < H; h++) {
         for (let p = 0; p < pack.length; p++) {
           out.push({ type: 'draftCommit', seat, packIndices: noop.map((v, j) => (j === p ? h : v)) });
+        }
+      }
+      return out;
+    }
+    // constructed draw phase: nothing else until the 2 cards go back. Every
+    // pair (ordered pairs collapse to one representative; apply() accepts any
+    // order) — hands are small, so full enumeration stays tiny.
+    if (e.bottomPending(seat)) {
+      const required = Math.min(2, hand.length);
+      if (required <= 1) {
+        out.push({ type: 'bottomCards', seat, handIndices: hand.map((_, i) => i).slice(0, required) });
+        return out;
+      }
+      for (let i = 0; i < hand.length; i++) {
+        for (let j = i + 1; j < hand.length; j++) {
+          out.push({ type: 'bottomCards', seat, handIndices: [i, j] });
         }
       }
       return out;

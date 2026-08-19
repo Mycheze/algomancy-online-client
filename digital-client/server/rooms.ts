@@ -11,8 +11,8 @@
 import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Action, Element, EngineEvent, GameMode, GameState } from '../engine/src/types.ts';
-import { apply, createGame, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import type { Action, CardName, Element, EngineEvent, GameMode, GameState } from '../engine/src/types.ts';
+import { apply, checkDeck, createGame, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const GAMES_DIR = join(HERE, 'games');
@@ -27,6 +27,9 @@ export interface Room {
   mode: GameMode;
   /** draft mode: the chosen trio (sanitized); ignored in 'shared' */
   els: Element[];
+  /** constructed mode: each seat's deck list (null = not brought yet). The
+   * game does not really start until both are in — see roomWaiting(). */
+  decks: [CardName[] | null, CardName[] | null];
   names: [string, string];
   state: GameState;
   actions: Action[];
@@ -63,6 +66,7 @@ export const CLOCK_START_MS = 40 * 60 * 1000;
  * opponent, a dropped tab, or a room restored after a server restart must
  * not silently drain anybody), and a finished game stops both clocks. */
 export function clockRunning(room: Room): [boolean, boolean] {
+  if (roomWaiting(room)) return [false, false];
   if (room.state.winner !== null || room.state.phase === 'gameover') return [false, false];
   if (!room.sockets[0] || !room.sockets[1]) return [false, false];
   return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0) as [boolean, boolean];
@@ -92,9 +96,43 @@ export function clockSnapshot(room: Room): { ms: [number, number]; running: [boo
 const rooms = new Map<string, Room>();
 
 /** Build a fresh game and its initial event list. */
-function fresh(seed: number, names: [string, string], mode: GameMode, els: Element[]): { state: GameState; events: EngineEvent[] } {
-  const r = createGame(seed, names, mode, els);
+function fresh(seed: number, names: [string, string], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]]): { state: GameState; events: EngineEvent[] } {
+  const r = createGame(seed, names, mode, els, decks);
   return { state: r.state, events: r.events };
+}
+
+/** A constructed room whose players have not both brought a deck yet: the
+ * held state is a PLACEHOLDER (never acted on — main.ts gates actions/undo
+ * on this) and the real game is dealt by setRoomDeck once both decks are in. */
+export function roomWaiting(room: Room): boolean {
+  return room.mode === 'constructed' && (!room.decks[0] || !room.decks[1]);
+}
+
+/** the decks to build a constructed room's state from: any missing deck is
+ * stood in for by the other one (placeholder games are never played) */
+function decksFor(room: Pick<Room, 'decks'>): [CardName[], CardName[]] {
+  const a = room.decks[0] ?? room.decks[1];
+  const b = room.decks[1] ?? room.decks[0];
+  if (!a || !b) throw new Error('a constructed room needs at least one deck');
+  return [a, b];
+}
+
+/** Register `seat`'s deck (validated!) while the room is waiting. When it
+ * completes the pair, the REAL game is dealt (the placeholder state and the
+ * empty action log are discarded). Returns true when the game just started. */
+export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[]): boolean {
+  if (!roomWaiting(room)) return false;
+  room.decks[seat] = [...cards];
+  const complete = !!room.decks[0] && !!room.decks[1];
+  if (complete) {
+    const { state, events } = fresh(room.seed, room.names, room.mode, room.els, decksFor(room));
+    room.state = state;
+    room.actions = [];
+    room.events = events;
+    room.clockStamp = Date.now();
+  }
+  persist(room);
+  return complete;
 }
 
 interface Rebuilt {
@@ -111,8 +149,8 @@ interface Rebuilt {
  * newer) engine now rejects is skipped with a warning instead of killing the
  * whole room — a personal server should never eat a live game over a rules
  * tweak. */
-function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[]): Rebuilt {
-  let { state, events } = fresh(seed, names, mode, els);
+function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]]): Rebuilt {
+  let { state, events } = fresh(seed, names, mode, els, decks);
   const all = [...events];
   let deploySnapshot: GameState | null = null;
   let deployStartIndex = -1;
@@ -151,11 +189,18 @@ export function getRoom(code: string): Room | undefined {
   return rooms.get(code);
 }
 
-export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[]): Room {
+/** `creatorDeck` (constructed only): the first joiner's deck, used to build
+ * the waiting room's placeholder state — setRoomDeck assigns it to the actual
+ * seat once main.ts has picked one. */
+export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[]): Room {
   const trio = sanitizeTrio(els);
-  const { state, events } = fresh(seed, names, mode, trio);
+  if (mode === 'constructed' && !creatorDeck) throw new IllegalAction('a constructed room needs a deck');
+  const decks: [CardName[] | null, CardName[] | null] = [null, null];
+  const { state, events } = mode === 'constructed'
+    ? fresh(seed, names, mode, trio, [creatorDeck!, creatorDeck!])
+    : fresh(seed, names, mode, trio);
   const room: Room = {
-    code, seed, mode, els: trio, names, state, actions: [], events, sockets: [null, null],
+    code, seed, mode, els: trio, decks, names, state, actions: [], events, sockets: [null, null],
     deploySnapshot: null, heldDeploy: [[], []], deployStartIndex: -1,
     clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
   };
@@ -164,10 +209,11 @@ export function createRoom(code: string, seed: number, names: [string, string] =
   return room;
 }
 
-/** `mode`/`els` only matter when the room doesn't exist yet (the creator's
- * first join carries them); joining an existing room ignores them. */
-export function getOrCreateRoom(code: string, mode: GameMode = 'shared', els?: Element[]): Room {
-  return rooms.get(code) ?? createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, els);
+/** `mode`/`els`/`creatorDeck` only matter when the room doesn't exist yet
+ * (the creator's first join carries them); joining an existing room ignores
+ * them. */
+export function getOrCreateRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[]): Room {
+  return rooms.get(code) ?? createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, els, creatorDeck);
 }
 
 /** Apply an action to the room's authoritative state and record it. Throws
@@ -212,7 +258,8 @@ export function undoActionAt(room: Room, index: number): void {
   settleClock(room);   // bill up to the undo; the rebuild changes who runs
   room.actions.splice(index, 1);
   const { state, events, deploySnapshot, heldDeploy, deployStartIndex } =
-    rebuild(room.seed, room.names, room.actions, room.mode, room.els);
+    rebuild(room.seed, room.names, room.actions, room.mode, room.els,
+      room.mode === 'constructed' ? decksFor(room) : undefined);
   room.state = state;
   room.events = events;
   room.deploySnapshot = deploySnapshot;
@@ -241,6 +288,8 @@ function persist(room: Room): void {
     writeFileSync(path, JSON.stringify({
       seed: room.seed, mode: room.mode, els: room.els, names: room.names,
       actions: room.actions, clockMs: room.clockMs,
+      // constructed: decks are part of the replay config (additive field)
+      ...(room.mode === 'constructed' ? { decks: room.decks } : {}),
     }));
   } catch (err) {
     console.error(`[rooms] could not persist ${room.code}:`, err);
@@ -263,16 +312,29 @@ export function restoreRooms(): void {
       const raw = JSON.parse(readFileSync(join(GAMES_DIR, f), 'utf8')) as {
         seed: number; mode?: GameMode; els?: Element[]; names?: [string, string];
         actions: Action[]; clockMs?: [number, number];
+        decks?: [CardName[] | null, CardName[] | null];
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const mode = raw.mode ?? 'shared';
       const els = sanitizeTrio(raw.els);
-      const { state, events, deploySnapshot, heldDeploy, deployStartIndex } = rebuild(raw.seed, names, raw.actions, mode, els);
+      const decks: [CardName[] | null, CardName[] | null] = [null, null];
+      if (mode === 'constructed') {
+        for (const s of [0, 1] as const) {
+          const c = checkDeck(raw.decks?.[s]);
+          if (c.ok) decks[s] = c.cards;
+        }
+        if (!decks[0] && !decks[1]) throw new Error('constructed room with no decks');
+      }
+      // a still-waiting room never had real actions — drop any strays
+      const actions = mode === 'constructed' && (!decks[0] || !decks[1]) ? [] : raw.actions;
+      const { state, events, deploySnapshot, heldDeploy, deployStartIndex } = rebuild(
+        raw.seed, names, actions, mode, els,
+        mode === 'constructed' ? decksFor({ decks }) : undefined);
       const clockMs: [number, number] = Array.isArray(raw.clockMs) && raw.clockMs.length === 2
         ? [Math.max(0, Number(raw.clockMs[0]) || 0), Math.max(0, Number(raw.clockMs[1]) || 0)]
         : [CLOCK_START_MS, CLOCK_START_MS];
       rooms.set(code, {
-        code, seed: raw.seed, mode, els, names, state, actions: raw.actions, events,
+        code, seed: raw.seed, mode, els, decks, names, state, actions, events,
         sockets: [null, null], deploySnapshot, heldDeploy, deployStartIndex,
         // nobody is connected right after a restart, so no clock runs yet
         clockMs, clockStamp: Date.now(), clockRun: [false, false],

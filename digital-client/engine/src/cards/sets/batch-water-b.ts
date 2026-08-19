@@ -526,7 +526,7 @@ card('Tiderunner Initiate', {
 card('Tides of the Cosmos', {
   spellEffect: {
     run: (g, ctx) => {
-      const top = g.s.sharedDeck.slice(0, 8);
+      const top = g.deckOf(ctx.controller).slice(0, 8);
       if (!top.length) return;
       g.ev('info', `Tides of the Cosmos reveals: ${top.join(', ')}.`);
       const manaOf = (n: string): number => {
@@ -550,7 +550,7 @@ card('Tides of the Cosmos', {
         budget -= manaOf(top[pick]!);
       }
       // commit: remove the revealed cards, play the picks, recycle the rest
-      g.s.sharedDeck.splice(0, top.length);
+      g.deckOf(ctx.controller).splice(0, top.length);
       for (const i of picks) {
         const name = top[i]!;
         g.ev('info', `Tides of the Cosmos: ${g.pname(ctx.controller)} plays ${name} for free.`);
@@ -563,7 +563,7 @@ card('Tides of the Cosmos', {
         }
       }
       for (let i = 0; i < top.length; i++) {
-        if (!picks.includes(i)) g.recycleToBottom(top[i]!);
+        if (!picks.includes(i)) g.recycleToBottom(ctx.controller, top[i]!);
       }
     },
   },

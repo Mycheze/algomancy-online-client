@@ -128,10 +128,25 @@ tail: `ALL PASS ✓`.
 ## Message protocol (JSON over one WebSocket)
 
 Client → server:
-- `{ t: 'join', room: CODE, seat?: 0|1 }`
+- `{ t: 'join', room: CODE, seat?: 0|1, name?, mode?, els?, deck? }` — `mode`
+  (`shared`/`draft`/`constructed`) + `els` only apply when the join creates the
+  room; `deck` (an array of card names, algomancer.cc-importable — see
+  `decks.ts`) registers this seat's constructed deck
 - `{ t: 'action', action: Action }`
 
 Server → client:
-- `{ t: 'joined', room, seat, view, log, legal, peers, names }`
+- `{ t: 'joined', room, seat, view, log, legal, peers, names }` — while a
+  constructed room still waits for decks, `view/log/legal` are replaced by
+  `waiting: { have: [bool, bool] }`; a fresh full `joined` goes to both seats
+  the moment the second deck arrives and the game is dealt
 - `{ t: 'update', view, events?, legal, peers }` — after any action, to both seats
 - `{ t: 'error', msg }` — illegal action / join error, to the actor only
+
+## Deck endpoints (constructed)
+
+- `GET /api/deck/defaults` — the bundled test decks (`default-decks.json`,
+  built by **aramsunat** on algomancer.cc), already mapped to engine card names
+- `POST /api/deck/import` with `{ url }` (an algomancer.cc deck link — fetched
+  through their `/api/decks/<id>` JSON) or `{ text }` (a pasted list, one card
+  per line with optional leading count) → `{ ok, deck: { name, author, url?,
+  cards, problems } }`

@@ -33,18 +33,24 @@ class NetBackend implements Backend {
   legal: Action[] = [];
   peers: [boolean, boolean] = [false, false];
   joined = false;
+  /** constructed lobby: non-null while the room waits for both decks */
+  waiting: { have: [boolean, boolean] } | null = null;
+  names: [string, string] = ['Player 1', 'Player 2'];
   /** set when the server hands this seat to a newer connection — stop rendering game UI */
   dead = false;
   ws: WebSocket;
+  private wantSeat: Seat | null;
+  private mode?: string;
+  private els?: string[];
   constructor(room: string, seat: Seat | null, mode?: string, els?: string[]) {
     if (seat != null) this.seat = seat;
+    this.wantSeat = seat;
+    this.mode = mode;
+    this.els = els;
     this.room = room;
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     this.ws = new WebSocket(`${proto}://${location.host}`);
-    const name = (localStorage.getItem('algoName') ?? '').trim();
-    // mode + chosen trio only matter when this join creates the room (the
-    // creator's link carries them) — the server ignores them for existing rooms
-    this.ws.onopen = () => this.ws.send(JSON.stringify({ t: 'join', room, seat, name, mode, els }));
+    this.ws.onopen = () => this.sendJoin();
     this.ws.onmessage = ev => this.onMsg(JSON.parse(String(ev.data)));
     this.ws.onclose = () => {
       if (this.dead) return;
@@ -52,20 +58,38 @@ class NetBackend implements Backend {
       if (this.joined) render();
     };
   }
+  /** (re-)join — also called from the waiting screen once a deck is picked.
+   * mode + trio only matter when this join creates the room; the selected
+   * deck rides along on every join and the server uses it where it matters
+   * (constructed room creation / a waiting seat). */
+  sendJoin(): void {
+    const name = (localStorage.getItem('algoName') ?? '').trim();
+    const deck = savedDeck();
+    this.ws.send(JSON.stringify({
+      t: 'join', room: this.room, seat: this.wantSeat, name,
+      mode: this.mode, els: this.els, ...(deck ? { deck: deck.cards } : {}),
+    }));
+  }
   do(a: Action): void { this.ws.send(JSON.stringify({ t: 'action', action: a })); }
   undo(): void { this.ws.send(JSON.stringify({ t: 'undo' })); }
   private onMsg(m: {
     t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
     events?: { msg: string }[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
-    clock?: ClockSnap;
+    clock?: ClockSnap; waiting?: { have: [boolean, boolean] }; names?: [string, string];
   }): void {
     if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };
+    if (m.names) this.names = m.names;
     if (m.t === 'joined') {
-      this.joined = true; this.seat = m.seat!; this.state = m.view!;
+      this.joined = true; this.seat = m.seat!;
+      this.wantSeat = m.seat!;   // reconnect/deck-rejoin keeps this seat
+      if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? [false, false]; uiError = ''; render(); return; }
+      this.waiting = null;
+      this.state = m.view!;
       this.log = m.log ?? []; this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
       resetUi(); uiError = ''; render(); return;
     }
     if (m.t === 'update') {
+      if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? this.peers; render(); return; }
       if (m.view) this.state = m.view;
       if (m.log) this.log = m.log;               // full log resync (undo shrank it)
       if (m.events) for (const e of m.events) this.log.push(e.msg);
@@ -136,6 +160,10 @@ interface UiState {
   confirmPass: 'pass' | 'passall' | null;
   /** home screen: the draft trio being picked (persisted per browser) */
   homeEls: string[];
+  /** constructed draw phase: hand indices picked to go to the bottom, in order */
+  bottomPick: number[];
+  /** which turn+seat bottomPick was built for (re-init on change) */
+  bottomFor: string;
 }
 const savedEls = (): string[] => {
   try { return JSON.parse(localStorage.getItem('algoEls') ?? '') as string[]; }
@@ -146,7 +174,35 @@ const freshUi = (): UiState => ({
   draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0,
   autopassPrefAt: -1, autopassSig: [], yieldAt: -1, cancelling: false, cancelAt: -1,
   prefillFor: '', confirmDone: null, confirmPass: null, homeEls: savedEls(),
+  bottomPick: [], bottomFor: '',
 });
+
+// ── constructed decks (algomancer.cc format, docs: server/decks.ts) ────
+
+/** the deck this browser will bring to constructed games (persisted) */
+interface SavedDeck { name: string; author: string; url?: string; cards: string[] }
+const savedDeck = (): SavedDeck | null => {
+  try {
+    const d = JSON.parse(localStorage.getItem('algoDeck') ?? '') as SavedDeck;
+    return Array.isArray(d.cards) && d.cards.length ? d : null;
+  } catch { return null; }
+};
+const saveDeck = (d: SavedDeck): void => {
+  localStorage.setItem('algoDeck', JSON.stringify({ name: d.name, author: d.author, url: d.url, cards: d.cards }));
+};
+/** the bundled default decks — fetched once from the server */
+let defaultDeckList: SavedDeck[] | null = null;
+let defaultDecksLoading = false;
+/** import status / problems shown under the deck picker */
+let deckMsg = '';
+function ensureDefaultDecks(then: () => void): void {
+  if (defaultDeckList || defaultDecksLoading) return;
+  defaultDecksLoading = true;
+  fetch('/api/deck/defaults').then(r => r.json()).then((r: { decks: (SavedDeck & { problems: string[] })[] }) => {
+    defaultDeckList = r.decks.filter(d => !d.problems.length);
+    then();
+  }).catch(() => { deckMsg = 'could not load the default decks from the server'; then(); });
+}
 let ui: UiState = freshUi();
 /** deploy-end reveal waiting behind the interstitial (C2) — messages to show */
 let pendingReveal: string[] | null = null;
@@ -712,7 +768,7 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
         <span style="color:var(--dim)">(${e.openMana(p)} mana open${s.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
       </span>
       ${miniHand}
-      <span class="binline">deck ${s.sharedDeck.length}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''}</span>
+      <span class="binline">deck ${s.mode === 'constructed' ? s.decks![p]!.length : s.sharedDeck.length}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''}</span>
     </div>
     ${seenStrip}
     <div class="regionrow">
@@ -1279,6 +1335,49 @@ function draftPanelHtml(): string {
   </div>`;
 }
 
+// ── constructed draw phase (draw 4, bottom 2) ─────────────────────────
+
+/** the seat whose bottoming this client should render, or null.
+ * Network mode: my seat while pending. Hotseat: first pending seat. */
+function bottomSeat(): Seat | null {
+  const s = h.state;
+  if (s.mode !== 'constructed' || s.phase !== 'planning' || !s.bottomDone) return null;
+  if (NET) return s.bottomDone[NET.seat] ? null : NET.seat;
+  const pending = s.bottomDone.findIndex(d => !d);
+  return pending === -1 ? null : (pending as Seat);
+}
+
+/** (re)set the tentative picks when the draw phase (re)opens */
+function ensureBottomUi(): void {
+  const seat = bottomSeat();
+  if (seat === null) { ui.bottomPick = []; ui.bottomFor = ''; return; }
+  const key = `${h.state.turn}:${seat}`;
+  if (ui.bottomFor !== key) { ui.bottomPick = []; ui.bottomFor = key; }
+}
+
+function bottomPanelHtml(): string {
+  const seat = bottomSeat();
+  if (seat === null) return '';
+  const s = h.state;
+  const hand = s.players[seat]!.hand;
+  const need = Math.min(2, hand.length);
+  const picked = ui.bottomPick.filter(i => i < hand.length);
+  const keep = hand.map((_, i) => i).filter(i => !picked.includes(i));
+  const ok = picked.length === need;
+  const row = (indices: number[]): string => indices.map(i =>
+    cardHtml(hand[i]!, { playable: true, data: `data-act="bottomcard" data-i="${i}"` })).join('');
+  return `<div class="draftpanel bottompanel">
+    <div class="drafthead"><span class="who">${esc(s.players[seat]!.name)} — draw phase</span>
+      You drew 4. Click ${need === 1 ? 'the card' : `${need} cards`} to put on the bottom of your deck, then confirm.
+      <button class="primary" data-btn="bottomcommit" data-p="${seat}" ${ok ? '' : 'disabled'}>
+        Put ${picked.length}/${need} on the bottom (enter)</button></div>
+    <div class="zonelabel">Keeping (${keep.length})</div>
+    <div class="zone draftkeep">${row(keep)}</div>
+    <div class="zonelabel">To the bottom of your deck, in this order (${picked.length}/${need})</div>
+    <div class="zone draftleave">${row(picked) || '<span class="binempty">click cards above</span>'}</div>
+  </div>`;
+}
+
 /** One-liner from playtest: a round-2 counterattack whose sent pool is exactly
  * one unit (but spell tokens could ride, so the engine deliberately does NOT
  * auto-declare) starts with that unit prefilled — the player just confirms. */
@@ -1296,8 +1395,10 @@ function ensureCounterPrefill(): void {
 
 function render(): void {
   if (NET && (NET.dead || !NET.joined)) { if (!NET.dead) renderConnecting(); return; }
+  if (NET?.waiting) { renderWaiting(); return; }   // constructed lobby
   $app.classList.toggle('netmode', !!NET);   // net mode: sticky hand dock at the bottom
   ensureDraftUi();
+  ensureBottomUi();
   ensureCounterPrefill();
   modHostCache = moddingHosts();   // #4: legal hosts for a mod-in-progress glow
   const logItems = h.log.slice(-80).map(l => `<div>${iconizeText(l)}</div>`).join('');
@@ -1331,6 +1432,7 @@ function render(): void {
       ${shareBannerHtml()}
       ${promptHtml()}
       ${draftPanelHtml()}
+      ${bottomPanelHtml()}
       ${regionPanelHtml(topSeat)}
       ${battleHtml()}
       ${regionPanelHtml(botSeat, { omitHand: !!NET })}
@@ -1476,9 +1578,73 @@ function renderConnecting(): void {
     <p>${uiError ? esc(uiError) : 'Connecting to the server…'}</p></div>`;
 }
 
+/** The constructed deck picker: the bundled algomancer.cc test decks (with
+ * their builders credited), plus import-by-link and paste-a-list. Used on the
+ * home screen and on the constructed waiting screen. */
+function deckPickerHtml(): string {
+  const cur = savedDeck();
+  const defaults = defaultDeckList;
+  if (!defaults) return `<div class="hint">loading the deck list…</div>${deckMsg ? `<div class="deckmsg">${esc(deckMsg)}</div>` : ''}`;
+  const isDefault = !!cur && defaults.some(d => d.name === cur.name && d.url === cur.url);
+  const opts = defaults.map((d, i) =>
+    `<option value="d${i}" ${cur && d.name === cur.name && d.url === cur.url ? 'selected' : ''}>${esc(d.name)} — by ${esc(d.author)}</option>`).join('');
+  const customOpt = cur && !isDefault
+    ? `<option value="custom" selected>${esc(cur.name)}${cur.author && cur.author !== 'you' ? ` — by ${esc(cur.author)}` : ''} (imported)</option>` : '';
+  const info = cur
+    ? `<div class="deckinfo">${cur.cards.length} cards · by ${esc(cur.author)}${cur.url
+        ? ` · <a href="${esc(cur.url)}" target="_blank" rel="noopener">view on algomancer.cc</a>` : ''}</div>`
+    : '<div class="deckinfo">pick a deck to play constructed</div>';
+  return `<select id="h-deck" class="deckselect">
+      ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${customOpt}
+    </select>
+    ${info}
+    <div class="joinrow deckimport">
+      <input id="h-deckurl" placeholder="algomancer.cc deck link" spellcheck="false">
+      <button data-btn="deckimporturl">Load</button>
+    </div>
+    <details class="deckpaste"><summary>…or paste a deck list</summary>
+      <textarea id="h-decktext" rows="6" spellcheck="false" placeholder="1 Ignis Sprite&#10;2 Overwhelm&#10;…"></textarea>
+      <button data-btn="deckimporttext">Use pasted list</button>
+    </details>
+    ${deckMsg ? `<div class="deckmsg">${esc(deckMsg)}</div>` : ''}`;
+}
+
+/** wire the picker's <select> after (re)rendering the screen holding it */
+function wireDeckPicker(rerender: () => void): void {
+  ensureDefaultDecks(rerender);
+  const sel = document.getElementById('h-deck') as HTMLSelectElement | null;
+  sel?.addEventListener('change', () => {
+    const v = sel.value;
+    if (v.startsWith('d') && defaultDeckList) {
+      const d = defaultDeckList[Number(v.slice(1))];
+      if (d) { saveDeck(d); deckMsg = ''; }
+    }
+    rerender();
+  });
+}
+
+/** import a deck through the server (link fetch or paste parse) */
+function importDeck(body: { url?: string; text?: string }, rerender: () => void): void {
+  deckMsg = 'importing…';
+  rerender();
+  fetch('/api/deck/import', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+  }).then(r => r.json()).then((r: { ok: boolean; error?: string; deck?: SavedDeck & { problems: string[] } }) => {
+    if (!r.ok || !r.deck) { deckMsg = r.error ?? 'import failed'; rerender(); return; }
+    if (r.deck.problems.length) {
+      deckMsg = `not playable: ${r.deck.problems.slice(0, 4).join(' · ')}${r.deck.problems.length > 4 ? ` (+${r.deck.problems.length - 4} more)` : ''}`;
+      rerender(); return;
+    }
+    saveDeck(r.deck);
+    deckMsg = `loaded ${r.deck.name} (${r.deck.cards.length} cards) by ${r.deck.author}`;
+    rerender();
+  }).catch(() => { deckMsg = 'could not reach the server'; rerender(); });
+}
+
 /** Home screen (docs/07 §2): new game / join / hotseat / practice. */
 function renderHome(): void {
   const name = localStorage.getItem('algoName') ?? '';
+  const deck = savedDeck();
   $app.innerHTML = `<div class="joinscreen home">
     <h1 class="homelogo">ALGOMANCY</h1>
     <label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>
@@ -1492,7 +1658,12 @@ function renderHome(): void {
         <button class="primary" data-btn="newgame" data-mode="draft" ${ui.homeEls.length === 3 ? '' : 'disabled'}>
           New live draft${ui.homeEls.length === 3 ? ` · ${ui.homeEls.join(' + ')}` : ` (${ui.homeEls.length}/3 picked)`}</button>
       </div>
-      <button data-btn="newgame" data-mode="shared">New constructed game</button>
+      <div class="elpicker deckpicker">
+        <div class="zonelabel">Constructed — bring your own deck</div>
+        ${deckPickerHtml()}
+        <button class="primary" data-btn="newgame" data-mode="constructed" ${deck ? '' : 'disabled'}>
+          New constructed game${deck ? ` · ${esc(deck.name)}` : ' (pick a deck)'}</button>
+      </div>
       <div class="joinrow">
         <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
           spellcheck="false" style="text-transform:uppercase">
@@ -1507,6 +1678,41 @@ function renderHome(): void {
   codeInput?.addEventListener('keydown', e => {
     if (e.key === 'Enter') (document.querySelector('[data-btn="joincode"]') as HTMLElement).click();
   });
+  wireDeckPicker(renderHome);
+}
+
+/** Constructed lobby: the room exists but the game has not been dealt — it
+ * starts the moment both seats have brought a deck. */
+function renderWaiting(): void {
+  const net = NET!;
+  const w = net.waiting!;
+  const me = net.seat, opp = other(me);
+  const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${opp}&mode=constructed`;
+  const deck = savedDeck();
+  const mineIn = w.have[me];
+  const oppLine = w.have[opp]
+    ? '✓ deck is in'
+    : net.peers[opp] ? 'connected — still choosing a deck…' : 'not here yet';
+  $app.innerHTML = `<div class="joinscreen home">
+    <h2>Constructed — room ${esc(net.room)}</h2>
+    <div class="waitstatus">
+      <div>${esc(net.names[me] ?? 'You')} (you): ${mineIn
+        ? `✓ deck is in${deck ? ` — <b>${esc(deck.name)}</b> by ${esc(deck.author)}` : ''}`
+        : 'pick a deck below'}</div>
+      <div>${esc(net.names[opp] ?? 'Opponent')}: ${oppLine}</div>
+    </div>
+    ${mineIn ? '<p class="hint">The game deals the moment both decks are in.</p>' : `
+      <div class="elpicker deckpicker">
+        ${deckPickerHtml()}
+        <button class="primary" data-btn="deckjoin" ${deck ? '' : 'disabled'}>Play this deck</button>
+      </div>`}
+    <div class="sharebar">Send your opponent the room code <b>${esc(net.room)}</b> or this link:
+      <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
+      <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>
+    ${uiError ? `<p class="deckmsg">${esc(uiError)}</p>` : ''}
+    <button data-btn="gohome">home</button>
+  </div>`;
+  wireDeckPicker(renderWaiting);
 }
 
 const saveHomeName = (): void => {
@@ -1645,7 +1851,9 @@ function handleButton(btn: HTMLElement): void {
   }
   if (b === 'newgame') {
     saveHomeName();
-    const mode = btn.dataset['mode'] === 'draft' ? 'draft' : 'shared';
+    const m = btn.dataset['mode'];
+    const mode = m === 'draft' ? 'draft' : m === 'constructed' ? 'constructed' : 'shared';
+    if (mode === 'constructed' && !savedDeck()) return;   // button is disabled anyway
     const els = mode === 'draft' && ui.homeEls.length === 3
       ? `&els=${encodeURIComponent(ui.homeEls.join(','))}` : '';
     fetch('/api/new').then(r => r.json()).then((r: { code: string }) => {
@@ -1653,6 +1861,19 @@ function handleButton(btn: HTMLElement): void {
     }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
     return;
   }
+  if (b === 'deckimporturl') {
+    const inp = document.getElementById('h-deckurl') as HTMLInputElement | null;
+    const url = inp?.value.trim();
+    if (url) importDeck({ url }, NET ? render : renderHome);
+    return;
+  }
+  if (b === 'deckimporttext') {
+    const ta = document.getElementById('h-decktext') as HTMLTextAreaElement | null;
+    const text = ta?.value.trim();
+    if (text) importDeck({ text }, NET ? render : renderHome);
+    return;
+  }
+  if (b === 'deckjoin') { NET?.sendJoin(); return; }
   if (b === 'joincode') {
     saveHomeName();
     const code = (document.getElementById('h-code') as HTMLInputElement).value.trim().toUpperCase();
@@ -1674,7 +1895,13 @@ function handleButton(btn: HTMLElement): void {
   }
   if (b === 'undo') { NET?.undo(); return; }
   const s = h.state;
-  if (b === 'restart' && !NET) { h = new Harness(Math.floor(Math.random() * 1e6), undefined, h.state.mode); resetUi(); uiError = ''; }
+  if (b === 'restart' && !NET) {
+    const d = h.state.mode === 'constructed' ? savedDeck() : null;
+    h = new Harness(Math.floor(Math.random() * 1e6), undefined,
+      h.state.mode === 'constructed' && !d ? 'shared' : h.state.mode, undefined,
+      d ? [d.cards, d.cards] : undefined);
+    resetUi(); uiError = '';
+  }
   if (b === 'doneplan') {
     const p = Number(btn.dataset['p']) as Seat;
     const pl = s.players[p]!;
@@ -1753,6 +1980,10 @@ function handleButton(btn: HTMLElement): void {
     act({ type: 'draftCommit', seat: Number(btn.dataset['p']) as Seat, packIndices: ui.draftPack.slice() });
     if (!uiError) { ui.draftPack = null; }
   }
+  if (b === 'bottomcommit') {
+    act({ type: 'bottomCards', seat: Number(btn.dataset['p']) as Seat, handIndices: ui.bottomPick.slice() });
+    if (!uiError) { ui.bottomPick = []; ui.bottomFor = ''; }
+  }
   if (b === 'decide') act({ type: 'decide', seat: s.decision!.seat, choice: Number(btn.dataset['i']) });
   if (b === 'orderpick') {
     ui.orderPicked.push(Number(btn.dataset['i']));
@@ -1800,6 +2031,15 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     const i = Number(t.dataset['i']);
     const at = ui.draftPack.indexOf(i);
     if (at >= 0) ui.draftPack.splice(at, 1); else ui.draftPack.push(i);
+    render();
+    return;
+  }
+
+  if (kind === 'bottomcard') {
+    const i = Number(t.dataset['i']);
+    const at = ui.bottomPick.indexOf(i);
+    if (at >= 0) ui.bottomPick.splice(at, 1);
+    else if (ui.bottomPick.length < 2) ui.bottomPick.push(i);
     render();
     return;
   }
@@ -2048,6 +2288,7 @@ document.addEventListener('keydown', e => {
 const ENTER_BTNS = [
   '[data-btn="revealdone"]', '[data-btn="passconfirm"]', '[data-btn="doneplanconfirm"]',
   '[data-btn="confirmattack"]', '[data-btn="confirmblocks"]', '[data-btn="draftcommit"]',
+  '[data-btn="bottomcommit"]',
   '[data-btn="donedeploy"]', '[data-btn="doneplan"]', '[data-btn="donehaste"]',
 ];
 document.addEventListener('keydown', e => {
@@ -2167,6 +2408,10 @@ if (params.has('room') && params.get('room')!.trim()) {
   if (params.get('mode') === 'draft') {
     const hotEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean) as import('../src/types.ts').Element[] | undefined;
     h = new Harness(Math.floor(Math.random() * 1e6), undefined, 'draft', hotEls);
+  } else if (params.get('mode') === 'constructed') {
+    // hotseat constructed: the saved deck plays against itself (testing rig)
+    const d = savedDeck();
+    if (d) h = new Harness(Math.floor(Math.random() * 1e6), undefined, 'constructed', undefined, [d.cards, d.cards]);
   }
   render();
 } else if (params.has('demo')) {

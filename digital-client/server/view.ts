@@ -73,7 +73,9 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
   }
 
   // deck order is hidden (and derivable from the seed) — send a count only.
+  // Constructed per-player decks too: even your OWN deck's order is hidden.
   v.sharedDeck = v.sharedDeck.map(() => HIDDEN_CARD);
+  if (v.decks) v.decks = v.decks.map(d => d.map(() => HIDDEN_CARD));
 
   // packs are face-down (Manual p.17: "packs may only be interacted with and
   // looked at during the draft step, and players may not look at the packs of

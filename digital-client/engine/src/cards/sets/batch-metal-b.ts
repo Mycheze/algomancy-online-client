@@ -126,7 +126,7 @@ card('Flux Resonator', {
 // the revealed card goes to the glimpser's hand. Bounded graft ([Switch1]).
 const foretellGlimpse: EffectDef = {
   run: (g, ctx) => {
-    const top = g.s.sharedDeck.shift();
+    const top = g.deckOf(ctx.controller).shift();
     if (top === undefined) { g.ev('info', 'Foretell: the deck is empty — Glimpse 0.'); return; }
     g.player(ctx.controller).hand.push(top);
     g.ev('info', `${g.pname(ctx.controller)} Glimpses 1: ${top} is cached (engine: to their hand).`);

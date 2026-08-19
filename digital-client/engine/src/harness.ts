@@ -2,7 +2,7 @@
  * hotseat UI. Keeps the current state, the accumulated log, and the action
  * log (seed + actions = the whole game). No I/O here either.
  */
-import type { Action, Decision, EngineEvent, GameState, Seat } from './types.ts';
+import type { Action, CardName, Decision, EngineEvent, GameMode, GameState, Seat } from './types.ts';
 import { apply, createGame, legalActions } from './apply.ts';
 import { E } from './engine.ts';
 
@@ -14,9 +14,9 @@ export class Harness {
 
   seed: number;
 
-  constructor(seed: number, names?: [string, string], mode?: 'shared' | 'draft', draftElements?: import('./types.ts').Element[]) {
+  constructor(seed: number, names?: [string, string], mode?: GameMode, draftElements?: import('./types.ts').Element[], decks?: [CardName[], CardName[]]) {
     this.seed = seed;
-    const r = createGame(seed, names, mode, draftElements);
+    const r = createGame(seed, names, mode, draftElements, decks);
     this.state = r.state;
     this.absorb(r.events);
   }

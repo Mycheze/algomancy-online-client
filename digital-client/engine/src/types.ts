@@ -21,8 +21,11 @@ export type Phase = 'planning' | 'battle' | 'regroup' | 'deploy' | 'gameover';
 
 /** 'shared' = the constructed-ish default (shared deck, draw 2, no packs);
  * 'draft' = live draft (Manual p.16-17): per-player 10-card packs, a draft
- * step each planning phase, clockwise passing, N+1-turn pack refresh. */
-export type GameMode = 'shared' | 'draft';
+ * step each planning phase, clockwise passing, N+1-turn pack refresh;
+ * 'constructed' = real constructed (Manual "Constructed"): per-player decks
+ * brought to the game (30+ cards, max 2 copies), draw phase = draw 4 then
+ * put 2 back on the bottom of your own deck. */
+export type GameMode = 'shared' | 'draft' | 'constructed';
 
 export type Attr =
   | 'Flying' | 'Deadly' | 'Swift' | 'Sluggish' | 'Tough' | 'Balanced'
@@ -254,6 +257,10 @@ export type Action =
   | { type: 'draftCommit'; seat: Seat; packIndices: number[] }
   /** haste step (between planning and battle): done playing haste cards */
   | { type: 'doneHaste'; seat: Seat }
+  /** constructed draw phase (Manual: "draw 4 cards, then select 2 cards from
+   * their hand and put them on the bottom of the deck in any order"): the
+   * chosen hand indices go to the bottom of YOUR deck in the order given */
+  | { type: 'bottomCards'; seat: Seat; handIndices: number[] }
   /** mode 'ambush': play a [Battle] Ambush card during battle (recall target
    * ally, take their position) paying printed.ambush instead of the card cost */
   | { type: 'playCard'; seat: Seat; handIndex: number; mode?: 'ambush' }
@@ -298,6 +305,13 @@ export interface GameState {
    * list cannot be created and the UI never offers them */
   elements: Element[];
   sharedDeck: CardName[];
+  /** mode 'constructed': decks[seat] = that seat's own deck (top = index 0).
+   * Absent in 'shared'/'draft', where sharedDeck is the one deck. */
+  decks?: CardName[][];
+  /** mode 'constructed': non-null while the draw phase's bottoming runs;
+   * bottomDone[seat] = that seat has put their 2 cards back this turn.
+   * Cleared (null) once everyone is done. Mirrors draftDone. */
+  bottomDone?: boolean[] | null;
   /** mode 'draft': packs[seat] = that seat's face-down pack (normally 10 cards;
    * viewable only by its holder during their draft step). Empty in 'shared'. */
   packs: CardName[][];
