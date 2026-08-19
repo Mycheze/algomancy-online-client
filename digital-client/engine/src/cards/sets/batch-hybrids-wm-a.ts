@@ -251,13 +251,28 @@ card('Scrapyard Custodian', {
 
 // "[Augment] Spells cost each player [two] more to play for each spell their
 // team has previously played in this battle." — em/3 3/4 Cosmic Arcane Unit.
-// PARKED (see header): a continuous cost-modification layer does not exist
-// (the Stasis Sentry precedent). Inert augmentText; plays as a vanilla 3/4.
+// LIVE as of the R59 cost-modifier layer (it was parked for want of one).
+//
+//  - "each player … their team": 1v1, so a team is one seat. The count is the
+//    payer's OWN spells, which is why the tax is asymmetric — the player who
+//    has been slinging spells pays, their opponent does not.
+//  - "previously played in this battle" is exactly the spellsPlayed:<seat>
+//    battle counter, bumped by commitItem for nontoken spells and reset with
+//    battleCounters each battle phase. It is bumped when the spell commits, so
+//    at the moment THIS spell's cost is read the counter still holds only the
+//    earlier ones — "previously" is right without an off-by-one correction.
+//  - "Spells … to play": spell card kinds played from hand, never a mod
+//    application (R37) and never a spell token cast from play.
+//  - No "during battle" clause, but the counter only exists during a battle,
+//    so a deployment cast is naturally untaxed.
 card('The Silent', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'spells cost [two] more per spell previously played this battle (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
+  augmentable: true,
+  costMods: [{
+    delta: (g, self, ctx) => {
+      if (ctx.purpose !== 'play') return 0;
+      if (ctx.card.kind !== 'spell' && ctx.card.kind !== 'spellUnit') return 0;
+      return 2 * g.battleCounter(self.region, `spellsPlayed:${ctx.seat}`);
+    },
   }],
 });
 

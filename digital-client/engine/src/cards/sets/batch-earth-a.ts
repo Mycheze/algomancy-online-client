@@ -269,9 +269,23 @@ card('Enigmatic Warder', {
         if (!item || item.negated) return;
         const me = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
         if (!me) return;
+        // R58: only slots I could LEGALLY occupy. Changing a target may not
+        // create an illegal one — the playtest bug was this Warder dropping
+        // itself into Fight's "target ALLY" slot while belonging to the other
+        // player, where "ally" means ally of the SPELL's controller. It also
+        // may not duplicate a sibling slot ("another target unit", R56).
         const slots: [number, number][] = [];
-        item.parts.forEach((p, pi) => { if (!p.spent) p.targets.forEach((_, ti) => slots.push([pi, ti])); });
-        if (!slots.length) { g.ev('info', `Enigmatic Warder: ${item.label} has no targets to change.`); return; }
+        item.parts.forEach((p, pi) => {
+          if (p.spent) return;
+          p.targets.forEach((cur, ti) => {
+            if (JSON.stringify(cur) === JSON.stringify({ unit: me.id })) return;   // already me
+            if (g.canFillSlot(item, pi, ti, { unit: me.id })) slots.push([pi, ti]);
+          });
+        });
+        if (!slots.length) {
+          g.ev('info', `Enigmatic Warder: no target of ${item.label} may legally be changed to ${me.card}.`);
+          return;
+        }
         const si = slots.length === 1 ? 0 : ctx.choose('slot', {
           kind: 'electricPath', seat: ctx.controller,
           prompt: 'Enigmatic Warder: which target changes to me?',
@@ -287,20 +301,41 @@ card('Enigmatic Warder', {
 
 // "[Switch1] Target ally and another target unit fight. (They deal damage to
 // each other equal to their power.)" — e/1 {Battle} Bedlam Spell. The whole
-// sentence is the bounded graftable effect ([Switch1], R9). ⚠ header
-// approximation: the ally is the cast-time target; "another target unit" is
-// a mid-resolution pick among the region's other units (auto when only one).
+// sentence is the bounded graftable effect ([Switch1], R9).
+//
+// PLAYTEST FIX (R58): the printed text says "target ally AND ANOTHER TARGET
+// unit" — BOTH are targets, chosen at cast. This used to take only the ally at
+// cast and pick the second unit mid-resolution, which meant the opponent never
+// saw what the spell was aimed at while it was on the stack, and the second
+// "target" could not be responded to at all. Now it is a two-slot spec with
+// per-slot legality: slot 0 an ally of the CASTER, slot 1 any other unit.
+//
+// Both are re-checked at resolution rather than trusted from cast (R56/R58):
+// Enigmatic Warder can redirect a slot afterwards, and the playtest bug was
+// the OPPONENT's Warder moving itself into the "ally" slot — "ally" means ally
+// of this spell's controller, never of the redirector's.
 const fightEffect: EffectDef = {
-  targets: { what: 'allyUnit', prompt: 'Fight: target ally (it fights another unit)' },
+  targets: {
+    what: 'unit', count: 2, min: 2,
+    slots: ['allyUnit', 'unit'],
+    prompt: 'Fight: target ally, then another target unit — they fight',
+    slotPrompts: [
+      'Fight: target ally (it fights another target unit)',
+      'Fight: another target unit (it fights your ally)',
+    ],
+  },
   run: (g, ctx) => {
-    const t = ctx.targets[0];
-    if (!isEnt(t) || !g.entity(t.id)) return;
-    const others = g.unitsIn(ctx.region).filter(u => u.id !== t.id);
-    const second = inEndOfTurn(g) ? (others[0] ?? null)
-      : chooseUnit(g, ctx, 'second', ctx.controller, others,
-        `Fight: the other unit (it fights ${t.card})`);
-    if (!second) { g.ev('info', 'Fight: no other unit — no fight.'); return; }
-    fight(g, ctx, t, second);
+    const [a, b] = [ctx.targets[0], ctx.targets[1]];
+    if (!isEnt(a) || !isEnt(b) || !g.entity(a.id) || !g.entity(b.id)) {
+      g.ev('info', 'Fight: a target is gone — no fight.');
+      return;
+    }
+    if (a.id === b.id) { g.ev('info', 'Fight: "another" — one unit cannot fight itself.'); return; }
+    if (a.controller !== ctx.controller) {
+      g.ev('info', `Fight: ${a.card} is not ${g.pname(ctx.controller)}'s ally any more — no fight.`);
+      return;
+    }
+    fight(g, ctx, a, b);
   },
 };
 card('Fight', {

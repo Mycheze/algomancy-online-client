@@ -5,6 +5,9 @@
 import { Harness } from '../src/harness.ts';
 import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/apply.ts';
 import { getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
+import {
+  activationNeedsConfirm, playableCachedNames, stackAbilityRows,
+} from './inspect.ts';
 import { E } from '../src/engine.ts';
 import type { Action, CachedCard, Entity, EntityId, EventType, GameState, Seat, TargetRef } from '../src/types.ts';
 
@@ -167,6 +170,14 @@ interface UiState {
   /** Pass pressed with castable spell tokens during battle (C5): which pass
    * button is being confirmed */
   confirmPass: 'pass' | 'passall' | null;
+  /** playtest: "done deploying" pressed while cards in the cache are playable
+   * RIGHT NOW — easy to forget a zone you are not used to watching. Holds the
+   * seat being asked. */
+  confirmDeploy: Seat | null;
+  /** playtest: an irreversible activation (a "Sacrifice me:" cost) with NO
+   * target decision to walk you back — held until confirmed. */
+  confirmAct: { seat: Seat; entityId: EntityId; abilityIndex: number;
+    via?: 'augment' | { mod: EntityId }; label: string; unit: string } | null;
   /** home screen: the draft trio being picked (persisted per browser) */
   homeEls: string[];
   /** constructed draw phase: hand indices picked to go to the bottom, in order */
@@ -191,6 +202,7 @@ const freshUi = (): UiState => ({
   draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0,
   autopassPrefAt: -1, autopassSig: [], yieldAt: -1, cancelling: false, cancelAt: -1,
   prefillFor: '', confirmDone: null, confirmPass: null, homeEls: savedEls(),
+  confirmDeploy: null, confirmAct: null,
   bottomPick: [], bottomFor: '',
 });
 
@@ -993,6 +1005,16 @@ function regionCacheHtml(p: Seat): string {
   </div>`;
 }
 
+/** see ui/inspect.ts — the pure logic lives there so it can be unit-tested */
+function needsConfirm(u: Entity, a: Extract<Action, { type: 'activateAbility' }>): boolean {
+  return activationNeedsConfirm(q(), u, a);
+}
+
+/** see ui/inspect.ts */
+function playableCached(seat: Seat): string[] {
+  return playableCachedNames(cacheOf(seat), legalFor(seat));
+}
+
 /** the full cache dialog — the zone is public, so this opens for either seat */
 function cacheDialogHtml(): string {
   if (cacheView === null) return '';
@@ -1295,6 +1317,17 @@ function moddingBarHtml(err: string): string {
 function promptHtml(): string {
   const s = h.state;
   const err = uiError ? `<span style="color:var(--bad)"> ✗ ${esc(uiError)}</span>` : '';
+  // playtest: an irreversible activation that will not stop to ask for a
+  // target asks here instead. Takes precedence over every other prompt — it is
+  // a modal question about something you already clicked.
+  if (ui.confirmAct) {
+    const a = ui.confirmAct;
+    return `<div class="promptbar pending"><span class="who">${esc(s.players[a.seat]!.name)}:</span>
+      activate <b>${esc(a.unit)}</b> — ${iconizeText(a.label)}?
+      <span style="color:var(--dim)">this cost cannot be taken back</span>
+      <button data-btn="actcancel">Cancel</button>
+      <button class="primary" data-btn="actconfirm">Yes, activate</button>${err}</div>`;
+  }
   if (s.phase === 'gameover') {
     const won = s.players[s.winner!]!.name;
     if (NET) return `<div class="promptbar"><span class="who">${s.winner === NET.seat ? 'You win! 🎉' : `${esc(won)} wins.`}</span></div>`;
@@ -1417,6 +1450,17 @@ function promptHtml(): string {
   if (s.phase === 'deploy') {
     if (ui.modding) return moddingBarHtml(err);
     const dd = s.deployDone ?? s.players.map(() => true);
+    // playtest: the cache is a zone nobody has muscle memory for, and a
+    // prophecy you paid for is easy to walk past. Name the cards, don't just
+    // count them, and make "end anyway" the deliberate second click.
+    if (ui.confirmDeploy !== null) {
+      const names = playableCached(ui.confirmDeploy);
+      return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.confirmDeploy]!.name)}:</span>
+        you can still play <b>${names.length}</b> card${names.length === 1 ? '' : 's'} from your cache —
+        <span class="cachenames">${names.map(n => `<span data-prev="${esc(n)}">${esc(n)}</span>`).join(', ')}</span>
+        <button data-btn="deploycancel">Go back</button>
+        <button class="primary" data-btn="deployconfirm">End deployment anyway</button>${err}</div>`;
+    }
     return `<div class="promptbar"><span class="who">Deployment</span>
       both players deploy at the same time — moves stay hidden until everyone is done.
       Play cards, mod units (augment/graft from hand or bin), activate abilities.
@@ -1448,6 +1492,28 @@ const LOG_EVENT_CLASS: Partial<Record<EventType, string>> = {
   lifeGained: 'ev-life',
 };
 
+/** Focus-viewer body for a stack item: its art plus the text of the ABILITY
+ * on the stack — each live part attributed to the card that contributed it,
+ * which is the whole point for a graft stack (Manual p.33: they resolve as one
+ * composed ability, and you need to see the composition). */
+function previewStackHtml(id: number): string {
+  const it = h.state.stack.find(i => i.id === id);
+  if (!it) return '';
+  const rows = stackAbilityRows(it).map(t => {
+    const tag = t.graft ? `${txtIcon('graft', '[Switch]')} ${esc(t.source)}` : esc(t.source);
+    return `<div class="abrow"><span class="absrc">${tag}</span>${iconizeText(t.text)}</div>`;
+  }).join('');
+  const targets = it.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
+  const composed = it.parts.filter(p => !p.spent).length > 1;
+  return `${it.card ? `<img src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
+    <div class="abilitybox">
+      <div class="abhead">${esc(it.kind)}${composed ? ' — resolves as ONE composed ability' : ''}</div>
+      ${rows || `<div class="hint">${iconizeText(it.label)}</div>`}
+      ${targets ? `<div class="abtargets">→ ${targets}</div>` : ''}
+      ${it.negated ? '<div class="abneg">negated — it will do nothing</div>' : ''}
+    </div>`;
+}
+
 function stackHtml(): string {
   const items = [...h.state.stack].reverse().map(it => {
     const targets = it.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
@@ -1467,7 +1533,7 @@ function stackHtml(): string {
     // double-count them as "grafted parts"
     const extraParts = it.parts.length - 1 - mods.length;
     return `<div class="stackitem ${it.negated ? 'negated' : ''} ${isCandidate({ stack: it.id }) ? 'candidate' : ''}"
-      data-act="stackitem" data-id="${it.id}" ${it.card ? `data-prev="${esc(it.card)}"` : ''}>
+      data-act="stackitem" data-id="${it.id}" data-prevstack="${it.id}">
       ${it.card ? `<img class="stackthumb" src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
       ${modThumbs}
       <div class="stackmain">${iconizeText(it.label)}${modChips}
@@ -1681,26 +1747,32 @@ function render(): void {
   const canUndo = NET && (h.state.phase === 'planning' || h.state.phase === 'deploy');
   if (ui.confirmPass !== null && (h.state.phase !== 'battle' || h.state.priority === null ||
     castableTokenCount(h.state.priority) === 0)) ui.confirmPass = null;   // stale confirm
+  // the two playtest confirms go stale the same way — the phase moved on, the
+  // cache emptied, or the ability stopped being legal while the bar was up
+  if (ui.confirmDeploy !== null
+    && (h.state.phase !== 'deploy' || playableCached(ui.confirmDeploy).length === 0)) {
+    ui.confirmDeploy = null;
+  }
+  if (ui.confirmAct && !legalFor(ui.confirmAct.seat).some(a => a.type === 'activateAbility'
+    && a.entityId === ui.confirmAct!.entityId && a.abilityIndex === ui.confirmAct!.abilityIndex)) {
+    ui.confirmAct = null;
+  }
   const autoPref = localStorage.getItem('algoAutopass') === '1';
   $app.innerHTML = `
     <div class="main">
-      <div class="topbar">
-        <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.map(el => elIcon(el)).join('')}` : ''}</span>
-        ${phaseTrackHtml()}
-        <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
-        ${netTag}
-        ${clocksHtml()}
-        ${ui.autopass ? '<button class="passallchip" data-btn="passallstop" title="click to stop passing">auto-passing… ✕ stop</button>' : ''}
-        ${NET ? `<button data-btn="autopasstoggle" class="aptoggle ${autoPref ? 'on' : ''}"
-          title="when ON: automatically pass whenever passing is your only legal action">auto-pass: ${autoPref ? 'on' : 'off'}</button>` : ''}
-        <button data-btn="helpopen" title="rules reference: phases + keywords" style="margin-left:auto">? rules</button>
-        <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
-        ${NET ? '<button data-btn="reportopen" title="report an issue — the server logs this exact game moment">🐛</button>' : ''}
-        ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
-        ${NET ? '' : '<button data-btn="restart">New game</button>'}
+      <!-- playtest: the turn/phase strip AND the "what to do next" bar are one
+           sticky unit at the top. The prompt used to scroll away exactly when
+           it mattered — mid-battle, with the board pushed down the page. -->
+      <div class="stickytop">
+        <div class="topbar">
+          <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.map(el => elIcon(el)).join('')}` : ''}</span>
+          ${phaseTrackHtml()}
+          <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
+          ${ui.autopass ? '<button class="passallchip" data-btn="passallstop" title="click to stop passing">auto-passing… ✕ stop</button>' : ''}
+        </div>
+        ${shareBannerHtml()}
+        ${promptHtml()}
       </div>
-      ${shareBannerHtml()}
-      ${promptHtml()}
       ${draftPanelHtml()}
       ${bottomPanelHtml()}
       ${regionPanelHtml(topSeat)}
@@ -1708,6 +1780,21 @@ function render(): void {
       ${regionPanelHtml(botSeat, { omitHand: !!NET })}
     </div>
     <div class="side">
+      <!-- playtest: room identity, presence, clocks and every chrome button
+           live here, above the focus viewer, instead of crowding the left. -->
+      <div class="sidehead">
+        ${netTag ? `<div class="sideid">${netTag}</div>` : ''}
+        ${clocksHtml()}
+        <div class="sidebtns">
+          <button data-btn="helpopen" title="rules reference: phases + keywords">? rules</button>
+          <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
+          ${NET ? '<button data-btn="reportopen" title="report an issue — the server logs this exact game moment">🐛 bug</button>' : ''}
+          ${NET ? `<button data-btn="autopasstoggle" class="aptoggle ${autoPref ? 'on' : ''}"
+            title="when ON: automatically pass whenever passing is your only legal action">auto-pass: ${autoPref ? 'on' : 'off'}</button>` : ''}
+          ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
+          ${NET ? '' : '<button data-btn="restart">New game</button>'}
+        </div>
+      </div>
       <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
       ${stackHtml()}
       <div class="logpanel" id="log"><h3>Game log</h3>${logItems}</div>
@@ -2064,12 +2151,17 @@ document.addEventListener('mouseover', e => {
   if (ping) {
     for (const el of document.querySelectorAll(`[data-id="${ping.dataset['ping']}"]`)) el.classList.add('pinghl');
   }
-  const t = (e.target as HTMLElement).closest('[data-prev], [data-previd]') as HTMLElement | null;
+  const t = (e.target as HTMLElement).closest('[data-prev], [data-previd], [data-prevstack]') as HTMLElement | null;
   if (!t) return;
   const prev = document.getElementById('preview');
   if (!prev) return;
   if (t.dataset['previd']) {
     const html = previewEntityHtml(Number(t.dataset['previd']));
+    if (html) { prev.innerHTML = html; return; }
+  }
+  // a stack item shows the ABILITY that is on the stack, not the whole card
+  if (t.dataset['prevstack']) {
+    const html = previewStackHtml(Number(t.dataset['prevstack']));
     if (html) { prev.innerHTML = html; return; }
   }
   const name = t.dataset['prev'];
@@ -2222,7 +2314,28 @@ function handleButton(btn: HTMLElement): void {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
   }
   if (b === 'revealdone') pendingReveal = null;
-  if (b === 'donedeploy') act({ type: 'doneDeploying', seat: Number(btn.dataset['p']) });
+  if (b === 'donedeploy') {
+    // playtest: don't let a paid-for prophecy or a glimpsed card die in the
+    // cache because deployment is the one step you click through fast.
+    const seat = Number(btn.dataset['p']) as Seat;
+    if (playableCached(seat).length) ui.confirmDeploy = seat;
+    else act({ type: 'doneDeploying', seat });
+  }
+  if (b === 'deploycancel') ui.confirmDeploy = null;
+  if (b === 'deployconfirm') {
+    const seat = ui.confirmDeploy;
+    ui.confirmDeploy = null;
+    if (seat !== null) act({ type: 'doneDeploying', seat });
+  }
+  if (b === 'actcancel') ui.confirmAct = null;
+  if (b === 'actconfirm') {
+    const a = ui.confirmAct;
+    ui.confirmAct = null;
+    if (a) {
+      act({ type: 'activateAbility', seat: a.seat, entityId: a.entityId,
+        abilityIndex: a.abilityIndex, ...(a.via ? { via: a.via } : {}) });
+    }
+  }
   if (b === 'skipattack') { act({ type: 'declareAttack', seat: s.battle!.attacker, columns: [] }); ui.columns = []; ui.carrying = null; ui.spellTokens = []; }
   if (b === 'attackall') {
     // one click for the whole army: every eligible unit fronts its own
@@ -2403,13 +2516,27 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
         const label = name ? getCard(name).augmentText?.[a.abilityIndex]?.label : undefined;
         return name && a.via !== 'augment' ? `${name}: ${label ?? '?'}` : label ?? '?';
       };
-      if (opts.length === 1) act(opts[0]!);
+      // playtest: a single ability used to fire on a bare click, so clicking a
+      // unit you meant to BLOCK with instead paid its "Sacrifice me:" cost and
+      // deleted it. Anything that spends something you cannot get back, and
+      // that will not stop to ask for a target, now asks first.
+      const fire = (a: Action): void => {
+        if (a.type !== 'activateAbility') return;
+        if (needsConfirm(u, a)) {
+          ui.confirmAct = {
+            seat: u.controller, entityId: id, abilityIndex: a.abilityIndex,
+            ...(a.via ? { via: a.via } : {}),
+            label: optLabel(a), unit: u.card,
+          };
+        } else act(a);
+      };
+      if (opts.length === 1) fire(opts[0]!);
       else if (opts.length > 1) {
         ui.menu = {
           x: e.clientX, y: e.clientY,
           items: opts.map(a => ({
             label: optLabel(a),
-            go: () => { act(a); render(); },
+            go: () => { fire(a); render(); },
           })),
         };
       }

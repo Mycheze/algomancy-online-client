@@ -274,11 +274,15 @@ export interface StackItem {
   /** R49: non-mana ACTIVATION costs that carry a CHOICE (which card to
    * discard, which unit to sacrifice), still to be paid. Collected in the cast
    * window — before the item reaches the stack — so nobody may respond between
-   * an activation's cost and its effect. The choice-free costs (mana, life,
-   * debt, sacrifice-self) are paid outright by doActivateAbility and never
-   * appear here. Atoms are popped as they are paid; the list is deleted when
-   * it empties. */
+   * an activation's cost and its effect. Atoms are popped as they are paid;
+   * the list is deleted when it empties. */
   pendingCosts?: { kind: 'discard' | 'sacrificeOther' | 'discardOrSacrifice'; n: number }[];
+  /** R57: the choice-free half of an activation cost (mana, life, debt,
+   * sacrifice-self), carried on the item so it can be charged AFTER the
+   * ability's targets are chosen rather than at the moment of activation.
+   * Deleted the instant it is paid, which is also the idempotence guard —
+   * collectTargets re-runs from the top after every answered decision. */
+  activationCost?: import('./cards/dsl.ts').AbilityCost;
   /** R49: receipt of the item-level activation costs above */
   paidCosts?: { discarded?: CardName[]; sacrificed?: CardName[] };
   /** triggered/activated: source entity (may be gone by resolution) */

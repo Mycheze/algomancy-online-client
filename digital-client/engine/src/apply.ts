@@ -672,25 +672,19 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
     controller: seat, region,
     negated: false, parts, sourceId: u.id, event: null,
   };
-  // R49: choice-free costs are charged right here, in the order printed on the
-  // cards (mana, life, debt, sacrifice-self); the ones that carry a choice ride
-  // on the item and are collected in the cast window — still before the item
-  // reaches the stack, so nothing can respond between cost and effect.
-  e.payMana(seat, cost.mana ?? 0);
-  if (cost.life) {
-    e.ev('info', `${e.pname(seat)} pays ${cost.life} life — the cost of ${item.label}.`);
-    e.loseLife(seat, cost.life, `${item.label} (cost)`);
-  }
-  if (cost.debt) {
-    e.ev('info', `${e.pname(seat)} gains ${cost.debt} debt — the cost of ${item.label}.`);
-    e.gainDebt(seat, cost.debt);
-  }
+  // R57: NOTHING is charged here. Every part of the cost rides on the item and
+  // is paid inside the cast window, AFTER the ability's targets are chosen —
+  // still before the item reaches the stack, so nobody may respond between
+  // cost and effect. This used to pay mana/life/debt and run
+  // `e.destroy(u, 'is sacrificed')` right here, which meant a "Sacrifice me:"
+  // ability ate its own unit the instant you clicked it, before you had seen
+  // the target list and with no way back if you had misclicked mid-battle.
+  item.activationCost = cost;
   const pending: NonNullable<StackItem['pendingCosts']> = [];
   if (cost.discard) pending.push({ kind: 'discard', n: cost.discard });
   if (cost.sacrificeOther) pending.push({ kind: 'sacrificeOther', n: cost.sacrificeOther });
   if (cost.discardOrSacrifice) pending.push({ kind: 'discardOrSacrifice', n: cost.discardOrSacrifice });
   if (pending.length) item.pendingCosts = pending;
-  if (cost.sacrificeSelf) e.destroy(u, 'is sacrificed');   // cost, not respondable
   e.castChain([item], then);
   e.settle();
 }
@@ -730,7 +724,9 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number, hostId: Entit
   const c = e.card(name);
   e.need(isAugment(name), 'that card is not an augment');
   const free = modIsFree(e, seat, from, index);
-  e.need(free || e.canPayCard(seat, name), 'cannot pay for that');
+  // R37/R59: applying a mod is not PLAYING, so a "spells cost more to play"
+  // modifier must not tax it — the cost is looked up with purpose 'mod'.
+  e.need(free || e.canPayCard(seat, name, { purpose: 'mod' }), 'cannot pay for that');
   const host = e.entity(hostId);
   e.need(host && host.kind === 'unit' && !host.absent, 'no such unit');
 
@@ -740,7 +736,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number, hostId: Entit
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(host.region === e.s.battle!.region, 'that unit is in another region');
     e.player(seat).hand.splice(index, 1);
-    e.payCard(seat, name);
+    e.payCard(seat, name, { purpose: 'mod' });   // R37/R59: a Virus augment is a mod
     const item: StackItem = {
       id: e.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${host.card})`, controller: seat,
@@ -755,7 +751,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number, hostId: Entit
     e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
     zoneTake(e, seat, from, index);
     if (free) e.ev('info', `${name} augments for FREE — its prophecy is fulfilled.`);
-    else e.payCard(seat, name);
+    else e.payCard(seat, name, { purpose: 'mod' });
     const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
     e.fireEvent('targeted', ev);
     e.attachMod(host, name, seat, 'augment');
@@ -776,12 +772,12 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
   // both cards must carry the graft symbol: the host needs its own graft cause
   e.need(graftCauseIndex(host.card) >= 0, 'the target has no graft cause');
   const free = modIsFree(e, seat, from, index);
-  e.need(free || e.canPayCard(seat, name), 'cannot pay for that');
+  e.need(free || e.canPayCard(seat, name, { purpose: 'mod' }), 'cannot pay for that');  // R37/R59
   // new grafts insert anywhere below the base card, never reorder the rest
   e.need(Number.isInteger(position) && position >= 0 && position <= host.mods.length, 'bad graft position');
   zoneTake(e, seat, from, index);
   if (free) e.ev('info', `${name} grafts for FREE — its prophecy is fulfilled.`);
-  else e.payCard(seat, name);
+  else e.payCard(seat, name, { purpose: 'mod' });
   const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
   e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)
   e.attachMod(host, name, seat, 'graft', position);
@@ -1174,7 +1170,7 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
         if (c.discardMe && (c.discardMe.timing ?? c.timing) === 'battle' && canPayDiscardMe(e, seat, c)) {
           out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
         }
-        if (c.virus && isAugment(name) && e.canPayCard(seat, name)) {
+        if (c.virus && isAugment(name) && e.canPayCard(seat, name, { purpose: 'mod' })) {
           for (const host of e.unitsIn(b.region)) out.push({ type: 'augment', seat, from: 'hand', index: i, hostId: host.id });
         }
       });
@@ -1223,7 +1219,7 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       const names = from === 'cache' ? e.cache(seat).map(cc => cc.card) : e.player(seat)[from];
       names.forEach((name, i) => {
         // a fulfilled prophecy makes the mod free (R42); otherwise pay normally
-        const affordable = modIsFree(e, seat, from, i) || e.canPayCard(seat, name);
+        const affordable = modIsFree(e, seat, from, i) || e.canPayCard(seat, name, { purpose: 'mod' });
         if (!getCard(name) || !affordable) return;
         if (isAugment(name)) {
           for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });

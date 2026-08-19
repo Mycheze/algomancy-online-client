@@ -21,11 +21,17 @@ import type {
 } from './types.ts';
 import {
   affinityPips, effectByKey, getCard, graftCauseIndex, isGraftable, isTriggered,
-  zoneTriggersFor,
-  type Ability, type CardDef, type CastCost, type EffectCtx, type EffectDef,
+  specForSlot, zoneTriggersFor,
+  type Ability, type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetSpec, type TriggeredAbility,
 } from './cards/dsl.ts';
 import { rngNext, rngShuffle } from './rng.ts';
+
+/** R59: where and why a card's cost is being computed (see manaToPlay).
+ * `region` defaults to the seat's action region; `purpose` defaults to
+ * 'play' — pass 'mod' when the card is being applied as an augment or graft,
+ * which is not playing (R37). */
+export interface CostOpts { region?: number; purpose?: 'play' | 'mod' }
 
 export class Suspended { }
 export class GameEnded { }
@@ -223,12 +229,53 @@ export class E {
   openMana(seat: Seat): number {
     return this.player(seat).resources.filter(r => r.state === 'open').length;
   }
-  canPayCard(seat: Seat, name: CardName): boolean {
+  /** reentrancy guard for cost-modifier evaluation (mirrors inStatics) */
+  private inCostMods = false;
+
+  /**
+   * R59: every active CostMod that applies to `ctx`. Radiates from units in
+   * play and from augment mods anchored on their host, scoped to the region
+   * the card is being played into (R12) — the same rules as staticsFor.
+   */
+  private costModsFor(region: number): { holder: Entity; mod: CostMod }[] {
+    if (this.inCostMods) return [];
+    const out: { holder: Entity; mod: CostMod }[] = [];
+    this.inCostMods = true;
+    try {
+      for (const holder of Object.values(this.s.entities)) {
+        let anchor: Entity | undefined;
+        if (holder.kind === 'unit') anchor = holder;
+        else if (holder.kind === 'mod' && holder.appliedAs === 'augment' && holder.modOf !== undefined) {
+          anchor = this.entity(holder.modOf);
+        }
+        if (!anchor || anchor.absent || anchor.region !== region) continue;
+        for (const mod of this.card(holder.card).costMods ?? []) out.push({ holder: anchor, mod });
+      }
+    } finally { this.inCostMods = false; }
+    return out;
+  }
+
+  /**
+   * R59: what it actually costs `seat` to play (or apply) `name` right now —
+   * printed mana plus every active cost modifier, never below zero. `purpose`
+   * separates playing from applying a mod: applying a mod is not playing
+   * (R37), so "spells cost [one] more to play" does not tax an augment.
+   */
+  manaToPlay(seat: Seat, name: CardName, opts: CostOpts = {}): number {
+    const c = this.card(name);
+    const base = c.mana === 'X' ? (c.xMin ?? 0) : c.mana;
+    const region = opts.region ?? this.actionRegion(seat);
+    const ctx = { seat, card: c, region, purpose: opts.purpose ?? 'play' as const };
+    let total = base;
+    for (const { holder, mod } of this.costModsFor(region)) total += mod.delta(this, holder, ctx);
+    return Math.max(0, total);
+  }
+
+  canPayCard(seat: Seat, name: CardName, opts: CostOpts = {}): boolean {
     const c = this.card(name);
     // X spells: X is chosen and paid at cast (R35); castability needs only the
     // smallest legal X to be affordable (xMin, e.g. "X can't be zero" → 1)
-    const mana = c.mana === 'X' ? (c.xMin ?? 0) : c.mana;
-    if (this.openMana(seat) < mana) return false;
+    if (this.openMana(seat) < this.manaToPlay(seat, name, opts)) return false;
     for (const [el, n] of Object.entries(affinityPips(c.cost))) {
       if (this.affinity(seat, el) < n) return false;
     }
@@ -253,9 +300,14 @@ export class E {
       tally[seat] = (tally[seat] ?? 0) + mana;
     }
   }
-  payCard(seat: Seat, name: CardName): void {
+  payCard(seat: Seat, name: CardName, opts: CostOpts = {}): void {
     const c = this.card(name);
-    this.payMana(seat, c.mana === 'X' ? 0 : c.mana);
+    // an X spell pays 0 here — X itself is chosen and paid at cast (R35) — but
+    // a cost modifier still applies to the non-X part of the bill (R59)
+    const mana = c.mana === 'X'
+      ? Math.max(0, this.manaToPlay(seat, name, opts) - (c.xMin ?? 0))
+      : this.manaToPlay(seat, name, opts);
+    this.payMana(seat, mana);
   }
 
   // ── stats & attributes (six-layer projection; layers 5-6 have no pool cards
@@ -1483,6 +1535,29 @@ export class E {
     }
     return out;
   }
+  /**
+   * R58: could `ref` legally occupy target slot `ti` of `item`'s part `pi`
+   * RIGHT NOW? Used by redirection effects (Enigmatic Warder's "change a
+   * target of target effect to me"), which must not be able to drop an
+   * illegal target into a slot — the playtest bug was the opponent's Warder
+   * moving itself into Fight's "target ALLY" slot, where ally means ally of
+   * the SPELL'S controller, not of the Warder's.
+   */
+  canFillSlot(item: StackItem, pi: number, ti: number, ref: TargetRef): boolean {
+    const part = item.parts[pi];
+    if (!part) return false;
+    // card code calls this in a loop over an arbitrary stack item, so an
+    // unresolvable key must answer "no", never throw
+    let def: EffectDef;
+    try { def = effectByKey(part.effectKey); } catch { return false; }
+    if (!def.targets) return false;
+    // "another target unit" — a slot may not duplicate a sibling slot (R56)
+    const key = JSON.stringify(ref);
+    if (part.targets.some((t, i) => i !== ti && JSON.stringify(t) === key)) return false;
+    const cands = this.targetCandidates(
+      specForSlot(def.targets, ti), item.region, item.id, item.controller);
+    return cands.some(c => JSON.stringify(c) === key);
+  }
   targetLabel(t: TargetRef): string {
     if ('unit' in t) return this.entity(t.unit)?.card ?? '(gone)';
     if ('player' in t) return this.pname(t.player);
@@ -1890,17 +1965,55 @@ export class E {
     if (!item.pendingCosts!.length) delete item.pendingCosts;
   }
 
-  /** Ask for every cast-time decision, in order: X (R35), bracketed costs
-   * (R35), then targets for every part that needs them — ALL at cast time
-   * (multi-target specs included). Suspends via 'cast'. */
+  /** Ask for every cast-time decision, in order: X (R35), {Modular} mods,
+   * TARGETS for every part that needs them, then the costs — ALL at cast time
+   * (multi-target specs included). Suspends via 'cast'.
+   *
+   * R57: targets are chosen BEFORE any activation cost is paid. They used to
+   * come last, so "Sacrifice me: …" destroyed the unit and only then showed
+   * you what you could aim at — irreversible, and a disaster to fumble during
+   * battle when you meant to block with it. Choosing first also means a
+   * player who cannot aim the ability anywhere still has their unit.
+   */
   collectTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
     this.collectX(item, then, moreItems);
-    // {Modular} before the bracketed costs and the targets: an applied mod
-    // adds a part, and that part has its own [cost] and its own targets to
-    // collect (Manual p.33 — the composite resolves as ONE ability)
+    // {Modular} before the costs and the targets: an applied mod adds a part,
+    // and that part has its own [cost] and its own targets to collect
+    // (Manual p.33 — the composite resolves as ONE ability)
     this.collectModular(item, then, moreItems);
-    this.collectItemCosts(item, then, moreItems);   // R49: activation costs
+    this.collectPartTargets(item, then, moreItems);
+    this.payActivationCost(item);                   // R57: choice-free half
+    this.collectItemCosts(item, then, moreItems);   // R49: the choice-bearing half
     this.collectCastCosts(item, then, moreItems);
+  }
+
+  /**
+   * R57: charge the choice-free half of an activation cost — mana, life, debt
+   * and sacrifice-self — once the ability's targets are settled. Deleting the
+   * field is the idempotence guard: collectTargets re-runs from the top after
+   * every answered decision, and this must not charge twice.
+   */
+  private payActivationCost(item: StackItem): void {
+    const cost = item.activationCost;
+    if (!cost) return;
+    delete item.activationCost;
+    const seat = item.controller;
+    this.payMana(seat, cost.mana ?? 0);
+    if (cost.life) {
+      this.ev('info', `${this.pname(seat)} pays ${cost.life} life — the cost of ${item.label}.`);
+      this.loseLife(seat, cost.life, `${item.label} (cost)`);
+    }
+    if (cost.debt) {
+      this.ev('info', `${this.pname(seat)} gains ${cost.debt} debt — the cost of ${item.label}.`);
+      this.gainDebt(seat, cost.debt);
+    }
+    if (cost.sacrificeSelf) {
+      const u = item.sourceId !== undefined ? this.entity(item.sourceId) : undefined;
+      if (u && u.kind === 'unit') this.destroy(u, 'is sacrificed');   // cost, not respondable
+    }
+  }
+
+  private collectPartTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
     for (let pi = 0; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
       if (part.spent) continue;
@@ -1909,8 +2022,12 @@ export class E {
       const max = def.targets.count ?? 1;
       const min = Math.min(def.targets.min ?? 1, max);
       while (!part.targetsDone && part.targets.length < max) {
+        const n = part.targets.length;
+        // R58: each slot may carry its own restriction (Fight: ally, then any
+        // other unit), so candidates are computed per slot rather than once.
+        const slot = specForSlot(def.targets, n);
         const chosen = new Set(part.targets.map(t => JSON.stringify(t)));
-        const cands = this.targetCandidates(def.targets, item.region, item.id, item.controller)
+        const cands = this.targetCandidates(slot, item.region, item.id, item.controller)
           .filter(c => !chosen.has(JSON.stringify(c)));
         if (!cands.length) break;         // composite part with nothing to aim at: skipped at resolution
         const options: { label: string; value: unknown }[] =
@@ -1918,12 +2035,13 @@ export class E {
         if (part.targets.length >= min) {
           options.push({ label: 'No more targets', value: { doneTargets: true } });
         }
-        const n = part.targets.length;
+        const base = def.targets.slotPrompts?.[n] ?? def.targets.prompt;
         this.suspend(
           { type: 'cast', item, partIndex: pi, targetIndex: n, then, moreItems },
           {
             seat: item.controller, kind: 'targets',
-            prompt: max > 1 ? `${def.targets.prompt} (target ${n + 1} of up to ${max})` : def.targets.prompt,
+            prompt: max > 1 && !def.targets.slotPrompts?.[n]
+              ? `${base} (target ${n + 1} of up to ${max})` : base,
             options: options as { label: string; value: TargetRef }[],
           },
         );

@@ -173,7 +173,7 @@ test("Enigmatic Warder: [two] activated ([Augment] text, via: 'augment') redirec
   finishBattle(h);
 });
 
-test('Fight: target ally fights another unit ([Switch1] effect as the spell)', () => {
+test('Fight: BOTH units are cast-time targets, ally first (R58)', () => {
   const h = new Harness(1609);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -184,8 +184,15 @@ test('Fight: target ally fights another unit ([Switch1] effect as the spell)', (
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Fight') });
-  pick(h, { unit: bubbD });                           // target ally
-  pass(h); pass(h);                                   // resolve — the 1/1 is the only other unit (auto)
+  // slot 0 is 'allyUnit' — only D's own units are offered
+  assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ unit: bubbD }],
+    'the ally slot offers allies of the CASTER only');
+  pick(h, { unit: bubbD });
+  // slot 1 is 'unit' — any OTHER unit in the region, so the attacker appears
+  assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ unit: atk }],
+    'the second slot offers the other units, and never the ally again');
+  pick(h, { unit: atk });
+  pass(h); pass(h);                                   // resolve
   assert.ok(!ent(h, atk), 'the 1/1 died to Bubb');
   assert.equal(ent(h, bubbD)!.damage, 1, 'Bubb took 1 back');
   finishBattle(h);

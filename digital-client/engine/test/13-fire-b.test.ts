@@ -202,13 +202,16 @@ test('Sacrificial Burst: sacrifice a unit, deal 4 to any target', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[atkr]] });
   pass(h);                                           // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Sacrificial Burst') });
-  // cast cost FIRST (R35): the sacrifice is paid before the spell hits the stack
+  // R57: TARGET first, cost second. Both still happen at cast, before the
+  // spell reaches the stack (R35) — only the order of the two questions
+  // changed, so you see what you are aiming at before you pay for it.
   assert.equal(h.state.decision?.kind, 'targets');
-  assert.equal(h.state.decision!.seat, D, 'the controller picks the sacrifice');
-  pick(h, { unit: fodder });
-  assert.ok(!ent(h, fodder), 'the sacrifice died at cast');
+  assert.equal(h.state.decision!.seat, D, 'the controller aims it');
+  pick(h, { player: A });                            // the 4 damage target
+  assert.ok(ent(h, fodder), 'nothing has been sacrificed yet');
+  pick(h, { unit: fodder });                         // then the sacrifice
+  assert.ok(!ent(h, fodder), 'the sacrifice is paid at cast');
   assert.ok(h.state.players[D]!.bin.includes('Curio Drifter'));
-  pick(h, { player: A });                            // then the 4 damage target
   pass(h); pass(h);                                  // resolve
   assert.ok(ent(h, whale), 'the other unit was not touched');
   assert.equal(h.state.players[A]!.life, 26, '4 damage to A');

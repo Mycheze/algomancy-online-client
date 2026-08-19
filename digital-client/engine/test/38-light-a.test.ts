@@ -469,8 +469,12 @@ test('Prismatic Observer: sacrifice to recall a cached card (either cache) and g
   const uid = cacheOf(h, D)[0]!.uid!;
   const life = h.state.players[A]!.life;
   h.do({ type: 'activateAbility', seat: A, entityId: obs, abilityIndex: 0 });
-  assert.ok(!ent(h, obs), 'sacrificed as a cost, before the ability resolves');
+  // R57: you pick the target BEFORE the sacrifice-self cost is paid, so a
+  // misclick during battle no longer eats the unit before you have seen the
+  // list. The cost is still paid at cast, before the ability resolves.
+  assert.ok(ent(h, obs), 'still alive while you choose');
   pick(h, { cached: { seat: D, uid } });                     // R41: the enemy cache is targetable
+  assert.ok(!ent(h, obs), 'sacrificed as a cost, before the ability resolves');
   assert.equal(cacheOf(h, D).length, 0, 'the entry (and its prophecy) is gone');
   assert.ok(h.state.players[D]!.hand.includes(bait), 'recalled to its owner\'s hand');
   assert.equal(h.state.players[A]!.life, life + 3, 'and you gain 3 life');

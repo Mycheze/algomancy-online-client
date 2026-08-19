@@ -269,11 +269,14 @@ test('Hand Peeper: R49 — at exactly 3 life the cost is unpayable and the activ
   assert.equal(h.state.seenHand[A], null, 'and nothing was seen');
   assert.ok(!h.legal(A).some(a => a.type === 'activateAbility' && a.entityId === hp),
     'and it is not offered');
-  // at 4 life it IS payable, and the life goes at ACTIVATION, before the stack
+  // at 4 life it IS payable. R57: the life goes once the target is chosen —
+  // still at cast, before the item reaches the stack, but after you have seen
+  // what you can aim at.
   h.state.players[A]!.life = 4;
   h.do({ type: 'activateAbility', seat: A, entityId: hp, abilityIndex: 0, via: 'augment' });
-  assert.equal(h.state.players[A]!.life, 1, 'the 3 life is paid as the ability is activated');
+  assert.equal(h.state.players[A]!.life, 4, 'nothing paid while you are still choosing');
   pick(h, { player: D });
+  assert.equal(h.state.players[A]!.life, 1, 'the 3 life is paid at cast, once aimed');
   pass(h); pass(h);
   assert.ok(h.state.seenHand[A], 'and the hand was seen');
   finishBattle(h);

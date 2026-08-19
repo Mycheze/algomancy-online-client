@@ -295,13 +295,14 @@ test('Darkblast: discard a card, deal 5 damage to any target (R35 cost, R40 tras
   give(h, A, 'Brough');                                        // the only card to discard
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Darkblast') });
-  // R35/R49: the bracketed cost is chosen and paid FIRST, at cast, before the
-  // spell reaches the stack and before targets are declared
-  assert.equal(h.state.decision!.seat, A, 'the [Discard a card] cost is asked at cast');
+  // R57: the TARGET is declared first, then the bracketed cost is chosen and
+  // paid — both still at cast, before the spell reaches the stack (R35).
+  assert.equal(h.state.decision!.seat, A, 'the caster aims it');
+  pick(h, { unit: victim });
+  assert.ok(!h.state.players[A]!.bin.includes('Brough'), 'nothing discarded yet');
   h.do({ type: 'decide', seat: A, choice: 0 });                // discard Brough
   assert.ok(h.state.players[A]!.bin.includes('Brough'),
     'the discard cost was paid at cast and trashed (R40)');
-  pick(h, { unit: victim });
   pass(h); pass(h);                                            // resolve
   assert.ok(!ent(h, victim), 'the target took 5 and died');
   finishBattle(h);

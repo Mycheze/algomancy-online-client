@@ -677,3 +677,93 @@ when the targets have collapsed.
 The general rule: cast-time target *selection* constrains what can be chosen,
 never what will still be true later. Redirection, death, region changes and
 zone changes all happen in between. Re-validate at resolution.
+
+## R57 — Targets are chosen before costs are paid
+
+*(Playtest round 6, 2026-08-19. Engine bug.)*
+
+Every cast-time *question* is asked in this order: **X → {Modular} mods →
+TARGETS → costs.** Nothing that requires a decision, and nothing irreversible,
+is spent until the effect has been aimed.
+
+The precise scope: an **activated ability** pays its entire cost after
+targeting (mana, life, debt and sacrifice-self included). A **played card**
+still pays its flat printed mana up front in `playAtTiming` — mana is fungible
+and castability was already gated, so nothing is lost by it — but its bracketed
+`[cost]` (R35), which is where the sacrifices and discards live, now comes
+after targets like everything else.
+
+It used to be the other way round. `doActivateAbility` charged mana, life and
+debt and ran `destroy(u, 'is sacrificed')` at the moment of activation, before
+`castChain` ever reached target collection. So a **"Sacrifice me:"** ability
+ate its own unit the instant you clicked it — before showing you the target
+list, and with no way back if you had misclicked a unit you meant to *block*
+with. Found at the table.
+
+The whole cost now rides on the item (`StackItem.activationCost` for the
+choice-free half, `pendingCosts` for the half that needs a choice) and is
+charged in the cast window once targets are settled. Both halves still happen
+**at cast, before the item reaches the stack**, so R49's guarantee holds: no
+player may respond between an activation's cost and its effect.
+
+This applies to bracketed part costs (R35) too, not only activation costs — a
+`[Sacrifice a unit]` spell asks what it is aiming at first. Two consequences
+worth knowing: an ability may now legally target the very unit it is about to
+sacrifice (it fizzles, exactly as it should), and the cost is charged even when
+targeting turned out to find nothing, which is why the client asks "are you
+sure?" before firing an irreversible ability that will not stop for a target.
+
+## R58 — Per-slot target legality, re-checked at resolution
+
+*(Playtest round 6, 2026-08-19. Engine bug.)*
+
+A multi-target spec may restrict each slot separately (`TargetSpec.slots`), and
+a redirection effect may only move a target into a slot **it could legally
+occupy**.
+
+**Fight** prints "Target ally and *another target* unit fight". Both are
+targets. The engine took only the ally at cast and picked the second unit
+mid-resolution, so the opponent never saw what the spell was aimed at while it
+sat on the stack, and the second "target" could not be responded to at all.
+It is now a two-slot spec: slot 0 `allyUnit`, slot 1 `unit`.
+
+"Ally" means ally **of the effect's controller**, and that is where the second
+half of the bug lived: **Enigmatic Warder** ("[two]: change a target of target
+effect to me") would move the *opponent's* unit into the caster's ally slot.
+Changing a target may never create an illegal one, so the Warder now offers
+only slots that `E.canFillSlot` accepts — which also enforces R56's "another"
+by refusing a slot that would duplicate a sibling.
+
+As in R56, cast-time legality is not an invariant. Fight re-checks both slots
+when it resolves: same unit twice, or an "ally" that changed controller while
+the spell was on the stack, and it does nothing.
+
+## R59 — Cost modifiers
+
+*(Playtest round 6, 2026-08-19.)*
+
+A card in play may continuously change what it costs to **play** other cards.
+`CardBehavior.costMods` radiates exactly like `statics` — from a unit in play
+and from an augment mod anchored on its host — and is scoped to the holder's
+region (R12). `E.manaToPlay(seat, name, opts)` is the authority; the total is
+clamped at zero.
+
+`purpose` separates **playing** a card from **applying** it as a mod. Applying
+a mod is not playing (R37), so a "spells cost [one] more to play" modifier must
+not tax an augment, a graft or a battle Virus — those price with
+`purpose: 'mod'`.
+
+**Tranquility** ("[Augment] Spells cost [one] more to play during battle") was
+parked for want of this layer, and the playtest report — "Tranquility isn't
+taxing spells" — was exactly right: it couldn't. It is live now, and its clauses
+map cleanly onto the layer: *spells* = the spell card kinds you play from hand
+(`spell`, `spellUnit`; a spell token is cast from play, not played), *to play*
+= `purpose: 'play'`, *during battle* = the battle phase only, and an unqualified
+subject means it taxes **both** players in its region, attackers included.
+
+An X spell still pays X at cast (R35); the modifier applies to the rest of the
+bill.
+
+Still parked for want of more than this layer: **Crevice Lurker** and the
+"choosing not to pay prevents the ability from triggering" shape, which needs a
+pay-to-trigger hook on every trigger entering the stack, not just a price.

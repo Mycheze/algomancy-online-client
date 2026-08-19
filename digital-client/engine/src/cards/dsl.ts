@@ -98,6 +98,26 @@ export interface TargetSpec {
   count?: number;
   /** minimum targets before "done" is offered (default 1) */
   min?: number;
+  /** R58: per-SLOT restriction for a multi-target spec — `slots[i]` governs
+   * target i and falls back to `what`. Fight prints "target ally and ANOTHER
+   * target unit": two cast-time targets whose legality differs by slot
+   * (['allyUnit', 'unit']). Without this a two-target spec could only ask one
+   * question twice, which is how Fight ended up choosing its second target
+   * mid-resolution instead. */
+  slots?: TargetSpec['what'][];
+  /** R58: per-slot prompt, same indexing as `slots`; falls back to `prompt`. */
+  slotPrompts?: string[];
+}
+
+/** R58: the restriction governing target slot `i` of a spec. */
+export function slotWhat(spec: TargetSpec, i: number): TargetSpec['what'] {
+  return spec.slots?.[i] ?? spec.what;
+}
+
+/** R58: the spec as it applies to slot `i` — what targetCandidates should be
+ * asked for when filling that one slot. */
+export function specForSlot(spec: TargetSpec, i: number): TargetSpec {
+  return { ...spec, what: slotWhat(spec, i) };
 }
 
 /**
@@ -222,6 +242,29 @@ export interface StaticMod {
   attrs?: Attr[];
 }
 
+/** What a cost modifier is being asked about. `purpose` separates PLAYING a
+ * card from APPLYING it as a mod — applying a mod is not playing (R37, Bena's
+ * ruling), so "spells cost [one] more to PLAY" must not tax an augment. */
+export interface CostCtx {
+  seat: Seat;
+  card: CardDef;
+  region: number;
+  purpose: 'play' | 'mod';
+}
+
+/**
+ * R59: a continuous COST modifier, radiating from a unit in play or from an
+ * augment mod exactly like a StaticMod, and scoped to the holder's region
+ * (R12). `delta` returns extra mana — negative to discount. The total is
+ * clamped at zero: no card ever costs less than nothing.
+ *
+ * Like StaticMod, `delta` must not call anything that re-enters cost
+ * evaluation (canPayCard / payCard / manaToPlay); read raw state instead.
+ */
+export interface CostMod {
+  delta: (g: E, self: Entity, ctx: CostCtx) => number;
+}
+
 export interface CardBehavior {
   /** X-cost cards only: the smallest legal X ("X can't be zero" → 1).
    * Casting requires (and X options start at) this much open mana. */
@@ -230,6 +273,9 @@ export interface CardBehavior {
   /** continuous stat/attr projections while this card is a unit in play OR
    * an augment mod (text-box [Augment] statics transfer with the card) */
   statics?: StaticMod[];
+  /** R59: continuous COST modifiers, same radiation rules as `statics`
+   * ("Spells cost [one] more to play during battle" — Tranquility) */
+  costMods?: CostMod[];
   /** the card can be applied as an augment even without augmentAttrs or
    * augmentText — its [Augment] text is implemented via `statics` */
   augmentable?: boolean;

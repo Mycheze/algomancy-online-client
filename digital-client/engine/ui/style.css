@@ -281,7 +281,24 @@ button:disabled { opacity: .4; cursor: default; }
 /* ── region-board overhaul + playtest round 2 (2026-08-18) ──────────── */
 
 /* B6: the topbar pins to the viewport top */
-.topbar { position: sticky; top: 0; z-index: 45; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+/* playtest: the turn strip and the "what to do next" bar pin together, so the
+   prompt never scrolls away mid-battle. The wrapper carries the sticky, not
+   the topbar, and paints an opaque ground so the board slides under it. A
+   decision with a card row can be tall, hence the cap + inner scroll. */
+.stickytop { position: sticky; top: 0; z-index: 45; background: var(--bg);
+  padding-top: 2px; margin-bottom: 8px; box-shadow: 0 4px 10px -4px rgba(0,0,0,.6);
+  max-height: 55vh; overflow-y: auto; }
+.stickytop .topbar, .stickytop .promptbar { margin-bottom: 6px; }
+.stickytop > :last-child { margin-bottom: 0; }
+
+/* playtest: room identity, presence, clocks and the chrome buttons moved out
+   of the crowded left topbar into their own block above the focus viewer. */
+.sidehead { background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 6px 8px; display: flex; flex-direction: column; gap: 6px; }
+.sideid { display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
+.sidehead .clocks { font-size: 12px; }
+.sidebtns { display: flex; flex-wrap: wrap; gap: 4px; }
+.sidebtns button { padding: 4px 8px; font-size: 12px; }
 
 /* A3: missing art never shows a broken-image glyph */
 .artfallback { display: none; }
@@ -554,3 +571,19 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .logpanel div.ev-debtpaid { color: #c9b477; border-left: 2px dotted #7d6a2f; padding-left: 5px; }
 .logpanel div.ev-trash { color: #b9a08c; border-left: 2px solid #6b4f3a; padding-left: 5px; }
 .logpanel div.ev-life { color: #9fe0a4; border-left: 2px solid #3f7a45; padding-left: 5px; }
+
+/* playtest: a stack item's focus view shows the ABILITY on the stack, part by
+   part, instead of the whole card — the difference between "here is Mohruung"
+   and "here is what is about to resolve". Composed graft stacks list every
+   contributing card, which is the case that made this necessary. */
+.abilitybox { text-align: left; margin-top: 6px; border-top: 1px solid var(--line); padding-top: 6px; }
+.abhead { color: var(--dim); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+.abrow { font-size: 12px; line-height: 1.35; margin-bottom: 5px; }
+.absrc { display: block; color: var(--accent); font-size: 10px; letter-spacing: .04em; }
+.abtargets { color: var(--target); font-size: 11px; margin-top: 4px; }
+.abneg { color: var(--danger); font-size: 11px; margin-top: 4px; }
+
+/* playtest: the end-of-deployment cache reminder names the cards rather than
+   just counting them — hovering one previews it, so you can decide without
+   opening the cache dialog. */
+.cachenames span { color: var(--accent); cursor: help; border-bottom: 1px dotted var(--accent); }

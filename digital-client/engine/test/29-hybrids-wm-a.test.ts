@@ -17,6 +17,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
+import { getCard } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
@@ -132,13 +133,16 @@ test('Scrapyard Custodian: counters on an ally → [Switch1] draw; grafts join t
 
 // ── The Silent ───────────────────────────────────────────────────────────
 
-test('The Silent: spells cost [two] more per spell the team played this battle', { todo: true }, () => {
-  // PARKED: a continuous cost-modification layer does not exist —
-  // canPayCard/payCard read printed mana only (the Stasis Sentry precedent).
-  // See the batch header.
+test('The Silent: spells cost [two] more per spell the team played this battle', () => {
+  // Unparked by R59's cost-modifier layer. The behaviour proper (asymmetry,
+  // the counter, stacking with Tranquility) is pinned in 49-playtest-round6;
+  // this checks the card is wired into the layer at all.
+  const c = getCard('The Silent');
+  assert.equal(c.costMods?.length, 1, 'it carries a cost modifier');
+  assert.equal(c.augmentable, true, 'and is still applicable as an augment');
 });
 
-test('The Silent: plays as a 3/4; augments (donating nothing yet)', () => {
+test('The Silent: plays as a 3/4 and augments', () => {
   const h = new Harness(2905);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -149,7 +153,7 @@ test('The Silent: plays as a 3/4; augments (donating nothing yet)', () => {
   giveResources(h, p, 'metal', 1);
   giveResources(h, p, 'wood', 1);                             // em / 3
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'The Silent'), hostId: host });
-  assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment (inert donation)');
+  assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment');
 });
 
 // ── Aether Channeler ─────────────────────────────────────────────────────

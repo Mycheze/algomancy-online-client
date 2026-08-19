@@ -397,13 +397,29 @@ card('Towering Colossus', {
 });
 
 // "[Augment] Spells cost [one] more to play during battle." — ee/3 3/4
-// Mystic Structure Unit. PARKED (see header): static cost modifiers have no
-// engine hook (canPayCard/payCard read printed costs only). Inert augmentText
-// keeps it recognised as an augment; it changes no costs yet.
+// Mystic Structure Unit. LIVE as of the R59 cost-modifier layer (it was parked
+// for want of one, and the playtest report was "Tranquility isn't taxing
+// spells" — it wasn't, it couldn't).
+//
+// Scope, clause by clause:
+//  - "Spells" = the spell CARD kinds you play from hand: spell and spellUnit.
+//    A spell TOKEN (Fireball, Poison) is cast from play, not played, and a
+//    unit is not a spell.
+//  - "to play" = playing the card. Applying it as a mod is NOT playing (R37),
+//    which the purpose: 'mod' lookup handles for free.
+//  - "during battle" = the battle phase only; deployment casts are untaxed.
+//  - Unqualified subject, so it taxes BOTH players — and it is region-scoped
+//    (R12) like every static, so it bites in whichever region it is standing
+//    in, attackers included.
+// Text-box [Augment], so the modifier radiates from the card played normally
+// AND from the augment mod anchored on its host, exactly like a static.
 card('Tranquility', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'spells cost [1] more during battle (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
+  augmentable: true,
+  costMods: [{
+    delta: (g, _self, ctx) =>
+      g.s.phase === 'battle'
+        && ctx.purpose === 'play'
+        && (ctx.card.kind === 'spell' || ctx.card.kind === 'spellUnit')
+        ? 1 : 0,
   }],
 });
