@@ -717,3 +717,16 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .tokenrow .card { width: 68px; }
 .tokenbody { min-width: 0; }
 .tokenname { font-weight: 700; color: var(--accent); }
+
+/* ── watching the opponent build a formation (playtest 2026-08-20) ────
+   The digital stand-in for seeing someone slide units into columns across the
+   table. Nothing here is committed, so nothing here looks committed: dashed,
+   dimmed, and inert. */
+.battle.watching { border-color: #3b4a5e; }
+.battle.watching h3 { color: #8fb4dd; }
+.livedot { color: var(--glow); font-size: 10px; letter-spacing: .1em;
+  animation: livepulse 1.6s ease-in-out infinite; }
+@keyframes livepulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+.pendingcol { display: flex; flex-direction: column; gap: 4px; align-items: center;
+  border: 1px dashed #4a5f7a; border-radius: 6px; padding: 4px; background: rgba(60,90,130,.08); }
+.pendingcol .card { opacity: .85; }

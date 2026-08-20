@@ -276,7 +276,8 @@ const wss = new WebSocketServer({ server });
 
 wss.on('connection', ws => {
   ws.on('message', raw => {
-    let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[]; deck?: unknown; action?: Action };
+    let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
+      deck?: unknown; action?: Action; cols?: unknown; send?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     if (msg.t === 'join') {
@@ -338,6 +339,9 @@ wss.on('connection', ws => {
             peers: peersOf(room),
             names: room.names,
             clock: clockSnapshot(room),
+            // a reconnect mid-declaration picks the opponent's half-built
+            // formation straight back up instead of waiting for their next move
+            building: room.building[(s === 0 ? 1 : 0) as Seat],
           };
       send(ws, joinedMsg(seat));
       // let the other seat know a peer arrived (fresh view refreshes presence;
@@ -363,6 +367,8 @@ wss.on('connection', ws => {
       try {
         const room = conn.room;
         const wasDeploy = room.state.phase === 'deploy';
+        // the committed declaration supersedes every in-progress one
+        room.building = [null, null];
         const events = applyToRoom(room, action);
         // drain forced steps (an empty board "attacks"/"blocks" by itself)
         for (let guard = 0; guard < 8; guard++) {
@@ -397,6 +403,26 @@ wss.on('connection', ws => {
         if (err instanceof IllegalAction) send(ws, { t: 'error', msg: err.message });
         else { console.error('[ws] apply error:', err); send(ws, { t: 'error', msg: 'internal error' }); }
       }
+      return;
+    }
+
+    // The formation a seat is building, relayed to the other seat as they
+    // build it (rooms.ts Room.building). Not an action: it never touches the
+    // engine, never enters the log, and is dropped the moment a real action
+    // lands. Sizes are capped so a rogue client cannot use it as a firehose.
+    if (msg.t === 'building') {
+      const conn = conns.get(ws);
+      if (!conn || roomWaiting(conn.room)) return;
+      const raw = msg;
+      const ids = (v: unknown, max: number): number[] => (Array.isArray(v) ? v : [])
+        .filter((n): n is number => Number.isInteger(n)).slice(0, max);
+      const cols = (Array.isArray(raw.cols) ? raw.cols : []).slice(0, 12).map(c => ids(c, 2));
+      const built = { cols, send: ids(raw.send, 12) };
+      const empty = !built.cols.some(c => c.length) && !built.send.length;
+      conn.room.building[conn.seat] = empty ? null : built;
+      const opp = (conn.seat === 0 ? 1 : 0) as Seat;
+      const oppSock = conn.room.sockets[opp] as unknown as WebSocket | null;
+      if (oppSock) send(oppSock, { t: 'building', seat: conn.seat, ...(empty ? { cols: [], send: [] } : built) });
       return;
     }
 

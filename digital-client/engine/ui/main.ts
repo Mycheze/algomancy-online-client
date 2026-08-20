@@ -52,6 +52,15 @@ class NetBackend implements Backend {
   names: [string, string] = ['Player 1', 'Player 2'];
   /** set when the server hands this seat to a newer connection — stop rendering game UI */
   dead = false;
+  /**
+   * The formation the OPPONENT is building right now, before they commit it
+   * (server/rooms.ts Room.building). The digital stand-in for watching someone
+   * slide units into columns across the table — playtest ask, 2026-08-20.
+   * Cleared by any real action, because the declaration supersedes it.
+   */
+  building: { cols: EntityId[][]; send: EntityId[] } | null = null;
+  /** the last payload we sent, so a re-render does not re-send it */
+  private sentBuilding = '';
   ws: WebSocket;
   private wantSeat: Seat | null;
   private mode?: string;
@@ -84,13 +93,33 @@ class NetBackend implements Backend {
       mode: this.mode, els: this.els, ...(deck ? { deck: deck.cards } : {}),
     }));
   }
-  do(a: Action): void { this.ws.send(JSON.stringify({ t: 'action', action: a })); }
+  do(a: Action): void {
+    this.sentBuilding = '';                       // a real action resets the relay
+    this.ws.send(JSON.stringify({ t: 'action', action: a }));
+  }
+  /** publish the formation being built (no-op when nothing changed) */
+  sendBuilding(cols: EntityId[][], send: EntityId[]): void {
+    const payload = JSON.stringify({ t: 'building', cols, send });
+    if (payload === this.sentBuilding || this.ws.readyState !== WebSocket.OPEN) return;
+    this.sentBuilding = payload;
+    this.ws.send(payload);
+  }
   undo(): void { this.ws.send(JSON.stringify({ t: 'undo' })); }
   private onMsg(m: {
     t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
     events?: { msg: string; type?: EventType }[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
     clock?: ClockSnap; waiting?: { have: [boolean, boolean] }; names?: [string, string];
+    cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
   }): void {
+    // the opponent moved a unit into (or out of) a column they are still
+    // building — presentation only, no state, no log
+    if (m.t === 'building') {
+      const cols = (m.cols ?? []).filter(c => c.length);
+      this.building = cols.length || m.send?.length
+        ? { cols: m.cols ?? [], send: m.send ?? [] } : null;
+      render();
+      return;
+    }
     if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };
     if (m.names) this.names = m.names;
     if (m.t === 'joined') {
@@ -99,13 +128,14 @@ class NetBackend implements Backend {
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? [false, false]; uiError = ''; render(); return; }
       this.waiting = null;
       this.state = m.view!;
+      this.building = m.building ?? null;   // reconnect mid-declaration
       this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
       this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
       resetUi(); uiError = ''; render(); return;
     }
     if (m.t === 'update') {
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? this.peers; render(); return; }
-      if (m.view) this.state = m.view;
+      if (m.view) { this.state = m.view; this.building = null; }   // a real action supersedes
       if (m.log) { this.log = m.log; this.logTypes = m.log.map(() => undefined); }   // full resync (undo shrank it)
       if (m.events) for (const e of m.events) { this.log.push(e.msg); this.logTypes.push(e.type); }
       if (m.legal) this.legal = m.legal;
@@ -781,6 +811,10 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   }
   for (const col of ui.columns) col.forEach(id => inFormation.add(id));
   ui.send.forEach(id => inFormation.add(id));
+  // …and the ones the OPPONENT is sliding in right now: they should leave
+  // their region the moment they are placed, so the move is visible
+  for (const col of NET?.building?.cols ?? []) col.forEach(id => inFormation.add(id));
+  (NET?.building?.send ?? []).forEach(id => inFormation.add(id));
 
   const here = Object.values(s.entities).filter(en =>
     (en.kind === 'unit' || en.kind === 'spellToken') && !en.absent &&
@@ -1338,6 +1372,9 @@ function battleHtml(): string {
   const A = h.state.players[b.attacker]!.name, D = h.state.players[b.defender]!.name;
 
   if (b.step === 'declare') {
+    // the seat that is NOT declaring watches it happen (playtest 2026-08-20:
+    // "it'd be cool to see their thought process… live")
+    if (NET && b.attacker !== NET.seat) return watchingHtml(A, 'is choosing an attack');
     const cols = ui.columns.map((col, ci) => colBuilderHtml(col, ci)).join('');
     const extra = colBuilderHtml([], ui.columns.length);
     return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} declares an attack — round ${b.round}${b.attackerPool ? ' (sent units only)' : ''}</h3>
@@ -1355,8 +1392,9 @@ function battleHtml(): string {
   // (.bhalf.top is column-reverse, so the FIRST unit — the front — hugs the line)
   const attackCols = b.columns.map((col, ci) => {
     const blockers = b.blocks[ci] ?? [];
-    const blockBuild = (b.step === 'blocks') ? blockBuilderHtml(ci) :
-      blockers.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('');
+    const blockBuild = b.step === 'blocks'
+      ? (!NET || b.defender === NET.seat ? blockBuilderHtml(ci) : pendingColHtml(NET.building?.cols[ci] ?? []))
+      : blockers.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('');
     const atkSide = col.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('') || '<div class="slot">gone</div>';
     const blkSide = blockBuild || '<div class="slot">unblocked</div>';
     const top = flip ? blkSide : atkSide;
@@ -1374,10 +1412,15 @@ function battleHtml(): string {
       ? cardHtml(en.card, { stats: 'X=' + en.x, selected: true, data: `data-act="token" data-id="${en.id}"` })
       : unitHtml(en, { selected: true });
   };
+  const iBlock = !NET || b.defender === NET.seat;
   const sendZone = (b.step === 'blocks' && b.round === 1)
-    ? `<div class="col"><div class="collabel">send to counterattack</div>
-        ${ui.send.map(sendEntHtml).join('')}
-        <div class="slot ${ui.carrying ? 'open' : ''}" data-act="sendslot">send</div></div>`
+    ? (iBlock
+      ? `<div class="col"><div class="collabel">send to counterattack</div>
+          ${ui.send.map(sendEntHtml).join('')}
+          <div class="slot ${ui.carrying ? 'open' : ''}" data-act="sendslot">send</div></div>`
+      : (NET?.building?.send?.length
+        ? `<div class="col"><div class="collabel">being sent to counterattack</div>
+            ${pendingColHtml(NET.building.send)}</div>` : ''))
     : '';
   const stepLabel: Record<string, string> = {
     attackWindow: 'response window (attack)', blocks: `${esc(D)} declares blocks & counterattackers`,
@@ -1385,6 +1428,37 @@ function battleHtml(): string {
   };
   return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>
     <div class="cols">${attackCols}${sendZone}</div></div>`;
+}
+
+/**
+ * The opponent's half-built column, read-only: the units they have slid into
+ * place so far. Inert — not clickable, not targetable — and marked `pending`
+ * so it never reads as a committed declaration.
+ */
+function pendingColHtml(col: EntityId[]): string {
+  const cards = col.map(id => {
+    const u = h.state.entities[id];
+    return u ? unitHtml(u, { inert: true }) : '';
+  }).join('');
+  return cards ? `<div class="pendingcol">${cards}</div>` : '<div class="slot">…</div>';
+}
+
+/** the whole battle panel while the OTHER seat declares: their formation as
+ * it is being built, with nothing of mine to click */
+function watchingHtml(who: string, doing: string): string {
+  const cols = (NET?.building?.cols ?? []).filter(c => c.length);
+  const sending = NET?.building?.send ?? [];
+  const body = cols.length
+    ? `<div class="cols">${cols.map((col, ci) =>
+        `<div class="col"><div class="collabel">column ${ci + 1}</div>${pendingColHtml(col)}</div>`).join('')}</div>`
+    : '<div style="color:var(--dim)">nothing placed yet…</div>';
+  const sent = sending.length
+    ? `<div class="collabel">sending to counterattack</div>
+       <div class="cols"><div class="col">${pendingColHtml(sending)}</div></div>` : '';
+  return `<div class="battle watching"><h3>${txtIcon('battle', '[battle]')} ${esc(who)} ${esc(doing)}…
+      <span class="livedot">● live</span></h3>
+    <div style="color:var(--dim);margin-bottom:6px">You are watching them build it — nothing is committed until they confirm.</div>
+    ${body}${sent}</div>`;
 }
 
 function colBuilderHtml(col: EntityId[], ci: number): string {
@@ -1979,6 +2053,7 @@ function renderNow(): boolean {
   maybeAutopass();
   maybeAutoYield();
   maybeCancelChain();
+  publishBuilding();
   // judge input: submit on Enter, survive re-renders mid-typing
   const jq = document.getElementById('judge-q') as HTMLInputElement | null;
   if (jq) {
@@ -2132,6 +2207,22 @@ function hoverArrowsFor(target: HTMLElement): ArrowSpec[] | null {
     if (it.sourceId === id) out.push({ from: [me], to: [`.stackitem[data-anim="s${it.id}"]`], cls: 'src' });
   }
   return out.length ? out : null;
+}
+
+/**
+ * Show the opponent what I am building, while I build it.
+ *
+ * Only during MY declaration step — outside it there is nothing being built,
+ * and an empty payload is how the other client learns I have cleared it.
+ * NetBackend.sendBuilding de-duplicates, so calling this from every render is
+ * one message per actual change.
+ */
+function publishBuilding(): void {
+  if (!NET) return;
+  const b = h.state.battle;
+  const mine = !!b && ((b.step === 'declare' && b.attacker === NET.seat)
+    || (b.step === 'blocks' && b.defender === NET.seat));
+  NET.sendBuilding(mine ? ui.columns.filter(c => c.length) : [], mine ? ui.send : []);
 }
 
 /** the judge question being typed (survives server-push re-renders) */

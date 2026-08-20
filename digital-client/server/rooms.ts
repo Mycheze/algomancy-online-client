@@ -53,10 +53,29 @@ export interface Room {
   clockStamp: number;
   /** which seats' clocks have been RUNNING since clockStamp */
   clockRun: [boolean, boolean];
+  /**
+   * The formation a seat is CURRENTLY BUILDING, before they commit it.
+   *
+   * Not a game action and never in `actions`: it is the digital stand-in for
+   * watching someone physically slide units into columns across the table
+   * (playtest ask, 2026-08-20 — "it'd be cool to see their thought process
+   * and see where they're putting the units, live"). Purely presentational,
+   * leaks nothing (the declaration becomes public a moment later anyway), and
+   * dropped the instant any action lands, because the real declaration
+   * supersedes it. Held on the room, not just relayed, so a reconnecting or
+   * re-rendering client picks it up without waiting for the next twitch.
+   */
+  building: [Formation | null, Formation | null];
 }
 
-/** Chess-clock starting bank per player (40 minutes). */
-export const CLOCK_START_MS = 40 * 60 * 1000;
+/** an uncommitted attack/block declaration: columns of entity ids, plus the
+ * counterattackers being set aside (round-1 blocks) */
+export interface Formation { cols: number[][]; send: number[] }
+
+/** Chess-clock starting bank per player. 40 minutes ran out mid-game in the
+ * playtests — a draft game with real decisions wants an hour (Bena,
+ * 2026-08-20). Persisted games keep whatever bank they were saved with. */
+export const CLOCK_START_MS = 60 * 60 * 1000;
 
 /** Which seats' clocks should run right now: the game is waiting on a seat
  * iff it has at least one legal action (covers pending decisions, priority,
@@ -203,6 +222,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     code, seed, mode, els: trio, decks, names, state, actions: [], events, sockets: [null, null],
     deploySnapshot: null, heldDeploy: [[], []], deployStartIndex: -1,
     clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
+    building: [null, null],
   };
   rooms.set(code, room);
   persist(room);
@@ -338,6 +358,7 @@ export function restoreRooms(): void {
         sockets: [null, null], deploySnapshot, heldDeploy, deployStartIndex,
         // nobody is connected right after a restart, so no clock runs yet
         clockMs, clockStamp: Date.now(), clockRun: [false, false],
+        building: [null, null],
       });
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions)`);
     } catch (err) {
