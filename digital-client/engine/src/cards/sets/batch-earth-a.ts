@@ -261,7 +261,7 @@ card('Enigmatic Warder', {
     type: 'activated', cost: { mana: 2 },
     label: '[two]: change a target of target effect to me',
     effect: {
-      targets: { what: 'stackSpell', prompt: 'Enigmatic Warder: change a target of target effect to me' },
+      targets: { what: 'stackEffect', prompt: 'Enigmatic Warder: change a target of target effect to me' },
       run: (g, ctx) => {
         const t = ctx.targets[0];
         if (!t || !('stack' in (t as object))) return;
@@ -402,7 +402,7 @@ card('Graxxlid', {
     type: 'activated', cost: { mana: 1 }, bounded: true,   // [once]
     label: "[one]: negate target effect targeting me; its controller draws",
     effect: {
-      targets: { what: 'stackSpell', prompt: 'Graxxlid: negate target effect targeting me' },
+      targets: { what: 'stackEffect', prompt: 'Graxxlid: negate target effect targeting me' },
       run: (g, ctx) => {
         const t = ctx.targets[0];
         if (!t || !('stack' in (t as object))) return;

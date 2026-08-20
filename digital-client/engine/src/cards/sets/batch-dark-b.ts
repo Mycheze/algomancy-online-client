@@ -522,7 +522,7 @@ function eraseFromBin(g: E, seat: Seat, n: number): void {
 }
 card('Necromantic Rebuke', {
   spellEffect: {
-    targets: { what: 'stackSpell', min: 0, prompt: 'Necromantic Rebuke: negate up to one target effect' },
+    targets: { what: 'stackEffect', min: 0, prompt: 'Necromantic Rebuke: negate up to one target effect' },
     run: (g, ctx) => {
       const me = ctx.controller;
       const t = ctx.targets[0];

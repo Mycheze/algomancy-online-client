@@ -267,7 +267,20 @@ export class E {
     const region = opts.region ?? this.actionRegion(seat);
     const ctx = { seat, card: c, region, purpose: opts.purpose ?? 'play' as const };
     let total = base;
-    for (const { holder, mod } of this.costModsFor(region)) total += mod.delta(this, holder, ctx);
+    for (const { holder, mod } of this.costModsFor(region)) total += mod.delta?.(this, holder, ctx) ?? 0;
+    return Math.max(0, total);
+  }
+
+  /**
+   * R60: the LIFE half of the same layer — what playing `name` costs in life
+   * on top of its mana ("Cards played during battle gain [Pay 2 life]").
+   * Zero unless some CostMod in the region asks for it.
+   */
+  lifeToPlay(seat: Seat, name: CardName, opts: CostOpts = {}): number {
+    const region = opts.region ?? this.actionRegion(seat);
+    const ctx = { seat, card: this.card(name), region, purpose: opts.purpose ?? 'play' as const };
+    let total = 0;
+    for (const { holder, mod } of this.costModsFor(region)) total += mod.life?.(this, holder, ctx) ?? 0;
     return Math.max(0, total);
   }
 
@@ -276,6 +289,9 @@ export class E {
     // X spells: X is chosen and paid at cast (R35); castability needs only the
     // smallest legal X to be affordable (xMin, e.g. "X can't be zero" → 1)
     if (this.openMana(seat) < this.manaToPlay(seat, name, opts)) return false;
+    // R60: an unpayable LIFE tax makes the card uncastable exactly as
+    // unpayable mana does — R49's rule, so 2 life is unpayable at 2 life.
+    if (!this.canPayLife(seat, this.lifeToPlay(seat, name, opts))) return false;
     for (const [el, n] of Object.entries(affinityPips(c.cost))) {
       if (this.affinity(seat, el) < n) return false;
     }
@@ -308,6 +324,14 @@ export class E {
       ? Math.max(0, this.manaToPlay(seat, name, opts) - (c.xMin ?? 0))
       : this.manaToPlay(seat, name, opts);
     this.payMana(seat, mana);
+    // R60: the life half of the bill, charged in the same breath as the mana
+    // — before the card reaches the stack, so it cannot be responded to and
+    // negating the card does not refund it.
+    const life = this.lifeToPlay(seat, name, opts);
+    if (life > 0) {
+      this.ev('info', `${this.pname(seat)} pays ${life} life to play ${name}.`);
+      this.loseLife(seat, life, `${name} (added cost)`);
+    }
   }
 
   // ── stats & attributes (six-layer projection; layers 5-6 have no pool cards
@@ -415,6 +439,27 @@ export class E {
       if (u) for (const a of this.ownAttrs(u)) set.add(a);
     }
     return set;
+  }
+  /**
+   * R61 {Pure}: "Pure cards and cards they are interacting with ignore all
+   * other attributes." Pure is not a one-sided evasion-breaker — it switches
+   * the attribute layer off for BOTH sides of the interaction it is in, its
+   * own other attributes included (Light & Dark provisional glossary).
+   *
+   * Combat is where attributes live, so the interaction unit is the
+   * attack-column/block-column pair: one Pure card anywhere in either makes
+   * that whole exchange attribute-blind. A Pure blocker therefore blocks a
+   * Flying or Evasive column, and takes and deals damage with the
+   * Piercing / Deadly / Powerful / Swift layer switched off.
+   */
+  pure(...cols: readonly EntityId[][]): boolean {
+    for (const ids of cols) {
+      for (const id of ids) {
+        const u = this.entity(id);
+        if (u && this.ownAttrs(u).has('Pure')) return true;
+      }
+    }
+    return false;
   }
   /** combat attributes are shared vertically within a column */
   effAttrs(e: Entity): Set<string> {
@@ -1536,11 +1581,18 @@ export class E {
     if (spec.what === 'any') {
       for (const seat of this.s.regions[region]!.presentSeats) out.push({ player: seat });
     }
-    if (spec.what === 'stackSpell') {
+    if (spec.what === 'stackSpell' || spec.what === 'stackEffect') {
       for (const it of this.s.stack) {
         if (it.id === excludeStackId || it.negated) continue;
         // an ambush is a played card's effect on the stack — negatable (R22)
-        if (it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'spellToken' || it.kind === 'ambush') out.push({ stack: it.id });
+        const spellish = it.kind === 'spell' || it.kind === 'spellUnit'
+          || it.kind === 'spellToken' || it.kind === 'ambush';
+        // R60: plain "target effect" also reaches the NONSPELL effects — the
+        // triggered and activated abilities, and a virus being applied. Only a
+        // 'unit' on its way into play is neither (it is not an effect at all).
+        const effectish = spellish || it.kind === 'triggered'
+          || it.kind === 'activated' || it.kind === 'virus';
+        if (spec.what === 'stackSpell' ? spellish : effectish) out.push({ stack: it.id });
       }
     }
     // R41: the cache is PUBLIC, so BOTH players' caches are legal targets
@@ -2595,8 +2647,11 @@ export class E {
     } finally { this.pumping = false; }
   }
 
-  private scheduled(colIds: EntityId[], sub: 'Swift' | 'normal' | 'Sluggish'): boolean {
-    const attrs = this.colAttrs(colIds);
+  private scheduled(colIds: EntityId[], sub: 'Swift' | 'normal' | 'Sluggish',
+    suppressed = false): boolean {
+    // R61 {Pure}: an attribute-blind exchange has no Swift or Sluggish in it,
+    // so it strikes in the normal sub-step whatever the column is printed with
+    const attrs = suppressed ? new Set<string>() : this.colAttrs(colIds);
     if (sub === 'Swift') return attrs.has('Swift');
     if (sub === 'Sluggish') return attrs.has('Sluggish');
     return !attrs.has('Swift') && !attrs.has('Sluggish');
@@ -2609,6 +2664,9 @@ export class E {
     // for R48 {Blessed}, the seat the life gain is owed to
     const perUnit = new Map<EntityId, {
       pool: number; poisonous: boolean; resonant: boolean;
+      /** R61 {Pure}: this damage came out of an attribute-blind exchange, so
+       * the VICTIM's Vulnerable is switched off for it too */
+      pure?: boolean;
       blessedTo?: Seat; blessedFrom?: string;
     }>();
     const deadlyHit = new Set<EntityId>();   // R21: any damage from a Deadly column kills
@@ -2637,7 +2695,7 @@ export class E {
     // receives double, so half the pool is lethal and the pre-double remainder
     // pierces through sooner (R23); Deadly caps lethal at 1 (R21).
     const assign = (ids: EntityId[], amount: number, srcAttrs: Set<string>,
-      src: { dealer: Seat; key: string; label: string }): number => {
+      src: { dealer: Seat; key: string; label: string }, pure = false): number => {
       const deadly = srcAttrs.has('Deadly');
       const poisonous = srcAttrs.has('Poisonous');
       const resonant = srcAttrs.has('Resonant');
@@ -2646,7 +2704,7 @@ export class E {
       for (const id of ids) {
         const u = this.entity(id);
         if (!u || remaining <= 0) continue;
-        const mult = this.effAttrs(u).has('Vulnerable') ? 2 : 1;
+        const mult = (!pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
         const prev = perUnit.get(id)?.pool ?? 0;
         const [, t] = this.effStats(u);
         const recvCap = Math.max(0, t - u.damage - prev * mult);   // received still needed to kill
@@ -2656,6 +2714,7 @@ export class E {
         if (a > 0) {
           const cur = perUnit.get(id) ?? { pool: 0, poisonous, resonant };
           cur.pool += a; cur.poisonous = poisonous; cur.resonant = resonant;
+          if (pure) cur.pure = true;
           if (blessedTo !== undefined) { cur.blessedTo = blessedTo; cur.blessedFrom = src.label; }
           perUnit.set(id, cur);
           if (deadly) deadlyHit.add(id);
@@ -2675,14 +2734,18 @@ export class E {
       const atk = alive(atkCol);
       const blockedEver = b.blocks[ci] !== undefined;
       const blk = blockedEver ? alive(b.blocks[ci]!) : [];
+      // R61 {Pure}: one Pure card in either column blinds the whole exchange
+      // to attributes — both sides', in both directions.
+      const pure = this.pure(atk, blk);
+      const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);
       // attacker side
-      if (atk.length && this.scheduled(atk, sub)) {
-        const atkAttrs = this.colAttrs(atk);
+      if (atk.length && this.scheduled(atk, sub, pure)) {
+        const atkAttrs = attrsOf(atk);
         const pow = dealtPower(atk, atkAttrs);
         const src = { dealer: b.attacker, key: `atk:${ci}`, label: colLabel(atk) };
         let toPlayer = 0;
         if (blk.length) {
-          const left = assign(blk, pow, atkAttrs, src);
+          const left = assign(blk, pow, atkAttrs, src, pure);
           if (atkAttrs.has('Piercing')) toPlayer = left;
         } else if (blockedEver) {
           // blocked stays blocked: only Piercing carries through dead blockers
@@ -2697,10 +2760,10 @@ export class E {
         }
       }
       // blocker side
-      if (blk.length && this.scheduled(blk, sub)) {
-        const blkAttrs = this.colAttrs(blk);
+      if (blk.length && this.scheduled(blk, sub, pure)) {
+        const blkAttrs = attrsOf(blk);
         const src = { dealer: b.defender, key: `blk:${ci}`, label: colLabel(blk) };
-        const left = assign(atk, dealtPower(blk, blkAttrs), blkAttrs, src);
+        const left = assign(atk, dealtPower(blk, blkAttrs), blkAttrs, src, pure);
         if (blkAttrs.has('Piercing') && left > 0) {
           playerHits.push({ seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label });
           if (blkAttrs.has('Thieving')) thievingDraw[b.defender] = (thievingDraw[b.defender] ?? 0) + 1;
@@ -2713,7 +2776,7 @@ export class E {
     for (const [id, hit] of perUnit) {
       const u = this.entity(id);
       if (!u) continue;
-      const mult = this.effAttrs(u).has('Vulnerable') ? 2 : 1;
+      const mult = (!hit.pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
       const received = hit.pool * mult;
       if (received <= 0) continue;
       // R48 {Blessed}: the gain is on the same game-state check as the damage

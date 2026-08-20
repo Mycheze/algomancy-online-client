@@ -284,7 +284,7 @@ card-name lookup must never treat them as two things.
 | `{Blessed}` | Damage dealt by a blessed source causes its controller to gain that much life. | Blessed Thing, Flzzz, Godray, Hammer of Justice, Shib |
 | `{Afflicting}` | When an afflicting source kills one or more units, those units' controllers gain a rot. | Umbral Decay |
 | `{Lethal}` | Any combat damage from a lethal unit will kill a player. | Gublin |
-| `{Pure}` | Pure cards and cards they are interacting with ignore all other attributes. | Just a Unit — **PARKED**, see below |
+| `{Pure}` | Pure cards and cards they are interacting with ignore all other attributes. | Just a Unit — **LIVE** (R61), see below |
 | `{Modular}` | You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs. | Spellbind |
 
 **Blessed** is lifelink, and it is *simultaneous*: Caleb, 2024-09-15 — *"Simultaneous"*;
@@ -307,11 +307,16 @@ Lethal still kills.
 2025-02-07: *"spellbind is an additional cost so it shows up on the stack with all it's
 mods"*, and a copy of the spell would copy the mods too.
 
-**`{Pure}` is PARKED** (Bena's standing precedent). It needs the attribute-suppression
-layer already parked for the base-set cards Monke, Suppression Field and Transmogrifant,
-and Pure's bidirectional "and cards they are interacting with" variant is needed by
-nothing else. `Just a Unit` registers with its printed body and a `todo` test, exactly like
-those three. Revisit if a suppression-layer session ever happens.
+**`{Pure}` is LIVE as of R61** — the parking call above turned out to be wrong, and it is
+worth saying why. It was parked because it looked like it needed the attribute-suppression
+layer still parked for Monke, Suppression Field and Transmogrifant. It does not: those
+suppress a card's attributes *globally and durably*, whereas Pure is scoped to a single
+**interaction** and switches both sides of it off at once. Combat already resolves per
+attack-column/block-column pair — which is exactly that interaction — so Pure needed no new
+layer, just the existing choke points (`E.pure`). Playtest DEYK reopened it: "Pure units
+should be able to block evasive or flying units". Still parked: Pure outside combat.
+
+The other three are genuinely different and stay parked.
 
 ---
 
@@ -326,10 +331,12 @@ provisional local errata, 2026-08-19.
 
 ## Deliberately out of scope
 
-- `{Pure}` / attribute suppression (above).
-- The general cost-modifier layer. `Deferral Drone` ("the next card you play this turn
-  costs `[3]` less") needs a narrow version of the parked layer; implement the narrow case
-  only if it falls out cheaply, otherwise park the card and say so.
+- Attribute suppression proper (Monke, Suppression Field, Transmogrifant) —
+  `{Pure}` is done and needed none of it (above).
+- ~~The general cost-modifier layer.~~ Delivered in two halves: mana in R59
+  (Tranquility) and life in R60 (Arbiter of Armistice). `Deferral Drone` ("the next card
+  you play this turn costs `[3]` less") is still parked — it wants a *consumable*
+  modifier, which neither half is.
 - Multiplayer prophecy counting (per-player turn vs table round) — 1v1 only, so
   unambiguous here.
 

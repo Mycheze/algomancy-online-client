@@ -14,7 +14,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E } from '../src/engine.ts';
+import { E, IllegalAction } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import type { EntityId, Seat } from '../src/types.ts';
 import {
@@ -309,6 +309,40 @@ test('Hush Mush: negates target effect; that controller gains control of the spa
   assert.deepEqual(effStats(h, atk), [1, 1], 'no buff landed');
   finishBattle(h);
   assert.ok(unitsOf(h, A).some(u => u.card === 'Hush Mush'), "regroup sent it to A's side");
+});
+
+test('Hush Mush: "target effect" reaches a TRIGGERED ability, "target SPELL effect" does not', () => {
+  // R60, playtest DEYK: "I'm not able to cast Hush Mush for some reason right
+  // now. Tho I have priority and there's an effect I want to negate." The
+  // effect was an attack trigger, and the engine had mapped every "target
+  // effect" onto spells only.
+  const h = new Harness(2330);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const herald = spawn(h, A, 'Warbloom Herald');     // "When I attack or block, …"
+  giveResources(h, D, 'wood', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[herald]] });
+  const trig = h.state.stack[0]!;
+  assert.equal(trig.kind, 'triggered', 'an attack trigger, not a spell, is on the stack');
+  assert.equal(h.state.priority, D, 'the defender responds first');
+  // the spell-only negate cannot see it…
+  giveResources(h, D, 'water', 6);
+  const dd = give(h, D, 'Dreadwave Devourer');
+  assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: dd }), IllegalAction,
+    '"target spell effect" still means spells only');
+  // …but plain "target effect" can
+  const hm = give(h, D, 'Hush Mush');
+  assert.ok(h.legal(D).some(a => a.type === 'playCard' && a.handIndex === hm),
+    'Hush Mush is offered against a triggered ability');
+  h.do({ type: 'playCard', seat: D, handIndex: hm });
+  pick(h, { stack: trig.id });
+  pass(h); pass(h);                                   // Hush Mush resolves
+  assert.ok(h.state.stack.find(i => i.id === trig.id)!.negated, 'the trigger is negated');
+  pass(h); pass(h);                                   // the spawn handoff
+  pass(h); pass(h);                                   // the negated trigger comes off
+  assert.deepEqual(effStats(h, herald), [1, 1], 'the +1/+0 never landed');
+  finishBattle(h);
 });
 
 test('Inspiration: +2/+2 to your units adjacent to it in formation (and only there)', () => {

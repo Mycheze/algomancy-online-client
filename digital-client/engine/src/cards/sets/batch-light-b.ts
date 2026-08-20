@@ -181,7 +181,7 @@ card('Debt Blep', {
 // (the engine rolls back to the part boundary on suspension).
 card('Divine Intervention', {
   spellEffect: {
-    targets: { what: 'stackSpell', prompt: 'Divine Intervention: change the targets of target effect' },
+    targets: { what: 'stackEffect', prompt: 'Divine Intervention: change the targets of target effect' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;

@@ -767,3 +767,100 @@ bill.
 Still parked for want of more than this layer: **Crevice Lurker** and the
 "choosing not to pay prevents the ability from triggering" shape, which needs a
 pay-to-trigger hook on every trigger entering the stack, not just a price.
+
+## R60 — "Target effect" vs "target spell effect", and the life half of the cost layer
+
+*(Playtest round 8, 2026-08-20, room DEYK.)*
+
+### The targeting half
+
+Two reports, one root. *"I'm not able to cast Hush Mush for some reason right
+now. Tho I have priority and there's an effect I want to negate."* The effect
+was **Warbloom Herald's attack trigger**, and every negate in the engine mapped
+onto one target kind — `stackSpell`, which is spells, spell units, spell tokens
+and ambushes.
+
+The card set draws the line itself, and drew it in the other place:
+
+| printed wording | cards |
+|---|---|
+| "target **spell** effect" | Dreadwave Devourer, Null Drone, Dream Lapse |
+| "target **nonspell** effect" | Nothyr |
+| "target effect" | Hush Mush, Dematerialize, Boon of Protection, Graxxlid, Enigmatic Warder, Gravitational Correction, Soul Tithe, Divine Intervention, Necromantic Rebuke, Frosted Denial |
+
+Both qualifiers are dead words if plain "effect" means only spells — "nonspell
+effect" would name the empty set, and three cards would be saying "spell"
+twice. So **plain "effect" is the superset**, and `TargetSpec.what` now has two
+members:
+
+- `stackSpell` — spell / spell unit / spell token / ambush. Unchanged, and
+  still what the three cards that say "spell effect" use.
+- `stackEffect` — all of those **plus** triggered abilities, activated
+  abilities and a Virus being applied.
+
+A **unit** on the stack is in neither: a unit arriving in play is not an
+effect, and there are no parts to negate.
+
+The ten unqualified cards moved to `stackEffect`. That is a real widening —
+Boon of Protection can answer a trigger now, Divine Intervention can redirect
+one — and it is what they print.
+
+Nothyr keeps its resolution-time `ctx.choose` over the nonspell items rather
+than a `stackNonspell` spec: it is still slightly stronger than printed
+(the pick cannot be responded to) and nothing new asks for the third spec.
+
+### The life half
+
+*"I didn't have to pay 2 life from Arbiter of Armistice's ability when casting
+a spell during battle (but I should have had to do it)."* Correct — the card
+was parked because R59 brought in only the **mana** half of the cost layer.
+
+`CostMod.life` is the other half, radiating on exactly the same rules (R59,
+R12). `E.lifeToPlay` is its authority, `E.canPayCard` gates on it, and
+`E.payCard` charges it in the same breath as the mana — before the card reaches
+the stack, so it cannot be responded to and negating the card does not refund
+it. An unpayable life tax makes a card uncastable exactly as unpayable mana
+does, under R49's rule: you may pay N life only while you have **more** than N,
+so 2 life is unpayable at 2 life.
+
+**Arbiter of Armistice** ("Cards played during battle gain [Pay 2 life]") is
+live, scoped as printed: *cards*, so a unit played in battle is taxed too;
+*played*, so applying a mod is exempt (R37); *during battle*, so the haste step
+and deployment are free; and unqualified, so it taxes **everyone** in its
+region including its own controller.
+
+## R61 — {Pure}: the attribute layer, switched off for one interaction
+
+*(Playtest round 8, 2026-08-20, room DEYK.)*
+
+*"Pure units should be able to block evasive or flying units."*
+
+`{Pure}` was parked by standing precedent (docs/08) on the assumption that it
+needed the general attribute-**suppression** layer still parked for Monke,
+Suppression Field and Transmogrifant. It does not, and that was the whole
+mistake: those suppress a card's attributes globally and durably, whereas Pure
+is scoped to a single **interaction** and switches *both* sides of it off at
+once — "Pure cards and cards they are interacting with ignore all other
+attributes", its own other attributes included.
+
+Combat is where attributes live, and combat already resolves per
+**attack-column / block-column pair**, which is exactly that interaction. So
+Pure lives at those choke points (`E.pure`), not in a suppression layer:
+
+- **Declaring blocks** — one Pure card in either column and neither evasion
+  rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A
+  Pure unit's own Feeble does not stop it blocking, either.
+- **Alluring** — a Pure blocker is "able" against anything, so it can be
+  compelled; and an Alluring column that is *itself* Pure ignores its own
+  Alluring and compels nobody.
+- **Combat damage** — both columns' attribute sets are empty for that
+  exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,
+  Afflicting or Thieving, and the victim's Vulnerable is off too. With no
+  Swift or Sluggish in it, the exchange strikes in the normal sub-step.
+
+Stats are not attributes: a Pure 2/3 still dies to 3 damage.
+
+**Not covered:** interactions outside combat. A spell targeting a Pure unit
+does not currently blind itself to that unit's attributes — no pool card needs
+it, and the general "any interaction" form still wants the parked suppression
+layer.

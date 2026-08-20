@@ -868,14 +868,23 @@ export function unmetAllure(
   for (const [ci, atkCol] of b.columns.entries()) {
     const live = atkCol.filter(id => e.entity(id));
     if (!live.length) continue;
-    const atkAttrs = e.colAttrs(live);
+    // R61 {Pure}: an Alluring column that is itself Pure ignores its own
+    // other attributes — Alluring included — so it compels nobody.
+    const atkPure = e.pure(live);
+    const atkAttrs = atkPure ? new Set<string>() : e.colAttrs(live);
     if (!atkAttrs.has('Alluring')) continue;
     if ((blocks[ci] ?? []).length) continue;                    // this one IS blocked
+    const isPure = (id: EntityId): boolean => e.pure([id]);
     const free = e.unitsIn(b.region).filter(u =>
       u.controller === seat && u.kind === 'unit' && !u.absent && !spokenFor.has(u.id)
-      && !e.ownAttrs(u).has('Feeble')
-      && !(atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying')));
-    if (free.length >= (atkAttrs.has('Evasive') ? 2 : 1)) {
+      // a Pure unit is able against anything: joining the column blinds the
+      // exchange, so neither its own Feeble nor the column's Flying stops it
+      && (isPure(u.id) || (!e.ownAttrs(u).has('Feeble')
+        && !(atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying')))));
+    // Evasive wants two blockers — unless one of the free ones is Pure, which
+    // switches Evasive off and lets it discharge the duty alone
+    const need = (atkAttrs.has('Evasive') && !free.some(u => isPure(u.id))) ? 2 : 1;
+    if (free.length >= need) {
       return e.entity(live[0]!)?.card ?? 'that attacker';
     }
   }
@@ -889,7 +898,11 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
   // R20: a lone Sneaky attacker (the only attacking unit) cannot be blocked
   const atkUnits = b.columns.flat().filter(id => e.entity(id));
   if (atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky')) {
-    e.need(Object.keys(blocks).length === 0, 'a lone Sneaky attacker cannot be blocked');
+    // R61 {Pure}: Sneaky is an attribute like any other, so a Pure blocker
+    // sees straight through it — the interaction blinds both sides.
+    const blockingWith = Object.values(blocks).flat();
+    e.need(blockingWith.length === 0 || e.pure(atkUnits, blockingWith),
+      'a lone Sneaky attacker cannot be blocked');
   }
   for (const [ciStr, col] of Object.entries(blocks)) {
     const ci = Number(ciStr);
@@ -901,11 +914,17 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
       e.need(u && u.kind === 'unit' && u.controller === seat && !u.absent, 'not your unit');
       e.need(u.region === b.region, 'that unit is in another region');
       e.need(!used.has(id), 'a unit can only block in one column');
-      // Feeble: can't block (own/augment attrs — a Feeble unit never joins a blocking column)
-      e.need(!e.ownAttrs(u).has('Feeble'), 'Feeble units cannot block');
+      // Feeble: can't block (own/augment attrs — a Feeble unit never joins a
+      // blocking column). R61: a Pure card ignores its OWN other attributes
+      // too, so Pure+Feeble blocks.
+      e.need(!e.ownAttrs(u).has('Feeble') || e.ownAttrs(u).has('Pure'),
+        'Feeble units cannot block');
       used.add(id);
     }
-    const atkAttrs = e.colAttrs(atkCol.filter(id => e.entity(id)));
+    // R61 {Pure}: one Pure card in either column switches the attribute layer
+    // off for this whole exchange, so neither evasion rule survives it.
+    const pure = e.pure(atkCol, col);
+    const atkAttrs = pure ? new Set<string>() : e.colAttrs(atkCol.filter(id => e.entity(id)));
     // Flying: only a flying column can block a flying column
     if (atkAttrs.has('Flying')) e.need(e.colAttrs(col).has('Flying'), 'only flying units can block flying units');
     // Evasive: requires two blockers
@@ -1180,24 +1199,34 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
         || !unmetAllure(e, seat, a.blocks, a.send ?? []);
       out.push({ type: 'declareBlocks', seat, blocks: {} });
       const mine = e.unitsOf(seat, b.region);
-      const blockers = mine.filter(u => !e.ownAttrs(u).has('Feeble'));   // Feeble can't block
-      // R20: a lone Sneaky attacker cannot be blocked at all
+      // Feeble can't block — unless it is also Pure, which ignores its own
+      // other attributes (R61)
+      const blockers = mine.filter(u => !e.ownAttrs(u).has('Feeble') || e.pure([u.id]));
+      // R20: a lone Sneaky attacker cannot be blocked at all — R61: except by
+      // a Pure blocker, which is blind to Sneaky like every other attribute
       const atkUnits = b.columns.flat().filter(id => e.entity(id));
       const sneakyAlone = atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky');
-      if (!sneakyAlone) b.columns.forEach((atkCol, ci) => {
-        const atkAttrs = e.colAttrs(atkCol.filter(id => e.entity(id)));
+      b.columns.forEach((atkCol, ci) => {
+        const live = atkCol.filter(id => e.entity(id));
+        const rawAttrs = e.colAttrs(live);
+        // this exchange's attrs depend on WHO blocks, so they are resolved per
+        // candidate column rather than once for the attacker
+        const attrsWith = (ids: EntityId[]) =>
+          e.pure(live, ids) ? new Set<string>() : rawAttrs;
         for (const u of blockers) {
+          const atkAttrs = attrsWith([u.id]);
+          if (sneakyAlone && atkAttrs.has('Sneaky')) continue;
           if (atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying')) continue;
           if (atkAttrs.has('Evasive')) continue;   // needs 2; single-blocker option invalid
           out.push({ type: 'declareBlocks', seat, blocks: { [ci]: [u.id] } });
         }
-        if (atkAttrs.has('Evasive') || !atkAttrs.has('Flying')) {
-          for (let i = 0; i < blockers.length; i++) {
-            for (let j = i + 1; j < blockers.length; j++) {
-              const pair = [blockers[i]!.id, blockers[j]!.id];
-              if (atkAttrs.has('Flying') && !e.colAttrs(pair).has('Flying')) continue;
-              out.push({ type: 'declareBlocks', seat, blocks: { [ci]: pair } });
-            }
+        for (let i = 0; i < blockers.length; i++) {
+          for (let j = i + 1; j < blockers.length; j++) {
+            const pair = [blockers[i]!.id, blockers[j]!.id];
+            const atkAttrs = attrsWith(pair);
+            if (atkAttrs.has('Flying') && !e.colAttrs(pair).has('Flying')) continue;
+            if (sneakyAlone && atkAttrs.has('Sneaky')) continue;
+            out.push({ type: 'declareBlocks', seat, blocks: { [ci]: pair } });
           }
         }
       });

@@ -292,7 +292,7 @@ card('Eldritch Reclaimer', {
 card('Frosted Denial', {
   xMin: 1,   // "X can't be zero."
   spellEffect: {
-    targets: { what: 'stackSpell', prompt: 'Frosted Denial: target enemy effect (its controller may pay X)' },
+    targets: { what: 'stackEffect', prompt: 'Frosted Denial: target enemy effect (its controller may pay X)' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;

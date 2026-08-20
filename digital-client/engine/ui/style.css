@@ -76,7 +76,10 @@ button:disabled { opacity: .4; cursor: default; }
 /* battle area */
 .battle { background: var(--panel); border: 1px solid #453a26; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
 .battle h3 { margin: 0 0 8px; color: var(--accent); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
-.cols { display: flex; gap: 14px; flex-wrap: wrap; }
+/* flex-start, not the default stretch: a column is as tall as it needs to be.
+   The attack columns still line up with each other because both of their
+   halves carry the same reserved height. */
+.cols { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
 .col { display: flex; flex-direction: column; gap: 4px; align-items: center; padding: 6px;
   border: 1px dashed var(--line); border-radius: 6px; }
 .col .collabel { font-size: 10px; color: var(--dim); }
@@ -472,9 +475,23 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    against the vs line; .top is column-reverse so its FIRST child (the front
    unit) hugs the line and extra depth grows AWAY (up for the top side, down
    for the bottom) */
+/* Each half reserves exactly as many rows as the deepest column in play needs
+ * (battleHtml sets --rowstop/--rowsbot), so the fronts still meet on one
+ * shared line while an empty back row costs nothing. Two rows is only the
+ * fallback for a .cols with no vars on it. */
 .bhalf { display: flex; flex-direction: column; gap: 4px; align-items: center; width: 100%;
-  justify-content: flex-start; min-height: calc(var(--cw) * 2.8 + 4px); }
-.bhalf.top { flex-direction: column-reverse; }
+  justify-content: flex-start;
+  min-height: max(0px, calc(var(--cw) * 1.4 * var(--rows, 2) + 4px * (var(--rows, 2) - 1))); }
+.bhalf.top { flex-direction: column-reverse; --rows: var(--rowstop, 2); }
+.bhalf.bot { --rows: var(--rowsbot, 2); }
+/* a "gone" / "unblocked" / "…" marker: says the word, takes no card of room */
+.slot.ghost { height: auto; min-height: 0; padding: 2px 8px; border-style: dotted;
+  font-size: 9px; letter-spacing: .04em; opacity: .8; width: auto; min-width: var(--cw); }
+/* counterattackers run ACROSS — the one list in the panel with no 2-per-column
+   cap, so stacking it down the page was unbounded */
+.sendcol { align-items: stretch; }
+.sendrow, .pendingcol.across { display: flex; flex-direction: row; flex-wrap: wrap;
+  gap: 4px; align-items: flex-start; max-width: min(100%, calc(var(--cw) * 6 + 30px)); }
 .col .vs { margin: 4px 0; }
 
 /* #3: hovering a decision option pings the unit it refers to */

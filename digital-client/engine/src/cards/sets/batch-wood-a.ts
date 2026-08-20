@@ -139,7 +139,7 @@ card('Bioremediation', {
 // units by controller, players by seat, stack items by their controller.
 card('Boon of Protection', {
   spellEffect: {
-    targets: { what: 'stackSpell', prompt: 'Boon of Protection: negate target effect that targets an allied effect, player or unit' },
+    targets: { what: 'stackEffect', prompt: 'Boon of Protection: negate target effect that targets an allied effect, player or unit' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;
@@ -422,7 +422,7 @@ card('Hooba-Nan', {
 const HUSH_KEY = 'hushMushGiveTo';
 card('Hush Mush', {
   spellEffect: {
-    targets: { what: 'stackSpell', prompt: 'Hush Mush: negate target effect (its controller gains control of me)' },
+    targets: { what: 'stackEffect', prompt: 'Hush Mush: negate target effect (its controller gains control of me)' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;

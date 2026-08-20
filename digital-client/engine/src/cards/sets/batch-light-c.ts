@@ -55,10 +55,8 @@
  *    legal target set from card code. Registered with an inert [Augment] entry
  *    (the Stasis Sentry / Conduit of Pain precedent) so it still plays,
  *    augments and attaches crash-free as a vanilla 0/7.
- *  - Just a Unit: {Pure} is PARKED BY DECISION (docs/08 — it needs the
- *    attribute-suppression layer already parked for Monke, Suppression Field
- *    and Transmogrifant, plus Pure's bidirectional variant). Registered with
- *    its printed body; the attribute is inert.
+ *  - Just a Unit: {Pure} is LIVE as of R61 — enforced by the engine at the
+ *    combat choke points (E.pure), not by card behaviour. See the card.
  *  - Prediction Prophet (HALF): (b) the start-of-deployment TRIGGER now exists
  *    (R50) and the card hears it; (a) a "predict a number" PLAYER ACTION during
  *    the haste step, and a place in PlayerState/Entity to keep the prediction,
@@ -279,11 +277,15 @@ card('Hand Peeper', {
 
 // "{i}(Pure cards and cards they are interacting with ignore all other
 // attributes.)" — l/2 2/3 {Virus} {Pure} Spirit Unit.
-// PARKED BY DECISION (docs/08 §New attributes): {Pure} needs the
-// attribute-suppression layer already parked for Monke, Suppression Field and
-// Transmogrifant, plus Pure's bidirectional "and cards they are interacting
-// with" variant which nothing else in the pool wants. It registers with its
-// printed body and plays as a vanilla 2/3 Virus.
+// R61: {Pure} is LIVE, and it needs no card behaviour — the attribute itself
+// is the whole card, enforced by the engine (E.pure). It was parked on the
+// assumption that it wanted the general attribute-SUPPRESSION layer still
+// parked for Monke / Suppression Field / Transmogrifant, but it does not:
+// those suppress a card's attributes globally and permanently, whereas Pure
+// is scoped to one INTERACTION and switches both sides off at once. Combat
+// already resolves per attack-column/block-column pair, which is exactly that
+// unit, so Pure lives at those choke points instead. Playtest DEYK, seat 1:
+// "Pure units should be able to block evasive or flying units".
 card('Just a Unit', {});
 
 // "[Augment] Pay 5 life: I gain +3/+3 until regroup." — l/2 1/1 {Virus}

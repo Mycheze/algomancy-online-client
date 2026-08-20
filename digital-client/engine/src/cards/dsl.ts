@@ -91,7 +91,19 @@ export interface TargetSpec {
   /** 'cachedCard' (R41): a card in EITHER player's cache — the zone is public
    * information, so both are legal targets, and it is not region-scoped.
    * (Prismatic Observer: "Recall up to one target cached card".) */
-  what: 'unit' | 'allyUnit' | 'any' | 'stackSpell' | 'cachedCard';
+  /** R60 — "target effect" vs "target SPELL effect". The card set draws the
+   * line itself: three cards say "target spell effect" (Dreadwave Devourer,
+   * Null Drone, Dream Lapse) and one says "target NONSPELL effect" (Nothyr).
+   * Both qualifiers would be dead words if plain "effect" meant only spells,
+   * so plain "effect" is the SUPERSET.
+   *   'stackSpell'  — spell / spell unit / spell token / ambush. The cards
+   *                   that spell out "spell effect".
+   *   'stackEffect' — all of the above PLUS triggered and activated abilities
+   *                   and viruses: anything on the stack that is an effect.
+   *                   The cards that just say "effect".
+   * A UNIT on the stack is in neither: a unit arriving in play is not an
+   * effect, and it has no parts to negate. */
+  what: 'unit' | 'allyUnit' | 'any' | 'stackSpell' | 'stackEffect' | 'cachedCard';
   prompt: string;
   /** maximum number of targets chosen AT CAST TIME (default 1). Distinct
    * targets; the chooser gets a "done" option once `min` are picked. */
@@ -262,7 +274,16 @@ export interface CostCtx {
  * evaluation (canPayCard / payCard / manaToPlay); read raw state instead.
  */
 export interface CostMod {
-  delta: (g: E, self: Entity, ctx: CostCtx) => number;
+  delta?: (g: E, self: Entity, ctx: CostCtx) => number;
+  /**
+   * R60: extra LIFE the play costs — "Cards played during battle gain
+   * [Pay 2 life]" (Arbiter of Armistice). A separate channel from `delta`
+   * because life and mana are not interchangeable: the mana half gates on
+   * open resources, the life half on R49's canPayLife (you may pay N life
+   * only while you have MORE than N), and an unpayable life tax makes the
+   * card uncastable exactly as unpayable mana does.
+   */
+  life?: (g: E, self: Entity, ctx: CostCtx) => number;
 }
 
 export interface CardBehavior {

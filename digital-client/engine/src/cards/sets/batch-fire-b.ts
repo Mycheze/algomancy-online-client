@@ -270,7 +270,7 @@ card('Soul Swallower', {
 // draws. Paying is only offered when they have the mana.
 card('Soul Tithe', {
   spellEffect: {
-    targets: { what: 'stackSpell', prompt: "Soul Tithe: target effect is negated unless its controller pays [one]" },
+    targets: { what: 'stackEffect', prompt: "Soul Tithe: target effect is negated unless its controller pays [one]" },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;

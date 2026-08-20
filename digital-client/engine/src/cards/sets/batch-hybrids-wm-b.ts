@@ -239,7 +239,7 @@ card('Auric Ascendant', {
 // STACK — so no 'trashed' fires for the card Dematerialize answers.
 card('Dematerialize', {
   spellEffect: {
-    targets: { what: 'stackSpell', prompt: 'Dematerialize: negate target effect' },
+    targets: { what: 'stackEffect', prompt: 'Dematerialize: negate target effect' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;

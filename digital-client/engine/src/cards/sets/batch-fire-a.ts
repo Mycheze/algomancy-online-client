@@ -363,7 +363,7 @@ card('Ghord', {
 // candidates. All choices happen before any mutation.
 card('Gravitational Correction', {
   spellEffect: {
-    targets: { what: 'stackSpell', prompt: 'Gravitational Correction: change the targets of target effect' },
+    targets: { what: 'stackEffect', prompt: 'Gravitational Correction: change the targets of target effect' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;

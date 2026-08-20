@@ -12,8 +12,11 @@
  * end-to-end (Tithe Enforcer, R42/R43), the sacrifice-to-negate augment
  * (Void Mandible) and the triple-graft cause (Witness of the Crossing).
  *
+ * {Pure} (Just a Unit) is live as of R61 and tested here in all four of its
+ * combat faces: Flying, Evasive, the attribute-blind damage exchange, Deadly.
+ *
  * PARKED cards get a { todo: true } test naming exactly what is missing, plus
- * one shared crash-free registration test: Gatekeeper of Souls, Just a Unit,
+ * one shared crash-free registration test: Gatekeeper of Souls,
  * Prediction Prophet, Slurpr, Suspend.
  */
 import { test } from 'node:test';
@@ -284,11 +287,75 @@ test('Hand Peeper: R49 — at exactly 3 life the cost is unpayable and the activ
 
 // ── Just a Unit ──────────────────────────────────────────────────────────
 
-test('Just a Unit: {Pure} suppresses all other attributes', { todo: true }, () => {
-  // PARKED BY DECISION (docs/08 §New attributes): {Pure} needs the
-  // attribute-suppression layer already parked for Monke, Suppression Field
-  // and Transmogrifant, plus Pure's bidirectional "and cards they are
-  // interacting with" variant that nothing else in the pool wants.
+test('Just a Unit: {Pure} blocks a Flying column, and only it can', () => {
+  const h = new Harness(4090);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const flier = spawn(h, A, 'Ephemeral Skywalker');   // 3/1 {Flying}
+  const pure = spawn(h, D, 'Just a Unit');            // 2/3 {Virus} {Pure}
+  const ground = spawn(h, D, 'Rune Channeler');       // no Flying
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[flier]] });
+  pass(h); pass(h);
+  const offered = (id: number): boolean => h.legal(D).some(a =>
+    a.type === 'declareBlocks' && (a.blocks[0] ?? []).length === 1 && a.blocks[0]![0] === id);
+  assert.ok(offered(pure), 'the Pure blocker is offered against a Flying column');
+  assert.ok(!offered(ground), 'a plain ground unit still is not');
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [ground] } }),
+    /flying/, 'and apply() agrees with legalActions');
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [pure] } });
+  pass(h); pass(h);
+  assert.ok(!ent(h, flier), 'the 3/1 flier died to the 2/3 it could not evade');
+});
+
+test('Just a Unit: {Pure} blocks an Evasive column alone', () => {
+  const h = new Harness(4091);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const drifter = spawn(h, A, 'Curio Drifter');   // 2/2 {Evasive} — normally needs two
+  const pure = spawn(h, D, 'Just a Unit');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[drifter]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [pure] } });
+  pass(h); pass(h);
+  assert.ok(!ent(h, drifter), 'one Pure blocker was enough — Evasive was not there to see');
+});
+
+test('Just a Unit: the exchange is attribute-blind in BOTH directions', () => {
+  // Pure is not an evasion-breaker: it switches the whole attribute layer off
+  // for the interaction, so the attacker's Piercing, Blessed and Deadly are
+  // all gone too (Light & Dark provisional glossary).
+  const h = new Harness(4092);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const hammer = spawn(h, A, 'Hammer of Justice');   // 10/3 {Blessed} {Piercing}
+  const pure = spawn(h, D, 'Just a Unit');           // 2/3
+  const lifeA = h.state.players[A]!.life, lifeD = h.state.players[D]!.life;
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[hammer]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [pure] } });
+  pass(h); pass(h);
+  assert.ok(!ent(h, pure), 'the blocker still died — stats are not attributes');
+  assert.equal(h.state.players[D]!.life, lifeD, 'no Piercing: the other 7 went nowhere');
+  assert.equal(h.state.players[A]!.life, lifeA, 'no Blessed: no life gained off it either');
+});
+
+test('Just a Unit: {Pure} switches off Deadly', () => {
+  const h = new Harness(4093);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const deadly = spawn(h, A, 'Tidepool Terror');   // 1/2 {Deadly}
+  const pure = spawn(h, D, 'Just a Unit');         // 2/3
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[deadly]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [pure] } });
+  pass(h); pass(h);
+  assert.ok(ent(h, pure), 'Deadly did not kill it — 1 damage is 1 damage here');
+  assert.equal(ent(h, pure)!.damage, 1, 'it just took the 1');
+  assert.ok(!ent(h, deadly), 'and the 2/3 killed the 1/2 back');
 });
 
 // ── Life Leech ───────────────────────────────────────────────────────────

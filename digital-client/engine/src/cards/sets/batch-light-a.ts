@@ -50,8 +50,6 @@
  *  - Keeper of Tithes hears the new 'endOfHaste' event.
  *
  * PARKED (needs primitives that do not exist; each registers crash-free):
- *  - Arbiter of Armistice: "Cards played during battle gain [Pay 2 life]" is
- *    the general cost-modifier layer, explicitly out of scope in docs/08.
  *  - The Everywhere: needs a "name a card" action AND the ability-suppression
  *    layer already parked for Monke / Suppression Field / Transmogrifant.
  */
@@ -167,7 +165,21 @@ function playedFromElsewhere(ev: EngineEvent): boolean {
 // ⚠ TRANSCRIPTION: the type line carries a bare `{Switch}` — the only card in
 // the whole pool that does, and the rules text has no [Switch]/[Switch1]
 // marker to go with it. Flagged, not guessed at: no graftEffect is invented.
-card('Arbiter of Armistice', {});
+// "Cards played during battle gain [Pay 2 life]." — ll/2 2/2 {Haste}
+// {Switch} Holy Unit. R60: the life half of the cost-modifier layer (R59
+// brought the mana half in for Tranquility). Scoped exactly as printed:
+//  · "cards", not "spells" — a unit played during battle is taxed too;
+//  · "played", so applying a mod is exempt (R37 — purpose 'mod');
+//  · "during battle", so the haste step and deployment are free;
+//  · everyone's cards, not just the opponent's — including my own.
+// Region-scoped like every other cost mod (R12): the Arbiter taxes the
+// battle it is standing in, not one happening elsewhere.
+card('Arbiter of Armistice', {
+  costMods: [{
+    life: (g, _self, ctx) =>
+      (g.s.phase === 'battle' && ctx.purpose === 'play') ? 2 : 0,
+  }],
+});
 
 // "[Augment] Pay 1 life: I gain piercing until regroup." — l/3 3/4 Horror
 // Unit. An ACTIVATED ability inside the [Augment] text box: usable on the card

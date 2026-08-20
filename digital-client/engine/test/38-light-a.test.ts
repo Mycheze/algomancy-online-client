@@ -2,7 +2,8 @@
  * States are built explicitly (spawn/give/giveResources) so parallel card
  * registration cannot shift assertions; seeds are 3800-3899.
  *
- * Covers: the parked cost rider (Arbiter of Armistice), pay-life activations
+ * Covers: the life half of the cost-modifier layer (Arbiter of Armistice,
+ * R60), pay-life activations
  * (Blob of the Dark Order, Glararr, Flesh Tithe), life-movement triggers
  * (Colony of the Interworld, Shard Sprite, Triskaidekaphage, Vroot), the cache
  * (Divine Foresight's granted prophecy, Prismatic Observer's recall, Lifebound
@@ -15,7 +16,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
+import { E, IllegalAction, Suspended } from '../src/engine.ts';
 import { isGraftable } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
@@ -62,11 +63,79 @@ test('Arbiter of Armistice: registers and plays as its printed 2/2 haste body', 
   assert.ok(ent(h, arb), 'it survives an unblocked attack — nothing crashes');
 });
 
-test('Arbiter of Armistice: "cards played during battle gain [Pay 2 life]"', { todo: true }, () => {
-  // PARKED: a blanket additional cast cost on every card played in a phase is
-  // the general cost-modifier layer, explicitly out of scope in docs/08.
-  // ⚠ Also flagged: the type line prints a bare {Switch} with no matching
-  // marker in the rules text — the only such card in the pool.
+// ⚠ Still flagged: the type line prints a bare {Switch} with no matching
+// marker in the rules text — the only such card in the pool.
+
+test('Arbiter of Armistice: cards played during battle cost 2 life — everyone\'s', () => {
+  // The Arbiter taxes the battle it is STANDING IN (R12 region scoping), so
+  // these all put it in the defending seat's home region — the battle region.
+  const h = new Harness(3830);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  spawn(h, A, 'Arbiter of Armistice');
+  toNextBattle(h, D);                       // D attacks INTO A's region
+  const atk = spawn(h, D, 'Ignis Sprite');
+  h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
+  // the ATTACKER first — the tax is on cards played in battle, not on the
+  // Arbiter's opponent (playtest DEYK: "I didn't have to pay 2 life")
+  giveResources(h, D, 'fire', 4);
+  const lifeD = h.state.players[D]!.life;
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
+  assert.equal(h.state.players[D]!.life, lifeD - 2, 'the 2 life came off at cast time');
+  assert.ok(h.log.some(l => l.includes('pays 2 life to play Flame of History')),
+    'and the log says why');
+  pick(h, { player: A }); pass(h); pass(h);   // aim it, let it resolve
+  // …and the Arbiter's OWN controller pays it too ("cards", not "their cards")
+  if (h.state.priority !== A) pass(h);
+  giveResources(h, A, 'fire', 4);
+  const lifeA = h.state.players[A]!.life;
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Flame of History') });
+  assert.equal(h.state.players[A]!.life, lifeA - 2, 'its own controller is taxed as well');
+  pick(h, { player: D });
+  finishBattle(h);
+});
+
+test('Arbiter of Armistice: an unpayable life tax makes the card uncastable', () => {
+  const h = new Harness(3831);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  spawn(h, A, 'Arbiter of Armistice');
+  toNextBattle(h, D);
+  const atk = spawn(h, D, 'Ignis Sprite');
+  h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
+  giveResources(h, D, 'fire', 4);
+  const bolt = give(h, D, 'Flame of History');
+  h.state.players[D]!.life = 2;   // R49: pay N life only while you have MORE
+  assert.ok(!h.legal(D).some(a => a.type === 'playCard' && a.handIndex === bolt),
+    'not offered at exactly 2 life');
+  assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: bolt }), IllegalAction,
+    'and apply() refuses it too');
+  h.state.players[D]!.life = 3;
+  assert.ok(h.legal(D).some(a => a.type === 'playCard' && a.handIndex === bolt),
+    'one more life and it is castable again');
+});
+
+test('Arbiter of Armistice: the tax is on PLAYING, in BATTLE — not haste, not mods', () => {
+  const h = new Harness(3832);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  spawn(h, A, 'Arbiter of Armistice');
+  // deployment, same region: still free — "during battle" is a real gate
+  giveResources(h, A, 'fire', 12);
+  const life0 = h.state.players[A]!.life;
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Ignis Sprite') });
+  assert.equal(h.state.players[A]!.life, life0, 'deployment is not battle — no tax');
+  toNextBattle(h, D);
+  const atk = spawn(h, D, 'Ignis Sprite');
+  h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
+  pass(h);
+  // R37: applying a mod is not PLAYING a card, so a Virus augment is exempt
+  const target = unitsOf(h, A)[0]!;
+  giveResources(h, A, 'fire', 6);
+  const life1 = h.state.players[A]!.life;
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Smouldering Inferno'), hostId: target.id });
+  assert.equal(h.state.players[A]!.life, life1, 'a Virus augment is applied, not played');
+  finishBattle(h);
 });
 
 // ── Blob of the Dark Order ───────────────────────────────────────────────

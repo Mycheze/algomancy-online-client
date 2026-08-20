@@ -9,6 +9,7 @@ import { DECK_LIST } from '../src/cards/registry.ts';
 import {
   activationNeedsConfirm, groupReveal, playableCachedNames, shouldAutoYield, stackAbilityRows,
 } from './inspect.ts';
+import { halfRows, publishCols } from './formation.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
 import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts';
 import type { GlossEntry } from './glossary.ts';
@@ -1398,16 +1399,38 @@ function battleHtml(): string {
   // (net mode; hotseat keeps attacker-on-top). Default layout has the
   // attacker on top — flip when the viewer IS the attacker.
   const flip = NET ? NET.seat === b.attacker : false;
+  const iBlock = !NET || b.defender === NET.seat;
   // #2: fronts stay on one shared line — each side lives in a fixed-height
   // half anchored against the vs line; extra depth grows AWAY from the front
   // (.bhalf.top is column-reverse, so the FIRST unit — the front — hugs the line)
+  //
+  // playtest DEYK: "the fact that, at every point during attacks, you can see
+  // the whole column, including the back row (which might be totally empty)
+  // takes up space. All the needed slots should be shown when there's a
+  // choice to be made, but otherwise the visual space should be simplified."
+  // So the shared height is now the DEEPEST column actually in play rather
+  // than a hardcoded two rows — the fronts still line up, but a battle of
+  // one-unit columns stops reserving a second row nobody is standing in.
+  const atkRows = halfRows(b.columns.map(col => col.filter(id => h.state.entities[id])));
+  const blkCols = b.columns.map((_col, ci) => b.step === 'blocks'
+    ? (iBlock ? (ui.columns[ci] ?? []) : (NET?.building?.cols[ci] ?? []))
+    : (b.blocks[ci] ?? []));
+  // …except while you are BUILDING a block: then every slot has to be
+  // reachable, so the full depth comes back for exactly as long as the choice
+  // is yours to make.
+  const blkRows = halfRows(blkCols, b.step === 'blocks' && iBlock);
+  const topRows = flip ? blkRows : atkRows;
+  const botRows = flip ? atkRows : blkRows;
   const attackCols = b.columns.map((col, ci) => {
     const blockers = b.blocks[ci] ?? [];
     const blockBuild = b.step === 'blocks'
-      ? (!NET || b.defender === NET.seat ? blockBuilderHtml(ci) : pendingColHtml(NET.building?.cols[ci] ?? []))
+      ? (iBlock ? blockBuilderHtml(ci) : pendingColHtml(NET?.building?.cols[ci] ?? []))
       : blockers.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('');
-    const atkSide = col.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('') || '<div class="slot">gone</div>';
-    const blkSide = blockBuild || '<div class="slot">unblocked</div>';
+    // the "nothing here" markers are a thin strip, not a card-sized hole: the
+    // half already reserves the height it needs, so the label only has to say
+    // the word
+    const atkSide = col.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('') || '<div class="slot ghost">gone</div>';
+    const blkSide = blockBuild || '<div class="slot ghost">unblocked</div>';
     const top = flip ? blkSide : atkSide;
     const bottom = flip ? atkSide : blkSide;
     return `<div class="col"><div class="collabel">column ${ci + 1}</div>
@@ -1416,6 +1439,7 @@ function battleHtml(): string {
       <div class="bhalf bot">${bottom}</div>
     </div>`;
   }).join('');
+  const colsStyle = `--rowstop:${topRows};--rowsbot:${botRows}`;
   const sendEntHtml = (id: EntityId): string => {
     const en = h.state.entities[id];
     if (!en) return '';
@@ -1423,22 +1447,25 @@ function battleHtml(): string {
       ? cardHtml(en.card, { stats: 'X=' + en.x, selected: true, data: `data-act="token" data-id="${en.id}"` })
       : unitHtml(en, { selected: true });
   };
-  const iBlock = !NET || b.defender === NET.seat;
+  // counterattackers lay out ACROSS, not down — the list has no 2-per-column
+  // limit to keep it short, so stacking it vertically was the one part of the
+  // battle panel that could grow without bound ("it'd be way easier to see
+  // horizontally. We have a good amount of space to go to the right").
   const sendZone = (b.step === 'blocks' && b.round === 1)
     ? (iBlock
-      ? `<div class="col"><div class="collabel">send to counterattack</div>
-          ${ui.send.map(sendEntHtml).join('')}
-          <div class="slot ${ui.carrying ? 'open' : ''}" data-act="sendslot">send</div></div>`
+      ? `<div class="col sendcol"><div class="collabel">send to counterattack</div>
+          <div class="sendrow">${ui.send.map(sendEntHtml).join('')}
+          <div class="slot ${ui.carrying ? 'open' : ''}" data-act="sendslot">send</div></div></div>`
       : (NET?.building?.send?.length
-        ? `<div class="col"><div class="collabel">being sent to counterattack</div>
-            ${pendingColHtml(NET.building.send)}</div>` : ''))
+        ? `<div class="col sendcol"><div class="collabel">being sent to counterattack</div>
+            ${pendingColHtml(NET.building.send, { across: true })}</div>` : ''))
     : '';
   const stepLabel: Record<string, string> = {
     attackWindow: 'response window (attack)', blocks: `${esc(D)} declares blocks & counterattackers`,
     blockWindow: 'response window (blocks)', afterWindow: 'after combat',
   };
   return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>
-    <div class="cols">${attackCols}${sendZone}</div></div>`;
+    <div class="cols" style="${colsStyle}">${attackCols}${sendZone}</div></div>`;
 }
 
 /**
@@ -1446,26 +1473,30 @@ function battleHtml(): string {
  * place so far. Inert — not clickable, not targetable — and marked `pending`
  * so it never reads as a committed declaration.
  */
-function pendingColHtml(col: EntityId[]): string {
+function pendingColHtml(col: EntityId[], opts: { across?: boolean } = {}): string {
   const cards = col.map(id => {
     const u = h.state.entities[id];
     return u ? unitHtml(u, { inert: true }) : '';
   }).join('');
-  return cards ? `<div class="pendingcol">${cards}</div>` : '<div class="slot">…</div>';
+  const cls = `pendingcol${opts.across ? ' across' : ''}`;
+  return cards ? `<div class="${cls}">${cards}</div>` : '<div class="slot ghost">…</div>';
 }
 
 /** the whole battle panel while the OTHER seat declares: their formation as
  * it is being built, with nothing of mine to click */
 function watchingHtml(who: string, doing: string): string {
-  const cols = (NET?.building?.cols ?? []).filter(c => c.length);
+  // keep each column's TRUE index — the label is "column 3", so dropping the
+  // empty ones before numbering would rename the ones that are left
+  const cols = (NET?.building?.cols ?? []).map((c, ci) => ({ c: c ?? [], ci }))
+    .filter(x => x.c.length);
   const sending = NET?.building?.send ?? [];
   const body = cols.length
-    ? `<div class="cols">${cols.map((col, ci) =>
-        `<div class="col"><div class="collabel">column ${ci + 1}</div>${pendingColHtml(col)}</div>`).join('')}</div>`
+    ? `<div class="cols">${cols.map(({ c, ci }) =>
+        `<div class="col"><div class="collabel">column ${ci + 1}</div>${pendingColHtml(c)}</div>`).join('')}</div>`
     : '<div style="color:var(--dim)">nothing placed yet…</div>';
   const sent = sending.length
     ? `<div class="collabel">sending to counterattack</div>
-       <div class="cols"><div class="col">${pendingColHtml(sending)}</div></div>` : '';
+       <div class="cols"><div class="col sendcol">${pendingColHtml(sending, { across: true })}</div></div>` : '';
   return `<div class="battle watching"><h3>${txtIcon('battle', '[battle]')} ${esc(who)} ${esc(doing)}…
       <span class="livedot">● live</span></h3>
     <div style="color:var(--dim);margin-bottom:6px">You are watching them build it — nothing is committed until they confirm.</div>
@@ -1477,13 +1508,14 @@ function colBuilderHtml(col: EntityId[], ci: number): string {
 }
 /** the two rows of one column being built: a unit, or an open slot you can
  * drop into. Both rows are always offered (playtest: the back row used to
- * appear only once the front was filled, which forced a click order). */
+ * appear only once the front was filled, which forced a click order) — and
+ * both are always DRAWN, because the half reserves room for two rows while a
+ * choice is live and an undrawn back row just left a hole in it. */
 function colSlotsHtml(col: EntityId[], ci: number): string {
   const u0 = col[0] !== undefined ? h.state.entities[col[0]] : undefined;
   const u1 = col[1] !== undefined ? h.state.entities[col[1]] : undefined;
   const front = u0 ? unitHtml(u0, { selected: true }) : slotHtml(ci, 0, !!ui.carrying);
-  const back = u1 ? unitHtml(u1, { selected: true })
-    : (u0 || ui.carrying ? slotHtml(ci, 1, !!ui.carrying) : '');
+  const back = u1 ? unitHtml(u1, { selected: true }) : slotHtml(ci, 1, !!ui.carrying);
   return front + back;
 }
 function slotHtml(ci: number, row: number, open: boolean): string {
@@ -1966,6 +1998,11 @@ function ensureCounterPrefill(): void {
   if (eligible.length === 1) ui.columns = [[eligible[0]!.id]];
 }
 
+/** Scrollers whose position must survive a repaint. `.main` is the board
+ * itself — the one the playtest report was about — and the other two are the
+ * side rail's panels, which scroll independently of it. */
+const SCROLLERS = ['.main', '.side .preview', '.side .stackpanel'] as const;
+
 /** Paint the whole UI. Returns false when it painted something that is NOT a
  * board (connecting / lobby) — the motion layer uses that to drop its
  * baseline instead of animating the first real board out of nowhere. */
@@ -2004,6 +2041,15 @@ function renderNow(): boolean {
     ui.confirmAct = null;
   }
   const autoPref = localStorage.getItem('algoAutopass') === '1';
+  // playtest DEYK: "it constantly resets the scroll height, which means you
+  // have to scroll down to see your units every time you click something".
+  // The client repaints by replacing $app.innerHTML, which throws away the
+  // scroll position of every scroller in it — and mid-battle the board is
+  // taller than the window, so every click threw you back to the top. The
+  // positions are read BEFORE the swap and put back after; the game log is
+  // deliberately not in the list, because it always wants to be at the bottom.
+  const scrollBefore = SCROLLERS.map(sel =>
+    [sel, document.querySelector(sel)?.scrollTop ?? 0] as const);
   $app.innerHTML = `
     <div class="main">
       <!-- playtest: the turn/phase strip AND the "what to do next" bar are one
@@ -2060,6 +2106,13 @@ function renderNow(): boolean {
     ${pendingReveal ? revealOverlayHtml() : ''}
     ${reportOpen ? reportOverlayHtml() : ''}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
+  for (const [sel, top] of scrollBefore) {
+    if (!top) continue;
+    const el = document.querySelector(sel);
+    // clamped by the browser if the new content is shorter — a board that
+    // shrank scrolls to its new bottom rather than to nowhere
+    if (el) el.scrollTop = top;
+  }
   const log = document.getElementById('log')!;
   log.scrollTop = log.scrollHeight;
   clampMenu();
@@ -2270,7 +2323,9 @@ function publishBuilding(): void {
   const b = h.state.battle;
   const mine = !!b && ((b.step === 'declare' && b.attacker === NET.seat)
     || (b.step === 'blocks' && b.defender === NET.seat));
-  NET.sendBuilding(mine ? ui.columns.filter(c => c.length) : [], mine ? ui.send : []);
+  // publishCols keeps the sparse column INDICES, which the old
+  // `.filter(c => c.length)` compacted away — see ui/formation.ts.
+  NET.sendBuilding(mine ? publishCols(ui.columns) : [], mine ? ui.send : []);
 }
 
 /** the judge question being typed (survives server-push re-renders) */
