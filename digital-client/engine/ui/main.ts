@@ -9,6 +9,8 @@ import {
   activationNeedsConfirm, playableCachedNames, stackAbilityRows,
 } from './inspect.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
+import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts';
+import type { GlossEntry } from './glossary.ts';
 import type { Census } from './motion.ts';
 import {
   captureFrame, clearArrows, initAnim, motionOn, playMotion,
@@ -1090,50 +1092,6 @@ let judgeOpen = false;
 let judgeBusy = false;
 const judgeLog: { q: string; a: string; cards: { title: string }[] }[] = [];
 
-const KEYWORDS: [string, string][] = [
-  ['Flying', 'Its column can only be blocked by a column with Flying.'],
-  ['Evasive', 'Needs two blockers — a single unit cannot block it.'],
-  ['Sneaky', 'If it is the only attacking unit, it cannot be blocked at all.'],
-  ['Alluring', 'Defenders that are able to block it must block it.'],
-  ['Piercing', 'Excess damage from its blocked column carries through to the defending player (automatic).'],
-  ['Electric', 'Excess damage arcs to an adjacent unit in the formation — the controller picks the path.'],
-  ['Deadly', 'Any amount of damage it deals destroys the damaged unit.'],
-  ['Swift', 'Its column deals combat damage before normal units; triggers from that damage resolve before normal damage.'],
-  ['Sluggish', 'Its column deals combat damage after normal units.'],
-  ['Tough', 'Its defense is doubled.'],
-  ['Balanced', 'Its power and defense each become the higher of the two.'],
-  ['Powerful', 'It deals double damage.'],
-  ['Vulnerable', 'It takes double damage.'],
-  ['Feeble', 'It cannot block.'],
-  ['Poisonous', 'Damage it deals becomes permanent −1/−1 counters instead of marked damage.'],
-  ['Resonant', 'When it damages a unit, that unit’s controller also loses that much life.'],
-  ['Thieving', 'When its column deals combat damage to a player, its controller draws a card.'],
-  ['Reaping', 'When it kills a unit, its controller draws a card.'],
-  ['Inverted', 'Its stat CHANGES are reversed (a −7/−7 becomes +7/+7).'],
-  ['Unaware', 'Everything counts as interacting with it.'],
-  ['Burst', 'Casting one of your burst spell tokens casts all of them in that region at once.'],
-  ['Unstable', 'A modded unit that dies is erased (with its mods) instead of going to a bin.'],
-  ['Virus', 'May be augmented onto an ENEMY unit during battle.'],
-  ['Ambush', 'An alternative battle-time cost: recall a target ally and take its position in play.'],
-  // Light & Dark (docs/08). Kept here so the card inspector can explain them
-  // instead of falling back to "see the rules reference".
-  ['Blessed', 'Damage dealt by a blessed source makes its controller gain that much life — simultaneously, so it applies before the lethal check.'],
-  ['Afflicting', 'When an afflicting source kills one or more units — by damage OR by −1/−1 counters — those units’ controllers each gain a rot.'],
-  ['Lethal', 'Any combat damage from a lethal unit kills a player outright.'],
-  ['Modular', 'You may apply mods from your hand and/or bin to this card as it is played, paying their costs; they ride on the stack with it.'],
-  ['Pure', 'Pure cards and cards they interact with ignore all other attributes. (Not implemented — parked with the attribute-suppression layer.)'],
-];
-
-/** the Light & Dark zone/counter concepts, explained in the rules reference */
-const EXPANSION_GUIDE: [string, string][] = [
-  ['Rot ☠', 'A counter on the PLAYER. At the start of every deployment you take damage equal to your rot. It never decreases on its own.'],
-  ['Debt ⛓', 'A counter on the PLAYER. At the very end of your next resource step you must pay 1 mana per debt; each mana removes one. Anything you cannot pay carries over, and the mana spent is gone for the turn.'],
-  ['Cache 📜', 'A fourth zone beside hand, bin and deck — and a PUBLIC one: you both see every cached card. Being cached is not permission to play it.'],
-  ['Prophecy', 'During DEPLOYMENT, pay a card’s banner cost to cache it with its condition attached. Once the condition has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity — normal timing still applies.'],
-  ['Glimpse', 'Reveal the top N cards of your deck and cache them. Until end of turn you may play them as if they were in hand, ignoring affinity but still paying their mana. Afterwards they stay cached, inert.'],
-  ['Trash', 'A nontoken card entering a bin from anywhere but the stack is trashed — discarding, sacrificing, milling and dying in combat all count. A resolved spell going to the bin does not.'],
-];
-
 const PHASE_GUIDE: [string, string][] = [
   ['Planning', 'Refresh resources · draw 2 · (draft: merge hand+pack, leave exactly 10, pass) · recycle cards into dormant resources · activate up to 2 resources (3+ affinity of an element when activating it grants a free dormant Shard) · exchange active Prismites.'],
   ['Haste', 'Only {Haste} cards may be played; they resolve immediately. Skipped when nobody can.'],
@@ -1143,6 +1101,11 @@ const PHASE_GUIDE: [string, string][] = [
   ['Deployment', 'Simultaneous and hidden: play cards, augment/graft (from hand or bin), activate abilities — alone in your region. Battle-timing cards unplayable. Reveals when both are done; then end-of-turn triggers (no responses) and initiative passes.'],
 ];
 
+/** one glossary entry as a reference row (the ? overlay and the inspector
+ * print the same thing, so they print it the same way) */
+const glossRow = (e: GlossEntry): string =>
+  `<div class="helprow"><b>${iconizeText(e.label ?? e.term)}</b><span>${iconizeText(e.text)}</span></div>`;
+
 function helpOverlayHtml(): string {
   return `<div class="overlay mainonly"><div class="overlaybox helpbox">
     <h3>Rules reference</h3>
@@ -1150,9 +1113,9 @@ function helpOverlayHtml(): string {
       <h4>The turn</h4>
       ${PHASE_GUIDE.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${iconizeText(v)}</span></div>`).join('')}
       <h4>Keywords</h4>
-      ${KEYWORDS.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${iconizeText(v)}</span></div>`).join('')}
+      ${KEYWORDS.map(glossRow).join('')}
       <h4>Light &amp; Dark</h4>
-      ${EXPANSION_GUIDE.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${iconizeText(v)}</span></div>`).join('')}
+      ${EXPANSION_GUIDE.map(glossRow).join('')}
       <h4>Quick reminders</h4>
       <div class="helprow"><b>Augment ${txtIcon('augment', '(+)')}</b><span>${iconizeText('Slide under a unit from hand or bin: donates type-line attributes and text-box [Augment] text to the host.')}</span></div>
       <div class="helprow"><b>Graft ${txtIcon('graft', '(⇄)')}</b><span>${iconizeText('Insert into a graft-cause unit’s stack: the [Switch] effects join its trigger as one ability. [Switch1] = once per turn per card.')}</span></div>
@@ -1195,11 +1158,24 @@ function inspectorHtml(): string {
   const u = inspect.id !== undefined ? h.state.entities[inspect.id] : undefined;
   const attrs = u ? [...q().ownAttrs(u)] : printedAttrs;
   const attrRows = attrs.length
-    ? attrs.map(a => {
-        const def = KEYWORDS.find(([k]) => k === a)?.[1] ?? 'see the rules reference';
-        return `<div class="helprow"><b>${esc(a)}</b><span>${esc(def)}</span></div>`;
-      }).join('')
+    ? attrs.map(a => glossRow(GLOSSARY.find(e => e.term === a)
+      ?? { term: a, text: 'see the rules reference' })).join('')
     : '<div class="hint">no attributes</div>';
+  // Playtest ask: every keyword this card (or a ruling about it) MENTIONS gets
+  // its reminder text right here, not behind the ? button. Scanned from the
+  // printed text, the type line, the text of any mod riding on this unit, and
+  // the rulings — minus the card's own attributes, which have their own
+  // section directly above.
+  const modTexts = (u?.mods ?? []).map(mid => {
+    const m = h.state.entities[mid];
+    try { return m ? getCard(m.card).text : ''; } catch { return ''; }
+  });
+  const referenced = glossaryHits(
+    [type, text, ...modTexts, ...(inspect.rulings ?? [])], { skip: attrs });
+  const refRows = referenced.length
+    ? referenced.map(glossRow).join('')
+    : `<div class="hint">${inspect.rulings === null
+      ? 'checking the text and rulings…' : 'nothing else to explain'}</div>`;
   const rulings = inspect.rulings === null
     ? '<div class="hint">loading rulings…</div>'
     : inspect.rulings.length
@@ -1213,6 +1189,9 @@ function inspectorHtml(): string {
       ${u ? graftComposedHtml(u) : ''}
       <h4>Attributes${u ? ' (current, shared/granted included)' : ' (printed)'}</h4>
       ${attrRows}
+      <h4>Referenced rules <span class="hint">— named in the text${
+        inspect.rulings?.length ? ' or the rulings' : ''}</span></h4>
+      ${refRows}
       <h4>Rulings</h4>
       ${rulings}
     </div>
