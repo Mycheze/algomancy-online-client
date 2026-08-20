@@ -39,6 +39,8 @@ const MIME: Record<string, string> = {
   '.css': 'text/css; charset=utf-8', '.json': 'application/json',
   '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml',
   '.webp': 'image/webp',
+  '.ogg': 'audio/ogg', '.mp3': 'audio/mpeg', '.wav': 'audio/wav',
+  '.txt': 'text/plain; charset=utf-8',
 };
 
 async function serveFile(res: import('node:http').ServerResponse, path: string): Promise<void> {

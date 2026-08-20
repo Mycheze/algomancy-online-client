@@ -18,6 +18,11 @@ import {
   setBaseArrows, setHoverArrows, setMotionOn,
 } from './anim.ts';
 import type { ArrowSpec } from './anim.ts';
+import { armsIdle, diffSfx, sfxSnap } from './sfx.ts';
+import type { SfxSnap } from './sfx.ts';
+import {
+  armIdle, disarmIdle, playCue, primeAudio, setSoundOn, soundOn,
+} from './audio.ts';
 import { E } from '../src/engine.ts';
 import type { Action, CachedCard, Entity, EntityId, EventType, GameState, Seat, TargetRef } from '../src/types.ts';
 
@@ -157,7 +162,9 @@ class NetBackend implements Backend {
         <button data-btn="gohome">home</button></div>`;
       return;
     }
-    if (m.t === 'error') { ui.cancelling = false; uiError = m.msg ?? 'error'; render(); return; }
+    if (m.t === 'error') {
+      ui.cancelling = false; uiError = m.msg ?? 'error'; playCue('error'); render(); return;
+    }
   }
 }
 
@@ -279,6 +286,7 @@ const resetUi = () => {
   pendingReveal = null;
   snaps = [];
   motionReset();
+  sfxReset();
 };
 
 const $app = document.getElementById('app')!;
@@ -367,10 +375,13 @@ const zoneLabel = (z: ModZone): string => (z === 'bin' ? 'the bin' : z === 'cach
 let snaps: { state: GameState; logLen: number; actionsLen: number }[] = [];
 
 function act(a: Action): void {
+  // you are demonstrably at the keyboard — stop counting down to the thump.
+  // The next obligation to ARRIVE re-arms it (soundPass).
+  disarmIdle();
   if (NET) {
     // network mode: the server is authoritative — send the intent and wait for
     // the pushed redacted update (or an 'error' message). Never apply locally.
-    if (a.seat !== NET.seat) { uiError = 'not your seat'; return; }
+    if (a.seat !== NET.seat) { uiError = 'not your seat'; playCue('error'); return; }
     NET.do(a);
     uiError = '';
     return;
@@ -389,7 +400,7 @@ function act(a: Action): void {
     uiError = '';
   } catch (err) {
     snaps.pop();   // state unchanged — drop the pre-action snapshot
-    if (err instanceof IllegalAction) uiError = err.message;
+    if (err instanceof IllegalAction) { uiError = err.message; playCue('error'); }
     else throw err;
   }
 }
@@ -2028,6 +2039,8 @@ function renderNow(): boolean {
             title="when ON: automatically pass whenever passing is your only legal action">auto-pass: ${autoPref ? 'on' : 'off'}</button>` : ''}
           <button data-btn="motiontoggle" class="aptoggle ${motionOn() ? 'on' : ''}"
             title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
+          <button data-btn="soundtoggle" class="aptoggle ${soundOn() ? 'on' : ''}"
+            title="notification sounds: phase and sub-step changes, priority, decisions${NET ? ", and a nudge if you haven't reacted in 15s" : ''}">${soundOn() ? '🔊' : '🔇'} sound: ${soundOn() ? 'on' : 'off'}</button>
           ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
           ${NET ? '' : '<button data-btn="restart">New game</button>'}
         </div>
@@ -2097,6 +2110,40 @@ let painting = false;
 /** drop the motion baseline — nothing on screen is a "before" any more */
 function motionReset(): void { lastCensus = null; clearArrows(); }
 
+// ── the sound pass (ui/sfx.ts + ui/audio.ts) ──────────────────────────
+//
+// Same shape as the motion pass, and for the same reason: the phase that just
+// changed is only visible as a DIFF between the state the board was painted
+// from and the new one. At most one cue per render (ui/sfx.ts CUE_ORDER).
+
+/** the snapshot the board on screen was painted from; null = no baseline,
+ * which makes the next render silent */
+let lastSfx: SfxSnap | null = null;
+
+/** Drop the sound baseline. Called wherever motionReset() is, and for the
+ * same reason: a state that arrives WHOLESALE — a fresh join, a reconnect
+ * resync, an undo's full-log replay, a return to the home screen — is not a
+ * change anybody just made, and must not fire cues for a phase that turned
+ * ten minutes ago. */
+function sfxReset(): void { lastSfx = null; disarmIdle(); }
+
+function soundPass(): void {
+  const s = h.state;
+  // whose ears these are. Network mode: my seat, and legalFor() already knows
+  // to use the legal actions the server pushed me. Hotseat: there is no
+  // "opponent", so the listener is simply whoever the game is waiting on.
+  const seat: Seat = NET ? NET.seat : (s.decision?.seat ?? s.priority ?? 0);
+  const snap = sfxSnap(s, seat, legalFor(seat).length > 0);
+  const before = lastSfx;
+  const cue = diffSfx(before, snap);
+  lastSfx = snap;
+  if (cue) playCue(cue);
+  // The idle thump is a NETWORK-mode safety net. In hotseat the game is never
+  // waiting on someone who isn't in the room, so a nudge every 15s would be
+  // hurrying you along rather than catching you out.
+  if (NET && armsIdle(before, snap)) armIdle();
+}
+
 function render(): void {
   if (painting) { renderNow(); return; }
   painting = true;
@@ -2104,11 +2151,12 @@ function render(): void {
     const frame = captureFrame();
     const before = lastCensus;
     const painted = renderNow();
-    if (!painted) { lastCensus = null; clearArrows(); return; }
+    if (!painted) { lastCensus = null; clearArrows(); sfxReset(); return; }
     const after = census(h.state);
     lastCensus = after;
     if (before) playMotion(frame, diffCensus(before, after));
     updateArrows();
+    soundPass();
   } finally { painting = false; }
 }
 
@@ -2318,6 +2366,7 @@ function maybeAutoPassPref(): void {
 
 function renderConnecting(): void {
   motionReset();
+  sfxReset();
   $app.classList.remove('board');
   $app.innerHTML = `<div class="joinscreen"><h2>Algomancy</h2>
     <p>${uiError ? esc(uiError) : 'Connecting to the server…'}</p></div>`;
@@ -2389,6 +2438,7 @@ function importDeck(body: { url?: string; text?: string }, rerender: () => void)
 /** Home screen (docs/07 §2): new game / join / hotseat / practice. */
 function renderHome(): void {
   motionReset();
+  sfxReset();
   $app.classList.remove('board');
   const name = localStorage.getItem('algoName') ?? '';
   const deck = savedDeck();
@@ -2433,6 +2483,7 @@ function renderHome(): void {
  * starts the moment both seats have brought a deck. */
 function renderWaiting(): void {
   motionReset();
+  sfxReset();
   $app.classList.remove('board');
   const net = NET!;
   const w = net.waiting!;
@@ -2577,6 +2628,12 @@ document.addEventListener('mouseout', e => {
 // the cursor leaving the window fires no mouseover, so drop the hover set here
 document.addEventListener('mouseleave', () => setHoverArrows(null));
 
+// Autoplay policy: samples can only be warmed once the page has seen a
+// gesture. Any click or key anywhere counts, and priming is a no-op after the
+// first, so this costs one branch per event forever after.
+document.addEventListener('pointerdown', primeAudio, { passive: true });
+document.addEventListener('keydown', primeAudio);
+
 document.addEventListener('click', e => {
   const btn = (e.target as HTMLElement).closest('[data-btn]') as HTMLElement | null;
   if (btn) { handleButton(btn); return; }
@@ -2661,6 +2718,15 @@ function handleButton(btn: HTMLElement): void {
     render(); return;
   }
   if (b === 'motiontoggle') { setMotionOn(!motionOn()); motionReset(); render(); return; }
+  if (b === 'soundtoggle') {
+    const on = !soundOn();
+    setSoundOn(on);
+    // switching it ON plays the quietest cue as an audition: you find out both
+    // that it works and how loud it is, without waiting for a phase to turn.
+    if (on) { primeAudio(); playCue('priority'); }
+    render();
+    return;
+  }
   if (b === 'undo') { NET?.undo(); return; }
   const s = h.state;
   if (b === 'restart' && !NET) {

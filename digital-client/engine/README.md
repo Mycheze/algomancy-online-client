@@ -38,6 +38,14 @@ tested in `test/51-ui-motion.test.ts`) plus `ui/anim.ts` (FLIP, ghost flights,
 the SVG arrow overlay). See [../docs/09-visual-clarification.md](../docs/09-visual-clarification.md);
 the `✨ motion` button in the side panel turns it all off.
 
+The sound layer follows the same split: `ui/sfx.ts` (pure state diff → at most
+one cue, tested in `test/54-ui-sfx.test.ts`) plus `ui/audio.ts` (WebAudio
+playback, the mix, and the idle timer). Samples are CC0 from Kenney's Interface
+Sounds pack, one `.ogg` per cue in `ui/sfx/` — replace a file to change how a
+cue sounds, edit `GAIN` in `ui/audio.ts` to change how loud it is. The
+`🔊 sound` button in the side panel turns it all off (remembered per browser).
+See [../docs/10-sound.md](../docs/10-sound.md).
+
 ## Shape (docs/04 §1, delivered)
 
 - **Pure reducer**: `apply(state, action) → { state, events, pendingDecisions }`.

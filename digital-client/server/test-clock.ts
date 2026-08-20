@@ -1,5 +1,6 @@
 /* Integration tests for the playtest-feedback trio (run: node test-clock.ts):
- *   - chess clock: 40:00 per seat, runs only for seats the game is waiting on
+ *   - chess clock: CLOCK_START_MS per seat, runs only for seats the game is
+ *     waiting on
  *     (and only while both players are connected), stops on donePlanning,
  *     persists across a server restart
  *   - POST /api/report appends {ts, room, seat, note, actionIndex} to
@@ -16,13 +17,16 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
+import { CLOCK_START_MS } from './rooms.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PORT = 8500 + Math.floor(Math.random() * 400);
 const ROOM = 'CK' + Math.floor(Math.random() * 1e6).toString(36).toUpperCase();
 const DROOM = 'CD' + Math.floor(Math.random() * 1e6).toString(36).toUpperCase();
 const ISSUES = join(HERE, 'issues.jsonl');
-const START = 40 * 60 * 1000;
+/** imported rather than restated: this test hardcoded 40:00 and silently
+ * went red when rooms.ts moved to 60:00 */
+const START = CLOCK_START_MS;
 
 let failures = 0;
 function ok(cond: unknown, label: string): void {
@@ -144,7 +148,7 @@ try {
   a.send({ t: 'join', room: ROOM, seat: 0, name: 'Tick' });
   const aj = await a.next(m => m.t === 'joined');
   ok(!!aj.clock, 'joined message carries a clock snapshot');
-  ok(aj.clock!.ms[0] === START && aj.clock!.ms[1] === START, `both clocks start at 40:00 (${aj.clock!.ms})`);
+  ok(aj.clock!.ms[0] === START && aj.clock!.ms[1] === START, `both clocks start at CLOCK_START_MS (${aj.clock!.ms})`);
   ok(aj.clock!.running[0] === false && aj.clock!.running[1] === false,
     'no clock runs while the opponent seat is empty');
   ok(typeof aj.clock!.at === 'number' && Math.abs(Date.now() - aj.clock!.at) < 5000,
