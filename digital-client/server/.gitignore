@@ -1,3 +1,7 @@
 node_modules/
+# saved rooms: runtime data, per-deployment (replay them with replay-room.ts)
 games/
 *.log
+# playtest bug reports from the in-game 🐛 button — runtime data like games/,
+# and the ones that mattered are written up in the commit that fixed them
+issues.jsonl
