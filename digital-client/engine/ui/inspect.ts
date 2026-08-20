@@ -167,3 +167,65 @@ export function shouldAutoYield(
   if (!top || top.negated) return false;
   return top.kind === 'triggered' && top.sourceId !== undefined && yielded.has(top.sourceId);
 }
+
+// ── deployment reveal interstitial ────────────────────────────────────
+
+/** longest word-sequence in `msg` that names a known card, if any */
+export function findCardName(msg: string): CardName | null {
+  const words = msg.split(/\s+/).map(w => w.replace(/[.,!:;()'"]/g, ''));
+  for (let len = Math.min(6, words.length); len >= 1; len--) {
+    for (let i = 0; i + len <= words.length; i++) {
+      const cand = words.slice(i, i + len).join(' ');
+      try { getCard(cand); return cand; } catch { /* not a card */ }
+    }
+  }
+  return null;
+}
+
+/** one row of the reveal: a card scan (or none) and the sentence(s) it covers */
+export interface RevealRow { name: CardName | null; text: string }
+
+/** drop a single trailing full stop so messages can be joined with commas */
+const unstop = (s: string): string => s.trim().replace(/\.$/, '');
+
+/**
+ * Join one row's messages: "a, b, c." — with a run of the SAME message
+ * collapsed to "a ×3", because three identical sentences separated by commas
+ * is the verbosity we are removing, not a shorter form of it.
+ */
+function joinMessages(msgs: string[]): string {
+  const parts: string[] = [];
+  for (let i = 0; i < msgs.length;) {
+    let n = 1;
+    while (i + n < msgs.length && msgs[i + n] === msgs[i]) n++;
+    parts.push(unstop(msgs[i]!) + (n > 1 ? ` ×${n}` : ''));
+    i += n;
+  }
+  const out = parts.join(', ');
+  return /[.!?]$/.test(out) ? out : `${out}.`;
+}
+
+/**
+ * Group the deployment reveal into rows.
+ *
+ * Playtest 2026-08-20, Bena: "single cards create 5 full sized entries […]
+ * it's good to show the full chain of events, but they don't need to take up
+ * so much space." One card being deployed is one beat, but the engine narrates
+ * it as several events — played, resolved, and one line per token it made —
+ * and each was drawing its own full card scan.
+ *
+ * CONSECUTIVE messages that resolve to the same card art collapse onto a
+ * single row. Consecutive, not global: the point is to compress a chain, not
+ * to reorder it, so a card that comes up again later still gets its own row in
+ * the place it happened.
+ */
+export function groupReveal(msgs: readonly string[]): RevealRow[] {
+  const groups: { name: CardName | null; msgs: string[] }[] = [];
+  for (const msg of msgs) {
+    const name = findCardName(msg);
+    const last = groups[groups.length - 1];
+    if (last && last.name === name) last.msgs.push(msg);
+    else groups.push({ name, msgs: [msg] });
+  }
+  return groups.map(g => ({ name: g.name, text: joinMessages(g.msgs) }));
+}

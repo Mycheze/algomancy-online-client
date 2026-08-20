@@ -7,7 +7,7 @@ import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/
 import { allCardNames, getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 import {
-  activationNeedsConfirm, playableCachedNames, shouldAutoYield, stackAbilityRows,
+  activationNeedsConfirm, groupReveal, playableCachedNames, shouldAutoYield, stackAbilityRows,
 } from './inspect.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
 import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts';
@@ -2277,23 +2277,12 @@ function publishBuilding(): void {
 let judgeDraft = '';
 
 // ── deployment reveal interstitial (C2) ───────────────────────────────
-/** longest word-sequence in `msg` that names a known card, if any */
-function findCardName(msg: string): string | null {
-  const words = msg.split(/\s+/).map(w => w.replace(/[.,!:;()'"]/g, ''));
-  for (let len = Math.min(6, words.length); len >= 1; len--) {
-    for (let i = 0; i + len <= words.length; i++) {
-      const cand = words.slice(i, i + len).join(' ');
-      try { getCard(cand); return cand; } catch { /* not a card */ }
-    }
-  }
-  return null;
-}
 
 function revealOverlayHtml(): string {
-  const lines = (pendingReveal ?? []).map(msg => {
-    const name = findCardName(msg);
-    return `<div class="revealline">${name ? cardHtml(name) : '<span class="revealspacer"></span>'}<span>${esc(msg)}</span></div>`;
-  }).join('');
+  // one row per card, not one per event — ui/inspect.ts groupReveal
+  const lines = groupReveal(pendingReveal ?? []).map(row =>
+    `<div class="revealline">${row.name ? cardHtml(row.name) : '<span class="revealspacer"></span>'}<span>${esc(row.text)}</span></div>`,
+  ).join('');
   // 'mainonly' leaves the side column (focus viewer!) uncovered so the
   // revealed cards can be read by hovering them
   return `<div class="overlay mainonly"><div class="overlaybox">
