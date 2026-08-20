@@ -120,6 +120,7 @@ class NetBackend implements Backend {
     }
     if (m.t === 'kicked') {
       this.dead = true;
+      $app.classList.remove('board');   // back to normal flow for the notice
       $app.innerHTML = `<div class="joinscreen"><h2>Algomancy</h2>
         <p>${esc(m.msg ?? 'another connection took over this seat')}</p>
         <button data-btn="gohome">home</button></div>`;
@@ -1776,7 +1777,8 @@ function ensureCounterPrefill(): void {
 function renderNow(): boolean {
   if (NET && (NET.dead || !NET.joined)) { if (!NET.dead) renderConnecting(); return false; }
   if (NET?.waiting) { renderWaiting(); return false; }   // constructed lobby
-  $app.classList.toggle('netmode', !!NET);   // net mode: sticky hand dock at the bottom
+  $app.classList.toggle('netmode', !!NET);   // net mode: the hand docks under the table
+  $app.classList.add('board');   // full-height board layout (style.css §board)
   ensureDraftUi();
   ensureBottomUi();
   ensureCounterPrefill();
@@ -2115,6 +2117,7 @@ function maybeAutoPassPref(): void {
 
 function renderConnecting(): void {
   motionReset();
+  $app.classList.remove('board');
   $app.innerHTML = `<div class="joinscreen"><h2>Algomancy</h2>
     <p>${uiError ? esc(uiError) : 'Connecting to the server…'}</p></div>`;
 }
@@ -2185,6 +2188,7 @@ function importDeck(body: { url?: string; text?: string }, rerender: () => void)
 /** Home screen (docs/07 §2): new game / join / hotseat / practice. */
 function renderHome(): void {
   motionReset();
+  $app.classList.remove('board');
   const name = localStorage.getItem('algoName') ?? '';
   const deck = savedDeck();
   $app.innerHTML = `<div class="joinscreen home">
@@ -2228,6 +2232,7 @@ function renderHome(): void {
  * starts the moment both seats have brought a deck. */
 function renderWaiting(): void {
   motionReset();
+  $app.classList.remove('board');
   const net = NET!;
   const w = net.waiting!;
   const me = net.seat, opp = other(me);

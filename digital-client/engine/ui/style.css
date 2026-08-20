@@ -245,12 +245,10 @@ button:disabled { opacity: .4; cursor: default; }
 /* the side panel (preview + stack + log) stays on screen while the board scrolls */
 .side { position: sticky; top: 8px; align-self: flex-start; max-height: calc(100vh - 16px); overflow-y: auto; }
 
-/* net mode: your hand is docked to the bottom of the viewport */
-.netmode .main { padding-bottom: 170px; }
-.netmode .side { max-height: calc(100vh - 186px); }
-.handdock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-  background: color-mix(in srgb, var(--panel) 92%, transparent); backdrop-filter: blur(4px);
-  border-top: 2px solid var(--accent); padding: 4px 10px 8px; }
+/* net mode: your hand docks to the bottom of the TABLE column (see the board
+   layout below — it is a grid item, not a viewport-wide bar) */
+.handdock { background: var(--panel); border-top: 2px solid var(--accent);
+  border-radius: 6px 6px 0 0; padding: 4px 10px 8px; }
 .handdock .zone { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
 .handdock .card { width: 92px; }
 
@@ -260,8 +258,6 @@ button:disabled { opacity: .4; cursor: default; }
   #app { grid-template-columns: 1fr 220px; }
   .preview img { max-width: 190px; }
   .handdock .card { width: 74px; }
-  .netmode .main { padding-bottom: 145px; }
-  .netmode .side { max-height: calc(100vh - 161px); }
 }
 .reschip.shard { background: linear-gradient(135deg, #b39ddb, #5e35b1); }
 
@@ -668,3 +664,35 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    back — same weave as .card.back */
 .animghost.back { background:
   repeating-linear-gradient(45deg, #263042 0 8px, #2e3a4e 8px 16px); }
+
+/* ── the board fills the window (playtest 2026-08-20) ────────────────
+   Two asks, one layout. The docked hand used to be a viewport-wide fixed bar,
+   so it ran on under the side rail and lined up with nothing; and the rail
+   stopped wherever its content ended, leaving dead space below the log.
+
+   Making the board a full-height grid answers both without arithmetic: the
+   hand is a grid item in the TABLE's column, so it is exactly as wide as the
+   battlefield above it, and the rail spans both rows, so it is exactly as tall
+   as the window. The table scrolls inside its own column; the rail — the
+   focus viewer, the stack and the log, i.e. everything you read WHILE acting —
+   never scrolls away.
+
+   Gated on .board so the home / lobby / connecting screens keep normal flow. */
+#app.board {
+  height: 100vh; height: 100dvh;
+  grid-template-rows: minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+#app.board .main { grid-column: 1; grid-row: 1; overflow-y: auto; overflow-x: hidden; }
+#app.board .handdock { grid-column: 1; grid-row: 2; }
+#app.board .side {
+  grid-column: 2; grid-row: 1 / -1;
+  position: static; align-self: stretch;
+  max-height: none; min-height: 0; overflow: hidden;
+}
+/* the rail's own share of that height: the log takes whatever the viewer and
+   the stack do not, so the column is always exactly full and never dead */
+#app.board .sidehead { flex: none; }
+#app.board .preview { flex: 0 1 auto; min-height: 0; max-height: 50%; overflow-y: auto; }
+#app.board .stackpanel { flex: 0 1 auto; min-height: 0; max-height: 34%; overflow-y: auto; }
+#app.board .logpanel { flex: 1 1 0; min-height: 110px; max-height: none; }
