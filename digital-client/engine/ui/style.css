@@ -587,3 +587,68 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    just counting them — hovering one previews it, so you can decide without
    opening the cache dialog. */
 .cachenames span { color: var(--accent); cursor: help; border-bottom: 1px dotted var(--accent); }
+
+/* ── the visual-clarification layer (ui/anim.ts) ─────────────────────
+   Two overlays live OUTSIDE #app so render()'s innerHTML wipe cannot touch
+   them, and both are pointer-events:none: the board underneath stays live
+   and clickable while a card is still in the air. Motion explains what the
+   engine already did — it never gates it. */
+
+.animlayer { position: fixed; inset: 0; z-index: 58; pointer-events: none; overflow: hidden; }
+/* one flying card scan. Sized to the box it left, translated to the box it
+   is going to; the arc and the scale are set per-flight in JS. */
+.animghost { position: fixed; transform-origin: 50% 50%; border-radius: 5px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.14);
+  background: var(--panel2); will-change: transform, opacity; }
+.animghost img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; display: block; }
+/* a card with no art (or none yet loaded) still needs a body to watch */
+.animghost.noart { background: linear-gradient(160deg, var(--panel2), #2b3440); }
+
+/* the destination flashes as the ghost hands over — "it is now this" */
+.animland { animation: animland .5s ease-out; }
+@keyframes animland {
+  0%   { box-shadow: 0 0 0 3px var(--accent), 0 0 14px 3px rgba(217,164,65,.55); }
+  100% { box-shadow: 0 0 0 0 rgba(217,164,65,0); }
+}
+/* same card, different numbers: damage/counters/life changed in place */
+.animhurt { animation: animhurt .7s ease-out; }
+@keyframes animhurt {
+  0%   { box-shadow: 0 0 0 3px var(--danger), 0 0 16px 4px rgba(217,84,84,.6); }
+  100% { box-shadow: 0 0 0 0 rgba(217,84,84,0); }
+}
+.animbuff { animation: animbuff .7s ease-out; }
+@keyframes animbuff {
+  0%   { box-shadow: 0 0 0 3px var(--glow), 0 0 16px 4px rgba(111,195,111,.55); }
+  100% { box-shadow: 0 0 0 0 rgba(111,195,111,0); }
+}
+
+/* ── targeting arrows ─────────────────────────────────────────────── */
+.arrowlayer { position: fixed; inset: 0; z-index: 55; pointer-events: none;
+  width: 100%; height: 100%; opacity: 0; transition: opacity .12s ease; }
+.arrowlayer.on { opacity: 1; }
+.arrow path { fill: none; stroke-linecap: round; filter: drop-shadow(0 1px 3px rgba(0,0,0,.9)); }
+.arrow .arrowhead { stroke: none; }
+.arrow .arrowdot { stroke: none; }
+
+/* solid amber: what this effect is pointed at */
+.arrow.tgt path { stroke: var(--target); stroke-width: 2.6; }
+.arrow.tgt .arrowhead, .arrow.tgt .arrowdot { fill: var(--target); }
+/* dashed blue, pointing INTO the stack item: what produced this ability */
+.arrow.src path { stroke: #7fc0ff; stroke-width: 2; stroke-dasharray: 7 5; }
+.arrow.src .arrowhead, .arrow.src .arrowdot { fill: #7fc0ff; }
+/* the always-on hint for the top of the stack — present, not shouting */
+.arrow.soft path { stroke: rgba(224,185,60,.5); stroke-width: 1.7; stroke-dasharray: 3 4; }
+.arrow.soft .arrowhead, .arrow.soft .arrowdot { fill: rgba(224,185,60,.6); }
+
+.arrowlabel { fill: var(--text); font: 700 10px system-ui, sans-serif;
+  paint-order: stroke; stroke: rgba(6,8,11,.9); stroke-width: 3px; stroke-linejoin: round; }
+
+/* honour the OS setting by default; the ✨ motion button overrides either way
+   (ui/anim.ts motionOn()) */
+@media (prefers-reduced-motion: reduce) {
+  .animland, .animhurt, .animbuff { animation-duration: .01ms; }
+}
+/* a card this client may not see (the opponent's face-down hand) flies as a
+   back — same weave as .card.back */
+.animghost.back { background:
+  repeating-linear-gradient(45deg, #263042 0 8px, #2e3a4e 8px 16px); }

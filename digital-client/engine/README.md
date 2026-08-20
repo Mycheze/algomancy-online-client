@@ -32,6 +32,12 @@ and `npm run check`.
 Hotseat game: open **ui/index.html** in a browser after `build:ui`
 (`?demo` jumps into a mid-battle with a spell on the stack).
 
+The UI's visual-clarification layer — cards that visibly travel between zones,
+and arrows from an effect to its targets — is `ui/motion.ts` (pure state diff,
+tested in `test/51-ui-motion.test.ts`) plus `ui/anim.ts` (FLIP, ghost flights,
+the SVG arrow overlay). See [../docs/09-visual-clarification.md](../docs/09-visual-clarification.md);
+the `✨ motion` button in the side panel turns it all off.
+
 ## Shape (docs/04 §1, delivered)
 
 - **Pure reducer**: `apply(state, action) → { state, events, pendingDecisions }`.

@@ -17,6 +17,7 @@ hard questions, a roadmap — and a playable hotseat prototype with 15 real card
 | [docs/04-architecture-spec.md](docs/04-architecture-spec.md) | proposed design: pure TS engine, state model, events/triggers/stack, card DSL, server, client |
 | [docs/05-hard-questions.md](docs/05-hard-questions.md) | rules gaps needing adjudication, product decisions (Bena's call), risk list |
 | [docs/06-roadmap.md](docs/06-roadmap.md) | M0 shared tabletop → M1 engine core → M2 enforced client → M3 card burn-down → M4 full game |
+| [docs/09-visual-clarification.md](docs/09-visual-clarification.md) | card-motion animations + targeting arrows: why a state-census diff rather than an event feed |
 
 ## The engine (M1, started 2026-07-16)
 

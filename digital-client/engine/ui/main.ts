@@ -8,12 +8,17 @@ import { getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import {
   activationNeedsConfirm, playableCachedNames, stackAbilityRows,
 } from './inspect.ts';
+import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
+import type { Census } from './motion.ts';
+import {
+  captureFrame, clearArrows, initAnim, motionOn, playMotion,
+  setBaseArrows, setHoverArrows, setMotionOn,
+} from './anim.ts';
+import type { ArrowSpec } from './anim.ts';
 import { E } from '../src/engine.ts';
 import type { Action, CachedCard, Entity, EntityId, EventType, GameState, Seat, TargetRef } from '../src/types.ts';
 
 const ART = '../../../AlgomancyCards/';
-/** placeholder name the server sends for a hidden card (opp hand / deck) — see server/view.ts */
-const HIDDEN_CARD = '__HIDDEN__';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
 /** chess-clock snapshot the server attaches to every state broadcast (#6);
@@ -239,6 +244,7 @@ const resetUi = () => {
   ui = freshUi();
   pendingReveal = null;
   snaps = [];
+  motionReset();
 };
 
 const $app = document.getElementById('app')!;
@@ -607,6 +613,8 @@ function xPreviewFor(name: string, seat: Seat): number | null {
 function cardHtml(name: string, opts: {
   playable?: boolean; candidate?: boolean; selected?: boolean; carrying?: boolean; modhost?: boolean;
   badges?: { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[]; stats?: string; dmg?: string; data?: string;
+  /** ui/motion.ts slot key — what makes this card the SAME card next render */
+  anim?: string;
 } = {}): string {
   const cls = ['card'];
   if (opts.playable) cls.push('playable');
@@ -615,7 +623,7 @@ function cardHtml(name: string, opts: {
   if (opts.carrying) cls.push('carrying');
   if (opts.modhost) cls.push('modhost');
   const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''} ${b.cls ?? ''}">${b.html ? b.t : esc(b.t)}</span>`).join('');
-  return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}">
+  return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}>
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
     <div class="artfallback">${esc(name)}</div>
     ${badges ? `<div class="badges">${badges}</div>` : ''}
@@ -625,8 +633,8 @@ function cardHtml(name: string, opts: {
 }
 
 /** a face-down card back (opponent's hidden hand in network mode) */
-function backHtml(): string {
-  return `<div class="card back" title="hidden card"></div>`;
+function backHtml(anim?: string): string {
+  return `<div class="card back" title="hidden card"${anim ? ` data-anim="${esc(anim)}"` : ''}></div>`;
 }
 
 function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; inert?: boolean } = {}): string {
@@ -639,7 +647,11 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
   for (const modId of u.mods) {
     const m = h.state.entities[modId];
     if (m) badges.push({
-      t: txtIcon(m.appliedAs === 'graft' ? 'graft' : 'augment', m.appliedAs === 'graft' ? '⇄' : '+') + esc(m.card.split(' ')[0]),
+      // a mod has no card of its own on the table — this badge IS where it
+      // lives, so it carries the mod's motion key and the flight lands here
+      t: `<span data-anim="e${m.id}">`
+        + txtIcon(m.appliedAs === 'graft' ? 'graft' : 'augment', m.appliedAs === 'graft' ? '⇄' : '+')
+        + esc(m.card.split(' ')[0]) + '</span>',
       mod: true, html: true,
     });
   }
@@ -655,6 +667,7 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     ? `<span class="${p + t >= base[0] + base[1] ? 'statup' : 'statdown'}">${p}/${t}</span><span class="basestat">${base[0]}/${base[1]}</span>`
     : `${p}/${t}`;
   return cardHtml(u.card, {
+    anim: `e${u.id}`,
     stats, dmg: u.damage ? `−${u.damage}` : '', badges,
     candidate: !opts.inert && isCandidate({ unit: u.id }),
     selected: opts.selected, carrying: ui.carrying === u.id,
@@ -692,8 +705,9 @@ function resHtml(r: { kind: string; state: string }, p: Seat, i: number): string
 function handZoneHtml(p: Seat): string {
   const pl = h.state.players[p]!;
   const legal = legalFor(p);
+  const keys = nameKeys(pl.hand, `h${p}:`);
   return pl.hand.map((n, i) => {
-    if (n === HIDDEN_CARD) return backHtml();
+    if (n === HIDDEN_CARD) return backHtml(keys[i]);
     const playable = legal.some(a =>
       (a.type === 'playCard' && a.handIndex === i) ||
       (a.type === 'augment' && a.from === 'hand' && a.index === i) ||
@@ -712,7 +726,7 @@ function handZoneHtml(p: Seat): string {
       badges.push({ t: `📜 prophesy${mana === undefined ? '' : ` [${mana}]`}`, cls: 'proph on' });
     }
     return cardHtml(n, {
-      playable, badges,
+      playable, badges, anim: keys[i],
       data: `data-act="hand" data-p="${p}" data-i="${i}"${xnow !== null ? ` data-xnow="${xnow}"` : ''}`,
     });
   }).join('');
@@ -738,6 +752,7 @@ function tokenHtml(t: Entity): string {
   const riding = ui.spellTokens.includes(t.id);
   const castable = legalFor(t.controller).some(a => a.type === 'castSpellToken' && a.entityId === t.id);
   return cardHtml(t.card, {
+    anim: `e${t.id}`,
     stats: 'X=' + t.x,
     playable: castable || tokenToggleMode(t) !== null,
     selected: riding || ui.send.includes(t.id),
@@ -806,7 +821,7 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   // B5: opponent's hidden hand lives in their identity row; seen-hand memory strip
   const hiddenHand = pl.hand.length > 0 && pl.hand.every(n => n === HIDDEN_CARD);
   const miniHand = hiddenHand
-    ? `<span class="minihand" title="hand: ${pl.hand.length} cards">${pl.hand.map(() => '<span class="miniback"></span>').join('')}</span><span style="color:var(--dim)">hand ${pl.hand.length}</span>`
+    ? `<span class="minihand" data-animzone="hand:${p}" title="hand: ${pl.hand.length} cards">${nameKeys(pl.hand, `h${p}:`).map(k => `<span class="miniback" data-anim="${k}"></span>`).join('')}</span><span style="color:var(--dim)">hand ${pl.hand.length}</span>`
     : '';
   const seen = NET && p === other(NET.seat) ? s.seenHand?.[NET.seat] : null;
   const seenStrip = seen
@@ -815,7 +830,8 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     : '';
 
   const handZone = opts.omitHand || hiddenHand ? '' :
-    `<div class="zonelabel">Hand (${pl.hand.length})</div><div class="zone">${handZoneHtml(p)}</div>`;
+    `<div class="zonelabel">Hand (${pl.hand.length})</div>
+     <div class="zone" data-animzone="hand:${p}">${handZoneHtml(p)}</div>`;
 
   // the bin lives IN its player's region: a mini stack on the right that
   // opens a full dialog (bin-play clicks work from the dialog).
@@ -823,9 +839,12 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   const binUsable = legal.some(a =>
     ((a.type === 'augment' || a.type === 'graft') && a.from === 'bin') ||
     (a.type === 'prophesy' && a.from === 'bin'));
-  const binMini = `<div class="regionbin ${binUsable ? 'hasmods' : ''}" data-btn="binopen" data-p="${p}" title="open ${esc(pl.name)}'s bin">
+  const binKeys = nameKeys(pl.bin, `b${p}:`);
+  const binMini = `<div class="regionbin ${binUsable ? 'hasmods' : ''}" data-btn="binopen" data-p="${p}"
+      data-animzone="bin:${p}" title="open ${esc(pl.name)}'s bin">
       <div class="zonelabel">bin (${pl.bin.length})</div>
-      <div class="regionbinthumbs">${pl.bin.slice(-3).map(n => cardHtml(n)).join('') || '<span class="binempty">empty</span>'}</div>
+      <div class="regionbinthumbs">${pl.bin.slice(-3).map((n, k) =>
+        cardHtml(n, { anim: binView === p ? undefined : binKeys[pl.bin.length - Math.min(3, pl.bin.length) + k] })).join('') || '<span class="binempty">empty</span>'}</div>
       ${binUsable ? `<div class="binmodhint">${txtIcon('augment', '+')}${txtIcon('graft', '[Switch]')} playable as mods</div>` : ''}
     </div>`;
 
@@ -842,19 +861,20 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   return `<div class="player region ${acting ? '' : 'inactive'} ${focus}">
     <div class="pheader">
       <span class="pname">${esc(pl.name)}${s.initiative === p ? ' ⭐' : ''}</span>
-      <span class="life ${isCandidate({ player: p }) ? 'candidate' : ''}" data-act="player" data-p="${p}">♥ ${pl.life}</span>
+      <span class="life ${isCandidate({ player: p }) ? 'candidate' : ''}" data-act="player" data-p="${p}"
+        data-animzone="life:${p}">♥ ${pl.life}</span>
       ${counters}
-      <span class="resrow">${pl.resources.map((r, i) => resHtml(r, p, i)).join('')}
+      <span class="resrow" data-animzone="res:${p}">${pl.resources.map((r, i) => resHtml(r, p, i)).join('')}
         <span style="color:var(--dim)">(${e.openMana(p)} mana open${s.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
       </span>
       ${miniHand}
-      <span class="binline">deck ${s.mode === 'constructed' ? s.decks![p]!.length : s.sharedDeck.length}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''}</span>
+      <span class="binline" data-animzone="deck:${p}">deck ${s.mode === 'constructed' ? s.decks![p]!.length : s.sharedDeck.length}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''}</span>
     </div>
     ${seenStrip}
     <div class="regionrow">
       <div class="regionmain">
         <div class="zonelabel">Region of ${esc(pl.name)}${focus === 'battlefocus' ? ` — ${txtIcon('battle', '[battle]')} the battle is here` : focus === 'battledim' ? ' — outside this battle' : ''}</div>
-        <div class="zone">${ownHere}</div>
+        <div class="zone" data-animzone="field:${p}">${ownHere}</div>
       </div>
       ${invaderHtml}
       ${sentStrip}
@@ -873,6 +893,7 @@ function binDialogHtml(): string {
   const p = binView;
   const pl = h.state.players[p]!;
   const legal = legalFor(p);
+  const binKeys = nameKeys(pl.bin, `b${p}:`);
   let anyUsable = false;
   const items = pl.bin.map((n, i) => {
     // #4: bin cards that can be applied as mods RIGHT NOW carry a badge and glow
@@ -891,7 +912,7 @@ function binDialogHtml(): string {
       });
     }
     if (canProph) badges.push({ t: '📜 prophesy from bin', cls: 'proph on' });
-    return cardHtml(n, { playable: usable, badges, data: `data-act="bin" data-p="${p}" data-i="${i}"` });
+    return cardHtml(n, { playable: usable, badges, anim: binKeys[i], data: `data-act="bin" data-p="${p}" data-i="${i}"` });
   }).join('');
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
     <h3>${esc(pl.name)}'s bin (${pl.bin.length})</h3>
@@ -965,12 +986,22 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
     stale,
   ].join('');
   const card = cardHtml(cc.card, {
+    anim: cacheAnimKeys(p)[i],
     badges: cacheBadges(p, i),
     playable: !!opts.clickable && (via !== null || cacheModActions(p, i).length > 0),
     candidate,
     data: `data-act="cache" data-p="${p}" data-i="${i}"`,
   });
   return `<div class="cacheentry">${card}${meta}</div>`;
+}
+
+/** motion keys for a seat's cache, index-aligned with cacheOf(seat). The uid
+ * is the real handle (R41); an entry cached before uids existed falls back to
+ * name+occurrence, exactly as ui/motion.ts does. */
+function cacheAnimKeys(p: Seat): string[] {
+  const cache = cacheOf(p);
+  const fb = nameKeys(cache.map(c => c.card), `c${p}:`);
+  return cache.map((cc, i) => (cc.uid !== undefined ? `c${cc.uid}` : fb[i]!));
 }
 
 /** the augment/graft actions available from `seat`'s cache entry `i` (R41:
@@ -997,10 +1028,13 @@ function regionCacheHtml(p: Seat): string {
   const note = mine && now ? `<div class="cachehint">${now} playable now</div>`
     : permitted ? `<div class="cachewait">${permitted} ready${mine ? ' — not this step' : ''}</div>`
       : `<div class="cachewait">${cache.length} waiting</div>`;
+  const keys = cacheAnimKeys(p);
   return `<div class="regioncache ${hot ? 'hasplay' : ''}" data-btn="cacheopen" data-p="${p}"
+      data-animzone="cache:${p}"
       title="R41: the cache is public — both players see every cached card. Click to open.">
     <div class="zonelabel">cache (${cache.length})</div>
-    <div class="regionbinthumbs">${cache.slice(-3).map(cc => cardHtml(cc.card)).join('')}</div>
+    <div class="regionbinthumbs">${cache.slice(-3).map((cc, k) =>
+      cardHtml(cc.card, { anim: cacheView === p ? undefined : keys[cache.length - Math.min(3, cache.length) + k] })).join('')}</div>
     ${note}
   </div>`;
 }
@@ -1533,14 +1567,14 @@ function stackHtml(): string {
     // double-count them as "grafted parts"
     const extraParts = it.parts.length - 1 - mods.length;
     return `<div class="stackitem ${it.negated ? 'negated' : ''} ${isCandidate({ stack: it.id }) ? 'candidate' : ''}"
-      data-act="stackitem" data-id="${it.id}" data-prevstack="${it.id}">
+      data-act="stackitem" data-id="${it.id}" data-prevstack="${it.id}" data-anim="s${it.id}">
       ${it.card ? `<img class="stackthumb" src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
       ${modThumbs}
       <div class="stackmain">${iconizeText(it.label)}${modChips}
       <div class="by">${esc(h.state.players[it.controller]!.name)} · ${it.kind}${extraParts > 0 ? ` · ${extraParts + 1} grafted parts` : ''}${mods.length ? ` · ${mods.length} {Modular} mod${mods.length === 1 ? '' : 's'}` : ''}${targets ? ' → ' + targets : ''}</div></div>
     </div>`;
   }).join('');
-  return `<div class="stackpanel"><h3>Stack (top first)</h3>${items || '<div class="stackempty">empty</div>'}</div>`;
+  return `<div class="stackpanel" data-animzone="stack"><h3>Stack (top first)</h3>${items || '<div class="stackempty">empty</div>'}</div>`;
 }
 function tgtLabel(t: TargetRef): string {
   if ('unit' in t) return esc(h.state.entities[t.unit]?.card ?? 'gone');
@@ -1724,9 +1758,12 @@ function ensureCounterPrefill(): void {
   if (eligible.length === 1) ui.columns = [[eligible[0]!.id]];
 }
 
-function render(): void {
-  if (NET && (NET.dead || !NET.joined)) { if (!NET.dead) renderConnecting(); return; }
-  if (NET?.waiting) { renderWaiting(); return; }   // constructed lobby
+/** Paint the whole UI. Returns false when it painted something that is NOT a
+ * board (connecting / lobby) — the motion layer uses that to drop its
+ * baseline instead of animating the first real board out of nowhere. */
+function renderNow(): boolean {
+  if (NET && (NET.dead || !NET.joined)) { if (!NET.dead) renderConnecting(); return false; }
+  if (NET?.waiting) { renderWaiting(); return false; }   // constructed lobby
   $app.classList.toggle('netmode', !!NET);   // net mode: sticky hand dock at the bottom
   ensureDraftUi();
   ensureBottomUi();
@@ -1791,6 +1828,8 @@ function render(): void {
           ${NET ? '<button data-btn="reportopen" title="report an issue — the server logs this exact game moment">🐛 bug</button>' : ''}
           ${NET ? `<button data-btn="autopasstoggle" class="aptoggle ${autoPref ? 'on' : ''}"
             title="when ON: automatically pass whenever passing is your only legal action">auto-pass: ${autoPref ? 'on' : 'off'}</button>` : ''}
+          <button data-btn="motiontoggle" class="aptoggle ${motionOn() ? 'on' : ''}"
+            title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
           ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
           ${NET ? '' : '<button data-btn="restart">New game</button>'}
         </div>
@@ -1800,7 +1839,7 @@ function render(): void {
       <div class="logpanel" id="log"><h3>Game log</h3>${logItems}</div>
     </div>
     ${NET ? `<div class="handdock"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})</div>
-      <div class="zone">${handZoneHtml(botSeat)}</div></div>` : ''}
+      <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${menuHtml()}
     ${binDialogHtml()}
     ${cacheDialogHtml()}
@@ -1839,7 +1878,138 @@ function render(): void {
       if (send) send.disabled = reportBusy || !reportDraft.trim();
     });
   }
+  return true;
 }
+
+// ── the motion pass (ui/motion.ts + ui/anim.ts) ───────────────────────
+//
+// The client re-renders EVERYTHING after every action, so no DOM node lives
+// long enough to be animated. Instead: measure the old board, take a census of
+// the old state, paint, then diff the two censuses and fly ghost cards along
+// the routes the diff found. The board underneath is final and clickable the
+// whole time — motion explains what happened, it never gates anything.
+
+/** the census the board on screen was painted from; null = no baseline yet
+ * (fresh join, home screen), which suppresses one round of animation */
+let lastCensus: Census | null = null;
+/** re-entrancy guard: renderChipOff() can re-render from inside a render */
+let painting = false;
+
+/** drop the motion baseline — nothing on screen is a "before" any more */
+function motionReset(): void { lastCensus = null; clearArrows(); }
+
+function render(): void {
+  if (painting) { renderNow(); return; }
+  painting = true;
+  try {
+    const frame = captureFrame();
+    const before = lastCensus;
+    const painted = renderNow();
+    if (!painted) { lastCensus = null; clearArrows(); return; }
+    const after = census(h.state);
+    lastCensus = after;
+    if (before) playMotion(frame, diffCensus(before, after));
+    updateArrows();
+  } finally { painting = false; }
+}
+
+// ── targeting arrows ──────────────────────────────────────────────────
+
+/** where a TargetRef lives on screen, best element first */
+function targetSelectors(t: TargetRef): string[] {
+  if ('unit' in t) return [`.card[data-anim="e${t.unit}"]`, `[data-anim="e${t.unit}"]`];
+  if ('player' in t) return [`[data-animzone="life:${t.player}"]`];
+  if ('stack' in t) return [`.stackitem[data-anim="s${t.stack}"]`];
+  return [`[data-anim="c${t.cached.uid}"]`, `[data-animzone="cache:${t.cached.seat}"]`];
+}
+
+/** the arrows for one item ON the stack: what fired it (dashed, into the
+ * item) and everything it is pointed at (solid, out of the item). Spent parts
+ * are skipped — they are the parts that will do nothing. */
+function stackArrows(id: number, cls: 'tgt' | 'soft'): ArrowSpec[] {
+  const it = h.state.stack.find(i => i.id === id);
+  if (!it || it.negated) return [];
+  const self = [`.stackitem[data-anim="s${it.id}"]`];
+  const out: ArrowSpec[] = [];
+  if (it.sourceId !== undefined) {
+    out.push({ from: [`.card[data-anim="e${it.sourceId}"]`], to: self, cls: 'src' });
+  }
+  const seen = new Set<string>();
+  const aim = (t: TargetRef): void => {
+    const sel = targetSelectors(t);
+    if (seen.has(sel[0]!)) return;
+    seen.add(sel[0]!);
+    out.push({ from: self, to: sel, cls });
+  };
+  for (const part of it.parts) {
+    if (part.spent) continue;
+    part.targets.forEach(aim);
+  }
+  if (it.hostId !== undefined) aim({ unit: it.hostId });
+  return out;
+}
+
+/** #4/R57: targets chosen for a cast that has NOT reached the stack yet. The
+ * item has no stack row to point from, so the arrows start at its source unit
+ * — or at the prompt bar, which is where the player's attention already is. */
+function pendingAimArrows(): ArrowSpec[] {
+  const sus = h.state.suspension;
+  if (!sus || sus.type !== 'cast') return [];
+  const it = sus.item;
+  const from = it.sourceId !== undefined
+    ? [`.card[data-anim="e${it.sourceId}"]`, '.promptbar'] : ['.promptbar'];
+  const out: ArrowSpec[] = [];
+  // "which card is asking me this?" — the prompt names the ability, but the
+  // card it came from can be anywhere on the table. Point at it.
+  if (h.state.decision && it.sourceId !== undefined) {
+    out.push({ from: [`.card[data-anim="e${it.sourceId}"]`], to: ['.promptbar'], cls: 'src' });
+  }
+  const seen = new Set<string>();
+  for (const part of it.parts) {
+    if (part.spent) continue;
+    for (const t of part.targets) {
+      const sel = targetSelectors(t);
+      if (seen.has(sel[0]!)) continue;
+      seen.add(sel[0]!);
+      out.push({ from, to: sel, cls: 'tgt' });
+    }
+  }
+  return out;
+}
+
+/** the always-on arrows: what you are currently aiming, or failing that the
+ * TOP of the stack — the one thing that is about to happen, drawn thin so a
+ * three-deep stack does not turn the table into a cat's cradle. */
+function updateArrows(): void {
+  const aim = pendingAimArrows();
+  if (aim.length) { setBaseArrows(aim); return; }
+  const top = h.state.stack[h.state.stack.length - 1];
+  setBaseArrows(top ? stackArrows(top.id, 'soft') : []);
+}
+
+/** the arrows for whatever the cursor is over, or null for "nothing special" */
+function hoverArrowsFor(target: HTMLElement): ArrowSpec[] | null {
+  const ping = target.closest('[data-ping]') as HTMLElement | null;
+  if (ping) {
+    const id = ping.dataset['ping']!;
+    return [{ from: ['.promptbar'], to: [`.card[data-anim="e${id}"]`, `[data-anim="e${id}"]`], cls: 'tgt' }];
+  }
+  const st = target.closest('[data-prevstack]') as HTMLElement | null;
+  if (st) return stackArrows(Number(st.dataset['prevstack']), 'tgt');
+  // hovering a unit answers the other half of the question: what is aimed AT
+  // me, and what did I put on the stack?
+  const card = target.closest('.card[data-anim]') as HTMLElement | null;
+  const key = card?.dataset['anim'] ?? '';
+  if (!key.startsWith('e')) return null;
+  const id = Number(key.slice(1));
+  const me = `.card[data-anim="e${id}"]`;
+  const out = h.state.stack.flatMap(it => stackArrows(it.id, 'tgt').filter(a => a.to[0] === me));
+  for (const it of h.state.stack) {
+    if (it.sourceId === id) out.push({ from: [me], to: [`.stackitem[data-anim="s${it.id}"]`], cls: 'src' });
+  }
+  return out.length ? out : null;
+}
+
 /** the judge question being typed (survives server-push re-renders) */
 let judgeDraft = '';
 
@@ -1932,6 +2102,7 @@ function maybeAutoPassPref(): void {
 }
 
 function renderConnecting(): void {
+  motionReset();
   $app.innerHTML = `<div class="joinscreen"><h2>Algomancy</h2>
     <p>${uiError ? esc(uiError) : 'Connecting to the server…'}</p></div>`;
 }
@@ -2001,6 +2172,7 @@ function importDeck(body: { url?: string; text?: string }, rerender: () => void)
 
 /** Home screen (docs/07 §2): new game / join / hotseat / practice. */
 function renderHome(): void {
+  motionReset();
   const name = localStorage.getItem('algoName') ?? '';
   const deck = savedDeck();
   $app.innerHTML = `<div class="joinscreen home">
@@ -2043,6 +2215,7 @@ function renderHome(): void {
 /** Constructed lobby: the room exists but the game has not been dealt — it
  * starts the moment both seats have brought a deck. */
 function renderWaiting(): void {
+  motionReset();
   const net = NET!;
   const w = net.waiting!;
   const me = net.seat, opp = other(me);
@@ -2145,6 +2318,9 @@ function previewEntityHtml(id: EntityId): string {
 }
 
 document.addEventListener('mouseover', e => {
+  // targeting arrows follow the cursor's subject: a stack item shows what it
+  // aims at, a unit shows what aims at it. null falls back to the base set.
+  if (inGame) setHoverArrows(hoverArrowsFor(e.target as HTMLElement));
   // #3: hovering a decision button that refers to a live entity pings that
   // unit's card(s) on the board
   const ping = (e.target as HTMLElement).closest('[data-ping]') as HTMLElement | null;
@@ -2179,6 +2355,9 @@ document.addEventListener('mouseout', e => {
   if (!ping) return;
   for (const el of document.querySelectorAll('.pinghl')) el.classList.remove('pinghl');
 });
+
+// the cursor leaving the window fires no mouseover, so drop the hover set here
+document.addEventListener('mouseleave', () => setHoverArrows(null));
 
 document.addEventListener('click', e => {
   const btn = (e.target as HTMLElement).closest('[data-btn]') as HTMLElement | null;
@@ -2258,6 +2437,7 @@ function handleButton(btn: HTMLElement): void {
     btn.textContent = 'copied ✓';
     return;
   }
+  if (b === 'motiontoggle') { setMotionOn(!motionOn()); motionReset(); render(); return; }
   if (b === 'undo') { NET?.undo(); return; }
   const s = h.state;
   if (b === 'restart' && !NET) {
@@ -2894,6 +3074,11 @@ document.addEventListener('contextmenu', e => {
   ui.menu = { x: me.clientX, y: me.clientY, items };
   render();
 });
+
+// the ghost cards the motion layer flies need the same art resolution the
+// board uses (registry image overrides included) — except a card this client
+// may not see, which has no art and flies as a card back
+initAnim({ art: (name: string) => (name === HIDDEN_CARD ? '' : art(name)) });
 
 const params = new URLSearchParams(location.search);
 /** false on the home screen — the game click-fallback must not fire there */
