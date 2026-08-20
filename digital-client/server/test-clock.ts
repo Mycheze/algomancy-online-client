@@ -18,11 +18,14 @@ import { fileURLToPath } from 'node:url';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
 import { CLOCK_START_MS } from './rooms.ts';
+import { mintRoom } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PORT = 8500 + Math.floor(Math.random() * 400);
-const ROOM = 'CK' + Math.floor(Math.random() * 1e6).toString(36).toUpperCase();
-const DROOM = 'CD' + Math.floor(Math.random() * 1e6).toString(36).toUpperCase();
+// minted from /api/new once the server is up: only a server-minted code may
+// create a room (rooms.ts)
+let ROOM = '';
+let DROOM = '';
 const ISSUES = join(HERE, 'issues.jsonl');
 /** imported rather than restated: this test hardcoded 40:00 and silently
  * went red when rooms.ts moved to 60:00 */
@@ -135,10 +138,9 @@ async function advanceUntil(a: Client, b: Client, pred: (v: any) => boolean, lab
 // preserve any real issues.jsonl on this machine; restore it afterwards
 const issuesBackup = existsSync(ISSUES) ? readFileSync(ISSUES, 'utf8') : null;
 
-rmSync(join(HERE, 'games', `${ROOM}.json`), { force: true });
-rmSync(join(HERE, 'games', `${DROOM}.json`), { force: true });
 let { server, up } = startServer();
 await up;
+ROOM = await mintRoom(PORT);
 
 try {
   // ── chess clock ─────────────────────────────────────────────────────
@@ -234,6 +236,9 @@ try {
 
   // ── draft packInfo ──────────────────────────────────────────────────
   console.log('\n[draft: packInfo in the redacted view]');
+  // minted HERE, not at the top: the restart above was a new process, and a
+  // reservation lives in memory, so a code minted before it is dead after it
+  DROOM = await mintRoom(PORT);
   const d0 = new Client(PORT);
   await d0.open();
   d0.send({ t: 'join', room: DROOM, seat: 0, mode: 'draft', name: 'Dee' });

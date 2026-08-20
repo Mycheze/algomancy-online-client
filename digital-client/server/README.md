@@ -23,15 +23,30 @@ bundle first:
 cd ../engine && npm run build:ui
 ```
 
-Open **http://localhost:8080** — the join screen appears when you pass `?ws=1`.
-Direct links skip it:
+Open **http://localhost:8080** and press **New live draft** or **New
+constructed game**. That is the only way a room comes into being: the button
+asks `/api/new` for a code, which RESERVES it, and the first join to a reserved
+code creates the room.
 
-- Seat 0: `http://localhost:8080/?ws=1&room=KITCHEN&seat=0`
-- Seat 1: `http://localhost:8080/?ws=1&room=KITCHEN&seat=1`
+Everyone else **joins** an existing code — the box on the home screen, or a
+direct link:
+
+- Seat 0: `http://localhost:8080/?ws=1&room=CODE&seat=0`
+- Seat 1: `http://localhost:8080/?ws=1&room=CODE&seat=1`
 
 Same `room` code = same game. `seat` is optional (omit it to take the first
-free seat). Opening the plain URL with no `?ws=`/`?room=` is the old **hotseat**
-client (both hands visible) — still works, unchanged.
+free seat).
+
+A code that names no room is an **error** — "No game with code XXXX" — not a
+new empty game. It used to be get-or-create, and a mistyped code dropped you
+alone into a room you thought was your opponent's (playtest: it happened twice
+in one session, and both misses were still sitting in `games/` afterwards).
+One consequence worth knowing: a reservation lives in memory, so if the server
+restarts between pressing New game and landing in it, the code is dead and you
+press the button again.
+
+Opening the plain URL with no `?ws=`/`?room=` is the old **hotseat** client
+(both hands visible) — still works, unchanged.
 
 ## Deployed (2026-08-18, home LAN)
 
@@ -71,8 +86,9 @@ needed:
 - **Port-forward**: forward TCP 8080 on the home router to 192.168.100.5 and
   share `http://<your-public-ip>:8080/?ws=1&room=CODE&seat=1`.
 
-Both of you pick the same room code and different seats. Refreshing the page
-rejoins the same room/seat and resyncs — see Reconnect below.
+One of you presses New game and sends the other the code (or their seat link);
+you take different seats. Refreshing the page rejoins the same room/seat and
+resyncs — see Reconnect below.
 
 ## How it works
 

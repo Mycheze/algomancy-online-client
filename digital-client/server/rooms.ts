@@ -229,11 +229,67 @@ export function createRoom(code: string, seed: number, names: [string, string] =
   return room;
 }
 
-/** `mode`/`els`/`creatorDeck` only matter when the room doesn't exist yet
- * (the creator's first join carries them); joining an existing room ignores
- * them. */
-export function getOrCreateRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[]): Room {
-  return rooms.get(code) ?? createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, els, creatorDeck);
+// ── who is allowed to CREATE a room ───────────────────────────────────
+//
+// Joining used to be get-or-create, so a mistyped code silently minted a brand
+// new empty game and dropped you into it, alone, convinced you were in your
+// friend's room. Playtest: Rashi did exactly that, twice, and the misses sat in
+// games/ afterwards as empty rooms nobody had played in.
+//
+// Creation is now the privilege of a code the SERVER handed out: /api/new mints
+// one and reserves it, and the first join to a reserved code spends the
+// reservation to create the room. Every other code must already exist. A code
+// you typed yourself can never create anything, which is the whole point — the
+// New-game button is unaffected because it goes through /api/new already.
+
+/** minted-but-not-yet-joined codes, and when they were minted */
+const reserved = new Map<string, number>();
+/** a reservation nobody used is a dead code — do not honour it forever */
+const RESERVE_TTL_MS = 6 * 60 * 60 * 1000;
+/** hard cap so a script hammering /api/new cannot grow this without bound */
+const RESERVE_MAX = 500;
+
+function pruneReservations(): void {
+  const now = Date.now();
+  for (const [code, at] of reserved) {
+    if (now - at > RESERVE_TTL_MS) reserved.delete(code);
+  }
+  // still too many: drop the oldest (Map iterates in insertion order)
+  while (reserved.size > RESERVE_MAX) {
+    const oldest = reserved.keys().next();
+    if (oldest.done) break;
+    reserved.delete(oldest.value);
+  }
+}
+
+/** /api/new: this code may be turned into a room by its first joiner */
+export function reserveRoomCode(code: string): void {
+  pruneReservations();
+  reserved.set(code, Date.now());
+}
+
+/** is `code` either a live room or a code we minted? (i.e. joinable at all) */
+export function roomExistsOrReserved(code: string): boolean {
+  pruneReservations();
+  return rooms.has(code) || reserved.has(code);
+}
+
+/**
+ * The room for `code`, creating it ONLY if the code was reserved by /api/new.
+ * Returns null when the code names nothing — the caller turns that into the
+ * error the player sees.
+ *
+ * `mode`/`els`/`creatorDeck` only matter when the room doesn't exist yet (the
+ * creator's first join carries them); joining an existing room ignores them.
+ */
+export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[]): Room | null {
+  const existing = rooms.get(code);
+  if (existing) return existing;
+  pruneReservations();
+  // spending the reservation and creating are one step: a second join to the
+  // same code finds the room above rather than a second reservation
+  if (!reserved.delete(code)) return null;
+  return createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, els, creatorDeck);
 }
 
 /** Apply an action to the room's authoritative state and record it. Throws

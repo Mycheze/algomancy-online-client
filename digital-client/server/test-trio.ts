@@ -5,11 +5,14 @@ import { spawn } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, rmSync } from 'node:fs';
+import { mintRoom } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PORT = 8500 + Math.floor(Math.random() * 400);
-const ROOM = 'TR' + Math.floor(Math.random() * 1e6).toString(36).toUpperCase();
-const ROOM2 = 'TS' + Math.floor(Math.random() * 1e6).toString(36).toUpperCase();
+// minted from /api/new once the server is up: only a server-minted code may
+// create a room (rooms.ts)
+let ROOM = '';
+let ROOM2 = '';
 
 let failures = 0;
 const ok = (cond: unknown, label: string): void => {
@@ -29,8 +32,6 @@ function joinRoom(room: string, seat: number, els?: string[]): Promise<any> {
   });
 }
 
-rmSync(join(HERE, 'games', `${ROOM}.json`), { force: true });
-rmSync(join(HERE, 'games', `${ROOM2}.json`), { force: true });
 const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
   env: { ...process.env, PORT: String(PORT) },
   stdio: ['ignore', 'pipe', 'inherit'],
@@ -40,6 +41,8 @@ await new Promise<void>((res, rej) => {
   server.on('exit', () => rej(new Error('server died')));
   setTimeout(() => rej(new Error('startup timeout')), 10000);
 });
+ROOM = await mintRoom(PORT);
+ROOM2 = await mintRoom(PORT);
 
 try {
   console.log('\n[trio selection]');

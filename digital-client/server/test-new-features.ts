@@ -15,7 +15,8 @@ import type { Action, Seat } from '../engine/src/types.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PORT = 8500 + Math.floor(Math.random() * 400);
-const ROOM = 'NF' + Math.floor(Math.random() * 1e6).toString(36).toUpperCase();
+// minted from /api/new below: only a server-minted code may create a room
+let ROOM = '';
 
 let failures = 0;
 function ok(cond: unknown, label: string): void {
@@ -82,6 +83,18 @@ try {
   const r2 = await (await fetch(`http://localhost:${PORT}/api/new`)).json() as { code: string };
   ok(/^[A-Z]{4}$/.test(r1.code), `returns a 4-letter code (${r1.code})`);
   ok(r1.code !== r2.code || true, 'codes are fresh each call'); // collision astronomically unlikely; don't flake
+  ROOM = r1.code;   // and it is RESERVED, so joining it creates the room
+
+  console.log('\n[unknown room codes]');
+  const stranger = new Client(PORT);
+  await stranger.open();
+  stranger.send({ t: 'join', room: 'ZZZZ', seat: 0 });
+  const refused = await stranger.next(m => m.t === 'error');
+  ok(/no game with code ZZZZ/i.test(refused.msg ?? ''),
+    'a code nobody minted is refused, not created');
+  const check = await (await fetch(`http://localhost:${PORT}/api/new`)).json() as { code: string };
+  ok(check.code !== 'ZZZZ', 'sanity: the refused code was not handed out');
+  stranger.ws.close();
 
   console.log('\n[join with a name]');
   const a = new Client(PORT);

@@ -12,9 +12,12 @@
  */
 import { spawn } from 'node:child_process';
 import { WebSocket } from 'ws';
+import { mintRoom } from './test-util.ts';
 
 const PORT = 8900 + Math.floor(Math.random() * 90);
-const ROOM = 'BLD' + Math.floor(Math.random() * 900 + 100);
+// minted from /api/new once the server is up: only a server-minted code may
+// create a room (rooms.ts)
+let ROOM = '';
 let failures = 0;
 const ok = (cond: unknown, what: string): void => {
   console.log(`  ${cond ? '✓' : '✗'} ${what}`);
@@ -54,6 +57,7 @@ srv.stdout.on('data', () => { /* quiet */ });
 
 try {
   await sleep(1200);
+  ROOM = await mintRoom(PORT);
   console.log(`[live formation relay on :${PORT}, room ${ROOM}]`);
 
   const a = new Client(PORT); await a.open();

@@ -15,10 +15,13 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, rmSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
+import { mintRoom } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PORT = 8500 + Math.floor(Math.random() * 400);
-const ROOM = 'DR' + Math.floor(Math.random() * 1e6).toString(36).toUpperCase();
+// minted from /api/new once the server is up: only a server-minted code may
+// create a room (rooms.ts)
+let ROOM = '';
 const HIDDEN = '__HIDDEN__';
 
 let failures = 0;
@@ -85,9 +88,9 @@ function noopCommit(view: any, seat: Seat): Action {
   return { type: 'draftCommit', seat, packIndices } as Action;
 }
 
-rmSync(join(HERE, 'games', `${ROOM}.json`), { force: true });
 let { server, up } = startServer();
 await up;
+ROOM = await mintRoom(PORT);
 
 try {
   console.log('\n[draft room creation + redaction]');

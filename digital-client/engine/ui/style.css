@@ -739,6 +739,9 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    The digital stand-in for seeing someone slide units into columns across the
    table. Nothing here is committed, so nothing here looks committed: dashed,
    dimmed, and inert. */
+/* a refused join (unknown room code) — the message is the point of the screen */
+.joinerr { color: var(--danger); font-size: 15px; max-width: 42ch; line-height: 1.5; }
+
 .battle.watching { border-color: #3b4a5e; }
 .battle.watching h3 { color: #8fb4dd; }
 .livedot { color: var(--glow); font-size: 10px; letter-spacing: .1em;

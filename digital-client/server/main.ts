@@ -22,7 +22,8 @@ import { checkDeck, forcedAction, legalActions, IllegalAction } from '../engine/
 import { viewFor, redactEvent, redactLog } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
-  applyToRoom, clearDeployHold, clockSnapshot, getOrCreateRoom, getRoom, renameSeat,
+  applyToRoom, clearDeployHold, clockSnapshot, getRoom, joinableRoom, renameSeat,
+  reserveRoomCode, roomExistsOrReserved,
   restoreRooms, roomWaiting, setRoomDeck, settleClock, undoActionAt, undoLastAction,
   type Room, type Socket,
 } from './rooms.ts';
@@ -70,11 +71,16 @@ const server = createServer(async (req, res) => {
   let path = decodeURIComponent(url.pathname);
   if (path === '/' || path === '') path = '/index.html';
 
-  // home screen asks here for an unused room code (the room itself is only
-  // created when the first player joins it over WS).
+  // home screen asks here for an unused room code. The room itself is only
+  // created when the first player joins it over WS — but the code is RESERVED
+  // here, and a reservation is the only thing that lets a join create a room
+  // (rooms.ts). That is what makes a mistyped code an error instead of a new
+  // empty game.
   if (path === '/api/new') {
+    const code = freshRoomCode();
+    reserveRoomCode(code);
     res.writeHead(200, { 'content-type': 'application/json' });
-    return res.end(JSON.stringify({ code: freshRoomCode() }));
+    return res.end(JSON.stringify({ code }));
   }
 
   // playtest feedback: append one JSON line per report to server/issues.jsonl.
@@ -285,6 +291,14 @@ wss.on('connection', ws => {
     if (msg.t === 'join') {
       const code = (msg.room ?? '').toUpperCase().trim();
       if (!code) return send(ws, { t: 'error', msg: 'a room code is required' });
+      // A code that names no room, and that we never minted, is a typo — say
+      // so instead of quietly creating an empty game around it (playtest: two
+      // of those ended up saved in games/, and the player thought they were in
+      // their opponent's room the whole time).
+      if (!roomExistsOrReserved(code)) {
+        console.log(`[ws] join refused: no room ${code}`);
+        return send(ws, { t: 'error', msg: `No game with code ${code}. Check the code with your opponent, or start a new game.` });
+      }
       // a deck riding on the join (constructed): validate it up front — the
       // client sends its selected deck with every join and the server uses it
       // only where it matters (creating a constructed room / a waiting seat)
@@ -302,9 +316,12 @@ wss.on('connection', ws => {
       if (mode === 'constructed' && !getRoom(code) && !deckCards) {
         return send(ws, { t: 'error', msg: 'a constructed game needs a deck — pick one on the home screen first' });
       }
-      const room = getOrCreateRoom(code, mode,
+      const room = joinableRoom(code, mode,
         Array.isArray(msg.els) ? (msg.els as import('../engine/src/types.ts').Element[]) : undefined,
         deckCards ?? undefined);
+      // only reachable if the reservation expired between the check above and
+      // here; treated exactly like a typo
+      if (!room) return send(ws, { t: 'error', msg: `No game with code ${code}. Start a new game to create one.` });
       const picked = pickSeat(room, msg.seat);
       if (picked === null) {
         return send(ws, { t: 'error', msg: 'room is full (2 players) — ask your opponent for their seat link, or use a new room' });

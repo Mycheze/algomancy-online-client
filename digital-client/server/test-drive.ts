@@ -18,10 +18,13 @@ import { fileURLToPath } from 'node:url';
 import { rmSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
 import { HIDDEN_CARD } from './view.ts';
+import { mintRoom } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PORT = 8100 + Math.floor(Math.random() * 400);
-const ROOM = 'TEST' + Math.floor(Math.random() * 1e6).toString(36).toUpperCase();
+// minted from /api/new once the server is up: only a server-minted code may
+// create a room (rooms.ts)
+let ROOM = '';
 
 let failures = 0;
 function ok(cond: unknown, label: string): void {
@@ -103,6 +106,7 @@ async function main(): Promise<void> {
   });
   srv.stdout.on('data', () => {});
   await waitForServer(PORT);
+  ROOM = await mintRoom(PORT);
   console.log(`server up on :${PORT}, room ${ROOM}`);
 
   try {

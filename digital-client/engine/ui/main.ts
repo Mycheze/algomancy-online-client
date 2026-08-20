@@ -1544,7 +1544,7 @@ function moddingBarHtml(err: string): string {
 
 function promptHtml(): string {
   const s = h.state;
-  const err = uiError ? `<span style="color:var(--bad)"> ✗ ${esc(uiError)}</span>` : '';
+  const err = uiError ? `<span style="color:var(--danger)"> ✗ ${esc(uiError)}</span>` : '';
   // playtest: an irreversible activation that will not stop to ask for a
   // target asks here instead. Takes precedence over every other prompt — it is
   // a modal question about something you already clicked.
@@ -1932,7 +1932,7 @@ function draftPanelHtml(): string {
       Click cards to move them between hand and pack. Leave exactly ${need} in the pack.
       <button class="primary" data-btn="draftcommit" data-p="${seat}" ${ok ? '' : 'disabled'}>
         Keep ${handIdx.length} · ${fate === 'recycled' ? 'end the pack' : 'pass the pack'} (enter)</button>
-      ${ok ? '' : `<span style="color:var(--bad)">pack has ${packIdx.length}/${need}</span>`}</div>
+      ${ok ? '' : `<span style="color:var(--danger)">pack has ${packIdx.length}/${need}</span>`}</div>
     <div class="zonelabel">Your hand after drafting (${handIdx.length})</div>
     <div class="zone draftkeep">${cardRow(handIdx)}</div>
     <div class="zonelabel">${leftLabel} (${packIdx.length}/${need})</div>
@@ -2412,8 +2412,12 @@ function renderConnecting(): void {
   motionReset();
   sfxReset();
   $app.classList.remove('board');
+  // a refused join (a room code that names no game) lands here, so this screen
+  // needs a way out — without the button it is a dead end you can only leave by
+  // editing the URL
   $app.innerHTML = `<div class="joinscreen"><h2>Algomancy</h2>
-    <p>${uiError ? esc(uiError) : 'Connecting to the server…'}</p></div>`;
+    <p${uiError ? ' class="joinerr"' : ''}>${uiError ? esc(uiError) : 'Connecting to the server…'}</p>
+    ${uiError ? '<button class="primary" data-btn="gohome">← Back to the home screen</button>' : ''}</div>`;
 }
 
 /** The constructed deck picker: the bundled algomancer.cc test decks (with
