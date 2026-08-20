@@ -14,6 +14,7 @@ npm run fuzz         # standalone fuzzer: node test/fuzz-run.ts [games] [maxActi
 npm run extract      # re-pull printed card data from AlgomancyCards-OracleText.json
 npm run build:ui     # bundle the hotseat UI → ui/bundle.js
 npm run fuzz:par     # parallel fuzzer: node test/fuzz-parallel.ts [games] [workers]
+npm run check        # the gate before any commit: typecheck + test + build:ui
 ```
 
 Scripting a new card (the M3 burn-down pipeline):
@@ -37,6 +38,12 @@ and arrows from an effect to its targets — is `ui/motion.ts` (pure state diff,
 tested in `test/51-ui-motion.test.ts`) plus `ui/anim.ts` (FLIP, ghost flights,
 the SVG arrow overlay). See [../docs/09-visual-clarification.md](../docs/09-visual-clarification.md);
 the `✨ motion` button in the side panel turns it all off.
+
+The battle panel's column arithmetic is split out the same way:
+`ui/formation.ts` (what to publish to the opponent while you build a formation,
+and how many rows each half of the battle line must reserve — tested in
+`test/55-ui-formation.test.ts`). Both halves of it are index arithmetic that a
+screenshot cannot check.
 
 The sound layer follows the same split: `ui/sfx.ts` (pure state diff → at most
 one cue, tested in `test/54-ui-sfx.test.ts`) plus `ui/audio.ts` (WebAudio
@@ -93,16 +100,24 @@ attackers, and the full mods system:
   composite, bounded effects skip per-card per-turn (R9), grafting is
   targeting, from hand or bin.
 
-Card pool: **64** (59 deck cards + 5 tokens), grown in waves:
-- prototype 15 + graft/rulings additions (registry.ts)
-- mechanics batch 2 (registry.ts): stat layer 4 (Tough/Balanced — R19),
-  Deadly (R21), Sneaky (R20), Feeble, the planning haste step (R18),
-  "dealt damage" triggers, Robot/Wisp tokens, the Ambush mode (R22)
-- attribute batch (`src/cards/sets/batch-attrs.ts`): **Powerful, Vulnerable,
-  Poisonous, Resonant, Thieving** (R23-R24) + Poison/Crystal counter tokens
-- water/metal + fire/wood batches (`src/cards/sets/batch-*.ts`): 20 more
-  cards — despawn/lifeLost/spellPlayed triggers, counter manipulation,
-  donated activated abilities (R25-R27)
+Card pool: **493 registered** — 483 in `DECK_LIST` plus 10 tokens — grown in
+waves, each batch its own append-only module so parallel scripting never
+collides:
+
+| wave | where | what it brought |
+|---|---|---|
+| prototype 15 + graft/rulings | `src/cards/registry.ts` (34) | the base pool |
+| mechanics batch 2 | same file | stat layer 4 (Tough/Balanced, R19), Deadly (R21), Sneaky (R20), Feeble, the planning haste step (R18), "dealt damage" triggers, Robot/Wisp tokens, Ambush (R22) |
+| attributes | `sets/batch-attrs.ts` | Powerful, Vulnerable, Poisonous, Resonant, Thieving (R23-R24) + Poison/Crystal counter tokens |
+| water/metal, fire/wood | `sets/batch-water-metal.ts`, `batch-fire-wood.ts` | despawn/lifeLost/spellPlayed triggers, counter manipulation, donated activated abilities (R25-R27) |
+| the five base elements | `sets/batch-{fire,water,earth,wood,metal}-{a,b,c}.ts` | the mono-element bulk |
+| base hybrids | `sets/batch-hybrids-fwe.ts`, `batch-hybrids-wm-{a,b}.ts` | two-element cards |
+| **Light & Dark** | `sets/batch-{light,dark}-{a,b,c}.ts`, `batch-hybrids-ld-{a,b,c}.ts` | the expansion — see [../docs/08-light-and-dark.md](../docs/08-light-and-dark.md) |
+
+A handful of cards are deliberately **parked** rather than half-scripted: each
+registers crash-free with its printed body and carries a `{ todo: true }` test
+naming exactly the primitive it is waiting on. `npm test` reports them as todo,
+so the count is the backlog.
 
 Printed data is generated from `AlgomancyCards-OracleText.json` by
 `scripts/extract-printed.mjs` (pool list in `scripts/pool.mjs`) — only
@@ -115,15 +130,23 @@ codes, server-authoritative apply, per-seat redacted views, reconnect; the
 hotseat UI doubles as the network client (`?ws=1&room=CODE&seat=0`). See
 `../server/README.md`.
 
-## Deliberate M1 cuts (parked, not forgotten)
+## Still cut (parked, not forgotten)
 
-- Stat layers 5-6 (Inverted/Unaware) — seams exist in `effStats`, no pool
-  card needs them; R10 is a `todo` test.
+- Stat layers 5-6 (Inverted/Unaware) — the seam is in `effStats`, no pool card
+  needs them; R10 is a `todo` test. (Layers 1-4 are all live: layer 2, base
+  stats, arrived with Formless and Body Swap.)
 - Combat damage split is auto-assigned lethal front-to-back; voluntary
   over-assignment (R7) has no observable effect in this pool.
 - Burst tokens cast in deterministic id order rather than player-chosen order.
-- Shard resources / free-shard-at-3-affinity.
-- No draft (shared deck, draw 2 — per roadmap, draft is M4).
+- Attribute **suppression** (Monke, Suppression Field, Transmogrifant).
+  `{Pure}` was on this list and is not any more — it turned out to need one
+  interaction's worth of scoping, not a layer (R61).
+- A *consumable* cost modifier (Deferral Drone). The continuous one is done in
+  both currencies: mana (R59) and life (R60).
+
+Shipped since this list was written, and no longer cut: **shards**
+(free-shard-at-3-affinity, Manual p.18) and the **live draft** (Manual
+p.16-17 — `mode: 'draft'`, per-player packs that pass).
 
 ## Files
 
@@ -133,7 +156,8 @@ hotseat UI doubles as the network client (`?ws=1&room=CODE&seat=0`). See
 | `src/engine.ts` | class `E`: queries, primitives, triggers, stack, combat, phases |
 | `src/apply.ts` | `createGame`, `apply` dispatch + validation, `legalActions`, `replay` |
 | `src/cards/dsl.ts` | card-definition DSL + registry + effect keys |
-| `src/cards/registry.ts` | the 34-card pool (behavior only) |
+| `src/cards/registry.ts` | the base 34 cards (behavior only) |
+| `src/cards/sets/*.ts` | every later batch; `sets/index.ts` is append-only |
 | `src/cards/printed.json` | generated printed data — do not edit |
 | `src/harness.ts` | stateful wrapper for tests/UI (accumulates log + action log) |
 | `scripts/gen-card.mjs` | card-scripting pipeline: oracle → skeleton + test stub |
