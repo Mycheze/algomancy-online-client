@@ -5,7 +5,7 @@
  *   - POST /api/report appends {ts, room, seat, note, actionIndex} to
  *     server/issues.jsonl (unknown room: actionIndex null)
  *   - draft mode: the per-seat view carries packInfo {packNumber, originalSize,
- *     remaining, picksMade, lastLook} while the draft step is open; lastLook
+ *     remaining, picksMade, picksTotal, after} while the draft step is open; `after`
  *     flips true on turn 2 (the pack in hand never returns to you)
  *
  * Same harness style as test-new-features.ts: spawn the real server on an
@@ -243,8 +243,10 @@ try {
   ok(!!p0 && !!p1, 'both seats see packInfo during the open draft step');
   ok(p0.originalSize === 10 && p0.remaining === 10 && p0.picksMade === 0,
     `turn 1: fresh pack of 10, no picks yet (${JSON.stringify(p0)})`);
-  ok(p0.lastLook === false && p1.lastLook === false,
-    'turn 1 is NOT the last look (your dealt pack returns on turn 3)');
+  ok(p0.after === 'returns' && p1.after === 'returns',
+    'turn 1 is NOT the last look — your dealt pack returns to you on turn 3');
+  ok(p0.picksTotal === 3 && p1.picksTotal === 3,
+    'a 1v1 pack is drafted from N+1 = 3 times before it is recycled');
   ok([p0.packNumber, p1.packNumber].sort().join() === '1,2',
     `the two dealt packs are #1 and #2 (${p0.packNumber} vs ${p1.packNumber})`);
   ok(d0.clock !== null, 'draft room updates carry the clock too');
@@ -268,8 +270,18 @@ try {
   ok(q0.packNumber === p1.packNumber && q1.packNumber === p0.packNumber,
     `turn 2: the packs swapped (seat 0 now holds #${q0?.packNumber})`);
   ok(q0.picksMade === 1 && q1.picksMade === 1, 'each pack has been picked over once');
-  ok(q0.lastLook === true && q1.lastLook === true,
-    'turn 2 IS the last look — after this commit the pack never returns to you');
+  ok(q0.after === 'others' && q1.after === 'others',
+    'turn 2 IS the last look — and your opponent DOES draft the leftovers on turn 3');
+
+  console.log('\n[draft: turn 3 is the final look — leftovers are recycled, not passed]');
+  await advanceUntil(d0, d1, v => v?.turn === 3 && v?.draftDone !== null, 'turn 3 draft step');
+  const r0 = d0.view.packInfo, r1 = d1.view.packInfo;
+  ok(!!r0 && !!r1, 'turn 3 draft step shows packInfo again');
+  ok(r0.packNumber === p0.packNumber && r1.packNumber === p1.packNumber,
+    'turn 3: your own dealt pack is back for its third and final look');
+  ok(r0.picksMade === 2 && r1.picksMade === 2, 'each pack has been picked over twice');
+  ok(r0.after === 'recycled' && r1.after === 'recycled',
+    'turn 3 leftovers go to the bottom of the deck — the opponent never sees them');
 
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {

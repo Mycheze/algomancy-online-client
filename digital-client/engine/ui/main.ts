@@ -1637,20 +1637,46 @@ function ensureDraftUi(): void {
  * absent on older servers and in hotseat, so consume defensively) */
 interface PackInfo {
   packNumber?: number; originalSize?: number; remaining?: number;
-  picksMade?: number; lastLook?: boolean;
+  picksMade?: number; picksTotal?: number;
+  after?: 'returns' | 'others' | 'recycled';
 }
 
-/** #5: "Pack #N · pick M (X of Y cards left)" + the last-look warning */
+/**
+ * What happens to the pack once you commit (server/view.ts PackInfo.after,
+ * from engine.ts packCycle).
+ *
+ * The 'recycled' line is the fix for a banner that was actively lying: it used
+ * to say "your opponent will see whatever you leave in it" on EVERY last look,
+ * including the cycle's final one — where the leftovers go to the bottom of
+ * the deck and nobody drafts them. That is the difference between a hate-draft
+ * being worth a pick and being worth nothing (Bena, playtest 2026-08-20).
+ */
+const PACK_FATE: Record<string, { cls: string; html: string }> = {
+  returns: {
+    cls: 'packback',
+    html: 'this pack <b>comes back to you</b> later this cycle — what you leave, your opponent picks from first',
+  },
+  others: {
+    cls: 'lastlook',
+    html: 'your <b>last look</b> at this pack — after this commit it never comes back to you, and your opponent drafts whatever you leave in it',
+  },
+  recycled: {
+    cls: 'lastlook final',
+    html: '<b>final look</b> — this pack is retired after this commit: what you leave is shuffled into the bottom of the deck, and <b>nobody</b> drafts from it again',
+  },
+};
+
+/** #5: "Pack #N · pick M of T (X of Y cards left)" + what happens to it next */
 function packInfoHtml(): string {
   const pi = (h.state as GameState & { packInfo?: PackInfo }).packInfo;
   if (!pi || typeof pi !== 'object' || typeof pi.packNumber !== 'number') return '';
-  const pick = typeof pi.picksMade === 'number' ? ` · pick ${pi.picksMade + 1}` : '';
+  const of = typeof pi.picksTotal === 'number' ? ` of ${pi.picksTotal}` : '';
+  const pick = typeof pi.picksMade === 'number' ? ` · pick ${pi.picksMade + 1}${of}` : '';
   const count = typeof pi.remaining === 'number' && typeof pi.originalSize === 'number'
     ? ` (${pi.remaining} of ${pi.originalSize} cards left)` : '';
-  const last = pi.lastLook === true
-    ? `<div class="lastlook">your <b>last look</b> at this pack — after this commit it never comes back to you; your opponent will see whatever you leave in it</div>`
-    : '';
-  return `<div class="packrow"><span class="packinfo">Pack #${pi.packNumber}${pick}${count}</span>${last}</div>`;
+  const fate = PACK_FATE[pi.after ?? ''];
+  const note = fate ? `<div class="${fate.cls}">${fate.html}</div>` : '';
+  return `<div class="packrow"><span class="packinfo">Pack #${pi.packNumber}${pick}${count}</span>${note}</div>`;
 }
 
 function draftPanelHtml(): string {
@@ -1665,16 +1691,23 @@ function draftPanelHtml(): string {
   const handIdx = pile.map((_, i) => i).filter(i => !inPack.has(i));
   const packIdx = pile.map((_, i) => i).filter(i => inPack.has(i));
   const ok = packIdx.length === need;
+  // the pack's own label makes the same promise the banner does, so it has to
+  // tell the same truth: on the cycle's final look these cards go to the
+  // bottom of the deck, not to the player across the table
+  const fate = (h.state as GameState & { packInfo?: PackInfo }).packInfo?.after;
+  const leftLabel = fate === 'recycled'
+    ? 'Left in the pack — recycled into the deck, unseen'
+    : 'Left in the pack — passes to your opponent';
   return `<div class="draftpanel">
     ${packInfoHtml()}
     <div class="drafthead"><span class="who">${esc(s.players[seat]!.name)} — draft step</span>
       Click cards to move them between hand and pack. Leave exactly ${need} in the pack.
       <button class="primary" data-btn="draftcommit" data-p="${seat}" ${ok ? '' : 'disabled'}>
-        Keep ${handIdx.length} · pass the pack (enter)</button>
+        Keep ${handIdx.length} · ${fate === 'recycled' ? 'end the pack' : 'pass the pack'} (enter)</button>
       ${ok ? '' : `<span style="color:var(--bad)">pack has ${packIdx.length}/${need}</span>`}</div>
     <div class="zonelabel">Your hand after drafting (${handIdx.length})</div>
     <div class="zone draftkeep">${cardRow(handIdx)}</div>
-    <div class="zonelabel">Left in the pack — passes to your opponent (${packIdx.length}/${need})</div>
+    <div class="zonelabel">${leftLabel} (${packIdx.length}/${need})</div>
     <div class="zone draftleave">${cardRow(packIdx)}</div>
   </div>`;
 }

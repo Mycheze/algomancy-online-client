@@ -17,6 +17,7 @@
  * Public (sent as-is): bins, life, in-play entities (units/tokens/mods),
  * formations/battle, the stack, phase/turn, and each seat's own everything.
  */
+import { packCycle } from '../engine/src/engine.ts';
 import type { EngineEvent, GameState, Seat } from '../engine/src/types.ts';
 
 /** Placeholder card name for a hidden card (opponent hand / deck). The client
@@ -40,12 +41,13 @@ export interface PackInfo {
   /** hand↔pack merges already committed on this pack since it was dealt —
    * how picked-over it is (your own commit counts once you've made it) */
   picksMade: number;
-  /** true = after your current commit this pack never returns to you before
-   * it is recycled. 1v1 pack cycle (see engine.ts startDraftStep/passPacks):
-   * fresh packs on turns 1, 4, 7, … — you hold your own dealt pack on cycle
-   * turn 0, the opponent's on turn 1, your own again on turn 2, then all
-   * packs are recycled. Only cycle turn 0 sees the pack again. */
-  lastLook: boolean;
+  /** looks this pack gets in total before it is recycled (N+1 — 3 in 1v1) */
+  picksTotal: number;
+  /** what becomes of this pack after your current commit — see
+   * engine.ts packCycle, which is the single source of this schedule.
+   * 'recycled' is the one the UI used to get wrong: on the cycle's final
+   * look the leftovers go to the bottom of the deck, NOT to your opponent. */
+  after: 'returns' | 'others' | 'recycled';
 }
 
 export type SeatView = GameState & { packInfo?: PackInfo };
@@ -115,13 +117,14 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
   if (state.mode === 'draft' && state.draftDone !== null) {
     const meta = state.packMeta?.[seat];
     if (meta) {
-      const cycle = state.players.length + 1;   // deals on turns 1, 1+cycle, …
+      const cyc = packCycle(state.turn, state.players.length);
       v.packInfo = {
         packNumber: meta.serial,
         originalSize: meta.originalSize,
         remaining: state.packs[seat]!.length,
         picksMade: meta.commits,
-        lastLook: (state.turn - 1) % cycle !== 0,
+        picksTotal: cyc.total,
+        after: cyc.after,
       };
     }
   }

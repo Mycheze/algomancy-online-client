@@ -493,6 +493,12 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .packinfo { color: var(--accent); font-weight: 700; }
 .lastlook { background: #33270f; border: 1px solid #7a5e1e; border-radius: 5px;
   color: var(--accent); padding: 3px 8px; font-size: 12px; }
+/* the cycle's FINAL look is a different fact from "your opponent gets it
+   next", so it must not wear the same colour — leftovers are recycled here */
+.lastlook.final { background: #241a2e; border-color: #7a5b96; color: #d6b8f2; }
+/* the reassuring half of the same information: the pack returns to you */
+.packback { background: #17241c; border: 1px solid #35583f; border-radius: 5px;
+  color: #8fc79c; padding: 3px 8px; font-size: 12px; }
 
 /* ── playtest round 4 (2026-08-18): clocks, report, hotkeys, X preview ── */
 

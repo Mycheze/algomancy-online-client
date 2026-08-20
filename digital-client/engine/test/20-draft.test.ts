@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { createGame, DRAFT_TRIO, IllegalAction, legalActions } from '../src/apply.ts';
+import { packCycle } from '../src/engine.ts';
 import { draftDeckList, DECK_LIST } from '../src/cards/registry.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import type { Seat } from '../src/types.ts';
@@ -211,4 +212,100 @@ test('replay determinism: same seed + same commits = same state', () => {
   const a = drive();
   const b = drive();
   assert.deepEqual(a, b);
+});
+
+// ── the pack schedule the draft banner promises (playtest 2026-08-20) ──
+//
+// Bena, holding pick 3 of a 1v1 pack: "This reminder text is false … it should
+// all be recycled at the end so my opponent will NOT get to see it again."
+// He was right, and the cause was two independent copies of the N+1 schedule —
+// one in startDraftStep, one in the server's view. packCycle is now the single
+// copy; these tests pin what each of its three answers CLAIMS against what the
+// engine actually does with the cards.
+
+test('packCycle: N+1 looks, and only the cycle-opening holder sees the pack again', () => {
+  // 1v1: three looks — you, your opponent, you again, then recycled
+  const c = (turn: number) => packCycle(turn, 2);
+  assert.equal(c(1).total, 3);
+  assert.deepEqual([c(1).index, c(2).index, c(3).index, c(4).index], [0, 1, 2, 0]);
+  assert.deepEqual([c(1).after, c(2).after, c(3).after], ['returns', 'others', 'recycled']);
+  assert.deepEqual([c(4).after, c(5).after, c(6).after], ['returns', 'others', 'recycled'],
+    'the schedule repeats every cycle');
+
+  // 3 players: four looks, once around the table and back to the owner
+  const t = (turn: number) => packCycle(turn, 3);
+  assert.equal(t(1).total, 4);
+  assert.deepEqual([t(1).after, t(2).after, t(3).after, t(4).after],
+    ['returns', 'others', 'others', 'recycled']);
+});
+
+test('packCycle agrees with startDraftStep about which turns deal fresh packs', () => {
+  // the refresh test above proves turn 4 refreshes; this proves the schedule
+  // the UI reads from cannot drift away from the one the engine acts on
+  const h = new Harness(2010, undefined, 'draft');
+  const serials = (): number[] => h.state.packMeta!.map(m => m!.serial);
+  const seen: Record<number, number[]> = {};
+  for (let turn = 1; turn <= 7; turn++) {
+    assert.equal(h.state.turn, turn);
+    seen[turn] = serials();
+    const fresh = packCycle(turn, 2).index === 0;
+    if (turn > 1) {
+      const grew = seen[turn]!.some(sn => !seen[turn - 1]!.includes(sn));
+      assert.equal(grew, fresh, `turn ${turn}: packCycle says fresh=${fresh}, engine says ${grew}`);
+    }
+    playTurn(h);
+  }
+});
+
+/** the cards left behind by `seat` after a no-op-ish commit this turn */
+function leftInPack(h: Harness, seat: Seat): string[] {
+  return h.state.packs[seat]!.slice();
+}
+
+test('"comes back to you" (turn 1) is true: your own pack returns on turn 3', () => {
+  const h = new Harness(2011, undefined, 'draft');
+  assert.equal(packCycle(1, 2).after, 'returns');
+  const mine = leftInPack(h, 0);
+  const serial = h.state.packMeta![0]!.serial;
+
+  playTurn(h);                                   // turn 1 → 2 (opponent picks)
+  assert.notEqual(h.state.packMeta![0]!.serial, serial, 'turn 2 holds the other pack');
+  playTurn(h);                                   // turn 2 → 3
+  assert.equal(h.state.turn, 3);
+  assert.equal(h.state.packMeta![0]!.serial, serial, 'turn 3: my own pack is back');
+  // no-op commits, so every card I left is still there for me to pick
+  assert.deepEqual(h.state.packs[0]!.slice().sort(), mine.slice().sort());
+});
+
+test('"your opponent drafts the leftovers" (turn 2) is true', () => {
+  const h = new Harness(2012, undefined, 'draft');
+  playTurn(h);                                   // → turn 2
+  assert.equal(packCycle(2, 2).after, 'others');
+  const left = leftInPack(h, 0);
+  const serial = h.state.packMeta![0]!.serial;
+
+  playTurn(h);                                   // → turn 3
+  assert.equal(h.state.packMeta![1]!.serial, serial,
+    'the pack I just looked at is in my OPPONENT’s hands on turn 3');
+  assert.deepEqual(h.state.packs[1]!.slice().sort(), left.slice().sort(),
+    'and they are looking at exactly what I left in it');
+});
+
+test('"nobody drafts it again" (turn 3) is true: the leftovers are recycled', () => {
+  const h = new Harness(2013, undefined, 'draft');
+  playTurn(h); playTurn(h);                      // → turn 3
+  assert.equal(h.state.turn, 3);
+  assert.equal(packCycle(3, 2).after, 'recycled');
+  const left = [leftInPack(h, 0), leftInPack(h, 1)];
+
+  playTurn(h);                                   // → turn 4: packs recycled
+  assert.equal(h.state.turn, 4);
+  for (const seat of [0, 1] as Seat[]) {
+    for (const card of left[seat]!) {
+      assert.ok(!h.state.packs.flat().includes(card),
+        `${card} was left on the final look but turned up in a pack — the banner would be lying`);
+      assert.ok(h.state.sharedDeck.includes(card),
+        `${card} should be at the bottom of the deck after the recycle`);
+    }
+  }
 });

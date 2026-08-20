@@ -2827,10 +2827,10 @@ export class E {
 
   /** Open the draft step. After each cycle of N+1 turns (N = players; 1v1:
    * turns 4, 7, …) all packs are first recycled — bottom of the deck in
-   * random order — and fresh packs of 10 dealt. */
+   * random order — and fresh packs of 10 dealt (see packCycle). */
   startDraftStep(): void {
     const n = this.s.players.length;
-    if (this.s.turn > 1 && (this.s.turn - 1) % (n + 1) === 0) {
+    if (this.s.turn > 1 && packCycle(this.s.turn, n).index === 0) {
       const recycled = this.shuffle(this.s.packs.flat());
       this.s.sharedDeck.push(...recycled);
       this.dealPacks();
@@ -3050,4 +3050,38 @@ export class E {
     this.s.initiative = this.nit;
     this.startTurn();
   }
+}
+
+/**
+ * Manual p.16-17: a dealt pack is drafted from N+1 times (N = players) and is
+ * then RECYCLED — shuffled to the bottom of the deck — with fresh packs dealt.
+ * In 1v1 that is three looks: you, your opponent, you again.
+ *
+ * Both the engine (when to recycle) and the server's per-seat view (what to
+ * tell a player about the pack in their hands) need this schedule. A second,
+ * independent copy of it is exactly how the draft banner came to promise that
+ * the opponent would see the leftovers of a pack that was about to be recycled
+ * — on the cycle's LAST look nobody sees them, which is the difference between
+ * hate-drafting being worth a pick and being worth nothing (playtest,
+ * 2026-08-20). One function, both callers.
+ */
+export function packCycle(turn: number, players: number): {
+  /** looks this pack gets before it is recycled (N+1) */
+  total: number;
+  /** 0-based position of THIS turn's look within the cycle */
+  index: number;
+  /** what becomes of the pack a seat is holding, once they commit:
+   *  'returns'  — it comes back to them later in this cycle
+   *  'others'   — someone else drafts from it; they never see it again
+   *  'recycled' — the final look: what they leave is shuffled into the deck
+   *               and NOBODY drafts from this pack again */
+  after: 'returns' | 'others' | 'recycled';
+} {
+  const total = Math.max(2, players + 1);
+  const index = (((turn - 1) % total) + total) % total;
+  // A pack travels exactly once around the table (N looks) plus one, so the
+  // only holder who ever sees it again is the one holding it at the start of
+  // the cycle — true for any N, not just 1v1.
+  const after = index === total - 1 ? 'recycled' : index === 0 ? 'returns' : 'others';
+  return { total, index, after };
 }
