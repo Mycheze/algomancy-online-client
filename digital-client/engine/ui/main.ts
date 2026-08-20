@@ -4,9 +4,10 @@
  * Both hands are visible: this is the M1 test rig, not the product. */
 import { Harness } from '../src/harness.ts';
 import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/apply.ts';
-import { getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
+import { allCardNames, getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
+import { DECK_LIST } from '../src/cards/registry.ts';
 import {
-  activationNeedsConfirm, playableCachedNames, stackAbilityRows,
+  activationNeedsConfirm, playableCachedNames, shouldAutoYield, stackAbilityRows,
 } from './inspect.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
 import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts';
@@ -508,11 +509,9 @@ function saveYield(): void {
  * item is a trigger sourced from an auto-yielded unit, pass automatically —
  * anything else on the stack (spells, other triggers) keeps the window open. */
 function maybeAutoYield(): void {
-  if (!NET || !yieldMap.size) return;
+  if (!NET) return;
   const s = h.state;
-  if (s.phase !== 'battle' || s.decision || s.priority !== NET.seat) return;
-  if (!s.stack.length) return;
-  if (!s.stack.every(it => it.kind === 'triggered' && it.sourceId !== undefined && yieldMap.has(it.sourceId))) return;
+  if (!shouldAutoYield(s, NET.seat, new Set(yieldMap.keys()))) return;
   if (s.actionCount === ui.yieldAt) return;   // one send per server state
   if (!NET.legal.some(a => a.type === 'passPriority')) return;
   ui.yieldAt = s.actionCount;
@@ -1007,6 +1006,26 @@ function cacheAnimKeys(p: Seat): string[] {
   return cache.map((cc, i) => (cc.uid !== undefined ? `c${cc.uid}` : fb[i]!));
 }
 
+/**
+ * R41/R45: a cache entry that can never be PLAYED again — no prophecy to
+ * fulfil, and either no glimpse stamp at all or one that has expired. It is
+ * not quite dead (you may still augment or graft from cache) but it is not
+ * what the zone is for, and a pile of them buries the entries that matter.
+ *
+ * Playtest 2026-08-20: "cards in the cache that are expired should be hidden.
+ * Still able to be shown or viewed, but mostly out of sight."
+ */
+function cacheSpent(p: Seat, i: number): boolean {
+  const cc = cacheOf(p)[i];
+  if (!cc) return false;
+  if (cc.prophecy) return false;                       // a condition may yet be met
+  if (cc.playableUntilTurn === undefined) return true;  // never had permission
+  return h.state.turn > cc.playableUntilTurn;           // the glimpse window closed
+}
+
+/** the seats whose spent cache entries the player has asked to see */
+let showSpentCache = new Set<Seat>();
+
 /** the augment/graft actions available from `seat`'s cache entry `i` (R41:
  * "you CAN augment or graft from cache") */
 function cacheModActions(seat: Seat, i: number): Action[] {
@@ -1028,16 +1047,24 @@ function regionCacheHtml(p: Seat): string {
   const now = new Set(legal.filter(a => a.type === 'playCached').map(a => (a as { index: number }).index)).size;
   const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'cache');
   const hot = now > 0 || usable;
+  const waiting = cache.filter((_, i) => !cacheSpent(p, i)).length;
   const note = mine && now ? `<div class="cachehint">${now} playable now</div>`
     : permitted ? `<div class="cachewait">${permitted} ready${mine ? ' — not this step' : ''}</div>`
-      : `<div class="cachewait">${cache.length} waiting</div>`;
+      : waiting ? `<div class="cachewait">${waiting} waiting</div>`
+        : `<div class="cachewait">nothing live</div>`;
   const keys = cacheAnimKeys(p);
+  // spent entries (expired glimpses, no prophecy) are still IN the zone but
+  // are not what you are looking at it for — the thumbs show live ones
+  const liveIdx = cache.map((_, i) => i).filter(i => !cacheSpent(p, i));
+  const spent = cache.length - liveIdx.length;
+  const thumbs = liveIdx.slice(-3);
   return `<div class="regioncache ${hot ? 'hasplay' : ''}" data-btn="cacheopen" data-p="${p}"
       data-animzone="cache:${p}"
       title="R41: the cache is public — both players see every cached card. Click to open.">
-    <div class="zonelabel">cache (${cache.length})</div>
-    <div class="regionbinthumbs">${cache.slice(-3).map((cc, k) =>
-      cardHtml(cc.card, { anim: cacheView === p ? undefined : keys[cache.length - Math.min(3, cache.length) + k] })).join('')}</div>
+    <div class="zonelabel">cache (${liveIdx.length}${spent ? ` +${spent} spent` : ''})</div>
+    <div class="regionbinthumbs">${thumbs.map(i =>
+      cardHtml(cache[i]!.card, { anim: cacheView === p ? undefined : keys[i] })).join('')
+      || '<span class="binempty">nothing live</span>'}</div>
     ${note}
   </div>`;
 }
@@ -1059,7 +1086,17 @@ function cacheDialogHtml(): string {
   const pl = h.state.players[p]!;
   const cache = cacheOf(p);
   const mine = !NET || NET.seat === p;
-  const items = cache.map((_, i) => cacheCardHtml(p, i, { clickable: mine })).join('');
+  const live = cache.map((_, i) => i).filter(i => !cacheSpent(p, i));
+  const spent = cache.map((_, i) => i).filter(i => cacheSpent(p, i));
+  const showSpent = showSpentCache.has(p);
+  const items = live.map(i => cacheCardHtml(p, i, { clickable: mine })).join('');
+  const spentItems = spent.length
+    ? `<div class="spentcache">
+        <button data-btn="cachespent" data-p="${p}">${showSpent ? '▾' : '▸'} ${spent.length} spent
+          <span style="color:var(--dim)">— expired or never permitted; still graftable</span></button>
+        ${showSpent ? `<div class="zone binzone bindialog cachezone dim">${
+          spent.map(i => cacheCardHtml(p, i, { clickable: mine })).join('')}</div>` : ''}
+      </div>` : '';
   const anyPlayable = cache.some((_, i) => q().cachePermission(p, i) !== null);
   return `<div class="overlay mainonly"><div class="overlaybox binbox cachebox">
     <h3>${esc(pl.name)}'s cache (${cache.length})</h3>
@@ -1068,7 +1105,8 @@ function cacheDialogHtml(): string {
       fulfilled (free, ignoring affinity) or a glimpse still allows it this turn (pay the mana,
       ignoring affinity). Normal timing still applies. You may also augment or graft from here.</div>
     ${anyPlayable && mine ? '<div class="binmodbanner">Glowing cards can be used right now — click one.</div>' : ''}
-    <div class="zone binzone bindialog cachezone">${items || '<span class="binempty">empty</span>'}</div>
+    <div class="zone binzone bindialog cachezone">${items || '<span class="binempty">nothing live</span>'}</div>
+    ${spentItems}
     <button data-btn="cacheclose">Close</button>
   </div></div>`;
 }
@@ -1127,6 +1165,60 @@ function helpOverlayHtml(): string {
   </div></div>`;
 }
 
+/**
+ * The token cards a card's text names.
+ *
+ * Playtest 2026-08-20: "any card that creates a token should have an easy way
+ * to view that token in the details — if you don't remember what a Wraith or
+ * Crystal token are, it's impossible to check right now."
+ *
+ * There is no per-card "creates" field to read, but tokens ARE registry cards
+ * (spawnUnit looks them up by name), and a card that makes one names it in its
+ * text: "Create a Crystal 2", "Create a Wraith". So: every registered name
+ * that is not in DECK_LIST is a token, and a token whose name appears in the
+ * text is one this card makes. Derived, so a new token needs no bookkeeping.
+ *
+ * Longest name first, so "Crystal 2" wins over "Crystal" on the same text.
+ */
+const TOKEN_NAMES: string[] = (() => {
+  const playable = new Set(DECK_LIST);
+  return allCardNames()
+    // resource FACES are registry cards too (the board renders them as scans)
+    // but nothing "creates a Fire Resource token" — drop them
+    .filter(n => !playable.has(n) && !/ Resource$/.test(n) && !/^Dormant/.test(n))
+    .sort((a, b) => b.length - a.length);
+})();
+
+function tokensNamedIn(text: string): string[] {
+  if (!text) return [];
+  const out: string[] = [];
+  let left = text;
+  for (const n of TOKEN_NAMES) {
+    const re = new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    if (re.test(left)) { out.push(n); left = left.replace(new RegExp(re.source, 'gi'), ' '); }
+  }
+  return out;
+}
+
+/** one token as a scan plus its own stat line and text — the whole point is
+ * not having to remember what a Wraith is */
+function tokenRowHtml(name: string): string {
+  let type = '', text = '', p = 0, t = 0;
+  try { const c = getCard(name); type = c.type; text = c.text; p = c.power; t = c.toughness; }
+  catch { return ''; }
+  // a SPELL token has no meaningful printed P/T (its X is supplied when it is
+  // created — "Create a Crystal 2" is a Crystal with X=2), so don't print one
+  const stats = /spell/i.test(type) ? '<span class="hint">X set when created</span>' : `<b>${p}/${t}</b>`;
+  return `<div class="tokenrow">
+    ${cardHtml(name, { data: `data-prev="${esc(name)}"` })}
+    <div class="tokenbody">
+      <div class="tokenname">${esc(name)} ${stats}</div>
+      <div class="hint">${iconizeText(type)}</div>
+      ${text ? `<div class="hint">${iconizeText(text)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
 // ── right-click card inspector ────────────────────────────────────────
 let inspect: {
   name: string;
@@ -1173,6 +1265,7 @@ function inspectorHtml(): string {
   });
   const referenced = glossaryHits(
     [type, text, ...modTexts, ...(inspect.rulings ?? [])], { skip: attrs });
+  const tokenRows = tokensNamedIn(text).map(tokenRowHtml).join('');
   const refRows = referenced.length
     ? referenced.map(glossRow).join('')
     : `<div class="hint">${inspect.rulings === null
@@ -1190,6 +1283,7 @@ function inspectorHtml(): string {
       ${u ? graftComposedHtml(u) : ''}
       <h4>Attributes${u ? ' (current, shared/granted included)' : ' (printed)'}</h4>
       ${attrRows}
+      ${tokenRows ? `<h4>Tokens it creates</h4>${tokenRows}` : ''}
       <h4>Referenced rules <span class="hint">— named in the text${
         inspect.rulings?.length ? ' or the rulings' : ''}</span></h4>
       ${refRows}
@@ -1294,22 +1388,25 @@ function battleHtml(): string {
 }
 
 function colBuilderHtml(col: EntityId[], ci: number): string {
+  return `<div class="col"><div class="collabel">column ${ci + 1}</div>${colSlotsHtml(col, ci)}</div>`;
+}
+/** the two rows of one column being built: a unit, or an open slot you can
+ * drop into. Both rows are always offered (playtest: the back row used to
+ * appear only once the front was filled, which forced a click order). */
+function colSlotsHtml(col: EntityId[], ci: number): string {
   const u0 = col[0] !== undefined ? h.state.entities[col[0]] : undefined;
   const u1 = col[1] !== undefined ? h.state.entities[col[1]] : undefined;
   const front = u0 ? unitHtml(u0, { selected: true }) : slotHtml(ci, 0, !!ui.carrying);
-  const back = u0 ? (u1 ? unitHtml(u1, { selected: true }) : slotHtml(ci, 1, !!ui.carrying)) : '';
-  return `<div class="col"><div class="collabel">column ${ci + 1}</div>${front}${back}</div>`;
+  const back = u1 ? unitHtml(u1, { selected: true })
+    : (u0 || ui.carrying ? slotHtml(ci, 1, !!ui.carrying) : '');
+  return front + back;
 }
 function slotHtml(ci: number, row: number, open: boolean): string {
-  return `<div class="slot ${open ? 'open' : ''}" data-act="slot" data-ci="${ci}" data-row="${row}">${row === 0 ? 'front' : 'back'}</div>`;
+  return `<div class="slot ${open ? 'open' : ''}" data-act="slot" data-ci="${ci}" data-row="${row}"
+    title="${row === 0 ? 'front row — takes the damage, and dropping here pushes a unit already standing there to the back' : 'back row'}">${row === 0 ? 'front' : 'back'}</div>`;
 }
 function blockBuilderHtml(ci: number): string {
-  const col = ui.columns[ci] ?? [];
-  const u0 = col[0] !== undefined ? h.state.entities[col[0]] : undefined;
-  const u1 = col[1] !== undefined ? h.state.entities[col[1]] : undefined;
-  const front = u0 ? unitHtml(u0, { selected: true }) : slotHtml(ci, 0, !!ui.carrying);
-  const back = u0 ? (u1 ? unitHtml(u1, { selected: true }) : slotHtml(ci, 1, !!ui.carrying)) : '';
-  return front + back;
+  return colSlotsHtml(ui.columns[ci] ?? [], ci);
 }
 
 /** #4: the mod-in-progress banner — spells out card, source zone and mode,
@@ -1347,6 +1444,19 @@ function promptHtml(): string {
     if (NET) return `<div class="promptbar"><span class="who">${s.winner === NET.seat ? 'You win! 🎉' : `${esc(won)} wins.`}</span></div>`;
     return `<div class="promptbar"><span class="who">${esc(won)} wins!</span>
       <button data-btn="restart">New game</button></div>`;
+  }
+  // Playtest 2026-08-20: "when a decision is pending for the other player I
+  // get the window for priority and it asks me to pass, but I can't." The
+  // server redacts the opponent's decision to null (view.ts — its options are
+  // private), so the client fell through to the ordinary priority bar and
+  // offered a button the server would refuse. It does not need the decision to
+  // know: an EMPTY legal-action list means nothing at all is mine to do.
+  if (NET && !s.decision && !NET.legal.length) {   // gameover returned above
+    const opp = esc(s.players[other(NET.seat)]!.name);
+    return `<div class="promptbar waiting"><span class="who">Waiting for ${opp}…</span>
+      <span style="color:var(--dim)">${s.stack.length
+        ? 'they are answering something on the stack — nothing is yours to do yet'
+        : 'nothing is yours to do yet'}</span>${err}</div>`;
   }
   const dec = s.decision;
   if (dec) {
@@ -2454,6 +2564,11 @@ function handleButton(btn: HTMLElement): void {
     btn.textContent = 'copied ✓';
     return;
   }
+  if (b === 'cachespent') {
+    const p = Number(btn.dataset['p']) as Seat;
+    if (showSpentCache.has(p)) showSpentCache.delete(p); else showSpentCache.add(p);
+    render(); return;
+  }
   if (b === 'motiontoggle') { setMotionOn(!motionOn()); motionReset(); render(); return; }
   if (b === 'undo') { NET?.undo(); return; }
   const s = h.state;
@@ -2742,8 +2857,15 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
 
   if (kind === 'slot' && ui.carrying !== null) {
     const ci = Number(t.dataset['ci']);
+    // playtest: the column used to offer one slot at a time and just push, so
+    // the ORDER you clicked units in was the order they stood in — "I was
+    // forced to do creature B as a blocker before creature A". Both rows are
+    // live now and the row you click is the row you get: dropping into the
+    // front of an occupied column pushes the sitting unit to the back.
+    const row = Number(t.dataset['row']) || 0;
     if (!ui.columns[ci]) ui.columns[ci] = [];
-    if (ui.columns[ci]!.length < 2) ui.columns[ci]!.push(ui.carrying);
+    const col = ui.columns[ci]!;
+    if (col.length < 2) col.splice(Math.min(row, col.length), 0, ui.carrying);
     ui.carrying = null;
   }
   if (kind === 'sendslot' && ui.carrying !== null) {

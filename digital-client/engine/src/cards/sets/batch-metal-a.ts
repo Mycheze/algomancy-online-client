@@ -323,9 +323,12 @@ card('Biomass Devourer', {
 
 // "[Switch1] Exchange the base stats of two target units until regroup.
 // (With each other.)" — m/2 2/1 {Battle} Arcane Spell. Two targets collected
-// at cast (count/min 2). ⚠ header: the exchange is a temp delta from each
-// unit's printed/token base — counters and other temp changes stay on top,
-// and regroup clears it (R11 step 3). Needs both targets alive at resolution.
+// at cast (count/min 2). The exchange REWRITES each unit's base (layer 2, see
+// E.setBase) rather than adding a delta: it is "exchange the base stats", so
+// counters and temp changes keep applying on top, a later base-setter
+// overwrites it rather than compounding with it, and the log says what
+// happened ("base becomes 4/4") instead of a misleading -X/+X. Regroup clears
+// it (R11 step 3). Needs both targets alive at resolution.
 const bodySwap: EffectDef = {
   targets: { what: 'unit', prompt: 'Body Swap: exchange the base stats of two target units until regroup', count: 2, min: 2 },
   run: (g, ctx) => {
@@ -335,10 +338,10 @@ const bodySwap: EffectDef = {
       g.ev('info', 'Body Swap: needs both targets — no effect.');
       return;
     }
-    const [ap, at] = baseStats(a);
-    const [bp, bt] = baseStats(b);
-    g.addTemp(a, bp - ap, bt - at);
-    g.addTemp(b, ap - bp, at - bt);
+    const [ap, at] = g.baseStatsOf(a);
+    const [bp, bt] = g.baseStatsOf(b);
+    g.setBase(a, bp, bt);
+    g.setBase(b, ap, at);
   },
 };
 card('Body Swap', {

@@ -135,17 +135,18 @@ card('Foretell', {
 
 // "When I attack or block, [Switch] Target unit becomes a base 4/4 and loses
 // all attributes until regroup. (This removes attributes from its column.)"
-// — mm/3 2/2 {Flying} Cloud Avatar Unit. ⚠ the base-4/4 half is a temp-stat
-// delta from the printed/token base (header); the attribute-loss half is
-// PARKED (no suppression layer). Unbounded graft cause ([Switch]).
+// — mm/3 2/2 {Flying} Cloud Avatar Unit. The base-4/4 half REWRITES layer 2
+// (E.setBase): "becomes a base 4/4" replaces the base, so it does not compound
+// with a base already rewritten by Body Swap — doing it with addTemp is how a
+// swapped Bloated Manablub came out a 6/9 instead of a 4/4 (playtest
+// 2026-08-20). The attribute-loss half is still PARKED (no suppression
+// layer). Unbounded graft cause ([Switch]).
 const formlessReshape: EffectDef = {
   targets: { what: 'unit', prompt: 'Formless: target unit becomes a base 4/4 until regroup' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!isEnt(t) || !g.entity(t.id)) return;
-    const c = g.card(t.card);
-    const base = t.tokenStats ?? [c.power, c.toughness];
-    g.addTemp(t, 4 - base[0]!, 4 - base[1]!);
+    g.setBase(t, 4, 4);
     g.ev('info', `Formless: ${t.card} is a base 4/4 until regroup (⚠ attribute loss not implemented).`);
     g.checkDeaths();
   },

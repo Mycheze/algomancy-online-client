@@ -343,9 +343,15 @@ export class E {
     return out;
   }
 
-  effStats(e: Entity): [number, number] {
+  /** layers 1-2: the printed/token stats, or the base somebody rewrote */
+  baseStatsOf(e: Entity): [number, number] {
+    if (e.baseSet) return [e.baseSet[0], e.baseSet[1]];        // layer 2
     const c = this.card(e.card);
-    const base = e.tokenStats ?? [c.power, c.toughness];       // layer 1 (+2 base-set later)
+    return e.tokenStats ?? [c.power, c.toughness];             // layer 1
+  }
+
+  effStats(e: Entity): [number, number] {
+    const base = this.baseStatsOf(e);                          // layers 1-2
     let p = base[0]! + e.counters + e.tempPower;               // layer 3
     let t = base[1]! + e.counters + e.tempToughness;
     for (const { holder, mod } of this.staticsFor(e)) {        // layer 3: continuous projections
@@ -1076,6 +1082,21 @@ export class E {
     target.tempToughness += dt;
     const sign = (n: number) => (n >= 0 ? `+${n}` : `${n}`);
     this.ev('statChanged', `${target.card} gets ${sign(dp)}/${sign(dt)} until regroup.`, { unit: target.id, dp, dt });
+  }
+
+  /**
+   * LAYER 2: rewrite a unit's BASE stats until regroup.
+   *
+   * Not a temp delta. "Becomes a base 4/4" and "exchange the base stats" both
+   * replace layer 2, so a second base-setting effect overwrites the first
+   * instead of stacking with it, and layer-3 changes (counters, temp deltas, a
+   * lord's static) keep applying on top. Doing this with addTemp is how
+   * Formless turned a Body-Swapped 2/1 into a 6/9 (playtest 2026-08-20).
+   */
+  setBase(target: Entity, p: number, t: number): void {
+    target.baseSet = [p, t];
+    this.ev('statChanged', `${target.card}'s base becomes ${p}/${t} until regroup.`,
+      { unit: target.id, baseP: p, baseT: t });
   }
 
   /** grant an attribute until regroup (cleared with temp stats, R11 step 3) */
@@ -2987,7 +3008,10 @@ export class E {
     // (2) all damage on units is removed
     for (const e of Object.values(this.s.entities)) if (e.kind === 'unit') e.damage = 0;
     // (3) all temporary stat changes are removed (counters are NOT temporary)
-    for (const e of Object.values(this.s.entities)) { e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs; }
+    for (const e of Object.values(this.s.entities)) {
+      e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs;
+      delete e.baseSet;   // layer 2 is an until-regroup rewrite too
+    }
     // (4) units leave formation — battle state is already gone
     // (+) spell tokens are erased
     for (const e of Object.values(this.s.entities)) {

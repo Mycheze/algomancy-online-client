@@ -839,6 +839,49 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
   e.settle();
 }
 
+/**
+ * ALLURING (Manual): "defenders that are able to block it must block it."
+ *
+ * Returns the name of an Alluring attacker the defender has left unblocked
+ * while still holding a unit that could have blocked it, or null when the
+ * declaration discharges the duty.
+ *
+ * "Able" is judged against the FINISHED declaration: a unit already blocking
+ * another column, or sent to counterattack, is spoken for, and so is one that
+ * could not legally join this column anyway (Feeble, no Flying against a
+ * Flying column, or a lone unit against Evasive, which needs two). The test is
+ * therefore "could an unassigned unit still be added here?" — which also
+ * settles two Alluring columns against one free blocker correctly: committing
+ * it to either leaves the other with nobody, and a duty you cannot discharge
+ * twice is discharged once.
+ *
+ * Shared with legalActions on purpose: the fuzzer's "legalActions lied" check
+ * catches the two drifting apart, and it did exactly that when this rule lived
+ * only in the validator.
+ */
+export function unmetAllure(
+  e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: readonly EntityId[] = [],
+): string | null {
+  const b = e.s.battle;
+  if (!b) return null;
+  const spokenFor = new Set<EntityId>([...Object.values(blocks).flat(), ...send]);
+  for (const [ci, atkCol] of b.columns.entries()) {
+    const live = atkCol.filter(id => e.entity(id));
+    if (!live.length) continue;
+    const atkAttrs = e.colAttrs(live);
+    if (!atkAttrs.has('Alluring')) continue;
+    if ((blocks[ci] ?? []).length) continue;                    // this one IS blocked
+    const free = e.unitsIn(b.region).filter(u =>
+      u.controller === seat && u.kind === 'unit' && !u.absent && !spokenFor.has(u.id)
+      && !e.ownAttrs(u).has('Feeble')
+      && !(atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying')));
+    if (free.length >= (atkAttrs.has('Evasive') ? 2 : 1)) {
+      return e.entity(live[0]!)?.card ?? 'that attacker';
+    }
+  }
+  return null;
+}
+
 function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: EntityId[]): void {
   const b = e.s.battle;
   e.need(e.s.phase === 'battle' && b && b.step === 'blocks' && seat === b.defender, 'not your block step');
@@ -880,6 +923,12 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
     if (t.kind === 'unit') sentUnits++;
   }
   e.need(send.length === 0 || sentUnits > 0, 'spell tokens travel only with units');
+
+  // Alluring: a defender who could still block one must (playtest 2026-08-20 —
+  // the attribute was in the type union and the rules reference, and enforced
+  // nowhere, so an Alluring attacker could simply be ignored)
+  const allured = unmetAllure(e, seat, blocks, send);
+  e.need(!allured, `Alluring: ${allured} must be blocked if you are able`);
 
   b.blocks = {};
   for (const [ciStr, col] of Object.entries(blocks)) b.blocks[Number(ciStr)] = col.slice();
@@ -1124,6 +1173,11 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       return out;
     }
     if (b.step === 'blocks' && seat === b.defender) {
+      // Alluring makes some of these illegal — filter at the end, from the one
+      // predicate the validator uses, so the two can never drift (the fuzzer's
+      // "legalActions lied" check is what caught them drifting)
+      const legalBlock = (a: Action): boolean => a.type !== 'declareBlocks'
+        || !unmetAllure(e, seat, a.blocks, a.send ?? []);
       out.push({ type: 'declareBlocks', seat, blocks: {} });
       const mine = e.unitsOf(seat, b.region);
       const blockers = mine.filter(u => !e.ownAttrs(u).has('Feeble'));   // Feeble can't block
@@ -1152,7 +1206,7 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       if (b.round === 1) {
         for (const u of mine) out.push({ type: 'declareBlocks', seat, blocks: {}, send: [u.id] });
       }
-      return out;
+      return out.filter(legalBlock);
     }
     if (s.priority === seat) {
       out.push({ type: 'passPriority', seat });

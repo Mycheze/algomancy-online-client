@@ -241,6 +241,12 @@ button:disabled { opacity: .4; cursor: default; }
 
 /* context menus never run off screen (clamped in JS too) */
 .menu { max-height: min(70vh, 480px); overflow-y: auto; }
+/* Playtest 2026-08-20: a context menu opened from INSIDE the bin/cache dialog
+   (z 60) rendered behind it at z 50, so clicking a cached card with more than
+   one play mode looked like nothing happened at all — the choices were there,
+   underneath the dialog. The menu is always the most recent thing the player
+   asked for, so it outranks the dialog it was opened from. */
+.menu { z-index: 70; }
 
 /* the side panel (preview + stack + log) stays on screen while the board scrolls */
 .side { position: sticky; top: 8px; align-self: flex-start; max-height: calc(100vh - 16px); overflow-y: auto; }
@@ -696,3 +702,18 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 #app.board .preview { flex: 0 1 auto; min-height: 0; max-height: 50%; overflow-y: auto; }
 #app.board .stackpanel { flex: 0 1 auto; min-height: 0; max-height: 34%; overflow-y: auto; }
 #app.board .logpanel { flex: 1 1 0; min-height: 110px; max-height: none; }
+/* nothing is yours to do — the opponent owes an answer (playtest 2026-08-20:
+   this used to render as a priority bar with a Pass button the server refused) */
+.promptbar.waiting { background: #1b2028; border-color: #384352; }
+.promptbar.waiting .who { color: var(--dim); }
+/* spent cache entries: present, viewable, out of the way (playtest 2026-08-20) */
+.spentcache { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 6px; }
+.spentcache > button { background: none; border: none; color: var(--dim); padding: 2px 0; font-size: 12px; }
+.spentcache > button:hover { color: var(--text); }
+.cachezone.dim { opacity: .6; }
+/* the tokens a card creates, shown in its inspector (playtest 2026-08-20) */
+.tokenrow { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0;
+  border-bottom: 1px dotted var(--line); }
+.tokenrow .card { width: 68px; }
+.tokenbody { min-width: 0; }
+.tokenname { font-weight: 700; color: var(--accent); }

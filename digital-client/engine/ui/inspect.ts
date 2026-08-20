@@ -141,3 +141,29 @@ export function playableCachedNames(cache: { card: CardName }[], legal: Action[]
 
 /** seat helper kept here so main.ts imports one module, not two */
 export type { Seat };
+
+/**
+ * Should the client auto-pass this priority window because the thing about to
+ * resolve is a trigger the player has chosen to yield to?
+ *
+ * Playtest 2026-08-20 ("auto yield literally isn't doing anything"): the old
+ * test was `stack.every(item is a yielded trigger)`. Passing priority only
+ * ever resolves the TOP of the stack, so requiring the whole stack to be
+ * yielded meant that the moment anything else was on it — the opponent's
+ * spell, a second unit's trigger, the very common case in a real game — the
+ * chip did nothing at all. One of Bena's stacks that turn held four triggers
+ * from four different units.
+ *
+ * The right question is about the top item only. Everything under it gets its
+ * own window later, and this runs again for each.
+ */
+export function shouldAutoYield(
+  state: GameState, seat: Seat, yielded: ReadonlySet<number>,
+): boolean {
+  if (!yielded.size) return false;
+  // a priority window of my own, with nothing being asked of anybody
+  if (state.priority !== seat || state.decision) return false;
+  const top = state.stack[state.stack.length - 1];
+  if (!top || top.negated) return false;
+  return top.kind === 'triggered' && top.sourceId !== undefined && yielded.has(top.sourceId);
+}

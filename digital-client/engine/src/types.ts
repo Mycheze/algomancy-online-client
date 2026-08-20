@@ -156,6 +156,20 @@ export interface Entity {
   /** unit token (erased on leaving play, survives regroup) */
   token?: boolean;
   tokenStats?: [number, number];
+  /**
+   * LAYER 2 of the Manual's six-layer stat model: "base stats, which can be
+   * changed to be different from what's printed". Set until regroup by cards
+   * that rewrite the base rather than adjust it — Formless ("becomes a base
+   * 4/4"), Body Swap ("exchange the BASE stats of two target units").
+   *
+   * Additive/optional so older serialized states still load. Cleared with the
+   * other until-regroup changes (R11 step 3), and read only through
+   * E.baseStatsOf — layer 3 (counters, temp deltas, static projections) then
+   * applies ON TOP, which is the whole reason this cannot be a delta: two
+   * base-setting effects on one unit must not stack (playtest 2026-08-20,
+   * Formless on a Body-Swapped Bloated Manablub made it a 6/9).
+   */
+  baseSet?: [number, number];
   /** the game turn this entity ARRIVED in play (GameState.turn at spawn time).
    * Additive/optional so states serialized before it still load — read it
    * through E.spawnedTurn(u), which answers undefined for an entity that
