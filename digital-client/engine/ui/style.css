@@ -710,10 +710,16 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    live here too; it is on the table now (see .stackboard). */
 #app.board .sidehead { flex: none; }
 #app.board .preview { flex: 0 1 auto; min-height: 0; max-height: 62%; overflow-y: auto; }
-/* the art is how you recognise the card; the text box is how you play it
-   correctly — so the scan gets a ceiling and the box gets the rest of the
-   rail, rather than pushing it below the fold (2026-08-21) */
-#app.board .preview > img { max-height: 30vh; width: auto; max-width: 100%; }
+/* The art is how you recognise the card; the text box is how you play it
+   correctly. The first attempt at that balance (2026-08-21) capped the scan at
+   30vh, which on an ordinary window binds LONG before the 260px width cap and
+   left the card ~59% of its old linear size — small enough that the printed
+   text on the scan stopped being readable, which is the whole point of a
+   preview. The ceiling is a SHORT-WINDOW guard, not the normal case: `min()`
+   lets width govern on any window tall enough for the card at full width
+   (260px wide is ~360px tall), and only bites when the rail genuinely cannot
+   afford it. The panel scrolls either way, so the text box is never lost. */
+#app.board .preview > img { max-height: min(64vh, 30rem); width: auto; max-width: 100%; }
 #app.board .logpanel { flex: 1 1 0; min-height: 110px; max-height: none; }
 /* nothing is yours to do — the opponent owes an answer (playtest 2026-08-20:
    this used to render as a priority bar with a Pass button the server refused) */
