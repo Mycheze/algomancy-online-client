@@ -177,9 +177,31 @@ player" is the right trade; on anything public it would not be.
 ```bash
 node seed-accounts.ts                          # sync anything new
 node seed-accounts.ts --alias "Player 2=Rashi" # a seat saved before the name box existed
+node seed-accounts.ts --result AGBP=Ben        # who won a game played before the winner stamp
+node seed-accounts.ts --result all=Ben         # ...or all of them at once
 node seed-accounts.ts --force                  # re-summarize everything
 node seed-accounts.ts --dry                    # report only, writes nothing
 ```
+
+`--alias` and `--result` both write INTO the saved game file, not just into
+the record. They have to: a sync re-reads a file whenever it has changed, and
+would otherwise undo them. Both are idempotent — a second run edits nothing.
+
+### Why a result is stamped and not derived
+
+A saved game is READ by replaying it, and an old log replayed onto a newer
+engine diverges: R34 re-ordered simultaneous triggers, and once one action is
+refused the rest of the log is describing a board that no longer exists, so
+the refusals cascade. Five of our first eight games diverge (AGBP applies 73
+of its 229 actions), which is why they briefly showed up as "unfinished" when
+in fact Ben had won all eight.
+
+So `rooms.ts` stamps `winner` into the saved game the moment a game is
+decided, keeps it stickily (a replay that cannot reach the ending must never
+clear a result that was true when it happened), and `stats.ts` prefers that
+stamp over anything it can derive. A game with no stamp whose replay diverged
+is reported as **unknown**, never as unfinished — its stats are a floor, not a
+total, and the profile and match history both say so.
 
 ### What is counted
 

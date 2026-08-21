@@ -68,23 +68,42 @@ for (let i = 0; i < argv.length; i++) {
   if (code && who) results.set(code.trim().toUpperCase(), who.trim());
 }
 
-/** Resolve "Ben" / "0" / "1" against a game's seat names, then write it in.
- * Returns a line to print, or null when there was nothing to do. */
-function stampResult(code: string, who: string): string | null {
+/**
+ * Write an alias and/or a result INTO one saved game file.
+ *
+ * Both edits go to the file rather than being applied on the way past,
+ * because a sync re-reads the file whenever it has changed and would
+ * otherwise undo them — the rename in particular is not a display
+ * preference, it is the correct name for a seat that was saved before the
+ * name box existed. Returns the lines to print.
+ */
+function fixUpGame(code: string, who: string | null): string[] {
   const path = join(gamesDir, `${code}.json`);
   let raw: { names?: [string, string]; winner?: number | null };
   try { raw = JSON.parse(readFileSync(path, 'utf8')) as typeof raw; }
-  catch { return `  ${code}: no such saved game`; }
-  const names = [alias0(raw.names?.[0] ?? 'Player 1'), alias0(raw.names?.[1] ?? 'Player 2')];
-  const seat = who === '0' ? 0 : who === '1' ? 1
-    : names.findIndex(n => n.trim().toLowerCase() === who.toLowerCase());
-  if (seat !== 0 && seat !== 1) {
-    return `  ${code}: "${who}" is not one of ${names.map(n => `"${n}"`).join(' / ')}`;
+  catch { return [`  ${code}: no such saved game`]; }
+
+  const out: string[] = [];
+  const was: [string, string] = [raw.names?.[0] ?? 'Player 1', raw.names?.[1] ?? 'Player 2'];
+  const names: [string, string] = [alias0(was[0]), alias0(was[1])];
+  const next = { ...raw, names };
+  if (names[0] !== was[0] || names[1] !== was[1]) {
+    out.push(`  ${code}: ${dry ? 'would rename' : 'renamed'} ${was.join(' / ')} → ${names.join(' / ')}`);
   }
-  if (raw.winner === seat) return null;   // already stamped that way
-  if (dry) return `  ${code}: would stamp ${names[seat]} (seat ${seat}) as the winner`;
-  writeFileSync(path, JSON.stringify({ ...raw, winner: seat }));
-  return `  ${code}: stamped ${names[seat]} (seat ${seat}) as the winner`;
+
+  if (who !== null) {
+    const seat = who === '0' ? 0 : who === '1' ? 1
+      : names.findIndex(n => n.trim().toLowerCase() === who.toLowerCase());
+    if (seat !== 0 && seat !== 1) {
+      out.push(`  ${code}: "${who}" is not one of ${names.map(n => `"${n}"`).join(' / ')}`);
+    } else if (raw.winner !== seat) {
+      next.winner = seat;
+      out.push(`  ${code}: ${dry ? 'would stamp' : 'stamped'} ${names[seat]} (seat ${seat}) as the winner`);
+    }
+  }
+
+  if (out.length && !dry) writeFileSync(path, JSON.stringify(next));
+  return out;
 }
 
 // A dry run must not touch the real file, and the sync persists on its own —
@@ -96,24 +115,28 @@ if (dry) {
   useAccountsFile(scratch);
 }
 
-// stamp results first: the sync below reads them straight back out
-if (results.size) {
-  console.log('stamping results');
-  const codes = results.has('ALL')
-    ? readdirSync(gamesDir).filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, ''))
+// fix up the saved files first: the sync below reads them straight back out
+let fixed = 0;
+if (aliases.size || results.size) {
+  const all = (): string[] => {
+    try { return readdirSync(gamesDir).filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, '')); }
+    catch { return []; }
+  };
+  const codes = aliases.size || results.has('ALL')
+    ? all()
     : [...results.keys()];
+  const lines: string[] = [];
   for (const code of codes) {
-    const who = results.get(code) ?? results.get('ALL')!;
-    const line = stampResult(code, who);
-    if (line) console.log(line);
+    lines.push(...fixUpGame(code, results.get(code) ?? results.get('ALL') ?? null));
   }
-  console.log('');
+  fixed = lines.length;
+  if (lines.length) console.log(`fixing up saved games\n${lines.join('\n')}\n`);
 }
 
 console.log(`seeding from ${gamesDir}\n`);
-// a stamped result changes a game's outcome without changing its file's role
-// in the skip check, so always re-summarize when one was applied
-const report = syncGamesDir(gamesDir, { aliases, force: force || results.size > 0 });
+// a fixup changes a game's content without changing its file's role in the
+// skip check, so always re-summarize when one was applied
+const report = syncGamesDir(gamesDir, { aliases, force: force || fixed > 0 });
 
 for (const { code, game, isNew } of report.rows) {
   const outcome = game.finished ? `${game.names[game.winner ?? 0]} won` : 'result unknown';
