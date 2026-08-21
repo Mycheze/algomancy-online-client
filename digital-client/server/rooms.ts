@@ -11,7 +11,7 @@
 import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Action, CardName, Element, EngineEvent, GameMode, GameState } from '../engine/src/types.ts';
+import type { Action, CardName, Element, EngineEvent, GameMode, GameState, Seat } from '../engine/src/types.ts';
 import { apply, checkDeck, createGame, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -36,6 +36,18 @@ export interface Room {
    * join from the token, persisted with the room, and read back when the game
    * is folded into the players' stats — see history.ts. */
   users: [string | null, string | null];
+  /**
+   * Who won, RECORDED AT THE TIME and persisted — not re-derived.
+   *
+   * A saved game is replayed to restore it, and an old log replayed onto a
+   * newer engine can diverge (R34 re-ordered simultaneous triggers; the log
+   * then describes a board that no longer exists). When that happens the
+   * replay stops short of the ending, and the game reads as if nobody won —
+   * which is how three real wins turned into "five unfinished games". A fact
+   * stamped when it happened cannot rot, so this is stickily kept: once set
+   * it is never cleared by a replay that fails to reach it.
+   */
+  winner: Seat | null;
   state: GameState;
   actions: Action[];
   /** full authoritative event history, for per-seat redacted log resync */
@@ -224,7 +236,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     ? fresh(seed, names, mode, trio, [creatorDeck!, creatorDeck!])
     : fresh(seed, names, mode, trio);
   const room: Room = {
-    code, seed, mode, els: trio, decks, names, users: [null, null],
+    code, seed, mode, els: trio, decks, names, users: [null, null], winner: null,
     state, actions: [], events, sockets: [null, null],
     deploySnapshot: null, heldDeploy: [[], []], deployStartIndex: -1,
     clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
@@ -315,6 +327,7 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
     room.deployStartIndex = room.actions.length;
   }
   if (wasDeploy) room.heldDeploy[action.seat === 0 ? 1 : 0].push(...r.events);
+  if (room.state.winner !== null) room.winner = room.state.winner;   // stamp it
   settleClock(room);   // recompute who is on the clock under the NEW state
   persist(room);
   return r.events;
@@ -380,6 +393,8 @@ function persist(room: Room): void {
       // accounts: who each seat belonged to, so the stats fold knows whose
       // game this was long after the sockets are gone (additive field)
       users: room.users,
+      // and the result, stamped at the time — see Room.winner
+      winner: room.winner,
       actions: room.actions, clockMs: room.clockMs,
       // constructed: decks are part of the replay config (additive field)
       ...(room.mode === 'constructed' ? { decks: room.decks } : {}),
@@ -406,10 +421,12 @@ export function restoreRooms(): void {
         seed: number; mode?: GameMode; els?: Element[]; names?: [string, string];
         actions: Action[]; clockMs?: [number, number];
         users?: [string | null, string | null];
+        winner?: number | null;
         decks?: [CardName[] | null, CardName[] | null];
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const users: [string | null, string | null] = [raw.users?.[0] ?? null, raw.users?.[1] ?? null];
+      const savedWinner: Seat | null = raw.winner === 0 || raw.winner === 1 ? raw.winner : null;
       const mode = raw.mode ?? 'shared';
       const els = sanitizeTrio(raw.els);
       const decks: [CardName[] | null, CardName[] | null] = [null, null];
@@ -429,7 +446,10 @@ export function restoreRooms(): void {
         ? [Math.max(0, Number(raw.clockMs[0]) || 0), Math.max(0, Number(raw.clockMs[1]) || 0)]
         : [CLOCK_START_MS, CLOCK_START_MS];
       rooms.set(code, {
-        code, seed: raw.seed, mode, els, decks, names, users, state, actions, events,
+        code, seed: raw.seed, mode, els, decks, names, users,
+        // the replay may not reach the ending this game actually had
+        winner: state.winner ?? savedWinner,
+        state, actions, events,
         sockets: [null, null], deploySnapshot, heldDeploy, deployStartIndex,
         // nobody is connected right after a restart, so no clock runs yet
         clockMs, clockStamp: Date.now(), clockRun: [false, false],

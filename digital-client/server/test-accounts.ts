@@ -129,8 +129,17 @@ console.log('\n[stats: a played game]');
   const s = summarizeGame(rec as never);
   eq(s.seats[0].recycled.fire, 1, 'a recycle is counted under the element chosen');
   eq(s.seats[1].recycled.water, 1, 'and for the other seat too');
-  eq(s.finished, false, 'a game with no winner is unfinished');
+  eq(s.finished, false, 'a game with no winner and no stamp has no known result');
   eq(s.seats[0].won, null, 'and neither seat won it');
+  eq(s.skipped, 0, 'a clean replay skips nothing');
+
+  // the fix for "we finished every game and it says five are unfinished": a
+  // result recorded at the time beats whatever the replay can reach
+  const stamped = summarizeGame({ ...rec, winner: 0 } as never);
+  eq(stamped.finished, true, 'a stamped winner makes the game resolved');
+  eq(stamped.winner, 0, 'and names the seat that won');
+  eq(stamped.seats[0].won, true, 'the stamped winner won');
+  eq(stamped.seats[1].won, false, 'and the other seat lost');
   ok(s.seats[0].lifeLeft > 0, 'life is read off the end state');
 
   // an action the engine would reject must not kill the whole summary — and
@@ -143,6 +152,7 @@ console.log('\n[stats: a played game]');
   eq(broken.seats[0].recycled.fire, 1, 'the legal action after a rejected one still counts');
   eq(broken.seats[0].unitsPlayed, 0, 'the rejected action is not counted');
   eq(broken.seats[0].spellsPlayed, 0, 'not as a spell either');
+  eq(broken.skipped, 1, 'and the divergence is reported, so the numbers can be labelled partial');
 }
 
 // ── 4. folding games into profiles ────────────────────────────────────
@@ -161,7 +171,7 @@ console.log('\n[profiles: the fold]');
   const game = (code: string, day: number, winner: 0 | 1): unknown => ({
     code, playedAt: `2026-08-${String(day).padStart(2, '0')}T12:00:00.000Z`,
     recordedAt: new Date().toISOString(), mode: 'draft', els: ['fire', 'water', 'earth'],
-    finished: true, winner, turns: 6,
+    finished: true, winner, turns: 6, diverged: false,
     users: [ben.id, rashi.id], names: ['Ben', 'Rashi'],
     seats: [seat('Ben', winner === 0, winner === 0 ? {} : { lifeLost: 30, lifeLeft: 0 }),
       seat('Rashi', winner === 1, winner === 1 ? {} : { lifeLost: 30, lifeLeft: 0 })],
@@ -241,21 +251,38 @@ console.log('\n[seeding: import saved games, claim by name]');
 
   const { mkdirSync } = await import('node:fs');
   mkdirSync(GAMES, { recursive: true });
+  // long enough to read as a real game rather than a room somebody opened and
+  // left (stats.ts MIN_GAME_ACTIONS)
+  const recycles = (seat: 0 | 1, element: string, n: number): unknown[] =>
+    Array.from({ length: n }, () => ({ type: 'recycleForResource', seat, handIndex: 0, element }));
   writeFileSync(join(GAMES, 'WXYZ.json'), JSON.stringify({
     seed: 4242, mode: 'shared', els: ['fire', 'water', 'earth'],
     names: ['Ben', 'Rashi'],
-    actions: [
-      { type: 'recycleForResource', seat: 0, handIndex: 0, element: 'fire' },
-      { type: 'recycleForResource', seat: 1, handIndex: 0, element: 'water' },
-    ],
+    actions: [...recycles(0, 'fire', 5), ...recycles(1, 'water', 5)],
   }));
-  // an empty room is not a game
+  // a room somebody opened and left is not a game
   writeFileSync(join(GAMES, 'EMTY.json'), JSON.stringify({ seed: 1, names: ['Ben', 'Rashi'], actions: [] }));
+  writeFileSync(join(GAMES, 'STUB.json'), JSON.stringify({
+    seed: 2, mode: 'shared', names: ['Ben', 'Rashi'],
+    actions: [{ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'fire' }],
+  }));
 
   const report = syncGamesDir(GAMES);
   eq(report.added, 1, 'the played game was imported');
-  eq(report.skipped, 1, 'the empty room was skipped');
+  eq(report.skipped, 2, 'the empty room and the barely-touched one were both skipped');
   eq(gameHistory()[0]?.users[0], null, 'nobody owns the seats yet');
+  eq(gameHistory()[0]?.finished, false, 'nobody won it and nobody stamped a result');
+
+  // stamping the result (seed-accounts --result, and what rooms.ts now writes
+  // at game over) is authoritative over the replay
+  writeFileSync(join(GAMES, 'WXYZ.json'), JSON.stringify({
+    seed: 4242, mode: 'shared', els: ['fire', 'water', 'earth'],
+    names: ['Ben', 'Rashi'], winner: 0,
+    actions: [...recycles(0, 'fire', 5), ...recycles(1, 'water', 5)],
+  }));
+  syncGamesDir(GAMES, { force: true });
+  eq(gameHistory()[0]?.finished, true, 'a stamped winner resolves the game');
+  eq(gameHistory()[0]?.winner, 0, 'and names the winning seat');
 
   const made = register('Ben', 'a good password');
   ok(made.ok, 'Ben signs up');

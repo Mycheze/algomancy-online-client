@@ -830,7 +830,9 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .accttable.games .resultcell { font-weight: 700; }
 .accttable.games .res-win .resultcell { color: var(--glow); }
 .accttable.games .res-loss .resultcell { color: var(--danger); }
-.accttable.games .res-unfinished td { color: var(--dim); }
+.accttable.games .res-unknown td { color: var(--dim); }
+/* a game the current engine cannot replay to its end: its numbers are a floor */
+.partial { color: var(--accent); font-weight: 700; margin-left: 2px; cursor: help; }
 .roomcell { font-family: ui-monospace, monospace; color: var(--dim); }
 
 .achgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }

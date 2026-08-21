@@ -38,8 +38,13 @@ export interface Profile {
   games: number;
   wins: number;
   losses: number;
-  /** games that were played but never reached a winner — most of ours */
-  unfinished: number;
+  /**
+   * Games whose result we do not know. Almost always a game played on an older
+   * engine whose log no longer replays to its ending (GameSummary.skipped) —
+   * NOT a game anybody abandoned. Games played since the server started
+   * stamping the winner at game over cannot land here.
+   */
+  unresolved: number;
   byMode: Record<GameMode, number>;
   /** games in which this element was in your pool */
   byElement: Record<Element, number>;
@@ -119,6 +124,9 @@ export interface RecordedGame {
   finished: boolean;
   winner: Seat | null;
   turns: number;
+  /** the current engine could not replay this game to its end — its stats are
+   * a floor, not a total, and its result is unknown unless somebody stamped it */
+  diverged: boolean;
   /** account id per seat (null = a seat nobody was logged in on) */
   users: [string | null, string | null];
   names: [string, string];
@@ -126,7 +134,7 @@ export interface RecordedGame {
 }
 
 export const emptyProfile = (): Profile => ({
-  games: 0, wins: 0, losses: 0, unfinished: 0,
+  games: 0, wins: 0, losses: 0, unresolved: 0,
   byMode: { shared: 0, draft: 0, constructed: 0 },
   byElement: zeroElements(), cardElements: zeroElements(), recycled: zeroElements(),
   cards: {}, unitsPlayed: 0, spellsPlayed: 0, tokensCast: 0, modsApplied: 0,
@@ -399,14 +407,20 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
   profile.longestGameTurns = Math.max(profile.longestGameTurns, game.turns);
 
   if (!game.finished) {
-    profile.unfinished++;
-    // an abandoned game breaks no streak: it says nothing about winning
+    profile.unresolved++;
+    // a result we cannot read breaks no streak: it says nothing about winning
   } else if (s.won) {
     profile.wins++;
     profile.streak = profile.streak >= 0 ? profile.streak + 1 : 1;
     profile.bestStreak = Math.max(profile.bestStreak, profile.streak);
-    if (s.lifeLost === 0) profile.flawlessWins++;
-    if (s.lifeLeft > 0 && s.lifeLeft <= 5) profile.closeWins++;
+    // Only from a game the engine can still replay end to end. A diverged
+    // replay stops early — often before any combat — so "lost no life" and
+    // "won on 4 life" would be artefacts of where the log gave out rather
+    // than anything that happened at the table.
+    if (!game.diverged) {
+      if (s.lifeLost === 0) profile.flawlessWins++;
+      if (s.lifeLeft > 0 && s.lifeLeft <= 5) profile.closeWins++;
+    }
   } else {
     profile.losses++;
     profile.streak = 0;
@@ -450,6 +464,7 @@ export function recordGame(summary: GameSummary, users: [string | null, string |
     finished: summary.finished,
     winner: summary.winner,
     turns: summary.turns,
+    diverged: summary.skipped > 0,
     users: [accounts[0]?.id ?? null, accounts[1]?.id ?? null],
     names: [summary.seats[0].name, summary.seats[1].name],
     seats: summary.seats,
@@ -613,7 +628,7 @@ function friendView(id: string, online: (id: string) => boolean): FriendView | n
 /** One row of the match history, from the point of view of one account. */
 export interface MatchRow {
   code: string; playedAt: string; mode: GameMode; els: Element[]; turns: number;
-  finished: boolean; result: 'win' | 'loss' | 'unfinished';
+  finished: boolean; diverged: boolean; result: 'win' | 'loss' | 'unknown';
   opponent: string; opponentId: string | null;
   life: [number, number];
   unitsPlayed: number; spellsPlayed: number; damageDealt: number;
@@ -631,8 +646,8 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
       const me = g.seats[seat]!, them = g.seats[seat === 0 ? 1 : 0]!;
       return {
         code: g.code, playedAt: g.playedAt, mode: g.mode, els: g.els, turns: g.turns,
-        finished: g.finished,
-        result: (!g.finished ? 'unfinished' : me.won ? 'win' : 'loss') as MatchRow['result'],
+        finished: g.finished, diverged: !!g.diverged,
+        result: (!g.finished ? 'unknown' : me.won ? 'win' : 'loss') as MatchRow['result'],
         opponent: g.names[seat === 0 ? 1 : 0],
         opponentId: g.users[seat === 0 ? 1 : 0],
         life: [me.lifeLeft, them.lifeLeft],

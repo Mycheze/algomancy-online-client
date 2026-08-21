@@ -64,6 +64,13 @@ export interface SeatStats {
   lifeLeft: number;
 }
 
+/** Games that never really began: a room somebody opened, poked at, and left.
+ * A real game runs to 150-300 actions, and the shortest opening (deal, first
+ * draft commit, a recycle or two) is already past this. Read off the RAW log
+ * rather than the replay, so a diverged replay cannot make a real game look
+ * like an abandoned room. */
+export const MIN_GAME_ACTIONS = 10;
+
 /** One whole game, from both sides. */
 export interface GameSummary {
   code: string;
@@ -71,11 +78,25 @@ export interface GameSummary {
   /** the draft trio, or the elements present in a constructed/shared game */
   els: Element[];
   seed: number;
-  /** true once somebody has actually won */
+  /** true when we know who won — from the winner stamped on the saved game, or
+   * from a replay that reached one */
   finished: boolean;
   winner: Seat | null;
   turns: number;
+  /** actions the replay could apply */
   actions: number;
+  /**
+   * Actions the CURRENT engine refused.
+   *
+   * These games are old: the rules have moved under them (R34 alone re-ordered
+   * simultaneous triggers), and once one action is refused the rest of the log
+   * is talking about a board that no longer exists, so the refusals cascade.
+   * A diverged replay therefore under-counts everything and, worse, stops
+   * before the ending — which is why a game with no stamped winner and
+   * `skipped > 0` is reported as UNKNOWN rather than unfinished. It is not that
+   * nobody won; it is that the log can no longer tell us who.
+   */
+  skipped: number;
   /** ISO — when the game was played (file mtime for seeded games, now() live) */
   playedAt: string;
   seats: [SeatStats, SeatStats];
@@ -91,6 +112,16 @@ export interface GameRecord {
   actions: Action[];
   decks?: [CardName[] | null, CardName[] | null];
   playedAt?: string;
+  /**
+   * The result as it was RECORDED WHEN THE GAME WAS PLAYED — rooms.ts stamps
+   * it the moment a game is decided, and `seed-accounts.ts --result` can set
+   * it by hand for the games that predate the stamp.
+   *
+   * Authoritative over the replay, and that is the whole point: a replay onto
+   * a newer engine can diverge, and the moment it does the action log stops
+   * being able to say who won. A fact recorded at the time cannot rot.
+   */
+  winner?: Seat | null;
 }
 
 const emptySeat = (name: string): SeatStats => ({
@@ -180,11 +211,13 @@ export function summarizeGame(rec: GameRecord): GameSummary {
     console.warn(`[stats] ${rec.code}: could not build the game — ${err instanceof Error ? err.message : err}`);
     return {
       code: rec.code, mode, els, seed: rec.seed, finished: false, winner: null,
-      turns: 0, actions: 0, playedAt: rec.playedAt ?? new Date().toISOString(), seats,
+      turns: 0, actions: 0, skipped: rec.actions.length,
+      playedAt: rec.playedAt ?? new Date().toISOString(), seats,
     };
   }
 
   let applied = 0;
+  let skipped = 0;
   for (const a of rec.actions) {
     const seat = a.seat === 0 || a.seat === 1 ? a.seat : null;
     if (seat === null) continue;
@@ -202,7 +235,7 @@ export function summarizeGame(rec: GameRecord): GameSummary {
     try {
       out = apply(state, a);
     } catch (err) {
-      if (err instanceof IllegalAction) continue;
+      if (err instanceof IllegalAction) { skipped++; continue; }
       throw err;
     }
 
@@ -248,10 +281,13 @@ export function summarizeGame(rec: GameRecord): GameSummary {
     events.push(...out.events);
   }
 
-  const finished = state.winner !== null;
+  // a stamped result beats the replay — see GameRecord.winner
+  const stamped = rec.winner === 0 || rec.winner === 1 ? rec.winner : null;
+  const winner = stamped ?? state.winner;
+  const finished = winner !== null;
   for (const s of [0, 1] as Seat[]) {
     seats[s]!.lifeLeft = state.players[s]?.life ?? 0;
-    seats[s]!.won = finished ? state.winner === s : null;
+    seats[s]!.won = finished ? winner === s : null;
   }
 
   return {
@@ -260,9 +296,10 @@ export function summarizeGame(rec: GameRecord): GameSummary {
     els: elementsOf(state, els, seats),
     seed: rec.seed,
     finished,
-    winner: state.winner,
+    winner,
     turns: state.turn,
     actions: applied,
+    skipped,
     playedAt: rec.playedAt ?? new Date().toISOString(),
     seats,
   };

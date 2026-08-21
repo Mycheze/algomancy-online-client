@@ -22,12 +22,14 @@ import {
   accountByName, allAccounts, claimSeats, gameHistory, rebuildProfiles,
   saveAccounts, stashHistory, type RecordedGame,
 } from './accounts.ts';
-import { summarizeGame, type GameRecord } from './stats.ts';
+import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord } from './stats.ts';
 
 /** The saved-room fields we care about, beyond what stats.ts already reads. */
 interface SavedRoom extends GameRecord {
   /** account id per seat, written by rooms.ts once accounts existed */
   users?: [string | null, string | null];
+  // `winner`, the result stamped at the time, comes from GameRecord — it is
+  // what keeps an old game's outcome readable after the rules have moved
 }
 
 export interface ImportOptions {
@@ -66,6 +68,7 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     finished: summary.finished,
     winner: summary.winner,
     turns: summary.turns,
+    diverged: summary.skipped > 0,
     // Seat ownership, best source first: what the room recorded while it was
     // being played, then a previous import's answer (which may have been
     // claimed by a registration since), then a name match. A seat nobody was
@@ -93,12 +96,15 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
 export function recordLiveGame(room: {
   code: string; seed: number; mode: GameRecord['mode']; els: GameRecord['els'];
   names: [string, string]; users: [string | null, string | null];
+  winner?: GameRecord['winner'];
   actions: GameRecord['actions']; decks: GameRecord['decks'];
 }): ImportedRow {
   const row = importGame(
     {
       seed: room.seed, mode: room.mode, els: room.els, names: room.names,
       actions: room.actions, decks: room.decks, users: room.users,
+      // the room stamped this when the game was decided — do not re-derive it
+      winner: room.winner,
     } as SavedRoom,
     room.code,
     new Date().toISOString(),
@@ -147,7 +153,12 @@ export function syncGamesDir(dir: string, opts: ImportOptions = {}): SyncReport 
       report.skipped++;
       continue;
     }
-    if (!raw.actions?.length) { report.skipped++; continue; }   // an empty room is not a game
+    // a room somebody opened and left is not a game — and the test reads the
+    // RAW log, so a diverged replay can never demote a real game to one
+    if ((raw.actions?.length ?? 0) < MIN_GAME_ACTIONS && raw.winner == null) {
+      report.skipped++;
+      continue;
+    }
     const known = gameHistory().find(g => g.code === code);
     if (!opts.force && known && known.playedAt === playedAt) { report.skipped++; continue; }
     const row = importGame(raw, code, playedAt, opts);

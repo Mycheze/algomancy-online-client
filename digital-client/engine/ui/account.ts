@@ -15,7 +15,9 @@
 // ── the shapes the server sends ───────────────────────────────────────
 
 export interface Profile {
-  games: number; wins: number; losses: number; unfinished: number;
+  games: number; wins: number; losses: number;
+  /** games whose result we cannot read — see the server's Profile.unresolved */
+  unresolved: number;
   byMode: Record<string, number>;
   byElement: Record<string, number>;
   cardElements: Record<string, number>;
@@ -43,7 +45,7 @@ export interface FriendView {
 
 export interface MatchRow {
   code: string; playedAt: string; mode: string; els: string[]; turns: number;
-  finished: boolean; result: 'win' | 'loss' | 'unfinished';
+  finished: boolean; diverged: boolean; result: 'win' | 'loss' | 'unknown';
   opponent: string; opponentId: string | null;
   life: [number, number];
   unitsPlayed: number; spellsPlayed: number; damageDealt: number;
@@ -147,7 +149,7 @@ export function barHtml(): string {
   }
   const p = me.profile;
   const record = p.games
-    ? `${p.wins}W–${p.losses}L${p.unfinished ? ` · ${p.unfinished} unfinished` : ''}`
+    ? `${p.wins}W–${p.losses}L${p.unresolved ? ` · ${p.unresolved} unrecorded` : ''}`
     : 'no games yet';
   return `<div class="acctbar in">
     <button class="acctwho" data-btn="acct-open-profile" title="your profile, stats and achievements">
@@ -239,7 +241,8 @@ function renderProfile(): void {
       <div>
         <h1>${esc(me.username)} ${elChip(me.favoriteElement)}</h1>
         <div class="hint">${p.games} game${p.games === 1 ? '' : 's'} · ${p.wins}W–${p.losses}L${
-          p.unfinished ? ` · ${p.unfinished} unfinished` : ''} · playing since ${shortDate(p.firstPlayed ?? me.createdAt)}</div>
+          p.unresolved ? ` · ${p.unresolved} with no recorded result` : ''
+        } · playing since ${shortDate(p.firstPlayed ?? me.createdAt)}</div>
       </div>
       <div class="accthbtns">
         <button data-btn="acct-refresh" title="reload from the server">↻</button>
@@ -265,11 +268,14 @@ function statsTab(p: Profile): string {
         ${stat('games', p.games)}
         ${stat('wins', p.wins)}
         ${stat('losses', p.losses)}
-        ${stat('unfinished', p.unfinished, 'games that stopped before anybody won')}
+        ${stat('no result', p.unresolved, 'games played on an older engine whose log no longer replays to its ending — the result was never recorded')}
         ${stat('win streak', p.streak)}
         ${stat('best streak', p.bestStreak)}
       </div>
       <div class="hint">formats played: ${esc(modes)}</div>
+      ${p.unresolved ? `<div class="hint">${p.unresolved} game${p.unresolved === 1 ? ' has' : 's have'}
+        no recorded result: played before the server started stamping the winner, and the rules have
+        moved far enough since that the saved log no longer replays to the end.</div>` : ''}
     </section>
     <section class="acctcard">
       <h3>Elements</h3>
@@ -396,16 +402,18 @@ function historyTab(): string {
       <th>result</th><th>opponent</th><th>format</th><th>elements</th>
       <th>turns</th><th>life</th><th>played</th><th>room</th>
     </tr></thead><tbody>${me!.history.map(g => `<tr class="res-${g.result}">
-      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '—'}</td>
+      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}</td>
       <td>${esc(g.opponent)}</td>
       <td>${esc(g.mode)}</td>
       <td>${g.els.map(el => `<span class="acctel ${el}">${el}</span>`).join('')}</td>
-      <td>${g.turns}</td>
+      <td>${g.turns}${g.diverged ? '<span class="partial" title="the current engine cannot replay this game to its end — its numbers are a floor, not a total">+</span>' : ''}</td>
       <td>${g.life[0]}–${g.life[1]}</td>
       <td>${shortDate(g.playedAt)}</td>
       <td class="roomcell">${esc(g.code)}</td>
     </tr>`).join('')}</tbody></table>
-    <div class="hint">A game counts as soon as it is played — including the ones that never reached a winner.</div>
+    <div class="hint">A game counts as soon as it is played. A <b>+</b> beside the turn count means the
+      current engine cannot replay that game all the way to its end, so its per-game numbers are a
+      floor rather than a total — the rules have moved since it was played.</div>
   </section>`;
 }
 
