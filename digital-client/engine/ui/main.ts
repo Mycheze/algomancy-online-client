@@ -4,12 +4,14 @@
  * Both hands are visible: this is the M1 test rig, not the product. */
 import { Harness } from '../src/harness.ts';
 import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/apply.ts';
-import { allCardNames, getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
+import { allCardNames, getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 import {
   activationNeedsConfirm, groupReveal, playableCachedNames, shouldAutoYield, stackAbilityRows,
 } from './inspect.ts';
 import { halfRows, publishCols } from './formation.ts';
+import { entityTextBox, printedTextBox, textBoxFor } from './cardtext.ts';
+import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
 import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts';
 import type { GlossEntry } from './glossary.ts';
@@ -420,6 +422,34 @@ function scheduleFlashWake(): void {
   if (at === null) return;
   flashTimer = setTimeout(() => { flashTimer = null; render(); }, Math.max(16, at - now));
 }
+
+/**
+ * Park the floating stack window beside the table.
+ *
+ * Playtest 2026-08-21: "it's too far in the middle… it should be its own
+ * little window thingy, floating in space, sorta between where the bins are."
+ * The bins sit at the right edge of each region panel, so the window rides the
+ * right edge of the table column, halfway between them.
+ *
+ * It is `position: fixed` against MEASURED edges rather than arithmetic on the
+ * grid, because the app is max-width'd and centred, the rail has its own
+ * width, and net mode adds a hand dock under the table — three numbers that
+ * would all have to be kept in sync by hand. The table's box does not move
+ * when it scrolls, so this only has to run on paint and on resize.
+ */
+function placeStackWindow(): void {
+  const main = document.querySelector('.main');
+  if (!main) return;
+  const r = main.getBoundingClientRect();
+  // Halfway down the table you can actually SEE — the sticky prompt sits over
+  // the top of `.main`, so its own box centre reads high, and the two bins the
+  // window is meant to sit between are further down than that.
+  const capped = document.querySelector('.stickytop')?.getBoundingClientRect().bottom ?? r.top;
+  const top = Math.max(r.top, Math.min(capped, r.bottom));
+  $app.style.setProperty('--table-right', `${Math.max(0, innerWidth - r.right)}px`);
+  $app.style.setProperty('--table-mid', `${(top + r.bottom) / 2}px`);
+}
+addEventListener('resize', placeStackWindow);
 
 /** the rows on the visual stack right now: the real stack, then the beats */
 const visualStack = (): ReturnType<typeof stackRows> =>
@@ -1434,15 +1464,19 @@ function openInspector(name: string, id?: EntityId): void {
 function inspectorHtml(): string {
   if (!inspect) return '';
   const name = inspect.name;
-  let text = '', type = '', printedAttrs: string[] = [];
-  try { const c = getCard(name); text = c.text; type = c.type; printedAttrs = c.attrs; } catch { /* unknown */ }
-  // a live unit shows its CURRENT attributes (shared/temp/static included);
-  // otherwise the printed ones
+  let text = '', type = '';
+  try { const c = getCard(name); text = c.text; type = c.type; } catch { /* unknown */ }
+  // the details screen leads with the box AS THE GAME SEES IT: live when
+  // there is a unit behind it, printed otherwise
   const u = inspect.id !== undefined ? h.state.entities[inspect.id] : undefined;
-  const attrs = u ? [...q().ownAttrs(u)] : printedAttrs;
-  const attrRows = attrs.length
-    ? attrs.map(a => glossRow(GLOSSARY.find(e => e.term === a)
-      ?? { term: a, text: 'see the rules reference' })).join('')
+  const box = u ? entityTextBox(q(), u) : printedTextBox(name);
+  // every attribute on that box gets its reminder text — including the ones
+  // that are switched off, which is exactly when a player goes looking
+  const attrs = box.attrs.map(a => a.attr);
+  const attrRows = box.attrs.length
+    ? box.attrs.map(a => `<div class="attrgloss${a.active ? '' : ' off'}">${
+        glossRow(GLOSSARY.find(e => e.term === a.attr) ?? { term: a.attr, text: 'see the rules reference' })
+      }</div>`).join('')
     : '<div class="hint">no attributes</div>';
   // Playtest ask: every keyword this card (or a ruling about it) MENTIONS gets
   // its reminder text right here, not behind the ? button. Scanned from the
@@ -1469,8 +1503,7 @@ function inspectorHtml(): string {
     <h3>${esc(name)} <span class="hint">${iconizeText(type)}</span></h3>
     <div class="inspectscroll">
       <div class="inspecttop"><img src="${art(name)}" alt="" onerror="this.style.display='none'">
-        <div class="inspecttext">${iconizeText(text)}</div></div>
-      ${u ? graftComposedHtml(u) : ''}
+        <div class="inspecttext">${textBoxHtml(box, { noTitle: true })}</div></div>
       <h4>Attributes${u ? ' (current, shared/granted included)' : ' (printed)'}</h4>
       ${attrRows}
       ${tokenRows ? `<h4>Tokens it creates</h4>${tokenRows}` : ''}
@@ -1913,6 +1946,14 @@ function previewStackHtml(id: number): string {
     </div>`;
 }
 
+/** How wide the row of stack cards may get, in `--cw` units. Shared with the
+ * window's max-width (style.css `.stackboard.live`) — change both together. */
+const STACK_SPAN = 3;
+/** one card's width, in `--cw` units (style.css `.stackcard`) */
+const STACK_CARD = 1.05;
+/** how far each card advances when there is room to spare */
+const STACK_STEP_MAX = 0.55;
+
 /** StackItem.kind, in words a player uses. The engine's names are internal
  * ('spellUnit', 'triggered'), and the tag under a stack card is two words of
  * space. */
@@ -1938,10 +1979,19 @@ const STACK_KIND: Record<string, string> = {
  */
 function stackBoardHtml(): string {
   const rows = visualStack();
-  if (!rows.length) {
-    return `<div class="stackboard" data-animzone="stack">
-      <div class="stackempty">stack — empty</div></div>`;
-  }
+  // Out of the flow it can simply not be there: an empty floating window is
+  // clutter, and there is no layout to hold open. The motion layer only needs
+  // the @stack anchor in the frame where a card is actually going to or
+  // leaving it, and in both of those the window exists.
+  if (!rows.length) return '';
+  // However deep the stack gets, the window stays the same width: the cards
+  // close ranks instead of marching off across the table. STACK_SPAN is shared
+  // with the window's max-width in style.css, so the row can never outgrow the
+  // box it lives in — at the cost of very thin slivers on an absurd stack,
+  // which is an honest picture of an absurd stack.
+  const step = rows.length > 1
+    ? Math.min(STACK_STEP_MAX, (STACK_SPAN - STACK_CARD) / (rows.length - 1))
+    : STACK_STEP_MAX;
   // Only the RIGHTMOST card wears a floating chip: every other card is
   // overlapped from the right by its neighbour, which would eat the label.
   // The buried ones say what they are in their own tag instead.
@@ -1987,12 +2037,12 @@ function stackBoardHtml(): string {
   const who = h.state.players[lead.controller]?.name ?? '';
   const verb = leadRow.flashing ? 'just resolved' : rows.length > 1 ? 'resolves next' : 'on the stack';
   return `<div class="stackboard live" data-animzone="stack">
-    <div class="stackrow">${cards}</div>
+    <div class="stackrow" style="--stackstep:${step.toFixed(3)}">${cards}</div>
     <div class="stackcaption">
       <span class="stackverb">${esc(verb)}</span>
       ${iconizeText(lead.label)}
       <span class="by">${esc(who)}${targets ? ` → ${esc(targets)}` : ''}</span>
-      ${rows.length > 1 ? `<span class="stackdepth">${rows.length} deep · resolves right to left</span>` : ''}
+      ${rows.length > 1 ? `<span class="stackdepth" title="the stack resolves from the right — the raised card goes first">${rows.length} deep ↢</span>` : ''}
     </div>
   </div>`;
 }
@@ -2224,6 +2274,9 @@ const SCROLLERS = ['.main', '.side .preview'] as const;
  * board (connecting / lobby) — the motion layer uses that to drop its
  * baseline instead of animating the first real board out of nowhere. */
 function renderNow(): boolean {
+  // the board is about to be replaced under the cursor: a long-hover box left
+  // floating over it would be describing a card that has moved or died
+  hideHoverTip();
   if (NET && (NET.dead || !NET.joined)) { if (!NET.dead) renderConnecting(); return false; }
   if (NET?.waiting) { renderWaiting(); return false; }   // constructed lobby
   $app.classList.toggle('netmode', !!NET);   // net mode: the hand docks under the table
@@ -2285,7 +2338,6 @@ function renderNow(): boolean {
       ${draftPanelHtml()}
       ${bottomPanelHtml()}
       ${regionPanelHtml(topSeat)}
-      ${stackBoardHtml()}
       ${battleHtml()}
       ${regionPanelHtml(botSeat, { omitHand: !!NET })}
     </div>
@@ -2314,6 +2366,7 @@ function renderNow(): boolean {
     </div>
     ${NET ? `<div class="handdock"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
+    ${stackBoardHtml()}
     ${menuHtml()}
     ${binDialogHtml()}
     ${cacheDialogHtml()}
@@ -2334,10 +2387,7 @@ function renderNow(): boolean {
   }
   const log = document.getElementById('log')!;
   log.scrollTop = log.scrollHeight;
-  // the stack strip sticks BELOW the sticky top bar rather than under it, and
-  // that bar's height depends on how much the prompt has to say
-  const topH = (document.querySelector('.stickytop') as HTMLElement | null)?.offsetHeight ?? 0;
-  $app.style.setProperty('--topbar-h', `${topH}px`);
+  placeStackWindow();
   clampMenu();
   maybeAutopass();
   maybeAutoYield();
@@ -2845,69 +2895,192 @@ const saveHomeName = (): void => {
   if (inp) localStorage.setItem('algoName', inp.value.trim());
 };
 
-// ── interaction ───────────────────────────────────────────────────────
-/** the focus viewer for a live unit: composed modded card (base art + each
- * mod's text strip, like the physical slide-under), live vs base stats,
- * counters, damage, attrs — the Discord bot's combine, in HTML */
-/** #7: a host's graft-cause trigger + its grafted [Switch] effects, rendered
- * as the single composed ability they actually are (Manual p.33): the host's
- * trigger clause (its text up to the [Switch] marker), then the host's own
- * effect and each grafted card's [Switch] effect in mod order — each keeping
- * its [switch]/[switch1] marker so iconizeText prefixes the right icon. */
-function graftComposedHtml(u: Entity): string {
-  const grafts = u.mods
-    .map(id => h.state.entities[id])
-    .filter((m): m is Entity => !!m && m.appliedAs === 'graft');
-  if (!grafts.length) return '';
-  let hostText = '';
-  try { if (graftCauseIndex(u.card) < 0) return ''; hostText = getCard(u.card).text; } catch { return ''; }
-  const sw = /\[switch1?\]/i;
-  const clean = (s: string): string => s.replace(/\{\/n\}/g, ' ').replace(/\s+/g, ' ').trim();
-  const m = sw.exec(hostText);
-  const head = clean(m ? hostText.slice(0, m.index) : hostText);
-  const parts: string[] = m ? [clean(hostText.slice(m.index))] : [];
-  for (const g of grafts) {
-    let t = '';
-    try { t = getCard(g.card).text; } catch { /* unknown */ }
-    if (!t) continue;
-    const gm = sw.exec(t);
-    parts.push(clean(gm ? t.slice(gm.index) : t));
-  }
-  return `<div class="grafted"><span class="grafttag">${txtIcon('graft', '[Switch]')} grafted — one ability</span>
-    <div class="graftbody">${iconizeText(head)} ${parts.map(p => iconizeText(p)).join(' ')}</div></div>`;
+// ── the current text box ──────────────────────────────────────────────
+/*
+ * Playtest 2026-08-21, Bena: "cards have their oracle text changed all the
+ * time […] The printed card is hardly ever correct." The scan is the card's
+ * history; this is what the game currently thinks it says.
+ *
+ * All of the thinking is in ui/cardtext.ts (pure, tested). Everything below
+ * is markup: one renderer, used by the focus viewer, the long-hover tooltip
+ * and the inspector, so the box never says three different things about the
+ * same unit.
+ */
+
+/** the little tag that says where a line came from */
+const LINE_TAG: Record<LineOrigin, (from: string) => string> = {
+  printed: () => 'printed',
+  augment: from => `${txtIcon('augment', '+')} ${esc(from)}`,
+  graft: from => `${txtIcon('graft', '⇄')} ${esc(from)}`,
+  granted: from => `✦ granted by ${esc(from)}`,
+  static: from => `⟳ ${esc(from)}`,
+  note: () => '⏳ spent',
+};
+
+const ATTR_TAG: Record<AttrOrigin, string> = {
+  printed: 'printed', augment: 'from a mod', static: 'projected',
+  temp: 'until regroup', column: 'shared by the column',
+};
+
+function statMathHtml(st: StatBreakdown): string {
+  if (!st.parts.length) return '';
+  const bits = st.parts.map(p => {
+    const d = `${p.dp >= 0 ? '+' : ''}${p.dp}/${p.dt >= 0 ? '+' : ''}${p.dt}`;
+    return `<span class="tbterm"><b>${esc(d)}</b> ${esc(p.label)}</span>`;
+  });
+  return `<div class="tbmath"><span class="tbterm"><b>${st.printed[0]}/${st.printed[1]}</b> printed</span>${bits.join('')}</div>`;
 }
 
+/**
+ * The whole box.
+ *
+ *  - `compact` drops the arithmetic and the state notes — the long-hover
+ *    tooltip wants the text, not the ledger.
+ *  - `noTitle` drops the name and type line, for the inspector, whose own
+ *    heading is already both of them. The "current text" badge stays: that
+ *    one is a claim about the box, not a label for the card.
+ */
+function textBoxHtml(box: CardTextBox, opts: { compact?: boolean; noTitle?: boolean } = {}): string {
+  const st = box.stats;
+  const changed = st?.changed ?? false;
+  const stats = st
+    ? `<div class="tbstats">
+        <b class="${changed ? (st.power + st.toughness >= st.printed[0] + st.printed[1] ? 'statup' : 'statdown') : ''}">${st.power}/${st.toughness}</b>
+        ${changed ? `<span class="basestat">printed ${st.printed[0]}/${st.printed[1]}</span>` : ''}
+        ${st.damage ? `<span class="tbdmg">−${st.damage} damage</span>` : ''}
+      </div>${opts.compact ? '' : statMathHtml(st)}`
+    : '';
+  const attrs = box.attrs.length
+    ? `<div class="tbattrs">${box.attrs.map(a =>
+        `<span class="tbattr${a.active ? '' : ' off'}" title="${esc(ATTR_TAG[a.origin])}${a.from ? ` — ${esc(a.from)}` : ''}">${esc(a.attr)}${
+          a.origin !== 'printed' ? `<em>${esc(ATTR_TAG[a.origin])}</em>` : ''}</span>`).join('')}</div>`
+    : '';
+  // the one thing a player must never miss: this card is not doing what it says
+  const supp = box.suppressed.attrs || box.suppressed.abilities
+    ? `<div class="tbsupp">⊘ ${esc([
+        box.suppressed.attrs ? 'attributes' : '', box.suppressed.abilities ? 'abilities' : '',
+      ].filter(Boolean).join(' and '))} switched off by ${esc(box.suppressed.by.join(', '))}</div>`
+    : '';
+  // on a card that is simply itself, "printed" is a tag with no other tag to
+  // distinguish it from — the box is quieter without it
+  const bare = box.lines.length === 1 && box.lines[0]!.origin === 'printed' && !box.modified;
+  const lines = box.lines.length
+    ? box.lines.map(l => `<div class="tbline tb-${l.origin}${l.active ? '' : ' off'}">
+        ${bare ? '' : `<span class="tbfrom">${l.composed
+          ? `${txtIcon('graft', '⇄')} grafted — one ability`
+          : LINE_TAG[l.origin](l.from)}</span>`}
+        <span class="tbtext">${iconizeText(l.text)}</span>
+        ${l.why ? `<span class="tbwhy">${esc(l.why)}</span>` : ''}
+      </div>`).join('')
+    : '<div class="tbline tb-printed"><span class="tbtext hint">no rules text</span></div>';
+  const state = !opts.compact && box.state.length
+    ? `<div class="tbstate">${box.state.map(s => `<span>${esc(s)}</span>`).join('')}</div>`
+    : '';
+  const head = opts.noTitle
+    ? (box.modified ? '<div class="tbhead bare"><span class="tbbadge">current text</span></div>' : '')
+    : `<div class="tbhead">
+        <span class="tbname">${esc(box.name)}</span>
+        <span class="tbtype">${iconizeText(box.typeLine)}</span>
+        ${box.modified ? '<span class="tbbadge">current text</span>' : ''}
+      </div>`;
+  return `<div class="textbox${box.modified ? ' modified' : ''}${opts.compact ? ' compact' : ''}">
+    ${head}${stats}${attrs}${supp}
+    <div class="tblines">${lines}</div>${state}
+  </div>`;
+}
+
+/** the box for whatever the UI is pointing at, live where a live entity backs
+ * it and printed where one does not */
+function boxFor(name: string, id?: EntityId): CardTextBox {
+  return textBoxFor(inGame ? q() : null, name, id);
+}
+
+// ── interaction ───────────────────────────────────────────────────────
+/**
+ * The focus viewer for a live unit: the composed modded card (base art with
+ * each mod's text strip slid under it, the way it looks on a table), then the
+ * CURRENT text box underneath.
+ *
+ * The art shows what is physically stacked there; the box says what the game
+ * reads off it. Both, in that order, because the picture is how you recognise
+ * the card and the box is how you play it correctly.
+ */
 function previewEntityHtml(id: EntityId): string {
   const u = h.state.entities[id];
   if (!u) return '';
-  const e = q();
-  const [p, t] = e.effStats(u);
-  let base: [number, number] = u.tokenStats ?? [0, 0];
-  let text = '';
-  try { const c = getCard(u.card); base = u.tokenStats ?? [c.power, c.toughness]; text = c.text; } catch { /* unknown */ }
   const modStrips = u.mods.map(mid => {
     const m = h.state.entities[mid];
     if (!m) return '';
-    let mtext = '';
-    try { mtext = getCard(m.card).text; } catch { /* unknown */ }
     const tag = m.appliedAs === 'graft'
       ? `${txtIcon('graft', '[Switch]')} grafted` : `${txtIcon('augment', '+')} augment`;
     return `<div class="modstrip"><img src="${art(m.card)}" alt="">
-      <span class="modtag">${tag} · ${esc(m.card)}</span></div>
-      <div class="hint modtext">${iconizeText(mtext)}</div>`;
+      <span class="modtag">${tag} · ${esc(m.card)}</span></div>`;
   }).join('');
-  const changed = p !== base[0] || t !== base[1];
-  const bits = [
-    `<b class="${changed ? (p + t >= base[0] + base[1] ? 'statup' : 'statdown') : ''}">${p}/${t}</b>${changed ? ` <span class="basestat">base ${base[0]}/${base[1]}</span>` : ''}`,
-    u.counters ? `${u.counters > 0 ? '+' : ''}${u.counters}/${u.counters > 0 ? '+' : ''}${u.counters} counters` : '',
-    u.damage ? `${u.damage} damage` : '',
-  ].filter(Boolean).join(' · ');
-  const attrs = [...e.ownAttrs(u)].join(' · ');
   return `<img src="${art(u.card)}" alt="" onerror="this.style.display='none'">${modStrips}
-    ${graftComposedHtml(u)}
-    <div class="prevstats">${bits}</div>
-    ${attrs ? `<div class="hint">${esc(attrs)}</div>` : ''}
-    <div class="hint">${iconizeText(text)}</div>`;
+    ${textBoxHtml(entityTextBox(q(), u))}`;
+}
+
+/* ── the long-hover text box ────────────────────────────────────────────
+ *
+ * Playtest ask: the current text box "should also be shown when hovering for
+ * long enough over a unit". The focus viewer in the side rail already has it,
+ * but reading it means looking away from the board — and mid-battle nobody
+ * does, which is how a silenced unit gets blocked as if it still had Flying.
+ *
+ * So: dwell on a card for HOVER_MS and the box comes to the cursor. Only on a
+ * DWELL, never on a sweep, because a tooltip that fires on every pass across
+ * a crowded formation is worse than none. It is inert to pointer events, so
+ * it can never eat the click it is sitting on top of.
+ */
+const HOVER_MS = 550;
+let hoverTimer: number | null = null;
+let hoverKey = '';
+
+const hoverTip = (): HTMLElement => {
+  let el = document.getElementById('hovertip');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'hovertip';
+    el.className = 'hovertip';
+    document.body.appendChild(el);
+  }
+  return el;
+};
+
+function hideHoverTip(): void {
+  if (hoverTimer !== null) { clearTimeout(hoverTimer); hoverTimer = null; }
+  hoverKey = '';
+  const el = document.getElementById('hovertip');
+  if (el) el.classList.remove('on');
+}
+
+/** place the tip beside the cursor, folded back inside the viewport */
+function placeHoverTip(el: HTMLElement, x: number, y: number): void {
+  el.style.left = '0px';
+  el.style.top = '0px';
+  el.classList.add('on');
+  const r = el.getBoundingClientRect();
+  const left = x + 18 + r.width > window.innerWidth ? Math.max(4, x - 18 - r.width) : x + 18;
+  const top = Math.max(4, Math.min(y + 14, window.innerHeight - r.height - 4));
+  el.style.left = `${left}px`;
+  el.style.top = `${top}px`;
+}
+
+function armHoverTip(target: HTMLElement, x: number, y: number): void {
+  const id = target.dataset['previd'];
+  const name = target.dataset['prev'];
+  if (id === undefined && !name) { hideHoverTip(); return; }
+  const key = id !== undefined ? `e${id}` : `c${name}`;
+  if (key === hoverKey) return;                    // same card: leave it alone
+  hideHoverTip();
+  hoverKey = key;
+  hoverTimer = window.setTimeout(() => {
+    hoverTimer = null;
+    const box = id !== undefined ? boxFor(name ?? '', Number(id)) : printedTextBox(name!);
+    const el = hoverTip();
+    el.innerHTML = textBoxHtml(box, { compact: true });
+    placeHoverTip(el, x, y);
+  }, HOVER_MS);
 }
 
 document.addEventListener('mouseover', e => {
@@ -2921,7 +3094,10 @@ document.addEventListener('mouseover', e => {
     for (const el of document.querySelectorAll(`[data-id="${ping.dataset['ping']}"]`)) el.classList.add('pinghl');
   }
   const t = (e.target as HTMLElement).closest('[data-prev], [data-previd], [data-prevstack]') as HTMLElement | null;
-  if (!t) return;
+  if (!t) { hideHoverTip(); return; }
+  // a stack item has no card box of its own — the side rail explains it
+  if (t.dataset['prevstack'] === undefined) armHoverTip(t, (e as MouseEvent).clientX, (e as MouseEvent).clientY);
+  else hideHoverTip();
   const prev = document.getElementById('preview');
   if (!prev) return;
   if (t.dataset['previd']) {
@@ -2935,12 +3111,11 @@ document.addEventListener('mouseover', e => {
   }
   const name = t.dataset['prev'];
   if (!name) return;
-  let text = '';
-  try { text = getCard(name).text; } catch { /* unknown card */ }
   // #5: hand cards carry their live X preview into the focus viewer
   const xnow = t.dataset['xnow'] !== undefined
     ? `<div class="xnow">X = ${esc(t.dataset['xnow'])} right now</div>` : '';
-  prev.innerHTML = `<img src="${art(name)}" alt="" onerror="this.style.display='none'">${xnow}<div class="hint">${iconizeText(text)}</div>`;
+  prev.innerHTML = `<img src="${art(name)}" alt="" onerror="this.style.display='none'">${xnow}${
+    textBoxHtml(printedTextBox(name))}`;
 });
 
 document.addEventListener('mouseout', e => {
@@ -2950,7 +3125,11 @@ document.addEventListener('mouseout', e => {
 });
 
 // the cursor leaving the window fires no mouseover, so drop the hover set here
-document.addEventListener('mouseleave', () => setHoverArrows(null));
+document.addEventListener('mouseleave', () => { setHoverArrows(null); hideHoverTip(); });
+// a click, a scroll or a keypress means the player is doing something else
+document.addEventListener('pointerdown', hideHoverTip, { passive: true });
+document.addEventListener('keydown', hideHoverTip);
+window.addEventListener('scroll', hideHoverTip, { passive: true, capture: true });
 
 // Autoplay policy: samples can only be warmed once the page has seen a
 // gesture. Any click or key anywhere counts, and priming is a no-op after the

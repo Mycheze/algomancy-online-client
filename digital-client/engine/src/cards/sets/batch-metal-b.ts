@@ -24,10 +24,9 @@
  *    countersChanged event) so replacement chains / self-retrigger loops
  *    cannot happen. Spawn-with-X counters (Robot X) fire no countersChanged
  *    → no bonus (spawned with, not "put on").
- *  - Formless: "becomes a base 4/4" is a temp-stat delta from the printed/
- *    token base (counters and other modifications still apply on top, as the
- *    text intends; cleared at regroup). The "loses all attributes" half is
- *    PARKED — see below.
+ *  - Formless: "becomes a base 4/4" REWRITES layer 2 (E.setBase), and the
+ *    "loses all attributes until regroup" half is R62's until-regroup
+ *    suppression — both cleared at regroup.
  *  - Instrument of Reassignment: the "[x], Sacrifice another nontoken unit"
  *    COSTS are paid at RESOLUTION (the DSL's activated-cost shape has no X
  *    and no sacrifice-another; Frosted Denial precedent for X-at-resolution).
@@ -56,16 +55,6 @@
  *    firing 'died', the event carries no counter count, and Entity has no
  *    persistent scratch space (budgets are per-turn). Inert augmentText
  *    keeps the card recognised as an augment.
- *  - Monke: "other units lose all attributes and abilities during battle"
- *    needs an attribute/ability SUPPRESSION layer — ownAttrs/effAttrs only
- *    union grants and fireEvent has no mute hook. Registered as a vanilla
- *    battle-timing 1/1.
- *  - Formless (the "loses all attributes" half): same suppression gap; the
- *    base-4/4 half IS implemented.
- *  - Reforge the Dead: granting units a NEW triggered ability ("When I die,
- *    create a Robot 3.") until regroup has no machinery — nothing remains in
- *    play to listen once the spell is binned. Resolves with an info event
- *    and no effect.
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -139,15 +128,18 @@ card('Foretell', {
 // (E.setBase): "becomes a base 4/4" replaces the base, so it does not compound
 // with a base already rewritten by Body Swap — doing it with addTemp is how a
 // swapped Bloated Manablub came out a 6/9 instead of a 4/4 (playtest
-// 2026-08-20). The attribute-loss half is still PARKED (no suppression
-// layer). Unbounded graft cause ([Switch]).
+// 2026-08-20). The attribute-loss half is live too (R62), and the printed
+// reminder is the reason it has to be a real layer rather than a subtraction:
+// switching the target's attribute layer off removes what it was SHARING into
+// its column, which E.colAttrs gets for free by unioning ownAttrs.
+// Unbounded graft cause ([Switch]).
 const formlessReshape: EffectDef = {
   targets: { what: 'unit', prompt: 'Formless: target unit becomes a base 4/4 until regroup' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!isEnt(t) || !g.entity(t.id)) return;
     g.setBase(t, 4, 4);
-    g.ev('info', `Formless: ${t.card} is a base 4/4 until regroup (⚠ attribute loss not implemented).`);
+    g.suppress(t, 'Formless', { attrs: true });   // R62 — abilities are untouched
     g.checkDeaths();
   },
 };
@@ -330,10 +322,25 @@ card('Manufacture', {
 });
 
 // "If I spawned this turn, other units lose all attributes and abilities
-// during battle." — m/1 1/1 {Battle} Bedlam Alien Monkey Unit. PARKED
-// (header): needs an attribute/ability suppression layer. Plays as a vanilla
-// battle-timing 1/1 meanwhile.
-card('Monke', {});
+// during battle." — m/1 1/1 {Battle} Bedlam Alien Monkey Unit. R62's
+// continuous suppression, with both of the printed conditions read live
+// (a static is re-evaluated every time anybody asks, so "if I spawned this
+// turn" stops being true the moment the turn rolls over, and the whole thing
+// switches off outside battle):
+//   - "other units": every unit in the region but Monke itself, BOTH sides'
+//     — the text says units, not your units, and this one is symmetrical on
+//     purpose (it is a 1/1 that turns the battle vanilla for everyone).
+//   - region scope is the engine's (R12), as for every other static.
+// Two Monkes do not silence each other: staticsFor's suppression check is the
+// entity flag only, so simultaneous static-vs-static suppression resolves in
+// one pass and both keep radiating (R62).
+card('Monke', {
+  statics: [{
+    affects: (g, self, t) => t.kind === 'unit' && t.id !== self.id
+      && g.s.phase === 'battle' && g.spawnedTurn(self) === g.s.turn,
+    suppressAttrs: true, suppressAbilities: true,
+  }],
+});
 
 // "[Augment] {Flying} Alien Cloud {Virus} Unit" — m/1 1/1. Type-line
 // [Augment] grants {Flying} (printed.augmentAttrs); {Virus} lets it augment
@@ -430,14 +437,34 @@ card('Powerforge Synergist', {
 });
 
 // "Your units gain \"When I die, create a Robot 3.\" until regroup." — mm/3
-// {Battle} Occult Technology Spell. PARKED (header): no machinery grants
-// units a new triggered ability — once the spell is binned nothing remains
-// in play to listen for the deaths. Resolves crash-free with no effect.
+// {Battle} Occult Technology Spell. R63: the granted clause is authored HERE,
+// as this card's own abilities[0], and handed to each unit as a reference.
+// Nothing else can ever fire it — a spell is never a unit in play, so
+// fireEvent's scan reaches abilities[0] only through the grants below.
+//
+// "Your units" is region-scoped (R12, the Flowstone Arcanite precedent): the
+// units with you where the spell is cast. The grant is a snapshot of that
+// moment, exactly as the printed text reads — a unit that arrives afterwards
+// was not one of "your units" when the spell resolved and gets nothing.
+const REFORGED = 'When I die, create a Robot 3.';
 card('Reforge the Dead', {
+  abilities: [{
+    type: 'triggered', events: ['died'], self: true,
+    label: 'create a Robot 3 (granted by Reforge the Dead)',
+    effect: {
+      run: (g, ctx) => { makeRobot(g, ctx.controller, 3, ctx.region); },
+    },
+  }],
   spellEffect: {
     run: (g, ctx) => {
-      g.ev('info', 'Reforge the Dead: PARKED — the engine cannot grant units "When I die, create a Robot 3." until regroup; no effect.');
-      void ctx;
+      const units = g.unitsOf(ctx.controller, ctx.region);
+      for (const u of units) {
+        g.grantText(u, {
+          card: 'Reforge the Dead', via: 'ability', index: 0,
+          text: REFORGED, from: 'Reforge the Dead',
+        });
+      }
+      if (!units.length) g.ev('info', 'Reforge the Dead: no units to grant it to.');
     },
   },
 });

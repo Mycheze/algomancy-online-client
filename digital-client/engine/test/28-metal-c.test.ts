@@ -8,11 +8,11 @@
  * a mid-resolution sacrifice cost (Scavenging Sentry, R6-style), moving net
  * counters between two cast-time targets (Scrap For Parts), affinity-sized
  * Robot tokens arriving at HOME (Self-Assembly, R28), counter-fueled damage
- * (Soul Reaver), mod erasure + effect negation (Suppression Field — the
- * attribute-suppression half is parked), region-scoped mass counters with a
+ * (Soul Reaver), the R62 suppression layer + mod erasure + effect negation
+ * (Suppression Field, all three clauses), region-scoped mass counters with a
  * bounded budget (Synaptic Energizer, R9/R12), net-counter duplication
- * (Technological Superiority), a mod-carried +2/+2 static (Transmogrifant —
- * the attribute-loss half is parked), a type-line Virus augment (Trashling),
+ * (Technological Superiority), a +2/+2-and-silence static in both forms
+ * (Transmogrifant, R62), a type-line Virus augment (Trashling),
  * base-stat gates (Unmake), a temp re-base (Unstable Refactor), an
  * immediate mid-combat death trigger (Unstable Singularity, R31), forced
  * discards (Void Memory), and a parked draft-skipper (Worldbender).
@@ -23,7 +23,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
-  spawn, toDeployment, toNextBattle, unitsOf,
+  spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
 // ── Refuse Reclaimer ─────────────────────────────────────────────────────
@@ -193,10 +193,50 @@ test('Suppression Field: erases all of the target\'s mods (donated attrs vanish)
   finishBattle(h);
 });
 
-test('Suppression Field: "loses all attributes and abilities until regroup" (no suppression layer)', { todo: true }, () => {
-  // PARKED: the engine cannot REMOVE a card's own printed attributes or
-  // silence its abilities — needs a suppression layer in ownAttrs/fireEvent.
-  // The mod-erasure + stack-negation halves are live (test above).
+test('Suppression Field: R62 — the target loses its printed attributes and its triggers', () => {
+  const h = new Harness(2820);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  // a printed flier with a printed spawn/death trigger, so both layers are
+  // observable on one card
+  const sprite = spawn(h, D, 'Ephemeral Skywalker');        // 3/1 {Flying}
+  assert.ok(ownAttrs(h, sprite).has('Flying'), 'printed Flying, before');
+  giveResources(h, A, 'metal', 1);                          // m/1
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suppression Field') });
+  pick(h, { unit: sprite });
+  pass(h); pass(h);                                         // resolve
+  assert.equal(ownAttrs(h, sprite).size, 0, 'the attribute layer is off');
+  assert.equal(ent(h, sprite)!.suppressed?.abilities, 'Suppression Field');
+  const e = new E(h.state);
+  assert.ok(e.abilitiesSuppressed(ent(h, sprite)!), 'and so is the ability layer');
+  finishBattle(h);
+  assert.ok(ownAttrs(h, sprite).has('Flying'), 'until REGROUP — it comes back');
+  assert.equal(ent(h, sprite)!.suppressed, undefined, 'the flag is cleared');
+});
+
+test('Suppression Field: a silenced unit stops firing its triggered abilities', () => {
+  const h = new Harness(2821);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  // "When I spawn or die, create a Fireball 1" — the death half is the half
+  // a suppressed unit must not get
+  const sprite = spawn(h, D, 'Ignis Sprite');               // 1/1
+  const before = tokensOf(h, D).length;
+  giveResources(h, A, 'metal', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suppression Field') });
+  pick(h, { unit: sprite });
+  pass(h); pass(h);                                         // resolve
+  const e = new E(h.state);
+  e.destroy(ent(h, sprite)!, 'is deleted');
+  e.settle();
+  assert.equal(tokensOf(h, D).length, before, 'the death trigger never queued');
+  finishBattle(h);
 });
 
 // ── Synaptic Energizer ───────────────────────────────────────────────────
@@ -269,9 +309,35 @@ test('Transmogrifant: the augment-donated static anchors on the host', () => {
   assert.deepEqual(effStats(h, host), [1, 1], 'the host itself ("other") does not');
 });
 
-test('Transmogrifant: "…and lose all attributes and abilities" (no suppression layer)', { todo: true }, () => {
-  // PARKED: same missing machinery as Suppression Field — the engine cannot
-  // strip printed attributes/abilities. The +2/+2 half is live (tests above).
+test('Transmogrifant: R62 — the same static that gives +2/+2 takes the attributes away', () => {
+  const h = new Harness(2822);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const sprite = spawn(h, A, 'Ephemeral Skywalker');        // 3/1 {Flying}
+  const theirs = spawn(h, D, 'Ephemeral Skywalker');
+  assert.ok(ownAttrs(h, sprite).has('Flying'), 'before');
+  const tm = spawn(h, A, 'Transmogrifant');
+  assert.equal(ownAttrs(h, sprite).size, 0, 'my other unit loses its attributes…');
+  assert.deepEqual(effStats(h, sprite), [5, 3], '…and still gets the +2/+2');
+  assert.ok(!new E(h.state).abilitiesSuppressed(ent(h, tm)!),
+    'the Transmogrifant itself is untouched ("other")');
+  assert.ok(ownAttrs(h, theirs).has('Flying'), 'their units are untouched ("your")');
+  // continuous, not until-regroup: it ends the instant the projector does
+  new E(h.state).destroy(ent(h, tm)!, 'is deleted');
+  assert.ok(ownAttrs(h, sprite).has('Flying'), 'the projector left — everything is back');
+});
+
+test('Transmogrifant: a silenced unit radiates nothing of its own (R62)', () => {
+  const h = new Harness(2823);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const other = spawn(h, A, 'Unit Token');
+  // two Transmogrifants: each is the OTHER's "other unit", so each silences
+  // the other. Static-vs-static suppression resolves in ONE pass (R62), so
+  // both keep radiating and the token gets +2/+2 twice.
+  spawn(h, A, 'Transmogrifant');
+  spawn(h, A, 'Transmogrifant');
+  assert.deepEqual(effStats(h, other), [5, 5], 'both statics still project');
 });
 
 // ── Trashling ────────────────────────────────────────────────────────────

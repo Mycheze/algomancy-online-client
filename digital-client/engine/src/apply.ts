@@ -640,6 +640,8 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
 function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: number, via?: 'augment' | { mod: EntityId }): void {
   const u = e.entity(entityId);
   e.need(u && u.kind === 'unit' && u.controller === seat && !u.absent, 'not your unit');
+  // R62: a silenced unit has no activated abilities to activate
+  e.need(!e.abilitiesSuppressed(u), 'that unit has lost its abilities');
   const { list, prefix, viaCard } = activationSource(e, u, via);
   const ability = list?.[abilityIndex];
   e.need(ability && ability.type === 'activated', 'no such activated ability');
@@ -1350,6 +1352,7 @@ function pushCachedPlays(e: E, seat: Seat, allowed: (t: CardDef['timing']) => bo
 function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): void {
   const battle = e.s.phase === 'battle';
   for (const u of e.unitsOf(seat, region)) {
+    if (e.abilitiesSuppressed(u)) continue;                     // R62
     const offer = (list: ReturnType<typeof getCard>['abilities'], prefix: 'ability' | 'augment',
       budgetCard: CardName, via?: 'augment' | { mod: EntityId }) => {
       (list ?? []).forEach((ab, i) => {

@@ -39,6 +39,18 @@ tested in `test/51-ui-motion.test.ts`) plus `ui/anim.ts` (FLIP, ghost flights,
 the SVG arrow overlay). See [../docs/09-visual-clarification.md](../docs/09-visual-clarification.md);
 the `✨ motion` button in the side panel turns it all off.
 
+**What a card's text box says right now** is its own layer, and the biggest
+one: printed text is the card's history, not its rules. `ui/cardtext.ts` (pure,
+tested in `test/57-ui-cardtext.test.ts`) composes the live box out of queries
+the rules themselves run — the printed clause, each mod's donated clause, a
+graft composite rendered as the single ability it is (Manual p.33), text
+granted until regroup (R63), what other cards are projecting onto it, which
+halves are switched off and by whom (R62), and stat arithmetic that reconciles
+to `effStats` term by term. `textBoxHtml()` in `ui/main.ts` renders it, and
+three surfaces show the same markup: the side-rail focus viewer, a long-hover
+box that comes to the cursor after half a second, and the card inspector.
+See [../docs/12-card-text.md](../docs/12-card-text.md).
+
 The battle panel's column arithmetic is split out the same way:
 `ui/formation.ts` (what to publish to the opponent while you build a formation,
 and how many rows each half of the battle line must reserve — tested in
@@ -148,9 +160,12 @@ hotseat UI doubles as the network client (`?ws=1&room=CODE&seat=0`). See
 - Combat damage split is auto-assigned lethal front-to-back; voluntary
   over-assignment (R7) has no observable effect in this pool.
 - Burst tokens cast in deterministic id order rather than player-chosen order.
-- Attribute **suppression** (Monke, Suppression Field, Transmogrifant).
-  `{Pure}` was on this list and is not any more — it turned out to need one
-  interaction's worth of scoping, not a layer (R61).
+- Naming a card as a decision (The Everywhere's "During [Haste] name a card").
+  Attribute/ability **suppression** was on this list and is not any more —
+  it is a real layer now (R62), which took Monke, Suppression Field,
+  Transmogrifant and Formless's second clause off it. So was `{Pure}`, which
+  turned out to need one interaction's worth of scoping rather than a layer
+  (R61), and granting rules text (R63, Reforge the Dead).
 - A *consumable* cost modifier (Deferral Drone). The continuous one is done in
   both currencies: mana (R59) and life (R60).
 
@@ -174,4 +189,5 @@ p.16-17 — `mode: 'draft'`, per-player packs that pass).
 | `scripts/pool.mjs` | the pool list (grown by gen-card.mjs) |
 | `test/` | suites 01-08 + fuzz (`node --test 'test/**/*.test.ts'`) |
 | `test/fuzz-parallel.ts` | multi-process fuzz runner for big runs |
+| `ui/cardtext.ts` | the card-text engine: a card's text box as the game sees it |
 | `ui/` | hotseat browser client (esbuild bundle) |

@@ -5,17 +5,18 @@
  * Covers: counter-bonus trigger in both forms (Flux Resonator), Glimpse 1
  * (Foretell — R45: the top card is CACHED and playable until end of turn
  * ignoring affinity, never put into hand), base-4/4 reshaping
- * (Formless; the attribute-loss half is parked), a battle-local Robot
+ * plus R62 attribute suppression (Formless), a battle-local Robot
  * (Hooba-Bot), resolution-paid X + sacrifice costs (Instrument of
  * Reassignment), opponent-chosen negation (Interdiction Rift), stat swapping
  * + card-code Reaping (Invasive Reassignment), linked sacrifices (Linked
  * Extinction), activated [Augment] abilities own AND donated (Living Forge),
  * a Robot 3+2+1 spread at home per R28 (Manufacture), a battle-timing unit
- * (Monke; suppression parked), type-line augment attrs (Nebula Drifter), an
+ * that switches the battle's attribute and ability layers off (Monke, R62),
+ * type-line augment attrs (Nebula Drifter), an
  * activated graft cause carrying a grafted Foretell (Omniwield Evoker),
  * region-scoped mass sacrifice (Perish), spawn counters + a died-trigger
- * counter move under R31 (Powerforge Synergist). Parked: Flux Constructor
- * (died-event counter snapshot), Reforge the Dead (ability granting).
+ * counter move under R31 (Powerforge Synergist), and R63 ability granting
+ * (Reforge the Dead). Parked: Flux Constructor (died-event counter snapshot).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -132,9 +133,28 @@ test('Formless: attack trigger — target unit becomes a base 4/4 until regroup'
   h.do({ type: 'declareAttack', seat: A, columns: [[fl]] });
   pick(h, { unit: big });                                   // the trigger's target
   pass(h); pass(h);                                         // resolve
-  assert.deepEqual(effStats(h, big), [4, 4], 'a base 4/4 (temp delta approximation)');
+  assert.deepEqual(effStats(h, big), [4, 4], 'a base 4/4 (layer 2 rewrite)');
   finishBattle(h);
   assert.deepEqual(effStats(h, big), [8, 3], 'restored at regroup');
+});
+
+test('Formless: R62 — "and loses all attributes", abilities untouched', () => {
+  const h = new Harness(2722);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const fl = spawn(h, A, 'Formless');
+  const sprite = spawn(h, D, 'Ephemeral Skywalker');        // 3/1 {Flying}
+  assert.ok(ownAttrs(h, sprite).has('Flying'), 'before');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[fl]] });
+  pick(h, { unit: sprite });
+  pass(h); pass(h);                                         // resolve
+  assert.equal(ownAttrs(h, sprite).size, 0, 'the attribute layer is off');
+  assert.deepEqual(effStats(h, sprite), [4, 4], 'and it is a base 4/4');
+  assert.ok(!new E(h.state).abilitiesSuppressed(ent(h, sprite)!),
+    'Formless takes attributes only — abilities are not in its text');
+  finishBattle(h);
+  assert.ok(ownAttrs(h, sprite).has('Flying'), 'until REGROUP');
 });
 
 // ── Hooba-Bot ────────────────────────────────────────────────────────────
@@ -320,7 +340,7 @@ test('Manufacture: creates a Robot 3, a Robot 2 and a Robot 1 at home (R28)', ()
 
 // ── Monke ────────────────────────────────────────────────────────────────
 
-test('Monke: plays as a battle-timing 1/1 into the battle (suppression parked)', () => {
+test('Monke: plays as a battle-timing 1/1 into the battle', () => {
   const h = new Harness(2715);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -337,9 +357,41 @@ test('Monke: plays as a battle-timing 1/1 into the battle (suppression parked)',
   finishBattle(h);
 });
 
-test('Monke: other units lose all attributes and abilities during battle (needs a suppression layer)', { todo: true }, () => {
-  // PARKED: ownAttrs/effAttrs only union grants and fireEvent has no mute
-  // hook — there is no way to remove attributes or silence abilities.
+test('Monke: R62 — other units lose all attributes and abilities during battle', () => {
+  const h = new Harness(2723);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const mine = spawn(h, A, 'Ephemeral Skywalker');          // 3/1 {Flying}
+  const theirs = spawn(h, D, 'Ephemeral Skywalker');
+  giveResources(h, A, 'metal', 1);                          // m/1
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
+  assert.ok(ownAttrs(h, mine).has('Flying'), 'before Monke arrives');
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
+  pass(h); pass(h);                                         // the unit item resolves
+  const monke = unitsOf(h, A).find(u => u.card === 'Monke')!;
+  assert.equal(ownAttrs(h, mine).size, 0, '"other units" — mine included');
+  assert.equal(ownAttrs(h, monke.id).size, 0, 'Monke is a vanilla 1/1 either way');
+  assert.ok(new E(h.state).abilitiesSuppressed(ent(h, mine)!), 'and their abilities');
+  // "if I spawned this turn" and "during battle" are both live conditions
+  finishBattle(h);
+  assert.ok(ownAttrs(h, mine).has('Flying'), 'out of battle: everything is back');
+  void theirs;
+});
+
+test('Monke: "other units" is both sides — it turns the whole battle vanilla', () => {
+  const h = new Harness(2724);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const mine = spawn(h, A, 'Unit Token');
+  const theirs = spawn(h, D, 'Ephemeral Skywalker');        // 3/1 {Flying}
+  giveResources(h, A, 'metal', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
+  pass(h); pass(h);
+  assert.equal(ownAttrs(h, theirs).size, 0, 'the text says units, not YOUR units');
+  finishBattle(h);
 });
 
 // ── Nebula Drifter ───────────────────────────────────────────────────────
@@ -448,23 +500,45 @@ test('Powerforge Synergist: dies in combat → move my counters onto target unit
 
 // ── Reforge the Dead ─────────────────────────────────────────────────────
 
-test('Reforge the Dead: registers and resolves crash-free (PARKED — no effect)', () => {
+test('Reforge the Dead: R63 — your units gain "When I die, create a Robot 3."', () => {
   const h = new Harness(2721);
   toDeployment(h);
-  const A = h.state.deployPlayer!;
+  const A = h.state.deployPlayer!, D = 1 - A;
   const tok = spawn(h, A, 'Unit Token');
   giveResources(h, A, 'metal', 3);                          // mm/3
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reforge the Dead') });
   pass(h); pass(h);                                         // resolve
-  assert.ok(h.log.some(l => l.includes('Reforge the Dead: PARKED')), 'the parked note is logged');
   assert.ok(h.state.players[A]!.bin.includes('Reforge the Dead'), 'resolved → bin');
-  assert.equal(unitsOf(h, A).filter(u => u.card === 'Robot').length, 0, 'no Robots were minted');
+  assert.equal(ent(h, tok)!.granted?.length, 1, 'the grant landed on the unit');
+  assert.equal(ent(h, tok)!.granted?.[0]?.text, 'When I die, create a Robot 3.');
+  // and it actually fires: the spell is long gone, the reference is not
+  {
+    const e = new E(h.state);
+    e.destroy(ent(h, tok)!, 'is deleted');
+    e.settle();
+  }
+  pass(h); pass(h);                                         // resolve the granted trigger
+  const robot = unitsOf(h, A).find(u => u.card === 'Robot');
+  assert.ok(robot, 'a Robot was created');
+  assert.equal(robot!.counters, 3, 'a Robot 3');
+  assert.equal(unitsOf(h, D).filter(u => u.card === 'Robot').length, 0, 'only YOUR units');
   finishBattle(h);
 });
 
-test('Reforge the Dead: units gain "When I die, create a Robot 3." until regroup (needs ability granting)', { todo: true }, () => {
-  // PARKED: no machinery grants units a NEW triggered ability — once the
-  // spell is binned nothing remains in play to listen for the deaths.
+test('Reforge the Dead: the grant is until regroup, and only for units already there', () => {
+  const h = new Harness(2725);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const early = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'metal', 3);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[early]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reforge the Dead') });
+  pass(h); pass(h);
+  const late = spawn(h, A, 'Unit Token');
+  assert.equal(ent(h, late)!.granted, undefined, 'arrived after the spell resolved');
+  finishBattle(h);
+  assert.equal(ent(h, early)!.granted, undefined, 'cleared at regroup');
 });

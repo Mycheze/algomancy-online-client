@@ -177,6 +177,49 @@ export interface Entity {
    * (Banishment) and "if I spawned this turn …". Mods carry it too; the field
    * is stamped by newEntity, so it is simply "when this entity was made". */
   spawnedTurn?: number;
+  /**
+   * R62, the until-regroup half of the SUPPRESSION layer: this unit's own
+   * attribute layer and/or ability layer is switched off, and the value is the
+   * card that switched it off (the text box names the culprit). "Loses all
+   * attributes and abilities until regroup" — Suppression Field, Formless's
+   * attribute half.
+   *
+   * The other half of R62 is CONTINUOUS and lives on StaticMod
+   * (`suppressAttrs` / `suppressAbilities`, radiating like any other static —
+   * Monke, Transmogrifant). Never read either raw: E.suppressionOf(e) is the
+   * one authority and unions both halves.
+   *
+   * Additive/optional, so states serialized before the layer existed still
+   * load. Cleared with the other until-regroup changes (R11 step 3).
+   */
+  suppressed?: { attrs?: CardName; abilities?: CardName };
+  /**
+   * R63: rules text GRANTED to this unit until regroup — "Your units gain
+   * 'When I die, create a Robot 3.' until regroup" (Reforge the Dead). A grant
+   * is a REFERENCE to an authored ability on some card, not a copy of it, so
+   * it stays serializable and replays bit-identically; fireEvent scans these
+   * alongside the unit's own lists, and the composed effect key
+   * (`ability:<card>#<i>`) resolves through the registry exactly as a printed
+   * one does.
+   *
+   * Additive/optional; cleared at regroup with everything else temporary.
+   */
+  granted?: GrantedText[];
+}
+
+/**
+ * R63: one granted ability on an entity. `card`/`via`/`index` address the
+ * authored ability (dsl.ts's registry — the GRANTING card usually carries the
+ * granted ability in its own `abilities` list, where nothing else can ever
+ * fire it: a spell is never a unit in play). `text` is the clause as the
+ * granting card prints it, for the text box; `from` names the granter.
+ */
+export interface GrantedText {
+  card: CardName;
+  via: 'ability' | 'augment';
+  index: number;
+  text: string;
+  from: CardName;
 }
 
 // ── battle ────────────────────────────────────────────────────────────

@@ -37,15 +37,6 @@
  *    region-scoped (R12, the Flowstone Arcanite precedent).
  *
  * PARKED (needs engine primitives that do not exist; subsets implemented):
- *  - Suppression Field ("loses all attributes and abilities until regroup"
- *    half): the engine has no suppression layer that can REMOVE a card's own
- *    printed attributes or silence its abilities. The other half is real:
- *    all of the target's mods are erased (which also strips every mod-granted
- *    attribute and donated text) and every stack effect whose source is the
- *    target is negated.
- *  - Transmogrifant ("lose all attributes and abilities" half): same missing
- *    suppression machinery; the +2/+2 static half is live (unit form AND
- *    augment-donated, host-anchored).
  *  - Worldbender: "Skip your draft step. When you do, draw a card." — the
  *    engine has draft state (state.draftDone, mode 'draft') but NO skip
  *    machinery; the constructed-format life clause has no format flag either.
@@ -243,16 +234,20 @@ card('Soul Reaver', {
 
 // "Target unit loses all attributes and abilities until regroup. Erase all
 // of its mods and negate all of its effects." — m/1 {Battle} Technology
-// Spell. The attribute/ability suppression half is PARKED (header). Live:
-// every mod on the target is ERASED (no bin — which also strips all
-// mod-granted attrs and donated text), and every stack effect whose source
-// is the target is negated.
+// Spell. All three clauses are live now that R62 exists: both layers are
+// switched off until regroup (which also silences everything its mods were
+// donating, and strips what it was sharing into its column), every mod on it
+// is ERASED (no bin), and every stack effect whose source is the target is
+// negated.
 card('Suppression Field', {
   spellEffect: {
-    targets: { what: 'unit', prompt: 'Suppression Field: erase target unit\'s mods and negate its effects' },
+    targets: { what: 'unit', prompt: 'Suppression Field: target unit loses everything' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
+      // R62: both layers off until regroup — this is the whole first sentence
+      g.suppress(t, 'Suppression Field', { attrs: true, abilities: true });
+      if (!g.entity(t.id)) return;                 // suppression can be lethal
       if (t.mods.length) {
         for (const modId of t.mods) delete g.s.entities[modId];
         g.ev('info', `Suppression Field ERASES ${t.mods.length} mod(s) on ${t.card}.`);
@@ -311,6 +306,11 @@ card('Transmogrifant', {
   statics: [{
     affects: (_g, self, t) => t.kind === 'unit' && t.controller === self.controller && t.id !== self.id,
     dp: 2, dt: 2,
+    // R62: the other half of the same sentence — "and lose all attributes and
+    // abilities". Continuous, so it lives and dies with the projector: erase
+    // the Transmogrifant (or the host it augments) and your units get
+    // everything back in the same instant.
+    suppressAttrs: true, suppressAbilities: true,
   }],
 });
 

@@ -249,6 +249,7 @@ export class E {
           anchor = this.entity(holder.modOf);
         }
         if (!anchor || anchor.absent || anchor.region !== region) continue;
+        if (anchor.suppressed?.abilities) continue;             // R62, as staticsFor
         for (const mod of this.card(holder.card).costMods ?? []) out.push({ holder: anchor, mod });
       }
     } finally { this.inCostMods = false; }
@@ -339,10 +340,13 @@ export class E {
   /** reentrancy guard for static-modifier evaluation (see StaticMod docs) */
   private inStatics = false;
 
-  /** every StaticMod projected onto `target` by in-play units in its region */
-  private staticsFor(target: Entity): { holder: Entity; mod: import('./cards/dsl.ts').StaticMod }[] {
+  /** every StaticMod projected onto `target` by in-play units in its region.
+   * `from` is the card that AUTHORED the static, which is not `holder.card`
+   * when the text arrived on an augment mod (the mod anchors on its host) —
+   * the text box has to name Transmogrifant, not the unit wearing it. */
+  private staticsFor(target: Entity): { holder: Entity; from: CardName; mod: import('./cards/dsl.ts').StaticMod }[] {
     if (this.inStatics) return [];
-    const out: { holder: Entity; mod: import('./cards/dsl.ts').StaticMod }[] = [];
+    const out: { holder: Entity; from: CardName; mod: import('./cards/dsl.ts').StaticMod }[] = [];
     this.inStatics = true;
     try {
       for (const holder of Object.values(this.s.entities)) {
@@ -359,8 +363,15 @@ export class E {
         // a sent counterattacker "doesn't exist until phase 1 finishes"
         // (Manual p.20) — it radiates nothing in the region it left
         if (!anchor || anchor.absent || anchor.region !== target.region) continue;
+        // R62: a silenced unit radiates nothing — a static IS an ability.
+        // Shallow by construction (the reentrancy guard is already held, so a
+        // nested suppression query sees no statics): a unit silenced by a
+        // SPELL stops radiating immediately, while two units whose statics
+        // silence each other both keep radiating and both go quiet, which is
+        // the simultaneous answer the layer model wants anyway.
+        if (anchor.suppressed?.abilities) continue;
         for (const mod of this.card(holder.card).statics ?? []) {
-          if (mod.affects(this, anchor, target)) out.push({ holder: anchor, mod });
+          if (mod.affects(this, anchor, target)) out.push({ holder: anchor, from: holder.card, mod });
         }
       }
     } finally { this.inStatics = false; }
@@ -411,11 +422,74 @@ export class E {
     }
     return out;
   }
+  /**
+   * R62 — the SUPPRESSION layer: which halves of a card are switched off right
+   * now, and by what. Two sources, unioned here so nothing else has to know
+   * there are two: the until-regroup flag a spell stamped on the entity
+   * (`Entity.suppressed`) and every continuous `suppressAttrs`/
+   * `suppressAbilities` static radiating onto it (Monke, Transmogrifant).
+   *
+   * Suppression is subtractive, so it is a VETO rather than a sum: one
+   * suppressor switches the layer off and nothing switches it back on. It sits
+   * UNDER every other layer — an attribute the unit would otherwise gain from
+   * a mod, a column-mate, or a temp grant is gone too, because the printed
+   * text says "loses ALL attributes", not "loses its printed attributes".
+   *
+   * `by` is for the text box: the cards to blame, deduped, entity flag first.
+   */
+  suppressionOf(e: Entity): { attrs: boolean; abilities: boolean; by: CardName[] } {
+    const by: CardName[] = [];
+    const blame = (n: CardName) => { if (!by.includes(n)) by.push(n); };
+    let attrs = false, abilities = false;
+    if (e.suppressed?.attrs) { attrs = true; blame(e.suppressed.attrs); }
+    if (e.suppressed?.abilities) { abilities = true; blame(e.suppressed.abilities); }
+    for (const { from, mod } of this.staticsFor(e)) {
+      if (mod.suppressAttrs) { attrs = true; blame(from); }
+      if (mod.suppressAbilities) { abilities = true; blame(from); }
+    }
+    return { attrs, abilities, by };
+  }
+  /** R62: are this entity's triggered / activated / static / cost abilities
+   * switched off? The gate on every path that would otherwise fire one. */
+  abilitiesSuppressed(e: Entity): boolean {
+    if (e.suppressed?.abilities) return true;
+    return this.staticsFor(e).some(s => s.mod.suppressAbilities);
+  }
+
+  /**
+   * The card-text engine's window onto layer 3: every continuous projection
+   * landing on `e` right now, numbers already evaluated, each attributed to
+   * the card that AUTHORED it rather than the entity carrying it.
+   *
+   * Pure, and deliberately reading the very same statics effStats/ownAttrs
+   * read — a text box built from this cannot disagree with the board it is
+   * describing. (Same contract as StaticMod: dp/dt must not re-enter stat
+   * evaluation, so calling them here is safe.)
+   */
+  projections(e: Entity): {
+    from: CardName; holder: EntityId;
+    dp: number; dt: number; attrs: string[];
+    suppressAttrs: boolean; suppressAbilities: boolean;
+  }[] {
+    return this.staticsFor(e).map(({ holder, from, mod }) => ({
+      from, holder: holder.id,
+      dp: typeof mod.dp === 'function' ? mod.dp(this, holder, e) : (mod.dp ?? 0),
+      dt: typeof mod.dt === 'function' ? mod.dt(this, holder, e) : (mod.dt ?? 0),
+      attrs: [...(mod.attrs ?? [])],
+      suppressAttrs: !!mod.suppressAttrs,
+      suppressAbilities: !!mod.suppressAbilities,
+    }));
+  }
+
   /** attrs on the card itself + type-line attrs granted by augment/virus mods */
   ownAttrs(e: Entity): Set<string> {
-    const set = new Set<string>(this.card(e.card).attrs);
+    const set = new Set<string>();
+    const statics = this.staticsFor(e);
+    // R62: "loses ALL attributes" — the layer is off, so nothing below it runs
+    if (e.suppressed?.attrs || statics.some(st => st.mod.suppressAttrs)) return set;
+    for (const a of this.card(e.card).attrs) set.add(a);
     for (const a of e.tempAttrs ?? []) set.add(a);
-    for (const { mod } of this.staticsFor(e)) for (const a of mod.attrs ?? []) set.add(a);
+    for (const { mod } of statics) for (const a of mod.attrs ?? []) set.add(a);
     for (const id of e.mods) {
       const m = this.entity(id);
       if (m && m.appliedAs === 'augment') {
@@ -710,6 +784,7 @@ export class E {
         anchor = this.entity(holder.modOf);
       }
       if (!anchor || anchor.absent || anchor.controller !== seat) continue;
+      if (this.abilitiesSuppressed(anchor)) continue;           // R62
       holders.push({ holder, anchor });
     }
     holders.sort((a, z) => a.holder.id - z.holder.id);
@@ -1150,6 +1225,44 @@ export class E {
     this.ev('statChanged', `${target.card} gains {${attr}} until regroup.`, { unit: target.id, attr });
   }
 
+  /**
+   * R62: switch a unit's attribute and/or ability layer off UNTIL REGROUP —
+   * "Target unit loses all attributes and abilities until regroup"
+   * (Suppression Field), "…and loses all attributes until regroup" (Formless).
+   * `by` is the card to blame, kept so the text box can say who did it.
+   *
+   * The continuous form of the same layer is a StaticMod flag and needs no
+   * primitive: it is simply true while the projector is there.
+   */
+  suppress(target: Entity, by: CardName, what: { attrs?: boolean; abilities?: boolean }): void {
+    const sup = (target.suppressed ??= {});
+    if (what.attrs) sup.attrs = by;
+    if (what.abilities) sup.abilities = by;
+    const lost = [what.attrs ? 'attributes' : '', what.abilities ? 'abilities' : '']
+      .filter(Boolean).join(' and ');
+    this.ev('statChanged', `${target.card} loses all ${lost} until regroup (${by}).`,
+      { unit: target.id, suppressed: what });
+    // an attribute the unit was relying on (Tough, a static's grant) can be
+    // what was keeping it alive
+    this.checkDeaths();
+  }
+
+  /**
+   * R63: grant a unit an authored ability until regroup — "Your units gain
+   * 'When I die, create a Robot 3.' until regroup" (Reforge the Dead).
+   *
+   * A REFERENCE, not a copy: `card`/`via`/`index` address the ability in the
+   * registry, so the grant is plain serializable data and replays identically.
+   * The granting card normally parks the granted ability in its own
+   * `abilities` list, where nothing else can fire it — a spell is never a unit
+   * in play, so fireEvent's scan never reaches it except through this grant.
+   */
+  grantText(target: Entity, g: import('./types.ts').GrantedText): void {
+    (target.granted ??= []).push(g);
+    this.ev('statChanged', `${target.card} gains "${g.text}" until regroup (${g.from}).`,
+      { unit: target.id, granted: g.text });
+  }
+
   /** "You gain N life" — the plain primitive (Prismatic Observer) and the
    * engine half of {Blessed}. Life gain is never lethal, so unlike loseLife
    * it has no state check to run. */
@@ -1232,6 +1345,7 @@ export class E {
         anchor = this.entity(holder.modOf);
       }
       if (!anchor || anchor.absent || anchor.region !== info.region) continue;
+      if (this.abilitiesSuppressed(anchor)) continue;           // R62
       holders.push({ holder, anchor });
     }
     holders.sort((a, z) => a.holder.id - z.holder.id);
@@ -2415,6 +2529,10 @@ export class E {
     listeners.sort((a, z) => (a.controller === this.initiative ? 0 : 1) - (z.controller === this.initiative ? 0 : 1));
     let queued = false;
     for (const u of listeners) {
+      // R62: a silenced unit has no triggered abilities to find — its own, its
+      // [Augment] text, its mods' donated text and anything granted to it are
+      // all "abilities", and the layer is off.
+      if (this.abilitiesSuppressed(u)) continue;
       const src = sourceId ?? dyingUnit?.id;
       queued = this.collectTriggersFrom(u, u.card, 'ability', type, ev, src) || queued;
       // a card's own [Augment] text is active when played normally (Manual Q&A)
@@ -2424,6 +2542,10 @@ export class E {
         if (mod && mod.appliedAs === 'augment') {
           queued = this.collectTriggersFrom(u, mod.card, 'augment', type, ev, src) || queued;
         }
+      }
+      // R63: text granted until regroup listens exactly like printed text
+      for (const g of u.granted ?? []) {
+        queued = this.collectTriggersFrom(u, g.card, g.via, type, ev, src) || queued;
       }
     }
     queued = this.fireZoneTriggers(type, ev) || queued;
@@ -3082,7 +3204,9 @@ export class E {
     // (3) all temporary stat changes are removed (counters are NOT temporary)
     for (const e of Object.values(this.s.entities)) {
       e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs;
-      delete e.baseSet;   // layer 2 is an until-regroup rewrite too
+      delete e.baseSet;      // layer 2 is an until-regroup rewrite too
+      delete e.suppressed;   // R62: so is a switched-off attribute/ability layer
+      delete e.granted;      // R63: and so is granted text
     }
     // (4) units leave formation — battle state is already gone
     // (+) spell tokens are erased

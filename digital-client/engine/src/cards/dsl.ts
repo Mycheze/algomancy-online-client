@@ -252,6 +252,19 @@ export interface StaticMod {
   dp?: number | ((g: E, self: Entity, target: Entity) => number);
   dt?: number | ((g: E, self: Entity, target: Entity) => number);
   attrs?: Attr[];
+  /**
+   * R62, the CONTINUOUS half of the suppression layer: while this static
+   * applies, the target's attribute layer (`suppressAttrs`) and/or its ability
+   * layer (`suppressAbilities`) is switched off — "other units lose all
+   * attributes and abilities during battle" (Monke), "[Augment] Your other
+   * units gain +2/+2 and lose all attributes and abilities" (Transmogrifant).
+   *
+   * Suppression is subtractive where every other static is additive, so it is
+   * read through E.suppressionOf(), never by summing: one suppressor is
+   * enough, and no amount of granting outvotes it.
+   */
+  suppressAttrs?: boolean;
+  suppressAbilities?: boolean;
 }
 
 /** What a cost modifier is being asked about. `purpose` separates PLAYING a

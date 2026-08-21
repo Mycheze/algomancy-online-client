@@ -864,3 +864,90 @@ Stats are not attributes: a Pure 2/3 still dies to 3 damage.
 does not currently blind itself to that unit's attributes — no pool card needs
 it, and the general "any interaction" form still wants the parked suppression
 layer.
+
+## R62 — The suppression layer: "loses all attributes and abilities"
+
+*(Playtest round 9, 2026-08-21.)*
+
+*"I'm pretty sure removing abilities from cards isn't working right."*
+
+It was not working at all. Five printed cards take something away — Suppression
+Field, Transmogrifant, Monke, Formless's second clause, The Everywhere — and
+every one of them was parked with the same note, because `ownAttrs` only ever
+*unioned* grants and `fireEvent` had no mute hook. The engine could add to a
+card forever and subtract from it never.
+
+**Suppression is a layer, and it sits under every other one.** It is a VETO,
+not a sum: one suppressor switches the half off, and nothing switches it back
+on. The printed text is "loses **all** attributes", so an attribute the unit
+would otherwise get from a mod, a column-mate, a static or an until-regroup
+grant is gone too — not just its printed ones.
+
+Two forms, unioned by `E.suppressionOf()` so nothing downstream has to know
+there are two:
+
+| form | where it lives | ends when | cards |
+|---|---|---|---|
+| until regroup | `Entity.suppressed = { attrs?, abilities? }`, stamped by `E.suppress()` | regroup (R11 step 3), with the other temporary changes | Suppression Field, Formless |
+| continuous | `StaticMod.suppressAttrs` / `.suppressAbilities`, radiating and region-scoped like any static | the instant the projector stops projecting | Monke, Transmogrifant |
+
+The value stored is the **card to blame**, because the client's text box
+(ui/cardtext.ts) has to say who did it — "⊘ attributes switched off by Monke"
+is the difference between a confusing board and a legible one.
+
+**What "abilities" covers.** Everything the card would otherwise do by itself:
+triggered abilities (own, its own `[Augment]` text, its mods' donated text,
+and anything granted to it under R63), activated abilities (neither offered by
+`legalActions` nor accepted by `apply`), the statics and cost modifiers it
+radiates — a static *is* an ability — and both R38 replacement hooks. Erasing
+a unit's mods (Suppression Field's second clause) is separate and additional:
+suppression silences donated text, erasure removes it.
+
+**What it does not cover.** Stats are not abilities: a silenced 7/5 is still a
+7/5, counters and temp deltas still apply, and layer 4 stops only because
+Tough and Balanced are attributes. Being suppressed does not stop a card being
+targeted, blocking, dying, or being a legal graft host.
+
+**Static-vs-static resolves in ONE pass.** `staticsFor` skips a holder whose
+*entity flag* is set, not one silenced by another static. So a unit silenced by
+a spell stops radiating immediately, while two Monkes — each the other's
+"other unit" — both keep radiating and both go quiet. That is the simultaneous
+answer the layer model wants, and it is also the only one that terminates
+without iterating to a fixpoint.
+
+**Still parked:** The Everywhere ("During `[Haste]` name a card. My last named
+card loses all abilities.") — the suppression half is now trivial, but naming a
+card is a decision primitive the engine does not have.
+
+## R63 — Granting rules text
+
+*(Playtest round 9, 2026-08-21.)*
+
+Reforge the Dead prints *"Your units gain 'When I die, create a Robot 3.'
+until regroup"*, and was parked for the mirror-image reason to R62: nothing
+could add an ability either, because once the spell is binned nothing remains
+in play to listen.
+
+A grant is a **reference, not a copy**: `Entity.granted` holds
+`{ card, via, index, text, from }`, addressing an authored ability in the
+registry. That keeps it plain serializable data — so it replays bit-identically
+— and it composes for free, because `fireEvent` already dispatches through
+`collectTriggersFrom(host, cardName, …)` with the card name as a parameter and
+the effect key (`ability:<card>#<i>`) already resolves through the registry
+rather than through the host.
+
+The granting card authors the granted ability **in its own `abilities` list**,
+where nothing else can ever fire it — a spell is never a unit in play, so the
+in-play scan reaches it only through a grant. No synthetic card, no second
+registry.
+
+Three consequences worth stating, all of them just the printed text read
+literally:
+
+- The grant is a **snapshot of "your units"** at resolution. A unit that
+  arrives afterwards was not one of them and gets nothing.
+- It is **region-scoped** (R12, the Flowstone Arcanite precedent).
+- It is cleared at **regroup**, with everything else temporary.
+
+Granted text is silenced by R62 exactly like printed text — it is an ability
+the card has, and "loses all abilities" means all of them.

@@ -430,7 +430,10 @@ button:disabled { opacity: .4; cursor: default; }
 .inspectscroll h4 .hint { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--dim); }
 .inspecttop { display: flex; gap: 12px; align-items: flex-start; }
 .inspecttop img { width: 150px; border-radius: 8px; flex-shrink: 0; }
-.inspecttext { color: var(--text); white-space: pre-wrap; }
+/* the inspector's right-hand column is the current text box now, not a
+   paragraph — `pre-wrap` here turned the renderer's own source indentation
+   into real gaps down the middle of the panel */
+.inspecttext { color: var(--text); flex: 1; min-width: 0; }
 .rulingrow { background: var(--panel2); border-left: 3px solid var(--accent); border-radius: 4px;
   padding: 6px 10px; margin-bottom: 6px; color: var(--text); }
 
@@ -706,7 +709,11 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    not, so the column is always exactly full and never dead. The stack used to
    live here too; it is on the table now (see .stackboard). */
 #app.board .sidehead { flex: none; }
-#app.board .preview { flex: 0 1 auto; min-height: 0; max-height: 50%; overflow-y: auto; }
+#app.board .preview { flex: 0 1 auto; min-height: 0; max-height: 62%; overflow-y: auto; }
+/* the art is how you recognise the card; the text box is how you play it
+   correctly — so the scan gets a ceiling and the box gets the rest of the
+   rail, rather than pushing it below the fold (2026-08-21) */
+#app.board .preview > img { max-height: 30vh; width: auto; max-width: 100%; }
 #app.board .logpanel { flex: 1 1 0; min-height: 110px; max-height: none; }
 /* nothing is yours to do — the opponent owes an answer (playtest 2026-08-20:
    this used to render as a priority bar with a Pass button the server refused) */
@@ -961,32 +968,41 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .pgpeek { align-self: center; background: none; border: none; color: var(--dim); font-size: 12px; }
 .pgpeek:hover { border: none; color: var(--text); text-decoration: underline; }
 
-/* ── the stack, on the table (playtest 2026-08-21) ────────────────────
+/* ── the stack: a little window floating over the table ───────────────
    "The effects go on as list items. It would be better to have a little
    horizontal stack using actual visual cards, slightly overlapping, on the
-   field." So the stack left the side rail and became a strip of real card
-   scans between the two regions — where you are already looking.
+   field" — and then: "it's too far in the middle. I like how it overlaps
+   other zones, it should do that with ALL zones and be its own little window
+   thingy, floating in space. And moved over to be sorta between where the
+   bins are."
 
-   It is sticky at BOTH ends of the scroller, so however far the table is
-   scrolled the stack stays on screen; --topbar-h is published by renderNow()
-   so it parks under the sticky prompt rather than beneath it. Empty, it is a
-   thin unobtrusive rule that never sticks to anything and never covers a
-   card — the strip only asserts itself when something is actually on it. */
-.stackboard { margin: 6px 0; }
-.stackboard .stackempty {
-  color: var(--dim); font-style: italic; font-size: 11px; text-align: center;
-  border-top: 1px dashed var(--line); padding-top: 3px; opacity: .5;
-}
+   So it is out of the flow entirely: fixed to the right edge of the table
+   column, halfway up, which is where the two bins are. --table-right and
+   --table-mid are measured by placeStackWindow() rather than derived from the
+   grid, because the app is max-width'd and centred, the rail has its own
+   width, and net mode adds a hand dock under the table.
+
+   Below the arrow layer (55), so targeting arrows still draw over it, and
+   below overlays and menus. The window itself does NOT eat clicks — only the
+   cards in it do — so a unit it happens to be floating over is still yours to
+   click. Empty, it is not rendered at all. */
 .stackboard.live {
-  position: sticky; top: calc(var(--topbar-h, 0px) + 4px); bottom: 6px; z-index: 25;
-  /* a little stack sitting on the table, not a panel across it */
-  width: fit-content; max-width: 100%; margin: 6px auto;
+  position: fixed; z-index: 46;
+  right: calc(var(--table-right, 306px) + 8px);
+  top: var(--table-mid, 50%);
+  transform: translateY(-50%);
+  pointer-events: none;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 6px 14px 8px;
-  background: linear-gradient(180deg, rgba(24,30,38,.97), rgba(18,22,28,.97));
-  border: 1px solid var(--accent); border-radius: 8px;
-  box-shadow: 0 6px 22px rgba(0,0,0,.55);
+  /* the 3 matches STACK_SPAN in main.ts: the row of cards is sized to fit
+     exactly this box, so a deep stack tightens instead of bursting out */
+  width: max-content; max-width: calc(var(--cw) * 3 + 26px);
+  padding: 6px 12px 8px;
+  background: linear-gradient(180deg, rgba(24,30,38,.96), rgba(16,20,26,.96));
+  border: 1px solid var(--accent); border-radius: 9px;
+  box-shadow: 0 10px 34px rgba(0,0,0,.7), 0 0 0 1px rgba(0,0,0,.4);
+  backdrop-filter: blur(3px);
 }
+.stackboard .stackcard { pointer-events: auto; }
 /* the cards themselves: slightly overlapping, oldest left, newest on top and
    on the right — which is also the one that resolves next */
 .stackrow { display: flex; align-items: flex-end; padding-top: 10px; }
@@ -996,9 +1012,11 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
   aspect-ratio: 63 / 88; cursor: default;
   transition: transform .12s ease, box-shadow .12s ease;
 }
-/* enough overlap to read as a stack, little enough that every card still
-   shows its art and the start of its tag */
-.stackcard + .stackcard { margin-left: calc(var(--cw) * -.5); }
+/* Enough overlap to read as a stack, little enough that every card still
+   shows its art and the start of its tag. --stackstep is how far each card
+   advances (in --cw units); stackBoardHtml shrinks it as the stack deepens so
+   the window keeps roughly one width however much is on it. */
+.stackcard + .stackcard { margin-left: calc(var(--cw) * (var(--stackstep, .55) - 1.05)); }
 .stackcard img { position: relative; z-index: 1;
   width: 100%; height: 100%; object-fit: cover; border-radius: 4px; display: block; }
 /* the name plate under the scan: what you read when the art is missing, or
@@ -1054,4 +1072,88 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .stackcaption .stackdepth { font-size: 10px; }
 @media (prefers-reduced-motion: reduce) {
   .stackcard, .stackcard.flashing { transition: none; animation: none; }
+}
+
+/* ── the current text box (ui/cardtext.ts) ──────────────────────────────
+ *
+ * Playtest 2026-08-21, Bena: "the printed card is hardly ever correct." The
+ * scan stays the picture; this is the rules text, and it has to read like a
+ * text box rather than like a debug dump — so it is one panel with a head, a
+ * stat line, an attribute row and one row per clause, and every row carries a
+ * small tag naming the card that clause is printed on.
+ *
+ * Three surfaces render exactly this markup: the side-rail focus viewer, the
+ * long-hover tooltip (.compact — no arithmetic, no state notes) and the
+ * inspector. One stylesheet block so they cannot drift apart.
+ */
+.textbox { text-align: left; background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 6px; padding: 7px 8px; margin-top: 8px; white-space: normal; }
+.textbox.modified { border-color: var(--accent); }
+.tbhead { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-bottom: 5px; }
+/* the inspector already has the name in its own heading: the badge alone */
+.tbhead.bare { border-bottom: 0; padding-bottom: 0; margin-bottom: 3px; }
+.tbname { font-weight: 700; }
+.tbtype { color: var(--dim); font-size: 11px; }
+/* the badge is the whole point of the panel: this is NOT the printed card */
+.tbbadge { margin-left: auto; background: var(--accent); color: #1a1206;
+  border-radius: 3px; font-size: 9px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; padding: 1px 5px; white-space: nowrap; }
+
+.tbstats { display: flex; align-items: baseline; gap: 8px; font-size: 15px; }
+.tbstats .statup { color: #7fdc7f; }
+.tbstats .statdown { color: #ff8a8a; }
+.tbstats .basestat { color: var(--dim); font-size: 11px; }
+.tbstats .tbdmg { color: var(--danger); font-size: 11px; margin-left: auto; }
+/* the arithmetic, so a surprising number can be READ rather than trusted */
+.tbmath { display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: 10px;
+  color: var(--dim); margin: 2px 0 4px; }
+.tbmath .tbterm b { color: var(--text); font-weight: 600; }
+
+.tbattrs { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
+.tbattr { background: var(--panel); border: 1px solid var(--line); border-radius: 3px;
+  font-size: 10px; padding: 1px 5px; }
+.tbattr em { color: var(--dim); font-style: normal; margin-left: 4px; }
+/* printed on the card, switched off by the board — both facts at once */
+.tbattr.off { text-decoration: line-through; opacity: .5; border-style: dashed; }
+
+.tbsupp { background: #3a1e1e; border: 1px solid var(--danger); border-radius: 4px;
+  color: #ffbcbc; font-size: 11px; padding: 3px 6px; margin: 5px 0; }
+
+.tblines { display: flex; flex-direction: column; gap: 5px; }
+.tbline { border-left: 2px solid var(--line); padding-left: 6px; font-size: 12px; line-height: 1.35; }
+.tbfrom { display: block; font-size: 9px; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--dim); }
+.tbline.tb-augment, .tbline.tb-graft { border-left-color: var(--accent); }
+.tbline.tb-augment .tbfrom, .tbline.tb-graft .tbfrom { color: var(--accent); }
+.tbline.tb-granted { border-left-color: var(--glow); }
+.tbline.tb-granted .tbfrom { color: var(--glow); }
+.tbline.tb-static { border-left-color: #6d5bd0; }
+.tbline.tb-static .tbfrom { color: #9d8bf0; }
+.tbline.tb-note { border-left-color: transparent; }
+/* a clause that is present but doing nothing: struck, not hidden — "it says
+   Flying and Flying is off" is the thing worth showing */
+.tbline.off .tbtext { text-decoration: line-through; opacity: .55; }
+.tbwhy { display: block; font-size: 10px; color: var(--danger); }
+.tbstate { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 10px;
+  color: var(--dim); border-top: 1px solid var(--line); margin-top: 6px; padding-top: 4px; }
+.textbox .txticon { vertical-align: -2px; }
+
+/* the long-hover box: it comes to the cursor rather than making the player
+   look away from the board. Inert to the pointer, so it can never eat a
+   click on the card underneath it. */
+.hovertip { position: fixed; z-index: 90; width: 300px; max-width: 80vw;
+  max-height: 70vh; overflow: hidden; pointer-events: none; opacity: 0;
+  visibility: hidden; transition: opacity 90ms ease-out;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,.65)); }
+.hovertip.on { opacity: 1; visibility: visible; }
+.hovertip .textbox { margin-top: 0; background: var(--panel); }
+.textbox.compact { font-size: 12px; }
+
+/* the inspector's attribute reminders inherit the same on/off vocabulary */
+.attrgloss.off { opacity: .5; }
+.attrgloss.off b { text-decoration: line-through; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hovertip { transition: none; }
 }
