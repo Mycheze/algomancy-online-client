@@ -82,20 +82,22 @@ export interface LobbyView {
 }
 
 function methodPickerHtml(lobby: TrioLobby, iAmLocked: boolean): string {
-  const current = lobby.methods.find(m => m.id === lobby.method);
+  // Each method carries its own blurb. The blurb used to live in one line
+  // under the row, describing whichever method was selected — which meant
+  // finding out what the other two did required selecting them.
   return `<div class="lobbymethods">
     ${lobby.methods.map(m => `<button class="lobbymethod ${m.id === lobby.method ? 'on' : ''}"
-      data-btn="lobby-method" data-method="${esc(m.id)}" ${iAmLocked ? 'disabled' : ''}
-      title="${esc(m.blurb)}">${esc(m.label)}</button>`).join('')}
-  </div>
-  <p class="hint">${esc(current?.blurb ?? '')}</p>`;
+      data-btn="lobby-method" data-method="${esc(m.id)}" ${iAmLocked ? 'disabled' : ''}>
+      <b>${esc(m.label)}</b><em>${esc(m.blurb)}</em></button>`).join('')}
+  </div>`;
 }
 
 function pickOneHtml(iAmLocked: boolean): string {
   return `<div class="elrow lobbyels">${ELEMENTS.map(el =>
     `<button class="elchip ${el} ${pick === el ? 'on' : ''}" data-btn="lobby-pick" data-el="${el}"
       ${iAmLocked ? 'disabled' : ''}>${icon(el)}${el}</button>`).join('')}</div>
-  <p class="hint">Your opponent cannot see this until you are both locked in.</p>`;
+  <p class="hint">${pick ? `You named <b>${esc(pick)}</b>. ` : 'Name one. '}Your opponent cannot see this
+    until you are both locked in.</p>`;
 }
 
 function rankHtml(iAmLocked: boolean): string {
@@ -117,6 +119,21 @@ function rankHtml(iAmLocked: boolean): string {
     far more likely to come up — but nothing is certain.</p>`;
 }
 
+/** the heading over the right-hand panel — what this method wants FROM you */
+function bodyLabel(method: string): string {
+  if (method === 'pick-one') return 'Your element';
+  if (method === 'rank') return 'Your ranking, best first';
+  return 'Nothing to fill in';
+}
+
+/** one seat's line in the footer: a dot, a name, a state */
+function seatLine(name: string, you: boolean, here: boolean, locked: boolean): string {
+  const dot = !here ? 'away' : locked ? 'ready' : '';
+  const state = !here ? 'has not arrived yet' : locked ? '<b class="lockedin">ready</b>' : 'still choosing…';
+  return `<span class="lobbyseat"><i class="seatdot ${dot}"></i>
+    <span>${esc(name)}${you ? ' (you)' : ''} — ${!here || locked ? state : `<span class="dim">${state}</span>`}</span></span>`;
+}
+
 export function lobbyHtml(v: LobbyView): string {
   const { lobby, seat, names, peers, room, link } = v;
   syncLocals(lobby);
@@ -132,42 +149,41 @@ export function lobbyHtml(v: LobbyView): string {
       : `<p class="hint">Nothing to fill in — say you are ready and the server will find you a trio
          the two of you have never played.</p>`;
 
-  const oppLine = !theyAreHere
-    ? `<span class="dim">${esc(names[opp] ?? 'Your opponent')} has not arrived yet</span>`
-    : theyAreLocked
-      ? `<b class="lockedin">${esc(names[opp] ?? 'They')} is locked in</b>`
-      : `<span class="dim">${esc(names[opp] ?? 'They')} is still choosing…</span>`;
-
-  return `<div class="joinscreen home lobbyscreen">
-    <h1 class="homelogo">ALGOMANCY</h1>
-    <h2>Live draft — room ${esc(room)}</h2>
-    <p class="hint">No cards are dealt until you have both locked in, so nobody gets an early look
-      at their first pack.</p>
-
-    <div class="lobbystatus">
-      <div>${esc(names[seat] ?? 'You')} (you): ${iAmLocked
-        ? '<b class="lockedin">locked in</b>' : 'choosing'}</div>
-      <div>${oppLine}</div>
-    </div>
-
-    <div class="lobbysection">
-      <div class="zonelabel">How should the trio be chosen?</div>
-      ${methodPickerHtml(lobby, iAmLocked)}
-    </div>
-
-    <div class="lobbysection">${body}</div>
-
-    <div class="homebtns">
-      ${iAmLocked
-        ? `<button data-btn="lobby-unlock">Change my mind</button>`
-        : `<button class="primary" data-btn="lobby-lock" ${ready(lobby.method) ? '' : 'disabled'}>
-             ${ready(lobby.method) ? "I'm ready" : 'finish choosing first'}</button>`}
+  return `<div class="lobbypage">
+    <div class="lobbyhead">
+      <h1 class="homelogo">ALGOMANCY</h1>
+      <h2>Live draft — room <span class="roomcode">${esc(room)}</span></h2>
+      <div class="headbtns"><button data-btn="gohome">Leave</button></div>
     </div>
 
     ${theyAreHere ? '' : `<div class="sharebar">Send your opponent the room code <b>${esc(room)}</b> or this link:
       <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
       <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>`}
-    <button data-btn="gohome">home</button>
+
+    <div class="lobbygrid">
+      <div class="lobbypanel">
+        <div class="zonelabel">How should the trio be chosen?</div>
+        ${methodPickerHtml(lobby, iAmLocked)}
+      </div>
+      <div class="lobbypanel">
+        <div class="zonelabel">${esc(bodyLabel(lobby.method))}</div>
+        <div class="lobbysection">${body}</div>
+      </div>
+    </div>
+
+    <div class="lobbyfoot">
+      <div class="lobbyseats">
+        ${seatLine(names[seat] ?? 'You', true, true, iAmLocked)}
+        ${seatLine(names[opp] ?? 'Your opponent', false, theyAreHere, theyAreLocked)}
+      </div>
+      <div class="lobbygo">${iAmLocked
+        ? `<button data-btn="lobby-unlock">Change my mind</button>`
+        : `<button class="primary" data-btn="lobby-lock" ${ready(lobby.method) ? '' : 'disabled'}>
+             ${ready(lobby.method) ? "I'm ready" : 'finish choosing first'}</button>`}</div>
+    </div>
+
+    <p class="homefoot">No cards are dealt until you have both locked in, so nobody gets an early look
+      at their first pack.</p>
   </div>`;
 }
 

@@ -2807,7 +2807,13 @@ function importDeck(body: { url?: string; text?: string }, rerender: () => void)
   }).catch(() => { deckMsg = 'could not reach the server'; rerender(); });
 }
 
-/** Home screen (docs/07 §2): new game / join / hotseat / practice. */
+/** Home screen (docs/07 §2): new game / join / hotseat / practice.
+ *
+ * Three cards abreast, not one 340px column. The old stack put "join with a
+ * code" and the two solo modes below the fold on an ordinary window, and it
+ * sat centred in the LEFT half of the board grid with the rail's width blank
+ * beside it (playtest 2026-08-21). Abreast, the whole menu is one screenful
+ * and each way in states what it is before it asks for anything. */
 function renderHome(): void {
   motionReset();
   sfxReset();
@@ -2818,19 +2824,23 @@ function renderHome(): void {
   const user = acct.currentUser();
   const name = user ? user.username : (localStorage.getItem('algoName') ?? '');
   const deck = savedDeck();
-  $app.innerHTML = `<div class="joinscreen home">
-    <h1 class="homelogo">ALGOMANCY</h1>
-    ${acct.barHtml()}
-    ${user
-      ? `<div class="namerow fixedname">Playing as <b>${esc(user.username)}</b></div>`
-      : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
-    <div class="homebtns">
-      <div class="elpicker">
-        <div class="zonelabel">Live draft</div>
-        <button class="primary" data-btn="newgame" data-mode="draft">New live draft</button>
-        <p class="hint">You choose the three elements together once you are both in the room —
-          one each, something you have never played, or from your combined rankings.
-          Nothing is dealt until then.</p>
+  $app.innerHTML = `<div class="homepage">
+    <div class="homehead">
+      <h1 class="homelogo">ALGOMANCY</h1>
+      <div class="homeident">
+        ${user
+          ? `<div class="namerow fixedname">Playing as <b>${esc(user.username)}</b></div>`
+          : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
+        ${acct.barHtml()}
+      </div>
+    </div>
+
+    <div class="homegrid">
+      <div class="homecard offer">
+        <h2>Live draft</h2>
+        <p class="cardsub">Draft a deck out of shared packs, then play it. You choose the three
+          elements together once you are both in the room — one each, something you have never
+          played, or from your combined rankings. Nothing is dealt until then.</p>
         <details class="fixedtrio" ${ui.homeFixedTrio ? 'open' : ''}>
           <summary>…or fix the trio now, and skip the lobby</summary>
           <div class="elrow">${ALL_ELEMENTS.map(el =>
@@ -2840,22 +2850,41 @@ function renderHome(): void {
           <button data-btn="newgame" data-mode="draft" data-els="1" ${ui.homeEls.length === 3 ? '' : 'disabled'}>
             ${ui.homeEls.length === 3 ? `Start ${ui.homeEls.join(' + ')} straight away` : `pick 3 of the ${ALL_ELEMENTS.length} (${ui.homeEls.length}/3)`}</button>
         </details>
+        <div class="spacer"></div>
+        <button class="cta primary" data-btn="newgame" data-mode="draft">New live draft</button>
       </div>
-      <div class="elpicker deckpicker">
-        <div class="zonelabel">Constructed — bring your own deck</div>
+
+      <div class="homecard offer deckpicker">
+        <h2>Constructed</h2>
+        <p class="cardsub">Bring a deck you already built. Pick one of the bundled algomancer.cc
+          decks, or import your own by link or list.</p>
         ${deckPickerHtml()}
-        <button class="primary" data-btn="newgame" data-mode="constructed" ${deck ? '' : 'disabled'}>
-          New constructed game${deck ? ` · ${esc(deck.name)}` : ' (pick a deck)'}</button>
+        <div class="spacer"></div>
+        <button class="cta primary" data-btn="newgame" data-mode="constructed" ${deck ? '' : 'disabled'}>
+          New constructed game${deck ? '' : ' — pick a deck first'}</button>
       </div>
-      <div class="joinrow">
-        <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
-          spellcheck="false" style="text-transform:uppercase">
-        <button data-btn="joincode">Join game</button>
+
+      <div class="homecard">
+        <h2>Join a game</h2>
+        <p class="cardsub">Someone sent you a four-letter room code — or a link, which skips
+          this box entirely.</p>
+        <div class="joinrow">
+          <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
+            spellcheck="false" style="text-transform:uppercase">
+          <button data-btn="joincode">Join</button>
+        </div>
+        <div class="spacer"></div>
+        <div class="homesep">
+          <div class="zonelabel">On your own</div>
+          <div class="homesolo">
+            <button data-btn="hotseat" title="both seats on this one screen">Local hotseat</button>
+            <button data-btn="practice" title="a scripted mid-battle to poke at">Practice demo</button>
+          </div>
+        </div>
       </div>
-      <button data-btn="hotseat">Local hotseat</button>
-      <button data-btn="practice">Practice demo</button>
     </div>
-    <p class="hint">One of you starts a new game and sends the other the room code or link.</p>
+
+    <p class="homefoot">One of you starts a new game and sends the other the room code or link.</p>
   </div>`;
   const codeInput = document.getElementById('h-code') as HTMLInputElement | null;
   codeInput?.addEventListener('keydown', e => {
@@ -2886,27 +2915,41 @@ function renderWaiting(): void {
   const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${opp}&mode=constructed`;
   const deck = savedDeck();
   const mineIn = w.have[me];
-  const oppLine = w.have[opp]
-    ? '✓ deck is in'
-    : net.peers[opp] ? 'connected — still choosing a deck…' : 'not here yet';
-  $app.innerHTML = `<div class="joinscreen home">
-    <h2>Constructed — room ${esc(net.room)}</h2>
-    <div class="waitstatus">
-      <div>${esc(net.names[me] ?? 'You')} (you): ${mineIn
-        ? `✓ deck is in${deck ? ` — <b>${esc(deck.name)}</b> by ${esc(deck.author)}` : ''}`
-        : 'pick a deck below'}</div>
-      <div>${esc(net.names[opp] ?? 'Opponent')}: ${oppLine}</div>
+  const oppLine = net.peers[opp] ? 'connected — still choosing a deck…' : 'not here yet';
+  // same furniture as the draft lobby (ui/lobby.ts): it is the same moment in
+  // the same room, and the two screens looking different made it read as two
+  // different products
+  $app.innerHTML = `<div class="lobbypage">
+    <div class="lobbyhead">
+      <h1 class="homelogo">ALGOMANCY</h1>
+      <h2>Constructed — room <span class="roomcode">${esc(net.room)}</span></h2>
+      <div class="headbtns"><button data-btn="gohome">Leave</button></div>
     </div>
-    ${mineIn ? '<p class="hint">The game deals the moment both decks are in.</p>' : `
-      <div class="elpicker deckpicker">
-        ${deckPickerHtml()}
-        <button class="primary" data-btn="deckjoin" ${deck ? '' : 'disabled'}>Play this deck</button>
-      </div>`}
+
     <div class="sharebar">Send your opponent the room code <b>${esc(net.room)}</b> or this link:
       <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
       <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>
+
+    ${mineIn ? '' : `<div class="lobbypanel deckpicker">
+      <div class="zonelabel">Your deck</div>
+      ${deckPickerHtml()}
+      <button class="cta primary" data-btn="deckjoin" ${deck ? '' : 'disabled'}>Play this deck</button>
+    </div>`}
+
+    <div class="lobbyfoot">
+      <div class="lobbyseats">
+        <span class="lobbyseat"><i class="seatdot ${mineIn ? 'ready' : ''}"></i>
+          <span>${esc(net.names[me] ?? 'You')} (you) — ${mineIn
+            ? `<b class="lockedin">deck is in</b>${deck ? ` — ${esc(deck.name)} by ${esc(deck.author)}` : ''}`
+            : '<span class="dim">pick a deck above</span>'}</span></span>
+        <span class="lobbyseat"><i class="seatdot ${w.have[opp] ? 'ready' : net.peers[opp] ? '' : 'away'}"></i>
+          <span>${esc(net.names[opp] ?? 'Opponent')} — ${w.have[opp]
+            ? '<b class="lockedin">deck is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
+      </div>
+    </div>
+
     ${uiError ? `<p class="deckmsg">${esc(uiError)}</p>` : ''}
-    <button data-btn="gohome">home</button>
+    <p class="homefoot">The game deals the moment both decks are in.</p>
   </div>`;
   wireDeckPicker(renderWaiting);
 }

@@ -175,8 +175,16 @@ button:disabled { opacity: .4; cursor: default; }
 .sharelink { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 4px 8px; font: 12px monospace; min-width: 120px; }
 
-/* ── home screen ────────────────────────────────────────────────────── */
-.joinscreen.home { max-width: 340px; }
+/* ── the pre-game screens: home, lobby, sign-in ─────────────────────────
+   None of these is the board, and none of them wants the board's layout.
+   #app is a `1fr 290px` grid because the table needs a rail beside it; on a
+   screen with no table that second column is simply dead, so every pre-game
+   card was centred inside the LEFT column — off-centre on screen, with a
+   third of the window unused (playtest 2026-08-21, Bena: "weirdly smushed
+   into the middle"). Off the board, #app is plain block flow and each screen
+   owns its own width. */
+#app:not(.board) { display: block; max-width: none; padding: 0; }
+
 .homelogo { color: var(--accent); letter-spacing: .3em; text-align: center; margin: 6px 0 18px; }
 .namerow { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--dim); }
 .namerow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; }
@@ -187,6 +195,45 @@ button:disabled { opacity: .4; cursor: default; }
 .joinrow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 6px 8px; letter-spacing: .2em; font-weight: 700; text-align: center; }
 .joinrow button { flex: 1; }
+
+/* ── home screen ───────────────────────────────────────────────────────
+   Three ways in, side by side, each one a card that says what it is before
+   it asks you for anything. They used to be a single stacked column you had
+   to scroll to reach the bottom of; abreast, the whole menu is one screenful
+   and "which of these do I want?" is answered by reading across, not down. */
+
+.homepage { max-width: 1180px; margin: 0 auto; padding: 30px 22px 44px; min-height: 100dvh;
+  display: flex; flex-direction: column; justify-content: safe center; gap: 20px; }
+.homehead { display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+.homehead .homelogo { margin: 0; font-size: 30px; text-align: left; }
+/* who you are, on the right of the wordmark rather than stacked under it */
+.homeident { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.homeident .acctbar { margin: 0; }
+.homeident .acctbar .accthint { flex: 0 1 auto; }
+.homeident .namerow { margin: 0; font-size: 12px; }
+.homeident .namerow input { width: 150px; flex: 0 0 auto; }
+
+.homegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(302px, 1fr));
+  gap: 14px; align-items: stretch; }
+.homecard { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+/* the two ways to start a NEW game read as the offer; joining is a reply to
+   someone else's, so it does not need the same weight */
+.homecard.offer { border-color: #3b4654; }
+.homecard h2 { margin: 0; font-size: 17px; color: var(--text); letter-spacing: .02em; font-weight: 700; }
+.homecard .cardsub { margin: 0; color: var(--dim); font-size: 12px; line-height: 1.5; }
+.homecard .spacer { flex: 1 1 auto; min-height: 2px; }
+.homecard .cta { padding: 11px 14px; font-size: 15px; font-weight: 700; }
+.homecard .cta.primary { border-color: var(--accent); color: var(--accent); }
+.homecard .joinrow input { font-size: 17px; padding: 10px 8px; }
+.homecard .joinrow button { flex: 0 0 auto; padding: 10px 18px; font-weight: 700; }
+/* second-tier ways in, under a rule so they read as "or, on your own" */
+.homesep { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 2px;
+  display: flex; flex-direction: column; gap: 8px; }
+.homesolo { display: flex; gap: 8px; }
+.homesolo button { flex: 1; padding: 9px; }
+.homefoot { color: var(--dim); font-size: 12px; margin: 0; text-align: center; }
 
 /* ── constructed deck picker + waiting lobby ────────────────────────── */
 .deckselect { width: 100%; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
@@ -199,8 +246,6 @@ button:disabled { opacity: .4; cursor: default; }
 .deckpaste textarea { width: 100%; box-sizing: border-box; margin: 6px 0; background: var(--panel2);
   color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; font: 12px monospace; }
 .deckmsg { color: var(--accent); font-size: 12px; }
-.waitstatus { display: flex; flex-direction: column; gap: 6px; background: var(--panel2);
-  border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font-size: 14px; }
 .joinscreen .sharebar { flex-wrap: wrap; margin-bottom: 0; }
 
 /* ── live draft panel (M4) ──────────────────────────────────────────── */
@@ -371,9 +416,7 @@ button:disabled { opacity: .4; cursor: default; }
 .revealspacer { width: 54px; flex-shrink: 0; }
 .overlaybox > button { align-self: flex-end; }
 
-/* ── home-screen element picker (draft trio) ────────────────────────── */
-.elpicker { display: flex; flex-direction: column; gap: 6px; background: var(--panel2);
-  border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+/* ── element chips (the draft trio, the lobby's picker) ─────────────── */
 .elrow { display: flex; gap: 6px; flex-wrap: wrap; }
 .elchip { text-transform: capitalize; padding: 5px 10px; opacity: .55; border-width: 2px; }
 .elchip.on { opacity: 1; font-weight: 700; outline: 2px solid var(--accent); }
@@ -782,6 +825,10 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .acctel.dark { background: var(--dark); color: var(--dark-ink); }
 
 .acctscreen h2 { margin: 0; color: var(--accent); }
+/* .joinscreen's `label { display:block }` outranks .namerow's flex, so the
+   sign-in boxes were two stub inputs floating mid-row — say it again, louder */
+.acctscreen .namerow { display: flex; margin-bottom: 2px; }
+.acctscreen .namerow input { flex: 1; }
 
 /* the profile page is its own full-width layout, not a 340px join card */
 .acctpage { grid-column: 1 / -1; max-width: 1100px; margin: 0 auto; padding: 12px; width: 100%; }
@@ -878,20 +925,59 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    Deliberately the same furniture as the home screen — it IS the home screen
    for the twenty seconds before a game exists. */
 
-.lobbyscreen { max-width: 440px; }
-.lobbyscreen h2 { margin: 0; color: var(--accent); font-size: 17px; }
-.lobbystatus { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
-  padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
-.lobbystatus .dim { color: var(--dim); }
-.lockedin { color: var(--glow); }
+/* The two questions this screen asks — "how do we choose?" and "what is my
+   answer?" — are side by side, because the second one only makes sense in
+   the light of the first. Who is ready and the button that says so live in
+   one bar underneath, so the state of the room is always in the same place. */
+.lobbypage { max-width: 1000px; margin: 0 auto; padding: 30px 22px 44px; min-height: 100dvh;
+  display: flex; flex-direction: column; justify-content: safe center; gap: 16px; }
+.lobbypage .sharebar { margin-bottom: 0; flex-wrap: wrap; }
+.lobbyhead { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+.lobbyhead .homelogo { margin: 0; font-size: 24px; text-align: left; }
+.lobbyhead h2 { margin: 0; font-size: 15px; color: var(--text); font-weight: 700; }
+.lobbyhead .roomcode { color: var(--accent); letter-spacing: .16em; }
+.lobbyhead .headbtns { margin-left: auto; }
+.lobbyhead .headbtns button { font-size: 12px; padding: 5px 12px; }
+
+.lobbygrid { display: grid; grid-template-columns: minmax(250px, 330px) 1fr; gap: 14px; align-items: stretch; }
+@media (max-width: 780px) { .lobbygrid { grid-template-columns: 1fr; } }
+.lobbypanel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.lobbypanel > .zonelabel { margin-top: 0; }
+.lobbypanel .hint { margin: 0; }
+
 .lobbysection { display: flex; flex-direction: column; gap: 8px; }
 .lobbysection .hint { margin: 0; }
+.lockedin { color: var(--glow); }
 
-.lobbymethods { display: flex; flex-direction: column; gap: 4px; }
-.lobbymethod { text-align: left; font-size: 13px; padding: 7px 10px; }
+/* every method carries its own one-line explanation: three buttons you have
+   to select one at a time to find out what it does is a quiz, not a menu */
+.lobbymethods { display: flex; flex-direction: column; gap: 6px; }
+.lobbymethod { display: block; width: 100%; text-align: left; font-size: 13px;
+  padding: 10px 12px; line-height: 1.35; }
+.lobbymethod b { display: block; font-size: 13.5px; }
+.lobbymethod em { display: block; font-style: normal; font-weight: 400; color: var(--dim);
+  font-size: 11.5px; margin-top: 3px; }
 .lobbymethod.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 
-.lobbyels { flex-wrap: wrap; gap: 4px; }
+/* the actual decision on the screen — big enough to be one */
+.lobbyels { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 6px; }
+.lobbyels .elchip { display: flex; align-items: center; justify-content: center;
+  font-size: 14px; padding: 9px 12px; }
+.lobbyels .elicon { width: 18px; height: 18px; vertical-align: -4px; }
+
+/* who is ready, and the button that makes it so */
+.lobbyfoot { display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+.lobbyseats { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; }
+.lobbyseat { display: flex; align-items: center; gap: 8px; }
+.lobbyseat .dim { color: var(--dim); }
+.seatdot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--accent); }
+.seatdot.ready { background: var(--glow); box-shadow: 0 0 7px var(--glow); }
+.seatdot.away { background: #454f5c; }
+.lobbygo { margin-left: auto; }
+.lobbygo button { font-size: 15px; font-weight: 700; padding: 10px 24px; }
 /* the ranking being built, best first — numbered so the order is the message */
 .ranklist { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; min-height: 30px;
   padding: 6px; border: 1px dashed var(--line); border-radius: 6px; background: rgba(0,0,0,.15); }
