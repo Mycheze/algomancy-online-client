@@ -168,6 +168,10 @@ export interface Entity {
    * that rewrite the base rather than adjust it — Formless ("becomes a base
    * 4/4"), Body Swap ("exchange the BASE stats of two target units").
    *
+   * The CONTINUOUS half of layer 2 lives on StaticMod (`baseP`/`baseT`,
+   * radiating like any other static — Aberrant Statweaver). Never read either
+   * raw: E.baseStatsOf is the one authority and resolves both together.
+   *
    * Additive/optional so older serialized states still load. Cleared with the
    * other until-regroup changes (R11 step 3), and read only through
    * E.baseStatsOf — layer 3 (counters, temp deltas, static projections) then
@@ -176,6 +180,14 @@ export interface Entity {
    * Formless on a Body-Swapped Bloated Manablub made it a 6/9).
    */
   baseSet?: [number, number];
+  /**
+   * When `baseSet` was stamped, as a tick of the global `nextId` clock. Layer
+   * 2 resolves LAST-WINS, so a rewrite needs a timestamp to be compared with
+   * the continuous base-setters (whose timestamp is the id of the entity
+   * carrying the text — the same clock). Undefined on a state serialized
+   * before the field, which reads as "oldest" and so loses to a live static.
+   */
+  baseSetSeq?: number;
   /** the game turn this entity ARRIVED in play (GameState.turn at spawn time).
    * Additive/optional so states serialized before it still load — read it
    * through E.spawnedTurn(u), which answers undefined for an entity that

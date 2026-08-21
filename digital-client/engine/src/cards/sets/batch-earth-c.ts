@@ -47,12 +47,14 @@
  *    ally" precondition are checked/paid at RESOLUTION (the Immolate
  *    precedent — there is no activation-precondition hook). No adjacent ally
  *    at resolution → nothing happens, the Boulder survives.
- *  - Throw off a Cliff: TargetSpec has no filters, so "4 or more defense" is
- *    enforced at RESOLUTION — an under-4 target simply survives (no-op).
- *  - Squish: the engine's cast-time targeting holds one target per part, so
- *    the SECOND target ("another target unit") is a mid-resolution pick by
- *    the caster (Tidal Reversion precedent). The damage source's attrs are
- *    the ally CARD's printed attrs (dealEffectDamage reads the card name).
+ *  - Squish: the damage source's attrs are the ally CARD's printed attrs
+ *    (dealEffectDamage reads the card name).
+ *    (Two entries used to sit here: Throw off a Cliff enforcing "4 or more
+ *    defense" at resolution because TargetSpec had no filters, and Squish
+ *    picking its second target mid-resolution because a spec held one target
+ *    per part. R64 added the restriction seam and R58 the per-slot one, and
+ *    both cards use them — the restriction is now part of what makes a target
+ *    legal, and both of Squish's targets are declared at cast.)
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';

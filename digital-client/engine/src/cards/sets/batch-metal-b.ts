@@ -49,12 +49,10 @@
  *    half of Linked Extinction are region-scoped (R12/R25); the caster's
  *    own Linked Extinction cost may come from any of their units.
  *
- * PARKED (needs engine primitives that do not exist; registered crash-free):
- *  - Flux Constructor: "put those counters onto another target unit" needs a
- *    died-event COUNTER SNAPSHOT — destroy() deletes the dying unit before
- *    firing 'died', the event carries no counter count, and Entity has no
- *    persistent scratch space (budgets are per-turn). Inert augmentText
- *    keeps the card recognised as an augment.
+ * (Nothing in this batch is parked any more. Flux Constructor used to be, on
+ * a "died-event counter snapshot" — but destroy() stamps `counters` onto the
+ * event for exactly this reason, and has since Entropic Entity needed it, so
+ * the note outlived the problem. It is implemented; see the card.)
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -73,14 +71,39 @@ const makeRobot = (g: E, seat: Seat, x: number, region?: number): Entity =>
 
 // "[Augment] Whenever one of your units with one or more counters on it dies,
 // you may put those counters onto another target unit." — m/3 3/3 Alien Robot
-// Unit. PARKED (header): the dying unit's counter count is unknowable at both
-// event time (destroy() deletes it before firing 'died') and resolution.
-// The inert augmentText keeps the card recognised as an augment.
+// Unit. Text-box [Augment]: live when played normally, donated on augment (so
+// "your" is then the HOST's controller).
+//
+// This was parked on a "died-event counter snapshot" that already exists:
+// destroy() stamps `counters` onto the event precisely BECAUSE the entity is
+// out of s.entities by the time 'died' fires (it was added for Entropic
+// Entity). "One or more counters on it" is a nonzero net, the Entropic Entity
+// reading — the engine keeps ONE signed total, so a unit that died holding
+// two -1/-1 counters is a unit with counters on it, and moving them keeps
+// their sign: you move what was actually there, drawback and all.
+//
+// R67: "another target unit" is a DECLARED target, chosen as the trigger goes
+// on the stack; `min: 0` carries the printed "you may". "Another" needs no
+// restriction — the unit that died is already gone, so it cannot be offered.
 card('Flux Constructor', {
   augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: "move a dead ally's counters onto another target unit (not implemented)",
-    effect: { run: () => { /* PARKED */ } },
+    type: 'triggered', events: ['died'],
+    label: "put a dead ally's counters onto another target unit",
+    when: (_g, self, ev) => ev.data?.['seat'] === self.controller
+      && ((ev.data?.['counters'] as number | undefined) ?? 0) !== 0,
+    effect: {
+      targets: {
+        what: 'unit', min: 0,
+        prompt: 'Flux Constructor: put those counters onto another target unit',
+      },
+      run: (g, ctx) => {
+        const n = (ctx.event?.data?.['counters'] as number | undefined) ?? 0;
+        const t = ctx.targets[0];
+        if (!n || !isEnt(t)) return;
+        const u = g.entity(t.id);
+        if (u) g.addCounters(u, n);
+      },
+    },
   }],
 });
 

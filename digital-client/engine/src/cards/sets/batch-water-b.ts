@@ -19,7 +19,7 @@
  */
 import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, isEntityTarget, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
 import type { ResolvedTarget } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -240,17 +240,21 @@ card('Rippleback Skulker', {
       return g.colAttrs(alive).has('Piercing');   // blocking column: only Piercing connects
     },
     effect: {
+      // R67: "target card from that player's bin" is a DECLARED target,
+      // chosen as the trigger goes on the stack. "That player" is the one the
+      // column just damaged, which only the EVENT knows — so the restriction
+      // reads `tc.event`, the same snapshot run() sees as ctx.event. The kind
+      // is 'anyBinCard' (it reaches a bin that is not mine) narrowed by the
+      // restriction to exactly the victim's.
+      targets: {
+        what: 'anyBinCard', min: 0,
+        prompt: "Rippleback Skulker: put target card from that player's bin into your hand",
+        restrict: (_g, t, tc) => 'binCard' in t && t.binCard.seat === tc.event?.data?.seat,
+      },
       run: (g, ctx) => {
-        const victim = ctx.event?.data?.seat as Seat | undefined;
-        if (victim === undefined) return;
-        const bin = g.player(victim).bin;
-        if (!bin.length) return;
-        const idx = bin.length === 1 ? 0 : ctx.choose('pick', {
-          kind: 'electricPath', seat: ctx.controller,
-          prompt: `Rippleback Skulker: put a card from ${g.pname(victim)}'s bin into your hand`,
-          options: bin.map((n, i) => ({ label: n, value: i, card: n })),
-        }) as number;
-        const [taken] = bin.splice(idx, 1);
+        const t = ctx.targets[0];
+        if (!t || !('binCard' in t) || t.binCard.index === -1) return;
+        const [taken] = g.player(t.binCard.seat).bin.splice(t.binCard.index, 1);
         if (taken !== undefined) {
           g.player(ctx.controller).hand.push(taken);
           g.ev('info', `Rippleback Skulker: ${taken} → ${g.pname(ctx.controller)}'s hand.`);
@@ -319,14 +323,15 @@ card('Shoreline Specter', {
 // per-battle life-loss ledger (E.loseLife bumps battleCounter
 // `lifeLost:<seat>`; reset per battle, R14; amount at resolution, R1).
 const soulSiphonMake: EffectDef = {
+  // R67: "target player" is a DECLARED target, chosen as the item goes on the
+  // stack. R64's 'player' kind is the one with no ownership clause — the card
+  // says "target player", not "target opponent", so aiming it at YOURSELF is
+  // legal (and is what you do when you are the one who has been bled).
+  targets: { what: 'player', prompt: 'Soul Siphon: target player (X = the life they lost this battle)' },
   run: (g, ctx) => {
-    const seats = presentSeats(g, ctx.region);
-    if (!seats.length) return;
-    const seat = (seats.length === 1 ? seats[0]! : ctx.choose('who', {
-      kind: 'electricPath', seat: ctx.controller,
-      prompt: 'Soul Siphon: target player (X = life they lost this battle)',
-      options: seats.map(s => ({ label: g.pname(s), value: s })),
-    })) as Seat;
+    const t = ctx.targets[0];
+    if (!t || !('player' in t)) return;
+    const seat = t.player;
     const x = g.battleCounter(ctx.region, `lifeLost:${seat}`);   // engine ledger (loseLife)
     if (x > 0) g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
     else g.ev('info', 'Soul Siphon: X = 0 — no unit created.');
@@ -358,31 +363,51 @@ card('Spawntender', {
 // clause is applied by ERASING the spell instead of binning it after it
 // resolves. A spell unit played this way spawns its body; the body's own
 // later bin-entry is not tracked as unstable (edge, noted for review).
+/**
+ * The restriction Spell Excavation aims under: a spell in the bin that could
+ * actually be played right now — affordable, and, if it targets, able to find
+ * a target. Asked at CAST as part of what makes a target legal (R64), and
+ * again in run(), because the board may have moved in between (R56).
+ *
+ * The "can it find a target" probe asks targetCandidates about ANOTHER card's
+ * spec, which is a nested query — and a Spell Excavation sitting in the bin
+ * makes that nesting self-referential (its own restriction scans the bin,
+ * finds itself, and asks again). `probing` is the reentrancy guard, the same
+ * shape as E.inStatics: a re-entered probe answers on kind and affordability
+ * alone. That can only make the outer menu MORE permissive, and run() re-asks
+ * the full question before it commits to anything.
+ */
+let probing = false;
+const excavatable = (g: E, seat: Seat, region: number, n: string): boolean => {
+  const d = getCard(n);
+  if (d.kind !== 'spell' && d.kind !== 'spellUnit') return false;
+  if (!g.canPayCard(seat, n)) return false;
+  if (probing || !d.spellEffect?.targets) return true;
+  probing = true;
+  try {
+    return g.targetCandidates(d.spellEffect.targets, region, undefined, seat).length > 0;
+  } finally {
+    probing = false;
+  }
+};
 card('Spell Excavation', {
   spellEffect: {
+    // R67: "target spell from your bin" is a DECLARED target, chosen as the
+    // Excavation goes on the stack (R64's 'binCard'), not a mid-resolution
+    // pick. min 0 carries the "You may".
+    targets: {
+      what: 'binCard', min: 0,
+      prompt: 'Spell Excavation: play target spell from your bin (it will be erased, not binned)',
+      restrict: (g, t, tc) => 'binCard' in t && tc.ally !== undefined
+        && excavatable(g, tc.ally, tc.region, t.binCard.card),
+    },
     run: (g, ctx) => {
       const bin = g.player(ctx.controller).bin;
-      const playable = (n: string): boolean => {
-        const d = getCard(n);
-        if (d.kind !== 'spell' && d.kind !== 'spellUnit') return false;
-        if (!g.canPayCard(ctx.controller, n)) return false;
-        if (d.spellEffect?.targets
-          && !g.targetCandidates(d.spellEffect.targets, ctx.region, undefined, ctx.controller).length) return false;
-        return true;
-      };
-      const opts = bin
-        .map((n, i) => ({ label: n, value: i, card: n }))
-        .filter(o => playable(bin[o.value]!));
-      if (!opts.length) return;
-      const pick = ctx.choose('pick', {
-        kind: 'electricPath', seat: ctx.controller,
-        prompt: 'Spell Excavation: play a spell from your bin (it will be erased, not binned)',
-        options: [...opts, { label: 'Decline', value: -1 }],
-      }) as number;
-      if (pick < 0) return;
-      const name = bin[pick];
-      if (name === undefined || !playable(name)) return;
-      bin.splice(pick, 1);
+      const t = ctx.targets[0];
+      if (!t || !('binCard' in t) || t.binCard.index === -1) return;
+      const name = bin[t.binCard.index];
+      if (name === undefined || !excavatable(g, ctx.controller, ctx.region, name)) return;
+      bin.splice(t.binCard.index, 1);
       g.payCard(ctx.controller, name);
       playInline(g, ctx, name, 'x');
       // unstable: the spell card is erased instead of returning to a bin
@@ -435,15 +460,25 @@ card('Tidal Menace', {});
 // a player controls exactly one unit in the region). Region-scoped (R12).
 card('Tidal Reversion', {
   spellEffect: {
+    // R67: "recall target unit that player controls" is a DECLARED target —
+    // one per player, all chosen as the spell goes on the stack rather than
+    // mid-resolution. Expressed as two unrestricted-`what` slots with a
+    // one-per-CONTROLLER restriction rather than ['allyUnit','enemyUnit'],
+    // because a fixed slot order aborts the whole collection when the first
+    // slot has no candidate: a player with an empty board must not stop the
+    // spell from reaching the other player's unit. min 0 for the same reason.
+    targets: {
+      what: 'unit', count: 2, min: 0,
+      prompt: 'Tidal Reversion: recall target unit (one per player)',
+      restrict: (_g, t, tc) => !isEntityTarget(t)
+        || !(tc.chosen ?? []).some(c => isEntityTarget(c) && c.controller === t.controller),
+    },
     run: (g, ctx) => {
-      const picks: Entity[] = [];
-      for (const seat of presentSeats(g, ctx.region)) {
-        const u = chooseUnit(g, ctx, `tr:${seat}`, ctx.controller,
-          g.unitsOf(seat, ctx.region),
-          `Tidal Reversion: recall which of ${g.pname(seat)}'s units?`);
-        if (u) picks.push(u);
+      for (const t of ctx.targets) {
+        if (!isEntityTarget(t)) continue;
+        const u = g.entity(t.id);
+        if (u) g.recall(u);
       }
-      for (const u of picks) g.recall(u);
     },
   },
 });

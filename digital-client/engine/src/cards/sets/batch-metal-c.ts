@@ -25,11 +25,12 @@
  *    (Manual: +1/+1 and -1/-1 cancel pairwise), so "duplicate each counter"
  *    doubles the net — identical whenever all counters share a sign, which
  *    the net model guarantees.
- *  - Unstable Refactor: "becomes base 5/0" is approximated as an until-regroup
- *    temp delta of (5 − base power)/(− base toughness): counters, other temps
- *    and statics still apply on top (correct), but a SECOND application in the
- *    same battle stacks the delta instead of re-basing, and layer-4 Tough
- *    doubles the summed toughness rather than a true base of 0.
+ *  - Unstable Refactor: "becomes base 5/0" REWRITES stat layer 2 (E.setBase),
+ *    so a second application re-bases instead of stacking and layer-4 Tough
+ *    doubles a true base of 0. Counters, temps and statics apply on top.
+ *  - Unmake's "base power 2 or less" reads layer 2 (E.baseStatsOf), so a
+ *    rewritten base is the base it asks about — Unstable Refactor makes a
+ *    target Unmake-proof, Aberrant Statweaver makes a Good Whale Unmakeable.
  *  - Void Memory: every pool card is a unit or a spell, so "discards a unit
  *    or spell if able" = "discards a card if their hand is nonempty"; the
  *    discarding player picks the card.
@@ -49,12 +50,6 @@ import { card, unitRestrict, type EffectDef } from '../dsl.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
-
-/** printed/token base stats — layer 1 only (no counters, temps or statics) */
-const baseStats = (g: E, e: Entity): [number, number] => {
-  const c = g.card(e.card);
-  return e.tokenStats ?? [c.power, c.toughness];
-};
 
 /** find an id inside a formation grid → its column and row */
 function locateInGrid(grid: EntityId[][], id: EntityId): { col: EntityId[]; i: number } | null {
@@ -336,12 +331,15 @@ card('Unmake', {
     // cast and resolution, and R5/R56 govern that, not the candidate list.
     targets: {
       what: 'unit', prompt: 'Unmake: delete target unit with base power 2 or less',
-      restrict: unitRestrict((g, u) => baseStats(g, u)[0] <= 2),
+      // E.baseStatsOf is layers 1-2, so a REWRITTEN base (Formless, Body
+      // Swap, Aberrant Statweaver) is the base this asks about; counters and
+      // until-regroup deltas (layer 3) are deliberately not counted.
+      restrict: unitRestrict((g, u) => g.baseStatsOf(u)[0] <= 2),
     },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      const [bp] = baseStats(g, t);
+      const [bp] = g.baseStatsOf(t);
       if (bp <= 2) g.destroy(t, 'is deleted');
       else g.ev('info', `Unmake: ${t.card} has base power ${bp} (> 2) — not deleted.`);
     },
@@ -349,19 +347,18 @@ card('Unmake', {
 });
 
 // "Target unit becomes base 5/0 until regroup." — m/2 {Battle} Cosmic
-// Technology Spell. ⚠ approximated as an until-regroup temp delta from the
-// current base (header): counters/temps/statics still apply on top, so a
-// counterless target is a 5/0 and dies at the death check unless something
-// props its toughness up.
+// Technology Spell. A layer-2 REWRITE (E.setBase), not a delta: whatever the
+// target's base was, it is 5/0 now, and a second base-setter replaces this
+// rather than compounding with it. Counters/temps/statics still apply on top,
+// so a counterless target is a 5/0 and dies at the death check unless
+// something props its defense up.
 card('Unstable Refactor', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Unstable Refactor: target unit becomes base 5/0 until regroup' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      const [bp, bt] = baseStats(g, t);
-      g.addTemp(t, 5 - bp, -bt);
-      g.checkDeaths();
+      g.setBase(t, 5, 0);   // E.setBase runs the death check itself
     },
   },
 });

@@ -51,7 +51,14 @@
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, effectByKey, type EffectDef } from '../dsl.ts';
+import { card, effectByKey, getCard, type EffectDef } from '../dsl.ts';
+
+/** a card that is a SPELL for bin purposes — a spell unit is one too (playing
+ * it from the bin casts the spell and then spawns the body). */
+const isSpellCard = (name: string): boolean => {
+  const k = getCard(name).kind;
+  return k === 'spell' || k === 'spellUnit';
+};
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -198,20 +205,21 @@ card('Conduit of Pain', {
 // the body still spawns.
 card('Delver of Mysteries', {
   spellEffect: {
+    // R67: "target spell in your bin" is a DECLARED target, chosen as the
+    // spell goes on the stack (R64's 'binCard' kind) — it used to be a
+    // mid-resolution pick, so the Delver reached the stack aiming at nothing
+    // and the opponent could not see what it was about to take back.
+    targets: {
+      what: 'binCard',
+      prompt: 'Delver of Mysteries: recall target spell in your bin',
+      restrict: (_g, t) => 'binCard' in t && isSpellCard(t.binCard.card),
+    },
     run: (g, ctx) => {
+      const t = ctx.targets[0];
+      if (!t || !('binCard' in t) || t.binCard.index === -1) return;
       const bin = g.player(ctx.controller).bin;
-      const spells = bin
-        .map((n, i) => ({ n, i }))
-        .filter(({ n }) => { const k = g.card(n).kind; return k === 'spell' || k === 'spellUnit'; });
-      if (!spells.length) return;
-      const idx = ctx.choose('recall', {
-        kind: 'payOrDecline', seat: ctx.controller,
-        prompt: 'Delver of Mysteries: recall target spell in your bin',
-        options: spells.map(s => ({ label: s.n, value: s.i })),
-      });
-      const name = bin[idx as number];
+      const [name] = bin.splice(t.binCard.index, 1);
       if (name !== undefined) {
-        bin.splice(idx as number, 1);
         g.player(ctx.controller).hand.push(name);
         g.ev('info', `${name} is recalled to ${g.pname(ctx.controller)}'s hand.`);
       }

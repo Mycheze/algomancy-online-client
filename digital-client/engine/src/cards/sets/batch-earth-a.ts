@@ -11,10 +11,6 @@
  * present seats; listeners are region-scoped).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - TWO-TARGET EFFECTS (Battle / Fight): cast-time targeting holds ONE
- *    target per part, so the FIRST unit is a real stack target and the
- *    SECOND is a mid-resolution ctx.choose pick by the caster (the Tidal
- *    Reversion precedent — opponents respond to the spell, not the pick).
  *  - FIGHT: modelled as simultaneous effect damage — powers are snapshotted,
  *    then each unit's damage is dealt via dealEffectDamage with THAT unit's
  *    card as the source (so Deadly/Poisonous/etc. on a fighter applies).

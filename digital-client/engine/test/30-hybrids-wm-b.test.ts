@@ -501,6 +501,13 @@ test('Mindwarp Sporefrog: its controller dealt combat damage → the opponent ga
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);   // combat: D takes 1 → the flip resolves at once (R31)
+  // R67: "target opponent" is declared as the trigger goes on the stack. In
+  // 1v1 there is only one, but it is a real target now — offered, and the
+  // 'opponent' kind measures from the SPOREFROG's controller, so D (who is
+  // giving it away) is not on the menu.
+  assert.equal(h.state.decision!.kind, 'targets');
+  assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ player: A }]);
+  pick(h, { player: A });
   assert.equal(ent(h, frog)!.controller, A, 'the opponent gains control of the Sporefrog');
   finishBattle(h);                                            // → regroup → deploy
   assert.equal(ent(h, frog)!.region, homeOf(h, A), 'regroup walks it to its new home');

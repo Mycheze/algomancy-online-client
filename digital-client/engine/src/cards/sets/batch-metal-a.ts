@@ -27,11 +27,13 @@
  *    LONGER ONE OF THEM: R64 made its bracket a real cast cost, paid before
  *    the spell is respondable, and the counters removed ARE X.
  *  - BASE-STAT CHANGES (Aberrant Statweaver / Body Swap / Celestial Shifter /
- *    Borrower of Forms): the stat layers have no base-set primitive. "Base
- *    X/Y" is approximated as a delta from the printed/token base — layered
- *    counters and temp changes still apply on top, which matches the layer
- *    order. Two Aberrant Statweavers would double-apply the delta (wrong, but
- *    a duplicate "your units are base 3/3" is also printed-meaningless).
+ *    Borrower of Forms) are real REPLACEMENTS of stat layer 2 — the number on
+ *    the card changes — not deltas. The one-shots stamp Entity.baseSet via
+ *    E.setBase; Statweaver's continuous "your units are base 3/3" radiates
+ *    StaticMod.baseP/baseT. Neither stacks: two Statweavers leave a unit on
+ *    3/3, and a later base-setter simply overwrites an earlier one
+ *    (E.baseStatsOf resolves the two sources last-wins by timestamp).
+ *    Counters and until-regroup deltas still apply on top (layer 3).
  *  - Automaton of Abundance duplicates PER TOKEN SPAWN (each spawn is its own
  *    'spawned' event): a batch of N identical tokens yields N extra copies,
  *    not "one per unique token" (needs replacement-effect machinery). The
@@ -80,10 +82,6 @@ import { card, getCard, type EffectDef } from '../dsl.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
-
-/** printed/token base stats (safe inside statics: never calls effStats) */
-const baseStats = (u: Entity): [number, number] =>
-  u.tokenStats ?? [getCard(u.card).power, getCard(u.card).toughness];
 
 /** Erase an entity from play entirely: no bin, no death/despawn triggers;
  * its mods are erased with it (Celestial Purge's pattern). */
@@ -135,14 +133,15 @@ function myColumnConnected(g: E, self: Entity, ev: { data?: Record<string, unkno
 // Unit. A statics-only augment (augmentable) — live when played normally
 // (Manual Q&A), donated when applied as an augment/Virus (staticsFor anchors
 // mod-carried statics on the host, so "your" reads the host's controller).
-// ⚠ "base 3/3" is a delta from the printed/token base (header note): counters
-// and temp changes still apply on top, matching the stat layer order.
+// "Base 3/3" is a REPLACEMENT, not a buff: baseP/baseT rewrite stat layer 2 —
+// the literal number on the card — so a 1/1 and a 7/5 both land on exactly
+// 3/3, two Statweavers do not stack, and counters / until-regroup deltas /
+// everyone else's +X/+X still apply on top (layer 3).
 card('Aberrant Statweaver', {
   augmentable: true,
   statics: [{
     affects: (_g, self, t) => t.kind === 'unit' && t.controller === self.controller,
-    dp: (_g, _self, t) => 3 - baseStats(t)[0],
-    dt: (_g, _self, t) => 3 - baseStats(t)[1],
+    baseP: 3, baseT: 3,
   }],
 });
 
@@ -356,7 +355,9 @@ card('Borrower of Forms', {
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      const [p, dt] = baseStats(t);
+      // the base it HAS (layer 2 included — a Formless'd or Statweavered
+      // body is the body you are borrowing), not the one it was printed with
+      const [p, dt] = g.baseStatsOf(t);
       const r = ctx.region;
       g.bumpBattleCounter(r, 'bof:pending', 1);
       g.bumpBattleCounter(r, 'bof:p', p);
@@ -451,8 +452,7 @@ card('Celestial Shifter', {
           options: opts,
         }) as number;
         g.payMana(ctx.controller, x);
-        const [bp, bt] = baseStats(self);
-        g.addTemp(self, x - bp, x - bt);
+        g.setBase(self, x, x);   // layer 2: "become base X/X", not +X/+X
       },
     },
   }],

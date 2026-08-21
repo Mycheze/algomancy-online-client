@@ -13,7 +13,7 @@
  * bounded budget (Synaptic Energizer, R9/R12), net-counter duplication
  * (Technological Superiority), a +2/+2-and-silence static in both forms
  * (Transmogrifant, R62), a type-line Virus augment (Trashling),
- * base-stat gates (Unmake), a temp re-base (Unstable Refactor), an
+ * base-stat gates (Unmake, R66), a layer-2 re-base (Unstable Refactor), an
  * immediate mid-combat death trigger (Unstable Singularity, R31), forced
  * discards (Void Memory), and a parked draft-skipper (Worldbender).
  */

@@ -192,9 +192,11 @@ test('Delver of Mysteries: recalls a chosen spell from the bin, then spawns 2/2'
   giveResources(h, p, 'fire', 4);                    // rr / 4
   const immolatesBefore = h.state.players[p]!.hand.filter(n => n === 'Immolate').length;
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Delver of Mysteries') });
-  assert.equal(h.state.decision?.kind, 'payOrDecline', 'mid-resolution bin pick');
+  // R67: the bin card is a CAST-TIME target, declared before the Delver is on
+  // the stack — not a mid-resolution pick
+  assert.equal(h.state.decision?.kind, 'targets', 'cast-time bin target');
   assert.equal(h.state.decision!.options.length, 1, 'only the SPELL is offered, not the unit');
-  pick(h, 0);                                        // bin index of Immolate
+  pick(h, { bin: { seat: p, card: 'Immolate' } });
   assert.equal(h.state.players[p]!.hand.filter(n => n === 'Immolate').length,
     immolatesBefore + 1, 'Immolate recalled to hand');
   assert.deepEqual(h.state.players[p]!.bin, ['Conduit of Pain'], 'unit stays in the bin');

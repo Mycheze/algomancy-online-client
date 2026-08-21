@@ -121,6 +121,7 @@ test('Big Glimpse Card: the opponent splits 7, the caster caches one pile playab
   const deckBefore = h.state.sharedDeck.length;
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Big Glimpse Card') });
+  pick(h, { player: D });                                    // R67: "target opponent", at cast
   pass(h); pass(h);                                          // resolve
   // the SPLIT is the opponent's: two cards into pile 1, then done
   assert.equal(h.state.decision!.seat, D, 'the opponent splits the piles');
@@ -278,12 +279,13 @@ test('Covenant of the Damned: reanimates from your bin and charges its cost in d
   giveResources(h, p, 'dark', 1);
   giveResources(h, p, 'earth', 1);                           // ld / 3
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Covenant of the Damned') });
+  pick(h, { bin: { seat: p, card: 'Gublin' } });             // R67: declared at cast
   assert.ok(unitsOf(h, p).some(u => u.card === 'Gublin'), 'the unit is in play');
   assert.ok(!h.state.players[p]!.bin.includes('Gublin'), 'it left the bin');
   assert.equal(new E(h.state).debt(p), 9, 'debt equal to its printed cost (R39)');
 });
 
-test('Covenant of the Damned: an empty bin is a no-op', () => {
+test('Covenant of the Damned: an empty bin makes the cast ILLEGAL (R67)', () => {
   const h = new Harness(4411);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -291,9 +293,15 @@ test('Covenant of the Damned: an empty bin is a no-op', () => {
   giveResources(h, p, 'light', 1);
   giveResources(h, p, 'dark', 1);
   giveResources(h, p, 'earth', 1);
-  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Covenant of the Damned') });
+  const idx = give(h, p, 'Covenant of the Damned');
+  // R64/R67: "put TARGET unit from your bin into play" is a mandatory target,
+  // so an empty bin means there is nothing legal to aim at and the card may
+  // not be played at all. It used to resolve into a no-op, which quietly ate
+  // the card and the mana.
+  assert.throws(() => h.do({ type: 'playCard', seat: p, handIndex: idx }),
+    /no legal target/i, 'refused, not wasted');
   assert.equal(new E(h.state).debt(p), 0, 'no unit, no debt');
-  assert.ok(h.log.some(l => l.includes('no unit in your bin')), 'said so in the log');
+  assert.ok(h.state.players[p]!.hand.includes('Covenant of the Damned'), 'still in hand');
 });
 
 // ── Debt Plant ───────────────────────────────────────────────────────────

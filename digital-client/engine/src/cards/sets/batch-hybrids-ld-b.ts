@@ -69,7 +69,7 @@
  */
 import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, getCard, isEntityTarget, type EffectDef } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -84,20 +84,6 @@ const binMatches = (g: E, seat: Seat, ok: (name: string) => boolean): [string, n
 const isUnitCard = (name: string): boolean => {
   const k = getCard(name).kind;
   return k === 'unit' || k === 'spellUnit';
-};
-
-/** pick one of `pool` (auto when forced); null on an empty pool. Callers plan
- * every pick before mutating — the engine rolls back to the part boundary and
- * replays on suspension. */
-const pickUnit = (
-  ctx: EffectCtx, key: string, chooser: Seat, pool: Entity[], prompt: string,
-): EntityId | null => {
-  if (!pool.length) return null;
-  if (pool.length === 1) return pool[0]!.id;
-  return ctx.choose(key, {
-    kind: 'electricPath', seat: chooser, prompt,
-    options: pool.map(u => ({ label: u.card, value: u.id })),
-  }) as EntityId;
 };
 
 /** every attribute the pool can print (types.ts `Attr`), for The Omniphage's
@@ -434,27 +420,25 @@ card('Splort', {
 // R47: the retired "Wight" and the current "Wraith" are one token; augmentWraith() creates it directly
 // as an augment MOD on the host rather than spawning the body, and the mod is
 // a token so it is erased (never binned, never trashed) when it leaves play.
-// ⚠ X-many targets are mid-resolution picks (header) — X is paid at cast
-// (R35) and read from ctx.x. "Target units" is unqualified, so an ENEMY unit
+// R67: the X targets are DECLARED targets, collected as the spell goes on the
+// stack (`count: 'X'`, which the collector reads off the X already fixed by
+// R35's cast-time payment) — they used to be mid-resolution picks, so the
+// spell sat on the stack aiming at nobody. "Target units" is unqualified, so an ENEMY unit
 // is a legal host: the Wraith's donated "[Augment] When I attack or block, put
 // a -1/-1 counter on me" then shrinks THEM. X = 0 does nothing (the card does
 // not print "X can't be zero", so xMin stays at the default 0).
 card("Blight's End", {
   spellEffect: {
+    targets: {
+      what: 'unit', count: 'X', min: 0,
+      prompt: "Blight's End: augment a Wight onto target unit",
+    },
     run: (g, ctx) => {
-      const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
-      if (x <= 0) { g.ev('info', "Blight's End: X = 0 — no effect."); return; }
-      // plan every pick first, then commit (attaching a mod fires triggers)
-      const picked: EntityId[] = [];
-      for (let i = 0; i < x; i++) {
-        const pool = g.unitsIn(ctx.region).filter(u => !picked.includes(u.id));
-        const id = pickUnit(ctx, `host:${i}`, ctx.controller, pool,
-          `Blight's End: augment a Wight onto which unit? (${i + 1} of ${x})`);
-        if (id === null) break;
-        picked.push(id);
-      }
-      for (const id of picked) {
-        const host = g.entity(id);
+      // the targets ARE the hosts; each is re-read at resolution so a unit
+      // that died in between is simply skipped (R5 partial resolution)
+      for (const t of ctx.targets) {
+        if (!isEntityTarget(t)) continue;
+        const host = g.entity(t.id);
         if (host) g.augmentWraith(host, ctx.controller);
       }
     },

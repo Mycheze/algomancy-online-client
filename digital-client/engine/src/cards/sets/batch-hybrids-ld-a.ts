@@ -266,6 +266,10 @@ card('Hyper Beam', {
 // piles. Cache one pile. You may play those cards until end of turn, ignoring
 // affinity. Recycle the other pile." — lb/4 {Battle} Cosmic Horror Spell, and
 // it prints a "[4] Prophecy — Two Turns Pass" banner (engine side, R42).
+// R67: "Target opponent" is a DECLARED target, chosen as the spell goes on
+// the stack. In 1v1 it is forced, so the collector fills it without asking —
+// but it is now visible on the stack and judged by the same rules as any
+// other target, instead of being re-derived at resolution.
 // ⚠ header: "the deck" is read as the caster's (shared in shared mode); the
 // OPPONENT splits (picking cards into pile 1 until done) and the CASTER
 // chooses which pile is cached. The cached pile gets glimpse-style permission
@@ -274,13 +278,15 @@ card('Hyper Beam', {
 // is requested before the deck is touched (R6).
 card('Big Glimpse Card', {
   spellEffect: {
+    targets: { what: 'opponent', min: 0, prompt: 'Big Glimpse Card: target opponent splits the 7' },
     run: (g, ctx) => {
       const deck = g.deckOf(ctx.controller);
       const revealed = deck.slice(0, 7);
       if (!revealed.length) { g.ev('info', 'Big Glimpse Card: the deck is empty.'); return; }
       g.ev('info', `Big Glimpse Card reveals: ${revealed.join(', ')}.`);
-      const opp = presentSeats(g, ctx.region).find(s => s !== ctx.controller)
-        ?? (1 - ctx.controller);
+      const t = ctx.targets[0];
+      const opp = (t && 'player' in t) ? t.player
+        : (presentSeats(g, ctx.region).find(s => s !== ctx.controller) ?? (1 - ctx.controller));
       // the opponent splits: pick cards into pile 1 until "Done"
       const pile1: number[] = [];
       for (let k = 0; k < revealed.length; k++) {
@@ -484,25 +490,26 @@ card('Apex Prime', {
 // ═══════════════════════ LIGHT / DARK (ld) ════════════════════════════
 
 // "[Switch1] Put target unit from your bin into play. You gain debt equal to
-// its cost." — ld/3 Cosmic Spell (deployment timing). The bin is not a
-// targetable zone, so the "target" is a mid-resolution pick over the unit
-// cards in my bin (the Resurrect precedent), auto-picked when forced. "Its
-// cost" is the printed mana of the card put into play, taken as debt (R39);
-// an X unit counts as 0 (there is no X to have chosen). Bounded graft
+// its cost." — ld/3 Cosmic Spell (deployment timing). R67: the bin IS a
+// targetable zone now (R64's 'binCard'), so the printed "target" is a
+// DECLARED target chosen as the item goes on the stack — it used to be a
+// mid-resolution pick, which put the Covenant on the stack aiming at nothing.
+// "Its cost" is the printed mana of the card put into play, taken as debt
+// (R39); an X unit counts as 0 (there is no X to have chosen). Bounded graft
 // ([Switch1], R9).
 const covenant: EffectDef = {
+  targets: {
+    what: 'binCard',
+    prompt: 'Covenant of the Damned: put target unit from your bin into play (you gain debt equal to its cost)',
+    restrict: (_g, t) => 'binCard' in t && isUnitCard(t.binCard.card),
+  },
   run: (g, ctx) => {
-    const units = binUnits(g, ctx.controller);
-    if (!units.length) {
+    const t = ctx.targets[0];
+    if (!t || !('binCard' in t) || t.binCard.index === -1) {
       g.ev('info', 'Covenant of the Damned: no unit in your bin — no effect.');
       return;
     }
-    const idx = units.length === 1 ? units[0]![1] : ctx.choose('which', {
-      kind: 'payOrDecline', seat: ctx.controller,
-      prompt: 'Covenant of the Damned: put which unit from your bin into play? (you gain debt equal to its cost)',
-      options: units.map(([n, i]) => ({ label: `${n} (${manaOf(n)} debt)`, value: i as unknown, card: n })),
-    }) as number;
-    const [name] = g.player(ctx.controller).bin.splice(idx, 1);
+    const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
     if (name === undefined) return;
     g.spawnUnit(ctx.controller, name, ctx.region);
     g.gainDebt(ctx.controller, manaOf(name));   // R39

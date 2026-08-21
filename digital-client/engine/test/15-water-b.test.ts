@@ -10,10 +10,10 @@ import { E } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, ownAttrs, pass,
-  pick, skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
+  notOffered, pick, skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 
-/** answer a mid-resolution (electricPath/payOrDecline) decision by label match */
+/** answer a pending decision by label or value match */
 function decide(h: Harness, match: (label: string, value: unknown) => boolean): void {
   const dec = h.state.decision!;
   const idx = dec.options.findIndex(o => match(o.label, o.value));
@@ -225,8 +225,12 @@ test("Rippleback Skulker: my column connects to a player → take a card from th
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);   // combat: unblocked, D loses 2 → trigger resolves at once → bin pick
   const dec = h.state.decision!;
+  assert.equal(dec.kind, 'targets', 'R67: a declared target, not a mid-resolution pick');
   assert.equal(dec.seat, A, 'the ability controller picks');
-  decide(h, l => l === 'Jelly');
+  // only the DAMAGED player's bin is offered — the restriction reads the event
+  assert.ok(dec.options.every(o => /No more targets|Player 1's bin/.test(o.label)),
+    `only that player's bin: [${dec.options.map(o => o.label)}]`);
+  decide(h, l => l.startsWith('Jelly'));
   assert.ok(h.state.players[A]!.hand.includes('Jelly'), "picked card → my hand");
   assert.deepEqual(h.state.players[D]!.bin, ['Good Whale'], 'only the picked card left the bin');
   assert.equal(h.state.players[D]!.life, 28, 'combat damage happened');
@@ -295,8 +299,8 @@ test('Soul Siphon: no life lost yet → X = 0, resolves cleanly, no unit', () =>
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Siphon') });
-  pass(h); pass(h);                                        // resolve → target player pick
-  decide(h, (_, v) => v === A);
+  decide(h, (_, v) => JSON.stringify(v) === JSON.stringify({ player: A }));   // R67: at cast
+  pass(h); pass(h);                                        // then it resolves
   assert.ok(!unitsOf(h, D).some(u => u.card === 'Unit Token'), 'X = 0 → no unit created');
   assert.ok(h.state.players[D]!.bin.includes('Soul Siphon'), 'spell → bin');
   assert.ok(h.log.some(l => l.includes('X = 0')), 'logged the empty result');
@@ -317,8 +321,8 @@ test('Soul Siphon: X = life the target player lost THIS battle (engine lifeLost 
   assert.equal(h.state.players[D]!.life, 23);
   pass(h);                                                 // afterWindow: A passes → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Siphon') });
-  pass(h); pass(h);                                        // resolve → target player pick
-  decide(h, (_, v) => v === D);                            // X = life D lost this battle
+  decide(h, (_, v) => JSON.stringify(v) === JSON.stringify({ player: D }));   // R67: at cast
+  pass(h); pass(h);                                        // X = life D lost this battle
   const made = unitsOf(h, D).filter(u => u.card === 'Unit Token');
   assert.equal(made.length, 1, 'a unit was created');
   assert.deepEqual(effStats(h, made[0]!.id), [7, 7], 'X = 7 → a 7/7');
@@ -358,8 +362,8 @@ test('Spell Excavation: plays a spell from your bin (cost paid); it is ERASED, n
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
-  pass(h); pass(h);                                        // resolve → bin pick
-  decide(h, l => l === 'Luminous Arc');                    // Arc auto-targets the only unit
+  decide(h, l => l.startsWith('Luminous Arc'));            // R67: declared at cast
+  pass(h); pass(h);                                        // Arc auto-targets the only unit
   assert.ok(!ent(h, atk), 'Luminous Arc dealt its 6 — the 2/2 died');
   assert.ok(!h.state.players[D]!.bin.includes('Luminous Arc'), 'unstable: erased, not binned');
   assert.ok(h.state.players[D]!.bin.includes('Spell Excavation'), 'Excavation itself → bin');
@@ -431,7 +435,11 @@ test('Tidal Reversion: recalls one unit per player (no life loss)', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[wh]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tidal Reversion') });
-  pass(h); pass(h);                                        // resolve (single candidates auto-pick)
+  // R67: both targets are declared at cast, one per player
+  pick(h, { unit: wh });
+  notOffered(h, { unit: wh }, 'already chosen');
+  pick(h, { unit: dr });
+  pass(h); pass(h);
   assert.ok(!ent(h, wh) && !ent(h, dr), 'one unit per player recalled');
   assert.ok(h.state.players[A]!.hand.includes('Good Whale'));
   assert.ok(h.state.players[D]!.hand.includes('Curio Drifter'));

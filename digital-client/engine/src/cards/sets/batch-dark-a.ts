@@ -21,12 +21,14 @@
  *   Spore of Regenesis, Tilling the Graves, Wake the Dead.
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - BIN PICKS ARE NOT TARGETING (Exhume, Tilling the Graves, Wake the Dead,
- *    Spore of Regenesis). The bin is not a targetable zone (TargetSpec covers
- *    units / players / stack items / cached cards only), so "target unit in
- *    your bin" is a RESOLUTION-time ctx.choose — it cannot be responded to and
- *    a hidden-information reveal never happens. The fire-b precedent
- *    (Resurrect, Reclaimer of Secrets, Rousing Spirit).
+ *  - BIN PICKS (Exhume, Wake the Dead, Spore of Regenesis) stay
+ *    RESOLUTION-time ctx.choose picks — and correctly so: none of the three
+ *    prints "target". They say "put A unit", "up to two units in any bin" and
+ *    "ALL units with cost [1]", which are selections made while the effect
+ *    resolves, not declared targets. (This note used to say the bin was not a
+ *    targetable zone at all. R64 made it one — 'binCard' / 'anyBinCard' — and
+ *    R67 moved every card here that DOES print "target" onto it; Tilling the
+ *    Graves is one of them, and no longer belongs in this list.)
  *  - "PUT INTO PLAY" / "PLAY … NOW, FOR FREE" is spawnUnit: the unit arrives
  *    directly in play and fires its spawn triggers, with no stack step. Wake
  *    the Dead reaches into ANY bin, and spawnUnit has no owner parameter, so a
@@ -74,9 +76,21 @@ const selfOf = (g: E, ctx: EffectCtx): Entity | undefined =>
 const presentSeats = (g: E, region: number): Seat[] =>
   g.s.regions[region]!.presentSeats.slice();
 
-/** printed/token base stats (never calls effStats) */
-const baseStats = (u: Entity): [number, number] =>
+/** PRINTED/token stats — layer 1 only, deliberately NOT E.baseStatsOf: this
+ * is the number the card was made with, so that "no stat changes" counts a
+ * rewritten base (Formless, Body Swap, Aberrant Statweaver) as a change. */
+const printedStats = (u: Entity): [number, number] =>
   u.tokenStats ?? [getCard(u.card).power, getCard(u.card).toughness];
+
+/** has anything at all moved this unit off its printed numbers? Layer 2 is
+ * checked explicitly because a rewrite to the SAME numbers (Formless on a
+ * printed 4/4) leaves effStats looking untouched. */
+const statsUntouched = (g: E, u: Entity): boolean => {
+  const [bp, bt] = printedStats(u);
+  const [p, d] = g.effStats(u);
+  return u.counters === 0 && u.tempPower === 0 && u.tempToughness === 0
+    && u.baseSet === undefined && p === bp && d === bt;
+};
 
 /** a card that enters play as a unit (a spell unit does, on resolution) */
 const isUnitCard = (name: CardName): boolean => {
@@ -325,19 +339,15 @@ card('Leave None Pure', {
     // ones that change between cast and resolution.
     targets: {
       what: 'unit', prompt: 'Leave None Pure: delete target unit with no stat changes',
-      restrict: unitRestrict((g, u) => {
-        const [bp, bt] = baseStats(u);
-        const [p, d] = g.effStats(u);
-        return u.counters === 0 && u.tempPower === 0 && u.tempToughness === 0 && p === bp && d === bt;
-      }),
+      restrict: unitRestrict((g, u) => statsUntouched(g, u)),
     },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      const [bp, bt] = baseStats(t);
-      const [p, d] = g.effStats(t);
-      if (t.counters !== 0 || t.tempPower !== 0 || t.tempToughness !== 0 || p !== bp || d !== bt) {
-        g.ev('info', `Leave None Pure: ${t.card} has stat changes (${p}/${d} vs base ${bp}/${bt}) — it is not deleted.`);
+      if (!statsUntouched(g, t)) {
+        const [bp, bt] = printedStats(t);
+        const [p, d] = g.effStats(t);
+        g.ev('info', `Leave None Pure: ${t.card} has stat changes (${p}/${d} vs printed ${bp}/${bt}) — it is not deleted.`);
         return;
       }
       g.destroy(t, 'is deleted');
@@ -393,20 +403,25 @@ card('Nothyr', {
     type: 'triggered', events: ['trashed'], self: true,
     label: 'negate up to one target nonspell effect',
     effect: {
+      // R67: "up to one target nonspell effect" is a DECLARED target, chosen
+      // as the trigger goes on the stack, not a mid-resolution pick — the
+      // whole point of a negate is that the table can see what it is aimed at
+      // while there is still a window to respond. 'stackEffect' is the
+      // superset kind (R60); the restriction narrows it to the NONSPELL half,
+      // which is exactly the qualifier Nothyr prints. min 0 = "up to one".
+      targets: {
+        what: 'stackEffect', min: 0,
+        prompt: 'Nothyr: negate up to one target nonspell effect',
+        restrict: (g, t) => {
+          if (!('stack' in t)) return false;
+          const it = g.s.stack.find(i => i.id === t.stack);
+          return !!it && (it.kind === 'triggered' || it.kind === 'activated');
+        },
+      },
       run: (g, ctx) => {
-        const hits = g.s.stack.filter(i =>
-          (i.kind === 'triggered' || i.kind === 'activated') && !i.negated);
-        if (!hits.length) { g.ev('info', 'Nothyr: no nonspell effect on the stack.'); return; }
-        const pick = ctx.choose('negate', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Nothyr: negate up to one nonspell effect',
-          options: [
-            ...hits.map(i => ({ label: i.label, value: i.id, ...(i.card ? { card: i.card } : {}) })),
-            { label: 'Decline', value: -1 },
-          ],
-        }) as number;
-        if (pick === -1) return;
-        g.negate(pick);
+        const t = ctx.targets[0];
+        if (!t || !('stack' in t)) { g.ev('info', 'Nothyr: no nonspell effect on the stack.'); return; }
+        g.negate(t.stack);
       },
     },
   }],

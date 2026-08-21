@@ -3,7 +3,7 @@
  * parallel card registration can't shift assertions; seeds are 2600-2699.
  *
  * Covers: base-setting statics in play AND virus-donated (Aberrant
- * Statweaver), the adjacent-ally trigger mimic (Ancient One, ⚠ triggered
+ * Statweaver — layer 2, R66; see test 59 for the layer itself), the adjacent-ally trigger mimic (Ancient One, ⚠ triggered
  * abilities only), token copying (Arcane Echo), token duplication with the
  * loop guard (Automaton of Abundance), pay-to-erase death feeding (Biomass
  * Devourer, R31 immediate combat triggers), base-stat exchange until regroup

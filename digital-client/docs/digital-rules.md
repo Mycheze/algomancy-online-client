@@ -1084,3 +1084,168 @@ triggers, nothing plays it back — but the information is public and there was
 no way to look at it. `PlayerState.erased` keeps it, appended by `E.ev()` off
 the `erased` event every erase site already emits, rather than at each of the
 dozen sites.
+
+## R66 — Base stats are REPLACED, not adjusted, and the replacement is a layer
+
+*(Playtest round 11, 2026-08-21.)*
+
+> "It looks like Aberrant Statweaver gives units +-X/+-X. But really what should
+> happen is a pure replacement effect that changes the BASE stats of the card.
+> Like, if Statweaver could, it would change the literal numbers on the card."
+
+R-round-7 built half of this: `Entity.baseSet`, an until-regroup stamp written
+by `E.setBase`, so *"becomes a base 4/4"* stopped compounding with the base a
+previous effect had already written. What it did not build was the CONTINUOUS
+half — a base rewrite that radiates from a card in play for as long as that
+card is in play — so *"Your units are base 3/3"* had nowhere to live and was
+implemented in the only layer that existed: `3 − printed power` handed to the
++X/+X layer.
+
+That is a different effect wearing the same numbers, and it is wrong in four
+separate ways:
+
+- **it stacks.** Two Statweavers turned a 7/5 into `7 + (3−7) + (3−7)` = a
+  −1/−1, i.e. a dead whale. A replacement is idempotent by construction.
+- **it re-derives off the PRINTED base**, so it could not see any other rewrite
+  — Formless and a Statweaver on one unit each computed a delta from 7/5 and
+  both deltas landed.
+- **it is invisible to the questions that ask about a base.** Unmake deletes a
+  unit *"with base power 2 or less"*; a Statweavered Good Whale is base power 3
+  and was still being read as 7.
+- **it reads as a buff.** Everything that asks *"has this unit's stats been
+  changed"* saw a −4/−2 modifier rather than a different card.
+
+**The rule.** Layer 2 has two sources and one answer. `Entity.baseSet` is the
+until-regroup stamp (Formless, Body Swap, Unstable Refactor, Celestial Shifter,
+Floral Singularity); `StaticMod.baseP`/`baseT` is the continuous rewrite
+(Aberrant Statweaver), radiating with the same region and suppression rules as
+every other static. `E.baseStatsOf` is the only reader, and it resolves the two
+**last-wins by timestamp** — never by summing. Timestamps come off the shared
+`nextId` clock: `baseSetSeq` for a stamp, and for a static the id of the entity
+carrying the text, which is when it started applying. So a Statweaver played
+after a Formless overrides it, and one played before does not.
+
+Nothing about layer 3 changes: counters, until-regroup deltas and everyone's
++X/+X still apply on top of whatever layer 2 answered, and a base rewrite that
+drops defense to 0 kills at the next death check exactly as it should.
+
+**Not layer 2:** *"double my power and defense"* (Bulwark Manatee, Transmutide
+Enigma) and *"switch the power and defense of target unit"* (Invasive
+Reassignment) are still until-regroup deltas computed off the effective stats
+at resolution. Doubling genuinely is a delta. Switching is the one remaining
+approximation in the stat layers: the delta freezes the two numbers as they
+stood at resolution, so a later ASYMMETRIC change (a +2/+0 landing afterwards)
+applies unswitched.
+
+Where a real switch belongs is an OPEN RULING, and this line previously guessed
+at it ("above layer 4"). It should not have. The Manual's layer list has six
+entries and none of them is a switch — layer 5 is {Inverted}, which sign-flips
+layer 3, a different operation entirely. Bena's position (2026-08-21): "I'm not
+a judge in either game." So the approximation stands, deliberately, rather than
+inventing a seventh layer and letting a guess harden into a rule the way the
+stale PARKED comments R67 swept did.
+
+---
+
+## R67 — "Target" is chosen when the effect is PUT ON THE STACK, and a bracketed cost is paid there too
+
+*(Playtest round 12, 2026-08-21)*
+
+> "Lots of cards seem to choose targets on resolution rather than when they're
+> played or put onto the stack. In many cases, this is wrong. Any card or
+> effect that says 'target' has to be chosen initially when put onto the stack.
+> Same for when you need to pay an additional cost. That cost is paid as it's
+> being put onto the stack."
+
+The engine's *architecture* already said this. `E.castChain` runs
+`collectTargets` and then `commitItem`, in that order, for every item that
+reaches the stack — a played card, an activated ability, and (via
+`processTriggerQueue`) a triggered one. Cast-time costs are paid in the same
+pass: R35's bracketed `castCost`, R49/R57's activation costs, R64's variable
+`'X'` costs, and {Modular}'s mods. Nothing on the stack has ever been able to
+pay a bracketed cost late.
+
+What was wrong was **per-card**: eleven cards never declared a `targets` spec at
+all and re-derived their "target" with a mid-resolution `ctx.choose` instead.
+Most of them predate the seams that would have let them declare it — R58's
+per-slot specs, R64's `binCard` / `anyBinCard` / `restrict` — and their comments
+say so in as many words ("*the bin is not a targetable zone, so the pick is a
+mid-resolution ctx.choose*"). The seams exist now, so the cards use them.
+
+A mid-resolution pick is not a cosmetic difference. It means:
+
+- **the item sits on the stack aiming at nothing**, so the window where an
+  opponent may respond is a window in which nobody can see what the spell is
+  about to do — the single thing the stack exists to show;
+- **nothing can interact with the choice.** A redirect (`E.canFillSlot`) has no
+  slot to move, `mustBeTargeted` (Gatekeeper of Souls) cannot compel it, and
+  R5's fizzle-when-the-target-is-gone never applies because there was no target
+  to lose;
+- **an impossible aim is discovered too late.** "Put target unit from your bin
+  into play" with an empty bin used to resolve into a silent no-op that ate the
+  card and the mana. A mandatory target with no legal candidate makes the cast
+  **illegal** (R64) — Covenant of the Damned is now refused, not wasted.
+
+**The rule.** If a card prints "target", the effect declares a `TargetSpec` and
+the engine collects it in the cast window. `min: 0` carries a printed "you may"
+or "up to"; `count: 'X'` carries "X target …" and reads the X that R35 already
+fixed. Choices that are *not* targets stay where they are — which pile to cache,
+how to distribute damage among a player's units, which card to discard, and
+"you may pay [2] to …" (optional mana *inside* an effect, not a cost of putting
+it on the stack) are all still mid-resolution `ctx.choose`.
+
+Two seams were added to carry the last two cards:
+
+- **`what: 'player'`** — plain "target player" with no ownership clause, so you
+  are a legal target for your own (Soul Siphon). `'opponent'` already existed
+  and measures from the effect's controller (R58), not the chooser's.
+- **`TargetCtx.event`** — the event that fired a triggered ability, so a target
+  phrased relative to it can be judged. Rippleback Skulker's "put target card
+  from *that player's* bin into your hand" cannot name a bin without knowing
+  who was just dealt combat damage.
+
+Fixed: Delver of Mysteries, Spell Excavation, Covenant of the Damned, Hooba-Mon
+(bin targets); Nothyr (up to one target nonspell effect); Mindwarp Sporefrog,
+Big Glimpse Card (target opponent); Soul Siphon (target player); Tidal
+Reversion (one target unit per player); Blight's End (X target units);
+Rippleback Skulker (target card in that player's bin).
+
+**Not this rule.** *Apex Prime* still prints "target" and still chooses
+nothing: "all of your units become a copy of target unit until regroup" needs a
+COPY layer — name, stats, attributes and abilities projected from another card
+and expiring at regroup — and there is none. The pool's one "become a copy"
+(Borrower of Forms) is a bespoke stats-and-counters relay through battle
+counters for a single unit, permanently, at spawn; it does not generalise.
+
+*Flux Constructor* was on this list and should not have been. Its card comment
+said the dying unit's counter count was "unknowable at both event time and
+resolution" — but `destroy()` stamps `counters` onto the death event for
+exactly this reason, and has since Entropic Entity needed it. The note outlived
+the problem it described. The card is implemented: the count comes off
+`ev.data.counters`, "one or more counters" is a nonzero *net* (the engine keeps
+one signed total, so a unit that died holding two -1/-1 counters qualifies and
+the drawback moves with them), and "another target unit" is a declared target
+with `min: 0` for the printed "you may".
+
+*Envoy of Lightning* and
+*Boon of Protection* say "target" about OTHER effects' targeting, not their own.
+*Channel Through*'s second clause ("distribute 2 damage among target opponent's
+units") declares its X allies but not the opponent: a spec cannot mix a
+variable-count slot with a fixed extra one, and in 1v1 the opponent is forced.
+
+**One hazard the move creates.** A restriction runs inside `targetCandidates`,
+so a restriction that asks `targetCandidates` about ANOTHER card's spec is a
+nested query — and Spell Excavation's ("target spell from your bin" is
+restricted to spells that could actually be played, which means asking whether
+the bin card can find a target) is self-referential the moment a second Spell
+Excavation is sitting in the bin. It overflowed the stack. The fix is a
+reentrancy guard of the same shape as `E.inStatics`: a re-entered probe answers
+on kind and affordability alone, which can only make the menu more permissive,
+and `run` re-asks the full question before committing. Any future restriction
+that reaches into another card's spec needs the same guard.
+
+**A consequence worth knowing:** the collector asks even when exactly one
+candidate is legal, so a forced "target opponent" is now a click. That is the
+engine's standing behaviour for every other target, and auto-filling forced
+targets would drop a `decide` from the action log and break replay of saved
+games — so it is left alone rather than special-cased here.

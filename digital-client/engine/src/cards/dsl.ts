@@ -111,12 +111,14 @@ export interface TargetSpec {
    * effect's controller, never to the chooser: a redirect that drops a unit
    * into someone else's "target ally" slot is what R58 already refuses.
    * 'opponent' is a PLAYER-only kind ("target opponent" — Ralph, Interdiction
-   * Rift, Divine Foresight); 'any' offers units and players together and is
-   * the damage kind, not a substitute for it.
+   * Rift, Divine Foresight); 'player' is the same kind WITHOUT the ownership
+   * clause — plain "target player" (Soul Siphon), which may legally be
+   * yourself; 'any' offers units and players together and is the damage kind,
+   * not a substitute for either.
    * 'token' is any token in the region, unit or spell token (Arcane Echo,
    * Download) — a token is a legal target for these whoever controls it, and
    * "gain control of" narrows to the enemy half with `restrict`. */
-  what: 'unit' | 'allyUnit' | 'enemyUnit' | 'token' | 'any' | 'opponent'
+  what: 'unit' | 'allyUnit' | 'enemyUnit' | 'token' | 'any' | 'opponent' | 'player'
     | 'stackSpell' | 'stackEffect' | 'cachedCard'
     /** R64: a card in YOUR bin ("target unit … from your bin"); 'anyBinCard'
      * reaches either player's, which is what "target card in a bin" prints. */
@@ -177,6 +179,17 @@ export interface TargetCtx {
    * whose legality depends on an earlier one reads them here — Necromorph's
    * second target is "with cost less than or equal to IT". */
   chosen?: ResolvedTarget[];
+  /**
+   * R67: the event that FIRED this ability, for a triggered ability whose
+   * printed target is phrased relative to it — Rippleback Skulker's "put
+   * target card from THAT PLAYER's bin into your hand" cannot say which bin
+   * without knowing who was just dealt combat damage.
+   *
+   * Null/undefined for a spell or an activated ability: they have no event.
+   * It is the same snapshot the effect later reads as `ctx.event`, so a
+   * restriction and the run() it gates agree about what happened.
+   */
+  event?: EngineEvent | null;
 }
 
 /** R64: a printed targeting restriction, as a predicate over the resolved
@@ -380,6 +393,24 @@ export interface StaticMod {
   affects: (g: E, self: Entity, target: Entity) => boolean;
   dp?: number | ((g: E, self: Entity, target: Entity) => number);
   dt?: number | ((g: E, self: Entity, target: Entity) => number);
+  /**
+   * LAYER 2, the CONTINUOUS half: while this static applies, the target's
+   * BASE power/defense is REWRITTEN to this number — "Your units are base
+   * 3/3" (Aberrant Statweaver). This is a replacement, not a delta: it is the
+   * literal number on the card changing, so two Statweavers do not stack, a
+   * 1/1 and a 7/5 both land on exactly 3/3, and every layer-3 change
+   * (counters, until-regroup deltas, a lord's +1/+1) still applies ON TOP.
+   *
+   * Setting only one of the pair rewrites only that half. Read through
+   * E.baseStatsOf, which resolves these against the until-regroup
+   * `Entity.baseSet` stamp last-wins by timestamp — never by summing.
+   *
+   * Same reentrancy rule as dp/dt, one step stricter: baseP/baseT must not
+   * call baseStatsOf or effStats either (the guard makes the nested query
+   * return the printed base).
+   */
+  baseP?: number | ((g: E, self: Entity, target: Entity) => number);
+  baseT?: number | ((g: E, self: Entity, target: Entity) => number);
   attrs?: Attr[];
   /**
    * R62, the CONTINUOUS half of the suppression layer: while this static

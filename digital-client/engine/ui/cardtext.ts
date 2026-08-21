@@ -237,7 +237,20 @@ export function statBreakdown(e: E, u: Entity): StatBreakdown {
   const [power, toughness] = e.effStats(u);
   const parts: { label: string; dp: number; dt: number }[] = [];
   if (base[0] !== printed[0] || base[1] !== printed[1]) {
-    parts.push({ label: `base rewritten to ${base[0]}/${base[1]}`, dp: base[0] - printed[0], dt: base[1] - printed[1] });
+    // layer 2 is a replacement, so it is shown as one line for the whole
+    // rewrite rather than per source — but name the continuous source when
+    // there is one, since its own dp/dt line would read +0/+0. Only a setter
+    // whose numbers ARE the resolved base gets credit: layer 2 is last-wins,
+    // and a Statweaver that an until-regroup rewrite overrode did not do this.
+    const setters = [...new Set(e.projections(u)
+      .filter(p => (p.baseP !== undefined || p.baseT !== undefined)
+        && (p.baseP ?? base[0]) === base[0] && (p.baseT ?? base[1]) === base[1])
+      .map(p => p.from))];
+    const by = setters.length ? ` (${setters.join(', ')})` : '';
+    parts.push({
+      label: `base rewritten to ${base[0]}/${base[1]}${by}`,
+      dp: base[0] - printed[0], dt: base[1] - printed[1],
+    });
   }
   if (u.counters) parts.push({ label: `${u.counters > 0 ? '+' : ''}${u.counters} counters`, dp: u.counters, dt: u.counters });
   if (u.tempPower || u.tempToughness) {
@@ -339,6 +352,11 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   //    sentence is about a whole class of units, not about this one.
   for (const p of e.projections(u)) {
     const bits: string[] = [];
+    if (p.baseP !== undefined || p.baseT !== undefined) {
+      // layer 2: it replaces the number rather than adjusting it, so it reads
+      // "is base X/Y" — printing a delta here would be a lie about stacking
+      bits.push(`is base ${p.baseP ?? '\u2014'}/${p.baseT ?? '\u2014'}`);
+    }
     if (p.dp || p.dt) bits.push(`${sign(p.dp)}/${sign(p.dt)}`);
     if (p.attrs.length) bits.push(`gains ${p.attrs.map(a => `{${a}}`).join(' ')}`);
     if (p.suppressAttrs && p.suppressAbilities) bits.push('loses all attributes and abilities');

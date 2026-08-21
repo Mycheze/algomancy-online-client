@@ -16,12 +16,14 @@
  * activated graft cause carrying a grafted Foretell (Omniwield Evoker),
  * region-scoped mass sacrifice (Perish), spawn counters + a died-trigger
  * counter move under R31 (Powerforge Synergist), and R63 ability granting
- * (Reforge the Dead). Parked: Flux Constructor (died-event counter snapshot).
+ * (Reforge the Dead). Nothing here is parked any more: Flux Constructor's
+ * "died-event counter snapshot" turned out to already exist (destroy() stamps
+ * `counters` onto the event), so R67 implemented it.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E } from '../src/engine.ts';
+import { E, Suspended } from '../src/engine.ts';
 import { isAugment } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
@@ -35,6 +37,19 @@ const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!
 const homeOf = (h: Harness, seat: number): number =>
   h.state.regions.findIndex(r => r.owner === seat);
 
+/** run engine mutations white-box, absorbing the suspension a mid-settle
+ * decision throws (test 59 precedent) */
+function whiteBox(h: Harness, f: (e: E) => void): void {
+  const e = new E(h.state);
+  try {
+    f(e);
+    e.settle();
+  } catch (sig) {
+    if (!(sig instanceof Suspended)) throw sig;
+  }
+  h.state = e.s;
+}
+
 // ── Flux Constructor ─────────────────────────────────────────────────────
 
 test('Flux Constructor: registers as a 3/3 augment (behavior parked)', () => {
@@ -46,10 +61,57 @@ test('Flux Constructor: registers as a 3/3 augment (behavior parked)', () => {
   assert.ok(isAugment('Flux Constructor'), 'recognised as an augment (inert text)');
 });
 
-test('Flux Constructor: move a dead unit\'s counters (needs a died-event counter snapshot)', { todo: true }, () => {
-  // PARKED: destroy() deletes the dying unit before firing 'died' and the
-  // event carries no counter count — "those counters" is unknowable in card
-  // code (Entity has no persistent scratch space; budgets are per-turn).
+test("Flux Constructor: a dead ally's counters move onto another target unit", () => {
+  const h = new Harness(2716);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  spawn(h, A, 'Flux Constructor');
+  const donor = spawn(h, A, 'Unit Token');
+  const heir = spawn(h, A, 'Good Whale');           // 7/5
+  const enemy = spawn(h, D, 'Unit Token');
+  whiteBox(h, e => e.addCounters(e.entity(donor)!, 3));   // the ally dies holding +3
+  whiteBox(h, e => e.destroy(e.entity(donor)!, 'dies'));
+  // R67: the heir is a DECLARED target, asked as the trigger goes on the stack
+  assert.equal(h.state.decision?.kind, 'targets');
+  assert.equal(h.state.decision!.seat, A, 'the augment controller chooses');
+  // "another target unit" is unqualified, but targeting is REGION-scoped
+  // (R12): in deployment each player sits in their own home region, so the
+  // enemy is not reachable here — not because it is an enemy.
+  assert.ok(!h.state.decision!.options.some(o =>
+    JSON.stringify(o.value) === JSON.stringify({ unit: enemy })), 'another region (R12)');
+  pick(h, { unit: heir });
+  assert.deepEqual(effStats(h, heir), [10, 8], 'the 3 counters landed on the heir');
+});
+
+test('Flux Constructor: the counters keep their SIGN, and "you may" can decline', () => {
+  const h = new Harness(2717);
+  toDeployment(h);
+  const A = h.state.initiative;
+  spawn(h, A, 'Flux Constructor');
+  const donor = spawn(h, A, 'Good Whale');
+  const heir = spawn(h, A, 'Good Whale');           // 7/5
+  whiteBox(h, e => e.addCounters(e.entity(donor)!, -2));  // two -1/-1 counters
+  whiteBox(h, e => e.destroy(e.entity(donor)!, 'dies'));
+  // a unit that died holding -1/-1 counters is still "a unit with counters on
+  // it" — the engine keeps one signed total, so the drawback moves too
+  assert.equal(h.state.decision?.kind, 'targets');
+  pick(h, { unit: heir });
+  assert.deepEqual(effStats(h, heir), [5, 3], 'the -2 moved, sign intact');
+});
+
+test('Flux Constructor: a counterless death, and an ENEMY death, do not fire it', () => {
+  const h = new Harness(2718);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  spawn(h, A, 'Flux Constructor');
+  const bare = spawn(h, A, 'Unit Token');           // no counters
+  const theirs = spawn(h, D, 'Unit Token');
+  whiteBox(h, e => e.addCounters(e.entity(theirs)!, 4));  // counters, but not MINE
+  for (const id of [bare, theirs]) {
+    whiteBox(h, e => e.destroy(e.entity(id)!, 'dies'));
+    assert.equal(h.state.decision, null,
+      '"one of YOUR units with one or more counters" — neither death qualifies');
+  }
 });
 
 // ── Flux Resonator ───────────────────────────────────────────────────────

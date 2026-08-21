@@ -359,9 +359,9 @@ export class E {
    * `from` is the card that AUTHORED the static, which is not `holder.card`
    * when the text arrived on an augment mod (the mod anchors on its host) —
    * the text box has to name Transmogrifant, not the unit wearing it. */
-  private staticsFor(target: Entity): { holder: Entity; from: CardName; mod: import('./cards/dsl.ts').StaticMod }[] {
+  private staticsFor(target: Entity): { holder: Entity; from: CardName; srcId: EntityId; mod: import('./cards/dsl.ts').StaticMod }[] {
     if (this.inStatics) return [];
-    const out: { holder: Entity; from: CardName; mod: import('./cards/dsl.ts').StaticMod }[] = [];
+    const out: { holder: Entity; from: CardName; srcId: EntityId; mod: import('./cards/dsl.ts').StaticMod }[] = [];
     this.inStatics = true;
     try {
       for (const holder of Object.values(this.s.entities)) {
@@ -386,25 +386,77 @@ export class E {
         // the simultaneous answer the layer model wants anyway.
         if (anchor.suppressed?.abilities) continue;
         for (const mod of this.card(holder.card).statics ?? []) {
-          if (mod.affects(this, anchor, target)) out.push({ holder: anchor, from: holder.card, mod });
+          // `srcId` is the entity CARRYING the text (the unit, or the augment
+          // mod that donated it), not the anchor — it is the tick of the
+          // nextId clock at which this static started applying, which is what
+          // layer 2 sorts by.
+          if (mod.affects(this, anchor, target)) out.push({ holder: anchor, from: holder.card, srcId: holder.id, mod });
         }
       }
     } finally { this.inStatics = false; }
     return out;
   }
 
-  /** layers 1-2: the printed/token stats, or the base somebody rewrote */
+  /**
+   * LAYERS 1-2: what the numbers on this card SAY right now.
+   *
+   * Layer 1 is what was printed (or, for a token, what it was created as).
+   * Layer 2 is every effect that REWRITES that number rather than adjusting
+   * it, and it comes from two places that have to be resolved together:
+   *   - `Entity.baseSet`, an until-regroup stamp left by a one-shot ("becomes
+   *     a base 4/4" — Formless, Unstable Refactor, Celestial Shifter, Floral
+   *     Singularity; "exchange the base stats" — Body Swap);
+   *   - `StaticMod.baseP`/`baseT`, radiating continuously for as long as its
+   *     source is in play ("Your units are base 3/3" — Aberrant Statweaver).
+   *
+   * They resolve LAST-WINS, never by summing: each one replaces the number,
+   * so two of them on one unit leave it on the later one's value and two
+   * copies of the SAME one leave it exactly where one copy would. Timestamps
+   * come from the shared nextId clock — the stamp's `baseSetSeq`, and for a
+   * static the id of the entity carrying the text (so a Statweaver played
+   * after a Formless overrides it, and before it does not).
+   *
+   * Layer 3 (counters, temp deltas, +X/+X statics) then applies ON TOP.
+   *
+   * Reentrancy: called from inside a static callback the guard hides the
+   * continuous half, so only the stamp applies — the same shallow answer
+   * dp/dt already gets, and the reason baseP/baseT must not call back in.
+   */
   baseStatsOf(e: Entity): [number, number] {
-    if (e.baseSet) return [e.baseSet[0], e.baseSet[1]];        // layer 2
+    return this.baseWith(e, this.staticsFor(e));
+  }
+  /** baseStatsOf against an ALREADY-COLLECTED static list, so effStats scans
+   * the board once for layers 2 and 3 instead of twice. */
+  private baseWith(e: Entity, statics: ReturnType<E['staticsFor']>): [number, number] {
     const c = this.card(e.card);
-    return e.tokenStats ?? [c.power, c.toughness];             // layer 1
+    let [p, t] = e.tokenStats ?? [c.power, c.toughness];       // layer 1
+    // layer 2: collect the rewrites, then apply them in timestamp order
+    let rewrites: { seq: number; p?: number; t?: number }[] | undefined;
+    for (const { holder, srcId, mod } of statics) {
+      if (mod.baseP === undefined && mod.baseT === undefined) continue;
+      (rewrites ??= []).push({
+        seq: srcId,
+        p: typeof mod.baseP === 'function' ? mod.baseP(this, holder, e) : mod.baseP,
+        t: typeof mod.baseT === 'function' ? mod.baseT(this, holder, e) : mod.baseT,
+      });
+    }
+    if (e.baseSet) (rewrites ??= []).push({ seq: e.baseSetSeq ?? 0, p: e.baseSet[0], t: e.baseSet[1] });
+    if (rewrites) {
+      if (rewrites.length > 1) rewrites.sort((a, b) => a.seq - b.seq);
+      for (const r of rewrites) {
+        if (r.p !== undefined) p = r.p;
+        if (r.t !== undefined) t = r.t;
+      }
+    }
+    return [p, t];
   }
 
   effStats(e: Entity): [number, number] {
-    const base = this.baseStatsOf(e);                          // layers 1-2
+    const statics = this.staticsFor(e);                        // one scan, two layers
+    const base = this.baseWith(e, statics);                    // layers 1-2
     let p = base[0]! + e.counters + e.tempPower;               // layer 3
     let t = base[1]! + e.counters + e.tempToughness;
-    for (const { holder, mod } of this.staticsFor(e)) {        // layer 3: continuous projections
+    for (const { holder, mod } of statics) {                   // layer 3: continuous projections
       p += typeof mod.dp === 'function' ? mod.dp(this, holder, e) : (mod.dp ?? 0);
       t += typeof mod.dt === 'function' ? mod.dt(this, holder, e) : (mod.dt ?? 0);
     }
@@ -485,6 +537,11 @@ export class E {
     from: CardName; holder: EntityId;
     dp: number; dt: number; attrs: string[];
     suppressAttrs: boolean; suppressAbilities: boolean;
+    /** LAYER 2: this static REWRITES the base rather than adjusting it, and
+     * these are the numbers it writes (absent = it leaves that half alone).
+     * A base-setter's dp/dt really are 0, so the text box has to credit it
+     * from here or it would print nothing at all. */
+    baseP?: number; baseT?: number;
   }[] {
     return this.staticsFor(e).map(({ holder, from, mod }) => ({
       from, holder: holder.id,
@@ -493,6 +550,10 @@ export class E {
       attrs: [...(mod.attrs ?? [])],
       suppressAttrs: !!mod.suppressAttrs,
       suppressAbilities: !!mod.suppressAbilities,
+      ...(mod.baseP !== undefined
+        ? { baseP: typeof mod.baseP === 'function' ? mod.baseP(this, holder, e) : mod.baseP } : {}),
+      ...(mod.baseT !== undefined
+        ? { baseT: typeof mod.baseT === 'function' ? mod.baseT(this, holder, e) : mod.baseT } : {}),
     }));
   }
 
@@ -1227,11 +1288,17 @@ export class E {
    * instead of stacking with it, and layer-3 changes (counters, temp deltas, a
    * lord's static) keep applying on top. Doing this with addTemp is how
    * Formless turned a Body-Swapped 2/1 into a 6/9 (playtest 2026-08-20).
+   *
+   * The stamp is timestamped off the nextId clock so baseStatsOf can resolve
+   * it last-wins against the CONTINUOUS base-setters (Aberrant Statweaver's
+   * "your units are base 3/3"), which live on StaticMod instead.
    */
   setBase(target: Entity, p: number, t: number): void {
     target.baseSet = [p, t];
+    target.baseSetSeq = this.s.nextId++;
     this.ev('statChanged', `${target.card}'s base becomes ${p}/${t} until regroup.`,
       { unit: target.id, baseP: p, baseT: t });
+    this.checkDeaths();   // a base 0 defense is lethal, exactly as counters are
   }
 
   /** grant an attribute until regroup (cleared with temp stats, R11 step 3) */
@@ -1722,7 +1789,7 @@ export class E {
    * measured from, never the chooser's (R58). `sourceId`, when given, is the
    * entity the effect comes from, for restrictions that read it.
    */
-  targetCandidates(spec: TargetSpec, region: number, excludeStackId?: number, ally?: Seat, sourceId?: EntityId, x?: number, chosen?: ResolvedTarget[]): TargetRef[] {
+  targetCandidates(spec: TargetSpec, region: number, excludeStackId?: number, ally?: Seat, sourceId?: EntityId, x?: number, chosen?: ResolvedTarget[], event?: EngineEvent | null): TargetRef[] {
     const out: TargetRef[] = [];
     if (spec.what === 'unit' || spec.what === 'any' || spec.what === 'allyUnit'
       || spec.what === 'enemyUnit' || spec.what === 'token') {
@@ -1740,7 +1807,10 @@ export class E {
         out.push({ unit: t.id });
       }
     }
-    if (spec.what === 'any' || spec.what === 'opponent') {
+    // R67: 'player' is "target player" with no ownership clause — you are a
+    // legal target for your own (Soul Siphon's X is the life SOME player lost,
+    // and aiming it at yourself is a real, if usually bad, choice).
+    if (spec.what === 'any' || spec.what === 'opponent' || spec.what === 'player') {
       for (const seat of this.s.regions[region]!.presentSeats) {
         if (spec.what === 'opponent' && seat === ally) continue;
         out.push({ player: seat });
@@ -1801,6 +1871,7 @@ export class E {
       ...(ally !== undefined ? { ally } : {}), region,
       ...(sourceId !== undefined ? { sourceId } : {}), ...(x !== undefined ? { x } : {}),
       ...(chosen ? { chosen } : {}),
+      ...(event !== undefined ? { event } : {}),   // R67: "that player's bin"
     };
     const kept = cands.filter(ref => {
       const t = this.resolveTargetRef(ref);
@@ -1894,7 +1965,8 @@ export class E {
       specForSlot(def.targets, ti), item.region, item.id, item.controller, item.sourceId,
       part.costPaid?.x ?? item.x,
       part.targets.filter((_, i) => i !== ti)
-        .map(t => this.resolveTargetRef(t)).filter((t): t is ResolvedTarget => t !== null));
+        .map(t => this.resolveTargetRef(t)).filter((t): t is ResolvedTarget => t !== null),
+      item.event);   // R67: a redirect must judge the slot the same way the collector did
     return cands.some(c => JSON.stringify(c) === key);
   }
   /**
@@ -2566,7 +2638,7 @@ export class E {
         const already = part.targets
           .map(t => this.resolveTargetRef(t)).filter((t): t is ResolvedTarget => t !== null);
         const cands = this.targetCandidates(slot, item.region, item.id, item.controller,
-          item.sourceId, part.costPaid?.x ?? item.x, already)
+          item.sourceId, part.costPaid?.x ?? item.x, already, item.event)
           .filter(c => !chosen.has(JSON.stringify(c)));
         if (!cands.length) {
           // R64: nothing legal to aim at. The part is skipped at resolution
@@ -3573,6 +3645,7 @@ export class E {
     for (const e of Object.values(this.s.entities)) {
       e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs;
       delete e.baseSet;      // layer 2 is an until-regroup rewrite too
+      delete e.baseSetSeq;
       delete e.suppressed;   // R62: so is a switched-off attribute/ability layer
       delete e.granted;      // R63: and so is granted text
     }

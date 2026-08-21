@@ -354,9 +354,10 @@ card('Abduct', {
 // "/[Create X 1/1 units {i1}or your units become base X/X until regroup]."
 // — ggm/X 2/2 Cosmic Flower Spell (deploy timing). X is chosen and paid AT
 // CAST (R35). Modal: the caster picks. Created UNITS arrive in the
-// controller's HOME region (R28). "Become base X/X" is the temp-stat
-// approximation (header), applied to your units in the resolution region
-// (R12).
+// controller's HOME region (R28). "Become base X/X" is a layer-2 REWRITE
+// (E.setBase) of every one of your units in the resolution region (R12) —
+// counters and other layer-3 changes keep applying on top, and X = 0 defense
+// kills anything that is not propped up (E.setBase runs the death check).
 card('Floral Singularity', {
   spellEffect: {
     run: (g, ctx) => {
@@ -377,11 +378,9 @@ card('Floral Singularity', {
         }
         return;
       }
-      for (const u of g.unitsOf(ctx.controller, ctx.region).slice()) {
-        const c = getCard(u.card);
-        const base = u.tokenStats ?? [c.power, c.toughness];
-        g.addTemp(u, x - base[0]!, x - base[1]!);
-      }
+      // layer 2, not a delta: every one of your units IS base X/X now,
+      // whatever it was printed as and whatever else rewrote it earlier
+      for (const u of g.unitsOf(ctx.controller, ctx.region).slice()) g.setBase(u, x, x);
     },
   },
 });
@@ -634,22 +633,17 @@ card('Mindwarp Sporefrog', {
     label: 'target opponent gains control of me (you were dealt combat damage)',
     when: (g, self, ev) => ev.data?.why === 'combat' && ev.data?.seat === self.controller,
     effect: {
+      // R67: "target opponent" is a DECLARED target, chosen as the trigger
+      // goes on the stack. 'opponent' is measured from the EFFECT's
+      // controller (R58), which is the Sporefrog's controller — the seat
+      // about to give it away — so the kind already excludes them.
+      targets: { what: 'opponent', prompt: 'Mindwarp Sporefrog: target opponent gains control of me' },
       run: (g, ctx) => {
         const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
         if (!self) return;
-        const opps = (g.s.regions[ctx.region]?.presentSeats ?? [])
-          .filter(s => s !== self.controller) as Seat[];
-        if (!opps.length) {
-          const any = g.s.players.map(p => p.seat).find(s => s !== self.controller);
-          if (any !== undefined) opps.push(any);
-        }
-        if (!opps.length) return;
-        const opp = opps.length === 1 ? opps[0]! : ctx.choose('opp', {
-          kind: 'electricPath', seat: self.controller,
-          prompt: `Mindwarp Sporefrog: which opponent gains control of ${self.card}?`,
-          options: opps.map(s => ({ label: g.pname(s), value: s })),
-        }) as Seat;
-        takeControl(g, self, opp);
+        const t = ctx.targets[0];
+        if (!t || !('player' in t)) return;
+        takeControl(g, self, t.player);
       },
     },
   }],

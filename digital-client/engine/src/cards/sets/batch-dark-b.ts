@@ -437,28 +437,33 @@ card('Hooba-Mon', {
     type: 'triggered', events: ['attacked'], self: true,
     label: 'you may exchange me for a unit in your bin with cost 3 or less',
     effect: {
+      // R67: "target unit in your bin with cost 3 or less" is a DECLARED
+      // target, chosen as the trigger goes on the stack (R64's 'binCard' plus
+      // its restriction seam) rather than mid-resolution. min 0 is the "you
+      // may": declining is choosing nothing. A SPELL UNIT counts as a unit for
+      // bin purposes (it spawns its body) — the convention every other bin
+      // search in the expansion uses.
+      targets: {
+        what: 'binCard', min: 0,
+        prompt: 'Hooba-Mon: exchange me for target unit in your bin with cost 3 or less',
+        restrict: (_g, t) => 'binCard' in t
+          && isUnitCard(t.binCard.card) && manaOf(t.binCard.card) <= 3,
+      },
       run: (g, ctx) => {
         const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
         if (!self) return;
-        const bin = g.player(ctx.controller).bin;
-        const opts = bin
-          .map((name, i) => ({ name, i }))
-          // a SPELL UNIT is a unit for bin purposes too (it spawns its body) —
-          // the convention every other bin search in the expansion uses
-          .filter(o => isUnitCard(o.name) && manaOf(o.name) <= 3);
-        if (!opts.length) { g.ev('info', 'Hooba-Mon: no unit with cost 3 or less in your bin.'); return; }
-        const pick = ctx.choose('hooba', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: `Hooba-Mon: exchange ${self.card} for a unit in your bin with cost 3 or less?`,
-          options: [
-            ...opts.map(o => ({ label: o.name, value: o.i, card: o.name })),
-            { label: 'decline', value: -1 },
-          ],
-        }) as number;
-        if (pick < 0) return;
-        const name = bin[pick];
+        const t = ctx.targets[0];
+        if (!t || !('binCard' in t) || t.binCard.index === -1) {
+          // the "you may" is min 0, so an empty menu and a decline both land
+          // here — only the first of those is worth explaining ("why did
+          // nothing happen?"), so it is checked rather than assumed
+          if (!g.player(ctx.controller).bin.some(n => isUnitCard(n) && manaOf(n) <= 3)) {
+            g.ev('info', 'Hooba-Mon: no unit with cost 3 or less in your bin.');
+          }
+          return;
+        }
+        const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
         if (name === undefined) return;
-        bin.splice(pick, 1);
         exchangeInPlace(g, self, name, ctx.controller);
       },
     },

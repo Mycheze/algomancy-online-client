@@ -348,8 +348,13 @@ test('Hooba-Mon: attacking may exchange it for a cheap unit in your bin', () => 
   h.state.players[A]!.bin.push('Unit Token');              // a [0] unit — cost ≤ 3
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[hooba]] });
+  // R67: the bin unit is a DECLARED target, so it is chosen while the trigger
+  // is still being cast — before it reaches the stack, not once it resolves
+  assert.equal(h.state.decision!.kind, 'targets');
+  assert.equal(h.state.stack.length, 0, 'targets come first: nothing on the stack yet');
+  pickRef(h, { bin: { seat: A, card: 'Unit Token' } });
   assert.equal(h.state.stack.length, 1, 'the attack trigger uses the stack (battle timing)');
-  resolveAll(h, o => o.label === 'Unit Token');
+  resolveAll(h);
   assert.equal(entsNamed(h, 'Hooba-Mon').length, 0, 'Hooba-Mon left play…');
   assert.ok(h.state.players[A]!.bin.includes('Hooba-Mon'), "…into its owner's bin");
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 1,

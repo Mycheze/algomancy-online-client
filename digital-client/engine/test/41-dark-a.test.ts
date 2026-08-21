@@ -290,9 +290,12 @@ test('Nothyr: "Discard me" in battle → its trash trigger negates a nonspell ef
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Nothyr'), mode: 'discardMe' });
   assert.ok(h.state.players[D]!.bin.includes('Nothyr'), 'the cost discarded it — a trash (R40)');
   assert.equal(h.q.openMana(D), 0, 'and the [2] was paid');
-  pass(h); pass(h);                                     // resolve Nothyr's trigger
+  // R67: the negate names its victim as the trigger goes on the stack, while
+  // there is still a window to respond — not once it is already resolving
+  assert.equal(h.state.decision!.kind, 'targets');
   assert.equal(h.state.decision!.seat, D);
-  pick(h, krakenItem);
+  pick(h, { stack: krakenItem });
+  pass(h); pass(h);                                     // resolve Nothyr's trigger
   assert.ok(h.log.some(l => l.includes('is negated')), 'the triggered effect is negated');
   pass(h); pass(h);                                     // the negated trigger does nothing
   assert.ok(ent(h, dTok), 'the token was never recalled');

@@ -129,10 +129,12 @@ test("Blight's End: augments a Wraith (R47) onto X target units, enemies include
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });   // both units now in region 1
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, "Blight's End") });
   pick(h, 2);                                                  // X = 2, paid at cast (R35)
+  // R67: the X hosts are DECLARED targets, chosen at CAST — X is settled
+  // first, so the collector knows to ask for exactly two of them
+  pick(h, { unit: mine });
+  pick(h, { unit: theirs });
+  assert.equal(h.state.stack.length, 1, 'only now is it on the stack, fully aimed');
   pass(h); pass(h);                                            // resolve
-  pick(h, mine);                    // ⚠ hosts are picked at RESOLUTION, not at cast
-  // the second pick is forced (only the ENEMY unit is left) and auto-resolves
-  assert.equal(h.state.decision, null, 'a forced pick is not asked');
   for (const id of [mine, theirs]) {
     const mods = ent(h, id)!.mods.map(m => ent(h, m)!);
     assert.equal(mods.length, 1, 'exactly one mod landed');

@@ -155,8 +155,17 @@ hotseat UI doubles as the network client (`?ws=1&room=CODE&seat=0`). See
 ## Still cut (parked, not forgotten)
 
 - Stat layers 5-6 (Inverted/Unaware) — the seam is in `effStats`, no pool card
-  needs them; R10 is a `todo` test. (Layers 1-4 are all live: layer 2, base
-  stats, arrived with Formless and Body Swap.)
+  needs them; R10 is a `todo` test. (Layers 1-4 are all live. Layer 2, base
+  stats, arrived with Formless and Body Swap as an until-regroup stamp, and
+  R66 gave it its continuous half — `StaticMod.baseP`/`baseT`, so Aberrant
+  Statweaver's "your units are base 3/3" replaces the numbers instead of
+  handing a delta to layer 3.)
+- A true power/defense SWITCH (Invasive Reassignment) — done as a delta off the
+  effective stats at resolution, which is right until something changes the two
+  numbers asymmetrically afterwards. The last approximation in the stat layers
+  (R66). Parked on a RULING, not on a primitive: the Manual's six layers have
+  no switch in them ({Inverted} is a sign-flip, not a swap), so where it sits
+  is an open question rather than something to guess.
 - Combat damage split is auto-assigned lethal front-to-back; voluntary
   over-assignment (R7) has no observable effect in this pool.
 - Burst tokens cast in deterministic id order rather than player-chosen order.
@@ -169,7 +178,10 @@ hotseat UI doubles as the network client (`?ws=1&room=CODE&seat=0`). See
   **targeting restrictions** (R64: `TargetSpec.restrict`, which also took
   Gatekeeper of Souls off the parked list) and the wider **cast-time cost**
   kinds (R64: `sacrificeUnits` / `removeCounters` / `eraseBin`, and `n: 'X'`
-  for all of them).
+  for all of them). R67 then spent those seams: eleven cards that printed
+  "target" but re-derived it mid-resolution now declare it and are aimed in
+  the cast window, and `what: 'player'` / `TargetCtx.event` were added for the
+  last two of them.
 - A *consumable* cost modifier (Deferral Drone). The continuous one is done in
   both currencies: mana (R59) and life (R60).
 
