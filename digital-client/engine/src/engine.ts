@@ -2155,8 +2155,17 @@ export class E {
         });
       this.fireEvent('spellPlayed', ev);
     }
-    if (then === 'push') this.pushItem(item);
-    else { this.resolveItem(item); this.settle(); }
+    if (then === 'push') { this.pushItem(item); return; }
+    // Nobody may respond to this one — the haste step, deployment, an
+    // activation outside battle, a trigger between combat sub-steps. It goes
+    // straight from wherever it was to done, which on screen is no journey at
+    // all ("very hard to track"). The client is handed the item as it stood a
+    // moment before resolution so it can show it on the stack anyway; see
+    // ui/flash.ts. Snapshotted because resolveParts is about to mark parts
+    // spent under it. No log line, no listeners: rules-inert.
+    this.ev('stackFlash', '', { item: structuredClone(item) });
+    this.resolveItem(item);
+    this.settle();
   }
 
   resolveTop(): void {

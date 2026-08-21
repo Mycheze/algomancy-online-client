@@ -34,10 +34,13 @@ export function motionOn(): boolean {
   return !reduced();
 }
 export function setMotionOn(on: boolean): void { localStorage.setItem(PREF, on ? '1' : '0'); }
-/** Targeting arrows are STATIC, so prefers-reduced-motion has no business
- * turning them off — they are the clarity half of this feature. Only an
- * explicit "motion: off" hides them. */
-export function arrowsOn(): boolean { return localStorage.getItem(PREF) !== '0'; }
+/** The CLARITY half of the feature — targeting arrows, which are static, and
+ * the beat an unrespondable effect gets on the visual stack (ui/flash.ts),
+ * which is information rather than decoration. prefers-reduced-motion has no
+ * business turning either off; only an explicit "motion: off" hides them. (The
+ * beat's own arrival animation IS dropped by the media query in style.css.) */
+export function clarityOn(): boolean { return localStorage.getItem(PREF) !== '0'; }
+export const arrowsOn = clarityOn;
 
 // ── tuning ────────────────────────────────────────────────────────────
 const FLIP_MS = 200;

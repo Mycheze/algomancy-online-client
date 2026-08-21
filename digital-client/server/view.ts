@@ -143,7 +143,9 @@ export function redactEvent(ev: EngineEvent, seat: Seat, names: string[]): Engin
   return ev;
 }
 
-/** Redacted log lines for `seat` from the full event history. */
+/** Redacted log lines for `seat` from the full event history. Events with an
+ * empty message ('stackFlash', a signal for the client's visual stack) are not
+ * log lines and are dropped here, exactly as the hotseat Harness drops them. */
 export function redactLog(events: EngineEvent[], seat: Seat, names: string[]): string[] {
-  return events.map(e => redactEvent(e, seat, names).msg);
+  return events.filter(e => e.msg).map(e => redactEvent(e, seat, names).msg);
 }

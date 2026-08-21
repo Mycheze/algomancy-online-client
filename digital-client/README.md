@@ -26,6 +26,7 @@ games rather than from reading the rulebook.
 | [docs/08-light-and-dark.md](docs/08-light-and-dark.md) | the Light & Dark expansion: new attributes and mechanics, and what is still parked |
 | [docs/09-visual-clarification.md](docs/09-visual-clarification.md) | card-motion animations + targeting arrows: why a state-census diff rather than an event feed |
 | [docs/10-sound.md](docs/10-sound.md) | phase/priority cues and the idle thump: the one-cue rule, and staying silent on a resync |
+| [docs/11-stack-on-the-table.md](docs/11-stack-on-the-table.md) | the stack as overlapping cards on the field, and giving unrespondable effects a beat on it |
 | [docs/digital-rules.md](docs/digital-rules.md) | **the digital comprehensive rules** — R1-R61, every adjudication the engine forced, with its source |
 
 ## The engine

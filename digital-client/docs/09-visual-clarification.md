@@ -122,6 +122,15 @@ Flights default to **off** under `prefers-reduced-motion`; arrows do **not**, be
 are static and they are the clarity half of the feature. Only an explicit "motion: off"
 hides them.
 
+## What came after
+
+Round 8 took the other half of "hard to tell what's happening": the stack itself. It left the
+side rail and became overlapping card scans on the table, and effects that resolve with no
+response window — which never touch `GameState.stack`, so no census diff can see them — now
+get a beat on it anyway. See [11-stack-on-the-table.md](11-stack-on-the-table.md); the
+census-diff machinery below is unchanged, with the flashed items spliced into the "after"
+census so they fly like anything else.
+
 ## Known limits
 
 * Two copies of the same card in the same zone can be paired the wrong way round.

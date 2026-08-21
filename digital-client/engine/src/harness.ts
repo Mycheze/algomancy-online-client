@@ -9,6 +9,11 @@ import { E } from './engine.ts';
 export class Harness {
   state: GameState;
   log: string[] = [];
+  /** EventType per LOG LINE, index-aligned with `log`. Not the same list as
+   * `events`: an event with an empty message ('stackFlash' — a signal for the
+   * client, not a line for the reader) is absorbed but never logged, so the
+   * two arrays drifted apart the moment such an event existed. */
+  logTypes: (EngineEvent['type'] | undefined)[] = [];
   events: EngineEvent[] = [];
   actions: Action[] = [];
 
@@ -23,7 +28,11 @@ export class Harness {
 
   private absorb(events: EngineEvent[]): void {
     this.events.push(...events);
-    for (const ev of events) this.log.push(ev.msg);
+    for (const ev of events) {
+      if (!ev.msg) continue;   // a signal-only event is not a log line
+      this.log.push(ev.msg);
+      this.logTypes.push(ev.type);
+    }
   }
 
   /** apply an action; throws IllegalAction on a bad one (state unchanged) */

@@ -45,6 +45,16 @@ and how many rows each half of the battle line must reserve — tested in
 `test/55-ui-formation.test.ts`). Both halves of it are index arithmetic that a
 screenshot cannot check.
 
+The stack itself is on the table rather than in the side rail: `ui/flash.ts`
+(pure — which items are on the VISUAL stack right now, tested in
+`test/56-ui-flash.test.ts`) plus `stackBoardHtml()` in `ui/main.ts`. It draws
+the real stack as overlapping card scans, and mixes in the items that resolve
+with no response window (haste, deployment, triggers between combat sub-steps)
+so they get a beat on the stack instead of happening invisibly. The engine
+announces those as a silent, rules-inert `stackFlash` event. See
+[../docs/11-stack-on-the-table.md](../docs/11-stack-on-the-table.md); the
+`✨ motion` button turns the beat off with everything else.
+
 The sound layer follows the same split: `ui/sfx.ts` (pure state diff → at most
 one cue, tested in `test/54-ui-sfx.test.ts`) plus `ui/audio.ts` (WebAudio
 playback, the mix, and the idle timer). Samples are CC0 from Kenney's Interface

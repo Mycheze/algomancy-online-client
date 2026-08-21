@@ -394,7 +394,14 @@ export type EventType =
   // closing (before it is nulled and before the R44 prophecy sweep reads the
   // mana tally); 'startOfDeployment' fires AFTER R38's rot damage has settled.
   | 'endOfHaste' | 'startOfDeployment'
-  | 'regroup' | 'endOfTurn' | 'gameOver' | 'info';
+  | 'regroup' | 'endOfTurn' | 'gameOver' | 'info'
+  // CLIENT-ONLY, and the one event with no log line of its own (msg is ''):
+  // an item that resolved with no response window ever gets to sit on the
+  // stack, so the client would never see it there. This carries the whole
+  // StackItem, snapshotted the instant before it resolves, so ui/flash.ts can
+  // put it on the visual stack for a beat. Nothing in the rules reads it, and
+  // the empty message keeps it out of the game log (harness.ts / view.ts).
+  | 'stackFlash';
 
 /** Engine events double as the game log: every one carries a rendered message. */
 export interface EngineEvent {

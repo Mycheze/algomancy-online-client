@@ -15,17 +15,21 @@ import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts
 import type { GlossEntry } from './glossary.ts';
 import type { Census } from './motion.ts';
 import {
-  captureFrame, clearArrows, initAnim, motionOn, playMotion,
+  captureFrame, clarityOn, clearArrows, initAnim, motionOn, playMotion,
   setBaseArrows, setHoverArrows, setMotionOn,
 } from './anim.ts';
 import type { ArrowSpec } from './anim.ts';
 import { armsIdle, diffSfx, sfxSnap } from './sfx.ts';
 import type { SfxSnap } from './sfx.ts';
+import { nextFlashWake, pruneFlashes, queueFlashes, stackRows } from './flash.ts';
+import type { Flash } from './flash.ts';
 import {
   armIdle, disarmIdle, playCue, primeAudio, setSoundOn, soundOn,
 } from './audio.ts';
 import { E } from '../src/engine.ts';
-import type { Action, CachedCard, Entity, EntityId, EventType, GameState, Seat, TargetRef } from '../src/types.ts';
+import type {
+  Action, CachedCard, EngineEvent, Entity, EntityId, EventType, GameState, Seat, StackItem, TargetRef,
+} from '../src/types.ts';
 import * as acct from './account.ts';
 import * as lob from './lobby.ts';
 import * as pg from './postgame.ts';
@@ -127,7 +131,7 @@ class NetBackend implements Backend {
   }
   private onMsg(m: {
     t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
-    events?: { msg: string; type?: EventType }[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
+    events?: EngineEvent[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
     clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby }; names?: [string, string];
     trio?: lob.TrioReveal;
     cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
@@ -188,16 +192,33 @@ class NetBackend implements Backend {
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? this.peers; render(); return; }
       if (m.view) { this.state = m.view; this.building = null; }   // a real action supersedes
       if (m.log) { this.log = m.log; this.logTypes = m.log.map(() => undefined); }   // full resync (undo shrank it)
-      if (m.events) for (const e of m.events) { this.log.push(e.msg); this.logTypes.push(e.type); }
+      if (m.events) {
+        // a signal-only event ('stackFlash') is not a log line — same rule the
+        // hotseat Harness and the server's redactLog follow, and the reason
+        // logTypes can stay index-aligned with the log
+        for (const e of m.events) {
+          if (!e.msg) continue;
+          this.log.push(e.msg);
+          this.logTypes.push(e.type);
+        }
+      }
       if (m.legal) this.legal = m.legal;
       if (m.peers) this.peers = m.peers;
       // deploy-end reveal: what the opponent secretly did during deployment.
       // Only worth an interstitial when there's more than the bare "is done
       // deploying" line. The state underneath applies normally — only the
-      // view is gated behind the overlay's Continue button.
-      if (m.reveal && m.reveal.some(ev => !/is done deploying/i.test(ev.msg))) {
-        pendingReveal = m.reveal.map(ev => ev.msg);
+      // view is gated behind the overlay's Continue button. Signal-only events
+      // ('stackFlash') carry no line and are not part of the reveal.
+      const told = m.reveal?.filter(ev => ev.msg) ?? [];
+      if (told.some(ev => !/is done deploying/i.test(ev.msg))) {
+        pendingReveal = told.map(ev => ev.msg);
       }
+      // The beats belong to the board, and behind the reveal overlay nobody is
+      // looking at the board — so a reveal holds them until you close it. That
+      // is also when they mean something: the reveal is the moment you find
+      // out the opponent deployed anything at all.
+      if (pendingReveal) heldFlashes.push(...(m.events ?? []));
+      else absorbFlashes(m.events ?? []);
       render(); return;
     }
     if (m.t === 'kicked') {
@@ -347,7 +368,70 @@ const resetUi = () => {
   snaps = [];
   motionReset();
   sfxReset();
+  flashReset();
 };
+
+// ── the visual stack's flash queue (ui/flash.ts) ──────────────────────
+//
+// Items that resolve with no response window never touch state.stack, so the
+// board could never show them there. The engine announces each one as a silent
+// 'stackFlash' event; the queue below decides when each gets its beat, and
+// stackBoardHtml draws them alongside whatever is really on the stack.
+
+/** items having (or waiting for) their beat on the visual stack */
+let flashQueue: Flash[] = [];
+/** beats parked behind the deploy-end reveal overlay (see NetBackend.onMsg) */
+let heldFlashes: EngineEvent[] = [];
+/** the pending repaint that ends the current beat */
+let flashTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Drop the queue. Called wherever motionReset() is, and for the same reason:
+ * a state that arrives WHOLESALE (a fresh join, a resync, an undo's replay) is
+ * not something somebody just did, and must not replay old beats. */
+function flashReset(): void {
+  flashQueue = [];
+  heldFlashes = [];
+  if (flashTimer !== null) { clearTimeout(flashTimer); flashTimer = null; }
+}
+
+/** the reveal overlay closed — play the beats it was standing in front of */
+function releaseHeldFlashes(): void {
+  if (!heldFlashes.length) return;
+  const held = heldFlashes;
+  heldFlashes = [];
+  absorbFlashes(held);
+}
+
+/** Fold one action's events into the queue. Gated on clarityOn() rather than
+ * motionOn(): a beat is the only chance to SEE an unrespondable effect, so
+ * prefers-reduced-motion must not silently delete it — an explicit
+ * "motion: off" does. */
+function absorbFlashes(events: readonly EngineEvent[]): void {
+  if (!clarityOn()) return;
+  flashQueue = queueFlashes(flashQueue, events, Date.now());
+}
+
+/** Book the repaint that starts the next beat (or ends the last one). */
+function scheduleFlashWake(): void {
+  if (flashTimer !== null) { clearTimeout(flashTimer); flashTimer = null; }
+  const now = Date.now();
+  flashQueue = pruneFlashes(flashQueue, now);
+  const at = nextFlashWake(flashQueue, now);
+  if (at === null) return;
+  flashTimer = setTimeout(() => { flashTimer = null; render(); }, Math.max(16, at - now));
+}
+
+/** the rows on the visual stack right now: the real stack, then the beats */
+const visualStack = (): ReturnType<typeof stackRows> =>
+  stackRows(h.state.stack, flashQueue, Date.now());
+
+/** A stack item by id, flashed ones included — the focus viewer, the arrows
+ * and the target labels all address items by id and must not go blank the
+ * moment an item's beat is the only reason it is on screen. */
+function stackItemById(id: number): StackItem | undefined {
+  return h.state.stack.find(i => i.id === id)
+    ?? visualStack().find(r => r.item.id === id)?.item;
+}
 
 const $app = document.getElementById('app')!;
 const esc = (s: unknown) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -448,14 +532,15 @@ function act(a: Action): void {
   }
   snaps.push({ state: structuredClone(h.state), logLen: h.log.length, actionsLen: (h as Harness).actions.length });
   if (snaps.length > 60) snaps.shift();
+  const local = h as Harness;   // past the NET guard above, h is the Harness
   try {
-    h.do(a);
+    absorbFlashes(local.do(a));
     // local mode: drain forced steps (empty boards attack/block by themselves;
     // the server does the same for network games)
     for (let g = 0; g < 8; g++) {
       const f = forcedAction(h.state);
       if (!f) break;
-      h.do(f);
+      absorbFlashes(local.do(f));
     }
     uiError = '';
   } catch (err) {
@@ -1773,12 +1858,13 @@ function promptHtml(): string {
 }
 
 // ── game log styling ──────────────────────────────────────────────────
-/** EventType per log line, index-aligned with `h.log`. Hotseat reads the
- * Harness's parallel event list (absorb() pushes both in lockstep); network
- * mode reads the types the server attached to each pushed event. */
+/** EventType per log line, index-aligned with `h.log`. Both sides keep a
+ * parallel array rather than indexing the event list, because not every event
+ * is a log line: a signal-only event ('stackFlash') is absorbed and never
+ * printed, so the two lists drift. */
 function logTypeAt(i: number): EventType | undefined {
   if (NET) return NET.logTypes[i];
-  return (h as Harness).events[i]?.type;
+  return (h as Harness).logTypes[i];
 }
 /** The event types that earn their own colour in the log. Everything else
  * keeps the default dim line — the point is that the Light & Dark bookkeeping
@@ -1800,7 +1886,7 @@ const LOG_EVENT_CLASS: Partial<Record<EventType, string>> = {
  * which is the whole point for a graft stack (Manual p.33: they resolve as one
  * composed ability, and you need to see the composition). */
 function previewStackHtml(id: number): string {
-  const it = h.state.stack.find(i => i.id === id);
+  const it = stackItemById(id);
   if (!it) return '';
   const rows = stackAbilityRows(it).map(t => {
     const tag = t.graft ? `${txtIcon('graft', '[Switch]')} ${esc(t.source)}` : esc(t.source);
@@ -1808,43 +1894,109 @@ function previewStackHtml(id: number): string {
   }).join('');
   const targets = it.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
   const composed = it.parts.filter(p => !p.spent).length > 1;
+  // {Modular}: mods applied as the card was PLAYED ride on the stack with it
+  // (Caleb 2025-02-07). The label names them, but the label is one line of
+  // text — the chips make them the separate, hoverable cards they are.
+  const mods = it.mods ?? [];
+  const modChips = mods.length
+    ? `<div class="stackmods">${mods.map(m =>
+        `<span class="badge mod" data-prev="${esc(m.card)}">${txtIcon('graft', '[Switch]')}${esc(m.card)}
+          <span class="modfrom">from ${esc(m.from)}</span></span>`).join('')}</div>`
+    : '';
   return `${it.card ? `<img src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
     <div class="abilitybox">
-      <div class="abhead">${esc(it.kind)}${composed ? ' — resolves as ONE composed ability' : ''}</div>
+      <div class="abhead">${esc(STACK_KIND[it.kind] ?? it.kind)}${composed ? ' — resolves as ONE composed ability' : ''}</div>
       ${rows || `<div class="hint">${iconizeText(it.label)}</div>`}
+      ${modChips}
       ${targets ? `<div class="abtargets">→ ${targets}</div>` : ''}
       ${it.negated ? '<div class="abneg">negated — it will do nothing</div>' : ''}
     </div>`;
 }
 
-function stackHtml(): string {
-  const items = [...h.state.stack].reverse().map(it => {
-    const targets = it.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
-    // {Modular}: mods applied as the card was PLAYED ride on the stack with it
-    // (Caleb 2025-02-07). it.label already names them, but the label is one
-    // line of text — the mods get their own scans + chips so they read as the
-    // separate cards they are, and can be hovered/right-clicked like any card.
+/** StackItem.kind, in words a player uses. The engine's names are internal
+ * ('spellUnit', 'triggered'), and the tag under a stack card is two words of
+ * space. */
+const STACK_KIND: Record<string, string> = {
+  unit: 'unit', spell: 'spell', spellUnit: 'spell unit', spellToken: 'token',
+  virus: 'virus', triggered: 'trigger', activated: 'ability', ambush: 'ambush',
+};
+
+/**
+ * The stack, ON THE TABLE, as cards.
+ *
+ * Playtest 2026-08-21: "the effects go on as list items… it would be better to
+ * have a little horizontal stack using actual visual cards, slightly
+ * overlapping, on the field". So this is a strip of real card scans between
+ * the two regions — the middle of the table, where you are already looking —
+ * rather than a bulleted list off in the side rail. Cards overlap left to
+ * right in the order they went on, so the newest is on top and on the right,
+ * which is also the one that resolves next.
+ *
+ * The rows come from ui/flash.ts, which mixes in items that resolved with no
+ * response window and so never touched state.stack at all. Those are drawn as
+ * cards like any other, marked as already-resolved, for one beat each.
+ */
+function stackBoardHtml(): string {
+  const rows = visualStack();
+  if (!rows.length) {
+    return `<div class="stackboard" data-animzone="stack">
+      <div class="stackempty">stack — empty</div></div>`;
+  }
+  // Only the RIGHTMOST card wears a floating chip: every other card is
+  // overlapped from the right by its neighbour, which would eat the label.
+  // The buried ones say what they are in their own tag instead.
+  const last = rows.length - 1;
+  const cards = rows.map((r, i) => {
+    const it = r.item;
     const mods = it.mods ?? [];
-    const modChips = mods.length
-      ? `<div class="stackmods">${mods.map(m =>
-          `<span class="badge mod" data-prev="${esc(m.card)}">${txtIcon('graft', '[Switch]')}${esc(m.card)}
-            <span class="modfrom">from ${esc(m.from)}</span></span>`).join('')}</div>`
-      : '';
-    const modThumbs = mods.map(m =>
-      `<img class="stackthumb modthumb" src="${art(m.card)}" alt="" data-prev="${esc(m.card)}" onerror="this.style.display='none'">`).join('');
     // a modular item's extra parts ARE its mods' [Switch] effects — don't
     // double-count them as "grafted parts"
     const extraParts = it.parts.length - 1 - mods.length;
-    return `<div class="stackitem ${it.negated ? 'negated' : ''} ${isCandidate({ stack: it.id }) ? 'candidate' : ''}"
-      data-act="stackitem" data-id="${it.id}" data-prevstack="${it.id}" data-anim="s${it.id}">
-      ${it.card ? `<img class="stackthumb" src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
-      ${modThumbs}
-      <div class="stackmain">${iconizeText(it.label)}${modChips}
-      <div class="by">${esc(h.state.players[it.controller]!.name)} · ${it.kind}${extraParts > 0 ? ` · ${extraParts + 1} grafted parts` : ''}${mods.length ? ` · ${mods.length} {Modular} mod${mods.length === 1 ? '' : 's'}` : ''}${targets ? ' → ' + targets : ''}</div></div>
+    const marks = [
+      r.flashing ? 'resolved' : '',
+      extraParts > 0 ? `${extraParts + 1}×` : '',
+      mods.length ? `${txtIcon('graft', '[Switch]')}${mods.length}` : '',
+    ].filter(Boolean).join(' · ');
+    const cls = [
+      'stackcard',
+      r.flashing ? 'flashing' : '',
+      r.top ? 'top' : '',
+      it.negated ? 'negated' : '',
+      isCandidate({ stack: it.id }) ? 'candidate' : '',
+      // whose it is, at a glance: net mode knows which seat is you, hotseat
+      // colours by seat number instead
+      NET ? (it.controller === NET.seat ? 'mine' : 'theirs') : `seat${it.controller}`,
+    ].filter(Boolean).join(' ');
+    const face = it.card
+      ? `<img src="${art(it.card)}" alt="" onerror="this.parentElement.classList.add('noart')">`
+      : '';
+    return `<div class="${cls}" style="z-index:${i + 1}"
+      data-act="stackitem" data-id="${it.id}" data-prevstack="${it.id}" data-anim="s${it.id}"
+      title="${esc(it.label)}">
+      ${face}<div class="stackface">${esc(it.card ?? it.label)}</div>
+      <div class="stacktag">${esc(STACK_KIND[it.kind] ?? it.kind)}${marks ? ` · ${marks}` : ''}</div>
+      ${i === last && r.flashing ? '<div class="stackbolt">resolved</div>' : ''}
+      ${i === last && r.top ? '<div class="stacknext">next</div>' : ''}
     </div>`;
   }).join('');
-  return `<div class="stackpanel" data-animzone="stack"><h3>Stack (top first)</h3>${items || '<div class="stackempty">empty</div>'}</div>`;
+  // one line of prose for the card that matters: what resolves next, or — when
+  // nothing is really on the stack — what just went off
+  const leadRow = rows.find(r => r.top) ?? rows[rows.length - 1]!;
+  const lead = leadRow.item;
+  const targets = lead.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
+  const who = h.state.players[lead.controller]?.name ?? '';
+  const verb = leadRow.flashing ? 'just resolved' : rows.length > 1 ? 'resolves next' : 'on the stack';
+  return `<div class="stackboard live" data-animzone="stack">
+    <div class="stackrow">${cards}</div>
+    <div class="stackcaption">
+      <span class="stackverb">${esc(verb)}</span>
+      ${iconizeText(lead.label)}
+      <span class="by">${esc(who)}${targets ? ` → ${esc(targets)}` : ''}</span>
+      ${rows.length > 1 ? `<span class="stackdepth">${rows.length} deep · resolves right to left</span>` : ''}
+    </div>
+  </div>`;
 }
+
 function tgtLabel(t: TargetRef): string {
   if ('unit' in t) return esc(h.state.entities[t.unit]?.card ?? 'gone');
   if ('player' in t) return esc(h.state.players[t.player]!.name);
@@ -1853,7 +2005,7 @@ function tgtLabel(t: TargetRef): string {
     const cc = (h.state.players[t.cached.seat]!.cache ?? []).find(c => c.uid === t.cached.uid);
     return esc(cc ? `${cc.card} (cache)` : 'gone');
   }
-  return esc(h.state.stack.find(i => i.id === t.stack)?.label ?? 'gone');
+  return esc(stackItemById(t.stack)?.label ?? 'gone');
 }
 
 function menuHtml(): string {
@@ -2064,9 +2216,9 @@ function ensureCounterPrefill(): void {
 }
 
 /** Scrollers whose position must survive a repaint. `.main` is the board
- * itself — the one the playtest report was about — and the other two are the
- * side rail's panels, which scroll independently of it. */
-const SCROLLERS = ['.main', '.side .preview', '.side .stackpanel'] as const;
+ * itself — the one the playtest report was about — and the focus viewer
+ * scrolls independently of it in the side rail. */
+const SCROLLERS = ['.main', '.side .preview'] as const;
 
 /** Paint the whole UI. Returns false when it painted something that is NOT a
  * board (connecting / lobby) — the motion layer uses that to drop its
@@ -2133,6 +2285,7 @@ function renderNow(): boolean {
       ${draftPanelHtml()}
       ${bottomPanelHtml()}
       ${regionPanelHtml(topSeat)}
+      ${stackBoardHtml()}
       ${battleHtml()}
       ${regionPanelHtml(botSeat, { omitHand: !!NET })}
     </div>
@@ -2157,7 +2310,6 @@ function renderNow(): boolean {
         </div>
       </div>
       <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
-      ${stackHtml()}
       <div class="logpanel" id="log"><h3>Game log</h3>${logItems}</div>
     </div>
     ${NET ? `<div class="handdock"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})</div>
@@ -2182,6 +2334,10 @@ function renderNow(): boolean {
   }
   const log = document.getElementById('log')!;
   log.scrollTop = log.scrollHeight;
+  // the stack strip sticks BELOW the sticky top bar rather than under it, and
+  // that bar's height depends on how much the prompt has to say
+  const topH = (document.querySelector('.stickytop') as HTMLElement | null)?.offsetHeight ?? 0;
+  $app.style.setProperty('--topbar-h', `${topH}px`);
   clampMenu();
   maybeAutopass();
   maybeAutoYield();
@@ -2264,6 +2420,30 @@ function soundPass(): void {
   if (NET && armsIdle(before, snap)) armIdle();
 }
 
+/**
+ * The census, plus the items having their beat on the visual stack.
+ *
+ * A flashed item is not in GameState anywhere — it already resolved — so
+ * ui/motion.ts cannot see it. Splicing it in here is what makes the card
+ * visibly LEAVE the hand (or leap off the unit whose trigger it is) and land
+ * on the stack, instead of the board simply being different afterwards.
+ *
+ * Prepended, because the pairing in diffCensus is greedy and stable: a haste
+ * card that goes hand → (stack) → bin has two equally plausible destinations
+ * born in the same render, and the stack is the one worth watching.
+ */
+function censusWithFlashes(s: GameState): Census {
+  const base = census(s);
+  const rows = visualStack().filter(r => r.flashing);
+  if (!rows.length) return base;
+  const phantom = rows.map(r => ({
+    key: `s${r.item.id}`, zone: 'stack' as const, seat: r.item.controller,
+    card: r.item.card ?? '', anchor: '@stack',
+    ...(r.item.sourceId !== undefined ? { origin: `e${r.item.sourceId}` } : {}),
+  }));
+  return { ...base, slots: [...phantom, ...base.slots] };
+}
+
 function render(): void {
   if (painting) { renderNow(); return; }
   painting = true;
@@ -2271,12 +2451,14 @@ function render(): void {
     const frame = captureFrame();
     const before = lastCensus;
     const painted = renderNow();
-    if (!painted) { lastCensus = null; clearArrows(); sfxReset(); return; }
-    const after = census(h.state);
+    if (!painted) { lastCensus = null; clearArrows(); sfxReset(); flashReset(); return; }
+    const after = censusWithFlashes(h.state);
     lastCensus = after;
     if (before) playMotion(frame, diffCensus(before, after));
     updateArrows();
     soundPass();
+    // a beat starts or ends at a known moment, so book the repaint for it
+    scheduleFlashWake();
   } finally { painting = false; }
 }
 
@@ -2286,7 +2468,7 @@ function render(): void {
 function targetSelectors(t: TargetRef): string[] {
   if ('unit' in t) return [`.card[data-anim="e${t.unit}"]`, `[data-anim="e${t.unit}"]`];
   if ('player' in t) return [`[data-animzone="life:${t.player}"]`];
-  if ('stack' in t) return [`.stackitem[data-anim="s${t.stack}"]`];
+  if ('stack' in t) return [`.stackcard[data-anim="s${t.stack}"]`];
   return [`[data-anim="c${t.cached.uid}"]`, `[data-animzone="cache:${t.cached.seat}"]`];
 }
 
@@ -2294,9 +2476,9 @@ function targetSelectors(t: TargetRef): string[] {
  * item) and everything it is pointed at (solid, out of the item). Spent parts
  * are skipped — they are the parts that will do nothing. */
 function stackArrows(id: number, cls: 'tgt' | 'soft'): ArrowSpec[] {
-  const it = h.state.stack.find(i => i.id === id);
+  const it = stackItemById(id);
   if (!it || it.negated) return [];
-  const self = [`.stackitem[data-anim="s${it.id}"]`];
+  const self = [`.stackcard[data-anim="s${it.id}"]`];
   const out: ArrowSpec[] = [];
   if (it.sourceId !== undefined) {
     out.push({ from: [`.card[data-anim="e${it.sourceId}"]`], to: self, cls: 'src' });
@@ -2372,7 +2554,7 @@ function hoverArrowsFor(target: HTMLElement): ArrowSpec[] | null {
   const me = `.card[data-anim="e${id}"]`;
   const out = h.state.stack.flatMap(it => stackArrows(it.id, 'tgt').filter(a => a.to[0] === me));
   for (const it of h.state.stack) {
-    if (it.sourceId === id) out.push({ from: [me], to: [`.stackitem[data-anim="s${it.id}"]`], cls: 'src' });
+    if (it.sourceId === id) out.push({ from: [me], to: [`.stackcard[data-anim="s${it.id}"]`], cls: 'src' });
   }
   return out.length ? out : null;
 }
@@ -2478,6 +2660,7 @@ function maybeAutoPassPref(): void {
 function renderConnecting(): void {
   motionReset();
   sfxReset();
+  flashReset();
   $app.classList.remove('board');
   // a refused join (a room code that names no game) lands here, so this screen
   // needs a way out — without the button it is a dead end you can only leave by
@@ -2554,6 +2737,7 @@ function importDeck(body: { url?: string; text?: string }, rerender: () => void)
 function renderHome(): void {
   motionReset();
   sfxReset();
+  flashReset();
   $app.classList.remove('board');
   // an open account screen (sign-in / profile) owns the page instead
   if (acct.screen()) { acct.renderScreen(); return; }
@@ -2611,6 +2795,7 @@ function renderHome(): void {
 function renderWaiting(): void {
   motionReset();
   sfxReset();
+  flashReset();
   $app.classList.remove('board');
   const net = NET!;
   const w = net.waiting!;
@@ -2875,7 +3060,7 @@ function handleButton(btn: HTMLElement): void {
     if (showSpentCache.has(p)) showSpentCache.delete(p); else showSpentCache.add(p);
     render(); return;
   }
-  if (b === 'motiontoggle') { setMotionOn(!motionOn()); motionReset(); render(); return; }
+  if (b === 'motiontoggle') { setMotionOn(!motionOn()); motionReset(); flashReset(); render(); return; }
   if (b === 'soundtoggle') {
     const on = !soundOn();
     setSoundOn(on);
@@ -2942,7 +3127,7 @@ function handleButton(btn: HTMLElement): void {
   }
   if (b === 'pg-reopen') { postGameHidden = false; render(); return; }
   if (b === 'trio-ok') { pendingTrio = null; render(); return; }
-  if (b === 'revealdone') pendingReveal = null;
+  if (b === 'revealdone') { pendingReveal = null; releaseHeldFlashes(); }
   if (b === 'donedeploy') {
     // playtest: don't let a paid-for prophecy or a glimpsed card die in the
     // cache because deployment is the one step you click through fast.
@@ -3447,7 +3632,7 @@ document.addEventListener('keydown', e => {
     if (helpOpen) { helpOpen = false; render(); return; }
     if (binView !== null) { binView = null; render(); return; }
     if (cacheView !== null) { cacheView = null; render(); return; }
-    if (pendingReveal) { pendingReveal = null; render(); return; }
+    if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); render(); return; }
     if (inField) return;
     if (ui.modding) { ui.modding = null; render(); return; }
     if (canCancelNow()) { startCastCancel(); render(); return; }
@@ -3507,7 +3692,7 @@ document.addEventListener('contextmenu', e => {
     const en = id !== undefined ? h.state.entities[id] : undefined;
     if (en && en.kind === 'unit') yid = en.id;
     else if (t.dataset['act'] === 'stackitem') {
-      const it = h.state.stack.find(i => i.id === Number(t.dataset['id']));
+      const it = stackItemById(Number(t.dataset['id']));
       if (it && it.kind === 'triggered' && it.sourceId !== undefined) {
         yid = it.sourceId;
         yname = h.state.entities[it.sourceId]?.card ?? it.card ?? name;
