@@ -26,13 +26,15 @@ import { viewFor, redactEvent, redactLog } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
   applyToRoom, clearDeployHold, clockSnapshot, getRoom, joinableRoom, renameSeat,
-  reserveRoomCode, roomExistsOrReserved,
-  restoreRooms, roomWaiting, setRoomDeck, setSeatUser, settleClock, undoActionAt, undoLastAction,
+  reserveRoomCode, resolveLobby, roomExistsOrReserved, roomLobby,
+  restoreRooms, roomWaiting, setLobbyMethod, setLobbySubmission, setRoomDeck,
+  setSeatUser, settleClock, undoActionAt, undoLastAction, unlockLobby,
   type Room, type Socket,
 } from './rooms.ts';
+import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
 import { accountRoutes } from './api-accounts.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
-import { accountById, accountForToken, loadAccounts, privateView } from './accounts.ts';
+import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
 import { recordLiveGame, syncGamesDir } from './history.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -230,10 +232,49 @@ const send = (ws: WebSocket, obj: unknown): void => {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
 };
 
-/** Constructed lobby state, attached to every message while the room waits
- * for decks: which seats have brought one. undefined once the game is real. */
-function waitingInfo(room: Room): { have: [boolean, boolean] } | undefined {
-  return roomWaiting(room) ? { have: [!!room.decks[0], !!room.decks[1]] } : undefined;
+/** Lobby state, attached to every message while the room is not a game yet.
+ * Two kinds: a constructed room waiting for decks (`have`), and a draft room
+ * choosing its trio (`trio`). undefined once the game is real.
+ *
+ * The other seat's SUBMISSION is deliberately absent — a pick you can see is
+ * a pick you can counter, and the whole point of choosing blind is that you
+ * each bring something you actually want. Only "are they locked in" travels. */
+function waitingInfo(room: Room, seat: Seat): {
+  have: [boolean, boolean];
+  trio?: {
+    method: string;
+    methods: { id: string; label: string; blurb: string }[];
+    locked: [boolean, boolean];
+    /** your own submission, echoed back so a reconnect keeps your ranking */
+    mine: unknown;
+  };
+} | undefined {
+  if (!roomWaiting(room)) return undefined;
+  const lobby = roomLobby(room);
+  return {
+    have: [!!room.decks[0], !!room.decks[1]],
+    ...(lobby ? {
+      trio: {
+        method: lobby.method,
+        methods: TRIO_METHODS.map(id => ({ id, label: METHOD_LABELS[id], blurb: METHOD_BLURBS[id] })),
+        locked: [...lobby.locked] as [boolean, boolean],
+        mine: lobby.submissions[seat],
+      },
+    } : {}),
+  };
+}
+
+/** Past games involving either seat, for the "something we have not played"
+ * method. Falls back to matching on NAME for a seat that is not logged in —
+ * a signed-out Ben should still not be handed the trio he played yesterday. */
+function trioHistoryFor(room: Room): TrioHistoryRow[] {
+  const ids = new Set(room.users.filter((u): u is string => !!u));
+  const names = new Set(room.names.map(n => n.trim().toLowerCase()));
+  return gameHistory()
+    .filter(g =>
+      g.users.some(u => u && ids.has(u))
+      || g.names.some(n => names.has(n.trim().toLowerCase())))
+    .map(g => ({ els: g.els, playedAt: g.playedAt }));
 }
 
 /** Push an update to one seat: redacted view (+optional events). During
@@ -243,7 +284,7 @@ function sendUpdate(room: Room, seat: Seat, events: import('../engine/src/types.
   if (!sock) return;
   // still waiting for decks: no game to show — just the lobby state
   if (roomWaiting(room)) {
-    send(sock, { t: 'update', waiting: waitingInfo(room), peers: peersOf(room), names: room.names });
+    send(sock, { t: 'update', waiting: waitingInfo(room, seat), peers: peersOf(room), names: room.names });
     return;
   }
   send(sock, {
@@ -350,7 +391,8 @@ const wss = new WebSocketServer({ server });
 wss.on('connection', ws => {
   ws.on('message', raw => {
     let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
-      token?: string; deck?: unknown; action?: Action; cols?: unknown; send?: unknown };
+      token?: string; deck?: unknown; action?: Action; cols?: unknown; send?: unknown;
+      method?: unknown; submission?: unknown; lock?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     if (msg.t === 'join') {
@@ -423,7 +465,7 @@ wss.on('connection', ws => {
       const joinedMsg = (s: Seat): unknown => roomWaiting(room)
         ? {
             t: 'joined', room: code, seat: s,
-            waiting: waitingInfo(room), peers: peersOf(room), names: room.names,
+            waiting: waitingInfo(room, s), peers: peersOf(room), names: room.names,
           }
         : {
             t: 'joined', room: code, seat: s,
@@ -449,6 +491,50 @@ wss.on('connection', ws => {
         else pushView(room, otherSeat);
       }
       console.log(`[ws] ${code}: seat ${seat} joined${roomWaiting(room) ? ' (waiting for decks)' : gameJustStarted ? ' (constructed game started)' : ''}`);
+      return;
+    }
+
+    // ── the draft lobby: choosing the trio, before there is a game ──
+    if (msg.t === 'lobby') {
+      const conn = conns.get(ws);
+      if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
+      const room = conn.room;
+      const lobby = roomLobby(room);
+      if (!lobby) return send(ws, { t: 'error', msg: 'this room is past choosing its elements' });
+
+      if (msg.method !== undefined) setLobbyMethod(room, msg.method);
+      else if (msg.lock === false) unlockLobby(room, conn.seat as 0 | 1);
+      else setLobbySubmission(room, conn.seat as 0 | 1, msg.submission, msg.lock !== false);
+
+      // both locked in: decide, deal, and tell them how it went
+      const result = resolveLobby(room, trioHistoryFor(room));
+      if (result) {
+        // the working goes into the game log, where both players can read it
+        // after the fact — a trio nobody can audit is a trio somebody
+        // suspects, and this one is decided by a seeded draw they cannot see
+        room.events.push({
+          type: 'info',
+          msg: `Trio: ${result.els.join(' + ')} — ${result.how}. ${result.detail.join(' ')}`,
+          data: { els: result.els },
+        } as unknown as import('../engine/src/types.ts').EngineEvent);
+        settleClock(room);
+        console.log(`[ws] ${room.code}: trio ${result.els.join('+')} (${lobby.method})`);
+        for (const s of [0, 1] as Seat[]) {
+          const sock = room.sockets[s] as unknown as WebSocket | null;
+          if (!sock) continue;
+          send(sock, {
+            t: 'joined', room: room.code, seat: s,
+            view: viewFor(room.state, s, room.deploySnapshot),
+            log: visibleLog(room, s),
+            legal: legalActions(room.state, s),
+            peers: peersOf(room), names: room.names,
+            clock: clockSnapshot(room), building: null,
+            trio: { els: result.els, how: result.how, detail: result.detail },
+          });
+        }
+        return;
+      }
+      for (const s of [0, 1] as Seat[]) pushView(room, s);
       return;
     }
 

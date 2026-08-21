@@ -13,6 +13,10 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Action, CardName, Element, EngineEvent, GameMode, GameState, Seat } from '../engine/src/types.ts';
 import { apply, checkDeck, createGame, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import {
+  resolveTrio, sanitizeMethod, sanitizeSubmission, submissionReady,
+  type TrioHistoryRow, type TrioMethod, type TrioResult, type TrioSubmission,
+} from './trio.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // ALGO_GAMES_DIR lets a test run against a throwaway directory of saved rooms
@@ -83,6 +87,30 @@ export interface Room {
    * re-rendering client picks it up without waiting for the next twitch.
    */
   building: [Formation | null, Formation | null];
+  /**
+   * Draft mode: the room where the trio gets chosen, before there is a game.
+   *
+   * A draft room used to be dealt the instant its creator joined, which meant
+   * one player picked the elements alone AND got to study pack 1 pick 1 for
+   * however long the other took to click the link. Both go away if the cards
+   * are not dealt until the trio is settled and both players are in — so a
+   * draft room now starts here and only becomes a game when `result` is set.
+   *
+   * null for a room created with an explicit trio (`&els=`, hotseat, tests),
+   * which still deals immediately.
+   */
+  lobby: Lobby | null;
+}
+
+/** The pre-game room: choose a method, both submit, the server resolves. */
+export interface Lobby {
+  method: TrioMethod;
+  /** each seat's submission (empty until they put something in) */
+  submissions: [TrioSubmission, TrioSubmission];
+  /** each seat has locked their submission in */
+  locked: [boolean, boolean];
+  /** set once both are locked — from here the room is a real game */
+  result: TrioResult | null;
 }
 
 /** an uncommitted attack/block declaration: columns of entity ids, plus the
@@ -137,11 +165,88 @@ function fresh(seed: number, names: [string, string], mode: GameMode, els: Eleme
   return { state: r.state, events: r.events };
 }
 
-/** A constructed room whose players have not both brought a deck yet: the
- * held state is a PLACEHOLDER (never acted on — main.ts gates actions/undo
- * on this) and the real game is dealt by setRoomDeck once both decks are in. */
+/** A room that is not a game yet: its held state is a PLACEHOLDER (never
+ * acted on — main.ts gates actions/undo on this) and the real one is dealt
+ * once the missing piece arrives. Two kinds: a constructed room still waiting
+ * for decks, and a draft room still choosing its trio. */
 export function roomWaiting(room: Room): boolean {
+  if (room.lobby && !room.lobby.result) return true;
   return room.mode === 'constructed' && (!room.decks[0] || !room.decks[1]);
+}
+
+/** The draft lobby, while it is still open. */
+export function roomLobby(room: Room): Lobby | null {
+  return room.lobby && !room.lobby.result ? room.lobby : null;
+}
+
+const freshLobby = (method: TrioMethod = 'pick-one'): Lobby => ({
+  method, submissions: [{}, {}], locked: [false, false], result: null,
+});
+
+/**
+ * Change the method. Either player may, while the lobby is open, and it
+ * clears both submissions — a ranking is not a pick, and silently carrying
+ * one over into another method would submit something nobody chose.
+ */
+export function setLobbyMethod(room: Room, method: unknown): boolean {
+  const lobby = roomLobby(room);
+  if (!lobby) return false;
+  const next = sanitizeMethod(method);
+  if (next === lobby.method) return false;
+  lobby.method = next;
+  lobby.submissions = [{}, {}];
+  lobby.locked = [false, false];
+  persist(room);
+  return true;
+}
+
+/** Record a seat's submission. `lock` marks them ready; the caller resolves. */
+export function setLobbySubmission(room: Room, seat: 0 | 1, raw: unknown, lock: boolean): boolean {
+  const lobby = roomLobby(room);
+  if (!lobby) return false;
+  const sub = sanitizeSubmission(raw, lobby.method);
+  lobby.submissions[seat] = sub;
+  lobby.locked[seat] = lock && submissionReady(sub, lobby.method);
+  persist(room);
+  return true;
+}
+
+/** Un-lock (the "change my mind" button), legal until the other side is in. */
+export function unlockLobby(room: Room, seat: 0 | 1): boolean {
+  const lobby = roomLobby(room);
+  if (!lobby || !lobby.locked[seat]) return false;
+  lobby.locked[seat] = false;
+  persist(room);
+  return true;
+}
+
+/**
+ * Both seats are locked in: decide the trio and DEAL THE GAME. Returns the
+ * result, or null if the lobby is not ready.
+ *
+ * The randomness is seeded off the room seed — reproducible, and not
+ * something either player can influence by the timing of their click.
+ */
+export function resolveLobby(room: Room, history: TrioHistoryRow[]): TrioResult | null {
+  const lobby = roomLobby(room);
+  if (!lobby) return null;
+  if (!lobby.locked[0] || !lobby.locked[1]) return null;
+  const result = resolveTrio({
+    method: lobby.method,
+    submissions: lobby.submissions,
+    names: room.names,
+    history,
+    rng: room.seed,
+  });
+  lobby.result = result;
+  room.els = sanitizeTrio(result.els);
+  const { state, events } = fresh(room.seed, room.names, room.mode, room.els);
+  room.state = state;
+  room.actions = [];
+  room.events = events;
+  room.clockStamp = Date.now();
+  persist(room);
+  return result;
 }
 
 /** the decks to build a constructed room's state from: any missing deck is
@@ -237,6 +342,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     : fresh(seed, names, mode, trio);
   const room: Room = {
     code, seed, mode, els: trio, decks, names, users: [null, null], winner: null,
+    lobby: mode === 'draft' && !els ? freshLobby() : null,
     state, actions: [], events, sockets: [null, null],
     deploySnapshot: null, heldDeploy: [[], []], deployStartIndex: -1,
     clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
@@ -395,6 +501,10 @@ function persist(room: Room): void {
       users: room.users,
       // and the result, stamped at the time — see Room.winner
       winner: room.winner,
+      // the draft lobby: a room can be restarted mid-trio-choice, and losing
+      // two rankings to a deploy would be a genuinely annoying way to lose
+      // them (additive field)
+      ...(room.lobby ? { lobby: room.lobby } : {}),
       actions: room.actions, clockMs: room.clockMs,
       // constructed: decks are part of the replay config (additive field)
       ...(room.mode === 'constructed' ? { decks: room.decks } : {}),
@@ -422,6 +532,7 @@ export function restoreRooms(): void {
         actions: Action[]; clockMs?: [number, number];
         users?: [string | null, string | null];
         winner?: number | null;
+        lobby?: Lobby;
         decks?: [CardName[] | null, CardName[] | null];
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
@@ -437,8 +548,23 @@ export function restoreRooms(): void {
         }
         if (!decks[0] && !decks[1]) throw new Error('constructed room with no decks');
       }
+      // a draft lobby that never resolved: keep the method and both
+      // submissions, and make sure the placeholder is rebuilt, not replayed
+      const lobby: Lobby | null = raw.lobby
+        ? {
+            method: sanitizeMethod(raw.lobby.method),
+            submissions: [
+              sanitizeSubmission(raw.lobby.submissions?.[0], sanitizeMethod(raw.lobby.method)),
+              sanitizeSubmission(raw.lobby.submissions?.[1], sanitizeMethod(raw.lobby.method)),
+            ],
+            locked: [!!raw.lobby.locked?.[0], !!raw.lobby.locked?.[1]],
+            result: raw.lobby.result ?? null,
+          }
+        : null;
       // a still-waiting room never had real actions — drop any strays
-      const actions = mode === 'constructed' && (!decks[0] || !decks[1]) ? [] : raw.actions;
+      const unresolved = (mode === 'constructed' && (!decks[0] || !decks[1]))
+        || (!!lobby && !lobby.result);
+      const actions = unresolved ? [] : raw.actions;
       const { state, events, deploySnapshot, heldDeploy, deployStartIndex } = rebuild(
         raw.seed, names, actions, mode, els,
         mode === 'constructed' ? decksFor({ decks }) : undefined);
@@ -446,7 +572,7 @@ export function restoreRooms(): void {
         ? [Math.max(0, Number(raw.clockMs[0]) || 0), Math.max(0, Number(raw.clockMs[1]) || 0)]
         : [CLOCK_START_MS, CLOCK_START_MS];
       rooms.set(code, {
-        code, seed: raw.seed, mode, els, decks, names, users,
+        code, seed: raw.seed, mode, els, decks, names, users, lobby,
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,
         state, actions, events,

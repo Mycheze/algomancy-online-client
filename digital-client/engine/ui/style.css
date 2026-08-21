@@ -871,3 +871,50 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .accttoast .ticon { font-size: 24px; }
 .accttoast b { color: var(--accent); }
 @keyframes toastin { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* ── the draft lobby: choosing three elements together ────────────────
+   Deliberately the same furniture as the home screen — it IS the home screen
+   for the twenty seconds before a game exists. */
+
+.lobbyscreen { max-width: 440px; }
+.lobbyscreen h2 { margin: 0; color: var(--accent); font-size: 17px; }
+.lobbystatus { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.lobbystatus .dim { color: var(--dim); }
+.lockedin { color: var(--glow); }
+.lobbysection { display: flex; flex-direction: column; gap: 8px; }
+.lobbysection .hint { margin: 0; }
+
+.lobbymethods { display: flex; flex-direction: column; gap: 4px; }
+.lobbymethod { text-align: left; font-size: 13px; padding: 7px 10px; }
+.lobbymethod.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+
+.lobbyels { flex-wrap: wrap; gap: 4px; }
+/* the ranking being built, best first — numbered so the order is the message */
+.ranklist { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; min-height: 30px;
+  padding: 6px; border: 1px dashed var(--line); border-radius: 6px; background: rgba(0,0,0,.15); }
+.ranklist .hint { padding: 0 4px; }
+.elchip.ranked { position: relative; padding-left: 22px; }
+.ranknum { position: absolute; left: 5px; top: 50%; transform: translateY(-50%);
+  font-size: 10px; font-weight: 700; opacity: .85; }
+.lobbyrankbtns { display: flex; gap: 6px; }
+.lobbyrankbtns button { font-size: 12px; padding: 4px 10px; }
+
+/* the home screen's escape hatch: start a fixed trio without a lobby */
+.fixedtrio { border-top: 1px dashed var(--line); padding-top: 8px; }
+.fixedtrio > summary { color: var(--dim); font-size: 12px; cursor: pointer; padding: 2px 0; }
+.fixedtrio > summary:hover { color: var(--text); }
+.fixedtrio .elrow { flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+
+/* "here is your trio, and here is exactly how it happened" — shown once, over
+   the freshly dealt board. The working is on screen because a trio nobody can
+   audit is a trio somebody suspects. */
+.trioover { display: flex; align-items: center; justify-content: center; }
+.trioreveal { background: var(--panel); border: 1px solid var(--accent); border-radius: 8px;
+  padding: 20px 24px; max-width: 460px; display: flex; flex-direction: column; gap: 12px;
+  align-items: center; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+.triobanner { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.triobanner .elchip { font-size: 15px; padding: 6px 12px; }
+.triohow { color: var(--accent); font-weight: 700; }
+.triodetail { margin: 0; padding: 0; list-style: none; color: var(--dim); font-size: 12px;
+  line-height: 1.6; text-align: left; }

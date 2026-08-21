@@ -241,7 +241,8 @@ try {
   DROOM = await mintRoom(PORT);
   const d0 = new Client(PORT);
   await d0.open();
-  d0.send({ t: 'join', room: DROOM, seat: 0, mode: 'draft', name: 'Dee' });
+  // explicit trio: this is a packInfo test, not a lobby one
+  d0.send({ t: 'join', room: DROOM, seat: 0, mode: 'draft', els: ['fire', 'water', 'earth'], name: 'Dee' });
   await d0.next(m => m.t === 'joined');
   const d1 = new Client(PORT);
   await d1.open();

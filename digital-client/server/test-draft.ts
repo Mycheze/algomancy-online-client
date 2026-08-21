@@ -96,7 +96,9 @@ try {
   console.log('\n[draft room creation + redaction]');
   const c0 = new Client(PORT);
   await c0.open();
-  c0.send({ t: 'join', room: ROOM, seat: 0, mode: 'draft', name: 'Bena' });
+  // an explicit trio skips the lobby (server/trio.ts) — this suite is about
+  // the draft itself, and the default trio is what it was already getting
+  c0.send({ t: 'join', room: ROOM, seat: 0, mode: 'draft', els: ['fire', 'water', 'earth'], name: 'Bena' });
   await c0.next(m => m.t === 'joined');
   ok(c0.view.mode === 'draft', 'room is a draft game');
   ok(c0.view.players[0].hand.length === 6, 'seat 0 hand is 6 (opening 4 + turn-1 draws)');

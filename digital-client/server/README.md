@@ -32,6 +32,8 @@ constructed game**. That is the only way a room comes into being: the button
 asks `/api/new` for a code, which RESERVES it, and the first join to a reserved
 code creates the room.
 
+A new live draft opens a **lobby** rather than a game — see below.
+
 Everyone else **joins** an existing code — the box on the home screen, or a
 direct link:
 
@@ -126,7 +128,8 @@ resyncs — see Reconnect below.
 
 | path | what |
 |---|---|
-| `main.ts` | HTTP static host + WebSocket game loop (join / action / broadcast) |
+| `main.ts` | HTTP static host + WebSocket game loop (join / action / broadcast / lobby) |
+| `trio.ts` | choosing the three draft elements together: the three methods, pure and seeded |
 | `view.ts` | `viewFor(state, seat)` redaction + per-seat event/log blurring |
 | `rooms.ts` | in-memory room store, apply-to-room, JSON persistence + replay restore |
 | `test-drive.ts` | integration test: boots the server, two clients, asserts redaction + reconnect |
@@ -139,6 +142,53 @@ resyncs — see Reconnect below.
 | `seed-accounts.ts` | CLI: import `games/` into the record (aliases, `--force`, `--dry`) |
 | `test-accounts.ts` | the accounts test suite (stats fold, achievements, friends, live server) |
 | `accounts/accounts.json` | the whole account store — **holds password hashes, gitignored** |
+
+## The draft lobby: choosing three elements together
+
+A live draft used to take its trio from the home screen, which had two
+problems. It was one person's decision. And because the room was dealt the
+moment its creator joined, that person got to study pack 1 pick 1 for however
+long it took their opponent to click the link.
+
+So a draft room now starts as a **lobby** and no cards exist until it
+resolves. Both players are in the room, both submit, and the game is dealt to
+both at the same instant. Either player can change the method while the lobby
+is open (changing it clears both submissions — a ranking is not a pick).
+
+Three methods (`trio.ts`), all of them **blind** — you never see what the
+other person submitted until the trio comes back, because a pick you can see
+is a pick you can counter:
+
+| method | what you do | how it resolves |
+|---|---|---|
+| **One each, one at random** | name one element | both picks go in, the rest is drawn. Wanting the same element is a real outcome: it goes in once and two are drawn |
+| **Something new** | just say you are ready | the trio the two of you have played least recently, or a brand new one — read off the account history, so it knows what you have actually played |
+| **Rank all seven** | put all seven in order | a Borda count of both ballots, then a weighted draw from it |
+
+Why Borda rather than an instant runoff: with two voters and seven candidates
+an IRV is just "whose first choice survives the coin flip", which throws away
+six sevenths of what you both said. Summing ranks uses the whole ballot, so
+something you both put second beats something one of you loved and the other
+put last — which is the outcome two people actually want out of a shared
+draft. The weighting is quadratic in the combined rank, which in practice
+gives a shared top three about 70% of the slots without ever making it certain.
+
+Every draw runs through the engine's seeded generator off the room seed, so a
+trio is reproducible and neither player can nudge it by the timing of their
+click. When it resolves, both players get the trio **and the working** — who
+picked what, the combined ranking, what chance did — as an interstitial and as
+a line in the game log. A trio nobody can audit is a trio somebody suspects.
+
+The escape hatch is unchanged: a room created with an explicit trio
+(`&els=fire,water,earth`, the home screen's "fix the trio now" drawer, hotseat,
+the tests) has no lobby and deals immediately.
+
+Lobby messages, client → server, all `{ t: 'lobby', … }`:
+`{ method }` changes the method · `{ submission, lock: true }` submits and
+locks · `{ lock: false }` unlocks. While the lobby is open every message
+carries `waiting.trio` — the method, the three on offer, who is locked in, and
+**your own** submission echoed back (so a refresh keeps your ranking). Your
+opponent's never crosses the wire.
 
 ## Accounts, stats and achievements
 

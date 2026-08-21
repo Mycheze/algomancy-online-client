@@ -51,6 +51,12 @@ and `node replay-room.ts games/CODE.json` replays one through the current engine
 how a playtest report gets checked against what actually happened. In-game `🐛 bug` reports
 append to `server/issues.jsonl`, stamped with the room and action index.
 
+Also since **2026-08-21**, a live draft opens a **lobby** instead of a game: the two of you
+choose the three elements together — one each with the third drawn, a trio you have never
+played, or a weighted draw from your combined rankings of all seven — and no cards are dealt
+until you have both locked in, so nobody gets an early look at their first pack. All three
+methods are blind, seeded off the room seed, and show their working when they resolve.
+
 Since **2026-08-21** it also carries **accounts**: a username and a password (no email, no
 recovery), a lifetime stat sheet, 28 achievements, a friends list and a match history.
 Everything downstream is a fold over the saved games themselves — `games/<CODE>.json` →

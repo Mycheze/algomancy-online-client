@@ -27,6 +27,7 @@ import {
 import { E } from '../src/engine.ts';
 import type { Action, CachedCard, Entity, EntityId, EventType, GameState, Seat, TargetRef } from '../src/types.ts';
 import * as acct from './account.ts';
+import * as lob from './lobby.ts';
 
 const ART = '../../../AlgomancyCards/';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -55,7 +56,7 @@ class NetBackend implements Backend {
   peers: [boolean, boolean] = [false, false];
   joined = false;
   /** constructed lobby: non-null while the room waits for both decks */
-  waiting: { have: [boolean, boolean] } | null = null;
+  waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby } | null = null;
   names: [string, string] = ['Player 1', 'Player 2'];
   /** set when the server hands this seat to a newer connection — stop rendering game UI */
   dead = false;
@@ -115,10 +116,15 @@ class NetBackend implements Backend {
     this.ws.send(payload);
   }
   undo(): void { this.ws.send(JSON.stringify({ t: 'undo' })); }
+  /** draft lobby: change the method, submit, lock or unlock (server/trio.ts) */
+  lobby(msg: Record<string, unknown>): void {
+    this.ws.send(JSON.stringify({ t: 'lobby', ...msg }));
+  }
   private onMsg(m: {
     t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
     events?: { msg: string; type?: EventType }[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
-    clock?: ClockSnap; waiting?: { have: [boolean, boolean] }; names?: [string, string];
+    clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby }; names?: [string, string];
+    trio?: lob.TrioReveal;
     cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
     me?: acct.Me; unlocked?: { id: string; name: string; desc: string; icon: string }[];
   }): void {
@@ -146,6 +152,8 @@ class NetBackend implements Backend {
       this.wantSeat = m.seat!;   // reconnect/deck-rejoin keeps this seat
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? [false, false]; uiError = ''; render(); return; }
       this.waiting = null;
+      // the lobby just resolved: show what the trio is and how it got there
+      if (m.trio) { pendingTrio = m.trio; lob.resetLobby(); }
       this.state = m.view!;
       this.building = m.building ?? null;   // reconnect mid-declaration
       this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
@@ -240,6 +248,10 @@ interface UiState {
     via?: 'augment' | { mod: EntityId }; label: string; unit: string } | null;
   /** home screen: the draft trio being picked (persisted per browser) */
   homeEls: string[];
+  /** home screen: the "fix the trio now" drawer is open. Held in state
+   * because touching a chip re-renders the whole screen, which would
+   * otherwise snap the drawer shut under the finger that opened it. */
+  homeFixedTrio: boolean;
   /** constructed draw phase: hand indices picked to go to the bottom, in order */
   bottomPick: number[];
   /** which turn+seat bottomPick was built for (re-init on change) */
@@ -262,6 +274,7 @@ const freshUi = (): UiState => ({
   draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0,
   autopassPrefAt: -1, autopassSig: [], yieldAt: -1, cancelling: false, cancelAt: -1,
   prefillFor: '', confirmDone: null, confirmPass: null, homeEls: savedEls(),
+  homeFixedTrio: false,
   confirmDeploy: null, confirmAct: null,
   bottomPick: [], bottomFor: '',
 });
@@ -295,6 +308,9 @@ function ensureDefaultDecks(then: () => void): void {
 let ui: UiState = freshUi();
 /** deploy-end reveal waiting behind the interstitial (C2) — messages to show */
 let pendingReveal: string[] | null = null;
+/** the trio the lobby just settled on, waiting behind its own interstitial —
+ * the first thing you see when the cards are dealt is how they were chosen */
+let pendingTrio: lob.TrioReveal | null = null;
 const resetUi = () => {
   ui = freshUi();
   pendingReveal = null;
@@ -2117,6 +2133,7 @@ function renderNow(): boolean {
     ${inspectorHtml()}
     ${judgeOpen ? judgeOverlayHtml() : ''}
     ${pendingReveal ? revealOverlayHtml() : ''}
+    ${pendingTrio ? `<div class="overlay trioover">${lob.revealHtml(pendingTrio)}</div>` : ''}
     ${reportOpen ? reportOverlayHtml() : ''}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
   for (const [sel, top] of scrollBefore) {
@@ -2514,14 +2531,20 @@ function renderHome(): void {
       : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
     <div class="homebtns">
       <div class="elpicker">
-        <div class="zonelabel">Live draft — pick exactly 3 of the ${ALL_ELEMENTS.length} elements
-          (${TRIO_COUNT} trios)</div>
-        <div class="elrow">${ALL_ELEMENTS.map(el =>
-          `<button class="elchip ${el} ${ui.homeEls.includes(el) ? 'on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
-          <button data-btn="elrandom" title="pick a random trio — any of the ${TRIO_COUNT}">🎲</button>
-        </div>
-        <button class="primary" data-btn="newgame" data-mode="draft" ${ui.homeEls.length === 3 ? '' : 'disabled'}>
-          New live draft${ui.homeEls.length === 3 ? ` · ${ui.homeEls.join(' + ')}` : ` (${ui.homeEls.length}/3 picked)`}</button>
+        <div class="zonelabel">Live draft</div>
+        <button class="primary" data-btn="newgame" data-mode="draft">New live draft</button>
+        <p class="hint">You choose the three elements together once you are both in the room —
+          one each, something you have never played, or from your combined rankings.
+          Nothing is dealt until then.</p>
+        <details class="fixedtrio" ${ui.homeFixedTrio ? 'open' : ''}>
+          <summary>…or fix the trio now, and skip the lobby</summary>
+          <div class="elrow">${ALL_ELEMENTS.map(el =>
+            `<button class="elchip ${el} ${ui.homeEls.includes(el) ? 'on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
+            <button data-btn="elrandom" title="pick a random trio — any of the ${TRIO_COUNT}">🎲</button>
+          </div>
+          <button data-btn="newgame" data-mode="draft" data-els="1" ${ui.homeEls.length === 3 ? '' : 'disabled'}>
+            ${ui.homeEls.length === 3 ? `Start ${ui.homeEls.join(' + ')} straight away` : `pick 3 of the ${ALL_ELEMENTS.length} (${ui.homeEls.length}/3)`}</button>
+        </details>
       </div>
       <div class="elpicker deckpicker">
         <div class="zonelabel">Constructed — bring your own deck</div>
@@ -2554,6 +2577,15 @@ function renderWaiting(): void {
   $app.classList.remove('board');
   const net = NET!;
   const w = net.waiting!;
+  // a draft room chooses its trio here, before a single card is dealt
+  if (w.trio) {
+    const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${other(net.seat)}&mode=draft`;
+    $app.innerHTML = lob.lobbyHtml({
+      lobby: w.trio, seat: net.seat as 0 | 1, names: net.names,
+      peers: net.peers, room: net.room, link,
+    });
+    return;
+  }
   const me = net.seat, opp = other(me);
   const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${opp}&mode=constructed`;
   const deck = savedDeck();
@@ -2718,8 +2750,15 @@ document.addEventListener('click', e => {
 function handleButton(btn: HTMLElement): void {
   // accounts own everything prefixed acct- (sign-in, profile, friends)
   if (acct.handleButton(btn)) return;
+  // and the draft lobby everything prefixed lobby-
+  if (NET?.waiting?.trio && lob.handleLobbyButton(btn, {
+    lobby: NET.waiting.trio,
+    send: msg => NET!.lobby(msg),
+    rerender: renderWaiting,
+  })) return;
   const b = btn.dataset['btn'];
   if (b === 'eltoggle') {
+    ui.homeFixedTrio = true;
     const el = btn.dataset['el']!;
     if (ui.homeEls.includes(el)) ui.homeEls = ui.homeEls.filter(x => x !== el);
     else if (ui.homeEls.length < 3) ui.homeEls.push(el);
@@ -2729,6 +2768,7 @@ function handleButton(btn: HTMLElement): void {
     return;
   }
   if (b === 'elrandom') {
+    ui.homeFixedTrio = true;
     // every element the ENGINE knows about, so the die reaches all C(n,3)
     // trios — 35 of them with Light & Dark in
     ui.homeEls = [];
@@ -2745,7 +2785,9 @@ function handleButton(btn: HTMLElement): void {
     const m = btn.dataset['mode'];
     const mode = m === 'draft' ? 'draft' : m === 'constructed' ? 'constructed' : 'shared';
     if (mode === 'constructed' && !savedDeck()) return;   // button is disabled anyway
-    const els = mode === 'draft' && ui.homeEls.length === 3
+    // a draft with NO els opens the lobby and chooses the trio there; passing
+    // els is the deliberate escape hatch that skips it
+    const els = mode === 'draft' && btn.dataset['els'] && ui.homeEls.length === 3
       ? `&els=${encodeURIComponent(ui.homeEls.join(','))}` : '';
     fetch('/api/new').then(r => r.json()).then((r: { code: string }) => {
       location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0&mode=${mode}${els}`;
@@ -2854,6 +2896,7 @@ function handleButton(btn: HTMLElement): void {
   if (b === 'autopasstoggle') {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
   }
+  if (b === 'trio-ok') { pendingTrio = null; render(); return; }
   if (b === 'revealdone') pendingReveal = null;
   if (b === 'donedeploy') {
     // playtest: don't let a paid-for prophecy or a glimpsed card die in the
