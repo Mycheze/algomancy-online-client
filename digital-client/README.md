@@ -55,7 +55,10 @@ Also since **2026-08-21**, a live draft opens a **lobby** instead of a game: the
 choose the three elements together — one each with the third drawn, a trio you have never
 played, or a weighted draw from your combined rankings of all seven — and no cards are dealt
 until you have both locked in, so nobody gets an early look at their first pack. All three
-methods are blind, seeded off the room seed, and show their working when they resolve.
+methods are blind, seeded off the room seed, and show their working when they resolve. And a
+game now ends on a **post-game screen** — who won, both players' numbers side by side, what it
+unlocked, and a rematch handshake that carries the format, the seats and (for a draft) a
+one-click "run it back" into the next room.
 
 Since **2026-08-21** it also carries **accounts**: a username and a password (no email, no
 recovery), a lifetime stat sheet, 28 achievements, a friends list and a match history.

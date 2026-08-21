@@ -28,6 +28,7 @@ import { E } from '../src/engine.ts';
 import type { Action, CachedCard, Entity, EntityId, EventType, GameState, Seat, TargetRef } from '../src/types.ts';
 import * as acct from './account.ts';
 import * as lob from './lobby.ts';
+import * as pg from './postgame.ts';
 
 const ART = '../../../AlgomancyCards/';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -120,6 +121,10 @@ class NetBackend implements Backend {
   lobby(msg: Record<string, unknown>): void {
     this.ws.send(JSON.stringify({ t: 'lobby', ...msg }));
   }
+  /** post-game: ask for (or take back) a rematch */
+  rematch(msg: Record<string, unknown>): void {
+    this.ws.send(JSON.stringify({ t: 'rematch', ...msg }));
+  }
   private onMsg(m: {
     t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
     events?: { msg: string; type?: EventType }[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
@@ -127,7 +132,26 @@ class NetBackend implements Backend {
     trio?: lob.TrioReveal;
     cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
     me?: acct.Me; unlocked?: { id: string; name: string; desc: string; icon: string }[];
+    rematch?: [boolean, boolean];
   }): void {
+    // the post-game screen: the whole payload on game over, then just the
+    // rematch state as the two of you make up your minds
+    if (m.t === 'gameover') {
+      postGame = m as unknown as pg.GameOver;
+      postGameHidden = false;
+      if (m.me) acct.applyMe(m.me);
+      render();
+      return;
+    }
+    if (m.t === 'rematch') {
+      if (postGame) {
+        postGame = { ...postGame, rematch: m.rematch ?? postGame.rematch, rematchRoom: (m as { room?: string }).room ?? null };
+        // both said yes: the server has already built the room
+        if (postGame.rematchRoom) { pg.goToRematch(postGame.rematchRoom, postGame); return; }
+        render();
+      }
+      return;
+    }
     // accounts: the profile that rides along with a join, and the "this game
     // is now in your stats" push when a game ends
     if (m.t === 'me') { if (m.me) acct.applyMe(m.me); return; }
@@ -311,9 +335,15 @@ let pendingReveal: string[] | null = null;
 /** the trio the lobby just settled on, waiting behind its own interstitial —
  * the first thing you see when the cards are dealt is how they were chosen */
 let pendingTrio: lob.TrioReveal | null = null;
+/** the finished game's post-game screen (server payload), and whether it has
+ * been dismissed to look at the final board */
+let postGame: pg.GameOver | null = null;
+let postGameHidden = false;
 const resetUi = () => {
   ui = freshUi();
   pendingReveal = null;
+  postGame = null;
+  postGameHidden = false;
   snaps = [];
   motionReset();
   sfxReset();
@@ -1587,7 +1617,10 @@ function promptHtml(): string {
   }
   if (s.phase === 'gameover') {
     const won = s.players[s.winner!]!.name;
-    if (NET) return `<div class="promptbar"><span class="who">${s.winner === NET.seat ? 'You win! 🎉' : `${esc(won)} wins.`}</span></div>`;
+    // net games get the full post-game screen; this bar is what is behind it
+    // once you dismiss it to look at the board, so it has a way back
+    if (NET) return `<div class="promptbar"><span class="who">${s.winner === NET.seat ? 'You win! 🎉' : `${esc(won)} wins.`}</span>
+      ${postGame ? '<button data-btn="pg-reopen">Post-game summary</button>' : ''}</div>`;
     return `<div class="promptbar"><span class="who">${esc(won)} wins!</span>
       <button data-btn="restart">New game</button></div>`;
   }
@@ -1856,9 +1889,12 @@ function phaseTrackHtml(): string {
     `<span class="ph ${p.cur ? 'cur' : ''}">${p.label}</span>`).join('<span class="phsep">▸</span>')}</span>`;
 }
 
-/** Share banner: shown while the opponent's seat is empty in network mode. */
+/** Share banner: shown while the opponent's seat is empty in network mode.
+ * Never on a finished game — there is nothing left to invite anybody to, and
+ * the post-game screen is what that room is for now. */
 function shareBannerHtml(): string {
   if (!NET || NET.peers[other(NET.seat)]) return '';
+  if (h.state.phase === 'gameover' || postGame) return '';
   const link = `${location.origin}/?ws=1&room=${encodeURIComponent(NET.room)}&seat=${other(NET.seat)}&mode=${h.state.mode}`;
   return `<div class="sharebar">Waiting for your opponent — send them the room code
     <b>${esc(NET.room)}</b> or this link:
@@ -2134,6 +2170,7 @@ function renderNow(): boolean {
     ${judgeOpen ? judgeOverlayHtml() : ''}
     ${pendingReveal ? revealOverlayHtml() : ''}
     ${pendingTrio ? `<div class="overlay trioover">${lob.revealHtml(pendingTrio)}</div>` : ''}
+    ${postGame && !postGameHidden ? pg.postGameHtml(postGame) : ''}
     ${reportOpen ? reportOverlayHtml() : ''}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
   for (const [sel, top] of scrollBefore) {
@@ -2750,6 +2787,13 @@ document.addEventListener('click', e => {
 function handleButton(btn: HTMLElement): void {
   // accounts own everything prefixed acct- (sign-in, profile, friends)
   if (acct.handleButton(btn)) return;
+  // and the post-game screen everything prefixed pg-
+  if (postGame && pg.handlePostGameButton(btn, {
+    over: postGame,
+    send: msg => NET!.rematch(msg),
+    rerender: render,
+    dismiss: () => { postGameHidden = true; render(); },
+  })) return;
   // and the draft lobby everything prefixed lobby-
   if (NET?.waiting?.trio && lob.handleLobbyButton(btn, {
     lobby: NET.waiting.trio,
@@ -2896,6 +2940,7 @@ function handleButton(btn: HTMLElement): void {
   if (b === 'autopasstoggle') {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
   }
+  if (b === 'pg-reopen') { postGameHidden = false; render(); return; }
   if (b === 'trio-ok') { pendingTrio = null; render(); return; }
   if (b === 'revealdone') pendingReveal = null;
   if (b === 'donedeploy') {

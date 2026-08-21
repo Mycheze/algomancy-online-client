@@ -127,8 +127,10 @@ export function lobbyHtml(v: LobbyView): string {
 
   const body = lobby.method === 'pick-one' ? pickOneHtml(iAmLocked)
     : lobby.method === 'rank' ? rankHtml(iAmLocked)
-    : `<p class="hint">Nothing to fill in — say you are ready and the server will find you a trio
-       the two of you have never played.</p>`;
+    : lobby.method === 'again'
+      ? '<p class="hint">Nothing to fill in — say you are ready and you will play it again.</p>'
+      : `<p class="hint">Nothing to fill in — say you are ready and the server will find you a trio
+         the two of you have never played.</p>`;
 
   const oppLine = !theyAreHere
     ? `<span class="dim">${esc(names[opp] ?? 'Your opponent')} has not arrived yet</span>`

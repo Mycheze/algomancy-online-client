@@ -129,7 +129,9 @@ resyncs — see Reconnect below.
 | path | what |
 |---|---|
 | `main.ts` | HTTP static host + WebSocket game loop (join / action / broadcast / lobby) |
-| `trio.ts` | choosing the three draft elements together: the three methods, pure and seeded |
+| `trio.ts` | choosing the three draft elements together: the methods, pure and seeded |
+| `test-lobby.ts` | the lobby: every method, the seeded draw, and "no cards until both lock in" |
+| `test-postgame.ts` | the post-game payload and the rematch handshake |
 | `view.ts` | `viewFor(state, seat)` redaction + per-seat event/log blurring |
 | `rooms.ts` | in-memory room store, apply-to-room, JSON persistence + replay restore |
 | `test-drive.ts` | integration test: boots the server, two clients, asserts redaction + reconnect |
@@ -155,7 +157,8 @@ resolves. Both players are in the room, both submit, and the game is dealt to
 both at the same instant. Either player can change the method while the lobby
 is open (changing it clears both submissions — a ranking is not a pick).
 
-Three methods (`trio.ts`), all of them **blind** — you never see what the
+Three methods (`trio.ts`) — four coming out of a rematch, which adds **Run it
+back** — all of them **blind** — you never see what the
 other person submitted until the trio comes back, because a pick you can see
 is a pick you can counter:
 
@@ -189,6 +192,39 @@ locks · `{ lock: false }` unlocks. While the lobby is open every message
 carries `waiting.trio` — the method, the three on offer, who is locked in, and
 **your own** submission echoed back (so a refresh keeps your ranking). Your
 opponent's never crosses the wire.
+
+## The post-game screen
+
+A game used to end with one line in the prompt bar over a board nobody could
+touch any more. It now ends with a screen: who won, both players' numbers side
+by side, whatever the game unlocked, and three ways out — **request rematch**,
+**return to home**, and a **matchmaking queue** button that is deliberately
+dead until there are more than two of us.
+
+The numbers come from the same `summarizeGame()` that feeds the profile, so
+this screen and your stats page can never disagree about the game you just
+played. Rows that are 0–0 for both players are dropped rather than padding the
+table, and the label sits BETWEEN the two figures so they can be compared at a
+glance — which is the only reason to put them on one screen.
+
+"View the final board" dismisses it; the prompt bar keeps a **Post-game
+summary** button to bring it back. Rejoining a room whose game is already over
+gets the screen rather than a dead board.
+
+### Rematch
+
+`{ t: 'rematch', want: true | false }`. One side asking is broadcast to the
+other (`{ t: 'rematch', rematch, room }`), and the button becomes "X wants a
+rematch — accept". When both agree the server builds the new room outright and
+sends both players its code; whoever clicks late follows them there rather than
+starting a second, empty rematch.
+
+The rematch keeps the format, the players and their seats, and takes a new
+seed — it is another game, not a rerun. Constructed keeps both decks and deals
+immediately (you have already each brought one). A **draft** rematch lands in a
+lobby that knows what you just played, so it offers a fourth method, **Run it
+back**, already selected — the likeliest answer to "again?" — with the other
+three still there if you would rather change it up.
 
 ## Accounts, stats and achievements
 
@@ -317,6 +353,11 @@ Server → client:
   the moment the second deck arrives and the game is dealt
 - `{ t: 'update', view, events?, legal, peers }` — after any action, to both seats
 - `{ t: 'error', msg }` — illegal action / join error, to the actor only
+- `{ t: 'gameover', seat, winner, names, mode, els, turns, seats, rematch,
+  recorded, unlocked?, me? }` — the post-game screen's payload, sent to both
+  seats when a game is decided and again to anyone who rejoins a decided room
+- `{ t: 'rematch', rematch, room }` — who has asked; `room` is non-null once
+  both have, and is where to go
 - `{ t: 'me', me }` — the account profile, pushed alongside `joined` when the
   join carried a valid token
 - `{ t: 'recorded', me, unlocked[] }` — the game just ended and went into your

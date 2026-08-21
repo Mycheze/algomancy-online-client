@@ -25,7 +25,7 @@ import { checkDeck, forcedAction, legalActions, IllegalAction } from '../engine/
 import { viewFor, redactEvent, redactLog } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
-  applyToRoom, clearDeployHold, clockSnapshot, getRoom, joinableRoom, renameSeat,
+  applyToRoom, clearDeployHold, clockSnapshot, createRematch, decidedWinner, getRoom, joinableRoom, renameSeat,
   reserveRoomCode, resolveLobby, roomExistsOrReserved, roomLobby,
   restoreRooms, roomWaiting, setLobbyMethod, setLobbySubmission, setRoomDeck,
   setSeatUser, settleClock, undoActionAt, undoLastAction, unlockLobby,
@@ -36,6 +36,7 @@ import { accountRoutes } from './api-accounts.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
 import { recordLiveGame, syncGamesDir } from './history.ts';
+import { summarizeGame } from './stats.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_DIR = join(HERE, '..', 'engine', 'ui');
@@ -256,7 +257,16 @@ function waitingInfo(room: Room, seat: Seat): {
     ...(lobby ? {
       trio: {
         method: lobby.method,
-        methods: TRIO_METHODS.map(id => ({ id, label: METHOD_LABELS[id], blurb: METHOD_BLURBS[id] })),
+        // "run it back" only exists coming out of a game — offering it on a
+        // fresh room would be a button with nothing behind it
+        methods: TRIO_METHODS
+          .filter(id => id !== 'again' || lobby.previousTrio?.length === 3)
+          .map(id => ({
+            id,
+            label: id === 'again' && lobby.previousTrio
+              ? `Run it back — ${lobby.previousTrio.join(' + ')}` : METHOD_LABELS[id],
+            blurb: METHOD_BLURBS[id],
+          })),
         locked: [...lobby.locked] as [boolean, boolean],
         mine: lobby.submissions[seat],
       },
@@ -338,24 +348,88 @@ function recordFinishedGame(room: Room): void {
   try {
     row = recordLiveGame(room);
   } catch (err) {
-    // stats must never cost anybody their game — log it and carry on
+    // stats must never cost anybody their game — log it, and still show them
+    // the post-game screen below
     console.error(`[accounts] could not record ${room.code}:`, err);
-    return;
   }
-  console.log(`[accounts] recorded ${room.code}: ${row.game.names.join(' vs ')}, ` +
-    `${row.game.finished ? `${row.game.names[row.game.winner ?? 0]} won` : 'unfinished'}`);
+  if (row) {
+    console.log(`[accounts] recorded ${room.code}: ${row.game.names.join(' vs ')}, ` +
+      `${row.game.finished ? `${row.game.names[row.game.winner ?? 0]} won` : 'unfinished'}`);
+  }
   for (const seat of [0, 1] as Seat[]) {
+    const unlocked: { id: string; name: string; desc: string; icon: string }[] = [];
     const account = accountById(room.users[seat]);
-    const sock = room.sockets[seat] as unknown as WebSocket | null;
-    if (!account || !sock) continue;
-    const had = before.get(account.id) ?? new Set<string>();
-    const unlocked = Object.keys(account.achievements)
-      .filter(id => !had.has(id))
-      .map(id => {
+    if (account) {
+      const had = before.get(account.id) ?? new Set<string>();
+      for (const id of Object.keys(account.achievements)) {
+        if (had.has(id)) continue;
         const def = ACHIEVEMENTS.find(a => a.id === id);
-        return def ? { id, name: def.name, desc: def.desc, icon: def.icon } : { id, name: id, desc: '', icon: '🏅' };
-      });
-    send(sock, { t: 'recorded', me: privateView(account, isOnline), unlocked });
+        unlocked.push(def ? { id, name: def.name, desc: def.desc, icon: def.icon }
+          : { id, name: id, desc: '', icon: '🏅' });
+      }
+    }
+    sendGameOver(room, seat, { row: row?.game ?? null, unlocked, account });
+  }
+}
+
+/**
+ * The post-game screen's payload: who won, both players' numbers, and — if
+ * you were logged in — what it did to your profile.
+ *
+ * Sent to everyone, account or not. The stats come from the same
+ * summarizeGame() the record uses, so the screen and the profile can never
+ * disagree about what just happened.
+ */
+function sendGameOver(room: Room, seat: Seat, extra: {
+  row: import('./accounts.ts').RecordedGame | null;
+  unlocked: { id: string; name: string; desc: string; icon: string }[];
+  account: ReturnType<typeof accountById>;
+}): void {
+  const sock = room.sockets[seat] as unknown as WebSocket | null;
+  if (!sock) return;
+  const row = extra.row ?? summarizeRoom(room);
+  send(sock, {
+    t: 'gameover',
+    seat,
+    winner: row.winner ?? decidedWinner(room),
+    names: room.names,
+    mode: room.mode,
+    els: row.els,
+    turns: row.turns,
+    seats: row.seats,
+    rematch: [...room.rematch],
+    rematchRoom: room.rematchRoom,
+    // "is this game in somebody's profile" — asked of the record, not of
+    // whether THIS call did the recording. A rejoin into a game recorded an
+    // hour ago must not tell you it went uncounted.
+    recorded: gameHistory().some(g => g.code === room.code && g.users.some(u => !!u)),
+    ...(extra.unlocked.length ? { unlocked: extra.unlocked } : {}),
+    ...(extra.account ? { me: privateView(extra.account, isOnline) } : {}),
+  });
+}
+
+/** A summary for a room we could not record (nobody logged in, or the record
+ * threw) — the post-game screen still deserves real numbers. */
+function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
+  const s = summarizeGame({
+    code: room.code, seed: room.seed, mode: room.mode, els: room.els,
+    names: room.names, actions: room.actions, winner: room.winner,
+    decks: room.mode === 'constructed' ? room.decks : undefined,
+  });
+  return {
+    code: s.code, playedAt: s.playedAt, recordedAt: s.playedAt, mode: s.mode,
+    els: s.els, finished: s.finished, winner: s.winner, turns: s.turns,
+    diverged: s.skipped > 0, users: [...room.users], names: [...room.names],
+    seats: s.seats,
+  };
+}
+
+/** Push the current rematch state to both seats. */
+function broadcastRematch(room: Room): void {
+  for (const seat of [0, 1] as Seat[]) {
+    const sock = room.sockets[seat] as unknown as WebSocket | null;
+    if (!sock) continue;
+    send(sock, { t: 'rematch', rematch: [...room.rematch], room: room.rematchRoom });
   }
 }
 
@@ -392,7 +466,7 @@ wss.on('connection', ws => {
   ws.on('message', raw => {
     let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
       token?: string; deck?: unknown; action?: Action; cols?: unknown; send?: unknown;
-      method?: unknown; submission?: unknown; lock?: unknown };
+      method?: unknown; submission?: unknown; lock?: unknown; want?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     if (msg.t === 'join') {
@@ -483,6 +557,11 @@ wss.on('connection', ws => {
       // the account payload rides along so a reconnecting client does not
       // need a second round trip to know who it is
       if (account) send(ws, { t: 'me', me: privateView(account, isOnline) });
+      // rejoining a game that is already over: the post-game screen is the
+      // screen for that room now, so send it rather than a dead board
+      if (!roomWaiting(room) && decidedWinner(room) !== null) {
+        sendGameOver(room, seat, { row: null, unlocked: [], account });
+      }
       // let the other seat know a peer arrived (fresh view refreshes presence;
       // on game start they need the full reset, i.e. their own 'joined')
       const otherSeat = (seat === 0 ? 1 : 0) as Seat;
@@ -491,6 +570,30 @@ wss.on('connection', ws => {
         else pushView(room, otherSeat);
       }
       console.log(`[ws] ${code}: seat ${seat} joined${roomWaiting(room) ? ' (waiting for decks)' : gameJustStarted ? ' (constructed game started)' : ''}`);
+      return;
+    }
+
+    // ── post-game: another one? ──
+    if (msg.t === 'rematch') {
+      const conn = conns.get(ws);
+      if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
+      const room = conn.room;
+      // already moved: a late clicker follows their opponent rather than
+      // starting a second, empty rematch
+      if (room.rematchRoom) {
+        return send(ws, { t: 'rematch', rematch: [...room.rematch], room: room.rematchRoom });
+      }
+      if (decidedWinner(room) === null) {
+        return send(ws, { t: 'error', msg: 'the game is not over yet' });
+      }
+      room.rematch[conn.seat] = msg.want !== false;
+      if (room.rematch[0] && room.rematch[1]) {
+        // createRematch registers the room outright, so there is nothing to
+        // reserve — a reservation is only for codes a join has yet to claim
+        const next = createRematch(room, freshRoomCode());
+        console.log(`[ws] ${room.code}: rematch → ${next.code} (${next.mode})`);
+      }
+      broadcastRematch(room);
       return;
     }
 

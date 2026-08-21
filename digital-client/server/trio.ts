@@ -17,9 +17,9 @@ import type { Element } from '../engine/src/types.ts';
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { rngNext, rngShuffle } from '../engine/src/rng.ts';
 
-export type TrioMethod = 'pick-one' | 'fresh' | 'rank';
+export type TrioMethod = 'pick-one' | 'fresh' | 'rank' | 'again';
 
-export const TRIO_METHODS: TrioMethod[] = ['pick-one', 'fresh', 'rank'];
+export const TRIO_METHODS: TrioMethod[] = ['again', 'pick-one', 'fresh', 'rank'];
 
 /** What one seat submits. The shape depends on the method; `fresh` asks for
  * nothing but still needs both players to say they are ready, because the
@@ -76,7 +76,7 @@ export function sanitizeSubmission(raw: unknown, method: TrioMethod): TrioSubmis
 export function submissionReady(sub: TrioSubmission, method: TrioMethod): boolean {
   if (method === 'pick-one') return isElement(sub.element);
   if (method === 'rank') return (sub.ranking?.length ?? 0) === ALL_ELEMENTS.length;
-  return true;   // 'fresh' asks nothing of you but your presence
+  return true;   // 'fresh' and 'again' ask nothing of you but your presence
 }
 
 /** draw `n` distinct elements from `pool`, seeded */
@@ -246,26 +246,39 @@ export interface ResolveInput {
   names: [string, string];
   /** past games involving either player, for 'fresh' */
   history: TrioHistoryRow[];
+  /** the trio the previous game used, for 'again' (rematches only) */
+  previousTrio?: Element[];
   /** seeded generator state — the room's seed, so this is reproducible */
   rng: number;
 }
 
 export function resolveTrio(input: ResolveInput): TrioResult {
-  const { method, submissions, names, history, rng } = input;
-  const [result] = method === 'pick-one' ? pickOne(submissions, names, rng)
-    : method === 'rank' ? ranked(submissions, names, rng)
-    : freshest(history, rng);
+  const { method, submissions, names, history, previousTrio, rng } = input;
+  // 'again' is offered only on a rematch; without a previous trio to run back
+  // it is meaningless, so fall through to the ordinary blind pick
+  if (method === 'again' && previousTrio?.length === 3) {
+    return {
+      els: inOrder(previousTrio),
+      how: 'the same trio again',
+      detail: [`You both wanted another game of ${list(inOrder(previousTrio))}.`],
+    };
+  }
+  const [result] = method === 'rank' ? ranked(submissions, names, rng)
+    : method === 'fresh' ? freshest(history, rng)
+    : pickOne(submissions, names, rng);
   return result;
 }
 
 /** A short label for the method, used by the lobby and the game log. */
 export const METHOD_LABELS: Record<TrioMethod, string> = {
+  again: 'Run it back',
   'pick-one': 'One each, one at random',
   fresh: 'Something new',
   rank: 'Rank all seven',
 };
 
 export const METHOD_BLURBS: Record<TrioMethod, string> = {
+  again: 'Play the same three elements you just played.',
   'pick-one': 'You each name one element without seeing the other. The third is drawn at random.',
   fresh: 'The server picks a trio the two of you have never played — or have not played in the longest.',
   rank: 'You each put all seven in order. The trio is drawn from your combined ranking, weighted toward what you both wanted.',

@@ -918,3 +918,56 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .triohow { color: var(--accent); font-weight: 700; }
 .triodetail { margin: 0; padding: 0; list-style: none; color: var(--dim); font-size: 12px;
   line-height: 1.6; text-align: left; }
+
+/* ── the post-game screen ─────────────────────────────────────────────
+   An hour of play deserves more than one line in the prompt bar. Who won,
+   both players' numbers side by side, and something to press. */
+
+.pgover { display: flex; align-items: center; justify-content: center; padding: 16px; overflow: auto; }
+.pgbox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 20px 24px; width: min(560px, 100%); max-height: calc(100vh - 32px); overflow: auto;
+  display: flex; flex-direction: column; gap: 14px; box-shadow: 0 14px 50px rgba(0,0,0,.65); }
+.pgbox.won { border-color: var(--glow); }
+.pgbox.lost { border-color: #4a5462; }
+
+.pghead { text-align: center; }
+.pgtitle { font-size: 30px; font-weight: 700; letter-spacing: .02em; line-height: 1.1; }
+.pgbox.won .pgtitle { color: var(--glow); }
+.pgbox.lost .pgtitle { color: var(--text); }
+.pgsub { color: var(--dim); font-size: 12px; margin-top: 6px;
+  display: flex; gap: 4px; align-items: center; justify-content: center; flex-wrap: wrap; }
+
+/* three columns: your number, what it is, theirs. The label in the middle so
+   the two players' figures sit next to each other and can be compared at a
+   glance, which is the only reason to put them on one screen. */
+.pgtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pgtable th { padding: 4px 8px 8px; font-size: 13px; color: var(--text); font-weight: 700; }
+.pgtable th:first-child { text-align: right; }
+.pgtable th:last-child { text-align: left; }
+.pgtable th.pgwin { color: var(--glow); }
+.pgtable td { padding: 3px 8px; border-top: 1px dotted var(--line); }
+.pgnum { width: 34%; font-variant-numeric: tabular-nums; color: var(--dim); }
+.pgnum:first-child { text-align: right; }
+.pgnum:last-child { text-align: left; }
+.pgnum.lead { color: var(--text); font-weight: 700; }
+.pglabel { text-align: center; color: var(--dim); font-size: 11px;
+  text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+.pgel:first-child, .pgcard:first-child { text-align: right; }
+.pgel:last-child, .pgcard:last-child { text-align: left; }
+.pgcard { color: var(--accent); font-size: 12px; }
+
+.pgunlocked { border: 1px solid var(--accent); border-radius: 6px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px; }
+.pgunlockedhead { color: var(--accent); font-size: 11px; text-transform: uppercase;
+  letter-spacing: .06em; font-weight: 700; }
+.pgach { display: flex; gap: 10px; align-items: center; font-size: 13px; }
+.pgach .achicon { font-size: 22px; filter: none; }
+
+.pgnote { color: var(--dim); font-size: 11px; text-align: center; }
+
+.pgbtns { display: flex; flex-direction: column; gap: 8px; }
+.pgbtns button { padding: 10px; font-size: 14px; }
+/* they asked first: the button is the answer to a question, so it looks like one */
+.pgwants { border-color: var(--glow); color: var(--glow); animation: livepulse 1.8s ease-in-out infinite; }
+.pgpeek { align-self: center; background: none; border: none; color: var(--dim); font-size: 12px; }
+.pgpeek:hover { border: none; color: var(--text); text-decoration: underline; }

@@ -100,11 +100,21 @@ export interface Room {
    * which still deals immediately.
    */
   lobby: Lobby | null;
+  /** post-game: which seats have asked for a rematch. In memory only — a
+   * rematch offer does not deserve to outlive the tab it was made in. */
+  rematch: [boolean, boolean];
+  /** the room a rematch moved to, so a straggler who clicks late (or
+   * reconnects into the finished game) is still sent where their opponent
+   * went rather than into a second, empty rematch */
+  rematchRoom: string | null;
 }
 
 /** The pre-game room: choose a method, both submit, the server resolves. */
 export interface Lobby {
   method: TrioMethod;
+  /** a rematch's lobby knows what you just played, which is what makes
+   * "run it back" a one-click option instead of a re-pick */
+  previousTrio?: Element[];
   /** each seat's submission (empty until they put something in) */
   submissions: [TrioSubmission, TrioSubmission];
   /** each seat has locked their submission in */
@@ -174,13 +184,27 @@ export function roomWaiting(room: Room): boolean {
   return room.mode === 'constructed' && (!room.decks[0] || !room.decks[1]);
 }
 
+/**
+ * Is this game decided, and by whom?
+ *
+ * The live state first, then the stamp. They come apart for a game saved
+ * before the winner stamp existed whose log no longer replays to its ending:
+ * the replay stops short so `state.winner` is null, but we know perfectly
+ * well who won. Anything asking "is this game over" wants this, not the raw
+ * state — otherwise such a room reads as still playable.
+ */
+export const decidedWinner = (room: Room): Seat | null => room.state.winner ?? room.winner;
+
 /** The draft lobby, while it is still open. */
 export function roomLobby(room: Room): Lobby | null {
   return room.lobby && !room.lobby.result ? room.lobby : null;
 }
 
-const freshLobby = (method: TrioMethod = 'pick-one'): Lobby => ({
+const freshLobby = (method: TrioMethod = 'pick-one', previousTrio?: Element[]): Lobby => ({
   method, submissions: [{}, {}], locked: [false, false], result: null,
+  // coming out of a game, "the same again" is the most likely answer, so it
+  // is the one already selected
+  ...(previousTrio ? { previousTrio: [...previousTrio], method: 'again' as TrioMethod } : {}),
 });
 
 /**
@@ -236,6 +260,7 @@ export function resolveLobby(room: Room, history: TrioHistoryRow[]): TrioResult 
     submissions: lobby.submissions,
     names: room.names,
     history,
+    previousTrio: lobby.previousTrio,
     rng: room.seed,
   });
   lobby.result = result;
@@ -343,6 +368,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
   const room: Room = {
     code, seed, mode, els: trio, decks, names, users: [null, null], winner: null,
     lobby: mode === 'draft' && !els ? freshLobby() : null,
+    rematch: [false, false], rematchRoom: null,
     state, actions: [], events, sockets: [null, null],
     deploySnapshot: null, heldDeploy: [[], []], deployStartIndex: -1,
     clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
@@ -470,6 +496,37 @@ export function undoActionAt(room: Room, index: number): void {
   persist(room);
 }
 
+/**
+ * Build the room a rematch moves to: same players, same seats, same format,
+ * a new seed — and, for a draft, a fresh lobby that already knows what you
+ * just played (so "run it back" is one click).
+ *
+ * Constructed keeps both decks and deals immediately: you have already each
+ * brought one, and being sent back to the deck picker to choose the same deck
+ * again would be a strange way to say "again".
+ */
+export function createRematch(old: Room, code: string): Room {
+  const seed = (Math.random() * 1e9) >>> 0;
+  const room = old.mode === 'constructed' && old.decks[0] && old.decks[1]
+    ? createRoom(code, seed, [...old.names], old.mode, old.els, old.decks[0]!)
+    : createRoom(code, seed, [...old.names], old.mode, old.mode === 'draft' ? undefined : old.els);
+  if (old.mode === 'constructed' && old.decks[0] && old.decks[1]) {
+    room.decks = [[...old.decks[0]!], [...old.decks[1]!]];
+    const { state, events } = fresh(seed, room.names, room.mode, room.els, [room.decks[0]!, room.decks[1]!]);
+    room.state = state;
+    room.events = events;
+  } else if (old.mode === 'draft') {
+    room.lobby = freshLobby('pick-one', old.els);
+  }
+  // carry the seat↔account binding over, so the rematch is already countable
+  // even before either client has re-joined
+  room.users = [...old.users];
+  for (const seat of [0, 1] as Seat[]) room.state.players[seat]!.name = room.names[seat]!;
+  old.rematchRoom = code;
+  persist(room);
+  return room;
+}
+
 /** Rename a seat. Names are cosmetic: they live in room.names (persisted, used
  * by replay) and in the live state's player slot for rendering. */
 export function renameSeat(room: Room, seat: 0 | 1, name: string): void {
@@ -573,6 +630,7 @@ export function restoreRooms(): void {
         : [CLOCK_START_MS, CLOCK_START_MS];
       rooms.set(code, {
         code, seed: raw.seed, mode, els, decks, names, users, lobby,
+        rematch: [false, false], rematchRoom: null,
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,
         state, actions, events,
