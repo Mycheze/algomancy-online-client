@@ -2,9 +2,13 @@
 
 A thin, server-authoritative Node layer over the pure engine so two people in
 different cities can play an enforced 1v1 game in their browsers. Personal
-scope: exactly two players, join-by-room-code, **no accounts, no lobbies, no
-TLS**. The server holds the authoritative `GameState` + action log per room and
-only ever sends each client a **redacted** view.
+scope: a handful of players, join-by-room-code, no lobbies, **no TLS**. The
+server holds the authoritative `GameState` + action log per room and only ever
+sends each client a **redacted** view.
+
+Since 2026-08-21 there are also **accounts** — a username and a password, a
+lifetime stat sheet, achievements and a friends list. They are optional: play
+signed out and nothing is recorded.
 
 ## Run it
 
@@ -126,12 +130,93 @@ resyncs — see Reconnect below.
 | `view.ts` | `viewFor(state, seat)` redaction + per-seat event/log blurring |
 | `rooms.ts` | in-memory room store, apply-to-room, JSON persistence + replay restore |
 | `test-drive.ts` | integration test: boots the server, two clients, asserts redaction + reconnect |
-| `games/` | one JSON file per room (`{ seed, names, actions }`) |
+| `games/` | one JSON file per room (`{ seed, names, users, actions }`) |
+| `accounts.ts` | the account store: passwords (scrypt), profiles, achievements unlocks, friends, match history |
+| `achievements.ts` | the achievement table — one declarative counter+goal per badge |
+| `stats.ts` | `summarizeGame(savedRoom)` — replays a game and tallies both players |
+| `history.ts` | summarize → stash → rebuild: the one path every recorded game takes |
+| `api-accounts.ts` | `/api/auth/*`, `/api/me`, `/api/player(s)`, `/api/friends/*` |
+| `seed-accounts.ts` | CLI: import `games/` into the record (aliases, `--force`, `--dry`) |
+| `test-accounts.ts` | the accounts test suite (stats fold, achievements, friends, live server) |
+| `accounts/accounts.json` | the whole account store — **holds password hashes, gitignored** |
+
+## Accounts, stats and achievements
+
+Sign up on the home screen: a username and a password, nothing else. No email,
+no reset flow — this is a two-person server, and an account is a name to hang
+your stats on. Passwords are scrypt-hashed with a per-user salt and compared in
+constant time; the session token lives in `localStorage` and rides along on the
+websocket join, which is what binds a seat to an account.
+
+**A game counts as soon as it is played, finished or not.** Most of ours end
+because somebody has to go, and a "record it when someone wins" design would
+count almost nothing. So the record is derived from `games/` itself: every
+saved room is summarized at server start (`syncGamesDir`) and again the moment
+a game reaches a winner. Unchanged files are skipped, so the sync costs nothing
+after the first pass.
+
+Everything downstream is a pure fold over that record:
+
+```
+games/<CODE>.json  →  summarizeGame()  →  history[]  →  rebuildProfiles()  →  achievements
+```
+
+which is why re-running any of it is safe. A game code is replaced in place,
+never appended twice, and profiles are recomputed rather than incremented —
+so changing how a stat is counted means `node seed-accounts.ts --force`, not
+hand-editing anybody's numbers.
+
+### Claiming games you already played
+
+Saved games are recorded under the seat NAMES that were typed at the time.
+Registering with one of those names claims them, so the first login already has
+a full profile behind it. That is how the eight playtest games became Ben's and
+Rashi's history. On a two-person LAN server "whoever registers the name is that
+player" is the right trade; on anything public it would not be.
+
+```bash
+node seed-accounts.ts                          # sync anything new
+node seed-accounts.ts --alias "Player 2=Rashi" # a seat saved before the name box existed
+node seed-accounts.ts --force                  # re-summarize everything
+node seed-accounts.ts --dry                    # report only, writes nothing
+```
+
+### What is counted
+
+Per game, per seat: units and spells played, spell tokens cast, augments and
+grafts, cards drafted, resources opened, abilities used, attacks declared and
+units sent, damage dealt, life lost, units killed and lost, turns, and a
+per-card tally. Elements are counted by **card weight** — every card you play
+credits its element, a hybrid a half to each — and your "favorite element" is
+the argmax of that. The tally reads the action log with the pre-action state in
+hand (an index means nothing after the action runs) and the event stream for
+consequences. Actions the current engine rejects are skipped, exactly as
+`rooms.ts` skips them on replay, and are **not** counted.
+
+Achievements (`achievements.ts`) are each one counter against one goal, so the
+UI shows honest progress ("79 / 100 cards drafted") for every locked one, and a
+new achievement is retroactive by construction. Unlocks are sticky: raising a
+goal later cannot take somebody's badge away.
+
+### Account endpoints
+
+`POST /api/auth/register` · `/api/auth/login` · `/api/auth/logout` ·
+`/api/auth/password` — a bearer token in, or out.
+`GET /api/me` (401 when the token is unknown, so a stale one can be dropped) ·
+`GET /api/player?name=` · `GET /api/players` · `GET /api/achievements`.
+`POST /api/friends/request` · `/accept` · `/remove` — decline, cancel and
+unfriend are all the same removal, so the client never has to work out which
+it is doing.
+
+Two env vars exist for tests, and only for tests: `ALGO_ACCOUNTS_FILE` and
+`ALGO_GAMES_DIR`. The real store holds password hashes and must never be a
+fixture.
 
 ## Test it
 
 ```bash
 node test-drive.ts
+node test-accounts.ts
 ```
 
 Boots the server on an ephemeral port, connects two clients, and asserts:
@@ -144,10 +229,13 @@ tail: `ALL PASS ✓`.
 ## Message protocol (JSON over one WebSocket)
 
 Client → server:
-- `{ t: 'join', room: CODE, seat?: 0|1, name?, mode?, els?, deck? }` — `mode`
-  (`shared`/`draft`/`constructed`) + `els` only apply when the join creates the
-  room; `deck` (an array of card names, algomancer.cc-importable — see
-  `decks.ts`) registers this seat's constructed deck
+- `{ t: 'join', room: CODE, seat?: 0|1, name?, token?, mode?, els?, deck? }` —
+  `mode` (`shared`/`draft`/`constructed`) + `els` only apply when the join
+  creates the room; `deck` (an array of card names, algomancer.cc-importable —
+  see `decks.ts`) registers this seat's constructed deck; `token` is the
+  account session token, and a valid one binds the seat to that account and
+  **overrides `name`** (stats are filed under the account name, so it is the
+  one thing that cannot disagree)
 - `{ t: 'action', action: Action }`
 
 Server → client:
@@ -157,6 +245,10 @@ Server → client:
   the moment the second deck arrives and the game is dealt
 - `{ t: 'update', view, events?, legal, peers }` — after any action, to both seats
 - `{ t: 'error', msg }` — illegal action / join error, to the actor only
+- `{ t: 'me', me }` — the account profile, pushed alongside `joined` when the
+  join carried a valid token
+- `{ t: 'recorded', me, unlocked[] }` — the game just ended and went into your
+  stats; `unlocked` is whatever achievements it earned
 
 ## Deck endpoints (constructed)
 

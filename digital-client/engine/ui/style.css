@@ -750,3 +750,122 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .pendingcol { display: flex; flex-direction: column; gap: 4px; align-items: center;
   border: 1px dashed #4a5f7a; border-radius: 6px; padding: 4px; background: rgba(60,90,130,.08); }
 .pendingcol .card { opacity: .85; }
+
+/* ── accounts: the home strip, the sign-in screen, the profile ─────────
+   Same spreadsheet-simulator palette as the board — a profile page that
+   looked like a different product would be worse than no profile page. */
+
+.acctbar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding: 6px 8px;
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; font-size: 12px; }
+.acctbar .accthint { color: var(--dim); flex: 1; }
+.acctbar button { padding: 4px 10px; font-size: 12px; }
+.acctwho { display: flex; align-items: center; gap: 6px; background: none; border: none; padding: 2px 4px; }
+.acctwho:hover { border: none; text-decoration: underline; }
+.acctname { font-weight: 700; color: var(--accent); font-size: 13px; }
+.acctrec { color: var(--dim); flex: 1; }
+.acctout { color: var(--dim); }
+.namerow.fixedname { color: var(--dim); }
+.namerow.fixedname b { color: var(--text); }
+
+/* an element name in the accent of that element — the one bit of colour the
+   stats pages get, and it has to survive Light's cream and Metal's grey */
+.acctel { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+  padding: 1px 6px; border-radius: 999px; color: #12151a; }
+.acctel.fire { background: var(--fire); color: #fff; }
+.acctel.water { background: var(--water); color: #fff; }
+.acctel.earth { background: var(--earth); color: #fff; }
+.acctel.wood { background: var(--wood); color: #fff; }
+.acctel.metal { background: var(--metal); color: var(--metal-ink); }
+.acctel.light { background: var(--light); color: var(--light-ink); }
+.acctel.dark { background: var(--dark); color: var(--dark-ink); }
+
+.acctscreen h2 { margin: 0; color: var(--accent); }
+
+/* the profile page is its own full-width layout, not a 340px join card */
+.acctpage { grid-column: 1 / -1; max-width: 1100px; margin: 0 auto; padding: 12px; width: 100%; }
+.accthead { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 12px; }
+.accthead h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: .04em; display: flex; align-items: center; gap: 10px; }
+.accthead .hint { color: var(--dim); font-size: 12px; }
+.accthbtns { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+.accttabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.accttab { text-transform: uppercase; letter-spacing: .06em; font-size: 11px; padding: 6px 12px; }
+.accttab.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.acctcount { color: var(--dim); font-weight: 400; }
+
+.acctbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; align-items: start; }
+.acctcard { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.acctcard.wide { grid-column: 1 / -1; }
+.acctcard h3 { margin: 0 0 8px; color: var(--accent); font-size: 14px;
+  text-transform: uppercase; letter-spacing: .06em; }
+.acctcard h4 { margin: 12px 0 6px; color: var(--dim); font-size: 12px;
+  text-transform: uppercase; letter-spacing: .06em; }
+
+.statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 6px; }
+.statcell { background: var(--panel2); border: 1px solid var(--line); border-radius: 5px;
+  padding: 8px 6px; text-align: center; }
+.statval { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.1; }
+.statlab { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; }
+
+/* how much of each element you have actually played, as one bar */
+.elbar { display: flex; height: 14px; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+.elbarseg.fire { background: var(--fire); } .elbarseg.water { background: var(--water); }
+.elbarseg.earth { background: var(--earth); } .elbarseg.wood { background: var(--wood); }
+.elbarseg.metal { background: var(--metal); } .elbarseg.light { background: var(--light); }
+.elbarseg.dark { background: var(--dark); }
+.ellegend { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+
+.topcards { margin: 0; padding-left: 20px; }
+.topcards li { padding: 2px 0; }
+.tcname { color: var(--text); }
+.tcn { color: var(--dim); margin-left: 6px; }
+
+.accttable { width: 100%; border-collapse: collapse; font-size: 12px; }
+.accttable th { text-align: left; color: var(--dim); font-weight: 400; font-size: 10px;
+  text-transform: uppercase; letter-spacing: .05em; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.accttable td { padding: 4px 6px; border-bottom: 1px dotted var(--line); }
+.accttable .good { color: var(--glow); }
+.accttable .bad { color: var(--danger); }
+.accttable.games .resultcell { font-weight: 700; }
+.accttable.games .res-win .resultcell { color: var(--glow); }
+.accttable.games .res-loss .resultcell { color: var(--danger); }
+.accttable.games .res-unfinished td { color: var(--dim); }
+.roomcell { font-family: ui-monospace, monospace; color: var(--dim); }
+
+.achgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.ach { display: flex; gap: 10px; background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 6px; padding: 8px 10px; opacity: .55; }
+.ach.got { opacity: 1; border-color: var(--accent); }
+.achicon { font-size: 22px; line-height: 1; filter: grayscale(1); }
+.ach.got .achicon { filter: none; }
+.achbody { min-width: 0; flex: 1; }
+.achname { font-weight: 700; display: flex; justify-content: space-between; gap: 8px; }
+.ach.got .achname { color: var(--accent); }
+.achdate { color: var(--dim); font-weight: 400; font-size: 11px; }
+.achdesc { color: var(--dim); font-size: 11px; margin-top: 2px; }
+.achbar { height: 4px; background: var(--line); border-radius: 999px; margin-top: 6px; overflow: hidden; }
+.achbar span { display: block; height: 100%; background: var(--accent); }
+.achprog { font-size: 10px; color: var(--dim); margin-top: 2px; }
+
+.friendrow { display: flex; align-items: center; gap: 8px; padding: 6px 0;
+  border-bottom: 1px dotted var(--line); }
+.friendrow:last-child { border-bottom: none; }
+.fname { font-weight: 700; }
+.fstats { color: var(--dim); font-size: 11px; }
+.fspacer { flex: 1; }
+.friendrow button { font-size: 11px; padding: 3px 8px; }
+.fdot { width: 8px; height: 8px; border-radius: 50%; background: #3a444f; flex: none; }
+.fdot.on { background: var(--glow); box-shadow: 0 0 6px var(--glow); }
+
+/* post-game toasts: "recorded", plus anything it unlocked. Outside the render
+   tree (account.ts) because the board rebuilds everything it owns. */
+.accttoasts { position: fixed; right: 12px; bottom: 12px; z-index: 90;
+  display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.accttoast { display: flex; gap: 10px; align-items: center; pointer-events: auto; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--accent); border-radius: 6px;
+  padding: 10px 14px; max-width: 320px; box-shadow: 0 6px 20px rgba(0,0,0,.5);
+  animation: toastin .35s ease-out; }
+.accttoast .ticon { font-size: 24px; }
+.accttoast b { color: var(--accent); }
+@keyframes toastin { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }

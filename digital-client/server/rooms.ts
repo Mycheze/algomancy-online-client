@@ -15,7 +15,8 @@ import type { Action, CardName, Element, EngineEvent, GameMode, GameState } from
 import { apply, checkDeck, createGame, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const GAMES_DIR = join(HERE, 'games');
+// ALGO_GAMES_DIR lets a test run against a throwaway directory of saved rooms
+const GAMES_DIR = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
 
 export interface Socket {
   send(data: string): void;
@@ -31,6 +32,10 @@ export interface Room {
    * game does not really start until both are in — see roomWaiting(). */
   decks: [CardName[] | null, CardName[] | null];
   names: [string, string];
+  /** ACCOUNT id per seat (null = whoever sat here was not logged in). Set on
+   * join from the token, persisted with the room, and read back when the game
+   * is folded into the players' stats — see history.ts. */
+  users: [string | null, string | null];
   state: GameState;
   actions: Action[];
   /** full authoritative event history, for per-seat redacted log resync */
@@ -219,7 +224,8 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     ? fresh(seed, names, mode, trio, [creatorDeck!, creatorDeck!])
     : fresh(seed, names, mode, trio);
   const room: Room = {
-    code, seed, mode, els: trio, decks, names, state, actions: [], events, sockets: [null, null],
+    code, seed, mode, els: trio, decks, names, users: [null, null],
+    state, actions: [], events, sockets: [null, null],
     deploySnapshot: null, heldDeploy: [[], []], deployStartIndex: -1,
     clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
     building: [null, null],
@@ -353,6 +359,14 @@ export function renameSeat(room: Room, seat: 0 | 1, name: string): void {
   persist(room);
 }
 
+/** Bind a seat to an account (or clear it when nobody is logged in there).
+ * Idempotent, and persisted — this is what makes the game countable later. */
+export function setSeatUser(room: Room, seat: 0 | 1, userId: string | null): void {
+  if (room.users[seat] === userId) return;
+  room.users[seat] = userId;
+  persist(room);
+}
+
 // ── persistence ───────────────────────────────────────────────────────
 
 function persist(room: Room): void {
@@ -363,6 +377,9 @@ function persist(room: Room): void {
     // replay. (Additive field — older files without it restore at 40:00.)
     writeFileSync(path, JSON.stringify({
       seed: room.seed, mode: room.mode, els: room.els, names: room.names,
+      // accounts: who each seat belonged to, so the stats fold knows whose
+      // game this was long after the sockets are gone (additive field)
+      users: room.users,
       actions: room.actions, clockMs: room.clockMs,
       // constructed: decks are part of the replay config (additive field)
       ...(room.mode === 'constructed' ? { decks: room.decks } : {}),
@@ -388,9 +405,11 @@ export function restoreRooms(): void {
       const raw = JSON.parse(readFileSync(join(GAMES_DIR, f), 'utf8')) as {
         seed: number; mode?: GameMode; els?: Element[]; names?: [string, string];
         actions: Action[]; clockMs?: [number, number];
+        users?: [string | null, string | null];
         decks?: [CardName[] | null, CardName[] | null];
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
+      const users: [string | null, string | null] = [raw.users?.[0] ?? null, raw.users?.[1] ?? null];
       const mode = raw.mode ?? 'shared';
       const els = sanitizeTrio(raw.els);
       const decks: [CardName[] | null, CardName[] | null] = [null, null];
@@ -410,7 +429,7 @@ export function restoreRooms(): void {
         ? [Math.max(0, Number(raw.clockMs[0]) || 0), Math.max(0, Number(raw.clockMs[1]) || 0)]
         : [CLOCK_START_MS, CLOCK_START_MS];
       rooms.set(code, {
-        code, seed: raw.seed, mode, els, decks, names, state, actions, events,
+        code, seed: raw.seed, mode, els, decks, names, users, state, actions, events,
         sockets: [null, null], deploySnapshot, heldDeploy, deployStartIndex,
         // nobody is connected right after a restart, so no clock runs yet
         clockMs, clockStamp: Date.now(), clockRun: [false, false],

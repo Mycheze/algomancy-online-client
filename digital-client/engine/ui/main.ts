@@ -26,6 +26,7 @@ import {
 } from './audio.ts';
 import { E } from '../src/engine.ts';
 import type { Action, CachedCard, Entity, EntityId, EventType, GameState, Seat, TargetRef } from '../src/types.ts';
+import * as acct from './account.ts';
 
 const ART = '../../../AlgomancyCards/';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -96,6 +97,9 @@ class NetBackend implements Backend {
     const deck = savedDeck();
     this.ws.send(JSON.stringify({
       t: 'join', room: this.room, seat: this.wantSeat, name,
+      // accounts: the session token binds this seat to an account server-side,
+      // which is what makes the game count toward your stats
+      ...(acct.token() ? { token: acct.token() } : {}),
       mode: this.mode, els: this.els, ...(deck ? { deck: deck.cards } : {}),
     }));
   }
@@ -116,7 +120,16 @@ class NetBackend implements Backend {
     events?: { msg: string; type?: EventType }[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
     clock?: ClockSnap; waiting?: { have: [boolean, boolean] }; names?: [string, string];
     cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
+    me?: acct.Me; unlocked?: { id: string; name: string; desc: string; icon: string }[];
   }): void {
+    // accounts: the profile that rides along with a join, and the "this game
+    // is now in your stats" push when a game ends
+    if (m.t === 'me') { if (m.me) acct.applyMe(m.me); return; }
+    if (m.t === 'recorded') {
+      if (m.me) acct.applyMe(m.me);
+      acct.showRecorded(m.unlocked ?? []);
+      return;
+    }
     // the opponent moved a unit into (or out of) a column they are still
     // building — presentation only, no state, no log
     if (m.t === 'building') {
@@ -2488,11 +2501,17 @@ function renderHome(): void {
   motionReset();
   sfxReset();
   $app.classList.remove('board');
-  const name = localStorage.getItem('algoName') ?? '';
+  // an open account screen (sign-in / profile) owns the page instead
+  if (acct.screen()) { acct.renderScreen(); return; }
+  const user = acct.currentUser();
+  const name = user ? user.username : (localStorage.getItem('algoName') ?? '');
   const deck = savedDeck();
   $app.innerHTML = `<div class="joinscreen home">
     <h1 class="homelogo">ALGOMANCY</h1>
-    <label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>
+    ${acct.barHtml()}
+    ${user
+      ? `<div class="namerow fixedname">Playing as <b>${esc(user.username)}</b></div>`
+      : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
     <div class="homebtns">
       <div class="elpicker">
         <div class="zonelabel">Live draft — pick exactly 3 of the ${ALL_ELEMENTS.length} elements
@@ -2565,6 +2584,9 @@ function renderWaiting(): void {
 }
 
 const saveHomeName = (): void => {
+  // logged in, the name box is not rendered at all — the account name is the
+  // one the server files stats under and must not be overwritten by a stale
+  // input value
   const inp = document.getElementById('h-name') as HTMLInputElement | null;
   if (inp) localStorage.setItem('algoName', inp.value.trim());
 };
@@ -2694,6 +2716,8 @@ document.addEventListener('click', e => {
 });
 
 function handleButton(btn: HTMLElement): void {
+  // accounts own everything prefixed acct- (sign-in, profile, friends)
+  if (acct.handleButton(btn)) return;
   const b = btn.dataset['btn'];
   if (b === 'eltoggle') {
     const el = btn.dataset['el']!;
@@ -3427,6 +3451,10 @@ initAnim({ art: (name: string) => (name === HIDDEN_CARD ? '' : art(name)) });
 const params = new URLSearchParams(location.search);
 /** false on the home screen — the game click-fallback must not fire there */
 const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.has('hotseat') || params.has('demo');
+// accounts: fetch the profile behind the stored token, and give the module a
+// way to repaint. In a game the repaint is a no-op — a profile push arriving
+// mid-game must never paint the home screen over the board.
+acct.initAccounts({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 if (params.has('room') && params.get('room')!.trim()) {
   const room = params.get('room')!.toUpperCase().trim();
   const sp = params.get('seat');

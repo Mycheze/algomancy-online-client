@@ -51,6 +51,14 @@ and `node replay-room.ts games/CODE.json` replays one through the current engine
 how a playtest report gets checked against what actually happened. In-game `🐛 bug` reports
 append to `server/issues.jsonl`, stamped with the room and action index.
 
+Since **2026-08-21** it also carries **accounts**: a username and a password (no email, no
+recovery), a lifetime stat sheet, 28 achievements, a friends list and a match history.
+Everything downstream is a fold over the saved games themselves — `games/<CODE>.json` →
+`summarizeGame()` → history → profiles → achievements — so a game counts as soon as it is
+played, finished or not, and re-running the fold after a change to how a stat is counted
+updates the numbers instead of doubling them. Signing up with a name you have already
+played under claims those games. Playing signed out records nothing.
+
 ## Try the old prototype
 
 Open **[prototype/index.html](prototype/index.html)** in a browser (no build, no server;

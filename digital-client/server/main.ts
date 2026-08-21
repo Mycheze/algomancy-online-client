@@ -6,7 +6,10 @@
  * (redacted) events + that seat's legalActions (computed server-side so the
  * client never needs hidden info to highlight plays).
  *
- * Scope is personal: two players, join-by-room-code, no accounts, no TLS.
+ * Scope is personal: a handful of players, join-by-room-code, no TLS. Accounts
+ * (username + password, stats, achievements, friends) live in accounts.ts and
+ * api-accounts.ts; the game loop only cares about them at two points — binding
+ * a seat to an account on join, and recording the game when it ends.
  *
  *   npm install && node main.ts            # serves + listens on :8080
  *   PORT=9000 node main.ts                 # custom port
@@ -24,14 +27,32 @@ import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
   applyToRoom, clearDeployHold, clockSnapshot, getRoom, joinableRoom, renameSeat,
   reserveRoomCode, roomExistsOrReserved,
-  restoreRooms, roomWaiting, setRoomDeck, settleClock, undoActionAt, undoLastAction,
+  restoreRooms, roomWaiting, setRoomDeck, setSeatUser, settleClock, undoActionAt, undoLastAction,
   type Room, type Socket,
 } from './rooms.ts';
+import { accountRoutes } from './api-accounts.ts';
+import { ACHIEVEMENTS } from './achievements.ts';
+import { accountById, accountForToken, loadAccounts, privateView } from './accounts.ts';
+import { recordLiveGame, syncGamesDir } from './history.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_DIR = join(HERE, '..', 'engine', 'ui');
+const GAMES_DIR = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
 const ART_DIR = join(HERE, '..', '..', 'AlgomancyCards');
 const PORT = Number(process.env['PORT'] ?? 8080);
+
+// ── who is logged in right now ────────────────────────────────────────
+//
+// Counted rather than flagged: the same account can have two tabs open (the
+// share-link flow encourages exactly that), and the first one to close must
+// not make its owner look offline to their friends list.
+
+const onlineCount = new Map<string, number>();
+const isOnline = (userId: string): boolean => (onlineCount.get(userId) ?? 0) > 0;
+function markOnline(userId: string, delta: 1 | -1): void {
+  const n = (onlineCount.get(userId) ?? 0) + delta;
+  if (n > 0) onlineCount.set(userId, n); else onlineCount.delete(userId);
+}
 
 // ── static file server ────────────────────────────────────────────────
 
@@ -70,6 +91,10 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
   let path = decodeURIComponent(url.pathname);
   if (path === '/' || path === '') path = '/index.html';
+
+  // accounts, stats, achievements and friends live in their own module; it
+  // answers true when the request was one of its own
+  if (await accountRoutes(req, res, path, url, { online: isOnline })) return;
 
   // home screen asks here for an unused room code. The room itself is only
   // created when the first player joins it over WS — but the code is RESERVED
@@ -198,7 +223,7 @@ const server = createServer(async (req, res) => {
 
 // ── websocket game loop ───────────────────────────────────────────────
 
-interface Conn { room: Room; seat: Seat; }
+interface Conn { room: Room; seat: Seat; userId: string | null; }
 const conns = new WeakMap<WebSocket, Conn>();
 
 const send = (ws: WebSocket, obj: unknown): void => {
@@ -253,6 +278,46 @@ function pushView(room: Room, seat: Seat): void {
   sendUpdate(room, seat, []);
 }
 
+/**
+ * The game just ended: fold it into both players' stats and tell them what it
+ * unlocked.
+ *
+ * Called only on the transition to a winner, because the fold is a rebuild
+ * over the whole history and is not something to run on every action. An
+ * abandoned game (the common case for us) is picked up instead by the boot
+ * sync over server/games/ — see history.ts.
+ */
+function recordFinishedGame(room: Room): void {
+  const before = new Map<string, Set<string>>();
+  for (const id of room.users) {
+    const a = accountById(id);
+    if (a) before.set(a.id, new Set(Object.keys(a.achievements)));
+  }
+  let row;
+  try {
+    row = recordLiveGame(room);
+  } catch (err) {
+    // stats must never cost anybody their game — log it and carry on
+    console.error(`[accounts] could not record ${room.code}:`, err);
+    return;
+  }
+  console.log(`[accounts] recorded ${room.code}: ${row.game.names.join(' vs ')}, ` +
+    `${row.game.finished ? `${row.game.names[row.game.winner ?? 0]} won` : 'unfinished'}`);
+  for (const seat of [0, 1] as Seat[]) {
+    const account = accountById(room.users[seat]);
+    const sock = room.sockets[seat] as unknown as WebSocket | null;
+    if (!account || !sock) continue;
+    const had = before.get(account.id) ?? new Set<string>();
+    const unlocked = Object.keys(account.achievements)
+      .filter(id => !had.has(id))
+      .map(id => {
+        const def = ACHIEVEMENTS.find(a => a.id === id);
+        return def ? { id, name: def.name, desc: def.desc, icon: def.icon } : { id, name: id, desc: '', icon: '🏅' };
+      });
+    send(sock, { t: 'recorded', me: privateView(account, isOnline), unlocked });
+  }
+}
+
 /** Push freshly-produced events + new state to both seats (per-seat redacted). */
 function broadcastAfterAction(room: Room, rawEvents: import('../engine/src/types.ts').EngineEvent[]): void {
   for (const seat of [0, 1] as Seat[]) sendUpdate(room, seat, rawEvents);
@@ -285,7 +350,7 @@ const wss = new WebSocketServer({ server });
 wss.on('connection', ws => {
   ws.on('message', raw => {
     let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
-      deck?: unknown; action?: Action; cols?: unknown; send?: unknown };
+      token?: string; deck?: unknown; action?: Action; cols?: unknown; send?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     if (msg.t === 'join') {
@@ -336,10 +401,20 @@ wss.on('connection', ws => {
         (picked.kicked as unknown as WebSocket).close();
         console.log(`[ws] ${code}: seat ${seat} taken over by a new connection`);
       }
-      const name = typeof msg.name === 'string' ? msg.name.trim().slice(0, 24) : '';
-      if (name) renameSeat(room, seat, name);
+      // accounts: the join carries the browser's session token. A logged-in
+      // player's ACCOUNT NAME wins over the typed name box — the name is what
+      // the stats get filed under, so it must be the one thing it cannot
+      // disagree with.
+      const account = accountForToken(msg.token);
+      const typed = typeof msg.name === 'string' ? msg.name.trim().slice(0, 24) : '';
+      const name = account ? account.username : typed;
+      if (name && name !== room.names[seat]) renameSeat(room, seat, name);
+      setSeatUser(room, seat, account?.id ?? null);
       room.sockets[seat] = ws as unknown as Socket;
-      conns.set(ws, { room, seat });
+      const previous = conns.get(ws);
+      if (previous?.userId) markOnline(previous.userId, -1);   // re-join on the same socket
+      if (account) markOnline(account.id, 1);
+      conns.set(ws, { room, seat, userId: account?.id ?? null });
       // constructed lobby: register this seat's deck; when it completes the
       // pair the real game is dealt and BOTH seats get a fresh 'joined'
       const gameJustStarted = roomWaiting(room) && deckCards
@@ -363,6 +438,9 @@ wss.on('connection', ws => {
             building: room.building[(s === 0 ? 1 : 0) as Seat],
           };
       send(ws, joinedMsg(seat));
+      // the account payload rides along so a reconnecting client does not
+      // need a second round trip to know who it is
+      if (account) send(ws, { t: 'me', me: privateView(account, isOnline) });
       // let the other seat know a peer arrived (fresh view refreshes presence;
       // on game start they need the full reset, i.e. their own 'joined')
       const otherSeat = (seat === 0 ? 1 : 0) as Seat;
@@ -386,6 +464,7 @@ wss.on('connection', ws => {
       try {
         const room = conn.room;
         const wasDeploy = room.state.phase === 'deploy';
+        const hadWinner = room.state.winner !== null;
         // the committed declaration supersedes every in-progress one
         room.building = [null, null];
         const events = applyToRoom(room, action);
@@ -418,6 +497,8 @@ wss.on('connection', ws => {
         } else {
           broadcastAfterAction(room, events);
         }
+        // the transition into a decided game — record it once
+        if (!hadWinner && room.state.winner !== null) recordFinishedGame(room);
       } catch (err) {
         if (err instanceof IllegalAction) send(ws, { t: 'error', msg: err.message });
         else { console.error('[ws] apply error:', err); send(ws, { t: 'error', msg: 'internal error' }); }
@@ -506,6 +587,7 @@ wss.on('connection', ws => {
   ws.on('close', () => {
     const conn = conns.get(ws);
     if (!conn) return;
+    if (conn.userId) markOnline(conn.userId, -1);
     if (conn.room.sockets[conn.seat] === (ws as unknown as Socket)) {
       conn.room.sockets[conn.seat] = null;
       settleClock(conn.room);   // a disconnected seat is not billed
@@ -516,7 +598,20 @@ wss.on('connection', ws => {
   });
 });
 
+loadAccounts();
 restoreRooms();
+// Every saved game becomes a match-history row and feeds the players' stats,
+// finished or not — most of ours end when somebody has to go, and those games
+// still happened. Cheap after the first pass: a game whose file has not been
+// written since we last read it is skipped (history.ts).
+{
+  const t0 = Date.now();
+  const report = syncGamesDir(GAMES_DIR);
+  if (report.added || report.updated) {
+    console.log(`[accounts] history sync: ${report.added} new, ${report.updated} updated ` +
+      `(${Date.now() - t0}ms)`);
+  }
+}
 server.listen(PORT, () => {
   console.log(`Algomancy server on http://localhost:${PORT}  (open it, or /?ws=1&room=CODE&seat=0)`);
 });
