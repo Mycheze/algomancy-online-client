@@ -237,11 +237,13 @@ test('Flesh Tithe: pay X life, create an X/X unit', () => {
   const A = h.state.deployPlayer!;
   giveResources(h, A, 'light', 4);                           // l/4
   const before = unitsOf(h, A).length;
+  // R64: "[Pay X life]" is an additional cost — paid at cast, a point at a
+  // time (R49 re-asked each time), and what was paid IS X.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Flesh Tithe') });
-  assert.equal(h.state.decision!.seat, A, 'X is chosen at resolution');
-  assert.equal(h.state.decision!.options.length, 30, 'X = 0 .. life - 1 (never lethal)');
-  pick(h, 5);
-  assert.equal(h.state.players[A]!.life, 25, '5 life paid');
+  assert.equal(h.state.decision!.seat, A, 'the caster pays as they cast');
+  for (let i = 0; i < 5; i++) pick(h, { payLife1: true });
+  assert.equal(h.state.players[A]!.life, 25, '5 life paid before it reached the stack');
+  pick(h, { doneCost: true });                               // X = 5
   const made = unitsOf(h, A).filter(u => u.token);
   assert.equal(made.length, 1, 'one token created');
   assert.equal(unitsOf(h, A).length, before + 1);
@@ -255,7 +257,7 @@ test('Flesh Tithe: X = 0 pays nothing and creates nothing', () => {
   const A = h.state.deployPlayer!;
   giveResources(h, A, 'light', 4);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Flesh Tithe') });
-  pick(h, 0);
+  pick(h, { doneCost: true });                               // X = 0, nothing paid
   assert.equal(h.state.players[A]!.life, 30);
   assert.equal(unitsOf(h, A).filter(u => u.token).length, 0);
 });

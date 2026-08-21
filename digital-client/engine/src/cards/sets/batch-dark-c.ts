@@ -145,28 +145,30 @@ function formationSlot(g: E, id: EntityId): { col: EntityId[]; idx: number } | n
 // bounded graftable effect — though a card sitting in the bin carries no
 // mods, so nothing ever rides along on the trash firing itself.
 const blightwalkerRecall: EffectDef = {
+  // R64: "another target unit from your bin" — a declared target, chosen as
+  // the trigger goes on the stack. min 0 carries the "you may": declining is
+  // simply choosing nothing. The [2] stays a resolution-time pay-or-decline —
+  // it is optional mana, not a bracketed cost.
+  targets: {
+    what: 'binCard', min: 0,
+    prompt: 'Blightwalker: pay [2] to recall another target unit from your bin',
+    restrict: (_g, t) => 'binCard' in t && t.binCard.card !== 'Blightwalker' && isUnitCard(t.binCard.card),
+  },
   run: (g, ctx) => {
     const seat = ctx.controller;
-    const bin = g.player(seat).bin;
-    const skip = bin.lastIndexOf('Blightwalker');           // "another": not me
-    const cands = binMatches(g, seat, isUnitCard).filter(([, i]) => i !== skip);
-    if (!cands.length) { g.ev('info', 'Blightwalker: no other unit in your bin.'); return; }
+    const t = ctx.targets[0];
+    if (!t || !('binCard' in t) || t.binCard.index === -1) return;
     if (g.openMana(seat) < 2) { g.ev('info', 'Blightwalker: cannot pay [2].'); return; }
     const pays = ctx.choose('pay', {
       kind: 'payOrDecline', seat,
-      prompt: 'Blightwalker: pay [2] to recall another unit from your bin?',
+      prompt: `Blightwalker: pay [2] to recall ${t.binCard.card} from your bin?`,
       options: [{ label: 'Pay [2]', value: 1 }, { label: 'Decline', value: 0 }],
     }) as number;
     if (!pays) return;
-    const idx = cands.length === 1 ? cands[0]![1] : ctx.choose('which', {
-      kind: 'payOrDecline', seat,
-      prompt: 'Blightwalker: recall which unit from your bin?',
-      options: cands.map(([n, i]) => ({ label: n, value: i, card: n })),
-    }) as number;
-    const name = g.player(seat).bin[idx];
+    const name = g.player(seat).bin[t.binCard.index];
     if (name === undefined) return;
     g.payMana(seat, 2);
-    g.player(seat).bin.splice(idx, 1);
+    g.player(seat).bin.splice(t.binCard.index, 1);
     g.player(seat).hand.push(name);
     g.ev('info', `Blightwalker recalls ${name} from ${g.pname(seat)}'s bin to their hand.`);
   },
@@ -181,31 +183,23 @@ card('Blightwalker', {
 });
 
 // "Put target card in a bin into your hand. Erase me." — dd/2 {Battle} Blight
-// Spell. "A bin" is unowned, so EITHER player's bin is fair game and the card
-// comes to the caster's hand. ⚠ header: the bin is not a targetable zone (the
-// pick is a mid-resolution ctx.choose), and "Erase me" is approximated by the
-// spell being binned normally afterwards.
+// Spell. "A bin" is unowned, so EITHER player's bin is fair game ('anyBinCard')
+// and the card comes to the caster's hand. R64: it is a real declared target
+// now — it used to be a mid-resolution pick, so the spell sat on the stack
+// aiming at nothing. "Erase me" is still approximated by the spell being
+// binned normally afterwards.
 card('Collect Remains', {
   spellEffect: {
+    targets: { what: 'anyBinCard', prompt: 'Collect Remains: put target card in a bin into your hand' },
     run: (g, ctx) => {
-      const opts: { label: string; value: { seat: Seat; index: number }; card: string }[] = [];
-      for (const p of g.s.players) {
-        p.bin.forEach((name, index) => {
-          opts.push({ label: `${name} (${p.name}'s bin)`, value: { seat: p.seat, index }, card: name });
-        });
-      }
-      if (!opts.length) { g.ev('info', 'Collect Remains: both bins are empty.'); return; }
-      const pick = opts.length === 1 ? opts[0]!.value : ctx.choose('take', {
-        kind: 'payOrDecline', seat: ctx.controller,
-        prompt: 'Collect Remains: put target card in a bin into your hand',
-        options: opts,
-      }) as { seat: Seat; index: number };
-      const bin = g.player(pick.seat).bin;
-      const name = bin[pick.index];
+      const t = ctx.targets[0];
+      if (!t || !('binCard' in t) || t.binCard.index === -1) return;
+      const bin = g.player(t.binCard.seat).bin;
+      const name = bin[t.binCard.index];
       if (name === undefined) return;
-      bin.splice(pick.index, 1);
+      bin.splice(t.binCard.index, 1);
       g.player(ctx.controller).hand.push(name);
-      g.ev('info', `Collect Remains: ${name} goes from ${g.pname(pick.seat)}'s bin to ${g.pname(ctx.controller)}'s hand.`);
+      g.ev('info', `Collect Remains: ${name} goes from ${g.pname(t.binCard.seat)}'s bin to ${g.pname(ctx.controller)}'s hand.`);
     },
   },
 });
@@ -284,8 +278,9 @@ card('Finality', {
       for (const p of g.s.players) {
         if (!p.bin.length) continue;
         const n = p.bin.length;
+        const gone = [...p.bin];
         p.bin.length = 0;
-        g.ev('erased', `Finality ERASES all ${n} card(s) in ${p.name}'s bin.`, { seat: p.seat, n });
+        g.ev('erased', `Finality ERASES all ${n} card(s) in ${p.name}'s bin.`, { seat: p.seat, n, cards: gone });
       }
     },
   },
@@ -328,7 +323,8 @@ card('Grox', {
         }) as number;
         const names = [bin[first], bin[second]];
         for (const i of [first, second].sort((a, z) => z - a)) bin.splice(i, 1);
-        g.ev('erased', `Grox ERASES ${names.join(' and ')} from ${g.pname(seat)}'s bin.`, { seat });
+        g.ev('erased', `Grox ERASES ${names.join(' and ')} from ${g.pname(seat)}'s bin.`,
+          { seat, cards: names.filter((n): n is string => n !== undefined) });
       },
     },
   }],
@@ -449,34 +445,54 @@ card('Murkdrop Distiller', {
 // "Exchange target unit in play for target unit with cost less than or equal
 // to it in its controller's bin." — dd/3 {Battle} Occult Spell. The unit in
 // play is a real target (it can be an enemy's); its OWN controller's bin
-// supplies the replacement and keeps controlling it. ⚠ header: the bin pick
-// is a mid-resolution ctx.choose and the exchange is delete-then-spawn — the
-// outgoing unit dies (→ bin → R40 trash, death triggers fire) and the
-// incoming one takes its region and, in battle, its formation slot.
+// supplies the replacement and keeps controlling it.
+// R64: BOTH are real targets, declared at cast — the card prints "target"
+// twice and the bin half used to be a mid-resolution pick. The second slot's
+// legality depends on the first (cost ≤ it, and IN ITS CONTROLLER'S bin),
+// which is what TargetCtx.chosen is for; and the first slot is narrowed to
+// units whose controller actually has a replacement, so the spell can never
+// be aimed somewhere it must do nothing.
+// The exchange is still delete-then-spawn (⚠ header): the outgoing unit dies
+// (→ bin → R40 trash, death triggers fire) and the incoming one takes its
+// region and, in battle, its formation slot.
+const necroSwapFor = (g: E, victimCard: string, seat: Seat): [string, number][] =>
+  binMatches(g, seat, n => isUnitCard(n) && manaOf(n) <= manaOf(victimCard));
 card('Necromorph', {
   spellEffect: {
-    targets: { what: 'unit', prompt: "Necromorph: exchange target unit for a cheaper one in its controller's bin" },
+    targets: {
+      what: 'unit', count: 2, min: 2,
+      prompt: "Necromorph: exchange target unit for a cheaper one in its controller's bin",
+      slots: ['unit', 'anyBinCard'],
+      slotPrompts: [
+        'Necromorph: exchange which unit in play?',
+        "Necromorph: for which unit in that unit's controller's bin?",
+      ],
+      slotRestricts: [
+        (g, t) => 'controller' in t && necroSwapFor(g, t.card, t.controller).length > 0,
+        (g, t, ctx) => {
+          const first = ctx.chosen?.[0];
+          if (!first || !('controller' in first) || !('binCard' in t)) return false;
+          return t.binCard.seat === first.controller
+            && isUnitCard(t.binCard.card) && manaOf(t.binCard.card) <= manaOf(first.card);
+        },
+      ],
+    },
     run: (g, ctx) => {
-      const t = ctx.targets[0];
-      if (!t || !('id' in (t as object))) return;
+      const [t, b] = [ctx.targets[0], ctx.targets[1]];
+      if (!t || !b || !('id' in (t as object)) || !('binCard' in b)) return;
       const victim = g.entity((t as Entity).id);
       if (!victim) return;
       const owner = victim.controller;
-      const cap = manaOf(victim.card);
-      const cands = binMatches(g, owner, n => isUnitCard(n) && manaOf(n) <= cap);
-      if (!cands.length) {
-        g.ev('info', `Necromorph: no unit with cost ${cap} or less in ${g.pname(owner)}'s bin — no exchange.`);
+      // R56: a redirect can have moved the unit target since the cast, so the
+      // pairing is re-checked here rather than trusted
+      if (b.binCard.seat !== owner || b.binCard.index === -1
+        || manaOf(b.binCard.card) > manaOf(victim.card)) {
+        g.ev('info', `Necromorph: ${b.binCard.card} is no longer a legal exchange for ${victim.card} — no effect.`);
         return;
       }
-      const idx = cands.length === 1 ? cands[0]![1] : ctx.choose('swap', {
-        kind: 'payOrDecline', seat: ctx.controller,
-        prompt: `Necromorph: exchange ${victim.card} for which unit in ${g.pname(owner)}'s bin?`,
-        options: cands.map(([n, i]) => ({ label: `${n} (cost ${manaOf(n)})`, value: i, card: n })),
-      }) as number;
-      const name = g.player(owner).bin[idx];
-      if (name === undefined) return;
+      const name = b.binCard.card;
       const slot = formationSlot(g, victim.id);
-      g.player(owner).bin.splice(idx, 1);
+      g.player(owner).bin.splice(b.binCard.index, 1);
       const fresh = g.spawnUnit(owner, name, victim.region);
       if (slot) {
         slot.col[slot.idx] = fresh.id;                        // take the exact slot…

@@ -36,7 +36,7 @@
  */
 import type { Entity, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectDef } from '../dsl.ts';
+import { card, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -218,7 +218,8 @@ card('Dreamfloat Drifter', {
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
     label: 'you and target opponent each draw a card',
     effect: {
-      targets: { what: 'any', prompt: 'Dreamfloat Drifter: target opponent (you both draw)' },
+      // R64: "target opponent" — a player, and not you
+      targets: { what: 'opponent', prompt: 'Dreamfloat Drifter: target opponent (you both draw)' },
       run: (g, ctx) => {
         g.draw(ctx.controller, 1);
         const t = ctx.targets[0];
@@ -257,26 +258,30 @@ card('Echo of Despair', {
 });
 
 // "Recall target unit in your bin. (Put it into your hand.)" — bb/4 4/2
-// Fish Horror Spell Unit. Bin cards are not stack-targetable (TargetSpec has
-// no bin scope) — the pick is a resolution-time ctx.choose over the unit
-// cards in the caster's bin. Empty bin → the spell still resolves and the
-// 4/2 spawns (nothing to recall).
+// Fish Horror Spell Unit. R64: a real cast-time target ('binCard'). min 0
+// because it is a SPELL UNIT — an empty bin must not make the 4/2 uncastable,
+// and with nothing to recall the body still arrives.
 card('Eldritch Reclaimer', {
   spellEffect: {
+    targets: {
+      what: 'binCard', min: 0,
+      prompt: 'Eldritch Reclaimer: recall target unit in your bin',
+      restrict: (_g, t) => {
+        if (!('binCard' in t)) return false;
+        const k = getCard(t.binCard.card).kind;
+        return k === 'unit' || k === 'spellUnit';
+      },
+    },
     run: (g, ctx) => {
+      const t = ctx.targets[0];
+      if (!t || !('binCard' in t) || t.binCard.index === -1) {
+        g.ev('info', 'Eldritch Reclaimer: no unit in the bin.');
+        return;
+      }
       const bin = g.player(ctx.controller).bin;
-      const options = bin
-        .map((name, i) => ({ label: name, value: i, card: name }))
-        .filter(o => { const k = getCard(o.label).kind; return k === 'unit' || k === 'spellUnit'; });
-      if (!options.length) { g.ev('info', 'Eldritch Reclaimer: no unit in the bin.'); return; }
-      const pick = ctx.choose('reclaim', {
-        kind: 'payOrDecline', seat: ctx.controller,
-        prompt: 'Eldritch Reclaimer: recall a unit from your bin to your hand',
-        options,
-      }) as number;
-      const name = bin[pick];
+      const name = bin[t.binCard.index];
       if (name === undefined) return;
-      bin.splice(pick, 1);
+      bin.splice(t.binCard.index, 1);
       g.player(ctx.controller).hand.push(name);
       g.ev('info', `${name} is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
     },
@@ -292,7 +297,13 @@ card('Eldritch Reclaimer', {
 card('Frosted Denial', {
   xMin: 1,   // "X can't be zero."
   spellEffect: {
-    targets: { what: 'stackEffect', prompt: 'Frosted Denial: target enemy effect (its controller may pay X)' },
+    // R64: "target ENEMY effect" — your own effects were being offered and
+    // then refused at resolution
+    targets: {
+      what: 'stackEffect', prompt: 'Frosted Denial: target enemy effect (its controller may pay X)',
+      restrict: (g, t, ctx) => 'stack' in t
+        && g.s.stack.find(i => i.id === t.stack)?.controller !== ctx.ally,
+    },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;
@@ -449,7 +460,11 @@ card('Lurking Slimebeast', {});
 // all units; the "5 or less defense" gate is enforced at resolution (an
 // over-tough pick is a no-op).
 const krakenRecall: EffectDef = {
-  targets: { what: 'unit', prompt: 'Minor Kraken: recall up to one target unit with 5 or less defense' },
+  // R64: "with 5 or less defense" is a targeting restriction.
+  targets: {
+    what: 'unit', prompt: 'Minor Kraken: recall up to one target unit with 5 or less defense',
+    restrict: unitRestrict((g, u) => g.effStats(u)[1] <= 5),
+  },
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!isEnt(t) || !g.entity(t.id)) return;

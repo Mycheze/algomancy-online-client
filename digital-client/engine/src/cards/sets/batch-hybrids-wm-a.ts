@@ -46,18 +46,19 @@
  *  - Soulforger: the died event has no token flag and the entity is erased
  *    before it fires, so "nontoken" is read off the rendered death message
  *    (destroy() writes "token: erased." exactly for tokens).
- *  - Malevolent Machinations: the "/[Sacrifice X units]" cost and the "up to
- *    X target effects" are mid-resolution chooses (the Immolate/Tidal
- *    Reversion approximations): opponents respond to the spell, not to the
- *    picks; "effects" = un-negated items on the stack at resolution (any
- *    kind, triggered abilities included).
+ *  - Malevolent Machinations: R64 — the "/[Sacrifice X units]" bracket is a
+ *    real cast cost (paid before the item reaches the stack, and the units
+ *    sacrificed ARE X) and the "up to X target effects" are declared targets.
+ *    "Effects" is R60's superset: any un-negated stack item that is an effect,
+ *    triggered abilities included.
  *  - Hearthwood Ancient: "Sacrifice another unit:" is an activation cost
  *    paid at resolution (the Slag Spewer precedent); with no other unit the
  *    ability resolves without effect.
  *  - Reconfigure: the moved unit leaves play SILENTLY (no died/despawned
  *    event — it is moved, not removed); its mod entities move along with
- *    budgets intact; "the first target must have [Augment]" is checked at
- *    resolution (no [Augment] → info, no effect).
+ *    budgets intact. R64: "the first target must have [Augment]" is a
+ *    TARGETING restriction on slot 0 — only augments are offered — and the
+ *    resolution check stays for a redirect that lands a non-augment there.
  *  - "your units" amounts (Colossal Construction's greatest defense) and
  *    "each player/opponent" are region-scoped at resolution (R12/R25/R27).
  *
@@ -165,15 +166,25 @@ card('Colossal Construction', {
 // afterwards and can do it twice, collapsing both onto one unit. Resolving
 // that augmented the unit onto ITSELF: the entity was deleted and then made a
 // mod pointing at its own dead id, an orphan the fuzz caught at seed 1132.
-// At resolution the first target must be an [Augment] card
-// (else info, no effect); it leaves play silently (⚠ header — moved, not
-// despawned), becomes an augment mod on the host via attachMod (modApplied
-// fires), and its existing mod entities move along, budgets intact.
+// R64: the printed parenthesis — "the first target must have [Augment] to be
+// able to be augmented" — is a TARGETING RESTRICTION, so the first slot now
+// offers only cards that have one. It was offering the whole board and doing
+// nothing on most of it ("I was allowed to choose illegal targets for
+// Reconfigure"). The resolution check stays: a redirect can put a
+// non-augment card in that slot after the cast (R56/R58).
+// It leaves play silently (⚠ header — moved, not despawned), becomes an
+// augment mod on the host via attachMod (modApplied fires), and its existing
+// mod entities move along, budgets intact.
 card('Reconfigure', {
   spellEffect: {
     targets: {
       what: 'unit', count: 2, min: 2,
       prompt: 'Reconfigure: first pick the unit to move, then the unit to augment it onto',
+      slotPrompts: [
+        'Reconfigure: which unit moves? (it must have [Augment])',
+        'Reconfigure: augment it onto which unit?',
+      ],
+      slotRestricts: [(_g, t) => 'card' in t && isAugment(t.card), null],
     },
     run: (g, ctx) => {
       if (ctx.targets.length < 2) { g.ev('info', 'Reconfigure: a target is gone — no effect.'); return; }
@@ -453,53 +464,23 @@ card('Maelstrom Charger', {
 });
 
 // "/[Sacrifice X units]: Negate up to X target effects." — rrm/2 5/3
-// {Battle} Occult Technology Spell. ⚠ header: the bracketed cost and the
-// negation picks are mid-resolution chooses, plan-then-commit — the caster
-// sacrifices any number of their units (X), then picks up to X un-negated
-// stack items to negate; everything commits after all picks.
+// {Battle} Occult Technology Spell. R64, un-parked: the bracket is an
+// ADDITIONAL COST, paid at cast — the units are sacrificed before the spell is
+// on the stack, X is fixed by how many, and the up-to-X effects it negates are
+// declared targets that everyone can see it aiming at. It used to do all of
+// that mid-resolution: the opponent answered a negate-spell of unknown size
+// aimed at nothing in particular, and could respond by adding an effect it was
+// then free to point at.
 card('Malevolent Machinations', {
   spellEffect: {
+    castCost: { kind: 'sacrificeUnits', n: 'X' },
+    targets: {
+      what: 'stackEffect', count: 'X', min: 0,
+      prompt: 'Malevolent Machinations: negate up to X target effects',
+    },
     run: (g, ctx) => {
-      // plan the cost: sacrifice any number of my units (X)
-      const sacs: EntityId[] = [];
-      for (;;) {
-        const pool = g.unitsOf(ctx.controller, ctx.region).filter(u => !sacs.includes(u.id));
-        if (!pool.length) break;
-        const v = ctx.choose(`sac:${sacs.length}`, {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: `Malevolent Machinations: sacrifice units (X = ${sacs.length} so far)`,
-          options: [
-            ...pool.map(u => ({ label: u.card, value: u.id as unknown })),
-            { label: 'Done', value: false },
-          ],
-        });
-        if (v === false) break;
-        sacs.push(v as EntityId);
-      }
-      const x = sacs.length;
-      // plan the negations: up to X un-negated stack effects
-      const negs: number[] = [];
-      for (let k = 0; k < x; k++) {
-        const pool = g.s.stack.filter(i => !i.negated && !negs.includes(i.id));
-        if (!pool.length) break;
-        const v = ctx.choose(`neg:${k}`, {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: `Malevolent Machinations: negate an effect (${k + 1} of up to ${x})`,
-          options: [
-            ...pool.map(i => ({ label: i.label, value: i.id as unknown })),
-            { label: 'Done', value: false },
-          ],
-        });
-        if (v === false) break;
-        negs.push(v as number);
-      }
-      // commit
-      for (const id of sacs) {
-        const u = g.entity(id);
-        if (u) g.destroy(u, 'is sacrificed');
-      }
-      for (const id of negs) g.negate(id);
-      if (!x) g.ev('info', 'Malevolent Machinations: X = 0 — nothing negated.');
+      if (!ctx.targets.length) { g.ev('info', 'Malevolent Machinations: nothing to negate.'); return; }
+      for (const t of ctx.targets) if ('stack' in t) g.negate(t.stack);
     },
   },
 });

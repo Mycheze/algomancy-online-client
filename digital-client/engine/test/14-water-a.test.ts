@@ -22,7 +22,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, notOffered, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
@@ -246,9 +246,12 @@ test('Eldritch Reclaimer: recalls a unit from your bin to your hand, spawns 4/2'
   const p = h.state.deployPlayer!;
   h.state.players[p]!.bin.push('Echo of Despair', 'Overwhelm');   // unit + spell in the bin
   giveResources(h, p, 'water', 4);                          // bb/4
+  // R64: a real cast-time target — the spell in the bin is never on the menu
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Eldritch Reclaimer') });
-  assert.equal(h.state.decision!.options.length, 1, 'only the unit is offered (not the spell)');
-  pick(h, 0);                                               // recall Echo of Despair (bin index 0)
+  assert.equal(h.state.decision!.options.length, 2,
+    'the one unit, plus the "up to" decline (an empty bin must not block the 4/2)');
+  notOffered(h, { bin: { seat: p, card: 'Overwhelm' } }, 'a spell is not a unit');
+  pick(h, { bin: { seat: p, card: 'Echo of Despair' } });
   assert.deepEqual(h.state.players[p]!.bin, ['Overwhelm'], 'unit left the bin');
   assert.ok(h.state.players[p]!.hand.includes('Echo of Despair'), 'recalled to hand');
   const rec = unitsOf(h, p).find(u => u.card === 'Eldritch Reclaimer')!;
@@ -439,7 +442,7 @@ test('Minor Kraken: attack → recall target unit with 5 or less defense', () =>
   assert.ok(h.state.players[D]!.hand.includes('Unit Token'), 'to its owner\'s hand');
   finishBattle(h);
 
-  // defense > 5: the resolution-time gate refuses
+  // R64 — defense > 5: not a legal target, so it is never offered
   const h2 = new Harness(1417);
   toDeployment(h2);
   const A2 = h2.state.deployPlayer!, D2 = 1 - A2;
@@ -447,7 +450,8 @@ test('Minor Kraken: attack → recall target unit with 5 or less defense', () =>
   const tough = spawn(h2, D2, 'Crumbling Ancient');         // 3/8
   toNextBattle(h2, A2);
   h2.do({ type: 'declareAttack', seat: A2, columns: [[kraken2]] });
-  pick(h2, { unit: tough });
+  notOffered(h2, { unit: tough }, '8 defense > 5');
+  pick(h2, { unit: kraken2 });                              // "up to one" — the Kraken itself is legal
   pass(h2); pass(h2);
   assert.ok(ent(h2, tough), '8 defense > 5 → not recalled');
   finishBattle(h2);

@@ -144,9 +144,13 @@ test('Reclaimer of Secrets: on death, pay [two] to recall a bin spell to hand', 
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [rec] } });
   pass(h); pass(h);   // combat: Reclaimer dies; death trigger resolves at once → payment
   assert.ok(!ent(h, rec), 'Reclaimer died blocking');
-  assert.equal(h.state.decision?.kind, 'payOrDecline');
+  // R64: the bin spell is a declared TARGET, chosen as the trigger is stacked…
+  assert.equal(h.state.decision?.kind, 'targets');
   assert.equal(h.state.decision!.seat, D);
-  pick(h, true);                                     // pay [two]; single spell auto-picked
+  pick(h, { bin: { seat: D, card: 'Luminous Arc' } });
+  // …and the optional [two] is still a resolution-time pay-or-decline
+  assert.equal(h.state.decision?.kind, 'payOrDecline');
+  pick(h, true);
   assert.ok(h.state.players[D]!.hand.includes('Luminous Arc'), 'spell recalled to hand');
   assert.deepEqual(h.state.players[D]!.bin, ['Reclaimer of Secrets'],
     'the Arc left the bin; the dead unit (not a spell) stayed');
@@ -161,11 +165,13 @@ test('Resurrect: put a bin unit with cost 2 or less into play', () => {
   // two legal picks (cost <= 2 units), one too expensive, one not a unit
   h.state.players[p]!.bin.push('Sparkwraith', 'Ignis Sprite', 'Good Whale', 'Luminous Arc');
   giveResources(h, p, 'fire', 2);                    // r / 2
+  // R64: the bin card is a declared TARGET, chosen as the spell is cast
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Resurrect') });
-  assert.equal(h.state.decision?.kind, 'payOrDecline', 'which unit? (two qualify)');
-  assert.deepEqual(h.state.decision!.options.map(o => o.label), ['Sparkwraith', 'Ignis Sprite'],
+  assert.equal(h.state.decision?.kind, 'targets', 'the target is asked for at cast');
+  assert.deepEqual(h.state.decision!.options.map(o => o.label),
+    [`Sparkwraith (${h.state.players[p]!.name}'s bin)`, `Ignis Sprite (${h.state.players[p]!.name}'s bin)`],
     'only units with cost 2 or less are offered');
-  pick(h, 0);                                        // bin index of Sparkwraith
+  pick(h, { bin: { seat: p, card: 'Sparkwraith' } });
   assert.ok(unitsOf(h, p).some(u => u.card === 'Sparkwraith'), 'Sparkwraith in play');
   assert.deepEqual(h.state.players[p]!.bin, ['Ignis Sprite', 'Good Whale', 'Luminous Arc', 'Resurrect'],
     'picked card left the bin; the resolved spell joined it');
@@ -179,9 +185,10 @@ test('Rousing Spirit: attack → a cheap bin unit fills the slot behind me', () 
   h.state.players[A]!.bin.push('Sparkwraith');       // cost 1 unit
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[spirit]] });
+  // R64: the bin card is targeted as the trigger goes on the stack
+  assert.equal(h.state.decision?.kind, 'targets', 'the bin card is targeted up front');
+  pick(h, { bin: { seat: A, card: 'Sparkwraith' } });
   pass(h); pass(h);                                  // attack trigger resolves
-  assert.equal(h.state.decision?.kind, 'payOrDecline', 'in formation, slot free → offer');
-  pick(h, 0);                                        // bin index of Sparkwraith
   const col = h.state.battle!.columns[0]!;
   assert.equal(col.length, 2, 'the column filled up');
   assert.equal(col[0], spirit, 'Spirit stays in front');

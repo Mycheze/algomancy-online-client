@@ -17,7 +17,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -242,6 +242,7 @@ test('Channel Through: X is chosen at cast (R35) — X=0 is a no-op, X=1 works',
   pass(h);                                                    // priority → D again
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
   pick(h, 1);                                                 // X = 1 at cast (R35), paid now
+  pick(h, { unit: tokD });                                    // R64: the ally is a CAST-TIME target
   pass(h); pass(h);
   assert.ok(!ent(h, tokD), 'the targeted ally took 2 and died');
   assert.ok(!ent(h, tokA), 'the distributed 2 killed the opponent’s 1/1');
@@ -396,8 +397,11 @@ test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifice
   const lifeD = h.state.players[D]!.life;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Torrential Reclamation') });
   pick(h, 1);                                                 // X = 1 at cast (R35), paid now
+  // R64: "X target nontoken allies" are declared at cast — D's own token is
+  // not offered, and neither is anything of A's.
+  notOffered(h, { unit: a1 }, "A's unit is not D's ally");
+  pick(h, { unit: sentry });                                  // D recalls the Sentry
   pass(h); pass(h);                                           // resolve
-  pick(h, sentry);                                            // D recalls the Sentry (nontoken pick)
   pick(h, a1);                                                // A's sacrifice pick (D's is forced)
   assert.ok(h.state.players[D]!.hand.includes('Stasis Sentry'), 'the ally is recalled to hand');
   assert.ok(!ent(h, tokD), 'D sacrificed a unit for the recall');

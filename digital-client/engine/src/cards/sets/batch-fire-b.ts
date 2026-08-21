@@ -16,8 +16,8 @@
  *    "Sacrifice another unit:" on an activated ability, Wildfire's X) are
  *    handled mid-resolution via ctx.choose, R6-style.
  *  - "target ... in your bin" (Resurrect, Reclaimer of Secrets, Rousing
- *    Spirit) is a mid-resolution choice, not engine targeting: the bin is
- *    not a targetable zone (TargetSpec covers units/players/stack only).
+ *    Spirit) is REAL TARGETING as of R64: TargetSpec has a 'binCard' kind, and
+ *    a bin holds names, so naming the card IS the reference (BinRef).
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -126,32 +126,34 @@ card('Ravenous Fireslinger', {
 });
 
 // "When I die, you may pay [two] to recall target spell in your bin." — rr/2
-// 4/1. R6 pattern: the payment and the pick are mid-resolution choices; the
-// bin is not a targetable zone (⚠ header note), so "target spell" is a
-// ctx.choose over the bin's spell cards. Its own card is already in the bin
-// when the trigger resolves (destroy bins before firing 'died') but it is a
-// unit, so it never shows up as an option.
+// 4/1. R64: "target spell in your bin" is a declared target, chosen as the
+// trigger goes on the stack (min 0 for the "you may"); the [two] stays a
+// resolution-time pay-or-decline — it is optional mana, not a cost of using
+// the ability. Its own card is already in the bin when the trigger resolves
+// (destroy bins before firing 'died') but it is a unit, so it is never a
+// legal target.
 card('Reclaimer of Secrets', {
   abilities: [{
     type: 'triggered', events: ['died'], self: true,
     label: 'you may pay [two] to recall a spell from your bin',
     effect: {
+      targets: {
+        what: 'binCard', min: 0,
+        prompt: 'Reclaimer of Secrets: pay [two] to recall target spell in your bin',
+        restrict: (_g, t) => 'binCard' in t && isSpellCard(t.binCard.card),
+      },
       run: (g, ctx) => {
-        const spells = binMatches(g, ctx.controller, isSpellCard);
-        if (!spells.length || g.openMana(ctx.controller) < 2) return;
+        const t = ctx.targets[0];
+        if (!t || !('binCard' in t) || t.binCard.index === -1) return;
+        if (g.openMana(ctx.controller) < 2) return;
         const pays = ctx.choose('pay', {
           kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Reclaimer of Secrets: pay [two] to recall a spell from your bin?',
+          prompt: `Reclaimer of Secrets: pay [two] to recall ${t.binCard.card} from your bin?`,
           options: [{ label: 'Pay [two]', value: true }, { label: 'Decline', value: false }],
         });
         if (!pays) return;
-        const idx = spells.length === 1 ? spells[0]![1] : ctx.choose('which', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Reclaimer of Secrets: recall which spell?',
-          options: spells.map(([n, i]) => ({ label: n, value: i, card: n })),
-        }) as number;
         g.payMana(ctx.controller, 2);
-        const [name] = g.player(ctx.controller).bin.splice(idx, 1);
+        const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
         if (name !== undefined) {
           g.player(ctx.controller).hand.push(name);
           g.ev('info', `Reclaimer of Secrets: ${name} recalled to ${g.pname(ctx.controller)}'s hand.`);
@@ -162,19 +164,22 @@ card('Reclaimer of Secrets', {
 });
 
 // "[Switch1] Put target unit with cost 2 or less from your bin into play." —
-// r/2 Occult Spell. Bin pick via ctx.choose (⚠ header note); auto-picked when
-// only one card qualifies. spawnUnit fires the unit's spawn triggers, exactly
-// as if it entered play. Bounded graft ([Switch1], R9).
+// r/2 Occult Spell. R64: the card in the bin is a REAL TARGET, declared at
+// cast — "target" is printed, and it used to be a mid-resolution pick, so the
+// spell went on the stack with nobody able to see what it was reaching for.
+// A bin holds names, so naming the card IS the reference (BinRef); it is
+// looked up again at resolution and fizzles if it has left. spawnUnit fires
+// the unit's spawn triggers, exactly as if it entered play. Bounded graft
+// ([Switch1], R9).
 const resurrectEffect: EffectDef = {
+  targets: {
+    what: 'binCard', prompt: 'Resurrect: put target unit with cost 2 or less from your bin into play',
+    restrict: (_g, t) => 'binCard' in t && isCheapUnit(t.binCard.card),
+  },
   run: (g, ctx) => {
-    const units = binMatches(g, ctx.controller, isCheapUnit);
-    if (!units.length) return;
-    const idx = units.length === 1 ? units[0]![1] : ctx.choose('which', {
-      kind: 'payOrDecline', seat: ctx.controller,
-      prompt: 'Resurrect: put which unit (cost 2 or less) into play?',
-      options: units.map(([n, i]) => ({ label: n, value: i, card: n })),
-    }) as number;
-    const [name] = g.player(ctx.controller).bin.splice(idx, 1);
+    const t = ctx.targets[0];
+    if (!t || !('binCard' in t) || t.binCard.index === -1) return;
+    const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
     if (name !== undefined) g.spawnUnit(ctx.controller, name, ctx.region);
   },
 };
@@ -188,29 +193,26 @@ card('Resurrect', {
 // {Haste}. "If I am still in formation" is the R1 explicit exception: a
 // RESOLUTION-time recheck, encoded per card. "The empty slot behind me" =
 // I am the front unit of my column and its back slot is free (columns hold
-// 1-2 units). "You may" + the bin pick are mid-resolution choices.
+// 1-2 units). R64: the bin card is a declared target ("target unit … from
+// your bin" is printed), min 0 for the "you may".
 card('Rousing Spirit', {
   abilities: [{
     type: 'triggered', events: ['attacked'], self: true,
     label: 'put a unit with cost 2 or less from your bin into the slot behind me',
     effect: {
+      targets: {
+        what: 'binCard', min: 0,
+        prompt: 'Rousing Spirit: put target unit with cost 2 or less from your bin behind me',
+        restrict: (_g, t) => 'binCard' in t && isCheapUnit(t.binCard.card),
+      },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
         if (!self) return;
         const col = g.columnOf(self.id);            // R1 recheck: still in formation?
         if (!col || col.indexOf(self.id) !== 0 || col.length !== 1) return;   // no empty slot behind me
-        const units = binMatches(g, ctx.controller, isCheapUnit);
-        if (!units.length) return;
-        const pick = ctx.choose('pick', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Rousing Spirit: put a unit from your bin into the slot behind me?',
-          options: [
-            ...units.map(([n, i]) => ({ label: n, value: i, card: n })),
-            { label: 'Decline', value: null },
-          ],
-        });
-        if (pick === null) return;
-        const [name] = g.player(ctx.controller).bin.splice(pick as number, 1);
+        const t = ctx.targets[0];
+        if (!t || !('binCard' in t) || t.binCard.index === -1) return;
+        const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
         if (name === undefined) return;
         const u = g.spawnUnit(ctx.controller, name, ctx.region);
         col.push(u.id);                             // straight into the slot behind me

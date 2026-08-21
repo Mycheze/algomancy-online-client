@@ -50,11 +50,10 @@
  *    card code cannot reach the stack item it is resolving from.
  *
  * PARKED (needs engine machinery that does not exist — report, don't invent):
- *  - Gatekeeper of Souls: "I must be targeted if able" is a TARGETING
- *    RESTRICTION; E.targetCandidates has no filter seam and nothing narrows a
- *    legal target set from card code. Registered with an inert [Augment] entry
- *    (the Stasis Sentry / Conduit of Pain precedent) so it still plays,
- *    augments and attaches crash-free as a vanilla 0/7.
+ *  - Gatekeeper of Souls: UN-PARKED by R64. "I must be targeted if able" is a
+ *    targeting COMPULSION — the mirror of a restriction, narrowing other
+ *    effects' candidate lists — and E.targetCandidates has the seam now.
+ *    CardBehavior.mustBeTargeted; see the card.
  *  - Just a Unit: {Pure} is LIVE as of R61 — enforced by the engine at the
  *    combat choke points (E.pure), not by card behaviour. See the card.
  *  - Prediction Prophet (HALF): (b) the start-of-deployment TRIGGER now exists
@@ -154,10 +153,9 @@ card('Calming Force', {
 });
 
 // "After combat, cache up to one target card with cost 1 from your bin. You
-// may play it until end of turn." — l/2 0/1 Horror Unit. R41/R45: the bin is
-// not a targetable zone (TargetSpec has no bin scope), so "up to one target
-// card … from your bin" is a mid-resolution ctx.choose over the controller's
-// own bin, with an explicit decline option for the "up to". "Cost 1" is the
+// may play it until end of turn." — l/2 0/1 Horror Unit. R64: the bin IS a
+// targetable zone now, so "up to one target card … from your bin" is a real
+// declared target (min 0 carries the "up to"). "Cost 1" is the
 // PRINTED mana cost; an X card is never 1. The cached card gets the
 // glimpse-style until-end-of-turn permission (E.cacheFromBin playable:true) —
 // which is what "you may play it until end of turn" means, so the mana is
@@ -167,26 +165,18 @@ card('Delver of the Ephemeral', {
     type: 'triggered', events: ['afterCombat'],
     label: 'cache up to one cost-1 card from your bin (playable until end of turn)',
     effect: {
+      targets: {
+        what: 'binCard', min: 0,
+        prompt: 'Delver of the Ephemeral: cache up to one target cost-1 card from your bin (playable until end of turn)',
+        restrict: (_g, t) => 'binCard' in t && getCard(t.binCard.card).mana === 1,
+      },
       run: (g, ctx) => {
-        const bin = g.player(ctx.controller).bin;
-        const options = bin
-          .map((name, i) => ({ name, i }))
-          .filter(({ name }) => getCard(name).mana === 1)
-          .map(({ name, i }) => ({ label: name, value: i, card: name }));
-        if (!options.length) {
-          g.ev('info', `Delver of the Ephemeral: no cost-1 card in ${g.pname(ctx.controller)}'s bin.`);
-          return;
-        }
-        const pick = ctx.choose('delve', {
-          kind: 'electricPath', seat: ctx.controller,
-          prompt: 'Delver of the Ephemeral: cache up to one cost-1 card from your bin (playable until end of turn)',
-          options: [...options, { label: '(cache nothing)', value: -1 }],
-        }) as number;
-        if (pick < 0) {
+        const t = ctx.targets[0];
+        if (!t || !('binCard' in t) || t.binCard.index === -1) {
           g.ev('info', 'Delver of the Ephemeral: nothing cached.');
           return;
         }
-        g.cacheFromBin(ctx.controller, pick, { playable: true });
+        g.cacheFromBin(ctx.controller, t.binCard.index, { playable: true });
       },
     },
   }],
@@ -219,18 +209,18 @@ card('Feed to Hooba', {
 });
 
 // "[Augment] When a player selects targets for an effect during battle, I
-// must be targeted if able." — l/4 0/7 Horror Unit.
-// PARKED (header): a targeting RESTRICTION. E.targetCandidates builds the
-// legal set with no seam a card can narrow, and the "if able" fallback (still
-// legal when the Gatekeeper is not a legal target for that effect) needs the
-// same machinery. The inert [Augment] entry keeps the card recognised as an
-// augment so it can still be applied; it is a blank 0/7 wall meanwhile.
+// must be targeted if able." — l/4 0/7 Horror Unit. UN-PARKED by R64: the
+// targeting seam exists now, and a compulsion is the mirror of a restriction —
+// it narrows OTHER effects' candidate lists instead of its own. `if able` is
+// the fallback: a list the Gatekeeper is not legally on (Unmake, which reaches
+// only base power 2 or less) is left exactly as it was. It radiates like a
+// static — live as a unit in play, donated while it is an augment mod — and
+// R62 silences it with every other ability. The compulsion is region-scoped
+// like everything else (R12), which is also what "during battle" amounts to:
+// outside battle the only units in your region are your own.
 card('Gatekeeper of Souls', {
-  augmentText: [{
-    type: 'triggered', events: [],
-    label: 'PARKED: I must be targeted if able (targeting restriction)',
-    effect: { run: () => { /* no engine seam for targeting restrictions */ } },
-  }],
+  mustBeTargeted: true,
+  augmentable: true,
 });
 
 // "{i}(Damage dealt by a blessed source causes its controller to gain that

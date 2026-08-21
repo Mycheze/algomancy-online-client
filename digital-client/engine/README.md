@@ -165,7 +165,11 @@ hotseat UI doubles as the network client (`?ws=1&room=CODE&seat=0`). See
   it is a real layer now (R62), which took Monke, Suppression Field,
   Transmogrifant and Formless's second clause off it. So was `{Pure}`, which
   turned out to need one interaction's worth of scoping rather than a layer
-  (R61), and granting rules text (R63, Reforge the Dead).
+  (R61), and granting rules text (R63, Reforge the Dead). And so were
+  **targeting restrictions** (R64: `TargetSpec.restrict`, which also took
+  Gatekeeper of Souls off the parked list) and the wider **cast-time cost**
+  kinds (R64: `sacrificeUnits` / `removeCounters` / `eraseBin`, and `n: 'X'`
+  for all of them).
 - A *consumable* cost modifier (Deferral Drone). The continuous one is done in
   both currencies: mana (R59) and life (R60).
 

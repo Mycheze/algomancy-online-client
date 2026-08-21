@@ -15,13 +15,13 @@
  * the RNG state rolled back with everything else).
  */
 import type {
-  Action, BattleState, CachedCard, CachedProphecy, CardName, Decision, DecisionOption,
+  Action, BattleState, BinRef, CachedCard, CachedProphecy, CardName, Decision, DecisionOption,
   EffectPart, EngineEvent, Entity, EntityId, EventType, GameState, PendingTrigger,
   ResourceKind, Seat, StackItem, Suspension, TargetRef,
 } from './types.ts';
 import {
-  affinityPips, effectByKey, getCard, graftCauseIndex, isGraftable, isTriggered,
-  specForSlot, zoneTriggersFor,
+  affinityPips, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
+  isGraftable, isTriggered, specForSlot, zoneTriggersFor,
   type Ability, type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetSpec, type TriggeredAbility,
 } from './cards/dsl.ts';
@@ -154,8 +154,23 @@ export class E {
   ev(type: EventType, msg: string, data?: Record<string, unknown>): EngineEvent {
     const e: EngineEvent = { type, msg, ...(data ? { data } : {}) };
     this.events.push(e);
+    // R65: the erased pile is kept here rather than at each of the dozen
+    // erase sites — every one of them already announces itself the same way,
+    // with the owning seat and the card name(s), so this is the one place
+    // that has to know. `cards` is the bulk form (Finality, Grox).
+    if (type === 'erased' && typeof data?.['seat'] === 'number') {
+      const seat = data['seat'] as Seat;
+      const names = Array.isArray(data['cards'])
+        ? data['cards'] as CardName[]
+        : typeof data['card'] === 'string' ? [data['card'] as CardName] : [];
+      if (names.length) (this.player(seat).erased ??= []).push(...names);
+    }
     return e;
   }
+
+  /** R65: the cards erased out of `seat`'s zones — public, and never a zone
+   * anything is played from. */
+  erased(seat: Seat): CardName[] { return this.player(seat).erased ?? []; }
   illegal(why: string): never { throw new IllegalAction(why); }
   need(cond: unknown, why: string): asserts cond { if (!cond) this.illegal(why); }
 
@@ -1313,6 +1328,18 @@ export class E {
     }
   }
 
+  /** R65: end the game with `seat` as the loser — the concede path. Shares
+   * loseLife's ending exactly (winner, phase, event, GameEnded) so nothing
+   * downstream has to tell the two apart. */
+  concede(seat: Seat): void {
+    if (this.s.winner !== null) return;
+    this.s.winner = other(seat);
+    this.s.phase = 'gameover';
+    this.ev('gameOver', `*** ${this.pname(other(seat))} wins — ${this.pname(seat)} conceded. ***`,
+      { winner: other(seat), conceded: seat });
+    throw new GameEnded();
+  }
+
   /**
    * R48 {Lethal}: "Any combat damage from a lethal unit will kill a player."
    * A kill, not damage — no amount is involved, so it is expressed as losing
@@ -1684,16 +1711,40 @@ export class E {
   }
 
   // ── targets ─────────────────────────────────────────────────────────
-  targetCandidates(spec: TargetSpec, region: number, excludeStackId?: number, ally?: Seat): TargetRef[] {
+  /**
+   * Every legal target for `spec`, right now, in `region`. The single source
+   * of truth for what may be aimed at: the chooser's option list, `castable`'s
+   * "can this even be played" gate, and `canFillSlot`'s redirect check all
+   * come through here, so a restriction added to a card is enforced in all
+   * three at once (R64).
+   *
+   * `ally` is the EFFECT's controller — the seat "ally"/"enemy"/"opponent" is
+   * measured from, never the chooser's (R58). `sourceId`, when given, is the
+   * entity the effect comes from, for restrictions that read it.
+   */
+  targetCandidates(spec: TargetSpec, region: number, excludeStackId?: number, ally?: Seat, sourceId?: EntityId, x?: number, chosen?: ResolvedTarget[]): TargetRef[] {
     const out: TargetRef[] = [];
-    if (spec.what === 'unit' || spec.what === 'any' || spec.what === 'allyUnit') {
+    if (spec.what === 'unit' || spec.what === 'any' || spec.what === 'allyUnit'
+      || spec.what === 'enemyUnit' || spec.what === 'token') {
       for (const u of this.unitsIn(region)) {
         if (spec.what === 'allyUnit' && u.controller !== ally) continue;
+        if (spec.what === 'enemyUnit' && u.controller === ally) continue;
+        if (spec.what === 'token' && !u.token) continue;
         out.push({ unit: u.id });
       }
     }
-    if (spec.what === 'any') {
-      for (const seat of this.s.regions[region]!.presentSeats) out.push({ player: seat });
+    // R64: a spell TOKEN is a token too — Arcane Echo copies one and Download
+    // steals one, and both are printed "target token" with no unit clause.
+    if (spec.what === 'token') {
+      for (const t of this.s.regions[region]!.presentSeats.flatMap(seat => this.tokensOf(seat, region))) {
+        out.push({ unit: t.id });
+      }
+    }
+    if (spec.what === 'any' || spec.what === 'opponent') {
+      for (const seat of this.s.regions[region]!.presentSeats) {
+        if (spec.what === 'opponent' && seat === ally) continue;
+        out.push({ player: seat });
+      }
     }
     if (spec.what === 'stackSpell' || spec.what === 'stackEffect') {
       for (const it of this.s.stack) {
@@ -1720,6 +1771,104 @@ export class E {
         }
       }
     }
+    // R64: a card in YOUR OWN bin ("recall target unit in your bin",
+    // "put target unit with cost 2 or less from your bin into play"). Every
+    // printed one reaches only the caster's bin, so this does too; a card the
+    // restriction wants to reach in an opponent's bin would need `restrict`
+    // to say so and this to widen. Duplicates collapse: the bin holds names,
+    // and naming a card there IS the reference (BinRef).
+    if (spec.what === 'binCard' && ally !== undefined) out.push(...this.binRefs(ally));
+    // "target card in A bin" (Collect Remains) — the zone is unowned, so both
+    if (spec.what === 'anyBinCard') {
+      for (const p of this.s.players) out.push(...this.binRefs(p.seat));
+    }
+    // R64: "I must be targeted if able" (Gatekeeper of Souls) — a restriction
+    // that narrows OTHER effects' lists. It is applied BEFORE the spec's own
+    // restriction, because "if able" means "if it is a legal target for this
+    // effect", and the spec's restriction is part of what decides that: a
+    // Gatekeeper with base power 8 cannot compel an Unmake to aim at it.
+    const gates = this.mustBeTargetedIn(region);
+    let cands = out;
+    if (gates.size) {
+      const forced = out.filter(r => 'unit' in r && gates.has(r.unit));
+      if (forced.length) cands = forced;
+    }
+    // R64: the printed RESTRICTION, judged against the resolved target. It
+    // runs last so it never has to re-derive what `what` already settled.
+    const restrict = spec.restrict;
+    if (!restrict) return cands;
+    const ctx = {
+      ...(ally !== undefined ? { ally } : {}), region,
+      ...(sourceId !== undefined ? { sourceId } : {}), ...(x !== undefined ? { x } : {}),
+      ...(chosen ? { chosen } : {}),
+    };
+    const kept = cands.filter(ref => {
+      const t = this.resolveTargetRef(ref);
+      return t !== null && restrict(this, t, ctx);
+    });
+    // "if able": a compelled list that the restriction empties falls back to
+    // the whole legal list — the Gatekeeper was not a legal target after all
+    if (kept.length || cands === out) return kept;
+    return out.filter(ref => {
+      const t = this.resolveTargetRef(ref);
+      return t !== null && restrict(this, t, ctx);
+    });
+  }
+
+  /**
+   * R64: the card a target ref names, when it names one OFF THE BOARD — a bin
+   * or cache entry — so the decision option can carry a scan to render.
+   *
+   * Deliberately empty for a unit/player/stack ref: those are clicked ON THE
+   * BOARD (the client highlights them), and giving them a `card` too would
+   * paint a second copy of every legal target into the prompt bar.
+   */
+  private targetCardOf(t: TargetRef): { card?: CardName } {
+    if ('bin' in t) return { card: t.bin.card };
+    if ('cached' in t) {
+      const i = this.cacheIndexOf(t.cached.seat, t.cached.uid);
+      return i === -1 ? {} : { card: this.cache(t.cached.seat)[i]!.card };
+    }
+    return {};
+  }
+
+  /** R64: one ref per CARD IN the bin — copies of one card are separate
+   * targets (a two-target spell may reach both), distinguished by `nth`. */
+  binRefs(seat: Seat): TargetRef[] {
+    const seen = new Map<CardName, number>();
+    return this.player(seat).bin.map(card => {
+      const nth = seen.get(card) ?? 0;
+      seen.set(card, nth + 1);
+      return { bin: { seat, card, ...(nth ? { nth } : {}) } };
+    });
+  }
+
+  /** R64: where a BinRef points RIGHT NOW — the nth surviving copy of that
+   * card, or the last one left if the pile has shrunk past it. -1 if gone. */
+  binIndexOf(ref: BinRef): number {
+    const bin = this.player(ref.seat).bin;
+    const hits: number[] = [];
+    bin.forEach((n, i) => { if (n === ref.card) hits.push(i); });
+    if (!hits.length) return -1;
+    return hits[Math.min(ref.nth ?? 0, hits.length - 1)]!;
+  }
+
+  /** R64: the units in `region` that must be targeted if able. Radiates like
+   * a static — live as a unit in play, donated while an augment mod — and is
+   * silenced by R62 exactly as an ability is. */
+  mustBeTargetedIn(region: number): Set<EntityId> {
+    const out = new Set<EntityId>();
+    for (const holder of Object.values(this.s.entities)) {
+      if (!this.card(holder.card).mustBeTargeted) continue;
+      let anchor: Entity | undefined;
+      if (holder.kind === 'unit') anchor = holder;
+      else if (holder.kind === 'mod' && holder.appliedAs === 'augment' && holder.modOf !== undefined) {
+        anchor = this.entity(holder.modOf);
+      }
+      if (!anchor || anchor.absent || anchor.region !== region) continue;
+      if (anchor.suppressed?.abilities) continue;             // R62, as staticsFor
+      out.add(anchor.id);
+    }
     return out;
   }
   /**
@@ -1742,21 +1891,41 @@ export class E {
     const key = JSON.stringify(ref);
     if (part.targets.some((t, i) => i !== ti && JSON.stringify(t) === key)) return false;
     const cands = this.targetCandidates(
-      specForSlot(def.targets, ti), item.region, item.id, item.controller);
+      specForSlot(def.targets, ti), item.region, item.id, item.controller, item.sourceId,
+      part.costPaid?.x ?? item.x,
+      part.targets.filter((_, i) => i !== ti)
+        .map(t => this.resolveTargetRef(t)).filter((t): t is ResolvedTarget => t !== null));
     return cands.some(c => JSON.stringify(c) === key);
   }
+  /**
+   * The name a target is offered and logged under. R64: a UNIT says whose it
+   * is. Rashi aimed Discharge at her own Unit Token because the list read
+   * "Unit Token, Unit Token" with nothing to tell the two sides apart — the
+   * board has generic tokens on both sides of it and identical art, so the
+   * option text was the only thing that could have carried the difference.
+   */
   targetLabel(t: TargetRef): string {
-    if ('unit' in t) return this.entity(t.unit)?.card ?? '(gone)';
+    if ('unit' in t) {
+      const u = this.entity(t.unit);
+      return u ? `${u.card} (${this.pname(u.controller)}'s)` : '(gone)';
+    }
     if ('player' in t) return this.pname(t.player);
     if ('cached' in t) {
       const i = this.cacheIndexOf(t.cached.seat, t.cached.uid);
       return i === -1 ? '(gone)' : `${this.cache(t.cached.seat)[i]!.card} (${this.pname(t.cached.seat)}'s cache)`;
+    }
+    if ('bin' in t) {
+      // copies are interchangeable but the menu must still show both, so a
+      // second copy says so rather than repeating the same line
+      const n = t.bin.nth ?? 0;
+      return `${t.bin.card}${n ? ` #${n + 1}` : ''} (${this.pname(t.bin.seat)}'s bin)`;
     }
     return this.s.stack.find(i => i.id === t.stack)?.label ?? '(gone)';
   }
   targetStillLegal(t: TargetRef): boolean {
     if ('unit' in t) { const u = this.entity(t.unit); return !!u && !u.absent; }
     if ('player' in t) return true;
+    if ('bin' in t) return this.binIndexOf(t.bin) !== -1;
     // the entry may have been played, grafted or recalled out of the cache
     // between cast and resolution — then it is simply gone (R5 fizzle)
     if ('cached' in t) return this.cacheIndexOf(t.cached.seat, t.cached.uid) !== -1;
@@ -1768,6 +1937,12 @@ export class E {
     if ('cached' in t) {
       const cc = this.cache(t.cached.seat)[this.cacheIndexOf(t.cached.seat, t.cached.uid)]!;
       return { cached: { seat: t.cached.seat, uid: t.cached.uid, card: cc.card } };
+    }
+    // R64: the bin INDEX is read now, at resolution — cards leave a bin
+    // between cast and resolution and the one that matters is wherever the
+    // named card sits at this instant.
+    if ('bin' in t) {
+      return { binCard: { seat: t.bin.seat, index: this.binIndexOf(t.bin), card: t.bin.card } };
     }
     return t as ResolvedTarget;
   }
@@ -1921,27 +2096,69 @@ export class E {
    * the check reads — castability is asked before doPlayCard splices the card
    * out, and a spell cannot discard itself to pay for itself. (0 for a cache
    * release, and for any check made after the card has already left.)
+   *
+   * R64: a VARIABLE cost ('X') asks whether its FLOOR is payable. `xMin` is 0
+   * for every printed one — "[Remove X +1/+1 counters from allies]" with no
+   * counters anywhere is a legal cast that does nothing, exactly as X = 0 on a
+   * mana-X spell is — so the gate is real only where a card sets a floor.
    */
-  canPayCastCost(seat: Seat, cost: CastCost, region: number, handReserve = 0): boolean {
+  canPayCastCost(seat: Seat, cost: CastCost, region: number, handReserve = 0, sourceId?: EntityId): boolean {
+    const want = costAmount(cost) ?? costXMin(cost);
     switch (cost.kind) {
       case 'sacrificeUnit': return this.unitsOf(seat, region).length > 0;
-      case 'payLife': return this.canPayLife(seat, cost.n);
-      case 'discardCard': return this.player(seat).hand.length - handReserve >= cost.n;
+      case 'sacrificeUnits': return this.unitsOf(seat, region).length >= want;
+      // a variable life cost is paid a point at a time (R49 re-asked each
+      // time), so its floor is "can you survive paying the first one"
+      case 'payLife': return this.canPayLife(seat, cost.n === 'X' ? Math.max(1, want) : want);
+      case 'discardCard': return this.player(seat).hand.length - handReserve >= want;
       case 'gainDebt': return true;   // debt is always takeable (R39)
+      case 'removeCounters': return this.counterPool(seat, region, cost.from, sourceId) >= want;
+      case 'eraseBin': return this.player(seat).bin.length >= want;
+    }
+  }
+
+  /** R64: how many +1/+1 counters a "[Remove X +1/+1 counters …]" cost can
+   * reach — every ally's in the region, or just the source unit's own. */
+  counterPool(seat: Seat, region: number, from: 'allies' | 'self', sourceId?: EntityId): number {
+    if (from === 'self') {
+      const u = sourceId !== undefined ? this.entity(sourceId) : undefined;
+      return u && u.controller === seat && !u.absent ? Math.max(0, u.counters) : 0;
+    }
+    return this.unitsOf(seat, region).reduce((n, u) => n + Math.max(0, u.counters), 0);
+  }
+
+  /** R64: a cost paid one unit at a time — the ones whose collector loops. */
+  private costIsIterated(cost: CastCost): boolean {
+    return cost.kind === 'sacrificeUnit' || cost.kind === 'sacrificeUnits'
+      || cost.kind === 'discardCard' || cost.kind === 'removeCounters'
+      || cost.kind === 'eraseBin' || costAmount(cost) === null;
+  }
+
+  /** R64: how much of an iterated cost `part` has already paid. */
+  private costPaidSoFar(part: EffectPart, cost: CastCost): number {
+    const paid = part.costPaid;
+    if (!paid) return 0;
+    switch (cost.kind) {
+      case 'sacrificeUnit': return paid.sacrificed !== undefined ? 1 : 0;
+      case 'sacrificeUnits': return paid.sacrificedUnits?.length ?? 0;
+      case 'discardCard': return paid.discarded?.length ?? 0;
+      case 'removeCounters': return (paid.counters ?? []).reduce((n, c) => n + c.n, 0);
+      case 'eraseBin': return paid.erased?.length ?? 0;
+      case 'payLife': return paid.life ?? 0;
+      case 'gainDebt': return paid.debt ?? 0;
     }
   }
 
   /** the receipt key a CastCost kind lands in — its presence means "already
-   * paid", which is what makes the collector idempotent across a replay */
+   * paid", which is what makes the collector idempotent across a replay.
+   * R64: a variable cost is settled by its own `xDone` flag, because a
+   * half-paid one and a finished one hold the same shape of receipt. */
   private costSettled(part: EffectPart, cost: CastCost): boolean {
     const paid = part.costPaid;
     if (!paid) return false;
-    switch (cost.kind) {
-      case 'sacrificeUnit': return paid.sacrificed !== undefined;
-      case 'payLife': return paid.life !== undefined;
-      case 'gainDebt': return paid.debt !== undefined;
-      case 'discardCard': return (paid.discarded?.length ?? 0) >= cost.n;
-    }
+    const want = costAmount(cost);
+    if (want === null) return paid.xDone === true;
+    return this.costPaidSoFar(part, cost) >= want;
   }
 
   /**
@@ -1951,60 +2168,117 @@ export class E {
    * parts riding a composite may decline — the rider is then skipped. An
    * unpayable cost skips the part the same way.
    *
-   * Costs that carry no choice (pay life, gain debt) are simply charged here;
-   * costs that do (sacrifice a unit, discard a card) suspend via 'cast'/'cost'
-   * once per card/unit still owed. Every branch is guarded by the receipt, so
-   * a resumed cast never pays twice.
+   * Costs that carry no choice (pay a fixed life, gain debt) are simply
+   * charged here; every other kind suspends via 'cast'/'cost' once per unit
+   * still owed. Every branch is guarded by the receipt, so a resumed cast
+   * never pays twice.
+   *
+   * R64 — the point of the whole thing, and the playtest report that forced
+   * it: "Shouldn't Discharge have you remove counters as an additional cost?
+   * Not on resolution". A cost paid at resolution is not a cost. It is paid
+   * after the opponent has already decided whether to respond, it can be
+   * negated away without ever being paid, and — the thing that actually
+   * happened — the caster's own X was still unfixed while priority passed, so
+   * the response was made against a spell whose size nobody knew. Everything
+   * bracketed is settled HERE, before the item is a thing anyone can answer.
    */
-  private collectCastCosts(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+  private collectCastCosts(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[], which: 'variable' | 'fixed'): void {
     for (let pi = 0; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
       if (part.spent) continue;
       const def = effectByKey(part.effectKey);
       const cost = def.castCost;
       if (!cost) continue;
-      if (this.costSettled(part, cost)) continue;
+      if ((costAmount(cost) === null) !== (which === 'variable')) continue;
       const seat = item.controller;
       // grafted riders are opt-in; the spell's own cost is part of casting it
       const optional = part.effectKey.startsWith('graft:');
-      // a MULTI-card cost is paid one card at a time, so payability has to be
-      // asked about what is still OWED, not about the printed total — else the
+      const total = costAmount(cost);
+      // a MULTI-unit cost is paid one at a time, so payability has to be asked
+      // about what is still OWED, not about the printed total — else the
       // second discard of a "[Discard 2 cards]" looks unpayable and the whole
       // part is wrongly skipped after the first card is already gone
-      const owed: CastCost = cost.kind === 'discardCard'
-        ? { kind: 'discardCard', n: cost.n - (part.costPaid?.discarded?.length ?? 0) }
-        : cost;
-      if (!this.canPayCastCost(seat, owed, item.region)) {
-        part.spent = true;   // unpayable: the part never resolves
-        this.ev('info', `${item.label}: the [${this.castCostLabel(cost)}] cost cannot be paid — that effect is skipped.`);
-        continue;
+      while (!this.costSettled(part, cost)) {
+        const done = this.costPaidSoFar(part, cost);
+        const owed = total === null ? 1 : total - done;
+        if (!this.canPayCastCost(seat, this.costOwing(cost, owed), item.region, 0, item.sourceId)) {
+          if (total === null) {
+            // a variable cost simply stops when nothing more can be paid —
+            // what was paid stands, and X is what it is
+            this.finishVariableCost(item, part, cost);
+            break;
+          }
+          part.spent = true;   // unpayable: the part never resolves
+          this.ev('info', `${item.label}: the [${this.castCostLabel(cost)}] cost cannot be paid — that effect is skipped.`);
+          break;
+        }
+        // choice-free costs: charged on the spot, no decision to ask for. A
+        // grafted rider is still opt-in, so it goes through the decision path.
+        if (!optional && !this.costIsIterated(cost)) { this.chargeCastCost(item, part, cost); break; }
+        const options: DecisionOption[] = this.castCostOptions(item, part, cost);
+        // payability and the option list read the same pool, so this is a
+        // belt-and-braces branch: nothing left to pay with closes a variable
+        // cost at what it has, and skips a fixed one rather than under-paying.
+        if (!options.length) {
+          if (total === null) this.finishVariableCost(item, part, cost);
+          else {
+            part.spent = true;
+            this.ev('info', `${item.label}: the [${this.castCostLabel(cost)}] cost cannot be paid — that effect is skipped.`);
+          }
+          break;
+        }
+        // R64: a variable cost is the caster's to size, so "that's enough" is
+        // always on the table once its floor is met. It goes LAST, where the
+        // targets collector puts "No more targets" — the stop is never the
+        // thing your hand lands on first.
+        if (total === null && done >= costXMin(cost)) {
+          options.push({ label: `That's enough — X = ${done}`, value: { doneCost: true } });
+        }
+        if (optional && !done) options.push({ label: "Don't pay — skip this effect", value: { declineCost: true } });
+        this.suspend(
+          { type: 'cast', stage: 'cost', item, partIndex: pi, targetIndex: 0, then, moreItems },
+          {
+            seat, kind: 'targets',
+            prompt: `${item.label}: ${this.castCostLabel(cost)}${
+              total !== null && total > 1 ? ` (${done + 1} of ${total})` : total === null ? ` (X = ${done} so far)` : ''
+            } — additional cost${optional ? ', optional' : ''}`,
+            options,
+          },
+        );
       }
-      // choice-free costs: charged on the spot, no decision to ask for. A
-      // grafted rider is still opt-in, so it goes through the decision path.
-      if (!optional && (cost.kind === 'payLife' || cost.kind === 'gainDebt')) {
-        this.chargeCastCost(item, part, cost);
-        continue;
-      }
-      const options: DecisionOption[] = this.castCostOptions(item, part, cost);
-      if (optional) options.push({ label: "Don't pay — skip this effect", value: { declineCost: true } });
-      this.suspend(
-        { type: 'cast', stage: 'cost', item, partIndex: pi, targetIndex: 0, then, moreItems },
-        {
-          seat, kind: 'targets',
-          prompt: `${item.label}: ${this.castCostLabel(cost)} (additional cost${optional ? ' — optional' : ''})`,
-          options,
-        },
-      );
     }
+  }
+
+  /** R64: the same cost, restated as the amount still owing — what payability
+   * must be asked about mid-payment. */
+  private costOwing(cost: CastCost, owed: number): CastCost {
+    if (cost.kind === 'sacrificeUnit' || cost.kind === 'gainDebt') return cost;
+    return { ...cost, n: owed, xMin: 0 } as CastCost;
+  }
+
+  /** R64: close a variable cost — X is what was actually paid, and it is
+   * written where the resolution reads it (ctx.x). */
+  private finishVariableCost(item: StackItem, part: EffectPart, cost: CastCost): void {
+    if (costAmount(cost) !== null) return;
+    const paid = (part.costPaid ??= {});
+    paid.x = this.costPaidSoFar(part, cost);
+    paid.xDone = true;
+    this.ev('info', `${item.label}: X = ${paid.x} (${this.castCostLabel(cost)}).`);
   }
 
   /** human-readable form of a bracketed cost, for prompts and the log */
   castCostLabel(cost: CastCost): string {
+    const n = costAmount(cost);
+    const many = (one: string, plural: (k: number | 'X') => string) =>
+      n === 1 ? one : plural(n === null ? 'X' : n);
     switch (cost.kind) {
       case 'sacrificeUnit': return 'sacrifice a unit';
-      case 'payLife': return `pay ${cost.n} life`;
-      case 'discardCard': return `discard ${cost.n === 1 ? 'a card' : `${cost.n} cards`}`;
+      case 'sacrificeUnits': return many('sacrifice a unit', k => `sacrifice ${k} units`);
+      case 'payLife': return `pay ${n === null ? 'X' : n} life`;
+      case 'discardCard': return many('discard a card', k => `discard ${k} cards`);
       case 'gainDebt': return `gain ${cost.n} debt`;
+      case 'removeCounters': return `remove ${n === null ? 'X' : n} +1/+1 counter${n === 1 ? '' : 's'} from ${cost.from === 'self' ? 'me' : 'allies'}`;
+      case 'eraseBin': return `erase ${n === null ? 'X' : n} card${n === 1 ? '' : 's'} from your bin`;
     }
   }
 
@@ -2012,14 +2286,42 @@ export class E {
    * which then present a single "pay it" option on the optional-rider path) */
   private castCostOptions(item: StackItem, part: EffectPart, cost: CastCost): DecisionOption[] {
     const seat = item.controller;
-    if (cost.kind === 'sacrificeUnit') {
-      return this.unitsOf(seat, item.region).map(u => ({ label: u.card, value: { unit: u.id }, card: u.card }));
+    if (cost.kind === 'sacrificeUnit' || cost.kind === 'sacrificeUnits') {
+      const spent = new Set<EntityId>();
+      // a multi-unit sacrifice may not name the same unit twice, and each one
+      // is really gone by the time the next is asked for — so only the units
+      // still in play are ever offered.
+      return this.unitsOf(seat, item.region)
+        .filter(u => !spent.has(u.id))
+        .map(u => ({ label: this.targetLabel({ unit: u.id }), value: { unit: u.id }, card: u.card }));
     }
     if (cost.kind === 'discardCard') {
-      const already = part.costPaid?.discarded?.length ?? 0;
-      return this.player(seat).hand.map((n, i) => ({
-        label: `${n}${cost.n > 1 ? ` (${already + 1} of ${cost.n})` : ''}`, value: { discard: i }, card: n,
-      }));
+      return this.player(seat).hand.map((n, i) => ({ label: n, value: { discard: i }, card: n }));
+    }
+    if (cost.kind === 'eraseBin') {
+      const seen = new Set<string>();
+      return this.player(seat).bin.filter(n => !seen.has(n) && seen.add(n))
+        .map(n => ({ label: n, value: { erase: n }, card: n }));
+    }
+    // R64: a VARIABLE life cost is paid a point at a time, so that R49's
+    // "never your last life" is re-asked before each one.
+    if (cost.kind === 'payLife') {
+      return this.canPayLife(seat, 1)
+        ? [{ label: `Pay 1 more life (you have ${this.player(seat).life})`, value: { payLife1: true } }]
+        : [];
+    }
+    if (cost.kind === 'removeCounters') {
+      // each counter is really taken off as it is paid, so `u.counters` is
+      // already net of everything paid so far — no separate tally
+      const pool = cost.from === 'self'
+        ? (item.sourceId !== undefined ? [this.entity(item.sourceId)] : []).filter((u): u is Entity => !!u && !u.absent)
+        : this.unitsOf(seat, item.region);
+      return pool
+        .filter(u => u.counters > 0)
+        .map(u => ({
+          label: `${this.targetLabel({ unit: u.id })} — has ${u.counters} counter${u.counters === 1 ? '' : 's'}`,
+          value: { counterFrom: u.id }, card: u.card,
+        }));
     }
     return [{ label: `Pay: ${this.castCostLabel(cost)}`, value: { payCost: true } }];
   }
@@ -2029,9 +2331,10 @@ export class E {
     const seat = item.controller;
     const paid = (part.costPaid ??= {});
     if (cost.kind === 'payLife') {
-      paid.life = cost.n;
-      this.ev('info', `${this.pname(seat)} pays ${cost.n} life — the cost of ${item.label}.`);
-      this.loseLife(seat, cost.n, `${item.label} (cost)`);
+      const n = costAmount(cost) ?? 0;
+      paid.life = n;
+      this.ev('info', `${this.pname(seat)} pays ${n} life — the cost of ${item.label}.`);
+      this.loseLife(seat, n, `${item.label} (cost)`);
     } else if (cost.kind === 'gainDebt') {
       paid.debt = cost.n;
       this.ev('info', `${this.pname(seat)} gains ${cost.n} debt — the cost of ${item.label}.`);
@@ -2044,24 +2347,53 @@ export class E {
    * stats snapshotted now) lands on the part for resolution to read. */
   payCastCost(item: StackItem, partIndex: number, val: unknown): void {
     const part = item.parts[partIndex]!;
-    if (val !== null && typeof val === 'object' && 'declineCost' in val) {
+    const cost = effectByKey(part.effectKey).castCost!;
+    const obj = val !== null && typeof val === 'object' ? val as Record<string, unknown> : {};
+    if ('declineCost' in obj) {
       part.spent = true;
       this.ev('info', `${item.label}: the [cost] is declined — that effect is skipped.`);
       return;
     }
-    const cost = effectByKey(part.effectKey).castCost!;
-    if (val !== null && typeof val === 'object' && 'payCost' in val) {
-      this.chargeCastCost(item, part, cost);
+    if ('doneCost' in obj) { this.finishVariableCost(item, part, cost); return; }
+    if ('payCost' in obj) { this.chargeCastCost(item, part, cost); return; }
+    const paid = (part.costPaid ??= {});
+    if ('payLife1' in obj) {
+      this.need(this.canPayLife(item.controller, 1), 'bad cost choice');
+      paid.life = (paid.life ?? 0) + 1;
+      this.ev('info', `${this.pname(item.controller)} pays 1 life — the cost of ${item.label}.`);
+      this.loseLife(item.controller, 1, `${item.label} (cost)`);
       return;
     }
-    if (cost.kind === 'discardCard') {
-      const idx = (val as { discard: number }).discard;
+    if ('discard' in obj) {
+      const idx = obj['discard'] as number;
       const name = this.player(item.controller).hand[idx];
       this.need(name !== undefined, 'bad cost choice');
-      const paid = (part.costPaid ??= {});
       (paid.discarded ??= []).push(name!);
       this.ev('info', `${this.pname(item.controller)} discards ${name} — the cost of ${item.label}.`);
       this.discardFromHand(item.controller, idx);
+      return;
+    }
+    if ('erase' in obj) {
+      const name = obj['erase'] as CardName;
+      const bin = this.player(item.controller).bin;
+      const idx = bin.indexOf(name);
+      this.need(idx !== -1, 'bad cost choice');
+      bin.splice(idx, 1);
+      (paid.erased ??= []).push(name);
+      // 'erased', not 'info': this is a real erase, and R65's public pile is
+      // kept by ev() off exactly this event
+      this.ev('erased', `${this.pname(item.controller)} erases ${name} from their bin — the cost of ${item.label}.`,
+        { card: name, seat: item.controller });
+      return;
+    }
+    if ('counterFrom' in obj) {
+      const u = this.entity(obj['counterFrom'] as EntityId);
+      this.need(u && u.kind === 'unit' && u.controller === item.controller && !u.absent
+        && u.counters > 0 && (cost.kind !== 'removeCounters' || cost.from !== 'self' || u.id === item.sourceId),
+        'bad cost choice');
+      (paid.counters ??= []).push({ unit: u!.id, card: u!.card, n: 1 });
+      this.ev('info', `${this.pname(item.controller)} removes a +1/+1 counter from ${u!.card} — the cost of ${item.label}.`);
+      this.addCounters(u!, -1);
       return;
     }
     const id = (val as { unit: EntityId }).unit;
@@ -2069,9 +2401,13 @@ export class E {
     this.need(u && u.kind === 'unit' && u.controller === item.controller && !u.absent
       && u.region === item.region, 'bad cost choice');
     const [p, t] = this.effStats(u);
-    (part.costPaid ??= {}).sacrificed = { card: u.card, power: p, defense: t };
-    this.ev('info', `${this.pname(item.controller)} sacrifices ${u.card} — the cost of ${item.label}.`);
-    this.destroy(u, 'is sacrificed');
+    const receipt = { card: u!.card, power: p, defense: t };
+    // 'sacrificeUnit' keeps the singular receipt every existing card reads;
+    // the plural kind accumulates its own list.
+    if (cost.kind === 'sacrificeUnits') (paid.sacrificedUnits ??= []).push(receipt);
+    else paid.sacrificed = receipt;
+    this.ev('info', `${this.pname(item.controller)} sacrifices ${u!.card} — the cost of ${item.label}.`);
+    this.destroy(u!, 'is sacrificed');
   }
 
   /**
@@ -2164,6 +2500,14 @@ export class E {
    */
   collectTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
     this.collectX(item, then, moreItems);
+    // R64: a VARIABLE bracketed cost is where X comes from ("[Remove X +1/+1
+    // counters from allies]", "[Sacrifice X units]"), so it is paid up here
+    // with the mana X rather than down with the fixed costs — the spell's size
+    // has to be settled before it can be aimed, since what it may aim at is
+    // sized by X ("Negate up to X target effects"). R57's "targets before
+    // costs" is about not destroying a unit before showing what it could have
+    // hit; a cost that decides how big the spell is has no such reading.
+    this.collectCastCosts(item, then, moreItems, 'variable');
     // {Modular} before the costs and the targets: an applied mod adds a part,
     // and that part has its own [cost] and its own targets to collect
     // (Manual p.33 — the composite resolves as ONE ability)
@@ -2171,7 +2515,7 @@ export class E {
     this.collectPartTargets(item, then, moreItems);
     this.payActivationCost(item);                   // R57: choice-free half
     this.collectItemCosts(item, then, moreItems);   // R49: the choice-bearing half
-    this.collectCastCosts(item, then, moreItems);
+    this.collectCastCosts(item, then, moreItems, 'fixed');
   }
 
   /**
@@ -2206,19 +2550,40 @@ export class E {
       if (part.spent) continue;
       const def = effectByKey(part.effectKey);
       if (!def.targets) continue;
-      const max = def.targets.count ?? 1;
+      // R64: "X target allies" / "up to X target effects" — the spec's count is
+      // the spell's X, already fixed by collectX or by a variable cast cost.
+      const max = def.targets.count === 'X'
+        ? (part.costPaid?.x ?? item.x ?? 0)
+        : (def.targets.count ?? 1);
       const min = Math.min(def.targets.min ?? 1, max);
+      if (max <= 0) { part.targetsDone = true; continue; }
       while (!part.targetsDone && part.targets.length < max) {
         const n = part.targets.length;
         // R58: each slot may carry its own restriction (Fight: ally, then any
         // other unit), so candidates are computed per slot rather than once.
         const slot = specForSlot(def.targets, n);
         const chosen = new Set(part.targets.map(t => JSON.stringify(t)));
-        const cands = this.targetCandidates(slot, item.region, item.id, item.controller)
+        const already = part.targets
+          .map(t => this.resolveTargetRef(t)).filter((t): t is ResolvedTarget => t !== null);
+        const cands = this.targetCandidates(slot, item.region, item.id, item.controller,
+          item.sourceId, part.costPaid?.x ?? item.x, already)
           .filter(c => !chosen.has(JSON.stringify(c)));
-        if (!cands.length) break;         // composite part with nothing to aim at: skipped at resolution
-        const options: { label: string; value: unknown }[] =
-          cands.map(c => ({ label: this.targetLabel(c), value: c }));
+        if (!cands.length) {
+          // R64: nothing legal to aim at. The part is skipped at resolution
+          // either way, but silence here is the "why did nothing happen?"
+          // that sends people to the bug button — so it says so, once.
+          // (`targetsDone` is also the idempotence guard: collectTargets
+          // re-runs from the top after every answered decision.)
+          part.targetsDone = true;
+          if (n === 0 && min > 0) {
+            this.ev('info', `${item.label}: there is no legal target for that — it does nothing.`);
+          }
+          break;
+        }
+        // `card` gives the UI a scan to render for targets that are not on the
+        // board — a card in a bin or a cache has no entity to look at
+        const options: DecisionOption[] =
+          cands.map(c => ({ label: this.targetLabel(c), value: c as TargetRef, ...this.targetCardOf(c) }));
         if (part.targets.length >= min) {
           options.push({ label: 'No more targets', value: { doneTargets: true } });
         }
@@ -2394,7 +2759,10 @@ export class E {
         sourceId: item.sourceId,
         region: item.region,
         targets: resolved,
-        x: item.x,
+        // R64: a VARIABLE cast cost defines this part's X (Discharge's "remove
+        // X counters … deal X damage"). It wins over the item-wide mana X so a
+        // grafted rider that paid its own cost cannot read its carrier's.
+        x: part.costPaid?.x ?? item.x,
         costPaid: part.costPaid,
         ...(part.mods ? { mods: part.mods } : {}),
         event: item.event ?? null,

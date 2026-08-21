@@ -346,21 +346,25 @@ card('Combustible Bogwalker', {
     type: 'activated', cost: { discardOrSacrifice: 1 }, bounded: true,
     label: 'sacrifice a nontoken unit or discard a card: recall target unit in your bin',
     effect: {
+      // R64: "target unit in your bin" is a declared target. NOTE the
+      // ordering it inherits: targets are collected BEFORE the activation
+      // cost is paid (R57), so the pick is made against the bin as it stands
+      // BEFORE the discard/sacrifice pushes another card into it — you cannot
+      // recall the very card you are about to pay with. That is the printed
+      // reading (the cost is paid to use the ability, not as part of it) and
+      // it is also the kinder one: you see what you would get first.
+      targets: {
+        what: 'binCard', min: 0,
+        prompt: 'Combustible Bogwalker: recall target unit in your bin',
+        restrict: (_g, t) => 'binCard' in t && isUnitCard(t.binCard.card),
+      },
       run: (g, ctx) => {
-        const bin = binMatches(g, ctx.controller, isUnitCard);
-        if (!bin.length) {
+        const t = ctx.targets[0];
+        if (!t || !('binCard' in t) || t.binCard.index === -1) {
           g.ev('info', 'Combustible Bogwalker: no unit in your bin — the cost is paid for nothing.');
           return;
         }
-        // NOTE: the cost was already paid at ACTIVATION, and paying it pushed a
-        // card into this same bin — so the pick is made against the bin AS IT
-        // IS NOW, not against a stale plan.
-        const which = bin.length === 1 ? bin[0]![1] : ctx.choose('bin', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Combustible Bogwalker: recall which unit from your bin?',
-          options: bin.map(([n, i]) => ({ label: n, value: i, card: n })),
-        }) as number;
-        const [name] = g.player(ctx.controller).bin.splice(which, 1);
+        const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
         if (name !== undefined) {
           g.player(ctx.controller).hand.push(name);
           g.ev('info', `Combustible Bogwalker: ${name} is recalled to ${g.pname(ctx.controller)}'s hand.`);

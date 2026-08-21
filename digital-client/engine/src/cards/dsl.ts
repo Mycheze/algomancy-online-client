@@ -12,7 +12,7 @@
  *   augment:<Card>#<i> the effect of augmentText[i] (text-box [Augment] text)
  */
 import type {
-  Attr, CardName, EngineEvent, Entity, EventType, Seat, TargetRef,
+  Attr, CardName, EffectPart, EngineEvent, Entity, EventType, Seat, TargetRef,
 } from '../types.ts';
 import type { E } from '../engine.ts';
 import printedJson from './printed.json' with { type: 'json' };
@@ -61,7 +61,11 @@ export interface ResolvedCached { cached: { seat: Seat; uid: number; card: CardN
 
 /** Resolved target passed to effect run(): an entity, a player, a stack item
  * id, or a cached card. */
-export type ResolvedTarget = Entity | { player: Seat } | { stack: number } | ResolvedCached;
+/** R64: a resolved 'binCard' target. `index` is where it sits in that bin at
+ * the moment of resolution — looked up then, never carried from cast. */
+export interface ResolvedBin { binCard: { seat: Seat; index: number; card: CardName } }
+
+export type ResolvedTarget = Entity | { player: Seat } | { stack: number } | ResolvedCached | ResolvedBin;
 
 export interface EffectCtx {
   controller: Seat;
@@ -72,7 +76,7 @@ export interface EffectCtx {
   x?: number;
   /** receipt of this part's cast-time [cost] payment (R35) — e.g. the unit
    * sacrificed to cast, with its stats snapshotted at payment time */
-  costPaid?: { sacrificed?: { card: CardName; power: number; defense: number } };
+  costPaid?: EffectPart['costPaid'];
   /** {Modular}: the mods applied to this card as it was played (Spellbind).
    * Their graft effects already ride as extra parts; this is the readable
    * list, for text that wants to know what is attached. */
@@ -103,11 +107,28 @@ export interface TargetSpec {
    *                   The cards that just say "effect".
    * A UNIT on the stack is in neither: a unit arriving in play is not an
    * effect, and it has no parts to negate. */
-  what: 'unit' | 'allyUnit' | 'any' | 'stackSpell' | 'stackEffect' | 'cachedCard';
+  /** R64 — the OWNERSHIP kinds. 'allyUnit'/'enemyUnit' are relative to the
+   * effect's controller, never to the chooser: a redirect that drops a unit
+   * into someone else's "target ally" slot is what R58 already refuses.
+   * 'opponent' is a PLAYER-only kind ("target opponent" — Ralph, Interdiction
+   * Rift, Divine Foresight); 'any' offers units and players together and is
+   * the damage kind, not a substitute for it.
+   * 'token' is any token in the region, unit or spell token (Arcane Echo,
+   * Download) — a token is a legal target for these whoever controls it, and
+   * "gain control of" narrows to the enemy half with `restrict`. */
+  what: 'unit' | 'allyUnit' | 'enemyUnit' | 'token' | 'any' | 'opponent'
+    | 'stackSpell' | 'stackEffect' | 'cachedCard'
+    /** R64: a card in YOUR bin ("target unit … from your bin"); 'anyBinCard'
+     * reaches either player's, which is what "target card in a bin" prints. */
+    | 'binCard' | 'anyBinCard';
   prompt: string;
   /** maximum number of targets chosen AT CAST TIME (default 1). Distinct
-   * targets; the chooser gets a "done" option once `min` are picked. */
-  count?: number;
+   * targets; the chooser gets a "done" option once `min` are picked.
+   * R64: `'X'` means the spell's X — the mana X it was cast for, or the
+   * amount a variable bracketed cost was paid at ("Negate up to X target
+   * effects", "Recall X target nontoken allies"). X is fixed before targets
+   * are asked for, so by the time this is read it is a number. */
+  count?: number | 'X';
   /** minimum targets before "done" is offered (default 1) */
   min?: number;
   /** R58: per-SLOT restriction for a multi-target spec — `slots[i]` governs
@@ -119,34 +140,142 @@ export interface TargetSpec {
   slots?: TargetSpec['what'][];
   /** R58: per-slot prompt, same indexing as `slots`; falls back to `prompt`. */
   slotPrompts?: string[];
+  /**
+   * R64 — the RESTRICTION seam. "Delete target unit with base power 2 or
+   * less", "recall target unit with 5 or less defense", "target unit with no
+   * stat changes": the printed restriction is part of what makes a target
+   * LEGAL, not a condition checked once the spell resolves. Without a seam
+   * every such card offered the whole board and then did nothing, which is
+   * indistinguishable from a bug at the table.
+   *
+   * The predicate runs against the RESOLVED target, so it can read live stats,
+   * counters, controller and card data. It is asked in three places and they
+   * must agree: the candidate list you choose from, `castable` (no legal
+   * target ⇒ the cast is illegal), and `canFillSlot` (a redirect may not drop
+   * an illegal target into the slot). It is NOT re-asked at resolution — R5
+   * and R56 govern that, and a card whose restriction can change between cast
+   * and resolution re-checks it in `run` (Unmake, Reconfigure).
+   */
+  restrict?: TargetRestrict;
+  /** R64: per-slot restriction, same indexing as `slots`; falls back to
+   * `restrict`. Use `null` in a slot to mean "this slot has none". */
+  slotRestricts?: (TargetRestrict | null)[];
 }
+
+/** R64: the context a TargetSpec.restrict is judged in — whose effect this is,
+ * where it is being cast, and (for "another target …") which entity is its
+ * source. `ally` is the effect's controller: the seat "ally"/"enemy" is
+ * measured from. */
+export interface TargetCtx {
+  ally?: Seat;
+  region: number;
+  sourceId?: number;
+  /** the item's X, already fixed by the time targets are asked for (R64) —
+   * "target unit with cost [x] or less" (Abduct) has nowhere else to read it */
+  x?: number;
+  /** R64: the targets ALREADY chosen for this part, resolved. A later slot
+   * whose legality depends on an earlier one reads them here — Necromorph's
+   * second target is "with cost less than or equal to IT". */
+  chosen?: ResolvedTarget[];
+}
+
+/** R64: a printed targeting restriction, as a predicate over the resolved
+ * target. Returns true if `t` may legally be chosen. */
+export type TargetRestrict = (g: E, t: ResolvedTarget, ctx: TargetCtx) => boolean;
 
 /** R58: the restriction governing target slot `i` of a spec. */
 export function slotWhat(spec: TargetSpec, i: number): TargetSpec['what'] {
   return spec.slots?.[i] ?? spec.what;
 }
 
+/** R64: is this resolved target an ENTITY (a unit, a token, a mod)? The other
+ * resolved shapes — a player, a stack item, a cached card, a bin card — carry
+ * no id. */
+export function isEntityTarget(t: ResolvedTarget): t is Entity {
+  return 'id' in t && 'card' in t;
+}
+
+/**
+ * R64: the common shape of a printed targeting restriction — a clause about
+ * the UNIT ("with base power 2 or less", "with no stat changes", "with 5 or
+ * less defense"). Non-unit targets pass through untouched, so a spec that
+ * offers units and players alike still offers the players.
+ */
+export function unitRestrict(ok: (g: E, u: Entity, ctx: TargetCtx) => boolean): TargetRestrict {
+  return (g, t, ctx) => !isEntityTarget(t) || ok(g, t, ctx);
+}
+
+/** R64: "with cost N or less" / "with cost less than or equal to …" — read off
+ * the PRINTED mana cost, which is what "cost" means on every card that says
+ * it. An X card counts as 0, its printed floor. */
+export function printedCost(name: CardName): number {
+  const m = getCard(name).mana;
+  return m === 'X' ? 0 : m;
+}
+
+/** R64: "another target …" — a slot that may not be the effect's own source.
+ * Distinctness BETWEEN slots is already enforced by the collector; this is the
+ * separate clause that excludes the unit the ability is printed on. */
+export const notSelf: TargetRestrict = (_g, t, ctx) =>
+  !isEntityTarget(t) || ctx.sourceId === undefined || t.id !== ctx.sourceId;
+
+/** R64: the restriction governing target slot `i` — `slotRestricts[i]` when
+ * the spec names one (including an explicit `null` for "no restriction here"),
+ * otherwise the spec-wide `restrict`. */
+export function slotRestrict(spec: TargetSpec, i: number): TargetRestrict | undefined {
+  const per = spec.slotRestricts?.[i];
+  if (per !== undefined) return per ?? undefined;
+  return spec.restrict;
+}
+
 /** R58: the spec as it applies to slot `i` — what targetCandidates should be
  * asked for when filling that one slot. */
 export function specForSlot(spec: TargetSpec, i: number): TargetSpec {
-  return { ...spec, what: slotWhat(spec, i) };
+  const r = slotRestrict(spec, i);
+  return { ...spec, what: slotWhat(spec, i), ...(r ? { restrict: r } : { restrict: undefined }) };
 }
 
 /**
  * A bracketed additional cost ("[Sacrifice a unit]: …", "[Pay 3 life]",
- * "[Discard a card]", "[Gain 4 debt]") chosen and PAID AT CAST, before the
- * item reaches the stack (R35). An unpayable cost makes the cast ILLEGAL;
- * on a grafted rider it is optional and declining skips that part.
+ * "[Discard a card]", "[Gain 4 debt]", "[Remove X +1/+1 counters from
+ * allies]") chosen and PAID AT CAST, before the item reaches the stack (R35).
+ * An unpayable cost makes the cast ILLEGAL; on a grafted rider it is optional
+ * and declining skips that part.
  *
- * `n` is the amount, and means nothing for 'sacrificeUnit' (always one unit).
+ * `n` is the amount. `'X'` (R64) is a VARIABLE cost: the payer keeps paying
+ * one unit at a time until they stop, and the number they paid IS the spell's
+ * X — Discharge's "[Remove X +1/+1 counters from allies]: I deal X damage"
+ * has no other source for X. A variable cost is offered down to `xMin`
+ * (default 0, i.e. "you may decline outright and the spell does nothing");
+ * the amount paid lands in `costPaid.x` and reaches the effect as `ctx.x`.
+ *
  * 'payLife' is governed by R49: you may pay N life only while you have MORE
  * than N — a cost you cannot survive is not payable.
  */
 export type CastCost =
   | { kind: 'sacrificeUnit' }
-  | { kind: 'payLife'; n: number }
-  | { kind: 'discardCard'; n: number }
-  | { kind: 'gainDebt'; n: number };
+  /** "[Sacrifice X units]" (Malevolent Machinations) — `n` units, or 'X' */
+  | { kind: 'sacrificeUnits'; n: number | 'X'; xMin?: number }
+  | { kind: 'payLife'; n: number | 'X'; xMin?: number }
+  | { kind: 'discardCard'; n: number | 'X'; xMin?: number }
+  | { kind: 'gainDebt'; n: number }
+  /** "[Remove X +1/+1 counters from allies]" (Discharge) / "from me" (Soul
+   * Reaver). `from: 'self'` spends the SOURCE unit's own counters. */
+  | { kind: 'removeCounters'; from: 'allies' | 'self'; n: number | 'X'; xMin?: number }
+  /** "[Erase X cards from your bin]" (Necromantic Rebuke) */
+  | { kind: 'eraseBin'; n: number | 'X'; xMin?: number };
+
+/** R64: the fixed amount a cost demands, or null when it is variable ('X'). */
+export function costAmount(cost: CastCost): number | null {
+  if (cost.kind === 'sacrificeUnit') return 1;
+  if (cost.kind === 'gainDebt') return cost.n;
+  return cost.n === 'X' ? null : cost.n;
+}
+
+/** R64: the floor a variable cost may be paid down to (default 0). */
+export function costXMin(cost: CastCost): number {
+  return ('xMin' in cost ? cost.xMin : undefined) ?? 0;
+}
 
 export interface EffectDef {
   targets?: TargetSpec;
@@ -313,6 +442,11 @@ export interface CardBehavior {
   /** the card can be applied as an augment even without augmentAttrs or
    * augmentText — its [Augment] text is implemented via `statics` */
   augmentable?: boolean;
+  /** R64: "I must be targeted if able" (Gatekeeper of Souls) — a targeting
+   * restriction that narrows OTHER effects' candidate lists rather than its
+   * own. Radiates like a static: live while the card is a unit in play, and
+   * donated while it is an augment mod. */
+  mustBeTargeted?: boolean;
   /** R42: this card may be prophesied out of its owner's BIN as well as their
    * hand ("I can be prophesied from your bin" — Angel of Anguish). No card may
    * be prophesied from the bin unless it says so, so this defaults to false

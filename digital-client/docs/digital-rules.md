@@ -951,3 +951,136 @@ literally:
 
 Granted text is silenced by R62 exactly like printed text — it is an ability
 the card has, and "loses all abilities" means all of them.
+
+## R64 — A bracketed cost is paid at cast; a printed restriction is a targeting restriction
+
+*(Playtest round 10, game PEMC, 2026-08-21.)*
+
+Two halves of one seam, from one report:
+
+> "Shouldn't Discharge have you remove counters as an additional cost? Not on
+> resolution"
+
+It should. What happened at the table is the reason this is a rule and not a
+tidiness note. Rashi cast Discharge — *"[Remove X +1/+1 counters from allies]:
+I deal X damage to target unit"* — it went on the stack, Ben got a full
+priority window, **and only then** was X chosen and the counters removed. Three
+things are wrong with that at once: the opponent is asked whether to answer a
+spell whose size nobody has chosen yet; a negate would have thrown the spell
+away without the cost ever being paid; and the caster can see the response
+before committing to what they are paying. A cost paid after the response
+window is not a cost.
+
+### The cost half
+
+R35 already said this and only had four cost kinds to say it about
+(`sacrificeUnit`, `payLife`, `discardCard`, `gainDebt`), so most of the pool's
+brackets were parked or hand-rolled into resolution-time `ctx.choose` loops.
+`CastCost` now covers `sacrificeUnits`, `removeCounters` (from allies or from
+the source itself) and `eraseBin` as well, and every kind accepts **`n: 'X'`**.
+
+A **variable** cost is where X comes from. You pay one unit of it at a time
+until you stop; what you paid **is** the spell's X, written to
+`costPaid.x` and read as `ctx.x`. That is the only source Discharge has for X —
+nothing on the card ties it to mana.
+
+Ordering follows from that. A variable cost is collected **with the mana X, at
+the very top**, before targets: the spell's size has to be settled before it
+can be aimed, because what it may aim at is sized by X (*"Negate up to X target
+effects"*). Fixed costs stay where R57 put them, **after** targets — R57 is
+about not destroying a unit before showing you what it could have hit, and a
+cost that decides how big the spell is has no such reading.
+
+Converted: Discharge, Malevolent Machinations, Necromantic Rebuke, Flesh Tithe,
+Soul Reaver. Still parked: Trench Stalker (its bracket pays for one of two
+play MODES that do not exist yet — adding the cost alone would only make the
+card worse) and Vengeance (it *grants* a bracket to the opponent's cards,
+which is the cost-modifier layer, not this one).
+
+### The targeting half
+
+> "I was allowed to choose illegal targets for Reconfigure"
+
+`TargetSpec` could say *what kind* of thing a target was and nothing else, so
+every printed restriction — *"with base power 2 or less"*, *"with 4 or more
+defense"*, *"with no stat changes"*, *"the first target must have [Augment]"* —
+was checked at resolution, and the spell offered the whole board and then
+refused most of it. From the table that is indistinguishable from a bug.
+
+`TargetSpec.restrict` is a predicate over the resolved target, asked in the
+three places that must agree: the menu you choose from, `castable` (no legal
+target ⇒ the cast is illegal), and `canFillSlot` (a redirect may not drop an
+illegal target into a slot). `slotRestricts` gives per-slot versions, and
+`TargetCtx` carries what the predicate needs: whose effect it is, the source
+entity, the item's X (Abduct's *"cost [x] or less"*) and the targets already
+chosen for this part (Necromorph's *"cost less than or equal to **it**"*).
+
+The restriction is **not** re-asked at resolution — R5 and R56 govern that —
+so a card whose restriction can change in between keeps its own resolution
+check. Both are correct and they are different questions.
+
+New target kinds alongside it: `enemyUnit`, `token` (unit tokens and spell
+tokens alike), `opponent` (a player, and not you — `any` was offering every
+unit on the board to *"target opponent"*), and **`binCard` / `anyBinCard`**. A
+bin holds plain card names, so two copies there are genuinely
+indistinguishable: naming the card **is** the whole reference (`BinRef`), and
+the index is looked up again at resolution.
+
+### Targets are declared at cast — all of them
+
+> "Download didn't have me target anything..."
+
+It did not, and neither did nine others: they picked their target
+mid-resolution, so the item sat on the stack aiming at nobody, *"when I become
+targeted"* never fired, and a response was made against an unaimed spell.
+Moved to cast time: Download, Arcane Echo, Resurrect, Rousing Spirit,
+Blightwalker, Collect Remains, Delver of the Ephemeral, Necromorph, Aethercap
+Siphoner, Torrential Reclamation and Channel Through's ally picks. What stays
+at resolution is what genuinely is not a target: a division of damage among a
+targeted opponent's units, a ransom the *other* player may pay, a sacrifice
+each player chooses for themselves.
+
+An **ability** is gated the way a spell is now, too: one whose bracketed cost
+cannot be paid, or whose mandatory target has nothing legal to aim at, is not
+offered and is refused. It used to take your mana and skip the part.
+
+### And the menu says whose
+
+Rashi aimed Discharge at her own Unit Token. The menu read *"Unit Token, Unit
+Token"*. Both sides field generic tokens with identical art, so the option text
+was the only thing that could have carried the difference; `targetLabel` now
+names the controller of every unit it offers.
+
+## R65 — Discarding is not playing; conceding; the erased pile
+
+*(Playtest round 10, game PEMC, 2026-08-21.)*
+
+**Discard-me is an instant-speed action.** R40 modelled the printed *"Discard
+me"* line as an alternative play MODE, and inherited the card's own timing with
+it — so Sacrifice Dude (*"2 [d] Discard me"* on a deploy unit) could only be
+discarded during deployment.
+
+> "I can't discard Sacrifice Dude at 'instant' speed. It has to work like that,
+> otherwise the alternate cost doesn't make sense (since you don't have
+> opponent's during deployment)."
+
+Right, and the card proves it: its payoff is *"each opponent sacrifices a
+nontoken unit"*, and in deployment the opponent is not in your region at all
+(R25). Discarding is not playing (R37) — nothing reaches the stack, nothing
+spawns, and the only thing anyone sees is the card's own "when I am trashed"
+trigger. So the mode is available whenever you hold priority in battle, as well
+as during your own deployment. A printed `{Battle}` marker on the discard line
+(Nothyr) still restricts it to battle; nothing restricts it to deployment.
+
+**Concede** is an `Action` — so it lands in the log, replays with the game, and
+reaches the result record exactly as a lethal blow does. It is the one action
+with no timing, no priority and no phase, and the one thing you may do while a
+decision is pending *against* you, since that decision may be the reason you
+want to stop. It is deliberately **not** in `legalActions`: it is never a move
+to consider, only one to choose, and the fuzzer must never wander into it.
+
+**The erased pile.** Erasing takes a card out of the game — no bin, no death
+triggers, nothing plays it back — but the information is public and there was
+no way to look at it. `PlayerState.erased` keeps it, appended by `E.ev()` off
+the `erased` event every erase site already emits, rather than at each of the
+dozen sites.

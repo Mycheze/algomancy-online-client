@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 
@@ -247,12 +247,13 @@ test('The Bonesculptor: play one ability-free unit from your bin each deployment
     /already used this turn/);
 });
 
-test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target survives (⚠ resolution-time check)', () => {
+test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not offered (R64)', () => {
   const h = new Harness(1811);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const atk = spawn(h, A, 'Unit Token');
   const big = spawn(h, D, 'Good Whale');                // 7/5 — deletable
+  const big2 = spawn(h, D, 'Good Whale');               // a second legal target
   const small = spawn(h, D, 'Curio Drifter');           // 2/2 — not deletable
   giveResources(h, A, 'earth', 5);                      // two casts: e / 2 each
   toNextBattle(h, A);
@@ -262,11 +263,16 @@ test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target survives
   pass(h); pass(h);
   assert.ok(!ent(h, big), '5 defense ≥ 4 → deleted');
   assert.ok(h.state.players[D]!.bin.includes('Good Whale'));
+  // R64: "with 4 or more defense" gates the candidate list — a 2/2 is not on
+  // it, and neither is the 1/1 attacker. Only the second Whale is offered.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Throw off a Cliff') });
-  pick(h, { unit: small });
+  notOffered(h, { unit: small }, '2 defense < 4');
+  notOffered(h, { unit: atk }, '1 defense < 4');
+  pick(h, { unit: big2 });
   pass(h); pass(h);
-  assert.ok(ent(h, small), '2 defense < 4 → survives');
-  assert.equal(ent(h, small)!.damage, 0, 'no damage either — the spell just fails');
+  assert.ok(!ent(h, big2), '5 defense ≥ 4 → deleted');
+  assert.ok(ent(h, small), 'the 2/2 was never touched');
+  assert.equal(ent(h, small)!.damage, 0, 'no damage either');
   finishBattle(h);
 });
 

@@ -22,7 +22,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, notOffered, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -154,13 +154,16 @@ test('Soul Reaver: [one] + remove X counters → X damage to target unit', () =>
   giveResources(h, A, 'metal', 1);                          // the [one]
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[sr]] });
+  // R64: "Remove X +1/+1 counters from me" is before the colon — a COST, paid
+  // as the ability is activated, so X is fixed before anyone can respond.
   h.do({ type: 'activateAbility', seat: A, entityId: sr, abilityIndex: 0, via: 'augment' });
-  pick(h, { unit: slime });                                 // damage target (at activation)
-  pass(h); pass(h);                                         // resolve → choose X
-  assert.equal(h.state.decision!.seat, A, 'the controller picks X');
-  pick(h, 2);                                               // remove both counters
-  assert.equal(ent(h, sr)!.counters, 0, 'the counters are gone');
+  assert.equal(h.state.decision!.seat, A, 'the controller pays');
+  pick(h, { counterFrom: sr }); pick(h, { counterFrom: sr });
+  // the counters ran out, so the variable cost closes itself: X = 2
+  pick(h, { unit: slime });                                 // then aim
+  assert.equal(ent(h, sr)!.counters, 0, 'the counters are gone as it is activated');
   assert.deepEqual(effStats(h, sr), [2, 3], 'back to the printed 2/3');
+  pass(h); pass(h);                                         // resolve
   assert.equal(ent(h, slime)!.damage, 2, 'X = 2 damage dealt');
   finishBattle(h);
 });
@@ -374,8 +377,10 @@ test('Unmake: deletes only units with BASE power 2 or less (counters don\'t coun
   pass(h); pass(h);                                         // resolve
   assert.ok(!ent(h, small), 'base power 2 → deleted despite 7/7 live stats');
   assert.ok(h.state.players[D]!.bin.includes('Trashling'), 'deleted → owner\'s bin');
+  // R64: a base-8 unit is not a legal target at all — it is never offered
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Unmake') });
-  pick(h, { unit: big });
+  notOffered(h, { unit: big }, 'base power 8 > 2');
+  pick(h, { unit: atk });                                   // the only one left
   pass(h); pass(h);                                         // resolve
   assert.ok(ent(h, big), 'base power 8 > 2 → not deleted');
   finishBattle(h);

@@ -56,7 +56,7 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectDef } from '../dsl.ts';
+import { card, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -339,7 +339,12 @@ card('The Bonesculptor', {
 // stats (R1) — an under-4 target survives and the spell does nothing.
 card('Throw off a Cliff', {
   spellEffect: {
-    targets: { what: 'unit', prompt: 'Throw off a Cliff: delete target unit with 4 or more defense' },
+    // R64: "with 4 or more defense" gates which units are legal targets at
+    // all; the resolution check stays for defense that changes in between.
+    targets: {
+      what: 'unit', prompt: 'Throw off a Cliff: delete target unit with 4 or more defense',
+      restrict: unitRestrict((g, u) => g.effStats(u)[1] >= 4),
+    },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t)) return;

@@ -19,7 +19,7 @@ import { E, Suspended } from '../src/engine.ts';
 import { IllegalAction } from '../src/apply.ts';
 import type { Entity, Seat } from '../src/types.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick, spawn,
+  effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick, spawn,
   toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 
@@ -213,8 +213,11 @@ test('Leave None Pure: deletes only a unit with no stat changes', () => {
   giveResources(h, A, 'dark', 4);                       // two casts of d/2
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  // R64: "with no stat changes" is a targeting restriction — the counter'd
+  // unit is never offered rather than being chosen and then spared.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Leave None Pure') });
-  pick(h, { unit: dirty });
+  notOffered(h, { unit: dirty }, 'it has a +1/+1 counter');
+  pick(h, { unit: atk });
   pass(h); pass(h);
   assert.ok(ent(h, dirty), 'a unit with a +1/+1 counter is not deleted');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Leave None Pure') });
@@ -432,11 +435,15 @@ test('Tilling the Graves: two bin units back to hand, then a discard', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const handBefore = h.state.players[A]!.hand.length;
+  // R64: "two TARGET units in your bin" are declared as the spell is cast
+  const bn = h.state.players[A]!.name;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tilling the Graves') });
-  pass(h); pass(h);                                     // resolve → the first bin pick
-  assert.deepEqual(h.state.decision!.options.map(o => o.label), ['Curio Drifter', 'Bumblecrab'],
+  assert.deepEqual(h.state.decision!.options.map(o => o.label),
+    [`Curio Drifter (${bn}'s bin)`, `Bumblecrab (${bn}'s bin)`, 'No more targets'],
     'only UNITS in the bin are offered');
-  pick(h, 0);                                           // the second is then the only one left
+  pick(h, { bin: { seat: A, card: 'Curio Drifter' } });
+  pick(h, { bin: { seat: A, card: 'Bumblecrab' } });
+  pass(h); pass(h);                                     // resolve
   assert.equal(h.state.decision!.kind, 'payOrDecline', 'and "then discard a card" follows');
   const chosen = String(h.state.decision!.options[0]!.label);
   pick(h, 0);

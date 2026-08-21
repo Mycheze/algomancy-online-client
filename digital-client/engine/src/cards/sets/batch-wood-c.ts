@@ -120,7 +120,9 @@ const create1s = (g: E, seat: Seat, n: number): void => {
 // giveControl approximation; during deployment the opponent is not present,
 // so they are no target (R25) and the ability no-ops.
 const ralphDefect: EffectDef = {
-  targets: { what: 'any', prompt: 'Ralph: target opponent gains control of me (then create three 1/1 units)' },
+  // R64: "target opponent" is a player, and not you — 'any' offered every
+  // unit in the region and Ralph's own controller, all of them dead options.
+  targets: { what: 'opponent', prompt: 'Ralph: target opponent gains control of me (then create three 1/1 units)' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!t || !('player' in (t as object)) || (t as { player: Seat }).player === ctx.controller) {

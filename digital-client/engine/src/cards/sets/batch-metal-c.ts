@@ -44,7 +44,7 @@
  */
 import type { Entity, EntityId } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, type EffectDef } from '../dsl.ts';
+import { card, unitRestrict, type EffectDef } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -99,7 +99,21 @@ card('Riftwalker', {
     type: 'activated', cost: { mana: 1 }, bounded: true,
     label: 'switch my position with another target ally in my formation',
     effect: {
-      targets: { what: 'allyUnit', prompt: 'Riftwalker: switch my position with another target ally in my formation' },
+      // R64: "ANOTHER target ally IN MY FORMATION" — both clauses gate the
+      // menu now; the resolution code re-checks the formation, which can
+      // change under the ability (R56).
+      targets: {
+        what: 'allyUnit', prompt: 'Riftwalker: switch my position with another target ally in my formation',
+        restrict: unitRestrict((g, u, ctx) => {
+          const me = ctx.sourceId;
+          if (me === undefined || u.id === me) return false;
+          const b = g.s.battle;
+          if (!b) return false;
+          // "in my formation": some grid holds us both (the run's own test)
+          return [b.columns, Object.values(b.blocks)]
+            .some(grid => !!locateInGrid(grid, me) && !!locateInGrid(grid, u.id));
+        }),
+      },
       run: (g, ctx) => {
         const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
         const t = ctx.targets[0];
@@ -200,33 +214,23 @@ card('Self-Assembly', {
 
 // "[Augment] [one], Remove X +1/+1 counters from me: I deal X damage to
 // target unit." — mm/3 2/3 Demon Technology {Virus} Unit. Text-box [Augment]
-// activated ability (unbounded), live when played normally. ⚠ X is chosen
-// and the counters removed at RESOLUTION (header approximation); no +1/+1
-// counters at resolution → no damage. Damage goes through the engine's
-// effect-damage path (Reaping/Electric handled there).
+// activated ability (unbounded), live when played normally. R64: "Remove X
+// +1/+1 counters from me" sits before the colon — it is part of the COST, so
+// it is paid as the ability is activated and X is fixed there, not chosen at
+// resolution after the opponent has already decided how to answer it.
 card('Soul Reaver', {
   augmentText: [{
     type: 'activated', cost: { mana: 1 },
     label: 'remove X +1/+1 counters from me: I deal X damage to target unit',
     effect: {
+      castCost: { kind: 'removeCounters', from: 'self', n: 'X', xMin: 1 },
       targets: { what: 'unit', prompt: 'Soul Reaver: I deal X damage to target unit (X = +1/+1 counters removed)' },
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
         const t = ctx.targets[0];
-        if (!self || !isEnt(t) || !g.entity(t.id)) return;
-        const have = Math.max(0, self.counters);
-        if (!have) { g.ev('info', 'Soul Reaver: no +1/+1 counters to remove.'); return; }
-        const opts = [];
-        for (let x = 1; x <= have; x++) opts.push({ label: `remove ${x}`, value: x });
-        const x = ctx.choose('reaveX', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Soul Reaver: remove how many +1/+1 counters? (I deal that much damage)',
-          options: opts,
-        }) as number;
-        if (!x || x < 1 || x > have) return;
-        g.addCounters(self, -x);
+        if (!isEnt(t)) return;
         const live = g.entity(t.id);
-        if (live) g.dealEffectDamage(ctx, live, x);
+        const x = ctx.x ?? 0;
+        if (live && x > 0) g.dealEffectDamage(ctx, live, x);
       },
     },
   }],
@@ -326,7 +330,14 @@ card('Trashling', {});
 // nontoken unmodded → owner's bin).
 card('Unmake', {
   spellEffect: {
-    targets: { what: 'unit', prompt: 'Unmake: delete target unit with base power 2 or less' },
+    // R64: "with base power 2 or less" is part of what makes a target LEGAL.
+    // It used to offer the whole board and then refuse most of it at
+    // resolution. The resolution check stays — base power can change between
+    // cast and resolution, and R5/R56 govern that, not the candidate list.
+    targets: {
+      what: 'unit', prompt: 'Unmake: delete target unit with base power 2 or less',
+      restrict: unitRestrict((g, u) => baseStats(g, u)[0] <= 2),
+    },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;

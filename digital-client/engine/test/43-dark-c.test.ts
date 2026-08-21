@@ -78,7 +78,10 @@ test('Blightwalker: trashed from hand → pay [2] to recall another unit from yo
   whiteBox(h, e => e.discardFromHand(P, i));
 
   assert.ok(trashedCards(h).includes('Blightwalker'), 'discarding it is a trash (R40)');
-  assert.ok(h.state.decision, 'its own trigger fires FROM THE BIN and offers the payment');
+  // R64: the bin card is a declared target, chosen as the trigger is put on
+  // the stack; the [2] is still paid at resolution.
+  assert.ok(h.state.decision, 'its own trigger fires FROM THE BIN and asks for its target');
+  pickBy(h, o => o.label.startsWith('Grox'));
   pickBy(h, o => o.label === 'Pay [2]');
   assert.ok(hand(h, P).includes('Grox'), 'the only unit in the bin comes back to hand');
   assert.ok(!bin(h, P).includes('Grox'), 'and leaves the bin');
@@ -94,12 +97,15 @@ test('Blightwalker: "another" excludes the copy that was just trashed, and the p
   const i = give(h, P, 'Blightwalker');
   whiteBox(h, e => e.discardFromHand(P, i));
   assert.equal(h.state.decision, null, 'the bin holds only me — nothing to recall');
-  assert.ok(h.log.some(l => l.includes('no other unit in your bin')));
 
-  // now with a real candidate, but declined
+  // now with a real candidate, but declined. R64: "another" is a targeting
+  // restriction, so the Blightwalker copies in the bin are never offered.
   bin(h, P).push('Rotling');
   const j = give(h, P, 'Blightwalker');
   whiteBox(h, e => e.discardFromHand(P, j));
+  assert.deepEqual(h.state.decision!.options.filter(o => String(o.label).startsWith('Blightwalker')), [],
+    '"another": the trashed copy is not a legal target');
+  pickBy(h, o => String(o.label).startsWith('Rotling'));
   pickBy(h, o => o.label === 'Decline');
   assert.ok(!hand(h, P).includes('Rotling'), 'declining recalls nothing');
   assert.equal(h.q.openMana(P), 2, 'and pays nothing');
@@ -117,11 +123,12 @@ test('Collect Remains: takes a card out of EITHER bin into your hand', () => {
   bin(h, D).push('Good Whale');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  // R64: "target card in a bin" is declared at cast — either bin, both offered
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
-  pass(h); pass(h);                                        // resolve → bin choice
   assert.equal(h.state.decision!.seat, A);
   assert.equal(h.state.decision!.options.length, 2, 'both bins are on offer');
   pickBy(h, o => String(o.label).startsWith('Good Whale'));
+  pass(h); pass(h);                                        // resolve
   assert.ok(hand(h, A).includes('Good Whale'), "the enemy's card comes to MY hand");
   assert.ok(!bin(h, D).includes('Good Whale'));
   // ⚠ approximation: "Erase me" is the spell being binned normally instead
@@ -196,6 +203,7 @@ test('Finality: negates every other effect on the stack and erases both bins', (
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Collect Remains') });
+  pickBy(h, o => String(o.label).startsWith('Good Whale'));  // R64: targeted at cast
   pass(h);                                                 // the responder declines
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Finality') });
   assert.equal(h.state.stack.length, 2);
@@ -415,7 +423,13 @@ test('Necromorph: exchanges a unit in play for a cheaper one in ITS controller\'
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Necromorph') });
   pick(h, { unit: victim });                               // cast-time target
-  pass(h); pass(h);                                        // resolve (one legal bin card → auto)
+  // R64: the bin half is a cast-time target too, and only the affordable one
+  // in the VICTIM's bin is offered
+  assert.deepEqual(h.state.decision!.options.map(o => o.label),
+    [`Blightwalker (${h.state.players[D]!.name}'s bin)`],
+    'only the cost-3 unit in D\'s bin is a legal exchange for a cost-6 Whale');
+  pick(h, { bin: { seat: D, card: 'Blightwalker' } });
+  pass(h); pass(h);                                        // resolve
   assert.ok(!ent(h, victim), 'the unit in play is gone');
   const fresh = unitsOf(h, D).find(u => u.card === 'Blightwalker');
   assert.ok(fresh, 'and its replacement arrived under the SAME controller');

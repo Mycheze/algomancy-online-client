@@ -135,6 +135,7 @@ resyncs — see Reconnect below.
 | `view.ts` | `viewFor(state, seat)` redaction + per-seat event/log blurring |
 | `rooms.ts` | in-memory room store, apply-to-room, JSON persistence + replay restore |
 | `test-drive.ts` | integration test: boots the server, two clients, asserts redaction + reconnect |
+| `test-concede.ts` | R65 concede: the opponent's update, the stamped result, the refusals |
 | `games/` | one JSON file per room (`{ seed, names, users, actions }`) |
 | `accounts.ts` | the account store: passwords (scrypt), profiles, achievements unlocks, friends, match history |
 | `achievements.ts` | the achievement table — one declarative counter+goal per badge |

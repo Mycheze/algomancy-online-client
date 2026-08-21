@@ -72,7 +72,7 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, getCard, notSelf, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -312,14 +312,18 @@ card('Transmutide Enigma', {
 
 // "Gain control of target unit with cost [x] or less unless its controller
 // pays [x]." — gm/X 2/2 {Battle} Alien Spell. X is chosen and paid AT CAST
-// (R35). The cost restriction is checked at RESOLUTION (⚠ header — the
-// TargetSpec cannot read x at cast time); the ransom is a mid-resolution
+// (R35), which is why the cost bar can be a real TARGETING RESTRICTION
+// (R64: TargetCtx carries the item's X) — only units it can actually take are
+// offered, and the resolution check stays for R5/R56; the ransom is a mid-resolution
 // pay-or-decline (R6) for the target's controller, skipped when they cannot
 // pay (x more than their open mana). Control flip per the header's
 // gain-control approximation.
 card('Abduct', {
   spellEffect: {
-    targets: { what: 'unit', prompt: 'Abduct: gain control of target unit (cost [x] or less)' },
+    targets: {
+      what: 'unit', prompt: 'Abduct: gain control of target unit (cost [x] or less)',
+      restrict: unitRestrict((_g, u, ctx) => manaOf(u.card) <= (ctx.x ?? 0)),
+    },
     run: (g, ctx) => {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       const t = ctx.targets[0];
@@ -473,7 +477,8 @@ card('Wither and Bloom', {
 // controller; "a counter" is one of the NET counters (the engine's signed
 // counter model — pairs cancel, Manual), so a -1/-1 moves while net
 // negative and a +1/+1 moves while net positive; nothing moves at net 0.
-// "May" = a mid-resolution choice with a Decline option.
+// R64: "another target unit" is a declared target chosen as the trigger goes
+// on the stack (min 0 carries the "may"), and "another" excludes the carrier.
 card('Aethercap Siphoner', {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
@@ -490,23 +495,19 @@ card('Aethercap Siphoner', {
     label: 'you may move a counter from me onto another unit (you played a nontoken spell)',
     when: (g, self, ev) => ev.data?.seat === self.controller && ev.data?.token !== true,
     effect: {
+      targets: {
+        what: 'unit', min: 0,
+        prompt: 'Aethercap Siphoner: move a counter from me onto another target unit',
+        restrict: notSelf,
+      },
       run: (g, ctx) => {
         const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self || self.counters === 0 || inEndOfTurn(g)) return;
+        if (!self || self.counters === 0) return;
+        const tref = ctx.targets[0];
+        if (!tref || !('id' in (tref as object))) return;
+        const t = g.entity((tref as Entity).id);
+        if (!t || t.id === self.id) return;
         const delta = self.counters > 0 ? 1 : -1;
-        const pool = g.unitsIn(ctx.region).filter(u => u.id !== self.id);
-        if (!pool.length) return;
-        const pick = ctx.choose('move', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: `Aethercap Siphoner: move a ${delta > 0 ? '+1/+1' : '-1/-1'} counter onto another unit?`,
-          options: [
-            ...pool.map(u => ({ label: u.card, value: u.id })),
-            { label: 'Decline', value: false },
-          ],
-        });
-        if (pick === false) return;
-        const t = g.entity(pick as EntityId);
-        if (!t) return;
         g.addCounters(self, -delta);
         g.addCounters(t, delta);
       },
@@ -581,21 +582,26 @@ card('Invasive Species', {
 // Fungus Unit. Bounded trigger + bounded graft cause ([Switch1], R9). "Up
 // to one" = a min-0 target spec (the chooser may pick nobody). The
 // formation size is live at resolution (R27: surviving units in the grid
-// side containing me); the cost bar is checked at RESOLUTION (⚠ TargetSpec
-// cannot express it — an over-cost target is simply not recalled). Not in
-// any formation → the bar is 0 (only cost-0 units are recallable).
+// side containing me). R64: the cost bar is a TARGETING RESTRICTION — the
+// TargetSpec can express it now, so only recallable units are offered; the
+// resolution check stays, because the formation can shrink under the spell.
+// Not in any formation → the bar is 0 (only cost-0 units are recallable).
+const formationSize = (g: E, sourceId?: number): number => {
+  const self = sourceId !== undefined ? g.entity(sourceId) : undefined;
+  const grid = self ? formationOf(g, self.id) : null;
+  return grid ? grid.flat().filter(id => !!g.entity(id)).length : 0;
+};
 const lurkerRecall: EffectDef = {
   targets: {
     what: 'unit', min: 0,
     prompt: 'Lumengrove Lurker: recall up to one target unit (cost ≤ units in my formation)',
+    restrict: unitRestrict((g, u, ctx) => manaOf(u.card) <= formationSize(g, ctx.sourceId)),
   },
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!t || !('id' in (t as object))) return;
     const u = t as Entity;
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-    const grid = self ? formationOf(g, self.id) : null;
-    const n = grid ? grid.flat().filter(id => !!g.entity(id)).length : 0;
+    const n = formationSize(g, ctx.sourceId);
     if (manaOf(u.card) > n) {
       g.ev('info', `Lumengrove Lurker: ${u.card}'s cost is above ${n} — not recalled.`);
       return;

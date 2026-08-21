@@ -118,6 +118,12 @@ export interface PlayerState {
    * and optional like `rot`/`debt` so pre-expansion saved games still load —
    * read it through E.cache(seat), never raw. */
   cache?: CachedCard[];
+  /** R65: every card erased out of this player's zones, in the order it went.
+   * Erasing takes a card OUT OF THE GAME — it is not a zone anyone plays
+   * from — but the pile is public information and players need to be able to
+   * look at it ("there's currently no way to view erased cards"). Additive
+   * and optional like `rot`/`debt`; read it through E.erased(seat). */
+  erased?: CardName[];
 }
 
 export interface Region {
@@ -259,11 +265,24 @@ export interface BattleState {
  * BOTH players' caches are legal targets. */
 export interface CachedRef { seat: Seat; uid: number }
 
+/** R64: a card in a bin. A bin holds plain card NAMES, so two copies of one
+ * card there are genuinely indistinguishable — the card name plus which copy
+ * IS the whole identity, and no uid is needed (contrast CachedRef, whose
+ * entries carry prophecies).
+ *
+ * `nth` is the 0-based occurrence among entries with that name, and exists so
+ * a two-target spell can reach both copies of one card ("Recall two target
+ * units in your bin"). If that copy has left by resolution the ref simply
+ * slides to whichever copies remain — which is exactly right, because copies
+ * of one card in a bin are interchangeable. */
+export interface BinRef { seat: Seat; card: CardName; nth?: number }
+
 export type TargetRef =
   | { unit: EntityId }
   | { player: Seat }
   | { stack: number }
-  | { cached: CachedRef };
+  | { cached: CachedRef }
+  | { bin: BinRef };
 
 /**
  * One sub-effect of a stack item with its declared targets.
@@ -294,6 +313,21 @@ export interface EffectPart {
     debt?: number;
     /** 'discardCard': the cards discarded, in the order they were chosen */
     discarded?: CardName[];
+    /** 'sacrificeUnits': every unit sacrificed, snapshotted at payment */
+    sacrificedUnits?: { card: CardName; power: number; defense: number }[];
+    /** 'removeCounters': how many +1/+1 counters came off, and from where */
+    counters?: { unit: EntityId; card: CardName; n: number }[];
+    /** 'eraseBin': the cards erased out of the bin, in the order chosen */
+    erased?: CardName[];
+    /** R64: a VARIABLE cast cost ('X') defines the spell's X — the number of
+     * units actually paid. Read by the effect as ctx.x, which prefers this
+     * over the item-wide mana X so a grafted rider paying its own variable
+     * cost cannot collide with its carrier's. */
+    x?: number;
+    /** R64: the payer said "that's enough" — the idempotence guard for a
+     * variable cost, whose receipt is otherwise indistinguishable from a
+     * partially-paid one across a replay. */
+    xDone?: boolean;
   };
   /** {Modular}: the mods riding on this item, mirrored onto every part so the
    * resolution can read them out of EffectCtx (they are also on the item, for
@@ -509,7 +543,12 @@ export type Action =
     }
   | { type: 'passPriority'; seat: Seat }
   | { type: 'doneDeploying'; seat: Seat }
-  | { type: 'decide'; seat: Seat; choice: number | number[] };
+  | { type: 'decide'; seat: Seat; choice: number | number[] }
+  /** R65: give up. A real action so it lands in the log, replays with the
+   * game, and reaches the result record the same way a lethal blow does.
+   * Deliberately NOT in legalActions — it is never a move to consider, only
+   * one to choose, and the fuzzer must never wander into it. */
+  | { type: 'concede'; seat: Seat };
 
 // ── the whole game ────────────────────────────────────────────────────
 

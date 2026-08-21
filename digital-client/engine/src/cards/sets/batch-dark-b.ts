@@ -507,12 +507,12 @@ card('Muck Rummager', {
 
 // "[Erase X cards from your bin] Negate up to one target effect unless its
 // controller erases X cards from their bin." — dd/2 {Battle} Blight Spell.
-// ⚠ header: nothing on the card ties X to mana and the engine's CastCost only
-// knows how to sacrifice a unit, so X is chosen at RESOLUTION out of the
-// caster's own bin. "Up to one target" is min:0 (R5) — the cost is still paid
-// with no target, exactly as printed. Both decisions are taken before anything
-// is erased (R6 plan-then-commit). Erasing never touches a bin on the way out,
-// so it is never a trash (R40).
+// R64: the bracketed "[Erase X cards from your bin]" is a real cast cost —
+// paid before the spell reaches the stack, and the cards erased ARE X.
+// "Up to one target" is min:0 (R5) — the cost is still paid with no target,
+// exactly as printed. The RANSOM stays at resolution: it is the other
+// player's choice about the spell resolving, not part of casting it. Erasing
+// never touches a bin on the way out, so it is never a trash (R40).
 function eraseFromBin(g: E, seat: Seat, n: number): void {
   for (let i = 0; i < n; i++) {
     const name = g.player(seat).bin.pop();   // ⚠ most recent first (header)
@@ -522,41 +522,33 @@ function eraseFromBin(g: E, seat: Seat, n: number): void {
 }
 card('Necromantic Rebuke', {
   spellEffect: {
+    // R64: the leading bracket is an ADDITIONAL COST — erased at cast, X fixed
+    // there. It used to be a resolution-time "how many?", which meant the
+    // opponent decided whether to answer a Rebuke whose ransom nobody knew yet.
+    castCost: { kind: 'eraseBin', n: 'X' },
     targets: { what: 'stackEffect', min: 0, prompt: 'Necromantic Rebuke: negate up to one target effect' },
     run: (g, ctx) => {
-      const me = ctx.controller;
       const t = ctx.targets[0];
       const item = t && 'stack' in (t as object)
         ? g.s.stack.find(i => i.id === (t as { stack: number }).stack) : undefined;
-      const mine = g.player(me).bin.length;
-      const xOpts: { label: string; value: number }[] = [];
-      for (let x = 0; x <= mine; x++) xOpts.push({ label: `erase ${x}`, value: x });
-      const x = mine === 0 ? 0 : ctx.choose('nrX', {
-        kind: 'payOrDecline', seat: me,
-        prompt: 'Necromantic Rebuke: erase how many cards from your bin? (X)',
-        options: xOpts,
-      }) as number;
-      let ransomed = false;
-      if (item && !item.negated) {
-        const them = item.controller;
-        const theirBin = g.player(them).bin.length;
-        if (x === 0) ransomed = true;                 // ⚠ nothing to erase: trivially met
-        else if (theirBin >= x) {
-          ransomed = ctx.choose('nrPay', {
-            kind: 'payOrDecline', seat: them,
-            prompt: `Necromantic Rebuke: erase ${x} cards from your bin to save ${item.label}?`,
-            options: [{ label: `erase ${x}`, value: 1 }, { label: `let it be negated`, value: 0 }],
-          }) as number === 1;
+      if (!item || item.negated) return;
+      const x = ctx.x ?? 0;
+      const them = item.controller;
+      // ⚠ nothing was erased: the "unless" is trivially met and it survives
+      if (x === 0) { g.ev('info', `Necromantic Rebuke: X = 0 — ${item.label} survives.`); return; }
+      if (g.player(them).bin.length >= x) {
+        const paid = ctx.choose('nrPay', {
+          kind: 'payOrDecline', seat: them,
+          prompt: `Necromantic Rebuke: erase ${x} cards from your bin to save ${item.label}?`,
+          options: [{ label: `erase ${x}`, value: 1 }, { label: 'let it be negated', value: 0 }],
+        }) as number === 1;
+        if (paid) {
+          eraseFromBin(g, them, x);
+          g.ev('info', `${g.pname(them)} erases ${x} — ${item.label} survives.`);
+          return;
         }
       }
-      eraseFromBin(g, me, x);                          // the cost
-      if (!item || item.negated) return;
-      if (ransomed) {
-        eraseFromBin(g, item.controller, x);
-        g.ev('info', `${g.pname(item.controller)} erases ${x} — ${item.label} survives.`);
-      } else {
-        g.negate(item.id);
-      }
+      g.negate(item.id);
     },
   },
 });

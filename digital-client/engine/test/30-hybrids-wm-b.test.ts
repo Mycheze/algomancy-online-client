@@ -21,7 +21,7 @@ import { E, Suspended } from '../src/engine.ts';
 import { getCard, type EffectCtx } from '../src/cards/dsl.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, notOffered, ownAttrs, pass, pick,
   skipHasteStep, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -371,7 +371,10 @@ test('Aethercap Siphoner: spawns with three -1/-1; a nontoken spell moves one on
   giveResources(h, p, 'metal', 1);                            // Floral Singularity ggm / X
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Floral Singularity') });
   pick(h, 0);                                                 // X = 0 at cast (R35) — a harmless no-op
-  pick(h, tok);                                               // may move a counter → onto the token
+  // R64: "another target unit" is declared as the trigger goes on the stack,
+  // and "another" means the Siphoner is not on the menu
+  notOffered(h, { unit: siph }, '"another target unit" excludes me');
+  pick(h, { unit: tok });                                     // move a counter onto the token
   assert.equal(ent(h, siph)!.counters, -2, 'one -1/-1 moved off the Siphoner');
   assert.ok(!ent(h, tok), 'the 1/1 token died to the moved -1/-1');
 });

@@ -43,7 +43,7 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, getCard, isEntityTarget, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -267,27 +267,23 @@ card('Tempest Oracle', {
 // "Recall X target nontoken allies. Then each player sacrifices a unit and
 // you lose 1 life for each ally recalled this way." — br/X 1/3 {Battle}
 // Elemental Spell. X is chosen and paid AT CAST (R35) and read from item.x
-// here. The "for each" distributes over both clauses: per
-// recalled ally, each present player (R25) sacrifices a unit and the caster
-// loses 1 life. Picks are mid-resolution chooses (⚠ header); everything is
-// planned before any mutation (plan-then-commit) — sacrifice pools exclude
-// the to-be-recalled allies and earlier planned sacrifices.
+// here. R64: "X target nontoken allies" are CAST-TIME targets — they used to
+// be picked mid-resolution, so the spell went on the stack aiming at nobody.
+// The "for each" distributes over both clauses: per recalled ally, each
+// present player (R25) sacrifices a unit and the caster loses 1 life. The
+// SACRIFICES stay at resolution: each player picks their own, which is a
+// choice about the spell resolving, not a target it declares.
 card('Torrential Reclamation', {
   spellEffect: {
+    targets: {
+      what: 'allyUnit', count: 'X', min: 0,
+      prompt: 'Torrential Reclamation: recall X target nontoken allies',
+      restrict: unitRestrict((_g, u) => !u.token),
+    },
     run: (g, ctx) => {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       if (x <= 0) { g.ev('info', 'Torrential Reclamation: X = 0 — no effect.'); return; }
-      // plan the recalls: up to X of the caster's nontoken units in-region
-      const recalled: Entity[] = [];
-      for (let i = 0; i < x; i++) {
-        const pool = g.unitsOf(ctx.controller, ctx.region)
-          .filter(u => !u.token && !recalled.includes(u));
-        const id = pickUnit(ctx, `rc:${i}`, ctx.controller, pool,
-          `Torrential Reclamation: recall a nontoken ally (${i + 1} of ${x})`);
-        if (id === null) break;
-        const u = g.entity(id);
-        if (u) recalled.push(u);
-      }
+      const recalled = ctx.targets.filter(isEntityTarget).map(t => g.entity(t.id)).filter((u): u is Entity => !!u);
       // plan the sacrifices: one round per recalled ally, each player picks
       const sacs: EntityId[] = [];
       for (let r = 0; r < recalled.length; r++) {
@@ -315,26 +311,23 @@ card('Torrential Reclamation', {
 // "I deal 2 damage to each of X target allies. For each ally damaged this
 // way, distribute 2 damage among target opponent's units." — eer/X 0/6
 // {Battle} Elemental Spell. X is chosen and paid AT CAST (R35) and read from
-// item.x here. The ally picks and the per-point distribution
-// are mid-resolution chooses (⚠ header, auto when forced), all planned
-// before any damage commits; the 2 distributed damage is committed in
-// 1-point increments to the chosen opponent units (a point aimed at a unit
-// that died mid-commit is lost).
+// item.x here. R64: the "X target allies" are CAST-TIME targets (they were
+// picked mid-resolution, so the spell hit the stack aiming at nobody). The
+// per-point DISTRIBUTION stays a mid-resolution choose: it is a division of
+// damage among the opponent's units, not a set of declared targets — the
+// printed target there is the opponent, who in 1v1 is the only one.
+// The 2 distributed damage is committed in 1-point increments (a point aimed
+// at a unit that died mid-commit is lost).
 card('Channel Through', {
   spellEffect: {
+    targets: {
+      what: 'allyUnit', count: 'X', min: 0,
+      prompt: 'Channel Through: deal 2 damage to each of X target allies',
+    },
     run: (g, ctx) => {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       if (x <= 0) { g.ev('info', 'Channel Through: X = 0 — no effect.'); return; }
-      // plan: pick up to X allies
-      const picked: Entity[] = [];
-      for (let i = 0; i < x; i++) {
-        const pool = g.unitsOf(ctx.controller, ctx.region).filter(u => !picked.includes(u));
-        const id = pickUnit(ctx, `ally:${i}`, ctx.controller, pool,
-          `Channel Through: deal 2 damage to which ally? (${i + 1} of ${x})`);
-        if (id === null) break;
-        const u = g.entity(id);
-        if (u) picked.push(u);
-      }
+      const picked = ctx.targets.filter(isEntityTarget).map(t => g.entity(t.id)).filter((u): u is Entity => !!u);
       // plan: per damaged ally, distribute 2 damage among opponent units
       const enemies = () => g.unitsIn(ctx.region).filter(u => u.controller !== ctx.controller);
       const alloc: EntityId[][] = picked.map((_, i) => {

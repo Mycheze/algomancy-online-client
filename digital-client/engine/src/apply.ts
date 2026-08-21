@@ -12,7 +12,7 @@ import type {
 import { E, GameEnded, IllegalAction, Suspended, other } from './engine.ts';
 import {
   affinityPips, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
-  type AbilityCost, type CardDef,
+  specForSlot, type AbilityCost, type CardDef, type EffectDef,
 } from './cards/dsl.ts';
 import { DECK_LIST, draftDeckList } from './cards/registry.ts';
 import { rngShuffle, rngNext } from './rng.ts';
@@ -170,7 +170,9 @@ export function replay(seed: number, actions: Action[], names?: [string, string]
 // ── dispatch ──────────────────────────────────────────────────────────
 
 function dispatch(e: E, action: Action): void {
-  if (e.s.decision && action.type !== 'decide') {
+  // R65: conceding is the one thing you may always do — including while the
+  // pending decision is the reason you want to stop.
+  if (e.s.decision && action.type !== 'decide' && action.type !== 'concede') {
     e.illegal(`a decision is pending for ${e.pname(e.s.decision.seat)}`);
   }
   switch (action.type) {
@@ -185,6 +187,7 @@ function dispatch(e: E, action: Action): void {
     case 'prophesy': return doProphesy(e, action.seat, action.from, action.index);
     case 'playCached': return doPlayCached(e, action.seat, action.index);
     case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId);
+    case 'concede': return doConcede(e, action.seat);
     case 'activateAbility': return doActivateAbility(e, action.seat, action.entityId, action.abilityIndex, action.via);
     case 'augment': return doAugment(e, action.seat, action.from, action.index, action.hostId);
     case 'graft': return doGraft(e, action.seat, action.from, action.index, action.hostId, action.position);
@@ -307,6 +310,20 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
   maybeGrantShard(e, seat, element);
 }
 
+/**
+ * R65: concede. The one action with no timing, no priority and no phase — a
+ * player may give up whenever the game is still going, including while a
+ * decision they do not want to answer is pending. It ends the game exactly as
+ * a lethal blow does (winner set, phase 'gameover', a 'gameOver' event), so
+ * everything downstream — the post-game screen, the stats record, the replay —
+ * needs no special case for it.
+ */
+function doConcede(e: E, seat: Seat): void {
+  e.need(e.s.winner === null, 'the game is already over');
+  e.ev('info', `${e.pname(seat)} concedes.`, { seat });
+  e.concede(seat);
+}
+
 function doDonePlanning(e: E, seat: Seat): void {
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
@@ -345,9 +362,12 @@ function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | '
   const eff = c.spellEffect;
   if (!eff) return true;
   if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, reserve)) return false;
-  // an "up to N" spec (min 0) may legally be cast at nothing
+  // an "up to N" spec (min 0) may legally be cast at nothing. R58/R64: the
+  // gate is the FIRST SLOT's spec — its own kind and its own restriction —
+  // not the spec-wide fallback, which for Fight ("target ally and another
+  // target unit") is the looser of the two.
   if (eff.targets && (eff.targets.min ?? 1) > 0
-    && e.targetCandidates(eff.targets, region, undefined, seat).length === 0) return false;
+    && e.targetCandidates(specForSlot(eff.targets, 0), region, undefined, seat).length === 0) return false;
   return true;
 }
 
@@ -551,18 +571,28 @@ function canPayDiscardMe(e: E, seat: Seat, c: CardDef): boolean {
  * the stack (in battle) or resolves immediately (in deployment) is the trash
  * TRIGGER, through the ordinary trigger machinery.
  *
- * TIMING comes from the cost line itself when it carries a marker — Nothyr's
- * {Battle} sits on the discard-me line while the card is a deploy unit — and
- * otherwise from the card (Dropslime: a deploy unit, so a deployment discard).
+ * R65 — TIMING. Discarding is not playing (R37): the card never goes to the
+ * stack, never spawns, and the only thing that reaches anyone is its own
+ * "when I am trashed" trigger. So the mode is available at INSTANT SPEED —
+ * during battle, whenever you hold priority — as well as during your own
+ * deployment. A printed {Battle} marker on the discard line (Nothyr) still
+ * restricts it to battle; nothing restricts it to deployment.
+ *
+ * Bena, playtest PEMC: "I can't discard Sacrifice Dude at instant speed. It
+ * has to work like that, otherwise the alternate cost doesn't make sense
+ * (since you don't have opponent's during deployment)." Exactly so — Sacrifice
+ * Dude's payoff is "each opponent sacrifices a nontoken unit", and in
+ * deployment the opponent is not in your region at all (R25), so the
+ * deployment-only reading made the mode unusable on its own card.
  */
 function doDiscardMe(e: E, seat: Seat, handIndex: number, c: CardDef): void {
   e.need(c.discardMe, 'that card has no "Discard me" mode');
   e.need(canPayDiscardMe(e, seat, c), 'cannot pay the discard cost');
-  const timing = c.discardMe!.timing ?? c.timing;
-  if (timing === 'battle') {
-    e.need(e.s.phase === 'battle', 'that mode is a battle action');
+  if (e.s.phase === 'battle') {
     e.need(e.s.priority === seat, 'you do not have priority');
   } else {
+    // a {Battle}-marked discard line is a battle action and nothing else
+    e.need((c.discardMe!.timing ?? c.timing) !== 'battle', 'that mode is a battle action');
     e.need(e.deploying(seat), 'not your deployment');
   }
   e.payMana(seat, c.discardMe!.mana);
@@ -637,6 +667,22 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
   return true;
 }
 
+/**
+ * R64: the ability's EFFECT-level gates, the same two `castable` applies to a
+ * spell — a bracketed [cost] that cannot be paid, and a mandatory target with
+ * nothing legal to aim at. Both used to be discovered halfway through: you
+ * paid the mana, the ability went on the stack, and the part was silently
+ * skipped at resolution. An ability you cannot use is not offered and is
+ * refused, exactly like a spell you cannot cast.
+ */
+function abilityEffectUsable(e: E, seat: Seat, ab: { effect: EffectDef }, u: Entity, region: number): boolean {
+  const eff = ab.effect;
+  if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, 0, u.id)) return false;
+  if (eff.targets && (eff.targets.min ?? 1) > 0
+    && e.targetCandidates(specForSlot(eff.targets, 0), region, undefined, seat, u.id).length === 0) return false;
+  return true;
+}
+
 function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: number, via?: 'augment' | { mod: EntityId }): void {
   const u = e.entity(entityId);
   e.need(u && u.kind === 'unit' && u.controller === seat && !u.absent, 'not your unit');
@@ -667,6 +713,8 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   // compose BEFORE paying costs: a spent bounded cause makes this illegal
   const parts = e.composeParts(u, abilityIndex, prefix, viaCard);
   e.need(parts, 'that ability was already used this turn');
+  // R64: …and only then, whether the effect has anything to spend itself on
+  e.need(abilityEffectUsable(e, seat, ability, u, region), 'that ability has nothing it can be used on');
   const srcCard = viaCard ?? u.card;
   const item: StackItem = {
     id: e.s.nextId++, kind: 'activated', card: srcCard,
@@ -1252,7 +1300,9 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
           out.push({ type: 'playCard', seat, handIndex: i, mode: 'ambush' });
         }
         // R40: a "Discard me" line whose own marker makes it battle timing (Nothyr)
-        if (c.discardMe && (c.discardMe.timing ?? c.timing) === 'battle' && canPayDiscardMe(e, seat, c)) {
+        // R65: discarding is not playing — every "Discard me" line works at
+        // instant speed, whatever the card's own timing says
+        if (c.discardMe && canPayDiscardMe(e, seat, c)) {
           out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
         }
         if (c.virus && isAugment(name) && e.canPayCard(seat, name, { purpose: 'mod' })) {
@@ -1362,6 +1412,7 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         if (ab.timing !== undefined && ab.timing !== (battle ? 'battle' : 'deploy')) return;
         if (!canPayAbilityCost(e, seat, ab.cost, u, region)) return;
         if (ab.bounded && (u.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
+        if (!abilityEffectUsable(e, seat, ab, u, region)) return;                // R64
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });
       });
     };

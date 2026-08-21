@@ -233,11 +233,13 @@ test('Combustible Bogwalker: discard a card to recall a unit from your bin ([onc
   emptyHand(h, p);
   give(h, p, 'Darkblast');                                     // a SPELL, so the bin
   h.do({ type: 'activateAbility', seat: p, entityId: bog, abilityIndex: 0, via: 'augment' });
+  // R64/R57: the TARGET is chosen first — against the bin as it is now, which
+  // is before the cost pushes a card into it
+  pickCard(h, 'Brough');
   // R49: the either/or cost is asked at ACTIVATION, before the item exists
   pickCard(h, 'Darkblast');
   assert.ok(h.state.players[p]!.bin.includes('Darkblast'),
     'paid immediately — nobody could respond in between');
-  // …still holds exactly one UNIT card, so the recall pick is forced
   assert.ok(h.state.players[p]!.hand.includes('Brough'), 'the bin unit is back in hand');
   assert.ok(!h.state.players[p]!.bin.includes('Brough'), 'and left the bin');
   assert.ok(h.state.players[p]!.bin.includes('Darkblast'), 'the discard trashed the paid card (R40)');

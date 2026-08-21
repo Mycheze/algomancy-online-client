@@ -225,7 +225,9 @@ card('Instrument of Reassignment', {
 // none → nothing happens.
 card('Interdiction Rift', {
   spellEffect: {
-    targets: { what: 'any', prompt: 'Interdiction Rift: target opponent negates an effect they control' },
+    // R64: "target OPPONENT" is a player-only, opponent-only kind — 'any'
+    // offered every unit on the board and the caster themself.
+    targets: { what: 'opponent', prompt: 'Interdiction Rift: target opponent negates an effect they control' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('player' in (t as object))) return;

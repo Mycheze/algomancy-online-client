@@ -40,7 +40,7 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, notSelf, type EffectCtx, type EffectDef } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -229,7 +229,11 @@ card('Eminence of the Barrens', {
     type: 'triggered', events: ['damage'], self: true,
     label: 'you may pay [one] — I fight another target unit',
     effect: {
-      targets: { what: 'unit', prompt: 'Eminence of the Barrens: I fight another target unit (if you pay [one])' },
+      // R64: "ANOTHER target unit" — the Eminence cannot fight itself
+      targets: {
+        what: 'unit', prompt: 'Eminence of the Barrens: I fight another target unit (if you pay [one])',
+        restrict: notSelf,
+      },
       run: (g, ctx) => {
         const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
         if (!self) return;

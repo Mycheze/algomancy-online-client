@@ -21,7 +21,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -114,10 +114,11 @@ test('Arcane Echo: creates a copy of a chosen token (unit copy arrives home, R28
   let robot = 0;
   withE(h, e => { robot = e.spawnUnit(D, 'Robot', e.homeRegion(D), { token: true, counters: 2 }).id; });
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  // R64: "target token" is chosen AT CAST, before anyone may respond
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arcane Echo') });
-  pass(h); pass(h);                                         // resolve → token choice
-  assert.equal(h.state.decision!.seat, A);
-  pick(h, robot);
+  assert.equal(h.state.decision!.seat, A, 'the target is asked for as it is cast');
+  pick(h, { unit: robot });
+  pass(h); pass(h);                                         // resolve
   const copies = unitsOf(h, A).filter(u => u.card === 'Robot');
   assert.equal(copies.length, 1, 'a Robot copy was created for the caster');
   assert.ok(copies[0]!.token, 'the copy is a token');
@@ -352,11 +353,18 @@ test('Discharge: remove X +1/+1 counters from allies, deal X to target unit', ()
   giveResources(h, A, 'metal', 1);                          // m/1
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2]] });
+  // R64: the bracketed cost is paid AT CAST — X is fixed and the counters are
+  // gone before the spell is ever on the stack for anyone to answer.
+  // The VARIABLE cost comes first (R64): X sizes the spell, so it is settled
+  // with the mana X, before targets are asked for.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Discharge') });
+  pick(h, { counterFrom: a1 }); pick(h, { counterFrom: a1 }); pick(h, { counterFrom: a2 });
+  pick(h, { doneCost: true });                              // X = 3
   pick(h, { unit: kraken });
-  pass(h); pass(h);                                         // resolve → the counter picks
-  pick(h, a1); pick(h, a1); pick(h, a2);                    // remove 2 + 1
-  pick(h, -1);                                              // done: X = 3
+  assert.equal(ent(h, a1)!.counters, 0, 'the counters are spent as the spell is cast…');
+  assert.equal(h.state.stack.length, 1, '…and only then does it reach the stack');
+  assert.equal(h.state.stack[0]!.parts[0]!.costPaid!.x, 3, 'X = 3, fixed at cast');
+  pass(h); pass(h);                                         // resolve
   assert.ok(!ent(h, kraken), '3 damage kills the 5/3');
   assert.ok(h.state.players[D]!.bin.includes('Minor Kraken'));
   assert.equal(ent(h, a1)!.counters, 0, 'two counters paid');
@@ -400,10 +408,13 @@ test('Download: steals a chosen enemy token; a stolen Fireball recasts with new 
     fb = e.createSpellToken(D, 'Fireball', 3, e.homeRegion(D)).id;
   });
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  // R64: "target token" is a CAST-TIME target — the playtest report was
+  // "Download didn't have me target anything".
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Download') });
-  pass(h); pass(h);                                         // resolve → token choice
-  assert.equal(h.state.decision!.options.length, 2, 'both enemy tokens offered');
-  pick(h, fb);
+  assert.equal(h.state.decision!.options.length, 2, 'both enemy tokens offered — and only those');
+  notOffered(h, { unit: atk }, 'your own attacker is not an enemy token');
+  pick(h, { unit: fb });
+  pass(h); pass(h);                                         // resolve
   assert.equal(ent(h, fb)!.controller, A, 'the Fireball swapped sides (R8)');
   assert.equal(ent(h, fb)!.owner, D, 'owner unchanged');
   // "you may choose new targets": the new controller casts it fresh

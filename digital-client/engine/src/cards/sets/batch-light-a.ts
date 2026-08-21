@@ -232,7 +232,8 @@ card('Colony of the Interworld', {
 // who may eventually release it — this is a delay, not a steal.
 card('Divine Foresight', {
   spellEffect: {
-    targets: { what: 'any', prompt: "Divine Foresight: look at target opponent's hand" },
+    // R64: "target opponent" — a player, and not you
+    targets: { what: 'opponent', prompt: "Divine Foresight: look at target opponent's hand" },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('player' in (t as object))) return;
@@ -258,20 +259,15 @@ card('Divine Foresight', {
 
 // "[Switch1] [Pay X life], create an X/X unit." — l/4 Horror Spell (deploy).
 // The leading [Switch1] makes the whole text a bounded graft as well as the
-// spell's own effect (Arcane Echo's shape). ⚠ header: X is chosen and the life
-// paid at RESOLUTION; X is capped at life − 1 so the cost can never be lethal.
+// spell's own effect (Arcane Echo's shape). R64: the bracket is an ADDITIONAL
+// COST — the life is paid at cast, a point at a time, and X is however much
+// was paid. R49 is re-asked before each point, so the cost can never be lethal
+// and no cap has to be computed up front.
 const fleshTithe: EffectDef = {
+  castCost: { kind: 'payLife', n: 'X' },
   run: (g, ctx) => {
-    const max = Math.max(0, g.player(ctx.controller).life - 1);
-    const options = [{ label: 'X = 0 (no unit)', value: 0 }];
-    for (let x = 1; x <= max; x++) options.push({ label: `X = ${x} (pay ${x} life)`, value: x });
-    const x = ctx.choose('tithe', {
-      kind: 'payOrDecline', seat: ctx.controller,
-      prompt: 'Flesh Tithe: pay X life to create an X/X unit',
-      options,
-    }) as number;
+    const x = ctx.x ?? 0;
     if (x <= 0) { g.ev('info', 'Flesh Tithe: X = 0 — no life paid, no unit.'); return; }
-    if (!payLife(g, ctx.controller, x, 'Flesh Tithe')) return;
     // R52: a created unit arrives in its CONTROLLER's home region
     g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller),
       { token: true, tokenStats: [x, x] });

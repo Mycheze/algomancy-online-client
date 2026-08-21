@@ -1144,6 +1144,25 @@ function binDialogHtml(): string {
   </div></div>`;
 }
 
+/** R65: the erased pile — cards taken OUT OF THE GAME. Not a zone anything is
+ * played from, and nothing here is ever clickable; it exists because the
+ * information is public and there was no way to look at it ("I dont think
+ * there's currently a way to view erased cards"). */
+let erasedView: Seat | null = null;
+function erasedDialogHtml(): string {
+  if (erasedView === null) return '';
+  const pl = h.state.players[erasedView]!;
+  const gone = pl.erased ?? [];
+  return `<div class="overlay mainonly"><div class="overlaybox binbox">
+    <h3>${esc(pl.name)}'s erased cards (${gone.length})</h3>
+    <div class="binmodbanner">Erased cards are out of the game — no bin, no death triggers, and nothing plays them back.</div>
+    <div class="zone binzone bindialog">${
+      gone.map(n => cardHtml(n, {})).join('') || '<span class="binempty">nothing has been erased</span>'
+    }</div>
+    <button data-btn="erasedclose">Close</button>
+  </div></div>`;
+}
+
 // (bins moved into their players' region panels — see regionPanelHtml/binDialogHtml)
 
 // ── R41: the cache — a fourth zone, and a PUBLIC one ──────────────────
@@ -2055,6 +2074,8 @@ function tgtLabel(t: TargetRef): string {
     const cc = (h.state.players[t.cached.seat]!.cache ?? []).find(c => c.uid === t.cached.uid);
     return esc(cc ? `${cc.card} (cache)` : 'gone');
   }
+  // R64: a card named in a bin — the zone is public, so it always reads
+  if ('bin' in t) return esc(`${t.bin.card} (bin)`);
   return esc(stackItemById(t.stack)?.label ?? 'gone');
 }
 
@@ -2367,6 +2388,8 @@ function renderNow(): boolean {
     ${NET ? `<div class="handdock"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${stackBoardHtml()}
+    ${erasedDialogHtml()}
+    ${concedeHtml()}
     ${menuHtml()}
     ${binDialogHtml()}
     ${cacheDialogHtml()}
@@ -2519,6 +2542,7 @@ function targetSelectors(t: TargetRef): string[] {
   if ('unit' in t) return [`.card[data-anim="e${t.unit}"]`, `[data-anim="e${t.unit}"]`];
   if ('player' in t) return [`[data-animzone="life:${t.player}"]`];
   if ('stack' in t) return [`.stackcard[data-anim="s${t.stack}"]`];
+  if ('bin' in t) return [`[data-animzone="bin:${t.bin.seat}"]`];
   return [`[data-anim="c${t.cached.uid}"]`, `[data-animzone="cache:${t.cached.seat}"]`];
 }
 
@@ -3374,6 +3398,13 @@ function handleButton(btn: HTMLElement): void {
   }
   if (b === 'binopen') { binView = Number(btn.dataset['p']) as Seat; }
   if (b === 'binclose') binView = null;
+  if (b === 'erasedclose') erasedView = null;
+  if (b === 'concedeno') concedeAsk = null;
+  if (b === 'concedeyes') {
+    const seat = concedeAsk;
+    concedeAsk = null;
+    if (seat !== null) act({ type: 'concede', seat });
+  }
   // R41: the cache is public — either seat's zone opens for either player
   if (b === 'cacheopen') { cacheView = Number(btn.dataset['p']) as Seat; }
   if (b === 'cacheclose') cacheView = null;
@@ -3810,6 +3841,8 @@ document.addEventListener('keydown', e => {
     if (judgeOpen) { judgeOpen = false; render(); return; }
     if (helpOpen) { helpOpen = false; render(); return; }
     if (binView !== null) { binView = null; render(); return; }
+    if (erasedView !== null) { erasedView = null; render(); return; }
+    if (concedeAsk !== null) { concedeAsk = null; render(); return; }
     if (cacheView !== null) { cacheView = null; render(); return; }
     if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); render(); return; }
     if (inField) return;
@@ -3823,7 +3856,8 @@ document.addEventListener('keydown', e => {
   }
 
   if (inField) return;   // never fire game hotkeys while typing
-  const overlayUp = reportOpen || judgeOpen || helpOpen || !!inspect || binView !== null || cacheView !== null || !!ui.menu;
+  const overlayUp = reportOpen || judgeOpen || helpOpen || !!inspect
+    || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu;
 
   if (e.key === ' ') {
     if (overlayUp) return;
@@ -3845,16 +3879,73 @@ document.addEventListener('keydown', e => {
   }
 });
 
+/** R65: the two things the board itself offers on a right-click, wherever you
+ * click — both were playtest asks ("We need a way to right click -> concede
+ * match :(", "I dont think there's currently a way to view erased cards").
+ * They ride on every card menu too, so you never have to hunt for bare table. */
+function boardMenuItems(): { label: string; go: () => void }[] {
+  const items: { label: string; go: () => void }[] = [];
+  for (const p of [0, 1] as Seat[]) {
+    const pl = h.state.players[p]!;
+    const n = (pl.erased ?? []).length;
+    const mine = NET ? p === NET.seat : false;
+    items.push({
+      label: `🚫 ${mine ? 'My' : `${pl.name}'s`} erased cards (${n})`,
+      go: () => { erasedView = p; render(); },
+    });
+  }
+  if (h.state.phase !== 'gameover') {
+    // net: you may only concede your own seat. Hotseat: one person is driving
+    // both, so both are offered — and priority can be null (planning, draft),
+    // which is exactly when someone might want to stop.
+    const seats: Seat[] = NET ? [NET.seat] : [0, 1];
+    for (const seat of seats) {
+      items.push({
+        label: NET ? '🏳 Concede the match' : `🏳 Concede as ${h.state.players[seat]!.name}`,
+        go: () => { concedeAsk = seat; render(); },
+      });
+    }
+  }
+  return items;
+}
+
+/** the concede confirmation — irreversible, so it is never one click */
+let concedeAsk: Seat | null = null;
+function concedeHtml(): string {
+  if (concedeAsk === null) return '';
+  const name = h.state.players[concedeAsk]!.name;
+  return `<div class="overlay mainonly"><div class="overlaybox">
+    <h3>Concede the match?</h3>
+    <p>${esc(name)} loses immediately and the game is over. This cannot be undone.</p>
+    <button data-btn="concedeyes">Concede</button>
+    <button data-btn="concedeno">Keep playing</button>
+  </div></div>`;
+}
+
 // right-click any card (board, hand, bin, preview, reveal) → inspector menu
 document.addEventListener('contextmenu', e => {
   if (!inGame) return;   // never paint game UI over the home screen
   const t = (e.target as HTMLElement).closest('[data-prev], [data-previd]') as HTMLElement | null;
-  if (!t) return;
+  if (!t) {
+    // bare table: the board menu on its own
+    const bare = boardMenuItems();
+    if (!bare.length) return;
+    e.preventDefault();
+    ui.menu = { x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY, items: bare };
+    render();
+    return;
+  }
   e.preventDefault();
   const id = t.dataset['previd'] !== undefined ? Number(t.dataset['previd']) : undefined;
-  const name = id !== undefined ? h.state.entities[id]?.card : t.dataset['prev'];
-  if (!name || name === HIDDEN_CARD) return;
   const me = e as MouseEvent;
+  const name = id !== undefined ? h.state.entities[id]?.card : t.dataset['prev'];
+  if (!name || name === HIDDEN_CARD) {
+    // a card back has nothing to inspect, but the board menu still applies —
+    // otherwise right-clicking the opponent's hand is a dead click
+    ui.menu = { x: me.clientX, y: me.clientY, items: boardMenuItems() };
+    render();
+    return;
+  }
   const items: { label: string; go: () => void }[] = [
     { label: `📖 ${name} — details, attributes & rulings`, go: () => openInspector(name, id) },
     { label: `⚖ Ask the judge about ${name}`, go: () => {
@@ -3891,7 +3982,7 @@ document.addEventListener('contextmenu', e => {
       });
     }
   }
-  ui.menu = { x: me.clientX, y: me.clientY, items };
+  ui.menu = { x: me.clientX, y: me.clientY, items: [...items, ...boardMenuItems()] };
   render();
 });
 

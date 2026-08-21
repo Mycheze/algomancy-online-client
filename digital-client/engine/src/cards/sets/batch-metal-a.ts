@@ -13,17 +13,19 @@
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch (metal = copies, transforms
  * and token games; the engine has NO copy/transform machinery):
- *  - TOKEN TARGETING (Arcane Echo / Download): tokens are not stack-targetable
- *    (TargetSpec has no token scope, spell tokens are not units), so "target
- *    token" is a RESOLUTION-TIME ctx.choose over the tokens in the effect's
- *    region. Slightly stronger than printed (the pick cannot be responded to).
+ *  - TOKEN TARGETING (Arcane Echo / Download): FIXED by R64 — TargetSpec has
+ *    a 'token' kind (unit tokens and spell tokens alike), so "target token" is
+ *    a real cast-time target on both. It used to be a resolution-time
+ *    ctx.choose, which is what the playtest report "Download didn't have me
+ *    target anything..." was looking at.
  *  - TOKEN COPIES (Arcane Echo / Automaton of Abundance): a token is fully
  *    described by card + tokenStats/counters/x, so copies are re-created via
  *    spawnUnit/createSpellToken. Mods on the original are not copied.
- *  - X COSTS AT RESOLUTION (Celestial Shifter / Deformant / Discharge): the
- *    engine has no X-at-activation collection and no compound activation
- *    costs, so X is chosen and paid (and Deformant's sacrifices happen) at
- *    RESOLUTION, Frosted Denial-style.
+ *  - X COSTS AT RESOLUTION (Celestial Shifter / Deformant): the engine has no
+ *    compound activation costs, so X is chosen and paid (and Deformant's
+ *    sacrifices happen) at RESOLUTION, Frosted Denial-style. DISCHARGE IS NO
+ *    LONGER ONE OF THEM: R64 made its bracket a real cast cost, paid before
+ *    the spell is respondable, and the counters removed ARE X.
  *  - BASE-STAT CHANGES (Aberrant Statweaver / Body Swap / Celestial Shifter /
  *    Borrower of Forms): the stat layers have no base-set primitive. "Base
  *    X/Y" is approximated as a delta from the printed/token base — layered
@@ -210,23 +212,16 @@ card('Ancient One', {
 });
 
 // "[Switch1] Create a copy of target token." — m/2 2/1 {Battle} Arcane Mimic
-// Spell. ⚠ header: "target token" is a resolution-time ctx.choose over the
-// tokens in this region (unit tokens AND spell tokens). A unit-token copy is
-// created in the caster's HOME region (R28); a spell-token copy appears here
-// (battle materiel). tokenStats/counters/x are copied; mods are not.
+// Spell. R64: "target token" is a CAST-TIME target — unit tokens and spell
+// tokens both, either side's. A unit-token copy is created in the caster's
+// HOME region (R28); a spell-token copy appears here (battle materiel).
+// tokenStats/counters/x are copied; mods are not.
 const echoCopy: EffectDef = {
+  targets: { what: 'token', prompt: 'Arcane Echo: create a copy of target token' },
   run: (g, ctx) => {
-    const cands = tokensInRegion(g, ctx.region);
-    if (!cands.length) { g.ev('info', 'Arcane Echo: no token here to copy.'); return; }
-    const pick = ctx.choose('echo', {
-      kind: 'payOrDecline', seat: ctx.controller,
-      prompt: 'Arcane Echo: create a copy of which token?',
-      options: cands.map(t => ({
-        label: `${t.card}${t.x !== undefined ? ` ${t.x}` : ''}${t.counters ? ` (${t.counters})` : ''}`,
-        value: t.id, card: t.card,
-      })),
-    }) as EntityId;
-    const orig = g.entity(pick);
+    const t = ctx.targets[0];
+    if (!isEnt(t)) return;
+    const orig = g.entity(t.id);
     if (!orig) return;
     if (orig.kind === 'spellToken') {
       g.createSpellToken(ctx.controller, orig.card, orig.x ?? 0, ctx.region);
@@ -558,34 +553,19 @@ card('Deformant', {
 // (plan-then-commit: the picks are tallied first, then committed together
 // with the damage). "Allies" = your units in this region (R12).
 const dischargeZap: EffectDef = {
-  targets: { what: 'unit', prompt: 'Discharge: remove X +1/+1 counters from allies — deal X damage to target unit' },
+  // R64: the bracket is an ADDITIONAL COST, so it is paid at cast, before the
+  // item is on the stack and before anyone can respond — and the counters
+  // removed ARE X. It used to be a mid-resolution ctx.choose loop, which meant
+  // Rashi's opponent got to answer a Discharge whose size was still unchosen,
+  // and a negate would have refunded a cost that had never been paid.
+  castCost: { kind: 'removeCounters', from: 'allies', n: 'X' },
+  targets: { what: 'unit', prompt: 'Discharge: I deal X damage to target unit' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!isEnt(t) || !g.entity(t.id)) return;
-    const planned = new Map<EntityId, number>();
-    let x = 0;
-    for (let i = 0; ; i++) {
-      const opts: { label: string; value: number; card?: string }[] = [{ label: `done (X = ${x})`, value: -1 }];
-      for (const u of g.unitsOf(ctx.controller, ctx.region)) {
-        const left = u.counters - (planned.get(u.id) ?? 0);
-        if (left > 0) opts.push({ label: `${u.card} (+${left})`, value: u.id, card: u.card });
-      }
-      if (opts.length === 1) break;
-      const pick = ctx.choose(`dis:${i}`, {
-        kind: 'payOrDecline', seat: ctx.controller,
-        prompt: `Discharge: remove a +1/+1 counter from an ally (X = ${x} so far)`,
-        options: opts,
-      }) as number;
-      if (pick === -1) break;
-      planned.set(pick, (planned.get(pick) ?? 0) + 1);
-      x++;
-    }
-    for (const [id, n] of planned) {
-      const u = g.entity(id);
-      if (u) g.addCounters(u, -n);
-    }
-    const victim = g.entity(t.id);
-    if (x > 0 && victim) g.dealEffectDamage(ctx, victim, x);
+    const x = ctx.x ?? 0;
+    if (x > 0) g.dealEffectDamage(ctx, g.entity(t.id)!, x);
+    else g.ev('info', 'Discharge: X is 0 — no damage.');
   },
 };
 card('Discharge', {
@@ -613,19 +593,19 @@ card('Dispatch Courier', {
 // controller, so "choose new targets" is automatic.
 card('Download', {
   spellEffect: {
+    // R64: "target token" is a CAST-TIME target — the playtest report was
+    // "Download didn't have me target anything…", and it did not: the token
+    // was picked at resolution, so the opponent responded to a theft with no
+    // victim named and Mohruung-style "when I become targeted" never fired.
+    targets: {
+      what: 'token', prompt: 'Download: gain control of target token',
+      restrict: (_g, t, ctx) => 'controller' in t && t.controller !== ctx.ally,
+    },
     run: (g, ctx) => {
-      const cands = tokensInRegion(g, ctx.region).filter(t => t.controller !== ctx.controller);
-      if (!cands.length) { g.ev('info', 'Download: no enemy token here.'); return; }
-      const pick = ctx.choose('dl', {
-        kind: 'payOrDecline', seat: ctx.controller,
-        prompt: 'Download: gain control of which token?',
-        options: cands.map(t => ({
-          label: `${t.card}${t.x !== undefined ? ` ${t.x}` : ''}${t.counters ? ` (${t.counters})` : ''}`,
-          value: t.id, card: t.card,
-        })),
-      }) as EntityId;
-      const tok = g.entity(pick);
-      if (!tok) return;
+      const t = ctx.targets[0];
+      if (!isEnt(t)) return;
+      const tok = g.entity(t.id);
+      if (!tok || tok.controller === ctx.controller) return;
       tok.controller = ctx.controller;
       unslot(g, tok.id);   // R8: it swaps sides — out of its old formation
       g.ev('info', `${g.pname(ctx.controller)} gains control of ${tok.card}.`);

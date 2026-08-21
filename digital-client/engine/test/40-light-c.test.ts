@@ -25,8 +25,8 @@ import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick, skipHasteStep,
-  spawn, toDeployment, toNextBattle, unitsOf,
+  effStats, ent, finishBattle, give, giveResources, notOffered, offered, pass, pick,
+  skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
 
@@ -126,12 +126,14 @@ test('Delver of the Ephemeral: after combat, caches a cost-1 card from your bin,
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: A, blocks: {} });
   pass(h); pass(h);                                           // combat → afterCombat trigger
-  pass(h); pass(h);                                           // resolve the trigger → the bin choice
+  // R64: the bin card is a declared TARGET, chosen as the trigger is stacked
   const dec = h.state.decision!;
   assert.equal(dec.seat, A, 'the Delver\'s controller chooses');
-  assert.deepEqual(dec.options.map(o => o.label), ['Hand Peeper', '(cache nothing)'],
+  assert.deepEqual(dec.options.map(o => o.label),
+    [`Hand Peeper (${h.state.players[A]!.name}'s bin)`, 'No more targets'],
     'only cost-1 cards, plus the "up to one" decline');
-  pick(h, 0);                                                 // the bin index of Hand Peeper
+  pick(h, { bin: { seat: A, card: 'Hand Peeper' } });
+  pass(h); pass(h);                                           // resolve the trigger
   assert.ok(!h.state.players[A]!.bin.includes('Hand Peeper'), 'it LEFT the bin');
   assert.deepEqual(cacheOf(h, A).map(c => c.card), ['Hand Peeper'], 'and is in the cache');
   assert.equal(cacheOf(h, A)[0]!.playableUntilTurn, h.state.turn, 'playable until end of THIS turn');
@@ -186,10 +188,47 @@ test('Feed to Hooba: the whole sentence is the bounded [Switch1] graft', () => {
 
 // ── Gatekeeper of Souls ──────────────────────────────────────────────────
 
-test('Gatekeeper of Souls: "I must be targeted if able" (targeting restriction)', { todo: true }, () => {
-  // PARKED: E.targetCandidates builds the legal target set with no filter seam
-  // a card can narrow, and "if able" needs the same machinery to fall back
-  // when the Gatekeeper is not itself a legal target for that effect.
+test('Gatekeeper of Souls: "I must be targeted if able" — it takes the hit', () => {
+  // R64 un-parked it: a compulsion is the mirror of a restriction, narrowing
+  // OTHER effects' candidate lists.
+  const h = new Harness(4090);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  const gk = spawn(h, D, 'Gatekeeper of Souls');              // 0/7
+  const prize = spawn(h, D, 'Lurking Slimebeast');            // 8/3 — the real target
+  giveResources(h, A, 'fire', 6);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ unit: gk }],
+    'every other unit is off the menu while the Gatekeeper is a legal target');
+  pick(h, { unit: gk });
+  pass(h); pass(h);
+  assert.equal(ent(h, gk)!.damage, 6, 'the wall took the Arc');
+  assert.equal(ent(h, prize)!.damage, 0, 'and the 8/3 was never reachable');
+  finishBattle(h);
+});
+
+test('Gatekeeper of Souls: "if able" — an effect it is not a legal target for is left alone', () => {
+  const h = new Harness(4091);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  // Minor Kraken recalls "target unit with 5 or less defense" — the 0/7
+  // Gatekeeper is not one, so it cannot compel this at all.
+  const kraken = spawn(h, A, 'Minor Kraken');
+  const gk = spawn(h, D, 'Gatekeeper of Souls');              // 7 defense — out of reach
+  const reachable = spawn(h, D, 'Curio Drifter');             // 2/2 — in reach
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[kraken]] });
+  notOffered(h, { unit: gk }, '7 defense is more than 5 — never a legal target');
+  assert.ok(offered(h).includes(JSON.stringify({ unit: reachable })),
+    '"if able": the rest of the board is still on the menu');
+  pick(h, { unit: reachable });
+  pass(h); pass(h);
+  assert.ok(!ent(h, reachable), 'recalled');
+  assert.ok(ent(h, gk), 'the Gatekeeper stands');
+  finishBattle(h);
 });
 
 // ── Godray ───────────────────────────────────────────────────────────────

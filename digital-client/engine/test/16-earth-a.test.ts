@@ -144,10 +144,12 @@ test('Eminence of the Barrens: dealt damage → may pay [one] to fight another t
   assert.ok(!ent(h, bubbA), 'Bubb died to the 6-power fight');
   assert.equal(ent(h, emin)!.damage, 6, '1 combat + 5 from the fight');
   assert.equal(h.state.players[D]!.resources.filter(r => r.state === 'expended').length, 1, 'the [one] was paid');
-  // "whenever": the fight's 5 damage re-triggered the ability — the only
-  // remaining unit is the Eminence itself, so it resolves as a no-op
-  pick(h, { unit: emin });
-  assert.ok(h.log.some(m => m.includes('cannot fight myself')), 'self-target no-op ("another target unit")');
+  // "whenever": the fight's 5 damage re-triggered the ability — but R64 makes
+  // "ANOTHER target unit" a real restriction, so with only the Eminence left
+  // there is nothing legal to aim at and the trigger says so instead of
+  // offering a target it would then refuse.
+  assert.equal(h.state.decision, null, 'no self-target is offered');
+  assert.ok(h.log.some(m => m.includes('no legal target')), 'and it says why nothing happened');
   finishBattle(h);
 });
 

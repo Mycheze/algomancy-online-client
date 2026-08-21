@@ -60,7 +60,7 @@
  */
 import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, getCard, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -320,7 +320,17 @@ card('Gzxyclop', {
 // until-regroup changes or somebody's static buff simply survives.
 card('Leave None Pure', {
   spellEffect: {
-    targets: { what: 'unit', prompt: 'Leave None Pure: delete target unit with no stat changes' },
+    // R64: "with no stat changes" is a targeting restriction, so only the
+    // unmodified units are ever offered; the resolution check stays for the
+    // ones that change between cast and resolution.
+    targets: {
+      what: 'unit', prompt: 'Leave None Pure: delete target unit with no stat changes',
+      restrict: unitRestrict((g, u) => {
+        const [bp, bt] = baseStats(u);
+        const [p, d] = g.effStats(u);
+        return u.counters === 0 && u.tempPower === 0 && u.tempToughness === 0 && p === bp && d === bt;
+      }),
+    },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
@@ -566,27 +576,29 @@ card('Spore of Regenesis', {
 // "Recall two target units in your bin, then discard a card." — dd/4 {Battle}
 // Alien Spell. "Recall … in your bin" = back to your HAND (recall is the
 // leave-play/return-to-hand verb; from a bin there is nothing to leave).
-// ⚠ header: bin picks are a resolution-time choose, not targeting — so
-// plan-then-commit, and "then discard a card" happens unconditionally, even
-// when the bin held no units at all (R5: nothing here is a target).
+// R64: "two TARGET units in your bin" is real targeting — two cast-time
+// targets, and BinRef.nth means two copies of one card are two separate
+// targets. min 0: the spell is castable with an empty bin, because "then
+// discard a card" still happens (R5 fizzling would swallow the whole spell,
+// and the printed text makes the discard unconditional).
 card('Tilling the Graves', {
   spellEffect: {
+    targets: {
+      what: 'binCard', count: 2, min: 0,
+      prompt: 'Tilling the Graves: recall two target units in your bin',
+      restrict: (_g, t) => 'binCard' in t && isUnitCard(t.binCard.card),
+    },
     run: (g, ctx) => {
       const seat = ctx.controller;
-      const chosen: number[] = [];
-      for (let k = 0; k < 2; k++) {
-        const units = binMatches(g, seat, isUnitCard).filter(([, i]) => !chosen.includes(i));
-        if (!units.length) break;
-        const idx = units.length === 1 ? units[0]![1] : ctx.choose(`grave:${k}`, {
-          kind: 'payOrDecline', seat,
-          prompt: 'Tilling the Graves: recall which unit from your bin?',
-          options: units.map(([n, i]) => ({ label: n, value: i, card: n })),
-        }) as number;
-        chosen.push(idx);
-      }
       const bin = g.player(seat).bin;
+      // resolve every ref to a live index FIRST, then splice from the back —
+      // an index read before an earlier splice would be stale
+      const chosen = ctx.targets
+        .filter((t): t is { binCard: { seat: Seat; index: number; card: CardName } } => 'binCard' in t)
+        .map(t => t.binCard.index)
+        .filter(i => i !== -1);
       const taken: CardName[] = [];
-      for (const i of [...chosen].sort((a, z) => z - a)) {
+      for (const i of [...new Set(chosen)].sort((a, z) => z - a)) {
         const [name] = bin.splice(i, 1);
         if (name !== undefined) taken.push(name);
       }

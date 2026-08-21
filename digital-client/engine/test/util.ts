@@ -83,6 +83,21 @@ export function pick(h: Harness, ref: unknown): void {
   h.do({ type: 'decide', seat: dec.seat, choice: idx });
 }
 
+/** R64: the refs the pending decision is offering, as JSON keys */
+export function offered(h: Harness): string[] {
+  return (h.state.decision?.options ?? []).map(o => JSON.stringify(o.value));
+}
+
+/** R64: assert a target is NOT on the pending decision's menu — an illegal
+ * target is not something you choose and then have refused, it is something
+ * you were never shown. */
+export function notOffered(h: Harness, ref: unknown, why = ''): void {
+  const keys = offered(h);
+  if (keys.includes(JSON.stringify(ref))) {
+    throw new Error(`${JSON.stringify(ref)} should not be a legal target${why ? ` (${why})` : ''}; menu was [${keys}]`);
+  }
+}
+
 /** drive the battle phase to its end (skip attacks, no blocks, pass all
  * windows; answer trigger-ordering decisions with the identity order) */
 export function finishBattle(h: Harness): void {

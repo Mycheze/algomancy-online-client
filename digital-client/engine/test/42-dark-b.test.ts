@@ -452,12 +452,16 @@ test('Necromantic Rebuke: negates unless its controller erases X from their bin'
   pass(h);                                                 // hand D the window
   h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Flame of History') });
   pickRef(h, { unit: victim });
+  // R64: the bracketed cost is paid AT CAST — two cards out of MY bin, X = 2,
+  // fixed before the spell is on the stack.
   h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Necromantic Rebuke') });
+  pickRef(h, { erase: 'Unit Token' });
+  pickRef(h, { erase: 'Unit Token' });                     // the bin is empty → X = 2, closed
+  assert.equal(h.state.players[A]!.bin.filter(c => c === 'Unit Token').length, 0,
+    'the cost was paid as it was cast — erased, never trashed');
   const dec = h.state.decision!;
   h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => o.label.includes('Flame')) });
-  resolveAll(h, o => o.label === 'erase 2');               // X = 2, out of MY bin
-  assert.equal(h.state.players[A]!.bin.filter(c => c === 'Unit Token').length, 0,
-    'the cost was paid — erased, never trashed');
+  resolveAll(h);
   assert.equal(trashes(h).length, 0, 'erasing never touches a bin (R40)');
   assert.equal(ent(h, victim)!.damage, 0, 'D had nothing to erase, so the Flame was negated');
   assert.ok(h.log.some(l => l.includes('is negated')));
@@ -480,9 +484,10 @@ test('Necromantic Rebuke: the ransom saves the effect', () => {
   h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Flame of History') });
   pickRef(h, { unit: victim });
   h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Necromantic Rebuke') });
+  pickRef(h, { erase: 'Unit Token' });                     // X = 1, paid at cast
   const dec = h.state.decision!;
   h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => o.label.includes('Flame')) });
-  resolveAll(h, o => o.label === 'erase 1');               // both sides erase one
+  resolveAll(h, o => o.label === 'erase 1');               // D pays the ransom
   assert.equal(h.state.players[D]!.bin.filter(c => c === 'Good Whale').length, 0,
     'the targeted effect\'s controller paid the ransom');
   assert.ok(ent(h, victim)!.damage > 0, 'and the Flame survived to resolve');

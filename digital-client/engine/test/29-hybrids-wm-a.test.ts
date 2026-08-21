@@ -295,13 +295,15 @@ test('Malevolent Machinations: sacrifice X units → negate up to X target effec
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Structural Collapse') });
   pick(h, { unit: atk });                                     // Collapse's cast cost (R35): paid up front
   const collapseId = h.state.stack.find(i => i.card === 'Structural Collapse')!.id;
+  // R64: the bracket is an additional cost — sacrificed AT CAST, X fixed
+  // there, and the effect it negates is a declared target on the stack.
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Malevolent Machinations') });
-  pass(h); pass(h);                                           // resolve Malevolent (top of stack)
-  pick(h, d1);                                                // sacrifice one unit…
-  pick(h, false);                                             // …then Done: X = 1
-  pick(h, collapseId);                                        // negate the Collapse
-  assert.ok(!ent(h, d1), 'the sacrifice was paid');
+  pick(h, { unit: d1 });                                      // sacrifice one unit…
+  pick(h, { doneCost: true });                                // …then done: X = 1
+  assert.ok(!ent(h, d1), 'the sacrifice is paid as it is cast, not at resolution');
+  pick(h, { stack: collapseId });                             // aim at the Collapse (X = 1 → the only one)
   assert.ok(ent(h, d2), 'only X = 1 unit sacrificed');
+  pass(h); pass(h);                                           // resolve Malevolent (top of stack)
   assert.ok(h.log.some(m => m.includes('is negated')), 'the effect was negated');
   pass(h); pass(h);                                           // the negated Collapse resolves
   assert.ok(h.state.players[A]!.bin.includes('Structural Collapse'), 'negated spell → bin');
