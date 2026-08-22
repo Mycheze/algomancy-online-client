@@ -132,21 +132,19 @@ const putIntoHand = (g: E, u: Entity, seat: Seat): void =>
 card('Angel of Anguish', { prophesyFromBin: true });
 
 // "Target player's life total becomes equal to twice the number of cards in
-// all bins." — ld/8 {Battle} Cosmic Spell. Spec 'any' (there is no
-// player-only TargetSpec; a unit target is a no-op — the Bripp precedent).
-// "All bins" = BOTH players' bins, unowned and not region-scoped. Setting the
-// total is expressed as the difference, so it runs through gainLife/loseLife
-// and a total of 0 or less really kills (loseLife's lethal check).
+// all bins." — ld/8 {Battle} Cosmic Spell. "All bins" = BOTH players' bins,
+// unowned and not region-scoped. Setting the total is expressed as the
+// difference, so it runs through gainLife/loseLife and a total of 0 or less
+// really kills (loseLife's lethal check).
 card('Haunting Memories', {
   spellEffect: {
-    targets: { what: 'any', prompt: "Haunting Memories: target player's life becomes 2× the cards in all bins" },
+    // R64: only a player has a life total, and 'player' is the kind that says
+    // so — 'any' offered the region's units, which this could do nothing to.
+    targets: { what: 'player', prompt: "Haunting Memories: target player's life becomes 2× the cards in all bins" },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('player' in (t as object))) {
-        g.ev('info', 'Haunting Memories: the target is not a player — no effect.');
-        return;
-      }
-      const who = (t as { player: Seat }).player;
+      if (!t || !('player' in t)) return;
+      const who = t.player;
       const bins = g.s.players.reduce((n, p) => n + p.bin.length, 0);
       const want = 2 * bins;
       const cur = g.player(who).life;

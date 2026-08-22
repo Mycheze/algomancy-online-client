@@ -22,7 +22,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, handIdx, notOffered, ownAttrs,
+  effStats, ent, finishBattle, give, giveResources, handIdx, notOffered, offered, ownAttrs,
   pass, pick, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -61,10 +61,18 @@ test('Bripp: look at target player\'s hand, recycle a card, they draw; 4/2 Feebl
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
   const tok = spawn(h, A, 'Unit Token');
+  const foe = spawn(h, D, 'Lurking Slimebeast');            // 8/3, trigger-free
   giveResources(h, A, 'water', 5);                          // Bripp: bb/3
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Bripp') });
+  // R64 (playtest UFAB): "target player" is the 'player' kind. Under the old
+  // 'any' — the DAMAGE kind — every unit in the region was on this menu, the
+  // cast was legal, and the spell resolved into "no hand to look at".
+  notOffered(h, { unit: foe }, 'a unit has no hand');
+  notOffered(h, { unit: tok }, 'nor does your own');
+  assert.deepEqual(offered(h).sort(), [JSON.stringify({ player: A }), JSON.stringify({ player: D })].sort(),
+    'both seats, and only the seats — "target player" may legally be yourself');
   pick(h, { player: D });                                   // target player
   pass(h); pass(h);                                         // resolve
   const dHand = h.state.players[D]!.hand.slice();

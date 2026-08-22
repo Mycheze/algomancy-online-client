@@ -352,7 +352,13 @@ card('Earthbound Replicator', {
         const name = ctx.event?.data?.card as CardName | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
         const self = selfOf(g, ctx);
-        if (name === undefined || seat === undefined || !self) return;
+        // R84 surfaced this one: the Alluring trigger changed what the
+        // conformance drive reaches, and this guard aborted in silence.
+        // ("A guard that aborts an effect must LOG why" — test/65.)
+        if (name === undefined || seat === undefined || !self) {
+          g.ev('info', 'Earthbound Replicator: the spell or my body is gone — no copy.');
+          return;
+        }
         const it = g.s.stack.find(i =>
           i.card === name && i.controller === seat && NONUNIT_SPELL_KINDS.has(i.kind));
         const targetsMe = !!it &&

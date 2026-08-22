@@ -15,7 +15,8 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { getCard } from '../src/cards/dsl.ts';
+import { readFileSync } from 'node:fs';
+import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 import {
   EXPANSION_GUIDE, GLOSSARY, KEYWORDS, MECHANICS, glossaryHits, matcherFor,
@@ -48,6 +49,128 @@ test('every attribute printed on a real card has reminder text', () => {
     for (const a of attrs) if (!known.has(a)) missing.add(a);
   }
   assert.deepEqual([...missing], [], 'attributes with no glossary entry');
+});
+
+/* ── the keys, against the engine's own vocabulary ─────────────────────────
+ *
+ * A glossary entry can silently contradict the engine — which is exactly how
+ * {Alluring} came to teach a rule (R76) that had been replaced (R84) and how
+ * {Pure} went on saying "not implemented" for two days after R61 implemented
+ * it. The KEYS can be checked cheaply, and are, in both directions below.
+ *
+ * The TEXT cannot be checked automatically: no machine can read "its column
+ * can only be blocked by a column with Flying" and tell you whether the engine
+ * agrees. The few sentences that a ruling has already caught out are pinned by
+ * name at the bottom of this file; everything else is on the author. */
+
+const TYPES = readFileSync(new URL('../src/types.ts', import.meta.url), 'utf8');
+
+/** the `Attr` union in src/types.ts, read as text — it is a TYPE, so there is
+ * no runtime value of it to import */
+function attrUnion(): string[] {
+  const at = TYPES.indexOf('export type Attr =');
+  assert.notEqual(at, -1, 'src/types.ts no longer declares `export type Attr`');
+  const decl = TYPES.slice(at, TYPES.indexOf(';', at));
+  const names = [...decl.matchAll(/'([A-Za-z]+)'/g)].map(m => m[1]!);
+  assert.ok(names.length > 20, `only parsed ${names.length} attributes — the parse is broken`);
+  return names;
+}
+
+/** the KEYWORDS headings that are not attributes: printed markers with a flag
+ * of their own on the card definition, plus the one pure rules concept */
+const CARD_FLAGS: Record<string, 'burst' | 'virus' | 'ambush'> = {
+  Burst: 'burst', Virus: 'virus', Ambush: 'ambush',
+};
+const RULES_CONCEPTS = ['Unstable'];   // R69: what having mods does to a card
+
+test('every attribute the ENGINE knows has reminder text, printed or not', () => {
+  // stronger than the pool sweep above: an attribute added to the union with
+  // no card yet still reaches the inspector through a granted attrs list
+  const known = new Set(GLOSSARY.map(e => e.term));
+  assert.deepEqual(attrUnion().filter(a => !known.has(a)), [],
+    'attributes in src/types.ts with no glossary entry');
+});
+
+test('every keyword heading is an attribute, a printed marker, or a named rule', () => {
+  // the other direction: a heading nothing in the engine answers to is a
+  // reminder for a rule the game does not have — a typo, or a rename that
+  // only got done on one side.
+  const attrs = new Set(attrUnion());
+  for (const e of KEYWORDS) {
+    const ok = attrs.has(e.term) || e.term in CARD_FLAGS || RULES_CONCEPTS.includes(e.term);
+    assert.ok(ok, `KEYWORDS has "${e.term}", which is not an Attr or a known marker`);
+  }
+  // …and the markers are real: each is a flag some card sets. allCardNames,
+  // not DECK_LIST — every {Burst} card in the game is a spell TOKEN, and
+  // tokens are not deck cards.
+  for (const [term, flag] of Object.entries(CARD_FLAGS)) {
+    const printed = allCardNames().some(n => {
+      try { return !!(getCard(n) as unknown as Record<string, unknown>)[flag]; } catch { return false; }
+    });
+    assert.ok(printed, `no card sets \`${flag}\` — is "${term}" still a thing?`);
+  }
+});
+
+test('every glossary heading is a word the game actually says', () => {
+  // the widest cheap check for the other two sections, which have no engine
+  // enum to match against: the term (or one of its spellings) has to appear in
+  // the printed corpus. Prismite is the one exception — a resource card, not a
+  // deck card, so it is nowhere in DECK_LIST.
+  const hay: string[] = [];
+  for (const n of DECK_LIST) {
+    try { const c = getCard(n); hay.push(n, c.type, c.text ?? ''); } catch { /* not a card */ }
+  }
+  const corpus = hay.join('\n');
+  assert.ok(corpus.length > 10000, 'the pool actually loaded');
+  const RESOURCES = ['Prismite'];
+  for (const e of GLOSSARY) {
+    if (RESOURCES.includes(e.term)) continue;
+    assert.ok(matcherFor(e).test(corpus), `"${e.term}" matches nothing in the printed pool`);
+  }
+});
+
+/* ── the sentences a ruling has already caught out ─────────────────────── */
+
+const entry = (term: string) => {
+  const e = GLOSSARY.find(g => g.term === term);
+  assert.ok(e, `no glossary entry for ${term}`);
+  return e!.text;
+};
+
+test('R84: Alluring TARGETS one enemy unit — it does not conscript every blocker', () => {
+  // it taught R76's invented rule ("Defenders that are able to block it must
+  // block it") for as long as R76 stood, and for a day after it was replaced
+  const t = entry('Alluring');
+  assert.match(t, /target/i, 'the whole attribute is that it targets');
+  assert.match(t, /one enemy unit/i, 'and it is ONE enemy unit, not the defence');
+  assert.match(t, /stack/i, 'from the stack — which is why it can be answered');
+  assert.match(t, /block/i, 'the lured unit must block that column if able');
+  assert.doesNotMatch(t, /defenders/i, 'the superseded wording is back');
+});
+
+test('R79: the Virus and Augment entries admit a spell on the stack is a host', () => {
+  assert.match(entry('Virus'), /stack/i,
+    'a virus may be augmented onto a spell on the stack (Caleb 2025-04-06)');
+  assert.match(entry('Augment'), /stack/i, 'and the mechanic entry has to say so too');
+  assert.match(entry('Augment'), /attributes only|only the attributes/i,
+    'a spell takes the type-line attributes and nothing else (Caleb 2025-04-24)');
+});
+
+test('R81: Burst groups by NAME, not by "every burst token you control"', () => {
+  assert.match(entry('Burst'), /same name/i);
+});
+
+test('R69/R79: Unstable is a BIN replacement, and a virused spell is Unstable', () => {
+  const t = entry('Unstable');
+  assert.match(t, /bin/i, 'it replaces the bin, not the death');
+  assert.match(t, /spell/i, 'R79: a spell carrying a virus is a modded card too');
+});
+
+test('R61: Pure no longer claims to be unimplemented', () => {
+  const t = entry('Pure');
+  assert.match(t, /combat/i, 'R61 implemented it at the combat choke points');
+  assert.doesNotMatch(t, /parked with the attribute-suppression layer/i,
+    'that was the reason it was unimplemented, and it stopped being true at R61');
 });
 
 /* ── matching ──────────────────────────────────────────────────────────── */

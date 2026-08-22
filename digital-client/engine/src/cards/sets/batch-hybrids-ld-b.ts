@@ -83,8 +83,21 @@ import { isEnt, isUnitCard } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** every attribute the pool can print (types.ts `Attr`), for The Omniphage's
- * per-attribute statics. {Pure} is in the union but PARKED engine-side; it is
- * copied like any other name and the engine simply ignores it. */
+ * per-attribute statics.
+ *
+ * ⚠ THIS NOTE WAS STALE (corrected 2026-08-22, card-ledger audit). It named
+ * {Pure} as "in the union but PARKED engine-side … the engine simply ignores
+ * it". R61 shipped {Pure} — E.pure() switches the attribute layer off for a
+ * whole attack/block exchange — and it reads E.ownAttrs, which folds in
+ * statics' `attrs`. So a {Pure} granted by one of the rows below is honoured
+ * at the combat choke points exactly like a printed one.
+ *
+ * The two names here that ARE still inert are {Inverted} and {Unaware}: both
+ * are stat layers 5 and 6, and effStats() ends at layer 4 with the literal
+ * placeholder "layer 5 (Inverted), 6 (Unaware) go here". A row granting either
+ * one copies the name onto the Omniphage and nothing happens. (The same gap
+ * makes Bubb, Trashling, Haboob, Reality Bender and Its Dark Bubb inert —
+ * see test/card-ledger.ts.) */
 const ALL_ATTRS: Attr[] = [
   'Flying', 'Deadly', 'Swift', 'Sluggish', 'Tough', 'Balanced',
   'Inverted', 'Unaware', 'Powerful', 'Vulnerable', 'Feeble', 'Evasive',

@@ -28,13 +28,28 @@
  *    statics", which expired when E.anchored() started radiating a mod's
  *    statics from its host. What is still missing is a spell-effect ATTR
  *    projection: "your SPELLS gain Powerful" has to attach an attribute to a
- *    spell EFFECT, and statics project onto in-play UNITS only
- *    (dealEffectDamage reads the source CARD's printed attrs).
+ *    spell EFFECT, and statics project onto in-play UNITS only.
+ *    ⚠ HALF-STALE, ANNOTATED 2026-08-22 (card-ledger audit): the tail of this
+ *    entry used to end "(dealEffectDamage reads the source CARD's printed
+ *    attrs)", full stop, and that is no longer the whole story. R79 gave
+ *    effects an attribute channel — `EffectCtx.grantedAttrs`, which
+ *    dealEffectDamage UNIONS into the source card's printed attrs. So the READ
+ *    side of "a spell effect can have attributes it did not print" shipped.
+ *    What did not is the WRITE side for a static: grantedAttrs is filled only
+ *    by E.stackAugmentAttrs, i.e. by a VIRUS augmented onto an item already on
+ *    the stack, and a StaticMod has no channel into it. Half the primitive
+ *    exists. Declared in test/card-ledger.ts as a deck-enabler gap — a spell
+ *    deck augments this expecting doubled spell damage and gets none.
  *  - Envoy of Lightning: "your single-target spell effects are Electric" —
  *    still out of reach even with the statics layer: statics project only
- *    onto in-play UNITS, while this must attach {Electric} to spell EFFECTS
- *    (dealEffectDamage reads the source CARD's printed attrs, no seam for
- *    in-play modifiers). Inert augmentText entry only.
+ *    onto in-play UNITS, while this must attach {Electric} to spell EFFECTS.
+ *    ⚠ HALF-STALE, ANNOTATED 2026-08-22: this used to end "(dealEffectDamage
+ *    reads the source CARD's printed attrs, no seam for in-play modifiers)".
+ *    There IS a seam now — R79's `EffectCtx.grantedAttrs`, unioned in by
+ *    dealEffectDamage — it is just fed exclusively by a VIRUS augmented onto a
+ *    stack item (E.stackAugmentAttrs), never by a static. Same half-shipped
+ *    primitive as Emberflame Enlightener above; whoever unparks one unparks
+ *    both. Inert augmentText entry only; declared in test/card-ledger.ts.
  *  - Fire Resource: resource CARDS aren't modelled — resources are plain
  *    ResourceState (no entities) and doActivateResource doesn't fireEvent, so
  *    "when I activate" has nothing to listen to. (The third reason this note
@@ -43,9 +58,14 @@
  *    registry.ts keeps every element's Resource face out of DECK_LIST.
  *  - Gravitational Correction (X half): UN-PARKED (R35) — X is now chosen and
  *    paid at cast; item.x is set before the spell hits the stack.
- *  - Harbinger of Immolation (augment half): "your spell tokens stay through
- *    regroup" needs a regroup-replacement hook (startRegroup erases all spell
- *    tokens unconditionally). The end-of-turn Fireball trigger is fully done.
+ *  - Harbinger of Immolation: UN-PARKED (R11). This note used to read "the
+ *    augment half needs a regroup-replacement hook (startRegroup erases all
+ *    spell tokens unconditionally)". It never needed a replacement hook: the
+ *    erase is a cleanup STEP, not an event, and "your spell tokens stay
+ *    through regroup" is a continuous property of the tokens. It is a
+ *    StaticMod (`survivesRegroup`) that startRegroup consults per token, live
+ *    in both forms because a mod's statics radiate from its host. Reported
+ *    twice from real games (rooms ZQPC and SAAY) before it was fixed.
  *  - Infernal Wispweaver: UN-PARKED (R62) — "do not sacrifice themselves after
  *    combat" was waiting on a way to suppress ANOTHER card's trigger, and
  *    StaticMod.suppressAbilities is it. The Wisp has exactly one ability, so
@@ -443,7 +463,31 @@ card('Gravitational Correction', {
 // after regroup wiped the battle's tokens, so X counts tokens made since
 // (e.g. during deployment) — exactly what "stay through regroup" would feed.
 // The [Augment] half is PARKED (see header): inert entry only.
+// "At the end of turn, create a Fireball X, where X is one plus the number of
+// spell tokens you control. [Augment] Your spell tokens stay through regroup."
+// — rr/3 2/3 Fire Unit. Text-box [Augment]: live on the card played normally
+// AND donated to a host (Hooba-Lin convention, below).
+//
+// The [Augment] half is a STATIC, not a trigger and not a replacement hook
+// (playtest ZQPC/SAAY: "my fireball was erased during regroup even tho I have
+// the Harbinger"). The regroup erase is a step of the R11 cleanup sequence,
+// not an event — nothing to respond to, nothing to negate — so the only honest
+// model is a standing property of the tokens, which is what StaticMod is for.
+// `survivesRegroup` is that property; startRegroup asks
+// E.spellTokenSurvivesRegroup() per token instead of erasing unconditionally.
+// Anchoring comes free: `self` is the unit itself when the card is in play and
+// the HOST when it was donated as an augment (E.anchored), so "your" means the
+// host's controller in the donated form. The tokens keep their X, and still
+// have their temporary changes swept — they are only spared the erase.
 card('Harbinger of Immolation', {
+  augmentable: true,   // text-box [Augment]: the static transfers when augmented
+  statics: [{
+    // NB the target is a spellToken, not a unit — the usual
+    // `target.kind === 'unit'` guard would make this static match nothing.
+    affects: (_g, self, target) =>
+      target.kind === 'spellToken' && target.controller === self.controller,
+    survivesRegroup: true,
+  }],
   abilities: [{
     type: 'triggered', events: ['endOfTurn'],
     label: 'create a Fireball X (X = 1 + your spell tokens)',
@@ -454,11 +498,6 @@ card('Harbinger of Immolation', {
         g.createSpellToken(ctx.controller, 'Fireball', x, ctx.region);
       },
     },
-  }],
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'your spell tokens stay through regroup (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
   }],
 });
 

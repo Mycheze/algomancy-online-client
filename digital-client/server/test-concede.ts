@@ -15,10 +15,10 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, rmSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
-import { mintRoom } from './test-util.ts';
+import { freePort, gameFile, mintRoom } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = 8900 + Math.floor(Math.random() * 400);
+const PORT = await freePort();
 
 let failures = 0;
 function ok(cond: unknown, label: string): void {
@@ -107,7 +107,7 @@ try {
 
   console.log('\n[the result is stamped, and it survives a restart]');
   await new Promise(r => setTimeout(r, 300));   // the room file is written async
-  const saved = JSON.parse(readFileSync(join(HERE, 'games', `${ROOM}.json`), 'utf8')) as
+  const saved = JSON.parse(readFileSync(gameFile(ROOM), 'utf8')) as
     { winner?: number; actions: Action[] };
   ok(saved.winner === 1, 'the saved room carries the result (not re-derived later)');
   ok(saved.actions.some(x => x.type === 'concede'), 'and the concede is in the action log, replayable');
@@ -121,7 +121,7 @@ try {
   a.ws.close(); b.ws.close();
 } finally {
   server.kill();
-  if (ROOM) rmSync(join(HERE, 'games', `${ROOM}.json`), { force: true });
+  if (ROOM) rmSync(gameFile(ROOM), { force: true });
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nall concede checks passed');

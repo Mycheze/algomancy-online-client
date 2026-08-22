@@ -20,7 +20,8 @@ import { createsOf, DECK_LIST } from '../src/cards/registry.ts';
 import {
   abilityOf, activatableUnits, activationBadge, activationNeedsConfirm, castProbe, costReceipt,
   dismissSeenCard, dismissSeenHand, erasedPileView, waitingNote, watchCast,
-  findCardName, groupReveal, linkCardNames, partitionOptions, partText, playableCachedNames,
+  findCardName, groupReveal, growCardLedger, linkCardNames, namesInEvents, namesInState,
+  onlyKnownNames, partitionOptions, partText, playableCachedNames,
   seenHandView, shouldAutoYield, stackAbilityRows, stackItemX, stackXMark, switchClause,
   tokensCreatedBy, tokensNamedIn,
   unitClickOptions,
@@ -769,6 +770,160 @@ test('findCardName is the same matcher, asked for the most specific name', () =>
   // scan per row and the most specific one is the right one
   assert.equal(findCardName('Fight resolves. Primordial Coalescence resolves.'),
     'Primordial Coalescence');
+});
+
+/* ── UFAB: the log links only the cards this game has shown ─────────────── */
+
+test('the cast list is empty until the game shows something', () => {
+  assert.deepEqual([...growCardLedger(new Set(), null)], []);
+  assert.deepEqual(namesInEvents([]), []);
+});
+
+test('UFAB: "Battle:" is a card name and must NOT link in the phase line', () => {
+  // `Battle` is a real card ("Two target units fight"), and the phase line the
+  // engine emits every single turn starts with it. This is the whole report.
+  const raw = linkCardNames('Battle: Ben may attack.');
+  assert.deepEqual(raw.filter(s => s.name).map(s => s.name), ['Battle'],
+    'the general matcher still finds it — that is not the bug');
+
+  const h = new Harness(5120);
+  toDeployment(h);
+  // the case the report is about: nobody has the card. (If somebody DOES have
+  // it, linking it in this line too is acceptable and not worth machinery.)
+  for (const p of h.state.players) {
+    p.hand = p.hand.filter(c => c !== 'Battle');
+    p.bin = p.bin.filter(c => c !== 'Battle');
+  }
+  const known = growCardLedger(new Set(), h.state);
+  assert.ok(!known.has('Battle'), 'nobody in this game has the card Battle');
+  const spans = onlyKnownNames(raw, known);
+  assert.deepEqual(spans.filter(s => s.name), [], 'so the line links nothing');
+  assert.equal(spans.map(s => s.text).join(''), 'Battle: Ben may attack.',
+    'and the line still reads exactly the way it read');
+  assert.equal(spans.length, 1, 'the demoted name is welded back into the prose');
+});
+
+test('a card that IS in the game links on its very first mention', () => {
+  // The first line about a card is the line announcing it, so the ledger has
+  // to grow from the batch and the new state BEFORE those lines are rendered.
+  const h = new Harness(5121);
+  toDeployment(h);
+  const seat = h.state.deployPlayer!;
+  giveResources(h, seat, 'fire', 6);
+  const idx = give(h, seat, 'Ignis Sprite');
+
+  const before = growCardLedger(new Set(), h.state);
+  assert.ok(before.has('Ignis Sprite'), 'it is in hand, so it is already known');
+
+  // and the harder case: a card nobody could see in ANY state, because it was
+  // created and resolved inside one batch — the client's only witness is the
+  // batch's own events
+  const fresh = new Set<CardName>();
+  const events = h.do({ type: 'playCard', seat, handIndex: idx });
+  growCardLedger(fresh, h.state, events);
+  assert.ok(fresh.has('Ignis Sprite'));
+  const line = events.find(e => /Ignis Sprite/.test(e.msg))!;
+  assert.deepEqual(
+    onlyKnownNames(linkCardNames(line.msg), fresh).filter(s => s.name).map(s => s.name),
+    linkCardNames(line.msg).filter(s => s.name).map(s => s.name),
+    'the announcing line links everything the general matcher found',
+  );
+});
+
+test('a card recalled out of play still links in the older lines', () => {
+  const h = new Harness(5122);
+  toDeployment(h);
+  const seat = h.state.deployPlayer!;
+  const id = spawn(h, seat, 'Ignis Sprite');
+  const known = growCardLedger(new Set(), h.state);
+  assert.ok(known.has('Ignis Sprite'));
+
+  // take it off the board entirely — no bin, no cache, nothing left to find
+  delete h.state.entities[id];
+  growCardLedger(known, h.state);
+  assert.ok(known.has('Ignis Sprite'), 'the ledger only ever grows');
+  assert.deepEqual(
+    onlyKnownNames(linkCardNames('Ignis Sprite attacks.'), known)
+      .filter(s => s.name).map(s => s.name),
+    ['Ignis Sprite'],
+  );
+});
+
+test('namesInState reads the zones this client is SHOWN, never the deck', () => {
+  const h = new Harness(5123);
+  const known = new Set(namesInState(h.state));
+  // the hotseat Harness holds the real, unredacted deck. A card nobody has
+  // seen is exactly the card the log must not pretend to be talking about.
+  const deck = h.state.sharedDeck.filter(c => !known.has(c));
+  assert.ok(deck.length > 0, 'the deck is not all in hand');
+  for (const c of h.state.players[0]!.hand) assert.ok(known.has(c), c);
+
+  // …and the zones that ARE shown
+  h.state.players[0]!.bin.push('Fight');
+  h.state.players[1]!.erased = ['Recall'];
+  h.state.players[0]!.cache = [{ card: 'Squish' }];
+  const grown = new Set(namesInState(h.state));
+  for (const c of ['Fight', 'Recall', 'Squish']) assert.ok(grown.has(c), c);
+});
+
+test('namesInEvents reads DATA, never the message — that is the bug', () => {
+  assert.deepEqual(namesInEvents([{ type: 'phase', msg: 'Battle: Ben may attack.' }]), []);
+  assert.deepEqual(namesInEvents([{ type: 'died', msg: 'x', data: { card: 'Fight' } }]), ['Fight']);
+  // a stack item's LABEL is prose and must not be scanned as a name
+  assert.deepEqual(namesInEvents([{
+    type: 'stackFlash', msg: '',
+    data: { item: { id: 1, kind: 'spell', label: 'Battle: two units fight', controller: 0, region: 0, negated: false, parts: [] } },
+  }]), []);
+  // but the item's own card, its riding mods and its parts' sources are names
+  assert.deepEqual(new Set(namesInEvents([{
+    type: 'stackFlash', msg: '',
+    data: {
+      item: {
+        id: 1, kind: 'spell', card: 'Fight', label: 'Fight', controller: 0, region: 0,
+        negated: false, mods: [{ card: 'Squish', from: 'hand' }],
+        parts: [{ effectKey: 'spell:Fight', targets: [] }, { effectKey: 'ability:Mohruung#0', targets: [] }],
+      },
+    },
+  }])), new Set(['Fight', 'Squish', 'Mohruung']));
+});
+
+test('a card in the game brings the tokens it declares with it', () => {
+  // Spirit of Nature's own trigger line reads "create a Poison 2 or a Crystal
+  // 2" BEFORE either token exists anywhere — and that line is exactly where a
+  // reader wants to hover the word. `createsOf` is declared on the effect and
+  // conformance-tested, so this is not a guess.
+  const tokens = createsOf('Spirit of Nature');
+  assert.ok(tokens.length > 0, 'Spirit of Nature declares its tokens');
+  const h = new Harness(5124);
+  toDeployment(h);
+  spawn(h, h.state.deployPlayer!, 'Spirit of Nature');
+  const known = growCardLedger(new Set(), h.state);
+  for (const t of tokens) assert.ok(known.has(t as CardName), t);
+});
+
+test('onlyKnownNames keeps the line byte-identical whatever it demotes', () => {
+  for (const msg of [
+    'Battle: Ben may attack.', 'Bena spawns Wraith.', 'Fight targets Wraith (Ben\'s).',
+    '', 'no cards at all here', 'Wraith Wraith Wraith',
+  ]) {
+    const spans = linkCardNames(msg);
+    for (const known of [new Set<string>(), new Set(['Wraith'])]) {
+      const out = onlyKnownNames(spans, known);
+      assert.equal(out.map(s => s.text).join(''), msg, JSON.stringify(msg));
+      // no empty spans, and no two prose spans left adjacent
+      for (const [i, sp] of out.entries()) {
+        assert.ok(sp.text.length > 0);
+        if (i > 0 && sp.name === null) assert.notEqual(out[i - 1]!.name, null);
+      }
+      for (const sp of out) if (sp.name) assert.ok(known.has(sp.name));
+    }
+  }
+});
+
+test('findCardName is untouched by the cast list — a different question', () => {
+  // the deployment reveal asks about ONE sentence, not about a game, and it
+  // must keep finding the name whether or not any ledger has heard of it
+  assert.equal(findCardName('Battle: Ben may attack.'), 'Battle');
 });
 
 /* ── R68: nothing on the rules stack is negated any more ────────────────── */

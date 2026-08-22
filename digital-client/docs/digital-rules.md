@@ -259,6 +259,49 @@ blocks): join behind a lone survivor, take over an emptied column, or — as
 the attacker — front a fresh column beside the formation. With no formation
 declared there is nothing to join and no prompt. Joining is optional ("may").
 
+**And it is a PLAY, so the spot is chosen at CAST.** *(Added 2026-08-22 from
+playtest room UFAB: "Tiderunner Initiate should never have entered the
+Invader's zone. It gets played directly into the formation, not as a trigger
+that happens when it enters.")*
+
+The card had been modelled as a triggered ability on its own `spawned` event,
+resolving through R75's `E.placeInFormation`. Playing it therefore spawned a
+unit into the battle region **in no column** — which is precisely the state the
+client draws as the invader's zone — stacked a placement trigger, and handed
+the opponent priority. In the reported game Good Whale (Ambush) and Tidal
+Reversion used that window to recall the Initiate before it ever reached the
+line. The window should not have existed: the card was never played anywhere
+for it to be answered in.
+
+The printed words settle it. *"You may PLAY me into an open spot"* is a
+statement about how the card is played, not an effect the card has. So:
+
+- the spot is collected in the **cast window**, beside X, {Modular} mods,
+  targets and bracketed costs (R35), through `E.collectFormationSpot` and the
+  `'formation'` cast stage. The answer rides on the stack item
+  (`StackItem.formationSpot`), where both players can see where it is going;
+- it is **taken at resolution, atomically with the spawn**. `E.takeSpot` runs
+  inside `spawnUnit`, between minting the entity and emitting `'spawned'`, so
+  the unit is already standing in the line the first time any listener or any
+  player sees it. Nothing observes the intermediate state, because there is no
+  moment at which it exists;
+- the slot is **re-derived** at resolution rather than remembered as an index —
+  a column can collapse, widen, or lose the unit the spot was measured against
+  between the cast and the resolution (R5/R56). `FormationSpot` names the spot
+  in a way that survives that (an end of the line, the unit it goes behind, the
+  index of a hole) and simply fails to match when it is gone, in which case the
+  card resolves into the region, outside the formation, **and says so**;
+- with no formation of your own, nothing is asked and the card is played
+  normally. That half is unchanged and is pinned by a test;
+- "stay out of formation" is still on the menu whenever the question is asked,
+  because the text says *may*. That is the one legal way to end up outside the
+  line — a choice, never a window.
+
+The card is now one flag: `card('Tiderunner Initiate', { playsIntoFormation:
+true })`. `CardBehavior.playsIntoFormation` is also the missing half of **Trench
+Stalker**'s first clause ("I can be played directly into formation"); what still
+parks that card is its play-from-bin mode, not this.
+
 ## R30 ⚠ — "Each player recalls a unit and loses 2 life" (Recall)
 The life loss is unconditional per present player: a player with no unit to
 recall still loses 2. (Do as much as you can; the two clauses are not linked
@@ -932,9 +975,12 @@ Pure lives at those choke points (`E.pure`), not in a suppression layer:
 - **Declaring blocks** — one Pure card in either column and neither evasion
   rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A
   Pure unit's own Feeble does not stop it blocking, either.
-- **Alluring** — a Pure blocker is "able" against anything, so it can be
-  compelled; and an Alluring column that is *itself* Pure ignores its own
-  Alluring and compels nobody.
+- **Alluring** (R84) — a Pure blocker is "able" against anything, so a *lured*
+  Pure unit is compelled even by a Flying column, and one Pure blocker covers
+  an Evasive Alluring column by itself (which makes "could it have satisfied
+  the column alone?" answer yes, so it must). An Alluring column that is
+  *itself* Pure ignores its own Alluring and compels nobody — under R84 that is
+  upstream of the stack, and the trigger never fires at all.
 - **Combat damage** — both columns' attribute sets are empty for that
   exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,
   Afflicting or Thieving, and the victim's Vulnerable is off too. With no
@@ -2134,11 +2180,19 @@ words:
 | Hooba-Lin | my column's back slot, else open a column on the right |
 | Hooba-God | my column's back slot, or **nothing at all** if it was full |
 | Hooba-Pon | "my column if open, else the first open one" |
-| Tiderunner Initiate | actually asked — and is where the slot logic was invented |
+
+⚠ **Tiderunner Initiate was in that table until 2026-08-22 and should never have
+been.** It is where the slot logic was invented — it was the one card that
+actually asked — but its text is *"you may PLAY me into an open spot"*, and a
+play is not an effect resolving. Folding it in here cost the UFAB report; see
+**R29**, which now owns it. What R75 governs is the *create a unit in my
+formation* class above, and nothing else.
 
 `E.formationSlots(seat)` is now the single answer to *where can a unit join this
-formation*, and `E.placeInFormation(unit, ctx)` raises the choice. All five cards
-route through it and their own placement code is gone.
+formation*, and `E.placeInFormation(unit, ctx)` raises the choice. All four cards
+route through it and their own placement code is gone. R29's play-time placement
+shares `formationSlots` — the legal set below is the same set either way — but
+reaches it through a cast stage and `E.takeSpot` instead.
 
 **The legal placement set.** Three kinds, left to right:
 
@@ -2171,14 +2225,28 @@ always grow at an end. A formation you are not standing in cannot be joined at
 all — with no living unit in the grid the answer is "no slots", not "open a
 column out of nowhere".
 
-**Resolution time, not cast time.** Nothing here prints *target*, so this is a
-choice and not a target — same shape as R71's "an ally": a `ctx.choose` at
-resolution, auto-picked when exactly one placement is legal, and a **logged**
-no-op when none is. The chooser is the **effect's** controller. `optional: true`
-adds a "stay out of formation" answer for the one card whose text says *you may*
-(Tiderunner Initiate). Every branch emits an event: an effect that resolves into
-silence is a conformance failure, and *"there was nowhere to put it"* is exactly
-what a player needs told.
+**Resolution time, not cast time — for an EFFECT that places a unit.** Nothing
+here prints *target*, so this is a choice and not a target — same shape as R71's
+"an ally": a `ctx.choose` at resolution, auto-picked when exactly one placement
+is legal, and a **logged** no-op when none is. The chooser is the **effect's**
+controller. Every branch emits an event: an effect that resolves into silence is
+a conformance failure, and *"there was nowhere to put it"* is exactly what a
+player needs told.
+
+⚠ **The carve-out (2026-08-22).** "At resolution" is a statement about *effects*,
+and it was over-applied. **A placement that is part of PLAYING a card is chosen
+on CAST**, with everything else about how that card is played (R35), and taken
+atomically with the card's own arrival — see **R29**. The two are not in tension
+once you read what each is about: Hooba-Bot's Robot is genuinely created by an
+effect and then put somewhere, so there is a real moment between the two and the
+ruling above says who decides. Tiderunner Initiate is never put anywhere,
+because it is played into the spot; a moment between the two would be a bug, and
+was one.
+
+(`placeInFormation`'s `optional: true` — the "stay out of formation" answer for
+the printed *you may* — was written for Tiderunner and now has no caller among
+the four. It is kept: R29's own menu offers the same answer, and the next card
+that prints *may* in an effect will want it here.)
 
 **Inserting at index 0 is the dangerous case, and it has one owner.** Opening a
 column on the left shifts every existing column right, so every `blocks` key and
@@ -2254,7 +2322,19 @@ therefore every saved game) replayable. See R72 for the full weighing.
 ## R76 — Alluring duties are discharged TOGETHER, and `legalActions` has to be able to say so
 
 *(Fuzz seed 1993, 2026-08-22. A stuck state: no legal action for either player,
-no pending decision. The rule was right; the engine could not express it.)*
+no pending decision.)*
+
+> ⚠ **The Alluring rule stated here is SUPERSEDED by R84** (2026-08-22, the same
+> day). "Defenders that are able to block it must block it" is attributed below
+> to the Manual, and the Manual does not contain the word: {Alluring} targets
+> ONE enemy unit, from the stack. Read R84 for what the attribute does. What
+> survives here — and is still load-bearing — is the **hang** and the
+> **contract** it forced on `legalActions`: because Alluring is conjunctive
+> across columns, a generator that varies one column at a time cannot express a
+> legal answer on its own, so every offer must be built on a compulsory core
+> that is always offered. R84 keeps that contract; only the definition of the
+> core changed. The mechanism described under "The fix" below (`alluringDuties`,
+> `unmetAllure`, free-pool counting) has been deleted.
 
 The fuzzer stopped on this position, at the block step:
 
@@ -2264,8 +2344,9 @@ defender: four units, all able to block
 blocks:   {}          → and no legal action for anyone
 ```
 
-Alluring (Manual): *"defenders that are able to block it must block it."* Two
-Alluring columns and two able blockers means **both duties are live at once**,
+Alluring, as the engine then read it: *"defenders that are able to block it must
+block it."* (Wrong — R84.) Two Alluring columns and two able blockers means
+**both duties are live at once**,
 so the only legal declarations are the ones that block both. `legalActions`
 offered a *representative* set of declarations that each blocked exactly **one**
 column — `{ [ci]: [u] }` and `{ [ci]: [u, v] }` — and then filtered the set
@@ -2289,6 +2370,9 @@ Alluring columns against **two** blockers, where the duty **can** be discharged
 twice and therefore must be, that had no representative.
 
 ### The fix: build the compulsory core first, then offer choices on top of it
+
+*(The shape survives in R84; the machinery below does not. Kept for the
+reasoning, which is why the contract exists.)*
 
 `unmetAllure` and the generator now read the same intermediate object. One
 `alluringDuties(e, seat, blocks, send)` returns, per unblocked Alluring column,
@@ -2941,3 +3025,269 @@ opponent's units rather than "everyone who is not me" — identical in 1v1, a
 real difference at three players. And the opponent is on the stack where it can
 be seen, redirected (R58 `canFillSlot`) and reacted to, which is the entire
 reason R67 moved targets to cast time.
+
+## R84 — {Alluring} TARGETS one enemy unit, from the stack
+
+*(Playtest room UFAB, 2026-08-22. Sources: Caleb, Discord — see the quotes
+below. **Supersedes R76**, which implemented a different rule entirely.)*
+
+The bug report was *"Tempest Wrangler (with Alluring) didn't trigger on
+attacks"*. The position: three attack columns, one of them {Alluring}; the
+defender held exactly two units able to block, put both of them on the **other
+two** columns, left the Alluring column unblocked, and the engine accepted the
+declaration. Six unblocked damage, dead player.
+
+There was a real hole there — the duty's candidate pool was computed **after**
+subtracting the units the defender had already committed elsewhere, so
+committing everyone somewhere else *manufactured* the "nobody is able" excuse.
+But fixing that in place would have entrenched the wrong rule. R76 read
+{Alluring} as *"defenders that are able to block it must block it"* and
+attributed the wording to the Manual. `Rules/Algomancy-Manual.txt` contains **no
+occurrence of the word "Alluring" at all**. The rule was invented.
+
+### What the attribute actually is
+
+Five rulings, all Caleb's unless noted:
+
+1. **It targets ONE enemy unit.** Asked "Does alluring stop a whole enemy from
+   attacking or a single unit?" — *"single unit"* … *"meaning target unit
+   controlled by an opponent"*. (`docs/03-mechanics-inventory.md` had it right
+   all along: "target enemy can't attack, must block this column".)
+2. **Two effects on that target: it can't attack, and it must block that column
+   this combat if able.** A community summary he let stand: *"if you are
+   Initiative player, when your formation enters enemy region, you can use
+   Alluring to target 1 enemy unit. It won't be able to 'counter-attack' into
+   your region and will be forced to block column which has Alluring unit. If
+   you are Non-Initiative player … the 'target enemy can't attack' part loses
+   its value … but you can still force specific unit to block Alluring
+   column."*
+3. **It goes on the stack and can be negated.** *"'Alluring' effect goes to
+   stack and can be negated?" — "Yep!"*, and *"this would stop the trigger if
+   you kill the allurer while the effect is on the stack"*.
+4. **Once it has resolved, killing the allurer does not undo it.** Asked whether
+   removing the Alluring unit in the priority window before blocks makes the
+   effect fizzle: *"You can't attack but you can block other things."*
+5. **It does not stack.** *"Nah alluring doesn't stack"* … *"It's just one
+   attribute"* … *"It's like how you can't gain flying flying"*. Two Alluring
+   units in one column produce ONE target, not two. It **is** shared to the
+   column like every other combat attribute — *"It's also even weirder because
+   alluring is shared to the column"* — so it is one target per COLUMN.
+
+And the printed word "able" is real, in both directions: *"Yeah they can not
+block. You don't get to mind control the opponent 🙂"*.
+
+### The rule, stated
+
+For each {Alluring} attack column `ci` with lured unit `A`:
+
+- Let **need(ci)** = 2 if the column is {Evasive}, else 1 — with R61's carve-out
+  that a single {Pure} blocker switches {Evasive} off and can cover it alone.
+- **If `blocks[ci]` is non-empty, `A` must be one of its members.**
+- **If `blocks[ci]` is empty, that is legal only if `A` could not have satisfied
+  the column alone** — i.e. `need(ci) > 1`, or `A` is not able to block `ci` at
+  all ({Feeble}; no {Flying} against a Flying column; R20's lone-{Sneaky}
+  attacker), all with R61's {Pure} exceptions.
+- **`A` may not be sent out as a counterattacker, and may not be declared as an
+  attacker**, for the rest of this battle phase.
+
+**"Able" is a property of the unit and that column only** — region, controller,
+still in play, {Feeble}, {Flying}, lone-{Sneaky}, {Evasive}, {Pure}. It never
+depends on what the defender chose to do with that unit elsewhere. That
+dependency *was* the UFAB bug, and removing it is the point of the rewrite.
+
+### The solved RAQ thread, which is what pins it
+
+*[Solved] Alluring AND Evasive column* — the column is Alluring **and** Evasive,
+so it needs two blockers, and it lures exactly one unit, A:
+
+| defender holds | legal declarations |
+|---|---|
+| A | forgo it — A cannot cover an Evasive column alone, so nothing compels it, and it is free to block elsewhere |
+| A, B | forgo it, **or** A+B — and nothing else |
+| A, B, C | forgo it, **or** A+B, **or** A+C — **B+C is illegal** |
+
+Both clauses are needed and neither is redundant. The second explains the first
+column: one unit cannot make `need = 2`, so "if able" is simply false. The first
+explains the last row, and the corpus gives the reasoning in one line: *"If
+another unit B wants to block the alluring column then suddenly A can and also
+has to."* You do not get to send a substitute — if the column is being blocked
+at all, the unit that was called to it is one of the blockers.
+
+Plain (non-Evasive) {Alluring} collapses to "A must block it", which is the
+whole point of the attribute.
+
+### Why it is a TRIGGER, and what that buys
+
+{Alluring} is the first **attribute in the game that targets**, so there was no
+pattern to copy. It is modelled as an on-attack triggered ability, queued at the
+`attackDeclared` seam in `doDeclareAttack` — one per Alluring COLUMN, not one
+per unit, because it does not stack.
+
+Everything in ruling 3 then comes for free from machinery that already exists:
+it is a `kind: 'triggered'` stack item, so it is a legal *"target effect"* and
+Dematerialize negates it (R68 splices it off the stack and it never resolves);
+its target is chosen as it goes onto the stack (R67), by the attacker, from the
+enemy units in the battle region; and the whole target-picking UI works on it
+without one line of client code.
+
+Ruling 3's "kill the allurer while it is on the stack" is **not** the general
+fizzle rule — the general rule fizzles on the *target* being gone, and the
+target is fine. It is a check inside the effect: the allurer must still be
+standing in an attack column, and that column must still be {Alluring}. Nothing
+else in the engine needed to change for it.
+
+**The effect needs a home.** `EffectPart.effectKey` is a registry lookup with no
+back door, and card code (Divine Intervention, Gravitational Correction, Hexbane
+Shiitake) calls `effectByKey` on the parts of whatever stack item it is
+retargeting — an Alluring trigger included, now that it is a legal target
+effect. A rules-owned effect therefore has to be a registered card or those
+three throw on it. It is registered as the synthetic `Alluring Attribute`
+(`registerSynthetic`, `kind: 'spellToken'` so it is not a deck card). The stack
+item carries the **allurer's** card name, not the synthetic's, so the log, the
+card scan and the token scanner never see it.
+
+### Lifetimes: two effects, two different clocks
+
+`Entity.allured = { round, columns[] }`.
+
+- **Can't attack** is the presence of the field, whatever round stamped it. It
+  lasts the rest of the battle phase and is cleared at regroup with every other
+  temporary change (R11 step 3). It survives the allurer's death, which is
+  exactly ruling 4.
+- **Must block** is `columns`, and only in the round that stamped it. The
+  entries are attack-column **indices**, which are a column's identity (R72), so
+  they are re-keyed by `E.rekeyColumns` in the same single commit as
+  `BattleState.blocks` and drop out when their column ceases to exist. That is
+  the mechanism behind "kill the allurer and the block is freed": the column
+  collapses, the duty goes with it, the mark stays.
+
+⚠ In the 1v1 battle structure the "may not be declared as an attacker" half is
+currently **unreachable on its own**: round 2's attacker pool *is* the units
+sent out at block time, and a lured unit may not be sent. The guard is in
+`validFormation` anyway — it is the half of the attribute that survives the
+allurer's death, and the seat/round model is written for formats with more
+rounds — and it is tested against a pool built by hand.
+
+### ⚠ Two duties on one unit — a judgement call
+
+Two Alluring columns may name the **same** unit, and it cannot block both.
+**Discharging either duty excuses the rest**, and the "must be among its
+blockers" clause is waived for the excused ones too. Without the waiver a
+defender who does exactly what one duty demands is then refused for the other,
+and the position has *no legal declaration at all* — which is the R76 hang in a
+new costume.
+
+This is the **only** place "able" is allowed to look at the rest of the
+declaration, and it is bounded: only another {Alluring} duty can excuse one.
+Blocking a plain column excuses nothing, and being sent to counterattack cannot
+excuse anything because a lured unit may not be sent. (Bena's call, 2026-08-22.)
+
+### What was deleted, and what R76's contract still buys
+
+`alluringDuties`, `unmetAllure` and `compulsoryBlocks`' free-pool search are
+gone — about 120 lines — replaced by `allureViolation` (the two clauses above)
+and a `compulsoryBlocks` that is no search at all: each duty **names its unit**,
+and two duties can only collide by naming the same one, in which case
+discharging either excuses the other, so taking the first is right.
+
+R76's *contract* survives and still matters: `legalActions` must always be able
+to offer at least one legal block declaration, because Alluring is conjunctive
+across columns and a generator that varies one column at a time cannot express
+that (fuzz seed 1993 — every offer refused, no legal action for anyone, hang).
+Every offer is still built on top of the compulsory core, and the bare core is
+still always offered. What changed is that the core is now legal *by
+construction* rather than by a greedy-is-sufficient argument.
+
+Two of R76's sub-findings also survive unchanged, because they were about "able"
+rather than about who is compelled: a lone {Sneaky} + {Alluring} attacker
+compels nobody (R20 forbids blocking it, so nobody is able), and an {Alluring}
+column that is itself {Pure} compels nobody (R61) — under the new model that is
+upstream of the stack, and the trigger simply never fires.
+
+## R85 — A suspended resolution rolls back on RESUME, not when it suspends
+
+*(Playtest room UFAB, 2026-08-22. Bug 52: "During the resolution of Insidious
+Invitation, I should have seen what my opponent played during the resolution
+and what they paid. That's the whole point of 'Starting with you'. I couldn't
+see anything until I declined to put something into play.")*
+
+Insidious Invitation reads *"Draw a card. [Switch1] Starting with you, players
+may play a unit from hand as if it were {Battle}."* The caster answered first,
+paid for a unit and put it into play; the opponent was then asked their half —
+and saw a board on which none of that had happened. No unit, no spent mana, not
+even the draw, and an empty log. They found out only once they had answered.
+
+### Not a networking bug: the information did not exist
+
+`ctx.choose` is not a coroutine. It **throws** a `PartChoice`, and the part is
+re-run from the top with the recorded answers once the answer arrives. For that
+replay to be sound the world has to be back at the boundary of that part, and
+`resolveParts` used to put it there *the instant the part suspended*:
+
+```ts
+this.s = snap;                 // the WHOLE state goes back
+this.events.length = evLen;    // the narration is DELETED
+```
+
+and only then published the suspension. So the state on the wire at every
+mid-resolution decision was the state *before the effect started*. The server
+was broadcasting correctly (`broadcastAfterAction`); there was simply nothing to
+broadcast. Deployment's `heldEvents` holding is not involved — `segmentKey`
+returns null in battle.
+
+The card is one `EffectPart` (the whole body, draw and per-seat loop together —
+`effectByKey` addresses parts as `spell:<CardName>`), so there is no sub-part
+granularity to fall back on. And this is the whole class: every multi-step
+resolution — a glimpse chain, an electric path, any per-seat loop — had it.
+
+### The fix: separate "what the replay restarts from" from "what players see"
+
+The rollback state is no longer applied at the suspension. It rides **on** it,
+as `Suspension.snapshot`, and `E.resumeResolve` applies it when the answer comes
+back. Between the question and the answer, the state on the table is the real,
+partly-resolved one.
+
+Four things make that safe:
+
+- **The published state never has to be action-legal, only renderable.**
+  `apply()`'s dispatch refuses every action except `decide` and `concede` while
+  a decision is pending (R65 owns the concede exception), so nothing can be
+  built on top of a half-resolved board. Verified, not assumed — and pinned by
+  a test that walks `legalActions` for both seats on a suspended resolution.
+- **The log does not double.** The replay deterministically re-emits everything
+  the part emitted before it suspended, so the suspension also records how many
+  events the table has already been shown (`Suspension.shown`) and
+  `resolveParts` drops exactly that many from the front of the replay's output.
+- **The replay is byte-identical.** Rolling back on resume rather than at the
+  suspension means `nextId` is restored to the part boundary *before* the
+  replay, not after it, so the entities the replay re-creates get the same ids
+  the ones on the players' screens had. Nothing flickers into a new identity.
+- **A few fields are carried FORWARD across the rewind**, because they belong to
+  the session rather than to the resolution: `actionCount` (the client's
+  "my action landed" latch — it must never go backwards), the seat NAMES
+  (rooms.ts writes those straight into the state, outside the action log), and
+  `decisionHigh`.
+
+`decisionHigh` is new and is the one subtlety worth naming. Decision ids come
+off `nextId`, which the rewind now moves *backwards*; the second question of a
+multi-step resolution could therefore be handed the id the first one used, and
+`ui/sfx.ts` reads "a new id" as "a new question was asked". A high-water mark
+keeps ids strictly increasing. Outside a replay it never binds, so every id in
+an ordinary game is the one it always was.
+
+**The snapshot never leaves the server.** It is a whole unredacted `GameState` —
+both hands, the deck order, the face-down resources — so `server/view.ts` strips
+it from every view, including the view of the seat whose decision it is. No
+client has any use for it: only `apply()` reads it.
+
+**Backwards compatible.** A suspension serialized before this rule has no
+snapshot; `resumeResolve` then replays from wherever it is, which is exactly the
+old behaviour and exactly what such a state was saved under. Saved games replay
+through the action log and never see a snapshot at all.
+
+⚠ **What this does NOT recover: "and what they paid" — actually, it does.** The
+report asked for two things and the payment looked unrecoverable, because
+`g.payCard` happens inside the rolled-back window. It is not: the window is no
+longer rolled back while the question is open, so the caster's spent resources
+are on the published board along with their unit. Both halves of the report are
+delivered.

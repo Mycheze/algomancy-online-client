@@ -39,6 +39,8 @@ button:disabled { opacity: .4; cursor: default; }
   margin-bottom: 8px; display: flex; align-items: center; gap: 12px; min-height: 38px; flex-wrap: wrap; }
 .promptbar.pending { background: #33270f; border-color: #7a5e1e; }
 .promptbar .who { font-weight: 700; color: var(--accent); }
+/* R84 {Alluring}: the compulsory block, named in the bar that gates Confirm */
+.promptbar .duty { color: var(--warn, #e8b64c); font-weight: 700; }
 
 .player { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin-bottom: 8px; }
 .player.inactive { opacity: .82; }
@@ -118,8 +120,10 @@ button:disabled { opacity: .4; cursor: default; }
    five seconds, so the walk across the board to the panel's scrollbar cannot
    lose it on the way. The badge is STICKY at the bottom because the panel
    opens at the bottom — put it at the top and the one thing explaining why
-   hovering stopped working would be the one thing scrolled out of sight. */
-.preview.pinned { border-color: var(--accent); }
+   hovering stopped working would be the one thing scrolled out of sight.
+   The badge is the WHOLE tell: an accent border round the panel was tried
+   (2026-08-22) and read as noise — the rail is already a stack of bordered
+   boxes, so one more outline says nothing the badge does not say better. */
 .preview .pinbadge { position: sticky; bottom: -8px; z-index: 1;
   margin: 6px -8px -8px; padding: 3px 8px; border-radius: 0 0 5px 5px;
   background: var(--accent); color: var(--bg); font-size: 11px; }
@@ -384,7 +388,16 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 /* B1 (reworked, playtest): invaders (enemy units standing in this region) sit
    as a compact, visually subordinate strip at the SIDE of the region — smaller
    cards, out of the owner's formation space */
-.invaders { width: 140px; flex-shrink: 0; align-self: flex-start;
+/* [61] …and it GROWS SIDEWAYS. The width was hard — 140px, a 128px content box
+   between the 6px paddings — against 52px cards with a 4px gap, so a third
+   invader could never sit on the first row and the strip climbed downwards
+   instead, dragging the whole region panel taller with it. Same arithmetic,
+   same cure as .tokenstrip below: a floor that still fits two, a ceiling that
+   keeps the strip subordinate to the formation, and .zone's flex-wrap doing
+   the grouping in between. */
+.invaders { flex: 0 1 auto; width: auto;
+  min-width: 140px; max-width: clamp(140px, 30%, 400px);
+  align-self: flex-start;
   border: 1px solid rgba(217,84,84,.55); background: rgba(217,84,84,.06); border-radius: 6px;
   padding: 2px 6px 6px; margin-top: 8px; }
 .invaderlabel { color: var(--danger); font-size: 10px; margin-top: 4px; }
@@ -397,7 +410,20 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
    the sent strip — a shelf of ammunition beside the region, not a rank in the
    formation. A token that has been picked up to RIDE with an attack leaves
    here and stands in the battle panel's .ridecol instead. */
-.tokenstrip { width: 118px; flex-shrink: 0; align-self: flex-start;
+/* [61] "Instead of all the spell tokens stacking up vertically when there are
+   many of them, their box can expand and they can be grouped horizontally."
+   It could not: 118px wide with 6px of padding either side is a 106px content
+   box, and two 52px cards with a 4px gap need 108. .zone already wraps — the
+   width simply never let a second card onto the row, so the strip was a
+   column by construction and grew the region panel taller for every token.
+   Fluid now, and the floor is 120px rather than 118 — the two extra pixels are
+   the ones that were missing, so even a squeezed strip fits two abreast. The
+   ceiling is roughly a quarter of the region row: six cards at the widest,
+   which is plenty of ammunition to read at a glance and still leaves
+   .regionmain (flex: 1; min-width: 0) the formation space it is entitled to. */
+.tokenstrip { flex: 0 1 auto; width: auto;
+  min-width: 120px; max-width: clamp(120px, 26%, 344px);
+  align-self: flex-start;
   border: 1px solid rgba(224,185,60,.4); background: rgba(224,185,60,.05);
   border-radius: 6px; padding: 2px 6px 6px; margin-top: 8px; margin-left: 4px; }
 .tokenstrip .zonelabel { color: var(--target); font-size: 10px; margin-top: 4px; }
@@ -588,6 +614,19 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 @keyframes modpulse { 50% { box-shadow: 0 0 14px rgba(111,195,111,.95); } }
 .card.modhost { outline: 3px solid var(--glow); cursor: pointer;
   box-shadow: 0 0 8px rgba(111,195,111,.5); animation: modpulse 1.1s ease-in-out infinite; }
+/* R79: a SPELL on the stack is the second kind of mod host (a virus may be
+   augmented onto one — Caleb 2025-04-06). It is the same click, so it wears
+   the same green pulse; the strip's own card is a .stackcard, not a .card. */
+.stackcard.modhost { outline: 3px solid var(--glow); cursor: pointer;
+  box-shadow: 0 0 8px rgba(111,195,111,.5); animation: modpulse 1.1s ease-in-out infinite; }
+.stackcard .stackmodhost {
+  position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%);
+  background: var(--glow); color: #0f1a0f; z-index: 3;
+  font-size: 8px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700;
+  padding: 0 4px; border-radius: 3px; white-space: nowrap;
+}
+/* …and the same fact in the focus viewer, where the player reads the item */
+.abmodhost { color: var(--glow); font-size: 12px; margin-top: 6px; }
 
 /* #5: draft pack indicator + the "last look" warning */
 .packrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }

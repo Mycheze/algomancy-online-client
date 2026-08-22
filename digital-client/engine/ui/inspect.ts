@@ -7,14 +7,15 @@
  * them.
  */
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
-import type { E } from '../src/engine.ts';
+import { E } from '../src/engine.ts';
+import { allureViolation } from '../src/apply.ts';
 import { specForSlot } from '../src/cards/dsl.ts';
 import type { ActivatedAbility } from '../src/cards/dsl.ts';
 import { createsOf, DECK_LIST } from '../src/cards/registry.ts';
 import { matcherFor } from './glossary.ts';
 import { clean, entityTextBox, switchClause } from './cardtext.ts';
 import type {
-  Action, CardName, Entity, EntityId, EffectPart, GameState, Seat, StackItem,
+  Action, CardName, EngineEvent, Entity, EntityId, EffectPart, GameState, Seat, StackItem,
 } from '../src/types.ts';
 
 // clean/switchClause live in ui/cardtext.ts now — one implementation, so the
@@ -188,6 +189,309 @@ export function shouldAutoYield(
   return top.kind === 'triggered' && top.sourceId !== undefined && yielded.has(top.sourceId);
 }
 
+// ── [59] the one automatic-pass decision ──────────────────────────────
+
+/**
+ * Identity keys of every activateAbility currently legal for a seat.
+ *
+ * "Pass all" snapshots these when it is armed; a key that was NOT in the
+ * snapshot means a resolution granted a new ability, and the chip disarms so
+ * the window is the player's again.
+ */
+export function activationKeys(legal: readonly Action[]): string[] {
+  return legal
+    .filter(a => a.type === 'activateAbility')
+    .map(a => {
+      const aa = a as Extract<Action, { type: 'activateAbility' }>;
+      const via = aa.via === undefined ? 'own' : aa.via === 'augment' ? 'aug' : `mod${aa.via.mod}`;
+      return `${aa.entityId}:${aa.abilityIndex}:${via}`;
+    });
+}
+
+/** distinct spell tokens this legal-action list can cast right now (C5) */
+export function castableTokens(legal: readonly Action[]): number {
+  return new Set(legal
+    .filter(a => a.type === 'castSpellToken')
+    .map(a => (a as { entityId: EntityId }).entityId)).size;
+}
+
+/** what the client's own settings say about passing without being asked */
+export interface AutoPassArm {
+  /** the "Pass all" chip is armed */
+  armed: boolean;
+  /** stack height when it was armed — growth disarms it */
+  armedStack: number;
+  /** activationKeys() when it was armed — a NEW key disarms it */
+  armedSig: readonly string[];
+  /** the persistent auto-pass TOGGLE (C4) is on */
+  prefOn: boolean;
+  /** units whose triggers this player yields to (#2) */
+  yieldIds: ReadonlySet<EntityId>;
+}
+export interface AutoPassPlan {
+  /** the "Pass all" chip must come off */
+  disarm: boolean;
+  /** why a pass is going out for this state — null means the window is mine */
+  pass: 'passall' | 'pref' | 'yield' | null;
+}
+
+/**
+ * Will this client pass this priority window by itself?
+ *
+ * [59] "I see a flash of the top of the screen that looks like it's giving me
+ * prio for like 1 frame AND I see a 'You do not have priority' note."
+ *
+ * Both halves of that report come from the same shape of mistake: the decision
+ * to pass used to be made AFTER the board had been painted, by three separate
+ * functions that each carried their own one-shot guard. So the prompt bar
+ * claimed priority for a whole server round trip before the corrective view
+ * arrived, and — with the auto-pass toggle on AND a yielded trigger on top —
+ * two of those three fired for the same state, the second one earning a
+ * "you do not have priority" refusal that stuck.
+ *
+ * This is the decision, alone, as a pure function: one answer per state, made
+ * BEFORE anything is drawn (so the bar can say "auto-passing" instead of
+ * lying) and consumed once (so exactly one pass goes out). The order is the
+ * one the old chain had — Pass-all, then the toggle, then the yield — and now
+ * it is an ordering rather than three independent chances to send.
+ */
+export function autoPassPlan(
+  s: GameState, seat: Seat, legal: readonly Action[], arm: AutoPassArm,
+): AutoPassPlan {
+  let disarm = false;
+  if (arm.armed) {
+    if (s.phase !== 'battle' || !s.battle) disarm = true;
+    else if (s.stack.length > arm.armedStack) disarm = true;
+    // #1: a resolution granted me a NEW activateAbility (e.g. a negate) that
+    // wasn't legal when the chip was armed — disarm so the window is mine
+    else if (activationKeys(legal).some(k => !arm.armedSig.includes(k))) disarm = true;
+    else if (!s.decision && s.priority === seat) {
+      // C5: never skip through castable spell tokens — disarm and let the
+      // player decide (the confirm bar shows on their next manual Pass)
+      if (castableTokens(legal) > 0) disarm = true;
+      else if (legal.some(a => a.type === 'passPriority')) return { disarm: false, pass: 'passall' };
+    }
+  }
+  // C4: the toggle passes whenever passing is my ONLY legal action
+  if (arm.prefOn && !s.decision && s.phase !== 'gameover'
+    && legal.length > 0 && legal.every(a => a.type === 'passPriority')) {
+    return { disarm, pass: 'pref' };
+  }
+  // #2: the top of the stack is a trigger from a unit I yield to
+  if (shouldAutoYield(s, seat, arm.yieldIds) && legal.some(a => a.type === 'passPriority')) {
+    return { disarm, pass: 'yield' };
+  }
+  return { disarm, pass: null };
+}
+
+/** the two stamps that make an automatic pass one-per-state (UiState) */
+export interface SendLatch {
+  /** actionCount an automatic pass has already been scheduled for */
+  autoAt: number;
+  /** actionCount ANY intent was handed to the socket for */
+  sentFor: number;
+}
+
+/**
+ * Does the pass this plan calls for actually go out — and, if so, claim the
+ * state so nothing else sends for it.
+ *
+ * [59] This is the other half of the report. render() runs many times per
+ * server state (a hover, a beat waking the log, the chip disarming and
+ * repainting itself), and the old code had a separate stamp per auto-pass
+ * reason, so two reasons could each pass their own guard for one state. The
+ * server applies the first and refuses the second with "you do not have
+ * priority" — the sticky note Bena saw. One latch, one send, whatever the
+ * reason and however many times the board is painted.
+ */
+export function takeAutoPass(plan: AutoPassPlan, actionCount: number, latch: SendLatch): boolean {
+  if (!plan.pass) return false;
+  if (latch.autoAt === actionCount || latch.sentFor === actionCount) return false;
+  latch.autoAt = actionCount;
+  return true;
+}
+
+// ── [08b] what a single click is allowed to just DO ───────────────────
+
+/**
+ * Must this action be picked off a menu rather than fired by the click that
+ * revealed it?
+ *
+ * Playtest [08b]: "I was able to Prophecy Air Plant without having any Wood
+ * resources. I just wanted to click the card to see what would happen and it
+ * just immediately went to the Cache zone." The cost was right — R42's
+ * prophecy banner is plain mana with no affinity — but the CLICK was not.
+ * During deployment a {Flying} unit that cannot be played and has no augment
+ * mode leaves prophesying as the only thing on offer, and `offer()` fires a
+ * lone item on the spot.
+ *
+ * Prophesying spends mana and moves a card out of hand for good, and unlike a
+ * cast it never stops to ask for a target — so there is no moment anywhere in
+ * it to notice. It gets the menu the other prophesy sources already show
+ * (a bin card that can also be augmented opens one today), which is the same
+ * second click, in the same interaction language, with the banner cost and the
+ * condition spelled out in the label before you commit.
+ */
+export function actionNeedsMenu(a: Action): boolean {
+  return a.type === 'prophesy';
+}
+
+/** what clicking a card with these options should do */
+export type OfferPlan = { kind: 'none' } | { kind: 'go'; index: number } | { kind: 'menu' };
+
+/**
+ * The common tail of every card click: exactly one harmless thing just
+ * happens, anything else opens the menu at the cursor.
+ *
+ * "Harmless" is the whole judgement — an item flagged `confirm` never fires
+ * on its own, however alone it is (see actionNeedsMenu above).
+ */
+export function planOffer(items: readonly { confirm?: boolean }[]): OfferPlan {
+  if (!items.length) return { kind: 'none' };
+  if (items.length === 1 && !items[0]!.confirm) return { kind: 'go', index: 0 };
+  return { kind: 'menu' };
+}
+
+// ── [30]/[31] what the board itself offers on a right-click ───────────
+
+/** one entry the board's right-click menu shows, before main.ts hangs an
+ * action on it. `confirm` means the entry only OPENS a question. */
+export interface BoardMenuEntry {
+  kind: 'erased' | 'concede';
+  seat: Seat;
+  label: string;
+  confirm: boolean;
+}
+
+/**
+ * R65: the two things the board offers wherever you right-click — both were
+ * playtest asks ("We need a way to right click -> concede match :(", "I dont
+ * think there's currently a way to view erased cards"). They ride on every
+ * card menu too, so you never have to hunt for bare table.
+ *
+ * `mySeat` is the seat this client drives, or null in hotseat (where one
+ * person drives both, so both are offered).
+ */
+export function boardMenuEntries(s: GameState, mySeat: Seat | null): BoardMenuEntry[] {
+  const items: BoardMenuEntry[] = [];
+  for (const p of [0, 1] as Seat[]) {
+    const pl = s.players[p]!;
+    // the same count the dialog shows: real cards, then "+n tokens" (R69)
+    const n = erasedPileView(pl.erased).countLabel;
+    const mine = mySeat !== null && p === mySeat;
+    items.push({
+      kind: 'erased', seat: p, confirm: false,
+      label: `🚫 ${mine ? 'My' : `${pl.name}'s`} erased cards (${n})`,
+    });
+  }
+  if (s.phase !== 'gameover') {
+    // net: you may only concede your own seat. Hotseat: one person is driving
+    // both, so both are offered — and priority can be null (planning, draft),
+    // which is exactly when someone might want to stop.
+    for (const seat of (mySeat !== null ? [mySeat] : [0, 1]) as Seat[]) {
+      items.push({
+        kind: 'concede', seat, confirm: true,
+        label: mySeat !== null ? '🏳 Concede the match' : `🏳 Concede as ${s.players[seat]!.name}`,
+      });
+    }
+  }
+  return items;
+}
+
+// ── [35] the classes one card scan wears ──────────────────────────────
+
+/** every state a card scan can be drawn in (cardHtml's options) */
+export interface CardFlags {
+  playable?: boolean; candidate?: boolean; selected?: boolean;
+  carrying?: boolean; modhost?: boolean;
+  /** UZRG: it has a legal activated ability — a DIFFERENT fact from `playable`
+   * ("can be dragged into a formation"), and both can be true at once */
+  activatable?: boolean;
+}
+/**
+ * The class list for a card scan. `.activatable` is the one that has to be
+ * spelled out here rather than inlined: it is the only class with no click
+ * behaviour of its own — deleting it breaks nothing but the green halo
+ * (style.css `.card.activatable`), which is exactly the ask it answers.
+ */
+export function cardClasses(f: CardFlags): string[] {
+  const cls = ['card'];
+  if (f.playable) cls.push('playable');
+  if (f.candidate) cls.push('candidate');
+  if (f.selected) cls.push('selected');
+  if (f.carrying) cls.push('carrying');
+  if (f.modhost) cls.push('modhost');
+  if (f.activatable) cls.push('activatable');
+  return cls;
+}
+
+// ── R79: where a mod-in-progress may LAND ─────────────────────────────
+
+/** the mod the client is placing (UiState.modding), minus the seat. Leave
+ * `index` off to ask about EVERY card in that zone at once — which is the
+ * question the bin dialog's banner asks, before any one card is picked. */
+export interface ModPick {
+  from: 'hand' | 'bin' | 'cache';
+  index?: number;
+  mode: 'augment' | 'graft';
+}
+
+/**
+ * The hosts one in-progress mod may legally land on, split by KIND.
+ *
+ * There are two kinds and there have always been two: a unit in play
+ * (`Action.hostId`) and — R79, sourced Caleb 2025-04-06 (*"In Battle, can you
+ * augment a spell with a virus… Yes"*) — a SPELL ON THE STACK
+ * (`Action.hostStack`). The client only ever read the first, because the cache
+ * behind the glow was a `Set<EntityId>` and a `StackItem` is not an `Entity`,
+ * so the whole ruling was unreachable from the board: `legalActions` offered
+ * the action and nothing on screen could emit it.
+ *
+ * This is a READ of the legal-action list, never a re-derivation. Which stack
+ * items qualify is `apply.ts`'s `STACK_VIRUS_HOSTS` ({spell, spellUnit,
+ * spellToken} — not a trigger, not an ability, not another virus, not an
+ * ambusher), and it is deliberately not restated here: the UI drifting from
+ * the engine's own answer is the entire bug this fixes.
+ */
+export interface ModHosts {
+  /** units in play (`hostId`) */
+  units: Set<EntityId>;
+  /** items on the stack (`hostStack`) — augment only, spells only */
+  stack: Set<number>;
+}
+
+export function modHosts(legal: readonly Action[], m: ModPick | null): ModHosts {
+  const hosts: ModHosts = { units: new Set(), stack: new Set() };
+  if (!m) return hosts;
+  for (const a of legal) {
+    if (a.type !== m.mode) continue;
+    const c = a as { from?: string; index?: number; hostId?: EntityId; hostStack?: number };
+    if (c.from !== m.from) continue;
+    if (m.index !== undefined && c.index !== m.index) continue;
+    if (c.hostId !== undefined) hosts.units.add(c.hostId);
+    if (c.hostStack !== undefined) hosts.stack.add(c.hostStack);
+  }
+  return hosts;
+}
+
+/** how many places this mod could go */
+export const modHostCount = (h: ModHosts): number => h.units.size + h.stack.size;
+
+/**
+ * What to CALL the hosts on offer, for the prompt bar, the menu entry and the
+ * bin banner — all three of which used to promise a unit and only a unit
+ * ("Glowing cards can be applied to a unit as a mod right now"). Reads the
+ * offer rather than the rules, so it cannot promise a host the engine will
+ * refuse, and it never widens: a graft has no stack form at all.
+ *
+ * Written to follow the article "a": `a ${modHostPhrase(hosts)}`.
+ */
+export function modHostPhrase(h: ModHosts): string {
+  if (h.stack.size && h.units.size) return 'unit, or a spell on the stack';
+  if (h.stack.size) return 'spell on the stack';
+  return 'unit';
+}
+
 // ── card names inside prose (the log, the reveal, the stack) ──────────
 
 /** the longest card name in the pool, in words — the window the scan slides */
@@ -289,6 +593,161 @@ export function findCardName(msg: string): CardName | null {
     if (len > bestLen) { best = sp.name; bestLen = len; }
   }
   return best;
+}
+
+// ── the cast list: which cards this game has actually shown ───────────
+//
+// Playtest UFAB: "all strings that match card names become hoverable cards…
+// so 'Battle:' (which happens every turn) looks like it's a card name.
+// Instead, the game log should only highlight actual cards used in the game
+// to generate those effects."
+//
+// `Battle` really is a card ("Two target units fight"), so the phase line
+// `Battle: Ben may attack.` — an `ev('phase', …)` carrying no card data at
+// all — linked every single turn. And it is not one unlucky word: 133 card
+// names are a single word, `Fight`, `Recall`, `Capture`, `Perish`, `Cull`,
+// `Crystal`, `Poison`, `Wisp`, `Robot` among them, so any new log phrasing
+// can collide tomorrow.
+//
+// The fix is Bena's own sentence: keep a set of the cards this game has
+// really shown, and let the log link a name only if it is in that set. The
+// matcher itself stays general — `findCardName` (the deployment reveal) is a
+// question about ONE sentence, not about a game, and reads the raw spans.
+//
+// The set GROWS and never shrinks: a card recalled to hand, binned, erased or
+// recycled away must still link in the old lines that talk about it.
+
+/** memoised "is this string a card name?" — `getCard` answers no by THROWING,
+ * and the ledger asks about a lot of strings */
+const nameKnown = new Map<string, boolean>();
+function isCardName(s: unknown): s is CardName {
+  if (typeof s !== 'string' || !s) return false;
+  const hit = nameKnown.get(s);
+  if (hit !== undefined) return hit;
+  // the same prefilter the scanner uses, so a stack item's LABEL (or any
+  // other long prose string riding in event data) never reaches getCard and
+  // never grows the memo
+  if (!startsAName(s.split(' ')[0] ?? '')) { nameKnown.set(s, false); return false; }
+  let ok = false;
+  try { getCard(s); ok = true; } catch { ok = false; }
+  nameKnown.set(s, ok);
+  return ok;
+}
+
+/** the card names a stack item puts on the table: the card itself, the mods
+ * riding with it, and the source of each of its effect parts (a trigger has
+ * no `card` of its own — 'ability:Boreal Wanderer#0' is the only place its
+ * name appears) */
+function itemNames(it: StackItem | null | undefined, out: CardName[]): void {
+  if (!it) return;
+  if (isCardName(it.card)) out.push(it.card);
+  for (const m of it.mods ?? []) if (isCardName(m?.card)) out.push(m.card);
+  for (const p of it.parts ?? []) {
+    const src = partText(p?.effectKey ?? '')?.source;
+    if (isCardName(src)) out.push(src);
+  }
+}
+
+/**
+ * Every card name visible in `s` — the zones this client is actually shown.
+ *
+ * Deliberately NOT the decks or the packs. A deck is hidden information (the
+ * hotseat Harness holds the real one, unredacted), and a card nobody has seen
+ * yet is exactly the card the log must not pretend to be talking about.
+ */
+export function namesInState(s: GameState | null | undefined): CardName[] {
+  const out: CardName[] = [];
+  if (!s) return out;
+  const add = (n: unknown): void => { if (isCardName(n)) out.push(n); };
+  for (const p of s.players ?? []) {
+    for (const n of p.hand ?? []) add(n);
+    for (const n of p.bin ?? []) add(n);
+    for (const n of p.erased ?? []) add(n);
+    for (const c of p.cache ?? []) add(c?.card);
+  }
+  for (const en of Object.values(s.entities ?? {})) add(en?.card);
+  for (const it of s.stack ?? []) itemNames(it, out);
+  itemNames(s.resolving, out);
+  // a hand you were shown (Bripp) is a hand you have seen
+  for (const sh of s.seenHand ?? []) for (const n of sh?.cards ?? []) add(n);
+  // and so are the cards a decision is currently offering you
+  for (const o of s.decision?.options ?? []) add(o?.card);
+  return out;
+}
+
+/** how deep the event-data walk goes — a stack item nests item → mods → parts
+ * and nothing in the engine is deeper than that */
+const DATA_DEPTH = 6;
+
+/**
+ * Every card name carried in a batch of events' DATA.
+ *
+ * The message is not read, on purpose — reading it is the bug. Only values
+ * the engine put in `data` count, and only exact matches: `data.card`,
+ * `data.cards[]`, the whole `StackItem` inside a 'stackFlash'. That last one
+ * is what catches a spell token created and resolved inside a single batch
+ * ("Ben creates a Fireball 30") — it is never in any state this client is
+ * handed, so nothing else would ever see it.
+ */
+export function namesInEvents(events: readonly EngineEvent[]): CardName[] {
+  const out: CardName[] = [];
+  const walk = (v: unknown, depth: number): void => {
+    if (depth > DATA_DEPTH || v === null || v === undefined) return;
+    if (typeof v === 'string') { if (isCardName(v)) out.push(v); return; }
+    if (Array.isArray(v)) { for (const x of v) walk(x, depth + 1); return; }
+    if (typeof v !== 'object') return;
+    const o = v as Record<string, unknown>;
+    // a stack item knows more about itself than a blind walk can find
+    if (typeof o['id'] === 'number' && typeof o['label'] === 'string' && Array.isArray(o['parts'])) {
+      itemNames(o as unknown as StackItem, out);
+    }
+    for (const x of Object.values(o)) walk(x, depth + 1);
+  };
+  for (const e of events) walk(e?.data, 0);
+  return out;
+}
+
+/**
+ * Fold this game's newest facts into the cast list. Mutates and returns
+ * `known`, which is the point: it must grow monotonically for the whole game.
+ */
+export function growCardLedger(
+  known: Set<CardName>, state: GameState | null | undefined,
+  events: readonly EngineEvent[] = [],
+): Set<CardName> {
+  const add = (n: CardName): void => {
+    if (known.has(n)) return;      // already expanded — createsOf is not free
+    known.add(n);
+    // A card in the game brings its tokens with it. `createsOf` is DECLARED on
+    // the effect and conformance-tested (registry.ts), so this is not a guess:
+    // Spirit of Nature's own trigger line says "create a Poison 2 or a Crystal
+    // 2" BEFORE either token exists anywhere, and that line is exactly where a
+    // reader most needs to hover the word and find out what a Crystal is.
+    for (const t of createsOf(n)) if (isCardName(t)) known.add(t);
+  };
+  for (const n of namesInState(state)) add(n);
+  for (const n of namesInEvents(events)) add(n);
+  return known;
+}
+
+/**
+ * The same spans with every name OUTSIDE `known` demoted back to prose.
+ *
+ * Adjacent prose runs are welded back together so the caller sees the line the
+ * way `linkCardNames` would have cut it if the demoted name had never been a
+ * card — one span in, one span out, no empty seams.
+ */
+export function onlyKnownNames(
+  spans: readonly NameSpan[], known: ReadonlySet<string>,
+): NameSpan[] {
+  const out: NameSpan[] = [];
+  for (const sp of spans) {
+    if (sp.name !== null && known.has(sp.name)) { out.push(sp); continue; }
+    const last = out[out.length - 1];
+    if (last && last.name === null) out[out.length - 1] = { text: last.text + sp.text, name: null };
+    else out.push({ text: sp.text, name: null });
+  }
+  return out;
 }
 
 /** one row of the reveal: a card scan (or none) and the sentence(s) it covers */
@@ -978,4 +1437,37 @@ export function waitingNote(s: GameState, casting = false): string {
   }
   if (s.stack.length) return 'they are answering something on the stack — nothing is yours to do yet';
   return 'nothing is yours to do yet';
+}
+
+// ── R84 {Alluring}: the block declaration the board is holding ─────────
+
+/**
+ * Why the block declaration currently being built would be REFUSED, in the
+ * engine's own words — `null` when it would be accepted.
+ *
+ * Playtest BRDM (2026-08-20) and again, verbatim, UFAB (2026-08-22): Tempest
+ * Wrangler's {Alluring} duty. The engine has been right about this for rounds
+ * — `allureViolation` names the duty precisely and `legalActions` builds every
+ * block option on top of the compulsory core — but the CLIENT had no idea the
+ * attribute existed: `grep -rn Alluring ui/` found one glossary entry and
+ * nothing else. The block bar promised "assign blockers", Confirm was always
+ * live, and the only feedback a lured defender ever got was a red error
+ * AFTER committing, phrased as though the click had been a mistake.
+ *
+ * This is a READ of the engine's own validator, never a second opinion. The
+ * duty is conjunctive across columns and turns on {Pure}, {Feeble}, {Flying},
+ * {Evasive} and a lone {Sneaky} attacker; restating any of that here is how
+ * the client ends up refusing a block the engine would have taken, which is
+ * the same bug wearing the other hat.
+ *
+ * The state is cloned because `E` is a mutator that happens to be queried
+ * here — the same reason `legalActions` clones before it reads.
+ */
+export function blockPlanIssue(
+  s: GameState, seat: Seat, blocks: Record<number, EntityId[]>,
+): string | null {
+  // the cheap early-out: no lure on the board, nothing to check, and no
+  // structuredClone of a whole game state on every paint of every battle
+  if (!Object.values(s.entities).some(e => e.allured && e.controller === seat)) return null;
+  return allureViolation(new E(structuredClone(s)), seat, blocks);
 }

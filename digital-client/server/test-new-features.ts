@@ -12,9 +12,10 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { rmSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
+import { freePort, gameFile } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = 8500 + Math.floor(Math.random() * 400);
+const PORT = await freePort();
 // minted from /api/new below: only a server-minted code may create a room
 let ROOM = '';
 
@@ -67,7 +68,7 @@ class Client {
 }
 
 // ── spawn the server ──────────────────────────────────────────────────
-rmSync(join(HERE, 'games', `${ROOM}.json`), { force: true });
+rmSync(gameFile(ROOM), { force: true });
 const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
   env: { ...process.env, PORT: String(PORT) },
   stdio: ['ignore', 'pipe', 'inherit'],
@@ -201,7 +202,7 @@ try {
   ok(/full/.test(fullErr.msg ?? ''), 'auto-join into a full room still politely fails');
 } finally {
   server.kill();
-  rmSync(join(HERE, 'games', `${ROOM}.json`), { force: true });
+  rmSync(gameFile(ROOM), { force: true });
 }
 
 console.log(failures === 0 ? '\nALL PASS ✓' : `\n${failures} FAILURES ✗`);

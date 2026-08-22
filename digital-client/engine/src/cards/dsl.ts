@@ -519,6 +519,36 @@ export interface StaticMod {
    */
   suppressAttrs?: boolean;
   suppressAbilities?: boolean;
+  /**
+   * R11, the CONTINUOUS half of the regroup cleanup: while this static
+   * applies to a SPELL TOKEN, regroup does not erase it — "[Augment] Your
+   * spell tokens stay through regroup" (Harbinger of Immolation).
+   *
+   * A static and not a trigger, and not a replacement hook either. The erase
+   * is not an event: it is a step of the R11 cleanup sequence, so there is
+   * nothing to put on the stack, nothing to respond to and nothing to negate,
+   * and a trigger that "re-created" the tokens afterwards would be a
+   * different card (new entities, new ids, the X re-derived). What the text
+   * describes is a standing property of the tokens themselves — they are the
+   * kind that stay — which is what layer 3 is for.
+   *
+   * Being a static is also what gets the [Augment] half right for free. The
+   * clause is text-box [Augment] (live on the card played normally AND
+   * donated to a host), and statics already anchor exactly that way: they
+   * radiate from a unit in play and from an augment mod through E.anchored(),
+   * reading from the HOST. So the donated form protects the HOST
+   * controller's tokens with no extra code, the way a donated aura does.
+   *
+   * Read through E.spellTokenSurvivesRegroup(), never by summing: like
+   * suppression this is a veto-shaped query, one protector is enough. It
+   * spares the token from the ERASE and nothing else — startRegroup still
+   * sweeps the token's temporary changes, and its X (the Fireball's number)
+   * is not something regroup ever touched.
+   *
+   * ⚠ The target of this one is a spellToken, not a unit, so `affects` must
+   * not assume `target.kind === 'unit'` the way the stat statics do.
+   */
+  survivesRegroup?: boolean;
 }
 
 /** What a cost modifier is being asked about. `purpose` separates PLAYING a
@@ -577,6 +607,14 @@ export interface CardBehavior {
    * be prophesied from the bin unless it says so, so this defaults to false
    * and the `prophesy` action's `from: 'bin'` is refused without it. */
   prophesyFromBin?: boolean;
+  /** R29: "You may play me into an open spot in your formation" (Tiderunner
+   * Initiate; Trench Stalker's first clause). The card is PLAYED into the
+   * line — the spot is chosen in the cast window like any other part of how a
+   * card is played, and the unit is written into the column atomically with
+   * its own spawn, so it is never observable standing outside the formation.
+   * Distinct from R75's `E.placeInFormation`, which is for an EFFECT that
+   * creates a unit in a formation and rightly places at resolution. */
+  playsIntoFormation?: boolean;
   /** effect of a spell / spell unit / spell token when played */
   spellEffect?: EffectDef;
   /** the [Switch]-marked effect that transfers when this card is grafted */

@@ -425,9 +425,98 @@ test('Harbinger of Immolation: end of turn → Fireball X, X = 1 + your spell to
   assert.ok(fires.some(t => t.x === 3), 'X = 1 + 2 controlled tokens = 3 (R1: live at resolution)');
 });
 
-test('Harbinger of Immolation: [Augment] your spell tokens stay through regroup', { todo: true }, () => {
-  // PARKED: startRegroup erases all spell tokens unconditionally — a
-  // regroup-replacement hook does not exist.
+// The [Augment] half (rooms ZQPC + SAAY: "my fireball was erased during
+// regroup even tho I have the Harbinger!!!"). It is a STATIC, so it is live
+// in BOTH forms — the card played normally and the card donated to a host —
+// and startRegroup asks per token instead of erasing unconditionally.
+
+test('Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup', () => {
+  const h = new Harness(1225);
+  toDeployment(h);
+  const A = h.state.initiative;
+  spawn(h, A, 'Harbinger of Immolation');
+  const e = new E(h.state);
+  const tok = e.createSpellToken(A, 'Fireball', 4, e.homeRegion(A));
+  toNextBattle(h, A);                                // EOT: the trigger adds one more
+  const before = tokensOf(h, A).length;
+  assert.ok(before >= 2, 'the seeded Fireball plus the end-of-turn one');
+  finishBattle(h);                                   // → regroup → deployment
+  assert.equal(h.state.phase, 'deploy');
+  assert.equal(tokensOf(h, A).length, before, 'every one of them survived regroup');
+  assert.ok(ent(h, tok.id), 'the seeded Fireball in particular');
+});
+
+test('Harbinger of Immolation: a surviving token keeps its X, and still loses its temporary changes', () => {
+  const h = new Harness(1226);
+  toDeployment(h);
+  const A = h.state.initiative;
+  spawn(h, A, 'Harbinger of Immolation');
+  const e = new E(h.state);
+  const tok = e.createSpellToken(A, 'Fireball', 7, e.homeRegion(A));
+  tok.tempPower = 3; tok.tempToughness = 2; tok.tempAttrs = ['Lethal'];
+  toNextBattle(h, A);
+  finishBattle(h);
+  const t = ent(h, tok.id);
+  assert.ok(t, 'not erased');
+  assert.equal(t!.x, 7, 'X is untouched — regroup never rewrote it');
+  assert.equal(t!.region, new E(h.state).homeRegion(A), 'it came home with everything else');
+  assert.equal(t!.tempPower, 0, 'step (3) still swept it: it is spared the erase, not the cleanup');
+  assert.equal(t!.tempToughness, 0);
+  assert.equal(t!.tempAttrs, undefined);
+});
+
+test('Harbinger of Immolation: augmented onto a host, the HOST controller\'s tokens stay', () => {
+  const h = new Harness(1227);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const host = spawn(h, A, 'Conduit of Pain');
+  const e = new E(h.state);
+  e.attachMod(ent(h, host)!, 'Harbinger of Immolation', A, 'augment');
+  const tok = e.createSpellToken(A, 'Fireball', 2, e.homeRegion(A));
+  toNextBattle(h, A);
+  finishBattle(h);
+  assert.ok(ent(h, tok.id), 'the mod radiates the static from its host (E.anchored)');
+});
+
+test('Harbinger of Immolation: only YOUR tokens stay — the opponent\'s are still erased', () => {
+  const h = new Harness(1228);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  spawn(h, A, 'Harbinger of Immolation');
+  const e = new E(h.state);
+  const mine = e.createSpellToken(A, 'Fireball', 1, e.homeRegion(A));
+  const theirs = e.createSpellToken(D, 'Fireball', 1, e.homeRegion(D));
+  toNextBattle(h, A);
+  finishBattle(h);
+  assert.ok(ent(h, mine.id), 'mine stays');
+  assert.ok(!ent(h, theirs.id), "the opponent's is erased as normal");
+});
+
+test('Harbinger of Immolation: no Harbinger (or it left play first) → tokens erased as normal', () => {
+  const h = new Harness(1229);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const harb = spawn(h, A, 'Harbinger of Immolation');
+  const e = new E(h.state);
+  const tok = e.createSpellToken(A, 'Fireball', 5, e.homeRegion(A));
+  toNextBattle(h, A);
+  const e2 = new E(h.state);
+  e2.destroy(ent(h, harb)!, 'dies');                 // the static goes with it
+  e2.settle();
+  finishBattle(h);
+  assert.ok(!ent(h, tok.id), 'nothing protects the token any more');
+  assert.equal(tokensOf(h, A).length, 0, 'and neither does the end-of-turn Fireball it made');
+});
+
+test('regroup default is unchanged: with no Harbinger anywhere, spell tokens are erased', () => {
+  const h = new Harness(1230);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const e = new E(h.state);
+  const tok = e.createSpellToken(A, 'Fireball', 3, e.homeRegion(A));
+  toNextBattle(h, A);
+  finishBattle(h);
+  assert.ok(!ent(h, tok.id), '(+) spell tokens are erased');
 });
 
 // ── Hooba-Lin ────────────────────────────────────────────────────────────

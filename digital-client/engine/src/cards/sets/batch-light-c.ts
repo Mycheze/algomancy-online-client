@@ -225,14 +225,13 @@ card('Hand Peeper', {
     type: 'activated', cost: { life: 3 },
     label: "pay 3 life: look at target player's hand",
     effect: {
-      targets: { what: 'any', prompt: "Hand Peeper: look at target player's hand" },
+      // R64: the 'player' kind — the seats present in the region and nothing
+      // else. 'any' also offered their units, which have no hand to look at.
+      targets: { what: 'player', prompt: "Hand Peeper: look at target player's hand" },
       run: (g, ctx) => {
         const t = ctx.targets[0];
-        if (!t || !('player' in (t as object))) {
-          g.ev('info', 'Hand Peeper: the target is not a player — nothing happens.');
-          return;
-        }
-        g.revealHandTo(ctx.controller, (t as { player: Seat }).player);
+        if (!t || !('player' in t)) return;
+        g.revealHandTo(ctx.controller, t.player);
       },
     },
   }],
@@ -407,10 +406,14 @@ card('Slurpr', {
 // a logged no-op so it can never crash a game.
 card('Suspend', {
   spellEffect: {
-    targets: { what: 'any', prompt: "Suspend: target player's life total can't change this battle" },
+    // R64: "target player" is the 'player' kind. Under 'any' the parked no-op
+    // could be aimed at a unit, and then even the ⚠ line below could not name
+    // whose life total was supposed to lock.
+    targets: { what: 'player', prompt: "Suspend: target player's life total can't change this battle" },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      const who = t && 'player' in (t as object) ? g.pname((t as { player: Seat }).player) : 'the target';
+      if (!t || !('player' in t)) return;
+      const who = g.pname(t.player);
       g.ev('info',
         `⚠ Suspend is PARKED: ${who}'s life total is NOT actually locked ` +
         '(no life-change replacement seam in the engine).',

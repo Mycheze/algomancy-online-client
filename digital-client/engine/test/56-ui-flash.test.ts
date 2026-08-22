@@ -17,8 +17,9 @@ import { Harness } from '../src/harness.ts';
 import type { EngineEvent, StackItem } from '../src/types.ts';
 import {
   HOLD_MS, MAX_LEAD_MS, STAGGER_MS,
-  censusFlashes, flashItems, leadRow, negatedFlashItems, negatedIds, nextFlashWake,
-  pruneFlashes, queueFlashes, stackCaption, stackRows, visibleFlashes,
+  censusFlashes, combatStages, dueBeats, flashItems, heldLines, leadRow, negatedFlashItems,
+  negatedIds, nextBeatWake, nextFlashWake, pruneFlashes, queueBeats, queueFlashes,
+  stackCaption, stackRows, visibleFlashes,
 } from '../ui/flash.ts';
 import { census, diffCensus } from '../ui/motion.ts';
 import { stackItemX, stackXMark } from '../ui/inspect.ts';
@@ -507,4 +508,167 @@ test('end to end: the strip holds the spell while its controller is still choosi
     stackRows(h.state.stack, [], 0, h.state.resolving ?? null).filter(r => r.item.id === id), [],
     'and the card has left the strip, now that it really is done',
   );
+});
+
+/* ── R80: narrative beats — a combat step told one stage at a time ─────── */
+
+/* UFAB: "Neither of us had anything to do during the end of that combat, but
+ * damage and all effects happened instantly. We should have been able to see,
+ * much slower, what happened and how much damage went through."
+ *
+ * The grouping has to come out of the batch as the engine already emits it —
+ * no `data.sub` on the damage events, no engine change at all. What IS in the
+ * batch is the 'combatDamage' header, the pump's alternation between damage
+ * and the checkDeaths() sweep after it, and the 'afterCombat' bookend. */
+
+const ev = (type: EngineEvent['type'], msg: string, data?: Record<string, unknown>): EngineEvent =>
+  ({ type, msg, ...(data ? { data } : {}) });
+
+/** the shape engine.ts emits for one unblocked column hitting a player */
+const simpleCombat = (): EngineEvent[] => [
+  ev('combatDamage', 'Combat damage (simultaneous):', { region: 0 }),
+  ev('lifeLost', 'Ben loses 4 life (combat) → 24.', { seat: 0, n: 4 }),
+  ev('afterCombat', 'After-combat step.', { region: 0 }),
+];
+
+test('a combat batch is cut at the seams the pump already leaves', () => {
+  const stages = combatStages(simpleCombat());
+  assert.deepEqual(stages.map(s => [s.kind, s.lines]), [['strike', 2], ['after', 1]]);
+  assert.deepEqual(stages[0]!.keys, ['@life:0'], 'the strike points at who was hit');
+});
+
+test('damage, then what it killed, then the after-step — three beats', () => {
+  const stages = combatStages([
+    ev('combatDamage', 'Combat damage (simultaneous):'),
+    ev('damage', 'Ember of Life takes 1 (1 total).', { unit: 45, n: 1 }),
+    ev('damage', 'Enigmatic Warder takes 2 (2 total).', { unit: 10, n: 2 }),
+    ev('lifeLost', 'Ben loses 16 life (combat) → 11.', { seat: 0 }),
+    ev('died', 'Enigmatic Warder dies → bin.', { unit: 10, seat: 1, card: 'Enigmatic Warder' }),
+    ev('trashed', 'Rashi trashes Enigmatic Warder (from play).', { seat: 1 }),
+    ev('afterCombat', 'After-combat step.'),
+    ev('triggered', 'Trigger: Spirit of Nature — create a Poison 2 or a Crystal 2 (after combat).'),
+  ]);
+  assert.deepEqual(stages.map(s => [s.kind, s.lines]),
+    [['strike', 4], ['fallout', 2], ['after', 2]]);
+  assert.deepEqual(stages[0]!.keys, ['e45', 'e10', '@life:0']);
+  // a dead unit's own key is off the board — the bin is what is left to pulse
+  assert.ok(stages[1]!.keys.includes('@bin:1'));
+});
+
+test('Swift → normal → Sluggish reads as its own sub-steps, with no engine tag', () => {
+  // checkDeaths() runs between every sub-step, so the batch alternates
+  // damage-run / death-run all by itself. That alternation IS the grouping.
+  const stages = combatStages([
+    ev('combatDamage', 'Combat damage (simultaneous):'),
+    ev('damage', 'A takes 3 (3 total).', { unit: 1 }),
+    ev('died', 'A dies → bin.', { unit: 1, seat: 0 }),
+    ev('damage', 'B takes 2 (2 total).', { unit: 2 }),
+    ev('lifeLost', 'Ben loses 1 life (combat) → 19.', { seat: 0 }),
+    ev('died', 'B dies → bin.', { unit: 2, seat: 0 }),
+    ev('damage', 'C takes 9 (9 total).', { unit: 3 }),
+    ev('died', 'C dies → bin.', { unit: 3, seat: 1 }),
+    ev('afterCombat', 'After-combat step.'),
+  ]);
+  assert.deepEqual(stages.map(s => s.kind),
+    ['strike', 'fallout', 'strike', 'fallout', 'strike', 'fallout', 'after']);
+  assert.deepEqual(stages.map(s => s.lines), [2, 1, 2, 1, 1, 1, 1]);
+});
+
+test('every line of the batch lands in exactly one stage, in order', () => {
+  for (const events of [simpleCombat(), [
+    ev('spellPlayed', 'Rashi plays Fight → stack.'),          // before the header
+    ev('combatDamage', 'Combat damage (simultaneous):'),
+    ev('damage', 'A takes 3 (3 total).', { unit: 1 }),
+    ev('stackFlash', ''),                                      // not a log line
+    ev('died', 'A dies → bin.', { unit: 1, seat: 0 }),
+    ev('afterCombat', 'After-combat step.'),
+    ev('phase', 'Battle: Ben may attack.'),
+  ]]) {
+    const lines = events.filter(e => e.msg);
+    const head = lines.findIndex(e => e.type === 'combatDamage');
+    const stages = combatStages(events);
+    assert.equal(stages.reduce((n, s) => n + s.lines, 0), lines.length - head,
+      'the stages cover the header onwards, and nothing before it');
+  }
+});
+
+test('nothing to pace is paced not at all', () => {
+  assert.deepEqual(combatStages([]), []);
+  assert.deepEqual(combatStages([ev('phase', 'Battle: Ben may attack.')]), [],
+    'a batch with no combat in it');
+  assert.deepEqual(combatStages([
+    ev('combatDamage', 'Combat damage (simultaneous):'),
+    ev('afterCombat', 'After-combat step.'),
+  ]), [], 'an unblocked attack into an empty board: nothing landed');
+  assert.deepEqual(queueBeats([{ kind: 'strike', lines: 3, keys: [] }], 0), [],
+    'and one stage is not a sequence');
+});
+
+test('the first beat is NOW — the board is already final under it', () => {
+  const q = queueBeats(combatStages(simpleCombat()), 1000);
+  assert.equal(q[0]!.at, 1000);
+  assert.equal(q[1]!.at, 1000 + HOLD_MS);
+  assert.equal(heldLines(q, 1000), 1, 'the after-step line is still held back');
+  assert.equal(heldLines(q, 1000 + HOLD_MS), 0, 'and then it is not');
+});
+
+test('the queue never runs more than MAX_LEAD_MS behind the board', () => {
+  // docs/11's contract: a beat explains, it never gates. A long combat crowds
+  // the beats together rather than queueing up for half a minute.
+  for (const n of [2, 3, 4, 6, 12, 40]) {
+    const stages = Array.from({ length: n }, () => ({ kind: 'strike' as const, lines: 1, keys: [] }));
+    const q = queueBeats(stages, 0);
+    assert.equal(q.length, n);
+    assert.equal(q[0]!.at, 0);
+    for (const [i, b] of q.entries()) {
+      assert.ok(b.at <= MAX_LEAD_MS, `${n}: beat ${i} at ${b.at}`);
+      if (i) assert.ok(b.at >= q[i - 1]!.at, 'and they never go backwards');
+    }
+    const gap = q[1]!.at - q[0]!.at;
+    assert.ok(gap <= HOLD_MS && (gap >= STAGGER_MS || q[n - 1]!.at === MAX_LEAD_MS),
+      `${n}: gap ${gap}`);
+  }
+});
+
+test('a beat is played once, and the wake is the moment the log changes', () => {
+  const q = queueBeats(combatStages(simpleCombat()), 0);
+  assert.equal(nextBeatWake(q, 0), HOLD_MS);
+  assert.deepEqual(dueBeats(q, 0).map(b => b.kind), ['strike']);
+  for (const b of dueBeats(q, 0)) b.fired = true;
+  assert.deepEqual(dueBeats(q, 0), [], 'a repaint inside the same beat replays nothing');
+  assert.deepEqual(dueBeats(q, HOLD_MS).map(b => b.kind), ['after']);
+  for (const b of dueBeats(q, HOLD_MS)) b.fired = true;
+  assert.equal(nextBeatWake(q, HOLD_MS), null, 'and then the queue is spent');
+  assert.equal(heldLines(q, HOLD_MS), 0);
+});
+
+test('the beats a real end-of-combat produces, played through the engine', () => {
+  // no synthetic events: play a battle to the damage step and stage the batch
+  // the client would actually be handed.
+  const h = new Harness(5680);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as 0 | 1;
+  const att = spawn(h, A, 'Ignis Sprite');
+  spawn(h, D, 'Ignis Sprite');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[att]] });
+  for (let g = 0; g < 12 && h.state.battle?.step !== 'blocks'; g++) {
+    if (h.state.decision) { const d = h.state.decision; h.do({ type: 'decide', seat: d.seat, choice: 0 }); continue; }
+    h.do({ type: 'passPriority', seat: h.state.priority! });
+  }
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });   // unblocked: it hits the player
+  let events: EngineEvent[] = [];
+  for (let g = 0; g < 12 && !events.some(e => e.type === 'combatDamage'); g++) {
+    if (h.state.decision) { const d = h.state.decision; h.do({ type: 'decide', seat: d.seat, choice: 0 }); continue; }
+    events = h.do({ type: 'passPriority', seat: h.state.priority! });
+  }
+  assert.ok(events.some(e => e.type === 'combatDamage'), 'the damage step ran in one batch');
+  assert.ok(events.some(e => e.type === 'afterCombat'), '…and the after-step with it');
+  const stages = combatStages(events);
+  assert.ok(stages.length >= 2, `a real combat is told in stages (${stages.length})`);
+  assert.equal(stages[0]!.kind, 'strike');
+  assert.equal(stages[stages.length - 1]!.kind, 'after');
+  const lines = events.filter(e => e.msg);
+  const head = lines.findIndex(e => e.type === 'combatDamage');
+  assert.equal(stages.reduce((n, s) => n + s.lines, 0), lines.length - head);
 });

@@ -5,17 +5,15 @@
  *
  * Was test-deploy.ts, when deployment was the only hidden step. */
 import { rmSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type { Action, EngineEvent, GameState, Seat } from '../engine/src/types.ts';
 import { apply, createGame, forcedAction } from '../engine/src/apply.ts';
 import { viewFor } from './view.ts';
+import { gameFile } from './test-util.ts';
 import {
   applyToRoom, createRoom, openSegment, segmentKey, spliceable, undoActionAt,
   type Room, type SegKey,
 } from './rooms.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
 let failures = 0;
 const ok = (cond: unknown, label: string): void => {
   if (cond) console.log(`  ✓ ${label}`);
@@ -310,5 +308,5 @@ function actOn(room: Room, a: Action): void {
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
-for (const c of codes) rmSync(join(HERE, 'games', `${c}.json`), { force: true });
+for (const c of codes) rmSync(gameFile(c), { force: true });
 process.exit(failures ? 1 : 0);

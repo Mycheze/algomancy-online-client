@@ -1,0 +1,487 @@
+/* Playtest round 15 — client-side reports, plus guards for four fixes that
+ * were shipped with nothing holding them down.
+ *
+ * The reports:
+ *
+ *  [59] "I turned on auto yield to a bunch of triggers and it's working, but
+ *       visually I see a flash of the top of the screen that looks like it's
+ *       giving me prio for like 1 frame AND I see a 'You do not have priority'
+ *       note up at the top."
+ *  [08b] "I was able to Prophecy Air Plant without having any Wood resources.
+ *       I just wanted to click the card to see what would happen and it just
+ *       immediately went to the Cache zone."
+ *  [61] "Instead of all the spell tokens stacking up vertically when there are
+ *       many of them, their box can expand and they can be grouped
+ *       horizontally."
+ *
+ * And the backfills: [26] arrows run centre to centre, [30] right-click →
+ * concede, [31] right-click → view erased cards, [35] the `.activatable`
+ * halo's wiring.
+ *
+ * ui/main.ts is a boot script — it takes the document, the socket and the URL
+ * on the way in, so it cannot be imported here. Everything with a judgement in
+ * it has been pulled out into ui/inspect.ts and ui/anim.ts and is tested
+ * directly; what is left in main.ts is the wiring between those answers and
+ * the DOM, and that gets read as text at the bottom of this file (see the
+ * comment there). ui/style.css gets the same treatment for the two fixes that
+ * are literally CSS arithmetic.
+ *
+ * Seeds 6000-6099.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { Harness } from '../src/harness.ts';
+import { legalActions } from '../src/apply.ts';
+import {
+  actionNeedsMenu, activatableUnits, autoPassPlan, boardMenuEntries, cardClasses,
+  castableTokens, activationKeys, planOffer, takeAutoPass,
+} from '../ui/inspect.ts';
+import type { AutoPassArm, SendLatch } from '../ui/inspect.ts';
+import { arrowGeometry, HEAD_INSET } from '../ui/anim.ts';
+import { give, giveResources, spawn, toDeployment, toNextBattle } from './util.ts';
+import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
+
+/* ── [59] the automatic pass: one decision, made before the paint ──────── */
+
+/** a battle-ish state with `stack` on it and priority to seat 0 */
+function stacked(kinds: { kind: string; sourceId?: EntityId }[]): GameState {
+  const h = new Harness(6000);
+  toDeployment(h);
+  const s = h.state;
+  s.priority = 0;
+  s.decision = null;
+  s.stack = kinds.map((k, i) => ({
+    id: 100 + i, kind: k.kind as 'triggered' | 'spell', label: `item ${i}`,
+    controller: 0, region: 0, negated: false, parts: [],
+    ...(k.sourceId !== undefined ? { sourceId: k.sourceId } : {}),
+  }));
+  return s;
+}
+
+const PASS: Action[] = [{ type: 'passPriority', seat: 0 }];
+const arm = (over: Partial<AutoPassArm> = {}): AutoPassArm => ({
+  armed: false, armedStack: 0, armedSig: [], prefOn: false, yieldIds: new Set(), ...over,
+});
+
+test('[59] the auto-pass toggle and an auto-yielded trigger produce ONE pass, not two', () => {
+  // the exact configuration Bena was in: the C4 toggle on, AND a unit whose
+  // triggers he had chosen to yield to sitting on top of the stack. The old
+  // code asked two independent functions, each with its own one-shot stamp,
+  // so both fired for the same server state. The server applied the first and
+  // refused the second — "you do not have priority" — and that refusal stuck.
+  const s = stacked([{ kind: 'triggered', sourceId: 7 }]);
+  const plan = autoPassPlan(s, 0, PASS, arm({ prefOn: true, yieldIds: new Set([7]) }));
+
+  // one plan, one reason, one send. (Which reason wins does not matter to the
+  // player — both mean "pass" — only that the answer is singular.)
+  assert.equal(plan.pass, 'pref');
+
+  const latch: SendLatch = { autoAt: -1, sentFor: -1 };
+  let sends = 0;
+  // render() runs many times per server state: a hover, a beat waking the log,
+  // the chip disarming and repainting itself. Every one of them re-asks.
+  for (let paint = 0; paint < 5; paint++) {
+    if (takeAutoPass(plan, s.actionCount, latch)) sends++;
+  }
+  assert.equal(sends, 1, 'one authoritative state, one intent on the wire');
+});
+
+test('[59] the latch releases only when the server state moves on', () => {
+  const s = stacked([{ kind: 'triggered', sourceId: 7 }]);
+  const plan = autoPassPlan(s, 0, PASS, arm({ yieldIds: new Set([7]) }));
+  assert.equal(plan.pass, 'yield');
+
+  const latch: SendLatch = { autoAt: -1, sentFor: -1 };
+  assert.equal(takeAutoPass(plan, 40, latch), true);
+  assert.equal(takeAutoPass(plan, 40, latch), false, 'still the same state');
+  assert.equal(takeAutoPass(plan, 41, latch), true, 'a new state is a new window');
+});
+
+test('[59] an intent already on the wire blocks the automatic one too', () => {
+  // the shared latch is the point: a manual click and an automatic pass are
+  // both intents spending the same state, and only one of them may.
+  const s = stacked([{ kind: 'triggered', sourceId: 7 }]);
+  const plan = autoPassPlan(s, 0, PASS, arm({ yieldIds: new Set([7]) }));
+  const latch: SendLatch = { autoAt: -1, sentFor: 40 };   // NetBackend.do() just fired
+  assert.equal(takeAutoPass(plan, 40, latch), false);
+  assert.equal(takeAutoPass(plan, 41, latch), true);
+});
+
+test('[59] no plan, no send — the window really is mine', () => {
+  const quiet = stacked([{ kind: 'triggered', sourceId: 9 }]);   // not a yielded unit
+  const plan = autoPassPlan(quiet, 0, PASS, arm({ yieldIds: new Set([7]) }));
+  assert.equal(plan.pass, null, 'somebody else’s trigger is worth a look');
+  const latch: SendLatch = { autoAt: -1, sentFor: -1 };
+  assert.equal(takeAutoPass(plan, 40, latch), false);
+  assert.equal(latch.autoAt, -1, 'and nothing is claimed');
+});
+
+test('[59] the C4 toggle passes only when passing is the ONLY thing I could do', () => {
+  const s = stacked([]);
+  const only = autoPassPlan(s, 0, PASS, arm({ prefOn: true }));
+  assert.equal(only.pass, 'pref');
+
+  const alsoCast: Action[] = [...PASS, { type: 'castSpellToken', seat: 0, entityId: 5 }];
+  assert.equal(autoPassPlan(s, 0, alsoCast, arm({ prefOn: true })).pass, null,
+    'something else to do is a window worth keeping');
+  assert.equal(autoPassPlan(s, 0, [], arm({ prefOn: true })).pass, null,
+    'nothing legal at all is not "pass is my only option"');
+  assert.equal(autoPassPlan(s, 0, PASS, arm({ prefOn: false })).pass, null,
+    'the toggle is off');
+});
+
+test('[59] a pending decision is never passed through, by any of the three', () => {
+  const s = stacked([{ kind: 'triggered', sourceId: 7 }]);
+  s.decision = { id: 1, seat: 0, kind: 'targets', prompt: 'pick', options: [] };
+  const both = arm({ prefOn: true, armed: true, armedStack: 1, yieldIds: new Set([7]) });
+  assert.equal(autoPassPlan(s, 0, PASS, both).pass, null);
+});
+
+test('[59] Pass-all still disarms on every one of its own conditions', () => {
+  // the pass-all branch moved wholesale into autoPassPlan; these are the four
+  // reasons the chip comes off, and they must all have survived the move
+  const battle = (over: Partial<GameState> = {}): GameState => {
+    const h = new Harness(6001);
+    toDeployment(h);
+    const A = h.state.initiative;
+    toNextBattle(h, A);
+    return Object.assign(h.state, { priority: 0 as Seat, decision: null }, over);
+  };
+  const armed = (o: Partial<AutoPassArm> = {}): AutoPassArm =>
+    arm({ armed: true, armedStack: 0, ...o });
+
+  const s = battle();
+  assert.equal(s.phase, 'battle', 'the fixture really is a battle');
+  assert.equal(autoPassPlan(s, 0, PASS, armed()).pass, 'passall', 'a quiet window is passed');
+
+  assert.equal(autoPassPlan({ ...s, phase: 'deploy' } as GameState, 0, PASS, armed()).disarm, true,
+    'the battle ended');
+  assert.equal(autoPassPlan({ ...s, stack: [...s.stack, {
+    id: 1, kind: 'spell', label: 'x', controller: 1, region: 0, negated: false, parts: [],
+  }] } as GameState, 0, PASS, armed()).disarm, true, 'somebody played something');
+  const grant: Action[] = [...PASS, { type: 'activateAbility', seat: 0, entityId: 3, abilityIndex: 0 }];
+  assert.equal(autoPassPlan(s, 0, grant, armed()).disarm, true,
+    '#1: a resolution granted an ability that was not legal when the chip was armed');
+  assert.equal(autoPassPlan(s, 0, grant, armed({ armedSig: activationKeys(grant) })).pass, 'passall',
+    '…but an ability that was already there is not news');
+  const token: Action[] = [...PASS, { type: 'castSpellToken', seat: 0, entityId: 5 }];
+  assert.equal(autoPassPlan(s, 0, token, armed()).disarm, true,
+    'C5: never skip through a castable spell token');
+});
+
+test('[59] activationKeys and castableTokens read a legal list, nothing else', () => {
+  const legal: Action[] = [
+    { type: 'passPriority', seat: 0 },
+    { type: 'activateAbility', seat: 0, entityId: 3, abilityIndex: 1 },
+    { type: 'activateAbility', seat: 0, entityId: 3, abilityIndex: 1, via: 'augment' },
+    { type: 'castSpellToken', seat: 0, entityId: 5 },
+    { type: 'castSpellToken', seat: 0, entityId: 5 },   // two ways to cast ONE token
+    { type: 'castSpellToken', seat: 0, entityId: 6 },
+  ];
+  assert.deepEqual(activationKeys(legal), ['3:1:own', '3:1:aug'],
+    'the same ability donated a different way is a different key');
+  assert.equal(castableTokens(legal), 2, 'distinct tokens, not distinct actions');
+});
+
+/* ── [08b] prophesying never fires on the click that reveals it ────────── */
+
+test('[08b] a hand card whose only option is prophesy opens a menu, it does not just fire', () => {
+  // Air Plant: lg/[7] {Flying}, banner "[2] Prophecy". During deployment with
+  // two mana and no host to augment, prophesying is the ONLY legal thing the
+  // card can do — which is exactly when offer() used to fire it on the spot,
+  // spending the mana and moving the card to the cache before Bena had seen a
+  // single word about what he was agreeing to.
+  const h = new Harness(6002);
+  toDeployment(h);
+  const seat = h.state.deployPlayer ?? 0;
+  const i = give(h, seat, 'Air Plant');
+  giveResources(h, seat, 'fire', 2);            // plain mana, and NOT wood — R42
+  const legal = legalActions(h.state, seat);
+
+  const proph = legal.filter(a => a.type === 'prophesy' && a.from === 'hand' && a.index === i);
+  const plays = legal.filter(a => a.type === 'playCard' && a.handIndex === i);
+  const mods = legal.filter(a => (a.type === 'augment' || a.type === 'graft')
+    && a.from === 'hand' && a.index === i);
+  assert.equal(proph.length, 1, 'the banner is payable with plain mana (R42 — this half is correct)');
+  assert.equal(plays.length + mods.length, 0, 'and it is the only thing this card can do');
+
+  // the list handleHandClick builds for that click, and what offer() does with it
+  const items = proph.map(a => ({ label: 'Prophesy Air Plant…', confirm: actionNeedsMenu(a) }));
+  assert.deepEqual(planOffer(items), { kind: 'menu' },
+    'one irreversible option is still a menu — the second click is the confirmation');
+});
+
+test('[08b] offer still fires a lone harmless option, and still menus a choice', () => {
+  assert.deepEqual(planOffer([{ }]), { kind: 'go', index: 0 },
+    'one ordinary thing to do just happens — the interaction everyone is used to');
+  assert.deepEqual(planOffer([{ }, { }]), { kind: 'menu' });
+  assert.deepEqual(planOffer([]), { kind: 'none' }, 'a dead click is a dead click');
+  assert.deepEqual(planOffer([{ confirm: true }, { }]), { kind: 'menu' });
+});
+
+test('[08b] prophesy is the action that needs the menu; playing a card is not', () => {
+  assert.equal(actionNeedsMenu({ type: 'prophesy', seat: 0, from: 'hand', index: 0 }), true);
+  assert.equal(actionNeedsMenu({ type: 'prophesy', seat: 0, from: 'bin', index: 0 }), true,
+    'R42: the bin is a prophesy source too (Angel of Anguish)');
+  assert.equal(actionNeedsMenu({ type: 'playCard', seat: 0, handIndex: 0 }), false,
+    'a cast stops to ask for targets and can be cancelled — it is allowed to just go');
+  assert.equal(actionNeedsMenu({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'fire' }), false);
+});
+
+/* ── [26] the arrows run centre to centre ──────────────────────────────── */
+
+const box = (left: number, top: number, width = 60, height = 84):
+  { left: number; top: number; width: number; height: number } => ({ left, top, width, height });
+
+test('[26] an arrow starts at one card’s centre and is aimed at the other’s', () => {
+  // ZQPC: "can you make the arrows originate from and point to the middle of
+  // the cards? Rather than from the side." The helper this replaced (`edge()`)
+  // deliberately stopped at the borders, and a head resting on a border in a
+  // tight column belongs to either of two cards.
+  const a = box(100, 100), b = box(500, 300);
+  const g = arrowGeometry(a, b)!;
+  assert.ok(g, 'two boxes that far apart get an arrow');
+  assert.deepEqual([g.x1, g.y1], [130, 142], 'the tail is the source box’s exact centre');
+  assert.deepEqual([g.x2, g.y2], [530, 342], 'and the target is the destination box’s exact centre');
+});
+
+test('[26] only the arrowHEAD is inset, and only by HEAD_INSET', () => {
+  const g = arrowGeometry(box(0, 0), box(400, 0))!;
+  // the tip stops HEAD_INSET short of the destination centre, along the
+  // curve's final tangent — so the triangle sits ON the art, not past it
+  assert.equal(Math.round(Math.hypot(g.x2 - g.tx, g.y2 - g.ty)), HEAD_INSET);
+  assert.ok(HEAD_INSET < 30, 'an inset that could reach a card border is the old bug again');
+  assert.equal(Math.round(Math.hypot(g.ux, g.uy) * 1000) / 1000, 1, 'the tangent is normalised');
+});
+
+test('[26] two cards on top of each other get no arrow at all', () => {
+  assert.equal(arrowGeometry(box(10, 10), box(12, 12)), null,
+    'there is no direction to point in — better nothing than a smudge');
+});
+
+/* ── [30]/[31] what the board offers on a right-click ──────────────────── */
+
+const boardState = (): GameState => { const h = new Harness(6003); toDeployment(h); return h.state; };
+
+test('[31] the board menu offers BOTH erased piles, counted', () => {
+  const s = boardState();
+  s.players[0]!.erased = ['Fight'] as never;
+  const entries = boardMenuEntries(s, 0);
+  const erased = entries.filter(e => e.kind === 'erased');
+  assert.equal(erased.length, 2, 'either pile is public — you may look at both');
+  assert.match(erased[0]!.label, /My erased cards \(1\)/, 'mine is named "My", and carries the count');
+  assert.match(erased[1]!.label, new RegExp(`${s.players[1]!.name}'s erased cards \\(0\\)`));
+  assert.equal(erased.every(e => !e.confirm), true, 'looking at a pile asks nothing');
+});
+
+test('[30] the board menu offers concede — and only ever OPENS the question', () => {
+  const s = boardState();
+  const con = boardMenuEntries(s, 0).filter(e => e.kind === 'concede');
+  assert.equal(con.length, 1, 'net: my own seat, and nobody else’s');
+  assert.equal(con[0]!.seat, 0);
+  assert.match(con[0]!.label, /Concede/);
+  assert.equal(con[0]!.confirm, true,
+    'irreversible: the entry raises the confirmation, it never concedes');
+});
+
+test('[30] hotseat offers both seats; a finished game offers neither', () => {
+  const s = boardState();
+  const both = boardMenuEntries(s, null).filter(e => e.kind === 'concede');
+  assert.deepEqual(both.map(e => e.seat), [0, 1], 'one person is driving both sides');
+  assert.match(both[0]!.label, new RegExp(`Concede as ${s.players[0]!.name}`));
+
+  const over = { ...s, phase: 'gameover' } as GameState;
+  assert.equal(boardMenuEntries(over, 0).some(e => e.kind === 'concede'), false,
+    'nothing left to concede');
+  assert.equal(boardMenuEntries(over, 0).filter(e => e.kind === 'erased').length, 2,
+    '…but the piles are still worth reading afterwards');
+});
+
+/* ── [35] the .activatable halo ────────────────────────────────────────── */
+
+test('[35] a unit with a legal activated ability is drawn with the .activatable class', () => {
+  // UZRG: "units with activated abilities don't get a green highlight around
+  // them indicating you can activate their abilities". activatableUnits() has
+  // always been guarded; the class it feeds had nothing holding it down, so
+  // deleting either end left the halo gone and every test still green.
+  const h = new Harness(6004);
+  toDeployment(h);
+  const seat: Seat = 0;
+  const id = spawn(h, seat, 'Omniwield Evoker');   // "[three]: put a +1/+1 counter on me"
+  giveResources(h, seat, 'metal', 3);
+  const act = activatableUnits(legalActions(h.state, seat));
+  assert.ok(act.has(id), 'the engine says this unit can act');
+
+  assert.ok(cardClasses({ activatable: act.has(id) }).includes('activatable'),
+    'so the scan wears the class the halo is hung on');
+  assert.equal(cardClasses({ activatable: false }).includes('activatable'), false);
+  // …and it is its own fact, orthogonal to "can be dragged into a formation"
+  assert.deepEqual(cardClasses({ playable: true, activatable: true }),
+    ['card', 'playable', 'activatable']);
+});
+
+/* ── [61] the strips beside a region expand sideways ───────────────────── */
+
+const CSS = readFileSync(new URL('../ui/style.css', import.meta.url), 'utf8');
+
+/** the declarations of one rule, by exact selector */
+function rule(sel: string): string {
+  const esc = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const m = CSS.match(new RegExp(`^\\s*${esc}\\s*\\{([^}]*)\\}`, 'm'));
+  assert.ok(m, `ui/style.css has no rule for \`${sel}\``);
+  return m![1]!;
+}
+/** one declaration's value, or null when the rule does not set it */
+function decl(sel: string, prop: string): string | null {
+  const m = rule(sel).match(new RegExp(`(?:^|;)\\s*${prop}\\s*:([^;]*)`));
+  return m ? m[1]!.trim() : null;
+}
+/** the LARGEST px length in a value (a clamp()'s ceiling, a lone number) */
+function maxPx(v: string | null): number {
+  const all = [...(v ?? '').matchAll(/(-?[\d.]+)px/g)].map(m => Number(m[1]));
+  return all.length ? Math.max(...all) : NaN;
+}
+/** the horizontal padding of a 1-to-4 value shorthand */
+function padX(v: string | null): number {
+  const parts = (v ?? '').split(/\s+/).filter(Boolean).map(p => Number(p.replace('px', '')));
+  return parts.length === 1 ? parts[0]! : parts[1]!;
+}
+/**
+ * How many cards can stand side by side in a strip at its widest.
+ *
+ * This is the whole of report [61], and it was always arithmetic: `.zone`
+ * already sets `flex-wrap: wrap`, so a strip groups horizontally the moment —
+ * and only the moment — its content box is wide enough for two cards and the
+ * gap between them. `.tokenstrip` was 118px with 6px of padding either side:
+ * a 106px content box against 52 + 4 + 52 = 108. Two pixels short, and so a
+ * vertical column by construction, growing the whole region panel taller.
+ */
+function fitsPerRow(strip: string, zone: string): number {
+  const wide = maxPx(decl(strip, 'max-width') ?? decl(strip, 'width'));
+  const content = wide - 2 * padX(decl(strip, 'padding'));
+  const card = maxPx(decl(`${strip} .card`, 'width'));
+  const gap = maxPx(decl(`${strip} ${zone}`, 'gap'));
+  return Math.floor((content + gap) / (card + gap));
+}
+
+for (const [strip, zone] of [['.tokenstrip', '.tokenzone'], ['.invaders', '.invaderzone']]) {
+  test(`[61] ${strip} can group its cards horizontally instead of stacking them`, () => {
+    assert.ok(fitsPerRow(strip!, zone!) >= 3,
+      `${strip} is too narrow to ever put three cards on one row — flex-wrap has nothing to do`);
+    assert.equal(decl(strip!, 'width'), 'auto',
+      `${strip} must not pin a hard width — that is what stopped it expanding`);
+    assert.ok(decl(strip!, 'max-width'), `${strip} needs a ceiling, or it takes the formation's space`);
+    assert.ok(decl(strip!, 'min-width'), `${strip} needs a floor, or one token collapses it`);
+  });
+}
+
+test('[61] the floor still fits two cards abreast', () => {
+  // the shrink case: under pressure the strip falls back to min-width, and the
+  // 118px it used to sit at was two pixels short of a pair
+  const floor = maxPx(decl('.tokenstrip', 'min-width')) - 2 * padX(decl('.tokenstrip', 'padding'));
+  const card = maxPx(decl('.tokenstrip .card', 'width'));
+  const gap = maxPx(decl('.tokenstrip .tokenzone', 'gap'));
+  assert.ok(floor >= card * 2 + gap, `${floor}px of content will not hold two ${card}px cards`);
+});
+
+test('[61] .zone still wraps — the strips are relying on it', () => {
+  assert.match(rule('.zone'), /flex-wrap:\s*wrap/);
+});
+
+test('[35] the halo itself is still in the stylesheet', () => {
+  // the other end of the wire: `.activatable` is emitted for nothing else, so
+  // deleting this rule removes the feature and breaks not one other test
+  assert.match(rule('.card.activatable'), /box-shadow:/);
+});
+
+/* ── the wiring in ui/main.ts ───────────────────────────────────────────
+ *
+ * main.ts takes the document, the socket and the URL at import time, so it
+ * cannot be loaded here and its DOM plumbing cannot be exercised. Everything
+ * above is the real logic, extracted; what follows checks the four short
+ * connections between that logic and the page — the lines whose deletion
+ * would otherwise break the feature and no test at all. They are deliberately
+ * few, and each names one exact edge. */
+
+const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
+/** the body of a top-level `function name(...)` in main.ts */
+function fn(name: string): string {
+  const at = MAIN.indexOf(`function ${name}(`);
+  assert.notEqual(at, -1, `ui/main.ts has no function ${name}`);
+  const end = MAIN.indexOf('\n}\n', at);
+  return MAIN.slice(at, end === -1 ? MAIN.length : end);
+}
+
+test('[59] renderNow decides about auto-passing BEFORE it writes the markup', () => {
+  // the "one frame of priority" was never a frame: the send is a ws.send, so
+  // the bar claiming priority stayed up for a whole server round trip. The
+  // decision has to be made before $app.innerHTML, and the send after it.
+  const body = fn('renderNow');
+  const decide = body.indexOf('planAutoPass()');
+  const paint = body.indexOf('$app.innerHTML');
+  const send = body.indexOf('runAutoPass(');
+  assert.ok(decide > -1 && paint > -1 && send > -1, 'all three steps are present');
+  assert.ok(decide < paint, 'the plan is made before the board is painted');
+  assert.ok(paint < send, 'and the intent goes out after it, never before');
+});
+
+test('[59] the prompt bar checks the plan before it offers a Pass button', () => {
+  const body = fn('promptHtml');
+  const guard = body.indexOf('autoPassing.pass');
+  const claim = body.indexOf('data-btn="pass"');
+  assert.ok(guard > -1, 'promptHtml never asks whether this window is already spent');
+  assert.ok(guard < claim, 'it would offer a Pass button for a window already given away');
+  const sent = body.indexOf('ui.sentFor ===');
+  assert.ok(sent > -1 && sent < claim,
+    'and the same for a pass sent by hand — the trailing render() repaints this bar');
+});
+
+test('[59] a fresh authoritative state clears the error from the previous one', () => {
+  // uiError was cleared in act() and nowhere on the way IN, and the auto-pass
+  // paths never go through act() — so a refusal one of them earned stayed on
+  // screen for the rest of the game
+  const at = MAIN.indexOf("m.t === 'update'");
+  assert.notEqual(at, -1);
+  const block = MAIN.slice(at, MAIN.indexOf("m.t === 'kicked'"));
+  assert.match(block, /uiError = '';/, "the 'update' handler must clear uiError");
+});
+
+test('[59] every intent latches the state it spends, and a refusal releases it', () => {
+  // bounded to do()'s own body — undo() latches a few lines below it
+  const doBody = MAIN.slice(MAIN.indexOf('do(a: Action): void {'), MAIN.indexOf("t: 'action'"));
+  assert.match(doBody, /this\.latch\(\);/, 'NetBackend.do() takes the latch');
+  assert.match(MAIN, /undo\(\): void \{ this\.latch\(\);/, '…and so does undo()');
+  assert.match(MAIN, /ui\.sentFor = -1; ui\.autoAt = -1;/,
+    'a refused action leaves actionCount alone — the latch must be let go by hand');
+  assert.match(fn('act'), /if \(ui\.sentFor === h\.state\.actionCount\) return;/,
+    'act() must not spend a state that is already on the wire');
+  assert.match(fn('sendAutoPass'), /if \(ui\.sentFor === at\) return;/,
+    'the pass is scheduled, so it must re-check the latch at fire time too — a click '
+    + 'during the wait spends the state without moving actionCount');
+});
+
+test('[08b] the click path routes prophesy through planOffer with the flag set', () => {
+  assert.match(fn('offer'), /planOffer\(items\)/, 'offer() must ask, not count');
+  const proph = [...MAIN.matchAll(/prophesyLabel\(name\)/g)];
+  assert.equal(proph.length, 2, 'the hand and the bin both offer prophesy');
+  for (const m of proph) {
+    assert.match(MAIN.slice(m.index!, m.index! + 200), /confirm: actionNeedsMenu\(/,
+      'both entries must carry the flag that stops a lone one firing');
+  }
+});
+
+test('[30]/[31] the board menu hangs the two behaviours on boardMenuEntries', () => {
+  const body = fn('boardMenuItems');
+  assert.match(body, /boardMenuEntries\(h\.state, NET \? NET\.seat : null\)/);
+  assert.match(body, /erasedView = entry\.seat/, '[31] the erased entry opens the pile dialog');
+  assert.match(body, /concedeAsk = entry\.seat/, '[30] the concede entry opens the CONFIRMATION');
+  assert.equal(/act\(\s*\{\s*type: 'concede'/.test(body), false,
+    'the menu item must never concede on its own');
+  assert.match(MAIN, /if \(b === 'concedeyes'\)/, 'only the confirmed button concedes');
+});
+
+test('[35] unitHtml passes its activatable fact into the class list', () => {
+  assert.match(fn('unitHtml'), /activatable: canAct/, 'the scan is told');
+  assert.match(fn('cardHtml'), /cardClasses\(opts\)/, 'and the class list is the tested one');
+});

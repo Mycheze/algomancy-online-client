@@ -12,6 +12,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { freePort } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-postgame-test-'));
@@ -52,7 +53,7 @@ console.log('\n[trio: run it back]');
 
 // ── 2. the live server ────────────────────────────────────────────────
 
-const PORT = 9600 + Math.floor(Math.random() * 300);
+const PORT = await freePort();
 
 /** A finished game, saved the way rooms.ts saves one: a real (short) log plus
  * the winner stamped at the time. */

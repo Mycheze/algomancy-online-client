@@ -6,6 +6,7 @@
   "description": "M2 slice: server-authoritative 1v1 Algomancy over WebSockets.",
   "scripts": {
     "start": "node main.ts",
+    "test": "node --test suite.test.ts",
     "test-drive": "node test-drive.ts"
   },
   "dependencies": {

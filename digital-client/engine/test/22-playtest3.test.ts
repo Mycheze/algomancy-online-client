@@ -88,12 +88,15 @@ test("Tidelurker's 2/2 is created at HOME even when it triggers while attacking"
 
 // ── Tiderunner Initiate ───────────────────────────────────────────────
 
-/** drive: attacker declares, then plays Tiderunner in the attack window */
+/** drive: attacker declares, then plays Tiderunner in the attack window.
+ *
+ * R29 (retimed 2026-08-22, playtest UFAB): the four passes are gone. The spot
+ * is part of PLAYING the card, so `playCard` raises the question itself —
+ * there is no window in which the unit stands outside the formation waiting
+ * for a trigger to resolve, which is exactly the window the report was about. */
 function castTiderunner(h: Harness, seat: Seat): void {
   giveResources(h, seat, 'water', 1);
   h.do({ type: 'playCard', seat, handIndex: give(h, seat, 'Tiderunner Initiate') });
-  pass(h); pass(h);                                      // resolve the unit spawn
-  pass(h); pass(h);                                      // resolve the join trigger → choice
 }
 
 test('Tiderunner (attacker): offered behind-survivor, a NEW column, or stay out', () => {
@@ -112,6 +115,7 @@ test('Tiderunner (attacker): offered behind-survivor, a NEW column, or stay out'
   assert.ok(dec.options.some(o => o.label === 'a new column on the right'), 'the right end');
   assert.ok(dec.options.some(o => o.label === 'stay out of formation'), 'joining is optional');
   pick(h, dec.options.find(o => o.label === 'a new column on the right')!.value);
+  pass(h); pass(h);                                      // the cast resolves
   const b = h.state.battle!;
   assert.equal(b.columns.length, 2, 'the formation widened');
   const tr = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate')!;

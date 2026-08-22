@@ -18,6 +18,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { freePort } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-accounts-test-'));
@@ -335,7 +336,7 @@ console.log('\n[seeding: import saved games, claim by name]');
 // ── 7. the live server: a seat bound to an account ────────────────────
 
 console.log('\n[server: joining while logged in]');
-const PORT = 8900 + Math.floor(Math.random() * 300);
+const PORT = await freePort();
 const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
   env: { ...process.env, PORT: String(PORT), ALGO_ACCOUNTS_FILE: STORE, ALGO_GAMES_DIR: GAMES },
   stdio: ['ignore', 'pipe', 'inherit'],

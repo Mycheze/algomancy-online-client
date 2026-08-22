@@ -491,16 +491,17 @@ card('Riftspawn Remnant', {
 // X is chosen and PAID AT CAST (R35). No xMin: the card does not print "X
 // can't be zero" (the batch convention is to set xMin only when it does), so
 // a pointless X = 0 cast is legal and simply does nothing. The bracketed
-// "[gains or loses]" is the caster's choice, made at resolution. Target spec
-// 'any' is the engine's only player-reaching scope — a unit target is a no-op,
-// exactly like Bripp's "target player's hand".
+// "[gains or loses]" is the caster's choice, made at resolution. R64: "target
+// player" is the 'player' kind — either seat, yourself included, and no unit.
+// It said 'any', the damage kind, which put every unit in the region on a menu
+// where none of them could do anything.
 card('Siphon Life', {
   spellEffect: {
-    targets: { what: 'any', prompt: 'Siphon Life: target player gains or loses X life' },
+    targets: { what: 'player', prompt: 'Siphon Life: target player gains or loses X life' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('player' in (t as object))) return;
-      const who = (t as { player: Seat }).player;
+      if (!t || !('player' in t)) return;
+      const who = t.player;
       const x = ctx.x ?? 0;
       if (x <= 0) return;
       const mode = ctx.choose('mode', {

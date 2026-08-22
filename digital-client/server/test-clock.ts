@@ -18,10 +18,10 @@ import { fileURLToPath } from 'node:url';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
 import { CLOCK_START_MS } from './rooms.ts';
-import { mintRoom } from './test-util.ts';
+import { freePort, gameFile, mintRoom } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = 8500 + Math.floor(Math.random() * 400);
+const PORT = await freePort();
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';
@@ -197,7 +197,7 @@ try {
   ok(START - ms[0] <= 1000, `seat 0 lost only its pre-done sliver (${START - ms[0]}ms)`);
 
   console.log('\n[clock: persists across a server restart]');
-  const persisted = JSON.parse(readFileSync(join(HERE, 'games', `${ROOM}.json`), 'utf8'));
+  const persisted = JSON.parse(readFileSync(gameFile(ROOM), 'utf8'));
   ok(Array.isArray(persisted.clockMs) && persisted.clockMs[1] <= START - 1200,
     `room file records clockMs (${JSON.stringify(persisted.clockMs)})`);
   server.kill();
@@ -304,8 +304,8 @@ try {
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {
   server.kill();
-  rmSync(join(HERE, 'games', `${ROOM}.json`), { force: true });
-  rmSync(join(HERE, 'games', `${DROOM}.json`), { force: true });
+  rmSync(gameFile(ROOM), { force: true });
+  rmSync(gameFile(DROOM), { force: true });
   if (issuesBackup === null) rmSync(ISSUES, { force: true });
   else writeFileSync(ISSUES, issuesBackup);
 }

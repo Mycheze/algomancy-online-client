@@ -107,21 +107,20 @@ card('All-Consuming Blight', {
 });
 
 // "Target player reveals their hand. You choose a card from it and put it
-// into your hand." — ggg/4 {Battle} Fungus Spell. Target is a player (spec
-// 'any'; a unit target is a no-op — the text only targets players). Bripp
-// precedent: the reveal is an info event + seenHand snapshot; the pick is a
-// mid-resolution choice (mandatory — the text has no "may"), auto when only
-// one card. Targeting yourself just shows you your own hand (nothing moves).
+// into your hand." — ggg/4 {Battle} Fungus Spell. The reveal is an info event
+// + seenHand snapshot; the pick is a mid-resolution choice (mandatory — the
+// text has no "may"), auto when only one card. "Target player" carries no
+// ownership clause, so targeting yourself is legal and just shows you your own
+// hand (nothing moves).
 card('Bioremediation', {
   spellEffect: {
-    targets: { what: 'any', prompt: 'Bioremediation: target player reveals their hand — you take a card from it' },
+    // R64: 'player' is the player-only kind. 'any' — the damage kind — offered
+    // the region's units too, and a unit has no hand to reveal.
+    targets: { what: 'player', prompt: 'Bioremediation: target player reveals their hand — you take a card from it' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('player' in (t as object))) {
-        g.ev('info', 'Bioremediation: the target is not a player — no hand is revealed.');
-        return;
-      }
-      const who = (t as { player: Seat }).player;
+      if (!t || !('player' in t)) return;
+      const who = t.player;
       const hand = g.player(who).hand;
       g.ev('info', `Bioremediation reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
       if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);

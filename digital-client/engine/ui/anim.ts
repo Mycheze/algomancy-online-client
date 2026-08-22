@@ -293,6 +293,28 @@ function pop(key: string, delay: number): void {
   );
 }
 
+/**
+ * R80: pulse things the motion diff cannot see.
+ *
+ * `playMotion` pulses whatever CHANGED between two renders — which is exactly
+ * once per batch, and a whole combat is one batch. The narrative beats
+ * (ui/flash.ts) re-tell that batch a stage at a time, and each stage needs to
+ * point at what it is about after the board has already finished moving. Same
+ * keys as the census, same two keyframes, so a beat's pulse and the motion
+ * layer's are indistinguishable — as they should be, they mean the same thing.
+ *
+ * Gated on `clarityOn()` rather than `motionOn()` for the reason docs/11
+ * gives: an explicit "motion: off" deletes it, prefers-reduced-motion does not
+ * silently delete the only chance to see what happened.
+ */
+export function pulseKeys(keys: readonly string[], kind: 'hurt' | 'buff' = 'hurt'): void {
+  if (!clarityOn()) return;
+  for (const key of keys) {
+    const el = elFor(key);
+    if (el) flash(el, kind === 'hurt' ? 'animhurt' : 'animbuff');
+  }
+}
+
 /** a CSS class worn just long enough to run its keyframes */
 function flash(el: HTMLElement, cls: string): void {
   el.classList.remove(cls);
@@ -384,7 +406,55 @@ const firstEl = (sels: string[]): HTMLElement | null => {
  * middle, and no further. The arrow layer paints above the board with a drop
  * shadow, so a head over art stays readable.
  */
-const HEAD_INSET = 7;
+export const HEAD_INSET = 7;
+
+/** the boxes arrow geometry needs — the DOMRect fields, and no more, so the
+ * arithmetic can be checked without a browser */
+export interface ArrowBox { left: number; top: number; width: number; height: number }
+/** everything one arrow between two boxes is drawn from */
+export interface ArrowGeometry {
+  /** the tail: the SOURCE box's centre, where the dot sits */
+  x1: number; y1: number;
+  /** the DESTINATION box's centre — what the head is aimed at */
+  x2: number; y2: number;
+  /** the quadratic control point (the bow) */
+  cx: number; cy: number;
+  /** the head's tip: HEAD_INSET short of (x2,y2) along the final tangent */
+  tx: number; ty: number;
+  /** that tangent, normalised (the head triangle is built off it) */
+  ux: number; uy: number;
+  dist: number;
+}
+
+/**
+ * The arrow from box `a` to box `b`, or null when they are too close together
+ * to point meaningfully.
+ *
+ * [26] Both ENDS are centres (see HEAD_INSET above). This is pulled out of
+ * paintArrows purely so that sentence is a test rather than an eyeball: the
+ * old `edge()` helper it replaced is easy to reintroduce by accident the next
+ * time an arrowhead looks like it is burying itself in the art.
+ */
+export function arrowGeometry(a: ArrowBox, b: ArrowBox): ArrowGeometry | null {
+  // centre to centre (ZQPC) — the dot marks the source card's middle, the
+  // head lands on the destination card's middle
+  const [x1, y1] = centre(a as DOMRect);
+  const [x2, y2] = centre(b as DOMRect);
+  const dx = x2 - x1, dy = y2 - y1;
+  const dist = Math.hypot(dx, dy);
+  if (dist < 8) return null;
+  // bow every arrow the same way so two arrows between the same pair of
+  // panels stay distinguishable instead of overlapping
+  const bow = Math.min(90, dist * 0.18);
+  const cx = (x1 + x2) / 2 - (dy / dist) * bow;
+  const cy = (y1 + y2) / 2 + (dx / dist) * bow;
+  // the head's tip, HEAD_INSET short of the destination centre along the
+  // curve's final tangent (p2 - control) — the line stops there too, so no
+  // stub of stroke pokes out ahead of the head
+  const hx = x2 - cx, hy = y2 - cy, hl = Math.hypot(hx, hy) || 1;
+  const ux = hx / hl, uy = hy / hl;
+  return { x1, y1, x2, y2, cx, cy, tx: x2 - ux * HEAD_INSET, ty: y2 - uy * HEAD_INSET, ux, uy, dist };
+}
 
 function paintArrows(): void {
   const svg = layer();
@@ -405,30 +475,16 @@ function draw(svg: SVGSVGElement, specs: ArrowSpec[]): number {
   for (const spec of specs) {
     const a = firstEl(spec.from), b = firstEl(spec.to);
     if (!a || !b || a === b) continue;
-    const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
-    // centre to centre (ZQPC) — the dot marks the source card's middle, the
-    // head lands on the destination card's middle
-    const [x1, y1] = centre(ra);
-    const [x2, y2] = centre(rb);
-    const dx = x2 - x1, dy = y2 - y1;
-    const dist = Math.hypot(dx, dy);
-    if (dist < 8) continue;
-    // bow every arrow the same way so two arrows between the same pair of
-    // panels stay distinguishable instead of overlapping
+    const geo = arrowGeometry(a.getBoundingClientRect(), b.getBoundingClientRect());
+    if (!geo) continue;
+    const { x1, y1, x2, y2, cx, cy, tx, ty, ux, uy, dist } = geo;
+    const dy = y2 - y1, dx = x2 - x1;
     const bow = Math.min(90, dist * 0.18);
-    const cx = (x1 + x2) / 2 - (dy / dist) * bow;
-    const cy = (y1 + y2) / 2 + (dx / dist) * bow;
+    const size = 10;
     const cls = spec.cls ?? 'tgt';
 
     const g = document.createElementNS(SVGNS, 'g');
     g.setAttribute('class', `arrow ${cls}`);
-
-    // the head's tip, HEAD_INSET short of the destination centre along the
-    // curve's final tangent (p2 - control) — the line stops there too, so no
-    // stub of stroke pokes out ahead of the head
-    const hx = x2 - cx, hy = y2 - cy, hl = Math.hypot(hx, hy) || 1;
-    const ux = hx / hl, uy = hy / hl, size = 10;
-    const tx = x2 - ux * HEAD_INSET, ty = y2 - uy * HEAD_INSET;
 
     const path = document.createElementNS(SVGNS, 'path');
     path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${tx} ${ty}`);

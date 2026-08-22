@@ -141,7 +141,7 @@ the sharer leaves the column — the game's combo engine)
 | Feeble | can't block | restriction |
 | Evasive | needs two blockers | restriction |
 | Sneaky | unblockable if attacking alone | restriction |
-| Alluring | target enemy can't attack, must block this column | forced-block |
+| Alluring | target enemy can't attack, must block this column | targeted on-attack trigger + forced-block (R84) |
 | Piercing | excess damage → defending player (trample) | damage assignment |
 | Electric | excess damage → adjacent unit, **recursively, non-overlapping path** | damage assignment + pathfinding |
 | Poisonous | damage dealt as −1/−1 counters | damage replacement |

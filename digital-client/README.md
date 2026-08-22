@@ -52,6 +52,13 @@ and `node replay-room.ts games/CODE.json` replays one through the current engine
 how a playtest report gets checked against what actually happened. In-game `🐛 bug` reports
 append to `server/issues.jsonl`, stamped with the room and action index.
 
+The server has its own gate: `npm --prefix server test` — 13 files, 465 assertions, ~30s,
+run against throwaway game/account directories so it is safe on the deploy box. It carries
+the guards the engine cannot hold, because they are about redaction, persistence and the
+socket rather than the rules. There is no repo-level test command yet (no root
+`package.json`, no CI); until there is, the full gate is `npm --prefix engine run check`
+**and** `npm --prefix server test`.
+
 Also since **2026-08-21**, a live draft opens a **lobby** instead of a game: the two of you
 choose the three elements together — one each with the third drawn, a trio you have never
 played, or a weighted draw from your combined rankings of all seven — and no cards are dealt

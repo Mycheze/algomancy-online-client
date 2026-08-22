@@ -1,0 +1,9 @@
+{
+  "name": "algomancy-digital-client",
+  "private": true,
+  "description": "Umbrella scripts for the two suites. There is no CI here — deploy is a git pull and a restart — so this file is the only thing that makes 'run everything' a single command.",
+  "scripts": {
+    "test": "npm --prefix engine test && npm --prefix server test",
+    "check": "npm --prefix engine run check && npm --prefix server test"
+  }
+}

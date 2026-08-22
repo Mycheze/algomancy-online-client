@@ -17,6 +17,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Element } from '../engine/src/types.ts';
+import { freePort } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-lobby-test-'));
@@ -170,7 +171,7 @@ console.log('\n[submissions]');
 // ── 6. the live server ────────────────────────────────────────────────
 
 console.log('\n[server: no cards until both are in]');
-const PORT = 9200 + Math.floor(Math.random() * 300);
+const PORT = await freePort();
 const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
   env: { ...process.env, PORT: String(PORT) },
   stdio: ['ignore', 'pipe', 'inherit'],

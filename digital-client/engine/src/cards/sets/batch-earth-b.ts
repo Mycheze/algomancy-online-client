@@ -11,9 +11,22 @@
  *
  * PARKED (needs engine machinery that does not exist yet):
  *  - Oorblak: "If combat damage would be dealt to you, that damage is dealt
- *    to me instead" needs damage replacement hooks (combatSubStep calls
- *    loseLife directly, with no replacement seam). Registered with a no-op
- *    [Augment] text so it can still be applied as a (blank) virus augment.
+ *    to me instead". ⚠ THIS NOTE WAS STALE (corrected 2026-08-22, card-ledger
+ *    audit). It used to read "needs damage replacement hooks (combatSubStep
+ *    calls loseLife directly, with no replacement seam)", and that stopped
+ *    being true: R38 added `CardBehavior.replaceCombatDamageToPlayer`, and
+ *    E.pumpCombatDamage asks E.replaceCombatDamage for every player hit BEFORE
+ *    loseLife. Blightsea Polyp (batch-hybrids-ld-c) has used the seam since,
+ *    and its anchoring is exactly what this card wants — units in play AND
+ *    augment mods, whose hook reads from their HOST, so "you" is the holder's
+ *    controller and "me" is the holder.
+ *      What is actually left is much smaller than "damage replacement hooks":
+ *    a way to deal the redirected damage TO A UNIT from inside the hook. The
+ *    hook is handed (g, self, seat, amount, info) and no EffectCtx, while
+ *    dealEffectDamage takes one. Blightsea Polyp never noticed because
+ *    g.gainRot needs no ctx.
+ *      Still registered with a no-op [Augment] text so it can be applied as a
+ *    (blank) virus augment. Declared in test/card-ledger.ts.
  *  - PARTIAL — Reality Bender: registered on printed data ({Inverted} attr +
  *    type-line [Augment] grant); the Inverted stat swap itself is the
  *    unimplemented effStats layer 5 (the seam exists in engine.ts).
@@ -206,7 +219,14 @@ card('Mohruung', {
 const mentorBuff: EffectDef = {
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
-    if (self) g.addTemp(self, 2, 2);
+    // test/65: the carrier dying between the augment and this resolving is a
+    // real outcome, and an effect that completes in silence is indistinguishable
+    // from a bug
+    if (!self) {
+      g.ev('info', `${ctx.sourceName}: the unit that would grow is gone — nothing happens.`);
+      return;
+    }
+    g.addTemp(self, 2, 2);
   },
 };
 card('Morphic Mentor', {
@@ -245,15 +265,27 @@ card('Nectar Ridge Oracle', {
 
 // "[Augment] If combat damage would be dealt to you, that damage is dealt to
 // me instead." — eee/4 2/4 {Unstable} Luminary Strider {Virus} Unit.
-// PARKED (see header): damage replacement hooks. Registered with a no-op
-// [Augment] text (events: [] never fires) so the card still spawns as a 2/4
-// and can be applied as a virus augment — the redirection itself does
-// nothing until the engine grows a replacement seam.
+// STILL PARKED, but ⚠ NOT on "there is no replacement seam" any more — that
+// reason expired and the note outlived it (corrected 2026-08-22; see the
+// header entry for the full account). R38's `replaceCombatDamageToPlayer` IS
+// the seam, it is consulted by E.pumpCombatDamage before loseLife, and it is
+// anchored on units in play and on augment mods reading from their host —
+// which is precisely this card's shape. Blightsea Polyp already uses it.
+//
+// The one piece left: the hook must DEAL the redirected damage to me, and it
+// is handed (g, self, seat, amount, info) with no EffectCtx, while
+// dealEffectDamage requires one. Blightsea Polyp sidesteps that by replacing
+// with rot (g.gainRot takes no ctx). So this is a small, well-defined job —
+// the highest-value unpark left in the pool — not a missing framework.
+//
+// Registered with a no-op [Augment] text (events: [] never fires) so the card
+// still spawns as a 2/4 and can be applied as a virus augment; the
+// redirection does nothing. Declared in test/card-ledger.ts.
 card('Oorblak', {
   augmentText: [{
-    type: 'triggered', events: [],   // PARKED: damage replacement hooks missing
+    type: 'triggered', events: [],   // PARKED: no ctx-free way to damage a unit from the hook
     label: 'combat damage to you is dealt to me instead (PARKED)',
-    effect: { run: () => { /* no replacement seam in the engine yet */ } },
+    effect: { run: () => { /* see above: the seam exists, the damage call does not */ } },
   }],
 });
 
@@ -288,7 +320,13 @@ card('Perpetual Construct', {
 const pebbleGrow: EffectDef = {
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
-    if (self) g.addCounters(self, 1);
+    // test/65: damage that kills the Pebble outright still fires this, and it
+    // must say why nothing happens rather than resolve into silence
+    if (!self) {
+      g.ev('info', `${ctx.sourceName}: the unit that would take the counter is gone — nothing happens.`);
+      return;
+    }
+    g.addCounters(self, 1);
   },
 };
 card('Plodding Pebble', {

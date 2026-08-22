@@ -18,10 +18,10 @@ import { fileURLToPath } from 'node:url';
 import { rmSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
 import { HIDDEN_CARD } from './view.ts';
-import { mintRoom } from './test-util.ts';
+import { freePort, gameFile, mintRoom } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = 8100 + Math.floor(Math.random() * 400);
+const PORT = await freePort();
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';
@@ -78,6 +78,11 @@ class Client {
     }
     if (!view.sharedDeck.every((n: string) => n === HIDDEN_CARD)) this.leaks.push('shared deck contents');
     if (view.seed !== 0 || view.rngState !== 0) this.leaks.push('seed/rngState');
+    // R85: a 'resolve' suspension carries the engine's rollback snapshot — a
+    // WHOLE unredacted GameState, both hands and the deck order included. It
+    // is server-internal and must never appear in a view, not even the view of
+    // the seat whose decision it is.
+    if (view.suspension?.snapshot) this.leaks.push('suspension rollback snapshot (R85)');
   }
   send(obj: unknown): void { this.ws.send(JSON.stringify(obj)); }
   waitFor(pred: (m: Msg) => boolean): Promise<Msg> {
@@ -194,7 +199,7 @@ async function main(): Promise<void> {
     b.close(); a2.close();
   } finally {
     srv.kill('SIGTERM');
-    try { rmSync(join(HERE, 'games', `${ROOM}.json`)); } catch { /* ignore */ }
+    try { rmSync(gameFile(ROOM)); } catch { /* ignore */ }
   }
 
   console.log(`\n${failures === 0 ? 'ALL PASS ✓' : `${failures} FAILURE(S) ✗`}`);

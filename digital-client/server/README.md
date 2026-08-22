@@ -242,6 +242,14 @@ block this round.
 | `seed-accounts.ts` | CLI: import `games/` into the record (aliases, `--force`, `--dry`) |
 | `test-accounts.ts` | the accounts test suite (stats fold, achievements, friends, live server) |
 | `accounts/accounts.json` | the whole account store — **holds password hashes, gitignored** |
+| `suite.test.ts` | **`npm test`** — runs every script below, plus the ledger that fails when a test file exists and nothing runs it |
+| `test-util.ts` | shared test helpers: `mintRoom` (a server-minted code), `freePort`, `gameFile` |
+| `test-new-features.ts` | join / rename / seat takeover / undo — and **the UZRG report**: the resource step is hidden, and your undo survives the opponent acting |
+| `test-clock.ts` | the chess clock, `POST /api/report`, and the draft's `packInfo` |
+| `test-draft.ts` | live-draft rooms: pack redaction, `draftCommit`, pack passing, undo, persistence |
+| `test-constructed.ts` | constructed rooms: decks, the waiting room, bottoming, persistence |
+| `test-trio.ts` | the element trio over the wire: creation, persistence, inheritance, sanitising |
+| `test-building.ts` | the live formation relay: never an action, never logged, dropped on a real action |
 
 ## The draft lobby: choosing three elements together
 
@@ -486,16 +494,80 @@ fixture.
 ## Test it
 
 ```bash
+npm test          # all 13 test files, ~30s, hermetic
+```
+
+That is the whole suite: **465 assertions across 13 files**, plus two ledger
+checks. Expected tail: `# pass 15 / # fail 0` (13 scripts + 2 ledger).
+
+Any one file still runs on its own, the way it always did:
+
+```bash
 node test-drive.ts
 node test-accounts.ts
 ```
 
-Boots the server on an ephemeral port, connects two clients, and asserts:
-redaction holds on **every** view pushed the whole session (seat 0 never sees
-the opponent's hand contents, the deck order, the opponent's dormant resource
-elements, or the seed); a recycle is blurred for the opponent; a wrong-seat
-action is rejected; and a drop+rejoin resyncs a full redacted view. Expected
-tail: `ALL PASS ✓`.
+### How the runner works, and why it looks like this
+
+`suite.test.ts` is a `node:test` file — the same convention as
+`engine/`'s `npm test` — with **one test case per script**, each of which
+spawns the script and asserts it exits 0. The scripts themselves are *not*
+`node:test` files and are deliberately not being converted: each boots the
+**real server** and drives it over **real WebSockets**, which is the whole
+value of them. The runner is a thin wrapper so both conventions can stay.
+
+There is **no `test:integration` split**. Eleven of the thirteen bind a port,
+so splitting on "binds a port" would leave `npm test` running two files —
+which is the problem this suite was created to fix, not a fix for it. Node
+runs a single file's top-level tests one at a time, so the scripts never race
+each other for a port.
+
+**The suite is hermetic.** Each script runs with its own throwaway
+`ALGO_GAMES_DIR` and `ALGO_ACCOUNTS_FILE`. This matters more than it sounds:
+`server/games/` and `server/accounts/` are *live data* on the deploy box, and
+before this, running the tests by hand really did stamp their fake games into
+the real account store (a conceded test game landing in somebody's match
+history) and leave orphan room files behind. `npm test` is now safe to run on
+the server.
+
+The one thing it does still touch is `server/issues.jsonl` — `main.ts` writes
+bug reports to a fixed path with no env override. `test-clock.ts` moves the
+real file aside and puts it back, which is enough, but it is the one shared
+file in the suite.
+
+### The ledger
+
+The reason this section exists is that `server/` had thirteen assertive test
+files and `package.json` had no `test` script for months. The guard for the
+UZRG playtest report — "you can't take back making the wrong resource if your
+opponent does something" — sat in `test-new-features.ts` under a heading that
+said exactly that, and **no command ever ran it**.
+
+So the last two cases in `suite.test.ts` guard the gap itself, the same way
+`engine/test/68-target-conformance.test.ts` guards its exemption list:
+
+- every `test-*.ts` / `*.test.ts` file in `server/` is either in the run list
+  or in `NOT_A_TEST` **with a reason** — a new test file that nothing runs
+  fails the suite, and so does a ledger entry for a file that no longer
+  exists;
+- `package.json`'s `test` script still points at `suite.test.ts` — because if
+  somebody rewires it, the ledger above stops guarding anything and should say
+  so out loud.
+
+### Running it with the engine's suite
+
+There is no repo-level test command: the repo has no root `package.json`, no
+CI, and no git hooks (it deploys by `git pull` and a restart). For now, run
+both:
+
+```bash
+npm --prefix digital-client/engine run check
+npm --prefix digital-client/server test
+```
+
+The smallest change that would make that one command is a
+`digital-client/package.json` with
+`"test": "npm --prefix engine test && npm --prefix server test"`.
 
 ## Message protocol (JSON over one WebSocket)
 

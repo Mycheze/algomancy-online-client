@@ -223,6 +223,32 @@ export interface Entity {
    * Additive/optional; cleared at regroup with everything else temporary.
    */
   granted?: GrantedText[];
+  /**
+   * R84 {Alluring}: this unit has been LURED — an Alluring column's on-attack
+   * trigger resolved naming it. Two effects, with two different lifetimes:
+   *
+   *  - **it cannot attack** for the rest of this battle phase. That is the
+   *    presence of the field itself, whatever round stamped it: it may not be
+   *    sent out as a counterattacker at block time and it may not be declared
+   *    as an attacker in round 2. It survives the allurer's death (Caleb:
+   *    *"You can't attack but you can block other things"*).
+   *  - **it must block those attack columns if able**, but only in the round
+   *    that lured it — `round` is `BattleState.round`, and a mark from an
+   *    earlier round carries only the can't-attack half.
+   *
+   * `columns` is a LIST because two Alluring columns may name the same unit
+   * (Alluring does not stack within one column, but two columns are two
+   * triggers). Blocking any one of them discharges all of them — a unit
+   * cannot block twice, and "if able" is the whole of the compulsion.
+   *
+   * The entries are attack-column INDICES, which are the column's identity
+   * (R72), so they are re-keyed by `E.rekeyColumns` with `BattleState.blocks`
+   * and drop out when their column ceases to exist — which is exactly how the
+   * must-block duty dies with the column.
+   *
+   * Additive/optional; cleared at regroup with everything else temporary.
+   */
+  allured?: { round: number; columns: number[] };
 }
 
 /**
@@ -360,6 +386,25 @@ export interface EffectPart {
   mods?: CardName[];
 }
 
+/**
+ * R29 — an open spot in a formation, named in a way that SURVIVES the board
+ * moving. A play-time placement is chosen at cast and taken at resolution, and
+ * between the two a column can collapse (R72), widen, or lose the unit the
+ * spot was measured against (R5/R56). An index into a slot list would quietly
+ * become a different slot; each of these is re-derived against a freshly
+ * computed `E.formationSlots` and simply fails to match when it is gone.
+ *
+ *  · `end`    — a new column at the left or right end of the attacking line
+ *  · `behind` — the back slot of the column that unit is standing in, alone
+ *  · `hole`   — the front slot of an emptied column (an R72 hole)
+ *  · `out`    — the printed "you MAY": played, but not into the formation
+ */
+export type FormationSpot =
+  | { kind: 'out' }
+  | { kind: 'end'; end: 'left' | 'right' }
+  | { kind: 'behind'; unit: EntityId }
+  | { kind: 'hole'; column: number };
+
 export interface StackItem {
   id: number;
   kind: 'unit' | 'spell' | 'spellUnit' | 'spellToken' | 'virus' | 'triggered' | 'activated' | 'ambush';
@@ -386,6 +431,14 @@ export interface StackItem {
    * rather than a log scan. Absent on items that are not a played card
    * (triggers, activations, spell tokens created in play). */
   from?: 'hand' | 'cache' | 'bin';
+  /** R29: for a card whose text is "you may PLAY me into an open spot in your
+   * formation" (CardBehavior.playsIntoFormation) — WHERE it is being played,
+   * chosen at cast like every other part of how a card is played (R35) and
+   * taken at resolution, atomically with the spawn. Absent on every other
+   * item, and absent even on this one when the caster has no formation to join
+   * (nothing is asked). Contrast R75, where placement is an EFFECT resolving
+   * and is chosen then. */
+  formationSpot?: FormationSpot;
   /** R49: non-mana ACTIVATION costs that carry a CHOICE (which card to
    * discard, which unit to sacrifice), still to be paid. Collected in the cast
    * window — before the item reaches the stack — so nobody may respond between
@@ -476,8 +529,11 @@ export type Suspension =
       moreItems: StackItem[];
       /** 'itemCost' (R49): an ITEM-level activation cost that carries a choice
        * (StackItem.pendingCosts), as opposed to 'cost', which is a PART's
-       * bracketed [cast cost] (EffectDef.castCost). */
-      stage?: 'x' | 'mods' | 'cost' | 'itemCost';
+       * bracketed [cast cost] (EffectDef.castCost).
+       * 'formation' (R29): WHERE a "play me into an open spot in your
+       * formation" card is being played — part of the play, so part of the
+       * cast window, and the answer rides on the item as `formationSpot`. */
+      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation';
     }
   | {
       /** ordering simultaneous triggers for one seat (R2) */
@@ -492,6 +548,38 @@ export type Suspension =
       partIndex: number;
       answers: Record<string, unknown>;
       pendingKey: string;
+      /**
+       * R85 — the state the replay restarts FROM, kept here instead of being
+       * applied the instant the part suspends.
+       *
+       * `ctx.choose` is not a coroutine: it throws, and the part is re-run from
+       * the top with the recorded `answers`. That needs the world back at the
+       * part boundary, and until playtest round 15 the rollback happened AT
+       * THE SUSPENSION — which meant the state published while a player was
+       * being asked something showed NOTHING of the resolution so far. "During
+       * the resolution of Insidious Invitation, I should have seen what my
+       * opponent played … I couldn't see anything until I declined" (UFAB,
+       * 2026-08-22): the caster's unit was not in play and the draw had not
+       * happened, because both had just been rolled back.
+       *
+       * So the rollback moved to RESUME (E.resumeResolve). The state that sits
+       * on the table while the question is open is the real, partly-resolved
+       * one; this snapshot is what the engine quietly rewinds to the moment the
+       * answer arrives. Engine-internal and completely unredacted — server/
+       * view.ts strips it before any client sees a suspension.
+       *
+       * Optional: a suspension serialized before round 15 simply has no
+       * snapshot, and E.resumeResolve replays from wherever it is — exactly the
+       * old behaviour, which is what those states were saved under.
+       */
+      snapshot?: GameState;
+      /**
+       * How many events THIS part has already emitted onto the table. The
+       * replay deterministically re-emits every one of them before it reaches
+       * the answered choice, so resolveParts drops that many from the front of
+       * the replay's output and the log never doubles.
+       */
+      shown?: number;
     };
 
 // ── events ────────────────────────────────────────────────────────────
@@ -693,6 +781,12 @@ export interface GameState {
   triggerOrderedSeats: Seat[];
   suspension: Suspension | null;
   decision: Decision | null;
+  /** R85: the highest decision id ever issued. Decision ids come off `nextId`,
+   * which a resolution replay rewinds to the part boundary — so without a
+   * high-water mark the second question of a multi-step resolution can be
+   * handed an id the first one already used, and ui/sfx.ts (which reads a
+   * changed id as "a new question") would fall silent. Additive/optional. */
+  decisionHigh?: number;
   /** R78: the item that is RESOLVING RIGHT NOW — off the stack (nobody may
    * respond to it or negate it any more) but not yet finished, because its
    * resolution suspended on a mid-resolution choice. Null the rest of the

@@ -207,8 +207,8 @@ card('Colony of the Interworld', {
 
 // "Look at target opponent's hand and choose a card from it. They cache that
 // card. It gains 'Prophecy — Three Turns Pass'." — ll/1 {Battle} Cosmic Spell.
-// Target is a PLAYER (spec 'any' — Bripp's precedent; a unit target is a
-// no-op) and must be an opponent. The card leaves their hand for THEIR cache
+// Target is a PLAYER, and not you — the 'opponent' kind says exactly that, so
+// no unit is ever on the menu. The card leaves their hand for THEIR cache
 // with a granted prophecy (R42/R43: normalizeProphecy handles the wording, and
 // the three-turn clock starts counting forward from now). They are the ones
 // who may eventually release it — this is a delay, not a steal.
@@ -381,16 +381,16 @@ card('Lifebound Seer', {
 // "Any number of target players each lose 1 life. Draw a card." — l/1
 // {Battle} Nature Spell. "Any number" in 1v1 is up to both players, so
 // count 2 / min 0 — and min 0 genuinely means "up to", so the draw still
-// happens when no player is targeted at all. Spec 'any' also offers units;
-// a unit target is a no-op (Bripp's precedent).
+// happens when no player is targeted at all. R64: the kind is 'player', which
+// offers the present seats and nothing else — 'any' let a unit fill one of the
+// two slots, and that slot then lost no life.
 card('Penance', {
   spellEffect: {
-    targets: { what: 'any', prompt: 'Penance: any number of target players each lose 1 life', count: 2, min: 0 },
+    targets: { what: 'player', prompt: 'Penance: any number of target players each lose 1 life', count: 2, min: 0 },
     run: (g, ctx) => {
       for (const t of ctx.targets) {
-        if (t && 'player' in (t as object)) {
-          g.loseLife((t as { player: Seat }).player, 1, 'Penance');
-        }
+        if (!('player' in t)) continue;                 // narrowing; the kind guarantees it
+        g.loseLife(t.player, 1, 'Penance');
       }
       g.draw(ctx.controller, 1);
     },

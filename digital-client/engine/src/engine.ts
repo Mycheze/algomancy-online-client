@@ -16,7 +16,7 @@
  */
 import type {
   Action, Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, Decision, DecisionOption,
-  EffectPart, EngineEvent, Entity, EntityId, EventType, GameState, PendingTrigger,
+  EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, PendingTrigger,
   ResourceKind, Seat, StackItem, Suspension, TargetRef,
 } from './types.ts';
 import {
@@ -554,6 +554,20 @@ export class E {
   abilitiesSuppressed(e: Entity): boolean {
     if (e.suppressed?.abilities) return true;
     return this.staticsFor(e).some(s => s.mod.suppressAbilities);
+  }
+
+  /**
+   * R11: is this spell token protected from the regroup erase by a live
+   * static ("Your spell tokens stay through regroup" — Harbinger of
+   * Immolation)? Same veto shape as abilitiesSuppressed(): one protector is
+   * enough, and nothing votes the other way.
+   *
+   * Asked once per token by startRegroup, and asked EARLY on purpose — see
+   * the ordering note there: the answer has to be read while the protector is
+   * still the unit it was during the battle.
+   */
+  spellTokenSurvivesRegroup(e: Entity): boolean {
+    return this.staticsFor(e).some(s => s.mod.survivesRegroup);
   }
 
   /**
@@ -1280,19 +1294,26 @@ export class E {
   /** "…that spawned this turn" (Banishment; "if I spawned this turn") */
   spawnedThisTurn(u: Entity): boolean { return u.spawnedTurn === this.s.turn; }
 
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin'; spot?: FormationSpot } = {}): Entity {
     const u = this.newEntity({
       card: name, owner: seat, controller: seat, kind: 'unit', region,
       ...(opts.token ? { token: true, tokenStats: opts.tokenStats } : {}),
     });
     // "I spawn with X counters" (Robot): counters are on before the spawn event
     if (opts.counters) u.counters = opts.counters;
+    // R29: a card PLAYED into an open spot in the formation is put there
+    // BEFORE the spawn event exists, so no listener and no player ever sees it
+    // standing anywhere else. See takeSpot.
+    const placed = opts.spot ? this.takeSpot(u, seat, opts.spot) : null;
     // R49: `from` is set only when this spawn IS a card being PLAYED out of a
     // zone (resolveItem for a unit / spell unit card). A unit created by an
     // effect carries no zone, which is what keeps "when you play a card from
     // anywhere other than your hand" (Proph) off effect-created units.
     const ev = this.ev('spawned', `${this.pname(seat)} spawns ${name}${opts.counters ? ` (${opts.counters} +1/+1)` : ''}.`,
       { seat, unit: u.id, region, card: name, ...(opts.from ? { from: opts.from } : {}) });
+    // under the spawn line, before anything the spawn triggers: the placement
+    // is part of the play, not a consequence of it
+    if (placed) this.ev('info', placed, { unit: u.id, region, seat });
     this.fireEvent('spawned', ev);
     return u;
   }
@@ -2079,6 +2100,16 @@ export class E {
       }
       this.s.battleCounters[b.region] = next;
     }
+    // R84 {Alluring}: a must-block duty names an attack COLUMN, so the column's
+    // identity is the duty's identity and it moves in the same commit as
+    // `blocks`. A duty whose column ceases to exist ceases with it — that is
+    // the mechanism behind "kill the allurer and the block is freed"; the
+    // can't-attack half is the presence of the mark, and stays.
+    for (const u of Object.values(this.s.entities)) {
+      const a = u.allured;
+      if (!a || a.round !== b.round) continue;
+      a.columns = a.columns.map(to).filter((ci): ci is number => ci !== null);
+    }
     b.blocks = blocks;
   }
 
@@ -2132,26 +2163,104 @@ export class E {
     return [];
   }
 
-  formationSlots(seat: Seat): { col: EntityId[] | null; end?: 'left' | 'right'; label: string }[] {
+  /**
+   * `spot` is the same placement expressed as something that SURVIVES the
+   * board moving under it — R29's play-time placement is chosen at cast and
+   * taken at resolution, and by then a column may have collapsed, widened or
+   * lost its occupant (R5/R56). A raw index into this list would silently
+   * become a different slot; the descriptor is re-matched against a freshly
+   * computed list instead, and simply fails to match when the spot is gone.
+   */
+  formationSlots(seat: Seat): { col: EntityId[] | null; end?: 'left' | 'right'; label: string; spot: FormationSpot }[] {
     const b = this.s.battle;
     if (!b) return [];
     const attacker = seat === b.attacker;
     const grid = this.formationGrid(seat);
     if (!grid.some(col => col.some(id => this.entity(id)))) return [];
-    const out: { col: EntityId[] | null; end?: 'left' | 'right'; label: string }[] = [];
+    const out: { col: EntityId[] | null; end?: 'left' | 'right'; label: string; spot: FormationSpot }[] = [];
     // Only the ATTACKING grid can widen. A blocking column is keyed to an
     // attacking column (R72), so a new one has no index to exist at.
-    if (attacker) out.push({ col: null, end: 'left', label: 'a new column on the left' });
+    if (attacker) {
+      out.push({ col: null, end: 'left', label: 'a new column on the left', spot: { kind: 'end', end: 'left' } });
+    }
     grid.forEach((col, i) => {
       const alive = col.filter(id => this.entity(id));
       if (alive.length === 1) {
-        out.push({ col, label: `column ${i + 1}, behind ${this.entity(alive[0]!)?.card ?? '?'}` });
+        out.push({
+          col, label: `column ${i + 1}, behind ${this.entity(alive[0]!)?.card ?? '?'}`,
+          spot: { kind: 'behind', unit: alive[0]! },
+        });
       } else if (alive.length === 0) {
-        out.push({ col, label: `column ${i + 1} (an empty slot in the line)` });
+        out.push({
+          col, label: `column ${i + 1} (an empty slot in the line)`,
+          spot: { kind: 'hole', column: i },
+        });
       }
     });
-    if (attacker) out.push({ col: null, end: 'right', label: 'a new column on the right' });
+    if (attacker) {
+      out.push({ col: null, end: 'right', label: 'a new column on the right', spot: { kind: 'end', end: 'right' } });
+    }
     return out;
+  }
+
+  /** the live slot `spot` names right now, or null if the board moved and it
+   * no longer names one (R5/R56 — re-derived, never remembered as an index) */
+  private slotForSpot(seat: Seat, spot: FormationSpot): { col: EntityId[] | null; end?: 'left' | 'right'; label: string } | null {
+    if (spot.kind === 'out') return null;
+    const same = (s: FormationSpot): boolean => {
+      if (s.kind !== spot.kind) return false;
+      if (s.kind === 'end' && spot.kind === 'end') return s.end === spot.end;
+      if (s.kind === 'behind' && spot.kind === 'behind') return s.unit === spot.unit;
+      if (s.kind === 'hole' && spot.kind === 'hole') return s.column === spot.column;
+      return false;
+    };
+    return this.formationSlots(seat).find(s => same(s.spot)) ?? null;
+  }
+
+  /** put `u` into `slot`. The one place a unit is written into the grid. */
+  private putInSlot(u: Entity, slot: { col: EntityId[] | null; end?: 'left' | 'right' }): void {
+    const b = this.s.battle!;
+    if (slot.col) { slot.col.push(u.id); return; }
+    // R72/R75: opening a column on the LEFT shifts every existing column
+    // right, so every block key and every column-scoped counter shifts with
+    // it. One atomic re-key, same owner as the collapse.
+    const at = slot.end === 'left' ? 0 : b.columns.length;
+    const cols = b.columns.slice();
+    cols.splice(at, 0, [u.id]);
+    this.rekeyColumns(oldCi => (oldCi >= at ? oldCi + 1 : oldCi));
+    b.columns = cols;
+  }
+
+  /**
+   * R29 — take the spot this card was PLAYED into, before it is anywhere else.
+   *
+   * Called from inside spawnUnit, between minting the entity and firing
+   * 'spawned', so the unit is already standing in the formation the first time
+   * any listener or any player sees it. That is the whole difference between
+   * this and R75's `placeInFormation`: R75 is an EFFECT resolving ("create a
+   * unit in my formation"), and its unit really does exist for a moment before
+   * it is placed. A card whose printed text is "you may PLAY me into an open
+   * spot" is never played anywhere else, so it must never be seen anywhere
+   * else — playtest UFAB, where Tiderunner Initiate spawned into the region,
+   * stacked a placement trigger, handed the opponent priority, and got recalled
+   * out of the invader's zone before it ever reached the line.
+   *
+   * Returns the log line for what happened, which spawnUnit emits under the
+   * spawn. Every branch has one: silence here is a conformance failure.
+   */
+  private takeSpot(u: Entity, seat: Seat, spot: FormationSpot): string {
+    const b = this.s.battle;
+    if (!b || u.region !== b.region) {
+      return `${u.card} is played, but there is no formation here to join — it enters the region.`;
+    }
+    if (spot.kind === 'out') return `${u.card} is played outside the formation, by choice.`;
+    const slot = this.slotForSpot(seat, spot);
+    if (!slot) {
+      // R5/R56: chosen at cast, taken at resolution — and the line moved.
+      return `${u.card}: the open spot it was played into is gone — it enters the region, outside the formation.`;
+    }
+    this.putInSlot(u, slot);
+    return `${u.card} is played straight into the formation (${slot.label}).`;
   }
 
   /**
@@ -2247,18 +2356,7 @@ export class E {
       this.ev('info', `${src}: ${u.card} stays out of the formation.`);
       return false;
     }
-    if (slot.col) {
-      slot.col.push(u.id);
-    } else {
-      // R72/R75: opening a column on the LEFT shifts every existing column
-      // right, so every block key and every column-scoped counter shifts with
-      // it. One atomic re-key, same owner as the collapse.
-      const at = slot.end === 'left' ? 0 : b.columns.length;
-      const cols = b.columns.slice();
-      cols.splice(at, 0, [u.id]);
-      this.rekeyColumns(oldCi => (oldCi >= at ? oldCi + 1 : oldCi));
-      b.columns = cols;
-    }
+    this.putInSlot(u, slot);
     this.ev('info', `${src}: ${u.card} joins the formation (${slot.label}).`,
       { unit: u.id, region: b.region, seat: ctx.controller });
     return true;
@@ -2693,6 +2791,46 @@ export class E {
       {
         seat, kind: 'targets',
         prompt: `${item.label} is {Modular}: apply a mod from your hand or bin (you still pay its cost)`,
+        options,
+      },
+    );
+  }
+
+  /**
+   * R29 — "You may play me into an open spot in your formation."
+   *
+   * A PLAY, not an effect: the spot is part of how the card is played, so it
+   * is chosen at cast alongside X, mods, targets and costs (R35), rides on the
+   * stack item where both players can see it, and is TAKEN at resolution
+   * atomically with the spawn (see takeSpot). Contrast R75's
+   * `E.placeInFormation`, which is a genuine effect resolving — "create a unit
+   * in my formation" — and rightly places at resolution time.
+   *
+   * The card was folded into R75's table when that rule was written, and the
+   * cost was the UFAB report: it spawned into the region with no column (which
+   * is exactly what the client draws as the invader's zone), stacked a
+   * placement trigger, and handed the opponent a priority window in which to
+   * recall it. A card that is played into the line was never in the region to
+   * be answered.
+   *
+   * With no formation of your own there is nothing to join, so nothing is
+   * asked and the card is simply played (R29). Joining is optional, because
+   * the text says *may* — "stay out of formation" is always on the menu when
+   * the question is asked at all.
+   */
+  private collectFormationSpot(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+    if (item.formationSpot !== undefined || !item.card) return;
+    if (item.kind !== 'unit') return;
+    if (!this.card(item.card).playsIntoFormation) return;
+    const slots = this.formationSlots(item.controller);
+    if (!slots.length) return;   // R29: no formation of yours — no prompt
+    const options: DecisionOption[] = slots.map(s => ({ label: s.label, value: s.spot }));
+    options.push({ label: 'stay out of formation', value: { kind: 'out' } as FormationSpot });
+    this.suspend(
+      { type: 'cast', stage: 'formation', item, partIndex: 0, targetIndex: 0, then, moreItems },
+      {
+        seat: item.controller, kind: 'electricPath',
+        prompt: `${item.card}: which open spot in your formation is it played into?`,
         options,
       },
     );
@@ -3226,6 +3364,7 @@ export class E {
     // (Manual p.33 — the composite resolves as ONE ability)
     this.collectModular(item, then, moreItems);
     this.collectPartTargets(item, then, moreItems);
+    this.collectFormationSpot(item, then, moreItems);   // R29: "play me into a spot"
     this.payActivationCost(item);                   // R57: choice-free half
     this.collectItemCosts(item, then, moreItems);   // R49: the choice-bearing half
     this.collectCastCosts(item, then, moreItems, 'fixed');
@@ -3420,7 +3559,12 @@ export class E {
    */
   resolveItem(item: StackItem): void {
     if (item.kind === 'unit') {
-      this.spawnUnit(item.controller, item.card!, item.region, { ...(item.from ? { from: item.from } : {}) });
+      // R29: `formationSpot` is where this card was PLAYED — chosen at cast
+      // (collectFormationSpot), taken here, atomically with the spawn.
+      this.spawnUnit(item.controller, item.card!, item.region, {
+        ...(item.from ? { from: item.from } : {}),
+        ...(item.formationSpot ? { spot: item.formationSpot } : {}),
+      });
       return;
     }
     if (item.kind === 'virus') {
@@ -3501,9 +3645,18 @@ export class E {
    */
   private partChoose: ((tag: string, dec: PartChoice['dec']) => unknown) | null = null;
 
-  /** Run parts [from..]; the composite is ONE ability resolving top-to-bottom.
-   * Suspending parts roll back to their boundary and replay with answers. */
-  resolveParts(item: StackItem, from: number, answers: Record<string, unknown>): void {
+  /**
+   * Run parts [from..]; the composite is ONE ability resolving top-to-bottom.
+   * A suspending part is replayed from its own boundary with `answers` filled
+   * in — R85: the world is rolled back to that boundary on RESUME
+   * (E.resumeResolve), not at the suspension, so the half-finished resolution
+   * is what the table gets to look at while somebody is being asked something.
+   *
+   * `shownEvents` is R85's other half, and applies to part `from` only: that
+   * many events of this part are already on everyone's screen, so the replay's
+   * re-emission of them is dropped instead of doubling the log.
+   */
+  resolveParts(item: StackItem, from: number, answers: Record<string, unknown>, shownEvents = 0): void {
     for (let pi = from; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
       if (part.spent) continue;
@@ -3549,8 +3702,13 @@ export class E {
       // when the part replays.
       const afflicting = this.itemAttrs(item).has('Afflicting');
       const beforeUnits = afflicting ? this.snapshotUnits() : null;
+      // R85: the rollback state, carried ON the suspension and applied when
+      // the answer comes back rather than here.
       const snap = structuredClone(this.s);
       const evLen = this.events.length;
+      // events of THIS part the table has already been shown (a replay of a
+      // part that has suspended before); the re-emission is dropped below.
+      const shown = pi === from ? shownEvents : 0;
       const outerChoose = this.partChoose;
       let helperSeq = 0;
       // ctx.choose already namespaces by part index; the seq keeps a helper
@@ -3560,14 +3718,15 @@ export class E {
         def.run(this, ctx);
       } catch (sig) {
         if (sig instanceof PartChoice) {
-          this.s = snap;
-          this.events.length = evLen;
-          // R78: the rollback swapped the whole state for a clone, so
-          // `s.resolving` is now a COPY of whatever was marked at the part
-          // boundary. Point it at the live object the suspension is about to
-          // store, so the state holds exactly ONE object for the resolving item
-          // — structuredClone at the apply() boundary memoises shared
-          // references, so a replay can never drift the marker and the
+          // Everything this part has emitted so far, INCLUDING the prefix it
+          // just re-emitted: that total is what the table will have seen once
+          // this suspension is published, so it is what the next replay must
+          // suppress.
+          const emitted = this.events.length - evLen;
+          this.events.splice(evLen, Math.min(shown, emitted));
+          // R78: `s.resolving` and the suspension's `item` must be ONE object,
+          // so that structuredClone at the apply() boundary memoises them
+          // together and a replay can never drift the marker and the
           // suspension apart.
           //
           // Assigned, never merely re-pointed, because THIS item is the one
@@ -3580,7 +3739,10 @@ export class E {
           // marker in the deploy phase (seed 693).
           this.s.resolving = this.s.phase === 'battle' ? item : null;
           this.suspend(
-            { type: 'resolve', item, partIndex: pi, answers, pendingKey: sig.key },
+            {
+              type: 'resolve', item, partIndex: pi, answers, pendingKey: sig.key,
+              snapshot: snap, shown: emitted,
+            },
             { seat: sig.dec.seat, kind: sig.dec.kind, prompt: sig.dec.prompt, options: sig.dec.options },
           );
         }
@@ -3588,6 +3750,8 @@ export class E {
       } finally {
         this.partChoose = outerChoose;
       }
+      // the part finished: the same suppression, for the last replay of it
+      if (shown) this.events.splice(evLen, Math.min(shown, this.events.length - evLen));
       this.checkDeaths();   // sequential within the composite; triggers wait for settle()
       if (beforeUnits) this.afflictingKills(beforeUnits, item.card ?? item.label);
     }
@@ -3688,8 +3852,77 @@ export class E {
   // ── suspensions & decisions ─────────────────────────────────────────
   suspend(susp: Suspension, dec: Omit<Decision, 'id'>): never {
     this.s.suspension = susp;
-    this.s.decision = { ...dec, id: this.s.nextId++ };
+    // R85: `nextId` is rewound by a resolution replay, so on its own it can
+    // hand out a decision id that has already been on a client's screen — and
+    // ui/sfx.ts reads "a new id" as "a new question was asked". The high-water
+    // mark keeps decision ids strictly increasing; outside a replay it never
+    // binds, so every id in a normal game is the one it always was.
+    const id = Math.max(this.s.nextId++, (this.s.decisionHigh ?? 0) + 1);
+    this.s.decisionHigh = id;
+    this.s.decision = { ...dec, id };
     throw new Suspended();
+  }
+
+  /**
+   * R85 — the answer to a mid-resolution question has arrived: put the world
+   * back at the boundary of the part that is about to be replayed, and say how
+   * many of that part's events the table has already seen.
+   *
+   * This is the rollback that used to happen the instant the part suspended.
+   * Moving it here is the whole fix: between the question and the answer the
+   * state on the table is the REAL, partly-resolved one — the card that was
+   * drawn, the unit that was put into play, the mana that was spent are all
+   * visible to everyone, which is the entire point of an effect that says
+   * "starting with you, players may…" (playtest UFAB, Insidious Invitation).
+   *
+   * Safe because that published state never has to be action-LEGAL, only
+   * renderable: apply()'s dispatch refuses every action except `decide` and
+   * `concede` while a decision is pending, so nothing can be built on top of a
+   * half-resolved board.
+   *
+   * A handful of fields are carried FORWARD across the rewind rather than
+   * being undone — they belong to the session, not to the resolution:
+   *  · `actionCount`, the client's "my action landed" latch (ui/main.ts). It
+   *    must never go backwards or the UI waits forever.
+   *  · `decisionHigh`, for the same reason decision ids exist at all.
+   *  · the seat NAMES, which rooms.ts writes straight into the state outside
+   *    the action log (renameSeat), so a rewind would restore a stale one.
+   * Everything else — entities, the RNG stream, zones — goes back.
+   *
+   * ⚠ `nextId` goes back to the boundary PLUS ONE, which looks arbitrary and
+   * is not. A SAVED GAME's action log names entities by id (`declareAttack`'s
+   * columns, `declareBlocks`' blocks and sends, `activateAbility`, `augment`),
+   * so the id stream is part of the replay contract: get it wrong by one and
+   * every later action in an old log addresses the wrong unit and is refused.
+   * The pre-R85 engine rolled back at the suspension and THEN spent one id on
+   * the decision, so each replay of a part started one higher than the last;
+   * `snapshot.nextId + 1` reproduces that recurrence exactly, attempt for
+   * attempt. (Verified against saved room UFAB, which suspends mid-resolution
+   * at action 30 and rejected 106 of its 154 actions without this.)
+   *
+   * The visible cost is small and worth naming: an entity created in the
+   * partly-resolved state the players are looking at is re-created by the
+   * replay with an id one higher, so a client that tracks entities by id sees
+   * it as a new object once the answer lands. Nothing in the rules reads an
+   * id, and the alternative — a stable id stream — is unreplayable history.
+   */
+  resumeResolve(sus: Extract<Suspension, { type: 'resolve' }>): number {
+    const snap = sus.snapshot;
+    // pre-R85 suspension (an old saved game, mid-resolution): it rolled back
+    // when it suspended, so the state IS the boundary already.
+    if (!snap) return 0;
+    const live = this.s;
+    const boundaryId = snap.nextId;
+    this.s = snap;
+    this.s.nextId = boundaryId + 1;
+    this.s.actionCount = live.actionCount;
+    this.s.decisionHigh = live.decisionHigh;
+    live.players.forEach((p, i) => { const q = this.s.players[i]; if (q) q.name = p.name; });
+    this.s.suspension = null;
+    this.s.decision = null;
+    // R78, exactly as at the suspension: ONE object for the resolving item.
+    this.s.resolving = this.s.phase === 'battle' ? sus.item : null;
+    return sus.shown ?? 0;
   }
 
   // ── mods ────────────────────────────────────────────────────────────
@@ -4487,10 +4720,40 @@ export class E {
     for (const e of Object.values(this.s.entities)) {
       if (e.kind === 'unit') { e.region = this.homeRegion(e.controller); e.absent = false; }
       if (e.kind === 'mod') { const h = e.modOf !== undefined ? this.entity(e.modOf) : undefined; if (h) e.region = h.region; }
+      // a spell token comes home too. It never used to matter (every token was
+      // erased two steps below), but one that SURVIVES regroup — Harbinger of
+      // Immolation — must not be left stranded in the region the battle was
+      // fought in: "everyone returns home" is about the board, not just units,
+      // and the survival query below is region-scoped like every other static.
+      if (e.kind === 'spellToken') e.region = this.homeRegion(e.controller);
     }
     for (const r of this.s.regions) r.presentSeats = [r.owner];
     // (2) all damage on units is removed
     for (const e of Object.values(this.s.entities)) if (e.kind === 'unit') e.damage = 0;
+    // (+) spell tokens are erased — unless a live static says YOURS stay
+    //     (Harbinger of Immolation, StaticMod.survivesRegroup).
+    //
+    //     Deliberately BEFORE step (3) rather than after it, which is where
+    //     the unconditional erase used to sit. The query reads statics, and
+    //     step (3) tears down the until-regroup layers a protector's own state
+    //     depends on — most sharply `suppressed`, the R62 stamp that switches
+    //     a silenced Harbinger's abilities (a static IS an ability) off. Read
+    //     after the sweep, a Harbinger silenced for the whole battle would
+    //     come back to life just in time to save the tokens.
+    //
+    //     A protected token is spared the ERASE and nothing else: step (3)
+    //     runs over every entity, so the survivor's own temporary changes are
+    //     still cleaned up. Its `x` — the Fireball's number — is not something
+    //     regroup touches at all, so it carries over intact.
+    const spared: EntityId[] = [];
+    for (const e of Object.values(this.s.entities)) {
+      if (e.kind !== 'spellToken') continue;
+      if (this.spellTokenSurvivesRegroup(e)) { spared.push(e.id); continue; }
+      delete this.s.entities[e.id];
+    }
+    if (spared.length) {
+      this.ev('info', `${spared.length} spell token(s) stay through regroup.`, { ids: spared });
+    }
     // (3) all temporary stat changes are removed (counters are NOT temporary)
     for (const e of Object.values(this.s.entities)) {
       e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs;
@@ -4498,12 +4761,9 @@ export class E {
       delete e.baseSetSeq;
       delete e.suppressed;   // R62: so is a switched-off attribute/ability layer
       delete e.granted;      // R63: and so is granted text
+      delete e.allured;      // R84 {Alluring}: "can't attack" lasted the battle phase
     }
     // (4) units leave formation — battle state is already gone
-    // (+) spell tokens are erased
-    for (const e of Object.values(this.s.entities)) {
-      if (e.kind === 'spellToken') delete this.s.entities[e.id];
-    }
     this.startDeployment();
   }
 

@@ -5,10 +5,10 @@ import { spawn } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, rmSync } from 'node:fs';
-import { mintRoom } from './test-util.ts';
+import { freePort, gameFile, mintRoom } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = 8500 + Math.floor(Math.random() * 400);
+const PORT = await freePort();
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';
@@ -52,7 +52,7 @@ try {
   const b = await joinRoom(ROOM, 1);   // no els — room exists
   ok(JSON.stringify(b.view.elements) === JSON.stringify(['fire', 'wood', 'metal']),
     'joiner lands in the same trio');
-  const raw = JSON.parse(readFileSync(join(HERE, 'games', `${ROOM}.json`), 'utf8'));
+  const raw = JSON.parse(readFileSync(gameFile(ROOM), 'utf8'));
   ok(JSON.stringify(raw.els) === JSON.stringify(['fire', 'wood', 'metal']), 'room file records els');
   const c = await joinRoom(ROOM2, 0, ['fire', 'fire', 'plasma']);
   ok(JSON.stringify(c.view.elements) === JSON.stringify(['fire', 'water', 'earth']),
@@ -61,7 +61,7 @@ try {
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {
   server.kill();
-  rmSync(join(HERE, 'games', `${ROOM}.json`), { force: true });
-  rmSync(join(HERE, 'games', `${ROOM2}.json`), { force: true });
+  rmSync(gameFile(ROOM), { force: true });
+  rmSync(gameFile(ROOM2), { force: true });
 }
 process.exit(failures ? 1 : 0);

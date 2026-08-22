@@ -237,8 +237,8 @@ card('Instrument of Reassignment', {
 });
 
 // "Target opponent negates an effect they control." — mm/2 {Battle} AI Cosmic
-// Spell. Target is a player (spec 'any'; a unit pick is a no-op — the text
-// only targets players). THE OPPONENT chooses which of their stack items to
+// Spell. Target is a player, and not you — the 'opponent' kind, so no unit is
+// ever offered. THE OPPONENT chooses which of their stack items to
 // negate (any un-negated effect they control); exactly one → automatic;
 // none → nothing happens.
 card('Interdiction Rift', {

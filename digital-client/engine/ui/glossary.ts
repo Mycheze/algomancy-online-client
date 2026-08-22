@@ -32,7 +32,9 @@ export const KEYWORDS: GlossEntry[] = [
   { term: 'Flying', text: 'Its column can only be blocked by a column with Flying.' },
   { term: 'Evasive', text: 'Needs two blockers — a single unit cannot block it.' },
   { term: 'Sneaky', text: 'If it is the only attacking unit, it cannot be blocked at all.' },
-  { term: 'Alluring', text: 'Defenders that are able to block it must block it.' },
+  // R84 (2026-08-22): it TARGETS. The old wording here — "defenders that are
+  // able to block it must block it" — was a rule nobody ever gave.
+  { term: 'Alluring', text: 'Attacking with its column targets one enemy unit, from the stack: that unit cannot attack or counterattack for the rest of the battle, and must block this column if able.' },
   { term: 'Piercing', text: 'Excess damage from its blocked column carries through to the defending player (automatic).' },
   { term: 'Electric', text: 'Excess damage arcs to an adjacent unit in the formation — the controller picks the path.' },
   { term: 'Deadly', text: 'Any amount of damage it deals destroys the damaged unit.' },
@@ -49,9 +51,13 @@ export const KEYWORDS: GlossEntry[] = [
   { term: 'Reaping', text: 'When it kills a unit, its controller draws a card.' },
   { term: 'Inverted', text: 'Its stat CHANGES are reversed (a −7/−7 becomes +7/+7).' },
   { term: 'Unaware', text: 'Everything counts as interacting with it.' },
-  { term: 'Burst', text: 'Casting one of your burst spell tokens casts all of them in that region at once.' },
-  { term: 'Unstable', text: 'A modded unit that dies is erased (with its mods) instead of going to a bin.' },
-  { term: 'Virus', text: 'May be augmented onto an ENEMY unit during battle.' },
+  // R81 (2026-08-22): the group is the tokens of the SAME NAME, not every
+  // burst token you control there.
+  { term: 'Burst', text: 'Casting one of your burst spell tokens casts every token of the same name you control in that region at once.' },
+  // R79 (2026-08-22): a spell carrying a virus is Unstable too, and a spell's
+  // way out of the game is the stack rather than a death.
+  { term: 'Unstable', text: 'A modded card is erased with its mods instead of reaching a bin — a unit that dies, and a spell that leaves the stack carrying a virus.' },
+  { term: 'Virus', text: 'May be augmented during battle onto an ENEMY unit — or onto a spell on the stack, either player’s.' },
   { term: 'Ambush', text: 'An alternative battle-time cost: recall a target ally and take its position in play.' },
   // Light & Dark (docs/08). Kept here so the card inspector can explain them
   // instead of falling back to "see the rules reference".
@@ -59,7 +65,9 @@ export const KEYWORDS: GlossEntry[] = [
   { term: 'Afflicting', text: 'When an afflicting source kills one or more units — by damage OR by −1/−1 counters — those units’ controllers each gain a rot.' },
   { term: 'Lethal', text: 'Any combat damage from a lethal unit kills a player outright.' },
   { term: 'Modular', text: 'You may apply mods from your hand and/or bin to this card as it is played, paying their costs; they ride on the stack with it.' },
-  { term: 'Pure', text: 'Pure cards and cards they interact with ignore all other attributes. (Not implemented — parked with the attribute-suppression layer.)' },
+  // R61 (2026-08-20) implemented the combat half; this entry still said the
+  // attribute did nothing at all.
+  { term: 'Pure', text: 'A Pure card and whatever it interacts with ignore all other attributes — in combat that switches off Flying, Evasive and Sneaky for both sides. (Outside combat: not implemented yet.)' },
 ];
 
 /** the Light & Dark zone/counter concepts */
@@ -94,7 +102,7 @@ export const EXPANSION_GUIDE: GlossEntry[] = [
 export const MECHANICS: GlossEntry[] = [
   {
     term: 'Augment',
-    text: 'Slide under a unit from hand, bin or cache: donates its type-line attributes and its text-box [Augment] text to the host.',
+    text: 'Slide under a unit from hand, bin or cache: donates its type-line attributes and its text-box [Augment] text to the host. A Virus may go onto a spell on the stack instead, which takes the attributes only.',
   },
   {
     // "switch" is also the ordinary English verb — Riftwalker's "Switch my

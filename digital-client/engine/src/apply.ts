@@ -6,13 +6,14 @@
  * caller keeps the old state.
  */
 import type {
-  Action, ApplyResult, CardName, EffectPart, Element, Entity, EntityId, GameMode,
-  GameState, ResourceKind, Seat, StackItem, TargetRef,
+  Action, ApplyResult, CardName, EffectPart, Element, EngineEvent, Entity, EntityId, FormationSpot,
+  GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other } from './engine.ts';
 import {
   affinityPips, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
-  specForSlot, type AbilityCost, type ActivatedAbility, type CardDef, type EffectDef,
+  registerSynthetic, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
+  type EffectDef,
 } from './cards/dsl.ts';
 import { DECK_LIST, draftDeckList } from './cards/registry.ts';
 import { rngShuffle, rngNext } from './rng.ts';
@@ -941,6 +942,9 @@ function validFormation(e: E, seat: Seat, columns: EntityId[][], fromRegion: num
       e.need(u.region === fromRegion, 'that unit is in another region');
       e.need(!used.has(id), 'a unit can only be in one column');
       e.need(!pool || pool.includes(id), 'only units sent at block time may counterattack');
+      // R84 {Alluring}: a lured unit cannot attack for the rest of this battle
+      // phase — the half of the attribute that survives the allurer's death
+      e.need(!u.allured, `Alluring: ${u.card} was lured and cannot attack this battle`);
       used.add(id);
     }
   }
@@ -974,6 +978,9 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
   if (!present.includes(seat)) present.push(seat);
   const ev = e.ev('attackDeclared', `${e.pname(seat)} attacks with ${columns.length} column(s).`, { seat, region: b.region });
   e.fireEvent('attackDeclared', ev);
+  // R84: {Alluring} is an on-attack trigger that targets — one per Alluring
+  // column, queued alongside the card triggers this same event just fired
+  queueAlluringTriggers(e, seat, ev);
   for (const id of columns.flat()) {
     const u = e.entity(id);
     if (!u) continue;
@@ -984,126 +991,277 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
   e.settle();
 }
 
-/**
- * ALLURING (Manual): "defenders that are able to block it must block it."
+/* ── R84 {Alluring} — an on-attack triggered ability that TARGETS ──────────
  *
- * One duty per unblocked Alluring column: who could still be added to it, and
- * how many it would take. `unmetAllure` reads these to REFUSE a declaration;
- * `compulsoryBlocks` reads the same ones to BUILD one. That sharing is the
- * point — when the rule lived only in the validator, `legalActions` drifted
- * from it and the fuzzer's "legalActions lied" check caught them apart.
+ * The attribute reads: when a column with {Alluring} attacks, it targets ONE
+ * enemy unit; that unit cannot attack, and must block THIS column this combat
+ * if able. Caleb, asked "does alluring stop a whole enemy from attacking or a
+ * single unit?" — *"single unit … meaning target unit controlled by an
+ * opponent"*. The community summary he let stand: *"when your formation enters
+ * enemy region, you can use Alluring to target 1 enemy unit. It won't be able
+ * to 'counter-attack' into your region and will be forced to block column
+ * which has Alluring unit."*
  *
- * "Able" is judged against the FINISHED declaration: a unit already blocking
- * another column, or sent to counterattack, is spoken for, and so is one that
- * could not legally join this column anyway (Feeble; no Flying against a
- * Flying column; R20's lone Sneaky attacker, which nobody but a Pure blocker
- * may block at all). The test is "could an unassigned unit still be added
- * here?", which settles two Alluring columns against ONE free blocker by
- * itself: committing it to either leaves the other with nobody, and a duty you
- * cannot discharge twice is discharged once.
+ * It is a real triggered ability, on the real stack: *"'Alluring' effect goes
+ * to stack and can be negated?" — "Yep!"*, and *"this would stop the trigger
+ * if you kill the allurer while the effect is on the stack"*. Modelling it as
+ * a trigger rather than as a block-time validator rule is what buys all of
+ * that — negation, fizzling, the target-picking UI — for nothing.
+ *
+ * It does not stack (*"Nah alluring doesn't stack … It's just one attribute …
+ * It's like how you can't gain flying flying"*), so it is ONE trigger per
+ * Alluring COLUMN, not one per unit — and Alluring is shared to the column
+ * like every other combat attribute (`E.colAttrs`).
  */
-interface AlluringDuty {
-  ci: number;
-  /** the attacker's name, for the refusal message */
-  card: CardName;
-  /** how many free units it takes to discharge this duty */
-  need: number;
-  /** units that could still be assigned here */
-  free: Entity[];
-  /** exactly which of them to use — Evasive is switched off by a single Pure
-   * blocker (R61), so the pick is that unit rather than any two */
-  pick: EntityId[];
+
+/** the synthetic card the Alluring trigger's effect hangs on.
+ *
+ * `EffectPart.effectKey` is a registry lookup, and there is deliberately no
+ * back door: `effectByKey` resolves `ability:<card>#<i>` through `getCard`,
+ * and CARD code (Divine Intervention, Gravitational Correction, Hexbane
+ * Shiitake) calls it on the parts of an arbitrary stack item it is retargeting
+ * — an Alluring trigger included, since it is a legal "target effect". A
+ * rules-owned effect therefore has to be a registered card or those three
+ * would throw on it.
+ *
+ * `kind: 'spellToken'` keeps it out of `DECK_LIST` (which takes only unit /
+ * spell / spellUnit), and the two-word name appears in no card's printed text
+ * and in no log line — the stack item carries the ALLURER's card name, not
+ * this one — so the client's log scanner and token scanner never see it. Its
+ * own `text` is the attribute written out as rules text, which is what
+ * test/68's target conformance reads the declared kind off. */
+const ALLURING_CARD = 'Alluring Attribute';
+const ALLURING_KEY = `ability:${ALLURING_CARD}#0`;
+
+/** The live {Alluring} attack column at index `ci`, or null.
+ *
+ * Asked at three moments — when the trigger is queued, when it resolves, and
+ * when blocks are declared — because all three can disagree: the allurer can
+ * die, be silenced (R62 switches the attribute layer off) or be blanked by a
+ * {Pure} column-mate in between, and each of those genuinely ends the duty. */
+function alluringColumn(e: E, ci: number): EntityId[] | null {
+  const b = e.s.battle;
+  if (!b) return null;
+  const col = b.columns[ci];
+  if (!col) return null;
+  const live = col.filter(id => e.entity(id));
+  if (!live.length) return null;
+  // R61 {Pure}: a column that is itself Pure ignores its own other attributes
+  // — Alluring included — so it compels nobody.
+  if (e.pure(live)) return null;
+  if (!e.colAttrs(live).has('Alluring')) return null;
+  return live;
 }
 
-function alluringDuties(
-  e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: readonly EntityId[] = [],
-): AlluringDuty[] {
+/**
+ * R84 — could `u` discharge column `ci`'s Alluring duty **on its own**?
+ *
+ * This is the printed word "able", and it is a property of the UNIT and THAT
+ * COLUMN only: region, controller, {Feeble}, {Flying}, R20's lone {Sneaky}
+ * attacker, {Evasive}'s second blocker, and R61's {Pure} exceptions to all of
+ * them. It deliberately does NOT look at what the defender has done with `u`
+ * elsewhere in the same declaration.
+ *
+ * That dependency was the UFAB bug (playtest 2026-08-22): the old rule
+ * computed each duty's candidate pool AFTER subtracting the units the defender
+ * had already committed to other columns, so committing every blocker
+ * somewhere else manufactured the "nobody is able" excuse and the Alluring
+ * column walked through unblocked for 6.
+ */
+function canBlockAlone(e: E, u: Entity, ci: number): boolean {
+  const b = e.s.battle;
+  const live = alluringColumn(e, ci);
+  if (!b || !live) return false;
+  if (u.kind !== 'unit' || u.absent || u.region !== b.region) return false;
+  // R61 {Pure}: one Pure card in either column switches the attribute layer
+  // off for that exchange — the blocker's own {Feeble} included.
+  const pure = e.pure(live, [u.id]);
+  const atkAttrs = pure ? new Set<string>() : e.colAttrs(live);
+  const own = e.ownAttrs(u);
+  if (own.has('Feeble') && !own.has('Pure')) return false;
+  if (atkAttrs.has('Flying') && !own.has('Flying')) return false;
+  // R20: a LONE Sneaky attacker cannot be blocked at all, so nobody is able to
+  // block it — except a Pure blocker, which sees through Sneaky (R61).
+  const atkUnits = b.columns.flat().filter(id => e.entity(id));
+  if (atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky') && !e.pure(atkUnits, [u.id])) return false;
+  // {Evasive} wants two blockers, so one unit alone cannot satisfy the column
+  // — and this is the case the solved RAQ thread turns on.
+  if (atkAttrs.has('Evasive')) return false;
+  return true;
+}
+
+/** the Alluring duties `seat` is under right now, grouped by the lured unit */
+function alluredUnits(e: E, seat: Seat): { u: Entity; cols: number[] }[] {
   const b = e.s.battle;
   if (!b) return [];
-  const spokenFor = new Set<EntityId>([...Object.values(blocks).flat(), ...send]);
-  // R20: a lone Sneaky attacker cannot be blocked, so nobody is "able" to
-  // block it and an Alluring duty riding on it is discharged by the rule that
-  // forbids blocking it. R61: a Pure blocker sees through Sneaky like every
-  // other attribute, so it alone stays able. Without this clause an
-  // Alluring+Sneaky lone attacker is a STUCK STATE: every declaration is
-  // refused by one rule or the other.
-  const atkUnits = b.columns.flat().filter(id => e.entity(id));
-  const sneakyAlone = atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky');
-  const isPure = (id: EntityId): boolean => e.pure([id]);
-  const out: AlluringDuty[] = [];
-  for (const [ci, atkCol] of b.columns.entries()) {
-    const live = atkCol.filter(id => e.entity(id));
-    if (!live.length) continue;
-    // R61 {Pure}: an Alluring column that is itself Pure ignores its own
-    // other attributes — Alluring included — so it compels nobody.
-    const atkAttrs = e.pure(live) ? new Set<string>() : e.colAttrs(live);
-    if (!atkAttrs.has('Alluring')) continue;
-    if ((blocks[ci] ?? []).length) continue;                    // this one IS blocked
-    const free = e.unitsIn(b.region).filter(u =>
-      u.controller === seat && u.kind === 'unit' && !u.absent && !spokenFor.has(u.id)
-      // a Pure unit is able against anything: joining the column blinds the
-      // exchange, so neither its own Feeble nor the column's Flying stops it
-      && (isPure(u.id) || (!e.ownAttrs(u).has('Feeble')
-        && !(atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying'))))
-      && (!sneakyAlone || isPure(u.id)));
-    // Evasive wants two blockers — unless one of the free ones is Pure, which
-    // switches Evasive off and lets it discharge the duty alone
-    const purely = atkAttrs.has('Evasive') ? free.find(u => isPure(u.id)) : undefined;
-    const need = (atkAttrs.has('Evasive') && !purely) ? 2 : 1;
-    const pick = purely ? [purely.id] : free.slice(0, need).map(u => u.id);
-    out.push({ ci, card: e.entity(live[0]!)?.card ?? 'that attacker', need, free, pick });
+  const out: { u: Entity; cols: number[] }[] = [];
+  for (const u of e.unitsOf(seat, b.region)) {
+    if (u.allured?.round !== b.round) continue;      // an older round: can't-attack only
+    const cols = u.allured.columns.filter(ci => alluringColumn(e, ci));
+    if (cols.length) out.push({ u, cols });
   }
   return out;
 }
 
 /**
- * Returns the name of an Alluring attacker the defender has left unblocked
- * while still holding a unit that could have blocked it, or null when the
- * declaration discharges every duty.
+ * R84 — why a block declaration is illegal under {Alluring}, or null.
+ *
+ * Two clauses per duty, and every case in the solved RAQ thread falls out of
+ * them (A is the lured unit, the column is Alluring+Evasive so it needs two):
+ *
+ *  - **If the column IS blocked, A must be among its blockers.** *"If another
+ *    unit B wants to block the alluring column then suddenly A can and also
+ *    has to."* So with three units A/B/C, A+B and A+C are legal and **B+C is
+ *    not** — you do not get to send a substitute.
+ *  - **If the column is NOT blocked, that is legal only if A could not have
+ *    satisfied it alone.** With one unit A, A cannot cover an Evasive column
+ *    by itself, so nothing compels it and it is free to block elsewhere; with
+ *    two, the defender may block A+B or forgo the column, and those are the
+ *    only two options. Plain (non-Evasive) Alluring collapses to "A must block
+ *    it", which is the whole point of the attribute.
+ *
+ * Nobody is mind-controlled: *"Yeah they can not block. You don't get to mind
+ * control the opponent 🙂"* — the compulsion never reaches past what ONE unit
+ * can do on its own.
+ *
+ * ⚠ **Two duties on one unit.** Two Alluring columns may name the same unit,
+ * and it cannot block both. Discharging either one excuses the rest — and the
+ * "must be among its blockers" clause is waived for the excused ones too,
+ * because otherwise a defender who does exactly what one duty demands is then
+ * refused for the other, and some positions have no legal declaration at all.
+ * That waiver is the ONLY place "able" is allowed to look at the rest of the
+ * declaration, and it is bounded: only another ALLURING duty can excuse one.
+ * Blocking a plain column, or being sent to counterattack, excuses nothing.
+ * (Judgement call, 2026-08-22 — see docs/digital-rules.md R84.)
  */
-export function unmetAllure(
-  e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: readonly EntityId[] = [],
+export function allureViolation(
+  e: E, seat: Seat, blocks: Record<number, EntityId[]>,
 ): string | null {
-  for (const d of alluringDuties(e, seat, blocks, send)) {
-    if (d.free.length >= d.need) return d.card;
+  for (const { u, cols } of alluredUnits(e, seat)) {
+    // discharged: it is blocking one of the columns that lured it
+    if (cols.some(ci => (blocks[ci] ?? []).includes(u.id))) continue;
+    for (const ci of cols) {
+      const lure = e.entity(alluringColumn(e, ci)![0]!)?.card ?? 'that attacker';
+      if ((blocks[ci] ?? []).length) {
+        return `Alluring: ${lure} lured ${u.card}, so ${u.card} must be one of that column's blockers`;
+      }
+      if (canBlockAlone(e, u, ci)) {
+        return `Alluring: ${u.card} was lured by ${lure} and must block that column`;
+      }
+    }
   }
   return null;
 }
 
 /**
- * R76 — the smallest block assignment that discharges every Alluring duty at
- * once, and the reason `legalActions` can always offer something at the block
- * step.
+ * R84 — the block assignment every Alluring duty on the board demands, and the
+ * reason `legalActions` can always offer something at the block step.
  *
- * Alluring is COMPULSORY, so a declaration is legal only if it discharges every
- * duty on the board simultaneously. `legalActions` used to offer a
- * representative set of ONE-column declarations, which cannot express that:
- * with two Alluring columns and two able blockers, every single-column
- * declaration leaves the other column unblocked with a blocker to spare, so
- * every option was refused and the game HUNG with no legal action for anyone
- * (fuzz seed 1993). Nothing was wrong with the position — only with the set of
- * declarations the engine could think of.
+ * Alluring is compulsory and conjunctive across columns, so a declaration is
+ * legal only if it answers every duty at once. `legalActions` offers a
+ * representative set of declarations that vary ONE column at a time, which
+ * cannot express that on its own: with two Alluring columns and two able
+ * blockers, every single-column option left the other duty unmet, every option
+ * was filtered out, and the game HUNG with no legal action for anyone (fuzz
+ * seed 1993 — R76). Every option is therefore built on top of this core, and
+ * the bare core is always offered.
  *
- * Greedy, in column order, is provably enough: process a duty by assigning it
- * the units it needs; a duty left unblocked was left unblocked because fewer
- * than `need` units were free when it was reached, and later assignments only
- * shrink the free pool, so it is still discharged at the end. Order therefore
- * cannot matter, and the result always satisfies `unmetAllure`.
+ * Under the new model this is no search at all: each duty NAMES its unit, and
+ * two duties can only collide by naming the same unit — in which case
+ * discharging one excuses the others, so taking the first is right. Distinct
+ * lured units have disjoint duty columns (one target per column), so the
+ * assignments can never contend for a column either. The result is legal by
+ * construction.
  */
-export function compulsoryBlocks(
-  e: E, seat: Seat, send: readonly EntityId[] = [],
-): Record<number, EntityId[]> {
+export function compulsoryBlocks(e: E, seat: Seat): Record<number, EntityId[]> {
   const blocks: Record<number, EntityId[]> = {};
-  // one duty discharged per pass; re-derived each time because assigning a
-  // blocker changes who is still free for every other duty
-  for (let guard = 0; guard < 64; guard++) {
-    const open = alluringDuties(e, seat, blocks, send).filter(d => d.free.length >= d.need);
-    if (!open.length) return blocks;
-    const d = open[0]!;
-    blocks[d.ci] = d.pick;
+  for (const { u, cols } of alluredUnits(e, seat)) {
+    const ci = cols.find(c => canBlockAlone(e, u, c));
+    if (ci !== undefined) blocks[ci] = [u.id];
   }
   return blocks;
 }
+
+/**
+ * R84 — the trigger, queued at the `attackDeclared` seam. One per Alluring
+ * COLUMN (it does not stack), anchored on the unit in it that actually carries
+ * the attribute so that killing THAT unit is what stops it.
+ *
+ * Queued by hand rather than through `E.fireEvent`, because there is no card
+ * here: the label and the source card name are the ALLURER's, so the stack,
+ * the log and the client's card scan all say which attacker is doing this.
+ */
+function queueAlluringTriggers(e: E, seat: Seat, ev: EngineEvent): void {
+  const b = e.s.battle!;
+  let queued = false;
+  b.columns.forEach((_col, ci) => {
+    const live = alluringColumn(e, ci);
+    if (!live) return;
+    const srcId = live.find(id => e.ownAttrs(e.entity(id)!).has('Alluring')) ?? live[0]!;
+    const src = e.entity(srcId)!;
+    e.s.triggerQueue.push({
+      sourceId: srcId, sourceCard: src.card, controller: seat, abilityIndex: 0,
+      label: `${src.card}: {Alluring}`,
+      parts: [{ effectKey: ALLURING_KEY, targets: [] }],
+      region: b.region, event: ev,
+    });
+    e.ev('triggered', `Trigger: ${src.card} — {Alluring}.`, { unit: srcId, region: b.region });
+    queued = true;
+  });
+  // a fresh batch: (re)ask the ordering, exactly as fireEvent does
+  if (queued) e.s.triggerOrderedSeats = [];
+}
+
+const ALLURING_EFFECT: EffectDef = {
+  targets: {
+    what: 'enemyUnit',
+    prompt: '{Alluring}: target an enemy unit — it cannot attack, and must block this column if able',
+  },
+  run: (g, ctx) => {
+    const b = g.s.battle;
+    const src = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const ci = b && src ? b.columns.findIndex(c => c.includes(src.id)) : -1;
+    // Caleb: *"this would stop the trigger if you kill the allurer while the
+    // effect is on the stack"*. The allurer has to still be attacking, and its
+    // column has to still be Alluring, or there is no column to be lured to.
+    // (Once it has RESOLVED the mark stands on its own — killing the allurer
+    // then frees the block and leaves the can't-attack half: *"You can't
+    // attack but you can block other things"*.)
+    if (!b || !src || ci < 0 || !alluringColumn(g, ci)) {
+      g.ev('info', `${ctx.sourceName}: the {Alluring} attacker is no longer in the line — nothing is lured.`);
+      return;
+    }
+    const t = ctx.targets[0];
+    if (!t || !('id' in (t as object))) {
+      g.ev('info', `${ctx.sourceName}: nothing left to lure.`);
+      return;
+    }
+    const u = t as Entity;
+    if (!u.allured || u.allured.round !== b.round) u.allured = { round: b.round, columns: [] };
+    if (!u.allured.columns.includes(ci)) u.allured.columns.push(ci);
+    g.ev('info',
+      `${u.card} is lured by ${src.card}: it cannot attack this battle, and must block that column if able.`,
+      { unit: u.id, region: b.region });
+  },
+};
+
+registerSynthetic({
+  name: ALLURING_CARD, cost: '', mana: 0, power: 0, toughness: 0,
+  type: 'Attribute', kind: 'spellToken', timing: 'battle', attrs: [],
+  virus: false, burst: false, augmentAttrs: [], image: '',
+  // the attribute as printed rules text, so test/68's target conformance can
+  // read the declared kind off it like it does for every real card
+  text: "When my column attacks, target unit controlled by an opponent can't attack "
+    + 'this battle, and must block my column this combat if able.',
+}, {
+  abilities: [{
+    type: 'triggered', events: ['attackDeclared'], label: '{Alluring}',
+    // never found by a scan: this card is never in play, and the trigger is
+    // queued by hand from doDeclareAttack. The guard is belt-and-braces.
+    when: () => false,
+    effect: ALLURING_EFFECT,
+  }],
+});
 
 function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: EntityId[]): void {
   const b = e.s.battle;
@@ -1152,16 +1310,20 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
     e.need(t && (t.kind === 'unit' || t.kind === 'spellToken') && t.controller === seat && !t.absent, 'cannot send that');
     e.need(t.region === b.region, 'that is in another region');
     e.need(!used.has(id), 'blockers cannot also be sent to attack');
+    // R84 {Alluring}: "it won't be able to counter-attack into your region" —
+    // going out as a counterattacker IS attacking, so a lured unit may not
+    e.need(!t.allured, `Alluring: ${t.card} was lured and cannot counterattack`);
     used.add(id);
     if (t.kind === 'unit') sentUnits++;
   }
   e.need(send.length === 0 || sentUnits > 0, 'spell tokens travel only with units');
 
-  // Alluring: a defender who could still block one must (playtest 2026-08-20 —
-  // the attribute was in the type union and the rules reference, and enforced
-  // nowhere, so an Alluring attacker could simply be ignored)
-  const allured = unmetAllure(e, seat, blocks, send);
-  e.need(!allured, `Alluring: ${allured} must be blocked if you are able`);
+  // R84 {Alluring}: each lured unit must be among its column's blockers, and
+  // may only leave that column unblocked when it could not have covered it
+  // alone. Judged against the unit and the column ONLY — never against what
+  // the defender did with it elsewhere (that was the UFAB bug).
+  const allured = allureViolation(e, seat, blocks);
+  e.need(!allured, allured ?? '');
 
   b.blocks = {};
   for (const [ciStr, col] of Object.entries(blocks)) b.blocks[Number(ciStr)] = col.slice();
@@ -1230,6 +1392,11 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     } else if (sus.stage === 'itemCost') {
       // R49: an activation cost that carries a choice — same window, same rule
       e.payItemCost(sus.item, val);
+    } else if (sus.stage === 'formation') {
+      // R29: WHERE this card is being played. Part of the play, so it is fixed
+      // in the cast window with everything else; it is taken at resolution,
+      // and re-derived there because the line may have moved (R5/R56).
+      sus.item.formationSpot = val as FormationSpot;
     } else if (typeof val === 'object' && val !== null && 'doneTargets' in val) {
       sus.item.parts[sus.partIndex]!.targetsDone = true;
     } else {
@@ -1257,10 +1424,15 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     return;
   }
 
-  // sus.type === 'resolve': fill the answer and replay the part
+  // sus.type === 'resolve': fill the answer and replay the part.
+  // R85: the rollback to the part boundary happens HERE, not when the part
+  // suspended — so the board everybody was looking at while this question was
+  // open showed the resolution as far as it had actually got. `shown` is how
+  // much of the part's log they were shown, which the replay must not repeat.
   e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
   sus.answers[sus.pendingKey] = dec.options[choice]!.value;
-  e.resolveParts(sus.item, sus.partIndex, sus.answers);
+  const shown = e.resumeResolve(sus);
+  e.resolveParts(sus.item, sus.partIndex, sus.answers, shown);
   e.afterParts(sus.item);
   // R78: it has ACTUALLY resolved now — clear the marker (resolveParts throws
   // straight past this if the item still owes another choice, which is exactly
@@ -1284,7 +1456,9 @@ export function forcedAction(state: GameState): Action | null {
   if (b.step === 'declare') {
     const from = b.round === 1 || b.attackerPool === null ? e.homeRegion(b.attacker) : b.region;
     const eligible = e.unitsOf(b.attacker, from)
-      .filter(u => !b.attackerPool || b.attackerPool.includes(u.id));
+      // R84: a lured unit cannot attack, so it is not eligible and cannot make
+      // the difference between "no attack is possible" and a real choice
+      .filter(u => (!b.attackerPool || b.attackerPool.includes(u.id)) && !u.allured);
     if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };
     // round-2 counterattack with EXACTLY one sent unit and no sent spell
     // token that could ride along: the only sensible formation is that unit
@@ -1404,7 +1578,8 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
     if (b.step === 'declare' && seat === b.attacker) {
       out.push({ type: 'declareAttack', seat, columns: [] });
       const fromRegion = b.round === 1 || b.attackerPool === null ? e.homeRegion(seat) : b.region;
-      const mine = e.unitsOf(seat, fromRegion).filter(u => !b.attackerPool || b.attackerPool.includes(u.id));
+      const mine = e.unitsOf(seat, fromRegion)
+        .filter(u => (!b.attackerPool || b.attackerPool.includes(u.id)) && !u.allured);   // R84
       for (const u of mine) out.push({ type: 'declareAttack', seat, columns: [[u.id]] });
       if (mine.length > 1) out.push({ type: 'declareAttack', seat, columns: mine.map(u => [u.id]) });
       return out;
@@ -1414,12 +1589,13 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       // predicate the validator uses, so the two can never drift (the fuzzer's
       // "legalActions lied" check is what caught them drifting)
       const legalBlock = (a: Action): boolean => a.type !== 'declareBlocks'
-        || !unmetAllure(e, seat, a.blocks, a.send ?? []);
-      // R76: Alluring duties are compulsory and must ALL be discharged at once,
-      // which no single-column declaration can do once there are two Alluring
-      // columns and two able blockers. Every option below is therefore built on
-      // top of the compulsory core, and the core alone is always offered — it
-      // is legal by construction, so this list is never empty.
+        || !allureViolation(e, seat, a.blocks);
+      // R84/R76: Alluring duties are compulsory and must ALL be discharged at
+      // once, which no single-column declaration can do once there are two
+      // Alluring columns and two lured blockers. Every option below is
+      // therefore built on top of the compulsory core, and the core alone is
+      // always offered — it is legal by construction, so this list is never
+      // empty.
       const core = compulsoryBlocks(e, seat);
       const spoken = new Set<EntityId>(Object.values(core).flat());
       const onCore = (blocks: Record<number, EntityId[]>): Record<number, EntityId[]> =>
@@ -1464,9 +1640,10 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       if (b.round === 1) {
         for (const u of mine) {
           if (spoken.has(u.id)) continue;   // it is already blocking, compulsorily
-          // sending a unit away changes who is still able, so the core is
-          // recomputed against this send rather than reused
-          out.push({ type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat, [u.id]), send: [u.id] });
+          // R84: a lured unit cannot counterattack — and sending anyone ELSE
+          // away cannot change who is "able", so the core is reused verbatim
+          if (u.allured) continue;
+          out.push({ type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat), send: [u.id] });
         }
       }
       return out.filter(legalBlock);

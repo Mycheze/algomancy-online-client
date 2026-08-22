@@ -13,10 +13,15 @@
  * ui/motion.ts and ui/sfx.ts: the arithmetic is pure and tested here, the DOM
  * layer just draws whatever `stackRows()` returns.
  *
+ * R80 widens the same idea from stack items to NARRATIVE BEATS — see the
+ * second half of this file. A combat damage step is not a stack item and gets
+ * no 'stackFlash', but it has exactly the same problem, and it gets the same
+ * treatment out of the same three knobs.
+ *
  * Time is a plain millisecond reading (Date.now()) passed in, never read here
  * — so a test can run a whole flash queue without a clock.
  */
-import type { EngineEvent, Seat, StackItem } from '../src/types.ts';
+import type { EngineEvent, EventType, Seat, StackItem } from '../src/types.ts';
 
 /** how long one flashed item sits on the visual stack. The ask was "at least
  * a second so that it doesn't happen too fast" — long enough to read the art
@@ -287,3 +292,156 @@ export function stackCaption(
  */
 export const censusFlashes = (rows: readonly StackRow[]): StackRow[] =>
   rows.filter(r => r.resolving || (r.flashing && !r.item.negated));
+
+// ── R80: narrative beats — a combat step told one stage at a time ─────
+//
+// Playtest UFAB: "Neither of us had anything to do during the end of that
+// combat, but damage and all effects happened instantly. We should have been
+// able to see, much slower, what happened and how much damage went through."
+//
+// The engine runs a whole damage step in ONE synchronous pump (engine.ts
+// pumpCombatDamage: Swift → normal → Sluggish → after, checkDeaths between
+// each), the server sends it as one batch and drains the forced steps into
+// the same batch, and the client appends every line and paints once. With
+// nothing to answer, an entire combat is a single frame.
+//
+// This is the same complaint docs/11 answered for unrespondable stack items,
+// so it gets the same answer and the same three knobs: hold the story back and
+// let it out a beat at a time. What is staged is the STORY — the log lines and
+// a pulse on what the stage is about. THE BOARD UNDERNEATH IS FINAL AND
+// CLICKABLE THE INSTANT render() RETURNS, exactly as docs/11 promises; a beat
+// explains, it never gates input, and the whole queue is bounded by
+// MAX_LEAD_MS so the log can never be more than 2.2s behind the table.
+//
+// Grouping is done WITHOUT any engine change. The damage events carry no
+// sub-step tag, but the pump's own shape is legible in the event order:
+// checkDeaths runs after every sub-step, so a batch reads as alternating runs
+// of "damage landed" and "and then things died", and the header and
+// 'afterCombat' bracket the whole thing. A run boundary is therefore just a
+// change of event flavour, which is what `combatStages` reads.
+
+/** events that say damage/life/counters LANDED */
+const STRIKE_TYPES: ReadonlySet<EventType> = new Set<EventType>([
+  'combatDamage', 'damage', 'lifeLost', 'lifeGained',
+  'countersChanged', 'statChanged', 'rotGained', 'debtGained',
+]);
+/** events that say what the strike COST — deaths and the tidy-up after them */
+const FALLOUT_TYPES: ReadonlySet<EventType> = new Set<EventType>([
+  'died', 'despawned', 'erased', 'trashed', 'info',
+]);
+
+/** which half of the story a stage tells */
+export type BeatKind = 'strike' | 'fallout' | 'after';
+
+/** one stage of a batch: a run of consecutive log lines and what they are about */
+export interface BeatStage {
+  kind: BeatKind;
+  /** how many of the batch's LOG LINES (events with a message) it releases */
+  lines: number;
+  /** ui/motion.ts keys the stage is about, for the pulse that draws the eye */
+  keys: string[];
+}
+
+/** a stage with the clock reading it is told at */
+export interface Beat extends BeatStage {
+  at: number;
+  /** the client has played this one (set by ui/main.ts when it paints it) */
+  fired?: boolean;
+}
+
+/** the motion keys one event is about: the unit it hit, or the player it hit */
+function beatKeys(ev: EngineEvent): string[] {
+  const d = ev.data ?? {};
+  const out: string[] = [];
+  const unit = d['unit'];
+  if (typeof unit === 'number') out.push(`e${unit}`);
+  const seat = d['seat'];
+  if (typeof seat === 'number') {
+    if (ev.type === 'lifeLost' || ev.type === 'lifeGained'
+      || ev.type === 'rotGained' || ev.type === 'debtGained') out.push(`@life:${seat}`);
+    // a death's own `e<id>` is already off the board — the bin is where the
+    // card actually went, and it is the thing still on screen to pulse
+    if (ev.type === 'died' || ev.type === 'trashed') out.push(`@bin:${seat}`);
+  }
+  return out;
+}
+
+/**
+ * Cut one action's events into the stages of a combat damage step, or [] when
+ * the batch is not one (or is too small to be worth telling slowly).
+ *
+ * Only log-line events are counted, because lines are the unit the client
+ * holds back — a signal-only 'stackFlash' is not in the log and must not shift
+ * the arithmetic by one.
+ *
+ * Everything BEFORE the 'combatDamage' header is left out of the queue
+ * entirely: it belongs to whatever the player just did, it is already on
+ * screen, and holding it would be rewriting history rather than pacing it.
+ *
+ * Anything the pump did not emit itself — a trigger going on the stack, a
+ * phase line from the server's forced-step drain — ends the staging: from
+ * there to the end of the batch is one final 'after' stage. That is the honest
+ * degradation. Nothing is ever lost, only grouped more coarsely.
+ */
+export function combatStages(events: readonly EngineEvent[]): BeatStage[] {
+  const lines = events.filter(e => e.msg);
+  const head = lines.findIndex(e => e.type === 'combatDamage');
+  if (head < 0) return [];
+  const stages: BeatStage[] = [];
+  let cur: BeatStage = { kind: 'strike', lines: 0, keys: [] };
+  stages.push(cur);
+  const open = (kind: BeatKind): void => { cur = { kind, lines: 0, keys: [] }; stages.push(cur); };
+  for (let i = head; i < lines.length; i++) {
+    const ev = lines[i]!;
+    const t = ev.type;
+    if (cur.kind !== 'after') {
+      if (t === 'afterCombat' || (!STRIKE_TYPES.has(t) && !FALLOUT_TYPES.has(t))) open('after');
+      else if (cur.kind === 'fallout' && STRIKE_TYPES.has(t)) open('strike');
+      else if (cur.kind === 'strike' && FALLOUT_TYPES.has(t)) open('fallout');
+    }
+    cur.lines++;
+    for (const k of beatKeys(ev)) if (!cur.keys.includes(k)) cur.keys.push(k);
+  }
+  // one stage is not a sequence: there is nothing to pace, so pace nothing.
+  // Nor is a combat in which nothing landed — an unblocked attack into an
+  // empty board is a bare header and an 'afterCombat', and making the player
+  // wait a beat to be told nothing happened is the opposite of the ask.
+  const told = stages.reduce((n, s) => (s.kind === 'after' ? n : n + s.lines), 0);
+  return stages.length > 1 && told > 1 ? stages : [];
+}
+
+/**
+ * Stamp the stages with the moments they are told at.
+ *
+ * The first stage is told NOW — the board is already final under it and the
+ * player must never wait to be told anything about a move they can already
+ * see. The rest walk forward one HOLD_MS apart, squeezed towards STAGGER_MS
+ * when there are enough of them that the staircase would otherwise run past
+ * MAX_LEAD_MS, and hard-clamped there whatever happens. Same three knobs, same
+ * meanings, as the flash queue above.
+ *
+ * A new batch REPLACES the queue rather than lining up behind it (the flash
+ * queue's rule): the lines a superseded stage was holding are already in the
+ * log the new batch was appended to, so making the player wait for them now
+ * would hold the newest events hostage to the oldest.
+ */
+export function queueBeats(stages: readonly BeatStage[], now: number): Beat[] {
+  if (stages.length < 2) return [];
+  const gap = Math.max(STAGGER_MS, Math.min(HOLD_MS, MAX_LEAD_MS / (stages.length - 1)));
+  return stages.map((s, i) => ({ ...s, at: now + Math.min(i * gap, MAX_LEAD_MS) }));
+}
+
+/** how many log lines at the TAIL of the log have not been told yet */
+export const heldLines = (beats: readonly Beat[], now: number): number =>
+  beats.reduce((n, b) => (b.at > now ? n + b.lines : n), 0);
+
+/** the beats whose moment has come and which the client has not played yet */
+export const dueBeats = (beats: readonly Beat[], now: number): Beat[] =>
+  beats.filter(b => !b.fired && b.at <= now);
+
+/** the next clock reading at which the log says something new, or null */
+export function nextBeatWake(beats: readonly Beat[], now: number): number | null {
+  let best: number | null = null;
+  for (const b of beats) if (b.at > now && (best === null || b.at < best)) best = b.at;
+  return best;
+}

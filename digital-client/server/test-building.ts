@@ -12,9 +12,9 @@
  */
 import { spawn } from 'node:child_process';
 import { WebSocket } from 'ws';
-import { mintRoom } from './test-util.ts';
+import { freePort, mintRoom } from './test-util.ts';
 
-const PORT = 8900 + Math.floor(Math.random() * 90);
+const PORT = await freePort();
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';

@@ -526,36 +526,28 @@ card('Tidelurker', {
 });
 
 // "You may play me into an open spot in your formation." — b/1 2/2 {Battle}
-// Fish Unit. Modelled as a spawn trigger: played during battle it spawns into
-// the region, then may slide into an open formation slot.
+// Fish Unit.
 //
-// R75: the slot set and the choice are now the engine's, not this card's.
-// `E.formationSlots` is the single answer to "where can a unit join a
-// formation" — either END of the attacking line, the back slot of a one-unit
-// column, or an R72 hole — and `E.placeInFormation(..., { optional: true })`
-// carries the printed "you MAY". This card is where that logic was invented,
-// one card at a time; four others were each doing a different version of it.
-card('Tiderunner Initiate', {
-  abilities: [{
-    type: 'triggered', events: ['spawned'], self: true,
-    label: 'you may join an open spot in your formation',
-    when: (g, self) =>
-      g.s.phase === 'battle' && g.formationSlots(self.controller).length > 0,
-    effect: {
-      run: (g, ctx) => {
-        const self = selfOf(g, ctx);
-        const b = g.s.battle;
-        if (!self || !b || self.region !== b.region || g.columnOf(self.id)) {
-          g.ev('info', 'Tiderunner Initiate: it is not where a formation can be joined — it stays out.');
-          return;
-        }
-        g.placeInFormation(self, ctx, {
-          key: 'spot', source: 'Tiderunner Initiate', optional: true,
-        });
-      },
-    },
-  }],
-});
+// R29, rewritten 2026-08-22 (playtest UFAB): the whole card is one engine
+// flag. `playsIntoFormation` makes the spot part of the CAST — asked in the
+// same window as X, mods, targets and costs (R35), and taken at resolution
+// atomically with the spawn, so the unit's first appearance anywhere is
+// already standing in the line.
+//
+// It used to be a triggered ability on its own `spawned` event, calling R75's
+// `E.placeInFormation` when the trigger resolved. That read the printed words
+// as an effect, and the report is what it cost: *"Tiderunner Initiate should
+// never have entered the Invader's zone. It gets played directly into the
+// formation, not as a trigger that happens when it enters."* Playing it
+// spawned a unit into the region with no column — which is precisely what the
+// client draws as the invader's zone — stacked a trigger, and handed the
+// opponent a priority window; in the reported game Good Whale and Tidal
+// Reversion used it to recall the Initiate before it ever reached the line.
+//
+// R75 keeps `placeInFormation` for what it was written for: an EFFECT that
+// creates a unit in a formation (Hooba-Bot/Lin/God/Pon). Those units really
+// are made and then placed. This one is played into a spot.
+card('Tiderunner Initiate', { playsIntoFormation: true });
 
 // "Reveal the top eight cards of the deck. Choose up to two of them with
 // total cost 8 or less. You may play them now, for free. Recycle the rest."
@@ -641,7 +633,13 @@ card('Upheaval', {
 const recallSelf: EffectDef = {
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
-    if (self) g.recall(self);
+    // test/65: on a host, or once the body is already gone, there is nothing to
+    // recall — and saying so is the difference between a rule and a bug
+    if (!self) {
+      g.ev('info', `${ctx.sourceName}: there is nothing left to recall — nothing happens.`);
+      return;
+    }
+    g.recall(self);
   },
 };
 card('Vaporweave Eidolon', {

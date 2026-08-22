@@ -24,9 +24,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
-import { isAugment } from '../src/cards/dsl.ts';
+import { getCard, isAugment } from '../src/cards/dsl.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, offered, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
@@ -217,6 +217,48 @@ test('Formless: R62 — "and loses all attributes", abilities untouched', () => 
     'Formless takes attributes only — abilities are not in its text');
   finishBattle(h);
   assert.ok(ownAttrs(h, sprite).has('Flying'), 'until REGROUP');
+});
+
+/* Playtest BRDM, 2026-08-20: "FORMLESS SHOULD BE ABLE TO TARGET ITSELF".
+ *
+ * It always could — a bare `what: 'unit'` spec offers every unit in the
+ * region, the source included, and "another target …" is a SEPARATE clause
+ * (dsl.ts `notSelf`) that Formless does not print. Nothing asserted it, which
+ * is the problem: 16-earth-a.test.ts asserts the exact OPPOSITE for Eminence
+ * of Fire ("no self-target is offered"), because that card really does print
+ * "another target unit". With one card pinned and the other not, an
+ * "exclude self" refactor would have looked sanctioned by the suite.
+ *
+ * So this pins both halves — the declaration and the live menu — and the
+ * whole point is that Formless is a 2/2 {Flying} choosing to become a 4/4
+ * that has lost Flying, which is a real play and not a misclick. */
+test('Formless: BRDM — "target unit" includes ME, and self-targeting really works', () => {
+  const spec = getCard('Formless').abilities![0]!.effect.targets!;
+  assert.equal(spec.what, 'unit', 'the printed text says "target unit", not "another target unit"');
+  assert.equal(spec.restrict, undefined, 'and nothing excludes the source (dsl.ts notSelf)');
+
+  const h = new Harness(2726);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const fl = spawn(h, A, 'Formless');                       // printed 2/2 {Flying}
+  const them = spawn(h, D, 'The Foretold');
+  assert.deepEqual(effStats(h, fl), [2, 2]);
+  assert.ok(ownAttrs(h, fl).has('Flying'));
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[fl]] });
+
+  // R64: a legal target is one you are OFFERED, so the menu is the assertion
+  assert.ok(offered(h).includes(JSON.stringify({ unit: fl })),
+    `Formless must be on its own trigger's menu; it offered [${offered(h)}]`);
+  assert.ok(offered(h).includes(JSON.stringify({ unit: them })), 'and so is everyone else');
+  pick(h, { unit: fl });
+  pass(h); pass(h);                                         // resolve
+
+  assert.deepEqual(effStats(h, fl), [4, 4], 'it rewrote its own base');
+  assert.equal(ownAttrs(h, fl).size, 0, 'and dropped its own {Flying} with the rest');
+  finishBattle(h);
+  assert.deepEqual(effStats(h, fl), [2, 2], 'until regroup');
+  assert.ok(ownAttrs(h, fl).has('Flying'));
 });
 
 // ── Hooba-Bot ────────────────────────────────────────────────────────────

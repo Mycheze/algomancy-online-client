@@ -6,13 +6,18 @@ import { Harness } from '../src/harness.ts';
 import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/apply.ts';
 import { getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import {
-  activatableUnits, activationBadge, activationNeedsConfirm, dismissSeenCard, dismissSeenHand,
-  erasedPileView, groupReveal, linkCardNames,
-  partitionOptions, playableCachedNames, seenHandView, shouldAutoYield, stackAbilityRows, stackItemX,
-  stackXMark, tokensCreatedBy, unitClickOptions, waitingNote, watchCast,
+  actionNeedsMenu, activatableUnits, activationBadge, activationKeys, activationNeedsConfirm,
+  autoPassPlan, blockPlanIssue, boardMenuEntries, cardClasses, castableTokens,
+  dismissSeenCard, dismissSeenHand,
+  erasedPileView, groupReveal, growCardLedger, linkCardNames, modHostCount, modHostPhrase,
+  modHosts, onlyKnownNames,
+  partitionOptions, planOffer, playableCachedNames, seenHandView, stackAbilityRows, stackItemX,
+  stackXMark, takeAutoPass, tokensCreatedBy, unitClickOptions, waitingNote, watchCast,
 } from './inspect.ts';
-import type { CastWatch, FormationRole, SeenHandDismissals, UnitClickOption } from './inspect.ts';
-import { halfRows, publishCols, rekeyBuild } from './formation.ts';
+import type {
+  AutoPassPlan, CastWatch, FormationRole, ModHosts, SeenHandDismissals, UnitClickOption,
+} from './inspect.ts';
+import { dropIntoRow, halfRows, publishCols, rekeyBuild } from './formation.ts';
 import { entityTextBox, printedTextBox, textBoxFor } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
@@ -20,20 +25,24 @@ import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts
 import type { GlossEntry } from './glossary.ts';
 import type { Census } from './motion.ts';
 import {
-  captureFrame, clarityOn, clearArrows, initAnim, motionOn, playMotion,
+  captureFrame, clarityOn, clearArrows, initAnim, motionOn, playMotion, pulseKeys,
   setBaseArrows, setHoverArrows, setMotionOn,
 } from './anim.ts';
 import type { ArrowSpec } from './anim.ts';
 import { armsIdle, diffSfx, sfxSnap } from './sfx.ts';
 import type { SfxSnap } from './sfx.ts';
-import { censusFlashes, nextFlashWake, pruneFlashes, queueFlashes, stackCaption, stackRows } from './flash.ts';
-import type { Flash } from './flash.ts';
+import {
+  censusFlashes, combatStages, dueBeats, heldLines, nextBeatWake, nextFlashWake,
+  pruneFlashes, queueBeats, queueFlashes, stackCaption, stackRows, STAGGER_MS,
+} from './flash.ts';
+import type { Beat, Flash } from './flash.ts';
 import {
   armIdle, disarmIdle, playCue, primeAudio, setSoundOn, soundOn,
 } from './audio.ts';
 import { E } from '../src/engine.ts';
 import type {
-  Action, CachedCard, EngineEvent, Entity, EntityId, EventType, GameState, Seat, StackItem, TargetRef,
+  Action, CachedCard, CardName, EngineEvent, Entity, EntityId, EventType, GameState,
+  Seat, StackItem, TargetRef,
 } from '../src/types.ts';
 import * as acct from './account.ts';
 import * as lob from './lobby.ts';
@@ -123,9 +132,14 @@ class NetBackend implements Backend {
     // paths call this directly, without act(), and must stop the idle
     // countdown too: the obligation it was counting down to is being consumed
     disarmIdle();
+    // [59] …and must take the latch with them. This state has now been spent;
+    // nothing else may act on it until the server says what it became.
+    this.latch();
     this.sentBuilding = '';                       // a real action resets the relay
     this.ws.send(JSON.stringify({ t: 'action', action: a }));
   }
+  /** [59] one intent per authoritative state — see UiState.sentFor */
+  private latch(): void { ui.sentFor = this.state?.actionCount ?? -1; }
   /** publish the formation being built (no-op when nothing changed) */
   sendBuilding(cols: EntityId[][], send: EntityId[]): void {
     const payload = JSON.stringify({ t: 'building', cols, send });
@@ -133,7 +147,7 @@ class NetBackend implements Backend {
     this.sentBuilding = payload;
     this.ws.send(payload);
   }
-  undo(): void { this.ws.send(JSON.stringify({ t: 'undo' })); }
+  undo(): void { this.latch(); this.ws.send(JSON.stringify({ t: 'undo' })); }
   /** draft lobby: change the method, submit, lock or unlock (server/trio.ts) */
   lobby(msg: Record<string, unknown>): void {
     this.ws.send(JSON.stringify({ t: 'lobby', ...msg }));
@@ -205,6 +219,11 @@ class NetBackend implements Backend {
     }
     if (m.t === 'update') {
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? this.peers; render(); return; }
+      // [59] a fresh authoritative state supersedes a complaint about the
+      // previous one. uiError was cleared in act() and nowhere on the way IN,
+      // so a refusal earned by an automatic pass — which never goes through
+      // act() — stayed on screen for the rest of the game.
+      uiError = '';
       rememberStack();   // R68: before the new view replaces the negated item
       if (m.view) { this.state = m.view; this.building = null; }   // a real action supersedes
       if (m.log) { this.log = m.log; this.logTypes = m.log.map(() => undefined); }   // full resync (undo shrank it)
@@ -246,6 +265,19 @@ class NetBackend implements Backend {
       // out the opponent deployed anything at all.
       if (pendingReveal) heldFlashes.push(...(m.events ?? []));
       else absorbFlashes(m.events ?? []);
+      // UFAB: the cast list grows from the batch BEFORE anything is drawn, or
+      // the very line announcing a card ("Ben plays Bripp → stack.") would be
+      // the one line that fails to link it.
+      noteCardsSeen(m.events ?? []);
+      // R80: and the combat beats are staged off the same batch, so the log
+      // lets go of a whole damage step one stage at a time. Behind the reveal
+      // overlay nobody is looking at the log, so that batch is not paced —
+      // and passing [] is also what clears a queue the reveal would otherwise
+      // leave holding lines that now belong to a different batch.
+      // (…and not off a full resync either: `m.log` means the log was
+      // REWRITTEN — an undo replayed the game — so its tail is not a story
+      // anybody just watched happen.)
+      absorbBeats(pendingReveal || m.log ? [] : (m.events ?? []));
       render(); return;
     }
     if (m.t === 'kicked') {
@@ -257,6 +289,10 @@ class NetBackend implements Backend {
       return;
     }
     if (m.t === 'error') {
+      // [59] a refusal leaves actionCount exactly where it was, so the latch
+      // would never lift on its own — and the player would be locked out of a
+      // state they are still holding. Release it here instead.
+      ui.sentFor = -1; ui.autoAt = -1;
       ui.cancelling = false; uiError = m.msg ?? 'error'; playCue('error'); render(); return;
     }
   }
@@ -269,6 +305,15 @@ let uiError = '';
 /** the zones a mod (augment/graft) can be applied from — R41 added the cache */
 type ModZone = 'hand' | 'bin' | 'cache';
 
+/**
+ * One entry in the click menu (ui.menu), and in the list `offer()` weighs
+ * before deciding whether there is anything to open a menu FOR.
+ *
+ * [08b] `confirm` is the flag that keeps a lone entry from firing on the click
+ * that revealed it — see actionNeedsMenu in ui/inspect.ts.
+ */
+interface MenuItem { label: string; icon?: string; go: () => void; confirm?: boolean }
+
 interface UiState {
   carrying: EntityId | null;
   columns: EntityId[][];
@@ -278,7 +323,7 @@ interface UiState {
   /** R41: 'cache' is a third mod source — "you CAN augment or graft from
    * cache" (Caleb 2024-12-02) — so the in-progress mod has to name it too. */
   modding: { from: ModZone; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
-  menu: { x: number; y: number; items: { label: string; icon?: string; go: () => void }[] } | null;
+  menu: { x: number; y: number; items: MenuItem[] } | null;
   orderPicked: number[];
   /** draft step: pile indices (into hand.concat(pack)) marked "leave in pack" */
   draftPack: number[] | null;
@@ -287,17 +332,31 @@ interface UiState {
   /** keep passing my priority windows until the battle ends or something new
    * hits the stack (net mode only) */
   autopass: boolean;
-  /** actionCount the last autopass was sent for (never double-send) */
-  autopassAt: number;
   /** stack height when autopass was armed — growth disarms it */
   autopassStack: number;
-  /** actionCount the auto-pass TOGGLE (C4) last sent a pass for */
-  autopassPrefAt: number;
   /** #1: activateAbility keys that were already legal when Pass-all was armed —
    * a NEW key appearing (a resolution granted an ability) disarms the chip */
   autopassSig: string[];
-  /** #2: actionCount the auto-yield-to-triggers pass was last sent for */
-  yieldAt: number;
+  /**
+   * [59] actionCount an AUTOMATIC pass has already been scheduled for.
+   *
+   * One field for all three auto-pass reasons (Pass-all, the C4 toggle, an
+   * auto-yielded trigger). They used to hold a stamp each, which made them
+   * one-shot individually and not at all collectively: with the toggle on and
+   * a yielded trigger on top, two passes went out for one state and the second
+   * came back "you do not have priority".
+   */
+  autoAt: number;
+  /**
+   * [59] actionCount ANY intent was last handed to the socket for.
+   *
+   * The client has no local copy of the rules in net mode, so between a send
+   * and the pushed view it is looking at a state it has already spent. This is
+   * the latch that stops it spending it twice — set by NetBackend.do/undo,
+   * released by the next authoritative actionCount (an applied action always
+   * bumps it) or, if the server refused, by the error itself.
+   */
+  sentFor: number;
   /** #4: a chained cast-cancel is in progress (net: one undo per server state) */
   cancelling: boolean;
   /** actionCount the last cancel-chain undo was sent for */
@@ -347,8 +406,8 @@ const savedEls = (): string[] => {
 };
 const freshUi = (): UiState => ({
   carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
-  draftPack: null, draftFor: '', autopass: false, autopassAt: -1, autopassStack: 0,
-  autopassPrefAt: -1, autopassSig: [], yieldAt: -1, cancelling: false, cancelAt: -1,
+  draftPack: null, draftFor: '', autopass: false, autopassStack: 0,
+  autopassSig: [], autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
   prefillFor: '', confirmDone: null, confirmPass: null, homeEls: savedEls(),
   homeFixedTrio: false,
   confirmDeploy: null, confirmAct: null,
@@ -408,8 +467,32 @@ const resetUi = () => {
   judgeOpen = false;
   inspect = null;
   showSpentCache = new Set();
+  cardsSeen = new Set();
   dropBaselines();
 };
+
+// ── the log's cast list (ui/inspect.ts growCardLedger) ────────────────
+//
+// UFAB: "all strings that match card names become hoverable cards… so
+// 'Battle:' (which happens every turn) looks like it's a card name. Instead,
+// the game log should only highlight actual cards used in the game."
+//
+// `Battle` IS a card, so the phase line linked one every turn. This is the set
+// of cards this game has really shown; `logLineHtml` links a name only if it
+// is in here. It grows and never shrinks — a card recalled out of play must
+// still link in the older lines that named it — and is dropped only by
+// resetUi(), which is a NEW GAME, not a new view of this one.
+let cardsSeen = new Set<CardName>();
+
+/** Fold the current board (and, when a batch just arrived, its events) into
+ * the cast list. Called from renderNow — so the set is always at least as big
+ * as what is on screen, whatever route the state took to get here — and from
+ * the two action paths, which is what catches the things state alone cannot:
+ * a spell token created and resolved inside one batch is in no state this
+ * client is ever handed, but its 'stackFlash' snapshot names it. */
+function noteCardsSeen(events: readonly EngineEvent[] = []): void {
+  growCardLedger(cardsSeen, h.state, events);
+}
 
 /** Drop every "what was on screen before" baseline — motion, sound, flash
  * beats. Called wherever the next paint is NOT the previous board plus one
@@ -489,6 +572,8 @@ let flashTimer: ReturnType<typeof setTimeout> | null = null;
 function flashReset(): void {
   flashQueue = [];
   heldFlashes = [];
+  beatQueue = [];       // R80: and the narrative beats holding back log lines
+  cancelAutoPass();     // R80: a pass scheduled against a board that is gone
   seenStack = new Map();
   // R78: and the cast watch with them. It is a DIFF against the last thing you
   // were shown, so a state that arrives wholesale gives it nothing to diff —
@@ -514,12 +599,50 @@ function absorbFlashes(events: readonly EngineEvent[]): void {
   flashQueue = queueFlashes(flashQueue, events, Date.now(), seenStack);
 }
 
+// ── R80: narrative beats — the combat step told one stage at a time ───
+//
+// UFAB: "Neither of us had anything to do during the end of that combat, but
+// damage and all effects happened instantly. We should have been able to see,
+// much slower, what happened and how much damage went through."
+//
+// ui/flash.ts does the arithmetic; this is the two lines of plumbing it needs.
+// The board is NOT staged — docs/11's contract is that a beat explains and
+// never gates, and the whole point of the report is that nobody had anything
+// to answer. What is staged is the LOG: `heldLines` says how many lines at the
+// tail of `h.log` have not been told yet, and renderNow simply draws fewer of
+// them. The array itself is never touched, so an undo, a resync or a bug can
+// only ever make the missing lines appear — at worst 2.2s (MAX_LEAD_MS) late.
+
+/** the stages of the batch being told, and when each is told */
+let beatQueue: Beat[] = [];
+
+/** Stage one action's events. A new batch REPLACES the queue: its lines are
+ * already appended behind the old ones, so holding those back now would hide
+ * the newest events instead of pacing them. */
+function absorbBeats(events: readonly EngineEvent[]): void {
+  beatQueue = clarityOn() ? queueBeats(combatStages(events), Date.now()) : [];
+}
+
+/** Play the beats whose moment has come: pulse what each stage is about, once.
+ * The first stage is skipped — it lands with the batch's own motion diff,
+ * which has just pulsed the same cards, and pulsing them twice in one frame
+ * reads as a stutter rather than as emphasis. */
+function fireBeats(): void {
+  const now = Date.now();
+  for (const b of dueBeats(beatQueue, now)) {
+    b.fired = true;
+    if (b !== beatQueue[0]) pulseKeys(b.keys);
+  }
+}
+
 /** Book the repaint that starts the next beat (or ends the last one). */
 function scheduleFlashWake(): void {
   if (flashTimer !== null) { clearTimeout(flashTimer); flashTimer = null; }
   const now = Date.now();
   flashQueue = pruneFlashes(flashQueue, now);
-  const at = nextFlashWake(flashQueue, now);
+  const flash = nextFlashWake(flashQueue, now);
+  const beat = nextBeatWake(beatQueue, now);
+  const at = flash === null ? beat : beat === null ? flash : Math.min(flash, beat);
   if (at === null) return;
   flashTimer = setTimeout(() => { flashTimer = null; render(); }, Math.max(16, at - now));
 }
@@ -649,7 +772,13 @@ const zoneLabel = (z: ModZone): string => (z === 'bin' ? 'the bin' : z === 'cach
  * originating action (structuredClone; capped, chains are short) */
 let snaps: { state: GameState; logLen: number; actionsLen: number }[] = [];
 
+/** Every engine action, hotseat or network, funnels through act(). The focus
+ * pin reads this to tell a MOVE from a LOOK: a click that reaches act() was
+ * playing the game, not reading a card. */
+let actCount = 0;
+
 function act(a: Action): void {
+  actCount++;
   // you are demonstrably at the keyboard — stop counting down to the thump.
   // The next obligation to ARRIVE re-arms it (soundPass).
   disarmIdle();
@@ -657,6 +786,11 @@ function act(a: Action): void {
     // network mode: the server is authoritative — send the intent and wait for
     // the pushed redacted update (or an 'error' message). Never apply locally.
     if (a.seat !== NET.seat) { uiError = 'not your seat'; playCue('error'); return; }
+    // [59] this state has already been spent — by a click a frame ago, by an
+    // automatic pass, or by a cast-cancel undo. A second intent for it is
+    // either refused ("you do not have priority") or, worse, applied to a
+    // window that is no longer the one the player was looking at.
+    if (ui.sentFor === h.state.actionCount) return;
     NET.do(a);
     uiError = '';
     return;
@@ -667,15 +801,21 @@ function act(a: Action): void {
   try {
     // R68: the last moment an item that is about to be negated still exists
     rememberStack();
-    absorbFlashes(local.do(a));
+    const evs = local.do(a);
+    absorbFlashes(evs);
+    noteCardsSeen(evs);
     // local mode: drain forced steps (empty boards attack/block by themselves;
     // the server does the same for network games)
     for (let g = 0; g < 8; g++) {
       const f = forcedAction(h.state);
       if (!f) break;
       rememberStack();
-      absorbFlashes(local.do(f));
+      const more = local.do(f);
+      absorbFlashes(more);
+      noteCardsSeen(more);
+      evs.push(...more);
     }
+    absorbBeats(evs);
     uiError = '';
   } catch (err) {
     snaps.pop();   // state unchanged — drop the pre-action snapshot
@@ -782,8 +922,9 @@ function legalFor(seat: Seat): Action[] {
 }
 
 /** hosts the in-progress mod (ui.modding) could legally land on — computed
- * once per render(); unitHtml highlights them (bin/hand mod affordance) */
-let modHostCache = new Set<EntityId>();
+ * once per render(); unitHtml highlights the units and stackBoardHtml the
+ * stack items (R79), both from the same read of the legal-action list */
+let modHostCache: ModHosts = { units: new Set(), stack: new Set() };
 /** UZRG: units with a legal activated ability RIGHT NOW — computed once per
  * render() from the legal-action list (never re-derived), so the glow and the
  * engine cannot disagree. unitHtml draws it. */
@@ -797,33 +938,20 @@ function refreshActCache(): void {
   actLegalCache = NET ? legalFor(NET.seat) : [...legalFor(0), ...legalFor(1)];
   actCache = activatableUnits(actLegalCache);
 }
-function moddingHosts(): Set<EntityId> {
+function moddingHosts(): ModHosts {
   const m = ui.modding;
-  if (!m) return new Set();
-  return new Set(legalFor(m.seat)
-    .filter(a => a.type === m.mode && (a as { from?: string }).from === m.from && (a as { index?: number }).index === m.index)
-    .map(a => (a as unknown as { hostId: EntityId }).hostId));
+  return modHosts(m ? legalFor(m.seat) : [], m);
 }
 
+/* [59] both of these are pure over a legal-action list, and autoPassPlan needs
+ * them, so the arithmetic lives in ui/inspect.ts and these just say whose
+ * list to read. */
 /** distinct spell tokens `seat` could cast right now (C5 pass guard) */
-function castableTokenCount(seat: Seat): number {
-  return new Set(legalFor(seat)
-    .filter(a => a.type === 'castSpellToken')
-    .map(a => (a as { entityId: EntityId }).entityId)).size;
-}
-
+const castableTokenCount = (seat: Seat): number => castableTokens(legalFor(seat));
 /** #1: identity keys of every activateAbility currently legal for `seat` —
  * Pass-all snapshots these on arming; a key that was NOT in the snapshot
  * means a resolution granted a new ability, and the chip must disarm. */
-function abilityKeys(seat: Seat): string[] {
-  return legalFor(seat)
-    .filter(a => a.type === 'activateAbility')
-    .map(a => {
-      const aa = a as Extract<Action, { type: 'activateAbility' }>;
-      const via = aa.via === undefined ? 'own' : aa.via === 'augment' ? 'aug' : `mod${aa.via.mod}`;
-      return `${aa.entityId}:${aa.abilityIndex}:${via}`;
-    });
-}
+const abilityKeys = (seat: Seat): string[] => activationKeys(legalFor(seat));
 
 // ── #2: auto-yield to a unit's triggers (MTGO-style) ──────────────────
 /** entity id → card name (display) of units whose triggers I auto-yield to;
@@ -864,19 +992,11 @@ function saveSeenDrop(): void {
   if (k && seenDrop) localStorage.setItem(k, JSON.stringify(seenDrop));
 }
 
-/** When I hold priority with no pending decision and the TOP of the stack is
- * a trigger sourced from an auto-yielded unit, pass automatically. Only the
- * top matters: passing resolves it, and whatever sits underneath gets its own
- * window — and its own check — afterwards (ui/inspect.ts shouldAutoYield). */
-function maybeAutoYield(): void {
-  if (!NET) return;
-  const s = h.state;
-  if (!shouldAutoYield(s, NET.seat, new Set(yieldMap.keys()))) return;
-  if (s.actionCount === ui.yieldAt) return;   // one send per server state
-  if (!NET.legal.some(a => a.type === 'passPriority')) return;
-  ui.yieldAt = s.actionCount;
-  NET.do({ type: 'passPriority', seat: NET.seat });
-}
+/* [59] The auto-yield pass used to live here as maybeAutoYield(), called
+ * unconditionally right after maybeAutopass() — which is how the toggle and
+ * the yield came to send two passes for one state. It is one branch of
+ * autoPassPlan (ui/inspect.ts) now; only the yielded-unit SET still lives up
+ * here, because it is a per-room browser preference and not game state. */
 
 // ── #6: chess clocks (display only) ───────────────────────────────────
 /** remaining ms for a seat, extrapolated locally from the last snapshot.
@@ -984,13 +1104,10 @@ function cardHtml(name: string, opts: {
   /** ui/motion.ts slot key — what makes this card the SAME card next render */
   anim?: string;
 } = {}): string {
-  const cls = ['card'];
-  if (opts.playable) cls.push('playable');
-  if (opts.candidate) cls.push('candidate');
-  if (opts.selected) cls.push('selected');
-  if (opts.carrying) cls.push('carrying');
-  if (opts.modhost) cls.push('modhost');
-  if (opts.activatable) cls.push('activatable');
+  // [35] the class list is ui/inspect.ts's cardClasses — `.activatable` is the
+  // one class with no behaviour attached to it, so nothing but a test notices
+  // when it stops being emitted and the green halo quietly goes away.
+  const cls = cardClasses(opts);
   const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''} ${b.cls ?? ''}"${
     b.title ? ` title="${esc(b.title)}"` : ''}>${b.html ? b.t : esc(b.t)}</span>`).join('');
   return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}>
@@ -1052,7 +1169,7 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     selected: opts.selected, carrying: ui.carrying === u.id,
     playable: opts.clickable,
     activatable: canAct,
-    modhost: !opts.inert && modHostCache.has(u.id),
+    modhost: !opts.inert && modHostCache.units.has(u.id),
     // inert (B2): absent "sent" units are not targets and take no clicks
     data: opts.inert ? `data-previd="${u.id}"` : `data-act="unit" data-id="${u.id}" data-previd="${u.id}"`,
   });
@@ -1330,7 +1447,11 @@ function binDialogHtml(): string {
   }).join('');
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
     <h3>${esc(pl.name)}'s bin (${pl.bin.length})</h3>
-    ${anyUsable ? `<div class="binmodbanner">${txtIcon('augment', '+')} Glowing cards can be applied to a unit as a mod right now — click one, then pick a host.</div>` : ''}
+    ${anyUsable ? `<div class="binmodbanner">${txtIcon('augment', '+')} Glowing cards can be applied to a ${
+      // R79: not always a unit — a virus from the bin can go onto a spell on
+      // the stack too, and this banner used to deny that in so many words.
+      modHostPhrase(modHosts(legal, { from: 'bin', mode: 'augment' }))
+    } as a mod right now — click one, then pick a host.</div>` : ''}
     <div class="zone binzone bindialog">${items || '<span class="binempty">empty</span>'}</div>
     <button data-btn="binclose">Close</button>
   </div></div>`;
@@ -1900,21 +2021,48 @@ function blockBuilderHtml(ci: number): string {
   return colSlotsHtml(ui.columns[ci] ?? [], ci);
 }
 
+/** the block declaration the board is holding right now, in the shape the
+ * action takes. ONE reader of `ui.columns`, so the bar's R84 duty check and
+ * the button that sends the declaration can never be looking at two different
+ * plans (the whole point of gating Confirm). */
+function blockPlan(): Record<number, EntityId[]> {
+  const blocks: Record<number, EntityId[]> = {};
+  ui.columns.forEach((col, ci) => { if (col && col.length) blocks[ci] = col; });
+  return blocks;
+}
+
 /** #4: the mod-in-progress banner — spells out card, source zone and mode,
  * and points at the highlighted legal hosts (modHostCache glows them) */
 function moddingBarHtml(err: string): string {
   const m = ui.modding!;
   const card = zoneCardName(m.seat, m.from, m.index) ?? '?';
   const icon = txtIcon(m.mode === 'graft' ? 'graft' : 'augment', m.mode === 'graft' ? '[Switch]' : '[Augment]');
-  const nHosts = modHostCache.size;
+  const nHosts = modHostCount(modHostCache);
+  // R79: the hosts are not always units — a virus may go onto a SPELL on the
+  // stack, and the bar has to name what is actually glowing. modHostPhrase
+  // reads the offer, so it can never promise a host the engine will refuse.
+  const what = modHostPhrase(modHostCache);
   // R42: a fulfilled prophecy makes the graft/augment free too, not only the play
   const free = m.from === 'cache' && q().cachePermission(m.seat, m.index) === 'prophecy'
     ? ' <span class="freetag">FREE — fulfilled prophecy</span>' : '';
   return `<div class="promptbar pending"><span class="who">${esc(h.state.players[m.seat]!.name)}:</span>
     applying <b>${esc(card)}</b> from ${zoneLabel(m.from)}${free} as ${icon} <b>${m.mode}</b>
-    — pick a glowing host unit${nHosts ? ` (${nHosts} legal)` : ''}
+    — pick a glowing host: a ${what}${nHosts ? ` (${nHosts} legal)` : ''}
     <button data-btn="modcancel">✕ cancel (esc)</button>${err}</div>`;
 }
+
+/**
+ * [59] What renderNow decided about passing this window, computed before the
+ * markup so promptHtml can tell the truth about it. Recomputed every paint;
+ * `pass: null` is the ordinary case where the window really is mine.
+ */
+let autoPassing: AutoPassPlan = { disarm: false, pass: null };
+/** the reason, in the words the player set up */
+const AUTO_PASS_WHY: Record<'passall' | 'pref' | 'yield', string> = {
+  passall: 'Pass all is on — stop it in the bar above to take this window back.',
+  pref: 'auto-pass is on and passing is your only legal action here.',
+  yield: 'you chose to auto-yield to this unit’s triggers.',
+};
 
 function promptHtml(): string {
   const s = h.state;
@@ -1929,6 +2077,14 @@ function promptHtml(): string {
       <span style="color:var(--dim)">this cost cannot be taken back</span>
       <button data-btn="actcancel">Cancel</button>
       <button class="primary" data-btn="actconfirm">Yes, activate</button>${err}</div>`;
+  }
+  // [59] this window is already being given away — a pass is scheduled for
+  // this exact state. Painting "you have priority — Pass" over it was a lie
+  // that lasted a whole server round trip, and clicking the button it drew
+  // sent the second pass that came back "you do not have priority".
+  if (NET && autoPassing.pass) {
+    return `<div class="promptbar waiting"><span class="who">Auto-passing…</span>
+      <span style="color:var(--dim)">${esc(AUTO_PASS_WHY[autoPassing.pass])}</span>${err}</div>`;
   }
   if (s.phase === 'gameover') {
     const won = s.players[s.winner!]!.name;
@@ -2063,9 +2219,16 @@ function promptHtml(): string {
     }
     if (b.step === 'blocks') {
       const built = ui.columns.some(c => c && c.length) || ui.send.length > 0;
-      return `<div class="promptbar"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
-        assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}
-        <button class="primary" data-btn="confirmblocks">Confirm (enter)</button>
+      // R84: a lured unit's block is COMPULSORY, and the client used to know
+      // nothing about it — Confirm was always live and the duty only ever
+      // surfaced as a red error after the fact. blockPlanIssue (ui/inspect.ts)
+      // asks the engine's own validator what it would say to this declaration.
+      const duty = blockPlanIssue(s, b.defender, blockPlan());
+      return `<div class="promptbar ${duty ? 'pending' : ''}"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
+        ${duty
+          ? `<b class="duty">${esc(duty)}</b> — that block is compulsory, so nothing can be confirmed until it is assigned.`
+          : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
+        <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>Confirm (enter)</button>
         ${built ? '<button data-btn="clearform" title="empty the blocks/send being built">✕ Clear (esc)</button>' : ''}${err}</div>`;
     }
     if (ui.modding) return moddingBarHtml(err);
@@ -2076,6 +2239,13 @@ function promptHtml(): string {
         you still have <b>${n} castable spell token${n === 1 ? '' : 's'}</b> — pass anyway?
         <button data-btn="passcancel">Go back</button>
         <button class="primary" data-btn="passconfirm">Pass anyway (space)</button>${err}</div>`;
+    }
+    // [59] …and the same lie told by hand: the manual Pass handler's trailing
+    // render() repaints this bar, live button and all, over a state whose
+    // priority has already gone to the socket. The latch says so — wait.
+    if (NET && ui.sentFor === s.actionCount) {
+      return `<div class="promptbar waiting"><span class="who">Sent — waiting for the server…</span>
+        <span style="color:var(--dim)">this priority window has already been spent</span>${err}</div>`;
     }
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
       you have priority — play a battle card / cast a token / virus-augment, or
@@ -2138,9 +2308,15 @@ const LOG_EVENT_CLASS: Partial<Record<EventType, string>> = {
  * hover preview, the long-hover text box AND right-click-inspect, so one
  * change buys all three. Segmenting is ui/inspect.ts's `linkCardNames`, the
  * one name-matcher in the client; this only paints the spans it returns.
+ *
+ * UFAB: and it links only the cards THIS GAME has shown. `linkCardNames` is a
+ * question about a sentence and stays general (the deployment reveal asks it
+ * the same way); `cardsSeen` is the answer to "is the log talking about a card
+ * at all?", which is a question about the game. Without it the phase line
+ * `Battle: Ben may attack.` linked the card Battle every single turn.
  */
 function logLineHtml(msg: string): string {
-  return linkCardNames(msg).map(sp => sp.name
+  return onlyKnownNames(linkCardNames(msg), cardsSeen).map(sp => sp.name
     ? `<span class="logcard" data-prev="${esc(sp.name)}">${iconizeText(sp.text)}</span>`
     : iconizeText(sp.text)).join('');
 }
@@ -2195,6 +2371,12 @@ function previewStackHtml(id: number): string {
       ${modChips}
       ${targets ? `<div class="abtargets">→ ${targets}</div>` : ''}
       ${it.negated ? '<div class="abneg">answered — it left the stack and will do nothing</div>' : ''}
+      ${modHostCache.stack.has(it.id)
+        // R79: the other place the player looks at a stack item. The glow is
+        // on the strip; the viewer says what it means in words.
+        ? `<div class="abmodhost">${txtIcon('augment', '+')} a legal host for the mod you are
+            placing — click this card on the stack to apply it</div>`
+        : ''}
     </div>`;
 }
 
@@ -2259,6 +2441,8 @@ function stackBoardHtml(): string {
   const last = rows.length - 1;
   const cards = rows.map((r, i) => {
     const it = r.item;
+    // R79: this spell is a legal host for the mod the player is holding
+    const modhost = modHostCache.stack.has(it.id);
     const mods = it.mods ?? [];
     // a modular item's extra parts ARE its mods' [Switch] effects — don't
     // double-count them as "grafted parts"
@@ -2282,6 +2466,10 @@ function stackBoardHtml(): string {
       r.top ? 'top' : '',
       it.negated ? 'negated' : '',   // greys it and stamps the ✕ (style.css)
       isCandidate({ stack: it.id }) ? 'candidate' : '',
+      // R79: a mod is in flight and THIS spell is one of its legal hosts —
+      // the same green pulse a unit host wears (style.css .card.modhost /
+      // .stackcard.modhost), because it is the same click.
+      modhost ? 'modhost' : '',
       // whose it is, at a glance: net mode knows which seat is you, hotseat
       // colours by seat number instead
       NET ? (it.controller === NET.seat ? 'mine' : 'theirs') : `seat${it.controller}`,
@@ -2299,8 +2487,9 @@ function stackBoardHtml(): string {
     return `<div class="${cls}" style="z-index:${i + 1}"
       data-act="stackitem" data-id="${it.id}" data-prevstack="${it.id}" data-anim="s${it.id}"
       ${prevName ? `data-prev="${esc(prevName)}"` : ''}
-      title="${esc(it.label)}">
+      title="${esc(modhost ? `${it.label} — click to apply the mod to this spell` : it.label)}">
       ${face}<div class="stackface">${esc(it.card ?? it.label)}</div>
+      ${modhost ? `<div class="stackmodhost">${txtIcon('augment', '+')} host</div>` : ''}
       <div class="stacktag">${esc(STACK_KIND[it.kind] ?? it.kind)}${marks ? ` · ${marks}` : ''}</div>
       ${r.resolving
         // R78: the pending chip is NOT gated on being the rightmost card the
@@ -2615,8 +2804,14 @@ function renderNow(): boolean {
   ensureBlockKeys();
   modHostCache = moddingHosts();   // #4: legal hosts for a mod-in-progress glow
   refreshActCache();               // UZRG: units with a legal activated ability
-  const logFrom = Math.max(0, h.log.length - 80);
-  const logItems = h.log.slice(-80).map((l, i) => {
+  noteCardsSeen();                 // UFAB: the log links only cards in the game
+  // R80: the tail of the log a narrative beat has not told yet. `h.log` itself
+  // is untouched — this is a curtain, not an edit, and it lifts on a timer
+  // bounded by MAX_LEAD_MS whatever else happens.
+  const untold = heldLines(beatQueue, Date.now());
+  const logEnd = Math.max(0, h.log.length - untold);
+  const logFrom = Math.max(0, logEnd - 80);
+  const logItems = h.log.slice(logFrom, logEnd).map((l, i) => {
     const t = logTypeAt(logFrom + i);
     const cls = t ? LOG_EVENT_CLASS[t] ?? '' : '';
     return `<div class="${cls}">${logLineHtml(l)}</div>`;
@@ -2641,6 +2836,10 @@ function renderNow(): boolean {
     ui.confirmAct = null;
   }
   const autoPref = localStorage.getItem('algoAutopass') === '1';
+  // [59] BEFORE the markup: whether this client is about to pass this window
+  // by itself decides what the prompt bar may claim. The send happens after
+  // the paint (runAutoPass, at the bottom) — this only decides and disarms.
+  autoPassing = planAutoPass();
   // playtest DEYK: "it constantly resets the scroll height, which means you
   // have to scroll down to see your units every time you click something".
   // The client repaints by replacing $app.innerHTML, which throws away the
@@ -2735,8 +2934,7 @@ function renderNow(): boolean {
   log.scrollTop = log.scrollHeight;
   placeStackWindow();
   clampMenu();
-  maybeAutopass();
-  maybeAutoYield();
+  runAutoPass(autoPassing);   // [59] the send, now that the truth is on screen
   maybeCancelChain();
   publishBuilding();
   // judge input: submit on Enter, survive re-renders mid-typing. Focus goes
@@ -2867,6 +3065,9 @@ function render(): void {
     if (before) playMotion(frame, diffCensus(before, after));
     updateArrows();
     soundPass();
+    // R80: the narrative beats this paint just let out point at what they are
+    // about — after playMotion, so the pulse lands on the settled board
+    fireBeats();
     // a beat starts or ends at a known moment, so book the repaint for it
     scheduleFlashWake();
   } finally { painting = false; }
@@ -3021,33 +3222,50 @@ function clampMenu(): void {
   if (r.right > innerWidth - 8) el.style.left = `${Math.max(8, innerWidth - r.width - 8)}px`;
 }
 
-/** "Pass all": keep passing my priority windows until the battle ends or the
- * stack grows (someone played something — then it's worth a look). */
-function maybeAutopass(): void {
-  if (!NET) return;
+/**
+ * [59] The whole automatic-pass decision, made BEFORE the board is painted.
+ *
+ * Report: "I turned on auto yield to a bunch of triggers and it's working, but
+ * visually I see a flash of the top of the screen that looks like it's giving
+ * me prio for like 1 frame AND I see a 'You do not have priority' note."
+ *
+ * The frame was not a frame. The pass used to be sent from the BOTTOM of
+ * renderNow, after $app.innerHTML had already been written with a "you have
+ * priority — Pass" bar; the send is a ws.send, so the corrective view only
+ * arrives a whole round trip later. On a real network it gets worse, not
+ * better. So the answer is computed here, up front, and promptHtml is told —
+ * it paints the waiting bar instead of offering a window that is already gone.
+ *
+ * The judgement itself lives in ui/inspect.ts (autoPassPlan), where it is
+ * tested. This function is only the bookkeeping around it: the Pass-all chip's
+ * arm, and its repaint when the arm drops.
+ */
+function planAutoPass(): AutoPassPlan {
+  if (!NET) return { disarm: false, pass: null };
+  const s = h.state;
+  const plan = autoPassPlan(s, NET.seat, NET.legal, {
+    armed: ui.autopass, armedStack: ui.autopassStack, armedSig: ui.autopassSig,
+    prefOn: localStorage.getItem('algoAutopass') === '1',
+    yieldIds: new Set(yieldMap.keys()),
+  });
   if (ui.autopass) {
-    const s = h.state;
-    if (s.phase !== 'battle' || !s.battle) ui.autopass = false;
-    else if (s.stack.length > ui.autopassStack) ui.autopass = false;
-    // #1: a resolution granted me a NEW activateAbility (e.g. a negate) that
-    // wasn't legal when the chip was armed — disarm so the window is mine
-    else if (abilityKeys(NET.seat).some(k => !ui.autopassSig.includes(k))) ui.autopass = false;
-    else {
-      ui.autopassStack = s.stack.length;
-      if (!s.decision && s.priority === NET.seat) {
-        // C5: never skip through castable spell tokens — disarm and let the
-        // player decide (the confirm bar shows on their next manual Pass)
-        if (castableTokenCount(NET.seat) > 0) ui.autopass = false;
-        else if (s.actionCount !== ui.autopassAt) {
-          ui.autopassAt = s.actionCount;
-          NET.do({ type: 'passPriority', seat: NET.seat });
-          return;
-        }
-      }
-    }
-    if (!ui.autopass) renderChipOff();
+    if (plan.disarm) ui.autopass = false;
+    else ui.autopassStack = s.stack.length;
   }
-  maybeAutoPassPref();
+  return plan;
+}
+
+/** [59] and the send, after the paint — one per authoritative state, whichever
+ * of the three reasons won. */
+function runAutoPass(plan: AutoPassPlan): void {
+  if (!NET) return;
+  // the chip was drawn this render but the arm just dropped: repaint it away
+  if (plan.disarm) renderChipOff();
+  const at = h.state.actionCount;
+  // one send per authoritative state, whichever reason won and however many
+  // times this state gets painted (ui/inspect.ts owns the latch, and tests it)
+  if (!takeAutoPass(plan, at, ui)) return;
+  sendAutoPass(at);
 }
 
 /** the "auto-passing…" chip was drawn this render but the arm just dropped —
@@ -3059,16 +3277,52 @@ function renderChipOff(): void {
   try { render(); } finally { chipRepainting = false; }
 }
 
-/** C4: the persistent auto-pass TOGGLE — pass automatically whenever passing
- * is my ONLY legal action (independent of "Pass all"). */
-function maybeAutoPassPref(): void {
-  if (!NET || localStorage.getItem('algoAutopass') !== '1') return;
-  const s = h.state;
-  if (s.decision || s.phase === 'gameover') return;
-  if (!NET.legal.length || !NET.legal.every(a => a.type === 'passPriority')) return;
-  if (s.actionCount === ui.autopassPrefAt) return;   // one send per server state
-  ui.autopassPrefAt = s.actionCount;
-  NET.do({ type: 'passPriority', seat: NET.seat });
+/**
+ * R80: an automatic pass, a beat late.
+ *
+ * UFAB: "damage and all effects happened instantly." Half of that is the
+ * engine's one-pump damage step (the beats above); the other half is this.
+ * Both auto-passes fired their `passPriority` SYNCHRONOUSLY from inside
+ * render(), so an unopposed end of combat was: paint, pass, server round-trip,
+ * paint, pass, … — several server states collapsing into one apparent instant
+ * with nothing on screen long enough to read.
+ *
+ * A short wait puts each of those states on screen for its own moment. It is
+ * shorter than one beat (STAGGER_MS) because it is not telling a story, only
+ * refusing to sprint, and the player is not waiting on it for anything: the
+ * board is already final and any real click cancels the pass by moving the
+ * game on underneath it.
+ *
+ * One send per server state, still. The callers stamp `actionCount` BEFORE
+ * scheduling (so a re-entrant render cannot queue a second one), the timer is
+ * single and self-replacing, and the send re-checks at fire time that the
+ * world has not moved — a stale pass would be either illegal or, worse, legal
+ * for a window that is now genuinely mine to use.
+ */
+let autoPassTimer: ReturnType<typeof setTimeout> | null = null;
+function cancelAutoPass(): void {
+  if (autoPassTimer !== null) { clearTimeout(autoPassTimer); autoPassTimer = null; }
+}
+function sendAutoPass(at: number): void {
+  cancelAutoPass();
+  // …and it waits for the story to finish first. Without this the pass lands
+  // mid-combat, the server's answer arrives, and the new batch supersedes the
+  // beat queue — the client would be racing itself to cut off its own
+  // explanation. Self-limiting: the queue is capped at MAX_LEAD_MS.
+  const last = beatQueue[beatQueue.length - 1];
+  const rest = last ? Math.max(0, last.at - Date.now()) : 0;
+  autoPassTimer = setTimeout(() => {
+    autoPassTimer = null;
+    const s = h.state;
+    // the world moved on while we waited: whoever moved it owns this window
+    if (!NET || s.actionCount !== at || s.decision || s.priority !== NET.seat) return;
+    // [59] …and "moved on" includes an intent that is still in flight. A click
+    // during the wait spends this state without changing actionCount yet, so
+    // the timer would otherwise land the second pass the report complained
+    // about — one round trip later, and this time from a real decision.
+    if (ui.sentFor === at) return;
+    NET.do({ type: 'passPriority', seat: NET.seat });
+  }, rest + STAGGER_MS);
 }
 
 function renderConnecting(): void {
@@ -3428,7 +3682,7 @@ function previewEntityHtml(id: EntityId): string {
  *    the name and the cost you already read off the board. Opening at the top
  *    meant a scroll for every modded unit, and the scroll is the expensive
  *    part, because:
- * 2. A CLICK PINS IT for PIN_MS. Reaching the panel to scroll it means
+ * 2. A CLICK THAT DID NOTHING ELSE PINS IT for PIN_MS. Reaching the panel to scroll it means
  *    dragging the cursor across the board, and every card on the way steals
  *    the viewer — so you arrive at the scrollbar reading the wrong card and
  *    have to thread the path again. A click says "this one", and for five
@@ -3559,15 +3813,49 @@ function pinFocus(sub: FocusSubject, key: string): void {
   paintFocus(sub, true);
 }
 
-// A click on a card pins the viewer to it. Capture phase, because the same
-// click is usually a game action, and the pin has to be set before the render
-// it triggers — renderNow reads it to repaint the rail.
+/** The parts of the UI a click is allowed to change. Deliberately a LIST and
+ * not `JSON.stringify(ui)`: the autopass / yield / cancel bookkeeping fields
+ * are rewritten by render() itself, and handleAction always renders, so
+ * including them would make every click look like it had done something. */
+const CLICK_STATE_KEYS = ['carrying', 'columns', 'send', 'spellTokens', 'modding', 'menu',
+  'orderPicked', 'draftPack', 'bottomPick', 'confirmDone', 'confirmPass', 'confirmDeploy',
+  'confirmAct'] as const;
+
+/** everything a click may move, as one string */
+function clickSig(): string {
+  return JSON.stringify([actCount, uiError, binView, cacheView, CLICK_STATE_KEYS.map(k => ui[k])]);
+}
+
+/* A click on a card pins the viewer to it — but ONLY when the click had
+ * nothing else to do.
+ *
+ * Playtest (2026-08-22): "clicking CAN'T count when you're supposed to click
+ * cards." Half the clicks in this game are MOVES — drafting, recycling,
+ * playing, answering a decision, building a line — and hanging a five-second
+ * hover freeze off those puts it on the busiest part of the turn, where the
+ * card you clicked is not even the one you want to read.
+ *
+ * The test is empirical rather than a hand-kept list of safe places to click,
+ * which would drift from handleAction the first time either changed: take a
+ * signature of everything a click can move, let the normal handlers run, and
+ * pin only if nothing moved. That is exactly the set the report describes —
+ * a unit on the field with no legal click, an opponent's unit, a hand card you
+ * cannot cast yet — plus the ones it did not think to mention: a card name in
+ * the log, a mod badge, a stack thumbnail, a revealed card.
+ *
+ * Scheduled rather than immediate because the answer is only known AFTER the
+ * other handlers and the render they trigger; pinFocus repaints the rail
+ * itself, so arriving late costs nothing.
+ */
 document.addEventListener('click', e => {
   const t = (e.target as HTMLElement)?.closest?.(
     '[data-prev], [data-previd], [data-prevstack]') as HTMLElement | null;
   if (!t) return;
   const sub = focusSubjectFor(t);
-  if (sub) pinFocus(sub, focusKeyOf(t));
+  if (!sub) return;
+  const key = focusKeyOf(t);
+  const before = clickSig();
+  setTimeout(() => { if (clickSig() === before) pinFocus(sub, key); }, 0);
 }, { capture: true });
 
 /* ── the long-hover text box ────────────────────────────────────────────
@@ -3814,7 +4102,9 @@ function handleButton(btn: HTMLElement): void {
   const armPassAll = (): void => {
     ui.autopass = true;
     ui.autopassStack = s.stack.length;
-    ui.autopassAt = s.actionCount;
+    // [59] the pass that arms the chip is the one going out for THIS state —
+    // the latch (UiState.sentFor, set by NetBackend.do) is what stops the
+    // chip's own auto-pass adding a second one on the very next paint.
     // #1: remember which activateAbility keys were ALREADY legal — a new one
     // appearing later (granted by a resolution) disarms the chip
     ui.autopassSig = NET ? abilityKeys(NET.seat) : [];
@@ -3838,9 +4128,13 @@ function handleButton(btn: HTMLElement): void {
       act({ type: 'passPriority', seat: s.priority! });
     }
   }
-  if (b === 'passallstop') ui.autopass = false;
+  // R80: an auto-pass is SCHEDULED now rather than sent on the spot, so
+  // switching either of them off has to reach into the wait as well — the
+  // whole point of the stop button is that this window becomes yours again.
+  if (b === 'passallstop') { ui.autopass = false; cancelAutoPass(); }
   if (b === 'autopasstoggle') {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
+    cancelAutoPass();
   }
   if (b === 'pg-reopen') { postGameHidden = false; render(); return; }
   if (b === 'trio-ok') { pendingTrio = null; render(); return; }
@@ -3888,8 +4182,12 @@ function handleButton(btn: HTMLElement): void {
     if (!uiError) { ui.columns = []; ui.carrying = null; ui.spellTokens = []; }
   }
   if (b === 'confirmblocks') {
-    const blocks: Record<number, EntityId[]> = {};
-    ui.columns.forEach((col, ci) => { if (col && col.length) blocks[ci] = col; });
+    const blocks = blockPlan();
+    // R84: the bar disables the button, and Enter honours `disabled` — this is
+    // the belt to that braces, so no path can send a declaration the engine has
+    // already told us it will refuse.
+    const duty = blockPlanIssue(s, s.battle!.defender, blocks);
+    if (duty) { uiError = duty; render(); return; }
     act({ type: 'declareBlocks', seat: s.battle!.defender, blocks, send: ui.send });
     if (!uiError) { ui.columns = []; ui.send = []; ui.carrying = null; ui.spellTokens = []; }
   }
@@ -4005,9 +4303,19 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
   }
 
   if (kind === 'stackitem') {
-    const ref: TargetRef = { stack: Number(t.dataset['id']) };
+    const id = Number(t.dataset['id']);
+    const ref: TargetRef = { stack: id };
     const idx = decisionOptionIndex(ref);
     if (idx >= 0) act({ type: 'decide', seat: s.decision!.seat, choice: idx });
+    // R79: a stack item is the second KIND of mod host — clicking a glowing
+    // spell finishes the placement exactly as clicking a glowing unit does.
+    // modHostCache.stack is the engine's own answer (hostStack), so a spell
+    // that is not a legal host takes no click at all.
+    else if (ui.modding && modHostCache.stack.has(id)) {
+      const m = ui.modding;
+      ui.modding = null;
+      applyMod(m, { stack: id }, e);
+    }
   }
 
   if (kind === 'token') {
@@ -4035,7 +4343,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     if (ui.modding) {
       const m = ui.modding;
       ui.modding = null;
-      applyMod(m, id, e);
+      applyMod(m, { unit: id }, e);
       render();
       return;
     }
@@ -4100,9 +4408,8 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     // live now and the row you click is the row you get: dropping into the
     // front of an occupied column pushes the sitting unit to the back.
     const row = Number(t.dataset['row']) || 0;
-    if (!ui.columns[ci]) ui.columns[ci] = [];
-    const col = ui.columns[ci]!;
-    if (col.length < 2) col.splice(Math.min(row, col.length), 0, ui.carrying);
+    // the insert itself is ui/formation.ts dropIntoRow, tested there
+    ui.columns[ci] = dropIntoRow(ui.columns[ci] ?? [], row, ui.carrying);
     ui.carrying = null;
   }
   if (kind === 'sendslot' && ui.carrying !== null) {
@@ -4122,8 +4429,10 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     const mods = legal.filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
     if (proph.length) {
       const name = h.state.players[p]!.bin[i] ?? '?';
-      const items: { label: string; go: () => void }[] = [
-        { label: prophesyLabel(name), go: () => { binView = null; act(proph[0]!); render(); } },
+      const items: MenuItem[] = [
+        // [08b] same rule as the hand: never on the revealing click
+        { label: prophesyLabel(name), confirm: actionNeedsMenu(proph[0]!),
+          go: () => { binView = null; act(proph[0]!); render(); } },
         ...modMenuItems(p, 'bin', i, name, mods, { close: () => { binView = null; } }),
       ];
       offer(items, e);
@@ -4164,7 +4473,7 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
   const playActions = legal.filter(a => a.type === 'playCard' && a.handIndex === i);
   const modActions = legal.filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'hand' && a.index === i);
   const prophesyActions = legal.filter(a => a.type === 'prophesy' && a.from === 'hand' && a.index === i);
-  const items: { label: string; go: () => void }[] = [];
+  const items: MenuItem[] = [];
   for (const a of playActions) {
     const mode = a.type === 'playCard' ? a.mode : undefined;
     // R40: "1 Discard me" is a whole alternative play mode like Ambush — pay
@@ -4177,8 +4486,11 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
   }
   // R42: prophesying is a DEPLOYMENT-only action; legalActions already knows
   // that, and which cards may come from the bin, so this just renders it.
+  // [08b] …and it never fires on the click that revealed it: it spends mana
+  // and takes the card out of your hand for good, with no target decision
+  // anywhere in it to walk you back.
   for (const a of prophesyActions) {
-    items.push({ label: prophesyLabel(name), go: () => { act(a); render(); } });
+    items.push({ label: prophesyLabel(name), confirm: actionNeedsMenu(a), go: () => { act(a); render(); } });
   }
   items.push(...modMenuItems(p, 'hand', i, name, modActions));
   offer(items, e);
@@ -4249,9 +4561,13 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent): void {
 
 /** the common tail: exactly one thing to offer just happens; more open a menu
  * at the cursor (the caller's render() paints it) */
-function offer(items: { label: string; go: () => void }[], e: MouseEvent): void {
-  if (items.length === 1) items[0]!.go();
-  else if (items.length > 1) ui.menu = { x: e.clientX, y: e.clientY, items };
+function offer(items: MenuItem[], e: MouseEvent): void {
+  // [08b] planOffer (ui/inspect.ts) owns the judgement, including the one an
+  // item can override: a `confirm` item never fires on the click that revealed
+  // it, however alone it is on the list.
+  const plan = planOffer(items);
+  if (plan.kind === 'go') items[plan.index]!.go();
+  else if (plan.kind === 'menu') ui.menu = { x: e.clientX, y: e.clientY, items };
 }
 
 /** The augment/graft menu entries for a mod-source card. Hand, bin and cache
@@ -4267,7 +4583,13 @@ function modMenuItems(p: Seat, from: ModZone, i: number, name: string, mods: Act
   };
   const sfx = opts.suffix ?? '';
   const items: { label: string; go: () => void }[] = [];
-  if (mods.some(a => a.type === 'augment')) items.push({ label: `Augment a unit with ${name}${sfx}`, go: start('augment') });
+  if (mods.some(a => a.type === 'augment')) {
+    // R79: name the hosts the engine is actually offering — a virus in a
+    // battle window can go onto a spell on the stack, and an entry that says
+    // "a unit" is how that ruling stayed invisible.
+    const what = modHostPhrase(modHosts(mods, { from, index: i, mode: 'augment' }));
+    items.push({ label: `Augment a ${what} with ${name}${sfx}`, go: start('augment') });
+  }
   if (mods.some(a => a.type === 'graft')) items.push({ label: `Graft ${name} under a unit${sfx}`, go: start('graft') });
   return items;
 }
@@ -4284,13 +4606,25 @@ function startModding(p: Seat, from: ModZone, i: number, legal: Action[], e: Mou
   };
 }
 
-function applyMod(m: NonNullable<UiState['modding']>, hostId: EntityId, e: MouseEvent): void {
+/** the two kinds of host a mod can land on: a unit in play, or (R79) a spell
+ * on the stack. `Action.augment` carries exactly one of them. */
+type ModHost = { unit: EntityId } | { stack: number };
+
+function applyMod(m: NonNullable<UiState['modding']>, host: ModHost, e: MouseEvent): void {
+  // R79: a virus onto a SPELL. Only augment ever offers a stack host (a graft
+  // wants a graft-cause unit's stack, which a spell has not got), so there is
+  // no position menu to open here — it goes on the stack above its host.
+  if ('stack' in host) {
+    act({ type: 'augment', seat: m.seat, from: m.from, index: m.index, hostStack: host.stack });
+    return;
+  }
+  const hostId = host.unit;
   if (m.mode === 'augment') {
     act({ type: 'augment', seat: m.seat, from: m.from, index: m.index, hostId });
     return;
   }
-  const host = h.state.entities[hostId];
-  const nMods = host?.mods.length ?? 0;
+  const hostEnt = h.state.entities[hostId];
+  const nMods = hostEnt?.mods.length ?? 0;
   if (nMods === 0) {
     act({ type: 'graft', seat: m.seat, from: m.from, index: m.index, hostId, position: 0 });
     return;
@@ -4425,31 +4759,18 @@ document.addEventListener('keydown', e => {
  * click — both were playtest asks ("We need a way to right click -> concede
  * match :(", "I dont think there's currently a way to view erased cards").
  * They ride on every card menu too, so you never have to hunt for bare table. */
-function boardMenuItems(): { label: string; go: () => void }[] {
-  const items: { label: string; go: () => void }[] = [];
-  for (const p of [0, 1] as Seat[]) {
-    const pl = h.state.players[p]!;
-    // the same count the dialog shows: real cards, then "+n tokens" (R69)
-    const n = erasedPileView(pl.erased).countLabel;
-    const mine = NET ? p === NET.seat : false;
-    items.push({
-      label: `🚫 ${mine ? 'My' : `${pl.name}'s`} erased cards (${n})`,
-      go: () => { erasedView = p; render(); },
-    });
-  }
-  if (h.state.phase !== 'gameover') {
-    // net: you may only concede your own seat. Hotseat: one person is driving
-    // both, so both are offered — and priority can be null (planning, draft),
-    // which is exactly when someone might want to stop.
-    const seats: Seat[] = NET ? [NET.seat] : [0, 1];
-    for (const seat of seats) {
-      items.push({
-        label: NET ? '🏳 Concede the match' : `🏳 Concede as ${h.state.players[seat]!.name}`,
-        go: () => { concedeAsk = seat; render(); },
-      });
-    }
-  }
-  return items;
+function boardMenuItems(): MenuItem[] {
+  // [30]/[31] WHICH entries there are, and what they are called, is decided in
+  // ui/inspect.ts (boardMenuEntries) where it is tested. This hangs the two
+  // behaviours on them — and note that neither one ACTS: concede opens the
+  // confirmation (concedeHtml), it never concedes.
+  return boardMenuEntries(h.state, NET ? NET.seat : null).map(entry => ({
+    label: entry.label,
+    confirm: entry.confirm,
+    go: entry.kind === 'erased'
+      ? (): void => { erasedView = entry.seat; render(); }
+      : (): void => { concedeAsk = entry.seat; render(); },
+  }));
 }
 
 /** the concede confirmation — irreversible, so it is never one click */

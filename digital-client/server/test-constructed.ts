@@ -15,10 +15,10 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, rmSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
-import { mintRoom } from './test-util.ts';
+import { freePort, gameFile, mintRoom } from './test-util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = 8500 + Math.floor(Math.random() * 400);
+const PORT = await freePort();
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';
@@ -156,7 +156,7 @@ try {
   ok(c1.legal.some(a => a.type === 'donePlanning'), 'donePlanning now legal');
 
   console.log('\n[persistence: restart replays the constructed room]');
-  const raw = JSON.parse(readFileSync(join(HERE, 'games', `${ROOM}.json`), 'utf8'));
+  const raw = JSON.parse(readFileSync(gameFile(ROOM), 'utf8'));
   ok(raw.mode === 'constructed' && Array.isArray(raw.decks?.[0]) && Array.isArray(raw.decks?.[1]),
     'room file records mode + both decks');
   ok(raw.actions.some((a: Action) => a.type === 'bottomCards'), 'room file holds the bottoming actions');
@@ -175,6 +175,6 @@ try {
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {
   server.kill();
-  rmSync(join(HERE, 'games', `${ROOM}.json`), { force: true });
+  rmSync(gameFile(ROOM), { force: true });
 }
 process.exit(failures ? 1 : 0);

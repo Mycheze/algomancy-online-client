@@ -337,15 +337,16 @@ card('Dropslime', {
 });
 
 // "[Switch1] Target player gains a rot." — d/1 {Battle} Blight Spell. The
-// whole spell is the [Switch1]-marked graft effect. "Target player" uses the
-// 'any' spec (the engine has no player-only scope — the Bripp precedent); a
-// unit target is a printed impossibility and no-ops.
+// whole spell is the [Switch1]-marked graft effect.
 const festerRot: EffectDef = {
-  targets: { what: 'any', prompt: 'Fester: target player gains a rot' },
+  // R64: 'player' is the kind for a bare "target player" — the present seats,
+  // yours among them. 'any' is the damage kind and offered units as well; rot
+  // is something only a player can gain, so those picks were dead.
+  targets: { what: 'player', prompt: 'Fester: target player gains a rot' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (t && 'player' in (t as object)) g.gainRot((t as { player: Seat }).player, 1);
-    else g.ev('info', 'Fester: only a player can gain rot — no effect.');
+    if (!t || !('player' in t)) return;
+    g.gainRot(t.player, 1);
   },
 };
 card('Fester', {
@@ -704,16 +705,17 @@ card('Skittering Blight', {
 });
 
 // "Look at target player's hand and discard a card from it. You gain 1 rot." —
-// dd/1 {Battle} Blight Spell. Player target via the 'any' spec (the Bripp
-// precedent); the caster picks the discard. The rot is a separate sentence and
-// happens whatever the target turned out to be.
+// dd/1 {Battle} Blight Spell. The caster picks the discard. The rot is a
+// separate sentence and happens whether or not there was a card to take.
 card('Thought Extraction', {
   spellEffect: {
-    targets: { what: 'any', prompt: "Thought Extraction: look at target player's hand and discard a card from it" },
+    // R64: "target player" is the 'player' kind — a hand is a thing only a
+    // seat has, and 'any' was offering the region's units alongside them.
+    targets: { what: 'player', prompt: "Thought Extraction: look at target player's hand and discard a card from it" },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (t && 'player' in (t as object)) {
-        const who = (t as { player: Seat }).player;
+      if (t && 'player' in t) {
+        const who = t.player;
         const hand = g.player(who).hand;
         g.ev('info', `Thought Extraction reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
         if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);
@@ -725,8 +727,6 @@ card('Thought Extraction', {
           }) as number;
           g.discardFromHand(who, i);
         }
-      } else {
-        g.ev('info', 'Thought Extraction: only a player has a hand to look at.');
       }
       g.gainRot(ctx.controller, 1);
     },

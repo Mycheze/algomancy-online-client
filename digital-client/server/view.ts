@@ -139,6 +139,13 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     v.suspension = null;
   }
 
+  // R85: a 'resolve' suspension carries a WHOLE unredacted state snapshot —
+  // the world as it stood at the boundary of the part being resolved, which
+  // the engine rewinds to when the answer arrives. It is engine-internal, and
+  // it holds both hands and the deck order, so it never leaves the server —
+  // not even to the seat that owns the decision.
+  if (v.suspension?.type === 'resolve') delete v.suspension.snapshot;
+
   // draft mode: identify the pack this seat is looking at (additive field —
   // older clients ignore it). Only while the draft step is running: once the
   // packs pass, packs[seat] belongs to NEXT turn's look.

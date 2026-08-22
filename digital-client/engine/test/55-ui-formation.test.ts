@@ -7,10 +7,17 @@
  *  · "you can see the whole column, including the back row (which might be
  *    totally empty)… all the needed slots should be shown when there's a
  *    choice to be made" — halfRows
+ *
+ * …and one more from the same room, backfilled 2026-08-22 because the fix
+ * shipped in ui/main.ts with nothing at all asserting it:
+ *  · "Sometimes the system wants you to block in a specific order. I was
+ *    forced to do creature B as a blocker before creature A despite it being
+ *    pointless" — dropIntoRow
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { halfRows, MAX_ROWS, publishCols, rekeyBuild } from '../ui/formation.ts';
+import { readFileSync } from 'node:fs';
+import { dropIntoRow, halfRows, MAX_ROWS, publishCols, rekeyBuild } from '../ui/formation.ts';
 
 // ── publishCols ───────────────────────────────────────────────────────
 
@@ -234,4 +241,65 @@ test('rekeyBuild: it feeds publishCols without flattening the holes back out', (
   const r = rekeyBuild(before, line([20], [30]), build);
   assert.deepEqual(publishCols(r.columns), [[], [99]],
     'lane 0 is published empty, not dropped, so 99 stays under attacker 30');
+});
+
+// ── dropIntoRow (playtest BRDM: the forced block order) ───────────────
+
+/* The report is about ORDER, and the column has only two places in it: the
+ * front row takes the damage and the back row does not. The old builder
+ * offered one open slot at a time and appended into it, so the front row was
+ * always whoever you clicked first — wanting A in front and B behind meant
+ * clicking A first, and changing your mind meant taking the column apart.
+ *
+ * These are the four things that has to mean. The main.ts side of it (both
+ * rows always drawn, `data-row` on the slot, the carried unit routed through
+ * here) is read as text at the bottom, and is also a ledger row in
+ * 75-ui-reachability. */
+
+test('dropIntoRow: the row you click is the row you get', () => {
+  assert.deepEqual(dropIntoRow([], 0, 7), [7], 'front of an empty column');
+  assert.deepEqual(dropIntoRow([], 1, 7), [7],
+    'and the back row of an EMPTY column is still the front — nobody floats');
+  assert.deepEqual(dropIntoRow([5], 1, 7), [5, 7], 'behind the unit already standing there');
+});
+
+test('dropIntoRow: dropping into an occupied FRONT row pushes the sitting unit back', () => {
+  // this is the whole report. Without it, putting A in front of a column B is
+  // already in means removing B first — the "specific order" that was forced.
+  assert.deepEqual(dropIntoRow([5], 0, 7), [7, 5]);
+});
+
+test('dropIntoRow: a full column takes no third unit', () => {
+  // MAX_ROWS is the game's own limit and apply() refuses a third — a client
+  // that built one would only be building a declaration it cannot send
+  assert.deepEqual(dropIntoRow([5, 6], 0, 7), [5, 6]);
+  assert.deepEqual(dropIntoRow([5, 6], 1, 7), [5, 6]);
+  assert.equal(MAX_ROWS, 2);
+});
+
+test('dropIntoRow: the caller keeps its own column, and a wild row is clamped', () => {
+  const col = [5];
+  const out = dropIntoRow(col, 0, 7);
+  col.push(9);
+  assert.deepEqual(out, [7, 5], 'the result is a copy, not the array that was passed in');
+  assert.deepEqual(dropIntoRow([5], 99, 7), [5, 7], 'a row past the end lands at the end');
+  assert.deepEqual(dropIntoRow([5], -3, 7), [7, 5], 'and one before the start lands at the front');
+});
+
+test('the block builder in ui/main.ts really routes its drop through dropIntoRow', () => {
+  // main.ts takes the document at import time and cannot be loaded here, so
+  // the three lines between this function and the page are read as text (the
+  // house pattern — see 74-ui-stack-mod-host). Deleting any one of them puts
+  // the forced order back with every test above still green.
+  const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
+  assert.match(MAIN, /ui\.columns\[ci\] = dropIntoRow\(ui\.columns\[ci\] \?\? \[\], row, ui\.carrying\);/,
+    'the slot click must delegate the insert, not splice by hand');
+  assert.match(MAIN, /const row = Number\(t\.dataset\['row'\]\) \|\| 0;/,
+    'and it must read WHICH row was clicked — without this every drop is a front-row drop');
+  assert.match(MAIN, /data-act="slot" data-ci="\$\{ci\}" data-row="\$\{row\}"/,
+    'the slot has to carry its row');
+  const cols = MAIN.slice(MAIN.indexOf('function colSlotsHtml('));
+  const body = cols.slice(0, cols.indexOf('\n}\n'));
+  assert.match(body, /slotHtml\(ci, 0,/, 'the front row is always drawn…');
+  assert.match(body, /slotHtml\(ci, 1,/, '…and so is the back row, or there is nothing to click');
 });

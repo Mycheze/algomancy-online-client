@@ -56,6 +56,36 @@ export function halfRows(cols: readonly (Col | undefined)[], building = false): 
   return Math.min(MAX_ROWS, cols.reduce((m, c) => Math.max(m, c?.length ?? 0), 0));
 }
 
+/**
+ * Drop the unit you are carrying into row `row` of one column.
+ *
+ * Playtest BRDM (2026-08-20): *"Sometimes the system wants you to block in a
+ * specific order. I was forced to do creature B as a blocker before creature A
+ * despite it being pointless."* The column offered ONE open slot at a time and
+ * the drop was an append, so the order you clicked units in was the order they
+ * ended up standing in — and the front row (which takes the damage) could only
+ * ever be the unit you happened to click first. Wanting A in front and B behind
+ * meant clicking A first; wanting to change your mind meant taking the whole
+ * column apart.
+ *
+ * So the row you click is the row you get. Dropping into the FRONT of an
+ * occupied column pushes the unit standing there back rather than refusing —
+ * that is the whole point of the report, and it is why this is a splice and
+ * not a push. `Math.min` keeps a click on the back row of an empty column
+ * honest (there is no floating unit in a back row with nothing in front).
+ *
+ * A full column takes no more: `MAX_ROWS` is the game's own limit and the
+ * engine refuses a third unit, so the client must not build one either. The
+ * caller drops what it was carrying either way — a click on a full column is
+ * an answered click, not a swallowed one.
+ */
+export function dropIntoRow(col: Col, row: number, id: EntityId): EntityId[] {
+  const out = [...col];
+  if (out.length >= MAX_ROWS) return out;
+  out.splice(Math.min(Math.max(row, 0), out.length), 0, id);
+  return out;
+}
+
 /** what a re-key did to an in-progress block preview */
 export interface Rekeyed {
   /** the preview, re-keyed onto the attacking line as it stands NOW */

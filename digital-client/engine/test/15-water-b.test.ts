@@ -510,6 +510,10 @@ test('Tidelurker: a player dealt combat damage → create a 2/2 ([Switch1])', ()
   assert.ok(ent(h, tl), 'Tidelurker still in play');
 });
 
+// R29 (retimed 2026-08-22, playtest UFAB): the spot is chosen AT CAST and
+// taken atomically with the spawn. It used to be a trigger on the card's own
+// `spawned` event, which meant a window in which the unit stood in the region
+// outside the line and could be answered there.
 test('Tiderunner Initiate: played during battle, may join an open formation spot', () => {
   const h = new Harness(1514);
   toDeployment(h);
@@ -519,11 +523,10 @@ test('Tiderunner Initiate: played during battle, may join an open formation spot
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[wh]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tiderunner Initiate') });
-  pass(h); pass(h);                                        // unit resolves, spawns → trigger stacked
-  pass(h); pass(h);                                        // resolve trigger → spot pick
-  const dec = h.state.decision!;
+  const dec = h.state.decision!;                           // the CAST asks, at once
   assert.equal(dec.seat, A);
   decide(h, l => l.includes('behind Good Whale'));
+  pass(h); pass(h);                                        // the unit resolves, into the line
   const tid = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate')!;
   assert.ok(h.state.battle!.columns[0]!.includes(tid.id), 'joined column 1 behind the whale');
   finishBattle(h);

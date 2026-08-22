@@ -2,7 +2,10 @@
  *
  *  - "Tempest Wrangler (with alluring) didn't trigger on attack": Alluring was
  *    in the Attr union and in the rules reference and enforced nowhere, so an
- *    Alluring attacker could simply be ignored.
+ *    Alluring attacker could simply be ignored. (The rule that landed here in
+ *    round 7 was itself the WRONG rule, and the report came back in round 15
+ *    from room UFAB — the whole Alluring half of this file was rebuilt for
+ *    R84's targeted model; see the section header below.)
  *  - "Formless is broken here. It should have set Manablub to a 4/4, but it's
  *    combined with the other thing. Stats need to be able to be SET without
  *    using + or -.": the engine had no layer 2. Formless and Body Swap both
@@ -17,10 +20,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { apply, legalActions, unmetAllure, IllegalAction } from '../src/apply.ts';
+import { apply, legalActions, IllegalAction } from '../src/apply.ts';
 import { shouldAutoYield } from '../ui/inspect.ts';
 import { effStats, ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
-import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
+import type { Action, Attr, EntityId, GameState, Seat } from '../src/types.ts';
 
 /* ── layer 2: stats that are SET, not adjusted ─────────────────────────── */
 
@@ -111,79 +114,64 @@ test('Formless after Body Swap is a 4/4 — the exact BRDM position', () => {
     'a base 4/4 is a base 4/4 however many times the base was rewritten before');
 });
 
-/* ── Alluring ──────────────────────────────────────────────────────────── */
+/* ── R84 {Alluring} — the targeted on-attack trigger ────────────────────────
+ *
+ * Rebuilt 2026-08-22 (playtest room UFAB). The reported bug was "Tempest
+ * Wrangler (with Alluring) didn't trigger on attacks": three columns, one of
+ * them Alluring, the defender held exactly two units able to block, put both
+ * of them on the OTHER two columns, and the engine accepted the declaration —
+ * six unblocked damage, dead player.
+ *
+ * That was a real hole in the old rule (the duty's candidate pool was computed
+ * AFTER subtracting the units already committed elsewhere, so the defender
+ * could MANUFACTURE the "nobody is able" excuse), but the investigation found
+ * the engine was implementing the wrong rule entirely. R76 read Alluring as
+ * "every defender able to block this column must block it" and attributed the
+ * wording to the Manual; `Rules/Algomancy-Manual.txt` contains no occurrence of
+ * the word. Caleb's rulings say something simpler: it TARGETS ONE enemy unit,
+ * that unit can't attack and must block this column if able, it goes on the
+ * stack, it can be negated, and it does not stack. See docs/digital-rules.md
+ * R84 for the sources.
+ *
+ * WHY THE OLD SUITE MISSED THE UFAB BUG: every scenario in it attacked with
+ * ONLY Alluring columns, so there was never a plain column to dump blockers
+ * onto. The first test below is that missing shape.
+ */
 
-/** set up a battle where `A` attacks `D` with an Alluring unit */
-function allureBoard(seed: number, extra?: (h: Harness, A: Seat, D: Seat) => void) {
-  const h = new Harness(seed);
-  toDeployment(h);
-  const A = h.state.initiative, D = 1 - A;
-  const lure = spawn(h, A, 'Tempest Wrangler');     // {Alluring}
-  const blocker = spawn(h, D, 'Good Whale');
-  extra?.(h, A, D);
-  toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
-  pass(h); pass(h);
-  return { h, A, D, lure, blocker };
+/** answer everything an attack declaration raises — one target decision per
+ * Alluring column, in the order the triggers resolve — and pass the attack
+ * window down to the block step. */
+function toBlockStep(h: Harness, targets: EntityId[] = []): void {
+  const want = targets.slice();
+  for (let guard = 0; guard < 80; guard++) {
+    if (h.state.phase !== 'battle' || h.state.battle!.step === 'blocks') return;
+    const dec = h.state.decision;
+    if (dec?.kind === 'orderTriggers') {
+      h.do({ type: 'decide', seat: dec.seat, choice: dec.options.map((_, i) => i) });
+    } else if (dec) {
+      const id = want.shift();
+      if (id === undefined) throw new Error(`unexpected decision: ${dec.prompt}`);
+      pick(h, { unit: id });
+    } else {
+      pass(h);
+    }
+  }
+  throw new Error('never reached the block step');
 }
 
-test('Alluring: a defender who can block it may not decline', () => {
-  const { h, D, lure } = allureBoard(5210);
-  assert.ok(new E(h.state).colAttrs([lure]).has('Alluring'), 'the attacker really is Alluring');
-  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: {} }),
-    (err: unknown) => err instanceof IllegalAction && /Alluring/.test((err as Error).message),
-    'declining an Alluring attacker with a free blocker is illegal');
-});
+/** mutate the live state through the engine, the way a card would */
+function whiteBox(h: Harness, fn: (e: E) => void): void {
+  const e = new E(h.state);
+  fn(e);
+  e.settle();
+  h.state = e.s;
+  h.events.push(...e.events);
+  for (const ev of e.events) if (ev.msg) h.log.push(ev.msg);
+}
 
-test('Alluring: legalActions never offers the declaration apply() would refuse', () => {
-  // the fuzzer's "legalActions lied" invariant is what caught this rule living
-  // in only one of the two places
-  const { h, D } = allureBoard(5211);
-  const legal = legalActions(h.state, D).filter(a => a.type === 'declareBlocks');
-  assert.ok(legal.length, 'there are still legal ways to block');
-  assert.ok(!legal.some(a => a.type === 'declareBlocks' && !Object.keys(a.blocks).length && !a.send?.length),
-    'the "block nothing" option is gone while the duty stands');
-  // and everything still offered is genuinely accepted (one declaration ends
-  // the step, so each is checked against its own copy of the position)
-  for (const a of legal) {
-    const fresh = structuredClone(h.state);
-    assert.doesNotThrow(() => apply(fresh, a),
-      `legalActions offered ${JSON.stringify(a)} but apply() refused it`);
-  }
-});
-
-test('Alluring: blocking it discharges the duty', () => {
-  const { h, D, blocker } = allureBoard(5212);
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
-  assert.deepEqual(h.state.battle!.blocks[0], [blocker]);
-});
-
-test('Alluring: a defender with nobody able is not obliged', () => {
-  const h = new Harness(5213);
-  toDeployment(h);
-  const A = h.state.initiative, D = 1 - A;
-  const lure = spawn(h, A, 'Tempest Wrangler');
-  toNextBattle(h, A);                               // D has NO units at all
-  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
-  pass(h); pass(h);
-  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
-  assert.deepEqual(h.state.battle!.blocks, {}, 'no units, no duty');
-  assert.equal(unmetAllure(new E(h.state), D, {}), null);
-});
-
-/* ── R76: two Alluring columns, and the stuck state that hid behind them ──
- *
- * Alluring is COMPULSORY, and a declaration must discharge every duty on the
- * board at once. `legalActions` offered a representative set of declarations
- * that each blocked exactly ONE column, which cannot express that: with two
- * Alluring columns and two able blockers, every option left the other column
- * unblocked with a blocker to spare, so every option was refused — no legal
- * action for either player, no pending decision, and the game HANGS.
- *
- * Found by the fuzzer at seed 1993 (pinned in test/06-fuzz.test.ts). The bug is
- * exactly as old as Alluring itself: the single-column generator and the
- * compulsory filter landed together in this round.
- */
+function attrOn(h: Harness, id: EntityId, attr: Attr): void {
+  new E(h.state).addTempAttr(ent(h, id)!, attr);
+}
 
 /** every declaration `legalActions` offers the defender, as concrete actions */
 function blockOptions(h: Harness, D: Seat): Extract<Action, { type: 'declareBlocks' }>[] {
@@ -191,146 +179,558 @@ function blockOptions(h: Harness, D: Seat): Extract<Action, { type: 'declareBloc
     .filter((a): a is Extract<Action, { type: 'declareBlocks' }> => a.type === 'declareBlocks');
 }
 
-/** two one-unit Alluring columns, and `nBlockers` plain 3/3s to answer them */
-function twoAlluringColumns(seed: number, nBlockers: number): {
-  h: Harness; A: Seat; D: Seat; lures: EntityId[]; blockers: EntityId[];
-} {
-  const h = new Harness(seed);
-  toDeployment(h);
-  const A = h.state.initiative, D = (1 - A) as Seat;
-  const lures = [0, 1].map(() => spawn(h, A, 'Tempest Wrangler'));   // 1/3 {Alluring}
-  const blockers = Array.from({ length: nBlockers }, () => spawn(h, D, 'The Foretold'));
-  toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: lures.map(id => [id]) });
-  pass(h); pass(h);                                   // → the block step
-  return { h, A, D, lures, blockers };
-}
-
-test('R76: two Alluring columns and two able blockers is not a stuck state', () => {
-  const { h, D } = twoAlluringColumns(5240, 2);
-  const anyone = [...legalActions(h.state, 0), ...legalActions(h.state, 1)];
-  assert.ok(anyone.length > 0,
-    'SOMEBODY must have something to do — an empty list here hangs the game');
+/** every offer must be one apply() accepts — the fuzzer's "legalActions lied"
+ * invariant, checked against its own copy of the position because one
+ * declaration ends the step */
+function offersAreHonest(h: Harness, D: Seat): void {
   const opts = blockOptions(h, D);
-  assert.ok(opts.some(a => Object.keys(a.blocks).length === 2),
-    'and at least one offer must block BOTH Alluring columns, because both compel');
-});
-
-test('R76: every block declaration legalActions offers is one apply() accepts', () => {
-  // the fuzzer's "legalActions lied" invariant, aimed at the position that
-  // broke it: each option is checked against its own copy, since one
-  // declaration ends the step
-  const { h, D } = twoAlluringColumns(5241, 2);
-  const opts = blockOptions(h, D);
-  assert.ok(opts.length, 'there are options at all');
+  assert.ok(opts.length, 'legalActions must always be able to offer SOMETHING at the block step');
   for (const a of opts) {
-    const fresh = structuredClone(h.state);
-    assert.doesNotThrow(() => apply(fresh, a),
+    assert.doesNotThrow(() => apply(structuredClone(h.state), a),
       `legalActions offered ${JSON.stringify(a)} but apply() refused it`);
   }
+}
+
+const refusedForAllure = (err: unknown) =>
+  err instanceof IllegalAction && /Alluring/.test((err as Error).message);
+
+/* ── the UFAB regression, and its minimal form ─────────────────────────── */
+
+test('R84 UFAB: an Alluring column may not be side-stepped by blocking the OTHERS', () => {
+  // THE REPORTED POSITION. Three attack columns, one Alluring; the defender
+  // holds exactly two units able to block and puts both on the plain columns.
+  const h = new Harness(5250);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');          // {Alluring}
+  const plain = [0, 1].map(() => spawn(h, A, 'The Foretold'));
+  const [d1, d2] = [spawn(h, D, 'The Foretold'), spawn(h, D, 'The Foretold')];
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure], [plain[0]!], [plain[1]!]] });
+  toBlockStep(h, [d1!]);                                  // the Wrangler lures d1
+
+  assert.deepEqual(ent(h, d1!)!.allured, { round: 1, columns: [0] });
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [d1!], 2: [d2!] } }),
+    refusedForAllure,
+    'both blockers spent elsewhere is exactly the excuse the old rule accepted');
+  // and the honest half: d1 covers the lure, d2 goes wherever it likes
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1!], 2: [d2!] } });
+  assert.deepEqual(h.state.battle!.blocks[0], [d1!]);
 });
 
-test('R76: with two able blockers, blocking only ONE Alluring column is still illegal', () => {
-  // the fix must not have loosened the rule — the position was always legal,
-  // it was the offer list that could not express it
-  const { h, D, lures, blockers } = twoAlluringColumns(5242, 2);
-  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blockers[0]!] } }),
-    (err: unknown) => err instanceof IllegalAction && /Alluring/.test((err as Error).message));
-  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: {} }),
-    (err: unknown) => err instanceof IllegalAction && /Alluring/.test((err as Error).message));
-  // …and covering both is accepted
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blockers[0]!], 1: [blockers[1]!] } });
-  assert.deepEqual(h.state.battle!.blocks[0], [blockers[0]!]);
-  assert.deepEqual(h.state.battle!.blocks[1], [blockers[1]!]);
-  assert.ok(lures.length === 2);
-});
-
-test('R76: two Alluring columns against ONE blocker is unchanged — one duty, discharged once', () => {
-  const { h, D, blockers } = twoAlluringColumns(5243, 1);
-  const opts = blockOptions(h, D);
-  assert.ok(opts.length, 'not stuck');
-  assert.ok(!opts.some(a => Object.keys(a.blocks).length === 2),
-    'there is nobody to cover the second column');
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [blockers[0]!] } });
-  assert.deepEqual(h.state.battle!.blocks[1], [blockers[0]!],
-    'committing the only blocker to either column discharges what can be discharged');
-});
-
-test('R76: an Alluring column that also needs TWO blockers gets two', () => {
-  const h = new Harness(5244);
+test('R84: the minimal form — two columns, one Alluring, one blocker', () => {
+  const h = new Harness(5251);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   const lure = spawn(h, A, 'Tempest Wrangler');
   const plain = spawn(h, A, 'The Foretold');
-  const blockers = [0, 1].map(() => spawn(h, D, 'The Foretold'));
-  new E(h.state).addTempAttr(ent(h, lure)!, 'Evasive');
+  const d1 = spawn(h, D, 'The Foretold');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[lure], [plain]] });
-  pass(h); pass(h);
-  const opts = blockOptions(h, D);
-  assert.ok(opts.length, 'not stuck');
-  for (const a of opts) {
-    assert.equal((a.blocks[0] ?? []).length, 2,
-      'Evasive needs two, and the compulsory core supplies two or the duty is undischargeable');
-  }
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: blockers } });
-  assert.deepEqual(h.state.battle!.blocks[0], blockers);
+  toBlockStep(h, [d1]);
+
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [d1] } }),
+    refusedForAllure, 'the lured unit may not go and block the plain column instead');
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: {} }),
+    refusedForAllure, 'nor may it simply decline');
+  offersAreHonest(h, D);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1] } });
+  assert.deepEqual(h.state.battle!.blocks[0], [d1]);
 });
 
-test('R76: a lone Sneaky attacker that is also Alluring is not a stuck state either', () => {
-  // R20 forbids blocking it; Alluring demanded a block. Two rules, no legal
-  // declaration, and the same hang — found by reading rather than by fuzzing.
-  const h = new Harness(5245);
+test('R84: only the LURED unit is compelled — a second able blocker is free', () => {
+  // "single unit … meaning target unit controlled by an opponent". The old
+  // rule compelled EVERY able defender; this one compels exactly one.
+  const h = new Harness(5252);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   const lure = spawn(h, A, 'Tempest Wrangler');
-  const blocker = spawn(h, D, 'The Foretold');
-  new E(h.state).addTempAttr(ent(h, lure)!, 'Sneaky');
+  const [d1, d2] = [spawn(h, D, 'The Foretold'), spawn(h, D, 'The Foretold')];
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
-  pass(h); pass(h);
-  assert.ok(blockOptions(h, D).length, 'not stuck');
-  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } }),
-    (err: unknown) => err instanceof IllegalAction && /Sneaky/.test((err as Error).message),
-    'R20 still forbids blocking it');
-  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
-  assert.deepEqual(h.state.battle!.blocks, {},
-    'nobody is ABLE to block it, so the Alluring duty is discharged by doing nothing');
+  toBlockStep(h, [d1]);
+  assert.equal(ent(h, d2)!.allured, undefined, 'the other unit was never targeted');
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1] }, send: [d2] });
+  assert.deepEqual(h.state.battle!.sentAttackers, [d2],
+    'd2 is under no duty at all and may go and counterattack');
 });
 
-test('R76: an attack that has collapsed to nothing still lets the defender declare', () => {
+test('R84: a substitute is not good enough — the lured unit must be in the column', () => {
+  // "If another unit B wants to block the alluring column then suddenly A can
+  // and also has to."
+  const h = new Harness(5253);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const [d1, d2] = [spawn(h, D, 'The Foretold'), spawn(h, D, 'The Foretold')];
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+  toBlockStep(h, [d1]);
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d2] } }),
+    refusedForAllure, 'd2 cannot stand in for the unit that was actually lured');
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1, d2] } });
+  assert.deepEqual(h.state.battle!.blocks[0], [d1, d2], 'but d2 may join it');
+});
+
+/* ── the solved RAQ thread: Alluring AND Evasive ────────────────────────────
+ *
+ * "[Solved] Alluring AND Evasive column". The column needs TWO blockers and
+ * lures exactly one unit, A. The thread pins three cases, and they are the
+ * whole semantics: an Evasive column is something one unit cannot cover, so
+ * "if able" is false for A alone — until a second unit volunteers, at which
+ * point "suddenly A can and also has to".
+ */
+
+/** an Alluring + Evasive one-unit column, `n` plain 3/3s to answer it, and the
+ * lure aimed at the first of them */
+function evasiveLure(seed: number, n: number): {
+  h: Harness; A: Seat; D: Seat; ds: EntityId[];
+} {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const ds = Array.from({ length: n }, () => spawn(h, D, 'The Foretold'));
+  attrOn(h, lure, 'Evasive');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+  toBlockStep(h, [ds[0]!]);
+  return { h, A, D, ds };
+}
+
+test('R84 RAQ 1/3: one unit — it cannot cover an Evasive column alone, so it is free', () => {
+  const h = new Harness(5254);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const plain = spawn(h, A, 'The Foretold');
+  const a = spawn(h, D, 'The Foretold');
+  attrOn(h, lure, 'Evasive');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure], [plain]] });
+  toBlockStep(h, [a]);
+  offersAreHonest(h, D);
+  // "A can not block that column alone, so no compulsion; A is free to block a
+  // different column"
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [a] } });
+  assert.deepEqual(h.state.battle!.blocks, { 1: [a] });
+});
+
+test('R84 RAQ 2/3: two units — block with both, or forgo the column; nothing else', () => {
+  const { h, D, ds } = evasiveLure(5255, 2);
+  const [a, b] = ds as [EntityId, EntityId];
+  // forgo
+  assert.doesNotThrow(() => apply(structuredClone(h.state), { type: 'declareBlocks', seat: D, blocks: {} }));
+  // A + B
+  assert.doesNotThrow(() => apply(structuredClone(h.state), { type: 'declareBlocks', seat: D, blocks: { 0: [a, b] } }));
+  // B alone is refused by {Evasive} itself; A alone likewise
+  assert.throws(() => apply(structuredClone(h.state), { type: 'declareBlocks', seat: D, blocks: { 0: [b] } }),
+    (err: unknown) => err instanceof IllegalAction && /Evasive/.test((err as Error).message));
+  assert.throws(() => apply(structuredClone(h.state), { type: 'declareBlocks', seat: D, blocks: { 0: [a] } }),
+    (err: unknown) => err instanceof IllegalAction && /Evasive/.test((err as Error).message));
+  offersAreHonest(h, D);
+});
+
+test('R84 RAQ 3/3: three units — forgo, or A+B, or A+C; B+C is illegal', () => {
+  const { h, D, ds } = evasiveLure(5256, 3);
+  const [a, b, c] = ds as [EntityId, EntityId, EntityId];
+  const ok = (blocks: Record<number, EntityId[]>) =>
+    assert.doesNotThrow(() => apply(structuredClone(h.state), { type: 'declareBlocks', seat: D, blocks }));
+  ok({});
+  ok({ 0: [a, b] });
+  ok({ 0: [a, c] });
+  assert.throws(() => apply(structuredClone(h.state), { type: 'declareBlocks', seat: D, blocks: { 0: [b, c] } }),
+    refusedForAllure,
+    'two OTHER units may not cover the column the lured one was called to');
+  offersAreHonest(h, D);
+});
+
+/* ── the other half of the attribute: it cannot attack ──────────────────── */
+
+test('R84: a lured unit cannot be sent out to counterattack', () => {
+  // "It won't be able to 'counter-attack' into your region" — going out at
+  // block time IS attacking.
+  const h = new Harness(5257);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const [d1, d2] = [spawn(h, D, 'The Foretold'), spawn(h, D, 'The Foretold')];
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+  toBlockStep(h, [d1]);
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1] }, send: [d1] }),
+    (err: unknown) => err instanceof IllegalAction);
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d2] }, send: [d1] }),
+    refusedForAllure);
+  assert.ok(!blockOptions(h, D).some(a => (a.send ?? []).includes(d1)),
+    'and legalActions never offers it either');
+});
+
+test('R84: a lured unit may not be declared as an attacker (a guard, by hand)', () => {
+  // In the 1v1 battle structure this position cannot arise on its own: round
+  // 2's attacker pool IS the units sent at block time, and a lured unit may
+  // not be sent. The restriction is still real — it is the half of the
+  // attribute that survives the allurer's death — so the guard is tested
+  // against a pool built by hand.
+  const h = new Harness(5258);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const [d1, d2] = [spawn(h, D, 'The Foretold'), spawn(h, D, 'The Foretold')];
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+  toBlockStep(h, [d1]);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1] }, send: [d2] });
+  while (h.state.battle!.round === 1) pass(h);
+  const b = h.state.battle!;
+  assert.equal(b.attacker, D, 'round 2: the defender counterattacks');
+  assert.ok(!b.attackerPool!.includes(d1), 'the lured unit was never eligible to be in the pool');
+  b.attackerPool!.push(d1);
+  ent(h, d1)!.absent = false;
+  ent(h, d1)!.region = b.region;
+  assert.throws(() => h.do({ type: 'declareAttack', seat: D, columns: [[d1]] }), refusedForAllure);
+  assert.ok(!legalActions(h.state, D).some(a =>
+    a.type === 'declareAttack' && a.columns.flat().includes(d1)),
+  'and legalActions does not offer it');
+});
+
+/* ── it is a real effect on a real stack ────────────────────────────────── */
+
+test('R84: the trigger goes on the stack, targets at cast (R67), and can be NEGATED', () => {
+  // "'Alluring' effect goes to stack and can be negated?" — "Yep!"
+  const h = new Harness(5259);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const d1 = spawn(h, D, 'The Foretold');
+  giveResources(h, D, 'water', 1);
+  giveResources(h, D, 'metal', 1);                            // Dematerialize: bm / 2
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+
+  const dec = h.state.decision!;
+  assert.equal(dec.seat, A, 'the ATTACKER aims it, and does so before it reaches the stack');
+  assert.deepEqual(dec.options.map(o => o.value), [{ unit: d1 }], 'legal targets: enemy units here');
+  pick(h, { unit: d1 });
+  const item = h.state.stack[h.state.stack.length - 1]!;
+  assert.equal(item.kind, 'triggered');
+  assert.match(item.label, /Alluring/);
+
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Dematerialize') });
+  pick(h, { stack: item.id });
+  pass(h); pass(h);                                           // resolve Dematerialize
+  h.do({ type: 'decide', seat: A, choice: 0 });               // its Glimpse 3
+  assert.ok(h.log.some(m => /Alluring.*is negated/.test(m)), 'the trigger is negated');
+  assert.equal(ent(h, d1)!.allured, undefined, 'so nothing was ever lured');
+  toBlockStep(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  assert.deepEqual(h.state.battle!.blocks, {}, 'and the defender is under no duty');
+});
+
+test('R84: killing the allurer while the trigger is ON the stack fizzles it', () => {
+  // "this would stop the trigger if you kill the allurer while the effect is
+  // on the stack"
+  const h = new Harness(5260);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const d1 = spawn(h, D, 'The Foretold');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+  pick(h, { unit: d1 });
+  assert.equal(h.state.stack.length, 1, 'it is on the stack');
+  whiteBox(h, e => { e.destroy(ent(h, lure)!, 'is deleted'); });
+  toBlockStep(h);
+  assert.equal(ent(h, d1)!.allured, undefined, 'nothing was lured');
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  assert.deepEqual(h.state.battle!.blocks, {});
+});
+
+test('R84: killing the allurer AFTER it resolves frees the block but not the attack', () => {
+  // "You can't attack but you can block other things" — the can't-attack half
+  // is a mark on the unit and survives; the must-block duty names a column and
+  // dies with it.
+  const h = new Harness(5261);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const other = spawn(h, A, 'The Foretold');
+  const d1 = spawn(h, D, 'The Foretold');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure], [other]] });
+  toBlockStep(h, [d1]);
+  assert.deepEqual(ent(h, d1)!.allured, { round: 1, columns: [0] });
+
+  whiteBox(h, e => { e.destroy(ent(h, lure)!, 'is deleted'); });
+  assert.deepEqual(ent(h, d1)!.allured, { round: 1, columns: [] },
+    'R72 closed the line, and the duty went with the column');
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [d1] }),
+    refusedForAllure, 'it still cannot attack');
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  assert.deepEqual(h.state.battle!.blocks, {}, 'but it is free not to block');
+});
+
+test('R84: {Alluring} does not stack — two Alluring units in one column, ONE trigger', () => {
+  // "Nah alluring doesn't stack … It's just one attribute … It's like how you
+  // can't gain flying flying"
+  const h = new Harness(5262);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const front = spawn(h, A, 'Tempest Wrangler');
+  const back = spawn(h, A, 'Tempest Wrangler');
+  const [d1, d2] = [spawn(h, D, 'The Foretold'), spawn(h, D, 'The Foretold')];
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[front, back]] });
+  assert.equal(h.log.filter(m => /Trigger: Tempest Wrangler — \{Alluring\}/.test(m)).length, 1,
+    'one column, one trigger');
+  pick(h, { unit: d1 });
+  assert.equal(h.state.decision, null, 'and only one target is asked for');
+  toBlockStep(h);
+  assert.equal(ent(h, d2)!.allured, undefined);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1] }, send: [d2] });
+  assert.deepEqual(h.state.battle!.blocks[0], [d1]);
+});
+
+test('R84: two Alluring COLUMNS are two triggers, and may name the same unit', () => {
+  // Alluring is shared to the column but does not stack WITHIN one; two
+  // columns are two independent attributes and so two triggers.
+  const h = new Harness(5263);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lures = [0, 1].map(() => spawn(h, A, 'Tempest Wrangler'));
+  const d1 = spawn(h, D, 'The Foretold');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: lures.map(id => [id]) });
+  toBlockStep(h, [d1, d1]);                                   // both aimed at the same unit
+  assert.deepEqual(ent(h, d1)!.allured, { round: 1, columns: [0, 1] });
+
+  // ⚠ the judgement call: one unit cannot block two columns, so discharging
+  // either duty excuses the other — INCLUDING the "must be among its
+  // blockers" half, or the position would have no legal declaration at all
+  offersAreHonest(h, D);
+  assert.throws(() => apply(structuredClone(h.state), { type: 'declareBlocks', seat: D, blocks: {} }),
+    refusedForAllure, 'it must still answer ONE of them');
+  for (const ci of [0, 1]) {
+    assert.doesNotThrow(() =>
+      apply(structuredClone(h.state), { type: 'declareBlocks', seat: D, blocks: { [ci]: [d1] } }),
+    `blocking column ${ci} discharges both`);
+  }
+});
+
+test('R84: two Alluring columns naming DIFFERENT units compel both', () => {
+  const h = new Harness(5264);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lures = [0, 1].map(() => spawn(h, A, 'Tempest Wrangler'));
+  const [d1, d2] = [spawn(h, D, 'The Foretold'), spawn(h, D, 'The Foretold')];
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: lures.map(id => [id]) });
+  // the two triggers resolve in stack order, so which one aims at which unit
+  // is read back off the marks rather than assumed
+  toBlockStep(h, [d1, d2]);
+  const col = (id: EntityId) => ent(h, id)!.allured!.columns[0]!;
+  assert.notEqual(col(d1), col(d2), 'two columns, two different lured units');
+  offersAreHonest(h, D);
+  assert.ok(blockOptions(h, D).some(a => Object.keys(a.blocks).length === 2),
+    'the compulsory core covers both columns at once (R76: a single-column offer cannot)');
+  assert.throws(() =>
+    apply(structuredClone(h.state), { type: 'declareBlocks', seat: D, blocks: { [col(d1)]: [d1] } }),
+  refusedForAllure, 'answering one duty does not answer the other');
+  h.do({ type: 'declareBlocks', seat: D, blocks: { [col(d1)]: [d1], [col(d2)]: [d2] } });
+  assert.deepEqual(h.state.battle!.blocks, { [col(d1)]: [d1], [col(d2)]: [d2] });
+});
+
+/* ── "able" is a property of the unit and the column, and nothing else ──── */
+
+test('R84: a {Feeble} lured unit is not able, so it is not compelled', () => {
+  const h = new Harness(5265);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const d1 = spawn(h, D, 'The Foretold');
+  attrOn(h, d1, 'Feeble');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+  toBlockStep(h, [d1]);
+  offersAreHonest(h, D);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  assert.deepEqual(h.state.battle!.blocks, {}, 'a Feeble unit can never block, so it is never able');
+});
+
+test('R84: a lured unit with no {Flying} is not able against a Flying column', () => {
+  const h = new Harness(5266);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const d1 = spawn(h, D, 'The Foretold');
+  attrOn(h, lure, 'Flying');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+  toBlockStep(h, [d1]);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  assert.deepEqual(h.state.battle!.blocks, {});
+});
+
+test('R84: a lone {Sneaky} + {Alluring} attacker is not a stuck state', () => {
+  // R20 forbids blocking it, so nobody is able and the compulsion is empty.
+  // (Under the old rule this was a HANG: two rules, no legal declaration.)
+  const h = new Harness(5267);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const d1 = spawn(h, D, 'The Foretold');
+  attrOn(h, lure, 'Sneaky');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+  toBlockStep(h, [d1]);
+  offersAreHonest(h, D);
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1] } }),
+    (err: unknown) => err instanceof IllegalAction && /Sneaky/.test((err as Error).message));
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  assert.deepEqual(h.state.battle!.blocks, {});
+});
+
+/* ── R61 {Pure} still holds ─────────────────────────────────────────────── */
+
+test('R84 + R61: an Alluring column that is itself {Pure} never even triggers', () => {
+  // "an Alluring column that is itself Pure ignores its own Alluring and
+  // compels nobody" — and under the new model that is upstream of the stack:
+  // there is nothing to negate, because nothing fires.
+  const h = new Harness(5268);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const pure = spawn(h, A, 'Just a Unit');                    // {Pure}
+  const d1 = spawn(h, D, 'The Foretold');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure, pure]] });
+  assert.equal(h.state.decision, null, 'no target is asked for');
+  assert.ok(!h.log.some(m => /\{Alluring\}/.test(m)), 'nothing fired');
+  toBlockStep(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  assert.deepEqual(h.state.battle!.blocks, {});
+});
+
+test('R84 + R61: a {Pure} lured unit is able against a Flying Alluring column', () => {
+  // "a Pure blocker is 'able' against anything, so it can be compelled"
+  const h = new Harness(5269);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const plain = spawn(h, A, 'The Foretold');
+  const pure = spawn(h, D, 'Just a Unit');                    // {Pure}, no Flying
+  attrOn(h, lure, 'Flying');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure], [plain]] });
+  toBlockStep(h, [pure]);
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: {} }), refusedForAllure);
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [pure] } }), refusedForAllure);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [pure] } });
+  assert.deepEqual(h.state.battle!.blocks[0], [pure]);
+});
+
+test('R84 + R61: a {Pure} lured unit discharges an EVASIVE Alluring column alone', () => {
+  // Pure switches the whole attribute layer off for the exchange, Evasive
+  // included, so "could it have covered the column alone?" answers yes.
+  const h = new Harness(5270);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const pure = spawn(h, D, 'Just a Unit');
+  attrOn(h, lure, 'Evasive');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+  toBlockStep(h, [pure]);
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: {} }), refusedForAllure,
+    'Evasive would need two — but a Pure blocker alone is enough, so it is compelled');
+  offersAreHonest(h, D);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [pure] } });
+  assert.deepEqual(h.state.battle!.blocks[0], [pure]);
+});
+
+/* ── the R76 hang guard, restated for the new model ─────────────────────── */
+
+test('R84/R76: legalActions always offers a legal declaration (the fuzz-1993 hang)', () => {
+  // The contract that exists because of a real hang: every offered declaration
+  // was refused and the game locked up with no legal action for anyone. Each
+  // shape below is checked for "there is something" AND "everything offered is
+  // accepted"; the same-unit-two-duties case is the one the new model could
+  // plausibly have re-broken.
+  const shapes: [string, number, number, boolean][] = [
+    // label, #Alluring columns, #defenders, aim both lures at the same unit
+    ['one lure, no defenders', 1, 0, false],
+    ['one lure, one defender', 1, 1, false],
+    ['two lures, one defender', 2, 1, true],
+    ['two lures, two defenders', 2, 2, false],
+    ['two lures, both on one unit', 2, 2, true],
+  ];
+  shapes.forEach(([label, nLures, nDefs, sameTarget], i) => {
+    const h = new Harness(5280 + i);
+    toDeployment(h);
+    const A = h.state.initiative, D = (1 - A) as Seat;
+    const lures = Array.from({ length: nLures }, () => spawn(h, A, 'Tempest Wrangler'));
+    const ds = Array.from({ length: nDefs }, () => spawn(h, D, 'The Foretold'));
+    toNextBattle(h, A);
+    h.do({ type: 'declareAttack', seat: A, columns: lures.map(id => [id]) });
+    const aims = nDefs === 0 ? [] : lures.map((_, k) => (sameTarget ? ds[0]! : ds[k % nDefs]!));
+    toBlockStep(h, aims);
+    const anyone = [...legalActions(h.state, 0), ...legalActions(h.state, 1)];
+    assert.ok(anyone.length > 0, `${label}: SOMEBODY must have something to do`);
+    offersAreHonest(h, D);
+  });
+});
+
+test('R84: an attack that has collapsed to nothing still lets the defender declare', () => {
   // R72: every attacking column can empty and close up before blocks, leaving
   // b.columns []. The defender must still have a way to say "no blocks".
-  const h = new Harness(5246);
+  const h = new Harness(5285);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'The Foretold');
   spawn(h, D, 'The Foretold');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  pass(h); pass(h);
-  const e = new E(h.state);
-  e.destroy(ent(h, atk)!, 'is deleted');
-  e.settle();
+  toBlockStep(h);
+  whiteBox(h, e => { e.destroy(ent(h, atk)!, 'is deleted'); });
   assert.deepEqual(h.state.battle!.columns, [], 'the whole attack collapsed away');
-  const opts = blockOptions(h, D);
-  assert.ok(opts.length, 'not stuck');
+  offersAreHonest(h, D);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   assert.equal(h.state.battle!.step, 'blockWindow', 'and the battle moves on');
   finishBattle(h);
 });
 
-test('Alluring: a unit sent to counterattack is spoken for, not "able"', () => {
-  const { h, D, blocker } = allureBoard(5214);
-  // sending the only free unit away is a real choice; the duty cannot also
-  // claim it
-  h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [blocker] });
-  assert.deepEqual(h.state.battle!.sentAttackers, [blocker]);
+test('R84: a duty is re-keyed when the formation closes ranks (R72)', () => {
+  // The duty names an attack COLUMN, and a column's index is its identity, so
+  // it has to move in the same commit as BattleState.blocks.
+  const h = new Harness(5286);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const doomed = spawn(h, A, 'The Foretold');
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const d1 = spawn(h, D, 'The Foretold');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[doomed], [lure]] });
+  toBlockStep(h, [d1]);
+  assert.deepEqual(ent(h, d1)!.allured, { round: 1, columns: [1] });
+  whiteBox(h, e => { e.destroy(ent(h, doomed)!, 'is deleted'); });
+  assert.deepEqual(ent(h, d1)!.allured, { round: 1, columns: [0] }, 'the line closed up under it');
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: {} }), refusedForAllure);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1] } });
+  assert.deepEqual(h.state.battle!.blocks[0], [d1]);
 });
 
-test('unmetAllure names the attacker that is being ignored', () => {
-  const { h, D } = allureBoard(5215);
-  assert.equal(unmetAllure(new E(h.state), D, {}), 'Tempest Wrangler');
+test('R84: the mark is an until-regroup change, and regroup clears it', () => {
+  const h = new Harness(5287);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const lure = spawn(h, A, 'Tempest Wrangler');
+  const d1 = spawn(h, D, 'The Foretold');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lure]] });
+  toBlockStep(h, [d1]);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1] } });
+  finishBattle(h);
+  assert.equal(ent(h, d1)!.allured, undefined, 'cleared with the other temp changes (R11 step 3)');
 });
 
 /* ── auto-yield ────────────────────────────────────────────────────────── */

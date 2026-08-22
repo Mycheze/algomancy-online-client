@@ -106,18 +106,18 @@ card('Amphivore', {
 
 // "[Switch1] Look at target player's hand. You may choose a card from it and
 // recycle that card. If you do, that player draws a card." — bb/3 4/2
-// {Battle} {Feeble} Spell Unit. Target is a player (spec 'any'; a unit target
-// is a no-op — the text only targets players). The hand is revealed as an
-// info event; the caster picks via ctx.choose (or declines).
+// {Battle} {Feeble} Spell Unit. The hand is revealed as an info event; the
+// caster picks via ctx.choose (or declines).
 const brippEffect: EffectDef = {
-  targets: { what: 'any', prompt: "Bripp: look at target player's hand" },
+  // R64: "target player" — the player-only kind, either seat, yourself
+  // included. This said 'any', the DAMAGE kind, which also offered every unit
+  // in the region; playtest UFAB aimed it at one and the spell was spent on a
+  // hand that does not exist.
+  targets: { what: 'player', prompt: "Bripp: look at target player's hand" },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (!t || !('player' in (t as object))) {
-      g.ev('info', "Bripp: the target is not a player — no hand to look at.");
-      return;
-    }
-    const who = (t as { player: Seat }).player;
+    if (!t || !('player' in t)) return;
+    const who = t.player;
     const hand = g.player(who).hand;
     g.ev('info', `Bripp reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
     // the looker keeps what they saw (client-side note-taking strip)
@@ -214,8 +214,8 @@ card('Dreadspawn Horror', {
 
 // "[Augment] When I attack or block, you and target opponent each draw a
 // card." — b/2 2/2 {Flying} Cloud Sprite Unit. Text-box [Augment]; live when
-// played normally (Manual Q&A). Targeted trigger (spec 'any' — pick the
-// opponent; a unit target degrades to "only you draw", R5 partial).
+// played normally (Manual Q&A). Targeted trigger; the 'opponent' kind offers
+// the other seats and nothing else, so the draw always has someone to go to.
 card('Dreamfloat Drifter', {
   augmentText: [{
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
