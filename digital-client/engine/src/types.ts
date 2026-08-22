@@ -400,10 +400,26 @@ export interface StackItem {
   activationCost?: import('./cards/dsl.ts').AbilityCost;
   /** R49: receipt of the item-level activation costs above */
   paidCosts?: { discarded?: CardName[]; sacrificed?: CardName[] };
+  /** R79: viruses augmented onto this item WHILE IT SAT ON THE STACK
+   * (Caleb 2025-04-06: "In Battle, can you augment a spell with a virus …
+   * Yes. This notably only works with attributes."). Only the donated
+   * `augmentAttrs` do anything — a spell has no body for a static or a
+   * triggered ability to live on (Caleb 2025-04-24). Distinct from `mods`,
+   * which is the {Modular} CAST COST paid on the way to the stack: these were
+   * applied afterwards, as a response, by either player. A carrier is MODDED,
+   * so it is {Unstable} and its card never reaches a bin (R69).
+   *
+   * `by` is who APPLIED it, which is not the item's controller when you virus
+   * an enemy spell — a card belongs to its owner, so that is the erased pile
+   * it lands in and the mod owner it becomes on a spell unit's body. */
+  augments?: { card: CardName; by: Seat }[];
   /** triggered/activated: source entity (may be gone by resolution) */
   sourceId?: EntityId;
   /** virus: host target */
   hostId?: EntityId;
+  /** R79: virus — the STACK ITEM this virus is being augmented onto, when its
+   * host is a spell rather than a unit. Exactly one of hostId / hostStack. */
+  hostStack?: number;
   /** R1 event snapshot for triggered abilities (amounts still read live state) */
   event?: EngineEvent | null;
 }
@@ -559,7 +575,10 @@ export type Action =
   // R41: 'cache' is a legal mod source — "you CAN augment or graft from cache"
   // (Caleb 2024-12-02), paying the mod's normal cost; a FULFILLED prophecy on
   // the cached card makes it free instead (Caleb 2024-12-03).
-  | { type: 'augment'; seat: Seat; from: 'hand' | 'bin' | 'cache'; index: number; hostId: EntityId }
+  // R79: `hostStack` aims a Virus at a SPELL ON THE STACK instead of a unit.
+  // Exactly one of the two is given; the virus goes on the stack above its
+  // host and resolves first, like any other response.
+  | { type: 'augment'; seat: Seat; from: 'hand' | 'bin' | 'cache'; index: number; hostId?: EntityId; hostStack?: number }
   | {
       type: 'graft'; seat: Seat; from: 'hand' | 'bin' | 'cache'; index: number; hostId: EntityId;
       /** insert position in the host's mod stack: 0 = directly under the base … mods.length */
@@ -674,6 +693,28 @@ export interface GameState {
   triggerOrderedSeats: Seat[];
   suspension: Suspension | null;
   decision: Decision | null;
+  /** R78: the item that is RESOLVING RIGHT NOW — off the stack (nobody may
+   * respond to it or negate it any more) but not yet finished, because its
+   * resolution suspended on a mid-resolution choice. Null the rest of the
+   * time, which is almost always: resolution is synchronous unless somebody
+   * has to answer something.
+   *
+   * The client reads THIS to say "Opponent is resolving X" instead of showing
+   * the stack silently empty while its controller picks. Deliberately NOT a
+   * member of `stack`: everything that reads `s.stack` — negation, R60's
+   * "target effect" candidates, "negate all OTHER effects" sweeps, the
+   * stack-empty gates in settle()/passPriority — must keep seeing exactly the
+   * items still WAITING to resolve.
+   *
+   * Battle phase only (see E.resolveTop / E.commitItem): outside battle,
+   * resolution happens inside a hidden simultaneous segment (resource step,
+   * haste step, deployment) whose whole point is that the opponent cannot see
+   * you act, and server/view.ts does not redact this field.
+   *
+   * Aliased to `suspension.item` for a 'resolve' suspension — ONE object, so a
+   * structuredClone at the apply() boundary keeps them in step. Additive and
+   * optional: a pre-R78 saved state reads as "nothing is resolving". */
+  resolving?: StackItem | null;
 }
 
 export interface PendingTrigger {

@@ -81,6 +81,13 @@ export interface EffectCtx {
    * Their graft effects already ride as extra parts; this is the readable
    * list, for text that wants to know what is attached. */
   mods?: CardName[];
+  /** R79: attributes a VIRUS augmented onto this effect while it sat on the
+   * stack donates to it (Chitin Shredder's {Powerful} on a Fireball). Only
+   * type-line `[Augment]` attributes ever appear here — a spell has no body
+   * for a static or a triggered ability. `E.dealEffectDamage` unions these
+   * into the source's printed attrs; anything else that judges an effect by
+   * its attributes should read them the same way. */
+  grantedAttrs?: Attr[];
   /** R1: the event snapshot for triggered abilities (conditions were checked at
    * event time; amounts must be computed here, at resolution, from live state) */
   event: EngineEvent | null;

@@ -16,7 +16,7 @@
  * Time is a plain millisecond reading (Date.now()) passed in, never read here
  * — so a test can run a whole flash queue without a clock.
  */
-import type { EngineEvent, StackItem } from '../src/types.ts';
+import type { EngineEvent, Seat, StackItem } from '../src/types.ts';
 
 /** how long one flashed item sits on the visual stack. The ask was "at least
  * a second so that it doesn't happen too fast" — long enough to read the art
@@ -161,25 +161,107 @@ export interface StackRow {
   flashing: boolean;
   /** true: the real top of the real stack — the thing that resolves next */
   top: boolean;
+  /**
+   * R78: true for the ONE item that is resolving right now — off `state.stack`
+   * (nobody may respond to it, negate it or target it any more) but not
+   * finished, because its resolution stopped on a mid-resolution choice.
+   *
+   * It is neither `flashing` (that is a replay of something already over) nor
+   * `top` (that is the next item still WAITING). Those three are mutually
+   * exclusive by construction and the board paints all three differently:
+   * purple "resolved", red "answered", pending "resolving".
+   */
+  resolving: boolean;
 }
 
 /**
- * The visual stack: what is really on it, then whatever is having its beat.
+ * The visual stack: what is really on it, then whatever is having its beat,
+ * and — last, because it is the thing actually happening — whatever is
+ * resolving.
  *
  * A flash sits ABOVE the real items because that is where it would have gone
- * had the rules given it a stop — and only the real top of the real stack
- * wears the "resolves next" mark, because a flash resolves next to nothing.
+ * had the rules given it a stop, and only the real top of the real stack wears
+ * the "resolves next" mark, because a flash resolves next to nothing.
+ *
+ * R78's `resolving` item goes RIGHTMOST — on top of the pile, overlapped by
+ * nothing. It came off the top of the stack a moment ago, so it outranks
+ * everything still waiting; and it is the only row whose chip must stay
+ * legible whatever else is on the strip, because it is the answer to "why has
+ * nothing happened yet?". A beat is a courtesy; this is the state.
+ *
+ * Passing `resolving` is optional so a pre-R78 saved state — or a caller that
+ * only cares about the queue arithmetic — behaves exactly as before.
  */
 export function stackRows(
   stack: readonly StackItem[], flashes: readonly Flash[], now: number,
+  resolving: StackItem | null = null,
 ): StackRow[] {
   const rows: StackRow[] = stack.map((item, i) => ({
-    item, flashing: false, top: i === stack.length - 1,
+    item, flashing: false, top: i === stack.length - 1, resolving: false,
   }));
   for (const f of visibleFlashes(flashes, now)) {
-    rows.push({ item: f.item, flashing: true, top: false });
+    rows.push({ item: f.item, flashing: true, top: false, resolving: false });
   }
-  return rows;
+  if (!resolving) return rows;
+  // one card per id, always: an item cannot be both waiting and resolving, but
+  // a resync could hand us a stale beat for the very item that is now resolving
+  // and drawing it twice would read as two copies of the spell.
+  const out = rows.filter(r => r.item.id !== resolving.id);
+  out.push({ item: resolving, flashing: false, top: false, resolving: true });
+  return out;
+}
+
+/** the row the caption under the strip is about, or null on an empty strip.
+ *
+ * What is HAPPENING beats what is next: a resolving item is the reason the
+ * board has not changed yet, so it leads even over the top of the stack. */
+export function leadRow(rows: readonly StackRow[]): StackRow | null {
+  return rows.find(r => r.resolving) ?? rows.find(r => r.top) ?? rows[rows.length - 1] ?? null;
+}
+
+/** the one line of prose under the strip: what is happening to the lead item */
+export interface StackCaption {
+  row: StackRow;
+  /** the small uppercase verb chip ("resolves next", "Alice is resolving…") */
+  verb: string;
+  /** the controller's name for the trailing "by" clause, or null when `verb`
+   * has already named them and repeating it would just be noise */
+  by: string | null;
+  /** R78: the lead item is mid-resolution. The caption must read as IN
+   * PROGRESS — the whole playtest complaint was that a half-done effect looked
+   * finished — so the board paints this row and this caption differently from
+   * both "just resolved" and "was answered". */
+  pending: boolean;
+}
+
+/**
+ * R78: "Opponent is resolving [effect]", and the equivalents.
+ *
+ * `mySeat` is the seat this screen belongs to, or null in hotseat where both
+ * seats are the player. Naming the controller is the whole point of the report
+ * — "to my opponent, it looks like something already resolved" — so the
+ * resolving verbs carry the name and drop the trailing `by`.
+ *
+ * Your OWN resolution says only "resolving now": the prompt bar directly above
+ * is already asking you the question in your own name, and a second copy of
+ * your name on the table is clutter. What the caption adds that the prompt bar
+ * cannot is WHICH card the question belongs to, and the card is right there.
+ */
+export function stackCaption(
+  rows: readonly StackRow[],
+  opts: { mySeat?: Seat | null; names?: readonly string[] } = {},
+): StackCaption | null {
+  const row = leadRow(rows);
+  if (!row) return null;
+  const name = opts.names?.[row.item.controller] ?? '';
+  if (row.resolving) {
+    const mine = opts.mySeat !== null && opts.mySeat !== undefined && row.item.controller === opts.mySeat;
+    return { row, verb: mine ? 'resolving now' : `${name} is resolving`, by: null, pending: true };
+  }
+  const verb = row.flashing
+    ? (row.item.negated ? 'was answered' : 'just resolved')
+    : rows.length > 1 ? 'resolves next' : 'on the stack';
+  return { row, verb, by: name || null, pending: false };
 }
 
 /**
@@ -195,6 +277,13 @@ export function stackRows(
  *
  * So the ghost stays on the strip and the card still makes its journey. The
  * board underneath is final either way — the beat is explanation, not a gate.
+ *
+ * R78: a RESOLVING row is a phantom for the opposite reason. Its `s<id>` key
+ * really was in the census one render ago and is really gone from `state.stack`
+ * now — but the card has gone NOWHERE, it is mid-resolution and still drawn on
+ * the strip. Without the phantom the diff would see the key vanish and fly the
+ * card off to a destination that does not exist yet. With it, the card sits
+ * still until the resolution actually finishes, and only then flies to the bin.
  */
 export const censusFlashes = (rows: readonly StackRow[]): StackRow[] =>
-  rows.filter(r => r.flashing && !r.item.negated);
+  rows.filter(r => r.resolving || (r.flashing && !r.item.negated));

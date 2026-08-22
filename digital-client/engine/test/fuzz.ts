@@ -174,5 +174,25 @@ export function checkInvariants(s: GameState): void {
   if (s.phase === 'battle' && !s.battle) die('battle phase without battle state');
   for (const item of s.stack) {
     if (item.region < 0 || item.region >= s.regions.length) die('stack item in bad region');
+    // R79: a virus is aimed at EITHER a unit or a stack item, never both and
+    // never neither
+    if (item.kind === 'virus' && (item.hostId === undefined) === (item.hostStack === undefined)) {
+      die(`virus ${item.card} names ${item.hostId === undefined ? 'no host' : 'two hosts'}`);
+    }
+    for (const a of item.augments ?? []) if (!KNOWN.has(a.card)) die(`unknown virus on the stack: ${a.card}`);
+  }
+  // R78: an item is only ever left mid-resolution because somebody has to
+  // answer something. A resolving item with no open decision is off the stack
+  // with nothing left to put it back — the stuck state this whole rule exists
+  // to make visible rather than invisible.
+  if (s.resolving) {
+    if (!s.decision) die(`${s.resolving.label} is resolving with no decision pending`);
+    if (s.phase !== 'battle') die('a resolving item published outside the battle phase');
+    if (s.stack.some(i => i.id === s.resolving!.id)) die('the resolving item is ALSO on the stack');
+    const sus = s.suspension;
+    if (sus?.type !== 'resolve') die('a resolving item under a non-resolve suspension');
+    else if (sus.item !== s.resolving) die('resolving and suspension.item are two objects');
+  } else if (s.suspension?.type === 'resolve' && s.phase === 'battle') {
+    die('a mid-resolution suspension in battle with nothing marked as resolving');
   }
 }

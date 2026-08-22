@@ -15,7 +15,7 @@
  * the RNG state rolled back with everything else).
  */
 import type {
-  Action, BattleState, BinRef, CachedCard, CachedProphecy, CardName, Decision, DecisionOption,
+  Action, Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, Decision, DecisionOption,
   EffectPart, EngineEvent, Entity, EntityId, EventType, GameState, PendingTrigger,
   ResourceKind, Seat, StackItem, Suspension, TargetRef,
 } from './types.ts';
@@ -1471,6 +1471,7 @@ export class E {
     if (p.life <= 0 && this.s.winner === null) {
       this.s.winner = other(seat);
       this.s.phase = 'gameover';
+      this.s.resolving = null;   // R78: nothing is resolving any more — the game is over
       this.ev('gameOver', `*** ${this.pname(other(seat))} wins! ***`, { winner: other(seat) });
       throw new GameEnded();
     }
@@ -1483,6 +1484,7 @@ export class E {
     if (this.s.winner !== null) return;
     this.s.winner = other(seat);
     this.s.phase = 'gameover';
+    this.s.resolving = null;   // R78
     this.ev('gameOver', `*** ${this.pname(other(seat))} wins — ${this.pname(seat)} conceded. ***`,
       { winner: other(seat), conceded: seat });
     throw new GameEnded();
@@ -1537,6 +1539,11 @@ export class E {
   dealEffectDamage(ctx: EffectCtx, target: ResolvedTarget, n: number): void {
     if (n <= 0) return;
     const srcAttrs = new Set(this.card(ctx.sourceName)?.attrs ?? []);
+    // R79: attributes a virus donated to this effect while it sat on the stack
+    // ("mostly Deadly, Piercing, and Powerful are impacted by this" — Caleb
+    // 2025-03-06). Read here rather than from the printed card alone, which is
+    // the seam the SPELLS half of Emberflame Enlightener was parked on.
+    for (const a of ctx.grantedAttrs ?? []) srcAttrs.add(a);
     const poisonous = srcAttrs.has('Poisonous');
     const resonant = srcAttrs.has('Resonant');
     // Powerful source: double the damage dealt (to units and players alike),
@@ -2534,12 +2541,17 @@ export class E {
   negate(stackId: number): void {
     const it = this.removeFromStack(stackId);
     if (!it) return;
-    const binned = it.card !== undefined && NEGATE_BINS.has(it.kind);
-    this.ev('negated', `${it.label} is negated${binned ? ' → bin' : ''}.`, { id: it.id });
-    if (binned) {
-      this.toBin(it.controller, it.card!, 'stack');
-      this.binItemMods(it);   // {Modular}: its mods leave with it
-    }
+    const hasCard = it.card !== undefined && NEGATE_BINS.has(it.kind);
+    // R79: a carrier is Unstable, so even negation cannot put its card in a
+    // bin — the card and its viruses are erased. (The Manual's "if a virus is
+    // negated … it is placed into the bin" is about the VIRUS ITEM being
+    // negated before it ever attached; that item has no augments of its own
+    // and still takes the bin branch.)
+    const unstable = (it.augments?.length ?? 0) > 0;
+    this.ev('negated',
+      `${it.label} is negated${unstable ? ' → erased (Unstable)' : hasCard ? ' → bin' : ''}.`,
+      { id: it.id });
+    this.dischargeItem(it, hasCard);
   }
 
   /** Build the cast chain for one action and run it (suspends on targets). */
@@ -3278,13 +3290,42 @@ export class E {
     // ui/flash.ts. Snapshotted because resolveParts is about to mark parts
     // spent under it. No log line, no listeners: rules-inert.
     this.ev('stackFlash', '', { item: structuredClone(item) });
+    const outer = this.beginResolving(item);
     this.resolveItem(item);
+    this.endResolving(outer);
     this.settle();
+  }
+
+  /**
+   * R78: mark `item` as the one currently resolving and hand back whatever was
+   * marked before (resolution can nest: an effect that resolves another item
+   * inline). Publishing is gated on the BATTLE phase — outside it, resolution
+   * runs inside a hidden simultaneous segment (resource step, haste step,
+   * deployment) and server/view.ts does not redact this field, so publishing
+   * there would tell your opponent you are mid-something while the freeze is
+   * meant to hide exactly that.
+   */
+  private beginResolving(item: StackItem): StackItem | null {
+    const outer = this.s.resolving ?? null;
+    if (this.s.phase === 'battle') this.s.resolving = item;
+    return outer;
+  }
+
+  /** R78: resolution finished (or fizzled, or partially resolved, or the item
+   * was never really there) — hand the marker back. Called on EVERY normal
+   * exit from resolveItem; a suspension deliberately throws past it, which is
+   * the whole point: the item stays marked until it has ACTUALLY resolved. */
+  endResolving(outer: StackItem | null): void {
+    this.s.resolving = outer;
   }
 
   resolveTop(): void {
     const item = this.s.stack.pop()!;
+    // R78: it is off the stack — nobody may respond to it or negate it now —
+    // but it has not resolved yet, and it says so until it has.
+    const outer = this.beginResolving(item);
     this.resolveItem(item);
+    this.endResolving(outer);
     this.finishResolutionTail();
   }
 
@@ -3314,6 +3355,21 @@ export class E {
       return;
     }
     if (item.kind === 'virus') {
+      // R79: a virus aimed at a SPELL ON THE STACK. Its host is legal exactly
+      // while it is still ON the stack: negated out from under it (R68) or
+      // recalled, and the virus fizzles to the bin — Manual p.34, "If a virus
+      // is negated or its target becomes invalid, it is placed into the bin,
+      // and cannot be used as a virus again".
+      if (item.hostStack !== undefined) {
+        const target = this.s.stack.find(it => it.id === item.hostStack);
+        if (!target) {
+          this.ev('fizzled', `${item.label} fizzles (its host has left the stack) → bin.`, { id: item.id });
+          this.toBin(item.controller, item.card!, 'stack');   // R40: from the stack, no trash
+          return;
+        }
+        this.augmentStackItem(target, item.card!, item.controller);
+        return;
+      }
       const host = item.hostId !== undefined ? this.entity(item.hostId) : undefined;
       if (!host) {
         this.ev('fizzled', `${item.label} fizzles (host is gone) → bin.`, { id: item.id });
@@ -3337,16 +3393,23 @@ export class E {
     };
     if (!item.parts.some(partAlive)) {
       this.ev('fizzled', `${item.label} fizzles — all targets are gone.`, { id: item.id });
-      if (item.card && (item.kind === 'spell' || item.kind === 'spellUnit' || item.kind === 'ambush')) {
-        // a fizzled spell unit never spawns; a fizzled ambusher is binned too
-        // ("you could find yourself losing both units" — Manual p.40).
-        // R40: still the stack, so still not a trash.
-        this.toBin(item.controller, item.card, 'stack');
-        this.binItemMods(item);   // {Modular}: its mods leave with it
-      }
+      // a fizzled spell unit never spawns; a fizzled ambusher is binned too
+      // ("you could find yourself losing both units" — Manual p.40).
+      // R40: still the stack, so still not a trash. R79: a fizzled carrier is
+      // still a modded card leaving the stack, so Unstable still replaces the
+      // bin with an erase — the virus was applied and is spent either way.
+      this.dischargeItem(item,
+        item.kind === 'spell' || item.kind === 'spellUnit' || item.kind === 'ambush');
       return;
     }
-    this.ev('resolved', `${item.label} resolves.`, { id: item.id });
+    // R78, playtest 2026-08-22: this line is a HEADING for the effects printed
+    // under it, not a statement that resolution finished — and it is emitted
+    // BEFORE resolveParts, which can suspend for as long as the controller
+    // takes to answer. "X resolves." asserted completion while the table
+    // showed "Bob is resolving — X", so the log contradicted the board. The
+    // present progressive is true at 0ms and at a minute; the effects beneath
+    // it remain the evidence that it actually finished.
+    this.ev('resolved', `Resolving ${item.label}:`, { id: item.id });
     this.resolveParts(item, 0, {});
     this.afterParts(item);
   }
@@ -3398,6 +3461,7 @@ export class E {
         x: part.costPaid?.x ?? item.x,
         costPaid: part.costPaid,
         ...(part.mods ? { mods: part.mods } : {}),
+        ...(item.augments?.length ? { grantedAttrs: this.stackAugmentAttrs(item) } : {}),
         event: item.event ?? null,
         choose: (key, dec) => {
           // namespaced per part: card code uses fixed keys (`sac:${seat}`),
@@ -3429,6 +3493,23 @@ export class E {
         if (sig instanceof PartChoice) {
           this.s = snap;
           this.events.length = evLen;
+          // R78: the rollback swapped the whole state for a clone, so
+          // `s.resolving` is now a COPY of whatever was marked at the part
+          // boundary. Point it at the live object the suspension is about to
+          // store, so the state holds exactly ONE object for the resolving item
+          // — structuredClone at the apply() boundary memoises shared
+          // references, so a replay can never drift the marker and the
+          // suspension apart.
+          //
+          // Assigned, never merely re-pointed, because THIS item is the one
+          // that is suspending. Resolution can nest (a part that ends the
+          // battle lets settle() resolve a start-of-deployment trigger inline),
+          // and the throw abandons the outer resolution entirely — leaving the
+          // outer item marked would strand it. The phase gate is re-applied for
+          // the same reason: the fuzzer found a Wraith's startOfDeployment
+          // trigger suspending under a battle resolution, which published a
+          // marker in the deploy phase (seed 693).
+          this.s.resolving = this.s.phase === 'battle' ? item : null;
           this.suspend(
             { type: 'resolve', item, partIndex: pi, answers, pendingKey: sig.key },
             { seat: sig.dec.seat, kind: sig.dec.kind, prompt: sig.dec.prompt, options: sig.dec.options },
@@ -3448,16 +3529,91 @@ export class E {
    * card's. Used by the resolution-time attribute checks ({Afflicting}). */
   itemAttrs(item: StackItem): Set<string> {
     const src = item.sourceId !== undefined ? this.entity(item.sourceId) : undefined;
-    if (src) return this.ownAttrs(src);
-    return new Set<string>(item.card ? this.card(item.card).attrs : []);
+    const set = src ? this.ownAttrs(src)
+      : new Set<string>(item.card ? this.card(item.card).attrs : []);
+    for (const a of this.stackAugmentAttrs(item)) set.add(a);   // R79
+    return set;
+  }
+
+  /**
+   * R79: the attributes a VIRUS augmented onto this stack item donates to it.
+   *
+   * Type-line `[Augment]` attributes only, exactly as `ownAttrs` reads them off
+   * a unit's augment mods — Caleb 2025-04-06: augmenting a virus onto a spell
+   * "notably only works with attributes", and 2025-04-24: "spells cannot gain
+   * static abilities like that, so the only useful thing you can do is give
+   * them attributes". A virus whose whole payload is text (Graxxlid, Skybreaker)
+   * may still legally be applied; it simply donates nothing.
+   */
+  stackAugmentAttrs(item: StackItem): Attr[] {
+    const out: Attr[] = [];
+    for (const a of item.augments ?? []) out.push(...this.card(a.card).augmentAttrs);
+    return out;
+  }
+
+  /** R79: attach a virus to a stack item. Rules-inert beyond the attachment:
+   * 'modApplied' means a mod reached a UNIT (every listener reads
+   * `ev.data.host`) and there is no host entity here, so this logs like the
+   * {Modular} path does. */
+  augmentStackItem(item: StackItem, name: CardName, byPlayer: Seat): void {
+    (item.augments ??= []).push({ card: name, by: byPlayer });
+    const granted = this.card(name).augmentAttrs;
+    this.ev('info',
+      `${name} augments ${item.label} on the stack`
+      + (granted.length ? ` — it gains {${granted.join('} {')}}` : ' — it grants no attributes, so nothing changes')
+      + ' — and it is now Unstable.',
+      { item: item.id, card: name, seat: byPlayer });
+  }
+
+  /**
+   * R68/R79: a stack item's CARD leaves the stack. Normally it goes to its
+   * controller's bin — R40: it comes FROM THE STACK, so this is never a trash.
+   *
+   * If a virus rode it, the item is MODDED, and Unstable is a BIN replacement
+   * rather than a death replacement (R69, Caleb 2025-03-13): the card and every
+   * virus on it are ERASED instead, and nothing reaches a bin. That is the
+   * mechanism behind Caleb 2025-03-06's "you can hit enemy spells and the spell
+   * gets erased on resolution".
+   *
+   * `hasCard` is whether this kind has a card to place at all — a spell token
+   * has none, and a triggered/activated ability's `card` names its source,
+   * which is still standing in play. The erase runs either way, because the
+   * viruses themselves still have to go somewhere.
+   */
+  dischargeItem(item: StackItem, hasCard: boolean): void {
+    const viruses = item.augments ?? [];
+    if (viruses.length) {
+      // R65: each card reaches ITS OWN owner's erased pile — a virus on an
+      // enemy spell is the enemy's card, and the two piles are public.
+      this.ev('erased',
+        `${item.label} is Unstable — it and its ${viruses.length} virus mod(s) are ERASED.`,
+        { seat: item.controller, cards: hasCard && item.card ? [item.card] : [] });
+      for (const seat of [...new Set(viruses.map(v => v.by))].sort()) {
+        const mine = viruses.filter(v => v.by === seat).map(v => v.card);
+        this.ev('erased', `${mine.join(', ')} — erased with ${item.label}.`, { seat, cards: mine });
+      }
+    } else if (hasCard && item.card) {
+      this.toBin(item.controller, item.card, 'stack');
+    }
+    this.binItemMods(item);   // {Modular}: its mods leave with it
   }
 
   afterParts(item: StackItem): void {
-    if (item.kind === 'spellUnit') this.spawnUnit(item.controller, item.card!, item.region, { ...(item.from ? { from: item.from } : {}) });
-    // R40: a resolved spell goes to the bin FROM THE STACK — explicitly not a trash
-    else if (item.kind === 'spell') this.toBin(item.controller, item.card!, 'stack');
-    // spellToken: already out of play; triggered/activated: nothing to move
-    this.binItemMods(item);   // {Modular}: its mods leave with it, also from the stack
+    if (item.kind === 'spellUnit') {
+      const u = this.spawnUnit(item.controller, item.card!, item.region, { ...(item.from ? { from: item.from } : {}) });
+      // R79: a spell UNIT's card does not leave — it arrives. Its viruses ride
+      // it in, as the augment mods they always were, which is also what makes
+      // the body Unstable. Erasing the card here instead would delete a unit
+      // on its way into play, which no ruling asks for.
+      for (const a of item.augments ?? []) this.attachMod(u, a.card, a.by, 'augment');
+      this.binItemMods(item);   // {Modular}: its mods leave with it, also from the stack
+      return;
+    }
+    // R40: a resolved spell goes to the bin FROM THE STACK — explicitly not a
+    // trash. R79: unless a virus rode it, in which case it is Unstable and the
+    // whole pile is erased instead. spellToken: already out of play;
+    // triggered/activated: nothing to move.
+    this.dischargeItem(item, item.kind === 'spell');
   }
 
   // ── suspensions & decisions ─────────────────────────────────────────

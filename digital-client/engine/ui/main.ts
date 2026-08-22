@@ -6,11 +6,12 @@ import { Harness } from '../src/harness.ts';
 import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/apply.ts';
 import { getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import {
-  activatableUnits, activationBadge, activationNeedsConfirm, erasedPileView, groupReveal, linkCardNames,
-  partitionOptions, playableCachedNames, shouldAutoYield, stackAbilityRows, stackItemX,
-  stackXMark, tokensCreatedBy, unitClickOptions,
+  activatableUnits, activationBadge, activationNeedsConfirm, dismissSeenCard, dismissSeenHand,
+  erasedPileView, groupReveal, linkCardNames,
+  partitionOptions, playableCachedNames, seenHandView, shouldAutoYield, stackAbilityRows, stackItemX,
+  stackXMark, tokensCreatedBy, unitClickOptions, waitingNote, watchCast,
 } from './inspect.ts';
-import type { FormationRole, UnitClickOption } from './inspect.ts';
+import type { CastWatch, FormationRole, SeenHandDismissals, UnitClickOption } from './inspect.ts';
 import { halfRows, publishCols, rekeyBuild } from './formation.ts';
 import { entityTextBox, printedTextBox, textBoxFor } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
@@ -25,7 +26,7 @@ import {
 import type { ArrowSpec } from './anim.ts';
 import { armsIdle, diffSfx, sfxSnap } from './sfx.ts';
 import type { SfxSnap } from './sfx.ts';
-import { censusFlashes, nextFlashWake, pruneFlashes, queueFlashes, stackRows } from './flash.ts';
+import { censusFlashes, nextFlashWake, pruneFlashes, queueFlashes, stackCaption, stackRows } from './flash.ts';
 import type { Flash } from './flash.ts';
 import {
   armIdle, disarmIdle, playCue, primeAudio, setSoundOn, soundOn,
@@ -195,7 +196,12 @@ class NetBackend implements Backend {
       this.building = m.building ?? null;   // reconnect mid-declaration
       this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
       this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
-      resetUi(); uiError = ''; render(); return;
+      resetUi();
+      // R78: seed the cast watch AFTER resetUi has dropped the baselines, so
+      // the first update after a join has something to diff against. Never
+      // `quiet` — a join is not an action somebody just took.
+      noteCast(this.state, this.seat, false);
+      uiError = ''; render(); return;
     }
     if (m.t === 'update') {
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? this.peers; render(); return; }
@@ -214,6 +220,11 @@ class NetBackend implements Backend {
       }
       if (m.legal) this.legal = m.legal;
       if (m.peers) this.peers = m.peers;
+      // R78(b): a cast-time suspension is the ONE thing that changes the board
+      // and says nothing at all. A full log resync (`m.log` — an undo replayed
+      // the game) is a wholesale arrival, not an action, so it re-baselines.
+      noteCast(this.state, this.seat, !m.log
+        && !(m.events ?? []).some(e => e.msg) && !(m.reveal ?? []).some(e => e.msg));
       // segment-end reveal: what the opponent secretly did while their half of
       // the view was frozen. `step` names WHICH segment just closed: a 'plan'
       // close fires every single turn and its payload is resource-step lines,
@@ -448,6 +459,25 @@ function rememberStack(): void {
     seenStack.delete(seenStack.keys().next().value!);   // oldest id first
   }
 }
+/**
+ * R78: the "a card has left their hand and has not appeared" watch.
+ *
+ * A CAST-time suspension (X, {Modular} mods, a bracketed cost, R67 targets)
+ * happens before the item reaches state.stack, and view.ts nulls the other
+ * seat's suspension along with their decision — so `resolving` cannot help and
+ * there is no `casting` field to read. ui/inspect.ts watchCast() infers it from
+ * public counts alone and re-baselines rather than guess whenever it cannot;
+ * this is only where the fold lives across updates. Net mode only: hotseat
+ * shows both seats' everything and has no wait banner to explain.
+ */
+let castWatch: CastWatch | null = null;
+
+/** Fold one arriving view into the cast watch. `quiet` — the update carried no
+ * log line — is the honesty gate; see ui/inspect.ts watchCast. */
+function noteCast(state: GameState, mySeat: Seat, quiet: boolean): void {
+  castWatch = watchCast(castWatch, state, other(mySeat), quiet);
+}
+
 /** beats parked behind the deploy-end reveal overlay (see NetBackend.onMsg) */
 let heldFlashes: EngineEvent[] = [];
 /** the pending repaint that ends the current beat */
@@ -460,6 +490,10 @@ function flashReset(): void {
   flashQueue = [];
   heldFlashes = [];
   seenStack = new Map();
+  // R78: and the cast watch with them. It is a DIFF against the last thing you
+  // were shown, so a state that arrives wholesale gives it nothing to diff —
+  // and a stale baseline would read a fresh join's hand as a card in flight.
+  castWatch = null;
   if (flashTimer !== null) { clearTimeout(flashTimer); flashTimer = null; }
 }
 
@@ -518,9 +552,10 @@ function placeStackWindow(): void {
 }
 addEventListener('resize', placeStackWindow);
 
-/** the rows on the visual stack right now: the real stack, then the beats */
+/** the rows on the visual stack right now: the real stack, then the beats,
+ * then (R78) whatever is mid-resolution — off the rules stack, still happening */
 const visualStack = (): ReturnType<typeof stackRows> =>
-  stackRows(h.state.stack, flashQueue, Date.now());
+  stackRows(h.state.stack, flashQueue, Date.now(), h.state.resolving ?? null);
 
 /** A stack item by id, flashed ones included — the focus viewer, the arrows
  * and the target labels all address items by id and must not go blank the
@@ -805,6 +840,30 @@ function saveYield(): void {
   const k = yieldStoreKey();
   if (k) localStorage.setItem(k, JSON.stringify([...yieldMap]));
 }
+// ── round 13: the seen-hand aid's dismissals ──────────────────────────
+/* "clicking a card removes it from the aid" / "a button to dismiss the whole
+ * aid". `seenHand` is ENGINE state, re-sent whole on every snapshot, so the
+ * dismissals are a view preference layered over it (ui/inspect.ts). They are
+ * persisted per room exactly like the auto-yield set above: the client never
+ * auto-reconnects, so every server restart reloads both players, and an aid
+ * that resurrected everything you had forgotten would be worse than no aid.
+ * The stored record names the look it belongs to, so a LATER reveal — a new
+ * turn, or a different hand in the same turn — shows everything again. */
+let seenDrop: SeenHandDismissals | null = null;
+const seenStoreKey = (): string | null => (NET ? `algoSeen:${NET.room}` : null);
+function loadSeenDrop(): void {
+  const k = seenStoreKey();
+  if (!k) return;
+  try {
+    const d = JSON.parse(localStorage.getItem(k) ?? 'null') as SeenHandDismissals | null;
+    seenDrop = d && typeof d.key === 'string' && Array.isArray(d.cards) ? d : null;
+  } catch { seenDrop = null; }
+}
+function saveSeenDrop(): void {
+  const k = seenStoreKey();
+  if (k && seenDrop) localStorage.setItem(k, JSON.stringify(seenDrop));
+}
+
 /** When I hold priority with no pending decision and the TOP of the stack is
  * a trigger sourced from an auto-yielded unit, pass automatically. Only the
  * top matters: passing resolves it, and whatever sits underneath gets its own
@@ -1162,10 +1221,25 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   const miniHand = hiddenHand
     ? `<span class="minihand" data-animzone="hand:${p}" title="hand: ${pl.hand.length} cards">${nameKeys(pl.hand, `h${p}:`).map(k => `<span class="miniback" data-anim="${k}"></span>`).join('')}</span><span style="color:var(--dim)">hand ${pl.hand.length}</span>`
     : '';
+  // round 13: the label used to be one long inline sentence that explained
+  // itself at length every render and ate the width the cards needed. Now it
+  // stacks ABOVE them in two short rows, and every card carries a ✕ that
+  // forgets it. The ✕ rather than a bare card click on purpose: these are
+  // real `cardHtml` scans, so hovering one previews it and right-clicking
+  // opens the inspector, and a left-click that deleted the card would make
+  // looking at it the same gesture as losing it.
   const seen = NET && p === other(NET.seat) ? s.seenHand?.[NET.seat] : null;
-  const seenStrip = seen
-    ? `<div class="seenhand"><span class="seenlabel">👁 You saw their hand (turn ${seen.turn}) — memory aid, cards may have been played since:</span>
-        <span class="seencards">${seen.cards.map(n => cardHtml(n)).join('')}</span></div>`
+  const sv = seenHandView(seen, seenDrop);
+  const seenStrip = sv.show
+    ? `<div class="seenhand">
+        <div class="seenhead">
+          <span class="seenlabel">👁 Their hand, seen turn ${sv.turn}</span>
+          <button class="seendismiss" data-btn="seenhideall" title="dismiss the whole memory aid until they show you their hand again">✕ dismiss</button>
+        </div>
+        <div class="seenhint">may be out of date${sv.dismissed ? ` · ${sv.dismissed} crossed off` : ''} — ✕ a card to forget it</div>
+        <div class="seencards">${sv.cards.map(c => `<span class="seenslot">${cardHtml(c.name)
+          }<button class="seenx" data-btn="seendrop" data-i="${c.index}" title="forget ${esc(c.name)} — it is played, or not worth tracking any more">✕</button></span>`).join('')}</div>
+      </div>`
     : '';
 
   const handZone = opts.omitHand || hiddenHand ? '' :
@@ -1873,10 +1947,11 @@ function promptHtml(): string {
   // know: an EMPTY legal-action list means nothing at all is mine to do.
   if (NET && !s.decision && !NET.legal.length) {   // gameover returned above
     const opp = esc(s.players[other(NET.seat)]!.name);
+    // R78: WHY you are waiting, when the state can say. `resolving` names the
+    // effect outright; the cast watch reports only what it observed. Both live
+    // in ui/inspect.ts (waitingNote), which is where the judgement is tested.
     return `<div class="promptbar waiting"><span class="who">Waiting for ${opp}…</span>
-      <span style="color:var(--dim)">${s.stack.length
-        ? 'they are answering something on the stack — nothing is yours to do yet'
-        : 'nothing is yours to do yet'}</span>${err}</div>`;
+      <span style="color:var(--dim)">${esc(waitingNote(s, castWatch?.casting ?? false))}</span>${err}</div>`;
   }
   const dec = s.decision;
   if (dec) {
@@ -2151,6 +2226,15 @@ const STACK_KIND: Record<string, string> = {
  * The rows come from ui/flash.ts, which mixes in items that resolved with no
  * response window and so never touched state.stack at all. Those are drawn as
  * cards like any other, marked as already-resolved, for one beat each.
+ *
+ * R78 adds the third kind of row: the item that is resolving RIGHT NOW. Playtest
+ * round 13: "to my opponent, it looks like something already resolved… it would
+ * make more sense if there was a different state before resolution like
+ * 'Opponent is resolving [effect]'". It is off state.stack (so the "negate every
+ * effect on the stack" sweeps cannot reach it) but it has not happened yet, so
+ * it goes on the strip rightmost, teal and breathing, and the caption names its
+ * controller. Which row is which, and what the caption says, is decided in
+ * ui/flash.ts (stackRows / stackCaption) where it is tested; this only paints.
  */
 function stackBoardHtml(): string {
   const rows = visualStack();
@@ -2181,7 +2265,8 @@ function stackBoardHtml(): string {
       // R68: a beat is either "it happened" or "it was answered" — never both,
       // and never neither. `negated` reaches this client only on a flash
       // snapshot (ui/flash.ts negatedFlashItems); GameState never carries it.
-      r.flashing ? (it.negated ? 'answered' : 'resolved') : '',
+      // R78 adds the third, mutually exclusive state: still going.
+      r.resolving ? 'resolving' : r.flashing ? (it.negated ? 'answered' : 'resolved') : '',
       // UZRG: X, on EVERY card. The caption under the row only ever describes
       // the lead item, and a stack four deep has four X's to answer for.
       stackXMark(it),
@@ -2191,6 +2276,7 @@ function stackBoardHtml(): string {
     const cls = [
       'stackcard',
       r.flashing ? 'flashing' : '',
+      r.resolving ? 'resolving' : '',   // R78: pending, not finished (style.css)
       r.top ? 'top' : '',
       it.negated ? 'negated' : '',   // greys it and stamps the ✕ (style.css)
       isCandidate({ stack: it.id }) ? 'candidate' : '',
@@ -2214,28 +2300,41 @@ function stackBoardHtml(): string {
       title="${esc(it.label)}">
       ${face}<div class="stackface">${esc(it.card ?? it.label)}</div>
       <div class="stacktag">${esc(STACK_KIND[it.kind] ?? it.kind)}${marks ? ` · ${marks}` : ''}</div>
-      ${i === last && r.flashing
-        ? `<div class="stackbolt${it.negated ? ' answered' : ''}">${it.negated ? 'answered' : 'resolved'}</div>`
-        : ''}
+      ${r.resolving
+        // R78: the pending chip is NOT gated on being the rightmost card the
+        // way the other two are. stackRows() puts the resolving item last so
+        // in practice it is rightmost, but this is the one label that must
+        // survive whatever else lands on the strip — it is the answer to "why
+        // has nothing happened yet?", not a decoration.
+        ? '<div class="stackbolt pending">resolving…</div>'
+        : i === last && r.flashing
+          ? `<div class="stackbolt${it.negated ? ' answered' : ''}">${it.negated ? 'answered' : 'resolved'}</div>`
+          : ''}
       ${i === last && r.top ? '<div class="stacknext">next</div>' : ''}
     </div>`;
   }).join('');
-  // one line of prose for the card that matters: what resolves next, or — when
-  // nothing is really on the stack — what just went off
-  const leadRow = rows.find(r => r.top) ?? rows[rows.length - 1]!;
-  const lead = leadRow.item;
+  // one line of prose for the card that matters: what is happening right now
+  // (R78), else what resolves next, else — when nothing is really on the stack
+  // — what just went off. ui/flash.ts stackCaption() picks the row and the
+  // words; this only paints them.
+  const cap = stackCaption(rows, {
+    mySeat: NET ? NET.seat : null,
+    names: h.state.players.map(p => p.name),
+  })!;
+  const lead = cap.row.item;
   const targets = lead.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
-  const who = h.state.players[lead.controller]?.name ?? '';
-  const verb = leadRow.flashing
-    ? (lead.negated ? 'was answered' : 'just resolved')
-    : rows.length > 1 ? 'resolves next' : 'on the stack';
-  return `<div class="stackboard live" data-animzone="stack">
+  const by = cap.by !== null || targets
+    ? `<span class="by">${cap.by !== null ? esc(cap.by) : ''}${targets ? ` → ${esc(targets)}` : ''}</span>`
+    : '';
+  return `<div class="stackboard live${cap.pending ? ' pending' : ''}" data-animzone="stack">
     <div class="stackrow" style="--stackstep:${step.toFixed(3)}">${cards}</div>
-    <div class="stackcaption">
-      <span class="stackverb">${esc(verb)}</span>
-      ${iconizeText(lead.label)}
-      <span class="by">${esc(who)}${targets ? ` → ${esc(targets)}` : ''}</span>
-      ${rows.length > 1 ? `<span class="stackdepth" title="the stack resolves from the right — the raised card goes first">${rows.length} deep ↢</span>` : ''}
+    <div class="stackcaption${cap.pending ? ' pending' : ''}">
+      <span class="stackverb">${esc(cap.verb)}</span>
+      ${iconizeText(lead.label)}${cap.pending ? '<span class="stackwait">…</span>' : ''}
+      ${by}
+      ${rows.length > 1 ? `<span class="stackdepth" title="${cap.pending
+        ? 'one of these is resolving right now — the rest are still waiting'
+        : 'the stack resolves from the right — the raised card goes first'}">${rows.length} deep ↢</span>` : ''}
     </div>
   </div>`;
 }
@@ -2740,7 +2839,10 @@ function censusWithFlashes(s: GameState): Census {
   if (!rows.length) return base;
   const phantom = rows.map(r => ({
     key: `s${r.item.id}`, zone: 'stack' as const, seat: r.item.controller,
-    card: r.item.card ?? '', anchor: '@stack',
+    // same fallback ui/motion.ts census() uses for a real stack slot: an
+    // ability has no card of its own, so it is drawn as its source's
+    card: r.item.card ?? (r.item.sourceId !== undefined ? s.entities[r.item.sourceId]?.card : undefined) ?? '',
+    anchor: '@stack',
     ...(r.item.sourceId !== undefined ? { origin: `e${r.item.sourceId}` } : {}),
   }));
   return { ...base, slots: [...phantom, ...base.slots] };
@@ -3665,6 +3767,15 @@ function handleButton(btn: HTMLElement): void {
   }
   if (b === 'binopen') { binView = Number(btn.dataset['p']) as Seat; }
   if (b === 'binclose') binView = null;
+  // the memory aid: forget one card, or the whole strip. Decision logic is in
+  // ui/inspect.ts — this only reads the live look and stores the answer.
+  if (b === 'seendrop' || b === 'seenhideall') {
+    const seen = NET ? h.state.seenHand?.[NET.seat] : null;
+    seenDrop = b === 'seenhideall'
+      ? dismissSeenHand(seen)
+      : dismissSeenCard(seen, seenDrop, Number(btn.dataset['i']));
+    saveSeenDrop();
+  }
   if (b === 'erasedclose') erasedView = null;
   if (b === 'concedeno') concedeAsk = null;
   if (b === 'concedeyes') {
@@ -4292,7 +4403,8 @@ if (params.has('room') && params.get('room')!.trim()) {
   const urlEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean);
   NET = new NetBackend(room, seat, params.get('mode') ?? undefined, urlEls?.length ? urlEls : undefined);
   h = NET;
-  loadYield();   // #2: per-room auto-yield choices survive a refresh
+  loadYield();       // #2: per-room auto-yield choices survive a refresh
+  loadSeenDrop();    // …and so do the cards you have crossed off the hand aid
   renderConnecting();
 } else if (params.has('hotseat')) {
   if (params.get('mode') === 'draft') {

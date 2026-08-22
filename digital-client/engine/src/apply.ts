@@ -123,6 +123,7 @@ export function createGame(
     // R43 forward-counting anchors for prophecy conditions (additive)
     hasteManaSpent: [0, 0], battlesCompleted: 0,
     triggerQueue: [], triggerOrderedSeats: [], suspension: null, decision: null,
+    resolving: null,
   };
   const e = new E(state);
   if (mode === 'draft') {
@@ -192,7 +193,7 @@ function dispatch(e: E, action: Action): void {
     case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId);
     case 'concede': return doConcede(e, action.seat);
     case 'activateAbility': return doActivateAbility(e, action.seat, action.entityId, action.abilityIndex, action.via);
-    case 'augment': return doAugment(e, action.seat, action.from, action.index, action.hostId);
+    case 'augment': return doAugment(e, action.seat, action.from, action.index, action.hostId, action.hostStack);
     case 'graft': return doGraft(e, action.seat, action.from, action.index, action.hostId, action.position);
     case 'declareAttack': return doDeclareAttack(e, action.seat, action.columns, action.spellTokens ?? []);
     case 'declareBlocks': return doDeclareBlocks(e, action.seat, action.blocks, action.send ?? []);
@@ -794,7 +795,32 @@ function modIsFree(e: E, seat: Seat, from: ModZone, index: number): boolean {
   return from === 'cache' && e.cachePermission(seat, index) === 'prophecy';
 }
 
-function doAugment(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityId): void {
+/**
+ * R79: the stack-item kinds a Virus may be augmented onto.
+ *
+ * SPELLS, and only spells. Caleb 2025-04-06 asks and answers exactly this
+ * ("can you augment a spell with a virus, such as applying Chitin Shredder as
+ * an augment on Arc Lightning? Yes"), and 2025-03-06 adds spell TOKENS by
+ * name. A spell UNIT is a spell on the way to being a body, and its viruses
+ * simply arrive with it as the augment mods they already were.
+ *
+ * Deliberately NOT here, each for its own reason:
+ *  - 'triggered' / 'activated' — an ability is an effect but not a spell, and
+ *    it has no card of its own for a mod to sit under. R60 lets you NEGATE
+ *    one; that is not the same permission.
+ *  - 'virus' — a virus is itself a mod in flight, not a host.
+ *  - 'unit' — a {Battle} unit mid-cast. A virus wants to be a mod on the body
+ *    it lands on, which is the ordinary augment, available the moment it
+ *    spawns; nothing in the rules asks for the mid-cast version.
+ *  - 'ambush' — an ambusher is a unit played face-down, not a spell, and R22
+ *    only makes it negatable.
+ * All four exclusions are ⚠ judgement calls, not sourced answers — see
+ * docs/digital-rules.md R79.
+ */
+const STACK_VIRUS_HOSTS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'spellToken']);
+
+function doAugment(e: E, seat: Seat, from: ModZone, index: number,
+  hostId?: EntityId, hostStack?: number): void {
   const name = zonePeek(e, seat, from, index);
   e.need(name !== undefined, `no such card in ${from}`);
   const c = e.card(name);
@@ -803,7 +829,43 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number, hostId: Entit
   // R37/R59: applying a mod is not PLAYING, so a "spells cost more to play"
   // modifier must not tax it — the cost is looked up with purpose 'mod'.
   e.need(free || e.canPayCard(seat, name, { purpose: 'mod' }), 'cannot pay for that');
-  const host = e.entity(hostId);
+
+  // R79: a Virus onto a SPELL ON THE STACK ("It's perfectly legal in the game
+  // to put the powerful guy onto a giant fireball you're casting"; Caleb
+  // 2025-04-06 confirms it, attributes only).
+  if (hostStack !== undefined) {
+    e.need(hostId === undefined, 'name one host, not two');
+    e.need(e.s.phase === 'battle', 'a spell on the stack can only be augmented during battle');
+    e.need(c.virus && from === 'hand', 'only Virus cards can augment from hand during battle');
+    e.need(e.s.priority === seat, 'you do not have priority');
+    const target = e.s.stack.find(it => it.id === hostStack);
+    // R78: `s.stack` and nothing else — an item that is RESOLVING has left the
+    // stack and is past being responded to, exactly as it is past negation.
+    e.need(target !== undefined && STACK_VIRUS_HOSTS.has(target.kind),
+      'no such spell on the stack');
+    e.need(target!.region === e.s.battle!.region, 'that spell is in another region');
+    e.player(seat).hand.splice(index, 1);
+    e.payCard(seat, name, { purpose: 'mod' });   // R37/R59: a Virus augment is a mod
+    const item: StackItem = {
+      id: e.s.nextId++, kind: 'virus', card: name,
+      label: `${name} (Virus augment on ${target!.label})`, controller: seat,
+      region: target!.region, negated: false, parts: [], hostStack,
+    };
+    // R53's "when I become targeted" listeners all read `data.unit`; there is
+    // no unit here, so they correctly do not match. The event is still fired
+    // and logged so the targeting is public and auditable.
+    const ev = e.ev('targeted', `${name} targets ${target!.label} on the stack.`,
+      { item: hostStack, region: target!.region });
+    e.fireEvent('targeted', ev);
+    // R37: applying a mod is not playing, and this is a response — it goes on
+    // the stack ABOVE its host and therefore resolves first, with no
+    // special-casing: pushItem hands priority to the other player.
+    e.pushItem(item);
+    e.settle();
+    return;
+  }
+
+  const host = e.entity(hostId!);
   e.need(host && host.kind === 'unit' && !host.absent, 'no such unit');
 
   if (e.s.phase === 'battle') {
@@ -1193,6 +1255,10 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   sus.answers[sus.pendingKey] = dec.options[choice]!.value;
   e.resolveParts(sus.item, sus.partIndex, sus.answers);
   e.afterParts(sus.item);
+  // R78: it has ACTUALLY resolved now — clear the marker (resolveParts throws
+  // straight past this if the item still owes another choice, which is exactly
+  // how it stays marked across a chain of mid-resolution decisions).
+  e.endResolving(null);
   e.finishResolutionTail();
 }
 
@@ -1418,6 +1484,11 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
         }
         if (c.virus && isAugment(name) && e.canPayCard(seat, name, { purpose: 'mod' })) {
           for (const host of e.unitsIn(b.region)) out.push({ type: 'augment', seat, from: 'hand', index: i, hostId: host.id });
+          // R79: and onto a spell on the stack — either player's
+          for (const it of s.stack) {
+            if (!STACK_VIRUS_HOSTS.has(it.kind) || it.region !== b.region) continue;
+            out.push({ type: 'augment', seat, from: 'hand', index: i, hostStack: it.id });
+          }
         }
       });
       pushCachedPlays(e, seat, t => t === 'battle', b.region, out);

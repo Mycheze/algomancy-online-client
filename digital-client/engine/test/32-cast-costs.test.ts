@@ -325,7 +325,7 @@ test('R73: [Sacrifice me] is charged with NO decision — that is what makes it 
   assert.equal(h.state.players[P]!.rot ?? 0, before + 1, 'the effect still resolved');
   // paid on the way to the stack: the sacrifice precedes the resolution
   const iPay = log.findIndex(l => l.includes('sacrifices T32 Selfeater'));
-  const iRes = log.findIndex(l => l.endsWith('resolves.') && l.includes('T32 Selfeater'));
+  const iRes = log.findIndex(l => l.startsWith('Resolving ') && l.includes('T32 Selfeater'));
   assert.ok(iPay !== -1 && iRes !== -1 && iPay < iRes, 'paid before it resolved');
 });
 

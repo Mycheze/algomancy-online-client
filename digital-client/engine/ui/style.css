@@ -3,6 +3,11 @@
   --bg: #12151a; --panel: #1a1f27; --panel2: #20262f; --line: #2e3742;
   --text: #d6dde6; --dim: #8794a3; --accent: #d9a441; --danger: #d95454;
   --glow: #6fc36f; --target: #e0b93c;
+  /* R78 "in progress": purple already means resolved, red means answered,
+     green means next and gold means targeting — so pending gets the one hue
+     none of them use. A teal that is not --water (#3f8fd9) either, because a
+     resolving card wears it as a border and the seat hairlines are elemental. */
+  --pending: #3fd2c0;
   /* the seven elements, in ALL_ELEMENTS order. Light & Dark are the yin-yang
      pair: Light is a warm cream (12.7:1 against --panel2, so it needs DARK ink
      on it — see --light-ink), Dark is a slate grey, deliberately NOT charcoal,
@@ -410,12 +415,25 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .player.battlefocus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .player.battledim { opacity: .55; filter: saturate(.3); }
 
-/* B5: seen-hand memory strip */
-.seenhand { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: rgba(63,143,217,.08);
+/* B5: seen-hand memory strip. Round 13: the label was one long inline line
+ * stealing the cards' width — it now stacks above them in two short rows, and
+ * every card carries a ✕ that forgets it. */
+.seenhand { display: flex; flex-direction: column; align-items: stretch; gap: 3px; background: rgba(63,143,217,.08);
   border: 1px dashed var(--water); border-radius: 6px; padding: 4px 8px; margin: 2px 0 6px; }
+.seenhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .seenlabel { color: var(--water); font-size: 11px; }
+.seenhint { color: var(--dim); font-size: 9px; line-height: 1.2; }
+.seendismiss { font-size: 9px; padding: 0 4px; line-height: 1.5; }
 .seencards { display: flex; gap: 4px; flex-wrap: wrap; }
+.seenslot { position: relative; display: inline-flex; }
 .seenhand .card { width: 44px; }
+/* the ✕ sits ON the card but is its own hit target: hovering the scan still
+ * previews it and right-clicking still opens the inspector */
+.seenx { position: absolute; top: -3px; right: -3px; z-index: 2; width: 14px; height: 14px; padding: 0;
+  line-height: 12px; text-align: center; font-size: 9px; border-radius: 50%; cursor: pointer;
+  background: rgba(20,24,30,.92); border: 1px solid var(--water); color: var(--water); opacity: .45; }
+.seenslot:hover .seenx { opacity: 1; }
+.seenx:hover { background: var(--danger); border-color: var(--danger); color: #fff; opacity: 1; }
 
 /* C3: the armed "Pass all" is visible and cancelable */
 .passallchip { background: #33270f; border-color: #7a5e1e; color: var(--accent); font-weight: 700; }
@@ -1161,6 +1179,32 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .stackcard .stacknext { background: var(--glow); color: #0f1a0f; }
 .stackcard .stackbolt { background: #6d5bd0; color: #fff; }
 .stackcard .stackbolt.answered { background: var(--danger); color: #fff; }
+/* R78: the item RESOLVING right now — off the stack, past every response
+   window, and NOT finished. The report was that a half-done effect looked
+   identical to a done one, so this shares nothing with either beat: it keeps
+   its colour, it sits proud like the top of the stack because it is the thing
+   happening, and it BREATHES. Motion is the part that reads as in-progress —
+   a still frame can always be mistaken for a result. */
+.stackcard.resolving {
+  border-color: var(--pending);
+  transform: translateY(-8px);
+  box-shadow: 0 5px 16px rgba(0,0,0,.6), 0 0 0 1px var(--pending);
+  animation: stackpending 1.6s ease-in-out infinite;
+}
+.stackcard .stackbolt.pending {
+  background: var(--pending); color: #06201d;
+  animation: stackpending 1.6s ease-in-out infinite;
+}
+@keyframes stackpending {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .58; }
+}
+/* …but it still lifts under the pointer: the rule above is later in the file
+   than .stackcard:hover and would otherwise pin it flat. */
+.stackcard.resolving:hover { transform: translateY(-12px) scale(1.06); }
+/* the window itself picks up the hue, so the strip reads as "busy" from the
+   corner of the eye without having to find which card is glowing */
+.stackboard.pending { border-color: var(--pending); }
 /* a card having its beat: it already resolved, so it reads as a replay rather
    than as something you might still respond to */
 .stackcard.flashing { border-color: #8f7ff0; animation: stackflash 220ms ease-out; }
@@ -1176,8 +1220,14 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
   letter-spacing: .06em; font-size: 9px; font-weight: 700; }
 .stackcaption .by, .stackcaption .stackdepth { color: var(--dim); }
 .stackcaption .stackdepth { font-size: 10px; }
+/* R78: "<name> is resolving" is a sentence about a person, so it keeps its
+   capitals instead of being shouted like the one-word verbs beside it. */
+.stackcaption.pending .stackverb { color: var(--pending); text-transform: none; font-size: 10px; }
+.stackcaption .stackwait { color: var(--pending); animation: stackpending 1.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .stackcard, .stackcard.flashing { transition: none; animation: none; }
+  /* the breathing goes; the colour and the raised card carry it alone */
+  .stackcard.resolving, .stackcard .stackbolt.pending, .stackcaption .stackwait { animation: none; }
 }
 
 /* ── the current text box (ui/cardtext.ts) ──────────────────────────────

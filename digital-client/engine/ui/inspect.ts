@@ -746,3 +746,198 @@ export function partitionOptions(options: readonly DecisionOptionLike[]): Option
   });
   return split;
 }
+
+// ── the seen-hand memory aid (playtest round 13) ──────────────────────
+
+/** `GameState.seenHand[viewer]`: the opponent's hand as this seat last saw it */
+export interface SeenHandSnapshot { turn: number; cards: CardName[] }
+
+/**
+ * The viewer's dismissals, layered OVER engine state.
+ *
+ * `seenHand` belongs to the engine and is re-sent on every state; the aid is
+ * a note-to-self about what is still worth remembering, which is nobody's
+ * business but this client's. So dismissals live here, keyed to the exact
+ * snapshot they were made against (`key`), and main.ts persists them in
+ * localStorage per room like `algoYield:` does.
+ */
+export interface SeenHandDismissals {
+  /** `seenHandKey` of the snapshot these dismissals were made against */
+  key: string;
+  /** indexes into that snapshot's `cards` that the viewer has forgotten */
+  cards: number[];
+  /** the viewer dismissed the whole strip */
+  all?: boolean;
+}
+
+/** one card still worth showing, and the index that dismisses it */
+export interface SeenHandCard { name: CardName; index: number }
+
+export interface SeenHandView {
+  /** paint the strip at all */
+  show: boolean;
+  /** the live snapshot's signature — what a dismissal must be stored against */
+  key: string;
+  /** the turn the look happened on: the one fact that decays */
+  turn: number;
+  /** what to paint, in the order the cards were seen */
+  cards: SeenHandCard[];
+  /** how many of the snapshot the viewer has forgotten */
+  dismissed: number;
+}
+
+const NO_SEEN: SeenHandView = { show: false, key: '', turn: 0, cards: [], dismissed: 0 };
+
+/**
+ * The identity of a look: which turn, and exactly which cards.
+ *
+ * The obvious key is `turn` alone, and it is nearly right — a later reveal
+ * must never inherit the dismissals of an earlier one, or the aid would hide
+ * cards the viewer has never seen dismissed. But `E.revealHandTo` stamps
+ * `state.turn`, so two looks in the SAME turn share a turn number while
+ * describing different hands. Folding the card list in costs nothing and
+ * makes the key say what it means: same look ⇒ keep my dismissals, any other
+ * look ⇒ start clean.
+ */
+export function seenHandKey(seen: SeenHandSnapshot | null | undefined): string {
+  return seen ? `${seen.turn}:${seen.cards.join('|')}` : '';
+}
+
+/**
+ * What the memory strip should paint, given engine state and this client's
+ * dismissals.
+ *
+ * Dismissals belonging to a different look are ignored rather than applied —
+ * that is the whole reason the key exists. `show` is false when there is no
+ * look, when the viewer dismissed the aid outright, or when they have
+ * dismissed every card in it: an empty strip is just a label taking up room.
+ */
+export function seenHandView(
+  seen: SeenHandSnapshot | null | undefined,
+  dismissed: SeenHandDismissals | null | undefined,
+): SeenHandView {
+  if (!seen) return NO_SEEN;
+  const key = seenHandKey(seen);
+  const mine = dismissed && dismissed.key === key ? dismissed : null;
+  if (mine?.all) return { show: false, key, turn: seen.turn, cards: [], dismissed: seen.cards.length };
+  const gone = new Set(mine?.cards ?? []);
+  const cards = seen.cards
+    .map((name, index) => ({ name, index }))
+    .filter(c => !gone.has(c.index));
+  return { show: cards.length > 0, key, turn: seen.turn, cards, dismissed: seen.cards.length - cards.length };
+}
+
+/** forget one card of the current look (by its index in the snapshot) */
+export function dismissSeenCard(
+  seen: SeenHandSnapshot | null | undefined,
+  dismissed: SeenHandDismissals | null | undefined,
+  index: number,
+): SeenHandDismissals {
+  const key = seenHandKey(seen);
+  const mine = dismissed && dismissed.key === key ? dismissed : null;
+  const cards = new Set(mine?.cards ?? []);
+  cards.add(index);
+  return { key, cards: [...cards].sort((a, b) => a - b), ...(mine?.all ? { all: true } : {}) };
+}
+
+/** forget the whole aid — until the next look replaces the key */
+export function dismissSeenHand(seen: SeenHandSnapshot | null | undefined): SeenHandDismissals {
+  return { key: seenHandKey(seen), cards: [], all: true };
+}
+
+// ── R78: what the other seat is doing, when the view will not say ──────
+
+/**
+ * A public fingerprint of one seat's hand and of everywhere a card leaving it
+ * could visibly land.
+ *
+ * This exists to close the hole R78 left one step EARLIER than itself. A
+ * cast-time suspension — R35's X, {Modular} mods, an R49 bracketed cost, R67's
+ * targets — happens after the card has left the hand and BEFORE the item
+ * reaches `state.stack`, so the item exists nowhere but `state.suspension`,
+ * and `server/view.ts` nulls the other seat's suspension along with their
+ * decision. The opponent is left looking at a frozen board with no explanation
+ * at all: the same complaint as the report, one beat sooner.
+ *
+ * There is no `state.casting` to read, and inventing one needs `src/` and
+ * `server/view.ts`. What the client CAN see is public and exact: the card is
+ * out of the hand and has not turned up anywhere. `shown` counts every public
+ * place a card that left a hand can be — the stack, the item resolving, play,
+ * both bins, both caches, both erased piles. Counting BOTH seats' piles is
+ * deliberate over-counting: a card belongs to its owner, so an enemy spell is
+ * erased onto the owner's pile, and over-counting can only ever COST us the
+ * hint, never fabricate one.
+ */
+export interface CastProbe {
+  /** cards in that seat's hand (a count is all the view gives for an opponent) */
+  hand: number;
+  /** everywhere public a card out of a hand could have gone */
+  shown: number;
+}
+
+export function castProbe(s: GameState, seat: Seat): CastProbe {
+  let shown = s.stack.length + (s.resolving ? 1 : 0) + Object.keys(s.entities).length;
+  for (const p of s.players) {
+    shown += p.bin.length + (p.cache?.length ?? 0) + (p.erased?.length ?? 0);
+  }
+  return { hand: s.players[seat]?.hand.length ?? 0, shown };
+}
+
+/**
+ * The sticky "a card has left their hand and has not appeared" watch.
+ *
+ * `base` is the last probe that was fully explained; `casting` is true while
+ * the live probe is SHORT of that baseline with nothing new to show for it.
+ * Freezing the baseline while the shortfall lasts is what makes the state
+ * survive the caster's own answers: paying X changes their resources, not
+ * their hand, so a per-update diff would blink the hint out on the first click.
+ *
+ * `quiet` — this update carried no log line at all — is what keeps the guess
+ * honest, and it is a measured property, not a hope. Of the 79 battle-timing
+ * cards in the pool that suspend at cast time, 77 do it in complete silence;
+ * the two that do not (Discharge, Hyper Beam) announce a bracketed cost, which
+ * already tells the opponent something is under way. Every OTHER way a hand
+ * shrinks in battle writes a line — a "Discard me" mode, a discard cost, a mod
+ * applied from hand — so requiring silence excludes them all, and `shown`
+ * excludes them a second time.
+ *
+ * The consequence of a wrong guess is a wrong message, so the failure mode is
+ * chosen: with no `prev` (a fresh join, a resync, an undo's replay) the watch
+ * simply re-baselines and says nothing. A missing hint, never a false one.
+ */
+export interface CastWatch {
+  base: CastProbe;
+  /** true while `seat` is holding a card the rest of the world cannot see */
+  casting: boolean;
+}
+
+export function watchCast(
+  prev: CastWatch | null, s: GameState, seat: Seat, quiet: boolean,
+): CastWatch {
+  const now = castProbe(s, seat);
+  const short = (base: CastProbe): boolean => now.hand < base.hand && now.shown <= base.shown;
+  // already watching: hold the baseline until the shortfall is explained
+  if (prev?.casting) return short(prev.base) ? { base: prev.base, casting: true } : { base: now, casting: false };
+  if (prev && quiet && short(prev.base)) return { base: prev.base, casting: true };
+  return { base: now, casting: false };
+}
+
+/**
+ * The grey sub-line under "Waiting for <opponent>…".
+ *
+ * Ordered by how much it explains. R78's `resolving` is a real field and says
+ * exactly what is happening, so it wins; the cast watch is an inference and
+ * says only what it actually observed ("a card has left their hand"), which is
+ * a statement about the board rather than a claim about their intent, and so
+ * cannot be wrong even if the card turns out to be a mod rather than a spell.
+ */
+export function waitingNote(s: GameState, casting = false): string {
+  if (s.resolving) {
+    return `they are resolving ${s.resolving.label} — it has left the stack and can no longer be answered`;
+  }
+  if (casting) {
+    return 'a card has left their hand — you will see what it is once they have finished choosing';
+  }
+  if (s.stack.length) return 'they are answering something on the stack — nothing is yours to do yet';
+  return 'nothing is yours to do yet';
+}

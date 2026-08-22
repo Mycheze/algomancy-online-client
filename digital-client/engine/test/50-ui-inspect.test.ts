@@ -18,15 +18,17 @@ import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { legalActions } from '../src/apply.ts';
 import { createsOf, DECK_LIST } from '../src/cards/registry.ts';
 import {
-  abilityOf, activatableUnits, activationBadge, activationNeedsConfirm, costReceipt,
-  erasedPileView,
+  abilityOf, activatableUnits, activationBadge, activationNeedsConfirm, castProbe, costReceipt,
+  dismissSeenCard, dismissSeenHand, erasedPileView, waitingNote, watchCast,
   findCardName, groupReveal, linkCardNames, partitionOptions, partText, playableCachedNames,
-  shouldAutoYield, stackAbilityRows, stackItemX, stackXMark, switchClause,
+  seenHandView, shouldAutoYield, stackAbilityRows, stackItemX, stackXMark, switchClause,
   tokensCreatedBy, tokensNamedIn,
   unitClickOptions,
 } from '../ui/inspect.ts';
+import type { CastWatch } from '../ui/inspect.ts';
+import { viewFor } from '../../server/view.ts';
 import { ent, give, giveResources, handIdx, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
-import type { Action, Seat, StackItem } from '../src/types.ts';
+import type { Action, CardName, GameState, Seat, StackItem } from '../src/types.ts';
 
 /* ── the ability text behind a stack item ──────────────────────────────── */
 
@@ -754,4 +756,295 @@ test('R68: a negated trigger is GONE from the stack, not sitting on it greyed', 
   assert.equal(
     shouldAutoYield({ ...h.state, priority: A, decision: null, stack: [ghost] }, A, yielded),
     false, 'a negated item is worth seeing, never silently passed through');
+});
+
+/* ── round 13: the seen-hand memory aid ─────────────────────────────────
+ *
+ * "Make it so that clicking a card removes it from the aid / make a button to
+ * dismiss the whole aid." `seenHand` is engine state, re-sent whole on every
+ * snapshot, so the dismissals are a client-side layer over it — and the
+ * interesting question is what happens when the engine sends a NEW look. */
+
+const look = (turn: number, ...cards: string[]): { turn: number; cards: CardName[] } =>
+  ({ turn, cards: cards as CardName[] });
+
+test('the aid shows the whole look until something is dismissed', () => {
+  const v = seenHandView(look(3, 'Jelly', 'Fight', 'Wraith'), null);
+  assert.equal(v.show, true);
+  assert.deepEqual(v.cards.map(c => c.name), ['Jelly', 'Fight', 'Wraith']);
+  assert.deepEqual(v.cards.map(c => c.index), [0, 1, 2], 'each card knows the index that forgets it');
+  assert.equal(v.dismissed, 0);
+  // no look at all is not an empty strip, it is no strip
+  assert.equal(seenHandView(null, null).show, false);
+  assert.equal(seenHandView(undefined, { key: 'x', cards: [0] }).show, false);
+});
+
+test('a dismissed card is omitted, and the rest keep their own indexes', () => {
+  const seen = look(3, 'Jelly', 'Fight', 'Wraith');
+  const d = dismissSeenCard(seen, null, 1);
+  const v = seenHandView(seen, d);
+  assert.equal(v.show, true, 'two cards are still worth remembering');
+  assert.deepEqual(v.cards.map(c => c.name), ['Jelly', 'Wraith'], 'the played card is gone');
+  assert.deepEqual(v.cards.map(c => c.index), [0, 2],
+    'indexes are the SNAPSHOT’s, not the view’s — dismissing "Wraith" next must not hit "Jelly"');
+  assert.equal(v.dismissed, 1);
+  // and the second dismissal lands on the card the player actually clicked
+  assert.deepEqual(seenHandView(seen, dismissSeenCard(seen, d, 2)).cards.map(c => c.name), ['Jelly']);
+});
+
+test('duplicates in a hand are forgotten one at a time', () => {
+  const seen = look(4, 'Jelly', 'Jelly');
+  const v = seenHandView(seen, dismissSeenCard(seen, null, 0));
+  assert.deepEqual(v.cards.map(c => c.index), [1],
+    'they are two cards, not one name — dismissing one copy leaves the other');
+});
+
+test('dismissing every card collapses the strip', () => {
+  const seen = look(3, 'Jelly', 'Fight');
+  let d = dismissSeenCard(seen, null, 0);
+  assert.equal(seenHandView(seen, d).show, true, 'one left');
+  d = dismissSeenCard(seen, d, 1);
+  assert.equal(seenHandView(seen, d).show, false, 'nothing left to remember, so no label taking up room');
+  assert.equal(seenHandView(seen, d).dismissed, 2);
+});
+
+test('the dismiss button hides the whole aid without listing every card', () => {
+  const seen = look(3, 'Jelly', 'Fight', 'Wraith');
+  const d = dismissSeenHand(seen);
+  assert.equal(d.all, true);
+  assert.deepEqual(d.cards, [], 'one flag, not a card-by-card record');
+  const v = seenHandView(seen, d);
+  assert.equal(v.show, false);
+  assert.equal(v.dismissed, 3, 'the whole look is what was forgotten');
+});
+
+test('a NEW look shows everything again, despite the earlier dismissals', () => {
+  const first = look(3, 'Jelly', 'Fight', 'Wraith');
+  let d = dismissSeenCard(first, null, 0);
+  d = dismissSeenCard(first, d, 1);
+  assert.deepEqual(seenHandView(first, d).cards.map(c => c.name), ['Wraith']);
+
+  // turn 6: they reveal again, and this hand is not the one I crossed cards off
+  const later = look(6, 'Jelly', 'Fight', 'Godray');
+  const v = seenHandView(later, d);
+  assert.equal(v.show, true);
+  assert.deepEqual(v.cards.map(c => c.name), ['Jelly', 'Fight', 'Godray'],
+    'stale dismissals must never hide a card from a look the player has not seen dismissed');
+  assert.equal(v.turn, 6);
+  assert.equal(v.dismissed, 0);
+
+  // …and dismissing against the new look drops the old record rather than merging
+  const d2 = dismissSeenCard(later, d, 2);
+  assert.deepEqual(d2.cards, [2], 'no leftovers from turn 3');
+  assert.deepEqual(seenHandView(later, d2).cards.map(c => c.name), ['Jelly', 'Fight']);
+});
+
+test('a whole-aid dismissal expires with its look too', () => {
+  const first = look(3, 'Jelly');
+  const d = dismissSeenHand(first);
+  assert.equal(seenHandView(first, d).show, false);
+  assert.equal(seenHandView(look(5, 'Jelly'), d).show, true,
+    'they showed me their hand again — that is new information, not the thing I dismissed');
+});
+
+test('two looks in the SAME turn are different looks', () => {
+  // E.revealHandTo stamps state.turn, so the turn number alone cannot tell a
+  // second reveal from the first. The key folds in the cards.
+  const before = look(3, 'Jelly', 'Fight');
+  const d = dismissSeenHand(before);
+  assert.equal(seenHandView(before, d).show, false);
+  const after = look(3, 'Fight', 'Godray');       // they played Jelly, drew Godray, revealed again
+  assert.equal(seenHandView(after, d).show, true, 'same turn, different hand — a different look');
+  assert.deepEqual(seenHandView(after, d).cards.map(c => c.name), ['Fight', 'Godray']);
+  // an identical re-send of the SAME look is not new information, so the
+  // dismissals survive the re-render/resync that carried it
+  assert.equal(seenHandView(look(3, 'Jelly', 'Fight'), d).show, false);
+});
+
+test('the aid is layered over live engine state, whatever revealHandTo wrote', () => {
+  // the shape really does come off the engine: reveal a hand, then run the
+  // view over exactly what the seat can see.
+  const h = new Harness(5099);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  new E(h.state).revealHandTo(A, D);
+  const seen = h.state.seenHand[A]!;
+  assert.ok(seen, 'the engine recorded the look');
+  assert.equal(seen.turn, h.state.turn);
+  const v = seenHandView(seen, null);
+  assert.deepEqual(v.cards.map(c => c.name), h.state.players[D]!.hand, 'the aid paints what was seen');
+  assert.equal(v.turn, h.state.turn, 'and keeps the turn — the one fact that decays');
+  const d = dismissSeenCard(seen, null, 0);
+  assert.equal(seenHandView(seen, d).cards.length, seen.cards.length - 1);
+});
+
+/* ── R78: telling the waiting player WHY nothing is happening ────────────
+ *
+ * Two holes, one complaint. The engine closed the later one: GameState.resolving
+ * names the item that is mid-resolution, so "Opponent is resolving X" is a
+ * field read. The EARLIER one has no field at all — a cast-time suspension
+ * (R35's X, {Modular} mods, an R49 bracketed cost, R67's targets) happens after
+ * the card has left the hand and before the item reaches state.stack, so it
+ * lives only in state.suspension, which view.ts nulls for the other seat along
+ * with their decision. The opponent gets a frozen board and no explanation.
+ *
+ * ui/inspect.ts watchCast() infers it from public counts alone, and its whole
+ * design constraint is that a WRONG message is worse than none: it says only
+ * what it observed, and it re-baselines instead of guessing.
+ */
+
+/** a battle, both seats able to act, with `me` holding priority */
+function battleReady(seed: number): { h: Harness; me: Seat; opp: Seat } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  spawn(h, D, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  for (let g = 0; g < 40 && h.state.decision; g++) {
+    const d = h.state.decision!;
+    h.do({ type: 'decide', seat: d.seat, choice: d.pickOrder ? d.options.map((_, i) => i) : 0 });
+  }
+  const me = h.state.priority!;
+  return { h, me, opp: (1 - me) as Seat };
+}
+
+test('castProbe counts the hand, and everywhere a card out of one could be', () => {
+  const { h, me } = battleReady(5090);
+  const base = castProbe(h.state, me);
+  assert.equal(base.hand, h.state.players[me]!.hand.length);
+  // both seats' piles, on purpose: a card belongs to its OWNER, so an enemy
+  // spell is binned/erased onto the owner's pile. Over-counting can only cost
+  // the hint, never fabricate one.
+  h.state.players[(1 - me) as Seat]!.bin.push('Fight');
+  assert.equal(castProbe(h.state, me).shown, base.shown + 1);
+  assert.equal(castProbe(h.state, me).hand, base.hand, 'the other seat\'s bin is not my hand');
+});
+
+test('a cast-time suspension is seen as a card out of the hand with nothing to show', () => {
+  const { h, me, opp } = battleReady(5091);
+  giveResources(h, me, 'fire', 8);
+  const idx = give(h, me, 'Fireball');            // mana X: suspends before it pays
+  // the watcher's view, which is where the hole is: view.ts has nulled the
+  // caster's decision and suspension, so nothing in it names the cast
+  let w: CastWatch | null = watchCast(null, viewFor(h.state, opp), me, false);
+  assert.equal(w.casting, false, 'a fresh join has nothing to diff and says nothing');
+
+  const events = h.do({ type: 'playCard', seat: me, handIndex: idx });
+  const view = viewFor(h.state, opp) as GameState;
+  assert.equal(view.decision, null, 'the caster\'s decision is redacted…');
+  assert.equal(view.suspension, null, '…and so is the item they are holding');
+  assert.equal(view.stack.length, 0, 'and it has not reached the stack');
+  assert.equal(view.resolving ?? null, null, 'R78 cannot help this far back');
+  const quiet = !events.some(e => e.msg);
+  assert.equal(quiet, true, 'a cast-time suspension is silent — that is the honesty gate');
+
+  w = watchCast(w, view, me, quiet);
+  assert.equal(w.casting, true, 'the one thing that IS public: their hand is short');
+  assert.match(waitingNote(view, w.casting), /left their hand/);
+});
+
+test('the guess survives the caster\'s own answers, and clears when the spell lands', () => {
+  const { h, me, opp } = battleReady(5092);
+  giveResources(h, me, 'fire', 8);
+  const idx = give(h, me, 'Fireball');
+  let w = watchCast(null, viewFor(h.state, opp), me, false);
+  const step = (evs: readonly { msg: string }[]): void => {
+    w = watchCast(w, viewFor(h.state, opp), me, !evs.some(e => e.msg));
+  };
+  step(h.do({ type: 'playCard', seat: me, handIndex: idx }));
+  assert.equal(w.casting, true);
+
+  // paying X changes their RESOURCES, not their hand — a per-update diff would
+  // blink the hint out on the caster's very first click. The baseline freezes.
+  let guard = 0;
+  while (h.state.decision && h.state.stack.length === 0 && guard++ < 8) {
+    const d = h.state.decision;
+    step(h.do({ type: 'decide', seat: d.seat, choice: 0 }));
+    if (h.state.stack.length === 0) {
+      assert.equal(w.casting, true, `still mid-cast after "${d.prompt}"`);
+    }
+  }
+  assert.equal(h.state.stack.length, 1, 'the spell reached the stack');
+  assert.equal(w.casting, false, 'and the shortfall is explained — the hint goes');
+  assert.match(waitingNote(viewFor(h.state, opp), w.casting), /on the stack/);
+});
+
+test('the shortfall is held until it is EXPLAINED, not until the next update', () => {
+  // The caster answers their own cast questions, and those answers change
+  // things that are not their hand — paying X expends resources, picking a
+  // {Modular} mod moves a card they already took. A per-update diff would
+  // blink the hint out on their very first click, so the baseline freezes for
+  // as long as the shortfall lasts. `quiet` is deliberately false throughout:
+  // once the watch is on, only an EXPLANATION turns it off.
+  const { h, me, opp } = battleReady(5095);
+  const view = (): GameState => viewFor(h.state, opp);
+  let w = watchCast(null, view(), me, false);
+
+  h.state.players[me]!.hand.pop();                     // the card leaves the hand
+  w = watchCast(w, view(), me, true);
+  assert.equal(w.casting, true);
+
+  giveResources(h, me, 'fire', 3);                     // …they pay for it
+  w = watchCast(w, view(), me, false);
+  assert.equal(w.casting, true, 'still short, still nothing to show for it');
+  h.state.players[me]!.resources.pop();
+  w = watchCast(w, view(), me, false);
+  assert.equal(w.casting, true, 'and again — the baseline does not drift');
+
+  h.state.stack.push({
+    id: 99, kind: 'spell', card: 'Fireball', label: 'Fireball', controller: me,
+    region: 0, negated: false, parts: [],
+  });
+  w = watchCast(w, view(), me, false);
+  assert.equal(w.casting, false, 'the card turned up: explained, and the hint goes');
+  // …and having re-baselined, the next shortfall is seen afresh
+  h.state.players[me]!.hand.pop();
+  assert.equal(watchCast(w, view(), me, true).casting, true);
+});
+
+test('a cancelled cast puts the card back, and the hint goes with it', () => {
+  // R67 gave the cast window a Cancel button. The card returns to the hand, so
+  // the shortfall simply stops being one — no special case needed.
+  const { h, me, opp } = battleReady(5096);
+  const view = (): GameState => viewFor(h.state, opp);
+  let w = watchCast(null, view(), me, false);
+  const held = h.state.players[me]!.hand.pop()!;
+  w = watchCast(w, view(), me, true);
+  assert.equal(w.casting, true);
+  h.state.players[me]!.hand.push(held);
+  w = watchCast(w, view(), me, false);
+  assert.equal(w.casting, false, 'nothing is missing any more');
+});
+
+test('an update that says anything at all is never read as a silent cast', () => {
+  const { h, me, opp } = battleReady(5093);
+  giveResources(h, me, 'fire', 8);
+  const idx = give(h, me, 'Fireball');
+  let w = watchCast(null, viewFor(h.state, opp), me, false);
+  h.do({ type: 'playCard', seat: me, handIndex: idx });
+  // same board, but the update carried a log line: every OTHER way a hand
+  // shrinks in battle writes one (a "Discard me" mode, a discard cost, a mod
+  // applied from hand), so silence is what excludes them.
+  w = watchCast(w, viewFor(h.state, opp), me, false);
+  assert.equal(w.casting, false, 'noisy: explained by the log, not by a guess');
+  assert.equal(waitingNote(viewFor(h.state, opp), w.casting), 'nothing is yours to do yet');
+});
+
+test('waitingNote prefers the fact it can prove over the one it inferred', () => {
+  const { h, me } = battleReady(5094);
+  const s = h.state;
+  assert.equal(waitingNote(s, false), 'nothing is yours to do yet');
+  assert.match(waitingNote(s, true), /left their hand/);
+  s.stack.push({
+    id: 1, kind: 'spell', card: 'Fireball', label: 'Fireball', controller: me,
+    region: 0, negated: false, parts: [],
+  });
+  assert.match(waitingNote(s, false), /answering something on the stack/);
+  // R78's marker is a real field and names the effect, so it wins over both
+  s.resolving = { ...s.stack[0]!, id: 2, label: 'Recall' };
+  assert.match(waitingNote(s, true), /resolving Recall/);
+  assert.match(waitingNote(s, true), /can no longer be answered/,
+    'and it must not imply a response window that closed');
 });

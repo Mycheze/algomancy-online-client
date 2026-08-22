@@ -522,7 +522,7 @@ test('Eldritch Dreamtender: the sacrifice is paid on the way to the stack, '
   // a bracketed cost belongs (R64/R67)
   const iPay = h.log.findIndex(l => l.includes('sacrifices Eldritch Dreamtender'));
   const iRes = h.log.findIndex(l => l.includes('Eldritch Dreamtender: sacrifice me')
-    && l.endsWith('resolves.'));
+    && l.startsWith('Resolving '));
   assert.ok(iPay !== -1, 'the sacrifice is logged as a cost payment');
   assert.ok(iRes !== -1 && iPay < iRes, 'and it is paid BEFORE the effect resolves');
   pick(h, 0);

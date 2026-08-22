@@ -2440,3 +2440,314 @@ picks and sacrifices at resolution. R77 fixed the offer half — it is no longer
 offered when you have no other unit — but the payment window is unchanged, and
 it now carries a `{ todo: true }` test naming the missing cost shape, per the
 project's park rule.
+
+## R78 — An item stays on the stack until it has ACTUALLY resolved
+
+*(Playtest round 13, 2026-08-22. The presentation half of the R68 machinery.)*
+
+> "The current way that effects resolve is confusing. To my opponent, it looks
+> like something already resolved and there's something confusing about seeing
+> 'xyz resolves' while your opponent is actually choosing how their effect
+> resolves. It would make more sense if there was a different state before
+> resolution like 'Opponent is resolving [effect]' and leave the effect on the
+> stack until it's ACTUALLY resolved (and its resulting effects are reflected
+> on the board). Right now, having it leave the stack while the player is
+> choosing things looks wrong."
+
+**The structural cause is that `resolveTop()` popped first and resolved
+second.**
+
+```ts
+resolveTop(): void {
+  const item = this.s.stack.pop()!;   // gone from the game state…
+  this.resolveItem(item);             // …and only now does anything happen
+  this.finishResolutionTail();
+}
+```
+
+`resolveItem` can suspend: the decision-point model (`state.decision` +
+`state.suspension`) throws out of the middle of a part, rolls the state back to
+that part's boundary, and replays it once the answer arrives. For the whole of
+that window — which is however long a human takes to click — the item was
+referenced by **nothing but the suspension**. It was not on the stack, its
+effects had not happened, and the log had already said "X resolves." The
+opponent's screen showed an empty stack and an unchanged board.
+
+### The state: `GameState.resolving`, not a flag on the stack
+
+The obvious shape is `StackItem.resolving = true`, left in `s.stack`. **That is
+the shape [R68](#r68--negating-an-effect-removes-it-from-the-stack-then-and-there)
+just deleted**, and the reason it deleted it applies here with a sharper edge.
+
+R68's argument was that a flag-on-the-stack makes every reader of `s.stack`
+responsible for remembering the flag, and that the readers do not remember. A
+resolving item is genuinely different from a negated one — it is really still
+there and it really will finish, where a negated one was finished and loitering
+— so "reintroducing `negated`" is not by itself the objection. The objection is
+concrete, and it is the card pool:
+
+> **Temporal Rift, Finality, Return to Nature, Calming Force, Flame Shield** all
+> resolve by sweeping `for (const it of [...g.s.stack]) g.negate(it.id)`.
+
+Put the resolving item back in `s.stack` and **Temporal Rift negates itself,
+mid-resolution, from inside its own `run()`**. Every one of those cards would
+need a new "except the one that is resolving" clause, and so would
+`targetCandidates`, `passPriority`'s `if (this.s.stack.length)`, `settle()`'s
+combat-damage resume, `finishResolutionTail`'s `lenBase`, and everything
+written after this. The invariant that keeps them all correct is worth more
+than the field placement:
+
+> **`s.stack` is the items still WAITING to resolve. Nothing else.**
+
+So the resolving item lives in its own field, `GameState.resolving:
+StackItem | null` — additive and optional, so a pre-R78 saved state reads as
+"nothing is resolving". `E.resolveTop()` sets it after the pop and clears it
+after `resolveItem` returns; a suspension throws straight past the clear, which
+is precisely the mechanism.
+
+**The client reads `state.resolving`.** It is a whole `StackItem`, so the label
+is `resolving.label` and *whose* effect it is is `resolving.controller` —
+`controller !== mySeat` is the "Opponent is resolving …" case. It is not
+redacted: `server/view.ts` structured-clones the state and blanks a named list
+(opponent hand, deck order, seed, the other seat's decision), and this is not on
+it. Nothing else needs to change server-side.
+
+### Responding to a resolving item: no, and it falls out for free
+
+The last response window closed when both players passed; a resolving item is
+past that. All three sites were checked and all three are already right,
+*because* the field is not in `s.stack`:
+
+| site | why it excludes a resolving item |
+| --- | --- |
+| `targetCandidates` (R60 "target effect") | iterates `this.s.stack` |
+| `E.negate` / `E.removeFromStack` | `findIndex` over `this.s.stack` |
+| `legalActions` | returns **only** `decide` actions while `s.decision` is set, and a resolving item exists only while one is |
+
+`apply`'s `dispatch` closes it a second time: every action except `decide` and
+`concede` is refused outright while a decision is pending. So the answer is
+enforced twice over, and a test pins both.
+
+### Replay determinism: ONE object, deliberately
+
+This is the part that could have gone quietly wrong. `resolveParts` suspends by
+replacing the entire state with a pre-part snapshot (`this.s = snap`) and then
+storing the **live** item on the suspension. With a second reference to that
+item now living in the state, the snapshot's copy and the suspension's original
+are two different objects the moment the rollback happens — and they would drift
+apart forever, because `structuredClone` (which `apply()` runs on every action)
+clones them independently once they are distinct.
+
+The rollback therefore re-points the marker at the live item:
+
+```ts
+this.s = snap;
+this.events.length = evLen;
+if (this.s.resolving) this.s.resolving = item;   // one object, not two
+```
+
+`structuredClone` **preserves internal aliasing** — shared references inside one
+clone stay shared — so from here on `s.resolving === s.suspension.item` survives
+every action boundary, every save, every replay. Using the live item (rather
+than the snapshot's copy) also keeps the behaviour byte-identical to pre-R78:
+that is exactly what the suspension already carried. `test/fuzz.ts` asserts the
+aliasing as an invariant, and `replay(seed, actions)` is pinned bit-identical.
+
+### Every exit clears it
+
+`resolveTop` and `commitItem(…, 'resolve')` each capture the previous marker and
+restore it, and `doDecide`'s resume clears it once `afterParts` has returned. That single clear point covers every way out of
+`resolveItem` — a normal resolution, an R5 fizzle, a partial resolution whose
+parts all skipped, a virus whose host vanished, and the `commitItem` no-window
+path behind the `stackFlash` beat. `loseLife`/`concede` clear it too, so a game
+that ends mid-resolution does not end holding one. `checkInvariants` makes a
+stranded marker a fuzzer failure: **`resolving` non-null with no `s.decision`
+open is a stuck state**, and this codebase has just had two of those.
+
+**Resolution nests, and the fuzzer proved it inside 700 games.** A battle
+resolution can end the battle; `settle()` then resolves a start-of-deployment
+trigger *inline*, under the outer `resolveItem` that is still on the JS stack.
+If that inner trigger suspends, the throw unwinds the outer resolution
+completely — it is abandoned, not paused, and nothing will ever finish it. So
+the rollback **assigns** the marker rather than re-pointing whatever was there:
+the item that is suspending is the only one that may stay marked, and the phase
+gate below is re-applied at the same moment. (Seed 693: a Wraith's
+`startOfDeployment` trigger suspending under a battle resolution, publishing a
+marker in the deploy phase. `test/67` pins it by seed.)
+
+### ⚠ Battle phase only — and why
+
+`beginResolving` publishes the marker only while `s.phase === 'battle'`.
+`resolveTop()` is only ever reached from `passPriority`, so that costs nothing
+there; the gate is about `commitItem(…, 'resolve')`, which also runs during the
+resource step, the haste step and deployment — the **hidden simultaneous
+segments** (`server/rooms.ts` `segmentKey`), whose entire purpose is that your
+opponent cannot see you act until both of you are done. `viewFor` freezes the
+opponent's players and entities inside a segment but `resolving` is a top-level
+field, so publishing it there would leak "your opponent is mid-something" out of
+the freeze.
+
+The residue: an unrespondable effect that suspends mid-resolution **outside**
+battle still shows the opponent nothing. Its controller has the decision open
+and knows perfectly well what is happening, and nobody else is allowed to. The
+one case this gives up is a trigger resolving between combat damage sub-steps
+in a *non*-battle phase, which does not exist. **If the freeze is ever taught to
+redact this field, the gate can go.**
+
+### ⚠ "X resolves." still logs at the START of resolution — Bena to rule
+
+The `resolved` event fires before `resolveParts` runs, so the log still reads
+"Fireball resolves." and then the damage lines underneath it. That ordering is
+what makes the log readable — the line is the heading for the effects that
+follow — and the event is log-only (nothing dispatches on it), so moving it is
+safe but not obviously better. The report's complaint is answered by the *state*
+being visible rather than by moving the line, but if seeing "resolves" while
+someone is still choosing is what grates, the fix is one line and belongs here.
+
+## R79 — A Virus may be augmented onto a SPELL on the stack
+
+*(Playtest round 13, 2026-08-22. Sourced: Caleb 2025-04-06, 2025-03-06,
+2025-04-24; Manual pp.34-35.)*
+
+> "Something that I'm almost positive hasn't been implemented is being able to
+> augment viruses onto spells that are on the stack. It's perfectly legal in the
+> game to put the powerful guy onto a giant fireball you're casting to have it
+> deal double damage."
+
+They were right on both counts, and the ruling is verbatim on the point:
+
+> **Q:** "In Battle, can you augment a spell with a virus, such as applying
+> Chitin Shredder as an augment on Arc Lightning?"
+> **A:** "Yes. **This notably only works with attributes.**" (Caleb 2025-04-06)
+
+and, more fully:
+
+> "It's very similar to how regular viruses work, so **you can hit enemy spells
+> and the spell gets erased on resolution**. You can augment spells during
+> deployment, but currently that would only be possible with spell tokens.
+> Also, **you can only do this with attributes** — mostly Deadly, Piercing, and
+> Powerful are impacted by this, especially Deadly." (Caleb 2025-03-06)
+
+"The powerful guy" is **Chitin Shredder** — `ee`, 1/2, *"[Augment] {Powerful}
+Insect {Virus} Unit"*, no rules text at all, so what it donates is the type-line
+attribute. {Powerful} doubles the damage its source deals.
+
+**Three separate places said no.** `doAugment` hard-gated the host with
+`e.need(host && host.kind === 'unit')`, and a `StackItem` is not an `Entity` at
+all. `legalActions` only ever offered `e.unitsIn(b.region)`. And
+`collectModular`'s own docstring asserted the opposite of the ruling — *"it is
+the only kind of mod that means anything on a spell — a spell has no body for an
+augment to grant attributes to"*. (The repo-root bot agrees and is also wrong:
+`mods.py:_check_host` raises `"is a {type}, not a unit — graft and augment both
+go onto a unit in play"`.)
+
+### Legal hosts: spells, and only spells
+
+`STACK_VIRUS_HOSTS = { spell, spellUnit, spellToken }`. The ruling names spells
+and adds spell tokens explicitly. Excluded, each for its own reason:
+
+| kind | why not |
+| --- | --- |
+| `triggered` / `activated` | an ability is an *effect* but not a *spell*, and it has no card of its own for a mod to sit under. R60 lets you **negate** one; that is a different permission. ⚠ |
+| `virus` | a virus is itself a mod in flight, not a host. ⚠ |
+| `unit` | a `{Battle}` unit mid-cast. A virus wants to be a mod on the body it lands on, which is the ordinary augment, available the instant it spawns. ⚠ |
+| `ambush` | an ambusher is a unit played face-down, not a spell; R22 only makes it negatable. ⚠ |
+
+The four ⚠ are judgement calls, not sourced answers. **Bena to rule** if any of
+them should open — the gate is one `Set` in `apply.ts` and the resolution code
+does not care.
+
+### What the mod actually does
+
+A `StackItem` now carries `augments?: { card: CardName; by: Seat }[]`,
+deliberately separate from `mods` ({Modular}'s cast-time cost, R35): these were
+applied **afterwards, as a response, by either player** — which is why `by` is
+recorded. A card belongs to its owner, so a virus you put on an *enemy* spell
+lands in **your** erased pile when the pair goes, and becomes a mod owned by
+**you** if the carrier was a spell unit. `E.stackAugmentAttrs(item)` unions their
+`augmentAttrs` — the type-line grants, exactly as `ownAttrs` reads a unit's
+augment mods — and the result reaches two places:
+
+- `EffectCtx.grantedAttrs`, which `dealEffectDamage` unions into the source's
+  printed attrs before it reads {Powerful} / {Deadly} / {Poisonous} /
+  {Resonant} / {Electric} / {Blessed} / {Reaping}. **This is the seam the
+  SPELLS half of Emberflame Enlightener has been parked on** ("dealEffectDamage
+  reads the source CARD's printed attrs, with no seam for an in-play
+  modifier") — it exists now, though that card is a *static aura* and unparking
+  it is a separate job.
+- `E.itemAttrs`, so the resolution-time attribute checks ({Afflicting}) see them
+  too.
+
+Text-box `[Augment]` abilities and statics donate **nothing** here — *"spells
+cannot gain static abilities like that, so the only useful thing you can do is
+give them attributes"* (Caleb 2025-04-24). A text-only virus (Graxxlid,
+Skybreaker) may still legally be applied; the log says so and nothing happens.
+
+### Timing falls out; nothing needed special-casing
+
+R37 already says applying a mod is not *playing*, so no "spells cost more"
+modifier taxes it. The battle branch of `doAugment` already required priority
+and the battle region. The virus item is `pushItem`ed like any response, which
+puts it **above** its host and hands priority to the other player — so it
+resolves first, and the host is still sitting underneath it when it does. A
+virus whose host left the stack in the meantime (negated, or recalled) fizzles
+to the bin, which is the Manual's own answer: *"If a virus is negated or its
+target becomes invalid, it is placed into the bin, and cannot be used as a virus
+again"* (p.34).
+
+**Consistency with [R78](#r78--an-item-stays-on-the-stack-until-it-has-actually-resolved):
+you cannot virus a spell that is RESOLVING.** `doAugment` looks the host up in
+`s.stack` and nowhere else, so a resolving item is simply not there — the same
+answer, from the same reason, as negation.
+
+### ⚠ The carrier is ERASED, not binned — R69's Unstable, applied
+
+Manual p.35: *"As long as a card is modded, it has the unstable attribute,
+meaning when it dies or is erased, it and all of its mods are erased with it."*
+R69 pinned the shape of that: **Unstable is a BIN replacement, not a death
+replacement** (Caleb 2025-03-13, 2025-04-08 — *"unstable units still die, they
+just get erased instead of ending up in the bin"*). A spell carrying a virus is
+a modded card, and a resolving spell is a card on its way to a bin. So:
+
+> `E.dischargeItem(item, hasCard)` — the one place a stack item's card leaves
+> the stack. With no viruses on it, the card goes to its controller's bin
+> (R40: from the stack, never a trash). With viruses on it, the card **and every
+> virus** are erased instead, into the public erased pile (R65).
+
+That is Caleb 2025-03-06's *"the spell gets erased on resolution"* arrived at
+from an existing rule rather than a new one, and it applies **uniformly** — a
+resolution, an R5 fizzle, and a negation all funnel through the one method. The
+negation case is the surprising one and it is deliberate: R68 bins a negated
+spell, but an Unstable one cannot reach a bin, so it is erased. (The Manual's
+*"if a virus is negated … it is placed into the bin"* is about the **virus item**
+being negated before it ever attached — that item has no augments of its own and
+still takes the bin branch. Both are pinned by tests.)
+
+**Bena to rule.** The quote is direct and the mechanism is R69's, but this is a
+real power increase: a `ee` virus now denies the opponent's spell to their bin
+entirely, which matters against every bin-recursion card in the pool. If the
+answer is "no, a virused spell still goes to the bin", `dischargeItem` is the
+one method to change.
+
+**The spell UNIT exception.** A `spellUnit` does not *leave* on resolution — it
+*arrives*. Erasing its card would delete a unit on its way into play, which no
+ruling asks for and which would make one `ee` virus a hard removal spell for
+every spell unit in the game. Instead its viruses ride it in as the augment mods
+they always were, via `attachMod` — which makes the **body** Unstable, exactly
+as if it had been augmented the ordinary way the moment it landed.
+
+### ⚠ Not in scope
+
+- **Deployment-phase augmenting of a spell token** — Caleb 2025-03-06 says it is
+  possible. A spell token in play is an `Entity` (`kind: 'spellToken'`), not a
+  stack item, and `doAugment`'s deploy branch still requires `kind === 'unit'`.
+  Untouched.
+- **Squish / Fight / Battle** — Caleb 2025-08-05: *"The **unit** is the source of
+  the damage, not the spell … a Virus like Powerful (or Tidepool Terror) should
+  be attached to the unit dealing the damage, not to the spell."* Those effects
+  already deal their damage through the unit, so they are correct by
+  construction; nothing was added to enforce it.
+- **{Piercing} on a spell effect.** The ruling lists it as impacted, but
+  Piercing is a combat-overflow rule in this engine and `dealEffectDamage` has
+  no overflow to pierce. The attribute now reaches the effect; nothing reads it
+  there yet.

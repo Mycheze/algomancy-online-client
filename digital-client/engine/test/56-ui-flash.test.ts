@@ -17,8 +17,8 @@ import { Harness } from '../src/harness.ts';
 import type { EngineEvent, StackItem } from '../src/types.ts';
 import {
   HOLD_MS, MAX_LEAD_MS, STAGGER_MS,
-  censusFlashes, flashItems, negatedFlashItems, negatedIds, nextFlashWake,
-  pruneFlashes, queueFlashes, stackRows, visibleFlashes,
+  censusFlashes, flashItems, leadRow, negatedFlashItems, negatedIds, nextFlashWake,
+  pruneFlashes, queueFlashes, stackCaption, stackRows, visibleFlashes,
 } from '../ui/flash.ts';
 import { census, diffCensus } from '../ui/motion.ts';
 import { stackItemX, stackXMark } from '../ui/inspect.ts';
@@ -346,4 +346,165 @@ test('the beat and the flight to the bin both happen, and neither eats the other
   assert.ok(flight, 'the negated card is seen leaving the stack');
   assert.equal(flight.kind, 'move');
   assert.equal(flight.toAnchor, `@bin:${A}`, 'and landing in its owner\'s bin');
+});
+
+/* ── R78: the item that is RESOLVING is on the strip, and reads as pending ──
+ *
+ * Bena: "to my opponent, it looks like something already resolved and there's
+ * something confusing about seeing 'xyz resolves' while your opponent is
+ * actually choosing how their effect resolves… it would make more sense if
+ * there was a different state before resolution like 'Opponent is resolving
+ * [effect]' and leave the effect on the stack until it's ACTUALLY resolved."
+ *
+ * The engine half is GameState.resolving — a whole StackItem, kept OUT of
+ * s.stack so the "negate every effect on the stack" sweeps cannot reach it.
+ * These pin the display half: it is on the visual stack, it is distinct from
+ * both beats, it says whose it is, and it goes when the resolution finishes.
+ */
+
+const names = ['Alice', 'Bob'];
+const theirs = (id: number): StackItem => ({ ...item(id), controller: 1 });
+
+test('a resolving item is on the visual stack, last and marked', () => {
+  const rows = stackRows([item(1), item(2)], [], 0, item(9));
+  assert.deepEqual(rows.map(r => r.item.id), [1, 2, 9],
+    'rightmost: nothing overlaps the thing that is actually happening');
+  const res = rows[2]!;
+  assert.equal(res.resolving, true);
+  assert.equal(res.flashing, false, 'it has NOT resolved — that is the whole report');
+  assert.equal(res.top, false, 'and it is not "next" either: next is what is still waiting');
+  // the real top of the real stack keeps its own mark — item 2 is still next
+  assert.deepEqual(rows.filter(r => r.top).map(r => r.item.id), [2]);
+  assert.deepEqual(rows.filter(r => r.resolving).map(r => r.item.id), [9], 'exactly one');
+});
+
+test('a resolving item is never drawn as a resolved beat', () => {
+  const rows = stackRows([], [], 0, item(9));
+  assert.deepEqual(rows.map(r => [r.flashing, r.resolving]), [[false, true]]);
+  // the three states of a card on the strip are mutually exclusive
+  const beat = stackRows([], queueFlashes([], [flashEv(1)], 0), 0)[0]!;
+  assert.equal(beat.flashing, true);
+  assert.equal(beat.resolving, false);
+  const answered = stackRows([], queueFlashes([], [negEv(5)], 0, new Map([[5, item(5)]])), 0)[0]!;
+  assert.equal(answered.item.negated, true);
+  assert.equal(answered.resolving, false);
+  // …and the caption never calls a resolving item resolved
+  const verb = stackCaption(rows, { mySeat: 0, names })!.verb;
+  assert.doesNotMatch(verb, /resolved|answered/, `"${verb}" must not read as finished`);
+});
+
+test('the caption says WHOSE it is, from both seats', () => {
+  const rows = stackRows([], [], 0, theirs(9));       // seat 1's effect
+  const mine = stackCaption(stackRows([], [], 0, item(9)), { mySeat: 0, names })!;
+  const opp = stackCaption(rows, { mySeat: 0, names })!;
+  // seat 0 watching seat 1: the report's exact ask
+  assert.equal(opp.verb, 'Bob is resolving');
+  assert.equal(opp.pending, true);
+  // seat 1 watching their OWN: the prompt bar above is already asking them in
+  // their own name, so the table does not repeat it
+  assert.equal(stackCaption(rows, { mySeat: 1, names })!.verb, 'resolving now');
+  assert.equal(mine.verb, 'resolving now', 'seat 0 watching seat 0');
+  // hotseat has no "me": both seats are the player, so both get named
+  assert.equal(stackCaption(rows, { mySeat: null, names })!.verb, 'Bob is resolving');
+  // and the name is never printed twice — the verb already carried it
+  assert.equal(opp.by, null);
+  assert.equal(stackCaption(stackRows([item(1)], [], 0), { mySeat: 0, names })!.by, 'Alice');
+});
+
+test('what is HAPPENING leads the caption over what is next', () => {
+  const rows = stackRows([item(1), item(2)], [], 0, theirs(9));
+  assert.equal(leadRow(rows)!.item.id, 9, 'not the top of the stack, which is only waiting');
+  assert.equal(stackCaption(rows, { mySeat: 0, names })!.row.item.id, 9);
+  // with nothing resolving the old order is untouched
+  assert.equal(leadRow(stackRows([item(1), item(2)], [], 0))!.item.id, 2);
+  assert.equal(stackCaption(stackRows([item(1), item(2)], [], 0), { names })!.verb, 'resolves next');
+  assert.equal(stackCaption(stackRows([item(1)], [], 0), { names })!.verb, 'on the stack');
+  assert.equal(stackCaption([], {}), null, 'and an empty strip captions nothing');
+});
+
+test('it clears the instant the resolution finishes', () => {
+  // the marker is the ONLY thing keeping it on screen: hand back null and the
+  // card is gone, exactly as it is gone from the engine
+  assert.deepEqual(stackRows([item(1)], [], 0, item(9)).map(r => r.item.id), [1, 9]);
+  assert.deepEqual(stackRows([item(1)], [], 0, null).map(r => r.item.id), [1]);
+  assert.deepEqual(stackRows([], [], 0, null), [], 'and nothing is left behind');
+  // the default keeps every pre-R78 caller honest
+  assert.deepEqual(stackRows([item(1)], [], 0).map(r => r.resolving), [false]);
+});
+
+test('a resolving item is drawn ONCE, whatever else the queue is holding', () => {
+  // a resync could hand the client a stale beat for the very item that is now
+  // resolving; two cards on the strip would read as two copies of the spell
+  const q = queueFlashes([], [flashEv(9)], 0);
+  assert.deepEqual(stackRows([], q, 0).map(r => r.item.id), [9], 'the beat alone');
+  const rows = stackRows([], q, 0, item(9));
+  assert.deepEqual(rows.map(r => r.item.id), [9]);
+  assert.equal(rows[0]!.resolving, true, 'and the live state wins over the stale beat');
+});
+
+test('a resolving item is a PHANTOM stack slot — its card goes nowhere yet', () => {
+  // mirror of the negated case. Its s<id> key really was in the census a
+  // render ago and is really out of state.stack now, but the card has not
+  // moved: it is mid-resolution and still drawn. Without the phantom the diff
+  // sees the key vanish and flies the card to a destination that does not
+  // exist yet — the spell is not in the bin until the resolution finishes.
+  const rows = stackRows([item(1)], [], 0, item(9));
+  assert.deepEqual(censusFlashes(rows).map(r => r.item.id), [9]);
+  // and once it is over, nothing is a phantom and the card is free to travel
+  assert.deepEqual(censusFlashes(stackRows([item(1)], [], 0)), []);
+});
+
+test('end to end: the strip holds the spell while its controller is still choosing', () => {
+  // Recall asks "choose a unit to recall" DURING resolution, which is exactly
+  // the window the report is about: pre-R78 the item was off the stack, "X
+  // resolves." was already in the log, and the board had not changed.
+  const h = new Harness(5680);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as 0 | 1;
+  const atk = spawn(h, A, 'Unit Token');
+  spawn(h, D, 'Unit Token');
+  spawn(h, D, 'Unit Token');   // more than one candidate, so Recall must ASK
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  for (let g = 0; g < 40 && h.state.decision; g++) {
+    const d = h.state.decision!;
+    h.do({ type: 'decide', seat: d.seat, choice: d.pickOrder ? d.options.map((_, i) => i) : 0 });
+  }
+  const me = h.state.priority!;
+  giveResources(h, me, 'water', 8);
+  h.do({ type: 'playCard', seat: me, handIndex: give(h, me, 'Recall') });
+  for (let g = 0; g < 8 && h.state.decision; g++) {
+    const d = h.state.decision!;
+    h.do({ type: 'decide', seat: d.seat, choice: 0 });
+  }
+  const id = h.state.stack.find(i => i.card === 'Recall')!.id;
+  h.do({ type: 'passPriority', seat: h.state.priority! });
+  if (h.state.stack.length) h.do({ type: 'passPriority', seat: h.state.priority! });
+
+  // mid-resolution: off the rules stack, and the engine says so
+  assert.equal(h.state.stack.some(i => i.id === id), false, 'R78: s.stack is what is WAITING');
+  assert.equal(h.state.resolving?.id, id, 'and this is what is happening');
+  assert.ok(h.state.decision, 'its controller is being asked something');
+
+  const rows = stackRows(h.state.stack, [], 0, h.state.resolving ?? null);
+  const row = rows.find(r => r.item.id === id)!;
+  assert.ok(row, 'the card is still on the table — it has not "already resolved"');
+  assert.equal(row.resolving, true);
+  assert.equal(row.flashing, false);
+  const watcher = (1 - me) as 0 | 1;
+  const cap = stackCaption(rows, { mySeat: watcher, names: h.state.players.map(p => p.name) })!;
+  assert.equal(cap.pending, true);
+  assert.equal(cap.verb, `${h.state.players[me]!.name} is resolving`);
+  assert.equal(cap.row.item.id, id);
+
+  // answer it → the resolution finishes and the marker goes with it
+  for (let g = 0; g < 8 && h.state.decision; g++) {
+    const d = h.state.decision!;
+    h.do({ type: 'decide', seat: d.seat, choice: 0 });
+  }
+  assert.equal(h.state.resolving ?? null, null, 'nothing is resolving any more');
+  assert.deepEqual(
+    stackRows(h.state.stack, [], 0, h.state.resolving ?? null).filter(r => r.item.id === id), [],
+    'and the card has left the strip, now that it really is done',
+  );
 });
