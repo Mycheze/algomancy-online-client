@@ -3265,9 +3265,12 @@ export class E {
       if (!def.targets) continue;
       // R64: "X target allies" / "up to X target effects" — the spec's count is
       // the spell's X, already fixed by collectX or by a variable cast cost.
-      const max = def.targets.count === 'X'
+      // R83: `extraSlots` are fixed slots ON TOP of that count, occupying the
+      // low indices (Channel Through's "target opponent" beside its X allies).
+      const counted = def.targets.count === 'X'
         ? (part.costPaid?.x ?? item.x ?? 0)
         : (def.targets.count ?? 1);
+      const max = counted + (def.targets.extraSlots ?? 0);
       const min = Math.min(def.targets.min ?? 1, max);
       if (max <= 0) { part.targetsDone = true; continue; }
       while (!part.targetsDone && part.targets.length < max) {

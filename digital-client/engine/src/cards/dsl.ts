@@ -140,6 +140,21 @@ export interface TargetSpec {
   count?: number | 'X';
   /** minimum targets before "done" is offered (default 1) */
   min?: number;
+  /**
+   * R83: fixed slots asked for IN ADDITION to `count`, so a spec can mix a
+   * variable-count slot with a fixed one. Channel Through prints "I deal 2
+   * damage to each of X target allies. For each ally damaged this way,
+   * distribute 2 damage among target opponent's units" — X allies AND one
+   * opponent, and until this existed the opponent simply went undeclared.
+   *
+   * The extra slots come FIRST, at indices 0…extraSlots-1, which is what
+   * `slots` (an ABSOLUTE index) already describes: `slots: ['opponent']` with
+   * `what: 'allyUnit'` makes slot 0 the opponent and every later slot an ally.
+   * First rather than last for a mechanical reason, not a stylistic one — a
+   * counted spec ends when the chooser says "no more targets", and a slot
+   * behind that gate could never be reached.
+   */
+  extraSlots?: number;
   /** R58: per-SLOT restriction for a multi-target spec — `slots[i]` governs
    * target i and falls back to `what`. Fight prints "target ally and ANOTHER
    * target unit": two cast-time targets whose legality differs by slot

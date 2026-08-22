@@ -119,6 +119,7 @@ test('R80: Channel Through gives a twice-hit unit ONE damage event (the Restitut
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
   pick(h, 1);                                           // X = 1, paid at cast (R35)
+  pick(h, { player: A });                               // R83: slot 0, target opponent
   pick(h, { unit: ally });                              // the one cast-time ally target
   pass(h); pass(h);                                     // resolve (both distributed points auto-aim)
   const hits = hitsOn(h.events.slice(mark), victim);
@@ -141,6 +142,7 @@ test('R80: Awoken Tomb reads its OWN share as X, not the batch total', () => {
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
   pick(h, 1);
+  pick(h, { player: A });                               // R83: slot 0, target opponent
   pick(h, { unit: ally });
   pass(h); pass(h);                                     // Channel Through resolves
   while (h.state.stack.length) pass(h);                 // and the Tomb's trigger after it
@@ -191,6 +193,76 @@ test('R80: "each unit" damage kills simultaneously — every unit hears the same
   assert.equal(evs.length, 2, 'one event per unit');
   assert.deepEqual(evs.map(e2 => e2.data?.total), [2, 2], 'both hear "this effect dealt 2"');
   assert.ok(!ent(h, x) && !ent(h, y), 'both 1/1s died');
+  finishBattle(h);
+});
+
+// ── R83: what Channel Through targets, and what it merely divides ────────
+
+test('R83: Channel Through declares X allies AND the opponent at cast', () => {
+  const h = new Harness(6908);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const a1 = spawn(h, D, 'Good Whale');
+  const a2 = spawn(h, D, 'Good Whale');
+  const foeUnit = spawn(h, A, 'Awoken Tomb');
+  giveResources(h, D, 'earth', 2);
+  giveResources(h, D, 'fire', 4);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[foeUnit]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
+  pick(h, 2);                                           // X = 2
+  // Bena 2026-08-22: "on cast, you target X of YOUR units and an opponent"
+  assert.match(h.state.decision!.prompt, /target opponent/i, 'slot 0 asks for the opponent');
+  pick(h, { player: A });
+  assert.match(h.state.decision!.prompt, /allies/i, 'then the allies');
+  pick(h, { unit: a1 });
+  pick(h, { unit: a2 });
+  const item = h.state.stack[h.state.stack.length - 1]!;
+  assert.deepEqual(item.parts[0]!.targets, [{ player: A }, { unit: a1 }, { unit: a2 }],
+    'all three are declared on the stack, where an opponent can see and answer them');
+  finishBattle(h);
+});
+
+test('R83: the distribution is NOT a target — nothing new reaches the stack', () => {
+  const h = new Harness(6909);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const ally = spawn(h, D, 'Good Whale');
+  const f1 = spawn(h, A, 'Good Whale');
+  const f2 = spawn(h, A, 'Awoken Tomb');
+  giveResources(h, D, 'earth', 2);
+  giveResources(h, D, 'fire', 3);
+  toNextBattle(h, A);
+  // both of A's units come into the battle region, so the distribution has a
+  // real choice to make rather than one forced candidate
+  h.do({ type: 'declareAttack', seat: A, columns: [[f1], [f2]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
+  pick(h, 1);
+  pick(h, { player: A });
+  pick(h, { unit: ally });
+  const declared = h.state.stack[h.state.stack.length - 1]!.parts[0]!.targets.length;
+  assert.equal(declared, 2, 'two declared targets and no more, whatever the distribution does');
+  pass(h); pass(h);                                     // resolve
+  // "then, when it resolves, you just distribute the damage without targeting
+  // or going onto the stack or anything" — the two points are a mid-resolution
+  // choose between the opponent's two units
+  assert.ok(h.state.decision, 'the distribution asks, mid-resolution');
+  assert.doesNotMatch(h.state.decision!.prompt, /target/i, 'and it does not call them targets');
+  assert.equal(h.state.stack.length, 0, 'nothing was put on the stack for it');
+  const opts = h.state.decision!.options.map(o => o.label);
+  assert.ok(opts.every(l => l === 'Good Whale' || l === 'Awoken Tomb'),
+    "only the TARGETED opponent's units are offered");
+  // and the options are bare entity ids, not TargetRefs — a target is a
+  // {unit: id} the client can draw an arrow to; this is a division of damage
+  assert.deepEqual(h.state.decision!.options.map(o => o.value).sort(), [f1, f2].sort());
+  // answer both points onto the trigger-free Whale: R80 makes that ONE hit of
+  // 2, and there is still nothing on the stack for any of it
+  pick(h, f1);
+  pick(h, f1);
+  assert.equal(h.state.stack.length, 0, 'the distribution never touched the stack');
+  assert.equal(ent(h, f1)!.damage, 2, 'both points landed as one 2-damage hit');
   finishBattle(h);
 });
 

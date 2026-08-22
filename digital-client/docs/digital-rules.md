@@ -1314,8 +1314,8 @@ with `min: 0` for the printed "you may".
 *Channel Through*'s second clause ("distribute 2 damage among target opponent's
 units") declares its X allies but not the opponent: a spec cannot mix a
 variable-count slot with a fixed extra one, and in 1v1 the opponent is forced.
-(R82 revisits this — Caleb 2025-11-25 says the player IS targeted, so the
-limitation is the engine's, not the card's.)
+(R83 fixes this — Bena ruled the opponent IS a cast-time target, and
+`TargetSpec.extraSlots` lets a variable slot be followed by a fixed one.)
 
 **One hazard the move creates.** A restriction runs inside `targetCandidates`,
 so a restriction that asks `targetCandidates` about ANOTHER card's spec is a
@@ -2897,10 +2897,47 @@ declared `what: 'any'`, which is the damage kind: it offered every unit on the
 board and both players, and the usual pick could only fizzle into an info line.
 The audit found that one; nobody had reported it.
 
-**Left standing, and worth Bena's ruling.** *Channel Through*'s second clause
-("distribute 2 damage among target opponent's units") declares no target
-because a `count: 'X'` slot cannot be followed by a fixed extra one. Caleb
-2025-11-25 says the player IS targeted — *"Channel Through targets the player,
-so yes, you're good"* — so in a 3+-player game this would be a real choice, and
-even in 1v1 it is a `targeted` event that never fires. Making it expressible
-means letting a spec mix a variable slot with a fixed one.
+**Channel Through** was left standing here for one round and is settled in R83
+below: the opponent IS a cast-time target, and the spec can say so now.
+
+
+## R83 — A spec may mix a VARIABLE slot with a fixed one; and Channel Through
+
+*(Bena, 2026-08-22, closing the question R82 left open.)*
+
+> "Channel Through's second part doesn't target, that's correct. On cast, you
+> target X of YOUR units and an opponent. Then, when it resolves, you just
+> 'distribute' the damage without targeting or going onto the stack or
+> anything."
+
+So the card makes **two different kinds of choice**, and the difference is the
+whole point:
+
+| | when | declared? | on the stack? | respondable? |
+|---|---|---|---|---|
+| X allies + one opponent | cast | yes, as targets | yes, on the item | yes |
+| which of that opponent's units take the points | resolution | no | no | no |
+
+The second half was already right — a mid-resolution `ctx.choose`, exactly what
+R67 said a *distribution* is. The first half was not: the opponent went
+**undeclared**, because a `count: 'X'` slot could not be followed by a fixed
+one. Caleb had already said the same thing from the other side (2025-11-25):
+*"Channel Through targets the player, so yes, you're good."*
+
+**The seam.** `TargetSpec.extraSlots` — fixed slots asked for in addition to
+`count`. They occupy the **low** indices, which is what `slots` (an absolute
+index) already describes: `slots: ['opponent']` with `what: 'allyUnit'` makes
+slot 0 the opponent and every later slot an ally. First rather than last for a
+mechanical reason, not a stylistic one: a counted spec ends when the chooser
+says "no more targets", and a slot behind that gate could never be reached.
+
+`min` counts across the whole spec, so `min: 1` means "the opponent is
+mandatory, the allies are not" — which is right, since you may hold fewer than
+X allies. At X = 0 the opponent is still asked for and the spell still does
+nothing (R74: a variable cost may warn that X = 0 is empty, not forbid it).
+
+**What changed at the table.** The distribution now offers only the **targeted**
+opponent's units rather than "everyone who is not me" — identical in 1v1, a
+real difference at three players. And the opponent is on the stack where it can
+be seen, redirected (R58 `canFillSlot`) and reacted to, which is the entire
+reason R67 moved targets to cast time.

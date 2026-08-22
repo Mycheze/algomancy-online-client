@@ -321,29 +321,47 @@ card('Torrential Reclamation', {
 // "I deal 2 damage to each of X target allies. For each ally damaged this
 // way, distribute 2 damage among target opponent's units." — eer/X 0/6
 // {Battle} Elemental Spell. X is chosen and paid AT CAST (R35) and read from
-// item.x here. R64: the "X target allies" are CAST-TIME targets (they were
-// picked mid-resolution, so the spell hit the stack aiming at nobody). The
-// per-point DISTRIBUTION stays a mid-resolution choose: it is a division of
-// damage among the opponent's units, not a set of declared targets — the
-// printed target there is the opponent, who in 1v1 is the only one.
-// The 2 distributed damage is committed in 1-point increments (a point aimed
-// at a unit that died mid-commit is lost).
+// item.x here.
+//
+// R83 — BENA, 2026-08-22, settling what R67 had to leave open: "On cast, you
+// target X of YOUR units AND an opponent. Then, when it resolves, you just
+// 'distribute' the damage without targeting or going onto the stack or
+// anything." So there are TWO kinds of choice here and the card makes both:
+//
+//  - CAST TIME, declared targets: X allies and one opponent. The opponent
+//    used to go undeclared because a `count: 'X'` slot could not be followed
+//    by a fixed one; `extraSlots` is that seam, and it puts the opponent at
+//    slot 0 (see TargetSpec.extraSlots for why first rather than last).
+//    Caleb 2025-11-25 agrees the player is targeted: "Channel Through targets
+//    the player, so yes, you're good."
+//  - RESOLUTION, not targets: the per-point distribution among that
+//    opponent's units. Not declared, not respondable, nothing on the stack —
+//    a mid-resolution ctx.choose, which is exactly what it already was.
+//
+// The 2 distributed damage is planned in 1-point increments but COMMITTED as
+// one batch (R80), so two points on one unit are one hit of 2.
 card('Channel Through', {
   spellEffect: {
     targets: {
-      what: 'allyUnit', count: 'X', min: 0,
-      prompt: 'Channel Through: deal 2 damage to each of X target allies',
+      what: 'allyUnit', count: 'X', extraSlots: 1, min: 1,
+      slots: ['opponent'],
+      prompt: 'Channel Through: X target allies, and target opponent',
+      slotPrompts: ['Channel Through: target opponent (their units take the distributed damage)'],
     },
     run: (g, ctx) => {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       if (x <= 0) { g.ev('info', 'Channel Through: X = 0 — no effect.'); return; }
+      // slot 0 is the opponent; every entity target after it is an ally
+      const foe = ctx.targets.find(t => 'player' in (t as object)) as { player: Seat } | undefined;
       const picked = ctx.targets.filter(isEntityTarget).map(t => g.entity(t.id)).filter((u): u is Entity => !!u);
       if (!picked.length) {
         g.ev('info', 'Channel Through: every targeted ally has left play — nothing is damaged.');
         return;
       }
-      // plan: per damaged ally, distribute 2 damage among opponent units
-      const enemies = () => g.unitsIn(ctx.region).filter(u => u.controller !== ctx.controller);
+      // plan: per damaged ally, distribute 2 damage among the TARGETED
+      // opponent's units (in 1v1 that is the only opponent; it matters at 3+)
+      const enemies = () => g.unitsIn(ctx.region)
+        .filter(u => (foe ? u.controller === foe.player : u.controller !== ctx.controller));
       const alloc: EntityId[][] = picked.map((_, i) => {
         const out: EntityId[] = [];
         for (let k = 0; k < 2; k++) {

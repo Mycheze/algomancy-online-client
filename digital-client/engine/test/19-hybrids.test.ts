@@ -260,16 +260,19 @@ test('Channel Through: X is chosen at cast (R35) — X=0 is a no-op, X=1 works',
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[tokA]] });
   pass(h);                                                    // priority → D
-  // X = 0 chosen at cast → nothing happens
+  // X = 0 chosen at cast → nothing happens. R83: the opponent is a cast-time
+  // target in its own right (slot 0), so it is asked for even at X = 0.
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
   pick(h, 0);                                                 // X = 0 at cast (R35)
+  pick(h, { player: A });                                     // R83: target opponent
   pass(h); pass(h);
   assert.ok(ent(h, tokA) && ent(h, tokD), 'X = 0: nobody was damaged');
-  // X = 1: 2 damage to the (auto-picked) ally, 2 distributed onto
-  // the (auto-picked) opponent unit — both 1/1s die
+  // X = 1: 2 damage to the targeted ally, 2 distributed onto the (auto-picked)
+  // unit of the targeted opponent — both 1/1s die
   pass(h);                                                    // priority → D again
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
   pick(h, 1);                                                 // X = 1 at cast (R35), paid now
+  pick(h, { player: A });                                     // R83: slot 0 is the opponent
   pick(h, { unit: tokD });                                    // R64: the ally is a CAST-TIME target
   pass(h); pass(h);
   assert.ok(!ent(h, tokD), 'the targeted ally took 2 and died');

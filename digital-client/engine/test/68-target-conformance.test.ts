@@ -40,8 +40,9 @@ function slotsOf(spec: TargetSpec | undefined): number {
   if (!spec) return 0;
   const c = spec.count ?? 1;
   // "X target allies" is ONE printed occurrence of the word, however many
-  // units it ends up aiming at — and X may legitimately be 1.
-  return c === 'X' ? 1 : c;
+  // units it ends up aiming at — and X may legitimately be 1. R83's
+  // `extraSlots` are separate printed targets and each counts.
+  return (c === 'X' ? 1 : c) + (spec.extraSlots ?? 0);
 }
 
 /** every effect a card owns, including the Ambush mode's generated one */
@@ -92,14 +93,7 @@ const EXEMPT: Record<string, string> = {
   // because printed text is per card; each effect asks for its own.
   'Stellarspore Harvester': 'the after-combat trigger targets a unit; the [Augment] death trigger targets an opponent',
 
-  // ── 3. a variable slot and a fixed one cannot share a spec (R67).
-  'Channel Through':
-    "'X target allies' is the declared slot; the second clause's 'target opponent's units' is a "
-    + 'DISTRIBUTION among one forced player. Caleb 2025-11-25 confirms the player IS targeted '
-    + "('Channel Through targets the player, so yes'), which a fixed extra slot after a count:'X' "
-    + 'slot cannot express — the collector would have to ask for a variable number and then one more.',
-
-  // ── 4. genuinely unimplemented, and parked as such rather than faked.
+  // ── 3. genuinely unimplemented, and parked as such rather than faked.
   'Apex Prime':
     "'all of your units become a copy of target unit until regroup' needs a COPY layer that does "
     + 'not exist (R67); the card targets nothing at all until it does.',
