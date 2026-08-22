@@ -22,14 +22,14 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
 import type { Action, CardName, Seat } from '../engine/src/types.ts';
 import { checkDeck, forcedAction, legalActions, IllegalAction } from '../engine/src/apply.ts';
-import { viewFor, redactEvent, redactLog } from './view.ts';
+import { other, viewFor, redactEvent, redactLog } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
-  applyToRoom, clearDeployHold, clockSnapshot, createRematch, decidedWinner, getRoom, joinableRoom, renameSeat,
+  applyToRoom, clockSnapshot, createRematch, decidedWinner, getRoom, joinableRoom, openSegment, renameSeat,
   reserveRoomCode, resolveLobby, roomExistsOrReserved, roomLobby,
-  restoreRooms, roomWaiting, setLobbyMethod, setLobbySubmission, setRoomDeck,
-  setSeatUser, settleClock, undoActionAt, undoLastAction, unlockLobby,
-  type Room, type Socket,
+  restoreRooms, roomWaiting, segmentKey, setLobbyMethod, setLobbySubmission, setRoomDeck,
+  setSeatUser, settleClock, spliceable, undoActionAt, undoLastAction, unlockLobby,
+  type Room, type SegKey,
 } from './rooms.ts';
 import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
 import { accountRoutes } from './api-accounts.ts';
@@ -79,6 +79,28 @@ async function serveFile(res: import('node:http').ServerResponse, path: string):
   }
 }
 
+/** Read and parse a JSON request body, capped — same reasoning as
+ * api-accounts.ts readBody: an unbounded read on an open port is a gift to
+ * anyone who finds it, even on a LAN. Rejects on oversize or bad JSON so
+ * each route's own catch keeps its current error shape. */
+function readJson(req: import('node:http').IncomingMessage, limit = 64 * 1024): Promise<Record<string, unknown>> {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    let over = false;
+    req.on('data', (c: Buffer) => {
+      if (over) return;
+      body += c;
+      if (body.length > limit) { over = true; body = ''; }
+    });
+    req.on('end', () => {
+      if (over) return reject(new Error(`body too large (over ${limit} bytes)`));
+      try { resolve(JSON.parse(body || '{}') as Record<string, unknown>); }
+      catch (err) { reject(err); }
+    });
+    req.on('error', reject);
+  });
+}
+
 /** Room codes: 4 letters, skipping easily-confused ones. */
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ';
 function freshRoomCode(): string {
@@ -115,29 +137,25 @@ const server = createServer(async (req, res) => {
   // actionIndex = the room's action count at report time, so the moment can be
   // replayed later (replay-room.ts + slicing the action log).
   if (path === '/api/report' && req.method === 'POST') {
-    let body = '';
-    req.on('data', (c: Buffer) => { body += c; });
-    req.on('end', () => {
-      try {
-        const { room, seat, note } = JSON.parse(body || '{}') as { room?: string; seat?: number; note?: string };
-        const code = String(room ?? '').toUpperCase().trim();
-        const r = getRoom(code);   // unknown room: still log it (actionIndex null)
-        const entry = {
-          ts: new Date().toISOString(),
-          room: code,
-          seat: seat === 0 || seat === 1 ? seat : null,
-          note: String(note ?? '').slice(0, 4000),
-          actionIndex: r ? r.actions.length : null,
-        };
-        appendFileSync(join(HERE, 'issues.jsonl'), JSON.stringify(entry) + '\n');
-        console.log(`[report] ${entry.room || '(no room)'} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'}: ${entry.note}`);
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ ok: true }));
-      } catch (err) {
-        res.writeHead(400, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ ok: false, error: String(err instanceof Error ? err.message : err) }));
-      }
-    });
+    try {
+      const { room, seat, note } = await readJson(req) as { room?: string; seat?: number; note?: string };
+      const code = String(room ?? '').toUpperCase().trim();
+      const r = getRoom(code);   // unknown room: still log it (actionIndex null)
+      const entry = {
+        ts: new Date().toISOString(),
+        room: code,
+        seat: seat === 0 || seat === 1 ? seat : null,
+        note: String(note ?? '').slice(0, 4000),
+        actionIndex: r ? r.actions.length : null,
+      };
+      appendFileSync(join(HERE, 'issues.jsonl'), JSON.stringify(entry) + '\n');
+      console.log(`[report] ${entry.room || '(no room)'} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'}: ${entry.note}`);
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ ok: true }));
+    } catch (err) {
+      res.writeHead(400, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: String(err instanceof Error ? err.message : err) }));
+    }
     return;
   }
 
@@ -150,21 +168,17 @@ const server = createServer(async (req, res) => {
   // constructed: turn an algomancer.cc link or a pasted list into engine
   // card names — { url } or { text } in, DeckInfo out (problems included)
   if (path === '/api/deck/import' && req.method === 'POST') {
-    let body = '';
-    req.on('data', (c: Buffer) => { body += c; });
-    req.on('end', async () => {
-      try {
-        const { url, text } = JSON.parse(body || '{}') as { url?: string; text?: string };
-        const deck = url
-          ? await importDeckUrl(String(url))
-          : importDeckText(String(text ?? ''));
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ ok: true, deck }));
-      } catch (err) {
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ ok: false, error: String(err instanceof Error ? err.message : err) }));
-      }
-    });
+    try {
+      const { url: deckUrl, text } = await readJson(req) as { url?: string; text?: string };
+      const deck = deckUrl
+        ? await importDeckUrl(String(deckUrl))
+        : importDeckText(String(text ?? ''));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, deck }));
+    } catch (err) {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: String(err instanceof Error ? err.message : err) }));
+    }
     return;
   }
 
@@ -187,25 +201,21 @@ const server = createServer(async (req, res) => {
   // the in-game judge popup: proxy to the rules bot (same box, :8000) so the
   // client needs no CORS and no second origin
   if (path === '/api/judge' && req.method === 'POST') {
-    let body = '';
-    req.on('data', (c: Buffer) => { body += c; });
-    req.on('end', async () => {
-      try {
-        const { question } = JSON.parse(body || '{}') as { question?: string };
-        const upstream = await fetch('http://127.0.0.1:8000/api/ask', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ question: String(question ?? '').slice(0, 2000), history: [] }),
-          signal: AbortSignal.timeout(60000),
-        });
-        const json = await upstream.text();
-        res.writeHead(upstream.status, { 'content-type': 'application/json' });
-        res.end(json);
-      } catch (err) {
-        res.writeHead(502, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ answer: `the judge is unreachable: ${err instanceof Error ? err.message : err}` }));
-      }
-    });
+    try {
+      const { question } = await readJson(req) as { question?: string };
+      const upstream = await fetch('http://127.0.0.1:8000/api/ask', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ question: String(question ?? '').slice(0, 2000), history: [] }),
+        signal: AbortSignal.timeout(60000),
+      });
+      const json = await upstream.text();
+      res.writeHead(upstream.status, { 'content-type': 'application/json' });
+      res.end(json);
+    } catch (err) {
+      res.writeHead(502, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ answer: `the judge is unreachable: ${err instanceof Error ? err.message : err}` }));
+    }
     return;
   }
 
@@ -232,6 +242,28 @@ const conns = new WeakMap<WebSocket, Conn>();
 const send = (ws: WebSocket, obj: unknown): void => {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
 };
+
+/** send() to whoever is connected on `seat`; a no-op for an empty chair. */
+function sendToSeat(room: Room, seat: Seat, obj: unknown): void {
+  const sock = room.sockets[seat];
+  if (sock) send(sock, obj);
+}
+
+/** Both seats, in seat order. */
+const forEachSeat = (fn: (seat: Seat) => void): void => { fn(0); fn(1); };
+
+/** The fields every state push shares: redacted view, this seat's legal
+ * actions, presence, clock. Each caller spreads its own extras on top — the
+ * per-site drift (log replace vs incremental events, reveal, trio) is
+ * deliberate, so it stays at the sites. */
+function baseView(room: Room, seat: Seat) {
+  return {
+    view: viewFor(room.state, seat, room.segSnapshot),
+    legal: legalActions(room.state, seat),
+    peers: peersOf(room),
+    clock: clockSnapshot(room),
+  };
+}
 
 /** Lobby state, attached to every message while the room is not a game yet.
  * Two kinds: a constructed room waiting for decks (`have`), and a draft room
@@ -287,40 +319,35 @@ function trioHistoryFor(room: Room): TrioHistoryRow[] {
     .map(g => ({ els: g.els, playedAt: g.playedAt }));
 }
 
-/** Push an update to one seat: redacted view (+optional events). During
- * deployment the opponent's half of the view comes from the freeze. */
+/** Push an update to one seat: redacted view (+optional events). Inside a
+ * hidden segment the opponent's half of the view comes from the freeze. */
 function sendUpdate(room: Room, seat: Seat, events: import('../engine/src/types.ts').EngineEvent[]): void {
-  const sock = room.sockets[seat] as unknown as WebSocket | null;
-  if (!sock) return;
   // still waiting for decks: no game to show — just the lobby state
   if (roomWaiting(room)) {
-    send(sock, { t: 'update', waiting: waitingInfo(room, seat), peers: peersOf(room), names: room.names });
+    sendToSeat(room, seat, { t: 'update', waiting: waitingInfo(room, seat), peers: peersOf(room), names: room.names });
     return;
   }
-  send(sock, {
+  sendToSeat(room, seat, {
     t: 'update',
-    view: viewFor(room.state, seat, room.deploySnapshot),
+    ...baseView(room, seat),
     ...(events.length ? { events: events.map(e => redactEvent(e, seat, room.names)) } : {}),
-    legal: legalActions(room.state, seat),
-    peers: peersOf(room),
-    clock: clockSnapshot(room),
   });
 }
 
-/** The deploy-end flush: like sendUpdate, but the opponent's held (hidden)
- * deploy events travel in a separate `reveal` field so the client can show
- * a "here is what your opponent did" interstitial before play continues. */
-function sendReveal(room: Room, seat: Seat, revealEvents: import('../engine/src/types.ts').EngineEvent[], tailEvents: import('../engine/src/types.ts').EngineEvent[]): void {
-  const sock = room.sockets[seat] as unknown as WebSocket | null;
-  if (!sock) return;
-  send(sock, {
+/** The segment-end flush: like sendUpdate, but the opponent's held (hidden)
+ * events travel in a separate `reveal` field so the client can show a "here
+ * is what your opponent did" interstitial before play continues.
+ *
+ * `step` says WHICH segment just closed — the client renders a 'plan' close as
+ * log lines and board animation only (it fires every single turn and the
+ * payload is resource lines), and keeps the modal for 'haste' and 'deploy'. */
+function sendReveal(room: Room, seat: Seat, revealEvents: import('../engine/src/types.ts').EngineEvent[], tailEvents: import('../engine/src/types.ts').EngineEvent[], step: SegKey): void {
+  sendToSeat(room, seat, {
     t: 'update',
-    view: viewFor(room.state, seat, room.deploySnapshot),
+    step,
+    ...baseView(room, seat),
     reveal: revealEvents.map(e => redactEvent(e, seat, room.names)),
     events: [...revealEvents, ...tailEvents].map(e => redactEvent(e, seat, room.names)),
-    legal: legalActions(room.state, seat),
-    peers: peersOf(room),
-    clock: clockSnapshot(room),
   });
 }
 
@@ -385,10 +412,11 @@ function sendGameOver(room: Room, seat: Seat, extra: {
   unlocked: { id: string; name: string; desc: string; icon: string }[];
   account: ReturnType<typeof accountById>;
 }): void {
-  const sock = room.sockets[seat] as unknown as WebSocket | null;
-  if (!sock) return;
+  // checked up front, not left to sendToSeat: summarizeRoom() replays the
+  // whole game, which is not worth doing for an empty chair
+  if (!room.sockets[seat]) return;
   const row = extra.row ?? summarizeRoom(room);
-  send(sock, {
+  sendToSeat(room, seat, {
     t: 'gameover',
     seat,
     winner: row.winner ?? decidedWinner(room),
@@ -426,22 +454,18 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
 
 /** Push the current rematch state to both seats. */
 function broadcastRematch(room: Room): void {
-  for (const seat of [0, 1] as Seat[]) {
-    const sock = room.sockets[seat] as unknown as WebSocket | null;
-    if (!sock) continue;
-    send(sock, { t: 'rematch', rematch: [...room.rematch], room: room.rematchRoom });
-  }
+  forEachSeat(seat => sendToSeat(room, seat, { t: 'rematch', rematch: [...room.rematch], room: room.rematchRoom }));
 }
 
 /** Push freshly-produced events + new state to both seats (per-seat redacted). */
 function broadcastAfterAction(room: Room, rawEvents: import('../engine/src/types.ts').EngineEvent[]): void {
-  for (const seat of [0, 1] as Seat[]) sendUpdate(room, seat, rawEvents);
+  forEachSeat(seat => sendUpdate(room, seat, rawEvents));
 }
 
-/** The log lines `seat` is currently allowed to see (opponent deploy moves
- * still hidden this phase are filtered out — they arrive with the reveal). */
+/** The log lines `seat` is currently allowed to see (the opponent's moves in
+ * the open hidden segment are filtered out — they arrive with the reveal). */
 function visibleLog(room: Room, seat: Seat): string[] {
-  const held = new Set(room.heldDeploy[seat]);
+  const held = new Set(room.heldEvents[seat]);
   return redactLog(room.events.filter(e => !held.has(e)), seat, room.names);
 }
 
@@ -451,7 +475,7 @@ const peersOf = (room: Room): [boolean, boolean] => [!!room.sockets[0], !!room.s
  * occupied (the old connection is kicked): with two known players, a stale tab
  * must never dead-end the real person behind "seat taken". Auto-join (no seat
  * requested) only takes a free seat. */
-function pickSeat(room: Room, requested: number | undefined): { seat: Seat; kicked: Socket | null } | null {
+function pickSeat(room: Room, requested: number | undefined): { seat: Seat; kicked: WebSocket | null } | null {
   if (requested === 0 || requested === 1) {
     return { seat: requested as Seat, kicked: room.sockets[requested] };
   }
@@ -461,8 +485,14 @@ function pickSeat(room: Room, requested: number | undefined): { seat: Seat; kick
 }
 
 const wss = new WebSocketServer({ server });
+wss.on('error', err => console.error('[ws] server error:', err));
 
 wss.on('connection', ws => {
+  // without this, one malformed frame (say, invalid UTF-8 from a mangling
+  // proxy) raises an unhandled 'error' event and takes down the whole
+  // process — every game, not just the offending socket. Log and let the
+  // library close the connection.
+  ws.on('error', err => console.warn('[ws] socket error:', err instanceof Error ? err.message : err));
   ws.on('message', raw => {
     let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
       token?: string; deck?: unknown; action?: Action; cols?: unknown; send?: unknown;
@@ -510,11 +540,11 @@ wss.on('connection', ws => {
       const seat = picked.seat;
       // a re-join on the SAME connection (waiting room: "here is my deck now")
       // must not kick itself
-      if (picked.kicked && picked.kicked !== (ws as unknown as Socket)) {
-        send(picked.kicked as unknown as WebSocket, {
+      if (picked.kicked && picked.kicked !== ws) {
+        send(picked.kicked, {
           t: 'kicked', msg: `another connection took over seat ${seat} — this tab is done (close it, or rejoin)`,
         });
-        (picked.kicked as unknown as WebSocket).close();
+        picked.kicked.close();
         console.log(`[ws] ${code}: seat ${seat} taken over by a new connection`);
       }
       // accounts: the join carries the browser's session token. A logged-in
@@ -526,7 +556,7 @@ wss.on('connection', ws => {
       const name = account ? account.username : typed;
       if (name && name !== room.names[seat]) renameSeat(room, seat, name);
       setSeatUser(room, seat, account?.id ?? null);
-      room.sockets[seat] = ws as unknown as Socket;
+      room.sockets[seat] = ws;
       const previous = conns.get(ws);
       if (previous?.userId) markOnline(previous.userId, -1);   // re-join on the same socket
       if (account) markOnline(account.id, 1);
@@ -543,15 +573,12 @@ wss.on('connection', ws => {
           }
         : {
             t: 'joined', room: code, seat: s,
-            view: viewFor(room.state, s, room.deploySnapshot),
+            ...baseView(room, s),
             log: visibleLog(room, s),
-            legal: legalActions(room.state, s),
-            peers: peersOf(room),
             names: room.names,
-            clock: clockSnapshot(room),
             // a reconnect mid-declaration picks the opponent's half-built
             // formation straight back up instead of waiting for their next move
-            building: room.building[(s === 0 ? 1 : 0) as Seat],
+            building: room.building[other(s)],
           };
       send(ws, joinedMsg(seat));
       // the account payload rides along so a reconnecting client does not
@@ -564,9 +591,9 @@ wss.on('connection', ws => {
       }
       // let the other seat know a peer arrived (fresh view refreshes presence;
       // on game start they need the full reset, i.e. their own 'joined')
-      const otherSeat = (seat === 0 ? 1 : 0) as Seat;
+      const otherSeat = other(seat);
       if (room.sockets[otherSeat]) {
-        if (gameJustStarted) send(room.sockets[otherSeat] as unknown as WebSocket, joinedMsg(otherSeat));
+        if (gameJustStarted) sendToSeat(room, otherSeat, joinedMsg(otherSeat));
         else pushView(room, otherSeat);
       }
       console.log(`[ws] ${code}: seat ${seat} joined${roomWaiting(room) ? ' (waiting for decks)' : gameJustStarted ? ' (constructed game started)' : ''}`);
@@ -622,22 +649,16 @@ wss.on('connection', ws => {
         } as unknown as import('../engine/src/types.ts').EngineEvent);
         settleClock(room);
         console.log(`[ws] ${room.code}: trio ${result.els.join('+')} (${lobby.method})`);
-        for (const s of [0, 1] as Seat[]) {
-          const sock = room.sockets[s] as unknown as WebSocket | null;
-          if (!sock) continue;
-          send(sock, {
-            t: 'joined', room: room.code, seat: s,
-            view: viewFor(room.state, s, room.deploySnapshot),
-            log: visibleLog(room, s),
-            legal: legalActions(room.state, s),
-            peers: peersOf(room), names: room.names,
-            clock: clockSnapshot(room), building: null,
-            trio: { els: result.els, how: result.how, detail: result.detail },
-          });
-        }
+        forEachSeat(s => sendToSeat(room, s, {
+          t: 'joined', room: room.code, seat: s,
+          ...baseView(room, s),
+          log: visibleLog(room, s),
+          names: room.names, building: null,
+          trio: { els: result.els, how: result.how, detail: result.detail },
+        }));
         return;
       }
-      for (const s of [0, 1] as Seat[]) pushView(room, s);
+      forEachSeat(s => pushView(room, s));
       return;
     }
 
@@ -652,7 +673,8 @@ wss.on('connection', ws => {
       }
       try {
         const room = conn.room;
-        const wasDeploy = room.state.phase === 'deploy';
+        // which hidden segment (if any) this action was taken INSIDE
+        const wasKey = room.segKey;
         const hadWinner = room.state.winner !== null;
         // the committed declaration supersedes every in-progress one
         room.building = [null, null];
@@ -663,28 +685,36 @@ wss.on('connection', ws => {
           if (!f) break;
           events.push(...applyToRoom(room, f));
         }
-        const isDeploy = room.state.phase === 'deploy';
-        if (wasDeploy && isDeploy) {
-          // hidden simultaneous deployment: the actor sees their own events;
-          // the opponent gets a view refresh only (their half is frozen, but
-          // the done-flags are public)
-          sendUpdate(room, conn.seat, events);
-          sendUpdate(room, (conn.seat === 0 ? 1 : 0) as Seat, []);
-        } else if (wasDeploy && !isDeploy) {
-          // deployment just ended: flush each seat's held opponent events as
-          // a REVEAL (the client shows them as "what your opponent did" and
-          // waits for acknowledgement) followed by the turn-end events
-          const opp = (conn.seat === 0 ? 1 : 0) as Seat;
-          // the actor's own final events (incl. turn end) are the tail of the
-          // opponent's held queue; split them out so the reveal holds only
-          // the ACTOR's hidden deploy moves
-          const theirsHeld = room.heldDeploy[opp].filter(e => !events.includes(e));
-          const mineHeld = [...room.heldDeploy[conn.seat]];
-          clearDeployHold(room);
-          sendReveal(room, conn.seat, mineHeld, events);
-          sendReveal(room, opp, theirsHeld, events);
+        // ONE rule for all three hidden segments: the key changed → flush the
+        // old segment's reveal, snapshot the new one. (Note that 'deploy' →
+        // 'plan' is a close and an immediate re-open on the SAME action —
+        // doneDeploying runs endTurn and startTurn — which this handles for
+        // free where a deploy-shaped special case could not.)
+        const nowKey = segmentKey(room.state);
+        if (wasKey === nowKey) {
+          if (wasKey) {
+            // still inside the same hidden segment: the actor sees their own
+            // events; the opponent gets a view refresh only (their half is
+            // frozen, but the done-flags are public)
+            sendUpdate(room, conn.seat, events);
+            sendUpdate(room, other(conn.seat), []);
+          } else {
+            broadcastAfterAction(room, events);
+          }
         } else {
-          broadcastAfterAction(room, events);
+          const opp = other(conn.seat);
+          // the actor's own final events (incl. the step/turn end) are the
+          // tail of the opponent's held queue; split them out so the reveal
+          // holds only what was actually hidden
+          const theirsHeld = wasKey ? room.heldEvents[opp]!.filter(e => !events.includes(e)) : [];
+          const mineHeld = wasKey ? room.heldEvents[conn.seat]!.filter(e => !events.includes(e)) : [];
+          openSegment(room);   // close the old freeze, open the new one
+          if (wasKey) {
+            sendReveal(room, conn.seat, mineHeld, events, wasKey);
+            sendReveal(room, opp, theirsHeld, events, wasKey);
+          } else {
+            broadcastAfterAction(room, events);
+          }
         }
         // the transition into a decided game — record it once
         if (!hadWinner && room.state.winner !== null) recordFinishedGame(room);
@@ -709,9 +739,7 @@ wss.on('connection', ws => {
       const built = { cols, send: ids(raw.send, 12) };
       const empty = !built.cols.some(c => c.length) && !built.send.length;
       conn.room.building[conn.seat] = empty ? null : built;
-      const opp = (conn.seat === 0 ? 1 : 0) as Seat;
-      const oppSock = conn.room.sockets[opp] as unknown as WebSocket | null;
-      if (oppSock) send(oppSock, { t: 'building', seat: conn.seat, ...(empty ? { cols: [], send: [] } : built) });
+      sendToSeat(conn.room, other(conn.seat), { t: 'building', seat: conn.seat, ...(empty ? { cols: [], send: [] } : built) });
       return;
     }
 
@@ -723,7 +751,7 @@ wss.on('connection', ws => {
       if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
       const room = conn.room;
       if (roomWaiting(room)) return send(ws, { t: 'error', msg: 'the game has not started — nothing to undo' });
-      const phase = room.state.phase;
+      const segKey = room.segKey;
       // A pending PRE-COMMIT cast chain of the requester's own (X / cost /
       // target stages, R35) is undoable in ANY phase: while their decision
       // pends nobody else can act, so the log's tail is provably theirs and
@@ -732,41 +760,58 @@ wss.on('connection', ws => {
       const sus = room.state.suspension, dec = room.state.decision;
       const castChain = !!dec && !!sus && sus.type === 'cast' && sus.item.kind !== 'triggered'
         && dec.seat === conn.seat && sus.item.controller === conn.seat;
-      if (phase !== 'planning' && phase !== 'deploy' && !castChain) {
+      if (!segKey && !castChain) {
         return send(ws, { t: 'error', msg: 'undo only works during planning and deploy (or while your own cast is awaiting X, costs or targets)' });
       }
-      if (phase === 'deploy') {
-        // simultaneous deployment: your last action may not be the last one
-        // overall (the opponent acts in parallel, hidden). Deploy actions are
-        // seat-independent, so your own most recent action WITHIN the deploy
-        // segment can be spliced out safely.
+      if (segKey) {
+        // THE REPORTED FIX. Inside a hidden simultaneous segment your last
+        // action is very often not the last one overall — your opponent is
+        // acting in parallel, behind the screen, and what they do must not be
+        // able to take your undo away. So walk back to YOUR most recent
+        // action within the segment and splice that.
+        //
+        // The window closes at each barrier, which is right: once both of you
+        // have pressed done, the resource decisions lock.
         let i = room.actions.length - 1;
-        while (i >= room.deployStartIndex && i >= 0 && room.actions[i]!.seat !== conn.seat) i--;
-        if (i < room.deployStartIndex || i < 0 || room.deployStartIndex < 0) {
-          return send(ws, { t: 'error', msg: 'nothing of yours to undo this phase' });
+        while (i >= room.segStartIndex && i >= 0 && room.actions[i]!.seat !== conn.seat) i--;
+        if (i < room.segStartIndex || i < 0 || room.segStartIndex < 0) {
+          return send(ws, { t: 'error', msg: 'nothing to undo — nothing of yours this step' });
         }
-        undoActionAt(room, i);
+        // ...unless taking it out would renumber or re-roll what your opponent
+        // did after it (rooms.ts spliceable). Refusing is the honest answer:
+        // the alternative is silently dropping one of THEIR plays.
+        if (!spliceable(room, i, conn.seat)) {
+          return send(ws, { t: 'error', msg: 'your opponent has already acted on top of that one — it cannot be taken back now' });
+        }
+        // spliceable() predicts; undoActionAt() measures and rolls itself back
+        // if the splice would make anything else in the log unreplayable. A
+        // refused undo beats an action silently vanishing out of the record.
+        const refused = undoActionAt(room, i);
+        if (refused.length) {
+          return send(ws, { t: 'error', msg: 'taking that back would drop moves made after it — it cannot be undone now' });
+        }
       } else {
         const last = room.actions[room.actions.length - 1];
         if (!last) return send(ws, { t: 'error', msg: 'nothing to undo' });
         if (last.seat !== conn.seat) return send(ws, { t: 'error', msg: 'your opponent acted since — nothing of yours to undo' });
-        undoLastAction(room);
+        const refused = undoLastAction(room);
+        if (refused.length) {
+          return send(ws, { t: 'error', msg: 'taking that back would drop moves made after it — it cannot be undone now' });
+        }
       }
-      room.events.push({
+      const note = {
         type: 'note', msg: `${room.names[conn.seat]} undid their last action.`, data: {},
-      } as unknown as import('../engine/src/types.ts').EngineEvent);
-      for (const s of [0, 1] as Seat[]) {
-        const sock = room.sockets[s] as unknown as WebSocket | null;
-        if (!sock) continue;
-        send(sock, {
-          t: 'update',
-          view: viewFor(room.state, s, room.deploySnapshot),
-          log: visibleLog(room, s),   // full log replace: lines were removed
-          legal: legalActions(room.state, s),
-          peers: peersOf(room),
-          clock: clockSnapshot(room),
-        });
-      }
+      } as unknown as import('../engine/src/types.ts').EngineEvent;
+      room.events.push(note);
+      // inside a hidden segment even the FACT that you changed your mind is
+      // yours: the note rides the reveal with everything else you did. (The
+      // rebuild above rebuilt heldEvents, so this goes on afterwards.)
+      if (room.segKey) room.heldEvents[other(conn.seat)]!.push(note);
+      forEachSeat(s => sendToSeat(room, s, {
+        t: 'update',
+        ...baseView(room, s),
+        log: visibleLog(room, s),   // full log replace: lines were removed
+      }));
       return;
     }
 
@@ -777,11 +822,11 @@ wss.on('connection', ws => {
     const conn = conns.get(ws);
     if (!conn) return;
     if (conn.userId) markOnline(conn.userId, -1);
-    if (conn.room.sockets[conn.seat] === (ws as unknown as Socket)) {
+    if (conn.room.sockets[conn.seat] === ws) {
       conn.room.sockets[conn.seat] = null;
       settleClock(conn.room);   // a disconnected seat is not billed
     }
-    const otherSeat = (conn.seat === 0 ? 1 : 0) as Seat;
+    const otherSeat = other(conn.seat);
     if (conn.room.sockets[otherSeat]) pushView(conn.room, otherSeat);
     console.log(`[ws] ${conn.room.code}: seat ${conn.seat} left`);
   });

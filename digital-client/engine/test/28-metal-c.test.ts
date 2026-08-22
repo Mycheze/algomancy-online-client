@@ -5,7 +5,8 @@
  *
  * Covers: death-fed counters (Refuse Reclaimer — unit form and augment-
  * donated), formation-array position swapping (Riftwalker, bounded [once]),
- * a mid-resolution sacrifice cost (Scavenging Sentry, R6-style), moving net
+ * a real sacrifice ACTIVATION cost (Scavenging Sentry, R49 sacrificeOther —
+ * it used to be a mid-resolution pick), moving net
  * counters between two cast-time targets (Scrap For Parts), affinity-sized
  * Robot tokens arriving at HOME (Self-Assembly, R28), counter-fueled damage
  * (Soul Reaver), the R62 suppression layer + mod erasure + effect negation
@@ -86,21 +87,26 @@ test('Riftwalker: [one] switches my position with a target ally in my formation;
 
 // ── Scavenging Sentry ────────────────────────────────────────────────────
 
-test('Scavenging Sentry: sacrifice another unit → +1/+1 counter; no fodder → no counter', () => {
+test('Scavenging Sentry: sacrifice another unit → +1/+1 counter; no fodder → not offered', () => {
+  // R49 UN-PARKED: the bracketed sacrifice is a real AbilityCost, paid in the
+  // cast window, and it GATES the activation.
   const h = new Harness(2804);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   const sentry = spawn(h, A, 'Scavenging Sentry');          // 2/2
   const fodder = spawn(h, A, 'Unit Token');
   h.do({ type: 'activateAbility', seat: A, entityId: sentry, abilityIndex: 0, via: 'augment' });
-  pick(h, fodder);                                          // the R6-style sacrifice payment
+  notOffered(h, { unit: sentry }, '"another unit" — never the carrier');
+  pick(h, { unit: fodder });                                // the activation cost
   assert.ok(!ent(h, fodder), 'the fodder was sacrificed (token: erased)');
   assert.equal(ent(h, sentry)!.counters, 1);
   assert.deepEqual(effStats(h, sentry), [3, 3], '2/2 + the counter');
-  // no other unit left → the cost cannot be paid, no counter
-  h.do({ type: 'activateAbility', seat: A, entityId: sentry, abilityIndex: 0, via: 'augment' });
-  assert.equal(h.state.decision, null, 'nothing to sacrifice → no prompt');
-  assert.equal(ent(h, sentry)!.counters, 1, 'unpaid cost → no second counter');
+  // no other unit left → the cost is unpayable, so the ability is not offered
+  assert.ok(!h.legal(A).some(a => a.type === 'activateAbility' && a.entityId === sentry),
+    'unpayable cost → not offered');
+  assert.throws(() => h.do({ type: 'activateAbility', seat: A, entityId: sentry, abilityIndex: 0, via: 'augment' }),
+    /cannot pay/, 'and apply() refuses it');
+  assert.equal(ent(h, sentry)!.counters, 1, 'no second counter');
 });
 
 // ── Scrap For Parts ──────────────────────────────────────────────────────

@@ -143,7 +143,11 @@ async function main(): Promise<void> {
     const bLast = b.log[b.log.length - 1] ?? '';
     ok(/recycles .+ for a dormant/.test(aLast) && !/recycles a card/.test(aLast),
       `actor sees the card name  ("${aLast}")`);
-    ok(/recycles a card for a dormant/.test(bLast), `opponent sees it blurred  ("${bLast}")`);
+    // ...and while the resource step is still open the opponent is shown
+    // NOTHING: the whole step is a hidden simultaneous segment now (rooms.ts
+    // segmentKey), so the blurred line only arrives with the reveal below.
+    ok(!b.log.some(l => /recycles/.test(l)),
+      `opponent sees nothing at all mid-resource-step  (last: "${bLast}")`);
 
     // ── server authority: wrong-seat action is rejected ─────────────────
     console.log('\n[server authority]');
@@ -165,6 +169,11 @@ async function main(): Promise<void> {
       await wait;
     }
     ok(steps > 3, `game advanced through ${steps} pass-actions without a stall`);
+    // both pressed done, so the resource step's reveal has been flushed —
+    // blurred, exactly as it used to arrive live
+    ok(b.log.some(l => /recycles a card for a dormant/.test(l)),
+      'the reveal brings the opponent the recycle, blurred');
+    ok(!b.log.some(l => /recycles [A-Z]/.test(l)), 'and never names the card');
     ok(a.leaks.length === 0, `A view stayed redacted all session (${a.leaks.length} leaks)`);
     ok(b.leaks.length === 0, `B view stayed redacted all session (${b.leaks.length} leaks)`);
     if (a.leaks.length) console.error('    A leaks:', [...new Set(a.leaks)]);

@@ -500,4 +500,9 @@ export const POOL = [
   'Writhing Host',
   'Xzydris',
   'Zephyrzoa',
+  // R71: the Wraith token. It has a printed card and an oracle entry, so its
+  // stats/type/text/art come from the pool like any other token (Wisp,
+  // Fireball, Poison) — registry.ts carries behaviour only. It is a "Token
+  // Unit" type, so DECK_LIST and the draft pools filter it out.
+  'Wraith',
 ];

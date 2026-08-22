@@ -3,8 +3,9 @@
  * token-spell triggers and bounded budgets (Nimbus Eel R9), spell-played
  * self-buffs (Ravenous Fireslinger), R6-style mid-resolution payments and bin
  * picks (Reclaimer of Secrets, Resurrect, Soul Tithe, Wildfire), the R1
- * "still in formation" resolution recheck (Rousing Spirit), sacrifice
- * approximations (Sacrificial Burst, Soul Swallower, Spiteful Shadow),
+ * "still in formation" resolution recheck (Rousing Spirit), sacrifices as real
+ * costs (Soul Swallower's R49 `sacrificeOther`) and as effects (Sacrificial
+ * Burst, Spiteful Shadow),
  * text-box [Augment] triggers (Sparkwraith, Spirit of Vengeance, Static
  * Courier, Stormsowing Nimbus, Unstable Apparition, Voltwrath Behemoth), and
  * the two-target choice of Twin Flame. States are built explicitly
@@ -16,7 +17,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, notOffered, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -50,7 +51,7 @@ test('Molten Riftbreaker: [Augment] text — my despawn negates all allied spell
   assert.ok(!ent(h, rift), 'Riftbreaker died');
   pass(h); pass(h);                                  // the despawn trigger resolves
   assert.ok(h.log.some(l => l.includes('Jelly is negated')), 'allied spell negated');
-  pass(h); pass(h);                                  // Jelly resolves (negated)
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Jelly left the stack at once');
   assert.deepEqual(effStats(h, whale), [7, 5], 'the negated Jelly never buffed/debuffed');
   assert.ok(!unitsOf(h, D).some(u => u.card === 'Jelly'), 'a negated spell unit never spawns');
   assert.ok(h.state.players[D]!.bin.includes('Jelly'), 'negated Jelly → bin');
@@ -226,6 +227,8 @@ test('Sacrificial Burst: sacrifice a unit, deal 4 to any target', () => {
 });
 
 test('Soul Swallower: activated [Augment] text — sacrifice another unit for +2/+2', () => {
+  // R49 UN-PARKED: "Sacrifice another unit" is a real AbilityCost
+  // (sacrificeOther), not a target that dies at resolution.
   const h = new Harness(1310);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -233,13 +236,18 @@ test('Soul Swallower: activated [Augment] text — sacrifice another unit for +2
   const fodder = spawn(h, p, 'Curio Drifter');
   // played normally: its own [Augment] text is activatable (via 'augment')
   h.do({ type: 'activateAbility', seat: p, entityId: sw, abilityIndex: 0, via: 'augment' });
+  // the cost menu can only ever offer ANOTHER unit — the carrier is not on it
+  notOffered(h, { unit: sw }, 'the carrier can never be its own fodder');
   pick(h, { unit: fodder });
   assert.ok(!ent(h, fodder), 'the sacrifice died');
   assert.deepEqual(effStats(h, sw), [4, 3], '2/1 + 2/2 = 4/3');
-  // "ANOTHER unit": picking the carrier itself no-ops
-  h.do({ type: 'activateAbility', seat: p, entityId: sw, abilityIndex: 0, via: 'augment' });
-  pick(h, { unit: sw });
-  assert.deepEqual(effStats(h, sw), [4, 3], 'self-pick: no sacrifice, no buff');
+  // with no other unit left the cost cannot be paid, so the ability is not
+  // offered at all — it is no longer activated-then-fizzled
+  assert.ok(!h.legal(p).some(a => a.type === 'activateAbility' && a.entityId === sw),
+    'unpayable cost → not offered');
+  assert.throws(() => h.do({ type: 'activateAbility', seat: p, entityId: sw, abilityIndex: 0, via: 'augment' }),
+    /cannot pay/, 'and apply() refuses it');
+  assert.deepEqual(effStats(h, sw), [4, 3], 'no second buff');
   assert.ok(ent(h, sw), 'still alive');
   // donated: augment a host, activate through the mod
   const whale = spawn(h, p, 'Good Whale');           // 7/5
@@ -277,7 +285,7 @@ test('Soul Tithe: decline → the effect is negated and I draw', () => {
   pick(h, false);
   assert.ok(h.log.some(l => l.includes('Luminous Arc is negated')), 'effect negated');
   assert.equal(h.state.players[D]!.hand.length, handBefore + 1, 'and I drew a card');
-  pass(h); pass(h);                                  // the negated Arc resolves
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Arc left the stack at once');
   assert.ok(ent(h, du), 'the negated Arc never dealt its damage');
   assert.ok(h.state.players[A]!.bin.includes('Luminous Arc'));
   finishBattle(h);

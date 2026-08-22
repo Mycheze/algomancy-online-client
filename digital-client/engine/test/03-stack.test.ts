@@ -35,8 +35,9 @@ test('the stack: negate & fizzle, spell units, priority order', () => {
   pick(h, { stack: h.state.stack[0]!.id });   // negate own Lillik (legal-shaped)
   pass(h); pass(h);   // resolve Dreadwave: negates Lillik, spawns 6/4
   assert.ok(unitsOf(h, D).some(u => u.card === 'Dreadwave Devourer'), 'Dreadwave spawned as a unit');
-  assert.equal(h.state.stack[0]!.negated, true, 'Lillik marked negated');
-  pass(h); pass(h);   // resolve negated Lillik
+  // R68: negation is REMOVAL — Lillik left the stack the instant Dreadwave
+  // resolved, and no further priority round is spent popping a dead item
+  assert.equal(h.state.stack.length, 0, 'the negated Lillik is off the stack already');
   assert.ok(!unitsOf(h, D).some(u => u.card === 'Leaping Lillik'), 'negated spell unit never spawned');
   assert.ok(h.state.players[D]!.bin.includes('Leaping Lillik'), 'negated Lillik in bin');
   assert.ok(ent(h, atk), 'whale survived (delete was negated)');

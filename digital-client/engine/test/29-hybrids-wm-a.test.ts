@@ -7,9 +7,10 @@
  * an either-or token conjure (Spirit of Nature), sacrifice-funded negation
  * (Malevolent Machinations), death-punishing sacrifices (Malicious Hardware,
  * Soulforger), the repeating sacrifice loop (Maw of Damnation), spell-damage
- * token minting (Ember of Life, R28) and a resolution-paid sacrifice buff
- * (Hearthwood Ancient). The PARKED Rook and The Silent (play-permission /
- * cost modifiers) have registration tests + todos.
+ * token minting (Ember of Life, R28) and a sacrifice ACTIVATION cost
+ * (Hearthwood Ancient, R49 sacrificeOther — it used to be paid at
+ * resolution). The Silent's cost tax is live (R59 CostMod); the PARKED Rook
+ * (play permission) has a registration test + todo.
  * States are built explicitly (give/spawn/giveResources/whiteBox) so parallel
  * card registration can't shift assertions. Seeds: 2900-2999.
  */
@@ -19,7 +20,7 @@ import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -305,7 +306,7 @@ test('Malevolent Machinations: sacrifice X units → negate up to X target effec
   assert.ok(ent(h, d2), 'only X = 1 unit sacrificed');
   pass(h); pass(h);                                           // resolve Malevolent (top of stack)
   assert.ok(h.log.some(m => m.includes('is negated')), 'the effect was negated');
-  pass(h); pass(h);                                           // the negated Collapse resolves
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Collapse left the stack at once');
   assert.ok(h.state.players[A]!.bin.includes('Structural Collapse'), 'negated spell → bin');
   assert.ok(!ent(h, atk), 'the Collapse cast cost stays paid (R35) — negation does not refund it');
   finishBattle(h);
@@ -429,9 +430,23 @@ test('Hearthwood Ancient: sacrifice another unit → your units gain +1/+1 until
   const t1 = spawn(h, p, 'Unit Token');
   const t2 = spawn(h, p, 'Unit Token');
   h.do({ type: 'activateAbility', seat: p, entityId: ha, abilityIndex: 0, via: 'augment' });
-  pick(h, t1);                                                // the resolution-paid sacrifice
+  // R49 UN-PARKED: a real activation cost, paid in the cast window, and it can
+  // only offer ANOTHER unit
+  notOffered(h, { unit: ha }, '"another unit" — never the carrier');
+  pick(h, { unit: t1 });                                      // the activation cost
   assert.ok(!ent(h, t1), 'the other unit was sacrificed');
   assert.deepEqual(effStats(h, ha), [1, 5], 'the Ancient gains +1/+1 (0/4 → 1/5)');
   assert.deepEqual(effStats(h, t2), [2, 2], 'the surviving ally gains +1/+1');
   assert.ok(!ent(h, t1), 'the sacrificed unit never benefits');
+});
+
+test('Hearthwood Ancient: with no other unit the ability is not offered at all', () => {
+  const h = new Harness(2919);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const ha = spawn(h, p, 'Hearthwood Ancient');
+  assert.ok(!h.legal(p).some(a => a.type === 'activateAbility' && a.entityId === ha),
+    'unpayable [Sacrifice another unit] → not offered (it used to activate and fizzle)');
+  assert.throws(() => h.do({ type: 'activateAbility', seat: p, entityId: ha, abilityIndex: 0, via: 'augment' }),
+    /cannot pay/);
 });

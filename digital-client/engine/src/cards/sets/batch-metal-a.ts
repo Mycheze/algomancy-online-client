@@ -47,9 +47,11 @@
  *    I ..." abilities read the Ancient One as "I"; bounded copies burn a
  *    per-copy budget on the Ancient One (R9). Activated abilities, statics
  *    and graft composition of neighbours are not copied (see PARKED).
- *  - Biomass Devourer reads "nontoken" off the death event message (the dead
- *    entity is gone by trigger time); an Unstable-erased card has no bin copy
- *    to erase but the paid counters still land.
+ *  - Biomass Devourer reads "nontoken" off the death event's `token` FACT
+ *    (R70 — the dead entity is gone by trigger time, which is why the fact
+ *    rides the event; this used to be a match on the rendered message). Still
+ *    true: an Unstable-erased card has no bin copy to erase, but the paid
+ *    counters land anyway.
  *  - Celestial Fluxmorph's donated "[Augment] when I despawn" does not fire
  *    when the HOST is recalled — E.recall erases mods before firing the
  *    despawn event (engine limitation; death and self-play despawn do fire).
@@ -70,39 +72,22 @@
  *    Poison/Crystal/Fireball creation cannot be intercepted. The Robot half
  *    IS implemented via the 'spawned' event: when you create a Robot you may
  *    have a Poison/Crystal/Fireball of the same X instead.
- *  - Ancient One (activated/static half): apply.ts only surfaces activated
- *    abilities from a unit's own lists and statics from a card's own def —
- *    neighbours' activated abilities and statics cannot be projected onto the
- *    Ancient One from card code. Triggered abilities are delivered (above).
+ *  - Ancient One (activated/static half): the gap is NEIGHBOUR projection, not
+ *    "own lists only" — this entry used to say apply.ts surfaces activated
+ *    abilities from a unit's own lists, which stopped being true when
+ *    pushActivatedOptions began offering a card's own augmentText AND every
+ *    augment mod's augmentText (apply.ts). What card code still cannot do is
+ *    project an ADJACENT ALLY's activated abilities or statics onto the
+ *    Ancient One: both are read off the holder's own card definition, and
+ *    there is no seam for "borrow that unit's". Triggered abilities are
+ *    delivered (above).
  */
 import type { Entity, EntityId, EventType, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, unslot, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
-
-/** Erase an entity from play entirely: no bin, no death/despawn triggers;
- * its mods are erased with it (Celestial Purge's pattern). */
-function eraseFromPlay(g: E, u: Entity): void {
-  for (const modId of u.mods) delete g.s.entities[modId];
-  delete g.s.entities[u.id];
-  unslot(g, u.id);
-  g.ev('erased', `${u.card} is ERASED (no bin, no death).`, { unit: u.id, card: u.card, seat: u.controller });
-}
-
-/** remove an id from every formation column / the sent-attacker list */
-function unslot(g: E, id: EntityId): void {
-  const b = g.s.battle;
-  if (!b) return;
-  for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-    const i = col.indexOf(id);
-    if (i !== -1) col.splice(i, 1);
-  }
-  const si = b.sentAttackers.indexOf(id);
-  if (si !== -1) b.sentAttackers.splice(si, 1);
-}
 
 /** all tokens (unit tokens + spell tokens) in a region, absent ones excluded */
 function tokensInRegion(g: E, region: number): Entity[] {
@@ -217,6 +202,10 @@ card('Ancient One', {
 // tokenStats/counters/x are copied; mods are not.
 const echoCopy: EffectDef = {
   targets: { what: 'token', prompt: 'Arcane Echo: create a copy of target token' },
+  // R69: the token's NAME is the target's — "a copy of target token" can be a
+  // Fireball, a Robot, a Wraith, a Hooba-God, anything a token is. No fixed
+  // list can be true, so this declares `createsAny` instead of lying with one.
+  createsAny: true,
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!isEnt(t)) return;
@@ -255,6 +244,9 @@ card('Automaton of Abundance', {
       return !!u && u.kind === 'unit' && !!u.token && u.id !== self.id;
     },
     effect: {
+      // R69: same as Arcane Echo — it duplicates WHATEVER unit token you just
+      // created, so the name is computed and no list can be true.
+      createsAny: true,
       run: (g, ctx) => {
         const orig = ctx.event?.data?.['unit'] !== undefined
           ? g.entity(ctx.event.data['unit'] as EntityId) : undefined;
@@ -275,26 +267,26 @@ card('Automaton of Abundance', {
 // "[Augment] Whenever a nontoken unit dies, you may pay [two] to erase it and
 // put two +1/+1 counters on me." — m/2 3/2 Alien Robot Unit. Text-box
 // [Augment]: live when played normally, donated on augment ("me" = the host).
-// 'died' listeners are region-scoped (R12). ⚠ header: "nontoken" is read off
-// the death event message; the erase removes the card from its owner's bin.
+// 'died' listeners are region-scoped (R12). R70: "nontoken" is read off the
+// death event's token flag; the erase removes the card from its owner's bin.
 card('Biomass Devourer', {
   augmentText: [{
     type: 'triggered', events: ['died'],
     label: 'you may pay [two] to erase the dead unit — I get two +1/+1 counters',
-    when: (_g, _self, ev) => !ev.msg.includes('token: erased'),
+    when: (_g, _self, ev) => ev.data?.token !== true,
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
-        if (g.openMana(ctx.controller) < 2) return;
+        const self = selfOf(g, ctx);
+        if (!self) { g.ev('info', 'Biomass Devourer: the carrier is gone — no counters.'); return; }
+        if (g.openMana(ctx.controller) < 2) { g.ev('info', 'Biomass Devourer: cannot pay [two] — no counters.'); return; }
         const name = ctx.event?.data?.['card'] as string | undefined;
-        if (!name) return;
+        if (!name) { g.ev('info', 'Biomass Devourer: the death event names no card — nothing to erase.'); return; }
         const pay = ctx.choose('devour', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: `Biomass Devourer: pay [two] to erase ${name} and get two +1/+1 counters?`,
           options: [{ label: 'pay 2', value: 1 }, { label: 'decline', value: 0 }],
         }) as number;
-        if (!pay) return;
+        if (!pay) { g.ev('info', 'Biomass Devourer: the [two] is declined — no erase, no counters.'); return; }
         g.payMana(ctx.controller, 2);
         const seats: Seat[] = [];
         const evSeat = ctx.event?.data?.['seat'] as Seat | undefined;
@@ -374,7 +366,7 @@ card('Borrower of Forms', {
     when: (g, self) => g.battleCounter(self.region, 'bof:pending') > 0,
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (!self) return;
         const r = ctx.region;
         const take = (k: string): number => {
@@ -412,7 +404,9 @@ card('Celestial Fluxmorph', {
       (ev.type === 'modApplied' && ev.data?.['host'] === self.id),
     effect: {
       run: (g, ctx) => {
-        for (const u of g.unitsOf(ctx.controller, ctx.region)) g.addCounters(u, 1);
+        const mine = g.unitsOf(ctx.controller, ctx.region);
+        if (!mine.length) { g.ev('info', 'Celestial Fluxmorph: you control no unit here — no counters.'); return; }
+        for (const u of mine) g.addCounters(u, 1);
       },
     },
   }],
@@ -421,9 +415,11 @@ card('Celestial Fluxmorph', {
     label: 'when I despawn, remove all counters from your units',
     effect: {
       run: (g, ctx) => {
+        let stripped = 0;
         for (const u of g.unitsOf(ctx.controller, ctx.region)) {
-          if (u.counters) g.addCounters(u, -u.counters);
+          if (u.counters) { g.addCounters(u, -u.counters); stripped++; }
         }
+        if (!stripped) g.ev('info', 'Celestial Fluxmorph: none of your units carries a counter — nothing to remove.');
       },
     },
   }],
@@ -441,8 +437,8 @@ card('Celestial Shifter', {
     label: '[x]: I become base X/X until regroup',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
+        const self = selfOf(g, ctx);
+        if (!self) { g.ev('info', 'Celestial Shifter: the carrier is gone — no re-base.'); return; }
         const open = g.openMana(ctx.controller);
         const opts = [];
         for (let x = 0; x <= open; x++) opts.push({ label: `X = ${x}`, value: x });
@@ -452,6 +448,7 @@ card('Celestial Shifter', {
           options: opts,
         }) as number;
         g.payMana(ctx.controller, x);
+        if (x === 0) g.ev('info', `Celestial Shifter: X = 0 — ${self.card} becomes base 0/0.`);
         g.setBase(self, x, x);   // layer 2: "become base X/X", not +X/+X
       },
     },
@@ -464,7 +461,7 @@ card('Celestial Shifter', {
 card('Containment Protocol', {
   spellEffect: {
     run: (g, _ctx) => {
-      const hits = g.s.stack.filter(i => (i.kind === 'triggered' || i.kind === 'activated') && !i.negated);
+      const hits = g.s.stack.filter(i => i.kind === 'triggered' || i.kind === 'activated');
       if (!hits.length) { g.ev('info', 'Containment Protocol: no activated or triggered effects to negate.'); return; }
       for (const i of hits) g.negate(i.id);
     },
@@ -487,6 +484,9 @@ card('Cosmic Conspirator', {
       return !!u && !!u.token;
     },
     effect: {
+      // the three named alternatives; the Robot itself was created by whatever
+      // made it, not by this
+      creates: ['Poison', 'Crystal', 'Fireball'],
       run: (g, ctx) => {
         const robot = ctx.event?.data?.['unit'] !== undefined
           ? g.entity(ctx.event.data['unit'] as EntityId) : undefined;
@@ -512,19 +512,28 @@ card('Cosmic Conspirator', {
 });
 
 // "Sacrifice me and another ally: Delete all units with cost equal to the
-// total number of counters on us." — m/2 2/2 Robot Spirit Unit. ⚠ header:
-// the compound cost is paid at RESOLUTION (the engine's activation costs
-// cannot express "me and another ally"): pick the ally, count the net
-// counters on both, sacrifice both, then delete every unit in this region
-// whose printed mana equals the total.
+// total number of counters on us." — m/2 2/2 Robot Spirit Unit.
+//
+// ⚠ STILL PARKED, and the missing piece is named by a { todo: true } test in
+// test/26-metal-a.test.ts: `AbilityCost` has no COMPOUND shape, so "me AND
+// another ally" cannot be expressed as one cost and is still paid at
+// RESOLUTION. `sacrificeSelf` and `sacrificeOther` exist separately and cannot
+// be combined — paying them independently would let the first half resolve
+// when the second cannot.
+//
+// R77 does fix the offer half: "another ally" is a board condition, so the
+// ability is no longer OFFERED when this is the only unit you have. It used to
+// activate, print "no other ally to sacrifice", and do nothing.
 card('Deformant', {
   abilities: [{
     type: 'activated', cost: {},
     label: 'sacrifice me and another ally: delete all units with cost equal to our counters',
+    usableWhen: (g, self, seat) =>
+      g.unitsOf(seat, self.region).some(u => u.id !== self.id),
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
+        const self = selfOf(g, ctx);
+        if (!self) { g.ev('info', 'Deformant: the carrier is gone — no effect.'); return; }
         const allies = g.unitsOf(ctx.controller, ctx.region).filter(u => u.id !== self.id);
         if (!allies.length) { g.ev('info', 'Deformant: no other ally to sacrifice — no effect.'); return; }
         const pick = ctx.choose('deform', {
@@ -559,6 +568,7 @@ const dischargeZap: EffectDef = {
   // Rashi's opponent got to answer a Discharge whose size was still unchosen,
   // and a negate would have refunded a cost that had never been paid.
   castCost: { kind: 'removeCounters', from: 'allies', n: 'X' },
+  xZeroWarning: 'X = 0 deals no damage',   // R74
   targets: { what: 'unit', prompt: 'Discharge: I deal X damage to target unit' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
@@ -586,11 +596,13 @@ card('Dispatch Courier', {
 });
 
 // "Gain control of target token. You may choose new targets for spells
-// controlled this way." — mm/1 4/3 {Battle} Technology Spell. ⚠ header: the
-// token is picked at resolution (not stack-targetable). The steal is R8's
-// straight swap: controller flips (owner and region stay), the token leaves
-// its old formation. A stolen spell token is cast fresh by its new
-// controller, so "choose new targets" is automatic.
+// controlled this way." — mm/1 4/3 {Battle} Technology Spell.
+// (This note used to read "⚠ the token is picked at resolution (not
+// stack-targetable)" — six lines above the R64 spec that makes it a cast-time
+// target. It had outlived its own code; corrected here.)
+// The steal is R8's straight swap: controller flips (owner and region stay),
+// the token leaves its old formation. A stolen spell token is cast fresh by
+// its new controller, so "choose new targets" is automatic.
 card('Download', {
   spellEffect: {
     // R64: "target token" is a CAST-TIME target — the playtest report was
@@ -603,9 +615,12 @@ card('Download', {
     },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!isEnt(t)) return;
+      if (!isEnt(t)) { g.ev('info', 'Download: no token is targeted — nothing changes hands.'); return; }
       const tok = g.entity(t.id);
-      if (!tok || tok.controller === ctx.controller) return;
+      if (!tok || tok.controller === ctx.controller) {
+        g.ev('info', 'Download: the token is gone or already yours — nothing changes hands.');
+        return;
+      }
       tok.controller = ctx.controller;
       unslot(g, tok.id);   // R8: it swaps sides — out of its old formation
       g.ev('info', `${g.pname(ctx.controller)} gains control of ${tok.card}.`);
@@ -619,17 +634,41 @@ card('Download', {
 // played normally, donated on augment ("me" = the host). Fires between combat
 // damage sub-steps and resolves immediately (R31). ⚠ column-connect read off
 // the aggregated combat lifeLost event (Amphivore's approximation).
+//
+// R73 (Bena's ruling, 2026-08-22): "sacrifice me" is a CAST COST. The report
+// was "Technically, Eldritch Dreamtender needs to be sacrificed for its ability
+// to go on the stack, but it's still visually in play while resolving its
+// trigger" — and it is right. The sacrifice used to be a g.destroy() inside
+// effect.run, at RESOLUTION, so the unit sat on the board through a whole
+// priority window first.
+//
+// Both halves are in place now. R64/R67 settle bracketed costs in the cast
+// window for spells, activated AND triggered items alike (buildTriggerItem ->
+// collectTargets -> collectCastCosts), and R73 added the one cost this card
+// needed: `sacrificeUnits` with `from: 'self'`, resolved through item.sourceId
+// exactly as `removeCounters`' own `from: 'self'` is.
+//
+// ⚠ The consequences are understood and INTENDED, not side effects: the
+// sacrifice is now mandatory (no "if you do" to decline), unrespondable (a
+// choice-free cost is charged with no decision and no suspension), and the
+// whole trigger is skipped when the source is already dead by settle time
+// (an unpayable cost sets part.spent — R5). That is what "sacrificed for its
+// ability to go on the stack" means. The printed line is effect prose with an
+// if-you-do rider rather than a printed [cost]; the ruling reads it as a cost
+// anyway.
 card('Eldritch Dreamtender', {
   augmentText: [{
     type: 'triggered', events: ['lifeLost'],
     label: "sacrifice me — look at that player's hand and discard a card",
     when: (g, self, ev) => myColumnConnected(g, self, ev),
     effect: {
+      // R73: paid on the way to the stack, not here. By the time run() is
+      // called the Dreamtender is already in its owner's bin — so there is no
+      // selfOf() to read, and there deliberately is no "if you do" check
+      // either: an unpaid cost means this run() never happens at all.
+      castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
         const who = ctx.event?.data?.['seat'] as Seat | undefined;
-        g.destroy(self, 'is sacrificed');
         if (who === undefined) return;
         const hand = g.player(who).hand;
         g.ev('info', `Eldritch Dreamtender reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
@@ -662,7 +701,7 @@ card('Evolutionary Experiment', {
     when: (_g, self, ev) => ev.data?.['host'] === self.id,
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (self) g.addCounters(self, 2);
       },
     },

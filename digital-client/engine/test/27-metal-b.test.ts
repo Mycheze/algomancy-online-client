@@ -229,6 +229,7 @@ test('Hooba-Bot: attack → a Robot 2 joins my formation (battle-local)', () => 
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[hb]] });
   pass(h); pass(h);                                         // resolve the trigger
+  pick(h, 1);                                               // R75: behind me, not auto-picked
   const col = h.state.battle!.columns[0]!;
   assert.equal(col.length, 2, 'the Robot joined my column');
   const robot = ent(h, col[1]!)!;
@@ -280,8 +281,7 @@ test('Interdiction Rift: target opponent negates an effect they control', () => 
   pick(h, { player: D });                                   // target opponent
   pass(h); pass(h);                                         // resolve the Rift
   // D controls exactly one effect → it is negated without a choice
-  assert.ok(h.state.stack[0]!.negated, 'the only effect D controls is negated');
-  pass(h); pass(h);                                         // the negated Overwhelm resolves → bin
+  assert.equal(h.state.stack.length, 0, 'R68: the only effect D controls is negated and off the stack');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
   assert.deepEqual(effStats(h, tok), [1, 1], 'the token was never shrunk');
   finishBattle(h);

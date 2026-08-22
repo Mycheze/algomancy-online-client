@@ -40,7 +40,7 @@ export function setMotionOn(on: boolean): void { localStorage.setItem(PREF, on ?
  * business turning either off; only an explicit "motion: off" hides them. (The
  * beat's own arrival animation IS dropped by the media query in style.css.) */
 export function clarityOn(): boolean { return localStorage.getItem(PREF) !== '0'; }
-export const arrowsOn = clarityOn;
+const arrowsOn = clarityOn;
 
 // ── tuning ────────────────────────────────────────────────────────────
 const FLIP_MS = 200;
@@ -348,7 +348,10 @@ function schedulePaint(): void {
   requestAnimationFrame(() => { paintQueued = false; paintArrows(); });
 }
 
-/** the arrows that stay up with no hover (the top stack item, a pending aim) */
+/** the arrows that stay up with no hover (the top stack item, a pending aim).
+ * Paints now AND again next frame: base arrows are set during render, before
+ * images/layout have settled, so the second pass re-measures the boxes the
+ * first one drew against (the hover setters run on settled layout and skip it). */
 export function setBaseArrows(specs: ArrowSpec[]): void { baseArrows = specs; paintArrows(); schedulePaint(); }
 /** the arrows for whatever is hovered right now; null = back to base */
 export function setHoverArrows(specs: ArrowSpec[] | null): void { hoverArrows = specs; paintArrows(); }
@@ -365,18 +368,25 @@ const firstEl = (sels: string[]): HTMLElement | null => {
   return null;
 };
 
-/** where a line aimed at (tx,ty) leaves the box `r` — so arrows touch the edge
- * of a card instead of burying their heads in the middle of the art */
-function edge(r: DOMRect, tx: number, ty: number, pad: number): [number, number] {
-  const [cx, cy] = centre(r);
-  const dx = tx - cx, dy = ty - cy;
-  if (!dx && !dy) return [cx, cy];
-  const hw = r.width / 2 + pad, hh = r.height / 2 + pad;
-  const t = Math.min(dx ? hw / Math.abs(dx) : Infinity, dy ? hh / Math.abs(dy) : Infinity);
-  return [cx + dx * t, cy + dy * t];
-}
+/**
+ * How far short of the destination CENTRE the arrowhead's tip stops.
+ *
+ * ZQPC, twice over: "can you make the arrows originate from and point to the
+ * middle of the cards? Rather than from the side. It'd make it a little easier
+ * to tell what's happening." This used to be an `edge()` helper that
+ * deliberately did the opposite, so that arrows touched a card's border
+ * instead of burying their heads in the art — which is exactly the ambiguity
+ * being reported: on an overlapping stack or a tight column, a head resting on
+ * a border belongs to either of two cards.
+ *
+ * So both ENDS are the centres now, and only the head is inset — just enough
+ * that the triangle sits centred on the art rather than overshooting past the
+ * middle, and no further. The arrow layer paints above the board with a drop
+ * shadow, so a head over art stays readable.
+ */
+const HEAD_INSET = 7;
 
-export function paintArrows(): void {
+function paintArrows(): void {
   const svg = layer();
   svg.replaceChildren();
   if (!arrowsOn()) { svg.classList.remove('on'); return; }
@@ -396,9 +406,10 @@ function draw(svg: SVGSVGElement, specs: ArrowSpec[]): number {
     const a = firstEl(spec.from), b = firstEl(spec.to);
     if (!a || !b || a === b) continue;
     const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
-    const [acx, acy] = centre(ra), [bcx, bcy] = centre(rb);
-    const [x1, y1] = edge(ra, bcx, bcy, 2);
-    const [x2, y2] = edge(rb, acx, acy, 7);
+    // centre to centre (ZQPC) — the dot marks the source card's middle, the
+    // head lands on the destination card's middle
+    const [x1, y1] = centre(ra);
+    const [x2, y2] = centre(rb);
     const dx = x2 - x1, dy = y2 - y1;
     const dist = Math.hypot(dx, dy);
     if (dist < 8) continue;
@@ -412,8 +423,15 @@ function draw(svg: SVGSVGElement, specs: ArrowSpec[]): number {
     const g = document.createElementNS(SVGNS, 'g');
     g.setAttribute('class', `arrow ${cls}`);
 
+    // the head's tip, HEAD_INSET short of the destination centre along the
+    // curve's final tangent (p2 - control) — the line stops there too, so no
+    // stub of stroke pokes out ahead of the head
+    const hx = x2 - cx, hy = y2 - cy, hl = Math.hypot(hx, hy) || 1;
+    const ux = hx / hl, uy = hy / hl, size = 10;
+    const tx = x2 - ux * HEAD_INSET, ty = y2 - uy * HEAD_INSET;
+
     const path = document.createElementNS(SVGNS, 'path');
-    path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
+    path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${tx} ${ty}`);
     g.appendChild(path);
 
     const dot = document.createElementNS(SVGNS, 'circle');
@@ -422,14 +440,11 @@ function draw(svg: SVGSVGElement, specs: ArrowSpec[]): number {
     dot.setAttribute('class', 'arrowdot');
     g.appendChild(dot);
 
-    // head oriented along the curve's final tangent (p2 - control)
-    const hx = x2 - cx, hy = y2 - cy, hl = Math.hypot(hx, hy) || 1;
-    const ux = hx / hl, uy = hy / hl, size = 10;
     const head = document.createElementNS(SVGNS, 'path');
     head.setAttribute('class', 'arrowhead');
     head.setAttribute('d',
-      `M ${x2} ${y2} L ${x2 - ux * size - uy * size * 0.55} ${y2 - uy * size + ux * size * 0.55}` +
-      ` L ${x2 - ux * size + uy * size * 0.55} ${y2 - uy * size - ux * size * 0.55} Z`);
+      `M ${tx} ${ty} L ${tx - ux * size - uy * size * 0.55} ${ty - uy * size + ux * size * 0.55}` +
+      ` L ${tx - ux * size + uy * size * 0.55} ${ty - uy * size - ux * size * 0.55} Z`);
     g.appendChild(head);
 
     if (spec.label) {

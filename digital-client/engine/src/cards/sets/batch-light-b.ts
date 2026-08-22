@@ -56,38 +56,18 @@
 import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, effectByKey, getCard, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
 
 /** "each player" = the seats PRESENT in the effect's region (R12/R25), in
  * presentSeats order (region owner first) — the whole table in 1v1 battle. */
 const playersIn = (g: E, region: number): Seat[] =>
   [...(g.s.regions[region]?.presentSeats ?? [])] as Seat[];
 
-/** Erase an entity from play entirely: no bin, no death/despawn triggers, its
- * mods erased with it, and out of any formation column it was fighting in.
- * (E.removeFromFormation is private, hence the local unslot.) */
-function eraseFromPlay(g: E, u: Entity): void {
-  for (const modId of u.mods) delete g.s.entities[modId];
-  delete g.s.entities[u.id];
-  const b = g.s.battle;
-  if (b) {
-    for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-      const i = col.indexOf(u.id);
-      if (i !== -1) col.splice(i, 1);
-    }
-    const si = b.sentAttackers.indexOf(u.id);
-    if (si !== -1) b.sentAttackers.splice(si, 1);
-  }
-  g.ev('erased', `${u.card} is ERASED (no bin, no death).`,
-    { unit: u.id, card: u.card, seat: u.controller });
-}
-
-/** The engine's per-battle life ledgers, read together. `gained` is the
- * counter E.gainLife SHOULD bump (see the header's first engine gap) — it
- * reads 0 today and the cards using it degrade gracefully. */
+/** The engine's per-battle life ledgers, read together. Both are live:
+ * E.gainLife bumps `lifeGained:<seat>` exactly as E.loseLife bumps
+ * `lifeLost:<seat>` (R49 — see the header). */
 const lifeLostThisBattle = (g: E, region: number, seat: Seat): number =>
   g.battleCounter(region, `lifeLost:${seat}`);
 const lifeGainedThisBattle = (g: E, region: number, seat: Seat): number =>
@@ -162,7 +142,7 @@ card('Debt Blep', {
     label: 'Gain 2 debt: I gain +3/+3 until regroup',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (self) g.addTemp(self, 3, 3);
       },
     },
@@ -186,7 +166,7 @@ card('Divine Intervention', {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-      if (!item || item.negated) return;
+      if (!item) return;
       const may = ctx.choose('may', {
         kind: 'payOrDecline', seat: ctx.controller,
         prompt: `Divine Intervention: change ${item.label}'s targets?`,
@@ -332,14 +312,11 @@ card('Insatiable Want', {
 // where X is the life you've gained in this battle." — l/2 {Battle} Nature
 // Spell.
 //
-// ⚠ X depends on the missing `lifeGained:<seat>` battle ledger (header gap 1).
-// The spell reads the ledger BEFORE gaining its own 3 and adds the 3 itself,
-// so the number is right in both worlds: with the ledger it is "everything
-// gained this battle, this spell included", and without it, it is exactly the
-// 3 this spell just gained — correct whenever Life Channel is the battle's
-// only life gain, low otherwise. The [Switch1] GRAFT rider is the buff clause
-// alone (no "gain 3 life" rides along), so it reads the ledger straight and
-// today always sees 0 — that half is effectively parked on the same one-liner.
+// The `lifeGained:<seat>` battle ledger is live (R49). The spell reads it
+// BEFORE gaining its own 3 and adds the 3 itself, so X is "everything gained
+// this battle, this spell included" with nothing double-counted. The
+// [Switch1] GRAFT rider is the buff clause alone (no "gain 3 life" rides
+// along), so it reads the ledger straight.
 card('Life Channel', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Life Channel: target unit gains +X/+X until regroup' },
@@ -393,16 +370,22 @@ card('Living Vault', {
           .map((name, i) => ({ name, i, cost: printedMana(g, name) }))
           .filter((o): o is { name: string; i: number; cost: number } => o.cost !== null && o.cost <= open)
           .map(o => ({ label: `${o.name} — pay [${o.cost}]`, value: o.i, card: o.name }));
-        if (!options.length) return;
+        if (!options.length) {
+          g.ev('info', 'Living Vault: no hand card whose cost you can still pay — nothing is cached.');
+          return;
+        }
         const chosen = ctx.choose('bank', {
           kind: 'payOrDecline', seat,
           prompt: 'Living Vault: pay [x] to cache a hand card with cost [x]?',
           options: [...options, { label: 'Decline', value: -1 }],
         }) as number;
-        if (chosen < 0) return;
+        if (chosen < 0) { g.ev('info', 'Living Vault: declined — nothing is cached.'); return; }
         const name = g.player(seat).hand[chosen];
         const cost = name === undefined ? null : printedMana(g, name);
-        if (name === undefined || cost === null || cost > g.openMana(seat)) return;
+        if (name === undefined || cost === null || cost > g.openMana(seat)) {
+          g.ev('info', 'Living Vault: that card can no longer be paid for — nothing is cached.');
+          return;
+        }
         g.payMana(seat, cost);
         g.cacheFromHand(seat, chosen, { prophecy: 'Prophecy — One Turn Passes' });
       },
@@ -432,7 +415,7 @@ card('Ploosh', {
           g.draw(seat, 1);
           return;
         }
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (self) g.destroy(self, 'is sacrificed');
         g.loseLife(seat, 3, 'Ploosh (even life)');
       },
@@ -485,8 +468,8 @@ card('Proph', {
 // holder (self === the host when it rides as a Virus), so "you" is the host's
 // controller — pinning a fragile 4/1 body onto an enemy unit is the point.
 //
-// ⚠ The life-GAINED half is dead until `lifeGained:<seat>` exists (header gap
-// 1); the life-LOST half works today off E.loseLife's ledger. `affects` reads
+// Both halves are live: E.gainLife's `lifeGained:<seat>` ledger (R49) and
+// E.loseLife's `lifeLost:<seat>` ledger. `affects` reads
 // battle counters only — never effStats (statics reentrancy guard).
 // `augmentable` because the card's [Augment] text is implemented as a static
 // and a Virus still has to qualify as an augment to be applied.

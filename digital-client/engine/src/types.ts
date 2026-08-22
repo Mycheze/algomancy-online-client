@@ -252,9 +252,22 @@ export interface BattleState {
   defender: Seat;
   region: number;
   step: BattleStep;
-  /** attacking columns, each [frontId, backId?] */
+  /**
+   * attacking columns, each [frontId, backId?].
+   *
+   * R72: an entry may legitimately be EMPTY — a permanent "hole" in the line.
+   * The Manual ("HOLD THE LINE"): an emptied column's neighbours close in to
+   * fill the gap ONLY before blocks are declared; after blocks, columns never
+   * move. So a column index is stable for the whole of combat, and mutable
+   * only in the attack/block steps — where `E.repairFormation()` (a gap
+   * closing) and `E.placeInFormation()` (a column opened on the left) are the
+   * only two things allowed to change it, both through `E.rekeyColumns`.
+   * Never cache a column index across either.
+   */
   columns: EntityId[][];
-  /** colIdx -> blocking column [frontId, backId?]. Key presence = sticky "blocked" flag. */
+  /** colIdx -> blocking column [frontId, backId?]. Key presence = sticky "blocked" flag.
+   * R72: the index is the ATTACK column's identity, and `repairFormation()` is
+   * the only thing allowed to change it — atomically, for every entry at once. */
   blocks: Record<number, EntityId[]>;
   /** units NIT sent out at block time — they attack in round 2 (1v1 battle, Manual p.20-21) */
   sentAttackers: EntityId[];
@@ -356,7 +369,6 @@ export interface StackItem {
   region: number;
   x?: number;
   negated: boolean;
-  fizzled?: boolean;
   parts: EffectPart[];
   /** R35 + {Modular}: mods applied to this card AS IT WAS PLAYED (Spellbind).
    * They are an additional CAST COST — paid before the item reaches the stack
@@ -402,8 +414,8 @@ export type DecisionKind =
   | 'targets'        // choose a target for a part of a pending cast/trigger
   | 'orderTriggers'  // order your simultaneous triggers (R2)
   | 'electricPath'   // choose next unit for electric excess (R4)
-  | 'payOrDecline'   // "unless its controller pays [x]" (R6)
-  | 'insertGraft';   // choose graft insert position (below base, Manual p.33)
+  | 'payOrDecline';  // "unless its controller pays [x]" (R6)
+  // (graft insert position rides on the graft ACTION itself, not a decision)
 
 export interface DecisionOption {
   label: string;
@@ -412,6 +424,12 @@ export interface DecisionOption {
   /** when the option IS a card (hand looks, deck tops, bin picks), its name —
    * the client renders the real scan instead of a text label */
   card?: CardName;
+  /** R74: this option is LEGAL but is a known trap — taking it makes the
+   * effect a guaranteed no-op. The text is already appended to `label`, so a
+   * client that ignores this field still shows the warning; the field exists
+   * so a client that cares can STYLE it as a warning rather than as prose.
+   * Never a prohibition: the option is offered and may be taken. */
+  warning?: string;
 }
 
 export interface Decision {
@@ -666,6 +684,12 @@ export interface PendingTrigger {
   label: string;
   /** graft composition computed at fire time: base part + graft parts (no targets yet) */
   parts: EffectPart[];
+  /** R70: the region the trigger's SOURCE was in when it fired. Needed because
+   * a source can be gone by the time the trigger resolves — every "when I die"
+   * trigger is exactly that case — and the fallback (the controller's action
+   * region) is not the region the unit died in. Optional/additive: a state
+   * serialized before this existed falls back to the old behaviour. */
+  region?: number;
   event: EngineEvent | null;
 }
 

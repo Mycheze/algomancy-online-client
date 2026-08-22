@@ -102,13 +102,20 @@ function noopCommit(view: any, seat: Seat): Action {
 }
 
 /** Drive both clients forward with "mundane" actions (done/pass/empty
- * formations/no-op commits) until pred(view) holds on client a. */
+ * formations/no-op commits) until pred(view) holds on BOTH clients.
+ *
+ * Both, not just `a`: the action that ends a hidden simultaneous segment
+ * pushes one message per seat, and the caller reads b.view straight after —
+ * returning as soon as a's arrived is a race the caller always eventually
+ * loses. (It did, the moment the resource step became a hidden segment and
+ * the message counts shifted.) */
 async function advanceUntil(a: Client, b: Client, pred: (v: any) => boolean, label: string): Promise<void> {
+  const done = (): boolean => pred(a.view) && pred(b.view);
   for (let i = 0; i < 120; i++) {
-    if (pred(a.view)) return;
+    if (done()) return;
     let sent = false;
     for (const c of [a, b]) {
-      if (pred(a.view)) return;
+      if (done()) return;
       const seat = c === a ? a.view?.players?.[0]?.seat ?? 0 : 1;
       void seat;
       const pick =
@@ -132,6 +139,7 @@ async function advanceUntil(a: Client, b: Client, pred: (v: any) => boolean, lab
     }
     if (!sent) await sleep(100);
   }
+  if (done()) return;
   throw new Error(`advanceUntil(${label}): gave up after 120 rounds`);
 }
 

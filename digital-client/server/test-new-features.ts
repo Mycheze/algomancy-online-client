@@ -27,6 +27,7 @@ function ok(cond: unknown, label: string): void {
 interface Msg {
   t: string; seat?: Seat; view?: any; log?: string[]; legal?: Action[];
   events?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string; names?: string[];
+  step?: string; reveal?: { msg: string }[];
 }
 
 class Client {
@@ -136,6 +137,46 @@ try {
   a.send({ t: 'undo' });
   const aErr = await a.next(m => m.t === 'error' && /nothing to undo/.test(m.msg ?? ''));
   ok(!!aErr, 'a second undo has nothing to undo');
+
+  // ── THE PLAYTEST UZRG REPORT ──────────────────────────────────────
+  // "you can't take back making the wrong resource or recycling the wrong
+  // card if your opponent does something (which shouldn't matter)". The
+  // resource step is a hidden simultaneous segment now, so it doesn't.
+  console.log('\n[the resource step is hidden, and your undo is yours]');
+  a.msgs.length = 0; b.msgs.length = 0;   // next() also matches past messages
+  const aLogMark = a.log.length;
+  const handA = a.view.players[0].hand.length;
+  const deckA = a.view.sharedDeck.length;
+  const oppHandSeen = a.view.players[1].hand.length;
+  a.send({ t: 'action', action: a.legal.find(x => x.type === 'recycleForResource')! });
+  await a.next(m => m.t === 'update' && m.view?.players?.[0]?.hand?.length === handA - 1);
+
+  const bHand = b.view.players[1].hand.length;
+  b.send({ t: 'action', action: b.legal.find(x => x.type === 'recycleForResource')! });
+  await b.next(m => m.t === 'update' && m.view?.players?.[1]?.hand?.length === bHand - 1);
+  await new Promise(r => setTimeout(r, 200));   // let seat 0's refresh land
+
+  ok(a.view.players[1].hand.length === oppHandSeen,
+    "seat 0 still sees the opponent's hand as it was when the step opened");
+  ok(a.view.sharedDeck.length === deckA + 1,
+    "and a deck count that reflects only their OWN recycle");
+  ok(!a.log.slice(aLogMark).some(l => /recycles a card/.test(l)),
+    "and hears nothing about the opponent's while the step is open");
+
+  a.msgs.length = 0;
+  a.send({ t: 'undo' });
+  const undo2 = await a.next(m => m.t === 'update' && !!m.log);
+  ok(undo2.view?.players?.[0]?.hand?.length === handA,
+    'the undo went through even though the opponent had acted after it');
+  ok(b.view.players[1].hand.length === bHand - 1, "and the opponent's own recycle was untouched");
+
+  console.log('\n[the reveal names its step]');
+  a.send({ t: 'action', action: { type: 'donePlanning', seat: 0 } });
+  b.send({ t: 'action', action: { type: 'donePlanning', seat: 1 } });
+  const revA = await a.next(m => m.t === 'update' && !!m.reveal);
+  ok(revA.step === 'plan', `the resource step's reveal is stamped step:'plan' (got ${revA.step})`);
+  ok((revA.reveal ?? []).some(e => /recycles a card/.test(e.msg)),
+    'and carries the opponent\'s recycle, blurred');
 
   console.log('\n[seat takeover]');
   const a2 = new Client(PORT);

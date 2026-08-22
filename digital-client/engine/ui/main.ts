@@ -4,12 +4,14 @@
  * Both hands are visible: this is the M1 test rig, not the product. */
 import { Harness } from '../src/harness.ts';
 import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/apply.ts';
-import { allCardNames, getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
-import { DECK_LIST } from '../src/cards/registry.ts';
+import { getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import {
-  activationNeedsConfirm, groupReveal, playableCachedNames, shouldAutoYield, stackAbilityRows,
+  activatableUnits, activationBadge, activationNeedsConfirm, erasedPileView, groupReveal, linkCardNames,
+  partitionOptions, playableCachedNames, shouldAutoYield, stackAbilityRows, stackItemX,
+  stackXMark, tokensCreatedBy, unitClickOptions,
 } from './inspect.ts';
-import { halfRows, publishCols } from './formation.ts';
+import type { FormationRole, UnitClickOption } from './inspect.ts';
+import { halfRows, publishCols, rekeyBuild } from './formation.ts';
 import { entityTextBox, printedTextBox, textBoxFor } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
@@ -23,7 +25,7 @@ import {
 import type { ArrowSpec } from './anim.ts';
 import { armsIdle, diffSfx, sfxSnap } from './sfx.ts';
 import type { SfxSnap } from './sfx.ts';
-import { nextFlashWake, pruneFlashes, queueFlashes, stackRows } from './flash.ts';
+import { censusFlashes, nextFlashWake, pruneFlashes, queueFlashes, stackRows } from './flash.ts';
 import type { Flash } from './flash.ts';
 import {
   armIdle, disarmIdle, playCue, primeAudio, setSoundOn, soundOn,
@@ -35,6 +37,7 @@ import type {
 import * as acct from './account.ts';
 import * as lob from './lobby.ts';
 import * as pg from './postgame.ts';
+import { elIcon as elIconOf, esc, shareBar } from './util.ts';
 
 const ART = '../../../AlgomancyCards/';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -93,7 +96,10 @@ class NetBackend implements Backend {
     this.ws.onclose = () => {
       if (this.dead) return;
       uiError = 'disconnected from server — refresh to reconnect';
-      if (this.joined) render();
+      // unconditionally: a connection that failed BEFORE 'joined' routes to
+      // renderConnecting, which is where the error and the way home live —
+      // without this the user is stuck on "Connecting…" forever
+      render();
     };
   }
   /** (re-)join — also called from the waiting screen once a deck is picked.
@@ -112,6 +118,10 @@ class NetBackend implements Backend {
     }));
   }
   do(a: Action): void {
+    // an intent is going out, whoever sent it — the auto-pass and auto-yield
+    // paths call this directly, without act(), and must stop the idle
+    // countdown too: the obligation it was counting down to is being consumed
+    disarmIdle();
     this.sentBuilding = '';                       // a real action resets the relay
     this.ws.send(JSON.stringify({ t: 'action', action: a }));
   }
@@ -134,10 +144,12 @@ class NetBackend implements Backend {
   private onMsg(m: {
     t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
     events?: EngineEvent[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
+    /** which hidden segment a reveal closes (server/main.ts sendReveal) */
+    step?: 'plan' | 'haste' | 'deploy';
     clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby }; names?: [string, string];
     trio?: lob.TrioReveal;
     cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
-    me?: acct.Me; unlocked?: { id: string; name: string; desc: string; icon: string }[];
+    me?: acct.Me;
     rematch?: [boolean, boolean];
   }): void {
     // the post-game screen: the whole payload on game over, then just the
@@ -158,14 +170,9 @@ class NetBackend implements Backend {
       }
       return;
     }
-    // accounts: the profile that rides along with a join, and the "this game
-    // is now in your stats" push when a game ends
+    // accounts: the profile that rides along with a join (a game's end pushes
+    // its profile + unlocks on the 'gameover' payload instead)
     if (m.t === 'me') { if (m.me) acct.applyMe(m.me); return; }
-    if (m.t === 'recorded') {
-      if (m.me) acct.applyMe(m.me);
-      acct.showRecorded(m.unlocked ?? []);
-      return;
-    }
     // the opponent moved a unit into (or out of) a column they are still
     // building — presentation only, no state, no log
     if (m.t === 'building') {
@@ -192,6 +199,7 @@ class NetBackend implements Backend {
     }
     if (m.t === 'update') {
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? this.peers; render(); return; }
+      rememberStack();   // R68: before the new view replaces the negated item
       if (m.view) { this.state = m.view; this.building = null; }   // a real action supersedes
       if (m.log) { this.log = m.log; this.logTypes = m.log.map(() => undefined); }   // full resync (undo shrank it)
       if (m.events) {
@@ -206,14 +214,20 @@ class NetBackend implements Backend {
       }
       if (m.legal) this.legal = m.legal;
       if (m.peers) this.peers = m.peers;
-      // deploy-end reveal: what the opponent secretly did during deployment.
-      // Only worth an interstitial when there's more than the bare "is done
-      // deploying" line. The state underneath applies normally — only the
-      // view is gated behind the overlay's Continue button. Signal-only events
-      // ('stackFlash') carry no line and are not part of the reveal.
+      // segment-end reveal: what the opponent secretly did while their half of
+      // the view was frozen. `step` names WHICH segment just closed: a 'plan'
+      // close fires every single turn and its payload is resource-step lines,
+      // so it lands as log lines and board motion only; 'haste' and 'deploy'
+      // closes earn the interstitial when there's more than the bare "is done"
+      // line. The state underneath applies normally — only the view is gated
+      // behind the overlay's Continue button. Signal-only events ('stackFlash')
+      // carry no line and are not part of the reveal.
       const told = m.reveal?.filter(ev => ev.msg) ?? [];
-      if (told.some(ev => !/is done deploying/i.test(ev.msg))) {
-        pendingReveal = told.map(ev => ev.msg);
+      // an older server sends no step, and the only reveal it ever sent was
+      // the deploy one — so that is what a missing step means
+      const step = m.step ?? 'deploy';
+      if (step !== 'plan' && told.some(ev => !/is done deploying/i.test(ev.msg))) {
+        pendingReveal = { step, msgs: told.map(ev => ev.msg) };
       }
       // The beats belong to the board, and behind the reveal overlay nobody is
       // looking at the board — so a reveal holds them until you close it. That
@@ -303,6 +317,10 @@ interface UiState {
   bottomPick: number[];
   /** which turn+seat bottomPick was built for (re-init on change) */
   bottomFor: string;
+  /** R72/R75: the ATTACKING line as it stood at the last paint, so a collapse
+   * or a left-insert can be spotted and `columns` — which is keyed by attack
+   * column index — carried across it. Null outside my block step. */
+  blockLine: EntityId[][] | null;
 }
 /** C(|ALL_ELEMENTS|, 3) — the number of live-draft trios the picker reaches.
  * Derived, never written down: adding an element to the engine moves it. */
@@ -323,7 +341,7 @@ const freshUi = (): UiState => ({
   prefillFor: '', confirmDone: null, confirmPass: null, homeEls: savedEls(),
   homeFixedTrio: false,
   confirmDeploy: null, confirmAct: null,
-  bottomPick: [], bottomFor: '',
+  bottomPick: [], bottomFor: '', blockLine: null,
 });
 
 // ── constructed decks (algomancer.cc format, docs: server/decks.ts) ────
@@ -353,8 +371,9 @@ function ensureDefaultDecks(then: () => void): void {
   }).catch(() => { deckMsg = 'could not load the default decks from the server'; then(); });
 }
 let ui: UiState = freshUi();
-/** deploy-end reveal waiting behind the interstitial (C2) — messages to show */
-let pendingReveal: string[] | null = null;
+/** segment-end reveal waiting behind the interstitial (C2) — which hidden
+ * segment closed (it titles the overlay) and the messages to show */
+let pendingReveal: { step: 'haste' | 'deploy'; msgs: string[] } | null = null;
 /** the trio the lobby just settled on, waiting behind its own interstitial —
  * the first thing you see when the cards are dealt is how they were chosen */
 let pendingTrio: lob.TrioReveal | null = null;
@@ -368,10 +387,29 @@ const resetUi = () => {
   postGame = null;
   postGameHidden = false;
   snaps = [];
+  // module-level view state survives a hotseat "New game" unless dropped here
+  // — a concede dialog opened pre-restart could otherwise end the new game
+  concedeAsk = null;
+  binView = null;
+  cacheView = null;
+  erasedView = null;
+  helpOpen = false;
+  judgeOpen = false;
+  inspect = null;
+  showSpentCache = new Set();
+  dropBaselines();
+};
+
+/** Drop every "what was on screen before" baseline — motion, sound, flash
+ * beats. Called wherever the next paint is NOT the previous board plus one
+ * action: a reset, the connecting screen, home, the lobby. clockSnap is
+ * deliberately NOT dropped here: the 'joined' message sets it BEFORE resetUi
+ * runs, so clearing it would wipe the very snapshot that just arrived. */
+function dropBaselines(): void {
   motionReset();
   sfxReset();
   flashReset();
-};
+}
 
 // ── the visual stack's flash queue (ui/flash.ts) ──────────────────────
 //
@@ -382,6 +420,34 @@ const resetUi = () => {
 
 /** items having (or waiting for) their beat on the visual stack */
 let flashQueue: Flash[] = [];
+/**
+ * R68: what the client last drew on the stack, by item id.
+ *
+ * Negating REMOVES an item now (docs/digital-rules R68) and the 'negated'
+ * event carries only its id — the engine's own copy is detached and dropped.
+ * So the beat that shows a player their spell was answered has to be drawn
+ * from a snapshot this client kept while the item was still on screen.
+ *
+ * Merged rather than replaced, and cleared with the queue, because a beat can
+ * be held behind the deploy reveal for a while before it is played. Stack ids
+ * are monotonic within a game and never reused, so a stale entry can only ever
+ * be unused, never wrong; the cap keeps a long game bounded.
+ */
+let seenStack = new Map<number, StackItem>();
+const SEEN_STACK_CAP = 240;
+
+/** Remember the stack as it stands RIGHT NOW — called immediately before any
+ * state change, which is the last moment the about-to-be-negated item exists.
+ * Cloned, so the snapshot cannot be edited underneath the beat (the same
+ * discipline engine.ts uses for its own 'stackFlash' payloads). */
+function rememberStack(): void {
+  const stack = h?.state?.stack;
+  if (!stack?.length) return;
+  for (const it of stack) if (!seenStack.has(it.id)) seenStack.set(it.id, structuredClone(it));
+  while (seenStack.size > SEEN_STACK_CAP) {
+    seenStack.delete(seenStack.keys().next().value!);   // oldest id first
+  }
+}
 /** beats parked behind the deploy-end reveal overlay (see NetBackend.onMsg) */
 let heldFlashes: EngineEvent[] = [];
 /** the pending repaint that ends the current beat */
@@ -393,6 +459,7 @@ let flashTimer: ReturnType<typeof setTimeout> | null = null;
 function flashReset(): void {
   flashQueue = [];
   heldFlashes = [];
+  seenStack = new Map();
   if (flashTimer !== null) { clearTimeout(flashTimer); flashTimer = null; }
 }
 
@@ -410,7 +477,7 @@ function releaseHeldFlashes(): void {
  * "motion: off" does. */
 function absorbFlashes(events: readonly EngineEvent[]): void {
   if (!clarityOn()) return;
-  flashQueue = queueFlashes(flashQueue, events, Date.now());
+  flashQueue = queueFlashes(flashQueue, events, Date.now(), seenStack);
 }
 
 /** Book the repaint that starts the next beat (or ends the last one). */
@@ -464,7 +531,6 @@ function stackItemById(id: number): StackItem | undefined {
 }
 
 const $app = document.getElementById('app')!;
-const esc = (s: unknown) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 /** art path for a card: the registry's per-card image when it has one
  * (fixes e.g. 'Unit Token' → 'Generic-Unit.jpg'), else derived from the name
  * (resource faces and other non-registry art) */
@@ -475,9 +541,9 @@ const art = (name: string): string => {
   } catch { /* not a registry card (resource faces etc.) — fall through */ }
   return ART + name.replace(/ /g, '-') + '.jpg';
 };
-/** the game's REAL icon (element pip, cost circle, marker) as an inline img */
-const elIcon = (name: string): string =>
-  `<img class="elicon" src="/Icons/${name}.webp" alt="${name}" onerror="this.style.display='none'">`;
+/** the game's REAL icon (element pip, cost circle, marker) as an inline img —
+ * alt = the name, because the topbar shows the icon with no word beside it */
+const elIcon = (name: string): string => elIconOf(name, name);
 
 // ── card-text icons (ported from the RAG front-end's token mapping) ────
 /** [..] / {..} keywords that have a real icon (Icons/<name>.webp) */
@@ -564,12 +630,15 @@ function act(a: Action): void {
   if (snaps.length > 60) snaps.shift();
   const local = h as Harness;   // past the NET guard above, h is the Harness
   try {
+    // R68: the last moment an item that is about to be negated still exists
+    rememberStack();
     absorbFlashes(local.do(a));
     // local mode: drain forced steps (empty boards attack/block by themselves;
     // the server does the same for network games)
     for (let g = 0; g < 8; g++) {
       const f = forcedAction(h.state);
       if (!f) break;
+      rememberStack();
       absorbFlashes(local.do(f));
     }
     uiError = '';
@@ -595,9 +664,6 @@ function cancelableCast(): boolean {
   const seat = NET ? NET.seat : dec.seat;
   return dec.seat === seat && sus.item.controller === seat;
 }
-/** net mode rewinds via the server undo — the solo phases, plus any pending
- * pre-commit cast chain of your own (the server verifies the same predicate) */
-const cancelWorksHere = (): boolean => true;
 /** hotseat: the snapshot window still covers the chain's originating action */
 function hotseatCancelIndex(): number {
   const H = h as Harness;
@@ -608,7 +674,9 @@ function hotseatCancelIndex(): number {
 }
 function canCancelNow(): boolean {
   if (!cancelableCast()) return false;
-  return NET ? cancelWorksHere() : hotseatCancelIndex() >= 0;
+  // net mode always rewinds via the server undo (it verifies the same
+  // predicate); hotseat needs a snapshot that still covers the chain
+  return !!NET || hotseatCancelIndex() >= 0;
 }
 function startCastCancel(): void {
   if (!canCancelNow()) return;
@@ -617,6 +685,9 @@ function startCastCancel(): void {
     const snap = snaps[i]!;
     h.state = snap.state;
     h.log.length = snap.logLen;
+    // logTypes is index-aligned with log (src/harness.ts) — truncate both, or
+    // every later line's styling is off by the unwound lines forever
+    (h as Harness).logTypes.length = snap.logLen;
     (h as Harness).actions.length = snap.actionsLen;
     snaps.length = i;
     uiError = '';
@@ -631,7 +702,7 @@ function startCastCancel(): void {
 /** one follow-up undo per received server state while a cast-cancel runs */
 function maybeCancelChain(): void {
   if (!NET || !ui.cancelling) return;
-  if (!cancelableCast() || !cancelWorksHere()) { ui.cancelling = false; return; }
+  if (!cancelableCast()) { ui.cancelling = false; return; }
   if (h.state.actionCount === ui.cancelAt) return;   // still waiting on the last undo
   ui.cancelAt = h.state.actionCount;
   NET.undo();
@@ -678,6 +749,19 @@ function legalFor(seat: Seat): Action[] {
 /** hosts the in-progress mod (ui.modding) could legally land on — computed
  * once per render(); unitHtml highlights them (bin/hand mod affordance) */
 let modHostCache = new Set<EntityId>();
+/** UZRG: units with a legal activated ability RIGHT NOW — computed once per
+ * render() from the legal-action list (never re-derived), so the glow and the
+ * engine cannot disagree. unitHtml draws it. */
+let actCache = new Set<EntityId>();
+/** the list behind it, kept so the per-unit badge can name the ability without
+ * recomputing legalActions once per card on the board */
+let actLegalCache: Action[] = [];
+/** every seat's legal actions, unioned — the glow is drawn for whoever's unit
+ * it is (hotseat shows both boards; net mode knows only its own list) */
+function refreshActCache(): void {
+  actLegalCache = NET ? legalFor(NET.seat) : [...legalFor(0), ...legalFor(1)];
+  actCache = activatableUnits(actLegalCache);
+}
 function moddingHosts(): Set<EntityId> {
   const m = ui.modding;
   if (!m) return new Set();
@@ -721,9 +805,10 @@ function saveYield(): void {
   const k = yieldStoreKey();
   if (k) localStorage.setItem(k, JSON.stringify([...yieldMap]));
 }
-/** When I hold priority with no pending decision and EVERY unresolved stack
- * item is a trigger sourced from an auto-yielded unit, pass automatically —
- * anything else on the stack (spells, other triggers) keeps the window open. */
+/** When I hold priority with no pending decision and the TOP of the stack is
+ * a trigger sourced from an auto-yielded unit, pass automatically. Only the
+ * top matters: passing resolves it, and whatever sits underneath gets its own
+ * window — and its own check — afterwards (ui/inspect.ts shouldAutoYield). */
 function maybeAutoYield(): void {
   if (!NET) return;
   const s = h.state;
@@ -828,9 +913,15 @@ function xPreviewFor(name: string, seat: Seat): number | null {
 }
 
 // ── rendering ─────────────────────────────────────────────────────────
+/** one corner chip on a card scan (cardHtml `badges`) */
+interface Badge { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string; title?: string }
+
 function cardHtml(name: string, opts: {
   playable?: boolean; candidate?: boolean; selected?: boolean; carrying?: boolean; modhost?: boolean;
-  badges?: { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[]; stats?: string; dmg?: string; data?: string;
+  /** UZRG: it has a legal activated ability — a DIFFERENT fact from `playable`
+   * ("can be dragged into a formation"), and both can be true at once */
+  activatable?: boolean;
+  badges?: Badge[]; stats?: string; dmg?: string; data?: string;
   /** ui/motion.ts slot key — what makes this card the SAME card next render */
   anim?: string;
 } = {}): string {
@@ -840,7 +931,9 @@ function cardHtml(name: string, opts: {
   if (opts.selected) cls.push('selected');
   if (opts.carrying) cls.push('carrying');
   if (opts.modhost) cls.push('modhost');
-  const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''} ${b.cls ?? ''}">${b.html ? b.t : esc(b.t)}</span>`).join('');
+  if (opts.activatable) cls.push('activatable');
+  const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''} ${b.cls ?? ''}"${
+    b.title ? ` title="${esc(b.title)}"` : ''}>${b.html ? b.t : esc(b.t)}</span>`).join('');
   return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}>
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
     <div class="artfallback">${esc(name)}</div>
@@ -857,7 +950,16 @@ function backHtml(anim?: string): string {
 
 function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; inert?: boolean } = {}): string {
   const [p, t] = q().effStats(u);
-  const badges: { t: string; mod?: boolean; ctr?: boolean; html?: boolean }[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
+  const badges: Badge[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
+  // UZRG: it can act. The outline says "something here"; the badge says what.
+  const canAct = !opts.inert && actCache.has(u.id);
+  if (canAct) {
+    const label = activationBadge(h.state, u, actLegalCache);
+    if (label) badges.unshift({
+      t: `⚡ ${iconizeText(label)}`, html: true, cls: 'act',
+      title: `activated ability, playable right now — click the unit: ${label.replace(/[[{]([^\]}]+)[\]}]/g, '$1')}`,
+    });
+  }
   if (u.counters) {
     const sign = u.counters > 0 ? '+' : '';
     badges.unshift({ t: `${sign}${u.counters}/${sign}${u.counters}`, ctr: true });
@@ -890,6 +992,7 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     candidate: !opts.inert && isCandidate({ unit: u.id }),
     selected: opts.selected, carrying: ui.carrying === u.id,
     playable: opts.clickable,
+    activatable: canAct,
     modhost: !opts.inert && modHostCache.has(u.id),
     // inert (B2): absent "sent" units are not targets and take no clicks
     data: opts.inert ? `data-previd="${u.id}"` : `data-act="unit" data-id="${u.id}" data-previd="${u.id}"`,
@@ -933,7 +1036,7 @@ function handZoneHtml(p: Seat): string {
       (a.type === 'prophesy' && a.from === 'hand' && a.index === i) ||
       (h.state.phase === 'planning' && a.type === 'recycleForResource' && a.handIndex === i));
     // #5: live X preview during battle for state-derived X spells
-    const badges: { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[] = [];
+    const badges: Badge[] = [];
     const xnow = xPreviewFor(n, p);
     if (xnow !== null) badges.push({ t: `X=${xnow} now`, ctr: true });
     // R42: this card can be prophesied RIGHT NOW — the banner cost, up front
@@ -997,6 +1100,10 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   }
   for (const col of ui.columns) col.forEach(id => inFormation.add(id));
   ui.send.forEach(id => inFormation.add(id));
+  // ZQPC: a spell token you have chosen to bring along is part of the attack
+  // being built, not part of the region any more — it renders in the battle
+  // panel's "riding along" row with the columns it is joining.
+  ui.spellTokens.forEach(id => inFormation.add(id));
   // …and the ones the OPPONENT is sliding in right now: they should leave
   // their region the moment they are placed, so the move is visible
   for (const col of NET?.building?.cols ?? []) col.forEach(id => inFormation.add(id));
@@ -1011,7 +1118,17 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   const entHtml = (en: Entity): string => en.kind === 'spellToken'
     ? tokenHtml(en)
     : unitHtml(en, { clickable: canClick(en) });
-  const ownHere = here.filter(en => en.controller === p).map(entHtml).join('');
+  // ZQPC ("the spell tokens shouldn't get smushed in with the units — they
+  // should have their own spot, over by the bin"): a spell token is not a
+  // creature on the line, it is ammunition waiting to be spent, and mixing the
+  // two made a formation impossible to read. Own strip, beside the bin.
+  const isTok = (en: Entity): boolean => en.kind === 'spellToken';
+  const ownHere = here.filter(en => en.controller === p && !isTok(en)).map(entHtml).join('');
+  const ownTokens = here.filter(en => en.controller === p && isTok(en));
+  const tokenStrip = ownTokens.length
+    ? `<div class="tokenstrip"><div class="zonelabel">✨ spell tokens (${ownTokens.length})</div>
+        <div class="zone tokenzone" data-animzone="tokens:${p}">${ownTokens.map(entHtml).join('')}</div></div>`
+    : '';
   // #1: invaders sit as a compact strip at the SIDE of the region's space —
   // visually subordinate to the owner's formation, not front-and-center
   const invaders = here.filter(en => en.controller !== p);
@@ -1098,6 +1215,7 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
         <div class="zonelabel">Region of ${esc(pl.name)}${focus === 'battlefocus' ? ` — ${txtIcon('battle', '[battle]')} the battle is here` : focus === 'battledim' ? ' — outside this battle' : ''}</div>
         <div class="zone" data-animzone="field:${p}">${ownHere}</div>
       </div>
+      ${tokenStrip}
       ${invaderHtml}
       ${sentStrip}
       ${binMini}
@@ -1126,7 +1244,7 @@ function binDialogHtml(): string {
     const canProph = legal.some(a => a.type === 'prophesy' && a.from === 'bin' && a.index === i);
     const usable = canAug || canGraft || canProph;
     anyUsable ||= usable;
-    const badges: { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[] = [];
+    const badges: Badge[] = [];
     if (canAug || canGraft) {
       badges.push({
         t: `${canAug ? txtIcon('augment', '+') : ''}${canGraft ? txtIcon('graft', '[Switch]') : ''} usable as mod`,
@@ -1147,18 +1265,25 @@ function binDialogHtml(): string {
 /** R65: the erased pile — cards taken OUT OF THE GAME. Not a zone anything is
  * played from, and nothing here is ever clickable; it exists because the
  * information is public and there was no way to look at it ("I dont think
- * there's currently a way to view erased cards"). */
+ * there's currently a way to view erased cards").
+ *
+ * R69 sends every dying token through a bin and then erases it, so the pile
+ * itself is now mostly dead Wisps. The engine's record keeps them; the VIEW
+ * lists only the real cards and says how many tokens it left out —
+ * erasedPileView() in ui/inspect.ts owns that decision and is tested there. */
 let erasedView: Seat | null = null;
 function erasedDialogHtml(): string {
   if (erasedView === null) return '';
   const pl = h.state.players[erasedView]!;
-  const gone = pl.erased ?? [];
+  const gone = erasedPileView(pl.erased);
+  const empty = gone.cards.length === 0
+    ? `<span class="binempty">${gone.tokensOmitted ? 'no real cards — only tokens have been erased' : 'nothing has been erased'}</span>`
+    : '';
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
-    <h3>${esc(pl.name)}'s erased cards (${gone.length})</h3>
+    <h3>${esc(pl.name)}'s erased cards (${esc(gone.countLabel)})</h3>
     <div class="binmodbanner">Erased cards are out of the game — no bin, no death triggers, and nothing plays them back.</div>
-    <div class="zone binzone bindialog">${
-      gone.map(n => cardHtml(n, {})).join('') || '<span class="binempty">nothing has been erased</span>'
-    }</div>
+    <div class="zone binzone bindialog">${gone.cards.map(n => cardHtml(n, {})).join('')}${empty}</div>
+    ${gone.note ? `<div class="binmodbanner">${esc(gone.note)} erased and not listed — every dead token is erased, and listing them would bury the cards above.</div>` : ''}
     <button data-btn="erasedclose">Close</button>
   </div></div>`;
 }
@@ -1178,11 +1303,11 @@ let cacheView: Seat | null = null;
 
 /** the badges one cache entry wears: its prophecy condition, whether that
  * prophecy is fulfilled, the glimpse window, and how it would be paid for */
-function cacheBadges(p: Seat, i: number): { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[] {
+function cacheBadges(p: Seat, i: number): Badge[] {
   const e = q();
   const cc = e.cache(p)[i];
   if (!cc) return [];
-  const out: { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string }[] = [];
+  const out: Badge[] = [];
   const via = e.cachePermission(p, i);
   const pr = cc.prophecy;
   if (pr) {
@@ -1404,41 +1529,6 @@ function helpOverlayHtml(): string {
   </div></div>`;
 }
 
-/**
- * The token cards a card's text names.
- *
- * Playtest 2026-08-20: "any card that creates a token should have an easy way
- * to view that token in the details — if you don't remember what a Wraith or
- * Crystal token are, it's impossible to check right now."
- *
- * There is no per-card "creates" field to read, but tokens ARE registry cards
- * (spawnUnit looks them up by name), and a card that makes one names it in its
- * text: "Create a Crystal 2", "Create a Wraith". So: every registered name
- * that is not in DECK_LIST is a token, and a token whose name appears in the
- * text is one this card makes. Derived, so a new token needs no bookkeeping.
- *
- * Longest name first, so "Crystal 2" wins over "Crystal" on the same text.
- */
-const TOKEN_NAMES: string[] = (() => {
-  const playable = new Set(DECK_LIST);
-  return allCardNames()
-    // resource FACES are registry cards too (the board renders them as scans)
-    // but nothing "creates a Fire Resource token" — drop them
-    .filter(n => !playable.has(n) && !/ Resource$/.test(n) && !/^Dormant/.test(n))
-    .sort((a, b) => b.length - a.length);
-})();
-
-function tokensNamedIn(text: string): string[] {
-  if (!text) return [];
-  const out: string[] = [];
-  let left = text;
-  for (const n of TOKEN_NAMES) {
-    const re = new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-    if (re.test(left)) { out.push(n); left = left.replace(new RegExp(re.source, 'gi'), ' '); }
-  }
-  return out;
-}
-
 /** one token as a scan plus its own stat line and text — the whole point is
  * not having to remember what a Wraith is */
 function tokenRowHtml(name: string): string {
@@ -1508,7 +1598,12 @@ function inspectorHtml(): string {
   });
   const referenced = glossaryHits(
     [type, text, ...modTexts, ...(inspect.rulings ?? [])], { skip: attrs });
-  const tokenRows = tokensNamedIn(text).map(tokenRowHtml).join('');
+  // R69 + UZRG ("Primordial Coalescence isn't showing the Tokens it creates"):
+  // the DECLARED creates list, plus an inflection-tolerant scan of the box the
+  // inspector is actually showing — so a token named in granted (R63) or
+  // donated text counts, and "Wraiths" finds Wraith.
+  const tokenRows = tokensCreatedBy(name, u ? { e: q(), unit: u } : undefined)
+    .map(tokenRowHtml).join('');
   const refRows = referenced.length
     ? referenced.map(glossRow).join('')
     : `<div class="hint">${inspect.rulings === null
@@ -1585,10 +1680,19 @@ function battleHtml(): string {
     if (NET && b.attacker !== NET.seat) return watchingHtml(A, 'is choosing an attack');
     const cols = ui.columns.map((col, ci) => colBuilderHtml(col, ci)).join('');
     const extra = colBuilderHtml([], ui.columns.length);
+    // ZQPC: a token you have picked up to bring along leaves the quiet "spell
+    // tokens" strip and stands WITH the attack, next to the columns it is
+    // joining — the one place a riding token has to stay legible.
+    const riding = ui.spellTokens
+      .map(id => h.state.entities[id]).filter((t): t is Entity => !!t);
+    const rideCol = riding.length
+      ? `<div class="col ridecol"><div class="collabel">${txtIcon('battle', '[battle]')} riding along</div>
+          <div class="sendrow">${riding.map(t => tokenHtml(t)).join('')}</div></div>`
+      : '';
     return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} declares an attack — round ${b.round}${b.attackerPool ? ' (sent units only)' : ''}</h3>
       <div style="color:var(--dim);margin-bottom:6px">Click one of your units, then a slot. Front row first, 2 max per column.
         Click your spell tokens to bring them along.${ui.spellTokens.length ? ` <b>${ui.spellTokens.length} token${ui.spellTokens.length === 1 ? '' : 's'} riding.</b>` : ''}</div>
-      <div class="cols">${cols}${extra}</div></div>`;
+      <div class="cols">${cols}${extra}${rideCol}</div></div>`;
   }
 
   // table orientation: YOUR units sit BELOW the vs-line, the opponent's above
@@ -1779,20 +1883,32 @@ function promptHtml(): string {
     const who = esc(s.players[dec.seat]!.name);
     // A2: options that ARE cards (hand looks, deck tops, bin picks) render as
     // clickable scans; the rest stay ordinary buttons after them
-    const isRef = (v: unknown): boolean => !!v && typeof v === 'object' &&
-      ('unit' in (v as object) || 'player' in (v as object) || 'stack' in (v as object));
+    const split = partitionOptions(dec.options);
     const cardRow = (btn: string, skip?: (i: number) => boolean): string => {
       const cards = dec.options.map((o, i) => (o.card && !skip?.(i))
         ? cardHtml(o.card, { playable: true, data: `data-btn="${btn}" data-i="${i}"${pingAttrs(o)}` }) : '').join('');
       return cards ? `<div class="deccards">${cards}</div>` : '';
     };
+    /** one option as a real button (ui/inspect.ts decides which bucket it is in) */
+    const optBtn = (i: number, cls = ''): string => {
+      const o = dec.options[i]!;
+      return `<button ${cls ? `class="${cls}" ` : ''}data-btn="decide" data-i="${i}"${
+        pingAttrs(o)}>${iconizeText(o.label)}</button>`;
+    };
     if (dec.kind === 'targets') {
-      const hasRefs = dec.options.some(o => isRef(o.value));
-      // A1: every non-board-target option (e.g. "No more targets") gets a real button
-      const btns = dec.options.map((o, i) => (isRef(o.value) || o.card) ? ''
-        : `<button data-btn="decide" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`).join(' ');
+      // UZRG, and the expensive one: a ref-valued option ({stack:96}) used to
+      // render NO button at all — you had to find and click the highlighted
+      // card in the floating stack window. With min:0 the engine adds "No more
+      // targets" from the very first slot, so the ONLY button in the bar was
+      // the decline, in the same screen position the player had just clicked
+      // ten times to pay a 10-card cost. Every option gets a real button now,
+      // and the decline is last and secondary.
+      const picks = [...split.refs, ...split.plain].map(i => optBtn(i)).join(' ');
+      const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
       return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(dec.prompt)}${hasRefs ? ' — click a highlighted target' : ''} ${cardRow('decide')} ${btns} ${castCancelBtnHtml()}${err}</div>`;
+        ${iconizeText(dec.prompt)}${split.refs.length ? ' — click a highlighted target, or pick one here' : ''}
+        ${cardRow('decide')} <span class="decpicks">${picks}</span>
+        ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
     }
     if (dec.kind === 'orderTriggers') {
       const btns = dec.options.map((o, i) => ui.orderPicked.includes(i)
@@ -1801,9 +1917,14 @@ function promptHtml(): string {
       return `<div class="promptbar pending"><span class="who">${who}:</span>
         ${iconizeText(dec.prompt)} — ${cardRow('orderpick', i => ui.orderPicked.includes(i))} ${btns}${err}</div>`;
     }
-    // payOrDecline / electricPath / insertGraft: cards then plain option buttons
-    const btns = dec.options.map((o, i) => o.card ? '' : `<button data-btn="decide" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`).join(' ');
-    return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)} ${cardRow('decide')} ${btns} ${castCancelBtnHtml()}${err}</div>`;
+    // payOrDecline / electricPath: cards, then the affirmative
+    // options, then the decline — same ordering rule as the targets bar, so
+    // "stop" is never where "go" was a click ago
+    const btns = [...split.refs, ...split.plain].map(i => optBtn(i)).join(' ');
+    const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
+    return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}
+      ${cardRow('decide')} <span class="decpicks">${btns}</span>
+      ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
   }
   // network mode: if the current control belongs to the opponent, show a wait
   // banner instead of the opponent's buttons (their turn is theirs to drive).
@@ -1933,6 +2054,22 @@ const LOG_EVENT_CLASS: Partial<Record<EventType, string>> = {
   lifeGained: 'ev-life',
 };
 
+/**
+ * One log line, with every card it names made inspectable.
+ *
+ * UZRG: "the log and the stack are not inspectable." The engine does log X and
+ * does log "Bena spawns Wraith", but `iconizeText` emitted no `data-prev`, so
+ * the log was inert prose — and `data-prev` is the single hook behind the
+ * hover preview, the long-hover text box AND right-click-inspect, so one
+ * change buys all three. Segmenting is ui/inspect.ts's `linkCardNames`, the
+ * one name-matcher in the client; this only paints the spans it returns.
+ */
+function logLineHtml(msg: string): string {
+  return linkCardNames(msg).map(sp => sp.name
+    ? `<span class="logcard" data-prev="${esc(sp.name)}">${iconizeText(sp.text)}</span>`
+    : iconizeText(sp.text)).join('');
+}
+
 /** Focus-viewer body for a stack item: its art plus the text of the ABILITY
  * on the stack — each live part attributed to the card that contributed it,
  * which is the whole point for a graft stack (Manual p.33: they resolve as one
@@ -1940,10 +2077,28 @@ const LOG_EVENT_CLASS: Partial<Record<EventType, string>> = {
 function previewStackHtml(id: number): string {
   const it = stackItemById(id);
   if (!it) return '';
-  const rows = stackAbilityRows(it).map(t => {
+  const abRows = stackAbilityRows(it);
+  const rows = abRows.map(t => {
     const tag = t.graft ? `${txtIcon('graft', '[Switch]')} ${esc(t.source)}` : esc(t.source);
-    return `<div class="abrow"><span class="absrc">${tag}</span>${iconizeText(t.text)}</div>`;
+    // R64: a clause that paid its own variable cast cost defines its own X —
+    // it belongs on the clause, not on the item, or a grafted rider's X and
+    // its carrier's would read as the same number
+    const x = t.x !== undefined
+      ? `<div class="xnow xinline">X = ${t.x}${t.receipt ? ` <span class="hint">— ${esc(t.receipt)}</span>` : ''}</div>` : '';
+    return `<div class="abrow"><span class="absrc">${tag}</span>${iconizeText(t.text)}${x}</div>`;
   }).join('');
+  // UZRG: "it's not possible to see the X value for an effect while it's on
+  // the stack." This viewer replaces the label with ability rows, and the label
+  // was the ONLY string carrying X (apply.ts rewrites it to "Card (X=n)") — so
+  // for any real spell the X was exactly what got dropped. Same badge as the
+  // hand card's live X preview: one presentation for one idea. Rows already
+  // attributed to a clause above are not repeated here.
+  const shown = new Set(abRows.filter(r => r.x !== undefined).map(r => r.part));
+  const xRows = stackItemX(it)
+    .filter(r => r.part === undefined || !shown.has(r.part))
+    .map(r => `<div class="xnow">X = ${r.x} <span class="hint">— ${
+      r.kind === 'cast' ? 'cast for X' : `${esc(r.source ?? 'additional cost')}${r.receipt ? `, ${esc(r.receipt)}` : ''}`
+    }</span></div>`).join('');
   const targets = it.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
   const composed = it.parts.filter(p => !p.spent).length > 1;
   // {Modular}: mods applied as the card was PLAYED ride on the stack with it
@@ -1958,10 +2113,11 @@ function previewStackHtml(id: number): string {
   return `${it.card ? `<img src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
     <div class="abilitybox">
       <div class="abhead">${esc(STACK_KIND[it.kind] ?? it.kind)}${composed ? ' — resolves as ONE composed ability' : ''}</div>
+      ${xRows}
       ${rows || `<div class="hint">${iconizeText(it.label)}</div>`}
       ${modChips}
       ${targets ? `<div class="abtargets">→ ${targets}</div>` : ''}
-      ${it.negated ? '<div class="abneg">negated — it will do nothing</div>' : ''}
+      ${it.negated ? '<div class="abneg">answered — it left the stack and will do nothing</div>' : ''}
     </div>`;
 }
 
@@ -2022,7 +2178,13 @@ function stackBoardHtml(): string {
     // double-count them as "grafted parts"
     const extraParts = it.parts.length - 1 - mods.length;
     const marks = [
-      r.flashing ? 'resolved' : '',
+      // R68: a beat is either "it happened" or "it was answered" — never both,
+      // and never neither. `negated` reaches this client only on a flash
+      // snapshot (ui/flash.ts negatedFlashItems); GameState never carries it.
+      r.flashing ? (it.negated ? 'answered' : 'resolved') : '',
+      // UZRG: X, on EVERY card. The caption under the row only ever describes
+      // the lead item, and a stack four deep has four X's to answer for.
+      stackXMark(it),
       extraParts > 0 ? `${extraParts + 1}×` : '',
       mods.length ? `${txtIcon('graft', '[Switch]')}${mods.length}` : '',
     ].filter(Boolean).join(' · ');
@@ -2030,7 +2192,7 @@ function stackBoardHtml(): string {
       'stackcard',
       r.flashing ? 'flashing' : '',
       r.top ? 'top' : '',
-      it.negated ? 'negated' : '',
+      it.negated ? 'negated' : '',   // greys it and stamps the ✕ (style.css)
       isCandidate({ stack: it.id }) ? 'candidate' : '',
       // whose it is, at a glance: net mode knows which seat is you, hotseat
       // colours by seat number instead
@@ -2039,12 +2201,22 @@ function stackBoardHtml(): string {
     const face = it.card
       ? `<img src="${art(it.card)}" alt="" onerror="this.parentElement.classList.add('noart')">`
       : '';
+    // UZRG: a stack card carried data-prevstack but no data-prev, so the
+    // contextmenu handler's closest('[data-prev], [data-previd]') never matched
+    // one — right-click-inspect could not fire on the stack at all, and the
+    // auto-yield-on-trigger branch behind it was dead code. Name the card the
+    // item is ABOUT (a trigger has none of its own: use its source unit), and
+    // only when it really is a card — the label is prose, not a lookup key.
+    const prevName = it.card ?? (it.sourceId !== undefined ? h.state.entities[it.sourceId]?.card : undefined);
     return `<div class="${cls}" style="z-index:${i + 1}"
       data-act="stackitem" data-id="${it.id}" data-prevstack="${it.id}" data-anim="s${it.id}"
+      ${prevName ? `data-prev="${esc(prevName)}"` : ''}
       title="${esc(it.label)}">
       ${face}<div class="stackface">${esc(it.card ?? it.label)}</div>
       <div class="stacktag">${esc(STACK_KIND[it.kind] ?? it.kind)}${marks ? ` · ${marks}` : ''}</div>
-      ${i === last && r.flashing ? '<div class="stackbolt">resolved</div>' : ''}
+      ${i === last && r.flashing
+        ? `<div class="stackbolt${it.negated ? ' answered' : ''}">${it.negated ? 'answered' : 'resolved'}</div>`
+        : ''}
       ${i === last && r.top ? '<div class="stacknext">next</div>' : ''}
     </div>`;
   }).join('');
@@ -2054,7 +2226,9 @@ function stackBoardHtml(): string {
   const lead = leadRow.item;
   const targets = lead.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
   const who = h.state.players[lead.controller]?.name ?? '';
-  const verb = leadRow.flashing ? 'just resolved' : rows.length > 1 ? 'resolves next' : 'on the stack';
+  const verb = leadRow.flashing
+    ? (lead.negated ? 'was answered' : 'just resolved')
+    : rows.length > 1 ? 'resolves next' : 'on the stack';
   return `<div class="stackboard live" data-animzone="stack">
     <div class="stackrow" style="--stackstep:${step.toFixed(3)}">${cards}</div>
     <div class="stackcaption">
@@ -2119,10 +2293,7 @@ function shareBannerHtml(): string {
   if (!NET || NET.peers[other(NET.seat)]) return '';
   if (h.state.phase === 'gameover' || postGame) return '';
   const link = `${location.origin}/?ws=1&room=${encodeURIComponent(NET.room)}&seat=${other(NET.seat)}&mode=${h.state.mode}`;
-  return `<div class="sharebar">Waiting for your opponent — send them the room code
-    <b>${esc(NET.room)}</b> or this link:
-    <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
-    <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>`;
+  return shareBar('Waiting for your opponent — send them the room code', NET.room, link);
 }
 
 // ── live draft (M4) ───────────────────────────────────────────────────
@@ -2286,6 +2457,40 @@ function ensureCounterPrefill(): void {
   if (eligible.length === 1) ui.columns = [[eligible[0]!.id]];
 }
 
+/**
+ * R72/R75: keep the in-progress block preview pointing at the attackers the
+ * player actually pointed at.
+ *
+ * `ui.columns` is keyed by ATTACK column index while blocking, and R72 leaves
+ * those indices moving for exactly as long as the block step lasts: the last
+ * unit in a column dies, the line closes ranks, and every key from the hole
+ * rightwards means a different column than it did a moment ago. R75's
+ * left-insert does the same in the other direction. `doDeclareBlocks` rejects
+ * a key naming no column, so the engine is safe — but from the table a
+ * rejected declaration is indistinguishable from the client eating your work.
+ *
+ * ui/formation.ts owns the arithmetic (and the reasoning); this only spots the
+ * change, applies it, and says so when a column the player was answering is
+ * gone. The snapshot is dropped outside the step, so re-entering the block
+ * step always starts from a fresh baseline.
+ */
+function ensureBlockKeys(): void {
+  const b = h.state.battle;
+  const mine = !!b && b.step === 'blocks' && (!NET || b.defender === NET.seat);
+  if (!b || !mine) { ui.blockLine = null; return; }
+  const was = ui.blockLine;
+  ui.blockLine = b.columns.map(col => [...col]);
+  if (!was) return;                       // first paint of this block step
+  const r = rekeyBuild(was, ui.blockLine, ui.columns);
+  if (!r.changed) return;
+  ui.columns = r.columns;
+  if (r.dropped.length) {
+    const n = r.dropped.length;
+    showToast(`the line closed ranks — the column you were blocking is gone, so ${n === 1 ? 'your blocker is' : `your ${n} blockers are`} free to place again`);
+    playCue('error');
+  }
+}
+
 /** Scrollers whose position must survive a repaint. `.main` is the board
  * itself — the one the playtest report was about — and the focus viewer
  * scrolls independently of it in the side rail. */
@@ -2298,19 +2503,22 @@ function renderNow(): boolean {
   // the board is about to be replaced under the cursor: a long-hover box left
   // floating over it would be describing a card that has moved or died
   hideHoverTip();
-  if (NET && (NET.dead || !NET.joined)) { if (!NET.dead) renderConnecting(); return false; }
+  if (NET?.dead) return false;                              // kicked: the notice owns the page
+  if (NET && !NET.joined) { renderConnecting(); return false; }
   if (NET?.waiting) { renderWaiting(); return false; }   // constructed lobby
   $app.classList.toggle('netmode', !!NET);   // net mode: the hand docks under the table
   $app.classList.add('board');   // full-height board layout (style.css §board)
   ensureDraftUi();
   ensureBottomUi();
   ensureCounterPrefill();
+  ensureBlockKeys();
   modHostCache = moddingHosts();   // #4: legal hosts for a mod-in-progress glow
+  refreshActCache();               // UZRG: units with a legal activated ability
   const logFrom = Math.max(0, h.log.length - 80);
   const logItems = h.log.slice(-80).map((l, i) => {
     const t = logTypeAt(logFrom + i);
     const cls = t ? LOG_EVENT_CLASS[t] ?? '' : '';
-    return `<div class="${cls}">${iconizeText(l)}</div>`;
+    return `<div class="${cls}">${logLineHtml(l)}</div>`;
   }).join('');
   // in network mode keep MY seat at the bottom (opponent on top)
   const topSeat: Seat = NET ? other(NET.seat) : 1;
@@ -2341,6 +2549,16 @@ function renderNow(): boolean {
   // deliberately not in the list, because it always wants to be at the bottom.
   const scrollBefore = SCROLLERS.map(sel =>
     [sel, document.querySelector(sel)?.scrollTop ?? 0] as const);
+  // same discipline for the two text inputs a server push can repaint
+  // mid-word: remember which one (if either) owned focus and where the caret
+  // sat, so the rebuilt input neither steals focus nor teleports the caret
+  const focusedBox = document.activeElement;
+  const keepFocus = (focusedBox instanceof HTMLInputElement || focusedBox instanceof HTMLTextAreaElement)
+    && (focusedBox.id === 'judge-q' || focusedBox.id === 'report-note')
+    ? { id: focusedBox.id, start: focusedBox.selectionStart ?? 0, end: focusedBox.selectionEnd ?? 0 }
+    : null;
+  const hadJudge = !!document.getElementById('judge-q');
+  const hadReport = !!document.getElementById('report-note');
   $app.innerHTML = `
     <div class="main">
       <!-- playtest: the turn/phase strip AND the "what to do next" bar are one
@@ -2416,10 +2634,14 @@ function renderNow(): boolean {
   maybeAutoYield();
   maybeCancelChain();
   publishBuilding();
-  // judge input: submit on Enter, survive re-renders mid-typing
+  // judge input: submit on Enter, survive re-renders mid-typing. Focus goes
+  // back only to the box that HAD it (with its caret where it was) — or to a
+  // freshly opened box, caret at the end of any prefill.
   const jq = document.getElementById('judge-q') as HTMLInputElement | null;
   if (jq) {
-    if (judgeDraft) { jq.value = judgeDraft; jq.focus(); jq.setSelectionRange(jq.value.length, jq.value.length); }
+    if (judgeDraft) jq.value = judgeDraft;
+    if (keepFocus?.id === 'judge-q') { jq.focus(); jq.setSelectionRange(keepFocus.start, keepFocus.end); }
+    else if (!hadJudge) { jq.focus(); jq.setSelectionRange(jq.value.length, jq.value.length); }
     jq.addEventListener('input', () => { judgeDraft = jq.value; });
     jq.addEventListener('keydown', ev => {
       if (ev.key === 'Enter') {
@@ -2432,7 +2654,10 @@ function renderNow(): boolean {
   const rn = document.getElementById('report-note') as HTMLTextAreaElement | null;
   if (rn) {
     rn.value = reportDraft;
-    if (!reportBusy) { rn.focus(); rn.setSelectionRange(rn.value.length, rn.value.length); }
+    if (!reportBusy) {
+      if (keepFocus?.id === 'report-note') { rn.focus(); rn.setSelectionRange(keepFocus.start, keepFocus.end); }
+      else if (!hadReport) { rn.focus(); rn.setSelectionRange(rn.value.length, rn.value.length); }
+    }
     rn.addEventListener('input', () => {
       reportDraft = rn.value;
       const send = document.querySelector('[data-btn="reportsend"]') as HTMLButtonElement | null;
@@ -2491,6 +2716,10 @@ function soundPass(): void {
   // waiting on someone who isn't in the room, so a nudge every 15s would be
   // hurrying you along rather than catching you out.
   if (NET && armsIdle(before, snap)) armIdle();
+  // …and it can also stop being owed without this player acting at all: the
+  // opponent's move mooted it, or the game ended. A countdown with nothing
+  // left to owe must not fire.
+  else if (!snap.mine || snap.over) disarmIdle();
 }
 
 /**
@@ -2507,7 +2736,7 @@ function soundPass(): void {
  */
 function censusWithFlashes(s: GameState): Census {
   const base = census(s);
-  const rows = visualStack().filter(r => r.flashing);
+  const rows = censusFlashes(visualStack());
   if (!rows.length) return base;
   const phantom = rows.map(r => ({
     key: `s${r.item.id}`, zone: 'stack' as const, seat: r.item.controller,
@@ -2551,6 +2780,9 @@ function targetSelectors(t: TargetRef): string[] {
  * are skipped — they are the parts that will do nothing. */
 function stackArrows(id: number, cls: 'tgt' | 'soft'): ArrowSpec[] {
   const it = stackItemById(id);
+  // R68: a negated item is off the rules stack, so this can only ever be a
+  // flash snapshot having its beat — and an answered effect must not still be
+  // drawing arrows at the things it was going to do
   if (!it || it.negated) return [];
   const self = [`.stackcard[data-anim="s${it.id}"]`];
   const out: ArrowSpec[] = [];
@@ -2658,13 +2890,13 @@ let judgeDraft = '';
 
 function revealOverlayHtml(): string {
   // one row per card, not one per event — ui/inspect.ts groupReveal
-  const lines = groupReveal(pendingReveal ?? []).map(row =>
+  const lines = groupReveal(pendingReveal?.msgs ?? []).map(row =>
     `<div class="revealline">${row.name ? cardHtml(row.name) : '<span class="revealspacer"></span>'}<span>${esc(row.text)}</span></div>`,
   ).join('');
   // 'mainonly' leaves the side column (focus viewer!) uncovered so the
   // revealed cards can be read by hovering them
   return `<div class="overlay mainonly"><div class="overlaybox">
-    <h3>Your opponent's deployment</h3>
+    <h3>Your opponent's ${pendingReveal?.step === 'haste' ? 'haste step' : 'deployment'}</h3>
     <div class="hint">hover a card to read it in the focus viewer →</div>
     <div class="reveallist">${lines}</div>
     <button class="primary" data-btn="revealdone">Continue (enter)</button>
@@ -2732,9 +2964,7 @@ function maybeAutoPassPref(): void {
 }
 
 function renderConnecting(): void {
-  motionReset();
-  sfxReset();
-  flashReset();
+  dropBaselines();
   $app.classList.remove('board');
   // a refused join (a room code that names no game) lands here, so this screen
   // needs a way out — without the button it is a dead end you can only leave by
@@ -2815,9 +3045,7 @@ function importDeck(body: { url?: string; text?: string }, rerender: () => void)
  * beside it (playtest 2026-08-21). Abreast, the whole menu is one screenful
  * and each way in states what it is before it asks for anything. */
 function renderHome(): void {
-  motionReset();
-  sfxReset();
-  flashReset();
+  dropBaselines();
   $app.classList.remove('board');
   // an open account screen (sign-in / profile) owns the page instead
   if (acct.screen()) { acct.renderScreen(); return; }
@@ -2896,9 +3124,7 @@ function renderHome(): void {
 /** Constructed lobby: the room exists but the game has not been dealt — it
  * starts the moment both seats have brought a deck. */
 function renderWaiting(): void {
-  motionReset();
-  sfxReset();
-  flashReset();
+  dropBaselines();
   $app.classList.remove('board');
   const net = NET!;
   const w = net.waiting!;
@@ -2926,9 +3152,7 @@ function renderWaiting(): void {
       <div class="headbtns"><button data-btn="gohome">Leave</button></div>
     </div>
 
-    <div class="sharebar">Send your opponent the room code <b>${esc(net.room)}</b> or this link:
-      <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
-      <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>
+    ${shareBar('Send your opponent the room code', net.room, link)}
 
     ${mineIn ? '' : `<div class="lobbypanel deckpicker">
       <div class="zonelabel">Your deck</div>
@@ -3562,49 +3786,51 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     const u = s.entities[id];
     const b = s.battle;
     if (NET && u && u.controller !== NET.seat) return;   // in net mode I only manipulate my own units
-    if (b && u && !s.decision &&
-      ((b.step === 'declare' && u.controller === b.attacker) || (b.step === 'blocks' && u.controller === b.defender))) {
-      const placed = ui.columns.some(c => c.includes(id)) || ui.send.includes(id);
-      if (placed) {
-        ui.columns = ui.columns.map(c => c.filter(x => x !== id)).filter(c => b.step === 'declare' ? c.length > 0 : true);
-        ui.send = ui.send.filter(x => x !== id);
-      } else {
-        ui.carrying = (ui.carrying === id ? null : id);
-      }
-    } else if (u && !s.decision) {
-      // activated abilities on your own units
-      const opts = legalFor(u.controller).filter(a => a.type === 'activateAbility' && a.entityId === id);
-      const optLabel = (a: Action): string => {
-        if (a.type !== 'activateAbility') return '?';
-        // resolve the ability list the action's `via` refers to (own abilities /
-        // own [Augment] text / text donated by an augment mod)
-        if (a.via === undefined) return getCard(u.card).abilities?.[a.abilityIndex]?.label ?? '?';
-        const name = a.via === 'augment' ? u.card : h.state.entities[a.via.mod]?.card;
-        const label = name ? getCard(name).augmentText?.[a.abilityIndex]?.label : undefined;
-        return name && a.via !== 'augment' ? `${name}: ${label ?? '?'}` : label ?? '?';
+    if (u && !s.decision) {
+      // UZRG: the formation branch used to be tested FIRST, so during your own
+      // declare (or block) step every click on your own unit picked it up for a
+      // column and the ability branch below was unreachable — a {Battle}-timed
+      // ability on a unit you are also attacking with had no input path at all.
+      // The two are one LIST now (ui/inspect.ts unitClickOptions): one entry
+      // means do it, more than one means ask.
+      const inFormation = !!b &&
+        ((b.step === 'declare' && u.controller === b.attacker) ||
+         (b.step === 'blocks' && u.controller === b.defender));
+      const role: FormationRole | null = inFormation && b ? {
+        step: b.step === 'declare' ? 'attack' : 'block',
+        placed: ui.columns.some(c => c.includes(id)) || ui.send.includes(id),
+        carrying: ui.carrying === id,
+      } : null;
+      const takeFormation = (): void => {
+        if (!role || !b) return;
+        if (role.placed) {
+          ui.columns = ui.columns.map(c => c.filter(x => x !== id)).filter(c => b.step === 'declare' ? c.length > 0 : true);
+          ui.send = ui.send.filter(x => x !== id);
+        } else {
+          ui.carrying = (ui.carrying === id ? null : id);
+        }
       };
       // playtest: a single ability used to fire on a bare click, so clicking a
       // unit you meant to BLOCK with instead paid its "Sacrifice me:" cost and
       // deleted it. Anything that spends something you cannot get back, and
       // that will not stop to ask for a target, now asks first.
-      const fire = (a: Action): void => {
-        if (a.type !== 'activateAbility') return;
+      const take = (o: UnitClickOption): void => {
+        if (o.kind === 'formation') { takeFormation(); return; }
+        const a = o.action!;
         if (needsConfirm(u, a)) {
           ui.confirmAct = {
             seat: u.controller, entityId: id, abilityIndex: a.abilityIndex,
             ...(a.via ? { via: a.via } : {}),
-            label: optLabel(a), unit: u.card,
+            label: o.label, unit: u.card,
           };
         } else act(a);
       };
-      if (opts.length === 1) fire(opts[0]!);
+      const opts = unitClickOptions(s, u, legalFor(u.controller), role);
+      if (opts.length === 1) take(opts[0]!);
       else if (opts.length > 1) {
         ui.menu = {
           x: e.clientX, y: e.clientY,
-          items: opts.map(a => ({
-            label: optLabel(a),
-            go: () => { fire(a); render(); },
-          })),
+          items: opts.map(o => ({ label: o.label, go: () => { take(o); render(); } })),
         };
       }
     }
@@ -3642,11 +3868,9 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
       const name = h.state.players[p]!.bin[i] ?? '?';
       const items: { label: string; go: () => void }[] = [
         { label: prophesyLabel(name), go: () => { binView = null; act(proph[0]!); render(); } },
+        ...modMenuItems(p, 'bin', i, name, mods, { close: () => { binView = null; } }),
       ];
-      if (mods.some(a => a.type === 'augment')) items.push({ label: `Augment a unit with ${name}`, go: () => { binView = null; ui.modding = { seat: p, from: 'bin', index: i, mode: 'augment' }; render(); } });
-      if (mods.some(a => a.type === 'graft')) items.push({ label: `Graft ${name} under a unit`, go: () => { binView = null; ui.modding = { seat: p, from: 'bin', index: i, mode: 'graft' }; render(); } });
-      if (items.length === 1) items[0]!.go();
-      else ui.menu = { x: e.clientX, y: e.clientY, items };
+      offer(items, e);
     } else {
       if (mods.length) binView = null;   // close the bin dialog so the host pick is visible
       startModding(p, 'bin', i, mods, e);
@@ -3700,14 +3924,8 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
   for (const a of prophesyActions) {
     items.push({ label: prophesyLabel(name), go: () => { act(a); render(); } });
   }
-  if (modActions.some(a => a.type === 'augment')) {
-    items.push({ label: `Augment a unit with ${name}`, go: () => { ui.modding = { seat: p, from: 'hand', index: i, mode: 'augment' }; render(); } });
-  }
-  if (modActions.some(a => a.type === 'graft')) {
-    items.push({ label: `Graft ${name} under a unit`, go: () => { ui.modding = { seat: p, from: 'hand', index: i, mode: 'graft' }; render(); } });
-  }
-  if (items.length === 1) items[0]!.go();
-  else if (items.length > 1) { ui.menu = { x: e.clientX, y: e.clientY, items }; render(); }
+  items.push(...modMenuItems(p, 'hand', i, name, modActions));
+  offer(items, e);
 }
 
 /** a plain mana amount as the bracketed WORD the cards print ([two]), so
@@ -3768,15 +3986,34 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent): void {
   }
   // R42: a fulfilled prophecy makes grafting/augmenting free as well
   const free = via === 'prophecy' ? ' — free' : '';
-  if (mods.some(a => a.type === 'augment')) {
-    items.push({ label: `Augment a unit with ${cc.card}${free}`, go: () => { cacheView = null; ui.modding = { seat: p, from: 'cache', index: i, mode: 'augment' }; render(); } });
-  }
-  if (mods.some(a => a.type === 'graft')) {
-    items.push({ label: `Graft ${cc.card} under a unit${free}`, go: () => { cacheView = null; ui.modding = { seat: p, from: 'cache', index: i, mode: 'graft' }; render(); } });
-  }
-  if (!items.length) return;
+  items.push(...modMenuItems(p, 'cache', i, cc.card, mods,
+    { close: () => { cacheView = null; }, suffix: free }));
+  offer(items, e);
+}
+
+/** the common tail: exactly one thing to offer just happens; more open a menu
+ * at the cursor (the caller's render() paints it) */
+function offer(items: { label: string; go: () => void }[], e: MouseEvent): void {
   if (items.length === 1) items[0]!.go();
-  else ui.menu = { x: e.clientX, y: e.clientY, items };
+  else if (items.length > 1) ui.menu = { x: e.clientX, y: e.clientY, items };
+}
+
+/** The augment/graft menu entries for a mod-source card. Hand, bin and cache
+ * share them, differing only in the zone, an optional dialog to close first
+ * (so the host pick is visible), and the cache's "— free" tag (R42: a
+ * fulfilled prophecy pays for the mod too). */
+function modMenuItems(p: Seat, from: ModZone, i: number, name: string, mods: Action[],
+  opts: { close?: () => void; suffix?: string } = {}): { label: string; go: () => void }[] {
+  const start = (mode: 'augment' | 'graft') => (): void => {
+    opts.close?.();
+    ui.modding = { seat: p, from, index: i, mode };
+    render();
+  };
+  const sfx = opts.suffix ?? '';
+  const items: { label: string; go: () => void }[] = [];
+  if (mods.some(a => a.type === 'augment')) items.push({ label: `Augment a unit with ${name}${sfx}`, go: start('augment') });
+  if (mods.some(a => a.type === 'graft')) items.push({ label: `Graft ${name} under a unit${sfx}`, go: start('graft') });
+  return items;
 }
 
 function startModding(p: Seat, from: ModZone, i: number, legal: Action[], e: MouseEvent): void {
@@ -3889,6 +4126,12 @@ document.addEventListener('keydown', e => {
     if (cacheView !== null) { cacheView = null; render(); return; }
     if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); render(); return; }
     if (inField) return;
+    // the four "are you sure?" bars — Esc is their "Go back" (the doneplan
+    // one even advertises it on the button)
+    if (ui.confirmDone !== null) { ui.confirmDone = null; render(); return; }
+    if (ui.confirmPass !== null) { ui.confirmPass = null; render(); return; }
+    if (ui.confirmDeploy !== null) { ui.confirmDeploy = null; render(); return; }
+    if (ui.confirmAct) { ui.confirmAct = null; render(); return; }
     if (ui.modding) { ui.modding = null; render(); return; }
     if (canCancelNow()) { startCastCancel(); render(); return; }
     if (ui.carrying !== null) { ui.carrying = null; render(); return; }
@@ -3930,7 +4173,8 @@ function boardMenuItems(): { label: string; go: () => void }[] {
   const items: { label: string; go: () => void }[] = [];
   for (const p of [0, 1] as Seat[]) {
     const pl = h.state.players[p]!;
-    const n = (pl.erased ?? []).length;
+    // the same count the dialog shows: real cards, then "+n tokens" (R69)
+    const n = erasedPileView(pl.erased).countLabel;
     const mine = NET ? p === NET.seat : false;
     items.push({
       label: `🚫 ${mine ? 'My' : `${pl.name}'s`} erased cards (${n})`,

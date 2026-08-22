@@ -11,21 +11,21 @@
  *
  * PARKED (needs engine machinery that does not exist yet):
  *  - Water Resource: "When I activate, if you have at least [b][b][b], create
- *    a Shard" needs (a) resource cards modelled as playable resources (the
- *    engine's resources are anonymous ResourceState entries made by
- *    recycleForResource), (b) 'resourceActivated' dispatched to trigger
- *    listeners (apply.ts only logs it), and (c) a 'Shard' resource kind.
- *    Registered as printed data only so lookups never crash.
+ *    a Shard" still needs (a) resource cards modelled as playable resources
+ *    (the engine's resources are anonymous ResourceState entries made by
+ *    recycleForResource) and (b) 'resourceActivated' dispatched to trigger
+ *    listeners (apply.ts only logs it). This note used to name a third
+ *    blocker, "(c) a 'Shard' resource kind" — that one has shipped
+ *    (E.createShard, kind 'shard', created dormant), so the payload is ready
+ *    and waiting for the trigger. Registered as printed data only.
  */
-import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
+import type { EngineEvent, Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, isEntityTarget, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
 import type { ResolvedTarget } from '../dsl.ts';
+import { selfOf, isEnt, manaOf, chooseUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity =>
-  !!t && typeof t === 'object' && 'id' in (t as object);
 
 /** present seats of a region, initiative player first (stable order) */
 const presentSeats = (g: E, region: number): Seat[] => {
@@ -33,26 +33,17 @@ const presentSeats = (g: E, region: number): Seat[] => {
   return [g.initiative, g.nit].filter(s => present.includes(s));
 };
 
-/** token cards never "enter a hand" — they are erased when they leave play.
- * The despawned event carries no token flag, so the card TYPE is the proxy
- * (every token card's type line contains "Token"). */
-const isNontokenCard = (name: unknown): boolean =>
-  typeof name === 'string' && !/Token/.test(getCard(name).type);
-
-/** `chooser` picks one of `candidates` (auto-picked when only one). Returns
- * null when there is nothing to pick. Plan-then-commit: call all chooses
- * before mutating (the engine replays the part on suspension). */
-const chooseUnit = (
-  g: E, ctx: EffectCtx, key: string, chooser: Seat, candidates: Entity[], prompt: string,
-): Entity | null => {
-  if (!candidates.length) return null;
-  if (candidates.length === 1) return candidates[0]!;
-  const id = ctx.choose(key, {
-    kind: 'electricPath', seat: chooser, prompt,
-    options: candidates.map(u => ({ label: u.card, value: u.id })),
-  }) as EntityId;
-  return g.entity(id) ?? null;
-};
+/** R70: "a card entered a hand" is now a fact ON THE DESPAWN EVENT — `to` is
+ * where the card actually went ('hand' | 'cache'). It used to be approximated
+ * by the card TYPE ("Token" in the type line), which also read a unit going to
+ * a CACHE as one entering a hand.
+ *
+ * R69, extended to the hand 2026-08-22: a recalled TOKEN says `to: 'hand'` as
+ * well — it really does enter the hand before the state-based sweep erases it,
+ * and Caleb was asked this about THIS CARD ("does recalling a spell token
+ * trigger Rider of the Tides?" → *"Oh dang yeah it should also trigger it."*,
+ * 2025-04-24). A CACHED unit still says 'cache' and is correctly no match. */
+const enteredAHand = (ev: EngineEvent): boolean => ev.data?.['to'] === 'hand';
 
 /** "Each player recalls a unit" (R12/R25: the region's present seats; each
  * player picks their own). All picks are gathered before any recall. */
@@ -141,7 +132,12 @@ const playInline = (g: E, ctx: EffectCtx, name: string, key: string): 'unit' | '
 //  - modded victim: destroy() erases everything (Unstable) and bins nothing, so
 //    `binTo` never applies and Pull Under owns the whole move. It uses
 //    E.toBin(caster, …, 'play'), which trashes each card by the caster.
-//  - token victim (or a token MOD): erased, no bin, no trash.
+//  - token victim (R69, 2026-08-21): a token is a card and DOES enter a bin, so
+//    destroy({ binTo: caster }) already bins it in the caster's name, trashes
+//    it there, and lets the state-based sweep erase it. Nothing left to do —
+//    hence the early return, which is now about not double-binning rather than
+//    about tokens being exempt.
+//  - token MOD: still erased. A mod has no card of its own to bin.
 card('Pull Under', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Pull Under: delete target unit — it and its mods go to your bin' },
@@ -152,15 +148,15 @@ card('Pull Under', {
       if (!u) return;
       const wasToken = !!u.token;
       const name = u.card;
-      // R40: a token mod has no card and is never trashed — it is erased with
-      // the body, exactly as recall()/cacheUnit() erase one.
+      // R69: a token MOD has no card of its own — it is erased with the body,
+      // exactly as recall()/cacheUnit() erase one, and never trashed.
       const modCards = u.mods
         .map(id => g.entity(id))
         .filter((m): m is Entity => !!m && !m.token)
         .map(m => m.card);
       const hadMods = u.mods.length > 0;
       g.destroy(u, 'is deleted', { binTo: ctx.controller });
-      if (wasToken) return;   // erased — nothing enters a bin
+      if (wasToken) return;   // R69: destroy() already binned, trashed and erased it
       if (hadMods) {
         // destroy() erased base + mods (Unstable) and fired no trash, so the
         // whole move is ours: everything enters the CASTER's bin from play,
@@ -192,8 +188,8 @@ card('Recall', {
 
 // "[Augment] Whenever a card enters a player's hand during battle, I gain
 // +2/+2 until regroup." — b/1 2/2 Fish Unit. Text-box [Augment]. Cards enter
-// hands mid-battle via recall ('despawned', nontoken → owner's hand; a token
-// recall is erased instead, filtered by card type — see isNontokenCard) or a
+// hands mid-battle via recall ('despawned' with to: 'hand'; a token recall is
+// erased and a cached unit goes to the cache, both excluded) or a
 // battle DRAW (E.draw fires 'draw' during battle only; drawn cards are deck
 // cards, always nontoken; the event carries no region, so the when() pins the
 // listener to the battle region, R12).
@@ -204,11 +200,14 @@ card('Rider of the Tides', {
     when: (g, self, ev) =>
       g.s.phase === 'battle' &&
       (ev.type === 'draw' ? g.s.battle?.region === self.region
-        : isNontokenCard(ev.data?.card)),
+        : enteredAHand(ev)),
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (self) g.addTemp(self, 2, 2);
+        const self = selfOf(g, ctx);
+        // the carrier can be gone by resolution — R69's hand window makes this
+        // reachable in one more way, since a token recall now fires the trigger
+        if (!self) { g.ev('info', 'Rider of the Tides: the carrier is gone — no +2/+2.'); return; }
+        g.addTemp(self, 2, 2);
       },
     },
   }],
@@ -253,7 +252,10 @@ card('Rippleback Skulker', {
       },
       run: (g, ctx) => {
         const t = ctx.targets[0];
-        if (!t || !('binCard' in t) || t.binCard.index === -1) return;
+        if (!t || !('binCard' in t) || t.binCard.index === -1) {
+          g.ev('info', 'Rippleback Skulker: no bin card is targeted (or it has left) — nothing is taken.');
+          return;
+        }
         const [taken] = g.player(t.binCard.seat).bin.splice(t.binCard.index, 1);
         if (taken !== undefined) {
           g.player(ctx.controller).hand.push(taken);
@@ -301,15 +303,17 @@ card('Shoreline Specter', {
       targets: { what: 'allyUnit', prompt: 'Shoreline Specter: recall target ally? (each opponent then loses 2 life)' },
       run: (g, ctx) => {
         const t = ctx.targets[0];
-        if (!isEnt(t)) return;
-        const u = g.entity(t.id);
-        if (!u) return;
+        if (!isEnt(t) || !g.entity(t.id)) {
+          g.ev('info', 'Shoreline Specter: the target ally is gone — nothing is recalled.');
+          return;
+        }
+        const u = g.entity(t.id)!;
         const yes = ctx.choose('doIt', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: `Shoreline Specter: recall ${u.card}? (each opponent loses 2 life)`,
           options: [{ label: `Recall ${u.card}`, value: true }, { label: 'Decline', value: false }],
         });
-        if (!yes) return;
+        if (!yes) { g.ev('info', 'Shoreline Specter: declined — no recall, no life loss.'); return; }
         const opponents = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
         g.recall(u);
         for (const s of opponents) g.loseLife(s, 2, 'Shoreline Specter');
@@ -328,6 +332,7 @@ const soulSiphonMake: EffectDef = {
   // says "target player", not "target opponent", so aiming it at YOURSELF is
   // legal (and is what you do when you are the one who has been bled).
   targets: { what: 'player', prompt: 'Soul Siphon: target player (X = the life they lost this battle)' },
+  creates: ['Unit Token'],
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!t || !('player' in t)) return;
@@ -346,6 +351,7 @@ card('Soul Siphon', {
 // spell part makes the 8/8; the 2/2 body then spawns (spellUnit). Bounded
 // graft shares the effect.
 const makeEightEight: EffectDef = {
+  creates: ['Unit Token'],
   run: (g, ctx) => {
     g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [8, 8] });
   },
@@ -404,9 +410,15 @@ card('Spell Excavation', {
     run: (g, ctx) => {
       const bin = g.player(ctx.controller).bin;
       const t = ctx.targets[0];
-      if (!t || !('binCard' in t) || t.binCard.index === -1) return;
+      if (!t || !('binCard' in t) || t.binCard.index === -1) {
+        g.ev('info', 'Spell Excavation: no bin spell is targeted (or it has left) — nothing is played.');
+        return;
+      }
       const name = bin[t.binCard.index];
-      if (name === undefined || !excavatable(g, ctx.controller, ctx.region, name)) return;
+      if (name === undefined || !excavatable(g, ctx.controller, ctx.region, name)) {
+        g.ev('info', 'Spell Excavation: that spell can no longer be played from the bin — nothing happens.');
+        return;
+      }
       bin.splice(t.binCard.index, 1);
       g.payCard(ctx.controller, name);
       playInline(g, ctx, name, 'x');
@@ -423,7 +435,7 @@ card('Spell Excavation', {
 // amount is my effective stats at RESOLUTION (R1), added as a temp change.
 const doubleSelf: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const self = selfOf(g, ctx);
     if (!self) return;
     const [p, t] = g.effStats(self);
     g.addTemp(self, p, t);
@@ -455,9 +467,12 @@ card('Tempest Wrangler', {});
 card('Tidal Menace', {});
 
 // "For each player, recall target unit that player controls." — bb/2,
-// {Battle} Mystic Spell. ⚠ the engine's cast-time targeting holds one target
-// per part, so the CASTER picks both units mid-resolution instead (auto when
-// a player controls exactly one unit in the region). Region-scoped (R12).
+// {Battle} Mystic Spell. R58/R64/R67: BOTH units are declared targets, chosen
+// as the spell goes on the stack — `count: 2, min: 0` with a one-per-
+// CONTROLLER restriction, spelled out six lines below. (The "⚠ the engine's
+// cast-time targeting holds one target per part, so the CASTER picks both
+// units mid-resolution" line that used to sit here contradicted it.)
+// Region-scoped (R12).
 card('Tidal Reversion', {
   spellEffect: {
     // R67: "recall target unit that player controls" is a DECLARED target —
@@ -474,6 +489,10 @@ card('Tidal Reversion', {
         || !(tc.chosen ?? []).some(c => isEntityTarget(c) && c.controller === t.controller),
     },
     run: (g, ctx) => {
+      if (!ctx.targets.some(isEntityTarget)) {
+        g.ev('info', 'Tidal Reversion: no unit is targeted — nothing is recalled.');
+        return;
+      }
       for (const t of ctx.targets) {
         if (!isEntityTarget(t)) continue;
         const u = g.entity(t.id);
@@ -491,6 +510,7 @@ card('Tidal Reversion', {
 // block the counterattack — created units default to your region unless the
 // card says "in my formation" or similar).
 const makeTwoTwo: EffectDef = {
+  creates: ['Unit Token'],
   run: (g, ctx) => {
     g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller), { token: true, tokenStats: [2, 2] });
   },
@@ -507,63 +527,31 @@ card('Tidelurker', {
 
 // "You may play me into an open spot in your formation." — b/1 2/2 {Battle}
 // Fish Unit. Modelled as a spawn trigger: played during battle it spawns into
-// the region, then may slide into an open BACK slot of one of its
-// controller's existing formation columns (attacking columns as the
-// attacker, blocking columns as the defender). ⚠ reading: "open spot" = the
-// empty second slot of a column that has exactly one living unit; it does not
-// open brand-new columns. Declining is allowed ("you may").
-// An "open spot in your formation": any of your formation columns with fewer
-// than 2 living members (join behind the survivor / take over an emptied
-// column), plus — provisional ruling — a fresh column alongside an EXISTING
-// formation. No formation at all (nothing declared) = nothing to join.
-const tiderunnerOpenSpots = (g: E, seat: Seat): { col: EntityId[] | null; label: string }[] => {
-  const b = g.s.battle;
-  if (!b) return [];
-  const attacker = seat === b.attacker;
-  const grid = attacker ? b.columns
-    : seat === b.defender ? Object.values(b.blocks) : [];
-  const anyAlive = grid.some(col => col.some(id => g.entity(id)));
-  if (!anyAlive) return [];
-  const out: { col: EntityId[] | null; label: string }[] = [];
-  grid.forEach((col, i) => {
-    const alive = col.filter(id => g.entity(id));
-    if (alive.length === 1) {
-      out.push({ col, label: `column ${i + 1}, behind ${g.entity(alive[0]!)?.card ?? '?'}` });
-    } else if (alive.length === 0) {
-      out.push({ col, label: `column ${i + 1} (emptied)` });
-    }
-  });
-  // the attacker's formation can widen by a column; a blocker grid is keyed
-  // to attacking columns, so no new columns there
-  if (attacker) out.push({ col: null, label: 'a new column' });
-  return out;
-};
+// the region, then may slide into an open formation slot.
+//
+// R75: the slot set and the choice are now the engine's, not this card's.
+// `E.formationSlots` is the single answer to "where can a unit join a
+// formation" — either END of the attacking line, the back slot of a one-unit
+// column, or an R72 hole — and `E.placeInFormation(..., { optional: true })`
+// carries the printed "you MAY". This card is where that logic was invented,
+// one card at a time; four others were each doing a different version of it.
 card('Tiderunner Initiate', {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
     label: 'you may join an open spot in your formation',
     when: (g, self) =>
-      g.s.phase === 'battle' && tiderunnerOpenSpots(g, self.controller).length > 0,
+      g.s.phase === 'battle' && g.formationSlots(self.controller).length > 0,
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         const b = g.s.battle;
-        if (!self || !b || self.region !== b.region || g.columnOf(self.id)) return;
-        const spots = tiderunnerOpenSpots(g, self.controller);
-        if (!spots.length) return;
-        const pick = ctx.choose('spot', {
-          kind: 'electricPath', seat: ctx.controller,
-          prompt: 'Tiderunner Initiate: join an open formation spot?',
-          options: [
-            ...spots.map((s, i) => ({ label: s.label, value: i })),
-            { label: 'Stay out of formation', value: -1 },
-          ],
-        }) as number;
-        const s = pick >= 0 ? spots[pick] : undefined;
-        if (!s) return;
-        if (s.col) s.col.push(self.id);
-        else b.columns.push([self.id]);   // a fresh column alongside the formation
-        g.ev('info', `Tiderunner Initiate joins the formation (${s.label}).`);
+        if (!self || !b || self.region !== b.region || g.columnOf(self.id)) {
+          g.ev('info', 'Tiderunner Initiate: it is not where a formation can be joined — it stays out.');
+          return;
+        }
+        g.placeInFormation(self, ctx, {
+          key: 'spot', source: 'Tiderunner Initiate', optional: true,
+        });
       },
     },
   }],
@@ -581,10 +569,6 @@ card('Tides of the Cosmos', {
       const top = g.deckOf(ctx.controller).slice(0, 8);
       if (!top.length) return;
       g.ev('info', `Tides of the Cosmos reveals: ${top.join(', ')}.`);
-      const manaOf = (n: string): number => {
-        const m = getCard(n).mana;
-        return m === 'X' ? 0 : m;
-      };
       const picks: number[] = [];
       let budget = 8;
       for (let k = 0; k < 2; k++) {
@@ -656,7 +640,7 @@ card('Upheaval', {
 // recalls the host). Bounded once per turn (R9).
 const recallSelf: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const self = selfOf(g, ctx);
     if (self) g.recall(self);
   },
 };
@@ -671,9 +655,9 @@ card('Vaporweave Eidolon', {
 
 // "When I activate, if you have at least [b][b][b], create a Shard.
 // (It spawns dormant.)" — b/0 2/0, [b] Water Resource.
-// PARKED (see header): resource cards, activation triggers and the Shard
-// resource kind are all missing engine primitives. Registered on printed data
-// only so lookups never crash. (Note: printed.kind is 'unit', so the shared
+// PARKED (see header) on resource CARDS and the activation trigger; the Shard
+// itself is no longer missing (E.createShard). Registered on printed data only
+// so lookups never crash. (Note: printed.kind is 'unit', so the shared
 // deck legally contains it; played, its 0 toughness kills it immediately —
 // harmless until resource-card play is modelled.)
 card('Water Resource', {});
@@ -693,10 +677,14 @@ card('Xenopod Progenitor', {
     when: (g, self, ev) =>
       g.s.phase === 'battle' &&
       (ev.type === 'draw' ? g.s.battle?.region === self.region
-        : ev.data?.unit !== self.id && isNontokenCard(ev.data?.card)),
+        : ev.data?.unit !== self.id && enteredAHand(ev)),
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
-        if (g.openMana(ctx.controller) < 1) return;
+        if (g.openMana(ctx.controller) < 1) {
+          g.ev('info', 'Xenopod Progenitor: no open mana to pay [1] — no unit.');
+          return;
+        }
         const pay = ctx.choose('pay', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: 'Xenopod Progenitor: pay [1] to create a 2/2 unit?',
@@ -705,7 +693,7 @@ card('Xenopod Progenitor', {
             { label: 'Decline', value: false },
           ],
         });
-        if (!pay) return;
+        if (!pay) { g.ev('info', 'Xenopod Progenitor: the [1] is declined — no unit.'); return; }
         g.payMana(ctx.controller, 1);
         g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [2, 2] });
       },

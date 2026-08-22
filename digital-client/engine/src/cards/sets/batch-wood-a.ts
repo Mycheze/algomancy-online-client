@@ -18,18 +18,25 @@
  *    removes the unit from any formation (a defector stops fighting), and
  *    logs. The region is left as-is: regroup (R11 step 1) reads controller
  *    and sends it to its new home.
- *  - EARNEST DEFENDER: spell-target 'targeted' events are logged but NOT
- *    dispatched to trigger listeners (engine: "none in pool yet"), so the
- *    trigger listens on 'spellPlayed' and reconstructs the cast's declared
- *    unit targets from the event-log tail (the 'targeted' entries logged by
- *    commitItem immediately before the spellPlayed event). One firing per
- *    enemy spell, even if it targets two allies. Spell tokens count as
- *    spells here (they target like spells; R26's "played" exclusion is
- *    about "you play" triggers).
- *  - FUNGAL GARDENER: a died event carries no token flag and the entity is
- *    already deleted at event time, so nontoken-ness is read from the died
- *    message ("token: erased" = token; Unstable erasure is still a nontoken
- *    death).
+ *  - EARNEST DEFENDER: still the log-tail reconstruction, but NOT for the
+ *    reason this note used to give. It said "'targeted' events are logged but
+ *    NOT dispatched to trigger listeners"; R53 fixed that — commitItem calls
+ *    fireEvent('targeted', …) for every unit target of every stack item, which
+ *    is how Mohruung works. What the dispatched event does NOT carry is who is
+ *    doing the targeting: its data is { item, unit, region } only, with no
+ *    controller and no kind, so "targeted by an ENEMY SPELL" cannot be decided
+ *    from it. Until the event carries the item's controller and kind, the
+ *    trigger listens on 'spellPlayed' (which does carry the seat) and reads
+ *    the 'targeted' entries commitItem logged immediately before it — sound,
+ *    because both are emitted synchronously inside one commitItem. One firing
+ *    per enemy spell, even if it targets two allies. Spell tokens count as
+ *    spells here (they target like spells; R26's "played" exclusion is about
+ *    "you play" triggers).
+ *  - FUNGAL GARDENER: NO LONGER an approximation. This said "a died event
+ *    carries no token flag … so nontoken-ness is read from the died message";
+ *    R70 stamps `token` (with `counters`, `verb`, `seat`, `region`) onto every
+ *    leave-play event precisely because the entity is gone by trigger time,
+ *    and the card reads ev.data.token.
  *  - HUSH MUSH: a spell unit spawns AFTER its effect parts (afterParts), so
  *    "its controller gains control of me" is handed off through a per-region
  *    battleCounters ledger read by Hush Mush's own spawn trigger. Two Hush
@@ -38,10 +45,12 @@
  *  - BURGEON: "double" adds the current EFFECTIVE stat as an until-regroup
  *    bonus (stat layer 3). Under a layer-4 multiplier (Tough/Balanced) the
  *    result overshoots ((base+eff)*2 > eff*2). No pool combo hits this today.
- *  - HOOBA-NAN: edge slots front NEW columns only while no blocks are
- *    declared (b.blocks is keyed by column index, so inserting columns
- *    after blocks would shift the mapping); slots inside existing columns
- *    are always fillable. New columns are only fronted from the front row.
+ *  - HOOBA-NAN: NO LONGER an approximation, and no longer this card's problem.
+ *    R75 put "adjacent" in the engine (E.adjacentSlots): sides and
+ *    above/below, nothing diagonal, over the slots the formation actually has.
+ *    It no longer fronts fresh columns at the edges of the line, so the
+ *    "only while no blocks are declared" guard — which existed because
+ *    unshifting a column renumbers every b.blocks key — is gone with it.
  *  - GLOWHAVEN ELDER / INSPIRATION: statics-only text-box [Augment]s —
  *    `augmentable: true` + statics anchored on the carrier (the host when
  *    donated; "your other units" excludes the anchor by id).
@@ -51,16 +60,9 @@
 import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, effectByKey, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, inEndOfTurn } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity =>
-  !!t && typeof t === 'object' && 'id' in (t as object);
-
-/** True while endTurn() is resolving end-of-turn triggers — a ctx.choose
- * suspension there strands the game (batch-fire-a precedent), so
- * choose-based effects reachable then must auto-pick deterministically. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
 
 /** create a 1/1 unit token for `seat` (R28: controller's home region unless
  * the caller passes a battle-local region) */
@@ -70,7 +72,8 @@ const makeOneOne = (g: E, seat: Seat, region?: number): Entity =>
 /** ⚠ header approximation: no engine control-change primitive. Flip the
  * controller on the unit and its mods, pull it out of any formation, log. */
 const giveControl = (g: E, u: Entity, to: Seat): void => {
-  if (u.controller === to || !g.entity(u.id)) return;
+  if (u.controller === to) { g.ev('info', `${g.pname(to)} already controls ${u.card} — nothing changes hands.`); return; }
+  if (!g.entity(u.id)) { g.ev('info', `${u.card} is gone — nothing changes hands.`); return; }
   const from = u.controller;
   u.controller = to;
   for (const id of u.mods) { const m = g.entity(id); if (m) m.controller = to; }
@@ -94,6 +97,7 @@ const giveControl = (g: E, u: Entity, to: Seat): void => {
 // tokens appear at ctx.region — they are battle materiel, not units (R28).
 card('All-Consuming Blight', {
   spellEffect: {
+    creates: ['Poison'],
     run: (g, ctx) => {
       const mine = g.unitsOf(ctx.controller, ctx.region);
       for (const _ of mine) g.createSpellToken(ctx.controller, 'Poison', 1, ctx.region);
@@ -113,7 +117,10 @@ card('Bioremediation', {
     targets: { what: 'any', prompt: 'Bioremediation: target player reveals their hand — you take a card from it' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('player' in (t as object))) return;
+      if (!t || !('player' in (t as object))) {
+        g.ev('info', 'Bioremediation: the target is not a player — no hand is revealed.');
+        return;
+      }
       const who = (t as { player: Seat }).player;
       const hand = g.player(who).hand;
       g.ev('info', `Bioremediation reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
@@ -125,7 +132,7 @@ card('Bioremediation', {
         options: hand.map((name, i) => ({ label: name, value: i, card: name })),
       }) as number;
       const [name] = hand.splice(pick, 1);
-      if (name === undefined) return;
+      if (name === undefined) { g.ev('info', 'Bioremediation: that card is gone — nothing is taken.'); return; }
       g.player(ctx.controller).hand.push(name);
       g.ev('info', `Bioremediation: ${g.pname(ctx.controller)} takes ${name}.`);
     },
@@ -144,7 +151,7 @@ card('Boon of Protection', {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-      if (!item || item.negated) return;
+      if (!item) return;
       const allied = item.parts.some(p => !p.spent && p.targets.some(tr => {
         if ('unit' in tr) return g.entity(tr.unit)?.controller === ctx.controller;
         if ('player' in tr) return tr.player === ctx.controller;
@@ -166,18 +173,47 @@ card('Boon of Protection', {
 // effect ([Switch1], R9). The stat is a mid-resolution pick by the caster
 // (R6; deterministic auto-pick of power during end-of-turn resolution).
 // ⚠ header approximation: adds the current EFFECTIVE stat as a temp bonus.
+//
+// PLAYTEST FIX (game MNWK: "Burgeon resolving didn't give me the choice to
+// double the power or defense. It just did nothing."). That game is too old to
+// replay, so which path fired cannot be confirmed — but BOTH of the paths that
+// produce exactly "no choice, nothing happened" were defects and both are
+// fixed here. An effect must never resolve into silence:
+//  1. the end-of-turn branch silently auto-picks 'power'. It still must (a
+//     ctx.choose suspension in the end-of-turn tail strands the game), but a
+//     GRAFTED Burgeon riding an end-of-turn cause now SAYS that it chose for
+//     you instead of just not asking.
+//  2. doubling a stat that is 0 is an invisible no-op — addTemp(+0/+0) logs a
+//     line that reads like nothing happened because nothing did. Say so.
+//  3. the gone-target guard was the only one in this file with no info line,
+//     unlike its siblings (Reconfigure, Body Swap, Fight).
 const burgeonEffect: EffectDef = {
   targets: { what: 'unit', prompt: 'Burgeon: double the power or defense of target unit until regroup' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (!isEnt(t) || !g.entity(t.id)) return;
+    if (!isEnt(t) || !g.entity(t.id)) {
+      g.ev('info', 'Burgeon: the target is gone — nothing is doubled.');
+      return;
+    }
     const [p, d] = g.effStats(t);
-    const mode = inEndOfTurn(g) ? 'power' : ctx.choose('stat', {
-      kind: 'electricPath', seat: ctx.controller,
-      prompt: `Burgeon: double ${t.card}'s power (${p} → ${p * 2}) or defense (${d} → ${d * 2})?`,
-      options: [{ label: `Power (${p} → ${p * 2})`, value: 'power' }, { label: `Defense (${d} → ${d * 2})`, value: 'defense' }],
-    });
-    if (mode === 'defense') g.addTemp(t, 0, d);
+    let mode: unknown = 'power';
+    if (inEndOfTurn(g)) {
+      // mandatory: deterministic auto-pick, no suspension (General Smof's rule)
+      g.ev('info', `Burgeon: power is auto-picked for ${t.card} (end-of-turn resolution — no choice can be offered).`);
+    } else {
+      mode = ctx.choose('stat', {
+        kind: 'electricPath', seat: ctx.controller,
+        prompt: `Burgeon: double ${t.card}'s power (${p} → ${p * 2}) or defense (${d} → ${d * 2})?`,
+        options: [{ label: `Power (${p} → ${p * 2})`, value: 'power' }, { label: `Defense (${d} → ${d * 2})`, value: 'defense' }],
+      });
+    }
+    const [stat, was] = mode === 'defense' ? ['defense', d] as const : ['power', p] as const;
+    if (was <= 0) {
+      g.ev('info', `Burgeon: ${t.card} has ${was} ${stat} — doubling it changes nothing.`);
+      return;
+    }
+    g.ev('info', `Burgeon doubles ${t.card}'s ${stat}: ${was} → ${was * 2} until regroup.`);
+    if (stat === 'defense') g.addTemp(t, 0, d);
     else g.addTemp(t, p, 0);
   },
 };
@@ -198,7 +234,7 @@ card('Corrupting Blight', {
     label: "a player who doesn't control me gains control of me (after combat)",
     effect: {
       run: (g, ctx) => {
-        const me = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const me = selfOf(g, ctx);
         if (!me) return;
         const candidates = g.s.players.map((_, s) => s as Seat).filter(s => s !== me.controller);
         if (!candidates.length) return;
@@ -215,9 +251,11 @@ card('Corrupting Blight', {
 
 // "[Augment] Whenever an ally becomes the target of an enemy spell, create
 // a 1/1 unit." — g/3 1/3 {Haste} Flower Guardian Unit. ⚠ header
-// approximation: listens on 'spellPlayed' and reconstructs the cast's unit
-// targets from the event-log tail (spell-target 'targeted' events are not
-// dispatched). "Ally" = a unit my controller controls (me included).
+// approximation: listens on 'spellPlayed' and reads the 'targeted' entries
+// commitItem logged immediately before it. ('targeted' IS dispatched now —
+// R53 — but its data is { item, unit, region }, with no controller and no
+// kind, so an "enemy SPELL" cannot be recognised from it alone; see header.)
+// "Ally" = a unit my controller controls (me included).
 // R28: the 1/1 arrives in the controller's home region.
 card('Earnest Defender', {
   augmentText: [{
@@ -243,6 +281,7 @@ card('Earnest Defender', {
       return targets.some(id => g.entity(id)?.controller === self.controller);
     },
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => { makeOneOne(g, ctx.controller); },
     },
   }],
@@ -251,10 +290,11 @@ card('Earnest Defender', {
 // "Whenever a nontoken enemy dies, [Switch] Create a 1/1 unit." — gg/2 1/2
 // Fungus Druid Unit. Died trigger, region-scoped by fireEvent; "enemy" =
 // the dead unit's controller differs from mine (R1: checked at event time).
-// ⚠ header approximation: nontoken-ness read from the died message. The
-// creation is the unbounded graftable piece ([Switch]); R28: the 1/1
-// arrives in the controller's home region.
+// R70: nontoken-ness is a FACT ON THE EVENT (ev.data.token) — it used to be a
+// string match on the death message. The creation is the unbounded graftable
+// piece ([Switch]); R28: the 1/1 arrives in the controller's home region.
 const gardenerSprout: EffectDef = {
+  creates: ['Unit Token'],
   run: (g, ctx) => { makeOneOne(g, ctx.controller); },
 };
 card('Fungal Gardener', {
@@ -263,7 +303,7 @@ card('Fungal Gardener', {
     label: 'create a 1/1 unit (a nontoken enemy died)',
     when: (g, self, ev) =>
       ev.data?.seat !== undefined && ev.data.seat !== self.controller
-        && !ev.msg.includes('token: erased'),
+        && ev.data?.token !== true,   // R70: the fact rides the event
     effect: gardenerSprout,
   }],
   graftEffect: { bounded: false, effect: gardenerSprout },
@@ -326,14 +366,14 @@ card('Hexbane Shiitake', {
     when: (g, self, ev) => ev.data?.seat !== self.controller && ev.data?.token !== true,
     effect: {
       run: (g, ctx) => {
-        const me = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const me = selfOf(g, ctx);
         if (!me) return;
         const cardName = ctx.event?.data?.card as string | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
         if (cardName === undefined || seat === undefined) return;
         const spellKinds = new Set(['spell', 'spellUnit']);
         const item = [...g.s.stack].reverse().find(i =>
-          i.card === cardName && i.controller === seat && !i.negated && spellKinds.has(i.kind));
+          i.card === cardName && i.controller === seat && spellKinds.has(i.kind));
         if (!item) { g.ev('info', `Hexbane Shiitake: ${cardName} is no longer on the stack — no exchange.`); return; }
         // plan: every choice before any mutation (the part replays on suspension)
         const pays = inEndOfTurn(g) ? false : ctx.choose('swap', {
@@ -376,39 +416,36 @@ card('Hexbane Shiitake', {
 // "[Augment] When I attack, if I am still in formation, create a 1/1 unit
 // in all my empty adjacent slots." — ggg/4 5/4 Hooba Banana Unit. Text-box
 // [Augment]; live when played normally. "Still in formation" is checked at
-// RESOLUTION (R27-style). Slots are battle-local (overrides R28): the
-// vertical slot in my column, the same-row slots of adjacent columns, and —
-// while no blocks are declared and I'm in the front row — fresh columns at
-// the formation edges (⚠ header). The tokens join the attack.
+// RESOLUTION (R27-style).
+//
+// R75: the slot set is the ENGINE's now (E.adjacentSlots) — "sides and
+// above/below, nothing diagonal", over the slots the formation actually has.
+// This card does NOT get the placement choice that "in my formation" cards
+// get: it names its own slots, so there is nothing to choose.
+//
+// Two behaviour changes fall out of the ruling, both deliberate:
+//  · it no longer opens FRESH COLUMNS at the edges of the line. Adjacent slots
+//    "only exist if it's in a formation", so a unit in the leftmost column has
+//    no left-adjacent slot rather than an implicit one.
+//  · with that gone, so is the `Object.keys(b.blocks).length === 0` guard this
+//    card used to need — it existed only because unshifting a new column at
+//    index 0 renumbers every block key by hand. That re-key now has exactly one
+//    owner (E.rekeyColumns) and this card never triggers it.
 card('Hooba-Nan', {
   augmentText: [{
     type: 'triggered', events: ['attacked'], self: true,
     label: 'create a 1/1 unit in all my empty adjacent slots',
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
-        const me = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        const b = g.s.battle;
-        if (!me || !b) return;
-        let ci = -1, ri = -1;
-        for (let i = 0; i < b.columns.length; i++) {
-          const r = b.columns[i]!.indexOf(me.id);
-          if (r !== -1) { ci = i; ri = r; break; }
-        }
-        if (ci === -1) { g.ev('info', `${me.card}: no longer in formation — no units.`); return; }
-        const canExtend = ri === 0 && Object.keys(b.blocks).length === 0;
-        let n = 0;
-        // vertical slot in my column
-        if (b.columns[ci]!.length < 2) { b.columns[ci]!.push(makeOneOne(g, ctx.controller, ctx.region).id); n++; }
-        // same-row slot of the right neighbor (or a fresh edge column)
-        if (ci + 1 < b.columns.length) {
-          if (b.columns[ci + 1]!.length <= ri) { b.columns[ci + 1]!.push(makeOneOne(g, ctx.controller, ctx.region).id); n++; }
-        } else if (canExtend) { b.columns.push([makeOneOne(g, ctx.controller, ctx.region).id]); n++; }
-        // same-row slot of the left neighbor (or a fresh edge column) — last,
-        // an unshift renumbers columns (safe: blocks are empty by the guard)
-        if (ci - 1 >= 0) {
-          if (b.columns[ci - 1]!.length <= ri) { b.columns[ci - 1]!.push(makeOneOne(g, ctx.controller, ctx.region).id); n++; }
-        } else if (canExtend) { b.columns.unshift([makeOneOne(g, ctx.controller, ctx.region).id]); n++; }
-        g.ev('info', `${me.card}: ${n} 1/1 unit(s) fill the empty adjacent slots.`);
+        const me = selfOf(g, ctx);
+        if (!me || !g.s.battle) { g.ev('info', 'Hooba-Nan: no formation to fill — no units.'); return; }
+        if (!g.columnOf(me.id)) { g.ev('info', `${me.card}: no longer in formation — no units.`); return; }
+        const slots = g.adjacentSlots(me.id);
+        if (!slots.length) { g.ev('info', `${me.card}: every adjacent slot is already taken — no units.`); return; }
+        for (const s of slots) s.col.push(makeOneOne(g, ctx.controller, ctx.region).id);
+        g.ev('info', `${me.card}: ${slots.length} 1/1 unit(s) fill the empty adjacent slots `
+          + `(${slots.map(s => s.label).join('; ')}).`);
       },
     },
   }],
@@ -425,9 +462,15 @@ card('Hush Mush', {
     targets: { what: 'stackEffect', prompt: 'Hush Mush: negate target effect (its controller gains control of me)' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('stack' in (t as object))) return;
+      if (!t || !('stack' in (t as object))) {
+        g.ev('info', 'Hush Mush: no effect is targeted — nothing is negated.');
+        return;
+      }
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-      if (!item) return;
+      if (!item) {
+        g.ev('info', 'Hush Mush: the targeted effect has already left the stack.');
+        return;
+      }
       g.negate(item.id);
       // handoff for my spawn trigger (see header): seat+1; 0 = nothing owed
       const c = g.s.battleCounters[ctx.region] ?? (g.s.battleCounters[ctx.region] = {});
@@ -440,11 +483,11 @@ card('Hush Mush', {
     when: (g, self) => (g.s.battleCounters[self.region]?.[HUSH_KEY] ?? 0) > 0,
     effect: {
       run: (g, ctx) => {
-        const me = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!me) return;
+        const me = selfOf(g, ctx);
+        if (!me) { g.ev('info', 'Hush Mush: the body is gone — no handover.'); return; }
         const c = g.s.battleCounters[ctx.region];
         const v = c?.[HUSH_KEY] ?? 0;
-        if (!c || v <= 0) return;
+        if (!c || v <= 0) { g.ev('info', 'Hush Mush: nothing was negated — nobody gains control of me.'); return; }
         c[HUSH_KEY] = 0;
         giveControl(g, me, (v - 1) as Seat);
       },
@@ -493,6 +536,7 @@ card('Jollyglop', {
     type: 'triggered', events: ['damage'], self: true, bounded: true,   // [once]
     label: 'create that many 1/1 units (I was dealt damage)',
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
         for (let i = 0; i < n; i++) makeOneOne(g, ctx.controller);

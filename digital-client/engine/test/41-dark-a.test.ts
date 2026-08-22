@@ -6,7 +6,7 @@
  * Covers the expansion mechanics this batch touches: glimpse (R45 — Glook,
  * Maw of Despair), rot (R38 — Cosmic Devourer, Pestilent Titan, Burn the
  * Blight), trash (R40 — Afflicting Anima, Maw of Despair, Nothyr, Sacrifice
- * Dude, and the "Discard me" play mode) and the Wight/Wraith token (R47 —
+ * Dude, and the "Discard me" play mode) and the Wraith token (R71 —
  * Afflicting Anima, Cosmic Devourer); plus bin recursion (Exhume, Spore of
  * Regenesis, Tilling the Graves, Wake the Dead), the stat-change target gate
  * (Leave None Pure) and the ordinary battle triggers (Cull, Gzxyclop,
@@ -43,7 +43,7 @@ const named = (h: Harness, card: string): Entity[] =>
 
 // ── Afflicting Anima ─────────────────────────────────────────────────────
 
-test('Afflicting Anima: trashed from hand → pay [1] to create a Wraith (R40 + R47)', () => {
+test('Afflicting Anima: trashed from hand → pay [1] to create a Wraith (R40 + R71)', () => {
   const h = new Harness(4101);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -55,7 +55,7 @@ test('Afflicting Anima: trashed from hand → pay [1] to create a Wraith (R40 + 
   pick(h, true);
   const wights = named(h, 'Wraith');
   assert.equal(wights.length, 1, 'a Wraith was created');
-  assert.deepEqual(effStats(h, wights[0]!.id), [4, 4], 'the Wight is a 4/4 body (R47)');
+  assert.deepEqual(effStats(h, wights[0]!.id), [3, 3], 'the Wraith is a 3/3 body (R71)');
   assert.ok(wights[0]!.token, 'and it is a token');
   assert.equal(h.q.openMana(A), 0, 'the [1] was paid');
   assert.ok(h.state.players[A]!.bin.includes('Afflicting Anima'), 'the card itself stays in the bin');
@@ -109,7 +109,7 @@ test('Cosmic Devourer: end of turn → create a Wraith and gain 1 rot', () => {
   spawn(h, A, 'Cosmic Devourer');
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });   // → end of turn
-  assert.equal(named(h, 'Wraith').length, 1, 'a Wraith at end of turn (R47)');
+  assert.equal(named(h, 'Wraith').length, 1, 'a Wraith at end of turn (R71)');
   assert.equal(h.q.rot(A), 1, 'and a rot (R38)');
   const life = h.state.players[A]!.life;
   // R38: the rot bites at the START of the next deployment
@@ -297,7 +297,7 @@ test('Nothyr: "Discard me" in battle → its trash trigger negates a nonspell ef
   pick(h, { stack: krakenItem });
   pass(h); pass(h);                                     // resolve Nothyr's trigger
   assert.ok(h.log.some(l => l.includes('is negated')), 'the triggered effect is negated');
-  pass(h); pass(h);                                     // the negated trigger does nothing
+  assert.equal(h.state.stack.length, 0, 'R68: the negated trigger left the stack at once');
   assert.ok(ent(h, dTok), 'the token was never recalled');
   finishBattle(h);
 });

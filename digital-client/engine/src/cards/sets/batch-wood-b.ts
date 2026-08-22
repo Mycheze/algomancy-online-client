@@ -42,37 +42,15 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, type EffectDef } from '../dsl.ts';
+import { isEnt, inEndOfTurn, chooseUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity =>
-  !!t && typeof t === 'object' && 'id' in (t as object);
 
 /** present seats of a region, initiative player first (stable order) */
 const presentSeats = (g: E, region: number): Seat[] => {
   const present = g.s.regions[region]!.presentSeats;
   return [g.initiative, g.nit].filter(s => present.includes(s));
-};
-
-/** True while endTurn() is resolving end-of-turn triggers — a ctx.choose
- * suspension there strands the game (see batch-fire-a), so choose-based
- * effects reachable then must auto-pick deterministically instead. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
-
-/** `chooser` picks one of `candidates` (auto-picked when only one). Returns
- * null when there is nothing to pick. Plan-then-commit: call all chooses
- * before mutating (the engine replays the part on suspension). */
-const chooseUnit = (
-  g: E, ctx: EffectCtx, key: string, chooser: Seat, candidates: Entity[], prompt: string,
-): Entity | null => {
-  if (!candidates.length) return null;
-  if (candidates.length === 1) return candidates[0]!;
-  const id = ctx.choose(key, {
-    kind: 'electricPath', seat: chooser, prompt,
-    options: candidates.map(u => ({ label: u.card, value: u.id })),
-  }) as EntityId;
-  return g.entity(id) ?? null;
 };
 
 // ────────────────────────────── the cards ──────────────────────────────
@@ -82,6 +60,7 @@ const chooseUnit = (
 // Poison is a SPELL token — it appears where the effect resolves (the
 // battle region, R28), ready to be thrown this battle.
 const createPoison5: EffectDef = {
+  creates: ['Poison'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Poison', 5, ctx.region); },
 };
 card('Megadeath', {
@@ -101,9 +80,13 @@ const groveMight: EffectDef = {
   targets: { what: 'unit', prompt: 'Might of the Grove: target unit gains +1/+1 for each of your units until regroup' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (!isEnt(t) || !g.entity(t.id)) return;
+    if (!isEnt(t) || !g.entity(t.id)) {
+      g.ev('info', 'Might of the Grove: the target is gone — nothing is buffed.');
+      return;
+    }
     const n = g.unitsOf(ctx.controller, ctx.region).length;
-    if (n > 0) g.addTemp(g.entity(t.id)!, n, n);
+    if (n <= 0) { g.ev('info', 'Might of the Grove: you control no unit here — +0/+0.'); return; }
+    g.addTemp(g.entity(t.id)!, n, n);
   },
 };
 card('Might of the Grove', {
@@ -134,7 +117,7 @@ const mindsporeGive: EffectDef = {
       prompt: `Mindspore Fiend: give ${g.pname(opp)} control of ${u.card} and draw a card?`,
       options: [{ label: 'Give control — draw a card', value: true }, { label: 'Decline', value: false }],
     });
-    if (gives !== true) return;
+    if (gives !== true) { g.ev('info', 'Mindspore Fiend: declined — no control change, no draw.'); return; }
     u.controller = opp;
     g.ev('info', `Mindspore Fiend: ${g.pname(opp)} gains control of ${u.card}.`);
     g.draw(ctx.controller, 1);
@@ -188,6 +171,7 @@ card('Noxious Deathcap', {
     effect: {
       run: (g, ctx) => {
         const units = g.unitsIn(ctx.region);
+        if (!units.length) { g.ev('info', 'Noxious Deathcap: there is no unit here to poison.'); return; }
         for (const u of units) {
           if (g.entity(u.id)) g.addCounters(u, -1);
         }
@@ -282,6 +266,7 @@ card('Pack Leader', {
     type: 'activated', cost: { mana: 2 },
     label: '[two]: create a 1/1 unit',
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
         g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller), { token: true, tokenStats: [1, 1] });
       },
@@ -301,6 +286,7 @@ card('Pathogenic Enclave', {
     type: 'triggered', events: ['spawned'], self: true,
     label: 'create two 1/1 units',
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
         for (let i = 0; i < 2; i++) {
           g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller), { token: true, tokenStats: [1, 1] });
@@ -314,6 +300,7 @@ card('Pathogenic Enclave', {
     effect: {
       run: (g, ctx) => {
         const toks = g.unitsOf(ctx.controller, ctx.region).filter(u => u.token);
+        if (!toks.length) { g.ev('info', 'Pathogenic Enclave: there is no token ally here to delete.'); return; }
         for (const u of toks) {
           if (g.entity(u.id)) g.destroy(u, 'is deleted');
         }
@@ -328,7 +315,9 @@ card('Pathogenic Enclave', {
 // snapshotted at resolution; addTemp + addTempAttr both clear at regroup.
 const photosynthesis: EffectDef = {
   run: (g, ctx) => {
-    for (const u of g.unitsOf(ctx.controller, ctx.region)) {
+    const mine = g.unitsOf(ctx.controller, ctx.region);
+    if (!mine.length) { g.ev('info', `${ctx.sourceName}: you control no unit here — nothing gains +2/+2.`); return; }
+    for (const u of mine) {
       g.addTemp(u, 2, 2);
       g.addTempAttr(u, 'Piercing');
     }
@@ -404,6 +393,7 @@ card('Plague Bellower', {
             'Plague Bellower: choose one of your units (it gets a -1/-1 counter)');
           if (u) picks.push(u);
         }
+        if (!picks.length) g.ev('info', 'Plague Bellower: no opponent here has a unit — no counters.');
         for (const u of picks) {
           if (g.entity(u.id)) g.addCounters(u, -1);
         }

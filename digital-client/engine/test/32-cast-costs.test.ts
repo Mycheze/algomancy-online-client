@@ -17,6 +17,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { forcedAction, IllegalAction } from '../src/apply.ts';
 import { E } from '../src/engine.ts';
+import { registerSynthetic } from '../src/cards/dsl.ts';
 import {
   ent, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
 } from './util.ts';
@@ -81,7 +82,7 @@ test('cast cost stays paid when the spell is negated (no refund)', () => {
   const handBefore = h.state.players[A]!.hand.length;
   pass(h); pass(h);                                  // Tithe resolves: A cannot pay [1]…
   pick(h, false);                                    // …declines → Immolate negated, D draws
-  pass(h); pass(h);                                  // negated Immolate resolves → bin
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Immolate left the stack at once');
   assert.ok(h.state.players[A]!.bin.includes('Immolate'), 'negated → bin');
   assert.ok(!ent(h, atk), 'the sacrifice is NOT refunded (R35: costs are paid at cast)');
   assert.equal(h.state.players[A]!.hand.length, handBefore, 'and nothing was drawn');
@@ -273,4 +274,81 @@ test('forcedAction: NOT forced with two sent units, nor in round 1 with one unit
   assert.equal(h.state.battle!.round, 2);
   assert.equal(h.state.battle!.attackerPool!.length, 2);
   assert.equal(forcedAction(h.state), null, 'two counterattackers → a real formation choice');
+});
+
+/* ── R73: "[Sacrifice me]" — a self-scoped sacrifice cast cost ───────────
+ *
+ * (Bena's ruling 2026-08-22, from the game-BRDM report about Eldritch
+ * Dreamtender: "Technically, Eldritch Dreamtender needs to be sacrificed for
+ * its ability to go on the stack, but it's still visually in play while
+ * resolving its trigger.")
+ *
+ * `CastCost` could say "sacrifice a unit" but not "sacrifice ME" —
+ * castCostOptions offered every unit you control in the region, so the payer
+ * could sacrifice something else entirely. `sacrificeUnits` now takes
+ * `from: 'self'`, resolved through `item.sourceId`, exactly as `removeCounters`
+ * already resolves its own `from: 'self'`.
+ *
+ * The card-level behaviour is pinned on the Dreamtender in test/26-metal-a;
+ * these two pin the PRIMITIVE, where the source's life and death can be
+ * controlled exactly.
+ */
+
+registerSynthetic({
+  name: 'T32 Selfeater', cost: '', mana: 0, power: 1, toughness: 1,
+  type: 'Test Unit', kind: 'unit', timing: 'deploy', attrs: [],
+  virus: false, burst: false, augmentAttrs: [], text: '', image: '',
+}, {
+  abilities: [{
+    type: 'triggered', events: ['spawned'], self: true,
+    label: 'sacrifice me: gain a rot',
+    effect: {
+      castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },
+      run: (g, ctx) => { g.gainRot(ctx.controller, 1); },
+    },
+  }],
+});
+
+test('R73: [Sacrifice me] is charged with NO decision — that is what makes it unrespondable', () => {
+  const h = new Harness(3230);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const before = h.state.players[P]!.rot ?? 0;
+  const e = new E(h.state);
+  const u = e.spawnUnit(P, 'T32 Selfeater', e.homeRegion(P));
+  e.settle();
+  const log = e.events.map(x => x.msg);
+  h.state = e.s;
+  assert.equal(h.state.decision, null, 'no unit menu, no pay-or-decline: no decision at all');
+  assert.ok(!ent(h, u.id), 'it sacrificed ITSELF');
+  assert.ok(h.state.players[P]!.bin.includes('T32 Selfeater'), 'and went to its own bin');
+  assert.equal(h.state.players[P]!.rot ?? 0, before + 1, 'the effect still resolved');
+  // paid on the way to the stack: the sacrifice precedes the resolution
+  const iPay = log.findIndex(l => l.includes('sacrifices T32 Selfeater'));
+  const iRes = log.findIndex(l => l.endsWith('resolves.') && l.includes('T32 Selfeater'));
+  assert.ok(iPay !== -1 && iRes !== -1 && iPay < iRes, 'paid before it resolved');
+});
+
+test('R73: a source that is already dead makes the cost UNPAYABLE, so the part is skipped', () => {
+  // Deliberately NOT `unitsOf(seat, region).length >= 1`: another live unit
+  // standing there must not stand in for the source. R5 then skips the part,
+  // which is the right answer for a trigger whose source died between firing
+  // and settling.
+  const h = new Harness(3231);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const before = h.state.players[P]!.rot ?? 0;
+  spawn(h, P, 'Good Whale');                       // a live ally that must NOT be eaten
+  const e = new E(h.state);
+  const u = e.spawnUnit(P, 'T32 Selfeater', e.homeRegion(P));   // queues its trigger
+  e.destroy(u, 'dies');                                         // …then dies before settle
+  e.settle();
+  const log = e.events.map(x => x.msg);
+  h.state = e.s;
+  assert.equal(h.state.players[P]!.rot ?? 0, before, 'the effect never resolved');
+  assert.equal(
+    h.q.unitsOf(P, h.q.homeRegion(P)).filter(x => x.card === 'Good Whale').length,
+    1, 'and the ally standing beside it was NOT sacrificed in its place');
+  assert.ok(log.some(l => l.includes('sacrifice me') && l.includes('cannot be paid')),
+    'the log says why: the cost could not be paid');
 });

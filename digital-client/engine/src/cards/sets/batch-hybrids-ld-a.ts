@@ -42,9 +42,10 @@
  *    blocked, or Piercing / a Piercing blocking column). "Erase me" deletes the
  *    entity and its mods without a bin, a death or a despawn — resolution has
  *    no erase hook, so it is done inline (the Reconfigure precedent).
- *  - DREAM LAPSE's "recall target spell effect" removes the item from the
- *    stack and puts its CARD in its controller's hand. A triggered/activated
- *    item or a spell token has no card to recall, so it is merely negated.
+ *  - DREAM LAPSE's "recall target spell effect" is R68's removeFromStack()
+ *    with a different destination: the item leaves the stack and its CARD goes
+ *    to its controller's hand rather than to a bin. A triggered/activated item
+ *    or a spell token has no card to recall, so it simply ceases to exist.
  *  - BIG GLIMPSE CARD: the printed text never says who picks which pile is
  *    cached (see the flagged-text note below); implemented as "the opponent
  *    splits, the caster chooses", the standard split-and-choose shape.
@@ -82,48 +83,14 @@
  */
 import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, inEndOfTurn, manaOf, isUnitCard, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
-
-/** True while endTurn() is resolving end-of-turn triggers (batch-fire-a
- * precedent): a ctx.choose suspension in that window strands the game, so
- * "may" effects auto-decline / choices auto-pick there. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
 
 /** the seats physically in a region right now (R12/R25) */
 const presentSeats = (g: E, region: number): Seat[] =>
   g.s.regions[region]!.presentSeats.slice();
-
-/** printed mana of a card name; X counts as 0 (the batch-hybrids-fwe
- * approximation — a card sitting in a bin carries no chosen X). */
-const manaOf = (name: CardName): number => {
-  const m = getCard(name).mana;
-  return typeof m === 'number' ? m : 0;
-};
-
-/** pick one of `pool` (auto when forced); returns null on an empty pool.
- * Plan-then-commit: callers gather every pick before mutating (the engine
- * rolls back to the part boundary and replays on suspension). */
-const pickUnit = (
-  ctx: EffectCtx, key: string, chooser: Seat, pool: Entity[], prompt: string,
-): EntityId | null => {
-  if (!pool.length) return null;
-  if (pool.length === 1) return pool[0]!.id;
-  return ctx.choose(key, {
-    kind: 'electricPath', seat: chooser, prompt,
-    options: pool.map(u => ({ label: u.card, value: u.id })),
-  }) as EntityId;
-};
-
-/** a card that becomes a UNIT when it is put into play (a spell unit spawns
- * its body too — afterParts) */
-const isUnitCard = (name: CardName): boolean => {
-  const k = getCard(name).kind;
-  return k === 'unit' || k === 'spellUnit';
-};
 
 /** the UNIT cards in `seat`'s bin, as [name, binIndex] pairs */
 const binUnits = (g: E, seat: Seat): [CardName, number][] =>
@@ -393,8 +360,8 @@ card('Bloppert', {
     label: 'the player with the highest life total gains control of me, then loses 5 life',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
+        const self = selfOf(g, ctx);
+        if (!self) { g.ev('info', 'Bloppert: the carrier is gone — no control change.'); return; }
         let best = -Infinity;
         let winners: Seat[] = [];
         for (const p of g.s.players) {
@@ -456,6 +423,7 @@ card('Life Plant', {
     label: 'create that many 1/1 units (you gained or lost life)',
     when: (_g, self, ev) => ev.data?.seat === self.controller,
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
         for (let i = 0; i < n; i++) {
@@ -532,13 +500,16 @@ card('Pale Tormentor', {
     effect: {
       run: (g, ctx) => {
         const here = new Set(presentSeats(g, ctx.region));
+        let hit = 0;
         for (const seat of [g.initiative, g.nit]) {
           if (!here.has(seat)) continue;
           const life = g.player(seat).life;
           if (life % 2 !== 0) continue;
           g.ev('info', `Pale Tormentor: ${g.pname(seat)}'s life total (${life}) is even.`);
           g.gainRot(seat, 2);   // R38
+          hit++;
         }
+        if (!hit) g.ev('info', 'Pale Tormentor: nobody here has an even life total — no rot.');
       },
     },
   }],
@@ -547,10 +518,11 @@ card('Pale Tormentor', {
 // ═══════════════════════ WATER / DARK (bd) ════════════════════════════
 
 // "Recall target spell effect, then its controller discards a card." — bd/2
-// {Battle} Mystic Spell. ⚠ header: "recall" is not "negate" — the item leaves
-// the stack and its CARD goes back to its controller's HAND (so it is never
-// binned, and never trashed: R40 only fires on a bin). An item with no card of
-// its own (a triggered/activated ability, a spell token) can only be negated.
+// {Battle} Mystic Spell. ⚠ header: "recall" is not "negate" — R68's removal
+// with a different destination. The item leaves the stack and its CARD goes
+// back to its controller's HAND (so it is never binned, and never trashed: R40
+// only fires on a bin). An item with no card of its own (a triggered/activated
+// ability, a spell token) simply ceases to exist.
 // The discard is the item's controller's own choice (R6), and it is a TRASH
 // (R40) — discardFromHand handles that.
 card('Dream Lapse', {
@@ -560,11 +532,12 @@ card('Dream Lapse', {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;
       const stackId = (t as { stack: number }).stack;
-      const it = g.s.stack.find(i => i.id === stackId);
+      // R68: removeFromStack() is the bare primitive — the item leaves the
+      // stack and NOTHING is done with its card. negate() would bin it, and
+      // then the recall below would put a second copy in hand.
+      const it = g.removeFromStack(stackId);
       if (!it) return;
-      g.negate(stackId);
-      const i = g.s.stack.indexOf(it);
-      if (i !== -1) g.s.stack.splice(i, 1);
+      g.ev('negated', `${it.label} is recalled off the stack.`, { id: it.id });
       const recallable = it.card !== undefined
         && (it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'virus' || it.kind === 'ambush');
       if (recallable) {
@@ -604,7 +577,7 @@ card('Zephyrzoa', {
     when: (g, self, ev) => myColumnConnected(g, self, ev),
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         const bin = g.player(ctx.controller).bin;
         const n = bin.length;
         if (n) {
@@ -633,11 +606,16 @@ card('Gublin', {});
 // mod entity is removed and the card enters play under the MOD's controller —
 // which, per attachMod, is the host's controller for anything applied to it,
 // so a virus you stuck on an enemy comes back on THEIR side. A token mod (a
-// Wraith augmented onto a unit, R47) re-enters play as a unit token. Everything
+// Wraith augmented onto a unit, R71) re-enters play as a unit token. Everything
 // arrives in the resolving region (the Resurrect precedent).
 card('Reclaim the Fallen', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Reclaim the Fallen: put all unit mods on target unit into play' },
+    // R69: the mods that leave the host keep their own card names, so what
+    // reaches the board is whatever was attached. Only ONE mod in the pool is
+    // a token — the Wraith (E.augmentWraith is the sole attachMod with
+    // token:true) — so that is the only token this can put into play.
+    creates: ['Wraith'],
     run: (g, ctx) => {
       const host = ctx.targets[0];
       if (!isEnt(host)) return;
@@ -678,7 +656,10 @@ card('Uglk', {
         const picks: { seat: Seat; idx: number }[] = [];
         for (const seat of presentSeats(g, ctx.region)) {
           const units = binUnits(g, seat);
-          if (!units.length) continue;
+          if (!units.length) {
+            g.ev('info', `Uglk: ${g.pname(seat)} has no unit in their bin.`);
+            continue;
+          }
           const idx = units.length === 1 || inEndOfTurn(g)
             ? units[0]![1]
             : ctx.choose(`pick:${seat}`, {

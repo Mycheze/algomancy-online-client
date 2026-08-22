@@ -88,6 +88,23 @@ test('Saprophytic Oracle: a nontoken death mints a 1/1 at home; token deaths do 
     '…and mints nothing ("nontoken", no loop)');
 });
 
+// R70: "nontoken" used to be decided by STRING-MATCHING the death log for
+// "token: erased". A token whose death logs anything else walked straight
+// through it — the redesigned Wraith is exactly such a token, and it minted a
+// 1/1 off a token death. The flag is on the event now.
+test('Saprophytic Oracle: a dying WRAITH is a token death too (R70, no message matching)', () => {
+  const h = new Harness(2504);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  spawn(h, p, 'Saprophytic Oracle');
+  const e = new E(h.state);
+  const w = e.createWraith(p);
+  e.destroy(w, 'dies');
+  e.settle();
+  assert.equal(unitsOf(h, p).filter(u => u.card === 'Unit Token').length, 0,
+    'a Wraith is a token, so the Oracle mints nothing');
+});
+
 test('Saprophytic Oracle: donated [Augment] text fires for the host on a nontoken death', () => {
   const h = new Harness(2503);
   toDeployment(h);
@@ -345,11 +362,12 @@ test('Woodland Warding: negates enemy effects aimed at your side, spares the res
   pick(h, { unit: lurk });                            // enemy effect aimed at D's unit
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Woodland Warding') });
   pass(h); pass(h);                                   // Warding (top) resolves
-  const vv = h.state.stack.find(i => i.label.includes('Verdant Vengeance'))!;
-  const boon = h.state.stack.find(i => i.label.includes('Channeled Boon'))!;
-  assert.equal(vv.negated, true, 'the effect targeting an allied unit is negated');
-  assert.equal(boon.negated, false, "the enemy effect aimed at the enemy's OWN unit is spared");
-  pass(h); pass(h);                                   // negated Vengeance fizzles away
+  // R68: the negated one is GONE from the stack; the spared one is still on it
+  assert.ok(!h.state.stack.some(i => i.label.includes('Verdant Vengeance')),
+    'the effect targeting an allied unit is negated and off the stack');
+  assert.ok(h.state.players[A]!.bin.includes('Verdant Vengeance'), 'binned from the stack');
+  assert.ok(h.state.stack.some(i => i.label.includes('Channeled Boon')),
+    "the enemy effect aimed at the enemy's OWN unit is spared");
   pass(h); pass(h);                                   // the Boon still resolves
   assert.equal(ent(h, lurk)!.damage, 0, 'no damage got through');
   assert.deepEqual(effStats(h, atk), [5, 5], 'the spared Boon did its +4/+4');

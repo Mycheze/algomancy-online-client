@@ -6,7 +6,8 @@
  * pumps and their [Switch1] budget (Deathcoil Construct, R9), a paid
  * spell-played drain (Dragnol), empty-hand bin plays (Gridxlan), a life total
  * rewritten from the bins (Haunting Memories), spawn lifegain (Iyngstra),
- * cost-funded glimpses (Lilbot), discard-funded sacrifices (No Hand Killer),
+ * cost-funded glimpses (Lilbot), a variable discard CAST COST (No Hand Killer,
+ * R64 — the discards used to happen at resolution),
  * a granted prophecy computed from a cost (Prophecy Bug, R43), damage-driven
  * rot (Rotwall), and the two shapes of a discard trigger (Swarmling, R40).
  * The PARKED Counter Theif (counter-placement replacement) and Trench Stalker
@@ -21,6 +22,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { registerSynthetic, type Printed } from '../src/cards/dsl.ts';
+import { legalActions, IllegalAction } from '../src/apply.ts';
 import {
   effStats, ent, give, giveResources, pass, pick, skipHasteStep,
   spawn, toDeployment, toNextBattle, unitsOf,
@@ -397,7 +399,10 @@ test('Gridxlan: with an EMPTY hand, play a unit out of your bin during deploymen
   assert.equal(h.q.openMana(P), 2, 'LDC Grunt is a [0] — its own cost is what is paid');
 });
 
-test('Gridxlan: a non-empty hand (and a second activation) do nothing', () => {
+test('R77: Gridxlan with a non-empty hand is not offered, and does not burn its [once]', () => {
+  // this used to activate, print "your hand is not empty", do nothing, and
+  // SPEND the once-per-turn budget — so emptying your hand afterwards was too
+  // late. "If your hand is empty" is an activation condition (R77).
   const h = new Harness(4613);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -405,13 +410,31 @@ test('Gridxlan: a non-empty hand (and a second activation) do nothing', () => {
   h.state.players[P]!.hand.length = 0;
   give(h, P, 'LDC Grunt');                                 // hand is NOT empty
   h.state.players[P]!.bin.push('LDC Grunt');
-  h.do({ type: 'activateAbility', seat: P, entityId: grid, abilityIndex: 0, via: 'augment' });
-  assert.equal(h.state.decision, null, 'no choice was even offered');
+  const offered = (): boolean => legalActions(h.state, P).some(a =>
+    a.type === 'activateAbility' && a.entityId === grid);
+  assert.ok(!offered(), 'not offered while the hand has a card in it');
+  assert.throws(() => h.do({ type: 'activateAbility', seat: P, entityId: grid, abilityIndex: 0, via: 'augment' }),
+    (err: unknown) => err instanceof IllegalAction);
   assert.deepEqual(h.state.players[P]!.bin, ['LDC Grunt'], 'nothing left the bin');
-  assert.ok(h.log.some(l => l.includes('Gridxlan: your hand is not empty')));
-  // bounded: the budget was spent, so emptying the hand now changes nothing
+  // and because nothing was activated, the [once] is intact: emptying the hand
+  // now makes it usable
   h.state.players[P]!.hand.length = 0;
-  assert.throws(() => h.do({ type: 'activateAbility', seat: P, entityId: grid, abilityIndex: 0, via: 'augment' }));
+  assert.ok(offered(), 'the budget was never spent');
+  h.do({ type: 'activateAbility', seat: P, entityId: grid, abilityIndex: 0, via: 'augment' });
+  pick(h, 0);
+  assert.ok(unitsOf(h, P).some(u => u.card === 'LDC Grunt'), 'it plays from the bin');
+});
+
+test('R77: Gridxlan with an empty hand but nothing playable in the bin is not offered', () => {
+  const h = new Harness(4616);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const grid = spawn(h, P, 'Gridxlan');
+  h.state.players[P]!.hand.length = 0;
+  h.state.players[P]!.bin.length = 0;                      // empty hand, empty bin
+  assert.ok(!legalActions(h.state, P).some(a =>
+    a.type === 'activateAbility' && a.entityId === grid),
+    'an ability with nothing to do is not offered (R64)');
 });
 
 // ── Haunting Memories ────────────────────────────────────────────────────
@@ -555,17 +578,18 @@ test('No Hand Killer: [once] discard X cards → each opponent sacrifices X unit
   give(h, D, 'LDC Wall');
   give(h, D, 'LDC Brute');                                 // a third card, deliberately kept
   pass(h);                                                 // priority → D
-  h.do({ type: 'activateAbility', seat: D, entityId: nhk, abilityIndex: 0, via: 'augment' });
-  pass(h); pass(h);                                        // resolve the activated ability
   const trashedBefore = h.events.filter(ev => ev.type === 'trashed').length;
-  pick(h, 0);                                              // discard #1
-  pick(h, 0);                                              // discard #2
-  pick(h, -1);                                             // Done: X = 2, not 3
+  h.do({ type: 'activateAbility', seat: D, entityId: nhk, abilityIndex: 0, via: 'augment' });
+  // R64 UN-PARKED: "Discard X cards" is the ACTIVATION cost, so the discards
+  // are chosen and paid HERE, in the cast window, before the ability is on the
+  // stack and before anyone can answer it. X is fixed by the time it is.
+  pick(h, { discard: 0 });                                 // discard #1
+  pick(h, { discard: 0 });                                 // discard #2
+  pick(h, { doneCost: true });                             // that's enough: X = 2, not 3
+  assert.deepEqual(h.state.players[D]!.hand, ['LDC Brute'], 'exactly two cards discarded — at cast');
+  pass(h); pass(h);                                        // resolve the activated ability
   pick(h, v1);                                             // A sacrifices, 1 of 2
   pick(h, v2);                                             // …and 2 of 2 (v3 survives)
-  // the part only COMMITS once it runs to completion: every suspension rolls
-  // it back to its boundary and replays it with the stored answers
-  assert.deepEqual(h.state.players[D]!.hand, ['LDC Brute'], 'exactly two cards discarded');
   assert.ok(h.events.filter(ev => ev.type === 'trashed').length >= trashedBefore + 2,
     'discarding trashes (R40)');
   assert.ok(!ent(h, v1) && !ent(h, v2), "two of the opponent's units are gone");
@@ -573,22 +597,34 @@ test('No Hand Killer: [once] discard X cards → each opponent sacrifices X unit
   drainStack(h);
 });
 
-test('No Hand Killer: X = 0 (declining every discard) sacrifices nothing', () => {
+test('No Hand Killer: an empty hand makes the activation unpayable — the [once] survives', () => {
+  // R64 UN-PARKED, with the printed floor: the cost is `n: 'X', xMin: 1`, so
+  // X = 0 is not on offer. It used to be reachable by declining every discard,
+  // which did nothing AND burned the [once] budget for the turn.
   const h = new Harness(4620);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   const nhk = spawn(h, D, 'No Hand Killer');
   const v1 = spawn(h, A, 'LDC Grunt');
   attackWith(h, A, [[v1]]);
-  h.state.players[D]!.hand.length = 0;
-  give(h, D, 'LDC Grunt');
+  h.state.players[D]!.hand.length = 0;                     // empty hand
   pass(h);                                                 // priority → D
-  h.do({ type: 'activateAbility', seat: D, entityId: nhk, abilityIndex: 0, via: 'augment' });
-  pass(h); pass(h);
-  pick(h, -1);                                             // Done immediately
+  assert.ok(!h.legal(D).some(a => a.type === 'activateAbility' && a.entityId === nhk),
+    'nothing to discard → not offered');
+  assert.throws(() => h.do({ type: 'activateAbility', seat: D, entityId: nhk, abilityIndex: 0, via: 'augment' }),
+    /nothing it can be used on|cannot pay/);
   assert.ok(ent(h, v1), 'nothing sacrificed');
-  assert.deepEqual(h.state.players[D]!.hand, ['LDC Grunt'], 'and nothing discarded');
-  assert.ok(h.log.some(l => l.includes('No Hand Killer: X = 0')));
+  // and the budget is intact: give them a card and it works this same turn
+  give(h, D, 'LDC Grunt');
+  h.do({ type: 'activateAbility', seat: D, entityId: nhk, abilityIndex: 0, via: 'augment' });
+  pick(h, { discard: 0 });
+  // the hand is empty now, so nothing more can be paid: the variable cost
+  // closes itself at X = 1 rather than asking again
+  assert.equal(h.state.decision, null);
+  assert.deepEqual(h.state.players[D]!.hand, [], 'the one card paid for X = 1');
+  pass(h); pass(h);
+  // A controls exactly one unit, so their sacrifice is forced and auto-picked
+  assert.ok(!ent(h, v1), 'X = 1 unit sacrificed');
   drainStack(h);
 });
 

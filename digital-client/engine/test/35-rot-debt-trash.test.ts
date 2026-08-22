@@ -318,15 +318,91 @@ test('R40: sacrificing and dying both trash — the card enters a bin from PLAY'
   assert.ok(iDied !== -1 && iTrash > iDied, 'the death is announced before the trash');
 });
 
-test('R40: a TOKEN dying is never trashed (it is erased, and R47 leans on this)', () => {
+// R69 (Bena 2026-08-21, reversing R40's old flat "tokens are never trashed"):
+// a dying token IS a card, it DOES enter the bin, it does not come from the
+// stack — so it is trashed there — and only then is it erased by a
+// state-based sweep. The bin is empty when the dust settles, but the trash
+// happened and the trash ledger counted it.
+test('R69: a TOKEN dying enters the bin, IS trashed, and is then erased', () => {
   const h = new Harness(3523);
   const P = 0 as const;
   whiteBox(h, e => {
     const t = e.spawnUnit(P, 'Test Grunt', e.homeRegion(P), { token: true });
     e.destroy(t, 'dies');
   });
-  assert.equal(trashes(h).length, 0, 'a token never trashes');
-  assert.deepEqual(h.state.players[P]!.bin, [], 'and never reaches a bin at all');
+  const t = trashes(h);
+  assert.equal(t.length, 1, 'a token trashes like any other card');
+  assert.equal(t[0]!.data!['card'], 'Test Grunt');
+  assert.equal(t[0]!.data!['from'], 'play');
+  assert.equal(t[0]!.data!['seat'], P, 'trashed by the owner of the bin it entered');
+  assert.equal(t[0]!.data!['token'], true, 'and the event says it was a token');
+  assert.deepEqual(h.state.players[P]!.bin, [],
+    'the state-based sweep erased it out of the bin again');
+  assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (R65)');
+  // the order the log tells it in: died -> trashed -> erased
+  const i = (frag: string) => h.log.findIndex(l => l.includes(frag));
+  assert.ok(i('Test Grunt dies') !== -1 && i('trashes Test Grunt') > i('Test Grunt dies')
+    && i('erased from the bin') > i('trashes Test Grunt'),
+  'died, then trashed, then erased');
+});
+
+// R69, EXTENDED TO THE HAND AND THE CACHE (Bena 2026-08-22). The designer's
+// ruling is literally about a hand — "Technically it does enter your hand and
+// then gets erased immediately. So it would trigger any 'enters hand' stuff"
+// (Caleb 2025-06-15) — which made the bin-only implementation the wrong half.
+// One mechanism (E.eraseFromZone) serves all three zones.
+test('R69: a recalled TOKEN enters the hand, is NOT trashed, and is then erased', () => {
+  const h = new Harness(3540);
+  const P = 0 as const;
+  whiteBox(h, e => {
+    const t = e.spawnUnit(P, 'Test Grunt', e.homeRegion(P), { token: true });
+    e.recall(t);
+  });
+  // a hand is not a bin, so R40 has nothing to say about it
+  assert.equal(trashes(h).length, 0, 'a recall is never a trash — a hand is not a bin');
+  assert.deepEqual(h.state.players[P]!.hand.filter(c => c === 'Test Grunt'), [],
+    'the sweep took it back out of the hand');
+  assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (R65)');
+  const despawn = h.events.filter(ev => ev.type === 'despawned').at(-1)!;
+  assert.equal(despawn.data!['to'], 'hand',
+    'the event says HAND — this is what "when a card enters a hand" reads (R70)');
+  assert.equal(despawn.data!['token'], true);
+  const i = (frag: string) => h.log.findIndex(l => l.includes(frag));
+  assert.ok(i('recalled to') !== -1 && i('erased from the hand') > i('recalled to'),
+    'recalled, then erased');
+});
+
+test('R69: a CACHED token visits the cache and is erased out of it (⚠ engine call)', () => {
+  const h = new Harness(3541);
+  const P = 0 as const;
+  whiteBox(h, e => {
+    const t = e.spawnUnit(P, 'Test Grunt', e.homeRegion(P), { token: true });
+    e.cacheUnit(t);
+  });
+  assert.equal(trashes(h).length, 0, 'caching is not binning');
+  assert.deepEqual(h.q.cache(P).map(c => c.card), [], 'the sweep emptied the cache again');
+  assert.deepEqual(h.q.erased(P), ['Test Grunt']);
+  const cached = h.events.filter(ev => ev.type === 'cached').at(-1)!;
+  assert.equal(cached.data!['card'], 'Test Grunt',
+    'the cached event fired with the token really sitting in the cache');
+  const despawn = h.events.filter(ev => ev.type === 'despawned').at(-1)!;
+  assert.equal(despawn.data!['to'], 'cache',
+    'and it says CACHE, not hand — a cache is still not a hand (R70)');
+});
+
+test('R69: the erase lands before anything the visit queued can RESOLVE', () => {
+  const h = new Harness(3542);
+  const P = 0 as const;
+  // the token is in the hand for the whole event window (fireEvent only
+  // QUEUES), and out of it before a queued trigger runs — Caleb 2023-09-12,
+  // "state based effects happen to erase it and then the trigger goes on the
+  // stack". Proven by where the erase sits in the log relative to the despawn.
+  whiteBox(h, e => {
+    const t = e.spawnUnit(P, 'Test Grunt', e.homeRegion(P), { token: true });
+    e.recall(t);
+    assert.deepEqual(e.player(P).hand.filter(c => c === 'Test Grunt'), [],
+      'by the time recall() returns the sweep has already run');
+  });
 });
 
 test('R40: a modded unit dying is ERASED, so nothing is trashed', () => {
@@ -357,9 +433,11 @@ test('R40: a NEGATED spell is not trashed either — countering is not trashing'
   whiteBox(h, e => {
     const item: StackItem = {
       id: e.s.nextId++, kind: 'spell', card: 'Test Bin Spell', label: 'Test Bin Spell',
-      controller: P, region: e.homeRegion(P), negated: true, parts: [],
+      controller: P, region: e.homeRegion(P), negated: false, parts: [],
     };
-    e.resolveItem(item);
+    e.s.stack.push(item);
+    e.negate(item.id);   // R68: this IS the removal — and the bin push
+    assert.equal(e.s.stack.length, 0, 'R68: negating takes it off the stack there and then');
   });
   assert.ok(h.state.players[P]!.bin.includes('Test Bin Spell'), 'a negated spell is binned');
   assert.equal(trashes(h).length, 0, 'and that is still the stack, so no trash');

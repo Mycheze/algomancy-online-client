@@ -68,6 +68,17 @@ button:disabled { opacity: .4; cursor: default; }
 .card .badge { background: rgba(20,24,30,.9); border: 1px solid #444; border-radius: 3px; font-size: 9px; padding: 0 3px; }
 .card .badge.mod { border-color: var(--accent); color: var(--accent); }
 .card.playable { outline: 2px solid var(--glow); cursor: pointer; }
+/* UZRG: "units with activated abilities don't get a green highlight around
+   them indicating you can activate their abilities". A DIFFERENT fact from
+   .playable (which on a unit means "can be dragged into a formation"), and
+   both can be true at once — so it is the asked-for green, but as a soft halo
+   that reads through a flat outline sitting on top of it. */
+@keyframes actpulse { 50% { box-shadow: 0 0 4px 1px rgba(111,195,111,.55), 0 0 14px 3px rgba(111,195,111,.4); } }
+.card.activatable { cursor: pointer; border-radius: 6px;
+  box-shadow: 0 0 3px 1px rgba(111,195,111,.75), 0 0 10px 2px rgba(111,195,111,.3);
+  animation: actpulse 1.8s ease-in-out infinite; }
+.card .badge.act { border-color: var(--glow); color: var(--glow); background: rgba(10,20,10,.92);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card.candidate { outline: 3px solid var(--target); cursor: pointer; }
 .card.selected { outline: 3px solid #7fc0ff; cursor: pointer; }
 .card.carrying { outline: 3px dashed #7fc0ff; }
@@ -115,10 +126,8 @@ button:disabled { opacity: .4; cursor: default; }
   border-radius: 10px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
 .joinscreen h2 { margin: 0; color: var(--accent); }
 .joinscreen label { display: block; }
-.joinscreen input[type="text"], .joinscreen #j-room { font-size: 16px; padding: 6px; margin-left: 6px;
+.joinscreen input[type="text"] { font-size: 16px; padding: 6px; margin-left: 6px;
   background: var(--panel2); border: 1px solid var(--line); border-radius: 5px; color: var(--text); }
-.joinscreen .seats { display: flex; gap: 12px; align-items: center; }
-.joinscreen .seats label { display: inline; }
 .joinscreen button { font-size: 16px; padding: 8px; }
 .joinscreen .hint { color: var(--dim); font-size: 12px; margin: 0; }
 
@@ -271,7 +280,6 @@ button:disabled { opacity: .4; cursor: default; }
 .minihand { display: flex; align-items: center; }
 .miniback { width: 30px; height: 42px; border-radius: 3px; margin-right: -18px;
   background: linear-gradient(135deg, #2a3140, #1a1f29); border: 1px solid #3a4356; }
-.zone.hiddenhand { min-height: 44px; }
 
 /* bins as real (small) card scans */
 .binzone .card { width: 58px; }
@@ -309,10 +317,6 @@ button:disabled { opacity: .4; cursor: default; }
 .card .stats .statup { color: #7fdc7f; }
 .card .stats .statdown { color: #ff8a8a; }
 .card .stats .basestat { display: block; font-size: 9px; font-weight: 400; color: var(--dim); text-align: right; }
-.prevstats { margin: 6px 0 2px; font-size: 14px; }
-.prevstats .statup { color: #7fdc7f; }
-.prevstats .statdown { color: #ff8a8a; }
-.prevstats .basestat { color: var(--dim); font-size: 11px; }
 
 /* composed modded card in the focus viewer: each mod slides under the base,
    showing its text-box strip (the physical table look) */
@@ -323,7 +327,6 @@ button:disabled { opacity: .4; cursor: default; }
 .modtag { position: absolute; top: 2px; left: 4px; background: rgba(10,12,16,.85);
   border: 1px solid var(--accent); color: var(--accent); border-radius: 3px;
   font-size: 10px; padding: 0 4px; }
-.preview .modtext { border-left: 2px solid var(--accent); padding-left: 6px; margin: 2px 8px; text-align: left; }
 
 /* ── region-board overhaul + playtest round 2 (2026-08-18) ──────────── */
 
@@ -356,6 +359,13 @@ button:disabled { opacity: .4; cursor: default; }
 
 /* A2: decision options rendered as real card scans in the promptbar */
 .deccards { display: flex; gap: 6px; flex-wrap: wrap; max-width: 100%; overflow-x: auto; padding: 2px; }
+/* UZRG: every option is a real button, and the decline is visually LAST and
+   secondary — the player who had just clicked ten times to pay a cost must not
+   find "no thanks" sitting where "yes" was. */
+.decpicks, .decdecline { display: inline-flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.decdecline { margin-left: auto; }
+button.declinebtn { background: transparent; border-style: dashed; color: var(--dim); }
+button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 
 /* B1 (reworked, playtest): invaders (enemy units standing in this region) sit
    as a compact, visually subordinate strip at the SIDE of the region — smaller
@@ -367,6 +377,22 @@ button:disabled { opacity: .4; cursor: default; }
 .invaders .invaderzone { gap: 4px; }
 .invaders .card { width: 52px; }
 .invaders .card img { box-shadow: 0 0 0 1px var(--danger); border-radius: 5px; }
+
+/* ZQPC: "the spell tokens shouldn't get smushed in with the units. They should
+   have their own spot, over by the bin." Same weight and shape as the bin and
+   the sent strip — a shelf of ammunition beside the region, not a rank in the
+   formation. A token that has been picked up to RIDE with an attack leaves
+   here and stands in the battle panel's .ridecol instead. */
+.tokenstrip { width: 118px; flex-shrink: 0; align-self: flex-start;
+  border: 1px solid rgba(224,185,60,.4); background: rgba(224,185,60,.05);
+  border-radius: 6px; padding: 2px 6px 6px; margin-top: 8px; margin-left: 4px; }
+.tokenstrip .zonelabel { color: var(--target); font-size: 10px; margin-top: 4px; }
+.tokenstrip .tokenzone { gap: 4px; }
+.tokenstrip .card { width: 52px; }
+/* the riding row inside the attack builder — tokens joining this declaration */
+.col.ridecol { border-left: 1px dashed var(--target); padding-left: 8px; }
+.ridecol .collabel { color: var(--target); }
+.ridecol .card { width: 56px; }
 
 /* B2 + playtest: counterattackers in transit, shown in the region they are
    heading INTO, beside that region's bin. Column-shaped and bin-sized so it
@@ -390,13 +416,6 @@ button:disabled { opacity: .4; cursor: default; }
 .seenlabel { color: var(--water); font-size: 11px; }
 .seencards { display: flex; gap: 4px; flex-wrap: wrap; }
 .seenhand .card { width: 44px; }
-
-/* B4: bins live in the side column as compact scans */
-.binspanel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
-.binspanel h3 { margin: 0 0 6px; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; }
-.binblock summary { cursor: pointer; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-.binblock .binzone { max-height: 180px; overflow-y: auto; }
-.binspanel .card { width: 48px; }
 
 /* C3: the armed "Pass all" is visible and cancelable */
 .passallchip { background: #33270f; border-color: #7a5e1e; color: var(--accent); font-weight: 700; }
@@ -577,13 +596,12 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 
 /* #5: live X preview badge on hand cards + focus viewer line */
 .xnow { color: var(--glow); font-weight: 700; margin: 4px 0; }
-
-/* #7: grafted abilities composed into the one ability they really are */
-.grafted { background: var(--panel2); border-left: 3px solid var(--accent); border-radius: 4px;
-  padding: 6px 8px; margin: 6px 4px; text-align: left; }
-.grafttag { display: block; color: var(--accent); font-size: 10px; text-transform: uppercase;
-  letter-spacing: .06em; margin-bottom: 3px; }
-.graftbody { color: var(--text); font-size: 12px; }
+/* the same badge, attributed to one clause of a composed stack item */
+.xnow.xinline { margin: 3px 0 0; font-size: 11px; }
+/* UZRG: card names in the game log are inspectable — hover previews, the
+   long-hover text box and right-click all key off data-prev */
+.logcard { color: var(--accent); cursor: help; border-bottom: 1px dotted rgba(217,164,65,.5); }
+.logcard:hover { color: #f0c983; border-bottom-color: var(--accent); }
 
 /* ═══ Light & Dark (docs/08) ═══════════════════════════════════════════ */
 
@@ -909,18 +927,6 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .fdot { width: 8px; height: 8px; border-radius: 50%; background: #3a444f; flex: none; }
 .fdot.on { background: var(--glow); box-shadow: 0 0 6px var(--glow); }
 
-/* post-game toasts: "recorded", plus anything it unlocked. Outside the render
-   tree (account.ts) because the board rebuilds everything it owns. */
-.accttoasts { position: fixed; right: 12px; bottom: 12px; z-index: 90;
-  display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-.accttoast { display: flex; gap: 10px; align-items: center; pointer-events: auto; cursor: pointer;
-  background: var(--panel); border: 1px solid var(--accent); border-radius: 6px;
-  padding: 10px 14px; max-width: 320px; box-shadow: 0 6px 20px rgba(0,0,0,.5);
-  animation: toastin .35s ease-out; }
-.accttoast .ticon { font-size: 24px; }
-.accttoast b { color: var(--accent); }
-@keyframes toastin { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-
 /* ── the draft lobby: choosing three elements together ────────────────
    Deliberately the same furniture as the home screen — it IS the home screen
    for the twenty seconds before a game exists. */
@@ -1135,11 +1141,18 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .stackcard.candidate { outline: 2px solid var(--target); cursor: pointer; }
 .stackcard:hover { transform: translateY(-12px) scale(1.06); z-index: 60 !important;
   box-shadow: 0 8px 20px rgba(0,0,0,.7); }
+/* R68: a negated item is off the rules stack the instant the negation
+   resolves, so nothing in GameState wears this any more — it is reached ONLY
+   by a flash snapshot having its beat (ui/flash.ts negatedFlashItems), which
+   is the whole reason a player still gets to see that their spell was
+   answered. Delete this and the beat goes silent. */
 .stackcard.negated { filter: grayscale(1) brightness(.7); }
 .stackcard.negated::after {
   content: '✕'; position: absolute; inset: 0; display: flex; align-items: center;
   justify-content: center; font-size: 26px; color: var(--danger); text-shadow: 0 0 6px #000;
 }
+/* …and its beat is red, not purple: "answered" is not "resolved" */
+.stackcard.negated.flashing { border-color: var(--danger); }
 .stackcard .stacknext, .stackcard .stackbolt {
   position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
   font-size: 8px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700;
@@ -1147,6 +1160,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 }
 .stackcard .stacknext { background: var(--glow); color: #0f1a0f; }
 .stackcard .stackbolt { background: #6d5bd0; color: #fff; }
+.stackcard .stackbolt.answered { background: var(--danger); color: #fff; }
 /* a card having its beat: it already resolved, so it reads as a replay rather
    than as something you might still respond to */
 .stackcard.flashing { border-color: #8f7ff0; animation: stackflash 220ms ease-out; }

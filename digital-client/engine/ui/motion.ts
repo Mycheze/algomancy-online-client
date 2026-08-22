@@ -82,8 +82,8 @@ export interface Motion { moves: Move[]; pulses: Pulse[] }
 const anchorOf = (zone: MotionZone, seat: Seat): string =>
   zone === 'stack' ? '@stack' : `@${zone}:${seat}`;
 
-export const DECK_ANCHOR = (seat: Seat): string => `@deck:${seat}`;
-export const RES_ANCHOR = (seat: Seat): string => `@res:${seat}`;
+const DECK_ANCHOR = (seat: Seat): string => `@deck:${seat}`;
+const RES_ANCHOR = (seat: Seat): string => `@res:${seat}`;
 
 /** the k-th copy of each name in a bare CardName list (hand, bin) */
 export function nameKeys(names: readonly CardName[], prefix: string): string[] {
@@ -137,9 +137,15 @@ export function census(s: GameState): Census {
   for (const en of Object.values(s.entities)) {
     // a mod has no card of its own on screen — it is a badge on its host, and
     // ui/anim.ts tags that badge with the mod's key so the flight lands on it
+    //
+    // ZQPC: spell tokens have their own strip on the board now, beside the
+    // bin. The ZONE stays 'field' — a token is still a permanent standing in a
+    // region, and the pairing rules (PLAUSIBLE) must not change underneath it
+    // — but the fallback ANCHOR points at the strip it actually lands in.
     slots.push({
       key: `e${en.id}`, zone: 'field', seat: en.controller, card: en.card,
-      anchor: anchorOf('field', en.controller),
+      anchor: en.kind === 'spellToken'
+        ? `@tokens:${en.controller}` : anchorOf('field', en.controller),
       sig: `${en.damage}:${en.counters}:${en.tempPower}:${en.tempToughness}:${en.mods.length}:${en.absent ? 1 : 0}`,
       vitality: en.counters + en.tempPower + en.tempToughness - en.damage,
     });

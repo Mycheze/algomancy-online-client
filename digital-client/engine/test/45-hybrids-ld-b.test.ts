@@ -1,6 +1,6 @@
 /* Per-card tests for the Light & Dark hybrid batch B (batch-hybrids-ld-b):
  * a prophecy-bannered lord (Air Plant, R42/R43), doubled life change (Arbiter
- * of Vitality), X-many Wight augments (Blight's End, R47), board-wide
+ * of Vitality), X-many Wraith augments (Blight's End, R71), board-wide
  * {Balanced} (Brough, R19), a discard-fuelled graft cause (Cadaverous
  * Cultivator), a resolution-paid recursion engine (Combustible Bogwalker),
  * a discard-costed burn spell (Darkblast, R35/R40), life averaging
@@ -8,8 +8,9 @@
  * statics (Life Power Dude), trash-triggered drain and burn (Murkstalker,
  * Splort, R40), counter/rot proliferation (Proliferating Slime), bin-fed
  * attribute theft (The Omniphage) and the two vanillas (Hammer of Justice,
- * Rime Wraith). The PARKED Deferral Drone and Vengeance (cost-modification
- * layer) have todo tests; Inexorable Miasma's bin half is live (R51).
+ * Rime Wraith). Deferral Drone and Vengeance are still parked, but no longer
+ * on "there is no cost-modification layer" (R59 shipped it) — their todos name
+ * what each is actually waiting on. Inexorable Miasma's bin half is live (R51).
  * States are built explicitly (give/spawn/giveResources/whiteBox) so parallel
  * card registration can't shift assertions. Seeds: 4500-4599.
  */
@@ -116,7 +117,7 @@ test('Arbiter of Vitality: doubles life LOSS, and never doubles its own doubling
 
 // ── Blight's End ─────────────────────────────────────────────────────────
 
-test("Blight's End: augments a Wraith (R47) onto X target units, enemies included", () => {
+test("Blight's End: augments a Wraith (R71) onto X target units, enemies included", () => {
   const h = new Harness(4505);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -142,7 +143,7 @@ test("Blight's End: augments a Wraith (R47) onto X target units, enemies include
     // current canonical name, so the alias never leaks out of getCard().
     assert.equal(mods[0]!.card, 'Wraith', 'it is the Wraith token');
     assert.equal(mods[0]!.appliedAs, 'augment', 'applied as an augment, not spawned');
-    assert.ok(mods[0]!.token, 'the mod is a token — erased, never trashed (R40/R47)');
+    assert.ok(mods[0]!.token, 'the mod is a token — a mod has no card of its own to bin (R69)');
   }
   finishBattle(h);
 });
@@ -337,10 +338,18 @@ test('Darkblast: R35 — with nothing else in hand the cost is unpayable and the
 // ── Deferral Drone (PARKED) ──────────────────────────────────────────────
 
 test('Deferral Drone: gain 4 debt → the next card you play this turn costs [3] less', { todo: true }, () => {
-  // PARKED: the (narrow) cost-modification layer does not exist — canPayCard /
-  // payCard read printed mana only. Wiring only the "gain 4 debt" half would
-  // hand the player a cost with no benefit, so the ability is not offered at
-  // all. See the batch header and docs/08 "Deliberately out of scope".
+  // PARKED — but the reason has MOVED. It used to be "the cost-modification
+  // layer does not exist"; R59's CostMod is that layer (Tranquility, The
+  // Silent and Stasis Sentry all ride it, and `costMods` is a first-class
+  // CardBehavior field).
+  //
+  // WAITING ON: a ONE-SHOT cost charge. CostMod is a continuous, stateless
+  // query — E.costModsFor asks every holder "what does this card cost right
+  // now" — and there is nowhere to record "…and stop after the next play".
+  // "The NEXT card you play this turn" needs a per-turn charge that a play
+  // consumes, i.e. state on the player (or the mod) plus a hook on the play
+  // path to spend it. Wiring only the "gain 4 debt" half meanwhile would hand
+  // the player a cost with no benefit, so the ability is not offered at all.
 });
 
 test('Deferral Drone: plays as a 2/2 and augments, offering no ability', () => {
@@ -606,9 +615,17 @@ test('The Omniphage: gains every attribute printed on units in your bin (live)',
 // ── Vengeance (PARKED) ───────────────────────────────────────────────────
 
 test("Vengeance: opponents' battle cards gain '[Sacrifice a unit]'", { todo: true }, () => {
-  // PARKED: imposing an additional cast cost on ANOTHER player's cards needs
-  // the cost-modification layer docs/08 puts out of scope (the Stasis Sentry /
-  // The Silent precedent). See the batch header.
+  // PARKED — but not on the cost-modification layer any more: R59's CostMod
+  // exists, it already applies to BOTH players (Tranquility and Stasis Sentry
+  // are unqualified taxes on everyone), and R60 gave it a second channel for
+  // life (Arbiter of Armistice).
+  //
+  // WAITING ON: a SACRIFICE channel on CostMod. It carries `delta` (extra
+  // mana) and `life` (extra life) and nothing else, so an imposed
+  // "[Sacrifice a unit]" has no way to be charged — and, unlike mana or life,
+  // it is a cost with a CHOICE in it, so it would also need to reach the cast
+  // window's pendingCosts rather than being charged outright, and to gate the
+  // opponent's cast when they control no unit.
 });
 
 test('Vengeance: plays as a 7/9 and is recognised as an augment', () => {

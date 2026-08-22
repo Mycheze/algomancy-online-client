@@ -40,9 +40,10 @@
  *    death check erases the 0/0 before any trigger resolves. The counters
  *    are added synchronously in a bookkeeping when() at spawn-event time
  *    (Mirage Walker precedent; silent — no countersChanged event, matching
- *    Robot's spawn-with-counters). "Move my counters": the unit is gone at
- *    resolution, so the amount is snapshotted into the trigger's event
- *    during when().
+ *    Robot's spawn-with-counters). "Move my counters" needs NO snapshot of its
+ *    own: R70 stamps `counters` onto every leave-play event (E.leftPlayFacts),
+ *    which is the same fact the note two paragraphs down credits for
+ *    un-parking Flux Constructor — the effect reads ctx.event.data.counters.
  *  - Perish / Linked Extinction: sacrifice choices are made seat by seat
  *    (caster first) and committed immediately — deterministic under the
  *    engine's rollback-and-replay choice model. Perish and the opponents'
@@ -57,10 +58,9 @@
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
 
 /** create a Robot X — a 0/0 Robot token with X +1/+1 counters — in its
  * controller's HOME region (R28; battle-local cards pass their own region) */
@@ -178,25 +178,19 @@ card('Formless', {
 // "[Augment] When I attack or block, create a Robot 2 in my formation." —
 // mm/3 1/2 Hooba Robot Unit. Text-box [Augment]; live when played normally
 // (Manual Q&A). "In my formation" is battle-local (R28 exception): the Robot
-// spawns in the battle region and joins my column if open, else the first
-// open column on my side; with no room it stays in the region unslotted.
+// spawns in the battle region and its CONTROLLER chooses the slot at
+// resolution (R75, E.placeInFormation). This used to auto-pick — "my column if
+// open, else the first open column" — which was one of five different
+// house rules for the same printed words.
 card('Hooba-Bot', {
   augmentText: [{
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
     label: 'create a Robot 2 in my formation',
     effect: {
+      creates: ['Robot'],
       run: (g, ctx) => {
         const robot = makeRobot(g, ctx.controller, 2, ctx.region);
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        const b = g.s.battle;
-        if (!self || !b) return;
-        const grid = b.columns.some(col => col.includes(self.id))
-          ? b.columns : Object.values(b.blocks);
-        const myCol = grid.find(col => col.includes(self.id));
-        const hasRoom = (col: EntityId[]) => col.filter(id => g.entity(id)).length < 2;
-        const col = (myCol && hasRoom(myCol)) ? myCol : grid.find(hasRoom);
-        if (col) col.push(robot.id);
-        else g.ev('info', 'Hooba-Bot: no open position — the Robot stays in the region, outside the formation.');
+        g.placeInFormation(robot, ctx, { key: 'hoobaBotSlot', source: 'Hooba-Bot' });
       },
     },
   }],
@@ -214,6 +208,7 @@ card('Instrument of Reassignment', {
     type: 'activated', cost: {},   // [x] + the sacrifice, paid at resolution
     label: '[x], sacrifice another nontoken unit: create a Robot X',
     effect: {
+      creates: ['Robot'],
       run: (g, ctx) => {
         const open = g.openMana(ctx.controller);
         if (open < 1) { g.ev('info', "Instrument of Reassignment: X can't be 0 and no mana is open — no effect."); return; }
@@ -256,7 +251,7 @@ card('Interdiction Rift', {
       if (!t || !('player' in (t as object))) return;
       const who = (t as { player: Seat }).player;
       if (who === ctx.controller) { g.ev('info', 'Interdiction Rift: you are not an opponent — no effect.'); return; }
-      const theirs = g.s.stack.filter(i => i.controller === who && !i.negated);
+      const theirs = g.s.stack.filter(i => i.controller === who);
       if (!theirs.length) { g.ev('info', `Interdiction Rift: ${g.pname(who)} controls no effect — nothing to negate.`); return; }
       const id = theirs.length === 1 ? theirs[0]!.id : ctx.choose('rift', {
         kind: 'payOrDecline', seat: who,
@@ -331,7 +326,7 @@ card('Living Forge', {
   augmentText: [{
     type: 'activated', cost: { mana: 3 },
     label: '[three]: create a Robot 2',
-    effect: { run: (g, ctx) => { makeRobot(g, ctx.controller, 2); } },
+    effect: { creates: ['Robot'], run: (g, ctx) => { makeRobot(g, ctx.controller, 2); } },
   }],
 });
 
@@ -339,6 +334,7 @@ card('Living Forge', {
 // Spell (deploy timing). All three arrive in the controller's home region
 // (R28). Bounded graft ([Switch1], R9).
 const manufactureRobots: EffectDef = {
+  creates: ['Robot'],
   run: (g, ctx) => { for (const x of [3, 2, 1]) makeRobot(g, ctx.controller, x); },
 };
 card('Manufacture', {
@@ -378,8 +374,9 @@ card('Nebula Drifter', {});
 // elsewhere. "Me" = the ability's carrier (the host when grafted).
 const evokerCounter: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-    if (self) g.addCounters(self, 1);
+    const self = selfOf(g, ctx);
+    if (!self) { g.ev('info', `${ctx.sourceName}: the carrier is gone — no counter.`); return; }
+    g.addCounters(self, 1);
   },
 };
 card('Omniwield Evoker', {
@@ -445,17 +442,19 @@ card('Powerforge Synergist', {
   augmentText: [{
     type: 'triggered', events: ['died', 'despawned'], self: true,
     label: 'move my counters onto target unit',
-    when: (_g, self, ev) => {
-      if (self.counters <= 0 || !ev.data) return false;
-      ev.data['pfCounters'] = self.counters;   // snapshot: I am gone at resolution
-      return true;
-    },
+    // R70: the leave-play event already CARRIES the counter total
+    // (E.leftPlayFacts stamps `counters` on 'died' and 'despawned' alike,
+    // precisely because the entity is out of s.entities by the time the
+    // trigger resolves). This used to stash its own `pfCounters` snapshot
+    // here — a private copy of a fact the event already told everyone.
+    when: (_g, self) => self.counters > 0,   // unchanged gate: positive counters only
     effect: {
       targets: { what: 'unit', min: 0, prompt: 'Powerforge Synergist: move my counters onto target unit (or decline)' },
       run: (g, ctx) => {
-        const n = (ctx.event?.data?.['pfCounters'] as number | undefined) ?? 0;
+        const n = (ctx.event?.data?.['counters'] as number | undefined) ?? 0;
         const t = ctx.targets[0];
         if (n > 0 && isEnt(t) && g.entity(t.id)) g.addCounters(t, n);
+        else g.ev('info', 'Powerforge Synergist: no unit is targeted (or it is gone) — the counters are lost.');
       },
     },
   }],
@@ -477,6 +476,7 @@ card('Reforge the Dead', {
     type: 'triggered', events: ['died'], self: true,
     label: 'create a Robot 3 (granted by Reforge the Dead)',
     effect: {
+      creates: ['Robot'],
       run: (g, ctx) => { makeRobot(g, ctx.controller, 3, ctx.region); },
     },
   }],

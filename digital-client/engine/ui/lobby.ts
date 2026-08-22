@@ -11,6 +11,8 @@
  * play. All the deciding happens server-side (server/trio.ts) off a seeded
  * draw — this module only collects a submission and shows what came back.
  */
+import { ALL_ELEMENTS } from '../src/apply.ts';
+import { elIcon as icon, esc, shareBar } from './util.ts';
 
 export interface TrioMethodInfo { id: string; label: string; blurb: string }
 
@@ -28,13 +30,9 @@ export interface TrioReveal {
   detail: string[];
 }
 
-const esc = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-const ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
-
-const icon = (el: string): string =>
-  `<img class="elicon" src="/Icons/${el}.webp" alt="" onerror="this.style.display='none'">`;
+/** the engine's own element list, so a new element never leaves this screen
+ * with a stale copy (the string type fits the server's untyped submissions) */
+const ELEMENTS: readonly string[] = ALL_ELEMENTS;
 
 // ── local, un-submitted state ─────────────────────────────────────────
 //
@@ -156,9 +154,7 @@ export function lobbyHtml(v: LobbyView): string {
       <div class="headbtns"><button data-btn="gohome">Leave</button></div>
     </div>
 
-    ${theyAreHere ? '' : `<div class="sharebar">Send your opponent the room code <b>${esc(room)}</b> or this link:
-      <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
-      <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>`}
+    ${theyAreHere ? '' : shareBar('Send your opponent the room code', room, link)}
 
     <div class="lobbygrid">
       <div class="lobbypanel">

@@ -12,15 +12,18 @@
  * fired during combat damage sub-steps resolve immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS in this batch:
- *  - Scavenging Sentry: "Sacrifice another unit" is printed as a COST; the
- *    DSL has no sacrifice-another cost slot for activations, so it is paid
- *    mid-resolution (R6-style, the batch-fire-b precedent): the controller
- *    picks one of their other units in the region (or declines — then no
- *    counter). The sacrifice is therefore respondable-after-activation.
- *  - Soul Reaver: "[one], Remove X +1/+1 counters from me" — the DSL cost
- *    slot covers only the mana; X is chosen and the counters are removed at
- *    RESOLUTION against the live count (counters lost in response shrink the
- *    available X).
+ *  - Scavenging Sentry: UN-PARKED (R49). This entry used to read "the DSL has
+ *    no sacrifice-another cost slot for activations, so it is paid
+ *    mid-resolution … therefore respondable-after-activation".
+ *    `AbilityCost.sacrificeOther` is that slot: it gates the activation (no
+ *    other unit ⇒ not offered at all) and is paid in the cast window, before
+ *    priority. Same unpark as Soul Swallower and Hearthwood Ancient.
+ *  - Soul Reaver: UN-PARKED (R64). This said "the DSL cost slot covers only
+ *    the mana; X is chosen and the counters are removed at RESOLUTION".
+ *    `CastCost { kind: 'removeCounters', from: 'self', n: 'X' }` is the slot —
+ *    dsl.ts names this card in its doc comment — and the ability declares it,
+ *    so the counters come off as the ability is activated and X is fixed
+ *    before anyone can answer it.
  *  - Technological Superiority: counters are modelled as one NET signed int
  *    (Manual: +1/+1 and -1/-1 cancel pairwise), so "duplicate each counter"
  *    doubles the net — identical whenever all counters share a sign, which
@@ -43,13 +46,12 @@
  *    machinery; the constructed-format life clause has no format flag either.
  *    Registered as a vanilla 2/2 {Feeble} unit until skipping exists.
  */
-import type { Entity, EntityId } from '../../types.ts';
+import type { EntityId } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, unitRestrict, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
 
 /** find an id inside a formation grid → its column and row */
 function locateInGrid(grid: EntityId[][], id: EntityId): { col: EntityId[]; i: number } | null {
@@ -75,7 +77,7 @@ card('Refuse Reclaimer', {
     when: (_g, self, ev) => ev.data?.unit !== self.id,     // "another unit"
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (self) g.addCounters(self, 1);
       },
     },
@@ -110,7 +112,7 @@ card('Riftwalker', {
         }),
       },
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         const t = ctx.targets[0];
         const b = g.s.battle;
         if (!self || !b || !isEnt(t) || !g.entity(t.id) || t.id === self.id) return;
@@ -137,27 +139,19 @@ card('Riftwalker', {
 // (or having none) yields no counter.
 card('Scavenging Sentry', {
   augmentText: [{
-    type: 'activated', cost: {},
+    // R49 UN-PARKED: a real activation cost. It gates the activation — with no
+    // other unit the ability is not offered at all, rather than activated and
+    // then fizzling — and it is paid in the cast window, so nobody responds
+    // between the sacrifice and the counter.
+    type: 'activated', cost: { sacrificeOther: 1 },
     label: 'sacrifice another unit: put a +1/+1 counter on me',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
-        const victims = g.unitsOf(ctx.controller, ctx.region).filter(u => u.id !== self.id);
-        if (!victims.length) { g.ev('info', 'Scavenging Sentry: no other unit to sacrifice.'); return; }
-        const pick = ctx.choose('sentrySac', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Scavenging Sentry: sacrifice another unit? (I get a +1/+1 counter)',
-          options: [
-            { label: 'decline', value: -1 },
-            ...victims.map(u => ({ label: u.card, value: u.id, card: u.card })),
-          ],
-        }) as number;
-        const victim = pick >= 0 ? g.entity(pick) : undefined;
-        if (!victim || victim.id === self.id) return;
-        g.destroy(victim, 'is sacrificed');
-        const me = g.entity(self.id);              // re-read: the sacrifice may have chained
-        if (me) g.addCounters(me, 1);
+        // re-read the carrier: the paid sacrifice can chain (a death trigger
+        // may have taken the Sentry with it)
+        const me = selfOf(g, ctx);
+        if (!me) { g.ev('info', 'Scavenging Sentry: the carrier is gone — no counter.'); return; }
+        g.addCounters(me, 1);
       },
     },
   }],
@@ -173,7 +167,10 @@ const scrapForParts: EffectDef = {
   allOrNothing: true,
   run: (g, ctx) => {
     const [from, to] = ctx.targets;
-    if (!isEnt(from) || !isEnt(to) || !g.entity(from.id) || !g.entity(to.id) || from.id === to.id) return;
+    if (!isEnt(from) || !isEnt(to) || !g.entity(from.id) || !g.entity(to.id) || from.id === to.id) {
+      g.ev('info', 'Scrap For Parts: it needs two different live units — nothing moves.');
+      return;
+    }
     const n = from.counters;
     if (!n) { g.ev('info', `Scrap For Parts: ${from.card} has no counters to move.`); return; }
     from.counters = 0;
@@ -194,6 +191,7 @@ card('Scrap For Parts', {
 // 0/0 that lives on its counters). X = 0 → nothing is created (a 0/0 would
 // die instantly).
 const selfAssemble: EffectDef = {
+  creates: ['Robot'],
   run: (g, ctx) => {
     const x = g.affinity(ctx.controller, 'metal');
     if (x <= 0) { g.ev('info', 'Self-Assembly: no metal affinity — no Robot.'); return; }
@@ -252,8 +250,8 @@ card('Suppression Field', {
         g.ev('info', `Suppression Field ERASES ${t.mods.length} mod(s) on ${t.card}.`);
         t.mods = [];
       }
-      for (const item of g.s.stack) {
-        if (!item.negated && item.sourceId === t.id) g.negate(item.id);
+      for (const item of [...g.s.stack]) {   // R68: negate() splices
+        if (item.sourceId === t.id) g.negate(item.id);
       }
       g.checkDeaths();                             // mod statics may have kept it alive
     },
@@ -285,7 +283,15 @@ const duplicateCounters: EffectDef = {
   targets: { what: 'unit', prompt: 'Technological Superiority: duplicate each counter on target unit' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (isEnt(t) && g.entity(t.id)) g.addCounters(t, t.counters);
+    if (!isEnt(t) || !g.entity(t.id)) {
+      g.ev('info', 'Technological Superiority: the target is gone — nothing is duplicated.');
+      return;
+    }
+    if (!t.counters) {
+      g.ev('info', `Technological Superiority: ${t.card} carries no counters — nothing to duplicate.`);
+      return;
+    }
+    g.addCounters(t, t.counters);
   },
 };
 card('Technological Superiority', {
@@ -297,9 +303,12 @@ card('Technological Superiority', {
 // abilities." — mm/4 4/3 Alien {Virus} Unit. The +2/+2 half is a static:
 // live as a unit in play AND augment-donated (mod-carried statics anchor on
 // the host, so "your OTHER units" reads from the host's perspective). ⚠
-// region-scoped (R12, header). The "lose all attributes and abilities" half
-// is PARKED (header: no suppression machinery). `augmentable` keeps the
-// Virus/augment play modes open despite no augmentAttrs/augmentText.
+// region-scoped (R12, header). The "lose all attributes and abilities" half is
+// LIVE — it is the same static's `suppressAttrs` / `suppressAbilities` flags,
+// eleven lines below. (This note used to say that half was "PARKED (header: no
+// suppression machinery)"; R62 shipped the machinery and the note was left
+// behind.) `augmentable` keeps the Virus/augment play modes open despite no
+// augmentAttrs/augmentText.
 card('Transmogrifant', {
   augmentable: true,
   statics: [{
@@ -390,8 +399,12 @@ card('Unstable Singularity', {
 // as the bin's owner). An empty hand is revealed instead.
 const voidMemory: EffectDef = {
   run: (g, ctx) => {
+    // R25: "each opponent" reads the effect region's PRESENT seats, like every
+    // other "each opponent" in the pool (Thoughtripper) — grafted onto a
+    // deployment-firing cause it reaches nobody who is not there.
+    const present = g.s.regions[ctx.region]!.presentSeats;
     for (const p of g.s.players) {
-      if (p.seat === ctx.controller) continue;
+      if (p.seat === ctx.controller || !present.includes(p.seat)) continue;
       if (!p.hand.length) {
         g.ev('info', `Void Memory: ${g.pname(p.seat)}'s hand is empty — revealed.`);
         g.revealHandTo(ctx.controller, p.seat);

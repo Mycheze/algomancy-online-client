@@ -10,20 +10,27 @@
  * the engine region-scopes trigger listeners and presentSeats, so "each
  * opponent" is read from the event's region).
  *
- * PARKED (needs engine machinery that does not exist yet):
- *  - Astralith's AUGMENT DONATION. The card is "[Augment] [three]: Put a +1/+1
- *    counter on target unit" — an ACTIVATED ability inside the [Augment] text
- *    box. The engine only surfaces activated abilities from a card's own
- *    `abilities` list (pushActivatedOptions / doActivateAbility in apply.ts read
- *    getCard(u.card).abilities and never scan augmentText or a host's augment
- *    mods). So an activated ability donated by an augment can never be activated
- *    on the host. Astralith's played-normally behavior IS delivered (modelled in
- *    `abilities`; Manual Q&A: a card's own [Augment] text is active when it is in
- *    play normally) and tested; the augmentText copy exists only so the card is
- *    recognised as an augment. See the ⚠ ruling proposal in the batch report.
+ * Nothing is parked in this batch.
+ *
+ * (This header used to park "Astralith's AUGMENT DONATION" on the claim that
+ * "the engine only surfaces activated abilities from a card's own `abilities`
+ * list … so an activated ability donated by an augment can never be activated
+ * on the host". That has not been true for some time: apply.ts's
+ * pushActivatedOptions offers a card's own `augmentText` (via: 'augment') AND
+ * every augment mod's `augmentText` (via: { mod }), and test 511 in
+ * 10-water-metal exercises the donated path end to end.
+ *
+ * The stale note had a live consequence, not just a wrong sentence: Astralith
+ * carried the SAME activated ability in both `abilities` and `augmentText` —
+ * one copy for the played-normally case, one "purely so the card registers as
+ * an augment" — and since apply.ts offers both lists, a normally-played
+ * Astralith surfaced its [three] ability TWICE in legalActions. It is now
+ * declared once, in `augmentText`, which is where the printed [Augment] marker
+ * puts it and which covers both forms.)
  */
-import type { Entity, Seat } from '../../types.ts';
+import type { Seat } from '../../types.ts';
 import { card, getCard, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -71,9 +78,11 @@ card('Bloated Manablub', {
 // region-scoped like Bloated Manablub.
 const dealTwoToEachOpponent: EffectDef = {
   run: (g, ctx) => {
+    let hit = 0;
     for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-      if (seat !== ctx.controller) g.dealEffectDamage(ctx, { player: seat as Seat }, 2);
+      if (seat !== ctx.controller) { g.dealEffectDamage(ctx, { player: seat as Seat }, 2); hit++; }
     }
+    if (!hit) g.ev('info', `${ctx.sourceName}: no opponent is present here — no damage.`);
   },
 };
 card('Boreal Wanderer', {
@@ -97,7 +106,7 @@ card('Boreal Wanderer', {
 const amalgamCounters: EffectDef = {
   run: (g, ctx) => {
     const x = eventSpellCost(ctx);
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const self = selfOf(g, ctx);
     if (self && x > 0) g.addCounters(self, x);
   },
 };
@@ -114,9 +123,11 @@ card('Channeled Amalgam', {
 // is the spell's cost." — bb/3 3/2. Same spellPlayed pattern; X/X token via
 // spawnUnit tokenStats (like Awoken Tomb).
 const arcaneMakeXX: EffectDef = {
+  creates: ['Unit Token'],
   run: (g, ctx) => {
     const x = eventSpellCost(ctx);
-    if (x > 0) g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
+    if (x <= 0) { g.ev('info', 'Arcane Concentrator: that spell costs 0 — X is 0, no unit.'); return; }
+    g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
   },
 };
 card('Arcane Concentrator', {
@@ -136,7 +147,7 @@ card('Arcane Concentrator', {
 const adversaryGrow: EffectDef = {
   run: (g, ctx) => {
     const n = (ctx.event?.data?.n as number | undefined) ?? 0;
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const self = selfOf(g, ctx);
     if (self && n > 0) g.addCounters(self, n);
   },
 };
@@ -163,26 +174,22 @@ card('A Pile of Rubbish', {
 });
 
 // "[Augment] [three]: Put a +1/+1 counter on target unit." — m/1 2/3.
-// An ACTIVATED ability inside the [Augment] text box (cost = 3 mana, targeted).
-// Modelled in `abilities` so the played-normally behavior works and is testable
-// (the engine only surfaces activated abilities from `abilities`); the
-// augmentText copy exists purely so the card registers as an augment. The
-// augment-DONATION of this activated ability is PARKED — see the header note.
+// An ACTIVATED ability inside the [Augment] text box (cost = 3 mana, targeted),
+// declared ONCE, in `augmentText`, which is where the printed [Augment] marker
+// puts it. apply.ts offers augmentText from the card itself (via: 'augment' —
+// Manual Q&A: a card's own [Augment] text is live when it is played normally)
+// and from every augment mod on a host (via: { mod }), so one declaration
+// covers both forms. It used to be declared in BOTH lists, on a header note
+// claiming donated activated abilities could never fire; that note had expired,
+// and the duplicate made a normally-played Astralith offer the ability twice.
 const putOneCounter: EffectDef = {
   targets: { what: 'unit', prompt: 'Astralith: put a +1/+1 counter on target unit' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (t && 'id' in (t as object)) g.addCounters(t as Entity, 1);
+    if (isEnt(t)) g.addCounters(t, 1);
   },
 };
 card('Astralith', {
-  abilities: [{
-    type: 'activated', cost: { mana: 3 },
-    label: '[three]: put a +1/+1 counter on target unit',
-    effect: putOneCounter,
-  }],
-  // recognised as an augment (its printed type line has [Augment]); the donated
-  // activated ability is not yet activatable on a host — PARKED (see header).
   augmentText: [{
     type: 'activated', cost: { mana: 3 },
     label: '[three]: put a +1/+1 counter on target unit',
@@ -194,6 +201,7 @@ card('Astralith', {
 // not [Switch1]); fires on 'afterCombat' (region-scoped) for the unit's
 // controller. Robot 1 = a 0/0 unit token with one +1/+1 counter.
 const createRobot1: EffectDef = {
+  creates: ['Robot'],
   run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Robot', ctx.region, { token: true, counters: 1 }); },
 };
 card('Construct Overseer', {

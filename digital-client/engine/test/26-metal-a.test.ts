@@ -20,6 +20,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
+import { legalActions } from '../src/apply.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
@@ -287,7 +288,7 @@ test('Containment Protocol: negates all triggered and activated effects on the s
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Containment Protocol') });
   pass(h); pass(h);                                         // resolve the Protocol first
   assert.ok(h.log.some(l => l.includes('is negated')), 'the triggered effect was negated');
-  pass(h); pass(h);                                         // the negated trigger resolves to nothing
+  assert.equal(h.state.stack.length, 0, 'R68: the negated trigger left the stack at once');
   assert.ok(ent(h, dTok), 'the token was never recalled');
   finishBattle(h);
 });
@@ -338,6 +339,31 @@ test('Deformant: sacrifice me + an ally, delete all units costing our counter to
   assert.ok(!ent(h, b1) && !ent(h, b2), 'all cost-3 units in the region deleted');
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Bripp').length, 2, 'deleted → bin');
   finishBattle(h);
+});
+
+test('R77: Deformant is not offered with no other ally to sacrifice', () => {
+  const h = new Harness(2620);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const def = spawn(h, A, 'Deformant');                     // its only unit
+  assert.ok(!legalActions(h.state, A).some(a =>
+    a.type === 'activateAbility' && a.entityId === def),
+    'it used to activate, say "no other ally", and do nothing');
+  spawn(h, A, 'Unit Token');
+  assert.ok(legalActions(h.state, A).some(a =>
+    a.type === 'activateAbility' && a.entityId === def), 'with an ally it is offered');
+});
+
+test('Deformant: "sacrifice me AND another ally" as one COMPOUND activation cost '
+  + '(PARKED: AbilityCost has no compound shape)', { todo: true }, () => {
+  // `AbilityCost` can express `sacrificeSelf: true` OR `sacrificeOther: n`,
+  // never both as a single indivisible payment, so Deformant pays at
+  // RESOLUTION: the ally is picked mid-resolution and both are destroyed there.
+  // What is missing is a cost shape that takes several sacrifices as ONE
+  // payment — offered, chosen and charged in the cast window like every other
+  // activation cost (R49/R57) — so that a Deformant whose ally is removed in
+  // response never half-pays. R77 gated the OFFER; the payment window is what
+  // is still parked.
 });
 
 // ── Discharge ────────────────────────────────────────────────────────────
@@ -461,6 +487,68 @@ test('Eldritch Dreamtender: connects → sacrifices itself to discard from that 
   assert.ok(sac, 'sacrificing is trashing (R40)');
   assert.equal(sac!.data!['seat'], A);
   assert.equal(sac!.data!['from'], 'play');
+  finishBattle(h);
+});
+
+test('Eldritch Dreamtender: the sacrifice is paid on the way to the stack, '
+  + 'not at resolution', () => {
+  // The report: "Technically, Eldritch Dreamtender needs to be sacrificed for
+  // its ability to go on the stack, but it's still visually in play while
+  // resolving its trigger." It used to be a `g.destroy(self, …)` inside
+  // effect.run — at resolution, after a whole priority window with the unit
+  // still on the board.
+  //
+  // R73 (Bena, 2026-08-22) makes it a real cast cost:
+  // `{ kind: 'sacrificeUnits', from: 'self', n: 1 }`. R64/R67 already settle
+  // bracketed costs in the cast window for triggered items too, so the payment
+  // now lands BEFORE the trigger is a thing anyone can answer.
+  const h = new Harness(2618);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const dt = spawn(h, A, 'Eldritch Dreamtender');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[dt]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);                                         // combat damage → trigger
+  // THE ASSERTION THE PARK WAS WAITING FOR: the Dreamtender is already out of
+  // play — and in its owner's bin — at the moment the trigger's own decision
+  // is being asked for, i.e. before anything could have answered it.
+  assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');
+  assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'), 'and it is in the bin');
+  assert.equal(h.state.decision!.seat, A, 'only now is the discard chosen');
+  // the log order is the proof: the payment lands between the trigger being
+  // QUEUED and the trigger RESOLVING — i.e. in the cast window, which is where
+  // a bracketed cost belongs (R64/R67)
+  const iPay = h.log.findIndex(l => l.includes('sacrifices Eldritch Dreamtender'));
+  const iRes = h.log.findIndex(l => l.includes('Eldritch Dreamtender: sacrifice me')
+    && l.endsWith('resolves.'));
+  assert.ok(iPay !== -1, 'the sacrifice is logged as a cost payment');
+  assert.ok(iRes !== -1 && iPay < iRes, 'and it is paid BEFORE the effect resolves');
+  pick(h, 0);
+  finishBattle(h);
+});
+
+test('Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (R73)', () => {
+  // The other deliberate consequence of the ruling: the printed "sacrifice me.
+  // If you do, …" loses its if-you-do. A choice-free cost on a spell/trigger's
+  // OWN effect is charged outright — the decline option only exists for an
+  // optional grafted rider. The dead-source half of R73 (an unpayable cost
+  // skips the part) is pinned on the primitive in test/32-cast-costs.
+  const h = new Harness(2619);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const dt = spawn(h, A, 'Eldritch Dreamtender');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[dt]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);
+  // the only decision raised is the discard — never "pay the cost?"
+  assert.ok(!h.state.decision!.options.some(o => /Don't pay|Decline/.test(o.label)),
+    'no way to keep the Dreamtender and still look at the hand');
+  assert.ok(!ent(h, dt), 'it is already gone');
+  pick(h, 0);
   finishBattle(h);
 });
 

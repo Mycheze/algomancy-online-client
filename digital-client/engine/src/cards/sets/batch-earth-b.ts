@@ -14,23 +14,25 @@
  *    to me instead" needs damage replacement hooks (combatSubStep calls
  *    loseLife directly, with no replacement seam). Registered with a no-op
  *    [Augment] text so it can still be applied as a (blank) virus augment.
- *  - Malformed Monstrosity (augment-donated form only): the unit form is a
- *    true self-affecting static (-7/-7, live in effStats) now. The
- *    augment-DONATED form needs mod-carried statics — statics run only while
- *    the holder is a UNIT in play — so a host still takes the -7/-7 once as
- *    permanent -1/-1 counters when the mod lands (pairwise-cancels with
- *    +1/+1 counters; the known deviation, now confined to that half).
- *  - Mohruung: "when I become targeted" is now heard on EVERY targeting path.
- *    It was partial — apply.ts dispatched 'targeted' for augment/virus/graft
- *    but engine.ts commitItem only LOGGED it for spell and ability targets,
- *    so no spell in the game could trigger it. Playtest 2026-08-19 (R53).
  *  - PARTIAL — Reality Bender: registered on printed data ({Inverted} attr +
  *    type-line [Augment] grant); the Inverted stat swap itself is the
  *    unimplemented effStats layer 5 (the seam exists in engine.ts).
+ *
+ * UN-PARKED (kept here so the history is readable; nothing below is waiting):
+ *  - Malformed Monstrosity: the unit form is a true self-affecting static
+ *    (-7/-7, live in effStats), and the augment-DONATED form is the SAME
+ *    static — mod-carried statics anchor on the host (E.anchored), which
+ *    retired the "-7/-7 as permanent -1/-1 counters" deviation the old entry
+ *    described (un-parked 2026-08-18).
+ *  - Mohruung: "when I become targeted" is heard on EVERY targeting path.
+ *    It was partial — apply.ts dispatched 'targeted' for augment/virus/graft
+ *    but engine.ts commitItem only LOGGED it for spell and ability targets,
+ *    so no spell in the game could trigger it. Playtest 2026-08-19 (R53).
  */
 import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+import { card, getCard, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+import { selfOf, chooseUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -38,20 +40,6 @@ import { card, getCard, type EffectCtx, type EffectDef, type ResolvedTarget } fr
 const presentSeats = (g: E, region: number): Seat[] => {
   const present = g.s.regions[region]!.presentSeats;
   return [g.initiative, g.nit].filter(s => present.includes(s));
-};
-
-/** `chooser` picks one of `candidates` (auto-picked when only one). Returns
- * null when there is nothing to pick. Deterministic replay: keys stable. */
-const chooseUnit = (
-  g: E, ctx: EffectCtx, key: string, chooser: Seat, candidates: Entity[], prompt: string,
-): Entity | null => {
-  if (!candidates.length) return null;
-  if (candidates.length === 1) return candidates[0]!;
-  const id = ctx.choose(key, {
-    kind: 'electricPath', seat: chooser, prompt,
-    options: candidates.map(u => ({ label: u.card, value: u.id })),
-  }) as EntityId;
-  return g.entity(id) ?? null;
 };
 
 // ────────────────────────────── the cards ──────────────────────────────
@@ -69,13 +57,27 @@ const chooseUnit = (
 // doubler). Bounded ([Switch1], R9): once per turn as a cause and as a graft.
 const doubleGrafts: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-    if (!self) return;
+    const self = selfOf(g, ctx);
+    if (!self) { g.ev('info', 'Lost Guardian: the carrier is gone — no graft is doubled.'); return; }
+    let doubled = 0;
     for (const modId of [...self.mods]) {
       const mod = g.entity(modId);
       if (!mod || mod.appliedAs !== 'graft' || mod.card === 'Lost Guardian') continue;
       const eff = getCard(mod.card).graftEffect?.effect;
       if (!eff) continue;
+      // ⚠ R35/R49: a rider with a bracketed [cost] is paid ONCE, in the cast
+      // window, when composeParts contributes its single copy. This inline
+      // copy runs outside that window and has no way to pay, so it is
+      // SKIPPED rather than resolved for free — Darkblast's "[Discard a card]
+      // deal 5 damage" would otherwise be 5 free damage. The printed copy
+      // still happens; only the extra one is lost. (Same rule as Witness of
+      // the Crossing's tripleGrafts.)
+      if (eff.castCost) {
+        g.ev('info',
+          `${ctx.sourceName}: ${mod.card} has a bracketed [cost], which the extra copy `
+          + 'cannot pay — only its paid copy resolves.');
+        continue;
+      }
       let targets: ResolvedTarget[] = [];
       if (eff.targets) {
         const cands = g.targetCandidates(eff.targets, ctx.region, undefined, ctx.controller);
@@ -93,7 +95,9 @@ const doubleGrafts: EffectDef = {
         region: ctx.region, targets, event: ctx.event,
         choose: (k, d) => ctx.choose(`lg:${modId}:${k}`, d),
       });
+      doubled++;
     }
+    if (!doubled) g.ev('info', `${ctx.sourceName}: no other graft is attached — there is nothing to double.`);
   },
 };
 card('Lost Guardian', {
@@ -120,6 +124,7 @@ card('Malformed Monstrosity', {
 // "When I attack or block, [Switch] Create a Crystal 1." — ee/2 2/2 Mystic
 // Luminary Unit. Unbounded graft shares the Crystal-making effect.
 const createCrystal1: EffectDef = {
+  creates: ['Crystal'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Crystal', 1, ctx.region); },
 };
 card('Metamorphic Luminary', {
@@ -166,9 +171,10 @@ card('Mirage Scuttler', {
     when: (g, self) => self.damage < g.effStats(self)[1],   // survived so far
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
         if (self && n > 0) g.addCounters(self, n);
+        else g.ev('info', 'Mirage Scuttler: it did not survive to take the counters.');
       },
     },
   }],
@@ -179,6 +185,7 @@ card('Mirage Scuttler', {
 // and spells/abilities off the stack (engine.ts commitItem — R53, the
 // playtest fix). Bounded ([Switch1], R9); the Crystal 2 is the bounded graft.
 const createCrystal2: EffectDef = {
+  creates: ['Crystal'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Crystal', 2, ctx.region); },
 };
 card('Mohruung', {
@@ -198,7 +205,7 @@ card('Mohruung', {
 // (R12). Unbounded graft: on a host, the host gains the +2/+2.
 const mentorBuff: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const self = selfOf(g, ctx);
     if (self) g.addTemp(self, 2, 2);
   },
 };
@@ -262,6 +269,7 @@ card('Perpetual Construct', {
     label: "create an X/X unit (X = the mod's cost)",
     when: (g, self, ev) => ev.data?.host === self.id,
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
         const mod = g.entity(ctx.event?.data?.mod as EntityId);
         if (!mod) return;
@@ -279,7 +287,7 @@ card('Perpetual Construct', {
 // host).
 const pebbleGrow: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const self = selfOf(g, ctx);
     if (self) g.addCounters(self, 1);
   },
 };
@@ -327,13 +335,16 @@ card('Restitution', {
 card('Return to Nature', {
   spellEffect: {
     run: (g, ctx) => {
-      for (const it of g.s.stack) g.negate(it.id);
+      let touched = g.s.stack.length;
+      for (const it of [...g.s.stack]) g.negate(it.id);   // R68: negate() splices
       for (const u of g.unitsIn(ctx.region)) {
         if (!u.mods.length) continue;
         for (const id of u.mods) delete g.s.entities[id];
         g.ev('info', `Return to Nature erases ${u.mods.length} mod(s) from ${u.card}.`);
         u.mods = [];
+        touched++;
       }
+      if (!touched) g.ev('info', 'Return to Nature: no effect on the stack and no mod in play — nothing happens.');
     },
   },
 });

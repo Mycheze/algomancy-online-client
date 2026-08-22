@@ -208,12 +208,18 @@ test('Finality: negates every other effect on the stack and erases both bins', (
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Finality') });
   assert.equal(h.state.stack.length, 2);
   pass(h); pass(h);                                        // Finality resolves first
-  assert.ok(h.state.stack[0]!.negated, 'the other effect is negated');
-  assert.deepEqual(bin(h, D), [], 'the enemy bin is erased');
-  assert.deepEqual(bin(h, A), ['Finality'], 'so is mine — Finality itself was on the stack, not in a bin');
-  drainStack(h);
+  assert.equal(h.state.stack.length, 0, 'R68: the negated effect left the stack at once');
   assert.ok(!hand(h, A).includes('Good Whale'), 'the negated Collect Remains did nothing');
-  assert.deepEqual(bin(h, A), ['Finality', 'Collect Remains'], 'the negated spell is binned from the stack');
+  assert.deepEqual(bin(h, D), [], 'the enemy bin is erased');
+  // ⚠ R68 ORDERING, needs a human ruling. Negation now bins the card DURING
+  // the negation, so by the time Finality's second sentence runs, Collect
+  // Remains is sitting in A's bin — and is erased with everything else.
+  // Before R68 it reached the bin a whole priority round later and survived.
+  // Finality itself is binned by afterParts, AFTER the erase, as printed.
+  assert.deepEqual(bin(h, A), ['Finality'],
+    'the card Finality just negated was erased with the rest of the bin (see R68 ⚠)');
+  drainStack(h);
+  assert.deepEqual(bin(h, A), ['Finality'], 'and nothing else arrives afterwards');
   finishBattle(h);
 });
 
@@ -246,11 +252,38 @@ test('Grox: the activation erases two chosen cards from your bin', () => {
   h.do({ type: 'declareAttack', seat: D, columns: [[raider]] });
   pass(h);                                                    // attacker passes → P acts
   h.do({ type: 'activateAbility', seat: P, entityId: grox, abilityIndex: 0 });
-  drainStack(h);
+  // R64 UN-PARKED: "Erase two cards in your bin:" is a bracketed CAST COST —
+  // chosen and paid on the way to the stack, not at resolution
   pickBy(h, o => o.label === 'Rotling');
   pickBy(h, o => o.label === 'Xzydris');
   assert.deepEqual(bin(h, P), ['Good Whale'], 'exactly the two chosen cards are gone');
   assert.equal(trashedCards(h).filter(c => c === 'Rotling').length, 0, 'erasing is not trashing (R40)');
+  drainStack(h);
+  finishBattle(h);
+});
+
+test('Grox: an unpayable erase makes the activation illegal — no free ride for a rider', () => {
+  // The consequence the old resolution-time approximation flagged and could
+  // not fix: "grafted riders resolve even when the bin turns out too small to
+  // pay". As a real CastCost the whole activation is refused instead.
+  const h = new Harness(4331);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const D = 1 - P;
+  const grox = spawn(h, P, 'Grox');
+  const raider = spawn(h, D, 'Unit Token');
+  giveResources(h, P, 'dark', 3);
+  bin(h, P).push('Rotling');                                  // one card — not two
+  h.do({ type: 'graft', seat: P, from: 'hand', index: give(h, P, 'Primordial Coalescence'), hostId: grox, position: 0 });
+  toNextBattle(h, D);
+  h.do({ type: 'declareAttack', seat: D, columns: [[raider]] });
+  pass(h);
+  assert.ok(!h.legal(P).some(a => a.type === 'activateAbility' && a.entityId === grox),
+    'unpayable [Erase two cards] → not offered');
+  assert.throws(() => h.do({ type: 'activateAbility', seat: P, entityId: grox, abilityIndex: 0 }),
+    /nothing it can be used on/);
+  assert.deepEqual(bin(h, P), ['Rotling'], 'nothing erased');
+  assert.equal(unitsNamed(h, 'Wraith').length, 0, 'and the rider never resolved');
   finishBattle(h);
 });
 
@@ -269,8 +302,13 @@ test('Grox: the bare [Switch] is a graft SOCKET — a grafted rider resolves wit
   h.do({ type: 'declareAttack', seat: D, columns: [[raider]] });
   pass(h);                                                    // attacker passes → P acts
   h.do({ type: 'activateAbility', seat: P, entityId: grox, abilityIndex: 0 });
+  // R64: the erase is a bracketed CAST COST now, so both cards are chosen and
+  // erased in the cast window — before the socket (and its rider) is on the
+  // stack, and before anyone can respond
+  pickBy(h, o => o.label === 'Rotling');
+  pickBy(h, o => o.label === 'Xzydris');
+  assert.deepEqual(bin(h, P), [], 'both cards erased as the cost');
   drainStack(h);
-  assert.deepEqual(bin(h, P), [], 'exactly two cards in the bin: both erased, no choice needed');
   assert.equal(unitsNamed(h, 'Wraith').length, 3, 'and the grafted rider made its three Wraiths');
   assert.equal(h.q.rot(P), 2);
   finishBattle(h);
@@ -482,7 +520,7 @@ test('Primordial Coalescence: three Wraiths (= Wights, R47) and 2 rot (R38)', ()
   const wights = unitsNamed(h, 'Wraith');
   assert.equal(wights.length, 3, 'three token bodies');
   assert.equal(wights[0]!.token, true);
-  assert.deepEqual(effStats(h, wights[0]!.id), [4, 4], 'each a real 4/4');
+  assert.deepEqual(effStats(h, wights[0]!.id), [3, 3], 'each a real 3/3 (R71)');
   assert.equal(wights[0]!.region, h.q.homeRegion(P), 'created units arrive at home (R28)');
   assert.equal(h.q.rot(P), 2, 'and the downside is 2 rot');
 

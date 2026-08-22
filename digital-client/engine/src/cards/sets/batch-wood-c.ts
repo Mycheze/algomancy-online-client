@@ -25,10 +25,11 @@
  *    precedent): a non-opponent pick resolves as a no-op. Region scoping
  *    (R25) means an absent opponent (e.g. during your deployment) simply is
  *    not a candidate — Ralph's defection is a battle play in practice.
- *  - Saprophytic Oracle's "nontoken unit dies": the died event carries no
- *    token flag, so the discriminator is the death message (token deaths are
- *    logged "— token: erased."). Copy-tokens of real cards are still
- *    correctly excluded (their death message is the token one).
+ *  - Saprophytic Oracle's "nontoken unit dies": NO LONGER an approximation.
+ *    This said "the died event carries no token flag, so the discriminator is
+ *    the death message"; R70 puts `token` on the event itself and the card
+ *    reads it. (The string match is exactly what the redesigned Wraith slipped
+ *    past, because its death logged different text.)
  *  - Wandering Blightshell's "when YOU put a counter on an enemy": nothing
  *    records WHO placed a counter, so the trigger reads countersChanged
  *    events as: -1/-1 counter(s) landing on an enemy of mine were put there
@@ -45,23 +46,16 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, inEndOfTurn, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity =>
-  !!t && typeof t === 'object' && 'id' in (t as object);
 
 /** present seats of a region, initiative player first (stable order) */
 const presentSeats = (g: E, region: number): Seat[] => {
   const present = g.s.regions[region]!.presentSeats;
   return [g.initiative, g.nit].filter(s => present.includes(s));
 };
-
-/** True while endTurn() is resolving end-of-turn triggers — a ctx.choose
- * suspension there strands the game (batch-fire-a precedent), so choose-based
- * effects reachable then must auto-pick deterministically instead. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
 
 /** `chooser` picks one of `candidates` (auto-picked when only one). Returns
  * null when there is nothing to pick. Plan-then-commit: call all chooses
@@ -123,13 +117,14 @@ const ralphDefect: EffectDef = {
   // R64: "target opponent" is a player, and not you — 'any' offered every
   // unit in the region and Ralph's own controller, all of them dead options.
   targets: { what: 'opponent', prompt: 'Ralph: target opponent gains control of me (then create three 1/1 units)' },
+  creates: ['Unit Token'],
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!t || !('player' in (t as object)) || (t as { player: Seat }).player === ctx.controller) {
       g.ev('info', 'Ralph: the target is not an opponent — nothing happens.');
       return;
     }
-    const me = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const me = selfOf(g, ctx);
     if (!me) { g.ev('info', 'Ralph: the unit is gone — no control change, no tokens.'); return; }
     const to = (t as { player: Seat }).player;
     if (me.controller === to) { g.ev('info', 'Ralph: they already control me — no tokens.'); return; }
@@ -167,6 +162,11 @@ card('Rebalance', {
             `Rebalance: choose one of your units — ${g.pname(to)} gains control of it`);
         if (u) gives.push({ u, to });
       }
+      if (!gives.length) {
+        // conformance: an effect that runs to completion must say something
+        g.ev('info', 'Rebalance: nobody in this region has a unit to give — no effect.');
+        return;
+      }
       for (const { u, to } of gives) {
         if (g.entity(u.id)) giveControl(g, u, to);
       }
@@ -177,15 +177,16 @@ card('Rebalance', {
 // "[Augment] Whenever a nontoken unit dies, create a 1/1 unit." — gg/3 2/3
 // Fungus Oracle Unit. Text-box [Augment]: live when played normally (Manual
 // Q&A) and donated to hosts. Death listeners are region-scoped (R12).
-// ⚠ header approximation: "nontoken" is read off the death message (the died
-// event carries no token flag; token deaths log "— token: erased."). The
-// created 1/1 IS a token, so no loop. It arrives at home (R28).
+// R70: "nontoken" is read off the death EVENT's token flag. It used to be a
+// string match on the log message ("— token: erased."), which a card whose
+// death logged different text — the redesigned Wraith — slipped straight
+// past. The created 1/1 IS a token, so no loop. It arrives at home (R28).
 card('Saprophytic Oracle', {
   augmentText: [{
     type: 'triggered', events: ['died'],
     label: 'a nontoken unit died — create a 1/1 unit',
-    when: (_g, _self, ev) => !ev.msg.includes('token: erased'),
-    effect: { run: (g, ctx) => create1s(g, ctx.controller, 1) },
+    when: (_g, _self, ev) => ev.data?.token !== true,
+    effect: { creates: ['Unit Token'], run: (g, ctx) => create1s(g, ctx.controller, 1) },
   }],
 });
 
@@ -200,6 +201,7 @@ card('Spawning Ground', {
     type: 'triggered', events: ['endOfTurn'],
     label: 'you lose 1 life and create a Poison 1',
     effect: {
+      creates: ['Poison'],
       run: (g, ctx) => {
         g.loseLife(ctx.controller, 1, 'Spawning Ground');
         g.createSpellToken(ctx.controller, 'Poison', 1);
@@ -214,8 +216,9 @@ card('Spawning Ground', {
 // is grafted elsewhere); a gone carrier or 0 power makes no token. The
 // Poison appears at ctx.region (spell tokens are battle materiel).
 const spewPoison: EffectDef = {
+  creates: ['Poison'],
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const self = selfOf(g, ctx);
     if (!self) { g.ev('info', 'Spewing Mushroom: the unit is gone — no Poison.'); return; }
     const [p] = g.effStats(self);
     if (p <= 0) { g.ev('info', `${self.card} has no power — no Poison.`); return; }
@@ -241,6 +244,7 @@ card('Spewing Mushroom', {
 const deleteCountered: EffectDef = {
   run: (g, ctx) => {
     const doomed = g.unitsIn(ctx.region).filter(u => u.counters < 0);
+    if (!doomed.length) { g.ev('info', `${ctx.sourceName}: no unit carries a -1/-1 counter — nothing is deleted.`); return; }
     for (const u of doomed) {
       if (g.entity(u.id)) g.destroy(u, 'is deleted');
     }
@@ -260,6 +264,7 @@ card('Sporebloom Siren', {
 // respondable); the [Switch] effect is an unbounded graft and the ability is
 // its cause. The Poison appears at ctx.region.
 const sprouterPoison: EffectDef = {
+  creates: ['Poison'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Poison', 1, ctx.region); },
 };
 card('Sprouter', {
@@ -327,7 +332,9 @@ card('Stellarspore Harvester', {
 // regroup, R11 step 3).
 const bloomBuff: EffectDef = {
   run: (g, ctx) => {
-    for (const u of g.unitsOf(ctx.controller, ctx.region)) g.addTemp(u, 1, 1);
+    const mine = g.unitsOf(ctx.controller, ctx.region);
+    if (!mine.length) { g.ev('info', `${ctx.sourceName}: you control no unit here — nothing is buffed.`); return; }
+    for (const u of mine) g.addTemp(u, 1, 1);
   },
 };
 card('Sudden Bloom', {
@@ -341,6 +348,7 @@ card('Sudden Bloom', {
 // The 1/1s are created units → they arrive at home (R28).
 card('Sylvan Sprouting', {
   spellEffect: {
+    creates: ['Unit Token'],
     run: (g, ctx) => {
       const n = g.affinity(ctx.controller, 'wood');
       if (n <= 0) { g.ev('info', 'Sylvan Sprouting: no wood affinity — no units.'); return; }
@@ -362,24 +370,23 @@ card('Verdant Necrophage', {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
     label: 'create a Poison 6',
-    effect: { run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Poison', 6, ctx.region); } },
+    effect: { creates: ['Poison'], run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Poison', 6, ctx.region); } },
   }],
   augmentText: [{
     type: 'triggered', events: ['died', 'despawned'], self: true,
     label: 'each opponent recalls a unit from their bin',
     effect: {
       run: (g, ctx) => {
-        const isUnitCard = (n: string): boolean => {
-          const k = getCard(n).kind;
-          return k === 'unit' || k === 'spellUnit';
-        };
         const plans: { seat: Seat; idx: number }[] = [];
         for (const seat of presentSeats(g, ctx.region)) {
           if (seat === ctx.controller) continue;
           const options = g.player(seat).bin
             .map((n, i) => [n, i] as const)
             .filter(([n]) => isUnitCard(n));
-          if (!options.length) continue;
+          if (!options.length) {
+            g.ev('info', `Verdant Necrophage: ${g.pname(seat)} has no unit in their bin to recall.`);
+            continue;
+          }
           if (options.length === 1 || inEndOfTurn(g)) {
             plans.push({ seat, idx: options[0]![1] });
             continue;
@@ -411,9 +418,13 @@ const vengeance: EffectDef = {
   targets: { what: 'unit', prompt: 'Verdant Vengeance: I deal damage equal to your unit count to target unit' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (!isEnt(t) || !g.entity(t.id)) return;
+    if (!isEnt(t) || !g.entity(t.id)) {
+      g.ev('info', `${ctx.sourceName}: the target is gone — no damage.`);
+      return;
+    }
     const n = g.unitsOf(ctx.controller, ctx.region).length;
-    if (n > 0) g.dealEffectDamage(ctx, t, n);
+    if (n <= 0) { g.ev('info', `${ctx.sourceName}: you control no unit here — 0 damage.`); return; }
+    g.dealEffectDamage(ctx, t, n);
   },
 };
 card('Verdant Vengeance', {
@@ -472,7 +483,7 @@ card('Woodland Warding', {
       const mine = ctx.controller;
       const alliedItems = new Set(g.s.stack.filter(i => i.controller === mine).map(i => i.id));
       const hits = g.s.stack.filter(it => {
-        if (it.negated || it.controller === mine) return false;
+        if (it.controller === mine) return false;
         return it.parts.some(p => !p.spent && p.targets.some(t =>
           ('unit' in t && g.entity(t.unit)?.controller === mine)
           || ('player' in t && t.player === mine)

@@ -39,6 +39,60 @@ export interface Flash {
   until: number;
 }
 
+/**
+ * R68: the stack ids a batch of events removed from the stack WITHOUT
+ * resolving, in order.
+ *
+ * The 'negated' event is the engine's marker for "this item left the stack and
+ * did nothing" — `E.negate()` fires it, and Dream Lapse fires it for a recall,
+ * which is the same fact about the item even though the card goes somewhere
+ * else. It carries only `{ id }`: the item itself is detached and dropped, so
+ * a client that wants to draw the thing that just got answered has to have
+ * kept its own copy (see `negatedFlashItems`).
+ */
+export function negatedIds(events: readonly EngineEvent[]): number[] {
+  const out: number[] = [];
+  for (const ev of events) {
+    if (ev.type !== 'negated') continue;
+    const id = ev.data?.['id'];
+    if (typeof id === 'number') out.push(id);
+  }
+  return out;
+}
+
+/**
+ * Snapshots of the items a batch of events negated, for their beat.
+ *
+ * Before R68, negating set `item.negated = true` and LEFT the item on the
+ * stack, so it sat there greyed out until a later priority round popped it —
+ * slow, but you could see that your spell had been answered. R68 removes it
+ * the instant the negation resolves, which is the right rule and costs the
+ * player the only picture they had of it.
+ *
+ * That is precisely the problem this module already exists to solve (docs/11):
+ * an item the rules stack no longer holds still gets a beat on the VISUAL
+ * stack. The engine hands over its own `structuredClone` for the items that
+ * never reached the stack at all; a negated item DID reach it, and was on this
+ * client's screen a render ago, so the snapshot comes from `seen` — the
+ * client's memory of what it last drew. Remembering what you drew is not
+ * inventing state: an id that is missing simply gets no beat, never a wrong one.
+ *
+ * `negated` is stamped on the COPY, exactly as `E.negate()` stamps its own
+ * detached copy, and it is what the board greys. Nothing in `GameState` ever
+ * carries it any more — so this is the one and only source of a negated item
+ * anywhere in the client, and deleting it would take the grey-out with it.
+ */
+export function negatedFlashItems(
+  events: readonly EngineEvent[], seen: ReadonlyMap<number, StackItem>,
+): StackItem[] {
+  const out: StackItem[] = [];
+  for (const id of negatedIds(events)) {
+    const item = seen.get(id);
+    if (item) out.push({ ...item, negated: true });
+  }
+  return out;
+}
+
 /** every 'stackFlash' payload in one batch of engine events, in order */
 export function flashItems(events: readonly EngineEvent[]): StackItem[] {
   const out: StackItem[] = [];
@@ -60,8 +114,11 @@ export function flashItems(events: readonly EngineEvent[]): StackItem[] {
  */
 export function queueFlashes(
   existing: readonly Flash[], events: readonly EngineEvent[], now: number,
+  remembered: ReadonlyMap<number, StackItem> = new Map(),
 ): Flash[] {
-  const items = flashItems(events);
+  // two sources, one queue: items that never reached the stack (the engine's
+  // own snapshots) and items R68 took OFF it without resolving (ours)
+  const items = [...flashItems(events), ...negatedFlashItems(events, remembered)];
   if (!items.length) return existing as Flash[];
   const out = existing.slice();
   const seen = new Set(out.map(f => f.item.id));
@@ -124,3 +181,20 @@ export function stackRows(
   }
   return rows;
 }
+
+/**
+ * The beats that also belong in the MOTION census as phantom stack slots.
+ *
+ * A normal flash is an item that never touched `state.stack`, so its `s<id>`
+ * key is born in the after-census and the card visibly flies onto the stack
+ * (docs/11). A NEGATED beat is the mirror image: its key was really there a
+ * frame ago and is really gone now, and its card is really travelling — to a
+ * bin under R68, or out of existence. Handing the census a phantom would keep
+ * that key alive across the diff, `stack>bin` would never pair, and the card
+ * would pop into the bin instead of flying there.
+ *
+ * So the ghost stays on the strip and the card still makes its journey. The
+ * board underneath is final either way — the beat is explanation, not a gate.
+ */
+export const censusFlashes = (rows: readonly StackRow[]): StackRow[] =>
+  rows.filter(r => r.flashing && !r.item.negated);

@@ -32,14 +32,21 @@
  * (regions are exclusive; "each opponent" reads the event region's present
  * seats), R28 (created units arrive in their controller's home region),
  * R37 (applying a mod is not playing a card), R38 (rot), R40 (trash),
- * R41/R45 (the cache; glimpse-style until-end-of-turn permission), R47 (the
+ * R41/R45 (the cache; glimpse-style until-end-of-turn permission), R71 (the
  * Wraith token).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
  *  - "target card in a/your bin" (Blightwalker, Collect Remains, Necromorph)
- *    is a RESOLUTION-TIME ctx.choose, not engine targeting: TargetSpec has no
- *    bin scope (units / players / stack items / cached cards only). Slightly
- *    stronger than printed — the pick cannot be responded to.
+ *    IS engine targeting now: R64 gave TargetSpec a bin scope — 'binCard' for
+ *    your own, 'anyBinCard' for either player's, resolved through BinRef at
+ *    resolution so an index can never go stale. All three cards declare it, so
+ *    the pick is made on the way to the stack and can be responded to. (This
+ *    entry used to say the bin had no scope and the pick was a resolution-time
+ *    ctx.choose.)
+ *  - (Grox's "erase two cards in your bin" used to be listed here as a
+ *    resolution-time approximation. It is a real bracketed CastCost now —
+ *    kind 'eraseBin' — collected in the cast window like any other, which also
+ *    stops grafted riders resolving off an unpayable cost.)
  *  - "ERASE ME" on a spell (Collect Remains) is approximated by the spell
  *    being binned normally after it resolves: resolveItem() runs afterParts()
  *    — which bins the card from the stack — after the effect has finished, and
@@ -92,25 +99,10 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-/** the entity carrying the running ability (the HOST when donated/grafted) */
-const selfOf = (g: E, ctx: EffectCtx): Entity | undefined =>
-  ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-
-/** printed mana of a card, with an X cost counted as 0 (the R-set convention) */
-const manaOf = (name: string): number => {
-  const m = getCard(name).mana;
-  return m === 'X' ? 0 : m;
-};
-
-/** a card that arrives in play as a unit (a spell unit's body counts) */
-const isUnitCard = (name: string): boolean => {
-  const k = getCard(name).kind;
-  return k === 'unit' || k === 'spellUnit';
-};
 
 /** [name, binIndex] pairs of `seat`'s bin passing a filter */
 const binMatches = (g: E, seat: Seat, ok: (name: string) => boolean): [string, number][] =>
@@ -138,9 +130,11 @@ function formationSlot(g: E, id: EntityId): { col: EntityId[]; idx: number } | n
 // from your bin. (Put it into your hand.)" — d/3 2/2 Alien Unit. R40: the
 // trash trigger fires FROM THE BIN, however the card got there (discarded,
 // milled, sacrificed, died in combat), and ctx.sourceId resolves to nothing —
-// nothing here reads it. ⚠ header: the bin is not a targetable zone, so the
-// pick is a mid-resolution ctx.choose. "Another" excludes the Blightwalker
-// that just landed in the bin (one instance of it is filtered out).
+// nothing here reads it. R64: the bin card is a DECLARED target ('binCard',
+// see the spec below) — the "⚠ the bin is not a targetable zone" line that
+// used to sit here was contradicted seven lines down. "Another" excludes the
+// Blightwalker that just landed in the bin (one instance of it is filtered
+// out).
 // [Switch1] on the trigger makes it a bounded graft CAUSE as well as a
 // bounded graftable effect — though a card sitting in the bin carries no
 // mods, so nothing ever rides along on the trash firing itself.
@@ -157,16 +151,19 @@ const blightwalkerRecall: EffectDef = {
   run: (g, ctx) => {
     const seat = ctx.controller;
     const t = ctx.targets[0];
-    if (!t || !('binCard' in t) || t.binCard.index === -1) return;
+    if (!t || !('binCard' in t) || t.binCard.index === -1) {
+      g.ev('info', 'Blightwalker: no card is targeted (or it left the bin) — nothing is recalled.');
+      return;
+    }
     if (g.openMana(seat) < 2) { g.ev('info', 'Blightwalker: cannot pay [2].'); return; }
     const pays = ctx.choose('pay', {
       kind: 'payOrDecline', seat,
       prompt: `Blightwalker: pay [2] to recall ${t.binCard.card} from your bin?`,
       options: [{ label: 'Pay [2]', value: 1 }, { label: 'Decline', value: 0 }],
     }) as number;
-    if (!pays) return;
+    if (!pays) { g.ev('info', 'Blightwalker: the [2] is declined — nothing is recalled.'); return; }
     const name = g.player(seat).bin[t.binCard.index];
-    if (name === undefined) return;
+    if (name === undefined) { g.ev('info', 'Blightwalker: the card left the bin — nothing is recalled.'); return; }
     g.payMana(seat, 2);
     g.player(seat).bin.splice(t.binCard.index, 1);
     g.player(seat).hand.push(name);
@@ -211,17 +208,21 @@ card('Collect Remains', {
 // the Virus reads as "the next card you trash costs you this unit".
 // "Another card" is free: the trash-side dispatch only reaches units IN PLAY,
 // and a card being trashed is by definition not one (R40).
+//
+// R73 (2026-08-22): "sacrifice me. If you do, …" is a CAST COST — the same
+// printed shape, and the same ruling, as Eldritch Dreamtender. The sacrifice
+// used to be a g.destroy() at resolution; it is now paid on the way to the
+// stack, which is also what makes the "nothing to sacrifice" guard unnecessary
+// (an unpayable cost skips the part outright, R5).
 card('Cthyrian Rector', {
   augmentText: [{
     type: 'triggered', events: ['trashed'],
     label: 'sacrifice me — recall the trashed card from your bin',
     when: (_g, self, ev) => ev.data?.['seat'] === self.controller,
     effect: {
+      castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },
       run: (g, ctx) => {
-        const self = selfOf(g, ctx);
-        if (!self || !g.entity(self.id)) return;             // nothing to sacrifice
         const name = ctx.event?.data?.['card'] as string | undefined;
-        g.destroy(self, 'is sacrificed');
         if (name === undefined) return;
         const bin = g.player(ctx.controller).bin;             // "if you do"
         const i = bin.lastIndexOf(name);
@@ -272,7 +273,7 @@ card('Entropic Entity', {
 card('Finality', {
   spellEffect: {
     run: (g, _ctx) => {
-      const hits = g.s.stack.filter(i => !i.negated);
+      const hits = [...g.s.stack];   // R68: everything still here is un-negated
       for (const i of hits) g.negate(i.id);
       if (!hits.length) g.ev('info', 'Finality: no other effects to negate.');
       for (const p of g.s.players) {
@@ -291,40 +292,30 @@ card('Finality', {
 // (the Manual's socket), so grafted riders are the whole point and the card
 // has no graftEffect to donate. R49: the printed "[Battle]" marker is
 // `timing: 'battle'` now — enforced at ACTIVATION, so Grox is not offered and
-// not accepted during deployment. ⚠ still at resolution: "erase TWO CARDS IN
-// YOUR BIN" is a bin-zone cost, which AbilityCost does not model (its atoms
-// are life / debt / discard / sacrifice-another). Consequence, unchanged:
-// grafted riders resolve even when the bin turns out too small to pay.
+// not accepted during deployment.
+//
+// UN-PARKED (R64). This note used to read "⚠ still at resolution: 'erase TWO
+// CARDS IN YOUR BIN' is a bin-zone cost, which AbilityCost does not model …
+// Consequence: grafted riders resolve even when the bin turns out too small to
+// pay." Two things had changed under it: `CastCost` grew an `eraseBin` kind,
+// and `collectCastCosts` runs for ACTIVATED items too (collectTargets calls it
+// on the way to the stack, not just for spells). So the erase is now a real
+// bracketed cost — chosen and paid before the socket is respondable — and the
+// consequence is fixed with it: with fewer than two cards in the bin the cost
+// is unpayable, so `abilityEffectUsable` refuses the activation outright and
+// no rider gets a free ride.
+//
+// The [Switch] socket itself still carries no text; `run` exists only to say
+// so, because an effect that resolves in silence is indistinguishable from a
+// bug (see test/65-effect-conformance).
 card('Grox', {
   abilities: [{
     type: 'activated', cost: {}, timing: 'battle', graftCause: true,
     label: '[Battle] Erase two cards in your bin: (graft cause)',
     effect: {
+      castCost: { kind: 'eraseBin', n: 2 },
       run: (g, ctx) => {
-        const seat = ctx.controller;
-        const bin = g.player(seat).bin;
-        if (bin.length < 2) {
-          g.ev('info', 'Grox: fewer than two cards in your bin — the cost is not paid.');
-          return;
-        }
-        const opt = (skip?: number) => bin
-          .map((n, i) => ({ label: n, value: i, card: n }))
-          .filter(o => o.value !== skip);
-        const first = bin.length === 2 ? 0 : ctx.choose('erase1', {
-          kind: 'payOrDecline', seat,
-          prompt: 'Grox: erase which card in your bin? (1 of 2)',
-          options: opt(),
-        }) as number;
-        const rest = opt(first);
-        const second = rest.length === 1 ? rest[0]!.value : ctx.choose('erase2', {
-          kind: 'payOrDecline', seat,
-          prompt: 'Grox: erase which card in your bin? (2 of 2)',
-          options: rest,
-        }) as number;
-        const names = [bin[first], bin[second]];
-        for (const i of [first, second].sort((a, z) => z - a)) bin.splice(i, 1);
-        g.ev('erased', `Grox ERASES ${names.join(' and ')} from ${g.pname(seat)}'s bin.`,
-          { seat, cards: names.filter((n): n is string => n !== undefined) });
+        g.ev('info', `${ctx.sourceName}: the erase is paid — the socket itself carries no text.`);
       },
     },
   }],
@@ -358,7 +349,10 @@ const lurkingDread: EffectDef = {
     const seat = ctx.controller;
     const inBin = g.player(seat).bin.lastIndexOf('Lurking Dread');
     const inCache = g.cache(seat).findIndex(cc => cc.card === 'Lurking Dread');
-    if (inBin === -1 && inCache === -1) return;               // already left the zone
+    if (inBin === -1 && inCache === -1) {   // already left the zone
+      g.ev('info', 'Lurking Dread: it is no longer in a bin or cache — nothing happens.');
+      return;
+    }
     const pool = g.unitsOf(seat, ctx.region).filter(u => !u.token);
     if (pool.length < 2) {
       g.ev('info', 'Lurking Dread: fewer than two nontoken units to sacrifice — it stays where it is.');
@@ -375,7 +369,10 @@ const lurkingDread: EffectDef = {
           { label: 'Decline', value: -1 as unknown },
         ],
       }) as number;
-      if (v < 0) return;                                      // "you may" — declined
+      if (v < 0) {   // "you may" — declined
+        g.ev('info', `Lurking Dread: ${g.pname(seat)} declines to sacrifice.`);
+        return;
+      }
       picks.push(v as EntityId);
     }
     for (const id of picks) {
@@ -388,7 +385,10 @@ const lurkingDread: EffectDef = {
     else {
       const ci = g.cache(seat).findIndex(cc => cc.card === 'Lurking Dread');
       if (ci !== -1) g.uncache(seat, ci);
-      else return;
+      else {
+        g.ev('info', 'Lurking Dread: it is no longer in a bin or cache — it does not arrive.');
+        return;
+      }
     }
     g.spawnUnit(seat, 'Lurking Dread', ctx.region);
   },
@@ -479,7 +479,7 @@ card('Necromorph', {
     },
     run: (g, ctx) => {
       const [t, b] = [ctx.targets[0], ctx.targets[1]];
-      if (!t || !b || !('id' in (t as object)) || !('binCard' in b)) return;
+      if (!isEnt(t) || !b || !('binCard' in b)) return;
       const victim = g.entity((t as Entity).id);
       if (!victim) return;
       const owner = victim.controller;
@@ -528,12 +528,13 @@ card('Pallid Gorger', {
 });
 
 // "[Switch1] Create three Wraiths and gain 2 Rot." — d/3 Primordial Occult
-// Spell (deploy timing). R47: "create a Wraith" spawns the 4/4 token body;
+// Spell (deploy timing). R71: "create a Wraith" spawns the 3/3 token body;
 // Wraith and the retired name Wight are one card. R28: created units arrive in their
 // controller's HOME region, which matters if the [Switch1] effect is grafted
 // onto a battle-timing cause. R38: the 2 rot is a straight gain — it costs
 // nothing now and 2 damage at the start of every future deployment.
 const coalesce: EffectDef = {
+  creates: ['Wraith'],
   run: (g, ctx) => {
     const home = g.homeRegion(ctx.controller);
     for (let i = 0; i < 3; i++) g.createWraith(ctx.controller, home);
@@ -621,7 +622,7 @@ card('Thoughtripper', {
           prompt: 'Thoughtripper: pay [2] so each opponent discards a card?',
           options: [{ label: 'Pay [2]', value: 1 }, { label: 'Decline', value: 0 }],
         }) as number;
-        if (!pays) return;
+        if (!pays) { g.ev('info', 'Thoughtripper: the [2] is declined — nobody discards.'); return; }
         // every choice first, then commit (the engine rolls back to the part
         // boundary on each suspension)
         const picks: [Seat, number][] = [];
@@ -690,7 +691,7 @@ card('Unrelenting Horror', {
 // 'bin'` dispatches to a card sitting in a bin (a detached stand-in anchored
 // on the bin's owner, so "YOUR bin" is ctx.controller).
 //
-// R47: "Augment a Wraith onto a unit" is E.augmentWraith — the SAME token
+// R71: "Augment a Wraith onto a unit" is E.augmentWraith — a Wraith token
 // applied directly as a mod rather than spawned as a body. It is a cost with a
 // choice, so it is paid at resolution via ctx.choose ("you may" → a decline
 // option). "Recall me" puts the card in its owner's HAND (recall is always to
@@ -701,9 +702,13 @@ card('Xzydris', {
     type: 'triggered', events: ['startOfDeployment'], zone: 'bin',
     label: 'augment a Wraith onto a unit to recall me from your bin',
     effect: {
+      creates: ['Wraith'],
       run: (g, ctx) => {
         const seat = ctx.controller;
-        if (g.player(seat).bin.lastIndexOf('Xzydris') === -1) return;
+        if (g.player(seat).bin.lastIndexOf('Xzydris') === -1) {
+          g.ev('info', 'Xzydris: it is no longer in the bin — nothing to recall.');
+          return;
+        }
         const pool = g.unitsIn(ctx.region);
         if (!pool.length) {
           g.ev('info', 'Xzydris: no unit to augment a Wraith onto — it stays in the bin.');
@@ -717,12 +722,12 @@ card('Xzydris', {
             { label: 'Decline — leave it in the bin', value: -1 as unknown },
           ],
         }) as number;
-        if (v < 0) return;
+        if (v < 0) { g.ev('info', 'Xzydris: declined — it stays in the bin.'); return; }
         const host = g.entity(v as EntityId);
-        if (!host) return;
+        if (!host) { g.ev('info', 'Xzydris: the chosen host is gone — it stays in the bin.'); return; }
         g.augmentWraith(host, seat);
         const i = g.player(seat).bin.lastIndexOf('Xzydris');
-        if (i === -1) return;
+        if (i === -1) { g.ev('info', 'Xzydris: it left the bin — nothing is recalled.'); return; }
         g.player(seat).bin.splice(i, 1);
         g.player(seat).hand.push('Xzydris');
         g.ev('info', `Xzydris is recalled from ${g.pname(seat)}'s bin to their hand.`);

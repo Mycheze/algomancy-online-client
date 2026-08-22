@@ -14,10 +14,14 @@
  *    replaced hit still counts as having been dealt (Caleb 2024-10-24).
  *  - R38 Blightsea Polyp: a per-COLUMN replacement of combat damage to
  *    players — 1 rot whatever the column's power, life untouched.
- *  - R47 The Wight (a.k.a. Wraith): a 0-mana 4/4 token that shrinks whenever
- *    it fights and, when it dies, re-attaches itself as an augment on a chosen
- *    ally instead of being erased. Two entry points (create / augment), one
- *    card, two printed names.
+ *  - R71 The Wraith (retired name: Wight): a 0-mana 3/3 token that shrinks an
+ *    ally at the start of deployment and mints a FRESH Wraith augment when it
+ *    dies. Two entry points (create / augment), one card, two printed names.
+ *    Redesigned 2026-08-21; this retires R47, under which the DYING Wraith
+ *    re-attached itself instead of being erased.
+ *  - R69 A dying token enters the bin, is TRASHED there, and is only then
+ *    erased by a state-based sweep; an Unstable (modded) unit is tested first
+ *    and is erased with its mods, token or not.
  *  - {Modular}: mods applied to a card AS IT IS PLAYED — an additional cast
  *    cost (R35), riding on the stack with the spell.
  *  - TargetSpec 'cachedCard': a card in EITHER player's cache (R41, public).
@@ -487,26 +491,38 @@ test('R48 {Lethal} still kills THROUGH the Blightsea replacement (the damage was
   assert.equal(h.state.winner, A, 'and Lethal killed anyway — Caleb 2024-10-24');
 });
 
-// ── R47: the Wraith ───────────────────────────────────────────────────
+// ── R71: the Wraith (redesigned 2026-08-21; retires R47) ──────────────
 
 // The token was renamed Wight -> Wraith. Six cards print the current name;
 // `Blight's End` still carries the retired one. Both must resolve to the SAME
 // registered card, with the CURRENT name canonical — state stores 'Wraith',
 // and 'Wight' exists only so an old printing still looks up.
-test('R47: Wraith and Wight are one card, and neither name is a second entry', () => {
+test('R71: Wraith and Wight are one card, and neither name is a second entry', () => {
   assert.equal(getCard('Wight'), getCard('Wraith'),
     'the retired name resolves to the same definition as the current one');
   assert.equal(getCard('Wight').name, 'Wraith',
     'and it reports the CURRENT name — the alias never leaks into state');
   assert.ok(allCardNames().includes('Wraith'), 'the canonical name is registered');
   assert.ok(!allCardNames().includes('Wight'), 'the retired alias is not a card of its own');
-  assert.equal(getCard('Wraith').power, 4);
-  assert.equal(getCard('Wraith').toughness, 4);
+  assert.equal(getCard('Wraith').power, 3, 'redesigned: 4/4 -> 3/3');
+  assert.equal(getCard('Wraith').toughness, 3);
   assert.equal(getCard('Wraith').mana, 0);
   assert.ok(/Token/.test(getCard('Wraith').type), 'and it is a token type, so it is not a deck card');
 });
 
-test('R47: "create a Wraith" spawns a real 4/4 token body', () => {
+// Project rule: printed data is never hand-copied. The Wraith has a printed
+// card and an oracle entry, so it goes through scripts/extract-printed.mjs
+// like Wisp, Fireball and Poison — registry.ts carries behaviour only.
+test('R71: the Wraith is EXTRACTED printed data, not a hand-written synthetic', () => {
+  assert.ok(PRINTED['Wraith'], 'it is in printed.json (i.e. in the extractor POOL)');
+  assert.equal(PRINTED['Wraith']!.power, 3);
+  assert.equal(PRINTED['Wraith']!.image, 'Wraith.jpg', 'and it has its own printed art');
+  assert.match(PRINTED['Wraith']!.text,
+    /At the start of deployment, put a -1\/-1 counter on an ally\./);
+  assert.match(PRINTED['Wraith']!.text, /When I die, Augment a Wraith onto an ally\./);
+});
+
+test('R71: "create a Wraith" spawns a real 3/3 token body', () => {
   const h = sterile(3730);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -516,68 +532,92 @@ test('R47: "create a Wraith" spawns a real 4/4 token body', () => {
   assert.equal(w.card, 'Wraith');
   assert.equal(w.kind, 'unit');
   assert.equal(w.token, true);
-  assert.deepEqual(effStats(h, id), [4, 4], 'a real 4/4 body, not merely a mod');
+  assert.deepEqual(effStats(h, id), [3, 3], 'a real 3/3 body, not merely a mod');
 });
 
-test('R47: a Wight shrinks when it attacks and when it blocks', () => {
+// The redesigned first line. It is [Augment] text, and a card's own [Augment]
+// text is live while it is a unit in play (R55), so a Wraith BODY does this.
+test('R71: at the start of deployment a Wraith body shrinks a chosen ally', () => {
   const h = sterile(3731);
   toDeployment(h);
-  const A = h.state.initiative, D = (1 - A) as Seat;
-  let atkW = 0, blkW = 0;
-  whiteBox(h, e => { atkW = e.createWraith(A).id; blkW = e.createWraith(D).id; });
-  attackWith(h, A, [[atkW]]);                              // drains the attack trigger
-  assert.deepEqual(effStats(h, atkW), [3, 3], 'attacking put a -1/-1 counter on it');
-  pass(h); pass(h);
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blkW] } });
-  drainStack(h);
-  assert.deepEqual(effStats(h, blkW), [3, 3], 'and blocking does the same');
+  const P = h.state.deployPlayer!;
+  const ally = spawn(h, P, 'T37 Brute');                   // 4/4
+  whiteBox(h, e => { e.createWraith(P); });
+  toNextBattle(h, P);
+  finishBattle(h);                                          // → next deployment
+  assert.ok(h.state.decision, 'it asks which ally (Wraith body or Brute)');
+  pickBy(h, o => o.value === ally);
+  assert.deepEqual(effStats(h, ally), [3, 3], 'a -1/-1 counter landed on the chosen ally');
 });
 
-test('R47: a dying Wight augments onto a chosen ally instead of being erased', () => {
+// ⚠ UNCONFIRMED (Bena to rule): may "an ally" be the carrier itself? The engine
+// says yes, which is also what keeps the line from ever having no candidate.
+test('R71 ⚠: a lone Wraith may pick ITSELF as "an ally" (unconfirmed reading)', () => {
   const h = sterile(3732);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  let id = 0;
+  whiteBox(h, e => { id = e.createWraith(P).id; });
+  toNextBattle(h, P);
+  finishBattle(h);
+  assert.equal(h.state.decision, null, 'only one candidate — itself — so nothing is asked');
+  assert.deepEqual(effStats(h, id), [2, 2], 'and it shrank itself');
+});
+
+// The redesigned second line. The dying Wraith is NOT re-homed (that was R47,
+// retired): it is erased like any other token and a FRESH Wraith is minted.
+test('R71: a dying Wraith mints a NEW Wraith onto a chosen ally', () => {
+  const h = sterile(3733);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const ally = spawn(h, P, 'T37 Brute');
   let id = 0;
   whiteBox(h, e => { id = e.createWraith(P).id; });
   whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
-  assert.ok(h.state.decision, 'its own trigger asks which ally to augment');
-  pick(h, { unit: ally });
-  assert.equal(unitsNamed(h, 'Wraith').length, 0, 'the body is gone…');
+  assert.equal(h.state.decision, null, 'only one ally left, so nothing to ask');
+  assert.equal(unitsNamed(h, 'Wraith').length, 0, 'the body is gone for good');
   const mods = modsOn(h, ally);
-  assert.equal(mods.length, 1, '…but it came back as a mod');
+  assert.equal(mods.length, 1, 'and a fresh Wraith arrived as an augment');
   assert.equal(mods[0]!.card, 'Wraith');
   assert.equal(mods[0]!.appliedAs, 'augment');
-  assert.equal(mods[0]!.token, true, 'still a token — it can never reach a bin');
+  assert.equal(mods[0]!.token, true);
+  assert.notEqual(mods[0]!.id, id, 'a NEW token — the dead one did not re-home itself');
 });
 
-test('R47: with no legal ally the Wight really does cease to exist', () => {
-  const h = sterile(3733);
-  toDeployment(h);
-  const P = h.state.deployPlayer!;
-  let id = 0;
-  whiteBox(h, e => { id = e.createWraith(P).id; });
-  whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
-  assert.equal(h.state.decision, null, 'nothing to choose between');
-  assert.equal(unitsNamed(h, 'Wraith').length, 0);
-  assert.equal(Object.values(h.state.entities).filter(e => e.card === 'Wraith').length, 0,
-    'no body and no mod: gone');
-  assert.ok(h.log.some(l => l.includes('fizzles')), 'the re-attach trigger simply fizzled');
-});
-
-test('R47/R40: a dying Wight is not trashed and never reaches a bin', () => {
+// "an ally" is not a TARGET (the word "target" is not printed), so this is an
+// R67 exception ON PURPOSE: the ally is chosen on resolution, and with no
+// candidate the trigger simply does nothing rather than fizzling.
+test('R71: with no ally left the death trigger does nothing — it cannot fizzle', () => {
   const h = sterile(3734);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   let id = 0;
   whiteBox(h, e => { id = e.createWraith(P).id; });
   whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
-  assert.equal(trashes(h).length, 0, 'tokens are excluded from trashing (R40)');
-  assert.deepEqual(h.state.players[P]!.bin, [], 'and nothing was binned');
+  assert.equal(h.state.decision, null, 'nothing to choose between');
+  assert.equal(Object.values(h.state.entities).filter(e => e.card === 'Wraith').length, 0,
+    'no body and no mod: gone');
+  assert.ok(!h.log.some(l => l.includes('fizzles')),
+    'and nothing fizzled — "an ally" was never a target to lose');
 });
 
-test('R47: "augment a Wraith onto a unit" makes the same token, directly as a mod', () => {
+// R69, reversing R47/R40's old carve-out.
+test('R69: a dying Wraith IS trashed, then erased out of the bin', () => {
   const h = sterile(3735);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  let id = 0;
+  whiteBox(h, e => { id = e.createWraith(P).id; });
+  whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
+  const t = trashes(h);
+  assert.equal(t.length, 1, 'a token is a card and it did enter a bin (R69)');
+  assert.equal(t[0]!.data!['card'], 'Wraith');
+  assert.deepEqual(h.state.players[P]!.bin, [], 'the state-based sweep erased it again');
+  assert.deepEqual(h.q.erased(P), ['Wraith'], 'and it shows in the erased pile');
+});
+
+test('R71: "augment a Wraith onto a unit" makes the same token, directly as a mod', () => {
+  const h = sterile(3736);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const host = spawn(h, P, 'T37 Brute');
@@ -593,25 +633,50 @@ test('R47: "augment a Wraith onto a unit" makes the same token, directly as a mo
   assert.equal(applied!.token, true);
 });
 
-test('R47: an augmented Wight donates its shrink-on-fight text to its host', () => {
-  const h = sterile(3736);
+// One text-box [Augment] over both lines, so BOTH travel to the host.
+test('R71: an augmented Wraith donates BOTH lines to its host', () => {
+  const h = sterile(3737);
   toDeployment(h);
-  const A = h.state.initiative;
-  const host = spawn(h, A, 'T37 Brute');                   // 4/4
-  whiteBox(h, e => { e.augmentWraith(e.entity(host)!, A); });
+  const P = h.state.deployPlayer!;
+  const host = spawn(h, P, 'T37 Brute');                   // 4/4
+  whiteBox(h, e => { e.augmentWraith(e.entity(host)!, P); });
   assert.deepEqual(effStats(h, host), [4, 4], 'the mod grants no stats of its own');
-  attackWith(h, A, [[host]]);
-  assert.deepEqual(effStats(h, host), [3, 3], 'the host now shrinks when it fights');
+  toNextBattle(h, P);
+  finishBattle(h);
+  assert.equal(h.state.decision, null, 'the host is the only ally, so no question');
+  assert.deepEqual(effStats(h, host), [3, 3], 'line 1 travelled: it shrank an ally');
 });
 
-test('R47/R40: a token mod is erased with its host, never binned or trashed', () => {
-  const h = sterile(3737);
+// R69/B — the branch order in destroy(). This is game UZRG's bug: the token
+// test used to come FIRST, so a modded token never reached the Unstable branch.
+test('R69: a MODDED token is Unstable — erased with its mods, no bin, no trash', () => {
+  const h = sterile(3738);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const bystander = spawn(h, P, 'T37 Brute');
+  let id = 0;
+  whiteBox(h, e => {
+    id = e.createWraith(P).id;
+    e.augmentWraith(e.entity(id)!, P);                     // a Wraith on a Wraith
+  });
+  whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
+  assert.equal(trashes(h).length, 0, 'Unstable erases; erasing never touches a bin (R40)');
+  assert.deepEqual(h.state.players[P]!.bin, []);
+  assert.ok(h.log.some(l => l.includes('Unstable')), 'and it took the Unstable branch');
+  // it still DIED, so both copies of the donated death text fired and each
+  // minted a Wraith onto the only ally left standing
+  assert.equal(modsOn(h, bystander).length, 2,
+    'Unstable replaces the BIN, not the death — both death triggers still fired');
+});
+
+test('R69/R70: a token mod is erased with its host, never binned or trashed', () => {
+  const h = sterile(3739);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const host = spawn(h, P, 'T37 Brute');
   whiteBox(h, e => { e.augmentWraith(e.entity(host)!, P); });
   whiteBox(h, e => { e.recall(e.entity(host)!); });
-  assert.deepEqual(h.state.players[P]!.hand.filter(c => c === 'Wraith'), [], 'no Wight in hand');
+  assert.deepEqual(h.state.players[P]!.hand.filter(c => c === 'Wraith'), [], 'no Wraith in hand');
   assert.deepEqual(h.state.players[P]!.bin, [], 'and none in the bin — a token mod is erased');
   assert.equal(trashes(h).length, 0);
 });

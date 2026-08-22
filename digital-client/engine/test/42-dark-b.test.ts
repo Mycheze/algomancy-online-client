@@ -389,7 +389,7 @@ test('Legion of the Depths: spawning creates two Wraiths and 2 rot', () => {
   const wights = entsNamed(h, 'Wraith').filter(e => e.kind === 'unit');
   assert.equal(wights.length, 2, 'two Wraiths — one card, the Wight token (R47)');
   assert.ok(wights.every(w => w.token && w.controller === P));
-  assert.deepEqual(effStats(h, wights[0]!.id), [4, 4], 'a real 4/4 body each');
+  assert.deepEqual(effStats(h, wights[0]!.id), [3, 3], 'a real 3/3 body each (R71)');
   assert.equal(rotOf(h, P), 2, 'and its controller pays 2 rot for them');
 });
 
@@ -496,6 +496,69 @@ test('Necromantic Rebuke: the ransom saves the effect', () => {
   assert.equal(h.state.players[D]!.bin.filter(c => c === 'Good Whale').length, 0,
     'the targeted effect\'s controller paid the ransom');
   assert.ok(ent(h, victim)!.damage > 0, 'and the Flame survived to resolve');
+});
+
+// R74 (Bena, 2026-08-22, having checked the physical card). The printed line
+// is exactly what is encoded — "[Erase X cards from your bin]: Negate up to one
+// target effect unless its controller erases X cards from their bin" — so the
+// MECHANICS are correct and untouched. What was missing is that X = 0 is a
+// guaranteed no-op: the ransom "erase 0 cards" is met by doing nothing, so the
+// negate can never happen. It stays LEGAL (explicitly not made illegal, unlike
+// No Hand Killer's xMin: 1, which prevents burning a [once] budget) — the
+// player is simply told, at the one moment they can still change their mind.
+test('Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays legal (R74)', () => {
+  const h = new Harness(4221.5);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  const victim = spawn(h, A, 'Good Whale');
+  giveResources(h, A, 'dark', 2);
+  giveResources(h, D, 'fire', 2);
+  give(h, A, 'Necromantic Rebuke');
+  give(h, D, 'Flame of History');
+  h.state.players[A]!.bin.push('Unit Token');              // something to erase, so a real choice
+  attackWith(h, A, [[atk, victim]]);
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Flame of History') });
+  pickRef(h, { unit: victim });
+  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Necromantic Rebuke') });
+  const dec = h.state.decision!;
+  const stop = dec.options.find(o => o.label.startsWith("That's enough"));
+  assert.ok(stop, 'the "that\'s enough" stop is on the table at X = 0');
+  assert.ok(stop!.warning, 'and it carries a machine-readable warning the client can style');
+  assert.ok(stop!.label.includes(stop!.warning!),
+    'the warning is also in the label, so a client that ignores the field still shows it');
+  assert.ok(/negates nothing/.test(stop!.warning!));
+  // it is a warning, NOT a prohibition: taking it works and the cast completes
+  h.do({ type: 'decide', seat: dec.seat, choice: dec.options.indexOf(stop!) });
+  assert.equal(h.state.players[A]!.bin.filter(c => c === 'Unit Token').length, 1,
+    'nothing was erased — X really is 0');
+  const dec2 = h.state.decision!;
+  h.do({ type: 'decide', seat: dec2.seat, choice: dec2.options.findIndex(o => o.label.includes('Flame')) });
+  resolveAll(h);
+  assert.ok(ent(h, victim)!.damage > 0, 'and, as warned, the Flame was not negated');
+});
+
+test('R74: the warning is only on X = 0 — a nonzero stop is an ordinary option', () => {
+  const h = new Harness(4221.6);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  const victim = spawn(h, A, 'Good Whale');
+  giveResources(h, A, 'dark', 2);
+  giveResources(h, D, 'fire', 2);
+  give(h, A, 'Necromantic Rebuke');
+  give(h, D, 'Flame of History');
+  h.state.players[A]!.bin.push('Unit Token', 'Unit Token');
+  attackWith(h, A, [[atk, victim]]);
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Flame of History') });
+  pickRef(h, { unit: victim });
+  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Necromantic Rebuke') });
+  pickRef(h, { erase: 'Unit Token' });                     // X = 1 so far
+  const stop = h.state.decision!.options.find(o => o.label.startsWith("That's enough"))!;
+  assert.equal(stop.warning, undefined, 'X = 1 negates for real — nothing to warn about');
+  assert.ok(!stop.label.includes('⚠'));
 });
 
 // ── Palewing ──────────────────────────────────────────────────────────

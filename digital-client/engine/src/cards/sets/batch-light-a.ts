@@ -31,10 +31,12 @@
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
  *  - LIFE AS A COST (R49). Blob of the Dark Order and Glararr now declare a
  *    real ACTIVATION cost ({ life: n }): it gates the activation and is paid
- *    before the ability reaches the stack. Flesh Tithe's "[Pay X life]" stays
- *    at resolution — X is chosen by the payer, and CastCost carries a FIXED
- *    amount — but it obeys the same R49 ruling: X is capped at life − 1, so a
- *    life cost you cannot survive is never payable.
+ *    before the ability reaches the stack. Flesh Tithe's "[Pay X life]" is a
+ *    real CAST COST too — `{ kind: 'payLife', n: 'X' }`, paid a point at a time
+ *    at cast, and the amount paid IS the spell's X. (This entry used to say it
+ *    "stays at resolution … CastCost carries a FIXED amount"; R64 added the
+ *    variable form.) It obeys the same R49 ruling either way: each point is
+ *    re-checked, so a life cost you cannot survive is never payable.
  *  - "MY COLUMN DEALS COMBAT DAMAGE" (Vroot) is read off the combat events the
  *    way Flowstone Arcanite / Amphivore read it: a 'damage' event with no
  *    `source` tag against the directly opposing column, or the aggregated
@@ -50,20 +52,17 @@
  *  - Keeper of Tithes hears the new 'endOfHaste' event.
  *
  * PARKED (needs primitives that do not exist; each registers crash-free):
- *  - The Everywhere: needs a "name a card" action AND the ability-suppression
- *    layer already parked for Monke / Suppression Field / Transmogrifant.
+ *  - The Everywhere: needs a "name a card" player action. That is the ONLY
+ *    thing left — this entry used to add "AND the ability-suppression layer
+ *    already parked for Monke / Suppression Field / Transmogrifant", and R62
+ *    shipped that layer; all three of those cards use it today.
  */
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, getCard, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
-
-/** the entity a triggered/activated ability is anchored on ("me"/"I") */
-const selfOf = (g: E, ctx: EffectCtx): Entity | undefined =>
-  (ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined);
 
 /**
  * Pay `n` life as a COST at resolution (header note). Returns false — having
@@ -79,23 +78,6 @@ function payLife(g: E, seat: Seat, n: number, why: string): boolean {
   }
   g.loseLife(seat, n, `${why} (cost)`);
   return true;
-}
-
-/** Erase an entity from play entirely: no bin, no death/despawn triggers; its
- * mods are erased with it (Celestial Purge's pattern). */
-function eraseFromPlay(g: E, u: Entity): void {
-  for (const modId of u.mods) delete g.s.entities[modId];
-  delete g.s.entities[u.id];
-  const b = g.s.battle;
-  if (b) {
-    for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-      const i = col.indexOf(u.id);
-      if (i !== -1) col.splice(i, 1);
-    }
-    const si = b.sentAttackers.indexOf(u.id);
-    if (si !== -1) b.sentAttackers.splice(si, 1);
-  }
-  g.ev('erased', `${u.card} is ERASED (no bin, no death).`, { unit: u.id, card: u.card, seat: u.controller });
 }
 
 /** R25: "each opponent" is the seats PRESENT IN THE EFFECT'S REGION, not every
@@ -265,6 +247,8 @@ card('Divine Foresight', {
 // and no cap has to be computed up front.
 const fleshTithe: EffectDef = {
   castCost: { kind: 'payLife', n: 'X' },
+  xZeroWarning: 'X = 0 creates no unit',   // R74
+  creates: ['Unit Token'],
   run: (g, ctx) => {
     const x = ctx.x ?? 0;
     if (x <= 0) { g.ev('info', 'Flesh Tithe: X = 0 — no life paid, no unit.'); return; }
@@ -330,26 +314,21 @@ card('Greed Angel', {
 
 // "When I attack or block, create a token that's a copy of me in my
 // formation." — lll/8 2/2 Hooba God Unit. The copy is a Hooba-God unit token;
-// "in my formation" slots it into the column I am fighting in, which in this
-// engine holds at most two units ([front, back?]) — with no room it still
-// arrives in the region, just outside the formation. The copy is created after
+// "in my formation" is R75 — the controller chooses the slot at resolution
+// rather than the copy silently taking my own column's back slot (and getting
+// nothing at all when that slot was full). The copy is created after
 // attackers/blockers are declared, so it never re-triggers this on its own.
 card('Hooba-God', {
   abilities: [{
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
     label: "create a token that's a copy of me in my formation",
     effect: {
+      creates: ['Hooba-God'],
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        if (!self) return;
+        if (!self) { g.ev('info', 'Hooba-God: it is no longer in play — no copy is created.'); return; }
         const copy = g.spawnUnit(ctx.controller, 'Hooba-God', self.region, { token: true });
-        const col = g.columnOf(self.id);
-        if (col && col.length < 2) {
-          col.push(copy.id);
-          g.ev('info', `${copy.card} joins ${self.card}'s column.`);
-        } else {
-          g.ev('info', `${copy.card} has no room in the formation — it arrives beside it.`);
-        }
+        g.placeInFormation(copy, ctx, { key: 'hoobaGodSlot', source: 'Hooba-God' });
       },
     },
   }],
@@ -368,6 +347,7 @@ card('Keeper of Tithes', {
     type: 'triggered', events: ['endOfHaste'],
     label: 'at the end of [Haste], create an X/X unit for your expended resources',
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
         const x = g.player(ctx.controller).resources.filter(r => r.state === 'expended').length;
         if (x <= 0) { g.ev('info', 'Keeper of Tithes: no expended resources — X is 0, no unit.'); return; }
@@ -529,10 +509,13 @@ card('Stalwart Sentinel', {
 
 // "[Augment] During [Haste] name a card. My last named card loses all
 // abilities. (As long as I am in their region.)" — l/4 3/3 {Haste} Spirit
-// Unit. PARKED (header): needs a "name a card" player action (there is none)
-// AND the attribute/ability suppression layer already parked for Monke,
-// Suppression Field and Transmogrifant. The inert augmentText keeps
-// isAugment() true so the card plays and attaches crash-free.
+// Unit. PARKED (header) on ONE missing primitive: a "name a card" player
+// action. The suppression half is done — R62's StaticMod.suppressAbilities is
+// exactly "loses all abilities", region-scoped and radiating, and Monke,
+// Suppression Field and Transmogrifant all use it; with a naming action this
+// becomes a static whose `affects` matches the named card. The inert
+// augmentText keeps isAugment() true so the card plays and attaches
+// crash-free.
 card('The Everywhere', {
   augmentText: [{
     type: 'triggered', events: [],

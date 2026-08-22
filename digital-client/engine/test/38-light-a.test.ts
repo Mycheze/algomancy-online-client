@@ -382,6 +382,7 @@ test('Hooba-God: attacking creates a copy token in its formation column', () => 
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[hg]] });
   pass(h); pass(h);                                          // resolve the attack trigger
+  pick(h, 1);                                                // R75: behind me
   const copies = unitsOf(h, A).filter(u => u.card === 'Hooba-God');
   assert.equal(copies.length, 2, 'the original plus one copy');
   const copy = copies.find(u => u.id !== hg)!;
@@ -391,7 +392,10 @@ test('Hooba-God: attacking creates a copy token in its formation column', () => 
   finishBattle(h);
 });
 
-test('Hooba-God: a full column has no room — the copy arrives beside the formation', () => {
+test('R75: a full column no longer strands the copy — it opens a column at an end', () => {
+  // this used to assert "no room in the formation": the copy was created and
+  // then left standing in the region, because Hooba-God only ever looked at
+  // its own column. R75 offers the two ENDS of the line as well.
   const h = new Harness(3813);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -400,9 +404,15 @@ test('Hooba-God: a full column has no room — the copy arrives beside the forma
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[hg, mate]] });
   pass(h); pass(h);                                          // resolve the attack trigger
-  assert.deepEqual(h.state.battle!.columns[0], [hg, mate], 'the column is untouched (1-2 units)');
-  assert.equal(unitsOf(h, A).filter(u => u.card === 'Hooba-God').length, 2, 'the copy still exists');
-  assert.ok(h.log.some(l => l.includes('no room in the formation')));
+  assert.deepEqual(h.state.decision!.options.map(o => o.label),
+    ['a new column on the left', 'a new column on the right'],
+    'a full column offers no back slot, but both ends are open');
+  pick(h, 1);                                                // the right-hand end
+  const b = h.state.battle!;
+  assert.deepEqual(b.columns[0], [hg, mate], 'the full column is untouched');
+  assert.equal(b.columns.length, 2, 'the formation widened');
+  const copy = unitsOf(h, A).filter(u => u.card === 'Hooba-God').find(u => u.id !== hg)!;
+  assert.deepEqual(b.columns[1], [copy.id], 'the copy fronts the new column');
   finishBattle(h);
 });
 

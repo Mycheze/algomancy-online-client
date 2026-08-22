@@ -25,48 +25,28 @@
  *    hook — doActivateAbility has no cost-modification layer and triggers
  *    have no payment gate. Inert augmentText entry (Astralith precedent)
  *    keeps it recognised as an augment.
- *  - Hooba-Lan: "create a Shard (spawns dormant)" needs a 'Shard'
- *    ResourceKind / resource-creation primitive (the same gap the Fire/Water
- *    Resource cards parked against). The attack/block trigger is wired and
- *    fires an info event; no Shard is created.
- *  - Earth Resource: the resource-card model is missing (resources are
- *    anonymous ResourceState entries; no activation triggers, no Shard
- *    kind). Registered printed-data-only; registry.ts deliberately excludes
- *    it from DECK_LIST (it is a resource face, not a deck card).
+ *  - Hooba-Lan: UN-PARKED — E.createShard() (a real 'shard' ResourceKind,
+ *    created dormant) exists, and the card calls it. The note that this
+ *    "needs a Shard ResourceKind" outlived the primitive; see the card.
+ *  - Earth Resource: STILL PARKED, but for two reasons rather than three —
+ *    the Shard half is done (E.createShard). What is missing is the
+ *    resource-CARD model: resources are anonymous ResourceState entries with
+ *    no card behind them, and doActivateResource does not fireEvent, so
+ *    "when I activate" has nothing to listen to. Registered printed-data-only;
+ *    registry.ts deliberately excludes it from DECK_LIST (a resource face,
+ *    not a deck card).
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, notSelf, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, inEndOfTurn, chooseUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity =>
-  !!t && typeof t === 'object' && 'id' in (t as object);
 
 /** present seats of a region, initiative player first (stable order) */
 const presentSeats = (g: E, region: number): Seat[] => {
   const present = g.s.regions[region]!.presentSeats;
   return [g.initiative, g.nit].filter(s => present.includes(s));
-};
-
-/** True while endTurn() is resolving end-of-turn triggers — a ctx.choose
- * suspension there strands the game (see batch-fire-a), so choose-based
- * effects reachable then must auto-pick deterministically instead. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
-
-/** `chooser` picks one of `candidates` (auto-picked when only one). Returns
- * null when there is nothing to pick. Plan-then-commit: call all chooses
- * before mutating (the engine replays the part on suspension). */
-const chooseUnit = (
-  g: E, ctx: EffectCtx, key: string, chooser: Seat, candidates: Entity[], prompt: string,
-): Entity | null => {
-  if (!candidates.length) return null;
-  if (candidates.length === 1) return candidates[0]!;
-  const id = ctx.choose(key, {
-    kind: 'electricPath', seat: chooser, prompt,
-    options: candidates.map(u => ({ label: u.card, value: u.id })),
-  }) as EntityId;
-  return g.entity(id) ?? null;
 };
 
 /** Two units fight: they deal damage to each other equal to their power,
@@ -106,9 +86,11 @@ const rockfall4: EffectDef = {
         'Rockfall 4: choose one of your units (it will be dealt 4 damage)');
       if (u) picks.push(u);
     }
+    let hit = 0;
     for (const u of picks) {
-      if (g.entity(u.id)) g.dealEffectDamage(ctx, u, 4);
+      if (g.entity(u.id)) { g.dealEffectDamage(ctx, u, 4); hit++; }
     }
+    if (!hit) g.ev('info', 'Rockfall 4: nobody has a unit to choose — nothing is dealt damage.');
   },
 };
 card('A Fast Pile of Rocks', {
@@ -127,8 +109,9 @@ card('A Fast Pile of Rocks', {
 // ⚠ header approximation: the permanent gain is two +1/+1 counters.
 const golemGrow: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-    if (self) g.addCounters(self, 2);
+    const self = selfOf(g, ctx);
+    if (!self) { g.ev('info', `${ctx.sourceName}: the carrier is gone — no +2/+2.`); return; }
+    g.addCounters(self, 2);
   },
 };
 card('Aetherflux Golem', {
@@ -194,23 +177,33 @@ card('Deathglow Strider', {
     type: 'triggered', events: ['afterCombat'],
     label: 'I deal my defense to each opponent (after combat)',
     effect: {
+      // every branch says something: an effect that runs to completion in
+      // silence is a conformance failure (test/65-effect-conformance.test.ts),
+      // and each of these three is a real thing a player needs told
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
+        const self = selfOf(g, ctx);
+        if (!self) { g.ev('info', 'Deathglow Strider: the carrier is gone — no damage.'); return; }
         const [, def] = g.effStats(self);
-        if (def <= 0) return;
-        for (const seat of presentSeats(g, ctx.region)) {
-          if (seat !== ctx.controller) g.dealEffectDamage(ctx, { player: seat }, def);
+        if (def <= 0) {
+          g.ev('info', `Deathglow Strider: ${self.card} has no defense left — no damage.`);
+          return;
         }
+        const foes = presentSeats(g, ctx.region).filter(seat => seat !== ctx.controller);
+        if (!foes.length) {
+          g.ev('info', 'Deathglow Strider: no opponent is in this region — no damage.');
+          return;
+        }
+        for (const seat of foes) g.dealEffectDamage(ctx, { player: seat }, def);
       },
     },
   }],
 });
 
 // "When I activate, if you have at least [e][e][e], create a Shard. (It
-// spawns dormant.)" — [e] Earth Resource, 2/0. PARKED (see header): the
-// resource-card model doesn't exist. Registered printed-data-only so lookups
-// never crash; registry.ts keeps it out of DECK_LIST (resource face).
+// spawns dormant.)" — [e] Earth Resource, 2/0. PARKED (see header) on the
+// resource-CARD model and the missing 'when I activate' event — NOT on the
+// Shard any more (E.createShard is real). Registered printed-data-only so
+// lookups never crash; registry.ts keeps it out of DECK_LIST (resource face).
 card('Earth Resource', {});
 
 // "[Augment] Whenever I am dealt damage, you may pay [one]. If you do, I
@@ -231,10 +224,13 @@ card('Eminence of the Barrens', {
         restrict: notSelf,
       },
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
+        const self = selfOf(g, ctx);
+        if (!self) { g.ev('info', 'Eminence of the Barrens: the carrier is gone — no fight.'); return; }
         const t = ctx.targets[0];
-        if (!isEnt(t) || !g.entity(t.id)) return;
+        if (!isEnt(t) || !g.entity(t.id)) {
+          g.ev('info', 'Eminence of the Barrens: the target is gone — no fight.');
+          return;
+        }
         if (t.id === self.id) { g.ev('info', 'Eminence of the Barrens: cannot fight myself ("another target unit").'); return; }
         if (g.openMana(ctx.controller) < 1) { g.ev('info', 'Eminence of the Barrens: cannot pay [one] — no fight.'); return; }
         if (inEndOfTurn(g)) { g.ev('info', 'Eminence of the Barrens: auto-declines the payment (end-of-turn resolution).'); return; }
@@ -243,7 +239,7 @@ card('Eminence of the Barrens', {
           prompt: `Eminence of the Barrens: pay [one] to fight ${t.card}?`,
           options: [{ label: 'Pay [one] — fight', value: true }, { label: 'Decline', value: false }],
         });
-        if (pays !== true) return;
+        if (pays !== true) { g.ev('info', 'Eminence of the Barrens: the [one] is declined — no fight.'); return; }
         g.payMana(ctx.controller, 1);
         fight(g, ctx, self, t);
       },
@@ -264,11 +260,17 @@ card('Enigmatic Warder', {
       targets: { what: 'stackEffect', prompt: 'Enigmatic Warder: change a target of target effect to me' },
       run: (g, ctx) => {
         const t = ctx.targets[0];
-        if (!t || !('stack' in (t as object))) return;
+        if (!t || !('stack' in (t as object))) {
+          g.ev('info', 'Enigmatic Warder: no effect is targeted — nothing is retargeted.');
+          return;
+        }
         const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-        if (!item || item.negated) return;
-        const me = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!me) return;
+        if (!item) {
+          g.ev('info', 'Enigmatic Warder: the targeted effect has already left the stack.');
+          return;
+        }
+        const me = selfOf(g, ctx);
+        if (!me) { g.ev('info', 'Enigmatic Warder: the carrier is gone — nothing to retarget to.'); return; }
         // R58: only slots I could LEGALLY occupy. Changing a target may not
         // create an illegal one — the playtest bug was this Warder dropping
         // itself into Fight's "target ALLY" slot while belonging to the other
@@ -356,7 +358,9 @@ card('Fight', {
 // "Your units" is region-scoped (R12); counters land at RESOLUTION (R1).
 const flowstoneCounters: EffectDef = {
   run: (g, ctx) => {
-    for (const u of g.unitsOf(ctx.controller, ctx.region)) g.addCounters(u, 1);
+    const mine = g.unitsOf(ctx.controller, ctx.region);
+    if (!mine.length) { g.ev('info', `${ctx.sourceName}: you control no unit here — no counters.`); return; }
+    for (const u of mine) g.addCounters(u, 1);
   },
 };
 card('Flowstone Arcanite', {
@@ -407,7 +411,7 @@ card('Graxxlid', {
         const t = ctx.targets[0];
         if (!t || !('stack' in (t as object))) return;
         const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-        if (!item || item.negated) return;
+        if (!item) return;
         const me = ctx.sourceId;
         const targetsMe = me !== undefined
           && item.parts.some(p => !p.spent && p.targets.some(tr => 'unit' in tr && tr.unit === me));
@@ -426,6 +430,7 @@ card('Haboob', {
   spellEffect: {
     run: (g, ctx) => {
       const units = g.unitsIn(ctx.region);
+      if (!units.length) { g.ev('info', 'Haboob: there is no unit here to damage.'); return; }
       for (const u of units) {
         if (g.entity(u.id)) g.dealEffectDamage(ctx, u, 1);
       }

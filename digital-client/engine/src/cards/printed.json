@@ -9661,5 +9661,24 @@
   "augmentAttrs": [],
   "text": "[Augment] When my column deals combat damage to an opponent, recall your bin and erase me.",
   "image": "Zephyrzoa.jpg"
+ },
+ "Wraith": {
+  "name": "Wraith",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 0,
+  "power": 3,
+  "toughness": 3,
+  "type": "Blight Zombie Token Unit",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "[Augment] At the start of deployment, put a -1/-1 counter on an ally. When I die, Augment a Wraith onto an ally.",
+  "image": "Wraith.jpg"
  }
 }

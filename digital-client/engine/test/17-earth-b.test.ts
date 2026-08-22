@@ -292,7 +292,7 @@ test('Return to Nature: negates everything on the stack and erases all mods in t
   h.do({ type: 'declareAttack', seat: A, columns: [[ml]] });   // Luminary trigger → stack
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Return to Nature') });
   pass(h); pass(h);                                   // Return to Nature resolves first
-  pass(h); pass(h);                                   // the negated trigger resolves
+  assert.equal(h.state.stack.length, 0, 'R68: the negated trigger left the stack with it');
   assert.equal(tokensOf(h, A).filter(t => t.card === 'Crystal').length, 0,
     'the Crystal trigger was negated — no Crystal');
   assert.equal(ent(h, host)!.mods.length, 0, 'all mods erased');

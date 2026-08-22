@@ -12,7 +12,7 @@
  * player" is region-scoped), R28/R52 (created units arrive in their
  * CONTROLLER's home region, whatever region the effect resolved in),
  * R37 (applying a mod is not playing a card), R40 (trashing), R45 (glimpse),
- * R47 (the Wraith/Wraith token).
+ * R71 (the Wraith token; retired name Wight).
  *
  * Cards in this batch:
  *   Afflicting Anima, Burn the Blight, Cosmic Devourer, Cull, Exhume, Glook,
@@ -34,12 +34,13 @@
  *    the Dead reaches into ANY bin, and spawnUnit has no owner parameter, so a
  *    unit stolen out of the opponent's bin becomes the caster's card outright
  *    (it returns to the CASTER's bin when it dies, not its printed owner's).
- *  - "TARGET NONSPELL EFFECT" (Nothyr) has no TargetSpec: `stackSpell` covers
- *    spells/spell units/spell tokens/ambushes only, which is the exact
- *    complement of what Nothyr wants. Modelled as a resolution-time
- *    ctx.choose over the triggered/activated items on the stack (the
- *    Containment Protocol precedent, plus "up to one" = a decline option).
- *    Slightly stronger than printed: the pick cannot be responded to.
+ *  - "TARGET NONSPELL EFFECT" (Nothyr) IS a TargetSpec now: R60's
+ *    `what: 'stackEffect'` is the superset (every effect on the stack,
+ *    triggered and activated abilities included) and a `restrict` narrows it
+ *    to the nonspell half. R67 collects it as the trigger goes on the stack.
+ *    This entry used to say the card "has no TargetSpec … modelled as a
+ *    resolution-time ctx.choose"; that expired, and with it the "slightly
+ *    stronger than printed: the pick cannot be responded to" caveat.
  *  - "REMOVE ALL COUNTERS FROM … PLAYERS" (Burn the Blight) reads rot and
  *    debt as the player counters (both are called counters by R38/R39). There
  *    is no loseRot/loseDebt primitive — gainRot(-n) is a no-op by design — so
@@ -48,8 +49,11 @@
  *    its printed/token base AND it carries no counters or until-regroup
  *    changes. That deliberately includes stat changes projected onto it by
  *    someone else's static (a lord's +1/+1): those are stat changes too.
- *    Enforced at RESOLUTION (the Minor Kraken precedent) — the spec cannot be
- *    a target filter, so an "illegal" target simply survives.
+ *    It is a TARGETING RESTRICTION (R64's TargetSpec.restrict): only unmodified
+ *    units are ever offered. The resolution recheck stays for a unit that
+ *    changes between cast and resolution (R5/R56) — but the sentence this note
+ *    used to carry, "the spec cannot be a target filter, so an 'illegal'
+ *    target simply survives", is no longer true of either half.
  *  - TRASH TRIGGERS CANNOT CARRY GRAFT RIDERS. Afflicting Anima and Maw of
  *    Despair print their trash trigger as a [Switch1] graft CAUSE, but a card
  *    trashed out of a bin fires from a detached ghost entity with no mods
@@ -63,14 +67,9 @@
 import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
-
-/** the entity carrying the running ability (the host when donated/grafted) */
-const selfOf = (g: E, ctx: EffectCtx): Entity | undefined =>
-  ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
 
 /** seats physically in a region (R12/R25: "each player" is region-scoped) */
 const presentSeats = (g: E, region: number): Seat[] =>
@@ -90,18 +89,6 @@ const statsUntouched = (g: E, u: Entity): boolean => {
   const [p, d] = g.effStats(u);
   return u.counters === 0 && u.tempPower === 0 && u.tempToughness === 0
     && u.baseSet === undefined && p === bp && d === bt;
-};
-
-/** a card that enters play as a unit (a spell unit does, on resolution) */
-const isUnitCard = (name: CardName): boolean => {
-  const k = getCard(name).kind;
-  return k === 'unit' || k === 'spellUnit';
-};
-
-/** printed mana as a number ("X" counts as 0 — the fire-b/metal-a reading) */
-const manaOf = (name: CardName): number => {
-  const m = getCard(name).mana;
-  return m === 'X' ? 0 : m;
 };
 
 /** [name, binIndex] pairs of `seat`'s bin passing a filter */
@@ -142,10 +129,11 @@ function discardHand(g: E, seat: Seat, picked: number[]): void {
 // 0/1 Alien Anima Unit. R40: the trigger fires FROM THE BIN, however the card
 // got there (discarded, milled, sacrificed, died in combat) — so ctx.sourceId
 // resolves to nothing and nothing here may read "me" as an entity. The [1] is
-// a mid-resolution pay-or-decline (R6). R47: "create a Wraith" spawns the
+// a mid-resolution pay-or-decline (R6). R71: "create a Wraith" spawns the
 // Wraith body. Bounded graft ([Switch1]) — ⚠ header: a trash trigger can never
 // actually carry a graft rider, but the card is still graftable.
 const animaWraith: EffectDef = {
+  creates: ['Wraith'],
   run: (g, ctx) => {
     if (g.openMana(ctx.controller) < 1) {
       g.ev('info', 'Afflicting Anima: cannot pay [1] — no Wraith.');
@@ -179,8 +167,9 @@ card('Afflicting Anima', {
 card('Burn the Blight', {
   spellEffect: {
     run: (g, ctx) => {
+      let stripped = 0;
       for (const u of g.unitsIn(ctx.region)) {
-        if (u.counters) g.addCounters(u, -u.counters);
+        if (u.counters) { g.addCounters(u, -u.counters); stripped++; }
       }
       for (const seat of presentSeats(g, ctx.region)) {
         const rot = g.rot(seat), debt = g.debt(seat);
@@ -190,7 +179,9 @@ card('Burn the Blight', {
         g.ev('info',
           `Burn the Blight removes ${g.pname(seat)}'s counters: ${rot} rot, ${debt} debt.`,
           { seat, rot, debt });
+        stripped++;
       }
+      if (!stripped) g.ev('info', 'Burn the Blight: there are no counters anywhere to remove.');
     },
   },
 });
@@ -198,12 +189,13 @@ card('Burn the Blight', {
 // "[Augment] At the end of turn, create a Wraith and gain 1 Rot." — dd/1 0/1
 // Alien Unit. Text-box [Augment]: live when played normally (Manual Q&A),
 // donated when it augments a host — and then it is the HOST's controller who
-// gets both the Wraith and the rot. R47 + R38.
+// gets both the Wraith and the rot. R71 + R38.
 card('Cosmic Devourer', {
   augmentText: [{
     type: 'triggered', events: ['endOfTurn'],
     label: 'create a Wraith and gain 1 rot (end of turn)',
     effect: {
+      creates: ['Wraith'],
       run: (g, ctx) => {
         g.createWraith(ctx.controller, g.homeRegion(ctx.controller));   // R52
         g.gainRot(ctx.controller, 1);
@@ -322,6 +314,7 @@ card('Gzxyclop', {
     effect: {
       run: (g, ctx) => {
         const picked = planDiscards(g, ctx, 'gz', ctx.controller, 2, 'Gzxyclop: discard two cards');
+        if (!picked.length) { g.ev('info', 'Gzxyclop: your hand is already empty — nothing is discarded.'); return; }
         discardHand(g, ctx.controller, picked);
       },
     },
@@ -329,9 +322,12 @@ card('Gzxyclop', {
 });
 
 // "Delete target unit with no stat changes." — d/2 {Battle} Blight Spell.
-// ⚠ header: TargetSpec has no filter, so the restriction is a RESOLUTION-time
-// recheck (Minor Kraken precedent) — a unit that has picked up counters,
-// until-regroup changes or somebody's static buff simply survives.
+// R64: "with no stat changes" is part of what makes a target LEGAL, so only
+// unmodified units are offered. The resolution recheck below is the R5/R56
+// half — a unit that picks up counters, until-regroup changes or somebody's
+// static buff between cast and resolution survives. (The line that used to sit
+// here, "⚠ header: TargetSpec has no filter", contradicted the spec six lines
+// below it.)
 card('Leave None Pure', {
   spellEffect: {
     // R64: "with no stat changes" is a targeting restriction, so only the
@@ -383,7 +379,8 @@ card("Möbius's Corruption", {
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        if (self) g.addCounters(self, -2);
+        if (!self) { g.ev('info', "Möbius's Corruption: the carrier is gone — no counters."); return; }
+        g.addCounters(self, -2);
       },
     },
   }],
@@ -394,10 +391,12 @@ card("Möbius's Corruption", {
 // paying it discards the card, which trashes it (R40) and fires this from the
 // bin — a battle-timed hard answer to a trigger. The discard-me mode itself
 // is entirely engine-side (printed.discardMe + legalActions).
-// ⚠ header: "target nonspell effect" has no TargetSpec, so the pick is a
-// resolution-time choose over the triggered/activated items on the stack
-// ("up to one" = a decline option). Outside battle the stack is empty and the
-// trigger is simply a no-op.
+// R60/R67: "target nonspell effect" is a DECLARED target — 'stackEffect'
+// narrowed by a restriction to the nonspell half — collected as the trigger
+// goes on the stack ("up to one" = min 0). Outside battle the stack is empty
+// and the trigger is simply a no-op. (The "⚠ has no TargetSpec, so the pick is
+// a resolution-time choose" line that used to sit here was contradicted by the
+// spec twelve lines below it.)
 card('Nothyr', {
   abilities: [{
     type: 'triggered', events: ['trashed'], self: true,
@@ -461,7 +460,10 @@ card('Reality Siphoner', {
     effect: {
       run: (g, ctx) => {
         const bin = g.player(ctx.controller).bin;
-        if (!bin.length) return;
+        if (!bin.length) {
+          g.ev('info', 'Reality Siphoner: your bin is empty — nothing is recycled, no counters.');
+          return;
+        }
         const moved = bin.splice(0, bin.length);
         for (const name of moved) g.recycleToBottom(ctx.controller, name);
         g.ev('info',
@@ -497,7 +499,7 @@ card('Sacrifice Dude', {
           prompt: 'Sacrifice Dude: pay [2] to make each opponent sacrifice a nontoken unit?',
           options: [{ label: 'Pay [2]', value: true }, { label: 'Decline', value: false }],
         });
-        if (pays !== true) return;
+        if (pays !== true) { g.ev('info', 'Sacrifice Dude: the [2] is declined — nobody sacrifices.'); return; }
         const picks: EntityId[] = [];
         for (const seat of presentSeats(g, ctx.region)) {
           if (seat === ctx.controller) continue;
@@ -511,6 +513,8 @@ card('Sacrifice Dude', {
           picks.push(id);
         }
         g.payMana(ctx.controller, 2);
+        g.ev('info', `Sacrifice Dude: ${g.pname(ctx.controller)} pays [2]${
+          picks.length ? '' : ' — but no opponent here has a nontoken unit to sacrifice'}.`);
         for (const id of picks) {
           const u = g.entity(id);
           if (u) g.destroy(u, 'is sacrificed');
@@ -621,8 +625,10 @@ card('Tilling the Graves', {
         g.player(seat).hand.push(name);
         g.ev('info', `Tilling the Graves: ${name} returns to ${g.pname(seat)}'s hand.`);
       }
+      if (!taken.length) g.ev('info', 'Tilling the Graves: no unit is targeted in your bin — nothing returns.');
       // "then discard a card" — the recalled units are legal discards
       const picked = planDiscards(g, ctx, 'till', seat, 1, 'Tilling the Graves: discard a card');
+      if (!picked.length) g.ev('info', 'Tilling the Graves: your hand is empty — nothing is discarded.');
       discardHand(g, seat, picked);
     },
   },

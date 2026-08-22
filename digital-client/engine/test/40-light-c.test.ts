@@ -97,8 +97,7 @@ test('Calming Force: negates every OTHER effect on the stack', () => {
   assert.equal(h.state.stack.length, 2);
   pass(h); pass(h);                                           // Calming Force resolves (top)
   assert.ok(h.log.some(l => l.includes('Calming Force negates 1 other effect')), 'the sweep is logged');
-  assert.ok(h.state.stack[0]!.negated, 'Godray is negated');
-  pass(h); pass(h);                                           // the negated Godray leaves the stack
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Godray left the stack at once');
   assert.equal(h.state.players[D]!.life, lifeD, 'no damage, no blessed gain');
   assert.ok(h.state.players[A]!.bin.includes('Godray'), 'a negated spell still goes to the bin (R40: from the stack)');
   finishBattle(h);
@@ -668,8 +667,7 @@ test('Void Mandible: a nontoken card played in battle sacrifices it and is negat
   pass(h); pass(h);                                           // the trigger resolves first
   assert.ok(!ent(h, vm), 'the Mandible sacrificed itself');
   assert.ok(h.state.players[A]!.bin.includes('Void Mandible'), 'a sacrifice bins it (and trashes it, R40)');
-  assert.ok(h.state.stack[0]!.negated, 'Godray is negated');
-  pass(h); pass(h);
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Godray left the stack at once');
   assert.equal(h.state.players[A]!.life, lifeA, 'no 3 damage, and no blessed gain for D');
   finishBattle(h);
 });
@@ -688,7 +686,7 @@ test('Void Mandible: it is NOT optional and fires on its own controller\'s spell
   pick(h, { player: D });
   pass(h); pass(h);
   assert.ok(!ent(h, vm), 'its own controller\'s Godray ate the Mandible');
-  assert.ok(h.state.stack[0]!.negated, 'and the Godray');
+  assert.equal(h.state.stack.length, 0, 'and the Godray is negated off the stack');
   finishBattle(h);
 });
 

@@ -62,10 +62,9 @@
  *    tokens, extended to spell units because the event is the engine's own
  *    definition of "a spell was played". R37 already keeps mods out.
  *  - "PUT TARGET UNIT INTO YOUR HAND" (Capture) is a recall to the CASTER's
- *    hand rather than the owner's, so it cannot use E.recall(); putIntoHand()
- *    below mirrors recall() exactly (mods shed to their owners' bins and are
- *    trashed per R40, formation cleanup, a 'despawned' event, tokens erased)
- *    and differs only in whose hand receives the card.
+ *    hand rather than the owner's, which is now all it is: `E.recall` takes a
+ *    `to` seat and a log verb, so putIntoHand() below is a one-line delegate
+ *    instead of the hand-rolled copy of recall() it used to be.
  *  - "CREATE A COPY OF ME" (Swarmling) creates a TOKEN copy (the Echo of
  *    Despair precedent): same card, erased when it leaves play, never trashed.
  *  - "DOUBLE ALL COUNTERS ON UNITS AND PLAYERS" (Buffer Overflow): units carry
@@ -91,14 +90,12 @@
  *    is deliberately NOT added alone — it would make the card strictly worse
  *    than the vanilla body. Registered bare: an ordinary [2] {Battle} 6/2.
  */
-import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
+import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, inEndOfTurn, manaOf, isUnitCard, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity =>
-  !!t && typeof t === 'object' && 'id' in (t as object);
 
 /** present seats of a region, initiative player first (stable order) */
 const presentSeats = (g: E, region: number): Seat[] => {
@@ -109,76 +106,20 @@ const presentSeats = (g: E, region: number): Seat[] => {
 const opponentsIn = (g: E, region: number, me: Seat): Seat[] =>
   presentSeats(g, region).filter(s => s !== me);
 
-/** True while endTurn() is resolving end-of-turn triggers (batch-fire-a
- * precedent): a ctx.choose suspension in that window strands the game, so
- * "may" effects auto-decline there. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
-
-/** pick one of `pool` (auto when forced); null on an empty pool */
-const pickUnit = (
-  ctx: EffectCtx, key: string, chooser: Seat, pool: Entity[], prompt: string,
-): EntityId | null => {
-  if (!pool.length) return null;
-  if (pool.length === 1) return pool[0]!.id;
-  return ctx.choose(key, {
-    kind: 'electricPath', seat: chooser, prompt,
-    options: pool.map(u => ({ label: u.card, value: u.id })),
-  }) as EntityId;
-};
-
-/** a card that enters play as a UNIT — a spell unit spawns its body too, so
- * it counts for every bin search (the convention shared by the other batches). */
-const isUnitCard = (name: CardName): boolean => {
-  const k = getCard(name).kind;
-  return k === 'unit' || k === 'spellUnit';
-};
-
-/** printed mana of a card; an X cost counts as 0 (⚠ there is no X to read on
- * a card sitting in hand — flagged for Prophecy Bug) */
-const manaOf = (name: CardName): number => {
-  const m = getCard(name).mana;
-  return typeof m === 'number' ? m : 0;
-};
-
 /**
- * ⚠ "Put target unit into YOUR hand" (Capture): a recall whose destination is
- * the CASTER's hand, not the owner's. Mirrors E.recall() step for step —
- * the entity leaves play, its mods are shed to their owners' bins (nontoken
- * ones are trashed from play, R40; token mods are erased, R47), the formation
- * is cleaned up, a 'despawned' event fires so leave-play triggers hear it, and
- * a token has no card to put anywhere so it is simply erased.
+ * "Put target unit into YOUR hand" (Capture): a recall whose destination is
+ * the CASTER's hand, not the owner's. That is the ONLY thing it changes, so it
+ * is E.recall() with a redirected seat rather than a second copy of it. This
+ * used to be a line-for-line duplicate of recall(), and it had already drifted
+ * out of sync twice over: it stamped no R70 `to` on its despawn event, so
+ * Capture triggered no "a card entered a hand" watcher at all (Rider of the
+ * Tides, Xenopod Progenitor, Galerider Eel), and it erased a token instantly
+ * instead of letting it visit the hand first (R69, extended to the hand
+ * 2026-08-22).
  */
-function putIntoHand(g: E, u: Entity, seat: Seat): void {
-  if (!g.entity(u.id)) return;
-  delete g.s.entities[u.id];
-  const mods = u.mods.map(id => g.entity(id)).filter((m): m is Entity => !!m);
-  for (const m of mods) {
-    delete g.s.entities[m.id];
-    if (!m.token) g.player(m.owner).bin.push(m.card);
-  }
-  // formation cleanup (mirror of the engine's private removeFromFormation)
-  const b = g.s.battle;
-  if (b) {
-    for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-      const i = col.indexOf(u.id);
-      if (i !== -1) col.splice(i, 1);
-    }
-    const si = b.sentAttackers.indexOf(u.id);
-    if (si !== -1) b.sentAttackers.splice(si, 1);
-  }
-  const evData = { unit: u.id, card: u.card, seat: u.controller, region: u.region };
-  if (u.token) {
-    g.ev('despawned', `${u.card} is put into a hand — token: erased.`, evData);
-  } else {
-    g.player(seat).hand.push(u.card);
-    g.ev('despawned',
-      `${u.card} is put into ${g.pname(seat)}'s hand` +
-      (mods.length ? ` (its ${mods.length} mod(s) → bin)` : '') + '.', evData);
-  }
-  const ev = g.events[g.events.length - 1]!;
-  g.fireEvent('despawned', ev, u);
-  for (const m of mods) if (!m.token) g.noteTrashed(m.owner, m.card, 'play');
-}
+const putIntoHand = (g: E, u: Entity, seat: Seat): void =>
+  g.recall(u, { to: seat, verb: 'put into' });
+
 
 // ─────────────────────── LIGHT / DARK (ld) ────────────────────────────
 
@@ -232,8 +173,8 @@ card('Aurozoa', {
     label: 'pay 1 life: recall me',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
+        const self = selfOf(g, ctx);
+        if (!self) { g.ev('info', 'Aurozoa: the carrier is already gone — nothing to recall.'); return; }
         g.recall(self);
       },
     },
@@ -401,9 +342,13 @@ card('Blightsea Polyp', {
 
 // "Put target unit into your hand, then discard a card." — bd/4 {Battle}
 // Mystic Spell. ⚠ The unit goes to the CASTER's hand, not its owner's
-// (putIntoHand above), so this steals; a token has no card and is simply
-// erased. The discard is mandatory and follows the capture, so the captured
-// card is itself a legal discard (R40: discarding trashes it).
+// (putIntoHand above), so this steals. A TOKEN visits that hand and is erased
+// out of it by R69's state-based sweep, which means capturing a token is not
+// nothing: it fires "a card entered a hand" and it is a legal discard for the
+// instant before the sweep — except that the sweep runs first, so the discard
+// below can never actually find it. The discard is mandatory and follows the
+// capture, so a captured NONTOKEN card is itself a legal discard (R40:
+// discarding trashes it).
 card('Capture', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Capture: put target unit into your hand' },
@@ -430,10 +375,14 @@ card('Capture', {
 
 // "[Discard two cards]{/n}I can be played directly into formation, and played
 // from your bin." — bd/2 6/2 {Battle} Alien Unit.
-// PARKED (see header): three missing primitives — a "[Discard two cards]"
-// bracketed cast cost, a play-directly-into-formation mode, and a
-// play-from-bin action. Registered bare so the card still enters DECK_LIST
-// and plays as an ordinary [2] {Battle} 6/2 out of hand.
+// PARKED (see header) on TWO missing primitives, not three: a
+// play-directly-into-formation MODE and a play-from-bin ACTION, both in
+// apply.ts's play paths. The third — a "[Discard two cards]" bracketed cast
+// cost — is expressible now (`CastCost { kind: 'discardCard', n: 2 }`, R64),
+// and is deliberately NOT added alone: on a bare unit it would be a cost with
+// neither of the modes it is supposed to pay for, i.e. strictly worse than the
+// vanilla body. Registered bare so the card still enters DECK_LIST and plays
+// as an ordinary [2] {Battle} 6/2 out of hand.
 // ⚠ TRANSCRIPTION: the "[Discard two cards]" line is left inside `text` by the
 // extractor (it is neither `ambush` nor `discardMe`), and the printed text
 // never says which of the two alternative modes the discard pays for.
@@ -526,6 +475,7 @@ card('Lilbot', {
 // my own bin ("you discard"). ⚠ The copy is a TOKEN copy (header). The [1] is
 // a mid-resolution pay-or-decline (R6).
 const swarmlingCopy: EffectDef = {
+  creates: ['Swarmling'],
   run: (g, ctx) => {
     if (g.openMana(ctx.controller) < 1 || inEndOfTurn(g)) return;
     const pay = ctx.choose('pay', {
@@ -568,29 +518,36 @@ card('Swarmling', {
 // activated ability in the [Augment] text box (The Bonesculptor precedent —
 // there is no bin-play action): once per turn, during YOUR deployment, with
 // an EMPTY hand, pick an affordable unit card in your bin; its cost is paid
-// normally and it spawns (spawn triggers fire). Both conditions are checked
-// at resolution, so activating it early wastes the budget.
+// normally and it spawns (spawn triggers fire).
+//
+// R77: all three preconditions are ACTIVATION gates now — `timing: 'deploy'`
+// (R49's own field, which this was re-implementing at resolution) plus
+// `usableWhen` for the printed "if your hand is empty" and for "is there
+// anything in the bin I could actually play". It is `bounded`, so activating
+// it when it could do nothing burnt the once-per-turn budget; the header used
+// to admit exactly that.
+const gridxlanPicks = (g: E, seat: Seat): { label: string; value: number; card: string }[] => {
+  const bin = g.player(seat).bin;
+  return bin
+    .map((name, i) => ({ label: name, value: i, card: name }))
+    // a SPELL UNIT counts as a unit for bin purposes (it spawns its body) —
+    // the convention every other bin search in the set uses
+    .filter(o => isUnitCard(bin[o.value]!) && g.canPayCard(seat, bin[o.value]!));
+};
 card('Gridxlan', {
   augmentText: [{
-    type: 'activated', cost: {}, bounded: true,
+    type: 'activated', cost: {}, bounded: true, timing: 'deploy',
     label: 'with an empty hand, play a unit from your bin (during deployment)',
+    usableWhen: (g, _self, seat) =>
+      g.player(seat).hand.length === 0 && gridxlanPicks(g, seat).length > 0,
     effect: {
       run: (g, ctx) => {
-        if (g.s.phase !== 'deploy') {
-          g.ev('info', 'Gridxlan: only during deployment — no effect.');
-          return;
-        }
         if (g.player(ctx.controller).hand.length > 0) {
           g.ev('info', 'Gridxlan: your hand is not empty — no effect.');
           return;
         }
         const bin = g.player(ctx.controller).bin;
-        const opts = bin
-          .map((name, i) => ({ label: name, value: i, card: name }))
-          // a SPELL UNIT counts as a unit for bin purposes (it spawns its
-          // body) — the convention every other bin search in the set uses
-          .filter(o => isUnitCard(bin[o.value]!)
-            && g.canPayCard(ctx.controller, bin[o.value]!));
+        const opts = gridxlanPicks(g, ctx.controller);
         if (!opts.length) {
           g.ev('info', 'Gridxlan: no playable unit in your bin.');
           return;
@@ -600,10 +557,13 @@ card('Gridxlan', {
           prompt: 'Gridxlan: play a unit from your bin',
           options: [...opts, { label: 'Decline', value: -1 }],
         }) as number;
-        if (pick < 0) return;
+        if (pick < 0) { g.ev('info', 'Gridxlan: declined — nothing is played from the bin.'); return; }
         const name = bin[pick];
         if (name === undefined || !isUnitCard(name)
-          || !g.canPayCard(ctx.controller, name)) return;
+          || !g.canPayCard(ctx.controller, name)) {
+          g.ev('info', 'Gridxlan: that card can no longer be played — nothing happens.');
+          return;
+        }
         bin.splice(pick, 1);
         g.payCard(ctx.controller, name);
         g.ev('info', `Gridxlan: ${g.pname(ctx.controller)} plays ${name} from the bin.`);
@@ -634,8 +594,23 @@ card('Rotwall', {
 
 // "[Augment] [once] Discard X cards: Each opponent sacrifices X units." —
 // rd/6 6/8 Bedlam Alien Unit. An ACTIVATED ability in the [Augment] text box,
-// bounded by [once] (R9). X is the activator's choice, made by discarding one
-// card at a time until they stop (⚠ header: the cost is paid at resolution).
+// bounded by [once] (R9).
+//
+// UN-PARKED (R64). "Discard X cards" sits BEFORE the colon — it is the
+// activation cost, and the note here used to admit "⚠ the cost is paid at
+// resolution" because the DSL had no shape for it. `EffectDef.castCost` with
+// `{ kind: 'discardCard', n: 'X' }` is that shape, and collectCastCosts runs
+// for ACTIVATED items too (collectTargets calls it on the way to the stack),
+// so the discards happen in the cast window: the opponent decides how to
+// answer a No Hand Killer whose X they can already see, instead of one whose
+// size was still unfixed while priority passed. `ctx.x` is what was paid.
+//
+// `xMin: 1` — the printed floor. Every other variable cost in the pool may be
+// paid down to 0 ("you may decline outright"), but here a 0 does nothing at
+// all AND burns the [once] budget, so an empty hand makes the whole activation
+// unpayable and legalActions stops offering it. ⚠ flagged: if Bena rules that
+// X = 0 is a legal (pointless) activation, drop the xMin.
+//
 // Every discard is a TRASH (R40) and fires whatever trash triggers it should.
 // Then each opponent (region-scoped, R25) sacrifices X of their own units,
 // choosing which; all of an opponent's picks are gathered before any of them
@@ -645,25 +620,13 @@ card('No Hand Killer', {
     type: 'activated', cost: {}, bounded: true,   // [once]
     label: 'discard X cards: each opponent sacrifices X units',
     effect: {
+      castCost: { kind: 'discardCard', n: 'X', xMin: 1 },
       run: (g, ctx) => {
-        let x = 0;
-        for (let k = 0; k < 40; k++) {
-          const hand = g.player(ctx.controller).hand;
-          if (!hand.length) break;
-          const v = ctx.choose(`discard:${k}`, {
-            kind: 'payOrDecline', seat: ctx.controller,
-            prompt: `No Hand Killer: discard a card (X = ${x} so far)`,
-            options: [
-              ...hand.map((name, i) => ({ label: name, value: i as unknown, card: name })),
-              { label: 'Done', value: -1 },
-            ],
-          }) as number;
-          if (v < 0) break;
-          if (g.discardFromHand(ctx.controller, v) === undefined) break;
-          x++;
-        }
+        const x = ctx.x ?? 0;   // however many cards were discarded at cast
         if (x === 0) { g.ev('info', 'No Hand Killer: X = 0 — nothing is sacrificed.'); return; }
-        for (const seat of opponentsIn(g, ctx.region, ctx.controller)) {
+        const foes = opponentsIn(g, ctx.region, ctx.controller);
+        if (!foes.length) { g.ev('info', 'No Hand Killer: no opponent is present here — nobody sacrifices.'); return; }
+        for (const seat of foes) {
           const picks: EntityId[] = [];
           for (let k = 0; k < x; k++) {
             const pool = g.unitsOf(seat, ctx.region).filter(u => !picks.includes(u.id));
@@ -671,6 +634,10 @@ card('No Hand Killer', {
               `No Hand Killer: sacrifice a unit (${k + 1} of ${x})`);
             if (id === null) break;
             picks.push(id);
+          }
+          if (!picks.length) {
+            g.ev('info', `No Hand Killer: ${g.pname(seat)} has no unit here to sacrifice.`);
+            continue;
           }
           for (const id of picks) {
             const u = g.entity(id);

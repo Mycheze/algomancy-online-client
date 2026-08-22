@@ -18,6 +18,12 @@ changed since 2024-05. Everything below has one of three sources, named per rule
 Bena supplied the rot, debt, trash, prophecy and Wight rulings on 2026-08-19 as official
 findings from Caleb; they are treated as authoritative here, not provisional.
 
+⚠ **2026-08-21 supersedes two of those.** The **Wraith token was redesigned** — Bena
+supplied the physical card, and it is a **3/3** with two entirely different triggers (see
+[The Wraith](#the-wraith-retired-name-wight)). And **tokens CAN be trashed**, reversing the
+"tokens are excluded" line below. A sourced ruling can go stale when the *card* changes;
+prefer the newest date.
+
 ## The two elements
 
 `light` (pip `l`) and `dark` (pip `d`) join fire/water/earth/wood/metal. Canonical order
@@ -218,8 +224,38 @@ unit **dying in combat** (Caleb confirmed a unit dying is trashed, 2025-02-01).
 
 **Does not count:** a spell or ability going to the bin after resolving (that is the stack,
 which is explicitly excluded — so countering/negating a spell is not trashing either);
-**tokens** of any kind ("a *nontoken* card"); **erasing**, which never touches the bin at
-all and is a permanent one-way zone (Caleb, 2025-12-06).
+**erasing**, which never touches the bin at all and is a permanent one-way zone (Caleb,
+2025-12-06).
+
+### ⚠ Tokens CAN be trashed (Bena, 2026-08-21 — REVERSES the earlier position)
+
+This doc previously excluded **tokens** of any kind, on the strength of the word
+*nontoken* in the reminder text. That is now wrong. A token that reaches a bin **is
+trashed**, and fires every "when a card is trashed" trigger.
+
+The evidence:
+
+1. **A token IS a card in Algomancy.** Both rulebooks say so outright — *"Tokens are
+   temporary **cards**"* (`Rules/Algomancy-Manual.txt:330`,
+   `Rules/Algomancy-Rulebook-2023-07.txt:116`). This is the opposite of Magic, where
+   "token" and "card" are disjoint; the Magic instinct is where the exclusion came from.
+2. **The one "nontoken" is on a cut card.** The qualifier survives only in the reminder
+   text of **Void Scavenger**, which has been **cut from the set**. Caleb's own paraphrase
+   the same day — *"basically when a card enters your bin but wasn't played"*
+   (2025-02-01) — has no such qualifier.
+3. **A dying token really does enter the bin.** Caleb, 2025-03-12, asked whether a token
+   entering the bin counts: *"yes, for the purposes of triggers"*. And 2025-06-15, on the
+   same point for the hand: *"Technically it does enter your hand and then gets erased
+   immediately. So it would trigger any 'enters hand' stuff"*. The token touches the zone,
+   fires what triggers off the zone, and is erased only afterwards.
+
+⚠ **Unnoted conflict with the printed Manual.** `Rules/Algomancy-Manual.txt:361-362` says a
+unit token leaving play is *"placed back into the token pile **instead of** the hand or
+bin"* — i.e. it never touches a bin at all. That is **contradicted** by the two 2025 Caleb
+rulings above, and no source in this repo previously flagged the contradiction. Follow the
+rulings (a designer ruling that contradicts an older rulebook means the game *changed*),
+but treat this as **provisional**: there is no official L&D rulebook or errata to settle
+it.
 
 The card is trashed **by the owner of the bin it enters**. "When you trash a card" means
 your own bin; "when another card is trashed" excludes the trigger source itself.
@@ -242,38 +278,71 @@ fires its own "when I am trashed" trigger. This is a new play mode, like Ambush.
 
 ## The Wraith (retired name: Wight)
 
-The token was **renamed FROM "Wight" TO "Wraith"** (Bena, 2026-08-19). The printed token
-card still shows the retired title, which is where these stats come from. Register it
-under the CURRENT name **`Wraith`** and alias the retired `Wight` to it, so an old
-printing still looks up but state only ever stores `Wraith`.
+The token was **renamed FROM "Wight" TO "Wraith"** (Bena, 2026-08-19) and then
+**REDESIGNED** (Bena supplied the physical card, 2026-08-21). Register it under the
+CURRENT name **`Wraith`** and alias the retired `Wight` to it, so an old printing still
+looks up but state only ever stores `Wraith`.
+
+**This is the authoritative printed card:**
 
 ```
-Wight — 0 mana, 4/4, Blight Zombie Token Unit   [printed title is the RETIRED name]
-[Augment] When I attack or block, put a -1/-1 counter on me.
-          When I die, augment me onto target ally.
+Wraith — cost 0, 3/3, "Blight Zombie Token Unit"
+[Augment] At the start of deployment, put a -1/-1 counter on an ally.
+          When I die, Augment a Wraith onto an ally.
 ```
 
-This is the subtle one. It is a **real 4/4 body**, not merely a mod — a free 4/4 that
-shrinks every time it fights and then re-attaches itself as an augment when it finally
-dies, donating that same shrink-on-fight text to its new host (the leading `[Augment]`
-means the text transfers).
+⚠ **Everything the previous revision of this section said is obsolete.** It recorded a
+**4/4** whose triggers read *"When I attack or block, put a -1/-1 counter on **me**"* and
+*"When I die, augment **me** onto **target** ally"*, and described it as a body that shrinks
+as it fights and then re-attaches itself. All of that is now wrong — the stats, both
+trigger conditions, and both effects. Also wrong: the claim that the printed token card
+still shows the retired title. **The printed token card says `Wraith`.** The only place the
+retired name survives is inside `Blight's End`'s own printed text (see below).
+
+It is a **real 3/3 body**, not merely a mod, and it also carries `[Augment]` so it can be
+created directly as a mod. Both text lines are **live on a Wraith standing in play as a
+unit** — a card's own `[Augment]` text is live while the card is itself a unit; it is not
+dormant text that only switches on once attached to a host (Bena, 2026-08-21).
 
 Engine consequences:
 
-- "**Create** a Wraith" spawns it as a unit token.
+- "**Create** a Wraith" spawns it as a **3/3** unit token.
 - "**Augment** a Wraith on/onto a unit" creates it directly as an augment mod on that unit
   — the same token, applied rather than spawned.
-- ⚠ R47: a Wraith that dies is **not erased** the way tokens normally are; its own trigger
-  re-attaches it as a mod. It only ceases to exist when there is no legal ally to augment.
-- A Wraith dying is **not** trashing (tokens are excluded).
+- **Trigger 1 is a deployment-phase debuff pointed OUTWARD.** At the start of deployment,
+  its controller puts a -1/-1 counter on **an ally**. It is not a combat trigger and it
+  does not shrink itself. A Wraith standing in play grinds down the board it is on.
+- **Trigger 2 does NOT move the dying Wraith.** The dying Wraith is **erased like any
+  other token**; the trigger **mints a NEW Wraith** and attaches it as an augment on an
+  ally. It is a fresh token, not a relocation — counters, damage and other mods on the
+  dying body do not carry across, and the effect works even if the Wraith is erased,
+  since the new one is created from the token pile (Bena, 2026-08-21).
+- **"An ally" is NOT a target.** It is chosen **on resolution**, so it cannot be
+  redirected by anything that redirects targets, and the trigger cannot **fizzle** for
+  want of a legal target. Do not route either trigger through the targeting/restriction
+  seam; pick on resolve (Bena, 2026-08-21).
+- A Wraith dying **IS** trashing — see [Tokens CAN be trashed](#-tokens-can-be-trashed-bena-2026-08-21--reverses-the-earlier-position)
+  above (Bena, 2026-08-21). The old "tokens are excluded" line is reversed.
+
+⚠ **R47 is now materially wrong.** It encodes the old behaviour — that a dying Wraith is
+*not* erased and re-attaches *itself* as a mod, ceasing to exist only when no legal ally
+exists. Under the new card the dying Wraith **is** erased and a **new** token is created.
+R47 is being rewritten by the engine work in this same round; see
+[digital-rules.md](digital-rules.md) for the current wording. **This doc does not edit
+that file** — treat digital-rules.md as the ruling of record once it lands.
 
 **Cards (7):** Afflicting Anima, Blight's End, Cosmic Devourer, Legion of the Depths,
 Plague Ritual, Primordial Coalescence, Xzydris.
 
 ⚠ The printed data is mid-transition: six cards already print the current **"Wraith"**,
 while **`Blight's End` still carries the retired "Wight"** ("Augment a Wight onto X target
-units"). Both must resolve to the same token — canonical `Wraith`, alias `Wight` — and a
-card-name lookup must never treat them as two things.
+units") — preserve that card's text verbatim. Both must resolve to the same token —
+canonical `Wraith`, alias `Wight` — and a card-name lookup must never treat them as two
+things.
+
+The token now has a proper entry in `AlgomancyCards/AlgomancyCards-OracleText.json` under
+`Wraith` (image `Wraith.jpg`), so it no longer has to be registered synthetically for art
+to resolve.
 
 ---
 

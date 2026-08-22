@@ -7,16 +7,18 @@
  * when grafted under a host); if the marker sits on the card's own triggered/
  * activated ability, that ability is a graft cause (graftCause: true).
  */
-import type { EngineEvent, Seat } from '../types.ts';
+import type { EngineEvent, Entity, Seat } from '../types.ts';
 import {
   allCardNames, card, getCard, registerAlias, registerSynthetic,
   type EffectCtx, type EffectDef,
 } from './dsl.ts';
+import { isEnt, selfOf } from './sets/helpers.ts';
 import type { E } from '../engine.ts';
 
 // ── shared effect primitives ─────────────────────────────────────────
 
 const createFireball1: EffectDef = {
+  creates: ['Fireball'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region); },
 };
 
@@ -76,7 +78,7 @@ card('Smouldering Inferno', {
     label: 'sacrifice me (after combat)',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (self) g.destroy(self, 'is sacrificed');
       },
     },
@@ -105,6 +107,7 @@ card('All-Consuming Blaze', {
 
 // "[Switch1] Create three Fireball 1."
 const threeFireballs: EffectDef = {
+  creates: ['Fireball'],
   run: (g, ctx) => { for (let i = 0; i < 3; i++) g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region); },
 };
 card('Flame Juggle', {
@@ -135,7 +138,7 @@ card('Jelly', {
     targets: { what: 'unit', prompt: 'Jelly: target unit gains -2/-2 until regroup' },
     run: (g, ctx) => {
       const t = ctx.targets[0]!;
-      if ('id' in (t as object)) g.addTemp(t as never, -2, -2);
+      if (isEnt(t)) g.addTemp(t, -2, -2);
       g.checkDeaths();
     },
   },
@@ -149,7 +152,7 @@ const deleteUnit: EffectDef = {
   targets: { what: 'unit', prompt: 'Delete target unit' },
   run: (g, ctx) => {
     const t = ctx.targets[0]!;
-    if ('id' in (t as object)) g.destroy(t as never, 'is deleted');
+    if (isEnt(t)) g.destroy(t, 'is deleted');
   },
 };
 card('Leaping Lillik', {
@@ -169,8 +172,8 @@ card('Dreadwave Devourer', {
 });
 
 // "{Piercing} … [Battle] Ambush [4bb] (Recall target ally, put me into their
-// position)" — the Ambush battle mode is NOT implemented in M1 (parked;
-// same cut as the prototype). Plays as a vanilla piercing 7/5 in deployment.
+// position)" — the Ambush battle mode is live (apply.ts doAmbush reads the
+// printed `ambush` cost/mana); no behavior beyond the mode + piercing body.
 card('Good Whale', {});
 
 // "When I attack or block, [Switch1] I deal damage to each player equal to
@@ -178,9 +181,12 @@ card('Good Whale', {});
 // RESOLUTION (hand counts read live), the condition fired at event time.
 const tidewraithEffect: EffectDef = {
   run: (g, ctx) => {
+    let dealt = 0;
     for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-      g.dealEffectDamage(ctx, { player: seat as Seat }, g.player(seat).hand.length);
+      const n = g.player(seat).hand.length;
+      if (n > 0) { g.dealEffectDamage(ctx, { player: seat as Seat }, n); dealt += n; }
     }
+    if (!dealt) g.ev('info', 'Astral Tidewraith: every player here is empty-handed — no damage.');
   },
 };
 card('Astral Tidewraith', {
@@ -197,7 +203,9 @@ card('Astral Tidewraith', {
 // "When I attack or block, [Switch] I deal 1 damage to each unit."
 const boulderEffect: EffectDef = {
   run: (g, ctx) => {
-    for (const u of g.unitsIn(ctx.region)) g.dealEffectDamage(ctx, u, 1);
+    const units = g.unitsIn(ctx.region);
+    if (!units.length) { g.ev('info', `${ctx.sourceName}: there is no unit here to damage.`); return; }
+    for (const u of units) g.dealEffectDamage(ctx, u, 1);
   },
 };
 card('Bellowing Boulder', {
@@ -222,6 +230,7 @@ card('Arc Lightning', {
 
 // "[Switch1] Create two 1/1 units."
 const twoOneOnes: EffectDef = {
+  creates: ['Unit Token'],
   run: (g, ctx) => {
     for (let i = 0; i < 2; i++) {
       g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] });
@@ -256,6 +265,7 @@ card('Whispering Mantid', {});
 
 // "{Haste} Elemental Spell — [Switch1] Create a Fireball 3." (haste step, R18)
 const fireball3: EffectDef = {
+  creates: ['Fireball'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Fireball', 3, ctx.region); },
 };
 card('Molten Upheaval', {
@@ -271,6 +281,7 @@ card('Awoken Tomb', {
     type: 'triggered', events: ['damage'], self: true, bounded: true,   // [once]
     label: 'create an X/X unit (X = the damage dealt)',
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
         const x = (ctx.event?.data?.n as number | undefined) ?? 0;
         if (x > 0) g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
@@ -281,6 +292,7 @@ card('Awoken Tomb', {
 
 // "When I attack, block, or die, [Switch1] Create two Wisps."
 const twoWisps: EffectDef = {
+  creates: ['Wisp'],
   run: (g, ctx) => {
     for (let i = 0; i < 2; i++) g.spawnUnit(ctx.controller, 'Wisp', ctx.region, { token: true });
   },
@@ -297,6 +309,7 @@ card('Aberrant Populace', {
 
 // "Occult Spell — [Switch1] Create three Wisps."
 const threeWisps: EffectDef = {
+  creates: ['Wisp'],
   run: (g, ctx) => {
     for (let i = 0; i < 3; i++) g.spawnUnit(ctx.controller, 'Wisp', ctx.region, { token: true });
   },
@@ -308,6 +321,7 @@ card('Spectrogenesis', {
 
 // "When I spawn or die, [Switch1] Create a Robot 1."
 const robot1: EffectDef = {
+  creates: ['Robot'],
   run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Robot', ctx.region, { token: true, counters: 1 }); },
 };
 card('Recyclable Sentinel', {
@@ -323,14 +337,23 @@ card('Recyclable Sentinel', {
 // ────────────────────────────── TOKENS ──────────────────────────────
 
 // "{Feeble} Spirit Token Unit — After combat, sacrifice me." (0/1, can't block)
+//
+// R62: this self-sacrifice is the ONE ability the Wisp has, which is what lets
+// Infernal Wispweaver's "your wisps … do not sacrifice themselves after
+// combat" be an exact implementation rather than an approximation — its static
+// carries `suppressAbilities`, and switching off the Wisp's ability layer and
+// switching off this line are the same statement. If the Wisp ever gains a
+// second ability, that equivalence breaks and the Wispweaver needs a narrower
+// seam (see batch-fire-a.ts).
 card('Wisp', {
   abilities: [{
     type: 'triggered', events: ['afterCombat'],
     label: 'sacrifice me (after combat)',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (self) g.destroy(self, 'is sacrificed');
+        const self = selfOf(g, ctx);
+        if (!self) { g.ev('info', 'Wisp: it is already gone — nothing to sacrifice.'); return; }
+        g.destroy(self, 'is sacrificed');
       },
     },
   }],
@@ -356,59 +379,107 @@ registerSynthetic({
   image: 'Generic-Unit.jpg',   // the box's generic-unit token card
 }, {});
 
-// R47 — the Wraith token (retired name: "Wight"). Not in the oracle pool (it
-// is a token card), so it is synthetic like Unit Token. The printed card image
-// still shows the OLD title, which is where these stats come from:
+// R71 — the Wraith token (retired name: "Wight"), REDESIGNED 2026-08-21. The
+// printed card is in the oracle pool like every other token card (Wisp,
+// Fireball, Poison), so stats/type/text/art are extracted, never hand-copied,
+// and only behaviour lives here:
 //
-//   "Wight — 0 mana, 4/4, Blight Zombie Token Unit"
-//    [Augment] When I attack or block, put a -1/-1 counter on me.
-//              When I die, augment me onto target ally."
+//   "Wraith — cost 0 [d], 3/3, Blight Zombie Token Unit"
+//    [Augment] At the start of deployment, put a -1/-1 counter on an ally.
+//              When I die, Augment a Wraith onto an ally.
 //
-// A free 4/4 that shrinks every time it fights and, when it finally dies,
-// re-attaches itself as an augment on an ally instead of being erased —
-// donating the shrink-on-fight text to its new host. Both engine entry points
-// (E.createWraith / E.augmentWraith) produce this one card.
-registerSynthetic({
-  name: 'Wraith', cost: '', mana: 0, power: 4, toughness: 4,
-  type: 'Blight Zombie Token Unit', kind: 'unit', timing: 'deploy', attrs: [],
-  virus: false, burst: false, augmentAttrs: [],
-  text: '[Augment] When I attack or block, put a -1/-1 counter on me.{/n}When I die, augment me onto target ally.',
-  image: 'Generic-Unit.jpg',   // no printed art for the token in the card set yet
-}, {
-  // The leading [Augment] marks the shrink-on-fight line as the text that
-  // TRANSFERS to the host when the Wraith is applied as a mod (R47: "donating
-  // the shrink-on-fight text to its new host"). A card's own [Augment] text is
-  // also live while it is a unit in play, so a Wraith body shrinks itself.
-  augmentText: [{
-    type: 'triggered', events: ['attacked', 'blocked'], self: true,
-    label: 'put a -1/-1 counter on me',
-    effect: {
-      run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (self) g.addCounters(self, -1);
+// Both lines sit under ONE text-box [Augment], so both TRANSFER to the host
+// when a Wraith is applied as an augment mod, and both are live on a Wraith
+// BODY standing in play (R55: a card's own [Augment] text is live when it is
+// played normally). A Wraith body carrying a Wraith mod therefore has the text
+// twice and does it twice — two copies, two firings.
+//
+// Neither line prints the word "target", so neither picks a target (R71): the
+// ally is chosen ON RESOLUTION with a plain ctx.choose. It cannot be redirected,
+// "when I become targeted" never fires for it, and it cannot fizzle for want of
+// a legal ally — it just does nothing. This is a deliberate exception to R67
+// ("targets are chosen at cast") and is an exception PRECISELY because the word
+// "target" is absent; do not "fix" it by adding a TargetSpec.
+//
+// Both engine entry points (E.createWraith / E.augmentWraith) produce this one
+// card: "create a Wraith" spawns the body, "Augment a Wraith onto a unit"
+// applies one directly as a mod. They stay a pair under the redesign — the
+// death trigger mints a BRAND-NEW Wraith through augmentWraith(), which is
+// correct behaviour now rather than the bug it was once suspected of being.
+//
+// SETTLED (Bena, 2026-08-21): **"an ally" MAY be the Wraith or its host
+// ITSELF — a unit is its own ally.** The engine already did this and keeps
+// doing it. The reasoning stands on the record: nothing on the card prints the
+// word "another", which is the qualifier the pool uses everywhere else when it
+// means "not me" (and is how `TargetSpec`'s `allyUnit` already behaves); it is
+// the only reading under which a LONE Wraith's deployment line has a candidate
+// at all, instead of being dead text on the commonest board state the card
+// produces; and it is continuous with the retired printing, which shrank
+// itself. `docs/08-light-and-dark.md`'s "it does not shrink itself" was read
+// as the contrary evidence — it describes the printed text's move from "on me"
+// to "on an ally", not a prohibition on picking yourself.
+
+/** the allies "an ally" may be chosen from: units the carrier's controller
+ * controls, in the carrier's own region (R12 — other regions do not exist).
+ * The carrier itself is INCLUDED — a unit is its own ally (see the note
+ * above; Bena's ruling, 2026-08-21). */
+const wraithAllies = (g: E, ctx: EffectCtx): Entity[] => {
+  const self = selfOf(g, ctx);
+  return g.unitsOf(ctx.controller, self?.region ?? ctx.region);
+};
+
+/** `seat` picks one of `candidates` (auto-picked when there is only one).
+ * NOT a target (no "target" printed): chosen here, at resolution. */
+const pickAlly = (
+  g: E, ctx: EffectCtx, key: string, candidates: Entity[], prompt: string,
+): Entity | null => {
+  if (!candidates.length) return null;
+  if (candidates.length === 1) return candidates[0]!;
+  const id = ctx.choose(key, {
+    kind: 'electricPath', seat: ctx.controller, prompt,
+    options: candidates.map(u => ({ label: u.card, value: u.id, card: u.card })),
+  }) as number;
+  return g.entity(id) ?? null;
+};
+
+card('Wraith', {
+  augmentText: [
+    // "At the start of deployment, put a -1/-1 counter on an ally."
+    {
+      type: 'triggered', events: ['startOfDeployment'],
+      label: 'put a -1/-1 counter on an ally',
+      effect: {
+        run: (g, ctx) => {
+          const ally = pickAlly(g, ctx, 'wraithShrink', wraithAllies(g, ctx),
+            'Wraith: put a -1/-1 counter on an ally');
+          if (!ally) { g.ev('info', 'Wraith: there is no ally to put a -1/-1 counter on.'); return; }
+          g.addCounters(ally, -1);
+        },
       },
     },
-  }],
-  // "When I die, augment me onto target ally" is the Wraith's OWN ability, not
-  // donated text: R47 names only the shrink text as travelling with it, and a
-  // host that dies with mods on it is erased outright (Unstable) anyway. With
-  // no legal ally the trigger finds no target, fizzles, and the token is gone
-  // for good — the one way a Wraith really ceases to exist.
-  abilities: [{
-    type: 'triggered', events: ['died'], self: true,
-    label: 'augment me onto target ally',
-    effect: {
-      targets: { what: 'allyUnit', prompt: 'Wraith: augment me onto target ally' },
-      run: (g, ctx) => {
-        const t = ctx.targets[0];
-        if (t && 'id' in (t as object)) g.augmentWraith(t as never, ctx.controller);
+    // "When I die, Augment a Wraith onto an ally." — the dying Wraith is NOT
+    // re-homed (it is erased like any other token, R69); this mints a FRESH
+    // Wraith mod. `self: true`, so a Wraith body fires for its own death and a
+    // donated copy fires for its host's death, never for a bystander's.
+    {
+      type: 'triggered', events: ['died'], self: true,
+      label: 'Augment a Wraith onto an ally',
+      effect: {
+        creates: ['Wraith'],
+        run: (g, ctx) => {
+          const ally = pickAlly(g, ctx, 'wraithAugment', wraithAllies(g, ctx),
+            'Wraith: Augment a Wraith onto an ally');
+          if (!ally) { g.ev('info', 'Wraith: there is no ally to Augment a Wraith onto.'); return; }
+          g.augmentWraith(ally, ctx.controller);
+        },
       },
     },
-  }],
+  ],
 });
 
-// R47: the token was renamed Wight -> Wraith. Six cards already say "Wraith";
-// `Blight's End` still carries the retired name. One card, two printed names.
+// R47/R71: the token was renamed Wight -> Wraith. Six cards already say
+// "Wraith"; `Blight's End` still carries the retired name. One card, two
+// printed names.
 registerAlias('Wight', 'Wraith');
 
 // batch modules register themselves on import (side-effect card() calls);
@@ -437,4 +508,30 @@ export function draftDeckList(elements: string[]): string[] {
     const f = getCard(n).factions ?? [];
     return f.length > 0 && f.every(el => chosen.has(el));
   });
+}
+
+/** Every EffectDef a card owns, wherever it lives — its spell effect, the
+ * [Switch] half that transfers on a graft, each activated/triggered ability,
+ * and each text-box [Augment] ability it donates to a host. */
+export function effectsOf(name: string): EffectDef[] {
+  const c = getCard(name);
+  const out: EffectDef[] = [];
+  if (c.spellEffect) out.push(c.spellEffect);
+  if (c.graftEffect) out.push(c.graftEffect.effect);
+  for (const a of c.abilities ?? []) out.push(a.effect);
+  for (const a of c.augmentText ?? []) out.push(a.effect);
+  return out;
+}
+
+/** R69: the tokens a card can put onto the board, unioned over every effect it
+ * owns and DECLARED (EffectDef.creates) rather than scraped out of the printed
+ * text. `npm test`'s conformance pass records what the effects actually spawn
+ * and fails if a card creates a token it never declared, so this stays true
+ * without anyone maintaining a list. */
+export function createsOf(name: string): string[] {
+  const out: string[] = [];
+  for (const e of effectsOf(name)) {
+    for (const t of e.creates ?? []) if (!out.includes(t)) out.push(t);
+  }
+  return out;
 }

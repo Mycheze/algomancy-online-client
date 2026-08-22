@@ -14,24 +14,20 @@
  *
  * PARKED (needs engine machinery that does not exist yet — every card still
  * registers crash-free and has a todo test):
- *  - Sandstone Defender (augment-donated form only): the unit form is a live
- *    static now (+0/+2 to its controller's OTHER units in its region). The
- *    augment-DONATED form needs mod-carried statics — statics run only while
- *    the holder is a UNIT in play — so as a mod it still donates nothing.
- *  - Towering Colossus (augment-donated form only): the unit form's drawback
- *    is a live static now (+2/+2 to enemy units in its region). Same
- *    remaining gap as Sandstone Defender: mod-carried statics.
- *  - Tranquility: "[Augment] Spells cost [one] more to play during battle."
- *    needs a static COST modifier layer — canPayCard/payCard read only the
- *    printed cost, with no hook for in-play modifiers. Inert augmentText.
+ *  (Nothing is parked in this batch any more. The three entries that used to
+ *  sit here have all been overtaken:
+ *   - Sandstone Defender / Towering Colossus, parked on "mod-carried statics —
+ *     statics run only while the holder is a UNIT in play". E.anchored()
+ *     radiates a mod's statics from its HOST, so both donate correctly; both
+ *     are now plain `augmentable: true` + a static, with no inert stand-in.
+ *   - Tranquility, parked on "a static COST modifier layer". R59's CostMod is
+ *     that layer, and the card has used it since.)
  *
  * ⚠ APPROXIMATIONS (implemented subsets, noted per card):
- *  - Swirling Shardform: there is no 'Shard' ResourceKind (the same gap the
- *    Fire/Water Resource parks named). Shards are approximated as dormant
- *    PRISMITES — the closest existing kind: 1 mana when activated, no
- *    affinity, spawns dormant. Fidelity leak: an active prismite can be
- *    exchanged for a real element during planning (R17), which a Shard could
- *    not.
+ *  - Swirling Shardform: NO LONGER an approximation. This note used to read
+ *    "there is no 'Shard' ResourceKind, so Shards are dormant PRISMITES" —
+ *    E.createShard() and a real 'shard' kind exist now, and the card calls
+ *    them, so the prismite fidelity leak it warned about is gone.
  *  - Skybreaker: "Erase me" is approximated by the engine's sacrifice-self
  *    activation cost — an unmodded Skybreaker therefore lands in the BIN
  *    instead of being erased (a modded host is erased anyway, Unstable).
@@ -56,23 +52,16 @@
  *    both cards use them — the restriction is now part of what makes a target
  *    legal, and both of Squish's targets are declared at cast.)
  */
-import type { Entity, EntityId, Seat } from '../../types.ts';
+import type { EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, inEndOfTurn } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity =>
-  !!t && typeof t === 'object' && 'id' in (t as object);
 
 /** present seats of a region, region-owner order (stable) */
 const presentOpponents = (g: E, region: number, me: Seat): Seat[] =>
   g.s.regions[region]!.presentSeats.filter(s => s !== me);
-
-/** True while endTurn() is resolving end-of-turn triggers — a ctx.choose
- * suspension there is unsafe (batch-fire-a precedent), so choose-based
- * effects reachable via grafts fall back to deterministic auto-picks. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
 
 // ────────────────────────────── the cards ──────────────────────────────
 
@@ -120,21 +109,22 @@ card('Ruinbringer', {
 });
 
 // "[Augment] Your other units gain +0/+2." — e/2 0/3 Anima Guardian Unit.
-// Text-box [Augment], live when played normally: a static projecting +0/+2
-// onto its controller's OTHER units in its region ("other" — never itself).
-// The augment-DONATED form is still PARKED (see header: mod-carried
-// statics); the inert augmentText entry (events: []) keeps the card
-// recognised as an augment (Conduit of Pain precedent).
+// Text-box [Augment]: a static projecting +0/+2 onto its controller's OTHER
+// units in its region ("other" — never itself), live in BOTH forms.
+//
+// UN-PARKED: the note here used to say "the augment-DONATED form is still
+// PARKED (mod-carried statics)" and carried an inert `augmentText` stand-in to
+// keep the card recognised as an augment. E.anchored() radiates a mod's
+// statics from its HOST, so the same static already covered the donated form —
+// test 1802 in 18-earth-c has asserted it for a while. The stand-in is gone;
+// `augmentable: true` is what makes the card applicable (Towering Colossus's
+// shape, which un-parked on the same day and the same primitive).
 card('Sandstone Defender', {
+  augmentable: true,
   statics: [{
     affects: (g, self, t) =>
       t.kind === 'unit' && t.id !== self.id && t.controller === self.controller,
     dt: 2,
-  }],
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — mod-carried statics
-    label: 'your other units gain +0/+2 (augment-donated form not implemented)',
-    effect: { run: () => { /* PARKED */ } },
   }],
 });
 
@@ -162,12 +152,14 @@ card('Skybreaker', {
     label: 'Erase me: negate all spell effects',
     effect: {
       run: (g) => {
-        for (const it of g.s.stack) {
-          if (it.negated) continue;
+        let negated = 0;
+        for (const it of [...g.s.stack]) {   // R68: negate() splices
           if (it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'spellToken' || it.kind === 'ambush') {
             g.negate(it.id);
+            negated++;
           }
         }
+        if (!negated) g.ev('info', 'Skybreaker: there is no spell effect on the stack to negate.');
       },
     },
   }],
@@ -220,6 +212,7 @@ card('Squish', {
 // (rare; noted). Poisonous damage becomes counters and never fires 'damage'.
 // Region auto-scoped (R12). Bounded ([Switch1], R9); the 2/2 is the graft.
 const stonebornMake: EffectDef = {
+  creates: ['Unit Token'],
   run: (g, ctx) => {
     g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [2, 2] });
   },
@@ -258,7 +251,7 @@ card('Swirling Shardform', {
 // happen if the host card itself were a Bulborb carrying a Bulborb mod.
 const bulborbShrink: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const self = selfOf(g, ctx);
     if (self) g.addCounters(self, -2);
   },
 };
@@ -293,17 +286,32 @@ card('Tenebrous Bulborb', {
 // that has no abilities (no triggered/activated/spell/graft text — printed
 // attributes and type-line augment grants are fine) and that you can afford;
 // its cost is paid normally and it spawns (spawn triggers fire). Declining
-// is allowed; activating outside deployment wastes the budget (noted).
+// is allowed.
+//
+// R77: both preconditions are ACTIVATION gates now — `timing: 'deploy'` for
+// the window (R49's own field, which this card was re-implementing at
+// resolution) and `usableWhen` for "is there anything in the bin I could
+// actually play". It is `bounded`, so being offered when it can do nothing
+// did not merely waste a click: activating it burnt the once-per-turn budget.
+const bonesculptorPicks = (g: E, seat: Seat): { label: string; value: number; card: string }[] => {
+  const bin = g.player(seat).bin;
+  const vanilla = (n: string): boolean => {
+    const d = getCard(n);
+    return d.kind === 'unit'
+      && !(d.abilities?.length) && !(d.augmentText?.length)
+      && !d.graftEffect && !d.spellEffect && !d.ambush;
+  };
+  return bin
+    .map((n, i) => ({ label: n, value: i, card: n }))
+    .filter(o => vanilla(bin[o.value]!) && g.canPayCard(seat, bin[o.value]!));
+};
 card('The Bonesculptor', {
   abilities: [{
-    type: 'activated', cost: {}, bounded: true,
+    type: 'activated', cost: {}, bounded: true, timing: 'deploy',
     label: 'play a unit with no abilities from your bin (each deployment)',
+    usableWhen: (g, _self, seat) => bonesculptorPicks(g, seat).length > 0,
     effect: {
       run: (g, ctx) => {
-        if (g.s.phase !== 'deploy') {
-          g.ev('info', 'The Bonesculptor: only during deployment — no effect.');
-          return;
-        }
         const bin = g.player(ctx.controller).bin;
         const vanilla = (n: string): boolean => {
           const d = getCard(n);
@@ -311,9 +319,7 @@ card('The Bonesculptor', {
             && !(d.abilities?.length) && !(d.augmentText?.length)
             && !d.graftEffect && !d.spellEffect && !d.ambush;
         };
-        const opts = bin
-          .map((n, i) => ({ label: n, value: i, card: n }))
-          .filter(o => vanilla(bin[o.value]!) && g.canPayCard(ctx.controller, bin[o.value]!));
+        const opts = bonesculptorPicks(g, ctx.controller);
         if (!opts.length) {
           g.ev('info', 'The Bonesculptor: no playable ability-free unit in your bin.');
           return;
@@ -336,9 +342,12 @@ card('The Bonesculptor', {
 });
 
 // "Delete target unit with 4 or more defense." — e/2, {Battle} Rock Spell.
-// ⚠ TargetSpec has no filters (see header): any unit is targetable at cast;
-// the "4 or more defense" restriction is enforced at RESOLUTION against live
-// stats (R1) — an under-4 target survives and the spell does nothing.
+// R64: "with 4 or more defense" is part of what makes a target LEGAL, so only
+// units at 4+ are ever offered; the resolution check below is the R5/R56 half,
+// for defense that changes between cast and resolution. (The "⚠ TargetSpec has
+// no filters … any unit is targetable at cast" line that used to sit here was
+// contradicted by the spec five lines below it — and by the header's own
+// retraction.)
 card('Throw off a Cliff', {
   spellEffect: {
     // R64: "with 4 or more defense" gates which units are legal targets at
@@ -361,26 +370,40 @@ card('Throw off a Cliff', {
 // "[Augment] Sacrifice me: I deal 3 damage to any target. Activate this
 // ability only if I have an adjacent ally." — e/1 0/3 Rock Unit. An ACTIVATED
 // ability in the [Augment] text box (live normally, donated to hosts — "me"
-// is then the host). ⚠ The sacrifice and the adjacency precondition are
-// resolved at RESOLUTION (Immolate precedent, see header): with no adjacent
-// ally (formation adjacency, allies only) nothing happens and the unit
-// survives. The damage source name stays 'Throwing Boulder' (its printed
-// attrs — none — drive the damage riders even on a host).
+// and "I" are then the host).
+//
+// R77 (playtest XCYX, 2026-08-22): "Throwing Boulder was allowed to be
+// activated without having adjacent allies. It didn't resolve, but it
+// shouldn't have been allowed to be activated. And also, in order to activate
+// it, sacrificing him should have happened as a cost to even put the ability
+// on the stack." Both halves were real and both are fixed here:
+//
+//  - the sacrifice is `cost: { sacrificeSelf: true }`, paid in the cast window
+//    on the way to the stack (R49/R57/R73), not a `g.destroy` at resolution;
+//  - "only if I have an adjacent ally" is `usableWhen`, so the ability is not
+//    offered and is refused (R64's principle), instead of being activated and
+//    then resolving into nothing.
+//
+// Adjacency is R75's: sides and above/below within the formation, nothing
+// diagonal — and adjacent allies only exist while I am IN a formation, so out
+// of combat this ability is simply not available.
+//
+// R1: the condition is checked once, at activation, and is NOT re-checked at
+// resolution — for a self-sacrificing ability it could not be, since the cost
+// has already removed its own subject by then. The damage lands whatever
+// happens to the ally in between.
 card('Throwing Boulder', {
   augmentText: [{
-    type: 'activated', cost: {},
-    label: 'Sacrifice me: I deal 3 damage to any target (needs an adjacent ally)',
+    type: 'activated', cost: { sacrificeSelf: true },
+    label: 'Sacrifice me: I deal 3 damage to any target (only with an adjacent ally)',
+    usableWhen: (g, self, seat) =>
+      g.adjacentInFormation(self.id).some(u => u.controller === seat),
     effect: {
       targets: { what: 'any', prompt: 'Throwing Boulder: deal 3 damage to any target' },
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
-        const allies = g.adjacentInFormation(self.id).filter(u => u.controller === ctx.controller);
-        if (!allies.length) {
-          g.ev('info', 'Throwing Boulder: no adjacent ally — cannot be thrown.');
-          return;
-        }
-        g.destroy(self, 'is sacrificed');
+        // the carrier is already in the bin: the sacrifice was the cost. The
+        // damage still comes FROM Throwing Boulder (ctx.sourceName), which is
+        // what its riders read.
         g.dealEffectDamage(ctx, ctx.targets[0]!, 3);
       },
     },
@@ -390,11 +413,11 @@ card('Throwing Boulder', {
 // "[Augment] Enemies gain +2/+2." — ee/5 10/15 Primordial Rock Beast {Virus}
 // Unit. Text-box [Augment], live when played normally: the drawback is a
 // static projecting +2/+2 onto ENEMY units in its region (R12: attackers
-// entering its region grow; its controller's units never do). The
-// augment-DONATED form is still PARKED (see header: mod-carried statics);
-// inert augmentText keeps it recognised as an augment / battle Virus.
-// mod-carried statics are live (host-anchored), so the same static covers the
-// augment-donated form too (un-parked 2026-08-18)
+// entering its region grow; its controller's units never do).
+// Mod-carried statics are live (host-anchored via E.anchored), so the same
+// static covers the augment-donated form too — un-parked 2026-08-18. (The
+// "still PARKED … inert augmentText" sentence that used to sit between those
+// two was left behind by that unpark and has been removed.)
 card('Towering Colossus', {
   augmentable: true,
   statics: [{

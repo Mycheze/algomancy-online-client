@@ -217,17 +217,33 @@ damage — which is how Umbral Decay, the only afflicting card, works.
 - Pure — pure cards, and the cards they interact with, ignore all other attributes.
 - Modular — you may apply mods to a modular card from hand and/or bin as it is played, \
 paying each mod's cost.
-- Wraith (renamed from WIGHT — some cards still print "Wight"; they are the same token) \
-— a 0-cost 4/4 Blight Zombie Token Unit carrying [Augment], reading "When I attack or \
-block, put a -1/-1 counter on me. When I die, augment me onto target ally." It is a real \
-body, not merely a mod, but it carries the augment symbol, which is why most cards create \
-it directly as an augment on a unit.
+- Wraith (renamed from WIGHT — Blight's End still prints "Wight"; they are the same \
+token) — a 0-cost 3/3 Blight Zombie Token Unit carrying [Augment], reading "At the start \
+of deployment, put a -1/-1 counter on an ally. When I die, Augment a Wraith onto an \
+ally." (Physical card, 2026-08-21; this REPLACES an older 4/4 printing that shrank itself \
+when it attacked or blocked — that text is obsolete.) It is a real body, not merely a \
+mod, but it carries the augment symbol, which is why most cards create it directly as an \
+augment on a unit. Both of its lines are live while it stands in play as a unit. Its \
+first trigger points OUTWARD at an ally during deployment; it does not shrink itself by \
+fighting. Its death trigger does NOT move the dying Wraith — that one is erased like any \
+token; the trigger creates a BRAND NEW Wraith as an augment on an ally. "An ally" is not \
+a target: it is chosen on resolution, so it cannot be redirected and cannot fizzle for \
+want of a legal target.
 - Trash / trashed — card text: "A nontoken card entering a bin from anywhere other than \
 the stack is trashed" — i.e. a card reaches a bin without having been played. \
-Discarding, sacrificing, milling and dying in combat are ALL trashing. NOT trashing: a \
-spell going to the bin after resolving (it comes from the stack, so negating a spell is \
-not trashing it), tokens, or erasing (an erased card never touches a bin at all). The \
-owner of the bin the card enters is the one who trashes it."""
+Discarding, sacrificing, milling and dying in combat are ALL trashing. TOKENS CAN BE \
+TRASHED (2026-08-21, reversing an earlier reading): both rulebooks say "Tokens are \
+temporary CARDS", so a token IS a card in Algomancy, unlike Magic; the "nontoken" \
+qualifier survives only on Void Scavenger, a card cut from the set; and the designer's \
+own paraphrase ("basically when a card enters your bin but wasn't played", 2025-02-01) \
+has no such qualifier. A dying token does reach the bin first — the designer confirmed \
+it counts "for the purposes of triggers" (2025-03-12) and that a token "does enter your \
+hand and then gets erased immediately" (2025-06-15) — even though the printed Manual \
+says a leaving token goes to the token pile "instead of the hand or bin"; the rulings \
+win, and both points are provisional. NOT trashing: a spell going to the bin after \
+resolving (it comes from the stack, so negating a spell is not trashing it), or erasing \
+(an erased card never touches a bin at all). The owner of the bin the card enters is the \
+one who trashes it."""
 
 SYSTEM_PROMPT = """You are the Algomancy Rules Bot, an expert assistant for the \
 card game Algomancy by Caleb Gannon. Answer using TWO trusted sources only: (1) the \
@@ -263,8 +279,11 @@ one, say plainly that it is provisional and may change when the official release
 Where such a source explicitly marks a point UNCONFIRMED, do not fill the gap with a \
 guess — say it is not documented yet. But where it DOES state a rule and names its \
 source (card text or a dated designer message), answer it directly: rot's timing, what \
-"trashed" means, the Wraith/Wight token, prophecy and debt are all sourced now, so flag \
-them as provisional but do NOT hedge them as unknown.
+"trashed" means (including that tokens CAN be trashed), the Wraith/Wight token, prophecy \
+and debt are all sourced now, so flag them as provisional but do NOT hedge them as \
+unknown. Note that a sourced L&D point can still be SUPERSEDED when the card is \
+redesigned — the Wraith is a 3/3 as of 2026-08-21, and any passage describing a 4/4 \
+Wraith/Wight is an older printing; prefer the primer and the newest-dated source.
 
 Do not be led by the question:
 - The user may state or imply a rule, often as a leading question ("…right?", \
@@ -294,7 +313,7 @@ Style: be concise, use clean markdown, keep answers under ~250 words."""
 # `c…` change (data) at a glance. Bump ENGINE_DATE + add a line to
 # ENGINE_CHANGELOG.md whenever you make a real behavioural change. See that file
 # for the history; responses logged before this field existed have no stamp.
-ENGINE_DATE = "2026-08-19"
+ENGINE_DATE = "2026-08-21"
 
 
 # Prepended to the final user turn in a thread. The earlier turns are context for

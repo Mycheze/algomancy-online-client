@@ -22,9 +22,11 @@
  *    with nothing to pay, the effect resolves without effect. Volatile
  *    Toxicity's "/[Sacrifice a unit]" is a true CAST COST now (R35).
  *  - X SPELLS (Abduct, Floral Singularity): X is chosen and paid AT CAST
- *    (R35) and stored on the item. Abduct's "with cost [x] or less" target
- *    restriction is still checked at RESOLUTION (TargetSpec cannot read x
- *    at cast time).
+ *    (R35) and stored on the item. Abduct's "with cost [x] or less" is a real
+ *    TARGETING restriction — R64 put the item's X on TargetCtx (dsl.ts names
+ *    Abduct in that field's doc), so only units it can legally reach are
+ *    offered. This entry used to say it was "still checked at RESOLUTION
+ *    (TargetSpec cannot read x at cast time)".
  *  - GAIN CONTROL (Abduct, Mindwarp Sporefrog): flipping Entity.controller.
  *    The flipped unit LEAVES any formation it fought in (it fights for
  *    neither side for the rest of the battle) and walks to its new
@@ -36,14 +38,17 @@
  *    — dealEffectDamage reads the source CARD's printed attrs only, so a
  *    spell/ability source is not deadly-fied (engine limitation).
  *  - TEMPORAL RIFT's "End this battle": every remaining stack item is
- *    negated and cleared (played cards reach the bin exactly as a negated
- *    resolution would bin them), then the battle round ends via the engine's
- *    endBattleRound. "Erase this spell" is approximated as the Rift going to
+ *    negated, which under R68 is itself the removal — the item leaves the
+ *    stack and its card is binned by negate() — then the battle round ends
+ *    via the engine's endBattleRound. "Erase this spell" is approximated as the Rift going to
  *    its controller's bin like any resolved spell — resolution has no
  *    erase-own-card hook (afterParts bins it after the effect runs).
- *  - DEMATERIALIZE's "target effect" = the engine's 'stackSpell' targets
- *    (spells, spell units, spell tokens, ambushes) — triggered/activated
- *    items are not targetable (Frosted Denial precedent). Glimpse 3 is real
+ *  - DEMATERIALIZE's "target effect" is R60's 'stackEffect' — the SUPERSET:
+ *    spells, spell units, spell tokens and ambushes PLUS triggered and
+ *    activated abilities and viruses, because the pool's other cards spell out
+ *    "target SPELL effect" when they mean the narrow one. (This entry used to
+ *    read "= the engine's 'stackSpell' targets … triggered/activated items are
+ *    not targetable".) Glimpse 3 is real
  *    (R45, E.glimpse): three are revealed, ONE of the glimpser's choice is
  *    cached (playable until end of turn, ignoring affinity) and the other two
  *    are recycled — it used to keep one card, permanently, in hand.
@@ -54,10 +59,12 @@
  *    UNIT: the formation is the battle grid side (attacking columns or
  *    blocking columns) containing it, counted live at resolution (R27); a
  *    target in no formation creates nothing. The 1/1s arrive HOME (R28).
- *  - FLORAL SINGULARITY's "become base X/X" mode is approximated with
- *    until-regroup temp stats (X - base each way): no base-setting layer
- *    exists, so counters/statics still apply on top (correct) but earlier
- *    temp changes stack additively instead of being overridden.
+ *  - FLORAL SINGULARITY's "become base X/X" is a REAL layer-2 replacement
+ *    (R66's E.setBase): the number on the card changes, so a later base-setter
+ *    overwrites an earlier one instead of stacking, and counters / statics /
+ *    until-regroup deltas still apply on top. This entry used to describe the
+ *    old approximation ("until-regroup temp stats … no base-setting layer
+ *    exists"), which the card stopped using.
  *  - "EACH ENEMY" / "each unit" / "all tokens" are region-scoped (R12/R25):
  *    only the event region's units/players are touched.
  *
@@ -72,35 +79,10 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, notSelf, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, notSelf, unitRestrict, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, inEndOfTurn, manaOf, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-/** True while endTurn() is resolving end-of-turn triggers (batch-fire-a
- * precedent): a ctx.choose suspension in that window strands the game, so
- * choices there auto-resolve deterministically. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
-
-/** printed mana of a card name; X counts as 0 (⚠ batch-hybrids-fwe
- * approximation — token units resolve to their 0-cost token cards). */
-const manaOf = (name: unknown): number => {
-  if (typeof name !== 'string') return 0;
-  const m = getCard(name).mana;
-  return typeof m === 'number' ? m : 0;
-};
-
-/** pick one of `pool` (auto when forced); returns null on an empty pool.
- * Plan-then-commit: callers gather every pick before mutating. */
-const pickUnit = (
-  ctx: EffectCtx, key: string, chooser: Seat, pool: Entity[], prompt: string,
-): EntityId | null => {
-  if (!pool.length) return null;
-  if (pool.length === 1) return pool[0]!.id;
-  return ctx.choose(key, {
-    kind: 'electricPath', seat: chooser, prompt,
-    options: pool.map(u => ({ label: u.card, value: u.id })),
-  }) as EntityId;
-};
 
 /** ⚠ gain-control approximation (see header): flip controller, leave any
  * formation; regroup then walks the unit to its new controller's home. */
@@ -185,6 +167,7 @@ card('Rotspore Herald', {
 // graft ([Switch]).
 const toxicityBrew: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
+  creates: ['Poison', 'Fireball'],
   run: (g, ctx) => {
     const x = ctx.costPaid?.sacrificed?.defense ?? 0;
     if (x > 0) {
@@ -210,7 +193,7 @@ card('Auric Ascendant', {
     label: '[one], recall another ally: I gain {Flying} and +2/+0 until regroup',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (!self) return;
         const pool = g.unitsOf(ctx.controller, ctx.region).filter(u => u.id !== self.id);
         if (!pool.length) {
@@ -232,8 +215,10 @@ card('Auric Ascendant', {
 });
 
 // "Negate target effect. Its controller Glimpses 3." — bm/2 2/1 {Battle}
-// Cosmic Technology Spell. ⚠ "target effect" = stack spells/spell units/
-// spell tokens/ambushes (header); the Glimpse is the real R45 one. It goes to
+// Cosmic Technology Spell. R60: "target effect" is the SUPERSET ('stackEffect'
+// — abilities and viruses too), which is what the spec six lines below says;
+// the "⚠ = stack spells/spell units/spell tokens/ambushes" line that used to
+// sit here contradicted it. The Glimpse is the real R45 one. It goes to
 // the negated item's controller, whoever that is (it can be the caster's own
 // effect). R40: negating is not trashing — the negated card comes off the
 // STACK — so no 'trashed' fires for the card Dematerialize answers.
@@ -254,21 +239,19 @@ card('Dematerialize', {
 
 // "End this battle. Erase this spell. (Negate all effects, this battle is
 // over.)" — bmm/4 1/2 {Battle} Temporal Arcane Spell. ⚠ header: every
-// remaining stack item is negated and cleared (cards binned as a negated
-// resolution would), then endBattleRound() runs — in round 1 with no sent
+// remaining stack item is negated — which under R68 is itself the removal,
+// card and all — then endBattleRound() runs — in round 1 with no sent
 // counterattackers that cascades straight through round 2 into regroup.
 // "Erase this spell" is approximated as the Rift being binned normally.
 card('Temporal Rift', {
   spellEffect: {
     run: (g, ctx) => {
       if (!g.s.battle) { g.ev('info', 'Temporal Rift: no battle to end.'); return; }
-      for (const it of g.s.stack) {
-        g.negate(it.id);
-        if (it.card && (it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'virus' || it.kind === 'ambush')) {
-          g.player(it.controller).bin.push(it.card);
-        }
-      }
-      g.s.stack.length = 0;
+      // R68: negate() is the removal — it splices the item off the stack and
+      // bins its card itself, so the sweep runs over a copy and hand-rolls
+      // nothing. This used to push the card a SECOND time and then clear the
+      // stack by hand.
+      for (const it of [...g.s.stack]) g.negate(it.id);
       g.ev('info', 'Temporal Rift: all effects are negated — the battle is over.');
       g.endBattleRound();
     },
@@ -327,7 +310,7 @@ card('Abduct', {
     run: (g, ctx) => {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       const t = ctx.targets[0];
-      if (!t || !('id' in (t as object))) return;
+      if (!isEnt(t)) return;
       const u = t as Entity;
       if (manaOf(u.card) > x) {
         g.ev('info', `Abduct: ${u.card} costs more than ${x} — no effect.`);
@@ -360,6 +343,7 @@ card('Abduct', {
 // kills anything that is not propped up (E.setBase runs the death check).
 card('Floral Singularity', {
   spellEffect: {
+    creates: ['Unit Token'],
     run: (g, ctx) => {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       if (x <= 0) { g.ev('info', 'Floral Singularity: X = 0 — no effect.'); return; }
@@ -397,15 +381,18 @@ card('Ominous Growth', {
     label: 'delete all tokens (after combat)',
     effect: {
       run: (g, ctx) => {
+        let deleted = 0;
         for (const u of g.unitsIn(ctx.region).slice()) {
-          if (u.token) g.destroy(u, 'is deleted');
+          if (u.token) { g.destroy(u, 'is deleted'); deleted++; }
         }
         for (const t of Object.values(g.s.entities)) {
           if (t.kind === 'spellToken' && t.region === ctx.region) {
             delete g.s.entities[t.id];
             g.ev('info', `${t.card} ${t.x ?? ''} is deleted (Ominous Growth).`);
+            deleted++;
           }
         }
+        if (!deleted) g.ev('info', 'Ominous Growth: there is no token here to delete.');
       },
     },
   }],
@@ -428,7 +415,7 @@ card('The World Shepherd', {
     },
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (!self) return;
         g.addCounters(self, -1);   // may kill me — the counter still landed ("you did")
         const tokId = ctx.event?.data?.unit as EntityId | undefined;
@@ -458,6 +445,10 @@ const witherOrBloom: EffectDef = {
     const pool = mode === 'wither'
       ? g.unitsIn(ctx.region).filter(u => u.controller !== ctx.controller)
       : g.unitsOf(ctx.controller, ctx.region);
+    if (!pool.length) {
+      g.ev('info', `Wither and Bloom: there is no ${mode === 'wither' ? 'enemy' : 'ally'} here — no counters.`);
+      return;
+    }
     for (const u of pool) g.addCounters(u, mode === 'wither' ? -1 : 1);
   },
 };
@@ -484,7 +475,7 @@ card('Aethercap Siphoner', {
     label: 'I spawn with three -1/-1 counters',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (self) g.addCounters(self, -3);
       },
     },
@@ -500,10 +491,10 @@ card('Aethercap Siphoner', {
         restrict: notSelf,
       },
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (!self || self.counters === 0) return;
         const tref = ctx.targets[0];
-        if (!tref || !('id' in (tref as object))) return;
+        if (!isEnt(tref)) return;
         const t = g.entity((tref as Entity).id);
         if (!t || t.id === self.id) return;
         const delta = self.counters > 0 ? 1 : -1;
@@ -522,9 +513,10 @@ card('Aethercap Siphoner', {
 card('Galactic Germination', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Galactic Germination: a unit in target formation' },
+    creates: ['Unit Token'],
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('id' in (t as object))) return;
+      if (!isEnt(t)) return;
       const grid = formationOf(g, (t as Entity).id);
       const n = grid ? grid.flat().filter(id => !!g.entity(id)).length : 0;
       if (n <= 0) {
@@ -562,7 +554,7 @@ card('Invasive Species', {
     label: 'at the start of deployment, recall all your other units',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         const others = g.unitsOf(ctx.controller, ctx.region)
           .filter(u => u.id !== self?.id);
         if (!others.length) {
@@ -598,7 +590,10 @@ const lurkerRecall: EffectDef = {
   },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (!t || !('id' in (t as object))) return;
+    if (!isEnt(t)) {
+      g.ev('info', 'Lumengrove Lurker: no unit is targeted (up to one) — nothing is recalled.');
+      return;
+    }
     const u = t as Entity;
     const n = formationSize(g, ctx.sourceId);
     if (manaOf(u.card) > n) {
@@ -639,7 +634,7 @@ card('Mindwarp Sporefrog', {
       // about to give it away — so the kind already excludes them.
       targets: { what: 'opponent', prompt: 'Mindwarp Sporefrog: target opponent gains control of me' },
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (!self) return;
         const t = ctx.targets[0];
         if (!t || !('player' in t)) return;

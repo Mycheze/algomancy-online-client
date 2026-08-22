@@ -22,36 +22,39 @@
  *    instead" is a damage REPLACEMENT; dealEffectDamage has no replacement
  *    hooks. Registered with an inert augmentText entry so the card is still
  *    recognised as an augment (Astralith precedent).
- *  - Emberflame Enlightener (spells half + augment form): the UNITS half is a
- *    live static ({Powerful} to your units in its region), but "your SPELLS
- *    gain Powerful" still needs a spell-effect attr projection (statics only
- *    project onto in-play UNITS; dealEffectDamage reads the source CARD's
- *    printed attrs), and the augment-donated form needs mod-carried statics
- *    (statics run only while the holder is a unit in play).
+ *  - Emberflame Enlightener (SPELLS half only): the UNITS half is a live
+ *    static ({Powerful} to your units in its region) in BOTH forms — this
+ *    entry used to add "and the augment-donated form needs mod-carried
+ *    statics", which expired when E.anchored() started radiating a mod's
+ *    statics from its host. What is still missing is a spell-effect ATTR
+ *    projection: "your SPELLS gain Powerful" has to attach an attribute to a
+ *    spell EFFECT, and statics project onto in-play UNITS only
+ *    (dealEffectDamage reads the source CARD's printed attrs).
  *  - Envoy of Lightning: "your single-target spell effects are Electric" —
  *    still out of reach even with the statics layer: statics project only
  *    onto in-play UNITS, while this must attach {Electric} to spell EFFECTS
  *    (dealEffectDamage reads the source CARD's printed attrs, no seam for
  *    in-play modifiers). Inert augmentText entry only.
- *  - Fire Resource: resource cards aren't modelled — resources are plain
- *    ResourceState (no entities), doActivateResource doesn't fireEvent, and
- *    there is no 'Shard' resource kind. Registered as printed (which leaks it
- *    into DECK_LIST as a phantom 2/0 that dies on arrival — flagged for the
- *    maintainer; every element's Resource card shares this).
+ *  - Fire Resource: resource CARDS aren't modelled — resources are plain
+ *    ResourceState (no entities) and doActivateResource doesn't fireEvent, so
+ *    "when I activate" has nothing to listen to. (The third reason this note
+ *    used to give — "there is no 'Shard' resource kind" — is no longer true:
+ *    E.createShard and a real 'shard' kind exist.) Registered as printed;
+ *    registry.ts keeps every element's Resource face out of DECK_LIST.
  *  - Gravitational Correction (X half): UN-PARKED (R35) — X is now chosen and
  *    paid at cast; item.x is set before the spell hits the stack.
  *  - Harbinger of Immolation (augment half): "your spell tokens stay through
  *    regroup" needs a regroup-replacement hook (startRegroup erases all spell
  *    tokens unconditionally). The end-of-turn Fireball trigger is fully done.
- *  - Infernal Wispweaver (sacrifice half): "+2/+1 to your wisps" is a live
- *    static now, but "do not sacrifice themselves after combat" still needs a
- *    way to suppress ANOTHER card's trigger (the Wisp token's after-combat
- *    self-sacrifice lives in registry.ts and fires unconditionally). The
- *    [Augment] end-of-turn wisp is done.
+ *  - Infernal Wispweaver: UN-PARKED (R62) — "do not sacrifice themselves after
+ *    combat" was waiting on a way to suppress ANOTHER card's trigger, and
+ *    StaticMod.suppressAbilities is it. The Wisp has exactly one ability, so
+ *    the same static that gives +2/+1 switches the self-sacrifice off.
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, effectByKey, getCard, type EffectDef } from '../dsl.ts';
+import { selfOf, inEndOfTurn } from './helpers.ts';
 
 /** a card that is a SPELL for bin purposes — a spell unit is one too (playing
  * it from the bin casts the spell and then spawns the body). */
@@ -62,13 +65,6 @@ const isSpellCard = (name: string): boolean => {
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** True while endTurn() is resolving end-of-turn triggers (phase is still
- * 'deploy' but nobody is deploying). A ctx.choose suspension in that window
- * STRANDS the game — the engine cannot resume endTurn's tail after a decide —
- * so choose-based effects here (reachable via grafts on end-of-turn graft
- * causes) must fall back to deterministic auto-picks instead of suspending. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
-
 /** "You may sacrifice a unit. If you do, draw a card." — mid-resolution
  * choice (R6 model): the controller picks one of their units in the event
  * region (R12) or declines. Plan-then-commit: the choose happens before any
@@ -76,16 +72,21 @@ const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlaye
 const sacrificeToDraw = (source: string): EffectDef => ({
   run: (g, ctx) => {
     const units = g.unitsOf(ctx.controller, ctx.region);
-    if (!units.length) return;
-    if (inEndOfTurn(g)) return;   // "may": auto-decline (no suspensions here)
+    if (!units.length) { g.ev('info', `${source}: you control no unit here — nothing to sacrifice.`); return; }
+    if (inEndOfTurn(g)) {   // "may": auto-decline (no suspensions here)
+      g.ev('info', `${source}: auto-declines the sacrifice (end-of-turn resolution).`);
+      return;
+    }
     const choice = ctx.choose('sac', {
       kind: 'payOrDecline', seat: ctx.controller,
       prompt: `${source}: sacrifice a unit to draw a card?`,
       options: [...units.map(u => ({ label: u.card, value: u.id })), { label: 'Decline', value: false }],
     });
-    if (choice === false) return;
+    if (choice === false) { g.ev('info', `${source}: declined — no sacrifice, no draw.`); return; }
     const u = g.entity(choice as EntityId);
-    if (u) { g.destroy(u, 'is sacrificed'); g.draw(ctx.controller, 1); }
+    if (!u) { g.ev('info', `${source}: the chosen unit is gone — no draw.`); return; }
+    g.destroy(u, 'is sacrificed');
+    g.draw(ctx.controller, 1);
   },
 });
 
@@ -176,7 +177,10 @@ card('Cinder Scuttler', {
       run: (g, ctx) => {
         const bin = g.player(ctx.controller).bin;
         const i = bin.lastIndexOf('Cinder Scuttler');
-        if (i === -1) return;                        // left the bin before this resolved
+        if (i === -1) {   // already recalled by an earlier firing this combat
+          g.ev('info', 'Cinder Scuttler: it has already left the bin — nothing to recall.');
+          return;
+        }
         bin.splice(i, 1);
         g.player(ctx.controller).hand.push('Cinder Scuttler');
         g.ev('info', `Cinder Scuttler is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
@@ -228,20 +232,26 @@ card('Delver of Mysteries', {
 });
 
 // "[Augment] Your units and spells gain {g}powerful. (Powerful sources deal
-// double damage)." — rrr/4 0/5. Text-box [Augment], live when played
-// normally: the UNITS half is a static — your units in its region (itself
-// included) gain {Powerful}, which combat reads through ownAttrs/colAttrs so
-// their columns' output doubles. PARKED remainder (see header): the SPELLS
-// half and the augment-donated form.
+// double damage)." — rrr/4 0/5. Text-box [Augment].
+//
+// The UNITS half is a static — your units in its region (itself included) gain
+// {Powerful}, which combat reads through ownAttrs/colAttrs so their columns'
+// output doubles — and it is live in BOTH forms: mod-carried statics radiate
+// from the HOST (E.anchored), so augmenting it donates the same aura. The
+// augment-donated form used to be parked here on "statics run only while the
+// holder is a unit in play"; that stopped being true, and the inert
+// augmentText stand-in it needed is gone with it (`augmentable: true` is what
+// keeps the card applicable).
+//
+// STILL PARKED (see header): the SPELLS half. "Your spells gain Powerful" has
+// to attach an attribute to a spell EFFECT, and statics reach in-play UNITS
+// only — dealEffectDamage reads the source CARD's printed attrs, with no seam
+// for an in-play modifier. Same wall as Envoy of Lightning below.
 card('Emberflame Enlightener', {
+  augmentable: true,
   statics: [{
     affects: (g, self, t) => t.kind === 'unit' && t.controller === self.controller,
     attrs: ['Powerful'],
-  }],
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — spells half / mod-carried statics
-    label: 'your units and spells gain Powerful (spells half + augment form not implemented)',
-    effect: { run: () => { /* PARKED */ } },
   }],
 });
 
@@ -258,8 +268,9 @@ card('Envoy of Lightning', {
 });
 
 // "When I activate, if you have at least [r][r][r], create a Shard. (It
-// spawns dormant.)" — [r] Fire Resource, 2/0. PARKED (see header): the
-// resource-card model doesn't exist. Registered so the name resolves.
+// spawns dormant.)" — [r] Fire Resource, 2/0. PARKED (see header) on the
+// resource-CARD model and the missing 'when I activate' event — NOT on the
+// Shard, which E.createShard makes for real. Registered so the name resolves.
 card('Fire Resource', {});
 
 // "Negate all other effects. For each nontoken spell negated this way,
@@ -270,12 +281,17 @@ card('Fire Resource', {});
 // effects). Only nontoken SPELLS (kind spell / spellUnit) pay out Fireballs.
 card('Flame Shield', {
   spellEffect: {
+    creates: ['Fireball'],
     run: (g, ctx) => {
       let fireballs = 0;
-      for (const it of g.s.stack) {
-        if (it.negated) continue;
+      // R68: negate() splices, so the sweep runs over a COPY — and the count
+      // is taken off the copy's own entries, never off the live stack.
+      for (const it of [...g.s.stack]) {
         g.negate(it.id);
         if (it.kind === 'spell' || it.kind === 'spellUnit') fireballs++;
+      }
+      if (!g.s.stack.length && !fireballs) {
+        g.ev('info', 'Flame Shield: there is no other effect on the stack — nothing is negated.');
       }
       for (let i = 0; i < fireballs; i++) g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region);
     },
@@ -305,6 +321,7 @@ const smofSacrifice: EffectDef = {
       });
       picks.push(c as EntityId);
     }
+    if (!picks.length) g.ev('info', 'General Smof: nobody here has a unit to sacrifice.');
     for (const id of picks) {
       const u = g.entity(id);
       if (u) g.destroy(u, 'is sacrificed');
@@ -346,6 +363,7 @@ const ghordSacrifice: EffectDef = {
       });
       picks.push(c as EntityId);
     }
+    if (!picks.length) g.ev('info', 'Ghord: no opponent here has a nontoken unit to sacrifice.');
     for (const id of picks) {
       const u = g.entity(id);
       if (u) g.destroy(u, 'is sacrificed');
@@ -357,7 +375,8 @@ card('Ghord', {
     type: 'triggered', events: ['died'], bounded: true, graftCause: true,
     label: 'each opponent sacrifices a nontoken unit',
     when: (g, self, ev) =>
-      ev.data?.seat === self.controller && ev.msg.includes('is sacrificed'),
+      // R70: the death event carries the VERB; this used to match the log text
+      ev.data?.seat === self.controller && ev.data?.verb === 'is sacrificed',
     effect: ghordSacrifice,
   }],
   graftEffect: { bounded: true, effect: ghordSacrifice },
@@ -374,9 +393,15 @@ card('Gravitational Correction', {
     targets: { what: 'stackEffect', prompt: 'Gravitational Correction: change the targets of target effect' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('stack' in (t as object))) return;
+      if (!t || !('stack' in (t as object))) {
+        g.ev('info', 'Gravitational Correction: no effect is targeted — nothing is retargeted.');
+        return;
+      }
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-      if (!item || item.negated) return;
+      if (!item) {
+        g.ev('info', 'Gravitational Correction: the targeted effect has already left the stack.');
+        return;
+      }
       const x = ctx.x ?? 0;
       const payOptions = [{ label: 'Decline', value: false }];
       if (g.openMana(item.controller) >= x) payOptions.unshift({ label: `Pay [${x}]`, value: true });
@@ -384,7 +409,11 @@ card('Gravitational Correction', {
         kind: 'payOrDecline', seat: item.controller,
         prompt: `Pay [${x}] to keep ${item.label}'s targets?`, options: payOptions,
       });
-      if (pays === true) { g.payMana(item.controller, x); return; }
+      if (pays === true) {
+        g.payMana(item.controller, x);
+        g.ev('info', `${g.pname(item.controller)} pays [${x}] — ${item.label} keeps its targets.`);
+        return;
+      }
       // change the targets: the Correction's controller re-picks each one
       const picks: [number, number, TargetRef][] = [];
       item.parts.forEach((part, pi) => {
@@ -402,6 +431,7 @@ card('Gravitational Correction', {
           picks.push([pi, ti, chosen as TargetRef]);
         });
       });
+      if (!picks.length) g.ev('info', `Gravitational Correction: ${item.label} has no target to change.`);
       for (const [pi, ti, ref] of picks) item.parts[pi]!.targets[ti] = ref;
     },
   },
@@ -418,6 +448,7 @@ card('Harbinger of Immolation', {
     type: 'triggered', events: ['endOfTurn'],
     label: 'create a Fireball X (X = 1 + your spell tokens)',
     effect: {
+      creates: ['Fireball'],
       run: (g, ctx) => {
         const x = 1 + g.tokensOf(ctx.controller).length;
         g.createSpellToken(ctx.controller, 'Fireball', x, ctx.region);
@@ -433,24 +464,19 @@ card('Harbinger of Immolation', {
 
 // "[Augment] When I attack, create a 1/1 unit in my formation." — rr/1 1/1
 // {Haste}. Text-box [Augment]: live on the card played normally and donated
-// to a host. "In my formation": the token joins my column's free back slot,
-// or opens a new attacking column beside it.
+// to a host. "In my formation": R75 — the controller of the effect chooses the
+// slot at resolution (either end of the line, or the back slot of a one-unit
+// column). It used to silently take my own column's back slot, or open one on
+// the right.
 card('Hooba-Lin', {
   augmentText: [{
     type: 'triggered', events: ['attacked'], self: true,
     label: 'create a 1/1 unit in my formation',
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
         const u = g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] });
-        const b = g.s.battle;
-        if (!b) return;
-        const col = g.columnOf(self.id);
-        if (col && b.columns.includes(col)) {
-          if (col.length < 2) col.push(u.id);
-          else b.columns.push([u.id]);
-        }
+        g.placeInFormation(u, ctx, { key: 'hoobaLinSlot', source: 'Hooba-Lin' });
       },
     },
   }],
@@ -484,6 +510,7 @@ card('Infernal Cultivator', {
     type: 'activated', cost: {}, bounded: true,   // [once]
     label: 'Sacrifice X units: create X Fireball 1',
     effect: {
+      creates: ['Fireball'],
       run: (g, ctx) => {
         const picks: EntityId[] = [];
         for (let i = 0; ; i++) {
@@ -497,6 +524,7 @@ card('Infernal Cultivator', {
           if (c === false) break;
           picks.push(c as EntityId);
         }
+        if (!picks.length) g.ev('info', 'Infernal Cultivator: no unit is sacrificed — X = 0, no Fireballs.');
         for (const id of picks) {
           const u = g.entity(id);
           if (u) g.destroy(u, 'is sacrificed');
@@ -508,22 +536,36 @@ card('Infernal Cultivator', {
 });
 
 // "Your wisps gain +2/+1 and do not sacrifice themselves after combat.
-// [Augment] At the end of turn, create a wisp." — rr/2 2/1. The +2/+1 is a
-// live static on your Wisps in its region (main-text, so unit-form only —
-// correct, since only the [Augment] line transfers to hosts). The
-// no-sacrifice clause is PARKED (see header: another card's trigger can't be
-// suppressed). The [Augment] end-of-turn wisp is implemented: live normally
-// and donated to hosts.
+// [Augment] At the end of turn, create a wisp." — rr/2 2/1.
+//
+// ONE sentence, one static. The +2/+1 and the no-sacrifice clause are the same
+// continuous effect on the same units, so they are the same StaticMod: main
+// text, so unit-form only (correct — only the [Augment] line transfers to
+// hosts), and region-scoped like every static (R12).
+//
+// R62 UNPARKED (playtest: "I have infernal wispweaver, but my wisps sacrificed
+// themselves anyway!!!"). This was parked on "there is no way to suppress
+// ANOTHER card's trigger". `StaticMod.suppressAbilities` is exactly that way:
+// a continuous, radiating flag that switches the target's whole ability layer
+// off, read as a veto (E.abilitiesSuppressed) on every path that would fire
+// one. It is an EXACT implementation here rather than an approximation because
+// the Wisp has exactly ONE ability — "After combat, sacrifice me" — so
+// "switch its abilities off" and "it does not sacrifice itself after combat"
+// name the same set of behaviour. Being continuous, it is also right in both
+// directions: kill the weaver mid-combat and the Wisps sacrifice themselves
+// again in the same instant, which is what a printed static means.
 card('Infernal Wispweaver', {
   statics: [{
     affects: (g, self, t) =>
       t.kind === 'unit' && t.card === 'Wisp' && t.controller === self.controller,
     dp: 2, dt: 1,
+    suppressAbilities: true,
   }],
   augmentText: [{
     type: 'triggered', events: ['endOfTurn'],
     label: 'create a Wisp (end of turn)',
     effect: {
+      creates: ['Wisp'],
       run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Wisp', ctx.region, { token: true }); },
     },
   }],

@@ -24,7 +24,8 @@ import type { EngineEvent, GameState, Seat } from '../engine/src/types.ts';
  * renders any card by this exact name as a face-down back. */
 export const HIDDEN_CARD = '__HIDDEN__';
 
-const other = (seat: Seat): Seat => (seat === 0 ? 1 : 0);
+/** The opposing seat. Shared: main.ts and rooms.ts flip seats constantly. */
+export const other = (seat: Seat): Seat => (seat === 0 ? 1 : 0);
 
 /** Draft-mode pack metadata for the pack `seat` is currently looking at
  * (additive; present in the view only while the draft step is open, i.e.
@@ -54,24 +55,51 @@ export type SeatView = GameState & { packInfo?: PackInfo };
 
 /** The redacted GameState that `seat` is allowed to receive.
  *
- * `frozenOpp`: during SIMULTANEOUS deployment, each seat's view of the
- * opponent is served from the deploy-start snapshot — the opponent's live
- * moves stay invisible until both players are done (main.ts then flushes the
- * held events as the reveal). */
+ * `frozenOpp`: inside a HIDDEN SIMULTANEOUS SEGMENT (the resource step, the
+ * haste step, deployment — see rooms.ts segmentKey), each seat's view of the
+ * opponent is served from the segment-start snapshot, so the opponent's live
+ * moves stay invisible until both players are done and main.ts flushes the
+ * held events as the reveal. The caller passes null outside a segment, which
+ * is the ONLY gate: testing the phase here as well would silently disable the
+ * planning freeze. */
 export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | null): SeatView {
   const v = structuredClone(state) as SeatView;
 
-  if (frozenOpp && state.phase === 'deploy') {
+  if (frozenOpp) {
     const o = other(seat);
-    // the opponent's half of the world, exactly as deployment began
+    // a name is cosmetic and never hidden — and renameSeat() writes it
+    // OUTSIDE the action log, so the snapshot (turn 1's is taken at room
+    // creation, before anyone has typed one) can hold a stale placeholder.
+    // The live name wins over the frozen slot.
+    const liveName = v.players[o]!.name;
+    const liveOppHand = v.players[o]!.hand.length;
+    // the opponent's half of the world, exactly as the segment began
     v.players[o] = structuredClone(frozenOpp.players[o]!);
+    v.players[o]!.name = liveName;
     for (const key of Object.keys(v.entities)) {
       if (v.entities[Number(key)]!.controller === o) delete v.entities[Number(key)];
     }
     for (const [key, en] of Object.entries(frozenOpp.entities)) {
       if (en.controller === o) v.entities[Number(key)] = structuredClone(en);
     }
-    // done-flags stay live: "opponent finished deploying" is public
+    // The DECK is the back door out of the freeze: a recycle puts the card on
+    // the bottom of a deck, so a live deck count is a live readout of how many
+    // resources the opponent has just made — the very thing the resource step
+    // is meant to hide. Constructed decks are per-seat, so the opponent's is
+    // simply served frozen.
+    if (v.decks && frozenOpp.decks?.[o]) v.decks[o] = [...frozenOpp.decks[o]];
+    // The shared deck is both players' at once and cannot just be frozen (your
+    // OWN recycles must still show up in it). In the RESOURCE step the
+    // arithmetic is exact instead: the only way a hand shrinks there is onto
+    // the bottom of that deck (a draft merge conserves hand size, and nothing
+    // draws), so subtract the opponent's own contribution back out.
+    if (frozenOpp.phase === 'planning' && !frozenOpp.hasteDone) {
+      const oppAdded = Math.max(0, frozenOpp.players[o]!.hand.length - liveOppHand);
+      if (oppAdded) v.sharedDeck = v.sharedDeck.slice(0, Math.max(0, v.sharedDeck.length - oppAdded));
+    }
+    // done-flags stay live and public — planningDone / hasteDone / draftDone /
+    // bottomDone / deployDone all read off `state`, not the freeze. "They are
+    // finished" is exactly what you can see across a table.
   }
 
   // deck order is hidden (and derivable from the seed) — send a count only.

@@ -107,9 +107,11 @@ test('Tiderunner (attacker): offered behind-survivor, a NEW column, or stay out'
   const dec = h.state.decision!;
   assert.equal(dec.seat, A);
   assert.ok(dec.options.some(o => o.label.includes('behind Bubb')), 'behind the survivor');
-  assert.ok(dec.options.some(o => o.label === 'a new column'), 'a fresh column');
-  assert.ok(dec.options.some(o => o.label === 'Stay out of formation'), 'joining is optional');
-  pick(h, dec.options.find(o => o.label === 'a new column')!.value);
+  // R75: BOTH ends of the line, not just the right-hand one
+  assert.ok(dec.options.some(o => o.label === 'a new column on the left'), 'the left end');
+  assert.ok(dec.options.some(o => o.label === 'a new column on the right'), 'the right end');
+  assert.ok(dec.options.some(o => o.label === 'stay out of formation'), 'joining is optional');
+  pick(h, dec.options.find(o => o.label === 'a new column on the right')!.value);
   const b = h.state.battle!;
   assert.equal(b.columns.length, 2, 'the formation widened');
   const tr = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate')!;

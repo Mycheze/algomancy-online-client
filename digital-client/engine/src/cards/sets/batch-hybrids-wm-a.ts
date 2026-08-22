@@ -43,17 +43,20 @@
  *    put counters on an ally" is read as "counters (either sign) were put on
  *    a unit you control, by anyone". Robots spawning with counters do NOT
  *    fire it (spawn counters are on before the spawn event — engine note).
- *  - Soulforger: the died event has no token flag and the entity is erased
- *    before it fires, so "nontoken" is read off the rendered death message
- *    (destroy() writes "token: erased." exactly for tokens).
+ *  - Soulforger: "nontoken" is a FACT ON THE DEATH EVENT (R70's `token`,
+ *    stamped by E.leftPlayFacts precisely because the entity is erased before
+ *    the event fires). This entry used to say the event had no token flag and
+ *    the discriminator was the rendered death message; the card reads
+ *    ev.data.token.
  *  - Malevolent Machinations: R64 — the "/[Sacrifice X units]" bracket is a
  *    real cast cost (paid before the item reaches the stack, and the units
  *    sacrificed ARE X) and the "up to X target effects" are declared targets.
  *    "Effects" is R60's superset: any un-negated stack item that is an effect,
  *    triggered abilities included.
- *  - Hearthwood Ancient: "Sacrifice another unit:" is an activation cost
- *    paid at resolution (the Slag Spewer precedent); with no other unit the
- *    ability resolves without effect.
+ *  - Hearthwood Ancient: UN-PARKED (R49). This used to say the sacrifice was
+ *    "an activation cost paid at resolution … with no other unit the ability
+ *    resolves without effect". `AbilityCost.sacrificeOther` is the real slot:
+ *    it gates the activation and is paid in the cast window, before priority.
  *  - Reconfigure: the moved unit leaves play SILENTLY (no died/despawned
  *    event — it is moved, not removed); its mod entities move along with
  *    budgets intact. R64: "the first target must have [Augment]" is a
@@ -68,9 +71,11 @@
  *    legality rules — no such layer exists (sibling of the missing cost-
  *    modification layer). Inert augmentText (Stasis Sentry precedent); it
  *    plays as a 4/4 and is recognised as an augment.
- *  - The Silent: "Spells cost each player [two] more … per spell their team
- *    played this battle" is a continuous COST modifier; canPayCard/payCard
- *    read printed mana only (the Stasis Sentry precedent). Inert augmentText.
+ *  - The Silent: UN-PARKED (R59), and has been for a while — this entry was
+ *    left behind. "Spells cost each player [two] more … per spell their team
+ *    played this battle" IS a continuous COST modifier, and CostMod is the
+ *    layer; the card is `augmentable: true` + a live `costMods` entry further
+ *    down this file, with no inert augmentText anywhere near it.
  */
 import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -78,29 +83,9 @@ import {
   card, getCard, isAugment,
   type EffectCtx, type EffectDef, type ResolvedTarget,
 } from '../dsl.ts';
+import { selfOf, isEnt, inEndOfTurn, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
-
-/** True while endTurn() is resolving end-of-turn triggers (batch-fire-a
- * precedent): a ctx.choose suspension in that window strands the game, so
- * "may" effects auto-decline / choices auto-pick there. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
-
-/** pick one of `pool` (auto when forced); returns null on an empty pool.
- * Plan-then-commit: callers gather every pick before mutating (the engine
- * rolls back to the part boundary and replays on suspension). */
-const pickUnit = (
-  ctx: EffectCtx, key: string, chooser: Seat, pool: Entity[], prompt: string,
-): EntityId | null => {
-  if (!pool.length) return null;
-  if (pool.length === 1) return pool[0]!.id;
-  return ctx.choose(key, {
-    kind: 'electricPath', seat: chooser, prompt,
-    options: pool.map(u => ({ label: u.card, value: u.id })),
-  }) as EntityId;
-};
 
 /** the stack-item kinds that count as a "nonunit spell" (plain "spell"
  * includes spell tokens — the batch-hybrids-fwe wording precedent; spellUnit
@@ -141,6 +126,7 @@ function runSpellCopy(
 // counters (the water-metal batch precedent); a created UNIT spawns in its
 // controller's HOME region (R28). No unit → X = 0 → no Robot.
 const buildRobot: EffectDef = {
+  creates: ['Robot'],
   run: (g, ctx) => {
     const x = g.unitsOf(ctx.controller, ctx.region)
       .reduce((m, u) => Math.max(m, g.effStats(u)[1]), 0);
@@ -304,7 +290,7 @@ card('Aether Channeler', {
       const u = uid !== undefined ? g.entity(uid) : undefined;
       return !!u && u.id !== self.id && u.controller === self.controller && !u.token;
     },
-    effect: { run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Crystal', 1, ctx.region); } },
+    effect: { creates: ['Crystal'], run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Crystal', 1, ctx.region); } },
   }],
 });
 
@@ -312,6 +298,7 @@ card('Aether Channeler', {
 // Crystal Spell. Both spell tokens appear where the effect resolves (R28).
 // Bounded graft ([Switch1], R9).
 const alchemyTokens: EffectDef = {
+  creates: ['Crystal', 'Poison'],
   run: (g, ctx) => {
     g.createSpellToken(ctx.controller, 'Crystal', 1, ctx.region);
     g.createSpellToken(ctx.controller, 'Poison', 1, ctx.region);
@@ -364,10 +351,10 @@ card('Earthbound Replicator', {
       run: (g, ctx) => {
         const name = ctx.event?.data?.card as CardName | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (name === undefined || seat === undefined || !self) return;
         const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && !i.negated && NONUNIT_SPELL_KINDS.has(i.kind));
+          i.card === name && i.controller === seat && NONUNIT_SPELL_KINDS.has(i.kind));
         const targetsMe = !!it &&
           it.parts.some(p => p.targets.some(t => 'unit' in t && t.unit === self.id));
         if (!it || !targetsMe) {
@@ -387,6 +374,7 @@ card('Earthbound Replicator', {
 // no suspensions there). Spell token appears where the effect resolves.
 // Bounded cause + bounded graft ([Switch1], R9).
 const conjureTwo: EffectDef = {
+  creates: ['Poison', 'Crystal'],
   run: (g, ctx) => {
     const kind = inEndOfTurn(g) ? 'Crystal' : ctx.choose('tok', {
       kind: 'electricPath', seat: ctx.controller,
@@ -431,13 +419,13 @@ card('Maelstrom Charger', {
     },
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (!self || inEndOfTurn(g)) return;
         const name = ctx.event?.data?.card as CardName | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
         if (name === undefined || seat === undefined) return;
         const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && !i.negated && NONUNIT_SPELL_KINDS.has(i.kind));
+          i.card === name && i.controller === seat && NONUNIT_SPELL_KINDS.has(i.kind));
         if (!it) { g.ev('info', `Maelstrom Charger: ${name} already left the stack — no copy.`); return; }
         const pay = ctx.choose('sac', {
           kind: 'payOrDecline', seat: ctx.controller,
@@ -474,6 +462,7 @@ card('Maelstrom Charger', {
 card('Malevolent Machinations', {
   spellEffect: {
     castCost: { kind: 'sacrificeUnits', n: 'X' },
+    xZeroWarning: 'X = 0 negates nothing — "up to X effects" is up to none',   // R74
     targets: {
       what: 'stackEffect', count: 'X', min: 0,
       prompt: 'Malevolent Machinations: negate up to X target effects',
@@ -547,17 +536,17 @@ card('Maw of Damnation', {
 });
 
 // "[Augment] Whenever one of your nontoken units dies, create a Fireball 1."
-// — rrm/2 2/2 Demon Robot Unit. Text-box [Augment]. Nontoken-ness is read
-// off the death message (⚠ header — the entity is erased before the event
-// fires and the event has no token flag). Spell token at the resolving
-// region (R28).
+// — rrm/2 2/2 Demon Robot Unit. Text-box [Augment]. Nontoken-ness is read off
+// the death event's token flag (R70 — the entity is gone before the event
+// fires, so the fact rides the event). Spell token at the resolving region
+// (R28).
 card('Soulforger', {
   augmentText: [{
     type: 'triggered', events: ['died'],
     label: 'create a Fireball 1 (one of your nontoken units died)',
     when: (g, self, ev) =>
-      ev.data?.seat === self.controller && !ev.msg.includes('token: erased'),
-    effect: { run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region); } },
+      ev.data?.seat === self.controller && ev.data?.token !== true,
+    effect: { creates: ['Fireball'], run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region); } },
   }],
 });
 
@@ -586,6 +575,7 @@ card('Ember of Life', {
       } catch { return false; }
     },
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
         for (let i = 0; i < n; i++) {
@@ -607,21 +597,19 @@ card('Ember of Life', {
 // region, until regroup (addTemp).
 card('Hearthwood Ancient', {
   augmentText: [{
-    type: 'activated', cost: {},
+    // R49 UN-PARKED: a real activation cost (gates the activation, paid in the
+    // cast window) rather than a resolution-time pick
+    type: 'activated', cost: { sacrificeOther: 1 },
     label: 'sacrifice another unit: your units gain +1/+1 until regroup',
     effect: {
       run: (g, ctx) => {
-        const pool = g.unitsOf(ctx.controller, ctx.region).filter(u => u.id !== ctx.sourceId);
-        if (!pool.length) {
-          g.ev('info', 'Hearthwood Ancient: no other unit to sacrifice — no effect.');
+        // the sacrifice is already paid; "your units" is the survivors (R12)
+        const mine = g.unitsOf(ctx.controller, ctx.region);
+        if (!mine.length) {
+          g.ev('info', 'Hearthwood Ancient: you control no unit here — nothing gains +1/+1.');
           return;
         }
-        const id = pickUnit(ctx, 'sac', ctx.controller, pool,
-          'Hearthwood Ancient: sacrifice another unit')!;
-        const sac = g.entity(id);
-        if (!sac) return;
-        g.destroy(sac, 'is sacrificed');
-        for (const u of g.unitsOf(ctx.controller, ctx.region)) g.addTemp(u, 1, 1);
+        for (const u of mine) g.addTemp(u, 1, 1);
       },
     },
   }],

@@ -10,10 +10,14 @@
  * feeds the profile (server/stats.ts), which is what stops this screen and
  * your stats page from ever disagreeing about the game you just played.
  */
+import { ALL_ELEMENTS } from '../src/apply.ts';
+import { esc } from './util.ts';
 
+/** NB: the wire carries more fields than the client reads (e.g. a per-seat
+ * `won` — this screen reads GameOver.winner instead) — only what the UI
+ * renders is declared here. */
 export interface SeatStats {
   name: string;
-  won: boolean | null;
   cards: Record<string, number>;
   unitsPlayed: number; spellsPlayed: number; tokensCast: number; modsApplied: number;
   cardElements: Record<string, number>;
@@ -39,13 +43,8 @@ export interface GameOver {
   unlocked?: { id: string; name: string; desc: string; icon: string }[];
 }
 
-const esc = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-const icon = (el: string): string =>
-  `<img class="elicon" src="/Icons/${el}.webp" alt="" onerror="this.style.display='none'">`;
-
-const ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
+/** the engine's own element list (string-typed to fit the weight records) */
+const ELEMENTS: readonly string[] = ALL_ELEMENTS;
 
 /** the element a player leaned on this game — argmax of what they played */
 function leaned(weights: Record<string, number>): string | null {

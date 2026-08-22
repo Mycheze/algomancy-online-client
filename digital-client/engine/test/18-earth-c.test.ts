@@ -12,6 +12,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
+import { getCard } from '../src/cards/dsl.ts';
+import { legalActions, IllegalAction } from '../src/apply.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,
@@ -133,7 +135,7 @@ test('Skybreaker: sacrifice ("Erase me" ⚠) negates all spell effects on the st
   assert.ok(!ent(h, sky), 'Skybreaker left play as the cost');
   assert.ok(h.state.players[D]!.bin.includes('Skybreaker'), '⚠ approximation: binned, not erased');
   pass(h); pass(h);                                     // resolve the ability → Boon negated
-  pass(h); pass(h);                                     // the negated Boon "resolves"
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Boon left the stack at once');
   assert.deepEqual(effStats(h, atk), [1, 1], 'the Boon was negated — no +4/+4');
   assert.ok(h.state.players[A]!.bin.includes('Channeled Boon'), 'negated spell → bin');
   finishBattle(h);
@@ -276,8 +278,19 @@ test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not o
   finishBattle(h);
 });
 
-test('Throwing Boulder: sacrifice + 3 damage — only with an adjacent ally', () => {
-  // with an adjacent ally: the throw connects
+/* ── Throwing Boulder (R77) ───────────────────────────────────────────────
+ *
+ * Playtest XCYX, 2026-08-22: "Throwing Boulder was allowed to be activated
+ * without having adjacent allies. It didn't resolve, but it shouldn't have been
+ * allowed to be activated. And also, in order to activate it, sacrificing him
+ * should have happened as a cost to even put the ability on the stack."
+ *
+ * Both halves were real. The sacrifice was a `g.destroy` at resolution and the
+ * adjacency condition was an `if` at resolution, so the ability was offered,
+ * activated, and then resolved into nothing.
+ */
+
+test('R77: Throwing Boulder with an adjacent ally — offered, and it connects', () => {
   const h = new Harness(1812);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -285,27 +298,64 @@ test('Throwing Boulder: sacrifice + 3 damage — only with an adjacent ally', ()
   const ally = spawn(h, A, 'Unit Token');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[boulder], [ally]] });   // adjacent columns
+  assert.ok(legalActions(h.state, A).some(a =>
+    a.type === 'activateAbility' && a.entityId === boulder), 'it is offered');
   h.do({ type: 'activateAbility', seat: A, entityId: boulder, abilityIndex: 0, via: 'augment' });
   pick(h, { player: D });
+  // R49/R57/R73: the sacrifice is the COST, paid on the way to the stack —
+  // the Boulder is already gone while its ability is still waiting to resolve
+  assert.ok(!ent(h, boulder), 'sacrificed to put the ability on the stack');
+  assert.ok(h.state.players[A]!.bin.includes('Throwing Boulder'), '→ bin');
+  assert.equal(h.state.stack.length, 1, 'and the ability has not resolved yet');
+  assert.equal(h.state.players[D]!.life, 30, 'so no damage has been dealt yet either');
   pass(h); pass(h);                                     // resolve
-  assert.ok(!ent(h, boulder), 'the Boulder was sacrificed');
-  assert.ok(h.state.players[A]!.bin.includes('Throwing Boulder'));
   assert.equal(h.state.players[D]!.life, 27, '3 damage to the player');
   finishBattle(h);
+});
 
-  // attacking alone: no adjacent ally → nothing happens (⚠ resolution-time check)
-  const h2 = new Harness(1813);
-  toDeployment(h2);
-  const A2 = h2.state.initiative, D2 = 1 - A2;
-  const b2 = spawn(h2, A2, 'Throwing Boulder');
-  toNextBattle(h2, A2);
-  h2.do({ type: 'declareAttack', seat: A2, columns: [[b2]] });
-  h2.do({ type: 'activateAbility', seat: A2, entityId: b2, abilityIndex: 0, via: 'augment' });
-  pick(h2, { player: D2 });
-  pass(h2); pass(h2);
-  assert.ok(ent(h2, b2), 'no adjacent ally → the Boulder survives');
-  assert.equal(h2.state.players[D2]!.life, 30, 'and no damage is dealt');
-  finishBattle(h2);
+test('R77: with NO adjacent ally the ability is not offered, and apply() refuses it', () => {
+  const h = new Harness(1813);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const b = spawn(h, A, 'Throwing Boulder');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[b]] });                 // attacking alone
+  assert.ok(!legalActions(h.state, A).some(a =>
+    a.type === 'activateAbility' && a.entityId === b),
+    'an ability you cannot use is not offered (R64)');
+  assert.throws(() => h.do({ type: 'activateAbility', seat: A, entityId: b, abilityIndex: 0, via: 'augment' }),
+    (err: unknown) => err instanceof IllegalAction,
+    '…and it is refused, rather than activated and then resolving into nothing');
+  assert.ok(ent(h, b), 'the Boulder is untouched — nothing was paid');
+  assert.equal(h.state.players[D]!.life, 30);
+  finishBattle(h);
+});
+
+test('R77: an ALLY is required — an adjacent enemy does not unlock it', () => {
+  const h = new Harness(1818);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const b = spawn(h, A, 'Throwing Boulder');
+  const blocker = spawn(h, D, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[b]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });       // an adjacent ENEMY
+  assert.ok(!legalActions(h.state, A).some(a =>
+    a.type === 'activateAbility' && a.entityId === b), 'still not offered');
+  finishBattle(h);
+});
+
+test('R77: out of formation there are no adjacent slots at all, so it is never offered', () => {
+  // R75: "adjacent slots … only exist if it's in a formation". During
+  // deployment the Boulder is standing in its region, not in a line.
+  const h = new Harness(1819);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const b = spawn(h, A, 'Throwing Boulder');
+  spawn(h, A, 'Unit Token');                                               // an ally, but not beside it
+  assert.ok(!legalActions(h.state, A).some(a =>
+    a.type === 'activateAbility' && a.entityId === b));
 });
 
 test('Towering Colossus: 10/15 body registers and plays', () => {
@@ -343,6 +393,27 @@ test('Tranquility: 3/4 body registers and plays', () => {
   assert.deepEqual(effStats(h, tr), [3, 4]);
 });
 
-test('Tranquility: "[Augment] Spells cost [one] more during battle" (PARKED: no static cost-modifier hook)', { todo: true }, () => {
-  // needs canPayCard/payCard to consult in-play cost modifiers.
+test('Tranquility: the [Augment] tax is DONATED — it radiates from the mod too', () => {
+  // UN-PARKED (R59). This used to be a todo reading "needs canPayCard/payCard
+  // to consult in-play cost modifiers"; CostMod is that hook, and 49-playtest-
+  // round6 covers the unit form end to end. What belongs here is the donated
+  // half: costModsFor() anchors a mod's CostMod on its HOST (E.anchored), so
+  // augmenting Tranquility onto something taxes exactly as playing it does.
+  const h = new Harness(1812);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const host = spawn(h, D, 'Unit Token');                 // D's region: the battle lands here
+  giveResources(h, D, 'earth', 3);                        // Tranquility is ee/3
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Tranquility'), hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'it attached as a mod');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const e = new E(h.state);
+  const printed = getCard('Fight').mana as number;
+  assert.equal(e.manaToPlay(D, 'Fight'), printed + 1,
+    'the donated modifier taxes from the host');
+  assert.equal(e.manaToPlay(A, 'Fight'), printed + 1,
+    'and it is unqualified — the attacker pays it too');
+  finishBattle(h);
 });

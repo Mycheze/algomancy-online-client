@@ -8,11 +8,15 @@
  * holding { seed, names, actions }. On startup rooms are restored by replaying
  * the action log through the engine (replay = seed + actions).
  */
-import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// type-only, so rooms.ts gains no runtime dependency on ws — the sockets are
+// the real WebSockets main.ts plugs in; this module only checks presence
+import type { WebSocket } from 'ws';
 import type { Action, CardName, Element, EngineEvent, GameMode, GameState, Seat } from '../engine/src/types.ts';
 import { apply, checkDeck, createGame, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { other } from './view.ts';
 import {
   resolveTrio, sanitizeMethod, sanitizeSubmission, submissionReady,
   type TrioHistoryRow, type TrioMethod, type TrioResult, type TrioSubmission,
@@ -22,9 +26,108 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 // ALGO_GAMES_DIR lets a test run against a throwaway directory of saved rooms
 const GAMES_DIR = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
 
-export interface Socket {
-  send(data: string): void;
+/**
+ * The HIDDEN SIMULTANEOUS SEGMENTS — the one place that knows which steps are
+ * played behind a screen.
+ *
+ * Playtest UZRG (2026-08-21): "Planning should be like deployment, entirely
+ * divorced from what your opponent is doing. But right now, you can't take
+ * back making the wrong resource or recycling the wrong card if your opponent
+ * does something (which shouldn't matter) and you can see what your opponent
+ * is doing live, so there's technically a reason to wait to see what they do
+ * (which there shouldn't be)."
+ *
+ * So a turn has THREE hidden segments, not one:
+ *
+ *   'plan'   the resource step  — recycle / activate / exchange / draft /
+ *            bottom, ending when both players have hit done planning. Every
+ *            one of those actions is confined to the actor's own hand and
+ *            resources, fires no triggers, touches no stack, draws no RNG and
+ *            allocates no entity ids, so the two seats' actions COMMUTE
+ *            (test-hidden.ts asserts it directly) — which is exactly what
+ *            makes an undo here always safe.
+ *   'haste'  the haste step — plays resolve immediately, no priority, no
+ *            responses (R18). Deployment's hazards, and no more.
+ *   'deploy' simultaneous deployment, as before.
+ *
+ * Everything downstream is ONE rule: **the key changed → flush the old
+ * segment's reveal, snapshot the new one.** Nothing else in the server knows
+ * which phase it is looking at.
+ */
+export type SegKey = 'plan' | 'haste' | 'deploy';
+
+/** Which hidden segment is this state in, if any? */
+export function segmentKey(s: GameState): SegKey | null {
+  // hasteEnding: the haste step's end-of-step triggers may suspend on a
+  // decision with hasteDone already conceptually spent — the resource step is
+  // definitively over, so this is never 'plan' again.
+  if (s.phase === 'planning') return (s.hasteDone || s.hasteEnding) ? 'haste' : 'plan';
+  if (s.phase === 'deploy') return 'deploy';
+  return null;
 }
+
+/** Did this action move the id clock or the RNG stream? (the undo gate) */
+const movedIdOrRng = (before: GameState, after: GameState): boolean =>
+  before.nextId !== after.nextId || before.rngState !== after.rngState;
+
+// ── the log's contract, and what happens when it breaks ───────────────
+//
+// A room file is a claim: **seed + actions reproduces this game**. It is the
+// forensic record the whole playtest loop runs on, so when the claim stops
+// being true that has to be LOUD.
+//
+// It stops being true like this. `rebuild()` is deliberately tolerant: an
+// action the (possibly newer) engine now rejects is skipped rather than
+// killing the room, because losing a live game to a rules tweak is worse than
+// a slightly wrong log. But the skipped action STAYS in `actions`, and one
+// skip cascades — the state the rest of the log was written against no longer
+// exists, so action after action is refused too. Measured on a synthetic
+// 60-action game: ONE action becoming illegal cost 28 of the 60, and rolled
+// the game back from turn 4 to turn 2. Play then continues from the rolled-
+// back board, appending to a log that is now two different games end to end,
+// with nothing to mark the join.
+//
+// Note what is NOT wrong: the skip is deterministic, so `rebuild(seed,
+// actions)` still equals the state the players are sitting in. The file is not
+// self-contradictory — it is FORKED, and says nothing about it. That silence
+// is the bug, and it is what makes a review months later report 79 rejections
+// with no way to tell "the rules changed under this game" from "the server
+// wrote a log it cannot honour".
+//
+// The fix is to make the file say so. We do NOT prune the skipped actions,
+// even though pruning would restore the literal contract, because those
+// actions are the evidence: a forked game is precisely the one you most want
+// to inspect, `history.ts` counts the RAW log length so a real game is never
+// demoted to a stub, and a rules commit can be reverted — a recorded fork can
+// then be re-evaluated, a pruned one is gone. So the contract becomes
+// explicit and checkable instead: **seed + actions, minus the forks this file
+// declares, reproduces this game.** replay-room.ts verifies exactly that.
+
+/** One logged action a rebuild could not apply. */
+export interface LostAction {
+  /** index into the room's `actions` */
+  i: number;
+  type: Action['type'];
+  seat: Seat;
+  /** the engine's own refusal */
+  why: string;
+}
+
+/** A restore that could not faithfully rebuild a game still being played. */
+export interface Fork {
+  /** when the restore happened (ISO) */
+  at: string;
+  /** what the log claimed vs what could actually be replayed */
+  logged: number;
+  lost: LostAction[];
+  /** where the rebuild landed — the board play resumed from */
+  turn: number;
+  phase: string;
+}
+
+/** Two skip sets describe the same fork iff they lost the same indices. */
+const sameLoss = (a: LostAction[], b: LostAction[]): boolean =>
+  a.length === b.length && a.every((x, i) => x.i === b[i]!.i);
 
 export interface Room {
   code: string;
@@ -54,19 +157,50 @@ export interface Room {
   winner: Seat | null;
   state: GameState;
   actions: Action[];
+  /**
+   * Every restore that could NOT faithfully rebuild this game. Persisted.
+   *
+   * The log's contract is "seed + actions reproduces this game". A tolerant
+   * restore breaks it silently: an action the current engine refuses is
+   * skipped but LEFT in `actions`, so the file goes on claiming to be a
+   * straight-through record of a game it no longer describes. This is the
+   * file admitting otherwise — see recordFork().
+   */
+  forks: Fork[];
+  /**
+   * Actions the most recent rebuild could not apply. DERIVED (never
+   * persisted): it is `forks` restated for the CURRENT engine, and it is what
+   * undoActionAt() measures against to guarantee an undo never loses a play.
+   */
+  lost: LostAction[];
   /** full authoritative event history, for per-seat redacted log resync */
   events: EngineEvent[];
   /** connected client per seat (null = nobody there) */
-  sockets: [Socket | null, Socket | null];
-  /** simultaneous deployment: the state as of deploy start — each seat's view
-   * of the OPPONENT is served from this freeze until both are done */
-  deploySnapshot: GameState | null;
-  /** events each seat has NOT yet been shown (their opponent's hidden deploy
-   * moves); flushed as the "replay" when deployment ends */
-  heldDeploy: [EngineEvent[], EngineEvent[]];
-  /** index into `actions` where the current deploy phase began (-1 outside
-   * deploy) — undo may splice a seat's own actions at/after this point */
-  deployStartIndex: number;
+  sockets: [WebSocket | null, WebSocket | null];
+  /** which hidden simultaneous segment is open right now (null = none) */
+  segKey: SegKey | null;
+  /** the state as of the open segment's start — each seat's view of the
+   * OPPONENT is served from this freeze until the segment closes */
+  segSnapshot: GameState | null;
+  /** events each seat has NOT yet been shown (their opponent's hidden moves
+   * this segment); flushed as the "reveal" when the segment closes */
+  heldEvents: [EngineEvent[], EngineEvent[]];
+  /** index into `actions` where the open segment began (-1 outside one) —
+   * undo may splice a seat's own actions at/after this point */
+  segStartIndex: number;
+  /**
+   * Per-action: did it move the id clock or the RNG stream?
+   *
+   * Parallel to `actions` (same length, same indices) and DERIVED — never
+   * persisted, rebuilt by rebuild(). It is the undo gate: splicing action `i`
+   * out of a hidden segment re-runs everything after it from a different
+   * prior state, so an action that consumed an entity id or an RNG draw
+   * renumbers/re-rolls its successors. Seat B's augment on "unit 8" quietly
+   * becomes an IllegalAction and is dropped by the tolerant replay — B loses
+   * a play they were never told about. So an action may only leave a segment
+   * when it is id- and RNG-inert, or when no opponent action follows it.
+   */
+  segTouched: boolean[];
   /** chess clock (MTGO-style, display only): remaining ms per seat */
   clockMs: [number, number];
   /** Date.now() of the last clock settle — elapsed since then is still
@@ -269,6 +403,10 @@ export function resolveLobby(room: Room, history: TrioHistoryRow[]): TrioResult 
   room.state = state;
   room.actions = [];
   room.events = events;
+  // the dealt game's first planning segment starts here — without this the
+  // freeze would still hold the placeholder (and its placeholder NAMES) for
+  // the whole of turn 1
+  resetSegment(room);
   room.clockStamp = Date.now();
   persist(room);
   return result;
@@ -295,6 +433,7 @@ export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[]): boolean
     room.state = state;
     room.actions = [];
     room.events = events;
+    resetSegment(room);   // same as resolveLobby: the real game's turn 1
     room.clockStamp = Date.now();
   }
   persist(room);
@@ -304,51 +443,66 @@ export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[]): boolean
 interface Rebuilt {
   state: GameState;
   events: EngineEvent[];
-  deploySnapshot: GameState | null;
-  heldDeploy: [EngineEvent[], EngineEvent[]];
-  deployStartIndex: number;
+  segKey: SegKey | null;
+  segSnapshot: GameState | null;
+  heldEvents: [EngineEvent[], EngineEvent[]];
+  segStartIndex: number;
+  segTouched: boolean[];
+  /** logged actions this rebuild could not apply (see LostAction) */
+  skipped: LostAction[];
 }
 
 /** Re-run seed + actions, accumulating the full event history (the engine's
- * own replay() keeps only the last events, so we accumulate here) and the
- * deploy-phase hidden-info bookkeeping. Tolerant: an action the (possibly
- * newer) engine now rejects is skipped with a warning instead of killing the
- * whole room — a personal server should never eat a live game over a rules
- * tweak. */
+ * own replay() returns only the creation events, so we accumulate here) and the
+ * hidden-segment bookkeeping. Tolerant: an action the (possibly newer) engine
+ * now rejects is skipped with a warning instead of killing the whole room — a
+ * personal server should never eat a live game over a rules tweak. */
 function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]]): Rebuilt {
   let { state, events } = fresh(seed, names, mode, els, decks);
   const all = [...events];
-  let deploySnapshot: GameState | null = null;
-  let deployStartIndex = -1;
-  const heldDeploy: [EngineEvent[], EngineEvent[]] = [[], []];
+  // SEED THE SEGMENT FROM THE INITIAL STATE: createGame already ends inside
+  // turn 1's planning, and turn-1 planning has no preceding action — a
+  // "snapshot after an action" pattern would miss the very first segment of
+  // every game (and serve a stale, placeholder-named opponent all through it).
+  let segKey = segmentKey(state);
+  let segSnapshot: GameState | null = segKey ? structuredClone(state) : null;
+  let segStartIndex = segKey ? 0 : -1;
+  let heldEvents: [EngineEvent[], EngineEvent[]] = [[], []];
+  const segTouched: boolean[] = [];
+  const skipped: LostAction[] = [];
   for (let i = 0; i < actions.length; i++) {
     const a = actions[i]!;
-    const wasDeploy = state.phase === 'deploy';
+    const before = state;
+    // hold only while the open segment is still the one this action is in:
+    // the forced battle drain runs public actions after the key has moved on
+    const holding = segKey !== null && segmentKey(before) === segKey;
     let r;
     try {
       r = apply(state, a);
     } catch (err) {
       if (err instanceof IllegalAction) {
-        console.warn(`[rooms] replay skipped now-illegal action ${a.type}: ${err.message}`);
+        // NOT just a warning: the caller records this into the file, because
+        // a log that quietly stopped describing its own game is the thing we
+        // most need to be able to see afterwards
+        skipped.push({ i, type: a.type, seat: a.seat, why: err.message });
+        segTouched.push(false);   // keep the index alignment with `actions`
         continue;
       }
       throw err;
     }
     state = r.state;
     all.push(...r.events);
-    if (state.phase === 'deploy' && !deploySnapshot) {
-      deploySnapshot = structuredClone(state);
-      deployStartIndex = i + 1;
-    }
-    if (wasDeploy) heldDeploy[a.seat === 0 ? 1 : 0].push(...r.events);
-    if (state.phase !== 'deploy') {
-      deploySnapshot = null;
-      deployStartIndex = -1;
-      heldDeploy[0] = [];
-      heldDeploy[1] = [];
+    segTouched.push(movedIdOrRng(before, state));
+    if (holding) heldEvents[other(a.seat)].push(...r.events);
+    const now = segmentKey(state);
+    if (now !== segKey) {
+      segKey = now;
+      segSnapshot = now ? structuredClone(state) : null;
+      segStartIndex = now ? i + 1 : -1;
+      heldEvents = [[], []];
     }
   }
-  return { state, events: all, deploySnapshot, heldDeploy, deployStartIndex };
+  return { state, events: all, segKey, segSnapshot, heldEvents, segStartIndex, segTouched, skipped };
 }
 
 export function getRoom(code: string): Room | undefined {
@@ -369,11 +523,13 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     code, seed, mode, els: trio, decks, names, users: [null, null], winner: null,
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
-    state, actions: [], events, sockets: [null, null],
-    deploySnapshot: null, heldDeploy: [[], []], deployStartIndex: -1,
+    state, actions: [], events, sockets: [null, null], forks: [], lost: [],
+    segKey: null, segSnapshot: null, heldEvents: [[], []], segStartIndex: -1, segTouched: [],
     clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
     building: [null, null],
   };
+  // turn 1's planning segment opens HERE, not on the first action
+  resetSegment(room);
   rooms.set(code, room);
   persist(room);
   return room;
@@ -446,54 +602,189 @@ export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Elem
  * whatever the engine throws (IllegalAction) — caller reports it to the actor. */
 export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   settleClock(room);   // bill elapsed time to whoever WAS on the clock
-  const wasDeploy = room.state.phase === 'deploy';
+  const before = room.state;
+  // hold this action's events back from the opponent only while the segment
+  // it was taken in is the one still open. (main.ts drains a run of forced
+  // battle actions after a segment's key has already moved on; those are
+  // public and must not land in anybody's held queue.)
+  const holding = room.segKey !== null && segmentKey(before) === room.segKey;
   const r = apply(room.state, action);
   room.state = r.state;
   room.actions.push(action);
+  room.segTouched.push(movedIdOrRng(before, r.state));
   room.events.push(...r.events);
-  // simultaneous-deploy bookkeeping: freeze a snapshot the moment deployment
-  // starts, and hold every deploy-phase event back from the actor's opponent
-  // (main.ts flushes the reveal; clearDeployHold() resets after the flush).
-  if (room.state.phase === 'deploy' && !room.deploySnapshot) {
-    room.deploySnapshot = structuredClone(room.state);
-    room.deployStartIndex = room.actions.length;
-  }
-  if (wasDeploy) room.heldDeploy[action.seat === 0 ? 1 : 0].push(...r.events);
+  if (holding) room.heldEvents[other(action.seat)].push(...r.events);
   if (room.state.winner !== null) room.winner = room.state.winner;   // stamp it
   settleClock(room);   // recompute who is on the clock under the NEW state
   persist(room);
   return r.events;
 }
 
-/** Deployment ended and the reveal has been sent — drop the freeze. */
-export function clearDeployHold(room: Room): void {
-  room.deploySnapshot = null;
-  room.heldDeploy = [[], []];
-  room.deployStartIndex = -1;
+/**
+ * Close whatever segment was open and open the one the CURRENT state is in
+ * (which may be none): a fresh freeze, a fresh start index, an empty hold.
+ *
+ * The caller reads `heldEvents` for the reveal BEFORE calling this. Every
+ * segment boundary — 'plan'→'haste', 'haste'→null, 'deploy'→'plan' — is this
+ * one call; there is no per-phase branch anywhere.
+ */
+export function openSegment(room: Room): void {
+  room.segKey = segmentKey(room.state);
+  room.segSnapshot = room.segKey ? structuredClone(room.state) : null;
+  room.segStartIndex = room.segKey ? room.actions.length : -1;
+  room.heldEvents = [[], []];
+}
+
+/** A room whose state was re-dealt and whose action log was reset (a resolved
+ * lobby, a completed constructed pair, a rematch): the derived per-action
+ * bookkeeping goes with it, and the new game's first segment opens now. */
+function resetSegment(room: Room): void {
+  room.segTouched = [];
+  // the previous action log is gone, so any fork recorded against it is too:
+  // a fork is a claim about THIS log, and this is a different one
+  room.forks = [];
+  room.lost = [];
+  openSegment(room);
 }
 
 /** Undo the most recent action (single-step, docs/07 §15): pop it and rebuild
  * state by replaying seed + remaining actions. Caller enforces who/when. */
-export function undoLastAction(room: Room): void {
-  undoActionAt(room, room.actions.length - 1);
+export function undoLastAction(room: Room): LostAction[] {
+  return undoActionAt(room, room.actions.length - 1);
 }
 
+/**
+ * May `seat` splice the action at `index` out of the open hidden segment?
+ *
+ * The action log stays ARRIVAL ORDER — it is the record, and replay(seed,
+ * actions) must still reproduce it bit-identically. What needs a rule is the
+ * SPLICE, because removing seat A's action re-runs seat B's from a different
+ * prior state. An action that moved the id clock or the RNG stream renumbers
+ * everything after it (A deploys unit 7, B deploys 8 and augments hostId 8;
+ * A undoes → B's unit is 7 → B's augment is now illegal and is SILENTLY
+ * skipped by the tolerant replay: B loses a play nobody told them about).
+ *
+ * So: an action may leave a segment iff it is id- and RNG-inert, or no
+ * opponent action follows it in the log. Refusing is deliberate — the
+ * alternative is silently reordering somebody else's game.
+ *
+ * The resource step is provably inert, so this never fires there. It also
+ * closes the same hole in deployment, which had it all along.
+ */
+export function spliceable(room: Room, index: number, seat: Seat): boolean {
+  if (!room.segTouched[index]) return true;
+  return !room.actions.slice(index + 1)
+    .some(a => a.seat !== seat && !RENUMBER_IMMUNE.has(a.type));
+}
+
+/**
+ * DO NOT "TIDY THIS AWAY". It is load-bearing, and the reasoning is here so
+ * that a later reader does not mistake it for an unprincipled special case.
+ *
+ * These five action types carry NO id, NO index and NO choice — their entire
+ * payload is `{ type, seat }`. Splicing an action out from under one of them
+ * renumbers entity ids and re-rolls the RNG stream, and neither can change
+ * what a bare barrier flag MEANS or whether it is legal: `doneDeploying` is
+ * legal iff you are deploying and have not yet finished, which no renumbering
+ * can affect. So one of these landing on top of your play is not a reason to
+ * refuse to take the play back.
+ *
+ * Without the exception the gate re-creates the exact complaint this whole
+ * design answers, one step further along: your opponent presses "done" and
+ * your undo silently disappears. Reviewed and approved 2026-08-21 after the
+ * first implementation flagged it.
+ *
+ * Anything with a payload — an entityId, a hand index, a decision choice —
+ * stays gated, because for those the renumbering genuinely can change what
+ * the action refers to.
+ */
+const RENUMBER_IMMUNE = new Set<Action['type']>([
+  'donePlanning', 'doneHaste', 'doneDeploying', 'passPriority', 'concede',
+]);
+
 /** Undo the action at `index` (splice + full rebuild). Callers enforce who
- * may remove what; deploy-phase actions are seat-independent, so splicing a
- * seat's own action out of the middle of the deploy segment is sound. */
-export function undoActionAt(room: Room, index: number): void {
+ * may remove what and check spliceable() first. */
+export function undoActionAt(room: Room, index: number): LostAction[] {
   settleClock(room);   // bill up to the undo; the rebuild changes who runs
+  const restore = [...room.actions];
   room.actions.splice(index, 1);
-  const { state, events, deploySnapshot, heldDeploy, deployStartIndex } =
-    rebuild(room.seed, room.names, room.actions, room.mode, room.els,
-      room.mode === 'constructed' ? decksFor(room) : undefined);
-  room.state = state;
-  room.events = events;
-  room.deploySnapshot = deploySnapshot;
-  room.heldDeploy = heldDeploy;
-  room.deployStartIndex = deployStartIndex;
+  let rb = rebuildRoom(room);
+  // An undo must never cost anybody an action they did not ask to give up.
+  // spliceable() predicts that from the action's payload; this MEASURES it,
+  // and a measurement beats a prediction — if taking this one out made
+  // anything else in the log unreplayable, put it back and say so. A refused
+  // undo is a mild annoyance; a silently dropped play is the bug that made
+  // game UZRG unreadable.
+  if (rb.skipped.length > room.lost.length) {
+    const wouldLose = rb.skipped;        // capture before the roll-back rebuild
+    room.actions = restore;
+    assignRebuild(room, rebuildRoom(room));   // deterministic: exact prior state
+    settleClock(room);
+    return wouldLose;                    // non-empty ⇒ the undo was REFUSED
+  }
+  assignRebuild(room, rb);
   settleClock(room);
   persist(room);
+  return [];
+}
+
+/**
+ * A restore could not faithfully rebuild this game: write that into the file,
+ * and tell the players.
+ *
+ * Only for rooms still being PLAYED. A finished game's skips are read-only
+ * forensics — `stats.ts` already reports it as diverged, `replay-room.ts`
+ * spells it out, and recording a fork for each of them would rewrite hundreds
+ * of settled files on every boot (the ~650 skip warnings at startup are these,
+ * and they are normal). A LIVE room is different: play is about to continue
+ * into that log, and the join has to be marked before it happens.
+ *
+ * Idempotent across restarts — restoring the same room under the same engine
+ * loses the same actions, and that is one fork, not one per boot.
+ */
+function recordFork(room: Room): boolean {
+  if (!room.lost.length) return false;
+  const previous = room.forks[room.forks.length - 1];
+  if (previous && sameLoss(previous.lost, room.lost)) return false;   // already known
+  room.forks.push({
+    at: new Date().toISOString(),
+    logged: room.actions.length,
+    lost: room.lost.map(l => ({ ...l })),
+    turn: room.state.turn,
+    phase: room.state.phase,
+  });
+  // and say it OUT LOUD, in the game's own log, where both players see it on
+  // their next join. Degrading quietly is the whole failure mode here.
+  room.events.push({
+    type: 'note',
+    msg: `⚠ This game could not be fully restored: ${room.lost.length} of ${room.actions.length} `
+      + `logged actions no longer replay under the current rules, so it has been rebuilt without `
+      + `them and stands at turn ${room.state.turn}. Everything before this line describes a `
+      + `different board.`,
+    data: { lost: room.lost.length, logged: room.actions.length },
+  } as unknown as EngineEvent);
+  console.warn(`[rooms] ${room.code} FORKED on restore: ${room.lost.length} of ${room.actions.length} `
+    + `actions could not be replayed; the game resumes at turn ${room.state.turn} ${room.state.phase}`);
+  return true;
+}
+
+/** rebuild() for a room that already knows its own seed/mode/els/decks. */
+function rebuildRoom(room: Room): Rebuilt {
+  return rebuild(room.seed, room.names, room.actions, room.mode, room.els,
+    room.mode === 'constructed' ? decksFor(room) : undefined);
+}
+
+/** Adopt a rebuild's results wholesale (state + event history + the derived
+ * segment and integrity bookkeeping). */
+function assignRebuild(room: Room, rb: Rebuilt): void {
+  room.state = rb.state;
+  room.events = rb.events;
+  room.segKey = rb.segKey;
+  room.segSnapshot = rb.segSnapshot;
+  room.heldEvents = rb.heldEvents;
+  room.segStartIndex = rb.segStartIndex;
+  room.segTouched = rb.segTouched;
+  room.lost = rb.skipped;
 }
 
 /**
@@ -522,13 +813,19 @@ export function createRematch(old: Room, code: string): Room {
   // even before either client has re-joined
   room.users = [...old.users];
   for (const seat of [0, 1] as Seat[]) room.state.players[seat]!.name = room.names[seat]!;
+  resetSegment(room);   // the constructed branch above replaced the state
   old.rematchRoom = code;
   persist(room);
   return room;
 }
 
 /** Rename a seat. Names are cosmetic: they live in room.names (persisted, used
- * by replay) and in the live state's player slot for rendering. */
+ * by replay) and in the live state's player slot for rendering.
+ *
+ * NOTE this happens OUTSIDE the action log, so it does not reach the open
+ * segment's frozen snapshot — and turn 1's 'plan' segment is snapshotted at
+ * room creation, before anybody has typed a name. viewFor() therefore carries
+ * the LIVE name over the frozen player slot; a name is never hidden. */
 export function renameSeat(room: Room, seat: 0 | 1, name: string): void {
   room.names[seat] = name;
   room.state.players[seat]!.name = name;
@@ -549,9 +846,13 @@ function persist(room: Room): void {
   try {
     mkdirSync(GAMES_DIR, { recursive: true });
     const path = join(GAMES_DIR, `${room.code}.json`);
+    // temp + rename, like accounts.ts: this file is the game's only record,
+    // and a crash mid-write must not leave it half-written (restoreRooms
+    // would silently skip the corrupt room and the game would be lost)
+    const tmp = `${path}.tmp`;
     // clockMs is persisted too: elapsed time cannot be reconstructed from a
     // replay. (Additive field — older files without it restore at 40:00.)
-    writeFileSync(path, JSON.stringify({
+    writeFileSync(tmp, JSON.stringify({
       seed: room.seed, mode: room.mode, els: room.els, names: room.names,
       // accounts: who each seat belonged to, so the stats fold knows whose
       // game this was long after the sockets are gone (additive field)
@@ -563,9 +864,14 @@ function persist(room: Room): void {
       // them (additive field)
       ...(room.lobby ? { lobby: room.lobby } : {}),
       actions: room.actions, clockMs: room.clockMs,
+      // every restore that could not faithfully rebuild this game. Without
+      // it the file goes on claiming to be a straight-through record of a
+      // game it no longer describes (additive field)
+      ...(room.forks.length ? { forks: room.forks } : {}),
       // constructed: decks are part of the replay config (additive field)
       ...(room.mode === 'constructed' ? { decks: room.decks } : {}),
     }));
+    renameSync(tmp, path);
   } catch (err) {
     console.error(`[rooms] could not persist ${room.code}:`, err);
   }
@@ -591,6 +897,7 @@ export function restoreRooms(): void {
         winner?: number | null;
         lobby?: Lobby;
         decks?: [CardName[] | null, CardName[] | null];
+        forks?: Fork[];
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const users: [string | null, string | null] = [raw.users?.[0] ?? null, raw.users?.[1] ?? null];
@@ -622,7 +929,7 @@ export function restoreRooms(): void {
       const unresolved = (mode === 'constructed' && (!decks[0] || !decks[1]))
         || (!!lobby && !lobby.result);
       const actions = unresolved ? [] : raw.actions;
-      const { state, events, deploySnapshot, heldDeploy, deployStartIndex } = rebuild(
+      const { state, events, segKey, segSnapshot, heldEvents, segStartIndex, segTouched, skipped } = rebuild(
         raw.seed, names, actions, mode, els,
         mode === 'constructed' ? decksFor({ decks }) : undefined);
       const clockMs: [number, number] = Array.isArray(raw.clockMs) && raw.clockMs.length === 2
@@ -634,12 +941,18 @@ export function restoreRooms(): void {
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,
         state, actions, events,
-        sockets: [null, null], deploySnapshot, heldDeploy, deployStartIndex,
+        sockets: [null, null], segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
+        forks: Array.isArray(raw.forks) ? raw.forks : [], lost: skipped,
         // nobody is connected right after a restart, so no clock runs yet
         clockMs, clockStamp: Date.now(), clockRun: [false, false],
         building: [null, null],
       });
-      console.log(`[rooms] restored ${code} (${raw.actions.length} actions)`);
+      // a LIVE room whose log could not be fully replayed has just forked:
+      // record it in the file and in the game's own log before play resumes
+      const restored = rooms.get(code)!;
+      if (decidedWinner(restored) === null && recordFork(restored)) persist(restored);
+      console.log(`[rooms] restored ${code} (${raw.actions.length} actions`
+        + `${skipped.length ? `, ${skipped.length} unreplayable` : ''})`);
     } catch (err) {
       console.error(`[rooms] could not restore ${code}:`, err instanceof Error ? err.message : err);
     }

@@ -92,7 +92,15 @@ test('Astralith: [three] activated ability puts a +1/+1 counter on a target unit
   const astra = spawn(h, p, 'Astralith');                   // 2/3
   const target = spawn(h, p, 'Lonely Forager');             // 3/1
   giveResources(h, p, 'metal', 3);                          // activation costs 3 mana
-  h.do({ type: 'activateAbility', seat: p, entityId: astra, abilityIndex: 0 });
+  // the ability is declared ONCE, in augmentText — a card's own [Augment] text
+  // is live when it is played normally (Manual Q&A), so it is offered as
+  // via: 'augment'. It used to be declared in `abilities` as well, which made
+  // legalActions offer the very same ability twice.
+  const offers = h.legal(p).filter(a =>
+    a.type === 'activateAbility' && a.entityId === astra);
+  assert.equal(offers.length, 1, 'offered exactly once, not once per list');
+  assert.equal(offers[0]!.type === 'activateAbility' && offers[0]!.via, 'augment');
+  h.do({ type: 'activateAbility', seat: p, entityId: astra, abilityIndex: 0, via: 'augment' });
   pick(h, { unit: target });
   assert.equal(ent(h, target)!.counters, 1, 'a +1/+1 counter landed');
   assert.deepEqual(effStats(h, target), [4, 2], '3/1 → 4/2');

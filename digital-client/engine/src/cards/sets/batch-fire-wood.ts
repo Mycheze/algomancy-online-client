@@ -12,8 +12,9 @@
  * Nothing parked in this batch — every printed behavior maps onto existing
  * engine primitives.
  */
-import type { EntityId, Entity } from '../../types.ts';
+import type { EntityId } from '../../types.ts';
 import { card, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt } from './helpers.ts';
 
 // ─────────────────────────── EARTH (augments) ───────────────────────────
 
@@ -34,7 +35,7 @@ const channeledBoonBuff: EffectDef = {
   targets: { what: 'unit', prompt: 'Channeled Boon: target unit gains +4/+4 until regroup' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (t && 'id' in (t as object)) g.addTemp(t as Entity, 4, 4);
+    if (isEnt(t)) g.addTemp(t, 4, 4);
   },
 };
 card('Channeled Boon', {
@@ -52,6 +53,10 @@ const burningVengeance: EffectDef = {
   run: (g, ctx) => {
     const deaths = g.battleCounter(ctx.region, 'allyDeaths:0')
       + g.battleCounter(ctx.region, 'allyDeaths:1');
+    if (deaths <= 0) {
+      g.ev('info', 'Burning Vengeance: no unit has died this battle — it deals 0 damage.');
+      return;
+    }
     g.dealEffectDamage(ctx, ctx.targets[0]!, deaths);
   },
 };
@@ -67,9 +72,10 @@ card('Burning Vengeance', {
 // number of allies adjacent to me." — text-box [Augment] (text only, no attrs).
 // R1: X is measured at RESOLUTION from live formation adjacency.
 const flamebreathInitiate: EffectDef = {
+  creates: ['Fireball'],
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-    if (!self) return;
+    const self = selfOf(g, ctx);
+    if (!self) { g.ev('info', 'Flamebreath Initiate: the carrier is gone — no Fireball.'); return; }
     const allies = g.adjacentInFormation(self.id).filter(u => u.controller === ctx.controller);
     g.createSpellToken(ctx.controller, 'Fireball', allies.length + 1, ctx.region);
   },
@@ -90,11 +96,12 @@ card('Flamebreath Initiate', {
 // (R1): survivors of combat. If I wasn't an attacker (I blocked, or there was
 // no attack) X = 0 and nothing is created.
 const embermawFledgling: EffectDef = {
+  creates: ['Unit Token'],
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-    if (!self) return;
+    const self = selfOf(g, ctx);
+    if (!self) { g.ev('info', 'Embermaw Fledgling: the carrier is gone — no unit.'); return; }
     const b = g.s.battle;
-    if (!b) return;
+    if (!b) { g.ev('info', 'Embermaw Fledgling: there is no formation to count — X = 0, no unit.'); return; }
     let x = 0;
     for (const col of b.columns) {
       for (const id of col) {
@@ -102,7 +109,8 @@ const embermawFledgling: EffectDef = {
         if (u && u.controller === self.controller) x++;
       }
     }
-    if (x > 0) g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
+    if (x <= 0) { g.ev('info', 'Embermaw Fledgling: no attacking unit in my formation — X = 0, no unit.'); return; }
+    g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
   },
 };
 card('Embermaw Fledgling', {
@@ -154,6 +162,7 @@ card('Engorged Caudex', {
 // (R1, event-time): the dying unit's controller differs from mine (enemy).
 // Region auto-scoped (R12). Bounded graft ([Switch1], R9).
 const foragerSpawn: EffectDef = {
+  creates: ['Unit Token'],
   run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [2, 2] }); },
 };
 card('Forager of the Fallen', {
@@ -174,6 +183,7 @@ card('Forager of the Fallen', {
 // Flourishing Flora it is NOT self-excluded: playing Bloomcaster itself also
 // makes a 1/1. Region auto-scoped (R12). See ⚠ note in the report.
 const bloomcasterMake: EffectDef = {
+  creates: ['Unit Token'],
   run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] }); },
 };
 card('Bloomcaster', {
@@ -193,7 +203,7 @@ card('Bloomcaster', {
 // Region auto-scoped (R12).
 const floraGrow: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+    const self = selfOf(g, ctx);
     if (self) g.addCounters(self, 1);
   },
 };

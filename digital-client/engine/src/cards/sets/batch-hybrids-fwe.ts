@@ -19,38 +19,29 @@
  *    precedent. Note: an augment-DONATED "when I despawn" only fires on the
  *    host's death, not its recall (recall() erases the mod entities before
  *    firing the event, destroy() after — engine asymmetry, flagged).
- *  - MULTI-TARGET spells (Channel Through's "X target allies" + distribution,
- *    Torrential Reclamation's "X target nontoken allies"): the engine's
- *    cast-time targeting holds ONE target per part, so the caster picks the
- *    units mid-resolution via ctx.choose (auto-picked when forced) — the
- *    Tidal Reversion approximation: opponents respond to the spell, not to
- *    the specific picks.
+ *  - MULTI-TARGET spells (Channel Through, Torrential Reclamation): NO LONGER
+ *    an approximation. This said "the engine's cast-time targeting holds ONE
+ *    target per part, so the caster picks the units mid-resolution"; R64's
+ *    `count: 'X'` (with min: 0) collects them all as the spell goes on the
+ *    stack, which both cards use. What stays mid-resolution is Channel
+ *    Through's DISTRIBUTION of its 2 damage among the opponent's units — a
+ *    division of damage, not a set of declared targets.
  *  - PLAIN "spell" includes spell tokens (Origon, Death Greeter): the pool's
  *    exclusion wording is "nontoken spell", so its absence counts tokens.
  *
- * PARKED (needs engine machinery that does not exist yet):
- *  - Stasis Sentry: "Spells with base cost [three] or less have a base cost
- *    of [three] to play during battle" is a CONTINUOUS COST MODIFIER;
- *    canPayCard/payCard read printed mana only — there is no cost-modification
- *    layer (sibling of the missing continuous static stat modifiers).
- *    Registered with an inert augmentText entry (Conduit of Pain precedent)
- *    so it still plays as a 2/4 and is recognised as an augment.
- *  - Channel Through / Torrential Reclamation (X half): no cast-time
- *    "choose and pay X" primitive exists (canPayCard treats X as 0), so
- *    item.x is undefined → 0 when played from hand and the spells resolve as
- *    no-ops. The full resolution machinery is implemented and tested with x
- *    set white-box (the Gravitational Correction precedent).
+ * Nothing is parked in this batch any more; both entries that used to sit here
+ * have been overtaken:
+ *  - Stasis Sentry, parked on "there is no cost-modification layer". R59's
+ *    CostMod is that layer, and the card is a live `costMods` entry now.
+ *  - Channel Through / Torrential Reclamation (X half), parked on "no
+ *    cast-time 'choose and pay X' primitive exists". R35's collectX fixes X
+ *    before the spell reaches the stack, and both cards read `ctx.x`.
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
-import type { E } from '../../engine.ts';
-import { card, getCard, isEntityTarget, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, getCard, isEntityTarget, unitRestrict, type EffectDef } from '../dsl.ts';
+import { selfOf, inEndOfTurn, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-/** True while endTurn() is resolving end-of-turn triggers (batch-fire-a
- * precedent): a ctx.choose suspension in that window strands the game, so
- * "may" effects auto-decline there. */
-const inEndOfTurn = (g: E): boolean => g.s.phase === 'deploy' && g.s.deployPlayer === null;
 
 /** printed mana of a card name; X counts as 0 (⚠ approximation — the event
  * snapshot carries no x, and X-cost items played from hand have x = 0). */
@@ -58,20 +49,6 @@ const manaOf = (name: unknown): number => {
   if (typeof name !== 'string') return 0;
   const m = getCard(name).mana;
   return typeof m === 'number' ? m : 0;
-};
-
-/** pick one of `pool` (auto when forced); returns null on an empty pool.
- * Plan-then-commit: callers gather every pick before mutating (the engine
- * rolls back to the part boundary and replays on suspension). */
-const pickUnit = (
-  ctx: EffectCtx, key: string, chooser: Seat, pool: Entity[], prompt: string,
-): EntityId | null => {
-  if (!pool.length) return null;
-  if (pool.length === 1) return pool[0]!.id;
-  return ctx.choose(key, {
-    kind: 'electricPath', seat: chooser, prompt,
-    options: pool.map(u => ({ label: u.card, value: u.id })),
-  }) as EntityId;
 };
 
 // ─────────────────────── WATER / EARTH (be) ───────────────────────────
@@ -92,9 +69,11 @@ card('A Pile of Runes', {
       return true;
     },
     effect: {
+      creates: ['Crystal'],
       run: (g, ctx) => {
         const x = (ctx.event?.data?.['aporDefense'] as number | undefined) ?? 0;
-        if (x > 0) g.createSpellToken(ctx.controller, 'Crystal', x, ctx.region);
+        if (x <= 0) { g.ev('info', 'A Pile of Runes: its defense was 0 — no Crystal.'); return; }
+        g.createSpellToken(ctx.controller, 'Crystal', x, ctx.region);
       },
     },
   }],
@@ -148,7 +127,7 @@ card('Origon', {
         if (name === undefined || seat === undefined) return;
         const spellKinds = new Set(['spell', 'spellUnit', 'spellToken']);
         const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && !i.negated && spellKinds.has(i.kind));
+          i.card === name && i.controller === seat && spellKinds.has(i.kind));
         if (it) g.negate(it.id);
         else g.ev('info', `Origon: ${name} already left the stack — not negated.`);
       },
@@ -158,14 +137,38 @@ card('Origon', {
 
 // "[Augment] Spells with base cost [three] or less have a base cost of
 // [three] to play during battle." — be/3 2/4 Arcane Beast Unit.
-// PARKED (see header): a continuous cost-modification layer does not exist.
-// The inert augmentText entry (events: []) keeps the card recognised as an
-// augment (Conduit of Pain precedent); it plays as a vanilla 2/4 meanwhile.
+//
+// UN-PARKED (R59). This was parked on "a continuous cost-modification layer
+// does not exist", with an inert augmentText stand-in; `CardBehavior.costMods`
+// is that layer (Tranquility and The Silent are the precedents), and it
+// radiates from the card in play AND from the augment mod anchored on its host
+// (E.costModsFor -> E.anchored), which is exactly what a text-box [Augment]
+// wants.
+//
+// Clause by clause:
+//  - "Spells" = the spell CARD kinds you PLAY (spell / spellUnit). A spell
+//    token is cast from play, not played; a unit is not a spell.
+//  - "to play" = playing it. Applying it as a mod is not playing (R37), which
+//    `purpose: 'mod'` excludes for free.
+//  - "base cost [three] or less" reads the PRINTED mana. ⚠ An X-COST SPELL IS
+//    EXCLUDED (flagged for a ruling): its base cost is not a number on the
+//    card, it is whatever the caster chooses to pay, so "with base cost three
+//    or less" does not name it. Reading X as its floor of 0 would instead put
+//    a +3 tax on every X spell in the game — including ones you meant to cast
+//    for more than three — which is plainly not what the card says.
+//  - "have a base cost of [three]" is a RAISE to three, not a discount: the
+//    delta is `3 - printed`, which is 0 at exactly three and never negative.
+//  - Unqualified subject, so it hits BOTH players, and region-scoped (R12)
+//    like every continuous effect.
 card('Stasis Sentry', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'spells with base cost [three] or less cost [three] in battle (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
+  augmentable: true,
+  costMods: [{
+    delta: (g, _self, ctx) => {
+      if (g.s.phase !== 'battle' || ctx.purpose !== 'play') return 0;
+      if (ctx.card.kind !== 'spell' && ctx.card.kind !== 'spellUnit') return 0;
+      if (ctx.card.mana === 'X') return 0;   // ⚠ see the note above
+      return ctx.card.mana <= 3 ? 3 - ctx.card.mana : 0;
+    },
   }],
 });
 
@@ -179,7 +182,7 @@ card('Unfinished Creation', {
     label: 'recall me (after combat)',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (self) g.recall(self);
       },
     },
@@ -246,7 +249,10 @@ card('Tempest Oracle', {
     label: 'you may pay [one] to draw a card and lose 1 life',
     effect: {
       run: (g, ctx) => {
-        if (g.openMana(ctx.controller) < 1 || inEndOfTurn(g)) return;
+        if (g.openMana(ctx.controller) < 1 || inEndOfTurn(g)) {
+          g.ev('info', 'Tempest Oracle: the [one] cannot be offered right now — no draw.');
+          return;
+        }
         const pay = ctx.choose('pay', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: 'Tempest Oracle: pay [one] to draw a card and lose 1 life?',
@@ -255,7 +261,7 @@ card('Tempest Oracle', {
             { label: 'Decline', value: false },
           ],
         });
-        if (!pay) return;
+        if (!pay) { g.ev('info', 'Tempest Oracle: the [one] is declined — no draw.'); return; }
         g.payMana(ctx.controller, 1);
         g.draw(ctx.controller, 1);
         g.loseLife(ctx.controller, 1, 'Tempest Oracle');
@@ -284,6 +290,10 @@ card('Torrential Reclamation', {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       if (x <= 0) { g.ev('info', 'Torrential Reclamation: X = 0 — no effect.'); return; }
       const recalled = ctx.targets.filter(isEntityTarget).map(t => g.entity(t.id)).filter((u): u is Entity => !!u);
+      if (!recalled.length) {
+        g.ev('info', 'Torrential Reclamation: every targeted ally has left play — nothing is recalled.');
+        return;
+      }
       // plan the sacrifices: one round per recalled ally, each player picks
       const sacs: EntityId[] = [];
       for (let r = 0; r < recalled.length; r++) {
@@ -328,6 +338,10 @@ card('Channel Through', {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       if (x <= 0) { g.ev('info', 'Channel Through: X = 0 — no effect.'); return; }
       const picked = ctx.targets.filter(isEntityTarget).map(t => g.entity(t.id)).filter((u): u is Entity => !!u);
+      if (!picked.length) {
+        g.ev('info', 'Channel Through: every targeted ally has left play — nothing is damaged.');
+        return;
+      }
       // plan: per damaged ally, distribute 2 damage among opponent units
       const enemies = () => g.unitsIn(ctx.region).filter(u => u.controller !== ctx.controller);
       const alloc: EntityId[][] = picked.map((_, i) => {
@@ -371,7 +385,7 @@ card('Molten Tormentor', {
     effect: {
       run: (g, ctx) => {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
-        if (n <= 0) return;
+        if (n <= 0) { g.ev('info', 'Molten Tormentor: 0 damage survived — nobody sacrifices.'); return; }
         const picks: EntityId[] = [];
         for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
           if (seat === ctx.controller) continue;
@@ -383,6 +397,7 @@ card('Molten Tormentor', {
             picks.push(id);
           }
         }
+        if (!picks.length) g.ev('info', 'Molten Tormentor: no opponent here has a unit to sacrifice.');
         for (const id of picks) {
           const u = g.entity(id);
           if (u) g.destroy(u, 'is sacrificed');
@@ -408,7 +423,7 @@ card('Slag Spewer', {
     effect: {
       targets: { what: 'any', prompt: 'Slag Spewer: deal 2 damage to any target' },
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (!self) return;
         const mods = self.mods
           .map(id => g.entity(id))
@@ -463,6 +478,7 @@ const collapseSacrifice: EffectDef = {
       }
       picks.push(...chosen);
     }
+    if (!picks.length) g.ev('info', 'Structural Collapse: nobody here has a unit to sacrifice.');
     for (const id of picks) {
       const u = g.entity(id);
       if (u) g.destroy(u, 'is sacrificed');
@@ -485,7 +501,7 @@ card('Unstable Form', {
     effect: {
       run: (g, ctx) => {
         const pool = g.unitsOf(ctx.controller, ctx.region).filter(u => u.id !== ctx.sourceId);
-        if (!pool.length) return;
+        if (!pool.length) { g.ev('info', 'Unstable Form: you control no OTHER unit here — nothing is sacrificed.'); return; }
         const id = inEndOfTurn(g)
           ? pool[0]!.id   // mandatory: deterministic auto-pick, no suspension
           : pickUnit(ctx, 'sac', ctx.controller, pool, 'Unstable Form: sacrifice another unit')!;

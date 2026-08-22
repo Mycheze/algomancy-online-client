@@ -115,6 +115,9 @@ resyncs — see Reconnect below.
 - **Event redaction**: `EngineEvent.msg` strings are blurred where they would
   leak hidden info — a recycle names the recycled card (which goes to the hidden
   bottom of the deck) to its owner but reads "recycles a card" to the opponent.
+- **Hidden simultaneous segments** (`rooms.ts` `segmentKey`): the resource
+  step, the haste step and deployment are each played behind a screen — see
+  below.
 - **Reconnect**: refreshing and rejoining the same room+seat gets a full
   redacted view + the full redacted game log resync (simple full-state push on
   join).
@@ -123,6 +126,97 @@ resyncs — see Reconnect below.
   by replaying their action logs (`restoreRooms()`), so a server restart does
   not lose games in progress. A log that an engine change made invalid is
   skipped with a warning rather than crashing startup.
+
+## Hidden simultaneous segments
+
+Deployment used to be the only step played behind a screen. Playtest UZRG
+(2026-08-21):
+
+> "Planning should be like deployment, entirely divorced from what your
+> opponent is doing. But right now, you can't take back making the wrong
+> resource or recycling the wrong card if your opponent does something (which
+> shouldn't matter) and you can see what your opponent is doing live, so
+> there's technically a reason to wait to see what they do (which there
+> shouldn't be)."
+
+So a turn now has **three** hidden segments, not one, and one piece of code
+knows which is which — `segmentKey(state)` in `rooms.ts`:
+
+| key | the step | ends when |
+|---|---|---|
+| `plan` | the resource step: recycle / activate / exchange, plus the draft and draw-phase gates | both have hit **done planning** |
+| `haste` | the haste step (R18) | both have hit **done haste** |
+| `deploy` | simultaneous deployment | both have hit **done deploying** |
+
+Inside a segment each seat's view of the OPPONENT is served from a snapshot
+taken when the segment opened (`view.ts`, the `frozenOpp` argument), and every
+event an action produces is held back from the other seat. Everything else is
+one rule: **the key changed → flush the old segment's reveal, snapshot the new
+one.** No phase is special-cased anywhere else. (`deploy` → `plan` is a close
+and an immediate re-open on the *same* action, because doneDeploying runs
+endTurn and startTurn; the rule handles it without knowing that.)
+
+What stays live and public inside a segment: every done-flag (`planningDone`,
+`hasteDone`, `draftDone`, `bottomDone`, `deployDone`) — "they have finished" is
+exactly what you can see across a table — the phase and turn, your own
+everything, and each player's NAME (which `renameSeat` writes outside the
+action log, so the live one is carried over the frozen slot). What is
+additionally covered up: the deck count, which a recycle would otherwise turn
+into a live readout of how many resources your opponent has just made.
+
+**Why the resource step is safe to hide.** The only legal actions there are
+`recycleForResource`, `activateResource`, `exchangePrismite`, `donePlanning`
+and the `draftCommit` / `bottomCards` gates. None reaches the stack, none
+fires a trigger, none draws from the RNG, none allocates an entity id, and
+every index is into the actor's own hand or resources — so the two seats'
+actions **commute**, which `test-hidden.ts` asserts directly (same seed, two
+interleavings, one state). The haste step can put things on the stack but only
+non-interactively (`castChain(…, 'resolve')` — immediate resolution, no
+priority, no responses), so it has deployment's hazards and no more.
+
+### Undo inside a segment
+
+Your last action is very often not the last one overall, so undo walks back to
+**your** most recent action inside the segment and splices that — your
+opponent acting can no longer take your undo away, which was the report. The
+window closes at each barrier, which is right: once both have pressed done,
+the decisions lock.
+
+The action log stays **arrival order** — it IS the record, and
+`replay(seed, actions)` must still reproduce it bit-identically. What needs a
+rule is the *splice*, because removing seat A's action re-runs seat B's from a
+different prior state. If A's action moved the entity-id clock or the RNG
+stream, everything after it renumbers: A deploys unit 7, B deploys 8 and
+augments `hostId: 8`; A undoes, B's unit becomes 7, and B's augment is now an
+IllegalAction that the tolerant replay **silently skips** — B loses a play
+nobody told them about. (That bug was in deployment all along.)
+
+So: an action may leave a segment iff it is id- and RNG-inert, or nothing an
+opponent did after it could be renumbered. `Room.segTouched[i]` (derived, never
+persisted) records the first half; the exception to the second is a bare
+barrier flag — `donePlanning` / `doneHaste` / `doneDeploying` / `passPriority`
+/ `concede` carry no id, index or choice at all, so one of those landing on top
+of your play is not a reason to refuse. Anything else is refused with a
+message, rather than silently reordering somebody else's game. Because the
+resource step is provably inert, the gate never fires there at all.
+
+### Known leaks inside a segment (pre-existing, deliberately not fixed yet)
+
+Both of these predate the hidden-segment work — they have always been true of
+deployment — and both are on the record rather than rediscovered later:
+
+- **`legalActions` is computed from live state.** A targeted play's legality
+  can depend on the opponent's entities, so the legal-move list pushed to a
+  seat during `haste` or `deploy` can reflect something they should not yet
+  see. The `plan` segment is unaffected: planning legals read only your own
+  hand, resources and pack.
+- **A suspended decision leaves its stack item visible.** If a play inside a
+  segment suspends on a decision, the item sits on `state.stack`, which is
+  public in the view. The opponent cannot answer the decision, but they can see
+  that something is there.
+
+Neither leaks card identity in the `plan` segment, which is why they did not
+block this round.
 
 ## Files
 
@@ -133,7 +227,10 @@ resyncs — see Reconnect below.
 | `test-lobby.ts` | the lobby: every method, the seeded draw, and "no cards until both lock in" |
 | `test-postgame.ts` | the post-game payload and the rematch handshake |
 | `view.ts` | `viewFor(state, seat)` redaction + per-seat event/log blurring |
-| `rooms.ts` | in-memory room store, apply-to-room, JSON persistence + replay restore |
+| `rooms.ts` | in-memory room store, apply-to-room, hidden-segment bookkeeping, JSON persistence + replay restore |
+| `test-hidden.ts` | the three hidden segments: freeze, holdback, reveal, the segment undo and its splice gate (was `test-deploy.ts`) |
+| `replay-room.ts` | replay a saved game and say whether the file still describes it — faithful / engine drift / forked / inconsistent |
+| `test-forensics.ts` | the log's contract: the fork record, the cascade one skip causes, and the undo roll-back guarantee |
 | `test-drive.ts` | integration test: boots the server, two clients, asserts redaction + reconnect |
 | `test-concede.ts` | R65 concede: the opponent's update, the stamped result, the refusals |
 | `games/` | one JSON file per room (`{ seed, names, users, actions }`) |
@@ -274,6 +371,71 @@ node seed-accounts.ts --dry                    # report only, writes nothing
 the record. They have to: a sync re-reads a file whenever it has changed, and
 would otherwise undo them. Both are idempotent — a second run edits nothing.
 
+### When a log stops describing its own game
+
+A room file is a claim: **seed + actions reproduces this game**. It is the tool
+the whole playtest loop reviews bugs with, so it has to be either true or
+explicit about why not. Game UZRG rejected **79 of its 276 actions** replayed
+on the engine it was played on, and nothing in the file explained it.
+
+The mechanism, reproduced in `test-forensics.ts`. `rebuild()` is deliberately
+tolerant — an action the current engine rejects is skipped rather than killing
+the room, because losing a live game to a rules tweak is worse than a slightly
+wrong log. But the skipped action stays in `actions`, and **one skip cascades**:
+the board the rest of the log was written against no longer exists, so action
+after action is refused too. On a synthetic 60-action game, one action becoming
+illegal cost **28 of the 60** and rolled the game back from turn 4 to turn 2 —
+and play then carried on from the rolled-back board, appending to a log that is
+now two different games end to end.
+
+Note what is *not* wrong: the skip is deterministic, so `rebuild(seed, actions)`
+still equals the state the players are sitting in. The file is not
+self-contradictory. It is **forked**, and it said nothing about it. That silence
+is the bug.
+
+So the file now says so. A restore that cannot faithfully rebuild a **live**
+room appends to a `forks` array — when, how many actions were lost, why the
+first one was refused, and which turn the game resumed at — and pushes a ⚠ line
+into the game's own log so both players see it on their next join. The contract
+becomes explicit and checkable: **seed + actions, minus the forks this file
+declares, reproduces this game.**
+
+Nothing is pruned, even though pruning would restore the literal contract.
+Those actions are the evidence — a forked game is exactly the one you most want
+to read — `history.ts` counts the RAW log length so a real game is never
+demoted to a stub, and a rules commit can be reverted, at which point a recorded
+fork can be re-checked while a pruned one is simply gone.
+
+**A game in progress survives all of this**, which is the whole reason the
+tolerant restore exists. It is restored, it is playable, new actions are still
+accepted. The only difference is that the fork is now loud instead of silent.
+Finished games are left alone: their skips are read-only forensics that
+`stats.ts` already reports as diverged, and recording a fork for each would
+rewrite hundreds of settled files on every boot. (The ~650 `replay skipped`
+warnings at startup are those, and they are normal.)
+
+Two more guarantees fell out:
+
+- **An undo can never quietly cost somebody a move.** `spliceable()` predicts
+  from an action's payload whether removing it would renumber what came after;
+  `undoActionAt()` now *measures* it — it does the splice, and if the rebuild
+  can suddenly not replay something, it puts the log back exactly as it was and
+  reports a refusal. A measurement beats a prediction, and a refused undo beats
+  an action vanishing out of the record.
+- **`replay-room.ts` tells the two failures apart.** It used to present both as
+  a pile of skips, which is precisely why UZRG went unnoticed:
+
+| verdict | exit | meaning |
+|---|---|---|
+| **FAITHFUL** | 0 | every action replays, no forks declared |
+| **ENGINE DRIFT** | 2 | the rules changed since; the *file* is a true record and the current engine disagrees with it. Expected after a rules commit — a surprise otherwise, and then this log has found you a regression |
+| **FORKED** | 2 | the file declares forks and this replay reproduces exactly them. Not a server bug; read the halves as separate games |
+| **FORKED + FURTHER DRIFT** | 2 | declared forks, plus new skips on top |
+| **INCONSISTENT** | 3 | the file declares forks this engine replays fine. No server behaviour can produce that — a rules change was reverted, or the file was hand-edited |
+
+`replay-room.ts` also deals constructed games from their two saved decks now;
+it used to replay them from a shared deck, which diverged at the first draw.
+
 ### Why a result is stamped and not derived
 
 A saved game is READ by replaying it, and an old log replayed onto a newer
@@ -352,7 +514,15 @@ Server → client:
   constructed room still waits for decks, `view/log/legal` are replaced by
   `waiting: { have: [bool, bool] }`; a fresh full `joined` goes to both seats
   the moment the second deck arrives and the game is dealt
-- `{ t: 'update', view, events?, legal, peers }` — after any action, to both seats
+- `{ t: 'update', view, events?, legal, peers }` — after any action, to both
+  seats. Inside a hidden segment the actor gets their own `events` and the
+  opponent gets a bare view refresh
+- `{ t: 'update', step, reveal, view, events, legal, peers }` — a hidden
+  segment just closed. `step` is `'plan' | 'haste' | 'deploy'`; `reveal` is
+  what the OTHER seat did behind the screen, and `events` is that followed by
+  the public tail. The client renders a `'plan'` close as log lines and board
+  animation only (it fires every turn and the payload is resource lines) and
+  keeps the modal interstitial for `'haste'` and `'deploy'`
 - `{ t: 'error', msg }` — illegal action / join error, to the actor only
 - `{ t: 'gameover', seat, winner, names, mode, els, turns, seats, rematch,
   recorded, unlocked?, me? }` — the post-game screen's payload, sent to both

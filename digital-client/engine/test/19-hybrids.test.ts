@@ -4,11 +4,12 @@
  * R14 counters), after-combat recalls/sacrifices (Unfinished Creation,
  * Unstable Form), battle life-loss draws (Astral Painseeker), spell-cost
  * sacrifices (Death Greeter), X-spell machinery with white-box x (Channel
- * Through, Torrential Reclamation — the cast-time X primitive is PARKED),
+ * Through, Torrential Reclamation — X is chosen and paid at cast, R35),
  * survive-damage punishment (Molten Tormentor), an [Augment]-text activated
  * ability (Slag Spewer), defense-bar sacrifices (Structural Collapse),
  * despawn pings (Demon of the Depths) and a pay-to-draw death trigger
- * (Tempest Oracle). The PARKED Stasis Sentry static has a todo test.
+ * (Tempest Oracle) and Stasis Sentry's continuous cost tax (R59 — un-parked;
+ * it used to carry a todo saying the cost layer did not exist).
  * States are built explicitly (give/spawn/giveResources) so parallel card
  * registration can't shift assertions. Seeds: 1900-1999.
  */
@@ -16,6 +17,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
+import { getCard } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
@@ -117,7 +119,7 @@ test('Origon: negates each player’s FIRST spell in this battle only (R14)', ()
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Structural Collapse') });
   pick(h, { unit: atk });                                     // cast cost (R35): paid before the push
   pass(h); pass(h);                                           // resolve the negation trigger
-  pass(h); pass(h);                                           // resolve the (negated) spell
+  assert.equal(h.state.stack.length, 0, 'R68: the negated spell left the stack with the trigger');
   assert.ok(h.log.some(m => m.includes('Structural Collapse is negated')), 'first spell negated');
   assert.ok(h.state.players[A]!.bin.includes('Structural Collapse'), 'negated spell → bin');
   assert.ok(!ent(h, atk), 'the cast COST was still paid (R35) — negation does not refund it');
@@ -132,24 +134,50 @@ test('Origon: negates each player’s FIRST spell in this battle only (R14)', ()
 
 // ── Stasis Sentry ────────────────────────────────────────────────────────
 
-test('Stasis Sentry: spells with base cost ≤ [three] cost [three] in battle', { todo: true }, () => {
-  // PARKED: a continuous cost-modification layer does not exist —
-  // canPayCard/payCard read printed mana only (sibling of the missing
-  // continuous static stat modifiers). See the batch header.
+test('Stasis Sentry: spells with base cost \u2264 [three] cost [three] in battle', () => {
+  // UN-PARKED (R59). This was a todo reading "a continuous cost-modification
+  // layer does not exist"; CostMod is that layer.
+  const h = new Harness(1904);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  spawn(h, D, 'Stasis Sentry');                               // D's region: the battle lands here
+  const cheap = 'Fight';                                      // printed 1
+  assert.equal(getCard(cheap).mana, 1, 'printed cost');
+  const before = new E(h.state);
+  assert.equal(before.manaToPlay(D, cheap), 1, 'no tax outside battle');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const e = new E(h.state);
+  assert.equal(e.manaToPlay(D, cheap), 3, 'a [1] spell is raised to [3] during battle');
+  assert.equal(e.manaToPlay(A, cheap), 3, 'unqualified subject — the attacker pays it too');
+  const pricey = 'Flame Shield';                              // printed 4
+  assert.equal(getCard(pricey).mana, 4);
+  assert.equal(e.manaToPlay(D, pricey), 4, 'a spell already above [three] is untouched');
+  assert.equal(e.manaToPlay(D, 'Torrential Reclamation'), 0,
+    '\u26a0 an X spell has no fixed base cost — excluded (see the card note)');
+  assert.equal(e.manaToPlay(D, 'Bubb'), getCard('Bubb').mana as number, 'a unit is not a spell');
+  finishBattle(h);
 });
 
-test('Stasis Sentry: plays as a 2/4; augments (donating nothing yet)', () => {
+test('Stasis Sentry: plays as a 2/4; the tax is DONATED by the augment', () => {
   const h = new Harness(1905);
   toDeployment(h);
-  const p = h.state.deployPlayer!;
-  const sentry = spawn(h, p, 'Stasis Sentry');
+  const A = h.state.initiative, D = 1 - A;
+  const sentry = spawn(h, A, 'Stasis Sentry');
   assert.deepEqual(effStats(h, sentry), [2, 4], 'vanilla 2/4 in play');
-  const host = spawn(h, p, 'Unit Token');
-  giveResources(h, p, 'water', 1);
-  giveResources(h, p, 'earth', 1);
-  giveResources(h, p, 'fire', 1);                             // be / 3
-  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Stasis Sentry'), hostId: host });
-  assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment (inert donation)');
+  const host = spawn(h, D, 'Unit Token');                     // D's region — where the battle lands
+  giveResources(h, D, 'water', 1);
+  giveResources(h, D, 'earth', 1);
+  giveResources(h, D, 'fire', 1);                             // be / 3
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Stasis Sentry'), hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'it attached as a mod');
+  const atk = spawn(h, A, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  assert.equal(new E(h.state).manaToPlay(D, 'Fight'), 3,
+    'the donated modifier taxes from the host (mod-carried CostMod, host-anchored)');
+  finishBattle(h);
 });
 
 // ── Unfinished Creation ──────────────────────────────────────────────────

@@ -267,8 +267,18 @@ export function specForSlot(spec: TargetSpec, i: number): TargetSpec {
  */
 export type CastCost =
   | { kind: 'sacrificeUnit' }
-  /** "[Sacrifice X units]" (Malevolent Machinations) — `n` units, or 'X' */
-  | { kind: 'sacrificeUnits'; n: number | 'X'; xMin?: number }
+  /**
+   * "[Sacrifice X units]" (Malevolent Machinations) — `n` units, or 'X'.
+   *
+   * `from: 'self'` is "sacrifice **me**" (Eldritch Dreamtender), resolved
+   * through `item.sourceId` exactly as `removeCounters`' own `from: 'self'`
+   * is. It carries NO choice — there is nothing to pick — so it is charged
+   * outright in the cast window with no decision and no suspension, which is
+   * what keeps it unrespondable. `n` must be 1. A source that is already dead
+   * makes it UNPAYABLE, so R5 partial resolution skips the part: a trigger
+   * whose source died between firing and settling does nothing at all.
+   */
+  | { kind: 'sacrificeUnits'; from?: 'self'; n: number | 'X'; xMin?: number }
   | { kind: 'payLife'; n: number | 'X'; xMin?: number }
   | { kind: 'discardCard'; n: number | 'X'; xMin?: number }
   | { kind: 'gainDebt'; n: number }
@@ -298,9 +308,55 @@ export interface EffectDef {
    * skipped) when the composite collects its cast-time decisions, exactly
    * where graft targeting happens. The receipt lands in ctx.costPaid. */
   castCost?: CastCost;
+  /**
+   * R74 — a VARIABLE cast cost ('X') whose **X = 0 makes this effect a
+   * guaranteed no-op**, said in one line and DECLARED rather than discovered.
+   * The engine shows it on the "That's enough — X = 0" option at the moment
+   * the payer can stop at zero, and logs it if the cost closes at zero on its
+   * own (an empty pool).
+   *
+   * It is a WARNING, never a prohibition — X = 0 stays legal and the option is
+   * still offered. That is the deliberate difference from `CastCost.xMin`,
+   * which forbids: use `xMin` where paying zero would burn something the payer
+   * cannot get back (No Hand Killer's `[once]` budget), and this where paying
+   * zero is merely a bad idea you are allowed to have.
+   *
+   * Declared per effect because "X = 0 does nothing" is a fact about the
+   * EFFECT, not about the cost kind: Necromantic Rebuke's ransom is trivially
+   * met at X = 0, Discharge deals 0 damage, Flesh Tithe makes no unit,
+   * Malevolent Machinations negates nothing. All four already say so at
+   * RESOLUTION, which is far too late to be of use.
+   */
+  xZeroWarning?: string;
   /** R5: if true, all targets invalid at resolution fizzles the whole effect.
    * Default: resolve partially against remaining legal targets. */
   allOrNothing?: boolean;
+  /** Every token this effect can put onto the board, DECLARED rather than
+   * inferred. The inspector's "tokens it creates" panel used to scrape the
+   * PRINTED text for a registered token name, which is wrong three ways: it
+   * misses plurals ("Create three Wraiths"), it cannot see a token whose card
+   * is also in DECK_LIST (Echo of Despair, Hooba-God), and printed text is the
+   * card's history, not its rules (R63 granting, donated mod text and graft
+   * composites are all invisible to it). A declaration is checked against what
+   * the effect actually does by the conformance test, so a card that starts
+   * making a token and forgets to say so fails `npm test`. */
+  creates?: string[];
+  /**
+   * R69, the honest escape hatch: this effect's token NAME is COMPUTED, not
+   * printed — it copies whatever token it is pointed at (Arcane Echo's "create
+   * a copy of target token", Automaton of Abundance's duplication of any unit
+   * token you create). No fixed `creates` list can be true for those, and the
+   * conformance test would rather be told that than be handed a guess.
+   *
+   * It exempts the effect from the "recorded ⊆ declared" assertion, so use it
+   * ONLY where the name genuinely cannot be known before resolution — an
+   * effect that picks among a KNOWN set (Cosmic Conspirator's Poison/Crystal/
+   * Fireball, Spirit of Nature's Poison-or-Crystal) declares that set instead.
+   * The test still checks that whatever such an effect spawns is a registered
+   * card, and `createsOf` deliberately does NOT report it: the inspector must
+   * not claim a card makes Wraiths merely because it could copy one.
+   */
+  createsAny?: boolean;
   run: (g: E, ctx: EffectCtx) => void;
 }
 
@@ -377,6 +433,22 @@ export interface ActivatedAbility {
   label: string;
   bounded?: boolean;
   graftCause?: boolean;
+  /**
+   * R77 — a printed PRECONDITION on activating: "Activate this ability only
+   * if …". A gate, not a fizzle: an ability whose condition is false is not
+   * offered by legalActions and is refused by apply(), exactly the way R64
+   * treats an unpayable [cost] or a target with nothing legal to aim at.
+   *
+   * `self` is the SOURCE unit — the host when the ability was donated by an
+   * augment, so "I" reads correctly either way. Evaluated BEFORE any cost is
+   * paid, which is what lets a condition about the source coexist with
+   * `cost.sacrificeSelf`: the check has already happened by the time the
+   * sacrifice removes its own subject.
+   *
+   * R1: this is a condition, so it is checked once, at activation. It is not
+   * re-checked at resolution — for a self-sacrificing ability it could not be.
+   */
+  usableWhen?: (g: E, self: Entity, seat: Seat) => boolean;
   effect: EffectDef;
 }
 
@@ -536,6 +608,11 @@ const PRINTED = printedJson as Record<string, Printed>;
 export function card(name: string, behavior: CardBehavior): void {
   const printed = PRINTED[name];
   if (!printed) throw new Error(`No printed data for "${name}" — add it to scripts/extract-printed.mjs POOL`);
+  // a second card() for the same name would silently REPLACE the first — and
+  // since Map.set keeps insertion order, even DECK_LIST would not shift, so
+  // nothing downstream could ever notice. Fail loudly instead.
+  // (registerSynthetic stays permissive: test files redefine test cards.)
+  if (REGISTRY.has(name)) throw new Error(`"${name}" is already registered — duplicate card() call`);
   REGISTRY.set(name, { ...printed, ...behavior });
   ZONE_INDEX = null;   // R51: a new registration may add a zone trigger
 }
@@ -547,7 +624,7 @@ export function registerSynthetic(printed: Printed, behavior: CardBehavior): voi
 }
 
 /**
- * R47: a second printed NAME for one registered card. The Wraith token is the
+ * R71: a second printed NAME for one registered card. The Wraith token is the
  * only case: the token was renamed FROM "Wight" TO "Wraith", and the printed
  * data is mid-transition in the other direction — six cards already read
  * "Wraith" while `Blight's End` still carries the OLD name ("Augment a Wight
@@ -668,7 +745,6 @@ export function zoneTriggersFor(type: EventType): ZoneTrigger[] {
 }
 
 export function isTriggered(a: Ability): a is TriggeredAbility { return a.type === 'triggered'; }
-export function isActivated(a: Ability): a is ActivatedAbility { return a.type === 'activated'; }
 
 /** A card can be grafted onto a host iff it has a [Switch]-marked effect. */
 export function isGraftable(name: string): boolean {

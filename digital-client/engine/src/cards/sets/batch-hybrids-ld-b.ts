@@ -14,7 +14,7 @@
  * ctx.choose), R9 (bounded [Switch1]/[once] budgets per card), R12/R25
  * ("each opponent" = the region's present seats), R19 (layer-4 Balanced),
  * R27 (state-derived amounts read live), R35 (bracketed costs paid at cast),
- * R37 (applying a mod is not playing), R40 (trash), R47 (the Wraith token).
+ * R37 (applying a mod is not playing), R40 (trash), R71 (the Wraith token).
  *
  * Cards in this batch:
  *   Air Plant             Arbiter of Vitality   Blight's End
@@ -34,10 +34,12 @@
  *    Combustible Bogwalker's "sacrifice a nontoken unit OR discard a card" is
  *    the printed either/or shape, `cost: { discardOrSacrifice: 1 }` — also a
  *    real activation cost, also paid before the item reaches the stack.
- *  - X-MANY TARGETS (Blight's End) are mid-resolution chooses: TargetSpec.count
- *    is fixed at definition time and X is only known after the cast payment
- *    (the Torrential Reclamation / Channel Through precedent). Opponents
- *    respond to the spell, not to the picks.
+ * ✔ X-MANY TARGETS ARE REAL NOW (R64/R67). This entry used to read "TargetSpec
+ *    .count is fixed at definition time and X is only known after the cast
+ *    payment", so Blight's End picked its hosts mid-resolution. `count: 'X'`
+ *    reads the X that R35 already fixed before targets are asked for, so the
+ *    spell goes on the stack aiming at named units and opponents respond to
+ *    the picks.
  *  - REPLACEMENT EFFECTS that the engine has no hook for (Arbiter of Vitality's
  *    doubled life change, Proliferating Slime's "plus one counter") are
  *    modelled as TRIGGERS that top the amount up afterwards. The engine has
@@ -51,17 +53,23 @@
  *    deployment and apply() refuses it there.
  *
  * PARKED (needs engine machinery that does not exist yet):
- *  - Deferral Drone: "the next card you play this turn costs [3] less" needs
- *    the cost-modification layer that docs/08 puts out of scope (canPayCard /
- *    payCard read printed mana only — the Stasis Sentry / The Silent
- *    precedent). Registered with inert [Augment] text so it plays as a 2/2 and
- *    is still recognised as an augment. Deliberately NOT activatable: the only
- *    half that DOES exist is "gain 4 debt", and offering the cost without the
- *    benefit would be strictly worse than the printed card.
+ *  - Deferral Drone: "the next card you play this turn costs [3] less". The
+ *    cost-modification layer this used to be parked on EXISTS (R59's CostMod —
+ *    Tranquility, The Silent and Stasis Sentry all use it), so the reason has
+ *    changed rather than gone: a CostMod is CONTINUOUS and stateless — it is
+ *    asked "what does this card cost right now" and has nowhere to record
+ *    "…and then stop applying". "The NEXT card you play this turn" needs a
+ *    one-shot that a play consumes, which no channel provides. Registered with
+ *    inert [Augment] text so it plays as a 2/2 and is still recognised as an
+ *    augment. Deliberately NOT activatable: the only half that DOES exist is
+ *    "gain 4 debt", and offering the cost without the benefit would be
+ *    strictly worse than the printed card.
  *  - Vengeance: "Cards your opponents play during battle gain '[Sacrifice a
- *    unit]'" IMPOSES an additional cast cost on other players' cards — the
- *    same missing layer, from the other side. Inert [Augment] text; plays as a
- *    7/9.
+ *    unit]'" IMPOSES an additional cast cost on other players' cards. Again the
+ *    layer exists but not this channel: CostMod carries `delta` (extra mana)
+ *    and `life` (extra life, R60's Arbiter of Armistice), and there is no
+ *    channel for "and a sacrifice" — nor any way to make the imposed cost gate
+ *    the opponent's cast. Inert [Augment] text; plays as a 7/9.
  *
  * UNPARKED by the R51 wave: Inexorable Miasma's second sentence ("After
  * combat, if I am in your bin …") is a `zone: 'bin'` trigger — see R51 and the
@@ -70,21 +78,9 @@
 import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, isEntityTarget, type EffectDef } from '../dsl.ts';
+import { isEnt, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
-
-/** [name, binIndex] pairs of `seat`'s bin cards passing a filter (the
- * batch-fire-b helper — bins hold bare names, so index is the handle) */
-const binMatches = (g: E, seat: Seat, ok: (name: string) => boolean): [string, number][] =>
-  g.player(seat).bin.map((n, i) => [n, i] as [string, number]).filter(([n]) => ok(n));
-
-/** "unit" for bin/zone purposes: a card that enters play as a unit */
-const isUnitCard = (name: string): boolean => {
-  const k = getCard(name).kind;
-  return k === 'unit' || k === 'spellUnit';
-};
 
 /** every attribute the pool can print (types.ts `Attr`), for The Omniphage's
  * per-attribute statics. {Pure} is in the union but PARKED engine-side; it is
@@ -264,10 +260,15 @@ card('Life Power Dude', {
 
 // "[Augment][once] Gain 4 debt: The next card you play this turn costs [3]
 // less." — lm/2 2/2 Horror Unit.
-// PARKED (see header): the narrow cost-modification layer does not exist, and
-// wiring only the "gain 4 debt" half would hand the player a cost with no
-// benefit. Inert augmentText — the card plays as a 2/2 and is recognised as an
-// augment, but the ability is never offered.
+// PARKED (see header) — but NOT on "there is no cost-modification layer" any
+// more: R59's CostMod is that layer, and Tranquility / The Silent / Stasis
+// Sentry all use it. What CostMod cannot express is the ONE-SHOT: it is a
+// continuous query ("what does this card cost right now") with nowhere to
+// record "…and then stop", and "the NEXT card you play this turn" needs a
+// charge that a play consumes. Wiring only the "gain 4 debt" half meanwhile
+// would hand the player a cost with no benefit. Inert augmentText — the card
+// plays as a 2/2 and is recognised as an augment, but the ability is never
+// offered.
 card('Deferral Drone', {
   augmentText: [{
     type: 'triggered', events: [],   // PARKED — never fires
@@ -363,13 +364,12 @@ card('Combustible Bogwalker', {
 // "[Switch1] [Discard a card] I deal 5 damage to any target." — rd/1 0/0
 // {Battle} Arcane Spell.
 //
-// ⚠ The bracketed [Discard a card] is a cast-time additional cost (R35) but
-// CastCost only knows `sacrificeUnit`, so it is paid at RESOLUTION (header):
-// an empty hand means the cost cannot be paid and the effect is SKIPPED, the
-// closest available reading of "the cast is illegal". The discard TRASHES the
-// card (R40) — which is the point of the card in a dark deck. Bounded graft
-// ([Switch1], R9); on a graft the CARRIER's controller pays and the carrier
-// aims the 5 damage.
+// The bracketed [Discard a card] is a REAL cast-time additional cost — see the
+// castCost below and the header's ✔ note. (The paragraph that used to stand
+// here said "CastCost only knows `sacrificeUnit`, so it is paid at RESOLUTION";
+// that expired when CastCost grew its other six kinds, and it contradicted the
+// declaration thirteen lines under it.) Bounded graft ([Switch1], R9); on a
+// graft the CARRIER's controller pays and the carrier aims the 5 damage.
 const darkblastEffect: EffectDef = {
   targets: { what: 'any', prompt: 'Darkblast: deal 5 damage to any target' },
   // R35/R49: a REAL bracketed cast cost now — chosen and paid at cast, before
@@ -417,7 +417,7 @@ card('Splort', {
 
 // "Augment a Wight onto X target units." — gd/X 0/0 {Battle} Blight Spell.
 //
-// R47: the retired "Wight" and the current "Wraith" are one token; augmentWraith() creates it directly
+// R71: the retired "Wight" and the current "Wraith" are one token; augmentWraith() creates it directly
 // as an augment MOD on the host rather than spawning the body, and the mod is
 // a token so it is erased (never binned, never trashed) when it leaves play.
 // R67: the X targets are DECLARED targets, collected as the spell goes on the
@@ -433,13 +433,20 @@ card("Blight's End", {
       what: 'unit', count: 'X', min: 0,
       prompt: "Blight's End: augment a Wight onto target unit",
     },
+    creates: ['Wraith'],
     run: (g, ctx) => {
       // the targets ARE the hosts; each is re-read at resolution so a unit
       // that died in between is simply skipped (R5 partial resolution)
+      let made = 0;
       for (const t of ctx.targets) {
         if (!isEntityTarget(t)) continue;
         const host = g.entity(t.id);
-        if (host) g.augmentWraith(host, ctx.controller);
+        if (host) { g.augmentWraith(host, ctx.controller); made++; }
+      }
+      if (!made) {
+        g.ev('info', ctx.targets.length
+          ? "Blight's End: every targeted unit has left play — no Wraiths."
+          : "Blight's End: X = 0 — no target, no Wraiths.");
       }
     },
   },
@@ -496,7 +503,11 @@ card('Inexorable Miasma', {
     targets: { what: 'unit', prompt: 'Inexorable Miasma: target unit gains {Poisonous} until regroup' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (isEnt(t)) g.addTempAttr(t, 'Poisonous');
+      if (!isEnt(t) || !g.entity(t.id)) {
+        g.ev('info', 'Inexorable Miasma: the target is gone — nothing gains {Poisonous}.');
+        return;
+      }
+      g.addTempAttr(t, 'Poisonous');
     },
   },
   abilities: [{
@@ -505,7 +516,10 @@ card('Inexorable Miasma', {
     effect: {
       run: (g, ctx) => {
         const me = g.player(ctx.controller).bin.lastIndexOf('Inexorable Miasma');
-        if (me === -1) return;                      // left the bin before this resolved
+        if (me === -1) {   // left the bin before this resolved
+          g.ev('info', 'Inexorable Miasma: it is no longer in the bin — nothing to recall.');
+          return;
+        }
         const pool = g.unitsIn(ctx.region).filter(u => u.counters < 0);
         if (!pool.length) {
           g.ev('info', 'Inexorable Miasma: no unit carries a -1/-1 counter — it stays in the bin.');
@@ -519,12 +533,12 @@ card('Inexorable Miasma', {
             { label: 'Decline — leave it in the bin', value: -1 as unknown },
           ],
         }) as number;
-        if (choice === -1) return;
+        if (choice === -1) { g.ev('info', 'Inexorable Miasma: declined — it stays in the bin.'); return; }
         const u = g.entity(choice as EntityId);
-        if (!u) return;
+        if (!u) { g.ev('info', 'Inexorable Miasma: the chosen unit is gone — it stays in the bin.'); return; }
         g.addCounters(u, 1);                        // net counters: +1 removes a -1/-1
         const idx = g.player(ctx.controller).bin.lastIndexOf('Inexorable Miasma');
-        if (idx === -1) return;
+        if (idx === -1) { g.ev('info', 'Inexorable Miasma: it left the bin — nothing is recalled.'); return; }
         g.player(ctx.controller).bin.splice(idx, 1);
         g.player(ctx.controller).hand.push('Inexorable Miasma');
         g.ev('info', `Inexorable Miasma is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);

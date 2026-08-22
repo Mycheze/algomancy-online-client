@@ -6,13 +6,13 @@
  * caller keeps the old state.
  */
 import type {
-  Action, ApplyResult, CardName, Decision, EffectPart, Element, Entity, EntityId, GameMode,
+  Action, ApplyResult, CardName, EffectPart, Element, Entity, EntityId, GameMode,
   GameState, ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
-import { E, GameEnded, IllegalAction, Suspended, other } from './engine.ts';
+import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other } from './engine.ts';
 import {
   affinityPips, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
-  specForSlot, type AbilityCost, type CardDef, type EffectDef,
+  specForSlot, type AbilityCost, type ActivatedAbility, type CardDef, type EffectDef,
 } from './cards/dsl.ts';
 import { DECK_LIST, draftDeckList } from './cards/registry.ts';
 import { rngShuffle, rngNext } from './rng.ts';
@@ -110,7 +110,7 @@ export function createGame(
         { kind: 'prismite', state: 'dormant' },
         { kind: 'prismite', state: 'dormant' },
       ],
-      activationsLeft: 2,
+      activationsLeft: ACTIVATIONS_PER_TURN,
       // Light & Dark player counters (R38/R39) and the cache zone (R41).
       // Optional on the type so pre-expansion saved games still load; new
       // games start them explicitly.
@@ -160,7 +160,10 @@ export function apply(state: GameState, action: Action): ApplyResult {
   };
 }
 
-/** Replay = seed + action log (docs/04 §1; constructed also needs the decks). */
+/** Replay = seed + action log (docs/04 §1; constructed also needs the decks).
+ * `events` deliberately stays the CREATION events, not an accumulation —
+ * callers only read `.state` (server/rooms.ts rebuild() accumulates its own
+ * full history when it needs one). */
 export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode, draftElements?: Element[], decks?: [CardName[], CardName[]]): ApplyResult {
   let r = createGame(seed, names, mode, draftElements, decks);
   for (const a of actions) r = { ...apply(r.state, a), events: r.events };
@@ -196,6 +199,10 @@ function dispatch(e: E, action: Action): void {
     case 'passPriority': return e.passPriority(action.seat);
     case 'doneDeploying': return doDoneDeploying(e, action.seat);
     case 'decide': return doDecide(e, action.seat, action.choice);
+    // a type the switch does not know must be refused, not silently recorded:
+    // the action log's whole contract is "seed + actions reproduces this game",
+    // and a no-op entry from a buggy client would pollute it forever
+    default: return e.illegal(`unknown action type ${String((action as { type?: unknown }).type)}`);
   }
 }
 
@@ -273,7 +280,7 @@ function doActivateResource(e: E, seat: Seat, index: number): void {
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
   const r = e.player(seat).resources[index];
   e.need(r && r.state === 'dormant', 'not a dormant resource');
-  e.need(e.player(seat).activationsLeft > 0, 'max 2 activations per turn');
+  e.need(e.player(seat).activationsLeft > 0, `max ${ACTIVATIONS_PER_TURN} activations per turn`);
   r.state = 'open';
   e.player(seat).activationsLeft--;
   e.ev('resourceActivated', `${e.pname(seat)} activates a ${r.kind} resource.`, { seat, kind: r.kind });
@@ -668,19 +675,37 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
 }
 
 /**
- * R64: the ability's EFFECT-level gates, the same two `castable` applies to a
- * spell — a bracketed [cost] that cannot be paid, and a mandatory target with
- * nothing legal to aim at. Both used to be discovered halfway through: you
- * paid the mana, the ability went on the stack, and the part was silently
- * skipped at resolution. An ability you cannot use is not offered and is
- * refused, exactly like a spell you cannot cast.
+ * R64/R77: everything other than the activation cost that decides whether an
+ * ability can be used at all. Three gates, one predicate, called from both
+ * `legalActions` (do not offer it) and `doActivateAbility` (refuse it):
+ *
+ *  - R77: a printed precondition — "Activate this ability only if …";
+ *  - R64: a bracketed [cost] on the EFFECT that cannot be paid;
+ *  - R64: a mandatory target with nothing legal to aim at.
+ *
+ * All three used to be discovered halfway through: you paid the mana, the
+ * ability went on the stack, and the part was silently skipped at resolution.
+ * An ability you cannot use is not offered and is refused, exactly like a spell
+ * you cannot cast.
  */
-function abilityEffectUsable(e: E, seat: Seat, ab: { effect: EffectDef }, u: Entity, region: number): boolean {
+function abilityUnusable(
+  e: E, seat: Seat, ab: { effect: EffectDef; usableWhen?: ActivatedAbility['usableWhen'] },
+  u: Entity, region: number,
+): string | null {
+  // R77 first: the precondition is about the source, and a self-sacrificing
+  // ability's cost would otherwise remove the thing the condition asks about
+  if (ab.usableWhen && !ab.usableWhen(e, u, seat)) {
+    return 'that ability cannot be activated right now';
+  }
   const eff = ab.effect;
-  if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, 0, u.id)) return false;
+  if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, 0, u.id)) {
+    return 'that ability has nothing it can be used on';
+  }
   if (eff.targets && (eff.targets.min ?? 1) > 0
-    && e.targetCandidates(specForSlot(eff.targets, 0), region, undefined, seat, u.id).length === 0) return false;
-  return true;
+    && e.targetCandidates(specForSlot(eff.targets, 0), region, undefined, seat, u.id).length === 0) {
+    return 'that ability has nothing it can be used on';
+  }
+  return null;
 }
 
 function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: number, via?: 'augment' | { mod: EntityId }): void {
@@ -714,7 +739,8 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   const parts = e.composeParts(u, abilityIndex, prefix, viaCard);
   e.need(parts, 'that ability was already used this turn');
   // R64: …and only then, whether the effect has anything to spend itself on
-  e.need(abilityEffectUsable(e, seat, ability, u, region), 'that ability has nothing it can be used on');
+  const unusable = abilityUnusable(e, seat, ability, u, region);
+  e.need(!unusable, unusable ?? '');
   const srcCard = viaCard ?? u.card;
   const item: StackItem = {
     id: e.s.nextId++, kind: 'activated', card: srcCard,
@@ -892,53 +918,122 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
 /**
  * ALLURING (Manual): "defenders that are able to block it must block it."
  *
- * Returns the name of an Alluring attacker the defender has left unblocked
- * while still holding a unit that could have blocked it, or null when the
- * declaration discharges the duty.
+ * One duty per unblocked Alluring column: who could still be added to it, and
+ * how many it would take. `unmetAllure` reads these to REFUSE a declaration;
+ * `compulsoryBlocks` reads the same ones to BUILD one. That sharing is the
+ * point — when the rule lived only in the validator, `legalActions` drifted
+ * from it and the fuzzer's "legalActions lied" check caught them apart.
  *
  * "Able" is judged against the FINISHED declaration: a unit already blocking
  * another column, or sent to counterattack, is spoken for, and so is one that
- * could not legally join this column anyway (Feeble, no Flying against a
- * Flying column, or a lone unit against Evasive, which needs two). The test is
- * therefore "could an unassigned unit still be added here?" — which also
- * settles two Alluring columns against one free blocker correctly: committing
- * it to either leaves the other with nobody, and a duty you cannot discharge
- * twice is discharged once.
- *
- * Shared with legalActions on purpose: the fuzzer's "legalActions lied" check
- * catches the two drifting apart, and it did exactly that when this rule lived
- * only in the validator.
+ * could not legally join this column anyway (Feeble; no Flying against a
+ * Flying column; R20's lone Sneaky attacker, which nobody but a Pure blocker
+ * may block at all). The test is "could an unassigned unit still be added
+ * here?", which settles two Alluring columns against ONE free blocker by
+ * itself: committing it to either leaves the other with nobody, and a duty you
+ * cannot discharge twice is discharged once.
  */
-export function unmetAllure(
+interface AlluringDuty {
+  ci: number;
+  /** the attacker's name, for the refusal message */
+  card: CardName;
+  /** how many free units it takes to discharge this duty */
+  need: number;
+  /** units that could still be assigned here */
+  free: Entity[];
+  /** exactly which of them to use — Evasive is switched off by a single Pure
+   * blocker (R61), so the pick is that unit rather than any two */
+  pick: EntityId[];
+}
+
+function alluringDuties(
   e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: readonly EntityId[] = [],
-): string | null {
+): AlluringDuty[] {
   const b = e.s.battle;
-  if (!b) return null;
+  if (!b) return [];
   const spokenFor = new Set<EntityId>([...Object.values(blocks).flat(), ...send]);
+  // R20: a lone Sneaky attacker cannot be blocked, so nobody is "able" to
+  // block it and an Alluring duty riding on it is discharged by the rule that
+  // forbids blocking it. R61: a Pure blocker sees through Sneaky like every
+  // other attribute, so it alone stays able. Without this clause an
+  // Alluring+Sneaky lone attacker is a STUCK STATE: every declaration is
+  // refused by one rule or the other.
+  const atkUnits = b.columns.flat().filter(id => e.entity(id));
+  const sneakyAlone = atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky');
+  const isPure = (id: EntityId): boolean => e.pure([id]);
+  const out: AlluringDuty[] = [];
   for (const [ci, atkCol] of b.columns.entries()) {
     const live = atkCol.filter(id => e.entity(id));
     if (!live.length) continue;
     // R61 {Pure}: an Alluring column that is itself Pure ignores its own
     // other attributes — Alluring included — so it compels nobody.
-    const atkPure = e.pure(live);
-    const atkAttrs = atkPure ? new Set<string>() : e.colAttrs(live);
+    const atkAttrs = e.pure(live) ? new Set<string>() : e.colAttrs(live);
     if (!atkAttrs.has('Alluring')) continue;
     if ((blocks[ci] ?? []).length) continue;                    // this one IS blocked
-    const isPure = (id: EntityId): boolean => e.pure([id]);
     const free = e.unitsIn(b.region).filter(u =>
       u.controller === seat && u.kind === 'unit' && !u.absent && !spokenFor.has(u.id)
       // a Pure unit is able against anything: joining the column blinds the
       // exchange, so neither its own Feeble nor the column's Flying stops it
       && (isPure(u.id) || (!e.ownAttrs(u).has('Feeble')
-        && !(atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying')))));
+        && !(atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying'))))
+      && (!sneakyAlone || isPure(u.id)));
     // Evasive wants two blockers — unless one of the free ones is Pure, which
     // switches Evasive off and lets it discharge the duty alone
-    const need = (atkAttrs.has('Evasive') && !free.some(u => isPure(u.id))) ? 2 : 1;
-    if (free.length >= need) {
-      return e.entity(live[0]!)?.card ?? 'that attacker';
-    }
+    const purely = atkAttrs.has('Evasive') ? free.find(u => isPure(u.id)) : undefined;
+    const need = (atkAttrs.has('Evasive') && !purely) ? 2 : 1;
+    const pick = purely ? [purely.id] : free.slice(0, need).map(u => u.id);
+    out.push({ ci, card: e.entity(live[0]!)?.card ?? 'that attacker', need, free, pick });
+  }
+  return out;
+}
+
+/**
+ * Returns the name of an Alluring attacker the defender has left unblocked
+ * while still holding a unit that could have blocked it, or null when the
+ * declaration discharges every duty.
+ */
+export function unmetAllure(
+  e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: readonly EntityId[] = [],
+): string | null {
+  for (const d of alluringDuties(e, seat, blocks, send)) {
+    if (d.free.length >= d.need) return d.card;
   }
   return null;
+}
+
+/**
+ * R76 — the smallest block assignment that discharges every Alluring duty at
+ * once, and the reason `legalActions` can always offer something at the block
+ * step.
+ *
+ * Alluring is COMPULSORY, so a declaration is legal only if it discharges every
+ * duty on the board simultaneously. `legalActions` used to offer a
+ * representative set of ONE-column declarations, which cannot express that:
+ * with two Alluring columns and two able blockers, every single-column
+ * declaration leaves the other column unblocked with a blocker to spare, so
+ * every option was refused and the game HUNG with no legal action for anyone
+ * (fuzz seed 1993). Nothing was wrong with the position — only with the set of
+ * declarations the engine could think of.
+ *
+ * Greedy, in column order, is provably enough: process a duty by assigning it
+ * the units it needs; a duty left unblocked was left unblocked because fewer
+ * than `need` units were free when it was reached, and later assignments only
+ * shrink the free pool, so it is still discharged at the end. Order therefore
+ * cannot matter, and the result always satisfies `unmetAllure`.
+ */
+export function compulsoryBlocks(
+  e: E, seat: Seat, send: readonly EntityId[] = [],
+): Record<number, EntityId[]> {
+  const blocks: Record<number, EntityId[]> = {};
+  // one duty discharged per pass; re-derived each time because assigning a
+  // blocker changes who is still free for every other duty
+  for (let guard = 0; guard < 64; guard++) {
+    const open = alluringDuties(e, seat, blocks, send).filter(d => d.free.length >= d.need);
+    if (!open.length) return blocks;
+    const d = open[0]!;
+    blocks[d.ci] = d.pick;
+  }
+  return blocks;
 }
 
 function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: EntityId[]): void {
@@ -1247,11 +1342,22 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       // "legalActions lied" check is what caught them drifting)
       const legalBlock = (a: Action): boolean => a.type !== 'declareBlocks'
         || !unmetAllure(e, seat, a.blocks, a.send ?? []);
-      out.push({ type: 'declareBlocks', seat, blocks: {} });
+      // R76: Alluring duties are compulsory and must ALL be discharged at once,
+      // which no single-column declaration can do once there are two Alluring
+      // columns and two able blockers. Every option below is therefore built on
+      // top of the compulsory core, and the core alone is always offered — it
+      // is legal by construction, so this list is never empty.
+      const core = compulsoryBlocks(e, seat);
+      const spoken = new Set<EntityId>(Object.values(core).flat());
+      const onCore = (blocks: Record<number, EntityId[]>): Record<number, EntityId[]> =>
+        ({ ...core, ...blocks });
+      out.push({ type: 'declareBlocks', seat, blocks: onCore({}) });
       const mine = e.unitsOf(seat, b.region);
       // Feeble can't block — unless it is also Pure, which ignores its own
       // other attributes (R61)
-      const blockers = mine.filter(u => !e.ownAttrs(u).has('Feeble') || e.pure([u.id]));
+      // a unit the compulsory core already spent is not free to be offered again
+      const blockers = mine.filter(u =>
+        !spoken.has(u.id) && (!e.ownAttrs(u).has('Feeble') || e.pure([u.id])));
       // R20: a lone Sneaky attacker cannot be blocked at all — R61: except by
       // a Pure blocker, which is blind to Sneaky like every other attribute
       const atkUnits = b.columns.flat().filter(id => e.entity(id));
@@ -1268,7 +1374,7 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
           if (sneakyAlone && atkAttrs.has('Sneaky')) continue;
           if (atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying')) continue;
           if (atkAttrs.has('Evasive')) continue;   // needs 2; single-blocker option invalid
-          out.push({ type: 'declareBlocks', seat, blocks: { [ci]: [u.id] } });
+          out.push({ type: 'declareBlocks', seat, blocks: onCore({ [ci]: [u.id] }) });
         }
         for (let i = 0; i < blockers.length; i++) {
           for (let j = i + 1; j < blockers.length; j++) {
@@ -1276,14 +1382,19 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
             const atkAttrs = attrsWith(pair);
             if (atkAttrs.has('Flying') && !e.colAttrs(pair).has('Flying')) continue;
             if (sneakyAlone && atkAttrs.has('Sneaky')) continue;
-            out.push({ type: 'declareBlocks', seat, blocks: { [ci]: pair } });
+            out.push({ type: 'declareBlocks', seat, blocks: onCore({ [ci]: pair } ) });
           }
         }
       });
       // send options (round 1 only — no counter-counterattacks):
       // each single non-blocking unit, representative
       if (b.round === 1) {
-        for (const u of mine) out.push({ type: 'declareBlocks', seat, blocks: {}, send: [u.id] });
+        for (const u of mine) {
+          if (spoken.has(u.id)) continue;   // it is already blocking, compulsorily
+          // sending a unit away changes who is still able, so the core is
+          // recomputed against this send rather than reused
+          out.push({ type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat, [u.id]), send: [u.id] });
+        }
       }
       return out.filter(legalBlock);
     }
@@ -1412,7 +1523,7 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         if (ab.timing !== undefined && ab.timing !== (battle ? 'battle' : 'deploy')) return;
         if (!canPayAbilityCost(e, seat, ab.cost, u, region)) return;
         if (ab.bounded && (u.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
-        if (!abilityEffectUsable(e, seat, ab, u, region)) return;                // R64
+        if (abilityUnusable(e, seat, ab, u, region)) return;                     // R64/R77
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });
       });
     };

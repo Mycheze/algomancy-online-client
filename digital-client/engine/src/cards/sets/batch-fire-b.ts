@@ -19,19 +19,12 @@
  *    Spirit) is REAL TARGETING as of R64: TargetSpec has a 'binCard' kind, and
  *    a bin holds names, so naming the card IS the reference (BinRef).
  */
-import type { Entity, EntityId, Seat } from '../../types.ts';
+import type { EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, getCard, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-/** the entity carrying the running ability (the host when donated/grafted) */
-const selfOf = (g: E, ctx: EffectCtx): Entity | undefined =>
-  ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-
-/** [name, binIndex] pairs of ctx.controller's bin cards passing a filter */
-const binMatches = (g: E, seat: Seat, ok: (name: string) => boolean): [string, number][] =>
-  g.player(seat).bin.map((n, i) => [n, i] as [string, number]).filter(([n]) => ok(n));
 
 /** "unit with cost 2 or less": unit-kind cards with numeric mana <= 2 */
 const isCheapUnit = (name: string): boolean => {
@@ -60,6 +53,7 @@ card('Molten Riftbreaker', {
     type: 'triggered', events: ['spawned'], self: true,
     label: 'create two Fireball 1',
     effect: {
+      creates: ['Fireball'],
       run: (g, ctx) => {
         for (let i = 0; i < 2; i++) g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region);
       },
@@ -70,11 +64,12 @@ card('Molten Riftbreaker', {
     label: 'negate all allied spells (when I despawn)',
     effect: {
       run: (g, ctx) => {
-        for (const it of g.s.stack) {
-          if (it.negated) continue;
+        let negated = 0;
+        for (const it of [...g.s.stack]) {   // R68: negate() splices
           if ((it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'spellToken' || it.kind === 'ambush')
-            && it.controller === ctx.controller) g.negate(it.id);
+            && it.controller === ctx.controller) { g.negate(it.id); negated++; }
         }
+        if (!negated) g.ev('info', 'Molten Riftbreaker: you have no spell on the stack — nothing is negated.');
       },
     },
   }],
@@ -89,9 +84,9 @@ const eelBuff: EffectDef = {
   targets: { what: 'unit', prompt: 'Nimbus Eel: target unit gains +2/+0 and flying until regroup' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (t && 'id' in (t as object)) {
-      g.addTemp(t as Entity, 2, 0);
-      g.addTempAttr(t as Entity, 'Flying');
+    if (isEnt(t)) {
+      g.addTemp(t, 2, 0);
+      g.addTempAttr(t, 'Flying');
     }
   },
 };
@@ -144,14 +139,17 @@ card('Reclaimer of Secrets', {
       },
       run: (g, ctx) => {
         const t = ctx.targets[0];
-        if (!t || !('binCard' in t) || t.binCard.index === -1) return;
-        if (g.openMana(ctx.controller) < 2) return;
+        if (!t || !('binCard' in t) || t.binCard.index === -1) {
+          g.ev('info', 'Reclaimer of Secrets: no bin spell is targeted (or it has left) — nothing is recalled.');
+          return;
+        }
+        if (g.openMana(ctx.controller) < 2) { g.ev('info', 'Reclaimer of Secrets: cannot pay [two].'); return; }
         const pays = ctx.choose('pay', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: `Reclaimer of Secrets: pay [two] to recall ${t.binCard.card} from your bin?`,
           options: [{ label: 'Pay [two]', value: true }, { label: 'Decline', value: false }],
         });
-        if (!pays) return;
+        if (!pays) { g.ev('info', 'Reclaimer of Secrets: the [two] is declined — nothing is recalled.'); return; }
         g.payMana(ctx.controller, 2);
         const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
         if (name !== undefined) {
@@ -207,13 +205,19 @@ card('Rousing Spirit', {
       },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        if (!self) return;
+        if (!self) { g.ev('info', 'Rousing Spirit: the carrier is gone — nothing is put into play.'); return; }
         const col = g.columnOf(self.id);            // R1 recheck: still in formation?
-        if (!col || col.indexOf(self.id) !== 0 || col.length !== 1) return;   // no empty slot behind me
+        if (!col || col.indexOf(self.id) !== 0 || col.length !== 1) {
+          g.ev('info', 'Rousing Spirit: there is no empty slot behind me — nothing is put into play.');
+          return;
+        }
         const t = ctx.targets[0];
-        if (!t || !('binCard' in t) || t.binCard.index === -1) return;
+        if (!t || !('binCard' in t) || t.binCard.index === -1) {
+          g.ev('info', 'Rousing Spirit: no bin unit is targeted (or it has left) — nothing is put into play.');
+          return;
+        }
         const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
-        if (name === undefined) return;
+        if (name === undefined) { g.ev('info', 'Rousing Spirit: the card left the bin — nothing is put into play.'); return; }
         const u = g.spawnUnit(ctx.controller, name, ctx.region);
         col.push(u.id);                             // straight into the slot behind me
       },
@@ -242,24 +246,26 @@ card('Sacrificial Burst', {
 // "[Augment] Sacrifice another unit: I gain +2/+2 until regroup." — r/2 2/1.
 // An ACTIVATED ability inside the [Augment] text box: activatable on the card
 // played normally (via 'augment') and on a host it augments (via {mod}).
-// ⚠ "Sacrifice another unit" is printed as a COST; the DSL's activated costs
-// are mana/sacrificeSelf only, so the victim is the ability's TARGET and dies
-// at resolution instead (picking the carrier itself — not "another" — no-ops).
+//
+// UN-PARKED (R49). The note here used to read "the DSL's activated costs are
+// mana/sacrificeSelf only, so the victim is the ability's TARGET and dies at
+// resolution instead (picking the carrier itself — not 'another' — no-ops)".
+// `AbilityCost.sacrificeOther` is exactly the missing slot: it GATES the
+// activation (no other unit ⇒ the ability is not offered, and apply() refuses
+// it), it rides as a `pendingCost` chosen in the cast window — before anyone
+// gets priority, so the sacrifice is no longer respondable-after-activation —
+// and it can only ever offer units OTHER than the carrier, which retires the
+// self-pick no-op the approximation had to carry.
 const swallowerFeast: EffectDef = {
-  targets: { what: 'allyUnit', prompt: 'Soul Swallower: sacrifice another unit (+2/+2 until regroup)' },
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
-    const t = ctx.targets[0];
-    if (!self || !t || !('id' in (t as object))) return;
-    const victim = t as Entity;
-    if (victim.id === self.id) return;              // "another unit"
-    g.destroy(victim, 'is sacrificed');
+    if (!self) { g.ev('info', 'Soul Swallower: the carrier is gone — no +2/+2.'); return; }
     g.addTemp(self, 2, 2);
   },
 };
 card('Soul Swallower', {
   augmentText: [{
-    type: 'activated', cost: {},
+    type: 'activated', cost: { sacrificeOther: 1 },
     label: 'Sacrifice another unit: I gain +2/+2 until regroup',
     effect: swallowerFeast,
   }],
@@ -275,9 +281,15 @@ card('Soul Tithe', {
     targets: { what: 'stackEffect', prompt: "Soul Tithe: target effect is negated unless its controller pays [one]" },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('stack' in (t as object))) return;
+      if (!t || !('stack' in (t as object))) {
+        g.ev('info', 'Soul Tithe: no effect is targeted — nothing is negated.');
+        return;
+      }
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-      if (!item || item.negated) return;
+      if (!item) {
+        g.ev('info', 'Soul Tithe: the targeted effect has already left the stack.');
+        return;
+      }
       const options = [{ label: "Don't pay", value: false }];
       if (g.openMana(item.controller) >= 1) options.unshift({ label: 'Pay [one]', value: true });
       const pays = ctx.choose('pay', {
@@ -285,7 +297,11 @@ card('Soul Tithe', {
         prompt: `Soul Tithe: pay [one] or ${item.label} is negated`,
         options,
       });
-      if (pays) { g.payMana(item.controller, 1); return; }
+      if (pays) {
+        g.payMana(item.controller, 1);
+        g.ev('info', `${g.pname(item.controller)} pays [one] — ${item.label} survives.`);
+        return;
+      }
       g.negate(item.id);
       g.draw(ctx.controller, 1);
     },
@@ -304,7 +320,8 @@ card('Sparkwraith', {
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        if (self) g.addCounters(self, 1);
+        if (!self) { g.ev('info', 'Sparkwraith: the carrier is gone — no counter.'); return; }
+        g.addCounters(self, 1);
       },
     },
   }],
@@ -320,9 +337,11 @@ card('Spirit of Vengeance', {
     label: 'I deal 1 damage to each opponent',
     effect: {
       run: (g, ctx) => {
+        let hit = 0;
         for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-          if (seat !== ctx.controller) g.dealEffectDamage(ctx, { player: seat as Seat }, 1);
+          if (seat !== ctx.controller) { g.dealEffectDamage(ctx, { player: seat as Seat }, 1); hit++; }
         }
+        if (!hit) g.ev('info', 'Spirit of Vengeance: no opponent is present here — no damage.');
       },
     },
   }],
@@ -346,6 +365,7 @@ const eachPlayerSacrifices: EffectDef = {
       }) as EntityId;
       picks.push(id);
     }
+    if (!picks.length) g.ev('info', 'Spiteful Shadow: nobody here has a unit to sacrifice.');
     for (const id of picks) {
       const u = g.entity(id);
       if (u) g.destroy(u, 'is sacrificed');
@@ -375,9 +395,11 @@ card('Static Courier', {
       return true;
     },
     effect: {
+      creates: ['Fireball'],
       run: (g, ctx) => {
         const x = (ctx.event?.data?.courierPower as number | undefined) ?? 0;
-        if (x > 0) g.createSpellToken(ctx.controller, 'Fireball', x, ctx.region);
+        if (x <= 0) { g.ev('info', 'Static Courier: its power was 0 — no Fireball.'); return; }
+        g.createSpellToken(ctx.controller, 'Fireball', x, ctx.region);
       },
     },
   }],
@@ -393,6 +415,7 @@ card('Stormsowing Nimbus', {
     label: 'create a 1/1 unit',
     when: (g, self, ev) => ev.data?.seat === self.controller && !ev.data?.token,
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
         g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] });
       },
@@ -408,7 +431,7 @@ const twinFlame: EffectDef = {
   targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units', count: 2, min: 1 },
   run: (g, ctx) => {
     for (const t of ctx.targets) {
-      if (t && 'id' in (t as object) && g.entity((t as Entity).id)) {
+      if (isEnt(t) && g.entity(t.id)) {
         g.dealEffectDamage(ctx, t, 2);
       }
     }
@@ -429,11 +452,13 @@ card('Unstable Apparition', {
     label: "create a Fireball X (X = the spell's cost)",
     when: (g, self, ev) => ev.data?.seat === self.controller && !ev.data?.token,
     effect: {
+      creates: ['Fireball'],
       run: (g, ctx) => {
         const name = ctx.event?.data?.card as string | undefined;
         const mana = name ? getCard(name).mana : 0;
         const x = typeof mana === 'number' ? mana : 0;
-        if (x > 0) g.createSpellToken(ctx.controller, 'Fireball', x, ctx.region);
+        if (x <= 0) { g.ev('info', 'Unstable Apparition: that spell costs 0 — no Fireball.'); return; }
+        g.createSpellToken(ctx.controller, 'Fireball', x, ctx.region);
       },
     },
   }],
@@ -463,7 +488,9 @@ card('Wildfire', {
   spellEffect: {
     targets: { what: 'any', prompt: 'Wildfire deals X damage to any target' },
     run: (g, ctx) => {
-      g.dealEffectDamage(ctx, ctx.targets[0]!, ctx.x ?? 0);
+      const x = ctx.x ?? 0;
+      if (x <= 0) { g.ev('info', 'Wildfire: X = 0 — no damage.'); return; }
+      g.dealEffectDamage(ctx, ctx.targets[0]!, x);
     },
   },
 });

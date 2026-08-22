@@ -280,7 +280,7 @@ test('Frosted Denial: controller cannot pay X → the effect is negated', () => 
   pick(h, { stack: owId });
   pass(h); pass(h);                                         // resolve; D has 0 open → auto-negate
   assert.equal(h.state.decision, null, 'no pay decision when the opponent cannot pay');
-  pass(h); pass(h);                                         // negated Overwhelm resolves → bin
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Overwhelm left the stack at once');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
   assert.deepEqual(effStats(h, tok), [1, 1], 'the token was never shrunk');
   assert.equal(h.state.players[A]!.resources.filter(r => r.state === 'open').length, 2, 'A paid X=1');
@@ -374,6 +374,7 @@ test('Hooba-Pon: attack → you may pay for a unit from hand into my formation',
   h.do({ type: 'declareAttack', seat: A, columns: [[hooba]] });
   pass(h); pass(h);                                         // resolve the trigger
   pick(h, h.state.players[A]!.hand.indexOf('Hooba-Pon'));   // play the second Hooba-Pon
+  pick(h, 1);                                               // R75: and where it goes — behind me
   const col = h.state.battle!.columns[0]!;
   assert.equal(col.length, 2, 'played into the open back position of my column');
   assert.equal(ent(h, col[1]!)!.card, 'Hooba-Pon');
@@ -519,7 +520,7 @@ test('Null Drone: negates a spell costing ≤ the greatest life lost this battle
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Null Drone') });
   pick(h, { stack: owId });
   pass(h); pass(h);                                         // resolve Null Drone: cost 1 ≤ 2 lost
-  pass(h); pass(h);                                         // negated Overwhelm resolves → bin
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Overwhelm left the stack at once');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
   assert.deepEqual(effStats(h, drone), [2, 1], 'the drone was never shrunk');
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Null Drone').length, 2, 'the spell unit spawned too');
@@ -549,7 +550,7 @@ test('Null Drone: life loss is ledgered engine-side — no tracker unit needed i
   pick(h, { stack: owId });
   pass(h); pass(h);                                         // resolve Null Drone: cost 1 ≤ 1 lost
   assert.ok(h.log.some(l => l.includes('is negated')), 'Overwhelm negated');
-  pass(h); pass(h);                                         // negated Overwhelm resolves → bin
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Overwhelm left the stack at once');
   assert.ok(h.state.players[D]!.bin.includes('Overwhelm'), 'negated → bin');
   assert.deepEqual(effStats(h, atk), [1, 1], 'the token was never shrunk');
   finishBattle(h);

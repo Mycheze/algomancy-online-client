@@ -12450,6 +12450,30 @@
             "source": "algomancer.cc + image transcription (provisional, pre-release)"
         }
     ],
+    "Wraith": [
+        {
+            "name": "Wraith",
+            "power": "3",
+            "toughness": "3",
+            "cost": "d",
+            "total_cost": "0",
+            "type": "Blight Zombie Token Unit",
+            "text": "[Augment] At the start of deployment, put a -1/-1 counter on an ally. When I die, Augment a Wraith onto an ally.",
+            "image": "Wraith.jpg",
+            "revision_date_time": "2026-08-21 00:00:00.000000",
+            "details": "Retired title: Wight \u2014 Wight and Wraith are the same token, renamed. Blight's End still prints the old name (\"Augment a Wight onto X target units\"). Created by Afflicting Anima, Blight's End, Cosmic Devourer, Legion of the Depths, Plague Ritual, Primordial Coalescence and Xzydris, either spawned as a unit token (\"create a Wraith\") or applied directly as an augment mod (\"Augment a Wraith onto a unit\").",
+            "factions": [
+                "dark"
+            ],
+            "rulings": [],
+            "complexity": "Simple",
+            "Side": "Front",
+            "Num_Copies": "1",
+            "Backside": "Generic Unit",
+            "Deck": "Light & Dark (Dark)",
+            "source": "physical token card supplied by the repo owner, 2026-08-21 (provisional, pre-release; supersedes the 4/4 printing recorded 2026-08-19)"
+        }
+    ],
     "Writhing Host": [
         {
             "name": "Writhing Host",

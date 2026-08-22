@@ -7,8 +7,9 @@
  * Warder, Graxxlid — via: 'augment'), the column-combat-damage trigger
  * (Flowstone Arcanite, both the lifeLost and unit-damage channels), a
  * region-wide sweep (Haboob), the pay-to-fight damage trigger (Eminence of
- * the Barrens, R6 payment), and the parked cards (Crevice Lurker, Hooba-Lan,
- * Earth Resource). States are built explicitly (give/spawn/giveResources).
+ * the Barrens, R6 payment), Hooba-Lan's real dormant Shard (unparked — see
+ * E.createShard) and the still-parked cards (Crevice Lurker, Earth Resource).
+ * States are built explicitly (give/spawn/giveResources).
  * Seeds 1600-1699. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -248,9 +249,9 @@ test('Graxxlid: [once][one] negates an effect targeting it; that controller draw
   h.do({ type: 'activateAbility', seat: D, entityId: grax, abilityIndex: 0, via: 'augment' });
   pick(h, { stack: boonId });
   pass(h); pass(h);                                   // Graxxlid resolves
-  assert.ok(h.state.stack.find(i => i.id === boonId)!.negated, 'the Boon is negated');
+  assert.ok(!h.state.stack.some(i => i.id === boonId), 'R68: the negated Boon left the stack');
+  assert.ok(h.state.players[A]!.bin.includes('Channeled Boon'), 'and went to its bin');
   assert.equal(h.state.players[A]!.hand.length, handA + 1, "the Boon's controller drew a card");
-  pass(h); pass(h);                                   // the negated Boon resolves → bin
   assert.deepEqual(effStats(h, grax), [2, 3], 'no buff landed');
   pass(h);                                            // priority → D
   assert.throws(

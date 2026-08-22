@@ -75,37 +75,10 @@
  */
 import type { Entity, EntityId, EngineEvent, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+import { card, getCard, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
-
-/** the entity a triggered/activated effect is anchored on (the unit itself, or
- * the HOST when the text arrives via an augment mod) */
-const anchor = (g: E, ctx: EffectCtx): Entity | undefined =>
-  ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-
-/** remove an id from every formation column / the sent-attacker list */
-function unslot(g: E, id: EntityId): void {
-  const b = g.s.battle;
-  if (!b) return;
-  for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-    const i = col.indexOf(id);
-    if (i !== -1) col.splice(i, 1);
-  }
-  const si = b.sentAttackers.indexOf(id);
-  if (si !== -1) b.sentAttackers.splice(si, 1);
-}
-
-/** Erase an entity from play entirely: no bin, no death/despawn triggers, and
- * so (R40) no trash either; its mods are erased with it. */
-function eraseFromPlay(g: E, u: Entity): void {
-  for (const modId of u.mods) delete g.s.entities[modId];
-  delete g.s.entities[u.id];
-  unslot(g, u.id);
-  g.ev('erased', `${u.card} is ERASED (no bin, no death).`, { unit: u.id, card: u.card, seat: u.controller });
-}
 
 /** the formation slot an entity occupies right now, captured before it moves
  * (the E.ambushSwap pattern — "in its position in play") */
@@ -139,8 +112,7 @@ card('Calming Force', {
   spellEffect: {
     run: (g, ctx) => {
       let n = 0;
-      for (const it of [...g.s.stack]) {
-        if (it.negated) continue;
+      for (const it of [...g.s.stack]) {   // R68: negate() splices
         g.negate(it.id);
         n++;
       }
@@ -190,6 +162,7 @@ card('Delver of the Ephemeral', {
 // the erase's unslot finds nothing to remove.
 const feedToHooba: EffectDef = {
   targets: { what: 'unit', prompt: 'Feed to Hooba: erase target unit (its controller gets a 3/3 in its place)' },
+  creates: ['Unit Token'],
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!isEnt(t) || !g.entity(t.id)) return;
@@ -289,7 +262,7 @@ card('Life Leech', {
     label: 'pay 5 life: I gain +3/+3 until regroup',
     effect: {
       run: (g, ctx) => {
-        const me = anchor(g, ctx);
+        const me = selfOf(g, ctx);
         if (!me) return;
         g.addTemp(me, 3, 3);
       },
@@ -467,22 +440,31 @@ card('Tithe Enforcer', {});
 // RESOLUTION — the bottom-most un-negated spell-kind item matching the event's
 // card and controller, with this trigger sitting above it.
 // ⚠ header: 'spellPlayed' does not cover {Battle}-timing units or ambushes.
+//
+// R73 (2026-08-22): "sacrifice me. If you do, …" is a CAST COST — the same
+// printed shape, and the same ruling, as Eldritch Dreamtender, and the printed
+// "(This is not optional.)" says out loud what the cost reading already gives.
+// It used to be a g.destroy() at resolution. Paid on the way to the stack now,
+// so the carrier is gone before anyone can answer the negate; a carrier that is
+// ALREADY gone makes the cost unpayable and the whole trigger is skipped (R5),
+// which is what the old "the carrier is gone" branch said in longhand.
 card('Void Mandible', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'],
     label: 'sacrifice me to negate a nontoken card played during battle',
     when: (g, _self, ev) => g.s.phase === 'battle' && ev.data?.['token'] !== true,
     effect: {
+      castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },
       run: (g, ctx) => {
-        const me = anchor(g, ctx);
-        if (!me) return;
         const name = ctx.event?.data?.['card'] as string | undefined;
         const seat = ctx.event?.data?.['seat'] as Seat | undefined;
-        g.destroy(me, 'is sacrificed');
-        if (name === undefined || seat === undefined) return;
+        if (name === undefined || seat === undefined) {
+          g.ev('info', 'Void Mandible: the event names no card — nothing is negated.');
+          return;
+        }
         const spellKinds = new Set(['spell', 'spellUnit', 'spellToken']);
         const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && !i.negated && spellKinds.has(i.kind));
+          i.card === name && i.controller === seat && spellKinds.has(i.kind));
         if (it) g.negate(it.id);
         else g.ev('info', `Void Mandible: ${name} already left the stack — not negated.`);
       },
@@ -505,7 +487,7 @@ card('Void Mandible', {
 // Bounded ([Switch1], R9): once per turn as a cause and as a graft.
 const tripleGrafts: EffectDef = {
   run: (g, ctx) => {
-    const self = anchor(g, ctx);
+    const self = selfOf(g, ctx);
     if (!self) return;
     for (const modId of [...self.mods]) {
       const mod = g.entity(modId);

@@ -240,6 +240,25 @@ test('Emberflame Enlightener: a Powerful column deals double combat damage (spel
   // printed attrs — statics project onto in-play units only.
 });
 
+test('Emberflame Enlightener: the units aura is DONATED too (mod-carried static)', () => {
+  // The augment-donated form used to be parked on "statics run only while the
+  // holder is a unit in play". E.anchored() radiates a mod's statics from its
+  // HOST, so augmenting it hands the host's side the same aura.
+  const h = new Harness(1224);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const host = spawn(h, A, 'Unit Token');
+  const ally = spawn(h, A, 'Unit Token');
+  const enemy = spawn(h, D, 'Unit Token');
+  assert.ok(!ownAttrs(h, ally).has('Powerful'), 'nothing yet');
+  giveResources(h, A, 'fire', 4);                     // rrr/4
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Emberflame Enlightener'), hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'it attached as a mod');
+  assert.ok(ownAttrs(h, ally).has('Powerful'), 'the donated aura reaches the host controller\'s units');
+  assert.ok(ownAttrs(h, host).has('Powerful'), '"your units" includes the host carrying it');
+  assert.ok(!ownAttrs(h, enemy).has('Powerful'), 'and still nobody else');
+});
+
 // ── Envoy of Lightning ───────────────────────────────────────────────────
 
 test('Envoy of Lightning: plays as a 3/2 (Electric aura PARKED)', () => {
@@ -267,10 +286,14 @@ test('Fire Resource: registered with its printed face', () => {
 });
 
 test('Fire Resource: activation → Shard at [r][r][r]', { todo: true }, () => {
-  // PARKED: resource cards aren't modelled — resources are plain ResourceState
-  // (not entities), doActivateResource doesn't fireEvent, and no 'Shard'
-  // resource kind exists. Also flags: registering leaks it into DECK_LIST as a
-  // phantom 2/0 unit.
+  // PARKED on exactly two things, both in the engine and neither in card code:
+  //  1. resource CARDS are not modelled — resources are plain ResourceState
+  //     entries, not entities, so there is no "me" for the text to be on;
+  //  2. doActivateResource does not fireEvent, so "when I activate" has no
+  //     event to listen for.
+  // It is NO LONGER parked on the Shard: E.createShard() and a real 'shard'
+  // ResourceKind exist (see Hooba-Lan in 16-earth-a and Swirling Shardform in
+  // 18-earth-c, both live), so the payload half is ready and waiting.
 });
 
 // ── Flame Shield ─────────────────────────────────────────────────────────
@@ -292,8 +315,7 @@ test('Flame Shield: negates the rest of the stack; a Fireball per nontoken spell
   const fires = tokensOf(h, D).filter(t => t.card === 'Fireball');
   assert.equal(fires.length, 1, 'one nontoken spell negated → one Fireball');
   assert.equal(fires[0]!.x, 1, 'Fireball 1');
-  assert.ok(h.state.stack[0]!.negated, 'Luminous Arc is negated');
-  pass(h); pass(h);                                  // negated Arc resolves → bin
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Arc is off the stack already');
   assert.ok(ent(h, whale), 'target survives');
   assert.equal(ent(h, whale)!.damage, 0, 'no damage dealt');
   assert.ok(h.state.players[A]!.bin.includes('Luminous Arc'), 'negated spell → bin');
@@ -421,6 +443,13 @@ test('Hooba-Lin: augmented host attacking creates a 1/1 in its formation column'
   toNextBattle(h, p);
   h.do({ type: 'declareAttack', seat: p, columns: [[host]] });
   pass(h); pass(h);                                  // resolve the attack trigger
+  // R75: the controller now chooses the slot — either end of the line, or the
+  // back slot of the one-unit column. This used to be auto-picked.
+  const dec = h.state.decision!;
+  assert.equal(dec.seat, p, 'the effect\'s controller picks');
+  assert.deepEqual(dec.options.map(o => o.label),
+    ['a new column on the left', 'column 1, behind Conduit of Pain', 'a new column on the right']);
+  pick(h, 1);                                        // behind the host
   const col = h.state.battle!.columns[0]!;
   assert.equal(col.length, 2, 'the 1/1 joined my column');
   const tok = ent(h, col[1]!)!;
@@ -504,8 +533,51 @@ test('Infernal Wispweaver: your Wisps in its region gain +2/+1 (live static)', (
   assert.deepEqual(effStats(h, wisp), [0, 1], 'the static ends with the weaver');
 });
 
-test('Infernal Wispweaver: wisps do not sacrifice themselves after combat', { todo: true }, () => {
-  // PARKED: needs a way to suppress ANOTHER card's trigger — the Wisp
-  // token's own after-combat self-sacrifice (registry.ts) fires
-  // unconditionally. The +2/+1 half of the line is implemented (see above).
+test('Infernal Wispweaver: wisps do not sacrifice themselves after combat', () => {
+  // R62 UNPARKED: the playtest report was "I have infernal wispweaver, but my
+  // wisps sacrificed themselves anyway!!!". The Wisp's whole ability list is
+  // "After combat, sacrifice me", so the weaver's static suppresses it.
+  const h = new Harness(1221);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  spawn(h, A, 'Infernal Wispweaver');
+  const mine = spawn(h, A, 'Wisp');
+  const theirs = spawn(h, D, 'Wisp');
+  const e = new E(h.state);
+  assert.ok(e.abilitiesSuppressed(ent(h, mine)!), "my Wisp's abilities are off");
+  assert.ok(!e.abilitiesSuppressed(ent(h, theirs)!), "the enemy's Wisp is untouched");
+  assert.deepEqual(e.suppressionOf(ent(h, mine)!).by, ['Infernal Wispweaver'],
+    'the text box names who switched it off');
+  assert.ok(e.ownAttrs(ent(h, mine)!).has('Feeble'),
+    'only the ABILITY layer is off — {Feeble} is a printed attribute and stays');
+});
+
+test('Infernal Wispweaver: the Wisp survives the after-combat sacrifice', () => {
+  const h = new Harness(1222);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const weaver = spawn(h, A, 'Infernal Wispweaver');
+  const guarded = spawn(h, A, 'Wisp');
+  toNextBattle(h, A);
+  const e = new E(h.state);
+  const doomed = e.spawnUnit(D, 'Wisp', h.state.battle!.region).id;
+  e.settle();
+  // the weaver rides along so the static reaches the Wisp in the battle region
+  h.do({ type: 'declareAttack', seat: A, columns: [[weaver], [guarded]] });
+  finishBattle(h);
+  assert.ok(ent(h, guarded), 'my Wisp is still there after combat');
+  assert.ok(!ent(h, doomed), 'the unguarded enemy Wisp sacrificed itself as printed');
+});
+
+test('Infernal Wispweaver: the suppression ends the instant the weaver does', () => {
+  const h = new Harness(1223);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const weaver = spawn(h, A, 'Infernal Wispweaver');
+  const wisp = spawn(h, A, 'Wisp');
+  const e = new E(h.state);
+  assert.ok(e.abilitiesSuppressed(ent(h, wisp)!));
+  e.destroy(ent(h, weaver)!, 'dies'); e.settle();
+  assert.ok(!new E(h.state).abilitiesSuppressed(ent(h, wisp)!),
+    'continuous, not a one-off stamp — the Wisp gets its ability back');
 });

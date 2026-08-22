@@ -208,7 +208,7 @@ test('composite is ONE stack item in battle: single negation kills all of it (R5
   assert.equal(h.state.stack[0]!.parts.length, 2, 'two parts inside');
   // negate it directly through the engine to prove single-negation semantics
   new E(h.state).negate(h.state.stack[0]!.id);
-  pass(h); pass(h);   // resolve: negated
+  assert.equal(h.state.stack.length, 0, 'R68: negating takes the composite off the stack at once');
   assert.equal(tokensOf(h, p).length, 0, 'no Fireballs: one negation killed the whole composite');
   assert.equal(h.state.players[o]!.life, 30, 'no Tidewraith damage either');
 });

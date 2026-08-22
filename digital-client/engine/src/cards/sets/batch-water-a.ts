@@ -18,11 +18,10 @@
  * that put the kept card permanently into HAND instead of the cache.
  *
  * PARKED (needs engine primitives that do not exist; subsets implemented):
- *  - Dreadspawn Horror (augment-donated form only): the unit form is a live
- *    self-static now (-1/-1 per card in the controller's hand, computed live
- *    in effStats), but the augment-DONATED form needs mod-carried statics —
- *    statics run only while the holder is a UNIT in play, so as a mod on a
- *    host it donates nothing.
+ *  - Dreadspawn Horror: NO LONGER parked. The self-static (-1/-1 per card in
+ *    the controller's hand, computed live in effStats) covers BOTH forms —
+ *    mod-carried statics anchor on the host (E.anchored), so the same def
+ *    donates correctly (un-parked 2026-08-18). This entry outlived it.
  *  - Lurking Slimebeast: printed.json has NO ambush field for it — the
  *    extractor does not parse the word-form "[three_blue]" cost (Mirage
  *    Walker's "[4bb]" parses fine). printed.json is not this batch's to
@@ -34,13 +33,12 @@
  *    budget, R9). Extra copies of TARGETED graft effects can't collect extra
  *    targets (composeParts collects one set per part) — those run once.
  */
-import type { Entity, Seat } from '../../types.ts';
+import type { Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
 
 /** Glimpse N for a seat (R45) — reveal the top N, cache exactly ONE of the
  * glimpser's choice and recycle the rest to the bottom of the deck; until end
@@ -69,8 +67,9 @@ const lifeLostThisBattle = (g: E, region: number, seat: Seat): number =>
 // unblocked, or blocked/blocking with Piercing.
 const amphivoreEcho: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-    if (!self) return;
+    const self = selfOf(g, ctx);
+    if (!self) { g.ev('info', 'Amphivore: the carrier is gone — no extra copies.'); return; }
+    let echoed = 0;
     for (const modId of self.mods) {
       const mod = g.entity(modId);
       if (!mod || mod.appliedAs !== 'graft' || mod.card === 'Amphivore') continue;
@@ -78,7 +77,9 @@ const amphivoreEcho: EffectDef = {
       if (!gr || gr.bounded || gr.effect.targets) continue;   // see PARKED note
       gr.effect.run(g, { ...ctx, sourceName: mod.card });     // copies 2 and 3
       gr.effect.run(g, { ...ctx, sourceName: mod.card });
+      echoed++;
     }
+    if (!echoed) g.ev('info', 'Amphivore: no unbounded graft is attached — there is nothing to triple.');
   },
 };
 card('Amphivore', {
@@ -112,7 +113,10 @@ const brippEffect: EffectDef = {
   targets: { what: 'any', prompt: "Bripp: look at target player's hand" },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (!t || !('player' in (t as object))) return;
+    if (!t || !('player' in (t as object))) {
+      g.ev('info', "Bripp: the target is not a player — no hand to look at.");
+      return;
+    }
     const who = (t as { player: Seat }).player;
     const hand = g.player(who).hand;
     g.ev('info', `Bripp reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
@@ -124,7 +128,10 @@ const brippEffect: EffectDef = {
       prompt: `Bripp: recycle a card from ${g.pname(who)}'s hand? (they then draw)`,
       options: [{ label: 'decline', value: -1 }, ...hand.map((name, i) => ({ label: name, value: i, card: name }))],
     }) as number;
-    if (pick < 0 || hand[pick] === undefined) return;
+    if (pick < 0 || hand[pick] === undefined) {
+      g.ev('info', 'Bripp: nothing is recycled.');
+      return;
+    }
     const [name] = hand.splice(pick, 1);
     g.recycleToBottom(who, name!);
     g.ev('info', `Bripp recycles ${name} from ${g.pname(who)}'s hand.`);
@@ -147,18 +154,7 @@ card('Celestial Purge', {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
       const who = t.controller;
-      for (const modId of t.mods) delete g.s.entities[modId];
-      delete g.s.entities[t.id];
-      const b = g.s.battle;
-      if (b) {
-        for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-          const i = col.indexOf(t.id);
-          if (i !== -1) col.splice(i, 1);
-        }
-        const si = b.sentAttackers.indexOf(t.id);
-        if (si !== -1) b.sentAttackers.splice(si, 1);
-      }
-      g.ev('erased', `${t.card} is ERASED (no bin, no death).`, { unit: t.id, card: t.card, seat: who });
+      eraseFromPlay(g, t);
       glimpse(g, who, 3);
     },
   },
@@ -174,9 +170,15 @@ card('Cosmic Reversal', {
   spellEffect: {
     run: (g, ctx) => {
       const recallKinds = new Set(['spell', 'spellUnit', 'spellToken', 'ambush']);
-      const keep: typeof g.s.stack = [];
-      for (const item of g.s.stack) {
-        if (!recallKinds.has(item.kind)) { keep.push(item); continue; }
+      // R68: removeFromStack() is the bare primitive — the item leaves the
+      // stack and the CALLER says where its card goes. This used to rebuild
+      // g.s.stack from a `keep` array because that primitive did not exist.
+      let recalled = 0;
+      for (const it of [...g.s.stack]) {
+        if (!recallKinds.has(it.kind)) continue;
+        const item = g.removeFromStack(it.id);
+        if (!item) continue;
+        recalled++;
         if (item.kind === 'spellToken') {
           g.ev('info', `Cosmic Reversal recalls ${item.label} — token: erased.`);
         } else {
@@ -184,7 +186,7 @@ card('Cosmic Reversal', {
           g.ev('info', `Cosmic Reversal recalls ${item.label} to ${g.pname(item.controller)}'s hand.`);
         }
       }
-      g.s.stack = keep;
+      if (!recalled) g.ev('info', 'Cosmic Reversal: there is no other spell effect on the stack — nothing is recalled.');
       void ctx;
     },
   },
@@ -195,11 +197,12 @@ card('Cosmic Reversal', {
 // self-affecting static whose dp/dt are computed live from the controller's
 // hand size (raw hand array — statics must never call effStats, reentrancy
 // guard). At 5+ cards in hand its toughness hits 0 and it dies at the next
-// death check. The augment-DONATED form is still PARKED (see header:
-// mod-carried statics); the inert augmentText entry below keeps isAugment()
-// true so the Virus mode works.
-// the static is host-anchored when mod-carried, so the same def covers both
-// the unit form and the augment-donated form (un-parked 2026-08-18)
+// death check. The static is HOST-ANCHORED when mod-carried, so the same def
+// covers the unit form and the augment-donated form alike (un-parked
+// 2026-08-18); `augmentable: true` is what keeps the Virus mode open. (The
+// "still PARKED … inert augmentText entry below" sentence that used to sit
+// here was left behind by that unpark, and described an entry that no longer
+// exists.)
 card('Dreadspawn Horror', {
   augmentable: true,
   statics: [{
@@ -248,9 +251,11 @@ card('Echo of Despair', {
         return g.s.players.some(p => lifeLostThisBattle(g, region, p.seat) > 0);
       },
       effect: {
+        creates: ['Echo of Despair'],
         run: (g, ctx) => {
-          const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-          if (self) g.spawnUnit(ctx.controller, 'Echo of Despair', ctx.region, { token: true });
+          const self = selfOf(g, ctx);
+          if (!self) { g.ev('info', 'Echo of Despair: the original is gone — there is nothing to copy.'); return; }
+          g.spawnUnit(ctx.controller, 'Echo of Despair', ctx.region, { token: true });
         },
       },
     },
@@ -339,14 +344,20 @@ card('Frosted Denial', {
 // (E.draw fires 'draw' during battle only — a multi-card draw is ONE event,
 // matching "one or more"). Flying via E.addTempAttr (until regroup).
 // Recall path: the recalled card goes to its OWNER's hand — the event only
-// carries the controller (≈ owner in this pool). Token recalls are erased,
-// not handed: filtered on the event message (the data carries no token flag).
+// carries the controller (≈ owner in this pool). R70 says where it went ON THE
+// EVENT: the despawn carries `to` ('hand' | 'cache'), which is what the when()
+// below reads. (It used to be a match on the rendered message, "the data
+// carries no token flag" — which also read a unit going to a CACHE as one
+// entering a hand.) R69, extended to the hand 2026-08-22: a recalled TOKEN
+// visits the hand too, so it counts here; a CACHED unit still does not.
 // Draw path: the 'draw' event carries no region, so the when() pins the
 // listener to the battle region itself (R12).
 const galeriderSurge: EffectDef = {
   run: (g, ctx) => {
-    const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-    if (self) { g.addTemp(self, 4, 4); g.addTempAttr(self, 'Flying'); }
+    const self = selfOf(g, ctx);
+    if (!self) { g.ev('info', 'Galerider Eel: the carrier is gone — no +4/+4 and no flying.'); return; }
+    g.addTemp(self, 4, 4);
+    g.addTempAttr(self, 'Flying');
   },
 };
 card('Galerider Eel', {
@@ -356,7 +367,9 @@ card('Galerider Eel', {
     when: (g, self, ev) => {
       if (g.s.phase !== 'battle' || ev.data?.seat !== self.controller) return false;
       if (ev.type === 'draw') return g.s.battle?.region === self.region;
-      return ev.data?.unit !== self.id && ev.msg.includes('hand');
+      // R70: the despawn event says where the card WENT; this used to match
+      // the word "hand" in the log message
+      return ev.data?.unit !== self.id && ev.data?.to === 'hand';
     },
     effect: galeriderSurge,
   }],
@@ -366,22 +379,23 @@ card('Galerider Eel', {
 // "[Augment] When I attack or block, you may play a unit from your hand into
 // an open position in my formation. (You still pay the cost.)" — bb/2 2/2.
 // Text-box [Augment], live when played normally. The unit is paid for
-// (canPayCard/payCard), spawns into the battle region and slots into my own
-// column if open, else the first open column on my side of the formation.
+// (canPayCard/payCard), spawns into the battle region, and R75 asks the
+// controller WHICH open position — "an open position in my formation" names a
+// kind of slot, not a particular one, so it is the same choice every other
+// "in my formation" card now makes.
 card('Hooba-Pon', {
   augmentText: [{
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
     label: 'you may play a unit from your hand into an open formation position',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         const b = g.s.battle;
-        if (!self || !b) return;
-        const grid = b.columns.some(col => col.includes(self.id))
-          ? b.columns : Object.values(b.blocks);
-        const myCol = grid.find(col => col.includes(self.id));
-        const hasRoom = (col: number[]) => col.filter(id => g.entity(id)).length < 2;
-        if (!grid.some(hasRoom)) return;   // no open position
+        if (!self || !b) { g.ev('info', 'Hooba-Pon: no formation to play into.'); return; }
+        if (!g.formationSlots(ctx.controller).length) {
+          g.ev('info', 'Hooba-Pon: there is no open position in the formation — nothing is played.');
+          return;
+        }
         const seat = ctx.controller;
         const hand = g.player(seat).hand;
         const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
@@ -390,19 +404,21 @@ card('Hooba-Pon', {
             options.push({ label: name, value: i, card: name });
           }
         });
-        if (options.length === 1) return;
+        if (options.length === 1) {
+          g.ev('info', 'Hooba-Pon: no unit in hand you can pay for — nothing is played.');
+          return;
+        }
         const pick = ctx.choose('hoobaPlay', {
           kind: 'payOrDecline', seat,
           prompt: 'Hooba-Pon: play a unit from your hand into an open position in my formation? (you pay its cost)',
           options,
         }) as number;
         const name = pick >= 0 ? hand[pick] : undefined;
-        if (name === undefined) return;
+        if (name === undefined) { g.ev('info', 'Hooba-Pon: declined — nothing is played.'); return; }
         hand.splice(pick, 1);
         g.payCard(seat, name);
         const u = g.spawnUnit(seat, name, ctx.region);
-        const col = (myCol && hasRoom(myCol)) ? myCol : grid.find(hasRoom);
-        if (col) col.push(u.id);
+        g.placeInFormation(u, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon' });
       },
     },
   }],
@@ -424,14 +440,20 @@ const insidiousInvite: EffectDef = {
           options.push({ label: name, value: i, card: name });
         }
       });
-      if (options.length === 1) continue;
+      if (options.length === 1) {
+        g.ev('info', `Insidious Invitation: ${g.pname(seat)} has no unit they can pay for.`);
+        continue;
+      }
       const pick = ctx.choose(`invite:${seat}`, {
         kind: 'payOrDecline', seat,
         prompt: 'Insidious Invitation: play a unit from your hand as if it were [Battle]? (costs still paid)',
         options,
       }) as number;
       const name = pick >= 0 ? hand[pick] : undefined;
-      if (name === undefined) continue;
+      if (name === undefined) {
+        g.ev('info', `Insidious Invitation: ${g.pname(seat)} declines.`);
+        continue;
+      }
       hand.splice(pick, 1);
       g.payCard(seat, name);
       g.spawnUnit(seat, name, ctx.region);
@@ -509,13 +531,14 @@ card('Mirage Walker', {
       label: 'create a 3/3 unit (you took no actions during deployment)',
       when: (_g, self) => !(self.budgets['mw:acted'] ?? 0),
       effect: {
+        creates: ['Unit Token'],
         run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [3, 3] }); },
       },
     },
   ],
   graftEffect: {
     bounded: true,
-    effect: { run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [3, 3] }); } },
+    effect: { creates: ['Unit Token'], run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [3, 3] }); } },
   },
 });
 
@@ -556,9 +579,14 @@ const overwhelmShrink: EffectDef = {
   targets: { what: 'unit', prompt: 'Overwhelm: target unit gains -1/-1 for each card in your hand' },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (!isEnt(t) || !g.entity(t.id)) return;
+    if (!isEnt(t) || !g.entity(t.id)) {
+      g.ev('info', 'Overwhelm: the target is gone — nothing is shrunk.');
+      return;
+    }
     const n = g.player(ctx.controller).hand.length;
-    if (n > 0) { g.addTemp(t, -n, -n); g.checkDeaths(); }
+    if (n <= 0) { g.ev('info', 'Overwhelm: your hand is empty — -0/-0, nothing changes.'); return; }
+    g.addTemp(t, -n, -n);
+    g.checkDeaths();
   },
 };
 card('Overwhelm', {

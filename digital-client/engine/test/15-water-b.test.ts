@@ -136,7 +136,7 @@ test('Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly onc
   finishBattle(h);
 });
 
-test('Pull Under: a TOKEN victim is erased — no bin, no trash (R40 excludes tokens)', () => {
+test('Pull Under: a TOKEN victim is trashed into the CASTER\'s bin, then erased (R69)', () => {
   const h = new Harness(1553);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -150,10 +150,14 @@ test('Pull Under: a TOKEN victim is erased — no bin, no trash (R40 excludes to
   pick(h, { unit: tok });
   pass(h); pass(h);
   assert.ok(!ent(h, tok), 'the token is gone');
-  assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'nothing entered the caster\'s bin');
-  assert.ok(!h.state.players[D]!.bin.includes('Unit Token'), 'nor the owner\'s');
-  assert.ok(!h.events.some(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Unit Token'),
-    'a token is never trashed (R40)');
+  // R69: a token does enter a bin — `binTo` sends it to the CASTER's, so the
+  // caster is the trasher — and the state-based sweep erases it from there.
+  const trash = h.events.filter(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Unit Token');
+  assert.equal(trash.length, 1, 'exactly one trash');
+  assert.equal(trash[0]!.data?.['seat'], A, 'by the owner of the bin it entered (R40)');
+  assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), "the sweep emptied the caster's bin again");
+  assert.ok(!h.state.players[D]!.bin.includes('Unit Token'), "and it never touched the owner's");
+  assert.ok(h.q.erased(A).includes('Unit Token'), 'the erased pile records it (R65)');
   finishBattle(h);
 });
 
@@ -195,6 +199,48 @@ test('Rider of the Tides: a card entering a hand during battle → +2/+2 until r
   assert.deepEqual(effStats(h, rider), [4, 4], '2/2 + 2/2 = 4/4');
   finishBattle(h);
   assert.deepEqual(effStats(h, rider), [2, 2], 'temp change gone at regroup');
+});
+
+// R69, extended to the hand 2026-08-22 — and Caleb was asked this about THIS
+// CARD: "does recalling a spell token trigger Rider of the Tides?" → "Oh dang
+// yeah it should also trigger it." (2025-04-24). The token enters the hand,
+// fires the trigger, and is erased by the state-based sweep before the trigger
+// resolves.
+test('Rider of the Tides: recalling a TOKEN triggers it too (R69, the hand window)', () => {
+  const h = new Harness(1523);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const rider = spawn(h, A, 'Rider of the Tides');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[rider]] });
+  const e = new E(h.state);
+  const tok = e.spawnUnit(A, 'Unit Token', h.state.battle!.region, { token: true });
+  e.recall(tok);
+  e.settle();
+  h.state = e.s;
+  pass(h); pass(h);                                        // resolve the trigger
+  assert.deepEqual(effStats(h, rider), [4, 4], 'the token entered a hand — 2/2 + 2/2');
+  assert.ok(!h.state.players[A]!.hand.includes('Unit Token'),
+    'and the sweep erased it out of the hand again');
+  finishBattle(h);
+});
+
+// The mirror: a CACHED unit is not a card entering a hand, and R70's `to`
+// keeps them apart (the old card-TYPE proxy read a cache as a hand).
+test('Rider of the Tides: a unit going to the CACHE is not a card entering a hand', () => {
+  const h = new Harness(1524);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const rider = spawn(h, A, 'Rider of the Tides');
+  const wh = spawn(h, A, 'Good Whale');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[rider], [wh]] });
+  const e = new E(h.state);
+  e.cacheUnit(h.state.entities[wh]!);
+  e.settle();
+  h.state = e.s;
+  assert.deepEqual(effStats(h, rider), [2, 2], 'no pump — the cache is not a hand');
+  finishBattle(h);
 });
 
 test('Rider of the Tides: a battle DRAW also triggers the pump', () => {
@@ -569,9 +615,13 @@ test('Water Resource: registered on printed data (2/0, [b]); behavior parked', (
   assert.ok(h.state.players[p]!.bin.includes('Water Resource'));
 });
 
-test('Water Resource: activation trigger + Shard (PARKED: resource cards / activation events / Shard kind missing)', { todo: true }, () => {
-  // needs: resource cards playable as resources, 'resourceActivated' dispatched
-  // to trigger listeners, and a 'Shard' resource kind ("spawns dormant").
+test('Water Resource: activation trigger + Shard (PARKED: resource cards + the activation event)', { todo: true }, () => {
+  // Needs two engine primitives: resource CARDS playable as resources (today a
+  // resource is an anonymous ResourceState entry, not an entity), and
+  // 'resourceActivated' dispatched to trigger listeners (apply.ts only logs
+  // it). The third blocker this note used to name — "a 'Shard' resource kind"
+  // — has shipped: E.createShard() creates real dormant shards, and
+  // Hooba-Lan / Swirling Shardform already use it.
 });
 
 test('Xenopod Progenitor: another card enters a hand in battle → may pay [1] for a 2/2', () => {

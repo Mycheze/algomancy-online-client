@@ -90,7 +90,14 @@ A blocked column stays blocked, but if all blockers are gone at damage time a
 over an empty column leaves everything as excess, and piercing excess is automatic
 per R7). Non-piercing columns still deal nothing through a dead block. ⚠ Engine
 call during M1 (the prototype dealt nothing in both cases) — needs Bena.
-(Engine 2026-07-16.)
+(Engine 2026-07-16.) **Confirmed by the Manual, 2026-08-21**, which prints it in
+as many words: *"The column is considered blocked even if the defending unit is
+removed during combat!"* The ⚠ above is really only about the Piercing half now.
+
+The mirror case — the **attackers** are gone and the blockers are alive — is
+answered the *other* way by
+[R72](#r72--formation-gravity-the-back-row-always-promotes-the-line-closes-ranks-only-before-blocks):
+the blocker deals nothing. There the attack is gone; here it is still real.
 
 ## R14 ⚠ — "In this battle" counters are per region-battle
 Battle-scoped counters ("the second ally dies in this battle") are kept **per
@@ -122,16 +129,31 @@ hidden information). A dormant Prismite cannot be exchanged. The engine and prot
 had wrongly treated them as wild-affinity and starting face-up.
 (Bena 2026-07-16, confirmed by Manual p.18.)
 
-## R18 ⚠ — Haste step engine model
+## R18 — Haste step engine model
 The haste step (Manual p.18: after the resource step, only {Haste} cards playable, ends
 when everyone has played all they want) is modeled as a sub-step after both players
 finish planning: each haste play **resolves immediately** (planning is not interactive —
 no stack, no responses), players may interleave plays in any order, and a player with no
 legal haste play is auto-marked done. The step is **skipped outright** when nobody has a
-legal haste play, so turns without haste cards look exactly as before. ⚠ Engine call:
-strictly, resource decisions lock before anyone sees a haste play; the engine lets a
-not-yet-done player keep playing haste cards after seeing the opponent's (planning
-reveals no other information, so this is judged harmless in 1v1). (Engine 2026-07-16.)
+legal haste play, so turns without haste cards look exactly as before. (Engine 2026-07-16.)
+
+**The ⚠ is withdrawn (2026-08-21).** It used to concede that "the engine lets a
+not-yet-done player keep playing haste cards after seeing the opponent's",
+judged harmless because planning reveals nothing else. The concession is now
+false: the haste step is a **hidden simultaneous segment** — nobody sees the
+other side's haste plays until everyone is done, exactly as the planning phase
+already worked. That hiding is not a mitigation of the model, it is *what makes
+the model correct*: with no information flowing, interleaving in any order and
+locking resource decisions first are indistinguishable from the printed
+"everyone plays what they want, then the step ends".
+
+Note the enforcement layer. The pure engine does not hide anything — it holds
+the whole state and answers every query truthfully — so the concealment is done
+where every other concealment is done, in the **server's view redaction**
+(`server/view.ts` / `server/rooms.ts`), the same seam that hides hands and
+opponents' pending decisions. A tool that drives the engine directly and skips
+the server can still peek, which is true of hands too and is not a rules
+question.
 
 ## R19 ⚠ — Stat layer 4 application order
 Tough (defense doubled) and Balanced (power and defense become the max of the two) apply
@@ -337,14 +359,43 @@ it is deliberately the LAST thing in the resource step so that no further
 mana can be activated afterwards, and the mana spent is unavailable for
 casting this turn. (Caleb 2024-09-10, refined 2024-12-02; via Bena 2026-08-19.)
 
-## R40 — Trashing: a nontoken card entering a bin from anywhere but the stack
+## R40 — Trashing: a card entering a bin from anywhere but the stack
 Discarding, sacrificing, milling and dying in combat all trash. A spell or
 ability going to the bin after resolving does NOT (it comes from the stack),
-so negating a spell is not trashing; tokens are never trashed; erasing never
-touches the bin and so is not trashing. The trasher is the owner of the bin
-the card enters. A per-battle trash count is required (Dropslime, Muck
-Rummager). (Printed: Void Scavenger reminder text; Caleb 2025-02-01;
-broadened by Bena 2026-08-19.)
+so negating a spell is not trashing; erasing never touches the bin and so is
+not trashing. The trasher is the owner of the bin the card enters. A
+per-battle trash count is required (Dropslime, Muck Rummager). (Printed: Void
+Scavenger reminder text; Caleb 2025-02-01; broadened by Bena 2026-08-19.)
+
+**Amended 2026-08-21 — the "nontoken" clause is REVERSED. Tokens CAN be
+trashed.** This rule used to read "a **nontoken** card entering a bin…" and
+carried the flat clause *tokens are never trashed*. Bena has ruled the other
+way, and the three premises are each independently sourced:
+
+1. **Tokens are cards.** *"Tokens are temporary cards"* opens the Tokens
+   section of BOTH rulebooks. Algomancy does not draw Magic's token/nontoken
+   line; token-ness here is physical provenance (anything you would not
+   shuffle into the deck), and the game carves tokens out by printing the
+   literal word **"nontoken"** where it means to.
+2. **A dying token does enter the bin** — see R69, with Caleb's rulings.
+3. **It does not come from the stack**, which is this rule's entire definition
+   of trashing.
+
+So a dying token is trashed by the owner of the bin it enters, exactly like
+everything else, and is *then* erased out of that bin (R69).
+
+⚠ What the old clause rested on: the **reminder text of Void Scavenger**, the
+one card in the corpus that prints "nontoken" next to a trash. That card has
+been **cut**, and it is not registered in the engine at all — so the qualifier
+that justified a rule-wide exception now survives on nothing. No scripted trash
+trigger in the pool prints "nontoken".
+
+**Consequence, and it is intended:** all fourteen trash triggers (Dropslime,
+Muck Rummager, Cerebrox, Murkstalker, Afflicting Anima, Blightwalker, Cthyrian
+Culler, Cthyrian Rector, Maw of Despair, Murkdrop Distiller, Nothyr, Splort,
+Thoughtripper — and Void Scavenger if it ever returns) and the per-battle trash
+ledger now see token deaths. Token-heavy Dark boards are materially stronger at
+trash payoffs. That is the point of the ruling, not a side effect of it.
 
 **Bin redirection (2026-08-19).** A card that redirects a dying unit into
 someone else's bin (Pull Under: "delete target unit; it and its mods go to
@@ -422,18 +473,30 @@ top card deterministically and says so in the log.
 When a unit in play is cached, the mods attached to it go to the bin rather
 than travelling with it. (Caleb 2024-09-15.)
 
-## R47 ⚠ — A dying Wraith re-attaches instead of being erased
-The Wraith token (renamed FROM "Wight"; the printed token card still shows the
-retired title, and `Blight's End` is the one card still printing it) is a 0-mana
-4/4 Blight Zombie Token Unit reading "[Augment] When I attack or block, put
-a -1/-1 counter on me. When I die, augment me onto target ally." Unlike
-every other unit token it is not erased on death — its own trigger applies
-it as an augment mod to a chosen ally, donating the shrink-on-fight text to
-its new host. It ceases to exist only when no legal ally remains. "Create a
-Wraith" spawns the body; "Augment a Wraith onto a unit" creates the same
-token directly as a mod. A Wraith dying is not trashing (tokens are excluded,
-R40). (Printed token card via Bena 2026-08-19; the no-erase carve-out is
-Bena's reading of the printed text.)
+## R47 — RETIRED 2026-08-21 (the card was redesigned; see R71)
+**This rule is withdrawn — not stale, wrong.** The card it described no longer
+exists.
+
+What R47 said, verbatim in substance: the Wraith token was a 0-mana **4/4**
+Blight Zombie Token Unit reading *"[Augment] When I attack or block, put a
+-1/-1 counter on me. When I die, augment me onto target ally"*; **unlike every
+other unit token it was not erased on death** — its own trigger re-applied *the
+same token* as an augment mod on a chosen ally, donating the shrink-on-fight
+text to its new host, and it ceased to exist only when no legal ally remained.
+A Wraith dying was not a trash, because tokens were excluded from R40.
+
+Every one of those clauses is now false. On **2026-08-21** Bena supplied the
+new printed card: a **3/3** whose first line is a start-of-deployment -1/-1
+counter on an ally and whose second line **mints a fresh Wraith** rather than
+re-homing the dying one. The dying Wraith is erased like any other token —
+after entering the bin and being trashed there (R69), which also reverses
+R47's last sentence.
+
+The one clause that survives is the naming: `Wraith` and the retired `Wight`
+are ONE card, registered under the current name with the old one as an alias,
+because `Blight's End` still prints "Wight".
+
+**Replaced by [R71](#r71--the-wraith-token-redesigned-and-an-ally-is-not-a-target).**
 
 ## R48 — Blessed is simultaneous; Afflicting fires on counter kills
 Blessed life gain happens on the same game-state check as the damage, not as
@@ -538,6 +601,19 @@ all, so a card that IS trashed provably carries no mods, and the ghost's empty
 graft CAUSE still works normally while the card is a unit in play; only the
 trash firing itself can never have riders.
 
+**Re-derived 2026-08-21, after R69 let tokens be trashed** — the argument
+survives, and is now load-bearing on the branch ORDER rather than on the token
+carve-out. R69 tests `mods.length` FIRST: an Unstable anything, token or not,
+is erased with its mods and reaches no bin. Trashing requires entering a bin.
+Therefore *anything trashed out of play carried no mods* — which is what the
+empty `mods: []` encodes — and that now holds for the token case too, where it
+previously held only by accident (a modded token used to take the token branch
+and escape trashing for the wrong reason). One further consequence: the
+stand-in a trash trigger fires on is no longer always fabricated. R70 hands it
+the dead unit's own detached entity where there is one, so the trigger keeps
+the region it died in; the `mods: []` is still written explicitly, for the
+reason above.
+
 ## R52 ⚠ — A created unit arrives in its CONTROLLER's home region (R28 is the default)
 "Create a unit / create a Wraith / create that many 1/1 units", with no place
 named, puts the unit in its **controller's home region** — never the battle
@@ -570,7 +646,11 @@ not uniform either.** A dozen base-set cards still create units in the
 effect's region — Perpetual Construct, Squish, Channeled Amalgam, Astralith,
 Stormsowing Nimbus, Flamebreath Initiate, Engorged Caudex, Forager of the
 Fallen, Spawntender, Spell Excavation, Echo of Despair, Mirage Walker,
-Gravitational Correction, Infernal Cultivator — while Tidelurker (R28's own
+Gravitational Correction, Infernal Cultivator — plus five more found in the
+2026-08-21 audit: Soul Siphon, Stoneborn Progenitor, Awoken Tomb, Arcane
+Concentrator, Embermaw Fledgling (all battle-reachable creators using the
+effect's region; Soul Siphon and Flesh Tithe are the same printed shape and
+currently behave differently) — while Tidelurker (R28's own
 source), Ancient One, Pack Leader, Pathogenic Enclave, Scrap For Parts, Floral
 Singularity and Galactic Germination already use the home region. R52 is
 the rule they should all follow, but the base-set migration wants its own
@@ -1249,3 +1329,1114 @@ candidate is legal, so a forced "target opponent" is now a click. That is the
 engine's standing behaviour for every other target, and auto-filling forced
 targets would drop a `decide` from the action log and break replay of saved
 games — so it is left alone rather than special-cased here.
+
+## R68 — Negating an effect REMOVES it from the stack, then and there
+
+*(Playtest round 13, game UZRG, 2026-08-21.)*
+
+> "Is negate supposed to remove effects from the stack? I thought it was
+> supposed to work by just removing them from the stack and putting them into
+> the bin (if a spell/unit), not just 'greying them out' and removing their
+> effect"
+
+It is, and it did not. `E.negate()` set `item.negated = true` and left the item
+sitting on the stack. The removal-and-bin lived somewhere else entirely — in an
+`if (item.negated)` branch of `resolveItem()` — and that branch only ran when
+`resolveTop()` eventually popped the item. Since `finishResolutionTail()`
+restarts the priority window from the initiative player after **every**
+resolution, each dead item cost a full extra round to shuffle off. In UZRG one
+Containment Protocol negated four items at action 218, and actions 219–226 were
+eight further `passPriority` calls popping four greyed-out corpses one at a
+time, while a battle both players had already resolved refused to end.
+
+**The structural cause is that the stack had exactly one exit.** `resolveTop()`
+→ `resolveItem()` was the only way anything came off it, so `negate()` *could
+not* remove anything — it could only leave a note for that one exit to read
+later. Negation was modelled as a property of resolution ("resolve as nothing")
+rather than as removal from the stack. Three cards had already hand-rolled the
+missing primitive, which is how you know it was missing: Temporal Rift called
+`negate()` and then pushed the cards to bins itself and set `stack.length = 0`;
+Dream Lapse called `negate()` and then spliced; Cosmic Reversal rebuilt
+`g.s.stack` from a `keep` array.
+
+**The rule.** A negated item leaves the stack the instant the negation
+resolves, and its card goes where it goes at that same instant. `E.negate()` is
+now written over a new primitive, `E.removeFromStack(stackId): StackItem |
+undefined` — pull an item off the stack and hand it back, the caller decides
+where its card goes. That is the second exit, and it is what a recall
+(Dream Lapse, Cosmic Reversal) needs too: the same removal with a different
+destination.
+
+Where the card goes, by item kind:
+
+- **spell / spellUnit / unit / virus / ambush** — to its controller's **bin**.
+  R40: it comes **from the stack**, so this is *not* a trash, and no `trashed`
+  event fires.
+- **spellToken** — erased. A token never reaches a bin (R40).
+- **triggered / activated** — nothing. The ability has no card of its own; the
+  item's `card` field names its SOURCE, which is still standing in play. A
+  negated ability is simply gone, and it does **not** count as "erased" for the
+  cards that care about the erased pile (R65).
+
+**The `kind: 'unit'` hole this closed.** The old branch gated the bin push on
+`spell | spellUnit | virus | ambush` but gated the "→ bin" log suffix on
+`kind !== spellToken | triggered | activated`. A negated `{Battle}` **unit**
+therefore logged "→ bin" and was **silently erased into nowhere**. It was
+reachable from Return to Nature, Calming Force, Finality and Temporal Rift, all
+of which negate everything on the stack, and all of which are `{Battle}` spells
+that can catch a `{Battle}` unit (Monke, Shard Sprite, Trench Stalker,
+Tiderunner Initiate, Surly Stalker) mid-cast. A negated unit is binned.
+
+**The hazard the change creates**, and it bit six cards: `negate()` now
+*splices*, so `for (const it of g.s.stack) g.negate(it.id)` skips every other
+item. Every sweep iterates a copy (`[...g.s.stack]`). Flame Shield was worse
+than a skip — it counted its Fireball payout off the same loop, so negating two
+spells paid one Fireball and left the second spell alive.
+
+**Two things stopped being questions.** `targetStillLegal` for a stack target
+is now just "is it still on the stack" — there is no such thing as a negated
+item sitting there to exclude. And `resolveItem`'s negated branch is gone
+rather than kept as a guard: its two callers are `resolveTop()`, which pops
+from a stack that no longer holds negated items, and `commitItem(…, 'resolve')`,
+which hands over an item freshly built with `negated: false` that was never on
+the stack for anyone to answer. The `negated` flag survives on the type and on
+the detached item, which is what the log line reads.
+
+### ⚠ Ordering inside one resolution — needs a ruling
+
+**Finality** reads *"Negate all other effects. Erase all cards in bins."* Under
+the old behaviour the negated cards reached the bin a whole priority round
+*after* Finality finished, so Finality did **not** erase the cards it had just
+negated. Under R68 they are in the bin before the second sentence runs, so it
+**does**.
+
+The straightforward reading of the printed text is implemented — the sentences
+resolve in order, and by the second one the cards are in bins — and
+`test/61-negation.test.ts` pins that. But it is a real power increase on one
+card, arrived at as a side effect of fixing something else, and the same shape
+will appear on any future card whose second clause reads a zone its first
+clause just filled. **Bena to rule.** If the answer is "no, a card negated by
+this spell is not yet in the bin when this spell's own later clause looks",
+that is a per-card ordering note on Finality, not a change to R68.
+
+## R69 — A token entering a ZONE is really there, then a state-based sweep erases it; and Unstable is tested first
+
+*(Playtest round 13, game UZRG, 2026-08-21. Sourced against the rules corpus
+and Caleb's Discord rulings; Bena's ruling on the trash half. **Extended from
+the bin to the HAND and the CACHE on 2026-08-22** — see the last section.)*
+
+Three things that looked like three separate bugs are one branch, in
+`E.destroy()`. As it stood:
+
+```
+if (u.token) …          // token: erased
+else if (mods.length) … // Unstable: it and its mods are ERASED
+else …                  // → bin, and R40 trashes it
+```
+
+### 1. The order is wrong — this is the UZRG bug
+
+A **modded token** takes the first branch and never reaches the Unstable one.
+At the table: a Wraith body carrying a Wraith mod (from `Blight's End`) died,
+took the token carve-out, **came back**, and its mod's donated death trigger
+fired as well — a double dip that no printed text authorises.
+
+Unstable is now tested **first**. An Unstable *anything*, token or not, is
+erased with its mods. `mods.length` is the whole test, which is what "Unstable"
+has always meant here.
+
+### 2. Unstable replaces the BIN, not the DEATH
+
+The playtest report claimed the opposite — that an Unstable unit should not
+die — and it is **mistaken**. Sources, in order of weight:
+
+- `Rules/Algomancy-Manual.txt:886-888`, the PERMADEATH sidebar, is the only
+  printed rules text; there is no glossary entry anywhere.
+- Reminder text on both cards that GRANT it (Abyssal Evocation, Spell
+  Excavation): *"(If they would enter a bin, erase them instead.)"* — a bin
+  replacement, in as many words.
+- Caleb 2025-03-13, asked *"Do unstable units die or do they just despawn into
+  the erased zone?"* → **"They die"**.
+- Caleb 2025-04-08, asked the exact graft-and-death-triggers version →
+  **"unstable units still die, they just get erased instead of ending up in the
+  bin"**.
+- He distinguishes this from a genuine death-replacement: on Pull Under he
+  would errata it *"to be a replacement, which wouldn't trigger death"*.
+
+So the `died` event fires on every branch, death triggers go off, and other
+cards' "whenever a unit dies" watchers see it. Only the destination changes.
+The engine, `docs/03-mechanics-inventory.md`, `ui/glossary.ts`, `core.py` and
+`cards.py` already had this right; nothing was changed for it beyond making the
+branch order stop hiding it.
+
+### 3. A dying token DOES reach the bin — and the printed Manual is wrong
+
+> "Do tokens enter hand/bin before they are erased?" — **"yes, for the purposes
+> of triggers"** (Caleb 2025-03-12)
+
+> "Technically it does enter your hand and then gets erased immediately. So it
+> would trigger any 'enters hand' stuff. Similar to how tokens can 'die'."
+> (Caleb 2025-06-15)
+
+Against `Rules/Algomancy-Manual.txt:361-362`, which says tokens go to the token
+pile *"instead of the hand or bin"*. The designer overrides the printed line.
+
+**Timing.** The erase is a **state-based action** and it resolves *before* the
+trigger goes on the stack — *"state based effects happen to erase it and then
+the trigger goes on the stack"* (Caleb 2023-09-12). That maps exactly onto the
+engine's two-phase dispatch: `fireEvent()` only QUEUES triggers, so the token
+is in the bin for the whole event window (every `when` predicate, the ledger,
+the bin-zone scan) and out of it before anything RESOLVES.
+
+⚠ **A conflicting ruling, recorded rather than smoothed over.** Caleb
+**2025-03-09** said the opposite — tokens go to the token pile *"instead of
+sending them to your bin"* — three days before the 2025-03-12 answer above.
+The engine implements the majority and most recent reading. If the 03-09 line
+is the intended one, this rule and R40's amendment both fall.
+
+### And so: a dying token is trashed
+
+Tokens are cards, they enter the bin, and they do not come from the stack —
+which is R40's entire definition of trashing. **Bena's ruling, 2026-08-21**,
+reversing R40's old flat "tokens are never trashed". See the amendment on R40
+for the evidence and for the fact that the old clause rested on the reminder
+text of a card that has since been cut.
+
+The sequence `destroy()` now produces for an unmodded token, in order:
+
+1. the card is pushed into the bin (the bin of `binTo` when a card redirects
+   it — Pull Under — else the owner's);
+2. `died` fires, and its listeners see the card sitting in that bin;
+3. `noteTrashed` fires `trashed`, bumps the per-battle ledger and queues the
+   card's own "when I am trashed" trigger;
+4. the state-based sweep (`E.eraseFromBin`) removes it and records it in the
+   public erased pile (R65);
+5. only now does anything queued in 2 or 3 resolve.
+
+⚠ **Step 4 is new information in the UI.** A dying token used to vanish with no
+`erased` event at all, so R65's pile never listed one; now every Wisp, Wraith
+and 1/1 that dies appends to it. That is *correct* — the card really was erased
+out of a zone — but the pile was built to answer "which real cards are out of
+the game", and token deaths are frequent enough to bury the answer. If Bena
+wants tokens kept off the list, the change is in `E.ev()`'s erased-pile hook,
+not in this rule: the erase itself still has to happen and still has to log.
+
+**What this hands to card code.** A trash trigger that wants the trashed card
+*back out of the bin* will not find a token there — `Cthyrian Rector` and
+`Murkdrop Distiller` both already handle "no longer in the bin", but the Rector
+sacrifices itself first and unconditionally ("sacrifice me. **If you do,**
+recall that card"), so it now eats itself on the first token death on your
+side and gets nothing. That follows from the printed text plus the timing
+ruling, so it is implemented as written rather than patched — **flagged for
+Bena** as the one place this ruling reads as a downgrade rather than an upgrade.
+(Since [R73](#r73--sacrifice-me-is-a-cast-cost-paid-on-the-way-to-the-stack) the
+Rector's self-sacrifice is a **cast cost**, which moves the payment earlier
+without changing this: it still pays, and still finds nothing left to recall.)
+
+### The window is not bin-only: it opens on the HAND and the CACHE too
+
+*(Bena's ruling, 2026-08-22. The bin-only first pass was the wrong half — the
+designer's answer is literally about a hand.)*
+
+> "Can I recall a token unit? If so, I guess it is just erased, right?" —
+> **"Yep. Technically it does enter your hand and then gets erased immediately.
+> So it would trigger any 'enters hand' stuff. Similar to how tokens can
+> 'die'."** (Caleb 2025-06-15)
+
+> asked whether recalling a spell token triggers Rider of the Tides —
+> **"Oh dang yeah it should also trigger it."** (Caleb 2025-04-24)
+
+So a **recalled** token really does enter the hand: `E.recall` pushes the card
+into the hand, stamps the despawn event `to: 'hand'` (R70) for a token exactly
+as for anything else, fires it — and only then does the same state-based sweep
+take it back out. The timing argument is unchanged and is the one Caleb gave
+(2023-09-12): `fireEvent` only QUEUES, so the token is in the hand for the whole
+event window and out of it before anything resolves.
+
+**Consequences, all intended.** "When one or more cards enter a hand during
+battle" now counts a recalled token — **Rider of the Tides** (the card Caleb was
+asked about), **Xenopod Progenitor** and **Galerider Eel**. A recall is still
+never a **trash**: a hand is not a bin, and R40 is about bins.
+
+⚠ **The CACHE is the engine's call, not a ruling.** There is no designer
+statement about a token being cached — none at all. `E.cacheUnit` opens the same
+window (the card reaches the cache, the `cached` event fires with it really
+sitting there, the sweep removes it) because the alternative is one zone
+behaving differently from the other two for no stated reason. **Overturnable by
+Bena** with no other change: the sweep is one call.
+
+**One mechanism, not three.** `E.eraseFromBin` became `E.eraseFromZone(seat,
+card, 'bin' | 'hand' | 'cache', msg, uid?)` and every caller — `destroy()`,
+`recall()`, `cacheUnit()` — goes through it. The generalisation was clean: the
+sweep was never bin-specific in substance, only in its name and its pile lookup.
+The cache needed one extra parameter because its entries are `CachedCard`s with
+a `uid` rather than bare names, and the caller minting the entry always has it.
+
+**A fourteenth leave-play copy collapsed with it.** `batch-hybrids-ld-c.ts` held
+a hand-rolled `putIntoHand()` for Capture ("put target unit into YOUR hand"),
+copied from `recall()` line for line because the destination seat differs. It
+had already drifted: it stamped no R70 `to`, so **Capture triggered no
+"a card entered a hand" watcher at all**. `E.recall` now takes `{ to, verb }`
+and `putIntoHand` is a one-line delegate. Every other hand-rolled leave-play
+routine in `src/cards/**` was checked and is a deliberate **erase** path (no
+bin, no despawn, nothing to share) — those stay local, correctly.
+
+## R70 — Facts about a leaving unit ride the EVENT
+
+*(Playtest round 13, 2026-08-21. Structural — no player quote; two live bugs.)*
+
+`E.destroy()` deletes the entity as its **second statement**, before the `died`
+event is even constructed, and then passes the deleted object by reference to
+`fireEvent`. Triggers are queued, not resolved, so by the time one of them runs
+`this.entity(sourceId)` is `undefined` and every fact about the dead unit has
+to come from somewhere else.
+
+The engine had already patched around this twice, in two different ways, which
+is how you know an idea was missing: `counters` was stamped onto the death
+event for Entropic Entity, and R40's trash trigger fabricated a **detached id
+-1 ghost** so its `when` had something to read. Two point fixes, one absent
+concept. Two bugs fell out of the gap.
+
+### 1. Every "when I die" trigger resolved in the wrong region (R12)
+
+`processTriggerQueue()` built its stack item with
+
+```
+region: this.entity(next.sourceId)?.region ?? this.actionRegion(next.controller)
+```
+
+For a death trigger the entity is *always* gone, so it *always* took the
+fallback — the **controller's** action region, not the region the unit died
+in. Reproduced: a death trigger offered a target standing in a different region
+while withholding the ally standing beside the corpse. This affected **every
+`self: true` "when I die" trigger in the pool**, and `test/62-death-facts.test.ts`
+pins it (revert the fix and that test alone fails).
+
+The fix is the general one: `PendingTrigger` carries the **region its source
+fired in**, written at queue time in `collectTriggersFrom` (from `host.region`),
+`fireOwnTrashTrigger` and `fireZoneTriggers`. Resolution reads
+`entity(sourceId)?.region ?? next.region ?? actionRegion(controller)` — a live
+source still uses its CURRENT region, because it may legitimately have moved
+between firing and resolving; the new middle term only ever answers for a
+source that is gone.
+
+### 2. Rules logic was reading the log message
+
+`batch-wood-c.ts`'s Saprophytic Oracle — *"whenever a **nontoken** unit dies"* —
+decided token-ness with `when: (_g, _self, ev) => !ev.msg.includes('token: erased')`.
+A dying Wraith logs different text, so it minted a 1/1 off a token death. This
+was a **class**, not a case: four cards matched that phrase (Saprophytic Oracle,
+Biomass Devourer, Soulforger, Fungal Gardener), Ghord matched
+`ev.msg.includes('is sacrificed')` to read the verb, Galerider Eel matched the
+word `'hand'` to ask where a recalled card went, and Rider of the Tides /
+Xenopod Progenitor asked the same question by looking up the card's TYPE for
+the word "Token" — which also read a unit going to a CACHE as one entering a
+hand.
+
+**The rule.** A message is for humans. Anything a `when` or an effect needs is
+event DATA. `died` and `despawned` now both carry the full bundle:
+
+| field | meaning |
+| --- | --- |
+| `unit`, `card`, `seat` | as before (`seat` is the CONTROLLER) |
+| `owner` | the card's owner, which `binTo` can divorce from the controller |
+| `region` | where it was standing when it left |
+| `counters` | what it was carrying (the old one-off stamp, now part of the set) |
+| `token` | was it a token — the "nontoken unit" test, for real |
+| `verb` | `dies` / `is deleted` / `is sacrificed` |
+| `to` | where the card went: `'bin'` \| `'erased'` \| `'hand'` \| `'cache'` |
+
+All eight cards above were rewritten onto these. No rules predicate in the pool
+reads `ev.msg` any more.
+
+### The two patches collapse into one mechanism
+
+R40's fabricated ghost and the death event's `counters` stamp were the same
+idea twice. `fireOwnTrashTrigger` now takes an optional **anchor**: when the
+trash happened *because a unit left play*, `destroy()` hands over the detached
+entity it already has — real region, real counters, real owner — and the
+fabricated id -1 stand-in remains only for a trash with no unit behind it (a
+discard, a mill, a cached card binned). The anchor is copied, not used in
+place, with `controller` forced to the trasher (R40: the owner of the bin the
+card entered) and `mods: []` (R51: anything trashed out of play provably had
+none), so composing the trigger cannot write a bounded budget onto a corpse.
+
+The `trashed` event and the per-battle ledger take their region from the anchor
+too — a unit that died in the other region used to have its trash counted, and
+its own trash trigger dispatched, in its controller's home region instead.
+
+**Deliberately not built:** the full "leaving play" limbo zone that was
+originally scoped for this. The Wraith redesign (R71) removed its main
+justification — nothing needs a dead unit to keep existing as an addressable
+thing any more; it only needs its facts, and facts fit on an event.
+
+## R71 — The Wraith token, redesigned; and "an ally" is not a target
+
+*(Bena, 2026-08-21, supplying the printed card. Retires [R47](#r47--retired-2026-08-21-the-card-was-redesigned-see-r71).)*
+
+```
+Wraith — cost 0 [d], 3/3, "Blight Zombie Token Unit"
+[Augment] At the start of deployment, put a -1/-1 counter on an ally.
+          When I die, Augment a Wraith onto an ally.
+```
+
+Against the retired 4/4: the body is smaller; the first line stopped being a
+self-shrink on attack/block and became a **start-of-deployment -1/-1 counter on
+an ALLY**; and the second line stopped moving the dying Wraith and now
+**creates a fresh one**.
+
+**Four rulings from Bena — the first three needed before the engine could
+script the card at all, the fourth (2026-08-21) settling this rule's one
+remaining ⚠.**
+
+1. **Both lines are live on a Wraith BODY standing in play**, not only when it
+   is a mod. That is not a new principle — a card's own text-box `[Augment]`
+   text has always been live while the card is itself a unit in play (Manual
+   Q&A; it is what `fireEvent`'s `collectTriggersFrom(u, u.card, 'augment')`
+   pass is for, and the retired Wraith already leaned on it) — but with one
+   `[Augment]` over BOTH lines it now means a Wraith body carrying a Wraith mod
+   has the text *twice* and does it *twice*. R55 is the neighbouring rule: the
+   marker is a permission to be applied as an augment, not a payload.
+2. **The death trigger mints a NEW Wraith.** The dying one is erased like any
+   other token (via R69's bin window). It does **not** re-home itself; that was
+   R47 and R47 is withdrawn. `E.augmentWraith` minting a brand-new token — long
+   suspected of being a bug — is the correct behaviour, and it stays paired
+   with `E.createWraith`: "create a Wraith" spawns the body, "Augment a Wraith
+   onto a unit" applies one as a mod. Neither is redundant under the redesign.
+3. **"an ally" / "on an ally" is NOT a target.** The word *target* is not
+   printed, so the ally is chosen **on resolution**, with a plain
+   `ctx.choose`. Consequences, all deliberate: it cannot be redirected
+   (`E.canFillSlot` has no slot to move), *"when I become targeted"* (R53) does
+   not fire, and it cannot **fizzle** for want of a legal ally — with no
+   candidate it simply does nothing.
+
+   ⚠ **This cuts against [R67](#r67--target-is-chosen-when-the-effect-is-put-on-the-stack-and-a-bracketed-cost-is-paid-there-too)** — "any card or effect that says
+   'target' has to be chosen initially when put onto the stack" — and it does
+   so **precisely because the word "target" is absent**. R67's own closing
+   paragraph already carves this out ("choices that are *not* targets stay
+   where they are"). Said here in as many words so the next reader does not
+   "fix" the Wraith by adding a `TargetSpec`.
+
+4. **"An ally" MAY be the Wraith (or its host) ITSELF — a unit is its own
+   ally.** *(Bena's ruling, 2026-08-21; this was the rule's one open ⚠ and it
+   is now settled in favour of what the engine already did.)*
+
+   The reasoning, kept because it generalises past this card: **nothing on the
+   card prints "another"**, which is the qualifier the pool uses everywhere
+   else when it means "not me" — and is how `TargetSpec`'s `allyUnit` already
+   behaves throughout. It is also the only reading under which the deployment
+   line **has a candidate at all on a lone Wraith**, instead of being dead text
+   on the commonest board state the card produces; and it is continuous with
+   the retired printing, which shrank itself.
+
+   `docs/08-light-and-dark.md`'s *"it is not a combat trigger and it does not
+   shrink itself"* was the contrary evidence. It is describing the printed
+   text's move from *"on me"* to *"on an ally"* — the trigger no longer
+   **automatically** targets itself — not forbidding a self-pick. No change was
+   needed in `wraithAllies`; the note above it in `registry.ts` records the
+   ruling rather than asking for one.
+
+**Registration.** The Wraith is now in `scripts/pool.mjs` and its printed data
+is EXTRACTED from `AlgomancyCards-OracleText.json` like every other token card
+(Wisp, Fireball, Poison) — stats, type, text, factions and art all come from
+the oracle entry, and `registry.ts` carries behaviour only. It used to be a
+hand-written `registerSynthetic`, which is what let its stats and its text
+drift a full card revision out of date and go unnoticed. The project rule
+("printed data is never hand-copied") is the whole reason this class of drift
+is supposed to be impossible; the Wraith was the exception that proved it.
+
+Its art is `Wraith.jpg`, not the generic-unit scan it used to point at.
+`test/63-card-art.test.ts` now opens the file behind **every** registered
+card's `image`, so a card silently rendering as a generic can never hide again.
+
+## R72 — Formation gravity: the back row always promotes, the line closes ranks only before blocks
+
+*(Playtest round 7, game BRDM, 2026-08-20 — reported, consciously deferred, and
+fixed in round 13, 2026-08-21. The rule is **printed**; the engine had simply
+never read it.)*
+
+> "When a column becomes empty during combat, the columns to the right should
+> immediately collapse and fill the gap. There can never be an empty column in
+> the middle of a formation. The game fixes the formation as a state based
+> action"
+
+The player is right about the mechanism and wrong about the window, and the
+Manual says so. **"HOLD THE LINE"** (p.22), verbatim:
+
+> "Formations have a front and back row but can scale infinitely in width. […]
+> Once a formation is set, the units are locked in position and are considered
+> adjacent to their left, right, front and back neighbors until regroup where
+> they all leave formation."
+>
+> "The front row of a column must be filled first before a unit can be placed
+> in a back row."
+>
+> "If a unit is removed from a formation, any units behind it move to the front
+> row and take its place."
+>
+> "If the last unit in a column is removed from a formation, the columns on its
+> sides will close in to fill the gap. **This only happens before blocks are
+> declared. After blocks, columns will not move to fill gaps.**"
+
+### The finding: gravity has two halves with DIFFERENT timing
+
+That asymmetry is the whole rule, and it is easy to miss because the two
+sentences sit next to each other:
+
+| | rule | when |
+| --- | --- | --- |
+| **vertical** | a unit behind a removed one moves up and takes its place | **always** — no qualifier, mid-combat included |
+| **horizontal** | the columns on either side of an emptied one close in | **only before blocks are declared** |
+
+So after the defender has answered, an emptied column is a **permanent hole**
+in the attacking line, and every column index is frozen for the rest of the
+battle. Back-row promotion keeps working throughout.
+
+### What was there, and what changed
+
+`E.removeFromFormation` spliced a dead unit out of its column — so vertical
+gravity worked by accident, since splicing a dense array *is* promotion — but
+the emptied column stayed in `b.columns` forever as a `[]`. A three-wide attack
+whose middle column died kept fighting as three columns with a hole in it
+**even in the attack step**, where the Manual says the line should have closed.
+Adjacency counted the hole as a neighbour and the UI drew a blank slot.
+
+`E.repairFormation()` now does both halves, with the window on the second one.
+It is a **state-based action** in the sense the report asked for — run wherever
+deaths are checked, never at one call site — but it is gated, not
+unconditional. The first build of this rule ran the collapse *always*, including
+between damage sub-steps; that was wrong, and the tests that pinned it are now
+the tests that pin the window.
+
+`E.beforeBlocksDeclared()` is the gate: battle steps `declare`, `attackWindow`
+and `blocks`. Note the consequence — `b.blocks` is still `{}` throughout that
+window, so **a collapse can never re-key a live block map**. The re-key path
+exists for column-scoped counters and as belt-and-braces; the live case is
+[R75](#r75--joining-a-formation-is-a-choice-and-adjacent-means-sides-and-abovebelow)'s
+left-insert.
+
+### The structural problem, and why index keys were kept
+
+`BattleState.blocks` is keyed by attack-column INDEX — **the index IS the
+column's identity** — so closing a gap is not a splice, it is a **re-key**, and
+there are three things keyed by that index that must all move at the same
+instant:
+
+| keyed by column index | what happens on a shift |
+| --- | --- |
+| `blocks[ci]` | the blocking column moves with its attacker |
+| `battleCounters['col:<ci>:…']` | the column's ledger moves with it |
+| the `atk:${ci}` / `blk:${ci}` damage-source keys | local to one sub-step; never persisted |
+
+`E.rekeyColumns(to)` is the single owner of that move, shared with R75's
+insert, and it commits in one statement pair with nothing observable between —
+which matters because "no priority" (R3) is not "no observers": a `when`
+predicate runs synchronously inside `fireEvent`, and several read the formation.
+`repairFormation` is called from `removeFromFormation` (the one funnel every
+departure goes through — `destroy`, `recall`, `cacheUnit`) so the repair lands
+*before* `fireEvent('died')`, and again at the end of `checkDeaths()` as the
+state-based backstop for the several cards that edit `b.columns` directly.
+
+Two details it gets right:
+
+- **Column ARRAY OBJECTS survive; they are never rebuilt.** Card code holds
+  column references (`E.columnOf`) and compares them by identity —
+  `Object.entries(b.blocks).find(([, c]) => c === col)` appears in four card
+  files.
+- **An emptied BLOCK column keeps its key.** Manual, on blocking: *"The column
+  is considered blocked even if the defending unit is removed during combat!"*
+  Key *presence* is that sticky flag (R13), so `blocks[ci] = []` is a hole in
+  the block assignment rather than a gap in a formation. And a blocking
+  formation *"is allowed to be assigned with empty columns"* in the first place,
+  so a sparse block map is never something to repair.
+
+**Why not stable per-column ids.** Weighed and rejected, for reasons about this
+repo rather than taste. `blocks` is not only engine state, it is the **wire
+format**: the `declareBlocks` action carries `Record<number, EntityId[]>` keyed
+by index, and *seed + action log = the whole game* is the project's hard gate,
+so re-keying the action would invalidate every saved game in `server/games/`.
+The identity would also have to live outside the thing it identifies — card code
+pushes columns onto `b.columns` directly (`batch-wood-a`, `batch-water-b`,
+`batch-fire-a`), so a parallel `colIds[]` drifts the first time a card grows the
+formation. The only handle that cannot drift is the column ARRAY OBJECT, which
+survives `structuredClone` but not the JSON the server and the saved games are
+made of. And roughly a dozen card files compute `ci = b.columns.indexOf(col)`
+and read `b.blocks[ci]` on the spot, so every one is correct the moment the
+re-key is atomic. Index-as-identity is safe exactly when the index set changes
+only in one atomic operation no observer can interleave with — and the Manual's
+timing rule makes that set change in a *much* smaller window than the first
+build assumed.
+
+The Manual's *"can scale infinitely in width"* does not force the issue either:
+an unbounded-left formation is handled by **normalising on every left-insert**
+rather than by going negative, which is the same atomic relabel, keeps
+`0..n-1` on the wire, and is observationally identical to negative indices.
+
+### A blocker whose attackers all died — the special case dissolved
+
+Bena, 2026-08-21, before the Manual passage surfaced:
+
+> "It stays, but has nothing to deal damage to, so it doesn't deal damage. But
+> it stays in the formation for the blocker, which means there's a 'hole' in
+> the attackers formation."
+
+The first half of that needed a special predicate — *a column holding blockers
+is not empty* — and under the Manual it needs nothing at all: blocks have been
+declared, so **no column moves**, and the hole is just the general rule. The
+special case is gone from the code. What survives is the damage half:
+
+**A blocking column whose attackers are all dead deals nothing, Piercing
+included.** Piercing is the excess left over after damage is *assigned* (R7);
+with nothing to assign to there is no exchange for it to be the excess of.
+Verified against the pre-R72 engine: a `Good Whale` (7/5 {Piercing}) blocking a
+column whose lone attacker was killed in the block window used to push its full
+**7 into the attacking player's face**. Reachable from any spell that kills a
+blocked attacker before damage.
+
+Note the deliberate asymmetry with **R13**, which is the Manual's own: a
+Piercing *attacker* still gets through a dead block, because *"the column is
+considered blocked even if the defending unit is removed during combat"* — there
+the attack is still real; here it is the attack that is gone.
+
+### ⚠ The client's in-progress block assignment is index-keyed too
+
+`ui/formation.ts` says it in as many words — *"THE INDEX IS THE MEANING"* — and
+the block-building preview keys the defender's half-finished assignment by
+attack-column index. The Manual's window makes this *the* remaining hazard
+rather than an incidental one: the collapse now fires only during `declare` /
+`attackWindow` / `blocks`, and the `blocks` step is exactly when the defender is
+clicking. A spell that kills an attacker mid-assignment shifts the indices under
+the client.
+
+The engine is safe either way — `doDeclareBlocks` validates every key against
+the current `b.columns` and refuses one that no longer exists, so the worst case
+is a rejected declaration rather than a misplaced blocker. But the client should
+re-seed its preview when `b.columns.length` changes, and it does not yet.
+Engine-side work is done; this one is a UI follow-up.
+
+### ⚠ A blocker may not be assigned where no attacker is — the engine is stricter than the Manual
+
+The Manual: *"Units may even be placed blocking in slots where attackers aren't,
+which can be beneficial for adjacency matters cards."* `doDeclareBlocks` refuses
+that — `e.need(atkCol, 'no such attacking column')` — so a blocking formation can
+only ever be as wide as the attack. Under the current data model it has to: a
+blocking column is addressed by the attacking column it answers, and a blocker
+standing opposite nothing has no key. Left alone deliberately, and noted here
+because it is a printed rule the engine does not implement, not an oversight.
+Fixing it means giving the blocking grid its own width, which is the one change
+that would genuinely force stable column ids.
+
+### Park hygiene — why this report came back at all
+
+The round-7 commit message closed with *"Still open, deliberately:"* and four
+items, and left **zero trace in the repo**: no `PARKED` comment, no ⚠ here, no
+`{ todo: true }` test. The engine README's own rule is that each parked thing
+carries a todo test naming the primitive it waits on, *so the todo count is the
+backlog*. These four were outside that accounting, so nothing could report them
+and two came back as fresh reports. Audited in round 13:
+
+| round-7 deferral | status |
+| --- | --- |
+| Necromorph's second target | **closed** — R64 gave bin cards a real `TargetRef` |
+| Formless's attribute-removal half | **closed** — R62 is the suppression layer |
+| the empty-column collapse | **closed** — this rule |
+| Eldritch Dreamtender's sacrifice timing | **closed** — [R73](#r73--sacrifice-me-is-a-cast-cost-paid-on-the-way-to-the-stack): the sacrifice is a cast cost, paid on the way to the stack |
+
+Eldritch Dreamtender was a rules question rather than a missing primitive, and
+it was answered within the day: R73 reads *"sacrifice me"* as a **cast cost**,
+paid on the way to the stack. Its ledger entry closed the same round it was
+written down — which is the point of writing it down.
+
+No other deferral in the playtest-round commit history is off the ledger: every
+other "parked" in those messages is a card that does carry its todo test.
+
+## R73 — "Sacrifice me" is a CAST COST, paid on the way to the stack
+
+*(Bena's ruling, 2026-08-22, on the game-BRDM report about Eldritch
+Dreamtender.)*
+
+> "Technically, Eldritch Dreamtender needs to be sacrificed for its ability to
+> go on the stack, but it's still visually in play while resolving its trigger."
+
+The card reads *"[Augment] When my column deals combat damage to an opponent,
+**sacrifice me. If you do,** look at that player's hand and discard a card from
+it."* The sacrifice used to be a `g.destroy(self, 'is sacrificed')` **inside
+`effect.run`** — at resolution, after a whole priority window with the unit
+still standing on the board. The report is right, and the ruling is: **read the
+printed prose as a bracketed cost.**
+
+**What was missing was one primitive, and only one.** The *window* was already
+solved: R64/R67 settle bracketed costs in the cast window for spells, activated
+abilities **and triggered items alike** (`buildTriggerItem` → `collectTargets` →
+`collectCastCosts`), so an `EffectDef.castCost` on a `TriggeredAbility` was
+already being honoured. What `CastCost` could not say was *"sacrifice **me**"*:
+`sacrificeUnit` / `sacrificeUnits` offer **every unit you control in the
+region**, which would let the player sacrifice a different unit — a different
+card. (`AbilityCost.sacrificeSelf` exists but is reachable only from an
+`ActivatedAbility`; a `TriggeredAbility` has no `cost` field at all.)
+
+**The shape follows the existing precedent.** `removeCounters` already carries
+`from: 'allies' | 'self'` and resolves `'self'` through `item.sourceId`;
+`sacrificeUnits` now carries `from?: 'self'` and does the same. Four touch
+points in `engine.ts`:
+
+| touch point | what `from: 'self'` does |
+| --- | --- |
+| `canPayCastCost` | payable **iff the source entity is live, non-absent and controlled by the paying seat** — deliberately NOT `unitsOf(seat, region).length >= 1` |
+| `costIsIterated` | **false**: the cost carries no choice, so it falls through to be charged outright — no decision, no suspension |
+| `chargeCastCost` | snapshots the source's stats into `costPaid.sacrificedUnits` (uniform with the chosen-unit path), then `destroy(u, 'is sacrificed')` |
+| `castCostLabel` | *"sacrifice me"* |
+
+The payability test is the subtle one and is the reason it is not a unit count:
+**a dead source has to make the cost unpayable**, so R5 partial resolution sets
+`part.spent` and skips the part. That is the right answer for a trigger whose
+source died between firing and settling — and it also guarantees an ally
+standing beside the corpse is never eaten in its place.
+
+**The consequences are understood and INTENDED, not side effects.** As a cost
+the sacrifice becomes:
+
+- **mandatory** — the printed "if you do" is gone; a choice-free cost on an
+  effect's own text is charged outright (the decline option exists only for an
+  optional grafted rider);
+- **unrespondable** — no decision means no suspension means no window between
+  the payment and the item reaching the stack;
+- **a total skip when the source is already dead** — no hand is looked at and
+  nothing is discarded.
+
+That is what *"sacrificed for its ability to go on the stack"* means. The
+printed line is effect prose with an if-you-do rider rather than a printed
+`[cost]`; the ruling reads it as a cost anyway.
+
+### Sibling sweep — every self-sacrifice in the pool, and where each landed
+
+The printed shape is prose with an if-you-do rider, not a bracketed cost, so it
+had to be found by reading rather than by grep on `castCost`. Fourteen printed
+cards mention sacrificing themselves. **Three moved:**
+
+| card | printed line | why it moves |
+| --- | --- | --- |
+| **Eldritch Dreamtender** | *"When my column deals combat damage to an opponent, sacrifice me. **If you do**, look at that player's hand and discard a card from it."* | the report's card; exact shape |
+| **Cthyrian Rector** | *"When you trash another card, sacrifice me. **If you do**, recall that card from your bin."* | identical shape, mandatory, no rider condition |
+| **Void Mandible** | *"When a nontoken card is played during battle, sacrifice me. **If you do**, negate that effect. (This is not optional.)"* | identical shape — and the printed *"(This is not optional.)"* says out loud what the cost reading already gives |
+
+**Deliberately NOT moved, with the reason in each case:**
+
+- **Ploosh** (*"Otherwise, sacrifice me and you lose 3 life"*) — genuinely
+  conditional on a life-parity check made at resolution. There is no cast-time
+  moment at which you know whether it is owed.
+- **Maelstrom Charger** (*"you **may** sacrifice me. If you do, copy that
+  spell"*) — printed as OPTIONAL. A choice-free cost would make it mandatory,
+  which is a behaviour change the printed text refuses.
+- **Smouldering Inferno**, **Wisp** (*"After combat, sacrifice me."*) — the
+  sacrifice IS the whole effect; there is no rider for a cost to buy. Moving it
+  would also break **Infernal Wispweaver**, whose *"your wisps … do not
+  sacrifice themselves"* works by suppressing the Wisp's one ability.
+- **Oracle of the Flame**, **Sprouter**, **Prismatic Observer**, **Skybreaker**
+  — already correct: printed *"Sacrifice me:"* colon-costs on ACTIVATED
+  abilities, carried by `AbilityCost.sacrificeSelf` and charged in the same
+  cast window.
+
+⚠ **Two left flagged rather than guessed at** — both are printed costs the
+engine still pays at resolution, but neither is the shape R73 built and each
+needs its own decision:
+
+- **Throwing Boulder** — *"Sacrifice me: I deal 3 damage to any target.
+  Activate this ability only if I have an adjacent ally."* A printed
+  colon-cost ACTIVATED ability that carries `cost: {}` and destroys itself
+  inside `run` (the file calls this "the Immolate precedent"). It wants
+  `sacrificeSelf: true`, not `castCost` — plus an activation gate for the
+  adjacency clause, which does not exist. **Not moved.**
+- **Deformant** — *"Sacrifice me **and another ally**: …"* A compound cost no
+  `AbilityCost` shape covers; it would need `sacrificeSelf` **and** a
+  sacrifice-another atom in one cost. **Not moved.**
+
+**Closes the last round-7 deferral.** `test/53-playtest-round7.test.ts`'s ledger
+listed *"Eldritch Dreamtender's sacrifice timing"* as the one item still open;
+the `{ todo: true }` tests in `test/26-metal-a.test.ts` and
+`test/53-playtest-round7.test.ts` are now real tests.
+
+⚠ **Still open, and genuinely a separate question: WHEN inside combat damage.**
+R73 settles *whether* the sacrifice is a cost, not *which damage sub-step* the
+trigger fires in. The trigger fires off the aggregated combat `lifeLost` event
+and R3/R31 resolve it immediately, so a Dreamtender in a Swift column is gone
+before normal damage. That reading is still the engine's default rather than a
+ruling, and the todo in `test/53` says so.
+
+## R74 — A variable cost may WARN that X = 0 does nothing; it may not forbid it
+
+*(Bena, 2026-08-22, from Necromantic Rebuke — having checked the physical card.)*
+
+The printed line is exactly
+
+```
+[Erase X cards from your bin]: Negate up to one target effect unless its
+controller erases X cards from their bin.
+```
+
+so the encoding is **correct as printed** — no transcription bug, no missing
+`xMin`, and none of the mechanics changed. What is wrong is that **X = 0 is a
+guaranteed no-op and nothing told you**: the ransom "erase 0 cards" is met by
+the controller doing nothing at all, so the negate can never happen, and the
+first the caster hears of it is the spell fizzling.
+
+**The ruling is a warning, not a prohibition.** X = 0 stays legal and the option
+stays on the table. This is deliberately different from `CastCost.xMin`, which
+**forbids** — compare No Hand Killer's `xMin: 1`, which exists so a zero cannot
+burn a `[once]` budget the player never gets back. The distinction:
+
+| | use |
+| --- | --- |
+| `xMin` | paying zero **costs you something irreversible** — refuse it |
+| `xZeroWarning` | paying zero is **merely a bad idea** — say so and allow it |
+
+**A declared seam, not a per-card patch.** `EffectDef.xZeroWarning?: string` is
+a one-line statement of *why* zero does nothing, declared on the effect because
+that is where the fact lives. `collectCastCosts` surfaces it on the
+`"That's enough — X = 0"` option — the one moment the payer can still change
+their mind — and `finishVariableCost` logs it when a variable cost closes at
+zero on its own (an empty pool raises no decision to hang it on).
+
+Four cards share the shape and all four now declare it: **Necromantic Rebuke**
+(negates nothing), **Malevolent Machinations** ("up to X effects" is up to
+none), **Discharge** (0 damage), **Flesh Tithe** (no unit). Every one of them
+already said it at RESOLUTION, which is far too late to be of any use.
+
+`DecisionOption.warning?: string` carries the text to the client. The warning is
+**also appended to `label`**, so a client that ignores the field still shows it;
+the field exists so a client that cares can style it as a warning rather than as
+prose.
+
+## R75 — Joining a formation is a CHOICE; and "adjacent" means sides and above/below
+
+*(Bena, 2026-08-21, two rulings. Replaces five per-card approximations of the
+first and one of the second.)*
+
+### The placement rule
+
+> "When something spawns something 'in my formation' or 'in formation', it's up
+> to the controller of the effect to choose where the unit goes. They can put it
+> to either side of the existing units OR in the second slot of a column for a
+> column which only has 1 unit. That choice should be made on effect
+> resolution."
+
+Nothing in the engine did this. **Placement was auto-picked, per card, with a
+different rule each time** — five cards, five house rules for the same printed
+words:
+
+| card | what it used to do |
+| --- | --- |
+| Hooba-Bot | "my column if open, else the first open column on my side" |
+| Hooba-Lin | my column's back slot, else open a column on the right |
+| Hooba-God | my column's back slot, or **nothing at all** if it was full |
+| Hooba-Pon | "my column if open, else the first open one" |
+| Tiderunner Initiate | actually asked — and is where the slot logic was invented |
+
+`E.formationSlots(seat)` is now the single answer to *where can a unit join this
+formation*, and `E.placeInFormation(unit, ctx)` raises the choice. All five cards
+route through it and their own placement code is gone.
+
+**The legal placement set.** Three kinds, left to right:
+
+- **a new column at either END of the line** — leftmost or rightmost;
+- **the BACK slot of a column that holds exactly one unit**;
+- **the front slot of an R72 hole** — a column emptied of attackers that its
+  blockers are holding open.
+
+The first two are the ruling as printed. Two things in that list are readings,
+and are said here so the next reader knows they were decided and not overlooked:
+
+⚠ **"Either side of the existing units" is read as the two ENDS, not as an
+insertion between two existing columns.** "The existing units" is taken to mean
+the line as a whole. A card that wanted to split a formation down the middle
+would be a different, louder effect.
+
+⚠ **The hole is a third kind the ruling does not enumerate.** It is kept because
+the engine already offered it (Tiderunner Initiate), because a hole genuinely is
+an open position in the line, and because it is the **only way a formation ever
+heals a hole** — R72 can open one and nothing else can close it. It cannot
+create a hole, so it cannot conflict with R72. A unit that takes a hole walks
+straight into the block that is holding it open, which is a real consequence and
+is pinned by a test.
+
+**Only the ATTACKING line can widen.** A blocking column is keyed to the
+attacking column it answers (R72 — the index *is* the identity), so a new
+blocking column has no index at which to exist. That also means "there is no
+open position" is, in practice, a **defender's** problem: an attacker's line can
+always grow at an end. A formation you are not standing in cannot be joined at
+all — with no living unit in the grid the answer is "no slots", not "open a
+column out of nowhere".
+
+**Resolution time, not cast time.** Nothing here prints *target*, so this is a
+choice and not a target — same shape as R71's "an ally": a `ctx.choose` at
+resolution, auto-picked when exactly one placement is legal, and a **logged**
+no-op when none is. The chooser is the **effect's** controller. `optional: true`
+adds a "stay out of formation" answer for the one card whose text says *you may*
+(Tiderunner Initiate). Every branch emits an event: an effect that resolves into
+silence is a conformance failure, and *"there was nowhere to put it"* is exactly
+what a player needs told.
+
+**Inserting at index 0 is the dangerous case, and it has one owner.** Opening a
+column on the left shifts every existing column right, so every `blocks` key and
+every column-scoped counter shifts with it. That is the same re-key R72's
+collapse performs in the other direction, and both now go through
+`E.rekeyColumns(to)` — one atomic commit, nothing observable in between. It is
+worth noting what this replaced: Hooba-Nan carried a
+`Object.keys(b.blocks).length === 0` guard that existed *solely* because
+unshifting a column renumbers block keys and the card could not do it safely.
+
+### The adjacency rule
+
+> "If a unit references its own adjacent slots (which only exist if it's in a
+> formation) it's referring to its sides and above/below. Nothing diagonal."
+
+and the Manual says the same thing in the same words — "HOLD THE LINE", p.22:
+
+> "Once a formation is set, the units are locked in position and are considered
+> adjacent to their **left, right, front and back** neighbors until regroup
+> where they all leave formation."
+
+Written down in the engine for the first time. Relative to a unit at grid position
+(column `ci`, row `ri`):
+
+- `(ci - 1, ri)` — the neighbouring column, **same row**
+- `(ci + 1, ri)` — likewise on the other side
+- `(ci, 1 - ri)` — the other slot in its **own** column
+
+and nothing else. **The other row of a neighbouring column is diagonal and is
+not adjacent.** `E.adjacentSlots(id)` returns the empty ones; `E.adjacentInFormation(id)`
+is the same definition read for units rather than for slots, and both take their
+grid from one private `formationGrid(seat)` so they cannot drift apart.
+
+A card that names slots relative to itself — Hooba-Nan's *"all my empty adjacent
+slots"*, Rousing Spirit's *"the empty slot behind me"* — is describing a derived
+set of positions, so it does **not** get the placement choice. It fills exactly
+those slots. Only *"in my formation"* / *"in formation"* with no positional
+qualifier is a choice.
+
+**Two questions the code had to answer, both settled by the parenthetical
+"which only exist if it's in a formation":**
+
+⚠ **Past the edge of the line is NOT a slot.** A unit in the leftmost column has
+no left-adjacent slot; it does not have an implicit one at which a new column
+could be opened. This **changes Hooba-Nan**: it used to front fresh columns at
+both edges (a lone Hooba-Nan grew a one-column attack into three), and now a
+lone Hooba-Nan makes exactly one 1/1, behind itself. Note that `formationSlots`
+*does* offer both ends — the two rules genuinely disagree about the space past
+the last column, and deliberately: **joining** a formation is a choice about the
+line as a whole, **adjacency** is a position derived from a unit.
+
+**The front row always fills first** — and that is *printed*, not derived:
+*"The front row of a column must be filled first before a unit can be placed in
+a back row."* So a column is `[]`, `[front]` or `[front, back]` and never
+`[gap, back]`, and the engine upholds it structurally: `repairFormation`'s
+vertical half promotes the back row (R72), the dead-id sweep splices, and every
+placement appends. A slot is therefore fillable only when the column's next free
+row *is* that row (`col.length === row`), which makes "the back slot of a column
+whose front is empty" **unreachable rather than a case to handle** — a unit put
+there would slide to the front, and the front of a neighbouring column is
+diagonal. Asserted impossible rather than handled, in
+`test/64-formation-collapse.test.ts` and `test/66-formation-placement.test.ts`.
+
+**Infinite width, without negative indices.** *"Formations […] can scale
+infinitely in width"*, in both directions — so `formationSlots` always offers
+both ends and there is no formation too wide to add to. The engine keeps
+`0..n-1` integer keys and **normalises on every left-insert** instead: the
+insert relabels every column, every `blocks` key and every column-scoped counter
+in one atomic `rekeyColumns` commit, which is observationally identical to
+letting the leftmost column be −1 and keeps the `declareBlocks` wire format (and
+therefore every saved game) replayable. See R72 for the full weighing.
+
+## R76 — Alluring duties are discharged TOGETHER, and `legalActions` has to be able to say so
+
+*(Fuzz seed 1993, 2026-08-22. A stuck state: no legal action for either player,
+no pending decision. The rule was right; the engine could not express it.)*
+
+The fuzzer stopped on this position, at the block step:
+
+```
+attacker: two one-unit columns, BOTH {Alluring}
+defender: four units, all able to block
+blocks:   {}          → and no legal action for anyone
+```
+
+Alluring (Manual): *"defenders that are able to block it must block it."* Two
+Alluring columns and two able blockers means **both duties are live at once**,
+so the only legal declarations are the ones that block both. `legalActions`
+offered a *representative* set of declarations that each blocked exactly **one**
+column — `{ [ci]: [u] }` and `{ [ci]: [u, v] }` — and then filtered the set
+through the validator's own `unmetAllure`. Every option left the other Alluring
+column unblocked with a blocker to spare, so every option was filtered out. The
+list came back empty for the defender, the attacker had no priority, and the
+game had nowhere to go.
+
+**Nothing was wrong with the position.** `{0: [a], 1: [b]}` was legal the whole
+time and `apply()` would have accepted it. The engine simply could not think of
+it — a representative set that cannot represent any legal answer is not a
+representative set, it is a hang.
+
+**This is exactly as old as Alluring.** The single-column generator and the
+compulsory filter landed in the same commit, playtest round 7 (2026-08-20),
+and nothing has touched either since; R72/R75 were ruled out by rebuilding the
+position by hand with both of them disabled. The round-7 note reasoned carefully
+about *two Alluring columns against ONE free blocker* — "a duty you cannot
+discharge twice is discharged once" — and that case does work. It is two
+Alluring columns against **two** blockers, where the duty **can** be discharged
+twice and therefore must be, that had no representative.
+
+### The fix: build the compulsory core first, then offer choices on top of it
+
+`unmetAllure` and the generator now read the same intermediate object. One
+`alluringDuties(e, seat, blocks, send)` returns, per unblocked Alluring column,
+*who could still be added* and *how many it would take*:
+
+- `unmetAllure` reads them to **refuse** a declaration — any duty with
+  `free.length >= need` is unmet.
+- `compulsoryBlocks` reads them to **build** one — assign each duty its `pick`,
+  greedily, in column order.
+
+Greedy is provably sufficient, which is why there is no search here: a duty left
+unblocked was left unblocked because fewer than `need` units were free when it
+was reached, and later assignments only shrink the free pool, so it is still
+discharged at the end. Order cannot matter, and the result always satisfies
+`unmetAllure`. Every declaration `legalActions` offers is now `{...core,
+...oneMoreColumn}`, and the bare core is always offered — legal by construction,
+so **the list is never empty**.
+
+The `pick` is not simply "the first `need` free units": {Evasive} wants two
+blockers *unless* one of them is {Pure}, which switches the attribute layer off
+for the whole exchange (R61) and lets it block alone. The duty carries the
+concrete units so the generator and the validator cannot disagree about which
+ones satisfy it.
+
+### A second stuck state, found by reading rather than by fuzzing
+
+An attacker that is **alone, {Sneaky} and {Alluring}** was the same hang from the
+other direction: R20 forbids blocking a lone Sneaky attacker, and Alluring
+demanded a block, so *every* declaration was refused by one rule or the other.
+
+The resolution is in the printed word "able": if the rules forbid blocking it,
+nobody is able, and the duty is discharged by doing nothing. `alluringDuties`
+now excludes a lone Sneaky attacker's would-be blockers — except a {Pure} one,
+which sees through Sneaky like every other attribute (R61) and is therefore
+still able, and still compelled.
+
+### The general lesson, for the next representative set
+
+`legalActions` is documented as returning a representative set rather than an
+exhaustive one, and for formation-shaped actions it has to be — the space is
+exponential. But *representative* has a floor: *if a legal action exists, at
+least one must be offered.* Any rule that makes legality **conjunctive across
+independent parts of one action** — as Alluring does across columns — breaks a
+generator that varies one part at a time. The fix shape generalises: compute the
+compelled part first, then vary what is free.
+
+The fuzzer's existing "legalActions lied" invariant catches the opposite error
+(offering something `apply` refuses) and cannot see this one; the stuck-state
+check is what catches this direction, and it did.
+
+## R77 — "Activate this ability only if …" is a GATE, and a self-sacrifice is a COST
+
+*(Playtest XCYX, 2026-08-22, Throwing Boulder. Applies R73's ruling to an
+activated ability, and R64's principle to a printed precondition.)*
+
+> "Throwing Boulder was allowed to be activated without having adjacent allies.
+> It didn't resolve, but it shouldn't have been allowed to be activated. And
+> also, in order to activate it, sacrificing him should have happened as a cost
+> to even put the ability on the stack"
+
+Both halves were real, and both had been predicted the same day by the agent
+that built R73, which declined to guess and left a note. The card reads:
+
+```
+Throwing Boulder — e/1, 0/3 Rock Unit
+[Augment] Sacrifice me: I deal 3 damage to any target.
+          Activate this ability only if I have an adjacent ally.
+```
+
+and was scripted with `cost: {}`, a `g.destroy(self, 'is sacrificed')` in the
+middle of `run()`, and the adjacency condition as an `if` beside it. So it was
+offered, activated, targeted, resolved — and then printed "no adjacent ally"
+and did nothing, having cost nothing.
+
+### The sacrifice is an activation cost
+
+`AbilityCost.sacrificeSelf` already existed and four cards already used it
+(Oracle of the Flame, Sprouter, Prismatic Observer, Skybreaker). Throwing
+Boulder now carries it, so R49/R57 apply unchanged: the cost rides on the item
+and is paid **inside the cast window, after targets are chosen and before the
+item reaches the stack**. Nobody may respond between the cost and the effect,
+and the unit is in the bin while its ability is still waiting to resolve —
+which is exactly what "sacrificed to even put the ability on the stack" means.
+This is R73 (a triggered ability's "sacrifice me") one shape along.
+
+### The precondition is a gate, not a fizzle
+
+`ActivatedAbility.usableWhen?: (g, self, seat) => boolean` is new — a general
+seam, not a carve-out, because "this ability is only usable under condition X"
+is a recurring shape and three other cards in the pool already wanted it.
+
+It joins the two gates R64 added, in one predicate (`abilityUnusable`) called
+from both `legalActions` (do not offer it) and `doActivateAbility` (refuse it):
+
+| gate | rule |
+| --- | --- |
+| a printed precondition is false | R77 |
+| a bracketed [cost] on the effect cannot be paid | R64 |
+| a mandatory target has nothing legal | R64 |
+
+**Ordering is load-bearing and it is checked first.** The condition is about the
+source, and the cost destroys the source. `doActivateAbility` evaluates every
+gate before anything is paid, so a self-sacrificing ability's cost can never
+invalidate its own condition. `self` is the source unit — the *host* when the
+ability was donated by an augment — so "I have an adjacent ally" reads
+correctly either way.
+
+**And it is not re-checked at resolution.** R1: conditions are checked once, at
+the moment the rule names — here, activation. For this card it could not be
+re-checked even in principle, since the cost has already removed its own subject
+by the time the ability resolves. If the ally dies in response, the boulder
+still lands. That is the same shape as every other R1 condition and needs no
+special case.
+
+Adjacency itself is [R75](#r75--joining-a-formation-is-a-choice-and-adjacent-means-sides-and-abovebelow)'s
+`E.adjacentInFormation`: sides and above/below, nothing diagonal. Adjacent
+allies only exist while the unit is *in* a formation, so out of combat this
+ability is simply never offered — which is correct, and was previously another
+way to waste it.
+
+### The sibling sweep
+
+Every activated ability in the pool was checked for the same shape — a board
+condition knowable at activation, tested at resolution instead. Converted:
+
+| card | condition, previously checked at resolution |
+| --- | --- |
+| **Throwing Boulder** | "only if I have an adjacent ally" |
+| **The Bonesculptor** | the deploy window (re-implemented by hand) + "is there an ability-free unit in my bin I can afford" |
+| **Gridxlan** | the deploy window + the printed "if your hand is empty" + "is there a unit in my bin I can afford" |
+| **Deformant** | "another ally" to sacrifice |
+
+The Bonesculptor and Gridxlan are the sharpest of these after the report itself:
+both are `bounded`, so being offered when they could do nothing did not merely
+waste a click — **activating burnt the once-per-turn budget**, and both cards'
+own headers admitted it ("activating outside deployment wastes the budget").
+Both were also re-implementing `ActivatedAbility.timing`, which R49 added for
+exactly this, at resolution and by hand.
+
+**Not converted, deliberately.** Everything else that early-returns from an
+activated ability's `run()` is one of two legitimate things: a **target that
+vanished** between activation and resolution (R5's fizzle — it was legal when
+offered), or a **mid-resolution choice that came back empty** (a decline).
+Neither is knowable at activation, and turning either into a gate would be
+wrong.
+
+### ⚠ Deformant's cost is still parked
+
+*"Sacrifice me **and another ally**"* is a **compound** cost, and `AbilityCost`
+has no shape for one: `sacrificeSelf` and `sacrificeOther` exist separately and
+cannot be combined into a single indivisible payment. Deformant therefore still
+picks and sacrifices at resolution. R77 fixed the offer half — it is no longer
+offered when you have no other unit — but the payment window is unchanged, and
+it now carries a `{ todo: true }` test naming the missing cost shape, per the
+project's park rule.

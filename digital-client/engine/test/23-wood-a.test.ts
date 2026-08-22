@@ -85,8 +85,8 @@ test('Boon of Protection: negates an effect aimed at something allied; no-op oth
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Boon of Protection') });
   pick(h, { stack: cb1 });
   pass(h); pass(h);                                   // Boon of Protection resolves
-  assert.ok(h.state.stack.find(i => i.id === cb1)!.negated, 'the enemy buff is negated');
-  pass(h); pass(h);                                   // the negated Boon resolves → bin
+  assert.ok(!h.state.stack.some(i => i.id === cb1), 'R68: the negated buff left the stack');
+  assert.ok(h.state.players[A]!.bin.includes('Channeled Boon'), 'and went to its bin');
   assert.deepEqual(effStats(h, bubbD), [5, 6], 'no buff landed');
   // 2: A's Boon targets A's OWN unit → nothing allied to D → no negate
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
@@ -95,7 +95,7 @@ test('Boon of Protection: negates an effect aimed at something allied; no-op oth
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Boon of Protection') });
   pick(h, { stack: cb2 });
   pass(h); pass(h);                                   // Boon of Protection resolves (no-op)
-  assert.ok(!h.state.stack.find(i => i.id === cb2)!.negated, 'not negated — nothing allied targeted');
+  assert.ok(h.state.stack.some(i => i.id === cb2), 'not negated — nothing allied targeted, so it is still there');
   assert.ok(h.log.some(m => m.includes('does not target anything allied')), 'the no-op is logged');
   pass(h); pass(h);                                   // Channeled Boon resolves
   assert.deepEqual(effStats(h, atk), [5, 5], 'the buff landed');
@@ -117,9 +117,36 @@ test('Burgeon: doubles the chosen stat of target unit until regroup', () => {
   pass(h); pass(h);                                   // resolve → the stat pick suspends
   pick(h, 'defense');
   assert.deepEqual(effStats(h, bubbD), [5, 12], 'defense doubled (6 → 12) until regroup');
+  // playtest MNWK ("Burgeon resolving … just did nothing"): whatever it does,
+  // it now SAYS what it did
+  assert.ok(h.log.some(l => l.includes("Burgeon doubles Bubb's defense: 6 → 12")),
+    'the doubling is logged, not silent');
   finishBattle(h);
   assert.deepEqual(effStats(h, bubbD), [5, 6], 'regroup cleared the temporary doubling');
   assert.equal(getCard('Burgeon').graftEffect?.bounded, true, '[Switch1]: bounded graftable effect');
+});
+
+test('Burgeon: doubling a 0 says so instead of resolving into silence', () => {
+  // The second half of the MNWK fix: doubling a 0-power unit is an invisible
+  // no-op — addTemp(+0/+0) logs a line that reads like nothing happened,
+  // because nothing did. Say so, and say it about the right stat.
+  const h = new Harness(2320);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const wall = spawn(h, D, 'Rampart Guardian');       // 0 power
+  giveResources(h, D, 'wood', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Burgeon') });
+  pick(h, { unit: wall });
+  pass(h); pass(h);
+  pick(h, 'power');
+  assert.equal(effStats(h, wall)[0], 0, 'twice nothing is still nothing');
+  assert.ok(h.log.some(l => l.includes('has 0 power — doubling it changes nothing')),
+    'and the log says why');
+  finishBattle(h);
 });
 
 test('Corrupting Blight: defects after combat when played normally; steals the host as a Virus', () => {
@@ -265,7 +292,11 @@ test('Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets i
   finishBattle(h);
 });
 
-test('Hooba-Nan: attacking with empty adjacent slots → 1/1 units fill them (battle-local)', () => {
+test('Hooba-Nan alone: its ONLY adjacent slot is the one behind it (R75)', () => {
+  // R75 (Bena 2026-08-21): adjacent slots are "sides and above/below, nothing
+  // diagonal", and they "only exist if it's in a formation" — so past the end
+  // of the line there is no slot. This used to grow the formation to three
+  // columns by fronting fresh edge columns on both sides.
   const h = new Harness(2310);
   toDeployment(h);
   const A = h.state.initiative;
@@ -275,12 +306,34 @@ test('Hooba-Nan: attacking with empty adjacent slots → 1/1 units fill them (ba
   pass(h); pass(h);                                   // the trigger resolves in the attack window
   const b = h.state.battle!;
   const made = unitsOf(h, A).filter(u => u.token);
-  assert.equal(made.length, 3, 'behind + both edge columns: three 1/1s');
-  assert.equal(b.columns.length, 3, 'the formation grew to three columns');
-  assert.equal(b.columns.flat().length, 4, 'four units are attacking');
-  const hoobaCol = b.columns.find(c => c.includes(hooba))!;
-  assert.equal(hoobaCol.length, 2, 'one 1/1 joined behind Hooba-Nan');
+  assert.equal(made.length, 1, 'a lone column has one empty adjacent slot: behind me');
+  assert.equal(b.columns.length, 1, 'the formation does NOT widen past its own edges');
+  assert.deepEqual(b.columns[0], [hooba, made[0]!.id], 'the 1/1 joined behind Hooba-Nan');
   assert.ok(made.every(u => u.region === b.region), 'slot units are battle-local, not home (overrides R28)');
+  finishBattle(h);
+});
+
+test('Hooba-Nan in the middle: both sides and below, and nothing diagonal (R75)', () => {
+  const h = new Harness(2312);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const left = spawn(h, A, 'Unit Token');
+  const hooba = spawn(h, A, 'Hooba-Nan');
+  const right = spawn(h, A, 'Unit Token');
+  const rightBack = spawn(h, A, 'Unit Token');
+  toNextBattle(h, A);
+  // left column: one unit (its back slot is my LEFT-adjacent? no — same ROW)
+  // right column: full, so its front row is taken
+  h.do({ type: 'declareAttack', seat: A, columns: [[left], [hooba], [right, rightBack]] });
+  pass(h); pass(h);
+  const b = h.state.battle!;
+  // I sit at (column 2, front row). Adjacent: (1, front) — taken by `left`;
+  // (2, back) — empty; (3, front) — taken by `right`. The empty BACK slot of
+  // the left column is diagonal to me and is NOT filled.
+  assert.deepEqual(b.columns[0], [left], 'the left column keeps its empty back slot — diagonal, not adjacent');
+  assert.equal(b.columns[1]!.length, 2, 'only the slot behind me was filled');
+  assert.deepEqual(b.columns[2], [right, rightBack], 'the full column is untouched');
+  assert.equal(b.columns.length, 3, 'no new columns');
   finishBattle(h);
 });
 
@@ -299,13 +352,12 @@ test('Hush Mush: negates target effect; that controller gains control of the spa
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
   pick(h, { stack: cbId });
   pass(h); pass(h);                                   // Hush Mush resolves: negate + spawn
-  assert.ok(h.state.stack.find(i => i.id === cbId)!.negated, 'the Boon is negated');
+  assert.ok(!h.state.stack.some(i => i.id === cbId), 'R68: the negated Boon left the stack');
   const mush = unitsOf(h, A).concat(unitsOf(h, D)).find(u => u.card === 'Hush Mush')!;
   assert.ok(mush, 'the spell unit spawned');
   pass(h); pass(h);                                   // its spawn trigger resolves: the handoff
   assert.equal(ent(h, mush.id)!.controller, A, "the negated effect's controller gained control");
   assert.equal(ent(h, mush.id)!.owner, D, 'ownership stays with the caster');
-  pass(h); pass(h);                                   // the negated Boon resolves → bin
   assert.deepEqual(effStats(h, atk), [1, 1], 'no buff landed');
   finishBattle(h);
   assert.ok(unitsOf(h, A).some(u => u.card === 'Hush Mush'), "regroup sent it to A's side");
@@ -338,9 +390,10 @@ test('Hush Mush: "target effect" reaches a TRIGGERED ability, "target SPELL effe
   h.do({ type: 'playCard', seat: D, handIndex: hm });
   pick(h, { stack: trig.id });
   pass(h); pass(h);                                   // Hush Mush resolves
-  assert.ok(h.state.stack.find(i => i.id === trig.id)!.negated, 'the trigger is negated');
+  assert.ok(!h.state.stack.some(i => i.id === trig.id), 'R68: the negated trigger left the stack');
+  assert.ok(!h.state.players[A]!.bin.includes('Warbloom Herald'),
+    'R68: a negated ABILITY has no card of its own — its source stays in play, nothing is binned');
   pass(h); pass(h);                                   // the spawn handoff
-  pass(h); pass(h);                                   // the negated trigger comes off
   assert.deepEqual(effStats(h, herald), [1, 1], 'the +1/+0 never landed');
   finishBattle(h);
 });

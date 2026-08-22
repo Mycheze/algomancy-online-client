@@ -380,11 +380,26 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
     }
     for (const id of u.mods) {
       const m = e.entity(id);
-      if (!m || m.appliedAs !== 'graft' || !(m.budgets['graft'] ?? 0)) continue;
-      lines.push({
-        text: `[Switch1] ${m.card}'s grafted effect — already used this turn.`,
-        from: m.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
-      });
+      if (!m) continue;
+      if (m.appliedAs === 'graft' && (m.budgets['graft'] ?? 0)) {
+        lines.push({
+          text: `[Switch1] ${m.card}'s grafted effect — already used this turn.`,
+          from: m.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
+        });
+      }
+      // a bounded ability DONATED by an augment mod is budget-keyed by the
+      // mod's card name, on the HOST's budgets (engine.ts composeParts:
+      // `augment:<mod card>#<i>`, budgetHolder = the unit it fires from)
+      if (m.appliedAs === 'augment') {
+        (defOf(m.card)?.augmentText ?? []).forEach((ab, i) => {
+          if (!ab.bounded) return;
+          if (!(u.budgets[`augment:${m.card}#${i}`] ?? 0)) return;
+          lines.push({
+            text: `${boundedTag(ab)} ${ab.label} — already used this turn.`,
+            from: m.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
+          });
+        });
+      }
     }
   }
 

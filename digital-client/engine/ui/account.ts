@@ -11,15 +11,19 @@
  * websocket join, which is what binds a seat to an account server-side, so a
  * game only counts toward your stats if you were logged in when you sat down.
  */
+import { ALL_ELEMENTS } from '../src/apply.ts';
+import { esc } from './util.ts';
 
 // ── the shapes the server sends ───────────────────────────────────────
 
+/** NB: the wire carries more fields than the client reads (e.g. byElement,
+ * which only the server's achievements look at) — only what the UI renders
+ * is declared here. */
 export interface Profile {
   games: number; wins: number; losses: number;
   /** games whose result we cannot read — see the server's Profile.unresolved */
   unresolved: number;
   byMode: Record<string, number>;
-  byElement: Record<string, number>;
   cardElements: Record<string, number>;
   recycled: Record<string, number>;
   cards: Record<string, number>;
@@ -92,23 +96,21 @@ export const token = (): string | null => localStorage.getItem(TOKEN_KEY);
 export const currentUser = (): Me | null => me;
 export const screen = (): 'auth' | 'profile' | null => view;
 
-const esc = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-const ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
+/** the engine's own element list, so a new element never leaves this file
+ * with a stale copy (the string type fits the server's weight records) */
+const ELEMENTS: readonly string[] = ALL_ELEMENTS;
 
 /** wire this module up. `rerender` repaints whatever the host was showing
  * (the home screen) once an account screen closes. */
 export function initAccounts(opts: { app: HTMLElement; rerender: () => void }): void {
   $app = opts.app;
   rerenderHost = opts.rerender;
-  ensureToastHost();
   if (token()) void refreshMe();
 }
 
 /** Ask the server who we are. A token the server no longer knows is dropped
  * rather than left to fail every subsequent request. */
-export async function refreshMe(): Promise<Me | null> {
+async function refreshMe(): Promise<Me | null> {
   const t = token();
   if (!t) { me = null; return null; }
   try {
@@ -198,7 +200,8 @@ function renderAuth(): void {
       if ((e as KeyboardEvent).key === 'Enter') submit();
     });
   }
-  (document.getElementById(authMode === 'register' ? 'a-user' : 'a-user') as HTMLInputElement | null)?.focus();
+  // login prefills the username, so the password is the field being asked for
+  (document.getElementById(authMode === 'register' ? 'a-user' : 'a-pass') as HTMLInputElement | null)?.focus();
 }
 
 const pct = (have: number, need: number): number => Math.max(0, Math.min(100, Math.round((have / need) * 100)));
@@ -494,10 +497,19 @@ export function handleButton(btn: HTMLElement): boolean {
       void refreshMe(); return true;
 
     case 'acct-logout': {
+      // invalidate the session with the token we are about to drop — post()
+      // re-reads localStorage for its auth header, so clearing first would
+      // send the request unauthenticated and leave the session alive
       const t = token();
+      if (t) {
+        void fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: `Bearer ${t}` },
+          body: '{}',
+        }).catch(() => {});
+      }
       localStorage.removeItem(TOKEN_KEY);
       me = null; view = null;
-      if (t) void post('/api/auth/logout', {}).catch(() => {});
       rerenderHost();
       return true;
     }
@@ -541,36 +553,5 @@ export function handleButton(btn: HTMLElement): boolean {
   return false;
 }
 
-// ── the post-game toast ───────────────────────────────────────────────
-//
-// Lives in its own element on <body> rather than in the render tree: an
-// achievement can land while the board is on screen, and the board's render()
-// rebuilds everything it owns.
-
-let $toast: HTMLElement | null = null;
-
-function ensureToastHost(): void {
-  if ($toast?.isConnected) return;
-  $toast = document.createElement('div');
-  $toast.className = 'accttoasts';
-  document.body.appendChild($toast);
-}
-
-/** Show "game recorded" and any achievements it unlocked. */
-export function showRecorded(unlocked: { id: string; name: string; desc: string; icon: string }[]): void {
-  ensureToastHost();
-  const items = [
-    { icon: '📊', name: 'Game recorded', desc: me ? `added to ${me.username}'s stats` : 'added to your stats' },
-    ...unlocked.map(u => ({ icon: u.icon, name: `Achievement — ${u.name}`, desc: u.desc })),
-  ];
-  for (const [i, item] of items.entries()) {
-    const el = document.createElement('div');
-    el.className = 'accttoast';
-    el.innerHTML = `<span class="ticon">${item.icon}</span>
-      <span class="tbody"><b>${esc(item.name)}</b><br><span class="hint">${esc(item.desc)}</span></span>`;
-    // clicking one dismisses it; they also time out on their own
-    el.addEventListener('click', () => el.remove());
-    $toast!.appendChild(el);
-    setTimeout(() => el.remove(), 9000 + i * 1200);
-  }
-}
+// (the "game recorded" toast is gone: the result and its unlocks now ride the
+// 'gameover' payload and are shown by the post-game screen, ui/postgame.ts)

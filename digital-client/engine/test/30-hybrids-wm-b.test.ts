@@ -99,16 +99,18 @@ test('Volatile Toxicity: sacrifice a unit → Poison X and Fireball X, X = its d
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const atk = spawn(h, A, 'Unit Token');
-  const sentry = spawn(h, D, 'Stasis Sentry');                // 2/4 — X will be 4
+  // a plain 0/4 body: this used to be a Stasis Sentry, which is a live R59
+  // cost modifier now and taxed the very spell the test is about
+  const fodder = spawn(h, D, 'Resonant Form');                // 2/4 — X will be 4
   giveResources(h, D, 'fire', 1);
   giveResources(h, D, 'wood', 1);                             // rg / 2
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Volatile Toxicity') });
-  pick(h, { unit: sentry });                                  // cast cost (R35): the 2/4 dies NOW, X = 4
-  assert.ok(!ent(h, sentry), 'the unit is sacrificed at cast');
-  assert.ok(h.state.players[D]!.bin.includes('Stasis Sentry'), 'sacrificed nontoken → bin');
+  pick(h, { unit: fodder });                                  // cast cost (R35): the 2/4 dies NOW, X = 4
+  assert.ok(!ent(h, fodder), 'the unit is sacrificed at cast');
+  assert.ok(h.state.players[D]!.bin.includes('Resonant Form'), 'sacrificed nontoken → bin');
   pass(h); pass(h);                                           // resolve
   const toks = tokensOf(h, D);
   assert.ok(toks.some(t => t.card === 'Poison' && t.x === 4), 'a Poison 4 is created');
@@ -174,7 +176,7 @@ test('Dematerialize: negates a target stack effect; its controller Glimpses 3 �
   assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn, ignoring affinity');
   assert.equal(h.events.filter(ev => ev.type === 'trashed').length, trashesBefore,
     'R40: negating is not trashing — the negated card comes off the STACK');
-  pass(h); pass(h);                                           // the negated Fireball resolves
+  assert.equal(h.state.stack.length, 0, 'R68: the negated Fireball left the stack at once');
   assert.equal(h.state.players[D]!.life, lifeD, 'the negated Fireball dealt nothing');
   finishBattle(h);
 });

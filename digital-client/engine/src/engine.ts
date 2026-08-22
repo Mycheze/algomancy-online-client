@@ -25,7 +25,7 @@ import {
   type Ability, type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetSpec, type TriggeredAbility,
 } from './cards/dsl.ts';
-import { rngNext, rngShuffle } from './rng.ts';
+import { rngShuffle } from './rng.ts';
 
 /** R59: where and why a card's cost is being computed (see manaToPlay).
  * `region` defaults to the seat's action region; `purpose` defaults to
@@ -47,6 +47,22 @@ class PartChoice {
 }
 
 export function other(seat: Seat): Seat { return 1 - seat; }
+
+/** Manual p.17: each player may flip up to TWO dormant resources face-up per
+ * turn. One constant, three coupled readers: the starting allowance
+ * (createGame), the per-turn refresh (startTurn) and the activation gate's
+ * error text (doActivateResource). */
+export const ACTIVATIONS_PER_TURN = 2;
+
+/**
+ * R68: the stack-item kinds whose CARD goes to the bin when the item is
+ * negated. A 'unit' belongs here — a {Battle} unit caught mid-cast is a real
+ * card and has to land somewhere (it used to be erased into nowhere while the
+ * log claimed "→ bin"). 'spellToken' does not: a token is erased (R40).
+ * 'triggered'/'activated' do not: their `card` names the SOURCE, which is
+ * still in play — the ability is simply gone.
+ */
+const NEGATE_BINS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'unit', 'virus', 'ambush']);
 
 // ── prophecy conditions (R43) ─────────────────────────────────────────
 //
@@ -174,11 +190,6 @@ export class E {
   illegal(why: string): never { throw new IllegalAction(why); }
   need(cond: unknown, why: string): asserts cond { if (!cond) this.illegal(why); }
 
-  rand(): number {
-    const [v, next] = rngNext(this.s.rngState);
-    this.s.rngState = next;
-    return v;
-  }
   shuffle<T>(items: T[]): T[] {
     const [out, next] = rngShuffle(items, this.s.rngState);
     this.s.rngState = next;
@@ -248,23 +259,54 @@ export class E {
   private inCostMods = false;
 
   /**
+   * The "unit-or-augment-mod → anchor" radiator walk, shared by everything
+   * that reads continuous text off cards in play (statics, cost mods, the two
+   * replacement hooks, mustBeTargeted): text radiates from units in play AND
+   * from augment mods — [Augment] text transfers with the card — and a mod's
+   * text is ANCHORED ON ITS HOST, reading from the host's perspective
+   * (controller/region are the host's, "your OTHER units" excludes the host).
+   * `holder` is the entity CARRYING the text (the unit, or the augment mod
+   * that donated it); `anchor` is the entity it reads from.
+   *
+   * A sent counterattacker "doesn't exist until phase 1 finishes" (Manual
+   * p.20) — an absent anchor radiates nothing — and that filter lives here.
+   * Everything else (region/controller scoping, and CRUCIALLY the R62
+   * suppression check) stays with the caller: the sites disagree on whether
+   * suppression is the shallow `anchor.suppressed?.abilities` flag or the
+   * full abilitiesSuppressed() projection, and each keeps its own answer.
+   * Iteration is s.entities in Object.values order (numeric key order), which
+   * callers rely on for determinism.
+   */
+  private anchored(keep: (holder: Entity, anchor: Entity) => boolean): { holder: Entity; anchor: Entity }[] {
+    const out: { holder: Entity; anchor: Entity }[] = [];
+    for (const holder of Object.values(this.s.entities)) {
+      let anchor: Entity | undefined;
+      if (holder.kind === 'unit') anchor = holder;
+      else if (holder.kind === 'mod' && holder.appliedAs === 'augment' && holder.modOf !== undefined) {
+        anchor = this.entity(holder.modOf);
+      }
+      if (!anchor || anchor.absent) continue;
+      if (!keep(holder, anchor)) continue;
+      out.push({ holder, anchor });
+    }
+    return out;
+  }
+
+  /**
    * R59: every active CostMod that applies to `ctx`. Radiates from units in
    * play and from augment mods anchored on their host, scoped to the region
    * the card is being played into (R12) — the same rules as staticsFor.
+   * NOTE the returned `holder` is the ANCHOR (the entity the mod reads from),
+   * while the mod list comes off the carrying entity's card.
    */
   private costModsFor(region: number): { holder: Entity; mod: CostMod }[] {
     if (this.inCostMods) return [];
     const out: { holder: Entity; mod: CostMod }[] = [];
     this.inCostMods = true;
     try {
-      for (const holder of Object.values(this.s.entities)) {
-        let anchor: Entity | undefined;
-        if (holder.kind === 'unit') anchor = holder;
-        else if (holder.kind === 'mod' && holder.appliedAs === 'augment' && holder.modOf !== undefined) {
-          anchor = this.entity(holder.modOf);
-        }
-        if (!anchor || anchor.absent || anchor.region !== region) continue;
-        if (anchor.suppressed?.abilities) continue;             // R62, as staticsFor
+      for (const { holder, anchor } of this.anchored((_h, a) =>
+        a.region === region
+        && !a.suppressed?.abilities)) {                         // R62, as staticsFor (shallow)
         for (const mod of this.card(holder.card).costMods ?? []) out.push({ holder: anchor, mod });
       }
     } finally { this.inCostMods = false; }
@@ -364,27 +406,18 @@ export class E {
     const out: { holder: Entity; from: CardName; srcId: EntityId; mod: import('./cards/dsl.ts').StaticMod }[] = [];
     this.inStatics = true;
     try {
-      for (const holder of Object.values(this.s.entities)) {
-        // statics radiate from units in play AND from augment mods (text-box
-        // [Augment] statics transfer with the card — Animated Spark, Sandstone
-        // Defender). A mod's static is anchored on its HOST: the transferred
-        // text reads from the host's perspective ("your OTHER units" excludes
-        // the host, controller/region are the host's).
-        let anchor: Entity | undefined;
-        if (holder.kind === 'unit') anchor = holder;
-        else if (holder.kind === 'mod' && holder.appliedAs === 'augment' && holder.modOf !== undefined) {
-          anchor = this.entity(holder.modOf);
-        }
-        // a sent counterattacker "doesn't exist until phase 1 finishes"
-        // (Manual p.20) — it radiates nothing in the region it left
-        if (!anchor || anchor.absent || anchor.region !== target.region) continue;
-        // R62: a silenced unit radiates nothing — a static IS an ability.
-        // Shallow by construction (the reentrancy guard is already held, so a
-        // nested suppression query sees no statics): a unit silenced by a
-        // SPELL stops radiating immediately, while two units whose statics
-        // silence each other both keep radiating and both go quiet, which is
-        // the simultaneous answer the layer model wants anyway.
-        if (anchor.suppressed?.abilities) continue;
+      // the anchored() walk: statics radiate from units in play AND from
+      // augment mods (text-box [Augment] statics transfer with the card —
+      // Animated Spark, Sandstone Defender), each read from its anchor.
+      // R62: a silenced unit radiates nothing — a static IS an ability.
+      // Shallow by construction (the reentrancy guard is already held, so a
+      // nested suppression query sees no statics): a unit silenced by a
+      // SPELL stops radiating immediately, while two units whose statics
+      // silence each other both keep radiating and both go quiet, which is
+      // the simultaneous answer the layer model wants anyway.
+      for (const { holder, anchor } of this.anchored((_h, a) =>
+        a.region === target.region
+        && !a.suppressed?.abilities)) {
         for (const mod of this.card(holder.card).statics ?? []) {
           // `srcId` is the entity CARRYING the text (the unit, or the augment
           // mod that donated it), not the anchor — it is the tick of the
@@ -656,11 +689,13 @@ export class E {
    * ability going to the bin after it resolves, or after being negated, comes
    * from the stack — so countering is not trashing); everything else does,
    * 'cache' (R41) included — a cached card binned without being played is
-   * trashed like any other.
+   * trashed like any other. R69: a TOKEN is trashed like any other too — the
+   * old `opts.token` escape hatch is gone, and it had no callers even before
+   * the ruling reversed it.
    */
-  toBin(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'stack' | 'cache', opts: { token?: boolean } = {}): void {
+  toBin(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'stack' | 'cache'): void {
     this.player(seat).bin.push(name);
-    if (from === 'stack' || opts.token) return;
+    if (from === 'stack') return;
     this.noteTrashed(seat, name, from);
   }
 
@@ -669,13 +704,21 @@ export class E {
    * Split out of toBin() for the paths that must control event ORDER: destroy()
    * and recall() bin the card first but have to emit (and fire) their own
    * 'died'/'despawned' event before the trash, or the game log reads backwards.
-   * Tokens must never reach here (R40; and R47's Wraith re-attaches itself as a
-   * mod when it dies — a token, so no trash).
+   *
+   * R69: a TOKEN does reach here. Tokens are cards ("Tokens are temporary
+   * cards" opens the Tokens section of both rulebooks), a dying one enters the
+   * bin before it is erased, and it does not come from the stack — which is
+   * R40's whole definition of trashing. Bena 2026-08-21, reversing R40's old
+   * flat "tokens are never trashed" clause.
+   *
+   * R70: `anchor` is the DETACHED entity the card was, when the trash came from
+   * one leaving play. It supplies the region (the one it died in, not the
+   * trasher's action region — R12) and stands in for the ghost below.
    */
-  noteTrashed(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'cache'): void {
+  noteTrashed(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'cache', anchor?: Entity): void {
     const where = from === 'play' ? 'from play' : from === 'hand' ? 'from hand'
       : from === 'cache' ? 'from the cache' : 'from the deck';
-    const region = this.actionRegion(seat);
+    const region = anchor?.region ?? this.actionRegion(seat);
     // per-battle trash ledger (R40: Dropslime counts every card trashed this
     // battle, Muck Rummager only your own) — battleCounters reset each battle
     // phase, so a trash outside battle deliberately counts for nothing
@@ -684,9 +727,9 @@ export class E {
       this.bumpBattleCounter(region, `trashed:${seat}`);
     }
     const ev = this.ev('trashed', `${this.pname(seat)} trashes ${name} (${where}).`,
-      { seat, card: name, from, region });
+      { seat, card: name, from, region, ...(anchor?.token ? { token: true } : {}) });
     this.fireEvent('trashed', ev);
-    this.fireOwnTrashTrigger(seat, name, region, ev);
+    this.fireOwnTrashTrigger(seat, name, region, ev, anchor);
   }
 
   /**
@@ -701,33 +744,37 @@ export class E {
    * into s.entities — it cannot be targeted, radiates no statics and turns up
    * in no other scan. It exists only to give `when` and the bounded-budget
    * bookkeeping (R9) something to read, and it is thrown away with this call,
-   * which is right: each trashed card is its own instance. Its id is -1, so
-   * `g.entity(ctx.sourceId)` correctly answers "there is no such unit".
+   * which is right: each trashed card is its own instance. Its id is not in
+   * s.entities, so `g.entity(ctx.sourceId)` correctly answers "there is no
+   * such unit".
+   *
+   * R70: when the card is being trashed BECAUSE it left play, `anchor` is the
+   * entity it was — already detached by destroy()/recall(), with exactly the
+   * properties a stand-in needs and the real region, counters and owner as
+   * well. The fabricated id -1 ghost is the fallback for a trash with no unit
+   * behind it (a discard, a mill, a cached card binned). One mechanism, two
+   * sources.
    *
    * Only `self: true` abilities fire here. "When ANOTHER card is trashed"
    * (Muck Rummager) belongs to a unit in play and the normal scan dispatches
    * it — which also gives R40's "excludes the trigger source itself" for free.
    */
-  private fireOwnTrashTrigger(seat: Seat, name: CardName, region: number, ev: EngineEvent): void {
+  private fireOwnTrashTrigger(seat: Seat, name: CardName, region: number, ev: EngineEvent, anchor?: Entity): void {
     const abilities = this.card(name).abilities ?? [];
     if (!abilities.length) return;
-    const ghost: Entity = {
-      id: -1, card: name, owner: seat, controller: seat, kind: 'unit', region,
-      damage: 0, counters: 0, tempPower: 0, tempToughness: 0, mods: [], budgets: {},
-    };
+    // `controller` is the TRASHER (R40: the owner of the bin it entered), which
+    // is what the queued trigger resolves under, so the stand-in reports the
+    // same seat whether it was fabricated or lifted off the dead unit. The
+    // copy also keeps composeParts' bounded-budget write off the real entity.
+    const ghost: Entity = anchor
+      ? { ...anchor, kind: 'unit', controller: seat, region, mods: [], budgets: {} }
+      : this.standIn(name, seat, region);
     let queued = false;
     abilities.forEach((ability, idx) => {
       if (!isTriggered(ability) || !ability.self) return;
       if (!ability.events.includes('trashed')) return;
-      if (ability.when && !ability.when(this, ghost, ev)) return;
-      const parts = this.composeParts(ghost, idx, 'ability');
-      if (!parts) return;
-      this.s.triggerQueue.push({
-        sourceId: ghost.id, sourceCard: name, controller: seat,
-        abilityIndex: idx, label: `${name}: ${ability.label}`, parts, event: ev,
-      });
-      this.ev('triggered', `Trigger: ${name} — ${ability.label} (trashed).`, { card: name });
-      queued = true;
+      queued = this.queueTrigger(ghost, name, idx, ability, 'ability', ev,
+        `Trigger: ${name} — ${ability.label} (trashed).`, { card: name }) || queued;
     });
     if (queued) this.s.triggerOrderedSeats = [];
   }
@@ -851,18 +898,10 @@ export class E {
    * host's perspective, so "counters on me" lands on the host.
    */
   private replaceRotDamage(seat: Seat, n: number): boolean {
-    const holders: { holder: Entity; anchor: Entity }[] = [];
-    for (const holder of Object.values(this.s.entities)) {
-      if (!this.card(holder.card).replaceRotDamage) continue;
-      let anchor: Entity | undefined;
-      if (holder.kind === 'unit') anchor = holder;
-      else if (holder.kind === 'mod' && holder.appliedAs === 'augment' && holder.modOf !== undefined) {
-        anchor = this.entity(holder.modOf);
-      }
-      if (!anchor || anchor.absent || anchor.controller !== seat) continue;
-      if (this.abilitiesSuppressed(anchor)) continue;           // R62
-      holders.push({ holder, anchor });
-    }
+    const holders = this.anchored((h, a) =>
+      !!this.card(h.card).replaceRotDamage
+      && a.controller === seat
+      && !this.abilitiesSuppressed(a));                         // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     for (const { holder, anchor } of holders) {
       if (this.card(holder.card).replaceRotDamage!(this, anchor, seat, n)) {
@@ -1086,44 +1125,80 @@ export class E {
   }
 
   /**
-   * R46: a unit in play is CACHED (Grob, Waxen Witness). The card goes to its
-   * OWNER's cache; its mods do NOT travel with it — they go to their own
-   * owners' bins, FROM PLAY, so wave A's R40 classification trashes every
-   * nontoken one (Caleb 2024-09-15). A token has no card to cache, so it is
-   * erased, exactly as recall() erases one.
+   * R70: the fact bundle every leave-play event carries — 'died'/'despawned'
+   * fire once the entity is already out of s.entities, so anything a listener
+   * wants (Entropic Entity's "a unit WITH COUNTERS on it despawns", every
+   * "whenever a NONTOKEN unit dies") has no other way to read it. The caller
+   * spreads its own `to` (and destroy() its `verb`) on top.
    */
-  cacheUnit(u: Entity, opts: { prophecy?: string; playable?: boolean } = {}): void {
-    if (!this.entity(u.id)) return;
+  private leftPlayFacts(u: Entity): {
+    unit: EntityId; card: CardName; seat: Seat; owner: Seat;
+    region: number; counters: number; token: boolean;
+  } {
+    return {
+      unit: u.id, card: u.card, seat: u.controller, owner: u.owner,
+      region: u.region, counters: u.counters, token: !!u.token,
+    };
+  }
+
+  /**
+   * Shared leave-play-WITHOUT-DYING bookkeeping (cacheUnit / recall — NOT
+   * destroy, whose mods are erased by Unstable rather than binned and whose
+   * formation cleanup lands after the death event): pull the unit and its
+   * mods out of s.entities, push each nontoken mod into its owner's bin
+   * (R69: a token mod has no card of its own — erased), and close the
+   * formation gap. Returns the detached mods, or null when the unit was
+   * already gone. The despawn event, the R40 mod trashes (afterDespawn) and
+   * where the CARD goes stay with the caller — that is where the verbs differ.
+   */
+  private leavePlay(u: Entity): Entity[] | null {
+    if (!this.entity(u.id)) return null;
     delete this.s.entities[u.id];
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
     for (const m of mods) {
       delete this.s.entities[m.id];
-      if (!m.token) this.player(m.owner).bin.push(m.card);   // R40/R47: a token mod is erased
+      if (!m.token) this.player(m.owner).bin.push(m.card);   // R69: a token MOD has no card of its own — erased
     }
     this.removeFromFormation(u.id);
-    // `counters` is on the event because 'died'/'despawned' fire once the
-    // entity is already out of s.entities: a listener that wants to know what
-    // the leaving unit was carrying (Entropic Entity's "a unit WITH COUNTERS
-    // on it despawns") has no other way to read it.
-    const evData = { unit: u.id, card: u.card, seat: u.controller, region: u.region, counters: u.counters };
-    if (u.token) {
-      // R47 is a DEATH carve-out ("when I die, augment me onto target ally")
-      // and caching is not dying, so a cached token — Wraith included — is
-      // erased here exactly as recall() erases one: there is no card to put
-      // into the cache.
-      this.ev('despawned', `${u.card} is cached — token: erased.`, evData);
-    } else {
-      this.ev('despawned',
-        `${u.card} leaves play for ${this.pname(u.owner)}'s cache` +
-        (mods.length ? ` (its ${mods.length} mod(s) stay behind → bin)` : '') + '.',
-        evData);
-    }
+    return mods;
+  }
+
+  /** The tail cacheUnit() and recall() share, once their despawn event is the
+   * last event logged: fire it, then (R40, after the despawn so the log reads
+   * in order) trash every nontoken mod — they entered a bin from play. */
+  private afterDespawn(u: Entity, mods: Entity[]): void {
     const ev = this.events[this.events.length - 1]!;
     this.fireEvent('despawned', ev, u);
-    // R40, after the despawn so the log reads in order: the mods entered a bin
-    // from play, so every nontoken one is trashed by its owner
-    for (const m of mods) if (!m.token) this.noteTrashed(m.owner, m.card, 'play');
-    if (!u.token) this.cacheCard(u.owner, u.card, 'play', opts);
+    for (const m of mods) if (!m.token) this.noteTrashed(m.owner, m.card, 'play', m);   // R70
+  }
+
+  /**
+   * R46: a unit in play is CACHED (Grob, Waxen Witness). The card goes to its
+   * OWNER's cache; its mods do NOT travel with it — they go to their own
+   * owners' bins, FROM PLAY, so wave A's R40 classification trashes every
+   * nontoken one (Caleb 2024-09-15).
+   *
+   * R69, extended to the CACHE on 2026-08-22: a cached TOKEN visits the cache
+   * and is erased out of it by the same state-based sweep, so the 'cached'
+   * event fires with the token really sitting there. ⚠ ENGINE'S CALL, not a
+   * designer ruling — Caleb's 2025-06-15 answer is about a HAND and there is
+   * no statement about the cache at all. It is here because the alternative is
+   * one zone behaving differently from the other two for no stated reason.
+   */
+  cacheUnit(u: Entity, opts: { prophecy?: string; playable?: boolean } = {}): void {
+    const mods = this.leavePlay(u);
+    if (!mods) return;
+    const evData = { ...this.leftPlayFacts(u), to: 'cache' };
+    this.ev('despawned',
+      `${u.card} leaves play for ${this.pname(u.owner)}'s cache` +
+      (mods.length ? ` (its ${mods.length} mod(s) stay behind → bin)` : '') +
+      (u.token ? ', then erased (token).' : '.'),
+      evData);
+    this.afterDespawn(u, mods);
+    const cc = this.cacheCard(u.owner, u.card, 'play', opts);
+    // R69's sweep, on the cache this time — `cc.uid` names the entry we just
+    // made, so a second copy of the same card already sitting there is safe
+    if (u.token) this.eraseFromZone(u.owner, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, cc.uid);
   }
 
   /** Where cache entry `uid` sits in `seat`'s cache right now, or -1 when it
@@ -1170,11 +1245,14 @@ export class E {
     return this.card(cc.card).timing;
   }
 
-  /** Affordability ignoring AFFINITY but not mana — what "for free ignores
-   * affinity" (R42) and glimpse's "ignoring affinity" (R45) both need. */
+  /** Affordability ignoring AFFINITY but nothing else — what glimpse's
+   * "ignoring affinity" (R45) needs. The bill must match what payCard will
+   * actually charge: printed mana PLUS active cost modifiers (R59) and any
+   * life tax (R60) — checking printed mana alone would offer a play whose
+   * payment then throws (mana) or kills the payer (life). */
   canPayManaOnly(seat: Seat, name: CardName): boolean {
-    const c = this.card(name);
-    return this.openMana(seat) >= (c.mana === 'X' ? (c.xMin ?? 0) : c.mana);
+    if (this.openMana(seat) < this.manaToPlay(seat, name)) return false;
+    return this.canPayLife(seat, this.lifeToPlay(seat, name));
   }
 
   /** `viewer` looks at `owner`'s hand (Bripp etc.): snapshot it so the client
@@ -1219,30 +1297,33 @@ export class E {
     return u;
   }
 
-  // ── the Wraith token (R47) ───────────────────────────────────────────
+  // ── the Wraith token (R71) ───────────────────────────────────────────
   //
-  // "Wight — 0 mana, 4/4, Blight Zombie Token Unit. [Augment] When I attack or
-  // block, put a -1/-1 counter on me. When I die, augment me onto target ally."
-  // A free 4/4 that shrinks every time it fights and then re-attaches itself
-  // as an augment when it finally dies. The token card was renamed from
-  // "Wraith"; the printed data is mid-transition (Blight's End already says
-  // the retired "Wight", six other cards say the current "Wraith"), so `Wight`
-  // is registered as an ALIAS of `Wraith` — both names, one card, one token.
+  // "Wraith — cost 0 [d], 3/3, Blight Zombie Token Unit. [Augment] At the start
+  // of deployment, put a -1/-1 counter on an ally. When I die, Augment a Wraith
+  // onto an ally." (Redesigned 2026-08-21; the retired 4/4 printing shrank
+  // itself on attack/block and RE-HOMED itself on death — that was R47, now
+  // withdrawn.) The token was renamed FROM "Wight"; the printed data is
+  // mid-transition (Blight's End still says the retired name, six other cards
+  // say the current one), so `Wight` is registered as an ALIAS of `Wraith`.
   //
   // Two entry points, deliberately: "CREATE a Wraith" spawns the body,
-  // "AUGMENT a Wraith onto a unit" creates the same token directly as a mod.
+  // "AUGMENT a Wraith onto a unit" creates a Wraith directly as a mod. They
+  // stay a PAIR under the redesign — the death trigger mints a brand-new token
+  // through augmentWraith(), which is now correct behaviour rather than the
+  // bug it was once suspected of being.
 
-  /** the canonical token name; "Wraith" resolves here through the alias */
+  /** the canonical token name; "Wight" resolves here through the alias */
   static readonly WRAITH: CardName = 'Wraith';
 
-  /** "Create a Wraith" — the 4/4 body, as a unit token. */
+  /** "Create a Wraith" — the 3/3 body, as a unit token. */
   createWraith(seat: Seat, region?: number): Entity {
     return this.spawnUnit(seat, E.WRAITH, region ?? this.actionRegion(seat), { token: true });
   }
 
-  /** "Augment a Wraith onto a unit" — the SAME token, applied rather than
-   * spawned. The mod is itself a token, so it is erased (never binned, never
-   * trashed) when it leaves play. */
+  /** "Augment a Wraith onto a unit" — a Wraith applied rather than spawned.
+   * The mod is itself a token, so it is erased with its host (never binned)
+   * when it leaves play. */
   augmentWraith(host: Entity, byPlayer: Seat): Entity {
     return this.attachMod(host, E.WRAITH, byPlayer, 'augment', undefined, { token: true });
   }
@@ -1430,18 +1511,10 @@ export class E {
    * cares about. First to return true consumes the hit; ties by entity id.
    */
   private replaceCombatDamage(seat: Seat, amount: number, info: { attacker: Seat; region: number }): boolean {
-    const holders: { holder: Entity; anchor: Entity }[] = [];
-    for (const holder of Object.values(this.s.entities)) {
-      if (!this.card(holder.card).replaceCombatDamageToPlayer) continue;
-      let anchor: Entity | undefined;
-      if (holder.kind === 'unit') anchor = holder;
-      else if (holder.kind === 'mod' && holder.appliedAs === 'augment' && holder.modOf !== undefined) {
-        anchor = this.entity(holder.modOf);
-      }
-      if (!anchor || anchor.absent || anchor.region !== info.region) continue;
-      if (this.abilitiesSuppressed(anchor)) continue;           // R62
-      holders.push({ holder, anchor });
-    }
+    const holders = this.anchored((h, a) =>
+      !!this.card(h.card).replaceCombatDamageToPlayer
+      && a.region === info.region
+      && !this.abilitiesSuppressed(a));                         // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     for (const { holder, anchor } of holders) {
       if (this.card(holder.card).replaceCombatDamageToPlayer!(this, anchor, seat, amount, info)) {
@@ -1566,16 +1639,18 @@ export class E {
     this.checkDeaths();
   }
 
-  /** orthogonal formation adjacency: front/back within a column + same row in
-   * a horizontally adjacent column (attackers and blockers are separate grids) */
+  /** R75 orthogonal formation adjacency, read for UNITS: front/back within a
+   * column + same row in a horizontally adjacent column, nothing diagonal
+   * (attackers and blockers are separate grids). `adjacentSlots` is the same
+   * definition read for the EMPTY positions, and both take their grid from
+   * `formationGrid` so the two can never drift apart. */
   adjacentInFormation(id: EntityId): Entity[] {
     const b = this.s.battle;
     if (!b) return [];
-    const grids: EntityId[][][] = [
-      b.columns,
-      // blocking columns keyed by attacked column index; consecutive keys are adjacent
-      Object.keys(b.blocks).sort((a, z) => Number(a) - Number(z)).map(k => b.blocks[Number(k)]!),
-    ];
+    // blocking columns are keyed by attacked column index; consecutive keys are
+    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read
+    // as neighbours)
+    const grids: EntityId[][][] = [this.formationGrid(b.attacker), this.formationGrid(b.defender)];
     for (const grid of grids) {
       for (let ci = 0; ci < grid.length; ci++) {
         const ri = grid[ci]!.indexOf(id);
@@ -1643,6 +1718,11 @@ export class E {
     }
   }
 
+  /** The state-based check. Two actions, run together at every safe point:
+   * lethal damage kills, and an empty attacking column stops existing (R72).
+   * The second is here as well as in removeFromFormation() because card code
+   * splices `b.columns` directly (Hooba-Nan, Shard Sprite, Tiderunner), and a
+   * state-based action nobody can forget to run is the whole point. */
   checkDeaths(): Entity[] {
     const dead: Entity[] = [];
     for (const u of Object.values(this.s.entities)) {
@@ -1651,6 +1731,7 @@ export class E {
       if (t <= 0 || u.damage >= t) dead.push(u);
     }
     for (const u of dead) this.destroy(u, 'dies');
+    this.repairFormation();
     return dead;
   }
 
@@ -1663,48 +1744,64 @@ export class E {
    * here, queueing its triggers and bumping the per-battle ledger, long before
    * card code regains control. A compensating second trashed(caster) would
    * double-count the ledger and double-fire "when I am trashed" (Dropslime,
-   * Nothyr, Murkstalker). Only the third branch below bins anything, so
-   * `binTo` is silently irrelevant for a token or an Unstable modded unit —
-   * both are erased and neither ever reaches a bin.
+   * Nothyr, Murkstalker). `binTo` is silently irrelevant for an Unstable modded
+   * unit — that one is erased and never reaches a bin at all.
+   *
+   * R69 — the branch ORDER is load-bearing, and it used to be wrong. Unstable
+   * (`mods.length`) is tested FIRST: an Unstable ANYTHING, token or not, is
+   * erased with its mods. The old order tested token-ness first, so a modded
+   * token took the token carve-out and never reached the Unstable branch (game
+   * UZRG: a Wraith body carrying a Wraith mod died, came back, AND fired its
+   * mod's donated death trigger).
+   *
+   * R69 again — a dying TOKEN really does enter its owner's bin, is trashed
+   * there like any other card, and is only then erased by a state-based sweep
+   * (Caleb 2025-03-12 / 2025-06-15: "yes, for the purposes of triggers";
+   * "technically it does enter … and then gets erased immediately"). The erase
+   * lands before any trigger RESOLVES — fireEvent only queues — which is the
+   * timing Caleb gave (2023-09-12: "state based effects happen to erase it and
+   * then the trigger goes on the stack").
+   *
+   * Unstable is a BIN replacement, not a death replacement (Caleb 2025-03-13,
+   * 2025-04-08: "unstable units still die, they just get erased instead of
+   * ending up in the bin"), so every branch below fires 'died'.
    */
   destroy(u: Entity, verb: 'dies' | 'is deleted' | 'is sacrificed',
     opts: { binTo?: Seat } = {}): void {
     if (!this.entity(u.id)) return;
     delete this.s.entities[u.id];
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
-    // `counters` is on the event because 'died'/'despawned' fire once the
-    // entity is already out of s.entities: a listener that wants to know what
-    // the leaving unit was carrying (Entropic Entity's "a unit WITH COUNTERS
-    // on it despawns") has no other way to read it.
-    const evData = { unit: u.id, card: u.card, seat: u.controller, region: u.region, counters: u.counters };
-    // R40: only the third branch puts a card in a bin, and it comes from play,
-    // so only that one trashes — a token is erased and an Unstable modded card
-    // is erased too, and erasing never touches a bin. The trash event is fired
-    // AFTER the death below so the log reads "X dies → bin" then "…trashes X".
+    // R70: every fact a death listener could want RIDES THE EVENT (see
+    // leftPlayFacts) — `verb` (Ghord's "sacrificed", which used to
+    // string-match the log message) is the death-only extra.
+    const binSeat = opts.binTo ?? u.owner;
+    const erasedByUnstable = mods.length > 0;
+    const evData: Record<string, unknown> = {
+      ...this.leftPlayFacts(u), verb,
+      to: erasedByUnstable ? 'erased' : 'bin',
+    };
     let trashedTo: Seat | null = null;
-    if (u.token) {
-      // R47: a token normally ceases to exist right here. The Wraith is the
-      // carve-out — it carries its own "when I die, augment me onto target
-      // ally" trigger, which fires below (the dying unit is in the listener
-      // list) and puts the same token back as an augment mod on a chosen ally.
-      // It only really ceases to exist when that trigger finds no legal ally.
-      // Nothing else changes: a token still never reaches a bin, so a dying
-      // Wraith is still not a trash (R40).
-      const reattaches = (this.card(u.card).abilities ?? []).some(a =>
-        isTriggered(a) && a.self && a.events.includes('died'));
-      this.ev('died', reattaches
-        ? `${u.card} ${verb} — token: its own death trigger decides what becomes of it.`
-        : `${u.card} ${verb} — token: erased.`, evData);
-    } else if (mods.length) {
-      // Unstable: a modded card dies → it and its mods are erased, not binned
-      this.ev('died', `${u.card} ${verb} — Unstable: it and its ${mods.length} mod(s) are ERASED.`, evData);
+    // R72: hold the death event ITSELF, not "whatever the last event was".
+    // removeFromFormation() below can now log a formation collapse, and a
+    // trailing `this.events[length-1]` would hand every "when I die" trigger
+    // that log line instead of the death it is listening for.
+    let evDied: EngineEvent;
+    if (erasedByUnstable) {
+      // Unstable: a modded card dies → it and its mods are erased, not binned.
+      // It still DIES: the event fires, death triggers go off, other cards'
+      // watchers see it. Only the destination changed (R69).
+      evDied = this.ev('died', `${u.card} ${verb} — Unstable: it and its ${mods.length} mod(s) are ERASED.`, evData);
     } else {
-      const binSeat = opts.binTo ?? u.owner;
+      // Everything else — token included — enters a bin FROM PLAY, so R40
+      // trashes it. The trash event fires AFTER the death below so the log
+      // reads "X dies → bin" then "…trashes X".
       this.player(binSeat).bin.push(u.card);
-      this.ev('died', `${u.card} ${verb} → ${binSeat === u.owner ? 'bin' : `${this.pname(binSeat)}'s bin`}.`, evData);
+      evDied = this.ev('died', `${u.card} ${verb} → ${binSeat === u.owner ? 'bin' : `${this.pname(binSeat)}'s bin`}`
+        + (u.token ? ', then erased (token).' : '.'), evData);
       trashedTo = binSeat;   // R40: the trasher is the owner of the bin it entered
     }
-    // formation cleanup + back-row promotion (state-based, no response window)
+    // formation cleanup + back-row promotion + R72 column collapse
+    // (state-based, no response window)
     this.removeFromFormation(u.id);
     if (this.s.phase === 'battle') {
       this.bumpBattleCounter(u.region, `allyDeaths:${u.controller}`);
@@ -1712,10 +1809,55 @@ export class E {
     // fire the death BEFORE erasing the mod entities: the dying unit's mods
     // still count as sources of donated "[Augment] when I die" text (the
     // fireEvent mod scan resolves u.mods through the entity table)
-    const evDied = this.events[this.events.length - 1]!;
     this.fireEvent('died', evDied, u);
-    if (trashedTo !== null) this.noteTrashed(trashedTo, u.card, 'play');   // R40
+    // R40/R70: the trash fires anchored on the dying unit itself, so its own
+    // "when I am trashed" trigger keeps the region it died in
+    if (trashedTo !== null) this.noteTrashed(trashedTo, u.card, 'play', u);
+    // R69 state-based sweep: the token has been in the bin for the whole
+    // event window above (both `when` passes and the ledger saw it there) and
+    // now leaves it, before anything queued has resolved.
+    if (u.token && trashedTo !== null) this.eraseFromZone(trashedTo, u.card, 'bin', `${u.card} is erased from the bin — it is a token.`);
+    // R65: an Unstable erase must reach the public erased pile like every
+    // other erase (ev() keeps the pile off 'erased' events). Without this,
+    // the one erase path players hit constantly — a modded unit dying — left
+    // no public record while even a dying token gets one.
+    if (erasedByUnstable) {
+      this.ev('erased', `${u.card} and its mod(s) go to the erased pile.`,
+        { seat: binSeat, cards: [u.card, ...mods.map(m => m.card)] });
+    }
     for (const m of mods) delete this.s.entities[m.id];
+  }
+
+  /**
+   * R69 — THE state-based sweep that erases a token the instant after it
+   * enters a zone. Pull ONE copy of `name` back out of `seat`'s bin, hand or
+   * cache and record it in the public erased pile (R65). No-op if it is not
+   * there (a trigger's `when` cannot move it, but a resolved sweep run twice
+   * must not eat a second copy).
+   *
+   * Generalised from the bin-only `eraseFromBin` on 2026-08-22: the zone is a
+   * parameter because the RULING is about zones in general — *"technically it
+   * does enter your hand and then gets erased immediately"* (Caleb
+   * 2025-06-15). `destroy()`, `recall()` and `cacheUnit()` all call this one
+   * method; there is deliberately no second erase path.
+   *
+   * `uid` names the exact cache entry (`CachedCard.uid`) — the cache is the
+   * one zone whose entries are not bare names, and the caller minting the
+   * entry always knows which one it just made.
+   */
+  eraseFromZone(seat: Seat, name: CardName, zone: 'bin' | 'hand' | 'cache', msg: string, uid?: number): void {
+    if (zone === 'cache') {
+      const i = uid !== undefined ? this.cacheIndexOf(seat, uid)
+        : this.cache(seat).map(cc => cc.card).lastIndexOf(name);
+      if (i === -1) return;
+      this.uncache(seat, i);
+    } else {
+      const pile = zone === 'bin' ? this.player(seat).bin : this.player(seat).hand;
+      const i = pile.lastIndexOf(name);
+      if (i === -1) return;
+      pile.splice(i, 1);
+    }
+    this.ev('erased', msg, { seat, card: name, from: zone });
   }
 
   private removeFromFormation(id: EntityId): void {
@@ -1727,35 +1869,371 @@ export class E {
     }
     const si = b.sentAttackers.indexOf(id);
     if (si !== -1) b.sentAttackers.splice(si, 1);
+    // R72: closing the gap is part of leaving the formation, not a follow-up
+    // somebody has to remember. removeFromFormation() is the ONLY way a unit
+    // leaves a column (destroy / recall / cacheUnit all funnel through it), so
+    // the empty column never survives past the statement that made it empty.
+    this.repairFormation();
   }
 
-  /** Recall: the unit leaves play WITHOUT dying (Manual: to its owner's hand;
-   * mods go to their owners' bins; a token is erased instead). */
-  recall(u: Entity): void {
-    if (!this.entity(u.id)) return;
-    delete this.s.entities[u.id];
-    const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
-    for (const m of mods) {
-      delete this.s.entities[m.id];
-      if (!m.token) this.player(m.owner).bin.push(m.card);   // R40/R47: a token mod is erased
+  /**
+   * R72 — the key for a battle counter that belongs to ONE attacking column
+   * ("this column has already connected twice this battle"). Column indices
+   * MOVE when the formation collapses, so a counter keyed by a bare index
+   * silently changes which column it describes. Build the key through here and
+   * repairFormation() carries it across the collapse; build it by hand and it
+   * does not.
+   */
+  colCounterKey(ci: number, name: string): string { return `col:${ci}:${name}`; }
+
+  /**
+   * Manual, "HOLD THE LINE": *"If the last unit in a column is removed from a
+   * formation, the columns on its sides will close in to fill the gap. **This
+   * only happens before blocks are declared. After blocks, columns will not
+   * move to fill gaps.**"*
+   *
+   * The engine had no such window: the first R72 build ran the collapse as an
+   * unconditional state-based action, including between damage sub-steps.
+   */
+  private beforeBlocksDeclared(): boolean {
+    const b = this.s.battle;
+    if (!b) return false;
+    return b.step === 'declare' || b.step === 'attackWindow' || b.step === 'blocks';
+  }
+
+  /**
+   * R72 — the two halves of formation GRAVITY, which have DIFFERENT timing
+   * rules. That asymmetry is printed, and it is the whole of this rule.
+   *
+   * *"When a column becomes empty during combat, the columns to the right
+   * should immediately collapse and fill the gap."* (game BRDM, 2026-08-20) —
+   * the report that found it, answered by the Manual's "HOLD THE LINE":
+   *
+   *  1. **Vertical, always.** *"If a unit is removed from a formation, any
+   *     units behind it move to the front row and take its place."* No
+   *     qualifier, so this holds at every moment, mid-combat included. Splicing
+   *     the dead id out of the dense column array IS the promotion, and it is
+   *     also why *"the front row of a column must be filled first"* can be
+   *     relied on as an invariant rather than checked (R75).
+   *  2. **Horizontal, only before blocks are declared.** *"If the last unit in
+   *     a column is removed … the columns on its sides will close in to fill
+   *     the gap. This only happens before blocks are declared. After blocks,
+   *     columns will not move to fill gaps."* Once the defender has answered,
+   *     the line is locked: an emptied column stays as a HOLE for the rest of
+   *     the battle.
+   *
+   * The Manual makes an earlier ⚠ dissolve. A blocker whose attackers all died
+   * needed a special case — Bena, 2026-08-21: *"It stays, but has nothing to
+   * deal damage to, so it doesn't deal damage. But it stays in the formation
+   * for the blocker, which means there's a 'hole' in the attackers
+   * formation."* Under (2) that is not a special case at all: blocks have been
+   * declared, so nothing moves. All that survives of the ruling is the damage
+   * half, in `combatSubStep`.
+   *
+   * The horizontal half is a **re-key**, and that is the hard part:
+   * `BattleState.blocks` is keyed by attack-column INDEX, so the index is the
+   * column's identity. `rekeyColumns` is the single owner of that move — every
+   * block entry and every column-scoped counter shift together, in one commit,
+   * with no engine event and no trigger in between. Column ARRAY OBJECTS are
+   * kept, never rebuilt: card code holds column references (`columnOf`) and
+   * compares them by identity.
+   *
+   * Called from removeFromFormation() — so no observer, not even a `when`
+   * predicate evaluated inside fireEvent, ever sees a half-repaired line — and
+   * again at the end of checkDeaths(), the state-based sweep, which is the
+   * backstop for the several cards that edit `b.columns` directly.
+   */
+  repairFormation(): void {
+    const b = this.s.battle;
+    if (!b) return;
+    // (1) vertical gravity: a column holds units that are in play, and nothing
+    // else. Untimed — this runs whatever the step.
+    for (const col of [...b.columns, ...Object.values(b.blocks)]) {
+      for (let i = col.length - 1; i >= 0; i--) if (!this.entity(col[i]!)) col.splice(i, 1);
     }
-    this.removeFromFormation(u.id);
-    // R40: the recalled card goes to HAND (or is erased if a token) — never a
-    // trash. Its mods do enter a bin, from play, so a nontoken mod IS trashed
-    // by its owner; fired below, after the despawn event, for log order.
-    const trashedMods = mods.filter(m => !m.token);
-    if (u.token) {
-      this.ev('despawned', `${u.card} is recalled — token: erased.`,
-        { unit: u.id, card: u.card, seat: u.controller, region: u.region, counters: u.counters });
+    // (2) horizontal gravity: the line closes ranks ONLY before blocks are
+    // declared. After that a gap is permanent, and so is every column index.
+    if (!this.beforeBlocksDeclared()) return;
+    const keep: number[] = [];
+    for (let ci = 0; ci < b.columns.length; ci++) if (b.columns[ci]!.length) keep.push(ci);
+    if (keep.length === b.columns.length) return;          // no gap to close
+    const remap = new Map<number, number>();
+    keep.forEach((oldCi, ni) => remap.set(oldCi, ni));
+    // did anything actually MOVE? dropping a trailing column shifts nobody, and
+    // an announcement for it would just be noise on top of the death that
+    // caused it.
+    const shifted = keep.some((oldCi, ni) => oldCi !== ni);
+    const dropped = b.columns.length - keep.length;
+    const cols = keep.map(ci => b.columns[ci]!);            // the same array objects
+    // ONE commit: the re-key lands whole. Nothing between these two statements
+    // yields, so no observer can see half of it.
+    this.rekeyColumns(oldCi => remap.get(oldCi) ?? null);
+    b.columns = cols;
+    if (shifted) {
+      this.ev('info',
+        `The formation closes up: ${dropped} empty column(s) removed, ${cols.length} left.`,
+        { region: b.region, columns: cols.length });
+    }
+  }
+
+  /**
+   * R72/R75 — THE re-key, and the only one. Every index-keyed thing hanging off
+   * an attacking column moves through here in a single commit: `blocks`, whose
+   * key IS the column's identity, and the column-scoped battle counters
+   * (colCounterKey). `to(oldCi)` answers the column's new index, or null when
+   * it is ceasing to exist.
+   *
+   * The caller assigns `b.columns` itself, immediately after — the two halves
+   * are separate statements only because the column list is built differently
+   * for a collapse (filter) than for an insertion (splice).
+   */
+  private rekeyColumns(to: (oldCi: number) => number | null): void {
+    const b = this.s.battle!;
+    const blocks: Record<number, EntityId[]> = {};
+    for (const [k, v] of Object.entries(b.blocks)) {
+      const ni = to(Number(k));
+      if (ni !== null) blocks[ni] = v;                     // the same array object
+    }
+    const ledger = this.s.battleCounters[b.region];
+    if (ledger) {
+      const next: Record<string, number> = {};
+      for (const [k, v] of Object.entries(ledger)) {
+        const m = /^col:(\d+):([\s\S]*)$/.exec(k);
+        if (!m) { next[k] = v; continue; }                 // not column-scoped
+        const ni = to(Number(m[1]));
+        if (ni === null) continue;                         // the column is gone; so is its ledger
+        next[this.colCounterKey(ni, m[2]!)] = v;
+      }
+      this.s.battleCounters[b.region] = next;
+    }
+    b.blocks = blocks;
+  }
+
+  // ── R75: joining a formation ────────────────────────────────────────
+  //
+  // "When something spawns something 'in my formation' or 'in formation', it's
+  // up to the controller of the effect to choose where the unit goes. They can
+  // put it to either side of the existing units OR in the second slot of a
+  // column for a column which only has 1 unit. That choice should be made on
+  // effect resolution." (Bena, 2026-08-21.)
+  //
+  // Before this, every card did its own thing: Hooba-Bot joined "my column if
+  // open, else the first open column", Hooba-Lin joined its own column or
+  // opened one on the right, Hooba-God only ever used its own column, and only
+  // Tiderunner Initiate actually asked. One rule, one primitive.
+
+  /**
+   * R75 — every legal place a unit could join `seat`'s formation, left to
+   * right. Not a target (nothing prints "target"): the caller offers these at
+   * RESOLUTION, the way R71's "an ally" is chosen.
+   *
+   * Three kinds, and the first two are the ruling as printed:
+   *  · a NEW column at either END. "Either side of the existing units" is read
+   *    as the two ENDS, not as an insertion between two existing columns — see
+   *    the rules entry, this is a reading.
+   *  · the BACK slot of a column that holds exactly one unit.
+   *  · the front slot of a HOLE (R72) — a column emptied of attackers that its
+   *    blockers are holding open. This is the one kind the ruling does not
+   *    enumerate, and it is kept because the engine already offered it
+   *    (Tiderunner Initiate) and because it is the only way a formation ever
+   *    heals a hole. It cannot CREATE a hole, so it cannot break R72.
+   *
+   * A formation you are not standing in cannot be widened: with no living unit
+   * in the grid there is no formation to join, and the answer is no slots at
+   * all rather than "open a column out of nowhere".
+   */
+  /**
+   * R75 — the formation grid `seat` fights in, `[column][row]`, front row
+   * first: the attacking columns as the attacker, the blocking columns as the
+   * defender (ordered by the attacking column each answers). One derivation,
+   * so `formationSlots`, `adjacentSlots` and `adjacentInFormation` cannot
+   * disagree about what the grid is.
+   */
+  private formationGrid(seat: Seat): EntityId[][] {
+    const b = this.s.battle;
+    if (!b) return [];
+    if (seat === b.attacker) return b.columns;
+    if (seat === b.defender) {
+      return Object.keys(b.blocks).sort((a, z) => Number(a) - Number(z)).map(k => b.blocks[Number(k)]!);
+    }
+    return [];
+  }
+
+  formationSlots(seat: Seat): { col: EntityId[] | null; end?: 'left' | 'right'; label: string }[] {
+    const b = this.s.battle;
+    if (!b) return [];
+    const attacker = seat === b.attacker;
+    const grid = this.formationGrid(seat);
+    if (!grid.some(col => col.some(id => this.entity(id)))) return [];
+    const out: { col: EntityId[] | null; end?: 'left' | 'right'; label: string }[] = [];
+    // Only the ATTACKING grid can widen. A blocking column is keyed to an
+    // attacking column (R72), so a new one has no index to exist at.
+    if (attacker) out.push({ col: null, end: 'left', label: 'a new column on the left' });
+    grid.forEach((col, i) => {
+      const alive = col.filter(id => this.entity(id));
+      if (alive.length === 1) {
+        out.push({ col, label: `column ${i + 1}, behind ${this.entity(alive[0]!)?.card ?? '?'}` });
+      } else if (alive.length === 0) {
+        out.push({ col, label: `column ${i + 1} (an empty slot in the line)` });
+      }
+    });
+    if (attacker) out.push({ col: null, end: 'right', label: 'a new column on the right' });
+    return out;
+  }
+
+  /**
+   * R75 — ADJACENCY, written down once. *"If a unit references its own adjacent
+   * slots (which only exist if it's in a formation) it's referring to its sides
+   * and above/below. Nothing diagonal."* (Bena, 2026-08-21.)
+   *
+   * So, relative to a unit at grid position (column ci, row ri):
+   *  · (ci - 1, ri) — the neighbouring column, SAME ROW
+   *  · (ci + 1, ri) — likewise on the other side
+   *  · (ci, 1 - ri) — the other slot in its OWN column (above / below)
+   * and nothing else. The other row of a neighbouring column is diagonal and
+   * is NOT adjacent. `E.adjacentInFormation` is the same definition read for
+   * units rather than for slots.
+   *
+   * This returns the EMPTY ones — the fillable positions — and two readings are
+   * baked in, both of which fall out of the parenthetical "which only exist if
+   * it's in a formation":
+   *
+   *  1. **Past the edge of the line is not a slot.** A unit in the leftmost
+   *     column has no left-adjacent slot; it does not have an implicit one that
+   *     a new column could be opened at. (Contrast `formationSlots`, where
+   *     opening a column at an end is a listed placement — that is a different
+   *     rule, about JOINING a formation, and it is a choice rather than a
+   *     position derived from a unit.)
+   *  2. **The front row fills first**, always: `removeFromFormation` promotes
+   *     the back row, `repairFormation` splices dead ids out, and every
+   *     placement appends. A column is therefore `[]`, `[front]` or
+   *     `[front, back]` and never `[empty, back]`. A slot is fillable only when
+   *     the column's next free row IS that row (`col.length === row`), which
+   *     makes the back slot of a column whose front is empty unreachable rather
+   *     than a case to handle: a unit put there would slide to the front, and
+   *     the front of a neighbouring column is diagonal.
+   */
+  adjacentSlots(id: EntityId): { col: EntityId[]; row: number; label: string }[] {
+    const u = this.entity(id);
+    if (!u || !this.s.battle) return [];
+    const grid = this.formationGrid(u.controller);
+    let ci = -1, ri = -1;
+    for (let i = 0; i < grid.length; i++) {
+      const r = grid[i]!.indexOf(id);
+      if (r !== -1) { ci = i; ri = r; break; }
+    }
+    if (ci === -1) return [];
+    const out: { col: EntityId[]; row: number; label: string }[] = [];
+    const take = (c: number, r: number, label: string): void => {
+      const col = grid[c];
+      if (!col) return;                    // past the edge of the line: not a slot at all
+      if (col.length !== r) return;        // taken, or unreachable (the front fills first)
+      out.push({ col, row: r, label });
+    };
+    take(ci - 1, ri, `column ${ci}, ${ri === 0 ? 'front' : 'back'} row`);
+    take(ci, 1 - ri, `column ${ci + 1}, behind ${u.card}`);
+    take(ci + 1, ri, `column ${ci + 2}, ${ri === 0 ? 'front' : 'back'} row`);
+    return out;
+  }
+
+  /**
+   * R75 — put `u` into `ctx.controller`'s formation, letting them choose where.
+   * Auto-picked when exactly one placement is legal; a logged no-op when none
+   * is. `optional` adds a "stay out of formation" answer (Tiderunner Initiate,
+   * whose printed text is "you MAY play me into an open spot").
+   *
+   * Every branch logs. An effect that resolves into silence is a bug the
+   * conformance suite fails on, and "there was nowhere to put it" is exactly
+   * the kind of thing a player needs told.
+   *
+   * Returns true when the unit actually joined.
+   */
+  placeInFormation(u: Entity, ctx: Pick<EffectCtx, 'controller' | 'choose'>,
+    opts: { key?: string; source?: string; optional?: boolean } = {}): boolean {
+    const b = this.s.battle;
+    const src = opts.source ?? u.card;
+    if (!b || u.region !== b.region) {
+      this.ev('info', `${src}: there is no formation here for ${u.card} to join.`);
+      return false;
+    }
+    const slots = this.formationSlots(ctx.controller);
+    if (!slots.length) {
+      this.ev('info',
+        `${src}: no open position in the formation — ${u.card} stays in the region, outside it.`);
+      return false;
+    }
+    const options: DecisionOption[] = slots.map((s, i) => ({ label: s.label, value: i }));
+    if (opts.optional) options.push({ label: 'stay out of formation', value: -1 });
+    const pick = options.length === 1 ? 0 : ctx.choose(opts.key ?? 'placeInFormation', {
+      kind: 'electricPath', seat: ctx.controller,
+      prompt: `${src}: where does ${u.card} join the formation?`,
+      options,
+    }) as number;
+    const slot = pick >= 0 ? slots[pick] : undefined;
+    if (!slot) {
+      this.ev('info', `${src}: ${u.card} stays out of the formation.`);
+      return false;
+    }
+    if (slot.col) {
+      slot.col.push(u.id);
     } else {
-      this.player(u.owner).hand.push(u.card);
-      this.ev('despawned',
-        `${u.card} is recalled to ${this.pname(u.owner)}'s hand${mods.length ? ` (its ${mods.length} mod(s) → bin)` : ''}.`,
-        { unit: u.id, card: u.card, seat: u.controller, region: u.region, counters: u.counters });
+      // R72/R75: opening a column on the LEFT shifts every existing column
+      // right, so every block key and every column-scoped counter shifts with
+      // it. One atomic re-key, same owner as the collapse.
+      const at = slot.end === 'left' ? 0 : b.columns.length;
+      const cols = b.columns.slice();
+      cols.splice(at, 0, [u.id]);
+      this.rekeyColumns(oldCi => (oldCi >= at ? oldCi + 1 : oldCi));
+      b.columns = cols;
     }
-    const ev = this.events[this.events.length - 1]!;
-    this.fireEvent('despawned', ev, u);
-    for (const m of trashedMods) this.noteTrashed(m.owner, m.card, 'play');
+    this.ev('info', `${src}: ${u.card} joins the formation (${slot.label}).`,
+      { unit: u.id, region: b.region, seat: ctx.controller });
+    return true;
+  }
+
+  /**
+   * Recall: the unit leaves play WITHOUT dying (Manual: to its owner's hand;
+   * mods go to their owners' bins).
+   *
+   * `opts.to` redirects the destination HAND — "put target unit into YOUR
+   * hand" (Capture) is a recall to the caster's hand rather than the owner's,
+   * and that is the only thing that card changes. `opts.verb` is the log's
+   * wording for the same ("put into"). Both exist so there is exactly one
+   * leave-play-to-a-hand routine; the card sets used to carry a line-for-line
+   * copy of this method (`putIntoHand`), and it drifted — it never stamped
+   * R70's `to`, so Capture triggered no "a card entered a hand" watcher at all.
+   *
+   * R69, extended to the HAND on 2026-08-22: a recalled TOKEN really does
+   * enter the hand — *"Technically it does enter your hand and then gets erased
+   * immediately. So it would trigger any 'enters hand' stuff."* (Caleb
+   * 2025-06-15; and 2025-04-24, asked whether recalling a spell token triggers
+   * Rider of the Tides: *"Oh dang yeah it should also trigger it."*) So the
+   * event says `to: 'hand'` for a token too, and the SAME state-based sweep
+   * `destroy()` uses takes it back out — after the event window, before
+   * anything queued in it resolves.
+   *
+   * R40: the recalled card is never trashed — a hand is not a bin. Its mods do
+   * enter a bin, from play, so a nontoken mod IS trashed by its owner — in
+   * afterDespawn(), after the despawn event, for log order.
+   */
+  recall(u: Entity, opts: { to?: Seat; verb?: string } = {}): void {
+    const mods = this.leavePlay(u);
+    if (!mods) return;
+    const seat = opts.to ?? u.owner;
+    const verb = opts.verb ?? 'recalled to';
+    // R70: facts ride the event (see leftPlayFacts). `to` is where the card
+    // went, which is what "when a unit is recalled to a HAND" wants to read —
+    // it used to be recovered by matching the word "hand" in the log message.
+    const evData = { ...this.leftPlayFacts(u), to: 'hand', hand: seat };
+    this.player(seat).hand.push(u.card);
+    this.ev('despawned',
+      `${u.card} is ${verb} ${this.pname(seat)}'s hand`
+      + (mods.length ? ` (its ${mods.length} mod(s) → bin)` : '')
+      + (u.token ? ', then erased (token).' : '.'),
+      evData);
+    this.afterDespawn(u, mods);
+    // R69's sweep, on the hand this time
+    if (u.token) this.eraseFromZone(seat, u.card, 'hand', `${u.card} is erased from the hand — it is a token.`);
   }
 
   /** Ambush resolution (Manual p.40): recall the target ally, spawn the
@@ -1818,7 +2296,7 @@ export class E {
     }
     if (spec.what === 'stackSpell' || spec.what === 'stackEffect') {
       for (const it of this.s.stack) {
-        if (it.id === excludeStackId || it.negated) continue;
+        if (it.id === excludeStackId) continue;   // R68: a negated item is not here to skip
         // an ambush is a played card's effect on the stack — negatable (R22)
         const spellish = it.kind === 'spell' || it.kind === 'spellUnit'
           || it.kind === 'spellToken' || it.kind === 'ambush';
@@ -1929,15 +2407,10 @@ export class E {
    * silenced by R62 exactly as an ability is. */
   mustBeTargetedIn(region: number): Set<EntityId> {
     const out = new Set<EntityId>();
-    for (const holder of Object.values(this.s.entities)) {
-      if (!this.card(holder.card).mustBeTargeted) continue;
-      let anchor: Entity | undefined;
-      if (holder.kind === 'unit') anchor = holder;
-      else if (holder.kind === 'mod' && holder.appliedAs === 'augment' && holder.modOf !== undefined) {
-        anchor = this.entity(holder.modOf);
-      }
-      if (!anchor || anchor.absent || anchor.region !== region) continue;
-      if (anchor.suppressed?.abilities) continue;             // R62, as staticsFor
+    for (const { anchor } of this.anchored((h, a) =>
+      !!this.card(h.card).mustBeTargeted
+      && a.region === region
+      && !a.suppressed?.abilities)) {                          // R62, as staticsFor (shallow)
       out.add(anchor.id);
     }
     return out;
@@ -2001,7 +2474,9 @@ export class E {
     // the entry may have been played, grafted or recalled out of the cache
     // between cast and resolution — then it is simply gone (R5 fizzle)
     if ('cached' in t) return this.cacheIndexOf(t.cached.seat, t.cached.uid) !== -1;
-    return this.s.stack.some(i => i.id === t.stack && !i.negated);
+    // R68: a stack target is legal exactly while the item is still ON the
+    // stack — negation removes it, so "is it there" is the whole question.
+    return this.s.stack.some(i => i.id === t.stack);
   }
   resolveTargetRef(t: TargetRef): ResolvedTarget | null {
     if (!this.targetStillLegal(t)) return null;
@@ -2028,11 +2503,42 @@ export class E {
     if (this.s.priority !== null) this.s.priority = other(item.controller);
   }
 
+  /**
+   * R68: pull an item OFF the stack and hand it back — the caller decides
+   * where its card goes (bin, hand, nowhere).
+   *
+   * The stack used to have exactly one exit, `resolveTop()`, so `negate()`
+   * could not remove anything: it could only leave a note ('negated') for that
+   * one exit to read whenever it eventually popped the item. Three cards
+   * (Temporal Rift, Dream Lapse, Cosmic Reversal) hand-rolled this splice
+   * because it did not exist. It exists now, and it is the second exit.
+   *
+   * The item is returned DETACHED: nothing else in state refers to it, so a
+   * caller may read `card`/`controller`/`mods` off it freely.
+   */
+  removeFromStack(stackId: number): StackItem | undefined {
+    const i = this.s.stack.findIndex(it => it.id === stackId);
+    return i === -1 ? undefined : this.s.stack.splice(i, 1)[0]!;
+  }
+
+  /**
+   * R68: negating REMOVES the item from the stack, the instant the negation
+   * resolves, and its card reaches the bin then — it does not sit there greyed
+   * out waiting for a priority round it can no longer use.
+   *
+   * The kinds that carry a card of their own are binned; a triggered or
+   * activated ability has no card (its `card` names the SOURCE, which is still
+   * in play) and is simply gone; a spell token is erased, never binned (R40).
+   * R40 again: this comes from the STACK, so it is not a trash.
+   */
   negate(stackId: number): void {
-    const it = this.s.stack.find(i => i.id === stackId);
-    if (it && !it.negated) {
-      it.negated = true;
-      this.ev('negated', `${it.label} is negated.`, { id: it.id });
+    const it = this.removeFromStack(stackId);
+    if (!it) return;
+    const binned = it.card !== undefined && NEGATE_BINS.has(it.kind);
+    this.ev('negated', `${it.label} is negated${binned ? ' → bin' : ''}.`, { id: it.id });
+    if (binned) {
+      this.toBin(it.controller, it.card!, 'stack');
+      this.binItemMods(it);   // {Modular}: its mods leave with it
     }
   }
 
@@ -2095,7 +2601,10 @@ export class E {
     const options: DecisionOption[] = [];
     for (const from of ['hand', 'bin'] as const) {
       this.player(seat)[from].forEach((name, index) => {
-        if (!isGraftable(name) || !this.canPayCard(seat, name)) return;
+        // purpose 'mod': attaching a {Modular} mod is applying, not playing
+        // (R37), so "spells cost more to PLAY" modifiers do not tax it — the
+        // same exemption every other mod path (augment/graft) already gets
+        if (!isGraftable(name) || !this.canPayCard(seat, name, { purpose: 'mod' })) return;
         options.push({ label: `${name} (${from})`, value: { modFrom: from, index }, card: name });
       });
     }
@@ -2123,9 +2632,9 @@ export class E {
     const zone = this.player(seat)[modFrom];
     const name = zone[index];
     this.need(name !== undefined && isGraftable(name), 'not a mod that can be applied');
-    this.need(this.canPayCard(seat, name), 'cannot pay for that mod');
+    this.need(this.canPayCard(seat, name, { purpose: 'mod' }), 'cannot pay for that mod');
     zone.splice(index, 1);
-    this.payCard(seat, name);
+    this.payCard(seat, name, { purpose: 'mod' });
     (item.mods ??= []).push({ card: name, from: modFrom });
     item.parts.push({ effectKey: `graft:${name}`, targets: [] });
     for (const part of item.parts) part.mods = item.mods.map(m => m.card);
@@ -2178,7 +2687,14 @@ export class E {
     const want = costAmount(cost) ?? costXMin(cost);
     switch (cost.kind) {
       case 'sacrificeUnit': return this.unitsOf(seat, region).length > 0;
-      case 'sacrificeUnits': return this.unitsOf(seat, region).length >= want;
+      // R73: "[Sacrifice me]" asks about the SOURCE, deliberately NOT about
+      // `unitsOf(seat, region).length >= want`. A dead source has to make the
+      // cost unpayable — that is what makes R5 skip the part, which is the
+      // right answer for a trigger whose source died between firing and
+      // settling. Any other live unit standing there must not stand in for it.
+      case 'sacrificeUnits': return cost.from === 'self'
+        ? this.selfSacrificeable(seat, sourceId)
+        : this.unitsOf(seat, region).length >= want;
       // a variable life cost is paid a point at a time (R49 re-asked each
       // time), so its floor is "can you survive paying the first one"
       case 'payLife': return this.canPayLife(seat, cost.n === 'X' ? Math.max(1, want) : want);
@@ -2199,9 +2715,24 @@ export class E {
     return this.unitsOf(seat, region).reduce((n, u) => n + Math.max(0, u.counters), 0);
   }
 
-  /** R64: a cost paid one unit at a time — the ones whose collector loops. */
+  /** R73: the source unit of a "[Sacrifice me]" cost, or undefined when it is
+   * not there to be sacrificed (already dead, absent, or no longer this
+   * seat's). The single reading `canPayCastCost` and `chargeCastCost` share. */
+  private selfSacrifice(seat: Seat, sourceId?: EntityId): Entity | undefined {
+    const u = sourceId !== undefined ? this.entity(sourceId) : undefined;
+    return u && u.kind === 'unit' && !u.absent && u.controller === seat ? u : undefined;
+  }
+  private selfSacrificeable(seat: Seat, sourceId?: EntityId): boolean {
+    return this.selfSacrifice(seat, sourceId) !== undefined;
+  }
+
+  /** R64: a cost paid one unit at a time — the ones whose collector loops.
+   * R73: "[Sacrifice me]" is NOT one of them — it carries no choice, so it
+   * falls through to be charged outright, with no decision and no suspension.
+   * That is the whole reason it is unrespondable. */
   private costIsIterated(cost: CastCost): boolean {
-    return cost.kind === 'sacrificeUnit' || cost.kind === 'sacrificeUnits'
+    return cost.kind === 'sacrificeUnit'
+      || (cost.kind === 'sacrificeUnits' && cost.from !== 'self')
       || cost.kind === 'discardCard' || cost.kind === 'removeCounters'
       || cost.kind === 'eraseBin' || costAmount(cost) === null;
   }
@@ -2304,7 +2835,17 @@ export class E {
         // targets collector puts "No more targets" — the stop is never the
         // thing your hand lands on first.
         if (total === null && done >= costXMin(cost)) {
-          options.push({ label: `That's enough — X = ${done}`, value: { doneCost: true } });
+          // R74: stopping at X = 0 is legal, and on some cards it is also a
+          // guaranteed no-op. Say so HERE, on the option itself, which is the
+          // only moment the payer can still change their mind — every one of
+          // these cards already says it at resolution, by which point the
+          // spell has been cast, answered and fizzled.
+          const warn = done === 0 ? def.xZeroWarning : undefined;
+          options.push({
+            label: `That's enough — X = ${done}` + (warn ? ` ⚠ ${warn}` : ''),
+            value: { doneCost: true },
+            ...(warn ? { warning: warn } : {}),
+          });
         }
         if (optional && !done) options.push({ label: "Don't pay — skip this effect", value: { declineCost: true } });
         this.suspend(
@@ -2336,6 +2877,11 @@ export class E {
     paid.x = this.costPaidSoFar(part, cost);
     paid.xDone = true;
     this.ev('info', `${item.label}: X = ${paid.x} (${this.castCostLabel(cost)}).`);
+    // R74: the other way a variable cost lands on zero is that there was
+    // nothing left to pay with — no decision is raised at all, so the warning
+    // has nowhere to hang but the log. It is still worth saying.
+    const warn = paid.x === 0 ? effectByKey(part.effectKey).xZeroWarning : undefined;
+    if (warn) this.ev('info', `⚠ ${item.label}: ${warn}`);
   }
 
   /** human-readable form of a bracketed cost, for prompts and the log */
@@ -2345,7 +2891,8 @@ export class E {
       n === 1 ? one : plural(n === null ? 'X' : n);
     switch (cost.kind) {
       case 'sacrificeUnit': return 'sacrifice a unit';
-      case 'sacrificeUnits': return many('sacrifice a unit', k => `sacrifice ${k} units`);
+      case 'sacrificeUnits': return cost.from === 'self' ? 'sacrifice me'
+        : many('sacrifice a unit', k => `sacrifice ${k} units`);
       case 'payLife': return `pay ${n === null ? 'X' : n} life`;
       case 'discardCard': return many('discard a card', k => `discard ${k} cards`);
       case 'gainDebt': return `gain ${cost.n} debt`;
@@ -2358,13 +2905,15 @@ export class E {
    * which then present a single "pay it" option on the optional-rider path) */
   private castCostOptions(item: StackItem, part: EffectPart, cost: CastCost): DecisionOption[] {
     const seat = item.controller;
-    if (cost.kind === 'sacrificeUnit' || cost.kind === 'sacrificeUnits') {
-      const spent = new Set<EntityId>();
-      // a multi-unit sacrifice may not name the same unit twice, and each one
-      // is really gone by the time the next is asked for — so only the units
-      // still in play are ever offered.
+    // R73: "[Sacrifice me]" names no unit, so it offers no unit menu. It only
+    // reaches here as an optional grafted rider (pay-or-decline); the normal
+    // path charges it without asking. Falls through to the "Pay: …" default.
+    if (cost.kind === 'sacrificeUnit'
+      || (cost.kind === 'sacrificeUnits' && cost.from !== 'self')) {
+      // a multi-unit sacrifice may not name the same unit twice — but each one
+      // is really gone by the time the next is asked for, so "still in play"
+      // already guarantees it and no explicit spent-set is needed.
       return this.unitsOf(seat, item.region)
-        .filter(u => !spent.has(u.id))
         .map(u => ({ label: this.targetLabel({ unit: u.id }), value: { unit: u.id }, card: u.card }));
     }
     if (cost.kind === 'discardCard') {
@@ -2411,6 +2960,20 @@ export class E {
       paid.debt = cost.n;
       this.ev('info', `${this.pname(seat)} gains ${cost.n} debt — the cost of ${item.label}.`);
       this.gainDebt(seat, cost.n);
+    } else if (cost.kind === 'sacrificeUnits' && cost.from === 'self') {
+      // R73: "[Sacrifice me]". No choice, so no decision and no suspension —
+      // it is charged here, in the cast window, before anyone has priority.
+      // canPayCastCost already refused an absent source, so this is live.
+      const u = this.selfSacrifice(seat, item.sourceId);
+      if (!u) return;
+      // the receipt keeps the same shape as the chosen-unit path: stats
+      // snapshotted AT PAYMENT, so a resolution that wants "the defense of the
+      // sacrificed unit" reads a number, not a corpse. (Nothing reads this one
+      // yet — uniformity is the point.)
+      const [p, t] = this.effStats(u);
+      (paid.sacrificedUnits ??= []).push({ card: u.card, power: p, defense: t });
+      this.ev('info', `${this.pname(seat)} sacrifices ${u.card} — the cost of ${item.label}.`);
+      this.destroy(u, 'is sacrificed');
     }
   }
 
@@ -2737,18 +3300,15 @@ export class E {
     }
   }
 
+  /**
+   * R68: there is no `item.negated` branch here any more. A negated item is
+   * off the stack and binned before this can ever see it, so the branch was
+   * unreachable from both of resolveItem's callers — `resolveTop()` pops from
+   * a stack that no longer holds negated items, and `commitItem(…, 'resolve')`
+   * hands over an item freshly built with `negated: false` that was never on
+   * the stack for anyone to answer.
+   */
   resolveItem(item: StackItem): void {
-    if (item.negated) {
-      const to = item.kind === 'spellToken' || item.kind === 'triggered' || item.kind === 'activated'
-        ? '' : ' → bin';
-      this.ev('resolved', `${item.label} was negated${to}.`, { id: item.id });
-      if (item.card && (item.kind === 'spell' || item.kind === 'spellUnit' || item.kind === 'virus' || item.kind === 'ambush')) {
-        // R40: from the stack — negating a spell is NOT trashing it
-        this.toBin(item.controller, item.card, 'stack');
-        this.binItemMods(item);   // {Modular}: its mods leave with it
-      }
-      return;
-    }
     if (item.kind === 'unit') {
       this.spawnUnit(item.controller, item.card!, item.region, { ...(item.from ? { from: item.from } : {}) });
       return;
@@ -2798,10 +3358,11 @@ export class E {
    * R45 "cache one of these N") would otherwise have to take an EffectCtx, and
    * every one of the eleven glimpse callers would have to be edited to pass it.
    * This is the seam instead: resolveParts publishes the live choose for the
-   * duration of one `def.run`, keyed per part so two parts of one composite can
-   * never collide in the shared `answers` map, and per call so a helper invoked
-   * twice in one part asks two distinct questions. Both counters are rebuilt
-   * from scratch on a suspension replay, so the keys are deterministic.
+   * duration of one `def.run`, keyed per call so a helper invoked twice in one
+   * part asks two distinct questions. (Per-part namespacing lives in
+   * ctx.choose itself, so card-code keys and helper keys alike can never
+   * collide across parts.) Both counters are rebuilt from scratch on a
+   * suspension replay, so the keys are deterministic.
    *
    * Not part of GameState: it lives only inside a synchronous `def.run`, and a
    * suspension rolls the state back and replays the part from its start.
@@ -2839,8 +3400,14 @@ export class E {
         ...(part.mods ? { mods: part.mods } : {}),
         event: item.event ?? null,
         choose: (key, dec) => {
-          if (key in answers) return answers[key];
-          throw new PartChoice(key, { ...dec, options: dec.options });
+          // namespaced per part: card code uses fixed keys (`sac:${seat}`),
+          // and a composite can hold the SAME effect twice (a General Smof
+          // grafted onto a General Smof). Without the prefix, part 2 finds
+          // part 1's answer already in the shared map and silently reuses a
+          // pick that may be dead instead of asking again.
+          const k = `${pi}:${key}`;
+          if (k in answers) return answers[k];
+          throw new PartChoice(k, { ...dec, options: dec.options });
         },
       };
       // R48 {Afflicting}: snapshot the units in play, so the kills this part
@@ -2853,7 +3420,9 @@ export class E {
       const evLen = this.events.length;
       const outerChoose = this.partChoose;
       let helperSeq = 0;
-      this.partChoose = (tag, dec) => ctx.choose(`${tag}#${pi}#${helperSeq++}`, dec);
+      // ctx.choose already namespaces by part index; the seq keeps a helper
+      // invoked twice in one part asking two distinct questions
+      this.partChoose = (tag, dec) => ctx.choose(`${tag}#${helperSeq++}`, dec);
       try {
         def.run(this, ctx);
       } catch (sig) {
@@ -2899,9 +3468,9 @@ export class E {
   }
 
   // ── mods ────────────────────────────────────────────────────────────
-  /** opts.token (R47): the mod IS a token — the Wraith augmented onto a unit is
-   * the same token card, applied rather than spawned. A token mod is erased
-   * when it leaves play instead of being binned (a token never reaches a bin,
+  /** opts.token (R71): the mod IS a token — a Wraith augmented onto a unit is
+   * the token card, applied rather than spawned. A token mod is erased
+   * when it leaves play instead of being binned (a mod has no card to bin,
    * R40), which recall()/cacheUnit() honour. */
   attachMod(host: Entity, name: CardName, byPlayer: Seat, appliedAs: 'augment' | 'graft',
     position?: number, opts: { token?: boolean } = {}): Entity {
@@ -3012,6 +3581,46 @@ export class E {
    *
    * Cost: one Map.get() per event when nothing in the pool listens from a zone.
    */
+  /**
+   * A DETACHED stand-in entity for a trigger whose card is not in play (R40
+   * trash-self triggers, R51 zone triggers). Never put into s.entities — it
+   * cannot be targeted, radiates no statics and turns up in no other scan. It
+   * exists only to give `when` and the bounded-budget bookkeeping (R9)
+   * something to read, and is thrown away with the call. Its id -1 is not in
+   * s.entities, so `g.entity(ctx.sourceId)` correctly answers "there is no
+   * such unit".
+   */
+  private standIn(name: CardName, seat: Seat, region: number): Entity {
+    return {
+      id: -1, card: name, owner: seat, controller: seat, kind: 'unit', region,
+      damage: 0, counters: 0, tempPower: 0, tempToughness: 0, mods: [], budgets: {},
+    };
+  }
+
+  /**
+   * The collect-and-queue step every trigger dispatch shares: evaluate `when`
+   * NOW, at event time (R1); compose the parts (null = bounded and already
+   * used this turn, R9); push the pending trigger; log it. The caller supplies
+   * the log line and payload — those differ per site. `host.region` rides the
+   * queued trigger because the host may be GONE by the time it resolves (R70:
+   * every "when I die" trigger is exactly that, and a stand-in was never in
+   * s.entities to read later).
+   */
+  private queueTrigger(host: Entity, cardName: CardName, abilityIndex: number,
+    ability: TriggeredAbility, prefix: 'ability' | 'augment', ev: EngineEvent,
+    logMsg: string, logData: Record<string, unknown>): boolean {
+    if (ability.when && !ability.when(this, host, ev)) return false;
+    const parts = this.composeParts(host, abilityIndex, prefix, cardName);
+    if (!parts) return false;
+    this.s.triggerQueue.push({
+      sourceId: host.id, sourceCard: cardName, controller: host.controller,
+      abilityIndex, label: `${cardName}: ${ability.label}`, parts,
+      region: host.region, event: ev,
+    });
+    this.ev('triggered', logMsg, logData);
+    return true;
+  }
+
   private fireZoneTriggers(type: EventType, ev: EngineEvent): boolean {
     const listeners = zoneTriggersFor(type);
     if (!listeners.length) return false;
@@ -3024,20 +3633,10 @@ export class E {
         if (!present) continue;
         const ability = this.card(name).abilities?.[abilityIndex];
         if (!ability || !isTriggered(ability)) continue;
-        const region = this.actionRegion(seat);
-        const ghost: Entity = {
-          id: -1, card: name, owner: seat, controller: seat, kind: 'unit', region,
-          damage: 0, counters: 0, tempPower: 0, tempToughness: 0, mods: [], budgets: {},
-        };
-        if (ability.when && !ability.when(this, ghost, ev)) continue;
-        const parts = this.composeParts(ghost, abilityIndex, 'ability');
-        if (!parts) continue;
-        this.s.triggerQueue.push({
-          sourceId: ghost.id, sourceCard: name, controller: seat,
-          abilityIndex, label: `${name}: ${ability.label}`, parts, event: ev,
-        });
-        this.ev('triggered', `Trigger: ${name} — ${ability.label} (from ${this.pname(seat)}'s ${zone}).`, { card: name, zone });
-        queued = true;
+        const ghost = this.standIn(name, seat, this.actionRegion(seat));
+        queued = this.queueTrigger(ghost, name, abilityIndex, ability, 'ability', ev,
+          `Trigger: ${name} — ${ability.label} (from ${this.pname(seat)}'s ${zone}).`,
+          { card: name, zone }) || queued;
       }
     }
     return queued;
@@ -3052,15 +3651,8 @@ export class E {
       if (!isTriggered(ability)) return;
       if (!ability.events.includes(type)) return;
       if (ability.self && eventSource !== host.id) return;
-      if (ability.when && !ability.when(this, host, ev)) return;
-      const parts = this.composeParts(host, idx, prefix, cardName);
-      if (!parts) return;   // bounded and already used this turn
-      this.s.triggerQueue.push({
-        sourceId: host.id, sourceCard: cardName, controller: host.controller,
-        abilityIndex: idx, label: `${cardName}: ${ability.label}`, parts, event: ev,
-      });
-      this.ev('triggered', `Trigger: ${cardName} — ${ability.label}.`, { unit: host.id });
-      queued = true;
+      queued = this.queueTrigger(host, cardName, idx, ability, prefix, ev,
+        `Trigger: ${cardName} — ${ability.label}.`, { unit: host.id }) || queued;
     });
     return queued;
   }
@@ -3115,7 +3707,13 @@ export class E {
       this.s.triggerQueue.splice(this.s.triggerQueue.indexOf(next), 1);
       const item: StackItem = {
         id: this.s.nextId++, kind: 'triggered', card: next.sourceCard, label: next.label,
-        controller: next.controller, region: this.entity(next.sourceId)?.region ?? this.actionRegion(next.controller),
+        controller: next.controller,
+        // R70: the live source's CURRENT region if it is still in play (it may
+        // have moved between firing and resolving), else the region it fired
+        // in, and only then the controller's action region. That last fallback
+        // used to be the only answer for a dead source, which put every "when
+        // I die" trigger in the wrong region (R12).
+        region: this.entity(next.sourceId)?.region ?? next.region ?? this.actionRegion(next.controller),
         negated: false, parts: next.parts, sourceId: next.sourceId, event: next.event,
       };
       const then = battleMode ? 'push' : 'resolve';
@@ -3313,6 +3911,10 @@ export class E {
       if (atk.length && this.scheduled(atk, sub, pure)) {
         const atkAttrs = attrsOf(atk);
         const pow = dealtPower(atk, atkAttrs);
+        // R72: `ci` is only an identity for the length of THIS sub-step. The
+        // key is a local bucket label for the afflicting diff below and is
+        // never stored, because the formation may collapse (and every index
+        // move) before the next sub-step runs.
         const src = { dealer: b.attacker, key: `atk:${ci}`, label: colLabel(atk) };
         let toPlayer = 0;
         if (blk.length) {
@@ -3333,11 +3935,34 @@ export class E {
       // blocker side
       if (blk.length && this.scheduled(blk, sub, pure)) {
         const blkAttrs = attrsOf(blk);
-        const src = { dealer: b.defender, key: `blk:${ci}`, label: colLabel(blk) };
-        const left = assign(atk, dealtPower(blk, blkAttrs), blkAttrs, src, pure);
-        if (blkAttrs.has('Piercing') && left > 0) {
-          playerHits.push({ seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label });
-          if (blkAttrs.has('Thieving')) thievingDraw[b.defender] = (thievingDraw[b.defender] ?? 0) + 1;
+        // R72 (Bena 2026-08-21): a blocking column whose attackers are all
+        // dead "has nothing to deal damage to, so it doesn't deal damage" —
+        // and that INCLUDES Piercing. Piercing is the excess left over after
+        // an assignment (R7); with nothing to assign to there is no exchange
+        // to be the excess of, and the whole power would otherwise wash
+        // through to the attacking player.
+        //
+        // The Manual answers the other half of that ruling by itself — the
+        // blocker STAYS because after blocks are declared no column moves —
+        // so this is all that is left of it. Note the deliberate asymmetry
+        // with R13, which is the Manual's own: "the column is considered
+        // blocked even if the defending unit is removed during combat", so a
+        // Piercing ATTACKER still gets through a dead block. There the attack
+        // is still real; here it is the attack that is gone.
+        if (!atk.length) {
+          const pow = dealtPower(blk, blkAttrs);
+          if (pow > 0) {
+            this.ev('info',
+              `Column ${ci + 1} has no attackers left — its blockers have nothing to fight.`,
+              { region: b.region });
+          }
+        } else {
+          const src = { dealer: b.defender, key: `blk:${ci}`, label: colLabel(blk) };
+          const left = assign(atk, dealtPower(blk, blkAttrs), blkAttrs, src, pure);
+          if (blkAttrs.has('Piercing') && left > 0) {
+            playerHits.push({ seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label });
+            if (blkAttrs.has('Thieving')) thievingDraw[b.defender] = (thievingDraw[b.defender] ?? 0) + 1;
+          }
         }
       }
     });
@@ -3421,7 +4046,7 @@ export class E {
     this.ev('turn', `— Turn ${this.s.turn} (initiative: ${this.pname(this.initiative)}) —`, { turn: this.s.turn });
     for (const p of this.s.players) {
       for (const r of p.resources) if (r.state === 'expended') r.state = 'open';
-      p.activationsLeft = 2;
+      p.activationsLeft = ACTIVATIONS_PER_TURN;
       // draft mode: turn 1's draws were dealt with the opening hand (Manual
       // p.16), and later draws go clockwise from initiative like the packs.
       // constructed: the combined draw phase (draw 4, bottom 2) is below.

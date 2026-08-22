@@ -33,7 +33,7 @@
  * R28 (created units arrive in their controller's HOME region), R35
  * (bracketed costs and X are chosen and paid at cast), R38 (rot + the rot
  * damage replacement hook), R40 (trashing; the per-battle trash ledger; the
- * "Discard me" play mode), R47 (the Wight, a.k.a. Wraith), R48 ({Afflicting}
+ * "Discard me" play mode), R71 (the Wraith, retired name Wight), R48 ({Afflicting}
  * fires on -1/-1 counter kills — engine-side, so Umbral Decay only puts the
  * counters on).
  *
@@ -60,19 +60,29 @@
  *    WITHOUT dying (no death trigger, no Unstable erase) straight into its
  *    owner's bin, which is a trash from play (R40). Mods on it are erased,
  *    matching destroy()'s Unstable branch.
- *  - ERASING FROM A BIN (Necromantic Rebuke) takes the most recently binned
- *    cards; the printed text does not say who chooses, and the engine has no
- *    bin-card decision primitive.
+ *  - ERASING FROM A BIN. The engine HAS a bin-card decision primitive now —
+ *    CastCost 'eraseBin' offers the bin card by card (E.castCostOptions), and
+ *    TargetSpec's 'binCard'/'anyBinCard' make a bin card a real target — so
+ *    Necromantic Rebuke's own bracketed [Erase X cards from your bin] is a
+ *    chosen, cast-time cost. What is still unchosen is the RANSOM half: the
+ *    "unless its controller erases X cards from THEIR bin" payment is settled
+ *    at resolution and takes the most recently binned cards, because the
+ *    printed text does not say who chooses and there is no seam for asking a
+ *    non-caster to pick during someone else's resolution.
  *
  * ⚠ TRANSCRIPTION NOTES (report, do not silently "fix"):
  *  - Necromantic Rebuke prints "[Erase X cards from your bin] Negate up to one
  *    target effect unless its controller erases X cards from their bin" while
  *    its printed cost is a flat `dd`/[2] — nothing on the card ties X to a
- *    mana payment, so X is read as "however many cards you choose to erase"
- *    and is picked at RESOLUTION (the engine's CastCost only knows how to
- *    sacrifice a unit, so a real cast-time [cost] is not expressible). With
- *    X = 0 the ransom is trivially met and the negate never happens; the card
- *    may well be meant to be an X-cost spell.
+ *    mana payment, so X is read as "however many cards you choose to erase".
+ *    That IS a real cast-time cost now (`{ kind: 'eraseBin', n: 'X' }`, R64):
+ *    the erase happens on the way to the stack and X is fixed before anyone
+ *    can answer it. (This note used to add "the engine's CastCost only knows
+ *    how to sacrifice a unit, so a real cast-time [cost] is not expressible" —
+ *    that expired.) What remains a genuine TRANSCRIPTION question, and is why
+ *    this entry stays here: with X = 0 the ransom is trivially met and the
+ *    negate never happens, so the card may well be meant to be an X-cost
+ *    spell. Bena to rule; do not silently "fix" it.
  *  - Legion of the Depths prints "gain 2 Rot" with no subject; read as its
  *    controller gaining it (the drawback half of a free 8-mana 0/8).
  *  - Dropslime's cost line extracts as `{ cost: '', mana: 1 }` with no timing
@@ -94,31 +104,16 @@
  */
 import type { CardName, EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, manaOf, isUnitCard, unslot } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-const isEnt = (t: unknown): t is Entity => !!t && typeof t === 'object' && 'id' in t;
-
-/** a card that enters play as a UNIT — a spell unit spawns its body too, so
- * it counts for every bin search (the convention shared by batch-dark-a/c and
- * batch-hybrids-ld-a/b). */
-const isUnitCard = (name: CardName): boolean => {
-  const k = getCard(name).kind;
-  return k === 'unit' || k === 'spellUnit';
-};
 
 /** R25: "each player" = the seats present in the effect's region, in
  * initiative order so the log and replay are deterministic. */
 const presentSeats = (g: E, region: number): Seat[] => {
   const present = g.s.regions[region]!.presentSeats;
   return [g.initiative, g.nit].filter(s => present.includes(s));
-};
-
-/** printed mana of a card name; an X cost counts as 0. */
-const manaOf = (name: CardName): number => {
-  const m = getCard(name).mana;
-  return typeof m === 'number' ? m : 0;
 };
 
 /** `chooser` picks one of `pool` (auto when forced); null on an empty pool.
@@ -145,19 +140,6 @@ function discardOne(g: E, ctx: EffectCtx, seat: Seat, source: string, key: strin
     options: hand.map((name, idx) => ({ label: name, value: idx, card: name })),
   }) as number;
   g.discardFromHand(seat, i);
-}
-
-/** remove an id from every formation column / the sent-attacker list (mirror
- * of the engine's private removeFromFormation) */
-function unslot(g: E, id: EntityId): void {
-  const b = g.s.battle;
-  if (!b) return;
-  for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-    const i = col.indexOf(id);
-    if (i !== -1) col.splice(i, 1);
-  }
-  const si = b.sentAttackers.indexOf(id);
-  if (si !== -1) b.sentAttackers.splice(si, 1);
 }
 
 /**
@@ -264,11 +246,14 @@ card('Cerebrox', {
     label: 'each other unit gains -1/-1 until regroup',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
+        let n = 0;
         for (const u of g.unitsIn(ctx.region)) {
           if (self && u.id === self.id) continue;
           g.addTemp(u, -1, -1);
+          n++;
         }
+        if (!n) g.ev('info', 'Cerebrox: there is no other unit here to shrink.');
         g.checkDeaths();
       },
     },
@@ -287,9 +272,11 @@ card('Cthyrian Culler', {
     label: 'each opponent loses 1 life',
     effect: {
       run: (g, ctx) => {
+        let hit = 0;
         for (const s of presentSeats(g, ctx.region)) {
-          if (s !== ctx.controller) g.loseLife(s, 1, 'Cthyrian Culler');
+          if (s !== ctx.controller) { g.loseLife(s, 1, 'Cthyrian Culler'); hit++; }
         }
+        if (!hit) g.ev('info', 'Cthyrian Culler: no opponent is present here — nobody loses life.');
       },
     },
   }],
@@ -310,6 +297,7 @@ card('Cthyrian Culler', {
           }) as number;
           picks.push([s, i]);
         }
+        if (!picks.length) g.ev('info', 'Cthyrian Culler: every player here is empty-handed — nobody discards.');
         for (const [s, i] of picks) g.discardFromHand(s, i);   // one each: indices stay valid
       },
     },
@@ -405,10 +393,13 @@ card('Grim Bargain', {
 
 // "[Augment] When I attack, you may exchange me for target unit in your bin
 // with cost 3 or less." — d/1 1/1 Occult Hooba Unit. Text-box [Augment]: live
-// when played normally, donated on augment ("me" = the host). The bin is not a
-// targetable zone, so the pick is a resolution-time ctx.choose over the
-// eligible unit cards in the controller's bin (⚠ slightly stronger than
-// printed: it cannot be responded to). The exchange keeps the formation slot,
+// when played normally, donated on augment ("me" = the host). R64/R67: the bin
+// card is a DECLARED target ('binCard' with a cost restriction), chosen as the
+// trigger goes on the stack — see the spec below. (The line that used to sit
+// here, "the bin is not a targetable zone, so the pick is a resolution-time
+// ctx.choose … slightly stronger than printed", expired with R64 and was
+// contradicted by the code thirty lines under it.) The exchange keeps the
+// formation slot,
 // exactly like an Ambush swap, but sends the outgoing unit to its owner's BIN
 // — from play, so it is trashed (R40) — without dying (⚠ header).
 function exchangeInPlace(g: E, self: Entity, name: CardName, controller: Seat): void {
@@ -450,7 +441,7 @@ card('Hooba-Mon', {
           && isUnitCard(t.binCard.card) && manaOf(t.binCard.card) <= 3,
       },
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
+        const self = selfOf(g, ctx);
         if (!self) return;
         const t = ctx.targets[0];
         if (!t || !('binCard' in t) || t.binCard.index === -1) {
@@ -474,7 +465,7 @@ card('Hooba-Mon', {
 // 2 Rot." — ddd/8 0/8 Polyform Unit. Text-box [Augment]: live when played
 // normally (so the spawn half fires on its own arrival), donated on augment
 // ("I" = the host, which has already spawned — the fight/die halves still
-// fire). R47: "create a Wraith" is E.createWraith, and Wraith/Wight are one
+// fire). R71: "create a Wraith" is E.createWraith, and Wraith/Wight are one
 // token. R28: created units arrive in their controller's HOME region, even
 // when the trigger fires mid-battle. ⚠ "gain 2 Rot" prints no subject — read
 // as the controller (the drawback half of a free 8-mana body).
@@ -483,6 +474,7 @@ card('Legion of the Depths', {
     type: 'triggered', events: ['spawned', 'attacked', 'blocked', 'died'], self: true,
     label: 'create two Wraiths and gain 2 rot',
     effect: {
+      creates: ['Wraith'],
       run: (g, ctx) => {
         const home = g.homeRegion(ctx.controller);   // R28
         g.createWraith(ctx.controller, home);
@@ -531,12 +523,22 @@ card('Necromantic Rebuke', {
     // there. It used to be a resolution-time "how many?", which meant the
     // opponent decided whether to answer a Rebuke whose ransom nobody knew yet.
     castCost: { kind: 'eraseBin', n: 'X' },
+    // R74 (Bena, 2026-08-22, from the physical card — the printed line is
+    // exactly as encoded, so nothing about the MECHANICS changes): at X = 0
+    // the ransom is "erase 0 cards", which the controller has already met by
+    // doing nothing, so the negate can never happen and the cast is a
+    // guaranteed no-op. Legal, and still offered — just said out loud at the
+    // one moment the caster can still change their mind.
+    xZeroWarning: 'X = 0 negates nothing — the "unless" is met by erasing 0 cards',
     targets: { what: 'stackEffect', min: 0, prompt: 'Necromantic Rebuke: negate up to one target effect' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       const item = t && 'stack' in (t as object)
         ? g.s.stack.find(i => i.id === (t as { stack: number }).stack) : undefined;
-      if (!item || item.negated) return;
+      if (!item) {
+        g.ev('info', 'Necromantic Rebuke: no effect is targeted (up to one) — nothing is negated.');
+        return;
+      }
       const x = ctx.x ?? 0;
       const them = item.controller;
       // ⚠ nothing was erased: the "unless" is trivially met and it survives
@@ -579,10 +581,11 @@ card('Palewing', {
 // one of their units." — dd/1 {Battle} Blight Spell. Symmetrical, so every
 // present player (R25) makes their own two choices, in initiative order, and
 // all of them are gathered before anything commits (R6 plan-then-commit).
-// R47: "Augment a Wraith on a unit" is E.augmentWraith — the same token as
+// R71: "Augment a Wraith on a unit" is E.augmentWraith — the same token as
 // "create a Wraith", applied rather than spawned. A player with no units in
 // the region simply skips that clause.
 const plagueRitual: EffectDef = {
+  creates: ['Wraith'],
   run: (g, ctx) => {
     const plan: { seat: Seat; discard: number | null; host: EntityId | null }[] = [];
     for (const s of presentSeats(g, ctx.region)) {
@@ -622,12 +625,12 @@ card('Rotbeast', {
     label: 'move all my other Augments onto one or more enemies',
     effect: {
       run: (g, ctx) => {
-        const self = ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
-        if (!self) return;
+        const self = selfOf(g, ctx);
+        if (!self) { g.ev('info', 'Rotbeast: the carrier is gone — no augments move.'); return; }
         const movable = self.mods
           .map(id => g.entity(id))
           .filter((m): m is Entity => !!m && m.appliedAs === 'augment' && m.card !== 'Rotbeast');
-        if (!movable.length) return;
+        if (!movable.length) { g.ev('info', 'Rotbeast: I carry no other augment to move.'); return; }
         const enemies = g.unitsIn(ctx.region).filter(u => u.controller !== self.controller);
         if (!enemies.length) { g.ev('info', 'Rotbeast: no enemy to move my augments onto.'); return; }
         const picks: [EntityId, EntityId][] = [];
@@ -668,10 +671,12 @@ card('Sarcophage', {
     effect: {
       run: (g, ctx) => {
         const victim = ctx.event?.data?.['seat'] as Seat | undefined;
-        if (victim === undefined) return;
+        if (victim === undefined) { g.ev('info', 'Sarcophage: no damaged player on the event — no counters removed.'); return; }
+        let stripped = 0;
         for (const u of unitsThatHit(g, victim)) {
-          if (u.counters !== 0) g.addCounters(u, -u.counters);
+          if (u.counters !== 0) { g.addCounters(u, -u.counters); stripped++; }
         }
+        if (!stripped) g.ev('info', 'Sarcophage: none of the units that connected carries a counter.');
       },
     },
   }],

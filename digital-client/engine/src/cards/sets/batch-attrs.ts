@@ -7,6 +7,7 @@
  * Owned by one card-scripting agent; see sets/index.ts for ordering rules.
  */
 import { card, type EffectDef } from '../dsl.ts';
+import { isEnt } from './helpers.ts';
 
 // ── vanilla [Augment] attribute units ────────────────────────────────
 // Type-line [Augment] grants the attribute when they augment a host; the
@@ -36,7 +37,7 @@ card('Poison', {
     targets: { what: 'unit', prompt: 'Poison: put X -1/-1 counters on target unit' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (t && 'id' in (t as object)) g.addCounters(t as never, -(ctx.x ?? 0));
+      if (isEnt(t)) g.addCounters(t, -(ctx.x ?? 0));
     },
   },
 });
@@ -47,7 +48,7 @@ card('Crystal', {
     targets: { what: 'unit', prompt: 'Crystal: put X +1/+1 counters on target unit' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (t && 'id' in (t as object)) g.addCounters(t as never, ctx.x ?? 0);
+      if (isEnt(t)) g.addCounters(t, ctx.x ?? 0);
     },
   },
 });
@@ -56,6 +57,7 @@ card('Crystal', {
 
 // "Arcane Blight Spell — [Switch1] Create three Poison 1."
 const threePoisons: EffectDef = {
+  creates: ['Poison'],
   run: (g, ctx) => { for (let i = 0; i < 3; i++) g.createSpellToken(ctx.controller, 'Poison', 1, ctx.region); },
 };
 card('Biotoxicity', {
@@ -65,6 +67,7 @@ card('Biotoxicity', {
 
 // "Crystal Rock Unit — When I spawn or die, [Switch] Create a Crystal 1."
 const createCrystal1: EffectDef = {
+  creates: ['Crystal'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Crystal', 1, ctx.region); },
 };
 card('Geode', {
@@ -86,7 +89,7 @@ card('Accumulated Nucleation', {
     targets: { what: 'unit', prompt: 'Accumulated Nucleation: +1/+1 counter per your earth affinity' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (t && 'id' in (t as object)) g.addCounters(t as never, g.affinity(ctx.controller, 'earth'));
+      if (isEnt(t)) g.addCounters(t, g.affinity(ctx.controller, 'earth'));
     },
   },
 });
