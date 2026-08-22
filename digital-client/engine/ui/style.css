@@ -118,8 +118,10 @@ button:disabled { opacity: .4; cursor: default; }
    five seconds, so the walk across the board to the panel's scrollbar cannot
    lose it on the way. The badge is STICKY at the bottom because the panel
    opens at the bottom — put it at the top and the one thing explaining why
-   hovering stopped working would be the one thing scrolled out of sight. */
-.preview.pinned { border-color: var(--accent); }
+   hovering stopped working would be the one thing scrolled out of sight.
+   The badge is the WHOLE tell: an accent border round the panel was tried
+   (2026-08-22) and read as noise — the rail is already a stack of bordered
+   boxes, so one more outline says nothing the badge does not say better. */
 .preview .pinbadge { position: sticky; bottom: -8px; z-index: 1;
   margin: 6px -8px -8px; padding: 3px 8px; border-radius: 0 0 5px 5px;
   background: var(--accent); color: var(--bg); font-size: 11px; }

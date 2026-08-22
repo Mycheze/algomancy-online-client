@@ -649,7 +649,13 @@ const zoneLabel = (z: ModZone): string => (z === 'bin' ? 'the bin' : z === 'cach
  * originating action (structuredClone; capped, chains are short) */
 let snaps: { state: GameState; logLen: number; actionsLen: number }[] = [];
 
+/** Every engine action, hotseat or network, funnels through act(). The focus
+ * pin reads this to tell a MOVE from a LOOK: a click that reaches act() was
+ * playing the game, not reading a card. */
+let actCount = 0;
+
 function act(a: Action): void {
+  actCount++;
   // you are demonstrably at the keyboard — stop counting down to the thump.
   // The next obligation to ARRIVE re-arms it (soundPass).
   disarmIdle();
@@ -3428,7 +3434,7 @@ function previewEntityHtml(id: EntityId): string {
  *    the name and the cost you already read off the board. Opening at the top
  *    meant a scroll for every modded unit, and the scroll is the expensive
  *    part, because:
- * 2. A CLICK PINS IT for PIN_MS. Reaching the panel to scroll it means
+ * 2. A CLICK THAT DID NOTHING ELSE PINS IT for PIN_MS. Reaching the panel to scroll it means
  *    dragging the cursor across the board, and every card on the way steals
  *    the viewer — so you arrive at the scrollbar reading the wrong card and
  *    have to thread the path again. A click says "this one", and for five
@@ -3559,15 +3565,49 @@ function pinFocus(sub: FocusSubject, key: string): void {
   paintFocus(sub, true);
 }
 
-// A click on a card pins the viewer to it. Capture phase, because the same
-// click is usually a game action, and the pin has to be set before the render
-// it triggers — renderNow reads it to repaint the rail.
+/** The parts of the UI a click is allowed to change. Deliberately a LIST and
+ * not `JSON.stringify(ui)`: the autopass / yield / cancel bookkeeping fields
+ * are rewritten by render() itself, and handleAction always renders, so
+ * including them would make every click look like it had done something. */
+const CLICK_STATE_KEYS = ['carrying', 'columns', 'send', 'spellTokens', 'modding', 'menu',
+  'orderPicked', 'draftPack', 'bottomPick', 'confirmDone', 'confirmPass', 'confirmDeploy',
+  'confirmAct'] as const;
+
+/** everything a click may move, as one string */
+function clickSig(): string {
+  return JSON.stringify([actCount, uiError, binView, cacheView, CLICK_STATE_KEYS.map(k => ui[k])]);
+}
+
+/* A click on a card pins the viewer to it — but ONLY when the click had
+ * nothing else to do.
+ *
+ * Playtest (2026-08-22): "clicking CAN'T count when you're supposed to click
+ * cards." Half the clicks in this game are MOVES — drafting, recycling,
+ * playing, answering a decision, building a line — and hanging a five-second
+ * hover freeze off those puts it on the busiest part of the turn, where the
+ * card you clicked is not even the one you want to read.
+ *
+ * The test is empirical rather than a hand-kept list of safe places to click,
+ * which would drift from handleAction the first time either changed: take a
+ * signature of everything a click can move, let the normal handlers run, and
+ * pin only if nothing moved. That is exactly the set the report describes —
+ * a unit on the field with no legal click, an opponent's unit, a hand card you
+ * cannot cast yet — plus the ones it did not think to mention: a card name in
+ * the log, a mod badge, a stack thumbnail, a revealed card.
+ *
+ * Scheduled rather than immediate because the answer is only known AFTER the
+ * other handlers and the render they trigger; pinFocus repaints the rail
+ * itself, so arriving late costs nothing.
+ */
 document.addEventListener('click', e => {
   const t = (e.target as HTMLElement)?.closest?.(
     '[data-prev], [data-previd], [data-prevstack]') as HTMLElement | null;
   if (!t) return;
   const sub = focusSubjectFor(t);
-  if (sub) pinFocus(sub, focusKeyOf(t));
+  if (!sub) return;
+  const key = focusKeyOf(t);
+  const before = clickSig();
+  setTimeout(() => { if (clickSig() === before) pinFocus(sub, key); }, 0);
 }, { capture: true });
 
 /* ── the long-hover text box ────────────────────────────────────────────
