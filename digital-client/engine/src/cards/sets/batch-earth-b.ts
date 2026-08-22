@@ -152,7 +152,7 @@ card('Meteor Shower', {
             g.unitsOf(seat, ctx.region), `Meteor Shower (rockfall ${i + 1}): choose one of your units`);
           if (u) picks.push(u);
         }
-        for (const u of picks) g.dealEffectDamage(ctx, u, 3);
+        g.dealEffectDamageAll(ctx, picks.map(u => ({ target: u, n: 3 })));   // R80: one rockfall, one batch
       }
     },
   },
@@ -321,7 +321,7 @@ card('Restitution', {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
         if (n <= 0) return;
         const opponents = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
-        for (const s of opponents) g.dealEffectDamage(ctx, { player: s }, n);
+        g.dealEffectDamageAll(ctx, opponents.map(s => ({ target: { player: s }, n })));   // R80
       },
     },
   }],

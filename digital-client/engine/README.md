@@ -169,6 +169,8 @@ hotseat UI doubles as the network client (`?ws=1&room=CODE&seat=0`). See
 - Combat damage split is auto-assigned lethal front-to-back; voluntary
   over-assignment (R7) has no observable effect in this pool.
 - Burst tokens cast in deterministic id order rather than player-chosen order.
+  (WHICH tokens go together is exact as of R81: same name, not merely both
+  Burst.)
 - Naming a card as a decision (The Everywhere's "During [Haste] name a card").
   Attribute/ability **suppression** was on this list and is not any more —
   it is a real layer now (R62), which took Monke, Suppression Field,

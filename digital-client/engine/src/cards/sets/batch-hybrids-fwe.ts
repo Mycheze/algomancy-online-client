@@ -353,15 +353,19 @@ card('Channel Through', {
         }
         return out;
       });
-      // commit: 2 to each ally, then its 2 distributed points
+      // commit: 2 to each ally, plus its 2 distributed points — R80, ONE
+      // batch, so a unit named by two points is dealt 2 (one trigger, not
+      // two) and "how much did this spell deal" is the whole 12
+      const hits: { target: Entity; n: number }[] = [];
       picked.forEach((ally, i) => {
         if (!g.entity(ally.id)) return;   // gone before its turn: not "damaged this way"
-        g.dealEffectDamage(ctx, ally, 2);
+        hits.push({ target: ally, n: 2 });
         for (const id of alloc[i]!) {
           const u = g.entity(id);
-          if (u) g.dealEffectDamage(ctx, u, 1);
+          if (u) hits.push({ target: u, n: 1 });
         }
       });
+      g.dealEffectDamageAll(ctx, hits);
     },
   },
 });

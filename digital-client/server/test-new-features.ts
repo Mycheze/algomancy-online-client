@@ -133,6 +133,13 @@ try {
   ok(undoMsg.view?.players?.[0]?.hand?.length === hand0, 'undo restored the hand');
   ok(a.log.some(l => /undid their last action/.test(l)), 'log notes the undo');
   ok(!a.log.some(l => /recycles/.test(l)), 'the recycled line is gone from the resynced log');
+  // Playtest VEAV: "I was able to see in the deployment recap that 'Rashi
+  // undid an action.' No need to show that to the other person, since you
+  // can't see what they undid." The note is privateTo the seat that pressed
+  // the button — never held-then-revealed, simply not theirs.
+  await b.next(m => m.t === 'update' && !!m.log);
+  ok(!b.log.some(l => /undid their last action/.test(l)),
+    "the opponent's log never mentions the undo");
 
   a.send({ t: 'undo' });
   const aErr = await a.next(m => m.t === 'error' && /nothing to undo/.test(m.msg ?? ''));

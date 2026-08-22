@@ -2172,7 +2172,9 @@ function previewStackHtml(id: number): string {
   const xRows = stackItemX(it)
     .filter(r => r.part === undefined || !shown.has(r.part))
     .map(r => `<div class="xnow">X = ${r.x} <span class="hint">— ${
-      r.kind === 'cast' ? 'cast for X' : `${esc(r.source ?? 'additional cost')}${r.receipt ? `, ${esc(r.receipt)}` : ''}`
+      r.kind === 'cast' ? 'cast for X'
+        : r.kind === 'event' ? esc(r.from ?? 'from the event that fired this')
+          : `${esc(r.source ?? 'additional cost')}${r.receipt ? `, ${esc(r.receipt)}` : ''}`
     }</span></div>`).join('');
   const targets = it.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
   const composed = it.parts.filter(p => !p.spent).length > 1;

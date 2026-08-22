@@ -114,10 +114,12 @@ units sent at block time** (Manual p.20-21), even if that set is empty (= no
 round-2 battle). (Engine 2026-07-16.)
 
 ## R16 ⚠ — Burst casting order
-Casting one Burst token casts all your Burst tokens in that region; the engine
-currently stacks them in a fixed (entity id) order instead of letting the caster
-order them. Targets are chosen per token. ⚠ Simplification — revisit if ordering
-ever matters. (Engine 2026-07-16.)
+Casting one Burst token casts all your Burst tokens **of that name** in that
+region (R81 — this used to read "all your Burst tokens", which fused a Poison
+into a Fireball group); the engine currently stacks them in a fixed (entity id)
+order instead of letting the caster order them. Targets are chosen per token.
+⚠ Simplification — revisit if ordering ever matters. (Engine 2026-07-16;
+name-grouping 2026-08-22.)
 
 ## R17 — Prismites give no affinity; active ones exchange during planning
 Prismites start the game **dormant** (Manual p.10 setup), can be expended for 1 mana
@@ -1312,6 +1314,8 @@ with `min: 0` for the printed "you may".
 *Channel Through*'s second clause ("distribute 2 damage among target opponent's
 units") declares its X allies but not the opponent: a spec cannot mix a
 variable-count slot with a fixed extra one, and in 1v1 the opponent is forced.
+(R82 revisits this — Caleb 2025-11-25 says the player IS targeted, so the
+limitation is the engine's, not the card's.)
 
 **One hazard the move creates.** A restriction runs inside `targetCandidates`,
 so a restriction that asks `targetCandidates` about ANOTHER card's spec is a
@@ -2751,3 +2755,152 @@ as if it had been augmented the ordinary way the moment it landed.
   Piercing is a combat-overflow rule in this engine and `dealEffectDamage` has
   no overflow to pierce. The attribute now reaches the effect; nothing reads it
   there yet.
+
+## R80 — ALL of one effect's damage is dealt at ONCE
+
+*(Playtest round 15, game VEAV, 2026-08-22.)*
+
+Two reports, minutes apart, and they are the same defect:
+
+> "Channel Through caused Restitution to make 2 triggers, but it should have
+> done just one trigger."
+
+> "I only made 2 units from my Channel Through, but Channel Through dealt 6
+> damage to my allies and 6 damage to my opponent's units, so I should have
+> made 12 units."
+
+The engine had no notion of **"the damage an effect dealt"** — only a pile of
+independent `dealEffectDamage(ctx, target, n)` calls, each firing its own
+`damage` event and each looking, to everything downstream, like a separate
+thing happening. Channel Through committed its distributed damage in 1-point
+increments (the card comment said so in as many words: *"the 2 distributed
+damage is committed in 1-point increments"*), so:
+
+- a unit given two of those points was **dealt damage twice**. Rashi's
+  Restitution ("whenever I am dealt damage, I deal that much damage to each
+  opponent") triggered twice for 1 instead of once for 2 — a visible,
+  game-swinging difference, because two triggers are two separate things to
+  respond to and each one is a separate hit on the face;
+- **Ember of Life** ("when one of your spell effects deals damage, create that
+  many 1/1 units") saw only the first fragment. Its own card comment recorded
+  the shape it was written against: *"one event per damaged victim; [once]
+  takes the first."* Two units instead of twelve.
+
+**The rule.** The unit of effect damage is the **batch**: one effect's
+resolution deals all of its damage at once, through `E.dealEffectDamageAll`.
+
+- hits are **coalesced per recipient** — a recipient named twice is dealt one
+  total and hears about it once;
+- every `damage` event in the batch carries **`total`**, the whole batch, for
+  the texts that ask what the EFFECT dealt rather than what one victim took;
+- **deaths are checked once**, after all of it is marked, which is what
+  "simultaneous" means for two units that kill each other.
+
+`dealEffectDamage(ctx, t, n)` is now sugar for a batch of one, so a
+single-target spell is unchanged and `total === n` there. Every reader can be
+written against the batch.
+
+**Where the line falls.** One resolution of one effect is one batch — *not* one
+spell, and not one turn. Sourced the other way round, Caleb 2025-03-20, on
+Meteor Shower making several Rockfalls: *"Each copy of Rockfall is a separate
+source, so Ember of Life triggers separately for each copy rather than
+combining them into one bigger trigger."* Meteor Shower's three rockfalls are
+three batches for the same reason.
+
+**Which cards changed.** Every effect that damages more than one recipient in
+one resolution: Channel Through, Rockfall 4 (A Fast Pile of Rocks), Meteor
+Shower, Haboob, Bellowing Boulder, Deathglow Strider, Restitution, Roving
+Quillback, Spirit of Vengeance, Infernal Grovekeeper, Boreal Wanderer, Bloated
+Manablub, Astral Tidewraith. *Fight* deliberately did not: its two halves have
+**different sources** (each unit deals its own damage), and a batch is per
+source.
+
+**Awoken Tomb reads its own share, Ember of Life reads the total**, and both
+are right: "X is the damage **I am dealt**" is `n`, "that many" after "one of
+your spell **effects** deals damage" is `total`. The event carries both.
+
+**Electric got slightly better on the way.** Overflow is planned against damage
+earlier hits *in this batch* have already assigned, rather than against a board
+that has not been written to yet.
+
+**Consequence for the stack display.** A triggered ability's X is usually
+neither the R35 mana X nor an R64 variable cost — it is the number its event
+carried, which is why "Awoken Tomb's trigger, while on the stack, doesn't say
+what X is equal to" survived R13's fix for the other two. `ui/inspect.ts`
+`stackItemX` reads `item.event.data.n` for a trigger whose **label** says its
+amount is variable ("X = the damage dealt", "that much", "that many"), and
+names the batch total in the hint when it differs. Presentation only: a label
+this misses costs one badge, never a rule.
+
+## R81 — Burst groups by NAME
+
+*(Playtest round 15, game VEAV, 2026-08-22. Supersedes half of R16.)*
+
+> "The game is trying to force me to cast my Fireball here (since it has
+> Burst), but Burst only applies to spell tokens with the same NAME. I should
+> be allowed to play Poison, let it resolve, then play Fireball since they have
+> different names."
+
+Correct, and printed: *"a player must play all burst spells they control **of
+the same type** at the same time"* (The Rules of Algomancy, spell tokens).
+`doCastSpellToken` swept `tokensOf(seat, region).filter(t => card(t).burst)` —
+**every** burst token you controlled there — so a Poison and a Fireball fused
+into one group that went on the stack together and could not be split. That is
+a real loss of play: the two do different things, and the whole point of
+resolving one before casting the other is to see what it did first.
+
+The group is `t.card === tok.card` now. R16's remaining half still stands: the
+tokens in a group stack in entity-id order rather than a caster-chosen one.
+
+Related: the caster may aim each token separately (Caleb 2025-03-22: *"spell
+tokens created via Burst can each target different things — they don't have to
+share a target"*), which the per-token target collection already did.
+
+## R82 — Two printed targets, two cast-time slots — and a test that says so
+
+*(Playtest round 15, game VEAV, 2026-08-22.)*
+
+> "Squish, on cast, only has you select 1 target unit, but it needs 2 targets
+> (a target ally and any target). **This is a recurring issue, do a full text
+> search for anything that has 2 targets** (either says the word target more
+> than once or says 'two targets') **and ensure all cards and effects that need
+> to choose targets happen ON CAST.**"
+
+R67 already settled the rule; what recurred is that it was enforced by reading
+the card that had just misbehaved. Fight (R58), then eleven cards at once in
+R67, then Necromorph (BRDM), then Squish (VEAV) — and 492 cards in the pool
+that nobody had read for this. (The MNWK report in the same series named
+"Flight", which is not a card in the pool under that name and could not be
+chased down; it is listed here only because the pattern is the point.)
+
+So the search is a test now: `test/68-target-conformance.test.ts`. A card whose
+printed text says "target" N times must declare at least N cast-time slots
+across its effects, and a card that prints "target" at all must declare one
+somewhere. Reminder text (`{i}…{/i}`) is stripped from the count — it restates
+rules rather than adding them, and Reconfigure's *"(the first target must have
+[Augment])"* is the same target the sentence already named.
+
+Every exemption is listed **with its reason**, and a third test asserts the
+list is exactly right: an exemption that stops being needed fails as loudly as
+a card that stops declaring its targets. There are four kinds of exemption —
+the word is about another effect's targeting (Gravitational Correction, Divine
+Intervention, Boon of Protection, Download, …), two separate effects with one
+target each (Stellarspore Harvester), a variable slot that cannot be followed
+by a fixed one (Channel Through), and one genuinely unimplemented card (Apex
+Prime, which still needs a copy layer).
+
+**Fixed by the sweep.** *Squish* — a two-slot spec, slot 0 an ally of the
+caster and slot 1 any other unit, exactly Fight's shape, re-checked at
+resolution (R56/R58) because a Warder can move a slot afterwards.
+*Stellarspore Harvester*'s [Augment] half printed "target **opponent**" and
+declared `what: 'any'`, which is the damage kind: it offered every unit on the
+board and both players, and the usual pick could only fizzle into an info line.
+The audit found that one; nobody had reported it.
+
+**Left standing, and worth Bena's ruling.** *Channel Through*'s second clause
+("distribute 2 damage among target opponent's units") declares no target
+because a `count: 'X'` slot cannot be followed by a fixed extra one. Caleb
+2025-11-25 says the player IS targeted — *"Channel Through targets the player,
+so yes, you're good"* — so in a 3+-player game this would be a real choice, and
+even in 1v1 it is a `targeted` event that never fires. Making it expressible
+means letting a spec mix a variable slot with a fixed one.

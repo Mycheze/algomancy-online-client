@@ -310,7 +310,13 @@ card('Stellarspore Harvester', {
     when: (g, self) => g.unitsOf(self.controller, self.region)
       .some(u => u.counters < 0 && u.id !== self.id),
     effect: {
-      targets: { what: 'any', prompt: 'Stellarspore Harvester: target opponent takes your -1/-1-countered units' },
+      // R64/R82 (target audit, playtest round 15): the printed target is
+      // "target OPPONENT", and 'opponent' is the kind that means it — measured
+      // from the effect's controller. This said 'any', which is the DAMAGE
+      // kind: it offered every unit on the board and both players, so the
+      // usual pick was a target that could only fizzle into the info line
+      // below. That line stays as the R58 resolution re-check.
+      targets: { what: 'opponent', prompt: 'Stellarspore Harvester: target opponent takes your -1/-1-countered units' },
       run: (g, ctx) => {
         const t = ctx.targets[0];
         if (!t || !('player' in (t as object)) || (t as { player: Seat }).player === ctx.controller) {

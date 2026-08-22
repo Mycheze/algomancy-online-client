@@ -558,9 +558,18 @@ card('Soulforger', {
 // "one of YOUR spell effects" = the event's controller is my controller —
 // an opponent's spell never fires me. Spell-effect damage to a PLAYER also
 // emits a damage event (face hits count; "deals damage" is unqualified);
-// combat damage never counts (no source on the event). "That many" = the
-// event's amount (one event per damaged victim; [once] takes the first).
-// Created UNITS spawn in the CARRIER's region (R33, refining R28).
+// combat damage never counts (no source on the event). Created UNITS spawn in
+// the CARRIER's region (R33, refining R28).
+//
+// R80: "that many" is what the SPELL EFFECT dealt, not what one victim took.
+// Playtest VEAV: "I only made 2 units from my Channel Through, but it dealt 6
+// damage to my allies and 6 to my opponent's units, so I should have made 12
+// units." Effect damage is one batch (E.dealEffectDamageAll), and every event
+// in it carries the batch `total` — so this reads `total`, and [once] means
+// the whole spell pays out once. Sourced the other way too, Caleb 2025-03-20
+// on Meteor Shower's several Rockfalls: "each copy of Rockfall is a separate
+// source, so Ember of Life triggers separately for each copy rather than
+// combining them into one bigger trigger." One source, one number.
 card('Ember of Life', {
   augmentText: [{
     type: 'triggered', events: ['damage'], bounded: true,   // [once]
@@ -577,7 +586,11 @@ card('Ember of Life', {
     effect: {
       creates: ['Unit Token'],
       run: (g, ctx) => {
-        const n = (ctx.event?.data?.n as number | undefined) ?? 0;
+        const d = ctx.event?.data;
+        // `total` is the whole batch; `n` is this victim's share, and is the
+        // fallback for an event minted before R80 (a replayed saved game)
+        const n = (d?.total as number | undefined) ?? (d?.n as number | undefined) ?? 0;
+        if (n <= 0) { g.ev('info', 'Ember of Life: no damage was dealt — no units.'); return; }
         for (let i = 0; i < n; i++) {
           g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
             { token: true, tokenStats: [1, 1] });

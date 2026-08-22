@@ -589,6 +589,55 @@ test('the stack card\'s X tag folds duplicates and stays out of the way', () => 
   })), 'X=4/9');
 });
 
+/* R80 — the THIRD X: a triggered ability's amount comes off its event.
+ * Playtest VEAV: "Awoken Tomb's trigger, while on the stack, doesn't say what
+ * X is equal to." */
+
+const dmgEvent = (n: number, total = n) => ({
+  type: 'damage' as const, msg: `Channel Through deals ${n} to Awoken Tomb.`,
+  data: { unit: 9, n, total, source: 'Channel Through', controller: 0 },
+});
+
+test("a triggered ability's X is the amount its event carried", () => {
+  const it = xItem({
+    kind: 'triggered', card: 'Awoken Tomb',
+    label: 'create an X/X unit (X = the damage dealt)',
+    event: dmgEvent(2),
+  });
+  const rows = stackItemX(it);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0]!.kind, 'event');
+  assert.equal(rows[0]!.x, 2);
+  assert.match(rows[0]!.from ?? '', /deals 2 to Awoken Tomb/);
+  assert.equal(stackXMark(it), 'X=2', 'and the stack card wears it');
+});
+
+test("an event X names the whole batch too, when the batch dealt more", () => {
+  const it = xItem({
+    kind: 'triggered', card: 'Awoken Tomb',
+    label: 'create an X/X unit (X = the damage dealt)',
+    event: dmgEvent(2, 6),
+  });
+  assert.match(stackItemX(it)[0]!.from ?? '', /6 in all from that effect/);
+});
+
+test('a trigger whose amount is not variable wears no X badge', () => {
+  // most damage-fired triggers do not scale with the damage; stamping every
+  // one of them with a number would be noise, not information
+  const it = xItem({
+    kind: 'triggered', card: 'Stoneborn Progenitor',
+    label: 'create a 2/2 unit (one of your units survived damage)',
+    event: dmgEvent(3),
+  });
+  assert.deepEqual(stackItemX(it), []);
+  assert.equal(stackXMark(it), '');
+});
+
+test('a SPELL is never given an event X — only a trigger has an event', () => {
+  const it = xItem({ kind: 'spell', card: 'Fireball', label: 'X = the damage dealt', event: dmgEvent(4) });
+  assert.deepEqual(stackItemX(it), []);
+});
+
 test('the cost receipt says what was actually spent', () => {
   assert.equal(costReceipt(undefined), undefined);
   assert.equal(costReceipt({}), undefined);

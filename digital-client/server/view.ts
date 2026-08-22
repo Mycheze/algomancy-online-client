@@ -171,9 +171,25 @@ export function redactEvent(ev: EngineEvent, seat: Seat, names: string[]): Engin
   return ev;
 }
 
+/**
+ * Is this event's line for `seat` to read at all?
+ *
+ * An event tagged `data.privateTo` belongs to ONE seat, permanently — not
+ * "held until the reveal" the way a hidden segment's events are (heldEvents,
+ * which empties at the barrier). Playtest VEAV: "I was able to see in the
+ * deployment recap that 'Rashi undid an action.' No need to show that to the
+ * other person, it's just confusing, since you can't see what they undid."
+ * The undo note rode the reveal because holding it was all the server could
+ * do; this is the seam that lets it simply not be theirs.
+ */
+export function visibleToSeat(ev: EngineEvent, seat: Seat): boolean {
+  const to = ev.data?.['privateTo'];
+  return typeof to !== 'number' || to === seat;
+}
+
 /** Redacted log lines for `seat` from the full event history. Events with an
  * empty message ('stackFlash', a signal for the client's visual stack) are not
  * log lines and are dropped here, exactly as the hotseat Harness drops them. */
 export function redactLog(events: EngineEvent[], seat: Seat, names: string[]): string[] {
-  return events.filter(e => e.msg).map(e => redactEvent(e, seat, names).msg);
+  return events.filter(e => e.msg && visibleToSeat(e, seat)).map(e => redactEvent(e, seat, names).msg);
 }

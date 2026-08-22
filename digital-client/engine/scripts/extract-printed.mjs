@@ -42,15 +42,31 @@ const PIP = 'rbegmld';
  *   "[Battle] Ambush [4bb]"  (base set)      and
  *   "[4] Ambush [Battle]"    (L&D: Shib).
  * Both mean the same thing: an alternative battle play mode costing <digits>
- * mana at <pips> affinity (Manual p.40). Word-form costs ("[three_blue]" on
- * Lurking Slimebeast) are deliberately not parsed. */
+ * mana at <pips> affinity (Manual p.40).
+ *
+ * ONE card spells its amount as a word inside the same token — Lurking
+ * Slimebeast's "[three_blue]" — and this used to skip it, which left the card
+ * with no ambush field and therefore no Ambush mode at all: a printed play
+ * mode that simply did not exist in the client. The expansion is the same one
+ * core.py's COST_WORDS has always used ("three_blue" -> "3b"), normalised
+ * before the patterns run so there is one place that knows the word forms. */
+const COST_WORDS = {
+  zero: '0', one: '1', two: '2', three: '3', four: '4',
+  five: '5', six: '6', seven: '7', eight: '8', nine: '9',
+  three_blue: '3b',
+};
+const COST_WORD_RE = new RegExp(`\\[(${Object.keys(COST_WORDS).join('|')})\\]`, 'gi');
+const expandCostWords = text =>
+  text.replace(COST_WORD_RE, (_m, w) => `[${COST_WORDS[w.toLowerCase()]}]`);
+
 const AMBUSH_RES = [
   new RegExp(`\\[Battle\\]\\s*Ambush\\s*\\[(\\d*)([${PIP}]*)\\]`),
   new RegExp(`\\[(\\d*)([${PIP}]*)\\]\\s*Ambush\\s*\\[Battle\\]`),
 ];
 function parseAmbush(text) {
+  const norm = expandCostWords(text);
   for (const re of AMBUSH_RES) {
-    const m = text.match(re);
+    const m = norm.match(re);
     if (m && (m[1] || m[2])) return { cost: m[2], mana: Number(m[1] || 0) };
   }
   return null;

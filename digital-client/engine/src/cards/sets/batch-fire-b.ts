@@ -337,11 +337,9 @@ card('Spirit of Vengeance', {
     label: 'I deal 1 damage to each opponent',
     effect: {
       run: (g, ctx) => {
-        let hit = 0;
-        for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-          if (seat !== ctx.controller) { g.dealEffectDamage(ctx, { player: seat as Seat }, 1); hit++; }
-        }
-        if (!hit) g.ev('info', 'Spirit of Vengeance: no opponent is present here — no damage.');
+        const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+        if (!foes.length) { g.ev('info', 'Spirit of Vengeance: no opponent is present here — no damage.'); return; }
+        g.dealEffectDamageAll(ctx, foes.map(s => ({ target: { player: s as Seat }, n: 1 })));   // R80
       },
     },
   }],

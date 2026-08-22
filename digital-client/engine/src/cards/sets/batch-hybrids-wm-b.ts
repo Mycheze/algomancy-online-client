@@ -135,9 +135,8 @@ card('Infernal Grovekeeper', {
     effect: {
       run: (g, ctx) => {
         for (const u of g.unitsIn(ctx.region).slice()) g.addCounters(u, -1);
-        for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-          g.dealEffectDamage(ctx, { player: seat as Seat }, 2);
-        }
+        g.dealEffectDamageAll(ctx,   // R80: "each player" is one batch
+          g.s.regions[ctx.region]!.presentSeats.map(s => ({ target: { player: s as Seat }, n: 2 })));
       },
     },
   }],

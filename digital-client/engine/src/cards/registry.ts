@@ -181,12 +181,11 @@ card('Good Whale', {});
 // RESOLUTION (hand counts read live), the condition fired at event time.
 const tidewraithEffect: EffectDef = {
   run: (g, ctx) => {
-    let dealt = 0;
-    for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-      const n = g.player(seat).hand.length;
-      if (n > 0) { g.dealEffectDamage(ctx, { player: seat as Seat }, n); dealt += n; }
-    }
-    if (!dealt) g.ev('info', 'Astral Tidewraith: every player here is empty-handed — no damage.');
+    const hits = g.s.regions[ctx.region]!.presentSeats
+      .map(seat => ({ target: { player: seat as Seat }, n: g.player(seat).hand.length }))
+      .filter(h => h.n > 0);
+    if (!hits.length) { g.ev('info', 'Astral Tidewraith: every player here is empty-handed — no damage.'); return; }
+    g.dealEffectDamageAll(ctx, hits);   // R80: "each player" is one batch
   },
 };
 card('Astral Tidewraith', {
@@ -205,7 +204,7 @@ const boulderEffect: EffectDef = {
   run: (g, ctx) => {
     const units = g.unitsIn(ctx.region);
     if (!units.length) { g.ev('info', `${ctx.sourceName}: there is no unit here to damage.`); return; }
-    for (const u of units) g.dealEffectDamage(ctx, u, 1);
+    g.dealEffectDamageAll(ctx, units.map(u => ({ target: u, n: 1 })));   // R80: one batch
   },
 };
 card('Bellowing Boulder', {

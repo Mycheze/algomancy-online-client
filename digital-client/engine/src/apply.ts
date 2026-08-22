@@ -630,9 +630,16 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId): void {
   } else {
     e.illegal('spell tokens are cast during battle or deployment');
   }
-  // Burst: all your burst tokens here are cast at once (deterministic id order)
+  // R16/R81: Burst casts all your burst tokens OF THE SAME NAME in this region
+  // at once, in deterministic id order. Playtest VEAV: "the game is trying to
+  // force me to cast my Fireball here, but Burst only applies to spell tokens
+  // with the same NAME — I should be allowed to play Poison, let it resolve,
+  // then play Fireball." Sourced: "a player must play all burst spells they
+  // control OF THE SAME TYPE at the same time" (The Rules of Algomancy,
+  // §spell tokens). This used to sweep every burst token you controlled here,
+  // which fused a Poison and a Fireball into one uninterruptible group.
   const group = c.burst
-    ? e.tokensOf(seat, tok.region).filter(t => e.card(t.card).burst).sort((a, z) => a.id - z.id)
+    ? e.tokensOf(seat, tok.region).filter(t => t.card === tok.card).sort((a, z) => a.id - z.id)
     : [tok];
   const items: StackItem[] = [];
   for (const t of group) {

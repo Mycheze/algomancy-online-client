@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
 import type { Action, CardName, Seat } from '../engine/src/types.ts';
 import { checkDeck, forcedAction, legalActions, IllegalAction } from '../engine/src/apply.ts';
-import { other, viewFor, redactEvent, redactLog } from './view.ts';
+import { other, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
   applyToRoom, clockSnapshot, createRematch, decidedWinner, getRoom, joinableRoom, openSegment, renameSeat,
@@ -330,7 +330,7 @@ function sendUpdate(room: Room, seat: Seat, events: import('../engine/src/types.
   sendToSeat(room, seat, {
     t: 'update',
     ...baseView(room, seat),
-    ...(events.length ? { events: events.map(e => redactEvent(e, seat, room.names)) } : {}),
+    ...(events.length ? { events: events.filter(e => visibleToSeat(e, seat)).map(e => redactEvent(e, seat, room.names)) } : {}),
   });
 }
 
@@ -346,8 +346,8 @@ function sendReveal(room: Room, seat: Seat, revealEvents: import('../engine/src/
     t: 'update',
     step,
     ...baseView(room, seat),
-    reveal: revealEvents.map(e => redactEvent(e, seat, room.names)),
-    events: [...revealEvents, ...tailEvents].map(e => redactEvent(e, seat, room.names)),
+    reveal: revealEvents.filter(e => visibleToSeat(e, seat)).map(e => redactEvent(e, seat, room.names)),
+    events: [...revealEvents, ...tailEvents].filter(e => visibleToSeat(e, seat)).map(e => redactEvent(e, seat, room.names)),
   });
 }
 
@@ -799,14 +799,19 @@ wss.on('connection', ws => {
           return send(ws, { t: 'error', msg: 'taking that back would drop moves made after it — it cannot be undone now' });
         }
       }
+      // Playtest VEAV: "I was able to see in the deployment recap that 'Rashi
+      // undid an action.' No need to show that to the other person, it's just
+      // confusing, since you can't see what they undid." It is not a move —
+      // it is the ABSENCE of one, and the log already shows the absence. So
+      // the note is `privateTo` the seat that pressed the button: it never
+      // enters the opponent's log, held or revealed (view.ts visibleToSeat).
+      // It still goes on room.events so the actor's own full-log replace below
+      // (and any later resync) keeps it.
       const note = {
-        type: 'note', msg: `${room.names[conn.seat]} undid their last action.`, data: {},
+        type: 'note', msg: `${room.names[conn.seat]} undid their last action.`,
+        data: { privateTo: conn.seat },
       } as unknown as import('../engine/src/types.ts').EngineEvent;
       room.events.push(note);
-      // inside a hidden segment even the FACT that you changed your mind is
-      // yours: the note rides the reveal with everything else you did. (The
-      // rebuild above rebuilt heldEvents, so this goes on afterwards.)
-      if (room.segKey) room.heldEvents[other(conn.seat)]!.push(note);
       forEachSeat(s => sendToSeat(room, s, {
         t: 'update',
         ...baseView(room, s),

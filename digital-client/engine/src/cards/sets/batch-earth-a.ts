@@ -86,11 +86,9 @@ const rockfall4: EffectDef = {
         'Rockfall 4: choose one of your units (it will be dealt 4 damage)');
       if (u) picks.push(u);
     }
-    let hit = 0;
-    for (const u of picks) {
-      if (g.entity(u.id)) { g.dealEffectDamage(ctx, u, 4); hit++; }
-    }
-    if (!hit) g.ev('info', 'Rockfall 4: nobody has a unit to choose — nothing is dealt damage.');
+    const live = picks.filter(u => g.entity(u.id));
+    if (!live.length) { g.ev('info', 'Rockfall 4: nobody has a unit to choose — nothing is dealt damage.'); return; }
+    g.dealEffectDamageAll(ctx, live.map(u => ({ target: u, n: 4 })));   // R80: one batch
   },
 };
 card('A Fast Pile of Rocks', {
@@ -193,7 +191,7 @@ card('Deathglow Strider', {
           g.ev('info', 'Deathglow Strider: no opponent is in this region — no damage.');
           return;
         }
-        for (const seat of foes) g.dealEffectDamage(ctx, { player: seat }, def);
+        g.dealEffectDamageAll(ctx, foes.map(seat => ({ target: { player: seat }, n: def })));   // R80
       },
     },
   }],
@@ -431,9 +429,8 @@ card('Haboob', {
     run: (g, ctx) => {
       const units = g.unitsIn(ctx.region);
       if (!units.length) { g.ev('info', 'Haboob: there is no unit here to damage.'); return; }
-      for (const u of units) {
-        if (g.entity(u.id)) g.dealEffectDamage(ctx, u, 1);
-      }
+      // R80: "each unit" is one batch — every unit here is dealt its 1 at once
+      g.dealEffectDamageAll(ctx, units.map(u => ({ target: u, n: 1 })));
     },
   },
 });

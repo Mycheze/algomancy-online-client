@@ -22,11 +22,11 @@
  *    the controller's hand, computed live in effStats) covers BOTH forms —
  *    mod-carried statics anchor on the host (E.anchored), so the same def
  *    donates correctly (un-parked 2026-08-18). This entry outlived it.
- *  - Lurking Slimebeast: printed.json has NO ambush field for it — the
- *    extractor does not parse the word-form "[three_blue]" cost (Mirage
- *    Walker's "[4bb]" parses fine). printed.json is not this batch's to
- *    edit. Registered as a plain 8/3 deploy unit; the Ambush mode is dead
- *    until the extractor learns word-form costs.
+ *  - Lurking Slimebeast: NO LONGER parked. This note used to read "printed.json
+ *    has NO ambush field for it — the extractor does not parse the word-form
+ *    '[three_blue]' cost". The extractor learned the word forms (the same
+ *    COST_WORDS expansion core.py has always used: three_blue -> 3b), so the
+ *    Ambush mode is real and needs nothing from this file.
  *  - Amphivore: "trigger three copies as one single trigger" is composed in
  *    card code: unbounded, UNtargeted graft effects are re-run twice by the
  *    base part (3 copies total); bounded grafts correctly run once ([Switch1]
@@ -470,10 +470,11 @@ card('Insidious Invitation', {
   graftEffect: { bounded: true, effect: insidiousInvite },
 });
 
-// "[Battle] Ambush [three_blue]" — bb/4 8/3 Slime Beast Unit. PARKED: the
-// printed-data extractor does not parse the word-form "[three_blue]" ambush
-// cost, so printed.json carries no ambush field and the engine's Ambush mode
-// (R22) never offers it. Plays as a vanilla 8/3 deploy unit meanwhile.
+// "[Battle] Ambush [three_blue]" — bb/4 8/3 Slime Beast Unit. No behaviour of
+// its own: the whole card is the printed body plus R22's Ambush mode, which
+// the engine generates from printed.ambush (3 mana at one water pip, the
+// word-form cost the extractor now expands). The generated mode is the
+// standard one — "Recall target ally, put me into their position in play".
 card('Lurking Slimebeast', {});
 
 // "When I attack, [Switch1] Recall up to one target unit with 5 or less

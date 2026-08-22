@@ -31,9 +31,11 @@
  *  - Skybreaker: "Erase me" is approximated by the engine's sacrifice-self
  *    activation cost — an unmodded Skybreaker therefore lands in the BIN
  *    instead of being erased (a modded host is erased anyway, Unstable).
- *  - Tenebrous Bulborb: "I gain -2/-2" (static) is applied as permanent
- *    -1/-1 counters, once, when the card spawns or when it lands on a host
- *    as a mod. Deviation: later +1/+1 counters cancel it pairwise.
+ *  - Tenebrous Bulborb: NO LONGER an approximation. This note used to read
+ *    '"I gain -2/-2" (static) is applied as permanent -1/-1 counters, once …
+ *    later +1/+1 counters cancel it pairwise'. Playtest VEAV rejected exactly
+ *    that; it is a real StaticMod on the anchor now, so it is continuous,
+ *    never on the stack, and leaves with the virus.
  *  - The Bonesculptor: "play one unit ... from your bin each deployment" is
  *    modelled as a free bounded activated ability (deploy plays resolve
  *    immediately, so the shapes match); the full cost of the played unit is
@@ -55,7 +57,7 @@
 import type { EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, inEndOfTurn } from './helpers.ts';
+import { isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -83,9 +85,8 @@ card('Roving Quillback', {
         const b = g.s.battle;
         if (!b) return;
         const n = Object.keys(b.blocks).length;
-        for (const seat of presentOpponents(g, ctx.region, ctx.controller)) {
-          g.dealEffectDamage(ctx, { player: seat }, n);
-        }
+        g.dealEffectDamageAll(ctx,   // R80: "each opponent" is one batch
+          presentOpponents(g, ctx.region, ctx.controller).map(seat => ({ target: { player: seat }, n })));
       },
     },
   }],
@@ -166,36 +167,46 @@ card('Skybreaker', {
 });
 
 // "[Switch1] Target ally deals damage equal to its defense to another target
-// unit." — e/2, {Battle} Rock Spell. The ally is the cast-time target; the
-// SECOND target is a mid-resolution caster pick (⚠ see header), auto-picked
-// when only one candidate exists (and in end-of-turn graft resolutions,
-// where suspending is unsafe). The amount is the ally's defense at
+// unit." — e/2, {Battle} Rock Spell. The amount is the ally's defense at
 // RESOLUTION (R1); the damage source is the ALLY (its printed attrs apply).
 // Bounded graft ([Switch1], R9).
+//
+// R67/R82 (playtest VEAV): "Squish, on cast, only has you select 1 target
+// unit, but it needs 2 targets (a target ally and any target)." It printed
+// TWO targets and declared one — the victim was a mid-resolution ctx.choose,
+// so the spell sat on the stack aiming at nobody and the second "target"
+// could not be responded to, redirected or lost. Same shape as Fight: a
+// two-slot spec with per-slot legality, slot 0 an ally of the CASTER and slot
+// 1 any other unit (the collector already keeps the two distinct).
+//
+// Both are re-checked at resolution rather than trusted from cast (R56/R58) —
+// Enigmatic Warder can move a slot afterwards, and "ally" means ally of this
+// spell's controller, never of the redirector's.
 const squishEffect: EffectDef = {
-  targets: { what: 'allyUnit', prompt: 'Squish: target ally deals damage equal to its defense to another unit' },
+  targets: {
+    what: 'unit', count: 2, min: 2,
+    slots: ['allyUnit', 'unit'],
+    prompt: 'Squish: target ally deals damage equal to its defense to another target unit',
+    slotPrompts: [
+      'Squish: target ally (it deals damage equal to its defense)',
+      'Squish: another target unit (it takes the damage)',
+    ],
+  },
   run: (g, ctx) => {
-    const t = ctx.targets[0];
-    if (!isEnt(t)) return;
-    const ally = g.entity(t.id);
-    if (!ally) return;
-    const others = g.unitsIn(ctx.region).filter(u => u.id !== ally.id);
-    if (!others.length) {
-      g.ev('info', 'Squish: no other unit to squish — no effect.');
+    const [a, b] = [ctx.targets[0], ctx.targets[1]];
+    if (!isEnt(a) || !isEnt(b) || !g.entity(a.id) || !g.entity(b.id)) {
+      g.ev('info', 'Squish: a target is gone — nothing is squished.');
       return;
     }
-    const victim = (others.length === 1 || inEndOfTurn(g)) ? others[0]! : (() => {
-      const id = ctx.choose('victim', {
-        kind: 'electricPath', seat: ctx.controller,
-        prompt: `Squish: ${ally.card} squishes which unit?`,
-        options: others.map(u => ({ label: u.card, value: u.id })),
-      }) as EntityId;
-      return g.entity(id);
-    })();
-    if (!victim) return;
-    const dmg = g.effStats(ally)[1];
+    if (a.id === b.id) { g.ev('info', 'Squish: "another" — one unit cannot squish itself.'); return; }
+    if (a.controller !== ctx.controller) {
+      g.ev('info', `Squish: ${a.card} is not ${g.pname(ctx.controller)}'s ally any more — nothing is squished.`);
+      return;
+    }
+    const dmg = g.effStats(a)[1];
+    if (dmg <= 0) { g.ev('info', `Squish: ${a.card} has no defense left — no damage.`); return; }
     // the ALLY deals the damage: its card's printed attrs drive the riders
-    g.dealEffectDamage({ ...ctx, sourceName: ally.card, sourceId: ally.id }, victim, dmg);
+    g.dealEffectDamage({ ...ctx, sourceName: a.card, sourceId: a.id }, b, dmg);
   },
 };
 card('Squish', {
@@ -242,41 +253,27 @@ card('Swirling Shardform', {
   }],
 });
 
-// "[Augment] I gain -2/-2." — e/1 5/4 Luminary Horror {Virus} Unit. The
-// static is approximated as permanent -1/-1 counters applied ONCE (⚠ see
-// header): entry 1 fires on the card's own spawn (own [Augment] text is live
-// when played normally → an effective 3/2); entry 2 fires when a Tenebrous
-// Bulborb mod lands on a host (deployment augment or battle Virus) — "I" is
-// then the host. The budgets marker dedupes the double-scan that would
-// happen if the host card itself were a Bulborb carrying a Bulborb mod.
-const bulborbShrink: EffectDef = {
-  run: (g, ctx) => {
-    const self = selfOf(g, ctx);
-    if (self) g.addCounters(self, -2);
-  },
-};
+// "[Augment] I gain -2/-2." — e/1 5/4 Luminary Horror {Virus} Unit.
+//
+// PLAYTEST FIX (VEAV, round 15): "The 'I get -2/-2' isn't a trigger that
+// should go on the stack. It's a static effect." It is, and this used to be
+// the ⚠ approximation in the header: two triggered abilities that put
+// PERMANENT -1/-1 counters on whatever the card was attached to. Three things
+// were wrong with that and all of them decided games. It went on the stack,
+// so there was a window to respond to a static. The counters were permanent,
+// so erasing the virus left the shrink behind. And counters cancel +1/+1
+// counters pairwise, so a -2/-2 that should be a flat layer ate two real
+// counters instead.
+//
+// It is a plain static now. `affects` matches the ANCHOR itself, which is
+// exactly what "[Augment] I …" means: the anchor is the card when it is a
+// unit in play (own [Augment] text is live when played normally — an
+// effective 3/2) and the HOST when the card is worn as a mod (staticsFor's
+// anchored() walk reads a mod's statics from its host). Two Bulborbs on one
+// host stack, which is right — each is its own -2/-2.
 card('Tenebrous Bulborb', {
-  augmentText: [
-    {
-      type: 'triggered', events: ['spawned'], self: true,
-      label: 'I gain -2/-2',
-      effect: bulborbShrink,
-    },
-    {
-      type: 'triggered', events: ['modApplied'],
-      label: 'I gain -2/-2 (augmented host)',
-      when: (g, self, ev) => {
-        if (ev.data?.host !== self.id) return false;
-        const mod = g.entity(ev.data?.mod as EntityId);
-        if (mod?.card !== 'Tenebrous Bulborb') return false;
-        const key = `tb:${ev.data?.mod}`;
-        if (self.budgets[key]) return false;   // dedupe: one trigger per application
-        self.budgets[key] = 1;
-        return true;
-      },
-      effect: bulborbShrink,
-    },
-  ],
+  augmentable: true,
+  statics: [{ affects: (_g, self, t) => t.id === self.id, dp: -2, dt: -2 }],
 });
 
 // "You may play one unit with no abilities from your bin each deployment.

@@ -78,11 +78,9 @@ card('Bloated Manablub', {
 // region-scoped like Bloated Manablub.
 const dealTwoToEachOpponent: EffectDef = {
   run: (g, ctx) => {
-    let hit = 0;
-    for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-      if (seat !== ctx.controller) { g.dealEffectDamage(ctx, { player: seat as Seat }, 2); hit++; }
-    }
-    if (!hit) g.ev('info', `${ctx.sourceName}: no opponent is present here — no damage.`);
+    const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+    if (!foes.length) { g.ev('info', `${ctx.sourceName}: no opponent is present here — no damage.`); return; }
+    g.dealEffectDamageAll(ctx, foes.map(s => ({ target: { player: s as Seat }, n: 2 })));   // R80
   },
 };
 card('Boreal Wanderer', {

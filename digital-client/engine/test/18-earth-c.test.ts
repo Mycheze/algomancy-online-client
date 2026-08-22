@@ -151,8 +151,9 @@ test('Squish: target ally deals its defense to another unit (amount at resolutio
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[whale]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Squish') });
-  pick(h, { unit: whale });                             // the ally target
-  pass(h); pass(h);                                     // resolve: sole other unit auto-picked
+  pick(h, { unit: whale });                             // slot 0: the ally
+  pick(h, { unit: vict });                              // slot 1: "another target unit" (R67, cast-time)
+  pass(h); pass(h);                                     // resolve
   assert.ok(!ent(h, vict), 'the drifter took 5 (= whale defense) and died');
   assert.ok(h.state.players[D]!.bin.includes('Curio Drifter'));
   assert.equal(ent(h, whale)!.damage, 0, 'the ally itself is unharmed');
@@ -203,16 +204,18 @@ test('Swirling Shardform: spawning creates two dormant Shards', () => {
     'both are Shards and both spawn dormant');
 });
 
+// Playtest VEAV: "the 'I get -2/-2' isn't a trigger that should go on the
+// stack, it's a static effect". These two pin the layer, not the counters.
 test('Tenebrous Bulborb: played normally, its own "[Augment] I gain -2/-2" makes it 3/2', () => {
   const h = new Harness(1808);
   toDeployment(h);
   const p = h.state.deployPlayer!;
   const tb = spawn(h, p, 'Tenebrous Bulborb');          // printed 5/4
-  assert.equal(ent(h, tb)!.counters, -2, 'the -2/-2 landed as permanent counters');
+  assert.equal(ent(h, tb)!.counters, 0, 'a static, not counters');
   assert.deepEqual(effStats(h, tb), [3, 2], '5/4 - 2/2 = 3/2');
 });
 
-test('Tenebrous Bulborb: augmenting a host gives THE HOST -2/-2 (once per application)', () => {
+test('Tenebrous Bulborb: augmenting a host gives THE HOST -2/-2, and it LEAVES with the virus', () => {
   const h = new Harness(1809);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -220,8 +223,25 @@ test('Tenebrous Bulborb: augmenting a host gives THE HOST -2/-2 (once per applic
   giveResources(h, p, 'earth', 2);                      // e / 1
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Tenebrous Bulborb'), hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1, 'the augment attached');
-  assert.equal(ent(h, host)!.counters, -2, 'exactly one -2/-2 (dedup guard)');
+  assert.equal(ent(h, host)!.counters, 0, 'no counters — the shrink is a layer');
   assert.deepEqual(effStats(h, host), [5, 3], '7/5 - 2/2 = 5/3');
+  assert.equal(h.state.stack.length, 0, 'a static never goes on the stack');
+  // the point of the layer: erase the mod and the host is whole again
+  const mod = ent(h, host)!.mods[0]!;
+  delete h.state.entities[mod];
+  ent(h, host)!.mods = [];
+  assert.deepEqual(effStats(h, host), [7, 5], 'the -2/-2 left with the virus');
+});
+
+test('Tenebrous Bulborb: two of them on one host stack to -4/-4', () => {
+  const h = new Harness(1811);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const host = spawn(h, p, 'Good Whale');               // 7/5
+  giveResources(h, p, 'earth', 4);
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Tenebrous Bulborb'), hostId: host });
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Tenebrous Bulborb'), hostId: host });
+  assert.deepEqual(effStats(h, host), [3, 1], '7/5 - 2/2 - 2/2 = 3/1');
 });
 
 test('The Bonesculptor: play one ability-free unit from your bin each deployment (attrs are not abilities)', () => {

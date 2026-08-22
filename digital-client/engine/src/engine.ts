@@ -1531,13 +1531,50 @@ export class E {
   }
 
   /**
-   * Effect (non-combat) damage. Handles Reaping (kill → draw) and Electric
-   * (R4: excess beyond lethal passes along a controller-chosen, non-overlapping
-   * adjacent path, atomically — planned fully before any damage commits, and
-   * no formation changes during distribution).
+   * Effect (non-combat) damage, ONE recipient. Sugar for the batch below —
+   * an effect that damages one thing deals a batch of one, so `total` on the
+   * event equals `n` and every reader can be written against the batch.
    */
   dealEffectDamage(ctx: EffectCtx, target: ResolvedTarget, n: number): void {
-    if (n <= 0) return;
+    this.dealEffectDamageAll(ctx, [{ target, n }]);
+  }
+
+  /**
+   * R80: ALL of one effect's damage, dealt at once.
+   *
+   * Playtest round 15 (VEAV): "Channel Through caused Restitution to make 2
+   * triggers, but it should have done just one trigger", and "I only made 2
+   * units from my Channel Through, but it dealt 6 damage to my allies and 6 to
+   * my opponent's units, so I should have made 12 units". Both are the same
+   * defect: the engine had no notion of "the damage an effect dealt", only a
+   * pile of independent dealEffectDamage calls. Channel Through committed its
+   * distributed damage in 1-point increments, so a unit that took two of those
+   * points was dealt damage TWICE — two damage events, two "when I am dealt
+   * damage" triggers — and Ember of Life's "that many" only ever saw one of
+   * the fragments.
+   *
+   * So the unit of effect damage is the BATCH:
+   *   - hits are COALESCED per recipient: a recipient named twice is dealt
+   *     one total, and hears about it once;
+   *   - every damage event in the batch carries `total`, the whole batch's
+   *     damage, for the texts that ask what the EFFECT dealt rather than what
+   *     one victim took (Ember of Life);
+   *   - deaths are checked once, after all of it is marked, which is what
+   *     "simultaneous" means for two units that kill each other.
+   *
+   * The line is the SOURCE, not the spell: Caleb 2025-03-20, on Meteor Shower
+   * making several Rockfalls — "each copy of Rockfall is a separate source, so
+   * Ember of Life triggers separately for each copy rather than combining them
+   * into one bigger trigger." One resolution of one effect, one batch.
+   *
+   * Handles Reaping (kill → draw) and Electric (R4: excess beyond lethal
+   * passes along a controller-chosen, non-overlapping adjacent path, planned
+   * fully before any damage commits, and no formation changes during
+   * distribution). Electric planning accounts for damage EARLIER HITS IN THIS
+   * BATCH have already assigned, so overflow is computed against what the
+   * victim will really have taken rather than against a stale board.
+   */
+  dealEffectDamageAll(ctx: EffectCtx, hits: { target: ResolvedTarget; n: number }[]): void {
     const srcAttrs = new Set(this.card(ctx.sourceName)?.attrs ?? []);
     // R79: attributes a virus donated to this effect while it sat on the stack
     // ("mostly Deadly, Piercing, and Powerful are impacted by this" — Caleb
@@ -1546,33 +1583,34 @@ export class E {
     for (const a of ctx.grantedAttrs ?? []) srcAttrs.add(a);
     const poisonous = srcAttrs.has('Poisonous');
     const resonant = srcAttrs.has('Resonant');
-    // Powerful source: double the damage dealt (to units and players alike),
-    // once, before Electric distribution or Vulnerable's receive-side doubling.
-    if (srcAttrs.has('Powerful')) n *= 2;
-    if ('player' in (target as object)) {
-      const seat = (target as { player: Seat }).player;
-      // spell-effect damage to a PLAYER is still damage: emit a 'damage' event
-      // (with the effect's controller, R33) so triggers hear face hits too.
-      // Fired before loseLife — a lethal hit ends the game mid-throw and the
-      // queued trigger is moot. Combat face damage does NOT come through here
-      // (pumpCombatDamage → loseLife directly) and stays trigger-silent.
-      const ev = this.ev('damage', `${ctx.sourceName} deals ${n} to ${this.pname(seat)}.`,
-        { player: seat, n, source: ctx.sourceName, controller: ctx.controller, region: ctx.region });
-      this.fireEvent('damage', ev);
-      // R48 {Blessed}: the gain lands on the SAME game-state check as the
-      // damage, so it is committed here — before loseLife runs the lethal
-      // check. A blessed source therefore cannot kill its own controller.
-      if (srcAttrs.has('Blessed')) this.blessedGain(ctx.controller, n, ctx.sourceName);
-      this.loseLife(seat, n, ctx.sourceName);
-      return;
-    }
-    const first = target as Entity;
-    if (!this.entity(first.id)) return;
 
-    const plan: [Entity, number][] = [];
-    if (!srcAttrs.has('Electric')) {
-      plan.push([first, n]);
-    } else {
+    // ── plan ──────────────────────────────────────────────────────────
+    // Recipients in FIRST-MENTIONED order (the order the card names them is
+    // the order the log should read in), each with the total this batch deals
+    // it. Players and units are one list so the interleaving survives.
+    type Recip = { seat: Seat; u?: undefined } | { u: Entity; seat?: undefined };
+    const order: Recip[] = [];
+    const dealt = new Map<string, number>();
+    const key = (r: Recip): string => (r.u ? `u${r.u.id}` : `p${r.seat}`);
+    const add = (r: Recip, n: number): void => {
+      const k = key(r);
+      if (!dealt.has(k)) order.push(r);
+      dealt.set(k, (dealt.get(k) ?? 0) + n);
+    };
+    for (const hit of hits) {
+      let n = hit.n;
+      if (n <= 0) continue;
+      // Powerful source: double the damage dealt (to units and players alike),
+      // once, before Electric distribution or Vulnerable's receive-side doubling.
+      if (srcAttrs.has('Powerful')) n *= 2;
+      const target = hit.target;
+      if ('player' in (target as object)) {
+        add({ seat: (target as { player: Seat }).player }, n);
+        continue;
+      }
+      const first = target as Entity;
+      if (!this.entity(first.id)) continue;
+      if (!srcAttrs.has('Electric')) { add({ u: first }, n); continue; }
       // R4: only the lethal share sticks to each victim; the rest passes along
       // a controller-chosen, non-overlapping adjacent path, all planned before
       // any damage commits (atomic — no formation changes mid-distribution)
@@ -1583,9 +1621,9 @@ export class E {
       for (; ;) {
         visited.add(victim.id);
         const [, t] = this.effStats(victim);
-        const lethal = Math.max(0, t - victim.damage);
-        if (remaining <= lethal) { plan.push([victim, remaining]); break; }
-        plan.push([victim, lethal]);
+        const lethal = Math.max(0, t - victim.damage - (dealt.get(`u${victim.id}`) ?? 0));
+        if (remaining <= lethal) { add({ u: victim }, remaining); break; }
+        if (lethal > 0) add({ u: victim }, lethal);
         remaining -= lethal;
         const nexts = this.adjacentInFormation(victim.id).filter(u => !visited.has(u.id));
         if (!nexts.length) break;                     // excess is lost
@@ -1603,31 +1641,59 @@ export class E {
         hop++;
       }
     }
-    // commit — Vulnerable victim doubles what it receives; Poisonous deals the
-    // damage as permanent -1/-1 counters instead of marked damage; Resonant
-    // also deals the same amount to the damaged unit's controller.
+    if (!order.length) return;
+
+    // What each recipient RECEIVES — a Vulnerable victim doubles it, and R48
+    // {Blessed} says what the victim receives is what the source dealt, so the
+    // doubling is inside the total the batch reports.
+    const received = new Map<string, number>();
+    for (const r of order) {
+      const n = dealt.get(key(r)) ?? 0;
+      received.set(key(r), r.u && this.effAttrs(r.u).has('Vulnerable') ? n * 2 : n);
+    }
+    const total = [...received.values()].reduce((a, b) => a + b, 0);
+
+    // ── commit ────────────────────────────────────────────────────────
     const killed: Entity[] = [];
-    for (const [u, dmg0] of plan) {
-      if (dmg0 <= 0 || !this.entity(u.id)) continue;
-      const received = this.effAttrs(u).has('Vulnerable') ? dmg0 * 2 : dmg0;
-      // R48 {Blessed}: what the victim RECEIVES is what the source dealt (a
-      // Vulnerable victim really is dealt double), and it is gained on the
-      // same check — before Resonant's life loss below can end the game.
-      if (srcAttrs.has('Blessed')) this.blessedGain(ctx.controller, received, ctx.sourceName);
+    for (const r of order) {
+      const n = received.get(key(r)) ?? 0;
+      if (n <= 0) continue;
+      if (r.seat !== undefined) {
+        const seat = r.seat;
+        // spell-effect damage to a PLAYER is still damage: emit a 'damage' event
+        // (with the effect's controller, R33) so triggers hear face hits too.
+        // Fired before loseLife — a lethal hit ends the game mid-throw and the
+        // queued trigger is moot. Combat face damage does NOT come through here
+        // (pumpCombatDamage → loseLife directly) and stays trigger-silent.
+        const ev = this.ev('damage', `${ctx.sourceName} deals ${n} to ${this.pname(seat)}.`,
+          { player: seat, n, total, source: ctx.sourceName, controller: ctx.controller, region: ctx.region });
+        this.fireEvent('damage', ev);
+        // R48 {Blessed}: the gain lands on the SAME game-state check as the
+        // damage, so it is committed here — before loseLife runs the lethal
+        // check. A blessed source therefore cannot kill its own controller.
+        if (srcAttrs.has('Blessed')) this.blessedGain(ctx.controller, n, ctx.sourceName);
+        this.loseLife(seat, n, ctx.sourceName);
+        continue;
+      }
+      const u = r.u!;
+      if (!this.entity(u.id)) continue;
+      if (srcAttrs.has('Blessed')) this.blessedGain(ctx.controller, n, ctx.sourceName);
       if (poisonous) {
-        this.ev('info', `Poisonous: ${ctx.sourceName} deals ${received} to ${u.card} as -1/-1 counter(s).`);
-        this.addCounters(u, -received);   // permanent counters; addCounters runs checkDeaths
+        // Poisonous deals the damage as permanent -1/-1 counters instead of
+        // marked damage — no damage event, so nothing "is dealt damage".
+        this.ev('info', `Poisonous: ${ctx.sourceName} deals ${n} to ${u.card} as -1/-1 counter(s).`);
+        this.addCounters(u, -n);   // permanent counters; addCounters runs checkDeaths
         if (!this.entity(u.id)) killed.push(u);
       } else {
-        u.damage += received;
-        const ev = this.ev('damage', `${ctx.sourceName} deals ${received} to ${u.card}.`,
-          { unit: u.id, n: received, source: ctx.sourceName, controller: ctx.controller });
+        u.damage += n;
+        const ev = this.ev('damage', `${ctx.sourceName} deals ${n} to ${u.card}.`,
+          { unit: u.id, n, total, source: ctx.sourceName, controller: ctx.controller });
         this.fireEvent('damage', ev);   // "when I am dealt damage" (Awoken Tomb)
         const [, t] = this.effStats(u);
         // R21: Deadly — any nonzero damage kills, regardless of toughness
         if (u.damage >= t || srcAttrs.has('Deadly')) killed.push(u);
       }
-      if (resonant) this.loseLife(u.controller, received, `${ctx.sourceName} (Resonant)`);
+      if (resonant) this.loseLife(u.controller, n, `${ctx.sourceName} (Resonant)`);
     }
     if (srcAttrs.has('Reaping')) {
       for (const _ of killed) {

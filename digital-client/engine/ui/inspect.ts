@@ -633,9 +633,12 @@ export function costReceipt(paid: EffectPart['costPaid']): string | undefined {
 }
 
 export interface StackXRow {
-  /** 'cast' = the R35 mana X the whole item was cast for;
-   *  'cost' = the R64 variable cast cost ONE part paid, defining that part's X */
-  kind: 'cast' | 'cost';
+  /** 'cast'  = the R35 mana X the whole item was cast for;
+   *  'cost'  = the R64 variable cast cost ONE part paid, defining that part's X;
+   *  'event' = R80: the amount the EVENT that fired a triggered ability
+   *            carried, which is the X of every "that much" / "that many" /
+   *            "X is the damage I am dealt" trigger in the pool */
+  kind: 'cast' | 'cost' | 'event';
   x: number;
   /** index into item.parts — 'cost' only; a mana X belongs to the item */
   part?: number;
@@ -643,7 +646,20 @@ export interface StackXRow {
   source?: CardName;
   /** what a variable cost consumed ("erased 10 cards") */
   receipt?: string;
+  /** 'event' only: the log line of the event that fired the trigger */
+  from?: string;
 }
+
+/**
+ * A triggered ability whose amount comes from its event says so in its label:
+ * "create an X/X unit (X = the damage dealt)", "I deal THAT MUCH damage to
+ * each opponent", "create THAT MANY 1/1 units". The labels are authored in the
+ * card sets, so this reads a written intent rather than guessing — and it is
+ * presentation only: a label this misses costs one badge, never a rule. It
+ * exists because the alternative is stamping every damage-fired trigger with a
+ * number that most of them do not use.
+ */
+const VARIABLE_LABEL = /\bx\b|that many|that much|equal to|double that/i;
 
 /**
  * Every X on a stack item, per part.
@@ -661,11 +677,33 @@ export interface StackXRow {
  * precisely so a grafted rider's own X does not collide with its carrier's
  * (types.ts EffectPart.costPaid.x). Spent parts are skipped — they resolve to
  * nothing, so their X is not about to matter.
+ *
+ * R80 adds a THIRD, and it is the one the report was actually about the second
+ * time (VEAV): "Awoken Tomb's trigger, while on the stack, doesn't say what X
+ * is equal to." A triggered ability's X is usually neither of the other two —
+ * it is a number the triggering EVENT carried ("create an X/X unit, where X is
+ * the damage I am dealt"), and that number lives on `item.event`, nowhere
+ * else. Every engine event that has an amount calls it `n`, so this needs no
+ * per-card declaration and cannot rot the way a hand-kept list would. When the
+ * event was part of a damage BATCH whose total differs, the hint says so —
+ * Ember of Life reads the total where Awoken Tomb reads its own share.
  */
 export function stackItemX(item: StackItem): StackXRow[] {
   const out: StackXRow[] = [];
   if (item.x !== undefined) {
     out.push({ kind: 'cast', x: item.x, ...(item.card ? { source: item.card } : {}) });
+  }
+  if (item.kind === 'triggered' && VARIABLE_LABEL.test(item.label)) {
+    const d = item.event?.data;
+    const n = d?.n;
+    if (typeof n === 'number') {
+      const total = d?.total;
+      const from = [
+        item.event?.msg,
+        typeof total === 'number' && total !== n ? `${total} in all from that effect` : '',
+      ].filter(Boolean).join(' · ');
+      out.push({ kind: 'event', x: n, ...(from ? { from } : {}) });
+    }
   }
   item.parts.forEach((p, i) => {
     if (p.spent) return;

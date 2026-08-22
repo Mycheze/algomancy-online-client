@@ -12,7 +12,7 @@
  * Reclaimer), R6 payments (Frosted Denial), hand-entry pump — recalls AND
  * battle draws (Galerider Eel), playing units mid-battle (Hooba-Pon,
  * Insidious Invitation), ambush
- * (Mirage Walker, R22; Lurking Slimebeast parked — no printed ambush data),
+ * (Mirage Walker and Lurking Slimebeast, R22),
  * targeted recall (Minor Kraken), deployment-idle tracking (Mirage Walker),
  * Glimpse spells (Oracle of Foretelling, Premonition) and until-regroup
  * pumps (Overwhelm, Protective Adaptations).
@@ -22,9 +22,12 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, notOffered, ownAttrs, pass, pick,
-  spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  effStats, ent, finishBattle, give, giveResources, handIdx, notOffered, ownAttrs,
+  pass, pick, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
+
+const passUntil = (h: Harness, seat: Seat) => { while (h.state.priority !== seat) pass(h); };
+const drainStack = (h: Harness) => { while (h.state.stack.length) pass(h); };
 import type { CachedCard, Seat } from '../src/types.ts';
 
 /** R41: the cache zone — optional field, so read it through here. */
@@ -412,7 +415,7 @@ test('Insidious Invitation: draw, then each player (you first) may play a unit a
 
 // ── Lurking Slimebeast ───────────────────────────────────────────────────
 
-test('Lurking Slimebeast: plays as an 8/3 (ambush data is parked)', () => {
+test('Lurking Slimebeast: plays as an 8/3', () => {
   const h = new Harness(1415);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -422,9 +425,34 @@ test('Lurking Slimebeast: plays as an 8/3 (ambush data is parked)', () => {
   assert.deepEqual(effStats(h, slime.id), [8, 3]);
 });
 
-test('Lurking Slimebeast: [Battle] Ambush [three_blue] (extractor does not parse word-form costs)', { todo: true }, () => {
-  // PARKED: printed.json has no ambush field for this card, so the engine's
-  // R22 ambush mode is never offered. Needs an extract-printed.mjs fix.
+// UNPARKED (round 15): the extractor expands word-form cost tokens now
+// (three_blue -> 3b, core.py's COST_WORDS), so printed.ambush is real and the
+// R22 mode is offered like any other ambusher's.
+test('Lurking Slimebeast: [Battle] Ambush [three_blue] = 3 mana at one water pip (R22)', () => {
+  const h = new Harness(1417);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const sprite = spawn(h, A, 'Ignis Sprite');
+  const rc = spawn(h, D, 'Rune Channeler');
+  giveResources(h, D, 'water', 4);                          // 3 is the ambush cost
+  give(h, D, 'Lurking Slimebeast');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[sprite]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [rc] } });
+  passUntil(h, D);
+  assert.ok(h.legal(D).some(a => a.type === 'playCard' && a.mode === 'ambush'),
+    'the ambush mode is offered at all — the whole point of the unpark');
+  h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Lurking Slimebeast'), mode: 'ambush' });
+  pick(h, { unit: rc });
+  drainStack(h);
+  assert.ok(!ent(h, rc), 'the ally it recalled left play');
+  const slime = unitsOf(h, D).find(u => u.card === 'Lurking Slimebeast');
+  assert.ok(slime, 'the ambusher is in play');
+  assert.equal(h.state.battle!.blocks[0]![0], slime!.id, 'it took the blocking slot');
+  assert.equal(h.state.players[D]!.resources.filter(r => r.state === 'expended').length, 3,
+    'paid the ambush cost (3), not the printed 4');
+  finishBattle(h);
 });
 
 // ── Minor Kraken ─────────────────────────────────────────────────────────

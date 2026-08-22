@@ -3173,6 +3173,10 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
+  "ambush": {
+   "cost": "b",
+   "mana": 3
+  },
   "text": "[Battle] Ambush  [three_blue] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\"){/i}",
   "image": "Lurking-Slimebeast.jpg"
  },
