@@ -2720,6 +2720,10 @@ function renderNow(): boolean {
     ${postGame && !postGameHidden ? pg.postGameHtml(postGame) : ''}
     ${reportOpen ? reportOverlayHtml() : ''}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
+  // the rail was rebuilt with it: put the focused card back, re-derived from
+  // the state that just landed, BEFORE the scroll positions go back on — the
+  // panel has to have its content again for its scrollTop to mean anything
+  repaintFocus();
   for (const [sel, top] of scrollBefore) {
     if (!top) continue;
     const el = document.querySelector(sel);
@@ -3415,6 +3419,157 @@ function previewEntityHtml(id: EntityId): string {
     ${textBoxHtml(entityTextBox(q(), u))}`;
 }
 
+/* ── the focus viewer: what it shows, and when hover may change it ──────
+ *
+ * Two playtest asks (2026-08-22), one mechanism.
+ *
+ * 1. It OPENS AT THE BOTTOM. A modded unit is taller than the rail, and the
+ *    half you want is the bottom half — the current text and the mods, not
+ *    the name and the cost you already read off the board. Opening at the top
+ *    meant a scroll for every modded unit, and the scroll is the expensive
+ *    part, because:
+ * 2. A CLICK PINS IT for PIN_MS. Reaching the panel to scroll it means
+ *    dragging the cursor across the board, and every card on the way steals
+ *    the viewer — so you arrive at the scrollbar reading the wrong card and
+ *    have to thread the path again. A click says "this one", and for five
+ *    seconds hover cannot take it away. The pin only suspends hover; it never
+ *    clears the panel, so when it lapses the card is still sitting there.
+ *
+ * Both need the viewer to know what it is SHOWING rather than just holding
+ * markup: a repaint (every action repaints the board, and the click that pins
+ * is usually also an action) has to re-derive the card from the state that
+ * just landed, not re-show a snapshot taken before it.
+ */
+const PIN_MS = 5000;
+
+/** the three hooks hover reads, as data. A card can carry more than one —
+ * a stack card has both `prevstack` and `prev` — so this is a record, not a
+ * union, and `focusHtmlFor` tries them in the order hover always tried them. */
+type FocusSubject = { eid?: number; sid?: number; name?: string; xnow?: string };
+
+/** what the viewer is pointed at (null = the hint), and its identity, so a
+ * mouseover that merely crosses a child element of the same card is a no-op
+ * instead of a repaint that would fight the player's own scrolling */
+let focusSub: FocusSubject | null = null;
+let focusKey = '';
+/** bumped on every paint, so a slow image cannot scroll a card that has since
+ * been replaced */
+let focusGen = 0;
+/** set while a click holds the viewer; hover is inert until it fires */
+let pinTimer: number | null = null;
+
+function focusKeyOf(t: HTMLElement): string {
+  return `${t.dataset['previd'] ?? ''}|${t.dataset['prevstack'] ?? ''}|${
+    t.dataset['prev'] ?? ''}|${t.dataset['xnow'] ?? ''}`;
+}
+
+function focusSubjectFor(t: HTMLElement): FocusSubject | null {
+  const eid = t.dataset['previd'];
+  const sid = t.dataset['prevstack'];
+  const name = t.dataset['prev'];
+  const xnow = t.dataset['xnow'];
+  if (eid === undefined && sid === undefined && !name) return null;
+  const sub: FocusSubject = {};
+  if (eid !== undefined) sub.eid = Number(eid);
+  if (sid !== undefined) sub.sid = Number(sid);
+  if (name) sub.name = name;
+  if (xnow !== undefined) sub.xnow = xnow;
+  return sub;
+}
+
+/** a live entity first, then the stack item, then the printed card — each
+ * falling through to the next when it has nothing to say (the unit died, the
+ * item resolved), which is what a stack card's two hooks are for */
+function focusHtmlFor(sub: FocusSubject): string {
+  if (sub.eid !== undefined) {
+    const html = previewEntityHtml(sub.eid);
+    if (html) return html;
+  }
+  // a stack item shows the ABILITY that is on the stack, not the whole card
+  if (sub.sid !== undefined) {
+    const html = previewStackHtml(sub.sid);
+    if (html) return html;
+  }
+  if (!sub.name) return '';
+  // #5: hand cards carry their live X preview into the focus viewer
+  const xnow = sub.xnow !== undefined
+    ? `<div class="xnow">X = ${esc(sub.xnow)} right now</div>` : '';
+  return `<img src="${art(sub.name)}" alt="" onerror="this.style.display='none'">${xnow}${
+    textBoxHtml(printedTextBox(sub.name))}`;
+}
+
+/** Drop the panel to the bottom of its content. Art that has not been fetched
+ * yet contributes NO height, so the first drop is to the bottom of a panel
+ * that is about to grow — hence the second one per image as it lands. */
+function scrollFocusToBottom(el: HTMLElement): void {
+  el.scrollTop = el.scrollHeight;
+  const gen = focusGen;
+  for (const img of el.querySelectorAll('img')) {
+    if (img.complete) continue;
+    const again = (): void => { if (gen === focusGen) el.scrollTop = el.scrollHeight; };
+    img.addEventListener('load', again, { once: true });
+    img.addEventListener('error', again, { once: true });
+  }
+}
+
+const PIN_BADGE = '<div class="pinbadge">📌 held — hovering elsewhere will not steal this</div>';
+
+/** Paint `sub` into the rail. `fresh` marks a card the player just chose,
+ * which opens at the bottom; a repaint after a board render is not fresh and
+ * leaves the scroll position alone (renderNow puts it back with the rest). */
+function paintFocus(sub: FocusSubject, fresh: boolean): boolean {
+  const prev = document.getElementById('preview');
+  if (!prev) return false;
+  const html = focusHtmlFor(sub);
+  if (!html) return false;
+  focusGen++;
+  prev.innerHTML = html + (pinTimer !== null ? PIN_BADGE : '');
+  prev.classList.toggle('pinned', pinTimer !== null);
+  if (fresh) scrollFocusToBottom(prev);
+  return true;
+}
+
+/** hover moved onto a different card */
+function showFocus(sub: FocusSubject, key: string): void {
+  if (!paintFocus(sub, true)) return;
+  focusSub = sub;
+  focusKey = key;
+}
+
+/** The board was just repainted under it: put the same card back, re-derived
+ * from the state that landed. Without this the viewer blanked to the hint on
+ * every single action — and a pinned card would not survive the click that
+ * pinned it, since that click is usually an action too. */
+function repaintFocus(): void {
+  if (focusSub) paintFocus(focusSub, false);
+}
+
+/** A click says "this one": hold it against hover for PIN_MS. Clicking again
+ * — the same card or another — re-arms rather than stacking timers. */
+function pinFocus(sub: FocusSubject, key: string): void {
+  if (!document.getElementById('preview')) return;   // no rail: not on a board
+  if (pinTimer !== null) clearTimeout(pinTimer);
+  pinTimer = window.setTimeout(() => {
+    pinTimer = null;
+    // the card STAYS; only hover's claim on the panel comes back
+    repaintFocus();
+  }, PIN_MS);
+  focusSub = sub;
+  focusKey = key;
+  paintFocus(sub, true);
+}
+
+// A click on a card pins the viewer to it. Capture phase, because the same
+// click is usually a game action, and the pin has to be set before the render
+// it triggers — renderNow reads it to repaint the rail.
+document.addEventListener('click', e => {
+  const t = (e.target as HTMLElement)?.closest?.(
+    '[data-prev], [data-previd], [data-prevstack]') as HTMLElement | null;
+  if (!t) return;
+  const sub = focusSubjectFor(t);
+  if (sub) pinFocus(sub, focusKeyOf(t));
+}, { capture: true });
+
 /* ── the long-hover text box ────────────────────────────────────────────
  *
  * Playtest ask: the current text box "should also be shown when hovering for
@@ -3493,24 +3648,12 @@ document.addEventListener('mouseover', e => {
   // a stack item has no card box of its own — the side rail explains it
   if (t.dataset['prevstack'] === undefined) armHoverTip(t, (e as MouseEvent).clientX, (e as MouseEvent).clientY);
   else hideHoverTip();
-  const prev = document.getElementById('preview');
-  if (!prev) return;
-  if (t.dataset['previd']) {
-    const html = previewEntityHtml(Number(t.dataset['previd']));
-    if (html) { prev.innerHTML = html; return; }
-  }
-  // a stack item shows the ABILITY that is on the stack, not the whole card
-  if (t.dataset['prevstack']) {
-    const html = previewStackHtml(Number(t.dataset['prevstack']));
-    if (html) { prev.innerHTML = html; return; }
-  }
-  const name = t.dataset['prev'];
-  if (!name) return;
-  // #5: hand cards carry their live X preview into the focus viewer
-  const xnow = t.dataset['xnow'] !== undefined
-    ? `<div class="xnow">X = ${esc(t.dataset['xnow'])} right now</div>` : '';
-  prev.innerHTML = `<img src="${art(name)}" alt="" onerror="this.style.display='none'">${xnow}${
-    textBoxHtml(printedTextBox(name))}`;
+  // a clicked card owns the viewer until its pin lapses
+  if (pinTimer !== null) return;
+  const key = focusKeyOf(t);
+  if (key === focusKey) return;            // same card: nothing to repaint
+  const sub = focusSubjectFor(t);
+  if (sub) showFocus(sub, key);
 });
 
 document.addEventListener('mouseout', e => {

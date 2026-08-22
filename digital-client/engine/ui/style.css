@@ -114,6 +114,15 @@ button:disabled { opacity: .4; cursor: default; }
 .preview { text-align: center; }
 .preview img { width: 100%; max-width: 260px; border-radius: 10px; }
 .preview .hint { color: var(--dim); font-size: 11px; }
+/* the focus pin (main.ts §focus viewer): a clicked card holds the viewer for
+   five seconds, so the walk across the board to the panel's scrollbar cannot
+   lose it on the way. The badge is STICKY at the bottom because the panel
+   opens at the bottom — put it at the top and the one thing explaining why
+   hovering stopped working would be the one thing scrolled out of sight. */
+.preview.pinned { border-color: var(--accent); }
+.preview .pinbadge { position: sticky; bottom: -8px; z-index: 1;
+  margin: 6px -8px -8px; padding: 3px 8px; border-radius: 0 0 5px 5px;
+  background: var(--accent); color: var(--bg); font-size: 11px; }
 
 .menu { position: fixed; background: var(--panel2); border: 1px solid var(--accent); border-radius: 6px;
   padding: 6px; z-index: 50; display: flex; flex-direction: column; gap: 4px; }
