@@ -896,12 +896,57 @@ test('Witness of the Crossing: only 1 or 13, only during battle, only your own l
   finishBattle(h);
 });
 
-test('Witness of the Crossing: [Switch1][Switch1][Switch1] means three copies', { todo: true }, () => {
-  // AMBIGUOUS PRINTED TEXT: the card prints three [Switch1] marks and NO
-  // reminder text. The three-copy reading is inferred from Lost Guardian
-  // ("[Switch1][Switch1] (Trigger two copies of this graft ability as one
-  // single trigger.)"), which prints the same shape with two marks. Confirm
-  // with the card image / Caleb before this is more than a precedent.
+test('Witness of the Crossing: [Switch1][Switch1][Switch1] triples EVERY graft, each copy aiming on its own', () => {
+  // THE READING IS CONFIRMED (owner, 2026-08-23). The card prints three
+  // [Switch1] marks and NO reminder text, so until today the three-copy
+  // reading was only inferred from Lost Guardian ("[Switch1][Switch1]
+  // (Trigger two copies of this graft ability as one single trigger.)").
+  // Asked directly, the owner closed it by pointing at the OTHER card that
+  // prints the mechanism:
+  //
+  //     "Amphivavor is the same. It creates a special Grafted ability with
+  //      everything on there three times"
+  //
+  // ("Amphivavor" = Amphivore.) So: three copies, of EVERYTHING attached, as
+  // one single trigger — which is exactly R110's `graftCopies: 3`, the same
+  // field Amphivore uses, and the same behaviour
+  // 14-water-a.test.ts::"R110: a TARGETED graft under Amphivore aims each of
+  // its three copies separately" already pins on that card.
+  //
+  // This test is the Witness's own copy of that proof, and it discriminates in
+  // the two ways the sibling above (three Crystals from ONE graft) cannot:
+  //   · TWO different grafts, so "everything on there three times" is tested
+  //     rather than "the one thing on there three times";
+  //   · a TARGETED graft, so each copy is seen collecting its own target set.
+  // At `graftCopies: 1` it fails on both counts (1 Crystal, 1 target question).
+  const h = new Harness(4025);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const woc = spawn(h, A, 'Witness of the Crossing');         // 0/3, graft cause
+  const raider = spawn(h, D, 'Unit Token');
+  giveResources(h, A, 'earth', 1);                            // Geode: e/1, "Create a Crystal 1"
+  h.do({ type: 'graft', seat: A, from: 'hand', index: give(h, A, 'Geode'), hostId: woc, position: 0 });
+  giveResources(h, A, 'fire', 3);                             // Rune Channeler: rr/3, [Switch1] 2 damage to any target
+  h.do({ type: 'graft', seat: A, from: 'hand', index: give(h, A, 'Rune Channeler'), hostId: woc, position: 1 });
+  assert.equal(ent(h, woc)!.mods.length, 2, 'two different grafts under the one cause');
+  toNextBattle(h, D);                                         // A defends → A's home is the battle region
+  h.state.players[A]!.life = 14;
+  h.do({ type: 'declareAttack', seat: D, columns: [[raider]] });
+  const lifeD = h.state.players[D]!.life;
+  whiteBox(h, e => e.loseLife(A, 1, 'test'));                 // 14 → 13: the cause fires
+  // R110: each copy of the TARGETED graft collects its own target set, so the
+  // one trigger asks three separate questions before it ever resolves
+  let asked = 0;
+  while (h.state.decision && asked < 6) { pick(h, { player: D }); asked++; }
+  assert.equal(asked, 3, 'three copies of the targeted graft, three target questions');
+  assert.equal(h.state.stack.length, 1, 'and still ONE single trigger on the stack');
+  pass(h); pass(h);                                           // resolve the composite
+  const crystals = Object.values(h.state.entities)
+    .filter(e => e.kind === 'spellToken' && e.card === 'Crystal' && e.controller === A);
+  assert.equal(crystals.length, 3, 'the untargeted graft ran three times too');
+  assert.ok(crystals.every(c => c.x === 1));
+  assert.equal(h.state.players[D]!.life, lifeD - 6, 'and the targeted one dealt 3 × 2');
+  finishBattle(h);
 });
 
 // ── parked cards: registration is still load-bearing ─────────────────────

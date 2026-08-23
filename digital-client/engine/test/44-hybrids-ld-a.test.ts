@@ -21,6 +21,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
+import { apply } from '../src/apply.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
@@ -103,8 +104,10 @@ test('Apex Prime: on an odd life total, all of your units copy the target\'s bas
   assert.deepEqual(effStats(h, tok), [2, 2]);
   assert.ok(ownAttrs(h, ap).has('Poisonous'), 'attributes copied (E.addTempAttr over ownAttrs)');
   assert.ok(ownAttrs(h, tok).has('Poisonous'));
-  assert.ok((ent(h, tok)!.granted ?? []).some(g => g.card === 'Sporebloom Siren'),
-    'R63: the triggered text is granted, and fireEvent scans `granted` like printed text');
+  assert.equal(new E(h.state).nameOf(ent(h, tok)!), 'Sporebloom Siren',
+    'R118: the copy is one FACE, so the NAME travels with the stats and the text');
+  assert.equal(ent(h, tok)!.card, 'Unit Token',
+    'R118 ruling 1: the PHYSICAL card is untouched — only the game name changed');
 });
 
 test('Apex Prime: the copied "when I die" text really fires on the copy (R63/R92)', () => {
@@ -155,21 +158,259 @@ test('Apex Prime: an EVEN life total means the trigger never queues at all (R1)'
   assert.equal(odd.state.decision!.kind, 'targets', 'odd life → the trigger queues and wants its target');
 });
 
-test('Apex Prime: the copy does not carry the NAME, the STATICS or the ACTIVATED abilities', { todo: true }, () => {
-  // R92 shipped three of the four copy layers — base stats (E.setBase),
-  // attributes (E.addTempAttr over ownAttrs) and triggered / [Augment] text
-  // (E.grantText). Three clauses of "become a copy" are still dead, and each
-  // one needs the CORE, not card code:
-  //   · the NAME. Entity.card is the identity bins, "name a card" and
-  //     counters-by-name all key off; a copy-name layer is a core change.
-  //   · STATICS. staticsFor() reads `statics` off the printed card; there is no
-  //     granted-static channel beside Entity.granted.
-  //   · ACTIVATED abilities. apply.ts's pushActivatedOptions offers
-  //     getCard(u.card).abilities and never reads `granted`, so a granted
-  //     activated ability can never be offered — grantText will store it and
-  //     nothing will ever surface it.
-  // Borrower of Forms waits on exactly the same three.
+/** R118: bring Apex Prime's trigger to resolution with `target` copied onto
+ * every unit `A` controls in the battle region. Returns the attacker's id. */
+function apexCopy(h: Harness, A: Seat, apexId: number, targetId: number, extra: number[] = []): void {
+  h.do({ type: 'declareAttack', seat: A, columns: [[apexId, ...extra]] });
+  pick(h, { unit: targetId });                                // R67: declared at cast
+  pass(h); pass(h);                                           // resolve the trigger
+  pick(h, true);                                              // "you MAY"
+}
+
+test('R118: a copy carries the NAME, and the PHYSICAL card is untouched (ruling 1)', () => {
+  const h = new Harness(4420);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');                    // 7/5
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  apexCopy(h, A, ap, whale, [tok]);
+  const e = new E(h.state);
+  assert.equal(e.nameOf(ent(h, tok)!), 'Good Whale', 'the GAME name is the copied card');
+  assert.equal(ent(h, tok)!.card, 'Unit Token', 'the PHYSICAL card is still its own');
+  assert.deepEqual(effStats(h, tok), [7, 5], 'and the printed numbers are the face\'s');
+  finishBattle(h);
 });
+
+test('R118: a copy DYING puts the PHYSICAL card in the bin, not the copied one (ruling 1)', () => {
+  const h = new Harness(4421);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const cap = spawn(h, A, 'Noxious Deathcap');               // a NON-token body, so it bins
+  const whale = spawn(h, D, 'Good Whale');
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  apexCopy(h, A, ap, whale, [cap]);
+  assert.equal(new E(h.state).nameOf(ent(h, cap)!), 'Good Whale');
+  whiteBox(h, e => e.destroy(e.entity(cap)!, 'dies'));
+  assert.ok(h.state.players[A]!.bin.includes('Noxious Deathcap'),
+    'R118 ruling 1: the card that bins is the one that was in the deck');
+  assert.ok(!h.state.players[A]!.bin.includes('Good Whale'),
+    'the copied card was never anybody\'s card — it does not enter a bin');
+});
+
+test('R118: a copied STATIC really radiates — Apex Prime copying Aberrant Statweaver', () => {
+  const h = new Harness(4422);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');                      // 1/1
+  const sw = spawn(h, D, 'Aberrant Statweaver');              // "your units are base 3/3"
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  assert.deepEqual(effStats(h, tok), [1, 1], 'before: a plain 1/1');
+  apexCopy(h, A, ap, sw, [tok]);
+  // both of A's units are Statweavers now, and each one's static reads
+  // "your units" as ITS controller's — so A's whole side is base 3/3
+  assert.deepEqual(effStats(h, tok), [3, 3], 'the copied static radiates from the copy');
+  assert.deepEqual(effStats(h, ap), [3, 3], 'onto every unit it matches, itself included');
+  assert.ok(new E(h.state).projections(ent(h, tok)!).some(p => p.from === 'Aberrant Statweaver'),
+    'and the text box is told which card the clause is printed on');
+  finishBattle(h);
+});
+
+test('R118: R62 suppression is a veto ABOVE copy — a silenced copy radiates nothing', () => {
+  const h = new Harness(4423);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');
+  const sw = spawn(h, D, 'Aberrant Statweaver');              // "your units are base 3/3"
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  apexCopy(h, A, ap, sw, [tok]);
+  const radiators = (): string[] =>
+    new E(h.state).projections(ent(h, tok)!).filter(p => p.from === 'Aberrant Statweaver')
+      .map(p => String(p.holder));
+  assert.equal(radiators().length, 2, 'both copies radiate the copied static');
+  whiteBox(h, e => e.suppress(e.entity(ap)!, 'Suppression Field', { attrs: true, abilities: true }));
+  assert.equal(radiators().length, 1, 'silencing one copy switches ONLY its face off');
+  whiteBox(h, e => e.suppress(e.entity(tok)!, 'Suppression Field', { attrs: true, abilities: true }));
+  assert.equal(radiators().length, 0,
+    'R62 sits ABOVE layer 0: a silenced copy radiates nothing, all faces at once');
+  // …and the veto is about ABILITIES, not identity. The copy is still a
+  // Statweaver, and still has a Statweaver's printed 3/3 body.
+  assert.equal(new E(h.state).nameOf(ent(h, tok)!), 'Aberrant Statweaver');
+  assert.deepEqual(effStats(h, tok), [3, 3], 'the FACE survives suppression — only its text is off');
+  finishBattle(h);
+});
+
+test('R118: {Unaware} reads the COPIED face\'s printed stats (R106 over layer 0)', () => {
+  const h = new Harness(4424);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');                    // 7/5
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  apexCopy(h, A, ap, whale, [tok]);
+  const e = new E(h.state);
+  assert.deepEqual(e.printedStats(ent(h, tok)!), [7, 5],
+    'a Unit Token wearing a Good Whale face PRINTS 7/5 — layer 0 redefines layer 1');
+  whiteBox(h, g => g.addCounters(g.entity(tok)!, 2));
+  assert.deepEqual(effStats(h, tok), [9, 7], 'counters are facts about the unit, on top');
+  whiteBox(h, g => g.addTempAttr(g.entity(tok)!, 'Unaware'));
+  assert.deepEqual(effStats(h, tok), [7, 5],
+    'R106: {Unaware} throws away everything above layer 1 — and layer 1 is the FACE');
+  finishBattle(h);
+});
+
+test('R118: {Inverted} inverts the change from the COPIED base (R93 over layer 0)', () => {
+  const h = new Harness(4425);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');                    // 7/5
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  apexCopy(h, A, ap, whale, [tok]);
+  whiteBox(h, g => g.addCounters(g.entity(tok)!, 2));         // 9/7 — a +2/+2 net change
+  assert.deepEqual(effStats(h, tok), [9, 7]);
+  whiteBox(h, g => g.addTempAttr(g.entity(tok)!, 'Inverted'));
+  assert.deepEqual(effStats(h, tok), [5, 3],
+    'the net change from the COPIED base (7/5) is inverted, not from the token\'s own 1/1');
+  finishBattle(h);
+});
+
+test('R118: a later setBase wins over a copy — and so does an earlier one (layer 2 over layer 0)', () => {
+  // copy THEN setBase
+  const h = new Harness(4426);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  apexCopy(h, A, ap, whale, [tok]);
+  assert.deepEqual(effStats(h, tok), [7, 5]);
+  whiteBox(h, g => g.setBase(g.entity(tok)!, 4, 4));
+  assert.deepEqual(effStats(h, tok), [4, 4], 'a base-setter rewrites what the face prints');
+  finishBattle(h);
+
+  // setBase THEN copy — the same answer, because copy is layer 0 and BELOW it
+  const h2 = new Harness(4427);
+  toDeployment(h2);
+  const A2 = h2.state.deployPlayer!, D2 = (1 - A2) as Seat;
+  const ap2 = spawn(h2, A2, 'Apex Prime');
+  const tok2 = spawn(h2, A2, 'Unit Token');
+  const whale2 = spawn(h2, D2, 'Good Whale');
+  h2.state.players[A2]!.life = 29;
+  toNextBattle(h2, A2);
+  whiteBox(h2, g => g.setBase(g.entity(tok2)!, 4, 4));
+  apexCopy(h2, A2, ap2, whale2, [tok2]);
+  assert.deepEqual(effStats(h2, tok2), [4, 4],
+    'the copy does not overwrite the base-set: layer 0 is BELOW layer 2 in both orders');
+  assert.equal(new E(h2.state).nameOf(ent(h2, tok2)!), 'Good Whale', 'but the face still landed');
+  finishBattle(h2);
+});
+
+test('R118: an until-regroup face lapses at regroup, and the revert can be lethal', () => {
+  const h = new Harness(4428);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');                      // 1/1
+  const whale = spawn(h, D, 'Good Whale');                    // 7/5
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  apexCopy(h, A, ap, whale, [tok]);
+  whiteBox(h, g => g.addCounters(g.entity(tok)!, -2));        // 5/3 while wearing the face
+  assert.deepEqual(effStats(h, tok), [5, 3]);
+  finishBattle(h);
+  assert.ok(!ent(h, tok),
+    'back to base 1/1 with two -1/-1 counters — the regroup sweep runs a death check');
+  assert.ok(h.state.players[A]!.bin.length >= 0);
+  assert.equal(ent(h, ap)!.copies, undefined, 'and the surviving copy\'s face is gone');
+  assert.deepEqual(effStats(h, ap), [4, 4], 'Apex Prime is a 4/4 again');
+});
+
+test('R118: a copy of a COPY chains through the face, not the physical card', () => {
+  const h = new Harness(4429);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  apexCopy(h, A, ap, whale, [tok]);
+  assert.equal(new E(h.state).nameOf(ent(h, tok)!), 'Good Whale');
+  // now a SECOND Apex copy, aimed at the unit that is already a copy
+  const ap2 = spawn(h, A, 'Apex Prime');
+  whiteBox(h, g => g.becomeCopy(g.entity(ap2)!, g.entity(tok)!, { from: 'Apex Prime', until: 'regroup' }));
+  assert.equal(new E(h.state).nameOf(ent(h, ap2)!), 'Good Whale',
+    'MTG\'s copiable values: you copy what it IS, not what card it is printed on');
+  assert.deepEqual(effStats(h, ap2), [7, 5]);
+  assert.equal(ent(h, ap2)!.card, 'Apex Prime', 'and its own physical card is still Apex Prime');
+  finishBattle(h);
+});
+
+test('R118: attacking and then blocking leaves ONE face, not two', () => {
+  const h = new Harness(4430);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  apexCopy(h, A, ap, whale, [tok]);
+  assert.equal(ent(h, tok)!.copies!.length, 1);
+  whiteBox(h, g => g.becomeCopy(g.entity(tok)!, g.entity(whale)!, { from: 'Apex Prime', until: 'regroup' }));
+  assert.equal(ent(h, tok)!.copies!.length, 1,
+    'a whole-identity face REPLACES the previous one — copies do not pile up');
+  finishBattle(h);
+});
+
+test('R118: a copied ACTIVATED ability is never offered — Apex Prime (apply.ts)',
+  { todo: true }, () => {
+    // The face Apex Prime stamps carries the 'activated' facet and
+    // `E.facesWith(u, 'activated')` answers with the copied card. Nothing
+    // reads it: apply.ts's `pushActivatedOptions` and `activationSource` both
+    // go to `getCard(u.card).abilities`, so a unit that became a copy of
+    // something with an activated ability cannot use it — and the fuzzer's
+    // "legalActions lied" check would catch the reverse mistake, not this one.
+    // Two reads in apply.ts (plus their mirrors at ui/inspect.ts:102 and 942).
+    // Ancient One and Borrower of Forms wait on the same two reads.
+  });
+
+test('R118: Entity.copies survives a seed + actions replay byte for byte', () => {
+  const h = new Harness(4431);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  // the spawns are white-box, so the round trip is ANCHORED at the state just
+  // before the copy; everything past that point is nothing but actions
+  const start = structuredClone(h.state);
+  const from = h.actions.length;
+  apexCopy(h, A, ap, whale, [tok]);
+  assert.ok(ent(h, tok)!.copies?.length, 'a face is on the board');
+  let st = start;
+  for (const a of h.actions.slice(from)) st = apply(st, a).state;
+  assert.equal(JSON.stringify(st), JSON.stringify(h.state),
+    'CopyRef is plain serializable data — the copy replays identically from the log');
+});
+
 
 test('Apex Prime: plays as a 4/4 and is recognised as an augment (inert donation)', () => {
   const h = new Harness(4402);

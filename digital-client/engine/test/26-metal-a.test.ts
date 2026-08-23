@@ -21,7 +21,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
-import type { Seat } from '../src/types.ts';
+import type { Entity, EntityId, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
@@ -97,12 +97,66 @@ test('Ancient One: has the triggered abilities of adjacent allies (in formation)
   finishBattle(h);
 });
 
-test('Ancient One: activated abilities and statics of neighbours are not copied', { todo: true }, () => {
-  // PARKED half: apply.ts surfaces activated abilities only from a unit's own
-  // lists and statics only from a card's own def — neighbours' activated
-  // abilities/statics cannot be projected from card code. Triggered abilities
-  // ARE mimicked (test above).
+test('R118: Ancient One radiates an adjacent ally\'s STATIC, and stops when the column breaks', () => {
+  const h = new Harness(2620);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const elder = spawn(h, A, 'Glowhaven Elder');             // "[Augment] your OTHER units gain +1/+1"
+  const ancient = spawn(h, A, 'Ancient One');               // 1/1
+  const bystander = spawn(h, A, 'Unit Token');              // 1/1, its own column
+  spawn(h, D, 'Unit Token');
+  toNextBattle(h, A);
+  // adjacency is a formation concept, so the two have to be in ONE column —
+  // and the bystander has to be in the battle region for a region-scoped
+  // static to reach it at all, so it attacks in a column of its own
+  h.do({ type: 'declareAttack', seat: A, columns: [[elder, ancient], [bystander]] });
+  assert.deepEqual(effStats(h, bystander), [3, 3],
+    'the Elder\'s own +1/+1, and the Ancient One\'s projected copy of it, both land');
+  assert.deepEqual(effStats(h, ancient), [2, 2],
+    'the projected static excludes its own anchor by id — only the Elder\'s copy reaches it');
+  const e = new E(h.state);
+  assert.equal(e.projections(ent(h, bystander)!).filter(p => p.from === 'Glowhaven Elder').length, 2,
+    'two radiators, and the text box names the card the clause is printed on for both');
+  // R118: the projection is CONTINUOUS, not a stamp — kill the neighbour
+  // mid-combat and the borrowed static is gone in the same instant
+  withE(h, g => g.destroy(g.entity(elder)!, 'dies'));
+  assert.deepEqual(effStats(h, bystander), [1, 1],
+    'the Elder left the column, so the Ancient One has nothing to borrow');
+  finishBattle(h);
 });
+
+test('R118: Ancient One projects an adjacent ally\'s face WITHOUT taking its name or its body', () => {
+  const h = new Harness(2621);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const whale = spawn(h, A, 'Good Whale');                  // 7/5
+  const ancient = spawn(h, A, 'Ancient One');               // 1/1
+  spawn(h, D, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[whale, ancient]] });
+  const e = new E(h.state);
+  assert.equal(e.nameOf(ent(h, ancient)!), 'Ancient One',
+    '"I have all ABILITIES of adjacent allies" is additive — facesOf()[0] is always the identity');
+  assert.deepEqual(effStats(h, ancient), [1, 1], 'and it is still a 1/1');
+  finishBattle(h);
+});
+
+test('R118: a copied ACTIVATED ability is never offered — Ancient One and Borrower of Forms (apply.ts)',
+  { todo: true }, () => {
+    // R118 built the whole engine side: the face is stamped, and
+    // `E.facesWith(u, 'activated')` answers with the copied / projected card
+    // names. What is missing is TWO reads in apply.ts, a file this change was
+    // scoped out of:
+    //   · `pushActivatedOptions` offers `getCard(u.card).abilities` (and
+    //     `.augmentText`), so a copied activated ability never reaches
+    //     `legalActions`;
+    //   · `activationSource` resolves `via === undefined` the same way, so it
+    //     would refuse the action even if it were offered.
+    // Both need `E.facesWith(u, 'activated')` in place of `u.card`, plus a
+    // `via: { face }` arm so `composeParts` keys the budget on the right card.
+    // `ui/inspect.ts` (lines 102 and 942) mirrors the same read and has to
+    // move with it. Apex Prime waits on exactly this — see its own todo.
+  });
 
 // ── Arcane Echo ──────────────────────────────────────────────────────────
 
@@ -263,10 +317,93 @@ test('Borrower of Forms: erases the target and takes its stats and counters', ()
   assert.deepEqual(effStats(h, bof.id), [9, 7], '"become" is permanent — survives regroup');
 });
 
-test('Borrower of Forms: card text, attributes and mods are not copied', { todo: true }, () => {
-  // APPROXIMATION: the engine has no transform machinery — the copy is base
-  // stats + counters + temp changes relayed into the spawned Borrower. The
-  // erased unit's card text, attrs and mods die with it.
+/** R118: cast Borrower of Forms at `target` and resolve it and its
+ * become-a-copy trigger. Returns the spawned Borrower body. */
+function borrow(h: Harness, A: Seat, target: EntityId): Entity {
+  giveResources(h, A, 'metal', 7);                          // mmm/7
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
+  pick(h, { unit: target });
+  pass(h); pass(h);                                         // resolve: erase + spawn
+  pass(h); pass(h);                                         // resolve the become-a-copy trigger
+  return unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
+}
+
+test('R118: Borrower of Forms takes the NAME, the attributes and the card TEXT', () => {
+  const h = new Harness(2622);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const siren = spawn(h, D, 'Sporebloom Siren');            // 2/2 {Poisonous}, "when I die …"
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const bof = borrow(h, A, siren);
+  const e = new E(h.state);
+  assert.equal(e.nameOf(bof), 'Sporebloom Siren', 'the GAME name is the borrowed one');
+  assert.equal(bof.card, 'Borrower of Forms', 'R118 ruling 1: the PHYSICAL card never changes');
+  assert.ok(e.ownAttrs(bof).has('Poisonous'), 'the attributes came with the face');
+  assert.deepEqual(effStats(h, bof.id), [2, 2], 'and so did the body');
+  finishBattle(h);
+});
+
+test('R118: a Borrower that became something else still bins as BORROWER OF FORMS (ruling 1)', () => {
+  const h = new Harness(2623);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');                  // 7/5
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const bof = borrow(h, A, whale);
+  assert.equal(new E(h.state).nameOf(bof), 'Good Whale');
+  withE(h, e => e.destroy(e.entity(bof.id)!, 'dies'));
+  assert.ok(h.state.players[A]!.bin.includes('Borrower of Forms'),
+    'the card that goes to the bin is the one that came out of the deck');
+  assert.ok(!h.state.players[A]!.bin.includes('Good Whale'),
+    'and the copied card, which nobody ever owned, does not');
+});
+
+test('R118 ruling 2: copying a MODDED unit inherits the mods TEXT and makes the copy {Unstable}', () => {
+  const h = new Harness(2624);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const host = spawn(h, D, 'Good Whale');                   // 7/5
+  giveResources(h, D, 'wood', 3);                           // gg/3
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Glowhaven Elder'), hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'the target is modded, and therefore Unstable');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const bof = borrow(h, A, host);
+  const ref = bof.copies!.find(c => c.facets.includes('name'))!;
+  assert.equal(ref.modded, true, 'the owner: "the copy is still considered modded"');
+  assert.deepEqual(ref.modText, ['Glowhaven Elder (augmented)'],
+    'the owner: "inherit the mods text" — the TEXT, not the mod entity');
+  assert.equal(bof.mods.length, 0, 'no mod ENTITY was cloned');
+  assert.ok(new E(h.state).isUnstable(bof), 'and therefore: "but it IS Unstable"');
+  withE(h, e => e.destroy(e.entity(bof.id)!, 'dies'));
+  assert.ok(!h.state.players[A]!.bin.includes('Borrower of Forms'),
+    'R69: an Unstable card is ERASED instead of binned');
+  assert.ok(h.log.some(l => l.includes('Unstable')), 'and the log says why');
+});
+
+test('R118: the Borrower\'s face is PERMANENT and its layer-1 numbers are the borrowed BASE', () => {
+  const h = new Harness(2625);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const tok = spawn(h, D, 'Unit Token');                    // 1/1 …
+  withE(h, e => e.setBase(e.entity(tok)!, 6, 6));           // … made base 6/6 (layer 2)
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const bof = borrow(h, A, tok);
+  const e = new E(h.state);
+  assert.deepEqual(e.printedStats(bof), [6, 6],
+    '"I copy all stat changes": the face snapshots the base it HAD, not the card\'s printed 1/1');
+  assert.equal(bof.tokenStats, undefined,
+    'and it is NOT written to tokenStats — the Borrower is not a token, and {Unaware} reads that');
+  finishBattle(h);
+  assert.deepEqual(effStats(h, bof.id), [6, 6], '"become" is permanent — the face survives regroup');
+  assert.equal(new E(h.state).nameOf(ent(h, bof.id)!), 'Unit Token', 'name included');
 });
 
 // ── Celestial Fluxmorph ──────────────────────────────────────────────────

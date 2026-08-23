@@ -598,8 +598,16 @@ card('Void Mandible', {
 // own: three [Switch1] marks on one cause = trigger THREE copies of each
 // attached graft ability as one single trigger (the Lost Guardian precedent,
 // which prints the same shape with two marks and spells the reading out in
-// reminder text). ⚠ Witness of the Crossing prints no such reminder — the
-// three-copy reading is inferred from Lost Guardian; flagged in the report.
+// reminder text).
+//
+// ✔ THE READING IS CONFIRMED (owner, 2026-08-23). This card prints no
+// reminder text, so the three-copy reading used to be an inference and was
+// carried in the card ledger as `unverified`. Asked directly, the owner closed
+// it by naming the other card that prints the mechanism: "Amphivavor is the
+// same. It creates a special Grafted ability with everything on there three
+// times" ("Amphivavor" = Amphivore). Amphivore is `graftCopies: 3` — this
+// card's own field — so nothing here changed; the ledger entry went, and the
+// {todo:true} became a real test in 40-light-c.test.ts.
 //
 // R110: a graft MULTIPLIER — `graftCopies: 3` makes composeParts materialize
 // every other attached graft three times in the one composite (G1 → G2 → G1

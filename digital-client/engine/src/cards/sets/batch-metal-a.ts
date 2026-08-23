@@ -139,14 +139,40 @@ card('Aberrant Statweaver', {
   }],
 });
 
-// "[Augment] I have all abilities of adjacent allies. (This includes modded
-// abilities.)" — mm/2 1/1 Ancient Mimic Unit. ⚠ approximation (header): a
-// bookkeeping when() (always false — Mirage Walker's pattern) scans adjacent
+// "[Augment] I have all abilities of adjacent allies. {/n}{i}(This includes
+// modded abilities.)" — mm/2 1/1 Ancient Mimic Unit.
+//
+// R118 — the ADDITIVE, CONTINUOUS half of the copy layer, and the reason the
+// layer could not be a stamp: adjacency changes inside a single combat (R72
+// column collapse, a neighbour dying, blockers being declared), so "all
+// abilities of adjacent allies" has to be re-asked every time it is read. That
+// is exactly `CardDef.projects`, which radiates through E.anchored() the way
+// StaticMod does — so the [Augment] form projects onto the HOST and "I" is the
+// host, for free.
+//
+// TWO HALVES, deliberately built two different ways:
+//
+//  · STATICS and ACTIVATED abilities are the `projects` declaration below.
+//    They are read off the holder's FACES now (E.facesWith), so a neighbour's
+//    "your units are base 3/3" really radiates from the Ancient One too.
+//    ⚠ The ACTIVATED half is stamped and engine-ready but NOT YET OFFERED:
+//    apply.ts's pushActivatedOptions/activationSource read
+//    `getCard(u.card).abilities` rather than the face. Two lines in a file
+//    this batch does not own.
+//
+//  · TRIGGERED abilities stay with the bookkeeping when() below, which
+//    predates R118 and does something the generic face machinery cannot: it
+//    labels each mimicked trigger "Ancient One (as Minor Kraken)", so the
+//    ordering UI says WHOSE trigger it is. `PROJECTED_FACETS` is overridden to
+//    ['statics', 'activated'] for exactly that reason — leaving 'triggered' in
+//    would queue every mimicked trigger TWICE.
+//
+// A bookkeeping when() (always false — Mirage Walker's pattern) scans adjacent
 // allies on every dispatched event and queues copies of their matching
 // TRIGGERED abilities (own card + augment-donated text) as the Ancient One's
 // own triggers. "I" in a copied ability is the Ancient One; ab.when runs with
 // the Ancient One as self. Bounded copies burn a per-source budget on the
-// Ancient One (R9). Activated abilities / statics: PARKED (header).
+// Ancient One (R9).
 const AO_EVENTS: EventType[] = [
   'spawned', 'died', 'despawned', 'draw', 'lifeLost', 'damage',
   'countersChanged', 'modApplied', 'spellPlayed', 'targeted',
@@ -154,7 +180,26 @@ const AO_EVENTS: EventType[] = [
   'afterCombat', 'endOfTurn',
 ];
 let aoScanning = false;   // reentrancy guard: two adjacent Ancient Ones must not mimic each other
+/** the FACES an Ancient One (or its host) borrows right now: every adjacent
+ * ally's own face plus every card augmented onto it ("this includes modded
+ * abilities"). Geometry and raw fields only — R118 forbids reading a number
+ * from here, because `projects` runs underneath effStats. */
+function aoBorrowedFaces(g: E, self: Entity): string[] {
+  const out: string[] = [];
+  for (const n of g.adjacentInFormation(self.id)) {
+    if (n.controller !== self.controller) continue;
+    out.push(g.nameOf(n));
+    for (const modId of n.mods) {
+      const m = g.entity(modId);
+      if (m && m.appliedAs === 'augment') out.push(m.card);
+    }
+  }
+  return out;
+}
 card('Ancient One', {
+  // R118: the statics/activated half. 'triggered' is deliberately excluded —
+  // the when() below already delivers it, with its own attribution label.
+  projects: [{ faces: aoBorrowedFaces, facets: ['statics', 'activated'] }],
   augmentText: [{
     type: 'triggered', events: AO_EVENTS,
     label: 'I have all abilities of adjacent allies (triggered abilities)',
@@ -165,9 +210,11 @@ card('Ancient One', {
         const src = ev.data?.['unit'] as EntityId | undefined;
         for (const n of g.adjacentInFormation(self.id)) {
           if (n.controller !== self.controller) continue;
+          // R118: a neighbour that is itself a COPY donates the face it wears
+          const face = g.nameOf(n);
           const sources: { cardName: string; prefix: 'ability' | 'augment' }[] = [
-            { cardName: n.card, prefix: 'ability' },
-            { cardName: n.card, prefix: 'augment' },
+            { cardName: face, prefix: 'ability' },
+            { cardName: face, prefix: 'augment' },
           ];
           for (const modId of n.mods) {
             const m = g.entity(modId);
@@ -359,11 +406,41 @@ card('Body Swap', {
   graftEffect: { bounded: true, effect: bodySwap },
 });
 
-// "Erase target unit. I become an exact copy of that unit. (I copy all stat
+// "Erase target unit. I become an exact copy of that unit. {i}(I copy all stat
 // changes, counters, card text and mods)." — mmm/7 2/2 {Battle} Squid Mimic
-// Spell Unit. ⚠ header: stats/counters/temp copy only, no text/mods (no
-// transform machinery). The spell erases the target and relays its body
-// through battle counters; the spell unit's own spawn trigger claims it.
+// Spell Unit.
+//
+// R118 — the COPY LAYER, and this card is the PERMANENT case: "I BECOME an
+// exact copy" prints no duration, so the face is stamped `until: 'permanent'`
+// and survives regroup (there is a live test that says so).
+//
+// The spell erases the target and relays its body through battle counters;
+// the spell unit's own spawn trigger claims it. What travels now:
+//   · the NAME, and with it the type line, the printed text, the statics and
+//     the triggered text — one `E.becomeCopy` face, not four grants;
+//   · the STAT CHANGES, verbatim from the reminder text. The face carries an
+//     explicit layer-1 override (`CopyRef.printedStats`) snapshotted at the
+//     target's BASE stats (layers 1-2), so a Formless'd or Statweavered body
+//     is the body you borrow — the one card in the pool that overrides layer 1
+//     rather than reading the copied card's printed pair, and it does so
+//     because its reminder text says "I copy all stat changes";
+//   · the COUNTERS, as real counters on the Borrower (facts about the unit);
+//   · the MODS, as R118 ruling 2 rules them — the owner, verbatim: "Inherit
+//     the mods text, but it IS Unstable. Anything that's modded is unstable
+//     and the copy is still considered modded." So no mod ENTITY is cloned
+//     (`Entity.mods` stays empty), the mods' text rides on the face, and the
+//     Borrower is {Unstable}: it is ERASED instead of binned when it dies.
+//
+// ⚠ What does NOT travel, by R118 ruling 1: the PHYSICAL card. A Borrower that
+// became a Good Whale and then dies puts **Borrower of Forms** in the bin.
+// `Entity.card` is never rewritten, which is the whole reason this is a layer
+// in front of the identity and not R101's in-place transform.
+//
+// ⚠ The old `self.tokenStats = [p, t]` write is GONE. tokenStats is LAYER 1
+// ("what a token was created as") and the Borrower is not a token, so the
+// write made R106 {Unaware} read the BORROWED numbers as printed. The face
+// carries them now, at layer 0, where {Unaware} reads them correctly.
+//
 // Target gone at resolution → the spell fizzles and Borrower is binned (R5).
 card('Borrower of Forms', {
   spellEffect: {
@@ -384,12 +461,18 @@ card('Borrower of Forms', {
       g.bumpBattleCounter(r, 'bof:c', t.counters);
       g.bumpBattleCounter(r, 'bof:tp', t.tempPower);
       g.bumpBattleCounter(r, 'bof:tt', t.tempToughness);
+      // R118: the FACE cannot ride a battle counter (it is a name, and the mods
+      // are a list), so it is parked on the spell's own region ledger and
+      // claimed by the spawn trigger below — the same relay, one channel wider.
+      g.parkCopySource(r, 'bof', t, {
+        from: 'Borrower of Forms', until: 'permanent', printedStats: [p, dt],
+      });
       eraseFromPlay(g, t);
     },
   },
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
-    label: 'I become a copy of the erased unit (stats, counters, temp changes)',
+    label: 'I become an exact copy of the erased unit (R118)',
     when: (g, self) => g.battleCounter(self.region, 'bof:pending') > 0,
     effect: {
       run: (g, ctx) => {
@@ -405,9 +488,15 @@ card('Borrower of Forms', {
         const p = take('bof:p'); const t = take('bof:t');
         const c = take('bof:c');
         const tp = take('bof:tp'); const tt = take('bof:tt');
+        const parked = g.takeCopySource(r, 'bof');
         if (!pending) return;
-        self.tokenStats = [p, t];
-        g.ev('info', `${self.card} takes the erased unit's form: base ${p}/${t}.`);
+        if (parked) {
+          // "I become an exact copy": one PERMANENT face, every facet, with
+          // the borrowed base as its layer-1 numbers ("I copy all stat changes")
+          g.wearCopy(self, parked);
+        } else {
+          g.ev('info', `${self.card} takes the erased unit's form: base ${p}/${t}.`);
+        }
         if (c) g.addCounters(self, c);
         if (tp || tt) g.addTemp(self, tp, tt);
       },

@@ -19,6 +19,9 @@
  *   augment   a clause donated by an augment mod slid under it (R55)
  *   graft     a [Switch] clause folded into the host's cause (Manual p.33)
  *   granted   text handed to it until regroup (R63)
+ *   copy      R118: the card this entity currently IS, and what it kept of its
+ *             own — a copy changes the game NAME but never the physical card,
+ *             so the box has to say both
  *   static    a continuous projection radiating onto it from elsewhere
  *   note      the one per-ability fact: a bounded [Switch1] already spent
  *
@@ -50,7 +53,7 @@ import type { CardName, Entity, EntityId } from '../src/types.ts';
 // ── the model ─────────────────────────────────────────────────────────
 
 export type LineOrigin =
-  | 'printed' | 'augment' | 'graft' | 'granted' | 'static' | 'note';
+  | 'printed' | 'augment' | 'graft' | 'granted' | 'copy' | 'static' | 'note';
 
 export interface TextLine {
   /** rules text with its printed markup intact — the caller iconizes it */
@@ -204,7 +207,8 @@ export function attrLines(e: E, u: Entity): AttrLine[] {
     out.push({ attr, origin, from, active });
   };
   const live = sup.attrs ? new Set<string>() : e.ownAttrs(u);
-  const def = defOf(u.card);
+  // R118 layer 0: "printed" means the card this entity currently IS
+  const def = defOf(e.nameOf(u));
   for (const a of def?.attrs ?? []) put(a, 'printed', null, live.has(a));
   for (const a of u.tempAttrs ?? []) put(a, 'temp', null, live.has(a));
   for (const id of u.mods) {
@@ -231,8 +235,9 @@ export function attrLines(e: E, u: Entity): AttrLine[] {
 // ── the stat arithmetic ───────────────────────────────────────────────
 
 export function statBreakdown(e: E, u: Entity): StatBreakdown {
-  const def = defOf(u.card);
-  const printed: [number, number] = u.tokenStats ?? [def?.power ?? 0, def?.toughness ?? 0];
+  // R118 layer 0 IS layer 1's input, so the box reads the engine's own answer
+  // rather than re-deriving it from a card definition
+  const printed: [number, number] = e.printedStats(u);
   const base = e.baseStatsOf(u);
   const [power, toughness] = e.effStats(u);
   const parts: { label: string; dp: number; dt: number }[] = [];
@@ -284,7 +289,8 @@ export function statBreakdown(e: E, u: Entity): StatBreakdown {
  * of the board is projecting onto it.
  */
 export function entityTextBox(e: E, u: Entity): CardTextBox {
-  const def = defOf(u.card);
+  const face = e.nameOf(u);                 // R118: the card it currently IS
+  const def = defOf(face);
   const sup = e.suppressionOf(u);
   const lines: TextLine[] = [];
   // NB: a silenced line carries no `why`. The suppression banner sits directly
@@ -295,16 +301,16 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
 
   // 1. the printed box — composed with its grafts when they have a cause
   const comp = graftComposition(e, u);
-  const printed = clean(textOf(u.card));
+  const printed = clean(textOf(face));
   if (comp) {
     lines.push({
       text: [comp.head, ...comp.parts.map(p => p.text)].filter(Boolean).join(' '),
-      from: u.card, origin: 'graft', composed: true,
+      from: face, origin: 'graft', composed: true,
       active: !silenced,
     });
   } else if (printed) {
     lines.push({
-      text: printed, from: u.card, origin: 'printed',
+      text: printed, from: face, origin: 'printed',
       active: !silenced,
     });
   }
@@ -344,6 +350,37 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       text: g.text, from: g.from, origin: 'granted',
       active: !silenced,
     });
+  }
+
+  // 3b. R118 the COPY layer. The printed line above is already the copied
+  //     card's, so what is left to say is the part a player cannot see: which
+  //     PHYSICAL card this is (it bins as itself — ruling 1), how long the
+  //     face lasts, and the mods' text a copy inherits without inheriting the
+  //     mods themselves (ruling 2, and it is why the copy is Unstable).
+  for (const c of u.copies ?? []) {
+    if (!c.facets.includes('name')) continue;
+    lines.push({
+      text: `A copy of ${c.card}${c.until === 'regroup' ? ' until regroup' : ''}`
+        + ` — the card itself is ${u.card}, and that is what bins.`,
+      from: c.from, origin: 'copy', active: true,
+    });
+    if (c.modText?.length) {
+      lines.push({
+        text: `It copied a modded card, so it has ${c.modText.join(', ')} and is`
+          + ' {Unstable} — erased instead of binned.',
+        from: c.from, origin: 'copy', active: true,
+      });
+    }
+  }
+  // faces PROJECTED onto it right now (Ancient One) — additive, abilities only
+  for (const facet of ['statics', 'activated', 'triggered'] as const) {
+    for (const name of e.facesWith(u, facet)) {
+      if (name === face) continue;
+      if (lines.some(l => l.origin === 'copy' && l.from === name)) continue;
+      lines.push({
+        text: clean(textOf(name)), from: name, origin: 'copy', active: !silenced,
+      });
+    }
   }
 
   // 4. what the board is projecting onto it. A projection is text on ANOTHER
@@ -411,7 +448,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   const attrs = attrLines(e, u);
   const stats = u.kind === 'mod' ? null : statBreakdown(e, u);
   return {
-    name: u.card,
+    name: face,
     typeLine: def?.type ?? '',
     stats,
     attrs,
@@ -428,7 +465,7 @@ function isModified(u: Entity, lines: TextLine[], attrs: AttrLine[], stats: Stat
   if (lines.some(l => l.origin !== 'printed' || !l.active)) return true;
   if (attrs.some(a => a.origin !== 'printed' || !a.active)) return true;
   if (stats?.changed) return true;
-  return !!(u.damage || u.counters || u.granted?.length || u.mods.length);
+  return !!(u.damage || u.counters || u.granted?.length || u.mods.length || u.copies?.length);
 }
 
 /**

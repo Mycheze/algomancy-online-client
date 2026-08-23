@@ -297,6 +297,26 @@ export interface Entity {
    */
   granted?: GrantedText[];
   /**
+   * R118 — THE COPY LAYER (layer 0). The faces this entity is WEARING, oldest
+   * first. Empty/absent is the overwhelmingly common case: the entity simply
+   * is its own card.
+   *
+   * ⚠ `Entity.card` is NEVER rewritten by a copy. R118's split identity: a
+   * copy changes the GAME name (statics, "name a card", targeting by name, the
+   * text box) but not the PHYSICAL card, which is what bins, what is erased and
+   * what belongs to a deck. A Borrower of Forms that became a Good Whale and
+   * then died puts **Borrower of Forms** in the bin. That is why this is an
+   * indirection in front of the identity rather than a mutation of it — and it
+   * is the one thing R101 (transform) could get away with mutating, because a
+   * transform is permanent and total while a copy reverts (Apex Prime) and is
+   * re-evaluated continuously (Ancient One).
+   *
+   * Read through `E.facesOf` / `E.faceName` / `E.faceDef` / `E.facesWith`;
+   * never read raw. Additive/optional so older serialized states still load,
+   * and pure data so `seed + actions` replays bit-identically.
+   */
+  copies?: CopyRef[];
+  /**
    * R84 {Alluring}: this unit has been LURED — an Alluring column's on-attack
    * trigger resolved naming it. Two effects, with two different lifetimes:
    *
@@ -337,6 +357,67 @@ export interface GrantedText {
   index: number;
   text: string;
   from: CardName;
+}
+
+/**
+ * R118: which half of a card a copied FACE contributes. A face that carries
+ * `name` is a whole-identity replacement — the entity's game name, type line,
+ * printed numbers and printed text all become the copied card's — and only
+ * such a face may ever be `facesOf()[0]`.
+ *
+ * Ancient One's continuous projection is the ADDITIVE case: it contributes
+ * `statics` / `activated` / `triggered` and NOTHING else, which is why "I have
+ * all abilities of adjacent allies" never changes the Ancient One's name or
+ * makes it a 3/3.
+ */
+export type CopyFacet = 'name' | 'stats' | 'attrs' | 'statics' | 'activated' | 'triggered';
+
+/**
+ * R118: one face worn by an entity — the serializable half of the copy layer.
+ *
+ * `seq` is a tick of the shared `nextId` clock, so two copies applied to the
+ * same unit resolve LAST-WINS exactly the way `baseSet`/`baseSetSeq` does
+ * against a continuous base-setter. Nothing here is an entity id and nothing
+ * here is derived, so a state carrying copies replays bit-identically.
+ */
+export interface CopyRef {
+  /** the card whose face is worn — resolved through the registry by NAME, so
+   * a copy of a copy chains through this field (MTG's "copiable values"). */
+  card: CardName;
+  facets: CopyFacet[];
+  /** 'regroup' is swept by R11 step 3 (Apex Prime); 'permanent' never lapses
+   * (Borrower of Forms — "I BECOME an exact copy", and the live test that
+   * pins it says so). */
+  until: 'regroup' | 'permanent';
+  /** the card that caused the copy, for the log and the text box */
+  from: CardName;
+  seq: number;
+  /**
+   * LAYER 1 OVERRIDE — this face's "printed" numbers, when they are not the
+   * copied card's printed numbers.
+   *
+   * Only Borrower of Forms sets it, and only because its reminder text says
+   * so verbatim: "(I copy all stat changes, counters, card text and mods)".
+   * The stat CHANGES are copied, so the face is snapshotted at the target's
+   * base stats (layers 1-2) rather than at the card's printed pair. Everything
+   * else leaves it undefined and reads the real printed numbers, which is what
+   * makes R106 {Unaware} read the copied face correctly.
+   */
+  printedStats?: [number, number];
+  /**
+   * R118 ruling 2, the owner verbatim: *"Inherit the mods text, but it IS
+   * Unstable. Anything that's modded is unstable and the copy is still
+   * considered modded."*
+   *
+   * So a copy of a MODDED unit inherits the mods' TEXT (quoted in `modText`
+   * for the box — no mod ENTITIES are ever cloned, which is why `Entity.mods`
+   * stays untouched), counts as modded, and is therefore {Unstable}: it is
+   * ERASED instead of binned when it dies (R69). Read through
+   * `E.isUnstable(e)`, never raw.
+   */
+  modded?: boolean;
+  /** the copied mods' donated clauses, verbatim, for the text box only */
+  modText?: string[];
 }
 
 // ── battle ────────────────────────────────────────────────────────────
@@ -1023,6 +1104,22 @@ export interface GameState {
   battleRound: 0 | 1 | 2;
   /** per-seat counters reset each battle PHASE ("second ally death this battle") */
   battleCounters: Record<string, number>[];
+  /**
+   * R118: prepared COPY FACES parked between two resolutions, keyed
+   * `${region}:${key}`.
+   *
+   * `battleCounters`' sibling and for the same reason — a card whose two
+   * halves resolve separately has to relay something across the gap in
+   * SERIALIZABLE state or the replay diverges. Counters can carry numbers;
+   * this carries the one thing they cannot, a face (a card name plus the mods
+   * that make R118 ruling 2's copy Unstable). Borrower of Forms is the only
+   * card that needs it: it erases its target in one resolution and spawns the
+   * body that wears the face in the next, so the source entity is gone.
+   *
+   * Written by `E.parkCopySource`, taken exactly once by `E.takeCopySource`,
+   * and wiped by regroup. Additive/optional so older states still load.
+   */
+  copyParks?: Record<string, CopyRef>;
   priority: Seat | null;
   passes: number;
   planningDone: boolean[];

@@ -68,30 +68,27 @@
  *    virus is normally applied to an ENEMY unit, where the other reading
  *    ("you" = the applier) is at least as natural.
  *
- * PARTIAL (needs engine machinery that does not exist yet):
- *  - APEX PRIME (R92): "all of your units become a copy of target unit until
- *    regroup" is THREE-QUARTERS live. The park note here used to claim no copy
- *    layer existed at all; three of the four layers do, and all three expire at
- *    regroup, which is this card's own duration — base stats via R66's
- *    E.setBase, attributes via E.addTempAttr over g.ownAttrs(target), and
- *    triggered / [Augment] text via R63's E.grantText (fireEvent scans
- *    `granted` exactly like printed text).
- *    What is STILL DEAD, and what each needs from the core:
- *      · the copied NAME — Entity.card is the identity every other subsystem
- *        keys off, so a copy-name layer is a core change, not a card one;
- *      · STATICS — staticsFor() reads them off the printed card and there is no
- *        granted-static channel beside `granted`;
- *      · ACTIVATED abilities — apply.ts's pushActivatedOptions offers
- *        getCard(u.card).abilities and never reads `granted`, so a granted
- *        activated ability can never be offered.
- *    (Borrower of Forms waits on the same three.)
+ * UNPARKED by R118 (the COPY LAYER):
+ *  - APEX PRIME is WHOLE. "All of your units become a copy of target unit
+ *    until regroup" is now one `E.becomeCopy` face carrying every facet —
+ *    name, stats, attrs, statics, triggered/[Augment] text — with
+ *    `until: 'regroup'`, the card's own printed duration. R92's four-grant
+ *    approximation (setBase + addTempAttr + two grantText channels) is gone:
+ *    it could carry neither the name nor the statics, and its stats sat at
+ *    layer 2 where a copy belongs at layer 0.
+ *    ⚠ ONE FACET IS STILL OWED, and it is not this card's: apply.ts's
+ *    `pushActivatedOptions` and `activationSource` read
+ *    `getCard(u.card).abilities` rather than the face, so a COPIED ACTIVATED
+ *    ability is stamped on the entity and never offered. Two lines in a file
+ *    this batch does not own; the engine side (`E.facesWith(u, 'activated')`)
+ *    is built and waiting.
  *
  * UNPARKED by the R49/R50 engine wave:
  *  - Debt Plant hears the new 'endOfHaste' event (a trigger, not a static —
  *    the amount is latched at that instant).
  *  - Hyper Beam's [Gain 4 debt] is a real cast cost, charged by playAtTiming.
  */
-import type { Attr, CardName, Entity, EntityId, Seat } from '../../types.ts';
+import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, manaOf, isUnitCard, pickUnit } from './helpers.ts';
@@ -440,36 +437,26 @@ card('Life Plant', {
 // all of your units become a copy of target unit until regroup." — lm/4 4/4
 // Technology God Unit.
 //
-// R92 — PARTIAL, and deliberately so. The park note above this card said a
-// COPY layer "of the sort [that] exists: nothing", and that was overstated:
-// THREE of the four layers a copy needs already ship, and — the part that
-// makes them usable here — all three expire at REGROUP, which is exactly this
-// card's printed duration.
-//   · BASE STATS  — R66's E.setBase (layer 2: a rewrite, not a delta, so
-//                   counters and temp buffs keep applying on top).
-//   · ATTRIBUTES  — E.addTempAttr over g.ownAttrs(target), which is the
-//                   target's live attribute set (its own, its mods', its
-//                   statics'), not just the printed line.
-//   · TRIGGERED / [Augment] TEXT — R63's E.grantText, which fireEvent already
-//                   scans ("R63: text granted until regroup listens exactly
-//                   like printed text"). One grant per channel is enough:
-//                   fireEvent dispatches `collectTriggersFrom(u, g.card,
-//                   g.via, …)`, which walks the WHOLE list, so the grant
-//                   carries every triggered ability on that channel.
-//   Reforge the Dead (batch-metal-b) is the precedent for the last one.
+// R118 — the COPY LAYER. This card is now WHOLE: the name, the base stats,
+// the attributes, the statics, the triggered/[Augment] text and (once
+// apply.ts's pushActivatedOptions reads the face) the activated abilities all
+// travel, as ONE face rather than four separate grants.
 //
-// ⚠ STILL DEAD, and each needs the CORE (see the batch header and the todo in
-// 44-hybrids-ld-a.test.ts):
-//   · the copied NAME. Entity.card is the identity everything else keys off
-//     (bins, "name a card", counters-by-name); rewriting it is a core change.
-//   · STATICS. A copied `statics` entry would have to radiate from the copier,
-//     and staticsFor() reads them off the printed card only — there is no
-//     granted-static channel next to `granted`.
-//   · ACTIVATED abilities. pushActivatedOptions (apply.ts) offers
-//     getCard(u.card).abilities and never looks at `granted`, so a granted
-//     activated ability is unreachable even though grantText will happily
-//     store it.
-// Everything reachable is done; nothing is faked.
+// `E.becomeCopy` stamps an `Entity.copies` face carrying every facet, with
+// `until: 'regroup'` — this card's printed duration, and the reason it needs
+// the layer rather than R101's in-place rewrite of `Entity.card`: a copy has
+// to REVERT, and a rewrite would also destroy the physical card (R118 ruling
+// 1 — a copy still bins as itself).
+//
+// R92's four-grant approximation (E.setBase + E.addTempAttr + two E.grantText
+// channels) is GONE. It could not carry the name or the statics at all, and
+// its base-stat half sat at layer 2, which meant a copied body outranked a
+// later "becomes a base 4/4" instead of being overwritten by it.
+//
+// Still region-scoped ("your units" — R12, the Flowstone Arcanite reading),
+// still one payOrDecline asked before anything is mutated, and still
+// idempotent across attacking and then blocking in the same battle (the face
+// is a replacement, and `E.isCopyOf` skips the re-stamp so the log stays quiet).
 const APEX_COPY_KEY = 'apexCopy';
 card('Apex Prime', {
   augmentText: [{
@@ -492,36 +479,24 @@ card('Apex Prime', {
         if (!mine.length) { g.ev('info', 'Apex Prime: you have no units here.'); return; }
         // "you MAY" — one payOrDecline, asked before anything is mutated
         // (plan-then-commit: the part is replayed from the top on suspension)
+        // R118: the prompt names the FACE — a Borrower already wearing a Good
+        // Whale is copied AS a Good Whale (a copy of a copy chains via the face)
+        const face = g.nameOf(src);
         const yes = ctx.choose(APEX_COPY_KEY, {
           kind: 'payOrDecline', seat: ctx.controller,
-          prompt: `Apex Prime: have your ${mine.length} unit(s) become a copy of ${src.card} until regroup?`,
+          prompt: `Apex Prime: have your ${mine.length} unit(s) become a copy of ${face} until regroup?`,
           options: [
-            { label: `Copy ${src.card}`, value: true, card: src.card },
+            { label: `Copy ${face}`, value: true, card: face },
             { label: 'Decline', value: false },
           ],
         }) as boolean;
         if (!yes) { g.ev('info', 'Apex Prime: the copy is declined.'); return; }
-        const [bp, bt] = g.baseStatsOf(src);
-        const attrs = [...g.ownAttrs(src)] as Attr[];
-        const def = g.card(src.card);
-        const channels: ('ability' | 'augment')[] = [];
-        if ((def.abilities ?? []).some(a => a.type === 'triggered')) channels.push('ability');
-        if ((def.augmentText ?? []).some(a => a.type === 'triggered')) channels.push('augment');
-        g.ev('info', `Apex Prime: ${mine.length} unit(s) become a copy of ${src.card} until regroup.`);
+        g.ev('info', `Apex Prime: ${mine.length} unit(s) become a copy of ${face} until regroup.`);
         for (const u of g.unitsOf(ctx.controller, ctx.region)) {
-          if (!g.entity(u.id)) continue;             // setBase can be lethal
-          if (u.id !== src.id) g.setBase(u, bp, bt);
-          for (const a of attrs) if (!(u.tempAttrs ?? []).includes(a)) g.addTempAttr(u, a);
-          if (u.id === src.id) continue;             // the original already has its own text
-          for (const via of channels) {
-            // idempotent: attacking and then blocking in the same battle must
-            // not stack two copies of the same text on the same unit
-            if ((u.granted ?? []).some(gr => gr.card === src.card && gr.via === via)) continue;
-            g.grantText(u, {
-              card: src.card, via, index: 0,
-              text: `the text of ${src.card}`, from: 'Apex Prime',
-            });
-          }
+          if (!g.entity(u.id)) continue;             // a copied 0-defense body is lethal
+          if (u.id === src.id) continue;             // the original already IS itself
+          if (g.isCopyOf(u, face)) continue;         // attack then block: one face, not two
+          g.becomeCopy(u, src, { from: 'Apex Prime', until: 'regroup' });
         }
       },
     },

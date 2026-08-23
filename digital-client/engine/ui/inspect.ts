@@ -771,7 +771,13 @@ export function namesInState(s: GameState | null | undefined): CardName[] {
     for (const n of p.erased ?? []) add(n);
     for (const c of p.cache ?? []) add(c?.card);
   }
-  for (const en of Object.values(s.entities ?? {})) add(en?.card);
+  // R118: an entity puts TWO names on the table when it is wearing a copied
+  // face — the physical card (which is what bins, ruling 1) and the card it
+  // currently reads as, whose text box and art the client is now showing.
+  for (const en of Object.values(s.entities ?? {})) {
+    add(en?.card);
+    for (const c of en?.copies ?? []) add(c?.card);
+  }
   for (const it of s.stack ?? []) itemNames(it, out);
   itemNames(s.resolving, out);
   // a hand you were shown (Bripp) is a hand you have seen

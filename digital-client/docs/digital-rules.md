@@ -5998,3 +5998,140 @@ Swift one (the regression: 3 face damage, not 2), the {Swift}-column mirror, a {
 column waiting out both earlier sub-steps, the {Pure} pairing collapsing a printed {Swift}
 column into the normal sub-step, and `combatSubStepOf` answering `null` outside a column.
 `26-metal-a`, `44-hybrids-ld-a` and `42-dark-b` keep the three cards' own coverage.
+
+---
+
+## R118 — the COPY LAYER: a face in front of the identity, at layer 0
+
+*(Owner rulings, 2026-08-23, unparking **Apex Prime**, **Borrower of Forms** and the
+statics half of **Ancient One** — the last multi-card seam in the ledger.)*
+
+### The two rulings
+
+**1. SPLIT IDENTITY.** A copy changes the **game name** — statics, "name a card",
+targeting by name, the text box — but the **physical card is unchanged**: it bins, it is
+erased, and it belongs to a deck *as itself*. A Borrower of Forms that became a Good Whale
+and then dies puts **Borrower of Forms** in the bin.
+
+**2. MODS.** The owner, verbatim:
+
+> *"Inherit the mods text, but it IS Unstable. Anything that's modded is unstable and the
+> copy is still considered modded."*
+
+So a copy of a modded unit inherits the mods' **text**, no mod entity is cloned, the copy
+**counts as modded**, and it is therefore **{Unstable}** — erased instead of binned when it
+dies (R69). This is neither of the two options that were offered; it is what he said.
+
+### Why it is a layer and not a rewrite
+
+R101 (transform) rewrites `Entity.card` in place and argues *"there is no transform layer
+and there does not need to be"*. That argument is right for a **permanent, total** change
+and is exactly why it fails for a copy:
+
+* **Apex Prime must revert** — "until regroup" is printed on the card;
+* **Ancient One is additive and continuous** — adjacency changes *inside* one combat (R72
+  column collapse, a neighbour dying, blockers declared), so the answer has to be
+  recomputed every time it is asked;
+* a rewrite would **destroy the physical card**, which ruling 1 forbids.
+
+So there is **one indirection in front of the identity**, and `Entity.card` is never
+written by a copy.
+
+### The shape
+
+`Entity.copies?: CopyRef[]`, where a `CopyRef` is `{ card, facets, until, from, seq }` plus
+two optionals. `facets` is which of `name | stats | attrs | statics | activated | triggered`
+the face contributes; `seq` is a `nextId` tick, so two copies resolve **last-wins** exactly
+the way `baseSet`/`baseSetSeq` does. Everything is plain serializable data, so `seed +
+actions` replays bit-identically and states written before R118 load unchanged.
+
+The engine's four public reads:
+
+| call | answers |
+| --- | --- |
+| `E.faceName(e)` / `E.nameOf(e)` | the GAME name — `facesOf(e)[0].card` |
+| `E.faceDef(e)` | `getCard(faceName(e))` — where its rules come from |
+| `E.facesWith(e, facet)` | every face contributing that facet, in order |
+| `E.isUnstable(e)` | mods, or R96's stamp, **or** ruling 2's copied-modded face |
+
+`E.nameOf` was added the same day for The Everywhere's name-matching static, reserved as
+"the single hook for a copy layer". It is that hook; it is now `faceName`.
+
+Two writers: `E.becomeCopy(target, src, opts)` stamps a face, and `E.prepareCopy` /
+`E.wearCopy` split it in two for a card whose halves resolve separately (`E.parkCopySource`
+/ `E.takeCopySource` hold the prepared face in `GameState.copyParks`, `battleCounters`'
+sibling — Borrower of Forms erases its target in one resolution and spawns the body that
+wears the face in the next, so the source entity is gone by then).
+
+The **continuous** half is `CardDef.projects` (a `FaceProjection`), radiating through
+`E.anchored()` exactly as `StaticMod` does: units in play plus augment mods reading from
+their host, R12 region scope, and the shallow R62 guard. That is what makes Ancient One's
+`[Augment]` form project onto the **host** for free.
+
+### Layer order
+
+**COPY IS LAYER 0**, below everything, because it redefines what *printed* MEANS:
+
+```
+0 COPY  ·  1 printed/tokenStats  ·  2 baseSet + StaticMod baseP/baseT
+3 counters/temp  ·  4 Tough/Balanced  ·  5 Inverted  ·  6 Unaware
+```
+
+Consequences, each of them pinned by a test:
+
+* **A later `setBase` still wins — and so does an earlier one.** Layer 2 rewrites whatever
+  layer 1 currently says, so the order the two land in does not matter.
+* **Counters and marked damage stay on the entity.** They are facts about the *unit*, not
+  about the face (R101's precedent). A 1/1 that becomes a 7/5, takes two -1/-1 counters and
+  then reverts at regroup **dies** — and the regroup sweep now runs `checkDeaths()` on the
+  way out, which it never did. That check was also missing for `baseSet`, silently, since
+  layer 2 shipped.
+* **R106 {Unaware} reads the COPIED face's printed stats.** `E.printedStats` consults the
+  face first: a Unit Token wearing a Good Whale face *prints* 7/5.
+* **R62 suppression is a veto ABOVE copy, checked on the ENTITY.** A silenced copy radiates
+  nothing — all of its faces go off at once — but it keeps its name and its body, because
+  R62 switches *abilities* off, not identity.
+* **A projected face never carries `name` or `stats`.** `facesOf(e)[0]` is always the
+  identity face, so "I have all abilities of adjacent allies" does not rename the Ancient
+  One or make it a 7/5.
+
+### Decisions taken here (defaults, all documented)
+
+* **Copy of a copy chains via the FACE** — MTG's "copiable values", and the only reading
+  consistent with split identity. You copy what it *is*, not what it is printed on.
+* **"Create a copy of me"** (Echo of Despair, Hooba-God, Swarmling) reads the FACE, and
+  carries no counters and no mods.
+* **Borrower of Forms overrides layer 1.** `CopyRef.printedStats` snapshots the target's
+  *base* (layers 1-2) rather than the copied card's printed pair, because the reminder text
+  says "I copy all **stat changes**". It is the only card that does. It also **stops
+  writing `self.tokenStats`** — a live latent bug: `tokenStats` is layer 1 "what a token
+  was created as", the Borrower is not a token, and the write made {Unaware} read the
+  *borrowed* numbers as printed.
+* **Ancient One's TRIGGERED half keeps its bookkeeping `when()`**, and its projection
+  declares `facets: ['statics', 'activated']`. The generic face machinery cannot label a
+  mimicked trigger *"Ancient One (as Minor Kraken)"*, and that attribution is what tells a
+  player whose trigger they are ordering. Leaving `'triggered'` in would queue every
+  mimicked trigger twice.
+* **A copy does NOT carry the radiating-permission families** — `costMods`, `effectAttrs`,
+  `amountMods`, `playPermissions`, `modPermissions`, `mustBeTargeted`. They read
+  `this.card(holder.card)` in six `anchored()` walks of their own and no card in the pool
+  needs them copied today. Routing them through `facesWith` is mechanical when one does.
+
+### What is still owed
+
+**The ACTIVATED facet is stamped but never offered.** `apply.ts`'s `pushActivatedOptions`
+and `activationSource` both read `getCard(u.card).abilities` rather than the face, so a
+copied or projected activated ability cannot reach `legalActions` — and `ui/inspect.ts`
+(lines 102 and 942) mirrors the same read. Both want `E.facesWith(u, 'activated')` plus a
+`via: { face }` arm so `composeParts` keys the R9 budget on the right card. The engine side
+is built and waiting; **one change unparks Apex Prime, Ancient One and Borrower of Forms
+together**, and all three keep a narrowed card-ledger entry saying so.
+
+**Tests:** `44-hybrids-ld-a` — ten new tests on Apex Prime covering the name, the physical
+card in the bin, a copied static radiating, R62 as a veto above copy, {Unaware}, {Inverted},
+`setBase` ordering both ways, the lethal regroup revert, copy-of-a-copy, face replacement
+across attack-then-block, and a `seed + actions` replay round trip of `Entity.copies`.
+`26-metal-a` — Ancient One's projected static appearing and vanishing with the column, the
+Ancient One keeping its own name and body, Borrower of Forms taking the name/attrs/text,
+binning as itself, ruling 2's modded-copy erase, and the permanent face with its snapshotted
+base. Two `{ todo: true }` tests name the apply.ts blocker.

@@ -248,23 +248,24 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // 17-earth-b.test.ts, Caleb's own case among them. Signpost for anyone
   // following the old `todoTest` reference, not a park.
   {
-    card: 'Apex Prime', gap: 'partial', severity: 'medium',
+    card: 'Apex Prime', gap: 'partial', severity: 'low',
     missing:
-      'the copied NAME, the copied `statics`, and the copied ACTIVATED abilities. Base '
-      + 'stats, attributes and triggered/[Augment] text all copy as of R92.',
+      'the copied ACTIVATED abilities. "Become a copy of target unit" now carries the '
+      + 'NAME, the base stats, the attributes, the STATICS and the triggered/[Augment] '
+      + 'text — R118 shipped the copy layer and all five travel as one face.',
     waitingOn:
-      'Three core layers. (1) A copy-NAME layer — `Entity.card` is the identity that '
-      + 'bins, "name a card" effects and counters-by-name all key off, so it cannot be '
-      + 'overwritten casually. (2) A granted-STATIC channel beside `Entity.granted`; '
-      + '`staticsFor()` reads statics off the printed card only. (3) `pushActivatedOptions` '
-      + '(apply.ts:1785-1793) offers `getCard(u.card).abilities` and never reads `granted`. '
-      + 'Borrower of Forms waits on the same three. The old park note claimed effStats had '
-      + 'no copy layer at all, which was overstated: three of the four already existed '
-      + '(E.setBase for base stats R66, E.addTempAttr for attributes, E.grantText for text '
-      + 'R63), and all three expire at regroup, which IS this card\'s printed duration. '
-      + 'Source for the copy semantics, the Borrower of Forms RAQ: Caleb — "it inherits '
-      + 'all of the combined text", and counters copy too.',
-    todoTest: '44-hybrids-ld-a.test.ts::Apex Prime: the copy does not carry the NAME',
+      'TWO READS IN apply.ts, and nothing else. The engine side is BUILT: `E.becomeCopy` '
+      + 'stamps `Entity.copies`, and `E.facesWith(u, \'activated\')` already answers with '
+      + 'the copied card. But `pushActivatedOptions` offers `getCard(u.card).abilities` / '
+      + '`.augmentText`, so a copied activated ability never reaches `legalActions`, and '
+      + '`activationSource` resolves `via === undefined` the same way, so it would refuse '
+      + 'the action even if it were offered. Both want `E.facesWith(u, \'activated\')` in '
+      + 'place of `u.card`, plus a `via: { face }` arm so `composeParts` keys the R9 budget '
+      + 'on the right card; `ui/inspect.ts` (lines 102 and 942) mirrors the same read and '
+      + 'moves with it. Ancient One and Borrower of Forms wait on exactly these two reads — '
+      + 'one change unparks all three. This entry is what is LEFT of the three-layer note '
+      + 'R92 wrote: the NAME layer and the granted-STATIC channel both shipped as R118.',
+    todoTest: '44-hybrids-ld-a.test.ts::a copied ACTIVATED ability is never offered — Apex Prime',
   },
   {
     card: 'Vengeance', gap: 'dead', severity: 'medium',
@@ -304,17 +305,22 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // ── PARTIAL: one clause works, another does not ─────────────────────────
 
   {
-    card: 'Ancient One', gap: 'partial', severity: 'medium',
+    card: 'Ancient One', gap: 'partial', severity: 'low',
     missing:
-      '"[Augment] I have all abilities of adjacent allies." — ACTIVATED abilities and '
-      + 'STATICS of the neighbours.',
+      '"[Augment] I have all abilities of adjacent allies." — the neighbours\' ACTIVATED '
+      + 'abilities. Their TRIGGERED abilities are delivered (a bookkeeping when() that '
+      + 'labels each mimicked trigger "Ancient One (as X)"), and R118 added their STATICS '
+      + 'as a continuous `CardDef.projects` declaration, re-evaluated on every read so a '
+      + 'column collapsing mid-combat takes the borrowed static with it.',
     waitingOn:
-      'NEIGHBOUR PROJECTION. Triggered abilities ARE delivered (a bookkeeping when() '
-      + "scans adjacent allies and queues copies as the Ancient One's own triggers). "
-      + 'What card code still cannot do is project an adjacent ally\'s activated '
-      + 'abilities or statics: both are read off the holder\'s own card definition, '
-      + 'and there is no "borrow that unit\'s" seam.',
-    todoTest: '26-metal-a.test.ts::Ancient One',
+      'The SAME two reads in apply.ts that Apex Prime waits on — `pushActivatedOptions` '
+      + 'and `activationSource` both go to `getCard(u.card).abilities` rather than the '
+      + 'face. R118 built everything up to them: the projection radiates through '
+      + '`E.anchored()` like a StaticMod and `E.facesWith(u, \'activated\')` already '
+      + 'returns the neighbours\' card names. One change unparks Ancient One, Apex Prime '
+      + 'and Borrower of Forms together. The old note here — "there is no seam for '
+      + '\'borrow that unit\'s\'" — is closed; the seam is `CardDef.projects`.',
+    todoTest: '26-metal-a.test.ts::Ancient One and Borrower of Forms',
   },
 
   // ── PRINTED ATTRIBUTES THE STAT LAYERS DO NOT IMPLEMENT ─────────────────
@@ -333,46 +339,31 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // they print. That is the Harbinger trap, so they are at least visible.
 
   {
-    card: 'Borrower of Forms', gap: 'approximated', severity: 'medium',
-    missing: 'card text, attributes and mods are not copied — only base stats are.',
-    waitingOn:
-      'The same COPY layer Apex Prime waits on. Base stats copy via R66\'s E.setBase; '
-      + 'everything else about the copied card does not travel.',
-    todoTest: '26-metal-a.test.ts::Borrower of Forms',
-  },
-  {
-    card: 'Witness of the Crossing', gap: 'approximated', severity: 'low',
-    unverified: true,
+    card: 'Borrower of Forms', gap: 'partial', severity: 'low',
     missing:
-      'nothing engine-side. "[Switch1][Switch1][Switch1]" — three copies of each attached '
-      + 'graft as one trigger — is BUILT and tested. What is open is the printed READING.',
+      'the ACTIVATED abilities of the copied unit. "I become an exact copy of that unit. '
+      + '{i}(I copy all stat changes, counters, card text and mods)" otherwise copies in '
+      + 'full as of R118: the NAME, the stat changes (the face snapshots the target\'s '
+      + 'BASE, layers 1-2), the counters, the attributes, the statics, the triggered and '
+      + '[Augment] text, and the MODS as R118 ruling 2 rules them — the mods\' TEXT is '
+      + 'inherited, no mod entity is cloned, and the copy counts as modded and is '
+      + 'therefore {Unstable}. The face is PERMANENT and survives regroup.',
     waitingOn:
-      'A PRINTED-TEXT confirmation, NOT an engine gap. The previous note here claimed '
-      + 'that "extra copies of a TARGETED graft effect cannot collect extra targets '
-      + '(composeParts collects one target set per part)"; every clause of that is false '
-      + 'today and was already false when R110 shipped. E.composeParts materialises each '
-      + 'extra copy as `parts.push({ ...p, targets: [] })` — a fresh part with an EMPTY '
-      + 'target array — and E.collectPartTargets loops over every part, so each copy '
-      + 'collects its own target set and pays its own [cost]. That is exactly what R110 '
-      + 'rules, and it is pinned by a REAL (non-todo) test on the identical `graftCopies: 3` '
-      + 'mechanism: 14-water-a.test.ts::"R110: a TARGETED graft under Amphivore aims each '
-      + 'of its three copies separately". Witness uses the same `graftCopies: 3` effect '
-      + 'shape and its own non-todo test asserts three copies of an untargeted graft. '
-      + 'What is genuinely unconfirmed is the CARD FACE: Witness prints three [Switch1] '
-      + 'marks and NO reminder text, so the three-copy reading is inferred from Lost '
-      + 'Guardian (which prints "[Switch1][Switch1] (Trigger two copies of this graft '
-      + 'ability as one single trigger.)"). If the printed reading turns out to be '
-      + 'something else, the card changes; the engine does not.',
-    todoTest: '40-light-c.test.ts::Witness of the Crossing',
-    note:
-      'CHECKED (2026-08-23): E.composeParts / E.collectPartTargets read end to end, and '
-      + '14-water-a.test.ts run green — the targeted-copy behaviour the old waitingOn '
-      + 'blamed demonstrably works. NOT CHECKED: the physical card face. The todo test '
-      + 'is deliberately left a todo and the entry deliberately left in place, because '
-      + 'the open question is "does the card really mean three copies?", which only the '
-      + 'owner / the card image can answer. Do not read this entry as an engine backlog '
-      + 'item.',
+      'The SAME two reads in apply.ts as Apex Prime and Ancient One — `pushActivatedOptions` '
+      + 'and `activationSource` read `getCard(u.card).abilities` rather than the face. '
+      + 'Nothing card-side and nothing engine-side is left. The old entry here blamed "the '
+      + 'same COPY layer Apex Prime waits on"; that layer is R118 and it shipped.',
+    todoTest: '26-metal-a.test.ts::Ancient One and Borrower of Forms',
   },
+  // Witness of the Crossing's entry was DELETED on 2026-08-23, per the house
+  // rule at the head of this file. It was never an engine backlog item: it sat
+  // at `unverified: true` waiting on ONE thing, a confirmation of the PRINTED
+  // reading, because the card prints three [Switch1] marks and no reminder
+  // text. The owner supplied it, verbatim: "Amphivavor is the same. It creates
+  // a special Grafted ability with everything on there three times"
+  // ("Amphivavor" = Amphivore). That is R110's `graftCopies: 3`, which both
+  // cards already share, so no code changed. Its todo was promoted to a real
+  // two-graft, one-targeted test in 40-light-c.test.ts. Signpost, not a park.
   {
     card: 'Deformant', gap: 'approximated', severity: 'low',
     missing:

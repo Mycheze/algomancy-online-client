@@ -3899,6 +3899,7 @@ const LINE_TAG: Record<LineOrigin, (from: string) => string> = {
   augment: from => `${txtIcon('augment', '+')} ${esc(from)}`,
   graft: from => `${txtIcon('graft', '⇄')} ${esc(from)}`,
   granted: from => `✦ granted by ${esc(from)}`,
+  copy: from => `⧉ ${esc(from)}`,          // R118: a copied / projected face
   static: from => `⟳ ${esc(from)}`,
   note: () => '⏳ spent',
 };

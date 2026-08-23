@@ -615,6 +615,47 @@ export interface ActivatedAbility {
 
 export type Ability = TriggeredAbility | ActivatedAbility;
 
+/**
+ * R118, the CONTINUOUS half of the copy layer: a card that radiates other
+ * cards' FACES onto a unit — "[Augment] I have all abilities of adjacent
+ * allies. (This includes modded abilities.)" (Ancient One).
+ *
+ * The additive twin of `Entity.copies`, and it has to be continuous rather
+ * than a stamp for the reason the ledger entry gave: adjacency changes inside
+ * a single combat (R72 column collapse, a neighbour dying, blockers being
+ * declared), so the answer must be recomputed every time it is asked, exactly
+ * as `StaticMod` is.
+ *
+ * Radiation rules are `StaticMod`'s, line for line: the `E.anchored()` walk
+ * (units in play plus augment mods reading from their HOST — so the [Augment]
+ * form projects onto the host and "I" is the host), the R12 region scope, and
+ * the shallow R62 guard (a silenced projector radiates nothing).
+ *
+ * ⚠ A projected face contributes STATICS / ACTIVATED / TRIGGERED and nothing
+ * else — never `name` and never `stats`. "I have all abilities of adjacent
+ * allies" does not rename the Ancient One and does not make it a 7/5. The
+ * engine enforces this: `facesOf()[0]` is always the identity face.
+ *
+ * ⚠ Same reentrancy contract as `StaticMod`, one step stricter: `faces` MUST
+ * NOT READ A NUMBER. It runs inside the `facesOf` latch, from underneath
+ * `effStats`, so a call into effStats/baseStatsOf would be reading the very
+ * projection it is being asked to produce. Read geometry and raw fields only
+ * (`E.adjacentInFormation`, `Entity.mods`, controllers) — the discipline
+ * `statLayerAttrs` states as "the walk is ownAttrs, never effStats".
+ */
+export interface FaceProjection {
+  /** which entity the faces land on. Default: the projector's own anchor,
+   * which is the unit itself, or the HOST when the text arrived as an
+   * augment mod. */
+  onto?: (g: E, self: Entity, target: Entity) => boolean;
+  /** the card names whose faces are projected. Duplicates are deduped by the
+   * engine; the projector's own face is skipped (no recursive mimicry). */
+  faces: (g: E, self: Entity) => CardName[];
+  /** which facets each projected face contributes. Defaults to statics +
+   * activated + triggered; `name` and `stats` are refused by the engine. */
+  facets?: import('../types.ts').CopyFacet[];
+}
+
 /** A continuous ("static") modification a card projects while it is a unit in
  * play: "+X/+Y to matching units", granted attributes, or both. Evaluated live
  * inside effStats/ownAttrs (engine stat layer 3). affects() runs for units in
@@ -1053,6 +1094,9 @@ export interface CardBehavior {
   /** continuous stat/attr projections while this card is a unit in play OR
    * an augment mod (text-box [Augment] statics transfer with the card) */
   statics?: StaticMod[];
+  /** R118: continuous FACE projections — "I have all abilities of adjacent
+   * allies" (Ancient One). Same radiation rules as `statics` again. */
+  projects?: FaceProjection[];
   /** R59: continuous COST modifiers, same radiation rules as `statics`
    * ("Spells cost [one] more to play during battle" — Tranquility) */
   costMods?: CostMod[];

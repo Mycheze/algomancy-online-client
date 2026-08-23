@@ -15,7 +15,8 @@
  * the RNG state rolled back with everything else).
  */
 import type {
-  Action, Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, Decision, DecisionOption,
+  Action, Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef,
+  Decision, DecisionOption,
   EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, PendingTrigger,
   ResourceKind, Seat, StackItem, Suspension, TargetRef,
 } from './types.ts';
@@ -26,6 +27,14 @@ import {
   type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
 } from './cards/dsl.ts';
 import { rngShuffle } from './rng.ts';
+
+/** R118: a whole-identity copy — "become a copy of target unit" contributes
+ * every facet, which is what makes it a face REPLACEMENT rather than a grant. */
+const FULL_FACETS: readonly CopyFacet[] =
+  ['name', 'stats', 'attrs', 'statics', 'activated', 'triggered'];
+/** R118: the ADDITIVE default — "I have all ABILITIES of adjacent allies"
+ * (Ancient One). Never `name`, never `stats`. */
+const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'triggered'];
 
 /** R59: where and why a card's cost is being computed (see manaToPlay).
  * `region` defaults to the seat's action region; `purpose` defaults to
@@ -365,6 +374,10 @@ export class E {
   private inPlayPermissions = false;
   /** R104: reentrancy guard for amount-modifier evaluation (mirrors inCostMods) */
   private inAmountMods = false;
+  /** R118: reentrancy guard for the CONTINUOUS half of the copy layer
+   * (mirrors inStatics). See `facesOf` — it sits UNDER effStats, so a nested
+   * query gets the identity face and nothing projected. */
+  private inFaces = false;
   /**
    * R104: reentrancy guard for the counter REDIRECT. Unlike the amount
    * modifiers above, a redirect really does re-enter — Counter Theif's
@@ -602,6 +615,262 @@ export class E {
     }
   }
 
+  // ── LAYER 0: the COPY layer (R118) ──────────────────────────────────
+  /**
+   * R118 — one FACE an entity is wearing: a card name plus which halves of
+   * that card it contributes. `ref` is the stored copy it came from (absent on
+   * the base face and on a continuous projection).
+   */
+
+  /**
+   * THE IDENTITY FACE — what this entity IS for rules purposes.
+   *
+   * Layer 0 sits BELOW everything, because it redefines what "printed" MEANS:
+   * the face supplies the game name, the type line, the printed numbers and
+   * the printed text, and every other layer (baseSet, StaticMod baseP/baseT,
+   * counters, {Tough}/{Balanced}, {Inverted}, {Unaware}) then applies on top
+   * of THAT. A `setBase` therefore wins over a copy in BOTH orders — it is a
+   * layer-2 rewrite of whatever layer 1 currently says.
+   *
+   * Last-wins by `seq` among the stored copies that carry the `name` facet,
+   * the same rule and the same `nextId` clock `baseSet`/`baseSetSeq` uses.
+   *
+   * Cheap and recursion-free ON PURPOSE: it reads `e.copies` and nothing else,
+   * so it can be called from inside the `facesOf` walk, from inside statics,
+   * and from the trigger scan without any latch at all.
+   *
+   * ⚠ It does NOT read `Entity.card` for anything but the fallback. `card`
+   * stays the PHYSICAL card forever (R118 ruling 1) — the thing that bins, is
+   * erased, and belongs to a deck.
+   */
+  private identityCopy(e: Entity): CopyRef | undefined {
+    let best: CopyRef | undefined;
+    for (const c of e.copies ?? []) {
+      if (!c.facets.includes('name')) continue;
+      if (!best || c.seq >= best.seq) best = c;
+    }
+    return best;
+  }
+
+  /**
+   * The card NAME this entity answers to (see `nameOf`, which is this) — and
+   * the card its text, type line and printed numbers are read from.
+   */
+  faceName(e: Entity): CardName {
+    return this.identityCopy(e)?.card ?? e.card;
+  }
+  /** the definition the entity's RULES come from — `getCard(faceName(e))` */
+  faceDef(e: Entity): CardDef {
+    return getCard(this.faceName(e));
+  }
+
+  /**
+   * EVERY face this entity is wearing, in layer order — `[0]` is the identity
+   * face (the base card, or the copy that replaced it), and the rest are what
+   * is being projected onto it right now (Ancient One).
+   *
+   * The whole-picture read, for the text box and for anything that wants to
+   * enumerate rather than ask about one facet. Hot paths call `facesWith`,
+   * which does one projection walk instead of three.
+   */
+  facesOf(e: Entity): { card: CardName; facets: readonly CopyFacet[]; ref?: CopyRef }[] {
+    const id = this.identityCopy(e);
+    // [0] is ALWAYS the identity face — the whole reason a projection may not
+    // carry `name` or `stats`
+    const out: { card: CardName; facets: readonly CopyFacet[]; ref?: CopyRef }[] = [
+      id ? { card: id.card, facets: id.facets, ref: id } : { card: e.card, facets: FULL_FACETS },
+    ];
+    for (const facet of PROJECTED_FACETS) {
+      for (const name of this.projectedFaces(e, facet)) {
+        const seen = out.find(f => f.card === name && !f.ref);
+        if (seen) { if (!seen.facets.includes(facet)) seen.facets = [...seen.facets, facet]; continue; }
+        if (out[0]!.card === name) continue;
+        out.push({ card: name, facets: [facet] });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * EVERY face contributing `facet`, in layer order: the identity face first,
+   * then whatever is being projected onto this entity right now (Ancient
+   * One). Names, deduped.
+   *
+   * This is the one call every "what does this thing DO" read routes through.
+   * The handful of reads that mean "which PHYSICAL card is this" — the bin
+   * push in `destroy`, `noteTrashed`, the R65 erased pile, DECK_LIST — keep
+   * reading `e.card` raw, and must (R118 ruling 1).
+   */
+  facesWith(e: Entity, facet: CopyFacet): CardName[] {
+    const out: CardName[] = [];
+    const id = this.identityCopy(e);
+    if (!id || id.facets.includes(facet)) out.push(id?.card ?? e.card);
+    for (const name of this.projectedFaces(e, facet)) {
+      if (!out.includes(name)) out.push(name);
+    }
+    return out;
+  }
+
+  /**
+   * The CONTINUOUS half of layer 0 — faces radiating onto `e` from cards in
+   * play right now (`CardDef.projects`; Ancient One is the only one today).
+   *
+   * Re-evaluated on every read, never stamped, because that is the whole
+   * reason Ancient One could not be built on `Entity.copies`: adjacency
+   * changes inside one combat (R72 column collapse, a neighbour dying,
+   * blockers declared) and the answer has to change with it.
+   *
+   * The walk is `anchored()`'s, with the same shallow R62 guard every
+   * radiating query uses — a SILENCED projector radiates nothing, so all of
+   * its faces go off at once. A projected face may never carry `name` or
+   * `stats`: `facesOf()[0]` is always the identity face, so the Ancient One
+   * keeps its own name and its own 1/1.
+   *
+   * ⚠ REENTRANCY, and it is stricter than `staticsFor`'s: this sits UNDER
+   * effStats, so `FaceProjection.faces` must not read a number. Under the
+   * latch a nested query answers "identity face only", which is the same
+   * shallow answer dp/dt already gets.
+   */
+  private projectedFaces(e: Entity, facet: CopyFacet): CardName[] {
+    if (facet === 'name' || facet === 'stats') return [];   // never projected
+    if (this.inFaces) return [];
+    const out: CardName[] = [];
+    this.inFaces = true;
+    try {
+      const mine = this.faceName(e);
+      for (const { holder, anchor } of this.anchored((h, a) =>
+        !!getCard(h.card).projects
+        && a.region === e.region
+        && !a.suppressed?.abilities)) {                       // R62, as staticsFor (shallow)
+        for (const pr of getCard(holder.card).projects ?? []) {
+          if (!(pr.onto ? pr.onto(this, anchor, e) : anchor.id === e.id)) continue;
+          const facets = pr.facets ?? PROJECTED_FACETS;
+          if (!facets.includes(facet)) continue;
+          for (const name of pr.faces(this, anchor)) {
+            if (name === mine) continue;                     // no recursive mimicry
+            if (!out.includes(name)) out.push(name);
+          }
+        }
+      }
+    } finally { this.inFaces = false; }
+    return out;
+  }
+
+  /**
+   * R118: stamp a copied FACE onto `target`.
+   *
+   * `Entity.card` is deliberately untouched — see `Entity.copies`. A face that
+   * carries `name` REPLACES any earlier one (last-wins by seq), so attacking
+   * and then blocking in the same battle leaves one face, not two.
+   */
+  becomeCopy(target: Entity, src: Entity, opts: {
+    from: CardName;
+    until: 'regroup' | 'permanent';
+    facets?: CopyFacet[];
+    /** override layer 1 — Borrower of Forms only, see CopyRef.printedStats */
+    printedStats?: [number, number];
+  }): CopyRef {
+    return this.wearCopy(target, this.prepareCopy(src, opts));
+  }
+
+  /**
+   * R118: build the FACE `src` would be copied as, WITHOUT putting it on
+   * anything. Plain serializable data, which is what lets a card park one for
+   * a resolution that has not happened yet — Borrower of Forms erases its
+   * target in one resolution and only spawns the body that wears the face in
+   * the next, so the source entity is gone by the time it is needed.
+   */
+  prepareCopy(src: Entity, opts: {
+    from: CardName;
+    until: 'regroup' | 'permanent';
+    facets?: CopyFacet[];
+    printedStats?: [number, number];
+  }): CopyRef {
+    const name = this.faceName(src);                        // copy of a copy chains via the FACE
+    // R118 ruling 2 (owner, verbatim): "Inherit the mods text, but it IS
+    // Unstable. Anything that's modded is unstable and the copy is still
+    // considered modded." No mod ENTITIES are cloned — `target.mods` is
+    // untouched — but the copy carries the text and counts as modded.
+    const modText: string[] = [];
+    for (const id of src.mods) {
+      const m = this.entity(id);
+      if (!m) continue;
+      modText.push(`${m.card} (${m.appliedAs === 'graft' ? 'grafted' : 'augmented'})`);
+    }
+    const ref: CopyRef = {
+      card: name,
+      facets: opts.facets ?? [...FULL_FACETS],
+      until: opts.until,
+      from: opts.from,
+      seq: this.s.nextId++,
+      ...(opts.printedStats ? { printedStats: opts.printedStats } : {}),
+      ...(modText.length ? { modded: true, modText } : {}),
+    };
+    return ref;
+  }
+
+  /** R118: put a prepared face on an entity (see `prepareCopy`). */
+  wearCopy(target: Entity, ref: CopyRef): CopyRef {
+    const name = ref.card;
+    const list = (target.copies ??= []);
+    if (ref.facets.includes('name')) {
+      // one identity face at a time: an older whole-face copy is replaced
+      for (let i = list.length - 1; i >= 0; i--) {
+        if (list[i]!.facets.includes('name')) list.splice(i, 1);
+      }
+    }
+    list.push(ref);
+    this.ev('statChanged',
+      `${target.card} becomes a copy of ${name}`
+      + (ref.modded ? ' — modded, so the copy is Unstable' : '')
+      + (ref.until === 'regroup' ? ' until regroup.' : '.'),
+      { unit: target.id, copy: name, until: ref.until });
+    this.checkDeaths();   // a copied 0-defense body is lethal, as setBase is
+    return ref;
+  }
+
+  /**
+   * R118: hold a prepared face in serializable state until the resolution
+   * that will wear it. Region-keyed for `battleCounters`' reason — it is a
+   * fact about this battle in this region — and taken exactly once.
+   */
+  parkCopySource(region: number, key: string, src: Entity, opts: {
+    from: CardName;
+    until: 'regroup' | 'permanent';
+    facets?: CopyFacet[];
+    printedStats?: [number, number];
+  }): void {
+    (this.s.copyParks ??= {})[`${region}:${key}`] = this.prepareCopy(src, opts);
+  }
+  /** R118: claim a parked face (see `parkCopySource`). Removes it. */
+  takeCopySource(region: number, key: string): CopyRef | undefined {
+    const parks = this.s.copyParks;
+    if (!parks) return undefined;
+    const k = `${region}:${key}`;
+    const ref = parks[k];
+    delete parks[k];
+    return ref;
+  }
+
+  /** R118: is this entity already wearing `name` as its identity face? The
+   * idempotence check a repeating copy trigger needs. */
+  isCopyOf(e: Entity, name: CardName): boolean {
+    return this.identityCopy(e)?.card === name;
+  }
+
+  /**
+   * R69 + R118 ruling 2: is this entity ERASED instead of binned when it dies?
+   *
+   * Three ways in, unioned here so `destroy` does not have to know there are
+   * three: it carries mods (the derivation — a modded card is Unstable), it
+   * carries R96's until-regroup {Unstable} stamp, or it is a COPY of something
+   * that was modded (ruling 2 — "the copy is still considered modded").
+   */
+  isUnstable(e: Entity): boolean {
+    if (e.mods.length > 0 || e.unstable === true) return true;
+    return (e.copies ?? []).some(c => c.modded);
+  }
+
   // ── stats & attributes (the six-layer projection, all six built: see
   //    docs/03 §4, and R93 / R106 for layers 5 and 6) ──────────────────
   /** reentrancy guard for static-modifier evaluation (see StaticMod docs) */
@@ -628,12 +897,28 @@ export class E {
       for (const { holder, anchor } of this.anchored((_h, a) =>
         a.region === target.region
         && !a.suppressed?.abilities)) {
-        for (const mod of this.card(holder.card).statics ?? []) {
-          // `srcId` is the entity CARRYING the text (the unit, or the augment
-          // mod that donated it), not the anchor — it is the tick of the
-          // nextId clock at which this static started applying, which is what
-          // layer 2 sorts by.
-          if (mod.affects(this, anchor, target)) out.push({ holder: anchor, from: holder.card, srcId: holder.id, mod });
+        // R118 layer 0: the statics come off the FACES the holder is wearing,
+        // not off `holder.card`. The identity face is the copied card (Apex
+        // Prime, Borrower of Forms); the projected ones are the neighbours'
+        // (Ancient One), and those land on the ANCHOR, so they are only
+        // gathered when the holder IS its anchor.
+        const faces = holder.id === anchor.id
+          // a unit reads its own identity face PLUS whatever is projected onto
+          // it — projections land on the ANCHOR, and here the holder is it
+          ? this.facesWith(holder, 'statics')
+          // an augment MOD carries only its own text; a mod is never copied,
+          // and a projection onto the host is gathered when the walk reaches
+          // the host itself
+          : [holder.card];
+        for (const face of faces) {
+          for (const mod of getCard(face).statics ?? []) {
+            // `srcId` is the entity CARRYING the text (the unit, or the augment
+            // mod that donated it), not the anchor — it is the tick of the
+            // nextId clock at which this static started applying, which is what
+            // layer 2 sorts by. `from` is the FACE, because the text box has to
+            // name the card the clause is printed on.
+            if (mod.affects(this, anchor, target)) out.push({ holder: anchor, from: face, srcId: holder.id, mod });
+          }
         }
       }
     } finally { this.inStatics = false; }
@@ -671,8 +956,8 @@ export class E {
   /** baseStatsOf against an ALREADY-COLLECTED static list, so effStats scans
    * the board once for layers 2 and 3 instead of twice. */
   private baseWith(e: Entity, statics: ReturnType<E['staticsFor']>): [number, number] {
-    const c = this.card(e.card);
-    let [p, t] = e.tokenStats ?? [c.power, c.toughness];       // layer 1
+    // layers 0-1: what the card this entity currently IS prints (R118)
+    let [p, t] = this.printedStats(e);
     // layer 2: collect the rewrites, then apply them in timestamp order
     let rewrites: { seq: number; p?: number; t?: number }[] | undefined;
     for (const { holder, srcId, mod } of statics) {
@@ -811,6 +1096,18 @@ export class E {
    * Deliberately NOT `baseStatsOf`, which is layers 1-2. See the layer-6 note.
    */
   printedStats(e: Entity): [number, number] {
+    // LAYER 0 (R118) sits UNDER layer 1 and redefines what "printed" means: a
+    // Unit Token that became a copy of a Good Whale reads 7/5 here, because
+    // the card it now is prints 7/5. This is the R106 {Unaware} decision, and
+    // it is also why Borrower of Forms no longer writes `tokenStats` on a
+    // non-token body — that write claimed the BORROWED numbers were what the
+    // Borrower "was created as", and {Unaware} believed it.
+    const id = this.identityCopy(e);
+    if (id) {
+      if (id.printedStats) return [id.printedStats[0], id.printedStats[1]];
+      const f = getCard(id.card);
+      return [f.power, f.toughness];
+    }
     if (e.tokenStats) return [e.tokenStats[0], e.tokenStats[1]];
     const c = this.card(e.card);
     return [c.power, c.toughness];
@@ -1012,7 +1309,9 @@ export class E {
     const statics = this.staticsFor(e);
     // R62: "loses ALL attributes" — the layer is off, so nothing below it runs
     if (e.suppressed?.attrs || statics.some(st => st.mod.suppressAttrs)) return set;
-    for (const a of this.card(e.card).attrs) set.add(a);
+    // LAYER 0 (R118): the attrs of the card this entity currently IS. Only the
+    // identity face carries `attrs`, so this is one name, not a union.
+    for (const a of this.faceDef(e).attrs) set.add(a);
     for (const a of e.tempAttrs ?? []) set.add(a);
     for (const { mod } of statics) for (const a of mod.attrs ?? []) set.add(a);
     for (const id of e.mods) {
@@ -1028,18 +1327,14 @@ export class E {
    * (The Everywhere) matches against, and the one place that comparison is
    * made.
    *
-   * It is `entity.card` today and there is no other answer to give. It exists
-   * as a method anyway because `Entity.card` is doing two jobs at once: it is
-   * the entity's IDENTITY (which registered definition supplies its text) and
-   * it is also the printed NAME. A copy layer separates them — the ledger's
-   * Apex Prime / Borrower of Forms entries are both waiting on one, and both
-   * warn that `Entity.card` is what "name a card" effects key off. When that
-   * layer lands, a copy has to answer with the name it is copying while still
-   * resolving its text through its own definition, and this is the single hook
-   * for that. Card code must never compare `t.card === named` directly.
+   * R118 landed the copy layer this hook was reserved for, so it is now
+   * `faceName(e)` — the GAME name, which is the copied card when the entity is
+   * wearing a face. `Entity.card` keeps the other job it was doing: the
+   * PHYSICAL card, the one that bins, is erased and belongs to a deck (ruling
+   * 1). Card code must never compare `t.card === named` directly.
    */
   nameOf(e: Entity): CardName {
-    return e.card;
+    return this.faceName(e);
   }
   /** the formation column an entity currently fights in, if any */
   columnOf(id: EntityId): EntityId[] | null {
@@ -3117,10 +3412,12 @@ export class E {
     // leftPlayFacts) — `verb` (Ghord's "sacrificed", which used to
     // string-match the log message) is the death-only extra.
     const binSeat = opts.binTo ?? u.owner;
-    // R96: TWO ways in. `mods.length` is the derived one (a modded card is
-    // Unstable — R69); `u.unstable` is the until-regroup STAMP a bin play
-    // leaves on the body it spawned. Same destination, same 'died' event.
-    const erasedByUnstable = mods.length > 0 || u.unstable === true;
+    // R96/R118: THREE ways in, unioned by E.isUnstable. `mods.length` is the
+    // derived one (a modded card is Unstable — R69); `u.unstable` is the
+    // until-regroup STAMP a bin play leaves on the body it spawned; and R118
+    // ruling 2 adds the COPY of a modded unit ("the copy is still considered
+    // modded"). Same destination, same 'died' event.
+    const erasedByUnstable = this.isUnstable(u);
     const evData: Record<string, unknown> = {
       ...this.leftPlayFacts(u), verb,
       to: erasedByUnstable ? 'erased' : 'bin',
@@ -5870,7 +6167,9 @@ export class E {
   /** Compose the parts of a firing ability: base effect + graft-mod effects,
    * top-to-bottom (Manual p.33). Bounded pieces consume per-card budgets (R9). */
   composeParts(source: Entity, abilityIndex: number, abilityKeyPrefix: 'ability' | 'augment', viaCard?: CardName): EffectPart[] | null {
-    const cardName = viaCard ?? source.card;
+    // R118 layer 0: with no `viaCard` the ability is the source's OWN, which
+    // means the card it currently IS — the face, not the physical card.
+    const cardName = viaCard ?? this.faceName(source);
     const def = this.card(cardName);
     const list = abilityKeyPrefix === 'ability' ? def.abilities : def.augmentText;
     const ability = list?.[abilityIndex];
@@ -5940,9 +6239,14 @@ export class E {
       // all "abilities", and the layer is off.
       if (this.abilitiesSuppressed(u)) continue;
       const src = sourceId ?? dyingUnit?.id;
-      queued = this.collectTriggersFrom(u, u.card, 'ability', type, ev, src) || queued;
-      // a card's own [Augment] text is active when played normally (Manual Q&A)
-      queued = this.collectTriggersFrom(u, u.card, 'augment', type, ev, src) || queued;
+      // R118 layer 0: the triggered text comes off the FACE. A Unit Token that
+      // became a Noxious Deathcap really has "when I die, …" — and "I" is the
+      // token, because the face is what the entity IS, not a second card.
+      for (const face of this.facesWith(u, 'triggered')) {
+        queued = this.collectTriggersFrom(u, face, 'ability', type, ev, src) || queued;
+        // a card's own [Augment] text is active when played normally (Manual Q&A)
+        queued = this.collectTriggersFrom(u, face, 'augment', type, ev, src) || queued;
+      }
       for (const modId of u.mods) {
         const mod = this.entity(modId);
         if (mod && mod.appliedAs === 'augment') {
@@ -6896,6 +7200,7 @@ export class E {
     this.s.hastePlaysUsed = this.s.players.map(() => 0);   // R97, beside its R43 sibling
     this.s.phase = 'battle';
     this.s.battleCounters = this.s.regions.map(() => ({}));
+    delete this.s.copyParks;   // R118: parked faces are a fact about ONE battle
     this.s.battleRound = 1;
     this.startBattleRound(this.initiative);
   }
@@ -7011,7 +7316,21 @@ export class E {
       delete e.shieldPending;
       delete e.granted;      // R63: and so is granted text
       delete e.allured;      // R84 {Alluring}: "can't attack" lasted the battle phase
+      // R118 layer 0: an until-regroup FACE lapses here (Apex Prime's "until
+      // regroup"). A 'permanent' one does NOT — Borrower of Forms prints "I
+      // BECOME an exact copy", with no duration, and a live test pins it.
+      if (e.copies) {
+        const kept = e.copies.filter(c => c.until !== 'regroup');
+        if (kept.length) e.copies = kept; else delete e.copies;
+      }
     }
+    // R118: reverting a face can be LETHAL, and nothing else here would
+    // notice. Damage is already gone (step 2) but COUNTERS are not — they are
+    // facts about the unit, not about the face — so a 1/1 that took two -1/-1
+    // counters while wearing a 7/5 face dies the moment the face lapses. The
+    // same is true of `baseSet`, which step (3) has just dropped as well, and
+    // which has been silently missing this check since layer 2 shipped.
+    this.checkDeaths();
     // (4) units leave formation — battle state is already gone
     this.startDeployment();
   }
