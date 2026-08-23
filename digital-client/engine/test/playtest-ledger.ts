@@ -942,4 +942,46 @@ export const LEDGER: LedgerEntry[] = [
       + 'anchored() does not walk) or Slurpr (the mod-timing twin); the ledger claimed shared '
       + 'credit that did not exist.',
   },
+{
+    id: 75, room: 'WEHH', date: '2026-08-22',
+    report: 'Replacement effects and triggered effects and static effects are being handled wrong '
+      + 'by the system, still. The only cards that should ever produce effects that go onto the '
+      + 'stack are cards that say "When" or "Whenever" or have a ":" activated ability. All cards '
+      + 'that say "instead" or "as" or "if" shouldn\'t go onto the stack.',
+    status: 'live',
+    note: 'The owner restating id 60 as a RULE rather than a symptom, and it is the sharpest '
+      + 'statement of it we have: the test for "does this use the stack" is the printed WORD. '
+      + '"When"/"Whenever"/":" go on the stack; "instead"/"as"/"if" never do. That is the '
+      + 'acceptance criterion the replacement layer should be built against. '
+      + '⚠ IT ALSO CUTS AGAINST R102, WHICH SHIPPED THE SAME DAY: Beyond, Codex Incarnate\'s rot '
+      + 'clause prints "instead", and R102 puts a triggered effect on the stack for it — on the '
+      + 'owner\'s own direct instruction about that card ("It would trigger, ask you what you want '
+      + 'to target, then put the -1/-1 counters on during deployment (which still has and uses a '
+      + 'stack)"), given AFTER this report was filed but without this report in view. The two need '
+      + 'reconciling: either Beyond is a deliberate exception because the choice has to be asked '
+      + 'somewhere, or R102 should become a decision-without-a-stack-item once the replacement '
+      + 'layer exists. Do not quietly pick one. See also id 60 and the eight cards listed there.',
+  },
+  {
+    id: 76, room: 'WEHH', date: '2026-08-22',
+    report: 'Despite Deployment being entirely separate from the opponent, I can\'t take back some '
+      + 'things and get "your opponent has already acted on top of that one — it cannot be taken '
+      + 'back now". What they do doesn\'t matter during deployment, so I should always be able to',
+    status: 'live',
+    note: 'Deployment is SIMULTANEOUS and hidden (both players move at once, revealed when both '
+      + 'are done), so the undo guard\'s "someone acted after you" test — which is right during '
+      + 'battle, where the stack is shared and public — is the wrong question here. Look at the '
+      + 'take-back gate and scope it to the acting seat while phase === deploy.',
+  },
+  {
+    id: 77, room: 'WEHH', date: '2026-08-22',
+    report: 'Trying to declare illegal blocks entirely resets the board, which is really annoying. '
+      + 'It should reset only the "affected" units and give a notice plus a "Reset blockers?" '
+      + 'button, so a massive block does not have to be rebuilt for forgetting one thing',
+    status: 'live',
+    note: 'Client-side. The block builder throws the whole plan away on a refused declaration '
+      + 'rather than reporting which units are the problem. R84 already built the shape this '
+      + 'wants — it names the compulsory block instead of letting you find out — so the fix is to '
+      + 'extend that judgement to every block-legality reason and keep the rest of the plan.',
+  },
 ];
