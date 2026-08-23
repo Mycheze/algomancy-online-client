@@ -23,7 +23,7 @@ import {
   affinityPips, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
   isGraftable, isTriggered, specForSlot, zoneTriggersFor,
   type Ability, type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
-  type ResolvedTarget, type TargetSpec, type TokenRequest, type TriggeredAbility,
+  type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
 } from './cards/dsl.ts';
 import { rngShuffle } from './rng.ts';
 
@@ -61,6 +61,10 @@ export interface UnitDamageInfo {
 
 export class Suspended { }
 export class GameEnded { }
+/** The unstarted tail of a multi-item cast chain and the `then` it runs
+ * with — threaded commitItem → resolveItem → resolveParts so that a
+ * mid-resolution suspension can carry it (see Suspension 'resolve'). */
+export interface ChainRest { then: 'push' | 'resolve'; moreItems: StackItem[] }
 export class IllegalAction extends Error { }
 /** thrown by ctx.choose inside an effect part; converted to a 'resolve' suspension */
 class PartChoice {
@@ -143,6 +147,43 @@ interface ProphecyRule {
   /** matched against the NORMALISED condition */
   re: RegExp;
   met: (g: E, seat: Seat, p: CachedProphecy, m: RegExpMatchArray) => boolean;
+}
+
+/** One unit's share of a combat sub-step's damage, tagged with the striking
+ * column's damage-replacement attrs (Poisonous → counters, Resonant → rider)
+ * and, for R48 {Blessed}, the seat the life gain is owed to. */
+interface CombatUnitHit {
+  pool: number; poisonous: boolean; resonant: boolean;
+  /** R61 {Pure}: this damage came out of an attribute-blind exchange, so
+   * the VICTIM's Vulnerable is switched off for it too */
+  pure?: boolean;
+  blessedTo?: Seat; blessedFrom?: string;
+  /** R98: the striking column's live attributes and label, carried so the
+   * prevention/replacement choke point can be told a {Piercing} hit from a
+   * plain overkill. Last assignment wins, as `poisonous`/`resonant` already
+   * do — a unit takes damage from at most one column per sub-step. */
+  attrs?: Set<string>; label?: string;
+}
+
+/** The scratch shared by `E.combatSubStep`'s halves, alive for exactly one
+ * sub-step: the assignment half fills it, the commit half and the aftermath
+ * read it. See the method for the order. */
+interface CombatLedger {
+  /** pool assigned to each unit this sub-step */
+  perUnit: Map<EntityId, CombatUnitHit>;
+  /** R21: any damage from a Deadly column kills */
+  deadlyHit: Set<EntityId>;
+  /** draws owed to each seat (R24 Thieving) */
+  thievingDraw: number[];
+  /** R48: combat damage a column deals to a PLAYER, one entry per column —
+   * per-column granularity is required by the Blightsea Polyp replacement
+   * ("as 1 rot", whatever the column's power) and by {Lethal}. */
+  playerHits: { seat: Seat; amount: number; by: Seat; attrs: Set<string>; label: string; pure: boolean }[];
+  /** R48 {Afflicting}: units each afflicting column damaged this sub-step,
+   * keyed by column, so its kills can be diffed out afterwards */
+  afflicted: Map<string, { dealer: Seat; label: string; ids: Set<EntityId> }>;
+  /** who controlled what before the sub-step, for the afflicting diff */
+  beforeUnits: Map<EntityId, Seat>;
 }
 
 /** R43: every condition counts FORWARD from the moment of prophesying — never
@@ -3045,6 +3086,39 @@ export class E {
   }
 
   /**
+   * R112: `to` gains control of unit `u`. The one control-change primitive —
+   * four card batches used to carry their own copy, and they disagreed.
+   *
+   * - Its MODS change controller with it (Bena 2026-08-23: "a stolen unit's
+   *   mods are part of the unit, so yes, they go with them to the unit's new
+   *   controller — that's the whole point of some of the viruses which force
+   *   units to flip flop controllers"). Owner never changes.
+   * - It leaves any formation it was in, through removeFromFormation, so the
+   *   R72 column collapse happens here too (the local copies skipped it).
+   * - Regions are exclusive: if the new controller is not present where the
+   *   unit stands (a deployment-time steal out of the owner's home), the unit
+   *   and its mods go to the new controller's home now rather than sitting
+   *   in a region its controller is not in until regroup walks it there.
+   *   Mid-battle both seats are present and it stays on the board.
+   * Returns false when nothing changed hands (unit gone, or already theirs).
+   */
+  giveControl(u: Entity, to: Seat): boolean {
+    if (!this.entity(u.id)) { this.ev('info', `${u.card} is gone — nothing changes hands.`); return false; }
+    if (u.controller === to) { this.ev('info', `${this.pname(to)} already controls ${u.card} — nothing changes hands.`); return false; }
+    const from = u.controller;
+    u.controller = to;
+    for (const id of u.mods) { const m = this.entity(id); if (m) m.controller = to; }
+    this.removeFromFormation(u.id);
+    if (!this.s.regions[u.region]!.presentSeats.includes(to)) {
+      u.region = this.homeRegion(to);
+      for (const id of u.mods) { const m = this.entity(id); if (m) m.region = u.region; }
+    }
+    this.ev('info', `${this.pname(to)} gains control of ${u.card} (from ${this.pname(from)}).`,
+      { unit: u.id, card: u.card, from, to });
+    return true;
+  }
+
+  /**
    * R72 — the key for a battle counter that belongs to ONE attacking column
    * ("this column has already connected twice this battle"). Column indices
    * MOVE when the formation collapses, so a counter keyed by a bare index
@@ -3513,7 +3587,35 @@ export class E {
    * entity the effect comes from, for restrictions that read it.
    */
   targetCandidates(spec: TargetSpec, region: number, excludeStackId?: number, ally?: Seat, sourceId?: EntityId, x?: number, chosen?: ResolvedTarget[], event?: EngineEvent | null): TargetRef[] {
+    const out = this.targetFamilyCandidates(spec, region, excludeStackId, ally);
+    const cands = this.compelledTargets(out, region);
+    // R64: the printed RESTRICTION, judged against the resolved target. It
+    // runs last so it never has to re-derive what `what` already settled.
+    const restrict = spec.restrict;
+    if (!restrict) return cands;
+    const ctx: TargetCtx = {
+      ...(ally !== undefined ? { ally } : {}), region,
+      ...(sourceId !== undefined ? { sourceId } : {}), ...(x !== undefined ? { x } : {}),
+      ...(chosen ? { chosen } : {}),
+      ...(event !== undefined ? { event } : {}),   // R67: "that player's bin"
+    };
+    return this.restrictTargets(out, cands, restrict, ctx);
+  }
+
+  /** Stage one of `targetCandidates`: everything `spec.what` reaches, family
+   * by family in a fixed order (units, players, stack, cache, bin) — the
+   * order is the chooser's option order, so it must not move. */
+  private targetFamilyCandidates(spec: TargetSpec, region: number, excludeStackId: number | undefined, ally: Seat | undefined): TargetRef[] {
     const out: TargetRef[] = [];
+    this.pushUnitTargets(out, spec, region, ally);
+    this.pushPlayerTargets(out, spec, region, ally);
+    this.pushStackTargets(out, spec, excludeStackId);
+    this.pushCachedCardTargets(out, spec);
+    this.pushBinCardTargets(out, spec, ally);
+    return out;
+  }
+
+  private pushUnitTargets(out: TargetRef[], spec: TargetSpec, region: number, ally: Seat | undefined): void {
     if (spec.what === 'unit' || spec.what === 'any' || spec.what === 'allyUnit'
       || spec.what === 'enemyUnit' || spec.what === 'token') {
       for (const u of this.unitsIn(region)) {
@@ -3530,6 +3632,9 @@ export class E {
         out.push({ unit: t.id });
       }
     }
+  }
+
+  private pushPlayerTargets(out: TargetRef[], spec: TargetSpec, region: number, ally: Seat | undefined): void {
     // R67: 'player' is "target player" with no ownership clause — you are a
     // legal target for your own (Soul Siphon's X is the life SOME player lost,
     // and aiming it at yourself is a real, if usually bad, choice).
@@ -3539,6 +3644,9 @@ export class E {
         out.push({ player: seat });
       }
     }
+  }
+
+  private pushStackTargets(out: TargetRef[], spec: TargetSpec, excludeStackId: number | undefined): void {
     if (spec.what === 'stackSpell' || spec.what === 'stackEffect') {
       for (const it of this.s.stack) {
         if (it.id === excludeStackId) continue;   // R68: a negated item is not here to skip
@@ -3553,6 +3661,9 @@ export class E {
         if (spec.what === 'stackSpell' ? spellish : effectish) out.push({ stack: it.id });
       }
     }
+  }
+
+  private pushCachedCardTargets(out: TargetRef[], spec: TargetSpec): void {
     // R41: the cache is PUBLIC, so BOTH players' caches are legal targets
     // (Prismatic Observer exists precisely to answer an opponent's
     // nearly-fulfilled prophecy). Not region-scoped: the cache is not in a
@@ -3564,6 +3675,9 @@ export class E {
         }
       }
     }
+  }
+
+  private pushBinCardTargets(out: TargetRef[], spec: TargetSpec, ally: Seat | undefined): void {
     // R64: a card in YOUR OWN bin ("recall target unit in your bin",
     // "put target unit with cost 2 or less from your bin into play"). Every
     // printed one reaches only the caster's bin, so this does too; a card the
@@ -3575,27 +3689,37 @@ export class E {
     if (spec.what === 'anyBinCard') {
       for (const p of this.s.players) out.push(...this.binRefs(p.seat));
     }
-    // R64: "I must be targeted if able" (Gatekeeper of Souls) — a restriction
-    // that narrows OTHER effects' lists. It is applied BEFORE the spec's own
-    // restriction, because "if able" means "if it is a legal target for this
-    // effect", and the spec's restriction is part of what decides that: a
-    // Gatekeeper with base power 8 cannot compel an Unmake to aim at it.
+  }
+
+  /** R64: "I must be targeted if able" (Gatekeeper of Souls) — a restriction
+   * that narrows OTHER effects' lists. It is applied BEFORE the spec's own
+   * restriction, because "if able" means "if it is a legal target for this
+   * effect", and the spec's restriction is part of what decides that: a
+   * Gatekeeper with base power 8 cannot compel an Unmake to aim at it.
+   *
+   * Returns `out` itself (same array, not a copy) when nothing compels, so
+   * `restrictTargets` can tell the two cases apart by identity. */
+  private compelledTargets(out: TargetRef[], region: number): TargetRef[] {
     const gates = this.mustBeTargetedIn(region);
     let cands = out;
     if (gates.size) {
       const forced = out.filter(r => 'unit' in r && gates.has(r.unit));
       if (forced.length) cands = forced;
     }
-    // R64: the printed RESTRICTION, judged against the resolved target. It
-    // runs last so it never has to re-derive what `what` already settled.
-    const restrict = spec.restrict;
-    if (!restrict) return cands;
-    const ctx = {
-      ...(ally !== undefined ? { ally } : {}), region,
-      ...(sourceId !== undefined ? { sourceId } : {}), ...(x !== undefined ? { x } : {}),
-      ...(chosen ? { chosen } : {}),
-      ...(event !== undefined ? { event } : {}),   // R67: "that player's bin"
-    };
+    return cands;
+  }
+
+  /** Stage two of `targetCandidates`: the printed restriction, in two passes.
+   *
+   * Pass 1 filters `cands` — the compelled (must-be-targeted) list if there
+   * is one, else the whole family list. Pass 2 is the "if able" fallback:
+   * when `cands` WAS the compelled list and the restriction emptied it, the
+   * Gatekeeper was not a legal target for this effect after all, so the
+   * restriction is re-run over the WHOLE list (`out`) instead. The identity
+   * check `cands === out` is what tells "nothing was compelled" from "the
+   * compelled list survived", so the fallback never runs twice over the same
+   * array. */
+  private restrictTargets(out: TargetRef[], cands: TargetRef[], restrict: TargetRestrict, ctx: TargetCtx): TargetRef[] {
     const kept = cands.filter(ref => {
       const t = this.resolveTargetRef(ref);
       return t !== null && restrict(this, t, ctx);
@@ -3905,8 +4029,11 @@ export class E {
     while (chain.length) {
       const item = chain[0]!;
       chain = chain.slice(1);
+      // `chain` rides on every suspension the item can raise — the cast-time
+      // ones via collectTargets, a mid-resolution one via commitItem — so the
+      // items behind it survive the throw and doDecide resumes them.
       this.collectTargets(item, then, chain);
-      this.commitItem(item, then);
+      this.commitItem(item, then, chain);
     }
   }
 
@@ -4257,6 +4384,19 @@ export class E {
       // about what is still OWED, not about the printed total — else the
       // second discard of a "[Discard 2 cards]" looks unpayable and the whole
       // part is wrongly skipped after the first card is already gone
+      // R110: a graft multiplied by Lost Guardian / Witness / Amphivore is N
+      // parts of this composite, and its [cost] "must be paid twice (Lost
+      // Guardian) or thrice (Amphivore)". All or nothing: if the whole N-fold
+      // cost is not payable up front, none of it is paid and the effect does
+      // not happen at all — asked ONCE, before the first copy pays.
+      if (total !== null && optional && !part.costPaid) {
+        const copies = this.costCopySiblings(item, part);
+        if (copies.length > 1 && !this.canPayCastCost(seat, this.costTimes(cost, copies.length), item.region, 0, item.sourceId)) {
+          for (const p of copies) p.spent = true;
+          this.ev('info', `${item.label}: the [${this.castCostLabel(cost)}] cost must be paid ${copies.length} times and cannot be — nothing is paid and that effect is skipped.`);
+          continue;
+        }
+      }
       while (!this.costSettled(part, cost)) {
         const done = this.costPaidSoFar(part, cost);
         const owed = total === null ? 1 : total - done;
@@ -4317,6 +4457,26 @@ export class E {
           },
         );
       }
+    }
+  }
+
+  /** R110: the unspent, unpaid copies of one multiplied graft part — the
+   * parts that share its mod (itself included, first). */
+  private costCopySiblings(item: StackItem, part: EffectPart): EffectPart[] {
+    if (part.fromMod === undefined) return [part];
+    return item.parts.filter(p => p.fromMod === part.fromMod && p.effectKey === part.effectKey && !p.spent && !p.costPaid);
+  }
+
+  /** R110: a fixed cost, k times over — what "pay it k times" must be asked
+   * about before the first payment. "[Sacrifice a unit]" k times is k units. */
+  private costTimes(cost: CastCost, k: number): CastCost {
+    const n = costAmount(cost);
+    if (n === null || k <= 1) return cost;
+    switch (cost.kind) {
+      case 'sacrificeUnit': return { kind: 'sacrificeUnits', n: k };
+      case 'sacrificeUnits': return cost.from === 'self' ? cost : { ...cost, n: n * k };
+      case 'gainDebt': return cost;
+      default: return { ...cost, n: n * k } as CastCost;
     }
   }
 
@@ -4443,8 +4603,11 @@ export class E {
     const cost = effectByKey(part.effectKey).castCost!;
     const obj = val !== null && typeof val === 'object' ? val as Record<string, unknown> : {};
     if ('declineCost' in obj) {
-      part.spent = true;
-      this.ev('info', `${item.label}: the [cost] is declined — that effect is skipped.`);
+      // R110: the rider is paid N times or not at all — declining the first
+      // copy declines every copy
+      const copies = this.costCopySiblings(item, part);
+      for (const p of copies) p.spent = true;
+      this.ev('info', `${item.label}: the [cost] is declined — that effect is skipped${copies.length > 1 ? ` (all ${copies.length} copies)` : ''}.`);
       // CARD-TODO #18, and the MOST reachable shape of it in the pool: a
       // bounded [Switch1] rider met as a graft, whose cost is declined at
       // composite cast time. The part is spent before it ever runs, so it can
@@ -4541,6 +4704,12 @@ export class E {
         // the payment vanished between activation and collection (a response
         // took the last unit): the cost is unpayable, so nothing is paid and
         // the whole activation is skipped — R35's unpayable-cost reading.
+        // ⚠ LATENT (2026-08-23 audit): "nothing is paid" holds only because
+        // no pool ability combines a choice-free half (mana/life/debt/
+        // sacrifice-me, charged by payActivationCost one call EARLIER) with a
+        // choice half like this one. The first card that does will reach
+        // here with its mana already spent — refund it or reorder the two
+        // collectors then; a ruling is needed on which.
         this.ev('info', `${item.label}: the activation cost can no longer be paid — the ability does nothing.`);
         // CARD-TODO #18: "the ability does nothing" is the ruling's own test —
         // nothing was paid and nothing will resolve, so no use is spent.
@@ -4749,7 +4918,10 @@ export class E {
     }
   }
 
-  commitItem(item: StackItem, then: 'push' | 'resolve'): void {
+  /** `moreItems` is the rest of the cast chain this item heads (castChain);
+   * when `then` is 'resolve' it rides on any mid-resolution suspension the
+   * item raises, so the chain is not lost if the player has to be asked. */
+  commitItem(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[] = []): void {
     // "When I become targeted" (Mohruung). PLAYTEST BUG: this logged the event
     // but never DISPATCHED it, so a spell aimed at Mohruung created no Crystal.
     // Modding already fired it (doAugment/doGraft) — only the stack path was
@@ -4792,7 +4964,7 @@ export class E {
     // spent under it. No log line, no listeners: rules-inert.
     this.ev('stackFlash', '', { item: structuredClone(item) });
     const outer = this.beginResolving(item);
-    this.resolveItem(item);
+    this.resolveItem(item, { then, moreItems });
     this.endResolving(outer);
     this.settle();
   }
@@ -4850,7 +5022,7 @@ export class E {
    * hands over an item freshly built with `negated: false` that was never on
    * the stack for anyone to answer.
    */
-  resolveItem(item: StackItem): void {
+  resolveItem(item: StackItem, chain?: ChainRest): void {
     if (item.kind === 'unit') {
       // R29: `formationSpot` is where this card was PLAYED — chosen at cast
       // (collectFormationSpot), taken here, atomically with the spawn.
@@ -4952,7 +5124,7 @@ export class E {
     // present progressive is true at 0ms and at a minute; the effects beneath
     // it remain the evidence that it actually finished.
     this.ev('resolved', `Resolving ${item.label}:`, { id: item.id });
-    this.resolveParts(item, 0, {});
+    this.resolveParts(item, 0, {}, 0, chain);
     this.afterParts(item);
   }
 
@@ -4984,8 +5156,12 @@ export class E {
    * `shownEvents` is R85's other half, and applies to part `from` only: that
    * many events of this part are already on everyone's screen, so the replay's
    * re-emission of them is dropped instead of doubling the log.
+   *
+   * `chain` is the rest of the cast chain this item heads, if any: it is put
+   * on the 'resolve' suspension so doDecide can run it once the item finishes.
    */
-  resolveParts(item: StackItem, from: number, answers: Record<string, unknown>, shownEvents = 0): void {
+  resolveParts(item: StackItem, from: number, answers: Record<string, unknown>, shownEvents = 0,
+    chain?: ChainRest): void {
     for (let pi = from; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
       if (part.spent) continue;
@@ -5131,6 +5307,7 @@ export class E {
             {
               type: 'resolve', item, partIndex: pi, answers, pendingKey: sig.key,
               snapshot: snap, shown: emitted,
+              ...(chain ? { then: chain.then, moreItems: chain.moreItems } : {}),
             },
             { seat: sig.dec.seat, kind: sig.dec.kind, prompt: sig.dec.prompt, options: sig.dec.options },
           );
@@ -5475,11 +5652,13 @@ export class E {
       if ((budgetHolder.budgets[budgetKey] ?? 0) > 0) return null;   // bounded cause bounds the whole composite
       budgetHolder.budgets[budgetKey] = 1;
     }
-    const parts: EffectPart[] = [{
+    const base: EffectPart = {
       effectKey: `${abilityKeyPrefix}:${cardName}#${abilityIndex}`, targets: [],
-    }];
+    };
+    const parts: EffectPart[] = [base];
     // grafted effects join only a graft cause, and only from graft-applied mods
     if (ability.graftCause && abilityKeyPrefix === 'ability') {
+      const grafts: EffectPart[] = [];
       for (const modId of source.mods) {
         const mod = this.entity(modId);
         if (!mod || mod.appliedAs !== 'graft') continue;
@@ -5489,7 +5668,24 @@ export class E {
           if ((mod.budgets['graft'] ?? 0) > 0) continue;   // used this turn: skipped, composite still fires
           mod.budgets['graft'] = 1;
         }
-        parts.push({ effectKey: `graft:${mod.card}`, targets: [], fromMod: mod.id });
+        grafts.push({ effectKey: `graft:${mod.card}`, targets: [], fromMod: mod.id });
+      }
+      // R110: "(Trigger two copies of this graft ability as one single
+      // trigger)" — a multiplier in the composite (the cause itself, Lost
+      // Guardian's own ability; or a multiplier grafted under this host)
+      // repeats every OTHER graft N times, top-to-bottom and then top-to-
+      // bottom again, bounded grafts included. Each copy is its own part, so
+      // it collects its own targets and pays its own [cost]. The multiplier
+      // parts themselves appear once and do nothing at resolution.
+      const copies = [base, ...grafts]
+        .map(p => effectByKey(p.effectKey).graftCopies ?? 1)
+        .reduce((a, b) => a * b, 1);
+      parts.push(...grafts);
+      for (let round = 1; round < copies; round++) {
+        for (const p of grafts) {
+          if (effectByKey(p.effectKey).graftCopies) continue;   // never multiply a multiplier
+          parts.push({ ...p, targets: [] });
+        }
       }
     }
     return parts;
@@ -5799,34 +5995,41 @@ export class E {
     return !attrs.has('Swift') && !attrs.has('Sluggish');
   }
 
+  /** One sub-step of simultaneous damage, in two halves over one ledger:
+   * ASSIGNMENT (every scheduled column's pool is split over its victims into
+   * the ledger; nothing is dealt yet) and COMMIT + AFTERMATH (the ledger is
+   * dealt to units, then Deadly, Afflicting, Blessed, per-column replacement
+   * to players, Lethal and Thieving read it in that order). The order of the
+   * aftermath is the rules' order — each step's comment says why it sits
+   * where it does — and the ledger lives for exactly this sub-step. */
   private combatSubStep(sub: 'Swift' | 'normal' | 'Sluggish'): void {
     const b = this.s.battle!;
-    // pool assigned to each unit this sub-step, tagged with the striking column's
-    // damage-replacement attrs (Poisonous → counters, Resonant → rider) and,
-    // for R48 {Blessed}, the seat the life gain is owed to
-    const perUnit = new Map<EntityId, {
-      pool: number; poisonous: boolean; resonant: boolean;
-      /** R61 {Pure}: this damage came out of an attribute-blind exchange, so
-       * the VICTIM's Vulnerable is switched off for it too */
-      pure?: boolean;
-      blessedTo?: Seat; blessedFrom?: string;
-      /** R98: the striking column's live attributes and label, carried so the
-       * prevention/replacement choke point can be told a {Piercing} hit from a
-       * plain overkill. Last assignment wins, as `poisonous`/`resonant` already
-       * do — a unit takes damage from at most one column per sub-step. */
-      attrs?: Set<string>; label?: string;
-    }>();
-    const deadlyHit = new Set<EntityId>();   // R21: any damage from a Deadly column kills
-    const playerDmg: number[] = this.s.players.map(() => 0);
-    const thievingDraw: number[] = this.s.players.map(() => 0);   // draws owed to each seat
-    // R48: combat damage a column deals to a PLAYER, one entry per column —
-    // per-column granularity is required by the Blightsea Polyp replacement
-    // ("as 1 rot", whatever the column's power) and by {Lethal}.
-    const playerHits: { seat: Seat; amount: number; by: Seat; attrs: Set<string>; label: string; pure: boolean }[] = [];
-    // R48 {Afflicting}: units each afflicting column damaged this sub-step,
-    // keyed by column, so its kills can be diffed out afterwards
-    const afflicted = new Map<string, { dealer: Seat; label: string; ids: Set<EntityId> }>();
-    const beforeUnits = this.snapshotUnits();
+    const L = this.newCombatLedger();
+    this.assignCombatDamage(b, sub, L);
+    const shielded = this.commitUnitDamage(b, L);
+    this.sweepDeadly(L, shielded);
+    this.afflictingAftermath(L);
+    this.commitPlayerDamage(b, L);
+    this.thievingDraws(L);
+  }
+
+  /** a fresh ledger (see `CombatLedger` for what each field is for) */
+  private newCombatLedger(): CombatLedger {
+    return {
+      perUnit: new Map(),
+      deadlyHit: new Set(),
+      thievingDraw: this.s.players.map(() => 0),
+      playerHits: [],
+      afflicted: new Map(),
+      beforeUnits: this.snapshotUnits(),
+    };
+  }
+
+  /** ASSIGNMENT half: walk every column; each side that strikes in this
+   * sub-step splits its (Powerful-doubled) power over the opposing column
+   * front-to-back into the ledger, and whatever reaches a PLAYER — unblocked,
+   * or Piercing overflow — is recorded as a per-column player hit. */
+  private assignCombatDamage(b: BattleState, sub: 'Swift' | 'normal' | 'Sluggish', L: CombatLedger): void {
     const alive = (ids: EntityId[]) => ids.filter(id => this.entity(id));
     const colLabel = (ids: EntityId[]) => ids.map(id => this.entity(id)?.card ?? '?').join(' + ') || 'a column';
     const colPower = (ids: EntityId[]) =>
@@ -5836,47 +6039,6 @@ export class E {
     // pierces the doubled amount).
     const dealtPower = (ids: EntityId[], attrs: Set<string>) =>
       colPower(ids) * (attrs.has('Powerful') ? 2 : 1);
-    // front-to-back lethal assignment (R7: controller's split is the default
-    // auto-assignment for now; piercing overflow is automatic, never elective).
-    // Returns the leftover pool (the Piercing candidate). A Vulnerable victim
-    // receives double, so half the pool is lethal and the pre-double remainder
-    // pierces through sooner (R23); Deadly caps lethal at 1 (R21).
-    const assign = (ids: EntityId[], amount: number, srcAttrs: Set<string>,
-      src: { dealer: Seat; key: string; label: string }, pure = false): number => {
-      const deadly = srcAttrs.has('Deadly');
-      const poisonous = srcAttrs.has('Poisonous');
-      const resonant = srcAttrs.has('Resonant');
-      const blessedTo = srcAttrs.has('Blessed') ? src.dealer : undefined;
-      let remaining = amount;
-      for (const id of ids) {
-        const u = this.entity(id);
-        if (!u || remaining <= 0) continue;
-        const mult = (!pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
-        const prev = perUnit.get(id)?.pool ?? 0;
-        const [, t] = this.effStats(u);
-        const recvCap = Math.max(0, t - u.damage - prev * mult);   // received still needed to kill
-        let poolNeed = Math.ceil(recvCap / mult);
-        if (deadly && recvCap > 0) poolNeed = 1;   // 1 pool point suffices to kill
-        const a = Math.min(remaining, poolNeed);
-        if (a > 0) {
-          const cur = perUnit.get(id) ?? { pool: 0, poisonous, resonant };
-          cur.pool += a; cur.poisonous = poisonous; cur.resonant = resonant;
-          cur.attrs = srcAttrs; cur.label = src.label;   // R98
-          if (pure) cur.pure = true;
-          if (blessedTo !== undefined) { cur.blessedTo = blessedTo; cur.blessedFrom = src.label; }
-          perUnit.set(id, cur);
-          if (deadly) deadlyHit.add(id);
-          if (srcAttrs.has('Afflicting')) {
-            const bucket = afflicted.get(src.key)
-              ?? { dealer: src.dealer, label: src.label, ids: new Set<EntityId>() };
-            bucket.ids.add(id);
-            afflicted.set(src.key, bucket);
-          }
-        }
-        remaining -= a;
-      }
-      return remaining;
-    };
 
     b.columns.forEach((atkCol, ci) => {
       const atk = alive(atkCol);
@@ -5897,7 +6059,7 @@ export class E {
         const src = { dealer: b.attacker, key: `atk:${ci}`, label: colLabel(atk) };
         let toPlayer = 0;
         if (blk.length) {
-          const left = assign(blk, pow, atkAttrs, src, pure);
+          const left = this.assignColumnDamage(L, blk, pow, atkAttrs, src, pure);
           if (atkAttrs.has('Piercing')) toPlayer = left;
         } else if (blockedEver) {
           // blocked stays blocked: only Piercing carries through dead blockers
@@ -5907,8 +6069,8 @@ export class E {
           toPlayer = pow;
         }
         if (toPlayer > 0) {
-          playerHits.push({ seat: b.defender, amount: toPlayer, by: b.attacker, attrs: atkAttrs, label: src.label, pure });
-          if (atkAttrs.has('Thieving')) thievingDraw[b.attacker] = (thievingDraw[b.attacker] ?? 0) + 1;
+          L.playerHits.push({ seat: b.defender, amount: toPlayer, by: b.attacker, attrs: atkAttrs, label: src.label, pure });
+          if (atkAttrs.has('Thieving')) L.thievingDraw[b.attacker] = (L.thievingDraw[b.attacker] ?? 0) + 1;
         }
       }
       // blocker side
@@ -5937,17 +6099,63 @@ export class E {
           }
         } else {
           const src = { dealer: b.defender, key: `blk:${ci}`, label: colLabel(blk) };
-          const left = assign(atk, dealtPower(blk, blkAttrs), blkAttrs, src, pure);
+          const left = this.assignColumnDamage(L, atk, dealtPower(blk, blkAttrs), blkAttrs, src, pure);
           if (blkAttrs.has('Piercing') && left > 0) {
-            playerHits.push({ seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label, pure });
-            if (blkAttrs.has('Thieving')) thievingDraw[b.defender] = (thievingDraw[b.defender] ?? 0) + 1;
+            L.playerHits.push({ seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label, pure });
+            if (blkAttrs.has('Thieving')) L.thievingDraw[b.defender] = (L.thievingDraw[b.defender] ?? 0) + 1;
           }
         }
       }
     });
+  }
 
-    // commit unit damage: Vulnerable doubles received; Poisonous replaces it with
-    // -1/-1 counters; Resonant riders the same amount onto the unit's controller
+  /** front-to-back lethal assignment (R7: controller's split is the default
+   * auto-assignment for now; piercing overflow is automatic, never elective).
+   * Returns the leftover pool (the Piercing candidate). A Vulnerable victim
+   * receives double, so half the pool is lethal and the pre-double remainder
+   * pierces through sooner (R23); Deadly caps lethal at 1 (R21). */
+  private assignColumnDamage(L: CombatLedger, ids: EntityId[], amount: number, srcAttrs: Set<string>,
+    src: { dealer: Seat; key: string; label: string }, pure = false): number {
+    const deadly = srcAttrs.has('Deadly');
+    const poisonous = srcAttrs.has('Poisonous');
+    const resonant = srcAttrs.has('Resonant');
+    const blessedTo = srcAttrs.has('Blessed') ? src.dealer : undefined;
+    let remaining = amount;
+    for (const id of ids) {
+      const u = this.entity(id);
+      if (!u || remaining <= 0) continue;
+      const mult = (!pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
+      const prev = L.perUnit.get(id)?.pool ?? 0;
+      const [, t] = this.effStats(u);
+      const recvCap = Math.max(0, t - u.damage - prev * mult);   // received still needed to kill
+      let poolNeed = Math.ceil(recvCap / mult);
+      if (deadly && recvCap > 0) poolNeed = 1;   // 1 pool point suffices to kill
+      const a = Math.min(remaining, poolNeed);
+      if (a > 0) {
+        const cur = L.perUnit.get(id) ?? { pool: 0, poisonous, resonant };
+        cur.pool += a; cur.poisonous = poisonous; cur.resonant = resonant;
+        cur.attrs = srcAttrs; cur.label = src.label;   // R98
+        if (pure) cur.pure = true;
+        if (blessedTo !== undefined) { cur.blessedTo = blessedTo; cur.blessedFrom = src.label; }
+        L.perUnit.set(id, cur);
+        if (deadly) L.deadlyHit.add(id);
+        if (srcAttrs.has('Afflicting')) {
+          const bucket = L.afflicted.get(src.key)
+            ?? { dealer: src.dealer, label: src.label, ids: new Set<EntityId>() };
+          bucket.ids.add(id);
+          L.afflicted.set(src.key, bucket);
+        }
+      }
+      remaining -= a;
+    }
+    return remaining;
+  }
+
+  /** COMMIT half, units: deal each unit its assigned pool. Vulnerable doubles
+   * received; Poisonous replaces it with -1/-1 counters; Resonant riders the
+   * same amount onto the unit's controller. Returns the units whose damage
+   * was fully prevented (R98), which the Deadly sweep must skip. */
+  private commitUnitDamage(b: BattleState, L: CombatLedger): Set<EntityId> {
     /** R98: units whose damage this sub-step was fully prevented. {Deadly}
      * kills "any combat damage from a deadly unit" — with none dealt there is
      * nothing for it to kill through, exactly as the shield stops Poisonous's
@@ -5956,7 +6164,7 @@ export class E {
      * "Atleast 1 dmg to Awoken (gets +1/+1, won't create 1/1 unit)", so the
      * 1-point floor is still assigned — it is just never dealt. */
     const shielded = new Set<EntityId>();
-    for (const [id, hit] of perUnit) {
+    for (const [id, hit] of L.perUnit) {
       const u = this.entity(id);
       if (!u) continue;
       const mult = (!hit.pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
@@ -5982,7 +6190,13 @@ export class E {
     // R98: "a +1/+1 counter for each damage prevented", after the whole
     // sub-step is marked (addCounters runs checkDeaths — see the method)
     this.settleDamagePrevention();
-    for (const id of deadlyHit) {
+    return shielded;
+  }
+
+  /** R21 {Deadly}: any damage from a Deadly column kills — unless none was
+   * actually dealt (R98 `shielded`). */
+  private sweepDeadly(L: CombatLedger, shielded: Set<EntityId>): void {
+    for (const id of L.deadlyHit) {
       if (shielded.has(id)) continue;   // R98: no damage dealt, nothing to kill through
       const u = this.entity(id);
       if (u) {
@@ -5990,27 +6204,37 @@ export class E {
         this.destroy(u, 'dies');
       }
     }
-    // R48 {Afflicting}: whatever an afflicting column damaged and killed gives
-    // its controller a rot, before any life is lost this sub-step. Ordinary
-    // combat damage does not kill until the state check, which pumpCombatDamage
-    // runs only AFTER this sub-step returns — so run it here first, or a
-    // straightforward combat kill would fall outside the diff. Idempotent: the
-    // pump's own checkDeaths then finds nothing left to do.
-    if (afflicted.size) this.checkDeaths();
-    for (const bucket of afflicted.values()) {
-      this.afflictingKills(beforeUnits, bucket.label, bucket.ids);
+  }
+
+  /** R48 {Afflicting}: whatever an afflicting column damaged and killed gives
+   * its controller a rot, before any life is lost this sub-step. Ordinary
+   * combat damage does not kill until the state check, which pumpCombatDamage
+   * runs only AFTER this sub-step returns — so run it here first, or a
+   * straightforward combat kill would fall outside the diff. Idempotent: the
+   * pump's own checkDeaths then finds nothing left to do. */
+  private afflictingAftermath(L: CombatLedger): void {
+    if (L.afflicted.size) this.checkDeaths();
+    for (const bucket of L.afflicted.values()) {
+      this.afflictingKills(L.beforeUnits, bucket.label, bucket.ids);
     }
+  }
+
+  /** COMMIT half, players: the per-column player hits become life loss —
+   * Blessed gains first, then the per-column replacement, then the loss
+   * itself, then Lethal. Each step's comment says why it sits where it does. */
+  private commitPlayerDamage(b: BattleState, L: CombatLedger): void {
+    const playerDmg: number[] = this.s.players.map(() => 0);
     // R48 {Blessed}: combat damage to a PLAYER gains too, and — the whole
     // point of "same game state check" — it is committed before the lethal
     // check below, so a blessed column can never kill its own controller.
-    for (const hit of playerHits) {
+    for (const hit of L.playerHits) {
       if (hit.attrs.has('Blessed')) this.blessedGain(hit.by, hit.amount, hit.label);
     }
     // R38 (Blightsea Polyp): a per-COLUMN replacement of combat damage to
     // players — "as 1 rot", whatever the column's power. Offered per hit, and
     // a replaced hit still counts as DEALT (Caleb 2024-10-24), which is why
     // Thieving above and Lethal below read playerHits, not playerDmg.
-    for (const hit of playerHits) {
+    for (const hit of L.playerHits) {
       const left = this.replaceCombatDamage(hit.seat, hit.amount,
         { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure });
       if (left <= 0) continue;
@@ -6023,12 +6247,15 @@ export class E {
     // R48 {Lethal}: "Any combat damage from a lethal unit will kill a player."
     // Last, because a normal-damage kill above already ended the game (and a
     // {Blessed} gain has already been applied).
-    for (const hit of playerHits) {
+    for (const hit of L.playerHits) {
       if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);
     }
-    // Thieving: a column that dealt combat damage to a player draws one card (R24)
+  }
+
+  /** Thieving: a column that dealt combat damage to a player draws one card (R24) */
+  private thievingDraws(L: CombatLedger): void {
     for (const seat of [this.initiative, this.nit]) {
-      for (let i = 0; i < (thievingDraw[seat] ?? 0); i++) {
+      for (let i = 0; i < (L.thievingDraw[seat] ?? 0); i++) {
         this.ev('info', `Thieving: ${this.pname(seat)} draws a card.`);
         this.draw(seat, 1);
       }
@@ -6137,6 +6364,15 @@ export class E {
    * has a legal haste play (R18). */
   startHasteStep(): void {
     const canHaste = (seat: Seat) => {
+      // LATENT DIVERGENCE from apply.ts `castable()`, which is what
+      // legalActions' haste branch actually gates on: this judges the
+      // spec-wide `targets` (castable judges slot 0 via specForSlot), treats a
+      // min-0 "up to N" spec as needing a candidate (castable lets it be cast
+      // at nothing), and never asks whether the bracketed [cast cost] /
+      // [Gain N debt] is payable. Each of those can make this say "yes" to a
+      // hand castable() then refuses — an empty haste step with a doneHaste
+      // to click — or (min-0) "no" to a playable card, which skips the step
+      // outright. Unifying them means routing this through castable().
       const hasTarget = (name: CardName) => {
         const spec = this.card(name).spellEffect?.targets;
         return !spec || this.targetCandidates(spec, this.homeRegion(seat), undefined, seat).length > 0;

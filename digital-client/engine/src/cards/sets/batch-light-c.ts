@@ -77,9 +77,9 @@
  *  - (Calming Force COMPLETE as of R100, round 17: "I can't be played from your
  *    hand" is the `noPlayFromHand` flag — see the card.)
  */
-import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
+import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+import { card, getCard, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -601,53 +601,22 @@ card('Void Mandible', {
 // reminder text). ⚠ Witness of the Crossing prints no such reminder — the
 // three-copy reading is inferred from Lost Guardian; flagged in the report.
 //
-// composeParts already contributes each attached graft ONCE, so the base
-// effect supplies the two extra copies inline (targets picked mid-resolution
-// via ctx.choose). Ordering: the base part runs first, so the extra copies
-// precede the composite's own graft parts — harmless inside one trigger.
-// Bounded ([Switch1], R9): once per turn as a cause and as a graft.
+// R110: a graft MULTIPLIER — `graftCopies: 3` makes composeParts materialize
+// every other attached graft three times in the one composite (G1 → G2 → G1
+// → G2 → G1 → G2), bounded grafts included, each copy with its own targets
+// and its own [cost] (paid thrice or not at all). The effect itself does
+// nothing at resolution. Bounded ([Switch1], R9): once per turn as a cause
+// and as a graft.
 const tripleGrafts: EffectDef = {
+  graftCopies: 3,
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
-    if (!self) return;
-    for (const modId of [...self.mods]) {
-      const mod = g.entity(modId);
-      if (!mod || mod.appliedAs !== 'graft' || mod.card === 'Witness of the Crossing') continue;
-      const eff = getCard(mod.card).graftEffect?.effect;
-      if (!eff) continue;
-      // ⚠ R35/R49: a rider with a bracketed [cost] is paid ONCE, in the cast
-      // window, when composeParts contributes its single copy. These inline
-      // copies run outside that window and have no way to pay, so they are
-      // SKIPPED rather than resolved for free — Darkblast's "[Discard a card]
-      // deal 5 damage" would otherwise be 5 free damage twice over. The
-      // printed copy still happens; only the two extra ones are lost.
-      if (eff.castCost) {
-        g.ev('info',
-          `${ctx.sourceName}: ${mod.card} has a bracketed [cost], which the extra copies `
-          + 'cannot pay — only its paid copy resolves.');
-        continue;
-      }
-      for (const copy of [1, 2]) {
-        let targets: ResolvedTarget[] = [];
-        if (eff.targets) {
-          const cands = g.targetCandidates(eff.targets, ctx.region, undefined, ctx.controller);
-          if (!cands.length) continue;
-          const ref = (cands.length === 1 ? cands[0]! : ctx.choose(`woc:${modId}:${copy}`, {
-            kind: 'electricPath', seat: ctx.controller, prompt: eff.targets.prompt,
-            options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
-          })) as TargetRef;
-          const r = g.resolveTargetRef(ref);
-          if (!r) continue;
-          targets = [r];
-        }
-        eff.run(g, {
-          controller: ctx.controller, sourceName: mod.card, sourceId: self.id,
-          region: ctx.region, targets, event: ctx.event,
-          eraseSelf: () => {},   // an inline mod copy has no stack item to erase
-          choose: (k, d) => ctx.choose(`woc:${modId}:${copy}:${k}`, d),
-        });
-      }
-    }
+    const others = self ? self.mods.filter(id => {
+      const m = g.entity(id);
+      return m && m.appliedAs === 'graft' && m.card !== 'Witness of the Crossing';
+    }).length : 0;
+    if (!others) g.ev('info', `${ctx.sourceName}: no other graft is attached — there is nothing to triple.`);
+    else g.ev('info', `${ctx.sourceName}: 3 copies of each grafted ability (${others} graft${others === 1 ? '' : 's'}), one single trigger.`);
   },
 };
 card('Witness of the Crossing', {

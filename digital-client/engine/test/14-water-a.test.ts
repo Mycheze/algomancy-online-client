@@ -719,3 +719,47 @@ test('Protective Adaptations: the target also gains piercing until regroup', () 
   finishBattle(h);
   assert.ok(!ownAttrs(h, tok).has('Piercing'), 'temporary — gone at regroup');
 });
+
+// ── R110: the ruling Amphivore is named in ──────────────────────────────
+//
+// "Amphivore / Lost Guardian. Bounded Grafts and Ralph explained." (moderator,
+// 2025-03-21): one stack item, the grafts tripled top-to-bottom and again,
+// "Any Bounded Grafts will be repeated", and a targeted graft aims each copy.
+// This file used to assert the opposite (bounded grafts "correctly run once").
+
+test('R110: Amphivore triples a BOUNDED [Switch1] graft — nine Fireballs from one "Create three"', () => {
+  const h = new Harness(1470);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const amph = spawn(h, A, 'Amphivore');
+  giveResources(h, A, 'fire', 2);                           // Flame Juggle: r/2, [Switch1]
+  h.do({ type: 'graft', seat: A, from: 'hand', index: give(h, A, 'Flame Juggle'), hostId: amph, position: 0 });
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[amph]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: 1 - A, blocks: {} });
+  pass(h); pass(h);                                         // 2 combat damage → trigger, resolves at once
+  const fires = tokensOf(h, A).filter(t => t.card === 'Fireball');
+  assert.equal(fires.length, 9, 'bounded "Create three Fireball 1" ran THREE times — "Any Bounded Grafts will be repeated"');
+  finishBattle(h);
+});
+
+test('R110: a TARGETED graft under Amphivore aims each of its three copies separately', () => {
+  const h = new Harness(1471);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const amph = spawn(h, A, 'Amphivore');
+  giveResources(h, A, 'fire', 3);                           // Rune Channeler: rr/3, [Switch1] 2 damage to any target
+  h.do({ type: 'graft', seat: A, from: 'hand', index: give(h, A, 'Rune Channeler'), hostId: amph, position: 0 });
+  toNextBattle(h, A);
+  const life = h.state.players[D]!.life;
+  h.do({ type: 'declareAttack', seat: A, columns: [[amph]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);                                         // 2 combat damage → the trigger asks for targets
+  let asked = 0;
+  while (h.state.decision && asked < 5) { pick(h, { player: D }); asked++; }
+  assert.equal(asked, 3, 'three copies, three target questions');
+  assert.equal(h.state.players[D]!.life, life - 2 - 6, '2 combat + 3 × 2 from the tripled graft');
+  finishBattle(h);
+});

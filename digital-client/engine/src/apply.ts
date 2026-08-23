@@ -9,7 +9,7 @@ import type {
   Action, ApplyResult, CardName, EffectPart, Element, EngineEvent, Entity, EntityId, FormationSpot,
   GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
-import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other } from './engine.ts';
+import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest } from './engine.ts';
 import {
   affinityPips, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
   registerSynthetic, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
@@ -413,11 +413,16 @@ function canPayAmbush(e: E, seat: Seat, c: CardDef): boolean {
 }
 
 function baseItem(e: E, c: CardDef, seat: Seat, region: number,
-  from?: 'hand' | 'cache' | 'bin', unstable = false): StackItem {
+  from?: 'hand' | 'cache' | 'bin', unstable = false, fixedX?: number): StackItem {
   const parts: EffectPart[] = c.spellEffect ? [{ effectKey: `spell:${c.name}`, targets: [] }] : [];
   return {
     id: e.s.nextId++, kind: c.kind, card: c.name, label: c.name,
     controller: seat, region, negated: false, parts,
+    // R111: a FREE release (fulfilled prophecy) casts an X spell for X = 0 —
+    // "for free" waives the whole mana cost, X included, so there is no X
+    // to choose and collectX has nothing to ask (Bena 2026-08-23, the Magic
+    // rule). An X that is a bracketed additional cost is not this X.
+    ...(fixedX !== undefined ? { x: fixedX } : {}),
     // R49: the zone this card is being played out of, carried into the
     // 'spellPlayed' / 'spawned' events (Proph, Stalwart Sentinel)
     ...(from ? { from } : {}),
@@ -438,7 +443,7 @@ function baseItem(e: E, c: CardDef, seat: Seat, region: number,
 function playAtTiming(
   e: E, seat: Seat, c: CardDef, timing: CardDef['timing'],
   take: () => void, pay: () => void, from: 'hand' | 'cache' | 'bin',
-  unstable = false,
+  unstable = false, fixedX?: number,
 ): void {
   const canCast = (region: number) => castable(e, c, region, seat, from);
   /** R49: the printed "[Gain N debt]" bracketed line (Hyper Beam) is a real
@@ -476,7 +481,7 @@ function playAtTiming(
       e.ev('info', `${c.name} is played during the haste step as if it had [Haste].`,
         { seat, card: c.name });
     }
-    e.castChain([baseItem(e, c, seat, region, from, unstable)], 'resolve');
+    e.castChain([baseItem(e, c, seat, region, from, unstable, fixedX)], 'resolve');
   } else if (e.s.phase === 'deploy') {
     e.need(e.deploying(seat), 'not your deployment');
     e.need(timing === 'deploy' || timing === 'haste', 'battle cards can only be played during battle');
@@ -484,7 +489,7 @@ function playAtTiming(
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
-    e.castChain([baseItem(e, c, seat, region, from, unstable)], 'resolve');
+    e.castChain([baseItem(e, c, seat, region, from, unstable, fixedX)], 'resolve');
   } else if (e.s.phase === 'battle') {
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(timing === 'battle', 'only battle cards can be played now');
@@ -492,7 +497,7 @@ function playAtTiming(
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
-    e.castChain([baseItem(e, c, seat, region, from, unstable)], 'push');
+    e.castChain([baseItem(e, c, seat, region, from, unstable, fixedX)], 'push');
     e.settle();
   } else {
     e.illegal('cards are played during deployment or battle');
@@ -575,13 +580,16 @@ function doPlayCached(e: E, seat: Seat, index: number): void {
     () => { e.uncache(seat, index); },
     () => {
       if (free) {
-        e.ev('info', `${cc.card} is released from ${e.pname(seat)}'s cache for FREE (prophecy fulfilled: ${cc.prophecy!.condition}).`);
+        e.ev('info', `${cc.card} is released from ${e.pname(seat)}'s cache for FREE (prophecy fulfilled: ${cc.prophecy!.condition})`
+          + (c.mana === 'X' ? ' — an X spell released for free is cast for X = 0.' : '.'));
       } else {
         e.payCard(seat, cc.card);
         e.ev('info', `${cc.card} is played from ${e.pname(seat)}'s cache, ignoring affinity.`);
       }
     },
-    'cache');
+    'cache', false,
+    // R111: free waives the mana cost entirely — X included (see baseItem)
+    free && c.mana === 'X' ? 0 : undefined);
 }
 
 /** R96: the cards a bin-play permission reaches. "You may play SPELLS from
@@ -1665,7 +1673,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     }
     let chain = sus.moreItems;
     e.collectTargets(sus.item, sus.then, chain);   // may suspend again
-    e.commitItem(sus.item, sus.then);
+    e.commitItem(sus.item, sus.then, chain);   // a 'resolve' suspension carries chain too
     e.castChain(chain, sus.then);
     e.settle();
     return;
@@ -1693,13 +1701,23 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
   sus.answers[sus.pendingKey] = dec.options[choice]!.value;
   const shown = e.resumeResolve(sus);
-  e.resolveParts(sus.item, sus.partIndex, sus.answers, shown);
+  // the rest of the cast chain this item heads (a {Burst} token's siblings),
+  // handed back to the replay so a SECOND question from the same item keeps
+  // carrying it, and run below once the item is done
+  const chain: ChainRest | undefined = sus.moreItems && sus.then
+    ? { then: sus.then, moreItems: sus.moreItems } : undefined;
+  e.resolveParts(sus.item, sus.partIndex, sus.answers, shown, chain);
   e.afterParts(sus.item);
   // R78: it has ACTUALLY resolved now — clear the marker (resolveParts throws
   // straight past this if the item still owes another choice, which is exactly
   // how it stays marked across a chain of mid-resolution decisions).
   e.endResolving(null);
   e.finishResolutionTail();
+  // castChain's loop, resumed: the item that suspended was `chain[0]` of some
+  // cast; commitItem's own tail (endResolving + settle) has its counterpart
+  // just above, and the items behind it are cast exactly as the loop would
+  // have — each collecting its own targets, with the remainder riding along.
+  if (chain?.moreItems.length) e.castChain(chain.moreItems, chain.then);
 }
 
 // ── forced actions ────────────────────────────────────────────────────
@@ -1744,298 +1762,336 @@ export function forcedAction(state: GameState): Action | null {
  * (declareAttack / declareBlocks) the enumeration is representative, not
  * exhaustive — the UI builds formations interactively and the fuzzer has its
  * own generator; apply() validates whatever they produce.
+ *
+ * A dispatcher: the phase blocks are independent of each other and each
+ * lives in its own `legal…Actions` function below. The ORDER actions are
+ * pushed inside each is load-bearing — the UI and the fuzzer index into
+ * this list — so a split must never reorder a push.
  */
 export function legalActions(state: GameState, seat: Seat): Action[] {
   const e = new E(structuredClone(state));   // E for queries only
-  const out: Action[] = [];
   const s = e.s;
-  if (s.phase === 'gameover') return out;
-
-  if (s.decision) {
-    if (s.decision.seat !== seat) return out;
-    if (s.decision.pickOrder) {
-      // small sets: every ordering; large sets: a representative pair
-      // (like formations, apply() validates ANY permutation the UI builds)
-      const n = s.decision.options.length;
-      if (n <= 4) {
-        for (const perm of permutations(n)) out.push({ type: 'decide', seat, choice: perm });
-      } else {
-        const identity = Array.from({ length: n }, (_, i) => i);
-        out.push({ type: 'decide', seat, choice: identity });
-        out.push({ type: 'decide', seat, choice: [...identity].reverse() });
-      }
-    } else {
-      s.decision.options.forEach((_, i) => out.push({ type: 'decide', seat, choice: i }));
-    }
-    return out;
-  }
-
-  if (s.phase === 'planning' && s.hasteDone) {   // haste step (R18)
-    if (s.hasteDone[seat]) return out;
-    out.push({ type: 'doneHaste', seat });
-    const home = e.homeRegion(seat);
-    e.player(seat).hand.forEach((name, i) => {
-      const c = getCard(name);
-      // R97, gate 2 of three: the printed [Haste] timing OR a live grant. The
-      // client's play affordance is built from this list, and a refusal the UI
-      // still offers as a legal click is its own playtest report — so this must
-      // route through the same `E.mayPlayAtHaste` that `playAtTiming` enforces.
-      const playable = c.timing === 'haste'
-        || e.mayPlayAtHaste({ seat, card: c, from: 'hand', region: home });
-      if (playable && !c.noPlayFromHand    // R100
-        && e.canPayCard(seat, name) && castable(e, c, home, seat)) {
-        out.push({ type: 'playCard', seat, handIndex: i });
-      }
-    });
-    pushCachedPlays(e, seat, t => t === 'haste', home, out);
-    return out;
-  }
-
-  if (s.phase === 'planning' && !s.planningDone[seat]) {
-    const hand = e.player(seat).hand;
-    // draft step first: nothing else until this seat commits their merge.
-    // Options are representative (like formations): the no-op keep plus every
-    // single hand↔pack swap; the UI builds arbitrary merges interactively and
-    // apply() validates whatever it sends.
-    if (e.draftPending(seat)) {
-      const pack = s.packs[seat]!;
-      const H = hand.length;
-      const noop = Array.from({ length: pack.length }, (_, i) => H + i);
-      out.push({ type: 'draftCommit', seat, packIndices: noop });
-      for (let h = 0; h < H; h++) {
-        for (let p = 0; p < pack.length; p++) {
-          out.push({ type: 'draftCommit', seat, packIndices: noop.map((v, j) => (j === p ? h : v)) });
-        }
-      }
-      return out;
-    }
-    // constructed draw phase: nothing else until the 2 cards go back. Every
-    // pair (ordered pairs collapse to one representative; apply() accepts any
-    // order) — hands are small, so full enumeration stays tiny.
-    if (e.bottomPending(seat)) {
-      const required = Math.min(2, hand.length);
-      if (required <= 1) {
-        out.push({ type: 'bottomCards', seat, handIndices: hand.map((_, i) => i).slice(0, required) });
-        return out;
-      }
-      for (let i = 0; i < hand.length; i++) {
-        for (let j = i + 1; j < hand.length; j++) {
-          out.push({ type: 'bottomCards', seat, handIndices: [i, j] });
-        }
-      }
-      return out;
-    }
-    for (let i = 0; i < hand.length; i++) {
-      for (const el of s.elements) out.push({ type: 'recycleForResource', seat, handIndex: i, element: el });
-    }
-    if (e.player(seat).activationsLeft > 0) {
-      e.player(seat).resources.forEach((r, i) => {
-        if (r.state === 'dormant') out.push({ type: 'activateResource', seat, index: i });
-      });
-    }
-    e.player(seat).resources.forEach((r, i) => {
-      if (r.kind === 'prismite' && r.state !== 'dormant') {
-        for (const el of s.elements) out.push({ type: 'exchangePrismite', seat, index: i, element: el });
-      }
-    });
-    out.push({ type: 'donePlanning', seat });
-    return out;
-  }
-
-  if (s.phase === 'battle' && s.battle) {
-    const b = s.battle;
-    if (b.step === 'declare' && seat === b.attacker) {
-      out.push({ type: 'declareAttack', seat, columns: [] });
-      const fromRegion = b.round === 1 || b.attackerPool === null ? e.homeRegion(seat) : b.region;
-      const mine = e.unitsOf(seat, fromRegion)
-        .filter(u => (!b.attackerPool || b.attackerPool.includes(u.id)) && !u.allured);   // R84
-      for (const u of mine) out.push({ type: 'declareAttack', seat, columns: [[u.id]] });
-      if (mine.length > 1) out.push({ type: 'declareAttack', seat, columns: mine.map(u => [u.id]) });
-      return out;
-    }
-    if (b.step === 'blocks' && seat === b.defender) {
-      // Alluring makes some of these illegal — filter at the end, from the one
-      // predicate the validator uses, so the two can never drift (the fuzzer's
-      // "legalActions lied" check is what caught them drifting)
-      const legalBlock = (a: Action): boolean => a.type !== 'declareBlocks'
-        || !allureViolation(e, seat, a.blocks);
-      // R84/R76: Alluring duties are compulsory and must ALL be discharged at
-      // once, which no single-column declaration can do once there are two
-      // Alluring columns and two lured blockers. Every option below is
-      // therefore built on top of the compulsory core, and the core alone is
-      // always offered — it is legal by construction, so this list is never
-      // empty.
-      const core = compulsoryBlocks(e, seat);
-      const spoken = new Set<EntityId>(Object.values(core).flat());
-      const onCore = (blocks: Record<number, EntityId[]>): Record<number, EntityId[]> =>
-        ({ ...core, ...blocks });
-      out.push({ type: 'declareBlocks', seat, blocks: onCore({}) });
-      const mine = e.unitsOf(seat, b.region);
-      // Feeble can't block — unless it is also Pure, which ignores its own
-      // other attributes (R61)
-      // a unit the compulsory core already spent is not free to be offered again
-      const blockers = mine.filter(u =>
-        !spoken.has(u.id) && (!e.ownAttrs(u).has('Feeble') || e.pure([u.id])));
-      // R20: a lone Sneaky attacker cannot be blocked at all — R61: except by
-      // a Pure blocker, which is blind to Sneaky like every other attribute
-      const atkUnits = b.columns.flat().filter(id => e.entity(id));
-      const sneakyAlone = atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky');
-      b.columns.forEach((atkCol, ci) => {
-        const live = atkCol.filter(id => e.entity(id));
-        const rawAttrs = e.colAttrs(live);
-        // this exchange's attrs depend on WHO blocks, so they are resolved per
-        // candidate column rather than once for the attacker
-        const attrsWith = (ids: EntityId[]) =>
-          e.pure(live, ids) ? new Set<string>() : rawAttrs;
-        for (const u of blockers) {
-          const atkAttrs = attrsWith([u.id]);
-          if (sneakyAlone && atkAttrs.has('Sneaky')) continue;
-          if (atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying')) continue;
-          if (atkAttrs.has('Evasive')) continue;   // needs 2; single-blocker option invalid
-          out.push({ type: 'declareBlocks', seat, blocks: onCore({ [ci]: [u.id] }) });
-        }
-        for (let i = 0; i < blockers.length; i++) {
-          for (let j = i + 1; j < blockers.length; j++) {
-            const pair = [blockers[i]!.id, blockers[j]!.id];
-            const atkAttrs = attrsWith(pair);
-            if (atkAttrs.has('Flying') && !e.colAttrs(pair).has('Flying')) continue;
-            if (sneakyAlone && atkAttrs.has('Sneaky')) continue;
-            out.push({ type: 'declareBlocks', seat, blocks: onCore({ [ci]: pair } ) });
-          }
-        }
-      });
-      // send options (round 1 only — no counter-counterattacks):
-      // each single non-blocking unit, representative
-      if (b.round === 1) {
-        // R87: the tokens standing where the counterattack leaves from. A
-        // token rides only WITH a unit ("they always need a unit to take them
-        // with them"), so the rider is offered on top of each unit send rather
-        // than on its own — which is also what makes every one of these legal
-        // by construction, the way the fuzzer's "legalActions lied" check
-        // insists.
-        const riders = e.tokensOf(seat, b.region).map(t => t.id);
-        for (const u of mine) {
-          if (spoken.has(u.id)) continue;   // it is already blocking, compulsorily
-          // R84: a lured unit cannot counterattack — and sending anyone ELSE
-          // away cannot change who is "able", so the core is reused verbatim
-          if (u.allured) continue;
-          out.push({ type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat), send: [u.id] });
-          // playtest report #67, game GETD: the counterattack went out and
-          // three Poison 1s stayed behind, because nothing — not the engine's
-          // own enumeration, not the client — ever said they could come. One
-          // representative rider per unit; the builder composes any subset and
-          // apply() validates it, exactly as it does for a formation.
-          if (riders.length) {
-            out.push({
-              type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat),
-              send: [u.id], spellTokens: riders.slice(),
-            });
-          }
-        }
-      }
-      return out.filter(legalBlock);
-    }
-    if (s.priority === seat) {
-      out.push({ type: 'passPriority', seat });
-      const hand = e.player(seat).hand;
-      hand.forEach((name, i) => {
-        const c = getCard(name);
-        if (c.timing === 'battle' && !c.noPlayFromHand   // R100
-          && e.canPayCard(seat, name) && castable(e, c, b.region, seat)) {
-          out.push({ type: 'playCard', seat, handIndex: i });
-        }
-        if (c.ambush && canPayAmbush(e, seat, c)
-          && e.targetCandidates({ what: 'allyUnit', prompt: '' }, b.region, undefined, seat).length > 0) {
-          out.push({ type: 'playCard', seat, handIndex: i, mode: 'ambush' });
-        }
-        // R40: a "Discard me" line whose own marker makes it battle timing (Nothyr)
-        // R65: discarding is not playing — every "Discard me" line works at
-        // instant speed, whatever the card's own timing says
-        if (c.discardMe && canPayDiscardMe(e, seat, c)) {
-          out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
-        }
-      });
-      // R95: the battle AUGMENT window, hand and bin together. It used to be a
-      // `c.virus && from === 'hand'` clause inside the hand walk above; there
-      // was no bin leg at all, which is why Rook's whole text was unreachable
-      // even though bin-augmenting is fully plumbed for deployment.
-      pushBattleAugments(e, seat, b.region, out);
-      pushCachedPlays(e, seat, t => t === 'battle', b.region, out);
-      pushBinPlays(e, seat, b.region, out);   // R96
-      for (const t of e.tokensOf(seat, b.region)) out.push({ type: 'castSpellToken', seat, entityId: t.id });
-      pushActivatedOptions(e, seat, b.region, out);
-      return out;
-    }
-    return out;
-  }
-
+  if (s.phase === 'gameover') return [];
+  if (s.decision) return legalDecisionActions(e, seat);
+  if (s.phase === 'planning' && s.hasteDone) return legalHasteActions(e, seat);   // haste step (R18)
+  if (s.phase === 'planning' && !s.planningDone[seat]) return legalPlanningActions(e, seat);
+  if (s.phase === 'battle' && s.battle) return legalBattleActions(e, seat);
   // simultaneous deployment: EVERY not-yet-done seat gets its options (the
   // playtest bug: this still gated on the derived initiative-first
   // deployPlayer, so the other seat saw nothing playable until the first
   // finished — the engine accepted the plays, but they were never offered)
-  if (e.deploying(seat)) {
-    const region = e.homeRegion(seat);
-    out.push({ type: 'doneDeploying', seat });
-    e.player(seat).hand.forEach((name, i) => {
-      const c = getCard(name);
-      if (timingAllowsDeploy(c) && !c.noPlayFromHand   // R100
-        && e.canPayCard(seat, name) && castable(e, c, region, seat)) {
-        out.push({ type: 'playCard', seat, handIndex: i });
+  if (e.deploying(seat)) return legalDeployActions(e, seat);
+  return [];
+}
+
+/** a pending decision: only its seat may answer, and only from its options */
+function legalDecisionActions(e: E, seat: Seat): Action[] {
+  const dec = e.s.decision!;
+  const out: Action[] = [];
+  if (dec.seat !== seat) return out;
+  if (dec.pickOrder) {
+    // small sets: every ordering; large sets: a representative pair
+    // (like formations, apply() validates ANY permutation the UI builds)
+    const n = dec.options.length;
+    if (n <= 4) {
+      for (const perm of permutations(n)) out.push({ type: 'decide', seat, choice: perm });
+    } else {
+      const identity = Array.from({ length: n }, (_, i) => i);
+      out.push({ type: 'decide', seat, choice: identity });
+      out.push({ type: 'decide', seat, choice: [...identity].reverse() });
+    }
+  } else {
+    dec.options.forEach((_, i) => out.push({ type: 'decide', seat, choice: i }));
+  }
+  return out;
+}
+
+/** the haste step (R18): done, or a haste-timed play from hand / cache */
+function legalHasteActions(e: E, seat: Seat): Action[] {
+  const out: Action[] = [];
+  if (e.s.hasteDone![seat]) return out;
+  out.push({ type: 'doneHaste', seat });
+  const home = e.homeRegion(seat);
+  e.player(seat).hand.forEach((name, i) => {
+    const c = getCard(name);
+    // R97, gate 2 of three: the printed [Haste] timing OR a live grant. The
+    // client's play affordance is built from this list, and a refusal the UI
+    // still offers as a legal click is its own playtest report — so this must
+    // route through the same `E.mayPlayAtHaste` that `playAtTiming` enforces.
+    const playable = c.timing === 'haste'
+      || e.mayPlayAtHaste({ seat, card: c, from: 'hand', region: home });
+    if (playable && !c.noPlayFromHand    // R100
+      && e.canPayCard(seat, name) && castable(e, c, home, seat)) {
+      out.push({ type: 'playCard', seat, handIndex: i });
+    }
+  });
+  pushCachedPlays(e, seat, t => t === 'haste', home, out);
+  return out;
+}
+
+/** planning: the draft merge / constructed bottoming gates first, then the
+ * resource actions and donePlanning */
+function legalPlanningActions(e: E, seat: Seat): Action[] {
+  const s = e.s;
+  const out: Action[] = [];
+  const hand = e.player(seat).hand;
+  // draft step first: nothing else until this seat commits their merge.
+  // Options are representative (like formations): the no-op keep plus every
+  // single hand↔pack swap; the UI builds arbitrary merges interactively and
+  // apply() validates whatever it sends.
+  if (e.draftPending(seat)) {
+    const pack = s.packs[seat]!;
+    const H = hand.length;
+    const noop = Array.from({ length: pack.length }, (_, i) => H + i);
+    out.push({ type: 'draftCommit', seat, packIndices: noop });
+    for (let h = 0; h < H; h++) {
+      for (let p = 0; p < pack.length; p++) {
+        out.push({ type: 'draftCommit', seat, packIndices: noop.map((v, j) => (j === p ? h : v)) });
       }
-      // R40: the "Discard me" mode (Dropslime) — a deployment action unless
-      // its own cost line carries a {Battle} marker
-      if (c.discardMe && (c.discardMe.timing ?? c.timing) !== 'battle' && canPayDiscardMe(e, seat, c)) {
-        out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
-      }
-    });
-    // R42: prophesying is a deployment action, and the banner cost is plain
-    // mana — no affinity pips, so this checks openMana rather than canPayCard.
-    // 'bin' only for a card that says it may be (Angel of Anguish).
-    for (const from of ['hand', 'bin'] as const) {
-      e.player(seat)[from].forEach((name, i) => {
-        const c = getCard(name);
-        if (!c.prophecy) return;
-        if (from === 'bin' && !c.prophesyFromBin) return;
-        if (e.openMana(seat) < c.prophecy.mana) return;
-        out.push({ type: 'prophesy', seat, from, index: i });
-      });
     }
-    // R42/R45: releasing a permitted cached card at deployment timing
-    pushCachedPlays(e, seat, t => t === 'deploy' || t === 'haste', region, out);
-    // R41: mods may come from the cache as well as hand and bin
-    for (const from of ['hand', 'bin', 'cache'] as const) {
-      const names = from === 'cache' ? e.cache(seat).map(cc => cc.card) : e.player(seat)[from];
-      names.forEach((name, i) => {
-        // a fulfilled prophecy makes the mod free (R42); otherwise pay normally
-        const affordable = modIsFree(e, seat, from, i) || e.canPayCard(seat, name, { purpose: 'mod' });
-        if (!getCard(name) || !affordable) return;
-        if (isAugment(name)) {
-          for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
-          // R89: and the spell tokens standing in the same region. This is the
-          // line whose absence made the ruling invisible — R79 shipped the
-          // stack half and `legalActions` never offered it either, which is
-          // precisely how it stayed unreachable for a whole round.
-          for (const host of e.tokensOf(seat, region)) {
-            out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
-          }
-        }
-        if (isGraftable(name)) {
-          for (const host of e.unitsOf(seat, region)) {
-            if (graftCauseIndex(host.card) < 0) continue;
-            for (let p = 0; p <= host.mods.length; p++) {
-              out.push({ type: 'graft', seat, from, index: i, hostId: host.id, position: p });
-            }
-          }
-        }
-      });
-    }
-    for (const t of e.tokensOf(seat, region)) {
-      if (timingAllowsDeploy(getCard(t.card))) out.push({ type: 'castSpellToken', seat, entityId: t.id });
-    }
-    pushActivatedOptions(e, seat, region, out);
     return out;
   }
+  // constructed draw phase: nothing else until the 2 cards go back. Every
+  // pair (ordered pairs collapse to one representative; apply() accepts any
+  // order) — hands are small, so full enumeration stays tiny.
+  if (e.bottomPending(seat)) {
+    const required = Math.min(2, hand.length);
+    if (required <= 1) {
+      out.push({ type: 'bottomCards', seat, handIndices: hand.map((_, i) => i).slice(0, required) });
+      return out;
+    }
+    for (let i = 0; i < hand.length; i++) {
+      for (let j = i + 1; j < hand.length; j++) {
+        out.push({ type: 'bottomCards', seat, handIndices: [i, j] });
+      }
+    }
+    return out;
+  }
+  for (let i = 0; i < hand.length; i++) {
+    for (const el of s.elements) out.push({ type: 'recycleForResource', seat, handIndex: i, element: el });
+  }
+  if (e.player(seat).activationsLeft > 0) {
+    e.player(seat).resources.forEach((r, i) => {
+      if (r.state === 'dormant') out.push({ type: 'activateResource', seat, index: i });
+    });
+  }
+  e.player(seat).resources.forEach((r, i) => {
+    if (r.kind === 'prismite' && r.state !== 'dormant') {
+      for (const el of s.elements) out.push({ type: 'exchangePrismite', seat, index: i, element: el });
+    }
+  });
+  out.push({ type: 'donePlanning', seat });
+  return out;
+}
 
+/** battle: one of three windows depending on the step and the seat */
+function legalBattleActions(e: E, seat: Seat): Action[] {
+  const s = e.s;
+  const b = s.battle!;
+  if (b.step === 'declare' && seat === b.attacker) return legalDeclareAttackActions(e, seat);
+  if (b.step === 'blocks' && seat === b.defender) return legalDeclareBlocksActions(e, seat);
+  if (s.priority === seat) return legalBattlePriorityActions(e, seat);
+  return [];
+}
+
+/** the attacker's declare step: representative formations */
+function legalDeclareAttackActions(e: E, seat: Seat): Action[] {
+  const b = e.s.battle!;
+  const out: Action[] = [];
+  out.push({ type: 'declareAttack', seat, columns: [] });
+  const fromRegion = b.round === 1 || b.attackerPool === null ? e.homeRegion(seat) : b.region;
+  const mine = e.unitsOf(seat, fromRegion)
+    .filter(u => (!b.attackerPool || b.attackerPool.includes(u.id)) && !u.allured);   // R84
+  for (const u of mine) out.push({ type: 'declareAttack', seat, columns: [[u.id]] });
+  if (mine.length > 1) out.push({ type: 'declareAttack', seat, columns: mine.map(u => [u.id]) });
+  return out;
+}
+
+/** the defender's block step: representative block declarations on top of
+ * the compulsory (Alluring) core, plus round-1 counterattack sends */
+function legalDeclareBlocksActions(e: E, seat: Seat): Action[] {
+  const b = e.s.battle!;
+  const out: Action[] = [];
+  // Alluring makes some of these illegal — filter at the end, from the one
+  // predicate the validator uses, so the two can never drift (the fuzzer's
+  // "legalActions lied" check is what caught them drifting)
+  const legalBlock = (a: Action): boolean => a.type !== 'declareBlocks'
+    || !allureViolation(e, seat, a.blocks);
+  // R84/R76: Alluring duties are compulsory and must ALL be discharged at
+  // once, which no single-column declaration can do once there are two
+  // Alluring columns and two lured blockers. Every option below is
+  // therefore built on top of the compulsory core, and the core alone is
+  // always offered — it is legal by construction, so this list is never
+  // empty.
+  const core = compulsoryBlocks(e, seat);
+  const spoken = new Set<EntityId>(Object.values(core).flat());
+  const onCore = (blocks: Record<number, EntityId[]>): Record<number, EntityId[]> =>
+    ({ ...core, ...blocks });
+  out.push({ type: 'declareBlocks', seat, blocks: onCore({}) });
+  const mine = e.unitsOf(seat, b.region);
+  // Feeble can't block — unless it is also Pure, which ignores its own
+  // other attributes (R61)
+  // a unit the compulsory core already spent is not free to be offered again
+  const blockers = mine.filter(u =>
+    !spoken.has(u.id) && (!e.ownAttrs(u).has('Feeble') || e.pure([u.id])));
+  // R20: a lone Sneaky attacker cannot be blocked at all — R61: except by
+  // a Pure blocker, which is blind to Sneaky like every other attribute
+  const atkUnits = b.columns.flat().filter(id => e.entity(id));
+  const sneakyAlone = atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky');
+  b.columns.forEach((atkCol, ci) => {
+    const live = atkCol.filter(id => e.entity(id));
+    const rawAttrs = e.colAttrs(live);
+    // this exchange's attrs depend on WHO blocks, so they are resolved per
+    // candidate column rather than once for the attacker
+    const attrsWith = (ids: EntityId[]) =>
+      e.pure(live, ids) ? new Set<string>() : rawAttrs;
+    for (const u of blockers) {
+      const atkAttrs = attrsWith([u.id]);
+      if (sneakyAlone && atkAttrs.has('Sneaky')) continue;
+      if (atkAttrs.has('Flying') && !e.colAttrs([u.id]).has('Flying')) continue;
+      if (atkAttrs.has('Evasive')) continue;   // needs 2; single-blocker option invalid
+      out.push({ type: 'declareBlocks', seat, blocks: onCore({ [ci]: [u.id] }) });
+    }
+    for (let i = 0; i < blockers.length; i++) {
+      for (let j = i + 1; j < blockers.length; j++) {
+        const pair = [blockers[i]!.id, blockers[j]!.id];
+        const atkAttrs = attrsWith(pair);
+        if (atkAttrs.has('Flying') && !e.colAttrs(pair).has('Flying')) continue;
+        if (sneakyAlone && atkAttrs.has('Sneaky')) continue;
+        out.push({ type: 'declareBlocks', seat, blocks: onCore({ [ci]: pair } ) });
+      }
+    }
+  });
+  // send options (round 1 only — no counter-counterattacks):
+  // each single non-blocking unit, representative
+  if (b.round === 1) {
+    // R87: the tokens standing where the counterattack leaves from. A
+    // token rides only WITH a unit ("they always need a unit to take them
+    // with them"), so the rider is offered on top of each unit send rather
+    // than on its own — which is also what makes every one of these legal
+    // by construction, the way the fuzzer's "legalActions lied" check
+    // insists.
+    const riders = e.tokensOf(seat, b.region).map(t => t.id);
+    for (const u of mine) {
+      if (spoken.has(u.id)) continue;   // it is already blocking, compulsorily
+      // R84: a lured unit cannot counterattack — and sending anyone ELSE
+      // away cannot change who is "able", so the core is reused verbatim
+      if (u.allured) continue;
+      out.push({ type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat), send: [u.id] });
+      // playtest report #67, game GETD: the counterattack went out and
+      // three Poison 1s stayed behind, because nothing — not the engine's
+      // own enumeration, not the client — ever said they could come. One
+      // representative rider per unit; the builder composes any subset and
+      // apply() validates it, exactly as it does for a formation.
+      if (riders.length) {
+        out.push({
+          type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat),
+          send: [u.id], spellTokens: riders.slice(),
+        });
+      }
+    }
+  }
+  return out.filter(legalBlock);
+}
+
+/** a battle priority window: pass, battle-timed plays, ambush, discardMe,
+ * augments, cached / bin plays, spell tokens, activated abilities */
+function legalBattlePriorityActions(e: E, seat: Seat): Action[] {
+  const b = e.s.battle!;
+  const out: Action[] = [];
+  out.push({ type: 'passPriority', seat });
+  const hand = e.player(seat).hand;
+  hand.forEach((name, i) => {
+    const c = getCard(name);
+    if (c.timing === 'battle' && !c.noPlayFromHand   // R100
+      && e.canPayCard(seat, name) && castable(e, c, b.region, seat)) {
+      out.push({ type: 'playCard', seat, handIndex: i });
+    }
+    if (c.ambush && canPayAmbush(e, seat, c)
+      && e.targetCandidates({ what: 'allyUnit', prompt: '' }, b.region, undefined, seat).length > 0) {
+      out.push({ type: 'playCard', seat, handIndex: i, mode: 'ambush' });
+    }
+    // R40: a "Discard me" line whose own marker makes it battle timing (Nothyr)
+    // R65: discarding is not playing — every "Discard me" line works at
+    // instant speed, whatever the card's own timing says
+    if (c.discardMe && canPayDiscardMe(e, seat, c)) {
+      out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
+    }
+  });
+  // R95: the battle AUGMENT window, hand and bin together. It used to be a
+  // `c.virus && from === 'hand'` clause inside the hand walk above; there
+  // was no bin leg at all, which is why Rook's whole text was unreachable
+  // even though bin-augmenting is fully plumbed for deployment.
+  pushBattleAugments(e, seat, b.region, out);
+  pushCachedPlays(e, seat, t => t === 'battle', b.region, out);
+  pushBinPlays(e, seat, b.region, out);   // R96
+  for (const t of e.tokensOf(seat, b.region)) out.push({ type: 'castSpellToken', seat, entityId: t.id });
+  pushActivatedOptions(e, seat, b.region, out);
+  return out;
+}
+
+/** the deployment phase (simultaneous — see the dispatcher's note) */
+function legalDeployActions(e: E, seat: Seat): Action[] {
+  const out: Action[] = [];
+  const region = e.homeRegion(seat);
+  out.push({ type: 'doneDeploying', seat });
+  e.player(seat).hand.forEach((name, i) => {
+    const c = getCard(name);
+    if (timingAllowsDeploy(c) && !c.noPlayFromHand   // R100
+      && e.canPayCard(seat, name) && castable(e, c, region, seat)) {
+      out.push({ type: 'playCard', seat, handIndex: i });
+    }
+    // R40: the "Discard me" mode (Dropslime) — a deployment action unless
+    // its own cost line carries a {Battle} marker
+    if (c.discardMe && (c.discardMe.timing ?? c.timing) !== 'battle' && canPayDiscardMe(e, seat, c)) {
+      out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
+    }
+  });
+  // R42: prophesying is a deployment action, and the banner cost is plain
+  // mana — no affinity pips, so this checks openMana rather than canPayCard.
+  // 'bin' only for a card that says it may be (Angel of Anguish).
+  for (const from of ['hand', 'bin'] as const) {
+    e.player(seat)[from].forEach((name, i) => {
+      const c = getCard(name);
+      if (!c.prophecy) return;
+      if (from === 'bin' && !c.prophesyFromBin) return;
+      if (e.openMana(seat) < c.prophecy.mana) return;
+      out.push({ type: 'prophesy', seat, from, index: i });
+    });
+  }
+  // R42/R45: releasing a permitted cached card at deployment timing
+  pushCachedPlays(e, seat, t => t === 'deploy' || t === 'haste', region, out);
+  // R41: mods may come from the cache as well as hand and bin
+  for (const from of ['hand', 'bin', 'cache'] as const) {
+    const names = from === 'cache' ? e.cache(seat).map(cc => cc.card) : e.player(seat)[from];
+    names.forEach((name, i) => {
+      // a fulfilled prophecy makes the mod free (R42); otherwise pay normally
+      const affordable = modIsFree(e, seat, from, i) || e.canPayCard(seat, name, { purpose: 'mod' });
+      if (!getCard(name) || !affordable) return;
+      if (isAugment(name)) {
+        for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
+        // R89: and the spell tokens standing in the same region. This is the
+        // line whose absence made the ruling invisible — R79 shipped the
+        // stack half and `legalActions` never offered it either, which is
+        // precisely how it stayed unreachable for a whole round.
+        for (const host of e.tokensOf(seat, region)) {
+          out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
+        }
+      }
+      if (isGraftable(name)) {
+        for (const host of e.unitsOf(seat, region)) {
+          if (graftCauseIndex(host.card) < 0) continue;
+          for (let p = 0; p <= host.mods.length; p++) {
+            out.push({ type: 'graft', seat, from, index: i, hostId: host.id, position: p });
+          }
+        }
+      }
+    });
+  }
+  for (const t of e.tokensOf(seat, region)) {
+    if (timingAllowsDeploy(getCard(t.card))) out.push({ type: 'castSpellToken', seat, entityId: t.id });
+  }
+  pushActivatedOptions(e, seat, region, out);
   return out;
 }
 

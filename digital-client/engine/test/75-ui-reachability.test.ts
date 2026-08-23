@@ -458,6 +458,8 @@ const corpus = (() => {
  * cannot be imported here. A 'wiring' row names the lines that connect a
  * tested helper (or a bare `legal.filter`) to something clickable; deleting
  * one puts the action out of reach with every other test in the suite green.
+ * A board button's handler is its entry in the BOARD_BTNS table (matched as
+ * `^  name: … =>` at the table's indent), so a deleted handler fails here.
  * That is the whole strength of the check and also its whole weakness — see
  * the header. */
 const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
@@ -546,12 +548,12 @@ const REACH: Record<string, Evidence> = {
   doneHaste: {
     via: 'wiring', anchor: 'the "done" button in the haste step (R18)',
     why: 'the haste step only appears when someone holds a payable {Haste} card',
-    needs: [/b === 'donehaste'/, /act\(\{ type: 'doneHaste', seat: Number\(btn\.dataset\['p'\]\) \}\)/],
+    needs: [/^  donehaste: btn =>/m, /act\(\{ type: 'doneHaste', seat: Number\(btn\.dataset\['p'\]\) \}\)/],
   },
   draftCommit: {
     via: 'wiring', anchor: 'the draft panel: build the merge, then Commit',
     why: 'legalActions offers only single swaps; the panel builds any merge and apply() validates it',
-    needs: [/b === 'draftcommit' && ui\.draftPack/, /packIndices: ui\.draftPack\.slice\(\)/],
+    needs: [/^  draftcommit: btn => \{\n    if \(!ui\.draftPack\) return;/m, /packIndices: ui\.draftPack\.slice\(\)/],
   },
   bottomCards: {
     via: 'helper', anchor: 'pick two hand cards, then the Commit button',
@@ -711,7 +713,7 @@ const REACH: Record<string, Evidence> = {
   'declareAttack:skip': {
     via: 'wiring', anchor: 'the "Don\'t attack" button',
     why: 'always offered, and always legal — the one action that is never a formation',
-    needs: [/b === 'skipattack'/, /data-btn="skipattack"/],
+    needs: [/^  skipattack: \(\) =>/m, /data-btn="skipattack"/],
   },
   'declareAttack:columns': {
     via: 'helper', anchor: 'pick a unit up, drop it in a column slot, then "Attack!"',
@@ -726,7 +728,7 @@ const REACH: Record<string, Evidence> = {
       // the drop itself is ui/formation.ts, tested in 55-ui-formation
       assert.deepEqual(dropIntoRow([], 0, a.columns[0]![0]!), [a.columns[0]![0]!]);
     },
-    needs: [/b === 'confirmattack'/, /columns: cols, spellTokens: ui\.spellTokens\.slice\(\)/,
+    needs: [/^  confirmattack: \(\) =>/m, /columns: cols, spellTokens: ui\.spellTokens\.slice\(\)/,
       /ui\.columns\[ci\] = dropIntoRow\(/],
   },
   'declareAttack:spellTokens': {
@@ -741,7 +743,7 @@ const REACH: Record<string, Evidence> = {
     via: 'helper', anchor: 'Confirm with nothing assigned',
     why: 'declining to block is a declaration like any other — unless a duty says otherwise',
     check: blockGateReach,
-    needs: [/b === 'confirmblocks'/, /const duty = blockPlanIssue\(s, s\.battle!\.defender, blocks\)/],
+    needs: [/^  confirmblocks: \(\) =>/m, /const duty = blockPlanIssue\(s, s\.battle!\.defender, blocks\)/],
   },
   'declareBlocks:blocks': {
     via: 'helper', anchor: 'pick a unit up, drop it in a column slot, then Confirm',
@@ -770,7 +772,7 @@ const REACH: Record<string, Evidence> = {
   passPriority: {
     via: 'wiring', anchor: 'the Pass button (or the space bar)',
     why: 'with a confirm bar when passing would waste a castable token',
-    needs: [/b === 'pass'/, /act\(\{ type: 'passPriority', seat: s\.priority! \}\)/],
+    needs: [/^  pass: \(\) => passClick\('pass'\)/m, /act\(\{ type: 'passPriority', seat: s\.priority! \}\)/],
   },
 
   // ── deployment ────────────────────────────────────────────────────────
@@ -791,12 +793,12 @@ const REACH: Record<string, Evidence> = {
       assert.ok(dec.options.length, 'with something to click');
       for (const o of dec.options) assert.ok(o.label?.length, 'and every option is named in the panel');
     },
-    needs: [/b === 'decide'/, /choice: Number\(btn\.dataset\['i'\]\)/, /function decisionOptionIndex/],
+    needs: [/^  decide: btn =>/m, /choice: Number\(btn\.dataset\['i'\]\)/, /function decisionOptionIndex/],
   },
   'decide:order': {
     via: 'wiring', anchor: 'the ordering panel: click the options one at a time',
     why: 'a pickOrder decision wants a LIST, so the panel collects clicks until it has them all',
-    needs: [/b === 'orderpick'/, /ui\.orderPicked\.length === s\.decision!\.options\.length/,
+    needs: [/^  orderpick: btn =>/m, /ui\.orderPicked\.length === s\.decision!\.options\.length/,
       /act\(\{ type: 'decide', seat: s\.decision!\.seat, choice \}\)/],
   },
 

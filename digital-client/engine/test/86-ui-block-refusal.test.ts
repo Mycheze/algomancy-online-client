@@ -311,7 +311,7 @@ test('#77 wiring: the refusal reaches the bar as structure, with a Reset blocker
   assert.match(MAIN, /ui\.columns = columnsFromPlan\(verdict\.keep\.blocks\);/,
     'putting the surviving plan back on the board');
   assert.match(MAIN, /data-btn="resetblocks"/, 'the report asked for this button by name');
-  assert.match(MAIN, /if \(b === 'resetblocks'\)/, 'and it is handled');
+  assert.match(MAIN, /^  resetblocks: \(\) =>/m, 'and it is handled (a BOARD_BTNS entry — see test 75 for the shape)');
   assert.match(MAIN, /r\.offenders\.map\(o => o\.card\)/,
     'the notice NAMES the units rather than counting them');
 });

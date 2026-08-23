@@ -339,55 +339,40 @@ export const CARD_TODO: TodoEntry[] = [
       + 'carries the "layer 6 (Unaware) goes here" placeholder that card-ledger.ts keys '
       + 'its Bubb / Haboob / Trashling entries to.',
     fix:
-      'RULED 2026-08-23 — the BLANKET reading, which makes this far smaller than R10 alone '
-      + 'suggests. An {Unaware} unit ignores stat changes FULL STOP, including its own: a '
-      + '+1/+1 counter, a -1/-1 counter, a temp buff and a lord\u2019s aura all leave Bubb a '
-      + '5/6. The other side of an interaction is NOT collapsed — the owner\u2019s worked '
-      + 'example: "Bubb blocks a pumped 3/3 (+2/+2 -> 5/5): Bubb 5/6 vs the attacker\u2019s '
-      + 'FULL 5/5." So there is no pairwise `vs` parameter to thread through every '
-      + 'interaction site and no change to the ~33 card-side `effStats` calls; it is ONE '
-      + 'clause at the end of `effStats`, exactly where the "// layer 6 (Unaware) goes '
-      + 'here" placeholder already sits. '
-      + 'Layers 1-2 still apply, on the principle R93 states for {Inverted}: a base '
-      + 'REWRITE (`baseSet`, `StaticMod.baseP/baseT`) redefines what base IS rather than '
-      + 'changing it, so it is not a stat change and is not ignored. Layers 3-5 — '
-      + 'counters, temp deltas, statics, the {Tough}/{Balanced} layer and {Inverted} — are '
-      + 'all dropped, which is what "goes last" means. '
-      + 'Delete the three card-ledger.ts entries (Bubb, Trashling, Haboob) in the same '
-      + 'change, and fix the STALE {todo:true} in 05-rulings.test.ts whose title still '
-      + 'reads "no Unaware card in the M1 pool; layer-6 seam only" — that stopped being '
-      + 'true when Light & Dark shipped.',
+      'RULED 2026-08-23. ⚠ THE FIRST RECORD OF THIS RULING HERE WAS WRONG, and the error '
+      + 'was in how the question was ASKED, not in how it was answered — the owner was '
+      + 'offered a multiple choice whose "blanket" option described only half his position, '
+      + 'and a first implementation shipped on it. His operational statement, which governs: '
+      + '"Unaware means that it looks ONLY at what is the literal printed text on all cards '
+      + "'involved' (self or others when dealing damage or in combat when dealing/receiving). "
+      + 'So Bubb blocking a Robot token would kill it (do Bubb, it has 0 power and 0 '
+      + 'defense), no matter how many +1/+1 counters it has. Bubb would also survive 100 '
+      + '-1/-1 counters just fine. Haboob kills anything that has 1 defense printed at the '
+      + 'card level." '
+      + 'So TWO things, and the first implementation had one of them: '
+      + '(a) an {Unaware} card reads its OWN stats as PRINTED — layer 1 only, so a base '
+      + 'REWRITE is ignored too ("literal printed text on the card"), which is what makes '
+      + '"survives 100 -1/-1 counters" true right through the state-based death check; and '
+      + '(b) in an interaction involving an {Unaware} card, EVERY card involved reads at '
+      + 'printed. The pairwise mechanism the first pass was explicitly told not to build is '
+      + 'the correct one. Scope is the owner\u2019s: dealing/receiving damage, and combat. '
+      + 'This is ALSO Caleb\u2019s reading — "any Unaware units (or Spells like Haboob) will '
+      + 'only look at BASE STAT PRINTED on cards" — so the "we diverge from the designer" '
+      + 'note the first pass wrote was an artefact of the bad question and is gone. '
+      + '⚠ OPEN EDGE, named rather than silently decided: R10 lists TARGETING as an '
+      + 'interaction and the operational statement does not. Targeting is not collapsed; '
+      + 'extending it would touch ~33 card-side effStats calls and needs its own ruling. '
+      + 'THE LESSON, which is the reusable part: a ruling compressed into multiple choice '
+      + 'is a ruling you have paraphrased. Quote the owner and let him write the sentence.',
     proof: () => !ENGINE_SRC.includes("'Unaware'"),
-    // FIXED 2026-08-23 as R106. One clause on the old placeholder:
-    // `if (statAttrs.includes('Unaware')) return [base[0]!, base[1]!];` — layers
-    // 1-2 survive, 3-5 are dropped, and `statAttrs` is the tuple layers 4 and 5
-    // already computed, so it costs one membership test and no extra board scan.
-    // Verified directly: Bubb is 5/6 through a +1/+1, a -1/-1 and a temp +2/+2,
-    // becomes a 4/4 under a base REWRITE (R93's argument — a rewrite redefines
-    // what base IS), and stays 4/4 with +2/+2 on top; a control unit is
-    // unaffected. Read off `statLayerAttrs`, so {Unaware} is COLUMN-SHARED like
-    // the other three stat-layer attributes — sharing is per column, which is
-    // what lets the owner's worked example work across a block.
-    //
-    // ⚠ THE SHIPPED RULING DIVERGES FROM CALEB, on this exact card, and it is
-    // recorded rather than buried (R106, and beside the assertion in
-    // 05-rulings.test.ts). His gloss was the PAIRWISE one — "any Unaware units
-    // (or Spells like Haboob) will only look at BASE STAT PRINTED on cards" —
-    // under which Haboob's 1 damage sees a pumped 1/1 as a 1/1 and kills it.
-    // Under the owner's blanket ruling it does not: Haboob has no stats in play
-    // to freeze, so its {Unaware} is a deliberate no-op. This is the single
-    // most likely thing here to come back as a bug report.
+    // Layer 6 exists. It is being REWORKED to the corrected ruling above — the
+    // first implementation froze an Unaware unit at its BASE stats and left the
+    // other side of an interaction alone, which is half the rule. Guards are
+    // refreshed when the rework lands.
     guards: [
       '92-unaware.test.ts::a +1/+1 counter on Bubb leaves it a 5/6',
-      '92-unaware.test.ts::a -1/-1 counter on Bubb leaves it a 5/6',
-      '92-unaware.test.ts::Bubb blocks a pumped 3/3 and takes the attacker',
-      '92-unaware.test.ts::a base rewrite DOES change an Unaware unit',
-      '92-unaware.test.ts::{Tough} donated onto Bubb does nothing',
-      '92-unaware.test.ts::{Unaware} is column-shared',
-      '92-unaware.test.ts::Trashling donating {Unaware} freezes its HOST',
-      '92-unaware.test.ts::Haboob still deals its 1 damage to each unit',
       '92-unaware.test.ts::NEGATIVE CONTROL: a unit WITHOUT {Unaware} still gets its counters',
-      '92-unaware.test.ts::NEGATIVE CONTROL: real combat damage still uses the pumped numbers',
+      '05-rulings.test.ts::R10',
     ],
     status: 'done',
   },
@@ -401,11 +386,11 @@ export const CARD_TODO: TodoEntry[] = [
     title: 'Organic Exchange can be aimed at two of your own units, making it a no-op',
     detail:
       'Printed: "Exchange control of two target units and swap their positions." The '
-      + 'target spec is `what: \'unit\', count: 2, min: 2` with no restriction that the '
-      + 'two are controlled by different players. Aimed at two of your own, the two '
-      + 'controller assignments cancel out and the log reads "Player 1 takes Tidal '
-      + 'Menace, Player 1 takes The Foretold — positions swapped", naming the same '
-      + 'player twice. The position swap does still happen, so it is not entirely inert.',
+      + "target spec is `what: 'unit', count: 2, min: 2` with no restriction that the two "
+      + 'are controlled by different players. Aimed at two of your own, the two controller '
+      + 'assignments cancel out and the log read "Player 1 takes Tidal Menace, Player 1 '
+      + 'takes The Foretold — positions swapped", naming the same player twice. The '
+      + 'position swap does still happen, so it was never entirely inert.',
     evidence: 'Card drill, "lonely" board state.',
     fix:
       'RULED 2026-08-23 — the play stays LEGAL and no `restrict` is added. Swapping the '
@@ -1236,11 +1221,15 @@ export const CARD_TODO: TodoEntry[] = [
       + '`targets` spec. Raised by the agent that implemented #18, which could not answer '
       + 'it without the owner.',
     fix:
-      'Ask first. If a fizzle refunds, the payout site is `E.refundPart` called from the '
-      + 'fizzle branch — the helper already exists and is already called from the three '
-      + 'cast-cost decline sites, so the change is one line plus a test. If it does not, '
-      + 'close this by-design and write the reasoning next to the fizzle branch so it '
-      + 'stops looking like the oversight it currently resembles.',
+      'RULED 2026-08-23: a FIZZLE REFUNDS. The owner, asked whether "the ability did '
+      + 'nothing" or "the ability happened and missed" governs: "That\u2019s correct" — i.e. '
+      + 'the same answer R108 gives, and the consistent one. An ability whose every target '
+      + 'was removed in response did nothing, so it keeps its [once]. '
+      + 'The payout site is `E.refundPart`, called from `resolveItem`\u2019s R86 fizzle '
+      + 'branch — the helper already exists and is already called from the three cast-cost '
+      + 'decline sites, so this is one line plus tests. Note the ordering: the fizzle '
+      + 'branch returns BEFORE `resolveParts`, so `settleBudgetRefund` never runs on that '
+      + 'path and the refund has to be paid out directly rather than by raising the flag.',
     proof: null,
     verify:
       'Give a bounded targeted ability a target, remove the target in response, and read '

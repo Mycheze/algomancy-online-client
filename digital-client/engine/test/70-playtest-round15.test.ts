@@ -460,7 +460,7 @@ test('[30]/[31] the board menu hangs the two behaviours on boardMenuEntries', ()
   assert.match(body, /concedeAsk = entry\.seat/, '[30] the concede entry opens the CONFIRMATION');
   assert.equal(/act\(\s*\{\s*type: 'concede'/.test(body), false,
     'the menu item must never concede on its own');
-  assert.match(MAIN, /if \(b === 'concedeyes'\)/, 'only the confirmed button concedes');
+  assert.match(MAIN, /^  concedeyes: \(\) =>/m, 'only the confirmed button concedes');
 });
 
 test('[35] unitHtml passes its activatable fact into the class list', () => {

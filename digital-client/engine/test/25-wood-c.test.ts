@@ -81,6 +81,33 @@ test('Rebalance: each present player gives an opponent control of one of their u
   assert.equal(ent(h, lurk)!.region, home(h, A), 'regroup takes the Lurker to its NEW controller (R11)');
 });
 
+test('R112: a stolen unit takes its MODS with it — they change controller too', () => {
+  // Bena 2026-08-23: "A stolen unit's mods are part of the unit, so yes, they
+  // go with them to the unit's new controller. That's the whole point of some
+  // of the viruses which force units to flip flop controllers."
+  const h = new Harness(2511);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const lurk = spawn(h, D, 'Crevice Lurker');
+  // D's Lurker wears an augment (a type-line {Evasive} mod)
+  giveResources(h, D, 'water', 1);
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Curio Drifter'), hostId: lurk });
+  const modId = ent(h, lurk)!.mods[0]!;
+  assert.equal(ent(h, modId)!.controller, D, 'the mod starts as D\'s');
+  giveResources(h, D, 'wood', 2);                     // Rebalance: g / 2
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Rebalance') });
+  pass(h); pass(h);                                   // D's only unit: the Lurker is auto-picked
+  assert.equal(ent(h, lurk)!.controller, A, 'the Lurker is A\'s now');
+  assert.equal(ent(h, modId)!.controller, A, 'and so is the mod riding it — mods are part of the unit');
+  assert.ok([...new E(h.state).ownAttrs(ent(h, lurk)!)].includes('Evasive'), 'the granted attribute still applies');
+  finishBattle(h);
+  assert.equal(ent(h, modId)!.region, ent(h, lurk)!.region, 'regroup keeps the mod with its host');
+});
+
 test('Saprophytic Oracle: a nontoken death mints a 1/1 at home; token deaths do not', () => {
   const h = new Harness(2502);
   toDeployment(h);

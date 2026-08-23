@@ -391,3 +391,81 @@ test('Return to Nature: negates everything on the stack and erases all mods in t
   assert.equal(h.state.players[D]!.bin.length, binD + 1, 'only Return to Nature itself was binned');
   finishBattle(h);
 });
+
+// ── R110: "trigger two copies of this graft ability" — the ruling ────────
+//
+// "Amphivore / Lost Guardian. Bounded Grafts and Ralph explained." (moderator,
+// 2025-03-21): ONE stack item with the grafts doubled, top-to-bottom and then
+// top-to-bottom again; "Any Bounded Grafts will be repeated"; a "[cost]:
+// effect" graft pays its cost twice, and if it cannot pay both times it pays
+// nothing and the effect does not happen at all.
+
+/** answer every pending decision of the composite: a discard cost takes the
+ * first card offered, a target menu takes the opponent's face */
+function answerAll(h: Harness, foe: Seat): void {
+  for (let guard = 0; guard < 20 && h.state.decision; guard++) {
+    const dec = h.state.decision;
+    const vals = dec.options.map(o => JSON.stringify(o.value));
+    let idx = vals.findIndex(v => v.startsWith('{"discard"'));
+    if (idx === -1) idx = vals.indexOf(JSON.stringify({ player: foe }));
+    if (idx === -1) throw new Error(`unexpected decision ${dec.prompt}: [${vals}]`);
+    h.do({ type: 'decide', seat: dec.seat, choice: idx });
+  }
+}
+
+function lostGuardianAfterCombat(h: Harness, p: Seat, lg: EntityId, hand?: string[]): void {
+  toNextBattle(h, p);
+  if (hand) h.state.players[p]!.hand = hand;          // set AFTER the turn's draw
+  h.do({ type: 'declareAttack', seat: p, columns: [[lg]] });
+  pass(h); pass(h);                                   // attackWindow → blocks
+  h.do({ type: 'declareBlocks', seat: 1 - p, blocks: {} });
+  pass(h); pass(h);                                   // combat (0 power) → afterCombat trigger
+}
+
+test('R110: Lost Guardian repeats a BOUNDED [Switch1] graft too — two copies, one budget', () => {
+  const h = new Harness(1760);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const lg = spawn(h, p, 'Lost Guardian');
+  giveResources(h, p, 'fire', 2);                     // Flame Juggle: r/2, [Switch1] three Fireball 1
+  h.do({ type: 'graft', seat: p, from: 'hand', index: give(h, p, 'Flame Juggle'), hostId: lg, position: 0 });
+  lostGuardianAfterCombat(h, p, lg);
+  answerAll(h, 1 - p);
+  pass(h); pass(h);                                   // resolve the trigger
+  const fires = tokensOf(h, p).filter(t => t.card === 'Fireball');
+  assert.equal(fires.length, 6, 'a bounded "Create three Fireball 1" ran TWICE (6 Fireballs) — "Any Bounded Grafts will be repeated"');
+  finishBattle(h);
+});
+
+test('R110: a "[cost]: effect" graft under Lost Guardian pays its cost TWICE and resolves twice', () => {
+  const h = new Harness(1761);
+  toDeployment(h);
+  const p = h.state.deployPlayer!, foe = 1 - p;
+  const lg = spawn(h, p, 'Lost Guardian');
+  giveResources(h, p, 'fire', 1); giveResources(h, p, 'dark', 1);   // Darkblast: rd/1
+  h.do({ type: 'graft', seat: p, from: 'hand', index: give(h, p, 'Darkblast'), hostId: lg, position: 0 });
+  const life = h.state.players[foe]!.life;
+  lostGuardianAfterCombat(h, p, lg, ['Geode', 'Geode']);   // exactly two cards to discard
+  answerAll(h, foe);                                  // discard, target; discard, target
+  pass(h); pass(h);
+  assert.equal(h.state.players[p]!.hand.length, 0, 'both cards were discarded — the cost is paid twice');
+  assert.equal(h.state.players[foe]!.life, life - 10, '5 damage, twice');
+  finishBattle(h);
+});
+
+test('R110: all or nothing — one card in hand cannot pay a doubled [Discard a card], so nothing is paid and nothing happens', () => {
+  const h = new Harness(1762);
+  toDeployment(h);
+  const p = h.state.deployPlayer!, foe = 1 - p;
+  const lg = spawn(h, p, 'Lost Guardian');
+  giveResources(h, p, 'fire', 1); giveResources(h, p, 'dark', 1);
+  h.do({ type: 'graft', seat: p, from: 'hand', index: give(h, p, 'Darkblast'), hostId: lg, position: 0 });
+  const life = h.state.players[foe]!.life;
+  lostGuardianAfterCombat(h, p, lg, ['Geode']);       // ONE card: can pay once, not twice
+  answerAll(h, foe);
+  pass(h); pass(h);
+  assert.equal(h.state.players[p]!.hand.length, 1, 'the one card is still in hand — "No Sacrifice at all"');
+  assert.equal(h.state.players[foe]!.life, life, '"and you don\'t get the effect"');
+  assert.ok(h.log.some(l => /must be paid 2 times and cannot be/.test(l)), 'the log says why');
+  finishBattle(h);
+});

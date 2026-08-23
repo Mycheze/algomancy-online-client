@@ -14,12 +14,12 @@
  * R31 (triggers in combat damage sub-steps resolve immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - CONTROL CHANGE (Ralph / Rebalance / Stellarspore Harvester): the engine
- *    has no control-change primitive, so the shared giveControl helper edits
- *    the entity directly: controller is reassigned, the unit drops out of any
- *    battle formation (it fights for nobody mid-swap), and it walks to its
- *    new controller's home region unless that controller is present where it
- *    stands (regroup would do the same move, R11 step 1). Owner is untouched
+ *  - CONTROL CHANGE (Ralph / Rebalance / Stellarspore Harvester): UN-PARKED
+ *    (R112, 2026-08-23) — `E.giveControl(u, to)` is the primitive this note
+ *    used to say did not exist, with exactly this batch's reading (drop out
+ *    of the formation, walk home unless the new controller is present) plus
+ *    the one thing this batch's local copy got wrong: the unit's MODS change
+ *    controller with it (Bena's ruling). Owner is untouched
  *    — the card still dies/recalls to its owner's bin/hand.
  *  - "TARGET OPPONENT" uses the 'any' TargetSpec (Dreamfloat Drifter
  *    precedent): a non-opponent pick resolves as a no-op. Region scoping
@@ -72,29 +72,6 @@ const chooseUnit = (
   return g.entity(id) ?? null;
 };
 
-/** ⚠ header approximation — control change without an engine primitive:
- * reassign controller, drop out of any battle formation, and move the unit
- * (mods riding along) to its new controller's home region unless the new
- * controller is present where it stands. Owner never changes. */
-const giveControl = (g: E, u: Entity, to: Seat): void => {
-  if (!g.entity(u.id) || u.controller === to) return;
-  u.controller = to;
-  const b = g.s.battle;
-  if (b) {
-    for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-      const i = col.indexOf(u.id);
-      if (i !== -1) col.splice(i, 1);
-    }
-    const si = b.sentAttackers.indexOf(u.id);
-    if (si !== -1) b.sentAttackers.splice(si, 1);
-  }
-  if (!g.s.regions[u.region]!.presentSeats.includes(to)) {
-    u.region = g.homeRegion(to);
-    for (const mid of u.mods) { const m = g.entity(mid); if (m) m.region = u.region; }
-  }
-  g.ev('info', `${g.pname(to)} gains control of ${u.card}.`);
-};
-
 /** create n 1/1 unit tokens for `seat` — in their HOME region (R28) */
 const create1s = (g: E, seat: Seat, n: number): void => {
   for (let i = 0; i < n; i++) {
@@ -111,7 +88,7 @@ const create1s = (g: E, seat: Seat, n: number): void => {
 // activator, whose 1/1s arrive at home (R28). "If you do": the tokens only
 // come if the control change actually happened — a gone unit or a
 // non-opponent target is a full no-op. ⚠ header notes: control change is the
-// giveControl approximation; during deployment the opponent is not present,
+// E.giveControl (R112); during deployment the opponent is not present,
 // so they are no target (R25) and the ability no-ops.
 const ralphDefect: EffectDef = {
   // R64: "target opponent" is a player, and not you — 'any' offered every
@@ -128,7 +105,7 @@ const ralphDefect: EffectDef = {
     if (!me) { g.ev('info', 'Ralph: the unit is gone — no control change, no tokens.'); return; }
     const to = (t as { player: Seat }).player;
     if (me.controller === to) { g.ev('info', 'Ralph: they already control me — no tokens.'); return; }
-    giveControl(g, me, to);
+    g.giveControl(me, to);
     create1s(g, ctx.controller, 3);
   },
 };
@@ -147,7 +124,7 @@ card('Ralph', {
 // (auto when they have one; deterministic auto-pick in the end-of-turn tail),
 // the receiving opponent in 1v1 is the other seat. All picks are gathered
 // before any control changes (plan-then-commit), then committed via the
-// giveControl approximation (⚠ header).
+// E.giveControl (R112).
 card('Rebalance', {
   spellEffect: {
     run: (g, ctx) => {
@@ -168,7 +145,7 @@ card('Rebalance', {
         return;
       }
       for (const { u, to } of gives) {
-        if (g.entity(u.id)) giveControl(g, u, to);
+        if (g.entity(u.id)) g.giveControl(u, to);
       }
     },
   },
@@ -284,7 +261,7 @@ card('Sprouter', {
 // combat); the "if it has" rider is enforced again on the chosen target at
 // resolution (Minor Kraken precedent) — a clean target is a no-op.
 // [Augment] half: died trigger (self — the HOST when donated); "you" = the
-// carrier's controller. All handovers use the giveControl approximation (⚠).
+// carrier's controller. All handovers go through E.giveControl (R112).
 card('Stellarspore Harvester', {
   abilities: [{
     type: 'triggered', events: ['afterCombat'],
@@ -299,7 +276,7 @@ card('Stellarspore Harvester', {
           g.ev('info', `Stellarspore Harvester: ${t.card} has no -1/-1 counter — no control change.`);
           return;
         }
-        giveControl(g, t, ctx.controller);
+        g.giveControl(t, ctx.controller);
       },
     },
   }],
@@ -325,7 +302,7 @@ card('Stellarspore Harvester', {
         }
         const to = (t as { player: Seat }).player;
         for (const u of g.unitsOf(ctx.controller, ctx.region)) {
-          if (u.counters < 0 && g.entity(u.id)) giveControl(g, u, to);
+          if (u.counters < 0 && g.entity(u.id)) g.giveControl(u, to);
         }
       },
     },

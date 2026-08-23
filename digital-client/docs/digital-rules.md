@@ -5558,3 +5558,91 @@ Deliberately not caught: a non-empty batch whose targets have all left play. Tha
 "your target is gone", those cards announce it themselves, and folding it in would put two
 different sentences behind one guard.
 
+---
+
+## R110 — "Trigger two/three copies of this graft ability" repeats bounded grafts and charges [costs] N times
+
+*(Audit follow-through, 2026-08-23. Sourced ruling, not a guess — numbered
+R110 to stay clear of the R103–R109 block the concurrent playtest round is
+writing.)*
+
+**Lost Guardian** (two marks), **Witness of the Crossing** and **Amphivore**
+(three) are graft MULTIPLIERS: `EffectDef.graftCopies` on their effect, read by
+`composeParts`, which materializes every OTHER graft part of the composite N
+times — *Graft 1 → Graft 2 → Graft 1 → Graft 2* — as ONE stack item. The
+multiplier's own effect does nothing at resolution.
+
+**The ruling** ("Amphivore / Lost Guardian. Bounded Grafts and Ralph explained.",
+Insanity Engine, moderator, 2025-03-21 — and "Can Amphivore trigger a bounded
+graft three times in a turn? Yes", same day):
+
+- *"Any Bounded Grafts will be repeated."* A [Switch1] graft's budget is spent
+  once by the cause's single trigger and the composite gets N copies of it.
+  Amphivore used to skip bounded grafts ("correctly run once") — wrong.
+- *"Cost must be paid twice (Lost Guardian) or thrice (Amphivore)."* Each
+  copy is its own part with its own cast-window [cost] and its own receipt.
+- *"What if you must Sacrifice 2 or 3 units, but have only 1 available? — No
+  Sacrifice at all and you don't get the effect."* `collectCastCosts` asks
+  about the N-fold cost ONCE, before the first copy pays; unpayable skips
+  every copy, and declining the first copy declines them all. (All three
+  doublers used to skip [cost] riders outright, resolving only the paid
+  printed copy — also wrong.)
+- A targeted graft aims each copy separately (each part collects its own
+  targets in the cast window — no more mid-resolution `ctx.choose` picking).
+- Ralph's control-changing graft: the copies after the first find the unit
+  no longer yours and do nothing — that falls out of resolution order.
+
+Two multipliers in one composite (a doubler grafted under a doubler) multiply;
+unruled, and unreachable in the pool without someone trying. Tests: 17-earth-b
+(bounded repeat; [Discard a card] paid twice; all-or-nothing), 14-water-a
+(bounded tripled; three targets).
+
+---
+
+## R111 — a FREE prophecy release casts an X spell for X = 0
+
+*(Audit follow-through, 2026-08-23. Owner's ruling.)*
+
+The engine used to log *"released for FREE"* and then run the normal "choose X
+(paid now)" decision, charging the whole X. **Bena, 2026-08-23:** *"prophecy on
+an X spell works like magic, forced to cast it for 0 (unless its X is an
+additional cost or something)."* So a fulfilled-prophecy release of a
+`mana: 'X'` card fixes `item.x = 0` at creation (`baseItem` via
+`playAtTiming`'s `fixedX`), `collectX` has nothing to ask, nothing is paid, and
+the log says *"an X spell released for free is cast for X = 0"*. A bracketed
+variable cast cost ("[Remove X +1/+1 counters]", "[Pay X life]") is a
+different X — a COST, not the mana — and is still collected as before. Test:
+36-cache-prophecy (R111).
+
+---
+
+## R112 — a stolen unit's mods change controller with it (one control-change primitive)
+
+*(Audit follow-through, 2026-08-23. Owner's ruling.)*
+
+Four card batches carried their own "gain control" helper and disagreed on
+the mods: wood-a flipped the mods' controller, wood-c / hybrids-wm-b /
+hybrids-ld-a left the mods on the old controller (so "your units" statics and
+"[Augment] when I…" text donated by a mod on a stolen unit still read the
+thief's opponent). **Bena, 2026-08-23:** *"A stolen unit's mods are part of
+the unit, so yes, they go with them to the unit's new controller. That's the
+whole point of some of the viruses which force units to flip flop
+controllers."*
+
+`E.giveControl(u, to)` is now the one primitive (Corrupting Blight, Hush Mush,
+Hexbane Shiitake, Ralph, Rebalance, Stellarspore Harvester, the wm-b and ld-a
+steals all call it): the unit AND its mods change controller (owner never
+does); it leaves any formation through `removeFromFormation`, so the R72
+column collapse happens — the local copies spliced the arrays by hand and
+skipped it; and since regions are exclusive, a unit whose new controller is
+not present where it stands (a deployment-time steal) goes to that
+controller's home now, mods with it, rather than sitting in a region its
+controller is not in until regroup. Mid-battle both seats are present and it
+stays on the board. Test: 25-wood-c (R112).
+
+*Also closed without a ruling:* the audit's "three readings of 'my column
+connected'" — on re-reading the printed text, Blightmound says *"When **I**
+deal combat damage or die"* (its anchor-only check is right), Vroot says *"my
+column deals combat damage"* (it listens to damage AND life loss, so blockers
+count, as printed), Zephyrzoa/Amphivore say *"…to an opponent"*. Each follows
+its own words; there was no divergence to rule on.

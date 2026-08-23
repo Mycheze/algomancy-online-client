@@ -496,7 +496,8 @@ test('[69] the Attack! button holds the declaration until the ride question is a
   assert.match(MAIN, /Select the spell tokens you wish to bring into the attacked region, or select Bring none\./,
     'the report wrote this copy too');
   for (const b of ['ridenone', 'rideconfirm', 'ridecancel']) {
-    assert.ok(MAIN.includes(`b === '${b}'`), `${b} must be handled`);
+    // a handler of its own in the BOARD_BTNS table (handleButton dispatches by data-btn name)
+    assert.match(MAIN, new RegExp(`^  ${b}: \\(\\) =>`, 'm'), `${b} must be handled`);
   }
   for (const b of ['ridenone', 'rideconfirm']) {
     assert.ok(MAIN.includes(`data-btn="${b}"`), `${b} must be reachable from the bar`);

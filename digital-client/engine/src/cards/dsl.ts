@@ -433,6 +433,25 @@ export interface EffectDef {
    * not claim a card makes Wraiths merely because it could copy one.
    */
   createsAny?: boolean;
+  /**
+   * R110 — "[Switch1][Switch1] (Trigger two copies of this graft ability as
+   * one single trigger)": this effect is a graft MULTIPLIER. Lost Guardian
+   * (2), Witness of the Crossing (3) and Amphivore (3) declare it; they do
+   * nothing themselves. composeParts materializes every OTHER graft part of
+   * the composite this many times, top-to-bottom and then top-to-bottom
+   * again (Graft 1 → Graft 2 → Graft 1 → Graft 2), as ONE stack item:
+   *   - bounded ([Switch1]) grafts are repeated too — the cause's single
+   *     trigger spends the graft's budget once and gets N copies of it;
+   *   - a "[cost]: effect" graft must pay its cost N times, in the cast
+   *     window, and if it cannot pay all N it pays nothing and the effect
+   *     does not happen at all (collectCastCosts);
+   *   - each copy is its own part: its own targets, its own cost receipt.
+   * Source: Insanity Engine (moderator) 2025-03-21, "Amphivore / Lost
+   * Guardian. Bounded Grafts and Ralph explained." Two multipliers in one
+   * composite multiply (unruled; no pool card can reach it without a
+   * doubler grafted under a doubler).
+   */
+  graftCopies?: number;
   run: (g: E, ctx: EffectCtx) => void;
 }
 

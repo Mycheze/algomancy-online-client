@@ -32,9 +32,9 @@
  *    but engine.ts commitItem only LOGGED it for spell and ability targets,
  *    so no spell in the game could trigger it. Playtest 2026-08-19 (R53).
  */
-import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
+import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+import { card, getCard, type EffectDef } from '../dsl.ts';
 import { selfOf, chooseUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -48,63 +48,26 @@ const presentSeats = (g: E, region: number): Seat[] => {
 // ────────────────────────────── the cards ──────────────────────────────
 
 // "After combat, [Switch1][Switch1] {i}(Trigger two copies of this graft
-// ability as one single trigger.)" — e/4 0/3 Cosmic Guardian Unit. The card
-// contributes no effect of its own: its afterCombat cause runs every attached
-// graft effect TWICE within one trigger. The engine's composeParts already
-// includes each graft once; this base effect supplies the second copy by
-// running each graft-applied mod's effect once more inline (targets picked
-// mid-resolution via ctx.choose, playInline-style). ⚠ ordering: the base part
-// runs first, so the "second copy" precedes the composite's graft parts —
-// harmless inside one single trigger. Grafted onto ANOTHER host, the same
-// effect doubles the host's other grafts (never itself — no doubling a
-// doubler). Bounded ([Switch1], R9): once per turn as a cause and as a graft.
+// ability as one single trigger.)" — e/4 0/3 Cosmic Guardian Unit. R110: the
+// card contributes no effect of its own — it is a graft MULTIPLIER.
+// composeParts reads `graftCopies: 2` and materializes every other attached
+// graft twice in the one composite (Graft 1 → Graft 2 → Graft 1 → Graft 2),
+// bounded grafts included, each copy with its own targets and its own
+// [cost] payment (paid twice or not at all). Grafted onto ANOTHER host, the
+// same declaration doubles the host's other grafts (never itself — no
+// doubling a doubler). Bounded ([Switch1], R9): once per turn as a cause
+// and as a graft. Source: "Amphivore / Lost Guardian. Bounded Grafts and
+// Ralph explained." (moderator ruling, 2025-03-21).
 const doubleGrafts: EffectDef = {
+  graftCopies: 2,
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
-    if (!self) { g.ev('info', 'Lost Guardian: the carrier is gone — no graft is doubled.'); return; }
-    let doubled = 0;
-    for (const modId of [...self.mods]) {
-      const mod = g.entity(modId);
-      if (!mod || mod.appliedAs !== 'graft' || mod.card === 'Lost Guardian') continue;
-      const eff = getCard(mod.card).graftEffect?.effect;
-      if (!eff) continue;
-      // ⚠ R35/R49: a rider with a bracketed [cost] is paid ONCE, in the cast
-      // window, when composeParts contributes its single copy. This inline
-      // copy runs outside that window and has no way to pay, so it is
-      // SKIPPED rather than resolved for free — Darkblast's "[Discard a card]
-      // deal 5 damage" would otherwise be 5 free damage. The printed copy
-      // still happens; only the extra one is lost. (Same rule as Witness of
-      // the Crossing's tripleGrafts.)
-      if (eff.castCost) {
-        g.ev('info',
-          `${ctx.sourceName}: ${mod.card} has a bracketed [cost], which the extra copy `
-          + 'cannot pay — only its paid copy resolves.');
-        continue;
-      }
-      let targets: ResolvedTarget[] = [];
-      if (eff.targets) {
-        const cands = g.targetCandidates(eff.targets, ctx.region, undefined, ctx.controller);
-        if (!cands.length) continue;
-        const ref = (cands.length === 1 ? cands[0]! : ctx.choose(`lg:${modId}`, {
-          kind: 'electricPath', seat: ctx.controller, prompt: eff.targets.prompt,
-          options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
-        })) as TargetRef;
-        const r = g.resolveTargetRef(ref);
-        if (!r) continue;
-        targets = [r];
-      }
-      eff.run(g, {
-        controller: ctx.controller, sourceName: mod.card, sourceId: self.id,
-        region: ctx.region, targets, event: ctx.event,
-        // "Erase me" has nothing to erase in an inline run: this is a MOD's
-        // graft effect resolving off the carrier's item, and the copy has no
-        // stack item of its own to redirect. No-op, deliberately.
-        eraseSelf: () => {},
-        choose: (k, d) => ctx.choose(`lg:${modId}:${k}`, d),
-      });
-      doubled++;
-    }
-    if (!doubled) g.ev('info', `${ctx.sourceName}: no other graft is attached — there is nothing to double.`);
+    const others = self ? self.mods.filter(id => {
+      const m = g.entity(id);
+      return m && m.appliedAs === 'graft' && m.card !== 'Lost Guardian';
+    }).length : 0;
+    if (!others) g.ev('info', `${ctx.sourceName}: no other graft is attached — there is nothing to double.`);
+    else g.ev('info', `${ctx.sourceName}: 2 copies of each grafted ability (${others} graft${others === 1 ? '' : 's'}), one single trigger.`);
   },
 };
 card('Lost Guardian', {

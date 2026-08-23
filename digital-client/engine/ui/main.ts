@@ -49,7 +49,7 @@ import {
 } from './audio.ts';
 import { E } from '../src/engine.ts';
 import type {
-  Action, CachedCard, CardName, EngineEvent, Entity, EntityId, EventType, GameState,
+  Action, CachedCard, CardName, Decision, EngineEvent, Entity, EntityId, EventType, GameState,
   Seat, StackItem, TargetRef,
 } from '../src/types.ts';
 import * as acct from './account.ts';
@@ -2177,6 +2177,84 @@ const AUTO_PASS_WHY: Record<'passall' | 'pref' | 'yield', string> = {
   yield: 'you chose to auto-yield to this unit’s triggers.',
 };
 
+/** The four "armed" confirm bars — activate, done planning, pass, end
+ * deployment — are one pattern: the player clicked something irreversible,
+ * the bar names what it would cost and offers Go back or a primary button
+ * that does it anyway. Only the words and the data-btn names differ, so each
+ * bar is a row here and promptHtml supplies the question. (The ride-along
+ * question is deliberately NOT one of these — its token chips make it a
+ * picker, not a yes/no.) The labels carry the hotkey hints: Esc is Go back on
+ * every one of them (the keydown handler), only doneplan advertises it; the
+ * confirm key is named where Enter/Space is wired to the primary button. */
+const CONFIRM_BARS = {
+  act:    { cancel: 'actcancel',      back: 'Cancel',        confirm: 'actconfirm',      go: 'Yes, activate' },
+  done:   { cancel: 'doneplancancel', back: 'Go back (esc)', confirm: 'doneplanconfirm', go: 'Really done (enter)' },
+  pass:   { cancel: 'passcancel',     back: 'Go back',       confirm: 'passconfirm',     go: 'Pass anyway (space)' },
+  deploy: { cancel: 'deploycancel',   back: 'Go back',       confirm: 'deployconfirm',   go: 'End deployment anyway' },
+} as const;
+/** one armed-confirm bar; `attrs` rides on the confirm button (doneplanconfirm
+ * carries the seat it is answering for) */
+function confirmBarHtml(kind: keyof typeof CONFIRM_BARS, seat: Seat, question: string, err: string, attrs = ''): string {
+  const c = CONFIRM_BARS[kind];
+  return `<div class="promptbar pending"><span class="who">${esc(h.state.players[seat]!.name)}:</span>
+        ${question}
+        <button data-btn="${c.cancel}">${c.back}</button>
+        <button class="primary" data-btn="${c.confirm}"${attrs}>${c.go}</button>${err}</div>`;
+}
+
+/** The pending decision's bar: the prompt, every option as something
+ * clickable, and the cast-cancel escape hatch. Options that ARE cards render
+ * as scans; the rest are buttons, ordered so the decline is never where the
+ * affirmative was a click ago. */
+function decisionBarHtml(dec: Decision, err: string): string {
+  const s = h.state;
+  const who = esc(s.players[dec.seat]!.name);
+  // A2: options that ARE cards (hand looks, deck tops, bin picks) render as
+  // clickable scans; the rest stay ordinary buttons after them
+  const split = partitionOptions(dec.options);
+  const cardRow = (btn: string, skip?: (i: number) => boolean): string => {
+    const cards = dec.options.map((o, i) => (o.card && !skip?.(i))
+      ? cardHtml(o.card, { playable: true, data: `data-btn="${btn}" data-i="${i}"${pingAttrs(o)}` }) : '').join('');
+    return cards ? `<div class="deccards">${cards}</div>` : '';
+  };
+  /** one option as a real button (ui/inspect.ts decides which bucket it is in) */
+  const optBtn = (i: number, cls = ''): string => {
+    const o = dec.options[i]!;
+    return `<button ${cls ? `class="${cls}" ` : ''}data-btn="decide" data-i="${i}"${
+      pingAttrs(o)}>${iconizeText(o.label)}</button>`;
+  };
+  if (dec.kind === 'targets') {
+    // UZRG, and the expensive one: a ref-valued option ({stack:96}) used to
+    // render NO button at all — you had to find and click the highlighted
+    // card in the floating stack window. With min:0 the engine adds "No more
+    // targets" from the very first slot, so the ONLY button in the bar was
+    // the decline, in the same screen position the player had just clicked
+    // ten times to pay a 10-card cost. Every option gets a real button now,
+    // and the decline is last and secondary.
+    const picks = [...split.refs, ...split.plain].map(i => optBtn(i)).join(' ');
+    const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
+    return `<div class="promptbar pending"><span class="who">${who}:</span>
+        ${iconizeText(dec.prompt)}${split.refs.length ? ' — click a highlighted target, or pick one here' : ''}
+        ${cardRow('decide')} <span class="decpicks">${picks}</span>
+        ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
+  }
+  if (dec.kind === 'orderTriggers') {
+    const btns = dec.options.map((o, i) => ui.orderPicked.includes(i)
+      ? `<span style="color:var(--dim)">${ui.orderPicked.indexOf(i) + 1}. ${iconizeText(o.label)}</span>`
+      : o.card ? '' : `<button data-btn="orderpick" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`).join(' ');
+    return `<div class="promptbar pending"><span class="who">${who}:</span>
+        ${iconizeText(dec.prompt)} — ${cardRow('orderpick', i => ui.orderPicked.includes(i))} ${btns}${err}</div>`;
+  }
+  // payOrDecline / electricPath: cards, then the affirmative
+  // options, then the decline — same ordering rule as the targets bar, so
+  // "stop" is never where "go" was a click ago
+  const btns = [...split.refs, ...split.plain].map(i => optBtn(i)).join(' ');
+  const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
+  return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}
+      ${cardRow('decide')} <span class="decpicks">${btns}</span>
+      ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
+}
+
 function promptHtml(): string {
   const s = h.state;
   const err = uiError ? `<span style="color:var(--danger)"> ✗ ${esc(uiError)}</span>` : '';
@@ -2185,11 +2263,8 @@ function promptHtml(): string {
   // a modal question about something you already clicked.
   if (ui.confirmAct) {
     const a = ui.confirmAct;
-    return `<div class="promptbar pending"><span class="who">${esc(s.players[a.seat]!.name)}:</span>
-      activate <b>${esc(a.unit)}</b> — ${iconizeText(a.label)}?
-      <span style="color:var(--dim)">this cost cannot be taken back</span>
-      <button data-btn="actcancel">Cancel</button>
-      <button class="primary" data-btn="actconfirm">Yes, activate</button>${err}</div>`;
+    return confirmBarHtml('act', a.seat, `activate <b>${esc(a.unit)}</b> — ${iconizeText(a.label)}?
+        <span style="color:var(--dim)">this cost cannot be taken back</span>`, err);
   }
   // [59] this window is already being given away — a pass is scheduled for
   // this exact state. Painting "you have priority — Pass" over it was a lie
@@ -2222,54 +2297,7 @@ function promptHtml(): string {
     return `<div class="promptbar waiting"><span class="who">Waiting for ${opp}…</span>
       <span style="color:var(--dim)">${esc(waitingNote(s, castWatch?.casting ?? false))}</span>${err}</div>`;
   }
-  const dec = s.decision;
-  if (dec) {
-    const who = esc(s.players[dec.seat]!.name);
-    // A2: options that ARE cards (hand looks, deck tops, bin picks) render as
-    // clickable scans; the rest stay ordinary buttons after them
-    const split = partitionOptions(dec.options);
-    const cardRow = (btn: string, skip?: (i: number) => boolean): string => {
-      const cards = dec.options.map((o, i) => (o.card && !skip?.(i))
-        ? cardHtml(o.card, { playable: true, data: `data-btn="${btn}" data-i="${i}"${pingAttrs(o)}` }) : '').join('');
-      return cards ? `<div class="deccards">${cards}</div>` : '';
-    };
-    /** one option as a real button (ui/inspect.ts decides which bucket it is in) */
-    const optBtn = (i: number, cls = ''): string => {
-      const o = dec.options[i]!;
-      return `<button ${cls ? `class="${cls}" ` : ''}data-btn="decide" data-i="${i}"${
-        pingAttrs(o)}>${iconizeText(o.label)}</button>`;
-    };
-    if (dec.kind === 'targets') {
-      // UZRG, and the expensive one: a ref-valued option ({stack:96}) used to
-      // render NO button at all — you had to find and click the highlighted
-      // card in the floating stack window. With min:0 the engine adds "No more
-      // targets" from the very first slot, so the ONLY button in the bar was
-      // the decline, in the same screen position the player had just clicked
-      // ten times to pay a 10-card cost. Every option gets a real button now,
-      // and the decline is last and secondary.
-      const picks = [...split.refs, ...split.plain].map(i => optBtn(i)).join(' ');
-      const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
-      return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(dec.prompt)}${split.refs.length ? ' — click a highlighted target, or pick one here' : ''}
-        ${cardRow('decide')} <span class="decpicks">${picks}</span>
-        ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
-    }
-    if (dec.kind === 'orderTriggers') {
-      const btns = dec.options.map((o, i) => ui.orderPicked.includes(i)
-        ? `<span style="color:var(--dim)">${ui.orderPicked.indexOf(i) + 1}. ${iconizeText(o.label)}</span>`
-        : o.card ? '' : `<button data-btn="orderpick" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`).join(' ');
-      return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(dec.prompt)} — ${cardRow('orderpick', i => ui.orderPicked.includes(i))} ${btns}${err}</div>`;
-    }
-    // payOrDecline / electricPath: cards, then the affirmative
-    // options, then the decline — same ordering rule as the targets bar, so
-    // "stop" is never where "go" was a click ago
-    const btns = [...split.refs, ...split.plain].map(i => optBtn(i)).join(' ');
-    const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
-    return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}
-      ${cardRow('decide')} <span class="decpicks">${btns}</span>
-      ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
-  }
+  if (s.decision) return decisionBarHtml(s.decision, err);
   // network mode: if the current control belongs to the opponent, show a wait
   // banner instead of the opponent's buttons (their turn is theirs to drive).
   if (NET && !ui.modding) {
@@ -2311,11 +2339,8 @@ function promptHtml(): string {
       const p = ui.confirmDone;
       const pl = s.players[p]!;
       const dormant = pl.resources.filter(r => r.state === 'dormant').length;
-      return `<div class="promptbar pending"><span class="who">${esc(pl.name)}:</span>
-        you still have <b>${pl.activationsLeft} activation${pl.activationsLeft === 1 ? '' : 's'}</b> and
-        <b>${dormant} dormant resource${dormant === 1 ? '' : 's'}</b> — activate them this turn?
-        <button data-btn="doneplancancel">Go back (esc)</button>
-        <button class="primary" data-btn="doneplanconfirm" data-p="${p}">Really done (enter)</button>${err}</div>`;
+      return confirmBarHtml('done', p, `you still have <b>${pl.activationsLeft} activation${pl.activationsLeft === 1 ? '' : 's'}</b> and
+        <b>${dormant} dormant resource${dormant === 1 ? '' : 's'}</b> — activate them this turn?`, err, ` data-p="${p}"`);
     }
     return `<div class="promptbar"><span class="who">Planning</span>
       Click a hand card to recycle it into a resource; click dormant resources to activate (max 2). ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
@@ -2392,11 +2417,8 @@ function promptHtml(): string {
       // to Regroup which will remove your Spell Tokens. Are you sure?" — and it
       // is now shown only on the pass that would actually get there.
       const n = castableTokenCount(s.priority!);
-      return `<div class="promptbar pending"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
-        You're about to move to Regroup, which will remove your spell tokens.
-        Are you sure? <span style="color:var(--dim)">(${n} still castable)</span>
-        <button data-btn="passcancel">Go back</button>
-        <button class="primary" data-btn="passconfirm">Pass anyway (space)</button>${err}</div>`;
+      return confirmBarHtml('pass', s.priority!, `You're about to move to Regroup, which will remove your spell tokens.
+        Are you sure? <span style="color:var(--dim)">(${n} still castable)</span>`, err);
     }
     // [59] …and the same lie told by hand: the manual Pass handler's trailing
     // render() repaints this bar, live button and all, over a state whose
@@ -2419,11 +2441,8 @@ function promptHtml(): string {
     // count them, and make "end anyway" the deliberate second click.
     if (ui.confirmDeploy !== null) {
       const names = playableCached(ui.confirmDeploy);
-      return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.confirmDeploy]!.name)}:</span>
-        you can still play <b>${names.length}</b> card${names.length === 1 ? '' : 's'} from your cache —
-        <span class="cachenames">${names.map(n => `<span data-prev="${esc(n)}">${esc(n)}</span>`).join(', ')}</span>
-        <button data-btn="deploycancel">Go back</button>
-        <button class="primary" data-btn="deployconfirm">End deployment anyway</button>${err}</div>`;
+      return confirmBarHtml('deploy', ui.confirmDeploy, `you can still play <b>${names.length}</b> card${names.length === 1 ? '' : 's'} from your cache —
+        <span class="cachenames">${names.map(n => `<span data-prev="${esc(n)}">${esc(n)}</span>`).join(', ')}</span>`, err);
     }
     return `<div class="promptbar"><span class="who">Deployment</span>
       both players deploy at the same time — moves stay hidden until everyone is done.
@@ -2990,54 +3009,13 @@ function renderNow(): boolean {
   const netTag = NET ? `<span class="init">room ${esc(NET.room)} · you are ${esc(h.state.players[NET.seat]!.name)}</span>
     <span class="presence ${oppOn ? 'on' : 'off'}">● ${oppOn ? 'opponent connected' : 'opponent offline'}</span>` : '';
   const canUndo = NET && (h.state.phase === 'planning' || h.state.phase === 'deploy');
-  // stale confirm — the bar asks about a pass that would end the battle with
-  // tokens still castable, so it goes the moment either half stops being true
-  // ([66]: the window moved on, or the tokens did)
-  if (ui.confirmPass !== null && (h.state.priority === null
-    || !passEndsBattlePhase(h.state, h.state.priority)
-    || castableTokenCount(h.state.priority) === 0)) ui.confirmPass = null;
-  // the two playtest confirms go stale the same way — the phase moved on, the
-  // cache emptied, or the ability stopped being legal while the bar was up
-  if (ui.confirmDeploy !== null
-    && (h.state.phase !== 'deploy' || playableCached(ui.confirmDeploy).length === 0)) {
-    ui.confirmDeploy = null;
-  }
-  if (ui.confirmAct && !legalFor(ui.confirmAct.seat).some(a => a.type === 'activateAbility'
-    && a.entityId === ui.confirmAct!.entityId && a.abilityIndex === ui.confirmAct!.abilityIndex)) {
-    ui.confirmAct = null;
-  }
-  // [69] and the ride-along question: it belongs to ONE attack declaration, so
-  // it goes the moment that declare step does (an undo, a resync, the attack
-  // landing) — and `rideAnswered` goes with it, or the next attack would
-  // inherit an answer given about a formation that no longer exists.
-  // …and R87 gives the block step the same dialogue, so both steps keep it.
-  if (h.state.battle?.step !== 'declare' && h.state.battle?.step !== 'blocks') {
-    ui.confirmRide = null; ui.rideAnswered = false;
-  }
+  gcStaleUi();
   const autoPref = localStorage.getItem('algoAutopass') === '1';
   // [59] BEFORE the markup: whether this client is about to pass this window
   // by itself decides what the prompt bar may claim. The send happens after
   // the paint (runAutoPass, at the bottom) — this only decides and disarms.
   autoPassing = planAutoPass();
-  // playtest DEYK: "it constantly resets the scroll height, which means you
-  // have to scroll down to see your units every time you click something".
-  // The client repaints by replacing $app.innerHTML, which throws away the
-  // scroll position of every scroller in it — and mid-battle the board is
-  // taller than the window, so every click threw you back to the top. The
-  // positions are read BEFORE the swap and put back after; the game log is
-  // deliberately not in the list, because it always wants to be at the bottom.
-  const scrollBefore = SCROLLERS.map(sel =>
-    [sel, document.querySelector(sel)?.scrollTop ?? 0] as const);
-  // same discipline for the two text inputs a server push can repaint
-  // mid-word: remember which one (if either) owned focus and where the caret
-  // sat, so the rebuilt input neither steals focus nor teleports the caret
-  const focusedBox = document.activeElement;
-  const keepFocus = (focusedBox instanceof HTMLInputElement || focusedBox instanceof HTMLTextAreaElement)
-    && (focusedBox.id === 'judge-q' || focusedBox.id === 'report-note')
-    ? { id: focusedBox.id, start: focusedBox.selectionStart ?? 0, end: focusedBox.selectionEnd ?? 0 }
-    : null;
-  const hadJudge = !!document.getElementById('judge-q');
-  const hadReport = !!document.getElementById('report-note');
+  const snap = snapshotViewport();
   $app.innerHTML = `
     <div class="main">
       <!-- playtest: the turn/phase strip AND the "what to do next" bar are one
@@ -3098,11 +3076,89 @@ function renderNow(): boolean {
     ${postGame && !postGameHidden ? pg.postGameHtml(postGame) : ''}
     ${reportOpen ? reportOverlayHtml() : ''}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
+  restoreViewport(snap);
+  runAutoPass(autoPassing);   // [59] the send, now that the truth is on screen
+  maybeCancelChain();
+  publishBuilding();
+  rewireInputs(snap);
+  return true;
+}
+
+/** Game-state policy that renderNow applies before it paints: every confirm
+ * bar asks a question about the state it was raised on, and the answer stops
+ * meaning anything the moment that state moves on underneath it (an undo, a
+ * resync, the opponent acting, the thing asked about becoming illegal). So
+ * the arm is dropped here, on the way into the paint, rather than painted
+ * over a question that is no longer being asked. */
+function gcStaleUi(): void {
+  // stale confirm — the bar asks about a pass that would end the battle with
+  // tokens still castable, so it goes the moment either half stops being true
+  // ([66]: the window moved on, or the tokens did)
+  if (ui.confirmPass !== null && (h.state.priority === null
+    || !passEndsBattlePhase(h.state, h.state.priority)
+    || castableTokenCount(h.state.priority) === 0)) ui.confirmPass = null;
+  // the two playtest confirms go stale the same way — the phase moved on, the
+  // cache emptied, or the ability stopped being legal while the bar was up
+  if (ui.confirmDeploy !== null
+    && (h.state.phase !== 'deploy' || playableCached(ui.confirmDeploy).length === 0)) {
+    ui.confirmDeploy = null;
+  }
+  if (ui.confirmAct && !legalFor(ui.confirmAct.seat).some(a => a.type === 'activateAbility'
+    && a.entityId === ui.confirmAct!.entityId && a.abilityIndex === ui.confirmAct!.abilityIndex)) {
+    ui.confirmAct = null;
+  }
+  // [69] and the ride-along question: it belongs to ONE attack declaration, so
+  // it goes the moment that declare step does (an undo, a resync, the attack
+  // landing) — and `rideAnswered` goes with it, or the next attack would
+  // inherit an answer given about a formation that no longer exists.
+  // …and R87 gives the block step the same dialogue, so both steps keep it.
+  if (h.state.battle?.step !== 'declare' && h.state.battle?.step !== 'blocks') {
+    ui.confirmRide = null; ui.rideAnswered = false;
+  }
+}
+
+/** What a repaint would otherwise destroy: the scroll position of each
+ * SCROLLERS panel, and which of the two typing boxes (if either) owned focus
+ * and where its caret sat. Read before `$app.innerHTML` is replaced, put back
+ * by restoreViewport / rewireInputs after. */
+type ViewportSnap = {
+  scroll: (readonly [string, number])[];
+  keepFocus: { id: string; start: number; end: number } | null;
+  hadJudge: boolean;
+  hadReport: boolean;
+};
+function snapshotViewport(): ViewportSnap {
+  // playtest DEYK: "it constantly resets the scroll height, which means you
+  // have to scroll down to see your units every time you click something".
+  // The client repaints by replacing $app.innerHTML, which throws away the
+  // scroll position of every scroller in it — and mid-battle the board is
+  // taller than the window, so every click threw you back to the top. The
+  // positions are read BEFORE the swap and put back after; the game log is
+  // deliberately not in the list, because it always wants to be at the bottom.
+  const scroll = SCROLLERS.map(sel =>
+    [sel, document.querySelector(sel)?.scrollTop ?? 0] as const);
+  // same discipline for the two text inputs a server push can repaint
+  // mid-word: remember which one (if either) owned focus and where the caret
+  // sat, so the rebuilt input neither steals focus nor teleports the caret
+  const focusedBox = document.activeElement;
+  const keepFocus = (focusedBox instanceof HTMLInputElement || focusedBox instanceof HTMLTextAreaElement)
+    && (focusedBox.id === 'judge-q' || focusedBox.id === 'report-note')
+    ? { id: focusedBox.id, start: focusedBox.selectionStart ?? 0, end: focusedBox.selectionEnd ?? 0 }
+    : null;
+  const hadJudge = !!document.getElementById('judge-q');
+  const hadReport = !!document.getElementById('report-note');
+  return { scroll, keepFocus, hadJudge, hadReport };
+}
+
+/** After the paint: the focus viewer, the scroll positions, the log tail and
+ * the two floating panels (stack window, context menu) — everything that has
+ * to be right before the player can look at the new board. */
+function restoreViewport(snap: ViewportSnap): void {
   // the rail was rebuilt with it: put the focused card back, re-derived from
   // the state that just landed, BEFORE the scroll positions go back on — the
   // panel has to have its content again for its scrollTop to mean anything
   repaintFocus();
-  for (const [sel, top] of scrollBefore) {
+  for (const [sel, top] of snap.scroll) {
     if (!top) continue;
     const el = document.querySelector(sel);
     // clamped by the browser if the new content is shorter — a board that
@@ -3113,9 +3169,13 @@ function renderNow(): boolean {
   log.scrollTop = log.scrollHeight;
   placeStackWindow();
   clampMenu();
-  runAutoPass(autoPassing);   // [59] the send, now that the truth is on screen
-  maybeCancelChain();
-  publishBuilding();
+}
+
+/** After the paint and the auto-actions: the two typing boxes are fresh DOM
+ * nodes again, so their drafts, their listeners and (for the one that had it)
+ * their focus and caret all have to be put back by hand. */
+function rewireInputs(snap: ViewportSnap): void {
+  const { keepFocus, hadJudge, hadReport } = snap;
   // judge input: submit on Enter, survive re-renders mid-typing. Focus goes
   // back only to the box that HAD it (with its caret where it was) — or to a
   // freshly opened box, caret at the end of any prefill.
@@ -3146,7 +3206,6 @@ function renderNow(): boolean {
       if (send) send.disabled = reportBusy || !reportDraft.trim();
     });
   }
-  return true;
 }
 
 // ── the motion pass (ui/motion.ts + ui/anim.ts) ───────────────────────
@@ -4161,6 +4220,396 @@ document.addEventListener('click', e => {
   handleAction(t, e as MouseEvent);
 });
 
+/** The home screen and the lobbies: element picker, deck import, room join,
+ * the share link. Nothing here repaints the BOARD — each button repaints the
+ * home screen itself, navigates away, or fires a request whose reply does the
+ * painting — so the caller stops when one of these claims the click. */
+function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
+  if (b === 'eltoggle') {
+    ui.homeFixedTrio = true;
+    const el = btn.dataset['el']!;
+    if (ui.homeEls.includes(el)) ui.homeEls = ui.homeEls.filter(x => x !== el);
+    else if (ui.homeEls.length < 3) ui.homeEls.push(el);
+    else { ui.homeEls.shift(); ui.homeEls.push(el); }   // full: rotate the oldest out
+    localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
+    renderHome();
+    return true;
+  }
+  if (b === 'elrandom') {
+    ui.homeFixedTrio = true;
+    // every element the ENGINE knows about, so the die reaches all C(n,3)
+    // trios — 35 of them with Light & Dark in
+    ui.homeEls = [];
+    while (ui.homeEls.length < 3) {
+      const pick = ALL_ELEMENTS[Math.floor(Math.random() * ALL_ELEMENTS.length)]!;
+      if (!ui.homeEls.includes(pick)) ui.homeEls.push(pick);
+    }
+    localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
+    renderHome();
+    return true;
+  }
+  if (b === 'newgame') {
+    saveHomeName();
+    const m = btn.dataset['mode'];
+    const mode = m === 'draft' ? 'draft' : m === 'constructed' ? 'constructed' : 'shared';
+    if (mode === 'constructed' && !savedDeck()) return true;   // button is disabled anyway
+    // a draft with NO els opens the lobby and chooses the trio there; passing
+    // els is the deliberate escape hatch that skips it
+    const els = mode === 'draft' && btn.dataset['els'] && ui.homeEls.length === 3
+      ? `&els=${encodeURIComponent(ui.homeEls.join(','))}` : '';
+    fetch('/api/new').then(r => r.json()).then((r: { code: string }) => {
+      location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0&mode=${mode}${els}`;
+    }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
+    return true;
+  }
+  if (b === 'deckimporturl') {
+    const inp = document.getElementById('h-deckurl') as HTMLInputElement | null;
+    const url = inp?.value.trim();
+    if (url) importDeck({ url }, NET ? render : renderHome);
+    return true;
+  }
+  if (b === 'deckimporttext') {
+    const ta = document.getElementById('h-decktext') as HTMLTextAreaElement | null;
+    const text = ta?.value.trim();
+    if (text) importDeck({ text }, NET ? render : renderHome);
+    return true;
+  }
+  if (b === 'deckjoin') { NET?.sendJoin(); return true; }
+  if (b === 'joincode') {
+    saveHomeName();
+    const code = (document.getElementById('h-code') as HTMLInputElement).value.trim().toUpperCase();
+    if (!code) return true;
+    location.search = `?ws=1&room=${encodeURIComponent(code)}`;
+    return true;
+  }
+  if (b === 'hotseat') { saveHomeName(); location.search = '?hotseat=1'; return true; }
+  if (b === 'practice') { saveHomeName(); location.search = '?demo=1'; return true; }
+  if (b === 'gohome') { location.href = location.pathname; return true; }
+  if (b === 'copylink') {
+    const link = btn.dataset['link']!;
+    // clipboard API needs a secure context; plain-http LAN needs the fallback
+    void navigator.clipboard?.writeText(link).catch(() => {});
+    const inp = document.querySelector('.sharelink') as HTMLInputElement | null;
+    if (inp) { inp.select(); document.execCommand('copy'); }
+    btn.textContent = 'copied ✓';
+    return true;
+  }
+  return false;
+}
+
+/** A board button's handler. The click handler repaints the board after every
+ * one of these — the one decision a handler owns is whether that repaint is
+ * wanted. `'no-repaint'` says it is not: either the reply to a send will paint
+ * (undo, the judge, a bug report) or the handler painted by hand. Everything
+ * else mutates and lets the shared render() show the result. */
+type BtnHandler = (btn: HTMLElement) => void | 'no-repaint';
+
+/** the chip: keep passing until the battle ends or something new is played */
+function armPassAll(): void {
+  ui.autopass = true;
+  ui.autopassStack = h.state.stack.length;
+  // [59] the pass that arms the chip is the one going out for THIS state —
+  // the latch (UiState.sentFor, set by NetBackend.do) is what stops the
+  // chip's own auto-pass adding a second one on the very next paint.
+  // #1: remember which activateAbility keys were ALREADY legal — a new one
+  // appearing later (granted by a resolution) disarms the chip
+  ui.autopassSig = NET ? abilityKeys(NET.seat) : [];
+}
+
+/** Pass / Pass all: the one pass that costs something asks first. */
+function passClick(mode: 'pass' | 'passall'): void {
+  const s = h.state;
+  // C5, rewritten for [66]: "The UI is reminding me I have unused tokens at
+  // EVERY chance it has… It should just be right at the end before moving to
+  // Regroup." The guard used to fire on any pass while a castable token was
+  // in hand, which during a busy battle is every window — so it stopped being
+  // information and became a second click on the Pass button.
+  //
+  // Regroup is the ONLY step that erases spell tokens (R11), so the pass that
+  // reaches it is the only pass that costs anything. passEndsBattlePhase
+  // (ui/battle.ts) derives that from the engine's own transition and is
+  // tested there.
+  if (s.priority !== null && passEndsBattlePhase(s, s.priority)
+    && castableTokenCount(s.priority) > 0) {
+    ui.confirmPass = mode;
+    return;
+  }
+  if (mode === 'passall') armPassAll();
+  act({ type: 'passPriority', seat: s.priority! });
+}
+
+/** [69] send the attack that has been built, riders and all */
+function declareBuiltAttack(): void {
+  const s = h.state;
+  if (!s.battle || s.battle.step !== 'declare') return;   // the window moved
+  const cols = ui.columns.filter(c => c.length);
+  act({ type: 'declareAttack', seat: s.battle!.attacker, columns: cols, spellTokens: ui.spellTokens.slice() });
+  if (!uiError) { ui.columns = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false; }
+}
+
+/** [67] send the block declaration that has been built, riders and all */
+function declareBuiltBlocks(): void {
+  const s = h.state;
+  if (!s.battle || s.battle.step !== 'blocks') return;   // the window moved
+  const blocks = blockPlan();
+  // R84: the bar disables the button, and Enter honours `disabled` — this is
+  // the belt to that braces, so no path can send a declaration the engine has
+  // already told us it will refuse.
+  const duty = blockPlanIssue(s, s.battle!.defender, blocks);
+  if (duty) { uiError = duty; render(); return; }
+  // R87: one list on the board, two fields in the action. splitCounterattack
+  // (ui/battle.ts) is the only place that split is made, so the log line and
+  // the reachability ledger see the tokens the player actually picked.
+  const { send, spellTokens } = splitCounterattack(s, ui.send);
+  // [77] …and the same question about EVERY other block rule, asked before
+  // the action goes anywhere. A refusal now keeps the parts of the plan the
+  // engine would take and clears only the units it named — the whole of
+  // ledger #77. blockVerdict (ui/battle.ts) is a read of the engine's own
+  // validator, exactly as blockPlanIssue is; it never invents a rule.
+  const verdict = blockVerdict(s, s.battle!.defender, blocks, send, spellTokens);
+  if (verdict) {
+    ui.blockRefusal = verdict;
+    ui.columns = columnsFromPlan(verdict.keep.blocks);
+    ui.send = [...verdict.keep.send, ...verdict.keep.spellTokens];
+    ui.carrying = null;
+    // the reason belongs NEXT TO the units it is about, not in the generic
+    // error slot at the far end of the bar — blockRefusalHtml prints it
+    uiError = '';
+    playCue('error');
+    render();
+    return;
+  }
+  ui.blockRefusal = null;
+  act({ type: 'declareBlocks', seat: s.battle!.defender, blocks, send, spellTokens });
+  if (!uiError) {
+    // [77] over a socket the refusal has not arrived yet, so the plan is
+    // held until an authoritative state says the declaration LANDED
+    // (ensureBlockKeys). Hotseat has already applied it, so it goes now.
+    if (NET) ui.blockSent = true;
+    else { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; }
+    ui.carrying = null;
+  }
+}
+
+/** the memory aid: forget one card, or the whole strip. Decision logic is in
+ * ui/inspect.ts — this only reads the live look and stores the answer. */
+function forgetSeen(what: 'card' | 'all', i = 0): void {
+  const seen = NET ? h.state.seenHand?.[NET.seat] : null;
+  seenDrop = what === 'all' ? dismissSeenHand(seen) : dismissSeenCard(seen, seenDrop, i);
+  saveSeenDrop();
+}
+
+/** Every board button by its data-btn name. The home screen and the lobbies
+ * are handlePregameButton; the acct-/pg-/lobby- families dispatch to their
+ * own modules before this table is consulted (handleButton). */
+const BOARD_BTNS: Record<string, BtnHandler> = {
+  cachespent: btn => {
+    const p = Number(btn.dataset['p']) as Seat;
+    if (showSpentCache.has(p)) showSpentCache.delete(p); else showSpentCache.add(p);
+  },
+  motiontoggle: () => { setMotionOn(!motionOn()); motionReset(); flashReset(); },
+  soundtoggle: () => {
+    const on = !soundOn();
+    setSoundOn(on);
+    // switching it ON plays the quietest cue as an audition: you find out both
+    // that it works and how loud it is, without waiting for a phase to turn.
+    if (on) { primeAudio(); playCue('priority'); }
+  },
+  undo: () => { NET?.undo(); return 'no-repaint'; },
+  restart: () => {
+    if (NET) return;   // hotseat only — a net game never draws this button
+    const d = h.state.mode === 'constructed' ? savedDeck() : null;
+    h = new Harness(Math.floor(Math.random() * 1e6), undefined,
+      h.state.mode === 'constructed' && !d ? 'shared' : h.state.mode, undefined,
+      d ? [d.cards, d.cards] : undefined);
+    resetUi(); uiError = '';
+  },
+  doneplan: btn => {
+    const s = h.state;
+    const p = Number(btn.dataset['p']) as Seat;
+    const pl = s.players[p]!;
+    const dormant = pl.resources.filter(r => r.state === 'dormant').length;
+    // guard against accidentally skipping activations (playtest feedback: a
+    // dormant board looks deceptively "ready")
+    if (pl.activationsLeft > 0 && dormant > 0) ui.confirmDone = p;
+    else act({ type: 'donePlanning', seat: p });
+  },
+  doneplanconfirm: btn => {
+    ui.confirmDone = null;
+    act({ type: 'donePlanning', seat: Number(btn.dataset['p']) });
+  },
+  doneplancancel: () => { ui.confirmDone = null; },
+  donehaste: btn => { act({ type: 'doneHaste', seat: Number(btn.dataset['p']) }); },
+  pass: () => passClick('pass'),
+  passall: () => passClick('passall'),
+  passcancel: () => { ui.confirmPass = null; },
+  passconfirm: () => {
+    const mode = ui.confirmPass;
+    ui.confirmPass = null;
+    if (mode) {
+      if (mode === 'passall') armPassAll();
+      act({ type: 'passPriority', seat: h.state.priority! });
+    }
+  },
+  // R80: an auto-pass is SCHEDULED now rather than sent on the spot, so
+  // switching either of them off has to reach into the wait as well — the
+  // whole point of the stop button is that this window becomes yours again.
+  passallstop: () => { ui.autopass = false; cancelAutoPass(); },
+  autopasstoggle: () => {
+    localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
+    cancelAutoPass();
+  },
+  'pg-reopen': () => { postGameHidden = false; },
+  'trio-ok': () => { pendingTrio = null; },
+  revealdone: () => { pendingReveal = null; releaseHeldFlashes(); },
+  donedeploy: btn => {
+    // playtest: don't let a paid-for prophecy or a glimpsed card die in the
+    // cache because deployment is the one step you click through fast.
+    const seat = Number(btn.dataset['p']) as Seat;
+    if (playableCached(seat).length) ui.confirmDeploy = seat;
+    else act({ type: 'doneDeploying', seat });
+  },
+  deploycancel: () => { ui.confirmDeploy = null; },
+  deployconfirm: () => {
+    const seat = ui.confirmDeploy;
+    ui.confirmDeploy = null;
+    if (seat !== null) act({ type: 'doneDeploying', seat });
+  },
+  actcancel: () => { ui.confirmAct = null; },
+  actconfirm: () => {
+    const a = ui.confirmAct;
+    ui.confirmAct = null;
+    if (a) {
+      act({ type: 'activateAbility', seat: a.seat, entityId: a.entityId,
+        abilityIndex: a.abilityIndex, ...(a.via ? { via: a.via } : {}) });
+    }
+  },
+  skipattack: () => {
+    act({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
+    ui.columns = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false;
+  },
+  attackall: () => {
+    // one click for the whole army: every eligible unit fronts its own
+    // column (still adjustable before "Attack!"; playtest: 100 token clicks)
+    const bt = h.state.battle!;
+    const e = q();
+    const from = bt.round === 1 || bt.attackerPool === null ? e.homeRegion(bt.attacker) : bt.region;
+    const placed = new Set(ui.columns.flat());
+    for (const u of e.unitsOf(bt.attacker, from)) {
+      if (placed.has(u.id)) continue;
+      if (bt.attackerPool && !bt.attackerPool.includes(u.id)) continue;
+      ui.columns.push([u.id]);
+    }
+    ui.carrying = null;
+  },
+  confirmattack: () => {
+    // [69] the last thing between the formation and the declaration: if tokens
+    // COULD ride along and none were picked, ask once. shouldAskRide
+    // (ui/battle.ts) is the judgement — it says no when there are no tokens (so
+    // this is never modal noise) and no once the question has been answered for
+    // this attack (so Attack! is not a two-click button from then on).
+    const s = h.state;
+    const atk = s.battle!.attacker;
+    if (shouldAskRide(s, atk, ui.spellTokens, ui.rideAnswered)) {
+      ui.confirmRide = atk; return;
+    }
+    declareBuiltAttack();
+  },
+  // "Bring none" is the explicit answer the report asked for — it must be a
+  // CHOICE the player makes, not the silent default that produced ten
+  // token-less attacks in GETD. On the block side "none" means dropping the
+  // tokens back out of the send list, leaving the counterattackers behind.
+  ridenone: () => {
+    const s = h.state;
+    ui.rideAnswered = true; ui.confirmRide = null;
+    if (s.battle?.step === 'blocks') {
+      ui.send = splitCounterattack(s, ui.send).send;
+      declareBuiltBlocks();
+    } else { ui.spellTokens = []; declareBuiltAttack(); }
+  },
+  rideconfirm: () => {
+    ui.rideAnswered = true; ui.confirmRide = null;
+    if (h.state.battle?.step === 'blocks') declareBuiltBlocks(); else declareBuiltAttack();
+  },
+  ridecancel: () => { ui.confirmRide = null; },   // back to building, unanswered
+  confirmblocks: () => {
+    // [67] the counterattack's own ride question, gated by shouldAskSend —
+    // which stays silent when there are no tokens, when the player has already
+    // picked some, and (the rule, not politeness) when no UNIT is being sent,
+    // because "they always need a unit to take them with them".
+    const s = h.state;
+    const def = s.battle!.defender;
+    if (shouldAskSend(s, def, ui.send, ui.rideAnswered)) {
+      ui.confirmRide = def; return;
+    }
+    declareBuiltBlocks();
+  },
+  draftcommit: btn => {
+    if (!ui.draftPack) return;
+    act({ type: 'draftCommit', seat: Number(btn.dataset['p']) as Seat, packIndices: ui.draftPack.slice() });
+    if (!uiError) { ui.draftPack = null; }
+  },
+  bottomcommit: btn => {
+    act({ type: 'bottomCards', seat: Number(btn.dataset['p']) as Seat, handIndices: ui.bottomPick.slice() });
+    if (!uiError) { ui.bottomPick = []; ui.bottomFor = ''; }
+  },
+  decide: btn => { act({ type: 'decide', seat: h.state.decision!.seat, choice: Number(btn.dataset['i']) }); },
+  orderpick: btn => {
+    const s = h.state;
+    ui.orderPicked.push(Number(btn.dataset['i']));
+    if (ui.orderPicked.length === s.decision!.options.length) {
+      const choice = ui.orderPicked.slice();
+      ui.orderPicked = [];
+      act({ type: 'decide', seat: s.decision!.seat, choice });
+    }
+  },
+  binopen: btn => { binView = Number(btn.dataset['p']) as Seat; },
+  binclose: () => { binView = null; },
+  seendrop: btn => forgetSeen('card', Number(btn.dataset['i'])),
+  seenhideall: () => forgetSeen('all'),
+  erasedclose: () => { erasedView = null; },
+  concedeno: () => { concedeAsk = null; },
+  concedeyes: () => {
+    const seat = concedeAsk;
+    concedeAsk = null;
+    if (seat !== null) act({ type: 'concede', seat });
+  },
+  // R41: the cache is public — either seat's zone opens for either player
+  cacheopen: btn => { cacheView = Number(btn.dataset['p']) as Seat; },
+  cacheclose: () => { cacheView = null; },
+  helpopen: () => { helpOpen = true; },
+  helpclose: () => { helpOpen = false; },
+  judgeopen: () => { judgeOpen = true; },
+  judgeclose: () => { judgeOpen = false; },
+  inspectclose: () => { inspect = null; },
+  inspectjudge: btn => {
+    const name = btn.dataset['name'] ?? inspect?.name ?? '';
+    inspect = null;
+    judgeOpen = true;
+    judgeDraft = `I have a question about ${name}. `;
+  },
+  judgeask: () => {
+    const inp = document.getElementById('judge-q') as HTMLInputElement | null;
+    const question = inp?.value.trim();
+    if (question && !judgeBusy) { if (inp) inp.value = ''; judgeDraft = ''; askJudge(question); return 'no-repaint'; }
+  },
+  modcancel: () => { ui.modding = null; },
+  castcancel: () => { startCastCancel(); },
+  // [69] a cleared formation is a new attack — the ride question comes back
+  clearform: () => { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null; ui.rideAnswered = false; ui.blockRefusal = null; },
+  // [77] "…give a notice as well as a 'Reset blockers?' button". The explicit
+  // start-again, offered BESIDE the surviving plan rather than done to it.
+  resetblocks: () => {
+    ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null;
+    ui.rideAnswered = false; ui.blockRefusal = null; uiError = '';
+  },
+  reportopen: () => { reportOpen = true; },
+  reportclose: () => { reportOpen = false; },
+  reportsend: () => { sendReport(); return 'no-repaint'; },
+  menuitem: btn => { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); },
+  menuclose: () => { ui.menu = null; },
+};
+
 function handleButton(btn: HTMLElement): void {
   // accounts own everything prefixed acct- (sign-in, profile, friends)
   if (acct.handleButton(btn)) return;
@@ -4178,359 +4627,10 @@ function handleButton(btn: HTMLElement): void {
     rerender: renderWaiting,
   })) return;
   const b = btn.dataset['btn'];
-  if (b === 'eltoggle') {
-    ui.homeFixedTrio = true;
-    const el = btn.dataset['el']!;
-    if (ui.homeEls.includes(el)) ui.homeEls = ui.homeEls.filter(x => x !== el);
-    else if (ui.homeEls.length < 3) ui.homeEls.push(el);
-    else { ui.homeEls.shift(); ui.homeEls.push(el); }   // full: rotate the oldest out
-    localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
-    renderHome();
-    return;
-  }
-  if (b === 'elrandom') {
-    ui.homeFixedTrio = true;
-    // every element the ENGINE knows about, so the die reaches all C(n,3)
-    // trios — 35 of them with Light & Dark in
-    ui.homeEls = [];
-    while (ui.homeEls.length < 3) {
-      const pick = ALL_ELEMENTS[Math.floor(Math.random() * ALL_ELEMENTS.length)]!;
-      if (!ui.homeEls.includes(pick)) ui.homeEls.push(pick);
-    }
-    localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
-    renderHome();
-    return;
-  }
-  if (b === 'newgame') {
-    saveHomeName();
-    const m = btn.dataset['mode'];
-    const mode = m === 'draft' ? 'draft' : m === 'constructed' ? 'constructed' : 'shared';
-    if (mode === 'constructed' && !savedDeck()) return;   // button is disabled anyway
-    // a draft with NO els opens the lobby and chooses the trio there; passing
-    // els is the deliberate escape hatch that skips it
-    const els = mode === 'draft' && btn.dataset['els'] && ui.homeEls.length === 3
-      ? `&els=${encodeURIComponent(ui.homeEls.join(','))}` : '';
-    fetch('/api/new').then(r => r.json()).then((r: { code: string }) => {
-      location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0&mode=${mode}${els}`;
-    }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
-    return;
-  }
-  if (b === 'deckimporturl') {
-    const inp = document.getElementById('h-deckurl') as HTMLInputElement | null;
-    const url = inp?.value.trim();
-    if (url) importDeck({ url }, NET ? render : renderHome);
-    return;
-  }
-  if (b === 'deckimporttext') {
-    const ta = document.getElementById('h-decktext') as HTMLTextAreaElement | null;
-    const text = ta?.value.trim();
-    if (text) importDeck({ text }, NET ? render : renderHome);
-    return;
-  }
-  if (b === 'deckjoin') { NET?.sendJoin(); return; }
-  if (b === 'joincode') {
-    saveHomeName();
-    const code = (document.getElementById('h-code') as HTMLInputElement).value.trim().toUpperCase();
-    if (!code) return;
-    location.search = `?ws=1&room=${encodeURIComponent(code)}`;
-    return;
-  }
-  if (b === 'hotseat') { saveHomeName(); location.search = '?hotseat=1'; return; }
-  if (b === 'practice') { saveHomeName(); location.search = '?demo=1'; return; }
-  if (b === 'gohome') { location.href = location.pathname; return; }
-  if (b === 'copylink') {
-    const link = btn.dataset['link']!;
-    // clipboard API needs a secure context; plain-http LAN needs the fallback
-    void navigator.clipboard?.writeText(link).catch(() => {});
-    const inp = document.querySelector('.sharelink') as HTMLInputElement | null;
-    if (inp) { inp.select(); document.execCommand('copy'); }
-    btn.textContent = 'copied ✓';
-    return;
-  }
-  if (b === 'cachespent') {
-    const p = Number(btn.dataset['p']) as Seat;
-    if (showSpentCache.has(p)) showSpentCache.delete(p); else showSpentCache.add(p);
-    render(); return;
-  }
-  if (b === 'motiontoggle') { setMotionOn(!motionOn()); motionReset(); flashReset(); render(); return; }
-  if (b === 'soundtoggle') {
-    const on = !soundOn();
-    setSoundOn(on);
-    // switching it ON plays the quietest cue as an audition: you find out both
-    // that it works and how loud it is, without waiting for a phase to turn.
-    if (on) { primeAudio(); playCue('priority'); }
-    render();
-    return;
-  }
-  if (b === 'undo') { NET?.undo(); return; }
-  const s = h.state;
-  if (b === 'restart' && !NET) {
-    const d = h.state.mode === 'constructed' ? savedDeck() : null;
-    h = new Harness(Math.floor(Math.random() * 1e6), undefined,
-      h.state.mode === 'constructed' && !d ? 'shared' : h.state.mode, undefined,
-      d ? [d.cards, d.cards] : undefined);
-    resetUi(); uiError = '';
-  }
-  if (b === 'doneplan') {
-    const p = Number(btn.dataset['p']) as Seat;
-    const pl = s.players[p]!;
-    const dormant = pl.resources.filter(r => r.state === 'dormant').length;
-    // guard against accidentally skipping activations (playtest feedback: a
-    // dormant board looks deceptively "ready")
-    if (pl.activationsLeft > 0 && dormant > 0) ui.confirmDone = p;
-    else act({ type: 'donePlanning', seat: p });
-  }
-  if (b === 'doneplanconfirm') {
-    ui.confirmDone = null;
-    act({ type: 'donePlanning', seat: Number(btn.dataset['p']) });
-  }
-  if (b === 'doneplancancel') ui.confirmDone = null;
-  if (b === 'donehaste') act({ type: 'doneHaste', seat: Number(btn.dataset['p']) });
-  const armPassAll = (): void => {
-    ui.autopass = true;
-    ui.autopassStack = s.stack.length;
-    // [59] the pass that arms the chip is the one going out for THIS state —
-    // the latch (UiState.sentFor, set by NetBackend.do) is what stops the
-    // chip's own auto-pass adding a second one on the very next paint.
-    // #1: remember which activateAbility keys were ALREADY legal — a new one
-    // appearing later (granted by a resolution) disarms the chip
-    ui.autopassSig = NET ? abilityKeys(NET.seat) : [];
-  };
-  if (b === 'pass' || b === 'passall') {
-    // C5, rewritten for [66]: "The UI is reminding me I have unused tokens at
-    // EVERY chance it has… It should just be right at the end before moving to
-    // Regroup." The guard used to fire on any pass while a castable token was
-    // in hand, which during a busy battle is every window — so it stopped being
-    // information and became a second click on the Pass button.
-    //
-    // Regroup is the ONLY step that erases spell tokens (R11), so the pass that
-    // reaches it is the only pass that costs anything. passEndsBattlePhase
-    // (ui/battle.ts) derives that from the engine's own transition and is
-    // tested there.
-    if (s.priority !== null && passEndsBattlePhase(s, s.priority)
-      && castableTokenCount(s.priority) > 0) {
-      ui.confirmPass = b;
-      render();
-      return;
-    }
-  }
-  if (b === 'pass') act({ type: 'passPriority', seat: s.priority! });
-  if (b === 'passall') { armPassAll(); act({ type: 'passPriority', seat: s.priority! }); }
-  if (b === 'passcancel') ui.confirmPass = null;
-  if (b === 'passconfirm') {
-    const mode = ui.confirmPass;
-    ui.confirmPass = null;
-    if (mode) {
-      if (mode === 'passall') armPassAll();
-      act({ type: 'passPriority', seat: s.priority! });
-    }
-  }
-  // R80: an auto-pass is SCHEDULED now rather than sent on the spot, so
-  // switching either of them off has to reach into the wait as well — the
-  // whole point of the stop button is that this window becomes yours again.
-  if (b === 'passallstop') { ui.autopass = false; cancelAutoPass(); }
-  if (b === 'autopasstoggle') {
-    localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
-    cancelAutoPass();
-  }
-  if (b === 'pg-reopen') { postGameHidden = false; render(); return; }
-  if (b === 'trio-ok') { pendingTrio = null; render(); return; }
-  if (b === 'revealdone') { pendingReveal = null; releaseHeldFlashes(); }
-  if (b === 'donedeploy') {
-    // playtest: don't let a paid-for prophecy or a glimpsed card die in the
-    // cache because deployment is the one step you click through fast.
-    const seat = Number(btn.dataset['p']) as Seat;
-    if (playableCached(seat).length) ui.confirmDeploy = seat;
-    else act({ type: 'doneDeploying', seat });
-  }
-  if (b === 'deploycancel') ui.confirmDeploy = null;
-  if (b === 'deployconfirm') {
-    const seat = ui.confirmDeploy;
-    ui.confirmDeploy = null;
-    if (seat !== null) act({ type: 'doneDeploying', seat });
-  }
-  if (b === 'actcancel') ui.confirmAct = null;
-  if (b === 'actconfirm') {
-    const a = ui.confirmAct;
-    ui.confirmAct = null;
-    if (a) {
-      act({ type: 'activateAbility', seat: a.seat, entityId: a.entityId,
-        abilityIndex: a.abilityIndex, ...(a.via ? { via: a.via } : {}) });
-    }
-  }
-  if (b === 'skipattack') { act({ type: 'declareAttack', seat: s.battle!.attacker, columns: [] }); ui.columns = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false; }
-  if (b === 'attackall') {
-    // one click for the whole army: every eligible unit fronts its own
-    // column (still adjustable before "Attack!"; playtest: 100 token clicks)
-    const bt = s.battle!;
-    const e = q();
-    const from = bt.round === 1 || bt.attackerPool === null ? e.homeRegion(bt.attacker) : bt.region;
-    const placed = new Set(ui.columns.flat());
-    for (const u of e.unitsOf(bt.attacker, from)) {
-      if (placed.has(u.id)) continue;
-      if (bt.attackerPool && !bt.attackerPool.includes(u.id)) continue;
-      ui.columns.push([u.id]);
-    }
-    ui.carrying = null;
-  }
-  /** [69] send the attack that has been built, riders and all */
-  const declareBuiltAttack = (): void => {
-    if (!s.battle || s.battle.step !== 'declare') return;   // the window moved
-    const cols = ui.columns.filter(c => c.length);
-    act({ type: 'declareAttack', seat: s.battle!.attacker, columns: cols, spellTokens: ui.spellTokens.slice() });
-    if (!uiError) { ui.columns = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false; }
-  };
-  if (b === 'confirmattack') {
-    // [69] the last thing between the formation and the declaration: if tokens
-    // COULD ride along and none were picked, ask once. shouldAskRide
-    // (ui/battle.ts) is the judgement — it says no when there are no tokens (so
-    // this is never modal noise) and no once the question has been answered for
-    // this attack (so Attack! is not a two-click button from then on).
-    const atk = s.battle!.attacker;
-    if (shouldAskRide(s, atk, ui.spellTokens, ui.rideAnswered)) {
-      ui.confirmRide = atk; render(); return;
-    }
-    declareBuiltAttack();
-  }
-  /** [67] send the block declaration that has been built, riders and all */
-  const declareBuiltBlocks = (): void => {
-    if (!s.battle || s.battle.step !== 'blocks') return;   // the window moved
-    const blocks = blockPlan();
-    // R84: the bar disables the button, and Enter honours `disabled` — this is
-    // the belt to that braces, so no path can send a declaration the engine has
-    // already told us it will refuse.
-    const duty = blockPlanIssue(s, s.battle!.defender, blocks);
-    if (duty) { uiError = duty; render(); return; }
-    // R87: one list on the board, two fields in the action. splitCounterattack
-    // (ui/battle.ts) is the only place that split is made, so the log line and
-    // the reachability ledger see the tokens the player actually picked.
-    const { send, spellTokens } = splitCounterattack(s, ui.send);
-    // [77] …and the same question about EVERY other block rule, asked before
-    // the action goes anywhere. A refusal now keeps the parts of the plan the
-    // engine would take and clears only the units it named — the whole of
-    // ledger #77. blockVerdict (ui/battle.ts) is a read of the engine's own
-    // validator, exactly as blockPlanIssue is; it never invents a rule.
-    const verdict = blockVerdict(s, s.battle!.defender, blocks, send, spellTokens);
-    if (verdict) {
-      ui.blockRefusal = verdict;
-      ui.columns = columnsFromPlan(verdict.keep.blocks);
-      ui.send = [...verdict.keep.send, ...verdict.keep.spellTokens];
-      ui.carrying = null;
-      // the reason belongs NEXT TO the units it is about, not in the generic
-      // error slot at the far end of the bar — blockRefusalHtml prints it
-      uiError = '';
-      playCue('error');
-      render();
-      return;
-    }
-    ui.blockRefusal = null;
-    act({ type: 'declareBlocks', seat: s.battle!.defender, blocks, send, spellTokens });
-    if (!uiError) {
-      // [77] over a socket the refusal has not arrived yet, so the plan is
-      // held until an authoritative state says the declaration LANDED
-      // (ensureBlockKeys). Hotseat has already applied it, so it goes now.
-      if (NET) ui.blockSent = true;
-      else { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; }
-      ui.carrying = null;
-    }
-  };
-  // "Bring none" is the explicit answer the report asked for — it must be a
-  // CHOICE the player makes, not the silent default that produced ten
-  // token-less attacks in GETD. On the block side "none" means dropping the
-  // tokens back out of the send list, leaving the counterattackers behind.
-  const blocking = s.battle?.step === 'blocks';
-  if (b === 'ridenone') {
-    ui.rideAnswered = true; ui.confirmRide = null;
-    if (blocking) {
-      ui.send = splitCounterattack(s, ui.send).send;
-      declareBuiltBlocks();
-    } else { ui.spellTokens = []; declareBuiltAttack(); }
-  }
-  if (b === 'rideconfirm') {
-    ui.rideAnswered = true; ui.confirmRide = null;
-    if (blocking) declareBuiltBlocks(); else declareBuiltAttack();
-  }
-  if (b === 'ridecancel') ui.confirmRide = null;   // back to building, unanswered
-  if (b === 'confirmblocks') {
-    // [67] the counterattack's own ride question, gated by shouldAskSend —
-    // which stays silent when there are no tokens, when the player has already
-    // picked some, and (the rule, not politeness) when no UNIT is being sent,
-    // because "they always need a unit to take them with them".
-    const def = s.battle!.defender;
-    if (shouldAskSend(s, def, ui.send, ui.rideAnswered)) {
-      ui.confirmRide = def; render(); return;
-    }
-    declareBuiltBlocks();
-  }
-  if (b === 'draftcommit' && ui.draftPack) {
-    act({ type: 'draftCommit', seat: Number(btn.dataset['p']) as Seat, packIndices: ui.draftPack.slice() });
-    if (!uiError) { ui.draftPack = null; }
-  }
-  if (b === 'bottomcommit') {
-    act({ type: 'bottomCards', seat: Number(btn.dataset['p']) as Seat, handIndices: ui.bottomPick.slice() });
-    if (!uiError) { ui.bottomPick = []; ui.bottomFor = ''; }
-  }
-  if (b === 'decide') act({ type: 'decide', seat: s.decision!.seat, choice: Number(btn.dataset['i']) });
-  if (b === 'orderpick') {
-    ui.orderPicked.push(Number(btn.dataset['i']));
-    if (ui.orderPicked.length === s.decision!.options.length) {
-      const choice = ui.orderPicked.slice();
-      ui.orderPicked = [];
-      act({ type: 'decide', seat: s.decision!.seat, choice });
-    }
-  }
-  if (b === 'binopen') { binView = Number(btn.dataset['p']) as Seat; }
-  if (b === 'binclose') binView = null;
-  // the memory aid: forget one card, or the whole strip. Decision logic is in
-  // ui/inspect.ts — this only reads the live look and stores the answer.
-  if (b === 'seendrop' || b === 'seenhideall') {
-    const seen = NET ? h.state.seenHand?.[NET.seat] : null;
-    seenDrop = b === 'seenhideall'
-      ? dismissSeenHand(seen)
-      : dismissSeenCard(seen, seenDrop, Number(btn.dataset['i']));
-    saveSeenDrop();
-  }
-  if (b === 'erasedclose') erasedView = null;
-  if (b === 'concedeno') concedeAsk = null;
-  if (b === 'concedeyes') {
-    const seat = concedeAsk;
-    concedeAsk = null;
-    if (seat !== null) act({ type: 'concede', seat });
-  }
-  // R41: the cache is public — either seat's zone opens for either player
-  if (b === 'cacheopen') { cacheView = Number(btn.dataset['p']) as Seat; }
-  if (b === 'cacheclose') cacheView = null;
-  if (b === 'helpopen') helpOpen = true;
-  if (b === 'helpclose') helpOpen = false;
-  if (b === 'judgeopen') judgeOpen = true;
-  if (b === 'judgeclose') judgeOpen = false;
-  if (b === 'inspectclose') inspect = null;
-  if (b === 'inspectjudge') {
-    const name = btn.dataset['name'] ?? inspect?.name ?? '';
-    inspect = null;
-    judgeOpen = true;
-    judgeDraft = `I have a question about ${name}. `;
-  }
-  if (b === 'judgeask') {
-    const inp = document.getElementById('judge-q') as HTMLInputElement | null;
-    const question = inp?.value.trim();
-    if (question && !judgeBusy) { if (inp) inp.value = ''; judgeDraft = ''; askJudge(question); return; }
-  }
-  if (b === 'modcancel') ui.modding = null;
-  if (b === 'castcancel') startCastCancel();
-  // [69] a cleared formation is a new attack — the ride question comes back
-  if (b === 'clearform') { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null; ui.rideAnswered = false; ui.blockRefusal = null; }
-  // [77] "…give a notice as well as a 'Reset blockers?' button". The explicit
-  // start-again, offered BESIDE the surviving plan rather than done to it.
-  if (b === 'resetblocks') {
-    ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null;
-    ui.rideAnswered = false; ui.blockRefusal = null; uiError = '';
-  }
-  if (b === 'reportopen') reportOpen = true;
-  if (b === 'reportclose') reportOpen = false;
-  if (b === 'reportsend') { sendReport(); return; }
-  if (b === 'menuitem') { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); }
-  if (b === 'menuclose') ui.menu = null;
+  if (handlePregameButton(b, btn)) return;
+  // a board button: the table's handler mutates, the repaint is shared — and a
+  // name the table does not know still repaints (a stray data-btn closes a menu)
+  if (BOARD_BTNS[b ?? '']?.(btn) === 'no-repaint') return;
   render();
 }
 

@@ -27,11 +27,12 @@
  *    '[three_blue]' cost". The extractor learned the word forms (the same
  *    COST_WORDS expansion core.py has always used: three_blue -> 3b), so the
  *    Ambush mode is real and needs nothing from this file.
- *  - Amphivore: "trigger three copies as one single trigger" is composed in
- *    card code: unbounded, UNtargeted graft effects are re-run twice by the
- *    base part (3 copies total); bounded grafts correctly run once ([Switch1]
- *    budget, R9). Extra copies of TARGETED graft effects can't collect extra
- *    targets (composeParts collects one set per part) — those run once.
+ *  - Amphivore: NO LONGER parked (R110, 2026-08-23). This note used to say
+ *    bounded grafts "correctly run once" and targeted grafts could not
+ *    collect extra targets. The ruling says the opposite on both counts
+ *    ("Any Bounded Grafts will be repeated"; costs are paid thrice), and
+ *    composeParts now materializes the copies as separate parts, each with
+ *    its own targets and [cost] — see EffectDef.graftCopies.
  */
 import type { Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -58,28 +59,26 @@ const lifeLostThisBattle = (g: E, region: number, seat: Seat): number =>
 
 // "When my column deals combat damage to an opponent, [Switch1][Switch1]
 // [Switch1] (Trigger three copies of this graft ability as one single
-// trigger)." — b/4 2/5 Frog Beast Unit. The cause is bounded (once/turn, R9)
-// and provides THREE cause copies in one trigger: composeParts contributes
-// each graft once; the base part re-runs unbounded UNtargeted grafts twice
-// more (3 copies); bounded grafts stay at one ([Switch1] budget). ⚠ approx:
+// trigger)." — b/4 2/5 Frog Beast Unit. The cause is bounded (once/turn, R9).
+// R110: a graft MULTIPLIER — `graftCopies: 3` makes composeParts materialize
+// every other attached graft three times in the one composite (G1 → G2 → G1
+// → G2 → G1 → G2). Per the ruling this card is named in ("Amphivore / Lost
+// Guardian. Bounded Grafts and Ralph explained", 2025-03-21) bounded grafts
+// ARE repeated, targeted grafts pick a target per copy, and a "[cost]:
+// effect" graft pays its cost three times or not at all. ⚠ approx:
 // "my column deals combat damage to an opponent" is read off the aggregated
 // combat lifeLost event — my column counts as connecting if it is attacking
 // unblocked, or blocked/blocking with Piercing.
 const amphivoreEcho: EffectDef = {
+  graftCopies: 3,
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
-    if (!self) { g.ev('info', 'Amphivore: the carrier is gone — no extra copies.'); return; }
-    let echoed = 0;
-    for (const modId of self.mods) {
-      const mod = g.entity(modId);
-      if (!mod || mod.appliedAs !== 'graft' || mod.card === 'Amphivore') continue;
-      const gr = getCard(mod.card).graftEffect;
-      if (!gr || gr.bounded || gr.effect.targets) continue;   // see PARKED note
-      gr.effect.run(g, { ...ctx, sourceName: mod.card });     // copies 2 and 3
-      gr.effect.run(g, { ...ctx, sourceName: mod.card });
-      echoed++;
-    }
-    if (!echoed) g.ev('info', 'Amphivore: no unbounded graft is attached — there is nothing to triple.');
+    const others = self ? self.mods.filter(id => {
+      const m = g.entity(id);
+      return m && m.appliedAs === 'graft' && m.card !== 'Amphivore';
+    }).length : 0;
+    if (!others) g.ev('info', `${ctx.sourceName}: no other graft is attached — there is nothing to triple.`);
+    else g.ev('info', `${ctx.sourceName}: 3 copies of each grafted ability (${others} graft${others === 1 ? '' : 's'}), one single trigger.`);
   },
 };
 card('Amphivore', {
