@@ -4812,3 +4812,40 @@ Guarded by
 `43-dark-c.test.ts::R102 — the target list is your own units, even with an enemy standing in the region`,
 `43-dark-c.test.ts::R102 — two Beyonds each queue their own, each asked of its own controller`, and
 `43-dark-c.test.ts::R102 — the start-of-deployment event still fires after the rot replacement stopped to ask`.
+
+### R102 addendum — checked against report #75, and it holds
+
+Report #75 (WEHH, 2026-08-22) states the rule for what may use the stack:
+
+> "The only cards that should ever produce effects that go onto the stack are
+> cards that say 'When' or 'Whenever' or have a ':' activated ability. All cards
+> that say 'instead' or 'as' or 'if' shouldn't go onto the stack."
+
+Beyond's rot clause prints **"instead"**, so on the face of it R102 contradicts
+that and the conflict was raised rather than papered over. Bena settled it on
+2026-08-23, and the refinement is the part to remember:
+
+> "Not an exception since it says 'target'. I guess I meant 'cards that say
+> instead, as or if and don't mention targets'. Plus, rot damage is a trigger to
+> deal you that damage anyway."
+
+So the rule has two halves, and the second is what makes it usable:
+
+1. **"instead" / "as" / "if" with NO target named → never touches the stack.**
+   This is the acceptance criterion the replacement layer (ledger #60) has to be
+   built against. Automaton of Abundance, Cosmic Conspirator, Nullbringer,
+   Counter Theif, Flux Resonator, Proliferating Slime and Conduit of Pain are
+   all in this class, and all of them reaching the stack today is the bug.
+2. **A replacement that names a TARGET still uses the stack.** A target has to
+   be *chosen*, and a choice is public and respondable — there is nowhere else
+   for it to happen. R102 is therefore the correct shape for Beyond, not a
+   carve-out from the rule.
+
+And the corroborating reason: rot damage is itself a trigger to deal you that
+damage, so a replacement of it riding the stack is consistent with the thing it
+replaces rather than an anomaly.
+
+The practical consequence for whoever builds the replacement layer: **the
+printed word decides the mechanism, and "target" is the switch.** Do not build
+one path and special-case the other — sort every card in ledger #60 by that
+test first.

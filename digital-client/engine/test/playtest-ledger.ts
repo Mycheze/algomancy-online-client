@@ -951,16 +951,18 @@ export const LEDGER: LedgerEntry[] = [
     status: 'live',
     note: 'The owner restating id 60 as a RULE rather than a symptom, and it is the sharpest '
       + 'statement of it we have: the test for "does this use the stack" is the printed WORD. '
-      + '"When"/"Whenever"/":" go on the stack; "instead"/"as"/"if" never do. That is the '
-      + 'acceptance criterion the replacement layer should be built against. '
-      + '⚠ IT ALSO CUTS AGAINST R102, WHICH SHIPPED THE SAME DAY: Beyond, Codex Incarnate\'s rot '
-      + 'clause prints "instead", and R102 puts a triggered effect on the stack for it — on the '
-      + 'owner\'s own direct instruction about that card ("It would trigger, ask you what you want '
-      + 'to target, then put the -1/-1 counters on during deployment (which still has and uses a '
-      + 'stack)"), given AFTER this report was filed but without this report in view. The two need '
-      + 'reconciling: either Beyond is a deliberate exception because the choice has to be asked '
-      + 'somewhere, or R102 should become a decision-without-a-stack-item once the replacement '
-      + 'layer exists. Do not quietly pick one. See also id 60 and the eight cards listed there.',
+      + '"When"/"Whenever"/":" go on the stack. REFINED BY HIM on 2026-08-23, and the refinement '
+      + 'is the load-bearing half — the rule is "cards that say instead, as or if AND DON\'T '
+      + 'MENTION TARGETS" never go on the stack. A replacement that names a TARGET still uses the '
+      + 'stack, because a target has to be chosen and choosing is a public, respondable thing. '
+      + 'So R102 (Beyond, Codex Incarnate\'s rot clause) is CORRECT and not an exception: it '
+      + 'prints "target unit". His second reason is worth keeping too — "rot damage is a trigger '
+      + 'to deal you that damage anyway", so a replacement of it riding the stack is consistent '
+      + 'with what it replaces. This is the acceptance criterion the replacement layer should be '
+      + 'built against, and the eight cards listed at id 60 should each be sorted by it: '
+      + 'Automaton of Abundance, Cosmic Conspirator, Nullbringer, Counter Theif, Flux Resonator, '
+      + 'Proliferating Slime and Conduit of Pain all print "instead" WITHOUT a target, so none of '
+      + 'them should ever reach the stack — which is exactly the bug being reported.',
   },
   {
     id: 76, room: 'WEHH', date: '2026-08-22',
