@@ -76,12 +76,12 @@ played, finished or not, and re-running the fold after a change to how a stat is
 updates the numbers instead of doubling them. Signing up with a name you have already
 played under claims those games. Playing signed out records nothing.
 
-## Try the old prototype
+## The old prototype
 
-Open **[prototype/index.html](prototype/index.html)** in a browser (no build, no server;
-`?demo` jumps into a mid-battle with a spell on the stack). `node prototype/test.js` runs
-the 56 engine tests. See [prototype/README.md](prototype/README.md) for what's real vs cut.
-It's the reference artifact the engine was rebuilt from — superseded by `engine/`.
+The pre-engine JavaScript prototype (`prototype/` — a no-build `index.html`, its own
+`engine.js` and 56 tests) was the reference artifact `engine/` was rebuilt from. It was
+superseded in 2026-07 and removed from the tree in 2026-08; `git log -- digital-client/prototype`
+still has every version if you want to see what was real vs cut at the time.
 
 ## The original one-paragraph verdict (2026-07-16)
 

@@ -20,7 +20,7 @@ with trigger provenance, "why is this action illegal?" — build these into the 
 the start, not as polish.
 
 ## M1 — Engine core with ~20 cards — 4-8 weeks
-The pure library, fuzz-tested, hotseat/solo in browser (grow it out of `prototype/`).
+The pure library, fuzz-tested, hotseat/solo in browser (grown out of the since-removed `prototype/`).
 - Phase machine (1v1), resources/affinity, deployment casting, stack + priority,
   triggers/events, modifiers + 6-layer projection, combat with formations, state-based actions,
   `legalActions`, decision-point model, seeded RNG + action log.

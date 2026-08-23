@@ -605,6 +605,23 @@ export type Suspension =
       answers: Record<string, unknown>;
       pendingKey: string;
       /**
+       * The rest of a multi-item cast chain ({Burst} tokens) and the `then`
+       * `castChain` was running it with. castChain keeps the unstarted items in
+       * a local, and a PartChoice thrown out of the FIRST item's resolution
+       * abandons that local — so without these two the chain's tail was simply
+       * lost. Carried from commitItem → resolveItem → resolveParts onto the
+       * suspension, and doDecide's resolve branch runs `castChain(moreItems,
+       * then)` once the resumed item has finished, exactly where castChain's
+       * loop would have picked up.
+       *
+       * Optional: a suspension saved before these existed has neither and
+       * resumes exactly as it always did (the item alone); and a 'resolve'
+       * suspension raised from OUTSIDE a chain (resolveTop, a trigger resolving
+       * inline in settle) carries none either.
+       */
+      then?: 'push' | 'resolve';
+      moreItems?: StackItem[];
+      /**
        * R85 — the state the replay restarts FROM, kept here instead of being
        * applied the instant the part suspends.
        *
