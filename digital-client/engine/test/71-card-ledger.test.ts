@@ -117,8 +117,20 @@ function runShape(f: unknown): 'none' | 'empty' | 'log-only' | 'real' {
   return (!mutates && calls.length && calls.every(n => n === 'ev')) ? 'log-only' : 'real';
 }
 
-/** the card says so itself, in a runtime log or an ability label */
+/** the card says so itself, in an ability LABEL — prose, so read loosely */
 const admitsTheGap = (s: string) => /PARKED|not implemented/i.test(s);
+/**
+ * The same, read in CODE — `bare()` has already stripped the comments and the
+ * string literals, so the only thing left that can "say PARKED" is an
+ * IDENTIFIER, and a case-insensitive match on one is a false positive waiting
+ * to happen. It happened: R118 gave Borrower of Forms
+ * `const parked = g.takeCopySource(…)`, a perfectly live line, and the sweep
+ * read it as the card admitting it does nothing. A real park note is written
+ * `PARKED`, in caps, every time — so the marker word is case-SENSITIVE here
+ * and only here. Verified against the whole pool: this is the only card whose
+ * verdict changes, and it changes from wrong to right.
+ */
+const codeAdmitsTheGap = (s: string) => /PARKED|not implemented/.test(s);
 
 const BEHAVIOR_KEYS = [
   'xMin', 'abilities', 'statics', 'costMods', 'effectAttrs', 'augmentable', 'mustBeTargeted',
@@ -174,7 +186,7 @@ export function deadShapes(name: string): string[] {
     const guarded = a.type === 'triggered' && !!a.when;
     if (shape === 'empty' && !guarded) out.push(`${where}: run body is empty`);
     if (shape === 'log-only') out.push(`${where}: run only writes to the log`);
-    if (admitsTheGap(bare(source(a.effect?.run))) || admitsTheGap(a.label ?? '')) {
+    if (codeAdmitsTheGap(bare(source(a.effect?.run))) || admitsTheGap(a.label ?? '')) {
       out.push(`${where}: says PARKED / not implemented in its own text`);
     }
   }
@@ -187,7 +199,7 @@ export function deadShapes(name: string): string[] {
     const shape = runShape(e.run);
     if (shape === 'empty') out.push(`${where}: run body is empty`);
     if (shape === 'log-only') out.push(`${where}: run only writes to the log`);
-    if (admitsTheGap(bare(source(e.run)))) out.push(`${where}: says PARKED / not implemented`);
+    if (codeAdmitsTheGap(bare(source(e.run)))) out.push(`${where}: says PARKED / not implemented`);
   }
   return [...new Set(out)];
 }

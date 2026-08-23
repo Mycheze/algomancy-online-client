@@ -700,9 +700,33 @@ test('Seer of Empty Spaces: the [Switch1] glimpse is bounded, and graftable onto
 // ── Slurpr ───────────────────────────────────────────────────────────────
 
 test('Slurpr: mods may be applied during [Haste] as if it was deployment', { todo: true }, () => {
-  // PARKED: a play-timing permission. apply.ts's doApplyMod phase gate is the
-  // only place that decides when a mod may be applied and card code cannot
-  // reach it (the Dispatch Courier precedent).
+  // ⚠ THE OLD REASON HERE WAS STALE IN BOTH HALVES: it said card code "cannot
+  // reach" the mod-timing gate and cited Dispatch Courier as the precedent
+  // AGAINST. R95 built `CardBehavior.modPermissions` (Rook) and R97 unparked
+  // Dispatch Courier with the PLAY-timing twin of the same seam, so the
+  // precedent is FOR this and the reach exists.
+  //
+  // The card half is done: Slurpr declares `ModPermission.applyAtHaste`, an
+  // unbudgeted OR-fold in R95's shape (it prints no "each turn", so unlike
+  // R97 nothing is counted and no GameState field is needed). What is left is
+  // ENGINE-ONLY, and this test stays a todo until all three land:
+  //   1. `E.mayApplyModAtHaste`, the OR-folding gatherer beside
+  //      `E.mayAugmentInBattle` — it needs the private `anchored()` walk and
+  //      the `inModPermissions` latch, so it cannot live in a card file.
+  //   2. a haste branch in `doAugment` (today: `illegal('modding is a
+  //      deployment action (or a battle Virus)')`) and in `doGraft` (today:
+  //      `need(e.deploying(seat), 'grafting is a deployment action')`) —
+  //      "as if it was deployment" is the deploy branch verbatim with only
+  //      its phase test replaced, since "mod" is R37's word for BOTH.
+  //   3. the two offer gates: `legalHasteActions` pushes no mod actions, and
+  //      `startHasteStep`'s `canHaste` SKIPS the step outright when no seat
+  //      has a legal PLAY — R97's fatal gate, in mod form.
+  //
+  // What this test must assert when they do: with a Slurpr in the region, a
+  // non-{Haste} augment AND a graft are both offered by legalActions in the
+  // haste step and both land; without one, both are refused; the permission
+  // is region-scoped (R12) and does not reach the opponent; and a mod applied
+  // this way still pays for itself (R37/R59 `purpose: 'mod'`).
 });
 
 // ── Suspend ──────────────────────────────────────────────────────────────

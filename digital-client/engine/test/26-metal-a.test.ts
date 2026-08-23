@@ -3,11 +3,14 @@
  * parallel card registration can't shift assertions; seeds are 2600-2699.
  *
  * Covers: base-setting statics in play AND virus-donated (Aberrant
- * Statweaver — layer 2, R66; see test 59 for the layer itself), the adjacent-ally trigger mimic (Ancient One, ⚠ triggered
- * abilities only), token copying (Arcane Echo), token duplication with the
- * loop guard (Automaton of Abundance), pay-to-erase death feeding (Biomass
+ * Statweaver — layer 2, R66; see test 59 for the layer itself), the
+ * adjacent-ally ability mimic (Ancient One — triggered via its bookkeeping
+ * when(), statics and ACTIVATED via R118's `CardDef.projects`), token copying
+ * (Arcane Echo), token duplication with the loop guard (Automaton of
+ * Abundance), pay-to-erase death feeding (Biomass
  * Devourer, R31 immediate combat triggers), base-stat exchange until regroup
- * (Body Swap), erase-and-become (Borrower of Forms, ⚠ stats/counters only),
+ * (Body Swap), erase-and-become (Borrower of Forms — a full R118 face: name,
+ * stats, counters, attributes, text and activated abilities, permanently),
  * counters on spawn/mod + despawn cleanup (Celestial Fluxmorph), X-at-
  * resolution activation (Celestial Shifter), stack sweeps (Containment
  * Protocol), the Robot-swap half of Cosmic Conspirator, compound-cost board
@@ -20,7 +23,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
-import { legalActions } from '../src/apply.ts';
+import { apply, legalActions } from '../src/apply.ts';
 import type { Entity, EntityId, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, notOffered, pass, pick,
@@ -141,22 +144,116 @@ test('R118: Ancient One projects an adjacent ally\'s face WITHOUT taking its nam
   finishBattle(h);
 });
 
-test('R118: a copied ACTIVATED ability is never offered — Ancient One and Borrower of Forms (apply.ts)',
-  { todo: true }, () => {
-    // R118 built the whole engine side: the face is stamped, and
-    // `E.facesWith(u, 'activated')` answers with the copied / projected card
-    // names. What is missing is TWO reads in apply.ts, a file this change was
-    // scoped out of:
-    //   · `pushActivatedOptions` offers `getCard(u.card).abilities` (and
-    //     `.augmentText`), so a copied activated ability never reaches
-    //     `legalActions`;
-    //   · `activationSource` resolves `via === undefined` the same way, so it
-    //     would refuse the action even if it were offered.
-    // Both need `E.facesWith(u, 'activated')` in place of `u.card`, plus a
-    // `via: { face }` arm so `composeParts` keys the budget on the right card.
-    // `ui/inspect.ts` (lines 102 and 942) mirrors the same read and has to
-    // move with it. Apex Prime waits on exactly this — see its own todo.
-  });
+/** every activateAbility `seat` may take on `id` right now, as its `via` */
+function activations(h: Harness, seat: Seat, id: EntityId): unknown[] {
+  return h.legal(seat)
+    .filter(a => a.type === 'activateAbility' && a.entityId === id)
+    .map(a => (a as { via?: unknown }).via ?? 'own');
+}
+
+test('R118: Ancient One offers an adjacent ally\'s ACTIVATED ability, and loses it when the column breaks', () => {
+  const h = new Harness(2628);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const evoker = spawn(h, A, 'Omniwield Evoker');           // "[three]: put a +1/+1 counter on me"
+  const ancient = spawn(h, A, 'Ancient One');               // 1/1, no activated text of its own
+  spawn(h, D, 'Unit Token');
+  toNextBattle(h, A);
+  giveResources(h, A, 'metal', 3);                          // the [three]
+  assert.deepEqual(activations(h, A, ancient), [],
+    'out of formation there is no neighbour, so nothing is borrowed');
+  h.do({ type: 'declareAttack', seat: A, columns: [[evoker, ancient]] });
+
+  // THE OFFER SIDE. A projected face is NOT the identity face, so it is
+  // addressed by name — two neighbours' ability #0 are two different options.
+  assert.deepEqual(activations(h, A, ancient), [{ face: 'Omniwield Evoker' }],
+    'the neighbour\'s activated ability reaches legalActions, attributed to its face');
+  // the fuzzer's "legalActions lied" invariant, aimed at this path by hand:
+  // a random game almost never puts an Ancient One next to an ally with an
+  // activated ability, so the offer/accept agreement is asserted here instead
+  for (const a of legalActions(h.state, A)) {
+    assert.doesNotThrow(() => apply(h.state, a), `legalActions offered ${JSON.stringify(a)} and apply refused it`);
+  }
+
+  // THE ACCEPT SIDE, which used to refuse what the other half offered
+  h.do({ type: 'activateAbility', seat: A, entityId: ancient, abilityIndex: 0, via: { face: 'Omniwield Evoker' } });
+  pass(h); pass(h);                                         // resolve it
+  assert.equal(ent(h, ancient)!.counters, 1, '"me" is the Ancient One — it took the counter');
+  assert.equal(ent(h, evoker)!.counters, 0, 'and the neighbour it was borrowed from did not');
+  assert.deepEqual(effStats(h, ancient), [2, 2], 'a 1/1 with one +1/+1 counter');
+  assert.equal(new E(h.state).nameOf(ent(h, ancient)!), 'Ancient One',
+    'borrowing an ABILITY is not becoming the card');
+
+  // R118: the projection is continuous, so the offer has to be too
+  giveResources(h, A, 'metal', 3);
+  withE(h, g => g.destroy(g.entity(evoker)!, 'dies'));
+  assert.deepEqual(activations(h, A, ancient), [],
+    'the Evoker left the column, so the ability stops being offered in the same instant');
+  assert.throws(
+    () => h.do({ type: 'activateAbility', seat: A, entityId: ancient, abilityIndex: 0, via: { face: 'Omniwield Evoker' } }),
+    /does not have that ability/,
+    'and apply refuses it too — the two sides agree, which is the whole point');
+  finishBattle(h);
+});
+
+test('R118: the R9 [once] budget is keyed by FACE — two projected faces do not share one', () => {
+  const h = new Harness(2629);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  // both print "[Augment][once] Gain N debt: …", both at augmentText index 0 —
+  // keyed on the PHYSICAL card these would collide into one 'augment:Ancient One#0'
+  const blep = spawn(h, A, 'Debt Blep');                    // [once] gain 2 debt: +3/+3
+  const ancient = spawn(h, A, 'Ancient One');               // 1/1
+  const drone = spawn(h, A, 'Deferral Drone');              // [once] gain 4 debt: next card costs [3] less
+  spawn(h, D, 'Unit Token');
+  toNextBattle(h, A);
+  // R75 adjacency: same row, horizontally adjacent columns — a column only
+  // holds two, so the three stand side by side rather than stacked
+  h.do({ type: 'declareAttack', seat: A, columns: [[blep], [ancient], [drone]] });
+  assert.deepEqual(activations(h, A, ancient),
+    [{ face: 'Debt Blep', text: 'augment' }, { face: 'Deferral Drone', text: 'augment' }],
+    'both neighbours\' [Augment] abilities are borrowed, each under its own face');
+  for (const a of legalActions(h.state, A)) {
+    assert.doesNotThrow(() => apply(h.state, a), `legalActions offered ${JSON.stringify(a)} and apply refused it`);
+  }
+
+  h.do({ type: 'activateAbility', seat: A, entityId: ancient, abilityIndex: 0, via: { face: 'Debt Blep', text: 'augment' } });
+  pass(h); pass(h);                                         // resolve it
+  assert.deepEqual(effStats(h, ancient), [4, 4], 'the borrowed +3/+3 landed on the Ancient One');
+  assert.deepEqual(activations(h, A, ancient), [{ face: 'Deferral Drone', text: 'augment' }],
+    'the Blep\'s [once] is spent and the Drone\'s is NOT — one budget each, keyed by face');
+  assert.deepEqual(Object.keys(ent(h, ancient)!.budgets), ['augment:Debt Blep#0'],
+    'and the key names the FACE the ability came from, never the physical Ancient One');
+  assert.deepEqual(activations(h, A, blep), ['augment'],
+    'and the Blep\'s own use is its own: R9 budgets live on the entity that used them');
+  finishBattle(h);
+});
+
+test('R118: an activateAbility carrying via:{face} replays byte for byte', () => {
+  const h = new Harness(2630);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const evoker = spawn(h, A, 'Omniwield Evoker');
+  const ancient = spawn(h, A, 'Ancient One');
+  spawn(h, D, 'Unit Token');
+  toNextBattle(h, A);
+  giveResources(h, A, 'metal', 3);
+  // the spawns are white-box, so the round trip is anchored at the state just
+  // before the declaration; everything past that point is nothing but actions
+  const start = structuredClone(h.state);
+  const from = h.actions.length;
+  h.do({ type: 'declareAttack', seat: A, columns: [[evoker, ancient]] });
+  h.do({ type: 'activateAbility', seat: A, entityId: ancient, abilityIndex: 0, via: { face: 'Omniwield Evoker' } });
+  pass(h); pass(h);
+  assert.equal(ent(h, ancient)!.counters, 1);
+  assert.ok(h.actions.slice(from).some(a => JSON.stringify(a).includes('"face":"Omniwield Evoker"')),
+    'the new via arm really is in the log being replayed');
+  let st = start;
+  for (const a of h.actions.slice(from)) st = apply(st, a).state;
+  assert.equal(JSON.stringify(st), JSON.stringify(h.state),
+    'the { face } arm is plain serializable data — seed + actions replays identically');
+  finishBattle(h);
+});
 
 // ── Arcane Echo ──────────────────────────────────────────────────────────
 
@@ -404,6 +501,36 @@ test('R118: the Borrower\'s face is PERMANENT and its layer-1 numbers are the bo
   finishBattle(h);
   assert.deepEqual(effStats(h, bof.id), [6, 6], '"become" is permanent — the face survives regroup');
   assert.equal(new E(h.state).nameOf(ent(h, bof.id)!), 'Unit Token', 'name included');
+});
+
+test('R118: Borrower of Forms offers the borrowed ACTIVATED ability, and keeps it permanently', () => {
+  const h = new Harness(2631);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const evoker = spawn(h, D, 'Omniwield Evoker');           // 2/1, "[three]: +1/+1 counter on me"
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const bof = borrow(h, A, evoker);
+  assert.equal(new E(h.state).nameOf(bof), 'Omniwield Evoker');
+  giveResources(h, A, 'metal', 3);                          // the [three]
+  // the borrowed face IS the Borrower's identity, so its abilities are its
+  // own — the same `via: undefined` a pre-R118 log carries
+  assert.deepEqual(activations(h, A, bof.id), ['own'],
+    'the erased unit\'s activated ability is offered on the body that became it');
+  h.do({ type: 'activateAbility', seat: A, entityId: bof.id, abilityIndex: 0 });
+  pass(h); pass(h);
+  assert.equal(ent(h, bof.id)!.counters, 1, 'and it fires');
+  assert.deepEqual(effStats(h, bof.id), [3, 2], 'base 2/1 plus the counter it just gave itself');
+  finishBattle(h);
+
+  // "I BECOME an exact copy": the face never lapses, so neither does the offer
+  toNextBattle(h, A);
+  giveResources(h, A, 'metal', 3);
+  h.do({ type: 'declareAttack', seat: A, columns: [[bof.id]] });
+  assert.deepEqual(activations(h, A, bof.id), ['own'],
+    '"become" is permanent — the borrowed ability survives regroup with the face');
+  finishBattle(h);
 });
 
 // ── Celestial Fluxmorph ──────────────────────────────────────────────────

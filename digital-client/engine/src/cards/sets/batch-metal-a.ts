@@ -21,11 +21,16 @@
  *  - TOKEN COPIES (Arcane Echo / Automaton of Abundance): a token is fully
  *    described by card + tokenStats/counters/x, so copies are re-created via
  *    spawnUnit/createSpellToken. Mods on the original are not copied.
- *  - X COSTS AT RESOLUTION (Celestial Shifter / Deformant): the engine has no
- *    compound activation costs, so X is chosen and paid (and Deformant's
- *    sacrifices happen) at RESOLUTION, Frosted Denial-style. DISCHARGE IS NO
- *    LONGER ONE OF THEM: R64 made its bracket a real cast cost, paid before
- *    the spell is respondable, and the counters removed ARE X.
+ *  - X COSTS AT RESOLUTION (Celestial Shifter / Deformant): X is chosen and
+ *    paid (and Deformant's sacrifices happen) at RESOLUTION, Frosted
+ *    Denial-style. DISCHARGE IS NO LONGER ONE OF THEM: R64 made its bracket a
+ *    real cast cost, paid before the spell is respondable, and the counters
+ *    removed ARE X. ⚠ The old reason given here — "the engine has no compound
+ *    activation costs" — was STALE for Deformant: one `AbilityCost` carries
+ *    `sacrificeSelf` and `sacrificeOther` together and both are paid in the
+ *    one cast window. What blocks Deformant is the RECEIPT (its effect needs
+ *    the sacrificed units' COUNTERS and neither writer records them), plus
+ *    two engine edits on the `CastCost` route. Spelled out on the card.
  *  - BASE-STAT CHANGES (Aberrant Statweaver / Body Swap / Celestial Shifter /
  *    Borrower of Forms) are real REPLACEMENTS of stat layer 2 — the number on
  *    the card changes — not deltas. The one-shots stamp Entity.baseSet via
@@ -42,13 +47,15 @@
  *    module-level `let aoaCopying` guard is gone with the trigger.
  *  - Borrower of Forms copies base stats, counters and temporary stat changes
  *    of the erased unit (relayed through battle counters into a self-spawn
- *    trigger). Card text, attributes and mods are NOT copied (no transform
- *    machinery) — it stays "Borrower of Forms" with the stolen body.
+ *    trigger). UNPARKED by R118 (the COPY LAYER): card text, attributes,
+ *    statics and activated abilities all copy now, via a permanent FACE. It
+ *    still BINS as "Borrower of Forms" — that is the owner's split-identity
+ *    ruling, not a gap: the game name is the face, the physical card is not.
  *  - Ancient One copies TRIGGERED abilities of adjacent allies only, and only
  *    while a formation exists (adjacency is a battle concept). Copied "when
  *    I ..." abilities read the Ancient One as "I"; bounded copies burn a
- *    per-copy budget on the Ancient One (R9). Activated abilities, statics
- *    and graft composition of neighbours are not copied (see PARKED).
+ *    per-copy budget on the Ancient One (R9). UNPARKED by R118: activated
+ *    abilities and statics now project too, through `projects` + E.facesWith.
  *  - Biomass Devourer reads "nontoken" off the death event's `token` FACT
  *    (R70 — the dead entity is gone by trigger time, which is why the fact
  *    rides the event; this used to be a match on the rendered message). Still
@@ -73,15 +80,13 @@
  *    creation call, so `E.createSpellToken` is a seam without dispatching
  *    anything. The Robot half stopped creating-then-erasing, which is what
  *    playtest report #64 was really about.)
- *  - Ancient One (activated/static half): the gap is NEIGHBOUR projection, not
- *    "own lists only" — this entry used to say apply.ts surfaces activated
- *    abilities from a unit's own lists, which stopped being true when
- *    pushActivatedOptions began offering a card's own augmentText AND every
- *    augment mod's augmentText (apply.ts). What card code still cannot do is
- *    project an ADJACENT ALLY's activated abilities or statics onto the
- *    Ancient One: both are read off the holder's own card definition, and
- *    there is no seam for "borrow that unit's". Triggered abilities are
- *    delivered (above).
+ *  - (Ancient One UNPARKED by R118, 2026-08-23 — both halves. Neighbour
+ *    projection is `CardDef.projects`, and pushActivatedOptions /
+ *    activationSource now read `E.facesWith(u, 'activated')` rather than
+ *    `getCard(u.card).abilities`, so a projected ability is OFFERED and
+ *    ACCEPTED, with its R9 budget keyed by FACE. Triggered abilities keep the
+ *    bookkeeping when() — it labels each mimicked trigger "Ancient One (as X)",
+ *    which the generic face machinery cannot do.)
  */
 import type { Entity, EntityId, EventType, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -155,10 +160,10 @@ card('Aberrant Statweaver', {
 //  · STATICS and ACTIVATED abilities are the `projects` declaration below.
 //    They are read off the holder's FACES now (E.facesWith), so a neighbour's
 //    "your units are base 3/3" really radiates from the Ancient One too.
-//    ⚠ The ACTIVATED half is stamped and engine-ready but NOT YET OFFERED:
-//    apply.ts's pushActivatedOptions/activationSource read
-//    `getCard(u.card).abilities` rather than the face. Two lines in a file
-//    this batch does not own.
+//    The ACTIVATED half is OFFERED and ACCEPTED as of R118's second half:
+//    pushActivatedOptions and activationSource both read
+//    `E.facesWith(u, 'activated')`, and `Action.via` gained a {face} arm so
+//    composeParts keys the R9 budget by the face rather than the body.
 //
 //  · TRIGGERED abilities stay with the bookkeeping when() below, which
 //    predates R118 and does something the generic face machinery cannot: it
@@ -654,16 +659,63 @@ card('Cosmic Conspirator', {
 // "Sacrifice me and another ally: Delete all units with cost equal to the
 // total number of counters on us." — m/2 2/2 Robot Spirit Unit.
 //
-// ⚠ STILL PARKED, and the missing piece is named by a { todo: true } test in
-// test/26-metal-a.test.ts: `AbilityCost` has no COMPOUND shape, so "me AND
-// another ally" cannot be expressed as one cost and is still paid at
-// RESOLUTION. `sacrificeSelf` and `sacrificeOther` exist separately and cannot
-// be combined — paying them independently would let the first half resolve
-// when the second cannot.
+// ⚠ STILL PARKED, but ⚠ THE OLD REASON HERE WAS STALE and is corrected. It
+// blamed the COMPOUND COST SHAPE — "`AbilityCost` has no compound shape, so
+// 'me AND another ally' cannot be expressed as one cost". That is not true: a
+// single `AbilityCost` already carries `sacrificeSelf` AND `sacrificeOther`
+// together, and both are paid inside the ONE cast window (payActivationCost
+// for the choice-free half, collectItemCosts for the choice half). The
+// PAYMENT has been expressible for a while.
+//
+// WHAT ACTUALLY BLOCKS IT IS THE RECEIPT. The effect needs the COUNTERS on the
+// two sacrificed units, and neither writer records them:
+//   · `payActivationCost`'s `sacrificeSelf` branch (engine.ts) writes NO
+//     receipt at all — it just destroys the source;
+//   · `payItemCost`'s `sacrificeOther` branch writes a bare `CardName` into
+//     `item.paidCosts.sacrificed`, and `EffectCtx` never exposes
+//     `item.paidCosts`, so run() could not even learn WHICH ally went.
+// And the counters cannot be reconstructed from `effStats`, because Caleb
+// rules they NET and that temp buffs are not counters at all — "if I have
+// +1/+1 and -1/-1 on the 2 cards, what's the total number?" -> "0, they cancel
+// out"; of an until-regroup buff, "oh, no those are not counters". So the
+// number has to be snapshotted from the raw `Entity.counters` AT PAYMENT.
+//
+// ⚠ AND THE `AbilityCost` ROUTE IS THE WRONG ONE ANYWAY. `collectItemCosts`
+// carries a documented latent half-pay bug (engine.ts, the "⚠ LATENT
+// (2026-08-23 audit)" note): the choice-free half is charged one call EARLIER
+// than the choice half, so the first card to combine them arrives at the
+// collector with its mana already spent. Deformant would be exactly that
+// first card. The route to take instead is the effect-level `CastCost` one —
+// `castCost: { kind: 'sacrificeUnits', n: 2 }` on the ability's effect, which
+// is all-or-nothing for a non-graft part, is gated at the OFFER by
+// `abilityUnusable`'s `canPayCastCost`, and writes `part.costPaid`, which
+// `EffectCtx.costPaid` ALREADY exposes.
+//
+// TWO ENGINE EDITS ARE STILL MISSING, both outside card code:
+//   (a) a way to force "me AND another" rather than "any two". `castCostOptions`
+//       offers `unitsOf(seat, item.region)` with no self-exclusion, so the
+//       Deformant is on its own menu and nothing makes it mandatory. The shape
+//       that fits is `includeSelf?: true` on the `sacrificeUnits` variant:
+//       charge the source choice-free through the existing `from: 'self'`
+//       branch, then take the remaining n-1 off the menu with `item.sourceId`
+//       excluded — and make `canPayCastCost` demand BOTH halves up front, or
+//       the source dies for a cost the rest of which cannot be paid.
+//   (b) widen the receipt: `costPaid.sacrificedUnits` is
+//       `{card, power, defense}[]` and needs `counters: number` and
+//       `unit: EntityId`, snapshotted at payment in BOTH writers
+//       (`chargeCastCost`'s `from: 'self'` branch and `payCastCost`'s
+//       chosen-unit branch).
+// With those two, the ally choice moves out of `run()` into the cost, the
+// total is read from `ctx.costPaid.sacrificedUnits`, and the mid-resolution
+// `ctx.choose('deform', …)` below — a RESPONSE WINDOW between cost and effect
+// that should not exist — is deleted. Its ledger entry goes in the same
+// change, and not before.
 //
 // R77 does fix the offer half: "another ally" is a board condition, so the
 // ability is no longer OFFERED when this is the only unit you have. It used to
-// activate, print "no other ally to sacrifice", and do nothing.
+// activate, print "no other ally to sacrifice", and do nothing. (On the
+// CastCost route this stops needing a `usableWhen` at all — `canPayCastCost`
+// for `sacrificeUnits` already refuses a board that cannot field two units.)
 card('Deformant', {
   abilities: [{
     type: 'activated', cost: {},

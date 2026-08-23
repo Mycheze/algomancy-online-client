@@ -92,16 +92,42 @@ export function stackAbilityRows(item: StackItem): StackAbilityRow[] {
   return out;
 }
 
+/**
+ * WHICH card and which list an activateAbility action addresses — the mirror
+ * of apply.ts's `activationSource`, and it has to stay one.
+ *
+ * `own` is true for the unit's own text (the two `via` shapes that address the
+ * IDENTITY face), false when the ability is borrowed from somewhere the player
+ * has to be told about: an augment mod, or an R118 face projected onto the
+ * unit right now. `card` is that source's name.
+ *
+ * ⚠ R118: `unit.card` is the PHYSICAL card and is NOT the answer for the own
+ * arms — a unit wearing a copy reads its own text off `E.faceName`. Reading
+ * `unit.card` here is exactly how the inspector would come to show a different
+ * ability list from the one the game offers.
+ */
+function activationTextSource(
+  state: GameState, unit: Entity, a: Extract<Action, { type: 'activateAbility' }>,
+): { card: CardName; list: 'abilities' | 'augmentText'; own: boolean } | undefined {
+  const via = a.via;
+  if (via === undefined) return { card: new E(state).faceName(unit), list: 'abilities', own: true };
+  if (via === 'augment') return { card: new E(state).faceName(unit), list: 'augmentText', own: true };
+  if ('face' in via) {
+    return { card: via.face, list: via.text === 'augment' ? 'augmentText' : 'abilities', own: false };
+  }
+  const card = state.entities[via.mod]?.card;
+  return card ? { card, list: 'augmentText', own: false } : undefined;
+}
+
 /** the ActivatedAbility an activateAbility action refers to, resolving its
- * `via` (own abilities / own [Augment] text / an augment mod's donated text) */
+ * `via` (own abilities / own [Augment] text / an augment mod's donated text /
+ * an R118 face projected onto the unit) */
 export function abilityOf(
   state: GameState, unit: Entity, a: Extract<Action, { type: 'activateAbility' }>,
 ): ActivatedAbility | undefined {
   try {
-    const list = a.via === undefined
-      ? getCard(unit.card).abilities
-      : getCard(a.via === 'augment' ? unit.card : state.entities[a.via.mod]?.card ?? '').augmentText;
-    const ab = list?.[a.abilityIndex];
+    const src = activationTextSource(state, unit, a);
+    const ab = src && getCard(src.card)[src.list]?.[a.abilityIndex];
     return ab && ab.type === 'activated' ? ab : undefined;
   } catch { return undefined; }
 }
@@ -265,7 +291,12 @@ export function activationKeys(legal: readonly Action[]): string[] {
     .filter(a => a.type === 'activateAbility')
     .map(a => {
       const aa = a as Extract<Action, { type: 'activateAbility' }>;
-      const via = aa.via === undefined ? 'own' : aa.via === 'augment' ? 'aug' : `mod${aa.via.mod}`;
+      const via = aa.via === undefined ? 'own'
+        : aa.via === 'augment' ? 'aug'
+          // R118: a projected face is its own identity — two neighbours'
+          // abilities at the same index are two different options
+          : 'face' in aa.via ? `face:${aa.via.face}:${aa.via.text ?? 'ability'}`
+            : `mod${aa.via.mod}`;
       return `${aa.entityId}:${aa.abilityIndex}:${via}`;
     });
 }
@@ -937,19 +968,21 @@ export function activatableUnits(legal: readonly Action[]): Set<EntityId> {
  * How to NAME one activateAbility option: the ability's own label, prefixed
  * with the mod that donated it when it is not the unit's own text.
  *
- * `via` is the three-way the engine uses (dsl.ts): undefined = the card's own
- * `abilities`, 'augment' = its own text-box [Augment] clause, { mod } = an
- * augment mod slid under it, whose card is the one to name.
+ * `via` is the four-way the engine uses (`ActivateVia`): undefined = the
+ * IDENTITY face's `abilities`, 'augment' = that face's text-box [Augment]
+ * clause, { mod } = an augment mod slid under it, { face } = an R118 face
+ * projected onto it. The last two name their source.
  */
 function abilityOptionLabel(
   state: GameState, unit: Entity, a: Extract<Action, { type: 'activateAbility' }>,
 ): string {
   try {
-    if (a.via === undefined) return getCard(unit.card).abilities?.[a.abilityIndex]?.label ?? '?';
-    const name = a.via === 'augment' ? unit.card : state.entities[a.via.mod]?.card;
-    if (!name) return '?';
-    const label = getCard(name).augmentText?.[a.abilityIndex]?.label;
-    return a.via === 'augment' ? label ?? '?' : `${name}: ${label ?? '?'}`;
+    const src = activationTextSource(state, unit, a);
+    if (!src) return '?';
+    const label = getCard(src.card)[src.list]?.[a.abilityIndex]?.label ?? '?';
+    // its own text names itself already; borrowed text (a mod's, or an R118
+    // face projected onto it) says whose it is
+    return src.own ? label : `${src.card}: ${label}`;
   } catch { return '?'; }
 }
 

@@ -68,10 +68,30 @@
  *    CardBehavior.mustBeTargeted; see the card.
  *  - Just a Unit: {Pure} is LIVE as of R61 — enforced by the engine at the
  *    combat choke points (E.pure), not by card behaviour. See the card.
- *  - Slurpr: "you can apply other mods during [Haste] as if it was deployment"
- *    is a play-timing permission living in apply.ts's doApplyMod phase gate,
- *    which card code cannot reach (the Dispatch Courier precedent). Inert
- *    [Augment] entry; it plays and augments as a vanilla 2/2.
+ *  - Slurpr: "you can apply other mods during [Haste] as if it was deployment".
+ *    ⚠ THE OLD NOTE HERE WAS STALE IN BOTH OF ITS CLAIMS and is corrected:
+ *    card code CAN reach a mod-timing gate now (R95 built
+ *    `CardBehavior.modPermissions` for Rook), and Dispatch Courier is
+ *    precedent FOR this, not against — R97 unparked it with the play-timing
+ *    twin of the same seam. The card now DECLARES the permission
+ *    (`ModPermission.applyAtHaste`, an unbudgeted OR-fold — see the card), so
+ *    the card half is done and the missing half is entirely ENGINE:
+ *      1. `E.mayApplyModAtHaste` — the OR-folding gatherer beside
+ *         `E.mayAugmentInBattle` in engine.ts (it needs the PRIVATE
+ *         `anchored()` walk and the `inModPermissions` latch, so it cannot
+ *         live in a card file or in dsl.ts).
+ *      2. a haste branch in `doAugment` (whose else-arm is today
+ *         `illegal('modding is a deployment action (or a battle Virus)')`)
+ *         and in `doGraft` (whose opening `need(e.deploying(seat), …)`
+ *         refuses outright) — "as if it was deployment" means the DEPLOY
+ *         branch verbatim, with only the phase test replaced.
+ *      3. the two OFFER gates: `legalHasteActions`, which pushes no mod
+ *         actions at all, and — the fatal one, exactly R97's — `startHasteStep`'s
+ *         `canHaste`, which SKIPS the step outright when no seat has a legal
+ *         PLAY, so a hand whose only haste option is a Slurpr-granted mod
+ *         would never reach the other two gates.
+ *    Until those land it plays and augments as a vanilla 2/2 and its ledger
+ *    entry stays.
  *  - (Suspend is fully unparked: its lock by R104, its "Erase me" by
  *    CARD-TODO #15 — see the ✔ note above and the card.)
  *  - (Calming Force COMPLETE as of R100, round 17: "I can't be played from your
@@ -468,16 +488,41 @@ card('Seer of Empty Spaces', {
 
 // "[Augment] You can apply other mods during [Haste] as if it was
 // deployment." — l/2 2/2 Horror Unit.
-// PARKED (header): a play-timing permission. doApplyMod's phase gate in
-// apply.ts is the only place that decides when a mod may be applied, and card
-// code cannot reach it (the Dispatch Courier precedent). The inert [Augment]
-// entry keeps the card applicable as a (blank) augment; it is a vanilla 2/2
-// meanwhile and the granted permission is dead.
+//
+// THE CARD HALF IS REAL NOW: `ModPermission.applyAtHaste`, the MOD-timing twin
+// of Rook's R95 `augmentInBattle`, declared exactly the way Rook declares its
+// own. ⚠ STILL PARKED END TO END — the ENGINE half is not built, so the
+// permission is declared and nothing asks it yet. See the header's PARKED
+// entry for the three seams that are still missing, and the card's ledger
+// entry, which stays until they land.
+//
+// WHY THIS FAMILY AND NOT R97's. Dispatch Courier prints "Each turn, you may
+// play a unit …", so R97 SUMS its grants into a per-turn budget kept in
+// `hastePlaysUsed`. Slurpr prints no "each turn" at all, so it is an
+// unbudgeted OR-FOLD in R95's shape: one grantor is enough, two Slurprs are
+// not twice as permissive, and NO new GameState field is needed anywhere.
+//
+// "OTHER MODS" IS AUGMENTS AND GRAFTS BOTH — R37's word for both is "mod" —
+// so this checks neither `ctx.kind` nor `ctx.from`. Unlike Rook, whose printed
+// "from hand and bin" is what makes Rook (not apply.ts) refuse the cache,
+// Slurpr names no zone list: "as if it was deployment" grants whatever
+// deployment already grants, and every other deployment refusal still stands
+// (paying for the mod under R37/R59's `purpose: 'mod'`, the host being in your
+// own region, a graft needing its own graft cause).
+//
+// "OTHER" is not a self-exclusion the predicate has to enforce: the granting
+// Slurpr is already applied, and a SECOND Slurpr card in hand genuinely is an
+// "other mod".
+//
+// `augmentable: true` replaces the inert `augmentText` stand-in, exactly as it
+// does on Rook: `isAugment` reads `augmentAttrs || augmentText || augmentable`
+// and printed.json gives Slurpr neither of the first two. `self` is the
+// ANCHOR, so augmented onto a host the permission belongs to the HOST's
+// controller — what "[Augment]" means everywhere else in the engine.
 card('Slurpr', {
-  augmentText: [{
-    type: 'triggered', events: [],
-    label: 'PARKED: apply other mods during [Haste] as if it was deployment',
-    effect: { run: () => { /* no engine seam for play-timing permissions */ } },
+  augmentable: true,
+  modPermissions: [{
+    applyAtHaste: (g, self, ctx) => ctx.seat === self.controller,
   }],
 });
 

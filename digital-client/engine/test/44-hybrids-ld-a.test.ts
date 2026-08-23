@@ -9,8 +9,10 @@
  * sacrifice-or-discard (Mindburn, R35/R40), even-life rot (Pale Tormentor,
  * R38), mods returned to play (Reclaim the Fallen), {Blessed} lifelink (Shib,
  * R48), bin-for-bin trades (Uglk) and bin recall + self-erase (Zephyrzoa).
- * Apex Prime is PARTIAL (R92): three of the four copy layers ship and are
- * tested here; the todo names the three clauses that still need the core.
+ * Apex Prime is COMPLETE as of R118: "become a copy of target unit until
+ * regroup" is one face carrying the name, the base stats, the attributes, the
+ * statics, the triggered/[Augment] text and — since apply.ts learned
+ * `E.facesWith(u, 'activated')` — the ACTIVATED abilities too.
  * Debt Plant (no end-of-haste trigger seam) has a registration test + todo.
  *
  * States are built explicitly (give/spawn/giveResources/whiteBox) so parallel
@@ -378,17 +380,66 @@ test('R118: attacking and then blocking leaves ONE face, not two', () => {
   finishBattle(h);
 });
 
-test('R118: a copied ACTIVATED ability is never offered — Apex Prime (apply.ts)',
-  { todo: true }, () => {
-    // The face Apex Prime stamps carries the 'activated' facet and
-    // `E.facesWith(u, 'activated')` answers with the copied card. Nothing
-    // reads it: apply.ts's `pushActivatedOptions` and `activationSource` both
-    // go to `getCard(u.card).abilities`, so a unit that became a copy of
-    // something with an activated ability cannot use it — and the fuzzer's
-    // "legalActions lied" check would catch the reverse mistake, not this one.
-    // Two reads in apply.ts (plus their mirrors at ui/inspect.ts:102 and 942).
-    // Ancient One and Borrower of Forms wait on the same two reads.
-  });
+/** every activateAbility `seat` may take on `id` right now, as its `via` */
+function activations(h: Harness, seat: Seat, id: number): unknown[] {
+  return h.legal(seat)
+    .filter(a => a.type === 'activateAbility' && a.entityId === id)
+    .map(a => (a as { via?: unknown }).via ?? 'own');
+}
+
+test('R118: a copied ACTIVATED ability is offered, accepted and really fires — Apex Prime', () => {
+  const h = new Harness(4432);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');                      // 1/1, no abilities at all
+  const evoker = spawn(h, D, 'Omniwield Evoker');             // 2/1, "[three]: +1/+1 counter on me"
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  assert.deepEqual(activations(h, A, tok), [], 'a Unit Token has nothing to activate');
+  apexCopy(h, A, ap, evoker, [tok]);
+  assert.equal(new E(h.state).nameOf(ent(h, tok)!), 'Omniwield Evoker');
+
+  // THE OFFER SIDE. The identity face keeps `via: undefined` — the copied card
+  // is what the unit IS, so its `abilities` are its own, not borrowed.
+  giveResources(h, A, 'metal', 3);                            // the [three]
+  assert.deepEqual(activations(h, A, tok), ['own'],
+    'the copied activated ability reaches legalActions, addressed as the unit\'s own');
+
+  // THE ACCEPT SIDE — the half that used to refuse what the other half offered
+  h.do({ type: 'activateAbility', seat: A, entityId: tok, abilityIndex: 0 });
+  assert.ok(h.log.some(l => l.includes('Omniwield Evoker')),
+    'the stack row names the FACE, not the physical Unit Token');
+  pass(h); pass(h);                                           // resolve it
+  assert.equal(ent(h, tok)!.counters, 1, 'and the ability actually did its thing');
+  assert.deepEqual(effStats(h, tok), [3, 2], 'a 2/1 Evoker plus its own +1/+1 counter');
+  finishBattle(h);
+});
+
+test('R118: an until-regroup face takes its ACTIVATED ability with it — Apex Prime', () => {
+  const h = new Harness(4433);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');
+  spawn(h, D, 'Omniwield Evoker');
+  const evoker = unitsOf(h, D).find(u => u.card === 'Omniwield Evoker')!.id;
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  apexCopy(h, A, ap, evoker, [tok]);
+  giveResources(h, A, 'metal', 3);
+  assert.deepEqual(activations(h, A, tok), ['own'], 'offered while the face is worn');
+  finishBattle(h);
+  assert.equal(ent(h, tok)!.copies, undefined, 'the face lapsed at regroup (R11 step 3)');
+
+  // the same window, one turn later: the token is a Unit Token again
+  toNextBattle(h, A);
+  giveResources(h, A, 'metal', 3);
+  h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
+  assert.deepEqual(activations(h, A, tok), [],
+    'and the borrowed ability is gone with it — the offer follows the face, not the card');
+  finishBattle(h);
+});
 
 test('R118: Entity.copies survives a seed + actions replay byte for byte', () => {
   const h = new Harness(4431);

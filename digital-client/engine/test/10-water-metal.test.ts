@@ -197,7 +197,7 @@ test('Astralith: donated "[Augment] [three]: +1/+1 counter" is activatable on th
   const modId = ent(h, host)!.mods[0]!;
   const offered = h.legal(p).some(a =>
     a.type === 'activateAbility' && a.entityId === host
-    && typeof a.via === 'object' && a.via.mod === modId);
+    && typeof a.via === 'object' && 'mod' in a.via && a.via.mod === modId);
   assert.ok(offered, 'donated activated ability is offered by legalActions');
   h.do({ type: 'activateAbility', seat: p, entityId: host, abilityIndex: 0, via: { mod: modId } });
   pick(h, { unit: host });                                  // target: the host itself

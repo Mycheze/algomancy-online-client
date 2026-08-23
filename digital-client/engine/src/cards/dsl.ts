@@ -861,7 +861,13 @@ export function isSpellEffect(kind: EffectAttrCtx['kind']): boolean {
  * card as a mod. `from` is in the signature ON PURPOSE rather than being
  * hardcoded at the call site: Rook prints "from hand and bin", so it is the
  * CARD that refuses the cache, and the next card to want this can widen or
- * narrow the zone list without touching apply.ts. */
+ * narrow the zone list without touching apply.ts.
+ *
+ * "MOD" HERE MEANS AUGMENT *AND* GRAFT (R37's word for both), which is why
+ * `kind` is on the ctx: `augmentInBattle` is only ever asked about an augment
+ * (a graft during battle is a separate rules question nobody has asked), but
+ * `applyAtHaste` is asked about both, because Slurpr prints "other MODS". A
+ * card that wants only one of the two checks `ctx.kind`. */
 export interface ModCtx {
   /** the player trying to apply the mod */
   seat: Seat;
@@ -871,6 +877,10 @@ export interface ModCtx {
   from: 'hand' | 'bin' | 'cache';
   /** the region the application happens in (R12) */
   region: number;
+  /** which application this is (R37: a "mod" is an augment or a graft).
+   * Optional so the R95 battle-augment call sites, which are augments by
+   * construction, need not restate it. */
+  kind?: 'augment' | 'graft';
 }
 
 /**
@@ -908,6 +918,27 @@ export interface ModCtx {
 export interface ModPermission {
   /** may `ctx.seat` apply this card as an AUGMENT during battle? */
   augmentInBattle?: (g: E, self: Entity, ctx: ModCtx) => boolean;
+  /**
+   * May `ctx.seat` apply this card as a MOD during the R18 haste step —
+   * "[Augment] You can apply other mods during [Haste] as if it was
+   * deployment" (Slurpr)?
+   *
+   * The MOD-timing twin of R97's `playAtHaste`, and deliberately R95's shape
+   * rather than R97's: an OR-FOLD with no per-turn budget, because Slurpr
+   * prints no "each turn" the way Dispatch Courier does. Two Slurprs are not
+   * two mods' worth of permission, so nothing has to be counted and no
+   * GameState field is needed — `hastePlaysUsed` has no sibling here.
+   *
+   * "As if it was deployment" is the whole grant: the answer is a boolean, and
+   * the deployment branch of `doAugment` / `doGraft` then runs UNCHANGED with
+   * only its phase test replaced. Everything deployment already refuses —
+   * paying for the mod (R37/R59's `purpose: 'mod'`), the host being in your
+   * own region, a graft needing a graft cause on the host — still refuses.
+   *
+   * ⚠ Asked about AUGMENTS AND GRAFTS alike (`ctx.kind`), because "mod" is
+   * R37's word for both. Slurpr checks neither: it grants both halves.
+   */
+  applyAtHaste?: (g: E, self: Entity, ctx: ModCtx) => boolean;
 }
 
 /**

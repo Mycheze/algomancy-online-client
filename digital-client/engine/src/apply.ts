@@ -6,8 +6,8 @@
  * caller keeps the old state.
  */
 import type {
-  Action, ApplyResult, CardName, EffectPart, Element, EngineEvent, Entity, EntityId, FormationSpot,
-  GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
+  Action, ActivateVia, ApplyResult, CardName, EffectPart, Element, EngineEvent, Entity, EntityId,
+  FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest } from './engine.ts';
 import {
@@ -790,11 +790,40 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId): void {
   e.settle();
 }
 
-/** resolve which ability list an activateAbility action refers to (see Action.via) */
-function activationSource(e: E, u: { card: CardName; id: EntityId; mods: EntityId[] }, via?: 'augment' | { mod: EntityId }):
+/**
+ * Resolve which ability list an activateAbility action refers to (see
+ * `ActivateVia`) — the ACCEPT side of `pushActivatedOptions`.
+ *
+ * R118: both sides read `E.facesWith(u, 'activated')` and both decide
+ * "is this the identity face?" with `E.faceName(u)`, so the offer and the
+ * accept cannot drift. A face the unit is not wearing is REFUSED here rather
+ * than silently resolved off the physical card, which is what would turn a
+ * stale action log into a different game.
+ *
+ * `viaCard` is the card the R9 budget and the effect key are keyed on, and it
+ * is always a FACE (or a mod's own card) — never `Entity.card`. That is what
+ * keeps two faces' [once] abilities in two budgets instead of one.
+ */
+function activationSource(e: E, u: Entity, via?: ActivateVia):
   { list: ReturnType<typeof getCard>['abilities']; prefix: 'ability' | 'augment'; viaCard?: CardName } {
-  if (via === undefined) return { list: getCard(u.card).abilities, prefix: 'ability' };
-  if (via === 'augment') return { list: getCard(u.card).augmentText, prefix: 'augment', viaCard: u.card };
+  if (via === undefined || via === 'augment') {
+    // the unit's OWN text — off the identity face, which is the copied card
+    // when it is wearing one (Apex Prime, Borrower of Forms)
+    const face = e.faceName(u);
+    e.need(e.facesWith(u, 'activated').includes(face), 'that unit has no abilities of its own');
+    return via === undefined
+      // viaCard stays undefined so composeParts falls through to faceName(u) —
+      // the same card, and the same budget key, by the shorter road
+      ? { list: getCard(face).abilities, prefix: 'ability' }
+      : { list: getCard(face).augmentText, prefix: 'augment', viaCard: face };
+  }
+  if ('face' in via) {
+    e.need(e.facesWith(u, 'activated').includes(via.face), 'that unit does not have that ability');
+    const def = getCard(via.face);
+    return via.text === 'augment'
+      ? { list: def.augmentText, prefix: 'augment', viaCard: via.face }
+      : { list: def.abilities, prefix: 'ability', viaCard: via.face };
+  }
   const mod = e.entity(via.mod);
   e.need(mod && mod.appliedAs === 'augment' && mod.modOf === u.id, 'no such augment on that unit');
   return { list: getCard(mod.card).augmentText, prefix: 'augment', viaCard: mod.card };
@@ -852,7 +881,7 @@ function abilityUnusable(
   return null;
 }
 
-function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: number, via?: 'augment' | { mod: EntityId }): void {
+function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: number, via?: ActivateVia): void {
   const u = e.entity(entityId);
   e.need(u && u.kind === 'unit' && u.controller === seat && !u.absent, 'not your unit');
   // R62: a silenced unit has no activated abilities to activate
@@ -885,10 +914,14 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   // R64: …and only then, whether the effect has anything to spend itself on
   const unusable = abilityUnusable(e, seat, ability, u, region);
   e.need(!unusable, unusable ?? '');
-  const srcCard = viaCard ?? u.card;
+  // R118: the log and the stack row name the FACE — the card this unit
+  // currently IS. For anything not wearing a copy that is `u.card` verbatim,
+  // so every existing label is unchanged.
+  const faceCard = e.faceName(u);
+  const srcCard = viaCard ?? faceCard;
   const item: StackItem = {
     id: e.s.nextId++, kind: 'activated', card: srcCard,
-    label: `${srcCard === u.card ? u.card : `${srcCard} (on ${u.card})`}: ${ability.label}`,
+    label: `${srcCard === faceCard ? faceCard : `${srcCard} (on ${faceCard})`}: ${ability.label}`,
     controller: seat, region,
     negated: false, parts, sourceId: u.id, event: null,
   };
@@ -2194,7 +2227,7 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
   for (const u of e.unitsOf(seat, region)) {
     if (e.abilitiesSuppressed(u)) continue;                     // R62
     const offer = (list: ReturnType<typeof getCard>['abilities'], prefix: 'ability' | 'augment',
-      budgetCard: CardName, via?: 'augment' | { mod: EntityId }) => {
+      budgetCard: CardName, via?: ActivateVia) => {
       (list ?? []).forEach((ab, i) => {
         if (ab.type !== 'activated') return;
         // R49: a per-ability {Battle}/{Deployment} marker, and the full
@@ -2206,9 +2239,26 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });
       });
     };
-    offer(getCard(u.card).abilities, 'ability', u.card);
-    // a card's own [Augment] text is active when played normally (Manual Q&A)
-    offer(getCard(u.card).augmentText, 'augment', u.card, 'augment');
+    // R118 layer 0: the activated text comes off the FACES the unit is
+    // wearing, not off `u.card`. `facesWith` puts the IDENTITY face first (the
+    // copied card for Apex Prime / Borrower of Forms, the unit's own card
+    // otherwise) and then whatever is being projected onto it right now
+    // (Ancient One's adjacent allies, and the cards augmented onto them).
+    //
+    // The identity face keeps the two `via` shapes it has always had —
+    // undefined and 'augment' — so a pre-R118 action log replays unchanged;
+    // every other face is addressed by `{ face }`. `activationSource` resolves
+    // the same list from the same call, and the two MUST agree action for
+    // action: the fuzzer's "legalActions lied" invariant is the guard, and
+    // this class of split has already been caught here once.
+    const idFace = e.faceName(u);
+    for (const face of e.facesWith(u, 'activated')) {
+      const own = face === idFace;
+      offer(getCard(face).abilities, 'ability', face, own ? undefined : { face });
+      // a card's own [Augment] text is active when played normally (Manual Q&A)
+      offer(getCard(face).augmentText, 'augment', face,
+        own ? 'augment' : { face, text: 'augment' });
+    }
     // activated abilities donated by augment mods (controller of the unit controls its mods)
     for (const modId of u.mods) {
       const mod = e.entity(modId);

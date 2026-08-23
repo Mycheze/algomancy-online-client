@@ -925,6 +925,41 @@ export interface EngineEvent {
 
 // ── actions ───────────────────────────────────────────────────────────
 
+/**
+ * WHICH ability list an `activateAbility` addresses — the other half of
+ * `abilityIndex`, which indexes into whatever this names.
+ *
+ *   undefined                the unit's own `abilities`, read off its IDENTITY
+ *                            face (R118): the copied card when it is wearing
+ *                            one, its own card when it is not.
+ *   'augment'                the same face's text-box [Augment] clause, which
+ *                            is live when the card is played normally.
+ *   { mod }                  text donated by that augment mod. A mod is never
+ *                            copied, so this arm always means the mod's own
+ *                            physical card.
+ *   { face }                 R118: a face that is NOT the identity one — one
+ *                            being projected onto the unit right now ("I have
+ *                            all abilities of adjacent allies", Ancient One).
+ *                            `text: 'augment'` selects that face's
+ *                            `augmentText` instead of its `abilities`, which
+ *                            is how a neighbour's augment-donated ability is
+ *                            addressed at all.
+ *
+ * ⚠ ADDITIVE, and it has to stay that way: the first three arms are byte for
+ * byte what they always were, so an action log recorded before the `{ face }`
+ * arm existed still parses and still replays identically. Nothing that was
+ * previously expressible changed shape, and `text` is omitted for the common
+ * `abilities` case so a new log stays minimal too.
+ *
+ * `pushActivatedOptions` (the offer) and `activationSource` (the accept) in
+ * apply.ts BOTH derive this from `E.facesWith(u, 'activated')` and must keep
+ * agreeing — the fuzzer's "legalActions lied" invariant is the guard.
+ */
+export type ActivateVia =
+  | 'augment'
+  | { mod: EntityId }
+  | { face: CardName; text?: 'ability' | 'augment' };
+
 export type Action =
   | { type: 'recycleForResource'; seat: Seat; handIndex: number; element: ResourceKind }
   | { type: 'activateResource'; seat: Seat; index: number }
@@ -967,10 +1002,8 @@ export type Action =
    * TIMING still applies: it is played "as if it were in your hand". */
   | { type: 'playCached'; seat: Seat; index: number }
   | { type: 'castSpellToken'; seat: Seat; entityId: EntityId }
-  /** via: undefined = the card's own abilities list; 'augment' = the card's own
-   * [Augment] text (live when played normally); { mod } = text donated by that
-   * augment mod. abilityIndex indexes the resolved list. */
-  | { type: 'activateAbility'; seat: Seat; entityId: EntityId; abilityIndex: number; via?: 'augment' | { mod: EntityId } }
+  /** see ActivateVia. abilityIndex indexes the resolved list. */
+  | { type: 'activateAbility'; seat: Seat; entityId: EntityId; abilityIndex: number; via?: ActivateVia }
   // R41: 'cache' is a legal mod source — "you CAN augment or graft from cache"
   // (Caleb 2024-12-02), paying the mod's normal cost; a FULFILLED prophecy on
   // the cached card makes it free instead (Caleb 2024-12-03).

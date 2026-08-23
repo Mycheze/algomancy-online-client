@@ -437,10 +437,12 @@ card('Life Plant', {
 // all of your units become a copy of target unit until regroup." — lm/4 4/4
 // Technology God Unit.
 //
-// R118 — the COPY LAYER. This card is now WHOLE: the name, the base stats,
-// the attributes, the statics, the triggered/[Augment] text and (once
-// apply.ts's pushActivatedOptions reads the face) the activated abilities all
-// travel, as ONE face rather than four separate grants.
+// R118 — the COPY LAYER. This card is WHOLE: the name, the base stats, the
+// attributes, the statics, the triggered/[Augment] text and the activated
+// abilities all travel, as ONE face rather than four separate grants.
+// (The activated facet landed with R118's second half, which pointed
+// pushActivatedOptions and activationSource at E.facesWith rather than at
+// getCard(u.card).abilities.)
 //
 // `E.becomeCopy` stamps an `Entity.copies` face carrying every facet, with
 // `until: 'regroup'` — this card's printed duration, and the reason it needs

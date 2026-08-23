@@ -2103,6 +2103,14 @@ needs its own decision:
 - **Deformant** — *"Sacrifice me **and another ally**: …"* A compound cost no
   `AbilityCost` shape covers; it would need `sacrificeSelf` **and** a
   sacrifice-another atom in one cost. **Not moved.**
+  **⚠ CORRECTED 2026-08-23 — this reason was wrong.** One `AbilityCost` does
+  carry `sacrificeSelf` **and** `sacrificeOther` together, and both are paid
+  inside the one cast window, so the payment was always expressible. What
+  actually blocks Deformant is the **receipt** (its effect needs the
+  sacrificed units' *counters*, and neither writer records them) — and the
+  `AbilityCost` route is the wrong one regardless, because
+  `collectItemCosts` carries a documented latent half-pay bug and Deformant
+  would be the first card to trip it. See the corrected note under R77 below.
 
 **Closes the last round-7 deferral.** `test/53-playtest-round7.test.ts`'s ledger
 listed *"Eldritch Dreamtender's sacrifice timing"* as the one item still open;
@@ -2524,13 +2532,63 @@ wrong.
 
 ### ⚠ Deformant's cost is still parked
 
-*"Sacrifice me **and another ally**"* is a **compound** cost, and `AbilityCost`
-has no shape for one: `sacrificeSelf` and `sacrificeOther` exist separately and
-cannot be combined into a single indivisible payment. Deformant therefore still
-picks and sacrifices at resolution. R77 fixed the offer half — it is no longer
-offered when you have no other unit — but the payment window is unchanged, and
-it now carries a `{ todo: true }` test naming the missing cost shape, per the
-project's park rule.
+Deformant still picks and sacrifices at **resolution**, which leaves a response
+window between cost and effect that should not exist. R77 fixed the offer half
+— it is no longer offered when you have no other unit — but the payment window
+is unchanged, and it carries a `{ todo: true }` test, per the project's park
+rule.
+
+**⚠ THE REASON RECORDED HERE WAS STALE, and is corrected 2026-08-23.** This
+section used to say *"'Sacrifice me and another ally' is a compound cost, and
+`AbilityCost` has no shape for one: `sacrificeSelf` and `sacrificeOther` exist
+separately and cannot be combined into a single indivisible payment."* That is
+**not true**: a single `AbilityCost` carries both fields at once, and both are
+paid inside the one cast window — `E.payActivationCost` for the choice-free
+half, `E.collectItemCosts` for the choice-bearing half. The payment has been
+expressible for a while.
+
+**What actually blocks it is the RECEIPT.** The effect needs the *counters* on
+the two sacrificed units, and neither writer records them:
+
+- `payActivationCost`'s `sacrificeSelf` branch writes **no receipt at all** —
+  it destroys the source and moves on;
+- `payItemCost`'s `sacrificeOther` branch writes a bare `CardName` into
+  `item.paidCosts.sacrificed`, and `EffectCtx` never exposes `item.paidCosts`,
+  so `run()` could not learn even *which* ally was paid.
+
+The counters cannot be reconstructed from `effStats` either, because Caleb
+rules that counters **net** and that temporary buffs are not counters at all —
+*"if I have +1/+1 and -1/-1 on the 2 cards, what's the total number?"* →
+*"0, they cancel out"*; of an until-regroup buff, *"oh, no those are not
+counters"*. `Entity.counters` is already documented as the net value, so it is
+the field to snapshot, at payment.
+
+**⚠ And the `AbilityCost` route is the wrong one anyway.** `collectItemCosts`
+carries a documented latent half-pay bug: the choice-free half is charged one
+call **earlier** than the choice-bearing half, so the first card to combine
+them reaches the collector with its mana already spent. Deformant would be
+exactly that first card.
+
+**The route that fits is the effect-level `CastCost` one** —
+`castCost: { kind: 'sacrificeUnits', n: 2 }` on the ability's effect. It is
+all-or-nothing for a non-graft part, `abilityUnusable` already gates the
+**offer** on `canPayCastCost` (so R77's board condition survives without a
+`usableWhen`), and it writes `part.costPaid`, which `EffectCtx.costPaid`
+**already exposes**. Two engine edits are still missing:
+
+1. **"me AND another", not "any two".** `castCostOptions` offers
+   `unitsOf(seat, item.region)` with no self-exclusion, so the Deformant is on
+   its own menu and nothing makes it mandatory. The shape that fits is
+   `includeSelf?: true` on the `sacrificeUnits` variant: charge the source
+   choice-free through the existing `from: 'self'` branch, then take the
+   remaining `n-1` off the menu with `item.sourceId` excluded — and make
+   `canPayCastCost` demand **both** halves up front, or the source dies for a
+   cost whose remainder cannot be paid.
+2. **A wider receipt.** `costPaid.sacrificedUnits` is
+   `{ card, power, defense }[]` and needs `counters: number` and
+   `unit: EntityId`, snapshotted at payment in **both** writers —
+   `chargeCastCost`'s `from: 'self'` branch and `payCastCost`'s chosen-unit
+   branch.
 
 ## R78 — An item stays on the stack until it has ACTUALLY resolved
 
@@ -3846,6 +3904,12 @@ should be CONTINUOUS`.
 
 ## R92 — Three of the four COPY layers already ship (Apex Prime, partial)
 
+> **SUPERSEDED BY R118 (2026-08-23).** The fourth layer shipped: copy is now
+> layer 0, and the "⚠ Still dead" list below — the NAME, `statics` and the
+> ACTIVATED abilities — is closed, for Apex Prime, Borrower of Forms and
+> Ancient One alike. Kept as the record of how the card was read before the
+> layer existed; the todo test it names at the end no longer exists.
+
 *(Same audit. Downgrades Apex Prime from `dead` to `partial`. Its note claimed
 "effStats has no copy layer and ownAttrs/abilities read straight off the
 printed card, so there is nothing to approximate honestly"; three quarters of
@@ -4415,6 +4479,26 @@ one of those is true, and it is the one already done:
   different card's play action**, which `PlayCtx` has no room for. Still parked.
 - **Slurpr** ("You can apply other mods during [Haste] as if it was deployment") is the
   MOD-timing twin and belongs to R95's family. Still parked.
+  **Update 2026-08-23 — the CARD half now exists.** `ModPermission` has a second member,
+  `applyAtHaste`, and Slurpr declares it. It is R95's shape and not R97's on purpose:
+  Slurpr prints no *"each turn"*, so it is an unbudgeted **OR-fold** — one grantor is
+  enough, two Slurprs are not twice as permissive, and **no new `GameState` field is
+  needed** (there is no `hastePlaysUsed` sibling to keep). "Other mods" is R37's word for
+  augments **and** grafts, so it grants both, and "as if it was deployment" means the
+  deployment branch verbatim with only its phase test replaced — every other deployment
+  refusal still stands. **The ENGINE half is not built**, so the card is still dead and its
+  ledger entry stays. Three seams are missing:
+  1. `E.mayApplyModAtHaste` — the OR-folding gatherer beside `E.mayAugmentInBattle`. It
+     needs the **private** `anchored()` walk and the `inModPermissions` latch, so it cannot
+     live in a card file or in `dsl.ts`.
+  2. A haste branch in `doAugment` (whose else-arm is
+     `illegal('modding is a deployment action (or a battle Virus)')`) and in `doGraft`
+     (whose opening `need(e.deploying(seat), 'grafting is a deployment action')` refuses
+     outright).
+  3. The two **offer** gates: `legalHasteActions` pushes no mod actions at all, and — the
+     fatal one, exactly R97's own — `startHasteStep`'s `canHaste` **skips the step
+     outright** when no seat has a legal *play*, so a hand whose only haste option is a
+     Slurpr-granted mod would never reach the other two gates.
 
 Only **Dispatch Courier**'s ledger entry is stale.
 
@@ -6003,8 +6087,9 @@ column into the normal sub-step, and `combatSubStepOf` answering `null` outside 
 
 ## R118 — the COPY LAYER: a face in front of the identity, at layer 0
 
-*(Owner rulings, 2026-08-23, unparking **Apex Prime**, **Borrower of Forms** and the
-statics half of **Ancient One** — the last multi-card seam in the ledger.)*
+*(Owner rulings, 2026-08-23, unparking **Apex Prime**, **Borrower of Forms** and
+**Ancient One** — the last multi-card seam in the ledger. The activated-ability facet
+landed later the same day; see "The ACTIVATED facet" below.)*
 
 ### The two rulings
 
@@ -6117,21 +6202,58 @@ Consequences, each of them pinned by a test:
   `this.card(holder.card)` in six `anchored()` walks of their own and no card in the pool
   needs them copied today. Routing them through `facesWith` is mechanical when one does.
 
-### What is still owed
+### The ACTIVATED facet — the offer and the accept (2026-08-23, same ruling)
 
-**The ACTIVATED facet is stamped but never offered.** `apply.ts`'s `pushActivatedOptions`
-and `activationSource` both read `getCard(u.card).abilities` rather than the face, so a
-copied or projected activated ability cannot reach `legalActions` — and `ui/inspect.ts`
-(lines 102 and 942) mirrors the same read. Both want `E.facesWith(u, 'activated')` plus a
-`via: { face }` arm so `composeParts` keys the R9 budget on the right card. The engine side
-is built and waiting; **one change unparks Apex Prime, Ancient One and Borrower of Forms
-together**, and all three keep a narrowed card-ledger entry saying so.
+The facet shipped stamped but unread: `apply.ts` offered and accepted activated abilities
+off `getCard(u.card)`, so a copied or projected one could never be used. Both reads now go
+through **`E.facesWith(u, 'activated')`**, which closed Apex Prime, Ancient One and Borrower
+of Forms in one change, exactly as this section predicted.
 
-**Tests:** `44-hybrids-ld-a` — ten new tests on Apex Prime covering the name, the physical
+**Which face, which list.** For every face the unit is wearing, in layer order, BOTH its
+`abilities` and its `augmentText` are live — the same pair `E.fireEvent` already scans for
+the triggered facet. A card's own `[Augment]` text is active when it is played normally
+(Manual Q&A), and a face projected off a neighbour's *augment mod* has its text nowhere
+else, so dropping `augmentText` would drop half of "this includes modded abilities".
+
+**`Action.via` grew a fourth arm, additively:**
+
+| `via` | list | budget / effect key |
+| --- | --- | --- |
+| `undefined` | the IDENTITY face's `abilities` | `ability:<face>#i` |
+| `'augment'` | the identity face's `augmentText` | `augment:<face>#i` |
+| `{ mod }` | that augment mod's `augmentText` | `augment:<mod card>#i` |
+| `{ face }` / `{ face, text: 'augment' }` | a **projected** face's list | `ability:<face>#i` / `augment:<face>#i` |
+
+The first three arms are byte for byte what they were, so an action log written before the
+`{ face }` arm existed still parses and still replays identically — pinned by a replay
+round-trip test that puts a real `via: { face }` in the log.
+
+**The identity face keeps `via: undefined`.** A unit that *became* a copy has not borrowed
+anything: the copied card is what it **is**, so its abilities are its own. Only a face that
+is not the identity one — a continuous projection — is addressed by name, which is also
+what makes the UI able to say *whose* ability it is.
+
+**The R9 budget is keyed by FACE, never by `Entity.card`.** `composeParts` takes
+`viaCard ?? faceName(source)`, and the `{ face }` arm feeds it the face. Without that, an
+Ancient One standing between two neighbours whose `[once]` abilities both sit at index 0
+would give them **one** budget between them and the second would be unusable.
+
+**Offer and accept share one derivation.** `pushActivatedOptions` and `activationSource`
+both call `facesWith(u, 'activated')` and both decide "is this the identity face?" with
+`faceName(u)`; a face the unit is not wearing is *refused* rather than quietly resolved off
+the physical card. This repo's "legalActions lied" bugs are all splits between those two,
+and the fuzzer has an invariant for exactly it. `ui/inspect.ts` mirrors the pair in one
+`activationTextSource` helper that `abilityOf` and the option label both use, so the
+inspector cannot list an ability the game will not offer.
+
+**Tests:** `44-hybrids-ld-a` — twelve tests on Apex Prime covering the name, the physical
 card in the bin, a copied static radiating, R62 as a veto above copy, {Unaware}, {Inverted},
 `setBase` ordering both ways, the lethal regroup revert, copy-of-a-copy, face replacement
-across attack-then-block, and a `seed + actions` replay round trip of `Entity.copies`.
+across attack-then-block, a `seed + actions` replay round trip of `Entity.copies`, and the
+copied activated ability being offered, accepted and firing — then gone again at regroup.
 `26-metal-a` — Ancient One's projected static appearing and vanishing with the column, the
 Ancient One keeping its own name and body, Borrower of Forms taking the name/attrs/text,
-binning as itself, ruling 2's modded-copy erase, and the permanent face with its snapshotted
-base. Two `{ todo: true }` tests name the apply.ts blocker.
+binning as itself, ruling 2's modded-copy erase, the permanent face with its snapshotted
+base, plus the projected ACTIVATED ability (offered, accepted, refused the instant the
+column breaks), the per-face `[once]` budget, the permanent Borrower offer, and the
+`via: { face }` replay round trip.

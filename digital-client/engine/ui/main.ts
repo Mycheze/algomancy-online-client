@@ -51,8 +51,8 @@ import {
 } from './audio.ts';
 import { E } from '../src/engine.ts';
 import type {
-  Action, CachedCard, CardName, Decision, EngineEvent, Entity, EntityId, EventType, GameState,
-  Seat, StackItem, TargetRef,
+  Action, ActivateVia, CachedCard, CardName, Decision, EngineEvent, Entity, EntityId, EventType,
+  GameState, Seat, StackItem, TargetRef,
 } from '../src/types.ts';
 import * as acct from './account.ts';
 import * as lob from './lobby.ts';
@@ -393,7 +393,7 @@ interface UiState {
   /** playtest: an irreversible activation (a "Sacrifice me:" cost) with NO
    * target decision to walk you back — held until confirmed. */
   confirmAct: { seat: Seat; entityId: EntityId; abilityIndex: number;
-    via?: 'augment' | { mod: EntityId }; label: string; unit: string } | null;
+    via?: ActivateVia; label: string; unit: string } | null;
   /** home screen: the draft trio being picked (persisted per browser) */
   homeEls: string[];
   /** home screen: the "fix the trio now" drawer is open. Held in state

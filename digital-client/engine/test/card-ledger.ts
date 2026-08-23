@@ -247,26 +247,16 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // `{ todo: true }` park test it used to cite is now four real tests in
   // 17-earth-b.test.ts, Caleb's own case among them. Signpost for anyone
   // following the old `todoTest` reference, not a park.
-  {
-    card: 'Apex Prime', gap: 'partial', severity: 'low',
-    missing:
-      'the copied ACTIVATED abilities. "Become a copy of target unit" now carries the '
-      + 'NAME, the base stats, the attributes, the STATICS and the triggered/[Augment] '
-      + 'text — R118 shipped the copy layer and all five travel as one face.',
-    waitingOn:
-      'TWO READS IN apply.ts, and nothing else. The engine side is BUILT: `E.becomeCopy` '
-      + 'stamps `Entity.copies`, and `E.facesWith(u, \'activated\')` already answers with '
-      + 'the copied card. But `pushActivatedOptions` offers `getCard(u.card).abilities` / '
-      + '`.augmentText`, so a copied activated ability never reaches `legalActions`, and '
-      + '`activationSource` resolves `via === undefined` the same way, so it would refuse '
-      + 'the action even if it were offered. Both want `E.facesWith(u, \'activated\')` in '
-      + 'place of `u.card`, plus a `via: { face }` arm so `composeParts` keys the R9 budget '
-      + 'on the right card; `ui/inspect.ts` (lines 102 and 942) mirrors the same read and '
-      + 'moves with it. Ancient One and Borrower of Forms wait on exactly these two reads — '
-      + 'one change unparks all three. This entry is what is LEFT of the three-layer note '
-      + 'R92 wrote: the NAME layer and the granted-STATIC channel both shipped as R118.',
-    todoTest: '44-hybrids-ld-a.test.ts::a copied ACTIVATED ability is never offered — Apex Prime',
-  },
+  //
+  // Apex Prime's entry was DELETED on 2026-08-23 when the last of its four copy
+  // layers landed. R118 had already shipped the face; what was left was the two
+  // reads in apply.ts this entry named — `pushActivatedOptions` and
+  // `activationSource` — and both now go through `E.facesWith(u, 'activated')`,
+  // with a `via: { face }` arm for a face that is not the identity one. Its
+  // `{ todo: true }` park test is two real tests in 44-hybrids-ld-a.test.ts
+  // (offered, accepted, fires; and gone again at regroup). Ancient One and
+  // Borrower of Forms came off in the SAME change, exactly as this entry said
+  // they would. Signpost for anyone following the old `todoTest` reference.
   {
     card: 'Vengeance', gap: 'dead', severity: 'medium',
     missing:
@@ -303,25 +293,17 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   },
 
   // ── PARTIAL: one clause works, another does not ─────────────────────────
-
-  {
-    card: 'Ancient One', gap: 'partial', severity: 'low',
-    missing:
-      '"[Augment] I have all abilities of adjacent allies." — the neighbours\' ACTIVATED '
-      + 'abilities. Their TRIGGERED abilities are delivered (a bookkeeping when() that '
-      + 'labels each mimicked trigger "Ancient One (as X)"), and R118 added their STATICS '
-      + 'as a continuous `CardDef.projects` declaration, re-evaluated on every read so a '
-      + 'column collapsing mid-combat takes the borrowed static with it.',
-    waitingOn:
-      'The SAME two reads in apply.ts that Apex Prime waits on — `pushActivatedOptions` '
-      + 'and `activationSource` both go to `getCard(u.card).abilities` rather than the '
-      + 'face. R118 built everything up to them: the projection radiates through '
-      + '`E.anchored()` like a StaticMod and `E.facesWith(u, \'activated\')` already '
-      + 'returns the neighbours\' card names. One change unparks Ancient One, Apex Prime '
-      + 'and Borrower of Forms together. The old note here — "there is no seam for '
-      + '\'borrow that unit\'s\'" — is closed; the seam is `CardDef.projects`.',
-    todoTest: '26-metal-a.test.ts::Ancient One and Borrower of Forms',
-  },
+  // EMPTY as of 2026-08-23, and kept as a heading because the class recurs:
+  // R118's copy layer took the last three off it at once.
+  //
+  // Ancient One's entry was DELETED on 2026-08-23 with Apex Prime's and
+  // Borrower of Forms': "one change unparks all three" is what it said, and it
+  // was one change. `CardDef.projects` already radiated the neighbours' faces;
+  // apply.ts now reads them, so an adjacent ally's ACTIVATED ability is offered
+  // on the Ancient One (as `via: { face }`, so two neighbours' ability #0 are
+  // two options with two R9 budgets) and stops the instant the column breaks.
+  // Real tests in 26-metal-a.test.ts. The triggered half is unchanged — the
+  // bookkeeping when() still labels each mimicked trigger "Ancient One (as X)".
 
   // ── PRINTED ATTRIBUTES THE STAT LAYERS DO NOT IMPLEMENT ─────────────────
   // EMPTY as of 2026-08-23, and kept as a heading because the class is real
@@ -338,23 +320,13 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // never fail — is the only thing recording that what they do is not what
   // they print. That is the Harbinger trap, so they are at least visible.
 
-  {
-    card: 'Borrower of Forms', gap: 'partial', severity: 'low',
-    missing:
-      'the ACTIVATED abilities of the copied unit. "I become an exact copy of that unit. '
-      + '{i}(I copy all stat changes, counters, card text and mods)" otherwise copies in '
-      + 'full as of R118: the NAME, the stat changes (the face snapshots the target\'s '
-      + 'BASE, layers 1-2), the counters, the attributes, the statics, the triggered and '
-      + '[Augment] text, and the MODS as R118 ruling 2 rules them — the mods\' TEXT is '
-      + 'inherited, no mod entity is cloned, and the copy counts as modded and is '
-      + 'therefore {Unstable}. The face is PERMANENT and survives regroup.',
-    waitingOn:
-      'The SAME two reads in apply.ts as Apex Prime and Ancient One — `pushActivatedOptions` '
-      + 'and `activationSource` read `getCard(u.card).abilities` rather than the face. '
-      + 'Nothing card-side and nothing engine-side is left. The old entry here blamed "the '
-      + 'same COPY layer Apex Prime waits on"; that layer is R118 and it shipped.',
-    todoTest: '26-metal-a.test.ts::Ancient One and Borrower of Forms',
-  },
+  // Borrower of Forms' entry was DELETED on 2026-08-23 with Apex Prime's and
+  // Ancient One's. The borrowed face is the Borrower's IDENTITY, so the copied
+  // card's activated abilities are its own — offered under the same
+  // `via: undefined` a pre-R118 action log carries, and PERMANENT, like the
+  // rest of the face. Real tests in 26-metal-a.test.ts, next to the ones that
+  // already pinned the name, the stats, the mods text and ruling 1.
+  //
   // Witness of the Crossing's entry was DELETED on 2026-08-23, per the house
   // rule at the head of this file. It was never an engine backlog item: it sat
   // at `unverified: true` waiting on ONE thing, a confirmation of the PRINTED
