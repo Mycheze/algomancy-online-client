@@ -151,7 +151,8 @@ function discardOne(g: E, ctx: EffectCtx, seat: Seat, source: string, key: strin
  *    {Poisonous} channel, where damage is replaced by -1/-1 counters;
  *  - 'lifeLost' why 'combat' where my column connects to the victim
  *    (attacking unblocked/Piercing, or blocking with Piercing).
- * A column I contribute no power to deals nothing, so it never counts.
+ * A column I contribute no power to deals nothing, so it never counts, and
+ * R117 adds the sub-step: it has to be the one MY column strikes in.
  */
 function myColumnDealtCombatDamage(g: E, self: Entity, ev: EngineEvent): boolean {
   const b = g.s.battle;
@@ -159,6 +160,13 @@ function myColumnDealtCombatDamage(g: E, self: Entity, ev: EngineEvent): boolean
   const col = g.columnOf(self.id);
   if (!col) return false;
   if (g.effStats(self)[0] <= 0) return false;
+  // R117 (owner, 2026-08-23): the third copy of the gate Eldritch Dreamtender
+  // and Zephyrzoa carry — the trigger fires in the sub-step MY OWN COLUMN
+  // strikes in. It matters most on the aggregated per-seat 'lifeLost' below,
+  // but it is true of the unit-damage branch as well (a column's damage is
+  // assigned in its own sub-step), so the gate sits above both rather than
+  // being duplicated inside one. `when()` only — see E.strikesInCurrentSubStep.
+  if (!g.strikesInCurrentSubStep(self)) return false;
   const alive = col.filter(id => g.entity(id));
   const ci = b.columns.indexOf(col);
   if (ev.type === 'damage' || ev.type === 'countersChanged') {

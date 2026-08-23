@@ -80,7 +80,14 @@ card('Refuse Reclaimer', {
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        if (self) g.addCounters(self, 1);
+        // the host can die in the same batch as the "another unit" that fired
+        // this — a real outcome, but it must not resolve in silence
+        // (65-effect-conformance)
+        if (!self) {
+          g.ev('info', 'Refuse Reclaimer: its host has left play — no counter is added.');
+          return;
+        }
+        g.addCounters(self, 1);
       },
     },
   }],

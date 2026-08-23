@@ -203,24 +203,14 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
     todoTest: '43-dark-c.test.ts::Rotling',
     note: 'Registered bare. The recursion payoff never happens.',
   },
-  {
-    card: 'The Everywhere', gap: 'approximated', severity: 'low',
-    missing:
-      'the CONTINUOUS duration of "(as long as I am in their region)" — the silence is '
-      + 'applied once, at naming time, and expires at regroup.',
-    waitingOn:
-      'A STRING field on Entity to hold the named card (`budgets` is numeric-only), plus '
-      + 'a StaticMod that matches on a card NAME rather than an entity id. The naming '
-      + 'action and the suppression both shipped in R91 — `ctx.choose` with '
-      + 'DecisionOption.card was the "name a card" action the old park note said did not '
-      + 'exist, and R62 E.suppress does the silencing. ⚠ Consequence of shipping it '
-      + 'region-strict (Caleb: "the single rule we\'ll never violate is nothing can send '
-      + 'information across regions"): at end-of-haste every unit is still home, so today '
-      + 'the card can only silence ALLIES. The printed card reaches an enemy by attacking '
-      + 'into their region later, which is exactly why its effect has to be continuous. '
-      + 'That is the whole remaining gap.',
-    todoTest: '38-light-a.test.ts::The Everywhere: the silence should be CONTINUOUS',
-  },
+  // The Everywhere's entry was DELETED on 2026-08-23 when the continuous half
+  // was built, per the house rule at the head of this file. It waited on "a
+  // STRING field on Entity to hold the named card, plus a StaticMod that
+  // matches on a card NAME rather than an entity id" — both are in the tree
+  // now (`Entity.named` in types.ts, the `statics` entry on the card in
+  // batch-light-a.ts), and the printed "(As long as I am in their region.)" is
+  // `staticsFor`'s own region scope, evaluated live. Its todo was promoted to
+  // real tests in 38-light-a.test.ts. Signpost, not a park.
   {
     card: 'Slurpr', gap: 'dead', severity: 'medium',
     missing: '"[Augment] You can apply other mods during [Haste] as if it was deployment."',
@@ -310,41 +300,6 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
       + 'printed (no discard) and strictly less flexible (no bin, no direct '
       + 'formation entry). Both directions are wrong.',
   },
-  {
-    card: 'Fire Resource', gap: 'dead', severity: 'low',
-    missing:
-      '"When I activate, if you have at least [r][r][r], create a Shard. {i}(It spawns dormant.)"',
-    waitingOn:
-      'The resource-CARD model. Resources are anonymous ResourceState entries with '
-      + 'no entity behind them, and doActivateResource does not fireEvent, so "when I '
-      + 'activate" has nothing to listen to. (The Shard half SHIPPED — E.createShard '
-      + "and a real 'shard' ResourceKind exist; the payload is ready and waiting for "
-      + 'the trigger.)',
-    todoTest: '12-fire-a.test.ts::Fire Resource',
-    note:
-      'NOT constructed-relevant: DECK_LIST filters every /\\bResource\\b/ type out, so '
-      + 'no resource face can be in a deck. Listed for completeness.',
-  },
-  {
-    card: 'Water Resource', gap: 'dead', severity: 'low',
-    missing:
-      '"When I activate, if you have at least [b][b][b], create a Shard. {i}(It spawns dormant.)"',
-    waitingOn: 'Identical to Fire Resource: the resource-CARD model and a dispatched activation event.',
-    todoTest: '15-water-b.test.ts::Water Resource',
-    note: 'Not in DECK_LIST (resource face).',
-  },
-  {
-    card: 'Earth Resource', gap: 'dead', severity: 'low',
-    missing:
-      '"When I activate, if you have at least [e][e][e], create a Shard. {i}(It spawns dormant.)"',
-    waitingOn: 'Identical to Fire Resource: the resource-CARD model and a dispatched activation event.',
-    unverified: true,
-    note:
-      'Not in DECK_LIST (resource face). ⚠ Unlike its Fire and Water siblings this '
-      + 'one has NO {todo:true} test anywhere — the batch-earth-a header is the only '
-      + 'thing that ever mentioned it. Flagged as unverified because nothing but a '
-      + 'comment was tracking it; the behaviour matches the other two by inspection.',
-  },
 
   // ── PARTIAL: one clause works, another does not ─────────────────────────
 
@@ -387,13 +342,36 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   },
   {
     card: 'Witness of the Crossing', gap: 'approximated', severity: 'low',
+    unverified: true,
     missing:
-      '"[Switch1][Switch1][Switch1]" — three copies of each attached graft as one trigger.',
+      'nothing engine-side. "[Switch1][Switch1][Switch1]" — three copies of each attached '
+      + 'graft as one trigger — is BUILT and tested. What is open is the printed READING.',
     waitingOn:
-      'Extra copies of a TARGETED graft effect cannot collect extra targets '
-      + '(composeParts collects one target set per part), so a targeted graft runs '
-      + 'once instead of three times. Untargeted grafts do get all three.',
+      'A PRINTED-TEXT confirmation, NOT an engine gap. The previous note here claimed '
+      + 'that "extra copies of a TARGETED graft effect cannot collect extra targets '
+      + '(composeParts collects one target set per part)"; every clause of that is false '
+      + 'today and was already false when R110 shipped. E.composeParts materialises each '
+      + 'extra copy as `parts.push({ ...p, targets: [] })` — a fresh part with an EMPTY '
+      + 'target array — and E.collectPartTargets loops over every part, so each copy '
+      + 'collects its own target set and pays its own [cost]. That is exactly what R110 '
+      + 'rules, and it is pinned by a REAL (non-todo) test on the identical `graftCopies: 3` '
+      + 'mechanism: 14-water-a.test.ts::"R110: a TARGETED graft under Amphivore aims each '
+      + 'of its three copies separately". Witness uses the same `graftCopies: 3` effect '
+      + 'shape and its own non-todo test asserts three copies of an untargeted graft. '
+      + 'What is genuinely unconfirmed is the CARD FACE: Witness prints three [Switch1] '
+      + 'marks and NO reminder text, so the three-copy reading is inferred from Lost '
+      + 'Guardian (which prints "[Switch1][Switch1] (Trigger two copies of this graft '
+      + 'ability as one single trigger.)"). If the printed reading turns out to be '
+      + 'something else, the card changes; the engine does not.',
     todoTest: '40-light-c.test.ts::Witness of the Crossing',
+    note:
+      'CHECKED (2026-08-23): E.composeParts / E.collectPartTargets read end to end, and '
+      + '14-water-a.test.ts run green — the targeted-copy behaviour the old waitingOn '
+      + 'blamed demonstrably works. NOT CHECKED: the physical card face. The todo test '
+      + 'is deliberately left a todo and the entry deliberately left in place, because '
+      + 'the open question is "does the card really mean three copies?", which only the '
+      + 'owner / the card image can answer. Do not read this entry as an engine backlog '
+      + 'item.',
   },
   {
     card: 'Deformant', gap: 'approximated', severity: 'low',
@@ -417,14 +395,11 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
     todoTest: '26-metal-a.test.ts::Deformant',
     note: 'Observable as a response window that should not exist between cost and effect.',
   },
-  {
-    card: 'Eldritch Dreamtender', gap: 'approximated', severity: 'low',
-    missing:
-      'WHICH combat-damage sub-step "when my column deals combat damage" fires in.',
-    waitingOn:
-      'A RULING, not a primitive — the only entry here that is not an engine gap. '
-      + 'R73 settled that the sacrifice is a cast cost; it left the sub-step open. '
-      + 'Needs Bena.',
-    todoTest: '53-playtest-round7.test.ts::Eldritch Dreamtender',
-  },
+  // Eldritch Dreamtender's entry was DELETED on 2026-08-23, per the house rule
+  // at the head of this file. It waited on a RULING and got one: R117 — the
+  // trigger fires in the sub-step its OWN COLUMN strikes in. The gate is
+  // `E.strikesInCurrentSubStep` (over the new public `E.combatSubStepOf`),
+  // asked from `when()`, and Zephyrzoa and Blightmound carry the same one. Its
+  // todo was promoted to five real tests in 53-playtest-round7.test.ts.
+  // Signpost, not a park.
 ];

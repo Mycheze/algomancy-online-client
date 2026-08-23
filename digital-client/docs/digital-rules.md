@@ -744,9 +744,22 @@ affinity bonus in `apply.ts` (Manual p.18 — three affinity in an element grant
 a free Shard when you activate it) already created real Shards and is unchanged.
 
 **Live:** Swirling Shardform (two on spawn), Hooba-Lan (one per attack or
-block — unparked by this). Still parked for a different reason: the `[element]
-Resource` card faces, whose "when I activate" trigger needs resource cards to
-be playable cards at all.
+block — unparked by this).
+
+**Corrected 2026-08-23.** This paragraph used to end by calling the `[element]
+Resource` card faces "still parked … needs resource cards to be playable cards
+at all", one paragraph after correctly saying the affinity bonus "already
+created real Shards and is unchanged". Both cannot be true, and the second one
+is: **the clause on those faces is not card behaviour**. "When I activate, if
+you have at least [r][r][r], create a Shard" is the Manual p.18 general rule,
+printed on the physical card as a reminder — implemented once in
+`apply.ts::maybeGrantShard`, for **all seven elements**, verified on the real
+`activateResource` action path. `printed.json` carries only three Resource
+faces (fire, water, earth), so routing the rule through card definitions would
+silently drop the bonus for wood, metal, light and dark, and keeping both would
+pay it twice. The three faces are `card('X Resource', {})` on purpose; their
+ledger entries were deleted and they are declared in `71-card-ledger`'s
+`NOT_A_GAP`. See R116 for the one thing about the bonus that *was* wrong.
 
 ## R55 — Printed `[Augment]` is a permission, not a payload
 
@@ -5873,3 +5886,115 @@ Tests: 98-spawn-region (report #83 verbatim; the regroup round-trip; R28's ratio
 inverted — the mid-attack token cannot block; the source scan; the two battle spells; a
 deploy-timing negative control), plus the fifteen card tests that flipped from asserting
 the old rule.
+
+## R116 — An EXCHANGE is not an ACTIVATION: no affinity Shard for a traded Prismite
+
+*(Owner, 2026-08-23. **Engine bug, quietly live since the p.18 bonus shipped.** This is a
+NERF: prismite-heavy play had been collecting a Shard it was never owed.)*
+
+### The line
+
+> "An exchange is not an activation."
+
+Caleb draws the same line, and names the mechanism it is not:
+
+> "'Activating the prismite' is like playing your land for turn, but cracking the
+> fetchland doesn't take an additional land drop."
+
+### What was wrong
+
+`doExchangePrismite` set `r.kind = element` and then called `maybeGrantShard`, so trading
+an active Prismite into your third copy of an element handed you a free dormant Shard —
+the Manual p.18 affinity bonus, paid on a card that had not been activated as that
+element. The inline comment justified it by arguing that "the exchange turns an
+already-activated resource into this element, so the p.18 shard bonus applies just as if
+it had been activated as one".
+
+That reasoning is the error. The trigger is printed as "**When I activate**", and the
+activation already happened — to a **Prismite**, which pays nothing (R17: prismites give
+no affinity, and `maybeGrantShard` returns early on `prismite` and `shard`). R17's
+exchange is a *later, separate* planning action that changes what an already-face-up
+resource is. It does not rewind time and re-run the activation as the new element, any
+more than cracking a fetchland re-spends your land drop.
+
+### What it means at the table
+
+- Activating a dormant element resource at ≥3 affinity: **Shard**, every time (Caleb,
+  asked whether the bonus is once or repeatable: "**Every time**"). Unchanged.
+- Exchanging an active Prismite into an element — even your third copy of it: **no
+  Shard**. The Prismite's value is R17's colour fixing, and that is all of it.
+- Recycling a card for a resource (R17's other resource source) never paid the bonus and
+  still does not: `doRecycle` creates a **dormant** resource, and you have to spend an
+  activation on it before anything happens.
+
+The affinity bonus now has exactly **one** call site, `doActivateResource`. Any future
+resource-creating action that wants to pay it has to say so, in the same breath as saying
+why it counts as an activation.
+
+**Tests:** `21-fixes` — the test that asserted the old behaviour ("exchanging a Prismite
+into your 3rd element copy also grants the shard") is inverted and renamed, and now pins
+that the exchange still *works* (the resource really becomes that element, keeping its
+state) while paying nothing. `12-fire-a` carries the positive half: the seven-element
+conformance sweep and the self-counts-toward-its-own-three boundary.
+
+---
+
+## R117 — "when my column deals combat damage" fires in MY column's sub-step
+
+*(Owner ruling, 2026-08-23, closing the last open question on **Eldritch Dreamtender** —
+the `{ todo: true }` that outlived all four round-7 deferrals.)*
+
+### The line
+
+> It fires in the sub-step its **own column** strikes in — a {Swift} column fires in the
+> Swift sub-step, otherwise the normal one.
+
+### What was wrong
+
+Combat damage is dealt in three sub-steps (Swift → normal → Sluggish, R3), and
+`E.commitPlayerDamage` aggregates **every** connecting column's face damage into **one**
+`loseLife` per seat per sub-step. The three cards that print "when my column deals combat
+damage to an opponent" — **Eldritch Dreamtender**, **Zephyrzoa**, **Blightmound** — all
+listen on that aggregated `lifeLost` and asked only *"is my column attacking unblocked, or
+piercing?"*. Nothing asked *which sub-step is running*.
+
+So a Dreamtender standing in a **normal** column fired during the **Swift** sub-step
+whenever any Swift column also connected. Because R73 makes its sacrifice a **cast cost**,
+it was then in the bin before its own column ever struck — and its own power simply
+evaporated. Same shape for Zephyrzoa (recall your bin and erase me) and Blightmound.
+
+### What the engine does
+
+Two public methods on `E`:
+
+* `combatSubStepOf(u)` → `'Swift' | 'normal' | 'Sluggish' | null` — which sub-step `u`'s
+  column strikes in, or `null` when `u` is in no column. It finds `u`'s column on either
+  side of the pairing, reconstructs the pairing's `pure` **exactly the way
+  `assignCombatDamage` does**, and returns whichever sub-step the private `scheduled()`
+  answers true for. Threading `pure` is not decoration: **R61 {Pure}** blinds a whole
+  exchange to attributes in both directions, so a printed {Swift} column blocked by a Pure
+  unit collapses into the *normal* sub-step.
+* `strikesInCurrentSubStep(u)` — `b.damageStep === combatSubStepOf(u)`. The one shared gate
+  the three cards call.
+
+**The gate must live in `when()`, never in `run()`.** `when()` is evaluated at event time
+(R1), *inside* `combatSubStep(sub)`; `pumpCombatDamage` advances `b.damageStep` only *after*
+`combatSubStep` returns, and then drains the trigger queue. So `b.damageStep` reads the
+CURRENT sub-step during `when()` and the NEXT one by the time the trigger settles.
+
+### What this does NOT close
+
+Face damage still arrives as **one aggregated `lifeLost` per seat per sub-step**, so two of
+the *same* player's columns connecting in the *same* sub-step remain indistinguishable to
+card text. The sub-step gate narrows the ambiguity a great deal but does not remove it;
+removing it means carrying live column ids on the combat ledger, which is a separate job
+that also touches Amphivore and Vroot.
+
+Orthogonal to **R114** (combat damage is dealt in full), which changed `assignColumnDamage`
+and touched neither `scheduled` nor `commitPlayerDamage`.
+
+**Tests:** `53-playtest-round7` — five tests: a Dreamtender in a normal column beside a
+Swift one (the regression: 3 face damage, not 2), the {Swift}-column mirror, a {Sluggish}
+column waiting out both earlier sub-steps, the {Pure} pairing collapsing a printed {Swift}
+column into the normal sub-step, and `combatSubStepOf` answering `null` outside a column.
+`26-metal-a`, `44-hybrids-ld-a` and `42-dark-b` keep the three cards' own coverage.

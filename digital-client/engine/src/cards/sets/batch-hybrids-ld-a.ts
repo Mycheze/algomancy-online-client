@@ -130,13 +130,18 @@ const eraseUnit = (g: E, u: Entity): void => {
 
 /** ⚠ "my column deals combat damage to an opponent" (see header): checked at
  * EVENT time on the combat 'lifeLost'. My column has to connect — attacking
- * and never blocked (or Piercing), or blocking with Piercing. */
+ * and never blocked (or Piercing), or blocking with Piercing — in the sub-step
+ * MY column strikes in (R117). */
 const myColumnConnected = (g: E, self: Entity, ev: { data?: Record<string, unknown> }): boolean => {
   if (ev.data?.why !== 'combat') return false;
   const b = g.s.battle;
   if (!b) return false;
   const victim = ev.data?.seat as Seat | undefined;
   if (victim === undefined || victim === self.controller) return false;
+  // R117 (owner, 2026-08-23): the trigger fires in the sub-step MY OWN COLUMN
+  // strikes in — same gate, same reason, as Eldritch Dreamtender's copy in
+  // batch-metal-a. `when()` only: see E.strikesInCurrentSubStep on the timing.
+  if (!g.strikesInCurrentSubStep(self)) return false;
   const col = g.columnOf(self.id);
   if (!col) return false;
   const alive = col.filter(id => g.entity(id));

@@ -286,7 +286,13 @@ const grobCache: EffectDef = {
   targets: { what: 'unit', min: 0, count: 1, prompt: "Grob: up to one unit — its controller caches it" },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (!isEnt(t)) return;
+    if (!isEnt(t)) {
+      // "UP TO one target": choosing none, or the target leaving before this
+      // resolves, is a legitimate outcome — but a bare `return` here made it
+      // resolve in SILENCE, which 65-effect-conformance exists to forbid.
+      g.ev('info', 'Grob: no unit is targeted (or it left play) — nothing is cached.');
+      return;
+    }
     g.cacheUnit(t, { prophecy: 'Prophecy — One Battle Passes' });
   },
 };

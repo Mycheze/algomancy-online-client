@@ -838,39 +838,168 @@ test('a seat with a decision pending against the OTHER seat has no legal action'
  *     Real tests, no longer todos: test/26-metal-a.test.ts for the card,
  *     test/32-cast-costs.test.ts for the primitive.
  *
- * ALL FOUR round-7 deferrals are now closed. What survives below is NOT one of
- * them: R73 settled WHETHER the sacrifice is a cost, and left open WHICH combat
- * damage sub-step the trigger fires in — a question the round-7 ledger never
- * asked and that no primitive is missing for.
+ * ALL FOUR round-7 deferrals are now closed, and so is the fifth question that
+ * outlived them: R73 settled WHETHER the sacrifice is a cost, and R117 (owner,
+ * 2026-08-23) settled WHICH combat damage sub-step the trigger fires in —
+ * **the sub-step its own column strikes in.** The `{ todo: true }` that used to
+ * sit here, and the card-ledger entry that named it, are replaced by the real
+ * tests below.
  */
 
-test('Eldritch Dreamtender: WHICH combat-damage sub-step the trigger fires in '
-  + '(PARKED: a rules question — needs Bena)', { todo: true }, () => {
-  // NOT the round-7 deferral, which R73 closed. The printed text is "When my
-  // column deals combat damage to an opponent, sacrifice me. If you do, look
-  // at that player's hand and discard a card from it." R73 (2026-08-22) ruled
-  // that the sacrifice is a CAST COST, so it is paid on the way to the stack
-  // rather than at resolution — the unit is in the bin before anyone has
-  // priority. What is STILL undecided is which damage sub-step the trigger
-  // fires in, and that moves the payment with it.
-  //
-  // Today: the trigger fires off the aggregated combat `lifeLost` event inside
-  // the damage sub-step, and R3/R31 resolve it IMMEDIATELY, before the next
-  // sub-step — so a Dreamtender in a Swift column is already in the bin when
-  // normal damage is dealt, and one in a normal column is gone before the
-  // Sluggish sub-step and before the after-combat window. That is a real
-  // difference: it changes what a Sluggish column-mate's attribute sharing
-  // sees, whether the Dreamtender is around for an "after combat" trigger, and
-  // (as of R72) whether its column collapses mid-combat.
-  //
-  // The alternative reading — the trigger waits until combat damage is
-  // finished — is not obviously wrong, and the paper game resolves it by
-  // conversation. There is no engine primitive missing: the trigger queue can
-  // express either. What is missing is the RULING, which is why this is a todo
-  // and not a bug.
-  //
-  // Related but separate, and already noted on the card: `myColumnConnected`
-  // reads "my column connected" off the aggregated lifeLost event
-  // (Amphivore's approximation), so two columns connecting in the same
-  // sub-step are indistinguishable to it.
+/* ── R117: "when my column deals combat damage" fires in MY column's sub-step ──
+ *
+ * Printed: "[Augment] When my column deals combat damage to an opponent,
+ * sacrifice me. If you do, look at that player's hand and discard a card from
+ * it." The gap R117 closes is not the printed text but the READ: the trigger
+ * listens on the aggregated combat `lifeLost`, and `commitPlayerDamage` folds
+ * EVERY connecting column's face damage into one `loseLife` per seat per
+ * sub-step. So a Dreamtender in a NORMAL column used to hear the SWIFT
+ * sub-step's damage as its own, sacrifice itself a sub-step early, and never
+ * be alive to deal its own column's damage at all.
+ *
+ * The gate is `E.strikesInCurrentSubStep`, and it lives in `when()`: `when()`
+ * is evaluated at event time inside `combatSubStep(sub)`, while
+ * `b.damageStep` is advanced only after `combatSubStep` returns — so it reads
+ * the CURRENT sub-step there and the NEXT one by the time the trigger settles.
+ *
+ * ⚠ NOT CLOSED, and deliberately out of scope: face damage still arrives as
+ * ONE aggregated `lifeLost` per seat per sub-step, so two of the SAME player's
+ * columns connecting in the SAME sub-step stay indistinguishable to card text.
+ * Closing that means carrying live column ids on the combat ledger, which is a
+ * separate job touching Amphivore, Vroot, Zephyrzoa and Blightmound too.
+ */
+
+/** answer whatever the combat pump raised (the Dreamtender's discard pick, a
+ * trigger ordering) so the remaining sub-steps can run */
+function answerAll(h: Harness): void {
+  let guard = 20;
+  while (h.state.decision && guard-- > 0) {
+    const d = h.state.decision;
+    h.do({
+      type: 'decide', seat: d.seat,
+      choice: d.kind === 'orderTriggers' ? d.options.map((_, i) => i) : 0,
+    });
+  }
+  if (guard <= 0) throw new Error('answerAll did not terminate');
+}
+
+test('R117: a Dreamtender in a NORMAL column survives the Swift sub-step and is sacrificed in its own', () => {
+  const h = new Harness(5290);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const swift = spawn(h, A, 'Dune Drifter');                 // {Swift}, 2 power
+  const dt = spawn(h, A, 'Eldritch Dreamtender');            // no speed attribute, 1 power
+  toNextBattle(h, A);
+  const life0 = h.state.players[D]!.life;
+  h.do({ type: 'declareAttack', seat: A, columns: [[swift], [dt]] });
+  assert.equal(h.q.combatSubStepOf(ent(h, swift)!), 'Swift');
+  assert.equal(h.q.combatSubStepOf(ent(h, dt)!), 'normal',
+    'my column has no Swift and no Sluggish in it, so it strikes in the normal sub-step');
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);
+  answerAll(h);
+  // THE REGRESSION THIS PINS: before R117 the Swift column's aggregated
+  // lifeLost fired the Dreamtender, so it was already in the bin when the
+  // normal sub-step ran and its own 1 power evaporated — 2 damage, not 3.
+  assert.equal(h.state.players[D]!.life, life0 - 3,
+    "2 from the Swift column and 1 from the Dreamtender's own — it was alive to deal it");
+  assert.equal(ent(h, dt), undefined, 'and then it sacrificed itself');
+  assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'));
+  finishBattle(h);
+});
+
+test('R117: a Dreamtender in a {Swift} column fires in the Swift sub-step', () => {
+  const h = new Harness(5291);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const swift = spawn(h, A, 'Dune Drifter');                 // {Swift}, 2 power
+  const dt = spawn(h, A, 'Eldritch Dreamtender');            // 1 power
+  const plain = spawn(h, A, 'Unit Token');                   // 1 power, normal
+  toNextBattle(h, A);
+  const life0 = h.state.players[D]!.life;
+  // the mirror of the test above: {Swift} is shared vertically down a column
+  // (E.colAttrs), so standing next to the Drifter moves the Dreamtender's
+  // strike — and therefore its trigger — into the Swift sub-step.
+  h.do({ type: 'declareAttack', seat: A, columns: [[swift, dt], [plain]] });
+  assert.equal(h.q.combatSubStepOf(ent(h, dt)!), 'Swift',
+    'the column carries Swift, so I strike in the Swift sub-step');
+  assert.equal(h.q.combatSubStepOf(ent(h, plain)!), 'normal');
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);
+  answerAll(h);
+  assert.equal(h.state.players[D]!.life, life0 - 4,
+    '3 from the Swift column (2 + 1) and 1 from the normal one');
+  assert.equal(ent(h, dt), undefined, 'sacrificed on its own column\'s damage');
+  finishBattle(h);
+});
+
+test('R117: a Dreamtender in a {Sluggish} column waits out BOTH earlier sub-steps', () => {
+  const h = new Harness(5292);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const swift = spawn(h, A, 'Dune Drifter');                 // {Swift}, 2 power
+  const plain = spawn(h, A, 'Unit Token');                   // 1 power, normal
+  const slow = spawn(h, A, 'Plodding Pebble');               // {Sluggish}, 0 power
+  const dt = spawn(h, A, 'Eldritch Dreamtender');            // 1 power
+  toNextBattle(h, A);
+  const life0 = h.state.players[D]!.life;
+  h.do({ type: 'declareAttack', seat: A, columns: [[swift], [plain], [slow, dt]] });
+  assert.equal(h.q.combatSubStepOf(ent(h, dt)!), 'Sluggish');
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);
+  answerAll(h);
+  // Two aggregated lifeLost events go past before mine: the sharpest form of
+  // the bug, because the old read fired on the FIRST one it heard.
+  assert.equal(h.state.players[D]!.life, life0 - 4, '2 Swift + 1 normal + 1 Sluggish');
+  assert.equal(ent(h, dt), undefined);
+  finishBattle(h);
+});
+
+test('R117 threads {Pure}: a printed {Swift} column blocked by a Pure unit strikes in the NORMAL sub-step', () => {
+  // R61 collapses an attribute-blind exchange into the normal sub-step whatever
+  // the columns are printed with, and it is a property of the PAIRING, not of
+  // either column — which is why `combatSubStepOf` reconstructs `pure` the way
+  // `assignCombatDamage` does instead of reading the column's own attributes.
+  // Asked at the engine level: a column blocked by a Pure unit deals no face
+  // damage at all (Pure switches Piercing off too), so there is no `lifeLost`
+  // for the Dreamtender's trigger to hear either way. Two blockers because the
+  // Dreamtender is {Evasive}.
+  const subStepBlockedBy = (blocker: string): string | null => {
+    const h = new Harness(5293);
+    toDeployment(h);
+    const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+    const swift = spawn(h, A, 'Dune Drifter');               // {Swift}
+    const dt = spawn(h, A, 'Eldritch Dreamtender');
+    const blk = spawn(h, D, blocker);
+    const blk2 = spawn(h, D, 'Unit Token');
+    toNextBattle(h, A);
+    h.do({ type: 'declareAttack', seat: A, columns: [[swift, dt]] });
+    pass(h); pass(h);
+    h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blk, blk2] } });
+    return h.q.combatSubStepOf(ent(h, dt)!);
+  };
+  assert.equal(subStepBlockedBy('Unit Token'), 'Swift', 'an ordinary blocker changes nothing');
+  assert.equal(subStepBlockedBy('Just a Unit'), 'normal',
+    '{Pure} blinds the whole exchange to attributes, Swift included (R61)');
+});
+
+test('R117: combatSubStepOf answers null for a unit that is not in a column', () => {
+  const h = new Harness(5294);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const dt = spawn(h, A, 'Eldritch Dreamtender');
+  const bench = spawn(h, A, 'Unit Token');
+  assert.equal(h.q.combatSubStepOf(ent(h, dt)!), null, 'no battle at all');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[dt]] });
+  assert.equal(h.q.combatSubStepOf(ent(h, bench)!), null, 'left at home, in no column');
+  assert.equal(h.q.combatSubStepOf(ent(h, dt)!), 'normal');
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);
+  answerAll(h);
+  finishBattle(h);
 });

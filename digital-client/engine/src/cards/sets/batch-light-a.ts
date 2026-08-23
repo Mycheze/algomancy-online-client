@@ -43,23 +43,19 @@
  *    combat 'lifeLost' with my column connecting. A column that both kills
  *    blockers and pierces through fires once per damage instance.
  *
- *  - THE EVERYWHERE (R91): the NAMING is live — a Decision at R50's
- *    'endOfHaste', menu = every card name in play plus an explicit "not in
- *    play" no-op — and the silence is R62's E.suppress, region-scoped, on
- *    every copy of the named card in my region. What is approximated is the
- *    DURATION: printed it is continuous ("as long as I am in their region"),
- *    and the engine has only the until-regroup form. That is not cosmetic here.
- *    At the end of the haste step every unit is still home, so my region holds
- *    only my own side; the printed card reaches an enemy because it ATTACKS
- *    INTO their region later in the same turn and the continuous effect then
- *    switches on. So today the card can only silence allies. It is deliberately
- *    NOT "fixed" by reaching across regions — Caleb, rules-questions: "If you
- *    have a question about wheither something can be done with units across
- *    regions, the answer is no", and "the single rule we'll never violate is
- *    'nothing can send information across regions'".
- *    The seam: a STRING on Entity to hold the named card (budgets are
- *    numeric-only) plus a StaticMod matching on a card NAME rather than an
- *    entity id. 38-light-a.test.ts's todo says the same.
+ *  - (THE EVERYWHERE is NO LONGER approximated, 2026-08-23. This entry used to
+ *    describe an until-regroup silence applied once at naming time, and named
+ *    the two missing pieces itself: "a STRING on Entity to hold the named card
+ *    (budgets are numeric-only) plus a StaticMod matching on a card NAME rather
+ *    than an entity id". The string is `Entity.named`; the StaticMod is the one
+ *    on the card. Everything else the note asked for already existed — R62's
+ *    continuous `StaticMod.suppressAbilities`, read through E.suppressionOf /
+ *    E.abilitiesSuppressed, whose `staticsFor` walk is scoped to
+ *    `anchor.region === target.region`. That scope IS "(as long as I am in
+ *    their region)", evaluated live, so the card now switches on when it
+ *    ATTACKS INTO the named unit's region and off again when it leaves —
+ *    without ever reaching across regions, which is the rule Caleb said would
+ *    never be violated. See the card for the full note.)
  *
  * UNPARKED by the R49/R50 engine wave:
  *  - Stalwart Sentinel reads the play events' new `data.from` zone instead of
@@ -542,8 +538,7 @@ card('Stalwart Sentinel', {
 // made by the HOLDER's controller (text-box [Augment], so "I" is the host when
 // this is donated), it hits every copy of the named card rather than one unit
 // ("my last named CARD"), it is REGION-SCOPED, and "loses all abilities" is
-// R62's E.suppress({ abilities: true }) — the same primitive Suppression Field
-// and Monke use.
+// R62's suppression layer — the same one Suppression Field and Monke use.
 //
 // The region scoping is not a choice. Caleb, rules-questions, twice and
 // emphatically:
@@ -554,24 +549,37 @@ card('Stalwart Sentinel', {
 //    across regions'"
 // So the silence reaches only copies standing in MY region.
 //
-// ⚠ WHAT IS APPROXIMATED, and it is the clause that gives the card its teeth:
-// the printed effect is CONTINUOUS ("as long as I am in their region"), and the
-// engine has only R62's UNTIL-REGROUP form. That matters more here than the
-// word "until regroup" suggests. At the end of the haste step every unit is
-// still standing at home, so my region holds only my own side; the printed card
-// reaches an enemy because it ATTACKS INTO their region later in the same turn,
-// at which point the continuous effect switches on. A one-shot applied at
-// naming time cannot see that coming. So today this silences allies (and units
-// whose control you have taken) and nothing else — a real, testable effect, and
-// an honestly weak one. It is NOT resolved by reaching across regions: that
-// would be inventing a rule against the quote above.
+// THE DURATION IS CONTINUOUS, and that clause is what gives the card its teeth.
+// This used to be the batch's last approximation: the silence was an
+// until-regroup E.suppress applied ONCE, at naming time, which mattered far
+// more than the phrase "until regroup" suggests. At the end of the haste step
+// every unit is still standing at home, so my region holds only my own side —
+// a one-shot stamped then could reach nothing but allies. The printed card
+// reaches an ENEMY because it ATTACKS INTO their region later in the same turn,
+// and the effect switches on at that moment.
 //
-// The missing seam, exactly: a STRING on Entity to hold the named card (budgets
-// are numeric-only — that is the store R90's Prediction Prophet uses), plus a
-// StaticMod that matches on a card NAME rather than an entity id, so the
-// silence can be re-evaluated as units move between regions. Then this card
-// becomes a static and stops being a trigger at all. This batch's todo test and
-// R91 both say so.
+// Both halves it was waiting on are below, and neither needed new machinery:
+//
+//   · `Entity.named` (types.ts) is the STRING the old note asked for, because
+//     `Entity.budgets` is numeric-only. It is a memory — "my LAST named card" —
+//     so regroup's R11 step-3 sweep deliberately does NOT clear it. A later
+//     naming overwrites it, which is exactly what "last" means.
+//   · the `statics` entry is R62's CONTINUOUS half (`StaticMod.suppressAbilities`,
+//     read through E.suppressionOf / E.abilitiesSuppressed), matching on the
+//     remembered card NAME instead of an entity id. Nothing about a
+//     name-matching static needed engine work: `affects(g, self, target)`
+//     already receives the target Entity.
+//
+// And the region clause is FREE. `staticsFor` walks anchors with
+// `anchor.region === target.region` and reads augment-donated statics from
+// their host — so "(As long as I am in their region.)" is that existing scope,
+// re-asked live every time anything reads the target's abilities, and the
+// [Augment] donation case falls out with no extra code (the Transmogrifant
+// shape). Nothing reaches across regions, which is the rule Caleb said would
+// never be violated; the card simply carries itself into their region.
+//
+// The naming is still a trigger, because naming is an ACTION taken at a time
+// ("During [Haste]"). What stopped being a trigger is the silence.
 card('The Everywhere', {
   augmentText: [{
     type: 'triggered', events: ['endOfHaste'],
@@ -595,23 +603,52 @@ card('The Everywhere', {
             { label: 'a card that is not in play', value: NOBODY },
           ],
         }) as string;
+        // The naming REMEMBERS; it does not silence. `Entity.named` is the
+        // memory ("my LAST named card" — a second naming simply overwrites it,
+        // and regroup deliberately does not wipe it), and the static below is
+        // the silence, re-asked every time anything reads a unit's abilities.
+        // That is what makes the duration continuous.
+        //
+        // `selfOf` is the ANCHOR in both play modes, which is why one field is
+        // enough: E.queueTrigger stamps `sourceId: host.id`, so text donated by
+        // an [Augment] names from — and is remembered on — the HOST, exactly the
+        // entity `staticsFor` anchors the static on (the Transmogrifant shape).
+        const self = selfOf(g, ctx);
+        if (!self) return;   // the namer left play mid-resolution: nothing to remember on
+        // "a card that is not in play" is REMEMBERED too, and that is the point
+        // of writing it before the early return: it is still a naming, so it
+        // becomes "my last named card" and whatever was silenced before is
+        // released. Empty string is a name no entity can ever carry, so the
+        // static below simply stops matching.
+        self.named = named;
         if (named === NOBODY) {
           g.ev('info', 'The Everywhere names a card that is not in play — nothing is silenced.');
           return;
         }
-        // R12: only copies in MY region. Re-looked up here rather than above:
-        // the choose may have suspended and been replayed, and "all copies" is
-        // judged now, at resolution (R27).
-        const hit = g.unitsIn(ctx.region).filter(u => u.card === named);
-        if (!hit.length) {
-          g.ev('info',
-            `The Everywhere names ${named} — no copy of it is in this region, so nothing is silenced.`);
-          return;
-        }
-        g.ev('info', `The Everywhere names ${named}: ${hit.length} copy(s) here lose all abilities.`);
-        for (const u of hit) g.suppress(u, 'The Everywhere', { abilities: true });
+        // R12 is not enforced here and must not be: which copies are actually
+        // silenced is the STATIC's business, and its answer changes as units
+        // move. This line only reports the board as it stands right now.
+        const here = g.unitsIn(self.region).filter(u => g.nameOf(u) === named).length;
+        g.ev('info', here
+          ? `The Everywhere names ${named}: ${here} copy(s) in this region lose all abilities `
+            + '— and any copy that later shares a region with me loses them too.'
+          : `The Everywhere names ${named} — no copy of it is here yet, but any that `
+            + 'shares a region with me loses all abilities for as long as it does.');
       },
     },
+  }],
+  // R62's CONTINUOUS half, which is what "(As long as I am in their region.)"
+  // is: a StaticMod matching on the remembered card NAME instead of an entity
+  // id. `staticsFor` supplies the region scope and the anchoring for free —
+  // it walks `anchor.region === target.region` and reads augment-donated
+  // statics from their host — so the printed duration clause IS the walk's
+  // existing scope, evaluated live, and the [Augment] case falls out with no
+  // extra code (the Transmogrifant precedent). Suppression is a veto (R62), so
+  // nothing votes the silence back on.
+  statics: [{
+    affects: (g, self, t) =>
+      t.kind === 'unit' && self.named !== undefined && g.nameOf(t) === self.named,
+    suppressAbilities: true,
   }],
 });
 

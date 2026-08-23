@@ -197,6 +197,15 @@ export function deadShapes(name: string): string[] {
  * 68-target-conformance pattern. Kept tiny on purpose: every name here is a
  * hole in the net, so an entry has to earn itself.
  */
+const RESOURCE_FACE_REASON =
+  'The printed "When I activate … create a Shard" clause is the MANUAL p.18 general '
+  + 'rule reprinted on the card as a reminder, not card-specific behaviour. It is '
+  + 'implemented in apply.ts::maybeGrantShard for ALL SEVEN elements and verified on '
+  + 'the real activateResource path (12-fire-a conformance sweep). printed.json has '
+  + 'only three Resource faces (fire/water/earth), so routing the rule through card '
+  + 'definitions would drop the bonus for wood/metal/light/dark and double it for '
+  + "these three. `card('X Resource', {})` is the correct definition. See R116.";
+
 const NOT_A_GAP: Record<string, string> = {
   Grox:
     'The [Switch] socket carries no text of its own — the whole ability is a graft '
@@ -211,6 +220,33 @@ const NOT_A_GAP: Record<string, string> = {
     '"I spawn with X +1/+1 counters on me" IS implemented — at every creation site, '
     + 'as spawnUnit(..., { token: true, counters: X }). The token has no behaviour of '
     + 'its own to carry, so `card(\'Robot\', {})` is the correct definition.',
+
+  // ── the three [element] Resource faces (2026-08-23) ────────────────────
+  //
+  // These carried `gap: 'dead'` ledger entries for weeks, waiting on "the
+  // resource-CARD model and a dispatched activation event". That was WRONG,
+  // and it is the exact failure mode this file was built to catch, running in
+  // the other direction: not a park note outliving its reason, but a park note
+  // that never had one. The clause was never card behaviour.
+  //
+  // "When I activate, if you have at least [r][r][r], create a Shard. {i}(It
+  // spawns dormant.)" is the MANUAL p.18 GENERAL RULE, printed on the physical
+  // card as a reminder — the same way a land prints its own tap symbol. It is
+  // implemented once, in `apply.ts::maybeGrantShard`, and it fires for ALL
+  // SEVEN elements. Verified on the real `activateResource` action path, not
+  // by inspection (12-fire-a's conformance sweep drives every element).
+  //
+  // ⚠ DO NOT "IMPLEMENT" THESE CARDS. `printed.json` carries only three
+  // Resource faces — fire, water, earth. There is no Wood/Metal/Light/Dark
+  // Resource face to hang the rule on. Routing it through card definitions
+  // would silently DROP the bonus for four of the seven elements (a live
+  // regression, traded for making a park note go away); keeping both would
+  // grant two Shards. `card('X Resource', {})` is the correct definition, for
+  // the Robot reason: the printed text carries no behaviour the card owns.
+  // See R116 and R54's 2026-08-23 correction.
+  'Fire Resource': RESOURCE_FACE_REASON,
+  'Water Resource': RESOURCE_FACE_REASON,
+  'Earth Resource': RESOURCE_FACE_REASON,
 };
 
 // ── (1) SWEEP → LEDGER: the assertion that would have caught Harbinger ──

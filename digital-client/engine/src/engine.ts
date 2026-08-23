@@ -1023,6 +1023,24 @@ export class E {
     }
     return set;
   }
+  /**
+   * The card NAME this entity answers to — what a "name a card" effect
+   * (The Everywhere) matches against, and the one place that comparison is
+   * made.
+   *
+   * It is `entity.card` today and there is no other answer to give. It exists
+   * as a method anyway because `Entity.card` is doing two jobs at once: it is
+   * the entity's IDENTITY (which registered definition supplies its text) and
+   * it is also the printed NAME. A copy layer separates them — the ledger's
+   * Apex Prime / Borrower of Forms entries are both waiting on one, and both
+   * warn that `Entity.card` is what "name a card" effects key off. When that
+   * layer lands, a copy has to answer with the name it is copying while still
+   * resolving its text through its own definition, and this is the single hook
+   * for that. Card code must never compare `t.card === named` directly.
+   */
+  nameOf(e: Entity): CardName {
+    return e.card;
+  }
   /** the formation column an entity currently fights in, if any */
   columnOf(id: EntityId): EntityId[] | null {
     const b = this.s.battle;
@@ -6204,6 +6222,84 @@ export class E {
     if (sub === 'Swift') return attrs.has('Swift');
     if (sub === 'Sluggish') return attrs.has('Sluggish');
     return !attrs.has('Swift') && !attrs.has('Sluggish');
+  }
+
+  /**
+   * R117: WHICH of the three combat-damage sub-steps `u`'s column strikes in —
+   * 'Swift', 'normal' or 'Sluggish', or null when `u` is not in a column at all.
+   *
+   * The owner's ruling (2026-08-23): a "when my column deals combat damage"
+   * trigger fires in the sub-step its OWN COLUMN strikes in. A {Swift} column
+   * fires in the Swift sub-step; every other column fires in the normal one.
+   * Card code could not ask that before, and it needed to: `commitPlayerDamage`
+   * aggregates EVERY connecting column's face damage into one `loseLife` per
+   * seat per sub-step, so a Dreamtender in a normal column heard the Swift
+   * sub-step's `lifeLost` and sacrificed itself a sub-step early whenever any
+   * Swift column also connected.
+   *
+   * The answer is `scheduled()`'s, asked over the three sub-steps in order —
+   * exactly one is true — with the pairing's `pure` threaded in the way
+   * `assignCombatDamage` threads it, because R61 {Pure} collapses a whole
+   * exchange (both sides, in both directions) into the normal sub-step whatever
+   * the columns are printed with. Reconstructing `pure` here rather than
+   * reading the column's own attributes is the entire reason this is an engine
+   * method and not three lines of card code.
+   *
+   * ⚠ Ask it from `when()`, not from `run()` — see `strikesInCurrentSubStep`.
+   */
+  combatSubStepOf(u: Entity): 'Swift' | 'normal' | 'Sluggish' | null {
+    const b = this.s.battle;
+    if (!b) return null;
+    const alive = (ids: EntityId[]) => ids.filter(id => this.entity(id));
+    let mine: EntityId[] | null = null;
+    let pure = false;
+    const ci = b.columns.findIndex(col => col.includes(u.id));
+    if (ci !== -1) {
+      // attacker side, read the way assignCombatDamage reads it: `blockedEver`
+      // is "b.blocks[ci] exists", and an unblocked column pairs against nothing
+      const atk = alive(b.columns[ci]!);
+      const blk = b.blocks[ci] !== undefined ? alive(b.blocks[ci]!) : [];
+      mine = atk;
+      pure = this.pure(atk, blk);
+    } else {
+      for (const [key, col] of Object.entries(b.blocks)) {
+        if (!col.includes(u.id)) continue;
+        const blk = alive(col);
+        const atk = alive(b.columns[Number(key)] ?? []);
+        mine = blk;
+        pure = this.pure(atk, blk);
+        break;
+      }
+    }
+    if (!mine) return null;
+    for (const sub of ['Swift', 'normal', 'Sluggish'] as const) {
+      if (this.scheduled(mine, sub, pure)) return sub;
+    }
+    return null;
+  }
+
+  /**
+   * R117, as card text asks it: is the sub-step running RIGHT NOW the one `u`'s
+   * column strikes in? The one shared gate behind every "when my column deals
+   * combat damage" trigger (Eldritch Dreamtender, Zephyrzoa, Blightmound).
+   *
+   * ⚠ TIMING — this is only true inside `when()`. `when()` is evaluated at
+   * event time (R1), which is inside `combatSubStep(sub)`, and `b.damageStep`
+   * is advanced only AFTER `combatSubStep` returns — so it reads the CURRENT
+   * sub-step here and the NEXT one by the time the queued trigger settles.
+   * Putting this gate in a `run()` would read the wrong sub-step every time.
+   *
+   * ⚠ WHAT THIS DOES NOT CLOSE: face damage still arrives as one aggregated
+   * `lifeLost` per seat per sub-step, so two of the SAME controller's columns
+   * connecting in the SAME sub-step remain indistinguishable to card text. The
+   * sub-step gate narrows that a great deal but does not close it; closing it
+   * means carrying live column ids on the combat ledger, which touches
+   * Amphivore, Vroot, Zephyrzoa and Blightmound as well.
+   */
+  strikesInCurrentSubStep(u: Entity): boolean {
+    const b = this.s.battle;
+    if (!b || !b.damageStep) return false;
+    return b.damageStep === this.combatSubStepOf(u);
   }
 
   /** One sub-step of simultaneous damage, in two halves over one ledger:

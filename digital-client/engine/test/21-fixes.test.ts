@@ -129,13 +129,37 @@ test('below 3 affinity no shard; shards give mana but never affinity', () => {
   assert.ok(h.q.openMana(0) >= 5, 'shards are mana like any resource');
 });
 
-test('exchanging a Prismite into your 3rd element copy also grants the shard', () => {
+test('R116: exchanging a Prismite into your 3rd element copy grants NO shard — an exchange is not an activation', () => {
+  // INVERTED 2026-08-23. This test used to assert the opposite ("…also grants
+  // the shard") and it was asserting a bug: doExchangePrismite called
+  // maybeGrantShard, so trading a Prismite in paid the Manual p.18 affinity
+  // bonus as though the resource had been activated as that element.
+  //
+  // The owner's ruling: "an exchange is not an activation." The printed text
+  // pays out "when I ACTIVATE", and the activation already happened — to a
+  // PRISMITE, which pays nothing (R17). Caleb: "'activating the prismite' is
+  // like playing your land for turn, but cracking the fetchland doesn't take
+  // an additional land drop." This is a NERF to prismite-heavy play.
   const h = new Harness(2106);
   giveResources(h, 0, 'water', 2, 'open');
   giveResources(h, 0, 'prismite', 1, 'open');
   const idx = h.state.players[0]!.resources.findIndex(r => r.kind === 'prismite' && r.state === 'open');
   h.do({ type: 'exchangePrismite', seat: 0, index: idx, element: 'water' });
-  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 1);
+  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 0,
+    'no p.18 bonus on an exchange');
+  // and the exchange itself still WORKS — R17 is untouched
+  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'water').length, 3,
+    'the prismite really became a water resource');
+  assert.equal(h.state.players[0]!.resources[idx]!.state, 'open', 'keeping its state');
+  assert.equal(h.q.affinity(0, 'water'), 3, 'and it counts for affinity like any water');
+
+  // ACTIVATING a dormant water at that same affinity still pays, so the ruling
+  // narrows the exchange and nothing else
+  giveResources(h, 0, 'water', 1, 'dormant');
+  const d = h.state.players[0]!.resources.findIndex(r => r.kind === 'water' && r.state === 'dormant');
+  h.do({ type: 'activateResource', seat: 0, index: d });
+  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 1,
+    'the activation path is unchanged');
 });
 
 // ── game elements ─────────────────────────────────────────────────────

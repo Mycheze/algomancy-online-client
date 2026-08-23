@@ -128,7 +128,15 @@ card('Embermaw Fledgling', {
 // (the battle region where I'm attacking/blocking). Unbounded graft.
 const grottoBuff: EffectDef = {
   run: (g, ctx) => {
-    for (const u of g.unitsOf(ctx.controller, ctx.region)) g.addTemp(u, 0, 1);
+    const units = g.unitsOf(ctx.controller, ctx.region);
+    // an empty region is a real outcome (the Guardian itself can have left by
+    // the time the trigger resolves) — it must still say so rather than
+    // resolving in silence (65-effect-conformance)
+    if (!units.length) {
+      g.ev('info', 'Guardian of the Grotto: you have no units in this region — nothing is buffed.');
+      return;
+    }
+    for (const u of units) g.addTemp(u, 0, 1);
   },
 };
 card('Guardian of the Grotto', {

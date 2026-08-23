@@ -108,5 +108,10 @@ Cards not in play (hand, bin, cache, a token being explained) render the same ma
 
 * Static-vs-static suppression resolves in one pass (R62) — two mutual suppressors both keep
   radiating and both go quiet.
-* The Everywhere is still parked: its suppression half is now trivial, but *naming a card* is
-  a decision primitive the engine does not have.
+* The Everywhere SHIPPED (2026-08-23). Both halves it was parked on had already landed and
+  the note above outlived them: *naming a card* is R91's `ctx.choose` with `DecisionOption.card`,
+  and the CONTINUOUS silence is R62's `StaticMod.suppressAbilities`, whose `staticsFor` walk is
+  already region-scoped — which is exactly what "(as long as I am in their region)" means. All
+  that was actually missing was somewhere to keep the name: `Entity.named`, a string, because
+  `budgets` is numeric-only. Read it through `E.nameOf()`, the single hook a future copy-NAME
+  layer has to touch.

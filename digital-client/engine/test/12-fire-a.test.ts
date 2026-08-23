@@ -6,7 +6,9 @@
  * Immolation, Infernal Wispweaver), formation token creation (Hooba-Lin), a
  * trigger-approximated aura (Animated Spark), a haste body plus a bin-resident
  * recall trigger (Cinder Scuttler, R51)
- * and the PARKED cards (todo tests state exactly what's missing). States are
+ * and the Manual p.18 AFFINITY BONUS that the [element] Resource faces reprint
+ * as reminder text — including the seven-element conformance sweep that keeps
+ * that rule out of card definitions (R116, R54). States are
  * built explicitly (give/spawn/giveResources) so parallel card registration
  * can't shift assertions. Seeds: 1200-1299.
  */
@@ -14,12 +16,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
+import { ALL_ELEMENTS } from '../src/apply.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
-import type { EntityId, Seat } from '../src/types.ts';
+import type { Element, EntityId, Seat } from '../src/types.ts';
 
 /** spawn a stat token (no triggers) into a seat's home region */
 function spawnToken(h: Harness, seat: Seat, p: number, t: number): EntityId {
@@ -717,15 +720,122 @@ test('Fire Resource: registered with its printed face', () => {
   assert.equal(c.toughness, 0);
 });
 
-test('Fire Resource: activation → Shard at [r][r][r]', { todo: true }, () => {
-  // PARKED on exactly two things, both in the engine and neither in card code:
-  //  1. resource CARDS are not modelled — resources are plain ResourceState
-  //     entries, not entities, so there is no "me" for the text to be on;
-  //  2. doActivateResource does not fireEvent, so "when I activate" has no
-  //     event to listen for.
-  // It is NO LONGER parked on the Shard: E.createShard() and a real 'shard'
-  // ResourceKind exist (see Hooba-Lan in 16-earth-a and Swirling Shardform in
-  // 18-earth-c, both live), so the payload half is ready and waiting.
+/* ── THE AFFINITY BONUS (Manual p.18) ──────────────────────────────────────
+ *
+ * These were a `{ todo: true }` test for weeks, and the ledger carried a
+ * `gap: 'dead'` entry beside them, both saying the clause needed "the
+ * resource-CARD model and a dispatched activation event". Both were WRONG.
+ *
+ * "When I activate, if you have at least [r][r][r], create a Shard. {i}(It
+ * spawns dormant.)" is not card-specific behaviour. It is the Manual p.18
+ * GENERAL RULE, reprinted on the physical card as reminder text, and it has
+ * been implemented the whole time in `apply.ts::maybeGrantShard` — for every
+ * element, on the real `activateResource` action path.
+ *
+ * ⚠ NOTE FOR WHOEVER READS THIS NEXT: printed.json carries only THREE Resource
+ * faces — Fire, Water and Earth. There is no Wood, Metal, Light or Dark
+ * Resource card. So the sweep below is the guard rail: "implementing" the
+ * three faces would route a SEVEN-element rule through three card definitions
+ * and silently drop the bonus for the other four. That is why these are
+ * declared in 71-card-ledger's NOT_A_GAP rather than implemented. R116, R54.
+ */
+
+test('Fire Resource: activating your 3rd fire pays the p.18 affinity Shard — dormant, and every time', () => {
+  const h = new Harness(1254);
+  giveResources(h, 0, 'fire', 2, 'open');
+  giveResources(h, 0, 'fire', 1, 'dormant');
+  const dormant = (): number =>
+    h.state.players[0]!.resources.findIndex(r => r.kind === 'fire' && r.state === 'dormant');
+  const shards = (): { state: string }[] => h.state.players[0]!.resources.filter(r => r.kind === 'shard');
+
+  h.do({ type: 'activateResource', seat: 0, index: dormant() });
+  assert.equal(shards().length, 1, 'the printed clause: at [r][r][r], a Shard');
+  assert.equal(shards()[0]!.state, 'dormant', '"(It spawns dormant.)"');
+  assert.equal(h.q.affinity(0, 'fire'), 3, 'and the Shard itself adds no fire affinity');
+
+  // Caleb, asked whether the bonus happens once or every time: "Every time."
+  giveResources(h, 0, 'fire', 1, 'dormant');
+  h.do({ type: 'activateResource', seat: 0, index: dormant() });
+  assert.equal(shards().length, 2, '"Every time" — not once per game, not once per turn');
+});
+
+test('Fire Resource: below three affinity the clause does nothing', () => {
+  const h = new Harness(1255);
+  giveResources(h, 0, 'fire', 1, 'open');
+  giveResources(h, 0, 'fire', 1, 'dormant');
+  const i = h.state.players[0]!.resources.findIndex(r => r.kind === 'fire' && r.state === 'dormant');
+  h.do({ type: 'activateResource', seat: 0, index: i });
+  assert.equal(h.q.affinity(0, 'fire'), 2, 'the 2nd fire — "at least [r][r][r]" is not met');
+  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 0);
+});
+
+test('the resource being activated COUNTS TOWARD ITS OWN THREE — the boundary', () => {
+  // The pinned reading of "if you have at least [r][r][r]": it is checked
+  // AFTER the resource turns face-up, so your THIRD fire pays for itself. The
+  // alternative reading ("three OTHER fire") would mean the bonus first
+  // arrives on the 4th, and nothing else in the suite says which it is. This
+  // test is the difference between the two, made to fail if it ever moves.
+  const h = new Harness(1256);
+  giveResources(h, 0, 'fire', 2, 'open');            // two face-up: affinity 2
+  giveResources(h, 0, 'fire', 1, 'dormant');
+  assert.equal(h.q.affinity(0, 'fire'), 2, 'BEFORE the activation the player is one short');
+  const i = h.state.players[0]!.resources.findIndex(r => r.kind === 'fire' && r.state === 'dormant');
+  h.do({ type: 'activateResource', seat: 0, index: i });
+  assert.equal(h.q.affinity(0, 'fire'), 3, 'the activated resource is the third');
+  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 1,
+    'and it pays out on the activation that made the third — not on the fourth');
+});
+
+test('CONFORMANCE: every element pays the p.18 affinity bonus at 3 — all seven, not just the three with printed faces', () => {
+  // THE TEST THAT MATTERS. It fails the day someone "implements" Fire/Water/
+  // Earth Resource as card definitions: the bonus would then live on three
+  // card faces, and wood, metal, light and dark — which have NO Resource face
+  // in printed.json to hang it on — would silently stop paying.
+  //
+  // Exhaustive by construction: the Record forces a compile error if a new
+  // Element is added to the type without a line here.
+  const EVERY_ELEMENT: Record<Element, true> = {
+    fire: true, water: true, earth: true, wood: true, metal: true, light: true, dark: true,
+  };
+  const elements = Object.keys(EVERY_ELEMENT) as Element[];
+  assert.deepEqual([...elements].sort(), [...ALL_ELEMENTS].sort(),
+    'this sweep must cover exactly the engine\'s element list');
+
+  const missed: string[] = [];
+  for (const el of elements) {
+    // a fresh game per element: ACTIVATIONS_PER_TURN is 2, and the point is
+    // the rule, not the budget
+    const h = new Harness(1257);
+    giveResources(h, 0, el, 2, 'open');
+    giveResources(h, 0, el, 1, 'dormant');
+    const i = h.state.players[0]!.resources.findIndex(r => r.kind === el && r.state === 'dormant');
+    h.do({ type: 'activateResource', seat: 0, index: i });
+    const shards = h.state.players[0]!.resources.filter(r => r.kind === 'shard');
+    if (shards.length !== 1) missed.push(`${el}: ${shards.length} shards, expected exactly 1`);
+    else if (shards[0]!.state !== 'dormant') missed.push(`${el}: shard arrived ${shards[0]!.state}, not dormant`);
+  }
+  assert.deepEqual(missed, [],
+    'the p.18 affinity bonus is a rule about ELEMENTS, implemented once in '
+    + 'apply.ts::maybeGrantShard. printed.json has Resource faces for only fire, '
+    + 'water and earth — so if this failed for wood/metal/light/dark, the likely '
+    + 'cause is that the rule was moved onto those three card definitions. Put it '
+    + 'back in maybeGrantShard; see R116 and 71-card-ledger\'s NOT_A_GAP.');
+});
+
+test('CONFORMANCE: a Prismite and a Shard never pay the bonus, however many you have', () => {
+  // maybeGrantShard's two early returns, pinned. R17: prismites give no
+  // affinity; R54: nor do shards. Neither is an "elemental resource" in the
+  // p.18 sense, so neither can reach three affinity of anything.
+  for (const kind of ['prismite', 'shard'] as const) {
+    const h = new Harness(1258);
+    giveResources(h, 0, kind, 3, 'open');
+    giveResources(h, 0, kind, 1, 'dormant');
+    const before = h.state.players[0]!.resources.filter(r => r.kind === 'shard').length;
+    const i = h.state.players[0]!.resources.findIndex(r => r.kind === kind && r.state === 'dormant');
+    h.do({ type: 'activateResource', seat: 0, index: i });
+    const after = h.state.players[0]!.resources.filter(r => r.kind === 'shard').length;
+    assert.equal(after, before, `activating a ${kind} must create nothing`);
+  }
 });
 
 // ── Flame Shield ─────────────────────────────────────────────────────────

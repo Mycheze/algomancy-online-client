@@ -99,11 +99,19 @@ function tokensInRegion(g: E, region: number): Entity[] {
 
 /** "my column deals combat damage to an opponent", read off the aggregated
  * combat lifeLost event (Amphivore's approximation): my column connects if it
- * is attacking unblocked, or blocked/blocking with Piercing. */
+ * is attacking unblocked, or blocked/blocking with Piercing — and the sub-step
+ * now running has to be MY column's (R117). */
 function myColumnConnected(g: E, self: Entity, ev: { data?: Record<string, unknown> }): boolean {
   if (g.s.phase !== 'battle' || ev.data?.['why'] !== 'combat' || ev.data?.['seat'] === self.controller) return false;
   const b = g.s.battle;
   if (!b) return false;
+  // R117 (owner, 2026-08-23): the trigger fires in the sub-step MY OWN COLUMN
+  // strikes in. Without this the aggregated per-seat `lifeLost` makes a normal
+  // column hear the Swift sub-step whenever any Swift column also connects.
+  // It belongs in when() and nowhere else — `b.damageStep` reads the CURRENT
+  // sub-step at event time and the NEXT one by resolution (see
+  // E.strikesInCurrentSubStep).
+  if (!g.strikesInCurrentSubStep(self)) return false;
   const atkCi = b.columns.findIndex(col => col.includes(self.id));
   if (atkCi !== -1) {
     const alive = b.columns[atkCi]!.filter(id => g.entity(id));

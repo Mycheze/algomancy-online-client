@@ -39,11 +39,18 @@
  *    the part's DECLARED targets, never the survivors — RAQ "[Solved] Envoy of
  *    Lightning vs Twin Flame." rules that a two-target spell that lost a
  *    target is still a two-target spell.
- *  - Fire Resource: resource CARDS aren't modelled — resources are plain
- *    ResourceState (no entities) and doActivateResource doesn't fireEvent, so
- *    "when I activate" has nothing to listen to. (The third reason this note
- *    used to give — "there is no 'Shard' resource kind" — is no longer true:
- *    E.createShard and a real 'shard' kind exist.) Registered as printed;
+ *  - Fire Resource: NOT PARKED — this note was wrong (corrected 2026-08-23).
+ *    It claimed the clause needed the resource-CARD model and a dispatched
+ *    activation event. The clause is not card behaviour at all: "When I
+ *    activate, if you have at least [r][r][r], create a Shard" is the MANUAL
+ *    p.18 general rule, reprinted on the physical card as reminder text, and
+ *    it has always worked — `apply.ts::maybeGrantShard`, for all seven
+ *    elements, on the real activateResource path. `card('Fire Resource', {})`
+ *    is the correct definition (the Robot precedent), because the face owns no
+ *    behaviour. ⚠ Do NOT "implement" it: printed.json has Resource faces for
+ *    only fire, water and earth, so moving the rule onto card definitions
+ *    would drop the bonus for wood/metal/light/dark. R116, R54; the
+ *    seven-element conformance sweep in test/12-fire-a is the guard rail.
  *    registry.ts keeps every element's Resource face out of DECK_LIST.
  *  - Gravitational Correction (X half): UN-PARKED (R35) — X is now chosen and
  *    paid at cast; item.x is set before the spell hits the stack.
@@ -367,9 +374,12 @@ card('Envoy of Lightning', {
 });
 
 // "When I activate, if you have at least [r][r][r], create a Shard. (It
-// spawns dormant.)" — [r] Fire Resource, 2/0. PARKED (see header) on the
-// resource-CARD model and the missing 'when I activate' event — NOT on the
-// Shard, which E.createShard makes for real. Registered so the name resolves.
+// spawns dormant.)" — [r] Fire Resource, 2/0. NOT PARKED: that sentence is
+// the Manual p.18 general rule reprinted as reminder text, implemented in
+// apply.ts::maybeGrantShard for all seven elements. Bare is CORRECT — the
+// face owns no behaviour. ⚠ Adding it here would double the bonus for fire
+// and, once the rule moved off maybeGrantShard, delete it for wood, metal,
+// light and dark (no printed faces). R116; guarded by test/12-fire-a.
 card('Fire Resource', {});
 
 // "Negate all other effects. For each nontoken spell negated this way,

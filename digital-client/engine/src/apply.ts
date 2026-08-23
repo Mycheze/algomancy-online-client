@@ -314,7 +314,20 @@ function doActivateResource(e: E, seat: Seat, index: number): void {
 /** Manual p.18 (Shards and Affinity Bonuses): "The elemental resources can
  * provide free Shards when they are activated if the player has at least
  * three affinity towards that resource." The shard arrives dormant like any
- * created resource and gives no affinity — mana only. */
+ * created resource and gives no affinity — mana only. Caleb, asked whether
+ * the bonus is once or repeatable: "Every time" — so this is unbounded.
+ *
+ * The resource being activated counts toward its own three: `r.state` is set
+ * to 'open' before this is called, so activating your 3rd fire pays out.
+ *
+ * THIS IS THE ONLY IMPLEMENTATION, and it is general — it fires for all seven
+ * elements. The `[element] Resource` card FACES print the same sentence as
+ * reminder text, but only three of the seven exist in printed.json (fire,
+ * water, earth), so routing the rule through card definitions would silently
+ * drop the bonus for wood/metal/light/dark. Do not "implement" those faces;
+ * the conformance sweep in `12-fire-a.test.ts` fails loudly if anyone does.
+ *
+ * ONE CALLER, by R116: activation. An exchange is not an activation. */
 function maybeGrantShard(e: E, seat: Seat, kind: ResourceKind): void {
   if (kind === 'prismite' || kind === 'shard') return;
   if (e.affinity(seat, kind) < 3) return;
@@ -336,9 +349,13 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
   e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');
   r.kind = element;
   e.ev('resourceActivated', `${e.pname(seat)} exchanges a Prismite for a ${element} resource.`, { seat, kind: element });
-  // the exchange turns an already-activated resource into this element, so
-  // the p.18 shard bonus applies just as if it had been activated as one
-  maybeGrantShard(e, seat, element);
+  // R116: NO affinity shard here. An exchange is not an activation. The
+  // printed text pays out "when I ACTIVATE", and Caleb draws the line
+  // explicitly: "'activating the prismite' is like playing your land for
+  // turn, but cracking the fetchland doesn't take an additional land drop."
+  // The prismite was activated as a PRISMITE (which pays nothing, p.18), and
+  // trading it in later does not retroactively make that an activation of the
+  // element. Only doActivateResource calls maybeGrantShard.
 }
 
 /**

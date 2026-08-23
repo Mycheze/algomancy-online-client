@@ -9,15 +9,19 @@
  * event region's present seats), R14 ("this battle" counters are per
  * region-battle).
  *
- * PARKED (needs engine machinery that does not exist yet):
- *  - Water Resource: "When I activate, if you have at least [b][b][b], create
- *    a Shard" still needs (a) resource cards modelled as playable resources
- *    (the engine's resources are anonymous ResourceState entries made by
- *    recycleForResource) and (b) 'resourceActivated' dispatched to trigger
- *    listeners (apply.ts only logs it). This note used to name a third
- *    blocker, "(c) a 'Shard' resource kind" — that one has shipped
- *    (E.createShard, kind 'shard', created dormant), so the payload is ready
- *    and waiting for the trigger. Registered as printed data only.
+ * NOTHING IN THIS BATCH IS PARKED.
+ *  - Water Resource: this header used to list it as parked on (a) resource
+ *    cards modelled as playable resources and (b) a dispatched
+ *    'resourceActivated' trigger. Corrected 2026-08-23: neither was ever
+ *    needed. "When I activate, if you have at least [b][b][b], create a Shard"
+ *    is the MANUAL p.18 general rule, reprinted on the physical card as
+ *    reminder text — implemented in `apply.ts::maybeGrantShard` for all seven
+ *    elements and verified on the real activateResource path (test/15-water-b,
+ *    and the conformance sweep in test/12-fire-a). Registered as printed data
+ *    only, which is the CORRECT definition: the face owns no behaviour.
+ *    ⚠ Do not "implement" it — printed.json carries Resource faces for only
+ *    fire, water and earth, so routing a seven-element rule through them would
+ *    silently drop the bonus for wood, metal, light and dark. R116, R54.
  */
 import type { EngineEvent, Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -670,12 +674,14 @@ card('Vaporweave Eidolon', {
 });
 
 // "When I activate, if you have at least [b][b][b], create a Shard.
-// (It spawns dormant.)" — b/0 2/0, [b] Water Resource.
-// PARKED (see header) on resource CARDS and the activation trigger; the Shard
-// itself is no longer missing (E.createShard). Registered on printed data only
-// so lookups never crash. (Note: printed.kind is 'unit', so the shared
-// deck legally contains it; played, its 0 toughness kills it immediately —
-// harmless until resource-card play is modelled.)
+// (It spawns dormant.)" — b/0 2/0, [b] Water Resource. NOT PARKED: that
+// sentence is the Manual p.18 general rule reprinted as reminder text, live in
+// apply.ts::maybeGrantShard for all seven elements. Bare is CORRECT — the face
+// owns no behaviour. ⚠ Adding it here would double the bonus for water and,
+// once the rule moved off maybeGrantShard, delete it for the four elements
+// with no printed face. R116; guarded by test/12-fire-a's sweep.
+// (Note: printed.kind is 'unit', so the shared deck legally contains it;
+// played, its 0 toughness kills it immediately — harmless.)
 card('Water Resource', {});
 
 // "[Augment] Whenever one or more other cards enter a player's hand during

@@ -28,13 +28,19 @@
  *  - Hooba-Lan: UN-PARKED — E.createShard() (a real 'shard' ResourceKind,
  *    created dormant) exists, and the card calls it. The note that this
  *    "needs a Shard ResourceKind" outlived the primitive; see the card.
- *  - Earth Resource: STILL PARKED, but for two reasons rather than three —
- *    the Shard half is done (E.createShard). What is missing is the
- *    resource-CARD model: resources are anonymous ResourceState entries with
- *    no card behind them, and doActivateResource does not fireEvent, so
- *    "when I activate" has nothing to listen to. Registered printed-data-only;
- *    registry.ts deliberately excludes it from DECK_LIST (a resource face,
- *    not a deck card).
+ *  - Earth Resource: NOT PARKED — corrected 2026-08-23. This note claimed the
+ *    clause waited on the resource-CARD model and a dispatched activation
+ *    event, and it was the ONLY thing tracking the card (no test existed until
+ *    now). Both claims were wrong: "When I activate, if you have at least
+ *    [e][e][e], create a Shard" is the MANUAL p.18 general rule reprinted on
+ *    the physical card as reminder text, implemented in
+ *    `apply.ts::maybeGrantShard` for all seven elements and now verified on
+ *    the real activateResource path (test/16-earth-a). Registered
+ *    printed-data-only, which is the CORRECT definition — the face owns no
+ *    behaviour. ⚠ Do not "implement" it: printed.json has Resource faces for
+ *    only fire, water and earth, so moving the rule onto card definitions
+ *    would drop the bonus for wood/metal/light/dark. R116, R54; registry.ts
+ *    still excludes it from DECK_LIST (a resource face, not a deck card).
  */
 import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -218,10 +224,13 @@ card('Deathglow Strider', {
 });
 
 // "When I activate, if you have at least [e][e][e], create a Shard. (It
-// spawns dormant.)" — [e] Earth Resource, 2/0. PARKED (see header) on the
-// resource-CARD model and the missing 'when I activate' event — NOT on the
-// Shard any more (E.createShard is real). Registered printed-data-only so
-// lookups never crash; registry.ts keeps it out of DECK_LIST (resource face).
+// spawns dormant.)" — [e] Earth Resource, 2/0. NOT PARKED: that sentence is
+// the Manual p.18 general rule reprinted as reminder text, live in
+// apply.ts::maybeGrantShard for all seven elements. Bare is CORRECT — the face
+// owns no behaviour. ⚠ Adding it here would double the bonus for earth and,
+// once the rule moved off maybeGrantShard, delete it for the four elements
+// with no printed face. R116; guarded by test/12-fire-a's sweep.
+// registry.ts keeps it out of DECK_LIST (resource face).
 card('Earth Resource', {});
 
 // "[Augment] Whenever I am dealt damage, you may pay [one]. If you do, I

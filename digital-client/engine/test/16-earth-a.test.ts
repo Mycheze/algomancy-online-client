@@ -8,7 +8,9 @@
  * (Flowstone Arcanite, both the lifeLost and unit-damage channels), a
  * region-wide sweep (Haboob), the pay-to-fight damage trigger (Eminence of
  * the Barrens, R6 payment), Hooba-Lan's real dormant Shard (unparked — see
- * E.createShard) and the still-parked cards (Crevice Lurker, Earth Resource).
+ * E.createShard), the Manual p.18 affinity bonus the Earth Resource face
+ * reprints as reminder text (R116/R54 — the rule lives in maybeGrantShard, not
+ * on the card), and the still-parked Crevice Lurker.
  * States are built explicitly (give/spawn/giveResources).
  * Seeds 1600-1699. */
 import { test } from 'node:test';
@@ -126,6 +128,44 @@ test('Earth Resource: registered printed-data-only (resource face, not a deck ca
   assert.equal(c.mana, 0);
   assert.deepEqual([c.power, c.toughness], [2, 0]);
   assert.match(c.type, /Earth Resource/);
+});
+
+test('Earth Resource: activating your 3rd earth pays the p.18 affinity Shard, every time', () => {
+  // Until 2026-08-23 this card had NO test at all — its ledger entry was
+  // `unverified: true` and a batch-header comment was the only thing that ever
+  // mentioned it, which is precisely the Harbinger shape. The entry claimed
+  // the printed clause was dead, waiting on "the resource-CARD model and a
+  // dispatched activation event". It was not dead. "When I activate, if you
+  // have at least [e][e][e], create a Shard. {i}(It spawns dormant.)" is the
+  // Manual p.18 GENERAL RULE reprinted on the card as reminder text, and it is
+  // implemented in apply.ts::maybeGrantShard for all seven elements — see the
+  // conformance sweep in 12-fire-a, which exists so nobody "implements" it
+  // onto the three printed Resource faces and drops the other four. R116, R54.
+  const h = new Harness(1621);
+  giveResources(h, 0, 'earth', 2, 'open');
+  giveResources(h, 0, 'earth', 1, 'dormant');
+  const dormant = (): number =>
+    h.state.players[0]!.resources.findIndex(r => r.kind === 'earth' && r.state === 'dormant');
+  const shards = (): { state: string }[] => h.state.players[0]!.resources.filter(r => r.kind === 'shard');
+
+  h.do({ type: 'activateResource', seat: 0, index: dormant() });
+  assert.equal(shards().length, 1, 'at [e][e][e], a Shard');
+  assert.equal(shards()[0]!.state, 'dormant', '"(It spawns dormant.)"');
+  assert.equal(h.q.affinity(0, 'earth'), 3, 'R54: the Shard adds no earth affinity of its own');
+
+  giveResources(h, 0, 'earth', 1, 'dormant');
+  h.do({ type: 'activateResource', seat: 0, index: dormant() });
+  assert.equal(shards().length, 2, 'Caleb, once or every time: "Every time"');
+});
+
+test('Earth Resource: two open earth is not [e][e][e] — no Shard', () => {
+  const h = new Harness(1622);
+  giveResources(h, 0, 'earth', 1, 'open');
+  giveResources(h, 0, 'earth', 1, 'dormant');
+  const i = h.state.players[0]!.resources.findIndex(r => r.kind === 'earth' && r.state === 'dormant');
+  h.do({ type: 'activateResource', seat: 0, index: i });
+  assert.equal(h.q.affinity(0, 'earth'), 2);
+  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 0);
 });
 
 test('Eminence of the Barrens: dealt damage → may pay [one] to fight another target unit (R6)', () => {

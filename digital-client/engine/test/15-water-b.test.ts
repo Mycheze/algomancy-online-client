@@ -600,7 +600,7 @@ test('Vaporweave Eidolon: [zero]: recall me — a free activated self-recall', (
   assert.ok(h.state.players[p]!.hand.includes('Vaporweave Eidolon'), 'back to hand');
 });
 
-test('Water Resource: registered on printed data (2/0, [b]); behavior parked', () => {
+test('Water Resource: registered on printed data (2/0, [b]); the face carries no behaviour of its own', () => {
   const def = getCard('Water Resource');
   assert.equal(def.power, 2);
   assert.equal(def.toughness, 0);
@@ -618,13 +618,41 @@ test('Water Resource: registered on printed data (2/0, [b]); behavior parked', (
   assert.ok(h.state.players[p]!.bin.includes('Water Resource'));
 });
 
-test('Water Resource: activation trigger + Shard (PARKED: resource cards + the activation event)', { todo: true }, () => {
-  // Needs two engine primitives: resource CARDS playable as resources (today a
-  // resource is an anonymous ResourceState entry, not an entity), and
-  // 'resourceActivated' dispatched to trigger listeners (apply.ts only logs
-  // it). The third blocker this note used to name — "a 'Shard' resource kind"
-  // — has shipped: E.createShard() creates real dormant shards, and
-  // Hooba-Lan / Swirling Shardform already use it.
+test('Water Resource: activating your 3rd water pays the p.18 affinity Shard, every time', () => {
+  // WAS a { todo: true } "PARKED: resource cards + the activation event". That
+  // was wrong, and the ledger entry beside it was wrong for the same reason:
+  // "When I activate, if you have at least [b][b][b], create a Shard. {i}(It
+  // spawns dormant.)" is the Manual p.18 GENERAL RULE reprinted on the card as
+  // reminder text, not behaviour this card owns. It lives in
+  // apply.ts::maybeGrantShard and fires for all seven elements — see the
+  // conformance sweep in 12-fire-a, which is what stops anyone from "fixing"
+  // this by moving the rule onto the three printed Resource faces (there are
+  // no wood/metal/light/dark faces to move it to). R116, R54.
+  const h = new Harness(1554);
+  giveResources(h, 0, 'water', 2, 'open');
+  giveResources(h, 0, 'water', 1, 'dormant');
+  const dormant = (): number =>
+    h.state.players[0]!.resources.findIndex(r => r.kind === 'water' && r.state === 'dormant');
+  const shards = (): { state: string }[] => h.state.players[0]!.resources.filter(r => r.kind === 'shard');
+
+  h.do({ type: 'activateResource', seat: 0, index: dormant() });
+  assert.equal(shards().length, 1, 'at [b][b][b], a Shard');
+  assert.equal(shards()[0]!.state, 'dormant', '"(It spawns dormant.)"');
+  assert.equal(h.q.affinity(0, 'water'), 3, 'R54: the Shard adds no water affinity of its own');
+
+  giveResources(h, 0, 'water', 1, 'dormant');
+  h.do({ type: 'activateResource', seat: 0, index: dormant() });
+  assert.equal(shards().length, 2, 'Caleb, once or every time: "Every time"');
+});
+
+test('Water Resource: two open water is not [b][b][b] — no Shard', () => {
+  const h = new Harness(1555);
+  giveResources(h, 0, 'water', 1, 'open');
+  giveResources(h, 0, 'water', 1, 'dormant');
+  const i = h.state.players[0]!.resources.findIndex(r => r.kind === 'water' && r.state === 'dormant');
+  h.do({ type: 'activateResource', seat: 0, index: i });
+  assert.equal(h.q.affinity(0, 'water'), 2);
+  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 0);
 });
 
 test('Xenopod Progenitor: another card enters a hand in battle → may pay [1] for a 2/2', () => {

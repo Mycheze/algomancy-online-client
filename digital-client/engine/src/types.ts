@@ -206,6 +206,32 @@ export interface Entity {
   absent?: boolean;
   /** per-turn uses of bounded ([Switch1]/[once]) abilities, keyed by ability key (R9: per card) */
   budgets: Record<string, number>;
+  /**
+   * R91: the card this entity has NAMED — "[Augment] During [Haste] name a
+   * card. My last named card loses all abilities. {i}(As long as I am in their
+   * region.)" (The Everywhere).
+   *
+   * A STRING and not a budget, because `budgets` is numeric-only and what has
+   * to be remembered here is a CardName. It is the anchor's memory: for text
+   * donated by an [Augment] the naming trigger already fires with the HOST as
+   * `sourceId` (E.queueTrigger passes `host.id`), which is the same entity
+   * `staticsFor` picks as the static's anchor — so one field serves both the
+   * played-normally and the donated case, exactly as it does for Transmogrifant.
+   *
+   * ⚠ NOT cleared by the R11 step-3 regroup sweep, deliberately. "My LAST
+   * named card" is a MEMORY, not an until-regroup effect: the duration clause
+   * is "(as long as I am in their region)", which the StaticMod's own region
+   * scope evaluates live, every time it is asked. Wiping the name at regroup
+   * would make the card re-name-or-forget every turn, which is not what it
+   * prints. A later naming simply overwrites this (that is "last").
+   *
+   * Read through `E.nameOf(entity)` rather than comparing `Entity.card`
+   * directly — see that method for why (a copy-NAME layer is a known future
+   * change and this is its one hook).
+   *
+   * Additive/optional, so states serialized before the field still load.
+   */
+  named?: CardName;
   /** unit token (erased on leaving play, survives regroup) */
   token?: boolean;
   tokenStats?: [number, number];

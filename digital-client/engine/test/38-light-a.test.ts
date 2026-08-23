@@ -11,8 +11,11 @@
  * Angel, including the automatic resource-step payment), self-copying in
  * formation (Hooba-God), the per-battle life-loss ledger (Retribution Thing),
  * multi-player targeting (Penance) and Keeper of Tithes. The Everywhere is
- * unparked as of R91 (naming + region-scoped suppression); its remaining todo
- * names the one clause still approximated — the CONTINUOUS duration.
+ * fully built: R91 landed the naming and the region-scoped suppression, and on
+ * 2026-08-23 the last approximated clause — the CONTINUOUS duration, "(As long
+ * as I am in their region.)" — landed as `Entity.named` plus a name-matching
+ * `StaticMod.suppressAbilities`. Its `{ todo: true }` and its card-ledger entry
+ * are gone; the four tests that replaced them are grouped below the card.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -685,7 +688,7 @@ test('The Everywhere: naming a card during [Haste] silences EVERY copy of it IN 
   const h = new Harness(3841);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  spawn(h, A, 'The Everywhere');
+  const ev = spawn(h, A, 'The Everywhere');
   const mine1 = spawn(h, A, 'Triskaidekaphage');              // "when I attack, your life becomes 13"
   const mine2 = spawn(h, A, 'Triskaidekaphage');
   const theirs = spawn(h, D, 'Triskaidekaphage');
@@ -696,16 +699,22 @@ test('The Everywhere: naming a card during [Haste] silences EVERY copy of it IN 
   assert.ok(h.state.decision!.options.some(o => o.value === 'Triskaidekaphage'),
     'the menu offers real cards, with DecisionOption.card set for the scan');
   pick(h, 'Triskaidekaphage');
-  assert.equal(ent(h, mine1)!.suppressed?.abilities, 'The Everywhere');
-  assert.equal(ent(h, mine2)!.suppressed?.abilities, 'The Everywhere',
+  assert.ok(h.q.abilitiesSuppressed(ent(h, mine1)!));
+  assert.ok(h.q.abilitiesSuppressed(ent(h, mine2)!),
     'the named CARD, not one unit — every copy');
+  assert.deepEqual(h.q.suppressionOf(ent(h, mine1)!).by, ['The Everywhere'],
+    'the text box names the culprit');
   // Caleb: "nothing can send information across regions" — the enemy copy is
-  // untouched, and that region rule is why this card needs the CONTINUOUS form
-  // (it reaches an enemy only by attacking into their region, later)
-  assert.equal(ent(h, theirs)!.suppressed, undefined, 'a copy in the other region is not silenced');
-  // not just a flag: the silenced trigger never queues
+  // untouched. The CONTINUOUS form does not change that: it reaches an enemy
+  // only by carrying The Everywhere into their region, which is the next test.
+  assert.ok(!h.q.abilitiesSuppressed(ent(h, theirs)!),
+    'a copy in the other region is not silenced');
+  // not just a flag: the silenced trigger never queues. The Everywhere attacks
+  // in its own column beside the named unit, because the silence is now scoped
+  // live to ITS region — a named ally that attacks alone leaves the projector
+  // behind and gets its abilities back (see the "leaves" test below).
   const lifeA = h.state.players[A]!.life;
-  h.do({ type: 'declareAttack', seat: A, columns: [[mine1]] });
+  h.do({ type: 'declareAttack', seat: A, columns: [[ev], [mine1]] });
   assert.equal(h.state.stack.length, 0, 'the on-attack trigger is silenced');
   finishBattle(h);
   assert.equal(h.state.players[A]!.life, lifeA, 'life never became 13');
@@ -719,7 +728,7 @@ test('The Everywhere: naming a card that is not in play silences nobody (R91)', 
   const mine = spawn(h, A, 'Triskaidekaphage');
   toNaming(h, A);
   pick(h, '');                                               // "a card that is not in play"
-  assert.equal(ent(h, mine)!.suppressed, undefined, 'nothing is silenced');
+  assert.ok(!h.q.abilitiesSuppressed(ent(h, mine)!), 'nothing is silenced');
   assert.ok(h.log.some(l => l.includes('names a card that is not in play')));
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   pass(h); pass(h);
@@ -727,24 +736,110 @@ test('The Everywhere: naming a card that is not in play silences nobody (R91)', 
   finishBattle(h);
 });
 
-test('The Everywhere: the silence should be CONTINUOUS, so it can reach the region I attack into', { todo: true }, () => {
-  // R91 shipped the naming and the suppression; what is still approximated is
-  // the DURATION, and it is the clause that gives the card its teeth.
-  // Printed: "my last named card loses all abilities (as long as I am in their
-  // region)" — continuous, re-evaluated as units move. The engine has only
-  // R62's until-regroup E.suppress, applied once, at naming time.
-  // The consequence is not cosmetic: at the end of the haste step every unit is
-  // still home in its own region, so the card can only silence ALLIES today.
-  // The printed card reaches an enemy by ATTACKING INTO their region later in
-  // the same turn, at which point the continuous effect switches on. This is
-  // deliberately NOT worked around by reaching across regions — Caleb,
-  // rules-questions: "If you have a question about wheither something can be
-  // done with units across regions, the answer is no", and "the single rule
-  // we'll never violate is 'nothing can send information across regions'".
-  // What would close it: a STRING field on Entity holding the named card
-  // (Entity.budgets is numeric-only), plus a StaticMod that matches on a card
-  // NAME rather than an entity id — then this stops being a trigger and becomes
-  // a static, which is what the printed text actually is.
+/* ── The Everywhere's CONTINUOUS silence ───────────────────────────────────
+ *
+ * These four replace the `{ todo: true }` that used to sit here (and the card
+ * ledger entry that named it). Printed: "[Augment] During [Haste] name a card.
+ * My last named card loses all abilities. {i}(As long as I am in their
+ * region.)" — the parenthetical is a DURATION, and it is the clause the card
+ * is built around. At the end of the haste step every unit is still standing
+ * at home, so a one-shot stamped at naming time could only ever reach allies;
+ * the printed card reaches an enemy by ATTACKING INTO their region afterwards.
+ *
+ * Nothing here reaches across regions (Caleb: "the single rule we'll never
+ * violate is 'nothing can send information across regions'"). The silence is a
+ * StaticMod, and `staticsFor` already scopes its walk to
+ * `anchor.region === target.region` — so the region clause is that scope,
+ * re-asked live, and The Everywhere has to physically travel to use it.
+ */
+
+test('The Everywhere: the silence is CONTINUOUS — an enemy copy is silenced only once I ATTACK INTO their region', () => {
+  const h = new Harness(3843);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ev = spawn(h, A, 'The Everywhere');                  // 3/3 {Haste}
+  const theirs = spawn(h, D, 'Triskaidekaphage');            // "when I attack or block, your life becomes 13"
+  toNaming(h, A);
+  pick(h, 'Triskaidekaphage');                               // a card in the OTHER region
+  assert.equal(ent(h, ev)!.named, 'Triskaidekaphage', 'the naming is remembered on the anchor');
+  assert.ok(!h.q.abilitiesSuppressed(ent(h, theirs)!),
+    'nothing is silenced yet — we are still in our own regions');
+  // the travel clause: attacking puts the projector in the defender's region
+  h.do({ type: 'declareAttack', seat: A, columns: [[ev]] });
+  assert.equal(ent(h, ev)!.region, ent(h, theirs)!.region, 'now we share a region');
+  assert.ok(h.q.abilitiesSuppressed(ent(h, theirs)!),
+    '"(as long as I am in their region)" — the silence switches on with no new event');
+  assert.deepEqual(h.q.suppressionOf(ent(h, theirs)!).by, ['The Everywhere']);
+  // and it is not just a flag: the silenced trigger never queues
+  const lifeD = h.state.players[D]!.life;
+  pass(h); pass(h);                                          // close the attack window
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [theirs] } });
+  assert.equal(h.state.stack.length, 0, 'the on-block trigger is silenced');
+  finishBattle(h);
+  assert.notEqual(h.state.players[D]!.life, 13, "the blocker's life never became 13");
+  assert.ok(h.state.players[D]!.life <= lifeD);
+});
+
+test('The Everywhere: the silence LIFTS when I leave — continuous, not until-regroup', () => {
+  const h = new Harness(3844);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ev = spawn(h, A, 'The Everywhere');
+  const theirs = spawn(h, D, 'Triskaidekaphage');
+  toNaming(h, A);
+  pick(h, 'Triskaidekaphage');
+  h.do({ type: 'declareAttack', seat: A, columns: [[ev]] });
+  assert.ok(h.q.abilitiesSuppressed(ent(h, theirs)!), 'silenced while I am there');
+  finishBattle(h);                                           // → regroup: everyone goes home
+  assert.ok(!h.q.abilitiesSuppressed(ent(h, theirs)!),
+    'I went home, so I am no longer in their region and the abilities come straight back');
+  // THE POINT of the distinction: the old implementation was an until-regroup
+  // stamp, so regroup was where it ENDED. Here regroup ends nothing — it only
+  // moves everyone, and the NAME survives as a memory ("my LAST named card"),
+  // ready to bite again the moment I am back in their region.
+  assert.equal(ent(h, theirs)!.suppressed, undefined,
+    'no until-regroup stamp was ever written — R11 step 3 has nothing to sweep');
+  assert.equal(ent(h, ev)!.named, 'Triskaidekaphage',
+    'the memory is deliberately NOT cleared by the R11 step-3 regroup sweep');
+});
+
+test('The Everywhere: a second naming replaces the first — it is my LAST named card', () => {
+  const h = new Harness(3845);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const ev = spawn(h, A, 'The Everywhere');
+  const trisk = spawn(h, A, 'Triskaidekaphage');
+  const vroot = spawn(h, A, 'Vroot');
+  toNaming(h, A);
+  pick(h, 'Triskaidekaphage');
+  assert.ok(h.q.abilitiesSuppressed(ent(h, trisk)!));
+  assert.ok(!h.q.abilitiesSuppressed(ent(h, vroot)!));
+  finishBattle(h);
+  toNaming(h, A);                                            // the next turn's [Haste] naming
+  pick(h, 'Vroot');
+  assert.equal(ent(h, ev)!.named, 'Vroot');
+  assert.ok(h.q.abilitiesSuppressed(ent(h, vroot)!), 'the new name is silenced');
+  assert.ok(!h.q.abilitiesSuppressed(ent(h, trisk)!),
+    'and the OLD one is released — "my LAST named card" is one card, not a growing list');
+  finishBattle(h);
+});
+
+test('The Everywhere: naming a card that is not in play RELEASES whatever I had named', () => {
+  const h = new Harness(3846);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const ev = spawn(h, A, 'The Everywhere');
+  const trisk = spawn(h, A, 'Triskaidekaphage');
+  toNaming(h, A);
+  pick(h, 'Triskaidekaphage');
+  assert.ok(h.q.abilitiesSuppressed(ent(h, trisk)!));
+  finishBattle(h);
+  toNaming(h, A);
+  pick(h, '');                                               // "a card that is not in play"
+  assert.equal(ent(h, ev)!.named, '', 'the decline is still a naming, and it is the LAST one');
+  assert.ok(!h.q.abilitiesSuppressed(ent(h, trisk)!),
+    'so the previous silence ends — the empty name matches no card in play');
+  finishBattle(h);
 });
 
 // ── Triskaidekaphage ─────────────────────────────────────────────────────
