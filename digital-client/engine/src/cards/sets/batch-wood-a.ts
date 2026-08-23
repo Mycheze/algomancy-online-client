@@ -352,8 +352,9 @@ card('Hexbane Shiitake', {
     effect: {
       run: (g, ctx) => {
         const me = selfOf(g, ctx);
-        // CARD-TODO #18: nothing to do, so the [once] is not spent (R9 ruling
-        // 2026-08-23 — a bounded use is spent only when it does something).
+        // R113: the ability IS the offer to exchange. Where the offer cannot
+        // be put to the player at all — no carrier, no spell left to swap for —
+        // the use is not spent, exactly as an outright decline is not.
         if (!me) { ctx.refundBudget?.(); g.ev('info', 'Hexbane Shiitake: the carrier is gone — no exchange.'); return; }
         const cardName = ctx.event?.data?.card as string | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;

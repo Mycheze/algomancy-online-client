@@ -306,7 +306,7 @@ const linkedExtinction: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
     if (!ctx.costPaid?.sacrificed) {
-      ctx.refundBudget?.();   // CARD-TODO #18: declining never spends it
+      ctx.refundBudget?.();   // R113: declining a [cost] never spends the use
       g.ev('info', 'Linked Extinction: no unit was sacrificed — nobody sacrifices.');
       return;   // rider declined / unpayable
     }

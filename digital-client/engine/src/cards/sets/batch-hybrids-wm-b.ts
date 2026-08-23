@@ -183,11 +183,13 @@ card('Auric Ascendant', {
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        // CARD-TODO #18: nothing to do, so the [once] is not spent.
-        if (!self) { ctx.refundBudget?.(); g.ev('info', 'Auric Ascendant: the carrier is gone — no recall, no {Flying}.'); return; }
+        // R113: this is an ACTIVATED [once] — the player chose to activate it
+        // and paid [one]. There is no "you may" inside it to decline, so both
+        // of these branches SPEND the use ("regardless of if that ability
+        // resolves or doesn't"). No refund, deliberately.
+        if (!self) { g.ev('info', 'Auric Ascendant: the carrier is gone — no recall, no {Flying}.'); return; }
         const pool = g.unitsOf(ctx.controller, ctx.region).filter(u => u.id !== self.id);
         if (!pool.length) {
-          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
           g.ev('info', 'Auric Ascendant: no other ally to recall — no effect.');
           return;
         }

@@ -453,7 +453,7 @@ card('Murkdrop Distiller', {
         const name = ctx.event?.data?.['card'] as string | undefined;
         if (name === undefined) return;
         if (g.player(ctx.controller).bin.lastIndexOf(name) === -1) {
-          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
+          ctx.refundBudget?.();   // R113: no offer could be made, so the use is not spent
           g.ev('info', `Murkdrop Distiller: ${name} is not in your bin — there is nothing to cache.`);
           return;
         }
@@ -463,7 +463,7 @@ card('Murkdrop Distiller', {
           options: [{ label: `Cache ${name}`, value: 1, card: name }, { label: 'Decline', value: 0 }],
         }) as number;
         if (!take) {
-          ctx.refundBudget?.();   // CARD-TODO #18: declining never spends it
+          ctx.refundBudget?.();   // R113: declining a "you may" never spends it
           g.ev('info', `Murkdrop Distiller: ${name} is left in the bin — nothing is cached.`);
           return;
         }

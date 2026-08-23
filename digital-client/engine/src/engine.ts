@@ -5228,24 +5228,24 @@ export class E {
     if (targeted && !item.parts.some(partAlive)) {
       this.ev('fizzled', `${item.label} fizzles — all targets are gone.`, { id: item.id });
       /**
-       * R108 / CARD-TODO #20: a fizzle REFUNDS a bounded budget.
+       * R113 / CARD-TODO #20: a fizzle SPENDS the bounded budget. It does NOT
+       * refund it, and the previous R108 answer here was wrong.
        *
-       * The owner, 2026-08-23, asked whether a fizzle is "the ability did
-       * nothing" or "the ability happened and missed": it is the former, which
-       * is the same answer R108 gives for a decline and the consistent one. An
-       * ability whose every declared target was removed in response keeps its
-       * [once] and may be used again this turn.
+       * RULED (designer, 2026-08-23), asked about `[bounded_graft]`: *"can only
+       * be activated or triggered once per turn. REGARDLESS OF IF THAT ABILITY
+       * RESOLVES OR DOESN'T."* A fizzled item was triggered — it went on the
+       * stack and then lost its targets — so the use is gone. The earlier
+       * reading ("a fizzle is the ability doing nothing, like a decline") is
+       * the one that sentence rules out by name.
        *
-       * It has to be paid out HERE, directly, rather than by raising
-       * `EffectPart.refunded` the way card code does: this branch returns
-       * before `resolveParts` ever runs, so no run exists to raise the flag and
-       * `settleBudgetRefund` is never reached on this path. Every part is
-       * refunded, not just the targeted ones — R86 is explicit that an item is
-       * ONE effect and fizzles as a unit ("If effect loses ALL of its targets
-       * and wants to resolve"), so an untargeted rider that died with it did
-       * not happen either.
+       * THE LINE R113 DRAWS, and the reason this branch is on the far side of
+       * it: a bounded use survives only where the player was OFFERED the
+       * ability and did not take it up (or could not be offered it at all).
+       * Once it is on the stack it has been used, and what happens afterwards —
+       * fizzling, whiffing, being negated — cannot hand it back. Removing a
+       * target in response is therefore a real answer to a bounded trigger,
+       * which is the whole point of doing it.
        */
-      for (const part of item.parts) this.refundPart(item, part);
       // a fizzled spell unit never spawns; a fizzled ambusher is binned too
       // ("you could find yourself losing both units" — Manual p.40).
       // R40: still the stack, so still not a trash. R79: a fizzled carrier is
@@ -5470,9 +5470,21 @@ export class E {
   /**
    * CARD-TODO #18: pay back the `[once]` a finished part refused to spend.
    *
-   * THE RULING (owner, 2026-08-23): "A [once] is spent only when the ability
-   * actually does something. Say no to a 'you may' and the budget is intact,
-   * so the same trigger can ask again later the same turn."
+   * THE RULING, as R113 finally settles it (designer, 2026-08-23): a bounded
+   * ability "can only be activated or triggered once per turn, REGARDLESS OF
+   * IF THAT ABILITY RESOLVES OR DOESN'T" — and, for Hexbane Shiitake's [once],
+   * "you can choose for each spell if you want to let it trigger and to put
+   * the ability on the stack." So the use is spent the moment the ability is
+   * activated or put on the stack, and the ONLY thing that keeps it is the
+   * player declining the ability, or no offer being possible at all.
+   *
+   * WHAT THIS IS NOT, and the reason to read it twice: it is not "the ability
+   * did nothing". That was R108's first reading and R113 reverses it. A run
+   * that was used and found nothing to do — an activated ability with no legal
+   * subject, a targeted trigger whose target left, a fizzle — spends the use.
+   * Six such calls were deleted from the card pool when R113 landed; do not
+   * add them back. The test of a branch is "was there a yes/no about the
+   * ability itself, and was the answer no?", not "did anything happen?".
    *
    * THE SEAM IS EXPLICIT, ON PURPOSE. The obvious implementation — refund a
    * run that emitted no events — cannot work any more: CARD-TODO #3's sweep
@@ -5510,7 +5522,8 @@ export class E {
    * CARD-TODO #18: hand `part`'s bounded reservation back, unconditionally.
    *
    * The half of `settleBudgetRefund` that does the work, split out so the
-   * CAST-TIME routes can reach it too. A cast [cost] that is DECLINED or
+   * CAST-TIME routes can reach it too. R113: the fizzle branch of `resolveItem`
+   * used to call this as well — it does not any more, and must not again. A cast [cost] that is DECLINED or
    * UNPAYABLE marks its part `spent` before the run exists (R35), so that part
    * can never call `ctx.refundBudget()` — and "the [cost] is declined" is the
    * most reachable decline in the pool, because a bounded [Switch1] rider is

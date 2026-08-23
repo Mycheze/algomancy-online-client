@@ -407,11 +407,18 @@ export interface EffectPart {
    * that it can do nothing, so a trigger that was never even ASKED — Hexbane
    * Shiitake during the end-of-turn window — burnt its `[once]` anyway.
    *
-   * RULED 2026-08-23 (owner): DECLINING NEVER SPENDS IT. A `[once]` is spent
-   * only when the ability actually does something, so saying no to a "you may"
-   * leaves the budget intact and the same trigger may ask again later the same
-   * turn. `EffectCtx.refundBudget()` raises this flag and
+   * RULED 2026-08-23 (owner): DECLINING NEVER SPENDS IT. Saying no to a "you
+   * may" leaves the budget intact and the same trigger may ask again later the
+   * same turn. `EffectCtx.refundBudget()` raises this flag and
    * `E.settleBudgetRefund` pays it out once the part has FINISHED.
+   *
+   * NARROWED THE SAME DAY BY R113 (designer): the reason the budget survives is
+   * that the ability was DECLINED, not that it "did nothing". A bounded use is
+   * spent by being activated or put on the stack, "regardless of if that
+   * ability resolves or doesn't" — so a fizzle, a negation, and a run that was
+   * used and found nothing to work on all SPEND it. This flag is for the one
+   * shape R113 keeps: the player was offered the ability and refused, or no
+   * offer could be made at all. 94-bounded-uses.test.ts guards both sides.
    *
    * ON THE PART, exactly like `StackItem.eraseSelf` and for the same reason: a
    * part can suspend mid-resolution and be replayed out of the serialised

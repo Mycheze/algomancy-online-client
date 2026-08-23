@@ -409,19 +409,20 @@ test('a bounded ability that DID something keeps the budget spent (Afflicting An
   assert.equal(g.entity(carrier.id)!.budgets[KEY], 1, 'so the use is spent');
 });
 
-// ══ CARD-TODO #20 — a FIZZLE refunds the bounded budget ═══════════════════
+// ══ CARD-TODO #20 — a FIZZLE SPENDS the bounded budget (R113) ════════════
 //
-// R108 settled that a [once] is spent only when the ability does something,
-// and `ctx.refundBudget()` delivers that for every branch a RUN can reach.
-// R5/R86's fizzle is not one of them: `resolveItem` sees that every declared
-// target is gone and returns BEFORE `resolveParts` ever runs, so no run exists
-// to raise the flag. The owner ruled the fizzle the same way — the ability did
-// nothing — so the payout happens directly in that branch.
+// REVERSED 2026-08-23. This file first asserted the opposite, on R108's
+// reading that a fizzle is "the ability did nothing" and therefore refunds.
+// The designer then ruled the family directly — a bounded ability "can only be
+// activated or triggered once per turn, REGARDLESS OF IF THAT ABILITY RESOLVES
+// OR DOESN'T" — which names the fizzle by its exact description.
 //
-// 61 bounded abilities in the pool declare a target spec, so this is reachable
-// by removing a target in response, which is an ordinary play.
+// The test is kept rather than deleted, inverted, because the inverted form is
+// the one that is easy to get wrong again: refunding on fizzle is the
+// intuitive-feeling behaviour, and it makes removing a target in response a
+// free answer to every one of the pool's 61 targeted bounded abilities.
 
-test('a bounded ability that FIZZLES for want of a target keeps its [once]', () => {
+test('a bounded ability that FIZZLES for want of a target has SPENT its [once] (R113)', () => {
   const KEY = 'ability:Minor Kraken#0';
   const { g, h, A, D } = board(9330);
   const kraken = g.entity(spawn(h, A, 'Minor Kraken'))!;
@@ -446,9 +447,9 @@ test('a bounded ability that FIZZLES for want of a target keeps its [once]', () 
   g.resolveTop();
   assert.ok(g.events.slice(before).some(e => e.type === 'fizzled'),
     'the item really fizzled — this test is worthless if it resolved normally');
-  assert.equal(kraken.budgets[KEY], undefined,
-    'a fizzle did nothing, so the [once] comes back (CARD-TODO #20)');
-  assert.notEqual(g.composeParts(kraken, 0, 'ability'), null,
-    'and it can be triggered again this turn');
+  assert.equal(kraken.budgets[KEY], 1,
+    'the trigger was PUT ON THE STACK, so the use is gone — a fizzle does not hand it '
+    + 'back (R113, reversing CARD-TODO #20\'s first answer)');
+  assert.equal(g.composeParts(kraken, 0, 'ability'), null,
+    'and it cannot be triggered again this turn');
 });
-

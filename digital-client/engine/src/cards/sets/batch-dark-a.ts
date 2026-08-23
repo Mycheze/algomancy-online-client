@@ -139,7 +139,7 @@ const animaWraith: EffectDef = {
   creates: ['Wraith'],
   run: (g, ctx) => {
     if (g.openMana(ctx.controller) < 1) {
-      ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
+      ctx.refundBudget?.();   // R113: no offer could be made, so the use is not spent
       g.ev('info', 'Afflicting Anima: cannot pay [1] — no Wraith.');
       return;
     }
@@ -149,7 +149,7 @@ const animaWraith: EffectDef = {
       options: [{ label: 'Pay [1] — create a Wraith', value: true }, { label: 'Decline', value: false }],
     });
     if (pays !== true) {
-      ctx.refundBudget?.();   // CARD-TODO #18: declining never spends it
+      ctx.refundBudget?.();   // R113: declining a "you may" never spends it
       g.ev('info', 'Afflicting Anima: [1] is not paid — no Wraith.');
       return;
     }

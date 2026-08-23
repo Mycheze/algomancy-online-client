@@ -123,6 +123,11 @@ export interface EffectCtx {
    * trigger is COMPOSED, before the run exists. The reservation stays there —
    * it is the re-entrancy guard — and this is the way back out.
    *
+   * SUPERSEDED BY R113 — read that first. The sentence below is the owner's
+   * first pass; the designer later narrowed it to "declined, or no offer was
+   * possible", which is NOT the same as "did nothing". Calling this from a
+   * branch that merely whiffed is now a bug (94-bounded-uses guards it).
+   *
    * RULED 2026-08-23 (owner): "A [once] is spent only when the ability
    * actually does something. Say no to a 'you may' and the budget is intact,
    * so the same trigger can ask again later the same turn." That covers both

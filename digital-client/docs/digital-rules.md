@@ -5507,9 +5507,11 @@ site is correct by construction: a creation is owned by its creator. The `spawne
 carries `owner` **only when it differs from the controller**, so no existing reader's
 payload moved.
 
-## R108 — a bounded [once] is spent only when the ability DOES something
+## R108 — a bounded [once] is not spent by a DECLINE (narrowed by R113)
 
-*(Owner ruling, 2026-08-23, closing CARD-TODO #18.)*
+*(Owner ruling, 2026-08-23, closing CARD-TODO #18. **Read R113 with this one** — the
+designer later drew the line more tightly than the sentence below does, and R113 wins
+wherever the two disagree.)*
 
 > A `[once]` is spent only when the ability actually does something. Say no to a "you may"
 > and the budget is intact, so the same trigger can ask again later the same turn.
@@ -5545,14 +5547,11 @@ is therefore also called from `payCastCost`'s decline branch and the two unpayab
 branches. Same ruling by a different route: declining a cost you were offered is
 declining.
 
-**A FIZZLE refunds too** *(owner, 2026-08-23, closing CARD-TODO #20)*. Asked whether a
-fizzle is "the ability did nothing" or "the ability happened and missed", he answered the
-former — the same answer as a decline, and the consistent one. R5/R86's fizzle returns
-from `resolveItem` **before** `resolveParts` runs, so no run exists to raise the flag and
-the payout is made directly in that branch instead. **Every** part is refunded, not only
-the targeted ones: R86 is explicit that an item is one effect and fizzles as a unit, so an
-untargeted rider that died with it did not happen either. 61 bounded abilities declare a
-target spec, so this is reached by ordinary play — removing a target in response.
+**A FIZZLE does NOT refund** — see **R113**. This was answered the other way on the same
+day (CARD-TODO #20) and then reversed by the designer's `[bounded_graft]` ruling, which
+says the use is gone "regardless of if that ability resolves or doesn't". The paragraph
+that used to stand here described the fizzle as "the ability did nothing"; R113 is the
+statement that being unable to finish is not the same as declining to start.
 
 ## R109 — an empty damage batch says so
 
@@ -5667,3 +5666,66 @@ deal combat damage or die"* (its anchor-only check is right), Vroot says *"my
 column deals combat damage"* (it listens to damage AND life loss, so blockers
 count, as printed), Zephyrzoa/Amphivore say *"…to an opponent"*. Each follows
 its own words; there was no divergence to rule on.
+
+
+## R113 — a bounded use is spent by USING it, not by it working
+
+*(Designer, 2026-08-23, four answers in one sitting. This is the rule the whole `[once]` /
+`[Switch1]` / `[bounded_graft]` family is measured against, and it **narrows R108**.)*
+
+### The line
+
+> A bounded ability **"can only be activated or triggered once per turn. Regardless of if
+> that ability resolves or doesn't."**
+
+and, on the same day, about **Hexbane Shiitake**'s `[once]` trigger:
+
+> "Its ability can only be triggered once per turn, but you can choose for each spell if
+> you want to let it trigger and to put the ability on the stack."
+
+Read together those two sentences name a single moment: **the bounded use is spent when
+the ability is activated, or when it is put on the stack.** Before that moment the player
+may decline for free, as often as the trigger condition recurs. After it, nothing hands
+the use back — not a fizzle, not a negation, not a run that finds there is nothing to do.
+
+**What survives, therefore, is exactly one shape:** the player was offered the ability and
+did not take it up, or could not be offered it at all. Every `E.refundPart` route in the
+engine has to answer to that sentence, and the ones that did not have been deleted (see
+"the two families" below).
+
+### The two families, as the code has them
+
+The pool's bounded runs bail out in two ways, and the ruling splits them:
+
+| the branch says | example | R113 |
+| --- | --- | --- |
+| *the player declined, or no offer was possible* | Afflicting Anima's "you may pay [1]" refused, or unpayable; Hexbane Shiitake declined, or never asked in the end-of-turn window; Murkdrop Distiller with nothing in the bin to cache; The Bonesculptor with no legal unit to offer; a graft rider's `[cost]` declined at cast time | **not spent** — `ctx.refundBudget?.()` stays |
+| *it was used and simply achieved nothing* | Auric Ascendant activated with no other ally to recall; Slag Spewer activated with no mod to erase; Graxxlid's target already off the stack; Structural Collapse's sacrificed unit having 0 defense; **any fizzle** | **spent** — the refund call has been removed |
+
+The test of which family a branch is in is not "did anything happen" — it is **"was there
+a yes/no about the ability itself, and was the answer no?"** An activated ability the
+player paid for has no such question in it; a `you may` does.
+
+### Nesting: `[graft]` under `[bounded_graft]`, and the other way round
+
+Both directions were ruled explicitly, and both were already true in `E.composeParts`:
+
+> "With `[graft]` under `[bounded_graft]` the whole block of different parts is only put on
+> the stack once per turn."
+
+A **bounded cause** bounds the whole composite. `composeParts` returns `null` on the second
+attempt, so nothing — base effect or grafted rider, bounded or not — goes on the stack
+again that turn.
+
+> "With `[bounded_graft]` under `[graft]` the big block of different parts can be put on the
+> stack multiple times each turn, but after the first time the `[bounded_graft]` parts are
+> missing."
+
+An **unbounded cause** composes every time; each bounded graft rider is skipped once its own
+`mod.budgets['graft']` is set, and the composite still fires without it.
+
+The budget is per *card* (R9), which for the rider means per **mod entity** — two copies of
+the same bounded graft card on one host each get their own use.
+
+Tests: 94-bounded-uses (all four answers, one test each), 93-engine-defects (the decline
+routes R113 keeps).

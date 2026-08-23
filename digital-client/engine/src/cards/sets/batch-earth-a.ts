@@ -493,13 +493,16 @@ card('Graxxlid', {
         const t = ctx.targets[0];
         if (!t || !('stack' in (t as object))) return;
         const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
+        // R113: both of these are a TARGETED bounded trigger that missed —
+        // the same shape as a fizzle, which the designer ruled spends the use
+        // ("regardless of if that ability resolves or doesn't"). Answering a
+        // Graxxlid by moving its target off the stack is meant to cost it the
+        // turn's use; refunding here would make that answer free.
         if (!item) {
-          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
           g.ev('info', 'Graxxlid: the targeted effect has already left the stack — nothing is negated.');
           return;
         }
         if (!aimsAtUnit(g, item.id, ctx.sourceId)) {
-          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
           g.ev('info', `Graxxlid: ${item.label} does not target me — no effect.`);
           return;
         }

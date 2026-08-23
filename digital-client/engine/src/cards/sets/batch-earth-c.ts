@@ -333,7 +333,7 @@ card('The Bonesculptor', {
         };
         const opts = bonesculptorPicks(g, ctx.controller);
         if (!opts.length) {
-          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
+          ctx.refundBudget?.();   // R113: no offer could be made, so the use is not spent
           g.ev('info', 'The Bonesculptor: no playable ability-free unit in your bin.');
           return;
         }
@@ -343,7 +343,7 @@ card('The Bonesculptor', {
           options: [...opts, { label: 'Decline', value: -1 }],
         }) as number;
         if (pick < 0) {
-          ctx.refundBudget?.();   // CARD-TODO #18: declining never spends it
+          ctx.refundBudget?.();   // R113: declining a "you may" never spends it
           g.ev('info', 'The Bonesculptor: no unit is played from the bin.');
           return;
         }

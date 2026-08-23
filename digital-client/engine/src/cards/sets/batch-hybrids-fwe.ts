@@ -446,14 +446,13 @@ card('Slag Spewer', {
       targets: { what: 'any', prompt: 'Slag Spewer: deal 2 damage to any target' },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        // CARD-TODO #18: nothing to do, so the [once] is not spent (R9 ruling
-        // 2026-08-23 — a bounded use is spent only when it does something).
-        if (!self) { ctx.refundBudget?.(); g.ev('info', 'Slag Spewer: the carrier is gone — no mod to erase, no damage.'); return; }
+        // R113: an ACTIVATED [once] with no "you may" in it. The player paid
+        // [one] to use it; finding nothing to erase does not hand the use back.
+        if (!self) { g.ev('info', 'Slag Spewer: the carrier is gone — no mod to erase, no damage.'); return; }
         const mods = self.mods
           .map(id => g.entity(id))
           .filter((m): m is Entity => !!m);
         if (!mods.length) {
-          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
           g.ev('info', 'Slag Spewer: no mod to erase — no effect.');
           return;
         }
@@ -484,11 +483,21 @@ card('Slag Spewer', {
 const collapseSacrifice: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
-    const bar = ctx.costPaid?.sacrificed?.defense ?? 0;
+    // R113 splits what used to be one branch. Declining (or being unable to
+    // pay) the rider's cast [cost] is declining the ability, so the use is
+    // kept; actually sacrificing a 0-defense unit is USING it and getting
+    // nothing, so the use is gone. `costPaid.sacrificed` is the difference:
+    // it exists only when a unit really was paid.
+    const sacrificed = ctx.costPaid?.sacrificed;
+    const bar = sacrificed?.defense ?? 0;
+    if (!sacrificed) {
+      ctx.refundBudget?.();   // R113: declining a [cost] never spends the use
+      g.ev('info', 'Structural Collapse: no unit was sacrificed — nobody sacrifices.');
+      return;
+    }
     if (bar <= 0) {
-      // rider declined / unpayable, or a 0-defense cost
-      ctx.refundBudget?.();   // CARD-TODO #18: declining never spends it
-      g.ev('info', 'Structural Collapse: no unit with defense was sacrificed — nobody sacrifices.');
+      // R113: the cost WAS paid — the use is spent even though the bar is 0.
+      g.ev('info', 'Structural Collapse: the sacrificed unit had 0 defense — nobody sacrifices.');
       return;
     }
     const picks: EntityId[] = [];

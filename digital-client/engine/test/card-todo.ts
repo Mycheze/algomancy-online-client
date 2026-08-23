@@ -1236,41 +1236,41 @@ export const CARD_TODO: TodoEntry[] = [
     severity: 'minor',
     title: 'A bounded [once] is still spent when the ability FIZZLES for want of a target',
     detail:
-      'The owner ruled 2026-08-23 that "a [once] is spent only when the ability actually '
-      + 'does something" (CARD-TODO #18), and `EffectCtx.refundBudget()` now delivers that '
-      + 'for every branch a RUN can reach. R5/R86\'s fizzle is not one of them: '
-      + '`resolveItem` sees that every declared target is gone and returns BEFORE '
-      + '`resolveParts` ever runs, so no run exists to ask for the refund and the budget '
-      + 'stays spent. '
+      'RE-ANSWERED, AND THE FIRST ANSWER WAS WRONG. The question was whether a fizzle is '
+      + '"the ability did nothing" (refund, consistent with CARD-TODO #18) or "the ability '
+      + 'happened and missed" (spend, consistent with the way R86 already treats a fizzle '
+      + 'as a real resolution that produced nothing). Both readings are defensible and the '
+      + 'engine originally answered by accident. '
+      + 'It was first closed on the REFUND reading, and shipped that way for part of a '
+      + 'day. The designer then ruled the whole bounded family directly — a bounded '
+      + 'ability "can only be activated or triggered once per turn. REGARDLESS OF IF THAT '
+      + 'ABILITY RESOLVES OR DOESN\'T" — which names the fizzle by its own description. '
       + 'Reachable, not theoretical: 61 bounded abilities in the pool declare a target '
-      + 'spec, so any of them whose target is removed in response burns its [once] for '
-      + 'nothing. '
-      + '⚠ THIS NEEDS A RULING, not just code, and it is a genuinely open question rather '
-      + 'than an oversight: is a fizzle "the ability did nothing" (refund, consistent with '
-      + '#18) or "the ability happened and missed" (spend, consistent with the way R86 '
-      + 'already treats a fizzle as a real resolution that produced nothing)? The two '
-      + 'readings are both defensible and the engine currently answers by accident.',
+      + 'spec, so any of them can be answered by removing its target in response — and '
+      + 'under the correct answer that answer COSTS the bounded ability its turn, which '
+      + 'is the whole reason to play it.',
     evidence:
       'Read at `resolveItem`\'s R86 fizzle branch (`item.label fizzles — all targets are '
       + 'gone`), which returns before `resolveParts`. Counted 61 bounded abilities with a '
       + '`targets` spec. Raised by the agent that implemented #18, which could not answer '
-      + 'it without the owner.',
+      + 'it without the owner; re-answered by the designer on the same day.',
     fix:
-      'RULED 2026-08-23: a FIZZLE REFUNDS. The owner, asked whether "the ability did '
-      + 'nothing" or "the ability happened and missed" governs: "That\u2019s correct" — i.e. '
-      + 'the same answer R108 gives, and the consistent one. An ability whose every target '
-      + 'was removed in response did nothing, so it keeps its [once]. '
-      + 'The payout site is `E.refundPart`, called from `resolveItem`\u2019s R86 fizzle '
-      + 'branch — the helper already exists and is already called from the three cast-cost '
-      + 'decline sites, so this is one line plus tests. Note the ordering: the fizzle '
-      + 'branch returns BEFORE `resolveParts`, so `settleBudgetRefund` never runs on that '
-      + 'path and the refund has to be paid out directly rather than by raising the flag.',
+      'RULED (designer, 2026-08-23), superseding the same day\'s first answer: a FIZZLE '
+      + 'SPENDS THE USE. Written up as R113, which draws the line for the whole family — '
+      + 'a bounded use is spent by being USED (activated, or put on the stack), and only '
+      + 'a decline, or an offer that could not be made at all, keeps it. '
+      + 'The fizzle branch\'s `refundPart` loop is deleted; `E.refundPart` stays, because '
+      + 'the three cast-cost decline sites still need it. Six card-level '
+      + '`ctx.refundBudget()` calls moved to the other side of the line at the same time '
+      + '(Auric Ascendant x2, Slag Spewer x2, Graxxlid x2) and one was split '
+      + '(Structural Collapse, on whether the [cost] was actually paid).',
     proof: null,
     verify:
       'Give a bounded targeted ability a target, remove the target in response, and read '
-      + '`budgets` on the source. It is spent today.',
+      + '`budgets` on the source. It must still hold the reservation.',
     guards: [
-      '93-engine-defects.test.ts::a bounded ability that FIZZLES for want of a target keeps its [once]',
+      '93-engine-defects.test.ts::a bounded ability that FIZZLES for want of a target has SPENT its [once]',
+      '94-bounded-uses.test.ts::a bounded trigger that is NEGATED on the stack has still spent its use',
     ],
     status: 'done',
   },
