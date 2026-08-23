@@ -441,21 +441,21 @@ test('every damage-reading attribute is honoured by the non-combat damage batch'
   // which closed CARD-TODO #4. It is the reason the list is asserted at all:
   // it worked in combat for months while being byte-identical to no attribute
   // at all here, and nothing said so.
+  //
+  // {Unaware} joined it on the same day, from the other end of CARD-TODO #5.
+  // R106's second half is a PAIRWISE collapse — "it looks ONLY at what is the
+  // literal printed text on all cards 'involved'" — so an Unaware SOURCE makes
+  // this batch price and kill its victims at their printed defense ("Haboob
+  // kills anything that has 1 defense printed at the card level"). It is read
+  // here, deliberately, and the assertion that used to say it must NOT be has
+  // been deleted rather than weakened.
   const READS = [
     'Deadly', 'Powerful', 'Poisonous', 'Resonant', 'Blessed', 'Reaping', 'Electric', 'Piercing',
+    'Unaware',
   ];
   const missing = READS.filter(a => !body.includes(`'${a}'`));
   assert.deepEqual(missing, [],
     `these attributes are not read by the non-combat damage batch: ${missing.join(', ')}`);
-  // The list is NOT a claim that the set is complete. {Unaware} was the one
-  // attribute in the pool with zero engine references anywhere (CARD-TODO #5);
-  // R106 shipped it on 2026-08-23 as stat LAYER 6 — a single clause at the end
-  // of effStats() — and deliberately nowhere else: the owner's blanket reading
-  // freezes an Unaware unit's own numbers and does NOT collapse the other side
-  // of an interaction, so a damage batch has nothing to ask it. This assertion
-  // therefore still holds, and now means something stronger than "unbuilt": it
-  // pins that layer 6 stayed OUT of the damage path.
-  assert.ok(!body.includes("'Unaware'"),
-    '{Unaware} is read here now — R106 says it should not be. Either the ruling changed '
-    + '(a pairwise reading) or this is a bug; add it to READS above only if the former.');
+  // The list is still NOT a claim that the set is complete — it is a claim
+  // that each of these was, at some point, silently absent.
 });

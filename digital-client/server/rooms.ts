@@ -921,56 +921,126 @@ export function undoLastAction(room: Room): LostAction[] {
 }
 
 /**
- * The ONE renumbering hazard cheap enough to answer without a rebuild: does
- * splicing the action at `index` shift an entity id that a LATER action
- * actually names?
+ * The ONE thing a splice can break that no repair can fix: does a LATER action
+ * name an entity that THIS action brought into existence?
  *
- * The action log stays ARRIVAL ORDER — it is the record, and replay(seed,
- * actions) must still reproduce it bit-identically. What needs a rule is the
- * SPLICE, because removing seat A's action re-runs seat B's from a different
- * prior state. `nextId` is one global clock, so an action that ALLOCATED ids
- * shifts every id above its floor down by however many it took: A deploys
- * unit 7, B deploys 8 and augments hostId 8; A undoes → B's unit is 7 → B's
- * `hostId: 8` names nobody (dropped) or, worse, names a DIFFERENT unit that
- * happens to sit at 8 now, and stays legal while doing it.
+ * THIS USED TO BE THE WHOLE GATE, AND THE OWNER REJECTED IT (2026-08-23,
+ * answering ledger #76):
  *
- * Two things this deliberately does NOT do any more, and both were the report
- * (ledger #76, WEHH 2026-08-22):
+ *   "In deployment and planning, you're 'alone' in a world that no one else
+ *    can see. So you should be perfectly allowed to undo everything, up to the
+ *    beginning of that phase … I don't understand your question otherwise."
  *
- *  - It does not ask **who** acted after you. `seat` is kept in the signature
- *    because the call site reads better with it, but an action of your own
- *    that names a shifted id is broken by the splice in exactly the same way,
- *    and a hidden segment can only hold one of yours after the one you are
- *    undoing anyway. Deployment being "entirely separate from the opponent" is
- *    true and is precisely why the opponent's identity was never the question.
- *  - It does not ask whether the later action **has a payload**. A payload of
- *    hand indices and choices is untouched by a renumbering; only a payload
- *    that names an id is at risk, and `entityRefs` is the exhaustive list of
- *    those. The old `RENUMBER_IMMUNE` five (`donePlanning`, `doneHaste`,
- *    `doneDeploying`, `passPriority`, `concede`) are now covered by the
- *    general rule rather than by an exception list: they name no id, so they
- *    can never be re-pointed. That exception was reviewed and approved
- *    2026-08-21 with exactly this argument; it has simply stopped being a
- *    special case.
+ * He is right at the game level, and the gate was answering a question about
+ * NUMBERING, not about the game. `nextId` is one global clock, so splicing an
+ * action that allocated ids shifts every later id down by however many it
+ * took; the log is replayed verbatim, so an opponent's `hostId: 8` goes on
+ * saying 8 when their unit has become 7. That is a bookkeeping fault in OUR
+ * representation, and the player should never have been asked to pay for it.
+ * `undoActionAt` now REPAIRS it (see `renumberAction`) instead of refusing.
  *
- * An action that allocated NO ids shifts nothing and always passes here —
- * which is why the resource step, whose actions are provably id- and RNG-inert
- * (test-hidden.ts asserts it), never reaches this gate at all.
+ * What survives here is the residue that a repair genuinely cannot reach. The
+ * ids in `[lo, hi)` are the ones the spliced action created, and after the
+ * splice they do not exist at all — there is no number to rewrite them to. A
+ * later action naming one of them is an action about a unit that is being
+ * un-played, and the only honest answers are "refuse" or "silently drop their
+ * move"; we refuse.
  *
- * This is still only the id route. The other two (a spliced EFFECT changing
- * what a later hand index names, and a re-rolled RNG stream changing what a
- * later draw produced) are not predictable from a payload, and are measured by
- * `undoActionAt` below.
+ * Two things this deliberately does NOT ask, both of which were the report:
+ *
+ *  - **Who** acted after you. `seat` is kept in the signature because the call
+ *    site reads better with it. Deployment being "entirely separate from the
+ *    opponent" is true, and is precisely why the opponent's identity was never
+ *    the question.
+ *  - Whether the later action **has a payload**. Hand indices and choices are
+ *    untouched by a renumbering; only ids are at risk, and `entityRefs` is the
+ *    exhaustive list of those. The old `RENUMBER_IMMUNE` five (`donePlanning`,
+ *    `doneHaste`, `doneDeploying`, `passPriority`, `concede`) are covered by
+ *    the general rule rather than by an exception list — they name no id, so
+ *    they can never be re-pointed.
+ *
+ * Inside a hidden segment this should essentially never fire: naming a unit
+ * your opponent deployed behind the screen means naming a unit you cannot see.
+ * It is kept because `undoActionAt` is also reachable from forensics and from
+ * the public tail path, where an attack CAN name a unit deployed a turn ago.
  */
 export function spliceable(room: Room, index: number, seat: Seat): boolean {
   void seat;
-  const from = room.segIdFloor[index];
-  if (from === undefined) return true;
+  const lo = room.segIdFloor[index];
+  if (lo === undefined) return true;
   // the floor of the NEXT action is this one's ceiling; past the end of the
   // log, the live state's clock is
-  const to = room.segIdFloor[index + 1] ?? room.state.nextId;
-  if (to === from) return true;          // allocated nothing: no id moves
-  return !room.actions.slice(index + 1).some(a => entityRefs(a).some(id => id >= from));
+  const hi = room.segIdFloor[index + 1] ?? room.state.nextId;
+  if (hi === lo) return true;            // allocated nothing: nothing to lose
+  return !room.actions.slice(index + 1)
+    .some(a => entityRefs(a).some(id => id >= lo && id < hi));
+}
+
+/**
+ * The same action, renumbered for a log the splice has shortened.
+ *
+ * WHY THIS IS NOT "REWRITING SOMEBODY ELSE'S MOVE". An entity id is not part
+ * of what a player chose — it is the row number we happened to file their
+ * choice under. `augment { hostId: 8 }` means "the mod goes on that unit", and
+ * after the unit ahead of it is un-played the same unit is called 7. Leaving
+ * the 8 in place does not preserve their intent; it destroys it, which is
+ * exactly what the "no such unit" refusal above was.
+ *
+ * WHY A CONSTANT SHIFT IS THE RIGHT ARITHMETIC. The spliced action allocated
+ * `[lo, hi)`. If nothing else about the rebuild changes — which is the thing
+ * we are about to check — every later action allocates the same ids it did
+ * before, one block lower, so `id -> id - (hi - lo)` for everything at or
+ * above `hi`. Ids below `lo` predate the splice and never move.
+ *
+ * WHY THE ASSUMPTION IS SAFE. It is not assumed, it is VERIFIED:
+ * `undoActionAt` rebuilds and then compares every later action's reference
+ * key, which resolves an id to "the k-th entity created by the action tagged
+ * t7" rather than to a number. If the shift was right, every key comes out
+ * byte-identical; if the world moved in any other way, a key differs and the
+ * whole undo is rolled back. So the repair can only ever land when it is
+ * provably a repair.
+ *
+ * The rewritten action carries the ORIGINAL's tag: it is the same action, and
+ * the reference keys on both sides of the comparison have to agree about that
+ * or every entity it created would look like a different entity.
+ */
+function renumberAction(a: Action, lo: number, hi: number): Action {
+  const shift = hi - lo;
+  let moved = false;
+  const one = (id: EntityId): EntityId => {
+    if (id < hi) return id;              // predates the splice, or is being erased by it
+    moved = true;
+    return id - shift;
+  };
+  const list = (ids: readonly EntityId[]): EntityId[] => ids.map(one);
+  let out: Action;
+  switch (a.type) {
+    case 'castSpellToken': out = { ...a, entityId: one(a.entityId) }; break;
+    case 'activateAbility':
+      out = typeof a.via === 'object' && a.via
+        ? { ...a, entityId: one(a.entityId), via: { mod: one(a.via.mod) } }
+        : { ...a, entityId: one(a.entityId) };
+      break;
+    case 'augment': out = a.hostId === undefined ? a : { ...a, hostId: one(a.hostId) }; break;
+    case 'graft': out = { ...a, hostId: one(a.hostId) }; break;
+    case 'declareAttack':
+      out = { ...a, columns: a.columns.map(list),
+        ...(a.spellTokens ? { spellTokens: list(a.spellTokens) } : {}) };
+      break;
+    case 'declareBlocks': {
+      // the KEYS are attack-column indices, not ids — only the values move
+      const blocks: Record<number, EntityId[]> = {};
+      for (const [k, v] of Object.entries(a.blocks)) blocks[Number(k)] = list(v);
+      out = { ...a, blocks,
+        ...(a.send ? { send: list(a.send) } : {}),
+        ...(a.spellTokens ? { spellTokens: list(a.spellTokens) } : {}) };
+      break;
+    }
+    default: return a;                   // names no id: nothing to renumber
+  }
+  if (!moved) return a;
+  ACTION_TAG.set(out, tagOf(a));          // the same action, under new numbers
+  return out;
 }
 
 /** How a refused undo is reported: 'lost' actions no longer replay at all,
@@ -984,28 +1054,47 @@ function asLost(l: LostAction[], kind: 'lost' | 'changed'): LostAction[] {
  *
  * Returns [] on success; a non-empty list is the refusal, and each entry names
  * a later action the splice would have damaged and how (`LostAction.kind`).
- * Callers enforce who may remove what; `spliceable()` is the cheap screen for
- * the id route, and this is the measurement for all three.
+ * Callers enforce who may remove what; `spliceable()` screens the one case no
+ * repair can reach, and this repairs and measures everything else.
  *
  * An undo must never cost anybody an action they did not ask to give up, and
  * must never quietly turn one into a different action. So the splice is
- * performed, MEASURED against the log it came from, and rolled back if either
- * happened — a measurement beats a prediction:
+ * performed, REPAIRED, MEASURED against the log it came from, and rolled back
+ * if either happened — a measurement beats a prediction:
  *
  *   lost     the rebuild refused an action it used to accept. This was always
  *            here; a silently dropped play is the bug that made game UZRG
  *            unreadable.
  *   changed  every surviving later action's REFERENCE KEY must be unchanged.
- *            This is the new half and the important one: an action that stays
- *            legal while pointing at another unit, another card in hand or
- *            another roll of the dice is invisible to the rebuild, invisible
- *            in the log, and worse than any refusal.
+ *            This is the important half: an action that stays legal while
+ *            pointing at another unit, another card in hand or another roll of
+ *            the dice is invisible to the rebuild, invisible in the log, and
+ *            worse than any refusal.
+ *
+ * THE REPAIR is what makes the owner's "you should be perfectly allowed to
+ * undo everything" actually true rather than nearly true. Splicing shifts the
+ * id clock, and the log replays verbatim, so without it the opponent's
+ * `hostId` goes on naming a number that no longer exists and the undo dies on
+ * "no such unit" — measured in real games, not supposed. `renumberAction`
+ * rewrites those references down by the block the spliced action gave up, and
+ * the reference-key comparison below is the PROOF that the rewrite was a
+ * repair: keys are written in terms of which action created an entity, not of
+ * its number, so a correct renumbering leaves every key byte-identical and any
+ * other movement shows up as `changed` and is rolled back.
  */
 export function undoActionAt(room: Room, index: number): LostAction[] {
   settleClock(room);   // bill up to the undo; the rebuild changes who runs
   const restore = [...room.actions];
   const wasRefs = [...room.segRefs];
-  room.actions.splice(index, 1);
+  // the block of ids this action allocated — the ones that cease to exist,
+  // and the size of the shift everything above them takes
+  const lo = room.segIdFloor[index];
+  const hi = lo === undefined ? undefined : (room.segIdFloor[index + 1] ?? room.state.nextId);
+  const tail = restore.slice(index + 1);
+  room.actions = restore.slice(0, index).concat(
+    lo !== undefined && hi !== undefined && hi > lo
+      ? tail.map(a => renumberAction(a, lo, hi))
+      : tail);
   const rb = rebuildRoom(room);
   const lost = rb.skipped.length > room.lost.length ? rb.skipped : [];
   // …and the actions that survive but no longer mean what they meant. Compared
@@ -1056,6 +1145,39 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
  */
 export type UndoOutcome = { ok: true } | { ok: false; why: string };
 
+/**
+ * How far back a walk may go: the first action in the open segment that is the
+ * PLAYER'S OWN business.
+ *
+ * The owner drew this line himself (2026-08-23): *"you should be perfectly
+ * allowed to undo everything, up to the beginning of that phase (unless there
+ * is anything that triggers at the beginning/end of those phases such as
+ * paying debt or 'at the beginning of deployment')"*.
+ *
+ * `segStartIndex` is nearly that line and not quite. Most start-of-phase
+ * machinery never reaches the log at all — debt is paid inside the barrier
+ * action that ends the resource step (R39), and start-of-deployment rot
+ * damage inside the one that opens deployment (R38), so both are already
+ * below `segStartIndex`. What DOES reach the log is a start-of-phase trigger
+ * that asks a question: the segment opens with the suspension already
+ * standing, and the `decide` answering it lands at `segStartIndex` itself —
+ * inside the walk, and undoable, which is what he says he does not want.
+ *
+ * So: if the segment opened mid-suspension, the leading run of `decide`
+ * actions draining it is the phase's business, not the player's. That run is
+ * unambiguous — while a decision is pending nobody else may act, so nothing
+ * can be interleaved into it, and it ends at the first action that is not a
+ * `decide` (the player's first free move of the step).
+ */
+export function segmentFloor(room: Room): number {
+  const start = room.segStartIndex;
+  if (start < 0) return -1;
+  if (!room.segSnapshot?.decision) return start;
+  let i = start;
+  while (i < room.actions.length && room.actions[i]!.type === 'decide') i++;
+  return i;
+}
+
 export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   const segKey = room.segKey;
   // A pending PRE-COMMIT cast chain of the requester's own (X / cost /
@@ -1079,22 +1201,30 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
     // ("planning should be like deployment") and what makes #76's fix reach
     // planning for free.
     //
-    // The window closes at each barrier, which is right: once both of you
-    // have pressed done, the decisions lock.
+    // Pressing undo repeatedly walks you back to `segmentFloor` and stops
+    // there — the owner's "up to the beginning of that phase". The window
+    // closes at each barrier, which is right: once both of you have pressed
+    // done, the step's decisions lock.
+    const floor = segmentFloor(room);
     let i = room.actions.length - 1;
-    while (i >= room.segStartIndex && i >= 0 && room.actions[i]!.seat !== seat) i--;
-    if (i < room.segStartIndex || i < 0 || room.segStartIndex < 0) {
-      return { ok: false, why: 'nothing to undo — nothing of yours this step' };
+    while (i >= floor && i >= 0 && room.actions[i]!.seat !== seat) i--;
+    if (floor < 0 || i < 0 || i < floor) {
+      // distinguish the two ways the walk ends, because they mean different
+      // things to the player: "there is nothing left of mine" versus "what is
+      // left is the phase starting, which was never yours to take back"
+      const atStart = floor > room.segStartIndex && room.segStartIndex >= 0
+        && room.actions.slice(room.segStartIndex, floor).some(a => a.seat === seat);
+      return atStart
+        ? { ok: false, why: 'that is the start of the phase — its triggers cannot be taken back' }
+        : { ok: false, why: 'nothing to undo — nothing of yours this step' };
     }
-    // ...unless taking it out would re-point a later move at something else.
-    // Note what is NOT asked any more, which was the whole of #76: "has your
-    // opponent acted since". In a hidden simultaneous segment they are acting
-    // the whole time, and what they did is almost never about what you did —
-    // so the question is whether the SPLICE REACHES their move, and nothing
-    // else. spliceable() screens the id route; undoActionAt() measures all
-    // three and rolls itself back.
+    // ...and the ONLY thing that can still stop it: a later move that names an
+    // entity this action created, which un-playing it destroys outright. Note
+    // what is NOT asked any more, which was the whole of #76: "has your
+    // opponent acted since", nor even "would this renumber their move" — a
+    // renumbering is our bookkeeping and undoActionAt repairs it.
     if (!spliceable(room, i, seat)) {
-      return { ok: false, why: 'a later move names a unit that taking this back would renumber — it cannot be taken back now' };
+      return { ok: false, why: 'a later move is about the very unit that action put on the board — it cannot be taken back on its own' };
     }
     const refused = undoActionAt(room, i);
     if (refused.length) return { ok: false, why: undoRefusal(refused) };

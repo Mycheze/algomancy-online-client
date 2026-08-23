@@ -999,7 +999,7 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Despite Deployment being entirely separate from the opponent, I can\'t take back some '
       + 'things and get "your opponent has already acted on top of that one — it cannot be taken '
       + 'back now". What they do doesn\'t matter during deployment, so I should always be able to',
-    status: 'partial',
+    status: 'fixed',
     guards: [
       'server/test-undo-segment.ts::and it carries a PAYLOAD',
       'server/test-undo-segment.ts::is still undoable',
@@ -1009,14 +1009,24 @@ export const LEDGER: LedgerEntry[] = [
       'server/test-undo-segment.ts::a fresh room opens inside the plan segment',
     ],
     note:
-      'FIXED 2026-08-23 for the reported shape, and deliberately NOT for "I should always be '
-      + 'able to" — hence `partial` rather than `fixed`. Splicing your action out shifts every '
-      + 'entity id above its floor, and an opponent action that still replays LEGALLY while '
-      + 'naming a different unit is silent corruption, which is worse than a refusal. So '
-      + '`spliceable()` is now exact for the id route only and no longer asks WHO acted, and '
-      + 'everything else is measured by rebuilding and comparing resolved reference keys. '
-      + 'The gate reads the SEGMENT, not the phase, so planning is covered too. What remains '
-      + 'refused: a later action that literally names an id your undo would renumber. '
+      'FIXED 2026-08-23, in two passes, and the second pass is the interesting one. '
+      + 'Pass one narrowed the refusal to the id route only and left the rest to a '
+      + 'reference-key measurement; the owner then said that was still too narrow — "in '
+      + 'deployment and planning, you\'re \'alone\' in a world that no one else can see, so '
+      + 'you should be perfectly allowed to undo everything, up to the beginning of that '
+      + 'phase". '
+      + 'Pass two found out why narrowing was not enough: the log is replayed VERBATIM, so a '
+      + 'later action\'s raw `hostId: 4` names a number that ceases to exist once your action '
+      + 'is spliced out. The measurement cannot wave that through — it refused four real '
+      + 'games with the engine\'s own "no such unit". The renumbering is damage to be '
+      + 'REPAIRED, not a false alarm to be silenced. So the undo now splices, RENUMBERS the '
+      + 'surviving log, rebuilds, and uses the reference keys as PROOF the repair was right: '
+      + 'if the world moved in any way other than that constant shift, a key differs and the '
+      + 'whole undo rolls back. ⚠ It rewrites entity ids in the persisted log, deliberately — '
+      + 'an id is the row number a choice was filed under, not the choice, and `seed + '
+      + 'actions` still reproduces the game exactly. '
+      + 'No refusal remains inside a hidden segment: the only actions that can name someone '
+      + 'else\'s unit are mods, and the engine already refuses those across regions. '
       + '⚠ THIS WAS A RECURRENCE OF #37, and the reason is on the record: #37\'s two guards '
       + 'both drive the resource step, which allocates no id and draws no RNG, so the splice '
       + 'gate they were supposed to protect is never reached by either of them. #37 built the '

@@ -340,8 +340,8 @@ test('every ledger entry is still needed — delete it when the card is implemen
   const engineSrc = fs.readFileSync(path.join(ENGINE, 'src', 'engine.ts'), 'utf8');
   // PER ATTRIBUTE, because the two stat layers did not ship together. Stat
   // layer 5 landed in round 17 (R93: {Inverted} negates the net change from
-  // base) and stat layer 6 landed on 2026-08-23 (R106: an {Unaware} unit's
-  // numbers are its base numbers, for everybody). BOTH placeholders are code
+  // base) and stat layer 6 landed on 2026-08-23 (R106: an {Unaware} card, and
+  // everything it fights or damages, reads at PRINTED stats). BOTH are code
   // now, so neither attribute has one left to point at and a `deadAttr` entry
   // naming either has lost that channel of evidence for good — which is the
   // file's designed outcome, not a bug in it: the cards work now and the

@@ -36,7 +36,7 @@
  *    registry.ts deliberately excludes it from DECK_LIST (a resource face,
  *    not a deck card).
  */
-import type { Entity, EntityId, Seat } from '../../types.ts';
+import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, notSelf, type EffectCtx, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, inEndOfTurn, chooseUnit } from './helpers.ts';
@@ -55,11 +55,27 @@ const presentSeats = (g: E, region: number): Seat[] => {
  * fighter attrs like Deadly apply; Reaping/Resonant riders credit the
  * effect's controller). */
 const fight = (g: E, ctx: EffectCtx, a: Entity, b: Entity): void => {
-  const [pa] = g.effStats(a);
-  const [pb] = g.effStats(b);
+  /* R106 {Unaware}: a fight is an interaction, so if EITHER fighter is Unaware
+   * both of them are read off the printed cards ("it looks ONLY at what is the
+   * literal printed text on all cards 'involved'"), in both directions.
+   *
+   * The powers are collapsed here. The RECEIVING half has to be collapsed too,
+   * and `dealEffectDamage` decides that from the source's attributes — which,
+   * for a fight, are the fighter's only when `ctx.sourceId` is unset (a spell
+   * like Battle); an ability that makes two units fight is still its own
+   * source. So the flag is handed over explicitly through `grantedAttrs`, the
+   * same seam R79 uses to donate a virus's attributes to a resolving effect.
+   * Without it, Bubb fighting an Eminence would kill it at printed and take
+   * the Eminence's EFFECTIVE power back. */
+  const collapsed = g.collapsedBy(a, [b]);
+  const [pa] = g.interactionStats(a, [b]);
+  const [pb] = g.interactionStats(b, [a]);
+  const granted: Attr[] = collapsed
+    ? [...(ctx.grantedAttrs ?? []), 'Unaware']
+    : (ctx.grantedAttrs ?? []);
   g.ev('info', `${a.card} fights ${b.card}.`);
-  if (pb > 0) g.dealEffectDamage({ ...ctx, sourceName: b.card }, a, pb);
-  if (pa > 0) g.dealEffectDamage({ ...ctx, sourceName: a.card }, b, pa);
+  if (pb > 0) g.dealEffectDamage({ ...ctx, sourceName: b.card, grantedAttrs: granted }, a, pb);
+  if (pa > 0) g.dealEffectDamage({ ...ctx, sourceName: a.card, grantedAttrs: granted }, b, pa);
 };
 
 // ────────────────────────────── the cards ──────────────────────────────
@@ -149,11 +165,13 @@ card('Battle', {
 // "[Augment] {Unaware} Druid Rock Turtle Unit" — e/4 5/6. Type-line
 // [Augment] grants {Unaware}; printed.augmentAttrs carries it and
 // printed.attrs keeps it live when played normally. Vanilla otherwise.
-// The attribute is LIVE as of R106 (2026-08-23): stat layer 6 shipped, and
-// Bubb — or any host its [Augment] lands on — ignores every stat change,
-// its own included, so Bubb is a 5/6 through counters, auras, {Tough} and
-// {Inverted} alike. (This note used to end at "vanilla otherwise", which was
-// true of the code and hid a dead card for two playtest reports.)
+// The attribute is LIVE as of R106 (2026-08-23): stat layer 6 shipped. Bubb —
+// or any host its [Augment] lands on — reads at the numbers PRINTED on its
+// card, through counters, auras, base rewrites, {Tough} and {Inverted} alike;
+// and so does everything it is dealing damage to or in combat with, which is
+// why it kills a Robot token however many +1/+1 counters that Robot carries.
+// (This note used to end at "vanilla otherwise", which was true of the code
+// and hid a dead card for two playtest reports.)
 card('Bubb', {});
 
 // "[Augment] Abilities cost [one] more to activate or trigger during battle.
@@ -495,11 +513,11 @@ card('Graxxlid', {
 // "I deal 1 damage to each unit." — ee/4 {Battle} {Unaware} Sand Spell.
 // "Each unit" = every unit in the effect's region (R12), both sides;
 // the unit list is snapshotted, then each still-alive unit is hit.
-// ⚠ {Unaware} on a SPELL is a deliberate no-op under R106's blanket reading:
-// layer 6 freezes an Unaware card's OWN stats and does not collapse what it
-// interacts with, and a spell has no stats in play to freeze. Haboob's 1
-// damage therefore lands on each unit's EFFECTIVE toughness. R106 records
-// why this diverges from Caleb's pairwise gloss on this exact card.
+// {Unaware} on this spell is LIVE and is the whole point of the card (R106):
+// a spell has no stats of its own to collapse, so its {Unaware} collapses what
+// it HITS. The owner, 2026-08-23: "Haboob kills anything that has 1 defense
+// printed at the card level" — a 1/1 under four +1/+1 counters dies to this 1
+// damage, and a printed 2 defense does not.
 card('Haboob', {
   spellEffect: {
     run: (g, ctx) => {

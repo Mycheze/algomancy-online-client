@@ -71,14 +71,13 @@ Once-per-turn ([once], bounded grafts) is **tracked per card**; changing control
 receiving combat damage), targeting — all of it. Unaware and whatever it interacts with
 mutually ignore stat changes. (Bena 2026-07-16.)
 
-> ⚠ **SUPERSEDED IN SCOPE BY [R106](#r106--stat-layer-6-unaware-an-unaware-units-numbers-are-its-base-numbers-for-everybody), 2026-08-23. Text above kept as the original ruling.**
-> R10 sat unimplemented for thirteen months because "mutually" reads as a *pairwise*
-> mechanism. Asked how wide it goes, the owner chose the **blanket** reading, and that is
-> what shipped: an `{Unaware}` unit ignores stat changes **including its own**, and the
-> **other side of the interaction is NOT collapsed** ("Bubb 5/6 vs the attacker's FULL
-> 5/5"). So there is no pairwise evaluation anywhere in the engine — the whole rule is one
-> clause at the end of `effStats` (stat layer 6). Read R106 before acting on the sentence
-> above.
+> ⚠ **IMPLEMENTED BY [R106](#r106--stat-layer-6-unaware-everything-in-the-interaction-reads-at-printed-stats), 2026-08-23. Text above kept as the original ruling; R106 is the operative one.**
+> R10 sat unimplemented for thirteen months. The owner restated it operationally in 2026:
+> an `{Unaware}` card, **and every card it is involved with**, reads at the numbers
+> **PRINTED** on the card — not its base stats, and not just the Unaware one. R106 scopes
+> that to **dealing/receiving damage and combat**; **targeting**, which the sentence above
+> also lists, is R106's one named open edge and is deliberately not implemented. Read R106
+> before acting on the sentence above.
 
 ## R11 — Regroup order
 There is a set order; per the Manual's own listing (p.7): **(1) players and units return to
@@ -5315,7 +5314,7 @@ negation),
 The last two previously asserted the mod landed in a **bin**; both were corrected
 to the erase, with the reasoning written into them.
 
-## R106 — STAT LAYER 6, {Unaware}: an Unaware unit's numbers are its BASE numbers, for everybody
+## R106 — STAT LAYER 6, {Unaware}: everything in the interaction reads at PRINTED stats
 
 R10 (above) settled what "interacting with" means in 2026-07-16 and then sat there for
 thirteen months, because the layer it needed was never built. {Unaware} was the last
@@ -5324,134 +5323,154 @@ three cards printed it — Bubb (5/6), Trashling (2/2, which donates it as a {Vi
 Haboob (a spell) — and all three were plain vanilla bodies in play. `effStats()` carried
 the comment `// layer 6 (Unaware) goes here` and nothing else.
 
-### The ruling (Bena, 2026-08-23) — the BLANKET reading, verbatim
+### The ruling (Bena, 2026-08-23), verbatim
 
-Asked how wide R10 goes, the owner chose the blanket form, with this worked example:
+> "Unaware means that it looks ONLY at what is the literal printed text on all cards
+> 'involved' (self or others when dealing damage or in combat when dealing/receiving). So
+> Bubb blocking a Robot token would kill it (do Bubb, it has 0 power and 0 defense), no
+> matter how many +1/+1 counters it has. Bubb would also survive 100 -1/-1 counters just
+> fine. Haboob kills anything that has 1 defense printed at the card level."
 
-> Bubb 5/6 with a +1/+1 counter = **STILL 5/6**. A -1/-1 counter on Bubb: still 5/6. A
-> lord's +1/+0 aura: still 5/6.
->
-> Bubb blocks a pumped 3/3 (+2/+2 → 5/5): **Bubb 5/6 vs the attacker's FULL 5/5.**
+This agrees with Caleb, in rules-questions, on the same attribute: "Unaware is last 'stat
+modifier applied' and any Unaware units (or Spells like Haboob) will only look at BASE
+STAT PRINTED on cards." There is no divergence between the two to record.
 
-Two halves, and the second is narrower than R10's own wording *on purpose*:
+The rule has two halves, and both shipped.
 
-1. an `{Unaware}` unit **ignores stat changes, including its own**. Its numbers are its
-   base numbers, for everybody, everywhere;
-2. the **other side of an interaction is NOT collapsed**. The pumped 3/3 is a full 5/5 in
-   that exchange.
+### Half 1 — SELF: printed, not base
 
-### What is deliberately NOT done: there is no pairwise evaluation
-
-R10's phrasing — "Unaware and whatever it interacts with **mutually** ignore stat
-changes" — invites a pairwise "as seen by" mechanism: an extra `vs` parameter threaded
-through combat damage, targeting, `fight`, and every one of the ~33 card-side `effStats`
-call sites. **That mechanism does not exist and must not be built.** The owner's worked
-example rules it out directly: the attacker Bubb blocks is a 5/5, not a 3/3. "Its numbers
-are its base numbers" is a property of the *unit*, not of the *exchange*, so the whole
-rule is one clause and every call site is untouched.
-
-This is the next reader's most likely wrong turn, which is why it is stated here as
-loudly as the rule itself.
-
-**It also diverges from Caleb**, and that is recorded rather than hidden. In
-rules-questions he gave the pairwise gloss on this exact card:
-
-> "Unaware is last 'stat modifier applied' and any Unaware units (or Spells like Haboob)
-> will only look at BASE STAT PRINTED on cards"
-
-Under that reading, Haboob's 1 damage would see a pumped 1/1 as a 1/1 and kill it. Under
-R106 it does not: Haboob has no stats of its own in play to freeze, so its `{Unaware}` is
-a deliberate no-op and the pumped token takes its 1 on an effective 3 toughness. The
-owner's ruling is the one that shipped. `05-rulings.test.ts` carries both the assertion
-and the divergence note next to it.
-
-### The layer boundary — layers 1-2 survive, 3-5 are dropped
-
-`{Unaware}` is stat **layer 6**, and "goes last" is the whole of it:
+Layer 6 returns **layer 1 alone**. An Unaware card's own numbers never move off the
+numbers on its face, for any purpose, the state-based death check included — which is
+what makes "survive 100 -1/-1 counters just fine" true with no special case anywhere.
 
 | layer | what it is | under {Unaware} |
 |---|---|---|
-| 1 | printed / token stats | **applies** |
-| 2 | base REWRITES — `Entity.baseSet`, `StaticMod.baseP`/`baseT` | **applies** |
-| 3 | counters, `tempPower`/`tempToughness`, continuous `dp`/`dt` statics | dropped |
-| 4 | the `{Tough}` / `{Balanced}` attribute layer (R19) | dropped |
-| 5 | `{Inverted}` (R93) | dropped |
-| 6 | `{Unaware}` | returns layers 1-2 |
+| 1 | printed / token stats | **the answer** |
+| 2 | base REWRITES — `Entity.baseSet`, `StaticMod.baseP`/`baseT` | ignored |
+| 3 | counters, `tempPower`/`tempToughness`, continuous `dp`/`dt` statics | ignored |
+| 4 | the `{Tough}` / `{Balanced}` attribute layer (R19) | ignored |
+| 5 | `{Inverted}` (R93) | ignored |
 
-Layer 2 survives on **exactly the argument R93 already makes for {Inverted}**, quoted
-from the comment in `effStats`: a base rewrite ("becomes a base 4/4" — Formless, Unstable
-Refactor, Celestial Shifter, Floral Singularity; "your units are base 3/3" — Aberrant
-Statweaver) *redefines what base IS* rather than changing it, so it is the thing you
-would invert **from** and is never inverted. By the same argument it is not a stat
-*change*, and `{Unaware}` does not ignore it. spikeydog_40883, uncontradicted, on the
-{Inverted} side of the same line: "Its base stats aren't being inverted. Just the
-modifications to those stats by counters, stat-altering augments, or attributes."
+Note it drops **layer 2 as well**, which is where it parts company with {Inverted} one
+layer up. R93 keeps base rewrites because they are what {Inverted} inverts *from*; this
+rule is about what a card *reads*, and "your units are base 3/3" (Aberrant Statweaver) or
+"becomes a base 4/4" (Formless, Unstable Refactor) is not literal printed text on Bubb's
+card. So a Statweaver leaves Bubb a 5/6.
 
-So a Statweaver really does make Bubb a 3/3 — and a `+2/+2` counter on top of that leaves
-it a 3/3, because layer 3 is still dropped, now measured from the *new* base.
+For a TOKEN, "printed" is what it was created as — which is the same thing its card face
+says, and the reason the owner reached for a Robot: a `Robot` prints **0/0** and carries
+its entire size in +1/+1 counters, so a Robot 20 reads 0/0 and the two readings are as
+far apart as the pool allows.
 
-### Column sharing (R19): {Unaware} is shared, and freezes the whole column
+### Half 2 — PAIRWISE: the other side IS collapsed
 
-The layer reads `E.statLayerAttrs`, the same helper `{Tough}`, `{Balanced}` and
-`{Inverted}` use, which walks own printed attrs → augment/virus mods → **column-mates**.
-So `{Unaware}` is column-shared, and a unit standing beside Bubb in a formation fights at
-*its own* base stats for as long as the formation holds.
+"it looks ONLY at what is the literal printed text on **all cards 'involved'**". If any
+participant in an interaction is {Unaware}, **every** participant reads at printed, not
+just the Unaware one. Bubb blocking a Robot 20 sees a 0/0: it kills it, and takes nothing
+back, because 0 power is what the Robot deals.
+
+**Scope is exactly the owner's parenthetical** — "self or others when dealing damage or in
+combat when dealing/receiving" — and it is three call sites, no more:
+
+- `assignCombatDamage`: power dealt and toughness assigned against, with **both columns of
+  the exchange** as the participants. Threaded exactly like {Pure}'s `pure` flag one layer
+  down, and for the same reason: it is a property of the pairing, not of a card.
+- `dealEffectDamageAll`: the lethal arithmetic (`poolToKill`, which {Piercing} and
+  {Electric} read) and the commit's death read, with **the source and the recipient** as
+  the participants. The source side is read off `srcAttrs`, which falls back to the
+  printed card when there is no source entity — that is the whole of how a SPELL like
+  Haboob is Unaware at all.
+- the `fight` helper in `batch-earth-a.ts`, which snapshots both powers. It hands the flag
+  to its two `dealEffectDamage` calls through `grantedAttrs` (R79's seam), because an
+  ability that makes two units fight is its own source and would otherwise collapse only
+  one direction.
+
+The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and
+this is a STAT layer — an Unaware card's numbers are its printed numbers whether or not
+anyone is reading its attributes.
+
+### The death check, and why it needed its own sweep
+
+`checkDeaths` is the state-based sweep and it reads `effStats`, so it cannot see that a
+Robot 20 just fought as a 0/0, or that Haboob's 1 damage was lethal on a printed 1 defense
+under four +1/+1 counters. Both of the owner's *kill* examples live in
+`E.sweepCollapsedDeaths`, which runs at the end of an exchange over that exchange's
+participants only — outside an interaction a Robot 20 is a 20/20 and stays one. It sits
+beside `sweepDeadly` in the combat sub-step for the same reason: both are "this exchange
+killed something the ordinary check misses".
+
+### Column sharing (R19): {Unaware} is shared
+
+The layer reads `E.statLayerAttrs`, the same helper {Tough}, {Balanced} and {Inverted}
+use, which walks own printed attrs → augment/virus mods → **column-mates**. So {Unaware}
+is column-shared, and a unit standing beside Bubb in a formation reads at *its own*
+printed stats for as long as the formation holds.
 
 That is the precedent, not an extrapolation. Caleb, quoted on that helper: units in a
 column "just share attributes **in all situations**… if one unit in the column has tough,
-the other will also have it"; and asked point-blank "So, all attributes are shared
-between the units in the same column? Including stuff like Inverted or Tough?" — "Yes".
-The consequence runs both ways and is pinned in a test: a `{Tough}` Rampart Guardian
-sharing a column with Bubb loses its own doubling, because it is Unaware now.
+the other will also have it"; and asked point-blank "So, all attributes are shared between
+the units in the same column? Including stuff like Inverted or Tough?" — "Yes". The
+consequence runs both ways and is pinned in a test: a {Tough} Rampart Guardian sharing a
+column with Bubb loses its own doubling, because it is Unaware now.
 
-The share is **per column**, so it does **not** cross a block: an attacker's column and
-its blockers' column are two columns, which is exactly what makes the owner's worked
-example work — Bubb (in the block column) is Unaware, the attacker it blocks is not.
+### ⚠ THE ONE OPEN EDGE: targeting
 
-### Where it lives, and reentrancy
+R10's own wording lists **targeting** as an interaction —
 
-One clause at the end of `E.effStats` in `engine/src/engine.ts`, where the placeholder
-sat:
+> "Everything counts as interacting: fight, battle (blocking/being blocked/dealing or
+> receiving combat damage), **targeting** — all of it."
 
-```ts
-if (statAttrs.includes('Unaware')) return [base[0]!, base[1]!];
-```
+— but the owner's operational statement scopes the rule to damage and combat:
 
-`statAttrs` is the already-computed `statLayerAttrs(e)` that layers 4 and 5 use, so layer
-6 costs one array membership test and no extra board scan.
+> "(self or others when dealing damage or in combat when dealing/receiving)"
 
-The reentrancy hazard is real and is avoided by construction: `effStats` is called from
-inside static callbacks (`affects`, `dp`, `baseP`), so the attribute lookup must never
-call back into `effStats`. `statLayerAttrs` walks `ownAttrs`, which reads printed data,
-`tempAttrs`, augment mods and statics' `attrs` — **it never asks anyone for a number**.
-The existing `E.inStatics` guard bounds the remaining depth: a static's own callback sees
-`staticsFor()` return `[]`, so the recursion is two deep and terminates.
+so targeting is **deliberately not implemented**. "Delete target unit with base power 2 or
+less" asks `baseStatsOf`, and target legality is read at roughly 33 card-side sites; making
+each of them Unaware-aware is a separate change with a separate ruling behind it. This is
+recorded as a known, named gap rather than left as an omission: if a player reports that an
+Unaware card was or was not a legal target for a stat-gated effect, this paragraph is the
+answer to check first.
+
+### Where it lives
+
+- `E.printedStats(e)` — layer 1 alone.
+- `E.unaware(e)` — column-shared, off `statLayerAttrs`.
+- `E.interactionStats(u, involved)` / `E.collapsedBy(u, involved)` — the pairwise read.
+- `E.sweepCollapsedDeaths(ids)` — the deaths the collapsed reading implies.
+- one clause at the end of `E.effStats`: `if (statAttrs.includes('Unaware')) return
+  this.printedStats(e);`
+
+Reentrancy is avoided by construction: `statLayerAttrs` walks `ownAttrs`, which reads
+printed data, `tempAttrs`, augment mods and statics' `attrs` — it never asks anyone for a
+number — and the existing `E.inStatics` guard bounds the rest.
 
 ### Consequences worth knowing
 
-- **Trashling is a debuff virus, not a blank.** Donating `{Unaware}` onto a host strips
-  the host's counters, auras, temp buffs and `{Tough}` for as long as the mod is on it —
-  a pumped 5/5 fights as its printed 3/3 — and it keeps doing so for counters gained
-  *after* the virus lands, because layer 6 is continuous, not a stamp.
-- **Haboob's `{Unaware}` does nothing**, per the divergence above; its printed "I deal 1
-  damage to each unit" is unaffected and still works.
-- **`{Unaware}` beats `{Inverted}` on the same unit**, by layer order: layer 5 inverts a
-  delta that layer 6 then discards, so a Bubb wearing a Reality Bender is still a 5/6.
-- **The attribute does not kill.** A `-9/-9` on Bubb leaves it a live 5/6; the counters
-  stay on the entity, they are simply not counted.
+- **Trashling is a debuff virus, not a blank.** Donating {Unaware} onto a host strips the
+  host's counters, auras, temp buffs and {Tough} for as long as the mod is on it, and it
+  keeps doing so for counters gained *after* the virus lands: layer 6 is continuous, not a
+  stamp.
+- **Haboob's {Unaware} is the card.** A spell has no stats of its own to collapse, so its
+  {Unaware} exists entirely to collapse what it hits.
+- **{Unaware} beats {Inverted}** on the same unit, by layer order.
+- **The attribute does not kill its own bearer.** A −100/−100 on Bubb leaves it a live 5/6;
+  the counters stay on the entity, they are simply never read.
 
 ### Tests
 
-`92-unaware.test.ts` (seeds 9200-9299) is the layer's own file: the worked example
-verbatim, the asymmetry through real combat damage in both directions, the layer boundary
-(base rewrite lands, `{Tough}` and `{Inverted}` do not), column sharing in both
-directions, the Trashling donation, Haboob's printed effect, and **two negative controls**
-— a non-Unaware unit still gets its counters, its aura, its temp delta and its `{Tough}`,
-and a non-Unaware blocker still fights with pumped numbers. Without those controls an
-implementation that collapsed *every* unit to base would pass the whole file.
-`05-rulings.test.ts` carries R10's own two tests, and its `{todo:true}` — which could
-never fail, and under which this card stayed dead through two playtest reports and a
-conceded game — is gone.
+`92-unaware.test.ts` (seeds 9200-9299) is the layer's own file: the owner's three worked
+examples as named tests quoting him, the self half (counter, temp delta, aura, base
+rewrite, {Tough}, {Inverted}), the pairwise half through real combat damage in both
+directions plus a `fight`, column sharing in both directions, the Trashling donation, and
+**three negative controls** — a non-Unaware unit still gets its counters, its aura, its
+temp delta and its {Tough}; an exchange with nobody Unaware in it is not collapsed; and a
+Robot token nobody Unaware is fighting swings its full size. The controls matter more than
+usual here because TWO different collapses are in play: an implementation that read every
+unit at printed all the time would satisfy every other assertion in the file.
+`05-rulings.test.ts` carries R10's own two tests, and its `{todo:true}` — which could never
+fail, and under which this card stayed dead through two playtest reports and a conceded
+game — is gone.
+
 
 ## R107 — OWNER is not CONTROLLER, and putting a card into play never transfers it
 
@@ -5526,12 +5545,14 @@ is therefore also called from `payCastCost`'s decline branch and the two unpayab
 branches. Same ruling by a different route: declining a cost you were offered is
 declining.
 
-⚠ **Still open (CARD-TODO #20): the FIZZLE.** R5/R86's fizzle returns from `resolveItem`
-before `resolveParts` runs, so no run exists to ask for a refund and a bounded ability
-whose target was removed in response still burns its `[once]`. 61 bounded abilities
-declare a target spec, so this is reachable. It needs its own ruling — "the ability did
-nothing" and "the ability happened and missed" are both defensible, and R86 already
-treats a fizzle as a real resolution that produced nothing.
+**A FIZZLE refunds too** *(owner, 2026-08-23, closing CARD-TODO #20)*. Asked whether a
+fizzle is "the ability did nothing" or "the ability happened and missed", he answered the
+former — the same answer as a decline, and the consistent one. R5/R86's fizzle returns
+from `resolveItem` **before** `resolveParts` runs, so no run exists to raise the flag and
+the payout is made directly in that branch instead. **Every** part is refunded, not only
+the targeted ones: R86 is explicit that an item is one effect and fizzles as a unit, so an
+untargeted rider that died with it did not happen either. 61 bounded abilities declare a
+target spec, so this is reached by ordinary play — removing a target in response.
 
 ## R109 — an empty damage batch says so
 

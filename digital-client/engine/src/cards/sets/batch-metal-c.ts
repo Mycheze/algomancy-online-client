@@ -326,9 +326,9 @@ card('Transmogrifant', {
 // [Augment]: augmenting grants {Unaware} via printed.augmentAttrs, and Virus
 // lets it augment from hand during battle — all engine-level, no card-side
 // behavior. That plumbing now HAS an outcome: R106 shipped stat layer 6, so
-// donating {Unaware} onto a host drops the host to its base stats for as long
-// as the mod is on it (a pumped 5/5 fights as its printed 3/3), which makes
-// this a debuff virus rather than a blank. (The old note ended "no behavior",
+// donating {Unaware} onto a host drops the host to its PRINTED stats for as
+// long as the mod is on it (a pumped 5/5 fights as its printed 3/3), which
+// makes this a debuff virus rather than a blank. (The old note ended "no behavior",
 // true of the card file and false of the game.)
 card('Trashling', {});
 

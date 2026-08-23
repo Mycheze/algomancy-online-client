@@ -97,8 +97,9 @@ import { isEnt, isUnitCard, selfOf } from './helpers.ts';
  *
  * {Unaware} used to be called out here as the one still-inert name. It is not
  * any more: R106 shipped stat layer 6 on 2026-08-23, so a row granting
- * {Unaware} makes the Omniphage ignore every stat change including its own,
- * and Bubb, Trashling and Haboob came off the card ledger with it.
+ * {Unaware} makes the Omniphage read at its PRINTED stats — and collapses
+ * whatever it deals damage to or fights to printed as well. Bubb, Trashling
+ * and Haboob came off the card ledger with it.
  *
  * {Inverted} came off the same list one round earlier: R93 shipped stat layer
  * 5 for playtest report #73, so a row granting {Inverted} now really inverts

@@ -365,13 +365,30 @@ export const CARD_TODO: TodoEntry[] = [
       + 'THE LESSON, which is the reusable part: a ruling compressed into multiple choice '
       + 'is a ruling you have paraphrased. Quote the owner and let him write the sentence.',
     proof: () => !ENGINE_SRC.includes("'Unaware'"),
-    // Layer 6 exists. It is being REWORKED to the corrected ruling above — the
-    // first implementation froze an Unaware unit at its BASE stats and left the
-    // other side of an interaction alone, which is half the rule. Guards are
-    // refreshed when the rework lands.
+    // FIXED 2026-08-23, on the SECOND attempt. Two halves:
+    //  · SELF — `effStats` ends `if (statAttrs.includes('Unaware')) return
+    //    this.printedStats(e);`, layer 1 alone, so layers 2-5 (base rewrites
+    //    included) are all ignored. Verified: Bubb is 5/6 through +5 counters,
+    //    through 100 -1/-1 counters, and through a base rewrite to 4/4.
+    //  · PAIRWISE — `interactionStats(u, involved)` collapses EVERY
+    //    participant to printed when any of them is Unaware, wired at the three
+    //    sites the owner named: the combat sub-step's column exchange,
+    //    `dealEffectDamageAll`, and the shared `fight` helper. Verified: a Unit
+    //    Token carrying +6 counters reads 7/7 alone and 1/1 in an exchange with
+    //    Bubb.
+    // A collapsed exchange needs its own death sweep, because `checkDeaths`
+    // reads `effStats`: a Robot 20 read as printed 0/0 is assigned no damage at
+    // all, so nothing would kill it. `sweepCollapsedDeaths` runs over the
+    // exchange's participants and never globally — outside an interaction a
+    // Robot 20 is a 20/20 and stays one.
+    // The collapse survives {Pure} on purpose: R61 switches off the ATTRIBUTE
+    // layer for an exchange, and this is a STAT layer.
     guards: [
+      '92-unaware.test.ts::Bubb blocking a Robot token would kill it',
+      '92-unaware.test.ts::Bubb would also survive 100 -1/-1 counters just fine',
+      '92-unaware.test.ts::Haboob kills anything that has 1 defense printed at the card level',
       '92-unaware.test.ts::a +1/+1 counter on Bubb leaves it a 5/6',
-      '92-unaware.test.ts::NEGATIVE CONTROL: a unit WITHOUT {Unaware} still gets its counters',
+      '92-unaware.test.ts::NEGATIVE CONTROL',
       '05-rulings.test.ts::R10',
     ],
     status: 'done',
@@ -748,17 +765,35 @@ export const CARD_TODO: TodoEntry[] = [
       'server/test-undo-segment.ts::a fresh room opens inside the plan segment',
       'server/test-hidden.ts::freeze is captured at room creation',
     ],
-    // DELIBERATELY STILL OPEN, and the report is `partial` rather than `fixed`
-    // to match. The reported behaviour is fixed and guarded above; what the
-    // owner literally asked for — "I should ALWAYS be able to" — is not, and
-    // should not be, because the residual case is one where allowing the undo
-    // would silently re-point one of HIS OPPONENT'S moves at a different unit.
-    // Closing this item is the owner's call, not ours: either he accepts the
-    // narrow refusal (then this closes as by-design and #76 becomes 'fixed'),
-    // or he wants it allowed anyway and that is a new, larger job — ids would
-    // have to stop being positional, which is an engine-wide change.
+    // CLOSED 2026-08-23 at the owner's second answer: "In deployment and
+    // planning, you're 'alone' in a world that no one else can see. So you
+    // should be perfectly allowed to undo everything, up to the beginning of
+    // that phase." No residual refusal remains inside a hidden segment.
+    //
+    // ⚠ THE FIRST ATTEMPT WAS TOO CAUTIOUS AND THE SECOND FOUND OUT WHY.
+    // Dropping the conservative id screen was NOT enough, and the reason is
+    // worth keeping: the log is replayed VERBATIM, so a later action's raw
+    // `hostId: 4` names a number that ceases to exist after the splice. The
+    // measurement cannot wave that through — it refused four real games with
+    // the engine's own "no such unit". The renumbering is not a false alarm to
+    // be silenced, it is damage to be REPAIRED.
+    // So `undoActionAt` now splices, RENUMBERS the surviving log (the spliced
+    // action allocated [lo, hi); everything at or above `hi` shifts down by
+    // hi - lo), rebuilds, and uses the reference-key measurement as the PROOF
+    // that the renumbering was a repair rather than a guess — if the world
+    // moved in any way other than that constant shift, a key differs and the
+    // whole undo rolls back.
+    // ⚠ This REWRITES ENTITY IDS IN THE PERSISTED LOG. Deliberate: an id is the
+    // row number a choice was filed under, not the choice, and `seed + actions`
+    // still reproduces the game exactly, which is the log's actual contract.
+    // The only alternative is the refusal the owner just rejected.
+    // The floor is `segmentFloor`, which lifts over a leading run of `decide`s
+    // when the segment opened mid-suspension — debt (R39) and start-of-
+    // deployment rot (R38) are paid inside the barrier action and were already
+    // below it, but a start-of-phase trigger that ASKS something leaves its
+    // `decide` at the segment start and must not be undone.
     severity: 'minor',
-    status: 'open',
+    status: 'done',
   },
   {
     id: 14,
@@ -1234,7 +1269,10 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'Give a bounded targeted ability a target, remove the target in response, and read '
       + '`budgets` on the source. It is spent today.',
-    status: 'open',
+    guards: [
+      '93-engine-defects.test.ts::a bounded ability that FIZZLES for want of a target keeps its [once]',
+    ],
+    status: 'done',
   },
   {
     id: 21,

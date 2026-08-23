@@ -25,38 +25,60 @@
  * half stayed as it was for every action that allocates an entity id, which is
  * every deployment play, so the report came back one day later.
  *
- * So this file pins the REPORTED SHAPE, and only the reported shape:
+ * AND THEN THE FIRST FIX WAS STILL TOO NARROW. It stopped refusing "your
+ * opponent acted" and started refusing "a later move names a unit this splice
+ * would renumber", which is a smaller set but still not the right question.
+ * The owner, 2026-08-23:
  *
- *   seat 0 acts during deployment → seat 1 acts during deployment WITH A
- *   PAYLOAD (a real play, not the bare `doneDeploying` the old gate already
- *   exempted) → seat 0's own last action must still be undoable, and seat 1's
- *   position must come out of the rebuild untouched.
+ *   "I'm not sure what this means. In deployment and planning, you're 'alone'
+ *    in a world that no one else can see. So you should be perfectly allowed
+ *    to undo everything, up to the beginning of that phase (unless there is
+ *    anything that triggers at the beginning/end of those phases such as
+ *    paying debt or 'at the beginning of deployment'), but you can back up
+ *    choosing their targets / to the point when they're on the stack (if
+ *    applicable). I don't understand your question otherwise."
  *
- * plus the one case that must still be refused, so the gate cannot be widened
- * away by accident, plus the same shape in the resource step (#37 says in so
- * many words that planning is meant to behave like deployment).
+ * He is right, and the gate had been answering a question about NUMBERING
+ * rather than about the game. `nextId` is one global clock, so splicing shifts
+ * every id above it and the log — replayed verbatim — goes on naming numbers
+ * that moved. That is our bookkeeping, and the player was being charged for
+ * it. `undoActionAt` now REPAIRS the numbering and uses the reference-key
+ * measurement as the PROOF that the repair was one.
+ *
+ * SO THIS FILE PINS THE TARGET BEHAVIOUR:
+ *
+ *   §1/§2  the reported shape, both ways round — you act, the opponent acts
+ *          with a real payload, your action still comes back.
+ *   §3     the case the first fix refused: the opponent deploys AND MODS,
+ *          so the log names an id your splice moves. Now accepted, their
+ *          position byte-identical, and the logged `hostId` renumbered.
+ *   §4     the residue, and why a hidden segment cannot reach it.
+ *   §4b    the WALK: undo repeatedly, all the way to the start of the
+ *          segment, with the opponent acting throughout.
+ *   §4c    the FLOOR: what the phase itself started is not yours to take back.
+ *   §4d    a pending cast walks back like anything else.
+ *   §5-§7  planning is the same segment; the measurement still catches a
+ *          genuine conflict; the barrier still closes the window.
  *
  * IT DRIVES `undoForSeat` — the actual production decision, moved out of
  * main.ts's WebSocket handler for exactly this reason. A decision that only
  * exists inside a socket handler can only be reached by playing a whole game
  * over a socket, which is a test nobody writes; that is the history above.
  *
- * NOTE ON SETUP. The positive cases play a REAL game with only legal actions
- * and no state injection, because an undo is a rebuild from `seed + actions`
- * and an injected resource or card is in neither — a room set up by hand
- * cannot be rebuilt, so every undo in it is refused for the wrong reason
- * (test-forensics.ts says the same thing about its own §4). The two negative
- * cases DO inject, and may: they assert a refusal that is decided by
- * `spliceable()` before any rebuild happens, and the log they check is the
- * one they wrote.
+ * NOTE ON SETUP. Anything asserting an ACCEPTED undo plays a REAL game with
+ * only legal actions and no state injection, because an undo is a rebuild from
+ * `seed + actions` and an injected resource or card is in neither — a room set
+ * up by hand cannot be rebuilt, so every undo in it would be refused for the
+ * wrong reason (test-forensics.ts says the same about its own §4). Only §4,
+ * which asserts a refusal decided before any rebuild runs, injects.
  */
 import { rmSync } from 'node:fs';
 import type { Action, GameState, Seat } from '../engine/src/types.ts';
 import { apply, forcedAction, legalActions } from '../engine/src/apply.ts';
 import { gameFile } from './test-util.ts';
 import {
-  applyToRoom, createRoom, openSegment, segmentKey, spliceable, undoActionAt, undoForSeat,
-  type Room,
+  applyToRoom, createRoom, openSegment, segmentFloor, segmentKey, spliceable, undoActionAt,
+  undoForSeat, type Room,
 } from './rooms.ts';
 
 let failures = 0;
@@ -84,6 +106,23 @@ function drain(room: Room): void {
   for (let g = 0; g < 20 && room.state.decision; g++) {
     const d = room.state.decision;
     actOn(room, { type: 'decide', seat: d.seat, choice: d.pickOrder ? d.options.map((_, i) => i) : 0 });
+  }
+}
+
+/** every entity id an action names — a test-local mirror of rooms.ts's own
+ * `entityRefs`, kept here so the sweep below reads the payload rather than
+ * trusting the module it is checking. */
+function entityIdsOf(a: Action): number[] {
+  switch (a.type) {
+    case 'castSpellToken': return [a.entityId];
+    case 'activateAbility':
+      return typeof a.via === 'object' && a.via ? [a.entityId, a.via.mod] : [a.entityId];
+    case 'augment': return a.hostId === undefined ? [] : [a.hostId];
+    case 'graft': return [a.hostId];
+    case 'declareAttack': return [...a.columns.flat(), ...(a.spellTokens ?? [])];
+    case 'declareBlocks':
+      return [...Object.values(a.blocks).flat(), ...(a.send ?? []), ...(a.spellTokens ?? [])];
+    default: return [];
   }
 }
 
@@ -117,11 +156,63 @@ function cleanPlay(room: Room, seat: Seat): Action | undefined {
 const SEEDS = [100016, 100020, 100023, 100030, 100039, 100015, 100027, 100021,
   100026, 100036, 100009, 100029, 100032];
 
+function walkToDeployment(room: Room, turns = 6): boolean {
+  for (let turn = 0; turn < turns; turn++) {
+    for (const s of [0, 1] as Seat[]) {
+      const r = first(room, s, 'recycleForResource');
+      if (r) actOn(room, r);
+      for (let k = 0; k < 4; k++) {
+        const v = first(room, s, 'activateResource');
+        if (v) actOn(room, v);
+      }
+    }
+    for (const s of [0, 1] as Seat[]) { const d = first(room, s, 'donePlanning'); if (d) actOn(room, d); }
+    for (const s of [0, 1] as Seat[]) { const d = first(room, s, 'doneHaste'); if (d) actOn(room, d); }
+    for (let g = 0; room.state.phase === 'battle' && g < 60; g++) {
+      if (room.state.decision) { drain(room); continue; }
+      let did = false;
+      for (const s of [0, 1] as Seat[]) {
+        const d = legalActions(room.state, s).find(a => a.type === 'passPriority'
+          || a.type === 'declareAttack' || a.type === 'declareBlocks');
+        if (d) { actOn(room, d); did = true; }
+      }
+      if (!did) break;
+    }
+    if (room.state.phase === 'deploy' && !room.state.decision
+      && cleanPlay(room, 0) && cleanPlay(room, 1)) return true;
+    for (const s of [0, 1] as Seat[]) {
+      const d = first(room, s, 'doneDeploying'); if (d) actOn(room, d);
+    }
+  }
+  return false;
+}
+
 function deployingRoom(code: string): Room {
   for (const seed of SEEDS) {
     const room = room$(code, seed);
     try {
-      for (let turn = 0; turn < 6; turn++) {
+      if (walkToDeployment(room)) return room;
+    } catch { /* this seed's game went somewhere unusable — try the next */ }
+    rmSync(gameFile(code), { force: true });
+  }
+  throw new Error('no seed reached a deployment both seats can play into');
+}
+
+/** the seeds whose deployment lets seat 1 deploy AND THEN MOD what they
+ * deployed — the sequence the first fix refused (see §3) */
+const MOD_SEEDS = [400027, 400015, 400020];
+
+/**
+ * A REAL deployment in which seat 0 has played, seat 1 has played, and seat 1
+ * has modded their own new unit — so the log carries a `hostId` naming an
+ * entity that splicing seat 0's play renumbers. No injection: this has to be
+ * a log that rebuilds, because the whole question is what the rebuild does.
+ */
+function deployPlayModRoom(code: string): { room: Room; myPlay: number; augAt: number } {
+  for (const seed of MOD_SEEDS) {
+    const room = room$(code, seed);
+    try {
+      for (let turn = 0; turn < 9; turn++) {
         for (const s of [0, 1] as Seat[]) {
           const r = first(room, s, 'recycleForResource');
           if (r) actOn(room, r);
@@ -130,12 +221,8 @@ function deployingRoom(code: string): Room {
             if (v) actOn(room, v);
           }
         }
-        for (const s of [0, 1] as Seat[]) {
-          const d = first(room, s, 'donePlanning'); if (d) actOn(room, d);
-        }
-        for (const s of [0, 1] as Seat[]) {
-          const d = first(room, s, 'doneHaste'); if (d) actOn(room, d);
-        }
+        for (const s of [0, 1] as Seat[]) { const d = first(room, s, 'donePlanning'); if (d) actOn(room, d); }
+        for (const s of [0, 1] as Seat[]) { const d = first(room, s, 'doneHaste'); if (d) actOn(room, d); }
         for (let g = 0; room.state.phase === 'battle' && g < 60; g++) {
           if (room.state.decision) { drain(room); continue; }
           let did = false;
@@ -146,16 +233,61 @@ function deployingRoom(code: string): Room {
           }
           if (!did) break;
         }
-        if (room.state.phase === 'deploy' && !room.state.decision
-          && cleanPlay(room, 0) && cleanPlay(room, 1)) return room;
-        for (const s of [0, 1] as Seat[]) {
-          const d = first(room, s, 'doneDeploying'); if (d) actOn(room, d);
+        if (room.state.phase === 'deploy' && !room.state.decision) {
+          const p0 = cleanPlay(room, 0);
+          if (p0) {
+            actOn(room, p0); drain(room);
+            const myPlay = room.actions.length - 1;
+            const p1 = cleanPlay(room, 1);
+            if (p1) {
+              actOn(room, p1); drain(room);
+              const aug = legalActions(room.state, 1).find(a => a.type === 'augment'
+                && a.hostId !== undefined && room.state.entities[a.hostId]?.controller === 1);
+              if (aug) {
+                actOn(room, aug); drain(room);
+                return { room, myPlay, augAt: room.actions.length - 1 };
+              }
+            }
+            break;                      // this seed got there and could not mod
+          }
         }
+        for (const s of [0, 1] as Seat[]) { const d = first(room, s, 'doneDeploying'); if (d) actOn(room, d); }
       }
-    } catch { /* this seed's game went somewhere unusable — try the next */ }
+    } catch { /* try the next seed */ }
     rmSync(gameFile(code), { force: true });
   }
-  throw new Error('no seed reached a deployment both seats can play into');
+  throw new Error('no seed reached a deployment where seat 1 could deploy and then mod');
+}
+
+/**
+ * A REAL deployment in which one seat has just played a card that SUSPENDED on
+ * a choice — the "you can back up choosing their targets" case. Returns the
+ * position that play should unwind to, or null if no seed reached one.
+ */
+function suspendingDeployRoom(code: string):
+{ room: Room; seat: Seat; before: string; oppBefore: string } | null {
+  for (const seed of SEEDS) {
+    const room = room$(code, seed);
+    try {
+      const built = walkToDeployment(room);
+      if (built) {
+        for (const seat of [0, 1] as Seat[]) {
+          const play = legalActions(room.state, seat).find(a => {
+            if (a.type !== 'playCard') return false;
+            try { return !!apply(room.state, a).state.decision; } catch { return false; }
+          });
+          if (!play) continue;
+          const before = positionOf(room.state, seat);
+          const oppBefore = positionOf(room.state, (1 - seat) as Seat);
+          actOn(room, play);
+          if (room.state.decision) return { room, seat, before, oppBefore };
+          return null;
+        }
+      }
+    } catch { /* try the next seed */ }
+    rmSync(gameFile(code), { force: true });
+  }
+  return null;
 }
 
 /**
@@ -242,82 +374,281 @@ function positionOf(s: GameState, seat: Seat): string {
   ok(positionOf(room.state, 0) === oppWas, "and seat 0's position is untouched");
 }
 
-// ══ 3. THE NEGATIVE — the one residual case, and nothing wider ════════
+// ══ 3. THE CASE THAT USED TO BE REFUSED, AND IS NOW ACCEPTED ══════════
 //
-// The hazard is not "the opponent acted". It is "a later action NAMES an
-// entity id that the splice would renumber". Seat 1 mods their own unit, so
-// the log now carries `hostId: <an id above seat 0's floor>`; splicing seat
-// 0's play shifts it, and the log is replayed VERBATIM. Refused — and the
-// refusal must say THAT rather than blaming the opponent for existing.
+// THE OWNER, 2026-08-23, on the first fix still refusing a narrow case:
 //
-// (Injected setup is fine here: the refusal is decided by `spliceable()`
-// before any rebuild runs, and what is asserted afterwards is that the log
-// this test wrote is still exactly the log this test wrote.)
+//   "In deployment and planning, you're 'alone' in a world that no one else
+//    can see. So you should be perfectly allowed to undo everything, up to
+//    the beginning of that phase."
+//
+// The narrow case was this one: seat 1 deploys a unit and mods it, so the log
+// carries `hostId: <an id above seat 0's floor>`. Splicing seat 0's play
+// shifts every id above it down, and the log replays VERBATIM — so the mod
+// went on naming a unit number that no longer existed and the undo died on
+// "no such unit". That was never a fact about the game; it was a fact about
+// our numbering. `undoActionAt` now renumbers the surviving log and PROVES
+// the renumbering was right by re-measuring every reference key.
+//
+// A real game, not an injected board: the whole question is what the rebuild
+// does, so the log has to be one that rebuilds.
 {
-  const room = room$('UND3', 616161);
-  console.log('\n[the residual case: a later move that NAMES a renumbered id]');
-  actOn(room, { type: 'donePlanning', seat: 0 });
-  actOn(room, { type: 'donePlanning', seat: 1 });
-  for (const s of [0, 1] as Seat[]) {
-    for (let i = 0; i < 4; i++) room.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
-    room.state.players[s]!.hand.push('Ignis Sprite');
-  }
-  actOn(room, { type: 'playCard', seat: 0, handIndex: room.state.players[0]!.hand.length - 1 });
-  const myPlay = room.actions.length - 1;
-  actOn(room, { type: 'playCard', seat: 1, handIndex: room.state.players[1]!.hand.length - 1 });
-  ok(spliceable(room, myPlay, 0), 'with only their play on top of it, the splice is allowed');
+  const { room, myPlay, augAt } = deployPlayModRoom('UND3');
+  console.log('\n[the case that used to be refused — a mod naming a renumbered unit]');
+  const aug = room.actions[augAt] as Extract<Action, { type: 'augment' }>;
+  ok(aug.type === 'augment' && aug.seat === 1, 'seat 1 deployed a unit and modded it');
+  const namedId = aug.hostId!;
+  const lo = room.segIdFloor[myPlay]!;
+  ok(namedId >= lo,
+    `the mod names entity ${namedId}, which sits above seat 0's floor ${lo} — the splice moves it`);
+  ok(spliceable(room, myPlay, 0),
+    'and that is no longer a refusal: a renumbering is bookkeeping, not a conflict');
 
-  const theirUnit = Object.values(room.state.entities)
-    .find(e => e.controller === 1 && e.kind === 'unit')!.id;
-  room.state.players[1]!.hand.push('Animated Spark');
-  actOn(room, { type: 'augment', seat: 1, from: 'hand',
-    index: room.state.players[1]!.hand.length - 1, hostId: theirUnit });
-  ok(room.actions[room.actions.length - 1]!.type === 'augment', 'seat 1 mods their own unit');
-  ok(!spliceable(room, myPlay, 0),
-    `and now that the log NAMES entity ${theirUnit}, the splice is refused`);
-
-  const before = JSON.stringify(room.actions);
+  const theirPositionWas = positionOf(room.state, 1);
   const out = undoForSeat(room, 0);
-  ok(!out.ok, 'the undo is refused');
-  ok(!out.ok && /renumber/.test(out.why),
-    `the refusal names the real reason (${out.ok ? '' : out.why})`);
-  ok(!out.ok && !/opponent has already acted/.test(out.why),
-    'and the reported error text is gone for good');
-  ok(JSON.stringify(room.actions) === before, 'the log is exactly as it was');
-  ok(Object.values(room.state.entities).some(e => e.controller === 0 && e.kind === 'unit'),
-    "and seat 0's unit is still on the board");
+  ok(out.ok, `seat 0's play comes back out (${out.ok ? 'accepted' : out.why})`);
+  ok(positionOf(room.state, 1) === theirPositionWas,
+    "and seat 1's whole position — the modded unit included — is byte-identical");
+
+  // the structural proof that a REPAIR happened rather than a coincidence:
+  // the logged action now names the same unit under its new number
+  const after = room.actions[augAt - 1] as Extract<Action, { type: 'augment' }>;
+  ok(after && after.type === 'augment', 'the mod is still in the log, one slot earlier');
+  ok(after.hostId !== namedId, `and its hostId was renumbered (${namedId} → ${after.hostId})`);
+  const host = room.state.entities[after.hostId!];
+  ok(!!host && host.controller === 1,
+    'pointing at a unit that exists and is still seat 1\'s');
+  ok(Object.values(room.state.entities).some(e => e.kind === 'mod' && e.controller === 1),
+    'and the mod is still on the board');
 }
 
-// ══ 4. the gate is about the ID, not about who acted ══════════════════
+// ══ 4. THE RESIDUE — and why a hidden segment cannot reach it ═════════
 //
-// Same board, but the mod is on seat 0's OWN unit. It still names an id above
-// seat 1's floor, so seat 1 is still refused — the opponent's identity is not
-// what the gate is made of, and neither is whose action carries the reference.
+// One thing a renumbering cannot repair: an action naming an entity the
+// SPLICED action created. Those ids do not move, they cease to exist, and
+// there is no number to rewrite them to. Un-playing the unit a later move is
+// about means dropping that move, and we refuse instead.
+//
+// It is asserted here at the primitive (`undoActionAt`'s own gate), because
+// inside a hidden segment IT CANNOT HAPPEN — the second half of this block
+// shows the engine itself making it unreachable.
 {
   const room = room$('UND4', 717171);
-  console.log('\n[the id is the reason, not who acted]');
+  console.log('\n[the residue: a later move about the very unit being un-played]');
   actOn(room, { type: 'donePlanning', seat: 0 });
   actOn(room, { type: 'donePlanning', seat: 1 });
   for (const s of [0, 1] as Seat[]) {
     for (let i = 0; i < 4; i++) room.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
-    room.state.players[s]!.hand.push('Ignis Sprite');
   }
-  actOn(room, { type: 'playCard', seat: 1, handIndex: room.state.players[1]!.hand.length - 1 });
-  const theirPlay = room.actions.length - 1;
+  room.state.players[0]!.hand.push('Ignis Sprite');
   actOn(room, { type: 'playCard', seat: 0, handIndex: room.state.players[0]!.hand.length - 1 });
+  const myPlay = room.actions.length - 1;
   const myUnit = Object.values(room.state.entities)
     .find(e => e.controller === 0 && e.kind === 'unit')!.id;
   room.state.players[0]!.hand.push('Animated Spark');
   actOn(room, { type: 'augment', seat: 0, from: 'hand',
     index: room.state.players[0]!.hand.length - 1, hostId: myUnit });
-  ok(!spliceable(room, theirPlay, 1),
-    'seat 1 cannot splice under a mod that names an id above their floor…');
-  const out = undoForSeat(room, 1);
-  ok(!out.ok && /renumber/.test(out.why), '…and undoForSeat refuses it with that reason');
-  // the mod itself is the tail, so it names nothing later and is still its
-  // own author's to take back — the gate is narrow, not sticky
-  ok(spliceable(room, room.actions.length - 1, 0),
-    'the tail action, naming nothing after it, is still spliceable');
+  ok(!spliceable(room, myPlay, 0),
+    `entity ${myUnit} is what that play CREATED, so the later mod cannot be renumbered onto anything`);
+  const before = JSON.stringify(room.actions);
+  const refused = undoActionAt(room, myPlay);
+  ok(refused.length > 0, 'and the splice is refused');
+  ok(JSON.stringify(room.actions) === before, 'leaving the log exactly as it was');
+
+  // …and the reason a PLAYER never meets this inside a hidden segment: the
+  // only actions that can name someone else's unit are mods, and the engine
+  // will not let a mod cross regions. A unit deployed behind the screen
+  // stands in its own controller's region, so the opponent cannot name it —
+  // which is the same fact as "you're alone in a world no one else can see".
+  room.state.players[1]!.hand.push('Chitin Shredder');
+  let refusedByEngine = '';
+  try {
+    actOn(room, { type: 'augment', seat: 1, from: 'hand',
+      index: room.state.players[1]!.hand.length - 1, hostId: myUnit });
+  } catch (err) { refusedByEngine = err instanceof Error ? err.message : String(err); }
+  ok(refusedByEngine !== '',
+    `the opponent cannot even name a unit deployed behind the screen (${refusedByEngine})`);
+  ok(!legalActions(room.state, 1).some(a => entityIdsOf(a).includes(myUnit)),
+    'and legalActions never offers seat 1 anything that names it');
+}
+
+// ══ 4b. THE WALK: all the way back to the start of the segment ════════
+//
+// *"You should be perfectly allowed to undo everything, up to the beginning of
+// that phase."* Pressing undo repeatedly must get there, with the opponent
+// acting throughout, and must stop exactly at the floor.
+//
+// Driven in the resource step, where a player really does stack up several
+// small decisions in one segment — and where #37 said in so many words that
+// planning should behave like deployment.
+{
+  const room = room$('UND8', 909090);
+  console.log('\n[the full walk back to the start of the segment]');
+  ok(room.segKey === 'plan' && segmentFloor(room) === room.segStartIndex,
+    'the segment is open and its floor is its start (no start-of-phase trigger here)');
+  const move = (s: Seat): Action | undefined =>
+    legalActions(room.state, s).find(a => a.type === 'recycleForResource' || a.type === 'activateResource');
+  let mine = 0;
+  for (let k = 0; k < 4; k++) {
+    const a0 = move(0); if (!a0) break;
+    actOn(room, a0); mine++;
+    const a1 = move(1); if (a1) actOn(room, a1);        // the opponent, all the way through
+  }
+  ok(mine >= 3, `seat 0 stacked up ${mine} decisions in one segment`);
+  const theirs = room.actions.filter(a => a.seat === 1).length;
+  ok(theirs >= 3, `and the opponent made ${theirs} of their own, interleaved`);
+
+  const theirPositionWas = positionOf(room.state, 1);
+  let steps = 0, disturbed = 0;
+  for (;;) {
+    const out = undoForSeat(room, 0);
+    if (!out.ok) {
+      ok(/nothing of yours this step|start of the phase/.test(out.why),
+        `the walk ends by running out, not by being refused (${out.why})`);
+      break;
+    }
+    steps++;
+    if (positionOf(room.state, 1) !== theirPositionWas) disturbed++;
+    if (steps > 30) break;                              // a walk that never ends is a bug
+  }
+  ok(steps === mine, `every one of seat 0's ${mine} actions came back out (${steps} undos)`);
+  ok(disturbed === 0, "and the opponent's position was byte-identical after every single step");
+  ok(room.actions.slice(segmentFloor(room)).filter(a => a.seat === 0).length === 0,
+    'nothing of seat 0 is left in the segment');
+  ok(room.actions.filter(a => a.seat === 1).length === theirs,
+    'while every one of the opponent\'s actions is still in the log');
+  ok(room.segKey === 'plan' && room.state.turn === 1,
+    'and the walk stopped inside the phase — it never crossed the boundary');
+}
+
+// ══ 4b-ii. THE SAME WALK, IN DEPLOYMENT — the reported phase ═════════
+//
+// Deployment is where the report was filed, so the walk is driven there too:
+// seat 0 plays, seat 1 plays, seat 0 presses done, seat 1 plays again. Then
+// seat 0 walks their whole step back — the done-flag and the play — with the
+// opponent's position byte-identical at every step.
+{
+  const room = deployingRoom('UNDB');
+  console.log('\n[the same walk, in deployment]');
+  ok(room.segKey === 'deploy', 'a real deployment segment');
+  const floor = segmentFloor(room);
+
+  actOn(room, cleanPlay(room, 0)!); drain(room);
+  const p1a = cleanPlay(room, 1); if (p1a) { actOn(room, p1a); drain(room); }
+  actOn(room, { type: 'doneDeploying', seat: 0 });
+  const p1b = cleanPlay(room, 1); if (p1b) { actOn(room, p1b); drain(room); }
+
+  const mine = room.actions.slice(floor).filter(a => a.seat === 0).length;
+  const theirs = room.actions.slice(floor).filter(a => a.seat === 1).length;
+  ok(mine >= 2, `seat 0 has ${mine} actions in the deployment segment`);
+  ok(theirs >= 1, `and the opponent acted ${theirs} time(s) among them`);
+  ok(room.state.deployDone?.[0] === true, 'seat 0 has pressed done');
+
+  const theirPositionWas = positionOf(room.state, 1);
+  let steps = 0, disturbed = 0;
+  for (;;) {
+    const out = undoForSeat(room, 0);
+    if (!out.ok) {
+      ok(/nothing of yours this step|start of the phase/.test(out.why),
+        `the walk ends by running out, not by being refused (${out.why})`);
+      break;
+    }
+    steps++;
+    if (positionOf(room.state, 1) !== theirPositionWas) disturbed++;
+    if (steps > 30) break;
+  }
+  ok(steps === mine, `all ${mine} of seat 0's deployment actions came back out`);
+  ok(disturbed === 0, "and the opponent's position never moved");
+  ok(!room.state.deployDone?.[0], 'the done-flag came off with them');
+  ok(room.actions.slice(segmentFloor(room)).filter(a => a.seat === 0).length === 0,
+    'nothing of seat 0 is left in the deployment');
+  ok(room.actions.slice(floor).filter(a => a.seat === 1).length === theirs,
+    "while every one of the opponent's hidden moves is still in the log");
+  ok(room.segKey === 'deploy', 'and the walk never crossed out of deployment');
+}
+
+// ══ 4c. THE FLOOR: a start-of-phase trigger is not yours to take back ═
+//
+// *"…up to the beginning of that phase (unless there is anything that triggers
+// at the beginning/end of those phases such as paying debt or 'at the
+// beginning of deployment')."*
+//
+// Most of that machinery never reaches the log — debt is paid inside the
+// barrier that ends the resource step, rot damage inside the one that opens
+// deployment — so it is already below `segStartIndex`. The exception is a
+// start-of-phase trigger that ASKS something: the segment opens with the
+// suspension standing and the `decide` answering it lands at `segStartIndex`.
+// `segmentFloor` is what lifts the floor over it.
+//
+// Asserted as the pure derivation it is: the cards that trigger this way
+// (Scholar of the Void, Prediction Prophet) are rare enough that no seed sweep
+// reaches one, and the rule is about the SHAPE of the log, not about a card.
+{
+  const room = room$('UND9', 424242);
+  console.log('\n[the floor sits above whatever the phase itself started]');
+  actOn(room, { type: 'donePlanning', seat: 0 });
+  actOn(room, { type: 'donePlanning', seat: 1 });
+  ok(room.segKey === 'deploy', 'a deployment segment');
+  const start = room.segStartIndex;
+  ok(!room.segSnapshot?.decision, 'this one opened with nothing pending…');
+  ok(segmentFloor(room) === start, '…so its floor is simply its start');
+
+  // now the shape a start-of-deployment "you may…" leaves behind: the segment
+  // opens mid-suspension, and the answer to it is the log's first entry
+  room.segSnapshot!.decision = {
+    id: 1, seat: 0, kind: 'payOrDecline', prompt: 'At the start of deployment, you may…', options: [],
+  };
+  room.actions.push({ type: 'decide', seat: 0, choice: 0 });
+  room.actions.push({ type: 'decide', seat: 0, choice: 0 });
+  ok(segmentFloor(room) === start + 2,
+    'the leading run of answers to it is below the floor — the phase started, not the player');
+  room.actions.push({ type: 'doneDeploying', seat: 0 });
+  room.actions.push({ type: 'decide', seat: 0, choice: 0 });
+  ok(segmentFloor(room) === start + 2,
+    'and the run ends at the first action that is not one of them — a later decide is the player\'s own');
+  const out = undoForSeat(room, 0);
+  ok(!out.ok || room.actions.length > start + 2, 'the walk can never reach below that floor');
+}
+
+// ══ 4d. A PENDING CAST: back out of the targeting, and out of the play ═
+//
+// The owner's parenthetical is a requirement of its own: *"…but you can back
+// up choosing their targets / to the point when they're on the stack (if
+// applicable)."*
+//
+// Outside a segment that is the `castChain` branch of `undoForSeat`, and it is
+// narrow on purpose — it only opens for a PRE-COMMIT cast of your own
+// (`sus.type === 'cast'`, `item.kind !== 'triggered'`). INSIDE a segment none
+// of that is consulted: the walk simply takes your last action, whatever the
+// engine happens to be suspended on, because while your decision pends nobody
+// else may act and the tail is provably yours. So the floor for a pending cast
+// is the same floor as for everything else — `segmentFloor` — and you can back
+// out of the choice AND of the play that raised it.
+{
+  const found = suspendingDeployRoom('UNDA');
+  console.log('\n[a pending cast walks back like anything else]');
+  if (!found) {
+    ok(false, 'no seed reached a deployment play that suspends on a choice');
+  } else {
+    const { room, seat, before, oppBefore } = found;
+    ok(!!room.state.decision, 'the play suspended: a choice is pending');
+    ok(room.state.decision!.seat === seat, 'and it is the playing seat that owes it');
+    const sus = room.state.suspension!;
+    ok(sus.type === 'cast', `the suspension is a cast (${sus.type})`);
+    // the narrow outside-a-segment branch would NOT have opened for this one —
+    // which is exactly why the segment must not defer to it
+    const wouldCastChain = sus.type === 'cast' && sus.item.kind !== 'triggered';
+    ok(room.segKey !== null, 'but we are inside a hidden segment');
+
+    const out = undoForSeat(room, seat);
+    ok(out.ok, `the pending cast is walkable back (${out.ok ? 'accepted' : out.why})`
+      + `${wouldCastChain ? '' : ' — and the castChain branch would have refused this one'}`);
+    ok(!room.state.decision, 'the choice is gone with it');
+    ok(positionOf(room.state, seat) === before,
+      'the position is exactly what it was before the card left hand');
+    ok(positionOf(room.state, (1 - seat) as Seat) === oppBefore,
+      "and the opponent's is untouched");
+  }
 }
 
 // ══ 5. #37's other half: PLANNING is the same segment, so it is fixed too ══
@@ -417,6 +748,11 @@ function positionOf(s: GameState, seat: Seat): string {
   ok(!shut.ok, 'and the deployment is no longer reachable');
   ok(!shut.ok && /nothing of yours this step|undo only works/.test(shut.why),
     `the window is what closed it, not the gate (${shut.ok ? '' : shut.why})`);
+  // #76's actual words: "✗ your opponent has already acted on top of that one
+  // — it cannot be taken back now". No refusal this server can produce may
+  // ever say that again, whatever the reason for the refusal is.
+  ok(!shut.ok && !/opponent has already acted/.test(shut.why),
+    'and the reported error text is gone for good');
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');

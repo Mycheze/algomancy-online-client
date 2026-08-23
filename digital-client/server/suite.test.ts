@@ -40,7 +40,7 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-hidden.ts',
     covers: 'hidden simultaneous segments in-process: freeze / holdback / reveal / undo for the resource step, the haste step and deployment' },
   { file: 'test-undo-segment.ts',
-    covers: 'ledger #76/#37: the take-back inside a hidden segment — the opponent deploying on top of you does not take your undo away; the two cases still refused (a later move that NAMES a renumbered id, and one that stays legal while meaning something else)' },
+    covers: 'ledger #76/#37: the take-back inside a hidden segment — undo walks all the way back to the start of the phase with the opponent acting throughout, the splice renumbers the surviving log rather than refusing, and the measurement still catches a move that would change meaning' },
   { file: 'test-forensics.ts',
     covers: 'saved logs as a forensic record: replay onto a changed engine, the skip cascade, fork records, undo never eating a move' },
   { file: 'test-drive.ts',

@@ -257,11 +257,10 @@ test('R9: once-per-turn budgets are per card and survive control change', () => 
  * still could not fail, and the attribute stayed dead through two playtest
  * reports and a conceded game (CARD-TODO #5).
  *
- * Stat layer 6 shipped on 2026-08-23 (R106, the owner's BLANKET reading): an
- * {Unaware} unit's numbers are its BASE numbers, for everybody, everywhere —
- * and the other side of an interaction is NOT collapsed, so there is no
- * pairwise evaluation anywhere. Both halves are exercised below, and the whole
- * layer has its own file, test/92-unaware.test.ts.
+ * Stat layer 6 shipped on 2026-08-23 (R106): an {Unaware} card, and everything
+ * it is interacting with, reads at the numbers PRINTED on the card. Both
+ * halves are exercised below, and the whole layer has its own file,
+ * test/92-unaware.test.ts.
  *
  * There is no todo left in this slot. There is no todo left to put here.
  */
@@ -283,7 +282,7 @@ test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob, and stat
   assert.ok(ownAttrs(h, bubb).has('Unaware'), 'a played Bubb has {Unaware}');
   ent(h, bubb)!.counters = 3;
   assert.deepEqual(effStats(h, bubb), [5, 6],
-    'R106: a +3/+3 is a stat change, and Bubb ignores its own stat changes');
+    'R106: Bubb reads the 5/6 printed on its own card, whatever is stacked on it');
   const host = spawn(h, A, 'Unit Token');                 // 1/1
   ent(h, host)!.counters = 2;                             // → 3/3
   assert.deepEqual(effStats(h, host), [3, 3], 'the host is an ordinary pumped 3/3 first');
@@ -292,21 +291,21 @@ test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob, and stat
   assert.ok(ownAttrs(h, host).has('Unaware'),
     'and the [Augment] half donates {Unaware} to the host (printed.augmentAttrs)');
   assert.deepEqual(effStats(h, host), [1, 1],
-    'which drops the host to ITS base 1/1 — the donation is a real effect now');
+    'which drops the host to ITS printed 1/1 — the donation is a real effect now');
 
-  // 3. THE OTHER SIDE IS NOT COLLAPSED, exercised end to end.
+  // 3. THE DIVERGENCE THAT USED TO BE PINNED HERE AS "THE WRONG ANSWER".
   //
-  //    ⚠ This is where the owner's ruling is deliberately NARROWER than both
-  //    R10's own wording and Caleb, who in rules-questions said
+  //    Haboob is an {Unaware} spell: "I deal 1 damage to each unit." Caleb, in
+  //    rules-questions:
   //      "Unaware is last 'stat modifier applied' and any Unaware units (or
   //       Spells like Haboob) will only look at BASE STAT PRINTED on cards"
-  //    — a PAIRWISE reading, under which Haboob would see a pumped 1/1 as a
-  //    1/1 and kill it. Asked how wide R10 goes on 2026-08-23 the owner chose
-  //    the blanket form instead, with the worked example "Bubb blocks a pumped
-  //    3/3 (+2/+2 -> 5/5): Bubb 5/6 vs the attacker's FULL 5/5." So an Unaware
-  //    card ignores stat changes on ITSELF and nothing else; a spell with no
-  //    stats of its own gets nothing out of the attribute at all. See R106,
-  //    which records the divergence rather than hiding it.
+  //    and the owner, 2026-08-23, in as many words: "Haboob kills anything
+  //    that has 1 defense printed at the card level." They agree. So a 1/1
+  //    token pumped to 3/3 is, to Haboob, a 1/1, and 1 damage kills it.
+  //
+  //    This assertion spent months reading `assert.ok(ent(h, pumped))` under a
+  //    comment explaining that it was the wrong answer, pinned on purpose
+  //    until layer 6 landed. Layer 6 landed; this is the right answer now.
   const pumped = spawn(h, A, 'Unit Token');               // 1/1
   ent(h, pumped)!.counters = 2;                           // → 3/3
   assert.deepEqual(effStats(h, pumped), [3, 3], 'pumped to 3/3 the ordinary way');
@@ -317,37 +316,33 @@ test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob, and stat
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Haboob') });
   pass(h); pass(h);                                       // resolve Haboob
 
-  assert.ok(ent(h, pumped), 'the pumped token survives: R106 does not collapse what an Unaware card hits');
-  assert.equal(ent(h, pumped)!.damage, 1, 'it took Haboob\'s 1 on its effective 3 toughness');
+  assert.ok(!ent(h, pumped), 'Haboob read the printed 1 toughness and killed it');
   finishBattle(h);
 });
 
-test('R10/R106: an Unaware blocker fights at its base, and the attacker it blocks does not', () => {
-  // The owner's worked example, driven through real combat: Bubb 5/6 blocks a
-  // 3/3 that has been pumped to 5/5. Bubb is a 5/6 whatever is done to it; the
-  // attacker is a 5/5, in full, in that same exchange. The two assertions
-  // together are what "no pairwise evaluation" means.
+test('R10/R106: an Unaware blocker and what it blocks BOTH read at printed', () => {
+  // The owner's own example, driven through real combat: "Bubb blocking a
+  // Robot token would kill it (do Bubb, it has 0 power and 0 defense), no
+  // matter how many +1/+1 counters it has." A Robot is printed 0/0 and carries
+  // its whole size in counters, so the two readings could not be further apart.
   const h = new Harness(1101);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
-  const atk = (() => {
+  const robot = (() => {
     const e = new E(h.state);
-    const u = e.spawnUnit(A, 'Unit Token', e.homeRegion(A), { token: true, tokenStats: [3, 3] });
+    const u = e.spawnUnit(A, 'Robot', e.homeRegion(A), { token: true, counters: 9 });
     e.settle();
     return u.id;
   })();
-  ent(h, atk)!.counters = 2;                              // +2/+2 → 5/5
   const bubb = spawn(h, D, 'Bubb');
-  ent(h, bubb)!.counters = 2;                             // would be 7/8
+  assert.deepEqual(effStats(h, robot), [9, 9], 'a Robot 9 is a 9/9 to everything else');
   toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'declareAttack', seat: A, columns: [[robot]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
-  assert.deepEqual(effStats(h, bubb), [5, 6], 'Bubb 5/6');
-  assert.deepEqual(effStats(h, atk), [5, 5], 'vs the attacker\'s FULL 5/5');
   pass(h); pass(h);                                       // damage
-  assert.ok(!ent(h, atk), 'Bubb\'s base 5 power killed the 5-toughness attacker');
-  assert.equal(ent(h, bubb)!.damage, 5, 'and Bubb took the attacker\'s full 5, not a collapsed 3');
+  assert.ok(!ent(h, robot), 'in the exchange it is a 0/0, and 0 defense is dead');
+  assert.equal(ent(h, bubb)!.damage, 0, 'and it dealt its printed 0 power, not 9');
   finishBattle(h);
 });
 

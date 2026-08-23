@@ -388,8 +388,8 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // {Unaware} — invisible to the shape sweep, because `card('X', {})` is the
   // CORRECT definition when there is no printed text to flag, which is the
   // mismatch that hid Harbinger in reverse. R106 shipped stat layer 6 (an
-  // Unaware unit's numbers are its base numbers, for everybody) and all three
-  // came off, exactly as Its Dark Bubb and Reality Bender came off when R93
+  // Unaware card, and everything it fights or damages, reads at PRINTED stats)
+  // and all three came off, as Its Dark Bubb and Reality Bender came off when R93
   // shipped layer 5. Both stat-layer placeholders in effStats() are now code.
 
   // ── APPROXIMATIONS SITTING BEHIND A {todo:true} ─────────────────────────

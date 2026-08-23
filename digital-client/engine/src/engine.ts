@@ -184,6 +184,10 @@ interface CombatLedger {
   afflicted: Map<string, { dealer: Seat; label: string; ids: Set<EntityId> }>;
   /** who controlled what before the sub-step, for the afflicting diff */
   beforeUnits: Map<EntityId, Seat>;
+  /** R106 {Unaware}: every unit that fought in an exchange collapsed to
+   * printed stats, so the sub-step can run the death check the collapsed
+   * reading implies — `checkDeaths` reads effStats and cannot see it. */
+  collapsed: Set<EntityId>;
 }
 
 /** R43: every condition counts FORWARD from the moment of prophesying — never
@@ -755,41 +759,123 @@ export class E {
       t = 2 * base[1]! - t;
     }
     /**
-     * LAYER 6 — {Unaware} (R106). "Unaware and whatever it interacts with
-     * mutually ignore stat changes" (R10), read by the owner on 2026-08-23 in
-     * its BLANKET form, which is narrower than R10's own wording and
-     * deliberately so:
+     * LAYER 6 — {Unaware} (R106). PRINTED, not base: layer 1 and nothing else.
      *
-     *   "Bubb 5/6 with a +1/+1 counter = STILL 5/6. A -1/-1 counter on Bubb:
-     *    still 5/6. A lord's +1/+0 aura: still 5/6."
-     *   "Bubb blocks a pumped 3/3 (+2/+2 -> 5/5): Bubb 5/6 vs the attacker's
-     *    FULL 5/5."
+     * The owner, 2026-08-23, stating it operationally:
      *
-     * So an Unaware unit ignores stat changes INCLUDING ITS OWN, everywhere,
-     * for everybody — and the OTHER side of the interaction is not collapsed.
-     * There is no pairwise "as seen by" evaluation, no `vs` parameter and no
-     * change at the ~33 card-side effStats call sites; the whole rule is this
-     * one clause, because "its numbers are its base numbers for everybody" is
-     * a property of the unit and not of the exchange it is in.
+     *   "Unaware means that it looks ONLY at what is the literal printed text
+     *    on all cards 'involved' (self or others when dealing damage or in
+     *    combat when dealing/receiving). So Bubb blocking a Robot token would
+     *    kill it (do Bubb, it has 0 power and 0 defense), no matter how many
+     *    +1/+1 counters it has. Bubb would also survive 100 -1/-1 counters
+     *    just fine. Haboob kills anything that has 1 defense printed at the
+     *    card level."
      *
-     * `base` is layers 1-2, exactly as it is for {Inverted} one layer up, and
-     * for the same reason R93 states there: a base REWRITE (`baseSet`,
-     * `StaticMod.baseP`/`baseT` — "becomes a base 4/4", "your units are base
-     * 3/3") redefines what base IS rather than changing it, so it is the thing
-     * you would invert FROM and is never inverted — and by the same argument
-     * it is not a stat CHANGE and {Unaware} does not ignore it. Dropped, then:
-     * counters, temp deltas, continuous dp/dt statics, the whole layer-4
-     * {Tough}/{Balanced} attribute layer, and layer-5 {Inverted}. That is what
-     * "layer 6 goes last" means.
+     * This half is the SELF half: an Unaware card's own numbers never move off
+     * the numbers on its face, for any purpose — combat, effects, and the
+     * state-based death check alike, which is what makes "survive 100 -1/-1
+     * counters just fine" true without a special case anywhere.
+     *
+     * Note it drops layer 2 as well, unlike {Inverted} one layer up. R93's
+     * argument for keeping base rewrites there is about what {Inverted}
+     * inverts FROM; this rule is about what a card READS, and "your units are
+     * base 3/3" (Aberrant Statweaver) is not literal printed text on Bubb's
+     * card. So `baseSet` and `StaticMod.baseP`/`baseT` are ignored too, along
+     * with counters, temp deltas, dp/dt statics, layer 4 ({Tough}/{Balanced})
+     * and layer 5 ({Inverted}). Everything above layer 1 goes.
      *
      * Read off `statLayerAttrs`, so {Unaware} is column-shared exactly like
      * {Tough}/{Balanced}/{Inverted} — Caleb, quoted on that helper: units in a
      * column "just share attributes in all situations". A column-mate of Bubb
      * is Unaware for as long as the formation holds, and therefore fights at
-     * ITS base stats too.
+     * ITS printed stats too.
+     *
+     * The OTHER half of R106 — every card in an interaction with an Unaware
+     * card also reads at printed — cannot live here, because `effStats(e)`
+     * knows only `e`. It lives in `interactionStats`, at the damage and combat
+     * sites; see that method.
      */
-    if (statAttrs.includes('Unaware')) return [base[0]!, base[1]!];
+    if (statAttrs.includes('Unaware')) return this.printedStats(e);
     return [p, t];
+  }
+
+  /**
+   * LAYER 1 ALONE — "the literal printed text on the card" (R106).
+   *
+   * For a token this is what it was CREATED as, which is the same thing its
+   * card face says: a `Robot` prints 0/0 and carries its size in +1/+1
+   * counters, so a Robot 7 reads 0/0 here, and that is the owner's own worked
+   * example. `tokenStats` covers the synthetic stat tokens the engine makes
+   * for cards that say "create an X/X".
+   *
+   * Deliberately NOT `baseStatsOf`, which is layers 1-2. See the layer-6 note.
+   */
+  printedStats(e: Entity): [number, number] {
+    if (e.tokenStats) return [e.tokenStats[0], e.tokenStats[1]];
+    const c = this.card(e.card);
+    return [c.power, c.toughness];
+  }
+
+  /** R106: does this entity carry {Unaware} for stat purposes? Column-shared,
+   * because it rides `statLayerAttrs` with the other three stat-layer attrs
+   * (R19) — so a unit standing beside Bubb in a formation is Unaware too. */
+  unaware(e: Entity): boolean {
+    return this.statLayerAttrs(e).includes('Unaware');
+  }
+
+  /**
+   * R106, the PAIRWISE half: the stats a card reads DURING AN INTERACTION.
+   *
+   * "it looks ONLY at what is the literal printed text on all cards
+   * 'involved'" — so if ANY participant is {Unaware}, EVERY participant reads
+   * at its printed stats, not just the Unaware one. Bubb blocking a Robot 7
+   * sees a 0/0 and kills it; the Robot's seven +1/+1 counters are not there to
+   * be seen.
+   *
+   * SCOPE, and it is deliberately narrow — the owner's parenthetical is the
+   * whole of it: "self or others when dealing damage or in combat when
+   * dealing/receiving". Three call sites, no more:
+   *   · `assignCombatDamage` — power dealt and toughness assigned against,
+   *     with both columns of the exchange as the participants;
+   *   · `dealEffectDamageAll` — lethal arithmetic and the commit's death read,
+   *     with the source and the recipient as the participants;
+   *   · the `fight` helper in batch-earth-a.ts, which snapshots both powers.
+   *
+   * ⚠ TARGETING IS OUT OF SCOPE. R10's older wording lists targeting as an
+   * interaction; the owner's operational statement does not, and legality
+   * checks read stats at ~33 card-side sites. Recorded as R106's one open
+   * edge rather than guessed at.
+   */
+  interactionStats(u: Entity, involved: readonly (Entity | undefined)[]): [number, number] {
+    return this.collapsedBy(u, involved) ? this.printedStats(u) : this.effStats(u);
+  }
+  /** the test `interactionStats` runs, exposed so a site that reads several
+   * numbers off one exchange can ask once instead of per number. */
+  collapsedBy(u: Entity, involved: readonly (Entity | undefined)[]): boolean {
+    if (this.unaware(u)) return true;
+    for (const e of involved) if (e && this.unaware(e)) return true;
+    return false;
+  }
+  /**
+   * R106: kill whatever the collapsed reading has already killed.
+   *
+   * `checkDeaths` is the state-based sweep and it reads `effStats`, so it
+   * cannot see that a Robot 7 read 0 defense in the exchange it just lost, or
+   * that Haboob's 1 damage was lethal on a printed 1 defense under five +1/+1
+   * counters. Both of the owner's kill examples live here. Run at the end of
+   * an exchange, over its participants, never globally: outside an interaction
+   * a Robot 7 is a 7/7 and stays one.
+   */
+  private sweepCollapsedDeaths(ids: Iterable<EntityId>): void {
+    for (const id of ids) {
+      const u = this.entity(id);
+      if (!u) continue;
+      const [p, t] = this.printedStats(u);
+      if (t > 0 && u.damage < t) continue;
+      this.ev('info',
+        `Unaware: ${u.card} is read at its printed ${p}/${t} — it dies.`, { unit: id });
+      this.destroy(u, 'dies');
+    }
   }
   /** R19/R93/R106: the stat-layer attrs, in layer-4 application order — own
    * printed (type-line order), then augment mods (stack order), then
@@ -2569,6 +2655,27 @@ export class E {
     const poisonous = srcAttrs.has('Poisonous');
     const resonant = srcAttrs.has('Resonant');
     const piercing = srcAttrs.has('Piercing');
+    /**
+     * R106 {Unaware}: is THIS recipient's hit read at printed stats?
+     *
+     * The owner's scope for the pairwise collapse is "self or others when
+     * dealing damage" — so the participants of an effect hit are the SOURCE
+     * and the RECIPIENT, and either one being Unaware collapses both.
+     *
+     * The source side is read off `srcAttrs`, not off `src`, and that matters:
+     * Haboob is a SPELL and has no entity in play, so `src` is undefined and
+     * only the printed-card fallback a few lines up knows it is Unaware. That
+     * is the whole of "Haboob kills anything that has 1 defense printed at the
+     * card level" — a spell has no stats of its own to collapse, and its
+     * {Unaware} exists to collapse what it hits.
+     *
+     * The recipient side is `unaware`, which is column-shared (R19), so a unit
+     * standing beside Bubb in a formation is read at printed here too.
+     */
+    const srcUnaware = srcAttrs.has('Unaware');
+    const collapsed = (u: Entity): boolean => srcUnaware || this.unaware(u);
+    /** the units this batch read at printed, for the death sweep at the end */
+    const collapsedHit = new Set<EntityId>();
 
     // ── plan ──────────────────────────────────────────────────────────
     // Recipients in FIRST-MENTIONED order (the order the card names them is
@@ -2619,7 +2726,9 @@ export class E {
      */
     const poolToKill = (u: Entity): number => {
       const mult = this.effAttrs(u).has('Vulnerable') ? 2 : 1;
-      const [, t] = this.effStats(u);
+      // R106: a collapsed hit is priced against PRINTED defense, so Piercing
+      // and Electric spend the small number and carry the rest on.
+      const [, t] = collapsed(u) ? this.printedStats(u) : this.effStats(u);
       const recvCap = Math.max(0, t - u.damage - (dealt.get(`u${u.id}`) ?? 0) * mult);
       if (recvCap <= 0) return 0;
       if (srcAttrs.has('Deadly')) return 1;
@@ -2804,6 +2913,9 @@ export class E {
       // being dealt, then no counters are placed" (RAQ, Poisonous vs
       // Phytochemical Protection).
       const through = n;
+      // R106: this hit was read at printed stats, so its lethality is settled
+      // by `sweepCollapsedDeaths` below rather than by the state-based sweep.
+      if (collapsed(u)) collapsedHit.add(u.id);
       if (srcAttrs.has('Blessed')) this.blessedGain(ctx.controller, through, ctx.sourceName);
       if (poisonous) {
         // Poisonous deals the damage as permanent -1/-1 counters instead of
@@ -2816,7 +2928,12 @@ export class E {
         const ev = this.ev('damage', `${ctx.sourceName} deals ${through} to ${u.card}.`,
           { unit: u.id, n: through, total, source: ctx.sourceName, controller: ctx.controller });
         this.fireEvent('damage', ev);   // "when I am dealt damage" (Awoken Tomb)
-        const [, t] = this.effStats(u);
+        // R106: lethality on a collapsed hit is measured on PRINTED defense —
+        // "Haboob kills anything that has 1 defense printed at the card level",
+        // however many +1/+1 counters are on it. The kill itself is
+        // `sweepCollapsedDeaths` below; `checkDeaths` reads effStats and would
+        // let the pumped victim walk.
+        const [, t] = collapsed(u) ? this.printedStats(u) : this.effStats(u);
         // R21: Deadly — any nonzero damage kills, regardless of toughness
         if (u.damage >= t || srcAttrs.has('Deadly')) killed.push(u);
       }
@@ -2840,6 +2957,9 @@ export class E {
         }
       }
     }
+    // R106: settle the deaths the collapsed reading implies before the ordinary
+    // state-based sweep, which reads effStats and cannot see them.
+    this.sweepCollapsedDeaths(collapsedHit);
     this.checkDeaths();
   }
 
@@ -5107,6 +5227,25 @@ export class E {
     const targeted = item.parts.some(p => !p.spent && !!effectByKey(p.effectKey).targets);
     if (targeted && !item.parts.some(partAlive)) {
       this.ev('fizzled', `${item.label} fizzles — all targets are gone.`, { id: item.id });
+      /**
+       * R108 / CARD-TODO #20: a fizzle REFUNDS a bounded budget.
+       *
+       * The owner, 2026-08-23, asked whether a fizzle is "the ability did
+       * nothing" or "the ability happened and missed": it is the former, which
+       * is the same answer R108 gives for a decline and the consistent one. An
+       * ability whose every declared target was removed in response keeps its
+       * [once] and may be used again this turn.
+       *
+       * It has to be paid out HERE, directly, rather than by raising
+       * `EffectPart.refunded` the way card code does: this branch returns
+       * before `resolveParts` ever runs, so no run exists to raise the flag and
+       * `settleBudgetRefund` is never reached on this path. Every part is
+       * refunded, not just the targeted ones — R86 is explicit that an item is
+       * ONE effect and fizzles as a unit ("If effect loses ALL of its targets
+       * and wants to resolve"), so an untargeted rider that died with it did
+       * not happen either.
+       */
+      for (const part of item.parts) this.refundPart(item, part);
       // a fizzled spell unit never spawns; a fizzled ambusher is binned too
       // ("you could find yourself losing both units" — Manual p.40).
       // R40: still the stack, so still not a trash. R79: a fizzled carrier is
@@ -6008,6 +6147,11 @@ export class E {
     this.assignCombatDamage(b, sub, L);
     const shielded = this.commitUnitDamage(b, L);
     this.sweepDeadly(L, shielded);
+    // R106 {Unaware}: an exchange collapsed to printed stats settles its own
+    // deaths, because the state-based sweep reads effStats and would keep a
+    // Robot 7 that just fought as a 0/0 alive. Beside sweepDeadly on purpose:
+    // both are "this exchange killed something the ordinary check misses".
+    this.sweepCollapsedDeaths(L.collapsed);
     this.afflictingAftermath(L);
     this.commitPlayerDamage(b, L);
     this.thievingDraws(L);
@@ -6022,6 +6166,7 @@ export class E {
       playerHits: [],
       afflicted: new Map(),
       beforeUnits: this.snapshotUnits(),
+      collapsed: new Set(),
     };
   }
 
@@ -6032,13 +6177,23 @@ export class E {
   private assignCombatDamage(b: BattleState, sub: 'Swift' | 'normal' | 'Sluggish', L: CombatLedger): void {
     const alive = (ids: EntityId[]) => ids.filter(id => this.entity(id));
     const colLabel = (ids: EntityId[]) => ids.map(id => this.entity(id)?.card ?? '?').join(' + ') || 'a column';
-    const colPower = (ids: EntityId[]) =>
-      ids.reduce((s, id) => { const u = this.entity(id); return u ? s + Math.max(0, this.effStats(u)[0]) : s; }, 0);
+    // R106 {Unaware}: `collapsed` is the whole exchange's flag, not this
+    // column's — if either side carries {Unaware}, BOTH sides deal and receive
+    // at their printed numbers ("it looks ONLY at what is the literal printed
+    // text on all cards 'involved'"). It is threaded exactly like `pure` one
+    // layer down, and for the same reason: it is a property of the pairing.
+    const colPower = (ids: EntityId[], collapsed: boolean) =>
+      ids.reduce((s, id) => {
+        const u = this.entity(id);
+        if (!u) return s;
+        const [p] = collapsed ? this.printedStats(u) : this.effStats(u);
+        return s + Math.max(0, p);
+      }, 0);
     // Powerful column: its whole combat output is doubled at the source, before
     // lethal assignment and Piercing overflow (so a Powerful+Piercing column
     // pierces the doubled amount).
-    const dealtPower = (ids: EntityId[], attrs: Set<string>) =>
-      colPower(ids) * (attrs.has('Powerful') ? 2 : 1);
+    const dealtPower = (ids: EntityId[], attrs: Set<string>, collapsed: boolean) =>
+      colPower(ids, collapsed) * (attrs.has('Powerful') ? 2 : 1);
 
     b.columns.forEach((atkCol, ci) => {
       const atk = alive(atkCol);
@@ -6048,10 +6203,21 @@ export class E {
       // to attributes — both sides', in both directions.
       const pure = this.pure(atk, blk);
       const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);
+      // R106 {Unaware}: one Unaware card anywhere in either column collapses
+      // the whole exchange to printed stats. Note it survives {Pure}: Pure
+      // switches the ATTRIBUTE layer off for the exchange (R61), and this is a
+      // stat layer — an Unaware unit's numbers are its printed numbers whether
+      // or not anyone is reading its attributes. `unaware` is column-shared, so
+      // a vanilla unit standing beside Bubb carries it into the exchange too.
+      const collapsed = [...atk, ...blk].some(id => {
+        const u = this.entity(id);
+        return !!u && this.unaware(u);
+      });
+      if (collapsed) for (const id of [...atk, ...blk]) L.collapsed.add(id);
       // attacker side
       if (atk.length && this.scheduled(atk, sub, pure)) {
         const atkAttrs = attrsOf(atk);
-        const pow = dealtPower(atk, atkAttrs);
+        const pow = dealtPower(atk, atkAttrs, collapsed);
         // R72: `ci` is only an identity for the length of THIS sub-step. The
         // key is a local bucket label for the afflicting diff below and is
         // never stored, because the formation may collapse (and every index
@@ -6059,7 +6225,7 @@ export class E {
         const src = { dealer: b.attacker, key: `atk:${ci}`, label: colLabel(atk) };
         let toPlayer = 0;
         if (blk.length) {
-          const left = this.assignColumnDamage(L, blk, pow, atkAttrs, src, pure);
+          const left = this.assignColumnDamage(L, blk, pow, atkAttrs, src, pure, collapsed);
           if (atkAttrs.has('Piercing')) toPlayer = left;
         } else if (blockedEver) {
           // blocked stays blocked: only Piercing carries through dead blockers
@@ -6091,7 +6257,7 @@ export class E {
         // Piercing ATTACKER still gets through a dead block. There the attack
         // is still real; here it is the attack that is gone.
         if (!atk.length) {
-          const pow = dealtPower(blk, blkAttrs);
+          const pow = dealtPower(blk, blkAttrs, collapsed);
           if (pow > 0) {
             this.ev('info',
               `Column ${ci + 1} has no attackers left — its blockers have nothing to fight.`,
@@ -6099,7 +6265,7 @@ export class E {
           }
         } else {
           const src = { dealer: b.defender, key: `blk:${ci}`, label: colLabel(blk) };
-          const left = this.assignColumnDamage(L, atk, dealtPower(blk, blkAttrs), blkAttrs, src, pure);
+          const left = this.assignColumnDamage(L, atk, dealtPower(blk, blkAttrs, collapsed), blkAttrs, src, pure, collapsed);
           if (blkAttrs.has('Piercing') && left > 0) {
             L.playerHits.push({ seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label, pure });
             if (blkAttrs.has('Thieving')) L.thievingDraw[b.defender] = (L.thievingDraw[b.defender] ?? 0) + 1;
@@ -6115,7 +6281,7 @@ export class E {
    * receives double, so half the pool is lethal and the pre-double remainder
    * pierces through sooner (R23); Deadly caps lethal at 1 (R21). */
   private assignColumnDamage(L: CombatLedger, ids: EntityId[], amount: number, srcAttrs: Set<string>,
-    src: { dealer: Seat; key: string; label: string }, pure = false): number {
+    src: { dealer: Seat; key: string; label: string }, pure = false, collapsed = false): number {
     const deadly = srcAttrs.has('Deadly');
     const poisonous = srcAttrs.has('Poisonous');
     const resonant = srcAttrs.has('Resonant');
@@ -6126,7 +6292,11 @@ export class E {
       if (!u || remaining <= 0) continue;
       const mult = (!pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
       const prev = L.perUnit.get(id)?.pool ?? 0;
-      const [, t] = this.effStats(u);
+      // R106: in an exchange collapsed by {Unaware} the victim is priced at the
+      // defense PRINTED on its card, so a Robot 7 needs 0 and a counter-laden
+      // 1/1 needs 1. The kill itself is `sweepCollapsedDeaths`, because a
+      // 0-defense victim is assigned nothing at all here.
+      const [, t] = collapsed ? this.printedStats(u) : this.effStats(u);
       const recvCap = Math.max(0, t - u.damage - prev * mult);   // received still needed to kill
       let poolNeed = Math.ceil(recvCap / mult);
       if (deadly && recvCap > 0) poolNeed = 1;   // 1 pool point suffices to kill
