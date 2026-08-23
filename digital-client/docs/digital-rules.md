@@ -4849,3 +4849,59 @@ The practical consequence for whoever builds the replacement layer: **the
 printed word decides the mechanism, and "target" is the switch.** Do not build
 one path and special-case the other — sort every card in ledger #60 by that
 test first.
+
+---
+
+## R110 — "Trigger two/three copies of this graft ability" repeats bounded grafts and charges [costs] N times
+
+*(Audit follow-through, 2026-08-23. Sourced ruling, not a guess — numbered
+R110 to stay clear of the R103–R109 block the concurrent playtest round is
+writing.)*
+
+**Lost Guardian** (two marks), **Witness of the Crossing** and **Amphivore**
+(three) are graft MULTIPLIERS: `EffectDef.graftCopies` on their effect, read by
+`composeParts`, which materializes every OTHER graft part of the composite N
+times — *Graft 1 → Graft 2 → Graft 1 → Graft 2* — as ONE stack item. The
+multiplier's own effect does nothing at resolution.
+
+**The ruling** ("Amphivore / Lost Guardian. Bounded Grafts and Ralph explained.",
+Insanity Engine, moderator, 2025-03-21 — and "Can Amphivore trigger a bounded
+graft three times in a turn? Yes", same day):
+
+- *"Any Bounded Grafts will be repeated."* A [Switch1] graft's budget is spent
+  once by the cause's single trigger and the composite gets N copies of it.
+  Amphivore used to skip bounded grafts ("correctly run once") — wrong.
+- *"Cost must be paid twice (Lost Guardian) or thrice (Amphivore)."* Each
+  copy is its own part with its own cast-window [cost] and its own receipt.
+- *"What if you must Sacrifice 2 or 3 units, but have only 1 available? — No
+  Sacrifice at all and you don't get the effect."* `collectCastCosts` asks
+  about the N-fold cost ONCE, before the first copy pays; unpayable skips
+  every copy, and declining the first copy declines them all. (All three
+  doublers used to skip [cost] riders outright, resolving only the paid
+  printed copy — also wrong.)
+- A targeted graft aims each copy separately (each part collects its own
+  targets in the cast window — no more mid-resolution `ctx.choose` picking).
+- Ralph's control-changing graft: the copies after the first find the unit
+  no longer yours and do nothing — that falls out of resolution order.
+
+Two multipliers in one composite (a doubler grafted under a doubler) multiply;
+unruled, and unreachable in the pool without someone trying. Tests: 17-earth-b
+(bounded repeat; [Discard a card] paid twice; all-or-nothing), 14-water-a
+(bounded tripled; three targets).
+
+---
+
+## R111 — a FREE prophecy release casts an X spell for X = 0
+
+*(Audit follow-through, 2026-08-23. Owner's ruling.)*
+
+The engine used to log *"released for FREE"* and then run the normal "choose X
+(paid now)" decision, charging the whole X. **Bena, 2026-08-23:** *"prophecy on
+an X spell works like magic, forced to cast it for 0 (unless its X is an
+additional cost or something)."* So a fulfilled-prophecy release of a
+`mana: 'X'` card fixes `item.x = 0` at creation (`baseItem` via
+`playAtTiming`'s `fixedX`), `collectX` has nothing to ask, nothing is paid, and
+the log says *"an X spell released for free is cast for X = 0"*. A bracketed
+variable cast cost ("[Remove X +1/+1 counters]", "[Pay X life]") is a
+different X — a COST, not the mana — and is still collected as before. Test:
+36-cache-prophecy (R111).

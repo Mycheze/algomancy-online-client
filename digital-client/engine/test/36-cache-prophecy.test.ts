@@ -59,6 +59,15 @@ registerSynthetic(unit('Test Battle Prophet', 0, 0, {
   spellEffect: { run: (g, ctx) => { g.ev('info', `${ctx.sourceName} resolves.`); } },
 });
 
+/** R111: an X SPELL with a banner — a free release must not ask for X */
+let lastX: number | undefined;
+registerSynthetic(unit('Test X Prophet', 0, 0, {
+  kind: 'spell', timing: 'deploy', type: 'Test Spell', cost: 'r', mana: 'X',
+  prophecy: { mana: 1, condition: 'One Turn Passes' },
+}), {
+  spellEffect: { run: (g, ctx) => { lastX = ctx.x; g.ev('info', `${ctx.sourceName} resolves with X = ${ctx.x}.`); } },
+});
+
 registerSynthetic(unit('Test Life Prophet', 1, 1, {
   prophecy: { mana: 1, condition: 'Your life is 5 or less' },
 }), {});
@@ -946,4 +955,24 @@ test('a populated cache survives a JSON round-trip, and pre-expansion states sti
   h.state = old;
   endDeployment(h);
   assert.equal(h.state.phase, 'planning', 'and the old state still drives fine');
+});
+
+// ── R111: a free release of an X spell is cast for X = 0 ─────────────
+
+test('R111: a fulfilled prophecy releases an X spell for X = 0 — no X asked, no mana paid', () => {
+  const h = sterile(3680);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  giveResources(h, P, 'fire', 3);
+  h.do({ type: 'prophesy', seat: P, from: 'hand', index: give(h, P, 'Test X Prophet') });
+  nextTurnsDeployment(h);
+  assert.equal(h.q.openMana(P), 3, 'three fire open — X COULD be 3 if it were paid for');
+  lastX = undefined;
+  h.do({ type: 'playCached', seat: P, index: 0 });
+  // the Magic rule (Bena 2026-08-23): "for free" waives the whole mana cost,
+  // X included, so there is no X to choose — the spell is simply cast for 0
+  assert.equal(h.state.decision, null, 'no "choose X" decision was raised');
+  assert.equal(lastX, 0, 'the effect saw X = 0');
+  assert.equal(h.q.openMana(P), 3, 'and nothing was paid');
+  assert.ok(h.log.some(l => /released .* for FREE .*X = 0/.test(l)), 'the log says so');
 });

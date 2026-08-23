@@ -3578,6 +3578,19 @@ export class E {
       // about what is still OWED, not about the printed total — else the
       // second discard of a "[Discard 2 cards]" looks unpayable and the whole
       // part is wrongly skipped after the first card is already gone
+      // R110: a graft multiplied by Lost Guardian / Witness / Amphivore is N
+      // parts of this composite, and its [cost] "must be paid twice (Lost
+      // Guardian) or thrice (Amphivore)". All or nothing: if the whole N-fold
+      // cost is not payable up front, none of it is paid and the effect does
+      // not happen at all — asked ONCE, before the first copy pays.
+      if (total !== null && optional && !part.costPaid) {
+        const copies = this.costCopySiblings(item, part);
+        if (copies.length > 1 && !this.canPayCastCost(seat, this.costTimes(cost, copies.length), item.region, 0, item.sourceId)) {
+          for (const p of copies) p.spent = true;
+          this.ev('info', `${item.label}: the [${this.castCostLabel(cost)}] cost must be paid ${copies.length} times and cannot be — nothing is paid and that effect is skipped.`);
+          continue;
+        }
+      }
       while (!this.costSettled(part, cost)) {
         const done = this.costPaidSoFar(part, cost);
         const owed = total === null ? 1 : total - done;
@@ -3636,6 +3649,26 @@ export class E {
           },
         );
       }
+    }
+  }
+
+  /** R110: the unspent, unpaid copies of one multiplied graft part — the
+   * parts that share its mod (itself included, first). */
+  private costCopySiblings(item: StackItem, part: EffectPart): EffectPart[] {
+    if (part.fromMod === undefined) return [part];
+    return item.parts.filter(p => p.fromMod === part.fromMod && p.effectKey === part.effectKey && !p.spent && !p.costPaid);
+  }
+
+  /** R110: a fixed cost, k times over — what "pay it k times" must be asked
+   * about before the first payment. "[Sacrifice a unit]" k times is k units. */
+  private costTimes(cost: CastCost, k: number): CastCost {
+    const n = costAmount(cost);
+    if (n === null || k <= 1) return cost;
+    switch (cost.kind) {
+      case 'sacrificeUnit': return { kind: 'sacrificeUnits', n: k };
+      case 'sacrificeUnits': return cost.from === 'self' ? cost : { ...cost, n: n * k };
+      case 'gainDebt': return cost;
+      default: return { ...cost, n: n * k } as CastCost;
     }
   }
 
@@ -3762,8 +3795,11 @@ export class E {
     const cost = effectByKey(part.effectKey).castCost!;
     const obj = val !== null && typeof val === 'object' ? val as Record<string, unknown> : {};
     if ('declineCost' in obj) {
-      part.spent = true;
-      this.ev('info', `${item.label}: the [cost] is declined — that effect is skipped.`);
+      // R110: the rider is paid N times or not at all — declining the first
+      // copy declines every copy
+      const copies = this.costCopySiblings(item, part);
+      for (const p of copies) p.spent = true;
+      this.ev('info', `${item.label}: the [cost] is declined — that effect is skipped${copies.length > 1 ? ` (all ${copies.length} copies)` : ''}.`);
       return;
     }
     if ('doneCost' in obj) { this.finishVariableCost(item, part, cost); return; }
@@ -3851,6 +3887,12 @@ export class E {
         // the payment vanished between activation and collection (a response
         // took the last unit): the cost is unpayable, so nothing is paid and
         // the whole activation is skipped — R35's unpayable-cost reading.
+        // ⚠ LATENT (2026-08-23 audit): "nothing is paid" holds only because
+        // no pool ability combines a choice-free half (mana/life/debt/
+        // sacrifice-me, charged by payActivationCost one call EARLIER) with a
+        // choice half like this one. The first card that does will reach
+        // here with its mana already spent — refund it or reorder the two
+        // collectors then; a ruling is needed on which.
         this.ev('info', `${item.label}: the activation cost can no longer be paid — the ability does nothing.`);
         for (const p of item.parts) p.spent = true;
         delete item.pendingCosts;
@@ -4600,11 +4642,13 @@ export class E {
       if ((budgetHolder.budgets[budgetKey] ?? 0) > 0) return null;   // bounded cause bounds the whole composite
       budgetHolder.budgets[budgetKey] = 1;
     }
-    const parts: EffectPart[] = [{
+    const base: EffectPart = {
       effectKey: `${abilityKeyPrefix}:${cardName}#${abilityIndex}`, targets: [],
-    }];
+    };
+    const parts: EffectPart[] = [base];
     // grafted effects join only a graft cause, and only from graft-applied mods
     if (ability.graftCause && abilityKeyPrefix === 'ability') {
+      const grafts: EffectPart[] = [];
       for (const modId of source.mods) {
         const mod = this.entity(modId);
         if (!mod || mod.appliedAs !== 'graft') continue;
@@ -4614,7 +4658,24 @@ export class E {
           if ((mod.budgets['graft'] ?? 0) > 0) continue;   // used this turn: skipped, composite still fires
           mod.budgets['graft'] = 1;
         }
-        parts.push({ effectKey: `graft:${mod.card}`, targets: [], fromMod: mod.id });
+        grafts.push({ effectKey: `graft:${mod.card}`, targets: [], fromMod: mod.id });
+      }
+      // R110: "(Trigger two copies of this graft ability as one single
+      // trigger)" — a multiplier in the composite (the cause itself, Lost
+      // Guardian's own ability; or a multiplier grafted under this host)
+      // repeats every OTHER graft N times, top-to-bottom and then top-to-
+      // bottom again, bounded grafts included. Each copy is its own part, so
+      // it collects its own targets and pays its own [cost]. The multiplier
+      // parts themselves appear once and do nothing at resolution.
+      const copies = [base, ...grafts]
+        .map(p => effectByKey(p.effectKey).graftCopies ?? 1)
+        .reduce((a, b) => a * b, 1);
+      parts.push(...grafts);
+      for (let round = 1; round < copies; round++) {
+        for (const p of grafts) {
+          if (effectByKey(p.effectKey).graftCopies) continue;   // never multiply a multiplier
+          parts.push({ ...p, targets: [] });
+        }
       }
     }
     return parts;

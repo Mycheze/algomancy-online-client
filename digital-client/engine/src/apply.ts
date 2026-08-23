@@ -413,11 +413,16 @@ function canPayAmbush(e: E, seat: Seat, c: CardDef): boolean {
 }
 
 function baseItem(e: E, c: CardDef, seat: Seat, region: number,
-  from?: 'hand' | 'cache' | 'bin', unstable = false): StackItem {
+  from?: 'hand' | 'cache' | 'bin', unstable = false, fixedX?: number): StackItem {
   const parts: EffectPart[] = c.spellEffect ? [{ effectKey: `spell:${c.name}`, targets: [] }] : [];
   return {
     id: e.s.nextId++, kind: c.kind, card: c.name, label: c.name,
     controller: seat, region, negated: false, parts,
+    // R111: a FREE release (fulfilled prophecy) casts an X spell for X = 0 —
+    // "for free" waives the whole mana cost, X included, so there is no X
+    // to choose and collectX has nothing to ask (Bena 2026-08-23, the Magic
+    // rule). An X that is a bracketed additional cost is not this X.
+    ...(fixedX !== undefined ? { x: fixedX } : {}),
     // R49: the zone this card is being played out of, carried into the
     // 'spellPlayed' / 'spawned' events (Proph, Stalwart Sentinel)
     ...(from ? { from } : {}),
@@ -438,7 +443,7 @@ function baseItem(e: E, c: CardDef, seat: Seat, region: number,
 function playAtTiming(
   e: E, seat: Seat, c: CardDef, timing: CardDef['timing'],
   take: () => void, pay: () => void, from: 'hand' | 'cache' | 'bin',
-  unstable = false,
+  unstable = false, fixedX?: number,
 ): void {
   const canCast = (region: number) => castable(e, c, region, seat, from);
   /** R49: the printed "[Gain N debt]" bracketed line (Hyper Beam) is a real
@@ -476,7 +481,7 @@ function playAtTiming(
       e.ev('info', `${c.name} is played during the haste step as if it had [Haste].`,
         { seat, card: c.name });
     }
-    e.castChain([baseItem(e, c, seat, region, from, unstable)], 'resolve');
+    e.castChain([baseItem(e, c, seat, region, from, unstable, fixedX)], 'resolve');
   } else if (e.s.phase === 'deploy') {
     e.need(e.deploying(seat), 'not your deployment');
     e.need(timing === 'deploy' || timing === 'haste', 'battle cards can only be played during battle');
@@ -484,7 +489,7 @@ function playAtTiming(
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
-    e.castChain([baseItem(e, c, seat, region, from, unstable)], 'resolve');
+    e.castChain([baseItem(e, c, seat, region, from, unstable, fixedX)], 'resolve');
   } else if (e.s.phase === 'battle') {
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(timing === 'battle', 'only battle cards can be played now');
@@ -492,7 +497,7 @@ function playAtTiming(
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
-    e.castChain([baseItem(e, c, seat, region, from, unstable)], 'push');
+    e.castChain([baseItem(e, c, seat, region, from, unstable, fixedX)], 'push');
     e.settle();
   } else {
     e.illegal('cards are played during deployment or battle');
@@ -575,13 +580,16 @@ function doPlayCached(e: E, seat: Seat, index: number): void {
     () => { e.uncache(seat, index); },
     () => {
       if (free) {
-        e.ev('info', `${cc.card} is released from ${e.pname(seat)}'s cache for FREE (prophecy fulfilled: ${cc.prophecy!.condition}).`);
+        e.ev('info', `${cc.card} is released from ${e.pname(seat)}'s cache for FREE (prophecy fulfilled: ${cc.prophecy!.condition})`
+          + (c.mana === 'X' ? ' — an X spell released for free is cast for X = 0.' : '.'));
       } else {
         e.payCard(seat, cc.card);
         e.ev('info', `${cc.card} is played from ${e.pname(seat)}'s cache, ignoring affinity.`);
       }
     },
-    'cache');
+    'cache', false,
+    // R111: free waives the mana cost entirely — X included (see baseItem)
+    free && c.mana === 'X' ? 0 : undefined);
 }
 
 /** R96: the cards a bin-play permission reaches. "You may play SPELLS from
