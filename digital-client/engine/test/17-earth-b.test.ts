@@ -7,9 +7,11 @@
  * augment-application triggers (Morphic Mentor, Perpetual Construct), R1's
  * textbook spawn condition (Nectar Ridge Oracle), damage-triggered growth
  * (Plodding Pebble), retaliation (Restitution), attrs-only registration
- * (Reality Bender) and a stack sweep (Return to Nature). Oorblak is PARKED
- * (damage replacement hooks). States are built explicitly (give/spawn/
- * giveResources); seeds 1700-1799.
+ * (Reality Bender) and a stack sweep (Return to Nature). Oorblak's combat-
+ * damage redirection (R38 replaceCombatDamageToPlayer) is live as of
+ * 2026-08-22, with a todo left for the Piercing-excess half of Caleb's RAQ
+ * answer. States are built explicitly (give/spawn/giveResources); seeds
+ * 1700-1799.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -179,12 +181,18 @@ test('Morphic Mentor: your battle augment gives +2/+2 until regroup; an enemy au
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: mentor });
   pass(h); pass(h);                                   // virus resolves → mod applied → trigger
   pass(h); pass(h);                                   // resolve the trigger
-  assert.deepEqual(effStats(h, mentor), [4, 5], '2/3 +2/+2 = 4/5');
+  // R93: Reality Bender is the convenient cheap Virus here, and its type-line
+  // [Augment] donates {Inverted} to the Mentor along the way — so stat layer 5
+  // now negates the Mentor's own +2/+2 off its printed 2/3: 4/5 → 2·2−4 /
+  // 2·3−5 = 0/1. The +2/+2 is still what is being measured (without the
+  // trigger the answer would be the unchanged 2/3, and this line would be the
+  // first thing to say so); it is just being read through the inversion.
+  assert.deepEqual(effStats(h, mentor), [0, 1], '2/3 +2/+2 = 4/5, inverted by the Bender to 0/1');
   // the ENEMY applying an augment ("you") buffs nothing
   pass(h);                                            // A passes, priority → D
   h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Reality Bender'), hostId: d1 });
   pass(h); pass(h);                                   // virus resolves — no Mentor trigger
-  assert.deepEqual(effStats(h, mentor), [4, 5], "an opponent's augment is not \"you apply\"");
+  assert.deepEqual(effStats(h, mentor), [0, 1], "an opponent's augment is not \"you apply\"");
   finishBattle(h);
 });
 
@@ -203,19 +211,92 @@ test('Nectar Ridge Oracle: defense>power ally spawn draws, once per turn ([once]
   assert.equal(h.state.players[p]!.hand.length, before + 1, '[once]: only once per turn (R9)');
 });
 
-test('Oorblak: combat-damage redirection — PARKED (no damage replacement hooks)', { todo: true }, () => {
-  // Workable subset: it registers, spawns as a 2/4, and can still be applied
-  // as a (currently blank) virus augment. The "damage to you is dealt to me
-  // instead" replacement needs an engine seam that does not exist yet.
+// ── Oorblak (R38 replaceCombatDamageToPlayer; un-parked 2026-08-22) ──────
+//
+// "[Augment] If combat damage would be dealt to you, that damage is dealt to
+// me instead." Assertions stop just after the combat-damage sub-step rather
+// than running finishBattle, because Oorblak is {Unstable} and regroup would
+// erase the very entity whose damage we are reading (R69).
+
+/** attack unblocked with `columns` and stop with combat damage dealt */
+function unblockedCombat(h: Harness, attacker: Seat, columns: EntityId[][]): void {
+  h.do({ type: 'declareAttack', seat: attacker, columns });
+  pass(h); pass(h);                                   // → block step
+  h.do({ type: 'declareBlocks', seat: (1 - attacker) as Seat, blocks: {} });
+  pass(h); pass(h);                                   // → combat damage
+}
+
+test('Oorblak: combat damage to me is dealt to my Oorblak instead — my life is untouched', () => {
   const h = new Harness(1708);
   toDeployment(h);
-  const p = h.state.deployPlayer!;
-  const oo = spawn(h, p, 'Oorblak');
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawnToken(h, A, 3, 3);
+  const oo = spawn(h, D, 'Oorblak');                   // 2/4, the defender's
   assert.deepEqual(effStats(h, oo), [2, 4], '2/4 body');
-  const host = spawnToken(h, p, 2, 2);
-  giveResources(h, p, 'earth', 4);                    // eee / 4
-  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Oorblak'), hostId: host });
-  assert.equal(ent(h, host)!.mods.length, 1, 'applies as an augment (text inert)');
+  const lifeD = h.state.players[D]!.life;
+  toNextBattle(h, A);
+  unblockedCombat(h, A, [[atk]]);
+  assert.equal(h.state.players[D]!.life, lifeD, 'the 3 never reached the life total');
+  assert.ok(ent(h, oo), 'Oorblak took 3 into a 4-toughness body and lived');
+  assert.equal(ent(h, oo)!.damage, 3, 'it really is damage on Oorblak, not nothing');
+});
+
+test('Oorblak: the redirected damage can kill it, and the life total is still spared', () => {
+  const h = new Harness(1714);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawnToken(h, A, 6, 1);                 // 6 > Oorblak's 4 toughness
+  const oo = spawn(h, D, 'Oorblak');
+  const lifeD = h.state.players[D]!.life;
+  toNextBattle(h, A);
+  unblockedCombat(h, A, [[atk]]);
+  assert.ok(!ent(h, oo), 'Oorblak ate 6 and died on the state check');
+  assert.equal(h.state.players[D]!.life, lifeD, 'and none of it spilled onto the life total');
+});
+
+test('Oorblak: "dealt to YOU" is its own controller — it does not eat the enemy\'s hits', () => {
+  const h = new Harness(1715);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawnToken(h, A, 3, 3);
+  const oo = spawn(h, A, 'Oorblak');                   // the ATTACKER's Oorblak, not attacking
+  const lifeD = h.state.players[D]!.life;
+  toNextBattle(h, A);
+  unblockedCombat(h, A, [[atk]]);
+  assert.equal(h.state.players[D]!.life, lifeD - 3, 'D takes the 3 normally');
+  assert.equal(ent(h, oo)!.damage, 0, "A's Oorblak is offered the hit by the engine and declines it");
+});
+
+test('Oorblak: as a Virus, "me" is the HOST — an enemy host eats its own controller\'s damage', () => {
+  const h = new Harness(1716);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawnToken(h, A, 3, 3);
+  const host = spawnToken(h, D, 0, 5);                // D's unit, not blocking
+  giveResources(h, A, 'earth', 4);                    // eee / 4
+  const lifeD = h.state.players[D]!.life;
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Oorblak'), hostId: host });
+  pass(h); pass(h);                                   // the Virus resolves → attaches
+  assert.equal(ent(h, host)!.mods.length, 1, 'applies as an augment/virus (augmentable)');
+  pass(h); pass(h);                                   // attack window (now empty) → block step
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);                                   // → combat damage
+  assert.equal(h.state.players[D]!.life, lifeD,
+    'the donated text reads "you" as the HOST\'s controller (D), not the mod owner (A)');
+  assert.equal(ent(h, host)!.damage, 3, 'and "me" is the host, which took the 3');
+});
+
+test('Oorblak: PARKED — Piercing excess past its toughness does not carry on to the face', { todo: true }, () => {
+  // RAQ "[Solved] Oorblak vs Piercing": "10 damage is redirected to Oorblak, he
+  // takes 4 damage which is enough to kill him and leftover 6 damage is still
+  // Piercing so it goes to players face." The excess carries on BECAUSE the hit
+  // is Piercing; a plain overkill spills nothing. `replaceCombatDamageToPlayer`
+  // is handed `info: { attacker, region }` only, so the hook cannot tell the two
+  // apart, and its boolean return is all-or-nothing. Needs the hit's `attrs`
+  // (and `pure`) on `info`, plus a way to hand part of the hit back.
+  assert.fail('needs the hit attributes on replaceCombatDamageToPlayer\'s info');
 });
 
 test("Perpetual Construct: an applied mod creates an X/X, X = the mod's cost", () => {
@@ -251,13 +332,21 @@ test('Reality Bender: {Inverted} 2/3 — as a unit and donated by type-line [Aug
   const p = h.state.deployPlayer!;
   const rb = spawn(h, p, 'Reality Bender');
   assert.ok(ownAttrs(h, rb).has('Inverted'), 'played normally: has Inverted');
-  // PARTIAL: the Inverted stat swap is effStats layer 5 (unimplemented) —
-  // the printed 2/3 stands until that layer lands.
-  assert.deepEqual(effStats(h, rb), [2, 3], '2/3 (layer-5 swap not yet applied)');
+  // Stat layer 5 landed in round 17 (R93), and the card is no longer
+  // attrs-only registration. With nothing having CHANGED its stats there is
+  // no change to invert, so the printed 2/3 still stands — that is the layer
+  // working, not the layer missing.
+  assert.deepEqual(effStats(h, rb), [2, 3], '2/3: no stat change, so nothing to invert');
+  ent(h, rb)!.counters = -1;
+  assert.deepEqual(effStats(h, rb), [3, 4], 'R93: its own -1/-1 counter inverts to +1/+1');
+  ent(h, rb)!.counters = 0;
   const host = spawnToken(h, p, 1, 1);
   giveResources(h, p, 'earth', 2);                    // e / 2
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Reality Bender'), hostId: host });
   assert.ok(ownAttrs(h, host).has('Inverted'), 'type-line [Augment] donates Inverted');
+  ent(h, host)!.counters = 2;
+  assert.deepEqual(effStats(h, host), [-1, -1],
+    'R93: and the donated {Inverted} really inverts the host — a 1/1 at +2/+2 is a -1/-1');
 });
 
 test('Restitution: dealt combat damage → each opponent loses that much (R25)', () => {

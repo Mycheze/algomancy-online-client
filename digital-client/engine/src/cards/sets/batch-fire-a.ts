@@ -11,10 +11,12 @@
  *
  * PARKED (needs engine machinery that does not exist yet — each card still
  * registers so nothing crashes, and each has a todo test):
- *  - Abyssal Evocation: "you may play spells from your bin" needs a bin-play
- *    permission in doPlayCard (it only reads the hand) plus an "unstable until
- *    regroup" marker on cards so played. The spell resolves as a no-op (info
- *    event) and is binned normally.
+ *  - Abyssal Evocation: UN-PARKED (R96). A `playFromBin` action gated on a
+ *    battle-scoped permission (E.mayPlaySpellsFromBin), plus a real
+ *    {Unstable} stamp on the item and on any body it spawns. ⚠ Open: a
+ *    bin-played card obeys its PRINTED timing (R42/R45's answer to the
+ *    analogous cache question), so only {Battle} spells in your bin are
+ *    reachable — flagged in R96, shipped restrictive.
  *  - Cinder Scuttler: UN-PARKED (R51) — "if I am in your bin, recall me" is a
  *    `zone: 'bin'` trigger, dispatched to the card while it sits in a bin on a
  *    detached stand-in owned by that bin's seat.
@@ -22,34 +24,20 @@
  *    instead" is a damage REPLACEMENT; dealEffectDamage has no replacement
  *    hooks. Registered with an inert augmentText entry so the card is still
  *    recognised as an augment (Astralith precedent).
- *  - Emberflame Enlightener (SPELLS half only): the UNITS half is a live
- *    static ({Powerful} to your units in its region) in BOTH forms — this
- *    entry used to add "and the augment-donated form needs mod-carried
- *    statics", which expired when E.anchored() started radiating a mod's
- *    statics from its host. What is still missing is a spell-effect ATTR
- *    projection: "your SPELLS gain Powerful" has to attach an attribute to a
- *    spell EFFECT, and statics project onto in-play UNITS only.
- *    ⚠ HALF-STALE, ANNOTATED 2026-08-22 (card-ledger audit): the tail of this
- *    entry used to end "(dealEffectDamage reads the source CARD's printed
- *    attrs)", full stop, and that is no longer the whole story. R79 gave
- *    effects an attribute channel — `EffectCtx.grantedAttrs`, which
- *    dealEffectDamage UNIONS into the source card's printed attrs. So the READ
- *    side of "a spell effect can have attributes it did not print" shipped.
- *    What did not is the WRITE side for a static: grantedAttrs is filled only
- *    by E.stackAugmentAttrs, i.e. by a VIRUS augmented onto an item already on
- *    the stack, and a StaticMod has no channel into it. Half the primitive
- *    exists. Declared in test/card-ledger.ts as a deck-enabler gap — a spell
- *    deck augments this expecting doubled spell damage and gets none.
- *  - Envoy of Lightning: "your single-target spell effects are Electric" —
- *    still out of reach even with the statics layer: statics project only
- *    onto in-play UNITS, while this must attach {Electric} to spell EFFECTS.
- *    ⚠ HALF-STALE, ANNOTATED 2026-08-22: this used to end "(dealEffectDamage
- *    reads the source CARD's printed attrs, no seam for in-play modifiers)".
- *    There IS a seam now — R79's `EffectCtx.grantedAttrs`, unioned in by
- *    dealEffectDamage — it is just fed exclusively by a VIRUS augmented onto a
- *    stack item (E.stackAugmentAttrs), never by a static. Same half-shipped
- *    primitive as Emberflame Enlightener above; whoever unparks one unparks
- *    both. Inert augmentText entry only; declared in test/card-ledger.ts.
+ *  - Emberflame Enlightener: UN-PARKED (R94). Both halves are live. The
+ *    units half is a static ({Powerful} to your units in its region) in BOTH
+ *    forms; the SPELLS half is an `effectAttrs` mod — CostMod's sibling, not
+ *    a StaticMod, because StaticMod.affects is typed over an Entity and a
+ *    resolving spell is a StackItem. R79 had already built the READ side
+ *    (`EffectCtx.grantedAttrs`, unioned into the source's attrs by
+ *    dealEffectDamage); what was missing and now exists is the WRITE side for
+ *    a continuous source. ⚠ One thing is still open and it is a real deck
+ *    question: whether "your spells" includes your spell TOKENS. The engine
+ *    says yes; `dsl.isSpellEffect` is the single line that decides it.
+ *  - Envoy of Lightning: UN-PARKED (R94), same channel. Its predicate counts
+ *    the part's DECLARED targets, never the survivors — RAQ "[Solved] Envoy of
+ *    Lightning vs Twin Flame." rules that a two-target spell that lost a
+ *    target is still a two-target spell.
  *  - Fire Resource: resource CARDS aren't modelled — resources are plain
  *    ResourceState (no entities) and doActivateResource doesn't fireEvent, so
  *    "when I activate" has nothing to listen to. (The third reason this note
@@ -73,7 +61,7 @@
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, effectByKey, getCard, type EffectDef } from '../dsl.ts';
+import { card, effectByKey, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
 import { selfOf, inEndOfTurn } from './helpers.ts';
 
 /** a card that is a SPELL for bin purposes — a spell unit is one too (playing
@@ -114,12 +102,34 @@ const sacrificeToDraw = (source: string): EffectDef => ({
 
 // "In this battle, you may play spells from your bin. If you do, they gain
 // {p}unstable until regroup. (If they would enter a bin, erase them instead.)"
-// — rr/4 {Battle} Arcane Occult Spell. PARKED (see header): bin-play is not a
-// thing doPlayCard can grant. Resolves as a no-op so the card never crashes.
+// — rr/4 {Battle} Arcane Occult Spell. Live as of round 17 (R96).
+//
+// The permission is BATTLE-SCOPED STATE, not a radiating static, and that is
+// forced rather than chosen: E.anchored() walks units in play and augment
+// mods, and this is a SPELL — it resolves and goes to the bin, leaving nothing
+// in play to radiate from. So it is a battleCounter, which is region-keyed
+// (R14: "'this battle' = this region's battle", so round 1's permission does
+// not leak into round 2), wiped by the existing per-battle reset, and NOT a
+// new GameState field — no serialization or replay risk.
+//
+// The {p}unstable half is a STAMP taken when a card is played this way
+// (StackItem.unstable → Entity.unstable), not a derivation off the
+// permission: the card says "gain … UNTIL REGROUP", so it has to outlive the
+// battle the permission belonged to. R69 names this card for the mechanism:
+// "Reminder text on both cards that GRANT it (Abyssal Evocation, Spell
+// Excavation): '(If they would enter a bin, erase them instead.)' — a bin
+// replacement, in as many words. … Only the destination changes."
+//
+// ⚠ Note for the owner: this card is a {Battle} spell, so after it resolves it
+// sits in your bin and is itself one of the spells you may now play from it.
 card('Abyssal Evocation', {
   spellEffect: {
     run: (g, ctx) => {
-      g.ev('info', `${ctx.sourceName}: PARKED — playing spells from the bin is not implemented yet; no effect.`);
+      g.grantBinSpellPlay(ctx.controller, ctx.region);
+      g.ev('info',
+        `${ctx.sourceName}: ${g.pname(ctx.controller)} may play spells from their bin `
+        + 'for the rest of this battle — each one gains {Unstable} until regroup.',
+        { seat: ctx.controller, region: ctx.region });
     },
   },
 });
@@ -263,27 +273,71 @@ card('Delver of Mysteries', {
 // augmentText stand-in it needed is gone with it (`augmentable: true` is what
 // keeps the card applicable).
 //
-// STILL PARKED (see header): the SPELLS half. "Your spells gain Powerful" has
-// to attach an attribute to a spell EFFECT, and statics reach in-play UNITS
-// only — dealEffectDamage reads the source CARD's printed attrs, with no seam
-// for an in-play modifier. Same wall as Envoy of Lightning below.
+// The SPELLS half is live as of round 17 (R94). It is NOT a static — statics
+// are typed over an Entity and a resolving spell is a StackItem, not one — but
+// an `effectAttrs` mod, CostMod's sibling: the same anchored() radiation, the
+// same R12 region scope, the same shallow R62 guard, and ownership decided
+// here in `affects` rather than in the gatherer, exactly as the units half
+// above decides it. The grant lands in `EffectCtx.grantedAttrs`, which
+// dealEffectDamage has unioned into the source's attrs since R79 — so a
+// Fireball resolving under this aura deals double.
+//
+// The designer scales a unit-sourced noncombat effect by a {Powerful} the
+// source did not print — RAQ "[Solved] Resonant, Combat Damage, Conduit and
+// Powerful": "2/4 Resonant Powerful would deal 4 combat damage to enemy unit
+// and then put effect on stack to deal 8 damage to enemy face" — which is
+// this card's own case, since the only way that Resonant unit gets {Powerful}
+// is by being granted it.
+//
+// ⚠ OPEN (R94): "your spells" and spell TOKENS. `isSpellEffect` is the single
+// place that answers it and it currently says YES — a Burst Fireball under
+// this aura deals double. See its doc comment; one edit moves both cards.
 card('Emberflame Enlightener', {
   augmentable: true,
   statics: [{
     affects: (g, self, t) => t.kind === 'unit' && t.controller === self.controller,
     attrs: ['Powerful'],
   }],
+  effectAttrs: [{
+    // "YOUR spells": the item's controller against the ANCHOR's controller.
+    // anchored()'s contract is that a mod's text reads from its HOST, so an
+    // Enlightener augmented onto an ENEMY unit boosts that enemy's spells —
+    // the same answer the units half already gives (12-fire-a's donated-aura
+    // test pins it).
+    affects: (g, self, ctx) => isSpellEffect(ctx.kind) && ctx.seat === self.controller,
+    attrs: ['Powerful'],
+  }],
 });
 
 // "[Augment] Your spell effects with a single target are {g}Electric." —
-// rr/2 3/2. PARKED (see header): even the statics layer can't reach this —
-// statics project onto in-play UNITS only, while this must make spell
-// EFFECTS Electric (dealEffectDamage reads the source CARD's printed attrs).
+// rr/2 3/2. Live as of round 17 (R94), on the same `effectAttrs` channel as
+// Emberflame Enlightener above and for the same reason: a resolving spell is
+// a StackItem and statics only reach Entities.
+//
+// The target count is the whole card, and it is the reason the channel is
+// PER PART with a DECLARED count rather than per item with a surviving one.
+// RAQ "[Solved] Envoy of Lightning vs Twin Flame.", the card by name:
+//   Q: "If Twin Flame is played with only 1 target, is it Electric thanks to
+//       Envoy?"                                  A: "Yes, it will be Electric"
+//   Q: "What if Twin Flame was played targeting two units, but one of them was
+//       removed before Twin Flame resolves. Will it be Electric?"
+//   A: "No, it still has 2 targets, but one of them is invalid (but could
+//       become valid thanks to Gravitational Correction or Warder)."
+// resolveParts drops dead refs before it builds ctx.targets, so counting the
+// survivors would score perfectly on Emberflame and wrongly — and SILENTLY —
+// here. `EffectAttrCtx.targets` is `part.targets.length`, the cast-time list.
+//
+// `augmentable: true` is load-bearing: `isAugment` reads
+// `augmentAttrs || augmentText || augmentable`, and this card prints none of
+// the first two, so deleting the old inert augmentText stub without it would
+// have quietly made the card un-augmentable — i.e. deleted the [Augment] the
+// whole card is.
 card('Envoy of Lightning', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'your single-target spell effects are Electric (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
+  augmentable: true,
+  effectAttrs: [{
+    affects: (g, self, ctx) =>
+      isSpellEffect(ctx.kind) && ctx.seat === self.controller && ctx.targets === 1,
+    attrs: ['Electric'],
   }],
 });
 
@@ -453,6 +507,17 @@ card('Gravitational Correction', {
       });
       if (!picks.length) g.ev('info', `Gravitational Correction: ${item.label} has no target to change.`);
       for (const [pi, ti, ref] of picks) item.parts[pi]!.targets[ti] = ref;
+      // The SUCCESS path used to say nothing at all: it rewrote another
+      // player's targets and the log showed only the payOrDecline. Found by
+      // 65-effect-conformance's "no effect resolves into silence" the moment
+      // R95 reordered legalActions enough for the fuzz to reach it — the
+      // retarget itself had never been driven to completion before.
+      if (picks.length) {
+        g.ev('info',
+          `Gravitational Correction: ${g.pname(ctx.controller)} changes `
+          + `${picks.length} of ${item.label}'s targets.`,
+          { item: item.id, n: picks.length });
+      }
     },
   },
 });

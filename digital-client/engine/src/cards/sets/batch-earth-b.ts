@@ -10,28 +10,18 @@
  * text live when played normally).
  *
  * PARKED (needs engine machinery that does not exist yet):
- *  - Oorblak: "If combat damage would be dealt to you, that damage is dealt
- *    to me instead". ⚠ THIS NOTE WAS STALE (corrected 2026-08-22, card-ledger
- *    audit). It used to read "needs damage replacement hooks (combatSubStep
- *    calls loseLife directly, with no replacement seam)", and that stopped
- *    being true: R38 added `CardBehavior.replaceCombatDamageToPlayer`, and
- *    E.pumpCombatDamage asks E.replaceCombatDamage for every player hit BEFORE
- *    loseLife. Blightsea Polyp (batch-hybrids-ld-c) has used the seam since,
- *    and its anchoring is exactly what this card wants — units in play AND
- *    augment mods, whose hook reads from their HOST, so "you" is the holder's
- *    controller and "me" is the holder.
- *      What is actually left is much smaller than "damage replacement hooks":
- *    a way to deal the redirected damage TO A UNIT from inside the hook. The
- *    hook is handed (g, self, seat, amount, info) and no EffectCtx, while
- *    dealEffectDamage takes one. Blightsea Polyp never noticed because
- *    g.gainRot needs no ctx.
- *      Still registered with a no-op [Augment] text so it can be applied as a
- *    (blank) virus augment. Declared in test/card-ledger.ts.
- *  - PARTIAL — Reality Bender: registered on printed data ({Inverted} attr +
- *    type-line [Augment] grant); the Inverted stat swap itself is the
- *    unimplemented effStats layer 5 (the seam exists in engine.ts).
- *
+ *  - PARTIAL — Oorblak: the REDIRECT now works (un-parked 2026-08-22, see the
+ *    card below). What is still missing is only the PIERCING EXCESS half of
+ *    Caleb's RAQ answer, and it needs one word added to a core signature —
+ *    `replaceCombatDamageToPlayer`'s `info` carries only `{attacker, region}`,
+ *    so the hook cannot tell a Piercing hit from an ordinary one and therefore
+ *    cannot know whether the damage Oorblak could not absorb carries on to the
+ *    face. Kept in test/card-ledger.ts for exactly that residue.
  * UN-PARKED (kept here so the history is readable; nothing below is waiting):
+ *  - Reality Bender: was PARTIAL, waiting on effStats layer 5. R93 shipped it
+ *    (playtest report #73, 2026-08-22) and the card needed no change at all —
+ *    its printed attrs and augmentAttrs were already right, so the layer alone
+ *    unparked it. It came off test/card-ledger.ts with Its Dark Bubb.
  *  - Malformed Monstrosity: the unit form is a true self-affecting static
  *    (-7/-7, live in effStats), and the augment-DONATED form is the SAME
  *    static — mod-carried statics anchor on the host (E.anchored), which
@@ -265,28 +255,69 @@ card('Nectar Ridge Oracle', {
 
 // "[Augment] If combat damage would be dealt to you, that damage is dealt to
 // me instead." — eee/4 2/4 {Unstable} Luminary Strider {Virus} Unit.
-// STILL PARKED, but ⚠ NOT on "there is no replacement seam" any more — that
-// reason expired and the note outlived it (corrected 2026-08-22; see the
-// header entry for the full account). R38's `replaceCombatDamageToPlayer` IS
-// the seam, it is consulted by E.pumpCombatDamage before loseLife, and it is
-// anchored on units in play and on augment mods reading from their host —
-// which is precisely this card's shape. Blightsea Polyp already uses it.
+// UN-PARKED 2026-08-22. The old note claimed this wanted "damage replacement
+// hooks"; R38 had already shipped them as `replaceCombatDamageToPlayer`, which
+// E.pumpCombatDamage consults for every player hit BEFORE loseLife, and
+// Blightsea Polyp (batch-hybrids-ld-c) has used the seam since. The residual
+// worry — "the hook has no EffectCtx and dealEffectDamage needs one" — was a
+// false alarm: this is COMBAT damage, not effect damage, so the thing to copy
+// is not dealEffectDamage at all but the combat sub-step's own per-unit commit
+// (engine.ts, `u.damage += received` + a 'damage' event). That needs no ctx.
 //
-// The one piece left: the hook must DEAL the redirected damage to me, and it
-// is handed (g, self, seat, amount, info) with no EffectCtx, while
-// dealEffectDamage requires one. Blightsea Polyp sidesteps that by replacing
-// with rot (g.gainRot takes no ctx). So this is a small, well-defined job —
-// the highest-value unpark left in the pool — not a missing framework.
+// ANCHORING. E.anchored hands the hook `self` = the UNIT the text is radiating
+// from: the card itself while it is a unit in play, or the HOST when the text
+// arrives donated by a virus/augment mod. R26 says a card's own [Augment] text
+// is live when it is played normally, so both cases are real, and both readings
+// fall out of the one line below: "me" is always `self`.
 //
-// Registered with a no-op [Augment] text (events: [] never fires) so the card
-// still spawns as a 2/4 and can be applied as a virus augment; the
-// redirection does nothing. Declared in test/card-ledger.ts.
+// WHOSE damage. The hook is offered to every holder in the battle region
+// regardless of seat (that is deliberate — Blightsea Polyp's "columns" is
+// plural and unowned, so the engine cannot pre-filter), and each card decides
+// for itself. Oorblak says "dealt to YOU", which on a donated ability means the
+// controller of the object carrying the text — i.e. `self.controller`, the
+// host's controller, not the mod's owner. So virusing Oorblak onto an ENEMY
+// unit does not steal their damage: it makes THEIR own unit eat THEIR combat
+// damage. Hence the `seat !== self.controller` bail; without it a single
+// Oorblak would swallow both players' hits.
+//
+// ⚠ Caleb 2024-10-24 (restated in dsl.ts): replacing damage does NOT unmake it.
+// The hit still counts as DEALT, so {Lethal} still kills through this, and
+// {Thieving}/{Blessed} still pay out — all of which the engine already handles
+// by reading `playerHits` rather than the post-replacement `playerDmg`. Our
+// side of that bargain is that the damage must land on Oorblak as real damage
+// and be allowed to kill it, which is why we write `self.damage` and fire the
+// 'damage' event ("whenever I am dealt damage" must hear this).
+//
+// We deliberately do NOT call checkDeaths(): ordinary combat damage does not
+// kill until the state-based check, and pumpCombatDamage runs one right after
+// the sub-step returns. Letting it do the killing keeps Oorblak dying on the
+// same game-state check as everything else the exchange killed.
+//
+// ⚠ KNOWN GAP — PIERCING EXCESS. RAQ "[Solved] Oorblak vs Piercing" (_passer,
+// answered by Caleb): "10 damage is redirected to Oorblak, he takes 4 damage
+// which is enough to kill him and leftover 6 damage is still Piercing so it
+// goes to players face", plus Caleb in rules-questions: "oorblak takes 5
+// piercing damage, 1 is enough to kill it and the remaining 4 hit the player /
+// Also it helps to remember that replacement effects only apply once in an
+// effect". So the excess carries on BECAUSE the damage is Piercing — a plain
+// unblocked hit that overkills Oorblak spills nothing. This hook is handed
+// `info: { attacker, region }` and cannot tell the two apart, and returning
+// `true` is all-or-nothing, so the excess is not implemented. Absorbing the
+// whole hit is the right default (it is correct for every non-Piercing hit,
+// which is the common case) and it errs in the defender's favour rather than
+// inventing life loss. See test/card-ledger.ts for the exact core change.
 card('Oorblak', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED: no ctx-free way to damage a unit from the hook
-    label: 'combat damage to you is dealt to me instead (PARKED)',
-    effect: { run: () => { /* see above: the seam exists, the damage call does not */ } },
-  }],
+  // the [Augment] text is a replacement hook, not augmentAttrs/augmentText, so
+  // nothing else would mark this card as legal to apply as an augment.
+  augmentable: true,
+  replaceCombatDamageToPlayer: (g, self, seat, amount) => {
+    if (seat !== self.controller) return false;
+    self.damage += amount;
+    const ev = g.ev('damage', `${self.card} takes ${amount} (${self.damage} total).`,
+      { unit: self.id, n: amount });
+    g.fireEvent('damage', ev);
+    return true;
+  },
 });
 
 // "Whenever a mod is applied to me, create {/n}an X/X unit, where X is the
@@ -340,9 +371,12 @@ card('Plodding Pebble', {
 
 // "[Augment] {Inverted} Ancient Anima {Virus} Unit" — e/2 2/3. Type-line
 // [Augment] grants {Inverted}; printed.augmentAttrs carries it, and
-// printed.attrs keeps it live when played normally. ⚠ PARTIAL (see header):
-// the Inverted stat swap is effStats layer 5, unimplemented — the attribute
-// is tracked but does not yet flip power/defense.
+// printed.attrs keeps it live when played normally. Nothing else is needed:
+// R93 made {Inverted} stat layer 5 (it negates the net stat change from base,
+// `2*base - current`, after layer 4), so the whole card is the attribute and
+// the layer does the work. Donating it onto a unit that has been pumped is
+// what makes this a Virus worth holding — see 17-earth-b's Morphic Mentor
+// case, whose old assertion had quietly encoded the missing layer.
 card('Reality Bender', {});
 
 // "[Augment] Whenever I am I dealt damage, I deal that much damage to each

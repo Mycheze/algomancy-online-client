@@ -150,68 +150,23 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // dead. These are the ones that lose games rather than fizzle a turn.
 
   {
-    card: 'Emberflame Enlightener', gap: 'partial', severity: 'deck-enabler',
-    missing: '"[Augment] Your units and spells gain {g}powerful." — the SPELLS half.',
-    waitingOn:
-      'A way to project an attribute onto a SPELL EFFECT. Statics reach in-play '
-      + 'UNITS only, and the units half is live in both forms. R79 built the READ '
-      + 'side — dealEffectDamage unions ctx.grantedAttrs into the source card\'s '
-      + 'printed attrs — but the only thing that ever fills grantedAttrs is a VIRUS '
-      + 'augmented onto an item on the stack (E.stackAugmentAttrs). A StaticMod has '
-      + 'no channel into it. Half the primitive exists; the static-to-effect half '
-      + 'does not.',
-    onlyTrackedHere: true,
-    note:
-      'A spell deck augments this expecting doubled spell damage and gets none. '
-      + 'Confirmed by reading the definition: `statics: [{ affects: t => t.kind === '
-      + "'unit' && …, attrs: ['Powerful'] }]` — the units half and nothing else. No "
-      + '{todo:true} test names the spells half anywhere in the suite; the only thing '
-      + 'that ever tracked it was one bullet in the batch-fire-a header.',
-  },
-  {
-    card: 'Abyssal Evocation', gap: 'dead', severity: 'deck-enabler',
+    card: 'Deferral Drone', gap: 'partial', severity: 'low',
     missing:
-      '"In this battle, you may play spells from your bin. If you do, they gain '
-      + '{p}unstable until regroup."',
+      'nothing printed. The card works as of round 17 — gain 4 debt, the next card you '
+      + 'play this turn costs [3] less, once per turn, and applying a MOD does not '
+      + 'burn the charge (R37/R59: applying a mod is not playing). What is listed here '
+      + 'is an UNSOURCED behaviour, not a dead clause.',
     waitingOn:
-      'A bin-play PERMISSION in apply.ts. `playAtTiming`/`castable` already take '
-      + "from: 'hand' | 'cache' | 'bin', but nothing in legalActions ever offers a "
-      + "play with from: 'bin' — the only bin action is doProphesy. Plus an "
-      + '"unstable until regroup" marker on the cards played that way.',
-    todoTest: '12-fire-a.test.ts::Abyssal Evocation',
-    note:
-      'The whole card. It resolves to an info line and goes to the bin, so a '
-      + 'bin-recursion deck built on it has no recursion. Same missing permission '
-      + 'parks Writhing Host and half of Trench Stalker.',
-  },
-  {
-    card: 'Rook', gap: 'dead', severity: 'deck-enabler',
-    missing:
-      '"[Augment] You may augment cards from hand and bin during battle as if they '
-      + 'were [Virus]."',
-    waitingOn:
-      "A continuous PLAY-PERMISSION layer over doApplyMod's legality rules in "
-      + 'apply.ts. R59 shipped CostMod (continuous cost modification); this is its '
-      + 'sibling for permissions and does not exist. Card code cannot reach '
-      + "apply.ts's phase gate.",
-    todoTest: '29-hybrids-wm-a.test.ts::Rook',
-    note:
-      'A mod-matters deck augments Rook to unlock battle-window augmenting and gets '
-      + 'a vanilla 4/4. The permission is the entire card.',
-  },
-  {
-    card: 'Deferral Drone', gap: 'dead', severity: 'deck-enabler',
-    missing: '"[Augment][once] Gain 4 debt: The next card you play this turn costs [3] less."',
-    waitingOn:
-      'A ONE-SHOT cost reduction. R59\'s CostMod is the cost layer and it is '
-      + 'continuous and stateless: it is asked "what does this card cost right now" '
-      + 'and has nowhere to record "…and then stop applying". Nothing consumes a '
-      + 'cost modifier on use.',
-    todoTest: '45-hybrids-ld-b.test.ts::Deferral Drone',
-    note:
-      'Deliberately not activatable at all: the only half that DOES exist is "gain 4 '
-      + 'debt", and offering the cost without the discount would be strictly worse '
-      + 'than the printed card. A debt/ramp deck gets a 2/2.',
+      'A RULING, not a seam. The charge lives on `Entity.budgets` (the same '
+      + 'per-turn store R9\'s [once] abilities use, wiped by E.startTurn), and the '
+      + 'discount is a `CostMod`, which radiates from the anchor — so sacrificing the '
+      + 'Drone in response evaporates a charge you already paid 4 debt for. A resolved '
+      + 'effect arguably should not care who paid for it. Making it survive means '
+      + 'moving the charge onto PlayerState, which is a core change AND a ruling. The '
+      + 'whole rulings export has ZERO hits for "Deferral", "next card you play" or '
+      + '"costs [3] less", so there is nothing to look up — the owner has to decide. '
+      + 'The park note this replaces was wrong on BOTH halves it claimed were missing.',
+    todoTest: '45-hybrids-ld-b.test.ts::Deferral Drone: PARKED — the charge does not survive',
   },
 
   // ── WHOLE CARDS THAT DO NOTHING ─────────────────────────────────────────
@@ -230,32 +185,6 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
       + 'a blank. Not caught by the shape sweep — its run does real work (it reads '
       + 'and names the target) and then does nothing with it, which is exactly the '
       + 'shape a sweep cannot see. Listed by hand.',
-  },
-  {
-    card: 'Prediction Prophet', gap: 'dead', severity: 'high',
-    missing:
-      '"During [Haste], predict your life total. At the start of deployment, create '
-      + 'a 5/5 unit if you matched the prediction."',
-    waitingOn:
-      'A "predict a number" PLAYER ACTION during the haste step, and somewhere in '
-      + 'PlayerState/Entity to keep the prediction. R50 supplied the other half: the '
-      + "'startOfDeployment' event exists and the card hears it — it just finds no "
-      + 'prediction on record and logs the gap.',
-    todoTest: '40-light-c.test.ts::Prediction Prophet',
-    note: 'The 5/5 can never be created. The card is a vanilla body.',
-  },
-  {
-    card: 'Phytochemical Protection', gap: 'dead', severity: 'high',
-    missing:
-      '"Until regroup, prevent all damage that would be dealt to target unit. Put a '
-      + '+1/+1 counter on it for each damage prevented this way."',
-    waitingOn:
-      'A damage-PREVENTION / shield layer. dealEffectDamage and pumpCombatDamage '
-      + 'have no prevention hook to install one on.',
-    todoTest: '24-wood-b.test.ts::Phytochemical Protection',
-    note:
-      'Collects its target, logs, and does nothing. Worse than a blank in play: it '
-      + 'reads like a combat trick and the unit dies anyway.',
   },
   {
     card: 'Worldbender', gap: 'dead', severity: 'high',
@@ -278,9 +207,12 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
       '"If I am in your bin, you may play a unit as if it had [Haste] by erasing me '
       + 'as an additional cost to play that unit."',
     waitingOn:
-      'Two things, both in apply.ts/legalActions and out of card code\'s reach: '
-      + 'granting HASTE TIMING to another card (the Dispatch Courier precedent), and '
-      + "attaching an arbitrary additional cost to a DIFFERENT card's play action.",
+      'A play permission whose GRANTOR IS IN THE BIN, plus an additional cost attached to '
+      + "ANOTHER card's play action. R97 (Dispatch Courier) built the play-permission family "
+      + 'this round and deliberately does NOT unpark this card — `PlayPermission` radiates '
+      + 'through `E.anchored()`, which walks units in play and augment mods only, never a bin, '
+      + 'and `PlayCtx` has no room to bolt a cost onto someone else\'s play. The ledger used to '
+      + 'imply shared credit with Dispatch Courier; there is none.',
     todoTest: "42-dark-b.test.ts::Writhing Host",
     note: 'Registered as a plain 3/1 body so it enters DECK_LIST and never crashes.',
   },
@@ -296,22 +228,33 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
     note: 'Registered bare. The recursion payoff never happens.',
   },
   {
-    card: 'The Everywhere', gap: 'dead', severity: 'high',
+    card: 'The Everywhere', gap: 'approximated', severity: 'low',
     missing:
-      '"[Augment] During [Haste] name a card. My last named card loses all abilities."',
+      'the CONTINUOUS duration of "(as long as I am in their region)" — the silence is '
+      + 'applied once, at naming time, and expires at regroup.',
     waitingOn:
-      'A "name a card" PLAYER ACTION. That is the only thing left — this used to '
-      + 'also wait on an ability-suppression layer, and R62 shipped it '
-      + '(StaticMod.suppressAbilities; Monke, Suppression Field and Transmogrifant '
-      + 'all use it today).',
-    todoTest: '38-light-a.test.ts::The Everywhere',
+      'A STRING field on Entity to hold the named card (`budgets` is numeric-only), plus '
+      + 'a StaticMod that matches on a card NAME rather than an entity id. The naming '
+      + 'action and the suppression both shipped in R91 — `ctx.choose` with '
+      + 'DecisionOption.card was the "name a card" action the old park note said did not '
+      + 'exist, and R62 E.suppress does the silencing. ⚠ Consequence of shipping it '
+      + 'region-strict (Caleb: "the single rule we\'ll never violate is nothing can send '
+      + 'information across regions"): at end-of-haste every unit is still home, so today '
+      + 'the card can only silence ALLIES. The printed card reaches an enemy by attacking '
+      + 'into their region later, which is exactly why its effect has to be continuous. '
+      + 'That is the whole remaining gap.',
+    todoTest: '38-light-a.test.ts::The Everywhere: the silence should be CONTINUOUS',
   },
   {
     card: 'Slurpr', gap: 'dead', severity: 'medium',
     missing: '"[Augment] You can apply other mods during [Haste] as if it was deployment."',
     waitingOn:
-      "The same play-timing permission layer Rook and Dispatch Courier wait on: "
-      + "doApplyMod's phase gate lives in apply.ts and card code cannot reach it.",
+      'The MOD-timing twin of R95. Rook shipped this round as `ModPermission.augmentInBattle` '
+      + '(a per-card, OR-folded permission gathered by E.mayAugmentInBattle, with one shared '
+      + 'predicate that both doAugment and legalActions call) and Dispatch Courier shipped as '
+      + 'R97\'s play sibling — neither touches this card. What is needed is a `deploymentTiming` '
+      + 'sibling in the same `ModPermission` family. The family now exists, so this is a small '
+      + 'job rather than a design one.',
     todoTest: '40-light-c.test.ts::Slurpr',
     note: 'Plays and augments as a vanilla 2/2.',
   },
@@ -327,21 +270,19 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
       '"[Augment] If an allied source would deal noncombat damage, it deals that '
       + 'much damage plus 1 instead."',
     waitingOn:
-      'A NONCOMBAT damage replacement hook. dealEffectDamage / dealEffectDamageAll '
-      + 'have none, and the two hooks that exist (replaceRotDamage, '
-      + 'replaceCombatDamageToPlayer) cover rot and column combat damage to players '
-      + 'only.',
+      'An amount-INCREASE hook. Half of the old note is stale as of R98: there IS now a '
+      + 'noncombat damage funnel for units (`E.preventUnitDamage`, consulted by '
+      + '`dealEffectDamageAll` and by the combat sub-step). But that funnel only ever REDUCES — '
+      + 'it returns the damage let through — and this card needs "deals that much plus 1". '
+      + 'The recommended shape is a continuous `AmountMod` family modelled on `CostMod` (SUMMED, '
+      + 'not first-true-consumes like the replaceX hooks), because Caleb settled composition: '
+      + '"a replacement only happens once … The replacement just takes what would be 1 and makes '
+      + 'it 2" — so two different modifiers both apply, and none applies to itself. NOTE: this '
+      + 'card is also now the load-bearing CANARY for 71-card-ledger.test.ts\'s dead-shape '
+      + 'sweep (it took over from Envoy of Lightning when R94 unparked that one), so unparking '
+      + 'it means nominating a new canary — the test says so itself.',
     todoTest: '12-fire-a.test.ts::Conduit of Pain',
     note: 'A burn deck augments this for +1 per ping and gets nothing.',
-  },
-  {
-    card: 'Envoy of Lightning', gap: 'dead', severity: 'high',
-    missing: '"[Augment] Your spell effects with a single target are {g}Electric."',
-    waitingOn:
-      'The same static-to-spell-effect projection Emberflame Enlightener waits on: '
-      + 'statics reach in-play UNITS only, and R79\'s ctx.grantedAttrs (the read side) '
-      + 'is filled by stack-augmented VIRUSES, never by a static.',
-    todoTest: '12-fire-a.test.ts::Envoy of Lightning',
   },
   {
     card: 'Crevice Lurker', gap: 'dead', severity: 'medium',
@@ -355,45 +296,40 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
     todoTest: '16-earth-a.test.ts::Crevice Lurker',
   },
   {
-    card: 'Oorblak', gap: 'dead', severity: 'high',
+    card: 'Oorblak', gap: 'partial', severity: 'medium',
     missing:
-      '"[Augment] If combat damage would be dealt to you, that damage is dealt to me '
-      + 'instead."',
+      'the PIERCING-EXCESS half only. The redirect itself works (round 17): combat '
+      + 'damage aimed at Oorblak\'s controller is dealt to Oorblak instead, it can die '
+      + 'of it, and the life total is spared. What is still wrong is the leftover.',
     waitingOn:
-      '⚠ STALE PARK, CORRECTED 2026-08-22. The batch-earth-b note said this needs '
-      + '"damage replacement hooks (combatSubStep calls loseLife directly, with no '
-      + 'replacement seam)". That is no longer true: E.pumpCombatDamage consults '
-      + 'E.replaceCombatDamage before loseLife, and CardBehavior.'
-      + 'replaceCombatDamageToPlayer is the seam — Blightsea Polyp '
-      + '(batch-hybrids-ld-c) already uses it, and it is anchored exactly right '
-      + '(units in play AND augment mods reading from their host). What is genuinely '
-      + 'left is small: a way to deal the redirected damage TO A UNIT from inside the '
-      + 'hook, which takes an EffectCtx that the hook is not handed. This is the '
-      + 'highest-value item in the ledger — most of the primitive already shipped.',
-    todoTest: '17-earth-b.test.ts::Oorblak',
+      'ONLY the card rewrite now — both seams it was blocked on landed in R98. '
+      + '`replaceCombatDamageToPlayer`\'s `info` carries `attrs` (the striking column\'s live '
+      + 'attributes) and `pure` (R61), so the hook can finally tell a Piercing hit from an '
+      + 'ordinary one; and its return type is `boolean | number`, a number being the damage LET '
+      + 'THROUGH, so it can hand the excess back instead of being all-or-nothing. `true`/`false` '
+      + 'keep their old meaning, which is why Blightsea Polyp and Oorblak both still pass '
+      + 'unedited. The ruling to implement, Caleb: "oorblak takes 5 piercing damage, 1 is enough '
+      + 'to kill it and the remaining 4 hit the player."',
+    todoTest: '17-earth-b.test.ts::Oorblak: PARKED — Piercing excess',
   },
   {
-    card: 'Dispatch Courier', gap: 'dead', severity: 'medium',
+    card: 'Apex Prime', gap: 'partial', severity: 'medium',
     missing:
-      '"[Augment] Each turn, you may play a unit during the mana step as if it had '
-      + '[Haste]."',
+      'the copied NAME, the copied `statics`, and the copied ACTIVATED abilities. Base '
+      + 'stats, attributes and triggered/[Augment] text all copy as of R92.',
     waitingOn:
-      "Play-timing gating in apply.ts's haste-step legality. The original precedent "
-      + 'for this class of park; Writhing Host, Slurpr and Rook all cite it.',
-    todoTest: '26-metal-a.test.ts::Dispatch Courier',
-  },
-  {
-    card: 'Apex Prime', gap: 'dead', severity: 'high',
-    missing:
-      '"[Augment] When I attack or block, if your life total is odd, you may have all '
-      + 'of your units become a copy of target unit until regroup."',
-    waitingOn:
-      'A COPY layer — name, stats, attributes and abilities projected from another '
-      + 'card and expiring at regroup. Nothing of the sort exists: effStats has no '
-      + 'copy layer, and ownAttrs/abilities read straight off the printed card. '
-      + '(Borrower of Forms is NOT a counterexample: it copies base stats only, and '
-      + 'its own todo test says text, attributes and mods are not copied.)',
-    todoTest: '44-hybrids-ld-a.test.ts::Apex Prime',
+      'Three core layers. (1) A copy-NAME layer — `Entity.card` is the identity that '
+      + 'bins, "name a card" effects and counters-by-name all key off, so it cannot be '
+      + 'overwritten casually. (2) A granted-STATIC channel beside `Entity.granted`; '
+      + '`staticsFor()` reads statics off the printed card only. (3) `pushActivatedOptions` '
+      + '(apply.ts:1785-1793) offers `getCard(u.card).abilities` and never reads `granted`. '
+      + 'Borrower of Forms waits on the same three. The old park note claimed effStats had '
+      + 'no copy layer at all, which was overstated: three of the four already existed '
+      + '(E.setBase for base stats R66, E.addTempAttr for attributes, E.grantText for text '
+      + 'R63), and all three expire at regroup, which IS this card\'s printed duration. '
+      + 'Source for the copy semantics, the Borrower of Forms RAQ: Caleb — "it inherits '
+      + 'all of the combined text", and counters copy too.',
+    todoTest: '44-hybrids-ld-a.test.ts::Apex Prime: the copy does not carry the NAME',
   },
   {
     card: 'Vengeance', gap: 'dead', severity: 'medium',
@@ -481,19 +417,6 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // ── PARTIAL: one clause works, another does not ─────────────────────────
 
   {
-    card: 'Scholar of the Void', gap: 'partial', severity: 'high',
-    missing:
-      '"[Augment] At the start of deployment, you may discard your hand and transform '
-      + 'me into Beyond, Codex Incarnate." — the transform.',
-    waitingOn:
-      "TWO things. R50's 'startOfDeployment' event exists and the trigger fires, but "
-      + '(a) the engine has no transform layer, and (b) "Beyond, Codex Incarnate" is '
-      + 'not in printed.json at all — the pool has no such card, so there is nothing '
-      + 'to become. (b) is not an engine gap, it is missing printed data.',
-    todoTest: '43-dark-c.test.ts::Scholar of the Void',
-    note: 'The trigger resolves to an info line saying the option is declined.',
-  },
-  {
     card: 'Cosmic Conspirator', gap: 'partial', severity: 'medium',
     missing:
       '"If you would create a Robot, Poison, Crystal or Fireball, you may instead '
@@ -518,20 +441,6 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
       + 'and there is no "borrow that unit\'s" seam.',
     todoTest: '26-metal-a.test.ts::Ancient One',
   },
-  {
-    card: 'Calming Force', gap: 'partial', severity: 'medium',
-    missing: '"I can\'t be played from your hand." — the zone restriction.',
-    waitingOn:
-      "A ZONE RESTRICTION on playing, enforceable only in apply.ts's doPlayCard. The "
-      + 'other half ("Negate all other effects") is fully live and sweeps the whole '
-      + 'stack.',
-    todoTest: '40-light-c.test.ts::Calming Force',
-    note:
-      'This one is permissive rather than dead: the engine LETS you cast it from '
-      + 'hand, which the printed card forbids. Strictly more powerful than printed, '
-      + 'so it will never feel broken in a game — it will just quietly be a better '
-      + 'card than it should be.',
-  },
 
   // ── PRINTED ATTRIBUTES THE STAT LAYERS DO NOT IMPLEMENT ─────────────────
   // engine.ts's effStats() ends with the literal placeholder
@@ -542,25 +451,6 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // `card('X', {})` is the CORRECT definition and there is no printed text to
   // flag. That mismatch is the same one that hid Harbinger, in reverse.
 
-  {
-    card: 'Its Dark Bubb', gap: 'dead', severity: 'high', deadAttr: 'Inverted',
-    missing: '{Inverted} on the type line — "Invert the stat changes of inverted units."',
-    waitingOn: 'Stat layer 5. effStats() has the seam and nothing in it.',
-    todoTest: '43-dark-c.test.ts::Its Dark Bubb',
-    note: 'The whole card is the attribute, so the whole card does nothing.',
-  },
-  {
-    card: 'Reality Bender', gap: 'dead', severity: 'high', deadAttr: 'Inverted',
-    missing: '"[Augment] {Inverted}" on the type line — the granted inversion.',
-    waitingOn: 'Stat layer 5, exactly as Its Dark Bubb.',
-    onlyTrackedHere: true,
-    note:
-      '⚠ No {todo:true} test names this card. The batch-earth-b header calls it '
-      + '"PARTIAL — registered on printed data", and the card comment says the '
-      + 'attribute "is carried" — both true and both misleading: carrying an '
-      + 'attribute the engine ignores is indistinguishable from a blank. Applied as '
-      + 'a virus to make an enemy pump backfire, it does nothing at all.',
-  },
   {
     card: 'Bubb', gap: 'dead', severity: 'medium', deadAttr: 'Unaware',
     missing: '"[Augment] {Unaware}" on the type line.',
@@ -646,9 +536,20 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
     missing:
       '"Sacrifice me and another ally:" as ONE indivisible activation cost.',
     waitingOn:
-      'A compound cost shape. AbilityCost expresses `sacrificeSelf: true` OR '
-      + '`sacrificeOther: n`, never both as a single payment, so Deformant picks the '
-      + 'ally and destroys both at RESOLUTION rather than in the cast window.',
+      'NOT the compound cost shape this note used to blame — that claim is stale. A single '
+      + '`AbilityCost` carries `sacrificeSelf` AND `sacrificeOther` together, and both are '
+      + 'paid inside the one cast window (payActivationCost for self, collectItemCosts for '
+      + 'other), so the PAYMENT is expressible today. What actually blocks moving Deformant '
+      + 'into the cast window is the RECEIPT, because its effect needs the sacrificed '
+      + "units' COUNTERS: `costPaid.sacrificedUnits` (types.ts:368) snapshots "
+      + '`{card, power, defense}` and not `counters`; `item.paidCosts.sacrificed` is a bare '
+      + 'CardName; and `EffectCtx` never exposes `item.paidCosts` at all, so with the '
+      + 'two-channel shape run() could not even learn WHICH ally was sacrificed. Nor can '
+      + 'the counters be reconstructed from effStats, because Caleb rules they NET and that '
+      + 'temp buffs are not counters at all — "if I have +1/+1 and -1/-1 on the 2 cards, '
+      + 'what\'s the total number?" -> "0, they cancel out"; and of an until-regroup buff, '
+      + '"oh, no those are not counters". Minimum fix: add `counters` (and ideally the '
+      + 'entity id) to both receipt shapes, and surface `item.paidCosts` on EffectCtx.',
     todoTest: '26-metal-a.test.ts::Deformant',
     note: 'Observable as a response window that should not exist between cost and effect.',
   },

@@ -80,12 +80,24 @@ export function createGame(
   // constructed: per-player decks, each shuffled with the seeded RNG (seat 0
   // first — deterministic, so replay = seed + decks + actions)
   let seatDecks: CardName[][] | undefined;
+  /** R99: constructed only — each seat's deck ELEMENT IDENTITY, for the client
+   * to default its resource menu to (ledger #63). Computed off the decklist as
+   * given, BEFORE the shuffle, because it is a property of the deck and not of
+   * the order it happens to be in. Same `getCard(n).factions` idiom
+   * `registry.ts`'s `draftDeckList` uses, and ordered by ALL_ELEMENTS so two
+   * identical decks always produce the identical array (replay determinism). */
+  let deckElements: Element[][] | undefined;
   if (mode === 'constructed') {
     if (!decks || decks.length !== 2) throw new Error('constructed mode needs a deck per player');
     for (const d of decks) {
       const check = checkDeck(d);
       if (!check.ok) throw new Error(check.error);
     }
+    deckElements = decks.map(d => {
+      const seen = new Set<string>();
+      for (const n of d) for (const f of getCard(n).factions ?? []) seen.add(f);
+      return ALL_ELEMENTS.filter(el => seen.has(el));
+    });
     seatDecks = [];
     for (const d of decks) {
       let shuffled: CardName[];
@@ -102,6 +114,10 @@ export function createGame(
     mode, packs: [[], []], draftDone: null, seenHand: [null, null],
     elements: mode === 'draft' ? trio : [...ALL_ELEMENTS],
     sharedDeck: deck,
+    // R99: absent outside constructed — shared plays all seven and draft has
+    // already narrowed `elements` to its trio, so a client falls back to
+    // `elements` when this is undefined.
+    ...(deckElements ? { deckElements } : {}),
     ...(seatDecks ? { decks: seatDecks, bottomDone: null } : {}),
     players: names.map((name, seat) => ({
       seat, name, life: 30, hand: [], bin: [],
@@ -191,13 +207,19 @@ function dispatch(e: E, action: Action): void {
     case 'playCard': return doPlayCard(e, action.seat, action.handIndex, action.mode);
     case 'prophesy': return doProphesy(e, action.seat, action.from, action.index);
     case 'playCached': return doPlayCached(e, action.seat, action.index);
+    case 'playFromBin': return doPlayFromBin(e, action.seat, action.binIndex);
     case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId);
     case 'concede': return doConcede(e, action.seat);
     case 'activateAbility': return doActivateAbility(e, action.seat, action.entityId, action.abilityIndex, action.via);
     case 'augment': return doAugment(e, action.seat, action.from, action.index, action.hostId, action.hostStack);
     case 'graft': return doGraft(e, action.seat, action.from, action.index, action.hostId, action.position);
     case 'declareAttack': return doDeclareAttack(e, action.seat, action.columns, action.spellTokens ?? []);
-    case 'declareBlocks': return doDeclareBlocks(e, action.seat, action.blocks, action.send ?? []);
+    case 'declareBlocks':
+      // R87: the tokens ride out with the counterattackers, so they are the
+      // same list to everything downstream — `send` has always carried them,
+      // `spellTokens` is the field the client can SEE (types.ts).
+      return doDeclareBlocks(e, action.seat, action.blocks,
+        [...(action.send ?? []), ...(action.spellTokens ?? [])]);
     case 'passPriority': return e.passPriority(action.seat);
     case 'doneDeploying': return doDoneDeploying(e, action.seat);
     case 'decide': return doDecide(e, action.seat, action.choice);
@@ -390,7 +412,8 @@ function canPayAmbush(e: E, seat: Seat, c: CardDef): boolean {
   return true;
 }
 
-function baseItem(e: E, c: CardDef, seat: Seat, region: number, from?: 'hand' | 'cache' | 'bin'): StackItem {
+function baseItem(e: E, c: CardDef, seat: Seat, region: number,
+  from?: 'hand' | 'cache' | 'bin', unstable = false): StackItem {
   const parts: EffectPart[] = c.spellEffect ? [{ effectKey: `spell:${c.name}`, targets: [] }] : [];
   return {
     id: e.s.nextId++, kind: c.kind, card: c.name, label: c.name,
@@ -398,6 +421,10 @@ function baseItem(e: E, c: CardDef, seat: Seat, region: number, from?: 'hand' | 
     // R49: the zone this card is being played out of, carried into the
     // 'spellPlayed' / 'spawned' events (Proph, Stalwart Sentinel)
     ...(from ? { from } : {}),
+    // R96: "If you do, they gain {p}unstable until regroup." A STAMP taken at
+    // the moment of playing, not a property of the zone — the card is Unstable
+    // even after the permission that let it out of the bin has lapsed.
+    ...(unstable ? { unstable: true } : {}),
   };
 }
 
@@ -411,6 +438,7 @@ function baseItem(e: E, c: CardDef, seat: Seat, region: number, from?: 'hand' | 
 function playAtTiming(
   e: E, seat: Seat, c: CardDef, timing: CardDef['timing'],
   take: () => void, pay: () => void, from: 'hand' | 'cache' | 'bin',
+  unstable = false,
 ): void {
   const canCast = (region: number) => castable(e, c, region, seat, from);
   /** R49: the printed "[Gain N debt]" bracketed line (Hyper Beam) is a real
@@ -429,12 +457,26 @@ function playAtTiming(
   if (e.s.phase === 'planning') {
     // haste step (R18): only haste cards, resolving immediately
     e.need(e.s.hasteDone !== null && !e.s.hasteDone[seat], 'not your haste step');
-    e.need(timing === 'haste', 'only haste cards during the haste step');
     const region = e.homeRegion(seat);
+    // R97: the printed timing is the default, and a PlayPermission granted by
+    // a unit in this region can widen it ("Each turn, you may play a unit
+    // during the mana step as if it had [Haste]" — Dispatch Courier). Gate 3
+    // of three; `E.mayPlayAtHaste` is the shared predicate all three call, and
+    // it refuses a {Battle} card whatever the grant says (RAQ "[Solved]
+    // Dispatch Courier vs Battle Timing").
+    const granted = timing !== 'haste' && e.mayPlayAtHaste({ seat, card: c, from, region });
+    e.need(timing === 'haste' || granted, 'only haste cards during the haste step');
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
-    e.castChain([baseItem(e, c, seat, region, from)], 'resolve');
+    // charged only once the play is known to be legal and paid for — an
+    // illegal attempt must not eat the turn's allowance
+    if (granted) {
+      e.chargeHastePlay(seat);
+      e.ev('info', `${c.name} is played during the haste step as if it had [Haste].`,
+        { seat, card: c.name });
+    }
+    e.castChain([baseItem(e, c, seat, region, from, unstable)], 'resolve');
   } else if (e.s.phase === 'deploy') {
     e.need(e.deploying(seat), 'not your deployment');
     e.need(timing === 'deploy' || timing === 'haste', 'battle cards can only be played during battle');
@@ -442,7 +484,7 @@ function playAtTiming(
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
-    e.castChain([baseItem(e, c, seat, region, from)], 'resolve');
+    e.castChain([baseItem(e, c, seat, region, from, unstable)], 'resolve');
   } else if (e.s.phase === 'battle') {
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(timing === 'battle', 'only battle cards can be played now');
@@ -450,7 +492,7 @@ function playAtTiming(
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
-    e.castChain([baseItem(e, c, seat, region, from)], 'push');
+    e.castChain([baseItem(e, c, seat, region, from, unstable)], 'push');
     e.settle();
   } else {
     e.illegal('cards are played during deployment or battle');
@@ -463,6 +505,12 @@ function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'disc
   const c = e.card(name);
   if (mode === 'ambush') return doAmbush(e, seat, handIndex, c);
   if (mode === 'discardMe') return doDiscardMe(e, seat, handIndex, c);
+  // R100: "I can't be played from your hand" (Calming Force). Checked here and
+  // nowhere near playAtTiming, because it is about the ZONE, not the timing —
+  // and the two alternative play MODES above are deliberately upstream of it:
+  // Ambush and "Discard me" are their own printed play modes with their own
+  // cost lines, and no card yet prints both this restriction and one of them.
+  e.need(!c.noPlayFromHand, `${c.name} can't be played from your hand`);
   e.need(e.canPayCard(seat, name), 'cannot pay for that');
   playAtTiming(e, seat, c, c.timing,
     () => { e.player(seat).hand.splice(handIndex, 1); },
@@ -534,6 +582,54 @@ function doPlayCached(e: E, seat: Seat, index: number): void {
       }
     },
     'cache');
+}
+
+/** R96: the cards a bin-play permission reaches. "You may play SPELLS from
+ * your bin" — a spell UNIT is one too: playing it casts the spell and then
+ * spawns the body, which is why `isSpellCard` in batch-fire-a reads the same
+ * way. Units, resources and anything else stay where they are. */
+function binPlayable(c: CardDef): boolean {
+  return c.kind === 'spell' || c.kind === 'spellUnit';
+}
+
+/**
+ * R96: play a spell out of your own BIN, under a permission granted this
+ * battle ("In this battle, you may play spells from your bin. If you do, they
+ * gain {p}unstable until regroup." — Abyssal Evocation).
+ *
+ * Modelled on `doPlayCached`, which is THE "play from a non-hand zone gated on
+ * a permission" function — same shape, down to needing the permission before
+ * anything else happens. The `bin` arm of `castable` / `baseItem` /
+ * `playAtTiming` / `StackItem.from` was pre-wired with no callers; this is the
+ * caller.
+ *
+ * ⚠ TIMING IS RESTRICTIVE, and deliberately: `playAtTiming` applies the card's
+ * PRINTED timing, so only {Battle} spells in your bin are playable and a bin
+ * full of deploy-timing spells is inert under this card. That is R42/R45's
+ * answer to the analogous CACHE question — "normal TIMING applies — the card
+ * is played 'as if it were in your hand' … (Caleb 2025-12-28)" — applied here
+ * because nothing says otherwise. The permissive reading would need an
+ * explicit override; flagged in R96 rather than assumed.
+ */
+function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
+  const name = e.player(seat).bin[binIndex];
+  e.need(name !== undefined, 'no such card in your bin');
+  const c = e.card(name);
+  // "IN THIS BATTLE": no battle, no permission — which is also why the region
+  // comes from the battle rather than from the seat's home.
+  const region = e.s.battle?.region;
+  e.need(region !== undefined && e.mayPlaySpellsFromBin(seat, region),
+    'you have no permission to play cards from your bin');
+  e.need(binPlayable(c), 'only spells may be played from your bin');
+  e.need(e.canPayCard(seat, name), 'cannot pay for that');
+  playAtTiming(e, seat, c, c.timing,
+    () => { e.player(seat).bin.splice(binIndex, 1); },
+    () => {
+      e.payCard(seat, name);
+      e.ev('info', `${name} is played from ${e.pname(seat)}'s bin — it is Unstable until regroup.`,
+        { seat, card: name });
+    },
+    'bin', true);
 }
 
 /** [Battle] Ambush (Manual p.40): play the unit during battle as an effect —
@@ -644,11 +740,25 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId): void {
     : [tok];
   const items: StackItem[] = [];
   for (const t of group) {
+    // R89: an augment applied in DEPLOYMENT rides the token onto the stack, as
+    // the `item.augments` R79 already built for the battle-time version. Doing
+    // it this way rather than teaching resolution about the entity's `mods` is
+    // what buys the whole rule for free: `EffectCtx.grantedAttrs`,
+    // `E.itemAttrs` and `dischargeItem`'s Unstable erase all read `augments`
+    // and none of them has to know where the virus was applied. It also
+    // enforces "you can only do this with attributes" by construction —
+    // `stackAugmentAttrs` unions `augmentAttrs` and reads nothing else, so a
+    // text-only augment donates exactly nothing.
+    const riding = t.mods
+      .map(id => e.entity(id))
+      .filter((m): m is Entity => !!m && m.appliedAs === 'augment');
     delete e.s.entities[t.id];
+    for (const m of riding) delete e.s.entities[m.id];
     const item = baseItem(e, e.card(t.card), seat, region);
     item.kind = 'spellToken';
     item.x = t.x;
     item.label = `${t.card} ${t.x ?? ''}`.trim();
+    if (riding.length) item.augments = riding.map(m => ({ card: m.card, by: m.owner }));
     items.push(item);
   }
   e.castChain(items, then);
@@ -804,6 +914,27 @@ function modIsFree(e: E, seat: Seat, from: ModZone, index: number): boolean {
 }
 
 /**
+ * R95: may `seat` apply `c` as an augment during battle, out of `from`?
+ *
+ * THE ONE PREDICATE. `doAugment` and `legalActions` both call it and neither
+ * has its own copy — the fuzzer's "legalActions lied" check has already caught
+ * that class of split once, and a permission grows a second implementation
+ * faster than most things.
+ *
+ * The base rule is the printed one: a {Virus}, from hand, and nothing else.
+ * On top of that sits R95's opt-in permission layer, which today is Rook
+ * ("[Augment] You may augment cards from hand and bin during battle as if they
+ * were [Virus]") and which the designer is explicit must be opt-in — asked
+ * whether an ordinary card grants it, calebgannon: "It shouldn't" … "If it
+ * said 'as if it was in your hand' then it could work" → `$card rook` → "Does
+ * do that".
+ */
+function battleAugmentAllowed(e: E, seat: Seat, c: CardDef, from: ModZone, region: number): boolean {
+  if (c.virus && from === 'hand') return true;
+  return e.mayAugmentInBattle({ seat, card: c, from, region });
+}
+
+/**
  * R79: the stack-item kinds a Virus may be augmented onto.
  *
  * SPELLS, and only spells. Caleb 2025-04-06 asks and answers exactly this
@@ -844,7 +975,15 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   if (hostStack !== undefined) {
     e.need(hostId === undefined, 'name one host, not two');
     e.need(e.s.phase === 'battle', 'a spell on the stack can only be augmented during battle');
-    e.need(c.virus && from === 'hand', 'only Virus cards can augment from hand during battle');
+    // R95: the permission layer, and the ONE predicate legalActions also uses.
+    // ⚠ OPEN: Rook says "as if they were [Virus]", and R79 is what a Virus may
+    // do to a spell on the stack, so the permissive reading unlocks this
+    // branch too and that is what ships. Flagged in R95: if the owner rules
+    // that the permission is only about hand-and-bin TIMING and not about
+    // stack hosts, this line goes back to `c.virus && from === 'hand'` and the
+    // unit branch below keeps the permission.
+    e.need(battleAugmentAllowed(e, seat, c, from, e.s.battle!.region),
+      'only Virus cards can augment from hand during battle');
     e.need(e.s.priority === seat, 'you do not have priority');
     const target = e.s.stack.find(it => it.id === hostStack);
     // R78: `s.stack` and nothing else — an item that is RESOLVING has left the
@@ -852,7 +991,11 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     e.need(target !== undefined && STACK_VIRUS_HOSTS.has(target.kind),
       'no such spell on the stack');
     e.need(target!.region === e.s.battle!.region, 'that spell is in another region');
-    e.player(seat).hand.splice(index, 1);
+    // R95: zoneTake, NOT hand.splice. Once the battle window can be entered
+    // from the bin, a hardcoded `hand.splice(index)` deletes an unrelated card
+    // out of the hand and leaves the bin card in place — the single most
+    // dangerous line in this change, in both branches.
+    zoneTake(e, seat, from, index);
     e.payCard(seat, name, { purpose: 'mod' });   // R37/R59: a Virus augment is a mod
     const item: StackItem = {
       id: e.s.nextId++, kind: 'virus', card: name,
@@ -874,14 +1017,32 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   }
 
   const host = e.entity(hostId!);
-  e.need(host && host.kind === 'unit' && !host.absent, 'no such unit');
+  // R89 — R79's missing half. Caleb, rules-questions 2025-03-06, answering
+  // "can i augment my spells during deployment?":
+  //
+  //   "You can augment spells during deployment but currently that would only
+  //    be possible with spell tokens. Also you can only do this with
+  //    attributes." (and immediately after: "Mostly, deadly, piercing and
+  //    powerful are impacted by this. Especially deadly")
+  //
+  // A spell token in play is an `Entity` with `kind: 'spellToken'`, and this
+  // line has always demanded a unit, so R79 had to list the whole half as
+  // "⚠ Not in scope". It is in scope now, in DEPLOYMENT only: during battle a
+  // token is a spell you cast, and the host you want is the stack item the
+  // `hostStack` branch above already reaches.
+  const tokenHost = e.s.phase === 'deploy'
+    && host?.kind === 'spellToken' && host.controller === seat;
+  e.need(host && (host.kind === 'unit' || tokenHost) && !host.absent,
+    tokenHost ? 'no such spell token' : 'no such unit');
 
   if (e.s.phase === 'battle') {
-    // Virus: an augment playable from hand during battle, on the stack
-    e.need(c.virus && from === 'hand', 'only Virus cards can augment from hand during battle');
+    // Virus: an augment playable from hand during battle, on the stack —
+    // plus R95's opt-in permission layer (Rook), through the one predicate.
+    e.need(battleAugmentAllowed(e, seat, c, from, e.s.battle!.region),
+      'only Virus cards can augment from hand during battle');
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(host.region === e.s.battle!.region, 'that unit is in another region');
-    e.player(seat).hand.splice(index, 1);
+    zoneTake(e, seat, from, index);
     e.payCard(seat, name, { purpose: 'mod' });   // R37/R59: a Virus augment is a mod
     const item: StackItem = {
       id: e.s.nextId++, kind: 'virus', card: name,
@@ -901,6 +1062,20 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
     e.fireEvent('targeted', ev);
     e.attachMod(host, name, seat, 'augment');
+    // R89: "you can only do this with attributes" — the same restriction R79
+    // enforces on the stack, said out loud HERE because this is the moment the
+    // player commits the card. A text-only augment (Graxxlid, Skybreaker) is
+    // still a legal thing to do and still does nothing to a spell; the log
+    // says which of the two just happened rather than leaving the player to
+    // discover it when the token resolves for the same damage as before.
+    if (tokenHost) {
+      const granted = c.augmentAttrs;
+      e.ev('info', `${name} augments ${host.card} ${host.x ?? ''}`.trimEnd()
+        + (granted.length
+          ? ` — the spell gains {${granted.join('} {')}} when it is cast.`
+          : ' — but a spell can only gain ATTRIBUTES, and this grants none, so nothing changes.'),
+        { unit: host.id, card: name, seat });
+    }
     e.settle();
   } else {
     e.illegal('modding is a deployment action (or a battle Virus)');
@@ -950,6 +1125,29 @@ function validFormation(e: E, seat: Seat, columns: EntityId[][], fromRegion: num
   }
 }
 
+/**
+ * R87 — may this spell token ride out with a formation leaving `fromRegion`?
+ *
+ * "Yes, spell tokens can move into other regions on attack/counter-attack
+ * step. But they always need a unit to take them with them" (lofavreel,
+ * rules-questions 2023-08-19), and Caleb himself: "you can only play spell
+ * tokens in the region they are in (or you can bring them into enemy regions
+ * during an attack, if they were created in your own region)" (2025-04-21).
+ *
+ * ONE helper for both declarations, deliberately: an attack and a
+ * counterattack are the same movement seen from the two sides of the table
+ * ("if your opponent declares a counter attack they create a formation and
+ * move those units + some/all spell tokens to your region" — tecera,
+ * 2025-12-23), and the whole of playtest report #67 is the two of them having
+ * been allowed to disagree. The "needs a unit to take it" half is enforced at
+ * each call site, because that is where the units are.
+ */
+function needRidingToken(e: E, seat: Seat, id: EntityId, fromRegion: number): void {
+  const t = e.entity(id);
+  e.need(t && t.kind === 'spellToken' && t.controller === seat && !t.absent
+    && t.region === fromRegion, 'not your spell token');
+}
+
 function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: EntityId[]): void {
   const b = e.s.battle;
   e.need(e.s.phase === 'battle' && b && b.step === 'declare' && seat === b.attacker, 'not your attack step');
@@ -966,8 +1164,7 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
   const fromRegion = b.round === 1 || b.attackerPool === null ? e.homeRegion(seat) : b.region;
   validFormation(e, seat, columns, fromRegion, b.attackerPool);
   for (const id of spellTokens) {
-    const t = e.entity(id);
-    e.need(t && t.kind === 'spellToken' && t.controller === seat && t.region === fromRegion, 'not your spell token');
+    needRidingToken(e, seat, id, fromRegion);
     e.need(!b.attackerPool || b.attackerPool.includes(id), 'only tokens sent at block time may come along');
   }
   b.columns = columns.map(c => c.slice());
@@ -1308,6 +1505,11 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
   for (const id of send) {
     const t = e.entity(id);
     e.need(t && (t.kind === 'unit' || t.kind === 'spellToken') && t.controller === seat && !t.absent, 'cannot send that');
+    // R87: a token riding a counterattack answers to exactly the question an
+    // attack asks of a rider, from the one helper both declarations use. (A
+    // unit keeps its own line below — a counterattacker leaves from the region
+    // it is DEFENDING, which is `b.region` for both kinds.)
+    if (t.kind === 'spellToken') needRidingToken(e, seat, id, b.region);
     e.need(t.region === b.region, 'that is in another region');
     e.need(!used.has(id), 'blockers cannot also be sent to attack');
     // R84 {Alluring}: "it won't be able to counter-attack into your region" —
@@ -1316,6 +1518,11 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
     used.add(id);
     if (t.kind === 'unit') sentUnits++;
   }
+  // R87, and it is the oldest half of the rule: "they always need a unit to
+  // take them with them" (lofavreel 2023-08-19) — "In order to move spell
+  // tokens, you must have attacked opponent Region. In order to attack
+  // opponent Region, you must send atleast 1 of your unit" (_passer
+  // 2025-05-10). A counterattack of tokens alone is not a counterattack.
   e.need(send.length === 0 || sentUnits > 0, 'spell tokens travel only with units');
 
   // R84 {Alluring}: each lured unit must be among its column's blockers, and
@@ -1331,7 +1538,11 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
   b.sentAttackers = send.slice();
   const ev = e.ev('blocksDeclared',
     `${e.pname(seat)} blocks ${Object.keys(blocks).length} column(s)` +
-    (send.length ? ` and sends ${send.length} counterattacker(s)` : '') + '.',
+    // R87: the tokens are counted separately, because "3 counterattackers"
+    // when one of them is a Poison is exactly the confusion report #67 opened
+    // with. Identical wording to before whenever no token rides along.
+    (send.length ? ` and sends ${sentUnits} counterattacker(s)`
+      + (send.length > sentUnits ? ` with ${send.length - sentUnits} spell token(s)` : '') : '') + '.',
     { seat, region: b.region });
   e.fireEvent('blocksDeclared', ev);
   for (const col of Object.values(b.blocks)) {
@@ -1512,13 +1723,21 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
   if (s.phase === 'planning' && s.hasteDone) {   // haste step (R18)
     if (s.hasteDone[seat]) return out;
     out.push({ type: 'doneHaste', seat });
+    const home = e.homeRegion(seat);
     e.player(seat).hand.forEach((name, i) => {
       const c = getCard(name);
-      if (c.timing === 'haste' && e.canPayCard(seat, name) && castable(e, c, e.homeRegion(seat), seat)) {
+      // R97, gate 2 of three: the printed [Haste] timing OR a live grant. The
+      // client's play affordance is built from this list, and a refusal the UI
+      // still offers as a legal click is its own playtest report — so this must
+      // route through the same `E.mayPlayAtHaste` that `playAtTiming` enforces.
+      const playable = c.timing === 'haste'
+        || e.mayPlayAtHaste({ seat, card: c, from: 'hand', region: home });
+      if (playable && !c.noPlayFromHand    // R100
+        && e.canPayCard(seat, name) && castable(e, c, home, seat)) {
         out.push({ type: 'playCard', seat, handIndex: i });
       }
     });
-    pushCachedPlays(e, seat, t => t === 'haste', e.homeRegion(seat), out);
+    pushCachedPlays(e, seat, t => t === 'haste', home, out);
     return out;
   }
 
@@ -1638,12 +1857,30 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       // send options (round 1 only — no counter-counterattacks):
       // each single non-blocking unit, representative
       if (b.round === 1) {
+        // R87: the tokens standing where the counterattack leaves from. A
+        // token rides only WITH a unit ("they always need a unit to take them
+        // with them"), so the rider is offered on top of each unit send rather
+        // than on its own — which is also what makes every one of these legal
+        // by construction, the way the fuzzer's "legalActions lied" check
+        // insists.
+        const riders = e.tokensOf(seat, b.region).map(t => t.id);
         for (const u of mine) {
           if (spoken.has(u.id)) continue;   // it is already blocking, compulsorily
           // R84: a lured unit cannot counterattack — and sending anyone ELSE
           // away cannot change who is "able", so the core is reused verbatim
           if (u.allured) continue;
           out.push({ type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat), send: [u.id] });
+          // playtest report #67, game GETD: the counterattack went out and
+          // three Poison 1s stayed behind, because nothing — not the engine's
+          // own enumeration, not the client — ever said they could come. One
+          // representative rider per unit; the builder composes any subset and
+          // apply() validates it, exactly as it does for a formation.
+          if (riders.length) {
+            out.push({
+              type: 'declareBlocks', seat, blocks: compulsoryBlocks(e, seat),
+              send: [u.id], spellTokens: riders.slice(),
+            });
+          }
         }
       }
       return out.filter(legalBlock);
@@ -1653,7 +1890,8 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
       const hand = e.player(seat).hand;
       hand.forEach((name, i) => {
         const c = getCard(name);
-        if (c.timing === 'battle' && e.canPayCard(seat, name) && castable(e, c, b.region, seat)) {
+        if (c.timing === 'battle' && !c.noPlayFromHand   // R100
+          && e.canPayCard(seat, name) && castable(e, c, b.region, seat)) {
           out.push({ type: 'playCard', seat, handIndex: i });
         }
         if (c.ambush && canPayAmbush(e, seat, c)
@@ -1666,16 +1904,14 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
         if (c.discardMe && canPayDiscardMe(e, seat, c)) {
           out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
         }
-        if (c.virus && isAugment(name) && e.canPayCard(seat, name, { purpose: 'mod' })) {
-          for (const host of e.unitsIn(b.region)) out.push({ type: 'augment', seat, from: 'hand', index: i, hostId: host.id });
-          // R79: and onto a spell on the stack — either player's
-          for (const it of s.stack) {
-            if (!STACK_VIRUS_HOSTS.has(it.kind) || it.region !== b.region) continue;
-            out.push({ type: 'augment', seat, from: 'hand', index: i, hostStack: it.id });
-          }
-        }
       });
+      // R95: the battle AUGMENT window, hand and bin together. It used to be a
+      // `c.virus && from === 'hand'` clause inside the hand walk above; there
+      // was no bin leg at all, which is why Rook's whole text was unreachable
+      // even though bin-augmenting is fully plumbed for deployment.
+      pushBattleAugments(e, seat, b.region, out);
       pushCachedPlays(e, seat, t => t === 'battle', b.region, out);
+      pushBinPlays(e, seat, b.region, out);   // R96
       for (const t of e.tokensOf(seat, b.region)) out.push({ type: 'castSpellToken', seat, entityId: t.id });
       pushActivatedOptions(e, seat, b.region, out);
       return out;
@@ -1692,7 +1928,8 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
     out.push({ type: 'doneDeploying', seat });
     e.player(seat).hand.forEach((name, i) => {
       const c = getCard(name);
-      if (timingAllowsDeploy(c) && e.canPayCard(seat, name) && castable(e, c, region, seat)) {
+      if (timingAllowsDeploy(c) && !c.noPlayFromHand   // R100
+        && e.canPayCard(seat, name) && castable(e, c, region, seat)) {
         out.push({ type: 'playCard', seat, handIndex: i });
       }
       // R40: the "Discard me" mode (Dropslime) — a deployment action unless
@@ -1724,6 +1961,13 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
         if (!getCard(name) || !affordable) return;
         if (isAugment(name)) {
           for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
+          // R89: and the spell tokens standing in the same region. This is the
+          // line whose absence made the ruling invisible — R79 shipped the
+          // stack half and `legalActions` never offered it either, which is
+          // precisely how it stayed unreachable for a whole round.
+          for (const host of e.tokensOf(seat, region)) {
+            out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
+          }
         }
         if (isGraftable(name)) {
           for (const host of e.unitsOf(seat, region)) {
@@ -1754,6 +1998,58 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
  * a prophecy, printed cost via a glimpse; affinity is ignored on both paths),
  * and a targeted cast still needs a candidate.
  */
+/**
+ * R95: every legal battle-window AUGMENT for `seat`, hand and bin.
+ *
+ * Routes through `battleAugmentAllowed`, the SAME predicate `doAugment`
+ * enforces — the fuzzer checks that `legalActions` never offers something
+ * `apply` refuses, and a permission with two implementations is precisely how
+ * that check gets tripped.
+ *
+ * The cache is deliberately not walked: no card grants a battle-window
+ * permission out of it (Rook prints "hand and bin"), and the zone list lives
+ * in the granting card, so a future card that does want the cache needs no
+ * change here.
+ */
+/**
+ * R96: every legal bin play for `seat` right now. Shaped on `pushCachedPlays`,
+ * and routed through the SAME `E.mayPlaySpellsFromBin` predicate `doPlayFromBin`
+ * enforces — the fuzzer asserts legalActions never offers what apply refuses,
+ * and this class of split has already been caught once.
+ */
+function pushBinPlays(e: E, seat: Seat, region: number, out: Action[]): void {
+  if (!e.mayPlaySpellsFromBin(seat, region)) return;
+  e.player(seat).bin.forEach((name, i) => {
+    const c = getCard(name);
+    if (!binPlayable(c)) return;
+    // R42/R45: printed timing applies, so the battle window offers {Battle}
+    // spells only (see doPlayFromBin's note).
+    if (c.timing !== 'battle') return;
+    if (!e.canPayCard(seat, name)) return;
+    if (!castable(e, c, region, seat, 'bin')) return;
+    out.push({ type: 'playFromBin', seat, binIndex: i });
+  });
+}
+
+function pushBattleAugments(e: E, seat: Seat, region: number, out: Action[]): void {
+  for (const from of ['hand', 'bin'] as const) {
+    e.player(seat)[from].forEach((name, i) => {
+      if (!isAugment(name)) return;
+      const c = getCard(name);
+      if (!battleAugmentAllowed(e, seat, c, from, region)) return;
+      if (!e.canPayCard(seat, name, { purpose: 'mod' })) return;
+      for (const host of e.unitsIn(region)) {
+        out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
+      }
+      // R79: and onto a spell on the stack — either player's
+      for (const it of e.s.stack) {
+        if (!STACK_VIRUS_HOSTS.has(it.kind) || it.region !== region) continue;
+        out.push({ type: 'augment', seat, from, index: i, hostStack: it.id });
+      }
+    });
+  }
+}
+
 function pushCachedPlays(e: E, seat: Seat, allowed: (t: CardDef['timing']) => boolean, region: number, out: Action[]): void {
   e.cache(seat).forEach((cc, i) => {
     const via = e.cachePermission(seat, i);

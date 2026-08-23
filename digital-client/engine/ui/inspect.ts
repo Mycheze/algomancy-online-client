@@ -11,7 +11,7 @@ import { E } from '../src/engine.ts';
 import { allureViolation } from '../src/apply.ts';
 import { specForSlot } from '../src/cards/dsl.ts';
 import type { ActivatedAbility } from '../src/cards/dsl.ts';
-import { createsOf, DECK_LIST } from '../src/cards/registry.ts';
+import { createsOf, DECK_LIST, transformingCardNames, transformsInto } from '../src/cards/registry.ts';
 import { matcherFor } from './glossary.ts';
 import { clean, entityTextBox, switchClause } from './cardtext.ts';
 import type {
@@ -67,7 +67,8 @@ export interface StackAbilityRow {
   graft?: boolean;
   /** index into item.parts — what ties the row to the clause that paid for it */
   part: number;
-  /** R64: the variable cast cost THIS clause paid, defining its own X. A
+  /** the cast cost THIS clause paid, defining its own X — R64's counted
+   * payment, or the receipt stat the clause sizes itself off (partCostX). A
    * grafted rider's X is not its carrier's (types.ts EffectPart.costPaid.x),
    * so it is attributed to the row rather than to the item. */
   x?: number;
@@ -84,7 +85,7 @@ export function stackAbilityRows(item: StackItem): StackAbilityRow[] {
     if (p.spent) return;
     const t = partText(p.effectKey);
     if (!t) return;
-    const x = p.costPaid?.x;
+    const x = partCostX(p);
     const receipt = costReceipt(p.costPaid);
     out.push({ ...t, part: i, ...(x !== undefined ? { x } : {}), ...(receipt ? { receipt } : {}) });
   });
@@ -254,34 +255,32 @@ export interface AutoPassPlan {
  * lying) and consumed once (so exactly one pass goes out). The order is the
  * one the old chain had — Pass-all, then the toggle, then the yield — and now
  * it is an ordering rather than three independent chances to send.
+ *
+ * WHAT IS NOT HERE ANY MORE: the Pass-all branch. Report #68 ("I hit pass all,
+ * but then it stopped passing all") was this function's own C5 clause —
+ * "castableTokens(legal) > 0 → disarm", true in nearly every priority window
+ * of nearly every battle, so the chip performed exactly one pass and switched
+ * itself off. The whole release list moved to ui/battle.ts `passAllRelease`,
+ * which asks the sharper question, and `autoPassDecision` (same file) is the
+ * one caller: it asks THIS function with `armed: false` for the remaining two
+ * reasons and owns Pass-all itself. The branch stayed here for a round after
+ * that, reachable only from its own tests, and is now gone — `arm.armed` and
+ * `arm.armedStack`/`armedSig` are read by `passAllRelease` alone. There is
+ * exactly one answer to "why did pass-all stop", and it is a PassAllRelease.
  */
 export function autoPassPlan(
   s: GameState, seat: Seat, legal: readonly Action[], arm: AutoPassArm,
 ): AutoPassPlan {
-  let disarm = false;
-  if (arm.armed) {
-    if (s.phase !== 'battle' || !s.battle) disarm = true;
-    else if (s.stack.length > arm.armedStack) disarm = true;
-    // #1: a resolution granted me a NEW activateAbility (e.g. a negate) that
-    // wasn't legal when the chip was armed — disarm so the window is mine
-    else if (activationKeys(legal).some(k => !arm.armedSig.includes(k))) disarm = true;
-    else if (!s.decision && s.priority === seat) {
-      // C5: never skip through castable spell tokens — disarm and let the
-      // player decide (the confirm bar shows on their next manual Pass)
-      if (castableTokens(legal) > 0) disarm = true;
-      else if (legal.some(a => a.type === 'passPriority')) return { disarm: false, pass: 'passall' };
-    }
-  }
   // C4: the toggle passes whenever passing is my ONLY legal action
   if (arm.prefOn && !s.decision && s.phase !== 'gameover'
     && legal.length > 0 && legal.every(a => a.type === 'passPriority')) {
-    return { disarm, pass: 'pref' };
+    return { disarm: false, pass: 'pref' };
   }
   // #2: the top of the stack is a trigger from a unit I yield to
   if (shouldAutoYield(s, seat, arm.yieldIds) && legal.some(a => a.type === 'passPriority')) {
-    return { disarm, pass: 'yield' };
+    return { disarm: false, pass: 'yield' };
   }
-  return { disarm, pass: null };
+  return { disarm: false, pass: null };
 }
 
 /** the two stamps that make an automatic pass one-per-state (UiState) */
@@ -458,24 +457,42 @@ export interface ModHosts {
   units: Set<EntityId>;
   /** items on the stack (`hostStack`) — augment only, spells only */
   stack: Set<number>;
+  /**
+   * R89: spell tokens IN PLAY (`hostId` again — a token is an Entity like a
+   * unit, so the engine names it in exactly the same field).
+   *
+   * Only filled when `modHosts` is given the state to ask; without it a token
+   * host is indistinguishable from a unit host and lands in `units`, which is
+   * what every caller that does not care about the difference wants. Optional
+   * so a caller can still hand-build a `ModHosts` of the two original kinds.
+   */
+  tokens?: Set<EntityId>;
 }
 
-export function modHosts(legal: readonly Action[], m: ModPick | null): ModHosts {
-  const hosts: ModHosts = { units: new Set(), stack: new Set() };
+export function modHosts(legal: readonly Action[], m: ModPick | null, s?: GameState): ModHosts {
+  const hosts: ModHosts = { units: new Set(), stack: new Set(), tokens: new Set() };
   if (!m) return hosts;
   for (const a of legal) {
     if (a.type !== m.mode) continue;
     const c = a as { from?: string; index?: number; hostId?: EntityId; hostStack?: number };
     if (c.from !== m.from) continue;
     if (m.index !== undefined && c.index !== m.index) continue;
-    if (c.hostId !== undefined) hosts.units.add(c.hostId);
+    if (c.hostId !== undefined) {
+      // R89 — Caleb 2025-03-06: "You can augment spells during deployment but
+      // currently that would only be possible with spell tokens." The engine
+      // offers it in `hostId`, so the KIND is the only thing that separates the
+      // two, and only the state knows it.
+      if (s && s.entities[c.hostId]?.kind === 'spellToken') hosts.tokens!.add(c.hostId);
+      else hosts.units.add(c.hostId);
+    }
     if (c.hostStack !== undefined) hosts.stack.add(c.hostStack);
   }
   return hosts;
 }
 
 /** how many places this mod could go */
-export const modHostCount = (h: ModHosts): number => h.units.size + h.stack.size;
+export const modHostCount = (h: ModHosts): number =>
+  h.units.size + h.stack.size + (h.tokens?.size ?? 0);
 
 /**
  * What to CALL the hosts on offer, for the prompt bar, the menu entry and the
@@ -485,11 +502,39 @@ export const modHostCount = (h: ModHosts): number => h.units.size + h.stack.size
  * refuse, and it never widens: a graft has no stack form at all.
  *
  * Written to follow the article "a": `a ${modHostPhrase(hosts)}`.
+ *
+ * R89 adds the third kind — a spell TOKEN standing in your region during
+ * deployment. It is named separately from "a unit" for the same reason the
+ * stack host was: a banner that says "unit" is how a ruling stays invisible.
  */
 export function modHostPhrase(h: ModHosts): string {
-  if (h.stack.size && h.units.size) return 'unit, or a spell on the stack';
-  if (h.stack.size) return 'spell on the stack';
-  return 'unit';
+  const parts: string[] = [];
+  if (h.units.size) parts.push('unit');
+  if (h.tokens?.size) parts.push('spell token');
+  if (h.stack.size) parts.push('spell on the stack');
+  return parts.length ? parts.join(', or a ') : 'unit';
+}
+
+/**
+ * R89: what an augment would actually donate to a SPELL host.
+ *
+ * "Also you can only do this with attributes" (Caleb 2025-03-06). A mod whose
+ * whole payload is rules text — Graxxlid, Skybreaker — is a perfectly legal
+ * thing to put on a spell token and changes nothing about it, and the engine
+ * says so in the log at the moment the card is committed (doAugment). This is
+ * the same fact one moment EARLIER, while the player can still change their
+ * mind, which is what R79's stack-host banner does for the stack kind.
+ */
+export function spellAugmentAttrs(card: CardName): string[] {
+  try { return [...getCard(card).augmentAttrs]; } catch { return []; }
+}
+
+/** the sentence that fact is worth, for the mod-in-progress bar */
+export function spellAugmentNote(card: CardName): string {
+  const attrs = spellAugmentAttrs(card);
+  return attrs.length
+    ? `a spell token would gain {${attrs.join('} {')}} — attributes are all a spell can take`
+    : 'a spell token would gain NOTHING — only ATTRIBUTES cross to a spell, and this grants none';
 }
 
 // ── card names inside prose (the log, the reveal, the stack) ──────────
@@ -925,8 +970,18 @@ export function unitClickOptions(
  */
 const TOKEN_NAMES: readonly string[] = (() => {
   const playable = new Set<string>(DECK_LIST);
+  // R101: a TRANSFORM BACK FACE is also a registry card outside DECK_LIST —
+  // "Beyond, Codex Incarnate" is even printed as a "Book Token Unit" — but it
+  // is not a token anything CREATES, and Scholar of the Void's printed text
+  // names it in a perfectly scannable sentence. Without this it would appear
+  // under "Tokens it creates" on the card that transforms INTO it, which is a
+  // false statement about the rules: Scholar becomes it, it never makes one.
+  // Excluded from the SCAN list only — the back face is still a token
+  // everywhere the type line is what matters (`tokenOnlyName`, DECK_LIST).
+  const backFaces = new Set(transformingCardNames().map(n => transformsInto(n)!));
   return allCardNames()
-    .filter(n => !playable.has(n) && !/ Resource$/.test(n) && !/^Dormant/.test(n))
+    .filter(n => !playable.has(n) && !backFaces.has(n)
+      && !/ Resource$/.test(n) && !/^Dormant/.test(n))
     .sort((a, b) => b.length - a.length);
 })();
 
@@ -992,6 +1047,52 @@ export function tokensCreatedBy(name: CardName, live?: { e: E; unit: Entity }): 
   }
   for (const t of tokensNamedIn(text)) add(t);
   return out;
+}
+
+// ── the face a card TRANSFORMS INTO (playtest ledger #24) ─────────────
+
+/**
+ * The back face(s) this card can turn into — [] for the 99% of cards that
+ * have none.
+ *
+ * THE REPORT, verbatim (ZQPC, 2026-08-20): "Scholar of the Void doesn't say
+ * what the Beyond card it can transform into does". Note what that is and is
+ * not. It is not a complaint that the transform is broken; it is that you
+ * cannot see what you would BECOME before committing — and Scholar's cost for
+ * finding out is discarding your entire hand, which is the most expensive
+ * "try it and see" in the pool. So this is the fix the owner actually asked
+ * for, and it has to work while the card is still in hand.
+ *
+ * DECLARATIVE, from `registry.transformsInto`, exactly like `tokensCreatedBy`
+ * leads with `EffectDef.creates` — and for the same reason, spelled out at
+ * length in test/65-effect-conformance: the inspector used to scrape printed
+ * text for a card NAME and that is wrong three ways. Here it would even
+ * appear to work, because Scholar's text does name the card in a scannable
+ * sentence; it would break the moment a transform is granted, or is worded
+ * "turn me over", or names a card whose name contains another's. There is
+ * deliberately NO text-scan fallback: unlike a token name, a transform target
+ * is not something a scan can ever confirm.
+ *
+ * `live` mirrors `tokensCreatedBy`'s parameter and answers two questions the
+ * printed lookup gets wrong, both by reading the entity's OWN card name:
+ *   · a Scholar that has ALREADY transformed is a Beyond, and Beyond has no
+ *     back face — the row disappears once it is spent, instead of offering an
+ *     option the unit no longer has;
+ *   · a host WEARING a Scholar as an augment mod shows no row, which is not
+ *     an omission but the rule: "transform me" rebinds to the host, and the
+ *     host has its own reverse side (batch-dark-c.ts refuses exactly this
+ *     case). The view and the engine agree because both ask the same question
+ *     of the same name.
+ *
+ * Returns names, so the caller renders them with the very same row builder it
+ * uses for tokens (`tokenRowHtml` in ui/main.ts) — which already prints the
+ * face's stats, type line and rules text, which is what "say what it does"
+ * means.
+ */
+export function transformFaces(name: CardName, live?: { e: E; unit: Entity }): CardName[] {
+  const from = live ? live.unit.card : name;
+  const back = transformsInto(from);
+  return back ? [back] : [];
 }
 
 // ── the erased pile, as it is SHOWN (R69 fallout) ─────────────────────
@@ -1091,9 +1192,64 @@ export function costReceipt(paid: EffectPart['costPaid']): string | undefined {
   return bits.length ? bits.join(', ') : undefined;
 }
 
+/**
+ * A clause that sizes itself off a stat of the unit its cost sacrificed.
+ *
+ * Playtest GETD: "there's still no way to see the X value for Volatile
+ * Toxicity on the stack. All spells with X should be clear what X is when
+ * they're cast." Report UZRG's fix covered the two X's that arrive as a
+ * NUMBER — R35's mana X on the item, R64's counted variable cost in
+ * `costPaid.x` — and this card has neither. Its cost is ONE sacrifice, a
+ * fixed amount, so `finishVariableCost` never runs and `costPaid.x` stays
+ * undefined; the X is a stat of the corpse: "X is the defense of the
+ * sacrificed unit". The engine snapshots exactly that stat into the receipt
+ * at payment (types.ts costPaid.sacrificed) precisely because the unit is
+ * gone by resolution — so the number is already fixed, already on the stack
+ * item, and was simply never read out.
+ *
+ * Which stat is a per-card sentence, so this reads the sentence rather than
+ * keeping a hand-kept list that would rot: the printed clause names 'defense'
+ * or 'power' "of the sacrificed unit", and the receipt carries both. Like
+ * VARIABLE_LABEL below this is presentation only — a phrasing it misses costs
+ * one badge, never a rule — but it cannot invent a number: no sentence, no
+ * row.
+ *
+ * Two cards in the pool print it. Volatile Toxicity calls the stat X outright;
+ * Structural Collapse ("until their total defense is at least equal to the
+ * defense of your sacrificed unit") never writes an X but is sized by the same
+ * snapshot, and is included deliberately — the bar is the whole question a
+ * responder has about that spell, and showing it as "X = 6, sacrificed Good
+ * Whale" beside the clause that spells out what the number means is worth more
+ * than withholding it over the letter X.
+ */
+const SACRIFICED_STAT = /\b(defense|power)\s+of\s+(?:the|your|that)\s+sacrificed\s+unit/i;
+
+/**
+ * The X of ONE part: what its own cast cost fixed.
+ *
+ * R64's counted payment is the X when there is one (`costPaid.x`); otherwise
+ * the clause may still read its X off the receipt (SACRIFICED_STAT). Both live
+ * on the part rather than the item so a grafted rider's X cannot collide with
+ * its carrier's (types.ts EffectPart.costPaid.x), and both are settled before
+ * the item reaches the stack — this only ever reports a number that is already
+ * final.
+ */
+function partCostX(part: EffectPart): number | undefined {
+  const paid = part.costPaid;
+  if (!paid) return undefined;
+  if (paid.x !== undefined) return paid.x;
+  const sac = paid.sacrificed;
+  if (!sac) return undefined;
+  const stat = SACRIFICED_STAT.exec(partText(part.effectKey)?.text ?? '')?.[1];
+  if (!stat) return undefined;
+  return stat.toLowerCase() === 'power' ? sac.power : sac.defense;
+}
+
 export interface StackXRow {
   /** 'cast'  = the R35 mana X the whole item was cast for;
-   *  'cost'  = the R64 variable cast cost ONE part paid, defining that part's X;
+   *  'cost'  = the cast cost ONE part paid, defining that part's X: R64's
+   *            counted variable payment, or the stat its receipt snapshotted
+   *            when the clause sizes itself off that (partCostX);
    *  'event' = R80: the amount the EVENT that fired a triggered ability
    *            carried, which is the X of every "that much" / "that many" /
    *            "X is the damage I am dealt" trigger in the pool */
@@ -1146,6 +1302,12 @@ const VARIABLE_LABEL = /\bx\b|that many|that much|equal to|double that/i;
  * per-card declaration and cannot rot the way a hand-kept list would. When the
  * event was part of a damage BATCH whose total differs, the hint says so —
  * Ember of Life reads the total where Awoken Tomb reads its own share.
+ *
+ * GETD came back a third time — "there's still no way to see the X value for
+ * Volatile Toxicity" — because a cast-cost X is not always a COUNT: see
+ * partCostX and SACRIFICED_STAT above for the clause that reads its X off the
+ * receipt instead. It is still a per-part X, so it lands in the same 'cost'
+ * row and needs no fourth kind.
  */
 export function stackItemX(item: StackItem): StackXRow[] {
   const out: StackXRow[] = [];
@@ -1166,7 +1328,7 @@ export function stackItemX(item: StackItem): StackXRow[] {
   }
   item.parts.forEach((p, i) => {
     if (p.spent) return;
-    const x = p.costPaid?.x;
+    const x = partCostX(p);
     if (x === undefined) return;
     const src = partText(p.effectKey)?.source;
     const receipt = costReceipt(p.costPaid);
@@ -1470,4 +1632,103 @@ export function blockPlanIssue(
   // structuredClone of a whole game state on every paint of every battle
   if (!Object.values(s.entities).some(e => e.allured && e.controller === seat)) return null;
   return allureViolation(new E(structuredClone(s)), seat, blocks);
+}
+
+// ── which elements a resource menu SHOWS (playtest ledger #63) ─────────
+
+/**
+ * The elements a resource menu (recycle, prismite exchange) leads with for one
+ * seat, and the ones it keeps behind an expander.
+ *
+ * THE REPORT, verbatim (GETD, 2026-08-22): "In constructed, the resource
+ * options from recycling and prismites should be limited just to the elements
+ * that are in your deck. No need to put the whole list for every single game
+ * when they're not relevant."
+ *
+ * ⚠ THIS IS A PRESENTATION DEFAULT, NOT A RULE, and the distinction is
+ * load-bearing rather than cautious. Reap the Due is mono-light and scales off
+ * DARK affinity, so a mono-light deck running it MUST still be able to take a
+ * dark resource or the card is blank. So nothing here removes an option: the
+ * engine still offers all seven (`legalActions` was deliberately left alone in
+ * R99), and everything this hides is one click away under `hidden`. A caller
+ * that renders `show` without also offering `hidden` has broken the card, not
+ * tidied the menu.
+ *
+ * `state.deckElements?.[seat] ?? state.elements` — ALWAYS the asking seat's own
+ * entry, never the opponent's, and never the union of both. The fallback covers
+ * three real cases at once and all three want the same answer:
+ *   · 'shared' and 'draft', where the engine never writes the field (draft has
+ *     already narrowed `elements` to its trio, so a second narrowing is noise);
+ *   · a game saved before R99, which simply lacks it;
+ *   · a seat entry that is missing or empty.
+ *
+ * And one more guard that is not paranoia: if the deck's elements and what the
+ * menu is offering do not intersect at all, we show everything rather than an
+ * EMPTY menu. A menu with nothing in it reads as "you may not do this", which
+ * is a rules claim, and it would be a false one.
+ *
+ * `offered` is what the caller can actually put on screen — `s.elements` for
+ * recycling, the elements of the legal `exchangePrismite` actions for a
+ * prismite — so this never invents an option the engine did not offer.
+ *
+ * ⚠ CALLERS MUST NOT key an auto-fire off `show.length`. The prismite site
+ * auto-acts when there is exactly ONE legal thing to do; counting the FILTERED
+ * list there would silently spend a mono-element deck's prismite with no menu
+ * at all. Auto-fire is a statement about legality, so it counts legal actions;
+ * this function only ever decides what is drawn.
+ */
+export function resourceMenuElements<T extends string>(
+  s: Pick<GameState, 'elements' | 'deckElements'>,
+  seat: Seat,
+  offered: readonly T[],
+  expanded = false,
+): { show: T[]; hidden: T[] } {
+  const all = [...offered];
+  if (expanded) return { show: all, hidden: [] };
+  // `element` on an exchangePrismite action is typed ResourceKind, which is
+  // Element plus 'prismite' — hence the widened compare rather than a cast that
+  // would quietly swallow a real mismatch.
+  const deck: readonly string[] | undefined = s.deckElements?.[seat];
+  if (!deck || deck.length === 0) return { show: all, hidden: [] };
+  const show = all.filter(el => deck.includes(el));
+  const hidden = all.filter(el => !deck.includes(el));
+  // never an empty menu — that would read as "you may not do this"
+  if (show.length === 0) return { show: all, hidden: [] };
+  return { show, hidden };
+}
+
+/**
+ * What clicking one of your resources should DO — the prismite site of #63,
+ * with the hazard that site carries built in.
+ *
+ * `opts` is every legal action on that resource slot (`activateResource` and
+ * the seven `exchangePrismite`s), straight from `legalActions`. The click has
+ * always auto-fired when there was exactly one legal thing to do, and that
+ * shortcut is a statement about LEGALITY.
+ *
+ * ⚠ THE HAZARD, and the whole reason this is a function and not two lines at
+ * the call site: an active prismite offers seven exchanges and NO activate, so
+ * for a mono-element constructed deck the display list narrows to exactly one.
+ * Filter first and count second and the click stops being a menu — it silently
+ * spends the prismite on the deck's own element, with no way to reach the other
+ * six and no way back. So the count happens BEFORE the filter, always, and
+ * `resourceMenuElements` is only ever asked what to DRAW.
+ *
+ * `hidden` is how many elements are behind the expander; the caller reopens
+ * with `expanded: true` to get all of them. It is never a menu of nothing.
+ */
+export function prismiteClickPlan(
+  s: Pick<GameState, 'elements' | 'deckElements'>,
+  seat: Seat,
+  opts: readonly Action[],
+  expanded = false,
+): { kind: 'none' } | { kind: 'auto'; action: Action }
+  | { kind: 'menu'; actions: Action[]; hidden: number } {
+  if (opts.length === 0) return { kind: 'none' };
+  // ⚠ legality, not display — see above
+  if (opts.length === 1) return { kind: 'auto', action: opts[0]! };
+  const offered = opts.flatMap(a => a.type === 'exchangePrismite' ? [a.element] : []);
+  const { show, hidden } = resourceMenuElements(s, seat, offered, expanded);
+  const actions = opts.filter(a => a.type !== 'exchangePrismite' || show.includes(a.element));
+  return { kind: 'menu', actions, hidden: hidden.length };
 }

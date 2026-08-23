@@ -121,7 +121,7 @@ function runShape(f: unknown): 'none' | 'empty' | 'log-only' | 'real' {
 const admitsTheGap = (s: string) => /PARKED|not implemented/i.test(s);
 
 const BEHAVIOR_KEYS = [
-  'xMin', 'abilities', 'statics', 'costMods', 'augmentable', 'mustBeTargeted',
+  'xMin', 'abilities', 'statics', 'costMods', 'effectAttrs', 'augmentable', 'mustBeTargeted',
   'prophesyFromBin', 'playsIntoFormation', 'spellEffect', 'graftEffect', 'augmentText',
   'replaceRotDamage', 'replaceCombatDamageToPlayer', 'xPreview',
 ] as const;
@@ -225,14 +225,22 @@ test('every card with a readably-dead half is declared in the card ledger', () =
 test('the sweep has teeth: it recognises the shape Harbinger of Immolation was fixed out of', () => {
   // Harbinger was fixed on 2026-08-22 (it is a StaticMod with survivesRegroup
   // now), so it can no longer prove anything about itself. Envoy of Lightning
-  // is the stand-in: its definition today is byte-for-byte the shape Harbinger
-  // had — an inert augmentText entry, `events: []`, an empty run and a label
-  // ending "(not implemented)".
-  const shapes = deadShapes('Envoy of Lightning');
+  // was the stand-in until round 17, when R94 built the static→effect-attribute
+  // channel and implemented it — so the canary moved on again, exactly the way
+  // this assertion's own failure message told it to.
+  //
+  // CONDUIT OF PAIN is the canary now. Its definition is byte-for-byte the
+  // shape Harbinger had and Envoy had — an inert augmentText entry, `events:
+  // []`, an empty run and a label ending "(not implemented)" — it is declared
+  // in the ledger, and it is genuinely parked: "[Augment] If an allied source
+  // would deal noncombat damage, it deals that much damage plus 1 instead"
+  // needs a NONCOMBAT damage replacement hook, which R94 did not build.
+  const CANARY = 'Conduit of Pain';
+  const shapes = deadShapes(CANARY);
   assert.ok(shapes.some(s => /events:\[\]/.test(s)),
-    'Envoy of Lightning no longer has the inert-augment shape — if it was implemented, '
+    `${CANARY} no longer has the inert-augment shape — if it was implemented, `
     + 'pick another currently-parked card as the canary and say which in this comment');
-  assert.ok(CARD_LEDGER.some(e => e.card === 'Envoy of Lightning'),
+  assert.ok(CARD_LEDGER.some(e => e.card === CANARY),
     'the canary must itself be declared, or the sweep proves nothing');
 
   // And the negative half: the sweep must NOT fire on the bookkeeping pattern,
@@ -318,7 +326,17 @@ test('every ledger entry is still needed — delete it when the card is implemen
   //     carries the unimplemented-stat-layer placeholder, or
   //   · it says so itself with `unverified` (which the tally counts, loudly).
   const engineSrc = fs.readFileSync(path.join(ENGINE, 'src', 'engine.ts'), 'utf8');
-  const LAYER_PLACEHOLDER = 'layer 5 (Inverted), 6 (Unaware) go here';
+  // PER ATTRIBUTE, because the two stat layers no longer ship together. Stat
+  // layer 5 landed in round 17 (R93: {Inverted} negates the net change from
+  // base), so there is no placeholder left for {Inverted} to point at and a
+  // `deadAttr: 'Inverted'` entry has lost that channel of evidence for good —
+  // which is the file's designed outcome, not a bug in it: the cards work now
+  // and the entries are what is left behind. Layer 6 ({Unaware}) is still
+  // unbuilt and keeps its placeholder.
+  const LAYER_PLACEHOLDER: Record<'Unaware' | 'Inverted', string | null> = {
+    Inverted: null,
+    Unaware: 'layer 6 (Unaware) goes here',
+  };
 
   const stale: string[] = [];
   for (const e of CARD_LEDGER) {
@@ -352,10 +370,14 @@ test('every ledger entry is still needed — delete it when the card is implemen
     if (e.deadAttr) {
       const c = getCard(e.card);
       const prints = [...c.attrs, ...c.augmentAttrs].includes(e.deadAttr);
+      const placeholder = LAYER_PLACEHOLDER[e.deadAttr];
       if (!prints) stale.push(`${e.card}: no longer prints {${e.deadAttr}} — recheck this entry`);
-      else if (!engineSrc.includes(LAYER_PLACEHOLDER)) {
-        stale.push(`${e.card}: engine.ts no longer carries the "${LAYER_PLACEHOLDER}" `
-          + `placeholder — if stat layer 5/6 shipped, {${e.deadAttr}} may be live and `
+      else if (placeholder === null) {
+        stale.push(`${e.card}: the stat layer {${e.deadAttr}} was waiting on has SHIPPED — the `
+          + 'attribute is live, so delete this ledger entry');
+      } else if (!engineSrc.includes(placeholder)) {
+        stale.push(`${e.card}: engine.ts no longer carries the "${placeholder}" `
+          + `placeholder — if the stat layer shipped, {${e.deadAttr}} may be live and `
           + 'this entry is stale');
       } else why.push('attr');
     }

@@ -7,16 +7,23 @@ import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/
 import { getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import {
   actionNeedsMenu, activatableUnits, activationBadge, activationKeys, activationNeedsConfirm,
-  autoPassPlan, blockPlanIssue, boardMenuEntries, cardClasses, castableTokens,
+  blockPlanIssue, boardMenuEntries, cardClasses, castableTokens,
   dismissSeenCard, dismissSeenHand,
   erasedPileView, groupReveal, growCardLedger, linkCardNames, modHostCount, modHostPhrase,
   modHosts, onlyKnownNames,
-  partitionOptions, planOffer, playableCachedNames, seenHandView, stackAbilityRows, stackItemX,
-  stackXMark, takeAutoPass, tokensCreatedBy, unitClickOptions, waitingNote, watchCast,
+  partitionOptions, planOffer, playableCachedNames, seenHandView, spellAugmentNote,
+  stackAbilityRows, stackItemX,
+  prismiteClickPlan, resourceMenuElements,
+  stackXMark, takeAutoPass, tokensCreatedBy, transformFaces, unitClickOptions, waitingNote,
+  watchCast,
 } from './inspect.ts';
 import type {
   AutoPassPlan, CastWatch, FormationRole, ModHosts, SeenHandDismissals, UnitClickOption,
 } from './inspect.ts';
+import {
+  autoPassDecision, passEndsBattlePhase, ridableTokens, sendableTokens, shouldAskRide,
+  shouldAskSend, splitCounterattack,
+} from './battle.ts';
 import { dropIntoRow, halfRows, publishCols, rekeyBuild } from './formation.ts';
 import { entityTextBox, printedTextBox, textBoxFor } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
@@ -369,6 +376,13 @@ interface UiState {
   /** Pass pressed with castable spell tokens during battle (C5): which pass
    * button is being confirmed */
   confirmPass: 'pass' | 'passall' | null;
+  /** [69] "Attack!" pressed with ride-along spell tokens available and none
+   * picked: which seat is being asked which tokens come along. */
+  confirmRide: Seat | null;
+  /** [69] the ride-along question has been answered for the attack currently
+   * being built — one dialogue per attack, not one per click of Attack!.
+   * Cleared wherever the formation is (a declaration, a clear, a skip). */
+  rideAnswered: boolean;
   /** playtest: "done deploying" pressed while cards in the cache are playable
    * RIGHT NOW — easy to forget a zone you are not used to watching. Holds the
    * seat being asked. */
@@ -408,7 +422,8 @@ const freshUi = (): UiState => ({
   carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
   draftPack: null, draftFor: '', autopass: false, autopassStack: 0,
   autopassSig: [], autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
-  prefillFor: '', confirmDone: null, confirmPass: null, homeEls: savedEls(),
+  prefillFor: '', confirmDone: null, confirmPass: null,
+  confirmRide: null, rideAnswered: false, homeEls: savedEls(),
   homeFixedTrio: false,
   confirmDeploy: null, confirmAct: null,
   bottomPick: [], bottomFor: '', blockLine: null,
@@ -940,7 +955,10 @@ function refreshActCache(): void {
 }
 function moddingHosts(): ModHosts {
   const m = ui.modding;
-  return modHosts(m ? legalFor(m.seat) : [], m);
+  // R89: the state is what tells a spell-token host from a unit host — the
+  // engine names both in `hostId`, so without it the token would glow as a
+  // "unit" and the bar would say so.
+  return modHosts(m ? legalFor(m.seat) : [], m, h.state);
 }
 
 /* [59] both of these are pure over a legal-action list, and autoPassPlan needs
@@ -1241,19 +1259,41 @@ function tokenToggleMode(t: Entity): 'ride' | 'send' | null {
     if (t.region === fromRegion && (!b.attackerPool || b.attackerPool.includes(t.id))) return 'ride';
     return null;
   }
-  if (b.step === 'blocks' && b.round === 1 && t.controller === b.defender) return 'send';
+  // [67] R87: and the counterattack side, from the same mirror of the engine
+  // the dialogue lists — a token standing somewhere other than the contested
+  // region is one doDeclareBlocks refuses, so it must not be clickable into
+  // the send list either.
+  if (b.step === 'blocks' && b.round === 1 && t.controller === b.defender) {
+    return sendableTokens(s, b.defender).includes(t.id) ? 'send' : null;
+  }
   return null;
 }
 
 function tokenHtml(t: Entity): string {
   const riding = ui.spellTokens.includes(t.id);
   const castable = legalFor(t.controller).some(a => a.type === 'castSpellToken' && a.entityId === t.id);
+  // R89: a spell token is the third kind of mod host (Caleb 2025-03-06 — "you
+  // can augment spells during deployment but currently that would only be
+  // possible with spell tokens"). It wears the same green pulse a unit host
+  // does, because it is the same click.
+  const modhost = modHostCache.tokens?.has(t.id) ?? false;
+  const badges: Badge[] = [];
+  if (riding) badges.push({ t: `${txtIcon('battle', '[battle]')} riding`, mod: true, html: true });
+  for (const modId of t.mods) {
+    const m = h.state.entities[modId];
+    if (m) badges.push({
+      t: `<span data-anim="e${m.id}">${txtIcon('augment', '+')}${esc(m.card.split(' ')[0])}</span>`,
+      mod: true, html: true,
+    });
+  }
+  if (t.absent) badges.push({ t: 'sent', mod: true });
   return cardHtml(t.card, {
     anim: `e${t.id}`,
     stats: 'X=' + t.x,
     playable: castable || tokenToggleMode(t) !== null,
     selected: riding || ui.send.includes(t.id),
-    badges: riding ? [{ t: `${txtIcon('battle', '[battle]')} riding`, mod: true, html: true }] : [],
+    modhost,
+    badges,
     data: `data-act="token" data-id="${t.id}"`,
   });
 }
@@ -1450,7 +1490,7 @@ function binDialogHtml(): string {
     ${anyUsable ? `<div class="binmodbanner">${txtIcon('augment', '+')} Glowing cards can be applied to a ${
       // R79: not always a unit — a virus from the bin can go onto a spell on
       // the stack too, and this banner used to deny that in so many words.
-      modHostPhrase(modHosts(legal, { from: 'bin', mode: 'augment' }))
+      modHostPhrase(modHosts(legal, { from: 'bin', mode: 'augment' }, h.state))
     } as a mod right now — click one, then pick a host.</div>` : ''}
     <div class="zone binzone bindialog">${items || '<span class="binempty">empty</span>'}</div>
     <button data-btn="binclose">Close</button>
@@ -1692,7 +1732,7 @@ const judgeLog: { q: string; a: string; cards: { title: string }[] }[] = [];
 
 const PHASE_GUIDE: [string, string][] = [
   ['Planning', 'Refresh resources · draw 2 · (draft: merge hand+pack, leave exactly 10, pass) · recycle cards into dormant resources · activate up to 2 resources (3+ affinity of an element when activating it grants a free dormant Shard) · exchange active Prismites.'],
-  ['Haste', 'Only {Haste} cards may be played; they resolve immediately. Skipped when nobody can.'],
+  ['Haste', 'Only cards with haste may be played — printed {Haste}, or granted by something in play (R97, Dispatch Courier). They resolve immediately. Skipped when nobody can. A {Battle} card does NOT become playable here even when granted haste.'],
   ['Battle round 1', 'Initiative attacks: build columns (max 2 units each; column-mates SHARE combat attributes) → response window → defender declares blocks AND may send counterattackers (they cease to exist until round 2) → response window → combat damage (Swift → normal → Sluggish; triggers resolve between steps, no priority) → after-combat window.'],
   ['Battle round 2', 'The counterattack, in the other region: only units sent in round 1 (or a fresh attack if round 1 didn’t happen). Same steps.'],
   ['Regroup', 'Automatic: everyone returns home · damage cleared · temporary changes cleared · spell tokens erased · formations dissolve. Deployment buffs persist into NEXT battle.'],
@@ -1799,6 +1839,14 @@ function inspectorHtml(): string {
   // donated text counts, and "Wraiths" finds Wraith.
   const tokenRows = tokensCreatedBy(name, u ? { e: q(), unit: u } : undefined)
     .map(tokenRowHtml).join('');
+  // Ledger #24 (ZQPC): "Scholar of the Void doesn't say what the Beyond card it
+  // can transform into does". The back face gets the SAME row builder the
+  // tokens do — tokenRowHtml prints stats, type line and rules text off a bare
+  // name, which is exactly what "say what it does" means — and it must be
+  // readable while the card is still in hand, because the cost of finding out
+  // the other way is discarding your entire hand.
+  const transformRows = transformFaces(name, u ? { e: q(), unit: u } : undefined)
+    .map(tokenRowHtml).join('');
   const refRows = referenced.length
     ? referenced.map(glossRow).join('')
     : `<div class="hint">${inspect.rulings === null
@@ -1816,6 +1864,7 @@ function inspectorHtml(): string {
       <h4>Attributes${u ? ' (current, shared/granted included)' : ' (printed)'}</h4>
       ${attrRows}
       ${tokenRows ? `<h4>Tokens it creates</h4>${tokenRows}` : ''}
+      ${transformRows ? `<h4>Transforms into</h4>${transformRows}` : ''}
       <h4>Referenced rules <span class="hint">— named in the text${
         inspect.rulings?.length ? ' or the rulings' : ''}</span></h4>
       ${refRows}
@@ -2045,10 +2094,16 @@ function moddingBarHtml(err: string): string {
   // R42: a fulfilled prophecy makes the graft/augment free too, not only the play
   const free = m.from === 'cache' && q().cachePermission(m.seat, m.index) === 'prophecy'
     ? ' <span class="freetag">FREE — fulfilled prophecy</span>' : '';
+  // R89: "you can only do this with attributes" (Caleb 2025-03-06). A mod
+  // whose whole payload is rules text is a legal thing to put on a spell token
+  // and donates nothing at all — said HERE, while the card can still be taken
+  // back, not in the log after it is spent.
+  const gift = modHostCache.tokens?.size
+    ? `<div class="modgift">${txtIcon('augment', '+')} ${esc(spellAugmentNote(card))}</div>` : '';
   return `<div class="promptbar pending"><span class="who">${esc(h.state.players[m.seat]!.name)}:</span>
     applying <b>${esc(card)}</b> from ${zoneLabel(m.from)}${free} as ${icon} <b>${m.mode}</b>
     — pick a glowing host: a ${what}${nHosts ? ` (${nHosts} legal)` : ''}
-    <button data-btn="modcancel">✕ cancel (esc)</button>${err}</div>`;
+    <button data-btn="modcancel">✕ cancel (esc)</button>${gift}${err}</div>`;
 }
 
 /**
@@ -2182,7 +2237,7 @@ function promptHtml(): string {
       : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${label} (enter)</button>`).join(' ');
   if (s.phase === 'planning' && s.hasteDone) {
     return `<div class="promptbar"><span class="who">Haste step</span>
-      Play haste cards (they resolve immediately). ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
+      Play cards with haste, printed or granted (they resolve immediately). ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
   }
   if (s.phase === 'planning' && s.mode === 'draft' && s.draftDone) {
     if (NET && s.draftDone[NET.seat]) {
@@ -2210,6 +2265,27 @@ function promptHtml(): string {
   if (s.phase === 'battle') {
     const b = s.battle!;
     if (b.step === 'declare') {
+      // [69] "It's very easy to attack without bringing along any spell tokens
+      // into the new region… make it a choice AFTER declaring attackers." The
+      // attack is built and Attack! has been pressed; the declaration is held
+      // here until the ride-along question is answered once. The tokens listed
+      // are the ones the ENGINE would accept (ui/battle.ts ridableTokens
+      // mirrors doDeclareAttack), and each chip is the same clickable token as
+      // the one in the strip, so the answer and the affordance are one thing.
+      if (ui.confirmRide !== null) {
+        const chips = ridableTokens(s, ui.confirmRide)
+          .map(id => s.entities[id]).filter((t): t is Entity => !!t)
+          .map(t => `<span class="ridechip${ui.spellTokens.includes(t.id) ? ' on' : ''}"
+              data-act="token" data-id="${t.id}">${ui.spellTokens.includes(t.id) ? '✓ ' : ''}${esc(t.card)} <b>X=${t.x}</b></span>`)
+          .join('');
+        const n = ui.spellTokens.length;
+        return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.confirmRide]!.name)}:</span>
+          Select the spell tokens you wish to bring into the attacked region, or select Bring none.
+          <span class="ridepick">${chips}</span>
+          <button data-btn="ridecancel">Go back (esc)</button>
+          <button ${n ? '' : 'class="primary" '}data-btn="ridenone">Bring none</button>
+          ${n ? `<button class="primary" data-btn="rideconfirm">Attack — ${n} token${n === 1 ? '' : 's'} riding (enter)</button>` : ''}${err}</div>`;
+      }
       const built = ui.columns.some(c => c.length) || ui.spellTokens.length > 0;
       return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> build your attack
         <button data-btn="attackall" title="every eligible unit joins, one per column — adjust before confirming">${txtIcon('battle', '[battle]')} Attack with everything</button>
@@ -2218,6 +2294,27 @@ function promptHtml(): string {
         ${built ? '<button data-btn="clearform" title="empty the formation being built">✕ Clear (esc)</button>' : ''}${err}</div>`;
     }
     if (b.step === 'blocks') {
+      // [67] R87: the same dialogue as the attack side, on the counterattack.
+      // "What happened to Rashi's Poison tokens here? She just wanted to bring
+      // them with her attackers but they somehow went onto the stack" — the
+      // Confirm is held here until the question is answered once. The chips
+      // are `data-act="token"`, literally the same clickable token as the one
+      // in the strip, and sendableTokens (ui/battle.ts) mirrors
+      // doDeclareBlocks, so the list can never offer what the engine refuses.
+      if (ui.confirmRide !== null) {
+        const chips = sendableTokens(s, ui.confirmRide)
+          .map(id => s.entities[id]).filter((t): t is Entity => !!t)
+          .map(t => `<span class="ridechip${ui.send.includes(t.id) ? ' on' : ''}"
+              data-act="token" data-id="${t.id}">${ui.send.includes(t.id) ? '✓ ' : ''}${esc(t.card)} <b>X=${t.x}</b></span>`)
+          .join('');
+        const n = splitCounterattack(s, ui.send).spellTokens.length;
+        return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.confirmRide]!.name)}:</span>
+          Select the spell tokens you wish to bring into the attacked region, or select Bring none.
+          <span class="ridepick">${chips}</span>
+          <button data-btn="ridecancel">Go back (esc)</button>
+          <button ${n ? '' : 'class="primary" '}data-btn="ridenone">Bring none</button>
+          ${n ? `<button class="primary" data-btn="rideconfirm">Counterattack — ${n} token${n === 1 ? '' : 's'} riding (enter)</button>` : ''}${err}</div>`;
+      }
       const built = ui.columns.some(c => c && c.length) || ui.send.length > 0;
       // R84: a lured unit's block is COMPULSORY, and the client used to know
       // nothing about it — Confirm was always live and the duty only ever
@@ -2233,10 +2330,13 @@ function promptHtml(): string {
     }
     if (ui.modding) return moddingBarHtml(err);
     if (ui.confirmPass !== null) {
-      // C5: passing away castable spell tokens wants a second look
+      // C5/[66]: the owner wrote the copy for this one — "You're about to move
+      // to Regroup which will remove your Spell Tokens. Are you sure?" — and it
+      // is now shown only on the pass that would actually get there.
       const n = castableTokenCount(s.priority!);
       return `<div class="promptbar pending"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
-        you still have <b>${n} castable spell token${n === 1 ? '' : 's'}</b> — pass anyway?
+        You're about to move to Regroup, which will remove your spell tokens.
+        Are you sure? <span style="color:var(--dim)">(${n} still castable)</span>
         <button data-btn="passcancel">Go back</button>
         <button class="primary" data-btn="passconfirm">Pass anyway (space)</button>${err}</div>`;
     }
@@ -2823,8 +2923,12 @@ function renderNow(): boolean {
   const netTag = NET ? `<span class="init">room ${esc(NET.room)} · you are ${esc(h.state.players[NET.seat]!.name)}</span>
     <span class="presence ${oppOn ? 'on' : 'off'}">● ${oppOn ? 'opponent connected' : 'opponent offline'}</span>` : '';
   const canUndo = NET && (h.state.phase === 'planning' || h.state.phase === 'deploy');
-  if (ui.confirmPass !== null && (h.state.phase !== 'battle' || h.state.priority === null ||
-    castableTokenCount(h.state.priority) === 0)) ui.confirmPass = null;   // stale confirm
+  // stale confirm — the bar asks about a pass that would end the battle with
+  // tokens still castable, so it goes the moment either half stops being true
+  // ([66]: the window moved on, or the tokens did)
+  if (ui.confirmPass !== null && (h.state.priority === null
+    || !passEndsBattlePhase(h.state, h.state.priority)
+    || castableTokenCount(h.state.priority) === 0)) ui.confirmPass = null;
   // the two playtest confirms go stale the same way — the phase moved on, the
   // cache emptied, or the ability stopped being legal while the bar was up
   if (ui.confirmDeploy !== null
@@ -2834,6 +2938,14 @@ function renderNow(): boolean {
   if (ui.confirmAct && !legalFor(ui.confirmAct.seat).some(a => a.type === 'activateAbility'
     && a.entityId === ui.confirmAct!.entityId && a.abilityIndex === ui.confirmAct!.abilityIndex)) {
     ui.confirmAct = null;
+  }
+  // [69] and the ride-along question: it belongs to ONE attack declaration, so
+  // it goes the moment that declare step does (an undo, a resync, the attack
+  // landing) — and `rideAnswered` goes with it, or the next attack would
+  // inherit an answer given about a formation that no longer exists.
+  // …and R87 gives the block step the same dialogue, so both steps keep it.
+  if (h.state.battle?.step !== 'declare' && h.state.battle?.step !== 'blocks') {
+    ui.confirmRide = null; ui.rideAnswered = false;
   }
   const autoPref = localStorage.getItem('algoAutopass') === '1';
   // [59] BEFORE the markup: whether this client is about to pass this window
@@ -3236,14 +3348,22 @@ function clampMenu(): void {
  * better. So the answer is computed here, up front, and promptHtml is told —
  * it paints the waiting bar instead of offering a window that is already gone.
  *
- * The judgement itself lives in ui/inspect.ts (autoPassPlan), where it is
- * tested. This function is only the bookkeeping around it: the Pass-all chip's
- * arm, and its repaint when the arm drops.
+ * The judgement itself lives in ui/battle.ts (autoPassDecision) and ui/inspect.ts
+ * (the toggle and the yield), where it is tested. This function is only the
+ * bookkeeping around it: the Pass-all chip's arm, and its repaint when the arm
+ * drops.
+ *
+ * [68] "I hit pass all, but then it stopped passing all. Why?" — because the
+ * release list used to contain "you hold a castable spell token", which is true
+ * of most windows of most battles, so the chip passed once and switched itself
+ * off. ui/battle.ts passAllRelease is now the single named list of every
+ * condition that takes the chip off, and the token clause in it asks the
+ * sharper question (would this pass actually REACH Regroup and erase them).
  */
 function planAutoPass(): AutoPassPlan {
   if (!NET) return { disarm: false, pass: null };
   const s = h.state;
-  const plan = autoPassPlan(s, NET.seat, NET.legal, {
+  const plan = autoPassDecision(s, NET.seat, NET.legal, {
     armed: ui.autopass, armedStack: ui.autopassStack, armedSig: ui.autopassSig,
     prefOn: localStorage.getItem('algoAutopass') === '1',
     yieldIds: new Set(yieldMap.keys()),
@@ -3819,7 +3939,7 @@ function pinFocus(sub: FocusSubject, key: string): void {
  * including them would make every click look like it had done something. */
 const CLICK_STATE_KEYS = ['carrying', 'columns', 'send', 'spellTokens', 'modding', 'menu',
   'orderPicked', 'draftPack', 'bottomPick', 'confirmDone', 'confirmPass', 'confirmDeploy',
-  'confirmAct'] as const;
+  'confirmAct', 'confirmRide'] as const;
 
 /** everything a click may move, as one string */
 function clickSig(): string {
@@ -4110,8 +4230,18 @@ function handleButton(btn: HTMLElement): void {
     ui.autopassSig = NET ? abilityKeys(NET.seat) : [];
   };
   if (b === 'pass' || b === 'passall') {
-    // C5: passing away castable spell tokens during battle wants a confirm
-    if (s.phase === 'battle' && s.priority !== null && castableTokenCount(s.priority) > 0) {
+    // C5, rewritten for [66]: "The UI is reminding me I have unused tokens at
+    // EVERY chance it has… It should just be right at the end before moving to
+    // Regroup." The guard used to fire on any pass while a castable token was
+    // in hand, which during a busy battle is every window — so it stopped being
+    // information and became a second click on the Pass button.
+    //
+    // Regroup is the ONLY step that erases spell tokens (R11), so the pass that
+    // reaches it is the only pass that costs anything. passEndsBattlePhase
+    // (ui/battle.ts) derives that from the engine's own transition and is
+    // tested there.
+    if (s.priority !== null && passEndsBattlePhase(s, s.priority)
+      && castableTokenCount(s.priority) > 0) {
       ui.confirmPass = b;
       render();
       return;
@@ -4161,7 +4291,7 @@ function handleButton(btn: HTMLElement): void {
         abilityIndex: a.abilityIndex, ...(a.via ? { via: a.via } : {}) });
     }
   }
-  if (b === 'skipattack') { act({ type: 'declareAttack', seat: s.battle!.attacker, columns: [] }); ui.columns = []; ui.carrying = null; ui.spellTokens = []; }
+  if (b === 'skipattack') { act({ type: 'declareAttack', seat: s.battle!.attacker, columns: [] }); ui.columns = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false; }
   if (b === 'attackall') {
     // one click for the whole army: every eligible unit fronts its own
     // column (still adjustable before "Attack!"; playtest: 100 token clicks)
@@ -4176,20 +4306,71 @@ function handleButton(btn: HTMLElement): void {
     }
     ui.carrying = null;
   }
-  if (b === 'confirmattack') {
+  /** [69] send the attack that has been built, riders and all */
+  const declareBuiltAttack = (): void => {
+    if (!s.battle || s.battle.step !== 'declare') return;   // the window moved
     const cols = ui.columns.filter(c => c.length);
     act({ type: 'declareAttack', seat: s.battle!.attacker, columns: cols, spellTokens: ui.spellTokens.slice() });
-    if (!uiError) { ui.columns = []; ui.carrying = null; ui.spellTokens = []; }
+    if (!uiError) { ui.columns = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false; }
+  };
+  if (b === 'confirmattack') {
+    // [69] the last thing between the formation and the declaration: if tokens
+    // COULD ride along and none were picked, ask once. shouldAskRide
+    // (ui/battle.ts) is the judgement — it says no when there are no tokens (so
+    // this is never modal noise) and no once the question has been answered for
+    // this attack (so Attack! is not a two-click button from then on).
+    const atk = s.battle!.attacker;
+    if (shouldAskRide(s, atk, ui.spellTokens, ui.rideAnswered)) {
+      ui.confirmRide = atk; render(); return;
+    }
+    declareBuiltAttack();
   }
-  if (b === 'confirmblocks') {
+  /** [67] send the block declaration that has been built, riders and all */
+  const declareBuiltBlocks = (): void => {
+    if (!s.battle || s.battle.step !== 'blocks') return;   // the window moved
     const blocks = blockPlan();
     // R84: the bar disables the button, and Enter honours `disabled` — this is
     // the belt to that braces, so no path can send a declaration the engine has
     // already told us it will refuse.
     const duty = blockPlanIssue(s, s.battle!.defender, blocks);
     if (duty) { uiError = duty; render(); return; }
-    act({ type: 'declareBlocks', seat: s.battle!.defender, blocks, send: ui.send });
-    if (!uiError) { ui.columns = []; ui.send = []; ui.carrying = null; ui.spellTokens = []; }
+    // R87: one list on the board, two fields in the action. splitCounterattack
+    // (ui/battle.ts) is the only place that split is made, so the log line and
+    // the reachability ledger see the tokens the player actually picked.
+    const { send, spellTokens } = splitCounterattack(s, ui.send);
+    act({ type: 'declareBlocks', seat: s.battle!.defender, blocks, send, spellTokens });
+    if (!uiError) {
+      ui.columns = []; ui.send = []; ui.carrying = null; ui.spellTokens = [];
+      ui.rideAnswered = false;
+    }
+  };
+  // "Bring none" is the explicit answer the report asked for — it must be a
+  // CHOICE the player makes, not the silent default that produced ten
+  // token-less attacks in GETD. On the block side "none" means dropping the
+  // tokens back out of the send list, leaving the counterattackers behind.
+  const blocking = s.battle?.step === 'blocks';
+  if (b === 'ridenone') {
+    ui.rideAnswered = true; ui.confirmRide = null;
+    if (blocking) {
+      ui.send = splitCounterattack(s, ui.send).send;
+      declareBuiltBlocks();
+    } else { ui.spellTokens = []; declareBuiltAttack(); }
+  }
+  if (b === 'rideconfirm') {
+    ui.rideAnswered = true; ui.confirmRide = null;
+    if (blocking) declareBuiltBlocks(); else declareBuiltAttack();
+  }
+  if (b === 'ridecancel') ui.confirmRide = null;   // back to building, unanswered
+  if (b === 'confirmblocks') {
+    // [67] the counterattack's own ride question, gated by shouldAskSend —
+    // which stays silent when there are no tokens, when the player has already
+    // picked some, and (the rule, not politeness) when no UNIT is being sent,
+    // because "they always need a unit to take them with them".
+    const def = s.battle!.defender;
+    if (shouldAskSend(s, def, ui.send, ui.rideAnswered)) {
+      ui.confirmRide = def; render(); return;
+    }
+    declareBuiltBlocks();
   }
   if (b === 'draftcommit' && ui.draftPack) {
     act({ type: 'draftCommit', seat: Number(btn.dataset['p']) as Seat, packIndices: ui.draftPack.slice() });
@@ -4247,7 +4428,8 @@ function handleButton(btn: HTMLElement): void {
   }
   if (b === 'modcancel') ui.modding = null;
   if (b === 'castcancel') startCastCancel();
-  if (b === 'clearform') { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null; }
+  // [69] a cleared formation is a new attack — the ride question comes back
+  if (b === 'clearform') { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null; ui.rideAnswered = false; }
   if (b === 'reportopen') reportOpen = true;
   if (b === 'reportclose') reportOpen = false;
   if (b === 'reportsend') { sendReport(); return; }
@@ -4283,17 +4465,28 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     const opts = legalFor(p).filter(a =>
       (a.type === 'activateResource' && a.index === i) ||
       (a.type === 'exchangePrismite' && a.index === i));
-    if (opts.length === 1) act(opts[0]!);
-    else if (opts.length > 1) {
-      ui.menu = {
-        x: e.clientX, y: e.clientY,
-        items: opts.map(a => ({
-          label: a.type === 'activateResource' ? 'Activate' : `Exchange → ${(a as { element: string }).element}`,
-          icon: a.type === 'exchangePrismite' ? (a as { element: string }).element : undefined,
-          go: () => { act(a); render(); },
-        })),
-      };
-    }
+    // #63: the exchange list DEFAULTS to your deck's elements, with the rest
+    // behind an expander. prismiteClickPlan (ui/inspect.ts) owns the judgement
+    // — including the auto-fire, which counts LEGAL actions and never the
+    // filtered display: an active prismite offers seven exchanges and no
+    // activate, so a mono-element deck counting the short list would have its
+    // prismite silently spent with no menu at all.
+    const openRes = (expanded: boolean): void => {
+      const plan = prismiteClickPlan(s, p, opts, expanded);
+      if (plan.kind === 'none') return;
+      if (plan.kind === 'auto') { act(plan.action); return; }
+      const items: MenuItem[] = plan.actions.map(a => ({
+        label: a.type === 'activateResource' ? 'Activate' : `Exchange → ${(a as { element: string }).element}`,
+        icon: a.type === 'exchangePrismite' ? (a as { element: string }).element : undefined,
+        go: () => { act(a); render(); },
+      }));
+      if (plan.hidden) items.push({
+        label: `more elements… (${plan.hidden})`,
+        go: () => { openRes(true); render(); },
+      });
+      ui.menu = { x: e.clientX, y: e.clientY, items };
+    };
+    openRes(false);
   }
 
   if (kind === 'player') {
@@ -4320,6 +4513,17 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
 
   if (kind === 'token') {
     const tok = s.entities[Number(t.dataset['id'])];
+    // R89: a mod in flight lands on a glowing spell token exactly as it lands
+    // on a glowing unit. Checked FIRST and against modHostCache.tokens — the
+    // engine's own offer — so a token that is not a legal host takes no click,
+    // and a placement in progress is never mistaken for "cast this token".
+    if (tok && ui.modding && (modHostCache.tokens?.has(tok.id) ?? false)) {
+      const m = ui.modding;
+      ui.modding = null;
+      applyMod(m, { unit: tok.id }, e);
+      render();
+      return;
+    }
     if (tok && (!NET || tok.controller === NET.seat)) {
       // C1: during formation building a click toggles ride-along / send
       const mode = tokenToggleMode(tok);
@@ -4456,15 +4660,24 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
   // during an open draft step the hand is drafted from the panel, not recycled
   if (s.mode === 'draft' && s.draftDone && !s.draftDone[p]) return;
   if (s.phase === 'planning' && !s.planningDone[p]) {
-    ui.menu = {
-      x: e.clientX, y: e.clientY,
-      // only the elements actually in this game (a fwe draft offers no wood/metal)
-      items: s.elements.map(el => ({
+    // only the elements actually in this game (a fwe draft offers no wood/metal),
+    // and in constructed only the ones in YOUR deck (#63) — with every one of
+    // the seven still one click away, because an off-element resource is a real
+    // play (Reap the Due is mono-light and scales off DARK affinity).
+    const openRecycle = (expanded: boolean): void => {
+      const { show, hidden } = resourceMenuElements(s, p, s.elements, expanded);
+      const items: MenuItem[] = show.map(el => ({
         label: `Recycle → ${el} resource`,
         icon: el,
         go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: el }); render(); },
-      })),
+      }));
+      if (hidden.length) items.push({
+        label: `more elements… (${hidden.length})`,
+        go: () => { openRecycle(true); render(); },
+      });
+      ui.menu = { x: e.clientX, y: e.clientY, items };
     };
+    openRecycle(false);
     render();
     return;
   }
@@ -4587,7 +4800,7 @@ function modMenuItems(p: Seat, from: ModZone, i: number, name: string, mods: Act
     // R79: name the hosts the engine is actually offering — a virus in a
     // battle window can go onto a spell on the stack, and an entry that says
     // "a unit" is how that ruling stayed invisible.
-    const what = modHostPhrase(modHosts(mods, { from, index: i, mode: 'augment' }));
+    const what = modHostPhrase(modHosts(mods, { from, index: i, mode: 'augment' }, h.state));
     items.push({ label: `Augment a ${what} with ${name}${sfx}`, go: start('augment') });
   }
   if (mods.some(a => a.type === 'graft')) items.push({ label: `Graft ${name} under a unit${sfx}`, go: start('graft') });
@@ -4690,6 +4903,10 @@ document.addEventListener('keydown', e => {
  * presence in the DOM ⇒ the action is legal right now (render() guarantees) */
 const ENTER_BTNS = [
   '[data-btn="revealdone"]', '[data-btn="passconfirm"]', '[data-btn="doneplanconfirm"]',
+  // [69] "Bring none" is deliberately NOT here: Enter is how the token-less
+  // attack got sent ten times in GETD, and the whole point of this bar is that
+  // declining is a choice somebody makes, not a key they were already holding.
+  '[data-btn="rideconfirm"]',
   '[data-btn="confirmattack"]', '[data-btn="confirmblocks"]', '[data-btn="draftcommit"]',
   '[data-btn="bottomcommit"]',
   '[data-btn="donedeploy"]', '[data-btn="doneplan"]', '[data-btn="donehaste"]',
@@ -4716,8 +4933,9 @@ document.addEventListener('keydown', e => {
     if (cacheView !== null) { cacheView = null; render(); return; }
     if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); render(); return; }
     if (inField) return;
-    // the four "are you sure?" bars — Esc is their "Go back" (the doneplan
-    // one even advertises it on the button)
+    // the five "are you sure?" bars — Esc is their "Go back" (the doneplan and
+    // the [69] ride-along ones even advertise it on the button)
+    if (ui.confirmRide !== null) { ui.confirmRide = null; render(); return; }
     if (ui.confirmDone !== null) { ui.confirmDone = null; render(); return; }
     if (ui.confirmPass !== null) { ui.confirmPass = null; render(); return; }
     if (ui.confirmDeploy !== null) { ui.confirmDeploy = null; render(); return; }
@@ -4726,7 +4944,7 @@ document.addEventListener('keydown', e => {
     if (canCancelNow()) { startCastCancel(); render(); return; }
     if (ui.carrying !== null) { ui.carrying = null; render(); return; }
     if (ui.columns.some(c => c && c.length) || ui.send.length || ui.spellTokens.length) {
-      ui.columns = []; ui.send = []; ui.spellTokens = []; render(); return;
+      ui.columns = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; render(); return;
     }
     return;
   }

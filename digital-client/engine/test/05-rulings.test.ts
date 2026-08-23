@@ -5,11 +5,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { registerSynthetic } from '../src/cards/dsl.ts';
+import { getCard, registerSynthetic } from '../src/cards/dsl.ts';
 import {
-  ent, finishBattle, give, giveResources, pass, pick, spawn,
+  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick, spawn,
   toDeployment, toNextBattle,
 } from './util.ts';
+import type { Seat } from '../src/types.ts';
 
 test('R1: trigger conditions check at event time; amounts compute at resolution', () => {
   const h = new Harness(101);
@@ -244,9 +245,89 @@ test('R9: once-per-turn budgets are per card and survive control change', () => 
   assert.equal(h.state.decision, null, 'stolen RC did not re-trigger: spent budget travelled with the card');
 });
 
-test('R10: Unaware — no Unaware card in the M1 pool; layer-6 seam only', { todo: true }, () => {
-  // effStats() has the layer seam; encode this ruling when the first Unaware
-  // card is scripted (M3 burn-down).
+/*
+ * R10 IS NO LONGER A THEORETICAL RULING. This slot used to hold one
+ * `{todo:true}` whose title read "no Unaware card in the M1 pool", and that
+ * stopped being true the day the Light & Dark expansion shipped: Bubb,
+ * Trashling and Haboob all print {Unaware} on the type line TODAY, and are in
+ * the pool, and get drafted. The todo's title was quietly telling every reader
+ * there was nothing to test here.
+ *
+ * There is. The attribute arrives — printed data carries it, the augment
+ * donates it, the UI shows it — and then `effStats()` ignores it: the method
+ * ends on the literal placeholder `// layer 5 (Inverted), 6 (Unaware) go
+ * here`. Carrying an attribute nothing reads is indistinguishable from a
+ * blank, which is exactly the shape that hid Harbinger, and it is why
+ * card-ledger.ts lists all three as dead-or-partial `deadAttr: 'Unaware'`
+ * entries.
+ *
+ * So this is now TWO tests: a real one that exercises the attribute end to end
+ * and pins where the truth stops, and a todo that keeps the still-unbuilt half
+ * — layer 6 itself — named. The real test is the guard; the todo is the entry
+ * card-ledger.ts's staleness check reads, and it is kept honest by having the
+ * real test standing next to it.
+ */
+test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob — and stat layer 6 still ignores it', () => {
+  // 1. the printed data. Three cards, one attribute — if a data refresh ever
+  //    drops it, this is the first thing that notices.
+  for (const name of ['Bubb', 'Trashling', 'Haboob']) {
+    assert.ok(getCard(name).attrs.includes('Unaware'),
+      `${name} prints {Unaware} on its type line`);
+  }
+
+  const h = new Harness(110);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+
+  // 2. it reaches a unit in play, and the "[Augment] {Unaware}" half donates
+  //    it to a host. Both paths work; both lead nowhere.
+  const bubb = spawn(h, A, 'Bubb');                       // 5/6
+  assert.ok(ownAttrs(h, bubb).has('Unaware'), 'a played Bubb has {Unaware}');
+  const host = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'earth', 4);                        // Bubb: e/4
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Bubb'), hostId: host });
+  assert.ok(ownAttrs(h, host).has('Unaware'),
+    'and the [Augment] half donates {Unaware} to the host (printed.augmentAttrs)');
+
+  // 3. THE DIVERGENCE, exercised end to end rather than asserted about.
+  //    Haboob is an {Unaware} spell: "I deal 1 damage to each unit." Caleb, in
+  //    rules-questions, is explicit about what {Unaware} means for it —
+  //      "Unaware is last 'stat modifier applied' and any Unaware units (or
+  //       Spells like Haboob) will only look at BASE STAT PRINTED on cards"
+  //    — so a 1/1 token pumped to 3/3 is, to Haboob, still a 1/1, and 1 damage
+  //    kills it. R10 says the same thing from the other side: "everything
+  //    counts as interacting", and the two mutually ignore stat changes.
+  const pumped = spawn(h, A, 'Unit Token');               // 1/1
+  ent(h, pumped)!.counters = 2;                           // → 3/3
+  assert.deepEqual(effStats(h, pumped), [3, 3], 'pumped to 3/3 the ordinary way');
+  giveResources(h, D, 'earth', 4);                        // Haboob: ee/4
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[pumped]] });
+  while (h.state.priority !== D) pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Haboob') });
+  pass(h); pass(h);                                       // resolve Haboob
+
+  // ⚠ THIS IS THE WRONG ANSWER, PINNED ON PURPOSE. Under R10 the token is
+  // dead: Haboob reads its BASE 1 toughness and deals it 1. The engine reads
+  // the effective 3 instead, because layer 6 does not exist, so the token
+  // walks away with a scratch. Nothing else in the repo would go red if
+  // somebody deleted the {Unaware} plumbing tomorrow, and nothing at all
+  // would go red when layer 6 finally lands — this assertion does both. When
+  // you implement layer 6, this line fails, and the fix is to change it to
+  // `assert.ok(!ent(h, pumped), 'Haboob read the printed 1 toughness')` and
+  // delete the todo below.
+  assert.ok(ent(h, pumped), 'layer 6 is unimplemented: the pumped token survives Haboob');
+  assert.equal(ent(h, pumped)!.damage, 1, 'it took the 1 damage, just not lethally');
+  finishBattle(h);
+});
+
+test('R10: Unaware — stat layer 6 itself (mutually ignoring stat changes at every interaction)', { todo: true }, () => {
+  // The half above pins the CURRENT behaviour; this is the one that is still
+  // to build. effStats() ends on "// layer 5 (Inverted), 6 (Unaware) go here"
+  // and R10's scope is wide — fight, blocking, being blocked, dealing or
+  // receiving combat damage, targeting, all of it — so it is a pairwise
+  // "as seen by" question at every interaction site, not a term to add to a
+  // sum. card-ledger.ts's Bubb / Trashling / Haboob entries point here.
 });
 
 test('R11: regroup runs its exact sequence (return → damage → temp → formation, tokens erased)', () => {

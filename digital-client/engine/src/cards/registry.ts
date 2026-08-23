@@ -9,7 +9,7 @@
  */
 import type { EngineEvent, Entity, Seat } from '../types.ts';
 import {
-  allCardNames, card, getCard, registerAlias, registerSynthetic,
+  allCardNames, card, getCard, registerAlias, registerSynthetic, unitRestrict,
   type EffectCtx, type EffectDef,
 } from './dsl.ts';
 import { isEnt, selfOf } from './sets/helpers.ts';
@@ -377,6 +377,235 @@ registerSynthetic({
   virus: false, burst: false, augmentAttrs: [], text: '',
   image: 'Generic-Unit.jpg',   // the box's generic-unit token card
 }, {});
+
+// R101 — "Beyond, Codex Incarnate", the TRANSFORM BACK FACE of Scholar of the
+// Void. Playtest ledger #24 (ZQPC, 2026-08-20) sat blocked for two days on the
+// plain fact that this card existed in NO data we hold: not the 534-card
+// oracle file (which names it only inside Scholar's own text), not the corpus,
+// not the rulings export. The owner supplied the face on 2026-08-22 and it is
+// transcribed here from the card image:
+//
+//   "Beyond, Codex Incarnate — cost 0, 8/3, Book Token Unit
+//    If you would take damage from rot, put that many -1/-1 counters on target
+//    unit instead.
+//    Your units are {g}inverted. {i}(Reverse their stat changes.)"
+//
+// WHY registerSynthetic AND NOT printed.json. printed.json is REGENERATED from
+// scripts/pool.mjs over the oracle file; a hand-added row there is silently
+// dropped on the next regeneration, which is exactly the kind of quiet lie the
+// card ledger exists to stop. This card is not in the oracle pool — the owner:
+// "can't be played cause it's on the back of a card" — so it is a synthetic,
+// beside the Unit Token above.
+//
+// The FIELDS, each a decision rather than a copy:
+//  · `kind: 'unit'`     — what stands in play after the transform is a unit
+//    body. (Not 'spellToken': it has stats, it blocks, it dies.)
+//  · `cost: ''`, `mana: 0` — the face prints a bare 0 with no affinity pip.
+//  · NO `factions`. Scholar is dd/dark and it is tempting to inherit that, but
+//    factions are read OFF THE COST PIPS and this face prints none. Nothing
+//    mechanical consumes the field for this card either — it is never in a
+//    deck (DECK_LIST), never drafted (draftDeckList filters DECK_LIST), never
+//    paid for, and no UI code reads `factions` at all. Inventing a pip to make
+//    the client tint it purple would be inventing printed data. Left absent,
+//    like the Unit Token's.
+//  · `timing: 'deploy'` — INERT. `timing` says when a card may be PLAYED and
+//    this one is never played; 'deploy' is the neutral value the other
+//    synthetic uses. It is deliberately NOT Scholar's 'haste': the thing that
+//    transforms is already in play, so haste has nothing to time.
+//  · `type: 'Book Token Unit'` — transcribed verbatim, and MECHANICALLY
+//    LOAD-BEARING in two places that both come free from the word "Token":
+//    DECK_LIST's `!/Token/.test(c.type)` filter keeps it out of every deck,
+//    every draft pool and the card browser; and ui/inspect's `tokenOnlyName`
+//    identifies it as a token in the erased pile by the same type line.
+//    (The ENTITY-level consequence — a token that dies is erased rather than
+//    binned — rides on `Entity.token`, which the transform sets; see
+//    batch-dark-c.ts's Scholar for why.)
+registerSynthetic({
+  name: 'Beyond, Codex Incarnate', cost: '', mana: 0, power: 8, toughness: 3,
+  type: 'Book Token Unit', kind: 'unit', timing: 'deploy', attrs: [],
+  virus: false, burst: false, augmentAttrs: [],
+  text: 'If you would take damage from rot, put that many -1/-1 counters on target unit '
+    + 'instead. Your units are {g}inverted. {i}(Reverse their stat changes.)',
+  image: 'Beyond-Codex-Incarnate.jpg',
+}, {
+  // ── "Your units are {g}inverted." ───────────────────────────────────
+  //
+  // Implementable as of R93, which shipped {Inverted} as stat layer 5
+  // ("p = 2·baseP − p" — negate the accumulated delta from base). Before that
+  // this clause had nowhere to land; now it is a plain attribute grant and
+  // needs no new machinery at all.
+  //
+  // Region scoping (R12) is FREE and is not written here on purpose:
+  // `E.staticsFor` already filters the anchored() walk to
+  // `anchor.region === target.region`, so "your units" can never reach a unit
+  // in another region. Ownership is the half that lives on the card, which is
+  // the division StaticMod's docstring describes.
+  //
+  // The `target.kind === 'unit'` guard is not decoration: `staticsFor` is also
+  // asked about SPELL TOKENS (E.spellTokenSurvivesRegroup), and "your units"
+  // does not mean your Fireballs. StaticMod's own docstring flags exactly this
+  // trap.
+  //
+  // Beyond is one of "your units", so it grants {Inverted} to ITSELF. That is
+  // correct and harmless as printed: an 8/3 with no modifiers inverts to an
+  // 8/3, because layer 5 negates the DELTA from base and the delta is zero.
+  statics: [{
+    affects: (_g, self, target) => target.kind === 'unit' && target.controller === self.controller,
+    attrs: ['Inverted'],
+  }],
+  // ── "If you would take damage from rot, put that many -1/-1 counters on
+  //    TARGET unit instead." ───────────────────────────────────────────
+  //
+  // LIVE as of R102. It was PARKED in R101 behind a park note that concluded a
+  // brand-new `Suspension` variant was needed, because `replaceRotDamage` is
+  // `(g, self, seat, amount) => boolean` — no `EffectCtx`, no `ctx.choose` —
+  // and `E.rotDamage()` is called straight out of `startDeployment()` with
+  // nothing on the stack. Every word of that is still true. What the note got
+  // wrong was the conclusion.
+  //
+  // THE OWNER RULED, 2026-08-22, verbatim:
+  //   "In Deployment, you're in your own region, alone. So you can only target
+  //    your own units. It would trigger, ask you what you want to target, then
+  //    put the -1/-1 counters on during deployment (which still has and uses a
+  //    stack). But since Beyond gives all your units inverted, no one would die
+  //    of course."
+  //
+  // "It would TRIGGER" is the whole design. The replacement does not have to
+  // finish inside the hook: it puts a TRIGGERED EFFECT on the stack, and the
+  // R67 machinery that already exists does the asking — fireEvent →
+  // queueTrigger → processTriggerQueue → collectTargets → commitItem. The one
+  // piece that was missing is the event to hang the trigger on, so R102 adds
+  // it: `E.replaceRotDamage` fires 'rotReplaced' the moment a hook returns
+  // true, inside rotDamage()'s own settle() window. No new Suspension variant,
+  // no new decision seam, no engine special-casing of this card.
+  //
+  // The three rejected shortcuts in R101's note (hardcode "me", auto-pick the
+  // forced candidate, pick a deterministic enemy) stay rejected — the printed
+  // word is "target", which is the game's word for "you choose", and now it
+  // really does.
+  //
+  // THE PIECES, each a decision:
+  //
+  //  · THE HOOK returns TRUE and does nothing else. The damage IS replaced
+  //    — that is what "instead" means — and it is replaced BEFORE anything is
+  //    queued, let alone resolved. So a queued effect that later fizzles for
+  //    want of a target does not resurrect the damage: nobody takes it either
+  //    way. That is the same direction R98 settled for combat ("a REPLACED hit
+  //    still counts as dealt") and R86 for a fizzle, and it is the only
+  //    ordering the hook's boolean signature can express.
+  //
+  //  · THE CHOOSER is Beyond's controller, for free: `queueTrigger` sets the
+  //    pending trigger's `controller` from the host entity, and the host is
+  //    Beyond. In deployment that is also the player who would have taken the
+  //    rot — `E.replaceRotDamage` only asks hooks whose anchor
+  //    `a.controller === seat` — so the two readings coincide, exactly as the
+  //    owner said.
+  //
+  //  · THE TARGET is `what: 'unit'` with an R64 `restrict` narrowing it to the
+  //    controller's own units, and NOT `what: 'allyUnit'`. Both express the
+  //    ruling; the restrict is the one that can be printed. The card says
+  //    "target unit", and test/68-target-conformance's "every target kind a
+  //    card declares is named by its printed text" reads the phrase the way a
+  //    player does: 'allyUnit' is the kind for text that prints "target ally",
+  //    and this text does not. So the KIND stays the kind the card names and
+  //    the owner's ruling lands where R64 put restrictions — in the predicate
+  //    that decides which candidates are legal. It is a real rule and not an
+  //    accident of the board: the region-scoped candidate list (R12) would
+  //    happen to hold only your units during deployment, and relying on that
+  //    would be relying on a coincidence.
+  //
+  //  · NO LEGAL TARGET cannot actually happen, and is handled anyway. R67
+  //    says a mandatory target with no candidate makes a CAST illegal, but
+  //    this is not a cast — the trigger is already firing, so `collectTargets`
+  //    takes the other branch it has always had: it logs "there is no legal
+  //    target for that — it does nothing" and the part is skipped (R86). It is
+  //    unreachable because the hook radiates from a UNIT IN PLAY that the
+  //    damaged seat controls, so Beyond itself is always a legal candidate for
+  //    its own replacement.
+  //
+  //  · BOTH SIDES: rot is per-seat and `E.rotDamage()` walks initiative then
+  //    NIT, so two Beyonds (one each) each fire their own 'rotReplaced' with
+  //    their own anchor and queue their own trigger under their own
+  //    controller. Ordering is `processTriggerQueue`'s existing determinism,
+  //    and within one seat `E.replaceRotDamage` already sorts holders by
+  //    entity id (R62 precedent).
+  //
+  // And the owner's closing observation is a real consequence, not a joke:
+  // Beyond grants {Inverted} to your units (the clause above), and R93's layer
+  // 5 negates the accumulated delta from base — so a -1/-1 counter on one of
+  // YOUR units reads as +1/+1. Your own rot makes your board BIGGER.
+  abilities: [{
+    type: 'triggered', events: ['rotReplaced'], self: true,
+    label: 'put that many -1/-1 counters on target unit',
+    effect: {
+      // R64: the printed kind, with the owner's ruling as the restriction.
+      // `ctx.ally` is the effect's controller — Beyond's controller.
+      targets: {
+        what: 'unit',
+        prompt: 'Beyond, Codex Incarnate: put that many -1/-1 counters on target unit',
+        restrict: unitRestrict((_g, u, ctx) => u.controller === ctx.ally),
+      },
+      run: (g, ctx) => {
+        // R1: the AMOUNT is the rot that was actually replaced, read off the
+        // event snapshot rather than recomputed — `E.rot(seat)` at resolution
+        // would be the same number today and a lie the first time anything
+        // changes rot in between.
+        const n = (ctx.event?.data?.['n'] as number | undefined) ?? 0;
+        const t = ctx.targets[0];
+        if (!t || !isEnt(t) || !g.entity(t.id)) {
+          g.ev('info', 'Beyond, Codex Incarnate: the target is gone — no counters. '
+            + 'The rot damage was replaced all the same, so nobody takes it.');
+          return;
+        }
+        if (n <= 0) {
+          g.ev('info', 'Beyond, Codex Incarnate: there was no rot damage to replace — no counters.');
+          return;
+        }
+        g.addCounters(t, -n);
+      },
+    },
+  }],
+  // The hook itself: consume the damage and say nothing. `E.replaceRotDamage`
+  // writes the log line and fires 'rotReplaced', which is what the ability
+  // above listens for — duplicating either here would double-log a single
+  // replacement.
+  replaceRotDamage: () => true,
+});
+
+/**
+ * R101 — the transform table: printed card → the face on its back.
+ *
+ * DECLARATIVE, and in the registry rather than in either consumer, for the
+ * same reason `EffectDef.creates` is declarative (R69): the inspector used to
+ * scrape printed text for a card NAME and that was wrong three ways at once.
+ * Scholar's text does name "Beyond, Codex Incarnate" in a scannable sentence,
+ * so the scrape would even work today — and it would break the first time a
+ * transform is GRANTED, or worded "transform me into my back face", or names
+ * a card whose name is a substring of another. One declaration, two readers:
+ * `batch-dark-c.ts` (the transform itself) and `ui/inspect.ts` (the row the
+ * owner asked for).
+ *
+ * ONE-DIRECTIONAL on purpose. Beyond is not listed as transforming back into
+ * Scholar: nothing on either face prints that, and a transformed unit that
+ * silently flipped back would be an invented rule (see batch-dark-c.ts).
+ *
+ * Keyed and valued by registered card name; `71-card-ledger.test.ts`-style
+ * resolution is not needed because `transformsInto` is only ever asked about a
+ * name that came off a live entity or the registry.
+ */
+const TRANSFORM_BACK_FACES: ReadonlyMap<string, string> = new Map([
+  ['Scholar of the Void', 'Beyond, Codex Incarnate'],
+]);
+
+/** The card `name` transforms into, or undefined if it has no back face. */
+export function transformsInto(name: string): string | undefined {
+  return TRANSFORM_BACK_FACES.get(name);
+}
+
+/** Every printed card that has a transform back face (for conformance sweeps). */
+export function transformingCardNames(): string[] {
+  return [...TRANSFORM_BACK_FACES.keys()];
+}
 
 // R71 — the Wraith token (retired name: "Wight"), REDESIGNED 2026-08-21. The
 // printed card is in the oracle pool like every other token card (Wisp,

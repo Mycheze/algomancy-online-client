@@ -83,9 +83,10 @@ import { rngNext } from '../src/rng.ts';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  blockPlanIssue, boardMenuEntries, castableTokens, modHostCount, modHosts,
+  blockPlanIssue, boardMenuEntries, castableTokens, modHostCount, modHostPhrase, modHosts,
   playableCachedNames, unitClickOptions,
 } from '../ui/inspect.ts';
+import { sendableTokens, shouldAskSend, splitCounterattack } from '../ui/battle.ts';
 import { dropIntoRow } from '../ui/formation.ts';
 import { give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 import type {
@@ -111,21 +112,43 @@ import type {
  * their product: what has to be true is "the client can send a `send` list",
  * not "the client can send a `send` list together with two blocks".
  */
-export function facetsOf(a: Action): string[] {
+/**
+ * R89: which KIND of thing an augment's `hostId` names.
+ *
+ * A spell token in play is an `Entity` exactly as a unit is, and the engine
+ * puts both in the same field — so this is the one facet that cannot be read
+ * off the action alone. Without the state (the sweep's `note` always has it)
+ * it degrades to `host-unit`, which is the pre-R89 answer.
+ */
+function hostKindOf(a: Extract<Action, { type: 'augment' }>, s?: GameState): string {
+  if (a.hostStack !== undefined) return 'host-stack';
+  if (a.hostId !== undefined && s?.entities[a.hostId]?.kind === 'spellToken') return 'host-token';
+  return 'host-unit';
+}
+
+export function facetsOf(a: Action, s?: GameState): string[] {
   switch (a.type) {
     case 'playCard': return [`playCard:${a.mode ?? 'plain'}`];
     case 'prophesy': return [`prophesy:${a.from}`];
     case 'graft': return [`graft:${a.from}`];
+    // R89: a spell TOKEN host arrives in `hostId`, the same field a unit host
+    // uses, so `host-unit` swallowed it whole and the new ruling passed this
+    // sweep in silence — the exact failure mode this file exists to prevent.
+    // The kind is not in the action, so the facet needs the state to see it.
     case 'augment':
-      return [`augment:${a.from}`, `augment:${a.hostStack !== undefined ? 'host-stack' : 'host-unit'}`];
+      return [`augment:${a.from}`, `augment:${hostKindOf(a, s)}`];
     case 'activateAbility':
       return [`activateAbility:${a.via === undefined ? 'own' : a.via === 'augment' ? 'augment' : 'mod'}`];
     case 'declareAttack':
       return [a.columns.length ? 'declareAttack:columns' : 'declareAttack:skip',
         ...(a.spellTokens?.length ? ['declareAttack:spellTokens'] : [])];
+    // R87: `spellTokens` is its own axis for the same reason `send` is — the
+    // client has to be able to put a token in that field, and folding it into
+    // `declareBlocks:send` let the whole rider pass this sweep unguarded.
     case 'declareBlocks':
       return [Object.keys(a.blocks).length ? 'declareBlocks:blocks' : 'declareBlocks:none',
-        ...(a.send?.length ? ['declareBlocks:send'] : [])];
+        ...(a.send?.length ? ['declareBlocks:send'] : []),
+        ...(a.spellTokens?.length ? ['declareBlocks:spellTokens'] : [])];
     case 'decide': return [`decide:${Array.isArray(a.choice) ? 'order' : 'one'}`];
     default: return [a.type];
   }
@@ -187,10 +210,14 @@ function sweepIssues(s: GameState, seat: Seat, legal: readonly Action[], where: 
     // mods: the glow behind a placement IS modHosts(), and a host that does
     // not glow takes no click (ui/main.ts routes the click through the cache)
     if (a.type === 'augment' || a.type === 'graft') {
-      const hosts = modHosts(legal, { from: a.from, index: a.index, mode: a.type });
-      const found = a.type === 'augment' && a.hostStack !== undefined
-        ? hosts.stack.has(a.hostStack)
-        : hosts.units.has((a as { hostId: EntityId }).hostId);
+      // R89: the state goes in, so a spell-token host is asked for by its own
+      // kind rather than being accepted as "a unit". A sweep that cannot tell
+      // them apart is a sweep the token host walks straight through.
+      const hosts = modHosts(legal, { from: a.from, index: a.index, mode: a.type }, s);
+      const kind = a.type === 'augment' ? hostKindOf(a, s) : 'host-unit';
+      const found = kind === 'host-stack' ? hosts.stack.has((a as { hostStack: number }).hostStack)
+        : kind === 'host-token' ? !!hosts.tokens?.has((a as { hostId: EntityId }).hostId)
+          : hosts.units.has((a as { hostId: EntityId }).hostId);
       if (!found) out.push(`${where}: modHosts() does not offer ${JSON.stringify(a)}`);
     }
     // activations: unitClickOptions IS the unit's click menu, and its label is
@@ -323,8 +350,48 @@ function orderingDecision(): Position {
   return { h, seat: dec!.seat };
 }
 
+/**
+ * R87, playtest report #67 (GETD): the block step of round 1, with a free
+ * counterattacker AND a spell token of the defender's standing in the
+ * contested region. `legalActions` offers the rider on top of each unit send,
+ * and no fuzz game reliably arrives here with a token in the right place.
+ */
+function counterattackRide(): Position {
+  const h = new Harness(7544);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'The Foretold');
+  spawn(h, D, 'The Foretold');                        // free to counterattack
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  // created where the defender stands, which is where a counterattack leaves
+  // from — the only place doDeclareBlocks will accept a rider from
+  new E(h.state).createSpellToken(D, 'Poison', 1, h.state.battle!.region);
+  pass(h); pass(h);
+  assert.equal(h.state.battle!.step, 'blocks', 'stopped at the block step');
+  return { h, seat: D };
+}
+
+/**
+ * R89: a deployment window with a spell TOKEN in the home region and an
+ * attribute-granting augment in hand. Spell tokens exist in the deployment
+ * phase only when something made one and regroup has not erased it yet, which
+ * a random game does not arrange.
+ */
+function tokenModHost(): Position {
+  const h = new Harness(7545);
+  toDeployment(h);
+  const seat = h.state.deployPlayer!;
+  const e = new E(h.state);
+  spawn(h, seat, 'Geode');                            // a unit host, for contrast
+  giveResources(h, seat, 'earth', 8);                 // Chitin Shredder, ee/2
+  e.createSpellToken(seat, 'Fireball', 3, e.homeRegion(seat));
+  give(h, seat, 'Chitin Shredder');                   // "[Augment] {Powerful} …"
+  return { h, seat };
+}
+
 const SCENARIOS: Record<string, () => Position> = {
-  virusWindow, ambushWindow, deployBench, orderingDecision,
+  virusWindow, ambushWindow, deployBench, orderingDecision, counterattackRide, tokenModHost,
 };
 
 const corpus = (() => {
@@ -336,7 +403,7 @@ const corpus = (() => {
   const note = (state: GameState, seat: Seat, legal: readonly Action[], where: string): void => {
     positions++;
     for (const a of legal) {
-      for (const f of facetsOf(a)) {
+      for (const f of facetsOf(a, state)) {
         if (samples.has(f)) continue;
         samples.set(f, { facet: f, state: structuredClone(state), seat, action: a, where });
       }
@@ -406,17 +473,23 @@ type Evidence =
 const legalAt = (s: Sample): Action[] => legalActions(s.state, s.seat);
 
 /** the mod-placement helper check both augment and graft rows use */
-const modReach = (kind: 'augment' | 'graft', want: 'units' | 'stack') => (s: Sample): void => {
+const modReach = (kind: 'augment' | 'graft', want: 'units' | 'stack' | 'tokens') => (s: Sample): void => {
   const a = s.action as Extract<Action, { type: 'augment' | 'graft' }>;
-  const hosts = modHosts(legalAt(s), { from: a.from, index: a.index, mode: kind });
+  const hosts = modHosts(legalAt(s), { from: a.from, index: a.index, mode: kind }, s.state);
   assert.ok(modHostCount(hosts) > 0, `nothing glows for ${JSON.stringify(a)} (${s.where})`);
   const id = want === 'stack'
     ? (a as { hostStack?: number }).hostStack : (a as { hostId?: EntityId }).hostId;
   assert.ok(id !== undefined, 'the sample carries the host the facet is about');
-  assert.ok(hosts[want].has(id!), `modHosts().${want} does not include ${id} (${s.where})`);
+  assert.ok(hosts[want]?.has(id!), `modHosts().${want} does not include ${id} (${s.where})`);
   // …and the zone banner, which asks the same question before a card is picked
-  const zone = modHosts(legalAt(s), { from: a.from, mode: kind });
+  const zone = modHosts(legalAt(s), { from: a.from, mode: kind }, s.state);
   assert.ok(modHostCount(zone) > 0, `the ${a.from} banner offers no host at all (${s.where})`);
+  // R89: and it must NAME the kind. "a unit" over a spell token is how a
+  // ruling stays invisible while every test stays green.
+  if (want === 'tokens') {
+    assert.match(modHostPhrase(hosts), /spell token/,
+      `the bar calls a spell-token host "${modHostPhrase(hosts)}" (${s.where})`);
+  }
 };
 
 /**
@@ -436,6 +509,9 @@ const REACH: Record<string, Evidence> = {
     // the menu is built from `s.elements`, NOT from the legal list, so the two
     // can drift: a game whose element list is narrower than what the engine
     // offers has entries with no menu item. That is the real question here.
+    // R101/#63: `s.elements` now goes through resourceMenuElements, which only
+    // ever decides which of them to draw FIRST — every element it holds back is
+    // behind the "more elements…" expander, so this question is unchanged.
     check: s => {
       const offered = new Set(legalAt(s).filter(a => a.type === 'recycleForResource').map(a => a.element));
       const inMenu = new Set(s.state.elements);
@@ -447,7 +523,9 @@ const REACH: Record<string, Evidence> = {
       const a = s.action as Extract<Action, { type: 'recycleForResource' }>;
       assert.ok(a.handIndex < s.state.players[s.seat]!.hand.length, 'and there is a card to click');
     },
-    needs: [/items: s\.elements\.map/, /type: 'recycleForResource', seat: p, handIndex: i, element: el/],
+    needs: [/const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, expanded\);/,
+      /const items: MenuItem\[\] = show\.map\(el => \(\{/,
+      /type: 'recycleForResource', seat: p, handIndex: i, element: el/],
   },
   activateResource: {
     via: 'wiring', anchor: 'a dormant resource chip',
@@ -598,6 +676,19 @@ const REACH: Record<string, Evidence> = {
     needs: [/modHostCache\.stack\.has\(it\.id\)/, /modHostCache\.stack\.has\(id\)/,
       /applyMod\(m, \{ stack: id \}, e\)/, /hostStack: host\.stack/],
   },
+  'augment:host-token': {
+    via: 'helper', anchor: 'a glowing SPELL TOKEN in the region strip, during your deployment',
+    why: 'R89 — R79\'s missing half, and the same shape of exposure. Caleb 2025-03-06: "You can '
+      + 'augment spells during deployment but currently that would only be possible with spell '
+      + 'tokens." The engine names the token in `hostId`, exactly as it names a unit, so this '
+      + 'facet used to be indistinguishable from augment:host-unit and the ruling could have '
+      + 'shipped unreachable with this whole file green',
+    check: modReach('augment', 'tokens'),
+    needs: [/modHostCache\.tokens\?\.has\(t\.id\)/, /modHostCache\.tokens\?\.has\(tok\.id\)/,
+      /applyMod\(m, \{ unit: tok\.id \}, e\)/, /modHosts\(m \? legalFor\(m\.seat\) : \[\], m, h\.state\)/,
+      // "you can only do this with attributes" — said before the card is spent
+      /spellAugmentNote\(card\)/],
+  },
   'graft:hand': {
     via: 'helper', anchor: 'a hand card → "Graft …" → a glowing host → a slot in its mod stack',
     why: 'the position menu is the second click; position 0 goes straight in when it is the only one',
@@ -662,7 +753,19 @@ const REACH: Record<string, Evidence> = {
   'declareBlocks:send': {
     via: 'wiring', anchor: 'the counterattack slot beside the line',
     why: 'the 1v1 battle rule: units that are not blocking may be sent out with the declaration',
-    needs: [/kind === 'sendslot' && ui\.carrying !== null/, /blocks, send: ui\.send/],
+    needs: [/kind === 'sendslot' && ui\.carrying !== null/,
+      /act\(\{ type: 'declareBlocks', seat: s\.battle!\.defender, blocks, send, spellTokens \}\)/],
+  },
+  'declareBlocks:spellTokens': {
+    via: 'helper', anchor: 'click your spell token (strip or chip), then Confirm',
+    why: 'R87, playtest report #67: "What happened to Rashi\'s Poison tokens here? She just '
+      + 'wanted to bring them with her attackers but they somehow went onto the stack." '
+      + '`declareBlocks` had no such field until R87, so the tokens had nowhere to go; folding '
+      + 'this into declareBlocks:send would have let the new field ship unreachable too',
+    check: counterattackRideReach,
+    needs: [/if \(shouldAskSend\(s, def, ui\.send, ui\.rideAnswered\)\) \{/,
+      /const \{ send, spellTokens \} = splitCounterattack\(s, ui\.send\);/,
+      /sendableTokens\(s, ui\.confirmRide\)/],
   },
   passPriority: {
     via: 'wiring', anchor: 'the Pass button (or the space bar)',
@@ -720,6 +823,34 @@ function activationReach(s: Sample): void {
   assert.notEqual(hit!.label, '?',
     `${u!.card}'s ability is offered with no name — two abilities on one card would be `
     + 'indistinguishable in the menu');
+}
+
+/**
+ * R87: the rider the counterattack carries, from the client's own two helpers.
+ *
+ * The board holds ONE list (`ui.send` — everything dropped in the counterattack
+ * slot or clicked in the strip) and the action has two fields, so both halves
+ * have to hold: `sendableTokens` must offer every token the engine will accept,
+ * and `splitCounterattack` must put each id back in the field it came from.
+ */
+function counterattackRideReach(s: Sample): void {
+  const a = s.action as Extract<Action, { type: 'declareBlocks' }>;
+  const listed = sendableTokens(s.state, s.seat);
+  for (const id of a.spellTokens ?? []) {
+    assert.ok(listed.includes(id),
+      `sendableTokens() does not offer token ${id}, which declareBlocks accepts (${s.where})`);
+  }
+  const split = splitCounterattack(s.state, [...(a.send ?? []), ...(a.spellTokens ?? [])]);
+  assert.deepEqual(split.send, a.send ?? [], 'the units go back to `send`');
+  assert.deepEqual(split.spellTokens, a.spellTokens ?? [], 'and the tokens to `spellTokens`');
+  assert.ok(split.send.length,
+    '"they always need a unit to take them with them" — a token-only counterattack is refused');
+  // and the dialogue is offered for exactly this shape: a unit picked, tokens
+  // available, none taken
+  assert.equal(shouldAskSend(s.state, s.seat, split.send, false), true,
+    `the client would send this counterattack without ever mentioning the tokens (${s.where})`);
+  assert.equal(shouldAskSend(s.state, s.seat, [], false), false,
+    'and never asks about a block-only declaration, which cannot carry a token at all');
 }
 
 /**
@@ -921,4 +1052,67 @@ test('R84: the block bar and the Confirm button read the same plan, and both gat
     'the click handler checks again, so no path can send a refused declaration');
   assert.match(MAIN, /const blocks = blockPlan\(\);/,
     'and both read the SAME plan');
+});
+
+/* ── round 18: the wiring for #24, #63 and the haste bar, read as text ──── */
+
+test('the details page really renders the Transforms into row for the back face', () => {
+  // Ledger #24 (ZQPC, 2026-08-20): "Scholar of the Void doesn't say what the
+  // Beyond card it can transform into does". transformFaces (ui/inspect.ts) has
+  // been right about the DATA and is tested for real in test/50-ui-inspect; the
+  // report stays open until the inspector draws it, because the alternative way
+  // to find out what you become is discarding your entire hand.
+  assert.match(MAIN, /const transformRows = transformFaces\(name, u \? \{ e: q\(\), unit: u \} : undefined\)/,
+    'the row must be built, and with the LIVE entity — a Scholar that already '
+    + 'transformed, and a host merely wearing the mod, must show nothing');
+  assert.match(MAIN, /\.map\(tokenRowHtml\)\.join\(''\);\s*\n\s*\/\/ Ledger #24/,
+    'built with the same row builder the tokens use — it prints stats, type line '
+    + 'and rules text off a bare name, which is what "say what it does" means');
+  assert.match(MAIN, /\$\{transformRows \? `<h4>Transforms into<\/h4>\$\{transformRows\}` : ''\}/,
+    'and really placed in the overlay, beside the token rows');
+  assert.match(MAIN, /\btransformFaces\b[\s\S]*?\} from '\.\/inspect\.ts';/,
+    'imported from ui/inspect.ts rather than re-derived here');
+});
+
+test('both resource menus default to the deck elements through the one shared helper', () => {
+  // Ledger #63 (GETD, 2026-08-22). A PRESENTATION default: the engine still
+  // offers all seven and both menus keep all seven reachable.
+  assert.match(MAIN, /const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, expanded\);/,
+    'the recycle menu asks the helper');
+  assert.doesNotMatch(MAIN, /items: s\.elements\.map\(el => \(\{/,
+    'the old unfiltered recycle list must be gone');
+  assert.match(MAIN, /const plan = prismiteClickPlan\(s, p, opts, expanded\);/,
+    'and the prismite site goes through the plan, so both share one judgement');
+  // every element stays one click away, at BOTH sites
+  assert.equal((MAIN.match(/more elements…/g) ?? []).length, 2,
+    'an expander at the recycle menu and an expander at the prismite menu');
+  assert.match(MAIN, /go: \(\) => \{ openRecycle\(true\); render\(\); \}/,
+    'the recycle expander reopens with everything');
+  assert.match(MAIN, /go: \(\) => \{ openRes\(true\); render\(\); \}/,
+    'and so does the prismite one');
+});
+
+test('the prismite click never counts the shortened list when it decides to auto fire', () => {
+  // THE HAZARD, and it is silent: an active prismite offers seven exchanges and
+  // no activate, so a mono-element deck's display list is exactly one — and
+  // this handler has always acted immediately on a single option. The count
+  // belongs to prismiteClickPlan, over the LEGAL actions, before any filtering
+  // (test/50-ui-inspect proves it with a real mono-light constructed game).
+  assert.doesNotMatch(MAIN, /if \(opts\.length === 1\) act\(opts\[0\]!\);/,
+    'main.ts must not keep its own count beside a filtered list');
+  assert.doesNotMatch(MAIN, /if \(show\.length === 1\)|if \(plan\.actions\.length === 1\)/,
+    'and must never count the DISPLAY');
+  assert.match(MAIN, /if \(plan\.kind === 'auto'\) \{ act\(plan\.action\); return; \}/,
+    'the auto-fire arrives as a decision the helper made');
+});
+
+test('the haste bar no longer claims only printed haste cards may be played', () => {
+  // R97 (Dispatch Courier): "Each turn, you may play a unit during the mana
+  // step as if it had [Haste]" — so a card with no [Haste] symbol can be
+  // playable in the haste step because something granted it, and the status
+  // bar was telling the player otherwise.
+  assert.match(MAIN, /Play cards with haste, printed or granted \(they resolve immediately\)\./,
+    'the prompt must be true in both cases');
+  assert.doesNotMatch(MAIN, /Play haste cards \(they resolve immediately\)\./,
+    'the old incomplete copy must be gone');
 });

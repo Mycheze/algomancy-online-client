@@ -3,8 +3,9 @@
  *     waiting on
  *     (and only while both players are connected), stops on donePlanning,
  *     persists across a server restart
- *   - POST /api/report appends {ts, room, seat, note, actionIndex} to
- *     server/issues.jsonl (unknown room: actionIndex null)
+ *   - POST /api/report appends {ts, room, seat, note, actionIndex} to the
+ *     issues file (unknown room: actionIndex null). Pointed at a throwaway
+ *     path via ALGO_ISSUES_FILE — see SCRATCH below.
  *   - draft mode: the per-seat view carries packInfo {packNumber, originalSize,
  *     remaining, picksMade, picksTotal, after} while the draft step is open; `after`
  *     flips true on turn 2 (the pack in hand never returns to you)
@@ -15,7 +16,8 @@
 import { spawn } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import type { Action, Seat } from '../engine/src/types.ts';
 import { CLOCK_START_MS } from './rooms.ts';
 import { freePort, gameFile, mintRoom } from './test-util.ts';
@@ -26,7 +28,20 @@ const PORT = await freePort();
 // create a room (rooms.ts)
 let ROOM = '';
 let DROOM = '';
-const ISSUES = join(HERE, 'issues.jsonl');
+/* The report half of this test POSTS two bug reports, so it needs somewhere
+ * for them to land that is NOT server/issues.jsonl — that file is the only
+ * copy of every playtest report the owner has ever filed, and this suite runs
+ * on the deploy box. It used to read the real file into memory, let the server
+ * append to it and write the original back in the `finally`, which loses the
+ * lot if a run is killed in between (or if two runs overlap). main.ts honours
+ * ALGO_ISSUES_FILE now, exactly like ALGO_GAMES_DIR and ALGO_ACCOUNTS_FILE, so
+ * the server under test writes to a throwaway file and never opens the real
+ * one. Set on process.env before the server is spawned: startServer() passes
+ * `...process.env` through, so both the child and the assertions below read
+ * the same path. */
+const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-clock-'));
+const ISSUES = join(SCRATCH, 'issues.jsonl');
+process.env['ALGO_ISSUES_FILE'] = ISSUES;
 /** imported rather than restated: this test hardcoded 40:00 and silently
  * went red when rooms.ts moved to 60:00 */
 const START = CLOCK_START_MS;
@@ -142,9 +157,6 @@ async function advanceUntil(a: Client, b: Client, pred: (v: any) => boolean, lab
   if (done()) return;
   throw new Error(`advanceUntil(${label}): gave up after 120 rounds`);
 }
-
-// preserve any real issues.jsonl on this machine; restore it afterwards
-const issuesBackup = existsSync(ISSUES) ? readFileSync(ISSUES, 'utf8') : null;
 
 let { server, up } = startServer();
 await up;
@@ -306,7 +318,6 @@ try {
   server.kill();
   rmSync(gameFile(ROOM), { force: true });
   rmSync(gameFile(DROOM), { force: true });
-  if (issuesBackup === null) rmSync(ISSUES, { force: true });
-  else writeFileSync(ISSUES, issuesBackup);
+  rmSync(SCRATCH, { recursive: true, force: true });
 }
 process.exit(failures ? 1 : 0);

@@ -15,8 +15,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { getCard } from '../src/cards/dsl.ts';
+import { legalActions } from '../src/apply.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, offered, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle,
 } from './util.ts';
 
@@ -257,6 +258,75 @@ test('Graxxlid: [once][one] negates an effect targeting it; that controller draw
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: D, entityId: grax, abilityIndex: 0, via: 'augment' }),
     /already used/, '[once]: spent for the turn (R9)');
+  finishBattle(h);
+});
+
+/* Report #70 (GETD, 2026-08-22): "Graxxlid is lighting up like I can activate
+ * its ability despite there being no legal targets on the stack". The empty
+ * stack was already covered (58-playtest-round9); the reported case is the
+ * harder one — a stack with plenty on it, none of it aimed at Graxxlid. R64's
+ * `restrict` is what makes those two the same question. */
+test('Graxxlid (report #70): a stack item that does NOT target me is not a legal target, so the ability is not offered', () => {
+  const h = new Harness(1613);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const grax = spawn(h, D, 'Graxxlid');               // 2/3
+  giveResources(h, A, 'fire', 4);                     // two Channeled Boons, rr/2 each
+  giveResources(h, D, 'earth', 2);                    // [one], with one to spare
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
+  pick(h, { unit: atk });                             // aimed at A's OWN attacker
+  assert.equal(h.state.stack.length, 1, 'the stack is not empty…');
+  assert.ok(!legalActions(h.state, D).some(a =>
+    a.type === 'activateAbility' && a.entityId === grax),
+    '…but nothing on it targets Graxxlid, so the activation is not offered');
+  assert.throws(
+    () => h.do({ type: 'activateAbility', seat: D, entityId: grax, abilityIndex: 0, via: 'augment' }),
+    /nothing it can be used on/, 'and it is refused if asked for anyway');
+  // …and the moment something DOES aim at it, the same ability is on the menu
+  pass(h);                                            // priority → A
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
+  pick(h, { unit: grax });
+  assert.ok(legalActions(h.state, D).some(a =>
+    a.type === 'activateAbility' && a.entityId === grax),
+    'an effect targeting Graxxlid puts the activation back on the menu');
+  const boonAtGrax = h.state.stack[h.state.stack.length - 1]!.id;
+  h.do({ type: 'activateAbility', seat: D, entityId: grax, abilityIndex: 0, via: 'augment' });
+  assert.deepEqual(offered(h), [JSON.stringify({ stack: boonAtGrax })],
+    'and the menu offers exactly the one item aimed at me — not the other Boon');
+  pick(h, { stack: boonAtGrax });
+  finishBattle(h);
+});
+
+/* Caleb, rules-questions: "You can redirect a virus, it is a targeted effect",
+ * and to "so you could Graxxlid or Boon of Protection it as well?" — "Yep!
+ * They're fully interactible." A virus carries no target refs (apply.ts builds
+ * it with `parts: []` and a `hostId`), so the target-ref read alone missed it. */
+test('Graxxlid: a Virus being applied to me IS an effect targeting me', () => {
+  const h = new Harness(1614);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const grax = spawn(h, D, 'Graxxlid');               // 2/3
+  giveResources(h, A, 'earth', 2);                    // Crumbling Ancient, e/2 {Virus}
+  giveResources(h, D, 'earth', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const handA = h.state.players[A]!.hand.length;
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Crumbling Ancient'), hostId: grax });
+  const virus = h.state.stack[h.state.stack.length - 1]!.id;
+  assert.ok(legalActions(h.state, D).some(a =>
+    a.type === 'activateAbility' && a.entityId === grax),
+    'the virus aimed at Graxxlid is a legal target for it');
+  h.do({ type: 'activateAbility', seat: D, entityId: grax, abilityIndex: 0, via: 'augment' });
+  pick(h, { stack: virus });
+  pass(h); pass(h);                                   // Graxxlid resolves
+  assert.ok(!h.state.stack.some(i => i.id === virus), 'R68: the negated virus left the stack');
+  assert.equal(h.state.players[A]!.hand.length, handA + 1, "the virus's controller drew a card");
+  assert.ok(!ent(h, grax)!.mods.some(m => ent(h, m)?.card === 'Crumbling Ancient'),
+    'and {Vulnerable} never landed on Graxxlid');
   finishBattle(h);
 });
 

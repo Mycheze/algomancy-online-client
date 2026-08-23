@@ -5,7 +5,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { checkDeck, replay, legalActions, IllegalAction } from '../src/apply.ts';
+import { ALL_ELEMENTS, checkDeck, replay, legalActions, IllegalAction } from '../src/apply.ts';
+import { getCard } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 import type { CardName, Seat } from '../src/types.ts';
 
@@ -121,4 +122,51 @@ test('the other modes still create games without decks', () => {
   assert.equal(shared.state.players[0]!.hand.length, 7);
   const draft = new Harness(9, undefined, 'draft');
   assert.equal(draft.state.players[0]!.hand.length, 6);
+});
+
+// ── R99: deck element identity (playtest ledger #63) ──────────────────
+
+test('deckElements: constructed records each seat’s deck element identity', () => {
+  // Ledger #63 (GETD): "In constructed, the resource options from recycling
+  // and prismites should be limited just to the elements that are in your
+  // deck." This is the engine half — the field the client defaults its menu to.
+  const mono: CardName[] = DECK_LIST.filter(n => {
+    const f = getCard(n).factions ?? [];
+    return f.length === 1 && f[0] === 'light';
+  }).slice(0, 30);
+  assert.equal(mono.length, 30, 'enough mono-light cards to build a legal deck');
+  const h = new Harness(77, undefined, 'constructed', undefined, [mono, deckB()]);
+  assert.deepEqual(h.state.deckElements![0], ['light'], 'a mono-light deck is light and nothing else');
+  const b = h.state.deckElements![1]!;
+  assert.ok(b.length > 0, 'the other deck reports its own elements');
+  // canonical ALL_ELEMENTS order, so two identical decks give identical arrays
+  assert.deepEqual(b, ALL_ELEMENTS.filter(el => b.includes(el)), 'canonical element order');
+  const fromDeck = new Set(deckB().flatMap(n => getCard(n).factions ?? []));
+  assert.deepEqual(b, ALL_ELEMENTS.filter(el => fromDeck.has(el)), 'the union of the decklist’s factions');
+});
+
+test('deckElements: it is a PRESENTATION default — all seven stay legal', () => {
+  // The restraint is the point. Reap the Due is mono-light and scales off DARK
+  // affinity, so a mono-light deck must still be able to take a dark resource.
+  const mono: CardName[] = DECK_LIST.filter(n => {
+    const f = getCard(n).factions ?? [];
+    return f.length === 1 && f[0] === 'light';
+  }).slice(0, 30);
+  const h = new Harness(78, undefined, 'constructed', undefined, [mono, deckB()]);
+  bottomBoth(h);
+  const legal = legalActions(h.state, 0);
+  const offered = new Set(legal
+    .filter((a): a is Extract<typeof a, { type: 'recycleForResource' }> => a.type === 'recycleForResource')
+    .map(a => a.element));
+  assert.deepEqual([...offered].sort(), [...ALL_ELEMENTS].sort(),
+    'legalActions still offers every element — nothing legal became illegal');
+  h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'dark' });
+  assert.ok(h.state.players[0]!.resources.some(r => r.kind === 'dark'),
+    'and an off-element resource is really takeable');
+});
+
+test('deckElements: absent outside constructed — the client falls back to `elements`', () => {
+  assert.equal(new Harness(79).state.deckElements, undefined, 'shared');
+  assert.equal(new Harness(80, undefined, 'draft', ['fire', 'water', 'earth']).state.deckElements,
+    undefined, 'draft already narrows `elements` to its trio');
 });

@@ -8,8 +8,9 @@
  * statics (Life Power Dude), trash-triggered drain and burn (Murkstalker,
  * Splort, R40), counter/rot proliferation (Proliferating Slime), bin-fed
  * attribute theft (The Omniphage) and the two vanillas (Hammer of Justice,
- * Rime Wraith). Deferral Drone and Vengeance are still parked, but no longer
- * on "there is no cost-modification layer" (R59 shipped it) — their todos name
+ * Rime Wraith). Deferral Drone is LIVE (R59 CostMod + an Entity.budgets
+ * charge, un-parked 2026-08-22). Vengeance is still parked, but no longer
+ * on "there is no cost-modification layer" (R59 shipped it) — the todos name
  * what each is actually waiting on. Inexorable Miasma's bin half is live (R51).
  * States are built explicitly (give/spawn/giveResources/whiteBox) so parallel
  * card registration can't shift assertions. Seeds: 4500-4599.
@@ -335,36 +336,103 @@ test('Darkblast: R35 — with nothing else in hand the cost is unpayable and the
   finishBattle(h);
 });
 
-// ── Deferral Drone (PARKED) ──────────────────────────────────────────────
+// ── Deferral Drone (R59 CostMod + an Entity.budgets charge) ──────────────
+//
+// "[Augment][once] Gain 4 debt: The next card you play this turn costs [3]
+// less." Un-parked 2026-08-22: the charge is a `budgets` key (per-turn state,
+// wiped by E.startTurn) and it is spent by the spellPlayed / spawned events a
+// play already fires, both of which land AFTER payment.
 
-test('Deferral Drone: gain 4 debt → the next card you play this turn costs [3] less', { todo: true }, () => {
-  // PARKED — but the reason has MOVED. It used to be "the cost-modification
-  // layer does not exist"; R59's CostMod is that layer (Tranquility, The
-  // Silent and Stasis Sentry all ride it, and `costMods` is a first-class
-  // CardBehavior field).
-  //
-  // WAITING ON: a ONE-SHOT cost charge. CostMod is a continuous, stateless
-  // query — E.costModsFor asks every holder "what does this card cost right
-  // now" — and there is nowhere to record "…and stop after the next play".
-  // "The NEXT card you play this turn" needs a per-turn charge that a play
-  // consumes, i.e. state on the player (or the mod) plus a hook on the play
-  // path to spend it. Wiring only the "gain 4 debt" half meanwhile would hand
-  // the player a cost with no benefit, so the ability is not offered at all.
-});
+/** what it costs `seat` to PLAY `name` right now, straight off the R59 layer */
+function costToPlay(h: Harness, seat: Seat, name: string): number {
+  return new E(h.state).manaToPlay(seat, name);
+}
+const debtOf = (h: Harness, seat: Seat): number => new E(h.state).debt(seat);
 
-test('Deferral Drone: plays as a 2/2 and augments, offering no ability', () => {
-  const h = new Harness(4513);
+test('Deferral Drone: gain 4 debt → the next card you play this turn costs [3] less', () => {
+  const h = new Harness(4535);
   toDeployment(h);
   const p = h.state.deployPlayer!;
   const drone = spawn(h, p, 'Deferral Drone');
-  assert.deepEqual(effStats(h, drone), [2, 2], 'vanilla 2/2 in play');
+  assert.deepEqual(effStats(h, drone), [2, 2], 'a 2/2 body');
+  assert.equal(costToPlay(h, p, 'Brough'), 4, 'printed [4] before anything is armed');
+  const act = h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === drone);
+  assert.ok(act, 'the ability is offered (it was deliberately not, while parked)');
+  h.do(act!);
+  assert.equal(debtOf(h, p), 4, 'the activation cost is real: 4 debt');
+  assert.equal(costToPlay(h, p, 'Brough'), 1, '[4] card now costs [1]');
+  assert.equal(costToPlay(h, p, 'Murkstalker'), 0, '[3] card is free — clamped at zero, never negative');
+});
+
+test('Deferral Drone: only the NEXT card is discounted — the one after it pays in full', () => {
+  const h = new Harness(4536);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const drone = spawn(h, p, 'Deferral Drone');
+  giveResources(h, p, 'light', 6);
+  giveResources(h, p, 'earth', 6);                             // Brough: le / 4
+  h.do(h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === drone)!);
+  const open = () => h.state.players[p]!.resources.filter(r => r.state === 'open').length;
+  const before = open();
+  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Brough') });
+  assert.equal(before - open(), 1, 'the first Brough really cost 1 mana, not 4');
+  assert.equal(costToPlay(h, p, 'Brough'), 4, 'the charge is spent — back to printed [4]');
+  const mid = open();
+  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Brough') });
+  assert.equal(mid - open(), 4, 'and the second one pays the full 4');
+});
+
+test('Deferral Drone: [once] — one activation per turn (R9)', () => {
+  const h = new Harness(4537);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const drone = spawn(h, p, 'Deferral Drone');
+  h.do(h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === drone)!);
   assert.ok(!h.legal(p).some(a => a.type === 'activateAbility' && a.entityId === drone),
-    'PARKED: no activated ability is offered');
+    'not offered a second time this turn');
+  assert.equal(debtOf(h, p), 4, 'and no second helping of debt');
+});
+
+test('Deferral Drone: applying a mod is not playing, so it keeps the charge (R37/R59)', () => {
+  const h = new Harness(4538);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const drone = spawn(h, p, 'Deferral Drone');
+  const host = spawn(h, p, 'Brough');
+  h.do(h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === drone)!);
+  const e = new E(h.state);
+  assert.equal(e.manaToPlay(p, 'Deferral Drone', { purpose: 'mod' }), 2,
+    'augmenting is priced at the printed [2] — the discount does not apply');
+  giveResources(h, p, 'light', 1);
+  giveResources(h, p, 'metal', 1);                             // lm / 2
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Deferral Drone'), hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'the augment landed');
+  assert.equal(costToPlay(h, p, 'Brough'), 1, 'and the charge is still standing for a real PLAY');
+});
+
+test('Deferral Drone: donated by an augment, "you" is the HOST\'s controller', () => {
+  const h = new Harness(4539);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
   const host = spawn(h, p, 'Brough');
   giveResources(h, p, 'light', 1);
   giveResources(h, p, 'metal', 1);                             // lm / 2
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Deferral Drone'), hostId: host });
-  assert.equal(ent(h, host)!.mods.length, 1, 'still recognised as an augment (inert donation)');
+  const act = h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === host);
+  assert.ok(act, 'the donated ability is offered on the HOST');
+  h.do(act!);
+  assert.equal(costToPlay(h, p, 'Hammer of Justice'), 3, 'the host radiates the discount: [6] → [3]');
+});
+
+test('Deferral Drone: PARKED — the charge does not survive the Drone leaving play', { todo: true }, () => {
+  // UNSOURCED. The discount is a CostMod, so it radiates from the Drone (or its
+  // host) and stops the instant that entity leaves play — sacrifice it in
+  // response and the paid-for charge evaporates. A resolved effect arguably
+  // should not care who paid for it, but the rulings export says NOTHING about
+  // this card (searched 2026-08-22: no hit for "Deferral", "next card you play"
+  // or "costs 3 less" in any channel). Making it survive means moving the
+  // charge off Entity.budgets onto PlayerState — a core change AND a ruling.
+  assert.fail('needs a ruling: does a paid-for one-shot discount outlive its source?');
 });
 
 // ── Equilibriate ─────────────────────────────────────────────────────────

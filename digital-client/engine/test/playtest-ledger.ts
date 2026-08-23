@@ -117,9 +117,14 @@ export const LEDGER: LedgerEntry[] = [
     id: 6, room: 'MNWK', date: '2026-08-19',
     report: "I'm unable to cast Divine Intervention at all",
     status: 'fixed',
-    guards: ['23-wood-a.test.ts::target effect', '39-light-b.test.ts::Divine Intervention'],
-    note: 'R60. The DI tests only aim at a SPELL, so they would survive a revert to '
-      + "stackSpell; the real guard is Hush Mush's. A DI-against-a-trigger case would close it.",
+    guards: ['23-wood-a.test.ts::target effect', '39-light-b.test.ts::Divine Intervention',
+      '39-light-b.test.ts::reaches a TRIGGER on the stack'],
+    note: 'R60. CLOSED in round 17. The two original DI tests only ever aimed at a SPELL, so both '
+      + 'would have survived a revert of the spec to `stackSpell` — the only thing actually '
+      + "holding the line was Hush Mush's test, one card away. The new case puts a spell AND a "
+      + 'trigger on the stack at once, each holding a target, and asserts the TRIGGER is on DI\'s '
+      + 'menu. Verified: narrowing the spec back to `stackSpell` leaves the two old tests green '
+      + 'and reddens only the new one, which is exactly the hole this entry described.',
   },
   {
     id: 7, room: 'MNWK', date: '2026-08-19',
@@ -142,11 +147,17 @@ export const LEDGER: LedgerEntry[] = [
     id: 9, room: 'MNWK', date: '2026-08-19',
     report: "I can't Prophecy Calming Force",
     status: 'by-design',
-    guards: ['36-cache-prophecy.test.ts::no banner'],
+    guards: ['36-cache-prophecy.test.ts::no banner',
+      '40-light-c.test.ts::is enforced, and not just un-offered'],
     note: 'Correct: Calming Force has no prophecy banner in the printed data or upstream oracle, '
-      + 'and R42 refuses a banner-less card. SEPARATE LIVE HOLE, tracked at id 9.5 in spirit: its '
-      + 'other line "I can\'t be played from your hand" is NOT enforced (batch-light-c.ts parks it, '
-      + '40-light-c.test.ts has a permanently-green todo), so the card can just be played from hand.',
+      + 'and R42 refuses a banner-less card. The SEPARATE LIVE HOLE this note used to describe is '
+      + 'CLOSED as of R100 (round 17): its other line "I can\'t be played from your hand" was '
+      + 'unenforced, so the engine was strictly more permissive than print. There is now a '
+      + '`CardBehavior.noPlayFromHand` flag — the mirror of prophesyFromBin, defaulting permissive '
+      + '— checked in doPlayCard AND at all three legalActions hand-play sites, because a refusal '
+      + 'the UI still offers as a legal click is its own playtest report. Collateral worth '
+      + 'knowing: two R68 negation tests used Calming Force played from hand as their vehicle and '
+      + 'had to be rerouted through a glimpse-stamped cache release.',
   },
 
   // ── BRDM, 2026-08-20 ────────────────────────────────────────────────────
@@ -195,12 +206,20 @@ export const LEDGER: LedgerEntry[] = [
   {
     id: 15, room: 'BRDM', date: '2026-08-20',
     report: "Why didn't Refuse Reclaimer get a counter from my Oracle dying?",
-    status: 'live',
-    note: 'The card is implemented correctly (28-metal-c.test.ts guards the mechanic). Round 7 '
-      + 'called it NOT A BUG — trigger fired, report filed while it sat on the stack — but that '
-      + 'claim rests only on a commit message and is not reproducible from the repo. Unresolved '
-      + 'caveat: the listener is region-scoped (R12), so a Reclaimer at home does not see a death '
-      + 'in the battle region, which would reproduce the symptom legitimately. Needs a test.',
+    status: 'by-design',
+    guards: ['28-metal-c.test.ts::a death in the battle region it attacked into',
+      '28-metal-c.test.ts::a death in a region it is not in'],
+    note: 'R12 — REGION SCOPING, and the caveat this entry carried since round 7 turns out to be '
+      + 'the whole explanation rather than a loose end. Caleb Gannon, #rules-questions 2025-03-09: '
+      + '"Everything in the game is region specific. So nothing will ever impact anything in '
+      + 'another region. You should be able to completely ignore cards in other regions when '
+      + 'resolving a battle. Units don\'t need to block to trigger (unless the card specifically '
+      + 'says so). Just being in the region is enough." A Reclaimer standing at home genuinely '
+      + 'does not see an Oracle die in the battle region, and that is the rule, not a bug. Round '
+      + '7 reached the same verdict but left only a commit message behind; round 17 replaced it '
+      + 'with the two tests named above, which pin BOTH directions — it fires on a death in its '
+      + 'own region without blocking, and stays cold for one in another region. Verified '
+      + 'load-bearing by breaking the region filter each way.',
   },
   {
     id: 16, room: 'BRDM', date: '2026-08-20',
@@ -279,12 +298,34 @@ export const LEDGER: LedgerEntry[] = [
   {
     id: 24, room: 'ZQPC', date: '2026-08-20',
     report: "Scholar of the Void doesn't say what the Beyond card it can transform into does",
-    status: 'live',
-    note: 'The transform is entirely unimplemented — the trigger\'s whole run() is an info line '
-      + 'saying so, and "Beyond, Codex Incarnate" is not in printed.json at all. The reported '
-      + 'symptom (cannot see what it becomes) is downstream of that. Needs the card in the pool, a '
-      + 'transform layer, and a "Transforms into" inspector row fed like tokensCreatedBy. '
-      + 'Guarded only by a {todo:true}, which cannot fail.',
+    status: 'fixed',
+    guards: ['43-dark-c.test.ts::R101 — discard your hand and transform into Beyond',
+      '43-dark-c.test.ts::R101 — a transformed Scholar is a TOKEN',
+      '50-ui-inspect.test.ts::the inspector says what Scholar of the Void transforms into',
+      '50-ui-inspect.test.ts::a card that has already transformed shows no row',
+      '75-ui-reachability.test.ts::the details page really renders the Transforms into row'],
+    note: 'R101. Blocked for two days on something no amount of research could fix: '
+      + '"Beyond, Codex Incarnate" existed in NO data we held — not the 534-card oracle file, '
+      + 'not the corpus, not the rulings export, and there was no art. The owner supplied the '
+      + 'card face on 2026-08-22 (0 mana, 8/3, "Book Token Unit") and it is now a '
+      + 'registerSynthetic in registry.ts, deliberately NOT in printed.json, which '
+      + 'scripts/pool.mjs regenerates and would silently drop it. NO TRANSFORM LAYER WAS NEEDED: '
+      + 'Entity.card IS the identity — baseStatsOf reads this.card(e.card), the bin push reads '
+      + 'u.card, the client keys off it — so turning the card over is one assignment on the SAME '
+      + 'object, which is why the id, the counters, the marked damage, the formation slot and '
+      + 'every "since it entered play" fact all survive for free, and no spawned/died event '
+      + 'fires. It also sets token:true, because the type line says "Book TOKEN Unit" and without '
+      + 'it a 0-cost 8/3 would sit in a bin for any exhume or bin-play effect to fetch. The '
+      + 'REPORTED symptom — you cannot see what you would become before discarding your hand — is '
+      + 'fixed by a declarative "Transforms into" inspector row fed the way tokensCreatedBy is. '
+      + 'BEYOND ITSELF is complete too, in the same round: its "Your units are inverted" clause '
+      + 'works only because R93 shipped stat layer 5 the same day, and its rot replacement '
+      + 'landed as R102 on the owner\'s own ruling — "In Deployment, you\'re in your own region, '
+      + 'alone. So you can only target your own units. It would trigger, ask you what you want to '
+      + 'target, then put the -1/-1 counters on during deployment (which still has and uses a '
+      + 'stack)." That ruling is what made it small: the first design called for a new Suspension '
+      + 'variant, and the stack route needed only a new listenable `rotReplaced` EVENT, after '
+      + 'which R67\'s ordinary trigger machinery does the asking.',
   },
   {
     id: 25, room: 'ZQPC', date: '2026-08-20',
@@ -633,12 +674,272 @@ export const LEDGER: LedgerEntry[] = [
     id: 63, room: 'GETD', date: '2026-08-22',
     report: 'In constructed, the resource options from recycling and prismites should be limited '
       + 'to the elements that are in your deck',
+    status: 'fixed',
+    guards: ['34-constructed.test.ts::deckElements: constructed records each seat',
+      '34-constructed.test.ts::it is a PRESENTATION default — all seven stay legal',
+      '50-ui-inspect.test.ts::the resource menu leads with your own decks elements',
+      '50-ui-inspect.test.ts::a mono element deck still gets a prismite MENU',
+      '75-ui-reachability.test.ts::the prismite click never counts the shortened list'],
+    note: 'R99. Deliberately a PRESENTATION default and not a rules change: GameState.'
+      + 'deckElements records each seat\'s deck element identity (the union of getCard(n).factions '
+      + 'over the decklist), computed in createGame before the shuffle, constructed only — but '
+      + 'legalActions still offers all seven, which is why all 19 saved games still replay and '
+      + 'why nothing legal became illegal. That matters because off-element resources are '
+      + 'genuinely useful: Reap the Due is mono-light but scales off DARK affinity, so a '
+      + 'mono-light deck running it must still be able to take dark resources or the card is '
+      + 'blank. Both menus lead with your deck\'s elements and keep the rest behind a "more '
+      + 'elements…" expander, through one shared helper so they cannot drift. ⚠ THE HAZARD, and '
+      + 'the reason one of the guards above exists: the prismite menu auto-fires when exactly one '
+      + 'option remains, and an ACTIVE prismite offers seven exchanges and no other action — so a '
+      + 'naive filter would have left a mono-element deck with exactly one entry and silently '
+      + 'spent the prismite with no menu and no way back. The auto-fire decision counts the LEGAL '
+      + 'ACTIONS, before any filtering. OPEN FOR THE OWNER: is a constructed deck\'s element '
+      + 'identity PUBLIC at game start? deckElements is not redacted in server/view.ts, so today '
+      + 'both seats can read both entries. No UI behaviour depends on the answer — each seat '
+      + 'reads only its own — and if it should be private it is one line in viewFor(). ⚠ `els` on '
+      + 'a saved game is a red herring: it is the draft trio and is written for every mode.',
+  },
+  // ── GETD, 2026-08-22 (the round-16 playtest, filed before that deploy) ──
+  {
+    id: 64, room: 'GETD', date: '2026-08-22',
+    report: "Biotoxicity didn't give me the choice of what kinds of tokens I wanted even though "
+      + 'I had Cosmic Conspirator',
     status: 'live',
-    note: 'Constructed and shared both get all seven elements; only draft narrows (to its trio). '
-      + 'IMPORTANT: this must be a PRESENTATION default, not a rules change — off-element '
-      + 'resources are genuinely useful, e.g. Reap the Due is mono-light but scales off DARK '
-      + 'affinity, so a mono-light deck running it must be able to take dark resources or the card '
-      + 'is blank. Plan: engine stores deckElements additively, legalActions keeps offering all '
-      + 'seven, the menu defaults to the deck\'s elements with an expander for the rest.',
+    note: 'Cosmic Conspirator is a REPLACEMENT effect (see id 60). Its "you may instead" is a '
+      + 'choice INSIDE the replacement, so it needs a decision raised before anything is created; '
+      + 'today the engine creates the Robot, fires `spawned`, then erases it. Biotoxicity creates '
+      + 'several tokens at once and the per-spawn trigger never asks per kind. Blocked on the '
+      + 'replacement layer.',
+  },
+  {
+    id: 65, room: 'GETD', date: '2026-08-22',
+    report: 'There\'s still no way to see the X value for Volatile Toxicity on the stack. All '
+      + 'spells with X should be clear what X is when they\'re cast',
+    status: 'fixed',
+    guards: ['50-ui-inspect.test.ts::Volatile Toxicity: the X read off its cost RECEIPT reaches the stack',
+      '50-ui-inspect.test.ts::a sacrifice cost whose clause names no stat wears no X'],
+    note: 'Report 43 fixed X-on-stack for the mana X and the event X, and the guess that this was '
+      + 'a third kind (R64\'s variable `costPaid.x`) was WRONG in an instructive way: Volatile '
+      + 'Toxicity\'s cost is a FIXED `sacrificeUnit` of one, so `finishVariableCost` never runs '
+      + 'and `costPaid.x` is never written. Its X lives in the cost RECEIPT — the effect reads '
+      + '`costPaid.sacrificed.defense` — and `stackItemX` only ever looked at `costPaid.x`, so the '
+      + 'number was invisible on the stack tag, in the focus viewer and in the ability rows alike. '
+      + 'ui/inspect.ts now reads the receipt when the printed clause names the stat. Structural '
+      + 'Collapse is the only other card in the pool that does this.',
+  },
+  {
+    id: 66, room: 'GETD', date: '2026-08-22',
+    report: 'The UI is reminding me I have unused tokens at EVERY chance it has. It should only '
+      + 'warn right before moving to Regroup ("You\'re about to move to Regroup which will remove '
+      + 'your Spell Tokens. Are you sure?")',
+    status: 'fixed',
+    guards: ['77-playtest-round17.test.ts::[66] passEndsBattlePhase agrees with the engine',
+      '77-playtest-round17.test.ts::[66] the pass confirm is wired to the end-of-battle question'],
+    note: 'The C5 guard fired on EVERY pass while you held a castable token. The warning was '
+      + 'right; only its trigger point was wrong, and the owner supplied the replacement copy. '
+      + 'The judgement "would this pass end the battle?" is now a pure predicate in the new '
+      + 'ui/battle.ts, derived from the engine\'s own chain (passPriority -> advanceBattleStep -> '
+      + 'endBattleRound -> startRegroup) and asserted against it at every priority window of a '
+      + 'real battle. ONE DELIBERATE DEVIATION, documented at the function: it does not require '
+      + 'the literally-closing pass, because E.openPriority always opens on the initiative '
+      + 'player, so gating on that would mean the initiative player is never warned at all. Cost '
+      + 'is at most one extra confirm per battle instead of one per window. Known gap that cannot '
+      + 'be closed client-side: if the round-2 attacker DECLINES, doDeclareAttack calls '
+      + 'endBattleRound with no priority window, so a defender holding tokens gets no pass to '
+      + 'warn on.',
+  },
+  {
+    id: 67, room: 'GETD', date: '2026-08-22',
+    report: "What happened to Rashi's Poison tokens? She just wanted to bring them with her "
+      + 'attackers but they somehow went onto the stack, without any targets',
+    status: 'fixed',
+    guards: ['78-round17-core.test.ts::declareBlocks takes spellTokens',
+      '78-round17-core.test.ts::legalActions offers the counterattack-with-token shape',
+      '78-round17-core.test.ts::spell tokens still travel only with units',
+      '77-playtest-round17.test.ts::[67] sendableTokens lists exactly the tokens a counterattack '
+      + 'will accept',
+      '77-playtest-round17.test.ts::[67] the counterattack ride dialogue respects',
+      '77-playtest-round17.test.ts::[67] the Confirm button holds the block declaration',
+      '75-ui-reachability.test.ts::the affordance for every offered shape is really in ui/main.ts'],
+    note: 'R87. GETD action 92 is a `declareBlocks` with `send: [25, 6, 19]` — a COUNTERATTACK — '
+      + 'and `declareBlocks` had no `spellTokens` field, while `declareAttack` did. The initial '
+      + 'diagnosis was half right and the correction matters: the LEGALITY was already there — '
+      + "doDeclareBlocks's `send` loop has always accepted a spellToken and always enforced "
+      + '"tokens travel only with units". What was missing was any way to FIND THAT OUT: no named '
+      + 'field for the client to fill, and legalActions never once offered a `send` containing a '
+      + 'token. So the three Poison 1s stayed home and were fired into a region everything had '
+      + 'just left, each logging "there is no legal target for that — it does nothing". That is '
+      + 'the "went onto the stack without any targets" the owner saw. Both halves shipped: the '
+      + 'client now interposes the same ride dialogue id 69 built for attacks, and '
+      + '75-ui-reachability.test.ts gained a `declareBlocks:spellTokens` facet so the shape can '
+      + 'never go quietly unreachable again — which is exactly how R79 lost a whole round. Sources: lofavreel — "spell '
+      + 'tokens can move into other regions on attack/counter-attack step. But they always need a '
+      + 'unit to take them with them"; _passer — "In order to attack opponent Region, you must '
+      + 'send atleast 1 of your unit". Old action shapes replay unchanged; 19/19 saved games '
+      + 'still FAITHFUL. The client half is the sibling of id 69 and reuses its bar and chips.',
+  },
+  {
+    id: 68, room: 'GETD', date: '2026-08-22',
+    report: 'I hit pass all, but then it stopped passing all. Why?',
+    status: 'fixed',
+    guards: ['77-playtest-round17.test.ts::[68] Pass-all stays armed',
+      '77-playtest-round17.test.ts::[68] the other three releases still release'],
+    note: 'Not the round-16 `sentFor` latch, which is innocent — it never disarms the chip, it '
+      + 'only stops a second send for one state. The culprit was one clause in the release list: '
+      + 'pass-all released whenever `castableTokens(legal) > 0`, which is true at nearly every '
+      + 'window of nearly every battle, so the chip performed exactly ONE pass and switched '
+      + 'itself off. That is the report, verbatim. `git log -S` shows round 16 carried the clause '
+      + 'across into autoPassPlan unchanged from pre-round-16 main.ts, so it was neither newly '
+      + 'caused nor already fixed. The four release conditions are now one named, tested '
+      + 'predicate (ui/battle.ts passAllRelease), and the token clause asks the sharper question '
+      + 'from id 66 — release only on the pass that actually reaches Regroup.',
+  },
+  {
+    id: 69, room: 'GETD', date: '2026-08-22',
+    report: "It's very easy to attack without bringing any spell tokens into the new region. Make "
+      + 'it a choice AFTER declaring attackers: "select the spell tokens you wish to bring, or '
+      + 'Bring none"',
+    status: 'fixed',
+    guards: ['77-playtest-round17.test.ts::[69] ridableTokens lists exactly the tokens',
+      '77-playtest-round17.test.ts::[69] the ride-along dialogue is interposed only when a choice '
+      + 'is being silently defaulted',
+      '77-playtest-round17.test.ts::[69] the Attack! button holds the declaration'],
+    note: 'Confirmed by the log before anything was written: of the eleven attacks declared in '
+      + 'GETD, exactly ONE carried a spell token (action 47) — every other declareAttack has '
+      + '`spellTokens: []`. The engine action already accepted the list, so this was purely a '
+      + 'client interaction: the affordance existed (click your tokens while building the '
+      + 'formation) and was being defaulted away in silence. Attack! now holds the declaration '
+      + 'and interposes a chip row with an explicit "Bring none" — and "Bring none" is '
+      + 'deliberately NOT bound to Enter, because Enter is exactly how the token-less attack got '
+      + 'sent ten times. Interposed only when a choice is actually being defaulted, so a '
+      + 'token-less player never sees it. Sibling of id 67, whose counterattack half needs the '
+      + 'engine field; the bar, chips and buttons are reusable for it as-is.',
+  },
+  {
+    id: 70, room: 'GETD', date: '2026-08-22',
+    report: 'Graxxlid is lighting up like I can activate its ability despite there being no legal '
+      + 'targets on the stack',
+    status: 'fixed',
+    guards: ['16-earth-a.test.ts::Graxxlid (report #70): a stack item that does NOT target me',
+      '16-earth-a.test.ts::Graxxlid: a Virus being applied to me IS an effect targeting me'],
+    note: 'Graxxlid printed "negate target effect TARGETING ME" but its spec was a bare '
+      + "`what: 'stackEffect'`, so every stack item was a candidate and the ability was offered "
+      + 'whenever the stack was non-empty; the "does not target me" check happened at resolution, '
+      + 'as an info line. Fixed with an R64 `restrict`, so no legal target means the activation is '
+      + 'never offered and `activatableUnits` stops glowing — no UI change was needed, which is '
+      + 'the point: the halo is a pure read of legalActions. Source: RAQ "[Solved] Target '
+      + 'requirements to put effect on stack" — "In order to play a card, you MUST be able to '
+      + 'select the valid targets for the effect." The resolution-time check was KEPT, because a '
+      + 'restriction is asked at cast and never re-asked (R5/R56) and a redirect can move targets '
+      + 'afterwards. R88. Inverse of id 35. Widened the card on the way: Caleb ruled a Virus is a '
+      + 'targeted effect and IS fully interactible ("Yep! They\'re fully interactible"), and a '
+      + 'virus stack item carries a `hostId` rather than target refs, so Graxxlid could never '
+      + 'answer one before.',
+  },
+  {
+    id: 71, room: 'GETD', date: '2026-08-22',
+    report: "Rashi's grafted effect resolved even though its only legal target was gone. An "
+      + 'official ruling says a grafted effect with a target becomes vulnerable to requiring a '
+      + 'target to resolve',
+    status: 'fixed',
+    guards: ['78-round17-core.test.ts::a graft composite that loses its ONLY target fizzles whole',
+      '78-round17-core.test.ts::one surviving target carries the untargeted grafts through',
+      '78-round17-core.test.ts::an item that declares NO target anywhere never fizzles',
+      '78-round17-core.test.ts::a required target with no legal candidate at cast still fizzles'],
+    note: 'R86. The owner was right and the ruling is exact — RAQ "[Solved] When does effect '
+      + 'fizzles?": "If effect loses ALL of its targets and wants to resolve", and the '
+      + 'load-bearing detail is the parenthesis in the Bellowing Boulder example, "(yielding no '
+      + 'card draw from 2nd and 3rd graft)" — the UNTARGETED parts of a composite die with it. '
+      + "The engine's partAlive returned true for any part with no target spec, so a composite "
+      + 'containing one could never fizzle however dead its targets were. Reproduced from the '
+      + 'game itself: the Spewing Mushroom composite had five parts, only one targeted, and its '
+      + 'single declared target had just died to a Poison 8 — it paid out four Poisons and a buff '
+      + 'anyway. Blast radius was ZERO: not one existing assertion had to be rewritten. One '
+      + 'narrowing was needed and the replay is what found it — keying the gate on "did any part '
+      + 'declare a TargetRef" passed every test but made spell tokens cast into an emptied region '
+      + 'stop fizzling, so the gate asks whether a part declared a target SPEC, not whether it '
+      + 'holds a live ref. Separate and still open: `allOrNothing` is a declared-but-unread flag '
+      + 'that three cards hand-roll; it asks a per-PART question where R86 asks a per-ITEM one.',
+  },
+  {
+    id: 72, room: 'GETD', date: '2026-08-22',
+    report: 'Phytochemical Protection is entirely non functional. Needs to work like the text says',
+    status: 'fixed',
+    guards: ['24-wood-b.test.ts::prevented damage is NOT dealt',
+      '24-wood-b.test.ts::Poisonous does not bypass it',
+      '24-wood-b.test.ts::{Deadly} cannot kill through it',
+      '80-round17-permissions.test.ts::R98: a REPLACED hit still counts as dealt'],
+    note: 'R98. The card-ledger entry predicted this report a day before it was filed, and the '
+      + 'three seams it named were all real: there was no "damage would be dealt to a UNIT" hook '
+      + 'of any kind (both existing replacement hooks are damage-to-a-PLAYER), nowhere on Entity '
+      + 'to keep an until-regroup shield, and no running per-unit total to feed "+1/+1 counter '
+      + 'for each damage prevented". THE HEADLINE FINDING: prevention is NOT the same layer as '
+      + 'replacement and the two must never share one. Caleb 2024-10-24 says replacing damage '
+      + 'does not unmake it ({Lethal} still kills through a Blightsea Polyp); the Phytochemical '
+      + 'RAQ says prevention DOES unmake it — "if there is not damage being dealt, then no '
+      + 'counters are placed … Jollyglop doesn\'t trigger". So a fully prevented hit fires no '
+      + 'damage event, lays no Poisonous counters, gets no {Deadly} kill, no {Resonant} rider and '
+      + 'no {Blessed} gain. Counters are deferred to a settle step because addCounters runs '
+      + 'checkDeaths, which would resolve a death mid-batch and break R80 simultaneity. '
+      + 'SURVIVING GAP, pinned by its own test: the counters cap at LETHAL, not at the whole hit '
+      + '— R7 auto-assignment gives each blocker just enough to kill it and drops the rest, while '
+      + 'the RAQ says all the damage must be assigned to the shielded unit ("potentially putting '
+      + 'a lot of +/+ counters"). Changing that moves every overkill number in the engine, so it '
+      + 'wants its own ruling. Bonus: fixing this widened Oorblak\'s player hook too — `info` now '
+      + 'carries attrs and pure, and the return is `boolean | number`.',
+  },
+  {
+    id: 73, room: 'GETD', date: '2026-08-22',
+    report: "Inverted isn't working on my Malformed Monstrosity. -7/-7 should become +7/+7, "
+      + 'making it a 17/16',
+    status: 'fixed',
+    guards: ['79-round17-layers.test.ts::Malformed Monstrosity — a 10/9 at -7/-7 inverts to 17/16',
+      '79-round17-layers.test.ts::worked example — a 1/4 Tough Balanced Inverted is a -6/0',
+      '79-round17-layers.test.ts::R93 layer 5: a base REWRITE is the thing inverted FROM',
+      '79-round17-layers.test.ts::R93 layer 5: {Inverted} is shared down the COLUMN'],
+    note: 'R93. {Inverted} was stat layer 5 and effStats literally ended with the comment '
+      + '"// layer 5 (Inverted), 6 (Unaware) go here". The rule is that {Inverted} negates the '
+      + 'NET stat change from base, and Caleb worked it out himself in #rules-questions: "1/4 '
+      + 'tough balanced is 8/8 — Tough is +0/+4, Balanced is +7/0 … To become a -6/0", then '
+      + '"If we compare 8/8 to 1/4, it\'s +7/+4 — which also works to invert to a -6/0". So '
+      + 'layer 5 is 2*base - current, and it reproduces the owner\'s number exactly: a 10/9 at '
+      + '-7/-7 is a 3/2, inverted to 17/16. Blast radius was ONE test — a Morphic Mentor case '
+      + 'that used Reality Bender as a cheap Virus body and had encoded the bug in its '
+      + 'assertion. Two things the research settled that were not obvious: COLUMN-SHARING of '
+      + '{Inverted} is sourced verbatim ("So, all attributes are shared between the units in the '
+      + 'same column? Including stuff like Inverted or Tough?" -> "Yes"), and a unit does NOT '
+      + 'die part-way through the equation ("Not if it hits 0 mid calculation") — which the '
+      + 'engine already had right, since effStats is atomic. Unparks Its Dark Bubb and Reality '
+      + 'Bender with no card-file change at all. Layer 6 ({Unaware}) is deliberately untouched '
+      + 'and 05-rulings.test.ts still pins its wrong answer on purpose. STILL OPEN: Caleb also '
+      + 'said "Tough inverted balanced would be different", which would mean interleaving '
+      + '{Inverted} among the layer-4 attrs in grant order rather than being a clean layer 5 — '
+      + 'he also called that case "basically impossible to make happen", so the clean layer '
+      + 'shipped and the nuance is recorded in R93.',
+  },
+  {
+    id: 74, room: 'WEHH', date: '2026-08-22',
+    report: "Dispatch Courier didn't give me the option to play a card with haste",
+    status: 'fixed',
+    guards: ['26-metal-a.test.ts::play a unit during the mana step as if it had',
+      '26-metal-a.test.ts::a {Battle} unit stays a battle card even with the grant',
+      '80-round17-permissions.test.ts::R97: every hand play legalActions offers in the haste step'],
+    note: 'R97, and the card ledger predicted it like id 72. The rules half had to be settled '
+      + 'first: the printed "mana step" IS this engine\'s R18 haste step (Caleb: "that symbol is '
+      + 'haste, meaning you can play it during the mana step" / "There is no priority during the '
+      + 'mana step, but you can play haste cards and resources as special actions"). What was '
+      + 'missing was one seat-level play permission consulted at THREE gates that must agree, and '
+      + 'the fatal one was the first: E.startHasteStep\'s canHaste SKIPS the step outright when no '
+      + 'seat has a legal haste play, so the other two were never even asked and the card was '
+      + 'invisible. THE RESEARCH CHANGED THE CARD: RAQ "[Solved] Dispatch Courier vs Battle '
+      + 'Timing" says a {Battle} card does NOT become playable in the haste step even with the '
+      + 'grant — "despite gaining haste they can still only be played during battle" — because, '
+      + 'Caleb, "spells like Dreadweave or Hush Mush can\'t have a legal target in the Haste '
+      + 'step". That refusal sits above every grantor. Design note: R95 OR-folds its permission '
+      + 'but R97 SUMS, because two Couriers each printing "Each turn, you may play a unit" is two '
+      + 'plays. The client needed NO change — the hand menu is built from legalActions, so the '
+      + 'card simply appears. Does NOT unpark Writhing Host (its grantor sits in a BIN, which '
+      + 'anchored() does not walk) or Slurpr (the mod-timing twin); the ledger claimed shared '
+      + 'credit that did not exist.',
   },
 ];

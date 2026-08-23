@@ -11,8 +11,8 @@
  * counters on spawn/mod + despawn cleanup (Celestial Fluxmorph), X-at-
  * resolution activation (Celestial Shifter), stack sweeps (Containment
  * Protocol), the Robot-swap half of Cosmic Conspirator, compound-cost board
- * wipes (Deformant), counter-fueled damage (Discharge), the parked Dispatch
- * Courier (crash-free attach), token theft + recast (Download, R8), combat
+ * wipes (Deformant), counter-fueled damage (Discharge), the R97 haste-step play
+ * grant (Dispatch Courier), token theft + recast (Download, R8), combat
  * hand disruption (Eldritch Dreamtender) and mod-stacking counters
  * (Evolutionary Experiment).
  */
@@ -21,8 +21,9 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
+import type { Seat } from '../src/types.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, handIdx, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -243,7 +244,8 @@ test('Celestial Fluxmorph: counters on spawn and on being modded; all removed at
   const fm = spawn(h, A, 'Celestial Fluxmorph');            // spawn trigger: +1 to each of your units
   assert.deepEqual(effStats(h, t1), [2, 2]);
   assert.deepEqual(effStats(h, fm), [2, 2], 'itself included');
-  // "or become modded": the (parked-inert) Dispatch Courier serves as the mod
+  // "or become modded": Dispatch Courier serves as the mod (its R97 grant is
+  // a play permission, so it adds no stats to the host)
   giveResources(h, A, 'metal', 2);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Dispatch Courier'), hostId: fm });
   assert.deepEqual(effStats(h, t1), [3, 3], 'modding the Fluxmorph pays everyone again');
@@ -401,7 +403,7 @@ test('Discharge: remove X +1/+1 counters from allies, deal X to target unit', ()
 
 // ── Dispatch Courier ─────────────────────────────────────────────────────
 
-test('Dispatch Courier: plays as a 2/1 and attaches as an (inert) augment', () => {
+test('Dispatch Courier: plays as a 2/1 and attaches as an augment', () => {
   const h = new Harness(2614);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -411,12 +413,76 @@ test('Dispatch Courier: plays as a 2/1 and attaches as an (inert) augment', () =
   giveResources(h, A, 'metal', 2);                          // mm/2
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Dispatch Courier'), hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1, 'attached crash-free');
-  assert.deepEqual(effStats(h, host), [1, 1], 'the donated text is parked-inert');
+  assert.deepEqual(effStats(h, host), [1, 1], 'it donates a permission, not stats');
 });
 
-test('Dispatch Courier: "play a unit during the mana step as if it had [Haste]"', { todo: true }, () => {
-  // PARKED: play-timing legality lives in apply.ts (the haste-step gate);
-  // card code cannot grant a play permission. Needs an engine hook.
+test('Dispatch Courier: "play a unit during the mana step as if it had [Haste]"', () => {
+  // R97, report #74 (WEHH): "Dispatch Courier didn't give me the option to
+  // play a card with haste". All three gates in one run — the step OPENS
+  // (canHaste), the play is OFFERED (legalActions) and it is ACCEPTED
+  // (playAtTiming), for a card whose printed timing is deploy.
+  const h = new Harness(2624);
+  const A: Seat = 0;
+  spawn(h, A, 'Dispatch Courier');
+  giveResources(h, A, 'metal', 4);
+  const idx = give(h, A, 'Dispatch Courier');                // mm/2 deploy unit
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  assert.ok(h.state.hasteDone, 'gate 1: the haste step OPENS for a grant-only hand');
+  const offered = h.legal(A).some(a => a.type === 'playCard' && a.handIndex === idx);
+  assert.ok(offered, 'gate 2: legalActions offers the deploy unit');
+  h.do({ type: 'playCard', seat: A, handIndex: idx });       // gate 3
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Dispatch Courier').length, 2,
+    'the unit is in play before the battle phase');
+  assert.equal(h.state.hastePlaysUsed?.[A], 1, 'the printed "Each turn" budget was charged');
+});
+
+test('Dispatch Courier: the "Each turn" allowance is one, and one Courier grants one', () => {
+  const h = new Harness(2625);
+  const A: Seat = 0;
+  spawn(h, A, 'Dispatch Courier');
+  giveResources(h, A, 'metal', 8);
+  // ⚠ both plays are VANILLA units on purpose: playing a second Courier would
+  // add a second grantor mid-step and buy its own next play.
+  const first = give(h, A, 'Nebula Drifter');               // m/1 deploy unit
+  give(h, A, 'Nebula Drifter');
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  h.do({ type: 'playCard', seat: A, handIndex: first });
+  const stillOffered = h.legal(A).some(a => a.type === 'playCard');
+  assert.ok(!stillOffered, 'the allowance is spent — nothing more is offered');
+  assert.throws(() => h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Nebula Drifter') }),
+    /only haste cards during the haste step/, 'and the enforcement agrees with the offer');
+});
+
+test('Dispatch Courier: a {Battle} unit stays a battle card even with the grant', () => {
+  // RAQ "[Solved] Dispatch Courier vs Battle Timing": "No, despite gaining
+  // :haste: they can still only be played during :battle:."
+  const h = new Harness(2626);
+  const A: Seat = 0;
+  spawn(h, A, 'Dispatch Courier');
+  giveResources(h, A, 'metal', 4);
+  const monke = give(h, A, 'Monke');                         // m/1 {Battle} unit
+  const dc = give(h, A, 'Dispatch Courier');                 // deploy — opens the step
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  assert.ok(h.state.hasteDone, 'the step is open (the deploy unit opened it)');
+  assert.ok(!h.legal(A).some(a => a.type === 'playCard' && a.handIndex === monke),
+    'the {Battle} unit is NOT offered');
+  assert.throws(() => h.do({ type: 'playCard', seat: A, handIndex: monke }),
+    /only haste cards during the haste step/, 'nor accepted');
+  assert.ok(h.legal(A).some(a => a.type === 'playCard' && a.handIndex === dc),
+    'the deploy unit still is');
+});
+
+test('Dispatch Courier: no Courier, no haste step — the grant is what opens it', () => {
+  const h = new Harness(2627);
+  const A: Seat = 0;
+  giveResources(h, A, 'metal', 4);
+  give(h, A, 'Dispatch Courier');
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  assert.equal(h.state.hasteDone, null, 'R18 skips the step outright with no grantor');
 });
 
 // ── Download ─────────────────────────────────────────────────────────────

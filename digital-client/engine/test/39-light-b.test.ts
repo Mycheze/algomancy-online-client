@@ -20,7 +20,7 @@ import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { IllegalAction } from '../src/apply.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, offered, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
@@ -197,6 +197,72 @@ test('Divine Intervention: "you may" — declining leaves the targets alone', ()
   pick(h, false);                                           // "leave them"
   pass(h); pass(h);
   assert.equal(ent(h, atk)!.counters, -1, 'the original target still takes it');
+  finishBattle(h);
+});
+
+/*
+ * Playtest ledger #6 (MNWK, 2026-08-19), "I'm unable to cast Divine
+ * Intervention at all", was closed by R60: the printed line is "You may change
+ * the targets of TARGET EFFECT", and "effect" is the SUPERSET — every spell,
+ * spell unit, spell token and ambush, PLUS the triggered and activated
+ * abilities. The engine spells that as `what: 'stackEffect'`, against
+ * `'stackSpell'` for the cards that really do say "target spell".
+ *
+ * But both tests above aim Divine Intervention at a SPELL, and a spell is
+ * legal under BOTH specs. Narrow the card back to 'stackSpell' and neither of
+ * them notices — the only thing keeping the superset honest was Hush Mush's
+ * test in 23-wood-a, a different card in a different file, which is a guard by
+ * coincidence rather than by intent. The ledger entry said so in as many
+ * words: "the real guard is Hush Mush's. A DI-against-a-trigger case would
+ * close it."
+ *
+ * This is that case. Both halves of the superset are on the stack at once — a
+ * spell AND a triggered ability, each holding a target — so the test cannot
+ * pass by accident: it asserts the trigger is on the menu (which 'stackSpell'
+ * would not offer) and then retargets it.
+ */
+test('Divine Intervention: "target effect" reaches a TRIGGER on the stack, not just a spell (R60)', () => {
+  const h = new Harness(3905.5);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Good Whale');                    // 7/5 attacker, survives everything here
+  // D's Behemoth: "[Augment] Whenever you play a spell, I deal 1 damage to any
+  // target." Its own [Augment] text is live while it is a unit in play, so
+  // D casting anything queues a TRIGGER that holds a target of its own.
+  const volt = spawn(h, D, 'Voltwrath Behemoth');           // 5/4, survives its own 1 damage
+  giveResources(h, A, 'light', 5);                          // Divine Intervention: ll/5
+  giveResources(h, D, 'wood', 2);                           // Noxious Demise: gg/1
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+
+  while (h.state.priority !== D) pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Noxious Demise') });
+  pick(h, { unit: atk });                                   // the SPELL aims at A's attacker
+  pick(h, { unit: atk });                                   // and so does the Behemoth's trigger
+
+  const spellItem = h.state.stack.find(i => i.kind === 'spell')!;
+  const trigItem = h.state.stack.find(i => i.kind === 'triggered')!;
+  assert.ok(spellItem && trigItem, 'a spell AND a trigger are both waiting on the stack');
+
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Divine Intervention') });
+  // THE ASSERTION THAT CLOSES #6: under a 'stackSpell' spec only the Noxious
+  // Demise item is a candidate and this menu does not contain the trigger.
+  assert.ok(offered(h).includes(JSON.stringify({ stack: trigItem.id })),
+    `R60: the triggered ability is a legal "target effect" — menu was [${offered(h)}]`);
+  pick(h, { stack: trigItem.id });
+
+  pass(h); pass(h);                                         // resolve Divine Intervention
+  assert.equal(h.state.decision!.seat, A, 'the caster is asked whether to change anything');
+  pick(h, true);
+  pick(h, { unit: volt });                                  // send the damage back at its own source
+
+  pass(h); pass(h);                                         // resolve the retargeted trigger
+  assert.equal(ent(h, volt)!.damage, 1, "the Behemoth's own ping landed on the Behemoth");
+  assert.equal(ent(h, atk)!.damage, 0, 'and never reached the attacker it was aimed at');
+
+  pass(h); pass(h);                                         // resolve Noxious Demise, untouched
+  assert.equal(ent(h, atk)!.counters, -1,
+    'the SPELL was left alone — Divine Intervention retargeted the trigger, not everything in sight');
   finishBattle(h);
 });
 

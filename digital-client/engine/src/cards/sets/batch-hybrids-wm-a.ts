@@ -66,11 +66,15 @@
  *    "each player/opponent" are region-scoped at resolution (R12/R25/R27).
  *
  * PARKED (needs engine machinery that does not exist yet):
- *  - Rook: "You may augment cards from hand and bin during battle as if they
- *    were [Virus]" is a continuous PLAY-PERMISSION modifier over doAugment's
- *    legality rules — no such layer exists (sibling of the missing cost-
- *    modification layer). Inert augmentText (Stasis Sentry precedent); it
- *    plays as a 4/4 and is recognised as an augment.
+ *  - Rook: UN-PARKED (R95). The permission layer it was waiting on exists now
+ *    and is `CardBehavior.modPermissions` — CostMod's sibling in shape,
+ *    OR-folded rather than summed because a permission is granted or it is
+ *    not. `augmentable: true` replaces the inert augmentText stand-in. ⚠ Two
+ *    things are open and listed in R95: whether "as if they were [Virus]" also
+ *    unlocks R79 STACK hosts (it does, as shipped), and whether the card grants
+ *    {Virus} itself or only the timing permission (only the permission, as
+ *    shipped). GRAFT is deliberately not covered — the printed word is
+ *    "augment", and doGraft is deployment-only.
  *  - The Silent: UN-PARKED (R59), and has been for a while — this entry was
  *    left behind. "Spells cost each player [two] more … per spell their team
  *    played this battle" IS a continuous COST modifier, and CostMod is the
@@ -213,15 +217,41 @@ card('Reconfigure', {
 });
 
 // "[Augment] You may augment cards from hand and bin during battle as if
-// they were [Virus]." — me/4 4/4 Polyform Crab Unit.
-// PARKED (see header): a continuous play-permission layer does not exist.
-// The inert augmentText entry keeps the card recognised as an augment
-// (Stasis Sentry precedent); it plays as a vanilla 4/4 meanwhile.
+// they were [Virus]." — me/4 4/4 Polyform Crab Unit. Live as of round 17
+// (R95); this text is the whole card, and until now it was a vanilla 4/4.
+//
+// A `modPermissions` mod — CostMod's sibling in shape (same ctx, same
+// anchored() radiation from a unit in play or an augment mod reading from its
+// HOST, same R12 region scoping) but folded as an OR rather than summed,
+// because a permission is granted or it is not and two Rooks are not twice as
+// permissive.
+//
+// The designer names this card as exactly this permission, and names it as
+// something that must be OPT-IN. rules-questions:
+//   chatt_nooga: "Does Steward of the Plain let me apply a virus from my
+//                 discard during combat?"
+//   calebgannon: "That's a very interesting question" / "It shouldn't" /
+//                "But I can see why it might be interpreted that way"
+//   chatt_nooga: "Okay but hear me out: What if it did? Would that be broken?"
+//   calebgannon: "Not really I don't think. If it said 'as if it was in your
+//                 hand' then it could work" → `$card rook` → "Does do that" /
+//                "Steward and rook are good friends"
+//
+// `augmentable: true` is what keeps the card applicable now that the inert
+// augmentText stand-in is gone: isAugment reads
+// `augmentAttrs || augmentText || augmentable`, and Rook prints neither of
+// the first two. The [Augment] half then costs nothing extra — `self` is the
+// ANCHOR, so augmented onto a host the permission belongs to the HOST's
+// controller, which is what "[Augment]" means everywhere else in the engine.
+//
+// `ctx.from` is checked HERE rather than being hardcoded in apply.ts, because
+// the printed zone list is this card's, not the rules': Rook says "hand and
+// bin", so Rook is what refuses the cache.
 card('Rook', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'augment from hand and bin during battle as if [Virus] (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
+  augmentable: true,
+  modPermissions: [{
+    augmentInBattle: (g, self, ctx) =>
+      ctx.seat === self.controller && (ctx.from === 'hand' || ctx.from === 'bin'),
   }],
 });
 

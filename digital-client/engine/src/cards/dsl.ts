@@ -583,6 +583,224 @@ export interface CostMod {
   life?: (g: E, self: Entity, ctx: CostCtx) => number;
 }
 
+/**
+ * R94: what an `EffectAttrMod` is being asked about — ONE PART of ONE
+ * resolving stack item.
+ *
+ * Per-part rather than per-item, because the only two cards that read this
+ * disagree about what they need and one of them is silent when it is wrong.
+ * Emberflame Enlightener ("your units and spells gain {g}powerful") is
+ * item-wide; Envoy of Lightning ("your spell effects with a single target are
+ * {g}Electric") counts targets, and a composite spell's parts do not all have
+ * the same number of them.
+ *
+ * `targets` is the DECLARED count — how many target slots this part was cast
+ * with — NOT how many of them are still alive at resolution. RAQ "[Solved]
+ * Envoy of Lightning vs Twin Flame.", in full:
+ *
+ *   Q: "If Twin Flame is played with only 1 target, is it Electric thanks to
+ *       Envoy?"                                    A: "Yes, it will be Electric"
+ *   Q: "What if Twin Flame was played targeting two units, but one of them was
+ *       removed before Twin Flame resolves. Will it be Electric?"
+ *   A: "No, it still has 2 targets, but one of them is invalid (but could
+ *       become valid thanks to Gravitational Correction or Warder)."
+ *
+ * `E.resolveParts` filters dead refs out before it builds `EffectCtx.targets`,
+ * so the survivor count is the WRONG number here and gives the wrong answer
+ * silently — a two-target Twin Flame that lost a target would come out
+ * Electric. The count therefore comes off `part.targets`, the declared list.
+ */
+export interface EffectAttrCtx {
+  /** the resolving item's controller — "YOUR spells" */
+  seat: Seat;
+  /** the region the item is resolving in (R12) */
+  region: number;
+  /** what kind of stack item this is; see `isSpellEffect` */
+  kind: 'unit' | 'spell' | 'spellUnit' | 'spellToken' | 'virus' | 'triggered' | 'activated' | 'ambush';
+  /** the printed card behind it, when there is one (a label-only item — a
+   * granted trigger, a bare effect — has none) */
+  card?: CardDef;
+  /** DECLARED target slots on THIS part (see above: not survivors) */
+  targets: number;
+}
+
+/**
+ * R94: a continuous ATTRIBUTE modifier on a resolving EFFECT — the write side
+ * of the channel R79 built the read side of ("[Augment] Your units and spells
+ * gain {g}powerful", Emberflame Enlightener; "[Augment] Your spell effects
+ * with a single target are {g}Electric", Envoy of Lightning).
+ *
+ * A sibling of `CostMod`, deliberately NOT an extension of `StaticMod`:
+ * `StaticMod.affects` is typed over an `Entity` and a `StackItem` is not one.
+ * It radiates by the same rules as both — from a unit in play or from an
+ * augment mod anchored on its HOST, scoped to the holder's region (R12) — and
+ * ownership lives in the card's own `affects`, not in the gatherer, which is
+ * the division `StaticMod` already uses.
+ *
+ * The designer scales a unit-sourced NONCOMBAT effect by a GRANTED {Powerful}
+ * (RAQ "[Solved] Resonant, Combat Damage, Conduit and Powerful": "2/4 Resonant
+ * Powerful would deal 4 combat damage to enemy unit and then put effect on
+ * stack to deal 8 damage to enemy face"), which is exactly the Emberflame
+ * case, so the grants land in `EffectCtx.grantedAttrs` beside R79's virus
+ * grants and everything downstream reads one unioned set.
+ *
+ * Like `CostMod`, `affects` must not re-enter effect-attribute evaluation;
+ * read raw state instead.
+ */
+export interface EffectAttrMod {
+  affects: (g: E, self: Entity, ctx: EffectAttrCtx) => boolean;
+  attrs: Attr[];
+}
+
+/**
+ * ⚠ THE OPEN QUESTION, IN ONE PLACE ON PURPOSE (R94): does "your SPELLS"
+ * include your spell TOKENS?
+ *
+ * It is the difference between an Emberflame deck doubling its Burst Fireballs
+ * and not, so it is a real deck-construction question and it is NOT settled.
+ * The engine's default here is YES, on the plainest reading: a spell token is
+ * a spell, and Emberflame's text has no play verb in it to hang a carve-out
+ * on. R59 DID carve tokens out of `costMods` — "a spell token is cast from
+ * play, not played" — but that carve-out exists because Tranquility says
+ * "cards cost [one] more to PLAY", and it does not generalise to a text that
+ * only says "your spells".
+ *
+ * The corpus is thin and second-hand: lordofkaranda, in rules-questions,
+ * "Spell tokens are spells and activating them is playing them" — a player,
+ * not Caleb, and its second half contradicts R59's basis for the cost layer.
+ * Nothing from the designer either way.
+ *
+ * So: one helper, one edit. If the owner rules the other way, delete
+ * `'spellToken'` from this line and both cards change together.
+ */
+export function isSpellEffect(kind: EffectAttrCtx['kind']): boolean {
+  return kind === 'spell' || kind === 'spellUnit' || kind === 'spellToken';
+}
+
+/** R95: what a `ModPermission` is being asked about — one attempt to apply one
+ * card as a mod. `from` is in the signature ON PURPOSE rather than being
+ * hardcoded at the call site: Rook prints "from hand and bin", so it is the
+ * CARD that refuses the cache, and the next card to want this can widen or
+ * narrow the zone list without touching apply.ts. */
+export interface ModCtx {
+  /** the player trying to apply the mod */
+  seat: Seat;
+  /** the mod being applied */
+  card: CardDef;
+  /** the zone it would leave */
+  from: 'hand' | 'bin' | 'cache';
+  /** the region the application happens in (R12) */
+  region: number;
+}
+
+/**
+ * R95: a continuous PERMISSION to apply a mod where the rules would otherwise
+ * refuse — "[Augment] You may augment cards from hand and bin during battle as
+ * if they were [Virus]" (Rook).
+ *
+ * OPT-IN PER CARD, never a general widening, and the designer is explicit that
+ * this is the shape. rules-questions, on whether an ordinary card grants it:
+ *   chatt_nooga: "Does Steward of the Plain let me apply a virus from my
+ *                 discard during combat?"
+ *   calebgannon: "That's a very interesting question" / "It shouldn't" /
+ *                "But I can see why it might be interpreted that way"
+ *   chatt_nooga: "Okay but hear me out: What if it did? Would that be broken?"
+ *   calebgannon: "Not really I don't think. If it said 'as if it was in your
+ *                 hand' then it could work" → `$card rook` → "Does do that" /
+ *                "Steward and rook are good friends"
+ * So the default is NO, it takes explicit wording, and Rook is the card with
+ * the wording.
+ *
+ * Structurally a `CostMod` — same ctx shape, same `anchored()` radiation from
+ * a unit in play or an augment mod reading from its HOST, same R12 region
+ * scoping, same purity rule — but folded as an OR rather than summed, which is
+ * exactly why it cannot BE a CostMod: one grantor is enough, and two Rooks are
+ * not twice as permissive. `self` is the ANCHOR, which makes Rook's own
+ * [Augment] half free: augmented onto a host, the permission belongs to the
+ * host's controller.
+ *
+ * Region scoping is not a convenience, it is the rule. rodanaw in
+ * rules-questions, on this very card: "I am 99% sure that Rook has to be in the
+ * region, since there are no global effects in Algomancy" — and the general
+ * form, elsewhere in the same corpus: "Yes. as with 99.99% of all questions
+ * regarding regions."
+ */
+export interface ModPermission {
+  /** may `ctx.seat` apply this card as an AUGMENT during battle? */
+  augmentInBattle?: (g: E, self: Entity, ctx: ModCtx) => boolean;
+}
+
+/**
+ * R97: what a `PlayPermission` is being asked about — one attempt to PLAY one
+ * card at a timing its printed line does not allow.
+ *
+ * Deliberately the twin of R95's `ModCtx`, field for field, because the two
+ * questions are the same question about different verbs: applying a mod is not
+ * playing a card (R37), so they must stay two seams, but a card that wants to
+ * widen one usually wants to phrase it the same way as a card that widens the
+ * other. `from` is in the signature for exactly R95's reason — the printed zone
+ * list belongs to the granting CARD, not to the rules.
+ */
+export interface PlayCtx {
+  /** the player trying to play the card */
+  seat: Seat;
+  /** the card being played */
+  card: CardDef;
+  /** the zone it would leave */
+  from: 'hand' | 'bin' | 'cache';
+  /** the region the play happens in (R12) */
+  region: number;
+  /** R97: how many grant-funded haste-step plays `seat` has ALREADY made this
+   * turn. The printed budget is per-card prose ("Each turn, you may play a
+   * unit…"), so the card spends it, not the engine: Dispatch Courier returns
+   * an allowance of 1 and the engine compares the sum of allowances with this.
+   * A grantor with no budget in its text simply ignores the field. */
+  usedThisTurn: number;
+}
+
+/**
+ * R97: a continuous PERMISSION to PLAY a card at a timing the printed line
+ * refuses — "[Augment] Each turn, you may play a unit during the mana step as
+ * if it had [Haste]" (Dispatch Courier).
+ *
+ * The rules half is settled and is not this seam's to decide. Caleb's Discord,
+ * rules-questions: "that symbol is haste, meaning you can play it during the
+ * mana step" and "There is no priority during the mana step, but you can play
+ * haste cards and resources as special actions"; asked what the mana step IS,
+ * nyarlathotep8457: "Yes the Mana step is the resources step of the planning
+ * phase." So the printed "mana step" is this engine's R18 haste step, and
+ * Courier is asking for exactly one thing: a seat-level play-timing grant.
+ *
+ * Radiation is R95's, unchanged: the `anchored()` walk (a unit in play, or an
+ * augment mod read from its HOST), R12 region scope, the shallow R62 guard,
+ * a reentrancy latch. What is NOT R95's is the FOLD — this one SUMS, because
+ * the printed text carries a per-turn quantity. Two Rooks are not twice as
+ * permissive (a boolean OR); two Couriers each print "Each turn, you may play
+ * a unit", and two of them are two plays. `Infinity` is the OR-fold's
+ * behaviour for a grant with no budget in its text, so both shapes fit one
+ * number.
+ *
+ * ⚠ WHAT THE GRANT CANNOT DO, and it is a ruling, not an omission: a {Battle}
+ * card stays a battle card. RAQ "[Solved] Dispatch Courier vs Battle Timing",
+ * in full — Q: "Does units / spell-units with :battle: timing can be played
+ * during :haste: thanks to Dispatch Courier?" A: "No, despite gaining :haste:
+ * they can still only be played during :battle:." The designer's own reasoning,
+ * in rules-questions on this exact case: calebgannon "it's gotta be no" /
+ * "battle cards are designed to be played in battle only. Not all of them will
+ * cause problems but I think some will". That refusal is GENERAL — it is about
+ * what gaining haste can do, not about Courier — so it lives in the engine
+ * gate (`E.hastePlayAllowance`), above every grantor, rather than in any one
+ * card's predicate.
+ */
+export interface PlayPermission {
+  /** R97: how many times per turn may `ctx.seat` play this card during the
+   * HASTE step (R18) despite its printed timing? Return 0 for no (the
+   * default), a finite count for a printed "each turn" budget, or `Infinity`
+   * for an unbudgeted grant. The engine sums every grantor's answer and
+   * compares the total with `ctx.usedThisTurn`. */
+  playAtHaste?: (g: E, self: Entity, ctx: PlayCtx) => number;
+}
+
 export interface CardBehavior {
   /** X-cost cards only: the smallest legal X ("X can't be zero" → 1).
    * Casting requires (and X options start at) this much open mana. */
@@ -594,6 +812,20 @@ export interface CardBehavior {
   /** R59: continuous COST modifiers, same radiation rules as `statics`
    * ("Spells cost [one] more to play during battle" — Tranquility) */
   costMods?: CostMod[];
+  /** R94: continuous ATTRIBUTE grants onto resolving EFFECTS, same radiation
+   * rules as `statics` and `costMods` ("[Augment] Your units and spells gain
+   * {g}powerful" — Emberflame Enlightener) */
+  effectAttrs?: EffectAttrMod[];
+  /** R95: continuous PERMISSIONS to apply a mod where the rules otherwise
+   * refuse, same radiation rules again ("[Augment] You may augment cards from
+   * hand and bin during battle as if they were [Virus]" — Rook) */
+  modPermissions?: ModPermission[];
+  /** R97: continuous PERMISSIONS to PLAY a card at a timing its printed line
+   * refuses, same radiation rules again — but SUMMED rather than OR-folded,
+   * because the printed text carries a per-turn count ("[Augment] Each turn,
+   * you may play a unit during the mana step as if it had [Haste]" — Dispatch
+   * Courier) */
+  playPermissions?: PlayPermission[];
   /** the card can be applied as an augment even without augmentAttrs or
    * augmentText — its [Augment] text is implemented via `statics` */
   augmentable?: boolean;
@@ -607,6 +839,26 @@ export interface CardBehavior {
    * be prophesied from the bin unless it says so, so this defaults to false
    * and the `prophesy` action's `from: 'bin'` is refused without it. */
   prophesyFromBin?: boolean;
+  /**
+   * R100: "I can't be played from your hand." (Calming Force) — the mirror of
+   * `prophesyFromBin` and defaulting the other way: every card may be played
+   * from hand unless it says it may not, so this is opt-in and permissive by
+   * default.
+   *
+   * A NEW flag rather than a reuse, because nothing existing means this. R64's
+   * `restrict` narrows what an EFFECT may TARGET; `prophesyFromBin` is about a
+   * different zone and a different verb; `timing` is about WHEN, not WHERE FROM.
+   * The engine was strictly more permissive than the printed card, and this is
+   * the whole of the difference.
+   *
+   * ⚠ It restricts PLAYING FROM HAND and nothing else. The card is still
+   * reachable — cached and released (R42/R45), played from a bin under a
+   * permission (R96), applied as a mod, discarded, recycled — because the
+   * printed line names one zone and one verb. Enforced in `doPlayCard` and
+   * refused by all three `legalActions` sites that push a hand `playCard`: a
+   * refusal the UI still offers as a legal click is its own playtest report.
+   */
+  noPlayFromHand?: boolean;
   /** R29: "You may play me into an open spot in your formation" (Tiderunner
    * Initiate; Trench Stalker's first clause). The card is PLAYED into the
    * line — the spot is chosen in the cast window like any other part of how a
@@ -650,7 +902,18 @@ export interface CardBehavior {
    * and unowned, so every holder in play is offered the replacement and the
    * card itself decides whose columns it cares about. */
   replaceCombatDamageToPlayer?: (g: E, self: Entity, seat: Seat, amount: number,
-    info: { attacker: Seat; region: number }) => boolean;
+    info: {
+      attacker: Seat; region: number;
+      /** R98: the striking COLUMN's live attributes — {Piercing}, {Lethal},
+       * {Thieving}, {Powerful}, … Added because a hook that has to tell a
+       * Piercing hit from a plain unblocked one could not: Oorblak's parked
+       * half turns entirely on that distinction (RAQ "[Solved] Oorblak vs
+       * Piercing"). */
+      attrs: Set<string>;
+      /** R98/R61 {Pure}: the exchange was attribute-blind, so `attrs` is empty
+       * and the card should behave as if the column printed nothing. */
+      pure: boolean;
+    }) => boolean | number;
   /** UI-only PURE query (playtest #5): the amount a state-derived X spell
    * (e.g. Burning Vengeance's "units that died this battle") would use if it
    * resolved RIGHT NOW for `seat`, with `region` the active battle region.

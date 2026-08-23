@@ -43,6 +43,24 @@
  *    combat 'lifeLost' with my column connecting. A column that both kills
  *    blockers and pierces through fires once per damage instance.
  *
+ *  - THE EVERYWHERE (R91): the NAMING is live — a Decision at R50's
+ *    'endOfHaste', menu = every card name in play plus an explicit "not in
+ *    play" no-op — and the silence is R62's E.suppress, region-scoped, on
+ *    every copy of the named card in my region. What is approximated is the
+ *    DURATION: printed it is continuous ("as long as I am in their region"),
+ *    and the engine has only the until-regroup form. That is not cosmetic here.
+ *    At the end of the haste step every unit is still home, so my region holds
+ *    only my own side; the printed card reaches an enemy because it ATTACKS
+ *    INTO their region later in the same turn and the continuous effect then
+ *    switches on. So today the card can only silence allies. It is deliberately
+ *    NOT "fixed" by reaching across regions — Caleb, rules-questions: "If you
+ *    have a question about wheither something can be done with units across
+ *    regions, the answer is no", and "the single rule we'll never violate is
+ *    'nothing can send information across regions'".
+ *    The seam: a STRING on Entity to hold the named card (budgets are
+ *    numeric-only) plus a StaticMod matching on a card NAME rather than an
+ *    entity id. 38-light-a.test.ts's todo says the same.
+ *
  * UNPARKED by the R49/R50 engine wave:
  *  - Stalwart Sentinel reads the play events' new `data.from` zone instead of
  *    scanning this apply() call's log (which was unsound — a cast that
@@ -52,10 +70,8 @@
  *  - Keeper of Tithes hears the new 'endOfHaste' event.
  *
  * PARKED (needs primitives that do not exist; each registers crash-free):
- *  - The Everywhere: needs a "name a card" player action. That is the ONLY
- *    thing left — this entry used to add "AND the ability-suppression layer
- *    already parked for Monke / Suppression Field / Transmogrifant", and R62
- *    shipped that layer; all three of those cards use it today.
+ *  - (none left in this batch — The Everywhere was the last one, and R91
+ *    unparked it to the approximation described above.)
  */
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -509,18 +525,92 @@ card('Stalwart Sentinel', {
 
 // "[Augment] During [Haste] name a card. My last named card loses all
 // abilities. (As long as I am in their region.)" — l/4 3/3 {Haste} Spirit
-// Unit. PARKED (header) on ONE missing primitive: a "name a card" player
-// action. The suppression half is done — R62's StaticMod.suppressAbilities is
-// exactly "loses all abilities", region-scoped and radiating, and Monke,
-// Suppression Field and Transmogrifant all use it; with a naming action this
-// becomes a static whose `affects` matches the named card. The inert
-// augmentText keeps isAugment() true so the card plays and attaches
-// crash-free.
+// Unit.
+//
+// R91 — UNPARKED, as an approximation (see the batch header). The park note
+// said "a 'name a card' PLAYER ACTION. That is the only thing left", and that
+// was a stale claim about the engine on the day it was written: `ctx.choose`
+// takes an arbitrary option list, and `DecisionOption.card` exists precisely so
+// the client renders a real card scan instead of a text label (types.ts: "when
+// the option IS a card (hand looks, deck tops, bin picks), its name — the
+// client renders the real scan"). Naming is a Decision, and R50's 'endOfHaste'
+// fires inside a settle() window that is allowed to raise one — the same seam
+// Keeper of Tithes above uses for its end-of-[Haste] trigger.
+//
+// WHAT IS EXACT: the naming happens once per haste step, it is mandatory, it is
+// made by the HOLDER's controller (text-box [Augment], so "I" is the host when
+// this is donated), it hits every copy of the named card rather than one unit
+// ("my last named CARD"), it is REGION-SCOPED, and "loses all abilities" is
+// R62's E.suppress({ abilities: true }) — the same primitive Suppression Field
+// and Monke use.
+//
+// The region scoping is not a choice. Caleb, rules-questions, twice and
+// emphatically:
+//   "if you take away anything from the rules, it is: If you have a question
+//    about wheither something can be done with units across regions, the
+//    answer is no. …the only exception is attacking into other regions"
+//   "the single rule we'll never violate is 'nothing can send information
+//    across regions'"
+// So the silence reaches only copies standing in MY region.
+//
+// ⚠ WHAT IS APPROXIMATED, and it is the clause that gives the card its teeth:
+// the printed effect is CONTINUOUS ("as long as I am in their region"), and the
+// engine has only R62's UNTIL-REGROUP form. That matters more here than the
+// word "until regroup" suggests. At the end of the haste step every unit is
+// still standing at home, so my region holds only my own side; the printed card
+// reaches an enemy because it ATTACKS INTO their region later in the same turn,
+// at which point the continuous effect switches on. A one-shot applied at
+// naming time cannot see that coming. So today this silences allies (and units
+// whose control you have taken) and nothing else — a real, testable effect, and
+// an honestly weak one. It is NOT resolved by reaching across regions: that
+// would be inventing a rule against the quote above.
+//
+// The missing seam, exactly: a STRING on Entity to hold the named card (budgets
+// are numeric-only — that is the store R90's Prediction Prophet uses), plus a
+// StaticMod that matches on a card NAME rather than an entity id, so the
+// silence can be re-evaluated as units move between regions. Then this card
+// becomes a static and stops being a trigger at all. This batch's todo test and
+// R91 both say so.
 card('The Everywhere', {
   augmentText: [{
-    type: 'triggered', events: [],
-    label: '(parked) during [Haste] name a card — my last named card loses all abilities',
-    effect: { run: () => { /* PARKED: needs a name-a-card action + suppression layer */ } },
+    type: 'triggered', events: ['endOfHaste'],
+    label: 'during [Haste] name a card — my last named card loses all abilities',
+    effect: {
+      run: (g, ctx) => {
+        // "name a card" is unrestricted, so the menu is every card name in
+        // play, not just the ones here — naming is a real choice even when the
+        // named card turns out to be somewhere this cannot reach. Plus the
+        // explicit "not in play at all" option, which is a no-op on the printed
+        // card too and is the only way to decline friendly fire.
+        const names = [...new Set(
+          g.s.regions.flatMap((_, r) => g.unitsIn(r)).map(u => u.card),
+        )].sort();
+        const NOBODY = '';
+        const named = ctx.choose('name', {
+          kind: 'payOrDecline', seat: ctx.controller,
+          prompt: 'The Everywhere: name a card',
+          options: [
+            ...names.map(n => ({ label: n, value: n, card: n })),
+            { label: 'a card that is not in play', value: NOBODY },
+          ],
+        }) as string;
+        if (named === NOBODY) {
+          g.ev('info', 'The Everywhere names a card that is not in play — nothing is silenced.');
+          return;
+        }
+        // R12: only copies in MY region. Re-looked up here rather than above:
+        // the choose may have suspended and been replayed, and "all copies" is
+        // judged now, at resolution (R27).
+        const hit = g.unitsIn(ctx.region).filter(u => u.card === named);
+        if (!hit.length) {
+          g.ev('info',
+            `The Everywhere names ${named} — no copy of it is in this region, so nothing is silenced.`);
+          return;
+        }
+        g.ev('info', `The Everywhere names ${named}: ${hit.length} copy(s) here lose all abilities.`);
+        for (const u of hit) g.suppress(u, 'The Everywhere', { abilities: true });
+      },
+    },
   }],
 });
 

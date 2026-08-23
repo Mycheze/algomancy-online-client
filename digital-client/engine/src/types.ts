@@ -147,6 +147,53 @@ export interface Entity {
   tempToughness: number;
   /** attributes granted "until regroup" (cleared with temp stats, R11 step 3) */
   tempAttrs?: Attr[];
+  /**
+   * R96 {Unstable}, as an until-regroup STAMP rather than a derivation.
+   *
+   * A modded card is Unstable because it has mods (R69) — that is derived and
+   * needs no field. This is the OTHER way in: "you may play spells from your
+   * bin. If you do, they gain {p}unstable until regroup" (Abyssal Evocation,
+   * Spell Excavation). The card SAYS "gain … until regroup", so it has to
+   * survive the permission lapsing and even the card being played again, which
+   * a derivation cannot do.
+   *
+   * ⚠ Not an `Attr` — {Unstable} is absent from the Attr union on purpose (it
+   * is a bin REPLACEMENT, not a combat attribute), so it cannot ride tempAttrs
+   * and needs its own flag. Cleared in the R11 step-3 sweep beside
+   * `suppressed`, which is what makes "until regroup" free.
+   */
+  unstable?: boolean;
+  /**
+   * R98: "Until regroup, prevent all damage that would be dealt to target
+   * unit" (Phytochemical Protection). The value is the CARD that put the
+   * shield up, exactly as `suppressed` names the card that switched a layer
+   * off — the log line has to say what stopped the damage.
+   *
+   * A field on the ENTITY rather than a radiating `StaticMod` because the
+   * shield belongs to a resolved SPELL with no permanent behind it: there is
+   * nothing in play for a static to hang on. Cleared in the R11 step-3 sweep
+   * beside `suppressed` and `unstable`, which is what makes "until regroup"
+   * free. Additive/optional — states serialized before R98 read as unshielded.
+   *
+   * ⚠ Prevention is NOT the R38 REPLACEMENT hooks' semantics. Caleb ruled
+   * (2024-10-24) that replacing damage does not unmake it, so {Lethal} still
+   * kills through a Blightsea Polyp. Prevention DOES unmake it — RAQ "[Solved]
+   * Poisonous vs 'Whenever I am dealt damage' vs Phytochemical Protection":
+   * "damage is dealt in the form of -1/-1 counters, which means if there is
+   * not damage being dealt, then no counters are placed", and "Jollyglop
+   * doesn't trigger". Read `E.preventUnitDamage`, never this raw.
+   */
+  damageShield?: CardName;
+  /**
+   * R98: damage prevented by `damageShield` that has not yet been paid out as
+   * +1/+1 counters ("Put a +1/+1 counter on it for each damage prevented this
+   * way"). Held rather than paid on the spot because both commit loops mark a
+   * whole batch of damage before checking any deaths — `addCounters` runs
+   * `checkDeaths`, and paying mid-loop would kill a unit that the rest of the
+   * batch is still being dealt to, which is exactly what R80 made simultaneous.
+   * `E.settleDamagePrevention()` drains it at the end of each commit.
+   */
+  shieldPending?: number;
   /** ordered mod stack; index 0 sits directly under the base card */
   mods: EntityId[];
   /** for kind 'mod': the host entity */
@@ -466,6 +513,15 @@ export interface StackItem {
    * an enemy spell — a card belongs to its owner, so that is the erased pile
    * it lands in and the mod owner it becomes on a spell unit's body. */
   augments?: { card: CardName; by: Seat }[];
+  /**
+   * R96: this card was played from a zone that makes it {Unstable} — today,
+   * out of a bin under Abyssal Evocation. A STAMP, not a derivation: `augments`
+   * already makes a carrier Unstable (R69) and this is the second, independent
+   * way in, so `dischargeItem` checks BOTH. It rides onto the spawned body of a
+   * spell UNIT played this way (Entity.unstable), which is the edge Spell
+   * Excavation's own note left open.
+   */
+  unstable?: boolean;
   /** triggered/activated: source entity (may be gone by resolution) */
   sourceId?: EntityId;
   /** virus: host target */
@@ -605,6 +661,17 @@ export type EventType =
   // closing (before it is nulled and before the R44 prophecy sweep reads the
   // mana tally); 'startOfDeployment' fires AFTER R38's rot damage has settled.
   | 'endOfHaste' | 'startOfDeployment'
+  // R102: a card's `replaceRotDamage` hook consumed a player's rot damage.
+  // Fired by E.replaceRotDamage the moment a hook returns true, INSIDE
+  // rotDamage()'s settle() window, so the replacement can put a real triggered
+  // effect on the stack instead of having to finish inline: the hook's
+  // signature has no EffectCtx and no ctx.choose, which is exactly why
+  // "put that many -1/-1 counters on TARGET unit instead" (Beyond, Codex
+  // Incarnate) had nowhere to ask its question. `data` carries `seat` (who
+  // would have taken it), `n` (how much was replaced), `card`, and `unit` —
+  // the ANCHOR entity, so a `self: true` listener on the replacing card
+  // matches and nobody else's does.
+  | 'rotReplaced'
   | 'regroup' | 'endOfTurn' | 'gameOver' | 'info'
   // CLIENT-ONLY, and the one event with no log line of its own (msg is ''):
   // an item that resolved with no response window ever gets to sit on the
@@ -650,6 +717,15 @@ export type Action =
    * the card itself says otherwise ("I can be prophesied from your bin" —
    * Angel of Anguish, CardBehavior.prophesyFromBin). */
   | { type: 'prophesy'; seat: Seat; from: 'hand' | 'bin'; index: number }
+  /**
+   * R96: play a spell out of your OWN bin, under a permission granted this
+   * battle ("In this battle, you may play spells from your bin" — Abyssal
+   * Evocation). Its own variant, following `prophesy`'s precedent, rather than
+   * a loosened `playCard`: `playCard` means "out of your hand" everywhere in
+   * the engine, replay corpus included, and widening it would silently
+   * re-index every saved game's hand plays.
+   */
+  | { type: 'playFromBin'; seat: Seat; binIndex: number }
   /** R42/R45: play a card out of your cache. Legal only with permission — a
    * fulfilled prophecy (free, ignoring affinity) or a glimpse-style
    * play-until-end-of-turn stamp (pay the mana, ignore affinity). Normal
@@ -677,6 +753,23 @@ export type Action =
       type: 'declareBlocks'; seat: Seat; blocks: Record<number, EntityId[]>;
       /** counterattackers sent out with the block declaration (1v1 battle rule) */
       send?: EntityId[];
+      /**
+       * R87 — the spell tokens riding out WITH those counterattackers, named
+       * in the same field, with the same meaning, as `declareAttack`'s.
+       *
+       * Playtest report #67 (game GETD, 2026-08-22): *"What happened to
+       * Rashi's Poison tokens here? She just wanted to bring them with her
+       * attackers but they somehow went onto the stack"*. `declareAttack` has
+       * always had this field and `declareBlocks` had not, so the client had
+       * nowhere to put them and the only remaining use for a token was to cast
+       * it where it stood — which is action 94 of that game, three Poison 1s
+       * fired into a region everything had just left.
+       *
+       * Optional, and the two lists are simply concatenated on the way in, so
+       * every saved game that put a token in `send` (which `apply` has always
+       * accepted, even though nothing ever offered it) replays unchanged.
+       */
+      spellTokens?: EntityId[];
     }
   | { type: 'passPriority'; seat: Seat }
   | { type: 'doneDeploying'; seat: Seat }
@@ -706,6 +799,37 @@ export interface GameState {
   /** the elements in this game (draft: the trio) — resources outside this
    * list cannot be created and the UI never offers them */
   elements: Element[];
+  /**
+   * R99, mode 'constructed' ONLY: the elements each seat's DECK is built from —
+   * `deckElements[seat]` is the union of `getCard(n).factions` over that seat's
+   * decklist, in the canonical `ALL_ELEMENTS` order.
+   *
+   * ⚠ THIS IS A PRESENTATION HINT, NOT A RULE. Ledger #63 (GETD, 2026-08-22):
+   * "In constructed, the resource options from recycling and prismites should
+   * be limited just to the elements that are in your deck. No need to put the
+   * whole list for every single game when they're not relevant." — and it is a
+   * MENU complaint, so it gets a menu answer. `legalActions` still offers all
+   * seven, `doRecycleForResource` and `doExchangePrismite` still accept all
+   * seven, and every saved game therefore still replays: nothing that was legal
+   * became illegal.
+   *
+   * That restraint is load-bearing, not caution. Reap the Due is mono-light and
+   * scales off DARK affinity, so a mono-light deck running it must still be
+   * able to take dark resources or the card is blank. The client should DEFAULT
+   * the menu to this list and keep the other elements reachable.
+   *
+   * Absent in 'shared' and 'draft': shared plays all seven, and draft already
+   * narrows `elements` to its trio, so a second narrowing would be noise. A
+   * client reading this must fall back to `elements` when it is undefined.
+   *
+   * Additive/optional — states serialized before R99 simply lack it.
+   *
+   * ⚠ OPEN, and shipped the conservative way: is a constructed deck's element
+   * identity PUBLIC at game start? Right now this field is not redacted, so
+   * BOTH seats can read both entries. See R99 for the one line in
+   * server/view.ts that makes it owner-only if the owner rules it private.
+   */
+  deckElements?: Element[][];
   sharedDeck: CardName[];
   /** mode 'constructed': decks[seat] = that seat's own deck (top = index 0).
    * Absent in 'shared'/'draft', where sharedDeck is the one deck. */
@@ -758,12 +882,44 @@ export interface GameState {
    * decision would otherwise strand the game between the haste step and the
    * battle phase. Additive/optional. */
   hasteEnding?: boolean;
+  /** R102: the START-OF-DEPLOYMENT opening is in progress — R38's rot damage
+   * (and anything it queued) is still draining, and the 'startOfDeployment'
+   * event has NOT fired yet. The event waits for it (E.finishDeployStart,
+   * called from settle()), exactly the way `hasteEnding` defers the phase flip
+   * and `turnEnding` the turn flip.
+   *
+   * This exists because R102 gave the rot REPLACEMENT a target to choose:
+   * Beyond, Codex Incarnate queues a triggered effect from inside
+   * E.rotDamage(), and the decision that effect raises suspends out of
+   * startDeployment() entirely. Before this flag the resumed decision landed
+   * in doDecide's collectTargets/commitItem/settle path, which knows nothing
+   * about the rest of startDeployment — so 'startOfDeployment' was never fired
+   * and every "At the start of deployment, …" card on the board (Scholar of
+   * the Void, Xzydris, Prediction Prophet, Invasive Species) silently missed
+   * its turn. Additive/optional. */
+  deployStarting?: boolean;
   /** R43: mana each seat has spent DURING the current haste step, behind
    * Tithe Enforcer's "End [Haste] with used mana" prophecy. Zeroed when the
    * haste step opens and again once the end-of-haste fulfilment sweep has
    * read it, so it is nonzero only inside its own window. Additive/optional
    * (pre-expansion states read as 0). */
   hasteManaSpent?: number[];
+  /**
+   * R97: grant-funded plays each seat has made in the current haste step —
+   * cards played there under a `PlayPermission` despite a printed timing that
+   * is not [Haste] ("[Augment] Each turn, you may play a unit during the mana
+   * step as if it had [Haste]", Dispatch Courier).
+   *
+   * A sibling of `hasteManaSpent` on purpose: same shape, same per-seat
+   * lifetime, zeroed by the same `startHasteStep`. A PLAY is not an ability
+   * activation, so `Entity.budgets` never sees one and the printed "Each turn"
+   * has nowhere else to live; the haste step happens exactly once a turn, so
+   * "per haste step" and "each turn" are the same window here.
+   *
+   * Additive/optional — states serialized before R97 read as 0, and no saved
+   * game replays differently for it (nothing that was legal became illegal).
+   */
+  hastePlaysUsed?: number[];
   /** R43: battle ROUNDS completed so far this game — the forward anchor for
    * "One Battle Passes". In 1v1 both the initiative battle and the
    * counterattack battle tick it (Caleb 2024-09-24). Additive/optional. */

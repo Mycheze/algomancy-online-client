@@ -742,6 +742,24 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    opening the cache dialog. */
 .cachenames span { color: var(--accent); cursor: help; border-bottom: 1px dotted var(--accent); }
 
+/* [69] the ride-along picker. It sits INSIDE the prompt bar rather than being
+   a card row of its own: the report asked for "a little dialogue", and a bar
+   the width of the board full of full-size token cards would be a bigger
+   interruption than the accident it is preventing. Each chip is the same
+   clickable token as the one in the strip (data-act="token"), so picking here
+   and picking there are literally the same click. */
+.ridepick { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; margin: 0 4px; }
+.ridechip { display: inline-block; padding: 2px 8px; border-radius: 10px; cursor: pointer;
+  border: 1px solid #7a5e1e; background: #1b2028; color: var(--fg, #e8e6df); font-size: 12px; }
+.ridechip:hover { border-color: var(--accent); }
+.ridechip.on { background: #3d5a20; border-color: var(--glow, #b7e26a); color: #eaf6d8; }
+
+/* R89: what an augment would actually donate to a SPELL token, in the
+   mod-in-progress bar — "you can only do this with attributes" (Caleb
+   2025-03-06). A mod of pure rules text is legal on a token and changes
+   nothing, and the player must be able to read that before they commit. */
+.modgift { color: var(--glow); font-size: 12px; margin-top: 4px; }
+
 /* ── the visual-clarification layer (ui/anim.ts) ─────────────────────
    Two overlays live OUTSIDE #app so render()'s innerHTML wipe cannot touch
    them, and both are pointer-events:none: the board underneath stays live

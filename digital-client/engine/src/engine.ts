@@ -33,6 +33,32 @@ import { rngShuffle } from './rng.ts';
  * which is not playing (R37). */
 export interface CostOpts { region?: number; purpose?: 'play' | 'mod' }
 
+/**
+ * R98: what `E.preventUnitDamage` is being asked about — one recipient, one
+ * commit, one source.
+ *
+ * `attrs` and `pure` are here from the start rather than "when something needs
+ * them", because the card that will need them is already written and parked:
+ * Oorblak's Piercing-excess half cannot tell a Piercing hit from a plain
+ * overkill out of `{ attacker, region }`, which is precisely why its ledger
+ * entry says the hook is the wrong shape. `attrs` is the SOURCE's live
+ * attribute set (the same set the commit loop is reading), and `pure` is R61's
+ * attribute-blind exchange, which switches those attributes off for both
+ * sides.
+ */
+export interface UnitDamageInfo {
+  /** the region the damage is dealt in (R12) */
+  region: number;
+  /** what is dealing it, for the log ("Fireball", a column label) */
+  source: string;
+  /** combat damage, or an effect's */
+  combat: boolean;
+  /** the SOURCE's live attributes — {Piercing}, {Deadly}, {Powerful}, … */
+  attrs: Set<string>;
+  /** R61 {Pure}: this came out of an attribute-blind exchange */
+  pure: boolean;
+}
+
 export class Suspended { }
 export class GameEnded { }
 export class IllegalAction extends Error { }
@@ -227,6 +253,35 @@ export class E {
     return c[key]!;
   }
 
+  /**
+   * R96: may `seat` play SPELLS out of their own bin in `region` right now?
+   *
+   * "In this battle, you may play spells from your bin" (Abyssal Evocation).
+   * It is a BATTLE-SCOPED permission and it is deliberately not an
+   * `anchored()` radiator: `E.anchored` walks units in play and augment mods,
+   * and Abyssal Evocation is a SPELL — it resolves and goes to the bin, so
+   * there is nothing left in play to radiate from. What the card grants is a
+   * fact about this battle, which is exactly what battleCounters are.
+   *
+   * Region-KEYED, which is R14's "'this battle' = this region's battle" for
+   * free, and stops round 1's permission leaking into round 2. Reset by
+   * `startBattlePhase`'s existing wipe, so "in this battle" needs no cleanup
+   * of its own, and it is not a new GameState field — zero serialization or
+   * replay risk.
+   *
+   * SPELLS specifically: the key names what was granted, so a future "you may
+   * play UNITS from your bin" gets its own key rather than silently widening
+   * this one. `apply` and `legalActions` both read THIS function — the
+   * fuzzer's "legalActions lied" check has caught that split before.
+   */
+  mayPlaySpellsFromBin(seat: Seat, region: number): boolean {
+    return this.battleCounter(region, `binPlaySpells:${seat}`) > 0;
+  }
+  /** R96: grant the above for the rest of this region's battle. */
+  grantBinSpellPlay(seat: Seat, region: number): void {
+    this.bumpBattleCounter(region, `binPlaySpells:${seat}`);
+  }
+
   // ── resources & payment ─────────────────────────────────────────────
   affinity(seat: Seat, element: string): number {
     let n = 0;
@@ -257,6 +312,12 @@ export class E {
   }
   /** reentrancy guard for cost-modifier evaluation (mirrors inStatics) */
   private inCostMods = false;
+  /** reentrancy guard for effect-attribute evaluation (mirrors inCostMods) */
+  private inEffectAttrs = false;
+  /** reentrancy guard for mod-permission evaluation (mirrors inCostMods) */
+  private inModPermissions = false;
+  /** reentrancy guard for play-permission evaluation (R97; mirrors the above) */
+  private inPlayPermissions = false;
 
   /**
    * The "unit-or-augment-mod → anchor" radiator walk, shared by everything
@@ -310,6 +371,46 @@ export class E {
         for (const mod of this.card(holder.card).costMods ?? []) out.push({ holder: anchor, mod });
       }
     } finally { this.inCostMods = false; }
+    return out;
+  }
+
+  /**
+   * R94: every attribute a continuous `EffectAttrMod` grants to ONE PART of a
+   * resolving stack item. `costModsFor`'s sibling, line for line — the same
+   * `anchored()` walk (units in play plus augment mods reading from their
+   * host), the same region scope (R12: the mod reads from the ANCHOR's
+   * region, which is why an Enlightener augmented onto an enemy unit boosts
+   * THAT player's spells), the same shallow R62 guard every radiating-static
+   * query uses (`anchor.suppressed?.abilities`, not the full
+   * abilitiesSuppressed() projection), and the same reentrancy latch.
+   *
+   * Ownership is NOT decided here. `ctx.seat` is the resolving item's
+   * controller and `self` is the anchor; a card that means "YOUR spells"
+   * compares the two in its own `affects`, exactly as `StaticMod.affects`
+   * does for "your units". `anchored`'s contract is that a mod's text reads
+   * from the HOST's perspective, so both halves of an [Augment] fall out for
+   * free.
+   *
+   * This runs on every part of every resolving item, so the `effectAttrs`
+   * presence test is the FIRST clause of the `anchored()` predicate: on a
+   * board with neither of the two cards that declare one — i.e. almost every
+   * board — the walk is one property read per entity and allocates nothing
+   * past the empty array.
+   */
+  private effectAttrsFor(ctx: import('./cards/dsl.ts').EffectAttrCtx): Attr[] {
+    if (this.inEffectAttrs) return [];
+    const out: Attr[] = [];
+    this.inEffectAttrs = true;
+    try {
+      for (const { holder, anchor } of this.anchored((h, a) =>
+        !!this.card(h.card).effectAttrs
+        && a.region === ctx.region
+        && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
+        for (const mod of this.card(holder.card).effectAttrs ?? []) {
+          if (mod.affects(this, anchor, ctx)) out.push(...mod.attrs);
+        }
+      }
+    } finally { this.inEffectAttrs = false; }
     return out;
   }
 
@@ -494,21 +595,89 @@ export class E {
       t += typeof mod.dt === 'function' ? mod.dt(this, holder, e) : (mod.dt ?? 0);
     }
     // layer 4: Tough / Balanced in application order (R19); duplicates don't stack
-    for (const a of this.layer4Attrs(e)) {
+    const statAttrs = this.statLayerAttrs(e);
+    for (const a of statAttrs) {
       if (a === 'Tough') t *= 2;
       else if (a === 'Balanced') { const m = Math.max(p, t); p = m; t = m; }
     }
-    // layer 5 (Inverted), 6 (Unaware) go here
+    /**
+     * LAYER 5 — {Inverted} (R93). "Invert the stat changes of inverted units."
+     *
+     * The operation is on the NET CHANGE FROM BASE, not on the final number
+     * and not on each contribution one at a time. Caleb worked it through
+     * himself in rules-questions and got both readings to agree:
+     *
+     *   "1/4 tough balanced is 8/8 — Tough is +0/+4, Balanced is +7/0.
+     *    If we include inverted it gains +0/-4, -7/+0 → To become a -6/0"
+     *   "If we compare 8/8 to 1/4, it's +7/+4"
+     *   "Which also works to invert to a -6/0"
+     *
+     * so negating each contribution and negating the accumulated delta are the
+     * same answer, and the delta form is one line. Hence `base - (cur - base)`,
+     * i.e. `2·base - cur`. Earlier in the same channel, on whether it is a
+     * word-game or arithmetic: "it is a mathematical operation, not a
+     * linguistic operation" — Tough inverted is not "halve", it is "lose the
+     * +0/+4 you gained" ("inverted would turn their +0/+3 into -0/-3 and kill
+     * them"). Counters ride along by construction: "Does inverted reverse the
+     * affect of +1/+1 Counters?" — "yes".
+     *
+     * `base` here is layers 1-2, which is exactly right: a base REWRITE
+     * (`baseSet`, `StaticMod.baseP/baseT`) redefines what base IS rather than
+     * changing it, so it is the thing inverted FROM and is never inverted.
+     * spikeydog_40883, uncontradicted: "Its base stats aren't being inverted.
+     * Just the modifications to those stats by counters, stat-altering
+     * augments, or attributes."
+     *
+     * Applied ONCE, however many sources granted it — `statLayerAttrs` dedupes
+     * on the way in, the same "an attribute is either present or not" rule
+     * layer 4 runs on (R19). Two Reality Benders on one host do not cancel.
+     *
+     * No death check happens inside here, and that is deliberate: `effStats`
+     * is atomic and the caller checks deaths after. Caleb, asked whether a
+     * unit dies part-way through the arithmetic: "Not if it hits 0 mid
+     * calculation" / "Doesn't instantly die", and lofavreel's gloss he agreed
+     * with — "imagine it as one big equation… It is not a time thing".
+     *
+     * ⚠ OPEN (R93): Caleb also said "Tough inverted balanced would be
+     * different" from "tough balanced inverted", which would make {Inverted}
+     * an interleaved member of the layer-4 order rather than a clean layer 5.
+     * He immediately called that case "basically impossible to make happen.
+     * Because tough inverted would die before you could add more", and his own
+     * worked example is the clean layer. Shipped clean; see R93.
+     */
+    if (statAttrs.includes('Inverted')) {
+      p = 2 * base[0]! - p;
+      t = 2 * base[1]! - t;
+    }
+    // layer 6 (Unaware) goes here
     return [p, t];
   }
-  /** R19: layer-4 attrs in application order — own printed (type-line order),
-   * then augment mods (stack order), then column-shared (column order);
-   * first occurrence wins, an attribute is either present or not. */
-  private layer4Attrs(e: Entity): ('Tough' | 'Balanced')[] {
-    const out: ('Tough' | 'Balanced')[] = [];
+  /** R19/R93: the stat-layer attrs, in layer-4 application order — own printed
+   * (type-line order), then augment mods (stack order), then column-shared
+   * (column order); first occurrence wins, an attribute is either present or
+   * not. {Inverted} rides the same walk because it is granted by exactly the
+   * same channels ({Inverted} is printed on Its Dark Bubb, donated by Reality
+   * Bender's type-line [Augment], and grantable by a static — see
+   * batch-hybrids-ld-b's attr row) and its POSITION in this list is unused:
+   * layer 5 applies once, after the whole of layer 4.
+   *
+   * Column-sharing {Inverted} is not an extrapolation from Tough; it is asked
+   * and answered verbatim in rules-questions —
+   *   spikeydog_40883: "So, all attributes are shared between the units in the
+   *                     same column? Including stuff like Inverted or Tough?"
+   *   calebgannon:     "Yes"
+   * and again, generally: "Units in a column just share attributes in all
+   * situations… if one unit in the column has tough, the other will also have
+   * it and it's defense will be doubled (regardless of it's when you're
+   * calculating combat damage, fighting or whatever)". A player working the
+   * consequence out in the same channel: augmenting Reality Bender onto a
+   * robot's column-mate kills the robot "because it would share inverted
+   * attribute with" it. */
+  private statLayerAttrs(e: Entity): ('Tough' | 'Balanced' | 'Inverted')[] {
+    const out: ('Tough' | 'Balanced' | 'Inverted')[] = [];
     const take = (attrs: Iterable<string>) => {
       for (const a of attrs) {
-        if ((a === 'Tough' || a === 'Balanced') && !out.includes(a)) out.push(a);
+        if ((a === 'Tough' || a === 'Balanced' || a === 'Inverted') && !out.includes(a)) out.push(a);
       }
     };
     take(this.ownAttrs(e));
@@ -919,7 +1088,38 @@ export class E {
     holders.sort((a, z) => a.holder.id - z.holder.id);
     for (const { holder, anchor } of holders) {
       if (this.card(holder.card).replaceRotDamage!(this, anchor, seat, n)) {
-        this.ev('info', `${holder.card} replaces the ${n} damage ${this.pname(seat)}'s rot would deal.`);
+        // R102 — the replacement's log line is now a DISPATCHED event.
+        //
+        // It used to be a plain `ev('info', …)`. Same words, same log line —
+        // only the type changed, and with it the fact that cards can hear it.
+        //
+        // Skittering Blight needs none: "instead put that many +1/+1 counters
+        // on me" is arithmetic the hook can finish on the spot. Beyond, Codex
+        // Incarnate reads "put that many -1/-1 counters on TARGET unit
+        // instead", and the owner ruled (2026-08-22) that it "would trigger,
+        // ask you what you want to target, then put the -1/-1 counters on
+        // during deployment (which still has and uses a stack)". A hook whose
+        // signature is `(g, self, seat, amount) => boolean` cannot ask
+        // anything — no EffectCtx, no ctx.choose — so the replacement fires
+        // THIS, a card declares an ordinary `self: true` triggered ability
+        // against it, and the whole R67 machinery (queue → collectTargets →
+        // commitItem) does the asking. No new Suspension variant, no new
+        // decision seam: the existing trigger path already runs during
+        // deployment (processTriggerQueue's `then = 'resolve'`).
+        //
+        // Fired AFTER the hook returned true, so the replacement is already a
+        // fact by the time anything hears about it: the damage is gone whether
+        // or not the queued effect later finds a target (R86, and R98's
+        // "a REPLACED hit still counts as dealt").
+        //
+        // `unit: anchor.id` and not `holder.id`: [Augment]-donated text reads
+        // from its HOST, which is what `anchored()` means by the anchor, and a
+        // `self: true` listener matches on the entity the ability is running
+        // for. `region` rides too so the region-scoped dispatch (R12) finds it.
+        const ev = this.ev('rotReplaced',
+          `${holder.card} replaces the ${n} damage ${this.pname(seat)}'s rot would deal.`,
+          { seat, n, card: holder.card, unit: anchor.id, region: anchor.region });
+        this.fireEvent('rotReplaced', ev);
         return true;
       }
     }
@@ -1533,22 +1733,123 @@ export class E {
    * REGION is offered the replacement and the card decides whose columns it
    * cares about. First to return true consumes the hit; ties by entity id.
    */
-  private replaceCombatDamage(seat: Seat, amount: number, info: { attacker: Seat; region: number }): boolean {
+  private replaceCombatDamage(seat: Seat, amount: number,
+    info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean }): number {
     const holders = this.anchored((h, a) =>
       !!this.card(h.card).replaceCombatDamageToPlayer
       && a.region === info.region
       && !this.abilitiesSuppressed(a));                         // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
+    let left = amount;
     for (const { holder, anchor } of holders) {
-      if (this.card(holder.card).replaceCombatDamageToPlayer!(this, anchor, seat, amount, info)) {
-        this.ev('info',
-          `${holder.card} replaces the ${amount} combat damage to ${this.pname(seat)} ` +
-          '(the damage still counts as having been dealt).',
-          { seat, amount, by: holder.card });
-        return true;
-      }
+      if (left <= 0) break;
+      const r = this.card(holder.card).replaceCombatDamageToPlayer!(this, anchor, seat, left, info);
+      // R98: the return widened from all-or-nothing to a NUMBER — the damage
+      // LET THROUGH — so a card can absorb part of a hit and pass the rest on.
+      // `true`/`false` keep their old meaning (all / none), which is what makes
+      // this a widening rather than a break: Blightsea Polyp still returns true.
+      const through = r === true ? 0 : r === false ? left : Math.max(0, Math.min(left, r));
+      if (through === left) continue;                           // this holder declined
+      this.ev('info',
+        `${holder.card} replaces ${left - through} of the ${left} combat damage to ` +
+        `${this.pname(seat)} (the damage still counts as having been dealt).`,
+        { seat, amount: left - through, by: holder.card });
+      left = through;
     }
-    return false;
+    return left;
+  }
+
+  /**
+   * R98: THE choke point for damage about to be dealt to a UNIT. Returns the
+   * damage LET THROUGH — 0 means nothing was dealt at all.
+   *
+   * Report #72 (GETD, 2026-08-22): "Phytochemical Protection is entirely non
+   * functional." It was, and it could not be written: the two places unit
+   * damage is committed (`dealEffectDamageAll`'s per-recipient loop and
+   * `combatSubStep`'s per-unit commit) consulted nothing, and the two hooks
+   * that did exist — `replaceRotDamage` and `replaceCombatDamageToPlayer` —
+   * are both damage to a PLAYER. This is the missing third.
+   *
+   * ── PREVENTION IS NOT REPLACEMENT, and the difference is the card ──
+   *
+   * R38's replacements do not unmake the damage: "Replacing the damage does
+   * NOT unmake it: Caleb ruled (2024-10-24) the damage still counts as having
+   * been DEALT, so {Lethal} still kills through it". Prevention is the other
+   * thing. RAQ "[Solved] Poisonous vs 'Whenever I am dealt damage' vs
+   * Phytochemical Protection", verbatim:
+   *
+   *   Q: "Does Poisonous bypass Phytochemical Protection?"
+   *   A: "No it doesn't. As said above, damage is dealt in the form of -1/-1
+   *       counters, which means if there is not damage being dealt, then no
+   *       counters are placed."
+   *   …"Then Sporebloom Siren deals 2 damage to Jollyglop, but damage is
+   *      prevented. Jollyglop doesn't trigger, won't get -2/-2 from Poisonous
+   *      but will receive +2/+2 counters from Phytochemical Protection."
+   *
+   * So a fully prevented hit produces NO damage event (nothing "is dealt
+   * damage"), no Poisonous counters, no {Deadly} kill, no {Resonant} rider and
+   * no {Blessed} gain — every one of those is keyed on damage being dealt.
+   * That is why this returns a number the callers must branch on rather than a
+   * flag they may ignore.
+   *
+   * ── WHAT IT DOES NOT TOUCH: assignment ──
+   *
+   * RAQ "[Solved] Excessive Combat Damage & interaction with Piercing, Deadly
+   * and Phytochemical Protection", on a 0/5 shielded Awoken Tomb in front of a
+   * 5/6 Bubb: "You must assign atleast 5 damage to Awoken before you can start
+   * assigning damage to Bubb in the back. Awoken will get atleast +5/+5
+   * counters, but won't make 5/5 unit." With Deadly instead: "Atleast 1 dmg to
+   * Awoken (gets +1/+1, won't create 1/1 unit), rest of the damage can go to
+   * Bubb". With Piercing: "Atleast 5 damage to Awoken (gets atleast +5/+5,
+   * won't create 5/5), atleast 6 damage to Bubb, rest can go to Opponent HP."
+   *
+   * The shield therefore changes NOTHING about lethal assignment, Piercing
+   * excess or Deadly's 1-point floor — those are planned against the unit's
+   * real toughness as if it were unprotected. This runs at COMMIT, after all
+   * of that planning, which is exactly where it has to be.
+   *
+   * ── THE SHAPE, and why it is this shape ──
+   *
+   * Numeric (damage let through) rather than boolean, so a partial preventer
+   * fits without a second seam — and so it matches the shape
+   * `replaceCombatDamageToPlayer` was widened to in the same ruling, which is
+   * what Oorblak's parked Piercing-excess half needs. `info` carries the
+   * source's live attributes and R61's {Pure} flag for the same reason: a hook
+   * that has to tell a Piercing hit from a plain overkill cannot do it from
+   * `{ attacker, region }` alone.
+   */
+  preventUnitDamage(u: Entity, amount: number, info: UnitDamageInfo): number {
+    if (amount <= 0) return amount;
+    if (!u.damageShield) return amount;
+    u.shieldPending = (u.shieldPending ?? 0) + amount;
+    this.ev('info',
+      `${u.damageShield} prevents all ${amount} damage to ${u.card}`
+      + ` (from ${info.source}) — no damage is dealt.`,
+      { unit: u.id, prevented: amount, by: u.damageShield });
+    return 0;
+  }
+
+  /**
+   * R98: pay out "Put a +1/+1 counter on it for each damage prevented this
+   * way", once the commit loop that prevented the damage has finished.
+   *
+   * Deferred rather than paid inside `preventUnitDamage` because `addCounters`
+   * runs `checkDeaths`: paying on the spot would resolve a death in the middle
+   * of a batch that R80 made simultaneous. Called at the end of BOTH commit
+   * loops; calling it with nothing pending is free.
+   */
+  settleDamagePrevention(): void {
+    for (const u of Object.values(this.s.entities)) {
+      const n = u.shieldPending ?? 0;
+      if (n <= 0) { delete u.shieldPending; continue; }
+      delete u.shieldPending;
+      if (!this.entity(u.id)) continue;
+      this.ev('info',
+        `${u.damageShield ?? 'The shield'}: ${u.card} gets ${n} +1/+1 counter(s)`
+        + ' — one for each damage prevented.',
+        { unit: u.id, n });
+      this.addCounters(u, n);
+    }
   }
 
   /**
@@ -1596,7 +1897,41 @@ export class E {
    * victim will really have taken rather than against a stale board.
    */
   dealEffectDamageAll(ctx: EffectCtx, hits: { target: ResolvedTarget; n: number }[]): void {
-    const srcAttrs = new Set(this.card(ctx.sourceName)?.attrs ?? []);
+    /**
+     * R94: the source's LIVE attributes, not its printed ones.
+     *
+     * This line used to read `this.card(ctx.sourceName)?.attrs`, i.e. the
+     * printed card and nothing else, and that was a real bug with a long tail:
+     * COMBAT damage has always read the live entity (colAttrs → ownAttrs →
+     * staticsFor), so a unit that GAINED {Powerful} hit twice as hard with its
+     * body and exactly as hard as before with its own damage ability. Soul
+     * Reaver, Deformant, Bloated Manablub, Verdant Necrophage, Cthyrian Culler,
+     * Nectar Ridge Oracle, Restitution, Seismomancy and Mirrorback Ambusher all
+     * deal noncombat damage from a unit source and all took the printed read.
+     *
+     * The designer scales a unit-sourced NONCOMBAT effect by that unit's
+     * {Powerful}, RAQ "[Solved] Resonant, Combat Damage, Conduit and Powerful":
+     *   Q: "What if Resonant is Powerful?"
+     *   A: "2/4 Resonant Powerful would deal 4 combat damage to enemy unit and
+     *       then put effect on stack to deal 8 damage to enemy face."
+     * — and {Powerful} is exactly the kind of thing that arrives by grant
+     * (Emberflame Enlightener's units half), never by printing.
+     *
+     * Shaped on `E.itemAttrs`, which has read it correctly for the
+     * {Afflicting} check all along: live entity while it is still in play,
+     * printed card once it is gone (a "when I die" ping outlives its body).
+     * ownAttrs, not effAttrs — the column-sharing layer is a COMBAT layer; an
+     * effect's source is the card, not the column it happens to be standing in.
+     *
+     * ⚠ Side finding, deliberately NOT fixed here: the same RAQ doubles the
+     * RESONANT RIDER a second time ("(4+1)x2 = 10 damage to enemy face"), while
+     * the engine riders the undoubled amount. That is a separate ruling with
+     * its own arithmetic; flagged in R94, untouched.
+     */
+    const src = ctx.sourceId !== undefined ? this.entity(ctx.sourceId) : undefined;
+    const srcAttrs: Set<string> = src
+      ? new Set(this.ownAttrs(src))
+      : new Set(this.card(ctx.sourceName)?.attrs ?? []);
     // R79: attributes a virus donated to this effect while it sat on the stack
     // ("mostly Deadly, Piercing, and Powerful are impacted by this" — Caleb
     // 2025-03-06). Read here rather than from the printed card alone, which is
@@ -1670,7 +2005,19 @@ export class E {
     const received = new Map<string, number>();
     for (const r of order) {
       const n = dealt.get(key(r)) ?? 0;
-      received.set(key(r), r.u && this.effAttrs(r.u).has('Vulnerable') ? n * 2 : n);
+      let got = r.u && this.effAttrs(r.u).has('Vulnerable') ? n * 2 : n;
+      // R98: prevention runs HERE, before `total`, because `total` is "the
+      // damage this effect dealt" (Ember of Life's "that many") and prevented
+      // damage was never dealt. It is also after Vulnerable's doubling: the
+      // shield stops "all damage that WOULD BE DEALT", and what would be dealt
+      // to a Vulnerable unit is the doubled number.
+      if (r.u && this.entity(r.u.id)) {
+        got = this.preventUnitDamage(r.u, got, {
+          region: ctx.region, source: ctx.sourceName, combat: false,
+          attrs: srcAttrs, pure: false,
+        });
+      }
+      received.set(key(r), got);
     }
     const total = [...received.values()].reduce((a, b) => a + b, 0);
 
@@ -1698,24 +2045,35 @@ export class E {
       }
       const u = r.u!;
       if (!this.entity(u.id)) continue;
-      if (srcAttrs.has('Blessed')) this.blessedGain(ctx.controller, n, ctx.sourceName);
+      // R98: `n` is already post-prevention (see above), and a fully prevented
+      // recipient never reaches here — the `n <= 0` guard at the top of the
+      // loop drops it. So no {Blessed} gain, no Poisonous counters, no 'damage'
+      // event, no {Deadly} kill, no {Resonant} rider: "if there is not damage
+      // being dealt, then no counters are placed" (RAQ, Poisonous vs
+      // Phytochemical Protection).
+      const through = n;
+      if (srcAttrs.has('Blessed')) this.blessedGain(ctx.controller, through, ctx.sourceName);
       if (poisonous) {
         // Poisonous deals the damage as permanent -1/-1 counters instead of
         // marked damage — no damage event, so nothing "is dealt damage".
-        this.ev('info', `Poisonous: ${ctx.sourceName} deals ${n} to ${u.card} as -1/-1 counter(s).`);
-        this.addCounters(u, -n);   // permanent counters; addCounters runs checkDeaths
+        this.ev('info', `Poisonous: ${ctx.sourceName} deals ${through} to ${u.card} as -1/-1 counter(s).`);
+        this.addCounters(u, -through);   // permanent counters; addCounters runs checkDeaths
         if (!this.entity(u.id)) killed.push(u);
       } else {
-        u.damage += n;
-        const ev = this.ev('damage', `${ctx.sourceName} deals ${n} to ${u.card}.`,
-          { unit: u.id, n, total, source: ctx.sourceName, controller: ctx.controller });
+        u.damage += through;
+        const ev = this.ev('damage', `${ctx.sourceName} deals ${through} to ${u.card}.`,
+          { unit: u.id, n: through, total, source: ctx.sourceName, controller: ctx.controller });
         this.fireEvent('damage', ev);   // "when I am dealt damage" (Awoken Tomb)
         const [, t] = this.effStats(u);
         // R21: Deadly — any nonzero damage kills, regardless of toughness
         if (u.damage >= t || srcAttrs.has('Deadly')) killed.push(u);
       }
-      if (resonant) this.loseLife(u.controller, n, `${ctx.sourceName} (Resonant)`);
+      if (resonant) this.loseLife(u.controller, through, `${ctx.sourceName} (Resonant)`);
     }
+    // R98: "Put a +1/+1 counter on it for each damage prevented this way" —
+    // paid out after the whole batch is marked, so a shield cannot resolve a
+    // death in the middle of damage R80 made simultaneous.
+    this.settleDamagePrevention();
     if (srcAttrs.has('Reaping')) {
       for (const _ of killed) {
         this.ev('info', `Reaping: ${this.pname(ctx.controller)} draws a card.`);
@@ -1869,7 +2227,10 @@ export class E {
     // leftPlayFacts) — `verb` (Ghord's "sacrificed", which used to
     // string-match the log message) is the death-only extra.
     const binSeat = opts.binTo ?? u.owner;
-    const erasedByUnstable = mods.length > 0;
+    // R96: TWO ways in. `mods.length` is the derived one (a modded card is
+    // Unstable — R69); `u.unstable` is the until-regroup STAMP a bin play
+    // leaves on the body it spawned. Same destination, same 'died' event.
+    const erasedByUnstable = mods.length > 0 || u.unstable === true;
     const evData: Record<string, unknown> = {
       ...this.leftPlayFacts(u), verb,
       to: erasedByUnstable ? 'erased' : 'bin',
@@ -1884,7 +2245,9 @@ export class E {
       // Unstable: a modded card dies → it and its mods are erased, not binned.
       // It still DIES: the event fires, death triggers go off, other cards'
       // watchers see it. Only the destination changed (R69).
-      evDied = this.ev('died', `${u.card} ${verb} — Unstable: it and its ${mods.length} mod(s) are ERASED.`, evData);
+      evDied = this.ev('died', `${u.card} ${verb} — Unstable: `
+        + (mods.length ? `it and its ${mods.length} mod(s) are ERASED.` : 'it is ERASED instead of binned.'),
+        evData);
     } else {
       // Everything else — token included — enters a bin FROM PLAY, so R40
       // trashes it. The trash event fires AFTER the death below so the log
@@ -2571,6 +2934,110 @@ export class E {
     bin.forEach((n, i) => { if (n === ref.card) hits.push(i); });
     if (!hits.length) return -1;
     return hits[Math.min(ref.nth ?? 0, hits.length - 1)]!;
+  }
+
+  /**
+   * R95: may `ctx.seat` apply that card as an AUGMENT during battle?
+   *
+   * The default is NO — only a {Virus} from hand may augment during battle —
+   * and this is the opt-in that overrides it. Shaped on `mustBeTargetedIn`,
+   * the one other BOOLEAN permission query, and on `costModsFor` for
+   * everything else: the same `anchored()` walk (units in play plus augment
+   * mods, each read from its HOST), the same R12 region scope, the same
+   * shallow R62 guard, the same reentrancy latch.
+   *
+   * An OR-FOLD, not a sum, which is why it is not a CostMod: one grantor is
+   * enough and a second changes nothing. Ownership and zone are decided by
+   * the granting CARD (`ModPermission.augmentInBattle`), not here — Rook
+   * prints "from hand and bin", so it is Rook that refuses the cache.
+   *
+   * ⚠ Both `legalActions` and `apply` MUST route through this one function.
+   * The fuzzer's "legalActions lied" check has caught that class of split
+   * before, and a permission is exactly the kind of thing that grows a second
+   * implementation.
+   */
+  mayAugmentInBattle(ctx: import('./cards/dsl.ts').ModCtx): boolean {
+    if (this.inModPermissions) return false;
+    this.inModPermissions = true;
+    try {
+      for (const { holder, anchor } of this.anchored((h, a) =>
+        !!this.card(h.card).modPermissions
+        && a.region === ctx.region
+        && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
+        for (const p of this.card(holder.card).modPermissions ?? []) {
+          if (p.augmentInBattle?.(this, anchor, ctx)) return true;
+        }
+      }
+    } finally { this.inModPermissions = false; }
+    return false;
+  }
+
+  /**
+   * R97: how many grant-funded plays may `ctx.seat` make in the HASTE step
+   * this turn, for a card whose printed timing is not [Haste]?
+   *
+   * Report #74 (WEHH, 2026-08-22): "Dispatch Courier didn't give me the option
+   * to play a card with haste". It did not, because nothing anywhere asked.
+   *
+   * The rules half is settled and cited on `PlayPermission` in dsl.ts. This is
+   * the arithmetic half, and it is R95's `mayAugmentInBattle` with one
+   * difference: it SUMS instead of OR-folding, because the printed text carries
+   * a per-turn quantity and two Couriers are two plays. `Infinity` recovers the
+   * OR-fold for a grant with no budget.
+   *
+   * THE TWO GENERAL REFUSALS LIVE HERE, above every grantor, because they are
+   * about what gaining [Haste] can do and not about any one card:
+   *
+   *  1. A {Battle} card stays a battle card. RAQ "[Solved] Dispatch Courier vs
+   *     Battle Timing": "No, despite gaining :haste: they can still only be
+   *     played during :battle:", and calebgannon in rules-questions on the same
+   *     case, "it's gotta be no" / "battle cards are designed to be played in
+   *     battle only". A grantor cannot buy its way past this.
+   *  2. A printed [Haste] card needs no grant and must not spend one — the
+   *     budget is for plays the rules would otherwise refuse. Callers check
+   *     `timing === 'haste'` first, and this returns 0 for such a card anyway
+   *     so a double-read cannot silently drain the allowance.
+   *
+   * ⚠ Every one of the THREE gates that must agree routes through this one
+   * function: `startHasteStep`'s `canHaste` (which skips the step outright, so
+   * missing it makes the other two unreachable), `legalActions`' haste branch,
+   * and `playAtTiming`'s planning branch. The fuzzer's "legalActions lied"
+   * check exists for exactly this class of split.
+   */
+  hastePlayAllowance(ctx: import('./cards/dsl.ts').PlayCtx): number {
+    if (ctx.card.timing === 'haste') return 0;   // needs no grant (see 2 above)
+    if (ctx.card.timing === 'battle') return 0;  // RAQ: a battle card stays one
+    if (this.inPlayPermissions) return 0;
+    this.inPlayPermissions = true;
+    try {
+      let total = 0;
+      for (const { holder, anchor } of this.anchored((h, a) =>
+        !!this.card(h.card).playPermissions
+        && a.region === ctx.region
+        && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
+        for (const p of this.card(holder.card).playPermissions ?? []) {
+          total += p.playAtHaste?.(this, anchor, ctx) ?? 0;
+        }
+      }
+      return total;
+    } finally { this.inPlayPermissions = false; }
+  }
+
+  /** R97: the boolean the three gates actually ask — is there allowance left
+   * this turn? `usedThisTurn` is filled in here so no caller can forget it. */
+  mayPlayAtHaste(ctx: Omit<import('./cards/dsl.ts').PlayCtx, 'usedThisTurn'>): boolean {
+    const used = this.s.hastePlaysUsed?.[ctx.seat] ?? 0;
+    return this.hastePlayAllowance({ ...ctx, usedThisTurn: used }) > used;
+  }
+
+  /** R97: charge one grant-funded haste-step play to `seat`. The sibling of
+   * R43's `hasteManaSpent` — same array shape, same per-seat/per-haste-step
+   * lifetime, zeroed by `startHasteStep` (which is once per turn, and so IS
+   * the printed "Each turn"). A play is not an ability activation, so nothing
+   * writes `Entity.budgets` for it and this is where the budget lives. */
+  chargeHastePlay(seat: Seat): void {
+    const tally = (this.s.hastePlaysUsed ??= this.s.players.map(() => 0));
+    tally[seat] = (tally[seat] ?? 0) + 1;
   }
 
   /** R64: the units in `region` that must be targeted if able. Radiates like
@@ -3593,18 +4060,54 @@ export class E {
       return;
     }
     // spell / spellUnit / spellToken / triggered / activated: run live parts
+    //
+    // R86, playtest report #71 (game GETD, 2026-08-22): an item fizzles when it
+    // DECLARED targets and has lost every one of them — and when it does, the
+    // UNTARGETED parts of the same item die with it. The ruling is Caleb's, in
+    // the RAQ thread "[Solved] When does effect fizzles?":
+    //
+    //   Q: "For effects like Channel Through or big Grafts with multiple
+    //      targets (and additional buff or card draws), when do they fizzle?"
+    //   A: "If effect loses ALL of its targets and wants to resolve."
+    //
+    // and the worked example is the whole point — a Bellowing Boulder graft
+    // composite that has lost both of its declared targets fizzles "(yielding
+    // no card draw from 2nd and 3rd graft)". The card draws were never
+    // targeted; they die anyway, because the ITEM is one effect and one effect
+    // fizzles as a unit. Restated later in the same thread: "currently at least
+    // 1 target must remain for whole effect to be carried out" and "in order
+    // for effect to fail you need to invalidate ALL targets".
+    //
+    // The old shape asked each part "are you still alive?" and let an
+    // UNTARGETED part answer `true`, which meant a composite holding any
+    // untargeted part could never fizzle however dead its targets were. That
+    // is exactly what GETD showed: a Spewing Mushroom trigger carrying four
+    // grafts declared one target (itself), lost it to a Poison 8, and still
+    // paid out four Poison tokens and a board-wide buff before its one
+    // targeted graft reported "a part fizzles (target gone)".
+    //
+    // The change is one word wide and it is the `return true` below: an
+    // UNTARGETED part no longer votes to keep the item alive. It still
+    // RESOLVES — it is only barred from being the reason the item survives.
+    // Whether the item is targeted AT ALL is then asked separately, of the
+    // whole item, so that a composite with no targeting anywhere (a plain
+    // trigger, "create a Poison X") can never fizzle: it has nothing to lose.
     const partAlive = (part: EffectPart): boolean => {
       if (part.spent) return false;
       const def = effectByKey(part.effectKey);
-      if (!def.targets) return true;
+      if (!def.targets) return false;   // R86: untargeted parts do not vote
       // "UP TO one target …" (min 0): declaring no target is a legal choice, so
       // the part still resolves — anything printed alongside the optional
       // target ("Recall up to one target cached card. You gain 3 life.") must
-      // happen. A min-1 spec with nothing declared is the real fizzle.
+      // happen. A min-1 spec with nothing declared is the real fizzle: it is
+      // the part collectTargets already reported as "there is no legal target
+      // for that — it does nothing", and an item made only of those is an
+      // effect that wanted a target and never had one.
       if (!part.targets.length) return (def.targets.min ?? 1) === 0;
       return part.targets.some(t => this.targetStillLegal(t));
     };
-    if (!item.parts.some(partAlive)) {
+    const targeted = item.parts.some(p => !p.spent && !!effectByKey(p.effectKey).targets);
+    if (targeted && !item.parts.some(partAlive)) {
       this.ev('fizzled', `${item.label} fizzles — all targets are gone.`, { id: item.id });
       // a fizzled spell unit never spawns; a fizzled ambusher is binned too
       // ("you could find yourself losing both units" — Manual p.40).
@@ -3683,7 +4186,30 @@ export class E {
         x: part.costPaid?.x ?? item.x,
         costPaid: part.costPaid,
         ...(part.mods ? { mods: part.mods } : {}),
-        ...(item.augments?.length ? { grantedAttrs: this.stackAugmentAttrs(item) } : {}),
+        // R79's virus grants UNIONED with R94's continuous ones. Both are
+        // "attributes this effect has that its card did not print", both land
+        // in the one field everything downstream already reads, and the union
+        // must stay INSIDE the per-part loop: R94's answer is per-part
+        // (Envoy of Lightning counts THIS part's declared targets), while
+        // R79's is per-item.
+        ...(() => {
+          const granted: Attr[] = [
+            ...(item.augments?.length ? this.stackAugmentAttrs(item) : []),
+            ...this.effectAttrsFor({
+              seat: item.controller,
+              region: item.region,
+              kind: item.kind,
+              ...(item.card ? { card: this.card(item.card) } : {}),
+              // DECLARED, not surviving: `part.targets` is the cast-time list,
+              // while `resolved` above has already dropped the dead refs. RAQ
+              // "[Solved] Envoy of Lightning vs Twin Flame.": a two-target Twin
+              // Flame that lost one target is NOT Electric — "it still has 2
+              // targets, but one of them is invalid".
+              targets: part.targets.length,
+            }),
+          ];
+          return granted.length ? { grantedAttrs: granted } : {};
+        })(),
         event: item.event ?? null,
         choose: (key, dec) => {
           // namespaced per part: card code uses fixed keys (`sac:${seat}`),
@@ -3815,11 +4341,17 @@ export class E {
    */
   dischargeItem(item: StackItem, hasCard: boolean): void {
     const viruses = item.augments ?? [];
-    if (viruses.length) {
+    // R96, the same two ways in as `destroy`: a virus rode it (derived, R79),
+    // or it was played from a bin under a permission that stamped it (Abyssal
+    // Evocation). THIS is the site an ordinary bin-played spell hits — the
+    // one choke point for both resolution and negation. The virus loop below
+    // is correctly a no-op at zero, so it stays untouched.
+    if (viruses.length || item.unstable === true) {
       // R65: each card reaches ITS OWN owner's erased pile — a virus on an
       // enemy spell is the enemy's card, and the two piles are public.
       this.ev('erased',
-        `${item.label} is Unstable — it and its ${viruses.length} virus mod(s) are ERASED.`,
+        `${item.label} is Unstable — `
+        + (viruses.length ? `it and its ${viruses.length} virus mod(s) are ERASED.` : 'it is ERASED instead of binned.'),
         { seat: item.controller, cards: hasCard && item.card ? [item.card] : [] });
       for (const seat of [...new Set(viruses.map(v => v.by))].sort()) {
         const mine = viruses.filter(v => v.by === seat).map(v => v.card);
@@ -3839,6 +4371,11 @@ export class E {
       // the body Unstable. Erasing the card here instead would delete a unit
       // on its way into play, which no ruling asks for.
       for (const a of item.augments ?? []) this.attachMod(u, a.card, a.by, 'augment');
+      // R96: a spell UNIT played from a bin spawns a body, and the stamp goes
+      // with it — the card said "THEY gain unstable until regroup", and the
+      // body is what the card became. This is the "edge, noted for review" in
+      // Spell Excavation's own comment, closed.
+      if (item.unstable) u.unstable = true;
       this.binItemMods(item);   // {Modular}: its mods leave with it, also from the stack
       return;
     }
@@ -4194,6 +4731,7 @@ export class E {
         if (this.s.battle?.damageStep && !this.pumping && !this.s.decision && !this.s.stack.length) {
           this.pumpCombatDamage();
         }
+        this.finishDeployStart();   // R102: resume a suspended rot-damage opening
         this.finishHasteEnd();   // R50: resume a suspended end-of-haste window
         this.finishTurnEnd();
         return;
@@ -4295,6 +4833,11 @@ export class E {
        * the VICTIM's Vulnerable is switched off for it too */
       pure?: boolean;
       blessedTo?: Seat; blessedFrom?: string;
+      /** R98: the striking column's live attributes and label, carried so the
+       * prevention/replacement choke point can be told a {Piercing} hit from a
+       * plain overkill. Last assignment wins, as `poisonous`/`resonant` already
+       * do — a unit takes damage from at most one column per sub-step. */
+      attrs?: Set<string>; label?: string;
     }>();
     const deadlyHit = new Set<EntityId>();   // R21: any damage from a Deadly column kills
     const playerDmg: number[] = this.s.players.map(() => 0);
@@ -4302,7 +4845,7 @@ export class E {
     // R48: combat damage a column deals to a PLAYER, one entry per column —
     // per-column granularity is required by the Blightsea Polyp replacement
     // ("as 1 rot", whatever the column's power) and by {Lethal}.
-    const playerHits: { seat: Seat; amount: number; by: Seat; attrs: Set<string>; label: string }[] = [];
+    const playerHits: { seat: Seat; amount: number; by: Seat; attrs: Set<string>; label: string; pure: boolean }[] = [];
     // R48 {Afflicting}: units each afflicting column damaged this sub-step,
     // keyed by column, so its kills can be diffed out afterwards
     const afflicted = new Map<string, { dealer: Seat; label: string; ids: Set<EntityId> }>();
@@ -4341,6 +4884,7 @@ export class E {
         if (a > 0) {
           const cur = perUnit.get(id) ?? { pool: 0, poisonous, resonant };
           cur.pool += a; cur.poisonous = poisonous; cur.resonant = resonant;
+          cur.attrs = srcAttrs; cur.label = src.label;   // R98
           if (pure) cur.pure = true;
           if (blessedTo !== undefined) { cur.blessedTo = blessedTo; cur.blessedFrom = src.label; }
           perUnit.set(id, cur);
@@ -4386,7 +4930,7 @@ export class E {
           toPlayer = pow;
         }
         if (toPlayer > 0) {
-          playerHits.push({ seat: b.defender, amount: toPlayer, by: b.attacker, attrs: atkAttrs, label: src.label });
+          playerHits.push({ seat: b.defender, amount: toPlayer, by: b.attacker, attrs: atkAttrs, label: src.label, pure });
           if (atkAttrs.has('Thieving')) thievingDraw[b.attacker] = (thievingDraw[b.attacker] ?? 0) + 1;
         }
       }
@@ -4418,7 +4962,7 @@ export class E {
           const src = { dealer: b.defender, key: `blk:${ci}`, label: colLabel(blk) };
           const left = assign(atk, dealtPower(blk, blkAttrs), blkAttrs, src, pure);
           if (blkAttrs.has('Piercing') && left > 0) {
-            playerHits.push({ seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label });
+            playerHits.push({ seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label, pure });
             if (blkAttrs.has('Thieving')) thievingDraw[b.defender] = (thievingDraw[b.defender] ?? 0) + 1;
           }
         }
@@ -4427,12 +4971,25 @@ export class E {
 
     // commit unit damage: Vulnerable doubles received; Poisonous replaces it with
     // -1/-1 counters; Resonant riders the same amount onto the unit's controller
+    /** R98: units whose damage this sub-step was fully prevented. {Deadly}
+     * kills "any combat damage from a deadly unit" — with none dealt there is
+     * nothing for it to kill through, exactly as the shield stops Poisonous's
+     * counters ("if there is not damage being dealt, then no counters are
+     * placed"). Assignment is untouched: RAQ's Deadly + Phytochemical line is
+     * "Atleast 1 dmg to Awoken (gets +1/+1, won't create 1/1 unit)", so the
+     * 1-point floor is still assigned — it is just never dealt. */
+    const shielded = new Set<EntityId>();
     for (const [id, hit] of perUnit) {
       const u = this.entity(id);
       if (!u) continue;
       const mult = (!hit.pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
-      const received = hit.pool * mult;
-      if (received <= 0) continue;
+      // R98: the choke point, after Vulnerable's doubling (the shield stops
+      // "all damage that WOULD BE DEALT") and after every assignment decision.
+      const received = this.preventUnitDamage(u, hit.pool * mult, {
+        region: b.region, source: hit.label ?? 'combat', combat: true,
+        attrs: hit.attrs ?? new Set<string>(), pure: !!hit.pure,
+      });
+      if (received <= 0) { shielded.add(id); continue; }
       // R48 {Blessed}: the gain is on the same game-state check as the damage
       if (hit.blessedTo !== undefined) this.blessedGain(hit.blessedTo, received, hit.blessedFrom ?? 'combat');
       if (hit.poisonous) {
@@ -4445,7 +5002,11 @@ export class E {
       }
       if (hit.resonant) this.loseLife(u.controller, received, 'Resonant');
     }
+    // R98: "a +1/+1 counter for each damage prevented", after the whole
+    // sub-step is marked (addCounters runs checkDeaths — see the method)
+    this.settleDamagePrevention();
     for (const id of deadlyHit) {
+      if (shielded.has(id)) continue;   // R98: no damage dealt, nothing to kill through
       const u = this.entity(id);
       if (u) {
         this.ev('info', `Deadly — ${u.card} dies.`);
@@ -4473,8 +5034,10 @@ export class E {
     // a replaced hit still counts as DEALT (Caleb 2024-10-24), which is why
     // Thieving above and Lethal below read playerHits, not playerDmg.
     for (const hit of playerHits) {
-      if (this.replaceCombatDamage(hit.seat, hit.amount, { attacker: hit.by, region: b.region })) continue;
-      playerDmg[hit.seat] = (playerDmg[hit.seat] ?? 0) + hit.amount;
+      const left = this.replaceCombatDamage(hit.seat, hit.amount,
+        { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure });
+      if (left <= 0) continue;
+      playerDmg[hit.seat] = (playerDmg[hit.seat] ?? 0) + left;
     }
     for (const seat of [this.initiative, this.nit]) {
       const n = playerDmg[seat] ?? 0;
@@ -4601,8 +5164,18 @@ export class E {
         const spec = this.card(name).spellEffect?.targets;
         return !spec || this.targetCandidates(spec, this.homeRegion(seat), undefined, seat).length > 0;
       };
+      // R97: a GRANT ("play a unit during the mana step as if it had [Haste]",
+      // Dispatch Courier) opens the step too. This gate is the one that must
+      // not be missed: it skips the step OUTRIGHT, so a hand of nothing but
+      // deploy units plus a Courier on the board would never even reach the
+      // other two gates and the grant would stay invisible — which is exactly
+      // playtest report #74. `mayPlayAtHaste` reads `hastePlaysUsed`, which
+      // this function zeroes below, so the budget is fresh when it is asked.
+      const playableHere = (name: CardName): boolean =>
+        this.card(name).timing === 'haste'
+        || this.mayPlayAtHaste({ seat, card: this.card(name), from: 'hand', region: this.homeRegion(seat) });
       const fromHand = this.player(seat).hand.some(name =>
-        this.card(name).timing === 'haste' && this.canPayCard(seat, name) && hasTarget(name));
+        playableHere(name) && this.canPayCard(seat, name) && hasTarget(name));
       if (fromHand) return true;
       // R42/R45: a permitted CACHED card released at haste timing opens the
       // step too — Tithe Enforcer is a haste unit and Divine Intervention's
@@ -4619,6 +5192,9 @@ export class E {
     // R43: a fresh window for "End [Haste] with used mana" (zeroed even when
     // the step is skipped outright, so nothing stale can be read later)
     this.s.hasteManaSpent = this.s.players.map(() => 0);
+    // R97: and the same fresh window for the printed "Each turn" budget —
+    // BEFORE canHaste runs, since canHaste asks whether any allowance is left.
+    this.s.hastePlaysUsed = this.s.players.map(() => 0);
     const done = this.s.players.map(p => !canHaste(p.seat));
     if (done.every(Boolean)) { this.startBattlePhase(); return; }
     this.s.hasteDone = done;
@@ -4663,6 +5239,7 @@ export class E {
     this.s.hasteDone = null;
     this.refreshProphecies();
     this.s.hasteManaSpent = this.s.players.map(() => 0);
+    this.s.hastePlaysUsed = this.s.players.map(() => 0);   // R97, beside its R43 sibling
     this.s.phase = 'battle';
     this.s.battleCounters = this.s.regions.map(() => ({}));
     this.s.battleRound = 1;
@@ -4749,6 +5326,21 @@ export class E {
     for (const e of Object.values(this.s.entities)) {
       if (e.kind !== 'spellToken') continue;
       if (this.spellTokenSurvivesRegroup(e)) { spared.push(e.id); continue; }
+      // R89: a token can now be MODDED (an augment applied in deployment), and
+      // a modded card is Unstable — "when it dies or is erased, it and all of
+      // its mods are erased with it" (Manual p.35). Without this the mod
+      // entities would outlive their host as orphans pointing at a dead id.
+      // The augment reaches the public erased pile (R65) exactly as it would
+      // if the token had been cast and discharged; the TOKEN itself does not,
+      // because a spell token is not a card and has never been recorded there.
+      const mods = e.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
+      if (mods.length) {
+        this.ev('erased',
+          `${e.card} ${e.x ?? ''}`.trimEnd()
+          + ` is erased at regroup — Unstable, so its ${mods.length} mod(s) go with it.`,
+          { seat: e.controller, cards: mods.map(m => m.card) });
+        for (const m of mods) delete this.s.entities[m.id];
+      }
       delete this.s.entities[e.id];
     }
     if (spared.length) {
@@ -4760,6 +5352,9 @@ export class E {
       delete e.baseSet;      // layer 2 is an until-regroup rewrite too
       delete e.baseSetSeq;
       delete e.suppressed;   // R62: so is a switched-off attribute/ability layer
+      delete e.unstable;     // R96: "they gain unstable UNTIL REGROUP" — this is that
+      delete e.damageShield; // R98: "UNTIL REGROUP, prevent all damage …" — and this
+      delete e.shieldPending;
       delete e.granted;      // R63: and so is granted text
       delete e.allured;      // R84 {Alluring}: "can't attack" lasted the battle phase
     }
@@ -4784,16 +5379,38 @@ export class E {
    * consequence is that rot which kills you kills you before your own
    * start-of-deployment trigger resolves.
    *
-   * Unlike the end-of-haste window this needs no deferral: nothing after the
-   * event depends on finishing (the phase is already flipped), so a trigger
-   * that suspends simply resumes through the normal decision path.
+   * A trigger from step 2 needs no deferral: nothing after the event depends
+   * on finishing (the phase is already flipped), so it simply resumes through
+   * the normal decision path.
+   *
+   * ⚠ R102: step 1 is a different matter, and this is the deferral for it.
+   * Rot damage can now RAISE A DECISION — Beyond, Codex Incarnate's "put that
+   * many -1/-1 counters on target unit instead" queues a triggered effect from
+   * inside rotDamage(), whose settle() collects its target and therefore
+   * suspends. That suspension throws clean out of this method, and doDecide
+   * resumes into collectTargets/commitItem/settle, which has never heard of
+   * step 2 — so the 'startOfDeployment' event was simply never fired and every
+   * "At the start of deployment, …" card on the board missed its turn. Same
+   * shape as startBattlePhase()/finishHasteEnd() and endTurn()/finishTurnEnd():
+   * flag the window open, and let settle() close it at the first safe point.
    */
   startDeployment(): void {
     this.s.phase = 'deploy';
     this.s.deployDone = this.s.players.map(() => false);
     this.s.deployPlayer = this.initiative;
     this.ev('phase', 'Deployment: both players deploy at the same time — moves are revealed when everyone is done.');
+    this.s.deployStarting = true;   // R102: step 2 is owed
     this.rotDamage();   // R38: start of deployment, before anyone may deploy
+    this.finishDeployStart();
+  }
+
+  /** R102: fire 'startOfDeployment' once R38's rot damage — and anything the
+   * rot replacement queued — has fully drained (see startDeployment). Called
+   * from settle() and directly. */
+  finishDeployStart(): void {
+    if (!this.s.deployStarting) return;
+    if (this.s.decision || this.s.stack.length || this.s.triggerQueue.length) return;
+    this.s.deployStarting = false;
     const ev = this.ev('startOfDeployment', 'Start of deployment.', { turn: this.s.turn });
     this.fireEvent('startOfDeployment', ev);
     this.settle();

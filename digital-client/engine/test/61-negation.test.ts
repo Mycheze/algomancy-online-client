@@ -90,7 +90,13 @@ test("R68: a negated kind:'unit' item reaches its owner's bin (it used to be era
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Monke') });
   assert.equal(h.state.stack[0]!.kind, 'unit', "a {Battle} unit is a kind:'unit' stack item");
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Calming Force') });
+  // R100: Calming Force "can't be played from your hand", so the negator gets
+  // onto the stack the way it now has to — cached with R45's glimpse stamp and
+  // released from there (the mana is still paid, which is what the `light 2`
+  // above is for). This test is about R68 — what happens to the NEGATED item —
+  // so the route the negator took to the stack is scenery, not the subject.
+  withE(h, e => { e.cacheCard(D, 'Calming Force', 'deck', { playable: true }); });
+  h.do({ type: 'playCached', seat: D, index: 0 });
   pass(h); pass(h);                                         // Calming Force resolves
 
   assert.equal(h.state.stack.length, 0, 'the negated unit left the stack');
@@ -114,7 +120,9 @@ test('R68: a negated spell TOKEN is erased, never binned', () => {
   withE(h, e => { fb = e.createSpellToken(A, 'Fireball', 1, e.s.battle!.region).id; });
   h.do({ type: 'castSpellToken', seat: A, entityId: fb });
   pick(h, { player: D });
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Calming Force') });
+  // R100 again: the hand route is gone, so the cache release is the vehicle.
+  withE(h, e => { e.cacheCard(D, 'Calming Force', 'deck', { playable: true }); });
+  h.do({ type: 'playCached', seat: D, index: 0 });
   pass(h); pass(h);
   assert.equal(h.state.stack.length, 0, 'the negated token left the stack');
   assert.equal(count(binOf(h, A), 'Fireball'), 0, 'a token never reaches a bin (R40)');

@@ -68,8 +68,12 @@ const NOT_A_TEST: { file: string; reason: string }[] = [
 /** Run one test script to completion; resolve with its exit code and output. */
 function runScript(file: string): Promise<{ code: number; out: string }> {
   return new Promise(resolve => {
-    // a throwaway games dir and accounts file per script: server/games/ and
-    // server/accounts/ are live data on the deploy box
+    // a throwaway games dir, accounts file and issues file per script:
+    // server/games/, server/accounts/ and server/issues.jsonl are all live
+    // data on the deploy box. issues.jsonl is the one with no other copy
+    // anywhere — every playtest report the owner has ever filed — so it gets
+    // the same treatment rather than being protected by a save-and-restore
+    // inside the one test that writes to it.
     const scratch = mkdtempSync(join(tmpdir(), 'algo-suite-'));
     const child = spawn(process.execPath, [join(HERE, file)], {
       cwd: HERE,
@@ -77,6 +81,7 @@ function runScript(file: string): Promise<{ code: number; out: string }> {
         ...process.env,
         ALGO_GAMES_DIR: join(scratch, 'games'),
         ALGO_ACCOUNTS_FILE: join(scratch, 'accounts.json'),
+        ALGO_ISSUES_FILE: join(scratch, 'issues.jsonl'),
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     });

@@ -45,6 +45,14 @@
  *    not caught. Token spells are excluded by the printed "nontoken".
  *  - FEED TO HOOBA / REAP THE DUE erase locally (the engine has no shared
  *    erase primitive; batch-water-a's Celestial Purge is the model).
+ *  - PREDICTION PROPHET's "predict your life total" is a Decision, and a
+ *    Decision carries a finite option list — so the menu runs 0 … your current
+ *    life + 5. Any number is legal on the printed card; a prediction more than
+ *    5 above where you stand during [Haste] cannot be entered here. (Everything
+ *    else about the card is exact: the prediction is taken in R50's
+ *    'endOfHaste' settle window and kept in the entity's own `budgets`, which
+ *    only E.startTurn wipes, so it survives battle and regroup into the same
+ *    turn's deployment.) See R90.
  *  - SUSPEND's "Erase me" is approximated as the spell being binned normally
  *    (the Temporal Rift precedent) — afterParts() bins a resolved spell and
  *    card code cannot reach the stack item it is resolving from.
@@ -56,10 +64,6 @@
  *    CardBehavior.mustBeTargeted; see the card.
  *  - Just a Unit: {Pure} is LIVE as of R61 — enforced by the engine at the
  *    combat choke points (E.pure), not by card behaviour. See the card.
- *  - Prediction Prophet (HALF): (b) the start-of-deployment TRIGGER now exists
- *    (R50) and the card hears it; (a) a "predict a number" PLAYER ACTION during
- *    the haste step, and a place in PlayerState/Entity to keep the prediction,
- *    still does not. The trigger logs the gap instead of being invisible.
  *  - Slurpr: "you can apply other mods during [Haste] as if it was deployment"
  *    is a play-timing permission living in apply.ts's doApplyMod phase gate,
  *    which card code cannot reach (the Dispatch Courier precedent). Inert
@@ -68,10 +72,8 @@
  *    needs a life-change lock — gainLife/loseLife have no replacement seam,
  *    and the two hooks that exist cover rot damage and column combat damage
  *    only. Resolves as a logged no-op so the card is never a crash.
- *  - Calming Force (HALF): "Negate all other effects" is implemented; "I can't
- *    be played from your hand" is a ZONE RESTRICTION on playing, enforceable
- *    only in apply.ts's doPlayCard. The card is therefore castable from hand
- *    in the engine, which is strictly more permissive than printed.
+ *  - (Calming Force COMPLETE as of R100, round 17: "I can't be played from your
+ *    hand" is the `noPlayFromHand` flag — see the card.)
  */
 import type { Entity, EntityId, EngineEvent, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -103,12 +105,26 @@ function slotOf(g: E, id: EntityId): { col: EntityId[]; idx: number } | null {
 card('Blessed Thing', {});
 
 // "I can't be played from your hand.{/n}Negate all other effects." — ll/2
-// {Battle} Nature Spell. PARTIAL (header): the hand restriction is an
-// apply.ts zone gate. The negate half sweeps the WHOLE stack — "all other
-// effects" is unqualified, so triggered and activated abilities go too. By
-// resolution time Calming Force has already been popped off the stack, so
-// every remaining item is genuinely an "other" effect.
+// {Battle} Nature Spell. COMPLETE as of R100: the hand restriction was an
+// apply.ts zone gate that card code could not reach, and is now the
+// `noPlayFromHand` CardBehavior flag — the mirror of `prophesyFromBin`,
+// defaulting permissive, enforced once in `doPlayCard` and refused at all
+// three `legalActions` sites that push a hand `playCard` (haste step, battle
+// window, deployment). Before it the engine was strictly MORE permissive than
+// the printed card, which is the one direction a rules engine must never be.
+//
+// ⚠ The line names one zone and one verb, so that is all it takes away. The
+// card is still perfectly reachable from anywhere else it could ever be — a
+// cache release (R42/R45), a bin-play permission (R96), or as a mod — and it
+// can still be discarded and recycled from hand like any card. Only PLAYING
+// it from hand is gone, which in practice makes it a card you have to set up.
+//
+// The negate half sweeps the WHOLE stack — "all other effects" is unqualified,
+// so triggered and activated abilities go too. By resolution time Calming
+// Force has already been popped off the stack, so every remaining item is
+// genuinely an "other" effect.
 card('Calming Force', {
+  noPlayFromHand: true,
   spellEffect: {
     run: (g, ctx) => {
       let n = 0;
@@ -306,25 +322,90 @@ card('Nullbringer', {
 
 // "During [Haste], predict your life total. At the start of deployment,
 // create a 5/5 unit if you matched the prediction." — lll/3 1/3 Spirit Unit.
-// HALF UNPARKED (R50): the start-of-deployment EVENT now exists, so the
-// second sentence has a home. The FIRST sentence does not: "predict your life
-// total" needs a player action during the haste step and a field in
-// PlayerState/Entity to keep the number, neither of which exists — and a
-// prediction nobody can make is a prediction that can never be matched.
 //
-// So the trigger is wired and correct, and simply always finds "no prediction
-// on record" and says so. The moment a predict action lands, this card is one
-// comparison away from finished; until then it is a vanilla 1/3 that logs the
-// gap once per deployment instead of being invisible.
+// R90 — FULLY UNPARKED. The park note above this card used to claim the first
+// sentence needed "a player action during the haste step and a field in
+// PlayerState/Entity to keep the number, neither of which exists". Both halves
+// of that claim were stale, which is the same lesson Oorblak taught: a PARKED
+// note is a CLAIM about the engine as it was the day it was written.
+//
+//  (a) THE ACTION. R50's 'endOfHaste' fires inside a real settle() window
+//      (E.startBattlePhase: "A trigger from step 1 may suspend on a decision,
+//      which would strand the game … so the flip is deferred to
+//      finishHasteEnd()"). A trigger there is therefore allowed to raise a
+//      decision, and `ctx.choose` IS the number-picker — the same R6 dialogue
+//      Reap the Due uses two cards below. No new player action was ever
+//      needed; the prediction is simply asked for at the tail of the step.
+//  (b) THE FIELD. `Entity.budgets` is a per-entity number store that E.startTurn
+//      wipes ("for (const e of Object.values(this.s.entities)) e.budgets = {}")
+//      and NOTHING else touches. The turn runs mana → [Haste] → battle →
+//      deployment, so a number written at the end of the haste step is still
+//      there at the start of deployment IN THE SAME TURN. (`battleCounters`
+//      would NOT do: finishHasteEnd wipes them on the way into battle, which
+//      is exactly the window the prediction has to survive.) Ancient One
+//      (batch-metal-a) writes `self.budgets[key]` by hand the same way.
+//
+// The stored value is prediction + 1. `budgets[k] ?? 0` cannot tell "absent"
+// from "zero", and 0 is a legal prediction (you predict your life total at the
+// start of deployment, and a player who is about to be at 0 has other
+// problems) — so the +1 keeps "never predicted" distinguishable and the
+// start-of-deployment trigger can say which of the two happened.
+//
+// ⚠ APPROXIMATION (batch header): "predict your life total" is any number, and
+// a Decision carries a finite option list, so the menu is 0 … your current
+// life + PREDICTION_HEADROOM. Predicting a total more than that far ABOVE
+// where you stand during [Haste] is not offered.
+const PREDICTION_KEY = 'predictedLife';
+/** how far above your current life the prediction menu reaches (see above) */
+const PREDICTION_HEADROOM = 5;
 card('Prediction Prophet', {
   abilities: [{
+    type: 'triggered', events: ['endOfHaste'],
+    label: 'predict your life total',
+    effect: {
+      run: (g, ctx) => {
+        const self = selfOf(g, ctx);
+        if (!self) return;                       // gone before the trigger resolved
+        // R1/R27: the amount is read at RESOLUTION, off the live life total —
+        // a haste-step play that moved your life moves the menu with it.
+        const life = g.player(ctx.controller).life;
+        const options: { label: string; value: unknown }[] = [];
+        for (let n = 0; n <= life + PREDICTION_HEADROOM; n++) {
+          options.push({ label: n === life ? `${n} (where you stand now)` : `${n}`, value: n });
+        }
+        const n = ctx.choose('predict', {
+          kind: 'payOrDecline', seat: ctx.controller,
+          prompt: `${ctx.sourceName}: predict your life total at the start of deployment`,
+          options,
+        }) as number;
+        self.budgets[PREDICTION_KEY] = n + 1;    // +1: 0 is a real prediction
+        g.ev('info', `${ctx.sourceName}: ${g.pname(ctx.controller)} predicts ${n}.`);
+      },
+    },
+  }, {
     type: 'triggered', events: ['startOfDeployment'],
     label: 'create a 5/5 unit if you matched your [Haste] prediction',
     effect: {
+      creates: ['Unit Token'],
       run: (g, ctx) => {
-        g.ev('info',
-          `${ctx.sourceName}: no prediction on record — the engine has no "predict a `
-          + 'number" action during [Haste] yet, so the 5/5 is never created.');
+        const self = selfOf(g, ctx);
+        const stored = self?.budgets[PREDICTION_KEY] ?? 0;
+        if (!stored) {
+          // no prediction this turn: it arrived after the haste step (or the
+          // step's trigger never reached it). Not a gap — a miss.
+          g.ev('info', `${ctx.sourceName}: no prediction was made during [Haste] — no unit.`);
+          return;
+        }
+        const predicted = stored - 1;
+        const life = g.player(ctx.controller).life;
+        if (life !== predicted) {
+          g.ev('info', `${ctx.sourceName}: predicted ${predicted}, life is ${life} — no unit.`);
+          return;
+        }
+        g.ev('info', `${ctx.sourceName}: the prediction of ${predicted} was matched.`);
+        // R52: a created unit arrives in its CONTROLLER's home region
+        g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller),
+          { token: true, tokenStats: [5, 5] });
       },
     },
   }],

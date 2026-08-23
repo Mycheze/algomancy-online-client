@@ -10,8 +10,9 @@
  * Seer's glimpse, Stalwart Sentinel's played-from-elsewhere), debt (Greed
  * Angel, including the automatic resource-step payment), self-copying in
  * formation (Hooba-God), the per-battle life-loss ledger (Retribution Thing),
- * multi-player targeting (Penance) and the two parked cards (Keeper of Tithes,
- * The Everywhere).
+ * multi-player targeting (Penance) and Keeper of Tithes. The Everywhere is
+ * unparked as of R91 (naming + region-scoped suppression); its remaining todo
+ * names the one clause still approximated — the CONTINUOUS duration.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -654,7 +655,20 @@ test('Stalwart Sentinel: +2 counters for a card played from the cache, not from 
 
 // ── The Everywhere ───────────────────────────────────────────────────────
 
-test('The Everywhere: plays as a 3/3 haste body and augments crash-free (parked text)', () => {
+/** deployment → the next turn's END-OF-HASTE decision. R50 fires 'endOfHaste'
+ * inside a settle() window that may suspend, which is where The Everywhere
+ * names its card — so the usual toNextBattle() plumbing would walk straight
+ * past (and then trip over) the pending decision. `attacker` pins round 1. */
+function toNaming(h: Harness, attacker?: Seat): void {
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  if (attacker !== undefined) h.state.initiative = attacker;
+  h.do({ type: 'donePlanning', seat: 0 });
+  if (!h.state.decision) h.do({ type: 'donePlanning', seat: 1 });
+  if (!h.state.decision) skipHasteStep(h);
+}
+
+test('The Everywhere: plays as a 3/3 haste body and augments crash-free', () => {
   const h = new Harness(3823);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -664,13 +678,73 @@ test('The Everywhere: plays as a 3/3 haste body and augments crash-free (parked 
   giveResources(h, A, 'light', 4);                           // l/4
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'The Everywhere'), hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1);
-  assert.deepEqual(effStats(h, host), [1, 1], 'the donated text is parked-inert');
+  assert.deepEqual(effStats(h, host), [1, 1], 'the donated text grants no stats');
 });
 
-test('The Everywhere: "name a card — my last named card loses all abilities"', { todo: true }, () => {
-  // PARKED: needs a "name a card" player action (there is none) AND the
-  // attribute/ability suppression layer already parked for Monke, Suppression
-  // Field and Transmogrifant.
+test('The Everywhere: naming a card during [Haste] silences EVERY copy of it IN MY REGION (R12/R62/R91)', () => {
+  const h = new Harness(3841);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  spawn(h, A, 'The Everywhere');
+  const mine1 = spawn(h, A, 'Triskaidekaphage');              // "when I attack, your life becomes 13"
+  const mine2 = spawn(h, A, 'Triskaidekaphage');
+  const theirs = spawn(h, D, 'Triskaidekaphage');
+  toNaming(h, A);
+  // R91: "name a card" IS a decision — the half the park note said did not exist
+  assert.equal(h.state.decision!.kind, 'payOrDecline');
+  assert.equal(h.state.decision!.seat, A, "the holder's controller names the card");
+  assert.ok(h.state.decision!.options.some(o => o.value === 'Triskaidekaphage'),
+    'the menu offers real cards, with DecisionOption.card set for the scan');
+  pick(h, 'Triskaidekaphage');
+  assert.equal(ent(h, mine1)!.suppressed?.abilities, 'The Everywhere');
+  assert.equal(ent(h, mine2)!.suppressed?.abilities, 'The Everywhere',
+    'the named CARD, not one unit — every copy');
+  // Caleb: "nothing can send information across regions" — the enemy copy is
+  // untouched, and that region rule is why this card needs the CONTINUOUS form
+  // (it reaches an enemy only by attacking into their region, later)
+  assert.equal(ent(h, theirs)!.suppressed, undefined, 'a copy in the other region is not silenced');
+  // not just a flag: the silenced trigger never queues
+  const lifeA = h.state.players[A]!.life;
+  h.do({ type: 'declareAttack', seat: A, columns: [[mine1]] });
+  assert.equal(h.state.stack.length, 0, 'the on-attack trigger is silenced');
+  finishBattle(h);
+  assert.equal(h.state.players[A]!.life, lifeA, 'life never became 13');
+});
+
+test('The Everywhere: naming a card that is not in play silences nobody (R91)', () => {
+  const h = new Harness(3842);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  spawn(h, A, 'The Everywhere');
+  const mine = spawn(h, A, 'Triskaidekaphage');
+  toNaming(h, A);
+  pick(h, '');                                               // "a card that is not in play"
+  assert.equal(ent(h, mine)!.suppressed, undefined, 'nothing is silenced');
+  assert.ok(h.log.some(l => l.includes('names a card that is not in play')));
+  h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
+  pass(h); pass(h);
+  assert.equal(h.state.players[A]!.life, 13, 'the unnamed card keeps its abilities');
+  finishBattle(h);
+});
+
+test('The Everywhere: the silence should be CONTINUOUS, so it can reach the region I attack into', { todo: true }, () => {
+  // R91 shipped the naming and the suppression; what is still approximated is
+  // the DURATION, and it is the clause that gives the card its teeth.
+  // Printed: "my last named card loses all abilities (as long as I am in their
+  // region)" — continuous, re-evaluated as units move. The engine has only
+  // R62's until-regroup E.suppress, applied once, at naming time.
+  // The consequence is not cosmetic: at the end of the haste step every unit is
+  // still home in its own region, so the card can only silence ALLIES today.
+  // The printed card reaches an enemy by ATTACKING INTO their region later in
+  // the same turn, at which point the continuous effect switches on. This is
+  // deliberately NOT worked around by reaching across regions — Caleb,
+  // rules-questions: "If you have a question about wheither something can be
+  // done with units across regions, the answer is no", and "the single rule
+  // we'll never violate is 'nothing can send information across regions'".
+  // What would close it: a STRING field on Entity holding the named card
+  // (Entity.budgets is numeric-only), plus a StaticMod that matches on a card
+  // NAME rather than an entity id — then this stops being a trigger and becomes
+  // a static, which is what the printed text actually is.
 });
 
 // ── Triskaidekaphage ─────────────────────────────────────────────────────

@@ -63,10 +63,9 @@
  *    the printed mana (X-cost cards count as 0).
  *
  * PARKED (needs engine primitives that do not exist; subsets implemented):
- *  - Dispatch Courier: "you may play a unit during the mana step as if it had
- *    [Haste]" needs play-timing gating (apply.ts's haste-step legality) that
- *    card code cannot reach. Registered with inert augmentText so it plays,
- *    augments and attaches crash-free; the granted permission is dead.
+ *  - (Dispatch Courier UNPARKED by R97, round 17 — see the card. The play-timing
+ *    gating card code could not reach is now `PlayPermission.playAtHaste`,
+ *    summed by `E.hastePlayAllowance` and asked at all three gates.)
  *  - Cosmic Conspirator (spell-token half): createSpellToken fires no
  *    dispatchable event (E.createSpellToken never calls fireEvent), so a
  *    Poison/Crystal/Fireball creation cannot be intercepted. The Robot half
@@ -584,14 +583,63 @@ card('Discharge', {
 });
 
 // "[Augment] Each turn, you may play a unit during the mana step as if it had
-// [Haste]." — mm/2 2/1 Robot Horse Unit. PARKED (header): play-timing gating
-// lives in apply.ts, out of card code's reach. The inert augmentText keeps
-// isAugment() true so the card still plays and attaches crash-free.
+// [Haste]." — mm/2 2/1 Robot Horse Unit. UNPARKED by R97 (report #74, WEHH
+// 2026-08-22: "Dispatch Courier didn't give me the option to play a card with
+// haste"). It did not, because nothing anywhere asked: play-timing gating
+// lives in apply.ts and had no seam card code could reach.
+//
+// The rules half was already settled, and settles what "the mana step" means.
+// Caleb's Discord, rules-questions: "that symbol is haste, meaning you can
+// play it during the mana step", and "There is no priority during the mana
+// step, but you can play haste cards and resources as special actions"; asked
+// what the mana step is, nyarlathotep8457: "Yes the Mana step is the resources
+// step of the planning phase". So the printed "during the mana step" IS this
+// engine's R18 haste step.
+//
+// R97 added the seam: `PlayPermission.playAtHaste` (dsl.ts), gathered and
+// SUMMED by `E.hastePlayAllowance`, asked through `E.mayPlayAtHaste` at the
+// three gates that have to agree — `startHasteStep`'s canHaste (which skips
+// the step outright, so it is the one that made the card invisible),
+// `legalActions`' haste branch, and `playAtTiming`'s planning branch — and
+// charged against `s.hastePlaysUsed`, the per-seat sibling of R43's
+// `hasteManaSpent` (a PLAY is not an ability activation, so `Entity.budgets`
+// never sees one). The haste step happens once a turn, so its window IS the
+// printed "Each turn".
+//
+// WHAT THIS CARD DECIDES, and what it does not:
+//  · "a UNIT" — so `kind` must be a unit. A SPELL UNIT counts: RAQ "[Solved]
+//    Spell Units played when you can 'play a unit from hand'" — "Q: If you
+//    decide to use Hooba-Pon Effect to play Spell-Unit, does that units
+//    'spell' part happens? A: Yes, the spell part happens and if it resolves,
+//    the unit will spawn into formation", and "Q: Does that count as 'playing
+//    a spell' for some triggers? A: Yes."
+//  · "Each turn" — an allowance of exactly 1. Two Couriers are two plays,
+//    which is why R97 sums grantors instead of OR-folding them.
+//  · [Augment] — the grant belongs to the ANCHOR's controller, so augmented
+//    onto a host it is the host's controller who may play the unit. Same rule
+//    as R95's Rook and every other anchored text.
+//  · It does NOT decide the zone. The printed line says "play a unit" with no
+//    zone in it, so any zone `playAtTiming` reaches in the haste step is fair
+//    — hand today, and a cache release already had its own [Haste] route (R42).
+//  · It does NOT get to say yes to a {Battle} card. RAQ "[Solved] Dispatch
+//    Courier vs Battle Timing": "No, despite gaining :haste: they can still
+//    only be played during :battle:." That refusal is general, so it lives in
+//    `E.hastePlayAllowance` above every grantor, not here.
+//
+// ⚠ STILL PARKED, and NOT unparked by this: Writhing Host ("If I am in your
+// bin, you may play a unit as if it had [Haste] by erasing me as an additional
+// cost") — the grantor is a card in the BIN, which `anchored()` does not walk,
+// and the grant carries an additional COST, which `PlayCtx` has no room for.
+// Slurpr ("You can apply other mods during [Haste] as if it was deployment")
+// is the MOD-timing twin and belongs to R95's family, not this one. Rook is
+// already live on R95.
 card('Dispatch Courier', {
-  augmentText: [{
-    type: 'triggered', events: [],
-    label: '(parked) each turn, you may play a unit during the mana step as if it had [Haste]',
-    effect: { run: () => { /* PARKED: needs mana-step play gating in apply.ts */ } },
+  augmentable: true,
+  playPermissions: [{
+    playAtHaste: (_g, self, ctx) =>
+      (ctx.seat === self.controller
+        && (ctx.card.kind === 'unit' || ctx.card.kind === 'spellUnit'))
+        ? 1 : 0,
   }],
 });
 

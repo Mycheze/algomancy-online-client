@@ -100,7 +100,8 @@ const EXEMPT: Record<string, string> = {
   'Divine Intervention': "'you may change the TARGETS of target effect' — one own target",
   'Boon of Protection': "'negate target effect that TARGETS an allied …' — one own target",
   'Download': "'gain control of target token. You may choose new TARGETS for spells controlled this way'",
-  'Envoy of Lightning': "'your spell effects with a single TARGET are Electric' — a static, targets nothing",
+  'Envoy of Lightning': "'your spell effects with a single TARGET are Electric' — an effectAttrs "
+    + 'mod (R94), targets nothing. It reads how many targets somebody ELSE declared.',
   'Earnest Defender': "'whenever an ally becomes the TARGET of an enemy spell' — a trigger condition",
   'Hexbane Shiitake': "'you may choose new TARGETS for that spell' — the exchanged spell's, not mine",
   'Earthbound Replicator': "'a nonunit spell TARGETING me … new targets for the copy' — the copy's",
@@ -111,10 +112,13 @@ const EXEMPT: Record<string, string> = {
   // because printed text is per card; each effect asks for its own.
   'Stellarspore Harvester': 'the after-combat trigger targets a unit; the [Augment] death trigger targets an opponent',
 
-  // ── 3. genuinely unimplemented, and parked as such rather than faked.
-  'Apex Prime':
-    "'all of your units become a copy of target unit until regroup' needs a COPY layer that does "
-    + 'not exist (R67); the card targets nothing at all until it does.',
+  // ── 3. (empty) — Apex Prime lived here until round 17. Its exemption said the
+  // card "targets nothing at all" because the copy layer did not exist; R92
+  // found that three of the four layers already did (base stats via E.setBase,
+  // attributes via E.addTempAttr, triggered/[Augment] text via E.grantText),
+  // so the card now declares a real target and this test rightly threw the
+  // exemption out. The remaining dead clauses (the copied NAME, statics and
+  // ACTIVATED abilities) are a card-ledger matter, not a targeting one.
 };
 
 test('R67: a card printing N targets declares N cast-time target slots', () => {

@@ -62,6 +62,94 @@ test('Refuse Reclaimer: the donated [Augment] text feeds the HOST counters', () 
   assert.deepEqual(effStats(h, host), [2, 2]);
 });
 
+/*
+ * THE BRDM REPORT (playtest ledger #15, 2026-08-20): "Why didn't Refuse
+ * Reclaimer get a counter from my Oracle dying?"
+ *
+ * Round 7 closed this as NOT A BUG on the strength of a commit message — the
+ * trigger fired, the report was filed while it was still sitting on the stack
+ * — and left no artefact behind, so the claim was not reproducible from the
+ * repo. It also left a much better explanation untested: the death listener is
+ * REGION-SCOPED. `E.fireEvent` filters the scan to `e.region === region`,
+ * where the region comes off the death event, so a Reclaimer standing at home
+ * genuinely does not see a unit die in the battle region it did not go to.
+ * That reproduces the reported symptom exactly, and it is CORRECT — Caleb, in
+ * rules-questions on 2025-03-09, answering "do these effects only trigger if
+ * the unit is in the same region as the thing that is happening?":
+ *
+ *   "Everything in the game is region specific. So nothing will ever impact
+ *    anything in another region. You should be able to completely ignore
+ *    cards in other regions when resolving a battle.
+ *    Units don't need to block to trigger (unless the card specifically says
+ *    so). Just being in the region is enough."
+ *
+ * So the two tests below are the artefact round 7 never wrote. The first is
+ * the "just being in the region is enough" half — the Reclaimer attacks and
+ * feeds on a death beside it, without blocking or fighting anything. The
+ * second is the half that answers the report: same board, Reclaimer left at
+ * home, and it stays a 1/1.
+ *
+ * The first test at the top of this file already covers a death in a HOME
+ * region outside battle; these two are about the region SPLIT, which is the
+ * only shape that could have produced the report.
+ */
+
+test('Refuse Reclaimer: a death in the battle region it attacked into feeds it — no blocking required (R12)', () => {
+  const h = new Harness(2811);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const rr = spawn(h, A, 'Refuse Reclaimer');               // 1/1
+  const mate = spawn(h, A, 'Unit Token');
+  const home = new E(h.state).homeRegion(A);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[rr], [mate]] });
+
+  const region = h.state.battle!.region;
+  assert.notEqual(region, home, 'the attack really did leave home — otherwise this proves nothing');
+  assert.equal(ent(h, rr)!.region, region, 'the Reclaimer travelled with the attack');
+  assert.equal(ent(h, mate)!.region, region, 'and so did the unit about to die');
+
+  {
+    const e = new E(h.state);                               // an ally dies beside it
+    e.destroy(ent(h, mate)!, 'dies');
+    e.settle();
+  }
+  assert.equal(h.state.stack.length, 1, 'in battle the death trigger goes on the stack, not off at once');
+  pass(h); pass(h);                                         // resolve it
+  assert.equal(ent(h, rr)!.counters, 1, 'the death in ITS region fed it');
+  assert.deepEqual(effStats(h, rr), [2, 2], '1/1 + the counter');
+  finishBattle(h);
+});
+
+test('Refuse Reclaimer: a death in a region it is not in leaves it cold (R12) — the BRDM report shape', () => {
+  const h = new Harness(2812);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const rr = spawn(h, A, 'Refuse Reclaimer');               // stays HOME
+  const atk = spawn(h, A, 'Unit Token');                    // goes to the battle
+  const home = new E(h.state).homeRegion(A);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+
+  const region = h.state.battle!.region;
+  assert.equal(ent(h, rr)!.region, home, 'the Reclaimer stayed at home');
+  assert.notEqual(region, home, 'and the battle is happening somewhere else');
+
+  {
+    const e = new E(h.state);
+    e.destroy(ent(h, atk)!, 'dies');
+    e.settle();
+  }
+  // Not "the trigger resolved and did nothing" — it is never even QUEUED. The
+  // region filter in fireEvent means the Reclaimer is not among the listeners
+  // scanned at all, which is why the owner saw nothing happen rather than
+  // seeing a trigger sit on the stack.
+  assert.equal(h.state.stack.length, 0, 'no trigger was queued for a death in another region');
+  assert.equal(ent(h, rr)!.counters, 0, 'the Reclaimer never saw it');
+  assert.deepEqual(effStats(h, rr), [1, 1], 'still a printed 1/1');
+  finishBattle(h);
+});
+
 // ── Riftwalker ───────────────────────────────────────────────────────────
 
 test('Riftwalker: [one] switches my position with a target ally in my formation; [once]', () => {

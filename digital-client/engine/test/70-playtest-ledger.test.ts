@@ -14,6 +14,29 @@
  * report sat dead for two days behind a `{todo:true}` that could never fail.
  * Naming a guard that does not exist — or that is a todo — is exactly how both
  * of those looked handled while being broken, so both are hard failures here.
+ *
+ * ── THE ONE MANUAL STEP ───────────────────────────────────────────────────
+ *
+ * (1) used to be `assert.equal(LEDGER.length, 75)` — a hardcoded number. That
+ * number is a claim about a file this repo could not see: the reports are
+ * appended to `server/issues.jsonl` ON THE GAME SERVER, and that file is not
+ * in git. So the assertion could only ever fail when somebody had ALREADY
+ * noticed the new reports and gone to bump it, which is the one moment you do
+ * not need a test. Eleven reports landed on 2026-08-22 and the suite stayed
+ * green through all of them.
+ *
+ * `playtest-issues.snapshot.jsonl` (beside this file) is a committed copy of
+ * that server file, and (1) now checks the ledger against it row by row. The
+ * snapshot cannot refresh itself — the server is a different machine — so the
+ * step a human still has to do is:
+ *
+ *     scp benshomeserver.local:/home/bena/Documents/Algomancy/digital-client/server/issues.jsonl \
+ *         engine/test/playtest-issues.snapshot.jsonl
+ *
+ * Do that whenever you sit down to work through reports. Anything new the copy
+ * brings down turns this file red until the ledger has an entry for it, which
+ * is the whole point: the reports and the repo can no longer drift silently,
+ * they can only drift for as long as it takes someone to run one scp.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -79,17 +102,82 @@ function testTitles(src: string): { title: string; todo: boolean }[] {
 
 const needsNote: LedgerEntry['status'][] = ['live', 'partial', 'by-design', 'wontfix'];
 
+/** One row of server/issues.jsonl, exactly as the 🐛 button writes it. */
+interface IssueRow {
+  ts: string;
+  room: string;
+  seat: number | null;
+  note: string;
+  actionIndex: number | null;
+}
+
+const SNAPSHOT_REL = 'playtest-issues.snapshot.jsonl';
+const SNAPSHOT = path.join(HERE, SNAPSHOT_REL);
+/** the refresh command, repeated in every failure message that needs it */
+const REFRESH =
+  'scp benshomeserver.local:/home/bena/Documents/Algomancy/digital-client/server/issues.jsonl '
+  + `engine/test/${SNAPSHOT_REL}`;
+
+function snapshotRows(): IssueRow[] {
+  assert.ok(fs.existsSync(SNAPSHOT),
+    `${SNAPSHOT_REL} is missing. It is the committed copy of the game server's `
+    + `server/issues.jsonl and the ledger is checked against it. Fetch it:\n    ${REFRESH}`);
+  const text = fs.readFileSync(SNAPSHOT, 'utf8');
+  return text.split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map((line, i) => {
+      try { return JSON.parse(line) as IssueRow; }
+      catch { throw new Error(`${SNAPSHOT_REL} line ${i + 1} is not JSON — re-fetch it:\n    ${REFRESH}`); }
+    });
+}
+
 test('every playtest report has a ledger entry, in issues.jsonl order', () => {
-  // Reports live in server/issues.jsonl, which is NOT in git — that is half of
-  // why they used to evaporate. The ledger is the committed copy, so the count
-  // is pinned here: when new reports come in, this number moves in the same
-  // commit that adds the entries, and a report cannot be quietly dropped.
-  const EXPECTED = 64;
-  assert.equal(LEDGER.length, EXPECTED,
-    `the ledger has ${LEDGER.length} entries but ${EXPECTED} reports have been filed — `
-    + 'add the missing entries (and bump EXPECTED in the same commit)');
-  LEDGER.forEach((e, i) => assert.equal(e.id, i,
-    `ledger entry ${i} claims id ${e.id} — ids are the issues.jsonl index and must stay in order`));
+  // Reports live in server/issues.jsonl ON THE GAME SERVER and that file is
+  // not in git, so for a long time this assertion was a hardcoded count —
+  // which is a number a human has to already know is wrong before it can go
+  // red. It never once caught an incoming report; eleven arrived on
+  // 2026-08-22 and nothing failed.
+  //
+  // The snapshot beside this file is the committed copy, and the ledger is now
+  // checked against IT: same length, same order, same room, same day. The id
+  // of a report IS its line index in that file, oldest first (the oldest row
+  // predates the id field entirely), which is what makes the pairing possible
+  // at all.
+  //
+  // What is deliberately NOT compared is the report TEXT. `LedgerEntry.report`
+  // is the raw note trimmed to its essence — typos left alone but rambling cut,
+  // and occasionally two notes about one thing merged into one sentence — so a
+  // string comparison would fail on every entry and force the ledger to become
+  // a second, worse copy of the snapshot. The snapshot IS the verbatim record;
+  // the ledger is the reading of it. Room and date are enough to prove the two
+  // are talking about the same report.
+  const rows = snapshotRows();
+
+  rows.forEach((row, i) => {
+    const e = LEDGER[i];
+    assert.ok(e,
+      `report #${i} (${row.room}, ${row.ts.slice(0, 10)}) is in ${SNAPSHOT_REL} and has NO ledger `
+      + `entry.\n  note: ${JSON.stringify(row.note)}\n`
+      + `  Add an entry with id ${i} to engine/test/playtest-ledger.ts — status 'live' with a note `
+      + 'saying what you found is the honest starting point.');
+    assert.equal(e!.id, i,
+      `ledger entry at index ${i} claims id ${e!.id} — ids are the issues.jsonl line index and `
+      + 'must stay in order');
+    assert.equal(e!.room, row.room,
+      `ledger #${i} says room ${e!.room}, but ${SNAPSHOT_REL} line ${i + 1} says ${row.room} — `
+      + 'the entries have drifted out of line with the reports (an entry inserted or deleted in '
+      + 'the middle, rather than appended)');
+    assert.equal(e!.date, row.ts.slice(0, 10),
+      `ledger #${i} (${e!.room}) is dated ${e!.date}, but the report was filed `
+      + `${row.ts.slice(0, 10)} (${row.ts})`);
+  });
+
+  assert.ok(LEDGER.length <= rows.length,
+    `the ledger has ${LEDGER.length} entries but ${SNAPSHOT_REL} only has ${rows.length} reports. `
+    + 'Either an entry was invented, or — far more likely — the snapshot is stale and the server '
+    + `has reports it does not. Re-fetch it and re-run:\n    ${REFRESH}`);
+
   const seen = new Set<number>();
   for (const e of LEDGER) {
     assert.ok(!seen.has(e.id), `duplicate ledger id ${e.id}`);

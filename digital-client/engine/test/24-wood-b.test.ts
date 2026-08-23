@@ -9,14 +9,15 @@
  * via {mod} (Pack Leader), the spawn/despawn token lifecycle (Pathogenic
  * Enclave), a team-wide temp buff (Pernicious Photosynthesis), the counter-
  * punisher (Pestilent Mycelion, fed by its own Poisonous combat damage),
- * a statics-only augment (Prickly Protector), and the parked prevention
- * shield (Phytochemical Protection). States are built explicitly
+ * a statics-only augment (Prickly Protector), and the R98 until-regroup
+ * damage-prevention shield (Phytochemical Protection). States are built explicitly
  * (give/spawn/giveResources). Seeds 2400-2499. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
+import type { Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
@@ -256,26 +257,138 @@ test('Pestilent Mycelion: its Poisonous block lands a -1/-1 counter → each opp
   finishBattle(h);
 });
 
-test('Phytochemical Protection: plays crash-free, no shield (prevention PARKED)', { todo: true }, () => {
+/** R98: put the shield up white-box (the spell itself is played end-to-end in
+ * the first test) and return the log lines a burst of effect damage produces. */
+function shield(h: Harness, id: number): void {
+  whiteBox(h, e => { e.entity(id)!.damageShield = 'Phytochemical Protection'; });
+}
+function zap(h: Harness, from: Seat, id: number, n: number, attrs?: string[]): string[] {
+  const e = new E(h.state);
+  const before = e.events.length;
+  e.dealEffectDamage({
+    controller: from, sourceName: 'Fireball', region: e.entity(id)!.region,
+    targets: [], event: null, choose: () => undefined,
+    ...(attrs ? { grantedAttrs: attrs } : {}),
+  } as never, e.entity(id)!, n);
+  e.settle();
+  h.state = e.s;
+  return e.events.slice(before).map(ev => ev.msg);
+}
+
+test('Phytochemical Protection: combat damage is prevented and paid back as +1/+1 counters', () => {
+  // R98, report #72 (GETD): "Phytochemical Protection is entirely non
+  // functional. Needs to work like the text says."
   const h = new Harness(2412);
   assert.equal(getCard('Phytochemical Protection').kind, 'spell', 'registered');
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
-  const atk = spawn(h, A, 'Unit Token');
-  const mine = spawn(h, D, 'Unit Token');
+  const atk = spawn(h, A, 'Good Whale');              // 7/5
+  const mine = spawn(h, D, 'Good Whale');             // 7/5 — 5 damage is lethal to it
   giveResources(h, D, 'wood', 2);                     // gg / 2
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Phytochemical Protection') });
   pick(h, { unit: mine });
-  pass(h); pass(h);                                   // resolve (info only)
-  assert.ok(h.log.some(m => m.includes('Phytochemical Protection') && m.includes('PARKED')),
-    'resolved with the parked log line');
+  pass(h); pass(h);                                   // resolve the shield
+  assert.equal(ent(h, mine)!.damageShield, 'Phytochemical Protection', 'the shield is up');
+  pass(h); pass(h);                                   // close the attack window
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
+  pass(h); pass(h);                                   // combat damage
+  const blocker = ent(h, mine);
+  assert.ok(blocker, 'it survived a hit that was lethal twice over — all of it was prevented');
+  assert.equal(blocker!.damage, 0, 'no damage was marked');
+  assert.equal(blocker!.counters, 5, 'a +1/+1 counter for each damage prevented');
+  assert.ok(!ent(h, atk), 'the attacker still took its 7 back and died');
   finishBattle(h);
-  // TODO(parked): "until regroup, prevent all damage dealt to target unit;
-  // +1/+1 counter per damage prevented" needs a damage-prevention /
-  // replacement hook in dealEffectDamage + combatSubStep.
+});
+
+test('Phytochemical Protection: ⚠ OPEN — the counters cap at LETHAL, not at the whole hit', () => {
+  // The engine's R7 auto-assignment gives each blocker exactly enough to kill
+  // it and DROPS the rest (only {Piercing} carries excess anywhere). The RAQ
+  // says otherwise for this card, and the difference is the whole payoff:
+  //   "Q: No Deadly, No Piercing. Single enemy with Phytochemical Protection?
+  //    A: All damage must be assigned to this single unit and whole damage
+  //       will be prevented, potentially putting a lot of +/+ counters."
+  // Deliberately NOT changed here: making the leftover pool land would move
+  // every overkill number in the engine (marked damage, the "takes N" line,
+  // and every {Resonant} rider), which is an assignment ruling of its own.
+  // This test pins what the engine actually does so a fix is a visible change.
+  const h = new Harness(2426);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Good Whale');              // 7 power
+  const mine = spawn(h, D, 'Unit Token');             // 1/1
+  toNextBattle(h, A);
+  shield(h, mine);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
+  pass(h); pass(h);
+  assert.equal(ent(h, mine)!.counters, 1,
+    'ENGINE: only the 1 lethal point was assigned — the RAQ would say 7');
+});
+
+test('Phytochemical Protection: prevented damage is NOT dealt — no damage event fires', () => {
+  // RAQ "[Solved] Poisonous vs 'Whenever I am dealt damage' vs Phytochemical
+  // Protection": "Jollyglop doesn't trigger". Prevention unmakes the damage,
+  // unlike R38's replacements ("replacing the damage does NOT unmake it").
+  const h = new Harness(2422);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const u = spawn(h, D, 'Good Whale');
+  shield(h, u);
+  const said = zap(h, A, u, 3);
+  assert.ok(!said.some(m => m.includes('Fireball deals')), 'no damage was dealt');
+  assert.ok(said.some(m => m.includes('prevents all 3 damage')), 'and the log says why');
+  assert.equal(ent(h, u)!.damage, 0);
+  assert.equal(ent(h, u)!.counters, 3, '+1/+1 per damage prevented, from effect damage too');
+});
+
+test('Phytochemical Protection: Poisonous does not bypass it, and lays no -1/-1 counters', () => {
+  // RAQ, verbatim: "Does Poisonous bypass Phytochemical Protection? No it
+  // doesn't. … if there is not damage being dealt, then no counters are
+  // placed." The victim ends UP counters, not down.
+  const h = new Harness(2423);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const u = spawn(h, D, 'Good Whale');
+  shield(h, u);
+  zap(h, A, u, 2, ['Poisonous']);
+  assert.equal(ent(h, u)!.counters, 2, '+2, not -2 — the Poisonous damage was never dealt');
+});
+
+test('Phytochemical Protection: {Deadly} cannot kill through it', () => {
+  // The RAQ line is "Atleast 1 dmg to Awoken (gets +1/+1, won't create 1/1
+  // unit)". Deadly kills through DAMAGE DEALT; the shield leaves none.
+  const h = new Harness(2424);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const killer = spawn(h, A, 'Unit Token');
+  whiteBox(h, e => { e.entity(killer)!.tempAttrs = ['Deadly']; });
+  const mine = spawn(h, D, 'Good Whale');             // 7/5
+  toNextBattle(h, A);
+  shield(h, mine);
+  h.do({ type: 'declareAttack', seat: A, columns: [[killer]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
+  pass(h); pass(h);                                   // combat damage
+  assert.ok(ent(h, mine), 'a Deadly hit that dealt no damage kills nothing');
+  assert.equal(ent(h, mine)!.counters, 1, 'and the 1 assigned point is still paid back');
+  finishBattle(h);
+});
+
+test('Phytochemical Protection: the shield lasts UNTIL REGROUP and no longer', () => {
+  const h = new Harness(2425);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const mine = spawn(h, D, 'Good Whale');
+  toNextBattle(h, A);
+  shield(h, mine);
+  finishBattle(h);
+  assert.equal(ent(h, mine)!.damageShield, undefined, 'swept by the R11 regroup cleanup');
+  zap(h, A, mine, 2);
+  assert.equal(ent(h, mine)!.damage, 2, 'damage lands again after regroup');
 });
 
 test('Plague Bellower: [three] — each opponent picks a unit; a -1/-1 counter on each', () => {

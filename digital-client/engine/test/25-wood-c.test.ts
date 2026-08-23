@@ -14,7 +14,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E } from '../src/engine.ts';
+import { E, Suspended } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
@@ -22,6 +22,18 @@ import {
 
 const home = (h: Harness, seat: number): number =>
   h.state.regions.findIndex(r => r.owner === seat);
+
+/** raw engine edits against the harness state, absorbing a suspension */
+function whiteBox(h: Harness, f: (e: E) => void): void {
+  const e = new E(h.state);
+  try {
+    f(e);
+    e.settle();
+  } catch (sig) {
+    if (!(sig instanceof Suspended)) throw sig;
+  }
+  h.state = e.s;   // a mid-resolution suspension re-points e.s (structuredClone)
+}
 
 test('Ralph: [one] gives target opponent control of it, creates three 1/1s at home; bounded across the handover', () => {
   const h = new Harness(2500);
@@ -342,6 +354,34 @@ test('Warbloom Herald: attacking gives your in-region units +1/+0 until regroup'
   assert.deepEqual(effStats(h, dUnit), [1, 1], 'enemies untouched');
   finishBattle(h);
   assert.deepEqual(effStats(h, herald), [1, 1], 'cleared at regroup');
+});
+
+test('Warbloom Herald: the buff over an empty region says so — it never resolves into silence', () => {
+  // The direct guard for the latent bug 65-effect-conformance.test.ts caught by
+  // fuzz (seed 11) through the GRAFTED copy: Vaporweave Eidolon activated
+  // "[zero]: recall me", the host left play, and the rider then ran over a
+  // region with no units of its controller and emitted nothing at all — the
+  // item left the stack, the board was unchanged and the log said nothing.
+  // The fuzz sweep is not a revert-proof guard for one card, so this is it,
+  // built on the plain printed trigger rather than a graft: the amount is live
+  // at RESOLUTION (R1), so removing the lone attacker in response is enough.
+  const h = new Harness(2526);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const herald = spawn(h, A, 'Warbloom Herald');
+  spawn(h, D, 'Unit Token');                          // an enemy: the region is not empty, MINE is
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[herald]] });
+  assert.equal(h.state.stack.length, 1, 'the attack trigger is on the stack');
+  // in response, the Herald itself leaves play — A now controls nothing here
+  whiteBox(h, e => { e.recall(e.entity(herald)!); });
+  assert.equal(unitsOf(h, A).length, 0, 'A controls no unit in the region any more');
+  const before = h.log.length;
+  pass(h); pass(h);                                   // the trigger resolves over nothing
+  assert.equal(h.state.stack.length, 0, 'and it did resolve — it is off the stack');
+  assert.ok(h.log.slice(before).some(l => l.includes('you control no unit here — nothing is buffed')),
+    'a completed run that changes nothing must still SAY so');
+  finishBattle(h);
 });
 
 test('Woodland Warding: negates enemy effects aimed at your side, spares the rest', () => {

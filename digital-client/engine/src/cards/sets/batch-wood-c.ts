@@ -465,7 +465,19 @@ card('Wandering Blightshell', {
 // "Your units" region-scoped (R12); temp layer, cleared at regroup.
 const warbloomBuff: EffectDef = {
   run: (g, ctx) => {
-    for (const u of g.unitsOf(ctx.controller, ctx.region)) g.addTemp(u, 1, 0);
+    // "Nothing happened" is a legitimate outcome; not SAYING so never is
+    // (test/65-effect-conformance.test.ts: "no effect resolves into silence").
+    // Latent since the card landed, and reachable without any graft at all —
+    // the trigger is queued when the Herald attacks or blocks, and by the time
+    // it RESOLVES (R1: the amount is live at resolution) its controller may
+    // control nothing in the region. The fuzz found it through the grafted
+    // copy: Vaporweave Eidolon activated "[zero]: recall me", the host left
+    // play, and this rider then ran over an empty region and emitted nothing.
+    // Worded exactly like its sibling `bloomBuff` (Sudden Bloom) above, and
+    // via ctx.sourceName because a graft rider speaks in the host's name.
+    const mine = g.unitsOf(ctx.controller, ctx.region);
+    if (!mine.length) { g.ev('info', `${ctx.sourceName}: you control no unit here — nothing is buffed.`); return; }
+    for (const u of mine) g.addTemp(u, 1, 0);
   },
 };
 card('Warbloom Herald', {

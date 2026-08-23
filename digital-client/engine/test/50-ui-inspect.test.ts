@@ -15,7 +15,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
-import { legalActions } from '../src/apply.ts';
+import { ALL_ELEMENTS, legalActions } from '../src/apply.ts';
 import { createsOf, DECK_LIST } from '../src/cards/registry.ts';
 import {
   abilityOf, activatableUnits, activationBadge, activationNeedsConfirm, castProbe, costReceipt,
@@ -23,7 +23,8 @@ import {
   findCardName, groupReveal, growCardLedger, linkCardNames, namesInEvents, namesInState,
   onlyKnownNames, partitionOptions, partText, playableCachedNames,
   seenHandView, shouldAutoYield, stackAbilityRows, stackItemX, stackXMark, switchClause,
-  tokensCreatedBy, tokensNamedIn,
+  prismiteClickPlan, resourceMenuElements,
+  tokensCreatedBy, tokensNamedIn, transformFaces,
   unitClickOptions,
 } from '../ui/inspect.ts';
 import type { CastWatch } from '../ui/inspect.ts';
@@ -469,6 +470,59 @@ test('an unknown card yields no tokens rather than throwing', () => {
   assert.deepEqual(tokensCreatedBy('No Such Card At All'), []);
 });
 
+/* ── what a card TRANSFORMS INTO (playtest ledger #24) ──────────────────── */
+
+test('the inspector says what Scholar of the Void transforms into, before the hand is discarded', () => {
+  // The report, verbatim (ZQPC, 2026-08-20): "Scholar of the Void doesn't say
+  // what the Beyond card it can transform into does". The complaint is about
+  // the INSPECTOR, not the transform: the card asks you to discard your entire
+  // hand for a face you have never been allowed to read.
+  assert.deepEqual(transformFaces('Scholar of the Void'), ['Beyond, Codex Incarnate']);
+  // …and the name is enough for the row builder to say what it DOES, which is
+  // the actual ask. (ui/main.ts renders it with tokenRowHtml, which prints
+  // stats, type line and rules text off exactly this name.)
+  const back = getCard('Beyond, Codex Incarnate');
+  assert.deepEqual([back.power, back.toughness], [8, 3]);
+  assert.match(back.text, /inverted/i, 'the face has real rules text to show');
+  assert.equal(back.type, 'Book Token Unit');
+  // the 99% case: no row at all
+  assert.deepEqual(transformFaces('Good Whale'), []);
+  assert.deepEqual(transformFaces('No Such Card At All'), []);
+});
+
+test('a card that has already transformed shows no row, and a host wearing the mod shows none either', () => {
+  // Both answers come from reading the ENTITY's own card name, and both agree
+  // with the engine: Beyond has no back face of its own, and "transform me"
+  // donated to a host rebinds to a host that has its own reverse side (which
+  // batch-dark-c.ts refuses). The view must not offer an option the unit does
+  // not have.
+  const h = new Harness(5907);
+  toDeployment(h);
+  const seat = h.state.deployPlayer!;
+  const sv = spawn(h, seat, 'Scholar of the Void');
+  const unit = h.state.entities[sv]!;
+  assert.deepEqual(transformFaces('Scholar of the Void', { e: new E(h.state), unit }),
+    ['Beyond, Codex Incarnate'], 'live, still a Scholar: the row is there');
+  unit.card = 'Beyond, Codex Incarnate';               // as the transform leaves it
+  assert.deepEqual(transformFaces('Scholar of the Void', { e: new E(h.state), unit }), [],
+    'spent: nothing left to turn over');
+
+  const host = h.state.entities[spawn(h, seat, 'Good Whale')]!;
+  assert.deepEqual(transformFaces('Scholar of the Void', { e: new E(h.state), unit: host }), [],
+    'the host has its own back face, so the donated text offers nothing');
+});
+
+test('the back face is NOT listed as a token Scholar of the Void creates', () => {
+  // Beyond is printed "Book Token Unit" and is a registry card outside
+  // DECK_LIST, which is exactly the shape TOKEN_NAMES sweeps up — and Scholar's
+  // printed text names it in a perfectly scannable sentence. Left alone, the
+  // details page would claim Scholar CREATES a Beyond. It becomes one.
+  assert.deepEqual(tokensCreatedBy('Scholar of the Void'), [],
+    'transforming into something is not creating it');
+  assert.deepEqual(tokensNamedIn(getCard('Scholar of the Void').text), [],
+    'and the scan itself must not see it, or every reader inherits the claim');
+});
+
 /* ── the erased pile, as it is SHOWN (R69) ──────────────────────────────── */
 
 test('the erased viewer lists the real cards that are out of the game', () => {
@@ -708,6 +762,69 @@ test('Necromantic Rebuke carries its paid X onto the real stack', () => {
     'X — and the receipt R65 makes public — survive all the way to the board',
   );
   assert.equal(stackXMark(item), 'X=2');
+});
+
+/* GETD — the X that is not a COUNT. "There's still no way to see the X value
+ * for Volatile Toxicity on the stack. All spells with X should be clear what X
+ * is when they're cast." Its cost is one sacrifice, a fixed amount, so R64's
+ * `costPaid.x` is never written; the X is a stat the receipt snapshotted. */
+
+test('Volatile Toxicity: the X read off its cost RECEIPT reaches the stack', () => {
+  const h = new Harness(5911);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');            // 7/5 → X = 5
+  giveResources(h, D, 'fire', 1);
+  giveResources(h, D, 'wood', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);                                            // priority → D
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Volatile Toxicity') });
+  pick(h, { unit: whale });                           // the cost, paid at cast
+
+  const item = h.state.stack.find(i => i.card === 'Volatile Toxicity')!;
+  assert.ok(item, 'it reached the stack');
+  assert.equal(item.x, undefined, 'no mana X…');
+  assert.equal(item.parts[0]!.costPaid!.x, undefined, '…and no counted variable cost either');
+  const rows = stackItemX(item);
+  assert.equal(rows.length, 1);
+  assert.deepEqual(
+    { kind: rows[0]!.kind, x: rows[0]!.x, part: rows[0]!.part, receipt: rows[0]!.receipt },
+    { kind: 'cost', x: 5, part: 0, receipt: 'sacrificed Good Whale' },
+    "X is the sacrificed unit's defense, snapshotted at payment",
+  );
+  assert.equal(stackXMark(item), 'X=5', 'and the stack card wears it');
+  assert.equal(stackAbilityRows(item)[0]!.x, 5, 'the clause row says it too');
+});
+
+test('a sacrifice cost whose clause names no stat wears no X — Immolate just draws', () => {
+  // the receipt is the same shape; only the printed sentence differs. Inventing
+  // an X here would put a number on a spell that has none.
+  const it = xItem({
+    card: 'Immolate',
+    parts: [{
+      effectKey: 'spell:Immolate', targets: [],
+      costPaid: { sacrificed: { card: 'Good Whale', power: 7, defense: 5 } },
+    }],
+  });
+  assert.deepEqual(stackItemX(it), []);
+  assert.equal(stackXMark(it), '');
+  assert.equal(stackAbilityRows(it)[0]!.x, undefined);
+});
+
+test("Structural Collapse's bar is the same snapshot, so it is shown too", () => {
+  // "…until their total defense is at least equal to the defense of your
+  // sacrificed unit" — the card never writes X, but that number is the whole
+  // question a responder has about the spell.
+  const it = xItem({
+    card: 'Structural Collapse',
+    parts: [{
+      effectKey: 'graft:Structural Collapse', targets: [],
+      costPaid: { sacrificed: { card: 'Good Whale', power: 7, defense: 5 } },
+    }],
+  });
+  assert.deepEqual(stackItemX(it).map(r => [r.kind, r.x]), [['cost', 5]]);
 });
 
 /* ── the decision bar's options ─────────────────────────────────────────── */
@@ -1251,4 +1368,103 @@ test('waitingNote prefers the fact it can prove over the one it inferred', () =>
   assert.match(waitingNote(s, true), /resolving Recall/);
   assert.match(waitingNote(s, true), /can no longer be answered/,
     'and it must not imply a response window that closed');
+});
+
+/* ── which elements a resource menu SHOWS (playtest ledger #63) ─────────── */
+
+/** the 30 cheapest mono-light cards in the pool — a legal constructed deck
+ * whose `deckElements` is exactly ['light'] (test/34-constructed uses the same
+ * recipe for the engine half) */
+const monoLightDeck = (): CardName[] => DECK_LIST
+  .filter(n => { const f = getCard(n).factions ?? []; return f.length === 1 && f[0] === 'light'; })
+  .slice(0, 30);
+
+test('the resource menu leads with your own decks elements and keeps the rest behind an expander', () => {
+  // The report, verbatim (GETD, 2026-08-22): "In constructed, the resource
+  // options from recycling and prismites should be limited just to the elements
+  // that are in your deck. No need to put the whole list for every single game
+  // when they're not relevant."
+  const h = new Harness(5081, undefined, 'constructed', undefined,
+    [monoLightDeck(), DECK_LIST.slice(30, 60)]);
+  const s = h.state;
+  assert.deepEqual(s.deckElements![0], ['light'], 'the fixture really is mono-light');
+
+  const mine = resourceMenuElements(s, 0, s.elements);
+  assert.deepEqual(mine.show, ['light'], 'seat 0 leads with light and nothing else');
+  assert.deepEqual([...mine.show, ...mine.hidden].sort(), [...ALL_ELEMENTS].sort(),
+    'and NOTHING is dropped — all seven are still reachable, because Reap the Due is '
+    + 'mono-light and scales off DARK affinity');
+  assert.equal(mine.hidden.length, 6, 'six of them behind the expander');
+
+  // always the ASKING seat's own entry, never the opponent's and never the union
+  const theirs = resourceMenuElements(s, 1, s.elements);
+  assert.deepEqual(theirs.show, s.deckElements![1], 'seat 1 reads seat 1');
+  assert.notDeepEqual(theirs.show, mine.show, 'the two seats do not share a menu');
+
+  // the expander itself: one click and the whole list is there
+  const opened = resourceMenuElements(s, 0, s.elements, true);
+  assert.deepEqual(opened.show, s.elements, 'expanded shows every element the game offers');
+  assert.deepEqual(opened.hidden, [], 'and has nothing left to expand');
+});
+
+test('a mono element deck still gets a prismite MENU rather than a silent auto exchange', () => {
+  // THE HAZARD. An ACTIVE prismite offers seven exchanges and no activate, so
+  // for a mono-element deck the display list narrows to exactly one — and the
+  // click handler has always auto-fired on a single option. Filter first and
+  // count second and the prismite is silently spent on light, with no menu, no
+  // way to reach the other six, and no way back.
+  const h = new Harness(5082, undefined, 'constructed', undefined,
+    [monoLightDeck(), DECK_LIST.slice(30, 60)]);
+  for (const seat of [0, 1] as Seat[]) {
+    if (h.state.bottomDone && !h.state.bottomDone[seat]) {
+      h.do({ type: 'bottomCards', seat, handIndices: [0, 1] });
+    }
+  }
+  h.do({ type: 'activateResource', seat: 0, index: 0 });   // now it is a live prismite
+  const opts = legalActions(h.state, 0).filter(a =>
+    (a.type === 'activateResource' && a.index === 0) ||
+    (a.type === 'exchangePrismite' && a.index === 0));
+  assert.equal(opts.length, 7, 'seven exchanges and no activate — the shape that bites');
+
+  const plan = prismiteClickPlan(h.state, 0, opts);
+  assert.equal(plan.kind, 'menu', 'a menu, NOT an auto-fire: the count is over legal actions');
+  assert.ok(plan.kind === 'menu');
+  assert.deepEqual(plan.actions.map(a => (a as { element: string }).element), ['light'],
+    'it still leads with the deck element');
+  assert.equal(plan.hidden, 6, 'and says how many are behind the expander');
+  assert.equal(plan.actions.length + 1, 2,
+    'so the player is shown a real choice, never one option masquerading as none');
+
+  // the expander reaches every one of the seven, unchanged
+  const opened = prismiteClickPlan(h.state, 0, opts, true);
+  assert.ok(opened.kind === 'menu');
+  assert.deepEqual(opened.actions, opts, 'expanded is the engine list verbatim');
+  assert.equal(opened.hidden, 0);
+
+  // and the auto-fire it is allowed to keep: exactly one LEGAL action
+  const one = prismiteClickPlan(h.state, 0, [opts[3]!]);
+  assert.equal(one.kind, 'auto', 'one legal thing to do is still one click');
+  assert.equal(prismiteClickPlan(h.state, 0, []).kind, 'none');
+});
+
+test('outside constructed the resource menu falls back to every element the game offers', () => {
+  // deckElements is absent in shared and draft, and absent on every game saved
+  // before R99. An empty menu would read as "you may not do this", which is a
+  // rules claim and a false one.
+  const shared = new Harness(5083).state;
+  assert.equal(shared.deckElements, undefined);
+  assert.deepEqual(resourceMenuElements(shared, 0, shared.elements).show, shared.elements);
+  assert.deepEqual(resourceMenuElements(shared, 0, shared.elements).hidden, []);
+
+  const draft = new Harness(5084, undefined, 'draft', ['fire', 'water', 'earth']).state;
+  assert.deepEqual(resourceMenuElements(draft, 0, draft.elements).show, draft.elements,
+    'draft already narrowed `elements` to its trio — a second narrowing would be noise');
+
+  // a seat entry that is missing or empty falls back the same way
+  const odd = { elements: shared.elements, deckElements: [[], ['fire']] } as Pick<
+    GameState, 'elements' | 'deckElements'>;
+  assert.deepEqual(resourceMenuElements(odd, 0, shared.elements).show, shared.elements,
+    'an empty seat entry is a fallback, not an empty menu');
+  assert.deepEqual(resourceMenuElements(odd, 1, ['light', 'dark']).show, ['light', 'dark'],
+    'and neither is a deck that shares nothing with what is on offer');
 });

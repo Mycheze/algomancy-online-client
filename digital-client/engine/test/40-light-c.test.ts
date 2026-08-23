@@ -16,14 +16,18 @@
  * combat faces: Flying, Evasive, the attribute-blind damage exchange, Deadly.
  *
  * PARKED cards get a { todo: true } test naming exactly what is missing, plus
- * one shared crash-free registration test: Gatekeeper of Souls,
- * Prediction Prophet, Slurpr, Suspend.
+ * one shared crash-free registration test: Gatekeeper of Souls, Slurpr,
+ * Suspend.
+ *
+ * R90 unparked Prediction Prophet, so it moved out of that shared test and
+ * into three of its own below.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
+import { legalActions } from '../src/apply.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, offered, pass, pick,
   skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
@@ -93,7 +97,10 @@ test('Calming Force: negates every OTHER effect on the stack', () => {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Godray') });
   pick(h, { player: D });
   assert.equal(h.state.stack.length, 1, 'Godray is on the stack');
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Calming Force') });
+  // R100: it can't be played from HAND, so it reaches the stack the way it
+  // now has to — cached with a glimpse stamp (R45) and released from there.
+  whiteBox(h, e => { e.cacheCard(D, 'Calming Force', 'deck', { playable: true }); });
+  h.do({ type: 'playCached', seat: D, index: 0 });
   assert.equal(h.state.stack.length, 2);
   pass(h); pass(h);                                           // Calming Force resolves (top)
   assert.ok(h.log.some(l => l.includes('Calming Force negates 1 other effect')), 'the sweep is logged');
@@ -103,10 +110,34 @@ test('Calming Force: negates every OTHER effect on the stack', () => {
   finishBattle(h);
 });
 
-test('Calming Force: "I can\'t be played from your hand" is NOT enforced', { todo: true }, () => {
-  // PARKED HALF: a zone restriction on PLAYING lives in apply.ts's doPlayCard,
-  // which card code cannot reach. The engine is strictly more permissive than
-  // printed — the card is castable from hand today.
+test('Calming Force: "I can\'t be played from your hand" is enforced, and not just un-offered', () => {
+  // R100. The engine used to be strictly MORE permissive than the printed
+  // card, which is the one direction a rules engine must never be.
+  const h = new Harness(4002);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, D, 'light', 4);
+  const idx = give(h, D, 'Calming Force');
+  // deployment: not offered, and refused if asked for anyway
+  assert.ok(!legalActions(h.state, D).some(a => a.type === 'playCard' && a.handIndex === idx),
+    'deployment: not offered');
+  assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: idx }),
+    /can't be played from your hand/, 'deployment: refused');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  // battle is its printed timing — the one window it WOULD be playable in
+  assert.ok(!legalActions(h.state, D).some(a => a.type === 'playCard' && a.handIndex === idx),
+    'battle: not offered either');
+  assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: idx }),
+    /can't be played from your hand/, 'battle: refused');
+  // and the restriction is about the HAND, not about the card: released from
+  // the cache it plays perfectly well (the test above is that end to end)
+  whiteBox(h, e => { e.cacheCard(D, 'Calming Force', 'deck', { playable: true }); });
+  assert.ok(legalActions(h.state, D).some(a => a.type === 'playCached'),
+    'a cache release is still offered — the line names one zone');
+  finishBattle(h);
 });
 
 // ── Delver of the Ephemeral ──────────────────────────────────────────────
@@ -461,32 +492,73 @@ test('Nullbringer: "instead" is a TRIGGER, not a replacement (life spikes, then 
 
 // ── Prediction Prophet ───────────────────────────────────────────────────
 
-test('Prediction Prophet: HALF unparked — the start-of-deployment trigger fires (R50)', () => {
+/** finish this turn's deployment and run the next turn's planning + haste
+ * step, stopping the moment a decision is raised — Prediction Prophet's
+ * prediction is asked for inside R50's end-of-haste settle window, which is
+ * BEFORE skipHasteStep's usual doneHaste plumbing has anything left to do. */
+function toPrediction(h: Harness): void {
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'donePlanning', seat: 0 });
+  if (!h.state.decision) h.do({ type: 'donePlanning', seat: 1 });
+  if (!h.state.decision) skipHasteStep(h);
+}
+
+test('Prediction Prophet: the [Haste] prediction is a real decision, and matching it creates a 5/5 (R90)', () => {
   const h = new Harness(4030);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   spawn(h, A, 'Prediction Prophet');
   const before = unitsOf(h, A).length;
-  // next start of deployment
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.do({ type: 'donePlanning', seat: 0 });
-  h.do({ type: 'donePlanning', seat: 1 });
-  skipHasteStep(h);
+  toPrediction(h);
+  // (a) THE ACTION: R50's endOfHaste window may suspend on a decision, so the
+  // prediction is asked for there — this is the half the park note called
+  // "a player action that does not exist".
+  assert.equal(h.state.decision!.kind, 'payOrDecline', 'the prediction is asked for during [Haste]');
+  assert.equal(h.state.decision!.seat, A);
+  const life = h.state.players[A]!.life;
+  pick(h, life);                                             // nothing will change it
+  assert.ok(h.log.some(l => l.includes(`predicts ${life}`)), 'the prediction is on the record');
   finishBattle(h);
   assert.equal(h.state.phase, 'deploy');
-  assert.ok(h.log.some(l => l.includes('Prediction Prophet: no prediction on record')),
-    'R50: the start-of-deployment event reaches the card');
-  assert.equal(unitsOf(h, A).length, before,
-    'and no 5/5 is created — the PREDICT half still has no player action');
+  const made = unitsOf(h, A).filter(u => u.token && u.tokenStats?.[0] === 5);
+  assert.equal(made.length, 1, 'the prediction was matched → a 5/5 unit');
+  assert.deepEqual(effStats(h, made[0]!.id), [5, 5]);
+  assert.equal(unitsOf(h, A).length, before + 1);
 });
 
-test('Prediction Prophet: still parked — "predict your life total during [Haste]"', { todo: true }, () => {
-  // HALF PARKED. The start-of-deployment trigger exists now (R50) and this
-  // card hears it; what is still missing is a "predict a number" PLAYER ACTION
-  // legal in the haste step, plus somewhere in PlayerState/Entity to keep the
-  // prediction across phases. Until that lands the comparison has nothing to
-  // compare against and the 5/5 can never be created.
+test('Prediction Prophet: the prediction survives battle and regroup, and a MISS creates nothing (R90)', () => {
+  const h = new Harness(4031);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  spawn(h, A, 'Prediction Prophet');
+  const before = unitsOf(h, A).length;
+  toPrediction(h);
+  const life = h.state.players[A]!.life;
+  pick(h, life);                                             // predict "unchanged"…
+  whiteBox(h, e => e.loseLife(A, 3, 'test'));                // …then lose 3 in battle
+  finishBattle(h);
+  assert.equal(h.state.phase, 'deploy');
+  assert.ok(h.log.some(l => l.includes(`predicted ${life}, life is ${life - 3}`)),
+    'the number written during [Haste] is still readable at deployment (budgets, not battleCounters)');
+  assert.equal(unitsOf(h, A).length, before, 'a miss creates nothing');
+});
+
+test('Prediction Prophet: predicting the life total you will END the battle on creates the 5/5 (R90)', () => {
+  const h = new Harness(4032);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  spawn(h, A, 'Prediction Prophet');
+  toPrediction(h);
+  const life = h.state.players[A]!.life;
+  // the whole point of the card: you predict where you will BE, not where you
+  // are. battleCounters would have been wiped between here and the check.
+  pick(h, life - 4);
+  whiteBox(h, e => e.loseLife(A, 4, 'test'));
+  finishBattle(h);
+  assert.equal(h.state.players[A]!.life, life - 4);
+  assert.ok(h.log.some(l => l.includes(`the prediction of ${life - 4} was matched`)));
+  assert.equal(unitsOf(h, A).filter(u => u.token && u.tokenStats?.[0] === 5).length, 1);
 });
 
 // ── Reap the Due ─────────────────────────────────────────────────────────
@@ -773,8 +845,8 @@ test('parked cards still register, play and attach without crashing', () => {
   // vanilla bodies
   const ju = spawn(h, A, 'Just a Unit');
   assert.deepEqual(effStats(h, ju), [2, 3]);
-  const pp = spawn(h, A, 'Prediction Prophet');
-  assert.deepEqual(effStats(h, pp), [1, 3]);
+  // (Prediction Prophet used to be listed here; R90 unparked it and its own
+  // tests below cover the body as well as the text.)
   // inert [Augment] entries: still applicable as (blank) augments
   const gk = spawn(h, A, 'Gatekeeper of Souls');
   giveResources(h, A, 'light', 4);

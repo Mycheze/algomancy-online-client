@@ -19,27 +19,174 @@ import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
+import type { EntityId, Seat } from '../src/types.ts';
+
+/** spawn a stat token (no triggers) into a seat's home region */
+function spawnToken(h: Harness, seat: Seat, p: number, t: number): EntityId {
+  const e = new E(h.state);
+  const u = e.spawnUnit(seat, 'Unit Token', e.homeRegion(seat), { token: true, tokenStats: [p, t] });
+  e.settle();
+  return u.id;
+}
 
 // ── Abyssal Evocation ────────────────────────────────────────────────────
 
-test('Abyssal Evocation: resolves as a no-op and is binned (bin-play PARKED)', () => {
+test('Abyssal Evocation: in this battle, you may play spells from your bin', () => {
+  // R96. The whole card. Before round 17 it resolved to an info line and went
+  // to the bin, so a bin-recursion deck built on it had no recursion.
   const h = new Harness(1200);
   toDeployment(h);
   const A = h.state.initiative;
   const atk = spawn(h, A, 'Conduit of Pain');
-  giveResources(h, A, 'fire', 4);                    // rr / 4
+  giveResources(h, A, 'fire', 6);                    // Evocation rr/4 + Luminous Arc r/2
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.state.players[A]!.bin = ['Luminous Arc'];        // a {Battle} spell, already spent
+  const region = h.state.battle!.region;
+  const canPlay = () => new E(h.state).mayPlaySpellsFromBin(A, region);
+  assert.equal(canPlay(), false, 'no permission to begin with');
+  assert.equal(h.legal(A).filter(a => a.type === 'playFromBin').length, 0,
+    'and nothing is offered');
+
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
   pass(h); pass(h);                                  // resolve
-  assert.ok(h.state.players[A]!.bin.includes('Abyssal Evocation'), 'spell → bin');
-  assert.ok(h.log.some(l => l.includes('PARKED')), 'no-op resolution is logged');
+  assert.equal(canPlay(), true, '"in this battle, you may play spells from your bin"');
+  const offers = h.legal(A).filter(a => a.type === 'playFromBin');
+  assert.equal(offers.length, 1, 'the Arc in the bin is offered');
+  assert.ok(h.state.players[A]!.bin.includes('Abyssal Evocation'), 'the Evocation itself binned');
+});
+
+test('Abyssal Evocation: a bin-played spell is {Unstable} — it is ERASED, never re-binned', () => {
+  // R69 names this card for the mechanism: "Reminder text on both cards that
+  // GRANT it (Abyssal Evocation, Spell Excavation): '(If they would enter a
+  // bin, erase them instead.)' — a bin replacement, in as many words. … Only
+  // the destination changes." `dischargeItem` is the single choke point for
+  // both resolution and negation, and this is the site an ordinary bin-played
+  // spell hits.
+  const h = new Harness(1240);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const victim = spawnToken(h, D, 1, 30);
+  const atk = spawn(h, A, 'Conduit of Pain');
+  giveResources(h, A, 'fire', 6);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.state.players[A]!.bin = ['Luminous Arc'];
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
+  pass(h); pass(h);
+  assert.deepEqual(h.state.players[A]!.bin, ['Luminous Arc', 'Abyssal Evocation'],
+    'the Arc is still there, and the Evocation joined it');
+
+  h.do({ type: 'playFromBin', seat: A, binIndex: 0 });
+  assert.deepEqual(h.state.players[A]!.bin, ['Abyssal Evocation'],
+    'the Arc left the BIN as it was played (index 0)');
+  pick(h, { unit: victim });
+  pass(h); pass(h);                                  // resolve it
+  assert.equal(ent(h, victim)!.damage, 6, 'it really resolved');
+  assert.ok(!h.state.players[A]!.bin.includes('Luminous Arc'),
+    '"if they would enter a bin, erase them instead" — it did NOT come back');
+  assert.ok((h.state.players[A]!.erased ?? []).includes('Luminous Arc'),
+    'R65: the erase reaches the public erased pile');
   finishBattle(h);
 });
 
-test('Abyssal Evocation: playing spells from the bin (unstable until regroup)', { todo: true }, () => {
-  // PARKED: doPlayCard only reads the hand — a bin-play permission window plus
-  // an "unstable until regroup" marker on cards so played does not exist yet.
+test('Abyssal Evocation: the permission is this REGION\'s battle, and lapses at the next one', () => {
+  // R14: "'this battle' = this region's battle". The permission is a
+  // region-keyed battleCounter, which is exactly why round 1's grant cannot
+  // leak into round 2 — and why it needed no cleanup code of its own.
+  const h = new Harness(1241);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const atk = spawn(h, A, 'Conduit of Pain');
+  giveResources(h, A, 'fire', 4);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  const region = h.state.battle!.region;
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
+  pass(h); pass(h);
+  assert.equal(new E(h.state).mayPlaySpellsFromBin(A, region), true, 'granted here');
+  const other = h.state.regions.findIndex((_r, i) => i !== region);
+  assert.equal(new E(h.state).mayPlaySpellsFromBin(A, other), false,
+    'and nowhere else — the other region\'s battle is a different battle');
+  finishBattle(h);
+  toNextBattle(h, A);
+  assert.equal(new E(h.state).mayPlaySpellsFromBin(A, region), false,
+    'the next battle in the same region is a new battle');
+});
+
+test('Abyssal Evocation: without the permission the action is refused, not just unoffered', () => {
+  const h = new Harness(1242);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const atk = spawn(h, A, 'Conduit of Pain');
+  giveResources(h, A, 'fire', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.state.players[A]!.bin = ['Luminous Arc'];
+  assert.throws(() => h.do({ type: 'playFromBin', seat: A, binIndex: 0 }),
+    /no permission to play cards from your bin/,
+    'apply refuses it, so legalActions and apply cannot drift apart in the safe direction only');
+  finishBattle(h);
+});
+
+test('Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing', () => {
+  // Shipped RESTRICTIVE, and this test is what says so out loud. R42/R45
+  // answered the analogous CACHE question that way — "normal TIMING applies —
+  // the card is played 'as if it were in your hand' … (Caleb 2025-12-28)" —
+  // and `playAtTiming` enforces it for free, so a bin full of DEPLOY-timing
+  // spells is inert under this card. If the owner rules the other way, this
+  // needs an explicit timing override and this assertion flips.
+  const h = new Harness(1243);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const atk = spawn(h, A, 'Conduit of Pain');
+  giveResources(h, A, 'fire', 8);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  // Flame Juggle is a DEPLOY-timing spell; Luminous Arc is {Battle}
+  h.state.players[A]!.bin = ['Flame Juggle', 'Luminous Arc'];
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
+  pass(h); pass(h);
+  const offers = h.legal(A).filter(a => a.type === 'playFromBin')
+    .map(a => h.state.players[A]!.bin[(a as { binIndex: number }).binIndex]);
+  // the Evocation itself is in the bin now and is a {Battle} spell, so it is
+  // legitimately one of the spells you may replay — which is worth knowing.
+  assert.deepEqual(offers.sort(), ['Abyssal Evocation', 'Luminous Arc'],
+    'only the {Battle} spells are reachable; the DEPLOY spell is not');
+  assert.throws(() => h.do({ type: 'playFromBin', seat: A, binIndex: 0 }),
+    /only battle cards can be played now/, 'and the deploy spell is refused outright');
+  finishBattle(h);
+});
+
+test('Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY, and "until regroup" ends it', () => {
+  // The "edge, noted for review" in Spell Excavation's own comment: a spell
+  // unit played this way spawns a body, and the body's later bin entry was not
+  // tracked as unstable. StackItem.unstable → Entity.unstable closes it, and
+  // the R11 step-3 sweep clears the stamp at regroup for free.
+  const h = new Harness(1244);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const atk = spawn(h, A, 'Conduit of Pain');
+  giveResources(h, A, 'fire', 8);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.state.players[A]!.bin = ['Jelly'];               // a {Battle} spell UNIT, b/3 2/1
+  assert.equal(getCard('Jelly').kind, 'spellUnit', 'the fixture is a spell unit');
+  assert.equal(getCard('Jelly').timing, 'battle', 'and battle timing');
+  giveResources(h, A, 'water', 3);                   // Jelly is b / 3
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Abyssal Evocation') });
+  pass(h); pass(h);
+  h.do({ type: 'playFromBin', seat: A, binIndex: 0 });
+  pick(h, { unit: atk });                            // "target unit gains -2/-2"
+  pass(h); pass(h);
+  const body = unitsOf(h, A).find(u => u.card === 'Jelly');
+  assert.ok(body, 'the body spawned');
+  assert.equal(body!.unstable, true, 'and it carries the Unstable stamp');
+  // it dies → erased, not binned
+  const e = new E(h.state);
+  e.destroy(e.entity(body!.id)!, 'dies'); e.settle(); h.state = e.s;
+  assert.ok(!h.state.players[A]!.bin.includes('Jelly'), 'erased, not binned');
+  assert.ok((h.state.players[A]!.erased ?? []).includes('Jelly'), 'and publicly so');
 });
 
 // ── Animated Spark ───────────────────────────────────────────────────────
@@ -224,7 +371,7 @@ test('Emberflame Enlightener: 0/5; your units in its region gain Powerful (live 
   assert.ok(!ownAttrs(h, ally).has('Powerful'), 'the aura ends with the Enlightener');
 });
 
-test('Emberflame Enlightener: a Powerful column deals double combat damage (spells half PARKED)', () => {
+test('Emberflame Enlightener: a Powerful column deals double combat damage', () => {
   const h = new Harness(1218);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -236,8 +383,8 @@ test('Emberflame Enlightener: a Powerful column deals double combat damage (spel
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   finishBattle(h);
   assert.equal(h.state.players[D]!.life, 28, 'the 1-power column output is DOUBLED (Powerful units)');
-  // "and spells" stays PARKED: dealEffectDamage reads the source CARD's
-  // printed attrs — statics project onto in-play units only.
+  // (The spells half is live too as of round 17 — R94, tested below on its own
+  // channel. This test is the UNITS half and stays a combat-damage test.)
 });
 
 test('Emberflame Enlightener: the units aura is DONATED too (mod-carried static)', () => {
@@ -259,21 +406,213 @@ test('Emberflame Enlightener: the units aura is DONATED too (mod-carried static)
   assert.ok(!ownAttrs(h, enemy).has('Powerful'), 'and still nobody else');
 });
 
+test('Emberflame Enlightener: your SPELLS gain {Powerful} too — a spell effect deals double', () => {
+  // R94, and the half the owner's spell deck was built around. The units half
+  // is a StaticMod; this one cannot be, because StaticMod.affects is typed
+  // over an Entity and a resolving spell is a StackItem. It is an
+  // `effectAttrs` mod — CostMod's sibling — whose grant lands in
+  // EffectCtx.grantedAttrs, which dealEffectDamage has unioned into the
+  // source's attributes since R79.
+  const h = new Harness(1233);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const victim = spawnToken(h, A, 1, 30);             // fat enough to read the number off
+  spawn(h, D, 'Emberflame Enlightener');              // defender's home region = the battle region
+  giveResources(h, D, 'fire', 2);                     // Luminous Arc: r/2
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[victim]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
+  pick(h, { unit: victim });
+  pass(h); pass(h);
+  assert.equal(ent(h, victim)!.damage, 12, '"I deal 6 damage" from a Powerful source is 12');
+  finishBattle(h);
+});
+
+test('Emberflame Enlightener: "YOUR spells" — the opponent\'s spell in the same region gains nothing', () => {
+  // The control for the test above, and the region/ownership half in one: the
+  // Enlightener is in the battle region, so the aura is in scope, and the
+  // spell is still not its controller's.
+  const h = new Harness(1234);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const victim = spawnToken(h, D, 1, 30);
+  spawn(h, D, 'Emberflame Enlightener');
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'fire', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  pick(h, { unit: victim });
+  pass(h); pass(h);
+  assert.equal(ent(h, victim)!.damage, 6, "the ATTACKER's spell is not \"your\" spell");
+  finishBattle(h);
+});
+
+test('Emberflame Enlightener: the SPELLS aura is DONATED too (mod-carried effectAttrs)', () => {
+  // The gatherer walks anchored(), so it reaches augment MODS as well as units
+  // in play and reads each from its HOST — the same contract statics and
+  // costMods radiate on. Here the Enlightener is a mod on one of A's units and
+  // A's spell still comes out Powerful.
+  //
+  // (Its host can only ever be an ALLY: this card is not a {Virus}, so it
+  // cannot be applied during battle, and a deployment mod may only go on a
+  // unit in your own region. Ownership is still decided against the ANCHOR's
+  // controller rather than the applier's, which is what makes the two halves
+  // of the [Augment] agree.)
+  const h = new Harness(1235);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const host = spawn(h, A, 'Unit Token');
+  const victim = spawnToken(h, D, 1, 30);
+  giveResources(h, A, 'fire', 6);                     // rrr/4 for the mod, r/2 for the Arc
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Emberflame Enlightener'), hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'it attached as a mod');
+  toNextBattle(h, D);                                 // battle in A's region, where the mod is
+  h.do({ type: 'declareAttack', seat: D, columns: [[victim]] });
+  while (h.state.priority !== A) pass(h);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  pick(h, { unit: victim });
+  pass(h); pass(h);
+  assert.equal(ent(h, victim)!.damage, 12, 'the donated aura doubles the host controller\'s spell');
+  finishBattle(h);
+});
+
+test('Emberflame Enlightener: ⚠ OPEN — "your spells" currently INCLUDES your spell tokens', () => {
+  // THE OPEN QUESTION, pinned so that whichever way the owner rules it, the
+  // suite says so out loud. R59 carved spell TOKENS out of `costMods` on the
+  // grounds that "a spell token is cast from play, not played" — but that
+  // carve-out exists because Tranquility's text says "to PLAY", and Emberflame
+  // has no play verb in it at all. The engine therefore reads "your spells" as
+  // including them, which is the difference between an Emberflame deck
+  // doubling its Fireballs and not.
+  //
+  // `dsl.isSpellEffect` is the single line that decides it. If the ruling goes
+  // the other way, drop 'spellToken' from that line and change the number
+  // below to 3 — nothing else moves.
+  const h = new Harness(1236);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const victim = spawnToken(h, A, 1, 30);
+  spawn(h, D, 'Emberflame Enlightener');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[victim]] });
+  const region = h.state.battle!.region;
+  new E(h.state).createSpellToken(D, 'Fireball', 3, region);
+  while (h.state.priority !== D) pass(h);
+  h.do({ type: 'castSpellToken', seat: D, entityId: tokensOf(h, D)[0]!.id });
+  pick(h, { unit: victim });
+  pass(h); pass(h);
+  assert.equal(ent(h, victim)!.damage, 6, 'a Fireball 3 under the aura deals 6, not 3');
+  finishBattle(h);
+});
+
 // ── Envoy of Lightning ───────────────────────────────────────────────────
 
-test('Envoy of Lightning: plays as a 3/2 (Electric aura PARKED)', () => {
+test('Envoy of Lightning: plays as a 3/2, and is still applicable as an augment', () => {
   const h = new Harness(1207);
   toDeployment(h);
   const p = h.state.deployPlayer!;
   const el = spawn(h, p, 'Envoy of Lightning');
   assert.deepEqual(effStats(h, el), [3, 2], '3/2 body');
+  // The whole card is an [Augment], and it prints no augmentAttrs and now has
+  // no augmentText either — `isAugment` reads
+  // `augmentAttrs || augmentText || augmentable`, so dropping the old inert
+  // stub without `augmentable: true` would have silently deleted the card.
+  const host = spawn(h, p, 'Unit Token');
+  giveResources(h, p, 'fire', 2);                     // rr/2
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Envoy of Lightning'), hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'it still attaches as a mod');
 });
 
-test('Envoy of Lightning: your single-target spell effects are Electric', { todo: true }, () => {
-  // PARKED even with the statics layer: statics project only onto in-play
-  // UNITS, while this must attach {Electric} to spell EFFECTS —
-  // dealEffectDamage reads the source CARD's printed attrs, with no
-  // projection seam for in-play modifiers.
+test('Envoy of Lightning: your single-target spell effects are Electric', () => {
+  // R94. Luminous Arc ("I deal 6 damage to target unit") is a plain spell with
+  // no printed attributes; under the Envoy it becomes {Electric}, so its
+  // excess past lethal walks to an adjacent unit (R4).
+  const h = new Harness(1230);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const front = spawn(h, A, 'Unit Token');            // 1/1
+  const back = spawnToken(h, A, 1, 20);               // big enough to survive the excess
+  spawn(h, D, 'Envoy of Lightning');                  // defender's home region
+  giveResources(h, D, 'fire', 2);                     // Luminous Arc: r/2
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[front, back]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
+  pick(h, { unit: front });
+  pass(h); pass(h);                                   // resolve
+  assert.ok(!ent(h, front), '1/1 dies to the first point');
+  assert.equal(ent(h, back)!.damage, 5,
+    'the other 5 followed the Electric path to the only adjacent unit');
+  finishBattle(h);
+});
+
+test('Envoy of Lightning: two DECLARED targets is not "a single target", even after one is removed', () => {
+  // RAQ "[Solved] Envoy of Lightning vs Twin Flame.", the card by name and the
+  // reason this whole channel is per-part with a DECLARED count:
+  //   Q: "What if Twin Flame was played targeting two units, but one of them
+  //       was removed before Twin Flame resolves. Will it be Electric?"
+  //   A: "No, it still has 2 targets, but one of them is invalid (but could
+  //       become valid thanks to Gravitational Correction or Warder)."
+  // resolveParts drops the dead ref before it builds ctx.targets, so a seam
+  // built on the SURVIVOR count would score perfectly on Emberflame Enlightener
+  // and wrongly — and invisibly — here.
+  const h = new Harness(1231);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const front = spawn(h, A, 'Unit Token');            // 1/1, col 0 front
+  const back = spawnToken(h, A, 1, 20);               // col 0 back
+  const other = spawn(h, A, 'Unit Token');            // 1/1, col 1 — the second target
+  spawn(h, D, 'Envoy of Lightning');
+  giveResources(h, D, 'fire', 3);                     // Twin Flame: rr/3
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[front, back], [other]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Twin Flame') });
+  pick(h, { unit: front });
+  pick(h, { unit: other });                           // TWO declared targets
+  // ...and now the second one is removed while the spell is still on the stack
+  const e = new E(h.state);
+  e.destroy(e.entity(other)!, 'dies'); e.settle();
+  h.state = e.s;
+  pass(h); pass(h);                                   // resolve with one live target
+  assert.ok(!ent(h, front), 'the surviving target still takes its 2 and dies');
+  assert.equal(ent(h, back)!.damage, 0,
+    '"it still has 2 targets, but one of them is invalid" — NOT Electric, so the excess is lost');
+  finishBattle(h);
+});
+
+test('Envoy of Lightning: one declared target on the SAME spell is Electric (the control)', () => {
+  // The other half of the RAQ — "If Twin Flame is played with only 1 target,
+  // is it Electric thanks to Envoy? … Yes, it will be Electric" — on the same
+  // board as the test above, so the only difference between them is the number
+  // of slots that were filled at cast.
+  const h = new Harness(1232);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const front = spawn(h, A, 'Unit Token');            // 1/1
+  const back = spawnToken(h, A, 1, 20);
+  const other = spawn(h, A, 'Unit Token');
+  spawn(h, D, 'Envoy of Lightning');
+  giveResources(h, D, 'fire', 3);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[front, back], [other]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Twin Flame') });
+  pick(h, { unit: front });
+  pick(h, { doneTargets: true });                     // "up to two" — stop at one
+  pass(h); pass(h);
+  // R4: two units are adjacent to the dead 1/1 (its column-mate and the
+  // neighbouring column's front), so the Electric excess asks its controller
+  // which way to go — an electricPath decision existing AT ALL is the proof
+  // that the spell resolved as {Electric}.
+  assert.equal(h.state.decision?.kind, 'electricPath', 'Electric: the 1 excess needs a path');
+  assert.equal(h.state.decision!.seat, D, "the Electric SOURCE's controller chooses (R4)");
+  pick(h, back);
+  assert.ok(!ent(h, front), 'the 1/1 dies to the first point');
+  assert.equal(ent(h, back)!.damage, 1, 'and the 1 excess walked the chosen way');
+  finishBattle(h);
 });
 
 // ── Fire Resource ────────────────────────────────────────────────────────

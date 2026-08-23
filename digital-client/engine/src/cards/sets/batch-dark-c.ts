@@ -85,12 +85,20 @@
  *  - Rotling: R51 gave it a trigger SURFACE, but "when I LEAVE your bin" needs
  *    an event nothing fires — bins are spliced directly from a dozen card
  *    effects and from engine code, with no choke point. See the card comment.
- *  - Scholar of the Void (HALF): the trigger fires now, but there is no
- *    transform machinery AND its target "Beyond, Codex Incarnate" is not in the
- *    printed pool at all, so there is nothing to become.
- *  - Its Dark Bubb is PRINTED-ONLY: {Inverted} is stat layer 5, unimplemented
- *    (Reality Bender, batch-earth-b, is the precedent). The attribute is
- *    carried; the stat-change inversion is not.
+ *  - Scholar of the Void is UNPARKED as of R101 (playtest ledger #24). The
+ *    owner supplied the "Beyond, Codex Incarnate" card face on 2026-08-22, so
+ *    the transform target exists (a registerSynthetic in registry.ts); and no
+ *    "transform machinery" was needed after all — `Entity.card` is the card's
+ *    identity, so turning it over is one assignment. The only clause still
+ *    parked is BEYOND's own rot replacement, which prints "target unit" and
+ *    sits on a hook with no decision window; see the card comment and R101.
+ *  - Its Dark Bubb WORKS as of R93 (playtest report #73, 2026-08-22). {Inverted}
+ *    is stat layer 5 and it now exists: layer 5 negates the NET stat change
+ *    from base, i.e. `2*base - current`, applied after layer 4. Caleb worked
+ *    the arithmetic out himself — "1/4 tough balanced is 8/8 … If we compare
+ *    8/8 to 1/4, it's +7/+4. Which also works to invert to a -6/0". The card
+ *    needed NO change here at all: the whole card is the printed attribute,
+ *    and the layer does the rest.
  *  - ⚠ TRASH TRIGGERS CANNOT CARRY GRAFT RIDERS (Blightwalker's [Switch1]) —
  *    and R51 did NOT change that, because it is structural rather than a
  *    missing hook: a MODDED unit that dies is ERASED (Unstable) and never
@@ -100,6 +108,7 @@
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, type EffectDef } from '../dsl.ts';
+import { transformsInto } from '../registry.ts';
 import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -563,25 +572,136 @@ card('Rotling', {});
 
 // "[Augment] At the start of deployment, you may discard your hand and
 // transform me into Beyond, Codex Incarnate." — dd/1 0/2 {Haste} Blight Unit.
-// HALF UNPARKED (R50): the start-of-deployment EVENT now exists and this card
-// hears it. What is still missing is the other two thirds — TRANSFORM
-// machinery (nothing in the engine replaces one card's identity with
-// another's) and the transform TARGET itself: "Beyond, Codex Incarnate" is not
-// in the printed pool at all, so there is nothing to become.
 //
-// The trigger is therefore wired and deliberately declines to do the harmful
-// half on its own: discarding your hand with no transform to show for it is
-// strictly worse than doing nothing, and "you may" makes it optional anyway.
-// It logs the gap once per deployment instead of being invisible.
+// UNPARKED (R101, playtest ledger #24). The two things it waited on both
+// arrived: R50 gave it the 'startOfDeployment' event, and the owner supplied
+// the back face on 2026-08-22, so "Beyond, Codex Incarnate" is now a
+// registered synthetic (registry.ts). What was NEVER missing, it turns out,
+// is a "transform layer" — the engine does not need one, and this is the
+// argument for that:
+//
+//   `Entity.card` IS the card's identity. `E.baseStatsOf` reads
+//   `this.card(e.card)` for layer 1; the bin push on death reads `u.card`;
+//   "name a card" and counters-by-name key off it; the inspector and the
+//   client render from it. So assigning `self.card = 'Beyond, Codex Incarnate'`
+//   changes every one of those AT ONCE and consistently, which is exactly what
+//   "transform me into X" means. Card code in this repo already mutates its
+//   own entity directly (`self.budgets[key] = 1` in batch-metal-a.ts), so this
+//   is where the operation belongs, not behind a new engine primitive.
+//
+// THE DESIGN DECISIONS, all of which follow from "a transform is not a new
+// unit — it is the SAME card with a different face up":
+//
+//  · SAME OBJECT, same `id`. Nothing is deleted and nothing is spawned. That
+//    is not a convenience, it is the ruling: a transformed unit was never
+//    absent from the board, so no 'died'/'despawned'/'spawned' event fires,
+//    every "when I entered play" fact stays true, anything holding its id
+//    (a block assignment, a pending trigger's sourceId, a targeting spell on
+//    the stack) still points at it, and `budgets` — the R9 per-card
+//    once-per-turn ledger — is not laundered by flipping the card over.
+//  · KEEPS ITS COUNTERS. They are on the entity, and layer 3 adds them to
+//    whatever base is underneath; a +1/+1 counter is a fact about the unit,
+//    not about the face. (R93 makes the same point for {Inverted}: counters
+//    ride along by construction.)
+//  · KEEPS ITS DAMAGE. Same reason. Note this is a strict UPGRADE here —
+//    Scholar is a 0/2 and Beyond an 8/3 — so a damaged Scholar cannot die of
+//    the transform; the resolution's own checkDeaths() would catch it if a
+//    future back face shrank the body.
+//  · KEEPS ITS MODS, and stays {Unstable} if it had any (R69/R96): the mods
+//    are still physically under the card. It also keeps its FORMATION SLOT,
+//    for free — the columns store ids, and the id did not change.
+//  · BECOMES A TOKEN (`self.token = true`). This is the consequential one.
+//    Beyond's type line says "Book TOKEN Unit", and the type line is this
+//    engine's own definition of a token (DECK_LIST's filter, ui/inspect's
+//    `tokenOnlyName`). `Entity.token` is the flag that carries that fact into
+//    every zone the body can leave play into, and setting it makes ALL of them
+//    correct with no new code: dying pushes to the bin and R69's state-based
+//    sweep immediately erases it with a public record (engine.ts's "then
+//    erased (token)"), and recall-to-hand / cache paths erase it the same way.
+//    Leaving the flag off would put the literal name "Beyond, Codex Incarnate"
+//    in a bin as though it were a card — a 0-cost 8/3 that every exhume,
+//    recall and bin-play effect in the pool could then fetch, which is both
+//    broken and a thing the owner explicitly said cannot happen ("can't be
+//    played cause it's on the back of a card").
+//    ⚠ REJECTED ALTERNATIVE: transform BACK to Scholar of the Void on the way
+//    out, so the physical card reaches the bin — the Magic rule for
+//    double-faced cards. It is a real reading and it loses the player less,
+//    but nothing on either face prints it, there is no Algomancy source for
+//    it anywhere in the corpus, and it needs a SECOND identity switch wired
+//    into the death path. Flagged for the owner in the report instead of
+//    invented here.
+//
+// THE [Augment] HALF, refused on purpose. This whole text sits under
+// [Augment], so it transfers to a HOST when Scholar is applied as an augment
+// mod, and "me" then rebinds to the host exactly as Skittering Blight's
+// "counters on me" does (fireEvent anchors donated text on the host; see
+// E.anchored). Transforming an arbitrary host is INCOHERENT, and the owner's
+// own words are why: Beyond is "on the back of a card" — of THIS card. A Good
+// Whale wearing a Scholar has its own reverse side, and it is not Beyond.
+// So the transform is offered only when the anchor is a card that actually
+// HAS this back face, which the registry's transform table answers. The nice
+// consequence is that a Scholar augmented onto ANOTHER Scholar works — that
+// host does have a Beyond on its back — and it falls out of the same check
+// rather than needing a special case.
+//
+// "YOU MAY DISCARD YOUR HAND" is a real cost of the option, so it is a real
+// payOrDecline: declining is always offered, and the hand is discarded only
+// after the answer comes back (plan-then-commit — the engine replays the part
+// from its boundary on suspension, so nothing may be mutated before the
+// choose). Discarding an EMPTY hand is LEGAL and the option is still offered:
+// the cost is "discard your hand", not "discard a card", and a hand of zero
+// cards is discarded by doing nothing. That makes an empty-handed Scholar the
+// card's best case, which is a genuine strategic line and not a bug.
 card('Scholar of the Void', {
   augmentText: [{
     type: 'triggered', events: ['startOfDeployment'],
     label: 'at the start of deployment, discard your hand to transform me',
     effect: {
       run: (g, ctx) => {
+        const self = selfOf(g, ctx);
+        if (!self) {
+          g.ev('info', `${ctx.sourceName}: it is no longer in play — nothing to transform.`);
+          return;
+        }
+        // "me" is the ANCHOR: this card's body when it was played normally
+        // (R55), the HOST when the text arrived on an augment mod. Only a card
+        // that prints this back face can be turned over into it.
+        const back = transformsInto(self.card);
+        if (!back) {
+          g.ev('info',
+            `${ctx.sourceName}: "transform me" is donated text here, and ${self.card} has its own `
+            + 'reverse side — Beyond, Codex Incarnate is on the back of Scholar of the Void, not '
+            + 'of whatever it is augmented onto. The option is not offered.');
+          return;
+        }
+        const hand = g.player(ctx.controller).hand;
+        const n = hand.length;
+        const beyond = g.card(back);
+        // the ONLY choose, and it happens before anything is mutated
+        const take = ctx.choose('transform', {
+          kind: 'payOrDecline', seat: ctx.controller,
+          prompt: `${self.card}: discard your hand (${n} card${n === 1 ? '' : 's'}) and transform `
+            + `into ${back} (${beyond.power}/${beyond.toughness})?`,
+          options: [
+            { label: `Discard ${n} card${n === 1 ? '' : 's'} and transform into ${back}`, value: true, card: back },
+            { label: 'Decline — stay as I am', value: false },
+          ],
+        }) as boolean;
+        if (!take) {
+          g.ev('info', `${ctx.sourceName}: ${g.pname(ctx.controller)} declines the transform.`);
+          return;
+        }
+        // pay: discard the WHOLE hand, back to front so the indices hold
+        for (let i = hand.length - 1; i >= 0; i--) g.discardFromHand(ctx.controller, i);
+        // …and turn the card over. Same entity, same id, same slot, same
+        // counters/damage/mods — only the face, and with it every stat, name
+        // and text lookup, changes.
+        self.card = back;
+        self.token = true;
         g.ev('info',
-          `${ctx.sourceName}: the transform target "Beyond, Codex Incarnate" is not in the `
-          + 'card pool and the engine has no transform layer — the option is declined.');
+          `Scholar of the Void transforms into ${back} — the same unit, now a `
+          + `${beyond.power}/${beyond.toughness} ${beyond.type} (it keeps its counters, damage and `
+          + 'mods, and as a token it is erased rather than binned when it leaves play).');
       },
     },
   }],

@@ -33,12 +33,10 @@
  *    present (out-of-battle graft timing) is a no-op, no draw.
  *
  * PARKED (needs engine machinery that does not exist yet):
- *  - Phytochemical Protection: "until regroup, prevent all damage that
- *    would be dealt to target unit; +1/+1 counter per damage prevented"
- *    is a DAMAGE-PREVENTION / REPLACEMENT shield — dealEffectDamage and
- *    combatSubStep have no prevention hook to install it on. Registered
- *    with a documented no-op spellEffect (targets collected, info log
- *    only) so it is playable crash-free.
+ *  - (Phytochemical Protection UNPARKED by R98, round 17 — see the card. The
+ *    prevention layer it waited on is `E.preventUnitDamage`, the one choke
+ *    point both unit-damage commits now pass through, with the shield kept on
+ *    `Entity.damageShield` and swept by the R11 regroup cleanup.)
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -352,15 +350,61 @@ card('Pestilent Mycelion', {
 
 // "Until regroup, prevent all damage that would be dealt to target unit.
 // Put a +1/+1 counter on it for each damage prevented this way." — gg/2
-// {Battle} Plant Spell. PARKED (see header): a damage-prevention /
-// replacement shield has nowhere to hook — the spell is playable, targets,
-// and logs; no shield is applied.
+// {Battle} Plant Spell. UNPARKED by R98 (report #72, GETD 2026-08-22:
+// "Phytochemical Protection is entirely non functional. Needs to work like the
+// text says."). It was: the spell targeted, logged and did nothing, because
+// there was no "damage would be dealt to a UNIT" hook anywhere in the engine.
+//
+// R98 built the three things the park named: `E.preventUnitDamage`, the one
+// choke point both unit-damage commits now pass through; `Entity.damageShield`
+// (the CARD that shielded, like `suppressed`), swept by the R11 regroup
+// cleanup; and `Entity.shieldPending` + `E.settleDamagePrevention`, the running
+// per-unit total that pays out "a +1/+1 counter for each damage prevented".
+//
+// PREVENTED MEANS NOT DEALT, and that is the whole card. RAQ "[Solved]
+// Poisonous vs 'Whenever I am dealt damage' vs Phytochemical Protection":
+//   Q: "Does Poisonous bypass Phytochemical Protection?"
+//   A: "No it doesn't. As said above, damage is dealt in the form of -1/-1
+//       counters, which means if there is not damage being dealt, then no
+//       counters are placed."
+//   "Then Sporebloom Siren deals 2 damage to Jollyglop, but damage is
+//    prevented. Jollyglop doesn't trigger, won't get -2/-2 from Poisonous but
+//    will receive +2/+2 counters from Phytochemical Protection."
+// So no 'damage' event fires, "whenever I am dealt damage" stays silent, and
+// {Deadly}, {Resonant}, {Blessed} and Poisonous all have nothing to key on.
+// ⚠ This is the OPPOSITE of the R38 replacement hooks, where "replacing the
+// damage does NOT unmake it" (Caleb 2024-10-24) and {Lethal} still kills
+// through. Prevention unmakes it; replacement does not.
+//
+// ASSIGNMENT IS UNTOUCHED. RAQ "[Solved] Excessive Combat Damage & interaction
+// with Piercing, Deadly and Phytochemical Protection", on a shielded 0/5 Awoken
+// Tomb in front of a 5/6 Bubb: "You must assign atleast 5 damage to Awoken
+// before you can start assigning damage to Bubb in the back. Awoken will get
+// atleast +5/+5 counters, but won't make 5/5 unit." With Deadly: "Atleast 1 dmg
+// to Awoken (gets +1/+1, won't create 1/1 unit), rest of the damage can go to
+// Bubb." With Piercing: "Atleast 5 damage to Awoken … atleast 6 damage to Bubb,
+// rest can go to Opponent HP." The shield is a COMMIT-time layer for exactly
+// that reason — it must not make the attacker assign differently.
+//
+// ⚠ OPEN, and deliberately answered the simple way: two Phytochemical
+// Protections on ONE unit. The shield is a single named flag, so the second
+// spell re-stamps it and the unit still gets ONE counter per damage prevented,
+// not two. Nothing in the corpus addresses it; flagged in R98.
 card('Phytochemical Protection', {
   spellEffect: {
-    targets: { what: 'unit', prompt: 'Phytochemical Protection: prevent all damage to target unit until regroup (PARKED)' },
+    targets: { what: 'unit', prompt: 'Phytochemical Protection: prevent all damage to target unit until regroup' },
     run: (g, ctx) => {
-      void ctx;
-      g.ev('info', 'Phytochemical Protection: PARKED — no damage-prevention layer exists; no shield is applied.');
+      const t = ctx.targets[0];
+      const u = isEnt(t) ? g.entity(t.id) : undefined;
+      if (!u) {
+        g.ev('info', 'Phytochemical Protection: the target is gone — no shield is applied.');
+        return;
+      }
+      u.damageShield = 'Phytochemical Protection';
+      g.ev('info',
+        `Phytochemical Protection: all damage to ${u.card} is prevented until regroup `
+        + '(it gets a +1/+1 counter for each damage prevented).',
+        { unit: u.id });
     },
   },
 });

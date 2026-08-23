@@ -12,13 +12,15 @@
  * the R47 Wight (Primordial Coalescence) and R38 rot (Spellbind, which also
  * exercises {Modular}), the augment-box activation (Pallid Gorger), and the
  * printed-only / PARKED cards (Its Dark Bubb, Lurking Dread, Rotling,
- * Scholar of the Void, Xzydris).
+ * Xzydris), and R101's TRANSFORM (Scholar of the Void turning over into
+ * Beyond, Codex Incarnate — playtest ledger #24).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard, graftCauseIndex, isAugment } from '../src/cards/dsl.ts';
+import { DECK_LIST, draftDeckList } from '../src/cards/registry.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
@@ -566,30 +568,411 @@ test('Scholar of the Void: plays and augments crash-free as a {Haste} 0/2', () =
   assert.equal(ent(h, host)!.mods.length, 1, 'attaching the inert augment does nothing and crashes nothing');
 });
 
-test('Scholar of the Void: R50 — the start-of-deployment trigger fires (transform still parked)', () => {
-  const h = new Harness(4337);
-  toDeployment(h);
-  const P = h.state.deployPlayer!;
-  spawn(h, P, 'Scholar of the Void');
+/** roll from the current deployment through a battle into the NEXT start of
+ * deployment, where the R50 'startOfDeployment' event fires. (The Xzydris
+ * tests below do the same six lines by hand; hoisted here because the R101
+ * transform tests need it seven more times.) */
+function toNextDeployment(h: Harness): void {
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
   skipHasteStep(h);
-  const handBefore = hand(h, P).length;
   finishBattle(h);
+}
+
+test('Scholar of the Void: R101 — discard your hand and transform into Beyond, Codex Incarnate', () => {
+  // Playtest ledger #24 (ZQPC, 2026-08-20). The owner supplied the back face on
+  // 2026-08-22; before that the trigger fired and declined, because there was
+  // no card to become. Now: "[Augment] At the start of deployment, you may
+  // discard your hand and transform me into Beyond, Codex Incarnate."
+  const h = new Harness(4337);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const sv = spawn(h, P, 'Scholar of the Void');
+  assert.deepEqual(effStats(h, sv), [0, 2], 'a 0/2 while it is still a Scholar');
+  give(h, P, 'Good Whale');
+  give(h, P, 'Grox');
+  const handBefore = hand(h, P).length;
+  assert.ok(handBefore >= 2, 'there is a real hand to lose');
+
+  toNextDeployment(h);
   assert.equal(h.state.phase, 'deploy');
-  assert.ok(h.log.some(l => l.includes('Beyond, Codex Incarnate')),
-    'R50: the event reaches the card and it says exactly what is missing');
-  assert.equal(hand(h, P).length, handBefore,
-    'and it does NOT discard your hand for a transform that cannot happen');
+  assert.ok(h.state.decision, 'R50 delivers the event and the "you may" asks');
+  assert.equal(h.state.decision!.seat, P, 'its controller decides');
+  pickBy(h, o => String(o.label).includes('transform into Beyond, Codex Incarnate'));
+
+  assert.equal(ent(h, sv)!.card, 'Beyond, Codex Incarnate',
+    'Entity.card IS the identity — turning it over is the whole transform');
+  assert.deepEqual(effStats(h, sv), [8, 3], 'and the stats come off the new face for free');
+  assert.equal(hand(h, P).length, 0, 'the whole hand was discarded — that is the cost');
+  assert.equal(bin(h, P).length >= handBefore, true, 'and it went to the bin');
 });
 
-test('Scholar of the Void: still parked — transform machinery and the target card', { todo: true }, () => {
-  // HALF PARKED. R50 gave it the start-of-deployment event and the trigger
-  // fires. What is still missing: (1) TRANSFORM machinery — nothing in the
-  // engine replaces one card's identity with another's; (2) the target itself,
-  // "Beyond, Codex Incarnate", which is not in printed.json at all.
+test('Scholar of the Void: R101 — declining keeps the hand and the 0/2 body', () => {
+  const h = new Harness(4338);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const sv = spawn(h, P, 'Scholar of the Void');
+  give(h, P, 'Good Whale');
+  toNextDeployment(h);
+  const handBefore = [...hand(h, P)];
+  assert.ok(handBefore.length > 0, 'there is a hand to lose');
+  assert.ok(h.state.decision, '"you may" — declining must be on offer');
+  pickBy(h, o => String(o.label).startsWith('Decline'));
+  assert.equal(ent(h, sv)!.card, 'Scholar of the Void', 'still itself');
+  assert.deepEqual(effStats(h, sv), [0, 2]);
+  assert.deepEqual(hand(h, P), handBefore, 'and the hand is untouched — a declined cost is not paid');
+  assert.ok(!ent(h, sv)!.token, 'and it is still a real card, not a token');
+});
+
+test('Scholar of the Void: R101 — an EMPTY hand still pays the cost, and the option is still offered', () => {
+  // "Discard your hand" is not "discard a card": a hand of zero cards is
+  // discarded by doing nothing, so the option is legal and free. That makes an
+  // empty-handed Scholar the card's best case, which is a line, not a bug.
+  const h = new Harness(4339);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const sv = spawn(h, P, 'Scholar of the Void');
+  // The turn draw refills a hand emptied before the phase roll, so the event
+  // is fired directly instead — the same call startDeployment() makes, one
+  // line later, with the hand in the state under test.
+  hand(h, P).length = 0;
+  whiteBox(h, e => e.fireEvent('startOfDeployment', e.ev('startOfDeployment', 'Start of deployment.')));
+  assert.ok(h.state.decision, 'offered with an empty hand');
+  assert.ok(h.state.decision!.options.some(o => String(o.label).includes('Discard 0 cards')),
+    'and it says out loud that the cost is nothing');
+  pickBy(h, o => String(o.label).includes('transform into Beyond, Codex Incarnate'));
+  assert.equal(ent(h, sv)!.card, 'Beyond, Codex Incarnate');
+});
+
+test('Scholar of the Void: R101 — the transform is the SAME unit: same id, and its counters and damage survive', () => {
+  // A transform is not a new unit. Nothing is deleted and nothing is spawned,
+  // so every fact that hangs off the entity is still true afterwards — which
+  // is also why no spawned/died event fires and why anything holding its id
+  // (a block assignment, a queued trigger's sourceId, a spell already
+  // targeting it) still points at the right thing.
+  //
+  // The event is fired directly rather than through a phase roll for one
+  // reason: R11's regroup sweep clears marked DAMAGE, so a turn boundary would
+  // wipe the very fact under test and the assertion would pass vacuously.
+  const h = new Harness(4340);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const sv = spawn(h, P, 'Scholar of the Void');
+  whiteBox(h, e => { e.addCounters(e.entity(sv)!, 1); e.entity(sv)!.damage = 1; });
+  const before = ent(h, sv)!;
+  const region = before.region, owner = before.owner;
+  assert.equal(before.counters, 1);
+  assert.equal(before.damage, 1);
+
+  whiteBox(h, e => e.fireEvent('startOfDeployment', e.ev('startOfDeployment', 'Start of deployment.')));
+  pickBy(h, o => String(o.label).includes('transform into Beyond'));
+
+  const after = ent(h, sv)!;
+  assert.ok(after, 'the very same entity id is still in play');
+  assert.equal(after.counters, 1, 'counters are on the ENTITY, not on the face');
+  assert.equal(after.damage, 1, 'and so is marked damage');
+  assert.equal(after.region, region);
+  assert.equal(after.owner, owner);
+  assert.ok(!h.events.some(ev => ev.type === 'spawned' && ev.data?.['unit'] === sv),
+    'nothing SPAWNED — a transform is not an arrival');
+  assert.ok(!h.events.some(ev => ev.type === 'died' && ev.data?.['unit'] === sv),
+    'and nothing DIED — the unit was never absent from the board');
+  // 8/3 base, +1 counter = 9/4, and Beyond grants {Inverted} to YOUR units —
+  // which includes ITSELF — so R93 layer 5 negates the +1/+1 back off: 7/2.
+  // (Worth knowing at the table: a Beyond wearing +1/+1 counters is SMALLER
+  // than one without, and enough of them will kill it. That is the printed
+  // card working, not a bug — this test was written with two counters first
+  // and the 6/1 body died to its own marked damage.)
+  assert.deepEqual(effStats(h, sv), [7, 2],
+    'R93: 2·base − current — the counters ride along and are then inverted');
+});
+
+test('Scholar of the Void: R101 — a transformed Scholar is a TOKEN: it is ERASED on death, never binned', () => {
+  // The single most consequential detail. Beyond's type line says "Book TOKEN
+  // Unit", and the type line is this engine's own definition of a token, so
+  // the transform sets Entity.token — which makes every leaves-play path
+  // correct at once (R69's state-based sweep). If it did NOT, the literal name
+  // "Beyond, Codex Incarnate" would sit in a bin as though it were a card, and
+  // every exhume/recall/bin-play effect in the pool could fetch a 0-cost 8/3.
+  const h = new Harness(4341);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const sv = spawn(h, P, 'Scholar of the Void');
+  toNextDeployment(h);
+  pickBy(h, o => String(o.label).includes('transform into Beyond'));
+  assert.equal(ent(h, sv)!.token, true, 'the body is a token now');
+
+  const binBefore = [...bin(h, P)];
+  whiteBox(h, e => e.destroy(e.entity(sv)!, 'dies'));
+  assert.equal(ent(h, sv), undefined, 'it left play');
+  assert.ok(!bin(h, P).includes('Beyond, Codex Incarnate'),
+    'a token has no card to bin — R69 sweeps it straight back out');
+  assert.ok(!bin(h, P).includes('Scholar of the Void'),
+    'and it does NOT flip back to its front face on the way out: nothing prints that');
+  assert.deepEqual(bin(h, P), binBefore, 'the bin is exactly as it was');
+  assert.ok((h.state.players[P]!.erased ?? []).includes('Beyond, Codex Incarnate'),
+    'R65: the erase still reaches the public record, so the player can see where it went');
+});
+
+test('Scholar of the Void: R101 — donated to a HOST the transform is refused, because the back face belongs to Scholar', () => {
+  // The whole text is [Augment], so it transfers, and "me" rebinds to the host
+  // exactly as Skittering Blight's "counters on me" does. Transforming an
+  // arbitrary host is incoherent — the owner: Beyond "is on the back of a
+  // card", and that card is Scholar of the Void. A Good Whale has its own
+  // reverse side. So the option is not offered at all.
+  const h = new Harness(4342);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const host = spawn(h, P, 'Good Whale');
+  whiteBox(h, e => e.attachMod(e.entity(host)!, 'Scholar of the Void', P, 'augment'));
+  const handBefore = hand(h, P).length;
+  toNextDeployment(h);
+  assert.equal(h.state.decision, null, 'nothing is asked — there is no option to take');
+  assert.equal(ent(h, host)!.card, 'Good Whale', 'the host is untouched');
+  assert.ok(!ent(h, host)!.token, 'and it is emphatically not turned into a token');
+  assert.ok(hand(h, P).length >= handBefore,
+    'no hand was discarded — it only grew, by the turn draw');
+  assert.ok(!h.log.some(l => l.includes('transforms into')), 'nothing was turned over');
+  assert.ok(h.log.some(l => l.includes('has its own')),
+    'and it SAYS why, rather than resolving into silence');
+});
+
+test('Scholar of the Void: R101 — a Scholar augmented onto ANOTHER Scholar does work: that host has the back face', () => {
+  // Falls out of the same check rather than needing a special case: the
+  // question asked is "does the ANCHOR print this back face?", and a Scholar
+  // does. Both the body's own [Augment] text and the mod's donated copy fire
+  // (R55), so the first transforms the host and the second finds a Beyond,
+  // which has no back face of its own, and declines.
+  const h = new Harness(4343);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const host = spawn(h, P, 'Scholar of the Void');
+  whiteBox(h, e => e.attachMod(e.entity(host)!, 'Scholar of the Void', P, 'augment'));
+  toNextDeployment(h);
+  let guard = 6;
+  while (h.state.decision && guard-- > 0) {
+    const wants = h.state.decision.options.findIndex(o => String(o.label).includes('transform into Beyond'));
+    h.do({ type: 'decide', seat: h.state.decision.seat, choice: wants === -1 ? 0 : wants });
+  }
+  assert.equal(ent(h, host)!.card, 'Beyond, Codex Incarnate', 'the host really did have a back face');
+  assert.equal(ent(h, host)!.token, true);
+});
+
+test('Beyond, Codex Incarnate: R101 — registered, but it can never be drafted, decked or drawn', () => {
+  // "Can't be played cause it's on the back of a card" (the owner). The
+  // guarantee is the printed type line, not a hand-kept list: DECK_LIST drops
+  // anything whose type says Token, and the draft pool is a filter over
+  // DECK_LIST.
+  const c = getCard('Beyond, Codex Incarnate');
+  assert.equal(c.type, 'Book Token Unit');
+  assert.deepEqual([c.power, c.toughness, c.mana], [8, 3, 0]);
+  assert.ok(!DECK_LIST.includes('Beyond, Codex Incarnate'), 'not a deck card');
+  assert.ok(!draftDeckList(['dark']).includes('Beyond, Codex Incarnate'), 'not draftable');
+  assert.ok(!draftDeckList(['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'])
+    .includes('Beyond, Codex Incarnate'), 'not draftable in ANY element set');
+});
+
+test('Beyond, Codex Incarnate: R93 — "Your units are inverted" reaches YOUR units and not the enemy', () => {
+  // Stat layer 5 shipped as R93, which is what made this clause implementable
+  // at all. The static is a plain attrs grant; ownership lives on the card and
+  // region scoping (R12) comes free from E.staticsFor's anchored() walk.
+  //
+  // Tested on units carrying only COUNTERS — deliberately no base rewrite
+  // anywhere near this test, because R93 has a live open question about
+  // whether {Inverted} inverts from the printed base or from a post-rewrite
+  // one, and nothing here should depend on how the owner settles it.
+  const h = new Harness(4344);
+  toDeployment(h);
+  const P = h.state.deployPlayer!, D = (1 - P) as Seat;
+  const sv = spawn(h, P, 'Scholar of the Void');
+  const ally = spawn(h, P, 'Good Whale');                       // 7/5
+  let foe = 0;
+  whiteBox(h, e => {
+    // an ENEMY unit standing in the same region, so the only thing that can
+    // exclude it is the static's ownership test rather than R12
+    foe = e.spawnUnit(D, 'Good Whale', e.entity(sv)!.region).id;
+  });
+  whiteBox(h, e => { e.addCounters(e.entity(ally)!, 1); e.addCounters(e.entity(foe)!, 1); });
+  assert.deepEqual(effStats(h, ally), [8, 6], 'before: 7/5 with a +1/+1 counter');
+  assert.deepEqual(effStats(h, foe), [8, 6]);
+
+  toNextDeployment(h);
+  pickBy(h, o => String(o.label).includes('transform into Beyond'));
+
+  assert.ok(ownAttrs(h, ally).has('Inverted'), 'your unit is inverted');
+  assert.deepEqual(effStats(h, ally), [6, 4], 'the +1/+1 is negated off base: 2·7−8, 2·5−6');
+  assert.ok(!ownAttrs(h, foe).has('Inverted'), '"YOUR units" — not theirs');
+  assert.deepEqual(effStats(h, foe), [8, 6], 'the enemy copy is untouched');
+});
+
+/* ── R102: the rot replacement, LIVE ────────────────────────────────────
+ *
+ * "If you would take damage from rot, put that many -1/-1 counters on target
+ * unit instead." Parked in R101 behind the conclusion that a brand-new
+ * Suspension variant was needed. The owner ruled otherwise, 2026-08-22:
+ *
+ *   "In Deployment, you're in your own region, alone. So you can only target
+ *    your own units. It would trigger, ask you what you want to target, then
+ *    put the -1/-1 counters on during deployment (which still has and uses a
+ *    stack). But since Beyond gives all your units inverted, no one would die
+ *    of course."
+ *
+ * So the replacement puts a TRIGGERED EFFECT on the stack and the R67
+ * machinery that already exists does the asking. The engine seam is one new
+ * dispatched event, 'rotReplaced', fired by E.replaceRotDamage the instant a
+ * hook returns true; Beyond declares an ordinary `self: true` trigger against
+ * it. These five tests are what keeps it honest.
+ */
+
+test('Beyond, Codex Incarnate: R102 — the rot replacement asks its controller for a target, and the damage never lands', () => {
+  const h = new Harness(4346);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const sv = spawn(h, P, 'Scholar of the Void');
+  toNextDeployment(h);
+  pickBy(h, o => String(o.label).includes('transform into Beyond'));
+  const ally = spawn(h, P, 'Good Whale');     // a second candidate, so there IS a choice
+  whiteBox(h, e => e.gainRot(P, 3));
+  const lifeBefore = h.state.players[P]!.life;
+
+  toNextDeployment(h);                        // R38 rot fires at the start of deployment
+
+  const dec = h.state.decision;
+  assert.ok(dec, 'the replacement stopped to ask — it did not resolve into a guess');
+  assert.equal(dec!.kind, 'targets', 'and it asked through the ordinary R67 target collector');
+  assert.equal(dec!.seat, P, 'the CHOOSER is Beyond, Codex Incarnates controller');
+  assert.ok(dec!.prompt.includes('-1/-1 counters on target unit'), 'the prompt is the printed line');
+  assert.ok(h.log.some(l => l.includes('replaces the 3 damage')), 'the replacement is announced');
+  assert.equal(h.state.players[P]!.life, lifeBefore,
+    'and the damage is ALREADY gone before the question is answered — the hook returned true first');
+
+  pickBy(h, o => (o.value as { unit?: number }).unit === ally);
+  assert.equal(ent(h, ally)!.counters, -3, 'that many -1/-1 counters, on the unit that was named');
+  assert.equal(ent(h, sv)!.counters, 0, 'and none on Beyond, which was merely one of the options');
+  assert.equal(h.state.players[P]!.life, lifeBefore, 'still no rot damage — "instead" means instead');
+});
+
+test('Beyond, Codex Incarnate: R102 — the counters make your own units BIGGER, because Beyond inverts them', () => {
+  // The owners closing observation, and a genuine consequence rather than a
+  // curiosity: Beyond grants {Inverted} to your units, R93 layer 5 negates the
+  // accumulated delta from base, so -1/-1 counters read as +1/+1. Your own rot
+  // grows your board and "no one would die of course".
+  const h = new Harness(4349);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const sv = spawn(h, P, 'Scholar of the Void');
+  toNextDeployment(h);
+  pickBy(h, o => String(o.label).includes('transform into Beyond'));
+  const ally = spawn(h, P, 'Good Whale');                 // 7/5
+  assert.deepEqual(effStats(h, ally), [7, 5], 'inverted, but with no delta yet, it is itself');
+  whiteBox(h, e => e.gainRot(P, 3));
+
+  toNextDeployment(h);
+  pickBy(h, o => (o.value as { unit?: number }).unit === ally);
+
+  assert.equal(ent(h, ally)!.counters, -3, 'three -1/-1 counters really are on it');
+  assert.deepEqual(effStats(h, ally), [10, 8],
+    'R93 layer 5: 2·7−4 and 2·5−2 — three -1/-1 counters made a 7/5 into a 10/8');
+  assert.ok(ent(h, ally), 'and it is emphatically alive');
+  assert.ok(unitsOf(h, P).some(u => u.id === ally), 'still on the board');
+});
+
+test('Beyond, Codex Incarnate: R102 — the target list is your own units, even with an enemy standing in the region', () => {
+  // R64: the ruling is written as a real `restrict` on a `what: 'unit'` spec —
+  // the kind the card actually prints — and NOT left to the board happening to
+  // be empty of enemies during deployment. This is the test that tells the two
+  // apart: an enemy unit is put into the very region the replacement resolves
+  // in, so the region-scoped candidate list (R12) would offer it, and the
+  // restriction is the only thing that does not.
+  const h = new Harness(4347);
+  toDeployment(h);
+  const P = h.state.deployPlayer!, D = (1 - P) as Seat;
+  const sv = spawn(h, P, 'Scholar of the Void');
+  toNextDeployment(h);
+  pickBy(h, o => String(o.label).includes('transform into Beyond'));
+  let foe = 0;
+  whiteBox(h, e => { foe = e.spawnUnit(D, 'Good Whale', e.entity(sv)!.region).id; });
+  assert.equal(ent(h, foe)!.region, ent(h, sv)!.region, 'the enemy really is in the same region');
+
+  // rot damage driven directly, because R11s regroup would walk the enemy home
+  // before the next deployment ever opened
+  whiteBox(h, e => { e.gainRot(P, 2); e.rotDamage(); });
+
+  const dec = h.state.decision;
+  assert.ok(dec, 'the replacement asked');
+  const offered = dec!.options.map(o => (o.value as { unit?: number }).unit);
+  assert.ok(offered.includes(sv), 'your own units are candidates');
+  assert.ok(!offered.includes(foe), 'the enemy in the same region is NOT — you can only target your own');
+});
+
+test('Beyond, Codex Incarnate: R102 — two Beyonds each queue their own, each asked of its own controller', () => {
+  // Rot is per-seat and can hit BOTH players in the same opening. Each side
+  // fires its own 'rotReplaced' off its own anchor, so each queues a trigger
+  // under its own controller and each is asked separately, in the deterministic
+  // order processTriggerQueue already imposes.
+  const h = new Harness(4348);
+  toDeployment(h);
+  const P = h.state.deployPlayer!, D = (1 - P) as Seat;
+  spawn(h, P, 'Scholar of the Void');
+  spawn(h, D, 'Scholar of the Void');
+  toNextDeployment(h);
+  let guard = 8;
+  while (h.state.decision && guard-- > 0) {
+    const want = h.state.decision.options.findIndex(o => String(o.label).includes('transform into Beyond'));
+    h.do({ type: 'decide', seat: h.state.decision.seat, choice: want === -1 ? 0 : want });
+  }
+  const allyP = spawn(h, P, 'Good Whale');
+  const allyD = spawn(h, D, 'Good Whale');
+  whiteBox(h, e => { e.gainRot(P, 1); e.gainRot(D, 2); });
+  const lifeP = h.state.players[P]!.life, lifeD = h.state.players[D]!.life;
+
+  toNextDeployment(h);
+  const asked: Seat[] = [];
+  guard = 8;
+  while (h.state.decision && guard-- > 0) {
+    asked.push(h.state.decision.seat);
+    const want = h.state.decision.options.findIndex(o => String(o.label).includes('Good Whale'));
+    assert.notEqual(want, -1, 'each side is offered its OWN Good Whale');
+    h.do({ type: 'decide', seat: h.state.decision.seat, choice: want });
+  }
+  assert.deepEqual([...asked].sort(), [0, 1], 'both controllers were asked, once each');
+  assert.equal(ent(h, allyP)!.counters, -1, 'one rot replaced, one counter, on the seat that had it');
+  assert.equal(ent(h, allyD)!.counters, -2, 'two rot, two counters, on the other');
+  assert.equal(h.state.players[P]!.life, lifeP, 'neither player took rot damage');
+  assert.equal(h.state.players[D]!.life, lifeD);
+});
+
+test('Beyond, Codex Incarnate: R102 — the start-of-deployment event still fires after the rot replacement stopped to ask', () => {
+  // The regression this whole deferral exists for. R50 puts rot damage FIRST
+  // and the 'startOfDeployment' event second, both inside startDeployment().
+  // Once rot can raise a DECISION, the suspension throws clean out of that
+  // method and doDecide resumes into collectTargets/commitItem/settle, which
+  // has never heard of the second half — so the event would simply never fire
+  // and every "At the start of deployment, …" card on the board would miss its
+  // turn. `deployStarting` + E.finishDeployStart (called from settle()) is the
+  // fix, in the shape of hasteEnding/finishHasteEnd and turnEnding/finishTurnEnd.
+  const h = new Harness(4350);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const sv = spawn(h, P, 'Scholar of the Void');
+  toNextDeployment(h);
+  pickBy(h, o => String(o.label).includes('transform into Beyond'));
+  spawn(h, P, 'Good Whale');
+  whiteBox(h, e => e.gainRot(P, 2));
+  const firedBefore = h.events.filter(ev => ev.type === 'startOfDeployment').length;
+
+  toNextDeployment(h);
+  assert.ok(h.state.decision, 'the opening stopped mid-way to ask for a target');
+  assert.equal(h.events.filter(ev => ev.type === 'startOfDeployment').length, firedBefore,
+    'and while the question is open the event has NOT fired — rot is still first (R50)');
+
+  pickBy(h, o => String(o.label).includes('Good Whale'));
+  assert.equal(h.events.filter(ev => ev.type === 'startOfDeployment').length, firedBefore + 1,
+    'answering it lets the opening finish: the event fires, once');
+  assert.ok(!h.state.deployStarting, 'and the window is closed behind it');
+  assert.equal(ent(h, sv)!.card, 'Beyond, Codex Incarnate', 'the board is intact');
 });
 
 // ── Spellbind ────────────────────────────────────────────────────────────

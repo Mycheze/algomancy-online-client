@@ -138,37 +138,19 @@ test('[59] a pending decision is never passed through, by any of the three', () 
   assert.equal(autoPassPlan(s, 0, PASS, both).pass, null);
 });
 
-test('[59] Pass-all still disarms on every one of its own conditions', () => {
-  // the pass-all branch moved wholesale into autoPassPlan; these are the four
-  // reasons the chip comes off, and they must all have survived the move
-  const battle = (over: Partial<GameState> = {}): GameState => {
-    const h = new Harness(6001);
-    toDeployment(h);
-    const A = h.state.initiative;
-    toNextBattle(h, A);
-    return Object.assign(h.state, { priority: 0 as Seat, decision: null }, over);
-  };
-  const armed = (o: Partial<AutoPassArm> = {}): AutoPassArm =>
-    arm({ armed: true, armedStack: 0, ...o });
-
-  const s = battle();
-  assert.equal(s.phase, 'battle', 'the fixture really is a battle');
-  assert.equal(autoPassPlan(s, 0, PASS, armed()).pass, 'passall', 'a quiet window is passed');
-
-  assert.equal(autoPassPlan({ ...s, phase: 'deploy' } as GameState, 0, PASS, armed()).disarm, true,
-    'the battle ended');
-  assert.equal(autoPassPlan({ ...s, stack: [...s.stack, {
-    id: 1, kind: 'spell', label: 'x', controller: 1, region: 0, negated: false, parts: [],
-  }] } as GameState, 0, PASS, armed()).disarm, true, 'somebody played something');
-  const grant: Action[] = [...PASS, { type: 'activateAbility', seat: 0, entityId: 3, abilityIndex: 0 }];
-  assert.equal(autoPassPlan(s, 0, grant, armed()).disarm, true,
-    '#1: a resolution granted an ability that was not legal when the chip was armed');
-  assert.equal(autoPassPlan(s, 0, grant, armed({ armedSig: activationKeys(grant) })).pass, 'passall',
-    '…but an ability that was already there is not news');
-  const token: Action[] = [...PASS, { type: 'castSpellToken', seat: 0, entityId: 5 }];
-  assert.equal(autoPassPlan(s, 0, token, armed()).disarm, true,
-    'C5: never skip through a castable spell token');
-});
+/* The Pass-all release list used to be a branch of autoPassPlan, and this file
+ * held the test for it ('[59] Pass-all still disarms on every one of its own
+ * conditions'). Report #68 — "I hit pass all, but then it stopped passing all"
+ * — was that branch's C5 clause, and the whole list moved to ui/battle.ts
+ * `passAllRelease` in round 17. The branch stayed behind for a round, dead,
+ * reachable only from that test; both are gone now. The four release reasons
+ * are held against REAL battle positions instead, in
+ * test/77-playtest-round17.test.ts:
+ *   '[68] Pass-all stays armed through a window where a spell token is merely castable'
+ *   '[68] Pass-all releases on the pass that would move to Regroup with tokens still castable'
+ *   '[68] the other three releases still release: the battle ending, a new stack item, a new ability'
+ * autoPassPlan answers for C4 and #2 only, which is what the tests above ask
+ * of it. */
 
 test('[59] activationKeys and castableTokens read a legal list, nothing else', () => {
   const legal: Action[] = [

@@ -53,17 +53,15 @@
  *    deployment and apply() refuses it there.
  *
  * PARKED (needs engine machinery that does not exist yet):
- *  - Deferral Drone: "the next card you play this turn costs [3] less". The
- *    cost-modification layer this used to be parked on EXISTS (R59's CostMod —
- *    Tranquility, The Silent and Stasis Sentry all use it), so the reason has
- *    changed rather than gone: a CostMod is CONTINUOUS and stateless — it is
- *    asked "what does this card cost right now" and has nowhere to record
- *    "…and then stop applying". "The NEXT card you play this turn" needs a
- *    one-shot that a play consumes, which no channel provides. Registered with
- *    inert [Augment] text so it plays as a 2/2 and is still recognised as an
- *    augment. Deliberately NOT activatable: the only half that DOES exist is
- *    "gain 4 debt", and offering the cost without the benefit would be
- *    strictly worse than the printed card.
+ *  - PARTIAL — Deferral Drone: the whole ability WORKS now (un-parked
+ *    2026-08-22, see the card below — the "one-shot that a play consumes"
+ *    turned out to be `Entity.budgets`, which is per-turn state cleared by
+ *    E.startTurn, plus the existing spellPlayed/spawned events to spend it).
+ *    What is left is one UNSOURCED rules question: because the discount is a
+ *    CostMod radiating from the Drone, it dies with the Drone. Nothing in the
+ *    rulings corpus says whether a resolved "the next card you play this turn
+ *    costs [3] less" should outlive its source. Kept in test/card-ledger.ts
+ *    for that residue.
  *  - Vengeance: "Cards your opponents play during battle gain '[Sacrifice a
  *    unit]'" IMPOSES an additional cast cost on other players' cards. Again the
  *    layer exists but not this channel: CostMod carries `delta` (extra mana)
@@ -78,7 +76,7 @@
 import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, isEntityTarget, type EffectDef } from '../dsl.ts';
-import { isEnt, isUnitCard } from './helpers.ts';
+import { isEnt, isUnitCard, selfOf } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -92,12 +90,16 @@ import { isEnt, isUnitCard } from './helpers.ts';
  * statics' `attrs`. So a {Pure} granted by one of the rows below is honoured
  * at the combat choke points exactly like a printed one.
  *
- * The two names here that ARE still inert are {Inverted} and {Unaware}: both
- * are stat layers 5 and 6, and effStats() ends at layer 4 with the literal
- * placeholder "layer 5 (Inverted), 6 (Unaware) go here". A row granting either
- * one copies the name onto the Omniphage and nothing happens. (The same gap
- * makes Bubb, Trashling, Haboob, Reality Bender and Its Dark Bubb inert —
- * see test/card-ledger.ts.) */
+ * The one name here that is still inert is {Unaware}: it is stat layer 6, and
+ * effStats() now ends at layer 5 with the placeholder "layer 6 (Unaware) goes
+ * here". A row granting it copies the name onto the Omniphage and nothing
+ * happens. (The same gap still makes Bubb, Trashling and Haboob inert — see
+ * test/card-ledger.ts.)
+ *
+ * {Inverted} used to be listed here too and no longer is: R93 shipped stat
+ * layer 5 for playtest report #73, so a row granting {Inverted} now really
+ * inverts the Omniphage's net stat change, and Reality Bender and Its Dark
+ * Bubb came off the card ledger with it. */
 const ALL_ATTRS: Attr[] = [
   'Flying', 'Deadly', 'Swift', 'Sluggish', 'Tough', 'Balanced',
   'Inverted', 'Unaware', 'Powerful', 'Vulnerable', 'Feeble', 'Evasive',
@@ -273,20 +275,96 @@ card('Life Power Dude', {
 
 // "[Augment][once] Gain 4 debt: The next card you play this turn costs [3]
 // less." — lm/2 2/2 Horror Unit.
-// PARKED (see header) — but NOT on "there is no cost-modification layer" any
-// more: R59's CostMod is that layer, and Tranquility / The Silent / Stasis
-// Sentry all use it. What CostMod cannot express is the ONE-SHOT: it is a
-// continuous query ("what does this card cost right now") with nowhere to
-// record "…and then stop", and "the NEXT card you play this turn" needs a
-// charge that a play consumes. Wiring only the "gain 4 debt" half meanwhile
-// would hand the player a cost with no benefit. Inert augmentText — the card
-// plays as a 2/2 and is recognised as an augment, but the ability is never
-// offered.
+//
+// UN-PARKED 2026-08-22. The park note said "a CostMod is continuous and
+// stateless … 'the NEXT card you play this turn' needs a one-shot that a play
+// consumes, which no channel provides". Both halves of that turned out to
+// exist already, in places the note never looked:
+//
+//  · THE ONE-SHOT is `Entity.budgets` — the Record<string, number> that R9's
+//    bounded/[once] abilities use to remember they have fired. It is real game
+//    state (so it serializes and replays), it is keyed by an arbitrary string,
+//    and E.startTurn wipes every entity's budgets. "This turn" is therefore
+//    free: the charge cannot outlive the turn even if nothing spends it.
+//    Ancient One (batch-metal-a) already writes budgets from card code.
+//
+//  · THE CONSUMER is the pair of events a play already fires. E.commitItem
+//    fires 'spellPlayed' for a spell / spell unit, and E.spawnUnit fires
+//    'spawned' carrying `from` for a unit that came out of a ZONE — an effect
+//    that merely creates a unit passes no `from`, which is exactly the
+//    "played, not made" distinction the card needs. Both fire AFTER the
+//    payment (apply.ts playAtTiming pays before castChain), so the charge is
+//    still standing while the bill is computed and is gone by the next play.
+//    The trigger uses the sanctioned bookkeeping shape — it mutates in when()
+//    and returns false, so nothing ever reaches the stack.
+//
+// R37/R59: applying a mod is NOT playing, so `purpose: 'mod'` is excluded —
+// you cannot spend this charge on an augment, a graft or a battle Virus. A
+// spell TOKEN is likewise excluded from the consumer: R59 already settled that
+// a token is cast from play rather than played.
+//
+// The whole thing is region-scoped (R12) because a CostMod radiates from its
+// anchor's region, and `self` is the anchor — the Drone in play, or the HOST
+// when the text is donated by an augment, so "you" is the host's controller
+// and the [Augment] half needs no extra code.
+//
+// ⚠ OPEN, UNSOURCED: the discount is a CostMod, so it stops the moment the
+// Drone (or its host) leaves play — sacrifice the Drone in response and the
+// charge evaporates. A resolved effect arguably should not care, but the
+// rulings corpus says NOTHING about this card (searched 2026-08-22: no hit for
+// "Deferral", "next card you play" or "costs 3 less" anywhere in the export).
+// Storing the charge on PlayerState instead of the entity would make it
+// survive, and that is a core change and a rules question. Guarded by a todo
+// test; declared in test/card-ledger.ts.
+const DRONE_CHARGE = 'deferralDrone:discount';
+
 card('Deferral Drone', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'gain 4 debt: the next card you play this turn costs [3] less (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
+  augmentText: [
+    {
+      // [once] = `bounded`, R9: one activation per turn per CARD, which is the
+      // same budget channel the charge itself rides (different key).
+      type: 'activated', bounded: true, cost: { debt: 4 },
+      label: 'gain 4 debt: the next card you play this turn costs [3] less',
+      effect: {
+        run: (g, ctx) => {
+          const self = selfOf(g, ctx);
+          if (!self) return;   // the carrier died with the ability on the stack
+          self.budgets[DRONE_CHARGE] = 1;
+          g.ev('info',
+            `${ctx.sourceName}: the next card ${g.pname(ctx.controller)} plays this turn costs [3] less.`,
+            { seat: ctx.controller });
+        },
+      },
+    },
+    {
+      // BOOKKEEPING ONLY (the Powerforge Synergist / Ancient One shape): the
+      // work happens in when(), which then returns false so no trigger is ever
+      // queued and nothing can be responded to. A cost reduction being spent
+      // is not an effect — it has already happened by the time we hear about it.
+      type: 'triggered', events: ['spellPlayed', 'spawned'],
+      label: 'the deferred discount is spent',
+      when: (g, self, ev) => {
+        if ((self.budgets[DRONE_CHARGE] ?? 0) === 0) return false;
+        if (ev.data?.['seat'] !== self.controller) return false;
+        // R59: a spell TOKEN is cast from play, not played.
+        if (ev.type === 'spellPlayed' && ev.data?.['token']) return false;
+        // a unit that came from no zone was CREATED, not played.
+        if (ev.type === 'spawned' && ev.data?.['from'] === undefined) return false;
+        self.budgets[DRONE_CHARGE] = 0;
+        g.ev('info', `Deferral Drone: the [3] discount is spent.`, { seat: self.controller });
+        return false;
+      },
+      effect: { run: () => { /* see when(): this trigger never queues */ } },
+    },
+  ],
+  costMods: [{
+    // R59. `self` is the anchor, so "you" is the Drone's controller in play and
+    // the HOST's controller when donated. manaToPlay clamps the total at zero,
+    // so a [1] card simply becomes free rather than going negative.
+    delta: (_g, self, ctx) =>
+      ctx.purpose === 'play'
+      && ctx.seat === self.controller
+      && (self.budgets[DRONE_CHARGE] ?? 0) > 0 ? -3 : 0,
   }],
 });
 

@@ -19,6 +19,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
+import type { Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
@@ -91,13 +92,138 @@ test('Reconfigure: moves target augment unit AND its mods onto another target un
 
 // ── Rook ─────────────────────────────────────────────────────────────────
 
-test('Rook: augment from hand and bin during battle as if [Virus]', { todo: true }, () => {
-  // PARKED: a continuous play-permission layer over doAugment's legality
-  // rules does not exist (sibling of the missing cost-modification layer).
-  // See the batch header.
+/* ── Rook (R95) ────────────────────────────────────────────────────────────
+ *
+ * "[Augment] You may augment cards from hand and bin during battle as if they
+ * were [Virus]." This text is the whole card; until round 17 it was a vanilla
+ * 4/4. The designer names it as exactly this permission AND as something that
+ * has to be opt-in (rules-questions):
+ *
+ *   chatt_nooga: "Does Steward of the Plain let me apply a virus from my
+ *                 discard during combat?"
+ *   calebgannon: "That's a very interesting question" / "It shouldn't"
+ *   chatt_nooga: "Okay but hear me out: What if it did? Would that be broken?"
+ *   calebgannon: "Not really I don't think. If it said 'as if it was in your
+ *                 hand' then it could work" → $card rook → "Does do that"
+ */
+
+test('Rook: a NON-virus augment from HAND during battle — refused without it, legal with it', () => {
+  const h = new Harness(2910);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const host = spawn(h, A, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  // Emberflame Enlightener is an augment and is NOT a {Virus}
+  const idx = give(h, A, 'Emberflame Enlightener');
+  giveResources(h, A, 'fire', 4);                             // rrr / 4
+  assert.throws(
+    () => h.do({ type: 'augment', seat: A, from: 'hand', index: idx, hostId: host }),
+    /only Virus cards can augment from hand during battle/,
+    'the base rule: a battle augment must be a Virus from hand');
+  // now a Rook in the region grants the permission
+  const e = new E(h.state);
+  e.spawnUnit(A, 'Rook', h.state.battle!.region);
+  e.settle(); h.state = e.s;
+  h.do({ type: 'augment', seat: A, from: 'hand', index: idx, hostId: host });
+  pass(h); pass(h);                                           // the virus-shaped item resolves
+  assert.ok(ent(h, host)!.mods.some(id => ent(h, id)!.card === 'Emberflame Enlightener'),
+    'with Rook in the region it lands, on the stack, exactly as a Virus would');
+  finishBattle(h);
 });
 
-test('Rook: plays as a 4/4; augments (donating nothing yet)', () => {
+test('Rook: augmenting from the BIN during battle takes the card out of the BIN, not the hand', () => {
+  // THE dangerous line. Both battle branches of doAugment used to hardcode
+  // `e.player(seat).hand.splice(index, 1)`, so widening only the legality
+  // check would have let a bin augment through and then deleted an unrelated
+  // card out of the hand while leaving the bin card in place. Both are
+  // `zoneTake` now.
+  const h = new Harness(2911);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const host = spawn(h, A, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  const e0 = new E(h.state);
+  e0.spawnUnit(A, 'Rook', h.state.battle!.region);
+  e0.settle(); h.state = e0.s;
+  // a hand that must survive untouched, and a bin with the augment in it
+  h.state.players[A]!.hand = ['Unit Token', 'Unit Token', 'Unit Token'];
+  h.state.players[A]!.bin = ['Emberflame Enlightener'];
+  giveResources(h, A, 'fire', 4);
+  h.do({ type: 'augment', seat: A, from: 'bin', index: 0, hostId: host });
+  pass(h); pass(h);
+  assert.deepEqual(h.state.players[A]!.bin, [], 'the card left the BIN');
+  assert.deepEqual(h.state.players[A]!.hand, ['Unit Token', 'Unit Token', 'Unit Token'],
+    'and the hand is untouched — zoneTake, not hand.splice');
+  assert.ok(ent(h, host)!.mods.some(id => ent(h, id)!.card === 'Emberflame Enlightener'),
+    'the mod really attached');
+  finishBattle(h);
+});
+
+test('Rook: legalActions OFFERS the bin augment, and offers nothing without a Rook', () => {
+  // legalActions and apply route through the same predicate
+  // (`battleAugmentAllowed`); the fuzzer's "legalActions lied" check has
+  // caught that class of split before. This is the other direction: an action
+  // that is legal must also be OFFERED, or the card is unreachable in the UI —
+  // which is exactly how Rook's whole text stayed invisible.
+  const h = new Harness(2912);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const host = spawn(h, A, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  h.state.players[A]!.bin = ['Emberflame Enlightener'];
+  giveResources(h, A, 'fire', 4);
+  const binAugments = () => h.legal(A).filter(
+    a => a.type === 'augment' && (a as { from?: string }).from === 'bin');
+  assert.equal(binAugments().length, 0, 'no Rook: the bin is not a battle-augment zone at all');
+  const e = new E(h.state);
+  e.spawnUnit(A, 'Rook', h.state.battle!.region);
+  e.settle(); h.state = e.s;
+  assert.ok(binAugments().length > 0, 'with a Rook in the region, the bin augment is offered');
+  finishBattle(h);
+});
+
+test('Rook: the permission is REGION-scoped, and does not reach the opponent', () => {
+  // "I am 99% sure that Rook has to be in the region, since there are no
+  // global effects in Algomancy" (rodanaw, rules-questions, on this card) —
+  // and "your" hand and bin, so it is the Rook controller's permission.
+  const h = new Harness(2913);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const host = spawn(h, A, 'Unit Token');
+  const rookAtHome = spawn(h, A, 'Rook');                     // A's HOME region
+  toNextBattle(h, A);                                         // battle is in D's region
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  const idx = give(h, A, 'Emberflame Enlightener');
+  giveResources(h, A, 'fire', 4);
+  assert.equal(ent(h, rookAtHome)!.region, new E(h.state).homeRegion(A), 'the Rook stayed home');
+  assert.throws(
+    () => h.do({ type: 'augment', seat: A, from: 'hand', index: idx, hostId: host }),
+    /only Virus cards can augment from hand during battle/,
+    'a Rook in another region grants nothing here (R12)');
+  // and even in the region, it is not the OPPONENT's permission
+  const e = new E(h.state);
+  e.spawnUnit(A, 'Rook', h.state.battle!.region);
+  e.settle(); h.state = e.s;
+  const dIdx = give(h, D, 'Emberflame Enlightener');
+  giveResources(h, D, 'fire', 4);
+  while (h.state.priority !== D) pass(h);
+  assert.throws(
+    () => h.do({ type: 'augment', seat: D, from: 'hand', index: dIdx, hostId: host }),
+    /only Virus cards can augment from hand during battle/,
+    "\"YOUR hand and bin\": the opponent gets nothing from my Rook");
+  finishBattle(h);
+});
+
+test('Rook: the [Augment] half works, and the permission belongs to the HOST', () => {
+  // `self` in a ModPermission is the ANCHOR, so a Rook augmented onto a unit
+  // grants that unit's controller the permission — the same "text reads from
+  // the host" contract statics and cost mods radiate on. `augmentable: true`
+  // is what keeps the card applicable at all now that the inert augmentText
+  // stand-in is gone (isAugment reads augmentAttrs || augmentText ||
+  // augmentable, and Rook prints neither of the first two).
   const h = new Harness(2903);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -108,7 +234,40 @@ test('Rook: plays as a 4/4; augments (donating nothing yet)', () => {
   giveResources(h, p, 'earth', 1);
   giveResources(h, p, 'wood', 2);                             // me / 4
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Rook'), hostId: host });
-  assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment (inert donation)');
+  assert.equal(ent(h, host)!.mods.length, 1, 'still recognised as an augment');
+  // the unit-in-play Rook is gone; only the mod on `host` carries the text now
+  const e = new E(h.state);
+  e.destroy(e.entity(rook)!, 'dies'); e.settle(); h.state = e.s;
+  toNextBattle(h, p);
+  h.do({ type: 'declareAttack', seat: p, columns: [[host]] });
+  h.state.players[p]!.bin = ['Emberflame Enlightener'];
+  giveResources(h, p, 'fire', 4);
+  h.do({ type: 'augment', seat: p, from: 'bin', index: 0, hostId: host });
+  pass(h); pass(h);
+  assert.deepEqual(h.state.players[p]!.bin, [], 'the donated permission opened the bin');
+  finishBattle(h);
+});
+
+test('Rook: it prints "hand and bin", so the CACHE stays shut', () => {
+  // ModCtx.from is in the signature rather than hardcoded in apply.ts
+  // precisely so this is the CARD's answer: Rook refuses the cache because
+  // Rook does not print it, not because the rules cannot express it.
+  const h = new Harness(2914);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const e = new E(h.state);
+  const rook = e.spawnUnit(A, 'Rook', e.homeRegion(A));
+  e.settle(); h.state = e.s;
+  const card = getCard('Rook');
+  const perms = card.modPermissions ?? [];
+  assert.equal(perms.length, 1, 'one permission');
+  const g = new E(h.state);
+  const self = g.entity(rook.id)!;
+  const ctx = (from: 'hand' | 'bin' | 'cache') =>
+    ({ seat: A, card: getCard('Emberflame Enlightener'), from, region: self.region });
+  assert.equal(perms[0]!.augmentInBattle!(g, self, ctx('hand')), true, 'hand: yes');
+  assert.equal(perms[0]!.augmentInBattle!(g, self, ctx('bin')), true, 'bin: yes');
+  assert.equal(perms[0]!.augmentInBattle!(g, self, ctx('cache')), false, 'cache: not printed');
 });
 
 // ── Scrapyard Custodian ──────────────────────────────────────────────────

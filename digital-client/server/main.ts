@@ -41,6 +41,18 @@ import { summarizeGame } from './stats.ts';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_DIR = join(HERE, '..', 'engine', 'ui');
 const GAMES_DIR = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
+/**
+ * Where the 🐛 button's reports land. Overridable for the same reason
+ * ALGO_GAMES_DIR and ALGO_ACCOUNTS_FILE are: this file is LIVE DATA on the
+ * deploy box — it is the only copy of every playtest report ever filed — and
+ * `npm test` has to be safe to run there. test-clock.ts posts two reports, and
+ * before this existed it protected the real file by reading it into memory,
+ * letting the server append to it, and writing the original back in a
+ * `finally`. That works exactly until a run crashes or is killed between the
+ * two, and then the reports are gone. Pointing the server somewhere else is
+ * the version with no window.
+ */
+const ISSUES_FILE = process.env['ALGO_ISSUES_FILE'] ?? join(HERE, 'issues.jsonl');
 const ART_DIR = join(HERE, '..', '..', 'AlgomancyCards');
 const PORT = Number(process.env['PORT'] ?? 8080);
 
@@ -133,7 +145,8 @@ const server = createServer(async (req, res) => {
     return res.end(JSON.stringify({ code }));
   }
 
-  // playtest feedback: append one JSON line per report to server/issues.jsonl.
+  // playtest feedback: append one JSON line per report to ISSUES_FILE
+  // (server/issues.jsonl unless ALGO_ISSUES_FILE says otherwise).
   // actionIndex = the room's action count at report time, so the moment can be
   // replayed later (replay-room.ts + slicing the action log).
   if (path === '/api/report' && req.method === 'POST') {
@@ -148,7 +161,7 @@ const server = createServer(async (req, res) => {
         note: String(note ?? '').slice(0, 4000),
         actionIndex: r ? r.actions.length : null,
       };
-      appendFileSync(join(HERE, 'issues.jsonl'), JSON.stringify(entry) + '\n');
+      appendFileSync(ISSUES_FILE, JSON.stringify(entry) + '\n');
       console.log(`[report] ${entry.room || '(no room)'} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'}: ${entry.note}`);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ ok: true }));

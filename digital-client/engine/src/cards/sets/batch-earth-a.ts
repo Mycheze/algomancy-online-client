@@ -393,27 +393,88 @@ card('Flowstone Arcanite', {
   graftEffect: { bounded: true, effect: flowstoneCounters },
 });
 
+/**
+ * "…target effect TARGETING ME": does the stack item `stackId` aim at `me`?
+ *
+ * One predicate, asked in two different questions, which is the whole point of
+ * report #70 below — the candidate list and the resolution check have to be
+ * the same sentence or the client offers what the card then refuses.
+ *
+ * Two ways an effect can aim at a unit:
+ *  - it declared the unit as a TARGET (`{ unit: me }` in a live, unspent
+ *    part) — the ordinary case, a Fireball on my host;
+ *  - it is a VIRUS being applied to me. A virus carries no parts and no target
+ *    refs (apply.ts builds it with `parts: []` and a `hostId`), so the plain
+ *    target-ref read misses it — but the designer is explicit that it is a
+ *    targeted effect and that Graxxlid reaches it. Caleb, rules-questions:
+ *    "You can redirect a virus, it is a targeted effect", and asked directly
+ *    "so you could Graxxlid or Boon of Protection it as well?" — "Yep!
+ *    They're fully interactible." R79's other virus shape (`hostStack`, a
+ *    virus aimed at a SPELL on the stack) is not aimed at me and is excluded.
+ */
+const aimsAtUnit = (g: E, stackId: number, me: EntityId | undefined): boolean => {
+  if (me === undefined) return false;
+  const item = g.s.stack.find(i => i.id === stackId);
+  if (!item) return false;
+  if (item.kind === 'virus') return item.hostId === me;
+  return item.parts.some(p => !p.spent && p.targets.some(tr => 'unit' in tr && tr.unit === me));
+};
+
 // "[Augment][once] [one]: Negate target effect targeting me. That effect's
 // controller draws a card." — ee/2 2/3 Arcane Guardian {Virus} Unit. An
-// ACTIVATED ability in the [Augment] text box, [once] = bounded (R9). The
-// "targeting me" restriction is enforced at resolution (Minor Kraken
-// precedent): a target that doesn't aim at me is a no-op — no negate, no
-// draw. "Me" = the carrier (the host when donated).
+// ACTIVATED ability in the [Augment] text box, [once] = bounded (R9).
+// "Me" = the carrier (the host when donated).
+//
+// Report #70 (GETD, 2026-08-22): "Graxxlid is lighting up like I can activate
+// its ability despite there being no legal targets on the stack". It was: the
+// spec was a bare `what: 'stackEffect'`, so EVERY item on the stack was a
+// candidate and "targeting me" was checked only at resolution, as an info
+// line. R64 settles which of the two that clause is — "the printed restriction
+// is part of what makes a target LEGAL, not a condition checked once the spell
+// resolves" — so it belongs in `restrict`, which the three places that must
+// agree all read: the candidate menu, `castable`, and `canFillSlot`. The
+// designer-community source under it is the RAQ thread "[Solved] Target
+// requirements to put effect on stack": "In order to play a card, you MUST be
+// able to select the valid targets for the effect. Eg. You cannot play
+// Resurrect if there aren't any 2 mana units in your bin." R64 already gates
+// an ABILITY the same way ("one whose mandatory target has nothing legal to
+// aim at is not offered and is refused"), which is exactly the ask: with no effect
+// on the stack aiming at Graxxlid, `abilityUnusable` drops the activation from
+// `legalActions` and the client's green `.activatable` halo — a pure read of
+// `legalActions` — goes out on its own. No UI change. (The inverse of report
+// #35, where a card that COULD act was not drawn as if it could.)
+//
+// The resolution check STAYS, and is not dead code. R64 is explicit that a
+// restriction is not re-asked at resolution (R5/R56), so between activation
+// and resolution the world may legally stop satisfying it: Redirect moves an
+// effect's targets ("You can redirect a virus, it is a targeted effect"), a
+// part can be spent, the aiming item can leave the stack, and Reconfigure can
+// carry the Graxxlid mod to a different host mid-battle (Passer's worked
+// example) while `ctx.sourceId` still names the host it was activated from.
+// A restriction that was true at cast is a promise about cast time only — the
+// same RAQ thread says so of the far end: "if there was a legal target at this
+// point in time and it disappears (e.g. OP playing something in response to
+// the trigger), the ability will resolve as far as it can."
 card('Graxxlid', {
   augmentText: [{
     type: 'activated', cost: { mana: 1 }, bounded: true,   // [once]
     label: "[one]: negate target effect targeting me; its controller draws",
     effect: {
-      targets: { what: 'stackEffect', prompt: 'Graxxlid: negate target effect targeting me' },
+      targets: {
+        what: 'stackEffect',
+        prompt: 'Graxxlid: negate target effect targeting me',
+        // R64: the printed "targeting me" clause, as a targeting restriction
+        restrict: (g, t, ctx) => 'stack' in t && aimsAtUnit(g, t.stack, ctx.sourceId),
+      },
       run: (g, ctx) => {
         const t = ctx.targets[0];
         if (!t || !('stack' in (t as object))) return;
         const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
         if (!item) return;
-        const me = ctx.sourceId;
-        const targetsMe = me !== undefined
-          && item.parts.some(p => !p.spent && p.targets.some(tr => 'unit' in tr && tr.unit === me));
-        if (!targetsMe) { g.ev('info', `Graxxlid: ${item.label} does not target me — no effect.`); return; }
+        if (!aimsAtUnit(g, item.id, ctx.sourceId)) {
+          g.ev('info', `Graxxlid: ${item.label} does not target me — no effect.`);
+          return;
+        }
         g.negate(item.id);
         g.draw(item.controller, 1);
       },

@@ -9,8 +9,9 @@
  * sacrifice-or-discard (Mindburn, R35/R40), even-life rot (Pale Tormentor,
  * R38), mods returned to play (Reclaim the Fallen), {Blessed} lifelink (Shib,
  * R48), bin-for-bin trades (Uglk) and bin recall + self-erase (Zephyrzoa).
- * The PARKED Apex Prime (no copy layer) and Debt Plant (no end-of-haste
- * trigger seam) have registration tests + todos.
+ * Apex Prime is PARTIAL (R92): three of the four copy layers ship and are
+ * tested here; the todo names the three clauses that still need the core.
+ * Debt Plant (no end-of-haste trigger seam) has a registration test + todo.
  *
  * States are built explicitly (give/spawn/giveResources/whiteBox) so parallel
  * card registration in sibling batches can't shift assertions. Seeds:
@@ -21,9 +22,10 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick, skipHasteStep,
-  spawn, toDeployment, toNextBattle, unitsOf,
+  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
+  skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
+import type { Seat } from '../src/types.ts';
 
 /** run engine mutations white-box; a trigger's decision may suspend —
  * the suspension is recorded in state and answered via h.do('decide'). */
@@ -84,11 +86,89 @@ test('Abyssal Extortionist: with no unit to sacrifice there is no damage', () =>
 
 // ── Apex Prime ───────────────────────────────────────────────────────────
 
-test('Apex Prime: all of your units become a copy of target unit until regroup', { todo: true }, () => {
-  // PARKED: needs a COPY layer — name, stats, attributes and abilities
-  // projected from another card and expiring at regroup. effStats has no copy
-  // layer and ownAttrs/abilities read straight off the printed card. See the
-  // batch header.
+test('Apex Prime: on an odd life total, all of your units copy the target\'s base stats and attributes (R92)', () => {
+  const h = new Harness(4404);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');                       // 4/4
+  const tok = spawn(h, A, 'Unit Token');                      // 1/1
+  const siren = spawn(h, D, 'Sporebloom Siren');              // 2/2 {Poisonous}, "when I die …"
+  h.state.players[A]!.life = 29;                              // odd — the printed gate
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[ap, tok]] });
+  pick(h, { unit: siren });                                   // R67: the target is declared at cast
+  pass(h); pass(h);                                           // resolve the trigger
+  pick(h, true);                                              // "you MAY"
+  assert.deepEqual(effStats(h, ap), [2, 2], 'base stats copied (R66 E.setBase) — even onto Apex Prime itself');
+  assert.deepEqual(effStats(h, tok), [2, 2]);
+  assert.ok(ownAttrs(h, ap).has('Poisonous'), 'attributes copied (E.addTempAttr over ownAttrs)');
+  assert.ok(ownAttrs(h, tok).has('Poisonous'));
+  assert.ok((ent(h, tok)!.granted ?? []).some(g => g.card === 'Sporebloom Siren'),
+    'R63: the triggered text is granted, and fireEvent scans `granted` like printed text');
+});
+
+test('Apex Prime: the copied "when I die" text really fires on the copy (R63/R92)', () => {
+  const h = new Harness(4405);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  const tok = spawn(h, A, 'Unit Token');
+  spawn(h, D, 'Noxious Deathcap');                            // 4/2, "[Augment] when I die, -1/-1 on each unit"
+  const cap = unitsOf(h, D)[0]!.id;
+  h.state.players[A]!.life = 29;
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[ap, tok]] });
+  pick(h, { unit: cap });
+  pass(h); pass(h);
+  pick(h, true);
+  assert.deepEqual(effStats(h, tok), [4, 2], 'the token has the Deathcap\'s base stats');
+  // the whole point: the copy is not cosmetic — the granted text is live
+  whiteBox(h, e => e.destroy(e.entity(tok)!, 'dies'));
+  pass(h); pass(h);                                           // resolve the granted death trigger
+  assert.equal(ent(h, ap)!.counters, -1,
+    'the Unit Token died with the Deathcap\'s text and poisoned the region');
+});
+
+test('Apex Prime: an EVEN life total means the trigger never queues at all (R1)', () => {
+  const h = new Harness(4406);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const ap = spawn(h, A, 'Apex Prime');
+  spawn(h, D, 'Sporebloom Siren');
+  h.state.players[A]!.life = 30;                              // even
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[ap]] });
+  assert.equal(h.state.stack.length, 0, 'R1: the condition is judged at event time');
+  assert.equal(h.state.decision, null, 'and no target is ever asked for');
+  assert.deepEqual(effStats(h, ap), [4, 4]);
+  finishBattle(h);
+  // the CONTROL, so this test discriminates rather than just observing a card
+  // that does nothing: the identical board on an odd life total does queue.
+  const odd = new Harness(4407);
+  toDeployment(odd);
+  const A2 = odd.state.deployPlayer!, D2 = (1 - A2) as Seat;
+  const ap2 = spawn(odd, A2, 'Apex Prime');
+  spawn(odd, D2, 'Sporebloom Siren');
+  odd.state.players[A2]!.life = 29;
+  toNextBattle(odd, A2);
+  odd.do({ type: 'declareAttack', seat: A2, columns: [[ap2]] });
+  assert.equal(odd.state.decision!.kind, 'targets', 'odd life → the trigger queues and wants its target');
+});
+
+test('Apex Prime: the copy does not carry the NAME, the STATICS or the ACTIVATED abilities', { todo: true }, () => {
+  // R92 shipped three of the four copy layers — base stats (E.setBase),
+  // attributes (E.addTempAttr over ownAttrs) and triggered / [Augment] text
+  // (E.grantText). Three clauses of "become a copy" are still dead, and each
+  // one needs the CORE, not card code:
+  //   · the NAME. Entity.card is the identity bins, "name a card" and
+  //     counters-by-name all key off; a copy-name layer is a core change.
+  //   · STATICS. staticsFor() reads `statics` off the printed card; there is no
+  //     granted-static channel beside Entity.granted.
+  //   · ACTIVATED abilities. apply.ts's pushActivatedOptions offers
+  //     getCard(u.card).abilities and never reads `granted`, so a granted
+  //     activated ability can never be offered — grantText will store it and
+  //     nothing will ever surface it.
+  // Borrower of Forms waits on exactly the same three.
 });
 
 test('Apex Prime: plays as a 4/4 and is recognised as an augment (inert donation)', () => {
