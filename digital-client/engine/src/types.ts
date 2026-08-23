@@ -398,6 +398,35 @@ export interface EffectPart {
   /** skip at resolution (bounded graft effect already used this turn, or a
    * cast-time [cost] that was unpayable / declined — R35) */
   spent?: boolean;
+  /**
+   * CARD-TODO #18 — this part's run said "I did nothing; give the [once] back".
+   *
+   * A `bounded` ability reserves its budget at COMPOSITION time (see
+   * `E.composeParts`), which is also the re-entrancy guard and has to stay
+   * there. But composition happens before the run has any chance to discover
+   * that it can do nothing, so a trigger that was never even ASKED — Hexbane
+   * Shiitake during the end-of-turn window — burnt its `[once]` anyway.
+   *
+   * RULED 2026-08-23 (owner): DECLINING NEVER SPENDS IT. A `[once]` is spent
+   * only when the ability actually does something, so saying no to a "you may"
+   * leaves the budget intact and the same trigger may ask again later the same
+   * turn. `EffectCtx.refundBudget()` raises this flag and
+   * `E.settleBudgetRefund` pays it out once the part has FINISHED.
+   *
+   * ON THE PART, exactly like `StackItem.eraseSelf` and for the same reason: a
+   * part can suspend mid-resolution and be replayed out of the serialised
+   * suspension (R85). `item` — and therefore `item.parts` — is what the
+   * suspension carries, so the flag survives the round trip; and because R85
+   * rolls the world back to the part BOUNDARY, a replay starts with the flag
+   * clear and re-raises it only if it reaches the same branch again. That is
+   * what makes the refund idempotent: it is paid once, after the last replay,
+   * and a run that ends up doing something never raises it at all.
+   *
+   * "Emitted no event" is deliberately NOT the test. CARD-TODO #3's sweep gave
+   * every one of these bail-out branches an announcement, which was the whole
+   * point of it, so an event-count heuristic would refund nothing.
+   */
+  refunded?: boolean;
   /** receipt of the part's cast-time [cost] payment (R35): what was paid,
    * snapshotted at payment so the resolution can read it (e.g. Volatile
    * Toxicity's "X is the defense of the sacrificed unit"). One key per
@@ -466,7 +495,18 @@ export interface StackItem {
    * They are an additional CAST COST — paid before the item reaches the stack
    * — so they ride on the stack with the spell and a copy would copy them
    * (Caleb 2025-02-07). A graftable mod also contributes its [Switch] effect
-   * as an extra part, exactly like a graft under a unit's graft cause. */
+   * as an extra part, exactly like a graft under a unit's graft cause.
+   *
+   * R105: ANY card may be applied, not just a graftable one (owner ruling,
+   * 2026-08-23). A mod's type-line [Augment] attributes are donated to the
+   * resolving effect via `E.stackModAttrs`; its text-box [Augment] abilities
+   * donate nothing, because a spell has no body for them to live on. A card
+   * with neither rides along inertly, which is legal and deliberate.
+   *
+   * Anything in this list makes the carrier {Unstable}: `payModularMod` stamps
+   * `unstable` below, and the pile is ERASED rather than binned (Manual p.35 —
+   * "even though mods can be applied from the bin, they are generally only
+   * able to be applied once"). */
   mods?: { card: CardName; from: 'hand' | 'bin' }[];
   /** {Modular}: the caster said "no more mods" (or had none to offer) — the
    * cast-time collector is resumable, so it needs the stop flag in state. */
@@ -514,14 +554,46 @@ export interface StackItem {
    * it lands in and the mod owner it becomes on a spell unit's body. */
   augments?: { card: CardName; by: Seat }[];
   /**
-   * R96: this card was played from a zone that makes it {Unstable} — today,
-   * out of a bin under Abyssal Evocation. A STAMP, not a derivation: `augments`
-   * already makes a carrier Unstable (R69) and this is the second, independent
-   * way in, so `dischargeItem` checks BOTH. It rides onto the spawned body of a
-   * spell UNIT played this way (Entity.unstable), which is the edge Spell
-   * Excavation's own note left open.
+   * R96/R105: this card is {Unstable}. A STAMP, not a derivation, and TWO
+   * cards write it:
+   *
+   *  · R96 — it was played from a zone that makes it Unstable (today, out of a
+   *    bin under Abyssal Evocation). It rides onto the spawned body of a spell
+   *    UNIT played this way (Entity.unstable), which is the edge Spell
+   *    Excavation's own note left open.
+   *  · R105 — a {Modular} mod was applied to it as it was played. Stamped in
+   *    `payModularMod`, at CAST, before the item ever reaches the stack: a
+   *    modded card is Unstable (Manual p.35), and stamping at the moment of
+   *    modding means every exit — resolution, R5 fizzle, negation — reads one
+   *    flag rather than re-deriving the same fact three times.
+   *
+   * `augments` (R79) is the THIRD way in and is derived rather than stamped,
+   * so `dischargeItem` and `negate` check both this flag and that list.
    */
   unstable?: boolean;
+  /**
+   * The printed "Erase me." / "Erase this spell." clause — Collect Remains,
+   * Suspend, Temporal Rift.
+   *
+   * A resolving spell is disposed of by `E.dischargeItem` AFTER its effect has
+   * run, so a self-erase cannot erase a card that is still on the stack: it has
+   * to REDIRECT that disposal. This is the redirect. `EffectCtx.eraseSelf()`
+   * raises it while the effect resolves, and `dischargeItem` sends the card to
+   * the erased pile (R65) instead of the bin.
+   *
+   * ON THE ITEM, not on a field of the engine, because the whole game is
+   * `seed + actions` and a resolution can suspend mid-part (R85): the flag has
+   * to survive being structuredCloned into the suspension and replayed out of
+   * it, and anything living outside GameState would not.
+   *
+   * NOT `unstable`, which is next door and looks like the same thing. R79's
+   * Unstable is a STAMP on the object — a virus rode it, or it was played out
+   * of a bin — and it therefore survives negation and fizzling, which is
+   * exactly why `dischargeItem` erases a negated carrier. "Erase me" is an
+   * INSTRUCTION in the effect text, so it only exists once the effect has
+   * actually resolved. Two different reasons, two different log lines.
+   */
+  eraseSelf?: boolean;
   /** triggered/activated: source entity (may be gone by resolution) */
   sourceId?: EntityId;
   /** virus: host target */

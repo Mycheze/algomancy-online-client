@@ -40,9 +40,16 @@
  *  - TEMPORAL RIFT's "End this battle": every remaining stack item is
  *    negated, which under R68 is itself the removal — the item leaves the
  *    stack and its card is binned by negate() — then the battle round ends
- *    via the engine's endBattleRound. "Erase this spell" is approximated as the Rift going to
- *    its controller's bin like any resolved spell — resolution has no
- *    erase-own-card hook (afterParts bins it after the effect runs).
+ *    via the engine's endBattleRound.
+ * ✔ TEMPORAL RIFT's "Erase this spell" is REAL as of CARD-TODO #15. This entry
+ *    used to say "resolution has no erase-own-card hook"; it has one now —
+ *    `ctx.eraseSelf()` raises `StackItem.eraseSelf` and `E.dischargeItem`
+ *    sends the card to the erased pile (R65) instead of the bin. The Rift's own
+ *    item is already off the stack when its effect runs (resolveTop pops it),
+ *    so neither the negate sweep nor endBattleRound can dispose of it first —
+ *    see the ordering note on the card. ⚠ A NEGATED Rift is still binned: the
+ *    erase is a sentence of the effect, and R68 says a negated effect does
+ *    nothing.
  *  - DEMATERIALIZE's "target effect" is R60's 'stackEffect' — the SUPERSET:
  *    spells, spell units, spell tokens and ambushes PLUS triggered and
  *    activated abilities and viruses, because the pool's other cards spell out
@@ -193,9 +200,11 @@ card('Auric Ascendant', {
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        if (!self) return;
+        // CARD-TODO #18: nothing to do, so the [once] is not spent.
+        if (!self) { ctx.refundBudget?.(); g.ev('info', 'Auric Ascendant: the carrier is gone — no recall, no {Flying}.'); return; }
         const pool = g.unitsOf(ctx.controller, ctx.region).filter(u => u.id !== self.id);
         if (!pool.length) {
+          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
           g.ev('info', 'Auric Ascendant: no other ally to recall — no effect.');
           return;
         }
@@ -229,7 +238,10 @@ card('Dematerialize', {
       if (!t || !('stack' in (t as object))) return;
       const stackId = (t as { stack: number }).stack;
       const it = g.s.stack.find(i => i.id === stackId);
-      if (!it) return;
+      if (!it) {
+        g.ev('info', 'Dematerialize: the targeted effect has already left the stack — nothing is negated.');
+        return;
+      }
       g.negate(stackId);
       glimpse(g, it.controller, 3);
     },
@@ -241,10 +253,29 @@ card('Dematerialize', {
 // remaining stack item is negated — which under R68 is itself the removal,
 // card and all — then endBattleRound() runs — in round 1 with no sent
 // counterattackers that cascades straight through round 2 into regroup.
-// "Erase this spell" is approximated as the Rift being binned normally.
+//
+// "ERASE THIS SPELL" IS REAL (CARD-TODO #15); it used to be approximated as
+// the Rift being binned normally. The ORDERING is the thing to get right, and
+// it works out because the Rift's own disposal is not on the stack and not
+// inside endBattleRound():
+//
+//   resolveTop() POPS the item first, so `g.s.stack` below never contains the
+//   Rift — the sweep cannot negate the Rift with everything else, and the
+//   battle ending cannot take its card anywhere. The item is held in a local
+//   for the whole of resolveItem(), and afterParts() → dischargeItem() runs
+//   AFTER this run() returns, cascade and all. So raising the flag here and
+//   letting the disposal read it is safe wherever endBattleRound() ends up:
+//   by the time anything disposes of the Rift, the flag is already on it.
+//
+// It is raised BEFORE the sweep rather than after, so that it is set even if
+// something downstream throws — and unconditionally, ahead of the no-battle
+// guard, because "Erase this spell" is its own printed sentence and does not
+// depend on there having been a battle to end. (A {Battle} spell outside a
+// battle is unreachable in practice; the guard is belt and braces.)
 card('Temporal Rift', {
   spellEffect: {
     run: (g, ctx) => {
+      ctx.eraseSelf();
       if (!g.s.battle) { g.ev('info', 'Temporal Rift: no battle to end.'); return; }
       // R68: negate() is the removal — it splices the item off the stack and
       // bins its card itself, so the sweep runs over a copy and hand-rolls
@@ -273,7 +304,10 @@ card('Transmutide Enigma', {
       run: (g, ctx) => {
         const id = ctx.event?.data?.unit as EntityId | undefined;
         const u = id !== undefined ? g.entity(id) : undefined;
-        if (!u) return;
+        if (!u) {
+          g.ev('info', 'Transmutide Enigma: the ally that spawned is gone — nothing is doubled.');
+          return;
+        }
         const [p, t] = g.effStats(u);
         const mode = ctx.choose('mode', {
           kind: 'electricPath', seat: ctx.controller,
@@ -315,7 +349,10 @@ card('Abduct', {
         g.ev('info', `Abduct: ${u.card} costs more than ${x} — no effect.`);
         return;
       }
-      if (u.controller === ctx.controller) return;   // already yours
+      if (u.controller === ctx.controller) {
+        g.ev('info', `Abduct: ${u.card} is already yours — nothing happens.`);
+        return;   // already yours
+      }
       const owner = u.controller;
       if (g.openMana(owner) >= x && !inEndOfTurn(g)) {
         const pay = ctx.choose('pay', {
@@ -326,7 +363,11 @@ card('Abduct', {
             { label: `Decline — ${g.pname(ctx.controller)} gains control of ${u.card}`, value: false },
           ],
         });
-        if (pay) { g.payMana(owner, x); return; }
+        if (pay) {
+          g.payMana(owner, x);
+          g.ev('info', `${g.pname(owner)} pays [${x}] — ${u.card} stays with them.`);
+          return;
+        }
       }
       takeControl(g, u, ctx.controller);
     },

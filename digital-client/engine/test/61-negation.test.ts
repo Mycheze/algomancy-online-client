@@ -170,7 +170,11 @@ test('R68: Temporal Rift bins each negated card exactly once', () => {
   pass(h); pass(h);                                           // the Rift resolves
   assert.equal(h.state.stack.length, 0, 'the stack is wiped');
   assert.equal(count(binOf(h, A), 'Luminous Arc'), 1, 'the negated Arc is binned ONCE');
-  assert.equal(count(binOf(h, D), 'Temporal Rift'), 1, 'and the Rift itself once');
+  // and the Rift itself is not in a bin at all: "Erase this spell" (CARD-TODO
+  // #15) redirects its own disposal. What this test is about — that negate()
+  // is the whole removal and nobody double-bins — is unaffected.
+  assert.equal(count(binOf(h, D), 'Temporal Rift'), 0, 'the Rift erased itself instead');
+  assert.equal(count(h.state.players[D]!.erased ?? [], 'Temporal Rift'), 1, 'exactly once');
   assert.ok(ent(h, whale), 'the Arc never dealt its damage');
 });
 

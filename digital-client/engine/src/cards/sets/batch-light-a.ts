@@ -650,8 +650,10 @@ card('Vroot', {
     effect: {
       run: (g, ctx) => {
         const n = Number(ctx.event?.data?.['n'] ?? 0);
-        if (n <= 0) return;
-        for (const s of opponentsOf(g, ctx.region, ctx.controller)) g.gainLife(s, n, 'Vroot');
+        if (n <= 0) { g.ev('info', 'Vroot: no combat damage was dealt — nobody gains life.'); return; }
+        const foes = opponentsOf(g, ctx.region, ctx.controller);
+        if (!foes.length) { g.ev('info', 'Vroot: no opponent is present here — nobody gains life.'); return; }
+        for (const s of foes) g.gainLife(s, n, 'Vroot');
       },
     },
   }],

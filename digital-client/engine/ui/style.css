@@ -41,6 +41,12 @@ button:disabled { opacity: .4; cursor: default; }
 .promptbar .who { font-weight: 700; color: var(--accent); }
 /* R84 {Alluring}: the compulsory block, named in the bar that gates Confirm */
 .promptbar .duty { color: var(--warn, #e8b64c); font-weight: 700; }
+/* [77] the refused-block notice: the engine's reason, the units it took back
+   out of the plan, and the explicit "Reset blockers?" the report asked for.
+   Inline in the bar rather than a modal — the plan it is talking about is
+   still on the board behind it, which is the whole point. */
+.promptbar .blockrefusal { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  border-left: 3px solid var(--danger, #d9534f); padding-left: 8px; margin-right: 8px; }
 
 .player { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin-bottom: 8px; }
 .player.inactive { opacity: .82; }

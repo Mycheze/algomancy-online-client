@@ -119,7 +119,7 @@ test('Seismomancy: 3 damage to any target; {Reaping} kill draws; player targets 
   finishBattle(h);
 });
 
-test('Skybreaker: sacrifice ("Erase me" ⚠) negates all spell effects on the stack', () => {
+test('Skybreaker: paying "Erase me" negates all spell effects on the stack', () => {
   const h = new Harness(1804);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -133,7 +133,10 @@ test('Skybreaker: sacrifice ("Erase me" ⚠) negates all spell effects on the st
   // D responds with Skybreaker's ability; the sacrifice is the activation cost
   h.do({ type: 'activateAbility', seat: D, entityId: sky, abilityIndex: 0, via: 'augment' });
   assert.ok(!ent(h, sky), 'Skybreaker left play as the cost');
-  assert.ok(h.state.players[D]!.bin.includes('Skybreaker'), '⚠ approximation: binned, not erased');
+  // CARD-TODO #15: the cost is `AbilityCost.eraseSelf`, not a sacrifice, so no
+  // card reaches a bin and nothing died. Detail in 89-self-erase.
+  assert.ok(!h.state.players[D]!.bin.includes('Skybreaker'), 'erased, not binned');
+  assert.ok((h.state.players[D]!.erased ?? []).includes('Skybreaker'), 'the erased pile');
   pass(h); pass(h);                                     // resolve the ability → Boon negated
   assert.equal(h.state.stack.length, 0, 'R68: the negated Boon left the stack at once');
   assert.deepEqual(effStats(h, atk), [1, 1], 'the Boon was negated — no +4/+4');
@@ -179,7 +182,9 @@ test('Stoneborn Progenitor: one of your units survives damage → a 2/2 (once pe
   // bounded: a second surviving-damage event the same turn does nothing (R9)
   const e = new E(h.state);
   e.dealEffectDamage(
-    { controller: A, sourceName: 'Unit Token', region: h.state.entities[stone]!.region, targets: [], event: null, choose: () => { throw new Error('no choice expected'); } },
+    { controller: A, sourceName: 'Unit Token', region: h.state.entities[stone]!.region, targets: [], event: null,
+      eraseSelf: () => {},   // no stack item here — a direct-run ctx
+      choose: () => { throw new Error('no choice expected'); } },
     h.state.entities[stone]!, 1);
   e.settle();
   assert.ok(ent(h, stone), 'survived again');

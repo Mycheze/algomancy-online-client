@@ -28,23 +28,23 @@
  *    ability is activated, before it reaches the stack. R49's ruling: a life
  *    cost is payable only while you have MORE life than it costs — paying your
  *    last life is refused too.
- *  - NULLBRINGER is a TRIGGER, not a replacement: the engine has exactly two
- *    replacement hooks (rot damage, column combat damage) and life gain is
- *    not one of them. "If a player would gain life, they lose that much life
- *    instead" is modelled as gain N -> lose 2N, which lands on the same life
- *    total. It is visible in the log as two steps, in battle it goes on the
- *    stack (so it is respondable and delayed), and a life total therefore
- *    momentarily spikes UP before coming back down — which another card that
- *    watches life totals (Witness of the Crossing) can see. Applied once per
- *    life-gain event however many Nullbringers are out (a replacement, not a
- *    stack of triggers): the first listener to be asked claims the event.
+ * ✔ NULLBRINGER IS A REAL REPLACEMENT NOW (R104). It used to be a trigger —
+ *    gain N, then lose 2N — which landed on the right FINAL total and was wrong
+ *    about everything in between: the life total SPIKED up through N, a
+ *    `lifeGained` fired for a gain the card says never happened, and in battle
+ *    the correction rode the stack, so it was delayed and negatable. As a
+ *    `replaceLifeGain` hook there is no gain at all and no lifeGained event, and
+ *    "they lose that much" is exactly N. First-true-consumes, so two
+ *    Nullbringers still turn +N into -N without the old WeakSet.
  *  - VOID MANDIBLE hears 'spellPlayed', which the engine fires for spell /
  *    spell unit / spell token casts only. The five {Battle}-timing UNIT cards
  *    and the five Ambush modes push a stack item without a play event, so
  *    they are not caught. Mods are not played at all (R37) and correctly are
  *    not caught. Token spells are excluded by the printed "nontoken".
- *  - FEED TO HOOBA / REAP THE DUE erase locally (the engine has no shared
- *    erase primitive; batch-water-a's Celestial Purge is the model).
+ *  - FEED TO HOOBA / REAP THE DUE erase through helpers.ts's `eraseFromPlay`.
+ *    (`E.eraseFromPlay` exists now — CARD-TODO #15 needed one engine side for
+ *    Skybreaker's "Erase me:" cost — but the card-side copies still carry their
+ *    own log wording that card tests read, so folding them in is its own sweep.)
  *  - PREDICTION PROPHET's "predict your life total" is a Decision, and a
  *    Decision carries a finite option list — so the menu runs 0 … your current
  *    life + 5. Any number is legal on the printed card; a prediction more than
@@ -53,9 +53,13 @@
  *    'endOfHaste' settle window and kept in the entity's own `budgets`, which
  *    only E.startTurn wipes, so it survives battle and regroup into the same
  *    turn's deployment.) See R90.
- *  - SUSPEND's "Erase me" is approximated as the spell being binned normally
- *    (the Temporal Rift precedent) — afterParts() bins a resolved spell and
- *    card code cannot reach the stack item it is resolving from.
+ * ✔ SUSPEND IS COMPLETE. The LIFE LOCK shipped with R104 — a region-keyed
+ *    battleCounter read by E.gainLife and E.loseLife alike, so "can't change"
+ *    really is both directions. "ERASE ME" shipped with CARD-TODO #15: this
+ *    entry used to say "card code cannot reach the stack item it is resolving
+ *    from", and now it can — `ctx.eraseSelf()` raises `StackItem.eraseSelf` and
+ *    `E.dischargeItem` sends the card to the erased pile (R65) instead of the
+ *    bin. The card's test/card-ledger.ts entry is deleted with that change.
  *
  * PARKED (needs engine machinery that does not exist — report, don't invent):
  *  - Gatekeeper of Souls: UN-PARKED by R64. "I must be targeted if able" is a
@@ -68,14 +72,12 @@
  *    is a play-timing permission living in apply.ts's doApplyMod phase gate,
  *    which card code cannot reach (the Dispatch Courier precedent). Inert
  *    [Augment] entry; it plays and augments as a vanilla 2/2.
- *  - Suspend: "target player's life total can't change during this battle"
- *    needs a life-change lock — gainLife/loseLife have no replacement seam,
- *    and the two hooks that exist cover rot damage and column combat damage
- *    only. Resolves as a logged no-op so the card is never a crash.
+ *  - (Suspend is fully unparked: its lock by R104, its "Erase me" by
+ *    CARD-TODO #15 — see the ✔ note above and the card.)
  *  - (Calming Force COMPLETE as of R100, round 17: "I can't be played from your
  *    hand" is the `noPlayFromHand` flag — see the card.)
  */
-import type { Entity, EntityId, EngineEvent, Seat, TargetRef } from '../../types.ts';
+import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, type EffectDef, type ResolvedTarget } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
@@ -287,37 +289,38 @@ card('Life Leech', {
 
 // "[Augment] If a player would gain life, they lose that much life instead."
 // — l/3 3/3 {Virus} Spirit Unit.
-// ⚠ APPROXIMATION (header): a TRIGGER, not a replacement — there is no
-// life-gain replacement seam. Gain N then lose 2N lands on exactly the life
-// total the printed replacement would produce (baseline - N). Applies to
-// EVERY player's life gain, its controller's included, and to {Blessed} gains
-// (E.blessedGain routes through E.gainLife).
 //
-// Replacements do not stack: two Nullbringers must not turn +N into -3N. The
-// event object is the identity of one life-gain, so the first listener asked
-// claims it — deterministic, because fireEvent's listener order is (and
-// replay rebuilds fresh event objects from scratch).
-const nullbringerClaimed = new WeakSet<EngineEvent>();
+// UNPARKED as a real replacement (R104). It used to be a TRIGGER: gain N, then
+// lose 2N. That landed on the right FINAL total (baseline − N) and was wrong
+// about everything in between, which is precisely what the owner reported —
+// the life total SPIKED up through N before coming back, anything watching
+// `lifeGained` fired for a gain the card says never happened, and in battle the
+// correction rode the stack, so it was delayed and Containment Protocol or
+// Nothyr could negate it and leave the player with the gain.
+//
+// As a replacement there is no gain at all: `E.gainLife` asks the hook before
+// it commits, the hook returns true, and NO `lifeGained` event is emitted. The
+// observable difference is the absence of that event, and asserting the absence
+// is what the guard test does.
+//
+// LOSE N, not 2N. The doubling only ever existed to undo a gain that had
+// already happened; with nothing gained, "they lose that much life instead"
+// is exactly N.
+//
+// REPLACEMENTS DO NOT STACK, and now that is structural rather than a
+// bookkeeping WeakSet: `E.replaceLifeGain` is first-true-consumes, so two
+// Nullbringers still turn +N into −N. (The old `nullbringerClaimed` WeakSet
+// keyed off the event OBJECT, which only worked because a trigger had an event
+// to key off — one more thing the replacement seam makes unnecessary.)
+//
+// "A PLAYER", unowned: every player's gain, its controller's included, and
+// {Blessed} gains too (E.blessedGain routes through E.gainLife).
 card('Nullbringer', {
-  augmentText: [{
-    type: 'triggered', events: ['lifeGained'],
-    label: 'a player who gains life loses that much instead',
-    when: (_g, _self, ev) => {
-      const n = ev.data?.['n'] as number | undefined;
-      if (ev.data?.['seat'] === undefined || !n || n <= 0) return false;
-      if (nullbringerClaimed.has(ev)) return false;
-      nullbringerClaimed.add(ev);
-      return true;
-    },
-    effect: {
-      run: (g, ctx) => {
-        const seat = ctx.event?.data?.['seat'] as Seat | undefined;
-        const n = ctx.event?.data?.['n'] as number | undefined;
-        if (seat === undefined || !n) return;
-        g.loseLife(seat, n * 2, 'Nullbringer (the gain is a loss instead)');
-      },
-    },
-  }],
+  augmentable: true,
+  replaceLifeGain: (g, _self, seat, n) => {
+    g.loseLife(seat, n, 'Nullbringer (the gain is a loss instead)');
+    return true;
+  },
 });
 
 // "During [Haste], predict your life total. At the start of deployment,
@@ -480,25 +483,59 @@ card('Slurpr', {
 
 // "Target player's life total can't change during this battle. Erase me." —
 // ll/2 {Battle} Nature Spell.
-// PARKED (header): a life-total LOCK. E.gainLife / E.loseLife commit
-// unconditionally and the engine's only two replacement hooks cover rot damage
-// and column combat damage. "Erase me" is likewise approximated as the spell
-// being binned normally (Temporal Rift precedent). It targets and resolves as
-// a logged no-op so it can never crash a game.
+//
+// BOTH HALVES ARE LIVE. The lock shipped with R104; "Erase me" shipped with
+// CARD-TODO #15 and is `ctx.eraseSelf()` — the seam `E.dischargeItem` reads to
+// send a resolved spell's card to the erased pile (R65) instead of its bin.
+// The card's ledger entry, which tracked the erase half alone, is deleted with
+// this change (card-ledger.ts's house rule). ⚠ The erase is part of the
+// EFFECT, so a NEGATED Suspend is binned normally — R68 — unlike R79's
+// {Unstable}, which is a stamp on the card. Pinned by 89-self-erase.
+//
+// A BATTLE-SCOPED LOCK, not a radiating static and not a card hook, and the
+// shape is forced rather than chosen: Suspend is a SPELL. It resolves and goes
+// to the bin, so there is nothing left in play for `E.anchored()` to radiate
+// from — exactly Abyssal Evocation's situation, and exactly R96's answer. What
+// the card grants is a fact about this battle, which is what battleCounters
+// are: region-keyed (R14's "'this battle' is this region's battle", so round
+// 1's lock does not leak into round 2) and wiped by the existing per-battle
+// reset, so "during this battle" needs no cleanup of its own and no new
+// GameState field.
+//
+// "CAN'T CHANGE" IS BOTH DIRECTIONS. The lock is asked by E.gainLife and
+// E.loseLife alike, ABOVE the replacement hooks — there is nothing left to
+// replace once the change cannot happen at all — so a locked player gains no
+// life, loses none, takes no rot damage to the face and cannot be killed by
+// {Lethal} (killPlayer routes through loseLife). Conceding is not a life
+// change and still ends the game (E.concede does not go through loseLife).
+//
+// ⚠ IT LOCKS THE TARGET, WHOEVER THAT IS. "Target player" is unowned, so
+// pointing it at yourself is a legal and sometimes correct play (you cannot be
+// burned out this battle either), and pointing it at an opponent denies them
+// every lifegain payoff they have. Both readings are the printed card.
+//
+// ⚠ OUTSIDE BATTLE it does nothing, because there is no battle for "during
+// this battle" to name. It is a {Battle} spell, so that is unreachable in
+// practice; the guard is `E.lifeLocked` returning false with no battle.
 card('Suspend', {
   spellEffect: {
-    // R64: "target player" is the 'player' kind. Under 'any' the parked no-op
-    // could be aimed at a unit, and then even the ⚠ line below could not name
-    // whose life total was supposed to lock.
+    // R64: "target player" is the 'player' kind. Under 'any' the lock could be
+    // aimed at a unit, which has no life total to lock.
     targets: { what: 'player', prompt: "Suspend: target player's life total can't change this battle" },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('player' in t)) return;
-      const who = g.pname(t.player);
-      g.ev('info',
-        `⚠ Suspend is PARKED: ${who}'s life total is NOT actually locked ` +
-        '(no life-change replacement seam in the engine).',
-        { seat: ctx.controller });
+      if (t && 'player' in t) {
+        g.lockLife(t.player, ctx.region);
+        g.ev('info',
+          `Suspend: ${g.pname(t.player)}'s life total can't change for the rest of this battle.`,
+          { seat: t.player, region: ctx.region });
+      }
+      // "Erase me." — the second sentence, and it reads as the card's price for
+      // the lock: a battle-long life lock that could then be recurred out of
+      // the bin is a different card. Unconditional given the spell resolves, so
+      // it sits outside the target guard. R65: dischargeItem sends it to the
+      // erased pile instead of the bin (StackItem.eraseSelf).
+      ctx.eraseSelf();
     },
   },
 });
@@ -606,6 +643,7 @@ const tripleGrafts: EffectDef = {
         eff.run(g, {
           controller: ctx.controller, sourceName: mod.card, sourceId: self.id,
           region: ctx.region, targets, event: ctx.event,
+          eraseSelf: () => {},   // an inline mod copy has no stack item to erase
           choose: (k, d) => ctx.choose(`woc:${modId}:${copy}:${k}`, d),
         });
       }

@@ -23,6 +23,7 @@
  * pattern — see the header of test/70-playtest-round15.test.ts).
  */
 import { E } from '../src/engine.ts';
+import { blockDeclarationIssue, compulsoryBlocks } from '../src/apply.ts';
 import { activationKeys, castableTokens } from './inspect.ts';
 import type { AutoPassArm, AutoPassPlan } from './inspect.ts';
 import { autoPassPlan } from './inspect.ts';
@@ -281,4 +282,147 @@ export function shouldAskSend(
   if (spellTokens.length) return false;      // the affordance has demonstrably been seen
   if (!send.length) return false;            // "they always need a unit to take them with them"
   return sendableTokens(s, seat).length > 0;
+}
+
+// ── [77] a refused block declaration must not throw away the plan ─────
+
+/**
+ * THE REPORT (ledger #77, WEHH 2026-08-22): *"Trying to declare illegal blocks
+ * entirely resets the board, which is really annoying. Instead, it should
+ * reset only the 'affected' units and give a notice as well as a 'Reset
+ * blockers?' button. That way, if there's a massive block, the player doesn't
+ * have to entirely rebuild it for forgetting about a single thing."*
+ *
+ * WHY THE BOARD USED TO EMPTY. `declareBuiltBlocks` (ui/main.ts) sent the
+ * action and then cleared `ui.columns` / `ui.send` "if there was no error".
+ * In hotseat that reads correctly, because `act()` applies synchronously and
+ * has already set `uiError`. Over a socket it cannot: the server is
+ * authoritative, `act()` returns the moment the intent is on the wire, and the
+ * refusal arrives some milliseconds later — by which time the plan is gone.
+ * So the whole plan was discarded on every refused declaration in every
+ * network game, which is every real game.
+ *
+ * WHAT THIS IS. R84's shape, widened. R84 asks the engine's own validator
+ * whether the plan being built would be refused (`blockPlanIssue`), so a
+ * compulsory block is NAMED rather than discovered; the only thing that kept
+ * it to {Alluring} was that the rest of the legality was locked inside
+ * `doDeclareBlocks`. `blockDeclarationIssue` (src/apply.ts) is that same run
+ * of checks as a value, and this walks a refused plan against it to work out
+ * the largest part of it the engine WOULD take.
+ *
+ * It is never a second opinion: every judgement below is the engine's own
+ * answer to a plan actually put to it. Restating any block rule here is how a
+ * client ends up refusing a block the engine would have accepted, which is the
+ * same bug wearing the other hat (the header of test/75-ui-reachability).
+ *
+ * THE WALK. One clone, then pure probes against it:
+ *
+ *  1. Ask about the whole plan. Accepted → nothing to report.
+ *  2. Establish a BASE. Normally the empty declaration, which is always legal;
+ *     when it is not, the board is under a compulsory duty, and R84's own
+ *     `compulsoryBlocks` is the assignment that duty demands — legal by
+ *     construction, so it is what the rebuild starts from and what the notice
+ *     names as REQUIRED.
+ *  3. Add the player's columns one at a time, in column order. A column that
+ *     the engine still accepts stays; one it refuses is dropped, and its units
+ *     become offenders carrying the engine's own reason for them.
+ *  4. Then the counterattackers, then the spell tokens riding with them — in
+ *     that order, because "spell tokens travel only with them" is a rule about
+ *     the units being there first.
+ *
+ * Greedy rather than exhaustive, deliberately: the alternative is a subset
+ * search over a plan that can hold two dozen units, and a player who is told
+ * "these three are the problem" and finds a fourth still there is far better
+ * served than one who waits for a minimal answer. Every step is a real
+ * question put to the engine, so what comes back is always a declaration the
+ * engine will take.
+ */
+export interface BlockOffender {
+  id: EntityId;
+  /** the card, so a notice can name it without the caller re-reading state */
+  card: string;
+  /** the engine's own refusal for the part this unit was in */
+  why: string;
+}
+
+export interface BlockVerdict {
+  /** the engine's refusal for the plan AS SUBMITTED */
+  why: string;
+  /** the units cleared out of the plan, and why each one went */
+  offenders: BlockOffender[];
+  /** the largest part of the plan the engine accepts — what the board keeps */
+  keep: { blocks: Record<number, EntityId[]>; send: EntityId[]; spellTokens: EntityId[] };
+  /** R84: blockers the plan was rebuilt ON because the board compels them.
+   * Added, never removed — the notice names these as required, not as errors. */
+  required: Record<number, EntityId[]>;
+}
+
+/**
+ * `null` when the engine would accept this declaration; otherwise what it
+ * refused, which units to clear, and the plan that survives.
+ *
+ * `blocks` / `send` / `spellTokens` are exactly the three fields of the
+ * `declareBlocks` action, and the two id lists are concatenated on the way in
+ * the same way `apply` concatenates them.
+ */
+export function blockVerdict(
+  s: GameState, seat: Seat,
+  blocks: Record<number, EntityId[]>, send: readonly EntityId[], spellTokens: readonly EntityId[],
+): BlockVerdict | null {
+  // ONE clone for the whole walk: checkBlocks only reads, and cloning per
+  // probe would put a dozen deep copies of a battle state on one click.
+  const e = new E(structuredClone(s));
+  const ask = (bl: Record<number, EntityId[]>, out: readonly EntityId[]): string | null =>
+    blockDeclarationIssue(e, seat, bl, [...out]);
+
+  const all = [...send, ...spellTokens];
+  const why = ask(blocks, all);
+  if (why === null) return null;
+
+  // the base: nothing, unless the board compels something (R84)
+  const required: Record<number, EntityId[]> = ask({}, []) === null ? {} : compulsoryBlocks(e, seat);
+  const keep: Record<number, EntityId[]> = {};
+  for (const [ci, col] of Object.entries(required)) keep[Number(ci)] = [...col];
+  const offenders: BlockOffender[] = [];
+  const name = (id: EntityId): string => s.entities[id]?.card ?? `unit ${id}`;
+  const blame = (ids: readonly EntityId[], reason: string): void => {
+    for (const id of ids) {
+      if (Object.values(keep).some(c => c.includes(id))) continue;   // it survived elsewhere
+      if (offenders.some(o => o.id === id)) continue;
+      offenders.push({ id, card: name(id), why: reason });
+    }
+  };
+
+  // …if even the compulsory core is refused, there is nothing to keep. Say so
+  // with the refusal for the plan as submitted rather than inventing one.
+  if (ask(keep, []) !== null) {
+    return { why, offenders: [...Object.values(blocks).flat(), ...all].map(id => ({ id, card: name(id), why })), keep: { blocks: {}, send: [], spellTokens: [] }, required: {} };
+  }
+
+  const keptSend: EntityId[] = [];
+  for (const ci of Object.keys(blocks).map(Number).sort((a, b) => a - b)) {
+    const col = blocks[ci] ?? [];
+    if (!col.length) continue;
+    // the player's column merged onto whatever the duty already put there,
+    // and — if that is what the engine dislikes — the player's column alone
+    const merged = [...(keep[ci] ?? []), ...col.filter(id => !(keep[ci] ?? []).includes(id))];
+    let reason: string | null = null;
+    for (const candidate of [merged, col]) {
+      const trial = { ...keep, [ci]: candidate };
+      reason = ask(trial, keptSend);
+      if (reason === null) { keep[ci] = candidate; break; }
+    }
+    if (reason !== null) blame(col, reason);
+  }
+  for (const id of send) {
+    const reason = ask(keep, [...keptSend, id]);
+    if (reason === null) keptSend.push(id); else blame([id], reason);
+  }
+  const keptTokens: EntityId[] = [];
+  for (const id of spellTokens) {
+    const reason = ask(keep, [...keptSend, ...keptTokens, id]);
+    if (reason === null) keptTokens.push(id); else blame([id], reason);
+  }
+
+  return { why, offenders, keep: { blocks: keep, send: keptSend, spellTokens: keptTokens }, required };
 }

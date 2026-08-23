@@ -164,9 +164,15 @@ card('Divine Intervention', {
     targets: { what: 'stackEffect', prompt: 'Divine Intervention: change the targets of target effect' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('stack' in (t as object))) return;
+      if (!t || !('stack' in (t as object))) {
+        g.ev('info', 'Divine Intervention: no effect is targeted — nothing is retargeted.');
+        return;
+      }
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-      if (!item) return;
+      if (!item) {
+        g.ev('info', 'Divine Intervention: the targeted effect has already left the stack.');
+        return;
+      }
       const may = ctx.choose('may', {
         kind: 'payOrDecline', seat: ctx.controller,
         prompt: `Divine Intervention: change ${item.label}'s targets?`,
@@ -192,7 +198,21 @@ card('Divine Intervention', {
           picks.push([pi, ti, chosen as TargetRef]);
         });
       });
+      // CARD-TODO #2: this was the SILENT half. The decline branch above logged
+      // and the path that actually rewrites another player's targets said
+      // nothing at all, so the visible behaviour was backwards. The wording is
+      // Gravitational Correction's, deliberately — the two cards do the same job
+      // and must read the same in the log.
+      if (!picks.length) {
+        g.ev('info', `Divine Intervention: ${item.label} has no target to change.`);
+      }
       for (const [pi, ti, ref] of picks) item.parts[pi]!.targets[ti] = ref;
+      if (picks.length) {
+        g.ev('info',
+          `Divine Intervention: ${g.pname(ctx.controller)} changes `
+          + `${picks.length} of ${item.label}'s targets.`,
+          { item: item.id, n: picks.length });
+      }
     },
   },
 });
@@ -220,9 +240,14 @@ card('Flzzz', {
         // every other "each opponent" in the expansion. Out of battle a home
         // region lists only its owner, so a deployment-phase life gain drains
         // nobody — the standing R25 behaviour, not a Flzzz special case.
+        let drained = 0;
         for (const seat of playersIn(g, ctx.region)) {
           if (seat === ctx.controller) continue;
           g.loseLife(seat, n, `${ctx.sourceName}'s drain`);
+          drained++;
+        }
+        if (!drained) {
+          g.ev('info', `${ctx.sourceName}: no opponent is present here — nobody loses life.`);
         }
       },
     },
@@ -503,7 +528,7 @@ card('Siphon Life', {
       if (!t || !('player' in t)) return;
       const who = t.player;
       const x = ctx.x ?? 0;
-      if (x <= 0) return;
+      if (x <= 0) { g.ev('info', 'Siphon Life: X = 0 — no life is gained or lost.'); return; }
       const mode = ctx.choose('mode', {
         kind: 'payOrDecline', seat: ctx.controller,
         prompt: `Siphon Life: does ${g.pname(who)} gain or lose ${x} life?`,

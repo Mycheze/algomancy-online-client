@@ -146,10 +146,44 @@ test('Automaton of Abundance: your unit tokens are duplicated; nontokens are not
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Unit Token').length, 1, 'nontoken spawns are not duplicated');
 });
 
-test('Automaton of Abundance: "an additional copy of each UNIQUE token" batch semantics', { todo: true }, () => {
-  // APPROXIMATION: duplication is per token spawn ('spawned' fires once per
-  // token) — a batch of N identical tokens yields N extra copies instead of
-  // one. Needs replacement-effect machinery to see a creation as one batch.
+test('Automaton of Abundance: a batch of three Robots yields ONE extra, not three', () => {
+  // R104, and the exact defect playtest report #60 named: "Automaton of
+  // Abundance fires per spawn so N identical tokens yield N copies instead of
+  // one per unique." Manufacture creates a Robot 3, a Robot 2 and a Robot 1 in
+  // ONE resolution, which is one creation batch.
+  //
+  // UNIQUENESS IS BY TOKEN KIND, and the X is not part of it: three Robots are
+  // one unique token however different their numbers, so exactly one extra
+  // Robot is created. The basis is the engine's own definition of identity —
+  // `Entity.card` is what bins, "name a card" effects, counters-by-name,
+  // DECK_LIST and the inspector all key off — and every Robot is the one
+  // registered card `Robot`.
+  const h = new Harness(2620);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  spawn(h, A, 'Automaton of Abundance');
+  giveResources(h, A, 'metal', 6);                          // mmm / 6
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Manufacture') });
+  const robots = unitsOf(h, A).filter(u => u.card === 'Robot');
+  assert.equal(robots.length, 4, 'three printed Robots plus ONE copy (not three, and not six)');
+  // the copy is of the FIRST of its kind in the batch — the deterministic
+  // reading of "a copy of each unique token you created"
+  assert.deepEqual(robots.map(r => r.counters).sort((a, b) => a - b), [1, 2, 3, 3],
+    'the extra copies the first Robot of that kind, X and all');
+});
+
+test('Automaton of Abundance: a mixed batch gets one extra per KIND, and spell tokens are not units', () => {
+  // "each unique token" over two kinds, and the printed restriction to UNIT
+  // tokens. Robot Corps creates a Robot; Biotoxicity creates three Poison 1 —
+  // spell tokens, which this card does not name.
+  const h = new Harness(2621);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  spawn(h, A, 'Automaton of Abundance');
+  giveResources(h, A, 'wood', 2);                           // g / 2
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Biotoxicity') });
+  assert.equal(tokensOf(h, A).filter(t => t.card === 'Poison').length, 3,
+    'three Poisons and no fourth — "unit tokens" does not mean spell tokens');
 });
 
 // ── Biomass Devourer ─────────────────────────────────────────────────────
@@ -297,25 +331,59 @@ test('Containment Protocol: negates all triggered and activated effects on the s
 
 // ── Cosmic Conspirator ───────────────────────────────────────────────────
 
-test('Cosmic Conspirator: a created Robot may become a Poison/Crystal/Fireball of the same X', () => {
+test('Cosmic Conspirator: a created Robot may become a Fireball of the same X, and no Robot ever exists', () => {
+  // R104. The old implementation really created the Robot, fired a `spawned`
+  // for it, asked, and then erased it — so a token the card says was never
+  // created was on the board and in the event stream. The replacement is
+  // consulted BEFORE anything exists, which is what "you would create" means,
+  // and the assertion is the ABSENCE of that spawn.
   const h = new Harness(2611);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   spawn(h, A, 'Cosmic Conspirator');
-  withE(h, e => { e.spawnUnit(A, 'Robot', e.homeRegion(A), { token: true, counters: 3 }); });
+  giveResources(h, A, 'metal', 2);                          // Self-Assembly: m / 2
+  const before = h.events.length;
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Self-Assembly') });
   assert.equal(h.state.decision!.seat, A, 'the swap is offered');
   assert.equal(h.state.decision!.options.length, 4, 'keep / Poison / Crystal / Fireball');
   pick(h, 'Fireball');
-  assert.equal(unitsOf(h, A).filter(u => u.card === 'Robot').length, 0, 'the Robot was never created');
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Robot').length, 0, 'no Robot on the board');
+  assert.equal(h.events.slice(before)
+    .filter(ev => ev.type === 'spawned' && ev.data?.['card'] === 'Robot').length, 0,
+    'and no `spawned` for a Robot was ever fired — the replacement is not a create-then-erase');
+  assert.equal(h.events.slice(before).filter(ev => ev.type === 'erased').length, 0,
+    'nothing was erased, because nothing was created');
   const fb = tokensOf(h, A).find(t => t.card === 'Fireball')!;
   assert.ok(fb, 'a Fireball exists instead');
-  assert.equal(fb.x, 3, 'with the same X value');
+  assert.equal(fb.x, 2, 'with the same X value (Self-Assembly\'s X is your [m])');
 });
 
-test('Cosmic Conspirator: swapping FROM Poison/Crystal/Fireball creations', { todo: true }, () => {
-  // PARKED half: E.createSpellToken fires no dispatchable event (no fireEvent
-  // on 'tokenCreated'), so spell-token creations cannot be intercepted from
-  // card code. Only the Robot ('spawned') direction is implemented.
+test('Cosmic Conspirator: Biotoxicity asks once per token in the batch (report #64)', () => {
+  // The owner, 2026-08-22 (GETD): "Biotoxicity didn't give me the choice of
+  // what kinds of tokens I wanted even though I had Cosmic Conspirator."
+  //
+  // TWO defects, both here. Biotoxicity creates three SPELL tokens, and
+  // `E.createSpellToken` fires no dispatchable event — so the old `spawned`
+  // trigger heard nothing at all. And a per-spawn trigger could not have asked
+  // per token in a batch even if it had. A replacement is consulted at the
+  // creation call, once per request.
+  const h = new Harness(2622);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  spawn(h, A, 'Cosmic Conspirator');
+  giveResources(h, A, 'wood', 2);                           // g / 2
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Biotoxicity') });
+  assert.equal(h.state.decision!.seat, A, 'asked for the FIRST Poison');
+  pick(h, 'Crystal');
+  assert.equal(h.state.decision!.seat, A, 'asked again for the second');
+  pick(h, 'keep');
+  assert.equal(h.state.decision!.seat, A, 'and again for the third');
+  pick(h, 'Fireball');
+  assert.equal(h.state.decision, null, 'three tokens, three questions, then done');
+  const kinds = tokensOf(h, A).map(t => t.card).sort();
+  assert.deepEqual(kinds, ['Crystal', 'Fireball', 'Poison'],
+    'one of each kind the player chose — the choice really is per token');
+  assert.ok(tokensOf(h, A).every(t => t.x === 1), '"(With the same X value.)"');
 });
 
 // ── Deformant ────────────────────────────────────────────────────────────

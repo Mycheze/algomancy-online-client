@@ -28,9 +28,12 @@
  *    "there is no 'Shard' ResourceKind, so Shards are dormant PRISMITES" —
  *    E.createShard() and a real 'shard' kind exist now, and the card calls
  *    them, so the prismite fidelity leak it warned about is gone.
- *  - Skybreaker: "Erase me" is approximated by the engine's sacrifice-self
- *    activation cost — an unmodded Skybreaker therefore lands in the BIN
- *    instead of being erased (a modded host is erased anyway, Unstable).
+ * ✔ Skybreaker: "Erase me" is REAL as of CARD-TODO #15. It used to be
+ *    approximated by the sacrifice-self activation cost, which put an unmodded
+ *    Skybreaker in the BIN — a death, with death triggers and R40 recursion off
+ *    it. `AbilityCost.eraseSelf` is its own choice-free cost kind now, paid by
+ *    E.payActivationCost through E.eraseFromPlay: no bin, no death, no despawn.
+ *    (A modded host was erased anyway under Unstable; that is unchanged.)
  *  - Tenebrous Bulborb: NO LONGER an approximation. This note used to read
  *    '"I gain -2/-2" (static) is applied as permanent -1/-1 counters, once …
  *    later +1/+1 counters cancel it pairwise'. Playtest VEAV rejected exactly
@@ -142,14 +145,26 @@ card('Seismomancy', {
 // "[Augment] Erase me: Negate all spell effects." — ee/2 2/2 Arcane
 // Primordial {Virus} Unit. An ACTIVATED ability in the [Augment] text box
 // (live when played normally, donated to hosts, playable as a battle Virus).
-// ⚠ "Erase me" is approximated by the sacrifice-self activation cost (see
-// header): an unmodded Skybreaker is binned; a modded host is erased anyway
-// (Unstable). "All spell effects" = every un-negated spell / spell unit /
-// spell token / ambush on the stack (R22 counts ambushes; triggered and
-// activated abilities are not spell effects).
+// "All spell effects" = every un-negated spell / spell unit / spell token /
+// ambush on the stack (R22 counts ambushes; triggered and activated abilities
+// are not spell effects).
+//
+// "ERASE ME" IS A COST, and that is what makes this card the odd one out of
+// the four CARD-TODO #15 named. The other three are SPELLS erasing themselves
+// on disposal, which needed a new route through `E.dischargeItem`; here the
+// subject is a UNIT IN PLAY and the erase is paid on the way to the stack,
+// before anybody may respond — so it belongs in `AbilityCost`, next to
+// `sacrificeSelf`, and `E.payActivationCost` charges it in the cast window.
+// It used to BE `sacrificeSelf`, which is a real divergence and not a wording
+// one: a sacrifice is a death, so the card reached D's bin, fired every
+// "when a unit dies" trigger, and could be recurred or trashed out of the bin
+// afterwards. An erase does none of that — no bin, no death, no despawn, R40
+// cannot reach it. (Spore of Regenesis is the same reading of the same clause
+// one zone over: there "erase me" is the cost of a death trigger and is paid
+// out of the bin.)
 card('Skybreaker', {
   augmentText: [{
-    type: 'activated', cost: { sacrificeSelf: true },
+    type: 'activated', cost: { eraseSelf: true },
     label: 'Erase me: negate all spell effects',
     effect: {
       run: (g) => {
@@ -318,6 +333,7 @@ card('The Bonesculptor', {
         };
         const opts = bonesculptorPicks(g, ctx.controller);
         if (!opts.length) {
+          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
           g.ev('info', 'The Bonesculptor: no playable ability-free unit in your bin.');
           return;
         }
@@ -326,7 +342,11 @@ card('The Bonesculptor', {
           prompt: 'The Bonesculptor: play a unit with no abilities from your bin',
           options: [...opts, { label: 'Decline', value: -1 }],
         }) as number;
-        if (pick < 0) return;
+        if (pick < 0) {
+          ctx.refundBudget?.();   // CARD-TODO #18: declining never spends it
+          g.ev('info', 'The Bonesculptor: no unit is played from the bin.');
+          return;
+        }
         const name = bin[pick];
         if (name === undefined || !vanilla(name) || !g.canPayCard(ctx.controller, name)) return;
         bin.splice(pick, 1);
@@ -357,7 +377,10 @@ card('Throw off a Cliff', {
       const t = ctx.targets[0];
       if (!isEnt(t)) return;
       const u = g.entity(t.id);
-      if (!u) return;
+      if (!u) {
+        g.ev('info', 'Throw off a Cliff: the target is gone — nothing is deleted.');
+        return;
+      }
       if (g.effStats(u)[1] >= 4) g.destroy(u, 'is deleted');
       else g.ev('info', `Throw off a Cliff: ${u.card} has less than 4 defense — nothing happens.`);
     },

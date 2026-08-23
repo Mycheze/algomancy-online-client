@@ -47,12 +47,18 @@
  *    resolution-time approximation. It is a real bracketed CastCost now —
  *    kind 'eraseBin' — collected in the cast window like any other, which also
  *    stops grafted riders resolving off an unpayable cost.)
- *  - "ERASE ME" on a spell (Collect Remains) is approximated by the spell
- *    being binned normally after it resolves: resolveItem() runs afterParts()
- *    — which bins the card from the stack — after the effect has finished, and
- *    an effect has no handle on its own stack item. Same approximation as
- *    Temporal Rift (batch-hybrids-wm-b). Consequence: Collect Remains can be
- *    recurred out of the bin, where the printed card cannot.
+ * ✔ "ERASE ME" ON A SPELL IS REAL NOW (CARD-TODO #15). This entry used to say
+ *    it was approximated by the spell being binned normally, because "an
+ *    effect has no handle on its own stack item". It has one: `ctx.eraseSelf()`
+ *    raises `StackItem.eraseSelf`, and `E.dischargeItem` — the single choke
+ *    point through which a resolving or negated item's card leaves the stack —
+ *    sends it to the erased pile (R65) instead of a bin. Collect Remains can
+ *    no longer be recurred out of the bin, which is the point of the clause on
+ *    a bin-recursion spell. Same seam as Temporal Rift and Suspend.
+ *    ⚠ It is part of the EFFECT, so a NEGATED Collect Remains is binned
+ *    normally (R68: the effect does nothing, and the erase is a sentence of
+ *    it) — unlike R79's {Unstable}, which is a stamp on the card and survives
+ *    negation. Pinned by 89-self-erase.
  * ✔ Pallid Gorger's "Discard a card or sacrifice a nontoken unit:" is a real
  *    ACTIVATION cost now (R49, `discardOrSacrifice: 1`): it gates the
  *    activation and is paid in the cast window, before the item reaches the
@@ -199,13 +205,23 @@ card('Collect Remains', {
     targets: { what: 'anyBinCard', prompt: 'Collect Remains: put target card in a bin into your hand' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!t || !('binCard' in t) || t.binCard.index === -1) return;
-      const bin = g.player(t.binCard.seat).bin;
-      const name = bin[t.binCard.index];
-      if (name === undefined) return;
-      bin.splice(t.binCard.index, 1);
-      g.player(ctx.controller).hand.push(name);
-      g.ev('info', `Collect Remains: ${name} goes from ${g.pname(t.binCard.seat)}'s bin to ${g.pname(ctx.controller)}'s hand.`);
+      if (t && 'binCard' in t && t.binCard.index !== -1) {
+        const bin = g.player(t.binCard.seat).bin;
+        const name = bin[t.binCard.index];
+        if (name !== undefined) {
+          bin.splice(t.binCard.index, 1);
+          g.player(ctx.controller).hand.push(name);
+          g.ev('info', `Collect Remains: ${name} goes from ${g.pname(t.binCard.seat)}'s bin to ${g.pname(ctx.controller)}'s hand.`);
+        }
+      }
+      // "Erase me." — the second sentence, and it is why the two are printed
+      // together: this is bin recursion that takes ITSELF out of the game, so
+      // it can never be recurred by the next copy. Unconditional given the
+      // spell resolves at all, which is why it sits outside the guard above —
+      // a bin card that vanished between cast and resolution does not save the
+      // Remains from its own text. R65: dischargeItem sends the card to the
+      // erased pile instead of the bin (StackItem.eraseSelf).
+      ctx.eraseSelf();
     },
   },
 });
@@ -436,13 +452,21 @@ card('Murkdrop Distiller', {
       run: (g, ctx) => {
         const name = ctx.event?.data?.['card'] as string | undefined;
         if (name === undefined) return;
-        if (g.player(ctx.controller).bin.lastIndexOf(name) === -1) return;
+        if (g.player(ctx.controller).bin.lastIndexOf(name) === -1) {
+          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
+          g.ev('info', `Murkdrop Distiller: ${name} is not in your bin — there is nothing to cache.`);
+          return;
+        }
         const take = ctx.choose('cache', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: `Murkdrop Distiller: cache ${name} and play it until end of turn?`,
           options: [{ label: `Cache ${name}`, value: 1, card: name }, { label: 'Decline', value: 0 }],
         }) as number;
-        if (!take) return;
+        if (!take) {
+          ctx.refundBudget?.();   // CARD-TODO #18: declining never spends it
+          g.ev('info', `Murkdrop Distiller: ${name} is left in the bin — nothing is cached.`);
+          return;
+        }
         const i = g.player(ctx.controller).bin.lastIndexOf(name);
         if (i === -1) return;
         g.cacheFromBin(ctx.controller, i, { playable: true });
@@ -490,7 +514,10 @@ card('Necromorph', {
       const [t, b] = [ctx.targets[0], ctx.targets[1]];
       if (!isEnt(t) || !b || !('binCard' in b)) return;
       const victim = g.entity((t as Entity).id);
-      if (!victim) return;
+      if (!victim) {
+        g.ev('info', 'Necromorph: the unit in play is gone — no exchange.');
+        return;
+      }
       const owner = victim.controller;
       // R56: a redirect can have moved the unit target since the cast, so the
       // pairing is re-checked here rather than trusted
@@ -711,9 +738,16 @@ card('Scholar of the Void', {
 // played. You still pay their costs.) [Switch1] You gain one rot." — d/1
 // {Battle} {Modular} Arcane Spell. {Modular} itself is engine-side (R35's
 // cast-time collection: the mods are an additional COST, they ride on the
-// stack with the spell and their graft effects join as extra parts) — the
-// card scripts only its own body, which is a pure downside: a 1-mana carrier
-// that charges you a rot for the privilege.
+// stack with the spell) — the card scripts only its own body, which is a pure
+// downside: a 1-mana carrier that charges you a rot for the privilege.
+//
+// R105 (owner, 2026-08-23): ANY card you can pay for may be applied, not just
+// a graftable one. A graft contributes its [Switch] effect as an extra part; a
+// type-line [Augment] attribute is donated to the resolving effect; text-box
+// [Augment] text does nothing, because a spell has no body for it. And the rot
+// is the price of what the card is FOR — "it basically works as a 'flashback'
+// for graft cards", so the carrier is {Unstable} and the mods are erased with
+// it, applied once and gone (Manual p.35).
 const spellbindRot: EffectDef = { run: (g, ctx) => g.gainRot(ctx.controller, 1) };
 card('Spellbind', {
   spellEffect: spellbindRot,

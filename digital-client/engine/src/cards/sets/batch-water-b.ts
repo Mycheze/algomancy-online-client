@@ -98,6 +98,7 @@ const playInline = (g: E, ctx: EffectCtx, name: string, key: string): 'unit' | '
       eff.run(g, {
         controller: ctx.controller, sourceName: name, region: ctx.region,
         targets, event: null,
+        eraseSelf: () => {},   // an inline mod run has no stack item to erase
         choose: (k, d) => ctx.choose(`${key}:${k}`, d),
       });
     }
@@ -145,7 +146,10 @@ card('Pull Under', {
       const t = ctx.targets[0];
       if (!isEnt(t)) return;
       const u = g.entity(t.id);
-      if (!u) return;
+      if (!u) {
+        g.ev('info', 'Pull Under: the target is gone — nothing is deleted.');
+        return;
+      }
       const wasToken = !!u.token;
       const name = u.card;
       // R69: a token MOD has no card of its own — it is erased with the body,
@@ -559,7 +563,10 @@ card('Tides of the Cosmos', {
   spellEffect: {
     run: (g, ctx) => {
       const top = g.deckOf(ctx.controller).slice(0, 8);
-      if (!top.length) return;
+      if (!top.length) {
+        g.ev('info', 'Tides of the Cosmos: the deck is empty — nothing is revealed.');
+        return;
+      }
       g.ev('info', `Tides of the Cosmos reveals: ${top.join(', ')}.`);
       const picks: number[] = [];
       let budget = 8;

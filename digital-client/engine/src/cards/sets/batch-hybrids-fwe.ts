@@ -446,11 +446,14 @@ card('Slag Spewer', {
       targets: { what: 'any', prompt: 'Slag Spewer: deal 2 damage to any target' },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        if (!self) return;
+        // CARD-TODO #18: nothing to do, so the [once] is not spent (R9 ruling
+        // 2026-08-23 — a bounded use is spent only when it does something).
+        if (!self) { ctx.refundBudget?.(); g.ev('info', 'Slag Spewer: the carrier is gone — no mod to erase, no damage.'); return; }
         const mods = self.mods
           .map(id => g.entity(id))
           .filter((m): m is Entity => !!m);
         if (!mods.length) {
+          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
           g.ev('info', 'Slag Spewer: no mod to erase — no effect.');
           return;
         }
@@ -482,7 +485,12 @@ const collapseSacrifice: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
     const bar = ctx.costPaid?.sacrificed?.defense ?? 0;
-    if (bar <= 0) return;   // rider declined / unpayable, or a 0-defense cost
+    if (bar <= 0) {
+      // rider declined / unpayable, or a 0-defense cost
+      ctx.refundBudget?.();   // CARD-TODO #18: declining never spends it
+      g.ev('info', 'Structural Collapse: no unit with defense was sacrificed — nobody sacrifices.');
+      return;
+    }
     const picks: EntityId[] = [];
     for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
       if (seat === ctx.controller) continue;

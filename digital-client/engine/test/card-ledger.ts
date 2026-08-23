@@ -172,21 +172,6 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // ── WHOLE CARDS THAT DO NOTHING ─────────────────────────────────────────
 
   {
-    card: 'Suspend', gap: 'dead', severity: 'high',
-    missing: '"Target player\'s life total can\'t change during this battle. Erase me."',
-    waitingOn:
-      'A life-change LOCK. E.gainLife / E.loseLife commit immediately and have no '
-      + 'replacement seam. The engine has exactly two replacement hooks '
-      + '(replaceRotDamage, replaceCombatDamageToPlayer) and deliberately no '
-      + 'framework; neither can stop a life change, only redirect one channel.',
-    todoTest: '40-light-c.test.ts::Suspend',
-    note:
-      'Casting it picks a target player and logs "⚠ Suspend is PARKED". The card is '
-      + 'a blank. Not caught by the shape sweep — its run does real work (it reads '
-      + 'and names the target) and then does nothing with it, which is exactly the '
-      + 'shape a sweep cannot see. Listed by hand.',
-  },
-  {
     card: 'Worldbender', gap: 'dead', severity: 'high',
     missing:
       '"Skip your draft step. When you do, draw a card. You also lose 3 life if '
@@ -265,26 +250,6 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // augment and never crashes. That is precisely what Harbinger looked like.
 
   {
-    card: 'Conduit of Pain', gap: 'dead', severity: 'high',
-    missing:
-      '"[Augment] If an allied source would deal noncombat damage, it deals that '
-      + 'much damage plus 1 instead."',
-    waitingOn:
-      'An amount-INCREASE hook. Half of the old note is stale as of R98: there IS now a '
-      + 'noncombat damage funnel for units (`E.preventUnitDamage`, consulted by '
-      + '`dealEffectDamageAll` and by the combat sub-step). But that funnel only ever REDUCES — '
-      + 'it returns the damage let through — and this card needs "deals that much plus 1". '
-      + 'The recommended shape is a continuous `AmountMod` family modelled on `CostMod` (SUMMED, '
-      + 'not first-true-consumes like the replaceX hooks), because Caleb settled composition: '
-      + '"a replacement only happens once … The replacement just takes what would be 1 and makes '
-      + 'it 2" — so two different modifiers both apply, and none applies to itself. NOTE: this '
-      + 'card is also now the load-bearing CANARY for 71-card-ledger.test.ts\'s dead-shape '
-      + 'sweep (it took over from Envoy of Lightning when R94 unparked that one), so unparking '
-      + 'it means nominating a new canary — the test says so itself.',
-    todoTest: '12-fire-a.test.ts::Conduit of Pain',
-    note: 'A burn deck augments this for +1 per ping and gets nothing.',
-  },
-  {
     card: 'Crevice Lurker', gap: 'dead', severity: 'medium',
     missing:
       '"[Augment] Abilities cost [one] more to activate or trigger during battle."',
@@ -341,19 +306,6 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
       + 'nothing else; a sacrifice is neither.',
     todoTest: '45-hybrids-ld-b.test.ts::Vengeance',
   },
-  {
-    card: 'Counter Theif', gap: 'dead', severity: 'medium',
-    missing:
-      '"[Augment] If one or more counters would be placed on one or more units during '
-      + 'battle, those counters are placed on me instead."',
-    waitingOn:
-      'A replacement effect on COUNTER PLACEMENT. E.addCounters has no hook at all, '
-      + 'and the engine has deliberately no replacement framework — just the two '
-      + 'named hooks.',
-    todoTest: '46-hybrids-ld-c.test.ts::Counter Theif',
-    note: 'Plays as a 0/5 and is recognised as an augment; the theft never happens.',
-  },
-
   // ── BARE DEFINITIONS WITH LIVE PRINTED TEXT ─────────────────────────────
 
   {
@@ -417,18 +369,6 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // ── PARTIAL: one clause works, another does not ─────────────────────────
 
   {
-    card: 'Cosmic Conspirator', gap: 'partial', severity: 'medium',
-    missing:
-      '"If you would create a Robot, Poison, Crystal or Fireball, you may instead '
-      + 'create a token of any of these types." — the SPELL-TOKEN half.',
-    waitingOn:
-      'A dispatchable event on spell-token creation. E.createSpellToken never calls '
-      + 'fireEvent, so a Poison/Crystal/Fireball creation cannot be intercepted. The '
-      + "ROBOT half IS live, via the 'spawned' event: creating a Robot does offer the "
-      + 'swap.',
-    todoTest: '26-metal-a.test.ts::Cosmic Conspirator',
-  },
-  {
     card: 'Ancient One', gap: 'partial', severity: 'medium',
     missing:
       '"[Augment] I have all abilities of adjacent allies." — ACTIVATED abilities and '
@@ -443,76 +383,20 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   },
 
   // ── PRINTED ATTRIBUTES THE STAT LAYERS DO NOT IMPLEMENT ─────────────────
-  // engine.ts's effStats() ends with the literal placeholder
-  //   "// layer 5 (Inverted), 6 (Unaware) go here"
-  // These cards carry the attribute in printed data — combat, targeting and
-  // the UI all show it — and the engine does nothing with it. They are
-  // invisible to the shape sweep: the whole card IS the attribute, so
-  // `card('X', {})` is the CORRECT definition and there is no printed text to
-  // flag. That mismatch is the same one that hid Harbinger, in reverse.
-
-  {
-    card: 'Bubb', gap: 'dead', severity: 'medium', deadAttr: 'Unaware',
-    missing: '"[Augment] {Unaware}" on the type line.',
-    waitingOn:
-      'Stat layer 6, evaluated pairwise at every interaction site (R10 lists them: '
-      + 'combat damage, targeting, "interacting with"). effStats() has the seam and '
-      + 'nothing in it.',
-    todoTest: '05-rulings.test.ts::R10: Unaware',
-    note:
-      '⚠ The todo test it points at is itself STALE: its title reads "no Unaware card '
-      + 'in the M1 pool; layer-6 seam only", which stopped being true when Light & '
-      + 'Dark shipped — Bubb, Trashling and Haboob all print {Unaware} today. The '
-      + 'test lives in engine/test/05-rulings.test.ts and is another agent\'s file, '
-      + 'so it is reported here rather than edited.',
-  },
-  {
-    card: 'Trashling', gap: 'dead', severity: 'medium', deadAttr: 'Unaware',
-    missing: '"[Augment] {Unaware}" on the type line, donated by the {Virus}.',
-    waitingOn: 'Stat layer 6, exactly as Bubb.',
-    todoTest: '05-rulings.test.ts::R10: Unaware',
-    note:
-      'The card comment says "all engine-level, no behavior" — true of the plumbing '
-      + 'and false of the outcome: the attribute arrives and is then ignored.',
-  },
-  {
-    card: 'Haboob', gap: 'partial', severity: 'low', deadAttr: 'Unaware',
-    missing: '"{Unaware}" on the type line.',
-    waitingOn: 'Stat layer 6, exactly as Bubb.',
-    todoTest: '05-rulings.test.ts::R10: Unaware',
-    note:
-      'The printed EFFECT ("I deal 1 damage to each unit") is fully implemented; only '
-      + 'the type-line attribute is inert. Lowest-impact of the five attribute cards.',
-  },
+  // EMPTY as of 2026-08-23, and kept as a heading because the class is real
+  // and will recur. It held Bubb, Trashling and Haboob, whose whole card IS
+  // {Unaware} — invisible to the shape sweep, because `card('X', {})` is the
+  // CORRECT definition when there is no printed text to flag, which is the
+  // mismatch that hid Harbinger in reverse. R106 shipped stat layer 6 (an
+  // Unaware unit's numbers are its base numbers, for everybody) and all three
+  // came off, exactly as Its Dark Bubb and Reality Bender came off when R93
+  // shipped layer 5. Both stat-layer placeholders in effStats() are now code.
 
   // ── APPROXIMATIONS SITTING BEHIND A {todo:true} ─────────────────────────
   // These cards DO something. They are here because a todo test — which can
   // never fail — is the only thing recording that what they do is not what
   // they print. That is the Harbinger trap, so they are at least visible.
 
-  {
-    card: 'Nullbringer', gap: 'approximated', severity: 'medium',
-    missing:
-      '"instead" — the printed text replaces a life GAIN; the engine reacts to one.',
-    waitingOn:
-      'A life-gain replacement seam (the same one Suspend waits on). Implemented as '
-      + 'a trigger: gain N, then lose 2N, which lands on the right final total '
-      + '(baseline − N) but SPIKES through the gain first.',
-    todoTest: '40-light-c.test.ts::Nullbringer',
-    note:
-      'The spike is observable: anything watching lifeGained fires, and a gain that '
-      + 'would cross a threshold crosses it before coming back.',
-  },
-  {
-    card: 'Automaton of Abundance', gap: 'approximated', severity: 'low',
-    missing: '"an additional copy of each UNIQUE token" — the batch semantics.',
-    waitingOn: 'A settled reading of "unique" across one creation batch.',
-    todoTest: '26-metal-a.test.ts::Automaton of Abundance',
-    unverified: true,
-    note:
-      'Unverified: the todo test names the question and does not answer it, and I did '
-      + 'not trace the creation path end to end. It may already be right.',
-  },
   {
     card: 'Borrower of Forms', gap: 'approximated', severity: 'medium',
     missing: 'card text, attributes and mods are not copied — only base stats are.',

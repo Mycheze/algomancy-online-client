@@ -17,13 +17,14 @@
  * put the card straight into the glimpser's hand, permanently.
  *
  * ⚠ ENGINE APPROXIMATIONS in this batch:
- *  - Flux Resonator: a REPLACEMENT effect approximated as a post-hoc trigger
- *    on 'countersChanged'. "By an allied source" is unknowable (the event
- *    carries no source) — read as "counters put on an allied unit", positive
- *    counters only. The bonus counter is added SILENTLY (direct mutation, no
- *    countersChanged event) so replacement chains / self-retrigger loops
- *    cannot happen. Spawn-with-X counters (Robot X) fire no countersChanged
- *    → no bonus (spawned with, not "put on").
+ *  - Flux Resonator: a REAL replacement as of R104 — an `AmountMod` consulted
+ *    by E.addCounters before it commits, so one placement produces one
+ *    countersChanged carrying the right number. It never reaches the stack.
+ *    ONE approximation survives: "by an allied source" is still read as
+ *    "counters put on an allied unit", because addCounters takes no source.
+ *    Positive counters only. Spawn-with-X counters (Robot X) are set on the
+ *    entity by spawnUnit and never go through addCounters → no bonus (spawned
+ *    with, not "put on"), which is the same answer as before.
  *  - Formless: "becomes a base 4/4" REWRITES layer 2 (E.setBase), and the
  *    "loses all attributes until regroup" half is R62's until-regroup
  *    suppression — both cleared at regroup.
@@ -109,27 +110,33 @@ card('Flux Constructor', {
 
 // "[Augment] If one or more counters would be put on a unit by an allied
 // source, put that many counters plus one instead." — mm/2 2/2 Technology
-// Construct Unit. ⚠ header approximation: replacement → post-hoc trigger on
-// 'countersChanged' for POSITIVE counters on ALLIED units; the extra counter
-// is added silently (no event → no chains, no loops). Text-box [Augment]:
-// live when played normally, donated on augment (the host carries it).
+// Construct Unit.
+//
+// UNPARKED as a real replacement (R104). It used to be a post-hoc trigger on
+// 'countersChanged' that reached into `u.counters` directly to dodge its own
+// re-entrancy — so the printed counters landed first, a `countersChanged` fired
+// for the wrong number, and the extra one arrived silently afterwards. An
+// `AmountMod` is CONSULTED instead, before the commit: one placement, one
+// event, the right number on it.
+//
+// SUMMED, so two Resonators put two more (Caleb: "a replacement only happens
+// once … The replacement just takes what would be 1 and makes it 2" — two
+// different modifiers both apply), and neither applies to its own contribution
+// because a query cannot re-enter the thing it is answering about.
+//
+// ⚠ THE APPROXIMATION THAT SURVIVES, unchanged and now stated where it can be
+// checked: "by an ALLIED SOURCE" is still read as "onto an allied unit".
+// `E.addCounters(target, n)` has no source parameter — counters arrive from
+// resolutions, from combat and from engine sweeps alike — so `AmountCtx`
+// carries no `sourceSeat` on the counters path. Widening addCounters' signature
+// is a separate change; until then this is the reading the card has shipped
+// with. POSITIVE counters only: the printed clause is a benefit, and a
+// Resonator that deepened your own -1/-1s would be a drawback nothing prints.
 card('Flux Resonator', {
-  augmentText: [{
-    type: 'triggered', events: ['countersChanged'],
-    label: 'one more counter (allied +1/+1 counters get +1)',
-    when: (g, self, ev) => {
-      const n = (ev.data?.n as number | undefined) ?? 0;
-      const u = g.entity(ev.data?.unit as EntityId);
-      return !!u && n > 0 && u.controller === self.controller;
-    },
-    effect: {
-      run: (g, ctx) => {
-        const u = g.entity(ctx.event?.data?.unit as EntityId);
-        if (!u) return;
-        u.counters += 1;   // silent on purpose — see the header note
-        g.ev('info', `Flux Resonator: one more counter on ${u.card} (net ${u.counters}).`);
-      },
-    },
+  augmentable: true,
+  amountMods: [{
+    delta: (_g, self, ctx) =>
+      (ctx.kind === 'counters' && ctx.amount > 0 && ctx.unit?.controller === self.controller ? 1 : 0),
   }],
 });
 
@@ -298,7 +305,11 @@ card('Invasive Reassignment', {
 const linkedExtinction: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
-    if (!ctx.costPaid?.sacrificed) return;   // rider declined / unpayable
+    if (!ctx.costPaid?.sacrificed) {
+      ctx.refundBudget?.();   // CARD-TODO #18: declining never spends it
+      g.ev('info', 'Linked Extinction: no unit was sacrificed — nobody sacrifices.');
+      return;   // rider declined / unpayable
+    }
     for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
       if (seat === ctx.controller) continue;
       const units = g.unitsOf(seat, ctx.region);

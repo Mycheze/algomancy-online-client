@@ -78,16 +78,70 @@ export interface EffectCtx {
    * sacrificed to cast, with its stats snapshotted at payment time */
   costPaid?: EffectPart['costPaid'];
   /** {Modular}: the mods applied to this card as it was played (Spellbind).
-   * Their graft effects already ride as extra parts; this is the readable
-   * list, for text that wants to know what is attached. */
+   * A GRAFTABLE mod's effect already rides as an extra part; any mod's
+   * type-line [Augment] attributes reach `grantedAttrs` below (R105). This is
+   * the readable list, for text that wants to know what is attached — and
+   * under R105 it may hold a card that contributes neither. */
   mods?: CardName[];
-  /** R79: attributes a VIRUS augmented onto this effect while it sat on the
-   * stack donates to it (Chitin Shredder's {Powerful} on a Fireball). Only
-   * type-line `[Augment]` attributes ever appear here — a spell has no body
-   * for a static or a triggered ability. `E.dealEffectDamage` unions these
-   * into the source's printed attrs; anything else that judges an effect by
-   * its attributes should read them the same way. */
+  /** R79/R105: attributes something applied to this effect donates to it — a
+   * VIRUS augmented onto it while it sat on the stack (Chitin Shredder's
+   * {Powerful} on a Fireball), or a {Modular} mod applied to it as it was
+   * played. Only type-line `[Augment]` attributes ever appear here — a spell
+   * has no body for a static or a triggered ability. `E.dealEffectDamage`
+   * unions these into the source's printed attrs; anything else that judges an
+   * effect by its attributes should read them the same way. */
   grantedAttrs?: Attr[];
+  /**
+   * The printed "Erase me." / "Erase this spell." clause on a SPELL —
+   * Collect Remains, Suspend, Temporal Rift.
+   *
+   * "Me" is the stack item currently resolving, and by the time an effect runs
+   * its card is already off the stack and on its way to a bin — `resolveTop`
+   * popped it, and `E.dischargeItem` will place it once every part has run. So
+   * this does not erase anything itself: it raises `StackItem.eraseSelf`, and
+   * the disposal reads it and sends the card to the erased pile (R65) instead
+   * of the bin. Calling it twice is the same as calling it once.
+   *
+   * CONSEQUENCES OF LIVING IN THE EFFECT, all of them deliberate (see
+   * `StackItem.eraseSelf`): a NEGATED spell never runs its parts, so it never
+   * asks, so it is binned — R68 says the effect does nothing, and this clause
+   * is part of the effect. A part that FIZZLES for want of a target (R5) is
+   * the same. Contrast R79's {Unstable}, which is a stamp on the card and
+   * outlives both.
+   *
+   * Only a kind that HAS a card to place responds to it — a spell. A trigger
+   * or an activated ability has no card of its own (its `card` names a source
+   * still standing in play), so asking there does nothing. A unit erasing
+   * ITSELF in play is a different mechanism: see `AbilityCost.eraseSelf`
+   * (Skybreaker) and the card-side erase helpers (Spore of Regenesis).
+   */
+  eraseSelf: () => void;
+  /**
+   * CARD-TODO #18 — "I did nothing; do not spend the [once]."
+   *
+   * A `bounded` ability ([once] / [Switch1], R9) reserves its budget when the
+   * trigger is COMPOSED, before the run exists. The reservation stays there —
+   * it is the re-entrancy guard — and this is the way back out.
+   *
+   * RULED 2026-08-23 (owner): "A [once] is spent only when the ability
+   * actually does something. Say no to a 'you may' and the budget is intact,
+   * so the same trigger can ask again later the same turn." That covers both
+   * halves of the defect at once: the ORDINARY decline, and the never-asked
+   * auto-decline (Hexbane Shiitake reads `inEndOfTurn(g) ? false : …`, so
+   * during that window the player was never asked and the [once] burnt
+   * regardless).
+   *
+   * CALL IT FROM a branch that DECLINED or found NOTHING TO DO. Do NOT call it
+   * from a branch that mutated state, even partially: half a job is a job, and
+   * a refund there would make `[once]` mean nothing.
+   *
+   * Optional because not every EffectCtx has a budget behind it — a card
+   * played inline mid-resolution has no stack item and no composed part — so
+   * card code calls it as `ctx.refundBudget?.()`. Calling it on an ability
+   * that is not bounded is a no-op: there is no reservation to hand back.
+   * Calling it twice is the same as calling it once.
+   */
+  refundBudget?: () => void;
   /** R1: the event snapshot for triggered abilities (conditions were checked at
    * event time; amounts must be computed here, at resolution, from live state) */
   event: EngineEvent | null;
@@ -418,8 +472,8 @@ export interface TriggeredAbility {
  * activation — an ability whose cost cannot be paid is not offered by
  * legalActions and is refused by apply() — instead of fizzling at resolution.
  *
- *  - mana / life / debt / sacrificeSelf carry no choice, so doActivateAbility
- *    pays them outright, before the item is built.
+ *  - mana / life / debt / sacrificeSelf / eraseSelf carry no choice, so
+ *    doActivateAbility pays them outright, before the item is built.
  *  - discard / sacrificeOther carry a choice, so they ride on the item as
  *    `pendingCosts` and are chosen in the cast window, still before the item
  *    reaches the stack: no one may respond between cost and effect.
@@ -429,6 +483,24 @@ export interface TriggeredAbility {
 export interface AbilityCost {
   mana?: number;
   sacrificeSelf?: boolean;
+  /**
+   * The printed "Erase me:" activation cost — Skybreaker's
+   * "[Augment] Erase me: Negate all spell effects."
+   *
+   * Distinct from `sacrificeSelf`, and the difference is the whole reason it
+   * exists: a sacrifice is a DEATH (the unit dies, its card reaches a bin,
+   * every "when a unit dies" trigger fires and R40 can trash it out of the bin
+   * afterwards), while an erase removes the unit from the game outright — no
+   * bin, no death, no despawn, so nothing triggers off it at all. Skybreaker
+   * was `sacrificeSelf` as a stand-in and was therefore recurrable out of its
+   * own bin, which the printed card does not allow.
+   *
+   * Choice-free like `sacrificeSelf`, so `E.payActivationCost` pays it in the
+   * cast window, and — also like `sacrificeSelf` — it gates nothing: the
+   * source unit is what is being erased, and an ability is only ever offered
+   * while its source is in play.
+   */
+  eraseSelf?: boolean;
   /** "Pay N life:" */
   life?: number;
   /** "Gain N debt:" */
@@ -801,6 +873,111 @@ export interface PlayPermission {
   playAtHaste?: (g: E, self: Entity, ctx: PlayCtx) => number;
 }
 
+/**
+ * R104: what an `AmountMod` is being asked about — ONE quantity, on its way
+ * through the engine, before anything has committed it.
+ *
+ * The seven cards ledger #60 lists split cleanly into two families, and this
+ * is the first: text that changes a NUMBER without changing what happens.
+ * "It deals that much damage plus 1 instead" (Conduit of Pain), "put that many
+ * counters plus one instead" (Flux Resonator, Proliferating Slime). Nothing is
+ * substituted, nothing is redirected — the quantity is simply different by the
+ * time it lands.
+ *
+ * `kind` names the quantity, and the list is CLOSED on purpose (the same
+ * narrowness `replaceRotDamage`'s comment argues for): a new replaceable
+ * quantity gets a new member here and a new consult site in the engine, so
+ * every one of them is greppable. There is no "any event" form.
+ */
+export interface AmountCtx {
+  /** which quantity is passing through */
+  kind: 'counters' | 'effectDamage' | 'rot' | 'debt';
+  /**
+   * the region it happens in (R12) — a mod only sees its own region.
+   *
+   * UNDEFINED means the change is not tied to a region and every holder is
+   * asked, which is not a loophole but `E.fireEvent`'s own rule reused: it
+   * scopes listeners to `ev.data.region` and, when an event carries none,
+   * dispatches to all of them. Rot and debt outside a battle are exactly that
+   * event — `gainRot` writes no region when `s.battle` is null — so a modifier
+   * that used to be a `rotGained` trigger must be asked in the same places or
+   * the card quietly narrows.
+   */
+  region?: number;
+  /**
+   * the amount as it stands, SIGNED. Counters are signed (+1/+1 vs -1/-1), so
+   * "one more of the same thing" is `amount > 0 ? +1 : -1` and not `+1`.
+   * Already past any engine scaling that happens earlier — {Powerful} has
+   * doubled `effectDamage` by the time this is asked (see R104's order note).
+   */
+  amount: number;
+  /** the unit receiving it, when the recipient is a unit */
+  unit?: Entity;
+  /** the player receiving it, when the recipient is a player (rot, debt, a
+   *  face hit) */
+  player?: Seat;
+  /** the controller of whatever is doing it — "an ALLIED source" is
+   *  `sourceSeat === self.controller` */
+  sourceSeat?: Seat;
+  /** the source card's name, for the log */
+  sourceName?: string;
+  /** combat damage, or an effect's. Always false today: the only `kind` that
+   *  can be combat is damage, and combat damage has its own two hooks. */
+  combat: boolean;
+}
+
+/**
+ * R104: a continuous AMOUNT modifier. `delta` returns how much to ADD.
+ *
+ * SUMMED, not first-true-consumes, and that is a ruling rather than a
+ * convenience. Caleb, on how replacements of this shape compose:
+ *
+ *   "a replacement only happens once … The replacement just takes what would
+ *    be 1 and makes it 2"
+ *
+ * So two DIFFERENT modifiers both apply (two Conduits of Pain make a 1 into a
+ * 3), and none applies to its own contribution — which falls out of the shape
+ * rather than needing a guard: an `AmountMod` is CONSULTED, once, as a pure
+ * query, where the old trigger implementations RE-ENTERED `addCounters` and
+ * needed module-level `let` flags to stop themselves looping. Deleting those
+ * flags is the point (report #60: "Five module-level mutable flags exist
+ * purely to paper over this").
+ *
+ * Modelled on `CostMod` line for line — the same `anchored()` walk, the same
+ * R12 region scope, the same shallow R62 suppression guard, the same
+ * reentrancy latch, the same "ownership lives in the card's own predicate, not
+ * in the gatherer". Like `CostMod`, `delta` must not call anything that
+ * re-enters amount evaluation; read raw state instead.
+ */
+export interface AmountMod {
+  delta: (g: E, self: Entity, ctx: AmountCtx) => number;
+}
+
+/**
+ * R104: ONE token about to be created, as a request the replacement layer can
+ * substitute before anything exists.
+ *
+ * `form` is the physical difference between the two creation primitives —
+ * `E.spawnUnit(…, { token: true })` puts a unit token on the board,
+ * `E.createSpellToken` puts a spell token in the region — and Cosmic
+ * Conspirator's four named types straddle it ("a Robot, Poison, Crystal or
+ * Fireball"), which is why a request carries the form rather than the caller
+ * deciding it.
+ *
+ * `x` is deliberately ONE field for two things: a spell token's X, and a unit
+ * token's spawn counters (Robot X is "I spawn with X +1/+1 counters on me").
+ * The Conspirator's reminder text — "(With the same X value.)" — is what makes
+ * that the right shape: the number survives the swap in either direction.
+ */
+export interface TokenRequest {
+  form: 'unit' | 'spell';
+  name: CardName;
+  /** a spell token's X, or a unit token's spawn counters */
+  x: number;
+  seat: Seat;
+  region: number;
+}
+
 export interface CardBehavior {
   /** X-cost cards only: the smallest legal X ("X can't be zero" → 1).
    * Casting requires (and X options start at) this much open mana. */
@@ -914,6 +1091,69 @@ export interface CardBehavior {
        * and the card should behave as if the column printed nothing. */
       pure: boolean;
     }) => boolean | number;
+  /**
+   * R104: continuous AMOUNT modifiers — "it deals that much damage plus 1
+   * instead", "put that many counters plus one instead". Same radiation rules
+   * as `statics`/`costMods` (a unit in play, or an augment mod reading from
+   * its HOST, scoped to the anchor's region), and SUMMED like `costMods`
+   * rather than first-true-consumes like the `replaceX` hooks below. See
+   * `AmountMod` for why the two families compose differently.
+   */
+  amountMods?: AmountMod[];
+  /**
+   * R104 replacement: `seat` is about to gain `amount` life. Return true to
+   * REPLACE the gain — the hook does whatever the card does instead
+   * (Nullbringer: "they lose that much life instead" → `g.loseLife(seat, n)`)
+   * — false to let it through. First true consumes; the gain never happens, so
+   * NO `lifeGained` event is fired and nothing that watches life gain hears
+   * about a gain that did not occur.
+   *
+   * Anchored exactly like `replaceRotDamage` (units in play plus augment mods
+   * reading from their HOST), but NOT seat-scoped: Nullbringer prints "if A
+   * PLAYER would gain life", unowned, so every holder in the region is offered
+   * the replacement and the card decides whose gains it cares about.
+   */
+  replaceLifeGain?: (g: E, self: Entity, seat: Seat, amount: number, why: string) => boolean;
+  /**
+   * R104 replacement: `n` counters are about to be put on `target`. Return the
+   * entity they should be put on INSTEAD (Counter Theif: "those counters are
+   * placed on me instead" → the anchor), or null to decline. First non-null
+   * consumes; the counters land on exactly one unit either way, so this is a
+   * REDIRECT and never a multiplier.
+   *
+   * `n` is already post-`AmountMod` — a Flux Resonator's "plus one" is part of
+   * what would be placed, so it is part of what gets stolen.
+   */
+  replaceCounters?: (g: E, self: Entity, target: Entity, n: number) => Entity | null;
+  /**
+   * R104 replacement: one token is about to be created. Return a substituted
+   * request (Cosmic Conspirator: "you may instead create a token of any of
+   * these types"), or null to decline. First non-null consumes.
+   *
+   * Consulted BEFORE anything is created — that is the whole point, and it is
+   * playtest report #64: the old trigger really created the Robot, fired a
+   * `spawned` for it and then erased it, so the swap was visible on the board
+   * and audible in the event stream. A hook that runs first makes the printed
+   * token the only one that ever exists.
+   *
+   * The hook MAY raise a decision (`E.askInResolution`), because "you may" is
+   * a choice inside the replacement rather than a triggered ability.
+   */
+  replaceTokenCreation?: (g: E, self: Entity, req: TokenRequest) => TokenRequest | null;
+  /**
+   * R104 replacement, the BATCH form: one effect has finished creating tokens
+   * and `batch` is everything it created, in creation order. Return extra
+   * tokens to create alongside them (Automaton of Abundance: "instead create
+   * those tokens plus an additional copy of each unique token you created"),
+   * or null to decline. First non-null consumes.
+   *
+   * A BATCH and not a per-token hook because the printed word is "each UNIQUE
+   * token", and uniqueness is a property of the whole creation, not of one
+   * spawn — report #60: "Automaton of Abundance fires per spawn so N identical
+   * tokens yield N copies instead of one per unique". The batch is one
+   * resolution of one effect part, the same unit R80 gave effect damage.
+   */
+  replaceTokenBatch?: (g: E, self: Entity, batch: readonly TokenRequest[]) => TokenRequest[] | null;
   /** UI-only PURE query (playtest #5): the amount a state-derived X spell
    * (e.g. Burning Vengeance's "units that died this battle") would use if it
    * resolved RIGHT NOW for `seat`, with `region` the active battle region.

@@ -71,6 +71,15 @@ Once-per-turn ([once], bounded grafts) is **tracked per card**; changing control
 receiving combat damage), targeting — all of it. Unaware and whatever it interacts with
 mutually ignore stat changes. (Bena 2026-07-16.)
 
+> ⚠ **SUPERSEDED IN SCOPE BY [R106](#r106--stat-layer-6-unaware-an-unaware-units-numbers-are-its-base-numbers-for-everybody), 2026-08-23. Text above kept as the original ruling.**
+> R10 sat unimplemented for thirteen months because "mutually" reads as a *pairwise*
+> mechanism. Asked how wide it goes, the owner chose the **blanket** reading, and that is
+> what shipped: an `{Unaware}` unit ignores stat changes **including its own**, and the
+> **other side of the interaction is NOT collapsed** ("Bubb 5/6 vs the attacker's FULL
+> 5/5"). So there is no pairwise evaluation anywhere in the engine — the whole rule is one
+> clause at the end of `effStats` (stat layer 6). Read R106 before acting on the sentence
+> above.
+
 ## R11 — Regroup order
 There is a set order; per the Manual's own listing (p.7): **(1) players and units return to
 their regions, (2) damage on units is reset, (3) temporary stat changes are removed,
@@ -2725,7 +2734,9 @@ attribute. {Powerful} doubles the damage its source deals.
 all. `legalActions` only ever offered `e.unitsIn(b.region)`. And
 `collectModular`'s own docstring asserted the opposite of the ruling — *"it is
 the only kind of mod that means anything on a spell — a spell has no body for an
-augment to grant attributes to"*. (The repo-root bot agrees and is also wrong:
+augment to grant attributes to"*. (**Corrected 2026-08-23 by
+[R105](#r105--modular-takes-any-mod-you-can-pay-for-and-a-modded-card-is-unstable)**,
+which made the same donation true through the `{Modular}` window as well.) (The repo-root bot agrees and is also wrong:
 `mods.py:_check_host` raises `"is a {type}, not a unit — graft and augment both
 go onto a unit in play"`.)
 
@@ -2817,6 +2828,13 @@ entirely, which matters against every bin-recursion card in the pool. If the
 answer is "no, a virused spell still goes to the bin", `dischargeItem` is the
 one method to change.
 
+**Answered 2026-08-23, from the other side.** Asked the same question about a
+`{Modular}` mod — the same act by a different timing — the owner ruled *"a
+modded Spellbind should also have unstable"*. That is R69's mechanism applied to
+a card on the stack, which is what this section already does, so the reading
+above stands and [R105](#r105--modular-takes-any-mod-you-can-pay-for-and-a-modded-card-is-unstable)
+makes the two windows agree. `91-modular.test.ts` asserts they cannot diverge.
+
 **The spell UNIT exception.** A `spellUnit` does not *leave* on resolution — it
 *arrives*. Erasing its card would delete a unit on its way into play, which no
 ruling asks for and which would make one `ee` virus a hard removal spell for
@@ -2835,10 +2853,12 @@ as if it had been augmented the ordinary way the moment it landed.
   be attached to the unit dealing the damage, not to the spell."* Those effects
   already deal their damage through the unit, so they are correct by
   construction; nothing was added to enforce it.
-- **{Piercing} on a spell effect.** The ruling lists it as impacted, but
-  Piercing is a combat-overflow rule in this engine and `dealEffectDamage` has
-  no overflow to pierce. The attribute now reaches the effect; nothing reads it
-  there yet.
+- ~~**{Piercing} on a spell effect.**~~ **CLOSED 2026-08-23 — see R103.** The
+  note above was true when it was written and stopped being true when the owner
+  ruled on where the excess goes. `dealEffectDamageAll` now reads {Piercing}
+  and a donated one pierces exactly like a printed one, which is what made this
+  ruling's own example ("mostly Deadly, Piercing, and Powerful are impacted by
+  this") true rather than aspirational.
 
 ## R80 — ALL of one effect's damage is dealt at ONCE
 
@@ -4849,3 +4869,692 @@ The practical consequence for whoever builds the replacement layer: **the
 printed word decides the mechanism, and "target" is the switch.** Do not build
 one path and special-case the other — sort every card in ledger #60 by that
 test first.
+
+## R103 — {Piercing} pierces on NON-COMBAT damage too, into the unit's controller
+
+*(Owner ruling, 2026-08-23, closing CARD-TODO #4 and the R79 "not in scope" note above.)*
+
+The owner's own example of what the test sweep should catch was *"piercing is
+done even when its on a non-combat effect"*. It was not: `dealEffectDamageAll`
+— the batch EVERY non-combat damage source goes through — read {Deadly},
+{Powerful}, {Poisonous}, {Resonant}, {Blessed}, {Reaping} and {Electric}, and
+never mentioned {Piercing}. Measured before the fix: Ruinbringer (8/9
+{Piercing}) dealing 5 effect damage to a 7/2 left both life totals at 30,
+byte-identical to a vanilla 3/3.
+
+**THE RULING, verbatim:**
+
+> "It redirects excess damage to that unit's controller (not as a trigger, just
+> as part of resolution of the damage)."
+
+That is the rulebook's combat wording generalised off the column — Rulebook
+2023-07: *"Excess damage beyond the health of the back row unit does not carry
+over to the player, unless the damage comes from a unit with the Piercing
+attribute"* — and R7 already settled that piercing is **automatic, not
+elective**, so there is no assignment choice to raise.
+
+**"Not as a trigger, just as part of resolution"** is the load-bearing half and
+it decides the implementation: the excess is added to the SAME R80 batch as an
+ordinary player recipient. One resolution, one `total`, one commit loop,
+nothing on the stack in between, and no window for anybody to respond between
+the unit's share and the player's.
+
+**Order of operations**, which is where this is easy to get wrong:
+
+1. {Powerful} doubles the source's damage first (already in the per-hit loop).
+2. The victim is priced in what it RECEIVES, so {Vulnerable}'s receive-side
+   doubling halves the pool needed to kill it — `mult` is the exchange rate
+   between "damage the source deals" and "damage the victim takes".
+3. Damage earlier hits in the same batch already assigned to that victim counts
+   (R80 coalesces a recipient named twice).
+4. {Deadly} caps the need at ONE point, so a Deadly + Piercing source spends 1
+   and pierces the whole rest. Source: RAQ *"[Solved] Excessive Combat Damage &
+   interaction with Piercing, Deadly and Phytochemical Protection"* — *"Atleast
+   1 dmg to Awoken (gets +1/+1, won't create 1/1 unit), rest of the damage can
+   go to Bubb."*
+5. Prevention (R98) runs afterwards, at commit. The same RAQ is explicit that a
+   damage shield changes nothing about assignment: *"Atleast 5 damage to Awoken
+   (gets atleast +5/+5, won't create 5/5), atleast 6 damage to Bubb, rest can go
+   to Opponent HP."* So the excess is planned against the unit's real toughness
+   **as if it were unprotected**.
+
+**{Poisonous} pierces on the same arithmetic.** `checkDeaths` kills on
+`t <= 0 || damage >= t`, so `t - damage` counters are exactly as lethal as
+`t - damage` marked damage — and combat's `assign` already prices a Poisonous
+column's lethal share off toughness, so ruling otherwise would put the two paths
+in disagreement.
+
+**{Electric} and {Piercing} compose** rather than one eating the other. Electric
+says where excess goes NEXT; Piercing says where it goes when there is no next.
+An Electric chain that dead-ends used to lose the remainder (R4); with Piercing
+it now lands on the last victim's controller.
+
+**The one lethal arithmetic.** All of the above lives in a single `poolToKill`
+closure inside `dealEffectDamageAll`, shaped on `combatSubStep`'s `assign` and
+read by both {Electric} and {Piercing}. That is deliberate: the previous inline
+copy in the Electric branch knew nothing about {Vulnerable} or {Deadly}, and two
+copies of overkill arithmetic are two copies that drift.
+
+⚠ **Still open: Oorblak.** *"[Augment] If combat damage would be dealt to you,
+that damage is dealt to me instead."* Its parked half is the COMBAT hook
+(`replaceCombatDamageToPlayer`), not this one, and non-combat damage never
+reaches it. Both engine seams it needs shipped in R98; what is left is the card
+rewrite plus replacing its `{ todo: true }` park test. See `card-ledger.ts`.
+
+## R104 — the REPLACEMENT-EFFECT LAYER: two families, and why they compose differently
+
+*(Owner ruling, restated three times; closing playtest ledger #60, #64 and #75,
+and CARD-TODO #10, #11 and #12.)*
+
+**THE RULE, verbatim (WEHH, 2026-08-22):**
+
+> "Replacement effects and triggered effects and static effects are being
+> handled wrong by the system, still. The only cards that should ever produce
+> effects that go onto the stack are cards that say 'When' or 'Whenever' or have
+> a ':' activated ability. All cards that say 'instead' or 'as' or 'if'
+> shouldn't go onto the stack."
+
+**And the refinement, 2026-08-23, which is the load-bearing half:**
+
+> "Not an exception since it says 'target'. I guess I meant 'cards that say
+> instead, as or if and don't mention targets'. Plus, rot damage is a trigger to
+> deal you that damage anyway."
+
+So **the printed word decides the mechanism, and "target" is the switch.** A
+target has to be *chosen*, and choosing is a public, respondable act — there is
+nowhere but the stack for it to happen. R102 (Beyond, Codex Incarnate) prints
+"target unit" and is therefore the correct shape for the one card that goes the
+other way, not a carve-out.
+
+**Why this needed a layer and not seven fixes.** He reported it three times.
+First as one card — #46, VEAV: *"The 'I get -2/-2' isn't a trigger that should go
+on the stack. It's a static effect"* — which was closed by editing Bulborb. Then
+as a class, twice (#60, #75). A one-card fix is what makes a class of bug recur,
+so the primary deliverable here is `test/88-replacement-conformance.test.ts`,
+not the cards. That is R48's lesson (report #48: *"This is a recurring issue, do
+a full text search"* → the answer was a permanent test).
+
+### The two families
+
+The cards split cleanly, and they **compose differently**, which is the whole
+reason there are two.
+
+**1. `AmountMod` — continuous, SUMMED.** Changes a NUMBER on its way through and
+nothing else. Modelled on `CostMod` line for line: the same `E.anchored()` walk
+(units in play plus augment mods reading from their HOST), the same R12 region
+scope, the same shallow R62 suppression guard, the same reentrancy latch, and
+the same division of labour — ownership lives in the card's own predicate, not
+in the gatherer. Read through `E.amountDelta(ctx)`.
+
+The fold is a ruling, not a convenience. Caleb, on how these compose:
+
+> "a replacement only happens once … The replacement just takes what would be 1
+> and makes it 2"
+
+So two **different** modifiers both apply (two Conduits of Pain make a 1 into a
+3), and none applies to its own contribution. That last part needs no guard at
+all, and its absence is the point: an `AmountMod` is **consulted**, once, as a
+pure query, where the trigger implementations it replaces **re-entered**
+`addCounters` and each needed a module-level `let` to stop themselves looping.
+Report #60 counted five such flags — *"Five module-level mutable flags exist
+purely to paper over this"* — and they are gone.
+
+**2. The named `replaceX` hooks — FIRST-TRUE-CONSUMES.** Substitutes or
+redirects the thing itself. A thing can only be replaced once, so the first
+claimant takes it and ties break by entity id, exactly as `replaceRotDamage`
+has always done. Modelled on the two hooks that already existed
+(`replaceRotDamage`, `replaceCombatDamageToPlayer`).
+
+**Deliberately NOT a general "any event" framework**, and that is
+`replaceRotDamage`'s own argument, kept: *"Deliberately a one-off hook, not a
+replacement framework."* One named hook per replaceable quantity means every
+replaceable thing in the engine is greppable and nothing becomes replaceable by
+accident. `88-replacement-conformance` asserts every declared hook is read
+somewhere in `engine.ts`, so a hook can never look implemented and do nothing —
+which is the exact shape of the Harbinger of Immolation incident.
+
+### The hooks and the choke points
+
+| Hook | Signature | Consulted in |
+|---|---|---|
+| `amountMods` | `delta: (g, self, ctx: AmountCtx) => number` | `E.addCounters`, `E.dealEffectDamageAll`, `E.gainRot`, `E.gainDebt` |
+| `replaceLifeGain` | `(g, self, seat, amount, why) => boolean` | `E.gainLife` |
+| `replaceCounters` | `(g, self, target, n) => Entity \| null` | `E.addCounters` |
+| `replaceTokenCreation` | `(g, self, req: TokenRequest) => TokenRequest \| null` | `E.spawnUnit({token:true})`, `E.createSpellToken` |
+| `replaceTokenBatch` | `(g, self, batch) => TokenRequest[] \| null` | `E.settleTokenBatch`, from `resolveParts` |
+
+Plus one thing that is neither: **the life LOCK**. `E.lifeLocked(seat)` /
+`E.lockLife(seat, region)` is a region-keyed `battleCounter`, not a radiator,
+and the shape is forced rather than chosen — Suspend is a SPELL, so nothing of
+it stays in play for `anchored()` to radiate from. That is R96's situation and
+R96's answer, reused. It is asked **above** the replacement hooks in both
+`gainLife` and `loseLife`: once the change cannot happen at all, there is
+nothing left to replace.
+
+**`AmountCtx.region` may be undefined**, and that is `E.fireEvent`'s own rule
+rather than a loophole: `fireEvent` scopes listeners to `ev.data.region` and
+dispatches an event carrying none to *all* of them. `gainRot` and `gainLife`
+write a region only inside a battle, so a modifier that used to be a
+`rotGained` trigger must be asked in the same places or the card quietly
+narrows on being "fixed".
+
+### Order of operations, where two layers meet
+
+**In `dealEffectDamageAll`** (rewritten hours earlier for R103's {Piercing}
+excess), the amount hook goes **after** {Powerful}'s doubling and **before**
+{Vulnerable} prices the victim:
+
+1. {Powerful} doubles what the source deals (R103 step 1 — the source scaling
+   its own printed damage).
+2. **`AmountMod`** — Conduit of Pain's "+1". An outside continuous modifier on
+   the result.
+3. `poolToKill` prices the victim in post-{Vulnerable} terms; {Piercing} and
+   {Electric} spend the excess.
+
+Put the modifier before the doubling and the printed "plus 1" silently becomes
+plus 2 in front of any Powerful source, which is not what the card says. Being
+at step 2 rather than at commit is also what makes it compose with {Piercing}:
+the extra point pierces like any other. It is applied **per hit**, exactly where
+{Powerful} is — a source that damages three units deals damage three times.
+
+**In `addCounters`**, the amount runs before the redirect. "Put that many
+counters plus one instead" describes what *would be placed*; "those counters are
+placed on me instead" steals what *would be placed*. So a Counter Theif standing
+beside a Flux Resonator steals the plus-one too.
+
+### Token creation, the BATCH, and how a replacement asks a question
+
+Report #64 (GETD): *"Biotoxicity didn't give me the choice of what kinds of
+tokens I wanted even though I had Cosmic Conspirator."* Two defects:
+
+* **The spell-token half was completely dead.** The old implementation was a
+  `spawned` trigger and `E.createSpellToken` fires no dispatchable event at all,
+  so Biotoxicity's three Poisons went past it in silence. A replacement is
+  *consulted at the call*, so it needs no event — **the seam is the call**. That
+  is the general lesson: the park note said this half waited on "a dispatchable
+  event on spell-token creation", and it never did.
+* **The Robot half asked too late.** It really created the Robot, fired a
+  `spawned` for it, asked, and erased it — so a token the card says was never
+  created was on the board and in the event stream.
+
+**One resolving part is one creation batch**, which is the unit R80 already gave
+effect damage (*"One resolution of one effect, one batch"*). `resolveParts`
+opens one around `def.run` and settles it **inside the try**, so a decision
+raised by a batch replacement suspends and replays through exactly the machinery
+every other mid-resolution question uses. A part that suspends before finishing
+leaves its batch unsettled on purpose: R85 rolls the world back to the part
+boundary and replays it, and a batch settled at the suspension would pay out
+twice. A creation with no part open is its own batch of one, so nothing is ever
+left unsettled.
+
+**Raising the decision** uses `E.askInResolution(tag, dec)`, which is
+`E.partChoose` — the seam `E.glimpse` uses, and the one R102's write-up
+discusses. It fits here where it did not fit R102 for a concrete reason: rot
+damage is dealt from `startDeployment()` with no part resolving, whereas token
+creation almost always happens *inside* one. Outside a resolving part it returns
+null, the card takes the printed branch and **says so**, exactly as glimpse's
+*"no decision window — the top card is cached by default"* does. A silent
+default is what produces playtest reports.
+
+**"UNIQUE" IS BY TOKEN KIND — the card NAME — and the X is not part of it.**
+So Manufacture ("Create a Robot 3, a Robot 2 and a Robot 1") plus Automaton of
+Abundance yields **one** extra Robot, and a Fireball 2 beside a Fireball 5 is
+one unique token. The basis is the engine's own definition of identity, which
+R101 argues at length for the transform: `Entity.card` is what bins, "name a
+card" effects, counters-by-name, `DECK_LIST` and the inspector all key off, and
+every Robot is the one registered card `Robot` whatever number it wears. The X
+is a quantity *on* the token, not a different token — which is also why Cosmic
+Conspirator's reminder text can say *"(With the same X value.)"* while swapping
+the kind. The copy takes the **first of its kind** in the batch: "a copy of each
+unique token you created" has to copy something, and first is the deterministic
+answer that needs no ruling (a "largest X" reading would be a strictly better
+card and nothing prints it). ⚠ This is the one place the uniqueness reading had
+a choice; if the owner rules otherwise it is three lines in
+`batch-metal-a.ts`.
+
+### What this fixes, card by card
+
+| Card | Was | Is |
+|---|---|---|
+| `Nullbringer` | trigger: gain N, then lose 2N — the total **spiked** and `lifeGained` fired for a gain that never happened | `replaceLifeGain`; lose N, and **no `lifeGained` event** |
+| `Counter Theif` | `events: []` — completely dead | `replaceCounters` redirect, gated on "during battle" |
+| `Conduit of Pain` | `events: []` — completely dead | `amountMods`, +1 to an allied source's noncombat damage |
+| `Flux Resonator` | trigger that mutated `u.counters` directly to dodge re-entrancy, so one placement produced a `countersChanged` for the WRONG number and a silent extra after it | `amountMods`; one placement, one event, the right number |
+| `Proliferating Slime` | trigger + module-level `let proliferating` | `amountMods` over counters, rot and debt |
+| `Automaton of Abundance` | trigger per `spawned` + `let aoaCopying`; N identical tokens gave N copies | `replaceTokenBatch`; one copy per unique kind |
+| `Cosmic Conspirator` | created the Robot, fired `spawned`, erased it; the spell-token half dead | `replaceTokenCreation`, asked before anything exists, once per token |
+| `Suspend` | a logged no-op | a real region-keyed life lock, both directions |
+
+**The module-level flags.** `proliferating` (batch-hybrids-ld-b) and
+`aoaCopying` (batch-metal-a) are **deleted** — they existed only because a
+trigger re-entered the primitive, and a consulted modifier does not. `probing`
+(batch-water-b) and `aoScanning` (batch-metal-a) are **kept**, and they are a
+different thing: both guard a nested QUERY from re-entering itself (Spell
+Excavation's bin scan finding itself; two adjacent Ancient Ones mimicking each
+other), which is `E.inStatics`' pattern and has nothing to do with replacement.
+One new latch was needed and it lives in the ENGINE, in `E.inCostMods`' shape:
+`E.inReplaceCounters`, because a counter REDIRECT really does re-enter — the
+thief puts the counters on itself, and that is a counter placement — and two
+thieves would bounce one placement between them forever.
+
+### What is still NOT replaceable, stated plainly
+
+* **`E.loseLife` has no card hook.** Only the lock stops it. Nothing in the pool
+  prints "if you would lose life, … instead", so the hook would be a hook with
+  no card, and the layer's narrowness is deliberate.
+* **Combat damage to a UNIT.** `preventUnitDamage` (R98) only ever *reduces*;
+  there is no substitute-or-redirect hook for it. Oorblak's parked Piercing-
+  excess half is on `replaceCombatDamageToPlayer`, a different seam, and is
+  untouched here.
+* **Card draw, discard, zone changes, targeting, death.** None has a hook. R79's
+  {Unstable} bin→erase is a *stamp* and not a replacement seam a card may ask
+  for about itself, which is why Suspend's "Erase me" is still parked (with
+  Temporal Rift, the other card printing it).
+* **MULTIPLICATIVE amounts.** `Arbiter of Vitality` — *"Double all life gain and
+  life loss"* — prints neither "would" nor "instead", so it is outside the class
+  #75 defines and stays a trigger. Giving it a hook would need a multiplicative
+  amount family, and how that composes with the additive one is a ruling nobody
+  has made.
+* **Prevention is still not replacement.** R98 settled it and nothing here
+  changes it: *"if there is not damage being dealt, then no counters are
+  placed."* Phytochemical Protection prints "would" and no "instead", and the
+  conformance sweep's third narrowing round is exactly that distinction.
+* **A replacement declares nothing to the inspector.** R69's `EffectDef.creates`
+  is a property of an EFFECT, and a replacement is not one — it has no
+  `EffectDef` and never resolves off a stack. `test/65-effect-conformance`
+  therefore exempts tokens created while `E.inReplacement` is true. That is a
+  real gap in the "tokens it creates" panel for Cosmic Conspirator and Automaton
+  of Abundance, and it is named here rather than papered over.
+
+Guarded by
+`88-replacement-conformance.test.ts` (the whole file — the sweep is the deliverable),
+`87-replacement-layer.test.ts` (the layer: composition, negation, the events that no longer fire, the batch, the lock),
+`12-fire-a.test.ts::Conduit of Pain`,
+`26-metal-a.test.ts::Automaton of Abundance` and `::Cosmic Conspirator`,
+`27-metal-b.test.ts::Flux Resonator`,
+`40-light-c.test.ts::Nullbringer` and `::Suspend`,
+`45-hybrids-ld-b.test.ts::Proliferating Slime`, and
+`46-hybrids-ld-c.test.ts::Counter Theif`.
+
+## R105 — {Modular} takes ANY mod you can pay for, and a modded card is Unstable
+
+*(Owner rulings, 2026-08-23, closing CARD-TODO #19. Sourced: Manual pp.33-35;
+Caleb 2025-02-07, 2025-04-24; R69, R79, R103.)*
+
+`{Modular}` is printed on exactly one card, **Spellbind** — *"(You can apply
+mods to a modular card from your hand and/or bin as it is played. You still pay
+their costs.) [Switch1] You gain one rot."* The window was built correctly in
+R35's cast-time collection and had been since Light & Dark landed. **What it
+offered was the bug**, and it was one line: `if (!isGraftable(name) …) return;`
+— 137 of 494 cards, grafts only.
+
+**THE RULE, verbatim:**
+
+> "I think it's legal to apply ANYTHING to a Modular card. But many cards wont
+> do anything at all since it requires being in play (which a spell never is).
+> Same with viruses, they should also be allowed to be applied to the modular
+> card, even if they might not do anything"
+
+So **the cost is the whole filter**: every card in your hand and bin whose cost
+you can pay is on the menu. No graft gate, no augment-capability gate, viruses
+included. Nothing in the pool is *structurally* excluded — every card in a hand
+or a bin is a `unit`, a `spell` or a `spellUnit`, and the only card faces that
+could not be applied (the element Resource faces) are not deck cards at all;
+`registry.DECK_LIST` filters them out before a game ever sees them.
+
+**A mod that does nothing is a legal play.** That is the half of the ruling that
+is easy to legislate away, and it is deliberate: the engine's job is to charge
+you for the card and let you make the mistake, not to protect you from it.
+
+### What a mod on a spell can and cannot do
+
+| what the mod prints | what it does on a spell | why |
+| --- | --- | --- |
+| a `[Switch]` graft effect | joins the item as an **extra part** | Manual p.33 — a graft's effect transfers, and the composite resolves as one ability. Unchanged from before. |
+| a **type-line** `[Augment]` attribute | is **donated to the resolving effect** | R79's channel, by a different timing. |
+| **text-box** `[Augment]` text, statics | **nothing** | *"spells cannot gain static abilities like that, so the only useful thing you can do is give them attributes"* (Caleb 2025-04-24). A spell has no body for a triggered ability or a static to live on. |
+| nothing applicable at all | **nothing** | legal, wasteful, and the owner's *"even if they might not do anything"*. |
+
+The third row is a **deliberate no-op**, not an unimplemented one, and the
+difference is invisible from outside — which is exactly how a dead card survives
+a green suite (see the head of `card-ledger.ts`). It is therefore asserted:
+Sparkwraith's whole card is *"[Augment] Whenever you play a spell, put a +1/+1
+counter on me"*, so the test applies it to a Spellbind, **plays a spell while it
+rides the stack**, and pins that no counter appears anywhere.
+
+### The attribute seam — the half that makes the ruling mean anything
+
+Widening the offer alone would have changed **nothing observable**, and that is
+the failure shape this repo keeps getting bitten by. The measurement, taken
+2026-08-23: graftable cards and type-line-`[Augment]` cards are **DISJOINT** —
+137 and 22, overlap **zero**. So under the old filter, attribute donation
+through `{Modular}` was not rare; it was *impossible*.
+
+`E.stackModAttrs(item)` unions the mods' `augmentAttrs` and is read in the two
+places R79's `stackAugmentAttrs` already was:
+
+- `EffectCtx.grantedAttrs`, which `dealEffectDamage` unions into the source's
+  printed attributes before it reads {Powerful} / {Deadly} / {Piercing} (R103) /
+  {Resonant} / {Poisonous} / {Blessed} / {Reaping};
+- `E.itemAttrs`, so the resolution-time checks ({Afflicting}) see them too.
+
+A **separate method** rather than a widened `stackAugmentAttrs`, so R79's virus
+channel keeps meaning what its name says and neither can be mistaken for the
+other in a stack trace.
+
+Of those 22 attribute cards, fourteen are viruses and could already reach a
+spell through R79's own window. **Eight could reach one by no route at all** —
+Resonant Form, Noxious Sporefiend, Carapace Devourer, Tempest Wrangler, Bubb,
+Ephemeral Skywalker, Curio Drifter, Whispering Mantid. `{Modular}` is the only
+timing that ever puts them on a spell, and the reminder text always said it did.
+
+### ⚠ The carrier is {Unstable} — and that is what the card is FOR
+
+The question this ruling had to answer: a resolving spell is neither dying nor
+being erased — R40 sends it to the bin **from the stack** — so does Manual p.35
+reach it?
+
+> "As long as a card is modded, it has the unstable attribute, meaning when it
+> dies or is erased, it and all of its mods are erased with it. **This means
+> that even though mods can be applied from the bin, they are generally only
+> able to be applied once.**" (Manual p.35)
+
+That last sentence has exactly one referent in the whole game: `{Modular}` is
+the only window that applies a mod **from a bin**. R69 had already settled the
+mechanism — **Unstable is a BIN replacement, not a death replacement** (Caleb
+2025-03-13, 2025-04-08: *"unstable units still die, they just get erased instead
+of ending up in the bin"*) — so "it never reaches a bin" needs no death to
+trigger it, and a resolving spell is precisely a card on its way to a bin.
+
+The owner ruled, and gave the design reason, which is the part worth keeping:
+
+> "A modded Spellbind should also have unstable. It basically works as a
+> 'flashback' for graft cards. You pay 1 to put it on the stack, then add in
+> some effects from your yard that you also want to happen. Since otherwise,
+> gaining 1 rot is pretty bad"
+
+So Spellbind is a **flashback**: [1] and a rot buys you a graft effect out of
+your own bin. The erase is not a harsh edge case — it is the **price** of the
+flashback, and without it the graft is infinitely reusable and the drawback
+evaporates. The Manual's sentence is not incidental colour; it is this card.
+
+**Mechanically**, `payModularMod` stamps `item.unstable = true` the moment a mod
+attaches. A stamp taken at CAST rather than a fact derived at disposal, for R96's
+reason: `dischargeItem` then reads **one** flag on every exit — resolution, R5
+fizzle and negation alike — instead of re-deriving the same fact three times.
+`E.disposeItemMods` sends the mods to their controller's public erased pile (R65)
+in one event, beside the carrier's own; `E.negate` reads the same pair, so a
+negated modded carrier is erased too and the log says so.
+
+This also **closes an asymmetry that had opened without anyone deciding it**: a
+virus applied to a spell through R79's window erased the whole pile, while a mod
+applied to the same spell through the `{Modular}` window binned it and left it
+reusable. Once anything at all can be applied, those are the same act, and one
+act cannot have two disposals. `91-modular.test.ts` runs both routes with the
+same card on the same carrier and asserts the two results are **deep-equal**, so
+they can never silently diverge again.
+
+**Unmodded, nothing changes.** A `{Modular}` spell nobody applied anything to is
+not modded, so it is not Unstable, and it is binned like any other spell (R40).
+
+### The spell-UNIT edge, stated rather than discovered later
+
+No `{Modular}` card in the pool is a spell unit. If one is ever printed, the
+stamp rides onto the spawned body (`afterParts` already copies `item.unstable`
+to `Entity.unstable`, R96's path) and the mods are erased rather than binned —
+which is the same answer, and is what a modded card being Unstable means. It is
+untested because it is unreachable; it is written down so that the first card
+that reaches it finds a decision rather than a surprise.
+
+Guarded by
+`91-modular.test.ts` (the whole file — the offer, the two donation channels, the
+deliberate no-op, the cost, the flashback line end to end, the R79 parity, and
+negation),
+`43-dark-c.test.ts::Spellbind: {Modular} carrier`, and
+`37-attrs-wight.test.ts::{Modular}: mods are applied at cast time`.
+The last two previously asserted the mod landed in a **bin**; both were corrected
+to the erase, with the reasoning written into them.
+
+## R106 — STAT LAYER 6, {Unaware}: an Unaware unit's numbers are its BASE numbers, for everybody
+
+R10 (above) settled what "interacting with" means in 2026-07-16 and then sat there for
+thirteen months, because the layer it needed was never built. {Unaware} was the last
+attribute in the pool with **zero** references anywhere in the engine (CARD-TODO #5):
+three cards printed it — Bubb (5/6), Trashling (2/2, which donates it as a {Virus}) and
+Haboob (a spell) — and all three were plain vanilla bodies in play. `effStats()` carried
+the comment `// layer 6 (Unaware) goes here` and nothing else.
+
+### The ruling (Bena, 2026-08-23) — the BLANKET reading, verbatim
+
+Asked how wide R10 goes, the owner chose the blanket form, with this worked example:
+
+> Bubb 5/6 with a +1/+1 counter = **STILL 5/6**. A -1/-1 counter on Bubb: still 5/6. A
+> lord's +1/+0 aura: still 5/6.
+>
+> Bubb blocks a pumped 3/3 (+2/+2 → 5/5): **Bubb 5/6 vs the attacker's FULL 5/5.**
+
+Two halves, and the second is narrower than R10's own wording *on purpose*:
+
+1. an `{Unaware}` unit **ignores stat changes, including its own**. Its numbers are its
+   base numbers, for everybody, everywhere;
+2. the **other side of an interaction is NOT collapsed**. The pumped 3/3 is a full 5/5 in
+   that exchange.
+
+### What is deliberately NOT done: there is no pairwise evaluation
+
+R10's phrasing — "Unaware and whatever it interacts with **mutually** ignore stat
+changes" — invites a pairwise "as seen by" mechanism: an extra `vs` parameter threaded
+through combat damage, targeting, `fight`, and every one of the ~33 card-side `effStats`
+call sites. **That mechanism does not exist and must not be built.** The owner's worked
+example rules it out directly: the attacker Bubb blocks is a 5/5, not a 3/3. "Its numbers
+are its base numbers" is a property of the *unit*, not of the *exchange*, so the whole
+rule is one clause and every call site is untouched.
+
+This is the next reader's most likely wrong turn, which is why it is stated here as
+loudly as the rule itself.
+
+**It also diverges from Caleb**, and that is recorded rather than hidden. In
+rules-questions he gave the pairwise gloss on this exact card:
+
+> "Unaware is last 'stat modifier applied' and any Unaware units (or Spells like Haboob)
+> will only look at BASE STAT PRINTED on cards"
+
+Under that reading, Haboob's 1 damage would see a pumped 1/1 as a 1/1 and kill it. Under
+R106 it does not: Haboob has no stats of its own in play to freeze, so its `{Unaware}` is
+a deliberate no-op and the pumped token takes its 1 on an effective 3 toughness. The
+owner's ruling is the one that shipped. `05-rulings.test.ts` carries both the assertion
+and the divergence note next to it.
+
+### The layer boundary — layers 1-2 survive, 3-5 are dropped
+
+`{Unaware}` is stat **layer 6**, and "goes last" is the whole of it:
+
+| layer | what it is | under {Unaware} |
+|---|---|---|
+| 1 | printed / token stats | **applies** |
+| 2 | base REWRITES — `Entity.baseSet`, `StaticMod.baseP`/`baseT` | **applies** |
+| 3 | counters, `tempPower`/`tempToughness`, continuous `dp`/`dt` statics | dropped |
+| 4 | the `{Tough}` / `{Balanced}` attribute layer (R19) | dropped |
+| 5 | `{Inverted}` (R93) | dropped |
+| 6 | `{Unaware}` | returns layers 1-2 |
+
+Layer 2 survives on **exactly the argument R93 already makes for {Inverted}**, quoted
+from the comment in `effStats`: a base rewrite ("becomes a base 4/4" — Formless, Unstable
+Refactor, Celestial Shifter, Floral Singularity; "your units are base 3/3" — Aberrant
+Statweaver) *redefines what base IS* rather than changing it, so it is the thing you
+would invert **from** and is never inverted. By the same argument it is not a stat
+*change*, and `{Unaware}` does not ignore it. spikeydog_40883, uncontradicted, on the
+{Inverted} side of the same line: "Its base stats aren't being inverted. Just the
+modifications to those stats by counters, stat-altering augments, or attributes."
+
+So a Statweaver really does make Bubb a 3/3 — and a `+2/+2` counter on top of that leaves
+it a 3/3, because layer 3 is still dropped, now measured from the *new* base.
+
+### Column sharing (R19): {Unaware} is shared, and freezes the whole column
+
+The layer reads `E.statLayerAttrs`, the same helper `{Tough}`, `{Balanced}` and
+`{Inverted}` use, which walks own printed attrs → augment/virus mods → **column-mates**.
+So `{Unaware}` is column-shared, and a unit standing beside Bubb in a formation fights at
+*its own* base stats for as long as the formation holds.
+
+That is the precedent, not an extrapolation. Caleb, quoted on that helper: units in a
+column "just share attributes **in all situations**… if one unit in the column has tough,
+the other will also have it"; and asked point-blank "So, all attributes are shared
+between the units in the same column? Including stuff like Inverted or Tough?" — "Yes".
+The consequence runs both ways and is pinned in a test: a `{Tough}` Rampart Guardian
+sharing a column with Bubb loses its own doubling, because it is Unaware now.
+
+The share is **per column**, so it does **not** cross a block: an attacker's column and
+its blockers' column are two columns, which is exactly what makes the owner's worked
+example work — Bubb (in the block column) is Unaware, the attacker it blocks is not.
+
+### Where it lives, and reentrancy
+
+One clause at the end of `E.effStats` in `engine/src/engine.ts`, where the placeholder
+sat:
+
+```ts
+if (statAttrs.includes('Unaware')) return [base[0]!, base[1]!];
+```
+
+`statAttrs` is the already-computed `statLayerAttrs(e)` that layers 4 and 5 use, so layer
+6 costs one array membership test and no extra board scan.
+
+The reentrancy hazard is real and is avoided by construction: `effStats` is called from
+inside static callbacks (`affects`, `dp`, `baseP`), so the attribute lookup must never
+call back into `effStats`. `statLayerAttrs` walks `ownAttrs`, which reads printed data,
+`tempAttrs`, augment mods and statics' `attrs` — **it never asks anyone for a number**.
+The existing `E.inStatics` guard bounds the remaining depth: a static's own callback sees
+`staticsFor()` return `[]`, so the recursion is two deep and terminates.
+
+### Consequences worth knowing
+
+- **Trashling is a debuff virus, not a blank.** Donating `{Unaware}` onto a host strips
+  the host's counters, auras, temp buffs and `{Tough}` for as long as the mod is on it —
+  a pumped 5/5 fights as its printed 3/3 — and it keeps doing so for counters gained
+  *after* the virus lands, because layer 6 is continuous, not a stamp.
+- **Haboob's `{Unaware}` does nothing**, per the divergence above; its printed "I deal 1
+  damage to each unit" is unaffected and still works.
+- **`{Unaware}` beats `{Inverted}` on the same unit**, by layer order: layer 5 inverts a
+  delta that layer 6 then discards, so a Bubb wearing a Reality Bender is still a 5/6.
+- **The attribute does not kill.** A `-9/-9` on Bubb leaves it a live 5/6; the counters
+  stay on the entity, they are simply not counted.
+
+### Tests
+
+`92-unaware.test.ts` (seeds 9200-9299) is the layer's own file: the worked example
+verbatim, the asymmetry through real combat damage in both directions, the layer boundary
+(base rewrite lands, `{Tough}` and `{Inverted}` do not), column sharing in both
+directions, the Trashling donation, Haboob's printed effect, and **two negative controls**
+— a non-Unaware unit still gets its counters, its aura, its temp delta and its `{Tough}`,
+and a non-Unaware blocker still fights with pumped numbers. Without those controls an
+implementation that collapsed *every* unit to base would pass the whole file.
+`05-rulings.test.ts` carries R10's own two tests, and its `{todo:true}` — which could
+never fail, and under which this card stayed dead through two playtest reports and a
+conceded game — is gone.
+
+## R107 — OWNER is not CONTROLLER, and putting a card into play never transfers it
+
+*(2026-08-23, closing CARD-TODO #17. Found by the fix round, not by a report.)*
+
+`E.spawnUnit(seat, …)`'s `seat` is the **controller**. `opts.owner` is whose card it is,
+and it defaults to `seat` — which is right for the overwhelming majority of spawns and
+wrong for every effect that reaches into a zone it does not own.
+
+Before this, `spawnUnit` had no owner parameter at all: it wrote `owner: seat,
+controller: seat` together. So **Wake the Dead** — *"Play up to two units in ANY bin with
+total cost [8] or less now, for free."* — did not borrow the opponent's card, it
+naturalised it. The unit died into the CASTER's bin, counted toward the caster's "cards
+in your bin" effects for the rest of the game, and the original owner could never recur
+it. Nothing in the printed text says any of that.
+
+**The rule.** R65 already governs and only needed to be honoured: *"each card reaches ITS
+OWN owner's erased pile — a virus on an enemy spell is the enemy's card, and the two
+piles are public."* Putting a card into play out of a zone you do not own does not
+transfer the card. It dies to its owner's bin, it counts toward their bin, and they may
+recur it.
+
+**A control clause is R8 and is NOT this.** R8 moves the unit between sides; it does not
+renationalise the card. The two are independent, and one card sets both in opposite
+directions in a single sentence — **Uglk**: *"each player puts a unit from **their** bin
+into play under an **opponent's** control."* Controller = the opponent, owner = the
+player whose bin it came from. That card was handing the card over permanently.
+
+**Reclaim the Fallen** is the third: *"under their **controller's** control"* — a virus
+you stuck on an enemy comes back on their side and is still your card.
+
+Every other spawn site in the pool reads the caster's own zone, and every `{ token: true }`
+site is correct by construction: a creation is owned by its creator. The `spawned` event
+carries `owner` **only when it differs from the controller**, so no existing reader's
+payload moved.
+
+## R108 — a bounded [once] is spent only when the ability DOES something
+
+*(Owner ruling, 2026-08-23, closing CARD-TODO #18.)*
+
+> A `[once]` is spent only when the ability actually does something. Say no to a "you may"
+> and the budget is intact, so the same trigger can ask again later the same turn.
+
+The bug: `composeParts` writes `budgetHolder.budgets[key] = 1` the moment a `bounded`
+ability is composed — before its run has any chance to discover it can do nothing. 88 of
+the pool's 138 bounded (`[once]` / `[Switch1]`) abilities have a run that can bail out.
+**Hexbane Shiitake** was the clearest victim: it read `inEndOfTurn(g) ? false :
+ctx.choose(…)`, so in that window the player was **never asked** and the `[once]` was
+burnt anyway.
+
+**Both halves answered at once.** Declining a "you may" and being unable to be asked at
+all are the same outcome under this ruling: nothing happened, so nothing is spent.
+
+**The seam is explicit, and it has to be.** `EffectCtx.refundBudget?.()` raises
+`EffectPart.refunded`; `E.settleBudgetRefund` pays it out *after* the part finishes.
+The obvious alternative — refund when the run emitted no event — **does not work and must
+not be reintroduced**: the CARD-TODO #3 sweep gave every one of those bail-out branches an
+announcement, which was the entire point of it, so they all look busy now. A refund keyed
+on event count would refund nothing.
+
+**Why the reservation stays at composition time.** It is also the re-entrancy guard. The
+refund is a payout, not a deferral.
+
+**Replay safety (R85).** The flag lives on the PART, which the suspension carries, so it
+survives serialisation. A suspension throws past `settleBudgetRefund`, and the replay
+starts with the flag clear and re-raises it only if it reaches the same branch again —
+so refunding is idempotent, and a run that succeeds never raises it at all.
+
+**One route the run cannot reach.** A graft rider's cast `[cost]` is marked spent at CAST
+time, before any run exists, so `ctx.refundBudget()` is unreachable there. `E.refundPart`
+is therefore also called from `payCastCost`'s decline branch and the two unpayable-cost
+branches. Same ruling by a different route: declining a cost you were offered is
+declining.
+
+⚠ **Still open (CARD-TODO #20): the FIZZLE.** R5/R86's fizzle returns from `resolveItem`
+before `resolveParts` runs, so no run exists to ask for a refund and a bounded ability
+whose target was removed in response still burns its `[once]`. 61 bounded abilities
+declare a target spec, so this is reachable. It needs its own ruling — "the ability did
+nothing" and "the ability happened and missed" are both defensible, and R86 already
+treats a fizzle as a real resolution that produced nothing.
+
+## R109 — an empty damage batch says so
+
+*(2026-08-23, closing CARD-TODO #16.)*
+
+`dealEffectDamageAll` handed an empty hit list used to return in silence. Every *"I deal N
+damage to each opponent / each enemy unit"* card builds a list and hands it over, so with
+no opponent in the region (R25) or no enemy unit on the board the card resolved, the mana
+was spent, and the log was blank. The guard is at the TOP of the method and keyed on
+`hits.length`, so one line covers every carrier and no card has to know — Meteor Shower,
+Roving Quillback, Infernal Grovekeeper and Channel Through were all fixed without a card
+edit.
+
+**Two shapes that are NOT this and stay silent**, which is why the guard is where it is:
+
+- **every hit computed `n <= 0`.** `hits` is non-empty, so it never reaches the guard; the
+  planning loop drops it. The CARD chose the amount and owns the explanation — Siphon Life
+  already says "X = 0".
+- **a fully PREVENTED batch (R98).** Prevention runs *after* `!order.length`, in the
+  `received` loop, so a prevented batch structurally cannot arrive at the guard, and
+  `preventUnitDamage` logs itself.
+
+Deliberately not caught: a non-empty batch whose targets have all left play. That is R5's
+"your target is gone", those cards announce it themselves, and folding it in would put two
+different sentences behind one guard.
+

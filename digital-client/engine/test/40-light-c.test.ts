@@ -482,12 +482,44 @@ test('Nullbringer: two copies do not stack — one inversion per life-gain event
   assert.equal(h.state.players[D]!.life, lifeD - 3, 'still exactly -3, not -6 or -9');
 });
 
-test('Nullbringer: "instead" is a TRIGGER, not a replacement (life spikes, then comes back)', { todo: true }, () => {
-  // APPROXIMATION: there is no life-gain replacement seam (the engine's only
-  // two hooks are rot damage and column combat damage), so the gain really
-  // happens and is then doubled back. The endpoint is right; the intermediate
-  // life total is not, and in battle the correction goes on the stack (so it
-  // is respondable and delayed) instead of being simultaneous.
+test('Nullbringer: the gain never happens, so no lifeGained event is ever fired', () => {
+  // R104, and the OBSERVABLE difference between a replacement and the trigger
+  // this replaces. The old implementation gained N and then lost 2N: the final
+  // total was right and everything in between was wrong — the life total spiked
+  // up through N, and anything watching `lifeGained` fired for a gain the card
+  // says never happened. Asserting the ABSENCE of that event is the assertion;
+  // the endpoint alone cannot tell the two implementations apart.
+  const h = new Harness(4013);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  spawn(h, A, 'Nullbringer');
+  const before = h.events.length;
+  whiteBox(h, e => e.gainLife(D, 5, 'test'));
+  const after = h.events.slice(before);
+  assert.equal(after.filter(ev => ev.type === 'lifeGained').length, 0,
+    'no lifeGained: there was no gain to report');
+  assert.equal(after.filter(ev => ev.type === 'lifeLost').length, 1,
+    'exactly one lifeLost — "they lose that much life instead"');
+  assert.equal(after.find(ev => ev.type === 'lifeLost')!.data!['n'], 5,
+    'that much: N, not the 2N the trigger needed to undo a gain that had already happened');
+});
+
+test('Nullbringer: the replacement never reaches the stack, so nothing can negate it', () => {
+  // CT-10's stated acceptance criterion. Containment Protocol negates "all
+  // activated and triggered effects"; a replacement is neither, and there is
+  // no stack item for it to find.
+  const h = new Harness(4014);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  spawn(h, A, 'Nullbringer');
+  const lifeD = h.state.players[D]!.life;
+  const before = h.events.length;
+  whiteBox(h, e => e.gainLife(D, 3, 'test'));
+  const after = h.events.slice(before);
+  assert.equal(after.filter(ev => ev.type === 'stackPushed' || ev.type === 'triggered').length, 0,
+    'nothing was queued and nothing was pushed');
+  assert.equal(h.state.stack.length, 0, 'the stack is empty');
+  assert.equal(h.state.players[D]!.life, lifeD - 3, 'and the replacement happened anyway');
 });
 
 // ── Prediction Prophet ───────────────────────────────────────────────────
@@ -675,12 +707,48 @@ test('Slurpr: mods may be applied during [Haste] as if it was deployment', { tod
 
 // ── Suspend ──────────────────────────────────────────────────────────────
 
-test('Suspend: target player\'s life total can\'t change during this battle', { todo: true }, () => {
-  // PARKED: a life-change LOCK. E.gainLife / E.loseLife commit
-  // unconditionally; the engine's only replacement hooks are rot damage
-  // (replaceRotDamage) and column combat damage (replaceCombatDamageToPlayer).
-  // "Erase me" is likewise approximated as the spell being binned normally
-  // (the Temporal Rift precedent).
+test("Suspend: the target's life total can't change in either direction this battle", () => {
+  // R104. Both halves are live: the lock here, and "Erase me" in
+  // 89-self-erase (CARD-TODO #15). The card's ledger entry is gone with it.
+  const h = new Harness(4025);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'light', 2);                            // ll / 2
+  toNextBattle(h, A);
+  const lifeD = h.state.players[D]!.life;
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
+  pick(h, { player: D });
+  pass(h); pass(h);
+  whiteBox(h, e => e.loseLife(D, 7, 'test'));
+  assert.equal(h.state.players[D]!.life, lifeD, 'no loss');
+  whiteBox(h, e => e.gainLife(D, 7, 'test'));
+  assert.equal(h.state.players[D]!.life, lifeD, 'and no gain — "can\'t change" is both directions');
+  whiteBox(h, e => e.gainLife(A, 4, 'test'));
+  assert.notEqual(h.state.players[A]!.life, lifeD, 'the OTHER player is untouched');
+  finishBattle(h);
+});
+
+test('Suspend: the lock is this battle only, and lapses with the battle that made it', () => {
+  // R14 via a region-keyed battleCounter: "this battle" is this region's
+  // battle, and startBattlePhase's existing wipe is the whole cleanup. That is
+  // the same shape Abyssal Evocation's bin permission uses (R96), and for the
+  // same forced reason — Suspend is a SPELL, so nothing of it stays in play to
+  // radiate from.
+  const h = new Harness(4026);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'light', 2);                            // ll / 2
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
+  pick(h, { player: D });
+  pass(h); pass(h);
+  assert.equal(h.q.lifeLocked(D), true, 'locked while the battle runs');
+  finishBattle(h);
+  assert.equal(h.q.lifeLocked(D), false, 'and not afterwards');
 });
 
 // ── Tithe Enforcer ───────────────────────────────────────────────────────
@@ -853,15 +921,17 @@ test('parked cards still register, play and attach without crashing', () => {
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Slurpr'), hostId: gk });
   assert.equal(ent(h, gk)!.mods.length, 1, 'Slurpr attached as an augment');
   assert.deepEqual(effStats(h, gk), [0, 7], 'and changes nothing');
-  // Suspend resolves as a logged no-op
+  // Suspend is NOT parked any more — the lock shipped with R104 and "Erase me"
+  // with CARD-TODO #15. It stays in this block only as a smoke test that it
+  // still plays; what it does is asserted in its own tests and in
+  // 89-self-erase.
   const atk = spawn(h, A, 'Unit Token');
   toNextBattle(h, A);
-  const lifeD = h.state.players[D]!.life;
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Suspend') });
   pick(h, { player: D });
   pass(h); pass(h);
-  assert.ok(h.log.some(l => l.includes('Suspend is PARKED')), 'and says so loudly');
-  assert.equal(h.state.players[D]!.life, lifeD);
+  assert.ok(!h.state.players[A]!.bin.includes('Suspend'), '"Erase me": no bin');
+  assert.ok((h.state.players[A]!.erased ?? []).includes('Suspend'), 'the erased pile instead');
   finishBattle(h);
 });

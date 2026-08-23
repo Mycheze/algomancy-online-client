@@ -22,10 +22,17 @@ import {
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
-/** spawn a REAL 1/1 token entity (the util spawn() makes nontoken entities) */
-function spawnToken(h: Harness, seat: Seat): EntityId {
+/** spawn a REAL token entity (the util spawn() makes nontoken entities).
+ *
+ * Defaults to 1/1. The 5/6 overload exists because three tests in this file
+ * used to measure a stat change on a spawned `Bubb` — the pool's only vanilla
+ * 5/6 body — and R106 (2026-08-23) shipped stat layer 6: {Unaware} makes Bubb
+ * ignore every stat change, so a doubling, a +4/+4 and a +0/+1 all became
+ * invisible ON THE YARDSTICK while the cards under test kept working. A stat
+ * token is the yardstick with no attributes on it. */
+function spawnToken(h: Harness, seat: Seat, p = 1, t = 1): EntityId {
   const e = new E(h.state);
-  const u = e.spawnUnit(seat, 'Unit Token', e.homeRegion(seat), { token: true, tokenStats: [1, 1] });
+  const u = e.spawnUnit(seat, 'Unit Token', e.homeRegion(seat), { token: true, tokenStats: [p, t] });
   e.settle();
   return u.id;
 }
@@ -107,7 +114,7 @@ test('Burgeon: doubles the chosen stat of target unit until regroup', () => {
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const atk = spawn(h, A, 'Unit Token');
-  const bubbD = spawn(h, D, 'Bubb');                  // 5/6
+  const bubbD = spawnToken(h, D, 5, 6);               // a vanilla 5/6 (see spawnToken)
   giveResources(h, D, 'wood', 2);                     // g / 2
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
@@ -119,7 +126,7 @@ test('Burgeon: doubles the chosen stat of target unit until regroup', () => {
   assert.deepEqual(effStats(h, bubbD), [5, 12], 'defense doubled (6 → 12) until regroup');
   // playtest MNWK ("Burgeon resolving … just did nothing"): whatever it does,
   // it now SAYS what it did
-  assert.ok(h.log.some(l => l.includes("Burgeon doubles Bubb's defense: 6 → 12")),
+  assert.ok(h.log.some(l => l.includes("Burgeon doubles Unit Token's defense: 6 → 12")),
     'the doubling is logged, not silent');
   finishBattle(h);
   assert.deepEqual(effStats(h, bubbD), [5, 6], 'regroup cleared the temporary doubling');
@@ -266,7 +273,7 @@ test('Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets i
   toDeployment(h);
   const D = h.state.initiative, A = 1 - D;            // D attacks, A defends (carrier at home)
   const host = spawn(h, A, 'Unit Token');             // carries the Hexbane augment
-  const bubbA = spawn(h, A, 'Bubb');                  // the retarget beneficiary
+  const bubbA = spawnToken(h, A, 5, 6);               // the retarget beneficiary, a vanilla 5/6
   const atkD = spawn(h, D, 'Unit Token');
   giveResources(h, A, 'wood', 4);                     // g / 4 (the augment)
   giveResources(h, D, 'fire', 4);                     // two Channeled Boons
@@ -420,7 +427,7 @@ test('Invigorate: target unit gains +0/+1 until regroup; draw a card', () => {
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const atk = spawn(h, A, 'Unit Token');
-  const bubbD = spawn(h, D, 'Bubb');                  // 5/6
+  const bubbD = spawnToken(h, D, 5, 6);               // a vanilla 5/6 (see spawnToken)
   giveResources(h, D, 'wood', 1);                     // g / 1
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });

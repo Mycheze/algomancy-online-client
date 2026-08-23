@@ -21,9 +21,10 @@ import type {
   AutoPassPlan, CastWatch, FormationRole, ModHosts, SeenHandDismissals, UnitClickOption,
 } from './inspect.ts';
 import {
-  autoPassDecision, passEndsBattlePhase, ridableTokens, sendableTokens, shouldAskRide,
+  autoPassDecision, blockVerdict, passEndsBattlePhase, ridableTokens, sendableTokens, shouldAskRide,
   shouldAskSend, splitCounterattack,
 } from './battle.ts';
+import type * as bat from './battle.ts';
 import { dropIntoRow, halfRows, publishCols, rekeyBuild } from './formation.ts';
 import { entityTextBox, printedTextBox, textBoxFor } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
@@ -405,6 +406,24 @@ interface UiState {
    * or a left-insert can be spotted and `columns` — which is keyed by attack
    * column index — carried across it. Null outside my block step. */
   blockLine: EntityId[][] | null;
+  /**
+   * [77] The last block declaration the ENGINE refused, as structure: which
+   * units went, why, and what the board kept. Held so the bar can name them
+   * and offer "Reset blockers?" instead of the board silently emptying.
+   * Cleared by the next declaration, by the reset, and by the step ending.
+   */
+  blockRefusal: bat.BlockVerdict | null;
+  /**
+   * [77] A block declaration is on the wire and the board is still holding the
+   * plan that produced it.
+   *
+   * The plan used to be dropped the instant the action was sent, which is
+   * right in hotseat (`act()` has already applied it or set `uiError`) and
+   * wrong over a socket, where the refusal arrives after the wipe. So the
+   * plan is kept until an authoritative state says the declaration LANDED —
+   * `ensureBlockKeys` drops it then.
+   */
+  blockSent: boolean;
 }
 /** C(|ALL_ELEMENTS|, 3) — the number of live-draft trios the picker reaches.
  * Derived, never written down: adding an element to the engine moves it. */
@@ -427,6 +446,7 @@ const freshUi = (): UiState => ({
   homeFixedTrio: false,
   confirmDeploy: null, confirmAct: null,
   bottomPick: [], bottomFor: '', blockLine: null,
+  blockRefusal: null, blockSent: false,
 });
 
 // ── constructed decks (algomancer.cc format, docs: server/decks.ts) ────
@@ -2070,6 +2090,44 @@ function blockBuilderHtml(ci: number): string {
   return colSlotsHtml(ui.columns[ci] ?? [], ci);
 }
 
+/**
+ * [77] The notice a refused block declaration leaves behind: what the engine
+ * said, which units were taken out of the plan, what the board is compelled
+ * to include — and the "Reset blockers?" button the report asked for by name.
+ *
+ * The units are NAMED, not counted. "Trying to declare illegal blocks entirely
+ * resets the board" is half the complaint; the other half is that the only
+ * feedback was one line of engine prose with no way to tell which of a dozen
+ * blockers it was about. Everything here comes off `ui.blockRefusal`, which is
+ * the engine's own verdict as structure (ui/battle.ts).
+ */
+function blockRefusalHtml(): string {
+  const r = ui.blockRefusal;
+  if (!r) return '';
+  const names = [...new Set(r.offenders.map(o => o.card))];
+  const cleared = names.length
+    ? `<b class="duty">${esc(names.join(', '))}</b> ${names.length === 1 ? 'was' : 'were'} taken back out — the rest of your plan is still on the board.`
+    : 'the rest of your plan is still on the board.';
+  const req = Object.values(r.required).flat()
+    .map(id => h.state.entities[id]?.card).filter(Boolean) as string[];
+  const must = req.length
+    ? ` <span class="duty">${esc([...new Set(req)].join(', '))}</span> must block — that one is compulsory.`
+    : '';
+  return `<span class="blockrefusal">✗ ${esc(r.why)} — ${cleared}${must}
+    <button data-btn="resetblocks" title="clear every blocker and counterattacker and start again">Reset blockers?</button>
+    </span> `;
+}
+
+/** [77] `blockPlan`'s inverse: the board's `ui.columns` for a declaration the
+ * engine has accepted. Keyed by ATTACK column index, so the array has to be
+ * long enough to hold the highest key and holes are empty columns. */
+function columnsFromPlan(blocks: Record<number, EntityId[]>): EntityId[][] {
+  const keys = Object.keys(blocks).map(Number);
+  const out: EntityId[][] = Array.from({ length: keys.length ? Math.max(...keys) + 1 : 0 }, () => []);
+  for (const ci of keys) out[ci] = [...(blocks[ci] ?? [])];
+  return out;
+}
+
 /** the block declaration the board is holding right now, in the shape the
  * action takes. ONE reader of `ui.columns`, so the bar's R84 duty check and
  * the button that sends the declaration can never be looking at two different
@@ -2321,8 +2379,8 @@ function promptHtml(): string {
       // surfaced as a red error after the fact. blockPlanIssue (ui/inspect.ts)
       // asks the engine's own validator what it would say to this declaration.
       const duty = blockPlanIssue(s, b.defender, blockPlan());
-      return `<div class="promptbar ${duty ? 'pending' : ''}"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
-        ${duty
+      return `<div class="promptbar ${duty || ui.blockRefusal ? 'pending' : ''}"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
+        ${blockRefusalHtml()}${duty
           ? `<b class="duty">${esc(duty)}</b> — that block is compulsory, so nothing can be confirmed until it is assigned.`
           : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
         <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>Confirm (enter)</button>
@@ -2867,7 +2925,16 @@ function ensureCounterPrefill(): void {
 function ensureBlockKeys(): void {
   const b = h.state.battle;
   const mine = !!b && b.step === 'blocks' && (!NET || b.defender === NET.seat);
-  if (!b || !mine) { ui.blockLine = null; return; }
+  // [77] the declaration LANDED (the step moved on, or the battle did): only
+  // now is it safe to drop the plan that produced it. Sending is not landing —
+  // over a socket the refusal arrives after the send, and dropping the plan
+  // there is the whole of the report.
+  if (ui.blockSent && !mine) {
+    ui.blockSent = false;
+    ui.columns = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false;
+  }
+  if (!mine) { ui.blockRefusal = null; ui.blockLine = null; return; }
+  if (!b) { ui.blockLine = null; return; }
   const was = ui.blockLine;
   ui.blockLine = b.columns.map(col => [...col]);
   if (!was) return;                       // first paint of this block step
@@ -4338,10 +4405,33 @@ function handleButton(btn: HTMLElement): void {
     // (ui/battle.ts) is the only place that split is made, so the log line and
     // the reachability ledger see the tokens the player actually picked.
     const { send, spellTokens } = splitCounterattack(s, ui.send);
+    // [77] …and the same question about EVERY other block rule, asked before
+    // the action goes anywhere. A refusal now keeps the parts of the plan the
+    // engine would take and clears only the units it named — the whole of
+    // ledger #77. blockVerdict (ui/battle.ts) is a read of the engine's own
+    // validator, exactly as blockPlanIssue is; it never invents a rule.
+    const verdict = blockVerdict(s, s.battle!.defender, blocks, send, spellTokens);
+    if (verdict) {
+      ui.blockRefusal = verdict;
+      ui.columns = columnsFromPlan(verdict.keep.blocks);
+      ui.send = [...verdict.keep.send, ...verdict.keep.spellTokens];
+      ui.carrying = null;
+      // the reason belongs NEXT TO the units it is about, not in the generic
+      // error slot at the far end of the bar — blockRefusalHtml prints it
+      uiError = '';
+      playCue('error');
+      render();
+      return;
+    }
+    ui.blockRefusal = null;
     act({ type: 'declareBlocks', seat: s.battle!.defender, blocks, send, spellTokens });
     if (!uiError) {
-      ui.columns = []; ui.send = []; ui.carrying = null; ui.spellTokens = [];
-      ui.rideAnswered = false;
+      // [77] over a socket the refusal has not arrived yet, so the plan is
+      // held until an authoritative state says the declaration LANDED
+      // (ensureBlockKeys). Hotseat has already applied it, so it goes now.
+      if (NET) ui.blockSent = true;
+      else { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; }
+      ui.carrying = null;
     }
   };
   // "Bring none" is the explicit answer the report asked for — it must be a
@@ -4429,7 +4519,13 @@ function handleButton(btn: HTMLElement): void {
   if (b === 'modcancel') ui.modding = null;
   if (b === 'castcancel') startCastCancel();
   // [69] a cleared formation is a new attack — the ride question comes back
-  if (b === 'clearform') { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null; ui.rideAnswered = false; }
+  if (b === 'clearform') { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null; ui.rideAnswered = false; ui.blockRefusal = null; }
+  // [77] "…give a notice as well as a 'Reset blockers?' button". The explicit
+  // start-again, offered BESIDE the surviving plan rather than done to it.
+  if (b === 'resetblocks') {
+    ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null;
+    ui.rideAnswered = false; ui.blockRefusal = null; uiError = '';
+  }
   if (b === 'reportopen') reportOpen = true;
   if (b === 'reportclose') reportOpen = false;
   if (b === 'reportsend') { sendReport(); return; }

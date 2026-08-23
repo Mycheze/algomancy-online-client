@@ -82,7 +82,12 @@ test('Abyssal Evocation: a bin-played spell is {Unstable} — it is ERASED, neve
     'the Arc left the BIN as it was played (index 0)');
   pick(h, { unit: victim });
   pass(h); pass(h);                                  // resolve it
-  assert.equal(ent(h, victim)!.damage, 6, 'it really resolved');
+  // 7, not the Arc's printed 6: R104 made Conduit of Pain live, and the
+  // attacker above is one — "[Augment] If an allied source would deal
+  // noncombat damage, it deals that much damage plus 1 instead". The bin-play
+  // path is what this test is about; the extra point is the replacement layer
+  // working in a real game, on a card that used to be a vanilla 2/1 body.
+  assert.equal(ent(h, victim)!.damage, 7, 'it really resolved (6 + Conduit of Pain\'s 1)');
   assert.ok(!h.state.players[A]!.bin.includes('Luminous Arc'),
     '"if they would enter a bin, erase them instead" — it did NOT come back');
   assert.ok((h.state.players[A]!.erased ?? []).includes('Luminous Arc'),
@@ -322,11 +327,99 @@ test('Conduit of Pain: plays as a 2/1; augments (donating nothing yet)', () => {
   giveResources(h, p, 'fire', 2);                    // rr / 2
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Conduit of Pain'), hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment');
-  assert.deepEqual(effStats(h, host), [1, 1], 'host stats unchanged (text is PARKED)');
+  assert.deepEqual(effStats(h, host), [1, 1], 'the text is an AmountMod, so the host\'s stats do not change');
 });
 
-test('Conduit of Pain: allied noncombat damage dealt +1 instead', { todo: true }, () => {
-  // PARKED: damage replacement — dealEffectDamage has no would-deal hooks.
+test('Conduit of Pain: an allied source deals its noncombat damage plus one', () => {
+  // R104. The AMOUNT family: nothing is substituted and nothing is redirected,
+  // the number is simply bigger by the time it lands. Luminous Arc prints 6.
+  const h = new Harness(1250);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const victim = spawnToken(h, D, 1, 30);
+  // R12: the Conduit radiates in ITS OWN region, so it has to be in the battle
+  // — it is the attacker here, exactly as a burn deck would play it.
+  const atk = spawn(h, A, 'Conduit of Pain');
+  giveResources(h, A, 'fire', 6);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  pick(h, { unit: victim });
+  pass(h); pass(h);
+  assert.equal(ent(h, victim)!.damage, 7, 'the printed 6 was dealt as 7');
+  finishBattle(h);
+});
+
+test('Conduit of Pain: two Conduits both apply, and neither applies to itself', () => {
+  // Caleb, on how these compose: "a replacement only happens once … The
+  // replacement just takes what would be 1 and makes it 2". So two DIFFERENT
+  // modifiers both apply (6 → 8), and none applies to its own contribution —
+  // which falls out of the shape rather than needing a guard, because an
+  // AmountMod is CONSULTED once as a pure query rather than re-entering the
+  // damage it is answering about.
+  const h = new Harness(1251);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const victim = spawnToken(h, D, 1, 30);
+  const atk = spawn(h, A, 'Conduit of Pain');
+  const atk2 = spawn(h, A, 'Conduit of Pain');
+  giveResources(h, A, 'fire', 6);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk], [atk2]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  pick(h, { unit: victim });
+  pass(h); pass(h);
+  assert.equal(ent(h, victim)!.damage, 8, '6 + 1 + 1, not 6 + 1 and then +1 of that again');
+  finishBattle(h);
+});
+
+test('Conduit of Pain: an ENEMY Conduit does not boost your spell', () => {
+  // "an allied source" is the effect's CONTROLLER, which the damage batch
+  // really knows (ctx.controller) — unlike the counters path, where addCounters
+  // has no source at all. A Conduit standing in the same battle on the other
+  // side is offered the same question and answers no.
+  const h = new Harness(1252);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const victim = spawnToken(h, D, 1, 30);            // a fat body in the battle region
+  const atk = spawn(h, A, 'Conduit of Pain');        // A's Conduit, in the battle
+  giveResources(h, D, 'fire', 6);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);                                           // A passes priority to D
+  // D casts the burn at their own body. A's Conduit is standing right there and
+  // is asked; "an ALLIED source" is allied to the CONDUIT, not to whoever is in
+  // the room, so the enemy's spell is not boosted.
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
+  pick(h, { unit: victim });
+  pass(h); pass(h);
+  assert.equal(ent(h, victim)!.damage, 6, 'an enemy Conduit does not boost your spell');
+  finishBattle(h);
+});
+
+test('Conduit of Pain: the extra damage never reaches the stack, so nothing can negate it', () => {
+  // CT-10's acceptance criterion, on the AmountMod half. A continuous modifier
+  // has no stack item for Containment Protocol or Nothyr to find, and no
+  // priority window opens between the spell's damage and the Conduit's point.
+  const h = new Harness(1253);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const victim = spawnToken(h, D, 1, 30);
+  const atk = spawn(h, A, 'Conduit of Pain');
+  giveResources(h, A, 'fire', 6);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Luminous Arc') });
+  pick(h, { unit: victim });
+  const before = h.events.length;
+  pass(h); pass(h);
+  const after = h.events.slice(before);
+  assert.equal(after.filter(ev => ev.type === 'triggered').length, 0,
+    'the Conduit queued nothing');
+  assert.equal(after.filter(ev => ev.type === 'damage' && ev.data?.['unit'] === victim).length, 1,
+    'ONE damage event carrying the whole 7 — not a 6 and then a 1');
+  assert.equal(ent(h, victim)!.damage, 7);
+  finishBattle(h);
 });
 
 // ── Delver of Mysteries ──────────────────────────────────────────────────

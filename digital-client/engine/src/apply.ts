@@ -1460,7 +1460,36 @@ registerSynthetic({
   }],
 });
 
-function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: EntityId[]): void {
+/**
+ * R84's judgement, widened to EVERY block-legality reason: WHY this block
+ * declaration would be refused, or null.
+ *
+ * Playtest ledger #77 (WEHH, 2026-08-22): *"Trying to declare illegal blocks
+ * entirely resets the board, which is really annoying. Instead, it should
+ * reset only the 'affected' units and give a notice as well as a 'Reset
+ * blockers?' button. That way, if there's a massive block, the player doesn't
+ * have to entirely rebuild it for forgetting about a single thing."*
+ *
+ * R84 already built the shape that answers this: `allureViolation` is a pure
+ * predicate the CLIENT reads (ui/inspect.ts `blockPlanIssue`) so that a
+ * compulsory block is NAMED up front instead of discovered by being refused.
+ * The only reason that shape stopped at {Alluring} is that the rest of the
+ * legality — Feeble, Flying, Evasive, lone Sneaky, one column per unit,
+ * 1-2 per column, what may be sent — lived inside `doDeclareBlocks` as a run
+ * of `e.need` calls that could only be reached by actually declaring.
+ *
+ * So the run of checks is lifted out here, VERBATIM and in the same order,
+ * and `doDeclareBlocks` now calls it. Nothing about which blocks are legal
+ * changes — this is a seam, not a rule. What it buys is that a client can ask
+ * "would you take this?" of a plan it is holding, which is what makes it
+ * possible to keep the parts that are fine and clear only the parts that are
+ * not (ui/battle.ts `blockVerdict`).
+ *
+ * Returns the number of UNITS in `send` (as opposed to spell tokens riding
+ * with them), which the declaration's log line needs and which is computed
+ * here anyway.
+ */
+function checkBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: EntityId[]): number {
   const b = e.s.battle;
   e.need(e.s.phase === 'battle' && b && b.step === 'blocks' && seat === b.defender, 'not your block step');
   const used = new Set<EntityId>();
@@ -1531,6 +1560,27 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
   // the defender did with it elsewhere (that was the UFAB bug).
   const allured = allureViolation(e, seat, blocks);
   e.need(!allured, allured ?? '');
+  return sentUnits;
+}
+
+/**
+ * `checkBlocks` as a value instead of a throw — the client-facing form.
+ *
+ * The state must be a CLONE: `E` is a mutator that only happens to be read
+ * from here, the same reason `legalActions` and `blockPlanIssue` clone before
+ * they look. Nothing in `checkBlocks` writes, but nothing in it promises not
+ * to either, and a client asking a question must not be able to move the game.
+ */
+export function blockDeclarationIssue(
+  e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: EntityId[],
+): string | null {
+  try { checkBlocks(e, seat, blocks, send); return null; }
+  catch (err) { if (err instanceof IllegalAction) return err.message || 'that block cannot be declared'; throw err; }
+}
+
+function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send: EntityId[]): void {
+  const b = e.s.battle!;
+  const sentUnits = checkBlocks(e, seat, blocks, send);
 
   b.blocks = {};
   for (const [ciStr, col] of Object.entries(blocks)) b.blocks[Number(ciStr)] = col.slice();

@@ -200,7 +200,9 @@ test('Floral Singularity: every one of your units is base X/X, whatever it was',
   whiteBox(h, e => {
     const ctx: EffectCtx = {
       controller: p, sourceName: 'Floral Singularity', region: e.homeRegion(p),
-      targets: [], x: 4, event: null, choose: () => 'base',
+      targets: [], x: 4, event: null,
+      eraseSelf: () => {},   // no stack item here — a direct-run ctx
+      choose: () => 'base',
     };
     getCard('Floral Singularity').spellEffect!.run(e, ctx);
   });
@@ -241,7 +243,9 @@ test('Unmake: a rewrite can drop a unit INTO "base power 2 or less"', () => {
   whiteBox(h, e => {
     const ctx: EffectCtx = {
       controller: D, sourceName: 'Floral Singularity', region: e.homeRegion(D),
-      targets: [], x: 2, event: null, choose: () => 'base',
+      targets: [], x: 2, event: null,
+      eraseSelf: () => {},   // no stack item here — a direct-run ctx
+      choose: () => 'base',
     };
     getCard('Floral Singularity').spellEffect!.run(e, ctx);
   });

@@ -711,8 +711,17 @@ test('{Modular}: mods are applied at cast time, paid for, and ride on the stack 
   drainStack(h);
   assert.equal(rotOf(h, A), 1, 'the base effect resolved');
   assert.equal(h.state.players[A]!.life, life + 4, 'and so did the mod, as one composite ability');
-  assert.ok(h.state.players[A]!.bin.includes('T37 Graft Mod'), 'the mod follows the card to the bin');
-  assert.equal(trashes(h).length, 0, 'from the stack, so nothing was trashed (R40)');
+  // R105 (owner, 2026-08-23): a modded card is {Unstable} — Manual p.35, "as
+  // long as a card is modded, it has the unstable attribute … even though mods
+  // can be applied from the bin, they are generally only able to be applied
+  // once". So the mod follows the card OUT OF THE GAME, not to a bin; this line
+  // read `.bin.includes(...)` until that ruling landed.
+  assert.ok(!h.state.players[A]!.bin.includes('T37 Graft Mod'), 'the mod does not reach a bin');
+  assert.ok((h.state.players[A]!.erased ?? []).includes('T37 Graft Mod'),
+    'it is erased with its carrier (R65, R69)');
+  assert.ok((h.state.players[A]!.erased ?? []).includes('T37 Modular Spell'),
+    'and the carrier with it — Unstable is a BIN replacement, so neither reaches one');
+  assert.equal(trashes(h).length, 0, 'from the stack, and never into a bin, so nothing was trashed (R40)');
 });
 
 test('{Modular}: the caster may decline, and a non-modular spell is never asked', () => {

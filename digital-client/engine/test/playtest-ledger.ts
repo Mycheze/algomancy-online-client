@@ -644,15 +644,29 @@ export const LEDGER: LedgerEntry[] = [
     id: 60, room: 'XBYN', date: '2026-08-22',
     report: 'The engine makes so many things "triggers" despite them not technically being '
       + 'triggers. We need a whole layer that deals with replacement effects',
-    status: 'live',
-    note: 'Correct diagnosis. Twelve cards print replacement wording; five are parked and six are '
-      + 'implemented as triggers. Real consequences today: Containment Protocol and Nothyr can '
-      + 'NEGATE them (a replacement never uses the stack); Automaton of Abundance fires per spawn '
-      + 'so N identical tokens yield N copies instead of one per unique; Cosmic Conspirator really '
-      + 'creates then erases, firing a spurious spawned event; Nullbringer fires a lifeGained for '
-      + 'a gain that never happened. Five module-level mutable flags exist purely to paper over '
-      + 'this. NOTE: Harbinger (id 28/62) is NOT in this class — it is continuous, not a '
-      + 'replacement.',
+    status: 'fixed',
+    guards: [
+      '88-replacement-conformance.test.ts::a card whose whole text is an untargeted replacement',
+      '88-replacement-conformance.test.ts::a replacement that names NO target is built out of',
+      '87-replacement-layer.test.ts::Containment Protocol RESOLVING negates nothing',
+      '87-replacement-layer.test.ts::Nothyr finds no nonspell effect to target',
+      '87-replacement-layer.test.ts::a replaced life gain fires no lifeGained',
+      '87-replacement-layer.test.ts::a replaced token creation fires no spawned',
+      '87-replacement-layer.test.ts::one resolving part is one creation batch',
+    ],
+    note: 'R104. The layer is TWO families, because the seven cards split cleanly and compose '
+      + 'differently. `AmountMod` is continuous and SUMMED, modelled on CostMod (Conduit of Pain, '
+      + 'Flux Resonator, Proliferating Slime) — Caleb: "a replacement only happens once … The '
+      + 'replacement just takes what would be 1 and makes it 2", so two different modifiers both '
+      + 'apply. The named `replaceX` hooks are first-true-consumes, modelled on replaceRotDamage '
+      + '(Nullbringer, Counter Theif, Cosmic Conspirator, Automaton of Abundance), plus a '
+      + 'battle-scoped life LOCK for Suspend. Deliberately NO general "any event" framework: one '
+      + 'named hook per replaceable quantity, which 88-replacement-conformance asserts is read '
+      + 'somewhere in the engine so a hook cannot look implemented and do nothing. All five '
+      + 'module-level mutable flags this report counted are gone — an AmountMod is CONSULTED, not '
+      + 're-entered — and the one latch that is still needed (a counter redirect really does '
+      + 're-enter) lives in the engine in E.inCostMods\' shape. NOTE: Harbinger (id 28/62) was '
+      + 'never in this class — it is continuous, not a replacement.',
   },
   {
     id: 61, room: 'SAAY', date: '2026-08-22',
@@ -704,12 +718,22 @@ export const LEDGER: LedgerEntry[] = [
     id: 64, room: 'GETD', date: '2026-08-22',
     report: "Biotoxicity didn't give me the choice of what kinds of tokens I wanted even though "
       + 'I had Cosmic Conspirator',
-    status: 'live',
-    note: 'Cosmic Conspirator is a REPLACEMENT effect (see id 60). Its "you may instead" is a '
-      + 'choice INSIDE the replacement, so it needs a decision raised before anything is created; '
-      + 'today the engine creates the Robot, fires `spawned`, then erases it. Biotoxicity creates '
-      + 'several tokens at once and the per-spawn trigger never asks per kind. Blocked on the '
-      + 'replacement layer.',
+    status: 'fixed',
+    guards: [
+      '26-metal-a.test.ts::Biotoxicity asks once per token in the batch',
+      '26-metal-a.test.ts::Cosmic Conspirator: a created Robot may become a Fireball',
+      '87-replacement-layer.test.ts::a replaced token creation fires no spawned',
+    ],
+    note: 'R104, and it was TWO defects. (1) The spell-token half was completely dead: the old '
+      + 'implementation was a `spawned` trigger, and E.createSpellToken fires no dispatchable '
+      + 'event at all, so Biotoxicity\'s three Poisons went past it in silence. A replacement is '
+      + 'CONSULTED at the creation call, so it needs no event — the seam is the call. (2) The '
+      + 'Robot half asked TOO LATE: it really created the Robot, fired a `spawned`, asked, then '
+      + 'erased it. `replaceTokenCreation` runs before anything exists, which is what "you would '
+      + 'create" means, and it is asked once per token in the batch. The choice is raised through '
+      + 'E.askInResolution — the same `partChoose` seam E.glimpse uses — which suspends and '
+      + 'replays the part; outside a resolving part there is nowhere to ask, so the card declines '
+      + 'and SAYS SO rather than defaulting in silence (the glimpse precedent).',
   },
   {
     id: 65, room: 'GETD', date: '2026-08-22',
@@ -948,42 +972,83 @@ export const LEDGER: LedgerEntry[] = [
       + 'by the system, still. The only cards that should ever produce effects that go onto the '
       + 'stack are cards that say "When" or "Whenever" or have a ":" activated ability. All cards '
       + 'that say "instead" or "as" or "if" shouldn\'t go onto the stack.',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '88-replacement-conformance.test.ts::a card whose whole text is an untargeted replacement',
+      '88-replacement-conformance.test.ts::a replacement that DOES name a target still uses the stack',
+      '88-replacement-conformance.test.ts::the classifier finds the replacement clauses',
+      '88-replacement-conformance.test.ts::every exemption is still needed',
+    ],
     note: 'The owner restating id 60 as a RULE rather than a symptom, and it is the sharpest '
       + 'statement of it we have: the test for "does this use the stack" is the printed WORD. '
-      + '"When"/"Whenever"/":" go on the stack. REFINED BY HIM on 2026-08-23, and the refinement '
-      + 'is the load-bearing half — the rule is "cards that say instead, as or if AND DON\'T '
-      + 'MENTION TARGETS" never go on the stack. A replacement that names a TARGET still uses the '
-      + 'stack, because a target has to be chosen and choosing is a public, respondable thing. '
-      + 'So R102 (Beyond, Codex Incarnate\'s rot clause) is CORRECT and not an exception: it '
-      + 'prints "target unit". His second reason is worth keeping too — "rot damage is a trigger '
-      + 'to deal you that damage anyway", so a replacement of it riding the stack is consistent '
-      + 'with what it replaces. This is the acceptance criterion the replacement layer should be '
-      + 'built against, and the eight cards listed at id 60 should each be sorted by it: '
-      + 'Automaton of Abundance, Cosmic Conspirator, Nullbringer, Counter Theif, Flux Resonator, '
-      + 'Proliferating Slime and Conduit of Pain all print "instead" WITHOUT a target, so none of '
-      + 'them should ever reach the stack — which is exactly the bug being reported.',
+      + 'REFINED BY HIM on 2026-08-23, and the refinement is the load-bearing half — "cards that '
+      + 'say instead, as or if AND DON\'T MENTION TARGETS" never go on the stack, because a '
+      + 'target has to be CHOSEN and choosing is public and respondable. So R102 (Beyond, Codex '
+      + 'Incarnate) is CORRECT and not an exception: it prints "target unit". '
+      + 'FIXED BY R104, and the guard is a PERMANENT CONFORMANCE TEST rather than a sweep, for '
+      + 'exactly the reason report #48 got one: this was reported three times (#46 as one card, '
+      + 'then #60 and #75 as a class) and a one-card fix is what makes a class of bug recur. '
+      + '88-replacement-conformance reads printed.json, classifies every replacement clause in '
+      + 'the pool (11 cards, after four rounds of narrowing: 63 → 19 → 11 → 10, plus the one '
+      + '"deals X as Y" card), and fails when a new card prints "would … instead" and is built as '
+      + 'a trigger. Every exemption carries its reason and the list is asserted to be exactly '
+      + 'right. It also asserts the OTHER direction, so nobody "fixes" R102 into the wrong shape.',
   },
   {
     id: 76, room: 'WEHH', date: '2026-08-22',
     report: 'Despite Deployment being entirely separate from the opponent, I can\'t take back some '
       + 'things and get "your opponent has already acted on top of that one — it cannot be taken '
       + 'back now". What they do doesn\'t matter during deployment, so I should always be able to',
-    status: 'live',
-    note: 'Deployment is SIMULTANEOUS and hidden (both players move at once, revealed when both '
-      + 'are done), so the undo guard\'s "someone acted after you" test — which is right during '
-      + 'battle, where the stack is shared and public — is the wrong question here. Look at the '
-      + 'take-back gate and scope it to the acting seat while phase === deploy.',
+    status: 'partial',
+    guards: [
+      'server/test-undo-segment.ts::and it carries a PAYLOAD',
+      'server/test-undo-segment.ts::is still undoable',
+      'server/test-undo-segment.ts::whole position came through the rebuild untouched',
+      'server/test-undo-segment.ts::and the reported error text is gone for good',
+      'server/test-undo-segment.ts::the splice is refused',
+      'server/test-undo-segment.ts::a fresh room opens inside the plan segment',
+    ],
+    note:
+      'FIXED 2026-08-23 for the reported shape, and deliberately NOT for "I should always be '
+      + 'able to" — hence `partial` rather than `fixed`. Splicing your action out shifts every '
+      + 'entity id above its floor, and an opponent action that still replays LEGALLY while '
+      + 'naming a different unit is silent corruption, which is worse than a refusal. So '
+      + '`spliceable()` is now exact for the id route only and no longer asks WHO acted, and '
+      + 'everything else is measured by rebuilding and comparing resolved reference keys. '
+      + 'The gate reads the SEGMENT, not the phase, so planning is covered too. What remains '
+      + 'refused: a later action that literally names an id your undo would renumber. '
+      + '⚠ THIS WAS A RECURRENCE OF #37, and the reason is on the record: #37\'s two guards '
+      + 'both drive the resource step, which allocates no id and draws no RNG, so the splice '
+      + 'gate they were supposed to protect is never reached by either of them. #37 built the '
+      + 'segments; it never touched the gate. The decision also lived inside main.ts\'s '
+      + 'WebSocket handler — reachable only by playing a whole game over a socket — and is now '
+      + '`undoForSeat(room, seat)` in rooms.ts, which is what the guards above drive.',
   },
   {
     id: 77, room: 'WEHH', date: '2026-08-22',
     report: 'Trying to declare illegal blocks entirely resets the board, which is really annoying. '
       + 'It should reset only the "affected" units and give a notice plus a "Reset blockers?" '
       + 'button, so a massive block does not have to be rebuilt for forgetting one thing',
-    status: 'live',
-    note: 'Client-side. The block builder throws the whole plan away on a refused declaration '
-      + 'rather than reporting which units are the problem. R84 already built the shape this '
-      + 'wants — it names the compulsory block instead of letting you find out — so the fix is to '
-      + 'extend that judgement to every block-legality reason and keep the rest of the plan.',
+    status: 'fixed',
+    guards: [
+      '86-ui-block-refusal.test.ts::one bad column does not cost you the other five',
+      '86-ui-block-refusal.test.ts::what the verdict keeps is something the engine actually accepts',
+      '86-ui-block-refusal.test.ts::a compulsory block is REQUIRED, not an offender',
+      '86-ui-block-refusal.test.ts::widening the error did not widen the RULE',
+      '86-ui-block-refusal.test.ts::and it did not narrow it either',
+      '86-ui-block-refusal.test.ts::the plan is no longer wiped the moment the action is sent',
+      '86-ui-block-refusal.test.ts::with a Reset blockers? button',
+    ],
+    note:
+      'Two halves, and the second was the real cause. (a) `doDeclareBlocks` is split into '
+      + '`checkBlocks` — the same legality run, verbatim and in the same order — and the '
+      + 'mutation, so a refusal is available as a VALUE; ui/battle.ts then walks the plan '
+      + 'against that oracle and returns which units offended, what survives, and R84\'s '
+      + 'compulsory duty as `required` rather than as an offender. No block rule is restated '
+      + 'client-side, so the surviving plan is legal by construction and the RULE did not '
+      + 'change. (b) `declareBuiltBlocks` cleared the plan the moment it called `act()`, which '
+      + 'is right in hotseat (the refusal is synchronous) and wrong over a socket, where the '
+      + 'refusal lands after the wipe — i.e. in every network game, which is every game this '
+      + 'report came from.',
   },
 ];

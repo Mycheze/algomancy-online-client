@@ -149,6 +149,11 @@ card('Battle', {
 // "[Augment] {Unaware} Druid Rock Turtle Unit" — e/4 5/6. Type-line
 // [Augment] grants {Unaware}; printed.augmentAttrs carries it and
 // printed.attrs keeps it live when played normally. Vanilla otherwise.
+// The attribute is LIVE as of R106 (2026-08-23): stat layer 6 shipped, and
+// Bubb — or any host its [Augment] lands on — ignores every stat change,
+// its own included, so Bubb is a 5/6 through counters, auras, {Tough} and
+// {Inverted} alike. (This note used to end at "vanilla otherwise", which was
+// true of the code and hid a dead card for two playtest reports.)
 card('Bubb', {});
 
 // "[Augment] Abilities cost [one] more to activate or trigger during battle.
@@ -470,8 +475,13 @@ card('Graxxlid', {
         const t = ctx.targets[0];
         if (!t || !('stack' in (t as object))) return;
         const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-        if (!item) return;
+        if (!item) {
+          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
+          g.ev('info', 'Graxxlid: the targeted effect has already left the stack — nothing is negated.');
+          return;
+        }
         if (!aimsAtUnit(g, item.id, ctx.sourceId)) {
+          ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
           g.ev('info', `Graxxlid: ${item.label} does not target me — no effect.`);
           return;
         }
@@ -485,6 +495,11 @@ card('Graxxlid', {
 // "I deal 1 damage to each unit." — ee/4 {Battle} {Unaware} Sand Spell.
 // "Each unit" = every unit in the effect's region (R12), both sides;
 // the unit list is snapshotted, then each still-alive unit is hit.
+// ⚠ {Unaware} on a SPELL is a deliberate no-op under R106's blanket reading:
+// layer 6 freezes an Unaware card's OWN stats and does not collapse what it
+// interacts with, and a spell has no stats in play to freeze. Haboob's 1
+// damage therefore lands on each unit's EFFECTIVE toughness. R106 records
+// why this diverges from Caleb's pairwise gloss on this exact card.
 card('Haboob', {
   spellEffect: {
     run: (g, ctx) => {

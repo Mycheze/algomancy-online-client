@@ -462,6 +462,7 @@ test('Life Channel: the [Switch1] graft rider reads the ledger straight', () => 
     def.run(e, {
       controller: A, sourceName: 'Life Channel', region: h.state.battle!.region,
       targets: [h.state.entities[atk]!], event: null,
+      eraseSelf: () => {},   // no stack item here — a direct-run ctx
       choose: () => { throw new Error('no choice expected'); },
     });
   });

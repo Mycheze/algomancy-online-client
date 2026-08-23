@@ -39,6 +39,8 @@ const TIMEOUT_MS = 180_000;
 const SUITE: { file: string; covers: string }[] = [
   { file: 'test-hidden.ts',
     covers: 'hidden simultaneous segments in-process: freeze / holdback / reveal / undo for the resource step, the haste step and deployment' },
+  { file: 'test-undo-segment.ts',
+    covers: 'ledger #76/#37: the take-back inside a hidden segment — the opponent deploying on top of you does not take your undo away; the two cases still refused (a later move that NAMES a renumbered id, and one that stays legal while meaning something else)' },
   { file: 'test-forensics.ts',
     covers: 'saved logs as a forensic record: replay onto a changed engine, the skip cascade, fork records, undo never eating a move' },
   { file: 'test-drive.ts',

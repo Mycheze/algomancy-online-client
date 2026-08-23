@@ -40,14 +40,19 @@
  *    reads the X that R35 already fixed before targets are asked for, so the
  *    spell goes on the stack aiming at named units and opponents respond to
  *    the picks.
- *  - REPLACEMENT EFFECTS that the engine has no hook for (Arbiter of Vitality's
- *    doubled life change, Proliferating Slime's "plus one counter") are
- *    modelled as TRIGGERS that top the amount up afterwards. The engine has
- *    exactly two replacement hooks (replaceRotDamage, replaceCombatDamage-
- *    ToPlayer) and neither covers life or counters. Observable differences:
- *    the top-up lands after the original amount rather than instead of it, and
- *    two copies of the card add 1x each instead of compounding. Each card
- *    documents its own guard against re-triggering itself.
+ * ✔ PROLIFERATING SLIME IS A REAL REPLACEMENT NOW (R104). "put that many
+ *    counters plus one instead" is an `AmountMod` — consulted by addCounters /
+ *    gainRot / gainDebt before they commit, summed across holders, never on the
+ *    stack — so the counters arrive once with the right number on them, and the
+ *    module-level `let proliferating` that guarded the old trigger's
+ *    re-entrancy is deleted (report #60 counted those flags as the symptom).
+ *  - ⚠ ARBITER OF VITALITY is still a TRIGGER, and deliberately so: "Double all
+ *    life gain and life loss" prints neither "would" nor "instead", so it is
+ *    outside the class report #75 defines and R104 implements. It is a
+ *    multiplier on a life change rather than a substitution of one, and giving
+ *    it a hook would need a MULTIPLICATIVE amount family whose composition with
+ *    the additive one nobody has ruled on. Flagged in R104's "still not
+ *    replaceable" list rather than guessed at.
  * ✔ "[Battle]" ON AN ACTIVATED ability is `ActivatedAbility.timing` now (R49),
  *    enforced at ACTIVATION: Cadaverous Cultivator is not offered during
  *    deployment and apply() refuses it there.
@@ -90,16 +95,19 @@ import { isEnt, isUnitCard, selfOf } from './helpers.ts';
  * statics' `attrs`. So a {Pure} granted by one of the rows below is honoured
  * at the combat choke points exactly like a printed one.
  *
- * The one name here that is still inert is {Unaware}: it is stat layer 6, and
- * effStats() now ends at layer 5 with the placeholder "layer 6 (Unaware) goes
- * here". A row granting it copies the name onto the Omniphage and nothing
- * happens. (The same gap still makes Bubb, Trashling and Haboob inert — see
- * test/card-ledger.ts.)
+ * {Unaware} used to be called out here as the one still-inert name. It is not
+ * any more: R106 shipped stat layer 6 on 2026-08-23, so a row granting
+ * {Unaware} makes the Omniphage ignore every stat change including its own,
+ * and Bubb, Trashling and Haboob came off the card ledger with it.
  *
- * {Inverted} used to be listed here too and no longer is: R93 shipped stat
- * layer 5 for playtest report #73, so a row granting {Inverted} now really
- * inverts the Omniphage's net stat change, and Reality Bender and Its Dark
- * Bubb came off the card ledger with it. */
+ * {Inverted} came off the same list one round earlier: R93 shipped stat layer
+ * 5 for playtest report #73, so a row granting {Inverted} now really inverts
+ * the Omniphage's net stat change, and Reality Bender and Its Dark Bubb came
+ * off the card ledger with it.
+ *
+ * Every name in this union is read by something now. If that stops being
+ * true, say WHICH name and cite the ledger entry — an "inert" note with no
+ * failing check behind it is the shape that hid Harbinger. */
 const ALL_ATTRS: Attr[] = [
   'Flying', 'Deadly', 'Swift', 'Sluggish', 'Tough', 'Balanced',
   'Inverted', 'Unaware', 'Powerful', 'Vulnerable', 'Feeble', 'Evasive',
@@ -638,72 +646,47 @@ card('Inexorable Miasma', {
   }],
 });
 
-/** ⚠ re-entrancy guard for Proliferating Slime's top-up (the engine's own
- * `inStatics` pattern): the extra counter is itself a counter event, so
- * without this a Slime would proliferate its own proliferation forever. It is
- * set and cleared inside ONE synchronous run() with no ctx.choose in between,
- * so it never has to survive a suspension/rollback and is deliberately kept
- * out of the serialized game state. Two Slimes still add one each: the guard
- * only suppresses NEW triggers raised by a top-up, and both Slimes already
- * queued off the original event. */
-let proliferating = false;
-
-/** "an enemy unit or player" — enemy of the Slime's controller */
-const slimeEnemyUnit = (g: E, self: Entity, ev: { data?: Record<string, unknown> }): boolean => {
-  if (proliferating) return false;
-  const uid = ev.data?.['unit'] as EntityId | undefined;
-  const u = uid !== undefined ? g.entity(uid) : undefined;
-  return !!u && u.controller !== self.controller && ((ev.data?.['n'] as number | undefined) ?? 0) !== 0;
-};
-
 // "[Augment] If one or more counters would be put on an enemy unit or player,
 // put that many counters plus one instead." — gd/2 1/2 {Virus} Blight Slime
 // Unit.
 //
-// ⚠ REPLACEMENT APPROXIMATION (header): the engine has no counter-replacement
-// hook, so this is a trigger that adds the "plus one" AFTER the original
-// counters land. The extra counter has the SAME SIGN as the ones that were
-// put ("that many counters plus one" — one more of the same thing), so a
-// -1/-1 counter on an enemy becomes two.
+// UNPARKED as a real replacement (R104). It used to be two triggers on
+// 'countersChanged'/'rotGained'/'debtGained' that added the "plus one" AFTER
+// the printed counters had already landed, guarded by a module-level `let
+// proliferating` — because the top-up was itself a counter placement and the
+// trigger re-entered `addCounters`. Report #60 named those five module flags
+// as the symptom; an `AmountMod` is CONSULTED rather than re-entered, so the
+// flag has no job and is deleted. The counters now arrive once, in one event,
+// with the right number on it.
 //
-// ⚠ INTERPRETATION: "or player" is read as ROT and DEBT, the expansion's two
-// player counters (docs/08: "A counter accumulated by a PLAYER" for both).
-// No other counter can be put on a player, so the clause would otherwise be
-// dead text. Flagged in the batch report.
+// SUMMED (Caleb: "a replacement only happens once … The replacement just takes
+// what would be 1 and makes it 2"), so two Slimes add two — and a Slime plus a
+// Flux Resonator add one each, which is the composition rule the two families
+// were split over.
+//
+// SAME SIGN as the counters that were put — "that many counters plus one" is
+// one more of the same thing — so a -1/-1 counter on an enemy becomes two.
+//
+// ⚠ INTERPRETATION, unchanged: "or player" is read as ROT and DEBT, the
+// expansion's two player counters (docs/08: "A counter accumulated by a
+// PLAYER" for both). No other counter can be put on a player, so the clause
+// would otherwise be dead text. Now that rot and debt are `AmountMod` sites the
+// reading is expressed in the same three lines as the unit half rather than in
+// a second trigger.
 card('Proliferating Slime', {
-  augmentText: [
-    {
-      type: 'triggered', events: ['countersChanged'],
-      label: 'put one more counter on that enemy unit',
-      when: (g, self, ev) => slimeEnemyUnit(g, self, ev),
-      effect: {
-        run: (g, ctx) => {
-          const uid = ctx.event?.data?.unit as EntityId | undefined;
-          const n = (ctx.event?.data?.n as number | undefined) ?? 0;
-          const u = uid !== undefined ? g.entity(uid) : undefined;
-          if (!u || n === 0) return;
-          proliferating = true;
-          try { g.addCounters(u, n > 0 ? 1 : -1); } finally { proliferating = false; }
-        },
-      },
+  augmentable: true,
+  amountMods: [{
+    delta: (_g, self, ctx) => {
+      const step = ctx.amount > 0 ? 1 : -1;
+      if (ctx.kind === 'counters') {
+        return ctx.unit && ctx.unit.controller !== self.controller ? step : 0;
+      }
+      if (ctx.kind === 'rot' || ctx.kind === 'debt') {
+        return ctx.player !== undefined && ctx.player !== self.controller ? step : 0;
+      }
+      return 0;
     },
-    {
-      type: 'triggered', events: ['rotGained', 'debtGained'],
-      label: 'give that enemy player one more rot/debt',
-      when: (_g, self, ev) => !proliferating && ev.data?.seat !== self.controller,
-      effect: {
-        run: (g, ctx) => {
-          const seat = ctx.event?.data?.seat as Seat | undefined;
-          if (seat === undefined) return;
-          const isRot = ctx.event?.type === 'rotGained';
-          proliferating = true;
-          try {
-            if (isRot) g.gainRot(seat, 1); else g.gainDebt(seat, 1);
-          } finally { proliferating = false; }
-        },
-      },
-    },
-  ],
+  }],
 });
 
 // ─────────────────────── EARTH / DARK (ed) ────────────────────────────

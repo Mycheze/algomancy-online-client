@@ -20,10 +20,11 @@
  *  - Cinder Scuttler: UN-PARKED (R51) — "if I am in your bin, recall me" is a
  *    `zone: 'bin'` trigger, dispatched to the card while it sits in a bin on a
  *    detached stand-in owned by that bin's seat.
- *  - Conduit of Pain: "an allied source would deal noncombat damage ... plus 1
- *    instead" is a damage REPLACEMENT; dealEffectDamage has no replacement
- *    hooks. Registered with an inert augmentText entry so the card is still
- *    recognised as an augment (Astralith precedent).
+ *  - Conduit of Pain: UN-PARKED (R104). "an allied source would deal noncombat
+ *    damage ... plus 1 instead" is the pure AMOUNT half of the replacement
+ *    layer — an `AmountMod`, summed like a CostMod, consulted by
+ *    dealEffectDamageAll after {Powerful} has doubled and before {Vulnerable}
+ *    prices the victim. It never reaches the stack, so it cannot be negated.
  *  - Emberflame Enlightener: UN-PARKED (R94). Both halves are live. The
  *    units half is a static ({Powerful} to your units in its region) in BOTH
  *    forms; the SPELLS half is an `effectAttrs` mod — CostMod's sibling, not
@@ -220,14 +221,35 @@ card('Cinder Scuttler', {
 });
 
 // "[Augment] If an allied source would deal noncombat damage, it deals that
-// much damage plus 1 instead." — rr/2 2/1. PARKED (see header): damage
-// replacement hook missing. The inert augmentText entry (events: []) keeps
-// the card recognised as an augment; it donates nothing yet.
+// much damage plus 1 instead." — rr/2 2/1.
+//
+// UNPARKED (R104). This is the pure AmountMod case: nothing is substituted and
+// nothing is redirected, the number is simply bigger by the time it lands. It
+// never reaches the stack — Containment Protocol and Nothyr have nothing to
+// negate — which is the owner's rule for a card that prints "instead" and
+// names no target (report #75).
+//
+// SUMMED, so two Conduits make a 1 into a 3. That is Caleb's composition
+// ruling: "a replacement only happens once … The replacement just takes what
+// would be 1 and makes it 2" — two DIFFERENT modifiers both apply, and none
+// applies to its own contribution.
+//
+// "AN ALLIED SOURCE" is the effect's controller, `ctx.sourceSeat` — which
+// `dealEffectDamageAll` really knows (it is `ctx.controller`), unlike the
+// counters path where `addCounters` has no source at all. Allied to the
+// ANCHOR: played normally that is this card, donated as an [Augment] it is the
+// host, and the whole clause moves to the host's side with it.
+//
+// NONCOMBAT only, which is the printed word and also the seam: combat damage
+// has its own two hooks (R38/R98) and never comes through
+// `dealEffectDamageAll`. `augmentable` is what keeps the card recognised as an
+// augment now that the inert augmentText entry is gone — the Rook/Emberflame
+// precedent for [Augment] text implemented as a continuous mod.
 card('Conduit of Pain', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'allied noncombat damage +1 (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
+  augmentable: true,
+  amountMods: [{
+    delta: (_g, self, ctx) =>
+      (ctx.kind === 'effectDamage' && ctx.sourceSeat === self.controller && ctx.amount > 0 ? 1 : 0),
   }],
 });
 
@@ -594,7 +616,14 @@ card('Hooba-Lin', {
 const immolateEffect: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
   run: (g, ctx) => {
-    if (!ctx.costPaid?.sacrificed) return;   // rider declined / unpayable
+    if (!ctx.costPaid?.sacrificed) {
+      // CARD-TODO #18: declining a [Switch1] rider's cost never spends the use.
+      // (The cast-time decline route refunds it too — R35 marks the part spent
+      // before it runs — so this is the belt to that braces.)
+      ctx.refundBudget?.();
+      g.ev('info', 'Immolate: no unit was sacrificed — no card is drawn.');
+      return;   // rider declined / unpayable
+    }
     g.draw(ctx.controller, 1);
   },
 };

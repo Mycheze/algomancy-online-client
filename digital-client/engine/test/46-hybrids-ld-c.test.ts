@@ -274,10 +274,57 @@ test('Capture: puts target unit into YOUR hand (a steal), then you discard a car
 
 // ── Counter Theif ────────────────────────────────────────────────────────
 
-test('Counter Theif: counters placed on units during battle land on me instead', { todo: true }, () => {
-  // PARKED: a replacement effect on COUNTER PLACEMENT. The engine has exactly
-  // two narrow replacement hooks (replaceRotDamage, replaceCombatDamageToPlayer)
-  // and no framework; E.addCounters has no hook at all. See the batch header.
+test('Counter Theif: counters placed on any unit during battle land on it instead', () => {
+  // R104, the REDIRECT family: the number is untouched and the RECIPIENT
+  // changes, so this is a first-claimant-consumes hook and not a summed
+  // AmountMod. The counters land on exactly one unit either way.
+  const h = new Harness(4620);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const ct = spawn(h, P, 'Counter Theif');
+  const other = spawn(h, P, 'LDC Grunt');
+  toNextBattle(h, P);
+  whiteBox(h, e => e.addCounters(e.entity(other)!, 2));
+  assert.equal(ent(h, other)!.counters, 0, 'the printed recipient got none');
+  assert.equal(ent(h, ct)!.counters, 2, '"those counters are placed on me instead"');
+});
+
+test('Counter Theif: outside battle the counters land where they were put', () => {
+  // "during battle" is a printed restriction and it is real. The engine's own
+  // battle state answers it, which costs a query rather than a listener.
+  const h = new Harness(4621);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const ct = spawn(h, P, 'Counter Theif');
+  const other = spawn(h, P, 'LDC Grunt');
+  whiteBox(h, e => e.addCounters(e.entity(other)!, 2));
+  assert.equal(ent(h, other)!.counters, 2, 'deployment is not battle');
+  assert.equal(ent(h, ct)!.counters, 0);
+});
+
+test('Counter Theif: two thieves do not ping-pong, and the theft never reaches the stack', () => {
+  // The redirect really re-enters — putting the counters on the thief IS a
+  // counter placement — so two thieves would bounce one placement between them
+  // forever without a latch. The latch lives in the engine
+  // (`E.inReplaceCounters`, in E.inCostMods' shape) and not as a module-level
+  // `let` in a card file, which is the correction playtest report #60 asked
+  // for. Lowest entity id claims, exactly as replaceRotDamage resolves ties.
+  const h = new Harness(4622);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const first = spawn(h, P, 'Counter Theif');
+  const second = spawn(h, P, 'Counter Theif');
+  const other = spawn(h, P, 'LDC Grunt');
+  toNextBattle(h, P);
+  const before = h.events.length;
+  whiteBox(h, e => e.addCounters(e.entity(other)!, 3));
+  assert.equal(ent(h, first)!.counters, 3, 'the lower id claims them');
+  assert.equal(ent(h, second)!.counters, 0, 'and the other gets nothing — a redirect, not a copy');
+  const after = h.events.slice(before);
+  assert.equal(after.filter(ev => ev.type === 'countersChanged').length, 1,
+    'ONE countersChanged for one placement');
+  assert.equal(after.filter(ev => ev.type === 'triggered' || ev.type === 'stackPushed').length, 0,
+    'nothing was queued and nothing was pushed — there is no stack item to negate');
 });
 
 test('Counter Theif: plays as a 0/5 and augments (donating nothing yet)', () => {
@@ -290,9 +337,11 @@ test('Counter Theif: plays as a 0/5 and augments (donating nothing yet)', () => 
   giveResources(h, P, 'metal', 2);
   giveResources(h, P, 'dark', 2);                          // md / 4
   h.do({ type: 'augment', seat: P, from: 'hand', index: give(h, P, 'Counter Theif'), hostId: host });
-  assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment (inert donation)');
+  assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment');
   whiteBox(h, e => e.addCounters(e.entity(host)!, 2));
-  assert.equal(ent(h, host)!.counters, 2, 'counters still land where they were put (PARKED)');
+  assert.equal(ent(h, host)!.counters, 2,
+    'outside battle nothing is stolen — and "me" is the HOST when the text is donated, '
+    + 'so even in battle the host would keep its own counters');
 });
 
 // ── Deathcoil Construct ──────────────────────────────────────────────────

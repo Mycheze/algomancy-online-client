@@ -75,13 +75,10 @@
  *
  * PARKED (needs engine machinery that does not exist yet — both cards still
  * register crash-free and have a todo test):
- *  - Counter Theif: "If one or more counters would be placed on one or more
- *    units during battle, those counters are placed on me instead" is a
- *    REPLACEMENT EFFECT ON COUNTER PLACEMENT. The engine has exactly two
- *    replacement hooks (replaceRotDamage, replaceCombatDamageToPlayer) and
- *    deliberately no framework; addCounters() has no hook at all. Registered
- *    with an inert augmentText entry (the Stasis Sentry precedent) so it still
- *    plays as a 0/5 and is recognised as an augment.
+ *  - Counter Theif: UN-PARKED (R104). "those counters are placed on me instead"
+ *    is a REDIRECT — the second family of the replacement layer — expressed as
+ *    `replaceCounters`, a first-claimant-consumes hook E.addCounters consults
+ *    before it commits. Nothing reaches the stack, so nothing can negate it.
  *  - Trench Stalker: of its three missing pieces R49 supplied one — a
  *    "[Discard two cards]" bracketed cast cost is expressible now (the
  *    extractor still leaves the printed line in `text`, so it would be authored
@@ -226,7 +223,14 @@ card('Dragnol', {
     when: (g, self, ev) => g.s.phase === 'battle' && ev.data?.seat === self.controller,
     effect: {
       run: (g, ctx) => {
-        if (g.openMana(ctx.controller) < 2 || inEndOfTurn(g)) return;
+        if (inEndOfTurn(g)) {
+          g.ev('info', 'Dragnol: no payment is offered during end of turn — nothing is drained.');
+          return;
+        }
+        if (g.openMana(ctx.controller) < 2) {
+          g.ev('info', 'Dragnol: you cannot pay [2] — nothing is drained.');
+          return;
+        }
         const pay = ctx.choose('pay', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: 'Dragnol: pay [2]? (each opponent loses 2 life, you gain 2 life)',
@@ -235,7 +239,10 @@ card('Dragnol', {
             { label: 'Decline', value: false },
           ],
         });
-        if (!pay) return;
+        if (!pay) {
+          g.ev('info', 'Dragnol: [2] is not paid — nothing is drained.');
+          return;
+        }
         g.payMana(ctx.controller, 2);
         // the gain first: a life total that ends at 0 must not be reached by
         // an opponent's loss before mine lands (loseLife ends the game inline)
@@ -421,19 +428,40 @@ card('Buffer Overflow', {
 // "[Augment] If one or more counters would be placed on one or more units
 // during battle, those counters are placed on me instead." — md/4 0/5
 // {Virus} Infection Unit.
-// PARKED (see header): a replacement effect on COUNTER PLACEMENT. The engine
-// has two narrow replacement hooks (rot damage, combat damage to a player)
-// and no framework; E.addCounters has no hook. The inert augmentText entry
-// keeps the card recognised as an augment (Stasis Sentry precedent); it plays
-// as a 0/5 meanwhile.
+// UNPARKED (R104). A REDIRECT, which is the second family in the replacement
+// layer: the number is untouched and the RECIPIENT changes, so it is a
+// first-claimant-consumes hook rather than a summed AmountMod. The counters
+// land on exactly one unit either way — that is what "instead" means, and it
+// is why two thieves do not each get a copy.
+//
+// "DURING BATTLE" is the printed restriction and it is real: outside battle
+// the thief takes nothing. The engine's own battle state answers it, and it
+// costs a query rather than a listener.
+//
+// "ON ONE OR MORE UNITS" — every unit, not just enemies and not just allies.
+// The text names no owner, so the hook is offered for any unit in the anchor's
+// region (R12), which is also the region the thief could actually reach.
+//
+// "ON ME" is the ANCHOR: this card's body when it was played normally, the
+// HOST when the text arrived on an augment mod — the same rebinding Skittering
+// Blight's "counters on me" gets, and it comes free from E.anchored().
+//
+// The engine's `inReplaceCounters` latch is what makes the self-placement safe
+// (the theft is itself a counter placement, and two thieves would otherwise
+// bounce one placement between them forever). It lives in the engine, in
+// E.inCostMods' shape, and NOT as a module-level `let` in this file — which is
+// the correction report #60 asked for.
+//
 // ⚠ TRANSCRIPTION: the printed NAME is misspelled ("Counter Theif") in the
 // card data; registered under the printed spelling deliberately.
 card('Counter Theif', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'counters placed on units during battle are placed on me instead (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
-  }],
+  augmentable: true,
+  replaceCounters: (g, self, target) => {
+    if (!g.s.battle) return null;                 // "during battle"
+    if (target.id === self.id) return null;       // already mine
+    if (target.region !== self.region) return null;
+    return self;
+  },
 });
 
 // "[Augment] [once] Discard a card or sacrifice another nontoken unit:
@@ -475,7 +503,14 @@ card('Lilbot', {
 const swarmlingCopy: EffectDef = {
   creates: ['Swarmling'],
   run: (g, ctx) => {
-    if (g.openMana(ctx.controller) < 1 || inEndOfTurn(g)) return;
+    if (inEndOfTurn(g)) {
+      g.ev('info', 'Swarmling: no payment is offered during end of turn — no copy.');
+      return;
+    }
+    if (g.openMana(ctx.controller) < 1) {
+      g.ev('info', 'Swarmling: you cannot pay [1] — no copy.');
+      return;
+    }
     const pay = ctx.choose('pay', {
       kind: 'payOrDecline', seat: ctx.controller,
       prompt: 'Swarmling: pay [1] to create a copy of me?',
@@ -484,7 +519,10 @@ const swarmlingCopy: EffectDef = {
         { label: 'Decline', value: false },
       ],
     });
-    if (!pay) return;
+    if (!pay) {
+      g.ev('info', 'Swarmling: [1] is not paid — no copy.');
+      return;
+    }
     g.payMana(ctx.controller, 1);
     // R52: a created unit arrives in its CONTROLLER's home region
     g.spawnUnit(ctx.controller, 'Swarmling', g.homeRegion(ctx.controller), { token: true });

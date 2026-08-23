@@ -150,7 +150,10 @@ card('Boon of Protection', {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-      if (!item) return;
+      if (!item) {
+        g.ev('info', 'Boon of Protection: the targeted effect has already left the stack — nothing is negated.');
+        return;
+      }
       const allied = item.parts.some(p => !p.spent && p.targets.some(tr => {
         if ('unit' in tr) return g.entity(tr.unit)?.controller === ctx.controller;
         if ('player' in tr) return tr.player === ctx.controller;
@@ -234,9 +237,12 @@ card('Corrupting Blight', {
     effect: {
       run: (g, ctx) => {
         const me = selfOf(g, ctx);
-        if (!me) return;
+        if (!me) { g.ev('info', 'Corrupting Blight: the carrier is gone — no control changes.'); return; }
         const candidates = g.s.players.map((_, s) => s as Seat).filter(s => s !== me.controller);
-        if (!candidates.length) return;
+        if (!candidates.length) {
+          g.ev('info', `Corrupting Blight: everybody already controls ${me.card} — no control changes.`);
+          return;
+        }
         const to = candidates.length === 1 || inEndOfTurn(g) ? candidates[0]! : ctx.choose('who', {
           kind: 'electricPath', seat: ctx.controller,
           prompt: `Corrupting Blight: who gains control of ${me.card}?`,
@@ -366,21 +372,42 @@ card('Hexbane Shiitake', {
     effect: {
       run: (g, ctx) => {
         const me = selfOf(g, ctx);
-        if (!me) return;
+        // CARD-TODO #18: nothing to do, so the [once] is not spent (R9 ruling
+        // 2026-08-23 — a bounded use is spent only when it does something).
+        if (!me) { ctx.refundBudget?.(); g.ev('info', 'Hexbane Shiitake: the carrier is gone — no exchange.'); return; }
         const cardName = ctx.event?.data?.card as string | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
-        if (cardName === undefined || seat === undefined) return;
+        if (cardName === undefined || seat === undefined) { ctx.refundBudget?.(); return; }
         const spellKinds = new Set(['spell', 'spellUnit']);
         const item = [...g.s.stack].reverse().find(i =>
           i.card === cardName && i.controller === seat && spellKinds.has(i.kind));
-        if (!item) { g.ev('info', `Hexbane Shiitake: ${cardName} is no longer on the stack — no exchange.`); return; }
+        if (!item) { ctx.refundBudget?.(); g.ev('info', `Hexbane Shiitake: ${cardName} is no longer on the stack — no exchange.`); return; }
         // plan: every choice before any mutation (the part replays on suspension)
-        const pays = inEndOfTurn(g) ? false : ctx.choose('swap', {
+        //
+        // CARD-TODO #18: the end-of-turn window (R6/R85: no deployment, so no
+        // decision channel) means the player CANNOT be asked, so the exchange
+        // does not happen. That part was always right; what was wrong was that
+        // the [once] burnt anyway, on a question nobody was asked. It is named
+        // here rather than folded into the ternary because the two facts are
+        // different: `canAsk` is why there is no answer, `pays` is the answer.
+        const canAsk = !inEndOfTurn(g);
+        const pays = canAsk && ctx.choose('swap', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: `Hexbane Shiitake: exchange control of ${me.card} for ${item.label}?`,
           options: [{ label: `Exchange (${g.pname(seat)} gets ${me.card})`, value: true }, { label: 'Decline', value: false }],
-        });
-        if (pays !== true) return;
+        }) === true;
+        if (!pays) {
+          // CARD-TODO #18, and the case that raised it. `pays` is false in TWO
+          // ways: the player was asked and declined, or the end-of-turn window
+          // meant they were NEVER ASKED at all (see `canAsk` above).
+          // The owner's ruling (2026-08-23) collapses both — "a [once] is spent
+          // only when the ability actually does something" — so the same
+          // refund covers the auto-decline and the ordinary one, and the
+          // trigger may ask again later the same turn.
+          ctx.refundBudget?.();
+          g.ev('info', `Hexbane Shiitake: ${item.label} is left alone — no exchange.`);
+          return;
+        }
         const retargets: { pi: number; ti: number; ref: TargetRef }[] = [];
         item.parts.forEach((p, pi) => {
           if (p.spent) return;

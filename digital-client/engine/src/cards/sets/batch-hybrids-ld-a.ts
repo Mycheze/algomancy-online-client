@@ -621,7 +621,10 @@ card('Dream Lapse', {
       // stack and NOTHING is done with its card. negate() would bin it, and
       // then the recall below would put a second copy in hand.
       const it = g.removeFromStack(stackId);
-      if (!it) return;
+      if (!it) {
+        g.ev('info', 'Dream Lapse: the targeted spell effect has already left the stack — nothing is recalled.');
+        return;
+      }
       g.ev('negated', `${it.label} is recalled off the stack.`, { id: it.id });
       const recallable = it.card !== undefined
         && (it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'virus' || it.kind === 'ambush');
@@ -717,7 +720,14 @@ card('Reclaim the Fallen', {
         if (k !== -1) host.mods.splice(k, 1);
       }
       for (const m of mods) {
-        g.spawnUnit(m.controller, m.card, ctx.region, m.token ? { token: true } : {});
+        // CARD-TODO #17: "under their CONTROLLER's control" — a mod's
+        // controller is its host's (attachMod), while its OWNER is whoever
+        // applied it. So a virus you stuck on an enemy comes back on their
+        // side, as the printed text says, but it is still your card and goes
+        // to your bin when it dies (R65). Passing only the controller made it
+        // theirs outright.
+        g.spawnUnit(m.controller, m.card, ctx.region,
+          { owner: m.owner, ...(m.token ? { token: true } : {}) });
       }
       g.ev('info', `Reclaim the Fallen: ${mods.length} unit mod(s) leave ${host.card} and enter play.`);
     },
@@ -759,7 +769,12 @@ card('Uglk', {
           if (name === undefined) continue;
           const opp = presentSeats(g, ctx.region).find(s => s !== seat) ?? (1 - seat);
           g.ev('info', `Uglk: ${g.pname(seat)} gives ${name} to ${g.pname(opp)}.`);
-          g.spawnUnit(opp, name, ctx.region);
+          // CARD-TODO #17: "under an opponent's control" is a CONTROL clause,
+          // not a transfer of the card. It came out of `seat`'s bin, so it is
+          // still `seat`'s card (R65) and dies back to their bin; `opp` only
+          // controls it. Before the owner option existed this handed the card
+          // over permanently, which the printed text never says.
+          g.spawnUnit(opp, name, ctx.region, { owner: seat });
         }
       },
     },

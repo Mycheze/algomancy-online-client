@@ -313,7 +313,10 @@ card('Frosted Denial', {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-      if (!item) return;
+      if (!item) {
+        g.ev('info', 'Frosted Denial: the targeted effect has already left the stack — no ransom, no negate.');
+        return;
+      }
       if (item.controller === ctx.controller) { g.ev('info', 'Frosted Denial: not an enemy effect — no effect.'); return; }
       const me = ctx.controller;
       const x = ctx.x ?? 0;
@@ -556,7 +559,10 @@ card('Null Drone', {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
-      if (!item || !item.card) return;
+      if (!item || !item.card) {
+        g.ev('info', 'Null Drone: the targeted spell effect has already left the stack — nothing is negated.');
+        return;
+      }
       const m = getCard(item.card).mana;
       const cost = m === 'X' ? (item.x ?? 0) : m;
       const lost = Math.max(0, ...g.s.players.map(p => lifeLostThisBattle(g, ctx.region, p.seat)));

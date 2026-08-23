@@ -31,9 +31,12 @@
  *    Graves is one of them, and no longer belongs in this list.)
  *  - "PUT INTO PLAY" / "PLAY … NOW, FOR FREE" is spawnUnit: the unit arrives
  *    directly in play and fires its spawn triggers, with no stack step. Wake
- *    the Dead reaches into ANY bin, and spawnUnit has no owner parameter, so a
- *    unit stolen out of the opponent's bin becomes the caster's card outright
- *    (it returns to the CASTER's bin when it dies, not its printed owner's).
+ *    the Dead reaches into ANY bin, and it is NO LONGER an approximation that
+ *    a unit raised out of the opponent's bin becomes the caster's card:
+ *    CARD-TODO #17 gave spawnUnit an `owner` option (defaulting to the seat it
+ *    enters play under), and Wake the Dead passes the bin's own seat. The
+ *    caster CONTROLS it; the opponent still OWNS it, so it dies to THEIR bin
+ *    (R65) and can be recurred by them.
  *  - "TARGET NONSPELL EFFECT" (Nothyr) IS a TargetSpec now: R60's
  *    `what: 'stackEffect'` is the superset (every effect on the stack,
  *    triggered and activated abilities included) and a `restrict` narrows it
@@ -136,6 +139,7 @@ const animaWraith: EffectDef = {
   creates: ['Wraith'],
   run: (g, ctx) => {
     if (g.openMana(ctx.controller) < 1) {
+      ctx.refundBudget?.();   // CARD-TODO #18: nothing to do
       g.ev('info', 'Afflicting Anima: cannot pay [1] — no Wraith.');
       return;
     }
@@ -144,7 +148,11 @@ const animaWraith: EffectDef = {
       prompt: 'Afflicting Anima: pay [1] to create a Wraith?',
       options: [{ label: 'Pay [1] — create a Wraith', value: true }, { label: 'Decline', value: false }],
     });
-    if (pays !== true) return;
+    if (pays !== true) {
+      ctx.refundBudget?.();   // CARD-TODO #18: declining never spends it
+      g.ev('info', 'Afflicting Anima: [1] is not paid — no Wraith.');
+      return;
+    }
     g.payMana(ctx.controller, 1);
     g.createWraith(ctx.controller, g.homeRegion(ctx.controller));   // R52
   },
@@ -576,7 +584,10 @@ card('Spore of Regenesis', {
           prompt: `Spore of Regenesis: erase me to put ${revivable.length} cost-[1] unit(s) into play?`,
           options: [{ label: 'Erase me — revive them', value: true }, { label: 'Decline', value: false }],
         });
-        if (yes !== true) return;
+        if (yes !== true) {
+          g.ev('info', 'Spore of Regenesis: the erase is declined — nothing returns from the bin.');
+          return;
+        }
         // highest index first so the earlier indices stay valid
         const idxs = [mine, ...revivable.map(([, i]) => i)].sort((a, z) => z - a);
         const names: CardName[] = [];
@@ -639,8 +650,14 @@ card('Tilling the Graves', {
 // with a running budget — the second pick is offered only from what still
 // fits under 8 minus the first. ⚠ header: "play … now, for free" is modelled
 // as putting the units straight into play (spawn triggers fire, no stack
-// step), and spawnUnit has no owner parameter, so a unit taken out of the
-// opponent's bin becomes the caster's card outright.
+// step).
+//
+// CARD-TODO #17, fixed 2026-08-23: a unit taken out of the OPPONENT's bin is
+// BORROWED, not naturalised. `spawnUnit` now takes an owner (defaulting to the
+// seat it enters play under), so the caster is its CONTROLLER while `c.seat`
+// stays its OWNER — it dies to their bin (R65), counts toward their "cards in
+// your bin", and they can recur it. Before the parameter existed the caster
+// became its owner outright and the original owner lost the card for good.
 card('Wake the Dead', {
   spellEffect: {
     run: (g, ctx) => {
@@ -674,7 +691,12 @@ card('Wake the Dead', {
       if (!chosen.length) { g.ev('info', 'Wake the Dead: nothing playable in any bin.'); return; }
       // remove highest index first within each bin, then spawn in pick order
       for (const c of [...chosen].sort((a, z) => z.idx - a.idx)) g.player(c.seat).bin.splice(c.idx, 1);
-      for (const c of chosen) g.spawnUnit(seat, c.name, ctx.region);
+      // CARD-TODO #17: "any bin" means the card may be the OPPONENT'S, and the
+      // two seats are different facts. The CONTROLLER is the caster; the OWNER
+      // is whichever bin it came out of, and it goes back there when it dies.
+      for (const c of chosen) {
+        g.spawnUnit(ctx.controller, c.name, ctx.region, { owner: c.seat });
+      }
     },
   },
 });

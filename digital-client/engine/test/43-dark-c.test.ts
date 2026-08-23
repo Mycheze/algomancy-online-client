@@ -64,6 +64,7 @@ const unitsNamed = (h: Harness, name: string): Entity[] =>
   Object.values(h.state.entities).filter(e => e.card === name && e.kind === 'unit');
 const bin = (h: Harness, seat: Seat): string[] => h.state.players[seat]!.bin;
 const hand = (h: Harness, seat: Seat): string[] => h.state.players[seat]!.hand;
+const erasedCards = (h: Harness, seat: Seat): string[] => h.state.players[seat]!.erased ?? [];
 const trashedCards = (h: Harness): unknown[] =>
   h.events.filter(ev => ev.type === 'trashed').map(ev => ev.data!['card']);
 
@@ -133,8 +134,10 @@ test('Collect Remains: takes a card out of EITHER bin into your hand', () => {
   pass(h); pass(h);                                        // resolve
   assert.ok(hand(h, A).includes('Good Whale'), "the enemy's card comes to MY hand");
   assert.ok(!bin(h, D).includes('Good Whale'));
-  // ⚠ approximation: "Erase me" is the spell being binned normally instead
-  assert.ok(bin(h, A).includes('Collect Remains'), '⚠ "Erase me" approximated as a normal bin');
+  // "Erase me." (CARD-TODO #15) — a bin-recursion spell that takes itself out
+  // of the game. Fully asserted in 89-self-erase.
+  assert.ok(!bin(h, A).includes('Collect Remains'), '"Erase me": not in a bin');
+  assert.ok((h.state.players[A]!.erased ?? []).includes('Collect Remains'), 'the erased pile');
   finishBattle(h);
 });
 
@@ -994,8 +997,17 @@ test('Spellbind: {Modular} carrier — the applied mod rides along, and you gain
   pass(h); pass(h);
   assert.equal(h.q.rot(A), 3, "Spellbind's own rot plus the rider's two");
   assert.equal(unitsNamed(h, 'Wraith').length, 3, "and the rider's three Wraiths");
-  assert.ok(bin(h, A).includes('Primordial Coalescence'), 'the mod leaves with the spell, from the stack');
-  assert.ok(!trashedCards(h).includes('Spellbind'), 'a resolved spell is binned, never trashed (R40)');
+  // R105 (owner, 2026-08-23): a modded card is {Unstable} (Manual p.35), so the
+  // mod does NOT come back — it and its carrier are erased. Spellbind "basically
+  // works as a 'flashback' for graft cards", and the one-shot is the price of
+  // the flashback: "even though mods can be applied from the bin, they are
+  // generally only able to be applied once". This assertion used to read
+  // `bin(h, A).includes(...)`, which made the flashback infinite.
+  assert.ok(!bin(h, A).includes('Primordial Coalescence'), 'the mod never returns to a bin');
+  assert.ok(erasedCards(h, A).includes('Primordial Coalescence'), 'it is erased with the spell (R65, R69)');
+  assert.ok(erasedCards(h, A).includes('Spellbind'), 'and so is the carrier — Unstable is a BIN replacement');
+  assert.ok(!trashedCards(h).includes('Spellbind'),
+    'nothing is trashed either: R40 needs a bin to be trashed out of, and it never reached one');
   finishBattle(h);
 });
 

@@ -39,6 +39,7 @@ function dealDamage(h: Harness, from: Seat, targetId: EntityId, n: number): void
   const ctx: EffectCtx = {
     controller: from, sourceName: 'Meteor Shower', region: u.region,
     targets: [], event: null,
+    eraseSelf: () => {},   // no stack item here — a direct-run ctx
     choose: () => { throw new Error('unexpected choice'); },
   };
   e.dealEffectDamage(ctx, u, n);

@@ -96,6 +96,10 @@ const doubleGrafts: EffectDef = {
       eff.run(g, {
         controller: ctx.controller, sourceName: mod.card, sourceId: self.id,
         region: ctx.region, targets, event: ctx.event,
+        // "Erase me" has nothing to erase in an inline run: this is a MOD's
+        // graft effect resolving off the carrier's item, and the copy has no
+        // stack item of its own to redirect. No-op, deliberately.
+        eraseSelf: () => {},
         choose: (k, d) => ctx.choose(`lg:${modId}:${k}`, d),
       });
       doubled++;
@@ -335,10 +339,17 @@ card('Perpetual Construct', {
       creates: ['Unit Token'],
       run: (g, ctx) => {
         const mod = g.entity(ctx.event?.data?.mod as EntityId);
-        if (!mod) return;
+        if (!mod) {
+          g.ev('info', 'Perpetual Construct: the mod is gone — no unit is created.');
+          return;
+        }
         const mana = getCard(mod.card).mana;
         const x = mana === 'X' ? 0 : mana;
-        if (x > 0) g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
+        if (x <= 0) {
+          g.ev('info', `Perpetual Construct: ${mod.card} costs 0 — X = 0, no unit is created.`);
+          return;
+        }
+        g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
       },
     },
   }],
@@ -391,8 +402,9 @@ card('Restitution', {
     effect: {
       run: (g, ctx) => {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
-        if (n <= 0) return;
+        if (n <= 0) { g.ev('info', 'Restitution: no damage was dealt to me — nothing is passed on.'); return; }
         const opponents = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
+        if (!opponents.length) { g.ev('info', 'Restitution: no opponent is present here — no damage.'); return; }
         g.dealEffectDamageAll(ctx, opponents.map(s => ({ target: { player: s }, n })));   // R80
       },
     },

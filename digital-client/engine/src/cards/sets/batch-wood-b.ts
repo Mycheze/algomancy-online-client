@@ -235,7 +235,17 @@ card('Organic Exchange', {
         if (slotA) slotA[0][slotA[1]] = b.id;
         if (slotB) slotB[0][slotB[1]] = a.id;
       }
-      g.ev('info', `Organic Exchange: ${g.pname(cb)} takes ${a.card}, ${g.pname(ca)} takes ${b.card} — positions swapped.`);
+      // CARD-TODO #6: two targets under the SAME controller is a legal, useful
+      // line (the positions really do swap) — but the two control assignments
+      // cancel, and saying "Player 1 takes X, Player 1 takes Y" named the same
+      // player twice and read like a bug. Say what actually happened instead.
+      if (ca === cb) {
+        g.ev('info',
+          `Organic Exchange: ${a.card} and ${b.card} are both ${g.pname(ca)}'s — `
+          + 'their positions swap and control does not change.');
+      } else {
+        g.ev('info', `Organic Exchange: ${g.pname(cb)} takes ${a.card}, ${g.pname(ca)} takes ${b.card} — positions swapped.`);
+      }
     },
   },
 });

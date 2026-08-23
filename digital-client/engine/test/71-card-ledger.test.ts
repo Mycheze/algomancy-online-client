@@ -124,6 +124,13 @@ const BEHAVIOR_KEYS = [
   'xMin', 'abilities', 'statics', 'costMods', 'effectAttrs', 'augmentable', 'mustBeTargeted',
   'prophesyFromBin', 'playsIntoFormation', 'spellEffect', 'graftEffect', 'augmentText',
   'replaceRotDamage', 'replaceCombatDamageToPlayer', 'xPreview',
+  // R104's replacement-effect layer. A card whose whole text is a replacement
+  // has no abilities and no spellEffect BY CONSTRUCTION — that is the point of
+  // the layer, not a gap — so the sweep has to see these or every one of the
+  // seven cards report #60 named would read as a bare definition the moment it
+  // was fixed. (Cosmic Conspirator did exactly that until this line existed.)
+  'amountMods', 'replaceLifeGain', 'replaceCounters',
+  'replaceTokenCreation', 'replaceTokenBatch',
 ] as const;
 
 /**
@@ -229,13 +236,18 @@ test('the sweep has teeth: it recognises the shape Harbinger of Immolation was f
   // channel and implemented it — so the canary moved on again, exactly the way
   // this assertion's own failure message told it to.
   //
-  // CONDUIT OF PAIN is the canary now. Its definition is byte-for-byte the
-  // shape Harbinger had and Envoy had — an inert augmentText entry, `events:
-  // []`, an empty run and a label ending "(not implemented)" — it is declared
-  // in the ledger, and it is genuinely parked: "[Augment] If an allied source
-  // would deal noncombat damage, it deals that much damage plus 1 instead"
-  // needs a NONCOMBAT damage replacement hook, which R94 did not build.
-  const CANARY = 'Conduit of Pain';
+  // CREVICE LURKER is the canary now. R104 built the replacement-effect layer
+  // and un-parked Conduit of Pain with it (an `AmountMod` consulted by
+  // dealEffectDamageAll), so the canary moved on for the third time — exactly
+  // the way this assertion's own failure message told it to.
+  //
+  // Its definition is byte-for-byte the shape Harbinger had, Envoy had and
+  // Conduit had — an inert augmentText entry, `events: []`, an empty run and a
+  // label ending "(not implemented)" — it is declared in the ledger, and it is
+  // genuinely parked: "[Augment] Abilities cost [one] more to activate or
+  // trigger during battle" needs ability-cost TAXATION (R59's CostMod taxes
+  // card plays only) plus a pay-to-trigger gate, and R104 built neither.
+  const CANARY = 'Crevice Lurker';
   const shapes = deadShapes(CANARY);
   assert.ok(shapes.some(s => /events:\[\]/.test(s)),
     `${CANARY} no longer has the inert-augment shape — if it was implemented, `
@@ -326,16 +338,18 @@ test('every ledger entry is still needed — delete it when the card is implemen
   //     carries the unimplemented-stat-layer placeholder, or
   //   · it says so itself with `unverified` (which the tally counts, loudly).
   const engineSrc = fs.readFileSync(path.join(ENGINE, 'src', 'engine.ts'), 'utf8');
-  // PER ATTRIBUTE, because the two stat layers no longer ship together. Stat
+  // PER ATTRIBUTE, because the two stat layers did not ship together. Stat
   // layer 5 landed in round 17 (R93: {Inverted} negates the net change from
-  // base), so there is no placeholder left for {Inverted} to point at and a
-  // `deadAttr: 'Inverted'` entry has lost that channel of evidence for good —
-  // which is the file's designed outcome, not a bug in it: the cards work now
-  // and the entries are what is left behind. Layer 6 ({Unaware}) is still
-  // unbuilt and keeps its placeholder.
+  // base) and stat layer 6 landed on 2026-08-23 (R106: an {Unaware} unit's
+  // numbers are its base numbers, for everybody). BOTH placeholders are code
+  // now, so neither attribute has one left to point at and a `deadAttr` entry
+  // naming either has lost that channel of evidence for good — which is the
+  // file's designed outcome, not a bug in it: the cards work now and the
+  // entries are what is left behind. The map stays, with the shape it needs
+  // for the NEXT unbuilt layer; a `null` means "shipped, delete the entry".
   const LAYER_PLACEHOLDER: Record<'Unaware' | 'Inverted', string | null> = {
     Inverted: null,
-    Unaware: 'layer 6 (Unaware) goes here',
+    Unaware: null,
   };
 
   const stale: string[] = [];

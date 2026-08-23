@@ -24,6 +24,7 @@ function dealEffect(h: Harness, controller: Seat, sourceName: string, targetId: 
   const target = g.entity(targetId)!;
   g.dealEffectDamage(
     { controller, sourceName, region: g.homeRegion(controller), targets: [], event: null,
+      eraseSelf: () => {},   // no stack item here — a direct-run ctx
       choose: () => { throw new Error('no choice expected'); } },
     target, n);
   g.settle();

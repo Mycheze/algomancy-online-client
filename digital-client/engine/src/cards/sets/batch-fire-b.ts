@@ -234,7 +234,10 @@ const burstEffect: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
   targets: { what: 'any', prompt: 'Sacrificial Burst deals 4 damage to any target' },
   run: (g, ctx) => {
-    if (!ctx.costPaid?.sacrificed) return;          // rider declined / unpayable
+    if (!ctx.costPaid?.sacrificed) {
+      g.ev('info', 'Sacrificial Burst: no unit was sacrificed — no damage.');
+      return;   // rider declined / unpayable
+    }
     g.dealEffectDamage(ctx, ctx.targets[0]!, 4);
   },
 };

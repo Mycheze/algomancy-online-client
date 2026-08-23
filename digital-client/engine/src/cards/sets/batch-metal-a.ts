@@ -34,10 +34,12 @@
  *    3/3, and a later base-setter simply overwrites an earlier one
  *    (E.baseStatsOf resolves the two sources last-wins by timestamp).
  *    Counters and until-regroup deltas still apply on top (layer 3).
- *  - Automaton of Abundance duplicates PER TOKEN SPAWN (each spawn is its own
- *    'spawned' event): a batch of N identical tokens yields N extra copies,
- *    not "one per unique token" (needs replacement-effect machinery). The
- *    copy mirrors the original's region (it is part of the same creation).
+ * ✔ AUTOMATON OF ABUNDANCE IS A BATCH REPLACEMENT NOW (R104). It used to fire
+ *    per 'spawned', so a batch of N identical tokens yielded N extra copies
+ *    instead of one per unique — playtest report #60's example. It now reads
+ *    the whole creation (one resolving part = one batch, R80's unit) and adds
+ *    one copy per unique token KIND. Nothing reaches the stack, and the
+ *    module-level `let aoaCopying` guard is gone with the trigger.
  *  - Borrower of Forms copies base stats, counters and temporary stat changes
  *    of the erased unit (relayed through battle counters into a self-spawn
  *    trigger). Card text, attributes and mods are NOT copied (no transform
@@ -66,11 +68,11 @@
  *  - (Dispatch Courier UNPARKED by R97, round 17 — see the card. The play-timing
  *    gating card code could not reach is now `PlayPermission.playAtHaste`,
  *    summed by `E.hastePlayAllowance` and asked at all three gates.)
- *  - Cosmic Conspirator (spell-token half): createSpellToken fires no
- *    dispatchable event (E.createSpellToken never calls fireEvent), so a
- *    Poison/Crystal/Fireball creation cannot be intercepted. The Robot half
- *    IS implemented via the 'spawned' event: when you create a Robot you may
- *    have a Poison/Crystal/Fireball of the same X instead.
+ *  - (Cosmic Conspirator UNPARKED by R104, BOTH halves — see the card. The
+ *    spell-token half never needed an event: a replacement is consulted at the
+ *    creation call, so `E.createSpellToken` is a seam without dispatching
+ *    anything. The Robot half stopped creating-then-erasing, which is what
+ *    playtest report #64 was really about.)
  *  - Ancient One (activated/static half): the gap is NEIGHBOUR projection, not
  *    "own lists only" — this entry used to say apply.ts surfaces activated
  *    abilities from a unit's own lists, which stopped being true when
@@ -83,7 +85,7 @@
  */
 import type { Entity, EntityId, EventType, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectDef } from '../dsl.ts';
+import { card, getCard, type EffectDef, type TokenRequest } from '../dsl.ts';
 import { selfOf, isEnt, unslot, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -209,7 +211,10 @@ const echoCopy: EffectDef = {
     const t = ctx.targets[0];
     if (!isEnt(t)) return;
     const orig = g.entity(t.id);
-    if (!orig) return;
+    if (!orig) {
+      g.ev('info', 'Arcane Echo: the token is gone — no copy is created.');
+      return;
+    }
     if (orig.kind === 'spellToken') {
       g.createSpellToken(ctx.controller, orig.card, orig.x ?? 0, ctx.region);
     } else {
@@ -228,39 +233,51 @@ card('Arcane Echo', {
 
 // "[Augment] If you would create one or more unit tokens, instead create
 // those tokens plus an additional copy of each unique token you created." —
-// mm/5 2/6 Automaton Construct Unit. ⚠ header: no replacement machinery —
-// approximated as a trigger on every unit-token spawn of yours, duplicating
-// it (region mirrored: the copy is part of the same creation). The module
-// guard stops copies from re-triggering any Automaton (no loops).
-let aoaCopying = false;
+// mm/5 2/6 Automaton Construct Unit.
+//
+// UNPARKED as a real BATCH replacement (R104). It used to be a trigger on
+// every unit-token 'spawned' event, and report #60 named exactly what that got
+// wrong: "Automaton of Abundance fires per spawn so N identical tokens yield N
+// copies instead of one per unique." A trigger cannot see a creation; it only
+// ever sees one spawn. `replaceTokenBatch` is handed the WHOLE creation — one
+// resolving part, the same unit R80 gave effect damage — so "each unique token
+// you created" finally has a creation to be unique across. The module-level
+// `let aoaCopying` guard is deleted with the trigger: an extra is not part of
+// the batch that produced it, and the engine's own latch says so once.
+//
+// "UNIQUE" IS BY TOKEN KIND — the card NAME — and the X is not part of it. So
+// a batch of three Robots yields ONE extra Robot, and a batch of a Fireball 2
+// and a Fireball 5 yields ONE extra Fireball. The basis is the engine's own
+// definition of identity: `Entity.card` is what bins, "name a card" effects,
+// counters-by-name, DECK_LIST and the inspector all key off (R101 makes the
+// argument at length for the transform), and every Robot is the one registered
+// card `Robot` whatever number it is wearing. The X is a quantity ON the token,
+// not a different token — which is also why Cosmic Conspirator's reminder text
+// can say "(With the same X value.)" while swapping the KIND.
+//
+// THE COPY TAKES THE FIRST OF ITS KIND in the batch. "A copy of each unique
+// token you created" has to copy something, and the first is the deterministic
+// answer that does not need a ruling (a "largest X" reading would be a strictly
+// better card and nothing prints it). Flagged in R104 as the one place the
+// uniqueness reading had a choice.
+//
+// "UNIT TOKENS" only, printed: the batch may contain spell tokens (Biotoxicity's
+// Poisons) and this ignores them. "YOU would create": the batch belongs to the
+// creating seat, and `self` is the ANCHOR — this card's body, or the HOST when
+// the text arrives as an augment mod.
 card('Automaton of Abundance', {
-  augmentText: [{
-    type: 'triggered', events: ['spawned'],
-    label: 'unit tokens you create are duplicated',
-    when: (g, self, ev) => {
-      if (aoaCopying || ev.data?.['seat'] !== self.controller) return false;
-      const u = ev.data?.['unit'] !== undefined ? g.entity(ev.data['unit'] as EntityId) : undefined;
-      return !!u && u.kind === 'unit' && !!u.token && u.id !== self.id;
-    },
-    effect: {
-      // R69: same as Arcane Echo — it duplicates WHATEVER unit token you just
-      // created, so the name is computed and no list can be true.
-      createsAny: true,
-      run: (g, ctx) => {
-        const orig = ctx.event?.data?.['unit'] !== undefined
-          ? g.entity(ctx.event.data['unit'] as EntityId) : undefined;
-        if (!orig) { g.ev('info', 'Automaton of Abundance: the created token is already gone — no copy.'); return; }
-        aoaCopying = true;
-        try {
-          g.spawnUnit(ctx.controller, orig.card, orig.region, {
-            token: true,
-            ...(orig.tokenStats ? { tokenStats: [...orig.tokenStats] as [number, number] } : {}),
-            ...(orig.counters ? { counters: orig.counters } : {}),
-          });
-        } finally { aoaCopying = false; }
-      },
-    },
-  }],
+  augmentable: true,
+  replaceTokenBatch: (_g, self, batch) => {
+    const seen = new Set<string>();
+    const extra: TokenRequest[] = [];
+    for (const r of batch) {
+      if (r.form !== 'unit' || r.seat !== self.controller) continue;
+      if (seen.has(r.name)) continue;              // one copy per unique KIND
+      seen.add(r.name);
+      extra.push({ ...r });
+    }
+    return extra.length ? extra : null;
+  },
 });
 
 // "[Augment] Whenever a nontoken unit dies, you may pay [two] to erase it and
@@ -345,7 +362,10 @@ card('Borrower of Forms', {
     targets: { what: 'unit', prompt: 'Borrower of Forms: erase target unit — I become a copy of it' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!isEnt(t) || !g.entity(t.id)) return;
+      if (!isEnt(t) || !g.entity(t.id)) {
+        g.ev('info', 'Borrower of Forms: the target is gone — there is no form to borrow.');
+        return;
+      }
       // the base it HAS (layer 2 included — a Formless'd or Statweavered
       // body is the body you are borrowing), not the one it was printed with
       const [p, dt] = g.baseStatsOf(t);
@@ -469,45 +489,69 @@ card('Containment Protocol', {
 
 // "If you would create a Robot, Poison, Crystal or Fireball, you may instead
 // create a token of any of these types. (With the same X value.)" — m/3 3/3
-// Luminary Unit. ⚠ PARKED half (header): spell-token creations fire no
-// dispatchable event, so only the ROBOT direction works — when you create a
-// Robot (a 'spawned' unit token), you may erase it and have a Poison, Crystal
-// or Fireball of the same X instead. Region-scoped listener (R12).
+// Luminary Unit.
+//
+// FULLY UNPARKED (R104), and it is the card playtest report #64 was filed
+// against: "Biotoxicity didn't give me the choice of what kinds of tokens I
+// wanted even though I had Cosmic Conspirator." Two defects, both structural:
+//
+//  1. THE SPELL-TOKEN HALF WAS COMPLETELY DEAD. The old implementation was a
+//     'spawned' trigger, and `E.createSpellToken` fires no dispatchable event
+//     at all — so a Poison, Crystal or Fireball creation could never be heard.
+//     Biotoxicity creates three Poisons; the card saw none of them. A
+//     replacement is CONSULTED at the call, so it needs no event: the seam is
+//     the creation itself, in both directions.
+//  2. THE ROBOT HALF ASKED TOO LATE. The trigger really created the Robot,
+//     fired a `spawned` for it, asked, and then ERASED it — so a token that
+//     "was never created" was on the board and in the event stream, and every
+//     spawn listener in the region heard about it. `replaceTokenCreation` runs
+//     BEFORE anything exists, which is what "you would create" means.
+//
+// AND IT IS ASKED ONCE PER TOKEN. Biotoxicity's three Poisons are one batch of
+// three requests, each offered separately, so the player picks a kind for each
+// — which is the shape the report describes wanting.
+//
+// THE CHOICE IS RAISED WITH `E.askInResolution`, the seam `E.glimpse` uses:
+// `partChoose` is non-null only inside a resolving part, which is where token
+// creation lives. The decision suspends the whole part and replays it (R85) —
+// which is exactly why the substitution must happen before any state is
+// mutated, and it is. Outside a resolving part (an engine-internal creation, a
+// direct call from a test) there is nothing to hang a decision on, so this
+// declines and SAYS SO, the way glimpse's "no decision window" branch does: a
+// silent default is what produces playtest reports.
+//
+// "WITH THE SAME X VALUE" is `TokenRequest.x`, which is one field for a spell
+// token's X and a unit token's spawn counters (Robot X is "I spawn with X
+// +1/+1 counters on me"). That is what lets the number survive a swap in
+// either direction.
+//
+// NOT AN [Augment] card, unlike the other six in this class: the text sits in
+// the main box, so it is live only while this card is a unit in play.
+const CONSPIRATOR_KINDS = ['Robot', 'Poison', 'Crystal', 'Fireball'] as const;
 card('Cosmic Conspirator', {
-  abilities: [{
-    type: 'triggered', events: ['spawned'],
-    label: 'you may create a Poison, Crystal or Fireball instead of a Robot',
-    when: (g, self, ev) => {
-      if (ev.data?.['seat'] !== self.controller || ev.data?.['card'] !== 'Robot') return false;
-      const u = ev.data?.['unit'] !== undefined ? g.entity(ev.data['unit'] as EntityId) : undefined;
-      return !!u && !!u.token;
-    },
-    effect: {
-      // the three named alternatives; the Robot itself was created by whatever
-      // made it, not by this
-      creates: ['Poison', 'Crystal', 'Fireball'],
-      run: (g, ctx) => {
-        const robot = ctx.event?.data?.['unit'] !== undefined
-          ? g.entity(ctx.event.data['unit'] as EntityId) : undefined;
-        if (!robot) { g.ev('info', 'Cosmic Conspirator: the Robot is already gone.'); return; }
-        const x = robot.counters;
-        const pick = ctx.choose('conspire', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: `Cosmic Conspirator: create a token of another type instead of the Robot ${x}?`,
-          options: [
-            { label: `keep the Robot ${x}`, value: 'keep' },
-            { label: `Poison ${x}`, value: 'Poison', card: 'Poison' },
-            { label: `Crystal ${x}`, value: 'Crystal', card: 'Crystal' },
-            { label: `Fireball ${x}`, value: 'Fireball', card: 'Fireball' },
-          ],
-        }) as string;
-        if (pick === 'keep') return;
-        const region = robot.region;
-        eraseFromPlay(g, robot);   // it was never created — no death, no bin
-        g.createSpellToken(ctx.controller, pick, x, region);
-      },
-    },
-  }],
+  replaceTokenCreation: (g, self, req) => {
+    if (req.seat !== self.controller) return null;               // "if YOU would create"
+    if (!(CONSPIRATOR_KINDS as readonly string[]).includes(req.name)) return null;
+    const pick = g.askInResolution('conspire', {
+      kind: 'payOrDecline', seat: self.controller,
+      prompt: `Cosmic Conspirator: create a token of another type instead of the ${req.name} ${req.x}?`,
+      options: [
+        { label: `keep the ${req.name} ${req.x}`, value: 'keep' },
+        ...CONSPIRATOR_KINDS.filter(k => k !== req.name)
+          .map(k => ({ label: `${k} ${req.x}`, value: k, card: k })),
+      ],
+    });
+    if (pick === null) {
+      g.ev('info',
+        `Cosmic Conspirator: the ${req.name} is created outside a resolution window, so there `
+        + 'is nowhere to ask — it is kept as printed.');
+      return null;
+    }
+    if (pick === 'keep' || typeof pick !== 'string') return null;
+    // Robot is the only unit token of the four; the other three are spell
+    // tokens. The form travels with the kind, so the caller never has to know.
+    return { ...req, name: pick, form: pick === 'Robot' ? 'unit' : 'spell' };
+  },
 });
 
 // "Sacrifice me and another ally: Delete all units with cost equal to the

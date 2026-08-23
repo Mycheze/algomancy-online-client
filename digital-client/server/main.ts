@@ -28,7 +28,7 @@ import {
   applyToRoom, clockSnapshot, createRematch, decidedWinner, getRoom, joinableRoom, openSegment, renameSeat,
   reserveRoomCode, resolveLobby, roomExistsOrReserved, roomLobby,
   restoreRooms, roomWaiting, segmentKey, setLobbyMethod, setLobbySubmission, setRoomDeck,
-  setSeatUser, settleClock, spliceable, undoActionAt, undoLastAction, unlockLobby,
+  setSeatUser, settleClock, undoForSeat, unlockLobby,
   type Room, type SegKey,
 } from './rooms.ts';
 import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
@@ -764,54 +764,13 @@ wss.on('connection', ws => {
       if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
       const room = conn.room;
       if (roomWaiting(room)) return send(ws, { t: 'error', msg: 'the game has not started — nothing to undo' });
-      const segKey = room.segKey;
-      // A pending PRE-COMMIT cast chain of the requester's own (X / cost /
-      // target stages, R35) is undoable in ANY phase: while their decision
-      // pends nobody else can act, so the log's tail is provably theirs and
-      // splicing it takes nothing away from the opponent. The client chains
-      // one undo per state until the suspension clears (cast-cancel, docs/07).
-      const sus = room.state.suspension, dec = room.state.decision;
-      const castChain = !!dec && !!sus && sus.type === 'cast' && sus.item.kind !== 'triggered'
-        && dec.seat === conn.seat && sus.item.controller === conn.seat;
-      if (!segKey && !castChain) {
-        return send(ws, { t: 'error', msg: 'undo only works during planning and deploy (or while your own cast is awaiting X, costs or targets)' });
-      }
-      if (segKey) {
-        // THE REPORTED FIX. Inside a hidden simultaneous segment your last
-        // action is very often not the last one overall — your opponent is
-        // acting in parallel, behind the screen, and what they do must not be
-        // able to take your undo away. So walk back to YOUR most recent
-        // action within the segment and splice that.
-        //
-        // The window closes at each barrier, which is right: once both of you
-        // have pressed done, the resource decisions lock.
-        let i = room.actions.length - 1;
-        while (i >= room.segStartIndex && i >= 0 && room.actions[i]!.seat !== conn.seat) i--;
-        if (i < room.segStartIndex || i < 0 || room.segStartIndex < 0) {
-          return send(ws, { t: 'error', msg: 'nothing to undo — nothing of yours this step' });
-        }
-        // ...unless taking it out would renumber or re-roll what your opponent
-        // did after it (rooms.ts spliceable). Refusing is the honest answer:
-        // the alternative is silently dropping one of THEIR plays.
-        if (!spliceable(room, i, conn.seat)) {
-          return send(ws, { t: 'error', msg: 'your opponent has already acted on top of that one — it cannot be taken back now' });
-        }
-        // spliceable() predicts; undoActionAt() measures and rolls itself back
-        // if the splice would make anything else in the log unreplayable. A
-        // refused undo beats an action silently vanishing out of the record.
-        const refused = undoActionAt(room, i);
-        if (refused.length) {
-          return send(ws, { t: 'error', msg: 'taking that back would drop moves made after it — it cannot be undone now' });
-        }
-      } else {
-        const last = room.actions[room.actions.length - 1];
-        if (!last) return send(ws, { t: 'error', msg: 'nothing to undo' });
-        if (last.seat !== conn.seat) return send(ws, { t: 'error', msg: 'your opponent acted since — nothing of yours to undo' });
-        const refused = undoLastAction(room);
-        if (refused.length) {
-          return send(ws, { t: 'error', msg: 'taking that back would drop moves made after it — it cannot be undone now' });
-        }
-      }
+      // THE WHOLE DECISION lives in rooms.ts (undoForSeat), not here. It is
+      // the piece ledger #37 and then #76 were both about, and a decision
+      // that only exists inside a WebSocket message handler can only be
+      // tested by playing a whole game over a socket — which is why #37's
+      // guards pinned the segment machinery and never the take-back itself.
+      const outcome = undoForSeat(room, conn.seat);
+      if (!outcome.ok) return send(ws, { t: 'error', msg: outcome.why });
       // Playtest VEAV: "I was able to see in the deployment recap that 'Rashi
       // undid an action.' No need to show that to the other person, it's just
       // confusing, since you can't see what they undid." It is not a move —

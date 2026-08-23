@@ -205,8 +205,11 @@ test('Temporal Rift: negates all stack effects and ends the battle', () => {
   // round 1 ended with no sent counterattackers → the cascade reaches deployment
   assert.equal(h.state.phase, 'deploy', 'round 2 was skipped straight into regroup/deploy');
   assert.ok(ent(h, atk), 'the attacker survived (combat never happened)');
-  // ⚠ approximation: "Erase this spell" — the Rift is binned like a resolved spell
-  assert.ok(h.state.players[D]!.bin.includes('Temporal Rift'), 'the Rift is binned (erase approximated)');
+  // "Erase this spell" (CARD-TODO #15): the battle ending does not take the
+  // Rift's disposal with it — its item is already off the stack, and
+  // afterParts runs after the cascade. Detail in 89-self-erase.
+  assert.ok(!h.state.players[D]!.bin.includes('Temporal Rift'), 'the Rift is not binned');
+  assert.ok((h.state.players[D]!.erased ?? []).includes('Temporal Rift'), 'it erased itself');
 });
 
 // ── Transmutide Enigma ───────────────────────────────────────────────────
@@ -273,7 +276,9 @@ test('Floral Singularity: create X 1/1s at home, or your units become base X/X (
     whiteBox(h, e => {
       const ctx: EffectCtx = {
         controller: p, sourceName: 'Floral Singularity', region: e.homeRegion(p),
-        targets: [], x, event: null, choose: () => mode,
+        targets: [], x, event: null,
+        eraseSelf: () => {},   // no stack item here — a direct-run ctx
+        choose: () => mode,
       };
       getCard('Floral Singularity').spellEffect!.run(e, ctx);
     });

@@ -117,6 +117,10 @@ function runSpellCopy(
     // a COPY is not cast: its cast cost is not paid again — it inherits the
     // original's payment receipt (R35), like it inherits the original's X
     targets, x, costPaid, event: null,
+    // A COPY of a spell is not a card, so a copy of "Erase me" has nothing to
+    // erase — and it must not reach for the ORIGINAL's item, which is going to
+    // the bin or the erased pile on its own terms.
+    eraseSelf: () => {},
     choose: (key, dec) => ctx.choose(`copy:${key}`, dec),
   });
 }
@@ -456,7 +460,11 @@ card('Maelstrom Charger', {
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        if (!self || inEndOfTurn(g)) return;
+        if (!self) { g.ev('info', 'Maelstrom Charger: the carrier is gone — no copy.'); return; }
+        if (inEndOfTurn(g)) {
+          g.ev('info', 'Maelstrom Charger: no sacrifice is offered during end of turn — no copy.');
+          return;
+        }
         const name = ctx.event?.data?.card as CardName | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
         if (name === undefined || seat === undefined) return;
@@ -471,7 +479,10 @@ card('Maelstrom Charger', {
             { label: 'Decline', value: false },
           ],
         });
-        if (!pay) return;
+        if (!pay) {
+          g.ev('info', `Maelstrom Charger: the sacrifice is declined — ${name} is not copied.`);
+          return;
+        }
         // the original cast's still-legal targets (⚠ header: no new targets)
         const targets: ResolvedTarget[] = [];
         for (const part of it.parts) {

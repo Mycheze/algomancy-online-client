@@ -243,26 +243,55 @@ function actOn(room: Room, a: Action): void {
     'and battle, which is public, opens no segment at all');
 }
 
-// ══ 4. the segTouched gate: refusing rather than silently reordering ══
+// ══ 4. the id gate: what a splice can and cannot reach ═══════════════
+//
+// LEDGER #76 (WEHH, 2026-08-22): *"Despite Deployment being entirely separate
+// from the opponent, I can't take back some things … What they do doesn't
+// matter during deployment, so I should always be able to."* The old gate
+// asked "has the opponent done anything with a payload since", which is
+// almost always yes in a simultaneous step, and which was never the actual
+// hazard. The hazard is narrower: a later action that NAMES an entity id the
+// splice would renumber. Both halves are pinned here.
 {
   const room = room$('HID3', 313131);
   const act = (a: Action): void => actOn(room, a);
-  console.log('\n[the id/RNG splice gate]');
+  console.log('\n[the id splice gate]');
   act({ type: 'donePlanning', seat: 0 });
   act({ type: 'donePlanning', seat: 1 });
   for (const s of [0, 1] as Seat[]) {
-    room.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
+    for (let i = 0; i < 4; i++) room.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
     room.state.players[s]!.hand.push('Ignis Sprite');
   }
   act({ type: 'playCard', seat: 1, handIndex: room.state.players[1]!.hand.length - 1 });
   const theirPlay = room.actions.length - 1;
   act({ type: 'playCard', seat: 0, handIndex: room.state.players[0]!.hand.length - 1 });
   ok(room.segTouched[theirPlay] === true, "seat 1's play moved the id clock");
-  ok(!spliceable(room, theirPlay, 1),
-    "it cannot be spliced out from under the opponent's own play — that would " +
-    "renumber their unit and silently drop anything referring to it");
+  // THE REPORTED SHAPE: a real, payload-carrying deployment action on top of
+  // yours. It names no entity id, so it cannot be re-pointed, so it is not a
+  // reason to refuse.
+  ok(spliceable(room, theirPlay, 1),
+    "the opponent deploying on top of it is NOT a reason to refuse — their play "
+    + 'names no id, so the renumbering cannot reach it (ledger #76)');
   // and the opponent's play, being last, is still theirs to take back
   ok(spliceable(room, room.actions.length - 1, 0), 'the later play is still spliceable by its own author');
+
+  // …now the residual hazard, and the ONLY thing the gate still refuses:
+  // seat 0 mods their own freshly-deployed unit, so the log now names an id
+  // that lives above seat 1's floor.
+  room.state.players[0]!.hand.push('Animated Spark');
+  const myUnit = Object.values(room.state.entities)
+    .find(e => e.controller === 0 && e.kind === 'unit')!;
+  act({ type: 'augment', seat: 0, from: 'hand',
+    index: room.state.players[0]!.hand.length - 1, hostId: myUnit.id });
+  ok(room.actions[room.actions.length - 1]!.type === 'augment', 'the mod landed');
+  ok(!spliceable(room, theirPlay, 1),
+    `now that a later action NAMES entity ${myUnit.id}, splicing seat 1's play `
+    + 'would renumber it — refused, and this is the one case that is');
+  // the gate is about the ID, not about who acted: seat 0's own earlier play
+  // is equally unspliceable now, because it too sits below that id
+  const myPlay = room.actions.findIndex((a, i) => i > theirPlay && a.type === 'playCard');
+  ok(!spliceable(room, myPlay, 0),
+    'and it is the id that is the reason, not whose action it was');
 }
 
 // ══ 5. resource-step actions COMMUTE ══════════════════════════════════

@@ -246,28 +246,26 @@ test('R9: once-per-turn budgets are per card and survive control change', () => 
 });
 
 /*
- * R10 IS NO LONGER A THEORETICAL RULING. This slot used to hold one
- * `{todo:true}` whose title read "no Unaware card in the M1 pool", and that
- * stopped being true the day the Light & Dark expansion shipped: Bubb,
- * Trashling and Haboob all print {Unaware} on the type line TODAY, and are in
- * the pool, and get drafted. The todo's title was quietly telling every reader
- * there was nothing to test here.
+ * R10 IS NO LONGER A THEORETICAL RULING, AND NO LONGER AN UNBUILT ONE.
  *
- * There is. The attribute arrives — printed data carries it, the augment
- * donates it, the UI shows it — and then `effStats()` ignores it: the method
- * ends on the literal placeholder `// layer 5 (Inverted), 6 (Unaware) go
- * here`. Carrying an attribute nothing reads is indistinguishable from a
- * blank, which is exactly the shape that hid Harbinger, and it is why
- * card-ledger.ts lists all three as dead-or-partial `deadAttr: 'Unaware'`
- * entries.
+ * This slot used to hold one `{todo:true}` whose title read "no Unaware card
+ * in the M1 pool", and that stopped being true the day the Light & Dark
+ * expansion shipped: Bubb, Trashling and Haboob all print {Unaware} on the
+ * type line, and are in the pool, and get drafted. The todo's title was
+ * quietly telling every reader there was nothing to test here. Then it was
+ * replaced by a SECOND todo — "stat layer 6 itself" — which was true but
+ * still could not fail, and the attribute stayed dead through two playtest
+ * reports and a conceded game (CARD-TODO #5).
  *
- * So this is now TWO tests: a real one that exercises the attribute end to end
- * and pins where the truth stops, and a todo that keeps the still-unbuilt half
- * — layer 6 itself — named. The real test is the guard; the todo is the entry
- * card-ledger.ts's staleness check reads, and it is kept honest by having the
- * real test standing next to it.
+ * Stat layer 6 shipped on 2026-08-23 (R106, the owner's BLANKET reading): an
+ * {Unaware} unit's numbers are its BASE numbers, for everybody, everywhere —
+ * and the other side of an interaction is NOT collapsed, so there is no
+ * pairwise evaluation anywhere. Both halves are exercised below, and the whole
+ * layer has its own file, test/92-unaware.test.ts.
+ *
+ * There is no todo left in this slot. There is no todo left to put here.
  */
-test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob — and stat layer 6 still ignores it', () => {
+test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob, and stat layer 6 reads it', () => {
   // 1. the printed data. Three cards, one attribute — if a data refresh ever
   //    drops it, this is the first thing that notices.
   for (const name of ['Bubb', 'Trashling', 'Haboob']) {
@@ -280,23 +278,35 @@ test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob — and s
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
 
   // 2. it reaches a unit in play, and the "[Augment] {Unaware}" half donates
-  //    it to a host. Both paths work; both lead nowhere.
+  //    it to a host. Both paths work, and both now END SOMEWHERE.
   const bubb = spawn(h, A, 'Bubb');                       // 5/6
   assert.ok(ownAttrs(h, bubb).has('Unaware'), 'a played Bubb has {Unaware}');
-  const host = spawn(h, A, 'Unit Token');
+  ent(h, bubb)!.counters = 3;
+  assert.deepEqual(effStats(h, bubb), [5, 6],
+    'R106: a +3/+3 is a stat change, and Bubb ignores its own stat changes');
+  const host = spawn(h, A, 'Unit Token');                 // 1/1
+  ent(h, host)!.counters = 2;                             // → 3/3
+  assert.deepEqual(effStats(h, host), [3, 3], 'the host is an ordinary pumped 3/3 first');
   giveResources(h, A, 'earth', 4);                        // Bubb: e/4
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Bubb'), hostId: host });
   assert.ok(ownAttrs(h, host).has('Unaware'),
     'and the [Augment] half donates {Unaware} to the host (printed.augmentAttrs)');
+  assert.deepEqual(effStats(h, host), [1, 1],
+    'which drops the host to ITS base 1/1 — the donation is a real effect now');
 
-  // 3. THE DIVERGENCE, exercised end to end rather than asserted about.
-  //    Haboob is an {Unaware} spell: "I deal 1 damage to each unit." Caleb, in
-  //    rules-questions, is explicit about what {Unaware} means for it —
+  // 3. THE OTHER SIDE IS NOT COLLAPSED, exercised end to end.
+  //
+  //    ⚠ This is where the owner's ruling is deliberately NARROWER than both
+  //    R10's own wording and Caleb, who in rules-questions said
   //      "Unaware is last 'stat modifier applied' and any Unaware units (or
   //       Spells like Haboob) will only look at BASE STAT PRINTED on cards"
-  //    — so a 1/1 token pumped to 3/3 is, to Haboob, still a 1/1, and 1 damage
-  //    kills it. R10 says the same thing from the other side: "everything
-  //    counts as interacting", and the two mutually ignore stat changes.
+  //    — a PAIRWISE reading, under which Haboob would see a pumped 1/1 as a
+  //    1/1 and kill it. Asked how wide R10 goes on 2026-08-23 the owner chose
+  //    the blanket form instead, with the worked example "Bubb blocks a pumped
+  //    3/3 (+2/+2 -> 5/5): Bubb 5/6 vs the attacker's FULL 5/5." So an Unaware
+  //    card ignores stat changes on ITSELF and nothing else; a spell with no
+  //    stats of its own gets nothing out of the attribute at all. See R106,
+  //    which records the divergence rather than hiding it.
   const pumped = spawn(h, A, 'Unit Token');               // 1/1
   ent(h, pumped)!.counters = 2;                           // → 3/3
   assert.deepEqual(effStats(h, pumped), [3, 3], 'pumped to 3/3 the ordinary way');
@@ -307,27 +317,38 @@ test('R10: Unaware is printed and carried on Bubb / Trashling / Haboob — and s
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Haboob') });
   pass(h); pass(h);                                       // resolve Haboob
 
-  // ⚠ THIS IS THE WRONG ANSWER, PINNED ON PURPOSE. Under R10 the token is
-  // dead: Haboob reads its BASE 1 toughness and deals it 1. The engine reads
-  // the effective 3 instead, because layer 6 does not exist, so the token
-  // walks away with a scratch. Nothing else in the repo would go red if
-  // somebody deleted the {Unaware} plumbing tomorrow, and nothing at all
-  // would go red when layer 6 finally lands — this assertion does both. When
-  // you implement layer 6, this line fails, and the fix is to change it to
-  // `assert.ok(!ent(h, pumped), 'Haboob read the printed 1 toughness')` and
-  // delete the todo below.
-  assert.ok(ent(h, pumped), 'layer 6 is unimplemented: the pumped token survives Haboob');
-  assert.equal(ent(h, pumped)!.damage, 1, 'it took the 1 damage, just not lethally');
+  assert.ok(ent(h, pumped), 'the pumped token survives: R106 does not collapse what an Unaware card hits');
+  assert.equal(ent(h, pumped)!.damage, 1, 'it took Haboob\'s 1 on its effective 3 toughness');
   finishBattle(h);
 });
 
-test('R10: Unaware — stat layer 6 itself (mutually ignoring stat changes at every interaction)', { todo: true }, () => {
-  // The half above pins the CURRENT behaviour; this is the one that is still
-  // to build. effStats() ends on "// layer 5 (Inverted), 6 (Unaware) go here"
-  // and R10's scope is wide — fight, blocking, being blocked, dealing or
-  // receiving combat damage, targeting, all of it — so it is a pairwise
-  // "as seen by" question at every interaction site, not a term to add to a
-  // sum. card-ledger.ts's Bubb / Trashling / Haboob entries point here.
+test('R10/R106: an Unaware blocker fights at its base, and the attacker it blocks does not', () => {
+  // The owner's worked example, driven through real combat: Bubb 5/6 blocks a
+  // 3/3 that has been pumped to 5/5. Bubb is a 5/6 whatever is done to it; the
+  // attacker is a 5/5, in full, in that same exchange. The two assertions
+  // together are what "no pairwise evaluation" means.
+  const h = new Harness(1101);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = (() => {
+    const e = new E(h.state);
+    const u = e.spawnUnit(A, 'Unit Token', e.homeRegion(A), { token: true, tokenStats: [3, 3] });
+    e.settle();
+    return u.id;
+  })();
+  ent(h, atk)!.counters = 2;                              // +2/+2 → 5/5
+  const bubb = spawn(h, D, 'Bubb');
+  ent(h, bubb)!.counters = 2;                             // would be 7/8
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
+  assert.deepEqual(effStats(h, bubb), [5, 6], 'Bubb 5/6');
+  assert.deepEqual(effStats(h, atk), [5, 5], 'vs the attacker\'s FULL 5/5');
+  pass(h); pass(h);                                       // damage
+  assert.ok(!ent(h, atk), 'Bubb\'s base 5 power killed the 5-toughness attacker');
+  assert.equal(ent(h, bubb)!.damage, 5, 'and Bubb took the attacker\'s full 5, not a collapsed 3');
+  finishBattle(h);
 });
 
 test('R11: regroup runs its exact sequence (return → damage → temp → formation, tokens erased)', () => {
