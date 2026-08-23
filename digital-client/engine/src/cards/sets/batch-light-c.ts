@@ -68,30 +68,15 @@
  *    CardBehavior.mustBeTargeted; see the card.
  *  - Just a Unit: {Pure} is LIVE as of R61 — enforced by the engine at the
  *    combat choke points (E.pure), not by card behaviour. See the card.
- *  - Slurpr: "you can apply other mods during [Haste] as if it was deployment".
- *    ⚠ THE OLD NOTE HERE WAS STALE IN BOTH OF ITS CLAIMS and is corrected:
- *    card code CAN reach a mod-timing gate now (R95 built
- *    `CardBehavior.modPermissions` for Rook), and Dispatch Courier is
- *    precedent FOR this, not against — R97 unparked it with the play-timing
- *    twin of the same seam. The card now DECLARES the permission
- *    (`ModPermission.applyAtHaste`, an unbudgeted OR-fold — see the card), so
- *    the card half is done and the missing half is entirely ENGINE:
- *      1. `E.mayApplyModAtHaste` — the OR-folding gatherer beside
- *         `E.mayAugmentInBattle` in engine.ts (it needs the PRIVATE
- *         `anchored()` walk and the `inModPermissions` latch, so it cannot
- *         live in a card file or in dsl.ts).
- *      2. a haste branch in `doAugment` (whose else-arm is today
- *         `illegal('modding is a deployment action (or a battle Virus)')`)
- *         and in `doGraft` (whose opening `need(e.deploying(seat), …)`
- *         refuses outright) — "as if it was deployment" means the DEPLOY
- *         branch verbatim, with only the phase test replaced.
- *      3. the two OFFER gates: `legalHasteActions`, which pushes no mod
- *         actions at all, and — the fatal one, exactly R97's — `startHasteStep`'s
- *         `canHaste`, which SKIPS the step outright when no seat has a legal
- *         PLAY, so a hand whose only haste option is a Slurpr-granted mod
- *         would never reach the other two gates.
- *    Until those land it plays and augments as a vanilla 2/2 and its ledger
- *    entry stays.
+ * ✔ SLURPR IS COMPLETE (2026-08-23). Its card half — `ModPermission.applyAtHaste`,
+ *    an unbudgeted OR-fold in R95's shape — landed first; the three ENGINE seams
+ *    it was waiting on are all in the tree now: `E.mayApplyModAtHaste` (the
+ *    gatherer beside `E.mayAugmentInBattle`, which needs the private
+ *    `anchored()` walk), the haste branch in `doAugment` and `doGraft` through
+ *    apply.ts's one shared `hasteModAllowed` predicate, and BOTH offer gates —
+ *    `legalHasteActions`' `pushHasteMods` and, the one that would otherwise have
+ *    made the whole thing unreachable, `startHasteStep`'s `canHaste` (report #74
+ *    in mod form). Its ledger entry is deleted with that change.
  *  - (Suspend is fully unparked: its lock by R104, its "Erase me" by
  *    CARD-TODO #15 — see the ✔ note above and the card.)
  *  - (Calming Force COMPLETE as of R100, round 17: "I can't be played from your
@@ -489,12 +474,15 @@ card('Seer of Empty Spaces', {
 // "[Augment] You can apply other mods during [Haste] as if it was
 // deployment." — l/2 2/2 Horror Unit.
 //
-// THE CARD HALF IS REAL NOW: `ModPermission.applyAtHaste`, the MOD-timing twin
-// of Rook's R95 `augmentInBattle`, declared exactly the way Rook declares its
-// own. ⚠ STILL PARKED END TO END — the ENGINE half is not built, so the
-// permission is declared and nothing asks it yet. See the header's PARKED
-// entry for the three seams that are still missing, and the card's ledger
-// entry, which stays until they land.
+// LIVE END TO END as of 2026-08-23: `ModPermission.applyAtHaste`, the
+// MOD-timing twin of Rook's R95 `augmentInBattle`, declared exactly the way
+// Rook declares its own — and the engine now ASKS it, at four gates.
+// `E.mayApplyModAtHaste` gathers the permission; apply.ts's `hasteModAllowed`
+// is the one predicate both the action path (`doAugment` / `doGraft`) and the
+// offer path (`pushHasteMods`) call; and `E.startHasteStep`'s `canHaste` opens
+// the step at all for a hand of nothing but mods, which is the gate whose
+// absence would have made every other one unreachable (report #74 in mod
+// form). The card's ledger entry is deleted with that change.
 //
 // WHY THIS FAMILY AND NOT R97's. Dispatch Courier prints "Each turn, you may
 // play a unit …", so R97 SUMS its grants into a per-turn budget kept in

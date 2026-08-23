@@ -993,6 +993,36 @@ function battleAugmentAllowed(e: E, seat: Seat, c: CardDef, from: ModZone, regio
 }
 
 /**
+ * R95's HASTE-timing sibling: may `seat` apply `c` as a mod (augment OR graft)
+ * during the R18 haste step — "[Augment] You can apply other mods during
+ * [Haste] as if it was deployment" (Slurpr)?
+ *
+ * THE ONE PREDICATE, exactly as `battleAugmentAllowed` is for the battle
+ * window: `doAugment`, `doGraft`, `pushHasteMods` (the legalActions offer) and
+ * `E.startHasteStep`'s `canHaste` all call this and none has its own copy.
+ * There are FOUR gates here rather than R95's two, and the load-bearing one is
+ * `canHaste`: it skips the haste step outright when nobody has anything to do
+ * in it, so a board with a Slurpr and a hand of nothing but mods would never
+ * reach the other three and the grant would be invisible. That is playtest
+ * report #74 (R97's `hastePlayAllowance`) in mod form.
+ *
+ * There is NO base case, unlike the battle window's {Virus}: nothing is
+ * printed as haste-timed modding, so the whole permission is the grant.
+ *
+ * The window test is here rather than in the engine gatherer because it is
+ * about the STEP, not about the permission: outside the haste step there is
+ * nothing to widen, and the deploy and battle branches answer for themselves.
+ */
+function hasteModAllowed(e: E, seat: Seat, c: CardDef, from: ModZone,
+  kind: 'augment' | 'graft'): boolean {
+  // the R18 haste step, and this seat has not already finished it
+  if (e.s.phase !== 'planning' || e.s.hasteDone === null || e.s.hasteDone[seat]) return false;
+  // R12: the grantor has to be in the region the modding happens in, which
+  // during the haste step is always this seat's home region.
+  return e.mayApplyModAtHaste({ seat, card: c, from, region: e.homeRegion(seat), kind });
+}
+
+/**
  * R79: the stack-item kinds a Virus may be augmented onto.
  *
  * SPELLS, and only spells. Caleb 2025-04-06 asks and answers exactly this
@@ -1075,6 +1105,13 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   }
 
   const host = e.entity(hostId!);
+  // R95 (haste sibling): "as if it was deployment" — Slurpr. Computed ONCE,
+  // here, because it is read three times below: it opens the deploy branch,
+  // it stands in for that branch's `deploying(seat)` test, and it carries the
+  // R89 spell-token host with it (the grant is "as if it was DEPLOYMENT", so
+  // the deployment branch runs verbatim and every other refusal in it still
+  // refuses — paying at `purpose: 'mod'`, the host being in your own region).
+  const hasteMod = hasteModAllowed(e, seat, c, from, 'augment');
   // R89 — R79's missing half. Caleb, rules-questions 2025-03-06, answering
   // "can i augment my spells during deployment?":
   //
@@ -1088,7 +1125,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   // "⚠ Not in scope". It is in scope now, in DEPLOYMENT only: during battle a
   // token is a spell you cast, and the host you want is the stack item the
   // `hostStack` branch above already reaches.
-  const tokenHost = e.s.phase === 'deploy'
+  const tokenHost = (e.s.phase === 'deploy' || hasteMod)
     && host?.kind === 'spellToken' && host.controller === seat;
   e.need(host && (host.kind === 'unit' || tokenHost) && !host.absent,
     tokenHost ? 'no such spell token' : 'no such unit');
@@ -1111,8 +1148,10 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     e.fireEvent('targeted', ev);
     e.pushItem(item);
     e.settle();
-  } else if (e.s.phase === 'deploy') {
-    e.need(e.deploying(seat), 'not your deployment');
+  } else if (e.s.phase === 'deploy' || hasteMod) {
+    // the ONLY line the haste grant changes: the phase test. Everything below
+    // is the deployment branch verbatim.
+    e.need(hasteMod || e.deploying(seat), 'not your deployment');
     e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
     zoneTake(e, seat, from, index);
     if (free) e.ev('info', `${name} augments for FREE — its prophecy is fulfilled.`);
@@ -1141,10 +1180,19 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
 }
 
 function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityId, position: number): void {
-  e.need(e.deploying(seat), 'grafting is a deployment action');
+  // ⚠ THE TIMING GATE MOVED DOWN. It used to be this function's first line,
+  // and it cannot be any more: R95's haste sibling asks the granting card
+  // about the CardDef being applied ("other mods" is a per-card question), so
+  // the zone lookup has to happen first. The refusal is otherwise unchanged —
+  // same test, same message, still before anything is taken or paid.
   const name = zonePeek(e, seat, from, index);
   e.need(name !== undefined, `no such card in ${from}`);
   e.need(isGraftable(name), 'that card has no graft symbol');
+  // R95 (haste sibling): "you can apply other MODS during [Haste] as if it was
+  // deployment" — R37's "mod" is an augment OR a graft, so Slurpr opens this
+  // door too. "As if it was deployment" means every line below still applies.
+  e.need(e.deploying(seat) || hasteModAllowed(e, seat, e.card(name!), from, 'graft'),
+    'grafting is a deployment action');
   const host = e.entity(hostId);
   e.need(host && host.kind === 'unit' && !host.absent, 'no such unit');
   e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
@@ -1881,6 +1929,10 @@ function legalHasteActions(e: E, seat: Seat): Action[] {
     }
   });
   pushCachedPlays(e, seat, t => t === 'haste', home, out);
+  // R95 (haste sibling), gate 2 of three: a mod applied "as if it was
+  // deployment" (Slurpr). Pushed AFTER the plays, so no existing index into
+  // this list moves.
+  pushHasteMods(e, seat, home, out);
   return out;
 }
 
@@ -2117,32 +2169,7 @@ function legalDeployActions(e: E, seat: Seat): Action[] {
   // R42/R45: releasing a permitted cached card at deployment timing
   pushCachedPlays(e, seat, t => t === 'deploy' || t === 'haste', region, out);
   // R41: mods may come from the cache as well as hand and bin
-  for (const from of ['hand', 'bin', 'cache'] as const) {
-    const names = from === 'cache' ? e.cache(seat).map(cc => cc.card) : e.player(seat)[from];
-    names.forEach((name, i) => {
-      // a fulfilled prophecy makes the mod free (R42); otherwise pay normally
-      const affordable = modIsFree(e, seat, from, i) || e.canPayCard(seat, name, { purpose: 'mod' });
-      if (!getCard(name) || !affordable) return;
-      if (isAugment(name)) {
-        for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
-        // R89: and the spell tokens standing in the same region. This is the
-        // line whose absence made the ruling invisible — R79 shipped the
-        // stack half and `legalActions` never offered it either, which is
-        // precisely how it stayed unreachable for a whole round.
-        for (const host of e.tokensOf(seat, region)) {
-          out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
-        }
-      }
-      if (isGraftable(name)) {
-        for (const host of e.unitsOf(seat, region)) {
-          if (graftCauseIndex(host.card) < 0) continue;
-          for (let p = 0; p <= host.mods.length; p++) {
-            out.push({ type: 'graft', seat, from, index: i, hostId: host.id, position: p });
-          }
-        }
-      }
-    });
-  }
+  pushMods(e, seat, region, out);
   for (const t of e.tokensOf(seat, region)) {
     if (timingAllowsDeploy(getCard(t.card))) out.push({ type: 'castSpellToken', seat, entityId: t.id });
   }
@@ -2209,6 +2236,68 @@ function pushBattleAugments(e: E, seat: Seat, region: number, out: Action[]): vo
       }
     });
   }
+}
+
+/**
+ * R41: every mod `seat` may apply into `region` right now — augments and
+ * grafts, out of hand, bin and cache.
+ *
+ * ONE walk, shared by the deployment offer and (through `gate`) by the R18
+ * haste-step offer, because "as if it was deployment" is exactly a claim that
+ * the two lists are the same list. Extracted rather than copied for the reason
+ * `battleAugmentAllowed` is one predicate: the fuzzer checks that legalActions
+ * never offers what apply refuses, and a second copy of a mod-offer walk is
+ * how that check gets tripped. The push ORDER is unchanged from the
+ * deployment-only version — the UI and the fuzzer index into this list.
+ *
+ * `gate` is the per-card permission question. Deployment asks nothing (a mod
+ * is a deployment action by default); the haste step asks R95's haste sibling
+ * about each card, since the grant is per-card by construction ("other mods").
+ */
+function pushMods(e: E, seat: Seat, region: number, out: Action[],
+  gate: (c: CardDef, from: ModZone, kind: 'augment' | 'graft') => boolean = () => true): void {
+  for (const from of ['hand', 'bin', 'cache'] as const) {
+    const names = from === 'cache' ? e.cache(seat).map(cc => cc.card) : e.player(seat)[from];
+    names.forEach((name, i) => {
+      // a fulfilled prophecy makes the mod free (R42); otherwise pay normally
+      const affordable = modIsFree(e, seat, from, i) || e.canPayCard(seat, name, { purpose: 'mod' });
+      if (!getCard(name) || !affordable) return;
+      const c = getCard(name);
+      if (isAugment(name) && gate(c, from, 'augment')) {
+        for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
+        // R89: and the spell tokens standing in the same region. This is the
+        // line whose absence made the ruling invisible — R79 shipped the
+        // stack half and `legalActions` never offered it either, which is
+        // precisely how it stayed unreachable for a whole round.
+        for (const host of e.tokensOf(seat, region)) {
+          out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
+        }
+      }
+      if (isGraftable(name) && gate(c, from, 'graft')) {
+        for (const host of e.unitsOf(seat, region)) {
+          if (graftCauseIndex(host.card) < 0) continue;
+          for (let p = 0; p <= host.mods.length; p++) {
+            out.push({ type: 'graft', seat, from, index: i, hostId: host.id, position: p });
+          }
+        }
+      }
+    });
+  }
+}
+
+/**
+ * R95 (haste sibling), offer gate 2 of the three: every mod `seat` may apply
+ * during the R18 haste step. Shaped on `pushBattleAugments` and routed through
+ * the SAME `hasteModAllowed` predicate `doAugment` and `doGraft` enforce.
+ *
+ * Hand, bin AND cache, for both kinds, because "as if it was deployment"
+ * grants whatever deployment grants and deployment walks all three (R41).
+ * Unlike Rook — which prints "from hand and bin" and so refuses the cache in
+ * the CARD — Slurpr names no zone list at all.
+ */
+function pushHasteMods(e: E, seat: Seat, region: number, out: Action[]): void {
+  pushMods(e, seat, region, out,
+    (c, from, kind) => hasteModAllowed(e, seat, c, from, kind));
 }
 
 function pushCachedPlays(e: E, seat: Seat, allowed: (t: CardDef['timing']) => boolean, region: number, out: Action[]): void {

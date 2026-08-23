@@ -2100,17 +2100,14 @@ needs its own decision:
   inside `run` (the file calls this "the Immolate precedent"). It wants
   `sacrificeSelf: true`, not `castCost` — plus an activation gate for the
   adjacency clause, which does not exist. **Not moved.**
-- **Deformant** — *"Sacrifice me **and another ally**: …"* A compound cost no
-  `AbilityCost` shape covers; it would need `sacrificeSelf` **and** a
-  sacrifice-another atom in one cost. **Not moved.**
-  **⚠ CORRECTED 2026-08-23 — this reason was wrong.** One `AbilityCost` does
-  carry `sacrificeSelf` **and** `sacrificeOther` together, and both are paid
-  inside the one cast window, so the payment was always expressible. What
-  actually blocks Deformant is the **receipt** (its effect needs the
-  sacrificed units' *counters*, and neither writer records them) — and the
-  `AbilityCost` route is the wrong one regardless, because
-  `collectItemCosts` carries a documented latent half-pay bug and Deformant
-  would be the first card to trip it. See the corrected note under R77 below.
+- **Deformant** — *"Sacrifice me **and another ally**: …"* **MOVED 2026-08-23**,
+  on the effect-level `castCost` route, and the two reasons this entry gave for
+  not moving it were both wrong. One `AbilityCost` does carry `sacrificeSelf`
+  **and** `sacrificeOther` together, so the payment was always expressible —
+  but that route carries `collectItemCosts`' documented latent half-pay (the
+  choice-free half charged one call earlier than the choice-bearing half), and
+  Deformant would have been the first card to trip it. `castCost` is one
+  collector and one window. See **`includeSelf`** below.
 
 **Closes the last round-7 deferral.** `test/53-playtest-round7.test.ts`'s ledger
 listed *"Eldritch Dreamtender's sacrifice timing"* as the one item still open;
@@ -2123,6 +2120,71 @@ trigger fires in. The trigger fires off the aggregated combat `lifeLost` event
 and R3/R31 resolve it immediately, so a Dreamtender in a Swift column is gone
 before normal damage. That reading is still the engine's default rather than a
 ruling, and the todo in `test/53` says so.
+
+### `includeSelf` — "sacrifice me AND another ally" as ONE payment (Deformant, 2026-08-23)
+*"Sacrifice me and another ally: Delete all units with cost equal to the total
+number of counters on us."* — Deformant, m/2 2/2. `sacrificeUnits` carries a
+third flag beside `from: 'self'`:
+
+```ts
+{ kind: 'sacrificeUnits'; from?: 'self'; includeSelf?: true; n: number | 'X'; xMin?: number }
+```
+
+It is **not** `from: 'self'` with a second cost bolted on, and it is **not "any
+two units"**: the source is *mandatory and choice-free*, and it is **excluded**
+from the menu the remaining `n - 1` are chosen from — which is what makes
+"another" mean another. Four touch points in `engine.ts`, and the first is the
+one that matters:
+
+| touch point | what `includeSelf` does |
+| --- | --- |
+| `canPayCastCost` | demands **BOTH halves up front** — the source live *and* `n - 1` other units in the region. Without this the source dies for a cost whose remainder cannot be paid |
+| `chargeCastCost` | shares R73's `from: 'self'` branch for the first half (widened to `from === 'self' \|\| includeSelf`), charged **first** and outright inside the cast window |
+| `castCostOptions` | filters `item.sourceId` off the menu |
+| `costOwing` | **drops the flag once the source half is paid.** Re-asking `includeSelf` for the remainder would look for a source that is now dead and skip the part after half of it had been charged |
+
+`costTimes` preserves the flag through R110's graft multiplier by spread.
+`costIsIterated` and `costPaidSoFar` needed no change. ⚠ The choice-free source
+half is charged only for a **non-optional** cost: an opt-in grafted rider must
+be able to decline before anything is charged, and no card in the pool is both.
+
+**The receipt widened with it.** `costPaid.sacrificedUnits` was
+`{ card, power, defense }[]` and is now
+`{ unit, card, power, defense, counters }[]`, snapshotted at payment in **both**
+writers. `counters` is the **raw `Entity.counters`**, and that is the ruling,
+not a shortcut: counters NET (*"if I have +1/+1 and -1/-1 on the 2 cards, what's
+the total number?"* → *"0, they cancel out"*) and a temporary buff is not a
+counter at all (*"oh, no those are not counters"*), so `effStats` cannot
+reconstruct the number. Both sacrificed units are dead by the time the effect
+runs, so the receipt is the only place the total can come from. The singular
+`paid.sacrificed` receipt — read by `batch-fire-a`, `batch-fire-b`,
+`batch-metal-b` and `batch-hybrids-wm-b` — is **built separately** now rather
+than sharing one literal, so a future field on one cannot appear silently on the
+other.
+
+**The card lost two things it no longer needs.** Its mid-resolution
+`ctx.choose('deform', …)` is gone — that was a response window between cost and
+effect the printed card does not have, and it was exactly what its ledger entry
+described. And its R77 `usableWhen` is gone as *redundant*, not as an omission:
+`canPayCastCost` for `sacrificeUnits` + `includeSelf` **is** the "another ally"
+board condition, and `abilityUnusable` asks it before the ability is offered.
+Restating it would be a second implementation of one gate.
+
+⚠ **A behaviour change to an existing passing test.**
+`26-metal-a.test.ts::Deformant: sacrifice me + an ally, …` used to `pass` twice
+to RESOLVE the activation and meet a `payOrDecline` naming the ally with a bare
+`EntityId`. The decision is a **`targets`** one carrying `{ unit: id }` now, and
+it arrives **before** the item reaches the stack, so the passes moved to after
+the payment. That is the point of the change, not a casualty of it.
+
+Guarded by `26-metal-a.test.ts::Deformant: sacrifice me + an ally, delete all
+units costing our counter total`, `26-metal-a.test.ts::Deformant: "sacrifice me
+AND another ally" is ONE payment, made in the CAST window`,
+`26-metal-a.test.ts::Deformant: the counter total is read off the RECEIPT as of
+payment, not off the board`, and `26-metal-a.test.ts::Deformant: all or nothing
+— it never half-pays when the second sacrifice is unavailable`.
+
+`card-ledger.ts`: **Deformant's entry is deleted.**
 
 ## R74 — A variable cost may WARN that X = 0 does nothing; it may not forbid it
 
@@ -2530,65 +2592,31 @@ offered), or a **mid-resolution choice that came back empty** (a decline).
 Neither is knowable at activation, and turning either into a gate would be
 wrong.
 
-### ⚠ Deformant's cost is still parked
+### Deformant's cost — UNPARKED 2026-08-23
 
-Deformant still picks and sacrifices at **resolution**, which leaves a response
-window between cost and effect that should not exist. R77 fixed the offer half
-— it is no longer offered when you have no other unit — but the payment window
-is unchanged, and it carries a `{ todo: true }` test, per the project's park
-rule.
+Deformant used to pick and sacrifice its ally at **resolution**, which left a
+response window between cost and effect that the printed card does not have.
+R77 fixed the offer half; the payment window shipped on 2026-08-23 on the
+effect-level **`CastCost`** route, and the R77 `usableWhen` came out with it —
+`abilityUnusable` gates the offer on `canPayCastCost`, which for
+`sacrificeUnits` + `includeSelf` **is** the "another ally" board condition, so a
+`usableWhen` restating it would be a second implementation of one gate.
 
-**⚠ THE REASON RECORDED HERE WAS STALE, and is corrected 2026-08-23.** This
-section used to say *"'Sacrifice me and another ally' is a compound cost, and
-`AbilityCost` has no shape for one: `sacrificeSelf` and `sacrificeOther` exist
-separately and cannot be combined into a single indivisible payment."* That is
-**not true**: a single `AbilityCost` carries both fields at once, and both are
-paid inside the one cast window — `E.payActivationCost` for the choice-free
-half, `E.collectItemCosts` for the choice-bearing half. The payment has been
-expressible for a while.
+**⚠ TWO REASONS RECORDED HERE WERE STALE, and both are corrected.** This section
+used to say *"'Sacrifice me and another ally' is a compound cost, and
+`AbilityCost` has no shape for one"* — not true: a single `AbilityCost` carries
+`sacrificeSelf` and `sacrificeOther` at once and pays both inside the one cast
+window. It then said the blocker was the **receipt**, which was true but not the
+deciding reason: **the `AbilityCost` route is the wrong one regardless.**
+`collectItemCosts` carries a documented latent half-pay — the choice-free half
+is charged one call **earlier** than the choice-bearing half, so the first card
+to combine them reaches the collector with its mana already spent, and Deformant
+would have been exactly that first card. `castCost` is one collector and one
+window.
 
-**What actually blocks it is the RECEIPT.** The effect needs the *counters* on
-the two sacrificed units, and neither writer records them:
-
-- `payActivationCost`'s `sacrificeSelf` branch writes **no receipt at all** —
-  it destroys the source and moves on;
-- `payItemCost`'s `sacrificeOther` branch writes a bare `CardName` into
-  `item.paidCosts.sacrificed`, and `EffectCtx` never exposes `item.paidCosts`,
-  so `run()` could not learn even *which* ally was paid.
-
-The counters cannot be reconstructed from `effStats` either, because Caleb
-rules that counters **net** and that temporary buffs are not counters at all —
-*"if I have +1/+1 and -1/-1 on the 2 cards, what's the total number?"* →
-*"0, they cancel out"*; of an until-regroup buff, *"oh, no those are not
-counters"*. `Entity.counters` is already documented as the net value, so it is
-the field to snapshot, at payment.
-
-**⚠ And the `AbilityCost` route is the wrong one anyway.** `collectItemCosts`
-carries a documented latent half-pay bug: the choice-free half is charged one
-call **earlier** than the choice-bearing half, so the first card to combine
-them reaches the collector with its mana already spent. Deformant would be
-exactly that first card.
-
-**The route that fits is the effect-level `CastCost` one** —
-`castCost: { kind: 'sacrificeUnits', n: 2 }` on the ability's effect. It is
-all-or-nothing for a non-graft part, `abilityUnusable` already gates the
-**offer** on `canPayCastCost` (so R77's board condition survives without a
-`usableWhen`), and it writes `part.costPaid`, which `EffectCtx.costPaid`
-**already exposes**. Two engine edits are still missing:
-
-1. **"me AND another", not "any two".** `castCostOptions` offers
-   `unitsOf(seat, item.region)` with no self-exclusion, so the Deformant is on
-   its own menu and nothing makes it mandatory. The shape that fits is
-   `includeSelf?: true` on the `sacrificeUnits` variant: charge the source
-   choice-free through the existing `from: 'self'` branch, then take the
-   remaining `n-1` off the menu with `item.sourceId` excluded — and make
-   `canPayCastCost` demand **both** halves up front, or the source dies for a
-   cost whose remainder cannot be paid.
-2. **A wider receipt.** `costPaid.sacrificedUnits` is
-   `{ card, power, defense }[]` and needs `counters: number` and
-   `unit: EntityId`, snapshotted at payment in **both** writers —
-   `chargeCastCost`'s `from: 'self'` branch and `payCastCost`'s chosen-unit
-   branch.
+The two engine edits it needed — `includeSelf?: true` on the `sacrificeUnits`
+variant, and the widened `costPaid.sacrificedUnits` receipt carrying `unit` and
+the raw `counters` — are documented in full under **R73 → `includeSelf`**.
 
 ## R78 — An item stays on the stack until it has ACTUALLY resolved
 
@@ -4308,6 +4336,64 @@ and the permission belongs to the HOST`, and `29-hybrids-wm-a.test.ts::Rook: it 
 
 `card-ledger.ts`: **delete Rook's entry.**
 
+### The HASTE sibling — `applyAtHaste` (Slurpr), shipped 2026-08-23
+"[Augment] You can apply other mods during [Haste] as if it was deployment." — Slurpr,
+l/2 2/2. `ModPermission` has a second member, `applyAtHaste?: (g, self, ctx) => boolean`,
+and `ModCtx` grew an optional `kind?: 'augment' | 'graft'`.
+
+**It is R95's shape and not R97's, on purpose.** Dispatch Courier prints *"Each turn"*, so
+R97 SUMS its grants into a per-turn budget kept in `hastePlaysUsed`. Slurpr prints no
+quantity at all, so this is an unbudgeted **OR-fold**: one grantor is enough, two Slurprs
+are not twice as permissive, and **no new `GameState` field exists or is needed**.
+
+**"Other mods" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is
+on the context. A card that wants only one half reads it; Slurpr grants both and reads
+neither. *"As if it was deployment"* is the whole grant: the deployment branch runs
+verbatim with only its **phase test** replaced, so every other deployment refusal still
+refuses (paying at `purpose: 'mod'` under R37/R59, the host being in your own region, a
+graft needing a graft cause on its host, R89's spell-token hosts).
+
+**"Other" needs no self-exclusion.** The granting Slurpr is already applied, and a second
+Slurpr card in hand genuinely is another mod.
+
+#### The four gates, and which one is fatal
+1. `E.mayApplyModAtHaste` — the OR-folding gatherer, byte for byte `mayAugmentInBattle`
+   apart from the member it reads. It needs the **private** `anchored()` walk and the
+   `inModPermissions` latch, which is exactly why it cannot live in a card file. Same R12
+   region scope, same shallow R62 guard. **No base case**, unlike the battle window's
+   {Virus}: nothing is printed as haste-timed modding, so the whole permission is the
+   grant.
+2. `apply.ts`'s `hasteModAllowed` — **the one predicate**, R95's `battleAugmentAllowed`
+   precedent. It adds the window test (the R18 haste step, this seat not yet done) and is
+   called by the action path *and* the offer path, because the fuzzer's "legalActions
+   lied" invariant has caught that split before.
+3. The action path: a haste branch in `doAugment` (whose else-arm was
+   `illegal('modding is a deployment action (or a battle Virus)')`) and in `doGraft`.
+   ⚠ `doGraft`'s timing gate **moved off its first line** — the predicate asks the granting
+   card about the `CardDef` being applied, so the `zonePeek`/`getCard` lookups have to come
+   first. The refusal is otherwise unchanged, and still precedes anything being taken or
+   paid.
+4. The offer gates, **both** of them. `legalHasteActions` grew `pushHasteMods`, which
+   shares one extracted `pushMods` walk with the deployment offer — hand, bin and cache
+   (R41), for augments and grafts alike — because *"as if it was deployment"* is precisely
+   a claim that the two lists are the same list. And `startHasteStep`'s `canHaste`, which
+   **skips the step outright** when no seat has a legal *play*: a board with a Slurpr and a
+   hand of nothing but mods would never have reached gates 2 and 3 at all. That is playtest
+   report #74 (R97's own fatal gate) one verb over, and it is the seam that would have made
+   the whole card silently unreachable. `E.hasHasteModAvailable` is that gate; it cannot
+   call `hasteModAllowed` (which gates on the `hasteDone` this very function is deciding),
+   so it duplicates the zone walk by hand and shares the **permission** half through
+   `mayApplyModAtHaste`.
+
+Guarded by `40-light-c.test.ts::Slurpr: mods may be applied during [Haste] as if it was
+deployment`, `40-light-c.test.ts::Slurpr: a GRAFT lands during [Haste] too`,
+`40-light-c.test.ts::Slurpr: the [Haste] mod permission is region-scoped and belongs to the
+grantor's controller`, `40-light-c.test.ts::Slurpr: the haste step OPENS for a hand of
+nothing but mods`, `40-light-c.test.ts::without a Slurpr the [Haste] refusal is unchanged`,
+and `40-light-c.test.ts::Slurpr: R37 — a mod applied during [Haste] pays at purpose "mod"`.
+
+`card-ledger.ts`: **Slurpr's entry is deleted.**
+
 ## R96 — Playing a spell from your BIN, and {Unstable} as a stamp
 "In this battle, you may play spells from your bin. If you do, they gain {p}unstable
 until regroup. (If they would enter a bin, erase them instead.)" — Abyssal Evocation,
@@ -4478,27 +4564,8 @@ one of those is true, and it is the one already done:
   in the **BIN**, which `anchored()` does not walk, and an **additional cost attached to a
   different card's play action**, which `PlayCtx` has no room for. Still parked.
 - **Slurpr** ("You can apply other mods during [Haste] as if it was deployment") is the
-  MOD-timing twin and belongs to R95's family. Still parked.
-  **Update 2026-08-23 — the CARD half now exists.** `ModPermission` has a second member,
-  `applyAtHaste`, and Slurpr declares it. It is R95's shape and not R97's on purpose:
-  Slurpr prints no *"each turn"*, so it is an unbudgeted **OR-fold** — one grantor is
-  enough, two Slurprs are not twice as permissive, and **no new `GameState` field is
-  needed** (there is no `hastePlaysUsed` sibling to keep). "Other mods" is R37's word for
-  augments **and** grafts, so it grants both, and "as if it was deployment" means the
-  deployment branch verbatim with only its phase test replaced — every other deployment
-  refusal still stands. **The ENGINE half is not built**, so the card is still dead and its
-  ledger entry stays. Three seams are missing:
-  1. `E.mayApplyModAtHaste` — the OR-folding gatherer beside `E.mayAugmentInBattle`. It
-     needs the **private** `anchored()` walk and the `inModPermissions` latch, so it cannot
-     live in a card file or in `dsl.ts`.
-  2. A haste branch in `doAugment` (whose else-arm is
-     `illegal('modding is a deployment action (or a battle Virus)')`) and in `doGraft`
-     (whose opening `need(e.deploying(seat), 'grafting is a deployment action')` refuses
-     outright).
-  3. The two **offer** gates: `legalHasteActions` pushes no mod actions at all, and — the
-     fatal one, exactly R97's own — `startHasteStep`'s `canHaste` **skips the step
-     outright** when no seat has a legal *play*, so a hand whose only haste option is a
-     Slurpr-granted mod would never reach the other two gates.
+  MOD-timing twin and belongs to R95's family. **COMPLETE as of 2026-08-23** — see R95's
+  own "haste sibling" section below for the finished seam.
 
 Only **Dispatch Courier**'s ledger entry is stale.
 

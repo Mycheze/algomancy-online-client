@@ -22,7 +22,7 @@ import type {
 } from './types.ts';
 import {
   affinityPips, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
-  isGraftable, isTriggered, specForSlot, zoneTriggersFor,
+  isAugment, isGraftable, isTriggered, specForSlot, zoneTriggersFor,
   type Ability, type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
 } from './cards/dsl.ts';
@@ -4243,6 +4243,95 @@ export class E {
   }
 
   /**
+   * R95, the HASTE-timing sibling: may `ctx.seat` apply that card as a MOD
+   * during the R18 haste step — "[Augment] You can apply other mods during
+   * [Haste] as if it was deployment" (Slurpr)?
+   *
+   * The default is NO: modding is a deployment action (or a battle Virus), and
+   * the haste step is neither. This is the opt-in that overrides it, and it is
+   * `mayAugmentInBattle` byte for byte apart from the member it reads — same
+   * `anchored()` walk (units in play plus augment mods, each read from its
+   * HOST), same R12 region scope, same shallow R62 guard, same reentrancy
+   * latch, same OR-fold.
+   *
+   * TWO DELIBERATE DIFFERENCES from its twin:
+   *
+   *  1. NO BASE CASE. `battleAugmentAllowed` starts from the printed rule that
+   *     a {Virus} from hand may augment during battle; nothing at all is
+   *     printed as haste-timed modding, so the whole permission is the grant.
+   *  2. AUGMENTS *AND* GRAFTS. "Mod" is R37's word for both, so `ctx.kind`
+   *     tells the grantor which is being attempted and both call sites fill it
+   *     in. A card that wants to grant only one half reads it; Slurpr grants
+   *     both and reads neither.
+   *
+   * R97's `hastePlayAllowance` is the PLAY-timing cousin and is deliberately
+   * NOT the shape used here: Dispatch Courier prints "Each turn", so plays are
+   * summed into a per-turn budget; Slurpr prints no quantity at all, so one
+   * grantor is enough, two Slurprs are not twice as permissive, and there is
+   * no budget and no GameState field to keep.
+   *
+   * ⚠ Both `legalActions` and `apply` MUST route through this one function —
+   * via apply.ts's `hasteModAllowed`, which is the single predicate the action
+   * path and both offer gates share. The fuzzer's "legalActions lied" check
+   * has caught that class of split before.
+   */
+  mayApplyModAtHaste(ctx: import('./cards/dsl.ts').ModCtx): boolean {
+    if (this.inModPermissions) return false;
+    this.inModPermissions = true;
+    try {
+      for (const { holder, anchor } of this.anchored((h, a) =>
+        !!this.card(h.card).modPermissions
+        && a.region === ctx.region
+        && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
+        for (const p of this.card(holder.card).modPermissions ?? []) {
+          if (p.applyAtHaste?.(this, anchor, ctx)) return true;
+        }
+      }
+    } finally { this.inModPermissions = false; }
+    return false;
+  }
+
+  /**
+   * R95 (haste sibling), gate 1 of the three — the one that decides whether
+   * the haste step HAPPENS: does `seat` have any mod it could legally apply if
+   * the step opened?
+   *
+   * `startHasteStep`'s `canHaste` used to ask only about PLAYS, so a board
+   * with a Slurpr and a hand of nothing but mods skipped the step outright and
+   * the other two gates were unreachable. That is exactly report #74's failure
+   * (R97, `hastePlayAllowance`) with "apply a mod" in place of "play a card".
+   *
+   * Deliberately the same shape as apply.ts's `pushMods`, zone for zone: the
+   * three mod zones (R41), a fulfilled prophecy making a cached mod free
+   * (R42), otherwise payable at `purpose: 'mod'` (R37/R59), and a legal HOST —
+   * a unit of your own in your region (a spell token too, for an augment: R89)
+   * and, for a graft, a host with its own graft cause. It answers "yes" only
+   * where `legalHasteActions` would really offer something.
+   */
+  private hasHasteModAvailable(seat: Seat): boolean {
+    const region = this.homeRegion(seat);
+    const units = this.unitsOf(seat, region);
+    const augmentHost = units.length > 0 || this.tokensOf(seat, region).length > 0;
+    const graftHost = units.some(u => graftCauseIndex(u.card) >= 0);
+    if (!augmentHost && !graftHost) return false;
+    for (const from of ['hand', 'bin', 'cache'] as const) {
+      const names = from === 'cache' ? this.cache(seat).map(cc => cc.card) : this.player(seat)[from];
+      for (let i = 0; i < names.length; i++) {
+        const name = names[i]!;
+        const card = this.card(name);
+        const ok = (augmentHost && isAugment(name)
+            && this.mayApplyModAtHaste({ seat, card, from, region, kind: 'augment' }))
+          || (graftHost && isGraftable(name)
+            && this.mayApplyModAtHaste({ seat, card, from, region, kind: 'graft' }));
+        if (!ok) continue;
+        const free = from === 'cache' && this.cachePermission(seat, i) === 'prophecy';
+        if (free || this.canPayCard(seat, name, { purpose: 'mod' })) return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * R97: how many grant-funded plays may `ctx.seat` make in the HASTE step
    * this turn, for a card whose printed timing is not [Haste]?
    *
@@ -4710,9 +4799,19 @@ export class E {
       // cost unpayable — that is what makes R5 skip the part, which is the
       // right answer for a trigger whose source died between firing and
       // settling. Any other live unit standing there must not stand in for it.
-      case 'sacrificeUnits': return cost.from === 'self'
-        ? this.selfSacrificeable(seat, sourceId)
-        : this.unitsOf(seat, region).length >= want;
+      // `includeSelf` ("sacrifice me AND another ally", Deformant) asks for
+      // BOTH HALVES UP FRONT, and that is the whole point of asking here: the
+      // source is charged choice-free before the menu for the rest is ever
+      // raised, so a board that can field the source but not the remainder
+      // would otherwise kill the source for a cost it cannot finish paying.
+      // All or nothing, exactly as R110 demands of a multiplied graft cost.
+      case 'sacrificeUnits':
+        if (cost.from === 'self') return this.selfSacrificeable(seat, sourceId);
+        if (cost.includeSelf) {
+          return this.selfSacrificeable(seat, sourceId)
+            && this.unitsOf(seat, region).filter(u => u.id !== sourceId).length >= want - 1;
+        }
+        return this.unitsOf(seat, region).length >= want;
       // a variable life cost is paid a point at a time (R49 re-asked each
       // time), so its floor is "can you survive paying the first one"
       case 'payLife': return this.canPayLife(seat, cost.n === 'X' ? Math.max(1, want) : want);
@@ -4835,7 +4934,7 @@ export class E {
       while (!this.costSettled(part, cost)) {
         const done = this.costPaidSoFar(part, cost);
         const owed = total === null ? 1 : total - done;
-        if (!this.canPayCastCost(seat, this.costOwing(cost, owed), item.region, 0, item.sourceId)) {
+        if (!this.canPayCastCost(seat, this.costOwing(cost, owed, done), item.region, 0, item.sourceId)) {
           if (total === null) {
             // a variable cost simply stops when nothing more can be paid —
             // what was paid stands, and X is what it is
@@ -4850,6 +4949,19 @@ export class E {
         // choice-free costs: charged on the spot, no decision to ask for. A
         // grafted rider is still opt-in, so it goes through the decision path.
         if (!optional && !this.costIsIterated(cost)) { this.chargeCastCost(item, part, cost); break; }
+        // `includeSelf` ("sacrifice me AND another ally", Deformant): the
+        // SOURCE half carries no choice, so it is charged FIRST and outright —
+        // in this same cast window, before the menu for the remainder is
+        // raised. `canPayCastCost` above already demanded both halves, so the
+        // source never dies for a cost the rest of which cannot be paid.
+        // ⚠ `!optional`: an opt-in grafted rider must be able to decline
+        // BEFORE anything is charged, and no card in the pool is both a graft
+        // rider and an includeSelf cost. If one ever is, the decline option
+        // has to be raised ahead of this line.
+        if (!optional && cost.kind === 'sacrificeUnits' && cost.includeSelf && done === 0) {
+          this.chargeCastCost(item, part, cost);
+          continue;
+        }
         const options: DecisionOption[] = this.castCostOptions(item, part, cost);
         // payability and the option list read the same pool, so this is a
         // belt-and-braces branch: nothing left to pay with closes a variable
@@ -4917,8 +5029,16 @@ export class E {
 
   /** R64: the same cost, restated as the amount still owing — what payability
    * must be asked about mid-payment. */
-  private costOwing(cost: CastCost, owed: number): CastCost {
+  private costOwing(cost: CastCost, owed: number, done = 0): CastCost {
     if (cost.kind === 'sacrificeUnit' || cost.kind === 'gainDebt') return cost;
+    // `includeSelf`: the source half is paid first and choice-free, so once it
+    // IS paid what is still owing is a plain n-unit sacrifice. Asking about
+    // `includeSelf` again would look for a source that is now dead and declare
+    // the rest unpayable, skipping the part after half of it had been charged.
+    if (cost.kind === 'sacrificeUnits' && cost.includeSelf && done > 0) {
+      const { includeSelf: _paid, ...rest } = cost;
+      return { ...rest, n: owed, xMin: 0 };
+    }
     return { ...cost, n: owed, xMin: 0 } as CastCost;
   }
 
@@ -4966,7 +5086,13 @@ export class E {
       // a multi-unit sacrifice may not name the same unit twice — but each one
       // is really gone by the time the next is asked for, so "still in play"
       // already guarantees it and no explicit spent-set is needed.
+      // `includeSelf` ("me AND another ALLY"): the source is not on the menu.
+      // It has already been charged, choice-free, so it is not there to pick
+      // anyway — but saying it here is what makes "another" mean another, and
+      // keeps the menu honest if the two halves are ever reordered.
+      const self = cost.kind === 'sacrificeUnits' && cost.includeSelf ? item.sourceId : undefined;
       return this.unitsOf(seat, item.region)
+        .filter(u => u.id !== self)
         .map(u => ({ label: this.targetLabel({ unit: u.id }), value: { unit: u.id }, card: u.card }));
     }
     if (cost.kind === 'discardCard') {
@@ -5013,18 +5139,23 @@ export class E {
       paid.debt = cost.n;
       this.ev('info', `${this.pname(seat)} gains ${cost.n} debt — the cost of ${item.label}.`);
       this.gainDebt(seat, cost.n);
-    } else if (cost.kind === 'sacrificeUnits' && cost.from === 'self') {
+    } else if (cost.kind === 'sacrificeUnits' && (cost.from === 'self' || cost.includeSelf)) {
       // R73: "[Sacrifice me]". No choice, so no decision and no suspension —
       // it is charged here, in the cast window, before anyone has priority.
       // canPayCastCost already refused an absent source, so this is live.
+      // `includeSelf` ("me AND another ally", Deformant) shares this branch for
+      // its FIRST half, which is the same choice-free payment; its remainder
+      // then iterates through the ordinary chosen-unit path.
       const u = this.selfSacrifice(seat, item.sourceId);
       if (!u) return;
-      // the receipt keeps the same shape as the chosen-unit path: stats
-      // snapshotted AT PAYMENT, so a resolution that wants "the defense of the
-      // sacrificed unit" reads a number, not a corpse. (Nothing reads this one
-      // yet — uniformity is the point.)
+      // the receipt keeps the same shape as the chosen-unit path: stats and
+      // COUNTERS snapshotted AT PAYMENT, so a resolution that wants "the
+      // defense of the sacrificed unit" or "the total number of counters on
+      // us" reads numbers, not a corpse.
       const [p, t] = this.effStats(u);
-      (paid.sacrificedUnits ??= []).push({ card: u.card, power: p, defense: t });
+      (paid.sacrificedUnits ??= []).push({
+        unit: u.id, card: u.card, power: p, defense: t, counters: u.counters,
+      });
       this.ev('info', `${this.pname(seat)} sacrifices ${u.card} — the cost of ${item.label}.`);
       this.destroy(u, 'is sacrificed');
     }
@@ -5101,11 +5232,24 @@ export class E {
     this.need(u && u.kind === 'unit' && u.controller === item.controller && !u.absent
       && u.region === item.region, 'bad cost choice');
     const [p, t] = this.effStats(u);
-    const receipt = { card: u!.card, power: p, defense: t };
-    // 'sacrificeUnit' keeps the singular receipt every existing card reads;
-    // the plural kind accumulates its own list.
-    if (cost.kind === 'sacrificeUnits') (paid.sacrificedUnits ??= []).push(receipt);
-    else paid.sacrificed = receipt;
+    // 'sacrificeUnit' keeps the singular receipt every existing card reads
+    // (batch-fire-a, batch-fire-b, batch-metal-b, batch-hybrids-wm-b all read
+    // `paid.sacrificed`); the plural kind accumulates its own list, and the
+    // two are built SEPARATELY rather than sharing one object — the plural one
+    // carries `unit` and `counters` besides, and a shared literal would mean
+    // every future field on one silently appearing on the other.
+    if (cost.kind === 'sacrificeUnits') {
+      // ⚠ `u.counters` RAW, deliberately not reconstructed from effStats:
+      // counters NET (Caleb, on +1/+1 and -1/-1 on the same card, "0, they
+      // cancel out") and a temporary buff is not a counter at all ("oh, no
+      // those are not counters"), so the entity's own field is the only
+      // number that answers "how many counters are on it".
+      (paid.sacrificedUnits ??= []).push({
+        unit: u!.id, card: u!.card, power: p, defense: t, counters: u!.counters,
+      });
+    } else {
+      paid.sacrificed = { card: u!.card, power: p, defense: t };
+    }
     this.ev('info', `${this.pname(item.controller)} sacrifices ${u!.card} — the cost of ${item.label}.`);
     this.destroy(u!, 'is sacrificed');
   }
@@ -7135,6 +7279,20 @@ export class E {
       const fromHand = this.player(seat).hand.some(name =>
         playableHere(name) && this.canPayCard(seat, name) && hasTarget(name));
       if (fromHand) return true;
+      // R95 (haste sibling): a MOD applied "as if it was deployment" (Slurpr)
+      // opens the step too, and this is R97's fatal gate in mod form — a board
+      // with a Slurpr and a hand of nothing but mods has no legal PLAY at all,
+      // so without this line the step is skipped outright and neither
+      // `legalHasteActions`' offer nor `doAugment`/`doGraft`'s haste branch is
+      // ever reached. Report #74, one verb over.
+      //
+      // ⚠ Kept in step with apply.ts's `pushMods` by hand: same three zones,
+      // same affordability rule (a fulfilled prophecy makes a cached mod
+      // free), same host requirement. It cannot call `hasteModAllowed`
+      // directly — that predicate gates on `hasteDone`, which this function
+      // is deciding, and apply.ts is downstream of engine.ts besides. The
+      // PERMISSION half is shared: both go through `mayApplyModAtHaste`.
+      if (this.hasHasteModAvailable(seat)) return true;
       // R42/R45: a permitted CACHED card released at haste timing opens the
       // step too — Tithe Enforcer is a haste unit and Divine Intervention's
       // banner marks its release [Haste]. Without this the step would be

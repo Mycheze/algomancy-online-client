@@ -17,7 +17,8 @@
  *
  * PARKED cards get a { todo: true } test naming exactly what is missing, plus
  * one shared crash-free registration test: Gatekeeper of Souls, Slurpr,
- * Suspend.
+ * Suspend. (Slurpr is UNPARKED as of 2026-08-23 — R95's haste sibling — and has
+ * six real tests of its own below.)
  *
  * R90 unparked Prediction Prophet, so it moved out of that shared test and
  * into three of its own below.
@@ -27,9 +28,9 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
-import { legalActions } from '../src/apply.ts';
+import { IllegalAction, legalActions } from '../src/apply.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, notOffered, offered, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, notOffered, offered, ownAttrs, pass, pick,
   skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
@@ -699,34 +700,220 @@ test('Seer of Empty Spaces: the [Switch1] glimpse is bounded, and graftable onto
 
 // ── Slurpr ───────────────────────────────────────────────────────────────
 
-test('Slurpr: mods may be applied during [Haste] as if it was deployment', { todo: true }, () => {
-  // ⚠ THE OLD REASON HERE WAS STALE IN BOTH HALVES: it said card code "cannot
-  // reach" the mod-timing gate and cited Dispatch Courier as the precedent
-  // AGAINST. R95 built `CardBehavior.modPermissions` (Rook) and R97 unparked
-  // Dispatch Courier with the PLAY-timing twin of the same seam, so the
-  // precedent is FOR this and the reach exists.
-  //
-  // The card half is done: Slurpr declares `ModPermission.applyAtHaste`, an
-  // unbudgeted OR-fold in R95's shape (it prints no "each turn", so unlike
-  // R97 nothing is counted and no GameState field is needed). What is left is
-  // ENGINE-ONLY, and this test stays a todo until all three land:
-  //   1. `E.mayApplyModAtHaste`, the OR-folding gatherer beside
-  //      `E.mayAugmentInBattle` — it needs the private `anchored()` walk and
-  //      the `inModPermissions` latch, so it cannot live in a card file.
-  //   2. a haste branch in `doAugment` (today: `illegal('modding is a
-  //      deployment action (or a battle Virus)')`) and in `doGraft` (today:
-  //      `need(e.deploying(seat), 'grafting is a deployment action')`) —
-  //      "as if it was deployment" is the deploy branch verbatim with only
-  //      its phase test replaced, since "mod" is R37's word for BOTH.
-  //   3. the two offer gates: `legalHasteActions` pushes no mod actions, and
-  //      `startHasteStep`'s `canHaste` SKIPS the step outright when no seat
-  //      has a legal PLAY — R97's fatal gate, in mod form.
-  //
-  // What this test must assert when they do: with a Slurpr in the region, a
-  // non-{Haste} augment AND a graft are both offered by legalActions in the
-  // haste step and both land; without one, both are refused; the permission
-  // is region-scoped (R12) and does not reach the opponent; and a mod applied
-  // this way still pays for itself (R37/R59 `purpose: 'mod'`).
+/**
+ * Finish deployment, take the new turn's planning to its end and STOP in the
+ * R18 haste step — util.ts's `toNextBattle` skips it, which is exactly what
+ * these tests must not do.
+ *
+ * `setup` runs AFTER the turn has flipped, and therefore after the draw: the
+ * haste step is decided by `E.startHasteStep` at the moment the second seat
+ * finishes planning, so that is the only window in which a test can say what
+ * is really in hand when the question is asked.
+ */
+function intoHasteStep(h: Harness, setup: () => void): void {
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  setup();
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+}
+
+/** every mod action `seat` is offered right now, as `kind:zone:index→host` */
+function modsOffered(h: Harness, seat: Seat): string[] {
+  return legalActions(h.state, seat)
+    .filter(a => a.type === 'augment' || a.type === 'graft')
+    .map(a => {
+      const m = a as { type: string; from: string; index: number; hostId?: number };
+      return `${m.type}:${m.from}:${m.index}->${m.hostId}`;
+    });
+}
+
+test('Slurpr: mods may be applied during [Haste] as if it was deployment', () => {
+  // R95's HASTE-timing sibling, end to end. The card half (an unbudgeted
+  // OR-folding `ModPermission.applyAtHaste`) was already declared; the three
+  // engine seams are `E.mayApplyModAtHaste`, the haste branch in `doAugment` /
+  // `doGraft`, and the two offer gates.
+  const h = new Harness(4030);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  spawn(h, A, 'Slurpr');                        // the grantor, in A's region
+  const host = spawn(h, A, 'Rune Channeler');   // something to mod
+  intoHasteStep(h, () => {
+    h.state.players[A]!.hand.length = 0;
+    h.state.players[D]!.hand.length = 0;
+    giveResources(h, A, 'fire', 4);
+    give(h, A, 'Ephemeral Skywalker');          // a plain [Deployment] augment
+  });
+  assert.equal(h.state.hasteDone![A], false, 'the haste step opened for A');
+  const idx = h.state.players[A]!.hand.indexOf('Ephemeral Skywalker');
+  // gate 2: legalActions has to OFFER it, or the client never draws the
+  // affordance and the permission is invisible however well apply() behaves
+  assert.ok(modsOffered(h, A).includes(`augment:hand:${idx}->${host}`),
+    'the augment is offered in the haste step');
+  h.do({ type: 'augment', seat: A, from: 'hand', index: idx, hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'the augment landed during [Haste]');
+  assert.ok(ownAttrs(h, host).has('Flying'), 'and did what an augment does');
+  assert.ok(!h.state.players[A]!.hand.includes('Ephemeral Skywalker'), 'the card left hand');
+  h.do({ type: 'doneHaste', seat: A });
+  assert.equal(h.state.phase, 'battle', 'the step closes normally afterwards');
+  finishBattle(h);
+});
+
+test('Slurpr: a GRAFT lands during [Haste] too — R37 calls both of them "mods"', () => {
+  const h = new Harness(4031);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  spawn(h, A, 'Slurpr');
+  const oracle = spawn(h, A, 'Oracle of the Flame');   // carries a graft cause
+  intoHasteStep(h, () => {
+    h.state.players[A]!.hand.length = 0;
+    h.state.players[D]!.hand.length = 0;
+    giveResources(h, A, 'fire', 6);
+    give(h, A, 'Flame Juggle');                        // [Deployment], graftable
+  });
+  assert.equal(h.state.hasteDone![A], false, 'a graftable mod alone opens the step');
+  const idx = h.state.players[A]!.hand.indexOf('Flame Juggle');
+  assert.ok(modsOffered(h, A).includes(`graft:hand:${idx}->${oracle}`), 'the graft is offered');
+  h.do({ type: 'graft', seat: A, from: 'hand', index: idx, hostId: oracle, position: 0 });
+  assert.equal(ent(h, oracle)!.mods.length, 1, 'the graft landed during [Haste]');
+  assert.equal(h.state.entities[ent(h, oracle)!.mods[0]!]!.appliedAs, 'graft');
+  h.do({ type: 'doneHaste', seat: A });
+  finishBattle(h);
+});
+
+test('Slurpr: the [Haste] mod permission is region-scoped and belongs to the grantor\'s controller', () => {
+  // R12, and the reason the permission is gathered by the `anchored()` walk
+  // rather than globally: "I am 99% sure that Rook has to be in the region,
+  // since there are no global effects in Algomancy".
+  const h = new Harness(4032);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  spawn(h, D, 'Slurpr');                        // the grantor stands in D's region
+  const aHost = spawn(h, A, 'Rune Channeler');
+  const dHost = spawn(h, D, 'Rune Channeler');
+  intoHasteStep(h, () => {
+    for (const s of [A, D] as Seat[]) {
+      h.state.players[s]!.hand.length = 0;
+      giveResources(h, s, 'fire', 4);
+      give(h, s, 'Ephemeral Skywalker');
+    }
+  });
+  assert.equal(h.state.hasteDone![D], false, 'D, who has the Slurpr, gets the step');
+  assert.equal(h.state.hasteDone![A], true,
+    'A does not — a grantor in another region reaches nobody, so A had no haste action at all');
+  assert.deepEqual(modsOffered(h, A), [], 'and A is offered no mod');
+  assert.throws(() => h.do({
+    type: 'augment', seat: A, from: 'hand',
+    index: h.state.players[A]!.hand.indexOf('Ephemeral Skywalker'), hostId: aHost,
+  }), IllegalAction, 'nor may A force one through');
+  const dIdx = h.state.players[D]!.hand.indexOf('Ephemeral Skywalker');
+  assert.ok(modsOffered(h, D).includes(`augment:hand:${dIdx}->${dHost}`), 'D is offered theirs');
+  h.do({ type: 'augment', seat: D, from: 'hand', index: dIdx, hostId: dHost });
+  assert.equal(ent(h, dHost)!.mods.length, 1, 'and D may apply it');
+  h.do({ type: 'doneHaste', seat: D });
+  finishBattle(h);
+});
+
+test('Slurpr: the haste step OPENS for a hand of nothing but mods', () => {
+  // ⚠ THE SEAM THAT WOULD OTHERWISE MAKE ALL OF THIS INVISIBLE.
+  // `startHasteStep`'s `canHaste` skips the step OUTRIGHT when no seat has a
+  // legal PLAY, so a board with a Slurpr and a hand of nothing but mods would
+  // never reach the offer gate or the action path, however correct both are.
+  // That is playtest report #74 (R97, Dispatch Courier) one verb over.
+  const h = new Harness(4033);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const slurpr = spawn(h, A, 'Slurpr');
+  spawn(h, A, 'Rune Channeler');
+  intoHasteStep(h, () => {
+    h.state.players[A]!.hand.length = 0;
+    h.state.players[D]!.hand.length = 0;
+    giveResources(h, A, 'fire', 4);
+    give(h, A, 'Ephemeral Skywalker');   // [Deployment]: not a haste PLAY anywhere
+  });
+  assert.notEqual(h.state.hasteDone, null, 'the step happened at all');
+  assert.equal(h.state.hasteDone![A], false, 'and it is A\'s to act in');
+  assert.equal(h.state.phase, 'planning', 'nobody has been pushed into battle');
+  // and the control: kill the grantor and the step is skipped outright again
+  const h2 = new Harness(4034);
+  toDeployment(h2);
+  const A2 = h2.state.deployPlayer!, D2 = (1 - A2) as Seat;
+  spawn(h2, A2, 'Rune Channeler');
+  intoHasteStep(h2, () => {
+    h2.state.players[A2]!.hand.length = 0;
+    h2.state.players[D2]!.hand.length = 0;
+    giveResources(h2, A2, 'fire', 4);
+    give(h2, A2, 'Ephemeral Skywalker');
+  });
+  assert.equal(h2.state.hasteDone, null, 'no grantor, no haste step');
+  assert.equal(h2.state.phase, 'battle', 'straight into battle, as R18 says');
+  assert.ok(slurpr >= 0);
+  h.do({ type: 'doneHaste', seat: A });
+  finishBattle(h);
+  finishBattle(h2);
+});
+
+test('without a Slurpr the [Haste] refusal is unchanged — modding is a deployment action', () => {
+  // The step is open on its own merits (a printed {Haste} unit in hand), so
+  // this isolates the PERMISSION from the step-opening gate above.
+  const h = new Harness(4035);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const host = spawn(h, A, 'Rune Channeler');
+  const oracle = spawn(h, A, 'Oracle of the Flame');
+  intoHasteStep(h, () => {
+    h.state.players[A]!.hand.length = 0;
+    h.state.players[D]!.hand.length = 0;
+    giveResources(h, A, 'fire', 9); giveResources(h, A, 'fire', 4);
+    give(h, A, 'Cinder Scuttler');        // a printed {Haste} unit: the step opens
+    give(h, A, 'Ephemeral Skywalker');
+    give(h, A, 'Flame Juggle');
+  });
+  assert.equal(h.state.hasteDone![A], false, 'the step is open');
+  assert.deepEqual(modsOffered(h, A), [], 'but no mod is offered without a grantor');
+  assert.throws(() => h.do({
+    type: 'augment', seat: A, from: 'hand',
+    index: h.state.players[A]!.hand.indexOf('Ephemeral Skywalker'), hostId: host,
+  }), IllegalAction, 'the augment refusal is unchanged');
+  assert.throws(() => h.do({
+    type: 'graft', seat: A, from: 'hand',
+    index: h.state.players[A]!.hand.indexOf('Flame Juggle'), hostId: oracle, position: 0,
+  }), IllegalAction, 'and so is the graft refusal');
+  h.do({ type: 'doneHaste', seat: A });
+  finishBattle(h);
+});
+
+test('Slurpr: R37 — a mod applied during [Haste] pays at purpose "mod" and is not a play', () => {
+  // Applying a mod is not PLAYING a card (R37), and "as if it was deployment"
+  // does not change that. Two consequences, both asserted here: the bill is
+  // the `purpose: 'mod'` bill — a Tranquility's "Spells cost [one] more to
+  // PLAY" cannot reach it — and R97's per-turn haste-play allowance is not
+  // charged, because no play happened.
+  const h = new Harness(4036);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  spawn(h, A, 'Slurpr');
+  spawn(h, A, 'Tranquility');                   // "Spells cost [one] more to play…"
+  const host = spawn(h, A, 'Rune Channeler');
+  intoHasteStep(h, () => {
+    h.state.players[A]!.hand.length = 0;
+    h.state.players[D]!.hand.length = 0;
+    giveResources(h, A, 'fire', 6);
+    give(h, A, 'Ephemeral Skywalker');          // printed cost 2
+  });
+  const open = () => h.state.players[A]!.resources.filter(r => r.state === 'open').length;
+  const before = open();
+  const billed = new E(h.state).manaToPlay(A, 'Ephemeral Skywalker', { purpose: 'mod' });
+  h.do({
+    type: 'augment', seat: A, from: 'hand',
+    index: h.state.players[A]!.hand.indexOf('Ephemeral Skywalker'), hostId: host,
+  });
+  assert.equal(billed, 2, 'the mod bill is the printed cost — no play tax reaches it');
+  assert.equal(before - open(), billed, 'and that is exactly what was spent');
+  assert.equal(h.state.hastePlaysUsed?.[A] ?? 0, 0,
+    'R97: no haste PLAY was made, so no grant allowance was drained');
+  h.do({ type: 'doneHaste', seat: A });
+  finishBattle(h);
 });
 
 // ── Suspend ──────────────────────────────────────────────────────────────

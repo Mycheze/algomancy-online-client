@@ -659,86 +659,57 @@ card('Cosmic Conspirator', {
 // "Sacrifice me and another ally: Delete all units with cost equal to the
 // total number of counters on us." — m/2 2/2 Robot Spirit Unit.
 //
-// ⚠ STILL PARKED, but ⚠ THE OLD REASON HERE WAS STALE and is corrected. It
-// blamed the COMPOUND COST SHAPE — "`AbilityCost` has no compound shape, so
-// 'me AND another ally' cannot be expressed as one cost". That is not true: a
-// single `AbilityCost` already carries `sacrificeSelf` AND `sacrificeOther`
-// together, and both are paid inside the ONE cast window (payActivationCost
-// for the choice-free half, collectItemCosts for the choice half). The
-// PAYMENT has been expressible for a while.
+// LIVE, and on the effect-level `CastCost` route. The cost is paid IN THE CAST
+// WINDOW — both sacrifices, before the item reaches the stack — so there is no
+// priority window between paying and deleting, and a Deformant whose only ally
+// is removed in response never half-pays.
 //
-// WHAT ACTUALLY BLOCKS IT IS THE RECEIPT. The effect needs the COUNTERS on the
-// two sacrificed units, and neither writer records them:
-//   · `payActivationCost`'s `sacrificeSelf` branch (engine.ts) writes NO
-//     receipt at all — it just destroys the source;
-//   · `payItemCost`'s `sacrificeOther` branch writes a bare `CardName` into
-//     `item.paidCosts.sacrificed`, and `EffectCtx` never exposes
-//     `item.paidCosts`, so run() could not even learn WHICH ally went.
-// And the counters cannot be reconstructed from `effStats`, because Caleb
-// rules they NET and that temp buffs are not counters at all — "if I have
-// +1/+1 and -1/-1 on the 2 cards, what's the total number?" -> "0, they cancel
-// out"; of an until-regroup buff, "oh, no those are not counters". So the
-// number has to be snapshotted from the raw `Entity.counters` AT PAYMENT.
+// WHY NOT `AbilityCost`, which is where an activation cost normally lives:
+// `collectItemCosts` carries a documented latent half-pay bug (engine.ts, the
+// "⚠ LATENT (2026-08-23 audit)" note) — the choice-free half of a compound
+// cost is charged one call EARLIER than the choice-bearing half, so the first
+// card to combine them arrives at the collector with its mana already spent.
+// Deformant would have been exactly that first card. `castCost` is one
+// collector, one window, and it is what `abilityUnusable` already gates the
+// OFFER on.
 //
-// ⚠ AND THE `AbilityCost` ROUTE IS THE WRONG ONE ANYWAY. `collectItemCosts`
-// carries a documented latent half-pay bug (engine.ts, the "⚠ LATENT
-// (2026-08-23 audit)" note): the choice-free half is charged one call EARLIER
-// than the choice half, so the first card to combine them arrives at the
-// collector with its mana already spent. Deformant would be exactly that
-// first card. The route to take instead is the effect-level `CastCost` one —
-// `castCost: { kind: 'sacrificeUnits', n: 2 }` on the ability's effect, which
-// is all-or-nothing for a non-graft part, is gated at the OFFER by
-// `abilityUnusable`'s `canPayCastCost`, and writes `part.costPaid`, which
-// `EffectCtx.costPaid` ALREADY exposes.
+// `includeSelf: true` is the engine shape "me AND another ally" needed, and it
+// is not "any two units": the source is mandatory and choice-free (charged
+// through the same branch R73's "[Sacrifice me]" uses) and is EXCLUDED from
+// the menu the second one is chosen from. `canPayCastCost` demands both halves
+// up front, so the Deformant never dies for a cost whose remainder cannot be
+// paid — the all-or-nothing rule R110 applies to a multiplied graft cost.
 //
-// TWO ENGINE EDITS ARE STILL MISSING, both outside card code:
-//   (a) a way to force "me AND another" rather than "any two". `castCostOptions`
-//       offers `unitsOf(seat, item.region)` with no self-exclusion, so the
-//       Deformant is on its own menu and nothing makes it mandatory. The shape
-//       that fits is `includeSelf?: true` on the `sacrificeUnits` variant:
-//       charge the source choice-free through the existing `from: 'self'`
-//       branch, then take the remaining n-1 off the menu with `item.sourceId`
-//       excluded — and make `canPayCastCost` demand BOTH halves up front, or
-//       the source dies for a cost the rest of which cannot be paid.
-//   (b) widen the receipt: `costPaid.sacrificedUnits` is
-//       `{card, power, defense}[]` and needs `counters: number` and
-//       `unit: EntityId`, snapshotted at payment in BOTH writers
-//       (`chargeCastCost`'s `from: 'self'` branch and `payCastCost`'s
-//       chosen-unit branch).
-// With those two, the ally choice moves out of `run()` into the cost, the
-// total is read from `ctx.costPaid.sacrificedUnits`, and the mid-resolution
-// `ctx.choose('deform', …)` below — a RESPONSE WINDOW between cost and effect
-// that should not exist — is deleted. Its ledger entry goes in the same
-// change, and not before.
+// THE TOTAL COMES FROM THE RECEIPT, not from the board: both units are already
+// dead when `run` executes, so `costPaid.sacrificedUnits` carries their
+// counters snapshotted AT PAYMENT. Those are the RAW `Entity.counters`,
+// because Caleb rules that counters NET and that temporary buffs are not
+// counters at all — "if I have +1/+1 and -1/-1 on the 2 cards, what's the
+// total number?" -> "0, they cancel out"; of an until-regroup buff, "oh, no
+// those are not counters" — so `effStats` cannot reconstruct the number.
 //
-// R77 does fix the offer half: "another ally" is a board condition, so the
-// ability is no longer OFFERED when this is the only unit you have. It used to
-// activate, print "no other ally to sacrifice", and do nothing. (On the
-// CastCost route this stops needing a `usableWhen` at all — `canPayCastCost`
-// for `sacrificeUnits` already refuses a board that cannot field two units.)
+// ⚠ THERE IS NO `ctx.choose` HERE ANY MORE, AND NONE MUST BE RESTORED. The
+// ally used to be picked mid-RESOLUTION, which opened a response window
+// between the cost and the effect that the printed card does not have (the
+// ledger entry called it out as exactly that). The pick is a COST now.
+//
+// ⚠ AND NO `usableWhen`. It is not missing, it is redundant: R77's board
+// condition ("another ally") is precisely what `canPayCastCost` answers for
+// `sacrificeUnits` + `includeSelf`, and `abilityUnusable` asks it before the
+// ability is ever offered. A `usableWhen` restating it would be a second
+// implementation of the same gate — the class of split the fuzzer's
+// "legalActions lied" check exists to catch.
 card('Deformant', {
   abilities: [{
     type: 'activated', cost: {},
     label: 'sacrifice me and another ally: delete all units with cost equal to our counters',
-    usableWhen: (g, self, seat) =>
-      g.unitsOf(seat, self.region).some(u => u.id !== self.id),
     effect: {
+      castCost: { kind: 'sacrificeUnits', includeSelf: true, n: 2 },
       run: (g, ctx) => {
-        const self = selfOf(g, ctx);
-        if (!self) { g.ev('info', 'Deformant: the carrier is gone — no effect.'); return; }
-        const allies = g.unitsOf(ctx.controller, ctx.region).filter(u => u.id !== self.id);
-        if (!allies.length) { g.ev('info', 'Deformant: no other ally to sacrifice — no effect.'); return; }
-        const pick = ctx.choose('deform', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Deformant: sacrifice which other ally?',
-          options: allies.map(u => ({ label: u.card, value: u.id, card: u.card })),
-        }) as EntityId;
-        const ally = g.entity(pick);
-        if (!ally) return;
-        const total = self.counters + ally.counters;
-        g.destroy(self, 'is sacrificed');
-        g.destroy(ally, 'is sacrificed');
-        g.ev('info', `Deformant: deleting all units with cost ${total}.`);
+        const paid = ctx.costPaid?.sacrificedUnits ?? [];
+        const total = paid.reduce((n, r) => n + r.counters, 0);
+        g.ev('info', `Deformant: ${paid.map(r => r.card).join(' and ')} were sacrificed with `
+          + `${total} counter${total === 1 ? '' : 's'} between them — deleting all units with cost ${total}.`);
         for (const u of g.unitsIn(ctx.region)) {
           const m = getCard(u.card).mana;
           if ((m === 'X' ? 0 : m) === total) g.destroy(u, 'is deleted');

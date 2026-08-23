@@ -13,8 +13,8 @@
  * stats, counters, attributes, text and activated abilities, permanently),
  * counters on spawn/mod + despawn cleanup (Celestial Fluxmorph), X-at-
  * resolution activation (Celestial Shifter), stack sweeps (Containment
- * Protocol), the Robot-swap half of Cosmic Conspirator, compound-cost board
- * wipes (Deformant), counter-fueled damage (Discharge), the R97 haste-step play
+ * Protocol), the Robot-swap half of Cosmic Conspirator, the `includeSelf`
+ * cast-cost board wipe (Deformant), counter-fueled damage (Discharge), the R97 haste-step play
  * grant (Dispatch Courier), token theft + recast (Download, R8), combat
  * hand disruption (Eldritch Dreamtender) and mod-stacking counters
  * (Evolutionary Experiment).
@@ -655,6 +655,13 @@ test('Cosmic Conspirator: Biotoxicity asks once per token in the batch (report #
 // ── Deformant ────────────────────────────────────────────────────────────
 
 test('Deformant: sacrifice me + an ally, delete all units costing our counter total', () => {
+  // ⚠ THIS TEST CHANGED SHAPE with the move to the `castCost` route, and the
+  // change is the point of the card. It used to `pass(h); pass(h)` to RESOLVE
+  // the activation and only then meet a `payOrDecline` picking the ally
+  // mid-resolution — a response window between cost and effect the printed
+  // card does not have. The cost is now paid in the CAST window, so the
+  // decision is a `targets` one carrying `{ unit: id }` and it arrives BEFORE
+  // the item is on the stack: the passes move to after the payment.
   const h = new Harness(2612);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -667,11 +674,11 @@ test('Deformant: sacrifice me + an ally, delete all units costing our counter to
   h.do({ type: 'declareAttack', seat: A, columns: [[b1], [b2]] });
   pass(h);                                                  // A passes → D may act
   h.do({ type: 'activateAbility', seat: D, entityId: def, abilityIndex: 0 });
-  pass(h); pass(h);                                         // resolve the activation
-  assert.equal(h.state.decision!.kind, 'payOrDecline');
-  pick(h, ally);                                            // sacrifice the ally (total counters: 1 + 2 = 3)
+  assert.equal(h.state.decision!.kind, 'targets', 'the ally is a COST choice now');
+  pick(h, { unit: ally });                                  // total counters: 1 + 2 = 3
   assert.ok(!ent(h, def) && !ent(h, ally), 'both sacrificed');
   assert.deepEqual(h.state.players[D]!.bin.sort(), ['Deformant', 'Unit Token']);
+  pass(h); pass(h);                                         // resolve the activation
   assert.ok(!ent(h, b1) && !ent(h, b2), 'all cost-3 units in the region deleted');
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Bripp').length, 2, 'deleted → bin');
   finishBattle(h);
@@ -690,16 +697,106 @@ test('R77: Deformant is not offered with no other ally to sacrifice', () => {
     a.type === 'activateAbility' && a.entityId === def), 'with an ally it is offered');
 });
 
-test('Deformant: "sacrifice me AND another ally" as one COMPOUND activation cost '
-  + '(PARKED: AbilityCost has no compound shape)', { todo: true }, () => {
-  // `AbilityCost` can express `sacrificeSelf: true` OR `sacrificeOther: n`,
-  // never both as a single indivisible payment, so Deformant pays at
-  // RESOLUTION: the ally is picked mid-resolution and both are destroyed there.
-  // What is missing is a cost shape that takes several sacrifices as ONE
-  // payment — offered, chosen and charged in the cast window like every other
-  // activation cost (R49/R57) — so that a Deformant whose ally is removed in
-  // response never half-pays. R77 gated the OFFER; the payment window is what
-  // is still parked.
+test('Deformant: "sacrifice me AND another ally" is ONE payment, made in the CAST window', () => {
+  // The promoted todo. Its old title blamed `AbilityCost` for having no
+  // compound shape; that claim was stale twice over — `AbilityCost` DOES carry
+  // `sacrificeSelf` and `sacrificeOther` together, and it is the wrong route
+  // anyway, because `collectItemCosts` charges the choice-free half a call
+  // earlier than the choice-bearing half and Deformant would have been the
+  // first card to meet that latent half-pay. The effect-level `castCost` is
+  // one collector and one window.
+  const h = new Harness(2621);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const def = spawn(h, D, 'Deformant');
+  const ally = spawn(h, D, 'Unit Token');
+  const spare = spawn(h, D, 'Unit Token');
+  const atk = spawn(h, A, 'Good Whale');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);                                                  // A passes → D may act
+  h.do({ type: 'activateAbility', seat: D, entityId: def, abilityIndex: 0 });
+  // the SOURCE half carries no choice, so it is charged first and outright…
+  assert.ok(!ent(h, def), 'the Deformant is already sacrificed');
+  // …and the picker for "another ally" is open with NOTHING on the stack yet
+  assert.equal(h.state.decision!.kind, 'targets');
+  assert.equal(h.state.stack.length, 0,
+    'the whole cost is paid before the item is a thing anyone can answer');
+  notOffered(h, { unit: def }, 'the source is not on its own "another ALLY" menu');
+  pick(h, { unit: ally });
+  assert.equal(h.state.stack.length, 1, 'only once BOTH are paid does it reach the stack');
+  assert.ok(!ent(h, ally) && ent(h, spare), 'exactly the two sacrifices, no more');
+  // and there is no priority window BETWEEN cost and effect: the first thing
+  // either player may do after the payment is respond to the item itself
+  assert.equal(h.state.decision, null, 'no further decision between cost and effect');
+  pass(h); pass(h);
+  assert.equal(h.state.stack.length, 0, 'resolved');
+  finishBattle(h);
+});
+
+test('Deformant: the counter total is read off the RECEIPT as of payment, not off the board', () => {
+  // Both sacrificed units are DEAD by the time `run` executes, so a board read
+  // would total zero. The counters are snapshotted at payment — RAW
+  // `Entity.counters`, because Caleb rules they net (+1/+1 and -1/-1 "cancel
+  // out") and that a temporary buff is not a counter at all, so `effStats`
+  // cannot reconstruct them.
+  const h = new Harness(2622);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const bripp = spawn(h, A, 'Bripp');                       // mana 3 — the victim
+  const whale = spawn(h, A, 'Good Whale');                  // a different cost
+  const def = spawn(h, D, 'Deformant');
+  const ally = spawn(h, D, 'Unit Token');
+  const third = spawn(h, D, 'Unit Token');                  // survives the whole thing
+  withE(h, e => {
+    e.addCounters(e.entity(def)!, 2);
+    e.addCounters(e.entity(def)!, -1);                      // counters NET: 2 - 1 = 1
+    e.addCounters(e.entity(ally)!, 2);
+    e.addCounters(e.entity(third)!, 5);                     // a third unit's counters…
+  });
+  assert.equal(ent(h, def)!.counters, 1, '+1/+1 and -1/-1 cancel pairwise');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[bripp], [whale]] });
+  pass(h);
+  h.do({ type: 'activateAbility', seat: D, entityId: def, abilityIndex: 0 });
+  pick(h, { unit: ally });
+  const receipt = h.state.stack[0]!.parts[0]!.costPaid!.sacrificedUnits!;
+  assert.deepEqual(receipt.map(r => [r.card, r.counters]),
+    [['Deformant', 1], ['Unit Token', 2]],
+    'the receipt names both units and their counters as of payment');
+  // …changed after payment, and it must not move the total
+  withE(h, e => { e.addCounters(e.entity(third)!, 4); });
+  pass(h); pass(h);                                         // resolve
+  assert.ok(!ent(h, bripp), 'the cost-3 unit is deleted — the total is 1 + 2, not 9');
+  assert.ok(ent(h, whale), 'and nothing else is');
+  assert.ok(ent(h, third), 'the third unit was never part of the cost');
+  finishBattle(h);
+});
+
+test('Deformant: all or nothing — it never half-pays when the second sacrifice is unavailable', () => {
+  // `canPayCastCost` demands BOTH halves up front, which is what stops the
+  // source dying for a cost whose remainder cannot be paid. R110 applies the
+  // same all-or-nothing rule to a multiplied graft cost.
+  const h = new Harness(2623);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const def = spawn(h, D, 'Deformant');
+  const ally = spawn(h, D, 'Unit Token');
+  const atk = spawn(h, A, 'Good Whale');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);                                                  // A passes → D may act
+  assert.ok(legalActions(h.state, D).some(a =>
+    a.type === 'activateAbility' && a.entityId === def), 'offered while the ally stands');
+  withE(h, e => { e.destroy(e.entity(ally)!, 'is deleted'); });
+  assert.ok(!legalActions(h.state, D).some(a =>
+    a.type === 'activateAbility' && a.entityId === def),
+    'the ally is gone, so the ability is no longer offered');
+  assert.throws(() => h.do({ type: 'activateAbility', seat: D, entityId: def, abilityIndex: 0 }),
+    /nothing it can be used on/, 'and it cannot be forced through either');
+  assert.ok(ent(h, def), 'the Deformant is ALIVE — no half-payment happened');
+  assert.ok(!h.state.players[D]!.bin.includes('Deformant'));
+  finishBattle(h);
 });
 
 // ── Discharge ────────────────────────────────────────────────────────────

@@ -211,19 +211,15 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // batch-light-a.ts), and the printed "(As long as I am in their region.)" is
   // `staticsFor`'s own region scope, evaluated live. Its todo was promoted to
   // real tests in 38-light-a.test.ts. Signpost, not a park.
-  {
-    card: 'Slurpr', gap: 'dead', severity: 'medium',
-    missing: '"[Augment] You can apply other mods during [Haste] as if it was deployment."',
-    waitingOn:
-      'The MOD-timing twin of R95. Rook shipped this round as `ModPermission.augmentInBattle` '
-      + '(a per-card, OR-folded permission gathered by E.mayAugmentInBattle, with one shared '
-      + 'predicate that both doAugment and legalActions call) and Dispatch Courier shipped as '
-      + 'R97\'s play sibling — neither touches this card. What is needed is a `deploymentTiming` '
-      + 'sibling in the same `ModPermission` family. The family now exists, so this is a small '
-      + 'job rather than a design one.',
-    todoTest: '40-light-c.test.ts::Slurpr',
-    note: 'Plays and augments as a vanilla 2/2.',
-  },
+  // Slurpr's entry was DELETED on 2026-08-23 when the MOD-timing twin of R95
+  // was built, per the house rule at the head of this file. All three engine
+  // seams it was waiting on are in the tree now: `E.mayApplyModAtHaste` (the
+  // OR-folding gatherer beside `E.mayAugmentInBattle`), the haste branch in
+  // `doAugment` and `doGraft` through apply.ts's one shared `hasteModAllowed`
+  // predicate, and BOTH offer gates — `legalHasteActions`' `pushHasteMods` and,
+  // the one that would otherwise have made the whole thing unreachable,
+  // `startHasteStep`'s `canHaste` (report #74 in mod form). Its todo was
+  // promoted to six real tests in 40-light-c.test.ts. Signpost, not a park.
 
   // ── DEAD [Augment] HALVES (the exact Harbinger shape) ───────────────────
   // Every one of these is `type: 'triggered', events: []` with an empty run —
@@ -336,28 +332,18 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // ("Amphivavor" = Amphivore). That is R110's `graftCopies: 3`, which both
   // cards already share, so no code changed. Its todo was promoted to a real
   // two-graft, one-targeted test in 40-light-c.test.ts. Signpost, not a park.
-  {
-    card: 'Deformant', gap: 'approximated', severity: 'low',
-    missing:
-      '"Sacrifice me and another ally:" as ONE indivisible activation cost.',
-    waitingOn:
-      'NOT the compound cost shape this note used to blame — that claim is stale. A single '
-      + '`AbilityCost` carries `sacrificeSelf` AND `sacrificeOther` together, and both are '
-      + 'paid inside the one cast window (payActivationCost for self, collectItemCosts for '
-      + 'other), so the PAYMENT is expressible today. What actually blocks moving Deformant '
-      + 'into the cast window is the RECEIPT, because its effect needs the sacrificed '
-      + "units' COUNTERS: `costPaid.sacrificedUnits` (types.ts:368) snapshots "
-      + '`{card, power, defense}` and not `counters`; `item.paidCosts.sacrificed` is a bare '
-      + 'CardName; and `EffectCtx` never exposes `item.paidCosts` at all, so with the '
-      + 'two-channel shape run() could not even learn WHICH ally was sacrificed. Nor can '
-      + 'the counters be reconstructed from effStats, because Caleb rules they NET and that '
-      + 'temp buffs are not counters at all — "if I have +1/+1 and -1/-1 on the 2 cards, '
-      + 'what\'s the total number?" -> "0, they cancel out"; and of an until-regroup buff, '
-      + '"oh, no those are not counters". Minimum fix: add `counters` (and ideally the '
-      + 'entity id) to both receipt shapes, and surface `item.paidCosts` on EffectCtx.',
-    todoTest: '26-metal-a.test.ts::Deformant',
-    note: 'Observable as a response window that should not exist between cost and effect.',
-  },
+  // Deformant's entry was DELETED on 2026-08-23, per the house rule at the
+  // head of this file. It waited on two engine edits and both are in the tree:
+  // `includeSelf?: true` on the `sacrificeUnits` CastCost (the source charged
+  // choice-free first, excluded from the menu the rest is chosen from, and
+  // `canPayCastCost` demanding BOTH halves up front so it never half-pays),
+  // and the widened `costPaid.sacrificedUnits` receipt, which now snapshots
+  // `unit` and the RAW `counters` at payment in both writers. The card moved
+  // to the effect-level `castCost` route — deliberately NOT `AbilityCost`,
+  // whose `collectItemCosts` half-pay would have bitten Deformant first — so
+  // the mid-resolution `ctx.choose` is gone and with it the response window
+  // this entry called out. Its todo was promoted to three real tests in
+  // 26-metal-a.test.ts. Signpost, not a park.
   // Eldritch Dreamtender's entry was DELETED on 2026-08-23, per the house rule
   // at the head of this file. It waited on a RULING and got one: R117 — the
   // trigger fires in the sub-step its OWN COLUMN strikes in. The gate is

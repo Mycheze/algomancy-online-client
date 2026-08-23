@@ -554,8 +554,24 @@ export interface EffectPart {
     debt?: number;
     /** 'discardCard': the cards discarded, in the order they were chosen */
     discarded?: CardName[];
-    /** 'sacrificeUnits': every unit sacrificed, snapshotted at payment */
-    sacrificedUnits?: { card: CardName; power: number; defense: number }[];
+    /**
+     * 'sacrificeUnits': every unit sacrificed, snapshotted at payment.
+     *
+     * `counters` is `Entity.counters` RAW, and that is the ruling rather than
+     * an implementation shortcut: counters NET (+1/+1 and -1/-1 cancel
+     * pairwise — "if I have +1/+1 and -1/-1 on the 2 cards, what's the total
+     * number?" → "0, they cancel out") and a temporary buff is not a counter
+     * at all ("oh, no those are not counters"), so it cannot be reconstructed
+     * from `effStats`. Deformant's "the total number of counters on us" reads
+     * exactly this, summed over the list.
+     *
+     * `unit` is the entity id, so a resolution can tell WHICH unit each
+     * receipt belongs to. Both are snapshots: the units are already dead by
+     * the time the effect runs, and re-reading the board would find nothing.
+     */
+    sacrificedUnits?: {
+      unit: EntityId; card: CardName; power: number; defense: number; counters: number;
+    }[];
     /** 'removeCounters': how many +1/+1 counters came off, and from where */
     counters?: { unit: EntityId; card: CardName; n: number }[];
     /** 'eraseBin': the cards erased out of the bin, in the order chosen */

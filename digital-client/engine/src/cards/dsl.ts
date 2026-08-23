@@ -370,8 +370,17 @@ export type CastCost =
    * what keeps it unrespondable. `n` must be 1. A source that is already dead
    * makes it UNPAYABLE, so R5 partial resolution skips the part: a trigger
    * whose source died between firing and settling does nothing at all.
+   *
+   * `includeSelf` is "sacrifice ME AND another ally" (Deformant) — the source
+   * plus `n - 1` others, as ONE indivisible payment. It is not `from: 'self'`
+   * with a second cost bolted on and it is not "any n units": the source is
+   * MANDATORY and is excluded from the menu the rest is chosen from. Charged
+   * in two halves in the one cast window — the choice-free source first,
+   * through the same branch `from: 'self'` uses, then the loop for the rest —
+   * and payability demands BOTH halves UP FRONT, or the source would die for
+   * a cost whose remainder cannot be paid.
    */
-  | { kind: 'sacrificeUnits'; from?: 'self'; n: number | 'X'; xMin?: number }
+  | { kind: 'sacrificeUnits'; from?: 'self'; includeSelf?: true; n: number | 'X'; xMin?: number }
   | { kind: 'payLife'; n: number | 'X'; xMin?: number }
   | { kind: 'discardCard'; n: number | 'X'; xMin?: number }
   | { kind: 'gainDebt'; n: number }
