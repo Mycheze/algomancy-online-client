@@ -13,11 +13,11 @@
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
  *  - CONTROL CHANGES (Corrupting Blight / Hush Mush / Hexbane Shiitake):
- *    the engine has no control-change primitive, so the batch-local
- *    giveControl() flips entity.controller (and its mods' controller),
- *    removes the unit from any formation (a defector stops fighting), and
- *    logs. The region is left as-is: regroup (R11 step 1) reads controller
- *    and sends it to its new home.
+ *    UN-PARKED (R112, 2026-08-23). This used to describe a batch-local
+ *    giveControl(); the engine now has `E.giveControl(u, to)` — unit AND
+ *    mods change controller (Bena's ruling), it leaves any formation
+ *    through removeFromFormation (so the R72 collapse happens), and it goes
+ *    to the new controller's home now if that controller is not present.
  *  - EARNEST DEFENDER: still the log-tail reconstruction, but NOT for the
  *    reason this note used to give. It said "'targeted' events are logged but
  *    NOT dispatched to trigger listeners"; R53 fixed that — commitItem calls
@@ -68,26 +68,6 @@ import { selfOf, isEnt, inEndOfTurn } from './helpers.ts';
  * the caller passes a battle-local region) */
 const makeOneOne = (g: E, seat: Seat, region?: number): Entity =>
   g.spawnUnit(seat, 'Unit Token', region ?? g.homeRegion(seat), { token: true, tokenStats: [1, 1] });
-
-/** ⚠ header approximation: no engine control-change primitive. Flip the
- * controller on the unit and its mods, pull it out of any formation, log. */
-const giveControl = (g: E, u: Entity, to: Seat): void => {
-  if (u.controller === to) { g.ev('info', `${g.pname(to)} already controls ${u.card} — nothing changes hands.`); return; }
-  if (!g.entity(u.id)) { g.ev('info', `${u.card} is gone — nothing changes hands.`); return; }
-  const from = u.controller;
-  u.controller = to;
-  for (const id of u.mods) { const m = g.entity(id); if (m) m.controller = to; }
-  const b = g.s.battle;
-  if (b) {
-    for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-      const i = col.indexOf(u.id);
-      if (i !== -1) col.splice(i, 1);
-    }
-    const si = b.sentAttackers.indexOf(u.id);
-    if (si !== -1) b.sentAttackers.splice(si, 1);
-  }
-  g.ev('info', `${g.pname(to)} gains control of ${u.card} (from ${g.pname(from)}).`);
-};
 
 // ────────────────────────────── the cards ──────────────────────────────
 
@@ -242,7 +222,7 @@ card('Corrupting Blight', {
           prompt: `Corrupting Blight: who gains control of ${me.card}?`,
           options: candidates.map(s => ({ label: g.pname(s), value: s })),
         }) as Seat;
-        giveControl(g, me, to);
+        g.giveControl(me, to);
       },
     },
   }],
@@ -356,7 +336,7 @@ card('Growing Plague', {
 // are gathered before mutating (plan-then-commit, R6): the exchange
 // (pay-or-decline), then a new-target pick per declared target (keep is
 // always offered). Committing flips item.controller to me and hands the
-// carrier to the spell's owner (⚠ header giveControl). Spell tokens are not
+// carrier to the spell's owner (E.giveControl, R112). Spell tokens are not
 // "played" (R26) and don't trigger this.
 card('Hexbane Shiitake', {
   augmentText: [{
@@ -406,7 +386,7 @@ card('Hexbane Shiitake', {
         item.controller = ctx.controller;
         for (const r of retargets) item.parts[r.pi]!.targets[r.ti] = r.ref;
         g.ev('info', `Hexbane Shiitake: ${g.pname(ctx.controller)} gains control of ${item.label}.`);
-        giveControl(g, me, seat);
+        g.giveControl(me, seat);
       },
     },
   }],
@@ -488,7 +468,7 @@ card('Hush Mush', {
         const v = c?.[HUSH_KEY] ?? 0;
         if (!c || v <= 0) { g.ev('info', 'Hush Mush: nothing was negated — nobody gains control of me.'); return; }
         c[HUSH_KEY] = 0;
-        giveControl(g, me, (v - 1) as Seat);
+        g.giveControl(me, (v - 1) as Seat);
       },
     },
   }],

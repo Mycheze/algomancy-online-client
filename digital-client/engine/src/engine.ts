@@ -2375,6 +2375,39 @@ export class E {
   }
 
   /**
+   * R112: `to` gains control of unit `u`. The one control-change primitive —
+   * four card batches used to carry their own copy, and they disagreed.
+   *
+   * - Its MODS change controller with it (Bena 2026-08-23: "a stolen unit's
+   *   mods are part of the unit, so yes, they go with them to the unit's new
+   *   controller — that's the whole point of some of the viruses which force
+   *   units to flip flop controllers"). Owner never changes.
+   * - It leaves any formation it was in, through removeFromFormation, so the
+   *   R72 column collapse happens here too (the local copies skipped it).
+   * - Regions are exclusive: if the new controller is not present where the
+   *   unit stands (a deployment-time steal out of the owner's home), the unit
+   *   and its mods go to the new controller's home now rather than sitting
+   *   in a region its controller is not in until regroup walks it there.
+   *   Mid-battle both seats are present and it stays on the board.
+   * Returns false when nothing changed hands (unit gone, or already theirs).
+   */
+  giveControl(u: Entity, to: Seat): boolean {
+    if (!this.entity(u.id)) { this.ev('info', `${u.card} is gone — nothing changes hands.`); return false; }
+    if (u.controller === to) { this.ev('info', `${this.pname(to)} already controls ${u.card} — nothing changes hands.`); return false; }
+    const from = u.controller;
+    u.controller = to;
+    for (const id of u.mods) { const m = this.entity(id); if (m) m.controller = to; }
+    this.removeFromFormation(u.id);
+    if (!this.s.regions[u.region]!.presentSeats.includes(to)) {
+      u.region = this.homeRegion(to);
+      for (const id of u.mods) { const m = this.entity(id); if (m) m.region = u.region; }
+    }
+    this.ev('info', `${this.pname(to)} gains control of ${u.card} (from ${this.pname(from)}).`,
+      { unit: u.id, card: u.card, from, to });
+    return true;
+  }
+
+  /**
    * R72 — the key for a battle counter that belongs to ONE attacking column
    * ("this column has already connected twice this battle"). Column indices
    * MOVE when the formation collapses, so a counter keyed by a bare index

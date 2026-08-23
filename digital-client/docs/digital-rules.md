@@ -4905,3 +4905,36 @@ the log says *"an X spell released for free is cast for X = 0"*. A bracketed
 variable cast cost ("[Remove X +1/+1 counters]", "[Pay X life]") is a
 different X — a COST, not the mana — and is still collected as before. Test:
 36-cache-prophecy (R111).
+
+---
+
+## R112 — a stolen unit's mods change controller with it (one control-change primitive)
+
+*(Audit follow-through, 2026-08-23. Owner's ruling.)*
+
+Four card batches carried their own "gain control" helper and disagreed on
+the mods: wood-a flipped the mods' controller, wood-c / hybrids-wm-b /
+hybrids-ld-a left the mods on the old controller (so "your units" statics and
+"[Augment] when I…" text donated by a mod on a stolen unit still read the
+thief's opponent). **Bena, 2026-08-23:** *"A stolen unit's mods are part of
+the unit, so yes, they go with them to the unit's new controller. That's the
+whole point of some of the viruses which force units to flip flop
+controllers."*
+
+`E.giveControl(u, to)` is now the one primitive (Corrupting Blight, Hush Mush,
+Hexbane Shiitake, Ralph, Rebalance, Stellarspore Harvester, the wm-b and ld-a
+steals all call it): the unit AND its mods change controller (owner never
+does); it leaves any formation through `removeFromFormation`, so the R72
+column collapse happens — the local copies spliced the arrays by hand and
+skipped it; and since regions are exclusive, a unit whose new controller is
+not present where it stands (a deployment-time steal) goes to that
+controller's home now, mods with it, rather than sitting in a region its
+controller is not in until regroup. Mid-battle both seats are present and it
+stays on the board. Test: 25-wood-c (R112).
+
+*Also closed without a ruling:* the audit's "three readings of 'my column
+connected'" — on re-reading the printed text, Blightmound says *"When **I**
+deal combat damage or die"* (its anchor-only check is right), Vroot says *"my
+column deals combat damage"* (it listens to damage AND life loss, so blockers
+count, as printed), Zephyrzoa/Amphivore say *"…to an opponent"*. Each follows
+its own words; there was no divergence to rule on.

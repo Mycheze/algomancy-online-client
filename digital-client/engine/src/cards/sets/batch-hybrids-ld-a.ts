@@ -108,23 +108,6 @@ const binUnits = (g: E, seat: Seat): [CardName, number][] =>
     .map((n, i) => [n, i] as [CardName, number])
     .filter(([n]) => isUnitCard(n));
 
-/** ⚠ gain-control approximation (see header): flip controller and leave any
- * formation; regroup then walks the unit to its new controller's home. */
-const takeControl = (g: E, u: Entity, seat: Seat): void => {
-  if (!g.entity(u.id) || u.controller === seat) return;
-  u.controller = seat;
-  const b = g.s.battle;
-  if (b) {
-    for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-      const i = col.indexOf(u.id);
-      if (i !== -1) col.splice(i, 1);
-    }
-    const si = b.sentAttackers.indexOf(u.id);
-    if (si !== -1) b.sentAttackers.splice(si, 1);
-  }
-  g.ev('info', `${g.pname(seat)} gains control of ${u.card}.`);
-};
-
 /** ⚠ "erase me" (see header): the unit and its mods cease to exist — no bin,
  * no death, no despawn, so nothing triggers off it (Caleb: erasing never
  * touches a bin, so it is never a trash either — R40). */
@@ -383,7 +366,7 @@ card('Bloppert', {
           return;
         }
         const seat = winners[0]!;
-        takeControl(g, self, seat);
+        g.giveControl(self, seat);
         g.loseLife(seat, 5, 'Bloppert');
       },
     },

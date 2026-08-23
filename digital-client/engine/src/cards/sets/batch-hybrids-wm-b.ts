@@ -84,23 +84,6 @@ import { selfOf, isEnt, inEndOfTurn, manaOf, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** ⚠ gain-control approximation (see header): flip controller, leave any
- * formation; regroup then walks the unit to its new controller's home. */
-const takeControl = (g: E, u: Entity, seat: Seat): void => {
-  if (!g.entity(u.id) || u.controller === seat) return;
-  u.controller = seat;
-  const b = g.s.battle;
-  if (b) {
-    for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-      const i = col.indexOf(u.id);
-      if (i !== -1) col.splice(i, 1);
-    }
-    const si = b.sentAttackers.indexOf(u.id);
-    if (si !== -1) b.sentAttackers.splice(si, 1);
-  }
-  g.ev('info', `${g.pname(seat)} gains control of ${u.card}.`);
-};
-
 /** the battle grid side (attacking columns / blocking columns) containing a
  * unit — the engine's closest thing to that unit's "formation" (R27). */
 const formationOf = (g: E, id: EntityId): EntityId[][] | null => {
@@ -299,7 +282,7 @@ card('Transmutide Enigma', {
 // offered, and the resolution check stays for R5/R56; the ransom is a mid-resolution
 // pay-or-decline (R6) for the target's controller, skipped when they cannot
 // pay (x more than their open mana). Control flip per the header's
-// gain-control approximation.
+// E.giveControl (R112): the unit and its mods change controller.
 card('Abduct', {
   spellEffect: {
     targets: {
@@ -328,7 +311,7 @@ card('Abduct', {
         });
         if (pay) { g.payMana(owner, x); return; }
       }
-      takeControl(g, u, ctx.controller);
+      g.giveControl(u, ctx.controller);
     },
   },
 });
@@ -619,7 +602,7 @@ card('Lumengrove Lurker', {
 // Resonant riders and effect damage don't count); it fires during a damage
 // sub-step, so the flip resolves immediately (R31). "Target opponent" is
 // auto-picked in 1v1 (one opponent); with more seats the controller picks.
-// Control flip per the header's gain-control approximation. {Virus} play
+// Control flip through E.giveControl (R112). {Virus} play
 // mode is engine-level.
 card('Mindwarp Sporefrog', {
   augmentText: [{
@@ -637,7 +620,7 @@ card('Mindwarp Sporefrog', {
         if (!self) return;
         const t = ctx.targets[0];
         if (!t || !('player' in t)) return;
-        takeControl(g, self, t.player);
+        g.giveControl(self, t.player);
       },
     },
   }],
