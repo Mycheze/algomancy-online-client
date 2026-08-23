@@ -171,21 +171,12 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
 
   // ── WHOLE CARDS THAT DO NOTHING ─────────────────────────────────────────
 
-  {
-    card: 'Worldbender', gap: 'dead', severity: 'high',
-    missing:
-      '"Skip your draft step. When you do, draw a card. You also lose 3 life if '
-      + 'playing a constructed format."',
-    waitingOn:
-      'Draft-step SKIP machinery (the engine has draft state — state.draftDone, mode '
-      + "'draft' — but nothing that can skip the step), and a format flag for the "
-      + 'constructed life clause.',
-    todoTest: '28-metal-c.test.ts::Worldbender',
-    note:
-      'Registered as a vanilla 2/2 {Feeble}. Ironically the one clause that only '
-      + 'matters in constructed ("you also lose 3 life") is dead too, so the card is '
-      + 'strictly BETTER than printed there — it just never draws.',
-  },
+  // Worldbender's entry was DELETED on 2026-08-23 when the card was built
+  // (playtest report #87 supplied the numbers the entry was waiting on): it is
+  // a `replaceCardStep` static now, live in both formats that have a card
+  // step, with real tests in 28-metal-c.test.ts. Per the house rule at the head
+  // of this file the entry goes in the same commit as the fix — this comment is
+  // a signpost for anyone following the old `todoTest` reference, not a park.
   {
     card: 'Writhing Host', gap: 'dead', severity: 'high',
     missing:
@@ -260,23 +251,12 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
       + 'prevents the abilities from triggering" needs the second half too).',
     todoTest: '16-earth-a.test.ts::Crevice Lurker',
   },
-  {
-    card: 'Oorblak', gap: 'partial', severity: 'medium',
-    missing:
-      'the PIERCING-EXCESS half only. The redirect itself works (round 17): combat '
-      + 'damage aimed at Oorblak\'s controller is dealt to Oorblak instead, it can die '
-      + 'of it, and the life total is spared. What is still wrong is the leftover.',
-    waitingOn:
-      'ONLY the card rewrite now — both seams it was blocked on landed in R98. '
-      + '`replaceCombatDamageToPlayer`\'s `info` carries `attrs` (the striking column\'s live '
-      + 'attributes) and `pure` (R61), so the hook can finally tell a Piercing hit from an '
-      + 'ordinary one; and its return type is `boolean | number`, a number being the damage LET '
-      + 'THROUGH, so it can hand the excess back instead of being all-or-nothing. `true`/`false` '
-      + 'keep their old meaning, which is why Blightsea Polyp and Oorblak both still pass '
-      + 'unedited. The ruling to implement, Caleb: "oorblak takes 5 piercing damage, 1 is enough '
-      + 'to kill it and the remaining 4 hit the player."',
-    todoTest: '17-earth-b.test.ts::Oorblak: PARKED — Piercing excess',
-  },
+  // Oorblak's entry was DELETED on 2026-08-23 when its PIERCING-EXCESS half was
+  // written against R98's wider `replaceCombatDamageToPlayer` (`info.attrs` /
+  // `info.pure`, and a numeric return meaning "damage let through"). The
+  // `{ todo: true }` park test it used to cite is now four real tests in
+  // 17-earth-b.test.ts, Caleb's own case among them. Signpost for anyone
+  // following the old `todoTest` reference, not a park.
   {
     card: 'Apex Prime', gap: 'partial', severity: 'medium',
     missing:

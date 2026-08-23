@@ -30,7 +30,7 @@
  * R5 (fizzle vs partial; min:0 = "up to"), R6 (mid-resolution choices via
  * ctx.choose, plan-then-commit), R9 (bounded budgets per card), R12/R25
  * ("each player/opponent" reads the effect region's present seats),
- * R28 (created units arrive in their controller's HOME region), R35
+ * R115 (created units arrive where their SOURCE is — ctx.region), R35
  * (bracketed costs and X are chosen and paid at cast), R38 (rot + the rot
  * damage replacement hook), R40 (trashing; the per-battle trash ledger; the
  * "Discard me" play mode), R71 (the Wraith, retired name Wight), R48 ({Afflicting}
@@ -334,6 +334,12 @@ card('Dropslime', {
     effect: dropslimeZap,
   }],
   graftEffect: { bounded: true, effect: dropslimeZap },
+  // #85: the damage is the battle's `trashed` ledger, which is not per-player
+  // and is printed nowhere — a player holding this is guessing at the number.
+  // One row: the counter is a fact about the battle, not about a seat.
+  xPreviewRows: (g, _seat, region) => [
+    { label: 'cards trashed this battle (the damage)', x: g.battleCounter(region, 'trashed') },
+  ],
 });
 
 // "[Switch1] Target player gains a rot." — d/1 {Battle} Blight Spell. The
@@ -467,8 +473,9 @@ card('Hooba-Mon', {
 // normally (so the spawn half fires on its own arrival), donated on augment
 // ("I" = the host, which has already spawned — the fight/die halves still
 // fire). R71: "create a Wraith" is E.createWraith, and Wraith/Wight are one
-// token. R28: created units arrive in their controller's HOME region, even
-// when the trigger fires mid-battle. ⚠ "gain 2 Rot" prints no subject — read
+// token. R115: created units arrive where their SOURCE is — so the two
+// Wraiths from an ATTACK trigger are minted in the battle region, stranded in
+// no column, and cannot block the counterattack. ⚠ "gain 2 Rot" prints no subject — read
 // as the controller (the drawback half of a free 8-mana body).
 card('Legion of the Depths', {
   augmentText: [{
@@ -477,9 +484,8 @@ card('Legion of the Depths', {
     effect: {
       creates: ['Wraith'],
       run: (g, ctx) => {
-        const home = g.homeRegion(ctx.controller);   // R28
-        g.createWraith(ctx.controller, home);
-        g.createWraith(ctx.controller, home);
+        g.createWraith(ctx.controller, ctx.region);   // R115
+        g.createWraith(ctx.controller, ctx.region);
         g.gainRot(ctx.controller, 2);
       },
     },

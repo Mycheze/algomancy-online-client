@@ -4906,6 +4906,11 @@ export class E {
     // (Manual p.33 — the composite resolves as ONE ability)
     this.collectModular(item, then, moreItems);
     this.collectPartTargets(item, then, moreItems);
+    // R57: WHICH HALF of a modal effect. AFTER the targets, so a mode can name
+    // what it is aimed at ("double Good Whale's power (5 → 10) or defense
+    // (3 → 6)?"); BEFORE the costs, so R57's "nothing irreversible is spent
+    // until the effect is fully declared" holds for a modal card too.
+    this.collectModes(item, then, moreItems);
     this.collectFormationSpot(item, then, moreItems);   // R29: "play me into a spot"
     this.payActivationCost(item);                   // R57: choice-free half
     this.collectItemCosts(item, then, moreItems);   // R49: the choice-bearing half
@@ -5035,6 +5040,56 @@ export class E {
           },
         );
       }
+    }
+  }
+
+  /**
+   * R57 — ask which HALF of a modal effect ("[… or …]") the caster is casting,
+   * once per modal part, in the cast window.
+   *
+   * THE BUG THIS EXISTS FOR (playtest, Burgeon): every caster-facing mode in
+   * the pool used to be a mid-resolution `ctx.choose`, so the item reached the
+   * stack with its mode UNKNOWN. The opponent spent a card responding to a
+   * Burgeon whose half had not been declared; the response resolved; and only
+   * then was the caster asked — with the option labels recomputed off the
+   * post-response stats. That is free information the opponent paid for, and
+   * it is the same defect R67 fixed for targets: a response window is only
+   * meaningful if what you are responding to is fully declared.
+   *
+   * A mode is not a target and not a cost, so it gets its own stage rather
+   * than riding on one of theirs. `part.mode !== undefined` is the idempotence
+   * guard — collectTargets re-runs from the top after every answered decision
+   * — which is why a part with nothing to choose between records `null`
+   * instead of staying undefined and asking again forever.
+   *
+   * ONLY the caster's own modes belong here. A half somebody ELSE picks stays
+   * at resolution, where the rules put it: R6's "unless its controller pays"
+   * (Abduct), R67's not-a-target carve-out ("each opponent discards a [unit or
+   * spell]" — Void Memory), and a replacement-effect mode (Cosmic
+   * Conspirator), which is raised before the token it is about exists.
+   */
+  private collectModes(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+    for (let pi = 0; pi < item.parts.length; pi++) {
+      const part = item.parts[pi]!;
+      if (part.spent) continue;
+      if (part.mode !== undefined) continue;   // idempotence guard (see above)
+      const def = effectByKey(part.effectKey);
+      if (!def.modes) continue;
+      const options = def.modes.options(this, item, part);
+      if (options.length < 2) {
+        // not a question: one half (or none) is all there is. Recorded so the
+        // guard above holds, and so `ctx.mode` is the same shape either way.
+        part.mode = options.length ? options[0]!.value : null;
+        continue;
+      }
+      this.suspend(
+        { type: 'cast', stage: 'mode', item, partIndex: pi, targetIndex: 0, then, moreItems },
+        {
+          seat: item.controller, kind: 'mode',
+          prompt: def.modes.prompt(this, item, part),
+          options,
+        },
+      );
     }
   }
 
@@ -5326,6 +5381,10 @@ export class E {
         // grafted rider that paid its own cost cannot read its carrier's.
         x: part.costPaid?.x ?? item.x,
         costPaid: part.costPaid,
+        // R57: the modal half, declared in the cast window by collectModes and
+        // visible on the stack for the whole response window. The effect reads
+        // it; it never asks.
+        ...(part.mode !== undefined ? { mode: part.mode } : {}),
         ...(part.mods ? { mods: part.mods } : {}),
         // R79's virus grants UNIONED with R105's {Modular}-mod grants and
         // R94's continuous ones. All three are "attributes this effect has
@@ -6288,17 +6347,44 @@ export class E {
     });
   }
 
-  /** front-to-back lethal assignment (R7: controller's split is the default
-   * auto-assignment for now; piercing overflow is automatic, never elective).
-   * Returns the leftover pool (the Piercing candidate). A Vulnerable victim
-   * receives double, so half the pool is lethal and the pre-double remainder
-   * pierces through sooner (R23); Deadly caps lethal at 1 (R21). */
+  /** front-to-back assignment (R7: the controller's split is elective, and
+   * this is the default auto-assignment for now; piercing overflow is
+   * automatic, never elective). Each victim in turn takes its PASS-ALONG
+   * SHARE — the pool that would kill it — and whatever is left over walks on;
+   * R114 lands the final leftover on the back-most living unit instead of
+   * dropping it. Returns that leftover only for {Piercing} (see the R114 note
+   * below). A Vulnerable victim receives double, so half the pool is its share
+   * and the pre-double remainder passes along sooner (R23); Deadly's lethal
+   * SHARE is 1 (R21) — a floor on what passes along, never a cap on what is
+   * dealt. */
   private assignColumnDamage(L: CombatLedger, ids: EntityId[], amount: number, srcAttrs: Set<string>,
     src: { dealer: Seat; key: string; label: string }, pure = false, collapsed = false): number {
     const deadly = srcAttrs.has('Deadly');
     const poisonous = srcAttrs.has('Poisonous');
     const resonant = srcAttrs.has('Resonant');
     const blessedTo = srcAttrs.has('Blessed') ? src.dealer : undefined;
+    /** write one hit into the ledger. Called twice: once for a victim's
+     * pass-along share inside the front-to-back walk, and once more for
+     * R114's leftover onto the back-most unit. The overflow hit is a REAL
+     * hit — it carries every flag a share does (Poisonous, Resonant, the
+     * source attrs and label, Pure, Blessed, the Deadly mark and the
+     * Afflicting bucket), because it is the same column dealing the same
+     * damage in the same sub-step. */
+    const give = (id: EntityId, a: number): void => {
+      const cur = L.perUnit.get(id) ?? { pool: 0, poisonous, resonant };
+      cur.pool += a; cur.poisonous = poisonous; cur.resonant = resonant;
+      cur.attrs = srcAttrs; cur.label = src.label;   // R98
+      if (pure) cur.pure = true;
+      if (blessedTo !== undefined) { cur.blessedTo = blessedTo; cur.blessedFrom = src.label; }
+      L.perUnit.set(id, cur);
+      if (deadly) L.deadlyHit.add(id);
+      if (srcAttrs.has('Afflicting')) {
+        const bucket = L.afflicted.get(src.key)
+          ?? { dealer: src.dealer, label: src.label, ids: new Set<EntityId>() };
+        bucket.ids.add(id);
+        L.afflicted.set(src.key, bucket);
+      }
+    };
     let remaining = amount;
     for (const id of ids) {
       const u = this.entity(id);
@@ -6311,25 +6397,41 @@ export class E {
       // 0-defense victim is assigned nothing at all here.
       const [, t] = collapsed ? this.printedStats(u) : this.effStats(u);
       const recvCap = Math.max(0, t - u.damage - prev * mult);   // received still needed to kill
+      // R114: `poolNeed` is this victim's PASS-ALONG SHARE — the pool it must
+      // be assigned before any may walk on to the unit behind it — and NOT a
+      // ceiling on what it may be dealt. {Deadly}'s 1 is the same thing: a
+      // FLOOR on the share ("1 pool point suffices to kill"), so the rest is
+      // free to pass along; it never means a Deadly column only deals 1.
       let poolNeed = Math.ceil(recvCap / mult);
-      if (deadly && recvCap > 0) poolNeed = 1;   // 1 pool point suffices to kill
+      if (deadly && recvCap > 0) poolNeed = 1;
       const a = Math.min(remaining, poolNeed);
-      if (a > 0) {
-        const cur = L.perUnit.get(id) ?? { pool: 0, poisonous, resonant };
-        cur.pool += a; cur.poisonous = poisonous; cur.resonant = resonant;
-        cur.attrs = srcAttrs; cur.label = src.label;   // R98
-        if (pure) cur.pure = true;
-        if (blessedTo !== undefined) { cur.blessedTo = blessedTo; cur.blessedFrom = src.label; }
-        L.perUnit.set(id, cur);
-        if (deadly) L.deadlyHit.add(id);
-        if (srcAttrs.has('Afflicting')) {
-          const bucket = L.afflicted.get(src.key)
-            ?? { dealer: src.dealer, label: src.label, ids: new Set<EntityId>() };
-          bucket.ids.add(id);
-          L.afflicted.set(src.key, bucket);
-        }
-      }
+      if (a > 0) give(id, a);
       remaining -= a;
+    }
+    // R114 (Bena 2026-08-23, report #84): "ALL damage is dealt to units, even
+    // if it surpasses its defense. The only exception is Piercing, which deals
+    // excess to the controller." The follow-up ruling the same day makes the
+    // split ELECTIVE — "each player is allowed to split the damage however
+    // they want... The only rule is that the front unit must be assigned
+    // lethal damage before assigning any to the back unit" — so the leftover
+    // may legally land anywhere once every share above it is paid. This is the
+    // DEFAULT auto-assignment, and it picks the legal split the rulebook
+    // describes ("excess damage beyond the health of the back row unit"): the
+    // leftover lands on the back-most living unit rather than evaporating.
+    // A player-elective mode is a separate feature; there is no decision point
+    // here on purpose.
+    //
+    // DELIBERATELY UNCHANGED, so the next reader does not "fix" them:
+    //  - {Piercing} still returns `remaining` and the caller sends it to the
+    //    face. That is the ruling's own stated exception, not an oversight.
+    //  - The "blocked, but every blocker died" branch above still drops
+    //    non-Piercing power: there is no unit left to deal it to (R72/R13, a
+    //    separate rule).
+    //  - Vulnerable's `mult` is untouched: `remaining` is SOURCE-side pool, so
+    //    a Vulnerable back-row unit receives 2 x `remaining`.
+    if (remaining > 0 && !srcAttrs.has('Piercing')) {
+      const back = [...ids].reverse().find(id => this.entity(id));
+      if (back !== undefined) { give(back, remaining); remaining = 0; }
     }
     return remaining;
   }
@@ -6472,10 +6574,20 @@ export class E {
   /** Constructed draw phase (Manual "Constructed"): everyone draws 4, then
    * each player puts 2 cards from hand on the bottom of their own deck in any
    * order (the bottomCards action). A seat with nothing to put back (empty
-   * deck ran the hand dry) is auto-done. */
+   * deck ran the hand dry) is auto-done.
+   *
+   * A seat whose card step is replaced (Worldbender) neither draws the 4 nor
+   * puts anything back — report #87: "instead of drawing 4 and recycling 2,
+   * you draw 2 for turn + 1 for Worldbender and lose 3 life". Constructed has
+   * no separate turn draw, so BOTH of those cards come out of the card's own
+   * hook; the engine's job here is only to not run the normal step. */
   startConstructedDraw(): void {
-    for (const seat of this.dealOrder()) this.draw(seat, 4);
-    const done = this.s.players.map(p => p.hand.length === 0);
+    const replaced = this.s.players.map(() => false);
+    for (const seat of this.dealOrder()) {
+      if (this.replaceCardStep(seat)) { replaced[seat] = true; continue; }
+      this.draw(seat, 4);
+    }
+    const done = this.s.players.map((p, seat) => replaced[seat] || p.hand.length === 0);
     if (done.every(Boolean)) { this.s.bottomDone = null; return; }
     this.s.bottomDone = done;
     this.ev('phase', 'Draw phase: select 2 cards to put on the bottom of your deck.');
@@ -6513,9 +6625,50 @@ export class E {
     }
   }
 
+  /**
+   * THE CARD STEP REPLACEMENT (playtest report #87, Worldbender).
+   *
+   * Every format gives a seat cards once per turn, and the shape differs:
+   * mode 'draft' opens a draft step (look at your pack, merge, leave 10) on
+   * top of the flat 2-card turn draw; mode 'constructed' has no pack and
+   * folds the turn draw into its draw phase (draw 4, put 2 back). A card that
+   * REPLACES that step therefore cannot be written as "skip and draw one
+   * more" in one place — the card has to say what happens instead, per mode,
+   * which is exactly what `CardBehavior.replaceCardStep` is for.
+   *
+   * Returns true when some card took the step over, in which case the caller
+   * must NOT run the normal one. First true consumes (the R104 rule): two
+   * Worldbenders replace the step once, not twice.
+   *
+   * Anchored like the other replacement hooks — units in play plus augment
+   * mods reading from their host — but scoped by CONTROLLER instead of by
+   * region: "your draft step" is a turn-structure thing that belongs to a
+   * seat, and at the top of a turn there is no battle and so no region to
+   * scope to (the reasoning `replaceLifeGain` spells out for life gained
+   * outside a battle). R62 suppression is the full projection, as it is for
+   * every other replacement.
+   */
+  private replaceCardStep(seat: Seat): boolean {
+    const holders = this.anchored((h, a) =>
+      !!this.card(h.card).replaceCardStep
+      && a.controller === seat
+      && !this.abilitiesSuppressed(a));                       // R62 (full projection)
+    holders.sort((a, z) => a.holder.id - z.holder.id);
+    for (const { holder, anchor } of holders) {
+      if (this.card(holder.card).replaceCardStep!(this, anchor, seat)) return true;
+    }
+    return false;
+  }
+
   /** Open the draft step. After each cycle of N+1 turns (N = players; 1v1:
    * turns 4, 7, …) all packs are first recycled — bottom of the deck in
-   * random order — and fresh packs of 10 dealt (see packCycle). */
+   * random order — and fresh packs of 10 dealt (see packCycle).
+   *
+   * A seat whose card step is replaced (Worldbender) never opens: it is
+   * marked done before anybody can act — it never looks at its pack — and its
+   * pack passes on exactly as it was received. Report #87: "instead of looking
+   * at the pack, you draw 2 for turn + 1 for Worldbender". The 2 for the turn
+   * are startTurn's; the +1 is the card's, fired from its own hook. */
   startDraftStep(): void {
     const n = this.s.players.length;
     if (this.s.turn > 1 && packCycle(this.s.turn, n).index === 0) {
@@ -6524,7 +6677,16 @@ export class E {
       this.dealPacks();
       this.ev('draft', 'Packs are recycled; everyone is dealt a fresh pack of 10.');
     }
-    this.s.draftDone = this.s.players.map(() => false);
+    const done = this.s.players.map(() => false);
+    this.s.draftDone = done;
+    // deal order, so any replacement draw comes off the deck in the same
+    // clockwise order everything else at the top of a turn uses
+    for (const seat of this.dealOrder()) {
+      if (this.replaceCardStep(seat)) done[seat] = true;
+    }
+    // everyone's step was replaced: it is over before it began, and the packs
+    // still pass (skipping the merge is not skipping the pass)
+    if (done.every(Boolean)) { this.passPacks(); return; }
     this.ev('draft', 'Draft step: combine your hand and pack, then leave exactly 10 cards in the pack.');
   }
 

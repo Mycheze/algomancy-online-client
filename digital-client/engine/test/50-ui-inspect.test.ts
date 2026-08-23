@@ -18,11 +18,12 @@ import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { ALL_ELEMENTS, legalActions } from '../src/apply.ts';
 import { createsOf, DECK_LIST } from '../src/cards/registry.ts';
 import {
-  abilityOf, activatableUnits, activationBadge, activationNeedsConfirm, castProbe, costReceipt,
+  abilityOf, activatableUnits, activationBadge, activationNeedsConfirm, cacheBlockReason,
+  castProbe, costReceipt,
   dismissSeenCard, dismissSeenHand, erasedPileView, waitingNote, watchCast,
   findCardName, groupReveal, growCardLedger, linkCardNames, namesInEvents, namesInState,
   onlyKnownNames, partitionOptions, partText, playableCachedNames,
-  seenHandView, shouldAutoYield, stackAbilityRows, stackItemX, stackXMark, switchClause,
+  seenHandView, shouldAutoYield, stackAbilityRows, stackItemModes, stackItemX, stackXMark, switchClause,
   prismiteClickPlan, resourceMenuElements,
   tokensCreatedBy, tokensNamedIn, transformFaces,
   unitClickOptions,
@@ -238,6 +239,92 @@ test('duplicate offers of one entry collapse to a single name', () => {
   ];
   assert.deepEqual(playableCachedNames([{ card: 'A' }, { card: 'B' }], legal), ['A', 'B'],
     'index order, deduped');
+});
+
+/* ── WHY a permitted cache entry will not go (playtest report #78) ──────
+ *
+ * Room EGCW, actionIndex 82: the cache panel said "not this step" for a
+ * {Deployment} unit, during deployment, that was permitted by a live glimpse
+ * and short only of MANA. Nothing illegal was offered and nothing legal was
+ * refused — the enforcement was right and the LABEL was wrong, because both
+ * render sites blamed the whole permitted/playable gap on timing without ever
+ * asking whether the timing already matched.
+ *
+ * cacheBlockReason asks pushCachedPlays' questions in pushCachedPlays' order,
+ * so the tests below pin each answer — including the one the bug destroyed AND
+ * the one it must not now destroy in the other direction.
+ */
+
+test('a permitted cached card blocked only by MANA does not blame the step', () => {
+  // the EGCW shape: Gatekeeper of Souls (l/4, {Deployment}), glimpse-cached
+  // this turn, in the deployment phase, with 2 open mana against its 4
+  const h = new Harness(5041, ['Ben', 'Rashi']);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  new E(h.state).cacheCard(A, 'Gatekeeper of Souls', 'hand', { playable: true });
+  h.state.players[A]!.resources = [];
+  giveResources(h, A, 'light', 2);
+
+  const e = new E(h.state);
+  assert.equal(e.cachePermission(A, 0), 'glimpse', 'the glimpse is live this turn');
+  assert.equal(e.cachedTiming(A, 0, 'glimpse'), 'deploy', 'and it is a deployment card');
+  assert.equal(e.openMana(A), 2);
+  assert.equal(e.manaToPlay(A, 'Gatekeeper of Souls'), 4);
+  const legal = legalActions(h.state, A);
+  assert.equal(legal.some(a => a.type === 'playCached'), false, 'rightly not offered');
+
+  assert.equal(cacheBlockReason(e, A, 0, legal), 'mana',
+    'the step was right — only the mana was missing');
+
+  // and the moment the mana is there, nothing is blocking it at all
+  giveResources(h, A, 'light', 2);
+  assert.equal(cacheBlockReason(new E(h.state), A, 0, legalActions(h.state, A)), 'none');
+});
+
+test('and a battle card cached during deployment DOES blame the step', () => {
+  // widening a label must not widen it past the truth: when the step really
+  // IS the problem, the panel must still say so
+  const h = new Harness(5042, ['Ben', 'Rashi']);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  new E(h.state).cacheCard(A, 'Fight', 'hand', { playable: true });   // Fight is {Battle}
+  giveResources(h, A, 'earth', 8);
+
+  const e = new E(h.state);
+  assert.equal(e.cachePermission(A, 0), 'glimpse');
+  assert.equal(e.canPayManaOnly(A, 'Fight'), true, 'affordable — so mana cannot be the excuse');
+  assert.equal(cacheBlockReason(e, A, 0, legalActions(h.state, A)), 'timing');
+});
+
+test('a cache entry with no permission at all blames permission, not the step', () => {
+  const h = new Harness(5043, ['Ben', 'Rashi']);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  new E(h.state).cacheCard(A, 'Gatekeeper of Souls', 'hand', {});   // no glimpse, no prophecy
+  giveResources(h, A, 'light', 8);
+
+  const e = new E(h.state);
+  assert.equal(e.cachePermission(A, 0), null);
+  assert.equal(cacheBlockReason(e, A, 0, legalActions(h.state, A)), 'no-permission',
+    'being cached is not permission (R41) — and that is not a timing problem');
+});
+
+test('a permitted, timely, affordable cached spell with nothing to aim at blames the target', () => {
+  // Overbloom is g/2 {Deployment} "target unit gains +7/+7"; on an empty
+  // board there is no legal target, and THAT is why it will not go
+  const h = new Harness(5044, ['Ben', 'Rashi']);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  new E(h.state).cacheCard(A, 'Overbloom', 'hand', { playable: true });
+  giveResources(h, A, 'wood', 8);
+
+  const e = new E(h.state);
+  assert.equal(e.cachePermission(A, 0), 'glimpse');
+  assert.equal(e.cachedTiming(A, 0, 'glimpse'), 'deploy');
+  assert.equal(e.canPayManaOnly(A, 'Overbloom'), true);
+  assert.equal(Object.values(h.state.entities).filter(x => x.kind === 'unit' && !x.absent).length, 0,
+    'no units anywhere — nothing to buff');
+  assert.equal(cacheBlockReason(e, A, 0, legalActions(h.state, A)), 'no-target');
 });
 
 // ── deployment reveal grouping (playtest round 8) ─────────────────────
@@ -625,6 +712,28 @@ test('stackItemX keeps the two X\'s apart', () => {
   assert.equal(rows[1]!.x, 7);
   assert.equal(rows[1]!.part, 1);
   assert.equal(rows[1]!.receipt, 'erased 2 cards');
+});
+
+test('a declared mode is readable off the stack, so a responder is not blind', () => {
+  // R57 / report #81 (EGCW). Choosing the half at cast time is only half the
+  // fix — if the opponent cannot READ it while the item sits there, they are
+  // still paying for a response without knowing what they are responding to,
+  // which is the harm the report described.
+  const it = xItem({ card: 'Burgeon', parts: [{ effectKey: 'spell:Burgeon', targets: [], mode: 'defense' }] });
+  const rows = stackItemModes(it);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0]!.key, 'stat');
+  assert.equal(rows[0]!.part, 0);
+  assert.equal(rows[0]!.label, 'defense', 'with no engine to ask, the raw value still tells the truth');
+});
+
+test('a part with no mode, and a spent one, contribute no mode row', () => {
+  assert.deepEqual(stackItemModes(xItem({ parts: [{ effectKey: 'spell:Fight', targets: [] }] })), [],
+    'a non-modal effect has nothing to declare');
+  assert.deepEqual(stackItemModes(xItem({
+    card: 'Burgeon',
+    parts: [{ effectKey: 'spell:Burgeon', targets: [], mode: 'power', spent: true }],
+  })), [], 'a spent part resolves to nothing, so its half is not news');
 });
 
 test('a spent part\'s X is not shown — it resolves to nothing', () => {

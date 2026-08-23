@@ -250,16 +250,19 @@ Same reading applies to future "in my formation" counts. (Engine 2026-07-16.)
 - **Distribution**: internal use / personal curiosity for now; nothing publishes without
   Caleb's approval (deferred, not forgotten).
 
-## R28 ⚠ — Created units arrive in their controller's region (playtest ruling)
-A triggered/spell effect that "creates" a UNIT without naming a place puts it
-in its controller's home region — NOT the battle region where the effect
-resolved (Tidelurker's 2/2 minted mid-attack must be home to block the
-counterattack). Cards that say "in my formation" or similar override this.
-Spell tokens (Fireballs etc.) still appear where the effect resolves — they
-are battle materiel. ⚠ Engine call from the 2026-08-18 playtest.
-**Confirmed as the global default by R52 (2026-08-19)**, which also closes
-R33's open question: R33 (Ember of Life) is a per-card exception, not a rival
-default.
+## R28 ❌ WITHDRAWN (2026-08-23) — superseded by R115
+**This ruling is dead. See [R115](#r115--a-created-unit-arrives-where-its-source-is).**
+
+It said: a created UNIT with no place named arrives in its controller's HOME
+region, not the battle region, *because* "Tidelurker's 2/2 minted mid-attack
+must be home to block the counterattack". The designer was asked that exact
+consequence on 2026-08-23 and answered the other way: **anything made by
+anything spawns in the region its source is in**, and a token minted mid-attack
+stays stranded in the enemy region, in no column, unable to block the
+counterattack. R28's rationale is precisely what R115 forbids, so the ruling is
+withdrawn rather than narrowed. R52, which confirmed it as the global default,
+is withdrawn with it. (Its one surviving half — spell tokens appear where the
+effect resolves — is now simply what R115 says about everything.)
 
 ## R29 ⚠ — "An open spot in your formation" (Tiderunner Initiate)
 Requires an EXISTING formation of yours (you attacked, or you declared
@@ -327,14 +330,14 @@ counterattacker is in NO region: it radiates no statics, is no legal target,
 and its spell tokens can't be cast. It reappears in the enemy region when
 round 2 begins.
 
-## R33 ⚠ — Ember of Life's 1/1s arrive in the CARRIER's region (playtest ruling)
+## R33 ✅ ABSORBED INTO R115 (2026-08-23) — it was never an exception
 "When one of your spell effects deals damage, create that many 1/1 units":
 the created units arrive **where the carrier (the augmented unit / the unit
-with the text) is**, not in the controller's home region — refining R28,
-whose home-region default came from Tidelurker. **That open question is now
-CLOSED by R52 (2026-08-19): R28 is the default and R33 is a per-card
-exception**, kept only because Ember of Life's printed text ties the creation
-to the carrier. Two related
+with the text) is**. R28 and R52 called this a *per-card exception* to a
+home-region default; [R115](#r115--a-created-unit-arrives-where-its-source-is)
+withdrew that default and made R33's reading **the general rule** — a created
+unit arrives where its SOURCE is, which for a carrier trigger is where the
+carrier is. Nothing about this card changes; it stops being special. Two related
 clarifications from the same playtest game: "one of YOUR spell effects"
 means spells controlled by the carrier's controller (damage events now carry
 the effect's controller), and "deals damage" is unqualified — spell-effect
@@ -667,51 +670,30 @@ the dead unit's own detached entity where there is one, so the trigger keeps
 the region it died in; the `mods: []` is still written explicitly, for the
 reason above.
 
-## R52 ⚠ — A created unit arrives in its CONTROLLER's home region (R28 is the default)
-"Create a unit / create a Wraith / create that many 1/1 units", with no place
-named, puts the unit in its **controller's home region** — never the battle
-region the effect happened to resolve in. This closes **R33's open question**
-("is R28 the default and R33 a per-card exception, or is 'the effect's region'
-the real default?") in favour of **R28**: R28 is the general rule, and R33
-(Ember of Life's 1/1s arriving where the *carrier* is) is a **per-card
-exception**, justified only because that card's printed text ties the creation
-to the carrier. Cards whose text names a place — "in my formation" (Hooba-God),
-"in its position in play" (Feed to Hooba) — likewise override it, and **spell
-tokens** (Fireballs, Poisons) are unaffected: they are battle materiel and
-still appear where the effect resolves.
+## R52 ❌ WITHDRAWN (2026-08-23) — superseded by R115
+**This ruling is dead. See [R115](#r115--a-created-unit-arrives-where-its-source-is).**
 
-Rationale, from R28's own playtest finding: a unit minted mid-attack must be
-home to block the counterattack, otherwise "create a unit" mid-battle reads as
-a combat trick the printed text does not promise. The alternative default —
-the effect's region — would make the same card behave differently depending on
-which trigger happened to fire it, which is exactly the inconsistency this
-ruling exists to remove.
+R52 confirmed R28 as the global default ("a created unit arrives in its
+CONTROLLER's home region, never the battle region the effect happened to
+resolve in") and closed R33's open question in R28's favour. On 2026-08-23 the
+designer reversed both, from report #83 — *"Life Plant's units were made in my
+region, despite it currently being in Rashi's region. Anything made by anything
+needs to spawn in that region (then can return during regroup)."*
 
-Applied uniformly across the Light & Dark pool: **Flesh Tithe**, **Keeper of
-Tithes**, **Afflicting Anima**, **Cosmic Devourer**, **Life Plant** and
-**Swarmling** moved from the effect's region to the controller's home region;
-**Legion of the Depths** and **Primordial Coalescence** already did this.
-"Put into play from a bin" (Exhume, Covenant of the Damned, Uglk, Gridxlan,
-Wake the Dead) is **not** creating and is deliberately untouched.
+Everything R52 moved is moved back:
 
-⚠ Known follow-up, deliberately out of this pass's scope: **the base set is
-not uniform either.** A dozen base-set cards still create units in the
-effect's region — Perpetual Construct, Squish, Channeled Amalgam, Astralith,
-Stormsowing Nimbus, Flamebreath Initiate, Engorged Caudex, Forager of the
-Fallen, Spawntender, Spell Excavation, Echo of Despair, Mirage Walker,
-Gravitational Correction, Infernal Cultivator — plus five more found in the
-2026-08-21 audit: Soul Siphon, Stoneborn Progenitor, Awoken Tomb, Arcane
-Concentrator, Embermaw Fledgling (all battle-reachable creators using the
-effect's region; Soul Siphon and Flesh Tithe are the same printed shape and
-currently behave differently) — while Tidelurker (R28's own
-source), Ancient One, Pack Leader, Pathogenic Enclave, Scrap For Parts, Floral
-Singularity and Galactic Germination already use the home region. R52 is
-the rule they should all follow, but the base-set migration wants its own
-coordinated sweep: several of those cards' tests pin the current region, and
-one of them (Ember of Life) is R33's named exception and must NOT move.
-(Engine 2026-08-19.)
-
----
+- **Flesh Tithe, Keeper of Tithes, Afflicting Anima, Cosmic Devourer, Life
+  Plant** and **Swarmling** went from the effect's region to home under R52;
+  R115 returns them to the effect's region — i.e. they were right before.
+- R52's **"⚠ Known follow-up"** list — the two dozen base-set cards said to
+  "still" create units in the effect's region, and therefore to need migrating
+  to home — is **CANCELLED in full**. Those cards were already following the
+  rule R115 states. (The list also named **Squish**, which creates nothing at
+  all: it only deals damage. It was never a creator.)
+- What R52 got right and R115 keeps: cards whose printed text names a place
+  (Hooba-God's "in my formation", Feed to Hooba's "in its position in play")
+  still override the region default with a *slot*, and putting a card into play
+  from a bin (Exhume, Wake the Dead, Uglk…) is not creating at all.
 
 ## R53 — "When I become targeted" fires on every targeting path
 
@@ -4504,10 +4486,10 @@ the middle of a batch R80 deliberately made simultaneous.
 `replaceCombatDamageToPlayer` now takes `attrs` (the striking column's live attributes) and
 `pure` (R61) in its `info`, and may return a **NUMBER** — the damage let through — instead
 of a boolean. `true`/`false` keep their old meaning, so it is a widening and Blightsea Polyp
-is untouched. Oorblak's ledger entry says in so many words that `{ attacker, region }` and
-an all-or-nothing return are why its Piercing-excess half is parked; both are gone now. The
-`17-earth-b.test.ts::Oorblak: PARKED — Piercing excess` todo is still a todo — the card
-itself was not rewritten — but nothing structural stands in its way any more.
+is untouched. Oorblak's ledger entry said in so many words that `{ attacker, region }` and
+an all-or-nothing return were why its Piercing-excess half was parked; both are gone, and
+the card was rewritten against them on 2026-08-23. The `PARKED — Piercing excess` todo is
+now four real tests in `17-earth-b.test.ts` and the ledger entry is deleted.
 
 ### ⚠ TWO THINGS LEFT OPEN, both deliberately
 1. **The counters cap at LETHAL, not at the whole hit.** The engine's R7 auto-assignment
@@ -4934,11 +4916,21 @@ read by both {Electric} and {Piercing}. That is deliberate: the previous inline
 copy in the Electric branch knew nothing about {Vulnerable} or {Deadly}, and two
 copies of overkill arithmetic are two copies that drift.
 
-⚠ **Still open: Oorblak.** *"[Augment] If combat damage would be dealt to you,
-that damage is dealt to me instead."* Its parked half is the COMBAT hook
-(`replaceCombatDamageToPlayer`), not this one, and non-combat damage never
-reaches it. Both engine seams it needs shipped in R98; what is left is the card
-rewrite plus replacing its `{ todo: true }` park test. See `card-ledger.ts`.
+✅ **Closed: Oorblak** (2026-08-23). *"[Augment] If combat damage would be dealt
+to you, that damage is dealt to me instead."* Its parked half was the COMBAT
+hook (`replaceCombatDamageToPlayer`), not this one — non-combat damage never
+reaches it. Both engine seams shipped in R98 and the card was rewritten against
+them, borrowing this section's arithmetic verbatim: {Powerful} has already
+doubled the hit at the source, {Vulnerable} prices what Oorblak RECEIVES, and
+the {Piercing} leftover is handed back as the hook's numeric return. **One
+deliberate divergence:** step 4 ({Deadly} caps the lethal share at one point)
+is NOT read on the redirect path, because the kill it implies is delivered by
+combat's `L.deadlyHit` sweep — which has already run by the time
+`commitPlayerDamage` calls the hook — so honouring the floor there would leave
+Oorblak alive on 1 damage *and* send the rest to the face. Killing from inside
+the hook is an engine ordering decision, not the card's; until it is ruled on,
+a Deadly+Piercing column redirected into Oorblak absorbs its full toughness and
+pierces only the true remainder. Tests: `17-earth-b.test.ts`.
 
 ## R104 — the REPLACEMENT-EFFECT LAYER: two families, and why they compose differently
 
@@ -5729,3 +5721,155 @@ the same bounded graft card on one host each get their own use.
 
 Tests: 94-bounded-uses (all four answers, one test each), 93-engine-defects (the decline
 routes R113 keeps).
+
+
+## R114 — combat damage is DEALT in full; the split is elective, and only {Piercing} leaves the unit
+
+*(Designer, 2026-08-23, two answers in one sitting — playtest reports #84 and #79.)*
+
+### The line
+
+> "ALL damage is dealt to units, even if it surpasses its defense. The only exception is
+> Piercing, which deals excess to the controller."
+
+and, asked the same day how a column splits over **several** blockers:
+
+> "Each player is allowed to split the damage however they want, actually. It's actually
+> legal to do ALL the damage to the front unit and none to the back one, even if there is
+> enough to kill them both. The only rule is that the front unit must be assigned lethal
+> damage before assigning any to the back unit."
+
+So there are two separate things, and the engine had been conflating them:
+
+* **Assignment** — how a column's pool is *divided* among the units it is fighting. This is
+  the attacker's (or blocker's) choice, constrained by exactly one rule: **a unit in front
+  must be assigned lethal before anything is assigned behind it.** Lethal is a *floor on the
+  pass-along*, not a ceiling on the share.
+* **Dealing** — what happens to the assigned pool. All of it lands. Nothing is trimmed for
+  being more than the victim's defense; "excess damage beyond the health of the back row
+  unit" simply piles onto that unit unless the column has **{Piercing}**, which is the one
+  attribute that carries it out of the combat and onto the controller's face.
+
+### What was wrong
+
+`E.assignColumnDamage` computed each victim's *lethal need* and then used it as a **cap on
+the damage dealt** (`a = Math.min(remaining, poolNeed)`), returning the leftover — which
+both callers dropped on the floor unless the source column had {Piercing}. A 4-power
+attacker into a 1/1 blocker therefore *dealt 1*, and every card that reads the amount off
+the `damage` event (Vroot, Mirage Scuttler, Molten Tormentor, Lithoghul, Restitution,
+Mirrorback Ambusher, Decay Distributor, Jollyglop, Phytochemical Protection) read the
+trimmed number. Report #79 is the sharpest case: a 2-power **{Deadly}** column into a
+shielded 7/3 paid **1** prevention counter instead of 2, because {Deadly}'s one-point floor
+had been implemented as a cap.
+
+Effect damage was never affected — `E.dealEffectDamageAll` always dealt the full amount, and
+its `poolToKill` is read only by {Piercing} and {Electric}. The two damage paths had quietly
+drifted apart; `82-attr-interactions` now pins them together.
+
+### What the engine does
+
+`assignColumnDamage` walks the victims front-to-back paying each one its **pass-along share**
+(the pool that would kill it; 1 for a {Deadly} column), and then lands whatever is left on
+the **back-most living unit** — one of the legal splits under the elective rule above, and
+the one the rulebook itself describes. {Piercing} is still the exception: its leftover is
+returned to the caller and hits the face instead.
+
+The **player-elective** split is a separate, unbuilt feature; there is no decision point in
+combat today, and the engine auto-assigns the split described above. Two neighbouring
+behaviours are deliberately unchanged: a column whose blockers all died still drops its
+non-Piercing power (R72/R13 — there is no unit left to deal it to), and a {Vulnerable}
+back-row unit receives *double* the leftover, because the leftover is source-side pool.
+
+Tests: 05-rulings (R114, three tests), 24-wood-b (Phytochemical Protection, the whole hit
+and the report-#79 situation), 38-light-a (Vroot), 17-earth-b (Mirage Scuttler), 19-hybrids
+(Mirrorback Ambusher), 82-attr-interactions (combat and effect damage agree).
+
+---
+
+## R115 — a created unit arrives where its SOURCE is
+
+*(Designer, 2026-08-23, from playtest report #83. This ruling **WITHDRAWS R28 and R52**
+and **ABSORBS R33**. It is a rules reversal, not a clarification: three cards' worth of
+power was deliberately cut by it.)*
+
+### The line
+
+> "Life Plant's units were made in my region, despite it currently being in Rashi's
+> region. **Anything made by anything needs to spawn in that region** (then can return
+> during regroup)."
+
+*That region* = the region the SOURCE is in **right now**, at the moment the effect
+resolves. Not the controller's home region; not where the source was played; not where the
+card that made the source came from.
+
+### The consequence, put to the designer explicitly and confirmed
+
+A token minted **mid-attack** is created in the **enemy region**. It is in that region and
+in **no column** — the state the client already draws as the invader's zone (a unit in a
+region but outside the formation is first-class and long-tested, 73-play-into-formation).
+Therefore:
+
+- it **cannot block the counterattack** — `validFormation` gates blockers on
+  `u.region === fromRegion`, and the attacker's home region is not the battle region;
+- it takes no part in this battle at all unless something places it into the formation;
+- it **walks home at regroup**, like every other unit out of position (`startRegroup`).
+
+This is a real power cut to **Tidelurker**, **Life Plant**, **Legion of the Depths** and
+**Pack Leader**, and the designer confirmed it as intended. R28 existed *because* of
+Tidelurker's 2/2 ("it must be home to block the counterattack"); that sentence is now the
+thing the rule forbids.
+
+### What it means in code
+
+`ctx.region` **is** the answer, on all four resolution paths, and always has been:
+
+| path | where `StackItem.region` comes from |
+| --- | --- |
+| spell cast in battle | the battle region the cast happened in (`apply.ts`) |
+| spell cast in deployment | the caster's home region (`apply.ts`) — home **is** the source's region then |
+| activated ability | `u.region` — where the unit stands (`apply.ts`) |
+| triggered ability | the source's region at fire time (`engine.ts`, R70) |
+
+So the rule is one line long: **a card that creates something passes `ctx.region`.** There
+is nothing to compute and no new primitive. `E.spawnUnit(seat, name, region, opts)` keeps
+its required explicit `region` — it has no `ctx` and cannot see the source, so it must not
+grow a default.
+
+25 cards were discarding `ctx.region` and substituting `g.homeRegion(ctx.controller)`; all
+25 now pass `ctx.region`. Two of them were **live bugs today** (battle-timing spells:
+Galactic Germination, Arcane Echo); six were latent (deploy-timing spells, where home *is*
+`ctx.region` — wrong only once a `[Switch1]` is grafted onto a battle cause); the other
+seventeen were ability-path creators, the family report #83 is about.
+
+### The three silent defaults, deleted
+
+`makeOneOne` (batch-wood-a), `makeRobot` (batch-metal-b) and `create1s` (batch-wood-c) each
+took `region?: number` and fell back to `?? g.homeRegion(seat)`. That `??` is *how* four
+cards inherited the wrong region with no line of code anywhere saying so. `region` is now a
+**required** parameter on all three, so the compiler asks the question at every call site.
+
+### The guard
+
+`98-spawn-region` scans the card sources and **fails on any `homeRegion(` inside a `run:`
+body under `src/cards/`**, with a named allow-list. The allow-list is empty of creators by
+construction: the only cards allowed to name a place are the bespoke placers, and those
+name a *slot* or another unit's region, never `homeRegion`. The test also asserts every
+allow-list entry is still needed, so the list cannot rot.
+
+### What did NOT change
+
+- **Spell tokens** (Fireball, Poison, Crystal) already appeared at `ctx.region`. R115 is
+  the same rule for unit tokens — the "battle materiel" distinction R28 drew is gone
+  because there is no longer anything for it to distinguish.
+- **Bespoke placers** whose printed text names a place: Hooba-God ("in my formation"),
+  Hooba-Mon, Necromorph (the victim's region), Feed to Hooba ("in its position in play"),
+  `E.ambushSwap`. These name a *slot* on top of R115's region.
+- **Putting a card into play from a bin** (Exhume, Wake the Dead, Resurrect, Uglk…) is not
+  creating; those cards pass `ctx.region` already and are untouched.
+- **Regroup** already returns every out-of-position unit to its controller's home region
+  (`startRegroup`), which is the second half of the designer's sentence.
+
+Tests: 98-spawn-region (report #83 verbatim; the regroup round-trip; R28's rationale
+inverted — the mid-attack token cannot block; the source scan; the two battle spells; a
+deploy-timing negative control), plus the fifteen card tests that flipped from asserting
+the old rule.

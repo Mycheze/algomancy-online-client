@@ -799,3 +799,28 @@ test('Vroot: when my column deals combat damage, each opponent gains that much l
   assert.ok(h.log.some(l => l.includes('Vroot')), 'the gain is attributed to Vroot');
   finishBattle(h);
 });
+
+test('Vroot: a blocked column pays out its whole power, not the blocker’s toughness (report #84, EGCW 251)', () => {
+  // R114: "ALL damage is dealt to units, even if it surpasses its defense."
+  // Vroot reads the amount straight off the combat 'damage' event, so the
+  // lethal-capped assignment used to pay out 2 (the blocker's toughness)
+  // where the column swung for 9. A non-Piercing column keeps every point.
+  const h = new Harness(3827);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const v = spawn(h, A, 'Vroot');                            // 4/4
+  let big = 0, chump = 0;
+  withE(h, e => {
+    big = e.spawnUnit(A, 'Unit Token', e.homeRegion(A), { token: true, tokenStats: [5, 5] }).id;
+    chump = e.spawnUnit(D, 'Unit Token', e.homeRegion(D), { token: true, tokenStats: [2, 2] }).id;
+  });
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[v, big]] });   // 4 + 5 = 9 power
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [chump] } });
+  pass(h); pass(h);
+  assert.ok(!ent(h, chump), 'the 2/2 blocker died');
+  assert.equal(h.state.players[D]!.life, 39,
+    'the column dealt all 9 to the blocker, so D gains 9 — not the 2 that killed it');
+  finishBattle(h);
+});

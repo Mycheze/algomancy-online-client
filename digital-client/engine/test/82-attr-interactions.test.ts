@@ -40,7 +40,7 @@ import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { effStats, ent, ownAttrs, spawn, toDeployment } from './util.ts';
+import { effStats, ent, ownAttrs, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 import type { Attr, EngineEvent, EntityId, Seat } from '../src/types.ts';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -414,6 +414,47 @@ test('Piercing: a unit named twice in one batch is overkilled ONCE, and the rest
   const { units, players } = damageTo(evs);
   assert.deepEqual(units.map(u => u.n), [6], 'one damage event for the unit, not two');
   assert.deepEqual(players.map(p => p.n), [2]);
+});
+
+// ── the two paths, measured against each other ──────────────────────────
+
+test('combat and effect damage agree on how much was dealt', () => {
+  // R114 (report #84, 2026-08-23): "ALL damage is dealt to units, even if it
+  // surpasses its defense."
+  //
+  // This is the invariant whose ABSENCE let the two damage paths drift.
+  // `dealEffectDamageAll` always dealt the full amount; `assignColumnDamage`
+  // clamped a combat hit to the victim's lethal need and silently dropped the
+  // rest. Both paths end at the same `damage` event, and every card that reads
+  // "that much" reads its `n` — so the same source dealing the same amount to
+  // the same body had to be measured once each way, and never was.
+  //
+  // 7 into a 3/5: lethal is 5, so a clamp shows up as 5 on one side and 7 on
+  // the other.
+  const effect = duelToken(7230, 'Life Plant', 3, 5);        // Life Plant is a 7/3, no attrs
+  const evs = dealAllFrom(effect.h, effect.A, effect.src, [{ id: effect.tgt, n: 7 }]);
+  const viaEffect = damageTo(evs).units.map(u => u.n);
+  assert.deepEqual(viaEffect, [7], 'effect damage deals the whole 7 to a 3/5');
+
+  const h = new Harness(7231);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const src = spawn(h, A, 'Life Plant');                     // the same 7 power
+  const g = new E(h.state);
+  const tgt = g.spawnUnit(D, 'Unit Token', g.homeRegion(D), { token: true, tokenStats: [3, 5] }).id;
+  g.settle();
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[src]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [tgt] } });
+  const mark = h.events.length;
+  pass(h); pass(h);
+  const viaCombat = h.events.slice(mark)
+    .filter(e => e.type === 'damage' && e.data?.['unit'] === tgt)
+    .map(e => e.data!['n'] as number);
+  assert.deepEqual(viaCombat, viaEffect,
+    'the same source dealing the same amount to the same body must report the same number '
+    + 'whether it came through combat or through an effect');
 });
 
 // ── the standing guarantee ──────────────────────────────────────────────

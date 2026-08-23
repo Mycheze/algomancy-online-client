@@ -10,8 +10,8 @@
  * R5 (fizzle vs partial), R6 (mid-resolution payments/choices via ctx.choose),
  * R9 (bounded [Switch1]/[once] budgets per card), R12/R25 ("each player/
  * opponent" and "your units" read the region's present seats / unitsOf(region)),
- * R28 (created UNITS spawn in their controller's HOME region; spell tokens
- * appear where the effect resolves), R31 (damage-sub-step triggers resolve
+ * R115 (created UNITS spawn where their SOURCE is — ctx.region — exactly as
+ * spell tokens always did), R31 (damage-sub-step triggers resolve
  * immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
@@ -38,7 +38,8 @@
  *    damage event too (engine dealEffectDamage), so "one of YOUR spell
  *    effects deals damage" is exact: my spells only, face hits included.
  *    Combat damage never counts (its event has no source). The 1/1s spawn
- *    in the CARRIER's region (R33, refining R28).
+ *    in the CARRIER's region (R33, absorbed by R115: everything created
+ *    arrives at ctx.region).
  *  - Scrapyard Custodian: 'countersChanged' carries no actor, so "when YOU
  *    put counters on an ally" is read as "counters (either sign) were put on
  *    a unit you control, by anyone". Robots spawning with counters do NOT
@@ -87,7 +88,7 @@ import {
   card, getCard, isAugment,
   type EffectCtx, type EffectDef, type ResolvedTarget,
 } from '../dsl.ts';
-import { selfOf, isEnt, inEndOfTurn, pickUnit } from './helpers.ts';
+import { selfOf, isEnt, pickUnit, perSeatRows } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -103,7 +104,7 @@ const NONUNIT_SPELL_KINDS = new Set(['spell', 'spellToken']);
 function runSpellCopy(
   g: E, ctx: EffectCtx, cardName: CardName, controller: Seat,
   x: number | undefined, targets: ResolvedTarget[],
-  costPaid?: EffectCtx['costPaid'],
+  costPaid?: EffectCtx['costPaid'], mode?: unknown,
 ): void {
   const def = getCard(cardName).spellEffect;
   if (!def) { g.ev('info', `${ctx.sourceName}: ${cardName} has no spell effect to copy.`); return; }
@@ -116,7 +117,11 @@ function runSpellCopy(
     controller, sourceName: cardName, sourceId: undefined, region: ctx.region,
     // a COPY is not cast: its cast cost is not paid again — it inherits the
     // original's payment receipt (R35), like it inherits the original's X
-    targets, x, costPaid, event: null,
+    // R57: a copy inherits the ORIGINAL's declared modal half, the same way it
+    // inherits its X and its cost receipt. The original said which half it was
+    // in its own cast window, in public; the copy is that spell again, not a
+    // second chance to pick.
+    targets, x, costPaid, mode, event: null,
     // A COPY of a spell is not a card, so a copy of "Erase me" has nothing to
     // erase — and it must not reach for the ORIGINAL's item, which is going to
     // the bin or the erased pile on its own terms.
@@ -131,15 +136,15 @@ function runSpellCopy(
 // units." — em/3 2/4 Primordial Technology Spell. X is live at resolution
 // (R27): the greatest effStats defense among the controller's units in the
 // resolving region (R12). Robot X = the 0/0 Robot token with X +1/+1
-// counters (the water-metal batch precedent); a created UNIT spawns in its
-// controller's HOME region (R28). No unit → X = 0 → no Robot.
+// counters (the water-metal batch precedent); a created UNIT spawns where its
+// SOURCE is — ctx.region (R115). No unit → X = 0 → no Robot.
 const buildRobot: EffectDef = {
   creates: ['Robot'],
   run: (g, ctx) => {
     const x = g.unitsOf(ctx.controller, ctx.region)
       .reduce((m, u) => Math.max(m, g.effStats(u)[1]), 0);
     if (x <= 0) { g.ev('info', 'Colossal Construction: no unit to measure — no Robot.'); return; }
-    g.spawnUnit(ctx.controller, 'Robot', g.homeRegion(ctx.controller), { token: true, counters: x });
+    g.spawnUnit(ctx.controller, 'Robot', ctx.region, { token: true, counters: x });
   },
 };
 card('Colossal Construction', {
@@ -305,6 +310,12 @@ card('The Silent', {
       return 2 * g.battleCounter(self.region, `spellsPlayed:${ctx.seat}`);
     },
   }],
+  // #85: the tax is ASYMMETRIC — each player pays 2 per spell THEY have
+  // already played this battle — so it genuinely differs by player, and
+  // neither number is on the board. The rows are the surcharge itself, not the
+  // raw counter, because the surcharge is what a player is deciding about.
+  xPreviewRows: (g, seat, region) =>
+    perSeatRows(g, seat, s2 => 2 * g.battleCounter(region, `spellsPlayed:${s2}`)),
 });
 
 // ─────────────────────── EARTH / WOOD (eg/ge) ─────────────────────────
@@ -314,7 +325,7 @@ card('The Silent', {
 // normally. 'spawned' fires with the entity already in play, so token-ness
 // and controller are read live at event time (R1). "Another" excludes the
 // carrier itself (when donated: the host). Spell tokens appear where the
-// effect resolves (R28).
+// effect resolves (R115).
 card('Aether Channeler', {
   augmentText: [{
     type: 'triggered', events: ['spawned'],
@@ -329,7 +340,7 @@ card('Aether Channeler', {
 });
 
 // "[Switch1] Create a Crystal 1 and a Poison 1." — eg/1 0/7 Arcane Blight
-// Crystal Spell. Both spell tokens appear where the effect resolves (R28).
+// Crystal Spell. Both spell tokens appear where the effect resolves (R115).
 // Bounded graft ([Switch1], R9).
 const alchemyTokens: EffectDef = {
   creates: ['Crystal', 'Poison'],
@@ -401,7 +412,7 @@ card('Earthbound Replicator', {
           g.ev('info', `Earthbound Replicator: ${name} does not target me (or already left the stack) — no copy.`);
           return;
         }
-        runSpellCopy(g, ctx, name, seat, it.x, [self], it.parts[0]?.costPaid);
+        runSpellCopy(g, ctx, name, seat, it.x, [self], it.parts[0]?.costPaid, it.parts[0]?.mode);
       },
     },
   }],
@@ -409,21 +420,27 @@ card('Earthbound Replicator', {
 
 // "After combat, [Switch1] Create a [Poison or Crystal] 2." — eg/3 2/3 Plant
 // Crystal Unit. afterCombat trigger (no source unit — the Unfinished
-// Creation precedent; region-scoped by the event). The either-or is a
-// mid-resolution choice (R6; auto Crystal during end-of-turn resolution —
-// no suspensions there). Spell token appears where the effect resolves.
-// Bounded cause + bounded graft ([Switch1], R9).
+// Creation precedent; region-scoped by the event). R57 — the printed
+// "[Poison or Crystal]" is declared in the CAST window (`EffectDef.modes`), so
+// the trigger sits on the stack already saying which token it will make and
+// the opponent responds to a fully declared effect. It used to be a
+// mid-resolution ctx.choose with a silent auto-pick of Crystal during
+// end-of-turn resolution; that auto-pick is gone, because E.finishTurnEnd
+// resumes out of settle() and the cast window already suspends there.
+// Spell token appears where the effect resolves. Bounded cause + bounded graft
+// ([Switch1], R9) — `modes` is per EFFECT, so a graft composite asks per part.
 const conjureTwo: EffectDef = {
   creates: ['Poison', 'Crystal'],
+  modes: {
+    key: 'tok',
+    prompt: () => 'Spirit of Nature: create a Poison 2 or a Crystal 2?',
+    options: () => [
+      { label: 'Poison 2', value: 'Poison' },
+      { label: 'Crystal 2', value: 'Crystal' },
+    ],
+  },
   run: (g, ctx) => {
-    const kind = inEndOfTurn(g) ? 'Crystal' : ctx.choose('tok', {
-      kind: 'electricPath', seat: ctx.controller,
-      prompt: 'Spirit of Nature: create a Poison 2 or a Crystal 2?',
-      options: [
-        { label: 'Poison 2', value: 'Poison' },
-        { label: 'Crystal 2', value: 'Crystal' },
-      ],
-    }) as string;
+    const kind = ctx.mode;   // R57: declared at cast
     g.createSpellToken(ctx.controller, kind === 'Poison' ? 'Poison' : 'Crystal', 2, ctx.region);
   },
 };
@@ -444,9 +461,9 @@ card('Spirit of Nature', {
 // trigger (your spell, kind spell/spellToken); at resolution the original is
 // found on the stack (the Origon bottom-most-match pattern) — my trigger
 // sits above it, so the copy resolves first. The sacrifice is a
-// mid-resolution pay-or-decline (R6, auto-declined during end-of-turn); the
-// copy reuses the original cast's still-legal targets ("new targets"
-// unsupported).
+// mid-resolution pay-or-decline (R6) and is offered wherever this resolves,
+// the end-of-turn window included (R85); the copy reuses the original cast's
+// still-legal targets ("new targets" unsupported).
 card('Maelstrom Charger', {
   abilities: [{
     type: 'triggered', events: ['spellPlayed'],
@@ -461,10 +478,6 @@ card('Maelstrom Charger', {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
         if (!self) { g.ev('info', 'Maelstrom Charger: the carrier is gone — no copy.'); return; }
-        if (inEndOfTurn(g)) {
-          g.ev('info', 'Maelstrom Charger: no sacrifice is offered during end of turn — no copy.');
-          return;
-        }
         const name = ctx.event?.data?.card as CardName | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
         if (name === undefined || seat === undefined) return;
@@ -492,7 +505,7 @@ card('Maelstrom Charger', {
           }
         }
         g.destroy(self, 'is sacrificed');
-        runSpellCopy(g, ctx, name, seat, it.x, targets, it.parts[0]?.costPaid);
+        runSpellCopy(g, ctx, name, seat, it.x, targets, it.parts[0]?.costPaid, it.parts[0]?.mode);
       },
     },
   }],
@@ -586,7 +599,7 @@ card('Maw of Damnation', {
 // — rrm/2 2/2 Demon Robot Unit. Text-box [Augment]. Nontoken-ness is read off
 // the death event's token flag (R70 — the entity is gone before the event
 // fires, so the fact rides the event). Spell token at the resolving region
-// (R28).
+// (R115).
 card('Soulforger', {
   augmentText: [{
     type: 'triggered', events: ['died'],
@@ -606,7 +619,8 @@ card('Soulforger', {
 // an opponent's spell never fires me. Spell-effect damage to a PLAYER also
 // emits a damage event (face hits count; "deals damage" is unqualified);
 // combat damage never counts (no source on the event). Created UNITS spawn in
-// the CARRIER's region (R33, refining R28).
+// the CARRIER's region (R33, now just R115: ctx.region, which for a carrier
+// trigger IS where the carrier is).
 //
 // R80: "that many" is what the SPELL EFFECT dealt, not what one victim took.
 // Playtest VEAV: "I only made 2 units from my Channel Through, but it dealt 6

@@ -1666,6 +1666,11 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
       // in the cast window with everything else; it is taken at resolution,
       // and re-derived there because the line may have moved (R5/R56).
       sus.item.formationSpot = val as FormationSpot;
+    } else if (sus.stage === 'mode') {
+      // R57: WHICH HALF of a modal effect. Declared here, in the cast window,
+      // so it rides onto the stack with the item — the opponent responds to a
+      // fully declared effect, not to a question that is still open.
+      sus.item.parts[sus.partIndex]!.mode = val;
     } else if (typeof val === 'object' && val !== null && 'doneTargets' in val) {
       sus.item.parts[sus.partIndex]!.targetsDone = true;
     } else {

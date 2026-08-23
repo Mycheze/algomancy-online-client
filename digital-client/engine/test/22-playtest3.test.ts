@@ -68,7 +68,12 @@ test('a sent spell token is not enumerable (castSpellToken) while absent', () =>
 
 // ── Tidelurker ────────────────────────────────────────────────────────
 
-test("Tidelurker's 2/2 is created at HOME even when it triggers while attacking", () => {
+// R115 (2026-08-23) REVERSED this test. It used to assert R28's rationale —
+// "the 2/2 minted mid-attack must be home to block the counterattack" — and the
+// designer answered the other way: anything made by anything spawns where its
+// source is. The 2/2 is stranded in the enemy region, in no column, and walks
+// home at regroup.
+test("Tidelurker's 2/2 is created in the BATTLE region when it triggers while attacking (R115)", () => {
   const h = new Harness(2202);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -81,8 +86,10 @@ test("Tidelurker's 2/2 is created at HOME even when it triggers while attacking"
   const e = new E(h.state);
   const tokens = unitsOf(h, A).filter(u => u.token && u.tokenStats?.[0] === 2);
   assert.equal(tokens.length, 1, 'the 2/2 was created');
-  assert.equal(tokens[0]!.region, e.homeRegion(A),
-    "…in its controller's HOME region (it can block the counterattack), not the battle region");
+  assert.equal(tokens[0]!.region, h.state.battle!.region,
+    '…where Tidelurker is: the battle region (R115)');
+  assert.notEqual(tokens[0]!.region, e.homeRegion(A),
+    'R28 is WITHDRAWN — the 2/2 is NOT sent home, so it cannot block the counterattack');
   finishBattle(h);
 });
 

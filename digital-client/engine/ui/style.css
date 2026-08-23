@@ -538,6 +538,22 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .judgeq { color: var(--accent); font-weight: 700; }
 .judgea { background: var(--panel2); border-radius: 6px; padding: 6px 10px; white-space: normal; }
 .judgea .hint span { text-decoration: underline dotted; cursor: help; }
+/* #82: the judge answers in markdown (ui/markdown.ts renders it). The overlay
+ * is a flat gap-6 column, so the answer's own blocks have to carry their own
+ * rhythm — otherwise a heading reads at body weight and a list loses its dots. */
+.judgea p { margin: 0 0 6px; }
+.judgea > :last-child { margin-bottom: 0; }
+.judgea h3, .judgea h4 { margin: 10px 0 4px; color: var(--accent); }
+.judgea h3 { font-size: 14px; }
+.judgea h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.judgea > h3:first-child, .judgea > h4:first-child { margin-top: 0; }
+.judgea ul, .judgea ol { margin: 0 0 6px; padding-left: 20px; }
+.judgea li { margin: 2px 0; }
+.judgea blockquote { margin: 0 0 6px; padding: 2px 0 2px 10px;
+  border-left: 3px solid var(--accent); color: var(--dim); }
+.judgea blockquote p:last-child { margin-bottom: 0; }
+.judgea code { background: var(--bg); border: 1px solid var(--line); border-radius: 3px;
+  padding: 0 4px; font-size: 12px; }
 .judgerow { display: flex; gap: 8px; }
 .judgerow input { flex: 1; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 6px 10px; }

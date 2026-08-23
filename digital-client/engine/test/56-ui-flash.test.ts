@@ -196,9 +196,13 @@ test('a flashed item still knows its X — the beat is the only chance to read i
   // R35: X is chosen and paid as the card is cast
   const dec = h.state.decision!;
   const want = 3;
-  const events = h.do({
-    type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => o.value === want),
-  });
+  h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => o.value === want) });
+  // R57: the Singularity's "[create X 1/1s or become base X/X]" is a modal
+  // bracket, declared in the same cast window right after X. Answering IT is
+  // what completes the cast, so this is the call whose events carry the beat.
+  const mode = h.state.decision!;
+  assert.equal(mode.kind, 'mode', 'the half is asked at cast, after X');
+  const events = h.do({ type: 'decide', seat: mode.seat, choice: 0 });
   assert.equal(h.state.stack.length, 0, 'deployment gives no window — it never reaches the stack');
 
   const flashed = flashItems(events).find(i => i.card === 'Floral Singularity')!;

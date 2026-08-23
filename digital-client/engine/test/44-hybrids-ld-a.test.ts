@@ -525,7 +525,10 @@ test('Life Plant: [once] per turn — a life change mints that many 1/1 units', 
   assert.equal(unitsOf(h, p).filter(u => u.card === 'Unit Token').length, 3, 'bounded — no second batch');
 });
 
-test('Life Plant: R52 — the created units arrive in the controller\'s HOME region, not the battle', () => {
+// R115 (2026-08-23) REVERSED this test. Report #83 IS this card: "Life Plant's
+// units were made in my region, despite it currently being in Rashi's region.
+// Anything made by anything needs to spawn in that region."
+test('Life Plant: R115 — the created units arrive in the BATTLE region the carrier is fighting in', () => {
   const h = new Harness(4418);
   toDeployment(h);
   const A = h.state.initiative;
@@ -539,8 +542,9 @@ test('Life Plant: R52 — the created units arrive in the controller\'s HOME reg
   pass(h); pass(h);                                          // resolve the queued trigger
   const made = unitsOf(h, A).filter(u => u.card === 'Unit Token' && u.token);
   assert.equal(made.length, 2, 'two 1/1s were created');
-  assert.ok(made.every(u => u.region === home),
-    'R52: a created unit defaults to its controller\'s home region (R28 confirmed as the rule)');
+  assert.ok(made.every(u => u.region === battleRegion),
+    'R115: a created unit arrives where its SOURCE is — the enemy region Life Plant is standing in');
+  assert.ok(made.every(u => u.region !== home), 'R52 is WITHDRAWN — they are NOT sent home');
   finishBattle(h);
 });
 

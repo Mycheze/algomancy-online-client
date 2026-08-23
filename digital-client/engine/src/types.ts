@@ -467,6 +467,34 @@ export interface EffectPart {
    * resolution can read them out of EffectCtx (they are also on the item, for
    * the stack display) */
   mods?: CardName[];
+  /**
+   * R57 — a MODAL effect's chosen half ("[Put a -1/-1 counter on each enemy
+   * or put a +1/+1 counter on each of your units]"), picked in the CAST
+   * window by `E.collectModes` and read back at resolution as `ctx.mode`.
+   *
+   * Every caster-facing mode used to be a mid-resolution `ctx.choose`, which
+   * meant the item sat on the stack with its mode UNKNOWN: the opponent spent
+   * a card responding to a Burgeon whose half had not been declared, the
+   * response resolved, and only then was the caster asked — with the option
+   * labels recomputed off the post-response stats. That is free information
+   * the opponent paid for. A mode is part of DECLARING the effect, exactly as
+   * X, mods, targets and bracketed costs are (R35/R57).
+   *
+   * ON THE PART, not the item, for the same reason `costPaid` is: a graft
+   * composite can carry two modal parts (a Burgeon grafted onto a Burgeon),
+   * and `part` is what the suspension carries (R85). Its PRESENCE is the
+   * idempotence guard — collectTargets re-runs from the top after every
+   * answered decision — so a mode with nothing to choose between is recorded
+   * as `null` rather than left undefined.
+   *
+   * NOT for a mode somebody ELSE picks. R6's "unless its controller pays"
+   * (Abduct) and R67's not-a-target carve-out ("each opponent discards a
+   * [unit or spell]" — Void Memory) are the OPPONENT's decision, made when
+   * the effect reaches them; docs/digital-rules.md:51 puts payment inside
+   * resolution. Nor for a replacement-effect mode (Cosmic Conspirator), which
+   * is raised before the thing it is about exists.
+   */
+  mode?: unknown;
 }
 
 /**
@@ -618,7 +646,8 @@ export type DecisionKind =
   | 'targets'        // choose a target for a part of a pending cast/trigger
   | 'orderTriggers'  // order your simultaneous triggers (R2)
   | 'electricPath'   // choose next unit for electric excess (R4)
-  | 'payOrDecline';  // "unless its controller pays [x]" (R6)
+  | 'payOrDecline'   // "unless its controller pays [x]" (R6)
+  | 'mode';          // which half of a modal effect (R57, EffectPart.mode)
   // (graft insert position rides on the graft ACTION itself, not a decision)
 
 export interface DecisionOption {
@@ -667,8 +696,11 @@ export type Suspension =
        * bracketed [cast cost] (EffectDef.castCost).
        * 'formation' (R29): WHERE a "play me into an open spot in your
        * formation" card is being played — part of the play, so part of the
-       * cast window, and the answer rides on the item as `formationSpot`. */
-      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation';
+       * cast window, and the answer rides on the item as `formationSpot`.
+       * 'mode' (R57): WHICH HALF of a modal effect ("[… or …]"), answered
+       * onto `parts[partIndex].mode` — declared before the item reaches the
+       * stack so the opponent can see what they are responding to. */
+      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation' | 'mode';
     }
   | {
       /** ordering simultaneous triggers for one seat (R2) */

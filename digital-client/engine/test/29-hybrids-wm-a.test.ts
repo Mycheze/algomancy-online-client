@@ -1,5 +1,5 @@
 /* Per-card tests for the wood/metal-involved hybrid batch (batch-hybrids-wm-a):
- * live-X Robot construction (Colossal Construction, R27/R28), moving a unit
+ * live-X Robot construction (Colossal Construction, R27/R115), moving a unit
  * and its mods onto a new host (Reconfigure), counter-triggered draws +
  * grafts (Scrapyard Custodian, Corroded Alchemy), spawn-triggered Crystals
  * (Aether Channeler), damage-mirroring -1/-1 counters (Decay Distributor),
@@ -7,7 +7,7 @@
  * an either-or token conjure (Spirit of Nature), sacrifice-funded negation
  * (Malevolent Machinations), death-punishing sacrifices (Malicious Hardware,
  * Soulforger), the repeating sacrifice loop (Maw of Damnation), spell-damage
- * token minting (Ember of Life, R28) and a sacrifice ACTIVATION cost
+ * token minting (Ember of Life, R33 — absorbed into R115) and a sacrifice ACTIVATION cost
  * (Hearthwood Ancient, R49 sacrificeOther — it used to be paid at
  * resolution). The Silent's cost tax is live (R59 CostMod); the PARKED Rook
  * (play permission) has a registration test + todo.
@@ -42,7 +42,7 @@ function whiteBox(h: Harness, f: (e: E) => void): void {
 
 // ── Colossal Construction ────────────────────────────────────────────────
 
-test('Colossal Construction: creates a Robot X, X = greatest defense among your units (R27/R28)', () => {
+test('Colossal Construction: creates a Robot X, X = greatest defense among your units (R27/R115)', () => {
   const h = new Harness(2901);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -56,7 +56,7 @@ test('Colossal Construction: creates a Robot X, X = greatest defense among your 
   assert.equal(robot.counters, 4, 'X = 4 (the Rook’s defense) as +1/+1 counters');
   assert.deepEqual(effStats(h, robot.id), [4, 4], 'the 0/0 Robot is a 4/4');
   assert.ok(robot.token, 'the Robot is a token');
-  assert.equal(robot.region, new E(h.state).homeRegion(p), 'created UNIT arrives home (R28)');
+  assert.equal(robot.region, new E(h.state).homeRegion(p), 'created UNIT arrives at ctx.region — home for a deploy cast (R115)');
 });
 
 // ── Reconfigure ──────────────────────────────────────────────────────────
@@ -403,8 +403,14 @@ test('Spirit of Nature: after combat, [Switch1] create a Poison 2 OR a Crystal 2
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                           // combat + afterCombat trigger
+  // R57: the either-or is declared as the trigger is put on the stack, not as
+  // it resolves — the item says which token it will make before anyone may
+  // answer it.
+  assert.equal(h.state.decision?.kind, 'mode', 'the half is a cast-time question');
+  assert.equal(h.state.stack.length, 0, 'asked before the trigger reaches the stack');
+  pick(h, 'Crystal');
+  assert.equal(h.state.stack[0]?.parts[0]?.mode, 'Crystal', 'and it rides on the stack');
   pass(h); pass(h);                                           // resolve the trigger
-  pick(h, 'Crystal');                                         // the either-or (R6)
   const crystals = tokensOf(h, D).filter(t => t.card === 'Crystal');
   assert.equal(crystals.length, 1, 'one token created');
   assert.equal(crystals[0]!.x, 2, 'a Crystal 2');
@@ -544,7 +550,7 @@ test('Soulforger: your NONTOKEN unit dying → Fireball 1 (token deaths don’t 
 
 // ── Ember of Life ────────────────────────────────────────────────────────
 
-test('Ember of Life: [once] a spell effect deals N damage → create N 1/1 units (R28)', () => {
+test('Ember of Life: [once] a spell effect deals N damage → create N 1/1 units (R33, absorbed into R115)', () => {
   const h = new Harness(2916);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

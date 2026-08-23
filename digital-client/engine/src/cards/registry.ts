@@ -65,6 +65,16 @@ card('Mischievous Reclaimer', {
     effect: drawOne,
   }],
   graftEffect: { bounded: true, effect: drawOne },
+  // #85: the trigger is an ORDINAL — "the SECOND ally death this battle" — and
+  // ordinal countdowns were deferred from #85 as a shape of their own. This
+  // row is not a countdown: it is the plain `allyDeaths:<seat>` running total,
+  // which is a hidden battle ledger exactly like Soul Siphon's, with the
+  // threshold named in the label. If a real countdown ever lands, it replaces
+  // this; it does not extend it.
+  xPreviewRows: (g, seat, region) => [
+    { label: 'your allies dead this battle (it draws on the 2nd)',
+      x: g.battleCounter(region, `allyDeaths:${seat}`) },
+  ],
 });
 
 // type "[Augment] {Flying} Cloud Sprite Unit" — augmenting grants Flying

@@ -268,8 +268,9 @@ const fleshTithe: EffectDef = {
   run: (g, ctx) => {
     const x = ctx.x ?? 0;
     if (x <= 0) { g.ev('info', 'Flesh Tithe: X = 0 — no life paid, no unit.'); return; }
-    // R52: a created unit arrives in its CONTROLLER's home region
-    g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller),
+    // R115: a created unit arrives where its SOURCE is — during deployment
+    // that IS home; grafted onto a battle cause it is the battle region
+    g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
       { token: true, tokenStats: [x, x] });
   },
 };
@@ -367,8 +368,8 @@ card('Keeper of Tithes', {
       run: (g, ctx) => {
         const x = g.player(ctx.controller).resources.filter(r => r.state === 'expended').length;
         if (x <= 0) { g.ev('info', 'Keeper of Tithes: no expended resources — X is 0, no unit.'); return; }
-        // R52: a created unit arrives in its CONTROLLER's home region
-        g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller),
+        // R115: a created unit arrives where its SOURCE is (ctx.region)
+        g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
           { token: true, tokenStats: [x, x] });
       },
     },

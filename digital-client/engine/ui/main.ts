@@ -5,20 +5,21 @@
 import { Harness } from '../src/harness.ts';
 import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/apply.ts';
 import { getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
+import type { XPreviewRow } from '../src/cards/dsl.ts';
 import {
   actionNeedsMenu, activatableUnits, activationBadge, activationKeys, activationNeedsConfirm,
-  blockPlanIssue, boardMenuEntries, cardClasses, castableTokens,
+  blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens,
   dismissSeenCard, dismissSeenHand,
   erasedPileView, groupReveal, growCardLedger, linkCardNames, modHostCount, modHostPhrase,
   modHosts, onlyKnownNames,
   partitionOptions, planOffer, playableCachedNames, seenHandView, spellAugmentNote,
-  stackAbilityRows, stackItemX,
+  stackAbilityRows, stackItemX, stackItemModes,
   prismiteClickPlan, resourceMenuElements,
   stackXMark, takeAutoPass, tokensCreatedBy, transformFaces, unitClickOptions, waitingNote,
   watchCast,
 } from './inspect.ts';
 import type {
-  AutoPassPlan, CastWatch, FormationRole, ModHosts, SeenHandDismissals, UnitClickOption,
+  AutoPassPlan, CacheBlock, CastWatch, FormationRole, ModHosts, SeenHandDismissals, UnitClickOption,
 } from './inspect.ts';
 import {
   autoPassDecision, blockVerdict, passEndsBattlePhase, ridableTokens, sendableTokens, shouldAskRide,
@@ -30,6 +31,7 @@ import { entityTextBox, printedTextBox, textBoxFor } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
 import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts';
+import { mdToHtml } from './markdown.ts';
 import type { GlossEntry } from './glossary.ts';
 import type { Census } from './motion.ts';
 import {
@@ -1116,17 +1118,58 @@ function sendReport(): void {
     .finally(() => { reportBusy = false; render(); });
 }
 
-/** #5: the value a state-derived X spell would use if it resolved right now
- * (xPreview is a pure per-card query — see engine/src/cards/dsl.ts) */
-function xPreviewFor(name: string, seat: Seat): number | null {
+/** #5 / #85: the value(s) a card reading a hidden battle ledger would use if it
+ * resolved right now. Both hooks are pure per-card queries the engine never
+ * calls — see engine/src/cards/dsl.ts.
+ *
+ * #85 ("Soul Siphon should show what X is for each player") widened this from
+ * one number to a list of labelled rows, because Soul Siphon's X is keyed on
+ * the DECLARED TARGET player and so has one value per seat. A card carrying
+ * only the older single-number `xPreview` comes back as one unlabelled row, so
+ * every render site below has exactly one shape to handle. */
+function xPreviewFor(name: string, seat: Seat): XPreviewRow[] | null {
   const s = h.state;
   if (s.phase !== 'battle' || !s.battle) return null;
   try {
-    const f = getCard(name).xPreview;
-    if (!f) return null;
-    const v = f(q(), seat, s.battle.region);
-    return typeof v === 'number' && Number.isFinite(v) ? v : null;
+    const c = getCard(name);
+    const region = s.battle.region;
+    // rows win when a card defines both — they say strictly more
+    const rows = c.xPreviewRows?.(q(), seat, region)
+      ?.filter(r => Number.isFinite(r.x));
+    if (rows?.length) return rows;
+    const v = c.xPreview?.(q(), seat, region);
+    return typeof v === 'number' && Number.isFinite(v) ? [{ label: '', x: v }] : null;
   } catch { return null; }
+}
+
+/** the corner chip. One row keeps #5's original "X=3 now" wording exactly —
+ * the chip is a few pixels wide and a label does not fit — and the labels ride
+ * in the tooltip. Several rows show the bare numbers in row order. */
+const xBadge = (rows: XPreviewRow[]): Badge => ({
+  t: rows.length === 1 ? `X=${rows[0]!.x} now` : `X now: ${rows.map(r => r.x).join(' · ')}`,
+  ctr: true,
+  title: rows.map(r => (r.label ? `${r.label}: ${r.x}` : `X = ${r.x}`)).join('\n'),
+});
+
+/** the same rows spelled out where there IS room (the focus viewer, the
+ * inspector). Same `.xnow` presentation the stack viewer already uses for a
+ * committed item's X — one idea, one look. */
+const xRowsHtml = (rows: XPreviewRow[]): string => rows.map(r =>
+  `<div class="xnow">X = ${r.x} right now${
+    r.label ? ` <span class="hint">— ${iconizeText(r.label)}</span>` : ''}</div>`).join('');
+
+/** rows ride to the focus viewer through a data attribute, so they have to
+ * survive a round trip through the DOM as text. JSON rather than a separator,
+ * because a player's name may contain any character at all. */
+const packXRows = (rows: XPreviewRow[]): string => JSON.stringify(rows);
+function unpackXRows(s: string): XPreviewRow[] {
+  try {
+    const v: unknown = JSON.parse(s);
+    return Array.isArray(v)
+      ? v.filter((r): r is XPreviewRow =>
+        !!r && typeof r === 'object' && typeof (r as XPreviewRow).x === 'number')
+      : [];
+  } catch { return []; }
 }
 
 // ── rendering ─────────────────────────────────────────────────────────
@@ -1249,10 +1292,11 @@ function handZoneHtml(p: Seat): string {
       (a.type === 'graft' && a.from === 'hand' && a.index === i) ||
       (a.type === 'prophesy' && a.from === 'hand' && a.index === i) ||
       (h.state.phase === 'planning' && a.type === 'recycleForResource' && a.handIndex === i));
-    // #5: live X preview during battle for state-derived X spells
+    // #5 / #85: live X preview during battle for cards reading a hidden
+    // battle ledger — one row per player where the number differs by player
     const badges: Badge[] = [];
-    const xnow = xPreviewFor(n, p);
-    if (xnow !== null) badges.push({ t: `X=${xnow} now`, ctr: true });
+    const xrows = xPreviewFor(n, p);
+    if (xrows) badges.push(xBadge(xrows));
     // R42: this card can be prophesied RIGHT NOW — the banner cost, up front
     const proph = legal.find(a => a.type === 'prophesy' && a.from === 'hand' && a.index === i);
     if (proph) {
@@ -1262,7 +1306,8 @@ function handZoneHtml(p: Seat): string {
     }
     return cardHtml(n, {
       playable, badges, anim: keys[i],
-      data: `data-act="hand" data-p="${p}" data-i="${i}"${xnow !== null ? ` data-xnow="${xnow}"` : ''}`,
+      data: `data-act="hand" data-p="${p}" data-i="${i}"${
+        xrows ? ` data-xnow="${esc(packXRows(xrows))}"` : ''}`,
     });
   }).join('');
 }
@@ -1594,11 +1639,21 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
   // R42/R45: permission is not the whole story — a cached card is still played
   // "as if it were in your hand", so its TIMING gate applies on top. Say which
   // it is, rather than letting a permitted-but-unplayable card look broken.
-  const playableNow = legalFor(p).some(a => a.type === 'playCached' && a.index === i);
+  //
+  // Report #78: it must say WHICH gate, and only after asking. This used to
+  // print "…but only during deployment" whenever a permitted entry was not in
+  // the legal list — during deployment, at a card that was merely unaffordable.
+  // cacheBlockReason (ui/inspect.ts) asks pushCachedPlays' questions in
+  // pushCachedPlays' order and this prints the answer it gets.
   const TIMING_WORD: Record<string, string> = { deploy: 'deployment', battle: 'battle', haste: 'the haste step' };
-  const when = via ? TIMING_WORD[q().cachedTiming(p, i, via)] ?? '' : '';
-  const stale = !!via && !!opts.clickable && !playableNow && when
-    ? `<div class="cachepay none">…but only during ${when}</div>` : '';
+  const e = q();
+  const when = via ? TIMING_WORD[e.cachedTiming(p, i, via)] ?? '' : '';
+  const why: CacheBlock = opts.clickable ? cacheBlockReason(e, p, i, legalFor(p)) : 'none';
+  const stale =
+    why === 'mana' ? `<div class="cachepay none">…but it needs ${e.manaToPlay(p, cc.card)} mana and you have ${e.openMana(p)}</div>`
+      : why === 'no-target' ? '<div class="cachepay none">…but there is nothing legal to aim it at</div>'
+        : why === 'timing' && when ? `<div class="cachepay none">…but only during ${when}</div>`
+          : '';
   const meta = [
     pr ? `<div class="cachecond ${met ? 'met' : ''}">📜 ${esc(pr.condition)}${pr.release === 'haste' ? ' <i>(released at haste)</i>' : ''}</div>` : '',
     via === 'prophecy' ? '<div class="cachepay free">free · ignores affinity</div>' :
@@ -1662,13 +1717,30 @@ function regionCacheHtml(p: Seat): string {
   // "permitted" (a fulfilled prophecy or a live glimpse) and "playable right
   // now" are different things — normal TIMING applies on top — so the summary
   // line says which one it means rather than over-promising.
-  const permitted = cache.filter((_, i) => q().cachePermission(p, i) !== null).length;
+  const e = q();
+  const permittedIdx = cache.map((_, i) => i).filter(i => e.cachePermission(p, i) !== null);
+  const permitted = permittedIdx.length;
   const now = new Set(legal.filter(a => a.type === 'playCached').map(a => (a as { index: number }).index)).size;
   const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'cache');
   const hot = now > 0 || usable;
   const waiting = cache.filter((_, i) => !cacheSpent(p, i)).length;
+  // Report #78: this line used to blame TIMING for every permitted-but-unoffered
+  // entry, so a {Deployment} card during deployment that was two mana short read
+  // "not this step". cacheBlockReason (ui/inspect.ts) asks the enumerator's own
+  // questions in its own order; rank the answers so the summary names the entry
+  // that is CLOSEST to playable rather than the first one in the zone.
+  const RANK: Record<CacheBlock, number> = { none: 0, mana: 1, 'no-target': 2, timing: 3, 'no-permission': 4 };
+  let best: { i: number; why: CacheBlock } | null = null;
+  for (const i of permittedIdx) {
+    const why = cacheBlockReason(e, p, i, legal);
+    if (!best || RANK[why] < RANK[best.why]) best = { i, why };
+  }
+  const because = !best ? ''
+    : best.why === 'mana' ? ` — needs ${e.manaToPlay(p, cache[best.i]!.card)} mana`
+      : best.why === 'no-target' ? ' — no legal target'
+        : ' — not this step';
   const note = mine && now ? `<div class="cachehint">${now} playable now</div>`
-    : permitted ? `<div class="cachewait">${permitted} ready${mine ? ' — not this step' : ''}</div>`
+    : permitted ? `<div class="cachewait">${permitted} ready${mine ? because : ''}</div>`
       : waiting ? `<div class="cachewait">${waiting} waiting</div>`
         : `<div class="cachewait">nothing live</div>`;
   const keys = cacheAnimKeys(p);
@@ -1867,6 +1939,13 @@ function inspectorHtml(): string {
   // the other way is discarding your entire hand.
   const transformRows = transformFaces(name, u ? { e: q(), unit: u } : undefined)
     .map(tokenRowHtml).join('');
+  // #85: "Soul Siphon should have a way of showing, WHILE IN YOUR HAND, what
+  // the X value is for each player." The hand chip is a few pixels of corner;
+  // this panel is where a player actually reads a card, and it showed no X at
+  // all. Whose "you" it is: the seat this client plays in, or — hotseat, where
+  // there is no single viewer — the inspected unit's own controller.
+  const xseat: Seat = NET ? NET.seat : (u?.controller ?? 0);
+  const xRows = xPreviewFor(name, xseat);
   const refRows = referenced.length
     ? referenced.map(glossRow).join('')
     : `<div class="hint">${inspect.rulings === null
@@ -1881,6 +1960,7 @@ function inspectorHtml(): string {
     <div class="inspectscroll">
       <div class="inspecttop"><img src="${art(name)}" alt="" onerror="this.style.display='none'">
         <div class="inspecttext">${textBoxHtml(box, { noTitle: true })}</div></div>
+      ${xRows ? `<h4>X right now</h4>${xRowsHtml(xRows)}` : ''}
       <h4>Attributes${u ? ' (current, shared/granted included)' : ' (printed)'}</h4>
       ${attrRows}
       ${tokenRows ? `<h4>Tokens it creates</h4>${tokenRows}` : ''}
@@ -1901,7 +1981,7 @@ function inspectorHtml(): string {
 function judgeOverlayHtml(): string {
   const rows = judgeLog.map(e => `
     <div class="judgeq">Q: ${esc(e.q)}</div>
-    <div class="judgea">${esc(e.a).replace(/\n/g, '<br>')}${e.cards.length
+    <div class="judgea">${mdToHtml(e.a, { inline: iconizeText })}${e.cards.length
       ? `<div class="hint">cards: ${e.cards.map(c => `<span data-prev="${esc(c.title)}">${esc(c.title)}</span>`).join(' · ')}</div>` : ''}</div>`).join('');
   return `<div class="overlay mainonly"><div class="overlaybox judgebox">
     <h3>⚖ Judge — ask the rules bot</h3>
@@ -2529,6 +2609,13 @@ function previewStackHtml(id: number): string {
         : r.kind === 'event' ? esc(r.from ?? 'from the event that fired this')
           : `${esc(r.source ?? 'additional cost')}${r.receipt ? `, ${esc(r.receipt)}` : ''}`
     }</span></div>`).join('');
+  // R57 (report #81, EGCW): the declared MODE rides on the stack so the
+  // opponent can price their response. Choosing it at cast time is only half
+  // the fix — an unreadable declaration leaves them responding blind, which is
+  // the harm the report described. Same badge as X: one presentation, one idea.
+  const modeRows = stackItemModes(it, q())
+    .map(r => `<div class="xnow">${esc(r.key === 'stat' ? 'Doubling' : 'Mode')}: ${
+      esc(r.label)}${r.source ? ` <span class="hint">— ${esc(r.source)}</span>` : ''}</div>`).join('');
   const targets = it.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
   const composed = it.parts.filter(p => !p.spent).length > 1;
   // {Modular}: mods applied as the card was PLAYED ride on the stack with it
@@ -2543,7 +2630,7 @@ function previewStackHtml(id: number): string {
   return `${it.card ? `<img src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
     <div class="abilitybox">
       <div class="abhead">${esc(STACK_KIND[it.kind] ?? it.kind)}${composed ? ' — resolves as ONE composed ability' : ''}</div>
-      ${xRows}
+      ${xRows}${modeRows}
       ${rows || `<div class="hint">${iconizeText(it.label)}</div>`}
       ${modChips}
       ${targets ? `<div class="abtargets">→ ${targets}</div>` : ''}
@@ -3991,9 +4078,9 @@ function focusHtmlFor(sub: FocusSubject): string {
     if (html) return html;
   }
   if (!sub.name) return '';
-  // #5: hand cards carry their live X preview into the focus viewer
-  const xnow = sub.xnow !== undefined
-    ? `<div class="xnow">X = ${esc(sub.xnow)} right now</div>` : '';
+  // #5 / #85: hand cards carry their live X preview into the focus viewer,
+  // where there is room to print what each row is counting
+  const xnow = sub.xnow !== undefined ? xRowsHtml(unpackXRows(sub.xnow)) : '';
   return `<img src="${art(sub.name)}" alt="" onerror="this.style.display='none'">${xnow}${
     textBoxHtml(printedTextBox(sub.name))}`;
 }

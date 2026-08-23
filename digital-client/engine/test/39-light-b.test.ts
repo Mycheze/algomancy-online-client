@@ -648,8 +648,16 @@ test('Siphon Life: X is paid at cast; target player gains or loses X life', () =
   pick(h, 3);                                               // X = 3, paid now (R35)
   assert.equal(h.q.openMana(A), 0, 'X was paid at cast');
   pick(h, { player: D });
-  pass(h); pass(h);                                         // resolve → gain-or-lose choice
+  // R57 — the report this fix is named for: "[gains or loses]" is the caster's
+  // choice and it is DECLARED AT CAST, after X and the target, before the
+  // stack. It used to be asked after both passes, so the opponent spent their
+  // window responding to a spell that would not say whether it was a burn or
+  // a heal.
+  assert.equal(h.state.decision?.kind, 'mode');
+  assert.equal(h.state.stack.length, 0, 'not on the stack until the half is named');
   pick(h, 'lose');
+  assert.equal(h.state.stack[0]?.parts[0]?.mode, 'lose', 'and it rides on the stack');
+  pass(h); pass(h);                                         // resolve
   assert.equal(h.state.players[D]!.life, dLife - 3, 'the target player lost X');
   finishBattle(h);
 });
@@ -666,8 +674,8 @@ test('Siphon Life: the caster may choose "gains" instead', () => {
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Siphon Life') });
   pick(h, 2);
   pick(h, { player: A });
+  pick(h, 'gain');                                          // R57: declared at cast
   pass(h); pass(h);
-  pick(h, 'gain');
   assert.equal(h.state.players[A]!.life, aLife + 2, 'a heal for X instead');
   finishBattle(h);
 });

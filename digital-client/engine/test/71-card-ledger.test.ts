@@ -123,7 +123,7 @@ const admitsTheGap = (s: string) => /PARKED|not implemented/i.test(s);
 const BEHAVIOR_KEYS = [
   'xMin', 'abilities', 'statics', 'costMods', 'effectAttrs', 'augmentable', 'mustBeTargeted',
   'prophesyFromBin', 'playsIntoFormation', 'spellEffect', 'graftEffect', 'augmentText',
-  'replaceRotDamage', 'replaceCombatDamageToPlayer', 'xPreview',
+  'replaceRotDamage', 'replaceCombatDamageToPlayer', 'xPreview', 'xPreviewRows',
   // R104's replacement-effect layer. A card whose whole text is a replacement
   // has no abilities and no spellEffect BY CONSTRUCTION — that is the point of
   // the layer, not a gap — so the sweep has to see these or every one of the
@@ -131,6 +131,10 @@ const BEHAVIOR_KEYS = [
   // was fixed. (Cosmic Conspirator did exactly that until this line existed.)
   'amountMods', 'replaceLifeGain', 'replaceCounters',
   'replaceTokenCreation', 'replaceTokenBatch',
+  // Worldbender's whole text is a card-step replacement (report #87), so it
+  // has no abilities and no spellEffect by construction — same reason as the
+  // R104 hooks above.
+  'replaceCardStep',
 ] as const;
 
 /**
@@ -143,8 +147,8 @@ export function deadShapes(name: string): string[] {
   const out: string[] = [];
 
   // (a) bare definition, but the card prints rules text. Correct for a vanilla
-  //     card, damning for one with text — Writhing Host, Rotling, Worldbender
-  //     and Trench Stalker are all just `card('X', {})`.
+  //     card, damning for one with text — Writhing Host, Rotling and Trench
+  //     Stalker are all just `card('X', {})`.
   if (!BEHAVIOR_KEYS.some(k => (c as unknown as Record<string, unknown>)[k] !== undefined) && meaningfulText(c)) {
     out.push('bare definition, but the card prints rules text');
   }

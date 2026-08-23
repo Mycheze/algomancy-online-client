@@ -462,3 +462,6 @@ agent:
    bin-play permission in `doPlayCard`, a different gap.
 4. **R52** settles where created units arrive (the controller's home region),
    closing R33's open question in favour of R28. Six Light & Dark cards moved.
+   **⚠ REVERSED 2026-08-23: R52 and R28 are WITHDRAWN by R115** (a created unit
+   arrives where its SOURCE is, `ctx.region`), which absorbs R33 as the general
+   rule and moves those six cards back where they started.

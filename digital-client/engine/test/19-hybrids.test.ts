@@ -74,10 +74,12 @@ test('Mirrorback Ambusher: [once] dealt combat damage → deals that much to tar
   h.do({ type: 'declareAttack', seat: A, columns: [[sentry]] });
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [amb] } });
-  pass(h); pass(h);   // combat: amb dealt 1 (lethal assignment), dies; trigger at once
+  pass(h); pass(h);   // combat: R114 — the 1/1 is DEALT all 2, not the 1 that
+                      // kills it; it dies, and the trigger mirrors what it took
   assert.ok(!ent(h, amb), 'the 1/1 died to combat damage');
   pick(h, { unit: sentry });                                  // the trigger targets the attacker
-  assert.equal(ent(h, sentry)!.damage, 2, '1 from the block + 1 mirrored = 2');
+  assert.equal(ent(h, sentry)!.damage, 3,
+    '1 from the block + 2 mirrored (the whole hit the 1/1 took, not its 1 toughness)');
   finishBattle(h);
 });
 

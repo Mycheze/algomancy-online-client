@@ -393,7 +393,7 @@ test('Legion of the Depths: spawning creates two Wraiths and 2 rot', () => {
   assert.equal(rotOf(h, P), 2, 'and its controller pays 2 rot for them');
 });
 
-test("Legion of the Depths: attacking makes two more, in its controller's HOME region (R28)", () => {
+test("Legion of the Depths: attacking makes two more, in the BATTLE region it is attacking into (R115)", () => {
   const h = new Harness(4216);
   toDeployment(h);
   const A = h.state.initiative;
@@ -403,8 +403,10 @@ test("Legion of the Depths: attacking makes two more, in its controller's HOME r
   const made = entsNamed(h, 'Wraith').filter(e => e.kind === 'unit');
   assert.equal(made.length - before, 2, 'two more on the attack');
   const home = h.q.homeRegion(A);
-  assert.ok(made.slice(-2).every(w => w.region === home),
-    'created units arrive home, not in the battle region');
+  const battle = h.state.battle!.region;
+  assert.notEqual(battle, home, 'the Legion is fighting away from home');
+  assert.ok(made.slice(-2).every(w => w.region === battle),
+    'R115: created units arrive where the SOURCE is — the battle region, not home');
   assert.equal(rotOf(h, A), 4, '2 rot on spawn + 2 more on the attack');
 });
 

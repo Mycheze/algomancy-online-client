@@ -39,7 +39,7 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import { card, getCard, isEntityTarget, unitRestrict, type EffectDef } from '../dsl.ts';
-import { selfOf, inEndOfTurn, pickUnit } from './helpers.ts';
+import { selfOf, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -241,16 +241,18 @@ card('Death Greeter', {
 // "When I despawn, you may pay [one] to draw a card and lose 1 life." —
 // br/1 2/1 Infernal Sprite Oracle Unit. Despawn = died + despawned (⚠
 // header). The [one] payment is a mid-resolution pay-or-decline (R6),
-// skipped when the controller cannot pay; auto-declined during end-of-turn
-// resolution ("may" — no suspensions there, batch-fire-a precedent).
+// skipped when the controller cannot pay — and only then. It is offered
+// wherever this resolves, the end-of-turn window included: a ctx.choose
+// suspension there is answered and E.finishTurnEnd closes the owed turn flip
+// afterwards (R85).
 card('Tempest Oracle', {
   abilities: [{
     type: 'triggered', events: ['died', 'despawned'], self: true,
     label: 'you may pay [one] to draw a card and lose 1 life',
     effect: {
       run: (g, ctx) => {
-        if (g.openMana(ctx.controller) < 1 || inEndOfTurn(g)) {
-          g.ev('info', 'Tempest Oracle: the [one] cannot be offered right now — no draw.');
+        if (g.openMana(ctx.controller) < 1) {
+          g.ev('info', 'Tempest Oracle: you cannot pay [one] — no draw.');
           return;
         }
         const pay = ctx.choose('pay', {
@@ -532,7 +534,9 @@ card('Structural Collapse', {
 // "[Augment] After combat, sacrifice another unit." — er/1 4/4 Occult Anima
 // {Virus} Unit. Text-box [Augment], live when played normally. Mandatory:
 // the controller sacrifices one of their OTHER units in the region (the
-// carrier stays); auto-picked when forced, nothing with no other unit.
+// carrier stays); auto-picked only when there is exactly one, nothing with no
+// other unit. "After combat" often lands in the end-of-turn window; the pick
+// is still a real question there (R85).
 card('Unstable Form', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
@@ -541,9 +545,7 @@ card('Unstable Form', {
       run: (g, ctx) => {
         const pool = g.unitsOf(ctx.controller, ctx.region).filter(u => u.id !== ctx.sourceId);
         if (!pool.length) { g.ev('info', 'Unstable Form: you control no OTHER unit here — nothing is sacrificed.'); return; }
-        const id = inEndOfTurn(g)
-          ? pool[0]!.id   // mandatory: deterministic auto-pick, no suspension
-          : pickUnit(ctx, 'sac', ctx.controller, pool, 'Unstable Form: sacrifice another unit')!;
+        const id = pickUnit(ctx, 'sac', ctx.controller, pool, 'Unstable Form: sacrifice another unit')!;
         const u = g.entity(id);
         if (u) g.destroy(u, 'is sacrificed');
       },

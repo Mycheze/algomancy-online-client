@@ -24,7 +24,7 @@ import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { getCard, type EffectCtx, type EffectDef } from '../src/cards/dsl.ts';
 import { Harness } from '../src/harness.ts';
-import { E } from '../src/engine.ts';
+import { E, Suspended } from '../src/engine.ts';
 import { spawn, toDeployment, giveResources } from './util.ts';
 import type { EngineEvent, Entity, Seat, StackItem } from '../src/types.ts';
 
@@ -293,9 +293,9 @@ function hexbane(seed: number, opts: { endOfTurn?: boolean; answers?: Record<str
     parts: [{ effectKey: 'spell:Overbloom', targets: [{ unit: theirs.id }] }],
   };
   g.s.stack.push(bait);
-  // the END-OF-TURN window is `phase === 'deploy' && deployPlayer === null`
-  // (helpers.inEndOfTurn) — the state in which nobody has a deployment, which
-  // is why the card refuses to raise a decision there.
+  // the END-OF-TURN window is `phase === 'deploy' && deployPlayer === null` —
+  // the state in which nobody has a deployment. The card used to refuse to
+  // raise a decision there; it no longer does (see below).
   if (opts.endOfTurn) g.s.deployPlayer = null;
   const ev: EngineEvent = {
     type: 'spellPlayed', msg: '', data: { card: 'Overbloom', seat: D, region: g.homeRegion(A) },
@@ -317,20 +317,29 @@ function hexbane(seed: number, opts: { endOfTurn?: boolean; answers?: Record<str
   return { g, A, D, carrier, bait, run };
 }
 
-test('Hexbane Shiitake in the end-of-turn window is never asked, and its [once] is not spent', () => {
-  // the headline case. `inEndOfTurn(g) ? false : ctx.choose(...)` means the
-  // player is NEVER ASKED there — and the budget used to burn anyway. An
-  // unanswered ctx.choose throws PartChoice, so "no throw" IS "not asked".
-  const { g, carrier, run } = hexbane(9320, { endOfTurn: true });
-  run();   // answers is empty: any question at all would throw here
+test('Hexbane Shiitake in the end-of-turn window is ASKED, and declining does not spend its [once]', () => {
+  // the headline case, INVERTED 2026-08-23. This card used to read
+  // `inEndOfTurn(g) ? false : ctx.choose(...)`: the player was never asked and
+  // the [once] burnt on a question nobody heard. The designer took the silent
+  // half away — "Ask — the click is the price" — because a ctx.choose raised in
+  // the end-of-turn window IS answered and E.finishTurnEnd closes the owed turn
+  // flip on the way back out of settle() (R85). 99-endofturn.test.ts drives that
+  // claim over the real action path; here it is enough that the question is real.
+  // An unanswered ctx.choose throws, so THROWING is "it asked".
+  assert.throws(() => hexbane(9320, { endOfTurn: true }).run(),
+    (e: unknown) => e instanceof Suspended,
+    'the end-of-turn window has to ASK: no answer was supplied, so a real question suspends');
+  // and the refund half of CARD-TODO #18 survives on the ordinary decline
+  const { g, carrier, run } = hexbane(9320, { endOfTurn: true, answers: { '0:swap': false } });
+  run();
   assert.equal(g.entity(carrier.id)!.budgets[HEX_BUDGET], undefined,
-    'the [once] was spent on a question nobody was asked');
+    'declining never spends the budget — not even here');
 });
 
-test('a Hexbane Shiitake that was never asked can still fire later the same turn', () => {
+test('a Hexbane Shiitake that DECLINED can still fire later the same turn', () => {
   // "the same trigger can ask again later the same turn" — the half of the
   // ruling that makes the refund mean something. Same turn, no budget reset.
-  const { g, carrier, run } = hexbane(9321, { endOfTurn: true });
+  const { g, carrier, run } = hexbane(9321, { endOfTurn: true, answers: { '0:swap': false } });
   const turn = g.s.turn;
   run();
   g.s.deployPlayer = g.s.players[carrier.controller]!.seat;   // the window closes

@@ -11,8 +11,8 @@
  * R6 (mid-resolution payments/choices via ctx.choose), R9 (bounded
  * [Switch1]/[once] budgets per card), R12/R25 ("each player/opponent" and
  * region-scoped listeners read the event region), R27 ("in my formation"
- * counts are live at resolution), R28 (created UNITS arrive in their
- * controller's HOME region; spell tokens stay at the resolution region),
+ * counts are live at resolution), R115 (created UNITS arrive where their
+ * SOURCE is — ctx.region — exactly where spell tokens always stayed),
  * R31 (combat-damage-sub-step triggers resolve immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
@@ -65,7 +65,8 @@
  *  - GALACTIC GERMINATION's "target formation" is proxied by targeting a
  *    UNIT: the formation is the battle grid side (attacking columns or
  *    blocking columns) containing it, counted live at resolution (R27); a
- *    target in no formation creates nothing. The 1/1s arrive HOME (R28).
+ *    target in no formation creates nothing. The 1/1s arrive at ctx.region
+ *    (R115) — cast in the enemy region, they stay there.
  *  - FLORAL SINGULARITY's "become base X/X" is a REAL layer-2 replacement
  *    (R66's E.setBase): the number on the card changes, so a later base-setter
  *    overwrites an earlier one instead of stacking, and counters / statics /
@@ -84,10 +85,10 @@
  *  - no whole card is parked in this batch any more; the remaining gaps are
  *    the per-card approximations listed above.
  */
-import type { Entity, EntityId, Seat } from '../../types.ts';
+import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, notSelf, unitRestrict, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, inEndOfTurn, manaOf, pickUnit } from './helpers.ts';
+import { selfOf, isEnt, manaOf, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -152,7 +153,7 @@ card('Rotspore Herald', {
 // paid before the spell reaches the stack (a grafted rider pays — or
 // declines — at composite cast time). X = the sacrificed unit's defense
 // SNAPSHOTTED at payment (effStats then); the spell tokens appear at the
-// resolution region (R28: spell tokens are battle materiel). Unbounded
+// resolution region (R115). Unbounded
 // graft ([Switch]).
 const toxicityBrew: EffectDef = {
   castCost: { kind: 'sacrificeUnit' },
@@ -276,9 +277,14 @@ card('Temporal Rift', {
 // "[Augment] Whenever another ally spawns during battle, double its /[power
 // {i1}or defense] until regroup." — bm/4 5/4 Jellyfish Oracle Unit. Text-box
 // [Augment]; "ally" reads from the carrier's side (host perspective when
-// donated). The doubled amount is the unit's LIVE effective stat at
-// resolution (R1), granted as an until-regroup temp bonus; the carrier's
-// controller picks the half (mid-resolution choice).
+// donated). The doubled AMOUNT is still the unit's live effective stat at
+// resolution (R1) — but R57 moves WHICH HALF into the cast window, where the
+// trigger's `item.event` already names the unit that spawned, so the labels
+// can show the numbers without the opponent's response having moved them.
+const enigmaSpawnedUnit = (g: E, item: { event?: EngineEvent | null }): Entity | undefined => {
+  const id = item.event?.data?.unit as EntityId | undefined;
+  return id !== undefined ? g.entity(id) : undefined;
+};
 card('Transmutide Enigma', {
   augmentText: [{
     type: 'triggered', events: ['spawned'],
@@ -286,6 +292,21 @@ card('Transmutide Enigma', {
     when: (g, self, ev) =>
       g.s.phase === 'battle' && ev.data?.seat === self.controller && ev.data?.unit !== self.id,
     effect: {
+      modes: {
+        key: 'mode',
+        prompt: (g, item) => {
+          const u = enigmaSpawnedUnit(g, item);
+          return `Transmutide Enigma: double ${u?.card ?? 'the ally'}'s power or defense until regroup?`;
+        },
+        options: (g, item) => {
+          const u = enigmaSpawnedUnit(g, item);
+          const [p, t] = u ? g.effStats(u) : [0, 0];
+          return [
+            { label: u ? `Double its power (+${p}/+0)` : 'Double its power', value: 'power' },
+            { label: u ? `Double its defense (+0/+${t})` : 'Double its defense', value: 'defense' },
+          ];
+        },
+      },
       run: (g, ctx) => {
         const id = ctx.event?.data?.unit as EntityId | undefined;
         const u = id !== undefined ? g.entity(id) : undefined;
@@ -294,14 +315,7 @@ card('Transmutide Enigma', {
           return;
         }
         const [p, t] = g.effStats(u);
-        const mode = ctx.choose('mode', {
-          kind: 'electricPath', seat: ctx.controller,
-          prompt: `Transmutide Enigma: double ${u.card}'s power or defense until regroup?`,
-          options: [
-            { label: `Double its power (+${p}/+0)`, value: 'power' },
-            { label: `Double its defense (+0/+${t})`, value: 'defense' },
-          ],
-        });
+        const mode = ctx.mode;   // R57: declared at cast
         if (mode === 'power') g.addTemp(u, p, 0);
         else g.addTemp(u, 0, t);
       },
@@ -339,7 +353,7 @@ card('Abduct', {
         return;   // already yours
       }
       const owner = u.controller;
-      if (g.openMana(owner) >= x && !inEndOfTurn(g)) {
+      if (g.openMana(owner) >= x) {
         const pay = ctx.choose('pay', {
           kind: 'payOrDecline', seat: owner,
           prompt: `Abduct: pay [${x}] to keep ${u.card}?`,
@@ -361,28 +375,39 @@ card('Abduct', {
 
 // "/[Create X 1/1 units {i1}or your units become base X/X until regroup]."
 // — ggm/X 2/2 Cosmic Flower Spell (deploy timing). X is chosen and paid AT
-// CAST (R35). Modal: the caster picks. Created UNITS arrive in the
-// controller's HOME region (R28). "Become base X/X" is a layer-2 REWRITE
+// CAST (R35). Modal: the caster picks. Created UNITS arrive at the source's
+// region (R115) — home for a deploy cast. "Become base X/X" is a layer-2 REWRITE
 // (E.setBase) of every one of your units in the resolution region (R12) —
 // counters and other layer-3 changes keep applying on top, and X = 0 defense
 // kills anything that is not propped up (E.setBase runs the death check).
 card('Floral Singularity', {
   spellEffect: {
     creates: ['Unit Token'],
+    // R57: which half, declared in the cast window. X is fixed by then
+    // (collectX runs first), so the labels can name it — and an X = 0 cast is
+    // a guaranteed no-op either way, so it is not worth a question.
+    modes: {
+      key: 'mode',
+      prompt: (_g, item) => {
+        const x = item.x ?? 0;
+        return `Floral Singularity: create ${x} 1/1 units, or your units become base ${x}/${x} until regroup?`;
+      },
+      options: (_g, item) => {
+        const x = item.x ?? 0;
+        if (x <= 0) return [];
+        return [
+          { label: `Create ${x} 1/1 unit token(s)`, value: 'create' },
+          { label: `Your units become base ${x}/${x} until regroup`, value: 'base' },
+        ];
+      },
+    },
     run: (g, ctx) => {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       if (x <= 0) { g.ev('info', 'Floral Singularity: X = 0 — no effect.'); return; }
-      const mode = ctx.choose('mode', {
-        kind: 'electricPath', seat: ctx.controller,
-        prompt: `Floral Singularity: create ${x} 1/1 units, or your units become base ${x}/${x} until regroup?`,
-        options: [
-          { label: `Create ${x} 1/1 unit token(s)`, value: 'create' },
-          { label: `Your units become base ${x}/${x} until regroup`, value: 'base' },
-        ],
-      });
+      const mode = ctx.mode;   // R57: declared at cast
       if (mode === 'create') {
         for (let i = 0; i < x; i++) {
-          g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller),
+          g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
             { token: true, tokenStats: [1, 1] });
         }
         return;
@@ -453,20 +478,27 @@ card('The World Shepherd', {
 
 // "[Switch1] /[Put a -1/-1 counter on each enemy or{i1} put a +1/+1 counter
 // on each of your units.]" — gm/3 1/2 {Battle} Arcane Druid Spell. Modal:
-// the controller picks a half (mid-resolution choice; ⚠ auto-picks the
-// bloom half during end-of-turn resolution — a mandatory modal cannot
-// suspend there, Unstable Form precedent). "Each enemy" / "your units" are
-// the resolution region's units (R12/R25). Bounded graft ([Switch1], R9).
+// R57 — the controller declares the half in the CAST window (`EffectDef.modes`),
+// so the item reaches the stack saying which one it is and the opponent
+// responds to a fully declared effect. It used to be a mid-resolution
+// ctx.choose with a silent auto-pick of 'bloom' during end-of-turn resolution;
+// that auto-pick is gone, because E.finishTurnEnd resumes out of settle() and
+// the cast window already suspends there for targets. "Each enemy" / "your
+// units" are the resolution region's units (R12/R25). Bounded graft
+// ([Switch1], R9) — and because `modes` is declared per EFFECT, a Wither and
+// Bloom grafted onto a carrier that already has one asks twice.
 const witherOrBloom: EffectDef = {
+  modes: {
+    key: 'mode',
+    prompt: () =>
+      'Wither and Bloom: a -1/-1 counter on each enemy, or a +1/+1 counter on each of your units?',
+    options: () => [
+      { label: 'Wither: a -1/-1 counter on each enemy', value: 'wither' },
+      { label: 'Bloom: a +1/+1 counter on each of your units', value: 'bloom' },
+    ],
+  },
   run: (g, ctx) => {
-    const mode = inEndOfTurn(g) ? 'bloom' : ctx.choose('mode', {
-      kind: 'electricPath', seat: ctx.controller,
-      prompt: 'Wither and Bloom: a -1/-1 counter on each enemy, or a +1/+1 counter on each of your units?',
-      options: [
-        { label: 'Wither: a -1/-1 counter on each enemy', value: 'wither' },
-        { label: 'Bloom: a +1/+1 counter on each of your units', value: 'bloom' },
-      ],
-    });
+    const mode = ctx.mode;   // R57: declared at cast
     const pool = mode === 'wither'
       ? g.unitsIn(ctx.region).filter(u => u.controller !== ctx.controller)
       : g.unitsOf(ctx.controller, ctx.region);
@@ -534,7 +566,8 @@ card('Aethercap Siphoner', {
 // {Battle} Alien Fungus Spell. ⚠ "target formation" proxied by a target
 // unit (header): the grid side containing it at RESOLUTION is the
 // formation, counted live (R27). The 1/1 unit tokens arrive in the
-// caster's HOME region (R28 — created units are not battle materiel).
+// caster's region at resolution (R115) — this is a {Battle} spell, so cast in
+// the enemy region the 1/1s are minted THERE, in no column.
 card('Galactic Germination', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Galactic Germination: a unit in target formation' },
@@ -549,7 +582,7 @@ card('Galactic Germination', {
         return;
       }
       for (let i = 0; i < n; i++) {
-        g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller),
+        g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
           { token: true, tokenStats: [1, 1] });
       }
     },

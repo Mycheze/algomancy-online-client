@@ -9,8 +9,8 @@
  * choices via ctx.choose, plan-then-commit), R9 (bounded budgets per card),
  * R11 (regroup returns units to their CONTROLLER's region — control changes
  * stick), R12/R25 ("each player/opponent"/"your units"/"all units" read the
- * effect region's present seats / in-region units), R28 (created UNITS spawn
- * in their controller's HOME region; spell tokens appear at ctx.region),
+ * effect region's present seats / in-region units), R115 (created UNITS spawn
+ * where their SOURCE is — ctx.region — as spell tokens always did),
  * R31 (triggers in combat damage sub-steps resolve immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
@@ -47,7 +47,7 @@
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, type EffectCtx, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, inEndOfTurn, isUnitCard } from './helpers.ts';
+import { selfOf, isEnt, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -72,10 +72,12 @@ const chooseUnit = (
   return g.entity(id) ?? null;
 };
 
-/** create n 1/1 unit tokens for `seat` — in their HOME region (R28) */
-const create1s = (g: E, seat: Seat, n: number): void => {
+/** create n 1/1 unit tokens for `seat` in `region`. R115: `region` is REQUIRED
+ * and is always the SOURCE's region (`ctx.region`) — a defaulted region is how
+ * a card ends up creating units somewhere no line of code names. */
+const create1s = (g: E, seat: Seat, n: number, region: number): void => {
   for (let i = 0; i < n; i++) {
-    g.spawnUnit(seat, 'Unit Token', g.homeRegion(seat), { token: true, tokenStats: [1, 1] });
+    g.spawnUnit(seat, 'Unit Token', region, { token: true, tokenStats: [1, 1] });
   }
 };
 
@@ -85,7 +87,7 @@ const create1s = (g: E, seat: Seat, n: number): void => {
 // three 1/1 units." — g/1 2/1 Apple Unit. Activated ([one] = mana 1),
 // [Switch1] = bounded (R9) and a graft cause. "Me" is the effect's carrier
 // (the host when the [Switch1] effect is grafted elsewhere); "you" is the
-// activator, whose 1/1s arrive at home (R28). "If you do": the tokens only
+// activator, whose 1/1s arrive at the source's region (R115). "If you do": the tokens only
 // come if the control change actually happened — a gone unit or a
 // non-opponent target is a full no-op. ⚠ header notes: control change is the
 // E.giveControl (R112); during deployment the opponent is not present,
@@ -106,7 +108,7 @@ const ralphDefect: EffectDef = {
     const to = (t as { player: Seat }).player;
     if (me.controller === to) { g.ev('info', 'Ralph: they already control me — no tokens.'); return; }
     g.giveControl(me, to);
-    create1s(g, ctx.controller, 3);
+    create1s(g, ctx.controller, 3, ctx.region);
   },
 };
 card('Ralph', {
@@ -121,8 +123,9 @@ card('Ralph', {
 // "Each player gives an opponent control of one of their units." — g/2
 // {Battle} Arcane Fungus Spell. "Each player" = the region's present seats
 // (R12/R25), initiative first; each picks one of their OWN in-region units
-// (auto when they have one; deterministic auto-pick in the end-of-turn tail),
-// the receiving opponent in 1v1 is the other seat. All picks are gathered
+// (auto only when they have exactly one — the question is put even when this
+// resolves in the end-of-turn window, R85), the receiving opponent in 1v1 is
+// the other seat. All picks are gathered
 // before any control changes (plan-then-commit), then committed via the
 // E.giveControl (R112).
 card('Rebalance', {
@@ -133,10 +136,8 @@ card('Rebalance', {
         const units = g.unitsOf(seat, ctx.region);
         if (!units.length) continue;
         const to = (1 - seat) as Seat;
-        const u = inEndOfTurn(g)
-          ? units[0]!
-          : chooseUnit(g, ctx, `rb:${seat}`, seat, units,
-            `Rebalance: choose one of your units — ${g.pname(to)} gains control of it`);
+        const u = chooseUnit(g, ctx, `rb:${seat}`, seat, units,
+          `Rebalance: choose one of your units — ${g.pname(to)} gains control of it`);
         if (u) gives.push({ u, to });
       }
       if (!gives.length) {
@@ -157,13 +158,13 @@ card('Rebalance', {
 // R70: "nontoken" is read off the death EVENT's token flag. It used to be a
 // string match on the log message ("— token: erased."), which a card whose
 // death logged different text — the redesigned Wraith — slipped straight
-// past. The created 1/1 IS a token, so no loop. It arrives at home (R28).
+// past. The created 1/1 IS a token, so no loop. It arrives at ctx.region (R115).
 card('Saprophytic Oracle', {
   augmentText: [{
     type: 'triggered', events: ['died'],
     label: 'a nontoken unit died — create a 1/1 unit',
     when: (_g, _self, ev) => ev.data?.token !== true,
-    effect: { creates: ['Unit Token'], run: (g, ctx) => create1s(g, ctx.controller, 1) },
+    effect: { creates: ['Unit Token'], run: (g, ctx) => create1s(g, ctx.controller, 1, ctx.region) },
   }],
 });
 
@@ -181,7 +182,7 @@ card('Spawning Ground', {
       creates: ['Poison'],
       run: (g, ctx) => {
         g.loseLife(ctx.controller, 1, 'Spawning Ground');
-        g.createSpellToken(ctx.controller, 'Poison', 1);
+        g.createSpellToken(ctx.controller, 'Poison', 1, ctx.region);
       },
     },
   }],
@@ -328,14 +329,15 @@ card('Sudden Bloom', {
 // "Create a 1/1 unit for each of your [g]." — g/3 Plant Spell (deploy).
 // [g] = wood AFFINITY at resolution (R1): non-dormant wood resources,
 // expended included — paying the spell's own mana never shrinks the count.
-// The 1/1s are created units → they arrive at home (R28).
+// The 1/1s are created units → they arrive at the source's region (R115),
+// which for a deploy-timing spell IS home.
 card('Sylvan Sprouting', {
   spellEffect: {
     creates: ['Unit Token'],
     run: (g, ctx) => {
       const n = g.affinity(ctx.controller, 'wood');
       if (n <= 0) { g.ev('info', 'Sylvan Sprouting: no wood affinity — no units.'); return; }
-      create1s(g, ctx.controller, n);
+      create1s(g, ctx.controller, n, ctx.region);
     },
   },
 });
@@ -346,9 +348,9 @@ card('Sylvan Sprouting', {
 // [Augment] half: "despawn" = ANY leave-play (batch-hybrids-fwe precedent:
 // 'died' + 'despawned'; ⚠ header: the DONATED copy misses host recalls).
 // "Each opponent" is region-scoped (R25); each recalls (bin → hand) a card
-// of their choice that is a unit (spell-units count), auto-picked when
-// forced or in the end-of-turn tail. Plan-then-commit: all picks precede
-// any bin mutation.
+// of their choice that is a unit (spell-units count), auto-picked only when
+// forced — a despawn in the end-of-turn window still asks (R85). Plan-then-
+// commit: all picks precede any bin mutation.
 card('Verdant Necrophage', {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
@@ -370,7 +372,7 @@ card('Verdant Necrophage', {
             g.ev('info', `Verdant Necrophage: ${g.pname(seat)} has no unit in their bin to recall.`);
             continue;
           }
-          if (options.length === 1 || inEndOfTurn(g)) {
+          if (options.length === 1) {
             plans.push({ seat, idx: options[0]![1] });
             continue;
           }

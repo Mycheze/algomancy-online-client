@@ -208,7 +208,17 @@ test('R6: decline branch deletes', () => {
   assert.ok(!ent(h, target), 'declined → deleted');
 });
 
-test('R7: piercing is automatic, not elective; without it excess is lost', () => {
+/** the `n` of every 'damage' event this test has seen land on one unit */
+function damageTo(h: Harness, id: number): number[] {
+  return h.events.filter(e => e.type === 'damage' && e.data?.['unit'] === id)
+    .map(e => e.data!['n'] as number);
+}
+
+test('R114: without Piercing the excess is not lost, it lands on the unit', () => {
+  // Report #84 (Bena, 2026-08-23): "ALL damage is dealt to units, even if it
+  // surpasses its defense. The only exception is Piercing, which deals excess
+  // to the controller." The engine used to CAP the hit at lethal and drop the
+  // rest, so a 4-power attacker into a 1/1 dealt 1.
   const h = new Harness(108);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -220,8 +230,50 @@ test('R7: piercing is automatic, not elective; without it excess is lost', () =>
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [chump] } });
   pass(h); pass(h);
   assert.ok(!ent(h, chump), 'blocker died');
-  assert.equal(h.state.players[D]!.life, 30, 'no piercing: 3 excess damage lost, never elective');
+  assert.deepEqual(damageTo(h, chump), [4],
+    'the 1/1 was DEALT the whole 4 — the excess is not trimmed away');
+  assert.equal(h.state.players[D]!.life, 30,
+    'and none of it reached the player: without Piercing nothing leaves the unit');
   // piercing-automatic is asserted in 02-combat ("piercing overflow hit player")
+});
+
+test("R114: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt", () => {
+  // Report #79 (EGCW 212): a 2-power {Deadly} column into a 7/3. {Deadly}
+  // means one point of the pool SUFFICES to kill, so only 1 has to be paid
+  // before the rest may walk on — it never means only 1 is dealt.
+  const h = new Harness(1084);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const d1 = spawn(h, A, 'Tidepool Terror');       // 1/2 {Deadly}
+  const d2 = spawn(h, A, 'Tidepool Terror');       // 1/2 {Deadly} — 2 power in column
+  const fat = spawn(h, D, 'Life Plant');           // 7/3 blocker
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[d1, d2]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [fat] } });
+  pass(h); pass(h);
+  assert.deepEqual(damageTo(h, fat), [2],
+    'the whole 2-power column was dealt, not the 1 {Deadly} needed');
+  assert.ok(!ent(h, fat), 'and the 7/3 still died to {Deadly}');
+  finishBattle(h);
+});
+
+test('R114: {Piercing} is still the exception — excess goes to the controller, not the unit', () => {
+  // The ruling's own carve-out, fenced so the R114 fix cannot swallow it.
+  const h = new Harness(1085);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const spear = spawn(h, A, 'Bumblecrab');           // 2/3 {Piercing}
+  const chump = spawn(h, D, 'Ignis Sprite');         // 1/1 blocker
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[spear]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [chump] } });
+  pass(h); pass(h);
+  assert.deepEqual(damageTo(h, chump), [1],
+    'Piercing pays the blocker its lethal share and carries the rest away');
+  assert.equal(h.state.players[D]!.life, 29, 'the 1 excess hit the controller');
+  finishBattle(h);
 });
 
 test('R9: once-per-turn budgets are per card and survive control change', () => {

@@ -10,14 +10,15 @@
  * text live when played normally).
  *
  * PARKED (needs engine machinery that does not exist yet):
- *  - PARTIAL — Oorblak: the REDIRECT now works (un-parked 2026-08-22, see the
- *    card below). What is still missing is only the PIERCING EXCESS half of
- *    Caleb's RAQ answer, and it needs one word added to a core signature —
- *    `replaceCombatDamageToPlayer`'s `info` carries only `{attacker, region}`,
- *    so the hook cannot tell a Piercing hit from an ordinary one and therefore
- *    cannot know whether the damage Oorblak could not absorb carries on to the
- *    face. Kept in test/card-ledger.ts for exactly that residue.
+ *  - nothing in this batch.
  * UN-PARKED (kept here so the history is readable; nothing below is waiting):
+ *  - Oorblak: was PARTIAL — the REDIRECT worked from 2026-08-22, the PIERCING
+ *    EXCESS half did not, because `replaceCombatDamageToPlayer`'s `info`
+ *    carried only `{attacker, region}` (so the hook could not tell a Piercing
+ *    hit from an ordinary one) and its boolean return was all-or-nothing. R98
+ *    added `attrs`/`pure` to `info` and widened the return to `boolean |
+ *    number` (a number being the damage LET THROUGH); the card was rewritten
+ *    against both on 2026-08-23 and came off test/card-ledger.ts.
  *  - Reality Bender: was PARTIAL, waiting on effStats layer 5. R93 shipped it
  *    (playtest report #73, 2026-08-22) and the card needed no change at all —
  *    its printed attrs and augmentAttrs were already right, so the layer alone
@@ -260,30 +261,86 @@ card('Nectar Ridge Oracle', {
 // the sub-step returns. Letting it do the killing keeps Oorblak dying on the
 // same game-state check as everything else the exchange killed.
 //
-// ⚠ KNOWN GAP — PIERCING EXCESS. RAQ "[Solved] Oorblak vs Piercing" (_passer,
-// answered by Caleb): "10 damage is redirected to Oorblak, he takes 4 damage
-// which is enough to kill him and leftover 6 damage is still Piercing so it
-// goes to players face", plus Caleb in rules-questions: "oorblak takes 5
-// piercing damage, 1 is enough to kill it and the remaining 4 hit the player /
-// Also it helps to remember that replacement effects only apply once in an
-// effect". So the excess carries on BECAUSE the damage is Piercing — a plain
-// unblocked hit that overkills Oorblak spills nothing. This hook is handed
-// `info: { attacker, region }` and cannot tell the two apart, and returning
-// `true` is all-or-nothing, so the excess is not implemented. Absorbing the
-// whole hit is the right default (it is correct for every non-Piercing hit,
-// which is the common case) and it errs in the defender's favour rather than
-// inventing life loss. See test/card-ledger.ts for the exact core change.
+// PIERCING EXCESS (was the parked half; implemented 2026-08-23 on R98's wider
+// hook). RAQ "[Solved] Oorblak vs Piercing" (_passer, answered by Caleb): "10
+// damage is redirected to Oorblak, he takes 4 damage which is enough to kill
+// him and leftover 6 damage is still Piercing so it goes to players face", and
+// Caleb in rules-questions on 2025-04-09, answering _passer's case where
+// Oorblak is virused UNDER A 1/1 (which is why one point kills it — read the
+// thread, not the number):
+//
+//   "So we have 5 piercing damage attempting to hit the defending player, that
+//    damage is redirected to oorblak, oorblak takes 5 piercing damage, 1 is
+//    enough to kill it and the remaining 4 hit the player."
+//   "Also it helps to remember that replacement effects only apply once in an
+//    effect."
+//
+// So the excess carries on BECAUSE the hit is Piercing: a plain unblocked hit
+// that overkills Oorblak still spills nothing. Two halves fall out of that:
+//
+//  1. HOW MUCH IS ABSORBED. Exactly the pool that would kill this body — the
+//     same lethal-share arithmetic R103 fixed for effect damage
+//     (`poolToKill` in dealEffectDamageAll) and R114 restated for combat
+//     (`assignColumnDamage`). Written in the same order and out of the same
+//     three clauses so the three cannot drift:
+//       · {Powerful} has ALREADY doubled `amount` — the column doubles its
+//         whole output at the source, before assignment (R103 step 1), so a
+//         Powerful+Piercing column pierces the DOUBLED number and nothing has
+//         to be done here.
+//       · {Vulnerable} is priced on the RECEIVE side (R103 step 2): the pool
+//         is counted in what the source deals, the toughness in what this body
+//         takes, and `mult` is the exchange rate — so a Vulnerable Oorblak
+//         needs half the pool to kill and the excess is what is left after
+//         BOTH doublings. `!pure` guards it exactly as combat's own commit
+//         does (R61: the exchange is attribute-blind).
+//       · damage already on the body counts, because the hit has to kill what
+//         is really there.
+//     {Deadly} is deliberately NOT read here — see the note below.
+//  2. WHAT IS HANDED BACK. R98 widened the return to `boolean | number`, a
+//     number being the damage LET THROUGH, so the leftover is simply returned:
+//     the engine adds it to the life loss for this hit. It is NOT re-offered
+//     to this same Oorblak ("replacement effects only apply once in an
+//     effect") — the engine's own loop moves on to the next holder — which is
+//     the same answer as _passer's "cannot recursively go back".
+//
+// ⚠ {Deadly} is a KNOWN, DELIBERATE divergence from R103 step 4, not an
+// oversight. R103 caps the lethal share at ONE point for a Deadly source, and
+// on the unit-assignment path the KILL is then delivered by a separate
+// mechanism (combat's `L.deadlyHit` sweep, which has already run by the time
+// this hook is called — `sweepDeadly` sits before `commitPlayerDamage`). A
+// replacement hook has no way to reach that sweep, so honouring the 1-point
+// floor here would leave Oorblak alive on 1 damage AND send the rest to the
+// face — strictly worse than absorbing the full lethal share. Killing from
+// inside the hook (`g.destroy`) would fix the arithmetic but moves a death out
+// of the state-based check, which is an ENGINE ordering decision and not the
+// card's to make. Until that is ruled on, a Deadly+Piercing column redirected
+// into Oorblak absorbs the full toughness and pierces the rest, which errs in
+// the defender's favour rather than inventing life loss.
 card('Oorblak', {
   // the [Augment] text is a replacement hook, not augmentAttrs/augmentText, so
   // nothing else would mark this card as legal to apply as an augment.
   augmentable: true,
-  replaceCombatDamageToPlayer: (g, self, seat, amount) => {
+  replaceCombatDamageToPlayer: (g, self, seat, amount, info) => {
     if (seat !== self.controller) return false;
-    self.damage += amount;
-    const ev = g.ev('damage', `${self.card} takes ${amount} (${self.damage} total).`,
-      { unit: self.id, n: amount });
+    // R61 {Pure}: an attribute-blind exchange cannot see this body's
+    // {Vulnerable} either — same guard combat's own commit loop uses.
+    const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;
+    const [, t] = g.effStats(self);
+    const needed = Math.max(0, t - self.damage);            // still to RECEIVE to kill
+    const pool = Math.ceil(needed / mult);                  // …priced in what the source deals
+    // Only {Piercing} leaves the body (R114). Everything else is absorbed
+    // whole, however far past this toughness it goes — that is the half that
+    // already worked and it must keep working.
+    const absorbed = info.attrs.has('Piercing') ? Math.min(amount, pool) : amount;
+    if (absorbed <= 0) return amount;                       // nothing left to soak: decline
+    const received = absorbed * mult;
+    self.damage += received;
+    const ev = g.ev('damage', `${self.card} takes ${received} (${self.damage} total).`,
+      { unit: self.id, n: received });
     g.fireEvent('damage', ev);
-    return true;
+    // (no checkDeaths() — see the note above: Oorblak dies on the same
+    // state-based check as everything else this exchange killed.)
+    return amount - absorbed;                               // the Piercing leftover, to the face
   },
 });
 

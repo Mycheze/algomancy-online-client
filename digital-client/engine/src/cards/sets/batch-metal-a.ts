@@ -8,7 +8,7 @@
  * R5 (fizzle vs partial), R6 (mid-resolution payments via ctx.choose),
  * R8 (control change swaps sides straight up), R9 (bounded budgets per card),
  * R12 (regions exclusive — listeners and effects are region-scoped),
- * R28 (created units arrive in their controller's home region),
+ * R115 (created units arrive where their SOURCE is — ctx.region),
  * R31 (triggers between combat damage sub-steps resolve immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch (metal = copies, transforms
@@ -198,8 +198,8 @@ card('Ancient One', {
 
 // "[Switch1] Create a copy of target token." — m/2 2/1 {Battle} Arcane Mimic
 // Spell. R64: "target token" is a CAST-TIME target — unit tokens and spell
-// tokens both, either side's. A unit-token copy is created in the caster's
-// HOME region (R28); a spell-token copy appears here (battle materiel).
+// tokens both, either side's. Both copies are created where the SOURCE is,
+// i.e. ctx.region (R115) — cast in the enemy region, the unit copy stays there.
 // tokenStats/counters/x are copied; mods are not.
 const echoCopy: EffectDef = {
   targets: { what: 'token', prompt: 'Arcane Echo: create a copy of target token' },
@@ -218,7 +218,7 @@ const echoCopy: EffectDef = {
     if (orig.kind === 'spellToken') {
       g.createSpellToken(ctx.controller, orig.card, orig.x ?? 0, ctx.region);
     } else {
-      g.spawnUnit(ctx.controller, orig.card, g.homeRegion(ctx.controller), {
+      g.spawnUnit(ctx.controller, orig.card, ctx.region, {
         token: true,
         ...(orig.tokenStats ? { tokenStats: [...orig.tokenStats] as [number, number] } : {}),
         ...(orig.counters ? { counters: orig.counters } : {}),

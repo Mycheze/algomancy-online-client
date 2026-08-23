@@ -8,9 +8,9 @@
  * R6 (mid-resolution payments/choices via ctx.choose), R9 (bounded budgets
  * per card), R12/R25 ("each player/opponent"/"all …" effects read the event
  * region's present seats/units; listeners are region-scoped), R27 (counting
- * amounts are live at resolution), R28 (created UNITS arrive in their
- * controller's HOME region unless the text says otherwise; spell tokens
- * appear where the effect resolves).
+ * amounts are live at resolution), R115 (created UNITS arrive where their
+ * SOURCE is — ctx.region — unless the text names a place; that is where spell
+ * tokens always appeared).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
  *  - MYCELIAL MENTOR "when you create a token": the engine logs
@@ -41,7 +41,7 @@
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, type EffectDef } from '../dsl.ts';
-import { isEnt, inEndOfTurn, chooseUnit } from './helpers.ts';
+import { isEnt, chooseUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -56,7 +56,7 @@ const presentSeats = (g: E, region: number): Seat[] => {
 // "When I attack, [Switch1] Create a Poison 5." — ggg/4 5/3 Blight Beast
 // Unit. Attack trigger (self), [Switch1] bounded (R9), graft cause. The
 // Poison is a SPELL token — it appears where the effect resolves (the
-// battle region, R28), ready to be thrown this battle.
+// battle region, R115), ready to be thrown this battle.
 const createPoison5: EffectDef = {
   creates: ['Poison'],
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Poison', 5, ctx.region); },
@@ -109,7 +109,6 @@ const mindsporeGive: EffectDef = {
     if (u.controller !== ctx.controller) { g.ev('info', `Mindspore Fiend: ${u.card} is no longer an ally — no effect.`); return; }
     const opp = presentSeats(g, ctx.region).find(s => s !== ctx.controller);
     if (opp === undefined) { g.ev('info', 'Mindspore Fiend: no opponent is present (R25) — no effect.'); return; }
-    if (inEndOfTurn(g)) { g.ev('info', 'Mindspore Fiend: auto-declines (end-of-turn resolution).'); return; }
     const gives = ctx.choose('give', {
       kind: 'payOrDecline', seat: ctx.controller,
       prompt: `Mindspore Fiend: give ${g.pname(opp)} control of ${u.card} and draw a card?`,
@@ -267,8 +266,9 @@ card('Overbloom', {
 // "[Augment] [two]: Create a 1/1 unit." — gg/6 4/4 Plant Unit. An ACTIVATED
 // ability in the [Augment] text box: live when played normally
 // (via: 'augment') and donated to hosts (via: { mod }). The created unit
-// arrives in its controller's HOME region (R28 — created units are not
-// battle materiel), unbounded (no [once]).
+// arrives where the carrier is (R115: ctx.region) — activate it while Pack
+// Leader is attacking and the 1/1 is minted in the enemy region, in no column
+// and unable to block the counterattack. Unbounded (no [once]).
 card('Pack Leader', {
   augmentText: [{
     type: 'activated', cost: { mana: 2 },
@@ -276,7 +276,7 @@ card('Pack Leader', {
     effect: {
       creates: ['Unit Token'],
       run: (g, ctx) => {
-        g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller), { token: true, tokenStats: [1, 1] });
+        g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] });
       },
     },
   }],
@@ -284,7 +284,7 @@ card('Pack Leader', {
 
 // "When I spawn, create two 1/1 units. [Augment] When I despawn, delete all
 // token allies." — gg/2 2/3 Fungus Parasite {Virus} Unit. The spawn clause
-// is a normal ability (created units arrive HOME, R28). The despawn clause
+// is a normal ability (created units arrive at ctx.region, R115). The despawn clause
 // is text-box [Augment] — as a Virus on an enemy unit, "allies" are the
 // HOST's controller's units, which is the whole point of the card. DESPAWN
 // = ANY leave-play: 'died' + 'despawned' (the Bloated Manablub precedent).
@@ -297,7 +297,7 @@ card('Pathogenic Enclave', {
       creates: ['Unit Token'],
       run: (g, ctx) => {
         for (let i = 0; i < 2; i++) {
-          g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller), { token: true, tokenStats: [1, 1] });
+          g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] });
         }
       },
     },
@@ -423,9 +423,8 @@ card('Phytochemical Protection', {
 // counter on each of the chosen units." — g/2 2/2 Insect Plant Unit. An
 // ACTIVATED ability in the [Augment] text box. "Each opponent" = the event
 // region's present seats other than mine (R25) — activated at home during
-// deployment it affects nobody. Each opponent picks their OWN unit (auto
-// when they have one; deterministic auto-pick during end-of-turn
-// resolution); all picks are gathered before any counter lands
+// deployment it affects nobody. Each opponent picks their OWN unit (auto when
+// they have only one); all picks are gathered before any counter lands
 // (plan-then-commit), then each chosen unit gets a -1/-1 counter.
 card('Plague Bellower', {
   augmentText: [{
@@ -438,11 +437,6 @@ card('Plague Bellower', {
           if (seat === ctx.controller) continue;
           const units = g.unitsOf(seat, ctx.region);
           if (!units.length) continue;
-          if (inEndOfTurn(g)) {   // no suspensions in the end-of-turn tail
-            g.ev('info', `Plague Bellower: ${units[0]!.card} is auto-picked (end-of-turn resolution).`);
-            picks.push(units[0]!);
-            continue;
-          }
           const u = chooseUnit(g, ctx, `pb:${seat}`, seat, units,
             'Plague Bellower: choose one of your units (it gets a -1/-1 counter)');
           if (u) picks.push(u);

@@ -406,8 +406,8 @@ card('Prediction Prophet', {
           return;
         }
         g.ev('info', `${ctx.sourceName}: the prediction of ${predicted} was matched.`);
-        // R52: a created unit arrives in its CONTROLLER's home region
-        g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller),
+        // R115: a created unit arrives where its SOURCE is (ctx.region)
+        g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
           { token: true, tokenStats: [5, 5] });
       },
     },

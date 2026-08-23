@@ -8,7 +8,8 @@
  * a real sacrifice ACTIVATION cost (Scavenging Sentry, R49 sacrificeOther —
  * it used to be a mid-resolution pick), moving net
  * counters between two cast-time targets (Scrap For Parts), affinity-sized
- * Robot tokens arriving at HOME (Self-Assembly, R28), counter-fueled damage
+ * Robot tokens arriving at the source's region (Self-Assembly, R115 — a deploy
+ * spell, so that is home), counter-fueled damage
  * (Soul Reaver), the R62 suppression layer + mod erasure + effect negation
  * (Suppression Field, all three clauses), region-scoped mass counters with a
  * bounded budget (Synaptic Energizer, R9/R12), net-counter duplication
@@ -16,12 +17,16 @@
  * (Transmogrifant, R62), a type-line Virus augment (Trashling),
  * base-stat gates (Unmake, R66), a layer-2 re-base (Unstable Refactor), an
  * immediate mid-combat death trigger (Unstable Singularity, R31), forced
- * discards (Void Memory), and a parked draft-skipper (Worldbender).
+ * discards (Void Memory), and the card-step replacement that makes a draft
+ * step or a constructed draw phase not happen at all (Worldbender, report #87).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
+import { apply, replay } from '../src/apply.ts';
+import { DECK_LIST } from '../src/cards/registry.ts';
+import type { Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
@@ -222,7 +227,7 @@ test('Scrap For Parts: moves ALL counters from the first target onto the second'
 
 // ── Self-Assembly ────────────────────────────────────────────────────────
 
-test('Self-Assembly: creates a Robot X at HOME, X = metal affinity at resolution', () => {
+test('Self-Assembly: creates a Robot X at the source\'s region, X = metal affinity at resolution', () => {
   const h = new Harness(2806);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -233,7 +238,7 @@ test('Self-Assembly: creates a Robot X at HOME, X = metal affinity at resolution
   assert.ok(robot.token, 'created = a token');
   assert.equal(robot.counters, 3, 'X = 3 metal affinity (expended resources count)');
   assert.deepEqual(effStats(h, robot.id), [3, 3], 'a 0/0 living on its counters');
-  assert.equal(robot.region, h.q.homeRegion(A), 'created units arrive at HOME (R28)');
+  assert.equal(robot.region, h.q.homeRegion(A), 'created units arrive at ctx.region — home for a deploy cast (R115)');
 });
 
 // ── Soul Reaver ──────────────────────────────────────────────────────────
@@ -561,8 +566,74 @@ test('Void Memory: each opponent discards a card of their choice (a TRASH by the
 });
 
 // ── Worldbender ──────────────────────────────────────────────────────────
+//
+// "Skip your draft step. When you do, draw a card. You also lose 3 life if
+// playing a constructed format."
+//
+// Playtest report #87 (room XVUR, 2026-08-23) is the spec, and the thing it
+// settles is that the card REPLACES the turn's card acquisition rather than
+// adding to it. Owner, verbatim:
+//
+//   "The way it works in live draft: instead of looking at the pack, you draw
+//    2 for turn + 1 for Worldbender. No life loss.
+//    The way it works in constructed and cube: instead of drawing 4 and
+//    recycling 2, you draw 2 for turn + 1 for Worldbender and lose 3 life."
+//
+// Both formats therefore end the turn +3 cards, but by different arithmetic:
+// draft already paid its flat 2 in startTurn and owes 1 more, while
+// constructed's draw phase IS the turn's cards, so all 3 come from the card.
+//
+// The step is per seat and SIMULTANEOUS — startDraftStep opens it for everyone
+// at the top of the turn and the packs pass only once both seats are done — so
+// "YOUR step" is well defined: one seat is marked done before it can act, the
+// other still drafts.
+//
+// These tests replaced a `{ todo: true }` placeholder, which is what let the
+// card stay dead long enough to be played in a real game. Every one of them
+// asserts a card COUNT and a LIFE TOTAL, because those are the two numbers the
+// owner reported wrong.
 
-test('Worldbender: registers and plays as a 2/2 {Feeble} body (skip is parked)', () => {
+/** commit that leaves the pack exactly as dealt (the 20-draft.test.ts helper) */
+function noopCommit(h: Harness, seat: Seat): void {
+  const H = h.state.players[seat]!.hand.length;
+  h.do({ type: 'draftCommit', seat, packIndices: h.state.packs[seat]!.map((_, i) => H + i) });
+}
+
+/** whoever still owes a draft commit makes a no-op one (hand size conserved) */
+function commitBoth(h: Harness): void {
+  for (const seat of [0, 1] as Seat[]) {
+    if (h.state.draftDone && !h.state.draftDone[seat]) noopCommit(h, seat);
+  }
+}
+
+/** whoever still owes their 2 cards back puts them back */
+function bottomBoth(h: Harness): void {
+  for (const seat of [0, 1] as Seat[]) {
+    if (h.state.bottomDone && !h.state.bottomDone[seat]) {
+      h.do({ type: 'bottomCards', seat, handIndices: [0, 1] });
+    }
+  }
+}
+
+/** empty battle, empty deployment — the turn rolls over into the next one,
+ *  which is where the card step (and any replacement of it) happens */
+function rollTurn(h: Harness): void {
+  toDeployment(h);
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+}
+
+const draftTurn = (h: Harness): void => { commitBoth(h); rollTurn(h); };
+const constructedTurn = (h: Harness): void => { bottomBoth(h); rollTurn(h); };
+
+const constructedGame = (seed: number): Harness =>
+  new Harness(seed, undefined, 'constructed', undefined, [DECK_LIST.slice(0, 30), DECK_LIST.slice(30, 60)]);
+
+/** hand size and life for both seats, so a test can diff a whole turn at once */
+const tally = (h: Harness): { hand: number; life: number }[] =>
+  h.state.players.map(p => ({ hand: p.hand.length, life: p.life }));
+
+test('Worldbender: registers and plays as a 2/2 {Feeble} body', () => {
   const h = new Harness(2818);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -571,8 +642,156 @@ test('Worldbender: registers and plays as a 2/2 {Feeble} body (skip is parked)',
   assert.ok(ownAttrs(h, wb).has('Feeble'));
 });
 
-test('Worldbender: "Skip your draft step. When you do, draw a card." (no skip machinery)', { todo: true }, () => {
-  // PARKED: the engine has draft state (state.draftDone, mode 'draft') but no
-  // way to SKIP a draft step, and no constructed-format flag for the life
-  // clause. Needs draft-skip machinery in startDraftStep/passPacks.
+test('Worldbender in a live draft: the pack is never offered, the hand gains 3, and life is untouched', () => {
+  const h = new Harness(2819, undefined, 'draft');
+  const A: Seat = 0, B: Seat = 1;
+  spawn(h, A, 'Worldbender');
+  const before = tally(h);
+  const deck = [...h.state.sharedDeck];
+  draftTurn(h);                                              // turn 1 → 2
+
+  // INSTEAD OF LOOKING AT THE PACK: the step is over for A before it opened,
+  // and there is no commit A could make.
+  assert.equal(h.state.turn, 2);
+  assert.deepEqual(h.state.draftDone, [true, false], "A's step never opens; B's does");
+  assert.ok(h.legal(A).every(a => a.type !== 'draftCommit'), 'no pack merge is on the menu');
+  assert.throws(() => noopCommit(h, A), /already finished drafting/);
+  assert.ok(h.log.some(l => l.includes('does not look at their pack')));
+
+  // 2 FOR TURN + 1 FOR WORLDBENDER, NO LIFE LOSS. The turn deals 2 to each
+  // seat in deal order first, so A's extra card is deck[4] and it is really
+  // in hand — five cards left the deck, not four.
+  assert.equal(h.state.players[A]!.hand.length - before[A]!.hand, 3, 'A: 2 for the turn + 1 for Worldbender');
+  assert.equal(h.state.players[B]!.hand.length - before[B]!.hand, 2, 'B: just the 2 for the turn');
+  assert.equal(h.state.players[A]!.hand.at(-1), deck[4], 'the extra card really arrives in hand');
+  assert.equal(h.state.sharedDeck.length, deck.length - 5);
+  assert.equal(h.state.players[A]!.life, before[A]!.life, 'NO life loss in draft (report #87)');
+
+  // the pack is untouched and still passes on: not looking at it is not
+  // holding on to it
+  assert.equal(h.state.packs[A]!.length, 10);
+});
+
+test('Worldbender in constructed: no draw-4-put-2-back — the hand gains 3 and 3 life is paid', () => {
+  const h = constructedGame(2820);
+  const A: Seat = 0, B: Seat = 1;
+  spawn(h, A, 'Worldbender');
+  bottomBoth(h);                                             // turn 1's own draw phase, unaffected
+  const before = tally(h);
+  const deck = [...h.state.decks![A]!];
+  rollTurn(h);                                               // turn 1 → 2
+
+  assert.equal(h.state.turn, 2);
+  // INSTEAD OF DRAWING 4 AND RECYCLING 2: A is not asked to put anything back,
+  // and cannot.
+  assert.deepEqual(h.state.bottomDone, [true, false], 'A owes no cards back; B still does');
+  assert.throws(() => h.do({ type: 'bottomCards', seat: A, handIndices: [0, 1] }), /not your draw phase/);
+  bottomBoth(h);        // B finishes the normal draw phase; A has nothing to finish
+
+  // 2 FOR TURN + 1 FOR WORLDBENDER AND LOSE 3 LIFE. Constructed has no
+  // separate turn draw, so all three come from the card: +3 in hand against
+  // the +2 a normal draw phase nets, and 3 cards off the deck instead of 4
+  // out and 2 back.
+  assert.equal(h.state.players[A]!.hand.length - before[A]!.hand, 3, 'A: draw 2 + 1, nothing put back');
+  assert.deepEqual(h.state.players[A]!.hand.slice(-3), deck.slice(0, 3), 'the three cards really arrive in hand');
+  assert.equal(h.state.decks![A]!.length, deck.length - 3);
+  assert.equal(h.state.players[A]!.life, before[A]!.life - 3, 'and 3 life is paid for it (report #87)');
+  // the opponent's turn is untouched: draw 4, put 2 back, no life paid
+  assert.equal(h.state.players[B]!.hand.length - before[B]!.hand, 2);
+  assert.equal(h.state.players[B]!.life, before[B]!.life);
+});
+
+test('Worldbender: the negative control — with no Worldbender in play both formats behave exactly as before', () => {
+  // The proof that the replacement changed only what it meant to. Same seeds,
+  // same turns, no Worldbender.
+  const draft = new Harness(2819, undefined, 'draft');
+  const beforeD = tally(draft);
+  draftTurn(draft);
+  assert.deepEqual(draft.state.draftDone, [false, false], 'both draft steps open');
+  for (const seat of [0, 1] as Seat[]) {
+    assert.equal(draft.state.players[seat]!.hand.length - beforeD[seat]!.hand, 2, 'the flat 2 for the turn');
+    assert.equal(draft.state.players[seat]!.life, beforeD[seat]!.life);
+  }
+  assert.ok(!draft.log.some(l => l.includes('Worldbender')));
+
+  const con = constructedGame(2820);
+  bottomBoth(con);
+  const beforeC = tally(con);
+  rollTurn(con);
+  assert.deepEqual(con.state.bottomDone, [false, false], 'both seats owe 2 cards back');
+  bottomBoth(con);
+  for (const seat of [0, 1] as Seat[]) {
+    assert.equal(con.state.players[seat]!.hand.length - beforeC[seat]!.hand, 2, 'draw 4, put 2 back = net 2');
+    assert.equal(con.state.players[seat]!.life, beforeC[seat]!.life, 'and nobody pays life');
+  }
+  assert.ok(!con.log.some(l => l.includes('Worldbender')));
+});
+
+test('Worldbender: it replaces the step EVERY turn it is in play, once per turn, and only for its controller', () => {
+  const h = new Harness(2821, undefined, 'draft');
+  const A: Seat = 0, B: Seat = 1;
+  const wb = spawn(h, A, 'Worldbender');
+  spawn(h, A, 'Worldbender');       // two copies: first true consumes, so still ONE replacement
+
+  for (const turn of [2, 3]) {
+    const before = tally(h);
+    draftTurn(h);
+    assert.equal(h.state.turn, turn);
+    assert.deepEqual(h.state.draftDone, [true, false], `turn ${turn}: still only A's step is replaced`);
+    assert.equal(h.state.players[A]!.hand.length - before[A]!.hand, 3,
+      `turn ${turn}: 3 cards — two Worldbenders replace the step once, not twice`);
+    assert.equal(h.state.players[B]!.hand.length - before[B]!.hand, 2, `turn ${turn}: B is untouched`);
+    assert.equal(h.state.players[A]!.life, before[A]!.life);
+  }
+  assert.equal(h.log.filter(l => l.includes('does not look at their pack')).length, 2, 'once per turn, twice over two turns');
+
+  // and it is a STATIC, not a one-shot: kill both bodies and the very next
+  // draft step opens normally
+  const e = new E(h.state);
+  for (const u of unitsOf(h, A).filter(u => u.card === 'Worldbender')) e.destroy(u, 'is deleted');
+  e.settle();
+  assert.equal(ent(h, wb), undefined);
+  const before = tally(h);
+  draftTurn(h);
+  assert.deepEqual(h.state.draftDone, [false, false], 'no Worldbender, no replacement');
+  assert.equal(h.state.players[A]!.hand.length - before[A]!.hand, 2, 'back to the flat 2 for the turn');
+});
+
+test('Worldbender: both seats replaced ends the draft step outright, and the packs still pass', () => {
+  const h = new Harness(2822, undefined, 'draft');
+  spawn(h, 0, 'Worldbender');
+  spawn(h, 1, 'Worldbender');
+  commitBoth(h);                                             // turn 1's own draft step
+  const packs = [[...h.state.packs[0]!], [...h.state.packs[1]!]];
+  const before = tally(h);
+  rollTurn(h);
+  assert.equal(h.state.draftDone, null, 'nobody is owed a commit, so the step is over before it began');
+  assert.deepEqual(h.state.packs[0], packs[1], '1v1: the packs still swap');
+  assert.deepEqual(h.state.packs[1], packs[0]);
+  for (const seat of [0, 1] as Seat[]) {
+    assert.equal(h.state.players[seat]!.hand.length - before[seat]!.hand, 3);
+    assert.equal(h.state.players[seat]!.life, before[seat]!.life);
+  }
+});
+
+test('Worldbender: replaying the action log rebuilds the replaced turns byte for byte', () => {
+  // The replacement runs inside startTurn, i.e. inside apply(), so a saved
+  // game is only reproducible if it replays from the action log alone
+  // (server/replay-room.ts). The spawn itself is white-box — Worldbender is
+  // metal and the default trio is fire/water/earth — so the round trip is
+  // anchored at the state right after it; everything after that point is
+  // nothing but actions.
+  const seed = 2823;
+  const h = new Harness(seed, undefined, 'draft');
+  spawn(h, 0, 'Worldbender');
+  const start = structuredClone(h.state);
+  draftTurn(h); draftTurn(h);
+  let st = start;
+  for (const a of h.actions) st = apply(st, a).state;
+  assert.equal(JSON.stringify(st), JSON.stringify(h.state), 'the replaced draft steps replay identically');
+
+  // and the plain seed + actions path is untouched by the new hook
+  const plain = new Harness(seed, undefined, 'draft');
+  draftTurn(plain); draftTurn(plain);
+  assert.equal(JSON.stringify(replay(seed, plain.actions, undefined, 'draft').state), JSON.stringify(plain.state));
 });

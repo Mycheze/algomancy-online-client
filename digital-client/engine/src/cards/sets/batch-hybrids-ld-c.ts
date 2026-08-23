@@ -90,7 +90,7 @@
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, inEndOfTurn, manaOf, isUnitCard, pickUnit } from './helpers.ts';
+import { selfOf, isEnt, manaOf, isUnitCard, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -223,10 +223,6 @@ card('Dragnol', {
     when: (g, self, ev) => g.s.phase === 'battle' && ev.data?.seat === self.controller,
     effect: {
       run: (g, ctx) => {
-        if (inEndOfTurn(g)) {
-          g.ev('info', 'Dragnol: no payment is offered during end of turn — nothing is drained.');
-          return;
-        }
         if (g.openMana(ctx.controller) < 2) {
           g.ev('info', 'Dragnol: you cannot pay [2] — nothing is drained.');
           return;
@@ -503,10 +499,6 @@ card('Lilbot', {
 const swarmlingCopy: EffectDef = {
   creates: ['Swarmling'],
   run: (g, ctx) => {
-    if (inEndOfTurn(g)) {
-      g.ev('info', 'Swarmling: no payment is offered during end of turn — no copy.');
-      return;
-    }
     if (g.openMana(ctx.controller) < 1) {
       g.ev('info', 'Swarmling: you cannot pay [1] — no copy.');
       return;
@@ -524,8 +516,8 @@ const swarmlingCopy: EffectDef = {
       return;
     }
     g.payMana(ctx.controller, 1);
-    // R52: a created unit arrives in its CONTROLLER's home region
-    g.spawnUnit(ctx.controller, 'Swarmling', g.homeRegion(ctx.controller), { token: true });
+    // R115: a created unit arrives where its SOURCE is (ctx.region)
+    g.spawnUnit(ctx.controller, 'Swarmling', ctx.region, { token: true });
   },
 };
 const discardedByMe = (g: E, self: Entity, ev: { data?: Record<string, unknown> }): boolean =>

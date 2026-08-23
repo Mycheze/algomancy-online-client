@@ -12,7 +12,7 @@
  *   augment:<Card>#<i> the effect of augmentText[i] (text-box [Augment] text)
  */
 import type {
-  Attr, CardName, EffectPart, EngineEvent, Entity, EventType, Seat, TargetRef,
+  Attr, CardName, EffectPart, EngineEvent, Entity, EventType, Seat, StackItem, TargetRef,
 } from '../types.ts';
 import type { E } from '../engine.ts';
 import printedJson from './printed.json' with { type: 'json' };
@@ -130,11 +130,13 @@ export interface EffectCtx {
    *
    * RULED 2026-08-23 (owner): "A [once] is spent only when the ability
    * actually does something. Say no to a 'you may' and the budget is intact,
-   * so the same trigger can ask again later the same turn." That covers both
+   * so the same trigger can ask again later the same turn." That covered both
    * halves of the defect at once: the ORDINARY decline, and the never-asked
-   * auto-decline (Hexbane Shiitake reads `inEndOfTurn(g) ? false : …`, so
-   * during that window the player was never asked and the [once] burnt
-   * regardless).
+   * auto-decline that Hexbane Shiitake used to take during the end-of-turn
+   * window, where the [once] burnt on a question nobody was asked. The
+   * auto-decline is gone now — every such card ASKS, wherever it resolves
+   * (99-endofturn.test.ts) — so only the ordinary decline is left, and it
+   * refunds.
    *
    * CALL IT FROM a branch that DECLINED or found NOTHING TO DO. Do NOT call it
    * from a branch that mutated state, even partially: half a job is a job, and
@@ -150,6 +152,16 @@ export interface EffectCtx {
   /** R1: the event snapshot for triggered abilities (conditions were checked at
    * event time; amounts must be computed here, at resolution, from live state) */
   event: EngineEvent | null;
+  /**
+   * R57: the half of a MODAL effect the caster declared in the cast window
+   * (see `EffectDef.modes` and `EffectPart.mode`). Card code reads it and
+   * branches — it never asks, because by the time `run` is entered the answer
+   * has been on the stack for the whole response window.
+   *
+   * `null` when there was nothing to choose between (an empty `options`);
+   * `undefined` on an effect that declares no `modes` at all.
+   */
+  mode?: unknown;
   /** mid-resolution choice (R4 electric path, R6 payments). Returns the stored
    * answer or suspends the engine with a decision. Parts that use this must
    * request all choices before mutating state, or use plan-then-commit —
@@ -381,8 +393,39 @@ export function costXMin(cost: CastCost): number {
   return ('xMin' in cost ? cost.xMin : undefined) ?? 0;
 }
 
+/**
+ * R57 — a printed MODAL clause: "[Put a -1/-1 counter on each enemy or put a
+ * +1/+1 counter on each of your units]", "[gains or loses] X life", "double
+ * target unit's power or defense". The caster picks a half, and the pick is a
+ * CAST-TIME declaration, collected by `E.collectModes` alongside X, mods,
+ * targets and costs and stored on the part as `EffectPart.mode`.
+ *
+ * DECLARED PER EFFECT, not per card, because a graft composite asks per part:
+ * Wither and Bloom, Burgeon and Spirit of Nature are all `graftEffect`s, and a
+ * Burgeon grafted onto a Burgeon is two parts with two independent halves.
+ *
+ * `prompt` and `options` are computed from the item as it stands at the end of
+ * the cast window — X is fixed, the targets are named — so Burgeon's options
+ * can read the unit it is aimed at ("Power (5 → 10)"). They must be PURE: the
+ * cast window re-runs from the top after every answered decision, so they are
+ * called more than once and must not mutate anything.
+ *
+ * Fewer than two options is not a question: `collectModes` records the single
+ * value (or `null` for none) without asking, which keeps `part.mode`'s
+ * presence a sound idempotence guard.
+ */
+export interface ModeSpec {
+  /** a name for the choice, for logs and for the ledger — 'mode', 'stat', … */
+  key: string;
+  prompt: (g: E, item: StackItem, part: EffectPart) => string;
+  options: (g: E, item: StackItem, part: EffectPart) => { label: string; value: unknown }[];
+}
+
 export interface EffectDef {
   targets?: TargetSpec;
+  /** R57: this effect is MODAL — the caster declares which half in the cast
+   * window, and `run` reads the answer back as `ctx.mode` (see ModeSpec). */
+  modes?: ModeSpec;
   /** cast-time additional cost (R35). On a spell: paying is part of casting —
    * with nothing to pay the cast is illegal. On a graft part joining a
    * composite: the carrier's controller pays (or declines — the rider is then
@@ -1125,6 +1168,31 @@ export interface CardBehavior {
    */
   amountMods?: AmountMod[];
   /**
+   * Replacement: `seat` is about to take their turn's CARD STEP — the draft
+   * step in mode 'draft' (look at your pack, merge, leave 10), the draw phase
+   * in mode 'constructed' (draw 4, put 2 back). Return true to REPLACE it: the
+   * normal step does not happen at all and the hook does whatever the card
+   * does instead. First true consumes, like the other replacements, so two
+   * copies replace the step once.
+   *
+   * Worldbender is the pool's only one, and it is the reason the hook takes
+   * the MODE into account rather than being "skip and draw one": what the step
+   * hands you differs per format, so what replaces it does too (report #87 —
+   * draft: draw 1 on top of the turn's 2, no life; constructed: draw 3, since
+   * constructed folds the turn draw into the draw phase, and lose 3 life).
+   *
+   * Anchored like the other replacement hooks (units in play plus augment mods
+   * reading from their host) but scoped by CONTROLLER, not region: a card step
+   * belongs to a seat, and at the top of a turn there is no battle to scope
+   * to. `self` is the anchor; `seat` is its controller, passed explicitly
+   * because that is what the step belongs to.
+   *
+   * Consulted only where a card step exists. Mode 'shared' has none — its
+   * whole turn draw is startTurn's flat 2 — so a card declaring this is inert
+   * there. OPEN: whether that is what 'shared' should do.
+   */
+  replaceCardStep?: (g: E, self: Entity, seat: Seat) => boolean;
+  /**
    * R104 replacement: `seat` is about to gain `amount` life. Return true to
    * REPLACE the gain — the hook does whatever the card does instead
    * (Nullbringer: "they lose that much life instead" → `g.loseLife(seat, n)`)
@@ -1185,7 +1253,33 @@ export interface CardBehavior {
    * client shows it as an "X = N right now" badge on hand cards during
    * battle. null = no meaningful number right now. */
   xPreview?: (g: E, seat: Seat, region: number) => number | null;
+  /** UI-only PURE query, the SAME contract as `xPreview` above — never called
+   * by the engine, apply(), or any replay-affecting path.
+   *
+   * Report #85: "Soul Siphon (and cards like it) should have a way of showing,
+   * while in your hand, what the X value is for each player." `xPreview`
+   * cannot: it returns ONE number keyed on the hand owner's seat, and Soul
+   * Siphon's X is "the life TARGET PLAYER lost in this battle" — one value per
+   * player, not one value. So this is a LIST of labelled rows.
+   *
+   * It is the hook for any card reading a battle counter the board does not
+   * print: life lost/gained, spells played, cards trashed, ally deaths. Those
+   * ledgers are all PUBLIC (every one is bumped by a visible event, and
+   * counters can only move during battle, which has no hidden simultaneous
+   * segment — server/rooms.ts segmentKey() returns null for it), so showing
+   * BOTH seats leaks nothing.
+   *
+   * Label with 'you' for `seat` and the opponent's name — `perSeatRows` in
+   * sets/helpers.ts does exactly that. A card whose number does NOT differ by
+   * player returns a single row naming what it counts. null = nothing to say.
+   *
+   * A card may define this, `xPreview`, or neither; a card that defines both
+   * has these rows preferred, and the two must agree. */
+  xPreviewRows?: (g: E, seat: Seat, region: number) => XPreviewRow[] | null;
 }
+
+/** one labelled line of a card's live X preview (#85) */
+export interface XPreviewRow { label: string; x: number }
 
 export type CardDef = Printed & CardBehavior;
 

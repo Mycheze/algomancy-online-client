@@ -63,7 +63,7 @@
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, effectByKey, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
-import { selfOf, inEndOfTurn } from './helpers.ts';
+import { selfOf } from './helpers.ts';
 
 /** a card that is a SPELL for bin purposes — a spell unit is one too (playing
  * it from the bin casts the spell and then spawns the body). */
@@ -82,10 +82,6 @@ const sacrificeToDraw = (source: string): EffectDef => ({
   run: (g, ctx) => {
     const units = g.unitsOf(ctx.controller, ctx.region);
     if (!units.length) { g.ev('info', `${source}: you control no unit here — nothing to sacrifice.`); return; }
-    if (inEndOfTurn(g)) {   // "may": auto-decline (no suspensions here)
-      g.ev('info', `${source}: auto-declines the sacrifice (end-of-turn resolution).`);
-      return;
-    }
     const choice = ctx.choose('sac', {
       kind: 'payOrDecline', seat: ctx.controller,
       prompt: `${source}: sacrifice a unit to draw a card?`,
@@ -147,6 +143,13 @@ card('Animated Spark', {
       g.s.phase === 'battle' && target.kind === 'unit' && target.controller === self.controller,
     dp: (g, self) => g.s.battleCounters[self.region]?.[`spellsPlayed:${self.controller}`] ?? 0,
   }],
+  // #85: the buff is a live count of YOUR nontoken spells this battle
+  // (`spellsPlayed:<seat>`), a ledger with no board representation. One row —
+  // the static only ever reads its own controller's count.
+  xPreviewRows: (g, seat, region) => [
+    { label: 'nontoken spells you have played (the +X/+0)',
+      x: g.battleCounter(region, `spellsPlayed:${seat}`) },
+  ],
 });
 
 // "When my column deals combat damage to an opponent, [Switch1] You may
@@ -405,11 +408,6 @@ const smofSacrifice: EffectDef = {
     for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
       const units = g.unitsOf(seat as Seat, ctx.region);
       if (!units.length) continue;
-      if (inEndOfTurn(g)) {   // mandatory: deterministic auto-pick, no suspension
-        g.ev('info', `General Smof: ${units[0]!.card} is auto-picked (end-of-turn resolution).`);
-        picks.push(units[0]!.id);
-        continue;
-      }
       const c = ctx.choose(`sac:${seat}`, {
         kind: 'payOrDecline', seat: seat as Seat,
         prompt: 'General Smof: sacrifice a unit',
@@ -447,11 +445,6 @@ const ghordSacrifice: EffectDef = {
       if (seat === ctx.controller) continue;
       const units = g.unitsOf(seat as Seat, ctx.region).filter(u => !u.token);
       if (!units.length) continue;
-      if (inEndOfTurn(g)) {   // mandatory: deterministic auto-pick, no suspension
-        g.ev('info', `Ghord: ${units[0]!.card} is auto-picked (end-of-turn resolution).`);
-        picks.push(units[0]!.id);
-        continue;
-      }
       const c = ctx.choose(`sac:${seat}`, {
         kind: 'payOrDecline', seat: seat as Seat,
         prompt: 'Ghord: sacrifice a nontoken unit',

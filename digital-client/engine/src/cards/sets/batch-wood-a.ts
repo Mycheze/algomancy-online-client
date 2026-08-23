@@ -7,8 +7,8 @@
  * Rulings referenced: R1 (conditions at event time, amounts at resolution),
  * R5 (partial resolution / fizzles), R6 (mid-resolution choices via
  * ctx.choose), R9 (bounded budgets per card), R12/R25 (region scoping),
- * R28 (created UNITS arrive in their CONTROLLER'S home region unless the
- * text names a place — Hooba-Nan's "adjacent slots" is battle-local),
+ * R115 (created UNITS arrive where their SOURCE is — ctx.region — unless the
+ * text names a place; Hooba-Nan's "adjacent slots" already was battle-local),
  * R31 (triggers between combat damage sub-steps resolve immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
@@ -60,21 +60,22 @@
 import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, effectByKey, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, inEndOfTurn } from './helpers.ts';
+import { selfOf, isEnt, modeTargetOf } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** create a 1/1 unit token for `seat` (R28: controller's home region unless
- * the caller passes a battle-local region) */
-const makeOneOne = (g: E, seat: Seat, region?: number): Entity =>
-  g.spawnUnit(seat, 'Unit Token', region ?? g.homeRegion(seat), { token: true, tokenStats: [1, 1] });
+/** create a 1/1 unit token for `seat` in `region`. R115: `region` is REQUIRED
+ * and is always the SOURCE's region (`ctx.region`) — the old `?? homeRegion`
+ * default is exactly how four cards silently inherited the wrong answer. */
+const makeOneOne = (g: E, seat: Seat, region: number): Entity =>
+  g.spawnUnit(seat, 'Unit Token', region, { token: true, tokenStats: [1, 1] });
 
 // ────────────────────────────── the cards ──────────────────────────────
 
 // "Create a Poison 1 for each of your units." — gg/4 Ancient Blight Spell
 // (deploy timing). "Your units" is region-scoped (R12): the units you have
 // where the spell resolves (your home region during deployment). Poison spell
-// tokens appear at ctx.region — they are battle materiel, not units (R28).
+// tokens appear at ctx.region, like everything else created (R115).
 card('All-Consuming Blight', {
   spellEffect: {
     creates: ['Poison'],
@@ -152,25 +153,48 @@ card('Boon of Protection', {
 
 // "[Switch1] Double the power or defense of target unit until regroup." —
 // g/2 {Battle} Druid Spell. The whole sentence is the bounded graftable
-// effect ([Switch1], R9). The stat is a mid-resolution pick by the caster
-// (R6; deterministic auto-pick of power during end-of-turn resolution).
-// ⚠ header approximation: adds the current EFFECTIVE stat as a temp bonus.
+// effect ([Switch1], R9). ⚠ header approximation: adds the current EFFECTIVE
+// stat as a temp bonus.
+//
+// R57 — WHICH STAT IS A CAST-TIME DECLARATION (`EffectDef.modes`), asked right
+// after the target and before any cost. It used to be a mid-resolution
+// ctx.choose, and that is the playtest report this card is famous for: the
+// Burgeon sat on the stack with its half UNKNOWN, the opponent spent a card
+// answering it, the response resolved, and only then was the caster asked —
+// off the POST-response stats. The opponent had paid for information the
+// caster then got to use. Two smaller bugs died with it:
+//  - the end-of-turn branch auto-picked 'power' FOR you. Its justification
+//    ("a suspension in the end-of-turn tail strands the game") went stale when
+//    E.finishTurnEnd started resuming out of settle(); the cast window already
+//    suspends there for targets, so it may suspend here too.
+//  - the option labels were computed at resolution, which is where the free
+//    information came from. They are computed in the cast window now.
 //
 // PLAYTEST FIX (game MNWK: "Burgeon resolving didn't give me the choice to
-// double the power or defense. It just did nothing."). That game is too old to
-// replay, so which path fired cannot be confirmed — but BOTH of the paths that
-// produce exactly "no choice, nothing happened" were defects and both are
-// fixed here. An effect must never resolve into silence:
-//  1. the end-of-turn branch silently auto-picks 'power'. It still must (a
-//     ctx.choose suspension in the end-of-turn tail strands the game), but a
-//     GRAFTED Burgeon riding an end-of-turn cause now SAYS that it chose for
-//     you instead of just not asking.
-//  2. doubling a stat that is 0 is an invisible no-op — addTemp(+0/+0) logs a
-//     line that reads like nothing happened because nothing did. Say so.
-//  3. the gone-target guard was the only one in this file with no info line,
-//     unlike its siblings (Reconfigure, Body Swap, Fight).
+// double the power or defense. It just did nothing.") — the rest of it stands:
+//  - doubling a stat that is 0 is an invisible no-op; addTemp(+0/+0) logs a
+//    line that reads like nothing happened because nothing did. Say so.
+//  - the gone-target guard was the only one in this file with no info line,
+//    unlike its siblings (Reconfigure, Body Swap, Fight).
 const burgeonEffect: EffectDef = {
   targets: { what: 'unit', prompt: 'Burgeon: double the power or defense of target unit until regroup' },
+  modes: {
+    key: 'stat',
+    prompt: (g, _item, part) => {
+      const u = modeTargetOf(g, part);
+      if (!u) return 'Burgeon: double the target\'s power or defense until regroup?';
+      const [p, d] = g.effStats(u);
+      return `Burgeon: double ${u.card}'s power (${p} → ${p * 2}) or defense (${d} → ${d * 2})?`;
+    },
+    options: (g, _item, part) => {
+      const u = modeTargetOf(g, part);
+      const [p, d] = u ? g.effStats(u) : [0, 0];
+      return [
+        { label: u ? `Power (${p} → ${p * 2})` : 'Power', value: 'power' },
+        { label: u ? `Defense (${d} → ${d * 2})` : 'Defense', value: 'defense' },
+      ];
+    },
+  },
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!isEnt(t) || !g.entity(t.id)) {
@@ -178,17 +202,8 @@ const burgeonEffect: EffectDef = {
       return;
     }
     const [p, d] = g.effStats(t);
-    let mode: unknown = 'power';
-    if (inEndOfTurn(g)) {
-      // mandatory: deterministic auto-pick, no suspension (General Smof's rule)
-      g.ev('info', `Burgeon: power is auto-picked for ${t.card} (end-of-turn resolution — no choice can be offered).`);
-    } else {
-      mode = ctx.choose('stat', {
-        kind: 'electricPath', seat: ctx.controller,
-        prompt: `Burgeon: double ${t.card}'s power (${p} → ${p * 2}) or defense (${d} → ${d * 2})?`,
-        options: [{ label: `Power (${p} → ${p * 2})`, value: 'power' }, { label: `Defense (${d} → ${d * 2})`, value: 'defense' }],
-      });
-    }
+    // R57: declared at cast, not asked here (see the header).
+    const mode = ctx.mode;
     const [stat, was] = mode === 'defense' ? ['defense', d] as const : ['power', p] as const;
     if (was <= 0) {
       g.ev('info', `Burgeon: ${t.card} has ${was} ${stat} — doubling it changes nothing.`);
@@ -223,7 +238,7 @@ card('Corrupting Blight', {
           g.ev('info', `Corrupting Blight: everybody already controls ${me.card} — no control changes.`);
           return;
         }
-        const to = candidates.length === 1 || inEndOfTurn(g) ? candidates[0]! : ctx.choose('who', {
+        const to = candidates.length === 1 ? candidates[0]! : ctx.choose('who', {
           kind: 'electricPath', seat: ctx.controller,
           prompt: `Corrupting Blight: who gains control of ${me.card}?`,
           options: candidates.map(s => ({ label: g.pname(s), value: s })),
@@ -241,7 +256,7 @@ card('Corrupting Blight', {
 // R53 — but its data is { item, unit, region }, with no controller and no
 // kind, so an "enemy SPELL" cannot be recognised from it alone; see header.)
 // "Ally" = a unit my controller controls (me included).
-// R28: the 1/1 arrives in the controller's home region.
+// R115: the 1/1 arrives where the source is (ctx.region).
 card('Earnest Defender', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'],
@@ -267,7 +282,7 @@ card('Earnest Defender', {
     },
     effect: {
       creates: ['Unit Token'],
-      run: (g, ctx) => { makeOneOne(g, ctx.controller); },
+      run: (g, ctx) => { makeOneOne(g, ctx.controller, ctx.region); },
     },
   }],
 });
@@ -277,10 +292,10 @@ card('Earnest Defender', {
 // the dead unit's controller differs from mine (R1: checked at event time).
 // R70: nontoken-ness is a FACT ON THE EVENT (ev.data.token) — it used to be a
 // string match on the death message. The creation is the unbounded graftable
-// piece ([Switch]); R28: the 1/1 arrives in the controller's home region.
+// piece ([Switch]); R115: the 1/1 arrives at the source's region (ctx.region).
 const gardenerSprout: EffectDef = {
   creates: ['Unit Token'],
-  run: (g, ctx) => { makeOneOne(g, ctx.controller); },
+  run: (g, ctx) => { makeOneOne(g, ctx.controller, ctx.region); },
 };
 card('Fungal Gardener', {
   abilities: [{
@@ -365,26 +380,21 @@ card('Hexbane Shiitake', {
         if (!item) { ctx.refundBudget?.(); g.ev('info', `Hexbane Shiitake: ${cardName} is no longer on the stack — no exchange.`); return; }
         // plan: every choice before any mutation (the part replays on suspension)
         //
-        // CARD-TODO #18: the end-of-turn window (R6/R85: no deployment, so no
-        // decision channel) means the player CANNOT be asked, so the exchange
-        // does not happen. That part was always right; what was wrong was that
-        // the [once] burnt anyway, on a question nobody was asked. It is named
-        // here rather than folded into the ternary because the two facts are
-        // different: `canAsk` is why there is no answer, `pays` is the answer.
-        const canAsk = !inEndOfTurn(g);
-        const pays = canAsk && ctx.choose('swap', {
+        // CARD-TODO #18: the offer is put to the player WHEREVER this resolves,
+        // the end-of-turn window included. A ctx.choose suspension raised there
+        // is answered like any other and E.finishTurnEnd closes the owed turn
+        // flip on the way back out of settle() (R85), so there is no longer a
+        // "cannot be asked" branch — `pays` is the answer and nothing else.
+        const pays = ctx.choose('swap', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: `Hexbane Shiitake: exchange control of ${me.card} for ${item.label}?`,
           options: [{ label: `Exchange (${g.pname(seat)} gets ${me.card})`, value: true }, { label: 'Decline', value: false }],
         }) === true;
         if (!pays) {
-          // CARD-TODO #18, and the case that raised it. `pays` is false in TWO
-          // ways: the player was asked and declined, or the end-of-turn window
-          // meant they were NEVER ASKED at all (see `canAsk` above).
-          // The owner's ruling (2026-08-23) collapses both — "a [once] is spent
-          // only when the ability actually does something" — so the same
-          // refund covers the auto-decline and the ordinary one, and the
-          // trigger may ask again later the same turn.
+          // CARD-TODO #18, and the case that raised it. The owner's ruling
+          // (2026-08-23) — "a [once] is spent only when the ability actually
+          // does something" — means an outright decline hands the budget back,
+          // so the same trigger may ask again later the same turn.
           ctx.refundBudget?.();
           g.ev('info', `Hexbane Shiitake: ${item.label} is left alone — no exchange.`);
           return;
@@ -535,8 +545,9 @@ card('Invigorate', {
 // "[Augment][once] When I am dealt damage, create that many 1/1 units." —
 // gg/3 0/4 Alien Insect Plant Unit. [once] = bounded (R9). Both damage
 // channels fire 'damage' with the amount in data.n; "that many" is read from
-// the event snapshot (R1, Lithoghul precedent). R28: the 1/1s arrive in the
-// controller's home region. Poisonous damage becomes counters and never
+// the event snapshot (R1, Lithoghul precedent). R115: the 1/1s arrive where
+// Jollyglop is — take damage while attacking and they are minted in the enemy
+// region, in no column. Poisonous damage becomes counters and never
 // fires 'damage' (earth-c precedent, noted).
 card('Jollyglop', {
   augmentText: [{
@@ -546,7 +557,7 @@ card('Jollyglop', {
       creates: ['Unit Token'],
       run: (g, ctx) => {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
-        for (let i = 0; i < n; i++) makeOneOne(g, ctx.controller);
+        for (let i = 0; i < n; i++) makeOneOne(g, ctx.controller, ctx.region);
       },
     },
   }],

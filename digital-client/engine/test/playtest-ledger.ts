@@ -1061,4 +1061,309 @@ export const LEDGER: LedgerEntry[] = [
       + 'refusal lands after the wipe — i.e. in every network game, which is every game this '
       + 'report came from.',
   },
+  {
+    id: 78, room: 'EGCW', date: '2026-08-23',
+    report: 'The cached zone (wrongly) says "not this turn"',
+    status: 'fixed',
+    guards: [
+      '50-ui-inspect.test.ts::a permitted cached card blocked only by MANA does not blame the step',
+      '50-ui-inspect.test.ts::and a battle card cached during deployment DOES blame the step',
+      '50-ui-inspect.test.ts::a cache entry with no permission at all blames permission, not the step',
+    ],
+    note:
+      'A LABEL bug — enforcement was correct and no legal play was refused. Reconstructed '
+      + 'from the replay: turn 2, deployment, Gatekeeper of Souls cached with '
+      + 'playableUntilTurn=2, so `cachePermission` correctly returned `glimpse`; its timing '
+      + 'is `deploy` and the phase WAS deployment. The only thing missing was mana — 2 open '
+      + 'against a cost of 4 — and `pushCachedPlays` correctly omitted the action. '
+      + 'Both render sites computed "permitted" from `cachePermission` and "playable now" '
+      + 'from `legalActions`, then blamed the entire gap on TIMING without ever checking '
+      + 'whether the timing already matched. `cacheBlockReason` in ui/inspect.ts now asks the '
+      + 'same clauses in the same order as `pushCachedPlays`, the discipline report #77 '
+      + 'established: the UI must not restate a rule, it must ask the same question. '
+      + '⚠ The timing predicate is NOT a constant — each caller passes its own (haste, battle '
+      + 'priority, deployment) — so the gate reconstructs the dispatcher including the gates '
+      + 'inside legalBattleActions. Without that, every "it is not your window" case would '
+      + 'have been mislabelled "no legal target": the same class of bug in a new place.',
+  },
+  {
+    id: 79, room: 'EGCW', date: '2026-08-23',
+    report: 'The column that I blocked had 2 power, so I should have taken 2 damage to my unit '
+      + 'and gotten 2 +1/+1 counters here',
+    status: 'fixed',
+    guards: [
+      "05-rulings.test.ts::R114: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt",
+      '24-wood-b.test.ts::Phytochemical Protection: a 2-power {Deadly} column into a shielded 7/3 pays 2 counters',
+      '24-wood-b.test.ts::Phytochemical Protection: the whole hit is prevented, not just the lethal part',
+    ],
+    note:
+      'Same root cause as #84 — see that entry for the one-line fix. This half came from the '
+      + '{Deadly} branch specifically: `if (deadly && recvCap > 0) poolNeed = 1` was applied as '
+      + 'a CEILING on what is dealt, so a 2-power Deadly column marked 1 damage and R98 paid '
+      + 'out 1 counter. {Deadly}\'s 1 is the minimum share that must be paid before {Piercing} '
+      + 'may carry the rest away — a FLOOR, never a cap. The RAQ it was drawn from ("at least 1 '
+      + 'dmg to Awoken, rest of the damage can go to Bubb") never said the rest disappears. '
+      + '⚠ FORESEEN AND RECORDED: ledger #72 closed with "SURVIVING GAP, pinned by its own '
+      + 'test: the counters cap at LETHAL, not at the whole hit … wants its own ruling". Its '
+      + 'guard could not catch this because the guard was written to pin the WRONG answer on '
+      + 'purpose — 24-wood-b\'s test was titled "⚠ OPEN — the counters cap at LETHAL" and '
+      + 'asserted `counters === 1`. #84 is the ruling it was waiting for; that test is now '
+      + 'replaced rather than amended, because its whole premise was false.',
+  },
+  {
+    id: 80, room: 'EGCW', date: '2026-08-23',
+    report: 'Given the option to play Soul Siphon during Deployment; Battle Spells (and Battle-symbol '
+      + 'activated abilities) should be illegal outside Battle',
+    status: 'by-design',
+    note:
+      'THE AUTHOR WITHDREW THIS HIMSELF: "It was offering me to GRAFT the ability from hand, '
+      + 'which is legal." Confirmed from the replay rather than taken on trust. At the reported '
+      + 'moment (turn 7 deployment, between actions 228 and 229) the ONLY action the engine ever '
+      + 'offered on Soul Siphon was `{type:\'graft\', from:\'hand\', index:0, hostId:75}` onto the '
+      + 'Glararr he had just played; no `playCard` was offered in that window at any point, and '
+      + '`apply()` refuses the cast outright with "battle cards can only be played during '
+      + 'battle". Soul Siphon is `timing:\'battle\'` with both a spellEffect and a graftEffect, so '
+      + 'grafting it from hand during deployment is legal. Basis: R37 — applying a mod is not '
+      + 'playing a card. '
+      + 'The enforcement audit was run anyway and came back clean: card-level timing is correct '
+      + 'BY CONSTRUCTION (`CardBehavior` has no `timing` key, so the `card()` spread cannot '
+      + 'override the printed value). All 137 battle-timed cards and both Battle-symbol '
+      + 'activated abilities (Grox, Cadaverous Cultivator) were driven into a deployment window '
+      + 'with 20 of every resource: 0 offered, 0 accepted. All 6 Ambush cards likewise. The '
+      + 'converse is also clean — 355 of 358 deploy/haste cards are offered, and the 3 that are '
+      + 'not (Delver of Mysteries, Resurrect, Covenant of the Damned) are bin-targeting spells '
+      + 'refused by R64\'s empty-candidate rule; stock the bin and all 3 appear. '
+      + '⚠ ONE REAL FINDING SURVIVES, filed as a separate UI item (not a playtest report id): the hand\'s `.card.playable` outline is a '
+      + 'single undifferentiated glow that OR-folds playCard/augment/graft/prophesy/'
+      + 'recycleForResource, so a battle spell that can only be GRAFTED looks exactly like a '
+      + 'castable card. The disambiguation exists only after a click. That is what made this '
+      + 'look like a bug to the person who designed the game.',
+  },
+  {
+    id: 81, room: 'EGCW', date: '2026-08-23',
+    report: 'Modal cards (with text like [lose *or* gain]) need to have their modes chosen on cast, '
+      + 'not on resolution',
+    status: 'fixed',
+    guards: [
+      '97-mode-conformance.test.ts::R57: Burgeon names its half before the stack, and the opponent can read it there',
+      '97-mode-conformance.test.ts::R57: a card printing a modal bracket declares EffectDef.modes',
+      '97-mode-conformance.test.ts::decision is ever raised mid-resolution',
+      '97-mode-conformance.test.ts::R57: Siphon Life says whether it is a burn or a heal before the response window',
+      '50-ui-inspect.test.ts::a declared mode is readable off the stack, so a responder is not blind',
+    ],
+    note:
+      'Six caster-facing modes moved to the R57 cast-time seam — Burgeon, Wither and Bloom, '
+      + 'Floral Singularity, Transmutide Enigma, Spirit of Nature, Siphon Life. `EffectPart.mode` '
+      + 'rides on the PART (not the item) for the same reason `costPaid` does: a composite can '
+      + 'carry two modal parts and the part is what the suspension carries (R85). '
+      + 'THE HARM, REPRODUCED: Burgeon sat on the stack with its half unknown, the opponent spent '
+      + 'a card responding, the response resolved, and only THEN was the caster asked — with the '
+      + 'option labels recomputed off the post-response board. That is free information the '
+      + 'opponent paid a card for and could not price. '
+      + '⚠ PARTIAL RE-REPORT OF #7 (Burgeon, MNWK, marked fixed 2026-08-19), and the reason is '
+      + 'exactly the shape this ledger exists to catch: #7 was diagnosed as a SILENCE bug, and '
+      + 'both its guards assert that a choice IS offered and that nothing resolves silently. '
+      + 'Neither asserts WHEN. Moving the mode to cast time would have left both green; so would '
+      + 'moving it back. The fix even hard-coded the resolution-time reading into the card '
+      + 'comment, miscategorising a caster\'s own mode as an R6 payment. '
+      + 'NOT moved, each verified: Void Memory (the DISCARDING player\'s own pick, R67 carve-out), '
+      + 'Retribution Thing (not modal at all — "[lost or gained]" is one quantity), R6 ransoms, '
+      + 'replacement-effect modes, R1 amounts read at resolution. '
+      + 'Two direct-run paths the diagnosis missed were caught in implementation: `runSpellCopy` '
+      + '(a copy inherits the original\'s declared half) and `playInline` (an inline play never '
+      + 'reaches the stack and has no response window, so asking there is correct, not a relapse). '
+      + 'The three `inEndOfTurn` auto-picks on these cards were deleted — their justification was '
+      + 'already stale, which is the thread that led to the 21-card end-of-turn sweep (see 99-endofturn.test.ts).',
+  },
+  {
+    id: 82, room: 'EGCW', date: '2026-08-23',
+    report: 'The judge responds using Markdown, but there is no Markdown renderer, so the text just '
+      + 'looks weird',
+    status: 'fixed',
+    guards: [
+      '95-ui-markdown.test.ts::#82: INVARIANT — every tag emitted is on the whitelist, and none has an attribute',
+      '95-ui-markdown.test.ts::#82: the XSS corpus produces no script, no event handler, no href',
+      '95-ui-markdown.test.ts::#82: a real logged judge answer renders as structure, not as asterisks',
+      '95-ui-markdown.test.ts::#82: an icon token inside **bold** reaches the output as an icon inside',
+    ],
+    note:
+      'The rules bot asks for Markdown by design (its system prompt ends "use clean markdown") '
+      + 'and the client escaped it and drew it raw. The bot\'s own web page renders it with '
+      + 'marked+DOMPurify from a CDN; the game client did neither, which is also wrong for a LAN '
+      + 'deploy. New dependency-free `ui/markdown.ts`: the `inline` hook is the ONLY place raw '
+      + 'text enters the output, so escaping is structural rather than remembered, and the '
+      + 'emitted tag set is closed with ZERO attributes ever produced. '
+      + 'LINK SYNTAX IS DELIBERATELY ABSENT: of 62 real logged answers, links appear in 0% — and '
+      + 'links are precisely where a Markdown renderer becomes an XSS surface (javascript: '
+      + 'hrefs). Omitting them removes the attack class instead of filtering it. '
+      + 'The same edit fixed a second, unreported defect at the same line: the judge box used '
+      + '`esc()` rather than `iconizeText()`, so the icon tokens the bot deliberately leaves in '
+      + 'place ([Switch1], {Battle}, [4bb]) rendered as literal brackets. '
+      + 'Scope checked, not assumed: all 764 generated rulings are plain prose, so the '
+      + 'inspector\'s ruling rows need no renderer. '
+      + '⚠ `engine/ui/bundle.js` is a committed build artifact and was NOT rebuilt — doing so '
+      + 'mid-round would have baked in another agent\'s in-flight engine state. This fix does not '
+      + 'reach a browser until `npm --prefix engine run build:ui` runs on a settled tree.',
+  },
+  {
+    id: 83, room: 'EGCW', date: '2026-08-23',
+    report: "Life Plant's units were made in my region, despite it currently being in Rashi's region. "
+      + 'Anything made by anything needs to spawn in that region (then can return during regroup)',
+    status: 'fixed',
+    guards: [
+      '98-spawn-region.test.ts::R115: report #83 — Life Plant attacking in the enemy region creates its 1/1s THERE, not at home',
+      '98-spawn-region.test.ts::R115: the stranded 1/1s walk home at regroup — the second half of the ruling',
+      "98-spawn-region.test.ts::R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack",
+      '98-spawn-region.test.ts::R115 conformance: no card effect reaches for homeRegion() — the source scan',
+      '98-spawn-region.test.ts::R115 negative control: a deploy-timing creator still lands at home, because home IS ctx.region then',
+    ],
+    note:
+      'NOT A CODE BUG — a RULES REVERSAL, and the engine was doing this deliberately. R28 and R52 '
+      + 'both ruled that a created unit arrives in its CONTROLLER\'S HOME region, and '
+      + '44-hybrids-ld-a carried a named, green test asserting exactly the behaviour reported here. '
+      + 'The owner confirmed the reversal with its consequence put to him explicitly: a token '
+      + 'minted mid-attack is STRANDED in the enemy region, in no column, and cannot block the '
+      + 'counterattack; it walks home at regroup. That is a real power cut to Tidelurker, Life '
+      + 'Plant, Legion of the Depths and Pack Leader, and it is intended. R28 WITHDRAWN, R52 '
+      + 'WITHDRAWN (its unfinished-migration list cancelled — those cards were the ones already '
+      + 'right), R33 ABSORBED as the general rule. Now R115. '
+      + 'The spell-vs-ability split the owner observed was a very good approximation but not the '
+      + 'structure: all four resolution paths already resolve `StackItem.region` to "where the '
+      + 'source is", and `spawnUnit` takes region as a required argument and writes it through. '
+      + 'The bug was 26 CARD SITES discarding `ctx.region` for `g.homeRegion(ctx.controller)`. '
+      + 'They skew to abilities because a unit can walk into the enemy region, while a '
+      + 'deploy-timing spell has home === ctx.region and the override is a silent no-op — but two '
+      + 'battle-timing SPELLS (Galactic Germination, Arcane Echo) were broken too. '
+      + 'The three shared helpers (`makeOneOne`, `makeRobot`, `create1s`) each read '
+      + '`region ?? g.homeRegion(seat)`; that `??` is the mechanism that let four cards inherit '
+      + 'the wrong answer with no line of code saying so, so `region` is now REQUIRED and the '
+      + 'compiler catches the next one.',
+  },
+  {
+    id: 84, room: 'EGCW', date: '2026-08-23',
+    report: 'Damage is a little bugged. Vroot should have had Rashi gain 9. ALL damage is dealt to '
+      + 'units, even if it surpasses its defense. The only exception is Piercing, which deals '
+      + 'excess to the controller',
+    status: 'fixed',
+    guards: [
+      '05-rulings.test.ts::R114: without Piercing the excess is not lost, it lands on the unit',
+      '05-rulings.test.ts::R114: {Piercing} is still the exception — excess goes to the controller, not the unit',
+      "38-light-a.test.ts::Vroot: a blocked column pays out its whole power, not the blocker",
+      '82-attr-interactions.test.ts::combat and effect damage agree on how much was dealt',
+    ],
+    note:
+      'One line: `assignColumnDamage` used `poolNeed` — LETHAL NEED — as a CAP on damage dealt '
+      + '(`const a = Math.min(remaining, poolNeed)`), and the leftover was returned to callers '
+      + 'that discarded it unless the column had {Piercing}. The clamped number is then what the '
+      + 'whole pool reads: the `damage` event\'s `n`, {Blessed} gain, {Poisonous} counters, '
+      + '{Resonant}, and R98 prevention payout. Nine cards read that amount directly (Vroot, '
+      + 'Mirage Scuttler, Molten Tormentor, Lithoghul, Restitution, Mirrorback Ambusher, Decay '
+      + 'Distributor, Jollyglop, Phytochemical Protection). '
+      + 'Verified against the real game: at EGCW action 251 a 9-power column blocked by a 2/2 '
+      + 'paid Vroot 2 instead of 9. `dealEffectDamageAll` was NOT affected — it already dealt the '
+      + 'full amount, so combat and effect damage had silently disagreed for months. That '
+      + 'invariant is now a test rather than a coincidence. '
+      + '⚠ THE RULING IS WIDER THAN THE FIX. Asked who soaks the leftover with two or more '
+      + 'blockers, the owner ruled that assignment is ELECTIVE: "It is legal to do ALL the damage '
+      + 'to the front unit and none to the back one, even if there is enough to kill them both. '
+      + 'The only rule is that the front unit must be assigned lethal damage before assigning any '
+      + 'to the back unit." The engine now auto-assigns ONE legal split (shares front-to-back, '
+      + 'leftover on the back-most living unit). The player-elective mode — and the "full '
+      + 'control" affordance he asked for alongside it — is scoped and deferred by his own '
+      + 'decision. Nothing here forecloses it.',
+  },
+  {
+    id: 85, room: 'EGCW', date: '2026-08-23',
+    report: 'Soul Siphon (and cards like it) should have a way of showing, while in your hand, what '
+      + 'the X value is for each player',
+    status: 'fixed',
+    guards: [
+      '96-x-preview.test.ts::#85: Soul Siphon previews a row PER PLAYER, and the row is the size of the unit it makes',
+      '96-x-preview.test.ts::#85: ROUND TRIP — the rows compute identically off viewFor(state, seat), for both seats',
+      '96-x-preview.test.ts::#85: CENSUS — every card reading a battle counter previews it or is exempted by name',
+    ],
+    note:
+      'The pattern already existed and Soul Siphon was simply never wired into it: '
+      + '`CardBehavior.xPreview` is a UI-only pure query the client already renders as an '
+      + '"X = N right now" badge, and only 6 of 494 cards defined it. '
+      + 'A structural gap had to be closed first: `xPreview` returns ONE number keyed on the hand '
+      + 'owner\'s seat, but Soul Siphon\'s X reads the DECLARED TARGET player\'s life lost, so it '
+      + 'has one value per player — exactly what the report asks for. New `xPreviewRows` returns '
+      + 'labelled rows; 8 cards wired. An "X right now" section was added to the inspector, which '
+      + 'showed no X at all, because "while in your hand" means the panel a player actually reads '
+      + 'a card in. '
+      + 'Showing BOTH players is safe by construction, not by judgement: every battle counter is '
+      + 'public, and counters can only be bumped during battle while the hidden simultaneous '
+      + 'segments are only plan/haste/deploy (`segmentKey()` returns null for battle), so nothing '
+      + 'can accumulate unseen. The census guard is the part that matters long-term — a card '
+      + 'reading `g.battleCounter(...)` must preview it or be exempted by name, so the next Soul '
+      + 'Siphon cannot ship unwired. '
+      + '⚠ DEFERRED by decision, each to its own entry rather than silently dropped: flag-style '
+      + 'hidden state (Suspend\'s life-lock — arguably the worst memory burden in the set, since '
+      + 'the card erases itself and nothing on the board records it — and Abyssal Evocation\'s '
+      + 'bin-play permission), and ordinal countdowns (Seabed Shellcaster, Origon, Mischievous '
+      + 'Reclaimer). Also left alone deliberately: `hasteManaSpent`/`hastePlaysUsed` DO accumulate '
+      + 'inside the hidden haste segment and are not frozen by viewFor — harmless only because no '
+      + 'UI reads them.',
+  },
+  {
+    id: 86, room: 'EGCW', date: '2026-08-23',
+    report: "Mirage Walker triggered in Rashi's Deployment despite her playing MIRAGE WALKER during "
+      + 'that Deployment',
+    status: 'live',
+    note:
+      'DIAGNOSED, fix QUEUED as its own change — deliberately NOT part of the end-of-turn sweep, '
+      + 'because the correct fix stamps the acting seat in the REDUCER (apply.ts / types.ts), '
+      + 'not in card code. Root cause is one line: '
+      + 'Mirage Walker\'s bookkeeping `when()` reads `g.s.deployPlayer === self.controller`, but '
+      + '`deployPlayer` is NOT the acting seat — deployment is simultaneous and it is a derived '
+      + 'initiative-ordered marker (its own comment says "derived sequential marker"). The '
+      + 'predicate reduces to "is my controller the initiative seat?" and never asks who acted. '
+      + 'It misfires BOTH ways, confirmed over the full seat x deployPlayer matrix: the '
+      + 'non-initiative seat\'s own actions are never counted (the reported case — Rashi was '
+      + 'non-initiative on turn 8), and the OPPONENT applying a mod in your region sets the flag '
+      + 'and suppresses your trigger though you did nothing. '
+      + 'Mirage Walker is the ONLY card in the pool that reads `deployPlayer` (verified by grep '
+      + 'over src/cards/), so the class is narrow — the real class is not "phase-begin triggers" '
+      + 'but "entity-local when() bookkeeping with a wrong window predicate". The parent '
+      + 'hypothesis that permanents generally misfire for the phase they entered was CHECKED AND '
+      + 'REFUTED: `fireEvent` snapshots entities at the instant the event fires, so a late '
+      + 'arrival has already missed it. '
+      + '⚠ WHY THE EXISTING GUARD WAS BLIND, and it is a repo-wide hazard: 14-water-a\'s test '
+      + 'reads `const p = h.state.deployPlayer!` and drives THAT seat — always the initiative '
+      + 'seat, the one seat the buggy predicate happens to serve correctly. It is green with the '
+      + 'bug live. `h.state.deployPlayer` is used 763 times across 65 test files as "the acting '
+      + 'seat", so ANY seat-asymmetric deployment bug is invisible to the whole suite. The '
+      + 'replacement test is parameterised over seat x deployPlayer and was confirmed red 4/4 '
+      + 'before the fix. RULING taken (owner): "the idea is that YOU did something during '
+      + 'deployment other than just hitting Done" — any deployment action counts, mods and '
+      + 'ability activations included, so the fix stamps every non-done action in the reducer '
+      + 'rather than whitelisting events.',
+  },
+  {
+    id: 87, room: 'XVUR', date: '2026-08-23',
+    report: 'Worldbender is non functional. In live draft: instead of looking at the pack you draw '
+      + '2 for turn + 1 for Worldbender, no life loss. In constructed and cube: instead of drawing '
+      + '4 and recycling 2, you draw 2 for turn + 1 for Worldbender and lose 3 life',
+    status: 'live',
+    note:
+      'NOT a regression and NOT something this round broke — Worldbender has never worked. It is '
+      + 'registered as a vanilla 2/2 {Feeble} with NONE of its text implemented, and has been '
+      + 'carried in card-ledger.ts as `gap: dead, severity: high` waiting on draft-step SKIP '
+      + 'machinery. The owner played it in a real game, which is how a card that had been parked '
+      + 'as a known gap became a filed report. '
+      + 'THE SPEC IS NOW COMPLETE, which is what unblocks it — the report supplies the constructed '
+      + 'half that no ruling had ever settled. The card REPLACES the turn\'s normal card '
+      + 'acquisition rather than adding to it: draft = skip the pack, draw 2 + 1 = 3, no life '
+      + 'loss; constructed/cube = skip the draw-4-put-2-back, draw 2 + 1 = 3, lose 3 life. '
+      + 'Fix in flight. ⚠ Two things it will have to settle that the report does not: `GameMode` '
+      + 'has only three values (shared | draft | constructed), so there is no CUBE mode to branch '
+      + 'on — cube presumably rides the constructed branch if it ever exists; and `shared` mode is '
+      + 'not mentioned at all and needs its own answer. '
+      + 'THE WIDER LESSON, recorded because it is the owner\'s standing complaint: this card was '
+      + 'never invisible — it had an accurate ledger entry AND a `{todo:true}` test naming exactly '
+      + 'what was missing. Neither can fail, so the suite stayed green for as long as the card '
+      + 'stayed dead, and the only thing that surfaced it was playing it. That is the same shape '
+      + 'as Harbinger of Immolation, which is why this ledger exists.',
+  },
 ];

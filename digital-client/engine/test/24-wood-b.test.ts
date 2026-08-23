@@ -184,7 +184,7 @@ test('Overbloom: target unit gains +7/+7 until regroup (deploy timing)', () => {
   assert.deepEqual(effStats(h, tok), [1, 1], 'until regroup: the buff is gone');
 });
 
-test("Pack Leader: [two] creates a 1/1 at home — own text (via: 'augment') and donated (via: {mod})", () => {
+test("Pack Leader: [two] creates a 1/1 where the carrier stands — own text (via: 'augment') and donated (via: {mod})", () => {
   const h = new Harness(2408);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -201,7 +201,7 @@ test("Pack Leader: [two] creates a 1/1 at home — own text (via: 'augment') and
   assert.equal(unitsOf(h, p).filter(u => u.token && u.id !== host).length, 2, 'the donated ability minted another 1/1');
 });
 
-test('Pathogenic Enclave: spawn mints two 1/1s (at home, R28); despawn deletes token allies in its region', () => {
+test('Pathogenic Enclave: spawn mints two 1/1s (at ctx.region — home, since it spawns during deployment, R115); despawn deletes token allies in its region', () => {
   const h = new Harness(2409);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -303,21 +303,18 @@ test('Phytochemical Protection: combat damage is prevented and paid back as +1/+
   finishBattle(h);
 });
 
-test('Phytochemical Protection: ⚠ OPEN — the counters cap at LETHAL, not at the whole hit', () => {
-  // The engine's R7 auto-assignment gives each blocker exactly enough to kill
-  // it and DROPS the rest (only {Piercing} carries excess anywhere). The RAQ
-  // says otherwise for this card, and the difference is the whole payoff:
+test('Phytochemical Protection: the whole hit is prevented, not just the lethal part', () => {
+  // The RAQ, and now R114 in the engine:
   //   "Q: No Deadly, No Piercing. Single enemy with Phytochemical Protection?
   //    A: All damage must be assigned to this single unit and whole damage
   //       will be prevented, potentially putting a lot of +/+ counters."
-  // Deliberately NOT changed here: making the leftover pool land would move
-  // every overkill number in the engine (marked damage, the "takes N" line,
-  // and every {Resonant} rider), which is an assignment ruling of its own.
-  // This test pins what the engine actually does so a fix is a visible change.
+  // The engine used to cap the assignment at lethal and drop the rest, which
+  // paid 1 counter here. A NON-Piercing attacker is the whole point of the
+  // question, so the attacker is a plain 7-power body.
   const h = new Harness(2426);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
-  const atk = spawn(h, A, 'Good Whale');              // 7 power
+  const atk = spawn(h, A, 'Life Plant');              // 7/3, no attributes
   const mine = spawn(h, D, 'Unit Token');             // 1/1
   toNextBattle(h, A);
   shield(h, mine);
@@ -325,8 +322,31 @@ test('Phytochemical Protection: ⚠ OPEN — the counters cap at LETHAL, not at 
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
   pass(h); pass(h);
-  assert.equal(ent(h, mine)!.counters, 1,
-    'ENGINE: only the 1 lethal point was assigned — the RAQ would say 7');
+  assert.ok(ent(h, mine), 'the shielded 1/1 survived a hit seven times lethal');
+  assert.equal(ent(h, mine)!.counters, 7,
+    'all 7 were dealt to it and all 7 were prevented — a counter for each');
+});
+
+test('Phytochemical Protection: a 2-power {Deadly} column into a shielded 7/3 pays 2 counters (report #79, EGCW 212)', () => {
+  // The exact table situation. {Deadly}'s 1 is a PASS-ALONG floor (R114), so
+  // the whole 2 lands on the sole blocker; the shield prevents all of it, and
+  // R98 then stops {Deadly} from killing through damage that was never dealt.
+  const h = new Harness(2427);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const d1 = spawn(h, A, 'Tidepool Terror');          // 1/2 {Deadly}
+  const d2 = spawn(h, A, 'Tidepool Terror');          // 1/2 {Deadly} — 2 power
+  const mine = spawn(h, D, 'Life Plant');             // 7/3 blocker
+  toNextBattle(h, A);
+  shield(h, mine);
+  h.do({ type: 'declareAttack', seat: A, columns: [[d1, d2]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
+  pass(h); pass(h);
+  assert.ok(ent(h, mine), 'nothing was dealt, so {Deadly} had nothing to kill through (R98)');
+  assert.equal(ent(h, mine)!.counters, 2,
+    'the whole 2-power column was assigned and prevented — 2 counters, not the 1 {Deadly} needs');
+  finishBattle(h);
 });
 
 test('Phytochemical Protection: prevented damage is NOT dealt — no damage event fires', () => {

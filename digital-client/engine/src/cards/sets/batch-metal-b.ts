@@ -7,8 +7,8 @@
  * Rulings referenced: R1 (conditions at event time, amounts at resolution),
  * R5 (fizzle vs partial), R9 (bounded budgets per card), R12 (regions are
  * exclusive — listeners and "each …" clauses are region-scoped), R25 ("each
- * opponent" region-scoped), R28 (created UNITS arrive in their CONTROLLER'S
- * home region unless the text is battle-local — "in my formation" is),
+ * opponent" region-scoped), R115 (created UNITS arrive where their SOURCE is
+ * — ctx.region; "in my formation" additionally names a slot),
  * R31 (triggers between combat damage sub-steps resolve immediately).
  *
  * GLIMPSE (Foretell) is REAL as of Light & Dark: E.glimpse (R45) reveals the
@@ -63,10 +63,11 @@ import { selfOf, isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** create a Robot X — a 0/0 Robot token with X +1/+1 counters — in its
- * controller's HOME region (R28; battle-local cards pass their own region) */
-const makeRobot = (g: E, seat: Seat, x: number, region?: number): Entity =>
-  g.spawnUnit(seat, 'Robot', region ?? g.homeRegion(seat), { token: true, counters: x });
+/** create a Robot X — a 0/0 Robot token with X +1/+1 counters — in `region`.
+ * R115: `region` is REQUIRED and is always the SOURCE's region (`ctx.region`);
+ * the old `?? homeRegion` default silently answered for cards that never asked. */
+const makeRobot = (g: E, seat: Seat, x: number, region: number): Entity =>
+  g.spawnUnit(seat, 'Robot', region, { token: true, counters: x });
 
 // ───────────────────────────── the cards ──────────────────────────────
 
@@ -184,7 +185,7 @@ card('Formless', {
 
 // "[Augment] When I attack or block, create a Robot 2 in my formation." —
 // mm/3 1/2 Hooba Robot Unit. Text-box [Augment]; live when played normally
-// (Manual Q&A). "In my formation" is battle-local (R28 exception): the Robot
+// (Manual Q&A). "In my formation" names a SLOT on top of R115's region: the Robot
 // spawns in the battle region and its CONTROLLER chooses the slot at
 // resolution (R75, E.placeInFormation). This used to auto-pick — "my column if
 // open, else the first open column" — which was one of five different
@@ -209,7 +210,7 @@ card('Hooba-Bot', {
 // to hosts (via: { mod }). ⚠ header approximation: both costs are paid at
 // RESOLUTION — X is chosen (1..open mana) and paid there, and the sacrifice
 // is any of your nontoken units other than the carrier. No mana or no victim
-// → no effect. The Robot arrives at home (R28).
+// → no effect. The Robot arrives at the carrier's region (R115).
 card('Instrument of Reassignment', {
   augmentText: [{
     type: 'activated', cost: {},   // [x] + the sacrifice, paid at resolution
@@ -237,7 +238,7 @@ card('Instrument of Reassignment', {
         if (!victim) return;
         g.payMana(ctx.controller, x);
         g.destroy(victim, 'is sacrificed');
-        makeRobot(g, ctx.controller, x);
+        makeRobot(g, ctx.controller, x, ctx.region);
       },
     },
   }],
@@ -331,22 +332,22 @@ card('Linked Extinction', {
 
 // "[Augment] [three]: Create a Robot 2." — mm/4 2/4 Robot Unit. An ACTIVATED
 // ability in the [Augment] text box: live when played normally
-// (via: 'augment') and donated to hosts (via: { mod }). The Robot arrives in
-// its controller's home region (R28).
+// (via: 'augment') and donated to hosts (via: { mod }). The Robot arrives
+// where the carrier is (R115: ctx.region).
 card('Living Forge', {
   augmentText: [{
     type: 'activated', cost: { mana: 3 },
     label: '[three]: create a Robot 2',
-    effect: { creates: ['Robot'], run: (g, ctx) => { makeRobot(g, ctx.controller, 2); } },
+    effect: { creates: ['Robot'], run: (g, ctx) => { makeRobot(g, ctx.controller, 2, ctx.region); } },
   }],
 });
 
 // "[Switch1] Create a Robot 3, a Robot 2 and a Robot 1." — mmm/6 Robot
-// Spell (deploy timing). All three arrive in the controller's home region
-// (R28). Bounded graft ([Switch1], R9).
+// Spell (deploy timing). All three arrive at the source's region (R115),
+// which for a deploy-timing spell IS home. Bounded graft ([Switch1], R9).
 const manufactureRobots: EffectDef = {
   creates: ['Robot'],
-  run: (g, ctx) => { for (const x of [3, 2, 1]) makeRobot(g, ctx.controller, x); },
+  run: (g, ctx) => { for (const x of [3, 2, 1]) makeRobot(g, ctx.controller, x, ctx.region); },
 };
 card('Manufacture', {
   spellEffect: manufactureRobots,

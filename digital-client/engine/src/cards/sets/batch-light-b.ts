@@ -371,6 +371,13 @@ card('Life Channel', {
       },
     },
   },
+  // #85: X reads the `lifeGained:<seat>` battle ledger, which the board never
+  // prints. One row, because the card only ever reads its OWN controller's
+  // total — the opponent's life gain is irrelevant to it. The spell half adds
+  // its own 3 before buffing, so that is the number a card in hand is worth.
+  xPreviewRows: (g, seat, region) => [
+    { label: 'you (this spell\'s own +3 included)', x: lifeGainedThisBattle(g, region, seat) + 3 },
+  ],
 });
 
 // "[Augment] At the end of turn, you may pay [x] and cache a card in your hand
@@ -510,30 +517,55 @@ card('Riftspawn Remnant', {
     dp: 4,
     dt: -4,
   }],
+  // #85: not an X, but the same defect — the card's whole behaviour hangs on
+  // two hidden battle ledgers, and a player holding it cannot see whether the
+  // +4/-4 is live. The row is the sum: the static is on exactly while it is
+  // above zero (lost > 0 || gained > 0 is the same predicate as lost + gained
+  // > 0). One row — the card reads only its own controller.
+  xPreviewRows: (g, seat, region) => [{
+    label: 'life you have lost or gained (it swaps to 4/1 above 0)',
+    x: lifeLostThisBattle(g, region, seat) + lifeGainedThisBattle(g, region, seat),
+  }],
 });
 
 // "Target player [gains or loses] X life." — ll/X {Battle} Nature Spell.
 // X is chosen and PAID AT CAST (R35). No xMin: the card does not print "X
 // can't be zero" (the batch convention is to set xMin only when it does), so
-// a pointless X = 0 cast is legal and simply does nothing. The bracketed
-// "[gains or loses]" is the caster's choice, made at resolution. R64: "target
+// a pointless X = 0 cast is legal and simply does nothing. R64: "target
 // player" is the 'player' kind — either seat, yourself included, and no unit.
 // It said 'any', the damage kind, which put every unit in the region on a menu
 // where none of them could do anything.
+//
+// R57 — the bracketed "[gains or loses]" is the caster's choice and it is made
+// AT CAST (`EffectDef.modes`), not at resolution. This is the card the report
+// was written about: a spell that says "target player gains or loses X life"
+// and will not say WHICH until after everybody has finished responding to it
+// is not a declared effect. X and the target are both fixed by the time the
+// mode is asked (collectX, then collectPartTargets, then collectModes), so the
+// options can name them.
 card('Siphon Life', {
   spellEffect: {
     targets: { what: 'player', prompt: 'Siphon Life: target player gains or loses X life' },
+    modes: {
+      key: 'mode',
+      prompt: (g, item, part) => {
+        const t = part.targets[0];
+        const who = t && 'player' in t ? g.pname(t.player) : 'the target';
+        return `Siphon Life: does ${who} gain or lose ${item.x ?? 0} life?`;
+      },
+      // X = 0 gains and loses nothing either way — not worth a question.
+      options: (_g, item) => (item.x ?? 0) <= 0 ? [] : [
+        { label: `Lose ${item.x}`, value: 'lose' },
+        { label: `Gain ${item.x}`, value: 'gain' },
+      ],
+    },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('player' in t)) return;
       const who = t.player;
       const x = ctx.x ?? 0;
       if (x <= 0) { g.ev('info', 'Siphon Life: X = 0 — no life is gained or lost.'); return; }
-      const mode = ctx.choose('mode', {
-        kind: 'payOrDecline', seat: ctx.controller,
-        prompt: `Siphon Life: does ${g.pname(who)} gain or lose ${x} life?`,
-        options: [{ label: `Lose ${x}`, value: 'lose' }, { label: `Gain ${x}`, value: 'gain' }],
-      });
+      const mode = ctx.mode;   // R57: declared at cast
       if (mode === 'gain') g.gainLife(who, x, 'Siphon Life');
       else g.loseLife(who, x, 'Siphon Life');
     },

@@ -30,7 +30,7 @@
  * Rulings leaned on: R5 (fizzle vs partial), R6 (payments are part of
  * resolution, via ctx.choose), R9 (bounded budgets per card), R12/R25
  * (regions are exclusive; "each opponent" reads the event region's present
- * seats), R28 (created units arrive in their controller's home region),
+ * seats), R115 (created units arrive where their SOURCE is — ctx.region),
  * R37 (applying a mod is not playing a card), R38 (rot), R40 (trash),
  * R41/R45 (the cache; glimpse-style until-end-of-turn permission), R71 (the
  * Wraith token).
@@ -565,15 +565,14 @@ card('Pallid Gorger', {
 
 // "[Switch1] Create three Wraiths and gain 2 Rot." — d/3 Primordial Occult
 // Spell (deploy timing). R71: "create a Wraith" spawns the 3/3 token body;
-// Wraith and the retired name Wight are one card. R28: created units arrive in their
-// controller's HOME region, which matters if the [Switch1] effect is grafted
-// onto a battle-timing cause. R38: the 2 rot is a straight gain — it costs
+// Wraith and the retired name Wight are one card. R115: created units arrive
+// where their SOURCE is — during deployment that IS home, but grafted onto a
+// battle-timing cause the three Wraiths are minted in the BATTLE region. R38: the 2 rot is a straight gain — it costs
 // nothing now and 2 damage at the start of every future deployment.
 const coalesce: EffectDef = {
   creates: ['Wraith'],
   run: (g, ctx) => {
-    const home = g.homeRegion(ctx.controller);
-    for (let i = 0; i < 3; i++) g.createWraith(ctx.controller, home);
+    for (let i = 0; i < 3; i++) g.createWraith(ctx.controller, ctx.region);
     g.gainRot(ctx.controller, 2);
   },
 };

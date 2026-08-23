@@ -128,7 +128,9 @@ Suite 289 / 0 fail; 1000-game fuzz clean on the new combat pump.
 counterattackers now exist NOWHERE (no statics radiation, no token
 enumeration — R32; the live Towering Colossus case); Tidelurker's 2/2 arrives
 at HOME (R28 ⚠ — created units default to the controller's region; global
-default still to confirm); Tiderunner Initiate's open-spot prompt broadened
+default still to confirm — **R28 was WITHDRAWN on 2026-08-23 by R115: a created
+unit arrives where its SOURCE is, so Tidelurker's 2/2 now stays in the battle
+region and cannot block the counterattack**); Tiderunner Initiate's open-spot prompt broadened
 (behind a survivor / emptied column / a NEW attacker column — R29); Recall's
 unconditional 2 life documented as R30; combat sub-step trigger timing is
 R31; seenHand (Bripp looks are remembered until the owner's draft merge);

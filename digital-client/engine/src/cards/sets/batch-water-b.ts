@@ -23,7 +23,7 @@ import type { EngineEvent, Entity, EntityId, Seat, TargetRef } from '../../types
 import type { E } from '../../engine.ts';
 import { card, isEntityTarget, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
 import type { ResolvedTarget } from '../dsl.ts';
-import { selfOf, isEnt, manaOf, chooseUnit } from './helpers.ts';
+import { selfOf, isEnt, manaOf, chooseUnit, inlineMode, perSeatRows, lifeLostIn } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -81,6 +81,7 @@ const playInline = (g: E, ctx: EffectCtx, name: string, key: string): 'unit' | '
   let fizzled = false;
   if (eff) {
     let targets: ResolvedTarget[] = [];
+    let refs: TargetRef[] = [];
     if (eff.targets) {
       const cands = g.targetCandidates(eff.targets, ctx.region, undefined, ctx.controller);
       if (!cands.length) fizzled = true;
@@ -90,14 +91,18 @@ const playInline = (g: E, ctx: EffectCtx, name: string, key: string): 'unit' | '
           options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
         })) as TargetRef;
         const r = g.resolveTargetRef(ref);
-        if (r) targets = [r];
+        if (r) { targets = [r]; refs = [ref]; }
         else fizzled = true;
       }
     }
     if (!fizzled) {
+      // R57: a modal card played inline has no cast window to declare its half
+      // in — it never reaches the stack — so it is asked here, through
+      // ctx.choose, exactly as it was before the mode moved. See inlineMode.
+      const mode = inlineMode(g, ctx, eff, `${key}:mode`, { card: name, targets: refs });
       eff.run(g, {
         controller: ctx.controller, sourceName: name, region: ctx.region,
-        targets, event: null,
+        targets, event: null, mode,
         eraseSelf: () => {},   // an inline mod run has no stack item to erase
         choose: (k, d) => ctx.choose(`${key}:${k}`, d),
       });
@@ -349,6 +354,11 @@ const soulSiphonMake: EffectDef = {
 card('Soul Siphon', {
   spellEffect: soulSiphonMake,
   graftEffect: { bounded: true, effect: soulSiphonMake },
+  // #85, the card that prompted the report: X is the life the DECLARED TARGET
+  // player lost, so it has one value per player and a single-number xPreview
+  // could not say it. Both rows are public — `lifeLost` is bumped by a visible
+  // loseLife event, and only during battle, which has no hidden segment.
+  xPreviewRows: (g, seat, region) => perSeatRows(g, seat, s => lifeLostIn(g, region, s)),
 });
 
 // "[Switch1] Create an 8/8 unit." — bbb/7 2/2 {Battle} Alien Spell Unit. The
@@ -509,14 +519,15 @@ card('Tidal Reversion', {
 // "When a player is dealt combat damage, [Switch1] Create a 2/2 unit." —
 // bb/3 1/4. Fires on 'lifeLost' with why 'combat' (ANY player; the event is
 // region-scoped in battle, R12). Bounded (R9); the 2/2 is the bounded graft.
-// The 2/2 is created in its CONTROLLER'S region, not the battle region
-// (playtest ruling: a token minted while Tidelurker attacks must be home to
-// block the counterattack — created units default to your region unless the
-// card says "in my formation" or similar).
+// The 2/2 is created where the SOURCE is (R115: ctx.region). This card WAS
+// R28's rationale — "a token minted while Tidelurker attacks must be home to
+// block the counterattack" — and R115 withdrew it: the 2/2 minted mid-attack
+// stands in the enemy region, in no column, blocks nothing, and walks home at
+// regroup. The designer confirmed the power cut.
 const makeTwoTwo: EffectDef = {
   creates: ['Unit Token'],
   run: (g, ctx) => {
-    g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller), { token: true, tokenStats: [2, 2] });
+    g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [2, 2] });
   },
 };
 card('Tidelurker', {

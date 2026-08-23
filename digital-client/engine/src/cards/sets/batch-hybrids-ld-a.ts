@@ -14,8 +14,8 @@
  * ctx.choose, plan-then-commit), R9 (bounded [Switch1]/[once] budgets, per
  * card, reset at start of turn), R12/R25 ("each player" / "your units" read
  * the region's present seats / unitsOf(region)), R27 (amounts are live at
- * resolution), R28/R52 (created units spawn in their CONTROLLER's home
- * region — R52 closes R33's open question in R28's favour),
+ * resolution), R115 (created units spawn where their SOURCE is — ctx.region;
+ * this WITHDREW R28/R52 and absorbed R33),
  * R35 (bracketed cast-time costs), R37 (applying a mod is not playing a
  * card), R38 (rot), R39 (debt), R40 (trash), R41/R45 (cache + glimpse
  * permission), R42/R43/R44 (prophecy — the Big Glimpse Card banner is engine
@@ -94,7 +94,7 @@
 import type { Attr, CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, inEndOfTurn, manaOf, isUnitCard, pickUnit } from './helpers.ts';
+import { selfOf, isEnt, manaOf, isUnitCard, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -254,7 +254,7 @@ card('Big Glimpse Card', {
           .map((n, i) => [n, i] as [CardName, number])
           .filter(([, i]) => !pile1.includes(i));
         if (!left.length) break;
-        const v = inEndOfTurn(g) ? false : ctx.choose(`split:${k}`, {
+        const v = ctx.choose(`split:${k}`, {
           kind: 'payOrDecline', seat: opp,
           prompt: `Big Glimpse Card: split the 7 — put a card into pile 1 (${pile1.length} so far)`,
           options: [
@@ -267,7 +267,7 @@ card('Big Glimpse Card', {
       }
       const a = revealed.filter((_, i) => pile1.includes(i));
       const b = revealed.filter((_, i) => !pile1.includes(i));
-      const which = inEndOfTurn(g) ? 'a' : ctx.choose('pile', {
+      const which = ctx.choose('pile', {
         kind: 'payOrDecline', seat: ctx.controller,
         prompt: 'Big Glimpse Card: cache which pile? (the other is recycled)',
         options: [
@@ -404,12 +404,12 @@ card('Debt Plant', {
 // [Augment]; "[once]" is a bounded budget (R9, per card, reset each turn).
 // Both directions count, and only MY life changes do ("when YOU gain or lose")
 // — checked at event time against the anchor's controller (R1). "That many" is
-// the event snapshot's amount. ⚠ R52 settles where the units land: a CREATED
-// unit arrives in its CONTROLLER's home region, so they come home even when
-// the carrier is fighting in the enemy region. (This card used to follow R33's
-// Ember of Life carrier-region reading; R52 closes R33's open question the
-// other way — R28 is the default and R33 is a per-card exception whose printed
-// text ties the creation to a carrier.)
+// the event snapshot's amount. ⚠ R115 settles where the units land, and it is
+// THIS CARD's report (#83): a CREATED unit arrives where its SOURCE currently
+// is, so a Life Plant fighting in the enemy region mints its 1/1s THERE — in
+// no column, unable to block the counterattack — and they walk home at
+// regroup. (R115 withdrew R52/R28, which had moved this card to home, and
+// absorbed R33's Ember of Life carrier reading as the general rule.)
 card('Life Plant', {
   augmentText: [{
     type: 'triggered', events: ['lifeGained', 'lifeLost'], bounded: true,   // [once]
@@ -420,8 +420,8 @@ card('Life Plant', {
       run: (g, ctx) => {
         const n = (ctx.event?.data?.n as number | undefined) ?? 0;
         for (let i = 0; i < n; i++) {
-          // R52: a created unit arrives in its CONTROLLER's home region
-          g.spawnUnit(ctx.controller, 'Unit Token', g.homeRegion(ctx.controller),
+          // R115: a created unit arrives where its SOURCE is (ctx.region)
+          g.spawnUnit(ctx.controller, 'Unit Token', ctx.region,
             { token: true, tokenStats: [1, 1] });
         }
       },
@@ -624,7 +624,7 @@ card('Dream Lapse', {
         g.ev('info', `Dream Lapse: ${g.pname(seat)} has no card to discard.`);
         return;
       }
-      const di = hand.length === 1 || inEndOfTurn(g) ? 0 : ctx.choose('discard', {
+      const di = hand.length === 1 ? 0 : ctx.choose('discard', {
         kind: 'payOrDecline', seat,
         prompt: 'Dream Lapse: discard a card',
         options: hand.map((n, k) => ({ label: n, value: k as unknown, card: n })),
@@ -722,7 +722,8 @@ card('Reclaim the Fallen', {
 // "[Augment] After combat, each player puts a unit from their bin into play
 // under an opponent's control." — gd/3 3/4 Mystic Fungus Unit. Text-box
 // [Augment]. "Each player" is region-scoped (R25), each picking from their OWN
-// bin (R6, auto when forced); the unit then enters play under their opponent's
+// bin (R6, auto only when there is exactly one — the question is put even in
+// the end-of-turn window, R85); the unit then enters play under their opponent's
 // control — in 1v1 that is simply the other seat. Plan-then-commit: every pick
 // is gathered before any bin is touched.
 card('Uglk', {
@@ -738,7 +739,7 @@ card('Uglk', {
             g.ev('info', `Uglk: ${g.pname(seat)} has no unit in their bin.`);
             continue;
           }
-          const idx = units.length === 1 || inEndOfTurn(g)
+          const idx = units.length === 1
             ? units[0]![1]
             : ctx.choose(`pick:${seat}`, {
               kind: 'electricPath', seat,
@@ -788,7 +789,7 @@ card('Mindburn', {
             ...hand.map((n, i) => ({ label: `Discard ${n}`, value: `h:${i}` as unknown, card: n })),
           ];
           if (!options.length) continue;
-          const v = options.length === 1 || inEndOfTurn(g)
+          const v = options.length === 1
             ? options[0]!.value
             : ctx.choose(`pick:${round}:${seat}`, {
               kind: 'electricPath', seat,
@@ -846,7 +847,7 @@ const moveCounters: EffectDef = {
     for (let k = 1; k <= avail; k++) {
       options.push({ label: `Move ${k} ${sign > 0 ? '+1/+1' : '-1/-1'} counter(s)`, value: k as unknown });
     }
-    const n = inEndOfTurn(g) ? avail : ctx.choose('howMany', {
+    const n = ctx.choose('howMany', {
       kind: 'payOrDecline', seat: ctx.controller,
       prompt: `Chombot: move how many counters from ${from.card} onto ${to.card}?`,
       options,

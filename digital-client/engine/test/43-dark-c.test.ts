@@ -526,7 +526,7 @@ test('Primordial Coalescence: three Wraiths (= Wights, R47) and 2 rot (R38)', ()
   assert.equal(wights.length, 3, 'three token bodies');
   assert.equal(wights[0]!.token, true);
   assert.deepEqual(effStats(h, wights[0]!.id), [3, 3], 'each a real 3/3 (R71)');
-  assert.equal(wights[0]!.region, h.q.homeRegion(P), 'created units arrive at home (R28)');
+  assert.equal(wights[0]!.region, h.q.homeRegion(P), 'created units arrive at ctx.region — home for a deploy spell (R115)');
   assert.equal(h.q.rot(P), 2, 'and the downside is 2 rot');
 
   // R38: that rot bites at the start of the next deployment

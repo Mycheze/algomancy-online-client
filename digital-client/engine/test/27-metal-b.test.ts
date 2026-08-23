@@ -10,7 +10,8 @@
  * Reassignment), opponent-chosen negation (Interdiction Rift), stat swapping
  * + card-code Reaping (Invasive Reassignment), linked sacrifices (Linked
  * Extinction), activated [Augment] abilities own AND donated (Living Forge),
- * a Robot 3+2+1 spread at home per R28 (Manufacture), a battle-timing unit
+ * a Robot 3+2+1 spread at the source's region per R115 (Manufacture — deploy
+ * timing, so that IS home), a battle-timing unit
  * that switches the battle's attribute and ability layers off (Monke, R62),
  * type-line augment attrs (Nebula Drifter), an
  * activated graft cause carrying a grafted Foretell (Omniwield Evoker),
@@ -301,7 +302,7 @@ test('Instrument of Reassignment: [x] + sacrifice another nontoken unit → a Ro
   const robot = unitsOf(h, p).find(u => u.card === 'Robot')!;
   assert.ok(robot, 'a Robot was created');
   assert.equal(robot.counters, 2, 'a Robot X = 2');
-  assert.equal(robot.region, homeOf(h, p), 'created at home (R28)');
+  assert.equal(robot.region, homeOf(h, p), 'created at ctx.region — the carrier is at home here (R115)');
   assert.equal(h.state.players[p]!.resources.filter(r => r.state === 'open').length, 1, 'X = 2 was paid');
 });
 
@@ -408,7 +409,7 @@ test('Living Forge: [three]: create a Robot 2 (own [Augment] text, played normal
   const robots = unitsOf(h, p).filter(u => u.card === 'Robot');
   assert.equal(robots.length, 1, 'one Robot created');
   assert.equal(robots[0]!.counters, 2, 'a Robot 2');
-  assert.equal(robots[0]!.region, homeOf(h, p), 'at home (R28)');
+  assert.equal(robots[0]!.region, homeOf(h, p), 'at ctx.region — the carrier is at home here (R115)');
   assert.equal(h.state.players[p]!.resources.filter(r => r.state === 'open').length, 0, '[three] paid');
 });
 
@@ -429,7 +430,7 @@ test('Living Forge: donated on a host, the [three] ability activates via the mod
 
 // ── Manufacture ──────────────────────────────────────────────────────────
 
-test('Manufacture: creates a Robot 3, a Robot 2 and a Robot 1 at home (R28)', () => {
+test('Manufacture: creates a Robot 3, a Robot 2 and a Robot 1 at the source\'s region (R115)', () => {
   const h = new Harness(2714);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -437,7 +438,7 @@ test('Manufacture: creates a Robot 3, a Robot 2 and a Robot 1 at home (R28)', ()
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Manufacture') });
   const robots = unitsOf(h, p).filter(u => u.card === 'Robot');
   assert.deepEqual(robots.map(r => r.counters).sort(), [1, 2, 3], 'a 3, a 2 and a 1');
-  assert.ok(robots.every(r => r.region === homeOf(h, p)), 'all at home (R28)');
+  assert.ok(robots.every(r => r.region === homeOf(h, p)), 'all at ctx.region — home, since this is a deploy-timing spell (R115)');
   assert.ok(robots.every(r => r.token), 'tokens');
   assert.ok(h.state.players[p]!.bin.includes('Manufacture'), 'the spell → bin');
 });

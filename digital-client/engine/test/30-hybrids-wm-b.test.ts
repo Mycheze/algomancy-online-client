@@ -224,8 +224,13 @@ test('Transmutide Enigma: another ally spawning in battle gets power or defense 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   let tok = 0;
   whiteBox(h, e => { tok = e.spawnUnit(D, 'Unit Token', e.s.battle!.region, { token: true, tokenStats: [2, 3] }).id; });
-  pass(h); pass(h);                                           // resolve the trigger
+  // R57: which half is declared as the trigger goes on the stack — the labels
+  // read the spawned unit's stats from BEFORE the response window, not after.
+  assert.equal(h.state.decision?.kind, 'mode');
+  assert.equal(h.state.stack.length, 0, 'asked before it reaches the stack');
   pick(h, 'defense');                                         // double its defense
+  assert.equal(h.state.stack[0]?.parts[0]?.mode, 'defense', 'and it rides on the stack');
+  pass(h); pass(h);                                           // resolve the trigger
   assert.deepEqual(effStats(h, tok), [2, 6], 'defense doubled (+0/+3) until regroup');
   finishBattle(h);                                            // → regroup → deploy
   assert.deepEqual(effStats(h, tok), [2, 3], 'the doubling is temporary — regroup clears it');
@@ -266,7 +271,7 @@ test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (
 
 // ── Floral Singularity ───────────────────────────────────────────────────
 
-test('Floral Singularity: create X 1/1s at home, or your units become base X/X (white-box x)', () => {
+test('Floral Singularity: create X 1/1s at the source\'s region, or your units become base X/X (white-box x)', () => {
   const h = new Harness(3009);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -277,8 +282,12 @@ test('Floral Singularity: create X 1/1s at home, or your units become base X/X (
       const ctx: EffectCtx = {
         controller: p, sourceName: 'Floral Singularity', region: e.homeRegion(p),
         targets: [], x, event: null,
+        // R57: the modal half is a CAST-TIME declaration now (EffectPart.mode),
+        // not a mid-resolution ctx.choose — a direct-run ctx hands it over the
+        // same way the engine does, on the ctx.
+        mode,
         eraseSelf: () => {},   // no stack item here — a direct-run ctx
-        choose: () => mode,
+        choose: () => { throw new Error('Floral Singularity must not ask anything at resolution'); },
       };
       getCard('Floral Singularity').spellEffect!.run(e, ctx);
     });
@@ -286,7 +295,7 @@ test('Floral Singularity: create X 1/1s at home, or your units become base X/X (
   runFloral(2, 'create');
   const toks = unitsOf(h, p).filter(u => u.token);
   assert.equal(toks.length, 2, 'two 1/1 unit tokens created');
-  assert.ok(toks.every(u => u.region === homeOf(h, p)), 'created units arrive HOME (R28)');
+  assert.ok(toks.every(u => u.region === homeOf(h, p)), 'created units arrive at ctx.region — home, since this ctx resolves at home (R115)');
   assert.deepEqual(effStats(h, toks[0]!.id), [1, 1], 'they are 1/1s');
   runFloral(3, 'base');
   assert.deepEqual(effStats(h, auric), [3, 3], 'the 2/1 became base 3/3 until regroup');
@@ -351,14 +360,20 @@ test('Wither and Bloom: modal — -1/-1 on each enemy, or +1/+1 on each of your 
   h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2]] });
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wither and Bloom') });
-  pass(h); pass(h);                                           // resolve
+  // R57: the modal bracket is declared in the cast window — this used to be
+  // asked after both passes, i.e. after the opponent had already responded to
+  // a spell that would not say which half it was.
+  assert.equal(h.state.decision?.kind, 'mode');
+  assert.equal(h.state.stack.length, 0, 'asked before the stack');
   pick(h, 'wither');                                          // -1/-1 on each enemy
+  assert.equal(h.state.stack[0]?.parts[0]?.mode, 'wither', 'and the opponent can read it');
+  pass(h); pass(h);                                           // resolve
   assert.ok(!ent(h, a1) && !ent(h, a2), 'both enemy 1/1s withered away');
   assert.equal(ent(h, sentry)!.counters, 0, 'your own units are untouched by wither');
   pass(h);                                                    // priority → D again
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wither and Bloom') });
-  pass(h); pass(h);                                           // resolve
   pick(h, 'bloom');                                           // +1/+1 on each of your units
+  pass(h); pass(h);                                           // resolve
   assert.equal(ent(h, sentry)!.counters, 1, 'the Sentry bloomed');
   assert.deepEqual(effStats(h, sentry), [3, 5], '2/4 with a +1/+1 counter');
   finishBattle(h);
@@ -388,7 +403,7 @@ test('Aethercap Siphoner: spawns with three -1/-1; a nontoken spell moves one on
 
 // ── Galactic Germination ─────────────────────────────────────────────────
 
-test('Galactic Germination: a 1/1 per unit in target formation — arriving HOME (R28)', () => {
+test('Galactic Germination: a 1/1 per unit in target formation — arriving in the BATTLE region (R115)', () => {
   const h = new Harness(3014);
   toDeployment(h);
   const D = h.state.initiative, A = 1 - D;                    // D will attack (initiative)
@@ -402,10 +417,13 @@ test('Galactic Germination: a 1/1 per unit in target formation — arriving HOME
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Galactic Germination') });
   pick(h, { unit: u1 });                                      // a unit in the target formation
   pass(h); pass(h);                                           // resolve
-  const home = unitsOf(h, D).filter(u => u.token && u.region === homeOf(h, D));
-  assert.equal(home.length, 2, 'two 1/1s — one per unit in the attacking formation');
-  assert.notEqual(homeOf(h, D), h.state.battle!.region, 'home is NOT the battle region here');
-  assert.deepEqual(effStats(h, home[0]!.id), [1, 1], 'they are 1/1s');
+  const battle = h.state.battle!.region;
+  const made = unitsOf(h, D).filter(u => u.token && u.card === 'Unit Token' && u.region === battle);
+  assert.equal(made.length, 2, 'two 1/1s — one per unit in the attacking formation');
+  assert.notEqual(homeOf(h, D), battle, 'home is NOT the battle region here');
+  assert.equal(unitsOf(h, D).filter(u => u.card === 'Unit Token' && u.region === homeOf(h, D)).length, 0,
+    'R115: a {Battle} spell cast in the enemy region creates its units THERE, not at home');
+  assert.deepEqual(effStats(h, made[0]!.id), [1, 1], 'they are 1/1s');
   finishBattle(h);
 });
 

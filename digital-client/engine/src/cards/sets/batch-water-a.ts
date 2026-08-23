@@ -37,7 +37,7 @@
 import type { Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay, perSeatRows } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -569,6 +569,15 @@ card('Null Drone', {
       else g.ev('info', `Null Drone: ${item.label} costs ${cost} > ${lost} life lost — not negated.`);
     },
   },
+  // #85: the negate threshold is "the GREATEST life lost by A player", so the
+  // useful preview is both seats AND the max it actually takes — a player
+  // holding this needs to know the ceiling before committing the cast, and the
+  // ceiling is invisible on the board. Three rows, not one.
+  xPreviewRows: (g, seat, region) => [
+    ...perSeatRows(g, seat, s2 => lifeLostThisBattle(g, region, s2)),
+    { label: 'greatest — the cost it can negate up to',
+      x: Math.max(0, ...g.s.players.map(p => lifeLostThisBattle(g, region, p.seat))) },
+  ],
 });
 
 // "Glimpse 5" — b/3 4/1 Polyform Oracle Spell Unit. R45: five are revealed,

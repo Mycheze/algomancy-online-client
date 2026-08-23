@@ -121,8 +121,18 @@ test('Burgeon: doubles the chosen stat of target unit until regroup', () => {
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Burgeon') });
   pick(h, { unit: bubbD });
-  pass(h); pass(h);                                   // resolve → the stat pick suspends
+  // R57 (ledger #7's other half): the stat is declared in the CAST window, so
+  // the opponent responds to a Burgeon that has already said which half it is.
+  // This used to be a mid-resolution ctx.choose asked AFTER both passes — the
+  // guards below asserted that a choice was offered and that nothing resolved
+  // silently, and both stayed green while the timing was wrong.
+  assert.equal(h.state.decision?.kind, 'mode', 'the stat is a cast-time question');
+  assert.equal(h.state.stack.length, 0, 'and it is asked before the stack, like a target');
   pick(h, 'defense');
+  assert.equal(h.state.stack.length, 1, 'now it is on the stack');
+  assert.equal(h.state.stack[0]!.parts[0]!.mode, 'defense',
+    'and the half it chose is readable there, all through the response window');
+  pass(h); pass(h);                                   // resolve
   assert.deepEqual(effStats(h, bubbD), [5, 12], 'defense doubled (6 → 12) until regroup');
   // playtest MNWK ("Burgeon resolving … just did nothing"): whatever it does,
   // it now SAYS what it did
@@ -148,8 +158,8 @@ test('Burgeon: doubling a 0 says so instead of resolving into silence', () => {
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Burgeon') });
   pick(h, { unit: wall });
+  pick(h, 'power');                                   // R57: declared at cast
   pass(h); pass(h);
-  pick(h, 'power');
   assert.equal(effStats(h, wall)[0], 0, 'twice nothing is still nothing');
   assert.ok(h.log.some(l => l.includes('has 0 power — doubling it changes nothing')),
     'and the log says why');
@@ -316,7 +326,7 @@ test('Hooba-Nan alone: its ONLY adjacent slot is the one behind it (R75)', () =>
   assert.equal(made.length, 1, 'a lone column has one empty adjacent slot: behind me');
   assert.equal(b.columns.length, 1, 'the formation does NOT widen past its own edges');
   assert.deepEqual(b.columns[0], [hooba, made[0]!.id], 'the 1/1 joined behind Hooba-Nan');
-  assert.ok(made.every(u => u.region === b.region), 'slot units are battle-local, not home (overrides R28)');
+  assert.ok(made.every(u => u.region === b.region), 'slot units are battle-local, not home (R115 — was an R28 override, now the general rule)');
   finishBattle(h);
 });
 

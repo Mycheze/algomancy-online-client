@@ -9,16 +9,17 @@
  * (Plodding Pebble), retaliation (Restitution), attrs-only registration
  * (Reality Bender) and a stack sweep (Return to Nature). Oorblak's combat-
  * damage redirection (R38 replaceCombatDamageToPlayer) is live as of
- * 2026-08-22, with a todo left for the Piercing-excess half of Caleb's RAQ
- * answer. States are built explicitly (give/spawn/giveResources); seeds
- * 1700-1799.
+ * 2026-08-22, and its PIERCING-EXCESS half as of 2026-08-23 — the todo that
+ * used to stand in for Caleb's RAQ answer is now four real tests, and the card
+ * came off test/card-ledger.ts with them. States are built explicitly
+ * (give/spawn/giveResources); seeds 1700-1799.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import type { EffectCtx } from '../src/cards/dsl.ts';
-import type { EntityId, Seat } from '../src/types.ts';
+import type { Attr, EntityId, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
@@ -149,6 +150,39 @@ test('Mirage Scuttler: surviving damage grows it by that much; lethal damage doe
   // lethal damage: "survive" fails at event time (R1) → no counters, it dies
   dealDamage(h, 1 - p, host, 20);
   assert.ok(!ent(h, host), 'lethal damage kills without triggering the growth');
+});
+
+test('Mirage Scuttler: an overkill combat hit marks the WHOLE amount, not the lethal part (R114)', () => {
+  // Report #84: "ALL damage is dealt to units, even if it surpasses its
+  // defense." The Scuttler reads its growth straight off the `n` of the
+  // damage event, so the old lethal-capped assignment fed it a trimmed
+  // number — a 7-power column into a 3/5 host reported 5, not 7.
+  //
+  // Note what this test can NOT show, and why: in combat an overkill hit is
+  // always lethal by construction (a unit is only assigned more than its
+  // share once that share — its own lethal need — has been paid), so the
+  // Scuttler's "whenever I SURVIVE damage" can never see an overkill. The
+  // survive-and-grow half is the effect-damage test above; what R114 changes
+  // here is the number the event carries.
+  const h = new Harness(1714);
+  toDeployment(h);
+  const D = h.state.deployPlayer!, A = 1 - D;
+  const host = spawnToken(h, D, 3, 5);
+  giveResources(h, D, 'earth', 1);                    // e / 1
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Mirage Scuttler'), hostId: host });
+  const atk = spawn(h, A, 'Life Plant');              // 7/3, no attributes
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [host] } });
+  const mark = h.events.length;
+  pass(h); pass(h);
+  const hits = h.events.slice(mark)
+    .filter(e => e.type === 'damage' && e.data?.['unit'] === host)
+    .map(e => e.data!['n'] as number);
+  assert.deepEqual(hits, [7], 'the whole 7-power column landed on the 3/5, not the 5 that killed it');
+  assert.ok(!ent(h, host), 'it did not survive, so it never grew');
+  finishBattle(h);
 });
 
 test('Mohruung: augment-targeting triggers a Crystal 2, once per turn ([Switch1])', () => {
@@ -289,15 +323,111 @@ test('Oorblak: as a Virus, "me" is the HOST — an enemy host eats its own contr
   assert.equal(ent(h, host)!.damage, 3, 'and "me" is the host, which took the 3');
 });
 
-test('Oorblak: PARKED — Piercing excess past its toughness does not carry on to the face', { todo: true }, () => {
-  // RAQ "[Solved] Oorblak vs Piercing": "10 damage is redirected to Oorblak, he
-  // takes 4 damage which is enough to kill him and leftover 6 damage is still
-  // Piercing so it goes to players face." The excess carries on BECAUSE the hit
-  // is Piercing; a plain overkill spills nothing. `replaceCombatDamageToPlayer`
-  // is handed `info: { attacker, region }` only, so the hook cannot tell the two
-  // apart, and its boolean return is all-or-nothing. Needs the hit's `attrs`
-  // (and `pure`) on `info`, plus a way to hand part of the hit back.
-  assert.fail('needs the hit attributes on replaceCombatDamageToPlayer\'s info');
+// ── Oorblak, the PIERCING-EXCESS half (R98's wider hook; R103/R114) ──────
+//
+// Caleb, rules-questions 2025-04-09, answering _passer's case — and the case
+// matters, because in it Oorblak is virused UNDER A 1/1, which is why one
+// point is enough to kill it:
+//
+//   _passer: "After blockers I attach Piercing to Barrens. Enemy respond to
+//     this by attaching Oorblak under his 1/1 from other column. … Barrens
+//     deal 1 to 1/1 and 5 'piercing-combat-damage' goes to enemy face. Since
+//     this is part of combat-damage its then redirected to 1/1 with Oorblak.
+//     What happens to this 1/1 with Oorblak?"
+//   Caleb: "So we have 5 piercing damage attempting to hit the defending
+//     player, that damage is redirected to oorblak, oorblak takes 5 piercing
+//     damage, 1 is enough to kill it and the remaining 4 hit the player."
+
+/** grant an attribute until regroup (tempAttrs; read by ownAttrs/colAttrs) */
+function attrOn(h: Harness, id: EntityId, attr: Attr): void {
+  const e = new E(h.state);
+  e.addTempAttr(e.entity(id)!, attr);
+  e.settle();
+}
+
+test("Oorblak: Caleb's case — 5 Piercing redirected, 1 kills the body, the remaining 4 hit the player", () => {
+  const h = new Harness(1717);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawnToken(h, A, 5, 1);                 // the 5 that would hit the face
+  attrOn(h, atk, 'Piercing');
+  const host = spawnToken(h, D, 1, 1);                // _passer's 1/1, D's own
+  giveResources(h, D, 'earth', 4);                    // eee / 4
+  const lifeD = h.state.players[D]!.life;
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);                                            // A passes → D holds priority
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Oorblak'), hostId: host });
+  pass(h); pass(h);                                   // the Virus resolves → attaches
+  assert.equal(ent(h, host)!.mods.length, 1, 'Oorblak is on the 1/1');
+  pass(h); pass(h);                                   // attack window → block step
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);                                   // → combat damage
+  assert.ok(!ent(h, host), 'the 1/1 took the 1 that kills it and died');
+  assert.equal(h.state.players[D]!.life, lifeD - 4,
+    'and the remaining 4 is still Piercing, so it goes to the player');
+});
+
+test('Oorblak: a NON-Piercing overkill is absorbed whole — nothing spills onto the face', () => {
+  // The regression fence for the half that already worked: the excess carries
+  // on BECAUSE the hit is Piercing. Same 5 damage as Caleb's case, same 1/1
+  // body, no {Piercing} — and the player takes none of it.
+  const h = new Harness(1718);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawnToken(h, A, 5, 1);                 // no attributes at all
+  const host = spawnToken(h, D, 1, 1);
+  giveResources(h, D, 'earth', 4);
+  const lifeD = h.state.players[D]!.life;
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);                                            // A passes → D holds priority
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Oorblak'), hostId: host });
+  pass(h); pass(h);                                   // the Virus resolves → attaches
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);
+  assert.ok(!ent(h, host), 'the 1/1 still eats the whole 5 and dies of it');
+  assert.equal(h.state.players[D]!.life, lifeD,
+    'a plain overkill spills nothing — only Piercing leaves the body (R114)');
+});
+
+test('Oorblak: the Piercing excess is what is left after BOTH doublings — {Powerful} at the source, {Vulnerable} on receipt (R103)', () => {
+  // R103's order of operations, on the combat side. A 3-power {Powerful}
+  // {Piercing} column deals 6 (doubled at the source, before assignment); a
+  // {Vulnerable} Oorblak receives double, so 2 pool is the share that kills
+  // its 4 toughness and 4 pool carries on. Miss either doubling and the
+  // leftover is a different number: no {Powerful} → 1, no {Vulnerable} → 2.
+  const h = new Harness(1719);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawnToken(h, A, 3, 1);
+  attrOn(h, atk, 'Piercing');
+  attrOn(h, atk, 'Powerful');
+  const oo = spawn(h, D, 'Oorblak');                  // 2/4
+  attrOn(h, oo, 'Vulnerable');
+  const lifeD = h.state.players[D]!.life;
+  toNextBattle(h, A);
+  unblockedCombat(h, A, [[atk]]);
+  assert.ok(!ent(h, oo), 'Oorblak received 2 x 2 = 4 and died on the state check');
+  assert.equal(h.state.players[D]!.life, lifeD - 4,
+    'the excess is computed after {Powerful} doubled 3 to 6 AND after {Vulnerable} halved the pool it costs to kill');
+});
+
+test('Oorblak: a Piercing hit smaller than its toughness is absorbed entirely — it lives and the face takes nothing', () => {
+  const h = new Harness(1720);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawnToken(h, A, 3, 1);                 // 3 < Oorblak's 4 toughness
+  attrOn(h, atk, 'Piercing');
+  const oo = spawn(h, D, 'Oorblak');                  // 2/4
+  const lifeD = h.state.players[D]!.life;
+  toNextBattle(h, A);
+  unblockedCombat(h, A, [[atk]]);
+  assert.ok(ent(h, oo), 'Oorblak survived');
+  assert.equal(ent(h, oo)!.damage, 3, 'it took all 3');
+  assert.equal(h.state.players[D]!.life, lifeD,
+    'there is no excess to pierce with — Piercing carries the LEFTOVER, not the hit');
 });
 
 test("Perpetual Construct: an applied mod creates an X/X, X = the mod's cost", () => {

@@ -106,7 +106,7 @@ test('Ancient One: activated abilities and statics of neighbours are not copied'
 
 // ── Arcane Echo ──────────────────────────────────────────────────────────
 
-test('Arcane Echo: creates a copy of a chosen token (unit copy arrives home, R28)', () => {
+test('Arcane Echo: creates a copy of a chosen token (the unit copy arrives in the BATTLE region, R115)', () => {
   const h = new Harness(2603);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -125,7 +125,9 @@ test('Arcane Echo: creates a copy of a chosen token (unit copy arrives home, R28
   assert.equal(copies.length, 1, 'a Robot copy was created for the caster');
   assert.ok(copies[0]!.token, 'the copy is a token');
   assert.equal(copies[0]!.counters, 2, 'with the same X (counters)');
-  assert.equal(copies[0]!.region, new E(h.state).homeRegion(A), 'unit copies arrive in the controller\'s home region (R28)');
+  assert.equal(copies[0]!.region, h.state.battle!.region,
+    'R115: the copy arrives where the SOURCE is — this spell was cast in the battle region');
+  assert.notEqual(h.state.battle!.region, new E(h.state).homeRegion(A), 'which is not the caster\'s home');
   assert.ok(ent(h, robot), 'the original is untouched');
   assert.ok(h.state.players[A]!.bin.includes('Arcane Echo'), 'the spell resolved → bin');
   finishBattle(h);

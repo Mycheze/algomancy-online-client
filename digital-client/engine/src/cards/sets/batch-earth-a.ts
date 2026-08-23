@@ -39,7 +39,7 @@
 import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, notSelf, type EffectCtx, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, inEndOfTurn, chooseUnit } from './helpers.ts';
+import { selfOf, isEnt, chooseUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -85,19 +85,16 @@ const fight = (g: E, ctx: EffectCtx, a: Entity, b: Entity): void => {
 // Unit. Died trigger (self); unbounded graft ([Switch]). "Each player" =
 // the event region's present seats (R12/R25) — dying during deployment, only
 // my controller is present. Each player picks their OWN unit (auto when they
-// have one; deterministic auto-pick during end-of-turn resolution); all picks
-// are gathered before any damage (plan-then-commit), then I deal 4 to each.
+// have only one); all picks are gathered before any damage (plan-then-commit),
+// then I deal 4 to each. The pick is a real question even when the trigger
+// resolves in the end-of-turn window — a ctx.choose suspension there is
+// answered and the turn flip is closed afterwards by E.finishTurnEnd (R85).
 const rockfall4: EffectDef = {
   run: (g, ctx) => {
     const picks: Entity[] = [];
     for (const seat of presentSeats(g, ctx.region)) {
       const units = g.unitsOf(seat, ctx.region);
       if (!units.length) continue;
-      if (inEndOfTurn(g)) {   // no suspensions in the end-of-turn tail
-        g.ev('info', `Rockfall: ${units[0]!.card} is auto-picked (end-of-turn resolution).`);
-        picks.push(units[0]!);
-        continue;
-      }
       const u = chooseUnit(g, ctx, `rf:${seat}`, seat, units,
         'Rockfall 4: choose one of your units (it will be dealt 4 damage)');
       if (u) picks.push(u);
@@ -254,7 +251,6 @@ card('Eminence of the Barrens', {
         }
         if (t.id === self.id) { g.ev('info', 'Eminence of the Barrens: cannot fight myself ("another target unit").'); return; }
         if (g.openMana(ctx.controller) < 1) { g.ev('info', 'Eminence of the Barrens: cannot pay [one] — no fight.'); return; }
-        if (inEndOfTurn(g)) { g.ev('info', 'Eminence of the Barrens: auto-declines the payment (end-of-turn resolution).'); return; }
         const pays = ctx.choose('pay', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: `Eminence of the Barrens: pay [one] to fight ${t.card}?`,

@@ -7,8 +7,8 @@
  * Rulings referenced: R1 (conditions at event time, amounts at resolution),
  * R5 (fizzle vs partial), R6 (mid-resolution payments via ctx.choose),
  * R9 (bounded budgets per card), R12 (regions exclusive — listeners, statics
- * and "your units" are region-scoped), R28 (created units arrive in their
- * controller's HOME region; spell tokens stay battle-local), R31 (triggers
+ * and "your units" are region-scoped), R115 (created units arrive where their
+ * SOURCE is — ctx.region — as spell tokens always did), R31 (triggers
  * fired during combat damage sub-steps resolve immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS in this batch:
@@ -40,11 +40,13 @@
  *  - Transmogrifant / Synaptic Energizer: "your (other) units" is read
  *    region-scoped (R12, the Flowstone Arcanite precedent).
  *
- * PARKED (needs engine primitives that do not exist; subsets implemented):
- *  - Worldbender: "Skip your draft step. When you do, draw a card." — the
- *    engine has draft state (state.draftDone, mode 'draft') but NO skip
- *    machinery; the constructed-format life clause has no format flag either.
- *    Registered as a vanilla 2/2 {Feeble} unit until skipping exists.
+ *  - Worldbender is fully LIVE as of playtest report #87, which is where its
+ *    numbers come from. It is a STATIC card-step replacement (the new
+ *    `CardBehavior.replaceCardStep`, consulted by E.startDraftStep and
+ *    E.startConstructedDraw), not a one-shot on-spawn skip: the owner reported
+ *    it while he "had it in play", describing what happens every turn. Only
+ *    mode 'shared' is unanswered — it has no card step at all, so the card is
+ *    inert there and nobody has said whether it should be.
  */
 import type { EntityId } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -186,8 +188,8 @@ card('Scrap For Parts', {
 
 // "[Switch1] Create a Robot X, where X is your [m]." — m/2 Scrap Technology
 // Spell. X = metal affinity at RESOLUTION (R1; expended resources count,
-// R17). A created unit is a token and arrives in its controller's HOME
-// region (R28); the Robot spawns with X +1/+1 counters (the Robot card is a
+// R17). A created unit is a token and arrives where its SOURCE is —
+// ctx.region (R115); the Robot spawns with X +1/+1 counters (the Robot card is a
 // 0/0 that lives on its counters). X = 0 → nothing is created (a 0/0 would
 // die instantly).
 const selfAssemble: EffectDef = {
@@ -195,7 +197,7 @@ const selfAssemble: EffectDef = {
   run: (g, ctx) => {
     const x = g.affinity(ctx.controller, 'metal');
     if (x <= 0) { g.ev('info', 'Self-Assembly: no metal affinity — no Robot.'); return; }
-    g.spawnUnit(ctx.controller, 'Robot', g.homeRegion(ctx.controller), { token: true, counters: x });
+    g.spawnUnit(ctx.controller, 'Robot', ctx.region, { token: true, counters: x });
   },
 };
 card('Self-Assembly', {
@@ -434,6 +436,46 @@ card('Void Memory', {
 
 // "Skip your draft step. When you do, draw a card. You also lose 3 life if
 // playing a constructed format." — mm/2 2/2 {Feeble} Cosmic Robot Unit.
-// PARKED (header: no draft-step-skip machinery; no format flag). Registered
-// as a vanilla 2/2 {Feeble} body meanwhile.
-card('Worldbender', {});
+//
+// It REPLACES the turn's card step while it is in play — it does not skip a
+// step and then draw on top of everything else. Owner, playtest report #87
+// (room XVUR, 2026-08-23), verbatim:
+//
+//   "The way it works in live draft: instead of looking at the pack, you draw
+//    2 for turn + 1 for Worldbender. No life loss.
+//    The way it works in constructed and cube: instead of drawing 4 and
+//    recycling 2, you draw 2 for turn + 1 for Worldbender and lose 3 life."
+//
+// So the two branches are not the same arithmetic written twice. Draft already
+// pays the flat 2 for the turn in startTurn, so the card owes ONE card there;
+// constructed has no separate turn draw at all — its draw phase IS the turn's
+// cards — so the card owes all THREE, and the 3 life with them. Both branches
+// end the step: no pack is looked at, and nothing is put back on the bottom.
+//
+// A skipped seat's pack is untouched and passes on as received, and their hand
+// never mixes with it, so `seenHand` stays valid — the one thing not drafting
+// preserves.
+//
+// "Cube" has no mode in this engine (GameMode is 'shared' | 'draft' |
+// 'constructed'); the owner groups it with constructed, so it falls into this
+// branch the day the mode exists.
+card('Worldbender', {
+  replaceCardStep: (g, _self, seat) => {
+    if (g.s.mode === 'draft') {
+      g.ev('draft', `Worldbender: ${g.pname(seat)} does not look at their pack — they draw a card instead.`, { seat });
+      g.draw(seat, 1);
+      return true;
+    }
+    if (g.s.mode === 'constructed') {
+      g.ev('draw', `Worldbender: ${g.pname(seat)} skips the draw phase — 2 cards for the turn plus 1 for Worldbender, and 3 life.`, { seat });
+      // drawn BEFORE the life is paid: 3 life can be lethal, and loseLife ends
+      // the game where it lands, so the cards the player is owed are already in
+      // hand when it does
+      g.draw(seat, 3);
+      g.loseLife(seat, 3, 'Worldbender');
+      return true;
+    }
+    // mode 'shared' never asks (it has no card step to replace) — see dsl.ts
+    return false;
+  },
+});

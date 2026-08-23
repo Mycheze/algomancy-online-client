@@ -1061,8 +1061,8 @@ export const CARD_TODO: TodoEntry[] = [
       + 'a `bounded` ability is composed — before its run has a chance to discover it can '
       + 'do nothing. 88 of the pool’s 138 bounded ([once] / [Switch1]) abilities have a '
       + 'run that can bail out, and most of those bail-outs are harmless type guards. '
-      + 'One is not: Hexbane Shiitake reads `inEndOfTurn(g) ? false : ctx.choose(...)`, so '
-      + 'during the end-of-turn window the player is NEVER ASKED and the [once] is spent '
+      + 'One was not: Hexbane Shiitake used to read `inEndOfTurn(g) ? false : ctx.choose(...)`, '
+      + 'so during the end-of-turn window the player was NEVER ASKED and the [once] was spent '
       + 'anyway. The same shape burns the budget when the carrier is already gone or when '
       + 'the spell it wanted has left the stack. '
       + '⚠ The general case needs a RULING, not just code: does declining a "you may" '
@@ -1078,6 +1078,11 @@ export const CARD_TODO: TodoEntry[] = [
       + 'so the same trigger can ask again later the same turn. That answers both halves '
       + 'at once (the never-asked auto-decline and the ordinary decline) and makes all 88 '
       + 'bounded abilities with a bail-out branch behave the same way. '
+      + 'SINCE UPDATED (same day): the never-asked half no longer exists. The premise it '
+      + 'rested on — that a ctx.choose suspension in the end-of-turn window strands the '
+      + 'game — was stale, so `inEndOfTurn` and all 21 of its auto-answers were deleted '
+      + 'and Hexbane now ASKS wherever it resolves (99-endofturn.test.ts). The RULING is '
+      + 'unchanged and still load-bearing: it is what makes the ORDINARY decline refund. '
       + 'IMPLEMENTATION NOTE, because the obvious version does not work: "emitted no '
       + 'event" is NOT the test for "did nothing" any more — CARD-TODO #3\u2019s sweep just '
       + 'gave every one of those bail-out branches an announcement, which was the point of '
@@ -1088,7 +1093,8 @@ export const CARD_TODO: TodoEntry[] = [
     // ⚠ THE FIRST VERSION OF THIS PROOF matched `inEndOfTurn(g) ? false` in the
     // card's source — and after the fix it went on matching the EXPLANATORY
     // COMMENT that replaced the code. Source-text proofs measure the wrong
-    // thing. This one asks whether the seam exists at all: a refund cannot
+    // thing. (The shape is gone from the pool entirely now, which is exactly
+    // why a proof written against it would have proved nothing.) This one asks whether the seam exists at all: a refund cannot
     // happen if there is nothing to call. The BEHAVIOUR — declined refunds,
     // successful activation still spends — is asserted by the guards below,
     // which is where behaviour belongs.
@@ -1107,7 +1113,7 @@ export const CARD_TODO: TodoEntry[] = [
     // two unpayable-cost branches. Same ruling, different route: declining a
     // cost you were offered is declining.
     guards: [
-      '93-engine-defects.test.ts::in the end-of-turn window is never asked, and its [once] is not spent',
+      '93-engine-defects.test.ts::in the end-of-turn window is ASKED, and declining does not spend its [once]',
       '93-engine-defects.test.ts::can still fire later the same turn',
       '93-engine-defects.test.ts::whose exchange is DECLINED keeps its [once]',
       '93-engine-defects.test.ts::a SUCCESSFUL Hexbane Shiitake exchange really does spend its [once]',
@@ -1307,6 +1313,118 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'Census: no ability with `bounded: true` also declares a `zone`. When one appears, '
       + 'this stops being latent.',
+    status: 'open',
+  },
+  {
+    id: 22,
+    area: 'engine',
+    severity: 'major',
+    cards: ['Mirage Walker'],
+    title: 'Mirage Walker asks who has INITIATIVE, not who acted, so it misfires both ways',
+    detail:
+      'Its bookkeeping `when()` reads `g.s.deployPlayer === self.controller`. `deployPlayer` is '
+      + 'NOT the acting seat: deployment is simultaneous and it is a derived initiative-ordered '
+      + 'marker (its own comment in apply.ts says "derived sequential marker"). The predicate '
+      + 'therefore reduces to "is my controller the initiative seat?" and never asks who acted. '
+      + 'FALSE NEGATIVE (the reported case, EGCW turn 8): the non-initiative seat\'s own '
+      + 'deployment actions are never counted, so Rashi played Mirage Walker and it still fired. '
+      + 'FALSE POSITIVE: the OPPONENT applying a mod in your region sets the flag and suppresses '
+      + 'your trigger though you did nothing — reachable whenever someone grafts onto your unit, '
+      + 'which is exactly what happened in that same deployment. '
+      + 'RULED by the owner 2026-08-23: "the idea is that YOU did something during deployment '
+      + 'other than just hitting Done" — any deployment action counts, mods and ability '
+      + 'activations included.',
+    evidence:
+      'Playtest report #86 (EGCW). Confirmed over the full seat x deployPlayer matrix: 2 of the 4 '
+      + 'combinations misfire. Mirage Walker is the ONLY card in the pool that reads '
+      + '`deployPlayer` (grep over src/cards/), so the class is narrow — the real class is not '
+      + '"phase-begin triggers" but "entity-local when() bookkeeping with a wrong window '
+      + 'predicate". The parent hypothesis that permanents generally misfire for the phase they '
+      + 'entered was CHECKED AND REFUTED: fireEvent snapshots entities at the instant the event '
+      + 'fires, so a late arrival has already missed it.',
+    fix:
+      'Do NOT patch the predicate in card code — stamp the truth in the REDUCER. Add a per-seat '
+      + '`deployActed` to GameState, zeroed in E.startDeployment(), set in apply() for any '
+      + 'deployment action other than doneDeploying/decide. Mirage Walker\'s when() then becomes '
+      + 'a pure read and the whole bookkeeping ability can be deleted. This also fixes the '
+      + 'approximation the card\'s own header admits ("pure activations with silent effects can '
+      + 'slip through") and removes its dependence on region scoping and event payloads — note '
+      + '`modApplied` carries no seat at all today, so the minimal card-level fix would need a '
+      + 'payload change anyway.',
+    proof: null,
+    verify:
+      'Drive playCard(Mirage Walker) in deployment for each of the four (mwSeat, deployPlayer) '
+      + 'combinations and count the 3/3 tokens at end of turn. While the bug is live, the two '
+      + 'combinations where deployPlayer !== mwSeat wrongly produce a token.',
+    reportId: 86,
+    status: 'open',
+  },
+  {
+    id: 23,
+    area: 'coverage',
+    severity: 'major',
+    title: 'deployPlayer is used as "the acting seat" by 763 assertions, so seat-asymmetric deployment bugs are invisible',
+    detail:
+      'The guard that should have caught CARD-TODO #22 reads `const p = h.state.deployPlayer!` '
+      + 'and then drives THAT seat — which is always the initiative seat right after '
+      + 'toDeployment(), i.e. the one seat Mirage Walker\'s buggy predicate happens to serve '
+      + 'correctly. The test is green with the bug live. '
+      + 'This is not one test\'s mistake: `h.state.deployPlayer` appears 763 times across 65 test '
+      + 'files as the canonical "acting seat". ANY seat-asymmetric deployment bug is therefore '
+      + 'invisible to the whole suite, not just this one. Same shape as the drill\'s own trap '
+      + 'list: a fixture that always picks the convenient seat is not coverage, it is a habit.',
+    evidence:
+      'A count of `deployPlayer` occurrences across test/. The Mirage Walker replacement test, '
+      + 'parameterised over seat x deployPlayer, was confirmed red 4/4 before the fix while the '
+      + 'original single-seat test stayed green.',
+    fix:
+      'Not a mass rewrite — most of those 763 uses are legitimately "whoever is deploying". The '
+      + 'useful move is a lint-style test asserting that any card test which drives a DEPLOYMENT '
+      + 'action runs from both seats, plus fixing the fixtures for cards whose behaviour is '
+      + 'seat-dependent. Start from the cards whose text says "you" or "your" about a deployment '
+      + 'action, since those are the ones where the two seats can differ.',
+    proof: null,
+    verify:
+      'grep -c "deployPlayer" over test/*.test.ts, and check whether any test drives the '
+      + 'NON-deployPlayer seat through a deployment action.',
+    status: 'open',
+  },
+  {
+    id: 24,
+    area: 'engine',
+    severity: 'major',
+    cards: ['Worldbender'],
+    title: 'Worldbender is a vanilla 2/2 — none of its text exists, and no draft-step skip machinery does either',
+    detail:
+      'Printed: "Skip your draft step. When you do, draw a card. You also lose 3 life if playing '
+      + 'a constructed format." The card is registered as a vanilla 2/2 {Feeble}. It has been '
+      + 'carried in card-ledger.ts as `gap: dead, severity: high`. '
+      + 'The owner played it and filed report #87, which finally supplies the spec that no ruling '
+      + 'had settled — and the key point is that the card REPLACES the turn\'s normal card '
+      + 'acquisition rather than adding to it: '
+      + 'LIVE DRAFT — skip looking at the pack; draw 2 for turn + 1 for Worldbender = 3; NO life '
+      + 'loss. CONSTRUCTED and CUBE — skip the draw-4-then-put-2-back; draw 2 for turn + 1 for '
+      + 'Worldbender = 3; lose 3 life.',
+    evidence:
+      'Playtest report #87 (XVUR, 2026-08-23): "I have it in play and didn\'t skip my draft step". '
+      + 'card-ledger.ts has carried the entry since the pool audit, with a {todo:true} test at '
+      + '28-metal-c.test.ts::Worldbender naming exactly what was missing — neither of which can '
+      + 'fail, which is why the suite stayed green while the card stayed dead. Only playing it '
+      + 'surfaced it.',
+    fix:
+      'Build a per-seat "skip your next draft step" flag consulted by the draft step, firing the '
+      + 'draw only when the skip ACTUALLY happens ("when you do" is conditional). Then branch the '
+      + 'two formats per the spec above. '
+      + 'TWO THINGS THE REPORT DOES NOT SETTLE and which must not be guessed: `GameMode` is '
+      + "'shared' | 'draft' | 'constructed' — there is no CUBE mode to branch on, so cube "
+      + 'presumably rides the constructed branch if it is ever added; and `shared` mode is not '
+      + 'mentioned at all and needs its own answer.',
+    proof: null,
+    verify:
+      'Play Worldbender in a draft game and take the draft step: while the bug is live the pack '
+      + 'is still offered and no extra card is drawn. In constructed, the draw-4-put-2-back still '
+      + 'happens and no life is lost.',
+    reportId: 87,
     status: 'open',
   },
 ];

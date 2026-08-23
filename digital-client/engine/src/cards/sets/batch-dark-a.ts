@@ -9,8 +9,8 @@
  * Rulings referenced: R1 (conditions at event time, amounts at resolution),
  * R5 (fizzle vs partial), R6 (payments are part of resolution, via
  * ctx.choose), R9 (bounded budgets per card), R12/R25 ("each unit / each
- * player" is region-scoped), R28/R52 (created units arrive in their
- * CONTROLLER's home region, whatever region the effect resolved in),
+ * player" is region-scoped), R115 (a created unit arrives where its SOURCE
+ * is — ctx.region — so a Wraith minted mid-attack stays in the battle region),
  * R37 (applying a mod is not playing a card), R40 (trashing), R45 (glimpse),
  * R71 (the Wraith token; retired name Wight).
  *
@@ -154,7 +154,7 @@ const animaWraith: EffectDef = {
       return;
     }
     g.payMana(ctx.controller, 1);
-    g.createWraith(ctx.controller, g.homeRegion(ctx.controller));   // R52
+    g.createWraith(ctx.controller, ctx.region);   // R115
   },
 };
 card('Afflicting Anima', {
@@ -205,7 +205,7 @@ card('Cosmic Devourer', {
     effect: {
       creates: ['Wraith'],
       run: (g, ctx) => {
-        g.createWraith(ctx.controller, g.homeRegion(ctx.controller));   // R52
+        g.createWraith(ctx.controller, ctx.region);   // R115
         g.gainRot(ctx.controller, 1);
       },
     },

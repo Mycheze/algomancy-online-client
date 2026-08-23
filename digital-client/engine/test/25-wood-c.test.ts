@@ -35,7 +35,7 @@ function whiteBox(h: Harness, f: (e: E) => void): void {
   h.state = e.s;   // a mid-resolution suspension re-points e.s (structuredClone)
 }
 
-test('Ralph: [one] gives target opponent control of it, creates three 1/1s at home; bounded across the handover', () => {
+test('Ralph: [one] gives target opponent control of it, creates three 1/1s where Ralph stands; bounded across the handover', () => {
   const h = new Harness(2500);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -51,7 +51,9 @@ test('Ralph: [one] gives target opponent control of it, creates three 1/1s at ho
   assert.ok(!h.state.battle!.columns.flat().includes(ralph), 'Ralph dropped out of the attack formation');
   const tokens = unitsOf(h, A).filter(u => u.card === 'Unit Token');
   assert.equal(tokens.length, 3, '"if you do": three 1/1 units for the giver');
-  assert.ok(tokens.every(u => u.region === home(h, A)), 'created units arrive at HOME (R28), not the battle region');
+  assert.ok(tokens.every(u => u.region === h.state.battle!.region),
+    'R115: created units arrive where the SOURCE is — Ralph was attacking, so they are in the battle region');
+  assert.notEqual(h.state.battle!.region, home(h, A), 'and that is not home');
   pass(h);                                            // priority → D
   assert.throws(
     () => h.do({ type: 'activateAbility', seat: D, entityId: ralph, abilityIndex: 0 }),
@@ -119,7 +121,7 @@ test('Saprophytic Oracle: a nontoken death mints a 1/1 at home; token deaths do 
   e.settle();
   const minted = unitsOf(h, p).filter(u => u.card === 'Unit Token');
   assert.equal(minted.length, 1, 'nontoken death → one 1/1 unit');
-  assert.equal(minted[0]!.region, home(h, p), 'the 1/1 arrives at home (R28)');
+  assert.equal(minted[0]!.region, home(h, p), 'the 1/1 arrives at ctx.region — in deployment that IS home (R115)');
   const e2 = new E(h.state);
   e2.destroy(minted[0]!, 'dies');                     // the token itself dies…
   e2.settle();
@@ -290,7 +292,7 @@ test('Sylvan Sprouting: one 1/1 per wood affinity — expended wood still counts
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Sylvan Sprouting') });
   const tokens = unitsOf(h, p).filter(u => u.card === 'Unit Token');
   assert.equal(tokens.length, 4, '4 wood affinity → 4 units (expended resources still give affinity)');
-  assert.ok(tokens.every(u => u.region === home(h, p)), 'created units arrive at home (R28)');
+  assert.ok(tokens.every(u => u.region === home(h, p)), 'created units arrive at ctx.region — home for a deploy spell (R115)');
 });
 
 test('Verdant Necrophage: spawning creates a Poison 6', () => {

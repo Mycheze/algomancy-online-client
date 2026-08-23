@@ -6,7 +6,7 @@
  * document. main.ts renders the answers; test/50-ui-inspect.test.ts checks
  * them.
  */
-import { allCardNames, getCard } from '../src/cards/dsl.ts';
+import { allCardNames, effectByKey, getCard } from '../src/cards/dsl.ts';
 import { E } from '../src/engine.ts';
 import { allureViolation } from '../src/apply.ts';
 import { specForSlot } from '../src/cards/dsl.ts';
@@ -155,6 +155,67 @@ export function playableCachedNames(cache: { card: CardName }[], legal: Action[]
     .filter((a): a is Extract<Action, { type: 'playCached' }> => a.type === 'playCached')
     .map(a => a.index));
   return [...idx].sort((x, y) => x - y).map(i => cache[i]?.card).filter((n): n is CardName => !!n);
+}
+
+/**
+ * Why one cache entry is not playable right now — the reason the UI prints.
+ *
+ * Playtest report #78 (room EGCW): the cache panel said "not this step" for a
+ * {Deployment} card, during deployment, that was permitted and correctly timed
+ * and short only of MANA. Nothing illegal was offered and nothing legal was
+ * refused — enforcement was right and the LABEL was wrong. Both render sites
+ * had computed "permitted" from cachePermission and "playable now" from the
+ * legal-action list, then blamed the entire gap on timing without ever asking
+ * whether the timing already matched.
+ *
+ * So the UI must not restate the rule; it must ask the SAME questions in the
+ * SAME order the enumerator does. pushCachedPlays (apply.ts) walks:
+ *     no `via`                                  → not permitted at all
+ *     !allowed(cachedTiming)                    → wrong step
+ *     via === 'glimpse' && !canPayManaOnly      → cannot pay
+ *     !castable(...)                            → nothing legal to aim at
+ *     otherwise it offers the play
+ * and this mirrors that, clause for clause. The last clause is the residual:
+ * `castable` is engine-private, so once permission, timing and mana are known
+ * to be fine, "still not in `legal`" IS "no legal target".
+ *
+ * `allowed` is not a free parameter — it comes from the step the game is in
+ * (haste → {Haste}; battle priority → {Battle}; deployment → {Deployment} or
+ * {Haste}), so a step that offers no cached play at all reads as 'timing'.
+ */
+export type CacheBlock = 'none' | 'no-permission' | 'timing' | 'mana' | 'no-target';
+
+/** the timing predicate `pushCachedPlays` would be handed right now, or null
+ * when this step never reaches it for this seat (legalActions' dispatcher, and
+ * the battle step/priority gates inside legalBattleActions) */
+function cacheTimingGate(e: E, seat: Seat): ((t: string) => boolean) | null {
+  const s = e.s;
+  if (s.phase === 'gameover' || s.decision) return null;
+  if (s.phase === 'planning' && s.hasteDone) {
+    return s.hasteDone[seat] ? null : (t: string) => t === 'haste';
+  }
+  if (s.phase === 'planning') return null;
+  if (s.phase === 'battle' && s.battle) {
+    const b = s.battle;
+    if (b.step === 'declare' && seat === b.attacker) return null;
+    if (b.step === 'blocks' && seat === b.defender) return null;
+    if (s.priority !== seat) return null;
+    return (t: string) => t === 'battle';
+  }
+  if (e.deploying(seat)) return (t: string) => t === 'deploy' || t === 'haste';
+  return null;
+}
+
+export function cacheBlockReason(e: E, seat: Seat, i: number, legal: Action[]): CacheBlock {
+  const cc = e.cache(seat)[i];
+  if (!cc) return 'no-permission';
+  const via = e.cachePermission(seat, i);
+  if (!via) return 'no-permission';
+  const allowed = cacheTimingGate(e, seat);
+  if (!allowed || !allowed(e.cachedTiming(seat, i, via))) return 'timing';
+  if (via === 'glimpse' && !e.canPayManaOnly(seat, cc.card)) return 'mana';
+  const offered = legal.some(a => a.type === 'playCached' && a.index === i && a.seat === seat);
+  return offered ? 'none' : 'no-target';
 }
 
 /**
@@ -1309,6 +1370,54 @@ const VARIABLE_LABEL = /\bx\b|that many|that much|equal to|double that/i;
  * receipt instead. It is still a per-part X, so it lands in the same 'cost'
  * row and needs no fourth kind.
  */
+/** One declared MODE riding on a stack item — R57. */
+export interface StackModeRow {
+  /** index into item.parts */
+  part: number;
+  /** the ModeSpec key ('stat', 'mode', 'tok', …) — names the choice */
+  key: string;
+  /** the option's own label if it can still be computed, else the raw value */
+  label: string;
+  /** which clause declared it, for a composed/grafted item */
+  source?: string;
+}
+
+/**
+ * R57: a modal card declares its half in the CAST window, before anyone may
+ * respond — see 97-mode-conformance.test.ts. That was the whole point of the
+ * report (EGCW #81): the caster used to pick AFTER seeing the response, with
+ * the option labels recomputed off the post-response board.
+ *
+ * Declaring it early is only half the fix. If the opponent cannot READ the
+ * declared half off the stack, they are still responding blind and the
+ * response window is still not meaningful — so the mode has to be visible
+ * here, next to X and the targets, the same way {Modular} mods are.
+ *
+ * The stored value is the ModeSpec option's `value`; the LABEL is nicer
+ * ("Power (5 → 10)" rather than "power"), so re-run `options()` to recover it.
+ * That call reads live state and can legitimately fail on a redacted client
+ * view — a missing label must never cost the viewer the fact that a mode was
+ * chosen at all, so any throw falls back to the raw value.
+ */
+export function stackItemModes(item: StackItem, g?: E): StackModeRow[] {
+  const out: StackModeRow[] = [];
+  item.parts.forEach((p, i) => {
+    if (p.spent || p.mode === undefined) return;
+    const spec = effectByKey(p.effectKey).modes;
+    if (!spec) return;
+    let label = typeof p.mode === 'string' ? p.mode : JSON.stringify(p.mode);
+    if (g) {
+      try {
+        const hit = spec.options(g, item, p).find(o => o.value === p.mode);
+        if (hit) label = hit.label;
+      } catch { /* redacted view or missing target — the raw value still tells the truth */ }
+    }
+    const src = partText(p.effectKey)?.source;
+    out.push({ part: i, key: spec.key, label, ...(src ? { source: src } : {}) });
+  });
+  return out;
+}
+
 export function stackItemX(item: StackItem): StackXRow[] {
   const out: StackXRow[] = [];
   if (item.x !== undefined) {

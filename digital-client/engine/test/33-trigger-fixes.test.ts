@@ -2,7 +2,7 @@
  *  - Ember of Life (triple fix): "one of YOUR spell effects" filters on the
  *    effect's CONTROLLER (damage events now carry it); spell-effect damage
  *    to a PLAYER's face counts (a damage event is emitted for it); the 1/1s
- *    spawn in the CARRIER's region (R33, refining R28).
+ *    spawn in the CARRIER's region (R33, absorbed into R115).
  *  - Unstable Apparition: pinned once-per-TURN semantics for [once] (R9) —
  *    the AGBP game review found the engine correct (fired on Accelerated
  *    Germination in the haste step, X = 2; correctly silent on Organic
