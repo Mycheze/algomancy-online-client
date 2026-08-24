@@ -7231,9 +7231,10 @@ export class E {
       && a.label === b.label && JSON.stringify(a.parts) === JSON.stringify(b.parts);
   }
 
-  /** Drain the trigger queue. In battle, triggers become stack items (owner
-   * orders their own; NIT's enter last so they resolve first — R2). Outside
-   * battle they resolve immediately in the order the stack would produce.
+  /** Drain the trigger queue. In battle AND in deployment (R144), triggers
+   * become stack items (owner orders their own; NIT's enter last so they
+   * resolve first — R2). Everywhere else they resolve immediately in the order
+   * the stack would produce.
    * A seat whose queued triggers are ALL identical (sameTrigger) skips the
    * ordering decision — the order cannot matter or even be expressed. */
   processTriggerQueue(): void {
@@ -7256,14 +7257,45 @@ export class E {
           this.s.triggerOrderedSeats.push(seat);
         }
       }
-      // 2. next trigger: battle → stack entry order IT(reversed) then NIT(reversed);
-      //    immediate → resolution order NIT first (equivalent outcomes, R2)
+      // 2. next trigger: stack mode → stack entry order IT(reversed) then
+      //    NIT(reversed); immediate → resolution order NIT first (equivalent
+      //    outcomes, R2)
       // between combat sub-steps triggers resolve IMMEDIATELY — special
       // actions, no priority (R3); otherwise battle triggers use the stack
       const battleMode = this.s.phase === 'battle' && !this.s.battle?.damageStep;
+      /**
+       * R144(a), OWNER RULING (report #101, room SMVJ, 2026-08-24):
+       * *"Deployment should use the stack."*
+       *
+       * Before this, `battleMode` was the ONLY way onto the stack and every
+       * deployment trigger took the `'resolve'` branch instead: it was built,
+       * aimed and resolved to completion, one at a time, before the next one
+       * was even looked at. That is what the owner was complaining about —
+       * with four Wraiths at the start of deployment the first counter could
+       * kill the ally and the remaining three were then re-aimed at whatever
+       * was still standing, because each was aimed only at the moment it ran.
+       * A pile of triggers that never coexists cannot be a pile.
+       *
+       * The ORDER is unchanged, deliberately. Immediate mode resolves NIT's
+       * queue first then IT's, front to back; stack mode pushes each seat's
+       * queue in REVERSE (so its front ends up on top) with NIT's pushed last
+       * (so NIT's is above IT's) — and pops FILO. Both spell exactly the same
+       * resolution order, which is what keeps R2, the seeded replay and every
+       * existing deployment test saying what they said before.
+       *
+       * NOT taxed: `gateTaxedTrigger` below stays keyed on `battleMode`. R121
+       * is Crevice Lurker's "during battle" clause and deployment is not
+       * battle; routing deployment through the stack must not invent a tax the
+       * card does not print.
+       *
+       * Nobody may RESPOND to a deployment stack: deployment is a hidden
+       * simultaneous segment with no priority windows at all. `settle()` drains
+       * the deployment stack itself, at the first safe point, top down.
+       */
+      const stackMode = battleMode || this.s.phase === 'deploy';
       const itQ = this.s.triggerQueue.filter(t => t.controller === this.initiative);
       const nitQ = this.s.triggerQueue.filter(t => t.controller === this.nit);
-      const next = battleMode
+      const next = stackMode
         ? (itQ.length ? itQ[itQ.length - 1]! : nitQ[nitQ.length - 1]!)
         : (nitQ.length ? nitQ[0]! : itQ[0]!);
       this.s.triggerQueue.splice(this.s.triggerQueue.indexOf(next), 1);
@@ -7278,7 +7310,7 @@ export class E {
       // controller to pay) or swallow the trigger (no mana — prevented,
       // announced); `continue` covers the swallowed case.
       if (battleMode && this.gateTaxedTrigger(next)) continue;
-      this.stackPendingTrigger(next, battleMode ? 'push' : 'resolve');
+      this.stackPendingTrigger(next, stackMode ? 'push' : 'resolve');
     }
   }
 
@@ -7385,6 +7417,31 @@ export class E {
       // (startTurn / endBattleRound / end of the haste step).
       this.refreshProphecies();
       if (!this.s.triggerQueue.length) {
+        /**
+         * R144(a): DRAIN THE DEPLOYMENT STACK.
+         *
+         * In battle the stack is drained by priority — two passes resolve the
+         * top item — because a battle stack exists so that people may respond
+         * to it. Deployment has no priority windows and no responses (it is a
+         * hidden simultaneous segment: see server/view.ts), so its stack is
+         * drained here, at the same safe point everything else outside battle
+         * uses, top down. The trigger queue is empty by the time this runs, so
+         * every trigger of the batch is already ON the stack and aimed — which
+         * is the whole point of the owner's ruling.
+         *
+         * ONE item, then return: `resolveTop` ends in `finishResolutionTail`,
+         * which settles again, so the rest of the stack drains through the
+         * same door — and a trigger that the resolution itself queues (a
+         * Wraith dying to its own counter) is picked up by that inner settle
+         * and lands ON TOP of what is left, resolving before it, as a stack
+         * must. A mid-resolution decision throws clean out of here and
+         * `doDecide` resumes into `finishResolutionTail` → `settle`, i.e. back
+         * to this line with one fewer item.
+         */
+        if (this.s.phase === 'deploy' && this.s.stack.length && !this.s.decision) {
+          this.resolveTop();
+          return;
+        }
         // resume a suspended combat-damage pump (R3 sub-step interleaving)
         if (this.s.battle?.damageStep && !this.pumping && !this.s.decision && !this.s.stack.length) {
           this.pumpCombatDamage();

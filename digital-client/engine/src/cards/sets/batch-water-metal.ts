@@ -120,7 +120,18 @@ const amalgamCounters: EffectDef = {
   run: (g, ctx) => {
     const x = eventSpellCost(ctx);
     const self = selfOf(g, ctx);
-    if (self && x > 0) g.addCounters(self, x);
+    // CARD-TODO #3 / R109: "nothing happened" is a legitimate outcome, not
+    // saying so never is. Its sibling three definitions down (Arcane
+    // Concentrator, the same [once]/spellPlayed/X-is-the-cost shape) has said
+    // this since it was written; this one was simply missed, and 65's fuzz
+    // drive only reached the branch once R144 moved the deployment triggers
+    // onto the stack and shifted the drive's trajectory. Pre-existing, not
+    // caused by that change.
+    if (!self || x <= 0) {
+      g.ev('info', `Channeled Amalgam: ${self ? 'that spell costs 0 — X is 0, no counters' : 'its carrier has left play — no counters'}.`);
+      return;
+    }
+    g.addCounters(self, x);
   },
 };
 card('Channeled Amalgam', {

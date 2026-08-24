@@ -1009,3 +1009,132 @@ test('the new actions replay deterministically from the same setup', () => {
   assert.equal(a.state.rngState, b.state.rngState, 'and the RNG never diverged');
 });
 
+/* ── R144: DEPLOYMENT USES THE STACK, AND TRIGGERS MAY OVER-AIM ────────
+ *
+ * OWNER RULING, playtest report #101 (room SMVJ, action 318, 2026-08-24),
+ * verbatim:
+ *
+ *   "Deployment should use the stack. All Wraith triggers should go onto the
+ *    stack simultaneously and be allowed to target the same unit, even
+ *    exceeding its defense (the final triggers would just fizzle)."
+ *
+ * Two halves, one commit each. (a) is this block; (b) is the one after it.
+ *
+ * WHAT THE BEHAVIOUR ACTUALLY WAS, measured before anything moved: three
+ * Wraiths at the start of deployment queued three triggers, `battleMode` was
+ * false, and every one of them took `stackPendingTrigger(next, 'resolve')` —
+ * built, aimed and resolved to completion, one at a time, with the stack empty
+ * throughout. The ally was chosen INSIDE the resolution (`ctx.choose`), so the
+ * second trigger was aimed after the first had already killed a 1/1 and was
+ * offered a menu the dead unit was no longer on. Not a targeting restriction
+ * refusing it — the unit was simply gone. Both halves of the hypothesis
+ * confirmed.
+ *
+ * R102 is NOT retested here: 43-dark-c.test.ts's "the start-of-deployment event
+ * still fires after the rot replacement stopped to ask" already drives exactly
+ * this path, and drives it harder now — under R144 that replacement trigger
+ * goes through the deployment stack, suspends mid-way, and `finishDeployStart`
+ * must still close the window afterwards.
+ */
+
+/** every stack depth observed from INSIDE a T144 Watcher's resolution */
+const watched: number[] = [];
+registerSynthetic(unit('T144 Watcher', 1, 1), {
+  abilities: [{
+    type: 'triggered', events: ['startOfDeployment'],
+    label: 'note how many siblings are still on the stack',
+    effect: {
+      run: (g: E) => {
+        watched.push(g.s.stack.length);
+        g.ev('info', `T144 Watcher: ${g.s.stack.length} still on the stack.`);
+      },
+    },
+  }],
+});
+
+// The claim in one number. A resolving deployment trigger used to see an empty
+// stack because there was never anything on it; now the whole batch is pushed
+// first and popped FILO, so the first to resolve can still see the two waiting
+// behind it. That is what "simultaneously" means mechanically, and it is the
+// precondition for half (b): a trigger cannot be aimed at a unit an earlier one
+// is about to kill unless it was aimed BEFORE that one resolved.
+test('R144(a): every start-of-deployment trigger is on the stack before any of them resolves', () => {
+  const h = sterile(3790);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  spawn(h, P, 'T144 Watcher');
+  spawn(h, P, 'T144 Watcher');
+  spawn(h, P, 'T144 Watcher');
+  watched.length = 0;
+  toNextBattle(h, P);
+  finishBattle(h);                                          // → next deployment
+  assert.equal(h.state.decision, null, 'nothing to ask — the watchers only look');
+  assert.deepEqual(watched, [2, 1, 0],
+    'three triggers, all three on the stack, popped FILO (was [0,0,0]: never stacked at all)');
+  assert.equal(h.state.stack.length, 0, 'and settle() drained it before the phase settled');
+});
+
+// The stack is a real stack, not a bookkeeping detail: each item announces its
+// arrival, and every arrival precedes every resolution.
+test('R144(a): deployment triggers announce themselves onto the stack, all of them before the first resolves', () => {
+  const h = sterile(3791);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  spawn(h, P, 'T144 Watcher');
+  spawn(h, P, 'T144 Watcher');
+  watched.length = 0;
+  const from = h.events.length;
+  toNextBattle(h, P);
+  finishBattle(h);
+  const kinds = h.events.slice(from)
+    .filter(ev => ev.type === 'stackPushed' || ev.type === 'resolved')
+    .map(ev => ev.type);
+  assert.deepEqual(kinds, ['stackPushed', 'stackPushed', 'resolved', 'resolved'],
+    'both pushes happen before either resolution');
+});
+
+// R12: the batch is shared but the AIM is not. Both seats' Wraiths fire into
+// one queue and one stack, and each seat may still only shrink its own units in
+// its own region — deployment puts each player alone in their home region.
+test('R144(a): R12 — a shared deployment stack does not let a Wraith reach across regions', () => {
+  const h = sterile(3792);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const allyA = spawn(h, A, 'T37 Brute');
+  const allyD = spawn(h, D, 'T37 Brute');
+  let wA = 0, wD = 0;
+  whiteBox(h, e => { wA = e.createWraith(A).id; wD = e.createWraith(D).id; });
+  toNextBattle(h, A);
+  finishBattle(h);
+  const seen: Record<number, number[]> = {};
+  let guard = 8;
+  while (h.state.decision && guard-- > 0) {
+    const dec = h.state.decision;
+    seen[dec.seat] = dec.options.map(o => o.value as number);
+    pickBy(h, o => o.value === (dec.seat === A ? allyA : allyD));
+  }
+  const sorted = (xs: number[]): number[] => xs.slice().sort((x, y) => x - y);
+  assert.deepEqual(sorted(seen[A]!), sorted([allyA, wA]),
+    'the initiative seat is offered its OWN region only');
+  assert.deepEqual(sorted(seen[D]!), sorted([allyD, wD]),
+    'and so is the other seat — neither sees the other side of the table');
+  assert.deepEqual(effStats(h, allyA), [3, 3]);
+  assert.deepEqual(effStats(h, allyD), [3, 3], 'each counter landed at home');
+});
+
+// R121's tax is Crevice Lurker's "during battle" clause. Routing deployment
+// through the stack must not invent a tax the card does not print, so the pay
+// gate stays keyed on the BATTLE phase and a deployment trigger walks past it.
+test('R144(a): the deployment stack is not taxed — R121 is a battle-phase gate', () => {
+  const h = sterile(3793);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  spawn(h, P, 'T144 Watcher');
+  watched.length = 0;
+  toNextBattle(h, P);
+  finishBattle(h);
+  assert.equal(h.state.decision, null, 'nobody was asked to pay for a deployment trigger');
+  assert.deepEqual(watched, [0], 'and it resolved');
+  assert.ok(!h.log.some(l => l.includes('is taxed')), 'no tax line at all');
+});
+

@@ -8183,3 +8183,149 @@ and the assertions measure an unfinished turn instead of a wrong one.
 ⚠ **`83-card-todo` FAILS ON PURPOSE when this lands**, naming CT-29: that entry
 carries a proof which holds only while the bug lives. The failure is the
 designed signal that the fix worked, and the ledger's owner closes it.
+## R144 — deployment uses the stack, and a trigger may aim where an earlier one is about to fizzle it
+
+**OWNER RULING**, playtest report #101 (room SMVJ, action 318, 2026-08-24),
+verbatim and in full:
+
+> "Deployment should use the stack. All Wraith triggers should go onto the
+> stack simultaneously and be allowed to target the same unit, even exceeding
+> its defense (the final triggers would just fizzle)."
+
+Not a defect report and not a question — a specification. It has two separable
+halves and they land as two commits, so either can be reverted alone:
+
+- **(a)** deployment-phase triggers go through the **stack**, like everything
+  else;
+- **(b)** several of them may aim at the **same unit** even when the total
+  exceeds what that unit can absorb; the surplus **fizzles on resolution**
+  rather than being prevented when it is aimed.
+
+**(b) is the load-bearing half.** (a) is the mechanism it needs.
+
+### What the behaviour actually was — measured, not assumed
+
+The suspicion carried into this ruling was "start-of-deployment triggers are
+queued and resolved one at a time, and targeting is validated as each trigger's
+target is collected, so a unit already at 0 toughness is no longer offered".
+Both halves of it are **confirmed**, and the second one is confirmed with a
+correction worth having:
+
+- `E.processTriggerQueue` had exactly one route onto the stack, gated on
+  `battleMode = phase === 'battle' && !battle.damageStep`. Everything else took
+  `stackPendingTrigger(next, 'resolve')`: **built, aimed and resolved to
+  completion, one at a time**, with the stack empty under all of them. Three
+  Wraiths at the start of deployment therefore never coexisted anywhere.
+- The Wraith's ally is **not chosen by the targeting layer at all**. R71 made
+  it a resolution-time `ctx.choose` precisely because the word *target* is not
+  printed on the card, so the second trigger picked its ally from
+  `g.unitsOf(...)` *after* the first had already killed a 1/1. Nothing
+  *refused* the dead unit; it was simply not in play any more.
+
+So the thing that "pre-validated" was **not a targeting restriction**. It was
+the ordinary fact that a choice made late is made in a later world. See the
+census under (b) below: **no targeting restriction in the pool had to be
+relaxed**, and the reason is worth reading before anyone loosens one.
+
+### (a) — deployment uses the stack
+
+`processTriggerQueue` gains `stackMode = battleMode || phase === 'deploy'`, and
+that is what decides `'push'` vs `'resolve'`. `settle()` gains the matching
+exit: with the trigger queue empty and a deployment stack standing, it calls
+`resolveTop()` once and returns — `finishResolutionTail` settles again, so the
+rest drains through the same door, top down.
+
+> **Why settle() drains it rather than priority.** In battle the stack is
+> drained by two passes because a battle stack **exists to be responded to**.
+> Deployment is a hidden simultaneous segment with no priority windows at all
+> — nobody may respond to anything — so its stack is drained at the same safe
+> point every other out-of-battle resolution already uses. The owner said this
+> himself back in [R102](#r102): deployment *"still has and uses a stack"*, in
+> the same breath as ruling that the rot replacement puts a triggered effect on
+> it.
+
+**The resolution ORDER is deliberately unchanged.** Immediate mode resolved
+NIT's queue first and then IT's, front to back. Stack mode pushes each seat's
+queue in **reverse** (so its front ends up on top) with **NIT's pushed last**
+(so NIT's sits above IT's) and pops FILO. Both spell the same order — which is
+R2, and which is why the seeded replay does not move: five saved games
+(WEHH, XVUR, EGCW, GETD, PRB1) replay with **byte-identical replayed/skipped
+counts** before and after (57/328, 109/243, 134/184, 48/265, 95/0). Half (a)
+costs **zero** replay drift.
+
+**No tax.** [R121](#r121)'s pay-to-trigger gate stays keyed on `battleMode`,
+not on `stackMode`. Crevice Lurker prints *"during battle"*; routing deployment
+through the stack must not invent a tax the card does not print.
+
+**[R102](#r102) is not regressed, and is now driven harder.** `deployStarting`
++ `finishDeployStart` already refuse to close the start-of-deployment window
+while `stack.length` is non-zero, which is exactly the condition (a) newly
+makes reachable. The rot replacement's trigger now goes *through* the
+deployment stack, suspends there for its target, and the `'startOfDeployment'`
+event still fires afterwards.
+
+### ⚠ (a) opened a hole in the deployment freeze, and closed it
+
+`server/view.ts` served **`state.stack` live to both seats, always**. That was
+sound while nothing could ever sit on the stack inside a hidden simultaneous
+segment — and after (a) something can: a start-of-deployment trigger sits there
+carrying its label, its region and its declared aim while its controller is
+being asked something. A live `v.stack` would be a live readout of what your
+opponent is doing behind the freeze, which is the one thing the freeze is for.
+
+`viewFor` now **drops the opponent's stack items inside a frozen segment** and
+only there; outside one — i.e. in battle — the stack stays fully public. Same
+rule and same reason as `E.beginResolving`, which publishes `s.resolving` in
+the battle phase only. Dropped rather than served frozen because the segment
+snapshot's own stack is empty by construction, so the two are the same array.
+
+### A deployment trigger is no longer FLASHED, because it is now really there
+
+`ui/flash.ts`'s `'stackFlash'` exists for items that resolve **without ever
+reaching `state.stack`** — "all effects that can't be responded to (like haste
+or end of turn) happen and resolve instantly so it's very hard to track". A
+start-of-deployment trigger was one of them and is not one any more: it has a
+real `stackPushed`/`resolved` pair, so flashing it as well would draw it twice.
+A card PLAYED during deployment still flashes — that one really does go from
+hand to board with no journey. Nothing regressed; the trigger stopped
+qualifying.
+
+### One pre-existing silent branch, exposed rather than caused
+
+`65-effect-conformance`'s fuzz drive reached **Channeled Amalgam**'s `if (self
+&& x > 0)` guard for the first time once (a) shifted the drive's trajectory,
+and the guard says nothing when it declines — a
+[CARD-TODO #3](#r109) defect. It is silent on master too (the drive just never
+got there: 65 passes at `3063f2b` and fails with (a) alone). Its own sibling
+three definitions down — Arcane Concentrator, the same `[once]`/`spellPlayed`/
+X-is-the-cost shape — has announced this since it was written. Fixed with the
+announcement rather than by re-seeding the drive.
+
+### Tests — (a)
+
+- `37-attrs-wight` — **"R144(a): every start-of-deployment trigger is on the
+  stack before any of them resolves"**. A synthetic watcher records
+  `g.s.stack.length` from inside its own resolution; three of them read
+  `[2, 1, 0]`. Before (a) they read `[0, 0, 0]` — the stack was empty under all
+  three because none of them was ever on it. That single array is the whole of
+  half (a).
+- `37-attrs-wight` — **"…announce themselves onto the stack, all of them before
+  the first resolves"**: the `stackPushed`/`resolved` event sequence is
+  `push, push, resolve, resolve`, never interleaved.
+- `37-attrs-wight` — **"R12 — a shared deployment stack does not let a Wraith
+  reach across regions"**: both seats fire into one queue and one stack, and
+  each seat's menu holds only its own home region.
+- `37-attrs-wight` — **"the deployment stack is not taxed — R121 is a
+  battle-phase gate"**.
+- `43-dark-c` — **"the start-of-deployment event still fires after the rot
+  replacement stopped to ask"** is R102's own regression test, unchanged, and
+  is now the guard for (a)'s suspension path as well.
+- `56-ui-flash` — **"an item that resolves with no response window announces
+  itself"**, amended: the deployment spawn trigger is now asserted **not** to
+  be flashed *and* to have announced itself on the real stack, which is the
+  same claim from both ends.
+
+**Red-checked**: reverting `engine.ts` reddens the first two by name. The R12
+and R121 tests **stay green** with (a) reverted, on purpose — they pin
+invariants that had to *survive* the change, not the change itself, and a test
+that reddened would mean (a) had broken one of them.

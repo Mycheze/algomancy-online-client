@@ -13,9 +13,12 @@
  *  - the OPPONENT's DORMANT resources     -> element hidden (they are face-down)
  *  - the seed / rngState                 -> dropped (deck order derivation)
  *  - a decision (+ its options/suspension) that belongs to the other seat
+ *  - R144: the OPPONENT's STACK ITEMS, inside a hidden simultaneous segment
+ *    only (see viewFor). Outside one — i.e. in battle — the stack is public.
  *
  * Public (sent as-is): bins, life, in-play entities (units/tokens/mods),
- * formations/battle, the stack, phase/turn, and each seat's own everything.
+ * formations/battle, the battle stack, phase/turn, and each seat's own
+ * everything.
  */
 import { packCycle } from '../engine/src/engine.ts';
 import type { EngineEvent, GameState, Seat } from '../engine/src/types.ts';
@@ -100,6 +103,27 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     // done-flags stay live and public — planningDone / hasteDone / draftDone /
     // bottomDone / deployDone all read off `state`, not the freeze. "They are
     // finished" is exactly what you can see across a table.
+    //
+    // R144(a): THE STACK IS PUBLIC IN BATTLE AND ONLY IN BATTLE. A battle
+    // stack is public because it exists to be responded to; a HIDDEN
+    // SIMULTANEOUS SEGMENT has no responses and no priority, and everything
+    // else about the opponent's half of it is already served frozen (their
+    // entities, their resources, their held log lines). Until R144 nothing
+    // ever sat on the stack inside a segment, so this had nothing to redact
+    // and did not exist. Now a start-of-deployment trigger does sit there
+    // while its controller is being asked something — carrying its label, its
+    // region and its declared targets/subjects — and a live `v.stack` would
+    // be a live readout of what your opponent is doing behind the freeze,
+    // which is the one thing the freeze is for. Same rule and same reason as
+    // `E.beginResolving`, which publishes `s.resolving` in the battle phase
+    // only.
+    //
+    // Dropped rather than frozen: the segment snapshot's own stack is empty by
+    // construction (a segment begins at a phase boundary, and settle() drains
+    // the deployment stack before any action can end), so "serve it from the
+    // freeze" and "serve nothing" are the same array. Your OWN items stay —
+    // you may see what you are being asked about.
+    v.stack = v.stack.filter(it => it.controller === seat);
   }
 
   // deck order is hidden (and derivable from the seed) — send a count only.

@@ -45,12 +45,22 @@ test('an item that resolves with no response window announces itself', () => {
   // deployment: nobody may respond, so the unit never reaches state.stack
   assert.equal(h.state.stack.length, 0);
   const flashed = flashItems(events);
-  // the Sprite itself, and the spawn trigger it fires on the way in — both
-  // resolved with no window, both worth a beat
+  // the Sprite itself: played during deployment, so it goes from hand to board
+  // with no journey at all, and the flash is the only thing that shows it
   assert.ok(flashed.length >= 1, 'something was announced');
   assert.equal(flashed[0]!.card, 'Ignis Sprite');
   assert.equal(flashed[0]!.controller, seat);
-  assert.ok(flashed.some(f => f.kind === 'triggered'), 'the spawn trigger too');
+  // R144(a): its SPAWN TRIGGER is a different matter now. This used to assert
+  // `flashed.some(f => f.kind === 'triggered')` — the trigger resolved without
+  // ever reaching state.stack, so a flash was all the reader could be given.
+  // Deployment triggers use the real stack now, so the trigger has a real
+  // stackPushed/resolved pair of its own and flashing it as well would draw it
+  // twice. A flash is for what the stack never showed; nothing regressed here,
+  // the trigger simply stopped qualifying.
+  assert.ok(!flashed.some(f => f.kind === 'triggered'),
+    'the spawn trigger is NOT flashed — R144 put it on the real stack instead');
+  assert.ok(events.some(ev => ev.type === 'stackPushed'),
+    'and it announced itself there, which is where the reader now finds it');
   // …and the announcement is a signal, not a line: no blank log lines
   assert.ok(!h.log.some(l => l === ''));
   assert.equal(h.log.length, h.logTypes.length);
