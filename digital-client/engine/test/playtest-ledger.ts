@@ -1573,7 +1573,13 @@ export const LEDGER: LedgerEntry[] = [
     id: 95, room: 'SMVJ', date: '2026-08-24',
     report: 'Hush Mush\'s ability to go to the opponent isn\'t a trigger. It just happens as part '
       + 'of the spell.',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated',
+      '23-wood-a.test.ts::R143 #96: the CASTER',
+      '23-wood-a.test.ts::TWO Hush Mushes in one battle keep separate answers',
+      '23-wood-a.test.ts::whose target has already left the stack fizzles',
+    ],
     note:
       'CONFIRMED by reading the card. Printed: "Negate target effect. Its controller gains '
       + 'control of me." The handover is part of the SPELL\'s resolution, not a separate ability. '
@@ -1588,7 +1594,13 @@ export const LEDGER: LedgerEntry[] = [
     id: 96, room: 'SMVJ', date: '2026-08-24',
     report: 'I shouldn\'t be getting a Flourishing Flora trigger here. Hush Mush should enter as '
       + 'Rashi\'s unit',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated',
+      '23-wood-a.test.ts::R143 #96: the CASTER',
+      '23-wood-a.test.ts::TWO Hush Mushes in one battle keep separate answers',
+      '23-wood-a.test.ts::whose target has already left the stack fizzles',
+    ],
     note:
       'The OBSERVABLE HALF of #95, and the reason that one is not cosmetic. Flourishing Flora is '
       + '"[Augment] Whenever another ally spawns, put a +1/+1 counter on me." Because Hush Mush '

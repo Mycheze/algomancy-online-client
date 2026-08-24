@@ -1713,7 +1713,13 @@ export const CARD_TODO: TodoEntry[] = [
       const abil = (getCard('Hush Mush').abilities ?? []) as Array<{ type?: string }>;
       return abil.some(a => a.type === 'triggered');
     },
-    status: 'open',
+    status: 'done',
+    guards: [
+      '23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated',
+      '23-wood-a.test.ts::R143 #96: the CASTER',
+      '23-wood-a.test.ts::TWO Hush Mushes in one battle keep separate answers',
+      '23-wood-a.test.ts::whose target has already left the stack fizzles',
+    ],
   },
   {
     id: 30, area: 'card', severity: 'major', reportId: 96, cards: ['Hush Mush', 'Flourishing Flora'],
@@ -1733,7 +1739,13 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify: 'Control Flourishing Flora, cast Hush Mush negating an opponent effect: Flora must not '
       + 'gain a counter, and the body must appear on the opponent\'s side without a handover step.',
-    status: 'open',
+    status: 'done',
+    guards: [
+      '23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated',
+      '23-wood-a.test.ts::R143 #96: the CASTER',
+      '23-wood-a.test.ts::TWO Hush Mushes in one battle keep separate answers',
+      '23-wood-a.test.ts::whose target has already left the stack fizzles',
+    ],
   },
   {
     id: 31, area: 'client', severity: 'minor', reportId: 97,
@@ -1859,5 +1871,81 @@ export const CARD_TODO: TodoEntry[] = [
       '122-cardtext-markup.test.ts::R142: no card in the pool renders engine markup to a player',
       '122-cardtext-markup.test.ts::R142: no printed card carries a hyphenation artifact',
     ],
+  },
+  // ── found by R143's pool sweep (2026-08-24), not by a report ──────────
+  {
+    id: 37,
+    area: 'card',
+    severity: 'major',
+    cards: ['Borrower of Forms', 'Nectar Ridge Oracle'],
+    title: 'Borrower of Forms ENTERS as itself and only then becomes the copy',
+    detail:
+      'The same defect class as CT-29, one layer over: IDENTITY instead of CONTROL. Its spell '
+      + 'parks the copied face and stats on a region ledger (`bof:*`) and its own `spawned` '
+      + 'trigger claims them, so the body enters play as a plain Borrower of Forms and only '
+      + 'afterwards becomes the thing it copied. Anything watching the spawn sees the wrong body. '
+      + 'Nectar Ridge Oracle — "when an ally with greater defense than power spawns", which is '
+      + "R1's own worked example — reads the pre-copy stats, and the player is asked a spurious "
+      + 'trigger-ordering question that should not exist.',
+    evidence:
+      'Found 2026-08-24 by the R143 agent sweeping every giveControl / cross-seat spawn / '
+      + 'opts.owner site in the pool after fixing Hush Mush. batch-metal-a.ts:477.',
+    fix:
+      'The same shape R143 used: carry the answer on the spell\'s own StackItem and apply it AS '
+      + 'the body spawns, rather than parking it on a shared region ledger for a follow-up '
+      + 'trigger to claim. R143 added `ctx.spawnUnder(seat)` for the controller; this wants the '
+      + 'equivalent for the copied face/stats. Deletes the trigger and the ledger, as R143 did.',
+    proof: null,
+    verify:
+      'Control a Nectar Ridge Oracle; cast Borrower of Forms copying something with greater '
+      + 'defense than power. The Oracle must see the COPIED body, and no trigger-ordering '
+      + 'question should be raised.',
+    status: 'open',
+  },
+  {
+    id: 38,
+    area: 'engine',
+    severity: 'major',
+    cards: ['Mindspore Fiend', 'Organic Exchange', 'Download'],
+    title: 'Three cards flip `controller` by raw assignment, bypassing E.giveControl',
+    detail:
+      'E.giveControl is the choke point for a control change: it propagates the new controller to '
+      + "the unit's MODS, unslots it from the old formation and moves it to the new region. Three "
+      + 'cards assign `controller` directly and skip all of it. Mindspore Fiend '
+      + '(batch-wood-b.ts:121) is the worst: it skips the formation unslot and the region move as '
+      + 'well, so it hands over a unit whose MODS STILL ANSWER TO THE OLD CONTROLLER. Organic '
+      + 'Exchange (batch-wood-b.ts:224) and Download (batch-metal-a.ts:865) skip the mod '
+      + 'propagation. Nothing reported this — it was found by sweep — so the failure is latent, '
+      + 'not yet observed at a table.',
+    evidence: "Found 2026-08-24 by the R143 agent's sweep of every control-change site in the pool.",
+    fix:
+      'Route all three through E.giveControl. Then pin the invariant the way R124 pinned the bin '
+      + 'choke point: a STATIC sweep in 90-coverage-census asserting that the only assignment to '
+      + '`.controller` on a unit in src/cards/ is inside giveControl itself, so the next bypass '
+      + 'fails a test instead of waiting to be swept up.',
+    proof: null,
+    verify:
+      'Give a MODDED unit away with Mindspore Fiend: the mods must answer to the new controller, '
+      + 'and the unit must leave the old formation and move region.',
+    status: 'open',
+  },
+  {
+    id: 39,
+    area: 'engine',
+    severity: 'minor',
+    title: 'No event fires when a unit changes controller',
+    detail:
+      "E.giveControl emits only an `info` line, so nothing in the pool can trigger on \"a unit "
+      + 'changed controller\". No printed card needs it TODAY — this is a missing seam, recorded '
+      + 'so the next card that prints "whenever you gain control of a unit" is a small change '
+      + 'rather than a surprise.',
+    evidence: "Found 2026-08-24 by the R143 agent's control-change sweep.",
+    fix:
+      "Emit a real typed event from giveControl (both seats' listeners, region-scoped per R12) "
+      + 'and add it to the event vocabulary that 84-card-semantics reads. Do it WITH the first '
+      + 'card that needs it, not before — an event nothing listens to is untested surface.',
+    proof: null,
+    verify: 'No card needs this yet; verify when one does.',
+    status: 'open',
   },
 ];
