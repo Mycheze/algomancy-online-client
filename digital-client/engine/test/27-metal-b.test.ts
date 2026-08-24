@@ -117,7 +117,7 @@ test('Flux Constructor: a counterless death, and an ENEMY death, do not fire it'
 
 // ── Flux Resonator ───────────────────────────────────────────────────────
 
-test('Flux Resonator: a counter put on an allied unit becomes one more', () => {
+test('Flux Resonator: a counter you put on an allied unit becomes one more', () => {
   const h = new Harness(2702);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -125,7 +125,9 @@ test('Flux Resonator: a counter put on an allied unit becomes one more', () => {
   const ally = spawn(h, p, 'Lurking Slimebeast');           // 8/3, trigger-free
   {
     const e = new E(h.state);
-    e.addCounters(h.state.entities[ally]!, 1);
+    // R130: `by` is the seat placing them — "by an ALLIED source" is the
+    // printed clause now, not "onto an allied unit".
+    e.addCounters(h.state.entities[ally]!, 1, p);
     e.settle();
   }
   assert.equal(ent(h, ally)!.counters, 2, '1 put + 1 from the Resonator');
@@ -143,7 +145,7 @@ test('Flux Resonator: the donated [Augment] text boosts allied counters via the 
   assert.equal(ent(h, host)!.mods.length, 1, 'augment attached');
   {
     const e = new E(h.state);
-    e.addCounters(h.state.entities[ally]!, 2);
+    e.addCounters(h.state.entities[ally]!, 2, p);
     e.settle();
   }
   assert.equal(ent(h, ally)!.counters, 3, '2 put + 1 (the donated text, once)');

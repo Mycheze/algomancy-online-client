@@ -79,7 +79,12 @@ test('two different AmountMods both apply to one counter placement', () => {
   // the two cards would ever meet in a real game.
   h.do({ type: 'declareAttack', seat: A, columns: [[mine]] });
   assert.equal(ent(h, slime)!.region, ent(h, mine)!.region, 'both are in the battle region');
-  whiteBox(h, e => e.addCounters(e.entity(mine)!, 1));
+  // R130: a white-box placement NAMES ITS ACTOR. In a real game `by` comes
+  // free from the resolving effect's controller; called straight off an E
+  // there is no effect to read it from, and the Resonator's printed "by an
+  // ALLIED source" now asks the question for real — an unattributed placement
+  // is not an allied one.
+  whiteBox(h, e => e.addCounters(e.entity(mine)!, 1, A));
   assert.equal(ent(h, mine)!.counters, 3,
     '1 printed + 1 from the Resonator (an ally of A) + 1 from the Slime (an enemy of A) = 3');
   finishBattle(h);
@@ -96,7 +101,7 @@ test('an AmountMod does not apply to its own contribution', () => {
   const A = h.state.deployPlayer!;
   const fr = spawn(h, A, 'Flux Resonator');
   const ally = spawn(h, A, 'Unit Token');
-  whiteBox(h, e => e.addCounters(e.entity(ally)!, 1));
+  whiteBox(h, e => e.addCounters(e.entity(ally)!, 1, A));
   assert.equal(ent(h, ally)!.counters, 2, '1 + 1, and not 1 + 1 + 1 + …');
   assert.equal(ent(h, fr)!.counters, 0, 'and the Resonator did not put any on itself');
 });
@@ -108,7 +113,7 @@ test('two copies of the SAME AmountMod both apply — they are two modifiers', (
   spawn(h, A, 'Flux Resonator');
   spawn(h, A, 'Flux Resonator');
   const ally = spawn(h, A, 'Unit Token');
-  whiteBox(h, e => e.addCounters(e.entity(ally)!, 2));
+  whiteBox(h, e => e.addCounters(e.entity(ally)!, 2, A));
   assert.equal(ent(h, ally)!.counters, 4, '2 + 1 + 1');
 });
 
@@ -122,7 +127,7 @@ test('one counter placement produces ONE countersChanged carrying the modified n
   const A = h.state.deployPlayer!;
   spawn(h, A, 'Flux Resonator');
   const ally = spawn(h, A, 'Unit Token');
-  const evs = during(h, () => whiteBox(h, e => e.addCounters(e.entity(ally)!, 2)));
+  const evs = during(h, () => whiteBox(h, e => e.addCounters(e.entity(ally)!, 2, A)));
   const changed = typesIn(evs, 'countersChanged');
   assert.equal(changed.length, 1, 'exactly one event for one placement');
   assert.equal(changed[0]!.data!['n'], 3, 'and it carries 3, not 2 with a silent extra after it');
@@ -194,7 +199,7 @@ test('an AmountMod runs BEFORE the redirect — the thief steals the plus-one to
   spawn(h, A, 'Flux Resonator');
   const victim = spawn(h, A, 'Unit Token');
   toNextBattle(h, A);
-  whiteBox(h, e => e.addCounters(e.entity(victim)!, 1));
+  whiteBox(h, e => e.addCounters(e.entity(victim)!, 1, A));
   assert.equal(ent(h, thief)!.counters, 2, '1 printed + the Resonator\'s 1, all stolen');
   assert.equal(ent(h, victim)!.counters, 0);
 });

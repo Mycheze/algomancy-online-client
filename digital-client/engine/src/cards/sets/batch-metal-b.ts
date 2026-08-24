@@ -20,11 +20,11 @@
  *  - Flux Resonator: a REAL replacement as of R104 — an `AmountMod` consulted
  *    by E.addCounters before it commits, so one placement produces one
  *    countersChanged carrying the right number. It never reaches the stack.
- *    ONE approximation survives: "by an allied source" is still read as
- *    "counters put on an allied unit", because addCounters takes no source.
- *    Positive counters only. Spawn-with-X counters (Robot X) are set on the
- *    entity by spawnUnit and never go through addCounters → no bonus (spawned
- *    with, not "put on"), which is the same answer as before.
+ *    NO approximation survives (R130): "by an allied source" is the printed
+ *    clause now that `addCounters` carries `by` (→ `AmountCtx.sourceSeat`),
+ *    the recipient may be any unit, and the sign filter is gone ("all counters
+ *    count as counters"). Spawn-with-X counters (Robot X) still get the bonus
+ *    through the amount layer (report #88) and still fire no countersChanged.
  *  - Formless: "becomes a base 4/4" REWRITES layer 2 (E.setBase), and the
  *    "loses all attributes until regroup" half is R62's until-regroup
  *    suppression — both cleared at regroup.
@@ -128,19 +128,34 @@ card('Flux Constructor', {
 // different modifiers both apply), and neither applies to its own contribution
 // because a query cannot re-enter the thing it is answering about.
 //
-// ⚠ THE APPROXIMATION THAT SURVIVES, unchanged and now stated where it can be
-// checked: "by an ALLIED SOURCE" is still read as "onto an allied unit".
-// `E.addCounters(target, n)` has no source parameter — counters arrive from
-// resolutions, from combat and from engine sweeps alike — so `AmountCtx`
-// carries no `sourceSeat` on the counters path. Widening addCounters' signature
-// is a separate change; until then this is the reading the card has shipped
-// with. POSITIVE counters only: the printed clause is a benefit, and a
-// Resonator that deepened your own -1/-1s would be a drawback nothing prints.
+// R130 TOOK BOTH APPROXIMATIONS OFF. They were one line each and both said
+// something the card does not print:
+//
+//  - "BY AN ALLIED SOURCE" used to be read as "onto an allied unit", because
+//    `addCounters` had no source. It has one now (`by`, defaulted to the
+//    resolving effect's controller), and the amount layer already had the
+//    field to carry it — `AmountCtx.sourceSeat`, which Conduit of Pain's
+//    identical clause has read on the damage path since R104. So the clause is
+//    the printed one: I care WHO is placing, not WHOM onto. The recipient is
+//    "a unit" — ANY unit — so counters you put on an ENEMY are plus one too,
+//    which is the half the old reading refused outright.
+//  - "POSITIVE COUNTERS ONLY" was a sign filter on a card that prints no sign.
+//    The owner, 2026-08-24: "All counters count as counters." "That many
+//    counters plus one" is one more of the same thing, so a -1/-1 becomes two
+//    — the `step` idiom Proliferating Slime (the same clause from the other
+//    side) has always used. It cuts both ways, and that is the point: your own
+//    -1/-1s deepen too. Nothing prints that it only helps.
+//
+// An UNKNOWN actor (`sourceSeat === undefined`: an engine sweep, a white-box
+// call) is not an allied one. The clause asks a question, and no answer is not
+// a yes.
 card('Flux Resonator', {
   augmentable: true,
   amountMods: [{
     delta: (_g, self, ctx) =>
-      (ctx.kind === 'counters' && ctx.amount > 0 && ctx.unit?.controller === self.controller ? 1 : 0),
+      (ctx.kind === 'counters' && ctx.sourceSeat === self.controller
+        ? (ctx.amount > 0 ? 1 : -1)
+        : 0),
   }],
 });
 

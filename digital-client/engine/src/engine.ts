@@ -2348,10 +2348,20 @@ export class E {
     // spawn is no placement and never becomes one. Deliberately NOT routed
     // through replaceCounters: whether a redirect (Counter Theif) can steal a
     // token's own spawn counters is an unsourced rules question.
+    //
+    // R130: the actor of a spawn's OWN counters is the seat creating it. There
+    // is no "putter" in the usual sense — nobody puts a Robot's X on it, it
+    // arrives holding them — so the answer had to be chosen rather than found,
+    // and `seat` is the only party involved: the source of the counters is the
+    // source of the token. It reaches the AMOUNT layer only (an allied Flux
+    // Resonator still makes a Robot X enter as X+1, report #88, which is the
+    // behaviour this line has to preserve); no `countersChanged` fires here, so
+    // no "when YOU put a counter" trigger sees a spawn, exactly as before.
     let spawnCounters = opts.counters ?? 0;
     if (spawnCounters >= 1) {
       spawnCounters += this.amountDelta({
         kind: 'counters', region, amount: spawnCounters, unit: u, combat: false,
+        sourceSeat: seat,
       });
     }
     if (spawnCounters) u.counters = spawnCounters;
@@ -2483,17 +2493,33 @@ export class E {
    * would have been placed, plus-one included.
    *
    * Both are consulted, not re-entered, which is why the module-level `let
-   * proliferating` flag that used to guard this path is gone (report #60). */
-  addCounters(target: Entity, n: number): void {
+   * proliferating` flag that used to guard this path is gone (report #60).
+   *
+   * R130: a placement KNOWS WHO MADE IT. `by` is the seat putting the counters
+   * on — optional, because counters also arrive from engine sweeps and from
+   * white-box test calls where there is no actor to name. When it is omitted
+   * the actor defaults to `partActor`: the controller of the effect currently
+   * resolving, which is what "YOU put a counter" means for every counter a
+   * card has ever placed. It reaches two places and no others:
+   *   · `AmountCtx.sourceSeat`, so Flux Resonator's printed "by an ALLIED
+   *     SOURCE" is the clause it prints instead of "onto an allied unit";
+   *   · `countersChanged`'s `by`, so Wandering Blightshell's "when YOU put a
+   *     counter on an enemy" and Scrapyard Custodian's "when you put one or
+   *     more counters on an ally" can read the attribution instead of
+   *     guessing it from the sign.
+   * A REDIRECT does not change it: if the counters you aimed at one unit are
+   * placed on another (Counter Theif), you are still the one who put them. */
+  addCounters(target: Entity, n: number, by?: Seat): void {
     if (!n || !this.entity(target.id)) return;
-    // ⚠ `sourceSeat` is deliberately absent: `addCounters` has no source
-    // parameter and never had one — counters arrive from resolutions, from
-    // combat and from engine sweeps alike. Flux Resonator's printed "by an
-    // allied source" is therefore still read as "onto an allied unit", which
-    // is the approximation its card comment has documented since it shipped,
-    // and widening `addCounters`' signature is a separate change.
+    // R130: explicit actor first, then the resolving effect's controller. Both
+    // may be absent (an engine sweep, a white-box call) and `undefined` is a
+    // legitimate answer — "nobody in particular put this" is not the same
+    // statement as "you did", and a card that asks WHO must get no for an
+    // answer rather than a guess.
+    const actor = by ?? this.partActor ?? undefined;
     n += this.amountDelta({
       kind: 'counters', region: target.region, amount: n, unit: target, combat: false,
+      sourceSeat: actor,
     });
     if (!n) return;                     // a modifier cancelled it out entirely
     target = this.replaceCounters(target, n);
@@ -2502,7 +2528,7 @@ export class E {
     const kind = n > 0 ? '+1/+1' : '-1/-1';
     const ev = this.ev('countersChanged',
       `${target.card} gets ${Math.abs(n)} ${kind} counter(s) (net ${target.counters}).`,
-      { unit: target.id, n, total: target.counters });
+      { unit: target.id, n, total: target.counters, ...(actor !== undefined ? { by: actor } : {}) });
     this.fireEvent('countersChanged', ev);
     this.checkDeaths();
   }
@@ -6152,6 +6178,23 @@ export class E {
   private partChoose: ((tag: string, dec: PartChoice['dec']) => unknown) | null = null;
 
   /**
+   * R130: the controller of the part currently resolving, or null outside one
+   * — `partChoose`'s sibling, published and restored on the same two lines.
+   *
+   * "When YOU put a counter on an enemy" needs the seat that put it, and every
+   * counter a CARD places is placed by a resolving effect whose controller is
+   * already on the item. Publishing it here is what let `addCounters` take an
+   * optional `by` without editing the 52 card call sites to pass a seat each
+   * of them already sits inside — and, like partChoose, it lives only for the
+   * duration of one `def.run`, never in GameState, so a suspension replay
+   * rebuilds it.
+   *
+   * Nested resolution (a part that resolves another item inline) saves and
+   * restores, so the inner item's controller is the actor while it runs.
+   */
+  private partActor: Seat | null = null;
+
+  /**
    * Run parts [from..]; the composite is ONE ability resolving top-to-bottom.
    * A suspending part is replayed from its own boundary with `answers` filled
    * in — R85: the world is rolled back to that boundary on RESUME
@@ -6266,6 +6309,8 @@ export class E {
       // part that has suspended before); the re-emission is dropped below.
       const shown = pi === from ? shownEvents : 0;
       const outerChoose = this.partChoose;
+      const outerActor = this.partActor;                  // R130
+      this.partActor = item.controller;
       let helperSeq = 0;
       // ctx.choose already namespaces by part index; the seq keeps a helper
       // invoked twice in one part asking two distinct questions
@@ -6324,6 +6369,7 @@ export class E {
         throw sig;
       } finally {
         this.partChoose = outerChoose;
+        this.partActor = outerActor;                      // R130
         this.tokenBatch = outerBatch;
       }
       // the part finished: the same suppression, for the last replay of it

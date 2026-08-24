@@ -7324,3 +7324,73 @@ play already announces itself on `spellPlayed` or on the `spawned` line, so
   Void Mandible needs the early one (it has to answer the play, not the body);
   a "put counters on me when you play a card" trigger arguably wants the late
   one. Folding them together is a separate ruling, not a tidy-up.
+
+## R130 — every counter is a counter, and a placement carries its actor
+
+*(2026-08-24. One engine parameter, three cards, two approximations retired.)*
+
+**The ruling**, verbatim: *"All counters count as counters."* No sign filter,
+ever. It is R125's principle applied to a noun: the printed word is "a
+counter", so a card that says it does not get to mean "a -1/-1 counter".
+
+**The bug underneath the sign filters was not narrowness — it was a missing
+fact.** Three cards print an ACTOR ("when **you** put", "by an **allied**
+source") and `E.addCounters(target, n)` had no source parameter, so each of
+them had picked a proxy for the actor out of what the event did carry. The
+proxies were wrong in both directions at once:
+
+| card | printed | read as | wrong when |
+|---|---|---|---|
+| Wandering Blightshell | "when **you** put **a counter** on an enemy" | -1/-1 counters landed on an enemy unit | an opponent shrinks their OWN unit (draws me a card); I grow an enemy (draws nothing) |
+| Scrapyard Custodian | "when **you** put one or more counters on an ally" | counters landed on an ally, by anyone | an opponent poisons my unit and I am paid for it |
+| Flux Resonator | "counters put on a unit **by an allied source**" | counters put onto an allied UNIT, positive only | an opponent's counters on my unit get my plus-one; my counters on THEIR unit do not |
+
+**The parameter.** `addCounters(target, n, by?: Seat)`. It reaches exactly two
+places: `AmountCtx.sourceSeat` (the field the amount layer has had since R104,
+which Conduit of Pain's identical "by an allied source" already reads on the
+damage path) and `by` on the `countersChanged` event. Nothing else changes —
+`inReplaceCounters` still latches the redirect, the amount layer still runs
+before it, and spawn counters still fold in at `spawnUnit`.
+
+**`by` is OPTIONAL, and its default is the seam that made this a small
+change.** `resolveParts` publishes the resolving item's controller as
+`partActor` for the duration of one `def.run` — `partChoose`'s sibling, saved
+and restored on the same two lines — and `addCounters` falls back to it. Every
+counter a CARD places is placed by a resolving effect, so the 52 card call sites got
+the right actor without being edited. Explicit `by` is for the caller who
+knows better and for white-box tests, which have no resolving part to inherit
+from.
+
+**An UNKNOWN actor is not a yes.** `by` is genuinely absent for engine sweeps
+and raw `new E(state).addCounters(...)` calls, and `undefined` is a real
+answer: "nobody in particular put this" is not the same statement as "you did".
+A card asking WHO gets no for an answer rather than a guess — which is why the
+white-box calls in `87-replacement-layer` and `27-metal-b` now name their seat.
+
+**A SPAWN's own counters have no putter**, so the answer was chosen rather than
+found: `spawnUnit` passes `sourceSeat: seat`, the creator of the token. It
+reaches the AMOUNT layer only — an allied Flux Resonator still makes a Robot X
+enter as X+1 (report #88) — and fires no `countersChanged`, so no "when you put
+a counter" trigger sees a spawn, exactly as before. A REDIRECT does not change
+the actor either: counters you aimed at one unit and a Counter Theif moved to
+another are still counters you put.
+
+**The sign filters that stayed.** Pestilent Mycelion ("whenever one or more
+**-1/-1** counters are put on a unit") prints its sign, and Flowstone
+Arcanite / Blightmound read a negative `countersChanged` in a combat sub-step
+to recognise {Poisonous} damage — a fact about the damage channel, not a
+reading of a card's noun. Both are correct as they stand. Flux Resonator's
+`amount > 0` was the third and it was not printed: "that many counters plus
+one" is one more of the same thing, the `step` idiom Proliferating Slime (the
+same clause from the other side) has always used. It cuts both ways — your own
+-1/-1s deepen too — and nothing prints that the clause only helps.
+
+### Tests
+
+`120-counter-attribution` — twelve, red-checked one seam at a time. Reverting
+the Blightshell predicate reddens 5 (both directions, the [Switch1] bound, the
+unattributed case and the real-card path); reverting Scrapyard Custodian
+reddens 1; reverting Flux Resonator reddens 3; dropping the `partActor`
+default reddens the 2 that drive real cards (a Crystal cast by me on an enemy,
+a Poison cast by the opponent on their own unit); dropping `by` from the event
+and from `AmountCtx` reddens 9.

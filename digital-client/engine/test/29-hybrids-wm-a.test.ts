@@ -280,13 +280,15 @@ test('Scrapyard Custodian: counters on an ally → [Switch1] draw; grafts join t
   const ally = spawn(h, p, 'Unit Token');
   whiteBox(h, e => e.attachMod(ent(h, cust)!, 'Corroded Alchemy', p, 'graft', 0));
   const handBefore = h.state.players[p]!.hand.length;
-  whiteBox(h, e => e.addCounters(ent(h, ally)!, 2));          // "you put counters on an ally"
+  // R130: the placement names its actor — "when YOU put" reads `by`, and a
+  // white-box call has no resolving effect to default it from.
+  whiteBox(h, e => e.addCounters(ent(h, ally)!, 2, p));       // "you put counters on an ally"
   assert.equal(h.state.players[p]!.hand.length, handBefore + 1, 'drew a card');
   assert.equal(tokensOf(h, p).filter(t => t.card === 'Crystal').length, 1,
     'the grafted Corroded Alchemy made its Crystal 1');
   assert.equal(tokensOf(h, p).filter(t => t.card === 'Poison').length, 1, '…and its Poison 1');
   // [Switch1]: bounded — a second batch of counters this turn does nothing
-  whiteBox(h, e => e.addCounters(ent(h, cust)!, 1));          // counters on the Custodian itself
+  whiteBox(h, e => e.addCounters(ent(h, cust)!, 1, p));       // counters on the Custodian itself
   assert.equal(h.state.players[p]!.hand.length, handBefore + 1, 'no second draw (R9)');
   assert.equal(tokensOf(h, p).length, 2, 'no second token pair');
 });

@@ -56,10 +56,11 @@
  *    Combat damage never counts (its event has no source). The 1/1s spawn
  *    in the CARRIER's region (R33, absorbed by R115: everything created
  *    arrives at ctx.region).
- *  - Scrapyard Custodian: 'countersChanged' carries no actor, so "when YOU
- *    put counters on an ally" is read as "counters (either sign) were put on
- *    a unit you control, by anyone". Robots spawning with counters do NOT
- *    fire it (spawn counters are on before the spawn event — engine note).
+ *  - Scrapyard Custodian: NO LONGER an approximation (R130) — 'countersChanged'
+ *    carries `by`, the seat that placed the counters, so "when YOU put
+ *    counters on an ally" is exact: my placement, either sign, onto a unit I
+ *    control. Robots spawning with counters still do NOT fire it (spawn
+ *    counters are on before the spawn event — engine note).
  *  - Soulforger: "nontoken" is a FACT ON THE DEATH EVENT (R70's `token`,
  *    stamped by E.leftPlayFacts precisely because the entity is erased before
  *    the event fires). This entry used to say the event had no token flag and
@@ -353,20 +354,24 @@ card('Rook', {
 });
 
 // "When you put one or more counters on an ally, [Switch1] Draw a card." —
-// me/3 3/3 Robot Druid Unit. 'countersChanged' trigger; the event carries no
-// actor (⚠ header: counters put on your ally by anyone count as "you put"),
-// either sign counts ("counters"), the amount doesn't matter ("one or
-// more"). Bounded graft cause + bounded graft ([Switch1], R9). Region-scoped
-// automatically (fireEvent reads the counted unit's region).
+// me/3 3/3 Robot Druid Unit. 'countersChanged' trigger. R130: the event
+// carries `by`, the seat that placed them, so "YOU put" is the printed word
+// and not "anyone put" — an opponent's Wraith shrinking one of my units is
+// their placement, not mine. Either sign counts ("counters" — all counters
+// count as counters), the amount doesn't matter ("one or more"), and the
+// recipient is an ally of mine. Bounded graft cause + bounded graft
+// ([Switch1], R9). Region-scoped automatically (fireEvent reads the counted
+// unit's region).
 const custodianDraw: EffectDef = { run: (g, ctx) => g.draw(ctx.controller, 1) };
 card('Scrapyard Custodian', {
   abilities: [{
     type: 'triggered', events: ['countersChanged'], bounded: true, graftCause: true,
     label: 'draw a card (counters were put on an ally)',
     when: (g, self, ev) => {
+      if (ev.data?.['by'] !== self.controller) return false;      // R130: "YOU put"
       const uid = ev.data?.unit as EntityId | undefined;
       const u = uid !== undefined ? g.entity(uid) : undefined;
-      return !!u && u.controller === self.controller;
+      return !!u && u.controller === self.controller;             // …"on an ally"
     },
     effect: custodianDraw,
   }],

@@ -30,24 +30,16 @@
  *    the death message"; R70 puts `token` on the event itself and the card
  *    reads it. (The string match is exactly what the redesigned Wraith slipped
  *    past, because its death logged different text.)
- *  - Wandering Blightshell's "when YOU put a counter on an enemy": nothing
- *    records WHO placed a counter, so the trigger reads countersChanged
- *    events as: -1/-1 counter(s) landing on an enemy of mine were put there
- *    by me. Deviation: an opponent putting -1/-1 counters on their own unit
- *    would also fire it (rare); +1/+1 counters I put on an enemy never do.
- *    ⚠ NEEDS-ESCALATION (2026-08-24 literal-reading sweep). The printed noun
- *    is "a counter", unqualified — the sign test is a stand-in for an
- *    ATTRIBUTION the engine does not keep, and it is wrong in both directions,
- *    not just narrow. It cannot be fixed from a card: `addCounters(target, n)`
- *    has no source parameter, and engine.ts says so on purpose ("`sourceSeat`
- *    is deliberately absent … widening `addCounters`' signature is a separate
- *    change" — the same line Flux Resonator's "by an allied source" is parked
- *    on). Widening the card alone would only trade one false reading for a
- *    louder one (an enemy growing their own units would draw me cards). The
- *    change to ask for: `addCounters(target, n, by?: Seat)`, threaded from the
- *    resolving effect's controller, with `by` on the countersChanged event —
- *    then this card is `ev.data.by === self.controller && victim is an enemy`,
- *    sign-blind, and Flux Resonator comes off its own approximation with it.
+ *  - Wandering Blightshell's "when YOU put a counter on an enemy": NO LONGER
+ *    an approximation (R130, 2026-08-24). The escalation this entry used to
+ *    carry was granted exactly as written — `addCounters(target, n, by?: Seat)`
+ *    defaulting to the resolving effect's controller, with `by` on the
+ *    countersChanged event — so the trigger is now
+ *    `ev.data.by === self.controller && the victim is an enemy`, sign-blind.
+ *    The sign test it replaces was wrong in BOTH directions (an enemy
+ *    shrinking their own unit fired it; a +1/+1 counter I put on an enemy did
+ *    not), and Flux Resonator came off its own half of the same approximation
+ *    in the same change.
  *  - Verdant Necrophage's donated "[Augment] when I despawn" fires on the
  *    host's DEATH but not its recall — recall() erases mod entities before
  *    firing the event (the batch-hybrids-fwe Bloated Manablub asymmetry).
@@ -450,18 +442,29 @@ card('Verdant Vengeance', {
 
 // "When you put a counter on an enemy, [Switch1] Draw a card." — g/2 1/2
 // Blight Turtle Unit. Bounded ([Switch1], R9) trigger on countersChanged.
-// ⚠ header approximation: the engine does not record who placed a counter,
-// so "you put a counter on an enemy" reads as "-1/-1 counter(s) landed on a
-// unit an opponent controls (in my region — listeners are region-scoped)".
+//
+// R130: BOTH printed words are now real, and neither was before.
+//  - "A COUNTER" is unqualified, so the sign test is gone. The owner,
+//    2026-08-24: "All counters count as counters." A +1/+1 counter you put on
+//    an enemy (Flux Resonator's plus-one onto their unit, a stat swap, Buffer
+//    Overflow doubling their +1/+1s) is a counter you put on an enemy.
+//  - "YOU PUT" is `ev.data.by`, the seat `E.addCounters` recorded — the actor
+//    the old code was standing in for with a sign. An enemy shrinking their
+//    OWN unit no longer draws me a card, which is the direction the stand-in
+//    was wrong in that nobody would have called narrow.
+// "An enemy" is the unit's controller, not mine; region scoping is free
+// (fireEvent reads the counted unit's region). A REDIRECT does not break the
+// attribution: counters you aimed at one unit and a Counter Theif moved to
+// another are still counters you put — on whatever they ended up on.
 const blightDraw: EffectDef = { run: (g, ctx) => g.draw(ctx.controller, 1) };
 card('Wandering Blightshell', {
   abilities: [{
     type: 'triggered', events: ['countersChanged'], bounded: true, graftCause: true,
     label: 'draw a card (you put a counter on an enemy)',
     when: (g, self, ev) => {
-      if (((ev.data?.n as number) ?? 0) >= 0) return false;
+      if (ev.data?.['by'] !== self.controller) return false;      // R130: "YOU put"
       const u = g.entity(ev.data?.unit as EntityId);
-      return !!u && u.controller !== self.controller;
+      return !!u && u.controller !== self.controller;             // …"on an enemy"
     },
     effect: blightDraw,
   }],
