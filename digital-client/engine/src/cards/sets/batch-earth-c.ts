@@ -295,27 +295,62 @@ card('Tenebrous Bulborb', {
 // {i}(Attributes are not abilities.)" — e/2 2/2 Primordial Occult Unit.
 // ⚠ Modelled as a free bounded activated ability (see header): once per turn
 // (= per deployment), during YOUR deployment, pick a unit card in your bin
-// that has no abilities (no triggered/activated/spell/graft text — printed
-// attributes and type-line augment grants are fine) and that you can afford;
-// its cost is paid normally and it spawns (spawn triggers fire). Declining
-// is allowed.
+// that has NO ABILITIES — no text at all, through any channel; see
+// `abilityFree` below for what that means and what it deliberately does not
+// count — and that you can afford; its cost is paid normally and it spawns
+// (spawn triggers fire). Declining is allowed.
 //
 // R77: both preconditions are ACTIVATION gates now — `timing: 'deploy'` for
 // the window (R49's own field, which this card was re-implementing at
 // resolution) and `usableWhen` for "is there anything in the bin I could
 // actually play". It is `bounded`, so being offered when it can do nothing
 // did not merely waste a click: activating it burnt the once-per-turn budget.
+/**
+ * "A unit with NO ABILITIES", read literally (2026-08-24 literal-reading audit).
+ *
+ * This used to test four channels — `abilities`, `augmentText`, `graftEffect`,
+ * `spellEffect` (plus `ambush`) — which is the shape of the mechanism the
+ * author had in mind, not the printed word. Forty-four cards in the pool carry
+ * real printed rules text through some OTHER channel and were therefore
+ * offered as "ability-free": Sandstone Defender ("[Augment] Your other units
+ * gain +0/+2"), Towering Colossus, Transmogrifant, Aberrant Statweaver and
+ * Monke are `statics`; Tranquility is a `costMod`; Dispatch Courier a
+ * `playPermission`; Automaton of Abundance, Cosmic Conspirator and Worldbender
+ * are replacements; Gatekeeper of Souls is `mustBeTargeted`. Every one of them
+ * has a text box.
+ *
+ * A static IS an ability — the engine says so itself where it silences one
+ * (`E.staticsFor`: "R62: a silenced unit radiates nothing — a static IS an
+ * ability"). So the test is now "the card def carries NO behaviour at all",
+ * with exactly two things deliberately not counted:
+ *   · attributes and type-line [Augment] attribute grants — the card's own
+ *     reminder text says "(Attributes are not abilities.)", and `augmentable`
+ *     is the plumbing flag that lets such a card be applied at all;
+ *   · `xMin` / the `xPreview*` UI hooks, which are cost and display detail.
+ */
+const abilityFree = (n: string): boolean => {
+  const d = getCard(n);
+  return d.kind === 'unit'
+    && !(d.abilities?.length) && !(d.augmentText?.length)
+    && !d.graftEffect && !d.spellEffect && !d.ambush
+    // continuous text (R59/R94/R95/R97/R118/R123) — all of it printed
+    && !(d.statics?.length) && !(d.projects?.length) && !(d.costMods?.length)
+    && !(d.effectAttrs?.length) && !(d.modPermissions?.length)
+    && !(d.playPermissions?.length) && !(d.binPlayPermissions?.length)
+    && !(d.amountMods?.length)
+    // printed one-line permissions and restrictions
+    && !d.mustBeTargeted && !d.prophesyFromBin && !d.playsFromBin
+    && !d.noPlayFromHand && !d.playsIntoFormation
+    // replacement effects ("If you would …", "Skip your draft step")
+    && !d.replaceRotDamage && !d.replaceCombatDamageToPlayer && !d.replaceCardStep
+    && !d.replaceLifeGain && !d.replaceCounters
+    && !d.replaceTokenCreation && !d.replaceTokenBatch;
+};
 const bonesculptorPicks = (g: E, seat: Seat): { label: string; value: number; card: string }[] => {
   const bin = g.player(seat).bin;
-  const vanilla = (n: string): boolean => {
-    const d = getCard(n);
-    return d.kind === 'unit'
-      && !(d.abilities?.length) && !(d.augmentText?.length)
-      && !d.graftEffect && !d.spellEffect && !d.ambush;
-  };
   return bin
     .map((n, i) => ({ label: n, value: i, card: n }))
-    .filter(o => vanilla(bin[o.value]!) && g.canPayCard(seat, bin[o.value]!));
+    .filter(o => abilityFree(bin[o.value]!) && g.canPayCard(seat, bin[o.value]!));
 };
 card('The Bonesculptor', {
   abilities: [{
@@ -325,12 +360,6 @@ card('The Bonesculptor', {
     effect: {
       run: (g, ctx) => {
         const bin = g.player(ctx.controller).bin;
-        const vanilla = (n: string): boolean => {
-          const d = getCard(n);
-          return d.kind === 'unit'
-            && !(d.abilities?.length) && !(d.augmentText?.length)
-            && !d.graftEffect && !d.spellEffect && !d.ambush;
-        };
         const opts = bonesculptorPicks(g, ctx.controller);
         if (!opts.length) {
           ctx.refundBudget?.();   // R113: no offer could be made, so the use is not spent
@@ -348,7 +377,7 @@ card('The Bonesculptor', {
           return;
         }
         const name = bin[pick];
-        if (name === undefined || !vanilla(name) || !g.canPayCard(ctx.controller, name)) return;
+        if (name === undefined || !abilityFree(name) || !g.canPayCard(ctx.controller, name)) return;
         g.removeFromBin(ctx.controller, pick, 'played');   // R124
         g.payCard(ctx.controller, name);
         g.ev('info', `The Bonesculptor: ${g.pname(ctx.controller)} plays ${name} from the bin.`);

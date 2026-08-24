@@ -45,6 +45,9 @@
  *    own: R70 stamps `counters` onto every leave-play event (E.leftPlayFacts),
  *    which is the same fact the note two paragraphs down credits for
  *    un-parking Flux Constructor — the effect reads ctx.event.data.counters.
+ *    "My counters" is the SIGNED net (Flux Constructor's and Scrap For Parts'
+ *    reading): a host on a net -3 has counters to move, and moving them keeps
+ *    their sign. The old "positive counters only" gate was not printed.
  *  - Perish / Linked Extinction: sacrifice choices are made seat by seat
  *    (caster first) and committed immediately — deterministic under the
  *    engine's rollback-and-replay choice model. Perish and the opponents'
@@ -459,13 +462,22 @@ card('Powerforge Synergist', {
     // precisely because the entity is out of s.entities by the time the
     // trigger resolves). This used to stash its own `pfCounters` snapshot
     // here — a private copy of a fact the event already told everyone.
-    when: (_g, self) => self.counters > 0,   // unchanged gate: positive counters only
+    // "MY COUNTERS", read literally (2026-08-24 literal-reading audit). This
+    // used to be `self.counters > 0` — "positive counters only", a qualifier
+    // the printed line does not carry. The engine keeps ONE signed net, and
+    // this batch already settles what that means for exactly this question:
+    // Flux Constructor, eight cards up, moves a dead ally's counters "with
+    // their sign — you move what was actually there, drawback and all", and
+    // Scrap For Parts says the same ("negative nets move too"). The donated
+    // [Augment] form is where the old gate was reachable and wrong: "I" is
+    // then the HOST, and a host sitting on a net -3 has counters to move.
+    when: (_g, self) => self.counters !== 0,
     effect: {
       targets: { what: 'unit', min: 0, prompt: 'Powerforge Synergist: move my counters onto target unit (or decline)' },
       run: (g, ctx) => {
         const n = (ctx.event?.data?.['counters'] as number | undefined) ?? 0;
         const t = ctx.targets[0];
-        if (n > 0 && isEnt(t) && g.entity(t.id)) g.addCounters(t, n);
+        if (n !== 0 && isEnt(t) && g.entity(t.id)) g.addCounters(t, n);
         else g.ev('info', 'Powerforge Synergist: no unit is targeted (or it is gone) — the counters are lost.');
       },
     },

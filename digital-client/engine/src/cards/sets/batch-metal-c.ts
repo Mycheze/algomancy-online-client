@@ -143,9 +143,11 @@ card('Riftwalker', {
 
 // "[Augment] Sacrifice another unit: Put a +1/+1 counter on me." — mm/2 2/2
 // Occult Scrap Unit. Text-box [Augment] activated ability (unbounded), live
-// when played normally. ⚠ the sacrifice cost is paid mid-resolution (header
-// approximation): pick one of your OTHER units in the region — declining
-// (or having none) yields no counter.
+// when played normally. (The "⚠ the sacrifice cost is paid mid-resolution …
+// declining (or having none) yields no counter" note that used to sit here was
+// left behind by the R49 unpark the header records, and by the `cost:
+// { sacrificeOther: 1 }` four lines below it: the cost gates the OFFER and is
+// paid in the cast window.)
 card('Scavenging Sentry', {
   augmentText: [{
     // R49 UN-PARKED: a real activation cost. It gates the activation — with no
