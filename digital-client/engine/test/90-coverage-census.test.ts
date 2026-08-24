@@ -182,9 +182,13 @@ test('no ability is both bounded and zone-dispatched without a real budget holde
 // `E.removeFromBin`, which fires 'leftBin' once per card — is a GUARD
 // property, not a status: it was found violated twice AFTER being declared
 // solved (zoneTake's mod-from-bin branch and the R123 grantor erase both
-// spliced bins directly, firing nothing). No reachable card broke, because
-// Rotling — the only 'leftBin' listener — has no augment/graft symbol; the
-// next listener that IS a mod card would have missed its own exit silently.
+// spliced bins directly, firing nothing). At the time nothing reachable
+// broke, and the reason recorded here was that Rotling — the only 'leftBin'
+// listener — had no augment/graft symbol. That was a fact about the code, not
+// about the card: Rotling prints [Switch1] and IS graftable, which the
+// literal-reading audit fixed hours later. The bypass is reachable by a real
+// card now (graft a Rotling out of your bin), so this guard is load-bearing
+// rather than precautionary.
 // So this scans the guard itself: a NEW direct bin splice anywhere in src/
 // fails here. If that is you, route the removal through
 // `E.removeFromBin(seat, index, reason)` instead — that is what fires

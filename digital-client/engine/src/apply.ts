@@ -1037,8 +1037,14 @@ function zonePeek(e: E, seat: Seat, from: ModZone, index: number): CardName | un
 function zoneTake(e: E, seat: Seat, from: ModZone, index: number): void {
   if (from === 'cache') e.uncache(seat, index);
   // R124: a bin exit goes through THE choke point so 'leftBin' fires — the
-  // old direct `[from].splice` here bypassed it (CARD-TODO #26), which no
-  // reachable card noticed only because Rotling carries no mod symbol.
+  // old direct `[from].splice` here bypassed it (CARD-TODO #26). This comment
+  // used to add "which no reachable card noticed, because Rotling carries no
+  // mod symbol". That was true of the CODE and false of the CARD: Rotling
+  // prints [Switch1], so it is graftable, and the literal-reading audit gave
+  // it the graftEffect it always should have had. Grafting a Rotling out of
+  // your bin is now the exact reachable case this line exists for — it hears
+  // its own exit and offers the pay-[1]. A defensive fix that acquired a real
+  // caller within the day.
   else if (from === 'bin') e.removeFromBin(seat, index, 'modded');
   else e.player(seat).hand.splice(index, 1);
 }
