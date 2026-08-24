@@ -104,7 +104,13 @@ test('R127: an adjacent Flux Resonator\'s AMOUNT MODIFIER radiates from the Anci
 
   for (const b of [far, near]) {
     const g = new E(b.h.state);
-    g.addCounters(g.entity(b.filler)!, 1);
+    // R130 (landed the same day, from another branch): the placement names
+    // its ACTOR, because Flux Resonator's printed "by an allied source" is a
+    // real gate now rather than an approximation. An unattributed white-box
+    // call is deliberately NOT "allied" — "nobody in particular put this" is
+    // not "you did" — so this test has to say who, exactly as R130's own
+    // updates to 87-replacement-layer / 27-metal-b / 29-hybrids-wm-a do.
+    g.addCounters(g.entity(b.filler)!, 1, b.A);
     b.h.state = g.s;
   }
   assert.equal(ent(far.h, far.filler)!.counters, 2,
