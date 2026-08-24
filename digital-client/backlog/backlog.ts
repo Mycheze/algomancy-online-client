@@ -921,7 +921,17 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Reset blocks — one button to clear an assignment and start over',
     area: 'client',
     size: 'S',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: '723d78d',
+      guards: [
+        '55-ui-formation.test.ts::clearBuild: every kind of assignment goes at once',
+        '55-ui-formation.test.ts::clearBuild: the SPARSE index survives a clear',
+        '55-ui-formation.test.ts::clearBuild: what gets republished is an EMPTY formation',
+        '55-ui-formation.test.ts::hasBuild: any one kind of assignment on its own counts',
+        '55-ui-formation.test.ts::the three clear paths in ui/main.ts all go through resetFormation',
+      ],
+    },
     track: 'qol',
     said: 'reset blocks',
     means:
