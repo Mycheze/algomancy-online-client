@@ -32,15 +32,17 @@
  *    neither side for the rest of the battle) and walks to its new
  *    controller's home at regroup (regroup reads controller). Its owner is
  *    unchanged — recall/death still send the card to the owner's hand/bin.
- *  - ROTSPORE HERALD's "Everything is deadly" is a mod-carried static
- *    granting {Deadly} to every unit in the region (both sides, itself
- *    included). COMBAT reads it (column attrs), and since R94 a UNIT-sourced
- *    effect reads its source's LIVE attrs (ownAttrs → staticsFor) too, so an
- *    ability fired by a unit in the region IS deadly-fied — pinned in
- *    107-semantics-statics. A SPELL source (no entity in play) still falls
- *    back to printed card attrs, and the static grants {Deadly} to units
- *    only, so spell/spell-token damage does not kill; whether "everything"
- *    should reach non-unit sources needs a ruling, not a guess.
+ * ✔ ROTSPORE HERALD's "Everything is deadly" is LITERAL as of R125. This entry
+ *    used to end "whether everything should reach non-unit sources needs a
+ *    ruling, not a guess" — the owner ruled 2026-08-24 that it reaches all
+ *    spells and spell tokens, "literally everything in its region". The card
+ *    carries BOTH attribute channels now: a `statics` mod with no kind filter
+ *    (so units AND spell tokens in the region wear {Deadly}, both sides,
+ *    itself included) and an R94 `effectAttrs` mod (so a resolving SPELL,
+ *    which has no entity and would otherwise read only printed attrs, is
+ *    deadly-fied through `EffectCtx.grantedAttrs`). COMBAT reads the first
+ *    via column attrs. All four reads pinned in 107-semantics-statics,
+ *    including the REGION boundary — a Herald elsewhere deadly-fies nothing.
  *  - TEMPORAL RIFT's "End this battle": every remaining stack item is
  *    negated, which under R68 is itself the removal — the item leaves the
  *    stack and its card is binned by negate() — then the battle round ends
@@ -140,14 +142,35 @@ card('Infernal Grovekeeper', {
 // "[Augment] Everything is {g}deadly. (Any damage from a deadly source will
 // kill a unit.)" — gr/2 2/2 Blight Spider Unit. A mod-carried STATIC
 // ([Augment] statics transfer with the card; `augmentable` marks it an
-// augment despite granting no type-line attrs): every unit in the region —
-// both sides, the holder included — has {Deadly}. COMBAT reads it (column
-// attrs) and, since R94, so does a UNIT-sourced effect (live ownAttrs — see
-// header; spell sources still read printed attrs, ruling pending).
+// augment despite granting no type-line attrs).
+//
+// R125 — EVERYTHING MEANS EVERYTHING (owner, 2026-08-24): *"Rotspore also
+// applies to all spells and spell tokens. Literally everything in its region.
+// I think you're underestimating most cards. All the cards in Algomancy are
+// pretty literal."* So the card is read at its word and the scope is the
+// REGION, not a category of object inside it: both sides, the holder
+// included, units and spell tokens alike, and every EFFECT resolving there.
+//
+// That needs both attribute channels, because the engine reads a damage
+// source two different ways (see `dealEffectDamageAll`): a source with an
+// entity in play reads live `ownAttrs` — which is the `statics` mod below,
+// now unfiltered by kind — while a resolving SPELL has no entity at all and
+// reads its printed attrs plus `EffectCtx.grantedAttrs`, which is R94's
+// `effectAttrs` channel. One card, one sentence, two mechanisms: a spell that
+// deals 1 damage in this region kills whatever it hits, and so does a
+// Fireball token standing here.
+//
+// Neither predicate tests ownership or kind, deliberately — the printed text
+// carries no qualifier to hang one on, and inventing one is exactly the
+// underestimation the ruling corrects.
 card('Rotspore Herald', {
   augmentable: true,
   statics: [{
-    affects: (g, self, t) => t.kind === 'unit',
+    affects: () => true,
+    attrs: ['Deadly'],
+  }],
+  effectAttrs: [{
+    affects: () => true,
     attrs: ['Deadly'],
   }],
 });

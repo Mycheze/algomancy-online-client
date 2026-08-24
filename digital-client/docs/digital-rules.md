@@ -6782,3 +6782,46 @@ reaches the erased pile exactly once) each fire exactly one 'leftBin'.
 `90-coverage-census` — a static sweep fails on any direct bin splice in src/
 outside `removeFromBin` itself, so the next bypass fails a test instead of
 waiting to be re-found (CARD-TODO #26).
+
+## R125 — "Everything" is literal: Rotspore Herald reaches spells and spell tokens
+
+*(2026-08-24. One card, two attribute channels, no engine change.)*
+
+**The ruling.** Asked whether "Everything is {deadly}" deadly-fies non-unit
+damage sources, the owner: *"Rotspore also applies to all spells and spell
+tokens. Literally everything in its region. I think you're underestimating
+most cards. All the cards in Algomancy are pretty literal."*
+
+**The general principle, which outlives this card**: when a printed text
+carries no qualifier, do not invent one. The narrow reading here was not a
+considered ruling — it was the shape of the mechanism that happened to be
+built first (a `StaticMod`, which is typed over `Entity`), quietly promoted
+into a rule about the card. Read the card, then find the mechanism.
+
+**Why one sentence needs two mechanisms.** `dealEffectDamageAll` reads a
+damage source's attributes two different ways, and only one of them was wired:
+
+| source | how its attrs are read | channel that reaches it |
+|---|---|---|
+| unit, spell token (an `Entity` in play) | live `ownAttrs` → `staticsFor` | `statics` |
+| a resolving SPELL (no entity at all) | printed `card.attrs` + `EffectCtx.grantedAttrs` | R94 `effectAttrs` |
+
+So the Herald now declares both, each with `affects: () => true` — no
+ownership test and no kind test, because the printed text has nothing to hang
+one on. `statics` losing its `t.kind === 'unit'` filter is what puts {Deadly}
+on a Fireball token standing in the region; `effectAttrs` is what puts it on a
+Flame of History resolving there. Both gatherers are already region-scoped
+(`a.region === target.region` / `=== ctx.region`), so the SCOPE clause of the
+card is inherited rather than re-implemented.
+
+### Tests
+
+`107-semantics-statics` — six, red-checked in both directions (removing
+`effectAttrs` reddens the spell and spell-token tests; narrowing `statics`
+back to units reddens the spell-token one alone): a unit-sourced effect (the
+pre-existing R94 pair), a 1-damage SPELL killing a 7/5 with the Herald in the
+region, the same spell merely marking 1 without it, a Fireball 1 spell token
+killing the 7/5 and visibly carrying {Deadly} in its own `ownAttrs`, and the
+REGION boundary — a Herald at home deadly-fies nothing in the battle region,
+asserted on the fixture itself so the test cannot silently stop meaning
+anything.
