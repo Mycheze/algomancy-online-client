@@ -19,6 +19,20 @@
  *    flag) can fire the trigger today. 'tokenCreated' is still listed in
  *    the events so the card starts hearing spell tokens the moment the
  *    engine fires that event.
+ *    ⚠ NEEDS-ESCALATION (2026-08-24 literal-reading sweep). This is NOT a
+ *    rules approximation, it is half a printed sentence lying dead — the R125
+ *    shape exactly. "A token" carries no qualifier, and the set itself proves
+ *    spell tokens are tokens: Cosmic Conspirator prints "if you would create a
+ *    Robot, POISON, CRYSTAL or FIREBALL", and this very batch mints Poisons on
+ *    four cards. Half the card works (unit tokens), so no sweep can see the
+ *    other half. The fix is one line and it is in engine.ts, which this batch
+ *    may not touch: in `createSpellToken`, keep the event and dispatch it —
+ *        const ev = this.ev('tokenCreated', …);  this.fireEvent('tokenCreated', ev);
+ *    'tokenCreated' is already an EventType (types.ts) and the card's `when`
+ *    already reads `ev.data?.seat`, so nothing else changes. Ask the owner
+ *    whether creating a Poison/Crystal/Fireball is "creating a token" (the
+ *    expected answer, per R125's "all the cards are pretty literal"), then
+ *    make the engine fire it.
  *  - NOXIOUS DEMISE is printed {Reaping}, but the engine's Reaping rider
  *    lives in dealEffectDamage and this spell kills via a -1/-1 counter —
  *    the "kill → its controller draws" rider is hand-rolled in the effect
@@ -400,6 +414,22 @@ card('Pestilent Mycelion', {
 // Protections on ONE unit. The shield is a single named flag, so the second
 // spell re-stamps it and the unit still gets ONE counter per damage prevented,
 // not two. Nothing in the corpus addresses it; flagged in R98.
+//   AUDITED 2026-08-24 (literal-reading sweep) and left alone: here the simple
+//   answer and the literal reading coincide. "Put a +1/+1 counter on it for
+//   each damage prevented THIS WAY" is paid by the prevention that did the
+//   preventing, and once the first shield has prevented all the damage there
+//   is no damage the second one "would" prevent — so a second copy pays for
+//   nothing however the flag is stored. The note's REASONING is still
+//   mechanism-shaped (one flag → one payout), which is the R125 smell; the
+//   ANSWER is not. Left open in case the owner rules preventions stack.
+//
+// ⚠ WHAT THE SAME SWEEP DID FIND: "prevent ALL damage that would be dealt to
+// target unit" carries no qualifier, so it has to reach every unit-damage
+// commit — and there were THREE, not the two R98 counted. Oorblak
+// (batch-earth-b) is a card-side commit: its replacement hook wrote
+// `self.damage` directly and never asked `preventUnitDamage`, so redirected
+// combat damage went through a shielded Oorblak. Fixed in the hook, which is
+// where the extra commit lives; tests in 112-literal-wood.
 card('Phytochemical Protection', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Phytochemical Protection: prevent all damage to target unit until regroup' },

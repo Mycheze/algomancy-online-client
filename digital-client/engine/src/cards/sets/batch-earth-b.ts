@@ -11,6 +11,16 @@
  *
  * PARKED (needs engine machinery that does not exist yet):
  *  - nothing in this batch.
+ *
+ * 2026-08-24, literal-reading sweep (R125's principle applied to every clause
+ * in this file). Two sentences were narrower than their words and are fixed
+ * below, with tests in 112-literal-wood:
+ *  - OORBLAK's replacement hook was a THIRD unit-damage commit that bypassed
+ *    `E.preventUnitDamage`, so Phytochemical Protection's "prevent ALL damage
+ *    that would be dealt to target unit" did not cover the damage this card
+ *    redirects. Replacement and prevention now compose in printed order.
+ *  - RETURN TO NATURE's "Erase all mods" walked `unitsIn`, i.e. kind 'unit'
+ *    only, and left an augment riding a SPELL TOKEN (R89) in play.
  * UN-PARKED (kept here so the history is readable; nothing below is waiting):
  *  - Oorblak: was PARTIAL — the REDIRECT worked from 2026-08-22, the PIERCING
  *    EXCESS half did not, because `replaceCombatDamageToPlayer`'s `info`
@@ -334,10 +344,36 @@ card('Oorblak', {
     const absorbed = info.attrs.has('Piercing') ? Math.min(amount, pool) : amount;
     if (absorbed <= 0) return amount;                       // nothing left to soak: decline
     const received = absorbed * mult;
-    self.damage += received;
-    const ev = g.ev('damage', `${self.card} takes ${received} (${self.damage} total).`,
-      { unit: self.id, n: received });
-    g.fireEvent('damage', ev);
+    // R98 — the THIRD unit-damage commit (2026-08-24 literal-reading audit).
+    // "the one choke point both unit-damage commits now pass through" was true
+    // of the engine and false of the board: this hook is a unit-damage commit
+    // living in a CARD, and it wrote `self.damage` directly. So Phytochemical
+    // Protection's "prevent ALL damage that would be dealt to target unit" —
+    // no qualifier, no source, no kind — silently let redirected combat damage
+    // through onto the one unit in the game whose whole job is to be dealt
+    // damage that was aimed somewhere else. The two layers compose in printed
+    // order and each keeps its own ruling: the REDIRECT is a replacement, so
+    // it happens and "does NOT unmake" the hit (Caleb 2024-10-24) — hence the
+    // absorption arithmetic and the Piercing leftover below are computed
+    // exactly as before, off this body's real toughness; the SHIELD then
+    // prevents what was redirected, and prevention DOES unmake it ("if there
+    // is not damage being dealt, then no counters are placed" — RAQ), so a
+    // shielded Oorblak takes no damage, fires no 'damage' event and banks a
+    // +1/+1 counter per point instead. `settleDamagePrevention` is called here
+    // because commitUnitDamage's own settle has already run by the time
+    // commitPlayerDamage offers this hook — the counters are owed to THIS
+    // sub-step, not the next one that happens to prevent something.
+    const through = g.preventUnitDamage(self, received, {
+      region: info.region, source: 'combat', combat: true,
+      attrs: info.attrs, pure: info.pure,
+    });
+    if (through > 0) {
+      self.damage += through;
+      const ev = g.ev('damage', `${self.card} takes ${through} (${self.damage} total).`,
+        { unit: self.id, n: through });
+      g.fireEvent('damage', ev);
+    }
+    g.settleDamagePrevention();
     // (no checkDeaths() — see the note above: Oorblak dies on the same
     // state-based check as everything else this exchange killed.)
     return amount - absorbed;                               // the Piercing leftover, to the face
@@ -435,14 +471,31 @@ card('Restitution', {
 // resolution this spell is already off the stack, so "all effects" = every
 // remaining stack item (spells, spell units, tokens, ambushes, triggered and
 // activated abilities alike). "All mods" is region-scoped (R12): every mod on
-// every unit in this region is ERASED — deleted outright, entering no bin.
+// every MODDED THING in this region is ERASED — deleted outright, entering no
+// bin.
+//
+// ⚠ "all mods" is not "all mods on units" (2026-08-24 literal-reading audit).
+// This walked `g.unitsIn(region)`, which is `kind === 'unit'` and nothing else,
+// so an augment sitting on a SPELL TOKEN in play survived a spell whose whole
+// text is two unqualified sweeps. R89 makes that a real board state — Caleb,
+// rules-questions 2025-03-06, asked "can i augment my spells during
+// deployment?": "You can augment spells during deployment but currently that
+// would only be possible with spell tokens. Also you can only do this with
+// attributes… Mostly, deadly, piercing and powerful are impacted by this" —
+// and `ownAttrs` reads an entity's augment mods whatever its kind, so a
+// {Deadly} Fireball token really is carrying its mod into this battle. The
+// walk is over the modded entities in the region instead; mods on the stack
+// need no clause of their own, since sentence one has already negated (and
+// discharged) every item they could be riding.
 card('Return to Nature', {
   spellEffect: {
     run: (g, ctx) => {
       let touched = g.s.stack.length;
       for (const it of [...g.s.stack]) g.negate(it.id);   // R68: negate() splices
-      for (const u of g.unitsIn(ctx.region)) {
-        if (!u.mods.length) continue;
+      const modded = Object.values(g.s.entities).filter(e =>
+        (e.kind === 'unit' || e.kind === 'spellToken') && e.region === ctx.region
+        && !e.absent && e.mods.length > 0);
+      for (const u of modded) {
         for (const id of u.mods) delete g.s.entities[id];
         g.ev('info', `Return to Nature erases ${u.mods.length} mod(s) from ${u.card}.`);
         u.mods = [];

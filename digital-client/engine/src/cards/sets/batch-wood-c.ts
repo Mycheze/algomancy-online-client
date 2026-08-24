@@ -35,6 +35,19 @@
  *    events as: -1/-1 counter(s) landing on an enemy of mine were put there
  *    by me. Deviation: an opponent putting -1/-1 counters on their own unit
  *    would also fire it (rare); +1/+1 counters I put on an enemy never do.
+ *    ⚠ NEEDS-ESCALATION (2026-08-24 literal-reading sweep). The printed noun
+ *    is "a counter", unqualified — the sign test is a stand-in for an
+ *    ATTRIBUTION the engine does not keep, and it is wrong in both directions,
+ *    not just narrow. It cannot be fixed from a card: `addCounters(target, n)`
+ *    has no source parameter, and engine.ts says so on purpose ("`sourceSeat`
+ *    is deliberately absent … widening `addCounters`' signature is a separate
+ *    change" — the same line Flux Resonator's "by an allied source" is parked
+ *    on). Widening the card alone would only trade one false reading for a
+ *    louder one (an enemy growing their own units would draw me cards). The
+ *    change to ask for: `addCounters(target, n, by?: Seat)`, threaded from the
+ *    resolving effect's controller, with `by` on the countersChanged event —
+ *    then this card is `ev.data.by === self.controller && victim is an enemy`,
+ *    sign-blind, and Flux Resonator comes off its own approximation with it.
  *  - Verdant Necrophage's donated "[Augment] when I despawn" fires on the
  *    host's DEATH but not its recall — recall() erases mod entities before
  *    firing the event (the batch-hybrids-fwe Bloated Manablub asymmetry).
@@ -261,6 +274,22 @@ card('Sprouter', {
 // the region at event time (R1 condition — no pointless targeting every
 // combat); the "if it has" rider is enforced again on the chosen target at
 // resolution (Minor Kraken precedent) — a clean target is a no-op.
+// ⚠ NEEDS-ESCALATION (2026-08-24 literal-reading sweep). That `when` gate is
+// the ONE qualifier here with no printed text under it: the card says "After
+// combat, gain control of target unit IF IT HAS a -1/-1 counter on it" — the
+// condition is on the TARGET, at resolution, and there is no trigger condition
+// at all. "No pointless targeting every combat" is a UX convenience promoted
+// into a rule about the card, which is exactly what R125 warns about, and it
+// costs a real line: after combat, target a clean enemy unit, then put a -1/-1
+// counter on it in the after-window (Noxious Demise is a {Battle} spell) and
+// steal it — legal on the printed card, unreachable here whenever no OTHER
+// unit in the region already carries a counter. Three readings are live and
+// the choice is the owner's, so nothing is changed here: (a) literal — drop
+// the gate, it always triggers and asks; (b) R64 — "if it has a -1/-1 counter"
+// is a targeting RESTRICTION, so it belongs in `restrict` and the trigger is
+// simply not offered with nothing legal to aim at; (c) as written. (b) and (c)
+// look alike today and differ exactly on the line above. Same question, same
+// answer, for the [Augment] half's `when` below.
 // [Augment] half: died trigger (self — the HOST when donated); "you" = the
 // carrier's controller. All handovers go through E.giveControl (R112).
 card('Stellarspore Harvester', {
@@ -474,6 +503,22 @@ card('Warbloom Herald', {
 // of its unspent parts targets: a unit you control, you as a player, or a
 // stack item you control ("allied" = your side; 1v1 = yours). Triggered and
 // activated items count — they are effects too.
+//
+// R79 — the half that was silently dead (found by the 2026-08-24 literal-
+// reading audit). A VIRUS on the stack carries NO parts and NO target refs:
+// apply.ts builds it with `parts: []` and a `hostId` (a unit, or a spell token
+// in play) or a `hostStack` (a SPELL on the stack, R79's other shape). So the
+// plain target-ref read above sees an enemy Virus aimed at your unit as a
+// stack item that targets nothing, and the card printed to answer enemy
+// effects aimed at your side sailed straight past the enemy effect that is
+// hardest to answer any other way. The designer is explicit that a virus IS a
+// targeted effect and is interactible — Caleb, rules-questions: "You can
+// redirect a virus, it is a targeted effect", and asked "so you could Graxxlid
+// or Boon of Protection it as well?" — "Yep! They're fully interactible."
+// Graxxlid reads exactly these two shapes (`aimsAtUnit`, batch-earth-a); this
+// is the same read widened from "me" to "my side", and `E.negate` already
+// knows what to do with a virus item ("if a virus is negated … it is placed
+// into the bin").
 card('Woodland Warding', {
   spellEffect: {
     run: (g, ctx) => {
@@ -481,6 +526,12 @@ card('Woodland Warding', {
       const alliedItems = new Set(g.s.stack.filter(i => i.controller === mine).map(i => i.id));
       const hits = g.s.stack.filter(it => {
         if (it.controller === mine) return false;
+        if (it.kind === 'virus') {
+          // "targeting allied … units" (hostId — a unit or spell token of mine)
+          // and "targeting allied effects" (hostStack — my spell on the stack)
+          return (it.hostId !== undefined && g.entity(it.hostId)?.controller === mine)
+            || (it.hostStack !== undefined && alliedItems.has(it.hostStack));
+        }
         return it.parts.some(p => !p.spent && p.targets.some(t =>
           ('unit' in t && g.entity(t.unit)?.controller === mine)
           || ('player' in t && t.player === mine)
