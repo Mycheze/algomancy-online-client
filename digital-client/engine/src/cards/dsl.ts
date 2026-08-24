@@ -181,7 +181,14 @@ export interface EffectCtx {
    * answer or suspends the engine with a decision. Parts that use this must
    * request all choices before mutating state, or use plan-then-commit —
    * the engine rolls back to the part boundary on suspension. */
-  choose: (key: string, dec: { kind: 'payOrDecline' | 'electricPath' | 'formationSlot'; seat: Seat; prompt: string; options: { label: string; value: unknown; card?: CardName }[] }) => unknown;
+  choose: (key: string, dec: {
+    kind: 'payOrDecline' | 'electricPath' | 'formationSlot'; seat: Seat; prompt: string;
+    options: { label: string; value: unknown; card?: CardName }[];
+    /** BL-25/R139: set this when the menu is "HOW MANY counters?" — it is the
+     * biggest amount offered, and a client draws a −/+ stepper and an "All"
+     * button over the menu instead of one button per amount. */
+    counterMax?: number;
+  }) => unknown;
 }
 
 export interface TargetSpec {

@@ -840,6 +840,13 @@ const moveCounters: EffectDef = {
       kind: 'payOrDecline', seat: ctx.controller,
       prompt: `Chombot: move how many counters from ${from.card} onto ${to.card}?`,
       options,
+      // BL-25/R139: an EFFECT that takes counters off a unit, not a cost — the
+      // client's quantity stepper is driven by this ceiling, so it reaches
+      // here too. `avail` is already `min(2, |from.counters|)`, so the stepper
+      // and the option list are the same number by construction. Option VALUES
+      // are unchanged (a bare amount), which is what keeps `pick(h, 2)` and
+      // every saved answer working.
+      counterMax: avail,
     }) as number;
     if (n <= 0) { g.ev('info', 'Chombot: no counters moved.'); return; }
     g.addCounters(from, -sign * n);

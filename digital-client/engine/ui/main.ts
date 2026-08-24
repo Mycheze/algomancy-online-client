@@ -9,6 +9,8 @@ import type { XPreviewRow } from '../src/cards/dsl.ts';
 import {
   actionNeedsMenu, activatableUnits, activationBadge, activationKeys, activationNeedsConfirm,
   blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens,
+  counterAmountIndex, counterPickIndex, counterPickUnits, counterPickValue, counterStepper,
+  counterStepperCount,
   dismissSeenCard, dismissSeenHand,
   erasedPileView, groupReveal, growCardLedger, linkCardNames, modHostCount, modHostPhrase,
   modHosts, onlyKnownNames, optionPingId, packBadgeLine,
@@ -336,6 +338,12 @@ interface UiState {
   modding: { from: ModZone; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
   menu: { x: number; y: number; items: MenuItem[] } | null;
   orderPicked: number[];
+  /** BL-25/R139: how many counters the next counter-removal click takes, and
+   * the decision id it was dialled for — a fresh question always starts at
+   * the floor, so the count can never be carried onto a menu that never
+   * offered it. */
+  counterCount: number;
+  counterFor: number;
   /** draft step: pile indices (into hand.concat(pack)) marked "leave in pack" */
   draftPack: number[] | null;
   /** which turn+seat draftPack was built for (re-init on change) */
@@ -442,6 +450,7 @@ const savedEls = (): string[] => {
 };
 const freshUi = (): UiState => ({
   carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
+  counterCount: 1, counterFor: -1,
   draftPack: null, draftFor: '', autopass: false, autopassStack: 0,
   autopassSig: [], autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
   prefillFor: '', confirmDone: null, confirmPass: null,
@@ -890,7 +899,11 @@ function decisionOptionIndex(ref: TargetRef): number {
   if (!dec || dec.kind !== 'targets') return -1;
   return dec.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify(ref));
 }
-const isCandidate = (ref: TargetRef) => decisionOptionIndex(ref) >= 0;
+/** BL-25/R139: `{counterFrom: id}` is a unit ref too — the highlight has to
+ * agree with the click handler, or the board lights up nothing while the
+ * prompt tells you to click a unit. */
+const isCandidate = (ref: TargetRef): boolean => decisionOptionIndex(ref) >= 0
+  || ('unit' in ref && counterPickIndex(h.state.decision, ref.unit, 1) >= 0);
 
 /** #3: when a decision option refers to a LIVE entity, its button/card pings
  * that unit on the board on hover (data-ping) and feeds the focus preview
@@ -902,6 +915,52 @@ function pingAttrs(o: { value: unknown }): string {
   const id = optionPingId(o.value, h.state.decision?.kind);
   if (id === null || !h.state.entities[id]) return '';
   return ` data-ping="${id}" data-previd="${id}"`;
+}
+
+/* ── BL-25/R139: the counter-removal quantity stepper ──────────────────
+ *
+ * The owner: "it's just not clear that it wants you to click the unit. It
+ * needs to say that. Plus maybe a counter with up/down arrows … or an 'All'
+ * button which jumps the count to the max (WITHOUT auto submitting)".
+ *
+ * Every judgement — which decisions get one, the floor, the ceiling, what −/+/
+ * All do, and which option index a unit click sends — is in ui/inspect.ts and
+ * tested in test/124-counter-stepper. This is the drawing and the wiring only.
+ */
+
+/** the count the stepper is showing for the LIVE decision. A new decision id
+ * resets it: an amount dialled for one menu is not an answer to the next
+ * question, and a stale 6 over a menu that now caps at 2 would silently take
+ * 2 while the bar still said 6. */
+function counterCount(): number {
+  const dec = h.state.decision;
+  if (!dec) return 1;
+  if (ui.counterFor !== dec.id) { ui.counterFor = dec.id; ui.counterCount = counterStepper(dec, 1).count; }
+  return counterStepper(dec, ui.counterCount).count;
+}
+
+/** the option index a click on `unit` should send, or -1 */
+function counterClickIndex(id: EntityId): number {
+  const dec = h.state.decision;
+  return dec ? counterPickIndex(dec, id, counterCount()) : -1;
+}
+
+function counterStepperHtml(dec: Decision): string {
+  const v = counterStepper(dec, counterCount());
+  if (v.mode === 'none') return '';
+  const btn = (act: string, txt: string, on: boolean, title: string): string =>
+    `<button data-btn="${act}" title="${esc(title)}"${on ? '' : ' disabled'}>${txt}</button>`;
+  // the 'amount' shape has no unit to click (the effect already fixed it), so
+  // it needs a confirm of its own; the 'pick' shape's confirm IS the unit
+  const take = v.mode === 'amount' && counterAmountIndex(dec, v.count) >= 0
+    ? ` ${btn('ctrtake', `Take ${v.count}`, true, 'answer with this many')}` : '';
+  // styled inline: ui/style.css belongs to another change in flight, and the
+  // stepper needs nothing a class would give it that three declarations don't
+  return `<span class="ctrstep" style="display:inline-flex;align-items:center;gap:.2em;white-space:nowrap">${
+    v.hint ? `<span style="color:var(--dim)">${esc(v.hint)}</span> ` : ''}${
+    btn('ctrdown', '−', v.canDown, 'one fewer')}<b style="min-width:1.2em;text-align:center">${v.count}</b>${
+    btn('ctrup', '+', v.canUp, 'one more')}${
+    btn('ctrall', `All (${v.max})`, v.canAll, 'set the count to the most this can take — it does NOT submit')}${take}</span>`;
 }
 
 function legalFor(seat: Seat): Action[] {
@@ -2264,6 +2323,26 @@ function decisionBarHtml(dec: Decision, err: string): string {
     return `<button ${cls ? `class="${cls}" ` : ''}data-btn="decide" data-i="${i}"${
       pingAttrs(o)}>${iconizeText(o.label)}</button>`;
   };
+  // BL-25/R139: a counter-removal menu carries one option per (unit, amount)
+  // pair. The bar draws ONE scan per unit and lets the stepper carry the
+  // amount — the alternative, a wall of "Take 2 / Take 3 / Take 4 …" buttons
+  // per ally, is the tedium the stepper exists to end.
+  // counterCount() FIRST: it is what resets the dial on a new decision id, and
+  // the scans below read the reset value. Reading `ui.counterCount` raw here
+  // drew a bar whose number and whose clickable scans disagreed for exactly
+  // one frame — the frame the new menu appeared on.
+  const step = counterStepper(dec, counterCount());
+  const stepperHtml = counterStepperHtml(dec);
+  const isCtrOpt = (i: number): boolean => counterPickValue(dec.options[i]!.value) !== null;
+  const ctrCards = (): string => {
+    const cards = counterPickUnits(dec).map(u => {
+      const i = counterClickIndex(u), name = h.state.entities[u]?.card;
+      return i >= 0 && name
+        ? cardHtml(name, { playable: true, data: `data-btn="decide" data-i="${i}" data-ping="${u}" data-previd="${u}"` })
+        : '';
+    }).join('');
+    return cards ? `<div class="deccards">${cards}</div>` : '';
+  };
   if (dec.kind === 'targets') {
     // UZRG, and the expensive one: a ref-valued option ({stack:96}) used to
     // render NO button at all — you had to find and click the highlighted
@@ -2272,11 +2351,14 @@ function decisionBarHtml(dec: Decision, err: string): string {
     // the decline, in the same screen position the player had just clicked
     // ten times to pay a 10-card cost. Every option gets a real button now,
     // and the decline is last and secondary.
-    const picks = [...split.refs, ...split.plain].map(i => optBtn(i)).join(' ');
+    const picks = [...split.refs, ...split.plain]
+      .filter(i => step.mode !== 'pick' || !isCtrOpt(i))
+      .map(i => optBtn(i)).join(' ');
     const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
     return `<div class="promptbar pending"><span class="who">${who}:</span>
         ${iconizeText(dec.prompt)}${split.refs.length ? ' — click a highlighted target, or pick one here' : ''}
-        ${cardRow('decide')} <span class="decpicks">${picks}</span>
+        ${stepperHtml}
+        ${step.mode === 'pick' ? ctrCards() : cardRow('decide')} <span class="decpicks">${picks}</span>
         ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
   }
   if (dec.kind === 'orderTriggers') {
@@ -2289,10 +2371,13 @@ function decisionBarHtml(dec: Decision, err: string): string {
   // payOrDecline / electricPath: cards, then the affirmative
   // options, then the decline — same ordering rule as the targets bar, so
   // "stop" is never where "go" was a click ago
-  const btns = [...split.refs, ...split.plain].map(i => optBtn(i)).join(' ');
+  const btns = [...split.refs, ...split.plain]
+    .filter(i => step.mode !== 'pick' || !isCtrOpt(i))
+    .map(i => optBtn(i)).join(' ');
   const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
   return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}
-      ${cardRow('decide')} <span class="decpicks">${btns}</span>
+      ${stepperHtml}
+      ${step.mode === 'pick' ? ctrCards() : cardRow('decide')} <span class="decpicks">${btns}</span>
       ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
 }
 
@@ -4150,7 +4235,7 @@ function pinFocus(sub: FocusSubject, key: string): void {
  * including them would make every click look like it had done something. */
 const CLICK_STATE_KEYS = ['carrying', 'columns', 'send', 'spellTokens', 'modding', 'menu',
   'orderPicked', 'draftPack', 'bottomPick', 'confirmDone', 'confirmPass', 'confirmDeploy',
-  'confirmAct', 'confirmRide'] as const;
+  'confirmAct', 'confirmRide', 'counterCount'] as const;
 
 /** everything a click may move, as one string */
 function clickSig(): string {
@@ -4639,6 +4724,21 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     if (!uiError) { ui.bottomPick = []; ui.bottomFor = ''; }
   },
   decide: btn => { act({ type: 'decide', seat: h.state.decision!.seat, choice: Number(btn.dataset['i']) }); },
+  // BL-25/R139 — the stepper. NONE of these three answers the decision: the
+  // owner asked for All to jump the count "without auto submitting", and the
+  // whole reason is that a unit with a lot of counters is exactly where you
+  // want to see the number before you spend them. ui/inspect.ts says so in
+  // the type (CounterStepperAction.submit is the literal false).
+  ctrup: () => { ui.counterCount = counterStepperCount(h.state.decision, ui.counterCount, 'up').count; },
+  ctrdown: () => { ui.counterCount = counterStepperCount(h.state.decision, ui.counterCount, 'down').count; },
+  ctrall: () => { ui.counterCount = counterStepperCount(h.state.decision, ui.counterCount, 'all').count; },
+  // the 'amount' shape (an effect that asks HOW MANY) has no unit to click,
+  // so its confirm is a button — and it is the ONLY one of the four that acts
+  ctrtake: () => {
+    const dec = h.state.decision;
+    const i = dec ? counterAmountIndex(dec, counterStepper(dec, ui.counterCount).count) : -1;
+    if (i >= 0) act({ type: 'decide', seat: dec!.seat, choice: i });
+  },
   orderpick: btn => {
     const s = h.state;
     ui.orderPicked.push(Number(btn.dataset['i']));
@@ -4824,6 +4924,13 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     const ref: TargetRef = { unit: id };
     const idx = decisionOptionIndex(ref);
     if (idx >= 0) { act({ type: 'decide', seat: s.decision!.seat, choice: idx }); render(); return; }
+    // BL-25/R139: a counter-removal option names its unit as {counterFrom},
+    // which the ref lookup above has never matched — so the unit standing on
+    // the BOARD was inert and the only way in was its scan down in the prompt
+    // bar. That is the "not clear that it wants you to click the unit" the
+    // owner hit: the obvious thing to click did nothing at all.
+    const ctr = counterClickIndex(id as EntityId);
+    if (ctr >= 0) { act({ type: 'decide', seat: s.decision!.seat, choice: ctr }); render(); return; }
     if (ui.modding) {
       const m = ui.modding;
       ui.modding = null;

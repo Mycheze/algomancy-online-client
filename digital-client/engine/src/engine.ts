@@ -103,7 +103,13 @@ export class IllegalAction extends Error { }
 /** thrown by ctx.choose inside an effect part; converted to a 'resolve' suspension */
 class PartChoice {
   key: string;
-  dec: { kind: 'payOrDecline' | 'electricPath' | 'formationSlot'; seat: Seat; prompt: string; options: DecisionOption[] };
+  dec: {
+    kind: 'payOrDecline' | 'electricPath' | 'formationSlot'; seat: Seat; prompt: string;
+    options: DecisionOption[];
+    /** BL-25/R139: a card effect asking HOW MANY counters — the ceiling its
+     * stepper maxes at. Passed straight through onto the Decision. */
+    counterMax?: number;
+  };
   constructor(key: string, dec: PartChoice['dec']) {
     this.key = key;
     this.dec = dec;
@@ -5176,6 +5182,37 @@ export class E {
     return this.unitsOf(seat, region).reduce((n, u) => n + Math.max(0, u.counters), 0);
   }
 
+  /**
+   * BL-25/R139: the most counters ONE pick of a "[Remove X +1/+1 counters …]"
+   * cost may take — what a client's quantity stepper maxes at, and what its
+   * "All" button jumps to.
+   *
+   * It is NOT always `counterPool`, and the difference is the whole reason
+   * this is a separate method rather than a client-side `Math.max`. A pick
+   * NAMES ONE UNIT, so `from: 'allies'` can never take the whole pool in one
+   * go — four counters spread over two allies is two picks of two, not one of
+   * four. `from: 'self'` is a single unit, so there the pool IS the answer and
+   * `counterPool` is returned unchanged.
+   *
+   * `owed` is what the cost still wants (null for a variable X cost, which
+   * wants as much as you will give it): a "[Remove 2]" cost may not offer to
+   * strip five counters off a unit that has five.
+   *
+   * ⚠ R130 — "all counters count as counters". This deliberately makes no
+   * eligibility judgement of its own: it reads `counterPool` and `unitsOf`,
+   * exactly the two the payability check and the option list read. The
+   * `Math.max(0, …)` is `counterPool`'s own, and it is there because counters
+   * are ONE signed net int and this cost prints its sign ("+1/+1"), which is
+   * the same reason R130 left Pestilent Mycelion's sign filter standing.
+   */
+  counterPickMax(seat: Seat, region: number, from: 'allies' | 'self', sourceId?: EntityId, owed: number | null = null): number {
+    const pool = this.counterPool(seat, region, from, sourceId);
+    if (pool <= 0) return 0;
+    const biggest = from === 'self' ? pool
+      : this.unitsOf(seat, region).reduce((m, u) => Math.max(m, Math.max(0, u.counters)), 0);
+    return Math.max(0, Math.min(biggest, pool, owed ?? Infinity));
+  }
+
   /** R73: the source unit of a "[Sacrifice me]" cost, or undefined when it is
    * not there to be sacrificed (already dead, absent, or no longer this
    * seat's). The single reading `canPayCastCost` and `chargeCastCost` share. */
@@ -5306,7 +5343,10 @@ export class E {
           this.chargeCastCost(item, part, cost);
           continue;
         }
-        const options: DecisionOption[] = this.castCostOptions(item, part, cost);
+        // BL-25/R139: a variable cost wants as much as you will give it, so
+        // its pick is capped only by the unit; a fixed one may not be overpaid.
+        const pickOwed = total === null ? null : owed;
+        const options: DecisionOption[] = this.castCostOptions(item, part, cost, pickOwed);
         // payability and the option list read the same pool, so this is a
         // belt-and-braces branch: nothing left to pay with closes a variable
         // cost at what it has, and skips a fixed one rather than under-paying.
@@ -5341,10 +5381,19 @@ export class E {
           { type: 'cast', stage: 'cost', item, partIndex: pi, targetIndex: 0, then, moreItems },
           {
             seat, kind: 'targets',
+            // BL-25 (owner): "it's just not clear that it wants you to click
+            // the unit. It needs to say that." The menu was a row of ally
+            // scans under a prompt that named the COST and never the action,
+            // so the affordance was there and invisible. Said here rather than
+            // in the client so every client — and the log — gets it.
             prompt: `${item.label}: ${this.castCostLabel(cost)}${
               total !== null && total > 1 ? ` (${done + 1} of ${total})` : total === null ? ` (X = ${done} so far)` : ''
-            } — additional cost${optional ? ', optional' : ''}`,
+            } — additional cost${optional ? ', optional' : ''}${
+              cost.kind === 'removeCounters' ? ' — click a unit to take counters off it' : ''}`,
             options,
+            ...(cost.kind === 'removeCounters'
+              ? { counterMax: this.counterPickMax(seat, item.region, cost.from, item.sourceId, pickOwed) }
+              : {}),
           },
         );
       }
@@ -5420,7 +5469,7 @@ export class E {
 
   /** the choices a bracketed cost offers (empty for the choice-free kinds,
    * which then present a single "pay it" option on the optional-rider path) */
-  private castCostOptions(item: StackItem, part: EffectPart, cost: CastCost): DecisionOption[] {
+  private castCostOptions(item: StackItem, part: EffectPart, cost: CastCost, owed: number | null = null): DecisionOption[] {
     const seat = item.controller;
     // R73: "[Sacrifice me]" names no unit, so it offers no unit menu. It only
     // reaches here as an optional grafted rider (pay-or-decline); the normal
@@ -5460,12 +5509,35 @@ export class E {
       const pool = cost.from === 'self'
         ? (item.sourceId !== undefined ? [this.entity(item.sourceId)] : []).filter((u): u is Entity => !!u && !u.absent)
         : this.unitsOf(seat, item.region);
-      return pool
-        .filter(u => u.counters > 0)
-        .map(u => ({
+      // BL-25/R139: a pick may take SEVERAL counters off the unit it names,
+      // so each unit contributes one option per amount it can still give.
+      //
+      // The one-per-counter menu it replaces was not merely tedious — it was
+      // untenable ACROSS A NETWORK. A quantity had to be an amount inside one
+      // choice, because a client cannot answer the same decision n times: a
+      // `decide` carries an option INDEX, and every index is re-evaluated
+      // against the NEXT decision, which this loop has already rebuilt.
+      //
+      // The n = 1 option keeps its exact old value (`{counterFrom: id}`, no
+      // `n`) and is the only one carrying `card`. That is what lets the four
+      // existing tests still find it by value, and what keeps the prompt bar's
+      // card row one scan per unit rather than one per counter.
+      const out: DecisionOption[] = [];
+      for (const u of pool) {
+        if (u.counters <= 0) continue;
+        const cap = Math.min(u.counters, owed ?? Infinity);
+        out.push({
           label: `${this.targetLabel({ unit: u.id })} — has ${u.counters} counter${u.counters === 1 ? '' : 's'}`,
           value: { counterFrom: u.id }, card: u.card,
-        }));
+        });
+        for (let k = 2; k <= cap; k++) {
+          out.push({
+            label: `Take ${k} counters off ${this.targetLabel({ unit: u.id })}`,
+            value: { counterFrom: u.id, n: k },
+          });
+        }
+      }
+      return out;
     }
     return [{ label: `Pay: ${this.castCostLabel(cost)}`, value: { payCost: true } }];
   }
@@ -5566,9 +5638,23 @@ export class E {
       this.need(u && u.kind === 'unit' && u.controller === item.controller && !u.absent
         && u.counters > 0 && (cost.kind !== 'removeCounters' || cost.from !== 'self' || u.id === item.sourceId),
         'bad cost choice');
-      (paid.counters ??= []).push({ unit: u!.id, card: u!.card, n: 1 });
-      this.ev('info', `${this.pname(item.controller)} removes a +1/+1 counter from ${u!.card} — the cost of ${item.label}.`);
-      this.addCounters(u!, -1);
+      // BL-25/R139: one pick, several counters. Absent `n` is 1 — the shape
+      // every saved game and every existing test sends.
+      //
+      // CLAMPED, not refused, and deliberately: the client's stepper carries a
+      // count across units, so "take 3" landing on a unit that has 2 must take
+      // 2 rather than throw the whole cast away. The two ceilings are the
+      // unit's own counters and — for a FIXED cost — what is still owed, so
+      // "[Remove 2]" can never be overpaid into by a hand-rolled action.
+      const asked = typeof obj['n'] === 'number' ? Math.floor(obj['n'] as number) : 1;
+      const total = costAmount(cost);
+      const owed = total === null ? Infinity : total - this.costPaidSoFar(part, cost);
+      const n = Math.min(Math.max(1, asked), u!.counters, owed);
+      this.need(Number.isFinite(n) && n >= 1, 'bad cost choice');
+      (paid.counters ??= []).push({ unit: u!.id, card: u!.card, n });
+      this.ev('info', `${this.pname(item.controller)} removes ${
+        n === 1 ? 'a +1/+1 counter' : `${n} +1/+1 counters`} from ${u!.card} — the cost of ${item.label}.`);
+      this.addCounters(u!, -n);
       return;
     }
     const id = (val as { unit: EntityId }).unit;
@@ -6383,7 +6469,12 @@ export class E {
               snapshot: snap, shown: emitted,
               ...(chain ? { then: chain.then, moreItems: chain.moreItems } : {}),
             },
-            { seat: sig.dec.seat, kind: sig.dec.kind, prompt: sig.dec.prompt, options: sig.dec.options },
+            {
+              seat: sig.dec.seat, kind: sig.dec.kind, prompt: sig.dec.prompt, options: sig.dec.options,
+              // BL-25/R139: an effect that removes counters says its own
+              // ceiling here — the quantity stepper is not a cost-only thing.
+              ...(sig.dec.counterMax !== undefined ? { counterMax: sig.dec.counterMax } : {}),
+            },
           );
         }
         throw sig;

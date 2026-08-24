@@ -2027,3 +2027,198 @@ export function prismiteClickPlan(
   const actions = opts.filter(a => a.type !== 'exchangePrismite' || show.includes(a.element));
   return { kind: 'menu', actions, hidden: hidden.length };
 }
+
+// ═══ BL-25 / R139 — the counter-removal quantity stepper ══════════════════
+
+/**
+ * The owner, on the counter-removal prompt: *"It's actually okay, it's just
+ * not clear that it wants you to click the unit. It needs to say that. Plus
+ * maybe a counter with up/down arrows would be nice too or an 'All' button
+ * which jumps the count to the max (without auto submitting) for cases where
+ * there are a ton of counters."*
+ *
+ * So the mechanism is not redesigned. What is added is a QUANTITY: how many
+ * counters this one pick takes. The judgement lives here rather than in
+ * main.ts for the reason R134 and R136 both landed on — main.ts runs DOM code
+ * on import and no test can reach it.
+ *
+ * Two decision shapes ask about a quantity of counters, and they are genuinely
+ * separate engine paths:
+ *
+ *   'pick'   the `removeCounters` CAST COST (Discharge's "[Remove X +1/+1
+ *            counters from allies]", Soul Reaver's "from me"). Options name a
+ *            unit — `{counterFrom: id}` for one counter, `{counterFrom: id,
+ *            n: k}` for k. You choose the unit, the stepper chooses k.
+ *   'amount' an EFFECT that removes counters and asks how many (Chombot's
+ *            "move up to two counters"). The unit is already fixed by the
+ *            effect's targets, so the options are bare amounts and the whole
+ *            question is the number.
+ *
+ * ⚠ THE MAX IS THE ENGINE'S, NEVER THIS FILE'S. `Decision.counterMax` comes
+ * from `E.counterPickMax`, which reads the same `counterPool` the payability
+ * check reads. Recomputing it here from board state was the obvious thing and
+ * it is wrong: `counterPool` counts the whole ALLY pool while a pick names ONE
+ * unit, so a client tallying "counters I can see" would offer to take four off
+ * a unit that has two — and R130's "all counters count as counters" would have
+ * had to be re-decided in the UI to do even that. The option list is used only
+ * as the fallback for a decision that carries no ceiling; the two agree by
+ * construction, because the engine builds both from the same pool.
+ */
+export type CounterMode = 'none' | 'pick' | 'amount';
+
+/** the shape of `GameState.decision` this module needs — kept structural so a
+ * test can hand-build one without a whole engine */
+export interface CounterDecisionLike {
+  prompt: string;
+  options: readonly { label: string; value: unknown; card?: CardName }[];
+  counterMax?: number;
+}
+
+export interface CounterStepperView {
+  mode: CounterMode;
+  /** the dialled-in count, ALREADY clamped into [min, max] */
+  count: number;
+  min: number;
+  max: number;
+  /** what the bar must say, or '' when the engine's prompt already said it */
+  hint: string;
+  canDown: boolean;
+  canUp: boolean;
+  /** "All" would move the count somewhere it is not already */
+  canAll: boolean;
+}
+
+/**
+ * The instruction the owner asked for: the prompt has to SAY that a unit is
+ * the thing to click. The engine's own cost prompt carries it (see
+ * `collectCastCosts`), so this string is what a decision that does NOT carry
+ * it — a card effect writing its own prompt — gets appended.
+ */
+export const COUNTER_CLICK_HINT = 'click a unit to take counters off it';
+export const COUNTER_AMOUNT_HINT = 'set how many counters, then confirm';
+
+const NO_STEPPER: CounterStepperView = {
+  mode: 'none', count: 0, min: 0, max: 0, hint: '', canDown: false, canUp: false, canAll: false,
+};
+
+/** the unit and amount a `removeCounters` cost option names, or null. A
+ * missing `n` is one counter — the exact value shape saved games and the four
+ * pre-R139 tests send. */
+export function counterPickValue(v: unknown): { unit: EntityId; n: number } | null {
+  if (!v || typeof v !== 'object' || !('counterFrom' in (v as object))) return null;
+  const id = (v as { counterFrom: unknown }).counterFrom;
+  if (typeof id !== 'number' || !Number.isFinite(id)) return null;
+  const raw = (v as { n?: unknown }).n;
+  const n = typeof raw === 'number' ? Math.floor(raw) : 1;
+  return Number.isFinite(n) && n >= 1 ? { unit: id as EntityId, n } : null;
+}
+
+/** the amount a bare-number option names (the 'amount' shape), or null */
+export function counterAmountValue(v: unknown): number | null {
+  return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : null;
+}
+
+/** a count, forced into the range the decision will actually accept */
+export function clampCounterCount(want: number, min: number, max: number): number {
+  if (!Number.isFinite(want)) return min;
+  if (max < min) return min;
+  return Math.min(Math.max(Math.floor(want), min), max);
+}
+
+/** say the instruction ONCE: '' when the engine's prompt already carries it */
+function counterHint(prompt: string, hint: string): string {
+  return prompt.toLowerCase().includes(hint.toLowerCase()) ? '' : hint;
+}
+
+/** What the prompt bar draws over a counter-removal decision — 'none' for
+ * every decision that is not one, which is almost all of them. */
+export function counterStepper(dec: CounterDecisionLike | null | undefined, want: number): CounterStepperView {
+  if (!dec) return NO_STEPPER;
+  const picks = dec.options.flatMap(o => { const p = counterPickValue(o.value); return p ? [p] : []; });
+  if (picks.length) {
+    const offered = picks.reduce((m, p) => Math.max(m, p.n), 0);
+    const max = dec.counterMax ?? offered;
+    const count = clampCounterCount(want, 1, max);
+    return {
+      mode: 'pick', count, min: 1, max, hint: counterHint(dec.prompt, COUNTER_CLICK_HINT),
+      canDown: count > 1, canUp: count < max, canAll: max >= 1 && count !== max,
+    };
+  }
+  // an effect's own "how many?" menu — only ever a stepper when the ENGINE
+  // said so, because a bare number is otherwise just a payload (an X amount,
+  // a hand index, R75's formation slot — the same namespace collision
+  // `optionPingId` above refuses to guess at)
+  if (dec.counterMax === undefined) return NO_STEPPER;
+  const amounts = dec.options.flatMap(o => { const n = counterAmountValue(o.value); return n === null ? [] : [n]; });
+  if (!amounts.length) return NO_STEPPER;
+  const min = Math.min(...amounts);
+  const max = Math.max(min, dec.counterMax);
+  const count = clampCounterCount(want, min, max);
+  return {
+    mode: 'amount', count, min, max, hint: counterHint(dec.prompt, COUNTER_AMOUNT_HINT),
+    canDown: count > min, canUp: count < max, canAll: count !== max,
+  };
+}
+
+/**
+ * What −, + and All do to the count.
+ *
+ * `submit: false` is not decoration — it is the ruling, in the type. The owner
+ * said "All … jumps the count to the max (WITHOUT auto submitting)", and the
+ * point of that is a unit carrying a lot of counters: you want to see the
+ * number before you spend them. No path through this function produces a
+ * decision index, so no path through it can pay a cost.
+ */
+export interface CounterStepperAction { count: number; submit: false }
+
+export function counterStepperCount(
+  dec: CounterDecisionLike | null | undefined, want: number, act: 'up' | 'down' | 'all',
+): CounterStepperAction {
+  const v = counterStepper(dec, want);
+  if (v.mode === 'none') return { count: want, submit: false };
+  if (act === 'all') return { count: v.max, submit: false };
+  return { count: clampCounterCount(v.count + (act === 'up' ? 1 : -1), v.min, v.max), submit: false };
+}
+
+/**
+ * The option index for "take `want` counters off `unit`" — the click the
+ * stepper is FOR.
+ *
+ * Clamped DOWNWARDS to what the unit can give: a stepper set to 5 that lands
+ * on a unit holding 2 takes 2. Refusing the click instead would make the
+ * stepper a trap on exactly the board the owner was complaining about (several
+ * allies, uneven counters), where the count dialled in for one unit is wrong
+ * for the next. -1 when this unit is not on the menu at all.
+ */
+export function counterPickIndex(
+  dec: CounterDecisionLike | null | undefined, unit: EntityId, want: number,
+): number {
+  let best = -1, bestN = 0;
+  if (!dec) return best;
+  const cap = Math.max(1, Math.floor(Number.isFinite(want) ? want : 1));
+  dec.options.forEach((o, i) => {
+    const p = counterPickValue(o.value);
+    if (!p || p.unit !== unit) return;
+    if (p.n <= cap && p.n > bestN) { best = i; bestN = p.n; }
+  });
+  return best;
+}
+
+/** the 'amount' shape's confirm: the option whose value IS the count, or -1 */
+export function counterAmountIndex(dec: CounterDecisionLike | null | undefined, want: number): number {
+  if (!dec) return -1;
+  return dec.options.findIndex(o => counterAmountValue(o.value) === Math.floor(want));
+}
+
+/** the units a 'pick' decision names, in menu order — ONE entry per unit, even
+ * though the menu carries one option per (unit, amount) pair. This is what
+ * keeps the prompt bar's card row one scan per ally, as it was before the
+ * amounts were added to the menu. */
+export function counterPickUnits(dec: CounterDecisionLike | null | undefined): EntityId[] {
+  const seen = new Set<EntityId>();
+  for (const o of dec?.options ?? []) {
+    const p = counterPickValue(o.value);
+    if (p) seen.add(p.unit);
+  }
+  return [...seen];
+}

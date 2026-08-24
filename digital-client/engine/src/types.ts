@@ -832,6 +832,13 @@ export interface Decision {
   options: DecisionOption[];
   /** multi-pick decisions (orderTriggers) expect an array of option indices */
   pickOrder?: boolean;
+  /** BL-25/R139: this decision takes COUNTERS off something, and this is the
+   * most one pick of it may take — the number a client's quantity stepper
+   * maxes out at and its "All" button jumps to. Set by the engine (never
+   * recomputed client-side: `E.counterPickMax` reads the same `counterPool`
+   * the payability check does, so the two cannot drift). Absent on every
+   * decision that is not about a quantity of counters. */
+  counterMax?: number;
 }
 
 /** Why the engine is paused, and how to resume. All serializable data. */
