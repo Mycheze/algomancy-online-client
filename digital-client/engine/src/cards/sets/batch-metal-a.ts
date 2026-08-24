@@ -58,9 +58,14 @@
  *    abilities and statics now project too, through `projects` + E.facesWith.
  *  - Biomass Devourer reads "nontoken" off the death event's `token` FACT
  *    (R70 — the dead entity is gone by trigger time, which is why the fact
- *    rides the event; this used to be a match on the rendered message). Still
- *    true: an Unstable-erased card has no bin copy to erase, but the paid
- *    counters land anyway.
+ *    rides the event; this used to be a match on the rendered message).
+ *    ✔ R140 CHANGED THE REST OF THIS ENTRY. It used to read "an Unstable-erased
+ *    card has no bin copy to erase, but the paid counters land anyway". Two
+ *    things are different now: the card is told WHICH bin copy died (the
+ *    'died' event carries `binSeat`/`binNth`), so it can no longer erase an
+ *    innocent same-named copy instead; and with nothing to erase it makes no
+ *    offer at all — the printed text is one package, so there is no [two] to
+ *    pay and no counters.
  *  - Celestial Fluxmorph's donated "[Augment] when I despawn" does not fire
  *    when the HOST is recalled — E.recall erases mods before firing the
  *    despawn event (engine limitation; death and self-play despawn do fire).
@@ -90,7 +95,7 @@
  */
 import type { Entity, EntityId, EventType, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectDef, type TokenRequest } from '../dsl.ts';
+import { card, eventBinSlot, getCard, type EffectDef, type TokenRequest } from '../dsl.ts';
 import { selfOf, isEnt, unslot, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -366,8 +371,27 @@ card('Biomass Devourer', {
         const self = selfOf(g, ctx);
         if (!self) { g.ev('info', 'Biomass Devourer: the carrier is gone — no counters.'); return; }
         if (g.openMana(ctx.controller) < 2) { g.ev('info', 'Biomass Devourer: cannot pay [two] — no counters.'); return; }
-        const name = ctx.event?.data?.['card'] as string | undefined;
-        if (!name) { g.ev('info', 'Biomass Devourer: the death event names no card — nothing to erase.'); return; }
+        // R140: "erase IT" is the copy this death put into a bin, named by the
+        // (binSeat, binNth) stamp `E.destroy` writes onto the 'died' event —
+        // R131's bin identity, the same pair 'trashed' already carried. The old
+        // code searched by name (`bin.lastIndexOf(name)`, controller's bin
+        // first, then everyone's), which is a different question: once the dead
+        // copy has been swept out — a token, or an {Unstable} death under R137
+        // — the last copy of that name is an INNOCENT older one, and this card
+        // ERASES what it finds. That is a card leaving the game permanently by
+        // mistake, the worst of the three misses R140 closes, so the miss is
+        // "gone" and nothing at all happens.
+        const slot = eventBinSlot(g, ctx.event);
+        if (!slot) { g.ev('info', 'Biomass Devourer: the death event names no card — nothing to erase.'); return; }
+        const name = slot.card;
+        // Guarded BEFORE the offer, like the two guards above it: the printed
+        // text is one package ("pay [two] to erase it AND put two counters on
+        // me"), so with nothing to erase there is no bargain to offer and the
+        // mana is not asked for.
+        if (slot.index === -1) {
+          g.ev('info', `Biomass Devourer: ${name} is no longer in the bin — nothing to erase, no counters.`);
+          return;
+        }
         const pay = ctx.choose('devour', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: `Biomass Devourer: pay [two] to erase ${name} and get two +1/+1 counters?`,
@@ -375,19 +399,11 @@ card('Biomass Devourer', {
         }) as number;
         if (!pay) { g.ev('info', 'Biomass Devourer: the [two] is declined — no erase, no counters.'); return; }
         g.payMana(ctx.controller, 2);
-        const seats: Seat[] = [];
-        const evSeat = ctx.event?.data?.['seat'] as Seat | undefined;
-        if (evSeat !== undefined) seats.push(evSeat);
-        for (const p of g.s.players) if (!seats.includes(p.seat)) seats.push(p.seat);
-        for (const s of seats) {
-          const bin = g.player(s).bin;
-          const i = bin.lastIndexOf(name);
-          if (i !== -1) {
-            g.removeFromBin(s, i, 'erased');   // R124
-            g.ev('erased', `${name} is ERASED from ${g.pname(s)}'s bin.`, { card: name, seat: s });
-            break;
-          }
-        }
+        // `ctx.choose` throws and re-enters this run from the top, so the slot
+        // above was resolved against the live bin on the pass that got the
+        // answer — one lookup, no second search.
+        g.removeFromBin(slot.seat, slot.index, 'erased');   // R124
+        g.ev('erased', `${name} is ERASED from ${g.pname(slot.seat)}'s bin.`, { card: name, seat: slot.seat });
         g.addCounters(self, 2);
       },
     },

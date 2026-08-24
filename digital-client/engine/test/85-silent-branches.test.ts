@@ -376,11 +376,17 @@ test('Spore of Regenesis whose erase cost is declined announces that nothing ret
 test('Murkdrop Distiller that declines to cache the trashed card announces that', () => {
   const { g, A } = board(8565);
   g.player(A).bin.push('Ignis Sprite');
+  // R140: the event carries `binNth` — WHICH copy of that name in that bin was
+  // trashed — exactly as E.noteTrashed stamps it. Without it the card reads the
+  // trash as "that copy is already gone" and takes the OTHER silent branch, so
+  // this fixture has to be a faithful trashed event or it tests nothing.
   const evs = resolve(abilityOf('Murkdrop Distiller'), g, {
     controller: A, sourceName: 'Murkdrop Distiller',
-    event: { type: 'trashed', msg: '', data: { card: 'Ignis Sprite', seat: A } },
+    event: { type: 'trashed', msg: '', data: { card: 'Ignis Sprite', seat: A, binNth: 0 } },
   }, { cache: 0 });
   assertSpoke(evs, 'Murkdrop Distiller with the cache declined');
+  assert.ok(evs.some(e => e.msg.includes('is left in the bin — nothing is cached')),
+    'and it is the DECLINE branch that spoke, not the "already gone" one');
   assert.ok(g.player(A).bin.includes('Ignis Sprite'), 'and the card stayed in the bin');
 });
 

@@ -233,6 +233,90 @@ test('R137 hazard: an Unstable death trashes, the Rector pays, and finds nothing
     'and the card says so out loud, exactly as it already did for a dying TOKEN');
 });
 
+// ── R140 — THE INNOCENT COPY ─────────────────────────────────────────────
+//
+// The fixture the whole ruling is about, and it takes all three of the cards
+// below in exactly this shape:
+//
+//   · an INNOCENT copy of some card name is already resting in the bin —
+//     trashed ages ago, nobody's business, recurrable by its owner;
+//   · a SECOND copy of that same name is trashed now and swept straight back
+//     out of the bin (a dying token, or R137's {Unstable} death);
+//   · the responder resolves, and the only correct answer is NEITHER. The copy
+//     it saw is gone; the copy still there is not the one it saw.
+//
+// The bug R140 fixes is that `bin.lastIndexOf(name)` says "the innocent one".
+// A bin holds bare card NAMES, so that search cannot tell them apart — which
+// is exactly why R131 stamped `binNth` on the event in the first place.
+test('R140: the Rector does NOT recall an innocent older copy when the trashed one was swept', () => {
+  const h = new Harness(4392);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  bin(h, P).push('Good Whale');                            // the INNOCENT copy, trashed long ago
+  const rector = spawn(h, P, 'Cthyrian Rector');
+  const victim = spawn(h, P, 'Good Whale');
+  whiteBox(h, e => {
+    e.entity(victim)!.unstable = true;                     // R96 stamp → R137: bin, trash, sweep
+    e.destroy(e.entity(victim)!, 'dies');
+  });
+  assert.ok(!ent(h, rector), 'the Rector triggered and paid its sacrifice (a cast cost, R73)');
+  assert.deepEqual(hand(h, P).filter(c => c === 'Good Whale'), [],
+    'and recalled NOTHING — the copy it saw trashed is in the erased pile, out of the game');
+  assert.deepEqual(bin(h, P).filter(c => c === 'Good Whale'), ['Good Whale'],
+    'the innocent copy is untouched, still exactly one, still in the bin');
+  assert.ok(h.log.some(l => l.includes('Cthyrian Rector: Good Whale is no longer in the bin')),
+    'and it says the copy is gone rather than quietly taking the other one');
+});
+
+test('R140: the Distiller does NOT cache an innocent older copy, and refunds its [once] on that miss', () => {
+  const h = new Harness(4393);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  bin(h, P).push('Good Whale');                            // the INNOCENT copy
+  spawn(h, P, 'Murkdrop Distiller');
+  const victim = spawn(h, P, 'Good Whale');
+  whiteBox(h, e => {
+    e.entity(victim)!.unstable = true;
+    e.destroy(e.entity(victim)!, 'dies');
+  });
+  assert.equal(h.state.decision, null,
+    'no cache is offered: the copy it saw trashed is gone, and the other copy is not it');
+  assert.deepEqual(h.q.cache(P).map(c => c.card), [], 'nothing was cached');
+  assert.deepEqual(bin(h, P).filter(c => c === 'Good Whale'), ['Good Whale'],
+    'the innocent copy never left the bin');
+  assert.ok(h.log.some(l => l.includes('Murkdrop Distiller: Good Whale is not in your bin')));
+  // R108/R113: a wrong-copy miss is "no offer could be made", so the [once]
+  // survives it exactly as an empty-bin miss does
+  const j = give(h, P, 'Rotling');
+  whiteBox(h, e => e.discardFromHand(P, j));
+  assert.ok(h.state.decision, 'the [once] was refunded — a real trash later this turn still gets the offer');
+  pickBy(h, o => String(o.label).startsWith('Cache'));
+  assert.equal(h.q.cache(P)[0]!.card, 'Rotling');
+});
+
+// R140, the engine half: the state-based sweep that CREATES the window above
+// had the same name-search in it. `destroy` pushes the card, fires 'died' and
+// 'trashed' (both of which only QUEUE — nothing resolves yet), then sweeps; the
+// sweep took `bin.lastIndexOf(name)`, which is the copy it pushed only by luck
+// of ordering. It knows exactly where it pushed, so it says so, and a named
+// slot that no longer holds that card means GONE — never a fall back to the
+// search, because falling back is the whole bug.
+test('R140: eraseFromZone can be told WHICH bin slot to take, and a mismatch means gone', () => {
+  const h = new Harness(4394);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  bin(h, P).push('Grox', 'Rotling', 'Grox');
+  whiteBox(h, e => e.eraseFromZone(P, 'Grox', 'bin', 'Grox is ERASED (test).', { index: 0 }));
+  assert.deepEqual(bin(h, P), ['Rotling', 'Grox'],
+    'the NAMED slot went — not "the last copy of that name", which is a different card');
+  whiteBox(h, e => e.eraseFromZone(P, 'Grox', 'bin', 'Grox is ERASED (test).', { index: 0 }));
+  assert.deepEqual(bin(h, P), ['Rotling', 'Grox'],
+    'slot 0 holds Rotling now, so the erase is a no-op: a mismatch is GONE, not a name search');
+  whiteBox(h, e => e.eraseFromZone(P, 'Grox', 'bin', 'Grox is ERASED (test).'));
+  assert.deepEqual(bin(h, P), ['Rotling'],
+    'and with no slot named it still searches by name, for the callers that have no handle');
+});
+
 // ── Entropic Entity ──────────────────────────────────────────────────────
 
 test('Entropic Entity: draws when a unit WITH COUNTERS despawns — once per turn', () => {

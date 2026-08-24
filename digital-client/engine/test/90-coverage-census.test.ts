@@ -224,3 +224,106 @@ test('R124 stays solved: the only direct bin splice in src is inside removeFromB
   assert.ok(engineLines.slice(Math.max(0, n - 8), n).join('\n').includes('removeFromBin('),
     'the one direct bin splice is no longer inside removeFromBin itself');
 });
+
+// ── R140: a bin-index event's responder never re-finds its card by NAME ────
+//
+// R131 fixed identity in a bin as (card NAME, nth occurrence), because a bin
+// holds bare names and "copies of one card there are genuinely
+// indistinguishable". Two events carry that index today: 'trashed' (R131,
+// stamped by `E.noteTrashed`) and 'died' (R140, stamped by `E.destroy`, which
+// also stamps `binSeat` — a death event's `seat` is the CONTROLLER while the
+// card bins to its OWNER).
+//
+// A card that RESPONDS to one of those and then reaches into the bin must
+// resolve that pair — `eventBinSlot` in dsl.ts — and treat a miss as GONE.
+// `bin.lastIndexOf(name)` answers a different question, "the last copy of that
+// name in the bin right now", and the two answers diverge the instant the
+// event's copy has left: the trigger goes on the stack, the state-based sweep
+// takes the copy (a token — R69; an {Unstable} death — R137), and on
+// resolution the name search lands on an INNOCENT older copy. Cthyrian Rector
+// recalled it to hand having already paid a sacrifice; Murkdrop Distiller
+// cached it out of the bin; Biomass Devourer ERASED it out of the game.
+//
+// So this scans the REGISTRY, not the text: every triggered ability listening
+// on a bin-index event whose run() still contains the name search. Three cards
+// were found by hand on 2026-08-24 and fixed; this is what stops the fourth
+// from having to be found by hand.
+const BIN_INDEX_EVENTS = new Set(['trashed', 'died']);
+
+/**
+ * The cards that use `bin.lastIndexOf` CORRECTLY, each with its reason. All
+ * five ask "is MY OWN name in a bin" — a question about a card name, where the
+ * copies really are interchangeable and the last one is as good as any other.
+ * None of them is reaching for the particular copy somebody else's event named.
+ *
+ * Only an entry whose trigger listens on a BIN_INDEX_EVENT can be reached by
+ * the scan below; the other four hang off zone triggers ('afterCombat',
+ * 'startOfDeployment') that carry no bin index at all. They are listed anyway,
+ * because the classification is the load-bearing half of this ruling and it
+ * belongs in one place — and the staleness check below keeps every entry
+ * honest, reachable or not.
+ */
+const SELF_LOCATING_IN_BIN: Record<string, string> = {
+  'Spore of Regenesis':
+    "'died' + self:true — the dying card is ITSELF, and it asks whether its own name reached "
+    + 'a bin. Any copy of that name answers it; it is not fetching a particular one.',
+  'Lurking Dread':
+    "zone triggers on 'afterCombat' — \"if I am in your bin/cache, …\". It locates its own name "
+    + 'to put that body into play, and one copy is as good as another (R51 fires once per zone).',
+  Xzydris:
+    "zone trigger on 'startOfDeployment' — the same shape: its own name in its own bin.",
+  'Cinder Scuttler':
+    "zone:'bin' trigger — its own name in its own bin, to bring itself back.",
+  'Inexorable Miasma':
+    "zone:'bin' trigger — its own name in its own bin, to bring itself back.",
+};
+
+/** every function body reachable from a card definition, concatenated, with
+ * COMMENTS STRIPPED. Reading SOURCE is the point: JSON.stringify drops
+ * functions, which is how the first draft of CARD-TODO #27's own proof
+ * silently answered "no problem here". Comments have to go because
+ * `Function.prototype.toString` keeps them, and the three cards R140 FIXED all
+ * explain in a comment what they no longer do — a scan that reads those would
+ * report the bug it just watched being removed. (A `//` inside a string
+ * literal would swallow the rest of that line; nothing in the pool does that,
+ * and the cost of the miss is one un-flagged line, not a false alarm.) */
+function fnSource(v: unknown, depth = 0): string {
+  if (depth > 6 || v === null || v === undefined) return '';
+  if (typeof v === 'function') {
+    return (v as () => void).toString().replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  }
+  if (Array.isArray(v)) return v.map(x => fnSource(x, depth + 1)).join('\n');
+  if (typeof v === 'object') return Object.values(v as Record<string, unknown>)
+    .map(x => fnSource(x, depth + 1)).join('\n');
+  return '';
+}
+
+test('R140: no card responding to a bin-index event re-finds its card by lastIndexOf', () => {
+  const offenders: string[] = [];
+  for (const name of allCardNames()) {
+    const def = getCard(name);
+    const triggers = [...(def.abilities ?? []), ...(def.augmentText ?? [])]
+      .filter(a => a.type === 'triggered' && a.events.some(e => BIN_INDEX_EVENTS.has(e)));
+    for (const t of triggers) {
+      if (fnSource(t).includes('lastIndexOf')) { offenders.push(name); break; }
+    }
+  }
+  const unexplained = offenders.filter(n => !(n in SELF_LOCATING_IN_BIN));
+  assert.deepEqual(unexplained, [],
+    `${unexplained.join(', ')} responds to a 'trashed'/'died' event and then re-finds its card `
+    + 'with bin.lastIndexOf(name). That search cannot tell two copies of one card apart, so once '
+    + "the event's copy has been swept out of the bin it silently acts on an INNOCENT older copy "
+    + "(R140, CARD-TODO #27). Resolve the event's (binSeat, binNth) stamp with `eventBinSlot` "
+    + 'from dsl.ts and treat index === -1 as GONE — never as "take the other one". If the card '
+    + 'genuinely asks about its OWN NAME rather than a particular copy, add it to '
+    + 'SELF_LOCATING_IN_BIN above with that reason.');
+
+  // and the allowlist cannot outlive its cause: an entry whose card stopped
+  // using the idiom (or stopped existing) is a stale exemption, which is how
+  // an allowlist quietly turns back into a blanket.
+  for (const [name, why] of Object.entries(SELF_LOCATING_IN_BIN)) {
+    assert.ok(allCardNames().includes(name), `SELF_LOCATING_IN_BIN names ${name}, which is not a card`);
+    assert.ok(fnSource(getCard(name)).includes('lastIndexOf'),
+      `${name} no longer uses bin.lastIndexOf, so its exemption is stale — drop it. (Was: ${why})`);
+  }
+});

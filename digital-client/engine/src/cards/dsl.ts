@@ -414,6 +414,56 @@ export const notSelfBinCard: TargetRestrict = (g, t, ctx) => {
   return binNthAt(g, t.binCard.seat, t.binCard.index) !== nth;
 };
 
+/** R140: the live index of the bin ref (name, nth) — the exact INVERSE of
+ * `binNthAt`. -1 when that occurrence is not there any more, and -1 is the
+ * whole answer: there is deliberately no "…so take some other copy instead"
+ * fallback, because a fallback by name is the bug R140 removes. */
+export function binIndexOfNth(g: E, seat: Seat, name: CardName, nth: number): number {
+  if (nth < 0) return -1;
+  const bin = g.player(seat).bin;
+  let seen = 0;
+  for (let i = 0; i < bin.length; i++) {
+    if (bin[i] !== name) continue;
+    if (seen === nth) return i;
+    seen++;
+  }
+  return -1;
+}
+
+/** R140: WHERE the card an event is about is sitting in a bin RIGHT NOW —
+ * `{ seat, card, index }`, with `index === -1` meaning "that copy is gone".
+ *
+ * This is the reader for the stamp `E.noteTrashed` (R131) and `E.destroy`
+ * (R140) put on their events: `card`, the bin's seat (`binSeat` when the event
+ * names one — a death bins to the OWNER's bin while `seat` is the controller —
+ * else `seat`), and `binNth`, which occurrence of that name in that bin the
+ * event's copy is. Resolving (name, nth) against the live bin is the ONLY
+ * honest way for a responder to find it again: a bin holds bare card names, so
+ * `lastIndexOf(name)` answers "the last copy of that name there NOW", which is
+ * a different card the moment the event's copy has left (a token sweep, an
+ * {Unstable} sweep — R69/R137) and an older, innocent copy of the same name is
+ * still resting there.
+ *
+ * `null` only when the event names no card at all — nothing to look for. A
+ * card WITHOUT `binNth` resolves to -1 rather than null, and that is exact:
+ * `noteTrashed` omits the stamp precisely when the card was not in that bin
+ * when the event fired (a discard that never reached one), so "no stamp" and
+ * "gone" are the same fact and get the same answer. */
+export function eventBinSlot(
+  g: E, ev: { data?: Record<string, unknown> } | null | undefined,
+): { seat: Seat; card: CardName; index: number } | null {
+  const d = ev?.data;
+  if (!d) return null;
+  const card = d['card'];
+  if (typeof card !== 'string') return null;
+  const rawSeat = d['binSeat'] ?? d['seat'];
+  if (typeof rawSeat !== 'number') return null;
+  const seat = rawSeat as Seat;
+  const nth = d['binNth'];
+  if (typeof nth !== 'number') return { seat, card, index: -1 };
+  return { seat, card, index: binIndexOfNth(g, seat, card, nth) };
+}
+
 /** R64: the restriction governing target slot `i` — `slotRestricts[i]` when
  * the spec names one (including an explicit `null` for "no restriction here"),
  * otherwise the spec-wide `restrict`. */

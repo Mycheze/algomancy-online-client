@@ -367,6 +367,61 @@ test('Biomass Devourer: pay [two] to erase a dead nontoken unit and grow', () =>
   finishBattle(h);
 });
 
+// R140 — THE INNOCENT COPY, and this is the card where getting it wrong is
+// worst: Biomass Devourer ERASES what it finds, so a miss removes a card from
+// the game permanently. The fixture is the ruling's: an innocent copy of some
+// card name already resting in the bin, a second copy of that name dying and
+// being swept straight back out ({Unstable}, R137), and the only correct
+// answer is NEITHER. `bin.lastIndexOf(name)` cannot tell them apart — a bin
+// holds bare card NAMES — so the card is told WHICH copy died: R140 stamps
+// (binSeat, binNth) onto the 'died' event, the same bin identity R131 already
+// put on 'trashed'.
+test('R140: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept', () => {
+  const h = new Harness(2694);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  h.state.players[A]!.bin.push('Good Whale');            // the INNOCENT copy, binned long ago
+  const dev = spawn(h, A, 'Biomass Devourer');
+  giveResources(h, A, 'metal', 2);                       // the [two] is payable, so that is not what stops it
+  const victim = spawn(h, A, 'Good Whale');
+  withE(h, e => {
+    e.entity(victim)!.unstable = true;                   // R96 stamp → R137: bin, trash, then the sweep
+    e.destroy(e.entity(victim)!, 'dies');
+  });
+  assert.equal(h.state.decision, null,
+    'no bargain is offered: the copy that died is in the erased pile and the other copy is not it');
+  assert.deepEqual(h.state.players[A]!.bin.filter(c => c === 'Good Whale'), ['Good Whale'],
+    'the innocent copy is untouched — it was never the card that died');
+  assert.equal(ent(h, dev)!.counters, 0, 'and no counters: nothing was erased, so nothing was paid for');
+  assert.equal(h.q.openMana(A), 2, 'the [two] was never asked for');
+});
+
+// R140, the second miss the same stamp closes and one that needs no sweep at
+// all: a death event's `seat` is the CONTROLLER while the card bins to its
+// OWNER. Searching by name found the controller's bin first, so a stolen unit
+// dying erased a same-named card out of the THIEF's bin and left the dead
+// card's own copy sitting in its owner's. The stamp names the bin.
+test('R140: a stolen unit dies — the erase reaches the OWNER\'s bin, not the controller\'s', () => {
+  const h = new Harness(2695);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  h.state.players[A]!.bin.push('Good Whale');            // the thief's own innocent copy
+  const dev = spawn(h, A, 'Biomass Devourer');
+  giveResources(h, A, 'metal', 2);
+  const victim = spawn(h, D, 'Good Whale');              // owned by D
+  withE(h, e => e.giveControl(e.entity(victim)!, A));    // R112: controlled by A, still owned by D
+  assert.equal(ent(h, victim)!.controller, A, 'A controls it');
+  assert.equal(ent(h, victim)!.owner, D, 'but D still owns it');
+  withE(h, e => e.destroy(e.entity(victim)!, 'dies'));   // → D's bin (the owner's)
+  assert.ok(h.state.decision, 'the death is offered to the Devourer');
+  pick(h, 1);                                            // pay [two] → erase
+  assert.deepEqual(h.state.players[A]!.bin.filter(c => c === 'Good Whale'), ['Good Whale'],
+    "the thief's own copy is untouched: it is not the card that died");
+  assert.deepEqual(h.state.players[D]!.bin.filter(c => c === 'Good Whale'), [],
+    "the copy that died — in its OWNER's bin — is the one erased");
+  assert.equal(ent(h, dev)!.counters, 2, 'and the erase really happened, so the counters are earned');
+});
+
 // ── Body Swap ────────────────────────────────────────────────────────────
 
 test('Body Swap: exchanges the base stats of two target units until regroup', () => {

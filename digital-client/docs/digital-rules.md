@@ -7703,6 +7703,15 @@ R137 an Unstable card is in the bin only for the trigger window. Neither
 needed a new answer — the TOKEN path has faced this since R69 and both cards
 already handle it:
 
+> ⚠ **That last sentence was wrong, and
+> [R140](#r140--a-responder-that-reaches-back-into-a-bin-must-name-the-copy-the-event-named)
+> fixes it the same day.** Both cards "handled it" by asking the bin *"is there
+> a card of that name here?"*, which gives the right answer only when there is
+> no OTHER copy of that name in the bin. With an innocent older copy resting
+> there, the Rector recalled *it* and the Distiller cached *it*. The two
+> paragraphs below are still correct about what should happen when the trashed
+> copy is gone; they were wrong that the cards could tell.
+
 - **Cthyrian Rector** ("sacrifice me. If you do, recall that card from your
   bin") pays its sacrifice — a CAST cost (R73), settled on the way to the stack
   before any bin lookup — and then finds nothing, saying so. Deliberate: the
@@ -7868,3 +7877,167 @@ Chombot's ceiling reddens 1; un-deduping `counterPickUnits` reddens 2.
 Both cost routes are covered because they are separate at the table even though
 they share `collectCastCosts`: a spell cast (Discharge, `from: 'allies'`) and an
 activated ability (Soul Reaver, `from: 'self'`).
+
+## R140 — a responder that reaches back into a bin must name the COPY the event named
+
+*(2026-08-24. CARD-TODO #27. Not an owner ruling and not a new rule of the
+game: it is [R131](#r131--another-is-a-different-entity-not-a-different-card-name)
+being applied on the side of the seam that never got it. Three cards, one
+engine sweep.)*
+
+### The rule
+
+**A bin holds bare card NAMES, so identity in a bin is (name, nth occurrence)
+— and a card responding to an event about a binned card must resolve THAT
+pair, not search the bin for the name.** A pair that no longer resolves means
+**gone**. It never means "take the other copy".
+
+R131 already said the first half and stamped `binNth` on the `trashed` event
+for exactly this reason: *"copies of one card there are genuinely
+indistinguishable"*, so the only handle on a particular copy is which
+occurrence of its name it is. `E.noteTrashed` has been stamping it, and
+`notSelfBinCard` has been reading it, since that ruling landed.
+
+**The cards that respond to a trash never read it.** They re-found the card
+with `bin.lastIndexOf(name)`.
+
+### Why that is a different question
+
+`lastIndexOf(name)` asks *"where is the last copy of that name in this bin
+RIGHT NOW"*. The event asks *"where is the copy this event was about"*. The two
+agree only while there is one copy, and they come apart the instant the event's
+copy has left the bin — which is precisely what the state-based sweep does:
+
+1. the card is pushed into the bin;
+2. `died` / `trashed` fire, and a responder's trigger goes **on the stack**;
+3. the sweep takes the copy back out — a token
+   ([R69](#r69--a-token-entering-a-zone-is-really-there-then-a-state-based-sweep-erases-it-and-unstable-is-tested-first)),
+   or an {Unstable} death
+   ([R137](#r137--an-unstable-unit-that-dies-is-trashed-it-passes-through-the-bin-then-is-erased));
+4. the trigger resolves, searches by name, and lands on an **innocent older
+   copy of the same card** that has been sitting in that bin all game.
+
+The cards then acted on a card the player never trashed. In full:
+
+| card | what the name search did to the wrong copy |
+|---|---|
+| **Cthyrian Rector** | recalled it to hand — having already paid the sacrifice, which is a CAST cost (R73) and settled before any lookup |
+| **Murkdrop Distiller** | cached it out of the bin and made it playable this turn ([R41/R45](#r45--glimpse-n-reveal-n-cache-one-recycle-the-rest)) |
+| **Biomass Devourer** | **ERASED it** — [R65](#r65--discarding-is-not-playing-conceding-the-erased-pile)'s pile, out of the game permanently |
+
+Biomass Devourer is the one that cost a card, and it had a second miss of the
+same family: a death event's `seat` is the **controller**, while the card bins
+to its **owner**. It searched the controller's bin first, so a stolen unit
+dying erased a same-named card out of the *thief's* bin and left the dead
+card's own copy sitting in its owner's.
+
+### ⚠ This is older than R137, and R137 is why it was found
+
+A dying **token** has been binned, trashed and swept since R69, so the window
+has always been open. R137 — every {Unstable} death now passes through the bin
+— widened it from "a token died" to "any modded unit died", which is a normal
+event in a normal battle. R137 looked straight at these two cards, wrote them
+up as handled, and was wrong about *why* they looked handled; the correction is
+recorded in R137's own text rather than quietly patched.
+
+### The fix
+
+`dsl.ts` gains the reader beside `binNthAt` and `notSelfBinCard`:
+
+- **`binIndexOfNth(g, seat, name, nth)`** — the exact inverse of `binNthAt`.
+  The live index of the (name, nth) ref, or **-1**.
+- **`eventBinSlot(g, ev)`** — `{ seat, card, index }` for the card an event is
+  about, `index === -1` meaning gone. It reads `card`, `binNth`, and the bin's
+  seat: `binSeat` when the event names one, else `seat`.
+
+`E.destroy` now stamps **`binSeat` and `binNth` onto the `died` event**, which
+is the one decision this ruling had to make rather than inherit.
+
+> **Why stamp the event rather than give Biomass Devourer its own handle.**
+> `trashed` already carried the pair, and a card should not have to know which
+> of the two events it is listening to in order to ask the same question. The
+> alternative — inventing a second mechanism for `died` — would have left two
+> spellings of one identity, which is the shape R131 was written to remove.
+> `destroy()` is also the only code that knows the answer: it pushes the card
+> and can read the index off that push. Stamping `binSeat` alongside is not
+> decoration — without it `died` names the controller and the erase goes to the
+> wrong player's bin, which is the second miss above.
+
+**`E.eraseFromZone`'s `'bin'` branch takes an optional index**, the way its
+`'cache'` branch already took an optional `uid`, and `destroy` passes the slot
+it pushed. Today the sweep was *usually* right because push and sweep are
+synchronous with only trigger COMPOSITION in between — but "usually right by
+luck of ordering" is what this whole ruling is about. **A named slot that does
+not hold that card is a no-op**, never a fall back to the name search: a
+fallback is the bug. Mods are swept **highest index first**, because two mods
+of one card land in one bin at consecutive slots and taking the lower one first
+slides the higher out from under its own index.
+
+[R124](#r124--leftbin-every-bin-removal-goes-through-one-choke-point) is
+untouched: every removal still goes through `E.removeFromBin`, and nothing new
+splices a bin.
+
+### What a miss costs each card, now
+
+- **Cthyrian Rector** — pays the sacrifice and recalls nothing, saying so. Same
+  as R137 described, and now for the right reason. The alternatives are
+  unchanged and still refused: refunding a paid cast cost (no mechanism, and
+  R73 exists so none is needed), or reaching into the erased pile (R65 — that
+  pile is how a card leaves the game).
+- **Murkdrop Distiller** — makes no offer and **refunds its `[once]`**
+  ([R108](#r108--a-bounded-once-is-not-spent-by-a-decline-narrowed-by-r113)/[R113](#r113--a-bounded-use-is-spent-by-using-it-not-by-it-working):
+  no offer could be made, so the use is not spent). The wrong-copy miss is the
+  same kind of miss as the empty-bin one and refunds identically.
+- **Biomass Devourer** — ⚠ **a behaviour change, stated so it can be
+  overruled.** It now makes **no offer at all**: no `[two]` is asked for and no
+  counters are added. Before, a miss still paid and still grew the carrier.
+  The printed text is one package — *"pay [two] to erase it and put two +1/+1
+  counters on me"* — so with nothing to erase there is no bargain to offer, and
+  this is how the card's two existing guards (no carrier, no mana) already
+  behave. Contrast the Rector, which cannot refund because its cost was paid on
+  the way to the stack; the Devourer's `[two]` is paid inside the resolution
+  and simply never is.
+
+### The five cards that use `lastIndexOf` CORRECTLY
+
+Thirteen sites on CARDS use the idiom and **nine of them were right** (the four
+wrong ones are the three cards above; Murkdrop had two), which is why this
+was a site-by-site classification and not a rewrite. Every correct one asks *"is
+MY OWN name in a bin"* — a question about a card name, where the copies really
+are interchangeable and the last is as good as any other:
+
+- **Spore of Regenesis** — `'died'` + `self: true`; the dying card is itself.
+- **Lurking Dread** — zone triggers on `'afterCombat'`, bin and cache.
+- **Xzydris** — zone trigger on `'startOfDeployment'`.
+- **Cinder Scuttler** — `zone: 'bin'`.
+- **Inexorable Miasma** — `zone: 'bin'`.
+
+### Tests
+
+- `43-dark-c` — the Rector and the Distiller each against the fixture the whole
+  ruling is about: an **innocent copy already in the bin**, a second copy
+  trashed and swept, and the responder must act on **neither**. Plus the
+  Distiller's `[once]` surviving a wrong-copy miss, and a white-box pin on
+  `eraseFromZone`'s named slot (it takes slot 0 with a later copy present, and
+  a slot holding something else is a no-op rather than a search).
+- `26-metal-a` — the same fixture for Biomass Devourer, and the
+  owner-vs-controller miss: a stolen unit dies and the erase reaches the
+  **owner's** bin while the thief's same-named card is untouched.
+- `85-silent-branches` — the Distiller's decline fixture grew a `binNth`, or it
+  would have been testing the "already gone" branch by accident. A hand-built
+  event that omits the stamp now reads as "not in the bin", which is exactly
+  what `noteTrashed` means when it omits it.
+- `90-coverage-census` — **the static sweep**, so the fourth one fails a test
+  instead of being found by hand. It walks the registry (not the text) for a
+  triggered ability listening on `'trashed'`/`'died'` whose `run` still
+  contains `lastIndexOf`, against an explicit allowlist naming each of the five
+  self-locating cards and its reason. The allowlist is checked in **both**
+  directions: an unexplained offender fails, and so does an entry whose card
+  has stopped using the idiom. ⚠ It strips COMMENTS out of the function source
+  before looking — `Function.prototype.toString` keeps them, and all three
+  fixed cards explain in a comment what they no longer do.
+
+Red-checked one fix at a time, four reverts: the Rector's name search reddens
+its own test **and the census sweep**; the Distiller's reddens its own; Biomass
+Devourer's reddens **both** of its (the swept-copy one and the stolen-unit
+one); dropping `eraseFromZone`'s index reddens the white-box pin.

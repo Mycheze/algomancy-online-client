@@ -21,7 +21,7 @@ import type {
   ResourceKind, Seat, StackItem, Suspension, TargetRef,
 } from './types.ts';
 import {
-  affinityPips, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
+  affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
   isAugment, isGraftable, isTriggered, specForSlot, zoneTriggersFor,
   type Ability, type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
@@ -2231,7 +2231,7 @@ export class E {
     const cc = this.cacheCard(u.owner, u.card, 'play', opts);
     // R69's sweep, on the cache this time — `cc.uid` names the entry we just
     // made, so a second copy of the same card already sitting there is safe
-    if (u.token) this.eraseFromZone(u.owner, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, cc.uid);
+    if (u.token) this.eraseFromZone(u.owner, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, { uid: cc.uid });
   }
 
   /** Where cache entry `uid` sits in `seat`'s cache right now, or -1 when it
@@ -3798,7 +3798,16 @@ export class E {
     // recall, so a death listener sees the same board a despawn listener would.
     const modBin = (m: Entity): Seat => opts.binTo ?? m.owner;
     const binnedMods = mods.filter(m => !m.token);
-    for (const m of binnedMods) this.player(modBin(m)).bin.push(m.card);
+    // R140: remember WHERE each push landed. The whole window between here and
+    // the state-based sweep below only QUEUES (fireEvent composes triggers, it
+    // never resolves one), so nothing can leave a bin in between and these
+    // indices are still exact when the sweep uses them.
+    const binnedAt = new Map<EntityId, number>();
+    for (const m of binnedMods) {
+      const b = this.player(modBin(m)).bin;
+      b.push(m.card);
+      binnedAt.set(m.id, b.length - 1);
+    }
     // R72: hold the death event ITSELF, not "whatever the last event was".
     // removeFromFormation() below can now log a formation collapse, and a
     // trailing `this.events[length-1]` would hand every "when I die" trigger
@@ -3810,6 +3819,15 @@ export class E {
     // and the erase (token sweep or Unstable sweep) comes after that again.
     this.player(binSeat).bin.push(u.card);
     const trashedTo: Seat = binSeat;   // R40: the trasher is the owner of the bin it entered
+    const bodyBinIndex = this.player(binSeat).bin.length - 1;
+    // R140: a 'died' listener that reaches into the bin for the card it just
+    // saw die (Biomass Devourer erases it OUTRIGHT) needs to name the exact
+    // copy, and only this method knows which one it is. `seat` on a death event
+    // is the CONTROLLER while the card bins to its OWNER, so the bin's seat is
+    // stamped too — the pair (binSeat, binNth) is R131's bin identity, the same
+    // one `noteTrashed` stamps on 'trashed', read back by `eventBinSlot`.
+    evData['binSeat'] = binSeat;
+    evData['binNth'] = binNthAt(this, binSeat, bodyBinIndex);
     const evDied = this.ev('died',
       `${u.card} ${verb} → ${binSeat === u.owner ? 'bin' : `${this.pname(binSeat)}'s bin`}`
       + (erasedByUnstable
@@ -3840,15 +3858,32 @@ export class E {
     // is the sanctioned route out of a bin, and the reason it records is
     // 'erased' — the same verb the token sweep uses, because it is the same
     // state-based action and not a new kind of departure.
+    //
+    // R140: each sweep names the SLOT it pushed (`binnedAt` / `bodyBinIndex`),
+    // not the card's name. Without the index this reads `bin.lastIndexOf(name)`,
+    // which is the copy just pushed only by luck of ordering — and an older
+    // copy of the same name resting in that bin is one reordering away from
+    // being the one eaten, leaving the token / Unstable card in the bin and
+    // taking an innocent card out of the game in its place.
     const sweepUnstable = erasedByUnstable && !opts.keepBinned;
     if (sweepUnstable) {
-      this.eraseFromZone(trashedTo, u.card, 'bin', `${u.card} is erased from the bin — Unstable.`);
-      for (const m of binnedMods) {
+      this.eraseFromZone(trashedTo, u.card, 'bin', `${u.card} is erased from the bin — Unstable.`,
+        { index: bodyBinIndex });
+      // R140: HIGHEST index first. Two mods of the same card on one carrier land
+      // in one bin at consecutive slots, and erasing the lower one first slides
+      // the higher one down under the index we recorded for it — after which a
+      // named slot that no longer holds that card is "gone" (below) and the
+      // second mod would survive the sweep. Descending order never disturbs an
+      // index still to be used. The body is above every mod in its own bin and
+      // was already taken, for the same reason.
+      for (const m of [...binnedMods].reverse()) {
         this.eraseFromZone(modBin(m), m.card, 'bin',
-          `${m.card} is erased from the bin — it modded an Unstable card.`);
+          `${m.card} is erased from the bin — it modded an Unstable card.`,
+          { index: binnedAt.get(m.id) });
       }
     } else if (u.token) {
-      this.eraseFromZone(trashedTo, u.card, 'bin', `${u.card} is erased from the bin — it is a token.`);
+      this.eraseFromZone(trashedTo, u.card, 'bin', `${u.card} is erased from the bin — it is a token.`,
+        { index: bodyBinIndex });
     }
     // R65: an Unstable erase must reach the public erased pile like every
     // other erase (ev() keeps the pile off 'erased' events). The body and the
@@ -3876,18 +3911,35 @@ export class E {
    * 2025-06-15). `destroy()`, `recall()` and `cacheUnit()` all call this one
    * method; there is deliberately no second erase path.
    *
-   * `uid` names the exact cache entry (`CachedCard.uid`) — the cache is the
-   * one zone whose entries are not bare names, and the caller minting the
-   * entry always knows which one it just made.
+   * `at` names the EXACT entry when the caller knows it, which is the only way
+   * to be sure a sweep takes the copy it just put there:
+   *
+   *  · `at.uid` — a cache entry (`CachedCard.uid`). The cache is the one zone
+   *    whose entries are not bare names, and the caller minting the entry
+   *    always knows which one it just made.
+   *  · `at.index` — a BIN slot (R140). A bin holds bare card NAMES, so a name
+   *    search there answers "the last copy of that name in this bin NOW", which
+   *    is the copy the caller pushed only by luck of ordering. `destroy` knows
+   *    exactly where it pushed and says so. A named slot that no longer holds
+   *    `name` means GONE — the erase is a no-op and deliberately does NOT fall
+   *    back to a name search, because falling back is how an innocent older
+   *    copy of the same card gets erased out of the game (R140).
+   *
+   * Without `at`, both zones still search by name, for the callers that
+   * genuinely have no handle (a white-box erase, a card naming a card).
    */
-  eraseFromZone(seat: Seat, name: CardName, zone: 'bin' | 'hand' | 'cache', msg: string, uid?: number): void {
+  eraseFromZone(seat: Seat, name: CardName, zone: 'bin' | 'hand' | 'cache', msg: string,
+    at?: { uid?: number; index?: number }): void {
     if (zone === 'cache') {
-      const i = uid !== undefined ? this.cacheIndexOf(seat, uid)
+      const i = at?.uid !== undefined ? this.cacheIndexOf(seat, at.uid)
         : this.cache(seat).map(cc => cc.card).lastIndexOf(name);
       if (i === -1) return;
       this.uncache(seat, i);
     } else if (zone === 'bin') {
-      const i = this.player(seat).bin.lastIndexOf(name);
+      const bin = this.player(seat).bin;
+      const i = at?.index !== undefined
+        ? (bin[at.index] === name ? at.index : -1)   // R140: a mismatch is "gone", never a search
+        : bin.lastIndexOf(name);
       if (i === -1) return;
       this.removeFromBin(seat, i, 'erased');   // R124: the one bin-removal path
     } else {

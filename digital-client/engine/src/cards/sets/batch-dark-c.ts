@@ -117,7 +117,7 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, notSelfBinCard, type EffectDef } from '../dsl.ts';
+import { card, eventBinSlot, notSelfBinCard, type EffectDef } from '../dsl.ts';
 import { transformsInto } from '../registry.ts';
 import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 
@@ -256,14 +256,23 @@ card('Cthyrian Rector', {
     effect: {
       castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },
       run: (g, ctx) => {
-        const name = ctx.event?.data?.['card'] as string | undefined;
-        if (name === undefined) return;
-        const bin = g.player(ctx.controller).bin;             // "if you do"
-        const i = bin.lastIndexOf(name);
-        if (i === -1) { g.ev('info', `Cthyrian Rector: ${name} is no longer in the bin.`); return; }
-        g.removeFromBin(ctx.controller, i, 'recalled');   // R124
-        g.player(ctx.controller).hand.push(name);
-        g.ev('info', `Cthyrian Rector recalls ${name} to ${g.pname(ctx.controller)}'s hand.`);
+        // R140: "THAT card" — the copy the trash event was about, resolved
+        // from the event's own `binNth` stamp (R131's (name, nth) bin
+        // identity) by `eventBinSlot`. This used to be a name search of the
+        // bin, which answers "the last copy of that name in the bin right
+        // now": a different question, and a different card once the trashed
+        // copy has been swept out (a token, or an {Unstable} death under
+        // R137). What the search found then was an INNOCENT older copy, which
+        // this card recalled to hand having already paid its sacrifice. A miss
+        // is "gone" — never "take the other one".
+        const slot = eventBinSlot(g, ctx.event);              // "if you do"
+        if (!slot) return;
+        // `when` pins the trashed seat to the controller, so slot.seat is
+        // "your bin" and the recall lands in the same player's hand.
+        if (slot.index === -1) { g.ev('info', `Cthyrian Rector: ${slot.card} is no longer in the bin.`); return; }
+        g.removeFromBin(slot.seat, slot.index, 'recalled');   // R124
+        g.player(ctx.controller).hand.push(slot.card);
+        g.ev('info', `Cthyrian Rector recalls ${slot.card} to ${g.pname(ctx.controller)}'s hand.`);
       },
     },
   }],
@@ -477,9 +486,19 @@ card('Murkdrop Distiller', {
     when: (_g, self, ev) => ev.data?.['seat'] === self.controller,
     effect: {
       run: (g, ctx) => {
-        const name = ctx.event?.data?.['card'] as string | undefined;
-        if (name === undefined) return;
-        if (g.player(ctx.controller).bin.lastIndexOf(name) === -1) {
+        // R140: "cache IT" is the copy the trash event was about, resolved by
+        // R131's (name, nth) bin identity. `bin.lastIndexOf(name)` used to
+        // stand in for it and answers a different question once that copy has
+        // been swept out (token, or an {Unstable} death under R137): it finds
+        // an INNOCENT older copy of the same name and would cache that one —
+        // a card the player never trashed, moved out of their bin and made
+        // playable. A wrong-copy miss is "gone", and "gone" refunds (R108/R113
+        // — no offer could be made, so the [once] is not spent), exactly as
+        // the empty-bin miss already did.
+        const slot = eventBinSlot(g, ctx.event);
+        if (!slot) return;
+        const name = slot.card;
+        if (slot.index === -1) {
           ctx.refundBudget?.();   // R113: no offer could be made, so the use is not spent
           g.ev('info', `Murkdrop Distiller: ${name} is not in your bin — there is nothing to cache.`);
           return;
@@ -494,9 +513,10 @@ card('Murkdrop Distiller', {
           g.ev('info', `Murkdrop Distiller: ${name} is left in the bin — nothing is cached.`);
           return;
         }
-        const i = g.player(ctx.controller).bin.lastIndexOf(name);
-        if (i === -1) return;
-        g.cacheFromBin(ctx.controller, i, { playable: true });
+        // `ctx.choose` is not a coroutine — it throws and this run re-enters
+        // from the top — so `slot.index` was resolved against the live bin on
+        // the pass that got the answer, and needs no second lookup.
+        g.cacheFromBin(slot.seat, slot.index, { playable: true });
       },
     },
   }],
