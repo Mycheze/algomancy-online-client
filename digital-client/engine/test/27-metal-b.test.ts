@@ -647,3 +647,27 @@ test('Reforge the Dead: the grant is until regroup, and only for units already t
   finishBattle(h);
   assert.equal(ent(h, early)!.granted, undefined, 'cleared at regroup');
 });
+
+// ── report #90: "Hooba bot made 2 robots I think" (XVUR, 2026-08-23) ──────
+//
+// The reproduction attempt. One attack fires "when I attack or block" ONCE
+// and makeRobot creates ONE Robot; `creates: ['Robot']` on the effect is
+// inspector metadata, not a second creation. If a player sees two robots in
+// one turn, the printed text itself supplies the honest path: the carrier
+// attacked in one battle round and BLOCKED in the other — two triggers, two
+// robots, as printed. This pins the per-trigger count so a real double-fire
+// can never hide behind that reading.
+test('Hooba-Bot: one attack trigger makes exactly ONE Robot (report #90)', () => {
+  const h = new Harness(2760);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const hb = spawn(h, A, 'Hooba-Bot');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[hb]] });
+  pass(h); pass(h);                                         // resolve the trigger
+  pick(h, 1);                                               // R75: the slot is chosen, not auto-picked
+  const robots = unitsOf(h, A).filter(u => u.card === 'Robot');
+  assert.equal(robots.length, 1,
+    'exactly one Robot per trigger — the trigger fired once and created once');
+  finishBattle(h);
+});

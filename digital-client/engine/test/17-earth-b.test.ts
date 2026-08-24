@@ -18,7 +18,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import type { EffectCtx } from '../src/cards/dsl.ts';
+import { allCardNames, getCard, type EffectCtx } from '../src/cards/dsl.ts';
 import type { Attr, EntityId, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
@@ -598,4 +598,55 @@ test('R110: all or nothing — one card in hand cannot pay a doubled [Discard a 
   assert.equal(h.state.players[foe]!.life, life, '"and you don\'t get the effect"');
   assert.ok(h.log.some(l => /must be paid 2 times and cannot be/.test(l)), 'the log says why');
   finishBattle(h);
+});
+
+// ── printed {Unstable} (playtest report #89) ──────────────────────────────
+//
+// "Aberrant Statweaver shouldn't have entered the bin. It's Unstable." (XVUR,
+// 2026-08-23). {Unstable} on the TYPE LINE was carried by NOTHING: the
+// extractor dropped the marker (deliberately not an Attr — it is a bin
+// replacement, not a combat attribute), so E.isUnstable unioned mods, the R96
+// stamp and modded copies, and the pool's two printed carriers fell through
+// to the bin. Unstable replaces the BIN, not the death: the card still DIES
+// and death triggers still fire (Caleb 2025-03-13 "They die"; 2025-04-08
+// "unstable units still die, they just get erased instead of ending up in the
+// bin") — destroy()'s erase branch fires the same 'died' event, which the
+// R69/R96 tests already pin for the modded and stamped ways in.
+
+test('Aberrant Statweaver: printed {Unstable} — it dies into the ERASED pile, never the bin (report #89)', () => {
+  const h = new Harness(1790);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const sw = spawn(h, p, 'Aberrant Statweaver');
+  const e = new E(h.state);
+  e.destroy(e.entity(sw)!, 'dies');
+  e.settle();
+  assert.equal(ent(h, sw), undefined, 'off the board — it really died');
+  assert.ok(!h.state.players[p]!.bin.includes('Aberrant Statweaver'),
+    'the bin never sees it — {Unstable} replaces the bin entry');
+  assert.ok((h.state.players[p]!.erased ?? []).includes('Aberrant Statweaver'),
+    'the public erased pile records it (R65)');
+});
+
+test('Oorblak: printed {Unstable} — erased on death while UNMODDED (report #89)', () => {
+  const h = new Harness(1791);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const oo = spawn(h, p, 'Oorblak');
+  const e = new E(h.state);
+  e.destroy(e.entity(oo)!, 'dies');
+  e.settle();
+  assert.ok(!h.state.players[p]!.bin.includes('Oorblak'), 'never binned');
+  assert.ok((h.state.players[p]!.erased ?? []).includes('Oorblak'), 'erased instead');
+});
+
+test('printed {Unstable} census: the flag mirrors the type line over the whole pool (report #89)', () => {
+  // The day a new card prints {Unstable} (or a synthetic registers with it in
+  // the type string but not the flag), this names it — the extractor and the
+  // registry cannot drift apart silently again.
+  for (const n of allCardNames()) {
+    const def = getCard(n);
+    assert.equal(def.unstable === true, def.type.includes('{Unstable}'),
+      `${n}: Printed.unstable must mirror the {Unstable} marker on "${def.type}"`);
+  }
 });

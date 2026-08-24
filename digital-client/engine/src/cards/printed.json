@@ -1760,6 +1760,7 @@
   "attrs": [],
   "virus": true,
   "burst": false,
+  "unstable": true,
   "augmentAttrs": [],
   "text": "[Augment] If combat damage would be dealt to you, that damage is dealt to me instead.",
   "image": "Oorblak.jpg"
@@ -4018,6 +4019,7 @@
   "attrs": [],
   "virus": true,
   "burst": false,
+  "unstable": true,
   "augmentAttrs": [],
   "text": "[Augment] Your units are base 3/3.",
   "image": "Aberrant-Statweaver.jpg"

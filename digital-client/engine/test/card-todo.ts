@@ -1424,7 +1424,47 @@ export const CARD_TODO: TodoEntry[] = [
       'Play Worldbender in a draft game and take the draft step: while the bug is live the pack '
       + 'is still offered and no extra card is drawn. In constructed, the draw-4-put-2-back still '
       + 'happens and no life is lost.',
+    // DONE 2026-08-23/24: `CardBehavior.replaceCardStep`, consulted by
+    // E.startDraftStep (the seat is marked done before anyone acts and its
+    // pack passes untouched) and by the constructed draw. Draft: draw 1 on top
+    // of startTurn's 2, no life loss. Constructed: no draw-4-put-2-back, draw
+    // 3 THEN lose 3 (a lethal 3 still leaves the cards drawn). Cube rides the
+    // constructed branch the day a mode exists; shared has no card step to
+    // replace, so the hook returns false. Card-ledger entry deleted in the
+    // same change; report #87 flipped to fixed with the same guards.
+    guards: [
+      '28-metal-c.test.ts::Worldbender in a live draft',
+      '28-metal-c.test.ts::Worldbender in constructed',
+    ],
     reportId: 87,
+    status: 'done',
+  },
+  {
+    id: 25,
+    area: 'engine',
+    severity: 'major',
+    cards: ['Flux Resonator'],
+    title: 'Spawn-with-counters bypasses the R104 amount layer, so Flux Resonator never sees a Robot spawn',
+    detail:
+      'The Robot token prints "I spawn with X +1/+1 counters on me", and Caleb has ruled Flux '
+      + 'Resonator applies to that placement (2025-03-21: tokens created under it enter with a '
+      + 'counter, "Yep"; 2025-05-30: "it\'s just X+1 … a 2/2 robot would spawn as a 3/3"). '
+      + 'E.addCounters consults `amountDelta({kind: \'counters\'…})`; E.spawnUnit sets '
+      + '`u.counters = opts.counters` DIRECTLY and never asks the layer, so every '
+      + '"create a Robot X" in the pool ignores an allied Resonator.',
+    evidence:
+      'Playtest report #88 (XVUR, 2026-08-23). Code read: spawnUnit\'s counters assignment vs '
+      + 'addCounters\' amountDelta fold, engine.ts.',
+    fix:
+      'Fold the counters amount layer into spawnUnit at the single site where `u.counters` is '
+      + 'set (opts.counters >= 1 only — zero counters is no placement), before the spawn '
+      + 'announce/event so the logged number is the final one. Deliberately NOT routed through '
+      + 'replaceCounters (Counter Theif redirect on a token\'s own spawn counters is unsourced).',
+    proof: null,
+    verify:
+      'Spawn a Robot 1 with an allied Flux Resonator in the region: while the bug is live it '
+      + 'enters as a 1/1 with 1 counter; fixed, a 2/2 with 2.',
+    reportId: 88,
     status: 'open',
   },
 ];

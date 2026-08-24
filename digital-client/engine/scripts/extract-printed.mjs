@@ -176,6 +176,12 @@ for (const name of POOL) {
     attrs,
     virus: markers.includes('Virus'),
     burst: markers.includes('Burst'),
+    // {Unstable} printed on the type line (Aberrant Statweaver, Oorblak). Not
+    // an ATTR on purpose (it is a bin replacement, not a combat attribute —
+    // see types.ts on Entity.unstable), so it gets its own flag, like virus.
+    // Emitted only when present so the two cards that print it are the whole
+    // diff. Read by E.isUnstable (report #89).
+    ...(markers.includes('Unstable') ? { unstable: true } : {}),
     // [Augment] on the type line => the attrs after it transfer when augmenting
     // (mirrors mods.py: text-box [Augment] transfers text only, never attrs)
     augmentAttrs: typeAugmentAttrs(type),

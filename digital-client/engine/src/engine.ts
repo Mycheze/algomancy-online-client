@@ -895,13 +895,18 @@ export class E {
   /**
    * R69 + R118 ruling 2: is this entity ERASED instead of binned when it dies?
    *
-   * Three ways in, unioned here so `destroy` does not have to know there are
-   * three: it carries mods (the derivation — a modded card is Unstable), it
-   * carries R96's until-regroup {Unstable} stamp, or it is a COPY of something
-   * that was modded (ruling 2 — "the copy is still considered modded").
+   * Four ways in, unioned here so `destroy` does not have to know there are
+   * four: it carries mods (the derivation — a modded card is Unstable), it
+   * carries R96's until-regroup {Unstable} stamp, its FACE prints {Unstable}
+   * on the type line (Aberrant Statweaver, Oorblak — report #89: nothing used
+   * to carry the printed marker, so both binned like anything else), or it is
+   * a COPY of something that was modded (ruling 2 — "the copy is still
+   * considered modded"). The printed flag reads the FACE, like ownAttrs'
+   * layer 0: a copy wearing a printed-Unstable face is Unstable.
    */
   isUnstable(e: Entity): boolean {
     if (e.mods.length > 0 || e.unstable === true) return true;
+    if (this.faceDef(e).unstable === true) return true;
     return (e.copies ?? []).some(c => c.modded);
   }
 
@@ -3452,7 +3457,7 @@ export class E {
     // leftPlayFacts) — `verb` (Ghord's "sacrificed", which used to
     // string-match the log message) is the death-only extra.
     const binSeat = opts.binTo ?? u.owner;
-    // R96/R118: THREE ways in, unioned by E.isUnstable. `mods.length` is the
+    // R96/R118/#89: FOUR ways in, unioned by E.isUnstable. `mods.length` is the
     // derived one (a modded card is Unstable — R69); `u.unstable` is the
     // until-regroup STAMP a bin play leaves on the body it spawned; and R118
     // ruling 2 adds the COPY of a modded unit ("the copy is still considered

@@ -31,6 +31,12 @@ export interface Printed {
   attrs: Attr[];
   virus: boolean;
   burst: boolean;
+  /** {Unstable} printed on the TYPE LINE (Aberrant Statweaver, Oorblak). Its
+   * own flag, not an `Attr`, for the same reason `Entity.unstable` is not one
+   * (types.ts): Unstable is a bin REPLACEMENT, not a combat attribute. Read by
+   * `E.isUnstable` as the fourth way in (report #89 — a printed-Unstable card
+   * used to bin like anything else, because nothing carried the marker). */
+  unstable?: boolean;
   augmentAttrs: Attr[];             // type-line [Augment] grants (mods.py rule)
   /** "[Battle] Ambush [4bb]" alternative play mode: mana + affinity pips */
   ambush?: { cost: string; mana: number };

@@ -1345,25 +1345,76 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Worldbender is non functional. In live draft: instead of looking at the pack you draw '
       + '2 for turn + 1 for Worldbender, no life loss. In constructed and cube: instead of drawing '
       + '4 and recycling 2, you draw 2 for turn + 1 for Worldbender and lose 3 life',
+    status: 'fixed',
+    guards: [
+      '28-metal-c.test.ts::Worldbender in a live draft: the pack is never offered, the hand gains 3, and life is untouched',
+      '28-metal-c.test.ts::Worldbender in constructed: no draw-4-put-2-back',
+    ],
+    note:
+      'Built as `CardBehavior.replaceCardStep`, consulted by E.startDraftStep and the constructed '
+      + 'draw — the card REPLACES the turn\'s card acquisition rather than adding to it, per the '
+      + 'spec this report supplied: draft = never open the pack (it passes untouched), draw 1 on '
+      + 'top of startTurn\'s 2, no life loss; constructed = no draw-4-put-2-back, draw 3, lose 3 '
+      + 'life AFTER the draw so a lethal 3 still leaves the cards drawn. The two questions the '
+      + 'report left open were settled in code and comment: CUBE has no GameMode, so it rides the '
+      + 'constructed branch the day it exists; SHARED mode has no card step to replace, so the '
+      + 'hook returns false there. Its card-ledger entry was deleted in the same change. '
+      + 'THE WIDER LESSON stays recorded: the card was never invisible — it had an accurate '
+      + 'ledger entry AND a `{todo:true}` test, neither of which can fail, so the suite stayed '
+      + 'green for as long as the card stayed dead. Playing it is what surfaced it.',
+  },
+  {
+    id: 88, room: 'XVUR', date: '2026-08-23',
+    report: "Flux Resonator isn't working with my Robot tokens.",
     status: 'live',
     note:
-      'NOT a regression and NOT something this round broke — Worldbender has never worked. It is '
-      + 'registered as a vanilla 2/2 {Feeble} with NONE of its text implemented, and has been '
-      + 'carried in card-ledger.ts as `gap: dead, severity: high` waiting on draft-step SKIP '
-      + 'machinery. The owner played it in a real game, which is how a card that had been parked '
-      + 'as a known gap became a filed report. '
-      + 'THE SPEC IS NOW COMPLETE, which is what unblocks it — the report supplies the constructed '
-      + 'half that no ruling had ever settled. The card REPLACES the turn\'s normal card '
-      + 'acquisition rather than adding to it: draft = skip the pack, draw 2 + 1 = 3, no life '
-      + 'loss; constructed/cube = skip the draw-4-put-2-back, draw 2 + 1 = 3, lose 3 life. '
-      + 'Fix in flight. ⚠ Two things it will have to settle that the report does not: `GameMode` '
-      + 'has only three values (shared | draft | constructed), so there is no CUBE mode to branch '
-      + 'on — cube presumably rides the constructed branch if it ever exists; and `shared` mode is '
-      + 'not mentioned at all and needs its own answer. '
-      + 'THE WIDER LESSON, recorded because it is the owner\'s standing complaint: this card was '
-      + 'never invisible — it had an accurate ledger entry AND a `{todo:true}` test naming exactly '
-      + 'what was missing. Neither can fail, so the suite stayed green for as long as the card '
-      + 'stayed dead, and the only thing that surfaced it was playing it. That is the same shape '
-      + 'as Harbinger of Immolation, which is why this ledger exists.',
+      'CONFIRMED and root-caused; fix in flight. The Robot token prints "I spawn with X +1/+1 '
+      + 'counters on me", and Caleb has ruled the Resonator applies to that placement twice over '
+      + '(2025-03-21: tokens created under it "enter play with a +1/+1 counter" — "Yep"; '
+      + '2025-05-30: "it\'s just X+1, so it happens to double a 1/1 but a 2/2 robot would spawn '
+      + 'as a 3/3"). The engine\'s E.addCounters consults the R104 amount layer, but '
+      + 'E.spawnUnit sets spawn counters DIRECTLY (`u.counters = opts.counters`) and never asks '
+      + 'it — so every "create a Robot X" in the pool ignores an allied Flux Resonator. '
+      + 'CARD-TODO #25 tracks it.',
+  },
+  {
+    id: 89, room: 'XVUR', date: '2026-08-23',
+    report: 'Aberrant Statweaver shouldn\'t have entered the bin. It\'s Unstable. So unless I\'m '
+      + 'misunderstanding what an "active zone" is, I think they should be erased.',
+    status: 'fixed',
+    guards: [
+      '17-earth-b.test.ts::Aberrant Statweaver: printed {Unstable} — it dies into the ERASED pile',
+      '17-earth-b.test.ts::Oorblak: printed {Unstable} — erased on death while UNMODDED',
+      '17-earth-b.test.ts::printed {Unstable} census',
+    ],
+    note:
+      'The owner was right, and the gap was a whole CLASS with two cards in it: {Unstable} '
+      + 'printed on the TYPE LINE was carried by nothing. The extractor parsed the type-line '
+      + 'markers into attrs/virus/burst and dropped {Unstable} (deliberately not an Attr — it is '
+      + 'a bin replacement, not a combat attribute), so E.isUnstable unioned mods, the R96 stamp '
+      + 'and modded copies, and a printed-Unstable card fell through to the bin. Now: '
+      + '`Printed.unstable` (extractor emits it off the {Unstable} marker; Statweaver and Oorblak '
+      + 'are the whole diff), and isUnstable reads it off the FACE as the fourth way in. A census '
+      + 'test pins flag⇔marker over the whole pool so the two cannot drift apart again. '
+      + 'Death triggers still fire — Unstable replaces the BIN, not the death (Caleb 2025-03-13). '
+      + '⚠ Scope note: this covers the leave-play path (destroy, R65 public erased pile). '
+      + 'Whether a printed-Unstable card DISCARDED from hand is also erased is unsourced and '
+      + 'deliberately unchanged.',
+  },
+  {
+    id: 90, room: 'XVUR', date: '2026-08-23',
+    report: 'Hooba bot made 2 robots I think',
+    status: 'by-design',
+    note:
+      'Could not reproduce a double-fire, and the printed text supplies the honest path to two '
+      + 'robots in one turn: "When I attack OR BLOCK, create a Robot 2 in my formation" — the '
+      + 'carrier attacking in one battle round and blocking in the other is two triggers and two '
+      + 'robots, as printed. The per-trigger count is now pinned: one attack fires the trigger '
+      + 'once and creates exactly ONE Robot (27-metal-b.test.ts::"Hooba-Bot: one attack trigger '
+      + 'makes exactly ONE Robot (report #90)"), so a real double-fire can never hide behind the '
+      + 'attack+block reading. (`creates: [\'Robot\']` on the effect is inspector metadata, not a '
+      + 'second creation; XVUR itself cannot be replayed for forensics — the Worldbender fix '
+      + 'changed the constructed draw phase, so the log diverges at action 72, long before this '
+      + 'report\'s action 238.) If it recurs with a board state attached, reopen as live.',
   },
 ];
