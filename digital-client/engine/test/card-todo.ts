@@ -523,7 +523,21 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'node --test test/71-card-ledger.test.ts prints the current tally on every run, and '
       + '83-card-todo.test.ts prints the ledger length beside the todo counts.',
-    status: 'open',
+    // DONE 2026-08-24: the ledger is EMPTY. The last six cards came off in one
+    // round, worked exactly as this entry prescribed — by PRIMITIVE, not by
+    // card: R121 (ability tax + pay-to-trigger gate → Crevice Lurker), R122
+    // (imposed sacrifice cast cost → Vengeance), R123 (bin-anchored play
+    // permission + erase-funded grant → Writhing Host, and the play-from-bin
+    // action → Trench Stalker whole), R124 ('leftBin' choke point → Rotling),
+    // plus Worldbender via replaceCardStep (report #87). The sweep stays armed:
+    // its dead-shape assertion fails the day a new card ships with a dead half
+    // and no entry, and the canary is synthetic now (T71 Canary), so an empty
+    // ledger cannot blunt it.
+    guards: [
+      '71-card-ledger.test.ts::every card with a readably-dead half is declared',
+      '71-card-ledger.test.ts::the sweep has teeth',
+    ],
+    status: 'done',
   },
   {
     id: 9,
@@ -1314,12 +1328,14 @@ export const CARD_TODO: TodoEntry[] = [
       'Census: no ability with `bounded: true` also declares a `zone`. When one appears, '
       + 'this stops being latent.',
     // DONE 2026-08-24 by the entry's own "cheapest honest fix": the census is
-    // a test now, so the day a bounded+zone ability enters the pool the suite
-    // fails and names this entry. The PROPER fix — a real budget holder for a
-    // card that is not in play (per seat × card name, since there is no
-    // entity) — stays deliberately unbuilt until a card needs it, because
-    // what "per card" (R9) means for a zone card is a design decision, not a
-    // guess. Reopen this entry when the census trips.
+    // a test now. SAME DAY, the PROPER fix landed too — R124 (Rotling's
+    // 'leftBin' trigger is bounded AND zone-dispatched) built the real budget
+    // holder this entry specified: `GameState.zoneBudgets`, per seat × card
+    // name, written by composeParts' stand-in branch for zone-dispatched
+    // abilities only, refunded through refundPart, wiped in startTurn,
+    // serialized. The census's premise changed with it — from "ban the
+    // combination" to "enumerate the population" — and its guard substring
+    // below still names it.
     guards: ['90-coverage-census.test.ts::no ability is both bounded and zone-dispatched'],
     status: 'done',
   },
