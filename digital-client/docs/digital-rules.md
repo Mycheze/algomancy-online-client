@@ -7727,3 +7727,144 @@ A virused spell leaving the stack (R79) is Unstable and is erased, and it is
 **not** trashed — not because of Unstable, but because **nothing coming from
 the stack is ever trashed** (R40). `E.dischargeItem` is a different path from
 `E.destroy` and this ruling does not reach it.
+## R139 — an amount rides INSIDE one decision option: the counter-removal pick
+
+*(Owner, 2026-08-24. BL-25. An affordance complaint that turned out to be a
+DECISION PROTOCOL change — the reason it is written up here and R136 (the
+one-line badge strip) is not: nothing outside the client could observe R136,
+whereas this changes what the engine offers, what it accepts, and what a card
+may declare.)*
+
+### The ruling
+
+> "It's actually okay, it's just not clear that it wants you to click the unit.
+> It needs to say that. Plus maybe a counter with up/down arrows would be nice
+> too or an 'All' button which jumps the count to the max (without auto
+> submitting) for cases where there are a ton of counters."
+
+**"Actually okay" is a constraint, not a compliment.** The mechanism —
+[R64](#r64--a-bracketed-cost-is-paid-at-cast-a-printed-restriction-is-a-targeting-restriction)'s
+"[Remove X +1/+1 counters from allies]" paid at cast, one pick at a time — is
+not redesigned. What is added is labelling, a stepper, and an "All" button.
+**"All" SETS the count and does NOT submit**, and that is the whole point: on a
+unit carrying a lot of counters you want to see the number before you spend
+them.
+
+### The fourth bug, which nobody reported: clicking the unit did nothing
+
+The owner said the prompt "isn't clear that it wants you to click the unit".
+The prompt was not merely unclear — **the unit was inert.** A counter-removal
+option names its unit as `{counterFrom: id}`, while `decisionOptionIndex` and
+`isCandidate` in `ui/main.ts` matched only `{unit: id}`. So the unit standing on
+the board was neither highlighted nor clickable, and the only way in was its
+card scan down in the prompt bar, under a prompt that named the COST
+("remove X +1/+1 counters from allies") and never the ACTION. The affordance
+existed and was invisible; the obvious thing to click was broken.
+
+Stated plainly because it generalises: **a decision option that names an entity
+in its own namespace is invisible to every board-side lookup keyed on
+`{unit:}`.** BL-24 hit the mirror image of this in `optionPingId` (a bare number
+under the wrong decision kind pinged whichever entity happened to own that id).
+Both are the same hazard — option payloads are per-decision namespaces, and the
+board's ref shape is only one of them.
+
+### Why a client-side stepper is unsound, and why this had to reach the engine
+
+The obvious implementation is a count in the client that sends the same
+decision N times. **It cannot work the moment the game is on a server.** A
+`decide` action carries an option **INDEX**, not a value; the cost collector
+rebuilds the whole menu after every payment (a unit that ran out of counters
+leaves it, the "that's enough — X = k" option renumbers); and `ui.sentFor`
+refuses a second intent against a state already spent. Sending 5 would pay 1 and
+silently discard 4 — or, worse, pay the 2nd through 5th against re-numbered
+options and take counters off units nobody clicked.
+
+So **the amount has to live inside one option**, which makes a quantity control
+an engine change and not a UI change:
+
+- `castCostOptions` emits one option per **(unit, amount)** pair where it used
+  to emit one per unit: `{counterFrom: id}` for one, and
+  `{counterFrom: id, n: k}` for k up to `min(u.counters, owed)`.
+- `payCastCost`'s `counterFrom` branch takes `n` and **clamps** it — to the
+  unit's own counters and, for a fixed cost, to what is still owed. Clamping
+  rather than refusing is deliberate: the client's stepper carries ONE count
+  across several allies with uneven counters, which is exactly the board being
+  complained about, and refusing "take 3" on the ally that has 2 would make the
+  stepper a trap.
+- the prompt says it — "— click a unit to take counters off it" — in the
+  ENGINE, so the log and any future client get it, not just the one client that
+  happens to draw a hint.
+
+**⚠ The n = 1 option's value is byte-identical to the pre-R139 one, and that is
+load-bearing, not incidental.** `{counterFrom: id}` with no `n` is what saved
+games, stored `ctx.choose` answers, and every existing test resolve against.
+Both saved games (ANBB, SMVJ) still replay FAITHFUL because of it. **A new
+option shape may be ADDED to a menu; an existing one may not be respelled.**
+
+### `counterPickMax` is NOT `counterPool` — the trap worth writing down
+
+`Decision.counterMax` is new: the most counters ONE pick may take, and what a
+client's stepper maxes at and its "All" jumps to. It comes from
+`E.counterPickMax`, which reads the same `counterPool` the payability check
+reads.
+
+The obvious answer — "the max is `counterPool`" — **is wrong for `from:
+'allies'`, and so is any client that adds up the pips it can see.** A pick NAMES
+ONE UNIT. Four counters spread over two allies is two picks of two, never one
+pick of four. A UI counting board state would have offered four, and the fourth
+click would have been refused by an engine that had never offered it. For
+`from: 'self'` there is exactly one unit, so there the pool IS the answer and
+`counterPool` is returned unchanged.
+
+### R130 is not re-litigated
+
+[R130](#r130--every-counter-is-a-counter-and-a-placement-carries-its-actor)
+ruled that all counters count as counters. `counterPickMax` therefore makes
+**no eligibility judgement of its own**: it reads `counterPool` and `unitsOf`
+and nothing else, which are the same two the payability check and the option
+list read. Deciding *which* counters a stepper may reach is not a judgement the
+UI gets to re-make.
+
+`counterPool` keeps its `Math.max(0, u.counters)`. That is not a sign filter
+R130 missed — counters are ONE signed net int, and this cost **prints its
+sign** ("+1/+1 counters"), which is the same carve-out R130 already left
+standing for Pestilent Mycelion's printed "-1/-1".
+
+### An effect may declare its own ceiling — groundwork, not a fix
+
+`ctx.choose`'s decision type grew `counterMax`, and the engine passes it onto
+the `Decision`, so **a card effect that asks "how many counters?" gets the same
+stepper as a cost does.** Chombot's "move up to two counters" declares it. Its
+option VALUES are unchanged (a bare amount), which is what keeps stored answers
+and `pick(h, 2)` working.
+
+**Said honestly: this fixes no live problem.** A survey of the pool found only
+two card effects that remove counters by a player's choice — Chombot (a fixed
+0–2 menu) and Inexorable Miasma (exactly one) — and neither can ever have "a
+ton of counters". Everything else is a choiceless sweep. The widening is
+groundwork so the next card that asks for a real quantity does not have to
+reinvent the protocol.
+
+### Tests
+
+`124-counter-stepper` — fifteen. The stepper's clamp/max/All judgement is
+LIFTED into `ui/inspect.ts` (`counterStepper`, `clampCounterCount`,
+`counterStepperCount`, `counterPickIndex`, `counterAmountIndex`,
+`counterPickUnits`) for the reason R134 (the card-text formatter) and R136
+both landed on: `ui/main.ts` runs DOM code on import and no test can reach it.
+`CounterStepperAction.submit` is the literal `false` — the "without auto
+submitting" ruling stated in the type, so no path through the stepper can
+produce a decision index.
+
+Red-checked one seam at a time, eleven reverts: dropping the prompt instruction
+reddens 2; dropping `counterMax` reddens 3; dropping the per-amount options
+reddens 3; pinning `payCastCost` back to one counter reddens 3; making "All" a
+no-op reddens 5; neutering `clampCounterCount` reddens 5; making
+`counterPickIndex` demand an exact match reddens 3; always emitting the hint
+reddens 1; dropping the `counterMax` gate on the amount shape reddens 1 (a
+"choose X" menu is bare numbers too — the BL-24 collision again); dropping
+Chombot's ceiling reddens 1; un-deduping `counterPickUnits` reddens 2.
+
+Both cost routes are covered because they are separate at the table even though
+they share `collectCastCosts`: a spell cast (Discharge, `from: 'allies'`) and an
+activated ability (Soul Reaver, `from: 'self'`).
