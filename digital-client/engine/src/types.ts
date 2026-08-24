@@ -1262,6 +1262,21 @@ export interface GameState {
   /** derived convenience: the initiative-ordered first seat still deploying
    * (null when deployment is over). Kept for sequential drivers/tests. */
   deployPlayer: Seat | null;
+  /** Report #86 (room EGCW, 2026-08-23) / CARD-TODO 22: has this seat taken
+   * ANY action during the current turn's deployment other than hitting Done?
+   * Owner's ruling (2026-08-23): "the idea is that YOU did something during
+   * deployment other than just hitting Done" — plays, mods, grafts and
+   * ability activations all count. It lives on GameState because the acting
+   * seat is a REDUCER fact: deployment is simultaneous, `deployPlayer` above
+   * is only a derived initiative marker, and card-level event bookkeeping
+   * cannot tell WHOSE action fired an event (that was the bug — Mirage Walker
+   * read `deployPlayer` and misfired both ways). Stamped at the dispatch
+   * choke point in apply.ts; zeroed by startDeployment; `decide` never stamps
+   * (a pending decision was raised by an action that already did). End-of-turn
+   * triggers read it after deployment ends and before the NEXT deployment
+   * zeroes it. Additive/optional so pre-fix saved games load — absent reads
+   * as "did not act". */
+  deployActed?: boolean[];
   /** triggers waiting to be ordered/targeted/stacked, in collection order */
   triggerQueue: PendingTrigger[];
   /** seats whose current trigger batch is already ordered (reset on new arrivals) */

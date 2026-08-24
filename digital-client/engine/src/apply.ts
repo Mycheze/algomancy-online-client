@@ -196,6 +196,18 @@ function dispatch(e: E, action: Action): void {
   if (e.s.decision && action.type !== 'decide' && action.type !== 'concede') {
     e.illegal(`a decision is pending for ${e.pname(e.s.decision.seat)}`);
   }
+  // Report #86 / CARD-TODO 22: during deployment, ANY action a seat takes
+  // other than hitting Done marks that seat as having acted (owner's ruling:
+  // plays, mods and ability activations all count — "the idea is that YOU did
+  // something during deployment other than just hitting Done"). `decide` does
+  // not stamp: it answers a question raised by an action that already did.
+  // Stamped HERE, before the switch, so no per-action-type site can be missed;
+  // an action that turns out to be illegal throws, and the caller discards the
+  // whole draft, stamp included. (`??=`: a pre-fix save has no field — R note
+  // in types.ts.)
+  if (e.s.phase === 'deploy' && action.type !== 'doneDeploying' && action.type !== 'decide') {
+    (e.s.deployActed ??= e.s.players.map(() => false))[action.seat] = true;
+  }
   switch (action.type) {
     case 'recycleForResource': return doRecycle(e, action.seat, action.handIndex, action.element);
     case 'activateResource': return doActivateResource(e, action.seat, action.index);

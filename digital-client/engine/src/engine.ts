@@ -7599,6 +7599,8 @@ export class E {
     this.s.phase = 'deploy';
     this.s.deployDone = this.s.players.map(() => false);
     this.s.deployPlayer = this.initiative;
+    // report #86: nobody has acted in THIS deployment yet (see types.ts)
+    this.s.deployActed = this.s.players.map(() => false);
     this.ev('phase', 'Deployment: both players deploy at the same time — moves are revealed when everyone is done.');
     this.s.deployStarting = true;   // R102: step 2 is owed
     this.rotDamage();   // R38: start of deployment, before anyone may deploy

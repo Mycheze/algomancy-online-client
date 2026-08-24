@@ -509,30 +509,20 @@ card('Minor Kraken', {
 
 // "[Battle] Ambush [4bb] … At the end of turn, if you took no actions during
 // deployment, [Switch1] Create a 3/3 unit." — bb/3 2/4 Arcane Lizard Unit.
-// The Ambush mode is engine-level (printed.ambush, R22). ⚠ approx: the
-// engine keeps no per-seat deployment-action record; a bookkeeping when()
-// (always false) marks a per-turn flag in my budgets when my controller
-// takes a deployment action that fires spawned/spellPlayed/modApplied
-// (playCard, castSpellToken, augment, graft — pure activations with silent
-// effects can slip through). Budgets reset at startTurn, so the flag is
-// naturally per-turn.
+// The Ambush mode is engine-level (printed.ambush, R22). Report #86: "you
+// took no actions" is a REDUCER fact — deployment is simultaneous, so the old
+// event bookkeeping here (spawned/spellPlayed/modApplied gated on
+// `deployPlayer`, a derived initiative marker) could not tell whose action it
+// was and misfired both ways. The reducer now stamps `deployActed[seat]` for
+// every deployment action except Done and `decide` (owner's ruling: plays,
+// mods and ability activations all count), and this trigger just reads it at
+// end of turn — after deployment ended, before the next one zeroes the flag.
 card('Mirage Walker', {
   abilities: [
     {
-      type: 'triggered', events: ['spawned', 'spellPlayed', 'modApplied'],
-      label: '(bookkeeping) note deployment actions',
-      when: (g, self) => {
-        if (g.s.phase === 'deploy' && g.s.deployPlayer === self.controller) {
-          self.budgets['mw:acted'] = 1;
-        }
-        return false;
-      },
-      effect: { run: () => { /* never queues */ } },
-    },
-    {
       type: 'triggered', events: ['endOfTurn'], bounded: true, graftCause: true,
       label: 'create a 3/3 unit (you took no actions during deployment)',
-      when: (_g, self) => !(self.budgets['mw:acted'] ?? 0),
+      when: (g, self) => !(g.s.deployActed?.[self.controller] ?? false),
       effect: {
         creates: ['Unit Token'],
         run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [3, 3] }); },

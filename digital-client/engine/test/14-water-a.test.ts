@@ -516,22 +516,95 @@ test('Mirage Walker: ambush [4bb] recalls an ally and takes its formation slot (
   finishBattle(h);
 });
 
-test('Mirage Walker: end of turn with no deployment actions → a 3/3 unit', () => {
-  const h = new Harness(1419);
+// Report #86 (EGCW, 2026-08-23): "you took no actions during deployment" is a
+// per-SEAT fact the reducer stamps (GameState.deployActed) — the old
+// bookkeeping read `deployPlayer`, a derived initiative marker, and misfired
+// both ways. The matrix below covers all four (mwSeat, deployPlayer)
+// combinations; the old code served exactly one of them.
+
+/** the 3/3s Mirage Walker made for `seat` */
+const mw33 = (h: Harness, seat: Seat) =>
+  unitsOf(h, seat).filter(u => u.token && u.tokenStats?.[0] === 3 && u.tokenStats?.[1] === 3);
+
+for (const mwSeat of [0, 1] as Seat[]) {
+  for (const init of [0, 1] as Seat[]) {
+    test(`Mirage Walker #86: acting suppresses, idling triggers (mwSeat=${mwSeat}, deployPlayer=${init})`, () => {
+      const h = new Harness(1480 + mwSeat * 2 + init);
+      h.state.initiative = init;                  // deployPlayer derives from initiative
+      toDeployment(h);
+      assert.equal(h.state.deployPlayer, init, 'the combination under test holds');
+      spawn(h, mwSeat, 'Mirage Walker');          // direct spawn — not a reducer action
+      // turn 1: the controller ACTS — a real deployment action through the reducer
+      giveResources(h, mwSeat, 'water', 3);      // Lonely Forager: b/3
+      h.do({ type: 'playCard', seat: mwSeat, handIndex: give(h, mwSeat, 'Lonely Forager') });
+      h.do({ type: 'doneDeploying', seat: mwSeat });
+      h.do({ type: 'doneDeploying', seat: (1 - mwSeat) as Seat });   // end of turn 1
+      assert.equal(mw33(h, mwSeat).length, 0, 'controller acted → no 3/3');
+      // turn 2: the controller only hits Done
+      h.state.initiative = init;                  // pin the same combination again
+      toDeployment(h);
+      assert.equal(h.state.deployPlayer, init, 'the combination still holds on turn 2');
+      h.do({ type: 'doneDeploying', seat: mwSeat });
+      h.do({ type: 'doneDeploying', seat: (1 - mwSeat) as Seat });   // end of turn 2
+      const made = mw33(h, mwSeat);
+      assert.equal(made.length, 1, 'controller only hit Done → one 3/3');
+      assert.deepEqual(effStats(h, made[0]!.id), [3, 3]);
+    });
+  }
+}
+
+test('Mirage Walker #86: the OPPONENT acting during deployment does not suppress the trigger', () => {
+  const h = new Harness(1484);
   toDeployment(h);
-  const p = h.state.deployPlayer!;
-  spawn(h, p, 'Mirage Walker');                             // its own arrival marks "acted"
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });   // end of turn 1
-  assert.ok(!unitsOf(h, p).some(u => u.token && u.tokenStats?.[0] === 3),
-    'acted during deployment (its own play) → no token');
-  // a full turn with an idle deployment
+  const mwSeat = h.state.deployPlayer!;           // the seat the old false positive hit
+  const opp = (1 - mwSeat) as Seat;
+  spawn(h, mwSeat, 'Mirage Walker');
+  const host = spawn(h, opp, 'Rune Channeler');
+  giveResources(h, opp, 'earth', 2);
+  // the opponent applies a mod while the controller does nothing but Done
+  h.do({ type: 'augment', seat: opp, from: 'hand', index: give(h, opp, 'Chitin Shredder'), hostId: host });
+  h.do({ type: 'doneDeploying', seat: mwSeat });
+  h.do({ type: 'doneDeploying', seat: opp });
+  assert.equal(mw33(h, mwSeat).length, 1, "the opponent's mod is not YOUR action → the 3/3 is created");
+});
+
+test('Mirage Walker #86: activating an ability during deployment counts as acting', () => {
+  const h = new Harness(1485);
   toDeployment(h);
+  const mwSeat = (1 - h.state.deployPlayer!) as Seat;   // the seat the old code never counted
+  spawn(h, mwSeat, 'Mirage Walker');
+  const oracle = spawn(h, mwSeat, 'Oracle of the Flame');
+  // ruling: "mods and ability activations included" — sacrifice-activate
+  h.do({ type: 'activateAbility', seat: mwSeat, entityId: oracle, abilityIndex: 0 });
+  h.do({ type: 'doneDeploying', seat: mwSeat });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
-  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });   // end of turn 2
-  const made = unitsOf(h, p).filter(u => u.token && u.tokenStats?.[0] === 3);
-  assert.equal(made.length, 1, 'idle deployment → one 3/3');
-  assert.deepEqual(effStats(h, made[0]!.id), [3, 3]);
+  assert.equal(mw33(h, mwSeat).length, 0, 'an activation is an action → no 3/3');
+});
+
+test('Mirage Walker #86: the stamp survives a JSON save/load mid-deployment', () => {
+  const h = new Harness(1486);
+  toDeployment(h);
+  const mwSeat = (1 - h.state.deployPlayer!) as Seat;
+  spawn(h, mwSeat, 'Mirage Walker');
+  giveResources(h, mwSeat, 'water', 3);           // Lonely Forager: b/3
+  h.do({ type: 'playCard', seat: mwSeat, handIndex: give(h, mwSeat, 'Lonely Forager') });
+  h.state = JSON.parse(JSON.stringify(h.state));  // save + load
+  assert.equal(h.state.deployActed?.[mwSeat], true, 'the stamp serializes');
+  h.do({ type: 'doneDeploying', seat: mwSeat });
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  assert.equal(mw33(h, mwSeat).length, 0, 'the loaded state still knows the controller acted');
+});
+
+test('Mirage Walker #86: a pre-fix save without deployActed loads and drives (absent = idle)', () => {
+  const h = new Harness(1487);
+  toDeployment(h);
+  const mwSeat = h.state.deployPlayer!;
+  spawn(h, mwSeat, 'Mirage Walker');
+  delete h.state.deployActed;                     // simulate a save from before the field existed
+  h.state = JSON.parse(JSON.stringify(h.state));
+  h.do({ type: 'doneDeploying', seat: mwSeat });
+  h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
+  assert.equal(mw33(h, mwSeat).length, 1, 'absent field reads as "did not act" → the 3/3 is created');
 });
 
 // ── Null Drone ───────────────────────────────────────────────────────────
