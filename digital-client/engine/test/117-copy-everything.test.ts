@@ -144,16 +144,16 @@ test('R127: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-target
     'the Gatekeeper left the column and the borrowed compulsion went with it');
 });
 
-// ── channel 4: a replace* hook (Counter Theif) ───────────────────────────
+// ── channel 4: a replace* hook (Counter Thief) ───────────────────────────
 
-test('R127: an adjacent Counter Theif\'s REPLACEMENT HOOK radiates from the Ancient One too', () => {
+test('R127: an adjacent Counter Thief\'s REPLACEMENT HOOK radiates from the Ancient One too', () => {
   // "[Augment] If one or more counters would be placed on one or more units
   // during battle, those counters are placed on me instead." A replacement is
   // consumed by the FIRST holder in entity-id order, and `board()` spawns the
   // Ancient One first — so when it is adjacent, the mimic claims the counters
   // and the Thief never sees them.
-  const near = board(12731, 'Counter Theif', true);
-  const far = board(12732, 'Counter Theif', false);
+  const near = board(12731, 'Counter Thief', true);
+  const far = board(12732, 'Counter Thief', false);
 
   for (const b of [far, near]) {
     const g = new E(b.h.state);

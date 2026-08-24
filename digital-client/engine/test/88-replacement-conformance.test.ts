@@ -219,7 +219,7 @@ test('the classifier finds the replacement clauses, and only those', () => {
   // sweep has to still see every one of them.
   const known = [
     // playtest ledger #60's list, verbatim
-    'Automaton of Abundance', 'Cosmic Conspirator', 'Nullbringer', 'Counter Theif',
+    'Automaton of Abundance', 'Cosmic Conspirator', 'Nullbringer', 'Counter Thief',
     'Flux Resonator', 'Proliferating Slime', 'Conduit of Pain',
     // the three the engine already had (R38/R98/R102)
     'Skittering Blight', 'Blightsea Polyp', 'Oorblak', 'Beyond, Codex Incarnate',

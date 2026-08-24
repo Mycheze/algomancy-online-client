@@ -368,7 +368,7 @@ export const POOL = [
   'Colony of the Interworld',
   'Combustible Bogwalker',
   'Cosmic Devourer',
-  'Counter Theif',
+  'Counter Thief',
   'Covenant of the Damned',
   'Cthyrian Culler',
   'Cthyrian Rector',

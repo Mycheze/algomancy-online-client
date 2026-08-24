@@ -10,7 +10,7 @@
  *   Blightsea Polyp
  *   Buffer Overflow
  *   Capture
- *   Counter Theif
+ *   Counter Thief
  *   Deathcoil Construct
  *   Dragnol
  *   Gridxlan
@@ -75,7 +75,7 @@
  *
  * PARKED (needs engine machinery that does not exist yet — both cards still
  * register crash-free and have a todo test):
- *  - Counter Theif: UN-PARKED (R104). "those counters are placed on me instead"
+ *  - Counter Thief: UN-PARKED (R104). "those counters are placed on me instead"
  *    is a REDIRECT — the second family of the replacement layer — expressed as
  *    `replaceCounters`, a first-claimant-consumes hook E.addCounters consults
  *    before it commits. Nothing reaches the stack, so nothing can negate it.
@@ -463,9 +463,9 @@ card('Buffer Overflow', {
 // E.inCostMods' shape, and NOT as a module-level `let` in this file — which is
 // the correction report #60 asked for.
 //
-// ⚠ TRANSCRIPTION: the printed NAME is misspelled ("Counter Theif") in the
+// ⚠ TRANSCRIPTION: the printed NAME is misspelled ("Counter Thief") in the
 // card data; registered under the printed spelling deliberately.
-card('Counter Theif', {
+card('Counter Thief', {
   augmentable: true,
   replaceCounters: (g, self, target) => {
     if (!g.s.battle) return null;                 // "during battle"

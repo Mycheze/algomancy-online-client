@@ -10,7 +10,7 @@
  * R64 — the discards used to happen at resolution),
  * a granted prophecy computed from a cost (Prophecy Bug, R43), damage-driven
  * rot (Rotwall), and the two shapes of a discard trigger (Swarmling, R40).
- * The PARKED Counter Theif (counter-placement replacement) has a registration
+ * The PARKED Counter Thief (counter-placement replacement) has a registration
  * test + todo. Trench Stalker is LIVE as of R123, whole: the [Discard two
  * cards] cast cost, R29 formation entry and the play-from-bin action landed
  * together.
@@ -273,16 +273,16 @@ test('Capture: puts target unit into YOUR hand (a steal), then you discard a car
   assert.ok(!h.state.players[A]!.hand.includes('LDC Brute'), 'the owner never got it back');
 });
 
-// ── Counter Theif ────────────────────────────────────────────────────────
+// ── Counter Thief ────────────────────────────────────────────────────────
 
-test('Counter Theif: counters placed on any unit during battle land on it instead', () => {
+test('Counter Thief: counters placed on any unit during battle land on it instead', () => {
   // R104, the REDIRECT family: the number is untouched and the RECIPIENT
   // changes, so this is a first-claimant-consumes hook and not a summed
   // AmountMod. The counters land on exactly one unit either way.
   const h = new Harness(4620);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const ct = spawn(h, P, 'Counter Theif');
+  const ct = spawn(h, P, 'Counter Thief');
   const other = spawn(h, P, 'LDC Grunt');
   toNextBattle(h, P);
   whiteBox(h, e => e.addCounters(e.entity(other)!, 2));
@@ -290,20 +290,20 @@ test('Counter Theif: counters placed on any unit during battle land on it instea
   assert.equal(ent(h, ct)!.counters, 2, '"those counters are placed on me instead"');
 });
 
-test('Counter Theif: outside battle the counters land where they were put', () => {
+test('Counter Thief: outside battle the counters land where they were put', () => {
   // "during battle" is a printed restriction and it is real. The engine's own
   // battle state answers it, which costs a query rather than a listener.
   const h = new Harness(4621);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const ct = spawn(h, P, 'Counter Theif');
+  const ct = spawn(h, P, 'Counter Thief');
   const other = spawn(h, P, 'LDC Grunt');
   whiteBox(h, e => e.addCounters(e.entity(other)!, 2));
   assert.equal(ent(h, other)!.counters, 2, 'deployment is not battle');
   assert.equal(ent(h, ct)!.counters, 0);
 });
 
-test('Counter Theif: two thieves do not ping-pong, and the theft never reaches the stack', () => {
+test('Counter Thief: two thieves do not ping-pong, and the theft never reaches the stack', () => {
   // The redirect really re-enters — putting the counters on the thief IS a
   // counter placement — so two thieves would bounce one placement between them
   // forever without a latch. The latch lives in the engine
@@ -313,8 +313,8 @@ test('Counter Theif: two thieves do not ping-pong, and the theft never reaches t
   const h = new Harness(4622);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const first = spawn(h, P, 'Counter Theif');
-  const second = spawn(h, P, 'Counter Theif');
+  const first = spawn(h, P, 'Counter Thief');
+  const second = spawn(h, P, 'Counter Thief');
   const other = spawn(h, P, 'LDC Grunt');
   toNextBattle(h, P);
   const before = h.events.length;
@@ -328,16 +328,16 @@ test('Counter Theif: two thieves do not ping-pong, and the theft never reaches t
     'nothing was queued and nothing was pushed — there is no stack item to negate');
 });
 
-test('Counter Theif: plays as a 0/5 and augments (donating nothing yet)', () => {
+test('Counter Thief: plays as a 0/5 and augments (donating nothing yet)', () => {
   const h = new Harness(4607);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const ct = spawn(h, P, 'Counter Theif');
+  const ct = spawn(h, P, 'Counter Thief');
   assert.deepEqual(effStats(h, ct), [0, 5], 'vanilla 0/5 in play');
   const host = spawn(h, P, 'LDC Grunt');
   giveResources(h, P, 'metal', 2);
   giveResources(h, P, 'dark', 2);                          // md / 4
-  h.do({ type: 'augment', seat: P, from: 'hand', index: give(h, P, 'Counter Theif'), hostId: host });
+  h.do({ type: 'augment', seat: P, from: 'hand', index: give(h, P, 'Counter Thief'), hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment');
   whiteBox(h, e => e.addCounters(e.entity(host)!, 2));
   assert.equal(ent(h, host)!.counters, 2,

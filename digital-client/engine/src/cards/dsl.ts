@@ -1516,7 +1516,7 @@ export interface CardBehavior {
   replaceLifeGain?: (g: E, self: Entity, seat: Seat, amount: number, why: string) => boolean;
   /**
    * R104 replacement: `n` counters are about to be put on `target`. Return the
-   * entity they should be put on INSTEAD (Counter Theif: "those counters are
+   * entity they should be put on INSTEAD (Counter Thief: "those counters are
    * placed on me instead" → the anchor), or null to decline. First non-null
    * consumes; the counters land on exactly one unit either way, so this is a
    * REDIRECT and never a multiplier.

@@ -3,7 +3,7 @@
  * The per-card behaviour lives with each card (12-fire-a for Conduit of Pain,
  * 26-metal-a for Automaton of Abundance and Cosmic Conspirator, 27-metal-b for
  * Flux Resonator, 40-light-c for Nullbringer and Suspend, 45-hybrids-ld-b for
- * Proliferating Slime, 46-hybrids-ld-c for Counter Theif). What is here is
+ * Proliferating Slime, 46-hybrids-ld-c for Counter Thief). What is here is
  * everything that is true of the LAYER rather than of any one card, because
  * that is the part playtest reports #60 and #75 are about:
  *
@@ -170,15 +170,15 @@ test('a replacement fires once, not once per source that could have fired it', (
 });
 
 test('a counter REDIRECT moves the counters, it does not copy them', () => {
-  // Counter Theif is the redirect half of the family: the number is untouched
+  // Counter Thief is the redirect half of the family: the number is untouched
   // and the recipient changes. Two thieves do not each get a set — the first
   // claimant consumes, ties by entity id, exactly as replaceRotDamage resolves
   // them.
   const h = new Harness(8707);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const first = spawn(h, A, 'Counter Theif');
-  const second = spawn(h, A, 'Counter Theif');
+  const first = spawn(h, A, 'Counter Thief');
+  const second = spawn(h, A, 'Counter Thief');
   const victim = spawn(h, A, 'Unit Token');
   toNextBattle(h, A);
   whiteBox(h, e => e.addCounters(e.entity(victim)!, 4));
@@ -195,7 +195,7 @@ test('an AmountMod runs BEFORE the redirect — the thief steals the plus-one to
   const h = new Harness(8708);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const thief = spawn(h, A, 'Counter Theif');
+  const thief = spawn(h, A, 'Counter Thief');
   spawn(h, A, 'Flux Resonator');
   const victim = spawn(h, A, 'Unit Token');
   toNextBattle(h, A);
@@ -218,12 +218,12 @@ test('a donated [Augment] replacement reads from its HOST, not from the card tha
   const host = spawn(h, A, 'Unit Token');
   const victim = spawn(h, A, 'Unit Token');
   giveResources(h, A, 'metal', 2);
-  giveResources(h, A, 'dark', 2);                   // Counter Theif md / 4
-  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Counter Theif'), hostId: host });
+  giveResources(h, A, 'dark', 2);                   // Counter Thief md / 4
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Counter Thief'), hostId: host });
   toNextBattle(h, A);
-  // the Counter Theif's own body is nowhere on the board — only the mod is —
+  // the Counter Thief's own body is nowhere on the board — only the mod is —
   // so anything that lands has to have come from the HOST's anchor
-  assert.equal(unitsOf(h, A).filter(u => u.card === 'Counter Theif').length, 0);
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Counter Thief').length, 0);
   whiteBox(h, e => e.addCounters(e.entity(victim)!, 3));
   assert.equal(ent(h, host)!.counters, 3,
     'the counters landed on the HOST — "me" is the anchor, not the card that donated the text');
@@ -279,7 +279,7 @@ test('Containment Protocol RESOLVING negates nothing a replacement did', () => {
   const atk = spawn(h, A, 'Nullbringer');
   spawn(h, A, 'Conduit of Pain');
   spawn(h, A, 'Flux Resonator');
-  spawn(h, A, 'Counter Theif');
+  spawn(h, A, 'Counter Thief');
   spawn(h, A, 'Proliferating Slime');
   spawn(h, A, 'Automaton of Abundance');
   spawn(h, A, 'Cosmic Conspirator');
@@ -304,7 +304,7 @@ test('Nothyr finds no nonspell effect to target while only replacements are in p
   toDeployment(h);
   const A = h.state.deployPlayer!;
   spawn(h, A, 'Nullbringer');
-  spawn(h, A, 'Counter Theif');
+  spawn(h, A, 'Counter Thief');
   spawn(h, A, 'Flux Resonator');
   const ally = spawn(h, A, 'Unit Token');
   toNextBattle(h, A);

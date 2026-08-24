@@ -7057,8 +7057,8 @@
   "text": "[Augment] At the end of turn, create a Wraith and gain 1 Rot.",
   "image": "Cosmic-Devourer.jpg"
  },
- "Counter Theif": {
-  "name": "Counter Theif",
+ "Counter Thief": {
+  "name": "Counter Thief",
   "factions": [
    "metal",
    "dark"
@@ -7075,7 +7075,7 @@
   "burst": false,
   "augmentAttrs": [],
   "text": "[Augment] If one or more counters would be placed on one or more units during battle, those counters are placed on me instead.",
-  "image": "Counter-Theif.jpg"
+  "image": "Counter-Thief.jpg"
  },
  "Covenant of the Damned": {
   "name": "Covenant of the Damned",

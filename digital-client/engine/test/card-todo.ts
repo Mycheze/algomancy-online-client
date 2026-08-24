@@ -512,7 +512,7 @@ export const CARD_TODO: TodoEntry[] = [
       + 'THE USEFUL FINDING, 2026-08-23: the ledger is not 28 independent problems. Twelve '
       + 'of its entries were parked on FOUR engine seams, and building those four closed '
       + 'them together — Oorblak on Piercing excess (R103), Suspend / Nullbringer / Conduit '
-      + 'of Pain / Counter Theif / Cosmic Conspirator / Automaton of Abundance on the '
+      + 'of Pain / Counter Thief / Cosmic Conspirator / Automaton of Abundance on the '
       + 'replacement layer (R104), Bubb / Trashling / Haboob on stat layer 6, and Suspend '
       + 'again plus Temporal Rift on self-erase. Read the ledger by MISSING PRIMITIVE, not '
       + 'by card, and it is a much shorter list than it looks.',
@@ -626,7 +626,7 @@ export const CARD_TODO: TodoEntry[] = [
       + 'applies to itself. Conduit of Pain, Flux Resonator, Proliferating Slime. '
       + '(b) Named `replaceX` hooks — first-true-consumes, modelled on the two that '
       + 'already existed: `replaceLifeGain`, `replaceCounters`, `replaceTokenCreation`, '
-      + '`replaceTokenBatch`. Nullbringer, Counter Theif, Cosmic Conspirator, Automaton of '
+      + '`replaceTokenBatch`. Nullbringer, Counter Thief, Cosmic Conspirator, Automaton of '
       + 'Abundance. Plus `E.lockLife` for Suspend, which is neither. '
       + 'Deliberately NOT a general "any event" framework — one named hook per replaceable '
       + 'quantity, which is what the engine already said it wanted. '
@@ -677,7 +677,7 @@ export const CARD_TODO: TodoEntry[] = [
       + 'activated ability go on the stack. Cards that say "instead", "as" or "if" AND DO '
       + 'NOT MENTION A TARGET never go on the stack — the target clause is the load-bearing '
       + 'half, because choosing a target is a public, respondable act. By that test '
-      + 'Automaton of Abundance, Cosmic Conspirator, Nullbringer, Counter Theif, Flux '
+      + 'Automaton of Abundance, Cosmic Conspirator, Nullbringer, Counter Thief, Flux '
       + 'Resonator, Proliferating Slime and Conduit of Pain all print "instead" with no '
       + 'target and must never reach the stack; R102 (Beyond, Codex Incarnate) is correctly '
       + 'NOT an exception, because it prints "target unit".',
@@ -1536,7 +1536,7 @@ export const CARD_TODO: TodoEntry[] = [
       'Fold the counters amount layer into spawnUnit at the single site where `u.counters` is '
       + 'set (opts.counters >= 1 only — zero counters is no placement), before the spawn '
       + 'announce/event so the logged number is the final one. Deliberately NOT routed through '
-      + 'replaceCounters (Counter Theif redirect on a token\'s own spawn counters is unsourced).',
+      + 'replaceCounters (Counter Thief redirect on a token\'s own spawn counters is unsourced).',
     proof: null,
     verify:
       'Spawn a Robot 1 with an allied Flux Resonator in the region: while the bug is live it '

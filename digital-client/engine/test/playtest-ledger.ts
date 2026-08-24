@@ -659,7 +659,7 @@ export const LEDGER: LedgerEntry[] = [
       + 'Flux Resonator, Proliferating Slime) — Caleb: "a replacement only happens once … The '
       + 'replacement just takes what would be 1 and makes it 2", so two different modifiers both '
       + 'apply. The named `replaceX` hooks are first-true-consumes, modelled on replaceRotDamage '
-      + '(Nullbringer, Counter Theif, Cosmic Conspirator, Automaton of Abundance), plus a '
+      + '(Nullbringer, Counter Thief, Cosmic Conspirator, Automaton of Abundance), plus a '
       + 'battle-scoped life LOCK for Suspend. Deliberately NO general "any event" framework: one '
       + 'named hook per replaceable quantity, which 88-replacement-conformance asserts is read '
       + 'somewhere in the engine so a hook cannot look implemented and do nothing. All five '

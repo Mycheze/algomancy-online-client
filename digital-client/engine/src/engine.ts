@@ -411,10 +411,10 @@ export class E {
   private inFaces = false;
   /**
    * R104: reentrancy guard for the counter REDIRECT. Unlike the amount
-   * modifiers above, a redirect really does re-enter — Counter Theif's
+   * modifiers above, a redirect really does re-enter — Counter Thief's
    * replacement puts the counters on ITSELF, and putting counters on a unit is
    * the very thing that asks the hook. Skipping the anchor is not enough:
-   * two Counter Theifs would bounce a single placement between them forever.
+   * two Counter Thiefs would bounce a single placement between them forever.
    * So the depth latch is the engine's, in the engine's own `inCostMods`
    * shape, rather than a `let` in a card file — which is exactly the move
    * report #60 asked for.
@@ -2390,7 +2390,7 @@ export class E {
     // just X+1 … a 2/2 robot would spawn as a 3/3, not a 4/4"). Positive
     // spawns only: "if ONE OR MORE counters would be put" — a counterless
     // spawn is no placement and never becomes one. Deliberately NOT routed
-    // through replaceCounters: whether a redirect (Counter Theif) can steal a
+    // through replaceCounters: whether a redirect (Counter Thief) can steal a
     // token's own spawn counters is an unsourced rules question.
     //
     // R130: the actor of a spawn's OWN counters is the seat creating it. There
@@ -2532,7 +2532,7 @@ export class E {
    * "Put that many counters PLUS ONE instead" (Flux Resonator, Proliferating
    * Slime) changes the number, so it is an `AmountMod` and it is summed — two
    * Resonators put two more. "Those counters are placed on ME instead"
-   * (Counter Theif) changes the recipient, so it is a redirect and the first
+   * (Counter Thief) changes the recipient, so it is a redirect and the first
    * claimant consumes it. The amount runs FIRST, because the thief steals what
    * would have been placed, plus-one included.
    *
@@ -2552,7 +2552,7 @@ export class E {
    *     more counters on an ally" can read the attribution instead of
    *     guessing it from the sign.
    * A REDIRECT does not change it: if the counters you aimed at one unit are
-   * placed on another (Counter Theif), you are still the one who put them. */
+   * placed on another (Counter Thief), you are still the one who put them. */
   addCounters(target: Entity, n: number, by?: Seat): void {
     if (!n || !this.entity(target.id)) return;
     // R130: explicit actor first, then the resolving effect's controller. Both
@@ -2885,7 +2885,7 @@ export class E {
    * R104: `n` counters are about to be put on `target` — may a card redirect
    * them?
    *
-   * Counter Theif: "[Augment] If one or more counters would be placed on one
+   * Counter Thief: "[Augment] If one or more counters would be placed on one
    * or more units during battle, those counters are placed on me instead."
    * Returns the unit they should land on; `target` itself when nobody claims
    * them. A REDIRECT and never a multiplier — the counters land on exactly one

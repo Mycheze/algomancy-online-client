@@ -5062,7 +5062,7 @@ So the rule has two halves, and the second is what makes it usable:
 1. **"instead" / "as" / "if" with NO target named → never touches the stack.**
    This is the acceptance criterion the replacement layer (ledger #60) has to be
    built against. Automaton of Abundance, Cosmic Conspirator, Nullbringer,
-   Counter Theif, Flux Resonator, Proliferating Slime and Conduit of Pain are
+   Counter Thief, Flux Resonator, Proliferating Slime and Conduit of Pain are
    all in this class, and all of them reaching the stack today is the bug.
 2. **A replacement that names a TARGET still uses the stack.** A target has to
    be *chosen*, and a choice is public and respondable — there is nowhere else
@@ -5277,7 +5277,7 @@ the extra point pierces like any other. It is applied **per hit**, exactly where
 
 **In `addCounters`**, the amount runs before the redirect. "Put that many
 counters plus one instead" describes what *would be placed*; "those counters are
-placed on me instead" steals what *would be placed*. So a Counter Theif standing
+placed on me instead" steals what *would be placed*. So a Counter Thief standing
 beside a Flux Resonator steals the plus-one too.
 
 ### Token creation, the BATCH, and how a replacement asks a question
@@ -5335,7 +5335,7 @@ a choice; if the owner rules otherwise it is three lines in
 | Card | Was | Is |
 |---|---|---|
 | `Nullbringer` | trigger: gain N, then lose 2N — the total **spiked** and `lifeGained` fired for a gain that never happened | `replaceLifeGain`; lose N, and **no `lifeGained` event** |
-| `Counter Theif` | `events: []` — completely dead | `replaceCounters` redirect, gated on "during battle" |
+| `Counter Thief` | `events: []` — completely dead | `replaceCounters` redirect, gated on "during battle" |
 | `Conduit of Pain` | `events: []` — completely dead | `amountMods`, +1 to an allied source's noncombat damage |
 | `Flux Resonator` | trigger that mutated `u.counters` directly to dodge re-entrancy, so one placement produced a `countersChanged` for the WRONG number and a silent extra after it | `amountMods`; one placement, one event, the right number |
 | `Proliferating Slime` | trigger + module-level `let proliferating` | `amountMods` over counters, rot and debt |
@@ -5392,7 +5392,7 @@ Guarded by
 `27-metal-b.test.ts::Flux Resonator`,
 `40-light-c.test.ts::Nullbringer` and `::Suspend`,
 `45-hybrids-ld-b.test.ts::Proliferating Slime`, and
-`46-hybrids-ld-c.test.ts::Counter Theif`.
+`46-hybrids-ld-c.test.ts::Counter Thief`.
 
 ## R105 — {Modular} takes ANY mod you can pay for, and a modded card is Unstable
 
@@ -7112,7 +7112,7 @@ hooks** (`replaceRotDamage`, `replaceCombatDamageToPlayer`, `replaceLifeGain`,
 `replaceCounters`, `replaceTokenCreation`, `replaceTokenBatch`, `replaceCardStep`) read
 `this.card(holder.card)` in seven more walks of exactly the same shape. So an Ancient One
 standing next to **Tranquility**, **Flux Resonator**, **Gatekeeper of Souls**, **Counter
-Theif**, **Automaton of Abundance**, **Cosmic Conspirator**, **Crevice Lurker**, **The
+Thief**, **Automaton of Abundance**, **Cosmic Conspirator**, **Crevice Lurker**, **The
 Silent**, **Rook**, **Dispatch Courier** or **Conduit of Pain** borrowed *nothing* from
 them — while borrowing the statics and activated abilities of the ally beside it.
 
@@ -7181,7 +7181,7 @@ adding new ones:
 
 * `inCostMods`, `inEffectAttrs`, `inAmountMods`, `inModPermissions`, `inPlayPermissions` —
   a nested query answers the identity-only/zero answer, exactly as before;
-* `inReplaceCounters` — the latch R104 added precisely because Counter Theif's redirect *is*
+* `inReplaceCounters` — the latch R104 added precisely because Counter Thief's redirect *is*
   a counter placement. A borrowed thief re-enters it and stops at the same door; the R127
   test drives that path;
 * `inTokenBatchSettle` — the extras a batch replacement creates are not part of their own
@@ -7231,13 +7231,13 @@ radiator *is* observable.
   projects for the same faces; the loop is widened so that stays true by construction
   rather than by coincidence.)
 * **The clause reads "I" as the mimic.** A borrowed Gatekeeper of Souls makes the **Ancient
-  One** must-be-targeted; a borrowed Counter Theif steals the counters onto the **Ancient
+  One** must-be-targeted; a borrowed Counter Thief steals the counters onto the **Ancient
   One**. That is `anchored()`'s existing contract (a clause reads from its anchor) and it
   is what "right in its text box" means.
 
 **Tests:** `117-copy-everything` — four channels (`costMods` via Tranquility, `amountMods`
 via Flux Resonator, `mustBeTargeted` via Gatekeeper of Souls, `replaceCounters` via Counter
-Theif), each asserted adjacent *and* two columns away on the same geometry, two of them
+Thief), each asserted adjacent *and* two columns away on the same geometry, two of them
 also asserted going dark the instant the neighbour dies; plus the negative test that an
 adjacent Good Whale's {Piercing} does **not** cross while a Tranquility on the other side
 of the same Ancient One does. Red-checked: dropping `'behavior'` from the projection fails
@@ -7397,7 +7397,7 @@ found: `spawnUnit` passes `sourceSeat: seat`, the creator of the token. It
 reaches the AMOUNT layer only — an allied Flux Resonator still makes a Robot X
 enter as X+1 (report #88) — and fires no `countersChanged`, so no "when you put
 a counter" trigger sees a spawn, exactly as before. A REDIRECT does not change
-the actor either: counters you aimed at one unit and a Counter Theif moved to
+the actor either: counters you aimed at one unit and a Counter Thief moved to
 another are still counters you put.
 
 **The sign filters that stayed.** Pestilent Mycelion ("whenever one or more

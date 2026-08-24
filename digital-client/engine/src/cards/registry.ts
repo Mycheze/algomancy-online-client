@@ -720,6 +720,16 @@ card('Wraith', {
 // printed names.
 registerAlias('Wight', 'Wraith');
 
+// 2026-08-24: the card is PRINTED "Counter Theif" — the misspelling is on the
+// physical card, not a transcription slip (see
+// AlgomancyCards/light-and-dark-transcription-notes.json). The owner asked for
+// clear typos and their references fixed, so our data says "Counter Thief" and
+// this alias keeps the printed spelling resolving: every ruling, Discord
+// answer and older note that says "Theif" still finds the card, and nothing
+// downstream can ever see the two as two cards (the alias is for LOOKUP only —
+// state always stores the canonical name).
+registerAlias('Counter Theif', 'Counter Thief');
+
 // batch modules register themselves on import (side-effect card() calls);
 // each owns its own file so parallel card work never collides here
 import './sets/index.ts';

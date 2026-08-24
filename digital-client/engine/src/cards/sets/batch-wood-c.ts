@@ -454,7 +454,7 @@ card('Verdant Vengeance', {
 //    was wrong in that nobody would have called narrow.
 // "An enemy" is the unit's controller, not mine; region scoping is free
 // (fireEvent reads the counted unit's region). A REDIRECT does not break the
-// attribution: counters you aimed at one unit and a Counter Theif moved to
+// attribution: counters you aimed at one unit and a Counter Thief moved to
 // another are still counters you put — on whatever they ended up on.
 const blightDraw: EffectDef = { run: (g, ctx) => g.draw(ctx.controller, 1) };
 card('Wandering Blightshell', {
