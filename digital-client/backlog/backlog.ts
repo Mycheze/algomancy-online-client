@@ -1227,7 +1227,18 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Removing counters: say to click the unit, add a stepper and an "All" button',
     area: 'client',
     size: 'S',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: '6c45091',
+      guards: [
+        '124-counter-stepper.test.ts::the Discharge cost prompt tells you to click a unit',
+        '124-counter-stepper.test.ts::the stepper clamps at 1 and at the max the engine gave it',
+        '124-counter-stepper.test.ts::"All" sets the count to the max and does NOT submit',
+        '124-counter-stepper.test.ts::the stepper max is counterPool(), asked of the engine',
+        '124-counter-stepper.test.ts::one click pays several counters, and X is what was taken',
+        '124-counter-stepper.test.ts::an effect that removes counters carries its own ceiling',
+      ],
+    },
     track: 'qol',
     said:
       'It\'s actually okay, it\'s just not clear that it wants you to click the unit. It needs '
