@@ -1642,13 +1642,30 @@ export const CARD_TODO: TodoEntry[] = [
       + 're-found.',
     proof: () => {
       // TRUE while a 'trashed' responder still resolves its card by name-search.
-      // Read the RUN FUNCTION's source — JSON.stringify drops functions, which
-      // is how the first draft of this proof silently answered false.
+      //
+      // Two ways this proof has already lied, both worth keeping in view:
+      //  1. The first draft read JSON.stringify(augmentText) — which DROPS
+      //     FUNCTIONS, so it silently answered false and the suite reported the
+      //     bug fixed while the code was untouched. Read `run.toString()`.
+      //  2. toString() KEEPS COMMENTS, so a comment merely *mentioning*
+      //     lastIndexOf held this true after the code stopped using it. R140's
+      //     own census sweep hit the identical trap on the same day. Strip
+      //     comments and strings first: measure CODE, never prose.
       const at = (getCard('Cthyrian Rector').augmentText ?? []) as Array<
         { effect?: { run?: (...a: never[]) => unknown } }>;
-      const src = at.map(t => t.effect?.run?.toString() ?? '').join('\\n');
-      return src.includes('lastIndexOf') && !src.includes('binNth');
+      const src = at.map(t => t.effect?.run?.toString() ?? '').join('\n')
+        .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
+        .replace(/(['"`])(?:\\.|(?!\1)[\s\S])*?\1/g, "''");
+      return src.includes('lastIndexOf');
     },
-    status: 'open',
+    status: 'done',
+    guards: [
+      '43-dark-c.test.ts::R140: the Rector does NOT recall an innocent older copy',
+      '43-dark-c.test.ts::R140: the Distiller does NOT cache an innocent older copy',
+      '43-dark-c.test.ts::R140: eraseFromZone can be told WHICH bin slot to take',
+      '26-metal-a.test.ts::R140: Biomass Devourer does NOT erase an innocent older copy',
+      '26-metal-a.test.ts::R140: a stolen unit dies',
+      '90-coverage-census.test.ts::R140: no card responding to a bin-index event re-finds its card by lastIndexOf',
+    ],
   },
 ];
