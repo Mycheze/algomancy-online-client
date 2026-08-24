@@ -1646,8 +1646,17 @@ export class E {
       this.bumpBattleCounter(region, 'trashed');
       this.bumpBattleCounter(region, `trashed:${seat}`);
     }
+    // R131: WHICH copy of `name` in this bin is the one that was just trashed.
+    // A bin holds bare card names, so BinRef (R124/R64) fixes identity there
+    // as (name, nth occurrence) — "copies of one card there are genuinely
+    // indistinguishable". Every caller pushes the card into the bin BEFORE
+    // calling here (toBin, destroy, leavePlay+afterDespawn, Hooba-Mon), so the
+    // LAST occurrence is this instance. -1 when the card is not in the bin at
+    // all (nothing to exclude, and no caller does that today).
+    const binNth = this.player(seat).bin.filter(c => c === name).length - 1;
     const ev = this.ev('trashed', `${this.pname(seat)} trashes ${name} (${where}).`,
-      { seat, card: name, from, region, ...(anchor?.token ? { token: true } : {}) });
+      { seat, card: name, from, region, ...(binNth >= 0 ? { binNth } : {}),
+        ...(anchor?.token ? { token: true } : {}) });
     this.fireEvent('trashed', ev);
     this.fireOwnTrashTrigger(seat, name, region, ev, anchor);
   }
@@ -6228,6 +6237,9 @@ export class E {
         controller: item.controller,
         sourceName: item.card ?? item.label,
         sourceId: item.sourceId,
+        // R131: the mod entity whose donated text this is, if any — the only
+        // handle "my OTHER Augments" has on the one augment that is itself.
+        ...(item.selfModId !== undefined ? { selfModId: item.selfModId } : {}),
         region: item.region,
         targets: resolved,
         // R64: a VARIABLE cast cost defines this part's X (Discharge's "remove
@@ -6826,7 +6838,10 @@ export class E {
       for (const modId of u.mods) {
         const mod = this.entity(modId);
         if (mod && mod.appliedAs === 'augment') {
-          queued = this.collectTriggersFrom(u, mod.card, 'augment', type, ev, src) || queued;
+          // R131: the mod's OWN id rides along, so its donated text can say
+          // "my other Augments" and mean every augment on this host except
+          // this one entity — a second copy of the same card included.
+          queued = this.collectTriggersFrom(u, mod.card, 'augment', type, ev, src, mod.id) || queued;
         }
       }
       // R63: text granted until regroup listens exactly like printed text
@@ -6886,14 +6901,17 @@ export class E {
    */
   private queueTrigger(host: Entity, cardName: CardName, abilityIndex: number,
     ability: TriggeredAbility, prefix: 'ability' | 'augment', ev: EngineEvent,
-    logMsg: string, logData: Record<string, unknown>): boolean {
+    logMsg: string, logData: Record<string, unknown>, selfModId?: EntityId): boolean {
     if (ability.when && !ability.when(this, host, ev)) return false;
     const parts = this.composeParts(host, abilityIndex, prefix, cardName);
     if (!parts) return false;
     this.s.triggerQueue.push({
       sourceId: host.id, sourceCard: cardName, controller: host.controller,
       abilityIndex, label: `${cardName}: ${ability.label}`, parts,
-      region: host.region, event: ev,
+      region: host.region,
+      // R131: which MOD donated this text, when a mod did. See PendingTrigger.
+      ...(selfModId !== undefined ? { selfModId } : {}),
+      event: ev,
     });
     this.ev('triggered', logMsg, logData);
     return true;
@@ -6931,7 +6949,7 @@ export class E {
     return queued;
   }
 
-  private collectTriggersFrom(host: Entity, cardName: CardName, prefix: 'ability' | 'augment', type: EventType, ev: EngineEvent, eventSource?: EntityId): boolean {
+  private collectTriggersFrom(host: Entity, cardName: CardName, prefix: 'ability' | 'augment', type: EventType, ev: EngineEvent, eventSource?: EntityId, selfModId?: EntityId): boolean {
     const def = this.card(cardName);
     const list = prefix === 'ability' ? def.abilities : def.augmentText;
     if (!list) return false;
@@ -6941,7 +6959,7 @@ export class E {
       if (!ability.events.includes(type)) return;
       if (ability.self && eventSource !== host.id) return;
       queued = this.queueTrigger(host, cardName, idx, ability, prefix, ev,
-        `Trigger: ${cardName} — ${ability.label}.`, { unit: host.id }) || queued;
+        `Trigger: ${cardName} — ${ability.label}.`, { unit: host.id }, selfModId) || queued;
     });
     return queued;
   }
@@ -7023,6 +7041,8 @@ export class E {
       // I die" trigger in the wrong region (R12).
       region: this.entity(next.sourceId)?.region ?? next.region ?? this.actionRegion(next.controller),
       negated: false, parts: next.parts, sourceId: next.sourceId, event: next.event,
+      // R131: which mod donated the text, carried to the EffectCtx
+      ...(next.selfModId !== undefined ? { selfModId: next.selfModId } : {}),
     };
     this.collectTargets(item, then, []);
     this.commitItem(item, then);

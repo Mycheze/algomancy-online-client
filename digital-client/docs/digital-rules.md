@@ -7394,3 +7394,105 @@ reddens 1; reverting Flux Resonator reddens 3; dropping the `partActor`
 default reddens the 2 that drive real cards (a Crystal cast by me on an enemy,
 a Poison cast by the opponent on their own unit); dropping `by` from the event
 and from `AmountCtx` reddens 9.
+
+## R131 — "another" is a different ENTITY, not a different card name
+
+*(2026-08-24. Owner ruling + one engine seam + two cards, Rotbeast and
+Blightwalker.)*
+
+**The ruling, verbatim.** *"All other/another cards should work based on 'game
+state tracking UUID' (or whatever we use). It only cares about the other thing
+being a different entity."*
+
+So an "other"/"another" clause **never** filters by CARD NAME. Two copies of a
+card are two things, and each is "another" to the other. Excluding by name
+excludes every copy — one card's worth too many — and it is the reading that
+*shuts interaction down*, which is exactly the habit the same day's rulings
+memo names: *"Don't assume that cards are limited, they're designed to be open
+ended and interact in novel and interesting ways."*
+
+**The three identities.** The comparison to make depends on where the thing
+lives, and this engine has exactly three shapes:
+
+| where | identity | how |
+| --- | --- | --- |
+| in play | `EntityId` | `notSelf` / `ctx.sourceId` — already right |
+| a MOD's donated text | the mod's own `EntityId` | `ctx.selfModId` (new) |
+| a BIN | `(card name, nth occurrence)` — a `BinRef` | the `'trashed'` event's `binNth` (new) |
+
+**The mod case (Rotbeast).** *"[Augment] After combat, move all my other
+Augments onto one or more enemies."* The text is printed on a card that is
+being worn as a mod, and "my" means the HOST — which is exactly why the trigger
+records `host.id` and nothing else. Donated text therefore had no way to name
+its own mod entity, and the implementation fell back to `m.card !== 'Rotbeast'`:
+a host wearing two Rotbeast augments moved **neither**, because each firing
+filtered out the other Rotbeast along with itself. (Its comment even claimed
+"one instance is filtered out" while the code filtered every instance — a fact
+about the code mistaken for a fact about the card, the same shape as R124's
+Rotling comments.)
+
+The fix is one optional field threaded end to end: `PendingTrigger.selfModId`
+→ `StackItem.selfModId` → `EffectCtx.selfModId`, set by the mod branch of
+`fireEvent`'s scan and read through the `isSelfMod(ctx, e)` helper. Undefined
+for a card's own text and for R63 granted text, which is right: no mod carries
+those, so nothing is excluded — a Rotbeast played normally as a unit dumps
+every augment on it, because a unit is not one of its own Augments.
+
+Two Rotbeast augments now do something instead of nothing: each trigger moves
+whatever is on the host but itself, so #1 carries #2 to the enemy and #2 — which
+reads the host live (R1) — then carries #1. The pool got a new interaction back
+that a name comparison had quietly deleted.
+
+**The bin case (Blightwalker).** *"When I am trashed, [Switch1] You may pay [2]
+to recall another target unit from your bin."* A bin holds bare card NAMES —
+there is no entity, so there is no uid to compare, and this is the case the
+ruling's "UUID" does not literally reach.
+
+It did not need a new identity, because **the repo had already answered this
+question and written down why**. R64's `BinRef` is `{ seat, card, nth }`, with
+the rationale printed in `types.ts`: *"copies of one card there are genuinely
+indistinguishable — the card name plus which copy IS the whole identity"*.
+(R124 made the same per-seat-per-NAME call for `zoneBudgets`.) So "another" in
+a bin means **one SLOT excluded**, not one name, and the only missing piece was
+*which* slot — the trigger knew the card's name and nothing about where it
+landed.
+
+`E.noteTrashed` now stamps it: the `'trashed'` event carries `binNth`, the
+occurrence index of the copy that was just trashed. Every trash path in the
+tree pushes the card into the bin *before* firing (`toBin`, `destroy`,
+`leavePlay` + `afterDespawn`, Hooba-Mon's exchange), so the LAST occurrence of
+that name is this instance. The restriction reads it through
+`notSelfBinCard`, which is legitimate under R67 — a triggered ability's
+targeting restriction may read the event that fired it.
+
+**What this does NOT close, honestly.** `binNth` is a *position*, not a uid, and
+it inherits `BinRef`'s slide: if an earlier copy leaves the bin between the
+firing and the target choice, the ref points at whichever copies remain. That
+is deliberate and consistent — copies of one card in a bin are interchangeable
+by the repo's own rule — but it is a weaker guarantee than an EntityId, and it
+would break if the game ever needed a bin card to be distinguishable from its
+twin (a bin card carrying counters, a mod, or a prophecy would need one; a
+`CachedCard` already has a `uid` for exactly that reason). **If that day comes,
+the fix is to give bin entries the shape cache entries already have — a record
+with a uid — not to bolt a second identity onto the event.** Until then, one
+slot excluded is the whole of what "another" means here.
+
+**Swept, and what came back.** `grep -rn "\.card !== '" src/cards/sets/` found
+five name comparisons and no more; `notSelf`'s two users were already correct.
+The other three (Amphivore, Witness of the Crossing, Lost Guardian) were
+LOG-LINE counts inside the R110 graft multipliers, and they were wrong in both
+directions at once: excluding their own name over-excluded a second copy of the
+same multiplier, and under-excluded a *different* multiplier — which
+`composeParts` skips anyway ("never multiply a multiplier"). They now ask
+`isGraftMultiplier(m.card)`, which is the question the engine actually answers
+and mentions no name at all.
+
+One near-miss is deliberately **not** changed: Earthbound Replicator and its
+kin find the spell that was just played with
+`g.s.stack.find(i => i.card === name && i.controller === seat)`. That is a
+lookup for the event's own subject, not an "other" exclusion, so R131 has
+nothing to say about it — but it is a name comparison standing in for an
+identity, and two identical spells on one stack would confuse it. Its own
+ruling, if anyone wants it.
+
+Pinned by `test/121-another-identity.test.ts`.

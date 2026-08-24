@@ -117,7 +117,7 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, type EffectDef } from '../dsl.ts';
+import { card, notSelfBinCard, type EffectDef } from '../dsl.ts';
 import { transformsInto } from '../registry.ts';
 import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 
@@ -151,9 +151,14 @@ function formationSlot(g: E, id: EntityId): { col: EntityId[]; idx: number } | n
 // milled, sacrificed, died in combat), and ctx.sourceId resolves to nothing —
 // nothing here reads it. R64: the bin card is a DECLARED target ('binCard',
 // see the spec below) — the "⚠ the bin is not a targetable zone" line that
-// used to sit here was contradicted seven lines down. "Another" excludes the
-// Blightwalker that just landed in the bin (one instance of it is filtered
-// out).
+// used to sit here was contradicted seven lines down.
+//
+// R131: "another" excludes ONE THING — the Blightwalker that just landed in
+// the bin — not every card named Blightwalker there. It used to compare card
+// names, so a bin already holding a Blightwalker offered neither of them.
+// A bin has no entity ids to compare, but R64/R124 already fixed identity
+// there: a BinRef is (name, nth occurrence), and `noteTrashed` stamps this
+// copy's `binNth` on the 'trashed' event. `notSelfBinCard` reads it.
 // [Switch1] on the trigger makes it a bounded graft CAUSE as well as a
 // bounded graftable effect — though a card sitting in the bin carries no
 // mods, so nothing ever rides along on the trash firing itself.
@@ -165,7 +170,7 @@ const blightwalkerRecall: EffectDef = {
   targets: {
     what: 'binCard', min: 0,
     prompt: 'Blightwalker: pay [2] to recall another target unit from your bin',
-    restrict: (_g, t) => 'binCard' in t && t.binCard.card !== 'Blightwalker' && isUnitCard(t.binCard.card),
+    restrict: (g, t, ctx) => 'binCard' in t && isUnitCard(t.binCard.card) && notSelfBinCard(g, t, ctx),
   },
   run: (g, ctx) => {
     const seat = ctx.controller;

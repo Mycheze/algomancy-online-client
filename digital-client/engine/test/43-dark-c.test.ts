@@ -102,12 +102,17 @@ test('Blightwalker: "another" excludes the copy that was just trashed, and the p
   assert.equal(h.state.decision, null, 'the bin holds only me — nothing to recall');
 
   // now with a real candidate, but declined. R64: "another" is a targeting
-  // restriction, so the Blightwalker copies in the bin are never offered.
+  // restriction. R131: it excludes exactly ONE SLOT — the copy that just
+  // landed — and NOT every card named Blightwalker; the earlier copy from the
+  // first discard above is a different entity and is offered. (This assertion
+  // used to read "no Blightwalker is offered", which was the name-comparison
+  // bug: two copies in a bin are two things, and each is "another".)
   bin(h, P).push('Rotling');
   const j = give(h, P, 'Blightwalker');
   whiteBox(h, e => e.discardFromHand(P, j));
-  assert.deepEqual(h.state.decision!.options.filter(o => String(o.label).startsWith('Blightwalker')), [],
-    '"another": the trashed copy is not a legal target');
+  assert.equal(bin(h, P).filter(c => c === 'Blightwalker').length, 2, 'two copies in the bin');
+  assert.equal(h.state.decision!.options.filter(o => String(o.label).startsWith('Blightwalker')).length, 1,
+    '"another": the trashed copy is excluded — and only it');
   pickBy(h, o => String(o.label).startsWith('Rotling'));
   pickBy(h, o => o.label === 'Decline');
   assert.ok(!hand(h, P).includes('Rotling'), 'declining recalls nothing');

@@ -784,6 +784,10 @@ export interface StackItem {
   eraseSelf?: boolean;
   /** triggered/activated: source entity (may be gone by resolution) */
   sourceId?: EntityId;
+  /** R131: carried over from PendingTrigger — the MOD ENTITY whose donated
+   * [Augment] text is resolving, so "my other Augments" can exclude exactly
+   * one entity (itself) by id rather than by card name. */
+  selfModId?: EntityId;
   /** virus: host target */
   hostId?: EntityId;
   /** R79: virus — the STACK ITEM this virus is being augmented onto, when its
@@ -1427,6 +1431,14 @@ export interface PendingTrigger {
    * region) is not the region the unit died in. Optional/additive: a state
    * serialized before this existed falls back to the old behaviour. */
   region?: number;
+  /** R131: the MOD ENTITY whose donated [Augment] text queued this trigger,
+   * when it was donated by one. `sourceId` names the HOST — "my" on a mod's
+   * text means the host — so without this the text has no way to name the one
+   * entity it must exclude from "my OTHER Augments" (Rotbeast), and every
+   * implementation fell back to filtering by card NAME, which wrongly excludes
+   * a second copy too. Absent for a card's own text and for granted text: no
+   * mod carries those, so nothing is excluded. */
+  selfModId?: EntityId;
   event: EngineEvent | null;
 }
 

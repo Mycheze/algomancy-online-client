@@ -88,7 +88,7 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { CARD_PLAY_KINDS, card, getCard, type EffectDef } from '../dsl.ts';
+import { CARD_PLAY_KINDS, card, getCard, isGraftMultiplier, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -667,7 +667,12 @@ const tripleGrafts: EffectDef = {
     const self = selfOf(g, ctx);
     const others = self ? self.mods.filter(id => {
       const m = g.entity(id);
-      return m && m.appliedAs === 'graft' && m.card !== 'Witness of the Crossing';
+      // R131: NOT a card-name exclusion — the grafts this multiplier has
+      // nothing to do with are the OTHER MULTIPLIERS (composeParts never
+      // multiplies a multiplier), whatever they are called. A second copy
+      // of this very card grafted here is one of them; a different multiplier
+      // grafted alongside is too.
+      return m && m.appliedAs === 'graft' && !isGraftMultiplier(m.card);
     }).length : 0;
     if (!others) g.ev('info', `${ctx.sourceName}: no other graft is attached — there is nothing to triple.`);
     else g.ev('info', `${ctx.sourceName}: 3 copies of each grafted ability (${others} graft${others === 1 ? '' : 's'}), one single trigger.`);

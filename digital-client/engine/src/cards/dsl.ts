@@ -77,6 +77,15 @@ export interface EffectCtx {
   controller: Seat;
   sourceName: string;
   sourceId?: number;
+  /**
+   * R131: when this effect is a MOD's donated [Augment] text, the mod's own
+   * EntityId. `sourceId` is the HOST (that is what "my" means on donated
+   * text), so this is the only handle the text has on the one entity that is
+   * ITSELF — which is exactly what "my OTHER Augments" (Rotbeast) has to
+   * exclude. Undefined for a card's own text and for granted text: no mod
+   * carries those, so there is nothing to exclude.
+   */
+  selfModId?: number;
   region: number;
   targets: ResolvedTarget[];
   x?: number;
@@ -327,11 +336,76 @@ export function printedCost(name: CardName): number {
   return m === 'X' ? 0 : m;
 }
 
+/* ── R131: "other" / "another" is a DIFFERENT ENTITY ───────────────────
+ *
+ * Owner, 2026-08-24: "All other/another cards should work based on 'game
+ * state tracking UUID' (or whatever we use). It only cares about the other
+ * thing being a different entity."
+ *
+ * So an "other"/"another" clause NEVER filters by CARD NAME. Two copies of
+ * one card are two entities, and each is "another" to the other — a second
+ * Rotbeast augment on one host really is one of "my other Augments", and a
+ * second Blightwalker in the bin really is "another target unit". Excluding
+ * by name excludes every copy, which is one card's worth too many.
+ *
+ * The identity to compare against depends on where the thing lives, and this
+ * engine has exactly three shapes:
+ *
+ *  · IN PLAY — `EntityId`. `notSelf` below (and `ctx.sourceId` for the rest).
+ *  · A MOD's DONATED TEXT — the mod is its own entity, but `ctx.sourceId` is
+ *    the HOST ("my" on donated text means the host). `ctx.selfModId` names the
+ *    mod carrying the text that is running; `isSelfMod` compares against it.
+ *  · A BIN — a bin holds bare card NAMES, so there is no uid to compare.
+ *    R64/R124 already settled identity there: a `BinRef` is (name, nth
+ *    occurrence), because "copies of one card there are genuinely
+ *    indistinguishable". `notSelfBinCard` excludes exactly the ONE slot the
+ *    trashed card itself occupies, read off the 'trashed' event's `binNth`.
+ */
+
 /** R64: "another target …" — a slot that may not be the effect's own source.
  * Distinctness BETWEEN slots is already enforced by the collector; this is the
- * separate clause that excludes the unit the ability is printed on. */
+ * separate clause that excludes the unit the ability is printed on.
+ *
+ * R131: an ENTITY comparison, which is the whole point — a second copy of the
+ * source's card is a different entity and stays targetable. */
 export const notSelf: TargetRestrict = (_g, t, ctx) =>
   !isEntityTarget(t) || ctx.sourceId === undefined || t.id !== ctx.sourceId;
+
+/** R131: is `e` the very mod whose donated [Augment] text is running? The
+ * "other" in "my other Augments" — one entity excluded, by id, never a name. */
+export function isSelfMod(ctx: EffectCtx, e: { id: number }): boolean {
+  return ctx.selfModId !== undefined && e.id === ctx.selfModId;
+}
+
+/** R131: which occurrence of its own name a bin slot is — the `nth` half of a
+ * BinRef, recovered from a resolved `binCard` target's live index. */
+export function binNthAt(g: E, seat: Seat, index: number): number {
+  const bin = g.player(seat).bin;
+  const name = bin[index];
+  let nth = 0;
+  for (let i = 0; i < index; i++) if (bin[i] === name) nth++;
+  return nth;
+}
+
+/**
+ * R131: "another target … from your bin", on a card's own "when I am trashed"
+ * text (Blightwalker). The card that fired is sitting in that same bin, and
+ * exactly ONE slot there is it — not every slot holding its name.
+ *
+ * Identity comes off the firing event: `noteTrashed` stamps `binNth` (which
+ * occurrence of its name the trashed copy is) alongside `seat` and `card`,
+ * and R67 already established that a triggered ability's restriction may read
+ * the event that fired it. If a copy leaves the bin in between, the ref simply
+ * slides — the same interchangeability BinRef is built on (R64).
+ */
+export const notSelfBinCard: TargetRestrict = (g, t, ctx) => {
+  if (!('binCard' in t)) return true;
+  const d = ctx.event?.data;
+  if (!d || d['card'] !== t.binCard.card || d['seat'] !== t.binCard.seat) return true;
+  const nth = d['binNth'];
+  if (typeof nth !== 'number') return true;
+  return binNthAt(g, t.binCard.seat, t.binCard.index) !== nth;
+};
 
 /** R64: the restriction governing target slot `i` — `slotRestricts[i]` when
  * the spec names one (including an explicit `null` for "no restriction here"),
@@ -1624,6 +1698,19 @@ export function isTriggered(a: Ability): a is TriggeredAbility { return a.type =
 /** A card can be grafted onto a host iff it has a [Switch]-marked effect. */
 export function isGraftable(name: string): boolean {
   return !!getCard(name).graftEffect;
+}
+
+/** R110: is this card's graft a MULTIPLIER ("trigger N copies of this graft
+ * ability")? `E.composeParts` never multiplies a multiplier, so these are the
+ * grafts a multiplier has nothing to do with.
+ *
+ * R131: the three multipliers used to find "the other grafts" by excluding
+ * their own card NAME, which both over-excluded (a second copy of the same
+ * multiplier) and under-excluded (a DIFFERENT multiplier, which the engine
+ * skips anyway). Neither is about names — it is about which parts get
+ * repeated. */
+export function isGraftMultiplier(name: string): boolean {
+  return !!getCard(name).graftEffect?.effect.graftCopies;
 }
 
 /** A host can receive grafts iff it has its own graft cause (Manual p.33). */

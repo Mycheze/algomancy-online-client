@@ -104,7 +104,7 @@
  */
 import type { CardName, EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, isSelfMod, type EffectCtx, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, manaOf, isUnitCard, unslot } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -667,10 +667,20 @@ card('Plague Ritual', {
 
 // "[Augment] After combat, move all my other Augments onto one or more
 // enemies." — dd/2 1/4 {Virus} Blight Unit. Text-box [Augment]: live when
-// played normally, donated on augment ("my" = the host). "My other Augments"
-// excludes the mod carrying this very text, identified by card name. ⚠ header:
-// mods are re-parented by hand and no 'modApplied' fires — moving is not
-// applying. Every destination is picked before anything moves (R6).
+// played normally, donated on augment ("my" = the host).
+//
+// R131: "my other Augments" excludes ONE ENTITY — the mod carrying this very
+// text, named by `ctx.selfModId` — and nothing else. It used to exclude by
+// card NAME, so a host wearing TWO Rotbeast augments moved neither: each
+// firing wrongly filtered out the other Rotbeast as well as itself. Two
+// augments donate two triggers; each moves everything but itself, so the
+// first moves Rotbeast #2 away and the second finds only what is left.
+// Played normally (no mod carries the text) `selfModId` is undefined and
+// every augment on the host is "other", which is right — the unit is not one
+// of its own Augments.
+//
+// ⚠ header: mods are re-parented by hand and no 'modApplied' fires — moving
+// is not applying. Every destination is picked before anything moves (R6).
 card('Rotbeast', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
@@ -681,7 +691,7 @@ card('Rotbeast', {
         if (!self) { g.ev('info', 'Rotbeast: the carrier is gone — no augments move.'); return; }
         const movable = self.mods
           .map(id => g.entity(id))
-          .filter((m): m is Entity => !!m && m.appliedAs === 'augment' && m.card !== 'Rotbeast');
+          .filter((m): m is Entity => !!m && m.appliedAs === 'augment' && !isSelfMod(ctx, m));
         if (!movable.length) { g.ev('info', 'Rotbeast: I carry no other augment to move.'); return; }
         const enemies = g.unitsIn(ctx.region).filter(u => u.controller !== self.controller);
         if (!enemies.length) { g.ev('info', 'Rotbeast: no enemy to move my augments onto.'); return; }
