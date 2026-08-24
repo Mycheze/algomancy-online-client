@@ -46,7 +46,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../src/cards/registry.ts';
-import { allCardNames } from '../src/cards/dsl.ts';
+import { allCardNames, getCard } from '../src/cards/dsl.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -125,4 +125,28 @@ test('the pool coverage census — printed on every run so CARD-TODO #9 cannot r
     + '118 after it — the floor is set just above the real number ON PURPOSE, so the next '
     + 'card added without a test of its own trips it. A registration smoke check passes for '
     + 'a card whose rules text does nothing at all, which is the whole of CARD-TODO #9.');
+});
+
+// ── CARD-TODO #21: the bounded+zone ghost, kept latent on purpose ─────────
+//
+// R51 dispatches a zone trigger to a card sitting in a bin/cache through
+// `E.standIn`, a detached entity with a THROWAWAY `budgets: {}` — so a
+// `bounded` ([once]/[Switch1]) reservation written onto it bounds nothing.
+// ZERO cards in the pool declare an ability that is both `bounded` and
+// zone-dispatched today, which is exactly why nothing fails. This census is
+// the honest fix while that stays true: the day a card prints
+// "[Augment][once] When I am trashed …", this names it and CARD-TODO #21's
+// design question (what is a per-card budget for a card that is not in play?)
+// has to be answered with a real budget holder instead of the ghost.
+test('no ability is both bounded and zone-dispatched (CARD-TODO #21)', () => {
+  for (const name of allCardNames()) {
+    const def = getCard(name);
+    for (const ab of [...(def.abilities ?? []), ...(def.augmentText ?? [])]) {
+      const a = ab as { bounded?: boolean; zone?: string };
+      assert.ok(!(a.bounded && a.zone),
+        `${name}: a bounded ability dispatched from zone '${a.zone}' reserves its [once] on `
+        + `E.standIn's throwaway budgets and is effectively UNBOUNDED — build a real budget `
+        + `holder first (CARD-TODO #21)`);
+    }
+  }
 });

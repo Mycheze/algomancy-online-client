@@ -1313,7 +1313,15 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'Census: no ability with `bounded: true` also declares a `zone`. When one appears, '
       + 'this stops being latent.',
-    status: 'open',
+    // DONE 2026-08-24 by the entry's own "cheapest honest fix": the census is
+    // a test now, so the day a bounded+zone ability enters the pool the suite
+    // fails and names this entry. The PROPER fix — a real budget holder for a
+    // card that is not in play (per seat × card name, since there is no
+    // entity) — stays deliberately unbuilt until a card needs it, because
+    // what "per card" (R9) means for a zone card is a design decision, not a
+    // guess. Reopen this entry when the census trips.
+    guards: ['90-coverage-census.test.ts::no ability is both bounded and zone-dispatched'],
+    status: 'done',
   },
   {
     id: 22,
