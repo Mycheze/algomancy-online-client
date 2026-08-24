@@ -1037,7 +1037,16 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Card text: duplicated Augment icon, missing Unstable, wrong depleted-ability icon',
     area: 'client',
     size: 'S',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: '85f697d',
+      guards: [
+        '122-cardtext-markup.test.ts::an augment line does not repeat the [Augment] icon',
+        '122-cardtext-markup.test.ts::no augment-donating card in the pool leads its clause with the marker',
+        '122-cardtext-markup.test.ts::an Unstable card says so',
+        '122-cardtext-markup.test.ts::a spent once-per-turn ability is one short [Once] note',
+      ],
+    },
     track: 'qol',
     said:
       'When looking at a cards text, it duplicates icons. For example, an augmented thing '
