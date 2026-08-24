@@ -149,25 +149,16 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // The Harbinger class: cards you build a deck AROUND, whose payoff half is
   // dead. These are the ones that lose games rather than fizzle a turn.
 
-  {
-    card: 'Deferral Drone', gap: 'partial', severity: 'low',
-    missing:
-      'nothing printed. The card works as of round 17 — gain 4 debt, the next card you '
-      + 'play this turn costs [3] less, once per turn, and applying a MOD does not '
-      + 'burn the charge (R37/R59: applying a mod is not playing). What is listed here '
-      + 'is an UNSOURCED behaviour, not a dead clause.',
-    waitingOn:
-      'A RULING, not a seam. The charge lives on `Entity.budgets` (the same '
-      + 'per-turn store R9\'s [once] abilities use, wiped by E.startTurn), and the '
-      + 'discount is a `CostMod`, which radiates from the anchor — so sacrificing the '
-      + 'Drone in response evaporates a charge you already paid 4 debt for. A resolved '
-      + 'effect arguably should not care who paid for it. Making it survive means '
-      + 'moving the charge onto PlayerState, which is a core change AND a ruling. The '
-      + 'whole rulings export has ZERO hits for "Deferral", "next card you play" or '
-      + '"costs [3] less", so there is nothing to look up — the owner has to decide. '
-      + 'The park note this replaces was wrong on BOTH halves it claimed were missing.',
-    todoTest: '45-hybrids-ld-b.test.ts::Deferral Drone: PARKED — the charge does not survive',
-  },
+  // Deferral Drone's entry was DELETED on 2026-08-23 when the owner ruled the
+  // last residue (R119: the charge SURVIVES the Drone — "you paid for it").
+  // The entry was never a dead clause — it declared an UNSOURCED behaviour —
+  // and the ruling is now code: `GameState.nextPlayDiscount`, set by
+  // E.grantNextPlayDiscount, read by manaToPlay, spent at the spellPlayed /
+  // spawned emit sites, cleared by startTurn. Its `{todo:true}` test was
+  // promoted in the same change (45-hybrids-ld-b.test.ts). Per the house rule
+  // at the head of this file the entry goes in the same commit as the fix —
+  // this comment is a signpost for anyone following the old `todoTest`
+  // reference, not a park.
 
   // ── WHOLE CARDS THAT DO NOTHING ─────────────────────────────────────────
 

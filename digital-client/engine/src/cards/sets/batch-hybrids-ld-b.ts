@@ -57,16 +57,14 @@
  *    enforced at ACTIVATION: Cadaverous Cultivator is not offered during
  *    deployment and apply() refuses it there.
  *
+ * ✔ DEFERRAL DRONE IS COMPLETE (R119, 2026-08-23). The last residue — "does a
+ *    paid-for one-shot discount outlive its source?" — was ruled on: it does,
+ *    "you paid for it". All three parts (set / read / spend) moved off the
+ *    entity onto `GameState.nextPlayDiscount`, because a charge that survives
+ *    the Drone needs a spend path that survives it too. See the card below and
+ *    R119; its card-ledger entry is deleted.
+ *
  * PARKED (needs engine machinery that does not exist yet):
- *  - PARTIAL — Deferral Drone: the whole ability WORKS now (un-parked
- *    2026-08-22, see the card below — the "one-shot that a play consumes"
- *    turned out to be `Entity.budgets`, which is per-turn state cleared by
- *    E.startTurn, plus the existing spellPlayed/spawned events to spend it).
- *    What is left is one UNSOURCED rules question: because the discount is a
- *    CostMod radiating from the Drone, it dies with the Drone. Nothing in the
- *    rulings corpus says whether a resolved "the next card you play this turn
- *    costs [3] less" should outlive its source. Kept in test/card-ledger.ts
- *    for that residue.
  *  - Vengeance: "Cards your opponents play during battle gain '[Sacrifice a
  *    unit]'" IMPOSES an additional cast cost on other players' cards. Again the
  *    layer exists but not this channel: CostMod carries `delta` (extra mana)
@@ -81,7 +79,7 @@
 import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, isEntityTarget, type EffectDef } from '../dsl.ts';
-import { isEnt, isUnitCard, selfOf } from './helpers.ts';
+import { isEnt, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -285,95 +283,62 @@ card('Life Power Dude', {
 // "[Augment][once] Gain 4 debt: The next card you play this turn costs [3]
 // less." — lm/2 2/2 Horror Unit.
 //
-// UN-PARKED 2026-08-22. The park note said "a CostMod is continuous and
-// stateless … 'the NEXT card you play this turn' needs a one-shot that a play
-// consumes, which no channel provides". Both halves of that turned out to
-// exist already, in places the note never looked:
+// FULLY BUILT 2026-08-23 (R119). The card is three lines of card code now
+// because all three moving parts live in the engine, and that is the ruling
+// rather than a tidy-up:
 //
-//  · THE ONE-SHOT is `Entity.budgets` — the Record<string, number> that R9's
-//    bounded/[once] abilities use to remember they have fired. It is real game
-//    state (so it serializes and replays), it is keyed by an arbitrary string,
-//    and E.startTurn wipes every entity's budgets. "This turn" is therefore
-//    free: the charge cannot outlive the turn even if nothing spends it.
-//    Ancient One (batch-metal-a) already writes budgets from card code.
+//   R119 (owner, 2026-08-23): the charge SURVIVES the Drone. "You paid for
+//   it." The ability has RESOLVED and the 4 debt is gone, so sacrificing the
+//   Drone in response must not evaporate a discount the player already bought.
 //
-//  · THE CONSUMER is the pair of events a play already fires. E.commitItem
-//    fires 'spellPlayed' for a spell / spell unit, and E.spawnUnit fires
-//    'spawned' carrying `from` for a unit that came out of a ZONE — an effect
-//    that merely creates a unit passes no `from`, which is exactly the
-//    "played, not made" distinction the card needs. Both fire AFTER the
-//    payment (apply.ts playAtTiming pays before castChain), so the charge is
-//    still standing while the bill is computed and is gone by the next play.
-//    The trigger uses the sanctioned bookkeeping shape — it mutates in when()
-//    and returns false, so nothing ever reaches the stack.
+// The first build (2026-08-22) put the charge on `Entity.budgets` and the
+// discount in a `CostMod`, which meant BOTH halves radiated from the Drone:
+// kill it and the charge vanished, which is exactly what R119 rejects. Moving
+// only the charge would have been worse — the SPEND half was a bookkeeping
+// trigger on the same card, so a dead Drone would have left a charge nothing
+// could ever consume. So all three parts moved together:
 //
-// R37/R59: applying a mod is NOT playing, so `purpose: 'mod'` is excluded —
-// you cannot spend this charge on an augment, a graft or a battle Virus. A
-// spell TOKEN is likewise excluded from the consumer: R59 already settled that
-// a token is cast from play rather than played.
+//   · SET   — `E.grantNextPlayDiscount(seat, 3)`, writing `GameState
+//             .nextPlayDiscount[seat]`. `ctx.controller` is the ITEM's
+//             controller, which is the Drone's controller in play and the
+//             HOST's controller when the text is donated by an augment — so
+//             R59's "'you' is the host's controller" still falls out for free.
+//   · READ  — one line in `E.manaToPlay`, after the CostMod fold and before
+//             the clamp at zero, so a [1] card goes free rather than negative.
+//             Guarded by `purpose === 'play'`: R37/R59, applying a mod is not
+//             playing, so an augment/graft/Virus pays printed price and burns
+//             nothing.
+//   · SPEND — `E.spendNextPlayDiscount(seat)` at the two emit sites a play
+//             already fires from: 'spellPlayed' in commitItem (skipping a
+//             spell TOKEN, which R59 says is cast from play rather than
+//             played) and 'spawned' in spawnUnit (skipping a unit with no
+//             `from`, i.e. CREATED rather than played). Both fire after
+//             payment, so the charge is standing while the bill is computed
+//             and gone by the next play. Deliberately NOT in payCard: a free
+//             prophecy release (R111) never reaches payCard and still spends
+//             the charge, which is the behaviour these sites already had.
+//   · CLEAR — `E.startTurn`, beside the `Entity.budgets` wipe that used to
+//             give "this turn" for free.
 //
-// The whole thing is region-scoped (R12) because a CostMod radiates from its
-// anchor's region, and `self` is the anchor — the Drone in play, or the HOST
-// when the text is donated by an augment, so "you" is the host's controller
-// and the [Augment] half needs no extra code.
-//
-// ⚠ OPEN, UNSOURCED: the discount is a CostMod, so it stops the moment the
-// Drone (or its host) leaves play — sacrifice the Drone in response and the
-// charge evaporates. A resolved effect arguably should not care, but the
-// rulings corpus says NOTHING about this card (searched 2026-08-22: no hit for
-// "Deferral", "next card you play" or "costs 3 less" anywhere in the export).
-// Storing the charge on PlayerState instead of the entity would make it
-// survive, and that is a core change and a rules question. Guarded by a todo
-// test; declared in test/card-ledger.ts.
-const DRONE_CHARGE = 'deferralDrone:discount';
+// NAMED CONSEQUENCE (R119): a CostMod is region-scoped (R12) and a per-seat
+// charge is not, so a seat acting in two regions in one turn now gets the
+// discount wherever they play. That is the more correct reading — "the next
+// card YOU play" is player-scoped, and R12 fences information crossing
+// regions, not a player's own resolved bookkeeping.
 
 card('Deferral Drone', {
-  augmentText: [
-    {
-      // [once] = `bounded`, R9: one activation per turn per CARD, which is the
-      // same budget channel the charge itself rides (different key).
-      type: 'activated', bounded: true, cost: { debt: 4 },
-      label: 'gain 4 debt: the next card you play this turn costs [3] less',
-      effect: {
-        run: (g, ctx) => {
-          const self = selfOf(g, ctx);
-          if (!self) return;   // the carrier died with the ability on the stack
-          self.budgets[DRONE_CHARGE] = 1;
-          g.ev('info',
-            `${ctx.sourceName}: the next card ${g.pname(ctx.controller)} plays this turn costs [3] less.`,
-            { seat: ctx.controller });
-        },
+  augmentText: [{
+    // [once] = `bounded`, R9: one activation per turn per CARD.
+    type: 'activated', bounded: true, cost: { debt: 4 },
+    label: 'gain 4 debt: the next card you play this turn costs [3] less',
+    effect: {
+      run: (g, ctx) => {
+        g.grantNextPlayDiscount(ctx.controller, 3);
+        g.ev('info',
+          `${ctx.sourceName}: the next card ${g.pname(ctx.controller)} plays this turn costs [3] less.`,
+          { seat: ctx.controller });
       },
     },
-    {
-      // BOOKKEEPING ONLY (the Powerforge Synergist / Ancient One shape): the
-      // work happens in when(), which then returns false so no trigger is ever
-      // queued and nothing can be responded to. A cost reduction being spent
-      // is not an effect — it has already happened by the time we hear about it.
-      type: 'triggered', events: ['spellPlayed', 'spawned'],
-      label: 'the deferred discount is spent',
-      when: (g, self, ev) => {
-        if ((self.budgets[DRONE_CHARGE] ?? 0) === 0) return false;
-        if (ev.data?.['seat'] !== self.controller) return false;
-        // R59: a spell TOKEN is cast from play, not played.
-        if (ev.type === 'spellPlayed' && ev.data?.['token']) return false;
-        // a unit that came from no zone was CREATED, not played.
-        if (ev.type === 'spawned' && ev.data?.['from'] === undefined) return false;
-        self.budgets[DRONE_CHARGE] = 0;
-        g.ev('info', `Deferral Drone: the [3] discount is spent.`, { seat: self.controller });
-        return false;
-      },
-      effect: { run: () => { /* see when(): this trigger never queues */ } },
-    },
-  ],
-  costMods: [{
-    // R59. `self` is the anchor, so "you" is the Drone's controller in play and
-    // the HOST's controller when donated. manaToPlay clamps the total at zero,
-    // so a [1] card simply becomes free rather than going negative.
-    delta: (_g, self, ctx) =>
-      ctx.purpose === 'play'
-      && ctx.seat === self.controller
-      && (self.budgets[DRONE_CHARGE] ?? 0) > 0 ? -3 : 0,
   }],
 });
 

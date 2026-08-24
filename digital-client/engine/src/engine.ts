@@ -541,6 +541,11 @@ export class E {
    * printed mana plus every active cost modifier, never below zero. `purpose`
    * separates playing from applying a mod: applying a mod is not playing
    * (R37), so "spells cost [one] more to play" does not tax an augment.
+   *
+   * R119 adds the one PLAYER-side discount, folded in after the radiating
+   * layer and before the clamp so a [1] card still goes free rather than
+   * negative. The `purpose` guard is R37/R59 doing its usual work: a mod
+   * payment passes `purpose: 'mod'` and pays full price, no charge burnt.
    */
   manaToPlay(seat: Seat, name: CardName, opts: CostOpts = {}): number {
     const c = this.card(name);
@@ -549,7 +554,36 @@ export class E {
     const ctx = { seat, card: c, region, purpose: opts.purpose ?? 'play' as const };
     let total = base;
     for (const { holder, mod } of this.costModsFor(region)) total += mod.delta?.(this, holder, ctx) ?? 0;
+    // R119: Deferral Drone's resolved charge. Player-side, so it is NOT
+    // region-scoped the way the CostMod layer above is (R12) — see types.ts.
+    if (ctx.purpose === 'play') total -= this.s.nextPlayDiscount?.[seat] ?? 0;
     return Math.max(0, total);
+  }
+
+  /**
+   * R119: arm "the next card you play this turn costs [`n`] less" for `seat`.
+   *
+   * The charge lives on `GameState`, not on the entity that granted it: the
+   * ability has resolved and its cost is paid, so the granting card leaving
+   * play cannot claw it back (owner's ruling — *"you paid for it"*). Multiple
+   * charges ADD, which is the only composition that keeps "costs [3] less"
+   * meaning the same thing twice; nothing in the pool can arm two yet.
+   */
+  grantNextPlayDiscount(seat: Seat, n: number): void {
+    const tally = (this.s.nextPlayDiscount ??= this.s.players.map(() => 0));
+    tally[seat] = (tally[seat] ?? 0) + n;
+  }
+
+  /** R119: `seat` has played a card — the charge is consumed. A no-op when
+   * there is nothing armed, so the two event sites that call it can do so
+   * unconditionally. Bookkeeping, not an effect: it has already happened by
+   * the time anyone hears about it, so nothing is queued and nothing can be
+   * responded to (the Powerforge Synergist shape this replaces). */
+  spendNextPlayDiscount(seat: Seat): void {
+    const n = this.s.nextPlayDiscount?.[seat] ?? 0;
+    if (n === 0) return;
+    this.s.nextPlayDiscount![seat] = 0;
+    this.ev('info', `Deferral Drone: the [${n}] discount is spent.`, { seat });
   }
 
   /**
@@ -2148,6 +2182,12 @@ export class E {
     // under the spawn line, before anything the spawn triggers: the placement
     // is part of the play, not a consequence of it
     if (placed) this.ev('info', placed, { unit: u.id, region, seat });
+    // R119: a unit that came from a ZONE was PLAYED, so it burns the Deferral
+    // Drone charge; one that came from nowhere was CREATED and does not. Same
+    // `opts.from` test R49 uses just above, and the same place the card's own
+    // bookkeeping trigger used to read it — the spend is engine-side now so a
+    // dead Drone cannot leave a paid-for charge unspendable.
+    if (opts.from !== undefined) this.spendNextPlayDiscount(seat);
     this.fireEvent('spawned', ev);
     // R104: record the creation in the open batch, so "each unique token you
     // created" has a creation to be unique across. After the spawn event, so a
@@ -5586,6 +5626,11 @@ export class E {
           // Absent on a spell TOKEN, which was never in a zone at all.
           ...(item.from ? { from: item.from } : {}),
         });
+      // R119: playing a spell burns the Deferral Drone charge — but a spell
+      // TOKEN is cast from play, not played (R59), so it does not. Same test
+      // the card's own bookkeeping trigger used to make; engine-side now, so
+      // the charge outlives the Drone in both halves (grant AND spend).
+      if (item.kind !== 'spellToken') this.spendNextPlayDiscount(item.controller);
       this.fireEvent('spellPlayed', ev);
     }
     if (then === 'push') { this.pushItem(item); return; }
@@ -7110,6 +7155,10 @@ export class E {
       for (const seat of this.dealOrder()) this.draw(seat, 2);
     }
     for (const e of Object.values(this.s.entities)) e.budgets = {};
+    // R119: "the next card you play THIS TURN" — an unspent charge expires
+    // with the turn that bought it, beside the per-turn budgets wipe it used
+    // to ride in (and like R43's hasteManaSpent, zeroed rather than deleted).
+    this.s.nextPlayDiscount = this.s.players.map(() => 0);
     this.refreshProphecies();   // R43: "N Turns Pass" ticks here
     if (this.s.mode === 'draft') this.startDraftStep();
     if (this.s.mode === 'constructed') this.startConstructedDraw();

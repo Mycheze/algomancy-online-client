@@ -336,12 +336,15 @@ test('Darkblast: R35 — with nothing else in hand the cost is unpayable and the
   finishBattle(h);
 });
 
-// ── Deferral Drone (R59 CostMod + an Entity.budgets charge) ──────────────
+// ── Deferral Drone (R119: a PLAYER-side charge) ──────────────────────────
 //
 // "[Augment][once] Gain 4 debt: The next card you play this turn costs [3]
-// less." Un-parked 2026-08-22: the charge is a `budgets` key (per-turn state,
-// wiped by E.startTurn) and it is spent by the spellPlayed / spawned events a
-// play already fires, both of which land AFTER payment.
+// less." Built 2026-08-22 as an `Entity.budgets` key plus a `CostMod`; moved
+// wholesale onto `GameState.nextPlayDiscount` on 2026-08-23 when the owner
+// ruled the residue (R119: the charge SURVIVES the Drone — "you paid for it").
+// Set by E.grantNextPlayDiscount, read by manaToPlay before its clamp, spent
+// at the spellPlayed / spawned emit sites a play already fires (both land
+// AFTER payment), cleared by E.startTurn.
 
 /** what it costs `seat` to PLAY `name` right now, straight off the R59 layer */
 function costToPlay(h: Harness, seat: Seat, name: string): number {
@@ -424,15 +427,95 @@ test('Deferral Drone: donated by an augment, "you" is the HOST\'s controller', (
   assert.equal(costToPlay(h, p, 'Hammer of Justice'), 3, 'the host radiates the discount: [6] → [3]');
 });
 
-test('Deferral Drone: PARKED — the charge does not survive the Drone leaving play', { todo: true }, () => {
-  // UNSOURCED. The discount is a CostMod, so it radiates from the Drone (or its
-  // host) and stops the instant that entity leaves play — sacrifice it in
-  // response and the paid-for charge evaporates. A resolved effect arguably
-  // should not care who paid for it, but the rulings export says NOTHING about
-  // this card (searched 2026-08-22: no hit for "Deferral", "next card you play"
-  // or "costs 3 less" in any channel). Making it survive means moving the
-  // charge off Entity.budgets onto PlayerState — a core change AND a ruling.
-  assert.fail('needs a ruling: does a paid-for one-shot discount outlive its source?');
+// ── R119: the charge outlives its source ─────────────────────────────────
+//
+// PROMOTED from `{ todo: true }` on 2026-08-23. The todo asked "does a
+// paid-for one-shot discount outlive its source?"; the owner answered YES —
+// "you paid for it". These five are the ruling.
+
+test('Deferral Drone: R119 — the charge SURVIVES the Drone leaving play ("you paid for it")', () => {
+  const h = new Harness(4540);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const drone = spawn(h, p, 'Deferral Drone');
+  h.do(h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === drone)!);
+  assert.equal(debtOf(h, p), 4, 'the 4 debt is really gone — that is what "you paid for it" means');
+  assert.equal(costToPlay(h, p, 'Brough'), 1, 'armed: [4] → [1]');
+  whiteBox(h, e => e.destroy(ent(h, drone)!, 'is sacrificed'));
+  assert.equal(ent(h, drone), undefined, 'the Drone is off the board');
+  assert.equal(costToPlay(h, p, 'Brough'), 1,
+    'R119: the ability RESOLVED and the debt is paid, so the source leaving play cannot claw the charge back');
+  assert.equal(costToPlay(h, p, 'Murkstalker'), 0, 'and it still clamps at zero rather than going negative');
+});
+
+test('Deferral Drone: R119 — the charge is spent by the next play even with the Drone gone', () => {
+  const h = new Harness(4541);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const drone = spawn(h, p, 'Deferral Drone');
+  giveResources(h, p, 'light', 6);
+  giveResources(h, p, 'earth', 6);                             // Brough: le / 4
+  h.do(h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === drone)!);
+  whiteBox(h, e => e.destroy(ent(h, drone)!, 'is sacrificed'));
+  const open = () => h.state.players[p]!.resources.filter(r => r.state === 'open').length;
+  const before = open();
+  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Brough') });
+  assert.equal(before - open(), 1, 'the discounted Brough really cost 1 mana');
+  // THE reason the spend could not stay card-side: the bookkeeping trigger
+  // died with the Drone, so a surviving charge would have been unspendable.
+  assert.equal(costToPlay(h, p, 'Brough'), 4, 'and the charge is spent — back to printed [4]');
+  const mid = open();
+  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Brough') });
+  assert.equal(mid - open(), 4, 'the one after it pays in full');
+});
+
+test('Deferral Drone: R119 — an unspent charge does not carry into the next turn', () => {
+  const h = new Harness(4542);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const drone = spawn(h, p, 'Deferral Drone');
+  h.do(h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === drone)!);
+  assert.equal(costToPlay(h, p, 'Brough'), 1, 'armed this turn');
+  const turn = h.state.turn;
+  toNextBattle(h);                                             // startTurn runs here
+  assert.ok(h.state.turn > turn, 'the turn really flipped');
+  assert.ok(ent(h, drone), 'the Drone is still standing — this is the clock, not the death');
+  assert.equal(costToPlay(h, p, 'Brough'), 4,
+    '"the next card you play THIS TURN": E.startTurn zeroes the charge beside the budgets wipe');
+});
+
+test('Deferral Drone: R119 — with the Drone gone, applying a mod still does not spend the charge (R37)', () => {
+  const h = new Harness(4543);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const drone = spawn(h, p, 'Deferral Drone');
+  const host = spawn(h, p, 'Brough');
+  h.do(h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === drone)!);
+  whiteBox(h, e => e.destroy(ent(h, drone)!, 'is sacrificed'));
+  assert.equal(new E(h.state).manaToPlay(p, 'Deferral Drone', { purpose: 'mod' }), 2,
+    'the `purpose` guard is R37/R59 doing its usual work: a mod payment pays printed [2]');
+  giveResources(h, p, 'light', 1);
+  giveResources(h, p, 'metal', 1);                             // lm / 2
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Deferral Drone'), hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'the augment landed');
+  assert.equal(costToPlay(h, p, 'Brough'), 1, 'and the charge is still standing for a real PLAY');
+});
+
+test('Deferral Drone: R119 — the charge survives a JSON round-trip, and pre-R119 states read as 0', () => {
+  const h = new Harness(4544);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const drone = spawn(h, p, 'Deferral Drone');
+  h.do(h.legal(p).find(a => a.type === 'activateAbility' && a.entityId === drone)!);
+  const round = JSON.parse(JSON.stringify(h.state)) as typeof h.state;
+  assert.deepEqual(round.nextPlayDiscount, h.state.nextPlayDiscount, 'the new field round-trips');
+  assert.equal(new E(round).manaToPlay(p, 'Brough'), 1, 'and the charge still prices a play off the reloaded state');
+  // additive/optional: a game serialized before R119 has no such key at all
+  const old = JSON.parse(JSON.stringify(h.state)) as typeof h.state;
+  delete old.nextPlayDiscount;
+  assert.equal(new E(old).manaToPlay(p, 'Brough'), 4, 'a pre-R119 save loads and reads as no charge');
+  h.state = old;
+  assert.doesNotThrow(() => h.legal(p), 'and still drives');
 });
 
 // ── Equilibriate ─────────────────────────────────────────────────────────

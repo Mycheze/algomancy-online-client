@@ -6324,3 +6324,95 @@ binning as itself, ruling 2's modded-copy erase, the permanent face with its sna
 base, plus the projected ACTIVATED ability (offered, accepted, refused the instant the
 column breaks), the per-face `[once]` budget, the permanent Borrower offer, and the
 `via: { face }` replay round trip.
+
+---
+
+## R119 — a paid-for cost reduction OUTLIVES its source ("you paid for it")
+
+*(Card-drill follow-through, 2026-08-23. Owner's ruling.)*
+
+**Deferral Drone**: *"[Augment][once] Gain 4 debt: The next card you play this
+turn costs [3] less."*
+
+The card was built on 2026-08-22 out of three parts that all lived on the
+entity: the charge was an `Entity.budgets` key, the discount was a `CostMod`
+radiating from the anchor, and the spend was a bookkeeping trigger on the same
+card. So **sacrificing the Drone in response evaporated a charge the player had
+already paid 4 debt for.** Nothing in the rulings export speaks to this card at
+all (zero hits for *"Deferral"*, *"next card you play"*, *"costs [3] less"*),
+so it was parked as a ruling question rather than guessed at.
+
+**Bena, 2026-08-23:** *the charge survives — **"you paid for it."***
+
+So the charge is not a property of the Drone. The **ability has resolved** and
+its cost is spent; what is left is a fact about the PLAYER, and the source
+leaving play cannot reach back through a resolved effect to take it away. This
+is the same instinct R59 already encodes on the other side — a CostMod is
+continuous and dies with its anchor precisely *because* it has never resolved.
+
+### What it is now
+
+`GameState.nextPlayDiscount?: number[]` — per-seat, additive/optional, so a
+game serialized before this ruling loads and reads as 0.
+
+| part | where |
+| --- | --- |
+| **set** | `E.grantNextPlayDiscount(seat, n)`; the card's `run` passes `ctx.controller` |
+| **read** | `E.manaToPlay`, after the `costModsFor` fold and **before** the clamp at 0 |
+| **spend** | `E.spendNextPlayDiscount(seat)` at the `'spellPlayed'` and `'spawned'` emit sites |
+| **clear** | `E.startTurn`, beside the `Entity.budgets` wipe |
+
+**All three moving parts had to move, not just the charge.** The spend half was
+a trigger *on the Drone*, so a charge that survived the Drone with a card-side
+spend would have been **unspendable** — a permanent 3-mana discount on every
+card for the rest of the turn. That is why this is an engine change and not a
+card change.
+
+**On `GameState`, not `PlayerState`.** The two existing per-seat-per-turn
+charges — R43's `hasteManaSpent` and R97's `hastePlaysUsed` — are both
+top-level arrays, and `PlayerState` is the redaction-sensitive object:
+`server/view.ts` replaces `players[opponent]` **wholesale** with the
+segment-start snapshot inside a hidden simultaneous segment, and rewrites hand
+and resources on top of it. Per-turn bookkeeping that must read live for the
+acting seat belongs beside its siblings.
+
+**`ctx.controller`, so R59 still holds.** That is the ITEM's controller — the
+Drone's controller when it is a unit in play, and the **HOST's** controller
+when the text was donated by an augment. *"You"* is the host's controller, and
+the `[Augment]` half needs no extra code, exactly as it did under the CostMod.
+
+**The `purpose` guard is R37/R59, unchanged.** A mod payment passes
+`purpose: 'mod'`, so the discount is not consulted and the charge is not burnt:
+applying an augment, a graft or a battle Virus is **not playing a card**.
+
+**The spend stays at the EVENT sites, deliberately — NOT in `payCard`.**
+Moving it into `payCard` looks cleaner and silently changes behaviour: a free
+prophecy release (R111) never reaches `payCard` at all (`doPlayCached`'s `free`
+arm skips it outright) and yet it *is* a card being played, and it fires
+`'spellPlayed'` / `'spawned'` like any other. Under the event sites it spends
+the charge, which is what the card already did. The two sites carry the two
+filters the card's own `when()` made, verbatim: a **spell token** is cast from
+play rather than played (R59), and a unit that arrives with no `from` zone was
+**created**, not played (R49).
+
+### The one behaviour change, named
+
+A `CostMod` is **region-scoped** (R12: `costModsFor` filters `a.region ===
+region`). A per-seat charge is not. **After this ruling, a seat acting in two
+regions in one turn gets the discount wherever they play.**
+
+That is the more correct reading rather than an accident: *"the next card
+**you** play"* is player-scoped text, and R12 exists to stop information and
+continuous effects crossing between regions, not to fence a player's own
+resolved bookkeeping — the same way life, debt and rot are not region-scoped.
+It is recorded here because it is visible at the table, not because it is in
+doubt.
+
+### Tests
+
+`45-hybrids-ld-b` — the charge survives the Drone being sacrificed; it is spent
+by the next play *with the Drone gone* (the reason the spend could not stay
+card-side); it does not carry into the next turn; applying a mod still does not
+burn it with the Drone gone (R37); plus the five pre-existing Deferral Drone
+tests unchanged, including the donated-augment R59 case and a JSON round-trip
+that also loads a pre-R119 state with the field absent.

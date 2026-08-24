@@ -1220,6 +1220,37 @@ export interface GameState {
    * game replays differently for it (nothing that was legal became illegal).
    */
   hastePlaysUsed?: number[];
+  /**
+   * R119: mana off the NEXT card each seat plays this turn — Deferral Drone's
+   * "[once] Gain 4 debt: The next card you play this turn costs [3] less".
+   *
+   * A PLAYER-side charge, deliberately, and NOT a radiating `CostMod`. The
+   * ability has RESOLVED and the 4 debt is paid, so the source leaving play
+   * cannot take the charge back (owner's ruling, 2026-08-23: *"you paid for
+   * it"* — sacrificing the Drone in response used to evaporate a charge the
+   * player had already bought). A CostMod radiates from an anchor and dies
+   * with it, which is exactly the behaviour the ruling rejects; the spend half
+   * could not stay card-side either, since a dead Drone would leave the charge
+   * unspendable.
+   *
+   * On `GameState` rather than `PlayerState`, following the two existing
+   * per-seat-per-turn charges: `hasteManaSpent` (R43) and `hastePlaysUsed`
+   * (R97) are both top-level arrays. `PlayerState` is the redaction-sensitive
+   * object — server/view.ts swaps `players[opponent]` wholesale for the
+   * segment-start snapshot inside a hidden simultaneous segment and rewrites
+   * hand/resources on top — so bookkeeping that must read live for the acting
+   * seat belongs beside its siblings, not inside it.
+   *
+   * CONSEQUENCE, named in R119: a `CostMod` is region-scoped (R12); a per-seat
+   * charge is not. A seat acting in two regions in one turn now gets the
+   * discount wherever they play. "The next card YOU play" is player-scoped,
+   * and R12 exists to stop information crossing regions rather than to fence a
+   * player's own resolved bookkeeping.
+   *
+   * Zeroed by `E.startTurn` beside the `Entity.budgets` wipe. Additive/
+   * optional — states serialized before R119 read as 0.
+   */
+  nextPlayDiscount?: number[];
   /** R43: battle ROUNDS completed so far this game — the forward anchor for
    * "One Battle Passes". In 1v1 both the initiative battle and the
    * counterattack battle tick it (Caleb 2024-09-24). Additive/optional. */
