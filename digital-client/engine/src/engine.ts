@@ -21,7 +21,7 @@ import type {
   ResourceKind, Seat, StackItem, Suspension, TargetRef,
 } from './types.ts';
 import {
-  affinityPips, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
+  affinityPips, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
   isAugment, isGraftable, isTriggered, specForSlot, zoneTriggersFor,
   type Ability, type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
@@ -2448,7 +2448,19 @@ export class E {
       }
     }
     const t = this.newEntity({ card: name, owner: seat, controller: seat, kind: 'spellToken', region: reg, x });
-    this.ev('tokenCreated', `${this.pname(seat)} creates a ${name} ${x}.`, { seat, id: t.id, region: reg });
+    // R129: this event was LOGGED and never DISPATCHED, so "when you create a
+    // token" (Mycelial Mentor) was half-dead — unit tokens fired it through
+    // 'spawned', a Poison/Crystal/Fireball fired nothing. Spell tokens are
+    // still tokens (owner, 2026-08-24), and the set says so itself: Cosmic
+    // Conspirator prints "a Robot, Poison, Crystal or Fireball".
+    //
+    // The payload deliberately carries `id`, NOT `unit`: a spell token is not
+    // a unit, and every "unit token" listener in the pool reads `data.unit`
+    // (The World Shepherd). Dispatched BEFORE noteTokenCreated, exactly like
+    // spawnUnit's 'spawned', so a batch replacement can never observe a
+    // half-created board.
+    const ev = this.ev('tokenCreated', `${this.pname(seat)} creates a ${name} ${x}.`, { seat, id: t.id, region: reg });
+    this.fireEvent('tokenCreated', ev);
     this.noteTokenCreated({ form: 'spell', name, x, seat, region: reg });
     return t;
   }
@@ -5901,6 +5913,32 @@ export class E {
       // the charge outlives the Drone in both halves (grant AND spend).
       if (item.kind !== 'spellToken') this.spendNextPlayDiscount(item.controller);
       this.fireEvent('spellPlayed', ev);
+    }
+    // R129: "when a CARD is played" — the wide event, fired ALONGSIDE
+    // 'spellPlayed' rather than replacing it, so every existing listener keeps
+    // the exact meaning it has today and nothing above this line changed.
+    //
+    // Membership is the owner's ruling of 2026-08-24, verbatim: "Everything is
+    // a card, including units. Tokens are NOT cards, however." — see
+    // CARD_PLAY_KINDS in dsl.ts, which is where the card files can reach it.
+    //  · 'unit' / 'spellUnit' / 'spell' / 'ambush' — a card being PLAYED. A
+    //    {Battle} unit and an Ambush pushed a stack item with no play event at
+    //    all before this, which is the half of Void Mandible's printed noun
+    //    that could never fire.
+    //  · 'spellToken' is OUT: a token is not a card, and R59 already says a
+    //    spell token is cast from play rather than played.
+    //  · 'virus' is OUT: applying a mod is not playing a card (R37). It never
+    //    reaches commitItem today (doAugment pushes it straight onto the
+    //    stack), and naming it there is what keeps that true if it ever does.
+    //  · 'triggered' / 'activated' are not plays at all.
+    // Signal-only (msg ''): the play already announced itself on 'spellPlayed'
+    // or, for a unit, on the 'spawned' line at resolution.
+    if (CARD_PLAY_KINDS.has(item.kind)) {
+      const ev = this.ev('cardPlayed', '', {
+        seat: item.controller, card: item.card, token: false, region: item.region,
+        ...(item.from ? { from: item.from } : {}),   // R49: the zone it came out of
+      });
+      this.fireEvent('cardPlayed', ev);
     }
     if (then === 'push') { this.pushItem(item); return; }
     // Nobody may respond to this one — the haste step, deployment, an

@@ -952,6 +952,14 @@ export type EventType =
   | 'phase' | 'turn' | 'draw' | 'draft' | 'recycle' | 'resourceActivated'
   | 'spawned' | 'died' | 'despawned' | 'erased'
   | 'spellPlayed' | 'stackPushed' | 'resolved' | 'negated' | 'fizzled'
+  // R129: "when a CARD is played". `spellPlayed` is the NARROW event and keeps
+  // its exact meaning (spell / spell unit / spell token); `cardPlayed` is the
+  // wide one and fires ALONGSIDE it for the kinds that are a CARD being
+  // played — spell, spell unit, {Battle} unit and Ambush. NOT a spell token
+  // ("Tokens are NOT cards", owner 2026-08-24) and NOT a mod application
+  // (R37). Signal-only: `msg` is '' because every play already announces
+  // itself on `spellPlayed`/`spawned`, so this adds no log line.
+  | 'cardPlayed'
   | 'triggered' | 'targeted' | 'modApplied' | 'grafted'
   | 'attackDeclared' | 'blocksDeclared' | 'attacked' | 'blocked'
   | 'combatDamage' | 'afterCombat'

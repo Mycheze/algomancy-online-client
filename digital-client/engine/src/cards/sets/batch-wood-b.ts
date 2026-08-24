@@ -13,26 +13,15 @@
  * tokens always appeared).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - MYCELIAL MENTOR "when you create a token": the engine logs
- *    'tokenCreated' for SPELL tokens (createSpellToken) but never runs
- *    triggers off it — only unit-token creation ('spawned' with a token
- *    flag) can fire the trigger today. 'tokenCreated' is still listed in
- *    the events so the card starts hearing spell tokens the moment the
- *    engine fires that event.
- *    ⚠ NEEDS-ESCALATION (2026-08-24 literal-reading sweep). This is NOT a
- *    rules approximation, it is half a printed sentence lying dead — the R125
- *    shape exactly. "A token" carries no qualifier, and the set itself proves
- *    spell tokens are tokens: Cosmic Conspirator prints "if you would create a
- *    Robot, POISON, CRYSTAL or FIREBALL", and this very batch mints Poisons on
- *    four cards. Half the card works (unit tokens), so no sweep can see the
- *    other half. The fix is one line and it is in engine.ts, which this batch
- *    may not touch: in `createSpellToken`, keep the event and dispatch it —
- *        const ev = this.ev('tokenCreated', …);  this.fireEvent('tokenCreated', ev);
- *    'tokenCreated' is already an EventType (types.ts) and the card's `when`
- *    already reads `ev.data?.seat`, so nothing else changes. Ask the owner
- *    whether creating a Poison/Crystal/Fireball is "creating a token" (the
- *    expected answer, per R125's "all the cards are pretty literal"), then
- *    make the engine fire it.
+ * ✔ MYCELIAL MENTOR HEARS SPELL TOKENS NOW (R129). "When you create a token"
+ *    carries no qualifier, and the set itself proves spell tokens are tokens:
+ *    Cosmic Conspirator prints "if you would create a Robot, POISON, CRYSTAL
+ *    or FIREBALL", and this very batch mints Poisons on four cards. The engine
+ *    LOGGED 'tokenCreated' for spell tokens and never dispatched it, so half
+ *    a printed sentence lay dead — unit tokens fired the trigger through
+ *    'spawned', a Poison/Crystal/Fireball fired nothing, and because the other
+ *    half worked no sweep could see it. `createSpellToken` fires the event now
+ *    (owner, 2026-08-24: spell tokens are still tokens).
  *  - NOXIOUS DEMISE is printed {Reaping}, but the engine's Reaping rider
  *    lives in dealEffectDamage and this spell kills via a -1/-1 counter —
  *    the "kill → its controller draws" rider is hand-rolled in the effect
@@ -145,11 +134,12 @@ card('Mindspore Fiend', {
 
 // "When you create a token, [Switch1] Target ally gains +3/+3 until
 // regroup." — g/1 2/1 Fungus Unit. Conditions at event time (R1): a unit
-// token I control spawning ('spawned' with the token flag), or — ⚠ header
-// approximation — a spell token ('tokenCreated', which the engine logs but
-// does not yet fire as a trigger event; listed so the card starts working
-// when it does). Region-scoped listener (R12): I only hear tokens made in
-// my region. [Switch1] bounded (R9).
+// token I control spawning ('spawned' with the token flag), or a SPELL token
+// I create ('tokenCreated', which the engine dispatches as of R129 — spell
+// tokens are still tokens). "A token" is unqualified, so the card means both
+// and hears both; each creation fires exactly ONE of the two events, so
+// nothing double-triggers. Region-scoped listener (R12): I only hear tokens
+// made in my region. [Switch1] bounded (R9).
 const mentorBuff: EffectDef = {
   targets: { what: 'allyUnit', prompt: 'Mycelial Mentor: target ally gains +3/+3 until regroup' },
   run: (g, ctx) => {

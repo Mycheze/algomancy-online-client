@@ -1562,6 +1562,23 @@ export function ambushEffect(name: CardName): EffectDef {
 }
 
 /** affinity pips of a cost string, e.g. "rr" -> { fire: 2 } */
+/**
+ * R129: the StackItem kinds that ARE a card being PLAYED, and therefore fire
+ * the 'cardPlayed' event. The owner, 2026-08-24: *"Everything is a card,
+ * including units. Tokens are NOT cards, however."*
+ *
+ * So: a spell, a spell unit, a {Battle}-timing UNIT and an AMBUSH are in.
+ * A spell TOKEN is out (not a card; R59 — it is cast from play, not played),
+ * a VIRUS is out (applying a mod is not playing, R37), and 'triggered' /
+ * 'activated' are not plays at all.
+ *
+ * It lives here rather than in engine.ts so the card files that need it
+ * (Void Mandible) can reach it without a runtime import of the engine — the
+ * layering every other card module keeps.
+ */
+export const CARD_PLAY_KINDS: ReadonlySet<StackItem['kind']> =
+  new Set<StackItem['kind']>(['unit', 'spell', 'spellUnit', 'ambush']);
+
 export const ELEMENT_OF_PIP: Record<string, string> = {
   r: 'fire', b: 'water', e: 'earth', g: 'wood', m: 'metal', l: 'light', d: 'dark',
 };

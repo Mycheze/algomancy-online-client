@@ -180,7 +180,10 @@ card('Aberrant Statweaver', {
 // Ancient One (R9).
 const AO_EVENTS: EventType[] = [
   'spawned', 'died', 'despawned', 'draw', 'lifeLost', 'damage',
-  'countersChanged', 'modApplied', 'spellPlayed', 'targeted',
+  // R129: 'cardPlayed' rides beside 'spellPlayed' because Void Mandible's
+  // augment text moved onto it — an adjacent ally wearing one must still be
+  // mimicked ("it explicitly includes modded abilities").
+  'countersChanged', 'modApplied', 'spellPlayed', 'cardPlayed', 'targeted',
   'attackDeclared', 'attacked', 'blocksDeclared', 'blocked',
   'afterCombat', 'endOfTurn',
 ];

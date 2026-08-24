@@ -36,11 +36,15 @@
  *    `replaceLifeGain` hook there is no gain at all and no lifeGained event, and
  *    "they lose that much" is exactly N. First-true-consumes, so two
  *    Nullbringers still turn +N into -N without the old WeakSet.
- *  - VOID MANDIBLE hears 'spellPlayed', which the engine fires for spell /
- *    spell unit / spell token casts only. The five {Battle}-timing UNIT cards
- *    and the five Ambush modes push a stack item without a play event, so
- *    they are not caught. Mods are not played at all (R37) and correctly are
- *    not caught. Token spells are excluded by the printed "nontoken".
+ * ✔ VOID MANDIBLE HEARS ITS WHOLE PRINTED NOUN NOW (R129). It used to hear
+ *    'spellPlayed', which the engine fires for spell / spell unit / spell
+ *    token casts only — so the five {Battle}-timing UNIT cards and the five
+ *    Ambush modes pushed a stack item with no play event at all and went
+ *    straight past a card that prints "when a nontoken CARD is played". The
+ *    engine fires 'cardPlayed' now (spell / spell unit / unit / ambush) and
+ *    the card listens to that. Mods are still not played at all (R37) and
+ *    correctly are not caught; a spell TOKEN is not a card and is out of the
+ *    event's membership, which is what the printed "nontoken" says.
  *  - FEED TO HOOBA / REAP THE DUE erase through helpers.ts's `eraseFromPlay`.
  *    (`E.eraseFromPlay` exists now — CARD-TODO #15 needed one engine side for
  *    Skybreaker's "Erase me:" cost — but the card-side copies still carry their
@@ -84,7 +88,7 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectDef } from '../dsl.ts';
+import { CARD_PLAY_KINDS, card, getCard, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -589,11 +593,19 @@ card('Tithe Enforcer', {});
 // hanging it on something. Mandatory, and it does NOT care whose card it is:
 // its own controller's spells trigger it too.
 //
-// The Origon pattern: at 'spellPlayed' time the spell is not on the stack yet
+// The Origon pattern: at play time the card is not on the stack yet
 // (commitItem fires the event before pushItem), so the item is found at
-// RESOLUTION — the bottom-most un-negated spell-kind item matching the event's
-// card and controller, with this trigger sitting above it.
-// ⚠ header: 'spellPlayed' does not cover {Battle}-timing units or ambushes.
+// RESOLUTION — the bottom-most un-negated played-kind item matching the
+// event's card and controller, with this trigger sitting above it.
+//
+// R129: it hears 'cardPlayed', not 'spellPlayed'. The printed noun is CARD,
+// and "everything is a card, including units" (owner, 2026-08-24) — so a
+// {Battle}-timing UNIT and an AMBUSH are exactly as much "a card played
+// during battle" as a spell is, and both used to push a stack item with no
+// play event at all. 'cardPlayed' fires for spell / spell unit / unit /
+// ambush and NOT for a spell token, so the printed "nontoken" is now true by
+// construction; the `token !== true` guard below is kept as belt-and-braces
+// so a future payload change cannot quietly widen the card.
 //
 // R73 (2026-08-22): "sacrifice me. If you do, …" is a CAST COST — the same
 // printed shape, and the same ruling, as Eldritch Dreamtender, and the printed
@@ -604,7 +616,7 @@ card('Tithe Enforcer', {});
 // which is what the old "the carrier is gone" branch said in longhand.
 card('Void Mandible', {
   augmentText: [{
-    type: 'triggered', events: ['spellPlayed'],
+    type: 'triggered', events: ['cardPlayed'],
     label: 'sacrifice me to negate a nontoken card played during battle',
     when: (g, _self, ev) => g.s.phase === 'battle' && ev.data?.['token'] !== true,
     effect: {
@@ -616,9 +628,10 @@ card('Void Mandible', {
           g.ev('info', 'Void Mandible: the event names no card — nothing is negated.');
           return;
         }
-        const spellKinds = new Set(['spell', 'spellUnit', 'spellToken']);
+        // R129: the same membership 'cardPlayed' fires for — the item to
+        // negate is a played CARD, so a {Battle} unit and an Ambush are in it.
         const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && spellKinds.has(i.kind));
+          i.card === name && i.controller === seat && CARD_PLAY_KINDS.has(i.kind));
         if (it) g.negate(it.id);
         else g.ev('info', `Void Mandible: ${name} already left the stack — not negated.`);
       },

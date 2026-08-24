@@ -518,6 +518,14 @@ card('Ominous Growth', {
 // you do, put +1/+1 counter on that token." — gm/1 2/3 Robot Fungus {Virus}
 // Unit. Text-box [Augment]; "me" = the carrier (host perspective when
 // donated). ANY player's unit token in my region triggers it (no "your").
+//
+// R129 — WHICH TOKENS THIS ONE MEANS: only UNIT tokens, and the printed word
+// "unit" is why. The engine dispatches 'tokenCreated' for SPELL tokens now
+// (Mycelial Mentor's half of R129), so a card that means every token listens
+// to BOTH events; this one deliberately listens to 'spawned' alone and its
+// `when` reads `data.unit`, neither of which a spell token ever produces. A
+// Poison is not a body, has no stats and could not take the +1/+1 the second
+// sentence puts on it.
 // "If you do" — the -1/-1 landing is the condition for the +1/+1: with the
 // carrier already gone at resolution neither counter is placed. The {Virus}
 // play mode is engine-level.

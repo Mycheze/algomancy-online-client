@@ -7217,3 +7217,110 @@ also asserted going dark the instant the neighbour dies; plus the negative test 
 adjacent Good Whale's {Piercing} does **not** cross while a Tranquility on the other side
 of the same Ancient One does. Red-checked: dropping `'behavior'` from the projection fails
 all five; adding `'attrs'` to it fails the negative one alone.
+
+## R129 — a spell token is a token, and a unit is a card: two events that were logged but never fired
+
+*(2026-08-24. Two owner rulings, one shape. Both halves were the same defect:
+the engine already KNEW the thing had happened — it had written a line about it
+— and no card could hear it.)*
+
+**The two rulings, verbatim.**
+
+> *"Spell tokens are still tokens."* … *"Don't assume that cards are limited,
+> they're designed to be open ended."*
+
+> *"Everything is a card, including units. Tokens are NOT cards, however."*
+
+### (a) 'tokenCreated' is now DISPATCHED, not just logged
+
+`E.createSpellToken` built a `tokenCreated` event and pushed it onto the log
+without ever calling `fireEvent`. `tokenCreated` has been a real `EventType`
+since the beginning; nothing had ever fired it. So **Mycelial Mentor** ("When
+you create a token, [Switch1] Target ally gains +3/+3 until regroup") worked
+for half of what it prints: a UNIT token spawns and fires `spawned`, which the
+card listens to, but a Poison, a Crystal or a Fireball fired nothing at all.
+
+"A token" carries no qualifier, and the set proves the reading itself — **Cosmic
+Conspirator** prints *"if you would create a Robot, POISON, CRYSTAL or
+FIREBALL"* in one breath, and the wood-b batch mints Poisons on four cards.
+
+**This is the R125 shape, and it is why nothing caught it.** Half the card
+worked. A sweep that asks "does this card do anything?" gets a yes.
+
+**The risk was never the event — it was the other listener.** Once
+`tokenCreated` really fires, every card that means *unit* token has to say so.
+The pool has exactly one: **The World Shepherd**, "[Augment] Whenever a UNIT
+token is created, put a -1/-1 counter on me. If you do, put +1/+1 counter on
+that token." A Poison is not a body; it has no stats and could not take the
++1/+1 the second sentence puts on it. Three independent things keep it out, and
+the R129 test pins all three rather than trusting any one of them:
+
+1. **The event.** The Shepherd listens to `spawned`, which a spell token does
+   not fire.
+2. **The payload.** `tokenCreated` carries `id`, never `unit` — deliberately.
+   Every unit-token listener in the pool identifies its subject as `data.unit`,
+   so that key is the fence. (Firing with `unit: t.id` "for payload parity" is
+   the plausible wrong fix; the test fails on it.)
+3. **The entity.** A spell token is `kind: 'spellToken'` and carries no `token`
+   flag, so `!!u.token` is false even for a listener that does reach it.
+
+Each creation fires exactly ONE of the two events, so a card that means *every*
+token can safely list both (Mycelial Mentor does) without double-triggering.
+
+### (b) 'cardPlayed': a {Battle} unit and an Ambush are cards being played
+
+`commitItem` fired `spellPlayed` for `spell` / `spellUnit` / `spellToken` only.
+A {Battle}-timing UNIT and an AMBUSH each pushed a stack item **with no play
+event at all** — so **Void Mandible** ("[Augment] When a nontoken CARD is played
+during battle, sacrifice me. If you do, negate that effect.") could not see
+either. Its printed noun is *card*, and under the owner's ruling that noun
+includes units. Five {Battle} unit cards and five Ambush modes walked past it.
+
+**The decision, and it is the load-bearing one: `cardPlayed` fires ALONGSIDE
+`spellPlayed`, it does not replace it.** `spellPlayed` keeps its exact current
+meaning — spell, spell unit, spell token, with `token: true` on the last — so
+not one of the ~15 "when you play a spell" cards changed behaviour, and the
+change cannot leak. `cardPlayed` is the wide event and Void Mandible is the only
+card moved onto it. A spell therefore fires both; that is intended, because a
+spell is a card.
+
+`CARD_PLAY_KINDS` (in `cards/dsl.ts`, so card files can reach it without a
+runtime import of the engine) is the membership, and the exclusions are as
+deliberate as the inclusions:
+
+| StackItem kind | fires `cardPlayed` | why |
+| --- | --- | --- |
+| `unit`, `spellUnit`, `spell`, `ambush` | **yes** | a card being played |
+| `spellToken` | no | *"Tokens are NOT cards"*; R59 — cast from play, not played |
+| `virus` | no | **R37**: applying a mod is not playing a card |
+| `triggered`, `activated` | no | not plays at all |
+
+R37 is untouched and re-pinned by test: a Virus applied during battle produces a
+`kind: 'virus'` stack item and fires **neither** event. It does not reach
+`commitItem` at all today (`doAugment` pushes it straight onto the stack) — the
+kind is named in the exclusion list so that stays true if it ever does.
+
+The event is **signal-only**: `msg` is `''`, the `leftBin` (R124) precedent. Every
+play already announces itself on `spellPlayed` or on the `spawned` line, so
+`cardPlayed` adds no log line anywhere and no existing log assertion moved.
+
+### What was deliberately NOT changed
+
+- **`playInline`** (batch-water-a) fires a hand-rolled `spellPlayed` for a card
+  played by another card's effect. It never goes through `commitItem`, so it
+  does not fire `cardPlayed`. Widening it is a card-side change with its own
+  blast radius and is not part of this ruling.
+- **Ancient One's** `AO_EVENTS` gained `'cardPlayed'` — one entry, and only
+  because Void Mandible's augment text moved onto that event and the Ancient
+  One must still mimic an adjacent ally wearing one.
+- **The two cards that hand-roll the union.** **Stalwart Sentinel** and
+  **Proph** already listen to `['spellPlayed', 'spawned']` to mean "a card was
+  played", with a `kind` check so a spell unit is counted exactly once. They
+  were deliberately left alone, and not only for diff hygiene: **they are asking
+  a different question.** A unit's `spawned` fires at RESOLUTION, so those two
+  count units that actually ARRIVED; `cardPlayed` fires in the cast window,
+  before the item is even on the stack, so it counts units that were PLAYED —
+  a negated {Battle} unit fires `cardPlayed` and never fires `spawned` at all.
+  Void Mandible needs the early one (it has to answer the play, not the body);
+  a "put counters on me when you play a card" trigger arguably wants the late
+  one. Folding them together is a separate ruling, not a tidy-up.
