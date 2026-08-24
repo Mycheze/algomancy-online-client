@@ -27,7 +27,7 @@ import {
   shouldAskSend, splitCounterattack,
 } from './battle.ts';
 import type * as bat from './battle.ts';
-import { dropIntoRow, halfRows, publishCols, rekeyBuild } from './formation.ts';
+import { clearBuild, dropIntoRow, halfRows, hasBuild, publishCols, rekeyBuild } from './formation.ts';
 import { entityTextBox, iconizeText, printedTextBox, textBoxFor, txtIcon } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
@@ -2410,7 +2410,10 @@ function promptHtml(): string {
           <button ${n ? '' : 'class="primary" '}data-btn="ridenone">Bring none</button>
           ${n ? `<button class="primary" data-btn="rideconfirm">Attack — ${n} token${n === 1 ? '' : 's'} riding (enter)</button>` : ''}${err}</div>`;
       }
-      const built = ui.columns.some(c => c.length) || ui.spellTokens.length > 0;
+      // BL-19: one reading of "is anything built" for both bars and for Esc —
+      // ui/formation.ts hasBuild. This bar used to ask about spellTokens and
+      // forget `send`, the block bar the exact other way round.
+      const built = hasBuild(ui);
       return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> build your attack
         <button data-btn="attackall" title="every eligible unit joins, one per column — adjust before confirming">${txtIcon('battle', '[battle]')} Attack with everything</button>
         <button class="primary" data-btn="confirmattack" ${ui.columns.some(c => c.length) ? '' : 'disabled'}>Attack! (enter)</button>
@@ -2439,7 +2442,7 @@ function promptHtml(): string {
           <button ${n ? '' : 'class="primary" '}data-btn="ridenone">Bring none</button>
           ${n ? `<button class="primary" data-btn="rideconfirm">Counterattack — ${n} token${n === 1 ? '' : 's'} riding (enter)</button>` : ''}${err}</div>`;
       }
-      const built = ui.columns.some(c => c && c.length) || ui.send.length > 0;
+      const built = hasBuild(ui);   // BL-19 — same question, same answer, both bars
       // R84: a lured unit's block is COMPULSORY, and the client used to know
       // nothing about it — Confirm was always live and the duty only ever
       // surfaced as a red error after the fact. blockPlanIssue (ui/inspect.ts)
@@ -3476,6 +3479,39 @@ function publishBuilding(): void {
   // publishCols keeps the sparse column INDICES, which the old
   // `.filter(c => c.length)` compacted away — see ui/formation.ts.
   NET.sendBuilding(mine ? publishCols(ui.columns) : [], mine ? ui.send : []);
+}
+
+/**
+ * BL-19: throw the whole declaration away and start again.
+ *
+ * The owner asked for it as *"reset blocks"*, but it is the same click and the
+ * same frustration on all three declarations — an attack formation, a block
+ * assignment, a counterattack send — so there is one of these and all three
+ * entry points (the Clear button on either bar, and Esc) come through it. They
+ * used to be three hand-written copies of the same five assignments, and they
+ * had already drifted apart: Esc left a block refusal notice standing over the
+ * plan it was complaining about, and the Clear button left `uiError` up.
+ *
+ * ui/formation.ts owns what an empty build IS, so the emptying is testable and
+ * so the sparse block keys cannot be "tidied" on the way through — a cleared
+ * `columns` is `[]`, never a compacted or re-indexed version of what was
+ * there. Local only: nothing is declared, sent or committed here.
+ *
+ * The republish is the caller's `render()`, which runs publishBuilding above —
+ * `publishCols([])` is `[]`, and that empty payload is the only thing that
+ * takes the formation off the OPPONENT's screen. Clearing without repainting
+ * would leave them staring at a line I have already thrown away.
+ */
+function resetFormation(): void {
+  const fresh = clearBuild();
+  ui.columns = fresh.columns;
+  ui.send = fresh.send;
+  ui.spellTokens = fresh.spellTokens;
+  ui.carrying = fresh.carrying;
+  ui.rideAnswered = fresh.rideAnswered;   // [69] a cleared formation is a new attack
+  // the complaints were about the plan that no longer exists
+  ui.blockRefusal = null;
+  uiError = '';
 }
 
 /** the judge question being typed (survives server-push re-renders) */
@@ -4644,14 +4680,13 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   },
   modcancel: () => { ui.modding = null; },
   castcancel: () => { startCastCancel(); },
-  // [69] a cleared formation is a new attack — the ride question comes back
-  clearform: () => { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null; ui.rideAnswered = false; ui.blockRefusal = null; },
+  // BL-19: the one-click start-again, on the attack bar and the block bar
+  // alike. resetFormation is the whole of it — and the repaint that
+  // handleButton does next republishes the now-empty formation.
+  clearform: () => { resetFormation(); },
   // [77] "…give a notice as well as a 'Reset blockers?' button". The explicit
   // start-again, offered BESIDE the surviving plan rather than done to it.
-  resetblocks: () => {
-    ui.columns = []; ui.send = []; ui.spellTokens = []; ui.carrying = null;
-    ui.rideAnswered = false; ui.blockRefusal = null; uiError = '';
-  },
+  resetblocks: () => { resetFormation(); },
   reportopen: () => { reportOpen = true; },
   reportclose: () => { reportOpen = false; },
   reportsend: () => { sendReport(); return 'no-repaint'; },
@@ -5196,9 +5231,9 @@ document.addEventListener('keydown', e => {
     if (ui.modding) { ui.modding = null; render(); return; }
     if (canCancelNow()) { startCastCancel(); render(); return; }
     if (ui.carrying !== null) { ui.carrying = null; render(); return; }
-    if (ui.columns.some(c => c && c.length) || ui.send.length || ui.spellTokens.length) {
-      ui.columns = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; render(); return;
-    }
+    // BL-19: Esc is the Clear button's shortcut, so it must do the Clear
+    // button's job — the same reset, and the same repaint-and-republish
+    if (hasBuild(ui)) { resetFormation(); render(); return; }
     return;
   }
 

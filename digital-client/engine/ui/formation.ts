@@ -14,6 +14,84 @@ export type Col = readonly EntityId[];
 export const MAX_ROWS = 2;
 
 /**
+ * Everything the battle panel can be holding while a declaration is being
+ * built, and nothing that is not part of it.
+ *
+ * One shape for all three declarations, because from the player's side they
+ * are one interaction: pick a unit up, put it down somewhere. Attacking fills
+ * `columns` (my line, left to right). Blocking fills `columns` too — but keyed
+ * by the ATTACKER's column, sparse, see `publishCols` — and `send` with the
+ * counterattackers going back the other way. `spellTokens` is [69]'s
+ * ride-along on the attack side; the block side keeps its riders in `send`,
+ * which `splitCounterattack` separates out at declaration time.
+ *
+ * `ui.columns` in ui/main.ts is a possibly-sparse array, so every reader here
+ * has to survive a hole — never assume `columns[i]` is an array.
+ */
+export interface Build {
+  /** my attack line, or my blockers keyed by attacker column (sparse) */
+  columns: EntityId[][];
+  /** counterattackers sent back, and the spell tokens riding with them */
+  send: EntityId[];
+  /** [69] spell tokens riding along with the attack being built */
+  spellTokens: EntityId[];
+  /** the unit picked up and not yet put down */
+  carrying: EntityId | null;
+  /** [69] whether the ride-along question has been answered for THIS build */
+  rideAnswered: boolean;
+}
+
+/**
+ * Is there any assignment here worth offering to clear?
+ *
+ * `carrying` deliberately does not count. A carried unit has not been assigned
+ * to anything yet, and Esc drops it by its own earlier rule — a build that is
+ * nothing but a unit in hand has nothing to reset.
+ *
+ * This exists because the two prompt bars each hand-rolled the question and
+ * each got a different answer: the attack bar asked about `columns` and
+ * `spellTokens`, the block bar about `columns` and `send`, and the Esc key
+ * about all three. Three readings of "is anything built" is two too many —
+ * whichever one is wrong hides the Clear button from a player who has
+ * something to clear.
+ */
+export function hasBuild(b: Build): boolean {
+  return b.columns.some(c => !!c && c.length > 0)
+    || b.send.length > 0 || b.spellTokens.length > 0;
+}
+
+/**
+ * The build a "Clear" leaves behind: a completely empty one.
+ *
+ * BL-19, straight from the owner — *"reset blocks"*. Un-assigning a six-blocker
+ * line one column at a time is the whole complaint, and it is the same
+ * complaint on an attack formation and on a counterattack send, so all three
+ * share this.
+ *
+ * It is a fresh object every call, and that matters twice over: the caller
+ * copies these arrays into `ui`, so two clears must not end up aliasing one
+ * array, and the emptied `columns` must be a NEW array rather than the old one
+ * truncated — the old one is what `rekeyBuild` may still be holding as
+ * `before`.
+ *
+ * **Emptying is the whole of it.** Do not be tempted to normalise, compact or
+ * re-index on the way through: `columns` is sparse ON PURPOSE and the index is
+ * the meaning (`publishCols`), so a clear that "tidies up" is a clear that
+ * teaches the next assignment to lie. `[]` has no indices to get wrong, which
+ * is exactly why a reset is the safe operation on this array and a compaction
+ * is not.
+ *
+ * Purely local, and it has to stay that way — nothing here declares, sends or
+ * commits anything. The one thing the caller still owes is a re-publish:
+ * `publishCols` of a cleared build is `[]`, and until that empty payload goes
+ * out the opponent's live preview keeps showing a formation that no longer
+ * exists.
+ */
+export function clearBuild(): Build {
+  return { columns: [], send: [], spellTokens: [], carrying: null, rideAnswered: false };
+}
+
+/**
  * The columns to publish to the opponent while you build a formation.
  *
  * THE INDEX IS THE MEANING. While blocking, `columns[ci]` is the blockers you

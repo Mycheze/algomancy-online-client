@@ -13,11 +13,17 @@
  *  · "Sometimes the system wants you to block in a specific order. I was
  *    forced to do creature B as a blocker before creature A despite it being
  *    pointless" — dropIntoRow
+ *
+ * …and one owner request, BL-19 (2026-08-24), two words long:
+ *  · "reset blocks" — hasBuild / clearBuild
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { dropIntoRow, halfRows, MAX_ROWS, publishCols, rekeyBuild } from '../ui/formation.ts';
+import type { Build } from '../ui/formation.ts';
+import {
+  clearBuild, dropIntoRow, halfRows, hasBuild, MAX_ROWS, publishCols, rekeyBuild,
+} from '../ui/formation.ts';
 
 // ── publishCols ───────────────────────────────────────────────────────
 
@@ -302,4 +308,124 @@ test('the block builder in ui/main.ts really routes its drop through dropIntoRow
   const body = cols.slice(0, cols.indexOf('\n}\n'));
   assert.match(body, /slotHtml\(ci, 0,/, 'the front row is always drawn…');
   assert.match(body, /slotHtml\(ci, 1,/, '…and so is the back row, or there is nothing to click');
+});
+
+// ── hasBuild / clearBuild (BL-19: "reset blocks") ─────────────────────
+//
+// The owner's whole request was two words — *"reset blocks"* — and the
+// expansion is that un-assigning a block line one column at a time is the
+// same chore on an attack formation and on a counterattack send, so one
+// control clears all three.
+//
+// The interesting half is not the emptying, it is what the emptying must NOT
+// do. `columns` is sparse and the index is the meaning (publishCols, above);
+// compacting it once already slid blockers onto the wrong attackers. A reset
+// is safe exactly because `[]` has no indices left to get wrong — and these
+// tests are here so that stays true if somebody tidies later.
+
+/** a build in the shape ui/main.ts keeps, so these are the real arguments */
+const build = (over: Partial<Build> = {}): Build => ({ ...clearBuild(), ...over });
+
+test('clearBuild: every kind of assignment goes at once', () => {
+  // blocks (sparse), a counterattack send, ride-along spell tokens and a unit
+  // still in hand — one click, and none of them survive it
+  const started = build({ send: [41, 42], spellTokens: [7], carrying: 9 });
+  started.columns[3] = [98, 99];
+  assert.equal(hasBuild(started), true, 'the premise: there is something to clear');
+  const after = clearBuild();
+  assert.deepEqual(after.columns, [], 'no blockers and no attack columns');
+  assert.deepEqual(after.send, [], 'and no counterattackers');
+  assert.deepEqual(after.spellTokens, [], 'and no tokens riding along');
+  assert.equal(after.carrying, null, 'and nothing left in hand');
+  assert.equal(after.rideAnswered, false, '[69] a cleared formation asks the ride question again');
+  assert.equal(hasBuild(after), false, 'nothing is built any more');
+});
+
+test('clearBuild: the SPARSE index survives a clear — column 3 still means column 3', () => {
+  // the trap. If a clear compacted (or a re-assignment landed on a normalised
+  // array), the blocker put back on attacker 3 would answer attacker 0 —
+  // which is the exact bug publishCols was written to end.
+  // assign to attacker 3, clear, assign to attacker 3 again
+  const first = clearBuild();
+  first.columns[3] = dropIntoRow(first.columns[3] ?? [], 0, 99);
+  assert.deepEqual(publishCols(first.columns), [[], [], [], [99]], 'the premise');
+  const again = clearBuild();
+  again.columns[3] = dropIntoRow(again.columns[3] ?? [], 0, 99);
+  assert.deepEqual(publishCols(again.columns), [[], [], [], [99]],
+    'still attacker 3 after the reset — not attacker 0');
+  assert.equal(again.columns[0], undefined, 'lanes 0-2 are holes, not blockers');
+  assert.equal(again.columns.length, 4, 'the array reaches lane 3 and stops');
+});
+
+test('clearBuild: what gets republished is an EMPTY formation', () => {
+  // the opponent is watching this build live. Clearing locally and NOT
+  // publishing the empty result leaves a formation on their screen that has
+  // already been thrown away — publishCols of a cleared build is the payload
+  // that takes it off.
+  const before: (readonly number[] | undefined)[] = [];
+  before[1] = [52]; before[5] = [60];
+  assert.deepEqual(publishCols(before), [[], [52], [], [], [], [60]], 'the premise: they can see it');
+  assert.deepEqual(publishCols(clearBuild().columns), [],
+    'and after a clear there is nothing left to show them');
+});
+
+test('clearBuild: a fresh object every call — two clears cannot alias one array', () => {
+  const a = clearBuild(), c = clearBuild();
+  a.columns.push([1]); a.send.push(2); a.spellTokens.push(3);
+  assert.deepEqual(c.columns, [], 'the second clear is not the first one');
+  assert.deepEqual(c.send, []);
+  assert.deepEqual(c.spellTokens, []);
+});
+
+test('hasBuild: any one kind of assignment on its own counts', () => {
+  // each bar used to ask this question its own way and get its own answer:
+  // the attack bar forgot `send`, the block bar forgot `spellTokens`, so a
+  // player holding only that one thing was offered no Clear at all
+  const sparse = build();
+  sparse.columns[4] = [99];
+  assert.equal(hasBuild(sparse), true, 'a blocker on attacker 4 and nothing else');
+  assert.equal(hasBuild(build({ columns: [[1]] })), true, 'an attack column');
+  assert.equal(hasBuild(build({ send: [1] })), true, 'a counterattacker sent back');
+  assert.equal(hasBuild(build({ spellTokens: [1] })), true, 'a spell token riding along');
+});
+
+test('hasBuild: empty lanes are not assignments, and a carried unit is not one either', () => {
+  assert.equal(hasBuild(build()), false, 'a brand new build');
+  assert.equal(hasBuild(build({ columns: [[], [], []] })), false,
+    'three columns with nobody in them is still nothing built');
+  const holed = build();
+  holed.columns[3] = [];
+  assert.equal(hasBuild(holed), false, 'and a hole reads as empty, not as a crash');
+  assert.equal(hasBuild(build({ carrying: 9 })), false,
+    'a unit in hand has not been assigned to anything — Esc drops it by its own rule');
+});
+
+test('the three clear paths in ui/main.ts all go through resetFormation', () => {
+  // main.ts takes the document at import time and cannot be loaded here, so
+  // the wiring is read as text — the house pattern (74-ui-stack-mod-host, and
+  // dropIntoRow above). Any one of these reverting to a hand-written copy of
+  // the five assignments is how the three paths drifted apart in the first
+  // place: Esc used to leave the block-refusal notice standing over a plan it
+  // had just deleted.
+  const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
+  assert.match(MAIN, /clearform: \(\) => \{ resetFormation\(\); \}/,
+    'the Clear button on the attack and block bars');
+  assert.match(MAIN, /resetblocks: \(\) => \{ resetFormation\(\); \}/,
+    'the [77] "Reset blockers?" button on a refusal notice');
+  assert.match(MAIN, /if \(hasBuild\(ui\)\) \{ resetFormation\(\); render\(\); return; \}/,
+    'and Esc, which must clear AND repaint — the repaint is the republish');
+  const fn = MAIN.slice(MAIN.indexOf('function resetFormation('));
+  const body = fn.slice(0, fn.indexOf('\n}\n'));
+  assert.match(body, /const fresh = clearBuild\(\);/,
+    'and what "empty" means lives in ui/formation.ts, not inline here');
+  for (const field of ['columns', 'send', 'spellTokens', 'carrying', 'rideAnswered']) {
+    assert.match(body, new RegExp(`ui\\.${field} = fresh\\.${field};`), `${field} is reset`);
+  }
+  assert.doesNotMatch(body, /NET|sendBuilding|\.do\(|act\(/,
+    'a clear is LOCAL — it declares nothing and sends nothing by itself');
+  // the Clear button is offered on both declarations, gated by the one predicate
+  assert.equal((MAIN.match(/const built = hasBuild\(ui\);/g) ?? []).length, 2,
+    'the attack bar and the block bar ask the same question');
+  assert.equal((MAIN.match(/data-btn="clearform"/g) ?? []).length, 2,
+    'and both of them actually draw the button');
 });
