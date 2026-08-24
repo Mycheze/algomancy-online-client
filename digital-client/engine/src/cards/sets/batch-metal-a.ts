@@ -372,7 +372,7 @@ card('Biomass Devourer', {
           const bin = g.player(s).bin;
           const i = bin.lastIndexOf(name);
           if (i !== -1) {
-            bin.splice(i, 1);
+            g.removeFromBin(s, i, 'erased');   // R124
             g.ev('erased', `${name} is ERASED from ${g.pname(s)}'s bin.`, { card: name, seat: s });
             break;
           }

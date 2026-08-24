@@ -349,7 +349,7 @@ card('The Bonesculptor', {
         }
         const name = bin[pick];
         if (name === undefined || !vanilla(name) || !g.canPayCard(ctx.controller, name)) return;
-        bin.splice(pick, 1);
+        g.removeFromBin(ctx.controller, pick, 'played');   // R124
         g.payCard(ctx.controller, name);
         g.ev('info', `The Bonesculptor: ${g.pname(ctx.controller)} plays ${name} from the bin.`);
         g.spawnUnit(ctx.controller, name, ctx.region);

@@ -127,26 +127,44 @@ test('the pool coverage census — printed on every run so CARD-TODO #9 cannot r
     + 'a card whose rules text does nothing at all, which is the whole of CARD-TODO #9.');
 });
 
-// ── CARD-TODO #21: the bounded+zone ghost, kept latent on purpose ─────────
+// ── CARD-TODO #21: bounded+zone has a real budget holder now (R124) ──────
 //
-// R51 dispatches a zone trigger to a card sitting in a bin/cache through
-// `E.standIn`, a detached entity with a THROWAWAY `budgets: {}` — so a
-// `bounded` ([once]/[Switch1]) reservation written onto it bounds nothing.
-// ZERO cards in the pool declare an ability that is both `bounded` and
-// zone-dispatched today, which is exactly why nothing fails. This census is
-// the honest fix while that stays true: the day a card prints
-// "[Augment][once] When I am trashed …", this names it and CARD-TODO #21's
-// design question (what is a per-card budget for a card that is not in play?)
-// has to be answered with a real budget holder instead of the ghost.
-test('no ability is both bounded and zone-dispatched (CARD-TODO #21)', () => {
+// R51 dispatches a zone trigger through `E.standIn`, a detached entity with a
+// THROWAWAY `budgets: {}` — so this census used to assert that NO ability was
+// both `bounded` and zone-dispatched: a [once] written onto the ghost bounded
+// nothing, and the honest fix while zero cards needed the combination was to
+// keep it out of the pool.
+//
+// R124 answered the design question the old census was holding open ("what is
+// a per-card budget (R9) for a card that is not in play?"): PER SEAT PER CARD
+// NAME, in `GameState.zoneBudgets` — real, serialized state, written by
+// composeParts' stand-in branch, refunded by refundPart's (R113), cleared by
+// startTurn beside the Entity.budgets wipe. A bin holds bare names, not
+// instances, so the name in that seat's zone IS the card as far as the rules
+// can see — the same reading R51 already used to give three copies one firing.
+//
+// WHY THE CHANGED PREMISE IS STILL HONEST: the old test's claim was "the
+// ghost budget is a silent lie, so the shape is banned". The ghost budget is
+// gone — a bounded zone firing reserves in real state, and the BEHAVIOUR is
+// pinned by the Rotling tests in 43-dark-c (bounds once per turn, R113
+// refund on decline, survives a JSON round-trip, wiped by startTurn). What
+// this census still holds is the POPULATION: per-seat-per-name is a design
+// decision with a written rationale (R124), not a universal truth about every
+// printed text — so a new bounded+zone ability must arrive HERE, be checked
+// against that rationale, and be added deliberately rather than slipping in
+// because the combination stopped failing.
+test('no ability is both bounded and zone-dispatched without a real budget holder — the population is enumerated (CARD-TODO #21/R124)', () => {
+  const found: string[] = [];
   for (const name of allCardNames()) {
     const def = getCard(name);
     for (const ab of [...(def.abilities ?? []), ...(def.augmentText ?? [])]) {
       const a = ab as { bounded?: boolean; zone?: string };
-      assert.ok(!(a.bounded && a.zone),
-        `${name}: a bounded ability dispatched from zone '${a.zone}' reserves its [once] on `
-        + `E.standIn's throwaway budgets and is effectively UNBOUNDED — build a real budget `
-        + `holder first (CARD-TODO #21)`);
+      if (a.bounded && a.zone) found.push(`${name} (zone '${a.zone}')`);
     }
   }
+  assert.deepEqual(found.sort(), ["Rotling (zone 'bin')"],
+    'a bounded ability dispatched from a zone keeps its [once] in GameState.zoneBudgets, '
+    + 'per (seat, card name), per turn — R124 / CARD-TODO #21. That is a design decision '
+    + "with a rationale, not a default: check the new card's printed text against it "
+    + '(is per-seat-per-name what IT means?), then add it to this list on purpose.');
 });

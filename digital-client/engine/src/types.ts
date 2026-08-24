@@ -970,6 +970,16 @@ export type EventType =
   // the ANCHOR entity, so a `self: true` listener on the replacing card
   // matches and nobody else's does.
   | 'rotReplaced'
+  // R124: a card LEFT a player's bin. Fired by E.removeFromBin — the ONE choke
+  // point every bin removal in the tree goes through — with
+  // `data: { seat, card, reason }` (`seat` = the bin's owner, `reason` a short
+  // verb like 'recalled'/'erased'/'cached' for anyone reading the event
+  // stream). A bulk sweep (Finality, Reality Siphoner, Zephyrzoa) fires it
+  // once PER CARD, back-to-front. `msg` is '' on purpose: every removal site
+  // already announces itself in its own words, so this is a signal-only event
+  // (the harness keeps empty messages out of the game log — the stackFlash
+  // precedent).
+  | 'leftBin'
   | 'regroup' | 'endOfTurn' | 'gameOver' | 'info'
   // CLIENT-ONLY, and the one event with no log line of its own (msg is ''):
   // an item that resolved with no response window ever gets to sit on the
@@ -1304,6 +1314,24 @@ export interface GameState {
    * optional — states serialized before R119 read as 0.
    */
   nextPlayDiscount?: number[];
+  /**
+   * R124 / CARD-TODO #21: the [once]/[Switch1] budgets of ZONE-dispatched
+   * triggers ("When I leave your bin, [Switch1] ...", Rotling). R51 anchors a
+   * zone trigger on a throwaway stand-in whose `Entity.budgets` dies with the
+   * call, so a bounded zone trigger had nowhere real to keep its reservation.
+   * It lives here instead, keyed `${seat}:${prefix}:${card}#${abilityIndex}` —
+   * CARD-TODO #21's design question ("what does 'per card' (R9) mean for a
+   * card not in play?") answered as PER SEAT PER CARD NAME: a bin holds bare
+   * names, not instances, so the name in that seat's zone IS the card as far
+   * as the rules can see, and three copies leaving one bin share one budget
+   * the same way R51 gives three copies one firing.
+   *
+   * Written by composeParts (stand-in branch), refunded by refundPart
+   * (sourceId -1 branch, so R113 holds from a zone), cleared by E.startTurn
+   * beside the Entity.budgets wipe. Additive/optional — states serialized
+   * before R124 read as empty.
+   */
+  zoneBudgets?: Record<string, number>;
   /** R43: battle ROUNDS completed so far this game — the forward anchor for
    * "One Battle Passes". In 1v1 both the initiative battle and the
    * counterattack battle tick it (Caleb 2024-09-24). Additive/optional. */

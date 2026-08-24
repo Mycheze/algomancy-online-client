@@ -607,7 +607,7 @@ card('Gridxlan', {
           g.ev('info', 'Gridxlan: that card can no longer be played — nothing happens.');
           return;
         }
-        bin.splice(pick, 1);
+        g.removeFromBin(ctx.controller, pick, 'played');   // R124
         g.payCard(ctx.controller, name);
         g.ev('info', `Gridxlan: ${g.pname(ctx.controller)} plays ${name} from the bin.`);
         g.spawnUnit(ctx.controller, name, ctx.region);

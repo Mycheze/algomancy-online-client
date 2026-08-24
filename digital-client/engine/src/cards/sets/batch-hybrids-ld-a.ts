@@ -527,7 +527,7 @@ const covenant: EffectDef = {
       g.ev('info', 'Covenant of the Damned: no unit in your bin — no effect.');
       return;
     }
-    const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
+    const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // R124
     if (name === undefined) return;
     g.spawnUnit(ctx.controller, name, ctx.region);
     g.gainDebt(ctx.controller, manaOf(name));   // R39
@@ -634,7 +634,11 @@ card('Zephyrzoa', {
         const bin = g.player(ctx.controller).bin;
         const n = bin.length;
         if (n) {
-          g.player(ctx.controller).hand.push(...bin.splice(0, n));
+          // R124: per card, back-to-front — each removal fires its own
+          // 'leftBin'; the order into the hand is preserved
+          const moved: string[] = [];
+          while (bin.length) moved.unshift(g.removeFromBin(ctx.controller, bin.length - 1, 'recalled')!);
+          g.player(ctx.controller).hand.push(...moved);
           g.ev('info', `Zephyrzoa: ${g.pname(ctx.controller)} recalls their whole bin (${n} card(s)) to hand.`);
         } else {
           g.ev('info', 'Zephyrzoa: the bin is empty — nothing to recall.');
@@ -731,7 +735,7 @@ card('Uglk', {
           picks.push({ seat, idx });
         }
         for (const { seat, idx } of picks) {
-          const [name] = g.player(seat).bin.splice(idx, 1);
+          const name = g.removeFromBin(seat, idx, 'revived');   // R124
           if (name === undefined) continue;
           const opp = presentSeats(g, ctx.region).find(s => s !== seat) ?? (1 - seat);
           g.ev('info', `Uglk: ${g.pname(seat)} gives ${name} to ${g.pname(opp)}.`);

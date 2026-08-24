@@ -178,17 +178,16 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // tests in 42-dark-b.test.ts. Per the house rule at the head of this file
   // the entry goes in the same commit as the fix — this comment is a signpost
   // for anyone following the old `todoTest` reference, not a park.
-  {
-    card: 'Rotling', gap: 'dead', severity: 'high',
-    missing: '"When I leave your bin, [Switch1] You may pay [1] to draw a card and gain 1 rot."',
-    waitingOn:
-      'A "card left a bin" EVENT. R51 gave the card a trigger SURFACE (`zone: \'bin\'` '
-      + 'dispatches to a card sitting in a zone), but nothing fires when a card LEAVES '
-      + 'one: bins are spliced directly from a dozen card effects and from engine code, '
-      + 'with no choke point to instrument.',
-    todoTest: '43-dark-c.test.ts::Rotling',
-    note: 'Registered bare. The recursion payoff never happens.',
-  },
+  // Rotling's entry was DELETED on 2026-08-24 when the 'leftBin' choke point
+  // was built (R124), per the house rule at the head of this file. The event
+  // it was waiting on exists now: EVERY bin removal in the tree goes through
+  // `E.removeFromBin(seat, index, reason)`, which fires 'leftBin'
+  // { seat, card, reason } once per card, and R51's zone dispatch delivers it
+  // to the card that just left (for 'leftBin' the presence test is the EVENT,
+  // not the bin — the subject has already left). Its [Switch1] lives in
+  // GameState.zoneBudgets — CARD-TODO #21's design question answered as per
+  // seat per card name. Its todo was promoted to real tests in
+  // 43-dark-c.test.ts. Signpost, not a park.
   // The Everywhere's entry was DELETED on 2026-08-23 when the continuous half
   // was built, per the house rule at the head of this file. It waited on "a
   // STRING field on Entity to hold the named card, plus a StaticMod that

@@ -431,7 +431,7 @@ card('Combustible Bogwalker', {
           g.ev('info', 'Combustible Bogwalker: no unit in your bin — the cost is paid for nothing.');
           return;
         }
-        const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
+        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
         if (name !== undefined) {
           g.player(ctx.controller).hand.push(name);
           g.ev('info', `Combustible Bogwalker: ${name} is recalled to ${g.pname(ctx.controller)}'s hand.`);
@@ -619,7 +619,7 @@ card('Inexorable Miasma', {
         g.addCounters(u, 1);                        // net counters: +1 removes a -1/-1
         const idx = g.player(ctx.controller).bin.lastIndexOf('Inexorable Miasma');
         if (idx === -1) { g.ev('info', 'Inexorable Miasma: it left the bin — nothing is recalled.'); return; }
-        g.player(ctx.controller).bin.splice(idx, 1);
+        g.removeFromBin(ctx.controller, idx, 'recalled');   // R124
         g.player(ctx.controller).hand.push('Inexorable Miasma');
         g.ev('info', `Inexorable Miasma is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
       },

@@ -151,7 +151,7 @@ card('Reclaimer of Secrets', {
         });
         if (!pays) { g.ev('info', 'Reclaimer of Secrets: the [two] is declined — nothing is recalled.'); return; }
         g.payMana(ctx.controller, 2);
-        const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
+        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
         if (name !== undefined) {
           g.player(ctx.controller).hand.push(name);
           g.ev('info', `Reclaimer of Secrets: ${name} recalled to ${g.pname(ctx.controller)}'s hand.`);
@@ -177,7 +177,7 @@ const resurrectEffect: EffectDef = {
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!t || !('binCard' in t) || t.binCard.index === -1) return;
-    const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
+    const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // R124
     if (name !== undefined) g.spawnUnit(ctx.controller, name, ctx.region);
   },
 };
@@ -216,7 +216,7 @@ card('Rousing Spirit', {
           g.ev('info', 'Rousing Spirit: no bin unit is targeted (or it has left) — nothing is put into play.');
           return;
         }
-        const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
+        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // R124
         if (name === undefined) { g.ev('info', 'Rousing Spirit: the card left the bin — nothing is put into play.'); return; }
         const u = g.spawnUnit(ctx.controller, name, ctx.region);
         col.push(u.id);                             // straight into the slot behind me

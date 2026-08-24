@@ -88,9 +88,9 @@
  *  - Xzydris and Scholar of the Void hear the new 'startOfDeployment' event.
  *
  * PARKED (needs engine primitives that do not exist — see the report):
- *  - Rotling: R51 gave it a trigger SURFACE, but "when I LEAVE your bin" needs
- *    an event nothing fires — bins are spliced directly from a dozen card
- *    effects and from engine code, with no choke point. See the card comment.
+ *  - Rotling is UNPARKED as of R124: E.removeFromBin is the choke point every
+ *    bin removal in the tree goes through, and it fires the 'leftBin' event
+ *    the card was waiting on. See the card comment.
  *  - Scholar of the Void is UNPARKED as of R101 (playtest ledger #24). The
  *    owner supplied the "Beyond, Codex Incarnate" card face on 2026-08-22, so
  *    the transform target exists (a registerSynthetic in registry.ts); and no
@@ -180,7 +180,7 @@ const blightwalkerRecall: EffectDef = {
     const name = g.player(seat).bin[t.binCard.index];
     if (name === undefined) { g.ev('info', 'Blightwalker: the card left the bin — nothing is recalled.'); return; }
     g.payMana(seat, 2);
-    g.player(seat).bin.splice(t.binCard.index, 1);
+    g.removeFromBin(seat, t.binCard.index, 'recalled');   // R124
     g.player(seat).hand.push(name);
     g.ev('info', `Blightwalker recalls ${name} from ${g.pname(seat)}'s bin to their hand.`);
   },
@@ -209,7 +209,7 @@ card('Collect Remains', {
         const bin = g.player(t.binCard.seat).bin;
         const name = bin[t.binCard.index];
         if (name !== undefined) {
-          bin.splice(t.binCard.index, 1);
+          g.removeFromBin(t.binCard.seat, t.binCard.index, 'recalled');   // R124
           g.player(ctx.controller).hand.push(name);
           g.ev('info', `Collect Remains: ${name} goes from ${g.pname(t.binCard.seat)}'s bin to ${g.pname(ctx.controller)}'s hand.`);
         }
@@ -252,7 +252,7 @@ card('Cthyrian Rector', {
         const bin = g.player(ctx.controller).bin;             // "if you do"
         const i = bin.lastIndexOf(name);
         if (i === -1) { g.ev('info', `Cthyrian Rector: ${name} is no longer in the bin.`); return; }
-        bin.splice(i, 1);
+        g.removeFromBin(ctx.controller, i, 'recalled');   // R124
         g.player(ctx.controller).hand.push(name);
         g.ev('info', `Cthyrian Rector recalls ${name} to ${g.pname(ctx.controller)}'s hand.`);
       },
@@ -305,7 +305,10 @@ card('Finality', {
         if (!p.bin.length) continue;
         const n = p.bin.length;
         const gone = [...p.bin];
-        p.bin.length = 0;
+        // R124: a bulk wipe still leaves one card at a time — back-to-front,
+        // each firing its own 'leftBin'. No storm: the leftBin dispatch is
+        // per-name (only the card that left hears its own leaving).
+        while (p.bin.length) g.removeFromBin(p.seat, p.bin.length - 1, 'erased');
         g.ev('erased', `Finality ERASES all ${n} card(s) in ${p.name}'s bin.`, { seat: p.seat, n, cards: gone });
       }
     },
@@ -406,7 +409,7 @@ const lurkingDread: EffectDef = {
     }
     // take it out of whichever zone still holds it, then put it into play
     const bi = g.player(seat).bin.lastIndexOf('Lurking Dread');
-    if (bi !== -1) g.player(seat).bin.splice(bi, 1);
+    if (bi !== -1) g.removeFromBin(seat, bi, 'revived');   // R124
     else {
       const ci = g.cache(seat).findIndex(cc => cc.card === 'Lurking Dread');
       if (ci !== -1) g.uncache(seat, ci);
@@ -528,7 +531,7 @@ card('Necromorph', {
       }
       const name = b.binCard.card;
       const slot = formationSlot(g, victim.id);
-      g.player(owner).bin.splice(b.binCard.index, 1);
+      g.removeFromBin(owner, b.binCard.index, 'revived');   // R124
       const fresh = g.spawnUnit(owner, name, victim.region);
       if (slot) {
         slot.col[slot.idx] = fresh.id;                        // take the exact slot…
@@ -584,17 +587,49 @@ card('Primordial Coalescence', {
 // "When I leave your bin, [Switch1] You may pay [1] to draw a card and gain 1
 // rot." — d/1 2/1 Blight Zombie Unit.
 //
-// STILL PARKED, and for a different reason than its bin-resident siblings.
-// R51 gave bin-resident cards a trigger surface (`zone: 'bin'`), which is half
-// of what this needs — but the OTHER half is an event that does not exist:
-// nothing fires when a card LEAVES a bin. There is no single choke point to
-// fire it from either: bins are spliced directly by a dozen card effects
-// (exhume, recall-from-bin, erase-from-bin, graft/augment-from-bin,
-// cacheFromBin, {Modular} mod payment…) plus engine code. Wiring this properly
-// means routing every one of those through an E.takeFromBin() helper, which is
-// a cross-cutting change over batch files owned by other lanes.
-// Plays as a printed 2/1 meanwhile.
-card('Rotling', {});
+// UNPARKED by R124: every bin removal in the tree now goes through
+// E.removeFromBin, which fires 'leftBin' { seat, card, reason } once per card
+// — the choke point this card was parked on. R51's zone dispatch delivers the
+// event, with one deliberate inversion: for 'leftBin' the presence test is
+// the EVENT (this card, out of this seat's bin), not the bin — the subject
+// has already left the zone it listens from — and that is also where
+// `self: true` is enforced (another card leaving my bin is not me).
+//
+// "YOUR bin" is the BIN OWNER's: the seat whose bin I leave is the seat that
+// triggers, decides, pays, draws and gains the rot — whichever side once
+// played me (leaving the opponent's bin is leaving THEIR "your bin"). The
+// [Switch1] is bounded per turn per (seat, card name) in GameState.zoneBudgets
+// (R124 / CARD-TODO #21 — a bin holds bare names, so the name IS the card),
+// and R113 applies from a bin exactly as in play: declining the [1], or
+// having no [1] to offer, refunds the use.
+card('Rotling', {
+  abilities: [{
+    type: 'triggered', events: ['leftBin'], zone: 'bin', self: true, bounded: true,
+    label: 'you may pay [1] to draw a card and gain 1 rot',
+    effect: {
+      run: (g, ctx) => {
+        if (g.openMana(ctx.controller) < 1) {
+          ctx.refundBudget?.();   // R113: no offer could be made, so the use is not spent
+          g.ev('info', 'Rotling: cannot pay [1] — no draw, no rot.');
+          return;
+        }
+        const pays = ctx.choose('pay', {
+          kind: 'payOrDecline', seat: ctx.controller,
+          prompt: 'Rotling: pay [1] to draw a card and gain 1 rot?',
+          options: [{ label: 'Pay [1] — draw a card, gain 1 rot', value: true }, { label: 'Decline', value: false }],
+        });
+        if (pays !== true) {
+          ctx.refundBudget?.();   // R113: declining a "you may" never spends it
+          g.ev('info', 'Rotling: the [1] is not paid — no draw, no rot.');
+          return;
+        }
+        g.payMana(ctx.controller, 1);
+        g.draw(ctx.controller, 1);
+        g.gainRot(ctx.controller, 1);
+      },
+    },
+  }],
+});
 
 // "[Augment] At the start of deployment, you may discard your hand and
 // transform me into Beyond, Codex Incarnate." — dd/1 0/2 {Haste} Blight Unit.
@@ -881,7 +916,7 @@ card('Xzydris', {
         g.augmentWraith(host, seat);
         const i = g.player(seat).bin.lastIndexOf('Xzydris');
         if (i === -1) { g.ev('info', 'Xzydris: it left the bin — nothing is recalled.'); return; }
-        g.player(seat).bin.splice(i, 1);
+        g.removeFromBin(seat, i, 'recalled');   // R124
         g.player(seat).hand.push('Xzydris');
         g.ev('info', `Xzydris is recalled from ${g.pname(seat)}'s bin to their hand.`);
       },

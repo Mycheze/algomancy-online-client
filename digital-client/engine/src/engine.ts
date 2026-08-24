@@ -1916,13 +1916,35 @@ export class E {
     return this.cacheCard(seat, name!, 'hand', opts);
   }
 
-  /** cache a card out of `seat`'s bin (Delver of the Ephemeral, Murkdrop
-   * Distiller). The card LEAVES the bin — it is not copied. */
-  cacheFromBin(seat: Seat, binIndex: number, opts: { prophecy?: string; playable?: boolean } = {}): CachedCard | undefined {
+  /**
+   * R124: THE bin-removal choke point. Every removal of a card from a
+   * player's bin — recall, revive-to-play, erase, cache, prophesy,
+   * play-from-bin, exchange, recycle — goes through here, and nowhere else
+   * splices a bin. That single-path rule is what makes "When I leave your
+   * bin, ..." (Rotling) implementable at all: the 'leftBin' event fires here,
+   * once per card, with `{ seat, card, reason }`, and R51's zone dispatch
+   * delivers it to the card that just left. `msg` is '' — signal-only, the
+   * stackFlash precedent — because every caller already announces the removal
+   * in its own words, and the log should not say everything twice.
+   *
+   * Returns the removed name, or undefined when the index is out of range
+   * (callers keep their own "it already left" messages).
+   */
+  removeFromBin(seat: Seat, binIndex: number, reason: string): CardName | undefined {
     const bin = this.player(seat).bin;
     if (binIndex < 0 || binIndex >= bin.length) return undefined;
     const [name] = bin.splice(binIndex, 1);
-    return this.cacheCard(seat, name!, 'bin', opts);
+    const ev = this.ev('leftBin', '', { seat, card: name!, reason });
+    this.fireEvent('leftBin', ev);
+    return name;
+  }
+
+  /** cache a card out of `seat`'s bin (Delver of the Ephemeral, Murkdrop
+   * Distiller). The card LEAVES the bin — it is not copied. */
+  cacheFromBin(seat: Seat, binIndex: number, opts: { prophecy?: string; playable?: boolean } = {}): CachedCard | undefined {
+    const name = this.removeFromBin(seat, binIndex, 'cached');   // R124
+    if (name === undefined) return undefined;
+    return this.cacheCard(seat, name, 'bin', opts);
   }
 
   /** cache the top `n` cards of `seat`'s deck (Blurf; and the engine half of
@@ -3624,11 +3646,15 @@ export class E {
         : this.cache(seat).map(cc => cc.card).lastIndexOf(name);
       if (i === -1) return;
       this.uncache(seat, i);
-    } else {
-      const pile = zone === 'bin' ? this.player(seat).bin : this.player(seat).hand;
-      const i = pile.lastIndexOf(name);
+    } else if (zone === 'bin') {
+      const i = this.player(seat).bin.lastIndexOf(name);
       if (i === -1) return;
-      pile.splice(i, 1);
+      this.removeFromBin(seat, i, 'erased');   // R124: the one bin-removal path
+    } else {
+      const hand = this.player(seat).hand;
+      const i = hand.lastIndexOf(name);
+      if (i === -1) return;
+      hand.splice(i, 1);
     }
     this.ev('erased', msg, { seat, card: name, from: zone });
   }
@@ -5370,7 +5396,7 @@ export class E {
       const bin = this.player(item.controller).bin;
       const idx = bin.indexOf(name);
       this.need(idx !== -1, 'bad cost choice');
-      bin.splice(idx, 1);
+      this.removeFromBin(item.controller, idx, 'erased');   // R124
       (paid.erased ??= []).push(name);
       // 'erased', not 'info': this is a real erase, and R65's public pile is
       // kept by ev() off exactly this event
@@ -6235,6 +6261,19 @@ export class E {
    */
   private refundPart(item: StackItem, part: EffectPart): void {
     part.refunded = true;
+    // R124: a zone-dispatched part's reservation lives in GameState.zoneBudgets
+    // (its stand-in source, id -1, is not in s.entities and is long gone) —
+    // hand it back there, so R113 holds from a bin exactly as it does in play.
+    if (part.fromMod === undefined && item.sourceId === -1) {
+      const zb = this.s.zoneBudgets;
+      const zoneKey = `${item.controller}:${part.effectKey}`;
+      if (!zb || (zb[zoneKey] ?? 0) <= 0) return;
+      delete zb[zoneKey];
+      this.ev('info',
+        `${item.label}: it did nothing, so its use is not spent — it can fire again this turn.`,
+        { budget: part.effectKey, refunded: true });
+      return;
+    }
     const holder = part.fromMod !== undefined
       ? this.entity(part.fromMod)
       : (item.sourceId !== undefined ? this.entity(item.sourceId) : undefined);
@@ -6507,8 +6546,29 @@ export class E {
     const budgetKey = `${abilityKeyPrefix}:${cardName}#${abilityIndex}`;
     const budgetHolder = source;   // per card = per entity instance (R9)
     if (ability.bounded) {
-      if ((budgetHolder.budgets[budgetKey] ?? 0) > 0) return null;   // bounded cause bounds the whole composite
-      budgetHolder.budgets[budgetKey] = 1;
+      // R124 / CARD-TODO #21: a ZONE-dispatched firing (R51) arrives on a
+      // throwaway stand-in (id -1) whose `budgets` dies with the call, so its
+      // [once] reservation moves to real, serialized state instead —
+      // GameState.zoneBudgets, per (seat, card name). "Per card" (R9) for a
+      // card that is not in play can only mean the NAME in that seat's zone:
+      // a bin holds bare names, not instances, so three copies leaving one
+      // bin share one budget, the same way R51 gives three copies one firing.
+      // Cleared by startTurn beside the Entity.budgets wipe; refunded by
+      // refundPart's stand-in branch (R113 keeps working from a zone).
+      // ZONE-dispatched only: R40's trash-trigger stand-in also has id -1,
+      // but there the throwaway per-instance budget is DELIBERATE ("each
+      // trashed card is its own instance" — see fireOwnTrashTrigger); only a
+      // zone listener is a standing per-name permission (R51), so only it
+      // keeps its reservation here.
+      if (source.id === -1 && (ability as { zone?: 'bin' | 'cache' }).zone !== undefined) {
+        const zb = (this.s.zoneBudgets ??= {});
+        const zoneKey = `${source.controller}:${budgetKey}`;
+        if ((zb[zoneKey] ?? 0) > 0) return null;
+        zb[zoneKey] = 1;
+      } else {
+        if ((budgetHolder.budgets[budgetKey] ?? 0) > 0) return null;   // bounded cause bounds the whole composite
+        budgetHolder.budgets[budgetKey] = 1;
+      }
     }
     const base: EffectPart = {
       effectKey: `${abilityKeyPrefix}:${cardName}#${abilityIndex}`, targets: [],
@@ -6606,9 +6666,10 @@ export class E {
    *
    * ONE firing per zone per event even when the zone holds several copies: the
    * printed texts are standing permissions ("if I am in your bin"), not
-   * per-copy triggers. Bounded budgets (R9) cannot persist on a stand-in, so a
-   * [Switch1] zone trigger is bounded only within the one firing — flagged in
-   * docs/digital-rules.md rather than faked.
+   * per-copy triggers. Bounded budgets (R9) cannot persist on a stand-in, so
+   * composeParts keeps a zone firing's [Switch1] reservation in
+   * GameState.zoneBudgets instead — per turn per (seat, card name), refunded
+   * by refundPart's stand-in branch (R124 / CARD-TODO #21).
    *
    * Cost: one Map.get() per event when nothing in the pool listens from a zone.
    */
@@ -6658,9 +6719,20 @@ export class E {
     let queued = false;
     for (const seat of [this.initiative, this.nit]) {
       for (const { card: name, abilityIndex, zone } of listeners) {
-        const present = zone === 'bin'
-          ? this.player(seat).bin.includes(name)
-          : this.cache(seat).some(cc => cc.card === name);
+        // R124: 'leftBin' is the one event whose subject has ALREADY left the
+        // zone it listens from, so presence-in-the-bin is exactly the wrong
+        // test — the event itself is the presence. It reaches the card that
+        // just left (this name, out of this seat's bin) and nobody else,
+        // which is also where a leftBin listener's `self: true` is enforced:
+        // "I" left, and another card leaving my bin is not me. The pronoun
+        // reading is the same fact from the other side — "YOUR bin" is the
+        // BIN OWNER's: the seat whose bin the card left is the seat that
+        // fires, decides and collects, whichever side once played the card.
+        const present = type === 'leftBin'
+          ? zone === 'bin' && ev.data?.['card'] === name && ev.data?.['seat'] === seat
+          : zone === 'bin'
+            ? this.player(seat).bin.includes(name)
+            : this.cache(seat).some(cc => cc.card === name);
         if (!present) continue;
         const ability = this.card(name).abilities?.[abilityIndex];
         if (!ability || !isTriggered(ability)) continue;
@@ -7570,6 +7642,9 @@ export class E {
       for (const seat of this.dealOrder()) this.draw(seat, 2);
     }
     for (const e of Object.values(this.s.entities)) e.budgets = {};
+    // R124: the zone-trigger budgets (CARD-TODO #21) are per-turn like every
+    // other [once] — wiped beside the Entity.budgets they stand in for.
+    this.s.zoneBudgets = {};
     // R119: "the next card you play THIS TURN" — an unspent charge expires
     // with the turn that bought it, beside the per-turn budgets wipe it used
     // to ride in (and like R43's hasteManaSpent, zeroed rather than deleted).

@@ -468,7 +468,7 @@ card('Hooba-Mon', {
           }
           return;
         }
-        const [name] = g.player(ctx.controller).bin.splice(t.binCard.index, 1);
+        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // R124
         if (name === undefined) return;
         exchangeInPlace(g, self, name, ctx.controller);
       },
@@ -561,7 +561,10 @@ function eraseChosenFromBin(g: E, ctx: EffectCtx, seat: Seat, n: number): void {
     indices = [...taken];   // insertion order = pick order
   }
   const names = indices.map(i => bin[i]!);
-  for (const i of [...indices].sort((a, b) => b - a)) bin.splice(i, 1);
+  // R124: the splice goes through the ONE bin-removal choke point, so
+  // 'leftBin' fires per card (Rotling) — the 'erased' events below keep
+  // their exact wording and the R65 pile routing.
+  for (const i of [...indices].sort((a, b) => b - a)) g.removeFromBin(seat, i, 'erased');
   for (const name of names) {
     g.ev('erased', `${name} is ERASED from ${g.pname(seat)}'s bin.`, { card: name, seat });
   }

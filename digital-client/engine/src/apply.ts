@@ -620,7 +620,8 @@ function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin', index: number): void
   e.need(banner, 'that card has no prophecy banner');
   e.need(from === 'hand' || c.prophesyFromBin, 'that card cannot be prophesied from your bin');
   e.need(e.openMana(seat) >= banner.mana, 'cannot pay the prophecy cost');
-  zone.splice(index, 1);
+  if (from === 'bin') e.removeFromBin(seat, index, 'prophesied');   // R124
+  else zone.splice(index, 1);
   e.payMana(seat, banner.mana);   // R42: plain mana, no affinity
   const ev = e.ev('prophesied',
     `${e.pname(seat)} prophesies ${name} from ${from} for [${banner.mana}].`,
@@ -711,7 +712,7 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
   e.need(viaGrant || !!c.playsFromBin, 'you have no permission to play cards from your bin');
   e.need(e.canPayCard(seat, name), 'cannot pay for that');
   playAtTiming(e, seat, c, c.timing,
-    () => { e.player(seat).bin.splice(binIndex, 1); },
+    () => { e.removeFromBin(seat, binIndex, 'played'); },   // R124
     () => {
       e.payCard(seat, name);
       // R96 vs R123 on {Unstable}: the stamp is the GRANTING card's own text

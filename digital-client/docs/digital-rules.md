@@ -640,15 +640,18 @@ targeted, radiates no statics and appears in no other scan. Its
 region. Dispatch is indexed by event type, so an event nobody listens for from
 a zone costs one failed map lookup.
 
-Two deliberate limits. ⚠ **One firing per zone, not per copy**: the printed
-texts are standing permissions ("if I am in your bin"), not per-copy triggers,
-so three copies in a bin fire once. And a `[Switch1]` budget (R9) on a zone
-trigger lives only for the one firing, because a stand-in has nowhere to keep
-it — flagged rather than faked.
+Two deliberate limits, one since lifted. ⚠ **One firing per zone, not per
+copy**: the printed texts are standing permissions ("if I am in your bin"),
+not per-copy triggers, so three copies in a bin fire once. A `[Switch1]`
+budget (R9) on a zone trigger used to live only for the one firing, because a
+stand-in has nowhere to keep it — that flag is CLOSED by
+[R120](#r120--leftbin-every-bin-removal-goes-through-one-choke-point), which
+keeps the reservation in `GameState.zoneBudgets` (per seat per card name, per
+turn).
 
-⚠ Two things this deliberately does **not** solve. There is still **no "a card
-left a bin" event** — bins are spliced directly by a dozen card effects and by
-engine code, with no choke point — so Rotling stays parked. And **a trash
+⚠ Two things this deliberately did **not** solve, one since solved. The
+missing **"a card left a bin" event** exists now — R120's `E.removeFromBin` is
+the choke point, and Rotling is unparked on it. And **a trash
 trigger can never carry a graft rider** (Blightwalker, Afflicting Anima, Maw of
 Despair print theirs as `[Switch1]`). That one is structural, not a missing
 hook: a *modded* unit that dies is ERASED (Unstable) and never reaches a bin at
@@ -6711,3 +6714,59 @@ played from bin with the discard-2 paid at cast and the R29 spot taken
 atomically (including a mid-cast JSON round trip), arriving WITHOUT
 {Unstable}; fewer than two other cards → no offer; from hand the cost and the
 formation entry both apply, in both directions of the old vanilla error.
+## R124 — 'leftBin': every bin removal goes through one choke point
+
+*(2026-08-24. Engine seam + one card, Rotling.)*
+
+**The gap.** R51 gave a card sitting in a bin a trigger surface (`zone:
+'bin'`), but nothing ever fired when a card LEFT one: bins were spliced
+directly by some thirty card effects and by engine code (cache, erase-as-cost,
+prophesy-from-bin, play-from-bin), so "When I leave your bin, [Switch1] You
+may pay [1] to draw a card and gain 1 rot." (Rotling) had an ear and no sound.
+
+**The choke point.** `E.removeFromBin(seat, binIndex, reason)` is now the ONE
+way a card leaves a bin. It splices, then fires a `'leftBin'` event with
+`data: { seat, card, reason }` — `seat` is the bin's owner, `reason` a short
+verb ('recalled', 'revived', 'erased', 'cached', 'played', 'prophesied',
+'recycled'). Every site in the tree is routed through it; a bulk sweep
+(Finality's erase-both-bins, Reality Siphoner's recycle-your-bin, Zephyrzoa's
+recall-your-bin) fires once **per card**, back-to-front. The event's `msg` is
+`''` — signal-only, the `stackFlash` precedent — because every site already
+announces the removal in its own words, and the game log should not say
+everything twice.
+
+**Dispatch inversion.** For every other zone event, R51's presence test is
+"does the zone hold the name?". For `'leftBin'` the subject has by definition
+already left, so the presence test is the EVENT itself: the listener fires
+exactly when the event names this card out of this seat's bin. That is also
+where `self: true` is enforced for zone listeners — another card leaving my
+bin is not me — and it makes the pronoun reading concrete: **"your bin" is the
+bin owner's.** The seat whose bin the card left is the seat that triggers,
+decides, pays and collects, whichever side once played the card.
+
+**The budget (CARD-TODO #21, closed).** A zone firing is anchored on a
+throwaway stand-in, so a `bounded` reservation written onto it bounded
+nothing — the census in 90-coverage-census kept the combination out of the
+pool rather than fake it. The design question it held open — *what does "per
+card" (R9) mean for a card that is not in play?* — is answered **per seat per
+card name**: a bin holds bare names, not instances, so the name in that seat's
+zone IS the card as far as the rules can see (the same reading R51 already
+used to give three copies one firing). The reservation lives in
+`GameState.zoneBudgets` (keyed `${seat}:${prefix}:${card}#${index}`), written
+by `composeParts`' stand-in branch, refunded by `refundPart`'s (so R113 — a
+declined "you may" never spends the use — holds from a bin exactly as it does
+in play), cleared by `startTurn` beside the `Entity.budgets` wipe, and it
+serializes with the state. Additive/optional: a pre-R124 save reads as empty.
+The census now pins the POPULATION of bounded+zone abilities instead, so the
+next one is checked against this rationale on purpose.
+
+### Tests
+
+`43-dark-c` — Rotling recalled out of the bin by a real recursion effect
+(Blightwalker) is offered the pay-[1] and draws + gains rot; declining pays,
+draws and gains nothing and does not spend the [Switch1] (R113); another card
+leaving is not me, and leaving the opponent's bin triggers the bin owner; the
+[Switch1] bounds it once per turn and startTurn refreshes it; erase-from-bin
+and cache-from-bin both fire 'leftBin' through the choke point; the pending
+decision and the reservation survive a JSON round-trip, and a pre-R124 state
+still loads.

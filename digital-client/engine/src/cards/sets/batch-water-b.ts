@@ -269,7 +269,7 @@ card('Rippleback Skulker', {
           g.ev('info', 'Rippleback Skulker: no bin card is targeted (or it has left) — nothing is taken.');
           return;
         }
-        const [taken] = g.player(t.binCard.seat).bin.splice(t.binCard.index, 1);
+        const taken = g.removeFromBin(t.binCard.seat, t.binCard.index, 'recalled');   // R124
         if (taken !== undefined) {
           g.player(ctx.controller).hand.push(taken);
           g.ev('info', `Rippleback Skulker: ${taken} → ${g.pname(ctx.controller)}'s hand.`);
@@ -437,7 +437,7 @@ card('Spell Excavation', {
         g.ev('info', 'Spell Excavation: that spell can no longer be played from the bin — nothing happens.');
         return;
       }
-      bin.splice(t.binCard.index, 1);
+      g.removeFromBin(ctx.controller, t.binCard.index, 'played');   // R124
       g.payCard(ctx.controller, name);
       playInline(g, ctx, name, 'x');
       // unstable: the spell card is erased instead of returning to a bin

@@ -285,7 +285,7 @@ card('Eldritch Reclaimer', {
       const bin = g.player(ctx.controller).bin;
       const name = bin[t.binCard.index];
       if (name === undefined) return;
-      bin.splice(t.binCard.index, 1);
+      g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
       g.player(ctx.controller).hand.push(name);
       g.ev('info', `${name} is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
     },

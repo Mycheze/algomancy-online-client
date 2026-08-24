@@ -135,7 +135,7 @@ const codeAdmitsTheGap = (s: string) => /PARKED|not implemented/.test(s);
 const BEHAVIOR_KEYS = [
   'xMin', 'abilities', 'statics', 'costMods', 'effectAttrs', 'augmentable', 'mustBeTargeted',
   'prophesyFromBin', 'playsIntoFormation', 'spellEffect', 'graftEffect', 'augmentText',
-  // R120: a bin-anchored haste grant (Writhing Host) and a card's own
+  // R123: a bin-anchored haste grant (Writhing Host) and a card's own
   // played-from-your-bin line (Trench Stalker) are whole-card behaviour with
   // no abilities and no live spellEffect run, so the sweep has to see them.
   'binPlayPermissions', 'playsFromBin',
@@ -245,10 +245,10 @@ const NOT_A_GAP: Record<string, string> = {
   'Trench Stalker':
     'The spellEffect exists solely to carry the R49 "[Discard two cards]" CAST COST, '
     + 'chosen and paid in the cast window on every route into play (hand and bin '
-    + 'alike, R120). Its empty run is unreachable BY CONSTRUCTION, not a gap: a '
+    + 'alike, R123). Its empty run is unreachable BY CONSTRUCTION, not a gap: a '
     + "'unit' StackItem resolves by spawning (resolveItem returns before parts ever "
     + 'run), so there is no resolution body to implement. The other two printed '
-    + 'clauses are live behaviour flags — R29 playsIntoFormation and R120 '
+    + 'clauses are live behaviour flags — R29 playsIntoFormation and R123 '
     + 'playsFromBin — with real tests in 46-hybrids-ld-c.test.ts.',
 
   // ── the three [element] Resource faces (2026-08-23) ────────────────────
@@ -302,7 +302,7 @@ test('every card with a readably-dead half is declared in the card ledger', () =
 // The sweep's canary, SYNTHETIC as of 2026-08-24. It was a real parked card
 // five times over — Harbinger → Envoy of Lightning → Conduit → Crevice Lurker
 // → Vengeance — and each time the card got built, the canary had to move.
-// The 2026-08-24 round un-parked EVERY remaining ledger card (R120-R122 plus
+// The 2026-08-24 round un-parked EVERY remaining ledger card (R120-R124,
 // the bin seams), so the musical chairs ended: the shape now lives on a card
 // registered by this file alone, byte-for-byte what Harbinger had — an inert
 // augmentText entry, `events: []`, an empty run, a label ending "(not

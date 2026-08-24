@@ -384,7 +384,7 @@ card('Verdant Necrophage', {
           plans.push({ seat, idx });
         }
         for (const { seat, idx } of plans) {
-          const [name] = g.player(seat).bin.splice(idx, 1);
+          const name = g.removeFromBin(seat, idx, 'recalled');   // R124
           if (name !== undefined) {
             g.player(seat).hand.push(name);
             g.ev('info', `${g.pname(seat)} recalls ${name} from their bin.`);

@@ -11,8 +11,8 @@
  * Necromorph's exchange), the counters-on-despawn draw (Entropic Entity),
  * the R47 Wight (Primordial Coalescence) and R38 rot (Spellbind, which also
  * exercises {Modular}), the augment-box activation (Pallid Gorger), and the
- * printed-only / PARKED cards (Its Dark Bubb, Lurking Dread, Rotling,
- * Xzydris), and R101's TRANSFORM (Scholar of the Void turning over into
+ * printed-only / PARKED cards (Its Dark Bubb, Lurking Dread,
+ * Xzydris), Rotling's R124 'leftBin' trigger, and R101's TRANSFORM (Scholar of the Void turning over into
  * Beyond, Codex Incarnate — playtest ledger #24).
  */
 import { test } from 'node:test';
@@ -203,7 +203,9 @@ test('Finality: negates every other effect on the stack and erases both bins', (
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Grox');
   giveResources(h, A, 'dark', 7);                          // dd/2 + dd/5
-  bin(h, A).push('Rotling');
+  // an INERT filler on purpose: a binned Rotling really triggers on the
+  // erase now (R124), and this test is about R68 negation, not about him
+  bin(h, A).push('Tempest Wrangler');
   bin(h, D).push('Good Whale');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
@@ -301,7 +303,9 @@ test('Grox: the bare [Switch] is a graft SOCKET — a grafted rider resolves wit
   const grox = spawn(h, P, 'Grox');
   const raider = spawn(h, D, 'Unit Token');
   giveResources(h, P, 'dark', 3);
-  bin(h, P).push('Rotling', 'Xzydris');
+  // inert filler on purpose: a binned Rotling really triggers on the erase
+  // now (R124), and this test is about the graft socket, not about him
+  bin(h, P).push('Tempest Wrangler', 'Xzydris');
   h.do({ type: 'graft', seat: P, from: 'hand', index: give(h, P, 'Primordial Coalescence'), hostId: grox, position: 0 });
   toNextBattle(h, D);
   h.do({ type: 'declareAttack', seat: D, columns: [[raider]] });
@@ -310,7 +314,7 @@ test('Grox: the bare [Switch] is a graft SOCKET — a grafted rider resolves wit
   // R64: the erase is a bracketed CAST COST now, so both cards are chosen and
   // erased in the cast window — before the socket (and its rider) is on the
   // stack, and before anyone can respond
-  pickBy(h, o => o.label === 'Rotling');
+  pickBy(h, o => o.label === 'Tempest Wrangler');
   pickBy(h, o => o.label === 'Xzydris');
   assert.deepEqual(bin(h, P), [], 'both cards erased as the cost');
   drainStack(h);
@@ -545,15 +549,169 @@ test('Rotling: plays as a printed 2/1', () => {
   assert.deepEqual(effStats(h, spawn(h, P, 'Rotling')), [2, 1]);
 });
 
-test('Rotling: "when I leave your bin, pay [1] to draw and gain 1 rot"', { todo: true }, () => {
-  // STILL PARKED, on the half R51 did not solve. R51 gave bin-resident cards a
-  // trigger SURFACE (`zone: 'bin'`, used by Lurking Dread, Xzydris and
-  // Inexorable Miasma) — but nothing emits "a card LEFT a bin", and there is no
-  // choke point to emit it from: bins are spliced directly by a dozen card
-  // effects (exhume, recall-from-bin, erase-from-bin, graft/augment-from-bin,
-  // cacheFromBin, {Modular} mod payment) as well as by engine code. Wiring it
-  // means routing every one of those through an E.takeFromBin() helper — a
-  // cross-cutting change across batch files owned by other lanes.
+test('Rotling: R124 — recalled out of your bin by a real recursion effect (Blightwalker), pay [1] to draw a card and gain 1 rot', () => {
+  const h = new Harness(4341);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  giveResources(h, P, 'dark', 3);
+  const mana = h.q.openMana(P);
+  bin(h, P).push('Rotling');
+  const i = give(h, P, 'Blightwalker');
+  whiteBox(h, e => e.discardFromHand(P, i));
+
+  // Blightwalker's own R40 trigger recalls Rotling for [2] — a real, existing
+  // bin-removal SITE (batch-dark-c), now routed through the R124 choke point
+  pickBy(h, o => String(o.label).startsWith('Rotling'));
+  pickBy(h, o => o.label === 'Pay [2]');
+
+  assert.ok(h.events.some(ev => ev.type === 'leftBin' && ev.data?.['card'] === 'Rotling'),
+    "the recall went through the choke point and fired 'leftBin'");
+  assert.ok(hand(h, P).includes('Rotling'), 'Rotling itself was recalled to hand');
+  assert.ok(h.state.decision, "Rotling's own leave-trigger asks");
+  const before = hand(h, P).length;
+  pickBy(h, o => String(o.label).startsWith('Pay [1]'));
+  assert.equal(hand(h, P).length, before + 1, 'paying [1] draws a card');
+  assert.equal(h.q.rot(P), 1, 'and gains 1 rot');
+  assert.equal(h.q.openMana(P), mana - 3, 'the [2] and the [1] were both really paid');
+});
+
+test('Rotling: declining pays nothing, draws nothing, gains no rot — and R113 keeps the [Switch1] unspent', () => {
+  const h = new Harness(4342);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  giveResources(h, P, 'dark', 1);
+  const mana = h.q.openMana(P);
+  bin(h, P).push('Rotling');
+  whiteBox(h, e => e.removeFromBin(P, e.player(P).bin.lastIndexOf('Rotling'), 'test'));
+
+  assert.ok(h.state.decision, 'the leave-trigger asks');
+  const before = hand(h, P).length;
+  pickBy(h, o => o.label === 'Decline');
+  assert.equal(hand(h, P).length, before, 'declining draws nothing');
+  assert.equal(h.q.rot(P), 0, 'gains no rot');
+  assert.equal(h.q.openMana(P), mana, 'and pays nothing');
+  assert.deepEqual(h.state.zoneBudgets ?? {}, {},
+    'R108/R113: the declined use is refunded, not spent');
+
+  // the same turn, another Rotling leaves — the [Switch1] is still available
+  bin(h, P).push('Rotling');
+  whiteBox(h, e => e.removeFromBin(P, e.player(P).bin.lastIndexOf('Rotling'), 'test'));
+  assert.ok(h.state.decision, 'it may ask again this turn (the use was never spent)');
+  pickBy(h, o => o.label === 'Decline');
+});
+
+test("Rotling: another card leaving the bin is not me; leaving the OPPONENT's bin triggers the bin owner", () => {
+  const h = new Harness(4343);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const A = (1 - P) as Seat;
+  giveResources(h, P, 'dark', 1);
+  giveResources(h, A, 'dark', 1);
+
+  // another card leaves MY bin: 'leftBin' reaches only the card that left
+  bin(h, P).push('Rotling', 'Grox');
+  whiteBox(h, e => e.removeFromBin(P, e.player(P).bin.lastIndexOf('Grox'), 'test'));
+  const askedForGrox = h.state.decision;   // snapshot: assert.equal(prop, null) would narrow the path
+  assert.equal(askedForGrox, null, 'Grox leaving is not Rotling leaving — no ask');
+  assert.ok(bin(h, P).includes('Rotling'), 'Rotling sat still');
+
+  // Rotling leaves the OPPONENT's bin. Documented pronoun reading (R124):
+  // "your bin" is the BIN OWNER's — the seat whose bin it leaves is the seat
+  // that triggers, decides, pays, draws and gains the rot, whichever side
+  // once played the card. (P's own binned Rotling stays silent through it.)
+  bin(h, A).push('Rotling');
+  const handA = hand(h, A).length;
+  whiteBox(h, e => e.removeFromBin(A, e.player(A).bin.lastIndexOf('Rotling'), 'test'));
+  assert.ok(h.state.decision, 'the leave-trigger asks');
+  assert.equal(h.state.decision!.seat, A, 'and it asks the BIN OWNER, not the other seat');
+  pickBy(h, o => String(o.label).startsWith('Pay [1]'));
+  assert.equal(hand(h, A).length, handA + 1, 'the bin owner draws');
+  assert.equal(h.q.rot(A), 1, 'the bin owner gains the rot');
+  assert.equal(h.q.rot(P), 0, 'the other seat gains nothing');
+});
+
+test('Rotling: the [Switch1] bounds it once per turn when it does something, and startTurn refreshes it', () => {
+  const h = new Harness(4344);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  giveResources(h, P, 'dark', 2);
+  bin(h, P).push('Rotling');
+  whiteBox(h, e => e.removeFromBin(P, e.player(P).bin.lastIndexOf('Rotling'), 'test'));
+  pickBy(h, o => String(o.label).startsWith('Pay [1]'));
+  assert.equal(h.q.rot(P), 1, 'the first leave fired and did something');
+
+  // second leave, same turn: the [Switch1] is spent — no ask, nothing happens
+  bin(h, P).push('Rotling');
+  whiteBox(h, e => e.removeFromBin(P, e.player(P).bin.lastIndexOf('Rotling'), 'test'));
+  assert.equal(h.state.decision, null, 'bounded: it does not ask twice in one turn');
+  assert.equal(h.q.rot(P), 1, 'and nothing happened');
+  assert.equal(Object.keys(h.state.zoneBudgets ?? {}).length, 1,
+    'the reservation is real GameState, not a stand-in ghost (CARD-TODO #21)');
+
+  toNextDeployment(h);
+  assert.deepEqual(h.state.zoneBudgets ?? {}, {}, 'startTurn wipes it beside Entity.budgets');
+  const Q = h.state.deployPlayer!;
+  giveResources(h, Q, 'dark', 1);
+  bin(h, Q).push('Rotling');
+  whiteBox(h, e => e.removeFromBin(Q, e.player(Q).bin.lastIndexOf('Rotling'), 'test'));
+  assert.ok(h.state.decision, 'a fresh turn, a fresh [Switch1]');
+  pickBy(h, o => o.label === 'Decline');
+});
+
+test("Rotling: R124 — two different engine removal sites (erase-from-bin, cache-from-bin) both fire 'leftBin'", () => {
+  const h = new Harness(4345);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const leftBins = () => h.events.filter(ev => ev.type === 'leftBin').length;
+
+  bin(h, P).push('Grox');
+  whiteBox(h, e => e.eraseFromZone(P, 'Grox', 'bin', 'Grox is ERASED (test).'));
+  assert.equal(leftBins(), 1, 'an erase-from-bin goes through the choke point');
+  assert.ok(!bin(h, P).includes('Grox'), 'and the card really left');
+
+  bin(h, P).push('Good Whale');
+  whiteBox(h, e => { e.cacheFromBin(P, e.player(P).bin.lastIndexOf('Good Whale')); });
+  assert.equal(leftBins(), 2, 'a cache-from-bin goes through the same choke point');
+  assert.ok(h.q.cache(P).some(cc => cc.card === 'Good Whale'), 'the card is in the cache');
+});
+
+test('Rotling: the pending pay-[1] decision and the zoneBudgets reservation survive a JSON round-trip (pre-R124 states still load)', () => {
+  const h = new Harness(4346);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  giveResources(h, P, 'dark', 1);
+  bin(h, P).push('Rotling');
+  whiteBox(h, e => e.removeFromBin(P, e.player(P).bin.lastIndexOf('Rotling'), 'test'));
+  assert.ok(h.state.decision, 'the leave-trigger is mid-question');
+
+  const round = JSON.parse(JSON.stringify(h.state)) as typeof h.state;
+  assert.deepEqual(round.zoneBudgets, h.state.zoneBudgets, 'the reservation round-trips');
+  assert.equal(Object.keys(round.zoneBudgets ?? {}).length, 1, 'and it is really there');
+  h.state = round;
+  const before = hand(h, P).length;
+  pickBy(h, o => String(o.label).startsWith('Pay [1]'));
+  assert.equal(hand(h, P).length, before + 1, 'the reloaded state still pays and draws');
+  assert.equal(h.q.rot(P), 1, 'and gains the rot');
+
+  // additive/optional: a game serialized before R124 has no such key at all
+  const h2 = new Harness(4347);
+  toDeployment(h2);
+  const P2 = h2.state.deployPlayer!;
+  const old = JSON.parse(JSON.stringify(h2.state)) as typeof h2.state;
+  delete old.zoneBudgets;
+  h2.state = old;
+  bin(h2, P2).push('Rotling');
+  // drain the mana first, so the R113 "cannot pay [1]" branch runs — it must
+  // not crash on the absent field (composeParts recreates it, refundPart
+  // hands the use back)
+  whiteBox(h2, e => {
+    const m = e.openMana(P2);
+    if (m > 0) e.payMana(P2, m);
+    e.removeFromBin(P2, e.player(P2).bin.lastIndexOf('Rotling'), 'test');
+  });
+  assert.equal(h2.state.decision, null, 'no [1] to offer — no question');
+  assert.deepEqual(h2.state.zoneBudgets ?? {}, {}, 'and the unusable firing is refunded (R113)');
+  assert.doesNotThrow(() => h2.legal(P2), 'a pre-R124 save still drives');
 });
 
 // ── Scholar of the Void ──────────────────────────────────────────────────

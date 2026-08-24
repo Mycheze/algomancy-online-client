@@ -260,7 +260,7 @@ card('Exhume', {
         prompt: `Exhume: put which unit (cost ${x} or less) into play?`,
         options: units.map(([n, i]) => ({ label: n, value: i, card: n })),
       }) as number;
-      const [name] = g.player(ctx.controller).bin.splice(idx, 1);
+      const name = g.removeFromBin(ctx.controller, idx, 'revived');   // R124
       if (name !== undefined) g.spawnUnit(ctx.controller, name, ctx.region);
     },
   },
@@ -472,7 +472,9 @@ card('Reality Siphoner', {
           g.ev('info', 'Reality Siphoner: your bin is empty — nothing is recycled, no counters.');
           return;
         }
-        const moved = bin.splice(0, bin.length);
+        // R124: per card, back-to-front — each removal fires its own 'leftBin'
+        const moved: string[] = [];
+        while (bin.length) moved.unshift(g.removeFromBin(ctx.controller, bin.length - 1, 'recycled')!);
         for (const name of moved) g.recycleToBottom(ctx.controller, name);
         g.ev('info',
           `Reality Siphoner recycles ${moved.length} card(s) from ${g.pname(ctx.controller)}'s bin.`,
@@ -592,7 +594,7 @@ card('Spore of Regenesis', {
         const idxs = [mine, ...revivable.map(([, i]) => i)].sort((a, z) => z - a);
         const names: CardName[] = [];
         for (const i of idxs) {
-          const [name] = bin.splice(i, 1);
+          const name = g.removeFromBin(ctx.controller, i, i === mine ? 'erased' : 'revived');   // R124
           if (name !== undefined && i !== mine) names.push(name);
         }
         g.ev('erased', 'Spore of Regenesis is ERASED from the bin (its own cost).',
@@ -629,7 +631,7 @@ card('Tilling the Graves', {
         .filter(i => i !== -1);
       const taken: CardName[] = [];
       for (const i of [...new Set(chosen)].sort((a, z) => z - a)) {
-        const [name] = bin.splice(i, 1);
+        const name = g.removeFromBin(seat, i, 'recalled');   // R124
         if (name !== undefined) taken.push(name);
       }
       for (const name of taken.reverse()) {
@@ -690,7 +692,7 @@ card('Wake the Dead', {
       }
       if (!chosen.length) { g.ev('info', 'Wake the Dead: nothing playable in any bin.'); return; }
       // remove highest index first within each bin, then spawn in pick order
-      for (const c of [...chosen].sort((a, z) => z.idx - a.idx)) g.player(c.seat).bin.splice(c.idx, 1);
+      for (const c of [...chosen].sort((a, z) => z.idx - a.idx)) g.removeFromBin(c.seat, c.idx, 'revived');   // R124
       // CARD-TODO #17: "any bin" means the card may be the OPPONENT'S, and the
       // two seats are different facts. The CONTROLLER is the caster; the OWNER
       // is whichever bin it came out of, and it goes back there when it dies.
