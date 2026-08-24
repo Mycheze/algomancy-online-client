@@ -440,10 +440,17 @@ card('Stormsowing Nimbus', {
 const twinFlame: EffectDef = {
   targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units', count: 2, min: 0 },
   run: (g, ctx) => {
-    for (const t of ctx.targets) {
-      if (isEnt(t) && g.entity(t.id)) {
-        g.dealEffectDamage(ctx, t, 2);
-      }
+    // R126: "up to two" — declaring none is legal, and a cast that shot
+    // nothing must still SAY so (65-effect-conformance: no effect resolves
+    // into silence). The same line covers every target having died before
+    // resolution.
+    const live = ctx.targets.filter(t => isEnt(t) && g.entity(t.id));
+    if (!live.length) {
+      g.ev('info', 'Twin Flame resolves with no target to damage.');
+      return;
+    }
+    for (const t of live) {
+      if (isEnt(t)) g.dealEffectDamage(ctx, t, 2);
     }
   },
 };

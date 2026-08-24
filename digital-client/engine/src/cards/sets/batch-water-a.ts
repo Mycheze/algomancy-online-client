@@ -605,7 +605,12 @@ const krakenRecall: EffectDef = {
   },
   run: (g, ctx) => {
     const t = ctx.targets[0];
-    if (!isEnt(t) || !g.entity(t.id)) return;
+    if (!isEnt(t) || !g.entity(t.id)) {
+      // R126: "up to one" — none declared (or the pick died first) still
+      // announces, per 65-effect-conformance.
+      g.ev('info', 'Minor Kraken recalls nothing.');
+      return;
+    }
     const [, def] = g.effStats(t);
     if (def <= 5) g.recall(t);
     else g.ev('info', `Minor Kraken: ${t.card} has ${def} defense (> 5) — not recalled.`);
