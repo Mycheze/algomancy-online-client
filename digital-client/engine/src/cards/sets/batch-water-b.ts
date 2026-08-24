@@ -87,9 +87,9 @@ const planEachPlayerRecall = (g: E, ctx: EffectCtx, tag: string): Entity[] => {
 // nontoken victim goes to the CASTER's bin (not its owner's), and a modded
 // victim's card + mods land in the caster's bin instead of being erased
 // (Unstable). destroy() is still used so death triggers / battle counters /
-// formation cleanup all behave; the unmodded case is redirected AT SOURCE with
-// destroy()'s `binTo`, the modded case is binned here. A token victim — and a
-// token MOD — is simply erased (there is no card to move).
+// formation cleanup all behave; BOTH cases are redirected AT SOURCE, with
+// destroy()'s `binTo` and (R137) `keepBinned`. A token victim — and a token
+// MOD — is simply erased (there is no card to move).
 //
 // R40 (trashing) is satisfied by `destroy(u, verb, { binTo })`, which routes
 // the single bin push AND the single trash attribution at the caster in one
@@ -102,14 +102,19 @@ const planEachPlayerRecall = (g: E, ctx: EffectCtx, tag: string): Entity[] => {
 //    before card code regains control, and a compensating second
 //    trashed(caster) would double-count the ledger and double-fire "when I am
 //    trashed".)
-//  - modded victim: destroy() erases everything (Unstable) and bins nothing, so
-//    `binTo` never applies and Pull Under owns the whole move. It uses
-//    E.toBin(caster, …, 'play'), which trashes each card by the caster.
+//  - modded victim: `keepBinned` (R137). destroy() now bins the body AND every
+//    nontoken mod in the CASTER's bin and trashes each one there, which is
+//    exactly the move this card describes — so all the card's text has left to
+//    say is "and they STAY": the Unstable sweep does not run. This branch used
+//    to be a second, hand-rolled `toBin` per card, because destroy() erased
+//    everything and fired no trash at all; under R137 that would have binned
+//    and trashed every one of them TWICE.
 //  - token victim (R69, 2026-08-21): a token is a card and DOES enter a bin, so
 //    destroy({ binTo: caster }) already bins it in the caster's name, trashes
 //    it there, and lets the state-based sweep erase it. Nothing left to do —
 //    hence the early return, which is now about not double-binning rather than
-//    about tokens being exempt.
+//    about tokens being exempt. `keepBinned` deliberately does not spare a
+//    token: this card moves CARDS into a bin, and a token has none.
 //  - token MOD: still erased. A mod has no card of its own to bin.
 card('Pull Under', {
   spellEffect: {
@@ -130,16 +135,8 @@ card('Pull Under', {
         .map(id => g.entity(id))
         .filter((m): m is Entity => !!m && !m.token)
         .map(m => m.card);
-      const hadMods = u.mods.length > 0;
-      g.destroy(u, 'is deleted', { binTo: ctx.controller });
+      g.destroy(u, 'is deleted', { binTo: ctx.controller, keepBinned: true });
       if (wasToken) return;   // R69: destroy() already binned, trashed and erased it
-      if (hadMods) {
-        // destroy() erased base + mods (Unstable) and fired no trash, so the
-        // whole move is ours: everything enters the CASTER's bin from play,
-        // and R40 trashes each one in the caster's name.
-        g.toBin(ctx.controller, name, 'play');
-        for (const m of modCards) g.toBin(ctx.controller, m, 'play');
-      }
       g.ev('info', `Pull Under: ${name}${modCards.length ? ` and ${modCards.length} mod(s)` : ''} → ${g.pname(ctx.controller)}'s bin.`);
     },
   },

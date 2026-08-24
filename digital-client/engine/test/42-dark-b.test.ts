@@ -267,6 +267,123 @@ test('Dropslime: trashed DURING battle, it zaps for everything trashed in that b
   assert.equal(h.state.players[D]!.life, lifeD - 2, "1 already trashed + Dropslime's own = 2 damage");
 });
 
+/* ── R137 / PLAYTEST REPORT #93, room ANBB, 2026-08-24 ───────────────────
+ *
+ * The owner: "I'm pretty sure we're doing death and trashing wrong for
+ * Unstable units. Dropslime wouldn't make sense otherwise. But here, it died
+ * and I didn't get its trigger or the other one."
+ *
+ * That game replays FAITHFUL under the engine of the day, and Dropslime
+ * demonstrated BOTH halves of the bug by itself:
+ *   - discarded from HAND, unmodded → "Ben trashes Dropslime (from hand)."
+ *     → trigger fired → 2 damage to Rashi.  Correct, and always was.
+ *   - later, in play, grafted a Wraith by Plague Ritual → {Unstable} → blocked,
+ *     took lethal → "Dropslime dies — Unstable: it and its 1 mod(s) are
+ *     ERASED." → no trash, no trigger, no ledger bump.
+ * On that same combat-damage step an unmodded Thoughtripper died, binned,
+ * trashed and fired correctly. Two disposals that look identical to a player,
+ * behaving differently — which is what R137 removes.
+ */
+test('R137 / playtest #93: Dropslime fires from HAND *and* dying while Unstable — the same card, both halves', () => {
+  const h = new Harness(4290);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const drop = spawn(h, A, 'Dropslime');                   // 1/1, will die Unstable
+  const wall = spawn(h, D, 'Muck Rummager');               // 2/3 blocker, kills it
+  // ANBB's Plague Ritual line: "Augments a Wraith on one of their units"
+  withE(h, e => { e.augmentWraith(e.entity(drop)!, A); });
+  assert.ok(new E(h.state).isUnstable(ent(h, drop)!), 'a modded unit is {Unstable} (R69)');
+  give(h, A, 'Dropslime');                                 // the hand copy, for half one
+  attackWith(h, A, [[drop]]);
+
+  // ── half one: discarded from HAND. This half NEVER broke.
+  const lifeD0 = h.state.players[D]!.life;
+  withE(h, e => { e.discardFromHand(A, handIdx(h, A, 'Dropslime')); });
+  assert.ok(h.state.decision, 'the trashed trigger fires from the bin and asks for a target');
+  pickRef(h, { player: D });
+  resolveAll(h);
+  assert.equal(h.state.players[D]!.life, lifeD0 - 1,
+    'one card trashed this battle — its own discard — so 1 damage');
+
+  // ── half two: the SAME card in play, dying while {Unstable}. This is #93.
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [wall] } });
+  pass(h); pass(h);
+  // the Wraith mod donates a death trigger of its own, so answer everything
+  // and steer only Dropslime's damage at the player
+  resolveAll(h, o => JSON.stringify(o.value) === JSON.stringify({ player: D }));
+  const trashed = trashes(h).filter(ev => ev.data?.['card'] === 'Dropslime');
+  assert.equal(trashed.length, 2, 'both halves trashed — hand and Unstable death');
+  assert.equal(trashed[1]!.data!['from'], 'play', 'the second came from PLAY');
+  assert.equal(trashed[1]!.data!['seat'], A, 'and A trashed it: it entered A\'s bin (R40)');
+  assert.equal(h.state.players[D]!.life, lifeD0 - 1 - 2,
+    'two cards trashed this battle by now, so the Unstable death zaps for 2 — '
+    + 'before R137 it dealt nothing at all, because it never fired');
+  // and the destination a player SEES is exactly what it always was
+  assert.equal(h.state.players[A]!.bin.filter(c => c === 'Dropslime').length, 1,
+    'only the DISCARDED copy rests in the bin — the Unstable one was swept out again');
+  assert.ok(h.q.erased(A).includes('Dropslime'), 'the Unstable copy is in the erased pile (R65)');
+  assert.ok(h.log.some(l => /Dropslime is erased from the bin — Unstable/.test(l)),
+    'and the log tells it in order: dies → bin, trashes, erased');
+});
+
+test('R137 / ANBB: an Unstable death and an unmodded death on the SAME damage step both trash and both fire', () => {
+  const h = new Harness(4291);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const a1 = spawn(h, A, 'Muck Rummager');                 // 2/3 attackers, both survive
+  const a2 = spawn(h, A, 'Muck Rummager');
+  const drop = spawn(h, D, 'Dropslime');                   // 1/1, will be {Unstable}
+  const trip = spawn(h, D, 'Thoughtripper');               // 1/1, unmodded — the control
+  withE(h, e => { e.augmentWraith(e.entity(drop)!, D); });
+  giveResources(h, D, 'dark', 2);                          // so Thoughtripper's [2] is payable
+  give(h, A, 'Good Whale');                                // something for A to discard
+  attackWith(h, A, [[a1], [a2]]);
+  const region = h.state.battle!.region;
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [drop], 1: [trip] } });
+  pass(h); pass(h);
+  // read the ledger at the END of the damage step, before any queued trigger
+  // resolves and starts trashing things of its own
+  const names = trashes(h).map(ev => ev.data!['card']);
+  assert.ok(names.includes('Dropslime'), 'the Unstable blocker trashed (R137 — it used to not)');
+  assert.ok(names.includes('Thoughtripper'), 'and the unmodded one, as it always did');
+  assert.ok(!names.includes('Wraith'), 'the token MOD has no card to bin, so no third trash (R69)');
+  assert.equal(h.q.battleCounter(region, 'trashed'), 2,
+    'the per-battle ledger counts BOTH deaths now — this is the number Dropslime reads');
+  // aim Dropslime's zap at a player so it does not kill an attacker and skew
+  // everything downstream
+  resolveAll(h, o => JSON.stringify(o.value) === JSON.stringify({ player: A }));
+  assert.ok(trashes(h).some(ev => ev.data?.['from'] === 'hand' && ev.data?.['seat'] === A),
+    "Thoughtripper's trigger resolved too: A paid the [2] and discarded");
+  // both are gone from play, and each went where its own rule sends it
+  assert.ok(h.state.players[D]!.bin.includes('Thoughtripper'), 'the plain card rests in the bin');
+  assert.ok(!h.state.players[D]!.bin.includes('Dropslime'),
+    'the Unstable one is swept back out — the visible destination never changed');
+  assert.ok(h.q.erased(D).includes('Dropslime'), 'into the public erased pile (R65)');
+});
+
+test('R137: Muck Rummager sees an Unstable death — "when you trash a card during battle, draw"', () => {
+  const h = new Harness(4292);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Muck Rummager');                // 2/3, kills the 1/1 blocker
+  spawn(h, D, 'Muck Rummager');                            // D's WATCHER, at home
+  const drop = spawn(h, D, 'Dropslime');
+  withE(h, e => { e.augmentWraith(e.entity(drop)!, D); });
+  attackWith(h, A, [[atk]]);
+  const handD = handSize(h, D);
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [drop] } });
+  pass(h); pass(h);
+  resolveAll(h);
+  assert.ok(trashes(h).some(ev => ev.data?.['card'] === 'Dropslime' && ev.data?.['seat'] === D),
+    'D trashed it — the bin it entered is D\'s');
+  assert.equal(handSize(h, D), handD + 1,
+    'Muck Rummager drew off it. Before R137 this watcher silently under-triggered '
+    + 'on EVERY modded-unit death, which nobody could report: you cannot see a trigger that does not happen.');
+});
+
 // ── Fester ────────────────────────────────────────────────────────────
 
 test('Fester: target player gains a rot', () => {

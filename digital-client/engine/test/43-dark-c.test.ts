@@ -92,6 +92,34 @@ test('Blightwalker: trashed from hand → pay [2] to recall another unit from yo
   assert.ok(bin(h, P).includes('Blightwalker'), 'the Blightwalker itself stays in the bin');
 });
 
+// R137, FAMILY A (the six cards whose OWN "when I am trashed" trigger died
+// with them whenever they died {Unstable}): Afflicting Anima, Blightwalker,
+// Dropslime, Maw of Despair, Nothyr, Thoughtripper. Dropslime is pinned by the
+// playtest-#93 fixture in 42-dark-b; this is the second witness, and it also
+// shows the ⚠ consequence: unlike a trash from HAND, this card cannot leave
+// itself in the bin to be recurred later — the sweep takes it.
+test('R137: Blightwalker dying while {Unstable} fires its own "when I am trashed" trigger', () => {
+  const h = new Harness(4392);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  giveResources(h, P, 'dark', 2);
+  bin(h, P).push('Grox');
+  const bw = spawn(h, P, 'Blightwalker');
+  whiteBox(h, e => {
+    e.entity(bw)!.unstable = true;                         // the R96 until-regroup STAMP (Abyssal Evocation)
+    e.destroy(e.entity(bw)!, 'dies');
+  });
+  assert.ok(trashedCards(h).includes('Blightwalker'),
+    'R137: dying Unstable is a trash — before this ruling nothing fired at all');
+  assert.ok(h.state.decision, 'and its own trigger asks for the bin card to recall');
+  pickBy(h, o => o.label.startsWith('Grox'));
+  pickBy(h, o => o.label === 'Pay [2]');
+  assert.ok(hand(h, P).includes('Grox'), 'the recall happened');
+  assert.ok(!bin(h, P).includes('Blightwalker'),
+    'and the Blightwalker itself does NOT rest in the bin — Unstable swept it out');
+  assert.ok(erasedCards(h, P).includes('Blightwalker'), 'it is in the erased pile (R65)');
+});
+
 test('Blightwalker: "another" excludes the copy that was just trashed, and the payment is optional', () => {
   const h = new Harness(4302);
   toDeployment(h);
@@ -173,6 +201,36 @@ test('Cthyrian Rector: Virus-donated, "me" is the HOST and "you" is the host\'s 
   whiteBox(h, e => e.discardFromHand(D, 0));
   assert.ok(!ent(h, host), "the HOST is what gets sacrificed");
   assert.ok(hand(h, D).includes('Rotling'), "and the host controller's card is recalled");
+});
+
+// R137 HAZARD 1. The Rector reaches for the trashed card IN THE BIN, and an
+// Unstable card is in a bin only for the trigger window. The answer is NOT new
+// and is not invented here: the TOKEN path has faced exactly this since R69,
+// and the Rector already reads `bin.lastIndexOf(name)` and says so when the
+// card is gone. So the sacrifice is paid (it is a CAST COST — R73 — settled
+// on the way to the stack, before any bin lookup happens) and the recall
+// finds nothing. Deliberate: the alternative is either refunding a cost after
+// the fact, which the engine has no mechanism for and R73 exists to avoid, or
+// recalling out of the ERASED PILE, which must never become reachable — that
+// pile is how a card leaves the game permanently (R65).
+test('R137 hazard: an Unstable death trashes, the Rector pays, and finds nothing — the erased pile stays unreachable', () => {
+  const h = new Harness(4390);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const rector = spawn(h, P, 'Cthyrian Rector');
+  const victim = spawn(h, P, 'Good Whale');
+  whiteBox(h, e => {
+    e.entity(victim)!.unstable = true;                     // the R96 until-regroup STAMP (Abyssal Evocation)
+    e.destroy(e.entity(victim)!, 'dies');
+  });
+  assert.ok(trashedCards(h).includes('Good Whale'), 'R137: the Unstable death IS a trash');
+  assert.ok(!ent(h, rector), 'so the Rector triggered and paid its sacrifice');
+  assert.ok(bin(h, P).includes('Cthyrian Rector'), 'which put the Rector itself in the bin');
+  assert.ok(!hand(h, P).includes('Good Whale'), 'but there was nothing left to recall');
+  assert.ok(!bin(h, P).includes('Good Whale'), 'the sweep had already taken it out of the bin');
+  assert.ok(erasedCards(h, P).includes('Good Whale'), 'it is in the erased pile — out of the game (R65)');
+  assert.ok(h.log.some(l => l.includes('Cthyrian Rector: Good Whale is no longer in the bin')),
+    'and the card says so out loud, exactly as it already did for a dying TOKEN');
 });
 
 // ── Entropic Entity ──────────────────────────────────────────────────────
@@ -459,6 +517,36 @@ test('Murkdrop Distiller: a trashed card may be cached and played this turn (R41
   whiteBox(h, e => e.discardFromHand(P, j));
   assert.equal(h.state.decision, null, '[once] — it does not offer again this turn');
   assert.ok(bin(h, P).includes('Rotling'));
+});
+
+// R137 HAZARD 2, the same shape as the Rector's and with the same precedent:
+// the Distiller caches the card it just saw trashed, and an Unstable card is
+// already erased by the time the trigger resolves. It has always guarded on
+// `bin.lastIndexOf(name) === -1` (this is how it behaves for a dying TOKEN),
+// and R108/R113 make the guard refund the reservation: "a [once] is spent only
+// when the ability DOES something", and no offer could be made at all.
+test('R137 hazard: an Unstable death gives the Distiller nothing to cache, and does NOT spend its [once] (R108)', () => {
+  const h = new Harness(4391);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  spawn(h, P, 'Murkdrop Distiller');
+  const victim = spawn(h, P, 'Good Whale');
+  whiteBox(h, e => {
+    e.entity(victim)!.unstable = true;                     // the R96 until-regroup STAMP (Abyssal Evocation)
+    e.destroy(e.entity(victim)!, 'dies');
+  });
+  assert.ok(trashedCards(h).includes('Good Whale'), 'R137: the trigger really did see a trash');
+  assert.equal(h.state.decision, null, 'but no cache is offered — the card is already gone');
+  assert.ok(h.log.some(l => l.includes('Murkdrop Distiller: Good Whale is not in your bin')));
+  assert.deepEqual(h.q.cache(P).map(c => c.card), [], 'nothing was cached');
+  assert.ok(erasedCards(h, P).includes('Good Whale'),
+    'it is in the erased pile, and no card may reach back into that');
+  // and the [once] survived, so a real trash later this turn still gets it
+  const j = give(h, P, 'Rotling');
+  whiteBox(h, e => e.discardFromHand(P, j));
+  assert.ok(h.state.decision, 'R108: an offer that could not be made never spent the use');
+  pickBy(h, o => String(o.label).startsWith('Cache'));
+  assert.equal(h.q.cache(P)[0]!.card, 'Rotling');
 });
 
 // ── Necromorph ───────────────────────────────────────────────────────────

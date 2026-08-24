@@ -127,7 +127,15 @@ test('R70: a dying TOKEN says so on the event (it used to be a log-message match
     'and the old string-matched phrase is gone — which is exactly why the flag exists');
 });
 
-test('R70: an Unstable death says its destination was the erased pile, and still DIES', () => {
+// R137 (2026-08-24) INVERTS the destination half of this test in place. It
+// used to be named "…says its destination was the erased pile" and assert
+// `to === 'erased'`, with "nothing reached a bin" as the reason. The owner
+// ruled that an Unstable death goes through the bin exactly as a token's does,
+// so `to` is 'bin' for EVERY death now — it reports where the card is during
+// the event window, which is the only thing a listener can act on. The bin
+// assertion below is unchanged and now means something different: not "it
+// never went there" but "it does not STAY there".
+test('R137: an Unstable death says BIN, like a token, and still DIES (R70 inverted)', () => {
   const h = new Harness(6203);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -138,8 +146,12 @@ test('R70: an Unstable death says its destination was the erased pile, and still
   });
   const ev = died(h);
   assert.equal(ev.type, 'died', 'Unstable replaces the BIN, not the death (Caleb 2025-04-08)');
-  assert.equal(ev.data!['to'], 'erased');
-  assert.deepEqual(h.state.players[P]!.bin, [], 'nothing reached a bin');
+  assert.equal(ev.data!['to'], 'bin',
+    'R137: the same answer a dying token gives — it really is in a bin while this fires');
+  assert.deepEqual(h.state.players[P]!.bin, [], 'and the sweep took it back out again');
+  const erased = h.events.filter(x => x.type === 'erased');
+  assert.ok(erased.some(x => x.data?.['card'] === 'T62 Ally' && x.data?.['from'] === 'bin'),
+    'the erase is recorded against the BIN it was swept out of');
 });
 
 // ── 3. the recall side of the same idea ───────────────────────────────

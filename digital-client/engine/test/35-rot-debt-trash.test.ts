@@ -405,7 +405,17 @@ test('R69: the erase lands before anything the visit queued can RESOLVE', () => 
   });
 });
 
-test('R40: a modded unit dying is ERASED, so nothing is trashed', () => {
+// R137 (Bena 2026-08-24, playtest #93/room ANBB) INVERTS this test in place.
+// It used to read "a modded unit dying is ERASED, so nothing is trashed" and
+// assert `trashes(h).length === 0` — the reading the printed reminder text
+// ("If they would enter a bin, erase them instead.") and Caleb 2025-04-08
+// ("unstable units still die, they just get erased instead of ending up in the
+// bin") both support. The owner overruled both: an Unstable death takes the
+// TOKEN's route — bin, trash, sweep — because the engine already says the same
+// words about a token and still runs it through the bin. The bin assertion is
+// the one line that survives unchanged, and that is the point: the DESTINATION
+// never moved, only what happens on the way.
+test('R137: a modded unit dying is binned, TRASHED, and only then erased (R40 inverted)', () => {
   const h = new Harness(3524);
   const P = 0 as const;
   const u = spawn(h, P, 'Test Brute');
@@ -413,8 +423,36 @@ test('R40: a modded unit dying is ERASED, so nothing is trashed', () => {
     e.attachMod(e.entity(u)!, 'Test Grunt', P, 'augment');
     e.destroy(e.entity(u)!, 'dies');
   });
-  assert.equal(trashes(h).length, 0, 'Unstable erases base and mods — erasing never touches a bin');
+  const t = trashes(h);
+  assert.deepEqual(t.map(ev => ev.data!['card']), ['Test Brute', 'Test Grunt'],
+    'the body AND its nontoken mod: both entered a bin from play (R40)');
+  assert.ok(t.every(ev => ev.data!['from'] === 'play' && ev.data!['seat'] === P));
+  assert.deepEqual(h.state.players[P]!.bin, [],
+    'and the sweep took both back out again — the visible destination is unchanged');
+  assert.deepEqual(h.q.erased(P), ['Test Brute', 'Test Grunt'],
+    'both reach the public erased pile (R65)');
+  const i = (frag: string) => h.log.findIndex(l => l.includes(frag));
+  assert.ok(i('Test Brute dies') !== -1 && i('trashes Test Brute') > i('Test Brute dies')
+    && i('erased from the bin — Unstable') > i('trashes Test Brute'),
+  'died, then trashed, then erased — the same order the token path logs');
+});
+
+// R137: a TOKEN mod has no card, so it has nothing to bin and nothing to trash
+// (R69). It still reaches the erased pile, which is the only public record a
+// token mod ever had.
+test('R137: a TOKEN mod on a dying Unstable carrier is erased, never binned or trashed', () => {
+  const h = new Harness(3525);
+  const P = 0 as const;
+  const u = spawn(h, P, 'Test Brute');
+  whiteBox(h, e => {
+    e.attachMod(e.entity(u)!, 'Test Grunt', P, 'augment', undefined, { token: true });
+    e.destroy(e.entity(u)!, 'dies');
+  });
+  assert.deepEqual(trashes(h).map(ev => ev.data!['card']), ['Test Brute'],
+    'only the body — a token mod has no card of its own (R69)');
   assert.deepEqual(h.state.players[P]!.bin, []);
+  assert.deepEqual(h.q.erased(P), ['Test Brute', 'Test Grunt'],
+    'both still show in the erased pile (R65)');
 });
 
 test('R40: a spell going to the bin after RESOLVING is not trashed (it comes from the stack)', () => {

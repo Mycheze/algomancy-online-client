@@ -56,7 +56,11 @@ export const KEYWORDS: GlossEntry[] = [
   { term: 'Burst', text: 'Casting one of your burst spell tokens casts every token of the same name you control in that region at once.' },
   // R79 (2026-08-22): a spell carrying a virus is Unstable too, and a spell's
   // way out of the game is the stack rather than a death.
-  { term: 'Unstable', text: 'A modded card is erased with its mods instead of reaching a bin — a unit that dies, and a spell that leaves the stack carrying a virus.' },
+  // R137 (2026-08-24): a dying UNIT is trashed on the way — it passes through
+  // the bin (firing "when I am trashed" and every trash watcher) and is erased
+  // out of it, exactly as a dying token is. A spell leaving the STACK is not
+  // trashed, because nothing coming from the stack ever is (R40).
+  { term: 'Unstable', text: 'A modded card ends up erased with its mods instead of resting in a bin. A unit that dies still passes through the bin first, so it is trashed on the way; a spell leaving the stack carrying a virus is erased without ever being trashed.' },
   { term: 'Virus', text: 'May be augmented during battle onto an ENEMY unit — or onto a spell on the stack, either player’s.' },
   { term: 'Ambush', text: 'An alternative battle-time cost: recall a target ally and take its position in play.' },
   // Light & Dark (docs/08). Kept here so the card inspector can explain them

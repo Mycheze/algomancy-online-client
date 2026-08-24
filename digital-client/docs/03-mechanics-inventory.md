@@ -102,7 +102,8 @@ changes — a pairwise-relative modifier).
 
 Other state: marked damage (persists the whole battle phase, cleared at regroup); expended/
 dormant; formation position; ordered mod stack; **Unstable** (any modded card → erased on
-death, "permadeath"); control vs ownership; negative power deals 0; defense ≤ 0 dies.
+death, "permadeath" — R137: it still passes through the bin and IS trashed on the way);
+control vs ownership; negative power deals 0; defense ≤ 0 dies.
 
 ## 5. Stack, priority, responses
 
@@ -162,7 +163,8 @@ Non-combat (purple, not column-shared): Burst, Unstable, timing markers.
   composition — grafts add effects to the topmost card's cause, resolving top-to-bottom as ONE
   ability, negatable as one. New grafts insert anywhere below the base; existing order
   immutable. A bounded *cause* limits the whole composite.
-- Mod shared rules: modded card gains Unstable → dies = card + mods **erased**. Leaves play
+- Mod shared rules: modded card gains Unstable → dies = card + mods **erased** (R137: via the
+  bin, so card and nontoken mods are all **trashed** on the way out). Leaves play
   without dying → mods to bin, base to hand. **Controller of the unit controls its mods** —
   augmenting an enemy unit donates the text (drawback-donation is a real strategy). Grafts
   detach if graftability is lost.

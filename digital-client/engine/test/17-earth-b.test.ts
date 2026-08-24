@@ -612,8 +612,15 @@ test('R110: all or nothing — one card in hand cannot pay a doubled [Discard a 
 // "unstable units still die, they just get erased instead of ending up in the
 // bin") — destroy()'s erase branch fires the same 'died' event, which the
 // R69/R96 tests already pin for the modded and stamped ways in.
+//
+// ⚠ R137 (2026-08-24) repairs the PROSE of the two tests below without moving
+// their outcome. They used to say "the bin never sees it" — that is no longer
+// how the engine gets there. An Unstable unit that dies now enters the bin, is
+// trashed there, and is swept out by a state-based action, exactly as a dying
+// token is; the assertions still hold because the bin is empty again by the
+// time anyone can look. The word "never" was the load-bearing mistake.
 
-test('Aberrant Statweaver: printed {Unstable} — it dies into the ERASED pile, never the bin (report #89)', () => {
+test('Aberrant Statweaver: printed {Unstable} — it dies into the ERASED pile, not the bin (report #89)', () => {
   const h = new Harness(1790);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -623,9 +630,13 @@ test('Aberrant Statweaver: printed {Unstable} — it dies into the ERASED pile, 
   e.settle();
   assert.equal(ent(h, sw), undefined, 'off the board — it really died');
   assert.ok(!h.state.players[p]!.bin.includes('Aberrant Statweaver'),
-    'the bin never sees it — {Unstable} replaces the bin entry');
+    'it does not REST in a bin — {Unstable} replaces the bin entry');
   assert.ok((h.state.players[p]!.erased ?? []).includes('Aberrant Statweaver'),
     'the public erased pile records it (R65)');
+  // R137: the printed-{Unstable} way in behaves like the other three
+  assert.ok(h.events.concat(e.events).some(ev => ev.type === 'trashed'
+    && ev.data?.['card'] === 'Aberrant Statweaver' && ev.data?.['from'] === 'play'),
+  'and it WAS trashed on the way through (R137)');
 });
 
 test('Oorblak: printed {Unstable} — erased on death while UNMODDED (report #89)', () => {
@@ -636,7 +647,7 @@ test('Oorblak: printed {Unstable} — erased on death while UNMODDED (report #89
   const e = new E(h.state);
   e.destroy(e.entity(oo)!, 'dies');
   e.settle();
-  assert.ok(!h.state.players[p]!.bin.includes('Oorblak'), 'never binned');
+  assert.ok(!h.state.players[p]!.bin.includes('Oorblak'), 'it does not rest in a bin');
   assert.ok((h.state.players[p]!.erased ?? []).includes('Oorblak'), 'erased instead');
 });
 

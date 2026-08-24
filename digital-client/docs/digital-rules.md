@@ -442,6 +442,13 @@ way, and the three premises are each independently sourced:
 So a dying token is trashed by the owner of the bin it enters, exactly like
 everything else, and is *then* erased out of that bin (R69).
 
+**Amended again 2026-08-24 — [R137](#r137--an-unstable-unit-that-dies-is-trashed-it-passes-through-the-bin-then-is-erased): the same
+sentence now covers an {Unstable} card.** It too enters a bin from play, is
+trashed there, and is only then erased by a state-based sweep — as do the
+nontoken MODS it carried. That was the last object whose disposition was
+allowed to decide whether trashing happened, and with it gone this rule is
+exactly what it says: *the destination, not the object.*
+
 ⚠ What the old clause rested on: the **reminder text of Void Scavenger**, the
 one card in the corpus that prints "nontoken" next to a trash. That card has
 been **cut**, and it is not registered in the engine at all — so the qualifier
@@ -657,20 +664,27 @@ missing **"a card left a bin" event** exists now — R124's `E.removeFromBin` is
 the choke point, and Rotling is unparked on it. And **a trash
 trigger can never carry a graft rider** (Blightwalker, Afflicting Anima, Maw of
 Despair print theirs as `[Switch1]`). That one is structural, not a missing
-hook: a *modded* unit that dies is ERASED (Unstable) and never reaches a bin at
-all, so a card that IS trashed provably carries no mods, and the ghost's empty
-`mods: []` is the correct answer rather than a limitation to route around. The
-graft CAUSE still works normally while the card is a unit in play; only the
-trash firing itself can never have riders.
+hook. The graft CAUSE still works normally while the card is a unit in play;
+only the trash firing itself can never have riders, and `fireOwnTrashTrigger`
+hard-codes the stand-in's `mods: []` to say so.
 
-**Re-derived 2026-08-21, after R69 let tokens be trashed** — the argument
-survives, and is now load-bearing on the branch ORDER rather than on the token
-carve-out. R69 tests `mods.length` FIRST: an Unstable anything, token or not,
-is erased with its mods and reaches no bin. Trashing requires entering a bin.
-Therefore *anything trashed out of play carried no mods* — which is what the
-empty `mods: []` encodes — and that now holds for the token case too, where it
-previously held only by accident (a modded token used to take the token branch
-and escape trashing for the wrong reason). One further consequence: the
+⚠ **The ARGUMENT for that was killed by [R137](#r137--an-unstable-unit-that-dies-is-trashed-it-passes-through-the-bin-then-is-erased) on
+2026-08-24; the answer was not.** It used to read: *a modded unit that dies is
+ERASED (Unstable) and never reaches a bin at all, so a card that IS trashed
+provably carries no mods* — re-derived on 2026-08-21 onto R69's branch order
+when tokens became trashable. R137 makes an Unstable unit pass THROUGH the bin
+and be trashed there, so a trashed card can now perfectly well have been a
+modded one, and the structural impossibility is gone.
+
+What replaces it is a live reason rather than an accident: the stand-in is the
+card **as it sits in the bin**, and a card in a bin has no mods on it. Mods do
+not travel into a bin with their carrier — each nontoken one enters its OWN
+owner's bin as a separate card (and is separately trashed, R137/R70), and a
+token mod has no card at all (R69). So `mods: []` is what the trashed object
+actually is, not a limitation to route around. This is the third time in two
+days (R116, R125, R133) that a conclusion outlived its argument; the conclusion
+is kept here **because it was re-derived**, not because it was already written
+down. One further consequence: the
 stand-in a trash trigger fires on is no longer always fabricated. R70 hands it
 the dead unit's own detached entity where there is one, so the trigger keeps
 the region it died in; the `mods: []` is still written explicitly, for the
@@ -1558,6 +1572,14 @@ die — and it is **mistaken**. Sources, in order of weight:
 
 So the `died` event fires on every branch, death triggers go off, and other
 cards' "whenever a unit dies" watchers see it. Only the destination changes.
+
+⚠ **[R137](#r137--an-unstable-unit-that-dies-is-trashed-it-passes-through-the-bin-then-is-erased) (2026-08-24) goes one step
+further and DIVERGES from the two sources quoted just above.** The reminder
+text and Caleb's 2025-04-08 line both describe the destination and both read as
+"no bin, therefore no trash" — the owner overruled them, and an Unstable death
+now takes the token's route: bin → `trashed` → sweep. The destination is still
+the erased pile; what changed is what happens on the way. Read R137 before
+reasoning from the quotes in this section.
 The engine, `docs/03-mechanics-inventory.md`, `ui/glossary.ts`, `core.py` and
 `cards.py` already had this right; nothing was changed for it beyond making the
 branch order stop hiding it.
@@ -1595,7 +1617,8 @@ reversing R40's old flat "tokens are never trashed". See the amendment on R40
 for the evidence and for the fact that the old clause rested on the reminder
 text of a card that has since been cut.
 
-The sequence `destroy()` now produces for an unmodded token, in order:
+The sequence `destroy()` now produces for an unmodded token — and, since
+[R137](#r137--an-unstable-unit-that-dies-is-trashed-it-passes-through-the-bin-then-is-erased), for an {Unstable} card as well — in order:
 
 1. the card is pushed into the bin (the bin of `binTo` when a card redirects
    it — Pull Under — else the owner's);
@@ -7556,3 +7579,151 @@ a dead premise is load-bearing for whoever reads it next.** When a ruling is
 reversed, walk its dependants and repair their reasoning even where the
 behaviour is already correct — the comment in `E.noteTrashed` quoted the dead
 premise verbatim and would have taught the next reader the wrong rule.
+
+## R137 — an {Unstable} unit that dies IS TRASHED: it passes through the bin, then is erased
+
+*(Owner, 2026-08-24, from playtest report #93 / room ANBB. **This ruling
+DIVERGES from the printed reminder text and from a direct Caleb ruling.** Both
+are quoted below and neither is being reinterpreted away — the owner overruled
+them, the way [R106](#r106--stat-layer-6-unaware-everything-in-the-interaction-reads-at-printed-stats)
+diverged from Caleb and the divergence was recorded rather than buried.)*
+
+### The report
+
+> "I'm pretty sure we're doing death and trashing wrong for Unstable units.
+> Dropslime wouldn't make sense otherwise. But here, it died and I didn't get
+> its trigger or the other one."
+
+Room ANBB replays FAITHFUL under the engine of the day, and **Dropslime
+demonstrates both halves of the bug by itself** in one battle:
+
+| what happened to it | log | trigger |
+|---|---|---|
+| discarded from HAND, unmodded | `Ben trashes Dropslime (from hand).` | fired — 2 damage to Rashi |
+| in play, grafted a Wraith by Plague Ritual → {Unstable}, blocked, took lethal | `Dropslime dies — Unstable: it and its 1 mod(s) are ERASED.` | **nothing** |
+
+On that same combat-damage step an unmodded **Thoughtripper** died, binned,
+trashed and fired correctly. Two disposals that look identical to a player,
+behaving differently.
+
+### The ruling
+
+**An Unstable card that dies enters a bin, is trashed there, and is only then
+erased.** Structurally identical to the TOKEN path the engine has run since
+[R69](#r69--a-token-entering-a-zone-is-really-there-then-a-state-based-sweep-erases-it-and-unstable-is-tested-first):
+
+1. the card is pushed into the bin (`binTo`'s bin when a card redirects it);
+2. `died` fires, and its listeners see the card sitting in that bin — `to` is
+   `'bin'` for every death now, Unstable included;
+3. `noteTrashed` fires `trashed`, bumps the per-battle ledger and queues the
+   card's own "when I am trashed" trigger;
+4. the state-based sweep (`E.eraseFromZone`, through R124's `removeFromBin`)
+   takes it back out and records it in the public erased pile (R65);
+5. only now does anything queued in 2 or 3 resolve.
+
+**The destination a player sees is unchanged.** The bin is empty again before
+anybody can look, and every existing "it does not reach a bin" assertion in the
+suite still passes. What changed is what happens *on the way*.
+
+### What this diverges from, in the sources' own words
+
+- **Printed reminder text**, on both cards that GRANT {Unstable} (Abyssal
+  Evocation, Spell Excavation): *"(If they would enter a bin, erase them
+  instead.)"*
+- **Caleb, 2025-04-08**, asked the exact graft-and-death-triggers version:
+  *"Unstable units still die, they just get erased instead of ending up in the
+  bin."*
+
+Both describe the **destination**, and both read naturally as "no bin,
+therefore no trash". That reading is what the engine implemented until today,
+and it is not a misreading — it is the plain sense of the text.
+
+### Why the owner ruled against them anyway
+
+The engine already says **exactly the same words about a token** and still runs
+it through the bin:
+
+> "Technically it does enter your hand and then gets erased immediately… So it
+> would trigger any 'enters hand' stuff. Similar to how tokens can 'die'."
+> (Caleb 2025-06-15, on tokens)
+
+A dying token is binned, trashed, and swept to the erased pile. A dying
+Unstable card ended in the *same erased pile* by a different rule, and so two
+disposals that are indistinguishable at the table behaved differently. #93 is
+what that costs: the same card, in the same battle, trashing from hand and not
+trashing from play.
+
+So the rule is the one [R133](#r133--tokens-are-not-cards-and-trashing-never-needed-them-to-be)
+stated and did not finish applying: **trashing is defined by the DESTINATION,
+not by the object.** Unstable was the last object still exempt.
+
+### The mods ride with it
+
+A nontoken mod on the dying carrier is **binned, trashed and swept too**. ⚠ The
+ANBB log cannot settle this — the mod there was a Wraith, a token, which has no
+card to trash either way — so this is reasoning, stated so it can be overruled
+cleanly:
+
+- when the carrier is **recalled or cached** instead of killed, its nontoken
+  mods already go to their owners' bins FROM PLAY and R40 already trashes each
+  one (`leavePlay` + `afterDespawn`, R70, Caleb 2024-09-15);
+- so if a *death* skipped that trash, the same mod card would behave
+  differently depending on how its host left play — which is the exact shape of
+  the bug this ruling removes.
+
+A **token** mod still has no card of its own (R69): never binned, never
+trashed, erased-pile record only.
+
+### Pull Under keeps its override
+
+Pull Under prints *"Delete target unit. If you do, put it and all of its mods
+into your bin"*, and the engine's long-standing reading is that the card's own
+destination wins over the Unstable erase. That override used to be card code
+doing its own `toBin` after `destroy()` erased everything and fired no trash.
+Under R137 `destroy()` already bins and trashes, so the override is now the
+single flag `destroy(u, verb, { binTo, keepBinned: true })` — "do not run the
+sweep". Left as it was, the card would have binned and trashed every card
+**twice**. A token victim is still swept: this card moves *cards* into a bin,
+and a token has none.
+
+### The blast radius, which is larger than the report
+
+**Family A — the card's OWN "when I am trashed" trigger**, dead on every
+Unstable death until now: Afflicting Anima, Blightwalker, Dropslime, Maw of
+Despair, Nothyr, Thoughtripper.
+
+**Family B — watchers of someone else's trash.** These eight have been silently
+**under-triggering on every modded-unit death in every game ever played**, and
+nobody reported it because you cannot see a trigger that does not happen:
+Cerebrox, Cthyrian Culler, Cthyrian Rector, Muck Rummager, Murkdrop Distiller,
+Murkstalker, Splort, Unrelenting Horror.
+
+**Two cards reach back into the bin for the card they saw trashed**, and under
+R137 an Unstable card is in the bin only for the trigger window. Neither
+needed a new answer — the TOKEN path has faced this since R69 and both cards
+already handle it:
+
+- **Cthyrian Rector** ("sacrifice me. If you do, recall that card from your
+  bin") pays its sacrifice — a CAST cost (R73), settled on the way to the stack
+  before any bin lookup — and then finds nothing, saying so. Deliberate: the
+  alternatives are refunding a paid cost after the fact (no mechanism, and R73
+  exists to avoid needing one) or recalling out of the **erased pile**, which
+  must never become reachable, because that pile is how a card leaves the game
+  permanently (R65).
+- **Murkdrop Distiller** ("[once] … you may cache it") finds nothing to cache
+  and — R108/R113, *"a [once] is spent only when the ability does something"* —
+  **refunds the use**, so a real trash later the same turn still gets the offer.
+
+### ⚠ A consequence worth knowing before it surprises somebody
+
+A Family A card that dies Unstable **cannot leave itself in the bin**. Trashed
+from hand, Dropslime rests in the bin and can be recurred; trashed by dying
+Unstable, it fires its trigger and is then erased out of the game. The trigger
+is the same; what is left behind is not.
+
+### Spells are untouched
+
+A virused spell leaving the stack (R79) is Unstable and is erased, and it is
+**not** trashed — not because of Unstable, but because **nothing coming from
+the stack is ever trashed** (R40). `E.dischargeItem` is a different path from
+`E.destroy` and this ruling does not reach it.

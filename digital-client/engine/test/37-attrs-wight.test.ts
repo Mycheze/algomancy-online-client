@@ -649,7 +649,16 @@ test('R71: an augmented Wraith donates BOTH lines to its host', () => {
 
 // R69/B — the branch order in destroy(). This is game UZRG's bug: the token
 // test used to come FIRST, so a modded token never reached the Unstable branch.
-test('R69: a MODDED token is Unstable — erased with its mods, no bin, no trash', () => {
+//
+// R137 (2026-08-24) INVERTS the trash half in place. This test used to be
+// named "…no bin, no trash" and assert `trashes(h).length === 0`; the owner
+// ruled that an Unstable death takes the token's route through the bin, so a
+// Wraith body carrying a Wraith mod now trashes exactly ONCE — for the body,
+// which is a token and so trashes on the R69 ruling, and NOT for the mod,
+// which is a token MOD and has no card of its own to bin at all. Both flips
+// are carried here rather than deleted: the branch order is still what the
+// test is about, and one trash instead of two is the proof it is still right.
+test('R69: a MODDED token is Unstable — erased with its mods; R137: the body still trashes, the token mod does not', () => {
   const h = sterile(3738);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -660,8 +669,11 @@ test('R69: a MODDED token is Unstable — erased with its mods, no bin, no trash
     e.augmentWraith(e.entity(id)!, P);                     // a Wraith on a Wraith
   });
   whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
-  assert.equal(trashes(h).length, 0, 'Unstable erases; erasing never touches a bin (R40)');
-  assert.deepEqual(h.state.players[P]!.bin, []);
+  const t = trashes(h);
+  assert.equal(t.length, 1,
+    'ONE trash: the body entered a bin (R69/R137); the token MOD never did (R69)');
+  assert.equal(t[0]!.data!['card'], 'Wraith');
+  assert.deepEqual(h.state.players[P]!.bin, [], 'and the sweep emptied the bin again');
   assert.ok(h.log.some(l => l.includes('Unstable')), 'and it took the Unstable branch');
   // it still DIED, so both copies of the donated death text fired and each
   // minted a Wraith onto the only ally left standing
