@@ -38,9 +38,11 @@
  *    caster CONTROLS it; the opponent still OWNS it, so it dies to THEIR bin
  *    (R65) and can be recurred by them.
  *  - "TARGET NONSPELL EFFECT" (Nothyr) IS a TargetSpec now: R60's
- *    `what: 'stackEffect'` is the superset (every effect on the stack,
- *    triggered and activated abilities included) and a `restrict` narrows it
- *    to the nonspell half. R67 collects it as the trigger goes on the stack.
+ *    `what: 'stackEffect'` is the superset (every effect on the stack —
+ *    triggered abilities, activated abilities and a virus being applied
+ *    included) and a `restrict` narrows it to the nonspell half: triggered,
+ *    activated AND virus, which is R60's own enumeration of that half.
+ *    R67 collects it as the trigger goes on the stack.
  *    This entry used to say the card "has no TargetSpec … modelled as a
  *    resolution-time ctx.choose"; that expired, and with it the "slightly
  *    stronger than printed: the pick cannot be responded to" caveat.
@@ -416,13 +418,25 @@ card('Nothyr', {
       // while there is still a window to respond. 'stackEffect' is the
       // superset kind (R60); the restriction narrows it to the NONSPELL half,
       // which is exactly the qualifier Nothyr prints. min 0 = "up to one".
+      //
+      // R60 defines the two halves and the NONSPELL half is the complement of
+      // the spell one, verbatim: 'stackSpell' is "spell / spell unit / spell
+      // token / ambush", 'stackEffect' is "all of those PLUS triggered
+      // abilities, activated abilities AND A VIRUS BEING APPLIED". So a virus
+      // item is a nonspell effect and Nothyr answers it — the restriction used
+      // to list only `triggered` and `activated`, which is a qualifier the
+      // printed word "nonspell" does not carry (an unprinted narrowing of the
+      // same shape as R125's). An 'ambush' is spell-side by R60 and stays out;
+      // a 'unit' on its way into play is in neither half and `stackEffect`
+      // never offers it in the first place.
       targets: {
         what: 'stackEffect', min: 0,
         prompt: 'Nothyr: negate up to one target nonspell effect',
         restrict: (g, t) => {
           if (!('stack' in t)) return false;
           const it = g.s.stack.find(i => i.id === t.stack);
-          return !!it && (it.kind === 'triggered' || it.kind === 'activated');
+          return !!it
+            && (it.kind === 'triggered' || it.kind === 'activated' || it.kind === 'virus');
         },
       },
       run: (g, ctx) => {

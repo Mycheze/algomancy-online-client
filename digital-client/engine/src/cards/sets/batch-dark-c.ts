@@ -90,7 +90,11 @@
  * PARKED (needs engine primitives that do not exist — see the report):
  *  - Rotling is UNPARKED as of R124: E.removeFromBin is the choke point every
  *    bin removal in the tree goes through, and it fires the 'leftBin' event
- *    the card was waiting on. See the card comment.
+ *    the card was waiting on. See the card comment — which now also carries
+ *    the OTHER half of its printed marker: `[Switch1]` makes the sentence a
+ *    bounded GRAFTABLE effect, and the card had no `graftEffect`, so it was
+ *    the one card in the pool with a [Switch]-marked effect that could not be
+ *    grafted at all.
  *  - Scholar of the Void is UNPARKED as of R101 (playtest ledger #24). The
  *    owner supplied the "Beyond, Codex Incarnate" card face on 2026-08-22, so
  *    the transform target exists (a registerSynthetic in registry.ts); and no
@@ -351,9 +355,14 @@ card('Grox', {
 
 // "(Invert the stat changes of inverted units. For example, -1/+2 would
 // become +1/-2.)" — d/4 4/6 {Inverted} Slime Unit. Reminder text only: the
-// whole card is the attribute. PRINTED-ONLY (header): the attribute is
-// carried by printed.attrs, but the inversion itself is stat layer 5, which
-// the engine does not have (Reality Bender's precedent).
+// whole card is the attribute, carried by printed.attrs.
+//
+// ⚠ THE LINE THAT USED TO SIT HERE — "the inversion itself is stat layer 5,
+// which the engine does not have (Reality Bender's precedent)" — expired with
+// R93 and was contradicted by this batch's own header ninety lines up. Layer 5
+// is live in `E.effStats` (`2·base - cur`, applied after layer 4, deduped by
+// `statLayerAttrs`), so this card genuinely works with no behaviour of its
+// own. Nothing to add; only the note was wrong.
 card('Its Dark Bubb', {});
 
 // "After combat, you may sacrifice two non-token units to put me into play
@@ -602,33 +611,62 @@ card('Primordial Coalescence', {
 // (R124 / CARD-TODO #21 — a bin holds bare names, so the name IS the card),
 // and R113 applies from a bin exactly as in play: declining the [1], or
 // having no [1] to offer, refunds the use.
+//
+// THE [Switch1] IS A GRAFT SYMBOL, and it was only half read. R124's engine
+// note and 90-coverage-census both say in prose that "Rotling carries no mod
+// symbol" — it prints one. `[Switch1]` marks a BOUNDED GRAFTABLE EFFECT
+// (R9/Manual p.33), so the sentence is donatable: applied as a graft to a host
+// with its own graft cause, the pay-[1] rider fires off THAT cause, addressed
+// to the host's controller. Rotling was the only card in the whole pool with a
+// [Switch]-marked EFFECT and no `graftEffect` — i.e. `isGraftable('Rotling')`
+// answered false and the card could not be applied at all — so the marker's
+// donatable half was dead text (the R125 shape: one clause works, the other
+// silently does nothing). The effect body is shared verbatim; nothing in it
+// reads a bin, so it resolves the same from a graft cause as from the bin.
+//
+// The graft CAUSE half is declared for the same reason the trash-trigger
+// family declares it (Afflicting Anima, Maw of Despair, Blightwalker):
+// fidelity to the printed symbol. It can never actually carry riders here —
+// a zone firing is anchored on R51's detached stand-in, whose `mods` is `[]`
+// by construction — which is the same structural argument R51 records for
+// trash triggers, extended one zone over.
+//
+// ONE LIVE CONSEQUENCE worth naming: a graftable Rotling can be applied OUT OF
+// THE BIN, and apply.ts's `zoneTake` routes that removal through
+// `E.removeFromBin(seat, i, 'modded')` (R124 / CARD-TODO #26). So grafting
+// Rotling out of your own bin fires Rotling's own 'leftBin' trigger. That
+// bypass was fixed blind — "no reachable card noticed only because Rotling
+// carries no mod symbol" — and this is the card that reaches it.
+const rotlingPay: EffectDef = {
+  run: (g, ctx) => {
+    if (g.openMana(ctx.controller) < 1) {
+      ctx.refundBudget?.();   // R113: no offer could be made, so the use is not spent
+      g.ev('info', 'Rotling: cannot pay [1] — no draw, no rot.');
+      return;
+    }
+    const pays = ctx.choose('pay', {
+      kind: 'payOrDecline', seat: ctx.controller,
+      prompt: 'Rotling: pay [1] to draw a card and gain 1 rot?',
+      options: [{ label: 'Pay [1] — draw a card, gain 1 rot', value: true }, { label: 'Decline', value: false }],
+    });
+    if (pays !== true) {
+      ctx.refundBudget?.();   // R113: declining a "you may" never spends it
+      g.ev('info', 'Rotling: the [1] is not paid — no draw, no rot.');
+      return;
+    }
+    g.payMana(ctx.controller, 1);
+    g.draw(ctx.controller, 1);
+    g.gainRot(ctx.controller, 1);
+  },
+};
 card('Rotling', {
   abilities: [{
     type: 'triggered', events: ['leftBin'], zone: 'bin', self: true, bounded: true,
+    graftCause: true,
     label: 'you may pay [1] to draw a card and gain 1 rot',
-    effect: {
-      run: (g, ctx) => {
-        if (g.openMana(ctx.controller) < 1) {
-          ctx.refundBudget?.();   // R113: no offer could be made, so the use is not spent
-          g.ev('info', 'Rotling: cannot pay [1] — no draw, no rot.');
-          return;
-        }
-        const pays = ctx.choose('pay', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Rotling: pay [1] to draw a card and gain 1 rot?',
-          options: [{ label: 'Pay [1] — draw a card, gain 1 rot', value: true }, { label: 'Decline', value: false }],
-        });
-        if (pays !== true) {
-          ctx.refundBudget?.();   // R113: declining a "you may" never spends it
-          g.ev('info', 'Rotling: the [1] is not paid — no draw, no rot.');
-          return;
-        }
-        g.payMana(ctx.controller, 1);
-        g.draw(ctx.controller, 1);
-        g.gainRot(ctx.controller, 1);
-      },
-    },
+    effect: rotlingPay,
   }],
+  graftEffect: { bounded: true, effect: rotlingPay },
 });
 
 // "[Augment] At the start of deployment, you may discard your hand and
