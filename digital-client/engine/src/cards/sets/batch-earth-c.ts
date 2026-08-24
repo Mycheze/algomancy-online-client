@@ -328,23 +328,60 @@ card('Tenebrous Bulborb', {
  *     is the plumbing flag that lets such a card be applied at all;
  *   · `xMin` / the `xPreview*` UI hooks, which are cost and display detail.
  */
+/**
+ * The keys a CardDef may carry that are printed IDENTITY or presentation
+ * rather than rules text. Everything NOT in here counts as an ability.
+ *
+ * The list is INVERTED on purpose. An explicit list of behaviour fields —
+ * which is what this started as — is wrong by default: it goes stale the day
+ * someone adds a new channel to CardDef, and it goes stale SILENTLY, because
+ * the card with the new behaviour simply starts being offered again. Written
+ * this way, a new field is an ability until somebody deliberately says it is
+ * not, and the failure mode is a card being refused (visible) rather than a
+ * card being smuggled out of the bin (invisible). That is the same trade the
+ * repo makes for its exemption lists everywhere else.
+ *
+ * `prophecy` is inert and it is the only judgement call here: a Prophecy is a
+ * release condition on a CACHED card, not text-box rules, and both cards that
+ * carry one (The Foretold, Tithe Enforcer) print a genuinely empty text box.
+ * `attrs`/`augmentAttrs`/`augmentable` are inert by the card's own reminder
+ * text, "(Attributes are not abilities.)".
+ */
+const INERT_KEYS = new Set([
+  'name', 'kind', 'cost', 'mana', 'power', 'toughness', 'type', 'text',
+  'factions', 'image', 'timing', 'burst', 'virus', 'unstable',
+  'attrs', 'augmentAttrs', 'augmentable',   // "(Attributes are not abilities.)"
+  'prophecy',                                // a cache-release condition, not text
+  'xMin', 'xPreview', 'xPreviewRows',        // cost arithmetic and UI detail
+]);
+
+/**
+ * "A unit with NO ABILITIES", read literally (2026-08-24 literal-reading audit).
+ *
+ * This used to test four channels — `abilities`, `augmentText`, `graftEffect`,
+ * `spellEffect` (plus `ambush`) — which is the shape of the mechanism the
+ * author had in mind, not the printed word. Forty-four cards in the pool carry
+ * real printed rules text through some OTHER channel and were therefore
+ * offered as "ability-free": Sandstone Defender ("[Augment] Your other units
+ * gain +0/+2"), Towering Colossus, Transmogrifant, Aberrant Statweaver and
+ * Monke are `statics`; Tranquility is a `costMod`; Dispatch Courier a
+ * `playPermission`; Automaton of Abundance, Cosmic Conspirator and Worldbender
+ * are replacements; Gatekeeper of Souls is `mustBeTargeted`. Every one of them
+ * has a text box.
+ *
+ * A static IS an ability — the engine says so itself where it silences one
+ * (`E.staticsFor`: "R62: a silenced unit radiates nothing — a static IS an
+ * ability"). So the test is "the card def carries no behaviour at all", by way
+ * of INERT_KEYS above.
+ */
 const abilityFree = (n: string): boolean => {
-  const d = getCard(n);
-  return d.kind === 'unit'
-    && !(d.abilities?.length) && !(d.augmentText?.length)
-    && !d.graftEffect && !d.spellEffect && !d.ambush
-    // continuous text (R59/R94/R95/R97/R118/R123) — all of it printed
-    && !(d.statics?.length) && !(d.projects?.length) && !(d.costMods?.length)
-    && !(d.effectAttrs?.length) && !(d.modPermissions?.length)
-    && !(d.playPermissions?.length) && !(d.binPlayPermissions?.length)
-    && !(d.amountMods?.length)
-    // printed one-line permissions and restrictions
-    && !d.mustBeTargeted && !d.prophesyFromBin && !d.playsFromBin
-    && !d.noPlayFromHand && !d.playsIntoFormation
-    // replacement effects ("If you would …", "Skip your draft step")
-    && !d.replaceRotDamage && !d.replaceCombatDamageToPlayer && !d.replaceCardStep
-    && !d.replaceLifeGain && !d.replaceCounters
-    && !d.replaceTokenCreation && !d.replaceTokenBatch;
+  const d = getCard(n) as unknown as Record<string, unknown>;
+  if (d.kind !== 'unit') return false;
+  return !Object.keys(d).some((k) => {
+    if (INERT_KEYS.has(k)) return false;
+    const v = d[k];
+    return Array.isArray(v) ? v.length > 0 : !!v;
+  });
 };
 const bonesculptorPicks = (g: E, seat: Seat): { label: string; value: number; card: string }[] => {
   const bin = g.player(seat).bin;
