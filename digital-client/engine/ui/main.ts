@@ -11,7 +11,7 @@ import {
   blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens,
   dismissSeenCard, dismissSeenHand,
   erasedPileView, groupReveal, growCardLedger, linkCardNames, modHostCount, modHostPhrase,
-  modHosts, onlyKnownNames, optionPingId,
+  modHosts, onlyKnownNames, optionPingId, packBadgeLine,
   partitionOptions, planOffer, playableCachedNames, seenHandView, spellAugmentNote,
   stackAbilityRows, stackItemX, stackItemModes,
   prismiteClickPlan, resourceMenuElements,
@@ -19,7 +19,8 @@ import {
   watchCast,
 } from './inspect.ts';
 import type {
-  AutoPassPlan, CacheBlock, CastWatch, FormationRole, ModHosts, SeenHandDismissals, UnitClickOption,
+  AutoPassPlan, Badge, CacheBlock, CastWatch, FormationRole, ModHosts, SeenHandDismissals,
+  UnitClickOption,
 } from './inspect.ts';
 import {
   autoPassDecision, blockVerdict, passEndsBattlePhase, ridableTokens, sendableTokens, shouldAskRide,
@@ -1125,9 +1126,6 @@ function unpackXRows(s: string): XPreviewRow[] {
 }
 
 // ── rendering ─────────────────────────────────────────────────────────
-/** one corner chip on a card scan (cardHtml `badges`) */
-interface Badge { t: string; mod?: boolean; ctr?: boolean; html?: boolean; cls?: string; title?: string }
-
 function cardHtml(name: string, opts: {
   playable?: boolean; candidate?: boolean; selected?: boolean; carrying?: boolean; modhost?: boolean;
   /** UZRG: it has a legal activated ability — a DIFFERENT fact from `playable`
@@ -1141,12 +1139,18 @@ function cardHtml(name: string, opts: {
   // one class with no behaviour attached to it, so nothing but a test notices
   // when it stops being emitted and the green halo quietly goes away.
   const cls = cardClasses(opts);
-  const badges = (opts.badges ?? []).map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''} ${b.cls ?? ''}"${
+  // BL-23/R136: the strip is ONE line. Chips are pushed from a dozen call
+  // sites that cannot each know how many others there will be, so the fold
+  // decision lives here, in the container — ui/inspect.ts packBadgeLine, where
+  // 123-badge-line can reach it. Nothing is dropped: what does not fit rides in
+  // the "+N" chip's tooltip, and the strip itself carries the full list.
+  const line = packBadgeLine(opts.badges ?? []);
+  const badges = [...line.shown, ...(line.more ? [line.more] : [])].map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''} ${b.cls ?? ''}"${
     b.title ? ` title="${esc(b.title)}"` : ''}>${b.html ? b.t : esc(b.t)}</span>`).join('');
   return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}>
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
     <div class="artfallback">${esc(name)}</div>
-    ${badges ? `<div class="badges">${badges}</div>` : ''}
+    ${badges ? `<div class="badges${line.more ? ' hasmore' : ''}"${line.more ? ` title="${esc(line.title)}"` : ''}>${badges}</div>` : ''}
     ${opts.stats ? `<div class="stats">${opts.stats}</div>` : ''}
     ${opts.dmg ? `<div class="dmg">${opts.dmg}</div>` : ''}
   </div>`;

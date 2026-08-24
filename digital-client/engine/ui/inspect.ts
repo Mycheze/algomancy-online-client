@@ -516,6 +516,130 @@ export function cardClasses(f: CardFlags): string[] {
   return cls;
 }
 
+// ── R136: the badge strip is ONE line ─────────────────────────────────
+
+/** one corner chip on a card scan (cardHtml `badges`) */
+export interface Badge {
+  t: string;
+  mod?: boolean;
+  ctr?: boolean;
+  /** `t` is markup, not text — a mod chip carries an icon and a motion key */
+  html?: boolean;
+  cls?: string;
+  title?: string;
+}
+
+/** what cardHtml actually draws: the chips that fit, the ones folded away,
+ * and the "+N" chip that keeps the folded ones reachable on hover */
+export interface BadgeLine {
+  /** the chips to draw, in the order the call sites pushed them */
+  shown: Badge[];
+  /** the chips that did not fit — never dropped, only folded into `more` */
+  hidden: Badge[];
+  /** the "+N" chip to draw last, or null when everything fit */
+  more: Badge | null;
+  /** every chip's label, for the strip's own tooltip */
+  title: string;
+}
+
+/**
+ * The badge strip used to be `flex-wrap: wrap`, so a unit wearing counters, an
+ * activated ability, three attributes and two mods spilled down over its art
+ * until the scan was unreadable (BL-23). The owner's complaint is the WRAPPING,
+ * not the badge count — so nothing may be dropped, only folded.
+ *
+ * Widths are in CSS pixels, modelled rather than measured — this runs while the
+ * HTML is being built, long before anything has a box. GLYPH/CHIP/MORE were
+ * calibrated against Chrome's real chip boxes at the strip's 9px font
+ * (`+2/+2` 32px, `sent` 26px, `+Ironhide` 49px, `+2` 18px), and land within
+ * about 15% either way. `.length` (not code points) is deliberate: an astral
+ * emoji counts 2, which is roughly what it renders as. The model decides what
+ * is WORTH putting on the line; style.css's `nowrap` is what guarantees there
+ * is only ever one of them.
+ */
+const GLYPH = 4.4;
+const CHIP = 10;
+/** the "+N" chip's own width — reserved before anything else is fitted, so the
+ * affordance that reaches the folded chips can never be squeezed out */
+const MORE = 20;
+/** the strip on the default 78px board scan (style.css `--cw`), less its insets */
+export const BADGE_LINE_PX = 74;
+
+/** a badge's plain text: the chip's own label with the icon markup read out of
+ * it, so a mod chip measures (and lists) as the words a player would read */
+export function badgeLabel(b: Badge): string {
+  if (!b.html) return b.t;
+  return b.t
+    .replace(/<img\b[^>]*\balt="([^"]*)"[^>]*>/g, '$1')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+    .trim();
+}
+
+/** how many pixels of the strip one chip eats, its gap included */
+export function badgeWidth(b: Badge): number {
+  return badgeLabel(b).length * GLYPH + CHIP;
+}
+
+/** A printed attribute is the only chip that repeats something the card itself
+ * already says — the inspector's text box has it either way. Live state (a
+ * counter, an activated ability, a mod, "sent", a prophecy window) is the chip
+ * that has nowhere else to be, so it is the last to fold.
+ *
+ * A mod chip also carries the mod's motion key (ui/main.ts unitHtml), so
+ * folding one costs its flight a landing spot — ui/anim.ts elFor is null-safe
+ * and pulses fall back to the host unit, so it degrades to no flourish rather
+ * than to a crash. Ranking mods above attributes keeps that rare. */
+const badgeRank = (b: Badge): number => (b.mod || b.ctr || b.cls ? 0 : 1);
+
+/** one over-long label, cut to the strip's width, keeping its full text on the
+ * chip's own tooltip. A single long chip never overflows, so it would never
+ * reach the "+N" — without this it would just be clipped silently by CSS. */
+function squeeze(b: Badge, px: number): Badge {
+  // markup is not safe to cut mid-tag; CSS ellipsis and the strip tooltip cover it
+  if (b.html) return b;
+  const max = Math.max(1, Math.floor((px - CHIP) / GLYPH));
+  if (b.t.length <= max) return b;
+  return { ...b, t: `${b.t.slice(0, max - 1)}…`, title: b.title ?? b.t };
+}
+
+/**
+ * Hold a badge list to one line `px` wide.
+ *
+ * Everything that fits is shown in the order it was pushed; the rest folds into
+ * a "+N" chip whose tooltip names them. At least one chip is always shown, even
+ * when it alone is wider than the strip — an empty strip on a badged card would
+ * be a worse lie than a clipped one.
+ */
+export function packBadgeLine(badges: Badge[], px = BADGE_LINE_PX): BadgeLine {
+  const fitted = badges.map(b => squeeze(b, px));
+  const title = fitted.map(badgeLabel).join(' · ');
+  const total = fitted.reduce((n, b) => n + badgeWidth(b), 0);
+  if (total <= px) return { shown: fitted, hidden: [], more: null, title };
+
+  // pick by rank, break ties by push order — but DRAW in push order, so folding
+  // an attribute away never shuffles the chips that stayed
+  const byRank = fitted.map((_, i) => i)
+    .sort((a, b) => (badgeRank(fitted[a]!) - badgeRank(fitted[b]!)) || a - b);
+  const keep = new Set<number>();
+  let used = MORE;
+  for (const i of byRank) {
+    const w = badgeWidth(fitted[i]!);
+    // a wide chip being rejected must not block a narrow one behind it
+    if (keep.size && used + w > px) continue;
+    keep.add(i);
+    used += w;
+  }
+  const shown = fitted.filter((_, i) => keep.has(i));
+  const hidden = fitted.filter((_, i) => !keep.has(i));
+  return {
+    shown,
+    hidden,
+    more: { t: `+${hidden.length}`, cls: 'more', title: hidden.map(badgeLabel).join('\n') },
+    title,
+  };
+}
+
 // ── R79: where a mod-in-progress may LAND ─────────────────────────────
 
 /** the mod the client is placing (UiState.modding), minus the seat. Leave

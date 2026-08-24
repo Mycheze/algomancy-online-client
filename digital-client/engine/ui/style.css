@@ -77,8 +77,23 @@ button:disabled { opacity: .4; cursor: default; }
   padding: 0 4px; font-weight: 700; font-size: 12px; }
 .card .dmg { position: absolute; bottom: 2px; left: 2px; background: var(--danger); border-radius: 4px;
   padding: 0 4px; font-weight: 700; font-size: 11px; }
-.card .badges { position: absolute; top: 2px; left: 2px; right: 2px; display: flex; gap: 2px; flex-wrap: wrap; }
-.card .badge { background: rgba(20,24,30,.9); border: 1px solid #444; border-radius: 3px; font-size: 9px; padding: 0 3px; }
+/* BL-23/R136: ONE line, at every card width — the same strip is drawn over a
+   40px sent-strip thumb and a 116px cache entry. `nowrap` is the guarantee and
+   ui/inspect.ts packBadgeLine decides what is worth putting on the line
+   (budgeted for the 78px board scan, style.css --cw); chips shrink and
+   ellipsise so a narrower card still gets one row.
+
+   `.more` is pinned to the strip's right edge instead of riding in the flow:
+   it is the ONLY way back to the chips that were folded away, and on the
+   smallest thumbs a trailing flex item is exactly what `overflow: hidden`
+   would cut in half. `.hasmore` reserves its lane so it never sits on a chip. */
+.card .badges { position: absolute; top: 2px; left: 2px; right: 2px; display: flex; gap: 2px;
+  flex-wrap: nowrap; overflow: hidden; align-items: flex-start; }
+.card .badges.hasmore { padding-right: 24px; box-sizing: border-box; }
+.card .badge { background: rgba(20,24,30,.9); border: 1px solid #444; border-radius: 3px; font-size: 9px; padding: 0 3px;
+  flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .badge.more { position: absolute; top: 0; right: 0; cursor: help;
+  border-color: #777; color: var(--dim); font-weight: 700; }
 .card .badge.mod { border-color: var(--accent); color: var(--accent); }
 .card.playable { outline: 2px solid var(--glow); cursor: pointer; }
 /* UZRG: "units with activated abilities don't get a green highlight around
@@ -90,8 +105,9 @@ button:disabled { opacity: .4; cursor: default; }
 .card.activatable { cursor: pointer; border-radius: 6px;
   box-shadow: 0 0 3px 1px rgba(111,195,111,.75), 0 0 10px 2px rgba(111,195,111,.3);
   animation: actpulse 1.8s ease-in-out infinite; }
-.card .badge.act { border-color: var(--glow); color: var(--glow); background: rgba(10,20,10,.92);
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* the shrink-and-ellipsise this used to carry alone is now on every `.badge`
+   (R136) — the ability chip was just the first one long enough to need it */
+.card .badge.act { border-color: var(--glow); color: var(--glow); background: rgba(10,20,10,.92); }
 .card.candidate { outline: 3px solid var(--target); cursor: pointer; }
 .card.selected { outline: 3px solid #7fc0ff; cursor: pointer; }
 .card.carrying { outline: 3px dashed #7fc0ff; }
