@@ -339,7 +339,10 @@ function doActivateResource(e: E, seat: Seat, index: number): void {
  * drop the bonus for wood/metal/light/dark. Do not "implement" those faces;
  * the conformance sweep in `12-fire-a.test.ts` fails loudly if anyone does.
  *
- * ONE CALLER, by R116: activation. An exchange is not an activation. */
+ * TWO CALLERS as of R132: a plain activation, and a prismite being spent —
+ * whose printed text ends "then activate it", so the bonus is owed there too.
+ * (This comment used to read "ONE CALLER, by R116: an exchange is not an
+ * activation", which the owner reversed on playtest report #92.) */
 function maybeGrantShard(e: E, seat: Seat, kind: ResourceKind): void {
   if (kind === 'prismite' || kind === 'shard') return;
   if (e.affinity(seat, kind) < 3) return;
@@ -361,13 +364,27 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
   e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');
   r.kind = element;
   e.ev('resourceActivated', `${e.pname(seat)} exchanges a Prismite for a ${element} resource.`, { seat, kind: element });
-  // R116: NO affinity shard here. An exchange is not an activation. The
-  // printed text pays out "when I ACTIVATE", and Caleb draws the line
-  // explicitly: "'activating the prismite' is like playing your land for
-  // turn, but cracking the fetchland doesn't take an additional land drop."
-  // The prismite was activated as a PRISMITE (which pays nothing, p.18), and
-  // trading it in later does not retroactively make that an activation of the
-  // element. Only doActivateResource calls maybeGrantShard.
+  // R132 — THE AFFINITY SHARD IS OWED. This is the reversal of R116, and the
+  // card's own text is the argument (owner, playtest report #92):
+  //
+  //   "Erase me: Create a non-prismite resource, THEN ACTIVATE IT. Do this
+  //    only during the mana step. (This does not use one of your activations
+  //    for turn.)"
+  //
+  // So the second half of a prismite's line IS an activation of the new
+  // resource, and the Manual p.18 bonus pays out on activating your third of
+  // an element however that activation came about. R116 read the operation as
+  // an EXCHANGE — a later mutation of an already-activated resource — and
+  // reasoned from that model rather than from the card. The engine had
+  // already disagreed with itself: the line above fires a 'resourceActivated'
+  // event, so every listener in the game has always seen this as an
+  // activation, and only the shard check was carved out.
+  //
+  // Caleb's fetchland line still holds and is not in tension: it is about the
+  // ACTIVATION ALLOWANCE ("doesn't take an additional land drop"), which is
+  // the reminder's "does not use one of your activations for turn" — and the
+  // allowance is charged in doActivateResource, not here.
+  maybeGrantShard(e, seat, element);
 }
 
 /**

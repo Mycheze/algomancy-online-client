@@ -6078,6 +6078,16 @@ the old rule.
 
 ## R116 — An EXCHANGE is not an ACTIVATION: no affinity Shard for a traded Prismite
 
+> ## ⚠ REVERSED BY [R132](#r132--a-prismite-does-activate-its-new-resource-r116-reversed).
+> The owner reversed this on 2026-08-24 from playtest ANBB (report #92):
+> *"Prismites are behaving wrong. You told me they shouldn't trigger the
+> creation of a shard, but that's not true. It literally says on them that you
+> make a resource then activate it."* The section is kept in full below,
+> because how it went wrong is the useful part: **it never quoted the card.**
+> It reasoned from the engine's `exchange` MODEL — a mutation of an
+> already-activated resource — and from a fetchland analogy, and neither is
+> what the card says. Do not restore it.
+
 *(Owner, 2026-08-23. **Engine bug, quietly live since the p.18 bonus shipped.** This is a
 NERF: prismite-heavy play had been collecting a Shard it was never owed.)*
 
@@ -6983,3 +6993,57 @@ other three (a negated spell unit, "target spell effect" refusing the plain
 unit, Finality catching it) pass in both directions **by design**: they pin
 behaviour R128 *confirms* rather than changes, and a green-in-both-directions
 test is exactly what "we checked this and did not move it" looks like.
+
+
+## R132 — a Prismite DOES activate its new resource (R116 reversed)
+
+*(Owner, 2026-08-24, playtest ANBB report #92. One line of engine; a BUFF,
+restoring what R116 took away a day earlier.)*
+
+### The card settles it
+
+> "Erase me: Create a non-prismite resource, **then activate it**. Do this only
+> during the mana step. {i}(This does not use one of your activations for turn.)"
+
+The second half of a prismite's own line **is an activation**, so the Manual
+p.18 affinity bonus is owed on it like any other: activate your third of an
+element, take a free dormant Shard. R116 had carved the exchange out.
+
+### Why the old ruling was wrong, which is the transferable part
+
+**R116 never quoted the printed text.** It reasoned from the engine's model —
+`doExchangePrismite` mutates a resource in place, so it looked like a "later,
+separate" act — and then reached for an analogy (cracking a fetchland) to
+justify what the model already did. That is the mechanism deciding the rule,
+the same failure as [R125](#r125--everything-is-literal-rotspore-herald-reaches-spells-and-spell-tokens)
+(a `StaticMod` typed over `Entity` became "Rotspore only affects units") and
+[R128](#r128--anything-on-the-stack-is-an-effect-r60-reversed) ("a unit has no
+parts to negate" became "a unit is not an effect").
+
+**The engine was already contradicting itself**, which is the tell to look for
+next time: `doExchangePrismite` fires a `'resourceActivated'` event, so every
+listener in the game has always been told this is an activation. Only the shard
+check was special-cased out of it.
+
+**Caleb's fetchland line survives and is not in tension.** *"'Activating the
+prismite' is like playing your land for turn, but cracking the fetchland
+doesn't take an additional land drop."* That is about the ACTIVATION
+ALLOWANCE — the reminder's "does not use one of your activations for turn" —
+which is charged in `doActivateResource` and not here. You get the Shard; you
+do not get a second activation. Both halves of the card are now true at once.
+
+### What it looked like at the table
+
+ANBB, 2026-08-24, is the whole argument on one board: Ben reached three dark
+affinity **through prismites** and was paid nothing, while Rashi's third fire
+came from an ordinary activation and paid. Same board state, two answers,
+decided by how you happened to get there. Pinned in `21-fixes` as
+`R132: the ANBB position`, asserting both seats on one harness.
+
+### Tests
+
+`21-fixes` — the third copy by prismite pays; a second copy pays nothing (the
+bar is affinity, not the prismite); and the ANBB two-seat comparison. The
+R116 test is not deleted but INVERTED IN PLACE, carrying the full history of
+both reversals, because this test has now flipped twice and the next person
+deserves to know that before flipping it a third time.

@@ -129,37 +129,83 @@ test('below 3 affinity no shard; shards give mana but never affinity', () => {
   assert.ok(h.q.openMana(0) >= 5, 'shards are mana like any resource');
 });
 
-test('R116: exchanging a Prismite into your 3rd element copy grants NO shard — an exchange is not an activation', () => {
-  // INVERTED 2026-08-23. This test used to assert the opposite ("…also grants
-  // the shard") and it was asserting a bug: doExchangePrismite called
-  // maybeGrantShard, so trading a Prismite in paid the Manual p.18 affinity
-  // bonus as though the resource had been activated as that element.
+test('R132: spending a Prismite into your 3rd element copy DOES grant the shard — "then activate it"', () => {
+  // ⚠ THIS TEST HAS NOW BEEN INVERTED TWICE, which is worth reading before
+  // touching it a third time.
   //
-  // The owner's ruling: "an exchange is not an activation." The printed text
-  // pays out "when I ACTIVATE", and the activation already happened — to a
-  // PRISMITE, which pays nothing (R17). Caleb: "'activating the prismite' is
-  // like playing your land for turn, but cracking the fetchland doesn't take
-  // an additional land drop." This is a NERF to prismite-heavy play.
+  //  · originally: the exchange granted the shard.
+  //  · 2026-08-23 (R116): inverted to "grants NO shard", on the reading that
+  //    an exchange is a later mutation of an already-activated resource —
+  //    "an exchange is not an activation".
+  //  · 2026-08-24 (R132): inverted BACK by the owner, from playtest ANBB
+  //    report #92, and this time the card's own printed text is the argument:
+  //
+  //      "Erase me: Create a non-prismite resource, THEN ACTIVATE IT. Do this
+  //       only during the mana step. (This does not use one of your
+  //       activations for turn.)"
+  //
+  // R116 never quoted that line. It reasoned from the engine's `exchange`
+  // MODEL — which mutates a resource in place — rather than from the card,
+  // which erases the prismite, creates a resource and activates it. The
+  // engine had already disagreed with itself: doExchangePrismite fires a
+  // 'resourceActivated' event, so every listener in the game has always seen
+  // this as an activation; only the p.18 shard check was carved out.
+  //
+  // Caleb's fetchland line ("cracking the fetchland doesn't take an
+  // additional land drop") is NOT in tension and survives: it is about the
+  // ACTIVATION ALLOWANCE, which is the reminder's "does not use one of your
+  // activations for turn", and which is charged in doActivateResource — not
+  // here. You get the shard; you do not get a second activation.
   const h = new Harness(2106);
   giveResources(h, 0, 'water', 2, 'open');
   giveResources(h, 0, 'prismite', 1, 'open');
   const idx = h.state.players[0]!.resources.findIndex(r => r.kind === 'prismite' && r.state === 'open');
   h.do({ type: 'exchangePrismite', seat: 0, index: idx, element: 'water' });
-  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 0,
-    'no p.18 bonus on an exchange');
-  // and the exchange itself still WORKS — R17 is untouched
+  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 1,
+    'the p.18 affinity bonus is owed — the prismite\'s own text ends "then activate it"');
+  // the exchange itself still WORKS exactly as R17 says
   assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'water').length, 3,
     'the prismite really became a water resource');
   assert.equal(h.state.players[0]!.resources[idx]!.state, 'open', 'keeping its state');
   assert.equal(h.q.affinity(0, 'water'), 3, 'and it counts for affinity like any water');
+});
 
-  // ACTIVATING a dormant water at that same affinity still pays, so the ruling
-  // narrows the exchange and nothing else
-  giveResources(h, 0, 'water', 1, 'dormant');
-  const d = h.state.players[0]!.resources.findIndex(r => r.kind === 'water' && r.state === 'dormant');
-  h.do({ type: 'activateResource', seat: 0, index: d });
-  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 1,
-    'the activation path is unchanged');
+test('R132: a Prismite spent into your SECOND copy pays nothing — the p.18 bar is three', () => {
+  const h = new Harness(2107);
+  giveResources(h, 0, 'water', 1, 'open');
+  giveResources(h, 0, 'prismite', 1, 'open');
+  const idx = h.state.players[0]!.resources.findIndex(r => r.kind === 'prismite' && r.state === 'open');
+  h.do({ type: 'exchangePrismite', seat: 0, index: idx, element: 'water' });
+  assert.equal(h.state.players[0]!.resources.filter(r => r.kind === 'shard').length, 0,
+    'two water is not three — the bonus is the affinity bar, not the prismite');
+  assert.equal(h.q.affinity(0, 'water'), 2);
+});
+
+test('R132: the ANBB position — a third element reached BY PRISMITE pays, exactly as a plain activation does', () => {
+  // The reported game (playtest #92, room ANBB, 2026-08-24). Ben built his
+  // third dark affinity out of prismites and was paid nothing, while the
+  // opponent's third fire came from an ordinary activation and paid. Two
+  // players, the same board state, different answers — which is what made it
+  // worth reporting. Both sides are asserted here on one harness.
+  const h = new Harness(2108);
+  // seat 0 reaches three dark THROUGH A PRISMITE
+  giveResources(h, 0, 'dark', 2, 'open');
+  giveResources(h, 0, 'prismite', 1, 'open');
+  const p = h.state.players[0]!.resources.findIndex(r => r.kind === 'prismite' && r.state === 'open');
+  h.do({ type: 'exchangePrismite', seat: 0, index: p, element: 'dark' });
+  const byPrismite = h.state.players[0]!.resources.filter(r => r.kind === 'shard').length;
+
+  // seat 1 reaches three fire by ACTIVATING one
+  giveResources(h, 1, 'fire', 2, 'open');
+  giveResources(h, 1, 'fire', 1, 'dormant');
+  const d = h.state.players[1]!.resources.findIndex(r => r.kind === 'fire' && r.state === 'dormant');
+  h.do({ type: 'activateResource', seat: 1, index: d });
+  const byActivation = h.state.players[1]!.resources.filter(r => r.kind === 'shard').length;
+
+  assert.equal(byPrismite, 1, 'the prismite route pays');
+  assert.equal(byActivation, 1, 'the activation route pays');
+  assert.equal(byPrismite, byActivation,
+    'and they pay THE SAME — the asymmetry in ANBB is what report #92 is about');
 });
 
 // ── game elements ─────────────────────────────────────────────────────
