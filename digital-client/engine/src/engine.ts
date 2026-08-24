@@ -1599,8 +1599,10 @@ export class E {
 
   // ── the bin & trashing (R40) ────────────────────────────────────────
   /**
-   * Every card that enters a bin goes through here. R40: **a nontoken card
-   * entering a bin from anywhere other than the stack is trashed**, and it is
+   * Everything that enters a bin goes through here. R40: **anything entering a
+   * bin from anywhere other than the stack is trashed** — tokens included, and
+   * NOT because a token is a card (R133: it is not), but because trashing is
+   * defined by the destination, not by the object. It is
    * trashed BY THE OWNER OF THE BIN IT ENTERS — so `seat` is both the bin's
    * owner and the trasher, whatever the card's own owner is (Pull Under moves
    * a dead enemy unit into the caster's bin: the caster trashes it).
@@ -1625,11 +1627,17 @@ export class E {
    * and recall() bin the card first but have to emit (and fire) their own
    * 'died'/'despawned' event before the trash, or the game log reads backwards.
    *
-   * R69: a TOKEN does reach here. Tokens are cards ("Tokens are temporary
-   * cards" opens the Tokens section of both rulebooks), a dying one enters the
-   * bin before it is erased, and it does not come from the stack — which is
-   * R40's whole definition of trashing. Bena 2026-08-21, reversing R40's old
-   * flat "tokens are never trashed" clause.
+   * R69: a TOKEN does reach here, and R133 (2026-08-24) had to REBUILD the
+   * argument for why without changing the answer. This comment used to open
+   * "Tokens are cards", quoting both rulebooks' "Tokens are temporary cards" —
+   * and the owner has since ruled the opposite: **tokens are NOT cards.**
+   *
+   * The outcome is unchanged because it never needed that premise. Trashing is
+   * defined by WHERE something goes, not by what it is: a dying token really
+   * does enter the bin (Caleb: "yes, for the purposes of triggers") and it does
+   * not come from the stack, which is the whole of R40's definition. The lone
+   * "nontoken" qualifier in the printed wording comes from Void Scavenger, a
+   * card CUT from the set. Bena 2026-08-21, reaffirmed 2026-08-24.
    *
    * R70: `anchor` is the DETACHED entity the card was, when the trash came from
    * one leaving play. It supplies the region (the one it died in, not the

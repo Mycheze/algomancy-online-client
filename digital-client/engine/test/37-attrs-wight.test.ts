@@ -610,7 +610,7 @@ test('R69: a dying Wraith IS trashed, then erased out of the bin', () => {
   whiteBox(h, e => { id = e.createWraith(P).id; });
   whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
   const t = trashes(h);
-  assert.equal(t.length, 1, 'a token is a card and it did enter a bin (R69)');
+  assert.equal(t.length, 1, 'a token is NOT a card (R133) but it did enter a bin, which is what trashing keys on (R69)');
   assert.equal(t[0]!.data!['card'], 'Wraith');
   assert.deepEqual(h.state.players[P]!.bin, [], 'the state-based sweep erased it again');
   assert.deepEqual(h.q.erased(P), ['Wraith'], 'and it shows in the erased pile');

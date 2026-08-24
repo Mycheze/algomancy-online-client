@@ -428,11 +428,13 @@ trashed.** This rule used to read "a **nontoken** card entering a bin…" and
 carried the flat clause *tokens are never trashed*. Bena has ruled the other
 way, and the three premises are each independently sourced:
 
-1. **Tokens are cards.** *"Tokens are temporary cards"* opens the Tokens
-   section of BOTH rulebooks. Algomancy does not draw Magic's token/nontoken
-   line; token-ness here is physical provenance (anything you would not
-   shuffle into the deck), and the game carves tokens out by printing the
-   literal word **"nontoken"** where it means to.
+1. ~~**Tokens are cards.**~~ ⚠ **THIS PREMISE IS DEAD — see
+   [R133](#r133--tokens-are-not-cards-and-trashing-never-needed-them-to-be).**
+   It read: *"Tokens are temporary cards"* opens the Tokens section of BOTH
+   rulebooks, so Algomancy does not draw Magic's token/nontoken line. The owner
+   ruled the opposite on 2026-08-24: **tokens are NOT cards.** The CONCLUSION
+   below is unaffected, because it rests on premises 2 and 3, which stand on
+   their own — trashing keys on the DESTINATION, not on what the object is.
 2. **A dying token does enter the bin** — see R69, with Caleb's rulings.
 3. **It does not come from the stack**, which is this rule's entire definition
    of trashing.
@@ -7496,3 +7498,61 @@ identity, and two identical spells on one stack would confuse it. Its own
 ruling, if anyone wants it.
 
 Pinned by `test/121-another-identity.test.ts`.
+
+
+## R133 — tokens are NOT cards, and trashing never needed them to be
+
+*(Owner, 2026-08-24. No behaviour change: a REASONING repair.)*
+
+### The ruling
+
+> "Everything is a card, including units. Tokens are NOT cards, however."
+
+and, asked directly whether that pulls trashing back with it:
+
+> "Tokens are trashed, yes."
+
+### Why both are true at once
+
+[R40](#r40--trashing-a-card-entering-a-bin-from-anywhere-but-the-stack)'s
+2026-08-21 amendment made tokens trashable and listed three premises. The
+FIRST was "tokens are cards", and it is now dead. The other two never depended
+on it:
+
+- a dying token **really does enter the bin** before the state-based sweep
+  erases it — Caleb, *"yes, for the purposes of triggers"*, and *"Technically
+  it does enter your hand and then gets erased immediately"* (R69);
+- the only printed wording that restricts trashing to a **nontoken** card is
+  the reminder text of **Void Scavenger, a card CUT from the set**.
+
+So the rule is: **trashing is defined by the DESTINATION, not by the object.**
+Anything entering a bin from anywhere other than the stack is trashed. A token
+qualifies not because it is a card but because it goes to the bin.
+
+### Void Mandible's "nontoken card" is shorthand, and provisional
+
+Void Mandible is the ONLY card in the pool printing "nontoken **card**" — the
+other 25 "nontoken" cards qualify *spell*, *unit*, *ally* or *enemy*, all
+things a token genuinely is. That lone exception looked like evidence that
+tokens ARE cards. The owner's answer:
+
+> "I think Void Mandible is just trying to save space (card < unit or spell).
+> And its a new card, so might be changed"
+
+So "card" there means "unit or spell", chosen to fit the text box — and the
+wording may not survive. **Do not build a rule on that card's noun.**
+[R129](#r129--a-spell-token-is-a-token-and-a-unit-is-a-card-two-events-that-were-logged-but-never-fired)
+already implements it as unit + spell + ambush with spell tokens excluded,
+which is what the shorthand means, so nothing changes.
+
+### The lesson, which is the third time today
+
+R40 kept the right answer while carrying a premise that had died. That is the
+same failure as [R116](#r116--an-exchange-is-not-an-activation-no-affinity-shard-for-a-traded-prismite)
+(reasoned from the engine's model instead of the card) and
+[R125](#r125--everything-is-literal-rotspore-herald-reaches-spells-and-spell-tokens)
+(a type signature became a rule): **a conclusion can outlive its argument, and
+a dead premise is load-bearing for whoever reads it next.** When a ruling is
+reversed, walk its dependants and repair their reasoning even where the
+behaviour is already correct — the comment in `E.noteTrashed` quoted the dead
+premise verbatim and would have taught the next reader the wrong rule.
