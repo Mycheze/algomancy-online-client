@@ -45,7 +45,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../src/cards/registry.ts';
-import { allCardNames, getCard } from '../src/cards/dsl.ts';
+import { allCardNames, getCard, registerSynthetic } from '../src/cards/dsl.ts';
 import type { Ability, CardDef, EffectDef } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 import { CARD_LEDGER, type CardLedgerEntry } from './card-ledger.ts';
@@ -233,6 +233,11 @@ const NOT_A_GAP: Record<string, string> = {
     '"I spawn with X +1/+1 counters on me" IS implemented — at every creation site, '
     + 'as spawnUnit(..., { token: true, counters: X }). The token has no behaviour of '
     + 'its own to carry, so `card(\'Robot\', {})` is the correct definition.',
+  'T71 Canary':
+    'The sweep\'s own SYNTHETIC canary, registered by this file (see the canary '
+    + 'test): it deliberately carries the Harbinger shape so the detector is proved '
+    + 'on every run. It is not a pool card and has no ledger entry — this exemption '
+    + 'is what keeps the sweep→ledger assertion from demanding one.',
 
   // ── the three [element] Resource faces (2026-08-23) ────────────────────
   //
@@ -282,34 +287,35 @@ test('every card with a readably-dead half is declared in the card ledger', () =
     + 'stayed dead through two playtest reports and a conceded game.');
 });
 
+// The sweep's canary, SYNTHETIC as of 2026-08-24. It was a real parked card
+// five times over — Harbinger → Envoy of Lightning → Conduit → Crevice Lurker
+// → Vengeance — and each time the card got built, the canary had to move.
+// The 2026-08-24 round un-parked EVERY remaining ledger card (R120-R122 plus
+// the bin seams), so the musical chairs ended: the shape now lives on a card
+// registered by this file alone, byte-for-byte what Harbinger had — an inert
+// augmentText entry, `events: []`, an empty run, a label ending "(not
+// implemented)". It is exempted in NOT_A_GAP (it is not a pool card, so it
+// carries no ledger entry — the declared-ness of REAL dead cards is what the
+// sweep→ledger assertion above proves, over the whole pool, on every run).
+registerSynthetic({
+  name: 'T71 Canary', cost: '', mana: 0, power: 1, toughness: 1,
+  type: 'Test Unit', kind: 'unit', timing: 'deploy', attrs: [],
+  virus: false, burst: false, augmentAttrs: [],
+  text: '[Augment] Canary clause that does nothing.', image: '',
+}, {
+  augmentText: [{
+    type: 'triggered', events: [],   // the Harbinger shape, on purpose
+    label: 'canary clause (not implemented)',
+    effect: { run: () => {} },
+  }],
+});
+
 test('the sweep has teeth: it recognises the shape Harbinger of Immolation was fixed out of', () => {
-  // Harbinger was fixed on 2026-08-22 (it is a StaticMod with survivesRegroup
-  // now), so it can no longer prove anything about itself. Envoy of Lightning
-  // was the stand-in until round 17, when R94 built the static→effect-attribute
-  // channel and implemented it — so the canary moved on again, exactly the way
-  // this assertion's own failure message told it to.
-  //
-  // CREVICE LURKER was the canary until 2026-08-24, when R121 built the
-  // ability-cost tax (CostCtx purposes 'activate'/'trigger' over R59's
-  // CostMod layer) and the pay-to-trigger gate (E.gateTaxedTrigger) and
-  // implemented it — so the canary moved on for the FOURTH time, exactly the
-  // way this assertion's own failure message told it to.
-  //
-  // VENGEANCE is the canary now. Its definition is byte-for-byte the shape
-  // Harbinger had, Envoy had, Conduit had and Crevice Lurker had — an inert
-  // augmentText entry, `events: []`, an empty run and a label ending "(not
-  // implemented)" — it is declared in the ledger, and it is genuinely
-  // parked: "[Augment] Cards your opponents play during battle gain
-  // '[Sacrifice a unit]'" needs a channel for IMPOSING an additional
-  // non-mana, non-life cast cost on another player's cards, and neither
-  // R59's CostMod (delta/life only) nor R121's purpose widening built one.
-  const CANARY = 'Vengeance';
+  const CANARY = 'T71 Canary';
   const shapes = deadShapes(CANARY);
   assert.ok(shapes.some(s => /events:\[\]/.test(s)),
-    `${CANARY} no longer has the inert-augment shape — if it was implemented, `
-    + 'pick another currently-parked card as the canary and say which in this comment');
-  assert.ok(CARD_LEDGER.some(e => e.card === CANARY),
-    'the canary must itself be declared, or the sweep proves nothing');
+    `${CANARY} no longer reads as the inert-augment shape — the detector has lost `
+    + 'its teeth. Fix deadShapes, do not touch the canary.');
 
   // And the negative half: the sweep must NOT fire on the bookkeeping pattern,
   // or it would be noise and get suppressed. Powerforge Synergist has an empty
