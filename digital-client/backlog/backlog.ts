@@ -1093,7 +1093,16 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Badges should stay on one line',
     area: 'client',
     size: 'S',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: 'c3e85f7',
+      guards: [
+        '123-badge-line.test.ts::folds the overflow into a +N chip that names what it hid',
+        '123-badge-line.test.ts::holds one line at every card width in style.css',
+        '123-badge-line.test.ts::folds printed attributes before live state',
+        '123-badge-line.test.ts::truncates a lone over-long label',
+      ],
+    },
     track: 'qol',
     said: 'single line "badges"',
     means:
