@@ -1850,6 +1850,12 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify: 'Render every card\'s text and type line: no {i}/{/i}/{i1}/{g}/{p}/{/n} and no "/[" '
       + 'survives, while X/X and +1/+1 are untouched and {Battle}/{Virus}/{Haste} still show.',
-    status: 'open',
+    status: 'done',
+    guards: [
+      '122-cardtext-markup.test.ts::R142: the /[…] box drops the slash and the brackets',
+      '122-cardtext-markup.test.ts::R142: {i1} does not eat the space beside the word',
+      '122-cardtext-markup.test.ts::R142: no card in the pool renders engine markup to a player',
+      '122-cardtext-markup.test.ts::R142: no printed card carries a hyphenation artifact',
+    ],
   },
 ];

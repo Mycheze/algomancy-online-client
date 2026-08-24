@@ -1670,7 +1670,15 @@ export const LEDGER: LedgerEntry[] = [
     id: 102, room: 'SMVJ', date: '2026-08-24',
     report: 'UI thing: All the text on cards still includes things that are only for the engine to '
       + 'see (like {i} or / or some other "markup" notes)',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '122-cardtext-markup.test.ts::R142: the /[…] box drops the slash and the brackets',
+      '122-cardtext-markup.test.ts::R142: a stat slash is NOT markup',
+      '122-cardtext-markup.test.ts::R142: {i1} does not eat the space beside the word',
+      '122-cardtext-markup.test.ts::R142: no card in the pool renders engine markup to a player',
+      '122-cardtext-markup.test.ts::R142: the keyword family is NOT suppressed',
+      '122-cardtext-markup.test.ts::R142: no printed card carries a hyphenation artifact',
+    ],
     note:
       'CONFIRMED with exact evidence. The owner on what the markup is: "It\'s pure engine markup '
       + 'used by some system Caleb uses to format cards better. {i} makes the next word italic, '
