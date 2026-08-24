@@ -2161,8 +2161,22 @@ export class E {
       card: name, owner, controller: seat, kind: 'unit', region,
       ...(opts.token ? { token: true, tokenStats: opts.tokenStats } : {}),
     });
-    // "I spawn with X counters" (Robot): counters are on before the spawn event
-    if (opts.counters) u.counters = opts.counters;
+    // "I spawn with X counters" (Robot): counters are on before the spawn
+    // event, and the AMOUNT LAYER is consulted first, exactly as addCounters
+    // does — report #88 (XVUR): an allied Flux Resonator makes a Robot X
+    // enter with X+1 counters (Caleb 2025-03-21: "Yep."; 2025-05-30: "it's
+    // just X+1 … a 2/2 robot would spawn as a 3/3, not a 4/4"). Positive
+    // spawns only: "if ONE OR MORE counters would be put" — a counterless
+    // spawn is no placement and never becomes one. Deliberately NOT routed
+    // through replaceCounters: whether a redirect (Counter Theif) can steal a
+    // token's own spawn counters is an unsourced rules question.
+    let spawnCounters = opts.counters ?? 0;
+    if (spawnCounters >= 1) {
+      spawnCounters += this.amountDelta({
+        kind: 'counters', region, amount: spawnCounters, unit: u, combat: false,
+      });
+    }
+    if (spawnCounters) u.counters = spawnCounters;
     // R29: a card PLAYED into an open spot in the formation is put there
     // BEFORE the spawn event exists, so no listener and no player ever sees it
     // standing anywhere else. See takeSpot.
@@ -2177,7 +2191,7 @@ export class E {
     // `owner` key is emitted only when it differs, so every existing reader of
     // a 'spawned' event keeps the payload it already had.
     const ev = this.ev('spawned',
-      `${this.pname(seat)} spawns ${name}${opts.counters ? ` (${opts.counters} +1/+1)` : ''}`
+      `${this.pname(seat)} spawns ${name}${spawnCounters ? ` (${spawnCounters} +1/+1)` : ''}`
       + (owner !== seat ? ` — ${this.pname(owner)}'s card.` : '.'),
       {
         seat, unit: u.id, region, card: name,
@@ -2196,7 +2210,9 @@ export class E {
     this.fireEvent('spawned', ev);
     // R104: record the creation in the open batch, so "each unique token you
     // created" has a creation to be unique across. After the spawn event, so a
-    // batch replacement can never observe a half-created board.
+    // batch replacement can never observe a half-created board. The REQUEST
+    // (opts.counters), not the amount-modified outcome: a batch copy replays
+    // the creation, and the layer applies to the copy on its own spawn.
     if (opts.token) {
       this.noteTokenCreated({ form: 'unit', name, x: opts.counters ?? 0, seat, region });
     }

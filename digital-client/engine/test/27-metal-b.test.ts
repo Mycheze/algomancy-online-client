@@ -149,6 +149,78 @@ test('Flux Resonator: the donated [Augment] text boosts allied counters via the 
   assert.equal(ent(h, ally)!.counters, 3, '2 put + 1 (the donated text, once)');
 });
 
+// Report #88 (XVUR, 2026-08-23): "Flux Resonator isn't working with my Robot
+// tokens." SPAWN counters are a counter placement too — spawnUnit used to set
+// them directly, past the amount layer. Caleb, 2025-03-21: tokens created
+// while a Resonator is out "enter play with a +1/+1 counter on them" — "Yep."
+
+test('Flux Resonator: an allied Robot spawns with one more counter (report #88)', () => {
+  const h = new Harness(2727);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  spawn(h, p, 'Flux Resonator');
+  giveResources(h, p, 'metal', 6);                          // Manufacture: mmm/6
+  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Manufacture') });
+  const robots = unitsOf(h, p).filter(u => u.card === 'Robot');
+  assert.deepEqual(robots.map(r => r.counters).sort(), [2, 3, 4],
+    'the 3/2/1 spread enters as 4/3/2 — each spawn is one placement, plus one');
+  const small = robots.find(r => r.counters === 2)!;
+  assert.deepEqual(effStats(h, small.id), [2, 2], 'the Robot 1 entered as a 2/2');
+});
+
+test('Flux Resonator: a Robot 2 enters as a 3/3, not a 4/4', () => {
+  // Caleb, 2025-05-30: "Not exactly double — it's just X+1, so it happens to
+  // double a 1/1 but a 2/2 robot would spawn as a 3/3, not a 4/4."
+  const h = new Harness(2728);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  spawn(h, p, 'Flux Resonator');
+  const lf = spawn(h, p, 'Living Forge');
+  giveResources(h, p, 'metal', 3);
+  h.do({ type: 'activateAbility', seat: p, entityId: lf, abilityIndex: 0, via: 'augment' });
+  const robot = unitsOf(h, p).find(u => u.card === 'Robot')!;
+  assert.equal(robot.counters, 3, 'X + 1, not 2X');
+  assert.deepEqual(effStats(h, robot.id), [3, 3]);
+});
+
+test('Flux Resonator: two allied Resonators give a spawn X plus TWO (summed)', () => {
+  const h = new Harness(2729);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  spawn(h, p, 'Flux Resonator');
+  spawn(h, p, 'Flux Resonator');
+  const lf = spawn(h, p, 'Living Forge');
+  giveResources(h, p, 'metal', 3);
+  h.do({ type: 'activateAbility', seat: p, entityId: lf, abilityIndex: 0, via: 'augment' });
+  const robot = unitsOf(h, p).find(u => u.card === 'Robot')!;
+  assert.equal(robot.counters, 4, '2 + 1 + 1 — the amount family is SUMMED');
+});
+
+test('Flux Resonator: an ENEMY Resonator adds nothing to a spawned Robot', () => {
+  const h = new Harness(2730);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  // in the SAME region as the spawn, so allegiance is what this isolates
+  whiteBox(h, e => { e.spawnUnit(D, 'Flux Resonator', e.homeRegion(A)); });
+  const lf = spawn(h, A, 'Living Forge');
+  giveResources(h, A, 'metal', 3);
+  h.do({ type: 'activateAbility', seat: A, entityId: lf, abilityIndex: 0, via: 'augment' });
+  const robot = unitsOf(h, A).find(u => u.card === 'Robot')!;
+  assert.equal(robot.counters, 2, 'not an allied source — the Robot keeps X');
+});
+
+test('Flux Resonator: a token that spawns with NO counters gets none', () => {
+  // "If ONE OR MORE counters would be put" — zero counters is no placement,
+  // so a counterless spawn (a Wisp) never becomes a countered one.
+  const h = new Harness(2731);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  spawn(h, p, 'Flux Resonator');
+  let wisp = -1;
+  whiteBox(h, e => { wisp = e.spawnUnit(p, 'Wisp', e.homeRegion(p), { token: true }).id; });
+  assert.equal(ent(h, wisp)!.counters, 0, 'a counterless spawn stays counterless');
+});
+
 // ── Foretell ─────────────────────────────────────────────────────────────
 
 test('Foretell: Glimpse 1 — the top card goes to the CACHE, playable this turn ignoring affinity', () => {
