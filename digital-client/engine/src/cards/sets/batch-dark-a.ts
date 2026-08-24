@@ -37,11 +37,12 @@
  *    enters play under), and Wake the Dead passes the bin's own seat. The
  *    caster CONTROLS it; the opponent still OWNS it, so it dies to THEIR bin
  *    (R65) and can be recurred by them.
- *  - "TARGET NONSPELL EFFECT" (Nothyr) IS a TargetSpec now: R60's
- *    `what: 'stackEffect'` is the superset (every effect on the stack —
- *    triggered abilities, activated abilities and a virus being applied
- *    included) and a `restrict` narrows it to the nonspell half: triggered,
- *    activated AND virus, which is R60's own enumeration of that half.
+ *  - "TARGET NONSPELL EFFECT" (Nothyr) IS a TargetSpec now:
+ *    `what: 'stackEffect'` is the superset and a `restrict` narrows it to the
+ *    nonspell half. R128 made that superset EVERY item on the stack (a unit
+ *    on its way into play included), so the nonspell half is triggered,
+ *    activated, virus AND unit — everything that is not spell / spell unit /
+ *    spell token / ambush.
  *    R67 collects it as the trigger goes on the stack.
  *    This entry used to say the card "has no TargetSpec … modelled as a
  *    resolution-time ctx.choose"; that expired, and with it the "slightly
@@ -419,24 +420,30 @@ card('Nothyr', {
       // superset kind (R60); the restriction narrows it to the NONSPELL half,
       // which is exactly the qualifier Nothyr prints. min 0 = "up to one".
       //
-      // R60 defines the two halves and the NONSPELL half is the complement of
-      // the spell one, verbatim: 'stackSpell' is "spell / spell unit / spell
-      // token / ambush", 'stackEffect' is "all of those PLUS triggered
-      // abilities, activated abilities AND A VIRUS BEING APPLIED". So a virus
-      // item is a nonspell effect and Nothyr answers it — the restriction used
-      // to list only `triggered` and `activated`, which is a qualifier the
-      // printed word "nonspell" does not carry (an unprinted narrowing of the
-      // same shape as R125's). An 'ambush' is spell-side by R60 and stays out;
-      // a 'unit' on its way into play is in neither half and `stackEffect`
-      // never offers it in the first place.
+      // The NONSPELL half is the COMPLEMENT of the spell one, and nothing
+      // else: 'stackSpell' is "spell / spell unit / spell token / ambush", so
+      // "nonspell effect" is every OTHER item on the stack. That used to mean
+      // triggered + activated + virus, because R60 said a unit on the stack
+      // was not an effect at all.
+      //
+      // R128 (owner, 2026-08-24) reversed R60: "ANYTHING on the stack is an
+      // effect, including units and spell units. Units aren't spells, so if
+      // they say 'spell effect' a unit would be unaffected." A {Battle} unit
+      // mid-cast is therefore an effect (R128) AND not a spell (same
+      // sentence), which is precisely what "nonspell effect" names — so
+      // Nothyr answers it, and the restriction is written as the complement
+      // rather than as a whitelist that would have to be edited again the next
+      // time a kind is added. An 'ambush' is spell-side by R60's table (still
+      // good law: R128 widened the effect half, it did not move the spell
+      // line) and stays out.
       targets: {
         what: 'stackEffect', min: 0,
         prompt: 'Nothyr: negate up to one target nonspell effect',
         restrict: (g, t) => {
           if (!('stack' in t)) return false;
           const it = g.s.stack.find(i => i.id === t.stack);
-          return !!it
-            && (it.kind === 'triggered' || it.kind === 'activated' || it.kind === 'virus');
+          return !!it && it.kind !== 'spell' && it.kind !== 'spellUnit'
+            && it.kind !== 'spellToken' && it.kind !== 'ambush';
         },
       },
       run: (g, ctx) => {

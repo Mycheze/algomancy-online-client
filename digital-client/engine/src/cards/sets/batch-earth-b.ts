@@ -491,6 +491,9 @@ card('Return to Nature', {
   spellEffect: {
     run: (g, ctx) => {
       let touched = g.s.stack.length;
+      // R128: "negate all effects" is the WHOLE stack, a {Battle} unit mid-cast
+      // included — the owner reversed R60 on 2026-08-24 ("ANYTHING on the stack
+      // is an effect"). Confirmed as-is; do not narrow this by kind.
       for (const it of [...g.s.stack]) g.negate(it.id);   // R68: negate() splices
       const modded = Object.values(g.s.entities).filter(e =>
         (e.kind === 'unit' || e.kind === 'spellToken') && e.region === ctx.region

@@ -186,11 +186,13 @@ export interface TargetSpec {
    * so plain "effect" is the SUPERSET.
    *   'stackSpell'  — spell / spell unit / spell token / ambush. The cards
    *                   that spell out "spell effect".
-   *   'stackEffect' — all of the above PLUS triggered and activated abilities
-   *                   and viruses: anything on the stack that is an effect.
-   *                   The cards that just say "effect".
-   * A UNIT on the stack is in neither: a unit arriving in play is not an
-   * effect, and it has no parts to negate. */
+   *   'stackEffect' — LITERALLY EVERY ITEM ON THE STACK. The cards that just
+   *                   say "effect".
+   * R128 (owner, 2026-08-24): "ANYTHING on the stack is an effect, including
+   * units and spell units. Units aren't spells, so if they say 'spell effect'
+   * a unit would be unaffected." That REVERSES R60's carve-out — a {Battle}
+   * unit mid-cast is an effect, and negating it means the unit never arrives.
+   * The spell/nonspell line is unmoved: a plain unit is a NONSPELL effect. */
   /** R64 — the OWNERSHIP kinds. 'allyUnit'/'enemyUnit' are relative to the
    * effect's controller, never to the chooser: a redirect that drops a unit
    * into someone else's "target ally" slot is what R58 already refuses.

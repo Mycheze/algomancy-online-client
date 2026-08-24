@@ -4247,12 +4247,13 @@ export class E {
         // an ambush is a played card's effect on the stack — negatable (R22)
         const spellish = it.kind === 'spell' || it.kind === 'spellUnit'
           || it.kind === 'spellToken' || it.kind === 'ambush';
-        // R60: plain "target effect" also reaches the NONSPELL effects — the
-        // triggered and activated abilities, and a virus being applied. Only a
-        // 'unit' on its way into play is neither (it is not an effect at all).
-        const effectish = spellish || it.kind === 'triggered'
-          || it.kind === 'activated' || it.kind === 'virus';
-        if (spec.what === 'stackSpell' ? spellish : effectish) out.push({ stack: it.id });
+        // R128 (owner, 2026-08-24): "ANYTHING on the stack is an effect,
+        // including units and spell units. Units aren't spells, so if they say
+        // 'spell effect' a unit would be unaffected." So 'stackEffect' is
+        // EVERY item on the stack with no kind test at all — the R60 carve-out
+        // for a 'unit' on its way into play is REVERSED. 'stackSpell' is
+        // unchanged and still excludes a plain unit: a unit is not a spell.
+        if (spec.what === 'stackSpell' ? spellish : true) out.push({ stack: it.id });
       }
     }
   }

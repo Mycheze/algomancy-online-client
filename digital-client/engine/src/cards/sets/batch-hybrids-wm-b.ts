@@ -299,6 +299,8 @@ card('Temporal Rift', {
       // bins its card itself, so the sweep runs over a copy and hand-rolls
       // nothing. This used to push the card a SECOND time and then clear the
       // stack by hand.
+      // R128: "(Negate all effects, this battle is over.)" really is all of
+      // them — a {Battle} unit mid-cast never arrives. Confirmed, not narrowed.
       for (const it of [...g.s.stack]) g.negate(it.id);
       g.ev('info', 'Temporal Rift: all effects are negated — the battle is over.');
       g.endBattleRound();

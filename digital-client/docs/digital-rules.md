@@ -904,6 +904,38 @@ pay-to-trigger hook on every trigger entering the stack, not just a price.
 
 *(Playtest round 8, 2026-08-20, room DEYK.)*
 
+> ### ⚠ THE TARGETING HALF OF THIS RULING WAS WRONG. See **R128**.
+>
+> The table below and the two `TargetSpec.what` members are still good law.
+> **One sentence of it was not**: "A unit on the stack is in neither: a unit
+> arriving in play is not an effect, and there are no parts to negate."
+>
+> The owner reversed that on 2026-08-24, verbatim: *"R60 is wrong. ANYTHING on
+> the stack is an effect, including units and spell units. Units aren't spells,
+> so if they say 'spell effect' a unit would be unaffected."*
+>
+> **Why the old reasoning was bad reasoning, and not just a bad answer.** The
+> second clause — "there are no parts to negate" — is a fact about `StackItem`,
+> not a fact about Algomancy. A 'unit' item is built with `parts: []` because a
+> unit card has no `spellEffect`; that is an implementation detail of how this
+> engine represents a card on its way into play. Reading it back out as a rule
+> ("therefore a unit cannot be an effect") is mechanism logic dressed as a
+> ruling: the engine's data shape was allowed to decide a rules question. And
+> the answer it produced was the CLOSED one — it is exactly the "cards are
+> conservative rather than intentionally open" assumption the owner named as the
+> reason six audit questions in a row came back the other way. Negating a unit
+> mid-cast is a real, interesting play, and nothing printed forbids it.
+>
+> The first clause was also weaker than it looked. "A unit arriving in play is
+> not an effect" was asserted, never sourced; the card set's own vocabulary
+> distinguishes *spell* from *effect*, and R60 used it to draw the
+> spell/nonspell line correctly while quietly borrowing it a second time to draw
+> an effect/non-effect line no card ever draws.
+>
+> This section is kept, wrong sentence and all, because the repo keeps
+> superseded rulings visible: the shape of the mistake is worth more than a
+> clean file. Read R128 for what the engine does now.
+
 ### The targeting half
 
 Two reports, one root. *"I'm not able to cast Hush Mush for some reason right
@@ -932,6 +964,8 @@ members:
 
 A **unit** on the stack is in neither: a unit arriving in play is not an
 effect, and there are no parts to negate.
+*(⚠ REVERSED by R128 — kept above as written for the record. A unit on the
+stack IS an effect; it is only the SPELL half it stays out of.)*
 
 The ten unqualified cards moved to `stackEffect`. That is a real widening —
 Boon of Protection can answer a trigger now, Divine Intervention can redirect
@@ -6852,3 +6886,100 @@ duplicate-refusal and below-minimum done-gate against **Fight** (a real
 Worth recognising: **a test fixture that has to be a specific card is evidence
 about that card.** When the only card with a shape is the card with the bug, the
 shape is the bug.
+
+## R128 — anything on the stack is an effect (R60 reversed)
+
+*(Owner ruling, 2026-08-24, verbatim: "R60 is wrong. ANYTHING on the stack is
+an effect, including units and spell units. Units aren't spells, so if they say
+'spell effect' a unit would be unaffected.")*
+
+### The rule
+
+**`stackEffect` — plain "target effect" — is now LITERALLY every item on the
+stack.** No kind test at all: spell, spell unit, spell token, ambush, triggered
+ability, activated ability, virus, **and a `{Battle}` unit on its way into
+play**. `E.pushStackTargets` no longer computes an `effectish` predicate; it
+pushes every item the exclusion (`excludeStackId`, R68) does not skip.
+
+**`stackSpell` — "target SPELL effect" — is unchanged.** Spell / spell unit /
+spell token / ambush. A plain unit is not a spell, so the three cards that print
+"spell effect" (Dreadwave Devourer, Null Drone, Dream Lapse) still cannot see
+it. A **spell unit stays spell-side**: the owner's sentence names "units and
+spell units" only to say both are *effects*, and a spell unit is a spell that
+becomes a unit — Hush Mush and Jelly are cast as spells and answered as spells.
+
+The spell/nonspell line has therefore not moved; the **effect** line has. The
+consequence that matters is the third category:
+
+**"Target NONSPELL effect" is the complement, so it GAINS the plain unit.**
+Nothyr ("negate up to one target nonspell effect") restricted to
+`triggered | activated | virus` — an enumeration copied out of R60's own
+sentence. A unit on the stack is an effect (R128) and is not a spell (the same
+sentence), which is precisely what "nonspell effect" names. Nothyr's `restrict`
+is now written as the complement — *not* spell / spell unit / spell token /
+ambush — so the next kind added to `StackItem` lands on the right side of it
+without a second edit.
+
+### What negating a unit does
+
+Nothing new had to be built, and that is worth recording rather than glossing:
+`negate()` already handled it, because `NEGATE_BINS` already contained `'unit'`
+(R68 put it there for the log line's sake — "a {Battle} unit caught mid-cast is
+a real card and has to land somewhere"). The branch was simply unreachable,
+since nothing could ever target a unit item. So:
+
+- the item is spliced off the stack the instant the negation resolves (R68);
+- **the unit never arrives** — `resolveItem`'s `spawnUnit` call is never made;
+- **the card goes to its controller's bin**, from the stack, which is not a
+  trash (R40). Unstable/`{Modular}` carriers erase instead, by the same
+  `dischargeItem` path as every other kind.
+
+A negated **spell unit** was already reachable and behaves the same way: no
+body spawns, the card is binned.
+
+`item.parts.length > 0` is assumed nowhere. Every consumer that walks the
+targeted item's parts does so with `.some` / `.forEach` (Boon of Protection,
+Divine Intervention, Gravitational Correction, Enigmatic Warder), and a unit
+item's `parts` is `[]`, so the walk is a clean no-op — "Monke has no target to
+change" — not a crash. Pinned by a test rather than asserted.
+
+### The sweeps: confirmed, NOT narrowed
+
+**Finality** ("negate all other effects"), **Return to Nature** ("negate all
+effects") and **Temporal Rift** ("negate all effects, this battle is over")
+iterate `[...g.s.stack]` with no kind filter, so they were already catching a
+unit mid-cast. The audit had flagged all three as possibly-too-wide *precisely
+because of R60*. R128 settles them the other way: the loops are correct exactly
+as written and must not be narrowed. Comments to that effect are on all three
+cards, because "we looked at this and deliberately left it" is the thing a
+future audit needs to know.
+
+The contrast card is **Molten Riftbreaker**, whose despawn clause negates "all
+allied **spells**" and does filter by kind. That is right for the same reason:
+a unit is an effect but is not a spell. R128 is one sentence with two halves,
+and Finality and Molten Riftbreaker are the two halves.
+
+### Deliberately not changed
+
+**`STACK_VIRUS_HOSTS`** (apply.ts) stays `spell | spellUnit | spellToken`. R79
+is about what a Virus may be *applied to* — "it's perfectly legal to put the
+powerful guy onto a giant fireball you're casting" — which is a permission
+about SPELLS, not about effects. R128 made a unit on the stack an effect; the
+same sentence says a unit is not a spell, so this set is untouched. (Whether a
+virus should be able to ride a `{Battle}` unit mid-cast is a separate open
+question, still flagged in R79 as a judgement call.)
+
+### Tests
+
+`test/118-stack-effect.test.ts`, seeds 12800-12806, seven tests. The vehicle is
+**Monke** (`m`/1 `{Battle}` Unit — no spawn trigger, so the stack item is a bare
+`unit` with `parts: []`, asserted in the fixture itself).
+
+Red-checked by reverting both halves of the fix (the `effectish` predicate in
+`pushStackTargets` and Nothyr's whitelist `restrict`): **4 of 7 fail** —
+Dematerialize is offered no target at all, the negate never happens, Nothyr's
+menu loses the unit, and Gravitational Correction has nothing to point at. The
+other three (a negated spell unit, "target spell effect" refusing the plain
+unit, Finality catching it) pass in both directions **by design**: they pin
+behaviour R128 *confirms* rather than changes, and a green-in-both-directions
+test is exactly what "we checked this and did not move it" looks like.

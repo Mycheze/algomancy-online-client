@@ -1128,7 +1128,11 @@ function hasteModAllowed(e: E, seat: Seat, c: CardDef, from: ModZone,
  *  - 'virus' — a virus is itself a mod in flight, not a host.
  *  - 'unit' — a {Battle} unit mid-cast. A virus wants to be a mod on the body
  *    it lands on, which is the ordinary augment, available the moment it
- *    spawns; nothing in the rules asks for the mid-cast version.
+ *    spawns; nothing in the rules asks for the mid-cast version. R128 does NOT
+ *    reopen this: it made a unit on the stack an EFFECT (so it can be negated
+ *    and it is a "nonspell effect"), and the same sentence says a unit is not
+ *    a SPELL — which is what this set is a list of ("onto a giant fireball
+ *    you're casting").
  *  - 'ambush' — an ambusher is a unit played face-down, not a spell, and R22
  *    only makes it negatable.
  * All four exclusions are ⚠ judgement calls, not sourced answers — see

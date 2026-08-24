@@ -296,6 +296,16 @@ card('Entropic Entity', {
 // "Negate all other effects. Erase all cards in bins." — dd/5 {Battle} Blight
 // Spell. "All OTHER effects" is every item still on the stack: Finality has
 // already been popped by the time it resolves, so it can never negate itself.
+//
+// R128 CONFIRMS THE SWEEP AS WRITTEN. The audit had flagged this loop as
+// possibly too wide, because it negates a {Battle} unit mid-cast and R60 said
+// a unit on the stack was not an effect at all. The owner reversed R60 on
+// 2026-08-24 — "ANYTHING on the stack is an effect, including units and spell
+// units" — so a bare `[...g.s.stack]` is exactly "all other effects" and this
+// must NOT be narrowed. Same for Return to Nature and Temporal Rift. (Contrast
+// Molten Riftbreaker, which prints "all allied SPELLS" and does filter by
+// kind: a unit is an effect but is not a spell, which is the other half of the
+// same sentence.)
 // Erasing empties BOTH bins — erasing never touches a bin again (R40), so
 // nothing here is a trash. Finality itself is binned afterwards, from the
 // stack, exactly as printed (it was never in a bin to be erased).
