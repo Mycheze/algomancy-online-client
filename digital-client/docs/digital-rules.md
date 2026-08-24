@@ -6626,3 +6626,88 @@ deployment plays (region held equal) and battle-time mods all exempt; the
 donated-augment host anchor; a death trigger firing off the sacrificed unit
 (Static Courier); a JSON round-trip of the pending decision; and two
 Vengeances imposing two sacrifices behind a two-unit gate.
+## R123 — playing cards out of a BIN under the card's own text (Writhing Host, Trench Stalker)
+
+*(Card-ledger follow-through, 2026-08-24. Two dead cards hung off one seam:
+nothing in `legalActions` ever offered a card sitting in a bin unless R96's
+battle-scoped spell grant was live, and no permission could be ANCHORED in a
+bin at all.)*
+
+**Writhing Host**: *"If I am in your bin, you may play a unit as if it had
+[Haste] by erasing me as an additional cost to play that unit."*
+
+**Trench Stalker**: *"[Discard two cards]{/n}I can be played directly into
+formation, and played from your bin."*
+
+### The bin-anchored grant (Writhing Host)
+
+R97's `PlayPermission` radiates through `E.anchored()`, which walks units in
+play and augment mods — a card in a bin is a NAME in an array with no Entity
+to anchor on. So the grant gets its own seam instead of a widened walk:
+
+| part | where |
+| --- | --- |
+| **declare** | `CardBehavior.binPlayPermissions` (dsl.ts) — predicate takes no `self` |
+| **gather** | `E.binHasteGrantorIndex(ctx)` walks `ctx.seat`'s OWN bin — the printed "your bin" is the walk itself, per-seat by construction |
+| **offer** | `legalHasteActions` pushes `{ type: 'playCard', …, eraseGrant: true }`, only when no free R97 route exists (a Courier allowance costs nothing and is strictly better) |
+| **open the step** | `startHasteStep`'s `canHaste` — report #74's fatal gate, a third time over, in bin form |
+| **pay** | `playAtTiming`'s planning branch erases the grantor beside the play's other costs |
+
+**The cost is the grantor.** No `hastePlaysUsed` budget is charged for an
+erase-funded play — erasing the card IS the spend, taken only once the play is
+known legal (a declined or refused play never touches the bin), announced as
+*"Writhing Host is erased from Ben's bin — X is played as if it had
+[Haste]."* and routed to the R65 public erased pile by the same `'erased'`
+event hook every other erase uses.
+
+**No index rides on the action.** `eraseGrant` is a flag: apply re-finds the
+first grantor through the same predicate the offer used, so a JSON round trip
+or a replay cannot desync on a stale bin index. Two Hosts in one bin are
+FUNGIBLE — same name, same effect, same pile — so the arbitrary first-match is
+not deciding for the player; a second DISTINCT grantor card would make the
+choice visible and would then need an index.
+
+**What the grant cannot do is R97's, unchanged:** a {Battle} card stays a
+battle card (RAQ "[Solved] Dispatch Courier vs Battle Timing"), a printed
+[Haste] card needs no grant (and must not cost anyone a grantor), and "as if
+it had [Haste]" is TIMING ONLY — the played unit never carries the attribute.
+"A unit" includes a spell unit (RAQ "[Solved] Spell Units played when you can
+'play a unit from hand'").
+
+### The card's own play-from-bin line (Trench Stalker)
+
+`CardBehavior.playsFromBin`, offered and applied through the SAME
+`playFromBin` action R96 built — `pushBinPlays` and `doPlayFromBin` now accept
+either the R96 battle grant (spells only) or the card's own flag. Printed
+timing still applies, exactly R42/R45's cache reading: a {Battle} card is
+offered in battle priority windows and nowhere else.
+
+**The {Unstable} question, decided and documented:** a card played from a bin
+under its OWN line is **NOT stamped {Unstable}**. The R96 stamp is the
+GRANTING cards' own text — "If you do, they gain {p}unstable until regroup" is
+a sentence on Abyssal Evocation and Spell Excavation, in reminder-text form
+"(If they would enter a bin, erase them instead.)" — not a fact about bins.
+The Manual's blanket Unstable rule is about MODDED cards (p.35), and Trench
+Stalker's line grants nothing of the kind. Encoded in `doPlayFromBin`
+(`unstable` is passed only on the grant route) and asserted in its tests.
+
+**The whole-card rule held:** the R49 `castCost: { kind: 'discardCard', n: 2 }`
+and R29's `playsIntoFormation` landed in the same commit as the bin action,
+per the ledger entry's warning — the cost gates EVERY play of the card (hand
+and bin), so the card is no longer strictly better than printed from hand nor
+less flexible than printed elsewhere. The cost hangs on a `spellEffect` whose
+`run` is empty and unreachable by construction (a `'unit'` StackItem resolves
+by spawning; `resolveItem` returns before parts run) — declared in
+`NOT_A_GAP` rather than smuggled past the ledger sweep.
+
+### Tests
+
+`42-dark-b` — the haste step engages off the bin grant alone; the offer
+carries `eraseGrant` and playing it erases exactly one Host to the erased
+pile; the played unit does NOT carry [Haste]; no bin copy → no offer; declining
+leaves bin and hand untouched; an opponent's copy grants nothing; a JSON round
+trip mid-offer still drives, with two fungible copies. `46-hybrids-ld-c` —
+played from bin with the discard-2 paid at cast and the R29 spot taken
+atomically (including a mid-cast JSON round trip), arriving WITHOUT
+{Unstable}; fewer than two other cards → no offer; from hand the cost and the
+formation entry both apply, in both directions of the old vanilla error.

@@ -135,6 +135,10 @@ const codeAdmitsTheGap = (s: string) => /PARKED|not implemented/.test(s);
 const BEHAVIOR_KEYS = [
   'xMin', 'abilities', 'statics', 'costMods', 'effectAttrs', 'augmentable', 'mustBeTargeted',
   'prophesyFromBin', 'playsIntoFormation', 'spellEffect', 'graftEffect', 'augmentText',
+  // R120: a bin-anchored haste grant (Writhing Host) and a card's own
+  // played-from-your-bin line (Trench Stalker) are whole-card behaviour with
+  // no abilities and no live spellEffect run, so the sweep has to see them.
+  'binPlayPermissions', 'playsFromBin',
   'replaceRotDamage', 'replaceCombatDamageToPlayer', 'xPreview', 'xPreviewRows',
   // R104's replacement-effect layer. A card whose whole text is a replacement
   // has no abilities and no spellEffect BY CONSTRUCTION — that is the point of
@@ -238,6 +242,14 @@ const NOT_A_GAP: Record<string, string> = {
     + 'test): it deliberately carries the Harbinger shape so the detector is proved '
     + 'on every run. It is not a pool card and has no ledger entry — this exemption '
     + 'is what keeps the sweep→ledger assertion from demanding one.',
+  'Trench Stalker':
+    'The spellEffect exists solely to carry the R49 "[Discard two cards]" CAST COST, '
+    + 'chosen and paid in the cast window on every route into play (hand and bin '
+    + 'alike, R120). Its empty run is unreachable BY CONSTRUCTION, not a gap: a '
+    + "'unit' StackItem resolves by spawning (resolveItem returns before parts ever "
+    + 'run), so there is no resolution body to implement. The other two printed '
+    + 'clauses are live behaviour flags — R29 playsIntoFormation and R120 '
+    + 'playsFromBin — with real tests in 46-hybrids-ld-c.test.ts.',
 
   // ── the three [element] Resource faces (2026-08-23) ────────────────────
   //

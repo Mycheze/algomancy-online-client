@@ -10,7 +10,8 @@
  * Wight/Wraith token (R47 — Legion of the Depths, Plague Ritual), {Afflicting}
  * on -1/-1 counter kills (R48 — Umbral Decay) and the mod/board manipulation
  * cards (Grim Bargain, Hooba-Mon, Necromantic Rebuke, Rotbeast, Sarcophage).
- * Writhing Host is PARKED with a todo test.
+ * Writhing Host is LIVE as of R123: a bin-anchored haste grant, paid for by
+ * erasing the grantor out of the bin.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,9 +19,10 @@ import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
-  effStats, ent, give, giveResources, handIdx, pass, spawn, toDeployment, toNextBattle,
+  effStats, ent, give, giveResources, handIdx, ownAttrs, pass, skipHasteStep, spawn,
+  toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
-import type { DecisionOption, EngineEvent, Entity, EntityId, Seat } from '../src/types.ts';
+import type { Action, DecisionOption, EngineEvent, Entity, EntityId, Seat } from '../src/types.ts';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -934,7 +936,7 @@ test('Umbral Decay: a survivor just shrinks, and nobody gains a rot', () => {
   assert.equal(rotOf(h, D), 0, 'nothing died, so nothing is afflicted');
 });
 
-// ── Writhing Host (PARKED) ────────────────────────────────────────────
+// ── Writhing Host (R123: a bin-anchored haste grant, erase-funded) ────
 
 test('Writhing Host: registers as a plain 3/1 body and plays crash-free', () => {
   const h = new Harness(4234);
@@ -948,12 +950,85 @@ test('Writhing Host: registers as a plain 3/1 body and plays crash-free', () => 
   assert.deepEqual(effStats(h, u.id), [3, 1]);
 });
 
-test('Writhing Host: "play a unit as if it had [Haste] by erasing me from your bin" is PARKED — '
-  + 'granting haste timing to ANOTHER card and adding a cost to its play action both live in '
-  + "apply.ts/legalActions, out of card code's reach", { todo: true }, () => {
-  // The same missing machinery that parks Dispatch Courier's "play a unit
-  // during the mana step as if it had [Haste]", plus a bin-sourced additional
-  // cost on a DIFFERENT card's play action.
+/** planning, turn 1: seat 0 holds a deploy-timing unit (a second Writhing
+ * Host — d/1, so one dark resource pays it) and `bins` says whose bin gets a
+ * Host. Both seats then finish planning, which is where startHasteStep
+ * decides whether the haste step engages at all (report #74's fatal gate). */
+function hostSetup(seed: number, bins: Seat[]): { h: Harness; P: Seat; idx: number } {
+  const h = new Harness(seed);
+  const P = 0 as Seat;
+  giveResources(h, P, 'dark', 1);
+  for (const s of bins) h.state.players[s]!.bin.push('Writhing Host');
+  const idx = give(h, P, 'Writhing Host');   // the PLAYED unit, deploy timing
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  return { h, P, idx };
+}
+
+/** the R123 offer: a haste-step play of the hand unit, funded by the erase */
+const eraseOffer = (h: Harness, P: Seat, idx: number): Action | undefined =>
+  h.legal(P).find(a => a.type === 'playCard' && a.handIndex === idx && a.eraseGrant === true);
+
+test('Writhing Host (R123): a deploy unit in hand is offered at haste timing, and playing it erases the Host from the bin', () => {
+  const { h, P, idx } = hostSetup(4235, [0]);
+  assert.ok(h.state.hasteDone, 'the haste step engages off the bin grant alone');
+  const offer = eraseOffer(h, P, idx);
+  assert.ok(offer, 'the play is offered with the erase cost attached');
+  h.do(offer!);
+  const u = unitsOf(h, P).find(e => e.card === 'Writhing Host');
+  assert.ok(u, 'the unit is in play (haste plays resolve immediately)');
+  assert.equal(h.state.players[P]!.bin.length, 0, 'the grantor left the bin');
+  assert.deepEqual(h.state.players[P]!.erased, ['Writhing Host'], '…for the ERASED pile, not another zone');
+  assert.ok(h.log.some(l => l.includes('is erased from') && l.includes('as if it had [Haste]')),
+    'the log announces the cost and the grant in one line');
+  assert.ok(!ownAttrs(h, u!.id).has('Haste'),
+    '"as if it had [Haste]" is timing only — the unit never carries the attribute');
+});
+
+test('Writhing Host (R123): with no copy in the bin the offer is absent', () => {
+  const { h, P, idx } = hostSetup(4236, []);
+  if (h.state.hasteDone) {   // a random hand may open the step on its own
+    assert.ok(!eraseOffer(h, P, idx), 'no erase-funded play is offered');
+    skipHasteStep(h);
+  }
+  assert.equal(h.state.players[P]!.hand[idx], 'Writhing Host', 'the unit stayed in hand');
+});
+
+test('Writhing Host (R123): declining the offered play leaves bin and hand untouched', () => {
+  const { h, P, idx } = hostSetup(4237, [0]);
+  assert.ok(eraseOffer(h, P, idx), 'the offer is up');
+  h.do({ type: 'doneHaste', seat: P });   // declined: the offer is simply not taken
+  assert.equal(h.state.players[P]!.bin.filter(n => n === 'Writhing Host').length, 1, 'the bin copy is untouched');
+  assert.equal(h.state.players[P]!.hand[idx], 'Writhing Host', 'the hand unit is untouched');
+  assert.equal((h.state.players[P]!.erased ?? []).length, 0, 'nothing was erased');
+});
+
+test("Writhing Host (R123): an opponent's bin copy grants you nothing — the printed \"your bin\" is per-seat", () => {
+  const { h, P, idx } = hostSetup(4238, [1]);
+  if (h.state.hasteDone) {
+    assert.ok(!eraseOffer(h, P, idx), "the opponent's grantor funds no play of yours");
+    skipHasteStep(h);
+  }
+  assert.equal(h.state.players[1]!.bin.filter(n => n === 'Writhing Host').length, 1,
+    "the opponent's copy sits untouched");
+});
+
+test('Writhing Host (R123): a JSON round trip mid-offer still drives, and two bin copies are fungible — one pays, one stays', () => {
+  const { h, P, idx } = hostSetup(4239, [0, 0]);
+  const offer = eraseOffer(h, P, idx);
+  assert.ok(offer, 'offered');
+  // the wire trip: the action carries a flag, not a bin index — apply re-finds
+  // the grantor through the same predicate the offer used, so nothing stale or
+  // unserializable rides on it
+  h.state = JSON.parse(JSON.stringify(h.state)) as typeof h.state;
+  h.do(JSON.parse(JSON.stringify(offer)) as Action);
+  assert.ok(unitsOf(h, P).some(e => e.card === 'Writhing Host'), 'the reloaded game played it');
+  // two identical grantors: the engine erases the first. An arbitrary pick
+  // between FUNGIBLE copies (same name, same effect, same erased pile) is not
+  // deciding for the player — a second DISTINCT grantor card would make the
+  // choice visible and need an index on the action; none exists.
+  assert.equal(h.state.players[P]!.bin.filter(n => n === 'Writhing Host').length, 1, 'exactly one grantor paid');
+  assert.deepEqual(h.state.players[P]!.erased, ['Writhing Host']);
 });
 
 // ── registration sweep ────────────────────────────────────────────────

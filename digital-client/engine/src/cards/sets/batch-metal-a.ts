@@ -790,13 +790,15 @@ card('Discharge', {
 //    only be played during :battle:." That refusal is general, so it lives in
 //    `E.hastePlayAllowance` above every grantor, not here.
 //
-// ⚠ STILL PARKED, and NOT unparked by this: Writhing Host ("If I am in your
-// bin, you may play a unit as if it had [Haste] by erasing me as an additional
-// cost") — the grantor is a card in the BIN, which `anchored()` does not walk,
-// and the grant carries an additional COST, which `PlayCtx` has no room for.
-// Slurpr ("You can apply other mods during [Haste] as if it was deployment")
-// is the MOD-timing twin and belongs to R95's family, not this one. Rook is
-// already live on R95.
+// Writhing Host ("If I am in your bin, you may play a unit as if it had
+// [Haste] by erasing me as an additional cost") stayed parked through this —
+// the grantor is a card in the BIN, which `anchored()` does not walk, and the
+// grant carries an additional COST, which `PlayCtx` has no room for — until
+// R123 gave it its own seam: `CardBehavior.binPlayPermissions`, gathered by
+// `E.binHasteGrantorIndex` over the owner's bin, with the erase paid beside
+// the play's other costs. Slurpr ("You can apply other mods during [Haste] as
+// if it was deployment") is the MOD-timing twin and belongs to R95's family,
+// not this one. Rook is already live on R95.
 card('Dispatch Courier', {
   augmentable: true,
   playPermissions: [{

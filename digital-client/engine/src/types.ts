@@ -1043,8 +1043,14 @@ export type Action =
    * ally, take their position) paying printed.ambush instead of the card cost.
    * mode 'discardMe' (R40): pay the printed "1 Discard me" cost line and
    * discard the card from hand — which TRASHES it, firing its own "when I am
-   * trashed" trigger (Dropslime, Nothyr). */
-  | { type: 'playCard'; seat: Seat; handIndex: number; mode?: 'ambush' | 'discardMe' }
+   * trashed" trigger (Dropslime, Nothyr).
+   * `eraseGrant` (R123): this haste-step play is funded by a grantor card in
+   * the seat's OWN bin ("play a unit as if it had [Haste] by erasing me as an
+   * additional cost" — Writhing Host). No bin index rides on the action:
+   * every grantor is a fungible copy of one card, so apply re-finds the first
+   * (E.binHasteGrantorIndex) and erases it when the play's costs are paid —
+   * a stale index cannot desync a replay. */
+  | { type: 'playCard'; seat: Seat; handIndex: number; mode?: 'ambush' | 'discardMe'; eraseGrant?: boolean }
   /** R42: cache a card with a printed prophecy banner, paying the banner's
    * plain mana (no affinity pips). DEPLOYMENT ONLY. `from` is 'hand' unless
    * the card itself says otherwise ("I can be prophesied from your bin" —

@@ -79,13 +79,12 @@
  *    is a REDIRECT — the second family of the replacement layer — expressed as
  *    `replaceCounters`, a first-claimant-consumes hook E.addCounters consults
  *    before it commits. Nothing reaches the stack, so nothing can negate it.
- *  - Trench Stalker: of its three missing pieces R49 supplied one — a
- *    "[Discard two cards]" bracketed cast cost is expressible now (the
- *    extractor still leaves the printed line in `text`, so it would be authored
- *    by hand). The other two are not: a "played directly into formation" play
- *    MODE and a play-from-bin ACTION, both in apply.ts's play paths. The cost
- *    is deliberately NOT added alone — it would make the card strictly worse
- *    than the vanilla body. Registered bare: an ordinary [2] {Battle} 6/2.
+ *  - Trench Stalker: LIVE as of R123, and it landed WHOLE, the way its ledger
+ *    entry demanded — the R49 "[Discard two cards]" cast cost went on in the
+ *    same change as the two modes it pays for: R29's `playsIntoFormation` and
+ *    R123's `playsFromBin` (the play-from-bin ACTION `legalActions` never
+ *    used to offer). No {Unstable} on the bin route: the R96 stamp is the
+ *    granting card's text, and this card's own line grants none.
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -375,19 +374,35 @@ card('Capture', {
 });
 
 // "[Discard two cards]{/n}I can be played directly into formation, and played
-// from your bin." — bd/2 6/2 {Battle} Alien Unit.
-// PARKED (see header) on TWO missing primitives, not three: a
-// play-directly-into-formation MODE and a play-from-bin ACTION, both in
-// apply.ts's play paths. The third — a "[Discard two cards]" bracketed cast
-// cost — is expressible now (`CastCost { kind: 'discardCard', n: 2 }`, R64),
-// and is deliberately NOT added alone: on a bare unit it would be a cost with
-// neither of the modes it is supposed to pay for, i.e. strictly worse than the
-// vanilla body. Registered bare so the card still enters DECK_LIST and plays
-// as an ordinary [2] {Battle} 6/2 out of hand.
-// ⚠ TRANSCRIPTION: the "[Discard two cards]" line is left inside `text` by the
-// extractor (it is neither `ambush` nor `discardMe`), and the printed text
-// never says which of the two alternative modes the discard pays for.
-card('Trench Stalker', {});
+// from your bin." — bd/2 6/2 {Battle} Alien Unit. UN-PARKED by R123, WHOLE —
+// the cost lands in the same change as the two modes it pays for, per its own
+// ledger entry's warning (either half alone would be a strictly wrong card):
+//  · "[Discard two cards]" is an R35/R49 bracketed CAST COST, chosen and paid
+//    in the cast window on EVERY route into play, hand and bin alike. It
+//    hangs on a `spellEffect` that exists solely to carry it: the run is
+//    empty BY CONSTRUCTION and unreachable, because a 'unit' StackItem
+//    resolves by spawning (`resolveItem` returns before parts ever run).
+//    Declared in NOT_A_GAP (71-card-ledger.test.ts) for exactly that reason.
+//  · "played directly into formation" is R29's `playsIntoFormation`,
+//    verbatim Tiderunner Initiate: the spot is chosen at cast, taken
+//    atomically with the spawn.
+//  · "played from your bin" is R123's `playsFromBin` — the card's own printed
+//    permission through the same `playFromBin` action R96 built. Printed
+//    {Battle} timing still applies, and NO {Unstable} stamp rides on it: the
+//    stamp is the R96 GRANTORS' own text, and this card prints no such line.
+// ⚠ TRANSCRIPTION: the "[Discard two cards]" line is left inside `text` by
+// the extractor (it is neither `ambush` nor `discardMe`), so the cost is
+// authored by hand here — and the printed text never says the discard pays
+// for only ONE of the modes, so it is read as the card's cost on every play.
+card('Trench Stalker', {
+  playsIntoFormation: true,   // R29
+  playsFromBin: true,         // R123
+  spellEffect: {
+    castCost: { kind: 'discardCard', n: 2 },   // R49, on every route into play
+    // unreachable by construction — see the note above and NOT_A_GAP
+    run: () => {},
+  },
+});
 
 // ─────────────────────── METAL / DARK (md) ────────────────────────────
 

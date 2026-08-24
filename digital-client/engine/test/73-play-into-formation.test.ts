@@ -247,13 +247,14 @@ test('R29 a spot chosen at cast opens a NEW column at resolution, re-keying bloc
   finishBattle(h);
 });
 
-// ── the primitive is a card FLAG, and only one card has it ────────────
+// ── the primitive is a card FLAG, and exactly two cards have it ───────
 
 test('R29 playsIntoFormation is the flag, and R75’s placeInFormation is untouched', async () => {
   const { allCardNames, getCard } = await import('../src/cards/dsl.ts');
   const flagged = allCardNames().filter(n => getCard(n).playsIntoFormation);
-  assert.deepEqual(flagged, ['Tiderunner Initiate'],
-    'exactly the card whose text is "you may PLAY me into an open spot"');
+  assert.deepEqual(flagged, ['Tiderunner Initiate', 'Trench Stalker'],
+    'exactly the cards whose text is a PLAY into the line — "you may PLAY me into an '
+    + 'open spot" and (R123) "I can be played directly into formation"');
 
   // R75's class is untouched: those four create a unit with an EFFECT and then
   // place it, so their placement stays where the ruling put it — at

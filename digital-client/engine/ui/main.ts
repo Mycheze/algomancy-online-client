@@ -1538,7 +1538,11 @@ function binDialogHtml(): string {
     // R42: "I can be prophesied from your bin" (Angel of Anguish) — the only
     // way a bin card leaves the bin without being a mod
     const canProph = legal.some(a => a.type === 'prophesy' && a.from === 'bin' && a.index === i);
-    const usable = canAug || canGraft || canProph;
+    // R96/R123: a bin card that may be PLAYED right now — under Abyssal
+    // Evocation's battle grant, or the card's own "played from your bin" line
+    // (Trench Stalker). legalActions already knows which; this just renders it.
+    const canPlay = legal.some(a => a.type === 'playFromBin' && a.binIndex === i);
+    const usable = canAug || canGraft || canProph || canPlay;
     anyUsable ||= usable;
     const badges: Badge[] = [];
     if (canAug || canGraft) {
@@ -1548,6 +1552,7 @@ function binDialogHtml(): string {
       });
     }
     if (canProph) badges.push({ t: '📜 prophesy from bin', cls: 'proph on' });
+    if (canPlay) badges.push({ t: '▶ playable from bin', cls: 'proph on' });
     return cardHtml(n, { playable: usable, badges, anim: binKeys[i], data: `data-act="bin" data-p="${p}" data-i="${i}"` });
   }).join('');
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
@@ -4915,12 +4920,17 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     // bin is a prophesy source too, so a bin card can offer both.
     const proph = legal.filter(a => a.type === 'prophesy' && a.from === 'bin' && a.index === i);
     const mods = legal.filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
-    if (proph.length) {
+    // R96/R123: playing a card straight out of the bin (Abyssal Evocation's
+    // grant, or the card's own line — Trench Stalker)
+    const plays = legal.filter(a => a.type === 'playFromBin' && a.binIndex === i);
+    if (plays.length || proph.length) {
       const name = h.state.players[p]!.bin[i] ?? '?';
       const items: MenuItem[] = [
+        ...plays.map(a => ({ label: `Play ${name} from your bin`,
+          go: () => { binView = null; act(a); render(); } })),
         // [08b] same rule as the hand: never on the revealing click
-        { label: prophesyLabel(name), confirm: actionNeedsMenu(proph[0]!),
-          go: () => { binView = null; act(proph[0]!); render(); } },
+        ...(proph.length ? [{ label: prophesyLabel(name), confirm: actionNeedsMenu(proph[0]!),
+          go: () => { binView = null; act(proph[0]!); render(); } }] : []),
         ...modMenuItems(p, 'bin', i, name, mods, { close: () => { binView = null; } }),
       ];
       offer(items, e);
@@ -4978,6 +4988,9 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
     // "when I am trashed" trigger (Dropslime, Nothyr, Sacrifice Dude).
     const label = mode === 'ambush' ? `Ambush with ${name}`
       : mode === 'discardMe' ? discardMeLabel(name)
+      // R123: an erase-funded haste play (Writhing Host) — the cost is said
+      // on the button, before the click, because the erase is not undoable
+      : a.type === 'playCard' && a.eraseGrant ? `Play ${name} as if it had [Haste] — erases the grantor from your bin`
       : `Play ${name}`;
     items.push({ label, go: () => { act(a); render(); } });
   }

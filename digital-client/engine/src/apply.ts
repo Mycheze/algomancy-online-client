@@ -216,7 +216,7 @@ function dispatch(e: E, action: Action): void {
     case 'draftCommit': return doDraftCommit(e, action.seat, action.packIndices);
     case 'doneHaste': return doDoneHaste(e, action.seat);
     case 'bottomCards': return doBottomCards(e, action.seat, action.handIndices);
-    case 'playCard': return doPlayCard(e, action.seat, action.handIndex, action.mode);
+    case 'playCard': return doPlayCard(e, action.seat, action.handIndex, action.mode, action.eraseGrant);
     case 'prophesy': return doProphesy(e, action.seat, action.from, action.index);
     case 'playCached': return doPlayCached(e, action.seat, action.index);
     case 'playFromBin': return doPlayFromBin(e, action.seat, action.binIndex);
@@ -473,6 +473,11 @@ function playAtTiming(
   e: E, seat: Seat, c: CardDef, timing: CardDef['timing'],
   take: () => void, pay: () => void, from: 'hand' | 'cache' | 'bin',
   unstable = false, fixedX?: number,
+  // R123: this play is funded by ERASING the grantor at `index` in seat's own
+  // bin (Writhing Host). Only doPlayCard's haste-step route ever passes it —
+  // it gates on the haste step being live — so the other branches never see
+  // one; the erase is paid in the planning branch with the play's other costs.
+  binErase?: { index: number },
 ): void {
   const canCast = (region: number) => castable(e, c, region, seat, from);
   /** R49: the printed "[Gain N debt]" bracketed line (Hyper Beam) is a real
@@ -513,8 +518,11 @@ function playAtTiming(
     // of three; `E.mayPlayAtHaste` is the shared predicate all three call, and
     // it refuses a {Battle} card whatever the grant says (RAQ "[Solved]
     // Dispatch Courier vs Battle Timing").
-    const granted = timing !== 'haste' && e.mayPlayAtHaste({ seat, card: c, from, region });
-    e.need(timing === 'haste' || granted, 'only haste cards during the haste step');
+    // R123: an erase-funded play (Writhing Host) is its own route — it never
+    // draws on the R97 allowance, so a Courier's free budget is not consulted
+    // and not charged for it.
+    const granted = timing !== 'haste' && !binErase && e.mayPlayAtHaste({ seat, card: c, from, region });
+    e.need(timing === 'haste' || granted || binErase !== undefined, 'only haste cards during the haste step');
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
@@ -524,6 +532,18 @@ function playAtTiming(
       e.chargeHastePlay(seat);
       e.ev('info', `${c.name} is played during the haste step as if it had [Haste].`,
         { seat, card: c.name });
+    }
+    // R123: the grant's price — the grantor leaves the BIN for the ERASED
+    // pile, paid here with the play's other costs (never before the play is
+    // known to be legal, so a refused play cannot touch the bin). The
+    // 'erased' event is what routes the card into the public erased pile
+    // (E.ev's R65 hook).
+    if (binErase) {
+      const grantor = e.player(seat).bin[binErase.index]!;
+      e.player(seat).bin.splice(binErase.index, 1);
+      e.ev('erased',
+        `${grantor} is erased from ${e.pname(seat)}'s bin — ${c.name} is played as if it had [Haste].`,
+        { seat, card: grantor });
     }
     e.castChain([mkItem(region)], 'resolve');
   } else if (e.s.phase === 'deploy') {
@@ -548,7 +568,7 @@ function playAtTiming(
   }
 }
 
-function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'discardMe'): void {
+function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'discardMe', eraseGrant?: boolean): void {
   const name = e.player(seat).hand[handIndex];
   e.need(name !== undefined, 'no such card in hand');
   const c = e.card(name);
@@ -561,10 +581,23 @@ function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'disc
   // cost lines, and no card yet prints both this restriction and one of them.
   e.need(!c.noPlayFromHand, `${c.name} can't be played from your hand`);
   e.need(e.canPayCard(seat, name), 'cannot pay for that');
+  // R123: a play funded by ERASING a bin grantor (Writhing Host). The haste
+  // step is the only window the grant opens, so anything else is refused up
+  // front and playAtTiming's other branches never see a grantor. The action
+  // carries no bin index — the grantor is re-found here, at apply time,
+  // through the SAME predicate the offer used (fungible copies; see
+  // E.binHasteGrantorIndex), so a stale index cannot desync a replay.
+  let binErase: { index: number } | undefined;
+  if (eraseGrant) {
+    e.need(e.s.phase === 'planning' && e.s.hasteDone !== null, 'that grant is a haste-step play');
+    const gi = e.binHasteGrantorIndex({ seat, card: c, from: 'hand', region: e.homeRegion(seat) });
+    e.need(gi >= 0, 'no card in your bin grants that play');
+    binErase = { index: gi };
+  }
   playAtTiming(e, seat, c, c.timing,
     () => { e.player(seat).hand.splice(handIndex, 1); },
     () => { e.payCard(seat, name); },
-    'hand');
+    'hand', false, undefined, binErase);
 }
 
 /**
@@ -667,21 +700,32 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
   const name = e.player(seat).bin[binIndex];
   e.need(name !== undefined, 'no such card in your bin');
   const c = e.card(name);
-  // "IN THIS BATTLE": no battle, no permission — which is also why the region
-  // comes from the battle rather than from the seat's home.
+  // "IN THIS BATTLE": no battle, no R96 permission — which is also why the
+  // grant's region comes from the battle rather than from the seat's home.
   const region = e.s.battle?.region;
-  e.need(region !== undefined && e.mayPlaySpellsFromBin(seat, region),
-    'you have no permission to play cards from your bin');
-  e.need(binPlayable(c), 'only spells may be played from your bin');
+  const viaGrant = region !== undefined && e.mayPlaySpellsFromBin(seat, region) && binPlayable(c);
+  // R123: `playsFromBin` is the card's OWN printed permission (Trench
+  // Stalker) — no grant needed, and printed timing then does the gating
+  // through playAtTiming (a {Battle} card still needs battle, exactly as it
+  // would from the cache, R42/R45).
+  e.need(viaGrant || !!c.playsFromBin, 'you have no permission to play cards from your bin');
   e.need(e.canPayCard(seat, name), 'cannot pay for that');
   playAtTiming(e, seat, c, c.timing,
     () => { e.player(seat).bin.splice(binIndex, 1); },
     () => {
       e.payCard(seat, name);
-      e.ev('info', `${name} is played from ${e.pname(seat)}'s bin — it is Unstable until regroup.`,
+      // R96 vs R123 on {Unstable}: the stamp is the GRANTING card's own text
+      // ("If you do, they gain {p}unstable until regroup" — Abyssal
+      // Evocation / Spell Excavation), NOT a fact about bins. The Manual's
+      // blanket Unstable rule is about MODDED cards (p.35). A card playing
+      // itself out under its own `playsFromBin` line prints no such clause,
+      // so it arrives stable — documented in R123.
+      e.ev('info', viaGrant
+        ? `${name} is played from ${e.pname(seat)}'s bin — it is Unstable until regroup.`
+        : `${name} is played from ${e.pname(seat)}'s bin — its own text allows it.`,
         { seat, card: name });
     },
-    'bin', true);
+    'bin', viaGrant);
 }
 
 /** [Battle] Ambush (Manual p.40): play the unit during battle as an effect —
@@ -1989,6 +2033,15 @@ function legalHasteActions(e: E, seat: Seat): Action[] {
     if (playable && !c.noPlayFromHand    // R100
       && e.canPayCard(seat, name) && castable(e, c, home, seat)) {
       out.push({ type: 'playCard', seat, handIndex: i });
+    } else if (!c.noPlayFromHand && e.canPayCard(seat, name) && castable(e, c, home, seat)
+      // R123, gate 2 of three for the BIN grantor (Writhing Host), routed
+      // through the same E.binHasteGrantorIndex that doPlayCard enforces —
+      // the fuzzer's "legalActions lied" check exists for this class of
+      // split. Offered only when no free route exists: an R97 allowance
+      // costs nothing, so erasing a grantor is never the default — but once
+      // the free plays are spent, the erase-funded one appears.
+      && e.binHasteGrantorIndex({ seat, card: c, from: 'hand', region: home }) >= 0) {
+      out.push({ type: 'playCard', seat, handIndex: i, eraseGrant: true });
     }
   });
   pushCachedPlays(e, seat, t => t === 'haste', home, out);
@@ -2269,12 +2322,15 @@ function legalDeployActions(e: E, seat: Seat): Action[] {
  * and this class of split has already been caught once.
  */
 function pushBinPlays(e: E, seat: Seat, region: number, out: Action[]): void {
-  if (!e.mayPlaySpellsFromBin(seat, region)) return;
+  const grant = e.mayPlaySpellsFromBin(seat, region);   // R96, battle-scoped
   e.player(seat).bin.forEach((name, i) => {
     const c = getCard(name);
-    if (!binPlayable(c)) return;
+    // R96's grant reaches SPELLS; R123's `playsFromBin` is the card's OWN
+    // printed line ("…and played from your bin" — Trench Stalker) and needs
+    // no grant. Same action, same doPlayFromBin gate.
+    if (!((grant && binPlayable(c)) || c.playsFromBin)) return;
     // R42/R45: printed timing applies, so the battle window offers {Battle}
-    // spells only (see doPlayFromBin's note).
+    // cards only (see doPlayFromBin's note).
     if (c.timing !== 'battle') return;
     if (!e.canPayCard(seat, name)) return;
     if (!castable(e, c, region, seat, 'bin')) return;

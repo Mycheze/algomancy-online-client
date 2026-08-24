@@ -4518,6 +4518,38 @@ export class E {
     return this.hastePlayAllowance({ ...ctx, usedThisTurn: used }) > used;
   }
 
+  /**
+   * R123: the index in `ctx.seat`'s OWN bin of a card granting this haste-step
+   * play at the price of its own erasure ("If I am in your bin, you may play a
+   * unit as if it had [Haste] by erasing me as an additional cost to play that
+   * unit" — Writhing Host), or -1.
+   *
+   * NOT folded into `hastePlayAllowance`: an R97 allowance is free and this
+   * grant costs its grantor, so the two must stay distinguishable — the offer
+   * (`legalHasteActions`) and the charge (`playAtTiming`'s erase) both need to
+   * know WHICH kind of permission funds the play. The two GENERAL refusals are
+   * R97's, restated above every grantor because they are rulings about what
+   * gaining [Haste] can do: a {Battle} card stays a battle card (RAQ
+   * "[Solved] Dispatch Courier vs Battle Timing"), and a printed [Haste] card
+   * needs no grant — so it must never cost anyone their grantor.
+   *
+   * FIRST match wins, and that is not deciding for the player: every grantor
+   * in the pool is Writhing Host, so two in one bin are fungible — same name,
+   * same effect, same erased pile — and an arbitrary pick between identical
+   * copies is invisible at the table. A second DISTINCT grantor card would
+   * make the choice visible and need an index on the action; none exists.
+   */
+  binHasteGrantorIndex(ctx: Omit<import('./cards/dsl.ts').PlayCtx, 'usedThisTurn'>): number {
+    if (ctx.card.timing === 'haste') return -1;   // needs no grant (R97 refusal 2)
+    if (ctx.card.timing === 'battle') return -1;  // RAQ: a battle card stays one
+    if (this.inPlayPermissions) return -1;        // R62-style reentrancy latch
+    this.inPlayPermissions = true;
+    try {
+      return this.player(ctx.seat).bin.findIndex(name =>
+        (this.card(name).binPlayPermissions ?? []).some(p => p.playAtHaste?.(this, ctx) === true));
+    } finally { this.inPlayPermissions = false; }
+  }
+
   /** R97: charge one grant-funded haste-step play to `seat`. The sibling of
    * R43's `hasteManaSpent` — same array shape, same per-seat/per-haste-step
    * lifetime, zeroed by `startHasteStep` (which is once per turn, and so IS
@@ -7707,7 +7739,13 @@ export class E {
       // this function zeroes below, so the budget is fresh when it is asked.
       const playableHere = (name: CardName): boolean =>
         this.card(name).timing === 'haste'
-        || this.mayPlayAtHaste({ seat, card: this.card(name), from: 'hand', region: this.homeRegion(seat) });
+        || this.mayPlayAtHaste({ seat, card: this.card(name), from: 'hand', region: this.homeRegion(seat) })
+        // R123: a grantor sitting IN THE BIN (Writhing Host) opens the step
+        // too — report #74's fatal gate a third time over, in bin form: a
+        // hand of deploy units plus a Host in the bin has no other legal
+        // haste play, so missing this line would skip the step outright and
+        // the other two gates would never be reached.
+        || this.binHasteGrantorIndex({ seat, card: this.card(name), from: 'hand', region: this.homeRegion(seat) }) >= 0;
       const fromHand = this.player(seat).hand.some(name =>
         playableHere(name) && this.canPayCard(seat, name) && hasTarget(name));
       if (fromHand) return true;

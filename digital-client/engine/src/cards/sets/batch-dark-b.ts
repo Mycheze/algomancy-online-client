@@ -97,13 +97,10 @@
  *    marker was lost in transcription or the card only works when something
  *    else trashes it mid-battle. Not "fixed" here.
  *
- * PARKED:
- *  - Writhing Host ("If I am in your bin, you may play a unit as if it had
- *    [Haste] by erasing me as an additional cost to play that unit") needs
- *    (a) play-timing gating from the BIN and (b) an arbitrary additional cost
- *    on ANOTHER card's play action — both live in apply.ts/legalActions, out
- *    of card code's reach (the Dispatch Courier precedent). Registered as a
- *    plain 3/1 body so it enters DECK_LIST and never crashes.
+ * Writhing Host is LIVE as of R123 (it was PARKED here through R97): the
+ * bin-anchored grant is `CardBehavior.binPlayPermissions`, gathered by
+ * `E.binHasteGrantorIndex` over the owner's own bin, and the erase is paid in
+ * apply.ts's `playAtTiming` with the play's other costs.
  */
 import type { CardName, EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -800,10 +797,26 @@ card('Umbral Decay', {
 });
 
 // "If I am in your bin, you may play a unit as if it had [Haste] by erasing me
-// as an additional cost to play that unit." — d/1 3/1 Horror Unit. PARKED
-// (header): granting haste timing to ANOTHER card, plus an arbitrary
-// additional cost on that other card's play action, both live in
-// apply.ts/legalActions and cannot be reached from card code (the Dispatch
-// Courier precedent). Registered as its printed body so it enters DECK_LIST,
-// plays normally and never crashes.
-card('Writhing Host', {});
+// as an additional cost to play that unit." — d/1 3/1 Horror Unit. UN-PARKED
+// by R123. The grantor sits in a BIN, so the permission cannot radiate through
+// `anchored()` (R97's family): `E.binHasteGrantorIndex` walks the owner's OWN
+// bin instead — the printed "your bin" is the walk itself, per seat by
+// construction — and the erase is paid in `playAtTiming` exactly where the
+// play's other costs are paid, so a declined play never touches the bin.
+//
+// WHAT THIS CARD DECIDES, and what it does not (the Dispatch Courier notes,
+// re-read for the bin):
+//  · "a UNIT" — `kind` must be a unit, and a SPELL UNIT counts (RAQ "[Solved]
+//    Spell Units played when you can 'play a unit from hand'").
+//  · "as if it had [Haste]" is TIMING ONLY — the unit never carries the
+//    attribute; the engine plays it in the R18 haste step and nothing more.
+//  · It does NOT get to say yes to a {Battle} card, and a printed [Haste]
+//    card never spends a grantor — both refusals are R97's, engine-side in
+//    `binHasteGrantorIndex`, above every grantor.
+//  · The COST is the card itself: no `hastePlaysUsed` budget is charged for
+//    an erase-funded play, because erasing the grantor IS the spend.
+card('Writhing Host', {
+  binPlayPermissions: [{
+    playAtHaste: (_g, ctx) => ctx.card.kind === 'unit' || ctx.card.kind === 'spellUnit',
+  }],
+});

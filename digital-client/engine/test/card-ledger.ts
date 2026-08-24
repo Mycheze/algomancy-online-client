@@ -168,21 +168,16 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // step, with real tests in 28-metal-c.test.ts. Per the house rule at the head
   // of this file the entry goes in the same commit as the fix — this comment is
   // a signpost for anyone following the old `todoTest` reference, not a park.
-  {
-    card: 'Writhing Host', gap: 'dead', severity: 'high',
-    missing:
-      '"If I am in your bin, you may play a unit as if it had [Haste] by erasing me '
-      + 'as an additional cost to play that unit."',
-    waitingOn:
-      'A play permission whose GRANTOR IS IN THE BIN, plus an additional cost attached to '
-      + "ANOTHER card's play action. R97 (Dispatch Courier) built the play-permission family "
-      + 'this round and deliberately does NOT unpark this card — `PlayPermission` radiates '
-      + 'through `E.anchored()`, which walks units in play and augment mods only, never a bin, '
-      + 'and `PlayCtx` has no room to bolt a cost onto someone else\'s play. The ledger used to '
-      + 'imply shared credit with Dispatch Courier; there is none.',
-    todoTest: "42-dark-b.test.ts::Writhing Host",
-    note: 'Registered as a plain 3/1 body so it enters DECK_LIST and never crashes.',
-  },
+  // Writhing Host's entry was DELETED on 2026-08-24 when R123 built both
+  // seams it was waiting on: a play permission whose GRANTOR IS IN THE BIN
+  // (`CardBehavior.binPlayPermissions`, gathered by `E.binHasteGrantorIndex`
+  // over the owner's own bin — `anchored()` never learns to walk one), and
+  // the additional cost bolted onto ANOTHER card's play (`playCard` grew an
+  // `eraseGrant` flag, and `playAtTiming` erases the grantor exactly where
+  // the play's other costs are paid). Its todo was promoted to five real
+  // tests in 42-dark-b.test.ts. Per the house rule at the head of this file
+  // the entry goes in the same commit as the fix — this comment is a signpost
+  // for anyone following the old `todoTest` reference, not a park.
   {
     card: 'Rotling', gap: 'dead', severity: 'high',
     missing: '"When I leave your bin, [Switch1] You may pay [1] to draw a card and gain 1 rot."',
@@ -262,28 +257,17 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // anyone following the old `todoTest` reference, not a park.
   // ── BARE DEFINITIONS WITH LIVE PRINTED TEXT ─────────────────────────────
 
-  {
-    card: 'Trench Stalker', gap: 'dead', severity: 'medium',
-    missing:
-      '"[Discard two cards]{/n}I can be played directly into formation, and played '
-      + 'from your bin."',
-    waitingOn:
-      'ONE of its original three (corrected 2026-08-22). R49 supplied the cost — '
-      + "`castCost: { kind: 'discardCard', n: 2 }` is expressible — and R29 has now "
-      + 'supplied "played directly into formation": `CardBehavior.playsIntoFormation` '
-      + 'is exactly this clause, built for Tiderunner Initiate, asked in the cast '
-      + 'window and taken atomically with the spawn. What is genuinely left is the '
-      + 'play-from-bin ACTION, which nothing in legalActions ever offers (the same '
-      + 'missing permission parks Abyssal Evocation and Writhing Host). Unparking '
-      + 'this card is now a two-piece job, not a three-piece one — and it must land '
-      + 'whole: the cost is deliberately NOT added on its own, because it would make '
-      + 'the card strictly worse than the vanilla body.',
-    todoTest: '46-hybrids-ld-c.test.ts::Trench Stalker',
-    note:
-      'Registered bare, so it is an ordinary [2] {Battle} 6/2 — strictly BETTER than '
-      + 'printed (no discard) and strictly less flexible (no bin, no direct '
-      + 'formation entry). Both directions are wrong.',
-  },
+  // Trench Stalker's entry was DELETED on 2026-08-24 when the play-from-bin
+  // ACTION landed (R123: `CardBehavior.playsFromBin`, offered through the
+  // same `playFromBin` action R96 built) — and, per this entry's own warning,
+  // the card landed WHOLE in one change: the R49 `castCost: { kind:
+  // 'discardCard', n: 2 }` and R29's `playsIntoFormation` went on in the same
+  // commit, so it is no longer strictly BETTER than printed from hand (the
+  // discard now gates every play) nor strictly LESS flexible than printed
+  // anywhere else (bin and direct formation entry both work). No {Unstable}
+  // from the bin route — the R96 stamp is the granting card's text, and this
+  // card's line grants none. Its todo was promoted to three real tests in
+  // 46-hybrids-ld-c.test.ts. Signpost, not a park.
 
   // ── PARTIAL: one clause works, another does not ─────────────────────────
   // EMPTY as of 2026-08-23, and kept as a heading because the class recurs:

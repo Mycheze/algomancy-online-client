@@ -10,9 +10,10 @@
  * R64 — the discards used to happen at resolution),
  * a granted prophecy computed from a cost (Prophecy Bug, R43), damage-driven
  * rot (Rotwall), and the two shapes of a discard trigger (Swarmling, R40).
- * The PARKED Counter Theif (counter-placement replacement) and Trench Stalker
- * (discard cast cost / play into formation / play from bin) have registration
- * tests + todos.
+ * The PARKED Counter Theif (counter-placement replacement) has a registration
+ * test + todo. Trench Stalker is LIVE as of R123, whole: the [Discard two
+ * cards] cast cost, R29 formation entry and the play-from-bin action landed
+ * together.
  *
  * States are built explicitly (give/spawn/giveResources/whiteBox) so parallel
  * card registration can't shift assertions. Seeds: 4600-4699.
@@ -772,18 +773,102 @@ test('Swarmling: in play, discarding ANOTHER card fires it too — and declining
 
 // ── Trench Stalker ───────────────────────────────────────────────────────
 
-test('Trench Stalker: [Discard two cards] cost, play into formation, play from bin', { todo: true }, () => {
-  // STILL PARKED, on two of its original three. R49 supplied the first:
-  // `castCost: { kind: 'discardCard', n: 2 }` is expressible now (though the
-  // extractor still leaves the printed line inside `text` rather than emitting
-  // a cost, so it would have to be authored by hand). Deliberately NOT added
-  // on its own: the cost without the two benefits it buys — a
-  // play-directly-into-formation MODE and a play-from-bin ACTION, both of
-  // which live in apply.ts's play paths — would make the card strictly worse
-  // than the vanilla body it currently plays as.
+/** answer the cast-window questions in whatever order collectTargets raises
+ * them (the R29 open-spot question comes before the fixed [Discard two
+ * cards]); returns how many of each were asked. */
+function answerStalkerCast(h: Harness): { spots: number; discards: number } {
+  const n = { spots: 0, discards: 0 };
+  let guard = 10;
+  while (h.state.decision && guard-- > 0) {
+    const dec = h.state.decision;
+    if (dec.prompt.includes('which open spot')) {
+      n.spots++;
+      const i = dec.options.findIndex(o => o.label.includes('behind LDC Grunt'));
+      assert.ok(i >= 0, `an open spot behind the attacker is on the menu: [${dec.options.map(o => o.label)}]`);
+      h.do({ type: 'decide', seat: dec.seat, choice: i });
+    } else if (dec.prompt.includes('discard')) {
+      n.discards++;
+      pick(h, { discard: 0 });
+    } else break;
+  }
+  return n;
+}
+
+test('Trench Stalker (R123): played from your bin — [Discard two cards] paid in the cast window, straight into an open spot (R29), and NO {Unstable}', () => {
+  const h = new Harness(4630);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const atk = spawn(h, A, 'LDC Grunt');
+  giveResources(h, A, 'water', 1);
+  giveResources(h, A, 'dark', 1);                          // bd / 2
+  h.state.players[A]!.bin.push('Trench Stalker');
+  attackWith(h, A, [[atk]]);
+  h.state.players[A]!.hand.splice(0);                      // deterministic fodder
+  give(h, A, 'LDC Grunt'); give(h, A, 'LDC Grunt');
+  const offer = h.legal(A).find(a => a.type === 'playFromBin');
+  assert.ok(offer, 'the bin play is offered in the battle window');
+  h.do(offer!);
+  // mid-cast wire trip: the suspension and its cost receipts are plain state
+  h.state = JSON.parse(JSON.stringify(h.state)) as typeof h.state;
+  const asked = answerStalkerCast(h);
+  assert.equal(asked.spots, 1, 'the R29 open-spot question was asked at cast');
+  assert.equal(asked.discards, 2, 'both discards chosen and paid at cast');
+  drainStack(h);                                           // resolve
+  const ts = unitsOf(h, A).find(u => u.card === 'Trench Stalker')!;
+  assert.ok(ts, 'in play');
+  assert.ok(h.state.battle!.columns[0]!.includes(ts.id), 'played directly into the line — never standing outside it');
+  assert.equal(h.state.players[A]!.hand.length, 0, 'both fodder cards discarded');
+  assert.ok(!h.state.players[A]!.bin.includes('Trench Stalker'), 'the Stalker left the bin');
+  assert.equal(h.state.players[A]!.bin.filter(n => n === 'LDC Grunt').length, 2, '…and the two discards reached it');
+  assert.ok(h.log.some(l => l.includes("Trench Stalker is played from")), 'the log says where it came from');
+  assert.ok(!h.q.isUnstable(ts),
+    "NOT {Unstable}: the R96 stamp is the GRANTING card's own text (Abyssal Evocation), and Trench Stalker's line grants none");
 });
 
-test('Trench Stalker: registers and plays as an ordinary [2] {Battle} 6/2', () => {
+test('Trench Stalker (R123): with fewer than two other cards in hand the bin play is not offered — the cost gates the offer', () => {
+  const h = new Harness(4631);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const atk = spawn(h, A, 'LDC Grunt');
+  giveResources(h, A, 'water', 1);
+  giveResources(h, A, 'dark', 1);
+  h.state.players[A]!.bin.push('Trench Stalker');
+  attackWith(h, A, [[atk]]);
+  h.state.players[A]!.hand.splice(0);
+  give(h, A, 'LDC Grunt');
+  assert.ok(!h.legal(A).some(a => a.type === 'playFromBin'), 'one card to discard is not two — no offer');
+  give(h, A, 'LDC Grunt');
+  assert.ok(h.legal(A).some(a => a.type === 'playFromBin'), '…and with a second card it appears');
+});
+
+test('Trench Stalker (R123): from HAND the printed cost applies too — no longer strictly better than printed in either direction', () => {
+  const h = new Harness(4632);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const atk = spawn(h, A, 'LDC Grunt');
+  giveResources(h, A, 'water', 1);
+  giveResources(h, A, 'dark', 1);
+  attackWith(h, A, [[atk]]);
+  h.state.players[A]!.hand.splice(0);
+  const tsIdx = give(h, A, 'Trench Stalker');
+  // direction 1: the vanilla registration played from an empty hand; the
+  // printed card cannot — the [cost] gates the hand play as well
+  assert.ok(!h.legal(A).some(a => a.type === 'playCard' && a.handIndex === tsIdx),
+    'with nothing to discard the hand play is refused');
+  give(h, A, 'LDC Grunt'); give(h, A, 'LDC Grunt');
+  const offer = h.legal(A).find(a => a.type === 'playCard' && a.handIndex === tsIdx);
+  assert.ok(offer, 'with two other cards it is offered');
+  h.do(offer!);
+  const asked = answerStalkerCast(h);
+  assert.equal(asked.discards, 2);
+  assert.equal(asked.spots, 1, 'direction 2: the formation entry works from hand too');
+  drainStack(h);
+  const ts = unitsOf(h, A).find(u => u.card === 'Trench Stalker')!;
+  assert.ok(h.state.battle!.columns[0]!.includes(ts.id), 'joined the column behind the attacker');
+  assert.equal(h.state.players[A]!.hand.length, 0, 'both discards paid from hand');
+});
+
+test('Trench Stalker: registers as a bd/2 {Battle} 6/2 — and a plain hand play now pays the printed [Discard two cards] (R123)', () => {
   const h = new Harness(4626);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -792,11 +877,16 @@ test('Trench Stalker: registers and plays as an ordinary [2] {Battle} 6/2', () =
   giveResources(h, D, 'dark', 1);                          // bd / 2
   attackWith(h, A, [[atk]]);
   pass(h);                                                 // priority → D
+  const before = h.state.players[D]!.hand.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Trench Stalker') });
-  pass(h); pass(h);                                        // resolve
+  pick(h, { discard: 0 }); pick(h, { discard: 0 });        // R123: the cost, paid at cast
+  // no open-spot question here: the DEFENDER has no formation before blocks
+  // are declared, and R29 asks nothing when there is nothing to join
+  drainStack(h);                                           // resolve
   const ts = unitsOf(h, D).find(u => u.card === 'Trench Stalker');
   assert.ok(ts, 'it is in play');
   assert.deepEqual(effStats(h, ts.id), [6, 2]);
+  assert.equal(h.state.players[D]!.hand.length, before - 2, 'two cards were discarded on the way in');
 });
 
 // ── Visionary Construct ──────────────────────────────────────────────────

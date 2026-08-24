@@ -1057,6 +1057,37 @@ export interface PlayPermission {
 }
 
 /**
+ * R123: a play permission whose GRANTOR IS A CARD SITTING IN A BIN — "If I am
+ * in your bin, you may play a unit as if it had [Haste] by erasing me as an
+ * additional cost to play that unit." (Writhing Host).
+ *
+ * Deliberately NOT a `PlayPermission`: R97's family radiates through
+ * `E.anchored()`, which walks units in play and augment mods, and a card in a
+ * bin is a NAME in an array with no Entity to anchor on. So the predicate
+ * takes no `self`, and the gatherer (`E.binHasteGrantorIndex`) walks
+ * `ctx.seat`'s OWN bin instead — the printed "YOUR bin" is enforced by the
+ * walk itself, per seat by construction, not per card.
+ *
+ * THE GRANT COSTS ITS GRANTOR. A play made under it ERASES the granting card
+ * out of the bin as an additional cost of the OTHER card's play — paid in
+ * `playAtTiming`, exactly where that play's other costs are paid, so a
+ * declined or illegal play never touches the bin. There is no engine budget
+ * to charge (`hastePlaysUsed` stays out of it): the grantor's own card IS the
+ * budget, and erasing it spends it.
+ *
+ * "As if it had [Haste]" is TIMING ONLY — the played unit never carries the
+ * Haste attribute (R97's reading, unchanged). R97's two general refusals
+ * stand above this grantor too, in the gatherer: a {Battle} card stays a
+ * battle card (RAQ "[Solved] Dispatch Courier vs Battle Timing"), and a
+ * printed [Haste] card needs no grant, so it must not cost anyone a grantor.
+ */
+export interface BinPlayPermission {
+  /** may `ctx.seat` play `ctx.card` during the HASTE step (R18), at the
+   * price of this card being erased from their bin? */
+  playAtHaste?: (g: E, ctx: Omit<PlayCtx, 'usedThisTurn'>) => boolean;
+}
+
+/**
  * R104: what an `AmountMod` is being asked about — ONE quantity, on its way
  * through the engine, before anything has committed it.
  *
@@ -1189,6 +1220,13 @@ export interface CardBehavior {
    * you may play a unit during the mana step as if it had [Haste]" — Dispatch
    * Courier) */
   playPermissions?: PlayPermission[];
+  /** R123: PERMISSIONS to play a card at haste timing granted by a card
+   * SITTING IN ITS OWNER'S BIN, paid for by erasing the grantor ("If I am in
+   * your bin, you may play a unit as if it had [Haste] by erasing me as an
+   * additional cost to play that unit" — Writhing Host). Not R97's family:
+   * those radiate through `anchored()`, and a bin card has no anchor. See
+   * `BinPlayPermission` for the shape and the cost. */
+  binPlayPermissions?: BinPlayPermission[];
   /** the card can be applied as an augment even without augmentAttrs or
    * augmentText — its [Augment] text is implemented via `statics` */
   augmentable?: boolean;
@@ -1202,6 +1240,22 @@ export interface CardBehavior {
    * be prophesied from the bin unless it says so, so this defaults to false
    * and the `prophesy` action's `from: 'bin'` is refused without it. */
   prophesyFromBin?: boolean;
+  /**
+   * R123: "…and played from your bin." (Trench Stalker) — this card may be
+   * PLAYED out of its owner's own bin under its own printed text. Distinct
+   * from R96, which is a battle-scoped GRANT by another card ("In this
+   * battle, you may play spells from your bin" — Abyssal Evocation) and
+   * reaches SPELLS only; this flag is the played card's own line and needs no
+   * grant. PRINTED TIMING still applies — the R42/R45 cache reading R96 also
+   * follows — so a {Battle} card is offered in battle priority windows.
+   *
+   * ⚠ NO {Unstable} stamp rides on this route. The R96 stamp is the GRANTING
+   * card's own text ("If you do, they gain {p}unstable until regroup"), not a
+   * fact about bins — the Manual's blanket Unstable rule is about MODDED
+   * cards (p.35). A card playing itself out under this flag prints no such
+   * line and arrives stable. Documented in R123.
+   */
+  playsFromBin?: boolean;
   /**
    * R100: "I can't be played from your hand." (Calming Force) — the mirror of
    * `prophesyFromBin` and defaulting the other way: every card may be played
