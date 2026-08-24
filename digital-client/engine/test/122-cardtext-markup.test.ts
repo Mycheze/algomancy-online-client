@@ -276,3 +276,222 @@ test('R141: no card in the pool prints a bare-digit cost token as text', () => {
   }
   assert.deepEqual(bad, [], `bare-digit costs left unrendered:\n${bad.join('\n')}`);
 });
+
+/* ── R142: none of Caleb's formatting markup may EVER reach a player ─────
+ *
+ * Owner, room SMVJ 2026-08-24 (report #102): "UI thing: All the text on cards
+ * still includes things that are only for the engine to see (like {i} or / or
+ * some other 'markup' notes)". And on what the markup IS: "It's pure engine
+ * markup used by some system Caleb uses to format cards better. {i} makes the
+ * next word italic, {g} puts it into gold colored text, etc. I'm not sure what
+ * the / does, tho."
+ *
+ * The `/` is `/[…]`: a bracket the PRINTED card draws as its own boxed panel,
+ * on 13 cards. R134 and R141 each closed one marker; this closes the last one
+ * and then nails the whole family shut with a sweep, because the lesson of both
+ * earlier rulings is that a marker nobody taught the formatter about does not
+ * announce itself — it renders as its own source text and waits for someone to
+ * happen to look at that card.
+ *
+ * ⚠ THREE FAMILIES OF BRACE TOKEN, and only ONE of them is markup:
+ *   1. FORMATTING — {i} {/i} {i1} {g} {p} {/n}, and `/[`. Never visible.
+ *   2. KEYWORDS   — {Battle} {Virus} {Haste} {Flying} … ~30 of them. ALWAYS
+ *      visible, as an icon where one exists and as the bare word where none
+ *      does. Only six have icon assets; the other two dozen correctly bare
+ *      their word, and that is not a bug to "fix" by inventing icons.
+ *   3. STAT NOTATION — not a token at all, but `X/X`, `+1/+1`, `-1/-1` share
+ *      the slash with family 1 and outnumber `/[` several times over.
+ */
+
+/** what a PLAYER actually reads: the rendered HTML with its tags taken off */
+const asPlayerReads = (html: string): string => html.replace(/<[^>]*>/g, '');
+
+test('R142: the /[…] box drops the slash and the brackets and keeps the words', () => {
+  // a COST box — the printed card draws the cost panel, then the colon
+  const cost = iconizeText('[Switch1] /[Sacrifice a unit]: Draw a card.');
+  assert.ok(!cost.includes('/['), `the report: the player read a literal "/[": ${cost}`);
+  assert.ok(cost.includes('<span class="costbox">Sacrifice a unit</span>'),
+    `the bracket keeps its grouping as markup, not as punctuation: ${cost}`);
+  assert.equal(asPlayerReads(cost), ' Sacrifice a unit: Draw a card.',
+    'and what is left reads as English');
+
+  // a MODE box — the same marker, a different job (six of the thirteen)
+  const mode = iconizeText('Double the /[power {i1}or defense] of target unit.');
+  assert.ok(!mode.includes('/['), `Burgeon's modal box: ${mode}`);
+  assert.equal(asPlayerReads(mode), 'Double the power or defense of target unit.');
+});
+
+test('R142: a stat slash is NOT markup — X/X and +1/+1 survive untouched', () => {
+  // THE TRAP. `/` is stat notation on far more cards than print `/[`, so the
+  // markup rule is anchored to the slash being glued to a `[`.
+  for (const raw of [
+    'Create an X/X unit.',
+    'Put a +1/+1 counter on each of your units.',
+    'Each unit gets -1/-1 until regroup.',
+    'I become base 4/4 and gain +2/+0.',
+  ]) {
+    assert.equal(asPlayerReads(iconizeText(raw)), raw, `stat notation must not move: ${raw}`);
+  }
+  // and the two live side by side on one card without interfering
+  const both = iconizeText('[Switch1] /[Remove X +1/+1 counters from allies]: I deal X damage.');
+  assert.ok(both.includes('+1/+1'), `Discharge keeps its counters: ${both}`);
+  assert.ok(!both.includes('/['), both);
+});
+
+test('R142: {i1} does not eat the space beside the word it italicises', () => {
+  // Wither and Bloom prints "…on each enemy or{i1} put a{/n} +1/+1…" — the
+  // marker's only separator from the NEXT word sits after it, and a bare `\s*`
+  // swallowed it, so the box read "each enemy orput a".
+  const read = asPlayerReads(iconizeText(textOf('Wither and Bloom')));
+  assert.ok(!/orput/.test(read), `two words jammed together: ${read}`);
+  assert.ok(/enemy or put a/.test(read), `the space survives the marker: ${read}`);
+  // the other side of the marker is the other half of the same bug
+  assert.ok(/units or your units/.test(asPlayerReads(iconizeText(textOf('Floral Singularity')))),
+    'and "units {i1}or your" keeps the space that sits BEFORE the marker');
+  // no card in the pool loses a space to {i1}. Checked POSITIVELY — "does the
+  // rendered text still have these two words with a space between them" — not
+  // by hunting for the jammed digraph, which false-positives the moment the
+  // pair happens to occur elsewhere ("power {i1}or" looks for "ro", and
+  // "regroup" has one; the same trap R134's sweep hit with "{i}to" -> "it").
+  const jammed: string[] = [];
+  for (const name of allCardNames()) {
+    const raw = textOf(name);
+    if (!raw.includes('{i1}')) continue;
+    const read = asPlayerReads(iconizeText(raw));
+    for (const re of [/([A-Za-z]+)\{i1\}[ \t]([A-Za-z]+)/g, /([A-Za-z]+)[ \t]\{i1\}([A-Za-z]+)/g]) {
+      for (const m of raw.matchAll(re)) {
+        if (!read.includes(`${m[1]} ${m[2]}`)) jammed.push(`${name}: "${m[1]} ${m[2]}" -> "${read.slice(0, 80)}"`);
+      }
+    }
+  }
+  assert.deepEqual(jammed, [], 'a marker that vanishes but takes a space with it is still visible');
+});
+
+test('R142: {/n} inside an unrecognised bracket is still a line break', () => {
+  // R134 CLAIMED formatting is resolved globally, before the icon pass, so a
+  // marker nested inside a bracket the icon pass does not recognise is still
+  // reached. Verified here rather than assumed: the claim held, and the /[…]
+  // span must not become the thing that breaks it.
+  assert.ok(iconizeText('a /[b{/n}c] d').includes('<span class="costbox">b<br>c</span>'),
+    'a break nested in the costbox still breaks, and rides INSIDE the box');
+  assert.ok(iconizeText('a [unknownthing{/n}x] b').includes('<br>'),
+    'and inside a bracket that stays a bracket');
+  assert.ok(iconizeText(textOf('Wither and Bloom')).includes('<br>'),
+    'which is what the reported card needs — its {/n} sits inside its /[…]');
+  // ⚠ the card BOX is the one place it is deliberately not a break: `clean()`
+  // collapses {/n} to a space because it is a mid-WORD wrap in the scans
+  // ("be- {/n}comes"), never a clause separator, and the box reflows.
+  assert.ok(!printedTextBox('Wither and Bloom').lines[0]!.text.includes('{/n}'),
+    'clean() has already consumed it before the box renders');
+});
+
+test('R142: no card in the pool renders engine markup to a player', () => {
+  // THE SWEEP, and the deliverable that makes this stay fixed. Over the WHOLE
+  // pool, for `text` AND the `type` line (R134's sweep covered only `text`),
+  // as the player reads it — tags off, because a marker hiding in an alt=""
+  // is not what anyone is complaining about.
+  const FORBIDDEN: [string, RegExp][] = [
+    ['{i}', /\{i\}/], ['{/i}', /\{\/i\}/], ['{i1}', /\{i1\}/],
+    ['{g}', /\{g\}/], ['{p}', /\{p\}/], ['{/n}', /\{\/n\}/],
+    ['/[', /\/\[/],
+    // the general form: ANY brace token the formatter did not consume, which
+    // is how the next unknown marker announces itself instead of shipping
+    ['an unconsumed {token}', /\{[^{}]*\}/],
+  ];
+  const bad: string[] = [];
+  for (const name of allCardNames()) {
+    for (const field of ['text', 'type'] as const) {
+      const raw = field === 'text' ? textOf(name) : getCard(name).type ?? '';
+      if (!raw) continue;
+      const read = asPlayerReads(iconizeText(raw));
+      for (const [label, re] of FORBIDDEN) {
+        if (re.test(read)) bad.push(`${name} (${field}): ${label} reached the player — "${read.slice(0, 90)}"`);
+      }
+    }
+  }
+  assert.deepEqual(bad, [], `engine markup on the table:\n${bad.join('\n')}`);
+});
+
+test('R142: the sweep covers the composed box, not just the raw card text', () => {
+  // ui/main.ts calls iconizeText from ~25 sites — ability labels, glossary and
+  // help rows, decision hints, the log, ui/markdown.ts — plus the full and
+  // compact text boxes. Every one of them funnels through this one function,
+  // which is WHY the fix is one function; this walks the box path (clean() +
+  // graft/augment slicing + dropOriginMarker) to prove the slicing does not
+  // reassemble something the formatter then fails to consume.
+  const bad: string[] = [];
+  for (const name of allCardNames()) {
+    const box = printedTextBox(name);
+    for (const s of [box.typeLine, ...box.lines.map(l => l.text)]) {
+      if (!s) continue;
+      const read = asPlayerReads(iconizeText(s));
+      if (/\{[^{}]*\}|\/\[/.test(read)) bad.push(`${name}: "${read.slice(0, 90)}"`);
+    }
+  }
+  assert.deepEqual(bad, [], `markup in a rendered text box:\n${bad.join('\n')}`);
+});
+
+test('R142: the keyword family is NOT suppressed — it keeps showing', () => {
+  // The other half of the rule, and the easy way to "pass" the sweep wrongly:
+  // {Battle} (136 uses), {Virus} (63), {Haste} (21) and ~30 more are card
+  // CONTENT, not markup. Six have icon assets; the rest correctly bare their
+  // word, which is not a bug.
+  assert.ok(iconizeText('{Battle} Elemental Spell').includes('Icons/battle.webp'));
+  assert.ok(iconizeText('as if it had {Haste}.').includes('Icons/haste.webp'));
+  for (const kw of ['Piercing', 'Blessed', 'Deadly', 'Unstable', 'Tough', 'Unaware', 'Inverted']) {
+    assert.equal(asPlayerReads(iconizeText(`I am {${kw}}.`)), `I am ${kw}.`,
+      'a keyword with no icon asset bares its word — it must never be suppressed');
+  }
+});
+
+/* ── R142 half two: the EXTRACTOR's layout artifacts ─────────────────────
+ *
+ * printed.json is GENERATED from Caleb's oracle file, so these are guarded on
+ * the emitted data rather than fixed in it — a hand edit would be wiped by the
+ * next regeneration, which is the quiet lie the card ledger exists to stop.
+ */
+
+test('R142: no printed card carries a hyphenation artifact from its own art', () => {
+  // Four cards lost the {/n} that went with their soft hyphen in transcription
+  // and were left reading "adja- cent" / "oppo- nent".
+  const bad: string[] = [];
+  for (const name of allCardNames()) {
+    const c = getCard(name);
+    for (const [field, s] of [['text', c.text ?? ''], ['type', c.type ?? '']] as const) {
+      // hyphen + space + LOWERCASE letter, and no {/n} in between: never
+      // legitimate in this pool (every -1/-1 has a digit after the hyphen,
+      // every compound is closed, and the prophecy banner uses an em-dash)
+      for (const m of s.matchAll(/[A-Za-z]-[ \t]+[a-z]/g)) bad.push(`${name} (${field}): "${m[0]}"`);
+    }
+  }
+  assert.deepEqual(bad, [], `broken words in the printed data:\n${bad.join('\n')}`);
+  assert.ok(getCard('Flamebreath Initiate').text.includes('allies adjacent to me'));
+  assert.ok(getCard('Ghord').text.includes('Each opponent sacrifices'));
+  // and the form that KEEPS its marker is deliberately untouched: {/n} is the
+  // line separator the extractor's banner parser splits on
+  assert.ok(getCard('Formless').text.includes('be- {/n}comes'),
+    'a soft hyphen that still has its line break stays for clean() to join');
+});
+
+test('R142: printed text and type lines carry no whitespace runs', () => {
+  const bad: string[] = [];
+  for (const name of allCardNames()) {
+    const c = getCard(name);
+    for (const [field, s] of [['text', c.text ?? ''], ['type', c.type ?? '']] as const) {
+      if (/\s\s/.test(s)) bad.push(`${name} (${field}): double space in "${s.slice(0, 70)}"`);
+      if (s !== s.trim()) bad.push(`${name} (${field}): untrimmed "${s.slice(0, 40)}"`);
+    }
+  }
+  assert.deepEqual(bad, [], `49 card texts and one type line had these:\n${bad.join('\n')}`);
+});
+
+test('R142: a typo in the DESIGNER\'s source data is left alone, on purpose', () => {
+  // Linked Extinction reads "Sacrifce a unit". That is Caleb's data, not a
+  // layout artifact, and the extractor does not silently rewrite a designer's
+  // words — it is reported upward instead. This test is the record of that
+  // decision: if it ever fails, either someone corrected the source (fine —
+  // delete this test) or someone added a fuzzy spellfix to the extractor (not
+  // fine, and this is the alarm).
+  assert.ok(getCard('Linked Extinction').text.includes('Sacrifce'),
+    'still spelled as the source spells it — normalisation fixes LAYOUT, never words');
+});

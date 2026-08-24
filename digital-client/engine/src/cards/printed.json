@@ -53,7 +53,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When the second ally dies in this battle,  [Switch1] Draw a card.",
+  "text": "When the second ally dies in this battle, [Switch1] Draw a card.",
   "image": "Mischievous-Reclaimer.jpg"
  },
  "Ephemeral Skywalker": {
@@ -149,7 +149,7 @@
   "mana": 2,
   "power": 3,
   "toughness": 3,
-  "type": "{Battle} Elemental  Spell",
+  "type": "{Battle} Elemental Spell",
   "kind": "spell",
   "timing": "battle",
   "attrs": [],
@@ -299,7 +299,7 @@
    "cost": "bb",
    "mana": 4
   },
-  "text": "[Battle] Ambush  [4bb] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\"){/i}",
+  "text": "[Battle] Ambush [4bb] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\"){/i}",
   "image": "Good-Whale.jpg"
  },
  "Oracle of the Flame": {
@@ -513,7 +513,7 @@
    "cost": "bb",
    "mana": 3
   },
-  "text": "[Battle] Ambush  [3bb] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\")",
+  "text": "[Battle] Ambush [3bb] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\")",
   "image": "Orblish-Horroth.jpg"
  },
  "Whispering Mantid": {
@@ -864,7 +864,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Put a +1/+1 counter on target unit for each of your  [e].",
+  "text": "Put a +1/+1 counter on target unit for each of your [e].",
   "image": "Accumulated-Nucleation.jpg"
  },
  "Poison": {
@@ -1001,7 +1001,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment]  [three]: Put a +1/+1 counter on target unit.",
+  "text": "[Augment] [three]: Put a +1/+1 counter on target unit.",
   "image": "Astralith.jpg"
  },
  "Construct Overseer": {
@@ -1278,7 +1278,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] When I attack or block, create a Fireball X+1, where X is the number of allies adja- cent to me.",
+  "text": "[Augment] When I attack or block, create a Fireball X+1, where X is the number of allies adjacent to me.",
   "image": "Flamebreath-Initiate.jpg"
  },
  "Embermaw Fledgling": {
@@ -1396,7 +1396,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Abilities cost  [one] more to activate or trigger during battle. {i}(Choosing to not pay {/n}this prevents the abilities from triggering.)",
+  "text": "[Augment] Abilities cost [one] more to activate or trigger during battle. {i}(Choosing to not pay {/n}this prevents the abilities from triggering.)",
   "image": "Crevice-Lurker.jpg"
  },
  "Deathglow Strider": {
@@ -1453,7 +1453,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Whenever I am dealt damage, you may {/n}pay  [one]. If you do, I fight another target unit. {i}(We deal damage to each other equal to our power.)",
+  "text": "[Augment] Whenever I am dealt damage, you may {/n}pay [one]. If you do, I fight another target unit. {i}(We deal damage to each other equal to our power.)",
   "image": "Eminence-of-the-Barrens.jpg"
  },
  "Enigmatic Warder": {
@@ -1512,7 +1512,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When my column deals combat damage,  {/n}[Switch1] Put a +1/+1 counter on each of your {/n}units.",
+  "text": "When my column deals combat damage, {/n}[Switch1] Put a +1/+1 counter on each of your {/n}units.",
   "image": "Flowstone-Arcanite.jpg"
  },
  "Graxxlid": {
@@ -1531,7 +1531,7 @@
   "virus": true,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment][once]  [one]: Negate target effect targeting me. That effect's controller draws a card.",
+  "text": "[Augment][once] [one]: Negate target effect targeting me. That effect's controller draws a card.",
   "image": "Graxxlid.jpg"
  },
  "Haboob": {
@@ -1723,7 +1723,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Whenever you apply an augment during battle,  [Switch] I gain +2/+2 until regroup.",
+  "text": "Whenever you apply an augment during battle, [Switch] I gain +2/+2 until regroup.",
   "image": "Morphic-Mentor.jpg"
  },
  "Nectar Ridge Oracle": {
@@ -1802,7 +1802,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When I am dealt damage,  [Switch1] Put a +1/+1 counter on me.",
+  "text": "When I am dealt damage, [Switch1] Put a +1/+1 counter on me.",
   "image": "Plodding-Pebble.jpg"
  },
  "Reality Bender": {
@@ -2000,7 +2000,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When one of your units survives damage,  [Switch1] Create a 2/2 unit.",
+  "text": "When one of your units survives damage, [Switch1] Create a 2/2 unit.",
   "image": "Stoneborn-Progenitor.jpg"
  },
  "Swirling Shardform": {
@@ -2133,7 +2133,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Spells cost  [one] more to play during battle.",
+  "text": "[Augment] Spells cost [one] more to play during battle.",
   "image": "Tranquility.jpg"
  },
  "A Pile of Runes": {
@@ -2177,7 +2177,7 @@
    "cost": "be",
    "mana": 2
   },
-  "text": "[Battle] Ambush  [2be] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\"){/i}  {/n}[once] When I am dealt damage, I deal that much damage to target unit.",
+  "text": "[Battle] Ambush [2be] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\"){/i} {/n}[once] When I am dealt damage, I deal that much damage to target unit.",
   "image": "Mirrorback-Ambusher.jpg"
  },
  "Origon": {
@@ -2217,7 +2217,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Spells with base cost  [three] or less have a base cost of  [three] to play during battle.",
+  "text": "[Augment] Spells with base cost [three] or less have a base cost of [three] to play during battle.",
   "image": "Stasis-Sentry.jpg"
  },
  "Unfinished Creation": {
@@ -2296,7 +2296,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When my column deals combat damage to an opponent,  [Switch1] You may sacrifice a unit. If you do, draw a card.",
+  "text": "When my column deals combat damage to an opponent, [Switch1] You may sacrifice a unit. If you do, draw a card.",
   "image": "Bloodwind-Revenant.jpg"
  },
  "Cinder Scuttler": {
@@ -2315,7 +2315,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When you deal combat damage to an oppo- nent, if I am in your bin, recall me. {i}(Put me into your hand.)",
+  "text": "When you deal combat damage to an opponent, if I am in your bin, recall me. {i}(Put me into your hand.)",
   "image": "Cinder-Scuttler.jpg"
  },
  "Conduit of Pain": {
@@ -2467,7 +2467,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When you sacrifice a unit, [Switch1] Each oppo- nent sacrifices a nontoken unit.",
+  "text": "When you sacrifice a unit, [Switch1] Each opponent sacrifices a nontoken unit.",
   "image": "Ghord.jpg"
  },
  "Gravitational Correction": {
@@ -2486,7 +2486,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Change the targets of target effect unless its controller pays  [x].",
+  "text": "Change the targets of target effect unless its controller pays [x].",
   "image": "Gravitational-Correction.jpg"
  },
  "Harbinger of Immolation": {
@@ -2942,7 +2942,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When my column deals combat damage to an opponent,  [Switch1][Switch1][Switch1] {i}(Trigger three copies of this graft ability as one single trigger).",
+  "text": "When my column deals combat damage to an opponent, [Switch1][Switch1][Switch1] {i}(Trigger three copies of this graft ability as one single trigger).",
   "image": "Amphivore.jpg"
  },
  "Bripp": {
@@ -3098,7 +3098,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "The controller of target enemy effect may pay  [x]. If they do, you draw a card. Otherwise, negate that effect. X can't be zero.",
+  "text": "The controller of target enemy effect may pay [x]. If they do, you draw a card. Otherwise, negate that effect. X can't be zero.",
   "image": "Frosted-Denial.jpg"
  },
  "Galerider Eel": {
@@ -3117,7 +3117,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Whenever one or more other cards enter your hand during battle,  [Switch] I gain +4/+4 and {g}flying until regroup. {i}(Only flying units can block flying units.)",
+  "text": "Whenever one or more other cards enter your hand during battle, [Switch] I gain +4/+4 and {g}flying until regroup. {i}(Only flying units can block flying units.)",
   "image": "Galerider-Eel.jpg"
  },
  "Hooba-Pon": {
@@ -3178,7 +3178,7 @@
    "cost": "b",
    "mana": 3
   },
-  "text": "[Battle] Ambush  [three_blue] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\"){/i}",
+  "text": "[Battle] Ambush [three_blue] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\"){/i}",
   "image": "Lurking-Slimebeast.jpg"
  },
  "Minor Kraken": {
@@ -3220,7 +3220,7 @@
    "cost": "bb",
    "mana": 4
   },
-  "text": "[Battle] Ambush  [4bb] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\"){/i} {/n}At the end of turn, if you took no actions during deployment,  [Switch1] Create a 3/3 unit.",
+  "text": "[Battle] Ambush [4bb] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\"){/i} {/n}At the end of turn, if you took no actions during deployment, [Switch1] Create a 3/3 unit.",
   "image": "Mirage-Walker.jpg"
  },
  "Null Drone": {
@@ -3296,7 +3296,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Glimpse X, where X is your [b].  {i}(Reveal the top X cards of the deck and cache one. Until end of turn, you may play it as if it was in your hand, ignoring affinity. Recycle the rest.)",
+  "text": "Glimpse X, where X is your [b]. {i}(Reveal the top X cards of the deck and cache one. Until end of turn, you may play it as if it was in your hand, ignoring affinity. Recycle the rest.)",
   "image": "Premonition.jpg"
  },
  "Protective Adaptations": {
@@ -3412,7 +3412,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When the second nontoken spell is played in {/n}this battle,  [Switch1] Each player recalls a unit.",
+  "text": "When the second nontoken spell is played in {/n}this battle, [Switch1] Each player recalls a unit.",
   "image": "Seabed-Shellcaster.jpg"
  },
  "Shoreline Specter": {
@@ -3663,7 +3663,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[zero]:   [Switch1] Recall me. {i}(Put me into your hand.)",
+  "text": "[zero]: [Switch1] Recall me. {i}(Put me into your hand.)",
   "image": "Vaporweave-Eidolon.jpg"
  },
  "Water Resource": {
@@ -3701,7 +3701,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Whenever one or more other cards enter a player's hand during battle, you may pay  [one] to create a 2/2 unit.",
+  "text": "[Augment] Whenever one or more other cards enter a player's hand during battle, you may pay [one] to create a 2/2 unit.",
   "image": "Xenopod-Progenitor.jpg"
  },
  "Astral Painseeker": {
@@ -3781,7 +3781,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Whenever I survive damage, each oppo- nent sacrifices that many units.",
+  "text": "[Augment] Whenever I survive damage, each opponent sacrifices that many units.",
   "image": "Molten-Tormentor.jpg"
  },
  "Slag Spewer": {
@@ -3794,14 +3794,14 @@
   "mana": 2,
   "power": 2,
   "toughness": 2,
-  "type": " Slag Beast {Virus} Unit",
+  "type": "Slag Beast {Virus} Unit",
   "kind": "unit",
   "timing": "deploy",
   "attrs": [],
   "virus": true,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment][once]  [one], Erase one of my mods: I deal 2 damage to any target.",
+  "text": "[Augment][once] [one], Erase one of my mods: I deal 2 damage to any target.",
   "image": "Slag-Spewer.jpg"
  },
  "Structural Collapse": {
@@ -3921,7 +3921,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Gain control of target unit with cost [x] or less unless its controller pays  [x].",
+  "text": "Gain control of target unit with cost [x] or less unless its controller pays [x].",
   "image": "Abduct.jpg"
  },
  "Floral Singularity": {
@@ -4097,7 +4097,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Whenever a nontoken unit dies, you may pay  [two] to erase it and put two +1/+1 counters on me.",
+  "text": "[Augment] Whenever a nontoken unit dies, you may pay [two] to erase it and put two +1/+1 counters on me.",
   "image": "Biomass-Devourer.jpg"
  },
  "Body Swap": {
@@ -4173,7 +4173,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment]  [x]: I become base X/X until regroup.",
+  "text": "[Augment] [x]: I become base X/X until regroup.",
   "image": "Celestial-Shifter.jpg"
  },
  "Containment Protocol": {
@@ -4268,7 +4268,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Each turn, you may play a unit during the mana step as if it had  [Haste].",
+  "text": "[Augment] Each turn, you may play a unit during the mana step as if it had [Haste].",
   "image": "Dispatch-Courier.jpg"
  },
  "Download": {
@@ -4405,7 +4405,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When I attack or block,  [Switch] Target unit be- {/n}comes a base 4/4 and loses all attributes until regroup. {i}(This removes attributes from its column.)",
+  "text": "When I attack or block, [Switch] Target unit be- {/n}comes a base 4/4 and loses all attributes until regroup. {i}(This removes attributes from its column.)",
   "image": "Formless.jpg"
  },
  "Hooba-Bot": {
@@ -4443,7 +4443,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment]  [x], Sacrifice another nontoken unit: Create a Robot X. X can't be 0.",
+  "text": "[Augment] [x], Sacrifice another nontoken unit: Create a Robot X. X can't be 0.",
   "image": "Instrument-of-Reassignment.jpg"
  },
  "Interdiction Rift": {
@@ -4521,7 +4521,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment]  [three]: Create a Robot 2.",
+  "text": "[Augment] [three]: Create a Robot 2.",
   "image": "Living-Forge.jpg"
  },
  "Manufacture": {
@@ -4601,7 +4601,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[three]:   [Switch] Put a +1/+1 counter on me.",
+  "text": "[three]: [Switch] Put a +1/+1 counter on me.",
   "image": "Omniwield-Evoker.jpg"
  },
  "Perish": {
@@ -4696,7 +4696,7 @@
   "virus": true,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment][once]  [one]: Switch my position with another target ally in my formation.",
+  "text": "[Augment][once] [one]: Switch my position with another target ally in my formation.",
   "image": "Riftwalker.jpg"
  },
  "Scavenging Sentry": {
@@ -4753,7 +4753,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Switch1] Create a Robot X, where X is your  [m].",
+  "text": "[Switch1] Create a Robot X, where X is your [m].",
   "image": "Self-Assembly.jpg"
  },
  "Soul Reaver": {
@@ -4772,7 +4772,7 @@
   "virus": true,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment]  [one], Remove X +1/+1 counters from me: I deal X damage to target unit.",
+  "text": "[Augment] [one], Remove X +1/+1 counters from me: I deal X damage to target unit.",
   "image": "Soul-Reaver.jpg"
  },
  "Suppression Field": {
@@ -5301,7 +5301,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Whenever a nontoken enemy dies, {/n}  [Switch] Create a 1/1 unit.",
+  "text": "Whenever a nontoken enemy dies, {/n} [Switch] Create a 1/1 unit.",
   "image": "Fungal-Gardener.jpg"
  },
  "Glowhaven Elder": {
@@ -5472,7 +5472,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When I attack in a formation of four or more units,  [Switch1] Draw a card.",
+  "text": "When I attack in a formation of four or more units, [Switch1] Draw a card.",
   "image": "Luminary-Leader.jpg"
  },
  "Megadeath": {
@@ -5742,7 +5742,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment]  [three]: Each opponent chooses one of their units. Put a -1/-1 counter on each of the chosen units.",
+  "text": "[Augment] [three]: Each opponent chooses one of their units. Put a -1/-1 counter on each of the chosen units.",
   "image": "Plague-Bellower.jpg"
  },
  "Prickly Protector": {
@@ -5780,7 +5780,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[one]:   [Switch1] Give target opponent control of me. If you do, create three 1/1 units.",
+  "text": "[one]: [Switch1] Give target opponent control of me. If you do, create three 1/1 units.",
   "image": "Ralph.jpg"
  },
  "Rebalance": {
@@ -5877,7 +5877,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When I die,  [Switch] Delete all units with -1/-1 counters on them.",
+  "text": "When I die, [Switch] Delete all units with -1/-1 counters on them.",
   "image": "Sporebloom-Siren.jpg"
  },
  "Sprouter": {
@@ -6010,7 +6010,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When you put a counter on an enemy,  {/n}[Switch1] Draw a card.",
+  "text": "When you put a counter on an enemy, {/n}[Switch1] Draw a card.",
   "image": "Wandering-Blightshell.jpg"
  },
  "Warbloom Herald": {
@@ -6068,7 +6068,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[once]  [one], Recall another ally: I gain {g}flying and +2/+0 until regroup. {i}(Only flying units can block flying units.)",
+  "text": "[once] [one], Recall another ally: I gain {g}flying and +2/+0 until regroup. {i}(Only flying units can block flying units.)",
   "image": "Auric-Ascendant.jpg"
  },
  "Dematerialize": {
@@ -6168,7 +6168,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Augment target unit and all of its mods onto another target unit. {i}(The first target must have{/i}  [Augment] {i}to be able to be augmented.)",
+  "text": "Augment target unit and all of its mods onto another target unit. {i}(The first target must have{/i} [Augment] {i}to be able to be augmented.)",
   "image": "Reconfigure.jpg"
  },
  "Rook": {
@@ -6188,7 +6188,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] You may augment cards from hand and bin during battle as if they were  [Virus].",
+  "text": "[Augment] You may augment cards from hand and bin during battle as if they were [Virus].",
   "image": "Rook.jpg"
  },
  "Scrapyard Custodian": {
@@ -6208,7 +6208,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When you put one or more counters on an ally,  [Switch1] Draw a card.",
+  "text": "When you put one or more counters on an ally, [Switch1] Draw a card.",
   "image": "Scrapyard-Custodian.jpg"
  },
  "The Silent": {
@@ -6228,7 +6228,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Spells cost each player  [two] more to play {/n}for each spell their team has previously {/n}played in this battle.",
+  "text": "[Augment] Spells cost each player [two] more to play {/n}for each spell their team has previously {/n}played in this battle.",
   "image": "The-Silent.jpg"
  },
  "Ember of Life": {

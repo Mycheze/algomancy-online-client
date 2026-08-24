@@ -131,6 +131,118 @@ branches now end in a whole-pool sweep so the next unknown spelling fails a test
 instead of reaching a player.
 
 
+### None of the formatting markup may ever reach a player (R142)
+
+> "UI thing: All the text on cards still includes things that are only for the engine to see
+> (like {i} or / or some other 'markup' notes)." […] "It's pure engine markup used by some
+> system Caleb uses to format cards better. {i} makes the next word italic, {g} puts it into
+> gold colored text, etc. I'm not sure what the / does, tho."
+> — Bena, room SMVJ 2026-08-24 (report #102)
+
+That second sentence is the rule, and it is stronger than the three fixes it produced: the
+markers are a **presentation layer, not card content**. So R142 stops fixing them one at a
+time and states the invariant, then guards it over the whole pool.
+
+**Three families of brace token, and only one of them is markup.** Getting this wrong in
+either direction is a bug, and both directions have shipped before:
+
+| family | examples | what must happen |
+|---|---|---|
+| **formatting** | `{i}` 80, `{/n}` 73, `{g}` 8, `{i1}` 6, `{/i}` 5, `{p}` 2, and `/[…]` 13 | **never** visible |
+| **keyword** | `{Battle}` 136, `{Virus}` 63, `{Haste}` 21, `{Flying}` 9, … ~30 | **always** visible — an icon where one exists, the bare word where none does |
+| **stat notation** | `X/X`, `+1/+1`, `-1/-1` | not a token at all, and must not move |
+
+Only six things have icon assets (`virus, battle, haste, augment, graft, bounded_graft,
+once`). The other two dozen keywords correctly bare their word; that is **not** a gap to
+close by inventing icons, and the sweep asserts they still print.
+
+#### `/[…]` — the last marker, and what it actually is
+
+`/[` marks a bracket the **printed card draws as its own boxed panel**. Thirteen cards print
+one, in two jobs: a *cost* (`[Switch1] /[Sacrifice a unit]: Draw a card.` — Immolate) and a
+*modal body* (`double its /[power {i1}or defense]` — Burgeon). Before R142 the slash and both
+brackets reached the table verbatim.
+
+**The census that came with the report was wrong about where it appears**, and the wrong
+version is the one worth writing down: it said `/[` only ever follows a `[Switch]`/`[Switch1]`
+marker. Six of the thirteen have no Switch in front of them — Burgeon, Void Memory, Spirit of
+Nature, Transmutide Enigma, Floral Singularity, Malevolent Machinations — and two of those
+*open* their text box with it. Had it been implemented as a suffix of the Switch token it
+would have fixed seven cards and left six, which is exactly the failure mode R134 and R141
+each hit: fix the instance you were shown, ship the family. It is handled generically, in the
+icon pass, where every other bracket is handled.
+
+**It renders as `<span class="costbox">`, not as bare `[…]` and not as nothing.** Three
+options were live. Printing `[…]` and dropping only the slash swaps one engine-looking
+character for two more, when the complaint *is* that card text reads like source. Dropping
+the delimiters entirely loses real information — on Wither and Bloom the box is what says the
+whole "or" clause is one alternative rather than a second sentence; on Immolate it is what
+separates the cost from the effect. The span keeps the printed card's grouping, prints no
+punctuation of its own, nests a `{/n}` or `{i1}` inside itself unharmed, and is a one-line
+stylesheet change if it should look different later.
+
+⚠ **The trap: `/` is also stat notation**, on far more cards than print `/[`. The markup rule
+is anchored to the slash being *glued* to a `[`, and a test renders `X/X`, `+1/+1` and `-1/-1`
+unchanged alongside Discharge, which prints both on one line.
+
+#### `{i1}` was eating the space next to the word it italicised
+
+`{i1}` italicises exactly one word, and it sits on whichever side of that word the printed
+line break happened to leave it: `units {i1}or your` has its space before, `each enemy or{i1}
+put a` has it after. The replacement consumed `\s*` and put nothing back, so the second form's
+only separator vanished and Wither and Bloom read *"each enemy orput a"*. The whitespace is
+captured and re-emitted now. **A marker that disappears but takes a space with it is as
+visible as one that prints** — which is why the pool sweep for this one is *positive* ("are
+these two words still separated?") rather than hunting for the jammed digraph: `power {i1}or`
+looks for `ro`, and "regroup" has one.
+
+#### R134's global-formatting claim: verified, not assumed
+
+R134 said formatting markers are resolved *globally*, before the icon pass, so a marker nested
+inside a bracket the icon pass does not recognise is still reached. The claim held — a `{/n}`
+inside `/[…]` was already a `<br>` — and it is now a test rather than a comment, because the
+`costbox` span was in a position to quietly break it. The one place `{/n}` deliberately is
+**not** a break is the composed text box, where `clean()` collapses it to a space: it is a
+mid-*word* wrap in the scans ("be- {/n}comes"), never a clause separator, and the box reflows.
+
+#### One function, ~25 call sites
+
+`ui/main.ts` calls `iconizeText` from about twenty-five places — ability labels, glossary and
+help rows, decision hints, the log, the menu, the token rows — plus `ui/markdown.ts` and the
+full/compact/printed text boxes. They all funnel through the one function, which is why the
+fix is one function and why "a fix that only covers the big card box" was never a risk here.
+The sweep walks both the raw card data *and* the composed box, so the slicing that
+`clean()`/`switchClause`/`dropOriginMarker` do cannot reassemble something the formatter then
+fails to consume.
+
+### Layout artifacts are scrubbed in the EXTRACTOR (R142)
+
+Two things that reach a player are not markup at all — they are accidents of the printed
+card's typesetting that the transcription carried through — and they belong in
+`scripts/extract-printed.mjs`, not the renderer. `printed.json` is **generated**; a hand edit
+there is silently wiped by the next regeneration.
+
+* **Hyphenation.** A word broken across a printed line normally keeps its break —
+  "sacri- {/n}fices" — and `clean()` joins hyphen and marker together. Four cards lost the
+  `{/n}` in transcription and were left holding a bare "adja- **cent**" (Flamebreath Initiate)
+  and "oppo- **nent**" (Cinder Scuttler, Ghord, Molten Tormentor).
+* **Whitespace runs**, on 49 card texts and one type line (Slag Spewer's leads with a space).
+  Invisible in HTML, visible everywhere else: logs, the Discord bot, a diff, a failure message.
+
+The join is anchored to letter + `-` + space + **lowercase** letter, which misses every
+`-1/-1` (the hyphen follows a space and precedes a digit), every closed compound
+(`Self-Assembly`), and the prophecy banner's em-dash. It deliberately also misses
+"sacri- {/n}fices": a `{/n}` is a real printed line break and the separator the banner parser
+splits on, so joining those away would destroy the text box's line structure to fix something
+`clean()` already handles. Regenerating produced 55 changed lines — 4 joins, 51 whitespace —
+and nothing else.
+
+⚠ **It does not fix spelling.** `Linked Extinction` reads *"Sacrifce a unit"*. That is a typo
+in the **designer's** source data, not a layout artifact, and the extractor does not rewrite a
+designer's words behind their back — that is the quiet lie the card ledger exists to stop. It
+is reported upward and left, and a test records the decision so that a future fuzzy spellfix
+trips an alarm instead of shipping.
+
 ### What is deliberately not split
 
 A card's own printed text stays **one line** rather than being cut into one clause per

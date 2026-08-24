@@ -127,9 +127,13 @@ export interface CardTextBox {
  * `{/n}` is a mid-WORD break from the card scans ("be- {/n}comes"), never a
  * clause separator — which is exactly why nothing here splits on it. The
  * hyphen in front of one is a SOFT hyphen and is joined away with it; every
- * `- ` in the whole printed pool is one of those (four of them lost their
- * `{/n}` in extraction, which is the other reason to match the hyphen rather
- * than the marker).
+ * `- ` in the whole printed pool is one of those.
+ *
+ * R142: four of them had LOST their `{/n}` in transcription ("adja- cent"), and
+ * matching the hyphen rather than the marker is what covered those here. They
+ * are joined in the extractor now, where a layout artifact belongs — this rule
+ * still carries the five that kept their marker, which the extractor
+ * deliberately leaves alone because `{/n}` is its line separator.
  */
 export const clean = (s: string): string =>
   s.replace(/\{\/n\}/g, ' ').replace(/-\s+/g, '').replace(/\s+/g, ' ').trim();
@@ -649,7 +653,16 @@ function formatting(escaped: string): string {
   let s = escaped.replace(/\{\/n\}/g, '<br>');
   // ITALICS FIRST, so the generic keyword marker below cannot mistake `{i}`
   // for one and swallow the word after it.
-  s = s.replace(/\{i1\}\s*([A-Za-z][A-Za-z-]*)/g, '<i>$1</i>');
+  //
+  // R142: the whitespace between the marker and its word is CAPTURED and put
+  // back. `{i1}` sits on whichever side of the word the printed line break
+  // happened to leave it — "units {i1}or your" has the space before it,
+  // "enemy or{i1} put a" has it after — and a bare `\s*` consumed the second
+  // form's only separator, so Wither and Bloom read "each enemy orput a".
+  // Reported as "text on cards still includes things that are only for the
+  // engine to see" (#102): a marker that vanishes but takes a space with it is
+  // as visible as one that prints.
+  s = s.replace(/\{i1\}([ \t]*)([A-Za-z][A-Za-z-]*)/g, '$1<i>$2</i>');
   // a reminder that opens with {i} and never closes: end it at its own ')'
   s = s.replace(/\{i\}(\([^)]*\))(?!\{\/i\})/g, '<i>$1</i>');
   s = s.replace(/\{i\}/g, '<i>').replace(/\{\/i\}/g, '</i>');
@@ -667,22 +680,65 @@ function formatting(escaped: string): string {
   return opens > shuts ? s + '</i>'.repeat(opens - shuts) : s;
 }
 
+/**
+ * R142 — the `/[…]` box, report #102: "All the text on cards still includes
+ * things that are only for the engine to see (like {i} or / or some other
+ * 'markup' notes)".
+ *
+ * `/[` is the last of Caleb's PRESENTATION markers still reaching a player. It
+ * marks a bracket the printed card draws as its own boxed panel, and 13 cards
+ * print one in two distinct jobs:
+ *
+ *   a COST     `[Switch1] /[Sacrifice a unit]: Draw a card.`   (Immolate)
+ *   a MODE     `double its /[power {i1}or defense]`            (Burgeon)
+ *
+ * The census that came with the report said it only ever follows a
+ * `[Switch]`/`[Switch1]` marker. It does not: six of the thirteen have no
+ * Switch in front of them (Burgeon, Void Memory, Spirit of Nature, Transmutide
+ * Enigma, Floral Singularity, Malevolent Machinations), and two of those START
+ * their text box with it. So it is handled where every other bracket is —
+ * generically, in the icon pass — not as a suffix of the Switch token.
+ *
+ * ⚠ `/` is ALSO stat notation (`X/X`, `+1/+1`, `-1/-1`) on far more cards than
+ * use `/[`, so the slash is matched ONLY where it is glued to the `[`. Nothing
+ * in the pool writes a stat slash immediately before a bracket, and the sweep
+ * in test/122 renders every card in the pool to prove no `X/X` moved.
+ *
+ * WHY A SPAN AND NOT BARE BRACKETS. Three options were on the table: print
+ * `[…]` and drop only the slash, drop the delimiters entirely, or keep the
+ * grouping as markup. Bare brackets swap one engine-looking character for two
+ * more — the report's complaint is exactly that card text reads like source.
+ * Dropping the delimiters loses real information: on Wither and Bloom the box
+ * is what tells you the whole "or" clause is one alternative rather than a
+ * second sentence, and on Immolate it is what separates the cost from the
+ * effect. A `<span class="costbox">` keeps the printed card's grouping, prints
+ * no punctuation of its own, and is a one-line stylesheet change if the box
+ * should look different later. It also nests: a `{/n}` line break or an `{i1}`
+ * italic INSIDE the bracket is already resolved by `formatting()` before this
+ * pass runs, and rides along inside the span.
+ */
+const COSTBOX = (inner: string): string => `<span class="costbox">${inner}</span>`;
+
 export function iconizeText(raw: string): string {
   return formatting(esc(raw))
-    .replace(/\[([^\[\]]+)\]|\{([^{}]+)\}/g, (tok, br?: string, bc?: string) => {
+    .replace(/(\/?)\[([^\[\]]+)\]|\{([^{}]+)\}/g, (tok, slash?: string, br?: string, bc?: string) => {
     if (br !== undefined) {
+      // R142: `/[` is the printed card's "draw this bracket as a box" marker
+      const box = slash ? COSTBOX : (s: string) => s;
       const body = br.toLowerCase();
       const icon = TEXT_ICON[body];
-      if (icon) return txtIcon(icon, tok);          // fallback KEEPS the brackets
+      if (icon) return box(txtIcon(icon, `[${br}]`));   // fallback KEEPS the brackets
       const cost = COST_WORD[body]
         ?? (COST_TOKEN_RE.test(body) || COST_DIGITS_RE.test(body) ? body : undefined);
       if (cost !== undefined) {
-        return [...cost].map(c => {
+        return box([...cost].map(c => {
           const el = PIP_EL[c];
           return el ? txtIcon(el, c) : txtIcon(`cost_${c}`, c);
-        }).join('');
+        }).join(''));
       }
-      return tok;                                    // unknown [token]: untouched
+      // unknown [token]: untouched — but a `/[` one is the box, and the box
+      // replaces the delimiters rather than printing them
+      return slash ? box(br) : tok;
     }
     const body = bc!.toLowerCase();
     // {/n}, {i}, {i1}, {/i} and {g} are resolved by formatting() above

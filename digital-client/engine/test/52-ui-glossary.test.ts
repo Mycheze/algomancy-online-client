@@ -206,7 +206,10 @@ test('the battle MARKER counts, written either way; the word does not', () => {
   // the corpus writes it both ways — {Battle} on a type line, [Battle] in a
   // text box (Good Whale). Missing one half is how this shipped broken once.
   assert.deepEqual(terms(['{Battle} Cosmic Spell']), ['Battle']);
-  assert.deepEqual(terms(['[Battle] Ambush  [4bb]']), ['Ambush', 'Battle']);
+  // R142 collapsed the double space this used to copy verbatim from Good
+  // Whale's printed text; the glossary never cared, but the literal should
+  // still be what the card actually says.
+  assert.deepEqual(terms(['[Battle] Ambush [4bb]']), ['Ambush', 'Battle']);
   assert.deepEqual(terms(['During the battle, units in that battle may block.']), [],
     'half the rulings corpus says "battle" — it cannot mean the marker every time');
 });

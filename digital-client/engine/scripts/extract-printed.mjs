@@ -72,6 +72,44 @@ function parseAmbush(text) {
   return null;
 }
 
+/**
+ * R142 — LAYOUT ARTIFACTS from the card art, scrubbed once, here.
+ *
+ * Report #102 was about markup reaching the player. Two of the things that
+ * reach the player are not markup at all: they are accidents of the printed
+ * card's TYPESETTING that the transcription carried through.
+ *
+ *  1. A word hyphenated across a printed line. The transcription normally
+ *     keeps the line break — "sacri- {/n}fices" — and the renderer's `clean()`
+ *     joins hyphen and marker together. But FOUR cards lost their `{/n}` in
+ *     transcription and are left holding a bare "adja- cent" (Flamebreath
+ *     Initiate) / "oppo- nent" (Cinder Scuttler, Ghord, Molten Tormentor).
+ *     Those read as broken words on every surface that shows raw printed text.
+ *
+ *  2. Runs of whitespace, on 49 cards' text and one type line (Slag Spewer's
+ *     leads with a space). Invisible in HTML, visible everywhere else — logs,
+ *     the Discord bot, a diff, a test's failure message.
+ *
+ * ⚠ ANCHORED NARROWLY, because the pool is full of legitimate dashes. The join
+ * fires only on letter + "-" + space + LOWERCASE letter. That misses every
+ * `-1/-1` (the hyphen follows a space and precedes a digit), every `-X/-X`,
+ * every closed compound (`Self-Assembly`, `non-token`), and the em-dash of the
+ * prophecy banner ("Prophecy — One Turn Passes"), which is `—`, not `-`. It
+ * also deliberately misses "sacri- {/n}fices": a `{/n}` is a real printed line
+ * break and the LINE_SEP the banner parser splits on, so joining those away
+ * would destroy the text box's line structure to fix a bug `clean()` already
+ * handles.
+ *
+ * ⚠ AND IT DOES NOT FIX SPELLING. `Linked Extinction` reads "Sacrifce a unit"
+ * — a typo in Caleb's source data, not a layout artifact. Rewriting a
+ * designer's words behind their back is the exact quiet lie the card ledger
+ * exists to stop, so it is reported and left. If it is ever corrected here it
+ * must be a named one-entry override, never a fuzzy spellfix.
+ */
+const normalisePrinted = s => (typeof s === 'string'
+  ? s.replace(/([A-Za-z])-[ \t]+([a-z])/g, '$1$2').replace(/[ \t]+/g, ' ').trim()
+  : s);
+
 /** The transcription joins the printed lines of a text box with "{/n}". */
 const LINE_SEP = '{/n}';
 const splitLines = text => text.split(LINE_SEP);
@@ -146,7 +184,10 @@ for (const name of POOL) {
   const entries = db[name];
   if (!entries) { missing.push(name); continue; }
   const e = entries[0];
-  const type = e.type;
+  // R142: layout artifacts out before anything reads the strings — the banner,
+  // ambush and attribute parsers all see the normalised form, so there is one
+  // spelling of the printed text in the whole pipeline
+  const type = normalisePrinted(e.type);
   const markers = [...type.matchAll(/\{([A-Za-z]+)\}/g)].map(m => m[1]);
   const attrs = markers.filter(m => ATTRS.has(m));
   const timing = markers.includes('Battle') ? 'battle' : markers.includes('Haste') ? 'haste' : 'deploy';
@@ -154,7 +195,7 @@ for (const name of POOL) {
     : /Spell Unit/.test(type) ? 'spellUnit'
     : /Spell/.test(type) ? 'spell' : 'unit';
   const cost = e.cost === 'empty' ? '' : e.cost;
-  const rawText = e.text ?? '';
+  const rawText = normalisePrinted(e.text ?? '');
   // an alternative battle play mode: pay <digits> mana with <pips> affinity
   // (Manual p.40, Ambush) — printed in either order, see AMBUSH_RES
   const ambush = parseAmbush(rawText);
