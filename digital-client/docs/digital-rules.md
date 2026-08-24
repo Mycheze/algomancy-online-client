@@ -6240,8 +6240,8 @@ written by a copy.
 ### The shape
 
 `Entity.copies?: CopyRef[]`, where a `CopyRef` is `{ card, facets, until, from, seq }` plus
-two optionals. `facets` is which of `name | stats | attrs | statics | activated | triggered`
-the face contributes; `seq` is a `nextId` tick, so two copies resolve **last-wins** exactly
+two optionals. `facets` is which of `name | stats | attrs | statics | activated | triggered | behavior`
+(the last added by R127) the face contributes; `seq` is a `nextId` tick, so two copies resolve **last-wins** exactly
 the way `baseSet`/`baseSetSeq` does. Everything is plain serializable data, so `seed +
 actions` replays bit-identically and states written before R118 load unchanged.
 
@@ -6312,10 +6312,15 @@ Consequences, each of them pinned by a test:
   mimicked trigger *"Ancient One (as Minor Kraken)"*, and that attribution is what tells a
   player whose trigger they are ordering. Leaving `'triggered'` in would queue every
   mimicked trigger twice.
-* **A copy does NOT carry the radiating-permission families** — `costMods`, `effectAttrs`,
-  `amountMods`, `playPermissions`, `modPermissions`, `mustBeTargeted`. They read
-  `this.card(holder.card)` in six `anchored()` walks of their own and no card in the pool
-  needs them copied today. Routing them through `facesWith` is mechanical when one does.
+* ~~**A copy does NOT carry the radiating-permission families**~~ — **REVERSED BY R127,
+  2026-08-24.** This section used to say that `costMods`, `effectAttrs`, `amountMods`,
+  `playPermissions`, `modPermissions` and `mustBeTargeted` "read `this.card(holder.card)`
+  in six `anchored()` walks of their own and no card in the pool needs them copied today",
+  and that routing them through `facesWith` was "mechanical when one does". The owner's
+  Ancient One ruling is that one, and the seven `replace*` hooks were a seventh through
+  thirteenth channel the sentence did not even list. **The facet list above is therefore
+  no longer complete**: `CopyFacet` gained `behavior`, and every one of those thirteen
+  walks now reads `E.facesWith`. See R127.
 
 ### The ACTIVATED facet — the offer and the accept (2026-08-23, same ruling)
 
@@ -7047,3 +7052,168 @@ bar is affinity, not the prismite); and the ANBB two-seat comparison. The
 R116 test is not deleted but INVERTED IN PLACE, carrying the full history of
 both reversals, because this test has now flipped twice and the next person
 deserves to know that before flipping it a third time.
+
+## R127 — Ancient One copies the whole text box: every channel but attributes
+
+*(Owner ruling, 2026-08-24, in the batch that also produced R125 and R126. It reverses a
+bullet R118 wrote in its own "decisions taken here" list.)*
+
+> *"Ancient One technically copies **eeeeverything**, including everything you mentioned.
+> It explicitly includes modded abilities. **The only thing it doesn't are attributes**
+> (like Piercing or Unstable). It basically just copies **the whole text box** of adjacent
+> allies (so only during combat) right in its text box."*
+
+Printed: *"[Augment] I have all abilities of adjacent allies. {i}(This includes modded
+abilities.)"*
+
+And the principle he gave with it, which is why the answer came back this way:
+
+> *"Don't assume that cards are limited, they're designed to be open ended and interact in
+> novel and interesting ways… Algomancy is inherently a creative, synergistic game."*
+
+### What was wrong
+
+R118 built the copy layer with a facet enum — `name | stats | attrs | statics | activated |
+triggered` — and then wrote down, as a deliberate decision, that the *other* things a card
+carries are not copied:
+
+> *"A copy does NOT carry the radiating-permission families — `costMods`, `effectAttrs`,
+> `amountMods`, `playPermissions`, `modPermissions`, `mustBeTargeted`. They read
+> `this.card(holder.card)` in six `anchored()` walks of their own and **no card in the pool
+> needs them copied today**. Routing them through `facesWith` is mechanical when one does."*
+
+Ancient One is that card, and always was. Worse, "six" undercounted: the **seven `replace*`
+hooks** (`replaceRotDamage`, `replaceCombatDamageToPlayer`, `replaceLifeGain`,
+`replaceCounters`, `replaceTokenCreation`, `replaceTokenBatch`, `replaceCardStep`) read
+`this.card(holder.card)` in seven more walks of exactly the same shape. So an Ancient One
+standing next to **Tranquility**, **Flux Resonator**, **Gatekeeper of Souls**, **Counter
+Theif**, **Automaton of Abundance**, **Cosmic Conspirator**, **Crevice Lurker**, **The
+Silent**, **Rook**, **Dispatch Courier** or **Conduit of Pain** borrowed *nothing* from
+them — while borrowing the statics and activated abilities of the ally beside it.
+
+### The ruling, as built
+
+`CopyFacet` gains one member, **`behavior`**, and it means *everything a card radiates from
+play that is not a static, an activated ability, a triggered ability, or an attribute*:
+
+```
+costMods · effectAttrs · amountMods · modPermissions · playPermissions · mustBeTargeted
+replaceRotDamage · replaceCombatDamageToPlayer · replaceLifeGain · replaceCounters
+replaceTokenCreation · replaceTokenBatch · replaceCardStep
+```
+
+The list is **closed by exclusion, not by enumeration**: anything a `CardDef` grows later
+that radiates from a unit in play belongs in `BEHAVIOR_CHANNELS`, because the owner's
+sentence is about the *whole text box* and names exactly one thing it leaves out.
+
+Ancient One's projection is now `facets: ['statics', 'activated', 'behavior']`. All
+thirteen walks read their clauses off `E.facesWith(holder, 'behavior')` — through two
+helpers that keep `staticsFor`'s rule from drifting thirteen ways:
+
+| helper | job |
+| --- | --- |
+| `E.behaviorFaces(holder, anchor)` | the faces this radiator's clauses come off: a unit reads its identity face (the **copied** card when it wears one) plus everything projected onto it; an augment **mod** reads only its own card, because a mod is never copied and a projection lands on its HOST |
+| `E.donates(holder, anchor, key)` | the `anchored()` presence predicate — own card first (a single property read, which is still the whole answer on any board with no copy layer), the face walk only if that misses |
+| `E.donorFaces(holders, key)` | flattens a sorted holder list into one entry per candidate CLAUSE, which is what the "first to claim it consumes the event" hooks actually iterate |
+
+**Log lines now name the FACE**, not the physical card — `staticsFor`'s `from: face` rule,
+for the same reason: the text box has to name the card the clause is printed on.
+
+### ATTRIBUTES are the one exclusion, and they were already excluded
+
+*"The only thing it doesn't are attributes (like Piercing or Unstable)."*
+
+`attrs` stays a `CopyFacet` of its own and is **not** in Ancient One's `projects` list. It
+has to stay a facet, because the R118 copy layer proper still uses it: a **Borrower of
+Forms** that becomes a Good Whale really does gain {Piercing}, and an **Apex Prime** copy
+carries the attributes of what it copied. The engine enforces the split in two places at
+once — `E.ownAttrs` reads `faceDef(e).attrs`, i.e. the **identity face only**, and Ancient
+One simply does not declare the facet. {Unstable} rides along with it: `E.isUnstable` reads
+`faceDef(e).unstable` and the copy-modded flag, neither of which a projection touches.
+
+### "So only during combat" needs no gate
+
+It is already true by construction, and adding a phase check would be a redundant second
+statement of the same fact. `E.adjacentInFormation` opens with:
+
+```ts
+const b = this.s.battle;
+if (!b) return [];
+```
+
+so `aoBorrowedFaces` returns an empty list outside a battle, the projection contributes
+nothing, and every channel falls back to the Ancient One's own (empty) text. The tests
+measure it from the other side: kill the neighbour mid-combat and the borrowed clause is
+gone in the same instant, because a projection is **re-evaluated on every read** and never
+stamped (R118's reason for `projects` existing at all).
+
+### Reentrancy: nothing new was needed, and here is why
+
+Widening the channel makes new re-entry paths *reachable* — a borrowed `costMod` asking
+about a cost, a borrowed `replaceCounters` placing counters. Every one of them lands on a
+latch that already existed, because the widening reuses the existing walks rather than
+adding new ones:
+
+* `inCostMods`, `inEffectAttrs`, `inAmountMods`, `inModPermissions`, `inPlayPermissions` —
+  a nested query answers the identity-only/zero answer, exactly as before;
+* `inReplaceCounters` — the latch R104 added precisely because Counter Theif's redirect *is*
+  a counter placement. A borrowed thief re-enters it and stops at the same door; the R127
+  test drives that path;
+* `inTokenBatchSettle` — the extras a batch replacement creates are not part of their own
+  batch;
+* `inFaces` — the `projectedFaces` latch, and it is **released before any borrowed clause
+  runs**: `behaviorFaces` returns a list of names, and the callbacks are invoked outside it.
+  So a borrowed clause gets the ordinary (not the shallow) answer to anything it asks;
+* `aoScanning`, the card-level latch that stops two adjacent Ancient Ones mimicking each
+  other, is untouched — it guards the TRIGGERED half, which R127 does not go near.
+
+**No new latch was added**, and the whole-pool card drill and the fuzzer both run clean.
+Saying so is the point: the instruction was to guard a genuine infinite recursion the way
+the existing latches do *and say so*; there was none to guard.
+
+### Deliberately NOT routed through the face layer
+
+Five one-line permissions read `this.card(name)` and stay that way, because every one of
+them is asked of a card that is **not in play**, and a projected face only exists for an
+entity standing in a formation:
+
+| flag | read of a card in | why a projection can never reach it |
+| --- | --- | --- |
+| `noPlayFromHand` | the HAND | no adjacency in a hand |
+| `prophesyFromBin` | the BIN | no adjacency in a bin |
+| `playsFromBin` (R123) | the BIN | ditto |
+| `binPlayPermissions` (R123, Writhing Host) | the owner's BIN | `anchored()` does not walk the bin at all |
+| `playsIntoFormation` (R29) | a STACK item | the card is mid-cast, not a unit |
+
+`playPermissions` and `modPermissions` *are* routed, because a copy-layer identity face can
+carry them — but note the timing: R97's haste step runs before any battle, so an Ancient
+One can never in practice borrow **Dispatch Courier**'s grant (there is no formation yet),
+while R95's `mayAugmentInBattle` is battle-timed and genuinely reachable. Both are
+OR-folded or budget-summed per grantor, so a borrowed copy of a grantor already on the
+board is usually invisible — which is why the tests pin the four channels where a second
+radiator *is* observable.
+
+### Consequences worth naming
+
+* **An identity copy now carries the behaviour channels too.** `behavior` is in
+  `FULL_FACETS`, so a Borrower of Forms that became Tranquility taxes spells — and, because
+  a face REPLACES, it stops radiating whatever its physical card printed. That is R118
+  ruling 1 applied to a channel R118 had left reading `Entity.card`.
+* **`E.facesOf` enumerates `behavior`** with the other projected facets, and
+  `ui/cardtext.ts`'s projected-face loop gained it too — so a projection that donated
+  *only* behaviour channels would still appear in the text box, attributed to the face it
+  came from. (Ancient One's faces were already listed via the `statics` facet, which it
+  projects for the same faces; the loop is widened so that stays true by construction
+  rather than by coincidence.)
+* **The clause reads "I" as the mimic.** A borrowed Gatekeeper of Souls makes the **Ancient
+  One** must-be-targeted; a borrowed Counter Theif steals the counters onto the **Ancient
+  One**. That is `anchored()`'s existing contract (a clause reads from its anchor) and it
+  is what "right in its text box" means.
+
+**Tests:** `117-copy-everything` — four channels (`costMods` via Tranquility, `amountMods`
+via Flux Resonator, `mustBeTargeted` via Gatekeeper of Souls, `replaceCounters` via Counter
+Theif), each asserted adjacent *and* two columns away on the same geometry, two of them
+also asserted going dark the instant the neighbour dies; plus the negative test that an
+adjacent Good Whale's {Piercing} does **not** cross while a Tranquility on the other side
+of the same Ancient One does. Red-checked: dropping `'behavior'` from the projection fails
+all five; adding `'attrs'` to it fails the negative one alone.

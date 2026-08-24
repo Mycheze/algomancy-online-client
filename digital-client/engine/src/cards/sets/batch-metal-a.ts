@@ -204,7 +204,15 @@ function aoBorrowedFaces(g: E, self: Entity): string[] {
 card('Ancient One', {
   // R118: the statics/activated half. 'triggered' is deliberately excluded —
   // the when() below already delivers it, with its own attribution label.
-  projects: [{ faces: aoBorrowedFaces, facets: ['statics', 'activated'] }],
+  //
+  // R127 adds 'behavior' — the owner: "it basically just copies the whole text
+  // box of adjacent allies … the only thing it doesn't are attributes". So the
+  // neighbour's costMods / effectAttrs / amountMods / modPermissions /
+  // playPermissions / mustBeTargeted / replace* hooks all radiate from the
+  // Ancient One too. 'attrs' is STILL absent, and that is the whole of the
+  // stated exclusion: a neighbour's {Piercing} or {Unstable} does not ride
+  // along.
+  projects: [{ faces: aoBorrowedFaces, facets: ['statics', 'activated', 'behavior'] }],
   augmentText: [{
     type: 'triggered', events: AO_EVENTS,
     label: 'I have all abilities of adjacent allies (triggered abilities)',

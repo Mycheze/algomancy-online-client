@@ -648,9 +648,10 @@ export type Ability = TriggeredAbility | ActivatedAbility;
  * form projects onto the host and "I" is the host), the R12 region scope, and
  * the shallow R62 guard (a silenced projector radiates nothing).
  *
- * ⚠ A projected face contributes STATICS / ACTIVATED / TRIGGERED and nothing
- * else — never `name` and never `stats`. "I have all abilities of adjacent
- * allies" does not rename the Ancient One and does not make it a 7/5. The
+ * ⚠ A projected face contributes STATICS / ACTIVATED / TRIGGERED / BEHAVIOR
+ * and nothing else — never `name`, never `stats` and (R127) never `attrs`. "I
+ * have all abilities of adjacent allies" does not rename the Ancient One, does
+ * not make it a 7/5 and does not lend it the neighbour's {Piercing}. The
  * engine enforces this: `facesOf()[0]` is always the identity face.
  *
  * ⚠ Same reentrancy contract as `StaticMod`, one step stricter: `faces` MUST
@@ -669,7 +670,8 @@ export interface FaceProjection {
    * engine; the projector's own face is skipped (no recursive mimicry). */
   faces: (g: E, self: Entity) => CardName[];
   /** which facets each projected face contributes. Defaults to statics +
-   * activated + triggered; `name` and `stats` are refused by the engine. */
+   * activated + triggered + behavior; `name` and `stats` are refused by the
+   * engine, and `attrs` is R127's one stated exclusion for Ancient One. */
   facets?: import('../types.ts').CopyFacet[];
 }
 

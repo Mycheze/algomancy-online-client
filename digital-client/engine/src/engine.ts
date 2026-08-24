@@ -31,10 +31,35 @@ import { rngShuffle } from './rng.ts';
 /** R118: a whole-identity copy — "become a copy of target unit" contributes
  * every facet, which is what makes it a face REPLACEMENT rather than a grant. */
 const FULL_FACETS: readonly CopyFacet[] =
-  ['name', 'stats', 'attrs', 'statics', 'activated', 'triggered'];
+  ['name', 'stats', 'attrs', 'statics', 'activated', 'triggered', 'behavior'];
 /** R118: the ADDITIVE default — "I have all ABILITIES of adjacent allies"
- * (Ancient One). Never `name`, never `stats`. */
-const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'triggered'];
+ * (Ancient One). Never `name`, never `stats`. R127 added `behavior`. */
+const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'triggered', 'behavior'];
+
+/**
+ * R127: every channel the `behavior` facet carries — the whole of what a card
+ * radiates from play that is not a static, an activated ability, a triggered
+ * ability or an ATTRIBUTE.
+ *
+ * The owner on Ancient One: *"it basically just copies the whole text box of
+ * adjacent allies … the only thing it doesn't are attributes"*. So the list is
+ * closed by exclusion, not by enumeration of what happened to be convenient:
+ * anything a `CardDef` grows that radiates from a unit in play belongs here.
+ *
+ * The four one-line permissions `prophesyFromBin` / `playsFromBin` /
+ * `noPlayFromHand` / `playsIntoFormation`, and `binPlayPermissions`, are
+ * DELIBERATELY absent: every one of them is read of a card in a HAND, a BIN or
+ * on the STACK, and a projected face only exists for an entity standing in a
+ * formation. There is nothing for an Ancient One to donate them to.
+ */
+const BEHAVIOR_CHANNELS = [
+  'costMods', 'effectAttrs', 'amountMods', 'modPermissions', 'playPermissions',
+  'mustBeTargeted', 'replaceRotDamage', 'replaceCombatDamageToPlayer',
+  'replaceLifeGain', 'replaceCounters', 'replaceTokenCreation',
+  'replaceTokenBatch', 'replaceCardStep',
+] as const;
+/** R127: one member of `BEHAVIOR_CHANNELS` */
+type BehaviorChannel = (typeof BEHAVIOR_CHANNELS)[number];
 
 /** R59: where and why a card's cost is being computed (see manaToPlay).
  * `region` defaults to the seat's action region; `purpose` defaults to
@@ -438,6 +463,62 @@ export class E {
   }
 
   /**
+   * R127: the faces one `anchored()` radiator's BEHAVIOUR channels come off.
+   *
+   * `staticsFor`'s rule, lifted out so the other thirteen channels cannot drift
+   * from it: a unit reads its own identity face (which is the COPIED card when
+   * it is wearing one) plus every face projected onto it right now (Ancient
+   * One); an augment MOD carries only its own text, because a mod is never
+   * copied and a projection lands on its HOST, which the walk reaches
+   * separately.
+   */
+  private behaviorFaces(holder: Entity, anchor: Entity): CardName[] {
+    return holder.id === anchor.id ? this.facesWith(holder, 'behavior') : [holder.card];
+  }
+
+  /**
+   * R127: does this radiator carry channel `key` right now — off its own card,
+   * off an identity copy, or off a face projected onto it?
+   *
+   * The `anchored()` presence predicates are the hottest reads in the engine
+   * (`amountDelta` runs on every counter and every point of effect damage), and
+   * they were written as a single property read for exactly that reason. That
+   * read is still FIRST here and is still the whole answer on any board with no
+   * copy layer at all; only a board that actually has one pays for the face
+   * walk, and only for a holder that IS its anchor.
+   */
+  private donates(holder: Entity, anchor: Entity, key: BehaviorChannel): boolean {
+    if (this.card(holder.card)[key]) return true;
+    if (holder.id !== anchor.id) return false;
+    return this.behaviorFaces(holder, anchor)
+      .some(f => f !== holder.card && !!this.card(f)[key]);
+  }
+
+  /**
+   * R127: flatten an `anchored()` result into ONE ENTRY PER FACE that actually
+   * declares `key`, keeping the holders' order (which the replacement hooks
+   * have already sorted by entity id) and, within a holder, layer order —
+   * identity face first, then whatever is projected onto it.
+   *
+   * The seven `replace*` hooks all read "first one to claim it consumes the
+   * event", so what they iterate has to be a flat, ordered list of CANDIDATE
+   * CLAUSES rather than of entities. `anchor` rides along because an
+   * [Augment]-donated or projected clause reads from its HOST/mimic, which is
+   * what `anchored()` means by the anchor.
+   */
+  private donorFaces(
+    holders: { holder: Entity; anchor: Entity }[], key: BehaviorChannel,
+  ): { face: CardName; anchor: Entity }[] {
+    const out: { face: CardName; anchor: Entity }[] = [];
+    for (const { holder, anchor } of holders) {
+      for (const face of this.behaviorFaces(holder, anchor)) {
+        if (this.card(face)[key]) out.push({ face, anchor });
+      }
+    }
+    return out;
+  }
+
+  /**
    * R59: every active CostMod that applies to `ctx`. Radiates from units in
    * play and from augment mods anchored on their host, scoped to the region
    * the card is being played into (R12) — the same rules as staticsFor.
@@ -452,9 +533,12 @@ export class E {
       for (const { holder, anchor } of this.anchored((_h, a) =>
         a.region === region
         && !a.suppressed?.abilities)) {                         // R62, as staticsFor (shallow)
-        // `via` is the card the mod is PRINTED on — the holder, which for a
-        // donated augment differs from the anchor (R121's logs name it)
-        for (const mod of this.card(holder.card).costMods ?? []) out.push({ holder: anchor, mod, via: holder.card });
+        // `via` is the card the mod is PRINTED on — the FACE (R127), which for
+        // a donated augment is the holder rather than the anchor (R121's logs
+        // name it) and for a projected/copied face is the borrowed card
+        for (const face of this.behaviorFaces(holder, anchor)) {
+          for (const mod of this.card(face).costMods ?? []) out.push({ holder: anchor, mod, via: face });
+        }
       }
     } finally { this.inCostMods = false; }
     return out;
@@ -489,11 +573,13 @@ export class E {
     this.inEffectAttrs = true;
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
-        !!this.card(h.card).effectAttrs
+        this.donates(h, a, 'effectAttrs')                     // R127: off the FACES
         && a.region === ctx.region
         && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
-        for (const mod of this.card(holder.card).effectAttrs ?? []) {
-          if (mod.affects(this, anchor, ctx)) out.push(...mod.attrs);
+        for (const face of this.behaviorFaces(holder, anchor)) {
+          for (const mod of this.card(face).effectAttrs ?? []) {
+            if (mod.affects(this, anchor, ctx)) out.push(...mod.attrs);
+          }
         }
       }
     } finally { this.inEffectAttrs = false; }
@@ -527,11 +613,13 @@ export class E {
     this.inAmountMods = true;
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
-        !!this.card(h.card).amountMods
+        this.donates(h, a, 'amountMods')                       // R127: off the FACES
         && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
         && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
-        for (const mod of this.card(holder.card).amountMods ?? []) {
-          total += mod.delta(this, anchor, ctx);
+        for (const face of this.behaviorFaces(holder, anchor)) {
+          for (const mod of this.card(face).amountMods ?? []) {
+            total += mod.delta(this, anchor, ctx);
+          }
         }
       }
     } finally { this.inAmountMods = false; }
@@ -1747,12 +1835,12 @@ export class E {
    */
   private replaceRotDamage(seat: Seat, n: number): boolean {
     const holders = this.anchored((h, a) =>
-      !!this.card(h.card).replaceRotDamage
+      this.donates(h, a, 'replaceRotDamage')                    // R127: off the FACES
       && a.controller === seat
       && !this.abilitiesSuppressed(a));                         // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
-    for (const { holder, anchor } of holders) {
-      if (this.card(holder.card).replaceRotDamage!(this, anchor, seat, n)) {
+    for (const { face, anchor } of this.donorFaces(holders, 'replaceRotDamage')) {
+      if (this.card(face).replaceRotDamage!(this, anchor, seat, n)) {
         // R102 — the replacement's log line is now a DISPATCHED event.
         //
         // It used to be a plain `ev('info', …)`. Same words, same log line —
@@ -1782,8 +1870,8 @@ export class E {
         // `self: true` listener matches on the entity the ability is running
         // for. `region` rides too so the region-scoped dispatch (R12) finds it.
         const ev = this.ev('rotReplaced',
-          `${holder.card} replaces the ${n} damage ${this.pname(seat)}'s rot would deal.`,
-          { seat, n, card: holder.card, unit: anchor.id, region: anchor.region });
+          `${face} replaces the ${n} damage ${this.pname(seat)}'s rot would deal.`,
+          { seat, n, card: face, unit: anchor.id, region: anchor.region });
         this.fireEvent('rotReplaced', ev);
         return true;
       }
@@ -2591,14 +2679,14 @@ export class E {
   private replaceCombatDamage(seat: Seat, amount: number,
     info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean }): number {
     const holders = this.anchored((h, a) =>
-      !!this.card(h.card).replaceCombatDamageToPlayer
+      this.donates(h, a, 'replaceCombatDamageToPlayer')          // R127: off the FACES
       && a.region === info.region
       && !this.abilitiesSuppressed(a));                         // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     let left = amount;
-    for (const { holder, anchor } of holders) {
+    for (const { face, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {
       if (left <= 0) break;
-      const r = this.card(holder.card).replaceCombatDamageToPlayer!(this, anchor, seat, left, info);
+      const r = this.card(face).replaceCombatDamageToPlayer!(this, anchor, seat, left, info);
       // R98: the return widened from all-or-nothing to a NUMBER — the damage
       // LET THROUGH — so a card can absorb part of a hit and pass the rest on.
       // `true`/`false` keep their old meaning (all / none), which is what makes
@@ -2606,9 +2694,9 @@ export class E {
       const through = r === true ? 0 : r === false ? left : Math.max(0, Math.min(left, r));
       if (through === left) continue;                           // this holder declined
       this.ev('info',
-        `${holder.card} replaces ${left - through} of the ${left} combat damage to ` +
+        `${face} replaces ${left - through} of the ${left} combat damage to ` +
         `${this.pname(seat)} (the damage still counts as having been dealt).`,
-        { seat, amount: left - through, by: holder.card });
+        { seat, amount: left - through, by: face });
       left = through;
     }
     return left;
@@ -2691,7 +2779,7 @@ export class E {
    */
   private replaceLifeGain(seat: Seat, n: number, why: string): boolean {
     const holders = this.anchored((h, a) =>
-      !!this.card(h.card).replaceLifeGain
+      this.donates(h, a, 'replaceLifeGain')                     // R127: off the FACES
       // R12, by E.fireEvent's own rule: `gainLife` writes a region onto its
       // event only inside a battle, and fireEvent dispatches an event with no
       // region to EVERY listener. A life gain outside a battle is therefore
@@ -2700,11 +2788,11 @@ export class E {
       && (!this.s.battle || a.region === this.s.battle.region)
       && !this.abilitiesSuppressed(a));                       // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
-    for (const { holder, anchor } of holders) {
-      if (this.card(holder.card).replaceLifeGain!(this, anchor, seat, n, why)) {
+    for (const { face, anchor } of this.donorFaces(holders, 'replaceLifeGain')) {
+      if (this.card(face).replaceLifeGain!(this, anchor, seat, n, why)) {
         this.ev('info',
-          `${holder.card} replaces the ${n} life ${this.pname(seat)} would have gained.`,
-          { seat, n, by: holder.card, unit: anchor.id });
+          `${face} replaces the ${n} life ${this.pname(seat)} would have gained.`,
+          { seat, n, by: face, unit: anchor.id });
         return true;
       }
     }
@@ -2729,20 +2817,21 @@ export class E {
   private replaceCounters(target: Entity, n: number): Entity {
     if (this.inReplaceCounters) return target;
     const holders = this.anchored((h, a) =>
-      !!this.card(h.card).replaceCounters
+      this.donates(h, a, 'replaceCounters')                   // R127: off the FACES
       && a.region === target.region
       && !this.abilitiesSuppressed(a));                       // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
+    const donors = this.donorFaces(holders, 'replaceCounters');
     this.inReplaceCounters = true;
     this.replacementDepth++;
     try {
-      for (const { holder, anchor } of holders) {
-        const to = this.card(holder.card).replaceCounters!(this, anchor, target, n);
+      for (const { face, anchor } of donors) {
+        const to = this.card(face).replaceCounters!(this, anchor, target, n);
         if (!to || to.id === target.id || !this.entity(to.id)) continue;
         this.ev('info',
-          `${holder.card}: the ${Math.abs(n)} counter(s) for ${target.card} are placed on `
+          `${face}: the ${Math.abs(n)} counter(s) for ${target.card} are placed on `
           + `${to.card} instead.`,
-          { unit: to.id, from: target.id, n, by: holder.card });
+          { unit: to.id, from: target.id, n, by: face });
         return to;
       }
     } finally { this.inReplaceCounters = false; this.replacementDepth--; }
@@ -2817,19 +2906,20 @@ export class E {
    */
   private replaceTokenCreation(req: TokenRequest): TokenRequest {
     const holders = this.anchored((h, a) =>
-      !!this.card(h.card).replaceTokenCreation
+      this.donates(h, a, 'replaceTokenCreation')              // R127: off the FACES
       && a.region === req.region
       && !this.abilitiesSuppressed(a));                       // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
+    const donors = this.donorFaces(holders, 'replaceTokenCreation');
     this.replacementDepth++;
     try {
-      for (const { holder, anchor } of holders) {
-        const sub = this.card(holder.card).replaceTokenCreation!(this, anchor, req);
+      for (const { face, anchor } of donors) {
+        const sub = this.card(face).replaceTokenCreation!(this, anchor, req);
         if (!sub) continue;
         if (sub.name === req.name && sub.form === req.form) return req;   // declined in substance
         this.ev('info',
-          `${holder.card}: a ${req.name} ${req.x} is created as a ${sub.name} ${sub.x} instead.`,
-          { by: holder.card, was: req.name, now: sub.name, x: sub.x, seat: req.seat });
+          `${face}: a ${req.name} ${req.x} is created as a ${sub.name} ${sub.x} instead.`,
+          { by: face, was: req.name, now: sub.name, x: sub.x, seat: req.seat });
         return sub;
       }
     } finally { this.replacementDepth--; }
@@ -2864,21 +2954,22 @@ export class E {
   private settleTokenBatch(batch: TokenRequest[]): void {
     if (!batch.length) return;
     const holders = this.anchored((h, a) =>
-      !!this.card(h.card).replaceTokenBatch
+      this.donates(h, a, 'replaceTokenBatch')                 // R127: off the FACES
       && a.region === batch[0]!.region
       && !this.abilitiesSuppressed(a));                       // R62 (full projection)
     if (!holders.length || this.inTokenBatchSettle) return;
     holders.sort((a, z) => a.holder.id - z.holder.id);
+    const donors = this.donorFaces(holders, 'replaceTokenBatch');
     this.inTokenBatchSettle = true;
     this.replacementDepth++;
     try {
-      for (const { holder, anchor } of holders) {
-        const extra = this.card(holder.card).replaceTokenBatch!(this, anchor, batch);
+      for (const { face, anchor } of donors) {
+        const extra = this.card(face).replaceTokenBatch!(this, anchor, batch);
         if (!extra || !extra.length) continue;
         this.ev('info',
-          `${holder.card}: the creation is replaced — ${extra.length} more token(s) `
+          `${face}: the creation is replaced — ${extra.length} more token(s) `
           + `(${extra.map(r => r.name).join(', ')}) are created with it.`,
-          { by: holder.card, unit: anchor.id, n: extra.length });
+          { by: face, unit: anchor.id, n: extra.length });
         for (const r of extra) this.createToken(r);
         return;                                   // first to replace consumes
       }
@@ -4391,11 +4482,13 @@ export class E {
     this.inModPermissions = true;
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
-        !!this.card(h.card).modPermissions
+        this.donates(h, a, 'modPermissions')                   // R127: off the FACES
         && a.region === ctx.region
         && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
-        for (const p of this.card(holder.card).modPermissions ?? []) {
-          if (p.augmentInBattle?.(this, anchor, ctx)) return true;
+        for (const face of this.behaviorFaces(holder, anchor)) {
+          for (const p of this.card(face).modPermissions ?? []) {
+            if (p.augmentInBattle?.(this, anchor, ctx)) return true;
+          }
         }
       }
     } finally { this.inModPermissions = false; }
@@ -4440,11 +4533,13 @@ export class E {
     this.inModPermissions = true;
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
-        !!this.card(h.card).modPermissions
+        this.donates(h, a, 'modPermissions')                   // R127: off the FACES
         && a.region === ctx.region
         && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
-        for (const p of this.card(holder.card).modPermissions ?? []) {
-          if (p.applyAtHaste?.(this, anchor, ctx)) return true;
+        for (const face of this.behaviorFaces(holder, anchor)) {
+          for (const p of this.card(face).modPermissions ?? []) {
+            if (p.applyAtHaste?.(this, anchor, ctx)) return true;
+          }
         }
       }
     } finally { this.inModPermissions = false; }
@@ -4531,11 +4626,13 @@ export class E {
     try {
       let total = 0;
       for (const { holder, anchor } of this.anchored((h, a) =>
-        !!this.card(h.card).playPermissions
+        this.donates(h, a, 'playPermissions')                  // R127: off the FACES
         && a.region === ctx.region
         && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
-        for (const p of this.card(holder.card).playPermissions ?? []) {
-          total += p.playAtHaste?.(this, anchor, ctx) ?? 0;
+        for (const face of this.behaviorFaces(holder, anchor)) {
+          for (const p of this.card(face).playPermissions ?? []) {
+            total += p.playAtHaste?.(this, anchor, ctx) ?? 0;
+          }
         }
       }
       return total;
@@ -4597,7 +4694,7 @@ export class E {
   mustBeTargetedIn(region: number): Set<EntityId> {
     const out = new Set<EntityId>();
     for (const { anchor } of this.anchored((h, a) =>
-      !!this.card(h.card).mustBeTargeted
+      this.donates(h, a, 'mustBeTargeted')                      // R127: off the FACES
       && a.region === region
       && !a.suppressed?.abilities)) {                          // R62, as staticsFor (shallow)
       out.add(anchor.id);
@@ -7738,12 +7835,12 @@ export class E {
    */
   private replaceCardStep(seat: Seat): boolean {
     const holders = this.anchored((h, a) =>
-      !!this.card(h.card).replaceCardStep
+      this.donates(h, a, 'replaceCardStep')                   // R127: off the FACES
       && a.controller === seat
       && !this.abilitiesSuppressed(a));                       // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
-    for (const { holder, anchor } of holders) {
-      if (this.card(holder.card).replaceCardStep!(this, anchor, seat)) return true;
+    for (const { face, anchor } of this.donorFaces(holders, 'replaceCardStep')) {
+      if (this.card(face).replaceCardStep!(this, anchor, seat)) return true;
     }
     return false;
   }

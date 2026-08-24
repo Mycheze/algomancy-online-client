@@ -373,7 +373,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
     }
   }
   // faces PROJECTED onto it right now (Ancient One) — additive, abilities only
-  for (const facet of ['statics', 'activated', 'triggered'] as const) {
+  for (const facet of ['statics', 'activated', 'triggered', 'behavior'] as const) {
     for (const name of e.facesWith(u, facet)) {
       if (name === face) continue;
       if (lines.some(l => l.origin === 'copy' && l.from === name)) continue;

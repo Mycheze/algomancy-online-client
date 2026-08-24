@@ -366,11 +366,20 @@ export interface GrantedText {
  * such a face may ever be `facesOf()[0]`.
  *
  * Ancient One's continuous projection is the ADDITIVE case: it contributes
- * `statics` / `activated` / `triggered` and NOTHING else, which is why "I have
- * all abilities of adjacent allies" never changes the Ancient One's name or
- * makes it a 3/3.
+ * `statics` / `activated` / `triggered` / `behavior` and NOTHING else, which is
+ * why "I have all abilities of adjacent allies" never changes the Ancient One's
+ * name or makes it a 3/3.
+ *
+ * R127 added `behavior`, the CATCH-ALL for every remaining channel a card can
+ * radiate from play — `costMods`, `effectAttrs`, `amountMods`,
+ * `modPermissions`, `playPermissions`, `mustBeTargeted` and the seven
+ * `replace*` hooks. The owner, on Ancient One: *"it basically just copies the
+ * whole text box of adjacent allies"*, and the ONE stated exclusion is
+ * attributes, which is why `attrs` stayed a facet of its own instead of being
+ * folded in here.
  */
-export type CopyFacet = 'name' | 'stats' | 'attrs' | 'statics' | 'activated' | 'triggered';
+export type CopyFacet =
+  'name' | 'stats' | 'attrs' | 'statics' | 'activated' | 'triggered' | 'behavior';
 
 /**
  * R118: one face worn by an entity — the serializable half of the copy layer.
