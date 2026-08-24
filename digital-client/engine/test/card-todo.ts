@@ -1432,7 +1432,24 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'grep -c "deployPlayer" over test/*.test.ts, and check whether any test drives the '
       + 'NON-deployPlayer seat through a deployment action.',
-    status: 'open',
+    // DONE 2026-08-24: test/101-deploy-seat-matrix.test.ts drives every card
+    // whose printed text ties a "you/your/ally" clause to deployment through
+    // the full owner-seat × deployPlayer 4-way (the Mirage Walker shape from
+    // report #86) — Bonesculptor, Gridxlan, Invasive Species, Scholar of the
+    // Void, Wraith, Xzydris, Prediction Prophet, Slurpr; Mirage Walker is
+    // EXEMPT with a reason (its 4-way lives in 14-water-a). The engine turned
+    // out genuinely seat-symmetric (`deploying()` reads per-seat deployDone,
+    // dispatch keys on controller/bin-owner), so no fix was needed — but the
+    // matrix was red-checked against both classic bugs (deploying :=
+    // initiative seat → 4 red; listener dispatch biased to initiative → 10
+    // red), and Wraith's start-of-deployment shrink had NO test anywhere
+    // before this. A sync lint scans printed.json both directions so a new
+    // deployment-"you" card must join the matrix or carry a written exemption.
+    guards: [
+      '101-deploy-seat-matrix.test.ts::seat-matrix',
+      '101-deploy-seat-matrix.test.ts::every deployment-"you" card in printed.json is in the matrix or exempt',
+    ],
+    status: 'done',
   },
   {
     id: 24,
