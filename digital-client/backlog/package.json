@@ -1,0 +1,13 @@
+{
+  "name": "@algomancy/backlog",
+  "private": true,
+  "type": "module",
+  "description": "The tracked backlog of non-card work on the digital client. `backlog.ts` is the data, `backlog.test.ts` keeps it honest, `report.ts` answers 'what should I pick up'. No dependencies of its own — it borrows the engine's tsc and @types/node so there is no third node_modules tree to install.",
+  "scripts": {
+    "test": "node --test backlog.test.ts",
+    "typecheck": "../engine/node_modules/.bin/tsc --noEmit",
+    "check": "npm run typecheck && npm test",
+    "ready": "node report.ts",
+    "show": "node report.ts"
+  }
+}
