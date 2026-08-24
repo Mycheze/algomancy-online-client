@@ -216,10 +216,10 @@ const READS_A_LEDGER = /battleCounters?\b|lifeLostThisBattle|lifeGainedThisBattl
  * fails this test until someone decides which side it is on.
  */
 const NO_PREVIEW_NEEDED: Record<string, string> = {
-  'Hush Mush': 'the counter is a private scratch slot, not a running total: the spell '
-    + 'stashes the negated effect\'s controller under `hushMushGiveTo` for its own spawn '
-    + 'trigger to read microseconds later. It never survives the resolution, so there is '
-    + 'no moment at which a player could look at it.',
+  // R143 removed Hush Mush's entry: it no longer reads a ledger at all. The
+  // negated effect's controller rides on its own stack item (StackItem
+  // .spawnUnder) and the body ENTERS as that seat's unit — the `hushMushGiveTo`
+  // scratch slot and the spawn trigger that read it are both gone.
   'Borrower of Forms': 'same shape — `bof:pending` relays the erased unit\'s stats from the '
     + 'spell effect into its own self-spawn trigger. Intra-resolution plumbing, not state.',
   'Echo of Despair': 'FLAG-STYLE, deferred with #85\'s other flags (Suspend\'s life-lock, '

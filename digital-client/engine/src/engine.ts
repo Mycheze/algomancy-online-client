@@ -6522,6 +6522,11 @@ export class E {
         // suspension (R85); `item` is what the suspension carries, so the
         // answer survives the round trip. `dischargeItem` reads it afterwards.
         eraseSelf: () => { item.eraseSelf = true; },
+        // R143: "…gains control of me" on a SPELL UNIT — the body has not been
+        // spawned yet (afterParts does that once every part has run), so this
+        // says who it ENTERS under rather than moving it afterwards. Same
+        // on-the-item shape as eraseSelf above, same R85 reason.
+        spawnUnder: (seat: Seat) => { item.spawnUnder = seat; },
         // CARD-TODO #18: "I did nothing — give the [once] back." The same
         // shape as eraseSelf directly above, and for the same R85 reason: the
         // flag lives on the PART (which the suspension carries), not in this
@@ -6851,7 +6856,18 @@ export class E {
 
   afterParts(item: StackItem): void {
     if (item.kind === 'spellUnit') {
-      const u = this.spawnUnit(item.controller, item.card!, item.region, { ...(item.from ? { from: item.from } : {}) });
+      // R143: the body normally enters under whoever cast it. `spawnUnder` is
+      // the one exception the pool has — Hush Mush's "its controller gains
+      // control of me" — and it is a DIFFERENT CONTROLLER AT ENTRY, not a
+      // handover afterwards, so no ally-spawn watcher of the caster's ever
+      // sees the body as theirs (report #96). OWNERSHIP does not move: R107's
+      // owner≠controller split, and the card is still the caster's, so it is
+      // still the caster's bin it dies to. `owner` is passed unconditionally
+      // because it is exactly `seat` in every other case.
+      const u = this.spawnUnit(item.spawnUnder ?? item.controller, item.card!, item.region, {
+        owner: item.controller,
+        ...(item.from ? { from: item.from } : {}),
+      });
       // R79: a spell UNIT's card does not leave — it arrives. Its viruses ride
       // it in, as the augment mods they always were, which is also what makes
       // the body Unstable. Erasing the card here instead would delete a unit

@@ -8041,3 +8041,145 @@ Red-checked one fix at a time, four reverts: the Rector's name search reddens
 its own test **and the census sweep**; the Distiller's reddens its own; Biomass
 Devourer's reddens **both** of its (the swept-copy one and the stolen-unit
 one); dropping `eraseFromZone`'s index reddens the white-box pin.
+
+## R143 — "…gains control of me" on a spell unit is where it ENTERS, not a handover
+
+*(Playtest reports #95 and #96, room SMVJ, 2026-08-24 — the same action index,
+one minute apart. #95 is the cause the owner diagnosed; #96 is the symptom he
+actually saw. Closes CARD-TODO #29 and #30.)*
+
+### The reports
+
+> **#95** — "Hush Mush's ability to go to the opponent isn't a trigger. It just
+> happens as part of the spell."
+
+> **#96** — "I shouldn't be getting a Flourishing Flora trigger here. Hush Mush
+> should enter as Rashi's unit."
+
+**Hush Mush** is a `{Battle}` Arcane Fungus **Spell Unit**, `gg`/2, 3/1:
+
+> Negate target effect. Its controller gains control of me.
+
+Two sentences, **one spell resolution**. The engine implemented the second one
+as a `triggered` ability on the body's own `spawned` event, relaying the seat
+through `battleCounters[region]['hushMushGiveTo']` (encoded `controller + 1`, 0
+meaning nothing owed) and calling `E.giveControl` when it fired.
+
+### Why that is wrong, and why it is not cosmetic
+
+The body **spawned under the caster** and changed hands afterwards. That
+intermediate state is **observable**, and the log said so out loud:
+
+```
+Resolving Hush Mush:
+Channeled Boon is negated → bin.
+Player 2 spawns Hush Mush.                                    ← the caster's
+Trigger: Flourishing Flora — put a +1/+1 counter on me.       ← report #96
+Trigger: Hush Mush — the negated effect's controller gains control of me.
+```
+
+The owner controlled a **Flourishing Flora** — *"[Augment] Whenever another
+ally spawns, put a +1/+1 counter on me"* — and it took a counter he correctly
+refused. The engine then stopped and asked him **which of the two triggers to
+resolve first**, a question that should never have been asked at all.
+
+**The bug is the window, not the card.** Every *"whenever another ally spawns"*
+watcher the caster controls can see it; Flourishing Flora is simply the one
+that happened to be on the board that game. Fixing Flora's `when()` would have
+been fixing the witness.
+
+### The ruling
+
+**A spell unit whose text says another player gains control of it ENTERS as
+that player's unit.** There is no moment at which the caster controls the body,
+so there is nothing for a watcher to observe and nothing to hand over.
+
+**OWNERSHIP DOES NOT FOLLOW.**
+[R107](#r107--owner-is-not-controller-and-putting-a-card-into-play-never-transfers-it)
+already draws this line and this is the same line: the opponent gains
+**control**; the card is still yours, so it is still **your bin** it dies to
+and still your card to recur. `spawnUnit(seat, …, { owner })` was built for
+exactly this and needed no widening — the `spawned` event carries `owner` only
+when it differs, so the table sees `Player 1 spawns Hush Mush — Player 2's
+card.` and every existing reader of that event keeps the payload it had.
+
+### The mechanism, and why it DELETED code
+
+A spell unit's body is spawned by `E.afterParts`, **after** every effect part
+has run, so an effect has no handle on it — which is the honest reason the
+handoff existed at all. The seam is shaped exactly like the one `ctx.eraseSelf()`
+already uses for *"Erase me."*: **`ctx.spawnUnder(seat)`** raises
+**`StackItem.spawnUnder`**, and `afterParts` spawns the body as that seat's
+unit. **On the item**, not in a closure, for the same
+[R85](#r85--a-suspended-resolution-rolls-back-on-resume-not-when-it-suspends)
+reason as `eraseSelf`: a part can suspend mid-resolution and be replayed out of
+the serialised suspension, and `item` is what the suspension carries.
+
+Net effect on the card: **the `triggered` ability and the `hushMushGiveTo`
+battleCounters ledger are both gone.** Three lines of engine seam replaced
+about twenty lines of relay.
+
+### What the deletions settle
+
+- **Two Hush Mushes in one battle.** `batch-wood-a.ts`'s header warned that the
+  ledger was per-**REGION** and last-write-wins, so two copies resolving in one
+  region before either spawned would read each other's seat — and dismissed it
+  as unreachable with one copy per deck pool. The worry is **retired, not
+  merely still unreachable**: the answer now rides on each spell's own stack
+  item, so the two cannot see each other by construction. R12 region scoping
+  stops being load-bearing here for the same reason — a stack item is not a
+  shared ledger and has nowhere to leak to.
+- **The target is gone.** The card's own *"the targeted effect has already left
+  the stack"* branch is kept verbatim, but it is now confirmed **defensive**:
+  R5 fizzles the whole item first (`Hush Mush fizzles — all targets are
+  gone.`), no body spawns, and the card is binned from the stack (R40). A spell
+  that negated nothing has no *"its controller"*, and now it also has nothing
+  to give away.
+- **"The body is gone — no handover."** **Deleted.** It guarded the gap between
+  the spawn and the trigger — the body could die in between — and there is no
+  gap any more. Deleting a branch whose whole subject has ceased to exist is
+  not a loss of coverage.
+- **Negation ordering** is unchanged, and now explicitly independent: the
+  controller is read off the stack item **before** `g.negate()` takes it off
+  the stack, so the body's controller never depends on the negated effect still
+  being there when the body appears.
+- **`96-x-preview`'s ledger census** lost its `Hush Mush` exemption, because the
+  card no longer reads a per-battle ledger at all. That census checks its
+  exemption list in **both** directions, so leaving the entry behind would have
+  failed — the deletion is enforced rather than remembered.
+
+### Tests
+
+`23-wood-a` — four new, on top of the existing Hush Mush test (which lost the
+two `pass()`es it used to need for the handoff and gained an assertion that
+**nothing is waiting on the stack**):
+
+- **#95** — the `spawned` event itself is the proof: `seat` is the negated
+  effect's controller, `owner` is the caster, no `gains control of Hush Mush`
+  line follows, and no trigger is queued behind the spell. There is no earlier
+  state to catch, which is the point.
+- **#96, the regression that matters** — the caster controls a Flourishing
+  Flora standing in the battle region (asserted, or the test would pass for the
+  wrong reason), and casting Hush Mush must queue **no Flourishing Flora
+  trigger**. Checked on the QUEUEING rather than on the counter, because the
+  queueing is the moment the caster's watcher saw a body that was never theirs
+  — under the old code the counter has not even landed at that instant, since
+  the engine is still busy asking which trigger to resolve first.
+- **Two Hush Mushes**, one negating the opponent's spell and one negating the
+  caster's OWN spell: two spawn events under two different seats. A shared slot
+  lands both the same way.
+- **The gone target**: two copies aimed at one effect — the second fizzles, no
+  body, owner's bin, and nothing changes hands.
+
+**Red-checked** by reverting `engine/src` and keeping the tests: all four new
+tests fail, each on its own headline assertion (`it entered as A's unit`; `no
+Flourishing Flora trigger`; `the two bodies ENTERED under different seats`;
+`nothing changed hands after the fact`), and the amended existing test fails on
+`the handover is not a trigger — nothing is waiting`. The drain helper these
+tests share deliberately ANSWERS a trigger-ordering question rather than
+refusing one — without that, the reverted run parks on the ordering decision
+and the assertions measure an unfinished turn instead of a wrong one.
+
+⚠ **`83-card-todo` FAILS ON PURPOSE when this lands**, naming CT-29: that entry
+carries a proof which holds only while the bug lives. The failure is the
+designed signal that the fix worked, and the ledger's owner closes it.

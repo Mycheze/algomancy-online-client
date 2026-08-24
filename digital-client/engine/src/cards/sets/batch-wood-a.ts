@@ -12,7 +12,9 @@
  * R31 (triggers between combat damage sub-steps resolve immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - CONTROL CHANGES (Corrupting Blight / Hush Mush / Hexbane Shiitake):
+ *  - CONTROL CHANGES (Corrupting Blight / Hexbane Shiitake — Hush Mush is no
+ *    longer one of these; R143 makes its body ENTER under the other seat
+ *    rather than change hands, see below):
  *    UN-PARKED (R112, 2026-08-23). This used to describe a batch-local
  *    giveControl(); the engine now has `E.giveControl(u, to)` — unit AND
  *    mods change controller (Bena's ruling), it leaves any formation
@@ -47,11 +49,18 @@
  *    R70 stamps `token` (with `counters`, `verb`, `seat`, `region`) onto every
  *    leave-play event precisely because the entity is gone by trigger time,
  *    and the card reads ev.data.token.
- *  - HUSH MUSH: a spell unit spawns AFTER its effect parts (afterParts), so
- *    "its controller gains control of me" is handed off through a per-region
- *    battleCounters ledger read by Hush Mush's own spawn trigger. Two Hush
- *    Mushes resolving in one region before either spawns would share the
- *    ledger (last write wins) — unreachable with one copy per deck pool.
+ *  - HUSH MUSH: NO LONGER an approximation, and no longer a handoff. This
+ *    said the spell stashed the negated effect's controller in a per-region
+ *    battleCounters ledger for its own `spawned` trigger to read, and worried
+ *    that two Hush Mushes resolving in one region before either spawned would
+ *    share it (last write wins). R143 deleted both the trigger and the ledger:
+ *    `ctx.spawnUnder(seat)` raises `StackItem.spawnUnder` and `E.afterParts`
+ *    spawns the body as THAT seat's unit, owner still the caster (R107). The
+ *    two-copies case retires with the ledger — the answer now rides on each
+ *    spell's OWN stack item, so two copies cannot see each other's. The bug
+ *    that forced this was report #96: while the body spawned under the caster
+ *    and only then changed hands, the caster's own "whenever another ally
+ *    spawns" watchers fired on it.
  *  - BURGEON: "double" adds the current EFFECTIVE stat as an until-regroup
  *    bonus (stat layer 3). Under a layer-4 multiplier (Tough/Balanced) the
  *    result overshoots ((base+eff)*2 > eff*2). No pool combo hits this today.
@@ -498,11 +507,31 @@ card('Hooba-Nan', {
 });
 
 // "Negate target effect. Its controller gains control of me." — gg/2 3/1
-// {Battle} Arcane Fungus Spell Unit. The spell part negates; the handoff is
-// deferred through a battleCounters ledger to my own spawn trigger, because
-// the spell unit spawns only after the effect parts run (⚠ header). A gone
-// target fizzles the whole spell — the unit never spawns and is binned (R5).
-const HUSH_KEY = 'hushMushGiveTo';
+// {Battle} Arcane Fungus Spell Unit.
+//
+// R143: ONE spell resolution, so ONE controller. The body is spawned by
+// E.afterParts once every part has run, and `ctx.spawnUnder()` tells it whose
+// unit to spawn — the body ENTERS as the negated effect's controller's ally.
+// It is deliberately NOT a `spawned` trigger calling giveControl afterwards
+// (which is what this was until R143): that spawns the body under the CASTER
+// first, and the caster's own "whenever another ally spawns" watchers fire on
+// a unit that was never theirs — report #96, where the owner's Flourishing
+// Flora took a counter he correctly refused. Every ally-spawn watcher could
+// see that window; Flora was just the one on the board.
+//
+// OWNERSHIP STAYS WITH ME (R107 owner≠controller): the opponent gains
+// CONTROL, but it is still my card and still my bin when it dies.
+//
+// The seat is read off the stack item BEFORE the negate and stashed on my own
+// stack item, so it does not matter that the negated effect is gone from the
+// stack by the time the body appears — and two Hush Mushes resolving in one
+// region can no longer collide, because each one carries its own answer
+// (the old battleCounters ledger was per-REGION and last-write-wins; the
+// ⚠ header's worry is retired rather than merely unreachable).
+//
+// A gone target fizzles the whole spell — the unit never spawns and is binned
+// (R5). If we get here with nothing to negate, nothing is stashed and the body
+// simply enters as mine, which is what "no effect's controller" has to mean.
 card('Hush Mush', {
   spellEffect: {
     targets: { what: 'stackEffect', prompt: 'Hush Mush: negate target effect (its controller gains control of me)' },
@@ -517,28 +546,14 @@ card('Hush Mush', {
         g.ev('info', 'Hush Mush: the targeted effect has already left the stack.');
         return;
       }
+      const to = item.controller;   // read before the negate takes it off the stack
       g.negate(item.id);
-      // handoff for my spawn trigger (see header): seat+1; 0 = nothing owed
-      const c = g.s.battleCounters[ctx.region] ?? (g.s.battleCounters[ctx.region] = {});
-      c[HUSH_KEY] = item.controller + 1;
+      ctx.spawnUnder?.(to);
+      if (to !== ctx.controller) {
+        g.ev('info', `Hush Mush: ${g.pname(to)} controlled the negated effect — I enter as their unit.`);
+      }
     },
   },
-  abilities: [{
-    type: 'triggered', events: ['spawned'], self: true,
-    label: "the negated effect's controller gains control of me",
-    when: (g, self) => (g.s.battleCounters[self.region]?.[HUSH_KEY] ?? 0) > 0,
-    effect: {
-      run: (g, ctx) => {
-        const me = selfOf(g, ctx);
-        if (!me) { g.ev('info', 'Hush Mush: the body is gone — no handover.'); return; }
-        const c = g.s.battleCounters[ctx.region];
-        const v = c?.[HUSH_KEY] ?? 0;
-        if (!c || v <= 0) { g.ev('info', 'Hush Mush: nothing was negated — nobody gains control of me.'); return; }
-        c[HUSH_KEY] = 0;
-        g.giveControl(me, (v - 1) as Seat);
-      },
-    },
-  }],
 });
 
 // "[Augment] Your units adjacent to me gain +2/+2." — gg/2 3/2 Mystic

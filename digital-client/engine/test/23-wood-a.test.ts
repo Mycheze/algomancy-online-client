@@ -372,12 +372,222 @@ test('Hush Mush: negates target effect; that controller gains control of the spa
   assert.ok(!h.state.stack.some(i => i.id === cbId), 'R68: the negated Boon left the stack');
   const mush = unitsOf(h, A).concat(unitsOf(h, D)).find(u => u.card === 'Hush Mush')!;
   assert.ok(mush, 'the spell unit spawned');
-  pass(h); pass(h);                                   // its spawn trigger resolves: the handoff
+  // R143: no handoff step — the body ENTERED as A's. There is nothing on the
+  // stack to pass on here, and the two passes this test used to need are gone
+  // with the trigger they were waiting for.
+  assert.deepEqual(h.state.stack, [], 'R143: the handover is not a trigger — nothing is waiting');
   assert.equal(ent(h, mush.id)!.controller, A, "the negated effect's controller gained control");
   assert.equal(ent(h, mush.id)!.owner, D, 'ownership stays with the caster');
   assert.deepEqual(effStats(h, atk), [1, 1], 'no buff landed');
   finishBattle(h);
   assert.ok(unitsOf(h, A).some(u => u.card === 'Hush Mush'), "regroup sent it to A's side");
+});
+
+/* ── R143 — Hush Mush's handover is not a trigger ─────────────────────────
+ *
+ * Reports #95 and #96, SMVJ, the same action index a minute apart. #95 is the
+ * cause: "Hush Mush's ability to go to the opponent isn't a trigger. It just
+ * happens as part of the spell." #96 is the symptom the owner actually saw:
+ * "I shouldn't be getting a Flourishing Flora trigger here. Hush Mush should
+ * enter as Rashi's unit."
+ *
+ * The old implementation spawned the body under its CASTER and moved it with
+ * giveControl from the body's own `spawned` trigger. That intermediate state
+ * is observable by every "whenever another ally spawns" watcher the caster
+ * controls — Flourishing Flora is just the one that happened to be on the
+ * board. R143 spawns the body under the negated effect's controller directly
+ * (StackItem.spawnUnder / ctx.spawnUnder), so the window does not exist.
+ */
+
+/** the log lines of everything that has happened since `from` */
+const since = (h: Harness, from: number): string[] =>
+  h.events.slice(from).map(e => e.msg).filter(Boolean);
+
+/** pass priority (answering any trigger-ordering question the first way) until
+ * the stack has drained.
+ *
+ * The tolerance for a decision is not laziness — it is what lets these tests
+ * measure the ANSWER rather than the number of steps. The OLD implementation
+ * pushed a handover trigger onto the stack, and where the caster had an
+ * ally-spawn watcher it pushed TWO, which made the engine stop and ask for a
+ * trigger ORDER. A drain that refused to answer would leave every assertion
+ * below testing an unfinished turn instead of a wrong one. */
+function drain(h: Harness, guard = 60): void {
+  while ((h.state.stack.length || h.state.decision) && h.state.phase === 'battle' && guard-- > 0) {
+    if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+    else pass(h);
+  }
+}
+
+test('R143 #95: Hush Mush ENTERS under the negated effect\'s controller — no trigger, no handover', () => {
+  const h = new Harness(2331);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'fire', 2);                     // Channeled Boon r/2
+  giveResources(h, D, 'wood', 2);                     // Hush Mush gg/2
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
+  pick(h, { unit: atk });
+  const cbId = h.state.stack[0]!.id;
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
+  pick(h, { stack: cbId });
+  const mark = h.events.length;
+  pass(h); pass(h);                                   // Hush Mush resolves
+
+  // the SPAWN EVENT itself is the proof: there is no earlier state to catch,
+  // so the only place the answer can be wrong is here.
+  const sp = h.events.slice(mark).find(e => e.type === 'spawned' && e.data?.card === 'Hush Mush');
+  assert.ok(sp, 'the body spawned');
+  assert.equal(sp!.data!.seat, A, 'it entered as A\'s unit — never the caster\'s');
+  assert.equal(sp!.data!.owner, D, 'R107: ownership did NOT follow — the card is still D\'s');
+  // and nothing moved afterwards
+  assert.ok(!since(h, mark).some(m => /gains control of Hush Mush/.test(m)),
+    'no giveControl line — the handover is not a step');
+  assert.deepEqual(h.state.stack, [], 'no trigger was queued behind the spell');
+  const body = unitsOf(h, A).find(u => u.card === 'Hush Mush')!;
+  assert.equal(ent(h, body.id)!.controller, A);
+  assert.equal(ent(h, body.id)!.owner, D);
+  finishBattle(h);
+});
+
+test('R143 #96: the CASTER\'s Flourishing Flora takes NO counter off Hush Mush', () => {
+  const h = new Harness(2332);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  // D casts Hush Mush; this is D's OWN ally-spawn watcher, exactly the board
+  // the owner had. "[Augment] Whenever another ally spawns, put a +1/+1
+  // counter on me" — 0/1, and it counts tokens too, so the only thing that
+  // can move it here is the Hush Mush body.
+  const flora = spawn(h, D, 'Flourishing Flora');
+  giveResources(h, A, 'fire', 2);
+  giveResources(h, D, 'wood', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  // R12: round 1 is fought in the DEFENDER's region, so Flora is standing in
+  // the very region the body spawns into. If this ever stops holding, the
+  // test would pass for the wrong reason.
+  assert.equal(ent(h, flora)!.region, h.state.battle!.region,
+    'Flora is in the battle region — it CAN see the spawn');
+  assert.deepEqual(effStats(h, flora), [0, 1], 'starts 0/1');
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
+  pick(h, { unit: atk });
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
+  pick(h, { stack: h.state.stack[0]!.id });
+  const mark = h.events.length;
+  pass(h); pass(h);                                   // Hush Mush resolves
+
+  // THE assertion of report #96, in the owner's own words — "I shouldn't be
+  // getting a Flourishing Flora trigger here". It is checked on the QUEUEING,
+  // not on the counter, because the queueing is the moment the caster's
+  // watcher saw a body that was never theirs. (Under the old implementation
+  // the counter has not landed yet at this point: two triggers went on the
+  // stack at once and the engine is busy asking D what order to resolve them
+  // in — a question that should never have been asked either.)
+  assert.ok(!since(h, mark).some(m => /Flourishing Flora/.test(m)),
+    'report #96: no Flourishing Flora trigger — the body was never D\'s ally');
+  drain(h);                                           // and nothing lands later
+  assert.deepEqual(effStats(h, flora), [0, 1], 'still 0/1 once everything has resolved');
+  assert.equal(ent(h, flora)!.counters ?? 0, 0, 'no counter was placed');
+  assert.ok(unitsOf(h, A).some(u => u.card === 'Hush Mush'), 'the body is A\'s');
+  finishBattle(h);
+});
+
+test('R143: TWO Hush Mushes in one battle keep separate answers (the old ledger\'s worry)', () => {
+  // The ⚠ header used to warn that the per-REGION `hushMushGiveTo` slot was
+  // last-write-wins, so two copies resolving in one region could read each
+  // other's seat. The answer now rides on each spell's OWN stack item, so the
+  // two cannot see each other — this pins that behaviourally: one Hush Mush
+  // negates A's spell (its body becomes A's) and the other negates D's OWN
+  // spell (its body stays D's). A shared slot makes both land the same way.
+  const h = new Harness(2333);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'fire', 2);                     // Channeled Boon r/2
+  giveResources(h, D, 'wood', 6);                     // two Hush Mushes gg/2 + Invigorate g/1
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
+  pick(h, { unit: atk });
+  const cbId = h.state.stack[0]!.id;
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Invigorate') });   // D's OWN spell
+  pick(h, { unit: atk });
+  const invId = h.state.stack[1]!.id;
+  pass(h);                                            // A declines
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
+  pick(h, { stack: invId });                          // → this body stays D's
+  pass(h);                                            // A declines
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
+  pick(h, { stack: cbId });                           // → this body becomes A's
+  const mark = h.events.length;
+  drain(h);                                           // both resolve
+  assert.ok(!h.state.stack.some(i => i.id === cbId), 'A\'s Boon is negated');
+  assert.ok(!h.state.stack.some(i => i.id === invId), 'D\'s own Invigorate is negated too');
+  // both bodies entered already-correct: two spawn events, two different seats
+  const spawns = h.events.slice(mark)
+    .filter(e => e.type === 'spawned' && e.data?.card === 'Hush Mush')
+    .map(e => e.data!.seat);
+  assert.deepEqual([...spawns].sort(), [0, 1],
+    'the two bodies ENTERED under different seats — neither read the other\'s answer');
+
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Hush Mush').length, 1,
+    'exactly one body went to A — the one that negated A\'s spell');
+  assert.equal(unitsOf(h, D).filter(u => u.card === 'Hush Mush').length, 1,
+    'and the one that negated D\'s own spell stayed with D');
+  for (const u of unitsOf(h, A).concat(unitsOf(h, D)).filter(u => u.card === 'Hush Mush')) {
+    assert.equal(ent(h, u.id)!.owner, D, 'both are still D\'s cards (R107)');
+  }
+  finishBattle(h);
+});
+
+test('R143: a Hush Mush whose target has already left the stack fizzles and hands nobody a body', () => {
+  // Two Hush Mushes aimed at the SAME effect: the first negates it, the second
+  // finds nothing there. R5 gets there first — the item fizzles before its run
+  // is entered, so the card's own "the targeted effect has already left the
+  // stack" branch stays the defensive line it always was, and the printed
+  // consequence is the one the card's comment claims: no body, card binned.
+  //
+  // (The OTHER old branch — "the body is gone — no handover" — is deleted
+  // rather than preserved. It guarded the gap between the spawn and the
+  // handover trigger, and R143 closes the gap, so there is nothing left for it
+  // to guard.)
+  const h = new Harness(2334);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'fire', 2);
+  giveResources(h, D, 'wood', 4);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
+  pick(h, { unit: atk });
+  const cbId = h.state.stack[0]!.id;
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
+  pick(h, { stack: cbId });
+  pass(h);                                            // A declines
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Hush Mush') });
+  pick(h, { stack: cbId });                           // the same, doomed target
+  const mark = h.events.length;
+  drain(h);                                           // both copies resolve
+  assert.ok(!h.state.stack.some(i => i.id === cbId), 'the Boon is gone');
+  assert.deepEqual(effStats(h, atk), [1, 1], 'the Boon never buffed anything');
+  assert.deepEqual(h.state.stack, [], 'and the game did not hang on it');
+  assert.ok(since(h, mark).some(m => /Hush Mush fizzles/.test(m)),
+    'R5: the second copy fizzled — all its targets are gone');
+  assert.ok(!since(h, mark).some(m => /gains control of Hush Mush/.test(m)),
+    'R143: nothing changed hands after the fact — a body enters correct or it never enters');
+  // a spell that negated nothing has no "its controller", so it must not hand a
+  // body to anybody — and R5 means it does not put one on the table at all.
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Hush Mush').length, 1,
+    'only the copy that really negated something went to A');
+  assert.equal(unitsOf(h, D).filter(u => u.card === 'Hush Mush').length, 0,
+    'and the fizzled copy spawned no body at all');
+  assert.equal(h.state.players[D]!.bin.filter(c => c === 'Hush Mush').length, 1,
+    'it went to its owner\'s bin from the stack (R40)');
+  finishBattle(h);
 });
 
 test('Hush Mush: "target effect" reaches a TRIGGERED ability, "target SPELL effect" does not', () => {
@@ -410,7 +620,6 @@ test('Hush Mush: "target effect" reaches a TRIGGERED ability, "target SPELL effe
   assert.ok(!h.state.stack.some(i => i.id === trig.id), 'R68: the negated trigger left the stack');
   assert.ok(!h.state.players[A]!.bin.includes('Warbloom Herald'),
     'R68: a negated ABILITY has no card of its own — its source stays in play, nothing is binned');
-  pass(h); pass(h);                                   // the spawn handoff
   assert.deepEqual(effStats(h, herald), [1, 1], 'the +1/+0 never landed');
   finishBattle(h);
 });

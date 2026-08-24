@@ -782,6 +782,28 @@ export interface StackItem {
    * actually resolved. Two different reasons, two different log lines.
    */
   eraseSelf?: boolean;
+  /**
+   * R143 — "…gains control of me" on a SPELL UNIT: the seat the body ENTERS
+   * under. `afterParts` spawns it as this seat's unit and keeps `controller`
+   * (the caster) as its OWNER, which is exactly R107's owner≠controller split.
+   *
+   * The same shape as `eraseSelf` directly above, raised by
+   * `EffectCtx.spawnUnder()` while the spell part runs, and ON THE ITEM for
+   * the same R85 reason: a part may suspend mid-resolution and be replayed out
+   * of the serialised suspension, and `item` is what the suspension carries.
+   *
+   * WHY IT IS NOT A HANDOVER. Hush Mush used to spawn under its caster and
+   * change hands from its own `spawned` trigger. That intermediate state is
+   * observable — every "whenever another ally spawns" watcher the CASTER
+   * controls fires on a body that was never meant to be theirs (report #96,
+   * Flourishing Flora). One spell resolution, one controller: the body has to
+   * arrive already theirs, so there is no window to observe.
+   *
+   * Absent on every item whose body enters under its own controller, which is
+   * all of them but this one. Per ITEM, so two copies resolving in one region
+   * cannot share an answer.
+   */
+  spawnUnder?: Seat;
   /** triggered/activated: source entity (may be gone by resolution) */
   sourceId?: EntityId;
   /** R131: carried over from PendingTrigger — the MOD ENTITY whose donated

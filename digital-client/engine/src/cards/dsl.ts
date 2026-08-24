@@ -132,6 +132,28 @@ export interface EffectCtx {
    */
   eraseSelf: () => void;
   /**
+   * R143 — "Its controller gains control of me." on a SPELL UNIT (Hush Mush).
+   *
+   * A spell unit's body is spawned by `E.afterParts`, AFTER every effect part
+   * has run, so an effect cannot reach it directly. This is the seam: it
+   * raises `StackItem.spawnUnder`, and `afterParts` spawns the body as that
+   * seat's unit — with the caster still its OWNER (R107), because the card is
+   * still yours and still goes to your bin when it dies.
+   *
+   * IT IS NOT A HANDOVER, and that is the whole point. The old
+   * implementation spawned the body under its caster and moved it with
+   * `giveControl` from the body's own `spawned` trigger; report #96 caught
+   * the caster's Flourishing Flora ("whenever another ally spawns") taking a
+   * counter off a unit that was never theirs. The printed text is one spell
+   * resolution, so there must be no moment at which the caster controls it.
+   *
+   * Optional because an EffectCtx without a stack item behind it (a card run
+   * inline mid-resolution) has no body to place — call it as
+   * `ctx.spawnUnder?.(seat)`. Calling it on any other kind of item is inert:
+   * only `kind: 'spellUnit'` spawns a body in `afterParts`. Last call wins.
+   */
+  spawnUnder?: (seat: Seat) => void;
+  /**
    * CARD-TODO #18 — "I did nothing; do not spend the [once]."
    *
    * A `bounded` ability ([once] / [Switch1], R9) reserves its budget when the
