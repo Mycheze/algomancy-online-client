@@ -583,6 +583,13 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 
 /* game icons sitting on a TEXT line (card text, prompts, labels, help) */
 .txticon { width: 15px; height: 15px; vertical-align: -3px; margin: 0 1px; }
+/* R134: `{g}` in card text marks the ONE keyword that follows it, which the
+   printed cards colour. Before R134 the marker fell through the icon table and
+   rendered as a literal "g" ("ginverted"). Amber to match the card faces. */
+.kw { color: #e3b341; font-weight: 600; }
+/* one class per marker letter, so {g} attributes and {p} unstable can diverge
+   later without another renderer change */
+.kw-p { color: #c98bdb; }
 
 /* Containers that hold a card SCAN stretch a bare <img> to fill themselves —
  * `.preview img`, `.card img`, `.modstrip img` are all width:100%, and

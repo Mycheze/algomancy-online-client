@@ -45,7 +45,8 @@
  * [Switch1] whose budget is spent, rides as a `note` line naming the ability
  * by its label.
  */
-import { getCard, graftCauseIndex, isTriggered } from '../src/cards/dsl.ts';
+import { getCard, graftCauseIndex, isTriggered, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
+import { esc } from './util.ts';
 import type { Ability, CardDef } from '../src/cards/dsl.ts';
 import type { E } from '../src/engine.ts';
 import type { CardName, Entity, EntityId } from '../src/types.ts';
@@ -502,4 +503,91 @@ export function textBoxFor(e: E | null, name: CardName, id?: EntityId): CardText
     if (u) return entityTextBox(e, u);
   }
   return printedTextBox(name);
+}
+
+// ── card-text icons (ported from the RAG front-end's token mapping) ────
+/** [..] / {..} keywords that have a real icon (Icons/<name>.webp) */
+export const TEXT_ICON: Record<string, string> = {
+  augment: 'augment', switch1: 'bounded_graft', switch: 'graft',
+  virus: 'virus', battle: 'battle', haste: 'haste', once: 'once',
+};
+/** amounts are spelled out on the cards ([one], [x]); three_blue is Lurking
+ * Slimebeast's amount+resource-in-one-word special */
+const COST_WORD: Record<string, string> = {
+  zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5',
+  six: '6', seven: '7', eight: '8', nine: '9', x: 'x', three_blue: '3b',
+};
+/** cost letters → faction icon; 'p' (prismite/colorless) has NO icon — left as
+ * text. Taken straight from the engine (l = light, d = dark) so a new element
+ * can never leave the UI with a stale copy of the pip table. */
+const PIP_EL: Record<string, string> = ELEMENT_OF_PIP;
+/** the same pip letters as a character class, for the [4bb]-style cost token */
+const COST_TOKEN_RE = new RegExp(`^[0-9]*[${Object.keys(PIP_EL).join('')}]+$`);
+/** a text-line game icon; if the file is missing it degrades to `fallback` */
+export const txtIcon = (name: string, fallback: string): string =>
+  `<img class="txticon" src="/Icons/${name}.webp" alt="${fallback}" onerror="this.outerHTML=this.alt">`;
+/** Swap game tokens in card text / prose ([Switch1], {Battle}, [one], [4bb], …)
+ * for the real icons. Escapes FIRST — always feed it RAW text, never pre-escaped
+ * HTML. Unknown [tokens] stay bracketed; unknown {attrs} bare their word;
+ * {/n}/{i}/{/i} formatting tokens become markup. */
+/**
+ * R134: FORMATTING markers are resolved globally, before the icon pass.
+ *
+ * They used to be handled inside the `[token]`/`{token}` replacer, which meant
+ * a marker sitting INSIDE an unrecognised bracket token was never reached —
+ * the modal construct `/[power {i1}or defense]` matches the bracket branch as
+ * one unknown token and is returned verbatim, so five cards printed a literal
+ * "{i1}" at the table (Burgeon, Void Memory, Spirit of Nature, Transmutide
+ * Enigma, Floral Singularity).
+ *
+ * `{i1}` italicises exactly ONE word — it is the sibling of `{g}`, which
+ * colours exactly one keyword. On the printed cards it is the "or" of a modal
+ * choice. `{i}` opens a run that the pool almost never closes: close it at the
+ * reminder's own ')' where it introduces one, and balance whatever is left over
+ * at the end, so an `<i>` can never leak out of the text box.
+ */
+function formatting(escaped: string): string {
+  let s = escaped.replace(/\{\/n\}/g, '<br>');
+  // ITALICS FIRST, so the generic keyword marker below cannot mistake `{i}`
+  // for one and swallow the word after it.
+  s = s.replace(/\{i1\}\s*([A-Za-z][A-Za-z-]*)/g, '<i>$1</i>');
+  // a reminder that opens with {i} and never closes: end it at its own ')'
+  s = s.replace(/\{i\}(\([^)]*\))(?!\{\/i\})/g, '<i>$1</i>');
+  s = s.replace(/\{i\}/g, '<i>').replace(/\{\/i\}/g, '</i>');
+  // A SINGLE-LETTER marker before a word marks that ONE word as a keyword —
+  // the printed cards colour it. `{g}` is the attributes ({g}deadly, {g}flying,
+  // {g}piercing, {g}inverted) and `{p}` is {p}unstable. Handled GENERICALLY on
+  // purpose: letter-by-letter, a marker nobody taught the formatter about falls
+  // through to "unknown {token} bares its word" and renders as a stray letter
+  // glued to the keyword — "ginverted", "punstable", which is exactly how this
+  // was reported. A new marker letter now styles its word instead of leaking,
+  // and the class carries the letter so a future palette can tell them apart.
+  s = s.replace(/\{([a-z])\}([A-Za-z][A-Za-z-]*)/g, '<span class="kw kw-$1">$2</span>');
+  const opens = (s.match(/<i>/g) ?? []).length;
+  const shuts = (s.match(/<\/i>/g) ?? []).length;
+  return opens > shuts ? s + '</i>'.repeat(opens - shuts) : s;
+}
+
+export function iconizeText(raw: string): string {
+  return formatting(esc(raw))
+    .replace(/\[([^\[\]]+)\]|\{([^{}]+)\}/g, (tok, br?: string, bc?: string) => {
+    if (br !== undefined) {
+      const body = br.toLowerCase();
+      const icon = TEXT_ICON[body];
+      if (icon) return txtIcon(icon, tok);          // fallback KEEPS the brackets
+      const cost = COST_WORD[body] ?? (COST_TOKEN_RE.test(body) ? body : undefined);
+      if (cost !== undefined) {
+        return [...cost].map(c => {
+          const el = PIP_EL[c];
+          return el ? txtIcon(el, c) : txtIcon(`cost_${c}`, c);
+        }).join('');
+      }
+      return tok;                                    // unknown [token]: untouched
+    }
+    const body = bc!.toLowerCase();
+    // {/n}, {i}, {i1}, {/i} and {g} are resolved by formatting() above
+    const icon = TEXT_ICON[body];
+    if (icon) return txtIcon(icon, bc!);             // fallback bares the word
+    return bc!;                                      // {Swift} → Swift
+  });
 }
