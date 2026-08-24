@@ -1310,11 +1310,22 @@ export const LEDGER: LedgerEntry[] = [
     id: 86, room: 'EGCW', date: '2026-08-23',
     report: "Mirage Walker triggered in Rashi's Deployment despite her playing MIRAGE WALKER during "
       + 'that Deployment',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '14-water-a.test.ts::Mirage Walker #86: acting suppresses, idling triggers',
+      '14-water-a.test.ts::Mirage Walker #86: the OPPONENT acting during deployment does not suppress the trigger',
+      '14-water-a.test.ts::Mirage Walker #86: activating an ability during deployment counts as acting',
+      '14-water-a.test.ts::Mirage Walker #86: the stamp survives a JSON save/load mid-deployment',
+    ],
     note:
-      'DIAGNOSED, fix QUEUED as its own change — deliberately NOT part of the end-of-turn sweep, '
-      + 'because the correct fix stamps the acting seat in the REDUCER (apply.ts / types.ts), '
-      + 'not in card code. Root cause is one line: '
+      'FIXED exactly as diagnosed: the truth is stamped in the REDUCER now — per-seat '
+      + '`GameState.deployActed`, zeroed by startDeployment, set at one choke point in '
+      + 'apply.ts\'s dispatch for any deployment action except doneDeploying/decide (the owner\'s '
+      + 'ruling: "YOU did something during deployment other than just hitting Done", mods and '
+      + 'ability activations included). Mirage Walker\'s whole bookkeeping trigger is deleted; '
+      + 'its end-of-turn when() is a pure read. The replacement test is parameterised over the '
+      + 'full seat × deployPlayer matrix and was red 6/9 on the old code — including both '
+      + 'misfire directions and the serialization cases. Root cause, kept for the record: '
       + 'Mirage Walker\'s bookkeeping `when()` reads `g.s.deployPlayer === self.controller`, but '
       + '`deployPlayer` is NOT the acting seat — deployment is simultaneous and it is a derived '
       + 'initiative-ordered marker (its own comment says "derived sequential marker"). The '

@@ -1364,8 +1364,22 @@ export const CARD_TODO: TodoEntry[] = [
       'Drive playCard(Mirage Walker) in deployment for each of the four (mwSeat, deployPlayer) '
       + 'combinations and count the 3/3 tokens at end of turn. While the bug is live, the two '
       + 'combinations where deployPlayer !== mwSeat wrongly produce a token.',
+    // DONE 2026-08-24, exactly per `fix`: per-seat GameState.deployActed,
+    // zeroed in startDeployment, stamped at ONE choke point in apply.ts's
+    // dispatch (any deployment action except doneDeploying/decide — an illegal
+    // action throws and discards the stamp with the draft). The card's whole
+    // bookkeeping trigger is deleted; its end-of-turn when() is a pure read.
+    // Red 6/9 before the fix across the seat × deployPlayer matrix, including
+    // BOTH misfire directions. CARD-TODO #23 (the 763-use deployPlayer test
+    // habit) stays open — this entry's guards are the first tests in the repo
+    // that drive deployment from the non-initiative seat on purpose.
+    guards: [
+      '14-water-a.test.ts::Mirage Walker #86: acting suppresses, idling triggers',
+      '14-water-a.test.ts::Mirage Walker #86: the OPPONENT acting during deployment does not suppress the trigger',
+      '14-water-a.test.ts::Mirage Walker #86: activating an ability during deployment counts as acting',
+    ],
     reportId: 86,
-    status: 'open',
+    status: 'done',
   },
   {
     id: 23,
