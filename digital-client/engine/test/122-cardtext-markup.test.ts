@@ -235,3 +235,44 @@ test('R135: a spent once-per-turn ability is one short [Once] note, not its text
     '[Switch1] in printed text is still the bounded-graft icon');
   finishBattle(h);
 });
+
+// ── R141: a cost written as bare digits ─────────────────────────────────
+//
+// Owner, 2026-08-24: "an icon we're NOT using anywhere is the [1] or [2] icon
+// for paying costs on cards." Half right, and the half that was wrong is the
+// interesting half: Icons/cost_0..9 and cost_x WERE reached — but only through
+// the spelled-out spelling. The pool writes the same amount two ways, `[two]`
+// on 24 cards and `[2]` on 12, and only the first drew an icon. The second
+// failed COST_TOKEN_RE (which demands a pip letter) and fell through to
+// "unknown [token]: untouched", printing a literal "[2]".
+
+test('R141: a cost written as bare digits draws the cost icon, not a literal "[2]"', () => {
+  const out = iconizeText('When I am trashed, you may pay [2].');
+  assert.ok(out.includes('Icons/cost_2.webp'), `the [2] is the cost icon: ${out}`);
+  assert.ok(!/\[2\]/.test(out), 'the report: the player read a literal "[2]"');
+});
+
+test('R141: the two spellings of one amount render identically', () => {
+  // [1] and [one] are the same cost; nothing about the card says which
+  // spelling the transcriber happened to use, so the box must not care.
+  for (const [digit, word] of [['[1]', '[one]'], ['[2]', '[two]'], ['[3]', '[three]']]) {
+    assert.equal(iconizeText(digit!), iconizeText(word!),
+      `${digit} and ${word} are the same cost and must render the same`);
+  }
+});
+
+test('R141: no card in the pool prints a bare-digit cost token as text', () => {
+  // the general form, over the whole pool — the same shape as R134's sweep.
+  // A new amount spelling nobody taught the formatter shows up here.
+  const bad: string[] = [];
+  for (const name of allCardNames()) {
+    for (const raw of [getCard(name).text ?? '', getCard(name).type ?? '']) {
+      if (!raw) continue;
+      const out = iconizeText(raw);
+      for (const m of out.matchAll(/\[([0-9]+)\]/g)) {
+        bad.push(`${name}: "[${m[1]}]" survived as text`);
+      }
+    }
+  }
+  assert.deepEqual(bad, [], `bare-digit costs left unrendered:\n${bad.join('\n')}`);
+});

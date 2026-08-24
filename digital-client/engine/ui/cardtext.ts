@@ -609,6 +609,19 @@ const COST_WORD: Record<string, string> = {
 const PIP_EL: Record<string, string> = ELEMENT_OF_PIP;
 /** the same pip letters as a character class, for the [4bb]-style cost token */
 const COST_TOKEN_RE = new RegExp(`^[0-9]*[${Object.keys(PIP_EL).join('')}]+$`);
+/**
+ * R141 — a cost written as BARE DIGITS. The pool spells the same amount two
+ * ways: `[two]` (24 cards) and `[2]` (12 cards). COST_TOKEN_RE demands at
+ * least one pip letter, so the digit form failed every branch above and fell
+ * through to "unknown [token]: untouched" — printing a literal "[2]" beside
+ * cards whose `[two]` drew the icon. `Icons/cost_0..9` and `cost_x` have
+ * existed the whole time; only one of the two spellings ever reached them.
+ *
+ * Exactly the R134 shape: a token nobody taught the formatter about does not
+ * announce itself, it just renders as its own source text. Digits are resolved
+ * per character like [4bb], so a hypothetical [10] draws 1 then 0.
+ */
+const COST_DIGITS_RE = /^[0-9]+$/;
 /** a text-line game icon; if the file is missing it degrades to `fallback` */
 export const txtIcon = (name: string, fallback: string): string =>
   `<img class="txticon" src="/Icons/${name}.webp" alt="${fallback}" onerror="this.outerHTML=this.alt">`;
@@ -661,7 +674,8 @@ export function iconizeText(raw: string): string {
       const body = br.toLowerCase();
       const icon = TEXT_ICON[body];
       if (icon) return txtIcon(icon, tok);          // fallback KEEPS the brackets
-      const cost = COST_WORD[body] ?? (COST_TOKEN_RE.test(body) ? body : undefined);
+      const cost = COST_WORD[body]
+        ?? (COST_TOKEN_RE.test(body) || COST_DIGITS_RE.test(body) ? body : undefined);
       if (cost !== undefined) {
         return [...cost].map(c => {
           const el = PIP_EL[c];

@@ -105,6 +105,32 @@ marker never does). Read through `E.isUnstable`; never re-derived here.
 A clause that is present but doing nothing is **struck through, not hidden**. "It says Flying
 and Flying is off" is two facts and a player needs both.
 
+### A cost written as bare digits (R141)
+
+The pool spells the same amount two ways — `[two]` on 24 cards and `[2]` on 12
+— and until R141 only the first one drew an icon. `COST_TOKEN_RE` demands at
+least one pip letter (it exists for the `[4bb]` compound form), so a bare-digit
+body matched nothing and fell through to the formatter's last branch, *"unknown
+`[token]`: untouched"*. The player read a literal `[2]` on twelve cards
+(Afflicting Anima, Blightwalker, Dragnol, Rotling, Sacrifice Dude, Shib, Wake
+the Dead and five more) while `Icons/cost_0..9` and `cost_x` sat unused for that
+spelling — they were reachable the whole time, just never from this one.
+
+Found by the owner, 2026-08-24: *"an icon we're NOT using anywhere is the [1] or
+[2] icon for paying costs on cards."* Half right, and the wrong half is the
+instructive one: the icons **were** in use, so grepping for `cost_` in the UI
+finds a live call site and says the feature works. Only one of two spellings
+ever reached it.
+
+Digits resolve per character, exactly as `[4bb]` does, so a hypothetical `[10]`
+would draw a 1 then a 0. No card in the pool goes past `[8]`.
+
+This is the same shape as R134's `{g}`: **a token nobody taught the formatter
+about does not announce itself — it renders as its own source text.** Both
+branches now end in a whole-pool sweep so the next unknown spelling fails a test
+instead of reaching a player.
+
+
 ### What is deliberately not split
 
 A card's own printed text stays **one line** rather than being cut into one clause per
