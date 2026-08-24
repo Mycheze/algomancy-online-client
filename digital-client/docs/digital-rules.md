@@ -8329,3 +8329,182 @@ announcement rather than by re-seeding the drive.
 and R121 tests **stay green** with (a) reverted, on purpose — they pin
 invariants that had to *survive* the change, not the change itself, and a test
 that reddened would mean (a) had broken one of them.
+
+### (b) — several triggers may aim at ONE unit, and the surplus fizzles
+
+The owner's clause is *"be allowed to target the same unit, even exceeding its
+defense (the final triggers would just fizzle)"*, and (a) alone does **not**
+deliver it. Measured with (a) in and (b) out: three Wraith triggers reach the
+stack, then the first resolves, asks *"which ally?"*, kills the 1/1 — and the
+second is asked afterwards, from a menu the 1/1 is no longer on. **A fizzle
+needs the aim to have been declared before the thing it named died.** So (b) is
+about *when the aim is taken*, and (a) is what makes an earlier moment exist.
+
+The engine gains one seam, `EffectDef.subject` / `EffectPart.subject` /
+`ctx.subject`, collected by `E.collectSubjects` beside the targets and read
+back at resolution:
+
+- **≥ 2 candidates** — one decision, in the stack window, `stage: 'subject'`.
+- **1 candidate** — recorded without asking. A lone Wraith is not asked which
+  of its single ally it means, exactly as `collectModes` does not ask about a
+  one-option mode.
+- **0 candidates** — recorded as `null`. This is the state the whole design
+  turns on: the part declared **nothing**, so it has **nothing to lose**, and
+  it resolves normally so its `run` can say *"there is no ally"*.
+- **aimed, and the entity is gone at resolution** — the part is lost, and an
+  item that has lost every target *and* subject it declared **fizzles**, with a
+  line: *"… fizzles — what it was aimed at has left play."*
+
+`E.resolveItem`'s existing R86 vote is where the last two meet: a subject part
+votes to keep the item alive only while `subject != null && entity(subject)`,
+and the "did it declare anything at all" question counts a subject only when it
+actually named something. That is what keeps R71's *"with no ally it simply
+does nothing — it cannot fizzle"* true while making *"the ally it named is
+dead"* a fizzle.
+
+> **R109's precedent, applied.** The fizzle line is not optional decoration. A
+> trigger that vanished because the unit it named died under it is
+> indistinguishable from a bug at the table, and "an empty damage batch
+> announces" is the same rule from the other end.
+
+### ⚠ Why this is NOT a `TargetSpec`, which would have been three lines
+
+[R71](#r71) rules that the Wraith's "an ally" is **not a target**, on the
+ground that the word *target* is not printed on the card, and spells the
+consequences out: it cannot be redirected, `"when I become targeted"` never
+fires for it, and it cannot fizzle. The owner's sentence overrules **the
+fizzle**, and uses the word *target* while doing it. It would have been easy —
+and wrong — to read that as "make it a target".
+
+Being a target is not one property. It is four:
+
+1. it is **chosen when the effect is declared**, not when it resolves;
+2. it can **go stale**, and losing every one fizzles the effect ([R86](#r86));
+3. it fires the **`'targeted'` event**;
+4. it can be **redirected** into a slot ([R58](#r58)) and is subject to
+   *"must be targeted if able"* compulsion.
+
+R144 grants **1 and 2** — which is exactly and only what the owner asked for —
+and withholds **3 and 4**. The expensive one is 3: **Mohruung** prints *"when I
+become targeted, create a Crystal"*, and a Wraith counter is aimed at an
+**ally**, so a pool where this fired would hand its controller a free Crystal
+per Wraith per deployment. That is a power gain nobody asked for and nobody
+could have been reading into report #101. 4 is the same objection in a quieter
+voice: a redirect could send a friendly -1/-1 counter at an enemy, and a
+Gatekeeper could compel the Wraith to shrink itself.
+
+So R144 **narrows R71 rather than reversing it**. The word *target* is still
+not printed, and everything R71 said except the fizzle still holds.
+
+### Which targeting restrictions were relaxed: NONE, and why that is the answer
+
+The brief for this ruling expected (b) to loosen targeting restrictions
+elsewhere in the pool — "targeting must not pre-validate against a limit that
+earlier-resolving triggers may consume". A census of the whole pool says there
+was nothing to loosen. **Thirty** `restrict` / `slotRestricts` predicates exist
+in `engine/src/cards/`, and every one of them tests a property of the candidate
+itself:
+
+- **card identity** — is this bin card a unit / a spell / cheap / mana 1 (15 of
+  the 30, all `binCard` shapes);
+- **ownership or region** — ally vs enemy, not-self, not-this-bin;
+- **printed stats** — base power ≤ 2, `manaOf(card) ≤ X`, not a token, is an
+  augment;
+- **live stats** — `effStats(u)[1] ≤ 5`, `≥ 4`, `statsUntouched`. Three of
+  these, and they are already governed by R5/R56: a restriction is **not
+  re-asked at resolution**, and a card that needs it re-checked does so in its
+  own `run` (Unmake, Reconfigure).
+
+None of them is a **consumable** limit — none asks "is there enough of
+something left", which is the only shape a sibling trigger could eat out from
+under a later one. `E.targetCandidates` adds no such test either; its only
+cross-item exclusion is "a part may not name the same target twice", which is
+about **one** part and says nothing about two items naming one unit. Two stack
+items have always been free to name the same target, and the survivor fizzles —
+which is why (b) needed a new place to make a choice rather than a restriction
+to delete.
+
+**So the STOP condition never fired.** Nothing here lets a player do anything
+they could not do with two spells aimed at one unit; the change is that a
+Wraith's leftover triggers now do **nothing** instead of being forced onto the
+player's own other units.
+
+### ⚠ (b) reopened the fuzzer's seed-693 hole from a new direction
+
+[R78](#r78) publishes `s.resolving` in the **battle phase only** — a hidden
+simultaneous segment must not tell your opponent that you are mid-something.
+Two places enforced that: `E.beginResolving`, which refuses to set the marker
+outside battle, and `resolveParts`' `PartChoice` catch, which re-clears it —
+the fuzzer's **seed 693**, where a battle resolution ended the battle and
+`settle()` then resolved a Wraith's start-of-deployment trigger inline, which
+suspended and stranded the outer battle item's marker in the deploy phase.
+
+(b) makes the Wraith suspend in `collectSubjects` instead — a `'cast'`
+suspension raised on the way *to* the stack, which never goes near that catch —
+and the invariant broke again in `67-resolving-and-stack-viruses`. Two sites
+cannot both be remembered, so **the gate moved to `E.suspend`**, the one door
+every suspension goes through: outside battle, suspending clears `s.resolving`.
+Nothing is lost — outside battle the marker was never legal to publish, and the
+throw has abandoned the outer resolution either way.
+
+### The death line is deliberately untouched
+
+*"When I die, Augment a Wraith onto an ally"* still picks at resolution. The
+owner's ruling is about the **start-of-deployment pile**, and that line has no
+limit to exceed: a unit can carry any number of Wraith augments, so no pile of
+them can over-aim and no surplus can exist to fizzle. Converting it would move
+a decision earlier in the battle phase — a real replay change — to buy nothing.
+
+### Tests — (b)
+
+- `37-attrs-wight` — **"R144(b): three Wraith triggers may all aim at one 1/1,
+  and the surplus fizzles"**. The owner's sentence, executed: all three menus
+  offer the 1/1, all three take it, one counter lands, **two fizzle with a line
+  each**, and — the point of the whole ruling — no Wraith is shrunk as a
+  consolation prize.
+- `37-attrs-wight` — **"…does not pre-validate against a limit an earlier
+  trigger will consume"**: five triggers onto a 4/4, four land, one fizzles.
+- `37-attrs-wight` — **"'no ally at all' still does nothing — it is not a
+  fizzle (R71 unmoved)"**.
+- `37-attrs-wight` — **"a subject is not a target — no 'targeted' event is ever
+  fired for it"**. The Mohruung guard.
+- `37-attrs-wight` — **"R144(b) x R113: a bounded ability that FIZZLES still
+  spends its use"** (see below).
+- `37-attrs-wight` — **"the aim is deterministic — same picks, same state"**.
+- `67-resolving-and-stack-viruses` — the existing seed-693 fuzz walk, which is
+  what caught the `s.resolving` regression above and now guards the new gate.
+
+**Red-checked**: reverting `registry.ts` alone (the Wraith back to a
+resolution-time `pickAlly`, the seam still present but unused) reddens the first
+two by name; reverting the whole seam reddens those two **and** the R113 one.
+Removing only the `E.suspend` phase gate reddens
+`67-resolving-and-stack-viruses`' seed-693 walk. The R71, Mohruung and
+determinism tests **stay green** under a revert, on purpose — they pin what had
+to *survive* (b).
+
+**Replay**: zero drift, both halves. WEHH / XVUR / EGCW / GETD / PRB1 replay
+with identical replayed-vs-skipped counts at `3063f2b`, after (a), and after
+(a)+(b) — 57/328, 109/243, 134/184, 48/265, 95/0. A saved game with **two or
+more Wraith deployment triggers in one batch** would diverge (the decisions are
+the same in number and order, but the menus differ once a unit dies mid-batch);
+none of the saved games reaches that state.
+
+### ⚠ FOR THE OWNER: this ruling was briefed with R108, and R113 overrules it
+
+The brief asked for a test that *"a `[once]`/bounded ability that fizzles does
+NOT spend its budget (R108)"*. **The repo rules the opposite**, on a verbatim
+designer quote, and the test written here asserts the repo's rule rather than
+the brief's:
+
+> `[bounded_graft]` — "can only be activated or triggered once per turn.
+> **Regardless of if that ability resolves or doesn't.**" — designer,
+> 2026-08-23
+
+[R113](#r113--a-bounded-use-is-spent-by-using-it-not-by-it-working) is that
+answer, and it says in its own text that *"the previous R108 answer here was
+wrong"*: a bounded use is spent by being **used** — activated, or put on the
+stack — and only a **decline**, or an offer that could not be made at all,
+keeps it. R144's fizzle is an ordinary fizzle and gets the ordinary treatment.
+Six refund calls were deleted from the card pool when R113 landed. If R108's
+first reading is meant to come back, it is a change to R113 and not something
+R144 should have quietly done on the side.

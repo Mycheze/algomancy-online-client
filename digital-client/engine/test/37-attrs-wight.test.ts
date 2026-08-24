@@ -1138,3 +1138,178 @@ test('R144(a): the deployment stack is not taxed — R121 is a battle-phase gate
   assert.ok(!h.log.some(l => l.includes('is taxed')), 'no tax line at all');
 });
 
+/* ── R144(b): several triggers may aim at ONE unit; the surplus fizzles ──
+ *
+ * The load-bearing half. The Wraith's deployment line is aimed in the STACK
+ * window now (`EffectDef.subject`), not inside its own resolution, so the whole
+ * pile is aimed while the board still looks the way it did when they fired.
+ *
+ * ⚠ Still NOT a target. R71 is narrowed, not reversed: no `'targeted'` event,
+ * no redirect, no compulsion, invisible to every targeting restriction. See
+ * `EffectDef.subject` for why those three were withheld — chiefly Mohruung,
+ * which creates a Crystal "when I become targeted" and would have paid its
+ * controller once per Wraith per deployment.
+ */
+
+/** a BOUNDED start-of-deployment shrinker, for the R113 interaction below */
+registerSynthetic(unit('T144 Bounded Shrinker', 1, 1), {
+  abilities: [{
+    type: 'triggered', events: ['startOfDeployment'], bounded: true,   // [once]
+    label: 'put a -1/-1 counter on an ally',
+    effect: {
+      subject: {
+        key: 'shrink',
+        prompt: () => 'T144 Bounded Shrinker: put a -1/-1 counter on an ally',
+        candidates: (g: E, item) => g.unitsOf(item.controller, item.region),
+      },
+      run: (g: E, ctx) => {
+        if (!ctx.subject) { g.ev('info', 'T144 Bounded Shrinker: no ally.'); return; }
+        g.addCounters(ctx.subject, -1);
+      },
+    },
+  }],
+});
+
+/** answer every pending deployment aim with `id` if it is still offered */
+function aimAllAt(h: Harness, id: EntityId): number {
+  let asked = 0, guard = 20;
+  while (h.state.decision && guard-- > 0) {
+    const dec = h.state.decision;
+    const i = dec.options.findIndex(o => o.value === id);
+    assert.notEqual(i, -1,
+      `the aim must still be offered ${id}; menu was [${dec.options.map(o => o.label).join(' | ')}]`);
+    h.do({ type: 'decide', seat: dec.seat, choice: i });
+    asked++;
+  }
+  return asked;
+}
+
+// The owner's sentence, executed. Three Wraiths, one 1/1: all three are
+// offered it, all three take it, the first kills it and the other two fizzle.
+// Before R144(b) the second and third were asked AFTER the first had resolved,
+// so the 1/1 was not on their menus at all and their counters were forced onto
+// the Wraiths instead — the leftovers ate the player's own board.
+test('R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fizzles', () => {
+  const h = sterile(3794);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const ally = spawn(h, P, 'T37 Grunt');                    // 1/1: absorbs ONE
+  let w1 = 0, w2 = 0, w3 = 0;
+  whiteBox(h, e => { w1 = e.createWraith(P).id; w2 = e.createWraith(P).id; w3 = e.createWraith(P).id; });
+  toNextBattle(h, P);
+  finishBattle(h);                                          // → next deployment
+  assert.equal(aimAllAt(h, ally), 3, 'all three were aimed, and all three were offered the 1/1');
+  assert.equal(ent(h, ally), undefined, 'it took its one counter and died');
+  const fizzles = h.log.filter(l => l.includes('fizzles'));
+  assert.equal(fizzles.length, 2, 'the two that outlived it fizzled — one line each');
+  assert.ok(fizzles.every(l => l.includes('what it was aimed at has left play')),
+    'and the log SAYS why (R109: a no-op announces; it does not vanish)');
+  // the point of the whole ruling: nothing was re-aimed at a bystander
+  for (const w of [w1, w2, w3]) {
+    assert.deepEqual(effStats(h, w), [3, 3], 'no Wraith was shrunk as a consolation prize');
+  }
+});
+
+// Over-aiming is legal, not merely tolerated: the aim never pre-validates
+// against what an earlier trigger is about to consume. The owner's own phrase
+// is "even exceeding its defense", so this is the arithmetic version — a 4/4
+// absorbs exactly four -1/-1 counters (4/4 → 3/3 → 2/2 → 1/1 → 0/0, dead), and
+// the fifth is the surplus.
+test('R144(b): the aim does not pre-validate against a limit an earlier trigger will consume', () => {
+  const h = sterile(3795);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const ally = spawn(h, P, 'T37 Brute');                    // 4/4: absorbs FOUR
+  whiteBox(h, e => { for (let i = 0; i < 5; i++) e.createWraith(P); });
+  toNextBattle(h, P);
+  finishBattle(h);
+  assert.equal(aimAllAt(h, ally), 5, 'a 4/4 may be named by FIVE triggers at once');
+  assert.equal(ent(h, ally), undefined, 'four counters killed it');
+  assert.equal(h.log.filter(l => l.includes('fizzles')).length, 1,
+    'exactly one surplus, exactly one fizzle');
+});
+
+// R71's other half, unmoved. "There is no ally at all" declares NOTHING, so
+// there is nothing to lose and the trigger does nothing rather than fizzling.
+// That distinction is the whole reason `EffectPart.subject` has three states.
+test('R144(b): "no ally at all" still does nothing — it is not a fizzle (R71 unmoved)', () => {
+  const h = sterile(3796);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  let id = 0;
+  whiteBox(h, e => { id = e.createWraith(P).id; });
+  toNextBattle(h, P);
+  finishBattle(h);
+  assert.equal(h.state.decision, null, 'one candidate — itself — so nothing is asked');
+  assert.deepEqual(effStats(h, id), [2, 2], 'and it shrank itself');
+  assert.ok(!h.log.some(l => l.includes('fizzles')), 'nothing fizzled');
+});
+
+// The three properties of a TARGET that R144 deliberately does NOT grant. The
+// first is the expensive one: Mohruung prints "when I become targeted, create a
+// Crystal", a Wraith counter is aimed at an ALLY, and a pool where this fired
+// would hand its controller a free Crystal per Wraith per deployment — a power
+// gain the owner never asked for and could not have been reading in.
+test('R144(b): a subject is not a target — no "targeted" event is ever fired for it', () => {
+  const h = sterile(3797);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const ally = spawn(h, P, 'T37 Brute');
+  whiteBox(h, e => { e.createWraith(P); e.createWraith(P); });
+  const from = h.events.length;
+  toNextBattle(h, P);
+  finishBattle(h);
+  aimAllAt(h, ally);
+  assert.equal(h.events.slice(from).filter(ev => ev.type === 'targeted').length, 0,
+    'the word "target" is still not printed on the card, and nothing behaves as if it were');
+  assert.deepEqual(effStats(h, ally), [2, 2], 'both counters landed all the same');
+});
+
+// ⚠ R113 vs R108, and R113 wins. R108's first reading ("a [once] is spent only
+// when the ability does something") would refund a fizzle; the DESIGNER
+// narrowed it on 2026-08-23 — a bounded ability "can only be activated or
+// triggered once per turn. REGARDLESS OF IF THAT ABILITY RESOLVES OR DOESN'T"
+// — so the use is spent by reaching the stack and a fizzle cannot hand it back.
+// R144's fizzle is an ordinary fizzle and obeys the ordinary rule. The decline
+// side of the same line is 94-bounded-uses.test.ts's job.
+test('R144(b) x R113: a bounded ability that FIZZLES still spends its use', () => {
+  const h = sterile(3798);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const ally = spawn(h, P, 'T37 Grunt');                    // 1/1: absorbs ONE
+  const s1 = spawn(h, P, 'T144 Bounded Shrinker');
+  const s2 = spawn(h, P, 'T144 Bounded Shrinker');
+  toNextBattle(h, P);
+  finishBattle(h);
+  assert.equal(aimAllAt(h, ally), 2, 'both [once] triggers were aimed at the 1/1');
+  assert.equal(ent(h, ally), undefined, 'one counter, one death');
+  assert.equal(h.log.filter(l => l.includes('fizzles')).length, 1, 'and one fizzle');
+  const key = 'ability:T144 Bounded Shrinker#0';
+  assert.equal(ent(h, s1)!.budgets[key], 1, 'the one that resolved spent its use');
+  assert.equal(ent(h, s2)!.budgets[key], 1,
+    'and so did the one that FIZZLED — R113: "regardless of if that ability resolves or doesn\'t"');
+  assert.ok(!h.log.some(l => l.includes('its use is not spent')),
+    'no refund was announced, because none was made');
+});
+
+// The aim is a decision like any other, so the replay depends on it being
+// raised in a stable order and answered the same way. Same setup, same picks,
+// same world.
+test('R144(b): the aim is deterministic — same picks, same state', () => {
+  const build = (): { h: Harness; ally: EntityId } => {
+    const h = sterile(3799);
+    toDeployment(h);
+    const P = h.state.deployPlayer!;
+    const ally = spawn(h, P, 'T37 Brute');
+    whiteBox(h, e => { e.createWraith(P); e.createWraith(P); e.createWraith(P); });
+    toNextBattle(h, P);
+    finishBattle(h);
+    aimAllAt(h, ally);
+    return { h, ally };
+  };
+  const a = build(), b = build();
+  assert.deepEqual(b.h.state, a.h.state, 'same actions, same state');
+  assert.deepEqual(b.h.actions, a.h.actions);
+  assert.equal(a.h.state.rngState, b.h.state.rngState, 'and the RNG never diverged');
+});
+

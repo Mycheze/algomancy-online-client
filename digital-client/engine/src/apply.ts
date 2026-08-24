@@ -1880,6 +1880,12 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
       // so it rides onto the stack with the item — the opponent responds to a
       // fully declared effect, not to a question that is still open.
       sus.item.parts[sus.partIndex]!.mode = val;
+    } else if (sus.stage === 'subject') {
+      // R144: WHAT an untargeted effect is aimed at. Same window and same
+      // reason as a mode — the aim is part of declaring the effect — but it
+      // can go STALE: several triggers may all name one unit, and the ones
+      // that outlive it fizzle in resolveItem rather than being re-aimed.
+      sus.item.parts[sus.partIndex]!.subject = val as EntityId;
     } else if (typeof val === 'object' && val !== null && 'doneTargets' in val) {
       sus.item.parts[sus.partIndex]!.targetsDone = true;
     } else {

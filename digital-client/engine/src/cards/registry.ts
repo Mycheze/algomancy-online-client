@@ -7,7 +7,7 @@
  * when grafted under a host); if the marker sits on the card's own triggered/
  * activated ability, that ability is a graft cause (graftCause: true).
  */
-import type { EngineEvent, Entity, Seat } from '../types.ts';
+import type { EngineEvent, Entity, Seat, StackItem } from '../types.ts';
 import {
   allCardNames, card, getCard, registerAlias, registerSynthetic, unitRestrict,
   type EffectCtx, type EffectDef,
@@ -666,6 +666,14 @@ const wraithAllies = (g: E, ctx: EffectCtx): Entity[] => {
   return g.unitsOf(ctx.controller, self?.region ?? ctx.region);
 };
 
+/** R144: the same list, asked of a STACK ITEM instead of an EffectCtx — the
+ * deployment line is aimed in the stack window now, where there is no ctx yet.
+ * One rule, two callers; `item` carries the same three facts `ctx` does. */
+const wraithAlliesOf = (g: E, item: StackItem): Entity[] => {
+  const self = item.sourceId !== undefined ? g.entity(item.sourceId) : undefined;
+  return g.unitsOf(item.controller, self?.region ?? item.region);
+};
+
 /** `seat` picks one of `candidates` (auto-picked when there is only one).
  * NOT a target (no "target" printed): chosen here, at resolution. */
 const pickAlly = (
@@ -683,13 +691,41 @@ const pickAlly = (
 card('Wraith', {
   augmentText: [
     // "At the start of deployment, put a -1/-1 counter on an ally."
+    //
+    // R144(b), OWNER RULING (report #101, room SMVJ, 2026-08-24): *"All Wraith
+    // triggers should go onto the stack simultaneously and be allowed to
+    // target the same unit, even exceeding its defense (the final triggers
+    // would just fizzle)."* The ally is therefore chosen when the trigger goes
+    // ONTO THE STACK (`EffectDef.subject`), not inside the resolution — four
+    // Wraiths may all name one 3/3, the first three kill it and the fourth
+    // fizzles. While it was a `pickAlly` at resolution the fourth was aimed in
+    // a later world, was offered a menu the 3/3 was no longer on, and had to
+    // shrink one of your other units instead of doing nothing.
+    //
+    // ⚠ STILL NOT A TARGET — R71 is narrowed, not reversed. The word "target"
+    // is still not printed, so this fires no `'targeted'` event (Mohruung does
+    // not hand you a Crystal every deployment), cannot be redirected, and is
+    // invisible to every targeting restriction. See `EffectDef.subject` for
+    // what R144 grants and what it deliberately withholds.
+    //
+    // The DEATH line below is untouched and still picks at resolution: the
+    // owner's ruling is about the start-of-deployment pile, and "Augment a
+    // Wraith onto an ally" has no limit to exceed — a unit can carry any
+    // number of Wraith augments, so no pile of them can ever over-aim.
     {
       type: 'triggered', events: ['startOfDeployment'],
       label: 'put a -1/-1 counter on an ally',
       effect: {
+        subject: {
+          key: 'wraithShrink',
+          prompt: () => 'Wraith: put a -1/-1 counter on an ally',
+          candidates: (g, item) => wraithAlliesOf(g, item),
+        },
         run: (g, ctx) => {
-          const ally = pickAlly(g, ctx, 'wraithShrink', wraithAllies(g, ctx),
-            'Wraith: put a -1/-1 counter on an ally');
+          const ally = ctx.subject;
+          // `null` only — a subject that has LEFT PLAY never reaches a run:
+          // that part fizzled, and said so. This is the "there was no ally at
+          // all" case, which R71 rules is a no-op and not a fizzle.
           if (!ally) { g.ev('info', 'Wraith: there is no ally to put a -1/-1 counter on.'); return; }
           g.addCounters(ally, -1);
         },

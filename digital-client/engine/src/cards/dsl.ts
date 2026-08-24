@@ -199,6 +199,19 @@ export interface EffectCtx {
    * `undefined` on an effect that declares no `modes` at all.
    */
   mode?: unknown;
+  /**
+   * R144: the entity this effect was AIMED at, declared in the stack window
+   * (see `EffectDef.subject` and `EffectPart.subject`). Card code reads it and
+   * acts — it never asks, because the aim has been fixed since before the item
+   * reached the stack.
+   *
+   * `null` when there was nothing to aim at, which is a real outcome the `run`
+   * must announce ("there is no ally to put a counter on"), NOT a fizzle — the
+   * effect declared nothing, so it lost nothing. `undefined` on an effect that
+   * declares no `subject` at all. It is never a DEAD entity: a subject that
+   * left play fizzles the part before `run` is entered.
+   */
+  subject?: Entity | null;
   /** mid-resolution choice (R4 electric path, R6 payments). Returns the stored
    * answer or suspends the engine with a decision. Parts that use this must
    * request all choices before mutating state, or use plan-then-commit —
@@ -591,11 +604,61 @@ export interface ModeSpec {
   options: (g: E, item: StackItem, part: EffectPart) => { label: string; value: unknown }[];
 }
 
+/**
+ * R144 — a SUBJECT: the entity an untargeted effect is AIMED AT, declared in
+ * the stack window and read back at resolution as `ctx.subject`.
+ *
+ * THE PROBLEM IT SOLVES, in the owner's own words (report #101, room SMVJ):
+ * *"All Wraith triggers should go onto the stack simultaneously and be allowed
+ * to target the same unit, even exceeding its defense (the final triggers
+ * would just fizzle)."* Four Wraith triggers must be able to pile onto one
+ * 3/3; the first three kill it and the fourth fizzles. That is impossible
+ * while the ally is picked INSIDE the resolution, because by then the ally is
+ * dead and the menu is a menu of bystanders — the leftover triggers were
+ * forced onto your other units instead of doing nothing.
+ *
+ * ⚠ WHY THIS IS NOT JUST A `TargetSpec`. It would have been three lines
+ * instead of a seam, and it was the wrong answer. R71 rules that the Wraith's
+ * "an ally" is not a target, on the ground that the word *target* is not
+ * printed — and being a target is not one property, it is four:
+ *
+ *   1. it is chosen when the effect is declared, not when it resolves;
+ *   2. it can go stale, and losing every one of them fizzles the effect (R86);
+ *   3. it fires the `'targeted'` event — Mohruung creates a Crystal when it
+ *      "becomes targeted", and a Wraith counter is aimed at an ALLY, so every
+ *      deployment would have handed its controller a free Crystal;
+ *   4. it can be REDIRECTED into a slot (R58/`canFillSlot`) and is subject to
+ *      "must be targeted if able" compulsion.
+ *
+ * R144 grants **1 and 2**, which is exactly what the owner asked for, and
+ * withholds **3 and 4**, which he did not. A subject fires no event, cannot be
+ * redirected, compels nothing, and is invisible to every targeting
+ * restriction in the pool.
+ *
+ * `candidates` is asked ONCE, in the stack window, and is never re-asked at
+ * resolution — R5/R56, the same rule a `TargetSpec.restrict` obeys. Fewer than
+ * two candidates is not a question: `E.collectSubjects` records the single
+ * entity (or `null` for none) without asking, which is what keeps
+ * `EffectPart.subject`'s presence a sound idempotence guard, and what keeps a
+ * lone Wraith from being asked which of its one ally it means.
+ */
+export interface SubjectSpec {
+  /** a name for the choice, for logs and for the ledger — 'ally', 'subject', … */
+  key: string;
+  prompt: (g: E, item: StackItem, part: EffectPart) => string;
+  /** every entity this effect may legally be aimed at, right now */
+  candidates: (g: E, item: StackItem, part: EffectPart) => Entity[];
+}
+
 export interface EffectDef {
   targets?: TargetSpec;
   /** R57: this effect is MODAL — the caster declares which half in the cast
    * window, and `run` reads the answer back as `ctx.mode` (see ModeSpec). */
   modes?: ModeSpec;
+  /** R144: this effect is AIMED at one entity without targeting it — declared
+   * in the stack window, read back as `ctx.subject`, and FIZZLES if what it
+   * was aimed at has left play by the time it resolves (see SubjectSpec). */
+  subject?: SubjectSpec;
   /** cast-time additional cost (R35). On a spell: paying is part of casting —
    * with nothing to pay the cast is illegal. On a graft part joining a
    * composite: the carrier's controller pays (or declines — the rider is then

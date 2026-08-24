@@ -641,6 +641,30 @@ export interface EffectPart {
    * is raised before the thing it is about exists.
    */
   mode?: unknown;
+  /**
+   * R144 — the entity this part is AIMED AT, declared in the stack window and
+   * read back at resolution as `ctx.subject`. A SUBJECT, deliberately not a
+   * target (see `EffectDef.subject` in cards/dsl.ts for what that distinction
+   * buys and what it refuses).
+   *
+   * Three states, and the difference between the last two is the whole ruling:
+   *  · `undefined` — not collected yet, or this part declares no subject at
+   *    all. Its absence is the idempotence guard, exactly like `mode`'s
+   *    presence is: `collectTargets` re-runs from the top after every answered
+   *    decision and must not ask twice.
+   *  · `null` — collected, and there was NOTHING to aim at. The part declared
+   *    nothing, so it has nothing to lose: it resolves and its `run` says so
+   *    (R71's "with no ally it simply does nothing — it cannot fizzle").
+   *  · an `EntityId` — aimed. If that entity is gone by the time the part
+   *    resolves, the part is lost and the item FIZZLES, which is what the
+   *    owner asked for: several triggers may all be aimed at one unit and the
+   *    ones that outlive it fizzle rather than being re-aimed at a bystander.
+   *
+   * ON THE PART, not the item, for the same reason `mode` and `costPaid` are:
+   * a graft composite can carry several subject-bearing parts, and `part` is
+   * what an R85 suspension carries across the round trip.
+   */
+  subject?: EntityId | null;
 }
 
 /**
@@ -887,8 +911,13 @@ export type Suspension =
        * cast window, and the answer rides on the item as `formationSpot`.
        * 'mode' (R57): WHICH HALF of a modal effect ("[… or …]"), answered
        * onto `parts[partIndex].mode` — declared before the item reaches the
-       * stack so the opponent can see what they are responding to. */
-      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation' | 'mode';
+       * stack so the opponent can see what they are responding to.
+       * 'subject' (R144): WHICH ENTITY an untargeted effect is aimed at
+       * ("put a -1/-1 counter on an ally"), answered onto
+       * `parts[partIndex].subject`. Same window and same reason as 'mode' —
+       * the aim is part of declaring the effect — but it can go STALE, and a
+       * part whose subject has left play fizzles. */
+      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation' | 'mode' | 'subject';
     }
   | {
       /** ordering simultaneous triggers for one seat (R2) */
