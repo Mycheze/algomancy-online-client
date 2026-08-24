@@ -1366,9 +1366,17 @@ export const LEDGER: LedgerEntry[] = [
   {
     id: 88, room: 'XVUR', date: '2026-08-23',
     report: "Flux Resonator isn't working with my Robot tokens.",
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '27-metal-b.test.ts::Flux Resonator: an allied Robot spawns with one more counter (report #88)',
+      '27-metal-b.test.ts::Flux Resonator: a Robot 2 enters as a 3/3, not a 4/4',
+      '27-metal-b.test.ts::Flux Resonator: two allied Resonators give a spawn X plus TWO',
+      '27-metal-b.test.ts::Flux Resonator: an ENEMY Resonator adds nothing',
+      '27-metal-b.test.ts::Flux Resonator: a token that spawns with NO counters gets none',
+    ],
     note:
-      'CONFIRMED and root-caused; fix in flight. The Robot token prints "I spawn with X +1/+1 '
+      'FIXED: spawn counters now go through the R104 amount layer at the single site where '
+      + 'spawnUnit sets them, exactly as addCounters does. The Robot token prints "I spawn with X +1/+1 '
       + 'counters on me", and Caleb has ruled the Resonator applies to that placement twice over '
       + '(2025-03-21: tokens created under it "enter play with a +1/+1 counter" — "Yep"; '
       + '2025-05-30: "it\'s just X+1, so it happens to double a 1/1 but a 2/2 robot would spawn '

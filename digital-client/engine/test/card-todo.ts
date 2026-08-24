@@ -1464,7 +1464,20 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'Spawn a Robot 1 with an allied Flux Resonator in the region: while the bug is live it '
       + 'enters as a 1/1 with 1 counter; fixed, a 2/2 with 2.',
+    // DONE 2026-08-24, exactly per `fix`: the fold sits at spawnUnit's single
+    // counters site (positive spawns only), the spawn line and 'spawned' event
+    // carry the final number, the token batch records the pre-mod REQUEST so a
+    // batch copy replays the creation, and replaceCounters is deliberately not
+    // consulted (unsourced). Red-checked: the first three guards fail with the
+    // fold removed; the last two pin non-application (enemy / counterless).
+    guards: [
+      '27-metal-b.test.ts::Flux Resonator: an allied Robot spawns with one more counter',
+      '27-metal-b.test.ts::Flux Resonator: a Robot 2 enters as a 3/3, not a 4/4',
+      '27-metal-b.test.ts::Flux Resonator: two allied Resonators give a spawn X plus TWO',
+      '27-metal-b.test.ts::Flux Resonator: an ENEMY Resonator adds nothing',
+      '27-metal-b.test.ts::Flux Resonator: a token that spawns with NO counters gets none',
+    ],
     reportId: 88,
-    status: 'open',
+    status: 'done',
   },
 ];
