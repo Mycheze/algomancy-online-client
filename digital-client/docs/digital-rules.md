@@ -5938,8 +5938,8 @@ the **back-most living unit** — one of the legal splits under the elective rul
 the one the rulebook itself describes. {Piercing} is still the exception: its leftover is
 returned to the caller and hits the face instead.
 
-The **player-elective** split is a separate, unbuilt feature; there is no decision point in
-combat today, and the engine auto-assigns the split described above. Two neighbouring
+The **player-elective** split shipped later as **R120**: when a strike carries a real choice
+the dealing side is asked, and the split above is the one-click default. Two neighbouring
 behaviours are deliberately unchanged: a column whose blockers all died still drops its
 non-Piercing power (R72/R13 — there is no unit left to deal it to), and a {Vulnerable}
 back-row unit receives *double* the leftover, because the leftover is source-side pool.
@@ -6416,3 +6416,73 @@ card-side); it does not carry into the next turn; applying a mod still does not
 burn it with the Drone gone (R37); plus the five pre-existing Deferral Drone
 tests unchanged, including the donated-augment R59 case and a JSON round-trip
 that also loads a pre-R119 state with the field absent.
+
+---
+
+## R120 — the ELECTIVE combat-damage split: the dealing side is ASKED
+
+*(The deferred half of R114 / playtest report #84, built 2026-08-24. The ruling was already
+on the books; this is the engine catching up to it.)*
+
+### The line
+
+> "Each player is allowed to split the damage however they want, actually. It's actually
+> legal to do ALL the damage to the front unit and none to the back one, even if there is
+> enough to kill them both. The only rule is that the front unit must be assigned lethal
+> damage before assigning any to the back unit."
+
+R114 recorded the ruling and shipped only the auto-split, marked as deferred. The standing
+project rule — **the engine must never decide for the player** — is what this closes: with
+two living victims and more pool than the front unit's share, *which* legal split lands was
+the engine's choice, not the controller's.
+
+### What the engine does
+
+At the top of every combat-damage sub-step, **before the ledger exists and before any event
+is emitted**, `E.collectAssignPlans` walks the columns exactly as the assignment will
+(`exchangeAt` is the shared derivation — same alive-filters, same {Pure}/{Unaware}
+handling, same Powerful-doubled pool) and raises a decision for every strike whose split is
+a *real* choice:
+
+* **≥ 2 living victims**, and
+* **pool > the front unit's pass-along share** (`victimShare`: lethal need, halved and
+  rounded up under {Vulnerable}, 1 under {Deadly}, printed defense in an {Unaware}
+  exchange), and
+* **no {Piercing}** — its overflow is automatic, never elective (the ruling's own
+  exception; the overflow keeps hitting the face untouched, and there is nothing left over
+  to elect once every share is paid).
+
+The decision (`kind: 'assignDamage'`, suspension `'combatAssign'`) belongs to the side
+**dealing** the column's damage — the attacker over the blocking column, the defender over
+the attacking column; both directions multi-assign. It is **iterative**: one victim at a
+time, front-to-back, "how much of the remaining N to this unit?", offering exactly the
+legal amounts `[share .. remaining]` — an amount below the front's lethal is never *shown*
+while anything would go behind it (the R64 doctrine: illegal options are unoffered, not
+refused). Forced steps — the last living victim, or a remainder within the next share —
+are auto-filled, so a two-unit column asks exactly one question. The whole pool is always
+assigned: the ruling deals ALL damage to units.
+
+The **first** question leads with `default — share front-to-back (…)`: one click reproduces
+the pre-R120 auto-split byte for byte and skips the walk. Fast play stays fast; the choice
+is still the player's. `forcedAction` never answers it (it returns null under any pending
+decision), and `finishBattle`/`assignDefault` in the test rig click the default explicitly.
+
+### Mechanics worth naming
+
+* Answers accumulate in `BattleState.assignPlans` (`{ picks, def? }` per strike key
+  `${sub}:atk|blk:${colIdx}`); the suspension is raised before anything mutates, so the
+  sub-step **re-enters from scratch** per answer — the processTriggerQueue discipline, which
+  is what makes a JSON round-trip mid-election load and drive. Plans are consumed by the
+  sub-step's assignment and cleared with it (R72: `ci` is only an identity for the
+  sub-step's length). Pre-R120 states simply have no `assignPlans` — read as "no elections",
+  which is right.
+* An elected split enters `assignColumnDamage` as a `plan` and short-circuits only the
+  *walk*: everything downstream of "unit U is assigned K" — {Deadly} marks, {Afflicting}
+  buckets, {Blessed}, {Poisonous}/{Resonant}, R98 prevention, {Vulnerable}'s receive-side
+  doubling, R114 dealing-in-full — is the same `give()` either way.
+* Amounts are SOURCE-side pool points, so a {Vulnerable} victim still receives double what
+  was elected onto it, exactly as the leftover behaved before.
+
+Tests: `100-elective-assign` (asked/overkill-front, default = pinned pre-R120 numbers,
+floors-only menus, silent trivial combats, {Deadly} floors, {Piercing} silent + unchanged
+overflow beside an election, mid-election JSON round-trips, block-side election).

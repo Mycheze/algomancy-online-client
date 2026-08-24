@@ -461,7 +461,21 @@ export interface BattleState {
    * riders like Flowstone Arcanite land before normal damage. Survives
    * suspension: settle() resumes the pump once decisions drain. */
   damageStep?: 'Swift' | 'normal' | 'Sluggish' | 'after' | null;
+  /** R120 (elective split): per-strike assignment plans for the sub-step
+   * currently collecting or assigning, keyed `${sub}:atk|blk:${colIdx}`.
+   * Filled one `decide` at a time while the pump is suspended (see the
+   * 'combatAssign' suspension); consumed by the sub-step's assignment and
+   * cleared before its commit. Absent in every state saved before R120 —
+   * and in any combat with no real split choice — which reads as "no
+   * elections recorded": exactly right for both. */
+  assignPlans?: Record<string, AssignPlan> | null;
 }
+
+/** R120: one strike's recorded elective-split answers. `picks` are the chosen
+ * pool amounts in ask order (front-to-back over the victims that carried a
+ * real choice — with two-unit columns that is only ever the front); `def`
+ * short-circuits the walk with the default front-to-back share instead. */
+export interface AssignPlan { picks: number[]; def?: boolean }
 
 // ── the stack ─────────────────────────────────────────────────────────
 
@@ -770,7 +784,8 @@ export type DecisionKind =
   | 'orderTriggers'  // order your simultaneous triggers (R2)
   | 'electricPath'   // choose next unit for electric excess (R4)
   | 'payOrDecline'   // "unless its controller pays [x]" (R6)
-  | 'mode';          // which half of a modal effect (R57, EffectPart.mode)
+  | 'mode'           // which half of a modal effect (R57, EffectPart.mode)
+  | 'assignDamage';  // R120: elective combat-damage split over a column's victims
   // (graft insert position rides on the graft ACTION itself, not a decision)
 
 export interface DecisionOption {
@@ -829,6 +844,20 @@ export type Suspension =
       /** ordering simultaneous triggers for one seat (R2) */
       type: 'orderTriggers';
       seat: Seat;
+    }
+  | {
+      /** R120: collecting one striking column's ELECTIVE damage split, one
+       * victim at a time, before the sub-step assigns anything. `key` names
+       * the strike (`${sub}:atk:${ci}` / `${sub}:blk:${ci}`) in
+       * `BattleState.assignPlans`; the `decide` answer lands there and the
+       * damage pump re-runs the collection pass, which either asks about the
+       * next victim or finds every plan complete and lets the sub-step
+       * assign. Same discipline as 'orderTriggers': the suspension is raised
+       * BEFORE anything is mutated, so the replay is a from-scratch re-entry,
+       * not a rollback. */
+      type: 'combatAssign';
+      seat: Seat;
+      key: string;
     }
   | {
       /** mid-resolution choice (R4 electric, R6 payments): replay item.parts[partIndex]

@@ -106,6 +106,13 @@ export function finishBattle(h: Harness): void {
     const b = h.state.battle!;
     const dec = h.state.decision;
     if (dec) {
+      // R120: an elective-split question is answered with its first option —
+      // the one-click default front-to-back share, i.e. exactly the split the
+      // engine used to auto-assign before the election existed
+      if (dec.kind === 'assignDamage') {
+        h.do({ type: 'decide', seat: dec.seat, choice: 0 });
+        continue;
+      }
       if (dec.kind !== 'orderTriggers') throw new Error('unexpected decision during finishBattle');
       h.do({ type: 'decide', seat: dec.seat, choice: dec.options.map((_, i) => i) });
       continue;
@@ -115,6 +122,17 @@ export function finishBattle(h: Harness): void {
     else pass(h);
   }
   if (guard <= 0) throw new Error('finishBattle did not terminate');
+}
+
+/** R120: answer every pending elective combat-split question with its FIRST
+ * option — on the first ask of a strike that is "default: share front-to-back",
+ * the exact split the engine auto-assigned before the election existed. Tests
+ * whose board raises the election but whose subject is something else call
+ * this after the pass into combat damage; their numbers are unchanged. */
+export function assignDefault(h: Harness): void {
+  while (h.state.decision?.kind === 'assignDamage') {
+    h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+  }
 }
 
 export function effStats(h: Harness, id: EntityId): [number, number] {

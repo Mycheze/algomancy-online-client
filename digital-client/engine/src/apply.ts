@@ -1808,6 +1808,26 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     return;
   }
 
+  if (sus.type === 'combatAssign') {
+    // R120: one elected amount (or the default-split shortcut) for one strike
+    // of the current damage sub-step. Recorded onto the battle state; settle()
+    // re-runs the damage pump, whose collection pass either asks about the
+    // next victim or, with every plan complete, lets the sub-step assign.
+    // NOTE `forcedAction` can never answer this: it returns null whenever a
+    // decision is pending, so the election is always the player's own click —
+    // the engine never decides for the player.
+    e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
+    const val = dec.options[choice]!.value;
+    const b = e.s.battle;
+    e.need(!!b && !!b.damageStep, 'no combat damage in progress');
+    const plans = (b!.assignPlans ??= {});
+    const plan = (plans[sus.key] ??= { picks: [] });
+    if (val === 'default') plan.def = true;
+    else plan.picks.push(val as number);
+    e.settle();
+    return;
+  }
+
   // sus.type === 'resolve': fill the answer and replay the part.
   // R85: the rollback to the part boundary happens HERE, not when the part
   // suspended — so the board everybody was looking at while this question was

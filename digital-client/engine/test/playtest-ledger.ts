@@ -1250,6 +1250,8 @@ export const LEDGER: LedgerEntry[] = [
       '05-rulings.test.ts::R114: {Piercing} is still the exception — excess goes to the controller, not the unit',
       "38-light-a.test.ts::Vroot: a blocked column pays out its whole power, not the blocker",
       '82-attr-interactions.test.ts::combat and effect damage agree on how much was dealt',
+      '100-elective-assign.test.ts::R120 (a): the ATTACKER is asked, and ALL 4 onto the front 1/1 leaves the back one untouched',
+      '100-elective-assign.test.ts::R120 (b): the FIRST option is the default split, and one click reproduces the pre-R120 numbers exactly',
     ],
     note:
       'One line: `assignColumnDamage` used `poolNeed` — LETHAL NEED — as a CAP on damage dealt '
@@ -1268,9 +1270,12 @@ export const LEDGER: LedgerEntry[] = [
       + 'to the front unit and none to the back one, even if there is enough to kill them both. '
       + 'The only rule is that the front unit must be assigned lethal damage before assigning any '
       + 'to the back unit." The engine now auto-assigns ONE legal split (shares front-to-back, '
-      + 'leftover on the back-most living unit). The player-elective mode — and the "full '
-      + 'control" affordance he asked for alongside it — is scoped and deferred by his own '
-      + 'decision. Nothing here forecloses it.',
+      + 'leftover on the back-most living unit). '
+      + '2026-08-24: the deferred player-elective mode SHIPPED as R120 — when a strike has ≥2 '
+      + 'living victims and more pool than the front unit\'s lethal share, the dealing side is '
+      + 'asked (both directions), with the pre-R120 auto-split as the one-click first option; '
+      + 'trivial combats and {Piercing} strikes keep the silent path. 100-elective-assign.test.ts '
+      + 'is the fence.',
   },
   {
     id: 85, room: 'EGCW', date: '2026-08-23',

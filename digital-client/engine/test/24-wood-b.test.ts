@@ -19,7 +19,7 @@ import { E, Suspended } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import type { Seat } from '../src/types.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
+  assignDefault, effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -343,6 +343,9 @@ test('Phytochemical Protection: a 2-power {Deadly} column into a shielded 7/3 pa
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
   pass(h); pass(h);
+  // R120: the 7-power BLOCK-side strike over the two 1/2s is now elective;
+  // this test is about the shield paying the Deadly floors, so take the default
+  assignDefault(h);
   assert.ok(ent(h, mine), 'nothing was dealt, so {Deadly} had nothing to kill through (R98)');
   assert.equal(ent(h, mine)!.counters, 2,
     'the whole 2-power column was assigned and prevented — 2 counters, not the 1 {Deadly} needs');

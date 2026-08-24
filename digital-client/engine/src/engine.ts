@@ -6825,8 +6825,17 @@ export class E {
    * where it does — and the ledger lives for exactly this sub-step. */
   private combatSubStep(sub: 'Swift' | 'normal' | 'Sluggish'): void {
     const b = this.s.battle!;
+    // R120: elective damage splits are asked for FIRST — before the ledger
+    // exists, before any event is emitted — so a suspension here leaves
+    // nothing half-done and the sub-step re-enters from scratch when the
+    // answer lands (settle() resumes the pump).
+    this.collectAssignPlans(b, sub);
     const L = this.newCombatLedger();
     this.assignCombatDamage(b, sub, L);
+    // R120: the plans were consumed by the assignment above, and they are
+    // meaningless outside their own sub-step (`ci` is only an identity for
+    // its length — R72), so they do not outlive it.
+    b.assignPlans = undefined;
     const shielded = this.commitUnitDamage(b, L);
     this.sweepDeadly(L, shielded);
     // R106 {Unaware}: an exchange collapsed to printed stats settles its own
@@ -6852,62 +6861,228 @@ export class E {
     };
   }
 
+  /** living members of a column, front-to-back — the one filter both the
+   * assignment walk and the R120 election planner read */
+  private aliveInCol(ids: EntityId[]): EntityId[] { return ids.filter(id => this.entity(id)); }
+
+  private colLabel(ids: EntityId[]): string {
+    return ids.map(id => this.entity(id)?.card ?? '?').join(' + ') || 'a column';
+  }
+
+  private colPower(ids: EntityId[], collapsed: boolean): number {
+    return ids.reduce((s, id) => {
+      const u = this.entity(id);
+      if (!u) return s;
+      const [p] = collapsed ? this.printedStats(u) : this.effStats(u);
+      return s + Math.max(0, p);
+    }, 0);
+  }
+
+  /** Powerful column: its whole combat output is doubled at the source, before
+   * lethal assignment and Piercing overflow (so a Powerful+Piercing column
+   * pierces the doubled amount). */
+  private dealtColPower(ids: EntityId[], attrs: Set<string>, collapsed: boolean): number {
+    return this.colPower(ids, collapsed) * (attrs.has('Powerful') ? 2 : 1);
+  }
+
+  /** One column pairing's shared derivation: who is alive on each side, R61
+   * {Pure}, the R106 {Unaware} collapse, and each side's post-Pure attribute
+   * set. Extracted (R120) so `assignCombatDamage` and the election planner
+   * `collectAssignPlans` read the SAME exchange and cannot drift — the
+   * planner prices floors with exactly the pools and attributes the
+   * assignment will use.
+   *
+   * R106 {Unaware}: `collapsed` is the whole exchange's flag, not one
+   * column's — if either side carries {Unaware}, BOTH sides deal and receive
+   * at their printed numbers ("it looks ONLY at what is the literal printed
+   * text on all cards 'involved'"). It is threaded exactly like `pure`, and
+   * for the same reason: it is a property of the pairing. Note it survives
+   * {Pure}: Pure switches the ATTRIBUTE layer off for the exchange (R61), and
+   * this is a stat layer — an Unaware unit's numbers are its printed numbers
+   * whether or not anyone is reading its attributes. `unaware` is
+   * column-shared, so a vanilla unit standing beside Bubb carries it into the
+   * exchange too. */
+  private exchangeAt(b: BattleState, ci: number): {
+    atk: EntityId[]; blk: EntityId[]; blockedEver: boolean;
+    pure: boolean; collapsed: boolean; atkAttrs: Set<string>; blkAttrs: Set<string>;
+  } {
+    const atk = this.aliveInCol(b.columns[ci] ?? []);
+    const blockedEver = b.blocks[ci] !== undefined;
+    const blk = blockedEver ? this.aliveInCol(b.blocks[ci]!) : [];
+    // R61 {Pure}: one Pure card in either column blinds the whole exchange
+    // to attributes — both sides', in both directions.
+    const pure = this.pure(atk, blk);
+    const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);
+    const collapsed = [...atk, ...blk].some(id => {
+      const u = this.entity(id);
+      return !!u && this.unaware(u);
+    });
+    return { atk, blk, blockedEver, pure, collapsed, atkAttrs: attrsOf(atk), blkAttrs: attrsOf(blk) };
+  }
+
+  /** R114: one victim's PASS-ALONG SHARE — the pool it must be assigned
+   * before any may walk on to the unit behind it, and NOT a ceiling on what
+   * it may be dealt. {Deadly}'s 1 is the same thing: a FLOOR on the share
+   * ("1 pool point suffices to kill"), so the rest is free to pass along; it
+   * never means a Deadly column only deals 1. A {Vulnerable} victim receives
+   * double, so half the pool is its share (rounded up — R23).
+   * R106: in an exchange collapsed by {Unaware} the victim is priced at the
+   * defense PRINTED on its card, so a Robot 7 needs 0 and a counter-laden
+   * 1/1 needs 1. The kill itself is `sweepCollapsedDeaths`, because a
+   * 0-defense victim is assigned nothing at all here.
+   * Shared by the assignment walk and the R120 election (floors AND option
+   * ranges) — one price, one place. `prevPool` is what this sub-step's ledger
+   * already assigned the victim (always 0 in practice: a unit stands in one
+   * column, so exactly one strike prices it per sub-step; the election walk
+   * relies on that and passes 0). */
+  private victimShare(u: Entity, prevPool: number, deadly: boolean, pure: boolean, collapsed: boolean): number {
+    const mult = (!pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
+    const [, t] = collapsed ? this.printedStats(u) : this.effStats(u);
+    const recvCap = Math.max(0, t - u.damage - prevPool * mult);   // received still needed to kill
+    let poolNeed = Math.ceil(recvCap / mult);
+    if (deadly && recvCap > 0) poolNeed = 1;
+    return poolNeed;
+  }
+
+  /** R120: the DEFAULT split, computed without a ledger — shares
+   * front-to-back, leftover on the back-most living unit. The same numbers
+   * `assignColumnDamage`'s no-plan walk produces (its `prev` is always 0 in
+   * combat), used only to label the one-click default option. */
+  private defaultSplitAmounts(living: Entity[], amount: number, deadly: boolean, pure: boolean, collapsed: boolean): number[] {
+    const out = living.map(() => 0);
+    let remaining = amount;
+    living.forEach((u, i) => {
+      if (remaining <= 0) return;
+      const a = Math.min(remaining, this.victimShare(u, 0, deadly, pure, collapsed));
+      out[i] = a; remaining -= a;
+    });
+    if (remaining > 0 && out.length) out[out.length - 1]! += remaining;
+    return out;
+  }
+
+  /** R120 — the ELECTIVE split (playtest ledger #84, the deferred half): "each
+   * player is allowed to split the damage however they want … The only rule is
+   * that the front unit must be assigned lethal damage before assigning any to
+   * the back unit."
+   *
+   * One walk, two modes. Both replay the strike's recorded plan
+   * (BattleState.assignPlans[key]) over the living victims front-to-back,
+   * auto-filling every FORCED step — the last living victim, or a remainder
+   * too small to unlock the unit behind it — and stopping at the first real
+   * question. With `ask` (the collection pass), an unanswered question
+   * suspends ('combatAssign' / 'assignDamage'). Without `ask` it returns the
+   * final per-victim pool amounts for `assignColumnDamage`, or undefined when
+   * the strike holds no election (the silent default path).
+   *
+   * NO election — today's silent path, on purpose:
+   *  - {Piercing}: its overflow is automatic, never elective (the ruling's
+   *    own exception; assignColumnDamage's docstring has said so all along).
+   *    Every victim gets exactly its share and the rest hits the face —
+   *    there is nothing left to elect.
+   *  - fewer than two living victims, or no pool.
+   *  - pool ≤ the front unit's share: every point is owed to the front, so
+   *    every split is forced.
+   *  - `def` recorded: the one-click default — undefined on purpose, so the
+   *    no-plan walk (the exact pre-R120 code path) produces the numbers.
+   *
+   * The options offered are exactly the LEGAL amounts [share .. remaining]:
+   * a front unit can never be given less than lethal while anything would go
+   * behind it — an illegal split is not refused, it is never shown (the same
+   * doctrine as R64 targeting). Choosing `remaining` is the reported elective
+   * case: ALL of it to the front, none behind, even past lethal. */
+  private electionWalk(b: BattleState, key: string, seat: Seat, ids: EntityId[], amount: number,
+    srcAttrs: Set<string>, pure: boolean, collapsed: boolean, label: string, ask: boolean): number[] | undefined {
+    if (srcAttrs.has('Piercing') || amount <= 0) return undefined;
+    const living = ids.map(id => this.entity(id)).filter((u): u is Entity => !!u);
+    if (living.length < 2) return undefined;
+    const deadly = srcAttrs.has('Deadly');
+    const needs = living.map(u => this.victimShare(u, 0, deadly, pure, collapsed));
+    if (amount <= needs[0]!) return undefined;
+    const plan = b.assignPlans?.[key];
+    if (plan?.def) return undefined;
+    const amounts = living.map(() => 0);
+    let remaining = amount, pi = 0;
+    for (let i = 0; i < living.length && remaining > 0; i++) {
+      const last = i === living.length - 1;
+      if (last || remaining <= needs[i]!) { amounts[i] = remaining; remaining = 0; break; }
+      if (pi < (plan?.picks.length ?? 0)) { amounts[i] = plan!.picks[pi++]!; remaining -= amounts[i]!; continue; }
+      // a real question is open for victim i
+      if (!ask) return undefined;   // unreachable in practice: collection completes before assignment runs
+      const u = living[i]!;
+      const options: DecisionOption[] = [];
+      if (i === 0) {
+        const def = this.defaultSplitAmounts(living, amount, deadly, pure, collapsed);
+        options.push({
+          label: `default — share front-to-back (${def.map((a, j) => `${a} to ${living[j]!.card}`).join(', ')})`,
+          value: 'default',
+        });
+      }
+      for (let a = needs[i]!; a <= remaining; a++) {
+        const tag = a === needs[i]! && a > 0 ? (deadly ? ' (the {Deadly} floor)' : ' (lethal)')
+          : a === remaining ? ' (everything)' : '';
+        options.push({ label: `${a} to ${u.card}${tag}`, value: a });
+      }
+      this.suspend({ type: 'combatAssign', seat, key }, {
+        seat, kind: 'assignDamage',
+        prompt: `${label}: assign combat damage — how much of ${remaining} to ${u.card}? `
+          + '(units in front must be assigned lethal before any goes behind them)',
+        options,
+      });
+    }
+    return amounts;
+  }
+
+  /** R120 — collection pass: raise every elective-split question for this
+   * sub-step, one victim at a time, BEFORE the ledger exists and before any
+   * event is emitted. `suspend` throws, and the sub-step re-enters from
+   * scratch once the answer lands (doDecide records it and settle() resumes
+   * the pump) — the same no-mutation-before-suspend discipline as
+   * processTriggerQueue's ordering decision, which is what makes the replay
+   * deterministic and a JSON round-trip mid-election drivable. The decision
+   * belongs to the side DEALING the column's damage: the attacker elects over
+   * the blocking column, the defender over the attacking column — BOTH
+   * directions multi-assign (a two-unit attacking column is a two-victim
+   * strike for its blockers), and both are walked here in the same order the
+   * assignment will read them. */
+  private collectAssignPlans(b: BattleState, sub: 'Swift' | 'normal' | 'Sluggish'): void {
+    b.columns.forEach((_col, ci) => {
+      const x = this.exchangeAt(b, ci);
+      if (x.atk.length && x.blk.length && this.scheduled(x.atk, sub, x.pure)) {
+        this.electionWalk(b, `${sub}:atk:${ci}`, b.attacker, x.blk,
+          this.dealtColPower(x.atk, x.atkAttrs, x.collapsed), x.atkAttrs, x.pure, x.collapsed,
+          this.colLabel(x.atk), true);
+      }
+      if (x.blk.length && x.atk.length && this.scheduled(x.blk, sub, x.pure)) {
+        this.electionWalk(b, `${sub}:blk:${ci}`, b.defender, x.atk,
+          this.dealtColPower(x.blk, x.blkAttrs, x.collapsed), x.blkAttrs, x.pure, x.collapsed,
+          this.colLabel(x.blk), true);
+      }
+    });
+  }
+
   /** ASSIGNMENT half: walk every column; each side that strikes in this
    * sub-step splits its (Powerful-doubled) power over the opposing column
    * front-to-back into the ledger, and whatever reaches a PLAYER — unblocked,
    * or Piercing overflow — is recorded as a per-column player hit. */
   private assignCombatDamage(b: BattleState, sub: 'Swift' | 'normal' | 'Sluggish', L: CombatLedger): void {
-    const alive = (ids: EntityId[]) => ids.filter(id => this.entity(id));
-    const colLabel = (ids: EntityId[]) => ids.map(id => this.entity(id)?.card ?? '?').join(' + ') || 'a column';
-    // R106 {Unaware}: `collapsed` is the whole exchange's flag, not this
-    // column's — if either side carries {Unaware}, BOTH sides deal and receive
-    // at their printed numbers ("it looks ONLY at what is the literal printed
-    // text on all cards 'involved'"). It is threaded exactly like `pure` one
-    // layer down, and for the same reason: it is a property of the pairing.
-    const colPower = (ids: EntityId[], collapsed: boolean) =>
-      ids.reduce((s, id) => {
-        const u = this.entity(id);
-        if (!u) return s;
-        const [p] = collapsed ? this.printedStats(u) : this.effStats(u);
-        return s + Math.max(0, p);
-      }, 0);
-    // Powerful column: its whole combat output is doubled at the source, before
-    // lethal assignment and Piercing overflow (so a Powerful+Piercing column
-    // pierces the doubled amount).
-    const dealtPower = (ids: EntityId[], attrs: Set<string>, collapsed: boolean) =>
-      colPower(ids, collapsed) * (attrs.has('Powerful') ? 2 : 1);
-
-    b.columns.forEach((atkCol, ci) => {
-      const atk = alive(atkCol);
-      const blockedEver = b.blocks[ci] !== undefined;
-      const blk = blockedEver ? alive(b.blocks[ci]!) : [];
-      // R61 {Pure}: one Pure card in either column blinds the whole exchange
-      // to attributes — both sides', in both directions.
-      const pure = this.pure(atk, blk);
-      const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);
-      // R106 {Unaware}: one Unaware card anywhere in either column collapses
-      // the whole exchange to printed stats. Note it survives {Pure}: Pure
-      // switches the ATTRIBUTE layer off for the exchange (R61), and this is a
-      // stat layer — an Unaware unit's numbers are its printed numbers whether
-      // or not anyone is reading its attributes. `unaware` is column-shared, so
-      // a vanilla unit standing beside Bubb carries it into the exchange too.
-      const collapsed = [...atk, ...blk].some(id => {
-        const u = this.entity(id);
-        return !!u && this.unaware(u);
-      });
+    b.columns.forEach((_atkCol, ci) => {
+      // the shared derivation (alive sides, {Pure}, the {Unaware} collapse,
+      // attrs, column power) lives in exchangeAt / dealtColPower so the R120
+      // election planner prices EXACTLY what is assigned here
+      const { atk, blk, blockedEver, pure, collapsed, atkAttrs, blkAttrs } = this.exchangeAt(b, ci);
       if (collapsed) for (const id of [...atk, ...blk]) L.collapsed.add(id);
       // attacker side
       if (atk.length && this.scheduled(atk, sub, pure)) {
-        const atkAttrs = attrsOf(atk);
-        const pow = dealtPower(atk, atkAttrs, collapsed);
+        const pow = this.dealtColPower(atk, atkAttrs, collapsed);
         // R72: `ci` is only an identity for the length of THIS sub-step. The
         // key is a local bucket label for the afflicting diff below and is
         // never stored, because the formation may collapse (and every index
         // move) before the next sub-step runs.
-        const src = { dealer: b.attacker, key: `atk:${ci}`, label: colLabel(atk) };
+        const src = { dealer: b.attacker, key: `atk:${ci}`, label: this.colLabel(atk) };
         let toPlayer = 0;
         if (blk.length) {
-          const left = this.assignColumnDamage(L, blk, pow, atkAttrs, src, pure, collapsed);
+          const left = this.assignColumnDamage(L, blk, pow, atkAttrs, src, pure, collapsed,
+            this.electionWalk(b, `${sub}:atk:${ci}`, b.attacker, blk, pow, atkAttrs, pure, collapsed, src.label, false));
           if (atkAttrs.has('Piercing')) toPlayer = left;
         } else if (blockedEver) {
           // blocked stays blocked: only Piercing carries through dead blockers
@@ -6923,7 +7098,6 @@ export class E {
       }
       // blocker side
       if (blk.length && this.scheduled(blk, sub, pure)) {
-        const blkAttrs = attrsOf(blk);
         // R72 (Bena 2026-08-21): a blocking column whose attackers are all
         // dead "has nothing to deal damage to, so it doesn't deal damage" —
         // and that INCLUDES Piercing. Piercing is the excess left over after
@@ -6939,15 +7113,17 @@ export class E {
         // Piercing ATTACKER still gets through a dead block. There the attack
         // is still real; here it is the attack that is gone.
         if (!atk.length) {
-          const pow = dealtPower(blk, blkAttrs, collapsed);
+          const pow = this.dealtColPower(blk, blkAttrs, collapsed);
           if (pow > 0) {
             this.ev('info',
               `Column ${ci + 1} has no attackers left — its blockers have nothing to fight.`,
               { region: b.region });
           }
         } else {
-          const src = { dealer: b.defender, key: `blk:${ci}`, label: colLabel(blk) };
-          const left = this.assignColumnDamage(L, atk, dealtPower(blk, blkAttrs, collapsed), blkAttrs, src, pure, collapsed);
+          const src = { dealer: b.defender, key: `blk:${ci}`, label: this.colLabel(blk) };
+          const blkPow = this.dealtColPower(blk, blkAttrs, collapsed);
+          const left = this.assignColumnDamage(L, atk, blkPow, blkAttrs, src, pure, collapsed,
+            this.electionWalk(b, `${sub}:blk:${ci}`, b.defender, atk, blkPow, blkAttrs, pure, collapsed, src.label, false));
           if (blkAttrs.has('Piercing') && left > 0) {
             L.playerHits.push({ seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label, pure });
             if (blkAttrs.has('Thieving')) L.thievingDraw[b.defender] = (L.thievingDraw[b.defender] ?? 0) + 1;
@@ -6957,9 +7133,10 @@ export class E {
     });
   }
 
-  /** front-to-back assignment (R7: the controller's split is elective, and
-   * this is the default auto-assignment for now; piercing overflow is
-   * automatic, never elective). Each victim in turn takes its PASS-ALONG
+  /** front-to-back assignment (R7: the controller's split is elective —
+   * `plan` is R120's elected split when the controller recorded one, and the
+   * walk below is the DEFAULT; piercing overflow is automatic, never
+   * elective). In the default walk each victim in turn takes its PASS-ALONG
    * SHARE — the pool that would kill it — and whatever is left over walks on;
    * R114 lands the final leftover on the back-most living unit instead of
    * dropping it. Returns that leftover only for {Piercing} (see the R114 note
@@ -6968,7 +7145,8 @@ export class E {
    * SHARE is 1 (R21) — a floor on what passes along, never a cap on what is
    * dealt. */
   private assignColumnDamage(L: CombatLedger, ids: EntityId[], amount: number, srcAttrs: Set<string>,
-    src: { dealer: Seat; key: string; label: string }, pure = false, collapsed = false): number {
+    src: { dealer: Seat; key: string; label: string }, pure = false, collapsed = false,
+    plan?: number[]): number {
     const deadly = srcAttrs.has('Deadly');
     const poisonous = srcAttrs.has('Poisonous');
     const resonant = srcAttrs.has('Resonant');
@@ -6996,24 +7174,30 @@ export class E {
       }
     };
     let remaining = amount;
+    if (plan) {
+      // R120: the controller's ELECTED split, collected by collectAssignPlans
+      // before this sub-step touched anything. The floors — every unit in
+      // front assigned its pass-along share before anything goes behind it —
+      // were enforced when the options were offered (electionWalk never shows
+      // an illegal amount), so nothing is re-checked here. Everything
+      // downstream of "unit U is assigned K" goes through the same give():
+      // Deadly marks, Afflicting buckets, Blessed, Poisonous/Resonant, R98
+      // prevention and Vulnerable's receive-side doubling are identical
+      // between the elected and the default path. A plan always assigns the
+      // whole pool — the ruling deals ALL damage to units — and is never
+      // built for a {Piercing} strike, so there is no leftover to return.
+      const living = ids.filter(id => this.entity(id));
+      plan.forEach((a, i) => { if (a > 0 && living[i] !== undefined) give(living[i]!, a); });
+      return 0;
+    }
     for (const id of ids) {
       const u = this.entity(id);
       if (!u || remaining <= 0) continue;
-      const mult = (!pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
       const prev = L.perUnit.get(id)?.pool ?? 0;
-      // R106: in an exchange collapsed by {Unaware} the victim is priced at the
-      // defense PRINTED on its card, so a Robot 7 needs 0 and a counter-laden
-      // 1/1 needs 1. The kill itself is `sweepCollapsedDeaths`, because a
-      // 0-defense victim is assigned nothing at all here.
-      const [, t] = collapsed ? this.printedStats(u) : this.effStats(u);
-      const recvCap = Math.max(0, t - u.damage - prev * mult);   // received still needed to kill
-      // R114: `poolNeed` is this victim's PASS-ALONG SHARE — the pool it must
-      // be assigned before any may walk on to the unit behind it — and NOT a
-      // ceiling on what it may be dealt. {Deadly}'s 1 is the same thing: a
-      // FLOOR on the share ("1 pool point suffices to kill"), so the rest is
-      // free to pass along; it never means a Deadly column only deals 1.
-      let poolNeed = Math.ceil(recvCap / mult);
-      if (deadly && recvCap > 0) poolNeed = 1;
+      // the R114 pass-along share / {Deadly} floor / R106 printed-defense
+      // pricing all live in victimShare — shared with the R120 election so
+      // the floors it offers are the shares this walk pays
+      const poolNeed = this.victimShare(u, prev, deadly, pure, collapsed);
       const a = Math.min(remaining, poolNeed);
       if (a > 0) give(id, a);
       remaining -= a;
@@ -7028,8 +7212,9 @@ export class E {
     // DEFAULT auto-assignment, and it picks the legal split the rulebook
     // describes ("excess damage beyond the health of the back row unit"): the
     // leftover lands on the back-most living unit rather than evaporating.
-    // A player-elective mode is a separate feature; there is no decision point
-    // here on purpose.
+    // The player-elective mode is R120 (`collectAssignPlans` / `electionWalk`):
+    // an elected split arrives as `plan` and short-circuits this walk; with no
+    // real choice, or the one-click default, THIS remains the split.
     //
     // DELIBERATELY UNCHANGED, so the next reader does not "fix" them:
     //  - {Piercing} still returns `remaining` and the caller sends it to the

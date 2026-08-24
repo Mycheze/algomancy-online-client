@@ -7,7 +7,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { getCard, registerSynthetic } from '../src/cards/dsl.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick, spawn,
+  assignDefault, effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick, spawn,
   toDeployment, toNextBattle,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
@@ -252,6 +252,9 @@ test("R114: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt", () 
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [fat] } });
   pass(h); pass(h);
+  // R120: the 7-power BLOCK-side strike over the two 1/2s is now elective;
+  // this test is about the attacker's {Deadly} floor, so take the default
+  assignDefault(h);
   assert.deepEqual(damageTo(h, fat), [2],
     'the whole 2-power column was dealt, not the 1 {Deadly} needed');
   assert.ok(!ent(h, fat), 'and the 7/3 still died to {Deadly}');
