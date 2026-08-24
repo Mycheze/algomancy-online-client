@@ -83,9 +83,14 @@ function namedCounts(): Map<string, number> {
     if (SWEEPS[f.slice(0, 2)]) continue;
     const src = fs.readFileSync(path.join(HERE, f), 'utf8');
     for (const name of counts.keys()) {
-      // both quote styles: `card("Blight's End", …)` is written with doubles
+      // both quote styles: `card("Blight's End", …)` is written with doubles.
+      // Title-style mentions count too (`test('Name: what it does', …)`) —
+      // exact-quote-only counting put 97 cards in the "named once" band on
+      // 2026-08-24, and a full audit of all 97 found 96 of them already
+      // carried real behavior tests whose TITLES named the card: the band was
+      // measuring the regex, not the coverage.
       const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const n = (src.match(new RegExp(`(['"])${esc}\\1`, 'g')) ?? []).length;
+      const n = (src.match(new RegExp(`(['"])${esc}(?:\\1|: )`, 'g')) ?? []).length;
       if (n) counts.set(name, counts.get(name)! + n);
     }
   }
@@ -119,12 +124,14 @@ test('the pool coverage census — printed on every run so CARD-TODO #9 cannot r
   // The bar is that the WEAK band does not grow. Adding cards is fine; adding
   // cards nobody writes a test for is the thing this catches. Absolute, not a
   // percentage, so a bigger pool cannot dilute it.
-  assert.ok(once.length + never.length <= 120,
+  assert.ok(once.length + never.length <= 8,
     `${once.length + never.length} cards have at most one human-written mention `
-    + `(${never.length} have none). That population was 131 at the start of this round and `
-    + '118 after it — the floor is set just above the real number ON PURPOSE, so the next '
-    + 'card added without a test of its own trips it. A registration smoke check passes for '
-    + 'a card whose rules text does nothing at all, which is the whole of CARD-TODO #9.');
+    + `(${never.length} have none). Measured 1 (Slink, whose {Thieving} is pinned through `
+    + 'it in 09-attrs) on 2026-08-24, after the CARD-TODO #9 audit of the whole band and '
+    + 'title-aware counting — the floor is set just above the real number ON PURPOSE, so '
+    + 'the next card added without a test of its own trips it. A registration smoke check '
+    + 'passes for a card whose rules text does nothing at all, which is the whole of '
+    + 'CARD-TODO #9.');
 });
 
 // ── CARD-TODO #21: bounded+zone has a real budget holder now (R124) ──────

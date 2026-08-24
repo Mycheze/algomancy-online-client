@@ -571,11 +571,26 @@ export const CARD_TODO: TodoEntry[] = [
       + 'the "named exactly once" band is small AND the cards in it are ones whose printed '
       + 'text genuinely needs no more than a body check (vanilla bodies, pure attribute '
       + 'cards) rather than ones nobody has got to yet.',
+    // DONE 2026-08-24: the whole 97-card "named exactly once" band was
+    // audited card-by-card by five parallel agents (combat triggers /
+    // lifecycle watchers / play-watchers / spells / statics). 96 of 97
+    // already carried real behavior tests — the band was an artifact of the
+    // census counting only EXACT-quoted names, so a thorough test titled
+    // 'Name: what it does' plus one spawn('Name') call scored as "named
+    // once". The census now counts title-style mentions too, and the honest
+    // band is 1: Slink, a vanilla body whose {Thieving} is pinned through it
+    // in 09-attrs — exactly the "needs no more than a body check" close
+    // condition this entry set. The audit also closed the real holes it
+    // found: Recyclable Sentinel's death-branch payout (104), Rotspore
+    // Herald on effect damage (107), ten R37/token-gate/bin-play negatives
+    // (105), and Wraith's start-of-deployment shrink (101, via #23). The
+    // floor is 8 (just above 1), so the next card added without a test of
+    // its own still trips the census.
     guards: [
       '90-coverage-census.test.ts::the pool coverage census',
       '90-coverage-census.test.ts::every excluded sweep file still exists',
     ],
-    status: 'open',
+    status: 'done',
   },
   // ── UNANSWERED OWNER REPORTS ──────────────────────────────────────────
   // Owner reports that were `live` in playtest-ledger.ts when this list was
