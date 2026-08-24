@@ -22,7 +22,7 @@ import {
   castProbe, costReceipt,
   dismissSeenCard, dismissSeenHand, erasedPileView, waitingNote, watchCast,
   findCardName, groupReveal, growCardLedger, linkCardNames, namesInEvents, namesInState,
-  onlyKnownNames, partitionOptions, partText, playableCachedNames,
+  onlyKnownNames, optionPingId, partitionOptions, partText, playableCachedNames,
   seenHandView, shouldAutoYield, stackAbilityRows, stackItemModes, stackItemX, stackXMark, switchClause,
   prismiteClickPlan, resourceMenuElements,
   tokensCreatedBy, tokensNamedIn, transformFaces,
@@ -962,6 +962,33 @@ test('every shape of decline lands in the decline bucket', () => {
   }
   // …and an affirmative that happens to be an object does NOT
   assert.deepEqual(partitionOptions([{ label: 'pay', value: { payCost: true } }]).plain, [0]);
+});
+
+/* ── BL-24: which option values ping a board unit ────────────────────────── */
+
+test('optionPingId: only R4 electric-path numbers are entity ids — a formation-slot index pings NOTHING', () => {
+  // R4's electric path really does put raw entity ids in its option values —
+  // that contract keeps its ping
+  assert.equal(optionPingId(7, 'electricPath'), 7);
+  // BL-24: R75's slot options are slot INDEXES 0..n-1. While the ask rode
+  // kind 'electricPath', "column 1, behind Hooba-Bot" (value 1) pinged and
+  // previewed whichever unit happened to own entity id 1. Under its own kind
+  // a bare number names no entity.
+  assert.equal(optionPingId(1, 'formationSlot'), null);
+  // …and neither does a number under any other kind (X amounts, hand indexes)
+  assert.equal(optionPingId(2, 'payOrDecline'), null);
+  assert.equal(optionPingId(3, undefined), null);
+});
+
+test("optionPingId: a ref value carrying `unit` pings that unit, whatever the kind — R29's behind-slot included", () => {
+  // R29 (Tiderunner / Trench Stalker) values are FormationSpot descriptors;
+  // the 'behind' one names the unit you would stand behind, which is exactly
+  // the right thing to light up on the board
+  assert.equal(optionPingId({ kind: 'behind', unit: 5 }, 'formationSlot'), 5);
+  assert.equal(optionPingId({ unit: 9 }, 'targets'), 9);
+  // spots that name no unit stay dark
+  assert.equal(optionPingId({ kind: 'end', end: 'left' }, 'formationSlot'), null);
+  assert.equal(optionPingId({ kind: 'out' }, 'formationSlot'), null);
 });
 
 /* ── card names inside prose ────────────────────────────────────────────── */

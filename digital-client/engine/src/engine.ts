@@ -78,7 +78,7 @@ export class IllegalAction extends Error { }
 /** thrown by ctx.choose inside an effect part; converted to a 'resolve' suspension */
 class PartChoice {
   key: string;
-  dec: { kind: 'payOrDecline' | 'electricPath'; seat: Seat; prompt: string; options: DecisionOption[] };
+  dec: { kind: 'payOrDecline' | 'electricPath' | 'formationSlot'; seat: Seat; prompt: string; options: DecisionOption[] };
   constructor(key: string, dec: PartChoice['dec']) {
     this.key = key;
     this.dec = dec;
@@ -4084,8 +4084,12 @@ export class E {
     }
     const options: DecisionOption[] = slots.map((s, i) => ({ label: s.label, value: i }));
     if (opts.optional) options.push({ label: 'stay out of formation', value: -1 });
+    // BL-24: NOT kind 'electricPath' — that kind's numeric option values are
+    // raw entity ids by contract (R4), and these are slot INDEXES. The client
+    // pings/previews a numeric electricPath value as a unit on the board, so
+    // the slot buttons lit up whichever units happened to own ids 0..N.
     const pick = options.length === 1 ? 0 : ctx.choose(opts.key ?? 'placeInFormation', {
-      kind: 'electricPath', seat: ctx.controller,
+      kind: 'formationSlot', seat: ctx.controller,
       prompt: `${src}: where does ${u.card} join the formation?`,
       options,
     }) as number;
@@ -4872,7 +4876,7 @@ export class E {
     this.suspend(
       { type: 'cast', stage: 'formation', item, partIndex: 0, targetIndex: 0, then, moreItems },
       {
-        seat: item.controller, kind: 'electricPath',
+        seat: item.controller, kind: 'formationSlot',   // BL-24: same class as R75's ask
         prompt: `${item.card}: which open spot in your formation is it played into?`,
         options,
       },

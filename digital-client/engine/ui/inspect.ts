@@ -1518,6 +1518,29 @@ function isDeclineValue(v: unknown): boolean {
   return DECLINE_KEYS.some(k => k in (v as object));
 }
 
+/**
+ * #3 (and BL-24): the LIVE entity a decision option's button should ping and
+ * preview on the board — or null for an option that names none.
+ *
+ * Two value shapes name an entity: a ref object carrying `unit`, and — for
+ * R4's electric path ONLY — a bare number, because that decision's options
+ * are raw entity ids by contract. A bare number under any OTHER kind is a
+ * payload in its own namespace (an R75 formation-slot index, an X amount, a
+ * hand index) that collides with the entity-id namespace by arithmetic
+ * accident. BL-24's presentational half: R75's slot question rode kind
+ * 'electricPath', so "column 1, behind Hooba-Bot" (value 1) pinged whichever
+ * unit happened to own entity id 1. The engine now asks it as
+ * 'formationSlot', and this refuses to ping numbers for every kind but R4's.
+ */
+export function optionPingId(value: unknown, kind: string | undefined): EntityId | null {
+  if (value !== null && typeof value === 'object' && 'unit' in (value as object)) {
+    const u = (value as { unit: unknown }).unit;
+    return typeof u === 'number' ? (u as EntityId) : null;
+  }
+  if (typeof value === 'number' && kind === 'electricPath') return value as EntityId;
+  return null;
+}
+
 export interface OptionSplit {
   /** render as a clickable card scan (bin/cache targets, hand looks, deck tops) */
   cards: number[];

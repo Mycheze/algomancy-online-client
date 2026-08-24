@@ -789,7 +789,8 @@ export interface StackItem {
 export type DecisionKind =
   | 'targets'        // choose a target for a part of a pending cast/trigger
   | 'orderTriggers'  // order your simultaneous triggers (R2)
-  | 'electricPath'   // choose next unit for electric excess (R4)
+  | 'electricPath'   // choose next unit for electric excess (R4) — options are RAW ENTITY IDS
+  | 'formationSlot'  // R75/R29: which open formation slot a unit joins (values are NOT entity ids)
   | 'payOrDecline'   // "unless its controller pays [x]" (R6)
   | 'mode'           // which half of a modal effect (R57, EffectPart.mode)
   | 'assignDamage';  // R120: elective combat-damage split over a column's victims

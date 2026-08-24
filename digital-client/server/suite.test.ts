@@ -59,6 +59,8 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-postgame.ts', covers: 'the post-game payload and the rematch handshake, from a saved decided game' },
   { file: 'test-view-snapshot.ts',
     covers: "R85: the suspension's rollback snapshot — a whole unredacted GameState — never reaches a client, not even the seat whose decision it is" },
+  { file: 'test-formation-decision.ts',
+    covers: "BL-24: both formation asks (R75 resolve-time, R29 cast-time) reach the asked seat intact over viewFor + legalActions as kind 'formationSlot', with the decide answers offered, and redact to nothing for the opponent" },
 ];
 
 /** Files that match the test-file naming but are NOT test scripts. Each needs

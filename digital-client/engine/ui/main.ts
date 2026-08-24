@@ -11,7 +11,7 @@ import {
   blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens,
   dismissSeenCard, dismissSeenHand,
   erasedPileView, groupReveal, growCardLedger, linkCardNames, modHostCount, modHostPhrase,
-  modHosts, onlyKnownNames,
+  modHosts, onlyKnownNames, optionPingId,
   partitionOptions, planOffer, playableCachedNames, seenHandView, spellAugmentNote,
   stackAbilityRows, stackItemX, stackItemModes,
   prismiteClickPlan, resourceMenuElements,
@@ -941,12 +941,10 @@ const isCandidate = (ref: TargetRef) => decisionOptionIndex(ref) >= 0;
  * that unit on the board on hover (data-ping) and feeds the focus preview
  * (data-previd). Options without a live entity degrade to nothing. */
 function pingAttrs(o: { value: unknown }): string {
-  const v = o.value;
-  let id: EntityId | null = null;
-  if (v !== null && typeof v === 'object' && 'unit' in (v as object)) id = (v as { unit: EntityId }).unit;
-  // electricPath options carry the raw entity id (other kinds use numbers for
-  // non-entity payloads like X amounts — never ping those)
-  else if (typeof v === 'number' && h.state.decision?.kind === 'electricPath') id = v;
+  // the judgement (which option values name a live entity, per decision kind)
+  // is ui/inspect.ts optionPingId, where BL-24's collision is tested: R75's
+  // formation-slot options carry slot INDEXES, which are not entity ids
+  const id = optionPingId(o.value, h.state.decision?.kind);
   if (id === null || !h.state.entities[id]) return '';
   return ` data-ping="${id}" data-previd="${id}"`;
 }
