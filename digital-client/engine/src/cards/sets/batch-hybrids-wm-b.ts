@@ -34,9 +34,13 @@
  *    unchanged — recall/death still send the card to the owner's hand/bin.
  *  - ROTSPORE HERALD's "Everything is deadly" is a mod-carried static
  *    granting {Deadly} to every unit in the region (both sides, itself
- *    included). COMBAT reads it (column attrs); EFFECT-damage sources do not
- *    — dealEffectDamage reads the source CARD's printed attrs only, so a
- *    spell/ability source is not deadly-fied (engine limitation).
+ *    included). COMBAT reads it (column attrs), and since R94 a UNIT-sourced
+ *    effect reads its source's LIVE attrs (ownAttrs → staticsFor) too, so an
+ *    ability fired by a unit in the region IS deadly-fied — pinned in
+ *    107-semantics-statics. A SPELL source (no entity in play) still falls
+ *    back to printed card attrs, and the static grants {Deadly} to units
+ *    only, so spell/spell-token damage does not kill; whether "everything"
+ *    should reach non-unit sources needs a ruling, not a guess.
  *  - TEMPORAL RIFT's "End this battle": every remaining stack item is
  *    negated, which under R68 is itself the removal — the item leaves the
  *    stack and its card is binned by negate() — then the battle round ends
@@ -137,8 +141,9 @@ card('Infernal Grovekeeper', {
 // kill a unit.)" — gr/2 2/2 Blight Spider Unit. A mod-carried STATIC
 // ([Augment] statics transfer with the card; `augmentable` marks it an
 // augment despite granting no type-line attrs): every unit in the region —
-// both sides, the holder included — has {Deadly}. ⚠ COMBAT reads it (column
-// attrs); effect-damage sources read printed attrs only (see header).
+// both sides, the holder included — has {Deadly}. COMBAT reads it (column
+// attrs) and, since R94, so does a UNIT-sourced effect (live ownAttrs — see
+// header; spell sources still read printed attrs, ruling pending).
 card('Rotspore Herald', {
   augmentable: true,
   statics: [{
