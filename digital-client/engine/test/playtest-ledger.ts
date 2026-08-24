@@ -1554,4 +1554,138 @@ export const LEDGER: LedgerEntry[] = [
       + 'Spells stay out of scope: a virused spell leaving the STACK is erased and not trashed, '
       + 'because nothing from the stack is ever trashed (R40), not because of Unstable.',
   },
+  {
+    id: 94, room: 'SMVJ', date: '2026-08-24',
+    report: 'We need a "max speed" that the gamestate can resolve/put things onto the stack. When '
+      + 'someone has auto pass on and has nothing left to do, it\'s impossible to keep up with '
+      + 'what\'s going on currently. Things should go onto the stack and then resolve at a max '
+      + 'speed of 1 thing per second, I think.',
+    status: 'live',
+    note:
+      'PACING, not correctness. With auto-yield on and nothing to respond to, the whole stack '
+      + 'resolves in one frame and the log scrolls past faster than a human can read, so a player '
+      + 'cannot tell WHY the board changed. The owner proposes a ceiling of ~1 item/second. '
+      + 'Presentation-only: the engine is pure and must NOT learn about wall-clock time — the '
+      + 'throttle belongs in the client\'s render/animation layer, replaying the event list it '
+      + 'already receives. Carried as CT-28.',
+  },
+  {
+    id: 95, room: 'SMVJ', date: '2026-08-24',
+    report: 'Hush Mush\'s ability to go to the opponent isn\'t a trigger. It just happens as part '
+      + 'of the spell.',
+    status: 'live',
+    note:
+      'CONFIRMED by reading the card. Printed: "Negate target effect. Its controller gains '
+      + 'control of me." The handover is part of the SPELL\'s resolution, not a separate ability. '
+      + 'The engine implements it as a `triggered` ability on the body\'s own `spawned` event '
+      + '(batch-wood-a.ts, HUSH_KEY handoff through battleCounters), so the body spawns under the '
+      + 'CASTER first and changes hands afterwards. That extra intermediate state is observable, '
+      + 'which is exactly what report #96 saw. R107 (owner != controller on spawnUnit) is the '
+      + 'primitive that makes the direct version possible — the body should ENTER under the '
+      + 'negated effect\'s controller, with no handover step at all. Carried as CT-29.',
+  },
+  {
+    id: 96, room: 'SMVJ', date: '2026-08-24',
+    report: 'I shouldn\'t be getting a Flourishing Flora trigger here. Hush Mush should enter as '
+      + 'Rashi\'s unit',
+    status: 'live',
+    note:
+      'The OBSERVABLE HALF of #95, and the reason that one is not cosmetic. Flourishing Flora is '
+      + '"[Augment] Whenever another ally spawns, put a +1/+1 counter on me." Because Hush Mush '
+      + 'spawns under the caster and only then hands over, it is briefly the caster\'s ally, so '
+      + 'the caster\'s ally-spawn watchers fire on a unit that should never have been theirs. The '
+      + 'owner got a free counter he correctly refused. WIDER: this hits every "whenever an ally '
+      + 'spawns" watcher, not just Flourishing Flora — the bug is the intermediate control state, '
+      + 'and any card observing spawns can see it. Fixing #95 fixes this. Carried as CT-30.',
+  },
+  {
+    id: 97, room: 'SMVJ', date: '2026-08-24',
+    report: 'Dormant resources can misleadingly look like they\'re active. Maybe have them not '
+      + 'show up (or something) during battle/deployment so players don\'t think they\'re active. '
+      + 'During planning they should show normally tho',
+    status: 'live',
+    note:
+      'Client presentation. A dormant resource is not spendable until it activates, but it is '
+      + 'drawn similarly enough to an active one to be misread mid-battle, when a player is '
+      + 'counting available mana under time pressure. The owner\'s own proposal is phase-scoped: '
+      + 'de-emphasise or hide dormant resources during battle/deployment, show them normally in '
+      + 'planning (which is when you act on them). Carried as CT-31.',
+  },
+  {
+    id: 98, room: 'SMVJ', date: '2026-08-24',
+    report: 'Rashi\'s start of combat (doing all her Wraith triggers) doesn\'t need to take away '
+      + 'from what I\'m doing in Deployment',
+    status: 'live',
+    note:
+      'Concurrency/flow. Deployment is SIMULTANEOUS (both players act, moves revealed when both '
+      + 'are done — R-deployment), so one player resolving a pile of start-of-combat triggers '
+      + 'should not seize the other player\'s screen or block their input. Related to #101, which '
+      + 'is the rules-side proposal for the same pile of Wraith triggers. Carried as CT-32.',
+  },
+  {
+    id: 99, room: 'SMVJ', date: '2026-08-24',
+    report: 'Tokens should have their X value in their text box modified to say the actual number, '
+      + 'rather than X. So a Poison 5 would say "Put 5 -1/-1 counters on target unit"',
+    status: 'live',
+    note:
+      'A token created with X=5 still prints the GENERIC text with a literal "X", so the player '
+      + 'has to remember what it was made for. The number is known at creation. NOT the same class '
+      + 'as the markup bugs (R134/R141/R142): those are a formatter failing to consume a token, '
+      + 'this is a live VALUE that should be substituted into the printed text for that instance. '
+      + 'Needs a decision on where the substitution lives — on the token entity at creation, or in '
+      + 'the text box reading the entity\'s stored X. Carried as CT-33.',
+  },
+  {
+    id: 100, room: 'SMVJ', date: '2026-08-24',
+    report: 'The damage distribution UI is terrible and confusing. Better would to have a ticker '
+      + 'counter thing on each unit that you click up/down and they always are forced to sum to '
+      + 'the amount of damage you have.',
+    status: 'live',
+    note:
+      'The UI for R120, the ELECTIVE combat damage split (built because "never decide for the '
+      + 'player"). The mechanic is right; the affordance is not. The owner names the fix exactly: '
+      + 'a per-unit up/down stepper, constrained to sum to the damage available. NOTE the shape is '
+      + 'the one R139/BL-25 just built for counter removal (stepper + max + "All", clamped, does '
+      + 'not auto-submit) — reuse that lifted, tested logic in ui/inspect.ts rather than writing a '
+      + 'second stepper. Carried as CT-34.',
+  },
+  {
+    id: 101, room: 'SMVJ', date: '2026-08-24',
+    report: 'Deployment should use the stack. All Wraith triggers should go onto the stack '
+      + 'simultaneously and be allowed to target the same unit, even exceeding its defense (the '
+      + 'final triggers would just fizzle).',
+    status: 'live',
+    note:
+      '⚠ A RULES CHANGE, not a bug, and the largest thing in this batch — it needs the owner to '
+      + 'confirm scope before any code moves. Two claims: (a) deployment-phase triggers use the '
+      + 'STACK like everything else, and (b) several may target the SAME unit even when the total '
+      + 'exceeds what that unit can absorb, with the surplus fizzling on resolution rather than '
+      + 'being prevented at targeting time. (b) is the load-bearing half: it says targeting must '
+      + 'NOT pre-validate against a limit that later triggers might consume, which is the ordinary '
+      + 'fizzle-on-resolution rule. Touches the deployment phase, the stack and every '
+      + 'start-of-deployment trigger. Related to #98 (the same Wraith pile, seen as a flow '
+      + 'complaint). Carried as CT-35.',
+  },
+  {
+    id: 102, room: 'SMVJ', date: '2026-08-24',
+    report: 'UI thing: All the text on cards still includes things that are only for the engine to '
+      + 'see (like {i} or / or some other "markup" notes)',
+    status: 'live',
+    note:
+      'CONFIRMED with exact evidence. The owner on what the markup is: "It\'s pure engine markup '
+      + 'used by some system Caleb uses to format cards better. {i} makes the next word italic, '
+      + '{g} puts it into gold colored text, etc. I\'m not sure what the / does, tho." So the rule '
+      + 'is that NONE of it may reach a player. Census: the formatting family is {i} (80 uses), '
+      + '{/n} (73), {g} (8), {i1} (6), {/i} (5), {p} (2); the ~30 CAPITALISED tokens ({Battle}, '
+      + '{Virus}, {Haste} …) are keyword names and must keep showing. The "/" is now settled: it '
+      + 'appears ONLY as "/[…]" directly after a [Switch1]/[Switch] marker, wrapping a cost '
+      + '(Discharge) or a mode body (Wither and Bloom) — and it is NOT the "/" in X/X or +1/+1 '
+      + 'stat notation, which must survive. Three live defects: "/[" prints literally on ~15 '
+      + 'cards; consuming {i1} EATS THE ADJACENT SPACE (Wither and Bloom renders "each enemy '
+      + 'orput a +1/+1"); and a {/n} nested in an unrecognised bracket never becomes a line break. '
+      + 'Plus a data half: printed.json is GENERATED by scripts/extract-printed.mjs, and carries '
+      + '49 cards with double spaces and 4 with layout hyphenation ("adja- cent", "oppo- nent"), '
+      + 'which must be fixed in the EXTRACTOR because a hand edit to printed.json is wiped on the '
+      + 'next regeneration. Carried as CT-36.',
+  },
 ];

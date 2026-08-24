@@ -1668,4 +1668,188 @@ export const CARD_TODO: TodoEntry[] = [
       '90-coverage-census.test.ts::R140: no card responding to a bin-index event re-finds its card by lastIndexOf',
     ],
   },
+  // ── the SMVJ batch (2026-08-24 afternoon, reports #94-#102) ───────────
+  // Nine reports arrived while round 22 was being worked. None is a card
+  // doing the wrong thing except CT-29/CT-30; the rest are the client and two
+  // rules questions. Each carries `reportId` so 83's cross-check binds them.
+  {
+    id: 28, area: 'client', severity: 'minor', reportId: 94,
+    title: 'The stack resolves faster than a human can read it',
+    detail:
+      'With auto-yield on and nothing to respond to, the whole stack resolves in one frame. The '
+      + 'log scrolls past and a player cannot tell WHY the board changed. Owner proposes a ceiling '
+      + 'of about one item per second.',
+    evidence: 'Owner report #94, room SMVJ, action 104.',
+    fix:
+      'A throttle in the CLIENT render/animation layer, replaying the event list it already '
+      + 'receives. The engine is pure and must NOT learn about wall-clock time — putting a delay '
+      + 'in the reducer would make replay and the test suite time-dependent. Likely a queue in '
+      + 'ui/main.ts that drains events on a timer, with a skip/fast-forward affordance so a player '
+      + 'who does not want the pacing is not held hostage by it.',
+    proof: null,
+    verify: 'Play a battle with auto-yield on and a multi-item stack; the items should appear one '
+      + 'at a time at a readable rate rather than all at once.',
+    status: 'open',
+  },
+  {
+    id: 29, area: 'card', severity: 'major', reportId: 95, cards: ['Hush Mush'],
+    title: 'Hush Mush hands over control as a TRIGGER; the card says it is part of the spell',
+    detail:
+      'Printed: "Negate target effect. Its controller gains control of me." One spell resolution, '
+      + 'no ability. The engine implements the handover as a `triggered` ability on the body\'s own '
+      + '`spawned` event, passing the seat through battleCounters[HUSH_KEY], so the body spawns '
+      + 'under the CASTER and changes hands a step later. The intermediate state is observable '
+      + '(see CT-30) and a trigger can be responded to or suppressed where spell resolution cannot.',
+    evidence: 'Owner report #95, room SMVJ, action 123. Confirmed by reading '
+      + 'src/cards/sets/batch-wood-a.ts (card definition at ~line 506) against the printed text.',
+    fix:
+      'Spawn the body already under the negated effect\'s controller instead of handing it over. '
+      + 'R107 (owner != controller on spawnUnit) is exactly this primitive and already exists, so '
+      + 'this should DELETE the triggered ability and the HUSH_KEY battleCounters handoff rather '
+      + 'than add machinery. Check the header note in batch-wood-a.ts about two Hush Mushes in one '
+      + 'battle before removing the ledger key.',
+    proof: () => {
+      // TRUE while the handover is still a separate triggered ability
+      const abil = (getCard('Hush Mush').abilities ?? []) as Array<{ type?: string }>;
+      return abil.some(a => a.type === 'triggered');
+    },
+    status: 'open',
+  },
+  {
+    id: 30, area: 'card', severity: 'major', reportId: 96, cards: ['Hush Mush', 'Flourishing Flora'],
+    title: 'Hush Mush briefly spawns as the CASTER\'s ally, firing their ally-spawn watchers',
+    detail:
+      'The observable half of CT-29, and the reason it is not cosmetic. Flourishing Flora is '
+      + '"[Augment] Whenever another ally spawns, put a +1/+1 counter on me." Because Hush Mush '
+      + 'enters under the caster and only then changes hands, the caster\'s ally-spawn watchers '
+      + 'fire on a unit that was never meant to be theirs, and the caster gets a counter. WIDER '
+      + 'THAN THE ONE CARD: every "whenever an ally spawns" watcher can see this intermediate '
+      + 'state; Flourishing Flora is just the one that happened to be on the board.',
+    evidence: 'Owner report #96, room SMVJ, action 123 — the owner refused a counter he could see '
+      + 'was wrong. Same action index as #95: cause and symptom, reported one minute apart.',
+    fix: 'Fixing CT-29 fixes this: if the body never enters under the caster, no ally-spawn '
+      + 'watcher of theirs can observe it. Pin it with a test that puts Flourishing Flora on the '
+      + 'CASTER\'s board and asserts it gains NO counter when Hush Mush resolves.',
+    proof: null,
+    verify: 'Control Flourishing Flora, cast Hush Mush negating an opponent effect: Flora must not '
+      + 'gain a counter, and the body must appear on the opponent\'s side without a handover step.',
+    status: 'open',
+  },
+  {
+    id: 31, area: 'client', severity: 'minor', reportId: 97,
+    title: 'Dormant resources read as active outside planning',
+    detail:
+      'A dormant resource cannot be spent until it activates, but it is drawn similarly enough to '
+      + 'an active one to be miscounted mid-battle, when a player is totting up available mana '
+      + 'under time pressure.',
+    evidence: 'Owner report #97, room SMVJ, action 149.',
+    fix: 'Phase-scope the presentation, per the owner\'s own proposal: de-emphasise or hide '
+      + 'dormant resources during battle and deployment, and show them normally during planning, '
+      + 'which is the phase you actually act on them in. Presentation only — no engine change.',
+    proof: null,
+    verify: 'During battle, dormant resources must be visually distinct from (or absent beside) '
+      + 'active ones; during planning they appear as they do today.',
+    status: 'open',
+  },
+  {
+    id: 32, area: 'client', severity: 'minor', reportId: 98,
+    title: 'One player resolving triggers blocks the other player\'s simultaneous deployment',
+    detail:
+      'Deployment is SIMULTANEOUS — both players act and moves are revealed when both are done — '
+      + 'so an opponent working through a pile of start-of-combat triggers should not seize your '
+      + 'screen or block your input while you deploy.',
+    evidence: 'Owner report #98, room SMVJ, action 238 (a stack of Wraith triggers).',
+    fix: 'Client concurrency: the opponent\'s trigger resolution should render without taking '
+      + 'input focus or gating the local deploy UI. Related to CT-35, which is the rules-side '
+      + 'proposal for the same pile of triggers.',
+    proof: null,
+    verify: 'While the opponent resolves start-of-combat triggers, you can still place and confirm '
+      + 'deployment moves without waiting.',
+    status: 'open',
+  },
+  {
+    id: 33, area: 'client', severity: 'minor', reportId: 99,
+    title: 'A token created with X=5 still prints a literal "X" in its text box',
+    detail:
+      'The value is known when the token is created, but the box shows the generic printed text, '
+      + 'so the player must remember what it was made for. Owner: a Poison 5 should read "Put 5 '
+      + '-1/-1 counters on target unit". NOT the markup class (R134/R141/R142) — nothing is failing '
+      + 'to be consumed here; this is a live per-instance VALUE that should be substituted in.',
+    evidence: 'Owner report #99, room SMVJ, action 264.',
+    fix:
+      'Decide where the substitution lives: stamped onto the token entity at creation, or done by '
+      + 'the text box reading the entity\'s stored X. Prefer the latter — the printed text stays '
+      + 'the printed text and only the DISPLAY specialises, which keeps printed.json (generated) '
+      + 'and the per-instance value from being confused. Applies to every X-valued token, not just '
+      + 'Poison.',
+    proof: null,
+    verify: 'Create a Poison with X=5; its text box reads "5", not "X".',
+    status: 'open',
+  },
+  {
+    id: 34, area: 'client', severity: 'major', reportId: 100,
+    title: 'The R120 elective damage-split UI is confusing',
+    detail:
+      'The mechanic is right — R120 made the combat damage split ELECTIVE because "never decide '
+      + 'for the player" — but the affordance is not. Owner: "terrible and confusing".',
+    evidence: 'Owner report #100, room SMVJ, action 290.',
+    fix:
+      'The owner names it exactly: a per-unit up/down ticker, constrained so the assignments '
+      + 'always sum to the damage available. ⚠ REUSE, do not rewrite: R139/BL-25 just built this '
+      + 'shape for counter removal — a stepper with a max asked of the engine, clamped, an "All" '
+      + 'that sets without submitting — lifted into ui/inspect.ts precisely so it is testable. A '
+      + 'second independent stepper implementation is how the two drift apart.',
+    proof: null,
+    verify: 'Assign combat damage across several blockers with steppers; the total is forced to '
+      + 'match the damage available and nothing submits until you confirm.',
+    status: 'open',
+  },
+  {
+    id: 35, area: 'engine', severity: 'major', reportId: 101,
+    title: 'RULES QUESTION: should deployment use the stack, and may triggers over-target?',
+    detail:
+      '⚠ A RULES CHANGE, not a defect, and the largest item in this batch. Owner: "Deployment '
+      + 'should use the stack. All Wraith triggers should go onto the stack simultaneously and be '
+      + 'allowed to target the same unit, even exceeding its defense (the final triggers would '
+      + 'just fizzle)." Two separable claims: (a) deployment-phase triggers use the STACK like '
+      + 'everything else; (b) several may target the SAME unit even when the total exceeds what it '
+      + 'can absorb, the surplus fizzling ON RESOLUTION rather than being prevented at targeting '
+      + 'time. (b) is the load-bearing half — it says targeting must not pre-validate against a '
+      + 'limit that earlier-resolving triggers may consume, which is the ordinary fizzle rule.',
+    evidence: 'Owner report #101, room SMVJ, action 318.',
+    fix:
+      'DO NOT START until the owner confirms scope — this touches the deployment phase, the stack '
+      + 'and every start-of-deployment trigger, and (b) may change existing targeting restrictions '
+      + 'across the pool. Get a ruling number, then split (a) and (b) into separate commits so '
+      + 'either can be reverted alone.',
+    proof: null,
+    verify: 'Owner ruling required before implementation.',
+    status: 'open',
+  },
+  {
+    id: 36, area: 'client', severity: 'major', reportId: 102,
+    title: "Caleb's formatting markup reaches the player: literal '/[', {i1} eating spaces",
+    detail:
+      'Owner: the {i}/{g}/"/" family is "pure engine markup used by some system Caleb uses to '
+      + 'format cards better", so none of it may reach a player. Three renderer defects: "/[" '
+      + 'prints literally on ~15 cards; consuming {i1} EATS THE ADJACENT SPACE, so Wither and '
+      + 'Bloom renders "each enemy orput a +1/+1"; and a {/n} nested inside an unrecognised '
+      + 'bracket never becomes a line break. Plus a DATA half — printed.json carries 49 cards with '
+      + 'double spaces and 4 with layout hyphenation ("adja- cent", "oppo- nent" x3).',
+    evidence:
+      'Owner report #102, room SMVJ, action 341. Census of the whole pool: formatting family is '
+      + '{i} 80, {/n} 73, {g} 8, {i1} 6, {/i} 5, {p} 2; the ~30 capitalised tokens are KEYWORD '
+      + 'names and must keep showing. "/" settled: it occurs only as "/[…]" directly after a '
+      + '[Switch1]/[Switch] marker, and is NOT the "/" of X/X or +1/+1 stat notation.',
+    fix:
+      'Renderer half in ui/cardtext.ts, with a whole-pool sweep over text AND type lines so no '
+      + 'formatting token or "/[" can survive again. Data half in scripts/extract-printed.mjs — '
+      + 'printed.json is GENERATED, so a hand edit there is silently wiped on the next '
+      + 'regeneration. Linked Extinction\'s "Sacrifce a unit" is a typo in CALEB\'S SOURCE and '
+      + 'must not be silently rewritten.',
+    proof: null,
+    verify: 'Render every card\'s text and type line: no {i}/{/i}/{i1}/{g}/{p}/{/n} and no "/[" '
+      + 'survives, while X/X and +1/+1 are untouched and {Battle}/{Virus}/{Haste} still show.',
+    status: 'open',
+  },
 ];
