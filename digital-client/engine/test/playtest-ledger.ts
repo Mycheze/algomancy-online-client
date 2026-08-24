@@ -1666,7 +1666,15 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Deployment should use the stack. All Wraith triggers should go onto the stack '
       + 'simultaneously and be allowed to target the same unit, even exceeding its defense (the '
       + 'final triggers would just fizzle).',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves',
+      '37-attrs-wight.test.ts::R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fizzles',
+      '37-attrs-wight.test.ts::does not pre-validate against a limit an earlier trigger will consume',
+      '37-attrs-wight.test.ts::a subject is not a target',
+      '37-attrs-wight.test.ts::R12 — a shared deployment stack does not let a Wraith reach across regions',
+      '67-resolving-and-stack-viruses.test.ts::a NESTED resolution that suspends does not strand the outer marker',
+    ],
     note:
       '⚠ A RULES CHANGE, not a bug, and the largest thing in this batch — it needs the owner to '
       + 'confirm scope before any code moves. Two claims: (a) deployment-phase triggers use the '

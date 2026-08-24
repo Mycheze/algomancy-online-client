@@ -1836,7 +1836,15 @@ export const CARD_TODO: TodoEntry[] = [
       + 'either can be reverted alone.',
     proof: null,
     verify: 'Owner ruling required before implementation.',
-    status: 'open',
+    status: 'done',
+    guards: [
+      '37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves',
+      '37-attrs-wight.test.ts::R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fizzles',
+      '37-attrs-wight.test.ts::does not pre-validate against a limit an earlier trigger will consume',
+      '37-attrs-wight.test.ts::a subject is not a target',
+      '37-attrs-wight.test.ts::R12 — a shared deployment stack does not let a Wraith reach across regions',
+      '67-resolving-and-stack-viruses.test.ts::a NESTED resolution that suspends does not strand the outer marker',
+    ],
   },
   {
     id: 36, area: 'client', severity: 'major', reportId: 102,
