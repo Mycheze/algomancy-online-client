@@ -89,3 +89,6 @@
 {"ts":"2026-08-23T15:19:20.302Z","room":"XVUR","seat":0,"note":"Flux Resonator isn't working with my Robot tokens.","actionIndex":140}
 {"ts":"2026-08-23T15:34:12.998Z","room":"XVUR","seat":0,"note":"Aberrant Statweaver shouldn't have entered the bin. It's Unstable. So unless I'm misunderstanding what an \"active zone\" is, I think they should be erased.","actionIndex":189}
 {"ts":"2026-08-23T15:48:52.007Z","room":"XVUR","seat":0,"note":"Hooba bot made 2 robots I think","actionIndex":238}
+{"ts":"2026-08-24T11:24:06.189Z","room":"ANBB","seat":0,"note":"Beyond, Codex Incarnate has a typo in its text","actionIndex":17}
+{"ts":"2026-08-24T11:30:01.749Z","room":"ANBB","seat":0,"note":"Prismites are behaving wrong. You told me they shouldn't trigger the creation of a shard, but that's not true. It literally says on them that you make a resource *then activate it*. And when you activate your 3rd (or more) resource in a color, you get a Shard. So using a Prismite should do the same.","actionIndex":38}
+{"ts":"2026-08-24T11:55:34.358Z","room":"ANBB","seat":0,"note":"I'm pretty sure we're doing death and trashing wrong for Unstable units. Dropslime wouldn't make sense otherwise. But here, it died and I didn't get its trigger or the other one","actionIndex":139}

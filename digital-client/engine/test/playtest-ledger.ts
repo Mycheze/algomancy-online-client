@@ -1445,4 +1445,113 @@ export const LEDGER: LedgerEntry[] = [
       + 'at action 72, long before action 238), which is why the real cause had to come from the '
       + 'owner\'s memory of the board.',
   },
+  {
+    id: 91, room: 'ANBB', date: '2026-08-24',
+    report: 'Beyond, Codex Incarnate has a typo in its text',
+    status: 'fixed',
+    guards: [
+      '122-cardtext-markup.test.ts::R134: {g} renders the keyword it marks',
+      '122-cardtext-markup.test.ts::R134: no card in the pool renders a stray marker word',
+      '122-cardtext-markup.test.ts::R134: an unclosed {i} reminder does not italicise the rules text after it',
+    ],
+    note:
+      'NOT a typo in the DATA \u2014 the transcription matches the card art word for word, which '
+      + 'is checkable because we hold the image. It was the RENDERER, and it was never one card. '
+      + '{g} marks the ONE keyword after it (the printed cards colour that word); the formatter '
+      + 'had no case for it, so it fell through the "unknown {token} bares its word" branch and '
+      + 'emitted a literal letter \u2014 NINE cards read "ginverted", "gdeadly", "gflying", '
+      + '"gpiercing", and two more read "punstable" from {p}. The owner named the one card he '
+      + 'happened to be looking at. Both markers are handled GENERICALLY now, because handling '
+      + 'them one letter at a time is what produced the bug. Pulling the thread found two more: '
+      + 'the pool writes reminders as {i}(\u2026) and almost never closes them, so the <i> ran to '
+      + 'the end of the text box \u2014 invisible on the ~69 cards whose reminder is last (which '
+      + 'is why it survived) but SEVEN print real rules text after a reminder and had it silently '
+      + 'italicised as flavour; and five cards printed a literal "{i1}" nested inside a modal '
+      + 'bracket the icon pass returned verbatim. WHY NOTHING CAUGHT IT: iconizeText lived in '
+      + 'ui/main.ts, which runs DOM code on import, so no test could reach it \u2014 the same shape '
+      + 'as BL-24\'s optionPingId and the undo decision that lived in a socket handler. Lifted to '
+      + 'ui/cardtext.ts, which is what made all three testable. Suspect any rendering decision '
+      + 'that only exists inside the client entry point.',
+  },
+  {
+    id: 92, room: 'ANBB', date: '2026-08-24',
+    report: 'Prismites are behaving wrong. You told me they shouldn\'t trigger the creation of a '
+      + 'shard, but that\'s not true. It literally says on them that you make a resource *then '
+      + 'activate it*. And when you activate your 3rd (or more) resource in a color, you get a '
+      + 'Shard. So using a Prismite should do the same.',
+    status: 'fixed',
+    guards: [
+      '21-fixes.test.ts::R132: spending a Prismite into your 3rd element copy DOES grant the shard',
+      '21-fixes.test.ts::R132: a Prismite spent into your SECOND copy pays nothing',
+      '21-fixes.test.ts::R132: the ANBB position',
+    ],
+    note:
+      'The owner was right and R116 is REVERSED (R132). Printed: "Erase me: Create a '
+      + 'non-prismite resource, THEN ACTIVATE IT. Do this only during the mana step. (This does '
+      + 'not use one of your activations for turn.)" The p.18 affinity bonus is owed, so '
+      + 'doExchangePrismite calls maybeGrantShard. R116 never quoted that line \u2014 it reasoned '
+      + 'from the ENGINE\'S MODEL (a mutation of an already-activated resource) and reached for a '
+      + 'fetchland analogy to justify what the model already did. Same failure as R125 (a '
+      + 'StaticMod typed over Entity became "Rotspore only affects units") and R128 ("a unit has '
+      + 'no parts to negate" became "a unit is not an effect"). The engine was already '
+      + 'contradicting itself, which is the tell: the exchange fires a resourceActivated event, so '
+      + 'every listener has always seen it as an activation \u2014 only the shard check was carved '
+      + 'out. Caleb\'s fetchland line survives untouched: it is about the ACTIVATION ALLOWANCE, '
+      + 'charged in doActivateResource, not here. You get the Shard, not a second activation. The '
+      + 'ANBB board is the argument and is pinned as a two-seat comparison: Ben reached three dark '
+      + 'through prismites and was paid nothing while Rashi\'s third fire came from a plain '
+      + 'activation and paid. The R116 test is inverted in place rather than deleted, carrying the '
+      + 'history of both flips \u2014 it has now turned over twice.',
+  },
+  {
+    id: 93, room: 'ANBB', date: '2026-08-24',
+    report: 'I\'m pretty sure we\'re doing death and trashing wrong for Unstable units. '
+      + 'Dropslime wouldn\'t make sense otherwise. But here, it died and I didn\'t get its '
+      + 'trigger or the other one',
+    status: 'fixed',
+    guards: [
+      '42-dark-b.test.ts::playtest #93: Dropslime fires from HAND',
+      '42-dark-b.test.ts::ANBB: an Unstable death and an unmodded death on the SAME damage step',
+      '42-dark-b.test.ts::Muck Rummager sees an Unstable death',
+      '43-dark-c.test.ts::Blightwalker dying while {Unstable} fires its own',
+      '43-dark-c.test.ts::the Rector pays, and finds nothing',
+      '43-dark-c.test.ts::gives the Distiller nothing to cache',
+      '35-rot-debt-trash.test.ts::a modded unit dying is binned, TRASHED, and only then erased',
+      '62-death-facts.test.ts::an Unstable death says BIN, like a token',
+    ],
+    note:
+      'The owner was right, and R137 REVERSES the old behaviour. ANBB replays FAITHFUL, so this '
+      + 'one had exact evidence: Dropslime demonstrates BOTH halves by itself. Discarded from '
+      + 'hand (unmodded) it trashed and its trigger paid out 2 damage; later spawned, grafted by '
+      + 'Plague Ritual, {Unstable}, it blocked, took lethal and was ERASED \u2014 no trash, no '
+      + 'trigger, no counter \u2014 while Thoughtripper died UNMODDED on the SAME damage step, '
+      + 'binned, trashed and fired correctly. (The owner recalled the pair as two Thoughtripper '
+      + 'deaths; Thoughtripper died once. The card that died twice, once each way, is Dropslime.) '
+      + '\u26a0 THE RULING DIVERGES FROM TWO SOURCES and that is recorded, not buried: Unstable\'s '
+      + 'printed reminder says "(If they would enter a bin, erase them instead.)" and Caleb '
+      + '2025-04-08 said "Unstable units still die, they just get erased instead of ending up in '
+      + 'the bin" \u2014 both argue for the OLD behaviour. The owner overruled them, as R106 did '
+      + 'over {Unaware}. The argument that won: the engine ALREADY treats a dying TOKEN as '
+      + 'entering the bin, trashing, then being swept to the erased pile (Caleb on tokens: '
+      + '"technically it does enter your hand and then gets erased immediately"), so two '
+      + 'disposals that end in the same erased pile behaved differently for no reason a player '
+      + 'could see. Now E.destroy has ONE destination. '
+      + 'WIDER THAN THE REPORT: 14 cards read trashing. Six lose their OWN trigger this way '
+      + '(Afflicting Anima, Blightwalker, Dropslime, Maw of Despair, Nothyr, Thoughtripper); the '
+      + 'other eight WATCH someone else\'s trash (Cerebrox, Cthyrian Culler, Cthyrian Rector, '
+      + 'Muck Rummager, Murkdrop Distiller, Murkstalker, Splort, Unrelenting Horror) and had been '
+      + 'silently UNDER-triggering on every modded-unit death in every game ever played \u2014 '
+      + 'invisible because you cannot see a trigger that does not happen. '
+      + 'Decided along the way: NONTOKEN MODS trash too, because a recalled or cached carrier\'s '
+      + 'mods already trash (R70), so a death skipping it would make one mod card behave two ways '
+      + 'depending on how its host left play \u2014 the exact shape being removed. Token mods keep '
+      + 'R69\'s carve-out. Pull Under needed a `keepBinned` seam: it hand-rolled its own toBin '
+      + 'precisely BECAUSE destroy erased without trashing, so under R137 it double-trashed \u2014 '
+      + 'caught by its own existing "exactly one trash" assertion, which is the suite working. '
+      + 'R51\'s ARGUMENT died here too (it justified fireOwnTrashTrigger\'s `mods: []` with "a '
+      + 'modded unit that dies never reaches a bin"); the answer survives on a new derivation and '
+      + 'the prose is repaired \u2014 R133\'s lesson recurring within 24 hours. '
+      + 'Spells stay out of scope: a virused spell leaving the STACK is erased and not trashed, '
+      + 'because nothing from the stack is ever trashed (R40), not because of Unstable.',
+  },
 ];

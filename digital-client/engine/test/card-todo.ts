@@ -1603,4 +1603,52 @@ export const CARD_TODO: TodoEntry[] = [
     ],
     status: 'done',
   },
+  {
+    id: 27,
+    area: 'engine',
+    severity: 'major',
+    cards: ['Cthyrian Rector', 'Murkdrop Distiller', 'Biomass Devourer'],
+    title: "A 'trashed' responder finds its card by lastIndexOf(name), not by R131's binNth",
+    detail:
+      'R131 put `binNth` on the trashed event precisely because a bin holds bare card NAMES, so '
+      + 'identity there is (name, nth occurrence) — "copies of one card are genuinely '
+      + 'indistinguishable". The cards that RESPOND to a trash never read it. They re-find the '
+      + 'card with `g.player(seat).bin.lastIndexOf(name)`, which answers "the last copy of that '
+      + 'name in the bin right now" — a different question. The two answers diverge whenever the '
+      + 'trashed copy has LEFT the bin before the responder resolves, which is exactly what a '
+      + 'state-based erase does: the trigger goes on the stack, the erase sweeps the copy, and on '
+      + 'resolution lastIndexOf lands on an INNOCENT older copy of the same name. Cthyrian Rector '
+      + 'then recalls the wrong card to hand (having already paid a sacrifice), and Biomass '
+      + 'Devourer erases the wrong card outright — a card leaving the game permanently by '
+      + 'mistake. ~13 sites use the lastIndexOf idiom; only the ones reacting to an event that '
+      + 'carries binNth are wrong, so this needs classifying site by site, not a blanket rewrite '
+      + '(Lurking Dread and Xzydris ask "is my own name in my bin", which lastIndexOf answers '
+      + 'correctly).',
+    evidence:
+      'Found 2026-08-24 by the R137 agent while pinning the two bin-reaching hazards for playtest '
+      + 'report #93, and confirmed by reading batch-dark-c.ts:262 (Rector) and batch-metal-a.ts:384 '
+      + '(Biomass Devourer) against E.noteTrashed. R137 did NOT create it — a dying TOKEN already '
+      + 'bins, trashes and is swept, so the window has always existed — but R137 widened it a lot, '
+      + 'because every modded unit death now opens the same window. Deliberately left unfixed in '
+      + 'R137 so a reversible ruling and an unrelated pre-existing bug did not land in one commit.',
+    fix:
+      "Pass R131's binNth through to the responders and index with it instead of searching by "
+      + 'name: the trashed event already carries {seat, card, binNth}, so a responder wants '
+      + '`bin[binNth] === name ? binNth : -1` and must treat the mismatch as "gone" rather than '
+      + 'falling back to a search. Classify all ~13 lastIndexOf sites first and fix only those '
+      + 'driven by an event that carries an index. Then pin it the way this repo pins invariants: '
+      + 'a static sweep in 90-coverage-census asserting no card reacting to a binNth-carrying '
+      + 'event resolves its target by lastIndexOf, so the next one fails a test instead of being '
+      + 're-found.',
+    proof: () => {
+      // TRUE while a 'trashed' responder still resolves its card by name-search.
+      // Read the RUN FUNCTION's source — JSON.stringify drops functions, which
+      // is how the first draft of this proof silently answered false.
+      const at = (getCard('Cthyrian Rector').augmentText ?? []) as Array<
+        { effect?: { run?: (...a: never[]) => unknown } }>;
+      const src = at.map(t => t.effect?.run?.toString() ?? '').join('\\n');
+      return src.includes('lastIndexOf') && !src.includes('binNth');
+    },
+    status: 'open',
+  },
 ];
