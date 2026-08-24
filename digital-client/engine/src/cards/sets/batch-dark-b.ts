@@ -64,11 +64,14 @@
  *    CastCost 'eraseBin' offers the bin card by card (E.castCostOptions), and
  *    TargetSpec's 'binCard'/'anyBinCard' make a bin card a real target — so
  *    Necromantic Rebuke's own bracketed [Erase X cards from your bin] is a
- *    chosen, cast-time cost. What is still unchosen is the RANSOM half: the
- *    "unless its controller erases X cards from THEIR bin" payment is settled
- *    at resolution and takes the most recently binned cards, because the
- *    printed text does not say who chooses and there is no seam for asking a
- *    non-caster to pick during someone else's resolution.
+ *    chosen, cast-time cost. The RANSOM half is chosen too now: the payment
+ *    is settled at resolution, and once the payer agrees, WHICH X cards
+ *    leave THEIR bin is their pick (eraseChosenFromBin) — the same ctx.choose
+ *    route the pay-or-decline already addresses to the payer's seat is the
+ *    seam for a non-caster picking during someone else's resolution; it used
+ *    to take the most recently binned cards unasked. A FORCED set is not a
+ *    question: with exactly X cards in the bin (and the ≤ X total wipe, which
+ *    the ≥ X pay gate keeps unreachable) everything goes with no prompt.
  *
  * ⚠ TRANSCRIPTION NOTES (report, do not silently "fix"):
  *  - Necromantic Rebuke prints "[Erase X cards from your bin] Negate up to one
@@ -525,10 +528,44 @@ card('Muck Rummager', {
 // exactly as printed. The RANSOM stays at resolution: it is the other
 // player's choice about the spell resolving, not part of casting it. Erasing
 // never touches a bin on the way out, so it is never a trash (R40).
-function eraseFromBin(g: E, seat: Seat, n: number): void {
-  for (let i = 0; i < n; i++) {
-    const name = g.player(seat).bin.pop();   // ⚠ most recent first (header)
-    if (name === undefined) return;
+/** The ransom's erase: `n` cards of the PAYER's choosing out of their bin —
+ * "erases X cards from THEIR bin" makes it their bin, and agreeing to pay
+ * makes WHICH cards their choice too (header). Picks are by bin index with
+ * the names visible (`card` gives the client the real scan; duplicate names
+ * are numbered the way E.targetLabel numbers bin copies). Plan-then-commit:
+ * every pick is a ctx.choose gathered before anything is spliced, so a
+ * suspension mid-pick replays cleanly (R85) and survives the JSON round trip.
+ * A FORCED set is not a question: with `bin.length <= n` the whole bin goes,
+ * no prompt — that covers both the total wipe and the exactly-n bin (the
+ * pay gate only offers the ransom at ≥ n, so ≤ n here means exactly n unless
+ * something drained the bin mid-resolution). Events keep the exact wording
+ * and shape the old take-the-newest erase emitted (the seat on the event is
+ * what routes the cards to the R65 erased pile). */
+function eraseChosenFromBin(g: E, ctx: EffectCtx, seat: Seat, n: number): void {
+  const bin = g.player(seat).bin;
+  let indices: number[];
+  if (bin.length <= n) {
+    indices = bin.map((_, i) => i);   // forced — no choice to offer
+  } else {
+    const taken = new Set<number>();
+    for (let i = 0; i < n; i++) {
+      const seen = new Map<string, number>();
+      const options = bin.map((name, bi) => {
+        const nth = seen.get(name) ?? 0;
+        seen.set(name, nth + 1);
+        return { label: nth ? `${name} #${nth + 1}` : name, value: bi, card: name };
+      }).filter(o => !taken.has(o.value));
+      taken.add(ctx.choose(`nrPick${i}`, {
+        kind: 'payOrDecline', seat,
+        prompt: `Necromantic Rebuke: erase which card from your bin? (${i + 1} of ${n})`,
+        options,
+      }) as number);
+    }
+    indices = [...taken];   // insertion order = pick order
+  }
+  const names = indices.map(i => bin[i]!);
+  for (const i of [...indices].sort((a, b) => b - a)) bin.splice(i, 1);
+  for (const name of names) {
     g.ev('erased', `${name} is ERASED from ${g.pname(seat)}'s bin.`, { card: name, seat });
   }
 }
@@ -565,7 +602,7 @@ card('Necromantic Rebuke', {
           options: [{ label: `erase ${x}`, value: 1 }, { label: 'let it be negated', value: 0 }],
         }) as number === 1;
         if (paid) {
-          eraseFromBin(g, them, x);
+          eraseChosenFromBin(g, ctx, them, x);
           g.ev('info', `${g.pname(them)} erases ${x} — ${item.label} survives.`);
           return;
         }

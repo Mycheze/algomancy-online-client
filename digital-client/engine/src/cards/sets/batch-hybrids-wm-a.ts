@@ -17,12 +17,21 @@
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
  *  - SPELL COPY (Earthbound Replicator, Maelstrom Charger): no copy machinery
  *    exists, so a "copy" re-runs the copied card's spellEffect in place —
- *    it never touches the stack (no responses to the copy), "may choose new
- *    targets" is NOT supported (the copy reuses the original cast's
- *    still-legal targets / the carrier), and a copy only happens while the
- *    original item is still ON the stack (found by id / by the Origon
- *    bottom-most-match pattern) — a deploy-phase spell that already resolved
- *    is not copyable (info line instead).
+ *    it never touches the stack (no responses to the copy), and a copy only
+ *    happens while the original item is still ON the stack (found by id / by
+ *    the Origon bottom-most-match pattern) — a deploy-phase spell that
+ *    already resolved is not copyable (info line instead). "May choose new
+ *    targets" IS supported now (it used to be silently skipped, which was the
+ *    engine deciding for the player): before the copy runs, the COPYING
+ *    player — Replicator's "they", Charger's "you"; both are the copy's
+ *    controller — is offered a mid-resolution choice (R6) to keep the
+ *    original targets or re-collect the copy's targets fresh against the
+ *    copied spell's own TargetSpec, R64 legality judged AT the re-collection
+ *    (chooseCopyTargets). Declining keeps the pre-existing behavior exactly:
+ *    the original cast's still-legal targets / the carrier ride, and a
+ *    target that has died still fizzles the copy. With no legal candidate at
+ *    all the choice is genuinely empty, so no question is asked (not an
+ *    auto-pick) and the originals ride with an info line.
  *  - Earthbound Replicator: written when spell-cast 'targeted' events were
  *    logged but never dispatched, so the trigger listens to 'spellPlayed'
  *    instead. Playtest 2026-08-19 FIXED that dispatch (R53) — this card could
@@ -82,10 +91,10 @@
  *    layer; the card is `augmentable: true` + a live `costMods` entry further
  *    down this file, with no inert augmentText anywhere near it.
  */
-import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
+import type { CardName, Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import {
-  card, getCard, isAugment,
+  card, getCard, isAugment, specForSlot,
   type EffectCtx, type EffectDef, type ResolvedTarget,
 } from '../dsl.ts';
 import { selfOf, isEnt, pickUnit, perSeatRows } from './helpers.ts';
@@ -96,6 +105,78 @@ import { selfOf, isEnt, pickUnit, perSeatRows } from './helpers.ts';
  * includes spell tokens — the batch-hybrids-fwe wording precedent; spellUnit
  * and ambush are unit plays and excluded) */
 const NONUNIT_SPELL_KINDS = new Set(['spell', 'spellToken']);
+
+/**
+ * "…may choose NEW targets for the copy" (Earthbound Replicator, Maelstrom
+ * Charger) — the printed choice, asked before runSpellCopy runs the copy.
+ *
+ * The copying player (`copier` — the copy's controller on both cards) is
+ * offered a mid-resolution decision (R6): keep the original cast's targets,
+ * or re-collect the copy's targets FRESH against the copied spell's own
+ * TargetSpec — slot by slot through E.targetCandidates, so R64 restrictions
+ * (and R58 per-slot specs) are judged NOW, at the re-collection, not at the
+ * original cast. Declining returns `original` untouched, so the pre-existing
+ * behavior — still-legal originals ride, a dead original fizzles the copy —
+ * is exactly preserved. If the FIRST slot has no legal candidate at all, the
+ * "choose new targets" half would be an empty menu, so no question is asked
+ * (a genuinely empty choice is not a choice, and silence here would be an
+ * auto-pick): the originals ride, with an info line saying why.
+ *
+ * Plan-then-commit: nothing here mutates — every pick is a ctx.choose, so a
+ * suspension replays the part cleanly (R85) and the picks survive the JSON
+ * round trip on the suspension.
+ */
+function chooseCopyTargets(
+  g: E, ctx: EffectCtx, cardName: CardName, copier: Seat,
+  x: number | undefined, original: ResolvedTarget[],
+): ResolvedTarget[] {
+  const spec = getCard(cardName).spellEffect?.targets;
+  if (!spec) return original;   // a targetless spell has nothing to re-aim
+  // slot arithmetic mirrors E.collectPartTargets: count ('X' = the copy's
+  // inherited X) plus R83's fixed extraSlots; min gates the "no more" option
+  const counted = spec.count === 'X' ? (x ?? 0) : (spec.count ?? 1);
+  const max = counted + (spec.extraSlots ?? 0);
+  const min = Math.min(spec.min ?? 1, max);
+  if (max <= 0) return original;
+  const candsFor = (n: number, chosen: ResolvedTarget[], taken: Set<string>): TargetRef[] =>
+    g.targetCandidates(specForSlot(spec, n), ctx.region, undefined, copier,
+      undefined, x, chosen, null)
+      .filter(c => !taken.has(JSON.stringify(c)));
+  if (!candsFor(0, [], new Set()).length) {
+    g.ev('info', `${ctx.sourceName}: no legal new target for the copy of ${cardName} — the original targets stand.`);
+    return original;
+  }
+  const fresh = ctx.choose('newTargets', {
+    kind: 'payOrDecline', seat: copier,
+    prompt: `${ctx.sourceName}: choose new targets for the copy of ${cardName}?`,
+    options: [
+      { label: 'Choose new targets', value: true },
+      { label: `Keep the original target${original.length === 1 ? '' : 's'}`, value: false },
+    ],
+  }) as boolean;
+  if (!fresh) return original;
+  const picked: ResolvedTarget[] = [];
+  const taken = new Set<string>();
+  for (let n = 0; n < max; n++) {
+    const cands = candsFor(n, picked, taken);
+    if (!cands.length) break;   // a later slot with nothing legal ends the collection
+    const options: { label: string; value: unknown }[] =
+      cands.map(c => ({ label: g.targetLabel(c), value: c }));
+    if (picked.length >= min) options.push({ label: 'No more targets', value: { doneTargets: true } });
+    const v = ctx.choose(`newTarget${n}`, {
+      kind: 'electricPath', seat: copier,
+      prompt: `${ctx.sourceName}: new target for the copy of ${cardName}`
+        + (max > 1 ? ` (target ${n + 1} of up to ${max})` : ''),
+      options,
+    });
+    if (!!v && typeof v === 'object' && 'doneTargets' in v) break;
+    const ref = v as TargetRef;
+    taken.add(JSON.stringify(ref));
+    const r = g.resolveTargetRef(ref);
+    if (r) picked.push(r);
+  }
+  return picked;
+}
 
 /** ⚠ SPELL COPY approximation (see the batch header): run the copied card's
  * spellEffect in place — off the stack, with the given targets, under the
@@ -381,8 +462,11 @@ card('Decay Distributor', {
 // listeners); "targeting me" is checked at RESOLUTION against the un-negated
 // item's collected targets on the stack (the Origon bottom-most-match
 // pattern — my trigger sits above the spell, so the copy resolves first).
-// The copy re-runs the spellEffect against the carrier itself ("new
-// targets" unsupported), controlled by the spell's player ("THEY copy it").
+// The copy is controlled by the spell's player ("THEY copy it"), and that
+// player "may choose new targets for the copy": chooseCopyTargets asks them
+// to keep the carrier as the copy's target or re-aim it fresh (R64 legality
+// at the re-collection). Declining keeps the old behavior exactly — the copy
+// runs against the carrier itself.
 card('Earthbound Replicator', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'],
@@ -412,7 +496,10 @@ card('Earthbound Replicator', {
           g.ev('info', `Earthbound Replicator: ${name} does not target me (or already left the stack) — no copy.`);
           return;
         }
-        runSpellCopy(g, ctx, name, seat, it.x, [self], it.parts[0]?.costPaid, it.parts[0]?.mode);
+        // "may choose new targets for the copy" — THEY (the spell's player)
+        // choose; declining keeps the carrier as the copy's target, as ever
+        const targets = chooseCopyTargets(g, ctx, name, seat, it.x, [self]);
+        runSpellCopy(g, ctx, name, seat, it.x, targets, it.parts[0]?.costPaid, it.parts[0]?.mode);
       },
     },
   }],
@@ -462,8 +549,11 @@ card('Spirit of Nature', {
 // found on the stack (the Origon bottom-most-match pattern) — my trigger
 // sits above it, so the copy resolves first. The sacrifice is a
 // mid-resolution pay-or-decline (R6) and is offered wherever this resolves,
-// the end-of-turn window included (R85); the copy reuses the original cast's
-// still-legal targets ("new targets" unsupported).
+// the end-of-turn window included (R85). "YOU may choose new targets for the
+// copy": chooseCopyTargets asks the controller — keep the original cast's
+// still-legal targets, or re-aim the copy fresh (R64 legality at the
+// re-collection). All choices come before the sacrifice commits
+// (plan-then-commit), so the Charger is still standing while it is asked.
 card('Maelstrom Charger', {
   abilities: [{
     type: 'triggered', events: ['spellPlayed'],
@@ -496,14 +586,20 @@ card('Maelstrom Charger', {
           g.ev('info', `Maelstrom Charger: the sacrifice is declined — ${name} is not copied.`);
           return;
         }
-        // the original cast's still-legal targets (⚠ header: no new targets)
-        const targets: ResolvedTarget[] = [];
+        // the original cast's still-legal targets — the "keep" half of the
+        // printed choice below
+        const original: ResolvedTarget[] = [];
         for (const part of it.parts) {
           for (const t of part.targets) {
             const r = g.resolveTargetRef(t);
-            if (r) targets.push(r);
+            if (r) original.push(r);
           }
         }
+        // "you may choose new targets for the copy" — asked BEFORE the
+        // sacrifice commits (plan-then-commit: every choose precedes the
+        // mutation, so a suspension replays cleanly). Targets are resolved at
+        // choice time, exactly as the keep-path always resolved them.
+        const targets = chooseCopyTargets(g, ctx, name, seat, it.x, original);
         g.destroy(self, 'is sacrificed');
         runSpellCopy(g, ctx, name, seat, it.x, targets, it.parts[0]?.costPaid, it.parts[0]?.mode);
       },

@@ -563,6 +563,144 @@ test('R74: the warning is only on X = 0 — a nonzero stop is an ordinary option
   assert.ok(!stop.label.includes('⚠'));
 });
 
+// The ransom's WHICH: "erases X cards from THEIR bin" — once the payer agrees
+// to pay, which X cards leave is the payer's pick (eraseChosenFromBin), by bin
+// index with the names visible. It used to take the most recently binned
+// cards unasked — the engine deciding for the player.
+test('Necromantic Rebuke: the payer PICKS which cards the ransom erases — the unpicked survive', () => {
+  const h = new Harness(4235);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  const victim = spawn(h, A, 'Good Whale');
+  giveResources(h, A, 'dark', 2);
+  giveResources(h, D, 'fire', 2);
+  give(h, A, 'Necromantic Rebuke');
+  give(h, D, 'Flame of History');
+  h.state.players[A]!.bin.push('Unit Token');
+  h.state.players[D]!.bin.push('Good Whale', 'Rotling');   // 2 > X = 1 → a real pick
+  attackWith(h, A, [[atk, victim]]);
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Flame of History') });
+  pickRef(h, { unit: victim });
+  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Necromantic Rebuke') });
+  pickRef(h, { erase: 'Unit Token' });                     // X = 1, paid at cast
+  const tgt = h.state.decision!;
+  h.do({ type: 'decide', seat: tgt.seat, choice: tgt.options.findIndex(o => o.label.includes('Flame')) });
+  pass(h); pass(h);                                        // resolve the Rebuke → the ransom
+  const pay = h.state.decision!;
+  assert.equal(pay.seat, D, 'the pay-or-decline goes to the payer');
+  h.do({ type: 'decide', seat: D, choice: pay.options.findIndex(o => o.label === 'erase 1') });
+  const pickDec = h.state.decision!;
+  assert.equal(pickDec.seat, D, 'and so does the WHICH pick — the payer chooses, not the engine');
+  assert.deepEqual(pickDec.options.map(o => o.label), ['Good Whale', 'Rotling'], 'picked by bin index, names visible');
+  assert.ok(pickDec.options.every(o => o.card), 'each option carries the card for the client to render');
+  h.do({ type: 'decide', seat: D, choice: pickDec.options.findIndex(o => o.label === 'Rotling') });
+  assert.deepEqual(h.state.players[D]!.bin, ['Good Whale'],
+    'the UNPICKED card survives — the old code would have eaten the most recent (Rotling was, but by CHOICE now)');
+  assert.ok(h.state.players[D]!.erased?.includes('Rotling'), 'the picked card reaches the erased pile (R65)');
+  resolveAll(h);
+  assert.ok(ent(h, victim)!.damage > 0, 'the ransom was paid → the Flame survived to resolve');
+});
+
+test('Necromantic Rebuke: a bin of exactly X is a FORCED set — everything goes, no pick prompt', () => {
+  const h = new Harness(4236);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  const victim = spawn(h, A, 'Good Whale');
+  giveResources(h, A, 'dark', 2);
+  giveResources(h, D, 'fire', 2);
+  give(h, A, 'Necromantic Rebuke');
+  give(h, D, 'Flame of History');
+  h.state.players[A]!.bin.push('Unit Token', 'Unit Token');
+  h.state.players[D]!.bin.push('Good Whale', 'Rotling');   // exactly X = 2
+  attackWith(h, A, [[atk, victim]]);
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Flame of History') });
+  pickRef(h, { unit: victim });
+  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Necromantic Rebuke') });
+  pickRef(h, { erase: 'Unit Token' });
+  pickRef(h, { erase: 'Unit Token' });                     // the bin empties → X = 2, closed
+  const tgt = h.state.decision!;
+  h.do({ type: 'decide', seat: tgt.seat, choice: tgt.options.findIndex(o => o.label.includes('Flame')) });
+  pass(h); pass(h);                                        // resolve the Rebuke → the ransom
+  const pay = h.state.decision!;
+  h.do({ type: 'decide', seat: pay.seat, choice: pay.options.findIndex(o => o.label === 'erase 2') });
+  // a zero-choice erase asks nothing: no WHICH prompt for a forced total set
+  assert.ok(!h.state.decision, 'no pick prompt when the whole bin must go');
+  assert.deepEqual(h.state.players[D]!.bin, [], 'everything went');
+  assert.deepEqual(h.state.players[D]!.erased, ['Good Whale', 'Rotling'], 'both to the erased pile (R65)');
+  resolveAll(h);
+  assert.ok(ent(h, victim)!.damage > 0, 'and the Flame survived');
+});
+
+test('Necromantic Rebuke: DECLINING the ransom is unchanged — negated, bin untouched', () => {
+  const h = new Harness(4237);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  const victim = spawn(h, A, 'Good Whale');
+  giveResources(h, A, 'dark', 2);
+  giveResources(h, D, 'fire', 2);
+  give(h, A, 'Necromantic Rebuke');
+  give(h, D, 'Flame of History');
+  h.state.players[A]!.bin.push('Unit Token');
+  h.state.players[D]!.bin.push('Good Whale', 'Rotling');   // could pay, chooses not to
+  attackWith(h, A, [[atk, victim]]);
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Flame of History') });
+  pickRef(h, { unit: victim });
+  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Necromantic Rebuke') });
+  pickRef(h, { erase: 'Unit Token' });                     // X = 1
+  const tgt = h.state.decision!;
+  h.do({ type: 'decide', seat: tgt.seat, choice: tgt.options.findIndex(o => o.label.includes('Flame')) });
+  resolveAll(h, o => o.label === 'let it be negated');
+  // the negated Flame's own card is binned by R68's disposal — the ransom
+  // itself touched nothing
+  assert.deepEqual(h.state.players[D]!.bin, ['Good Whale', 'Rotling', 'Flame of History'],
+    'declining erases nothing — only the negated spell itself arrives');
+  assert.ok(!h.state.players[D]!.erased?.length, 'nothing reached the erased pile');
+  assert.equal(ent(h, victim)!.damage, 0, 'the Flame was negated');
+  assert.ok(h.log.some(l => l.includes('is negated')));
+});
+
+test('Necromantic Rebuke: the ransom pick survives a JSON round-trip mid-decision (R85)', () => {
+  const h = new Harness(4238);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  const victim = spawn(h, A, 'Good Whale');
+  giveResources(h, A, 'dark', 2);
+  giveResources(h, D, 'fire', 2);
+  give(h, A, 'Necromantic Rebuke');
+  give(h, D, 'Flame of History');
+  h.state.players[A]!.bin.push('Unit Token', 'Unit Token');
+  h.state.players[D]!.bin.push('Good Whale', 'Rotling', 'Palewing');   // 3 > X = 2
+  attackWith(h, A, [[atk, victim]]);
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Flame of History') });
+  pickRef(h, { unit: victim });
+  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Necromantic Rebuke') });
+  pickRef(h, { erase: 'Unit Token' });
+  pickRef(h, { erase: 'Unit Token' });                     // X = 2
+  const tgt = h.state.decision!;
+  h.do({ type: 'decide', seat: tgt.seat, choice: tgt.options.findIndex(o => o.label.includes('Flame')) });
+  pass(h); pass(h);
+  const pay = h.state.decision!;
+  h.do({ type: 'decide', seat: pay.seat, choice: pay.options.findIndex(o => o.label === 'erase 2') });
+  h.state = JSON.parse(JSON.stringify(h.state));           // save + load mid-pick (1 of 2)
+  const p1 = h.state.decision!;
+  h.do({ type: 'decide', seat: D, choice: p1.options.findIndex(o => o.label === 'Rotling') });
+  h.state = JSON.parse(JSON.stringify(h.state));           // save + load mid-pick (2 of 2)
+  const p2 = h.state.decision!;
+  h.do({ type: 'decide', seat: D, choice: p2.options.findIndex(o => o.label === 'Palewing') });
+  assert.deepEqual(h.state.players[D]!.bin, ['Good Whale'], 'the loaded state still erases exactly the picked two');
+  assert.deepEqual(h.state.players[D]!.erased, ['Rotling', 'Palewing'], 'in pick order, to the erased pile');
+  resolveAll(h);
+  assert.ok(ent(h, victim)!.damage > 0, 'and the Flame survived');
+});
+
 // ── Palewing ──────────────────────────────────────────────────────────
 
 test('Palewing: attacking discards a card (feeding the trash deck)', () => {

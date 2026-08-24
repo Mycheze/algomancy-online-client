@@ -370,7 +370,7 @@ test('Decay Distributor: dealt N damage → N -1/-1 counters on target unit (com
 
 // ── Earthbound Replicator ────────────────────────────────────────────────
 
-test('Earthbound Replicator: a nonunit spell targeting me is copied (⚠ same target)', () => {
+test('Earthbound Replicator: a nonunit spell targeting me is copied; declining the retarget keeps the original target', () => {
   const h = new Harness(2909);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -383,10 +383,62 @@ test('Earthbound Replicator: a nonunit spell targeting me is copied (⚠ same ta
   h.do({ type: 'castSpellToken', seat: A, entityId: fb });    // A's priority right after declare
   pick(h, { unit: repl });                                    // Fireball 1 targets the Replicator
   pass(h); pass(h);                                           // resolve the copy trigger first
+  // "may choose new targets": the printed choice is offered to THE SPELL'S
+  // PLAYER ("they copy it") mid-resolution. Declining pins the pre-choice
+  // behavior exactly: the copy runs against the carrier.
+  assert.equal(h.state.decision?.kind, 'payOrDecline', 'the retarget question is a real decision');
+  assert.equal(h.state.decision?.seat, A, "Replicator's 'they' — the copying player answers, not the carrier's owner");
+  pick(h, false);                                             // keep the original target
   pass(h); pass(h);                                           // then the original Fireball
   assert.ok(h.log.some(m => m.includes('copies Fireball')), 'the spell was copied');
-  assert.equal(ent(h, repl)!.damage, 2, '1 original + 1 copy = 2 damage');
+  assert.equal(ent(h, repl)!.damage, 2, '1 original + 1 copy = 2 damage — exactly the pre-retarget behavior');
   assert.ok(ent(h, repl), 'the 1/3 survives');
+  finishBattle(h);
+});
+
+test('Earthbound Replicator: choosing NEW targets aims the copy elsewhere; the original is untouched by it', () => {
+  const h = new Harness(2920);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const repl = spawn(h, D, 'Earthbound Replicator');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  let fb = 0;
+  whiteBox(h, e => { fb = e.createSpellToken(A, 'Fireball', 1, h.state.battle!.region).id; });
+  h.do({ type: 'castSpellToken', seat: A, entityId: fb });
+  pick(h, { unit: repl });                                    // Fireball 1 targets the Replicator
+  pass(h); pass(h);                                           // resolve the copy trigger
+  pick(h, true);                                              // choose new targets for the copy
+  // the re-collection is fresh against Fireball's own spec ('any') — units
+  // and players alike are on the menu, R64-judged now
+  pick(h, { unit: atk });                                     // aim the copy at A's own 1/1
+  pass(h); pass(h);                                           // then the original Fireball
+  assert.ok(!ent(h, atk), 'the copy hit the NEW target — the 1/1 died to it');
+  assert.equal(ent(h, repl)!.damage, 1, 'only the ORIGINAL hit the Replicator — the copy did not touch it');
+  finishBattle(h);
+});
+
+test('Earthbound Replicator: the retarget choice survives a JSON round-trip mid-decision (R85)', () => {
+  const h = new Harness(2923);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const repl = spawn(h, D, 'Earthbound Replicator');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  let fb = 0;
+  whiteBox(h, e => { fb = e.createSpellToken(A, 'Fireball', 1, h.state.battle!.region).id; });
+  h.do({ type: 'castSpellToken', seat: A, entityId: fb });
+  pick(h, { unit: repl });
+  pass(h); pass(h);                                           // → the keep-or-new decision
+  h.state = JSON.parse(JSON.stringify(h.state));              // save + load mid-choice
+  pick(h, true);                                              // choose new targets
+  h.state = JSON.parse(JSON.stringify(h.state));              // save + load mid-PICK too
+  pick(h, { unit: atk });
+  pass(h); pass(h);
+  assert.ok(!ent(h, atk), 'the loaded state still drives the retargeted copy');
+  assert.equal(ent(h, repl)!.damage, 1, 'and the copy still misses the original target');
   finishBattle(h);
 });
 
@@ -420,7 +472,7 @@ test('Spirit of Nature: after combat, [Switch1] create a Poison 2 OR a Crystal 2
 
 // ── Maelstrom Charger ────────────────────────────────────────────────────
 
-test('Maelstrom Charger: sacrifice me as you play a nonunit spell → copy it (⚠ same targets)', () => {
+test('Maelstrom Charger: sacrifice me as you play a nonunit spell → copy it; declining the retarget keeps the targets', () => {
   const h = new Harness(2911);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -436,10 +488,68 @@ test('Maelstrom Charger: sacrifice me as you play a nonunit spell → copy it (�
   pick(h, { player: A });                                     // Fireball 1 at the opponent
   pass(h); pass(h);                                           // resolve the Charger trigger
   pick(h, true);                                              // sacrifice → copy
+  // "YOU may choose new targets" — the Charger's controller is asked, before
+  // the sacrifice commits. Declining pins the pre-choice behavior exactly.
+  assert.equal(h.state.decision?.seat, D, "Charger's 'you' — its controller answers");
+  assert.ok(ent(h, chg), 'plan-then-commit: the Charger still stands while the retarget is asked');
+  pick(h, false);                                             // keep the original targets
   pass(h); pass(h);                                           // resolve the original Fireball
   assert.ok(!ent(h, chg), 'the Charger was sacrificed');
   assert.ok(h.state.players[D]!.bin.includes('Maelstrom Charger'), 'sacrificed → bin');
-  assert.equal(h.state.players[A]!.life, lifeA - 2, 'copy + original: 2 total damage');
+  assert.equal(h.state.players[A]!.life, lifeA - 2, 'copy + original: 2 total damage — exactly the pre-retarget behavior');
+  finishBattle(h);
+});
+
+test('Maelstrom Charger: choosing NEW targets re-aims the copy; the original still hits its own target', () => {
+  const h = new Harness(2921);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const chg = spawn(h, D, 'Maelstrom Charger');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  let fb = 0;
+  whiteBox(h, e => { fb = e.createSpellToken(D, 'Fireball', 1, h.state.battle!.region).id; });
+  const lifeA = h.state.players[A]!.life;
+  h.do({ type: 'castSpellToken', seat: D, entityId: fb });
+  pick(h, { player: A });                                     // the original: 1 at A's face
+  pass(h); pass(h);                                           // resolve the Charger trigger
+  pick(h, true);                                              // sacrifice → copy
+  pick(h, true);                                              // choose new targets
+  pick(h, { unit: atk });                                     // the copy re-aims at the attacker
+  pass(h); pass(h);                                           // resolve the original Fireball
+  assert.ok(!ent(h, chg), 'the Charger was sacrificed');
+  assert.ok(!ent(h, atk), 'the copy killed its NEW target');
+  assert.equal(h.state.players[A]!.life, lifeA - 1, 'only the original hit the face');
+  finishBattle(h);
+});
+
+test('Maelstrom Charger: with NO legal new target there is no retarget question — the originals ride', () => {
+  const h = new Harness(2922);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const chg = spawn(h, D, 'Maelstrom Charger');
+  giveResources(h, D, 'metal', 2);                            // Arcane Echo m/2, {Battle}
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  // a token for the Echo to target — the ONLY token in the region
+  let tok = 0;
+  whiteBox(h, e => { tok = e.createSpellToken(A, 'Fireball', 1, h.state.battle!.region).id; });
+  pass(h);                                                    // priority → D
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arcane Echo') });
+  pick(h, { unit: tok });                                     // Echo targets the token
+  // A answers by removing the only token: now 'target token' has NO candidate
+  whiteBox(h, e => { delete e.s.entities[tok]; });
+  pass(h); pass(h);                                           // resolve the Charger trigger
+  pick(h, true);                                              // sacrifice → copy
+  // a genuinely empty choice is NOT a question: no retarget decision appears
+  assert.ok(!h.state.decision, 'no retarget question when nothing is legal to aim at');
+  assert.ok(h.log.some(m => m.includes('no legal new target')), 'and the log says why the originals ride');
+  assert.ok(h.log.some(m => m.includes('has no target — no effect')), 'the dead original then fizzles the copy, as ever');
+  assert.ok(!ent(h, chg), 'the Charger was still sacrificed');
+  pass(h); pass(h);                                           // the original Echo fizzles too (target gone)
   finishBattle(h);
 });
 
