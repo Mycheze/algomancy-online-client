@@ -15,8 +15,15 @@
  * immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - SPELL COPY (Earthbound Replicator, Maelstrom Charger): no copy machinery
- *    exists, so a "copy" re-runs the copied card's spellEffect in place —
+ *  - SPELL COPY (Earthbound Replicator, Maelstrom Charger): no STACK-ITEM copy
+ *    machinery exists, so a "copy" re-runs the copied card's spellEffect in
+ *    place —
+ *    (⚠ checked against R118, 2026-08-24: the copy LAYER it built is an
+ *    entity-identity layer — `Entity.copies`, a face in front of a unit in
+ *    play, read through E.faceName / facesWith. It has no bearing on copying a
+ *    SPELL that is resolving off the stack, so this note is not obsolete;
+ *    what a real fix needs is a StackItem clone that gets pushed and can be
+ *    responded to.)
  *    it never touches the stack (no responses to the copy), and a copy only
  *    happens while the original item is still ON the stack (found by id / by
  *    the Origon bottom-most-match pattern) — a deploy-phase spell that

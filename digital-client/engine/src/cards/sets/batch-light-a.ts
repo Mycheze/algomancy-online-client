@@ -38,10 +38,14 @@
  *    variable form.) It obeys the same R49 ruling either way: each point is
  *    re-checked, so a life cost you cannot survive is never payable.
  *  - "MY COLUMN DEALS COMBAT DAMAGE" (Vroot) is read off the combat events the
- *    way Flowstone Arcanite / Amphivore read it: a 'damage' event with no
- *    `source` tag against the directly opposing column, or the aggregated
- *    combat 'lifeLost' with my column connecting. A column that both kills
- *    blockers and pierces through fires once per damage instance.
+ *    way Amphivore / Blightmound read it: a 'damage' event with no `source`
+ *    tag against the directly opposing column, or the aggregated combat
+ *    'lifeLost' with my column connecting — and, since R117, only in the
+ *    SUB-STEP MY OWN COLUMN STRIKES IN (E.strikesInCurrentSubStep). A column
+ *    that both kills blockers and pierces through fires once per damage
+ *    instance. What is STILL approximate is R117's own residue: face damage
+ *    arrives as one aggregated `lifeLost` per seat per sub-step, so two of my
+ *    columns connecting in the SAME sub-step are indistinguishable here.
  *
  *  - (THE EVERYWHERE is NO LONGER approximated, 2026-08-23. This entry used to
  *    describe an until-regroup silence applied once at naming time, and named
@@ -71,7 +75,7 @@
  */
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, type EffectDef } from '../dsl.ts';
+import { allCardNames, card, getCard, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -106,14 +110,25 @@ const opponentsOf = (g: E, region: number, seat: Seat): Seat[] =>
  *    unit in the column DIRECTLY OPPOSING mine;
  *  - the aggregated combat 'lifeLost' where my column connects to the victim
  *    (attacking unblocked, or blocked/blocking with Piercing).
- * Mirrors Flowstone Arcanite so the two cards read the same combat the same
- * way. Returns false outside battle and for a 0-power column.
+ * Mirrors batch-dark-b's function of the same name so every "when my column
+ * deals combat damage" card reads the same combat the same way. Returns false
+ * outside battle and for a 0-power column.
+ *
+ * R117 (owner, 2026-08-23): the clause fires in the sub-step MY OWN COLUMN
+ * strikes in. `commitPlayerDamage` aggregates EVERY connecting column's face
+ * damage into one `loseLife` per seat per sub-step, so without the gate a
+ * normal column hears the Swift sub-step whenever any Swift column also
+ * connects — and Vroot paid the opponent for damage its column had not dealt.
+ * The gate belongs in `when()` and nowhere else: `b.damageStep` reads the
+ * CURRENT sub-step at event time and the NEXT one by the time the queued
+ * trigger settles (see E.strikesInCurrentSubStep).
  */
 function myColumnDealtCombatDamage(g: E, self: Entity, ev: { type: string; data?: Record<string, unknown> }): boolean {
   const b = g.s.battle;
   if (!b) return false;
   const col = g.columnOf(self.id);
   if (!col) return false;
+  if (!g.strikesInCurrentSubStep(self)) return false;        // R117
   const alive = col.filter(id => g.entity(id));
   const power = alive.reduce((s, id) => s + Math.max(0, g.effStats(g.entity(id)!)[0]), 0);
   if (power <= 0) return false;
@@ -237,7 +252,15 @@ card('Divine Foresight', {
         return;
       }
       const hand = g.player(who).hand;
-      g.ev('info', `Divine Foresight reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
+      // "LOOK AT target opponent's hand" — YOU look. The hand is not revealed
+      // to the table, so the line that names the cards is tagged `privateTo`
+      // the looker (server/view.ts::visibleToSeat drops it for everyone else);
+      // E.revealHandTo below writes the public "X looks at Y's hand" line and
+      // stores the look in `seenHand[viewer]`, and is deliberately careful NOT
+      // to name the cards for exactly this reason. Untagged, this line put the
+      // whole opposing hand in the shared log.
+      g.ev('info', `Divine Foresight reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`,
+        { privateTo: ctx.controller });
       g.revealHandTo(ctx.controller, who);
       if (!hand.length) return;
       const pick = ctx.choose('foresee', {
@@ -326,11 +349,21 @@ card('Greed Angel', {
 });
 
 // "When I attack or block, create a token that's a copy of me in my
-// formation." — lll/8 2/2 Hooba God Unit. The copy is a Hooba-God unit token;
-// "in my formation" is R75 — the controller chooses the slot at resolution
-// rather than the copy silently taking my own column's back slot (and getting
-// nothing at all when that slot was full). The copy is created after
-// attackers/blockers are declared, so it never re-triggers this on its own.
+// formation." — lll/8 2/2 Hooba God Unit. The copy is a unit token; "in my
+// formation" is R75 — the controller chooses the slot at resolution rather
+// than the copy silently taking my own column's back slot (and getting nothing
+// at all when that slot was full). The copy is created after attackers/blockers
+// are declared, so it never re-triggers this on its own.
+//
+// R118: "a copy of ME" reads the FACE, not `Entity.card` — the ruling names
+// this card by name ('"Create a copy of me" (Echo of Despair, Hooba-God,
+// Swarmling) reads the FACE, and carries no counters and no mods'). A
+// Hooba-God wearing an identity face (Apex Prime, Borrower of Forms) IS that
+// card for every rules purpose, so the token it creates is that card too; the
+// hardcoded name predated the copy layer. `E.nameOf` is the layer's public
+// read and answers 'Hooba-God' whenever nothing has copied it, so the ordinary
+// case is byte for byte what it was. `creates` stays the printed declaration —
+// it is the UI/conformance list of what this card normally makes.
 card('Hooba-God', {
   abilities: [{
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
@@ -340,7 +373,8 @@ card('Hooba-God', {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
         if (!self) { g.ev('info', 'Hooba-God: it is no longer in play — no copy is created.'); return; }
-        const copy = g.spawnUnit(ctx.controller, 'Hooba-God', self.region, { token: true });
+        const me = g.nameOf(self);                 // R118 layer 0: what I AM
+        const copy = g.spawnUnit(ctx.controller, me, self.region, { token: true });
         g.placeInFormation(copy, ctx, { key: 'hoobaGodSlot', source: 'Hooba-God' });
       },
     },
@@ -586,21 +620,46 @@ card('The Everywhere', {
     label: 'during [Haste] name a card — my last named card loses all abilities',
     effect: {
       run: (g, ctx) => {
-        // "name a card" is unrestricted, so the menu is every card name in
-        // play, not just the ones here — naming is a real choice even when the
-        // named card turns out to be somewhere this cannot reach. Plus the
-        // explicit "not in play at all" option, which is a no-op on the printed
-        // card too and is the only way to decline friendly fire.
-        const names = [...new Set(
-          g.s.regions.flatMap((_, r) => g.unitsIn(r)).map(u => u.card),
-        )].sort();
+        // "NAME A CARD" IS UNRESTRICTED, and the menu is the whole card pool.
+        //
+        // It used to be `unitsIn(r).map(u => u.card)` — the names of the UNITS
+        // standing on the board right now — with a comment claiming that was
+        // "every card name in play". That is a qualifier the printed text does
+        // not carry (R125's lesson: the shape of the mechanism that happened to
+        // exist got promoted into a rule about the card), and it cost the card
+        // its best line of play: the silence below is CONTINUOUS and matches on
+        // a NAME, so naming a card that is not on the board yet is exactly how
+        // you turn off the thing your opponent is about to play into your
+        // region. Under the old menu that card could never be named.
+        //
+        // The list is DECK_LIST's own filter — real pool cards, no token faces
+        // and no resource faces — unioned with every name actually in play, so
+        // today's options are a strict subset (a Robot / Unit Token standing
+        // there is still nameable) and nothing that used to be legal is gone.
+        // Read through `E.nameOf` for the same reason the static below does:
+        // R118 layer 0 means a copy answers to its FACE, and the face is the
+        // name that has to be nameable for the silence to bite.
+        const pool = allCardNames().filter(n => {
+          const c = getCard(n);
+          if (/\bResource\b/.test(c.type)) return false;
+          return !/Token/.test(c.type)
+            && (c.kind === 'unit' || c.kind === 'spell' || c.kind === 'spellUnit');
+        });
+        const names = [...new Set([
+          ...pool,
+          ...g.s.regions.flatMap((_, r) => g.unitsIn(r)).map(u => g.nameOf(u)),
+        ])].sort();
         const NOBODY = '';
         const named = ctx.choose('name', {
           kind: 'payOrDecline', seat: ctx.controller,
           prompt: 'The Everywhere: name a card',
           options: [
             ...names.map(n => ({ label: n, value: n, card: n })),
-            { label: 'a card that is not in play', value: NOBODY },
+            // kept from the old menu, where it was the ONLY way to point at
+            // something the board did not already hold. With the whole pool
+            // above it is no longer that — it is just "name nothing", the way
+            // to release a previous naming without silencing anyone new.
+            { label: 'name no card (release my last naming)', value: NOBODY },
           ],
         }) as string;
         // The naming REMEMBERS; it does not silence. `Entity.named` is the
