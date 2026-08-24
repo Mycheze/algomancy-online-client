@@ -6562,3 +6562,67 @@ untaxed battle mod application (R37), the donated-augment host-region form,
 two Lurkers summing to +2, and a JSON round-trip of the pending
 pay-decision. The card's ledger entry came off in the same commit, and the
 71-card-ledger CANARY moved on to Vengeance.
+
+---
+
+## R122 — an IMPOSED additional cast cost on another player's cards
+
+*(Vengeance un-parked, 2026-08-24.)*
+
+**Vengeance**: *"[Augment] Cards your opponents play during battle gain
+'[Sacrifice a unit]'."*
+
+R59's `CostMod` carried `delta` (extra mana) and R60 added `life` (extra
+life); a sacrifice is neither — it is a cost **with a choice in it**, so it
+can be neither summed into `manaToPlay` nor charged inside `payCard`. R122 is
+the third channel of the same layer: `CostMod.sacrifice` returns how many
+units the play additionally costs, and the payment routes through the cast
+window like every other chosen cost (R35/R49/R64).
+
+| part | where |
+| --- | --- |
+| **declare** | `CostMod.sacrifice?(g, self, ctx)` — same `CostCtx`, same anchor walk and R12 region scope as `delta`/`life` |
+| **count** | `E.unitsToPlay(seat, name, opts)` — `lifeToPlay`'s sibling, line for line; contributions ADD |
+| **gate** | `E.canPayCard` / `E.canPayManaOnly`: fewer units in the region than the count → the play is not offered, and `apply()` refuses it — exactly as unaffordable mana |
+| **attach** | `playAtTiming` (apply.ts): a `StackItem.pendingCosts` atom `{ kind: 'playSacrifice', n }`, counted against the region the card is played into |
+| **pay** | `collectItemCosts` / `payItemCost`: the PAYER picks each unit off a menu of their own units (tokens included); each dies as a real sacrifice through `destroy` — death triggers fire, bin/Unstable rules apply |
+
+Decisions, one per rule that needed making:
+
+- **The payer chooses.** The decision lists the paying seat's units in the
+  battle region and nothing else; the engine never decides for the player.
+- **Additive composition.** Two Vengeances demand two sacrifices — each
+  bracketed cost is its own payment. `unitsToPlay` sums, the atom's `n`
+  carries the total, and the collector asks unit by unit ("2 left" first).
+- **Mandatory once declared, atomic before the stack.** There is no decline
+  option: legality was gated up front (no unit → no play, and a refused play
+  pays nothing — hand, mana and board untouched), and the cost is paid in the
+  cast window before the item reaches the stack, with the play's mana.
+  Nobody may respond between cost and spell. The action model has no mid-cast
+  cancel, so "a declined play pays nothing" reduces to the gate plus a menu
+  that offers ONLY the payer's units.
+- **Scope is the R59/R60 scope, verbatim.** "Your opponents" compares
+  `ctx.seat` to the ANCHOR's controller, so a donated augment reads from the
+  HOST — "you" is the host's controller — with no extra code; "during battle"
+  is the phase test plus R12 region scoping (it taxes the battle it stands
+  in, both rounds alike); applying a mod is not playing (R37,
+  `purpose: 'mod'`).
+- **What stays outside, deliberately.** A spell token is cast from play, not
+  played (R59), and never reaches `playAtTiming`; an Ambush pays its own
+  printed cost line and today sits outside the R59/R60/R122 play-tax layer
+  alike — widening any of the three onto Ambush is one future decision, not
+  three accidents.
+- **The count is fixed at declaration**, with the rest of the bill.
+  `collectItemCosts` keeps a belt-and-braces unpayable branch for a board
+  that changes inside the window — unreachable by construction today, and
+  labelled as such at the branch.
+
+### Tests
+
+`45-hybrids-ld-b` — nine real tests replacing the `{ todo: true }` park:
+the taxed opponent choosing off a menu of only their units; the gated play
+refusing atomically with nothing half-paid; the controller's own plays,
+deployment plays (region held equal) and battle-time mods all exempt; the
+donated-augment host anchor; a death trigger firing off the sacrificed unit
+(Static Courier); a JSON round-trip of the pending decision; and two
+Vengeances imposing two sacrifices behind a two-unit gate.

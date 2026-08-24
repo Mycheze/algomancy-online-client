@@ -702,8 +702,15 @@ export interface StackItem {
    * discard, which unit to sacrifice), still to be paid. Collected in the cast
    * window — before the item reaches the stack — so nobody may respond between
    * an activation's cost and its effect. Atoms are popped as they are paid;
-   * the list is deleted when it empties. */
-  pendingCosts?: { kind: 'discard' | 'sacrificeOther' | 'discardOrSacrifice'; n: number }[];
+   * the list is deleted when it empties.
+   *
+   * R122: 'playSacrifice' is not an activation's cost but an IMPOSED
+   * additional cast cost on the PLAY itself — "Cards your opponents play
+   * during battle gain '[Sacrifice a unit]'" (Vengeance, CostMod.sacrifice).
+   * Attached by playAtTiming with `n` = the summed count, paid by the paying
+   * player's own picks through the same collector, mandatory once the play
+   * is declared (castability already gated on it being payable). */
+  pendingCosts?: { kind: 'discard' | 'sacrificeOther' | 'discardOrSacrifice' | 'playSacrifice'; n: number }[];
   /** R57: the choice-free half of an activation cost (mana, life, debt,
    * sacrifice-self), carried on the item so it can be charged AFTER the
    * ability's targets are chosen rather than at the moment of activation.

@@ -249,16 +249,17 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // (offered, accepted, fires; and gone again at regroup). Ancient One and
   // Borrower of Forms came off in the SAME change, exactly as this entry said
   // they would. Signpost for anyone following the old `todoTest` reference.
-  {
-    card: 'Vengeance', gap: 'dead', severity: 'medium',
-    missing:
-      '"[Augment] Cards your opponents play during battle gain \'[Sacrifice a unit]\'."',
-    waitingOn:
-      'A channel for IMPOSING an additional cast cost on another player\'s cards. '
-      + "R59's CostMod carries `delta` (extra mana) and `life` (extra life) and "
-      + 'nothing else; a sacrifice is neither.',
-    todoTest: '45-hybrids-ld-b.test.ts::Vengeance',
-  },
+  // Vengeance's entry was DELETED on 2026-08-24 when R122 landed exactly the
+  // channel it named: `CostMod` carries a third member now — `sacrifice`, an
+  // IMPOSED "[Sacrifice a unit]" on card plays, counted by `E.unitsToPlay`,
+  // gated in `canPayCard`/`canPayManaOnly`, attached by `playAtTiming` as a
+  // StackItem.pendingCosts 'playSacrifice' atom, and paid by the PAYER's own
+  // picks in the cast window. Its `{ todo: true }` park test is nine real
+  // tests in 45-hybrids-ld-b.test.ts (taxed opponent with the payer choosing;
+  // gated play with nothing half-paid; exempt controller, deployment and mods;
+  // donated augment; death triggers on the sacrifice; JSON round-trip of the
+  // pending decision; two-Vengeance additive composition). Signpost for
+  // anyone following the old `todoTest` reference, not a park.
   // ── BARE DEFINITIONS WITH LIVE PRINTED TEXT ─────────────────────────────
 
   {

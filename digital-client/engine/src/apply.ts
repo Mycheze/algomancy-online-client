@@ -488,6 +488,21 @@ function playAtTiming(
       e.gainDebt(seat, c.gainDebt);
     }
   };
+  /** R122: an imposed "[Sacrifice a unit]" additional cost radiating from a
+   * CostMod (Vengeance). Counted at the moment of playing, against the region
+   * the card is played into — fixed then, like the rest of the bill — and
+   * attached as a pendingCosts atom so the cast window collects it: the PAYER
+   * picks the units, before the item reaches the stack, atomically with the
+   * play's other costs (canPayCard already gated the play on the count).
+   * Deliberately HERE and not in baseItem: a spell token is cast from play,
+   * not played (R59), and never reaches this function; an Ambush pays its own
+   * printed cost line and sits outside the R59/R60/R122 play-tax layer alike. */
+  const mkItem = (region: number): StackItem => {
+    const item = baseItem(e, c, seat, region, from, unstable, fixedX);
+    const sacs = e.unitsToPlay(seat, c.name, { region });
+    if (sacs > 0) item.pendingCosts = [{ kind: 'playSacrifice', n: sacs }];
+    return item;
+  };
   if (e.s.phase === 'planning') {
     // haste step (R18): only haste cards, resolving immediately
     e.need(e.s.hasteDone !== null && !e.s.hasteDone[seat], 'not your haste step');
@@ -510,7 +525,7 @@ function playAtTiming(
       e.ev('info', `${c.name} is played during the haste step as if it had [Haste].`,
         { seat, card: c.name });
     }
-    e.castChain([baseItem(e, c, seat, region, from, unstable, fixedX)], 'resolve');
+    e.castChain([mkItem(region)], 'resolve');
   } else if (e.s.phase === 'deploy') {
     e.need(e.deploying(seat), 'not your deployment');
     e.need(timing === 'deploy' || timing === 'haste', 'battle cards can only be played during battle');
@@ -518,7 +533,7 @@ function playAtTiming(
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
-    e.castChain([baseItem(e, c, seat, region, from, unstable, fixedX)], 'resolve');
+    e.castChain([mkItem(region)], 'resolve');
   } else if (e.s.phase === 'battle') {
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(timing === 'battle', 'only battle cards can be played now');
@@ -526,7 +541,7 @@ function playAtTiming(
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
-    e.castChain([baseItem(e, c, seat, region, from, unstable, fixedX)], 'push');
+    e.castChain([mkItem(region)], 'push');
     e.settle();
   } else {
     e.illegal('cards are played during deployment or battle');

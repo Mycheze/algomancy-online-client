@@ -213,16 +213,31 @@ card('Arbiter of Vitality', {
 });
 
 // "[Augment] Cards your opponents play during battle gain '[Sacrifice a
-// unit]'." — lr/13 7/9 Occult Unit.
-// PARKED (see header): imposing an additional cast cost on ANOTHER player's
-// cards is the cost-modification layer docs/08 puts out of scope. The inert
-// augmentText entry keeps the card recognised as an augment (Stasis Sentry /
-// The Silent precedent); it plays as a vanilla 7/9 meanwhile.
+// unit]'." — lr/13 7/9 Occult Unit. LIVE (R122): the third CostMod channel —
+// an IMPOSED bracketed additional cost on card PLAYS (R59 brought mana,
+// R60 life; a sacrifice is neither, and it carries a CHOICE).
+//
+// Clause by clause:
+//  - "Cards", unqualified — units and spells alike are taxed. A spell TOKEN
+//    is cast from play, not played (R59), and never reaches the play route
+//    the atom rides on.
+//  - "your opponents" — seats other than mine. `self` is the ANCHOR
+//    (E.costModsFor), so donated as an augment the text reads from the HOST:
+//    "you" is the host's controller, no extra code (Deferral Drone, R59).
+//  - "play" — applying a mod is not playing (R37): purpose 'mod' is exempt.
+//  - "during battle" — the battle phase only, and region-scoped like every
+//    radiating mod (R12): it taxes the battle it is standing in.
+// The sacrifice is the PAYER's choice (their units in the battle region,
+// tokens included), it gates castability when they control none there, and it
+// is paid in the cast window before the item reaches the stack. Two
+// Vengeances impose two sacrifices — the channel is additive, each bracketed
+// cost its own payment. Text-box [Augment], live when played normally
+// (Tranquility / Stasis Sentry precedent).
 card('Vengeance', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: "opponents' battle cards gain '[Sacrifice a unit]' (not implemented)",
-    effect: { run: () => { /* PARKED */ } },
+  augmentable: true,
+  costMods: [{
+    sacrifice: (g, self, ctx) =>
+      g.s.phase === 'battle' && ctx.purpose === 'play' && ctx.seat !== self.controller ? 1 : 0,
   }],
 });
 

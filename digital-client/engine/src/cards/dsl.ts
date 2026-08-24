@@ -784,6 +784,27 @@ export interface CostMod {
    * card uncastable exactly as unpayable mana does.
    */
   life?: (g: E, self: Entity, ctx: CostCtx) => number;
+  /**
+   * R122: an IMPOSED bracketed additional cost — "Cards your opponents play
+   * during battle gain '[Sacrifice a unit]'" (Vengeance). Returns how many
+   * units the play additionally costs. Contributions from several mods ADD
+   * (two Vengeances demand two sacrifices): each bracketed cost is its own
+   * payment, and a sum is the only composition under which the printed text
+   * means the same thing twice.
+   *
+   * Unlike `delta` and `life` this is a cost WITH A CHOICE in it, so it
+   * cannot be charged inside payCard: the count is fixed at the moment of
+   * playing (E.unitsToPlay, asked with the rest of the bill) and rides the
+   * item into the cast window as a `StackItem.pendingCosts` atom
+   * ({ kind: 'playSacrifice' }), where the PAYING player picks each unit off
+   * a menu of their own units, tokens included — the engine never picks for
+   * the player. Each unit dies as a real sacrifice through the normal
+   * destroy path (death triggers fire; bin/Unstable rules apply). An
+   * unpayable count gates castability exactly as unaffordable mana does
+   * (E.canPayCard / canPayManaOnly): the play is not offered, and nothing is
+   * half-paid.
+   */
+  sacrifice?: (g: E, self: Entity, ctx: CostCtx) => number;
 }
 
 /**

@@ -636,6 +636,27 @@ export class E {
     return { total: Math.max(0, total), byCard };
   }
 
+  /**
+   * R122: the SACRIFICE third of the same layer — how many units playing
+   * `name` additionally costs ("Cards your opponents play during battle gain
+   * '[Sacrifice a unit]'", Vengeance). Zero unless some CostMod in the region
+   * imposes it; contributions ADD (two Vengeances, two units — each bracketed
+   * cost is its own payment).
+   *
+   * Unlike mana and life this cost carries a CHOICE, so it is NOT charged in
+   * payCard: `playAtTiming` reads this count and attaches a 'playSacrifice'
+   * pendingCosts atom to the item, which `collectItemCosts` collects in the
+   * cast window — before the item reaches the stack, by the PAYER's own
+   * picks. This query is only the bill; `canPayCard` gates on it.
+   */
+  unitsToPlay(seat: Seat, name: CardName, opts: CostOpts = {}): number {
+    const region = opts.region ?? this.actionRegion(seat);
+    const ctx = { seat, card: this.card(name), region, purpose: opts.purpose ?? 'play' as const };
+    let total = 0;
+    for (const { holder, mod } of this.costModsFor(region)) total += mod.sacrifice?.(this, holder, ctx) ?? 0;
+    return Math.max(0, total);
+  }
+
   canPayCard(seat: Seat, name: CardName, opts: CostOpts = {}): boolean {
     const c = this.card(name);
     // X spells: X is chosen and paid at cast (R35); castability needs only the
@@ -644,6 +665,12 @@ export class E {
     // R60: an unpayable LIFE tax makes the card uncastable exactly as
     // unpayable mana does — R49's rule, so 2 life is unpayable at 2 life.
     if (!this.canPayLife(seat, this.lifeToPlay(seat, name, opts))) return false;
+    // R122: an imposed "[Sacrifice a unit]" gates castability the same way —
+    // no unit to sacrifice, no play. The cost itself is chosen and paid in
+    // the cast window (playAtTiming → collectItemCosts); this is only the gate,
+    // which is what keeps the refusal atomic: nothing is ever half-paid.
+    const sacs = this.unitsToPlay(seat, name, opts);
+    if (sacs > 0 && this.unitsOf(seat, opts.region ?? this.actionRegion(seat)).length < sacs) return false;
     for (const [el, n] of Object.entries(affinityPips(c.cost))) {
       if (this.affinity(seat, el) < n) return false;
     }
@@ -2104,7 +2131,11 @@ export class E {
    * payment then throws (mana) or kills the payer (life). */
   canPayManaOnly(seat: Seat, name: CardName): boolean {
     if (this.openMana(seat) < this.manaToPlay(seat, name)) return false;
-    return this.canPayLife(seat, this.lifeToPlay(seat, name));
+    if (!this.canPayLife(seat, this.lifeToPlay(seat, name))) return false;
+    // R122: the imposed-sacrifice gate is part of the bill too — a glimpse
+    // release with no unit to sacrifice must not be offered either.
+    const sacs = this.unitsToPlay(seat, name);
+    return sacs === 0 || this.unitsOf(seat, this.actionRegion(seat)).length >= sacs;
   }
 
   /** `viewer` looks at `owner`'s hand (Bripp etc.): snapshot it so the client
@@ -5372,10 +5403,10 @@ export class E {
       const discards: DecisionOption[] = this.player(seat).hand
         .map((n, i) => ({ label: atom.kind === 'discard' ? n : `Discard ${n}`, value: { discard: i }, card: n }));
       const sacrifices: DecisionOption[] = sacs
-        .map(u => ({ label: atom.kind === 'sacrificeOther' ? u.card : `Sacrifice ${u.card}`, value: { unit: u.id }, card: u.card }));
+        .map(u => ({ label: atom.kind === 'discardOrSacrifice' ? `Sacrifice ${u.card}` : u.card, value: { unit: u.id }, card: u.card }));
       const options: DecisionOption[] =
         atom.kind === 'discard' ? discards
-          : atom.kind === 'sacrificeOther' ? sacrifices
+          : atom.kind === 'sacrificeOther' || atom.kind === 'playSacrifice' ? sacrifices
             : [...discards, ...sacrifices];
       if (!options.length) {
         // the payment vanished between activation and collection (a response
@@ -5387,7 +5418,14 @@ export class E {
         // choice half like this one. The first card that does will reach
         // here with its mana already spent — refund it or reorder the two
         // collectors then; a ruling is needed on which.
-        this.ev('info', `${item.label}: the activation cost can no longer be paid — the ability does nothing.`);
+        // R122: for a 'playSacrifice' atom this branch is unreachable by
+        // construction today — canPayCard gated the play on the count, and
+        // nothing may act between the gate and this collection — but it is
+        // kept as the belt-and-braces answer should a payCard-side trigger
+        // ever eat the last unit inside the window.
+        this.ev('info', atom.kind === 'playSacrifice'
+          ? `${item.label}: the imposed [sacrifice a unit] cost can no longer be paid — the effect is skipped.`
+          : `${item.label}: the activation cost can no longer be paid — the ability does nothing.`);
         // CARD-TODO #18: "the ability does nothing" is the ruling's own test —
         // nothing was paid and nothing will resolve, so no use is spent.
         for (const p of item.parts) { p.spent = true; this.refundPart(item, p); }
@@ -5400,9 +5438,9 @@ export class E {
           seat, kind: 'targets',
           prompt: `${item.label}: ${
             atom.kind === 'discard' ? 'discard a card'
-              : atom.kind === 'sacrificeOther' ? 'sacrifice a unit'
+              : atom.kind === 'sacrificeOther' || atom.kind === 'playSacrifice' ? 'sacrifice a unit'
                 : 'discard a card or sacrifice a nontoken unit'
-          } (activation cost${atom.n > 1 ? `, ${atom.n} left` : ''})`,
+          } (${atom.kind === 'playSacrifice' ? 'additional cost' : 'activation cost'}${atom.n > 1 ? `, ${atom.n} left` : ''})`,
           options,
         },
       );

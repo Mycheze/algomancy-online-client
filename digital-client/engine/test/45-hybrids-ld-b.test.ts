@@ -9,9 +9,9 @@
  * Splort, R40), counter/rot proliferation (Proliferating Slime), bin-fed
  * attribute theft (The Omniphage) and the two vanillas (Hammer of Justice,
  * Rime Wraith). Deferral Drone is LIVE (R59 CostMod + an Entity.budgets
- * charge, un-parked 2026-08-22). Vengeance is still parked, but no longer
- * on "there is no cost-modification layer" (R59 shipped it) — the todos name
- * what each is actually waiting on. Inexorable Miasma's bin half is live (R51).
+ * charge, un-parked 2026-08-22). Vengeance is LIVE (R122: the CostMod
+ * `sacrifice` channel — an imposed additional cast cost paid in the cast
+ * window, un-parked 2026-08-24). Inexorable Miasma's bin half is live (R51).
  * States are built explicitly (give/spawn/giveResources/whiteBox) so parallel
  * card registration can't shift assertions. Seeds: 4500-4599.
  */
@@ -19,10 +19,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import type { Seat } from '../src/types.ts';
-import { E, Suspended } from '../src/engine.ts';
+import { E, IllegalAction, Suspended } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
-  spawn, toDeployment, toNextBattle, unitsOf,
+  effStats, ent, finishBattle, give, giveResources, offered, ownAttrs, pass,
+  pick, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
 /** run engine mutations white-box; a trigger's decision may suspend —
@@ -763,20 +763,220 @@ test('The Omniphage: gains every attribute printed on units in your bin (live)',
   assert.ok(!ownAttrs(h, omni).has('Sluggish'), '"YOUR bin" — not the opponent’s');
 });
 
-// ── Vengeance (PARKED) ───────────────────────────────────────────────────
+// ── Vengeance (R122) ─────────────────────────────────────────────────────
+// The un-park of the old { todo: true } test: CostMod carries a `sacrifice`
+// channel now, counted by E.unitsToPlay, gated in canPayCard, and paid as a
+// StackItem.pendingCosts 'playSacrifice' atom in the cast window.
 
-test("Vengeance: opponents' battle cards gain '[Sacrifice a unit]'", { todo: true }, () => {
-  // PARKED — but not on the cost-modification layer any more: R59's CostMod
-  // exists, it already applies to BOTH players (Tranquility and Stasis Sentry
-  // are unqualified taxes on everyone), and R60 gave it a second channel for
-  // life (Arbiter of Armistice).
-  //
-  // WAITING ON: a SACRIFICE channel on CostMod. It carries `delta` (extra
-  // mana) and `life` (extra life) and nothing else, so an imposed
-  // "[Sacrifice a unit]" has no way to be charged — and, unlike mana or life,
-  // it is a cost with a CHOICE in it, so it would also need to reach the cast
-  // window's pendingCosts rather than being charged outright, and to gate the
-  // opponent's cast when they control no unit.
+test("Vengeance: opponents' battle cards gain '[Sacrifice a unit]' — the payer picks, off a menu of THEIR units only", () => {
+  const h = new Harness(4545);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  spawn(h, A, 'Vengeance');                 // radiates from A's home — the battle region below
+  toNextBattle(h, D);                       // D attacks INTO A's region
+  const atk = spawn(h, D, 'Good Whale');    // vanilla — no spawn trigger to muddy the stack
+  const spare = spawn(h, D, 'Unit Token');
+  h.do({ type: 'declareAttack', seat: D, columns: [[atk], [spare]] });
+  giveResources(h, D, 'fire', 4);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
+  pick(h, { player: A });                   // the spell's own target first (R57)
+  // then the imposed cost: a real decision, and the PAYER owns it
+  const dec = h.state.decision!;
+  assert.equal(dec.seat, D, 'the paying player chooses — never the engine, never the Vengeance side');
+  assert.ok(dec.prompt.includes('sacrifice a unit') && dec.prompt.includes('additional cost'), dec.prompt);
+  // mandatory once the play is declared: the menu is their units — the token
+  // included ("a unit", unqualified) — and NOTHING else, no decline option
+  assert.deepEqual(offered(h).sort(),
+    [JSON.stringify({ unit: atk }), JSON.stringify({ unit: spare })].sort(),
+    "exactly D's two units: no enemy units, no skip");
+  assert.equal(h.state.stack.length, 0, 'the cost is paid BEFORE the item reaches the stack');
+  pick(h, { unit: spare });
+  assert.ok(!ent(h, spare), 'the picked unit died');
+  assert.ok(ent(h, atk), 'and the other survived');
+  assert.ok(h.log.some(l => l.includes('sacrifices Unit Token')), 'it died as a SACRIFICE');
+  assert.equal(h.state.stack.length, 1, 'only once the cost is paid does the spell reach the stack');
+  pass(h); pass(h);
+  finishBattle(h);
+});
+
+test('Vengeance: no unit to sacrifice — the play is not offered, refused atomically, nothing half-paid', () => {
+  const h = new Harness(4546);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const v = spawn(h, A, 'Vengeance');
+  toNextBattle(h, A);                       // A attacks INTO D's region; D defends with NOTHING
+  h.do({ type: 'declareAttack', seat: A, columns: [[v]] });
+  pass(h);                                  // A passes → D holds priority
+  giveResources(h, D, 'fire', 4);
+  const bolt = give(h, D, 'Flame of History');
+  const hand0 = h.state.players[D]!.hand.length;
+  const open0 = h.state.players[D]!.resources.filter(r => r.state === 'open').length;
+  assert.ok(!h.legal(D).some(a => a.type === 'playCard' && a.handIndex === bolt),
+    'an unpayable additional cost gates legality, exactly as unaffordable mana does');
+  assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: bolt }), IllegalAction,
+    'and apply() refuses it too');
+  assert.equal(h.state.players[D]!.hand.length, hand0, 'the card never left the hand');
+  assert.equal(h.state.players[D]!.resources.filter(r => r.state === 'open').length, open0,
+    'and no mana was spent — a refused play pays nothing');
+  const chump = spawn(h, D, 'Unit Token');  // D's home IS the battle region here
+  assert.ok(h.legal(D).some(a => a.type === 'playCard' && a.handIndex === bolt),
+    'one unit and the same play is castable again');
+  h.do({ type: 'playCard', seat: D, handIndex: bolt });
+  pick(h, { player: A });
+  pick(h, { unit: chump });
+  assert.ok(!ent(h, chump), 'paid with the only unit');
+  pass(h); pass(h);
+  finishBattle(h);
+});
+
+test("Vengeance: its controller's OWN battle plays are untouched", () => {
+  const h = new Harness(4547);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const v = spawn(h, A, 'Vengeance');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[v]] });   // it carries its own text into battle
+  giveResources(h, A, 'fire', 4);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Flame of History') });
+  pick(h, { player: D });
+  assert.equal(h.state.decision, null, '"your opponents" — no sacrifice asked of its own controller');
+  assert.equal(h.state.stack.length, 1, 'the spell went straight to the stack');
+  assert.ok(ent(h, v), 'and the Vengeance stands');
+  pass(h); pass(h);
+  finishBattle(h);
+});
+
+test('Vengeance: deployment plays are untaxed — "during battle" is a real gate (region held equal)', () => {
+  const h = new Harness(4548);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const v = spawn(h, A, 'Vengeance');
+  const chump = spawn(h, D, 'Unit Token');
+  // park A's Vengeance IN D's home region, so only the PHASE separates this
+  // from the battle case — R12 region scope is not what exempts it here
+  whiteBox(h, e => { e.entity(v)!.region = e.homeRegion(D); });
+  h.do({ type: 'doneDeploying', seat: A });
+  giveResources(h, D, 'fire', 1);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Ignis Sprite') });
+  assert.equal(h.state.decision, null, 'no sacrifice decision during deployment');
+  assert.ok(ent(h, chump), 'nothing died');
+  assert.ok(unitsOf(h, D).some(u => u.card === 'Ignis Sprite'), 'the unit simply enters');
+});
+
+test('Vengeance: applying a mod during battle is not playing (R37) — no tax on an augment', () => {
+  const h = new Harness(4549);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  spawn(h, A, 'Vengeance');
+  toNextBattle(h, D);
+  const atk = spawn(h, D, 'Ignis Sprite');
+  h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
+  giveResources(h, D, 'fire', 6);
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Smouldering Inferno'), hostId: atk });
+  assert.equal(h.state.decision, null, 'no sacrifice asked for a mod — purpose "mod" is exempt');
+  let guard = 20;   // a battle augment rides the stack (R79) — let it attach
+  while (h.state.stack.length && guard-- > 0) pass(h);
+  assert.ok(ent(h, atk), 'the host lives');
+  assert.equal(ent(h, atk)!.mods.length, 1, 'the augment is applied, and no sacrifice was ever asked');
+  finishBattle(h);
+});
+
+test('Vengeance: donated as an augment, the HOST\'s controller is "you" — their opponents are taxed', () => {
+  const h = new Harness(4550);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const host = spawn(h, A, 'Ignis Sprite');
+  giveResources(h, A, 'light', 1);
+  giveResources(h, A, 'fire', 1);
+  giveResources(h, A, 'earth', 11);                            // lr / 13
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Vengeance'), hostId: host });
+  const chump = spawn(h, D, 'Unit Token');
+  const spare = spawn(h, D, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] }); // the HOST carries the donated text into battle
+  pass(h);                                                     // A passes → D holds priority
+  giveResources(h, D, 'fire', 4);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
+  pick(h, { player: A });
+  assert.ok(h.state.decision, "the host's opponent is taxed — the mod anchors on the host (R59 anchoring)");
+  pick(h, { unit: chump });
+  assert.ok(!ent(h, chump) && ent(h, spare), 'one sacrifice, the payer chose which');
+  pass(h); pass(h);
+  finishBattle(h);
+});
+
+test('Vengeance: the imposed sacrifice is a REAL death — death triggers fire (Static Courier)', () => {
+  const h = new Harness(4551);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  spawn(h, A, 'Vengeance');
+  toNextBattle(h, D);
+  const courier = spawn(h, D, 'Static Courier');   // 3/2 — "When I die, create a Fireball X (X = my power)"
+  h.do({ type: 'declareAttack', seat: D, columns: [[courier]] });
+  giveResources(h, D, 'fire', 4);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
+  pick(h, { player: A });
+  pick(h, { unit: courier });                      // pay the imposed cost with the Courier
+  assert.ok(!ent(h, courier), 'sacrificed — through the normal destroy path');
+  let guard = 20;
+  while (h.state.stack.length && guard-- > 0) pass(h);   // death trigger + the spell both resolve
+  const fires = tokensOf(h, D).filter(t => t.card === 'Fireball');
+  assert.equal(fires.length, 1, 'its death trigger fired');
+  assert.equal(fires[0]!.x, 3, 'X = its power when it died');
+  finishBattle(h);
+});
+
+test('Vengeance: a pending sacrifice decision survives a JSON round-trip and drives on', () => {
+  const h = new Harness(4552);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  spawn(h, A, 'Vengeance');
+  toNextBattle(h, D);
+  const atk = spawn(h, D, 'Good Whale');    // vanilla — no spawn trigger to muddy the stack
+  const spare = spawn(h, D, 'Unit Token');
+  h.do({ type: 'declareAttack', seat: D, columns: [[atk], [spare]] });
+  giveResources(h, D, 'fire', 4);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Flame of History') });
+  pick(h, { player: A });
+  assert.ok(h.state.decision, 'the sacrifice decision is pending');
+  h.state = JSON.parse(JSON.stringify(h.state));               // save + load
+  assert.ok(h.state.decision, 'the decision round-trips');
+  pick(h, { unit: atk });
+  assert.ok(!ent(h, atk) && ent(h, spare), 'the loaded game pays and plays on');
+  assert.equal(h.state.stack.length, 1, 'and the spell reaches the stack as normal');
+  pass(h); pass(h);
+  finishBattle(h);
+});
+
+test('Vengeance: two of them impose TWO sacrifices — additive, and the gate counts both', () => {
+  const h = new Harness(4553);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  spawn(h, A, 'Vengeance');
+  spawn(h, A, 'Vengeance');
+  toNextBattle(h, D);
+  const atk = spawn(h, D, 'Ignis Sprite');
+  h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
+  giveResources(h, D, 'fire', 4);
+  const bolt = give(h, D, 'Flame of History');
+  // one unit cannot pay two imposed sacrifices — gated, never half-paid
+  assert.ok(!h.legal(D).some(a => a.type === 'playCard' && a.handIndex === bolt),
+    'one unit is not enough under two Vengeances');
+  const t1 = spawn(h, D, 'Unit Token');
+  const t2 = spawn(h, D, 'Unit Token');
+  // spawned at home; walk them to the battle region so they can pay (R12)
+  whiteBox(h, e => { for (const id of [t1, t2]) e.entity(id)!.region = e.s.battle!.region; });
+  assert.ok(h.legal(D).some(a => a.type === 'playCard' && a.handIndex === bolt),
+    'three units clear the two-sacrifice gate');
+  h.do({ type: 'playCard', seat: D, handIndex: bolt });
+  pick(h, { player: A });
+  assert.ok(h.state.decision!.prompt.includes('2 left'),
+    'each bracketed cost is its own payment — the printed reading is additive');
+  pick(h, { unit: t1 });
+  pick(h, { unit: t2 });
+  assert.ok(!ent(h, t1) && !ent(h, t2) && ent(h, atk), 'exactly two die, and the payer chose which');
+  pass(h); pass(h);
+  finishBattle(h);
 });
 
 test('Vengeance: plays as a 7/9 and is recognised as an augment', () => {
