@@ -429,29 +429,16 @@ card('Stormsowing Nimbus', {
 // (count: 2, min: 1); each surviving target takes 2. Bounded graft
 // ([Switch1], R9).
 //
-// ⚠ NEEDS-ESCALATION — LITERAL-READING AUDIT (2026-08-24). `min: 1` is a
-// COUNT NARROWING the printed text does not carry: "UP TO two" means nought
-// is a legal declaration, and `min: 0` is this repo's own spelling of "up to"
-// on every OTHER card that prints it (R5; Minor Kraken's "recall up to one
-// target unit", Prismatic Observer, Necromantic Rebuke, Grob, Nothyr). The
-// narrow reading was never a ruling — `min` DEFAULTS to 1 and only "up to"
-// cards override it, and this one did not. Live consequence: the caster is
-// FORCED to shoot something whenever any unit in the region is legal, their
-// own board included, which the card nowhere says.
-//
-// The fix is `min: 0` plus an info line for the nothing-declared resolution
-// (65-effect-conformance: a part that resolves having done nothing must say
-// so). It was written, red-checked green, and then REVERTED, because it has
-// one piece of collateral outside this file's remit:
-// `test/21-fixes.test.ts:253` ("multi-target validation: no duplicate
-// targets, done only after the minimum") uses Twin Flame as the fixture for a
-// GENERAL engine assertion — "no done before the min" — that only holds for a
-// min >= 1 spec. That test's intent is untouched by this change; it just needs
-// re-pointing at any of the pool's count-2/min-2 cards (Fight, Squish, Body
-// Swap, Reconfigure, Necromorph, Chombot, Battle, Organic Exchange …).
-// Land the two together.
+// R126 — "UP TO" MEANS YOU MAY DECLARE NONE. `min: 1` forced the caster to
+// shoot whenever any unit was legal, their own board included. Declaring
+// nothing is a legal declaration for an "up to" spell, and `min: 0` is this
+// repo's own spelling of it on every other card that prints the words
+// (Prismatic Observer, Necromantic Rebuke, Grob, Nothyr, Lumengrove Lurker,
+// Delver of the Ephemeral, Malevolent Machinations). `min` defaults to 1, so
+// only an "up to" card overrides it — and the two that print the words and
+// did NOT override it were this card and Minor Kraken, both fixed together.
 const twinFlame: EffectDef = {
-  targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units', count: 2, min: 1 },
+  targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units', count: 2, min: 0 },
   run: (g, ctx) => {
     for (const t of ctx.targets) {
       if (isEnt(t) && g.entity(t.id)) {

@@ -596,7 +596,11 @@ card('Lurking Slimebeast', {});
 const krakenRecall: EffectDef = {
   // R64: "with 5 or less defense" is a targeting restriction.
   targets: {
+    // R126: "up to one" — declaring none is legal, so min is 0, not the
+    // default 1. Without it an attacking Kraken was forced to recall
+    // something whenever any unit in reach was legal, including your own.
     what: 'unit', prompt: 'Minor Kraken: recall up to one target unit with 5 or less defense',
+    min: 0,
     restrict: unitRestrict((g, u) => g.effStats(u)[1] <= 5),
   },
   run: (g, ctx) => {

@@ -6825,3 +6825,30 @@ killing the 7/5 and visibly carrying {Deadly} in its own `ownAttrs`, and the
 REGION boundary — a Herald at home deadly-fies nothing in the battle region,
 asserted on the fixture itself so the test cannot silently stop meaning
 anything.
+
+## R126 — "up to N" means you may declare NONE
+
+*(2026-08-24. Two cards, no engine change — found by the literal-reading audit.)*
+
+`TargetSpec.min` defaults to 1, so a spec that prints "up to" must override it.
+Twin Flame ("I deal 2 damage to each of **up to** two target units") and Minor
+Kraken ("Recall **up to** one target unit with 5 or less defense") did not, and
+were therefore FORCED to shoot or recall whenever any legal unit was in reach —
+including the caster's own board, which is the case that makes it a real cost
+rather than a technicality. Every other card printing the words already spells
+it `min: 0` (Prismatic Observer, Necromantic Rebuke, Grob, Nothyr, Lumengrove
+Lurker, Delver of the Ephemeral, Malevolent Machinations), so this is the pool
+agreeing with itself, not a new rule.
+
+**A fixture rotted with it, and that is the interesting part.** `21-fixes`'s
+"multi-target validation" test drove Twin Flame to assert a GENERAL engine
+property — "done is offered only after the minimum". Twin Flame was the pool's
+only `count: 2, min: 1` spec, and it was that only *because of this bug*. Fixing
+the card left the test describing a shape no card has. It is now two tests: the
+duplicate-refusal and below-minimum done-gate against **Fight** (a real
+`min: 2`), and the "up to" behaviour against Twin Flame itself, which now offers
+"No more targets" immediately and completes a cast having shot nothing.
+
+Worth recognising: **a test fixture that has to be a specific card is evidence
+about that card.** When the only card with a shape is the card with the bug, the
+shape is the bug.

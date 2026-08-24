@@ -235,8 +235,46 @@ test('Flowstone Arcanite: Swift-step counters land BEFORE normal combat damage',
 
 // ── multi-target casts ────────────────────────────────────────────────
 
-test('multi-target validation: no duplicate targets, done only after the minimum', () => {
+// ⚠ THIS FIXTURE MOVED (R126, 2026-08-24). It used to be one test driving
+// Twin Flame, which was the pool's only `count: 2, min: 1` spec — and it was
+// that only because it printed "up to two target units" and failed to say so
+// in code. With `min: 0` where it belongs, NO card has count >= 2 with a min
+// of 1, so "done is offered only after the first pick" no longer describes
+// anything in the pool. The two general engine properties the old test bundled
+// are worth keeping, so they are pinned separately against cards that really
+// have those shapes: duplicate-refusal and the done-gate below the minimum on
+// a min-2 spec (Fight), and the "up to" behaviour on Twin Flame itself.
+
+test('multi-target validation: no duplicate targets, and no done below the minimum', () => {
   const h = new Harness(2111);
+  const A: Seat = 0, D: Seat = 1;
+  h.state.initiative = A;
+  const u1 = spawn(h, A, 'Unit Token');
+  const u2 = spawn(h, A, 'Bubb');
+  const mine = spawn(h, D, 'Grox');            // Fight needs a target ALLY of the caster
+  giveResources(h, D, 'earth', 3);
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);
+  h.do({ type: 'declareAttack', seat: A, columns: [[u1], [u2]] });
+  h.do({ type: 'passPriority', seat: A });
+  const i = h.state.players[D]!.hand.push('Fight') - 1;
+  h.do({ type: 'playCard', seat: D, handIndex: i });
+  const first = h.state.decision!;
+  assert.ok(!first.options.some(o => o.label === 'No more targets'),
+    'no done before the min — Fight prints two targets and means both');
+  h.do({ type: 'decide', seat: D, choice: 0 });
+  const second = h.state.decision!;
+  const firstVal = JSON.stringify(first.options[0]!.value);
+  assert.ok(!second.options.some(o => JSON.stringify(o.value) === firstVal),
+    'no duplicate targets');
+  assert.ok(!second.options.some(o => o.label === 'No more targets'),
+    'still no done at one of two — the minimum is two');
+  assert.ok(mine, 'the ally fixture is used');
+});
+
+test('R126: an "up to" spell may decline every target — Twin Flame declares none', () => {
+  const h = new Harness(2112);
   const A: Seat = 0, D: Seat = 1;
   h.state.initiative = A;
   const u1 = spawn(h, A, 'Unit Token');
@@ -250,15 +288,13 @@ test('multi-target validation: no duplicate targets, done only after the minimum
   const i = h.state.players[D]!.hand.push('Twin Flame') - 1;
   h.do({ type: 'playCard', seat: D, handIndex: i });
   const first = h.state.decision!;
-  assert.ok(!first.options.some(o => o.label === 'No more targets'), 'no done before the min');
-  h.do({ type: 'decide', seat: D, choice: 0 });
-  const second = h.state.decision!;
-  const firstVal = JSON.stringify(first.options[0]!.value);
-  assert.ok(!second.options.some(o => JSON.stringify(o.value) === firstVal), 'no duplicate targets');
-  assert.ok(second.options.some(o => o.label === 'No more targets'), 'done offered after the min');
-  const done = second.options.findIndex(o => o.label === 'No more targets');
-  h.do({ type: 'decide', seat: D, choice: done });   // stop at one target
-  assert.equal(h.state.decision, null, 'cast complete with a single target');
+  assert.ok(first.options.some(o => o.label === 'No more targets'),
+    '"up to two" — declaring NONE is a legal declaration, so done is offered at once');
+  const done = first.options.findIndex(o => o.label === 'No more targets');
+  h.do({ type: 'decide', seat: D, choice: done });
+  assert.equal(h.state.decision, null, 'the cast completes with no targets at all');
+  assert.equal(h.state.entities[u1]!.damage, 0, 'and nothing was shot');
+  assert.equal(h.state.entities[u2]!.damage, 0);
 });
 
 test('legalActions OFFERS deploy plays to both seats at once (not just initiative)', () => {
