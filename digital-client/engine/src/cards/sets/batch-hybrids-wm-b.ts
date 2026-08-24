@@ -27,11 +27,15 @@
  *    Abduct in that field's doc), so only units it can legally reach are
  *    offered. This entry used to say it was "still checked at RESOLUTION
  *    (TargetSpec cannot read x at cast time)".
- *  - GAIN CONTROL (Abduct, Mindwarp Sporefrog): flipping Entity.controller.
- *    The flipped unit LEAVES any formation it fought in (it fights for
- *    neither side for the rest of the battle) and walks to its new
- *    controller's home at regroup (regroup reads controller). Its owner is
- *    unchanged — recall/death still send the card to the owner's hand/bin.
+ * ✔ GAIN CONTROL (Abduct, Mindwarp Sporefrog) IS E.giveControl, and it is no
+ *    longer an approximation. This entry used to read "flipping Entity
+ *    .controller … walks to its new controller's home at regroup". R112 made
+ *    it whole: the unit's MODS change controller with it, the unit leaves any
+ *    formation it fought in (it fights for neither side for the rest of the
+ *    battle), and it moves to the new controller's home IMMEDIATELY when that
+ *    seat is not present in the region it is standing in — mods and all —
+ *    rather than waiting for regroup. Its owner is unchanged, so recall/death
+ *    still send the card to the owner's hand/bin (R65).
  * ✔ ROTSPORE HERALD's "Everything is deadly" is LITERAL as of R125. This entry
  *    used to end "whether everything should reach non-unit sources needs a
  *    ruling, not a guess" — the owner ruled 2026-08-24 that it reaches all
@@ -448,11 +452,28 @@ card('Floral Singularity', {
 });
 
 // "[Augment] After combat, delete all tokens." — gm/2 2/2 Alien Fungus Unit.
-// Text-box [Augment], live when played normally. "All tokens" = every unit
-// token AND spell token in the battle region (R12 — other regions don't
-// exist). Unit tokens are deleted through destroy() (formation cleanup,
-// death bookkeeping — a deleted token is erased, not binned); spell tokens
-// are erased directly (they don't "die", so no despawn triggers misfire).
+// Text-box [Augment], live when played normally.
+//
+// "ALL TOKENS" IS UNQUALIFIED BY KIND, and the engine has THREE token shapes,
+// not two (the R125 reading: the printed text carries no qualifier, so do not
+// invent one out of whichever shapes the sweep happened to know about):
+//   · kind 'unit'      — a unit token, deleted through destroy() so formation
+//                        cleanup and death bookkeeping run (a deleted token is
+//                        erased, not binned);
+//   · kind 'spellToken'— erased directly; it does not "die", so no despawn
+//                        trigger misfires;
+//   · kind 'mod'       — an AUGMENT that is itself a token. Today that is the
+//                        Wraith and only the Wraith (E.augmentWraith is the
+//                        sole attachMod with token:true — Blight's End mints
+//                        them by the X-full), and it used to walk out of
+//                        "delete all tokens" untouched because the sweep could
+//                        only see bodies. A mod carries `region: host.region`
+//                        (attachMod), so R12 scopes it for free; it is deleted
+//                        the way Reclaim the Fallen and eraseUnit take a mod
+//                        off a host — unlink from `host.mods`, then delete —
+//                        because a mod is not a body and has no death of its
+//                        own to run.
+// Region-scoped throughout (R12 — other regions don't exist for this).
 card('Ominous Growth', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
@@ -469,6 +490,21 @@ card('Ominous Growth', {
             g.ev('info', `${t.card} ${t.x ?? ''} is deleted (Ominous Growth).`);
             deleted++;
           }
+        }
+        // the third shape: a TOKEN MOD riding on a host (R71's Wraith). The
+        // host survives — the token is the augment, not the unit wearing it.
+        for (const m of Object.values(g.s.entities)) {
+          if (m.kind !== 'mod' || !m.token || m.region !== ctx.region) continue;
+          const host = m.modOf !== undefined ? g.entity(m.modOf) : undefined;
+          if (host) {
+            const k = host.mods.indexOf(m.id);
+            if (k !== -1) host.mods.splice(k, 1);
+          }
+          delete g.s.entities[m.id];
+          g.ev('info',
+            `${m.card} is deleted off ${host?.card ?? 'its host'} (Ominous Growth).`,
+            host ? { unit: host.id } : {});
+          deleted++;
         }
         if (!deleted) g.ev('info', 'Ominous Growth: there is no token here to delete.');
       },

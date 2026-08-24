@@ -64,13 +64,19 @@
  *    the Drone needs a spend path that survives it too. See the card below and
  *    R119; its card-ledger entry is deleted.
  *
+ * ✔ VENGEANCE IS LIVE (R122). This entry used to sit under PARKED — "there is
+ *    no channel for 'and a sacrifice' … Inert [Augment] text; plays as a 7/9"
+ *    — and that expired when R122 added the THIRD CostMod channel: an imposed
+ *    bracketed SACRIFICE on card plays, which gates the opponent's cast and is
+ *    paid in the cast window. See the card's own comment for the clause walk.
+ *
+ * ✔ BROUGH'S "EVERYTHING" IS LITERAL (R125's principle, applied 2026-08-24).
+ *    The static used to be filtered to `kind === 'unit'`, which is exactly the
+ *    invented qualifier the Rotspore ruling took off. Removed; see the card for
+ *    what it does and does not change (nothing arithmetical, today).
+ *
  * PARKED (needs engine machinery that does not exist yet):
- *  - Vengeance: "Cards your opponents play during battle gain '[Sacrifice a
- *    unit]'" IMPOSES an additional cast cost on other players' cards. Again the
- *    layer exists but not this channel: CostMod carries `delta` (extra mana)
- *    and `life` (extra life, R60's Arbiter of Armistice), and there is no
- *    channel for "and a sacrifice" — nor any way to make the imposed cost gate
- *    the opponent's cast. Inert [Augment] text; plays as a 7/9.
+ *  - nothing in this batch.
  *
  * UNPARKED by the R51 wave: Inexorable Miasma's second sentence ("After
  * combat, if I am in your bin …") is a `zone: 'bin'` trigger — see R51 and the
@@ -246,14 +252,35 @@ card('Vengeance', {
 // "[Augment] Everything is balanced. {i}(The power and defense of balanced
 // units are equal to the greater of the two.)" — le/4 0/4 Cosmic Unit.
 //
-// "Everything" is unowned and unqualified: every unit in the region, both
+// "Everything" is unowned and unqualified: EVERYTHING in the region, both
 // players', the carrier included. {Balanced} is a layer-4 attribute (R19) —
-// granting it through a static lands in ownAttrs, which layer4Attrs reads, so
-// the max-of-the-two rewrite happens in the right layer for free.
+// granting it through a static lands in ownAttrs, which statLayerAttrs reads,
+// so the max-of-the-two rewrite happens in the right layer for free.
+//
+// The predicate used to read `target.kind === 'unit'`, which is the same
+// invented qualifier R125 took off Rotspore Herald: `StaticMod.affects` is
+// typed over an `Entity`, units were the case in mind, and the shape of the
+// mechanism got promoted into a rule about the card. It is off, for the same
+// reason — the printed text has nothing to hang it on.
+//
+// ⚠ HONEST NOTE ON WHAT THAT CHANGES: nothing arithmetical, today. The three
+// spell tokens in the pool (Fireball / Poison / Crystal) all print 3/3, and
+// max(3,3) is 3 — {Balanced} is a no-op on them, and a mod entity's stats are
+// read by nothing. So this is the GRANT being literal (a Fireball standing
+// under a Brough really does wear {Balanced}: E.ownAttrs and the text box's
+// projections both say so), not a stat change nobody was getting. It is worth
+// having anyway: an unequal-statted spell token, or any future reader of a
+// non-unit's stats, gets the printed answer instead of the mechanism's.
+//
+// Unlike Rotspore Herald, this sentence needs only ONE channel: R125's second
+// mechanism (`effectAttrs`) exists to attribute a resolving SPELL that has no
+// entity, and a spell has no power or defense for "balanced" to act on —
+// `grantedAttrs` is read only by dealEffectDamageAll's source-attribute set
+// ({Deadly}/{Poisonous}/{Resonant}/{Piercing}/{Unaware}). Checked, not assumed.
 card('Brough', {
   augmentable: true,   // text-box [Augment] implemented as a static (see below)
   statics: [{
-    affects: (_g, _self, target) => target.kind === 'unit',
+    affects: () => true,
     attrs: ['Balanced'],
   }],
 });

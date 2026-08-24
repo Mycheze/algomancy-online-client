@@ -32,9 +32,12 @@
  *    victim receiving double does not gain the extra (dealEffectDamage returns
  *    nothing to read back). Sacrificing the very unit that was targeted is
  *    detected: no damage, no life.
- *  - "GAINS CONTROL" (Bloppert) is the batch-hybrids-wm-b approximation: flip
- *    Entity.controller and drop out of any formation; regroup then walks the
- *    unit home to its new controller.
+ * ✔ "GAINS CONTROL" (Bloppert) is E.giveControl and is no longer an
+ *    approximation. This entry used to read "flip Entity.controller and drop
+ *    out of any formation; regroup then walks the unit home". R112: the mods
+ *    change controller with the unit, and the walk home happens AT ONCE when
+ *    the new controller is not present in the region — see batch-hybrids-wm-b's
+ *    header, which this used to defer to for the older wording.
  *  - ZEPHYRZOA's "when my column deals combat damage to an opponent" is the
  *    Bloodwind Revenant / Rippleback Skulker reconstruction: combat damage to a
  *    player emits only 'lifeLost' ({ why: 'combat' }), with no column
