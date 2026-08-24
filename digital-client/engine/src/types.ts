@@ -973,7 +973,8 @@ export type EventType =
   // R124: a card LEFT a player's bin. Fired by E.removeFromBin — the ONE choke
   // point every bin removal in the tree goes through — with
   // `data: { seat, card, reason }` (`seat` = the bin's owner, `reason` a short
-  // verb like 'recalled'/'erased'/'cached' for anyone reading the event
+  // verb like 'recalled'/'erased'/'cached'/'modded' (an augment or graft
+  // applied out of the bin) for anyone reading the event
   // stream). A bulk sweep (Finality, Reality Siphoner, Zephyrzoa) fires it
   // once PER CARD, back-to-front. `msg` is '' on purpose: every removal site
   // already announces itself in its own words, so this is a signal-only event

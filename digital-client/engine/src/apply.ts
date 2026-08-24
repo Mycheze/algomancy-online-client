@@ -539,8 +539,10 @@ function playAtTiming(
     // 'erased' event is what routes the card into the public erased pile
     // (E.ev's R65 hook).
     if (binErase) {
-      const grantor = e.player(seat).bin[binErase.index]!;
-      e.player(seat).bin.splice(binErase.index, 1);
+      // R124: the exit goes through THE choke point, so 'leftBin' fires for
+      // the grantor. The 'erased' ANNOUNCE below is still what feeds the R65
+      // public pile — once; removeFromBin itself never touches the pile.
+      const grantor = e.removeFromBin(seat, binErase.index, 'erased')!;
       e.ev('erased',
         `${grantor} is erased from ${e.pname(seat)}'s bin — ${c.name} is played as if it had [Haste].`,
         { seat, card: grantor });
@@ -1034,7 +1036,11 @@ function zonePeek(e: E, seat: Seat, from: ModZone, index: number): CardName | un
 
 function zoneTake(e: E, seat: Seat, from: ModZone, index: number): void {
   if (from === 'cache') e.uncache(seat, index);
-  else e.player(seat)[from].splice(index, 1);
+  // R124: a bin exit goes through THE choke point so 'leftBin' fires — the
+  // old direct `[from].splice` here bypassed it (CARD-TODO #26), which no
+  // reachable card noticed only because Rotling carries no mod symbol.
+  else if (from === 'bin') e.removeFromBin(seat, index, 'modded');
+  else e.player(seat).hand.splice(index, 1);
 }
 
 /**

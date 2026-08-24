@@ -133,6 +133,45 @@ test('grafts can be applied from the bin', () => {
   assert.equal(tokensOf(h, p).length, 4, 'Fireball 1 (base) + three Fireball 1 (Flame Juggle graft)');
 });
 
+test("graft from the bin goes through the R124 choke point: exactly one 'leftBin', reason 'modded'", () => {
+  // zoneTake's bin branch used to splice the bin DIRECTLY, so no 'leftBin'
+  // ever fired for a graft applied out of the bin (CARD-TODO #26). Nothing
+  // reachable broke — Rotling, the only listener, carries no graft symbol —
+  // but a future leftBin listener that IS a mod card would have missed its
+  // own exit silently. The event stream is the assertion, not the zone.
+  const h = new Harness(921);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  giveResources(h, p, 'fire', 6);
+  const oracle = spawn(h, p, 'Oracle of the Flame');
+  h.state.players[p]!.bin.push('Flame Juggle');
+  h.do({ type: 'graft', seat: p, from: 'bin', index: 0, hostId: oracle, position: 0 });
+  assert.equal(ent(h, oracle)!.mods.length, 1, 'the graft really attached');
+  assert.equal(h.state.players[p]!.bin.length, 0, 'and the card left the bin');
+  const left = h.events.filter(ev => ev.type === 'leftBin');
+  assert.equal(left.length, 1, "exactly ONE 'leftBin' fired");
+  assert.deepEqual(left[0]!.data, { seat: p, card: 'Flame Juggle', reason: 'modded' },
+    'through E.removeFromBin, with the mod-application reason verb');
+});
+
+test("augment from the bin goes through the R124 choke point: exactly one 'leftBin', reason 'modded'", () => {
+  // the augment sibling of the graft test above — doAugment's deployment
+  // branch routes through the same zoneTake, and R41 allows the bin zone.
+  const h = new Harness(922);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const host = spawn(h, p, 'Rune Channeler');
+  giveResources(h, p, 'fire', 4);
+  h.state.players[p]!.bin.push('Ephemeral Skywalker');
+  h.do({ type: 'augment', seat: p, from: 'bin', index: 0, hostId: host });
+  assert.ok(ownAttrs(h, host).has('Flying'), 'the augment really attached');
+  assert.equal(h.state.players[p]!.bin.length, 0, 'and the card left the bin');
+  const left = h.events.filter(ev => ev.type === 'leftBin');
+  assert.equal(left.length, 1, "exactly ONE 'leftBin' fired");
+  assert.deepEqual(left[0]!.data, { seat: p, card: 'Ephemeral Skywalker', reason: 'modded' },
+    'through E.removeFromBin, with the mod-application reason verb');
+});
+
 test('bounded graft EFFECT skips after first firing; unbounded cause keeps firing (R9)', () => {
   const h = new Harness(93);
   toDeployment(h);

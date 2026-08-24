@@ -168,3 +168,48 @@ test('no ability is both bounded and zone-dispatched without a real budget holde
     + "with a rationale, not a default: check the new card's printed text against it "
     + '(is per-seat-per-name what IT means?), then add it to this list on purpose.');
 });
+
+// ── R124: the choke point stays the ONLY way out of a bin (CARD-TODO #26) ──
+//
+// R124's claim — every removal of a card from a player's bin goes through
+// `E.removeFromBin`, which fires 'leftBin' once per card — is a GUARD
+// property, not a status: it was found violated twice AFTER being declared
+// solved (zoneTake's mod-from-bin branch and the R123 grantor erase both
+// spliced bins directly, firing nothing). No reachable card broke, because
+// Rotling — the only 'leftBin' listener — has no augment/graft symbol; the
+// next listener that IS a mod card would have missed its own exit silently.
+// So this scans the guard itself: a NEW direct bin splice anywhere in src/
+// fails here. If that is you, route the removal through
+// `E.removeFromBin(seat, index, reason)` instead — that is what fires
+// 'leftBin' — and announce the removal in your own words at the call site
+// (the choke point is deliberately signal-only).
+test('R124 stays solved: the only direct bin splice in src is inside removeFromBin', () => {
+  const SRC = path.resolve(HERE, '..', 'src');
+  const files: string[] = [];
+  const walk = (dir: string): void => {
+    for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, f.name);
+      if (f.isDirectory()) walk(p);
+      else if (f.name.endsWith('.ts')) files.push(p);
+    }
+  };
+  walk(SRC);
+  const hits: string[] = [];
+  for (const file of files) {
+    fs.readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+      // `.bin.splice(` — any player-state bin spliced through its property;
+      // `bin.splice(` — a local alias of one; `[from].splice(` — a computed
+      // zone access that can reach a bin (the shape bypass A hid behind).
+      if (/\.bin\.splice\(|\bbin\.splice\(|\[from\]\.splice\(/.test(line))
+        hits.push(`${path.basename(file)}:${i + 1}`);
+    });
+  }
+  assert.equal(hits.length, 1,
+    `direct bin splices at [${hits.join(', ')}] — every bin removal must go through `
+    + "E.removeFromBin so 'leftBin' fires (R124, CARD-TODO #26)");
+  assert.ok(hits[0]!.startsWith('engine.ts:'), `the one legal site lives in engine.ts, not ${hits[0]}`);
+  const engineLines = fs.readFileSync(path.join(SRC, 'engine.ts'), 'utf8').split('\n');
+  const n = Number(hits[0]!.split(':')[1]) - 1;
+  assert.ok(engineLines.slice(Math.max(0, n - 8), n).join('\n').includes('removeFromBin('),
+    'the one direct bin splice is no longer inside removeFromBin itself');
+});

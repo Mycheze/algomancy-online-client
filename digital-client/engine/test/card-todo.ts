@@ -23,10 +23,14 @@
  *
  *   · `card-ledger.ts`     — the 28 cards with a printed clause that does
  *                            nothing. Referenced by CT-8, not copied.
- *   · `playtest-ledger.ts` — all 78 owner bug reports. The 5 still `live` are
- *                            carried here as CT-10..CT-14 so that "unanswered
- *                            user reports" and "cards found broken by testing"
- *                            live in ONE list, which is what was asked for.
+ *   · `playtest-ledger.ts` — every owner bug report, one row each (the tally
+ *                            line in 83-card-todo.test.ts reads the ledger
+ *                            LIVE — a count typed here would only rot). Any
+ *                            report still `live` there is carried here as its
+ *                            own CT entry (CT-10..CT-14 were that batch), so
+ *                            "unanswered user reports" and "cards found
+ *                            broken by testing" live in ONE list, which is
+ *                            what was asked for.
  *
  * THE RULE THAT KEEPS IT HONEST
  *
@@ -574,11 +578,14 @@ export const CARD_TODO: TodoEntry[] = [
     status: 'open',
   },
   // ── UNANSWERED OWNER REPORTS ──────────────────────────────────────────
-  // The 5 entries still `live` in playtest-ledger.ts, carried here so that
-  // "cards found broken by testing" and "reports nobody has answered" are ONE
-  // list — which is what was asked for. `reportId` is the index into
-  // playtest-issues.snapshot.jsonl; the ledger stays the authority on the
-  // wording, and 83-card-todo.test.ts asserts these stay in step with it.
+  // Owner reports that were `live` in playtest-ledger.ts when this list was
+  // drawn up (CT-10..CT-14 were that batch), carried here so that "cards
+  // found broken by testing" and "reports nobody has answered" are ONE list —
+  // which is what was asked for. The LEDGER stays the authority on wording
+  // and status, and its tally is read live by 83-card-todo.test.ts rather
+  // than counted here, so this comment cannot rot when reports get fixed.
+  // `reportId` is the index into playtest-issues.snapshot.jsonl, and
+  // 83-card-todo.test.ts asserts these entries stay in step with the ledger.
   {
     id: 10,
     area: 'engine',
@@ -1516,6 +1523,52 @@ export const CARD_TODO: TodoEntry[] = [
       '27-metal-b.test.ts::Flux Resonator: a token that spawns with NO counters gets none',
     ],
     reportId: 88,
+    status: 'done',
+  },
+  {
+    id: 26,
+    area: 'engine',
+    severity: 'major',
+    cards: ['Rotling', 'Writhing Host'],
+    title: "Two bin removals bypassed the R124 'leftBin' choke point (mods-from-bin; the R123 grantor erase)",
+    detail:
+      "R124 claims E.removeFromBin is the ONE way a card leaves a bin, firing 'leftBin' "
+      + '{seat, card, reason} once per card. Two sites still spliced bins directly: '
+      + "(a) apply.ts zoneTake — a mod (augment or graft) applied `from: 'bin'` ran "
+      + "`e.player(seat)[from].splice(index, 1)`, so no 'leftBin' fired for the applied card; "
+      + '(b) the R123 erase-funded haste play — the Writhing Host grantor was spliced out of '
+      + "the bin directly before the 'erased' announce. No reachable card misbehaved: Rotling, "
+      + "the only 'leftBin' listener, has no augment/graft symbol and cannot leave a bin via "
+      + 'either path. But the invariant and its doc were FALSE, and any future leftBin '
+      + 'listener that IS a mod card would have missed its own exit silently — the '
+      + '"check the guards, not the status" class this repo keeps re-learning.',
+    evidence:
+      'Self-found 2026-08-24 by grepping for direct bin splices against the R124 claim: '
+      + 'apply.ts zoneTake bin branch and the binErase block in playAtTiming (haste branch).',
+    fix:
+      "Route both through the choke point: zoneTake's bin branch calls "
+      + "e.removeFromBin(seat, index, 'modded') — a new reason verb, added to the R124 verb "
+      + 'list in types.ts and docs/digital-rules.md — and the R123 grantor leaves via '
+      + "e.removeFromBin(seat, binErase.index, 'erased'), KEEPING the site's own 'erased' "
+      + 'announce (the R65 hook on that announce is what feeds the public erased pile, once). '
+      + 'Plus a static conformance sweep in 90-coverage-census so the NEXT direct splice '
+      + 'fails a test instead of waiting to be re-found.',
+    proof: null,
+    verify:
+      'node --test test/90-coverage-census.test.ts — the static sweep asserts the only '
+      + 'direct bin splice in src/ is inside removeFromBin itself. The behavioural guards '
+      + "assert one 'leftBin' per removal on the event stream and the erased pile holding "
+      + 'the grantor exactly once.',
+    // DONE 2026-08-24 in the same change that found it. Red-checked: each fix
+    // reverted alone makes its matching guard fail (the mod tests see zero
+    // 'leftBin' events; the Writhing Host test sees zero; the static sweep
+    // counts two splices instead of one), then restored.
+    guards: [
+      "04-mods.test.ts::graft from the bin goes through the R124 choke point",
+      "04-mods.test.ts::augment from the bin goes through the R124 choke point",
+      '42-dark-b.test.ts::the grantor leaves through the R124 choke point',
+      '90-coverage-census.test.ts::the only direct bin splice in src is inside removeFromBin',
+    ],
     status: 'done',
   },
 ];

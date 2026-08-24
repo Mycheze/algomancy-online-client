@@ -645,12 +645,13 @@ copy**: the printed texts are standing permissions ("if I am in your bin"),
 not per-copy triggers, so three copies in a bin fire once. A `[Switch1]`
 budget (R9) on a zone trigger used to live only for the one firing, because a
 stand-in has nowhere to keep it — that flag is CLOSED by
-[R120](#r120--leftbin-every-bin-removal-goes-through-one-choke-point), which
+[R124](#r124--leftbin-every-bin-removal-goes-through-one-choke-point), which
 keeps the reservation in `GameState.zoneBudgets` (per seat per card name, per
-turn).
+turn). (The ruling was renumbered R124 at merge — R120 is the elective
+combat-damage split.)
 
 ⚠ Two things this deliberately did **not** solve, one since solved. The
-missing **"a card left a bin" event** exists now — R120's `E.removeFromBin` is
+missing **"a card left a bin" event** exists now — R124's `E.removeFromBin` is
 the choke point, and Rotling is unparked on it. And **a trash
 trigger can never carry a graft rider** (Blightwalker, Afflicting Anima, Maw of
 Despair print theirs as `[Switch1]`). That one is structural, not a missing
@@ -6728,7 +6729,13 @@ may pay [1] to draw a card and gain 1 rot." (Rotling) had an ear and no sound.
 way a card leaves a bin. It splices, then fires a `'leftBin'` event with
 `data: { seat, card, reason }` — `seat` is the bin's owner, `reason` a short
 verb ('recalled', 'revived', 'erased', 'cached', 'played', 'prophesied',
-'recycled'). Every site in the tree is routed through it; a bulk sweep
+'recycled', 'modded' — an augment or graft applied out of the bin). Every
+site in the tree is routed through it — since 2026-08-24 that includes the
+two late finds (CARD-TODO #26): a mod applied `from: 'bin'` (apply.ts
+`zoneTake`, reason `'modded'`) and the R123 erase-funded grantor (the
+Writhing Host bin copy paying for a haste play used to be spliced directly;
+it now leaves with reason `'erased'`, and the site's own 'erased' announce
+still routes it to the R65 pile, exactly once). A bulk sweep
 (Finality's erase-both-bins, Reality Siphoner's recycle-your-bin, Zephyrzoa's
 recall-your-bin) fires once **per card**, back-to-front. The event's `msg` is
 `''` — signal-only, the `stackFlash` precedent — because every site already
@@ -6769,4 +6776,9 @@ leaving is not me, and leaving the opponent's bin triggers the bin owner; the
 [Switch1] bounds it once per turn and startTurn refreshes it; erase-from-bin
 and cache-from-bin both fire 'leftBin' through the choke point; the pending
 decision and the reservation survive a JSON round-trip, and a pre-R124 state
-still loads.
+still loads. `04-mods` / `42-dark-b` — the two once-bypassed sites (a graft
+and an augment applied from the bin; the R123 grantor erase, which also still
+reaches the erased pile exactly once) each fire exactly one 'leftBin'.
+`90-coverage-census` — a static sweep fails on any direct bin splice in src/
+outside `removeFromBin` itself, so the next bypass fails a test instead of
+waiting to be re-found (CARD-TODO #26).

@@ -1031,6 +1031,23 @@ test('Writhing Host (R123): a JSON round trip mid-offer still drives, and two bi
   assert.deepEqual(h.state.players[P]!.erased, ['Writhing Host']);
 });
 
+test("Writhing Host (R123/R124): the grantor leaves through the R124 choke point — 'leftBin' reason 'erased', erased pile exactly once", () => {
+  // the grantor used to be spliced out of the bin DIRECTLY (CARD-TODO #26),
+  // so its exit fired no 'leftBin'. It goes through E.removeFromBin now; the
+  // site's own 'erased' announce is still the only thing feeding the R65
+  // public pile, so the card must land there EXACTLY once, not twice.
+  const { h, P, idx } = hostSetup(4240, [0]);
+  const offer = eraseOffer(h, P, idx);
+  assert.ok(offer, 'the erase-funded play is offered');
+  h.do(offer!);
+  const left = h.events.filter(ev => ev.type === 'leftBin');
+  assert.equal(left.length, 1, "the grantor's exit fired exactly ONE 'leftBin'");
+  assert.deepEqual(left[0]!.data, { seat: P, card: 'Writhing Host', reason: 'erased' },
+    'through E.removeFromBin, with the erase reason verb');
+  assert.deepEqual(h.state.players[P]!.erased, ['Writhing Host'],
+    "in the R65 pile exactly once — 'leftBin' itself must not double the announce's push");
+});
+
 // ── registration sweep ────────────────────────────────────────────────
 
 test('every dark-b card is registered with its printed data', () => {
