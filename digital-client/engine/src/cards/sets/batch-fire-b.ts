@@ -426,8 +426,30 @@ card('Stormsowing Nimbus', {
 
 // "[Switch1] I deal 2 damage to each of up to two target units." — rr/3
 // {Battle} Mystic Elemental Spell. Both targets are chosen AT CAST TIME
-// (count: 2, min: 1 — "up to two"); each surviving target takes 2.
-// Bounded graft ([Switch1], R9).
+// (count: 2, min: 1); each surviving target takes 2. Bounded graft
+// ([Switch1], R9).
+//
+// ⚠ NEEDS-ESCALATION — LITERAL-READING AUDIT (2026-08-24). `min: 1` is a
+// COUNT NARROWING the printed text does not carry: "UP TO two" means nought
+// is a legal declaration, and `min: 0` is this repo's own spelling of "up to"
+// on every OTHER card that prints it (R5; Minor Kraken's "recall up to one
+// target unit", Prismatic Observer, Necromantic Rebuke, Grob, Nothyr). The
+// narrow reading was never a ruling — `min` DEFAULTS to 1 and only "up to"
+// cards override it, and this one did not. Live consequence: the caster is
+// FORCED to shoot something whenever any unit in the region is legal, their
+// own board included, which the card nowhere says.
+//
+// The fix is `min: 0` plus an info line for the nothing-declared resolution
+// (65-effect-conformance: a part that resolves having done nothing must say
+// so). It was written, red-checked green, and then REVERTED, because it has
+// one piece of collateral outside this file's remit:
+// `test/21-fixes.test.ts:253` ("multi-target validation: no duplicate
+// targets, done only after the minimum") uses Twin Flame as the fixture for a
+// GENERAL engine assertion — "no done before the min" — that only holds for a
+// min >= 1 spec. That test's intent is untouched by this change; it just needs
+// re-pointing at any of the pool's count-2/min-2 cards (Fight, Squish, Body
+// Swap, Reconfigure, Necromorph, Chombot, Battle, Organic Exchange …).
+// Land the two together.
 const twinFlame: EffectDef = {
   targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units', count: 2, min: 1 },
   run: (g, ctx) => {

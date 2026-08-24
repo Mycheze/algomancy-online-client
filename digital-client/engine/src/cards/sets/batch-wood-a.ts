@@ -28,10 +28,20 @@
  *    from it. Until the event carries the item's controller and kind, the
  *    trigger listens on 'spellPlayed' (which does carry the seat) and reads
  *    the 'targeted' entries commitItem logged immediately before it — sound,
- *    because both are emitted synchronously inside one commitItem. One firing
- *    per enemy spell, even if it targets two allies. Spell tokens count as
- *    spells here (they target like spells; R26's "played" exclusion is about
- *    "you play" triggers).
+ *    because both are emitted synchronously inside one commitItem. Spell
+ *    tokens count as spells here, and that is now the whole file's answer
+ *    rather than this card's exception — see Hexbane Shiitake, where the
+ *    opposite guard was a literal-reading bug. (The old parenthetical said
+ *    "R26's 'played' exclusion is about 'you play' triggers"; R26 is about
+ *    token CREATION and settles nothing here either way.)
+ *    ⚠ OPEN, literal-reading audit 2026-08-24: it is ONE firing per enemy
+ *    spell even when that spell targets TWO allies, and the printed text is
+ *    "whenever an ALLY becomes the target", which reads per-ally. A Twin
+ *    Flame aimed at two of my units should then make two 1/1s, not one.
+ *    Unfixed on purpose: trigger MULTIPLICITY is a rules question nobody has
+ *    put to the owner, and the honest fix rides on the same engine change the
+ *    note above is waiting for ('targeted' carrying the item's controller and
+ *    kind), after which this stops being a log-tail scrape at all.
  *  - FUNGAL GARDENER: NO LONGER an approximation. This said "a died event
  *    carries no token flag … so nontoken-ness is read from the died message";
  *    R70 stamps `token` (with `counters`, `verb`, `seat`, `region`) onto every
@@ -357,13 +367,32 @@ card('Growing Plague', {
 // are gathered before mutating (plan-then-commit, R6): the exchange
 // (pay-or-decline), then a new-target pick per declared target (keep is
 // always offered). Committing flips item.controller to me and hands the
-// carrier to the spell's owner (E.giveControl, R112). Spell tokens are not
-// "played" (R26) and don't trigger this.
+// carrier to the spell's owner (E.giveControl, R112).
+//
+// LITERAL-READING AUDIT (2026-08-24): SPELL TOKENS COUNT. This used to carry
+// `ev.data?.token !== true` and the note "spell tokens are not 'played'
+// (R26)", and both were wrong:
+//  · R26 is about token CREATION ("the created 1/1 is a token and can't
+//    re-trigger"), and R59's "a spell token is cast from play, not played" is
+//    about what a COST modifier may tax. Neither is about this trigger.
+//  · The engine's own answer is the opposite: `commitItem` fires 'spellPlayed'
+//    for a spell token with `token: true` — Nimbus Eel's printed "When you
+//    play a TOKEN spell" is built on exactly that event, so the SET calls
+//    casting a token "playing a spell".
+//  · Every other `token !== true` guard on 'spellPlayed' in the whole pool
+//    belongs to a card that PRINTS "nontoken" (Ravenous Fireslinger,
+//    Stormsowing Nimbus, Unstable Apparition, Channeled Amalgam, Arcane
+//    Concentrator, Seabed Shellcaster, Aethercap Siphoner, Void Mandible).
+//    This card prints "a spell", like Sparkwraith and Voltwrath Behemoth,
+//    which both count tokens. The set says "nontoken" when it means it.
+// So the guard is gone and 'spellToken' joins the kinds the exchange can find
+// on the stack — without that second half the trigger would fire and then
+// report "no longer on the stack", which is the dead-clause shape (R125).
 card('Hexbane Shiitake', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'], bounded: true,   // [once]
     label: 'exchange control of me for that spell (you may)',
-    when: (g, self, ev) => ev.data?.seat !== self.controller && ev.data?.token !== true,
+    when: (g, self, ev) => ev.data?.seat !== self.controller,
     effect: {
       run: (g, ctx) => {
         const me = selfOf(g, ctx);
@@ -374,7 +403,7 @@ card('Hexbane Shiitake', {
         const cardName = ctx.event?.data?.card as string | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
         if (cardName === undefined || seat === undefined) { ctx.refundBudget?.(); return; }
-        const spellKinds = new Set(['spell', 'spellUnit']);
+        const spellKinds = new Set(['spell', 'spellUnit', 'spellToken']);
         const item = [...g.s.stack].reverse().find(i =>
           i.card === cardName && i.controller === seat && spellKinds.has(i.kind));
         if (!item) { ctx.refundBudget?.(); g.ev('info', `Hexbane Shiitake: ${cardName} is no longer on the stack — no exchange.`); return; }

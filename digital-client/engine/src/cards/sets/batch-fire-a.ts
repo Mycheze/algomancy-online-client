@@ -323,6 +323,28 @@ card('Delver of Mysteries', {
 // ⚠ OPEN (R94): "your spells" and spell TOKENS. `isSpellEffect` is the single
 // place that answers it and it currently says YES — a Burst Fireball under
 // this aura deals double. See its doc comment; one edit moves both cards.
+//
+// LITERAL-READING AUDIT (2026-08-24) — the code DOES match that stated
+// default, in both cards and on every path that reads the attribute, and the
+// R125 shape is NOT present here. Checked and pinned in 111-literal-fire:
+//  · `isSpellEffect` is the one predicate both Emberflame and Envoy of
+//    Lightning use, and it lists 'spellToken' beside 'spell'/'spellUnit', so
+//    the two cards cannot drift apart.
+//  · a spell token is CAST FROM PLAY: `doCastSpellToken` deletes the entity
+//    and rebuilds a StackItem off the printed card, so a cast token has no
+//    `sourceId` and `dealEffectDamageAll` reads printed attrs + R94's
+//    `grantedAttrs`. `effectAttrs` is therefore the channel that reaches it —
+//    the statics channel could not, whatever it filtered on.
+//  · so both halves of the printed sentence have live code: `statics` is
+//    "your units" and `effectAttrs` is "your spells", spell tokens included.
+// The one asymmetry with Rotspore Herald is COSMETIC and left alone: R125
+// widened its `statics` so a Fireball STANDING in the region shows {Deadly}
+// in `ownAttrs`, and this card's units-only `statics` means your Fireball
+// does not show {Powerful} before you cast it. Nothing reads that (the grant
+// is regenerated on the stack item), and the owner's R125 wording — "all
+// spells AND SPELL TOKENS" — names the two as separate categories, so
+// widening on the strength of it would be inventing the ruling, not applying
+// it. Flagged for the owner rather than changed.
 card('Emberflame Enlightener', {
   augmentable: true,
   statics: [{
