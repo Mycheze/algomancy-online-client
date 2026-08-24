@@ -1588,7 +1588,12 @@ export const LEDGER: LedgerEntry[] = [
       + 'CASTER first and changes hands afterwards. That extra intermediate state is observable, '
       + 'which is exactly what report #96 saw. R107 (owner != controller on spawnUnit) is the '
       + 'primitive that makes the direct version possible — the body should ENTER under the '
-      + 'negated effect\'s controller, with no handover step at all. Carried as CT-29.',
+      + 'negated effect\'s controller, with no handover step at all. Carried as CT-29. '
+      + '\u26a0 REPLAY: SMVJ no longer replays cleanly from action 121 (209 of 375 actions '
+      + 'rejected) and that is THIS FIX working, not a regression \u2014 bisected to R143. The '
+      + 'log holds an answer to a trigger-ordering question (Flourishing Flora\'s trigger vs '
+      + 'the handover) that no longer exists, so everything after it shifts. Same shape as '
+      + 'ANBB after R137. R144 added ZERO further drift (209 before and after both halves).',
   },
   {
     id: 96, room: 'SMVJ', date: '2026-08-24',
