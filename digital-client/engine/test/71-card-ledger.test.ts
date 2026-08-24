@@ -178,7 +178,8 @@ export function deadShapes(name: string): string[] {
     }
     const shape = runShape(a.effect?.run);
     // An empty run is fine when a `when()` is doing the work: the bookkeeping
-    // pattern (Mirage Walker, Powerforge Synergist, Ancient One) mutates in
+    // pattern (Powerforge Synergist, Ancient One; Mirage Walker used it too
+    // until #86 moved its fact into the reducer) mutates in
     // when() and returns false so the trigger never queues. Harbinger had no
     // when(), which is why it is caught and they are not.
     // `when` lives on TriggeredAbility only; an activated ability has none, so
