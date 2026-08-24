@@ -743,3 +743,27 @@ test('Hooba-Bot: one attack trigger makes exactly ONE Robot (report #90)', () =>
     'exactly one Robot per trigger — the trigger fired once and created once');
   finishBattle(h);
 });
+
+// The owner solved #90 himself the next day: "Hooba bot actually wasn't a
+// bug. There was an Automaton of Abundance in play." One trigger, one
+// creation batch of one Robot 2 — and R104's batch replacement adds a copy of
+// each unique token created. This pins the exact reported board — and its
+// R12 nuance: the batch hook anchors by REGION (settleTokenBatch filters
+// `a.region === batch[0].region`), the robot spawns in the BATTLE region, so
+// the Automaton only copies when it came along to the battle. It did (first
+// draft of this test left it at home and correctly got ONE robot).
+test('Hooba-Bot + Automaton of Abundance: the reported two robots, by design (report #90)', () => {
+  const h = new Harness(2761);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const hb = spawn(h, A, 'Hooba-Bot');
+  const aoa = spawn(h, A, 'Automaton of Abundance');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[hb, aoa]] });
+  pass(h); pass(h);                                         // resolve the trigger
+  pick(h, 1);                                               // R75: the original's slot is chosen
+  const robots = unitsOf(h, A).filter(u => u.card === 'Robot');
+  assert.equal(robots.length, 2, 'ONE trigger, TWO robots — the Automaton copies the batch');
+  assert.ok(robots.every(r => r.counters === 2), 'both are Robot 2s (the copy mirrors the original)');
+  finishBattle(h);
+});

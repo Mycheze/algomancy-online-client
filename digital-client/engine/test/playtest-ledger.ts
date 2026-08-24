@@ -1430,15 +1430,19 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Hooba bot made 2 robots I think',
     status: 'by-design',
     note:
-      'Could not reproduce a double-fire, and the printed text supplies the honest path to two '
-      + 'robots in one turn: "When I attack OR BLOCK, create a Robot 2 in my formation" — the '
-      + 'carrier attacking in one battle round and blocking in the other is two triggers and two '
-      + 'robots, as printed. The per-trigger count is now pinned: one attack fires the trigger '
-      + 'once and creates exactly ONE Robot (27-metal-b.test.ts::"Hooba-Bot: one attack trigger '
-      + 'makes exactly ONE Robot (report #90)"), so a real double-fire can never hide behind the '
-      + 'attack+block reading. (`creates: [\'Robot\']` on the effect is inspector metadata, not a '
-      + 'second creation; XVUR itself cannot be replayed for forensics — the Worldbender fix '
-      + 'changed the constructed draw phase, so the log diverges at action 72, long before this '
-      + 'report\'s action 238.) If it recurs with a board state attached, reopen as live.',
+      'SOLVED by the owner himself (2026-08-24): "Hooba bot actually wasn\'t a bug. There was '
+      + 'an Automaton of Abundance in play." That is R104\'s batch replacement doing its printed '
+      + 'job — Hooba-Bot\'s trigger creates a Robot 2 in the BATTLE region, and an Automaton '
+      + 'that came along to the battle (the hook is region-scoped, R12) adds "an additional '
+      + 'copy of each unique token you created", so the one-token batch yields two Robot 2s. '
+      + 'Pinned as a '
+      + 'test now (27-metal-b.test.ts::"Hooba-Bot + Automaton of Abundance: the reported two '
+      + 'robots, by design"), beside the per-trigger pin written while diagnosing '
+      + '(27-metal-b.test.ts::"Hooba-Bot: one attack trigger makes exactly ONE Robot (report '
+      + '#90)"). The first hypothesis recorded here — attack in one round, block in the other, '
+      + 'two triggers as printed — was plausible but wrong; XVUR could not be replayed for '
+      + 'forensics (the Worldbender fix changed the constructed draw phase, so the log diverges '
+      + 'at action 72, long before action 238), which is why the real cause had to come from the '
+      + 'owner\'s memory of the board.',
   },
 ];
