@@ -217,17 +217,22 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // an "inert augmentText entry", registered so the card still counts as an
   // augment and never crashes. That is precisely what Harbinger looked like.
 
-  {
-    card: 'Crevice Lurker', gap: 'dead', severity: 'medium',
-    missing:
-      '"[Augment] Abilities cost [one] more to activate or trigger during battle."',
-    waitingOn:
-      'Ability-cost TAXATION plus a pay-to-trigger gate. R59\'s CostMod taxes CARD '
-      + 'plays only; doActivateAbility has no cost-modification layer, and triggers '
-      + 'have no payment gate at all (the reminder text\'s "choosing to not pay this '
-      + 'prevents the abilities from triggering" needs the second half too).',
-    todoTest: '16-earth-a.test.ts::Crevice Lurker',
-  },
+  // Crevice Lurker's entry was DELETED on 2026-08-24 when R121 built both
+  // halves it was waiting on, per the house rule at the head of this file:
+  // the ability-cost TAX rides R59's CostMod layer under two new CostCtx
+  // purposes ('activate' — folded into E.payActivationCost and the shared
+  // canPayAbilityCost gate, so an unaffordable taxed activation is neither
+  // offered nor accepted — and 'trigger'), and the pay-to-trigger gate is
+  // E.gateTaxedTrigger at processTriggerQueue's single stack-bound choke
+  // point, with the payOrDecline question carried by the serializable
+  // 'payTrigger' suspension and answered only by the player (zero open mana
+  // is prevented outright, announced in the log). Its `{ todo: true }` park
+  // test is nine real tests in 16-earth-a.test.ts: taxed/refused activation,
+  // untaxed deployment, the pay/decline/no-mana trigger gate, the kept
+  // [once] (R108/R113), the untaxed mod application (R37), the donated form,
+  // two-Lurker summing, and a JSON round-trip of the pending question.
+  // Signpost, not a park. (It also handed the 71-card-ledger CANARY role on
+  // to Vengeance, the remaining card with the exact Harbinger shape.)
   // Oorblak's entry was DELETED on 2026-08-23 when its PIERCING-EXCESS half was
   // written against R98's wider `replaceCombatDamageToPlayer` (`info.attrs` /
   // `info.pure`, and a numeric return meaning "damage let through"). The

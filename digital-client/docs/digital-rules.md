@@ -6486,3 +6486,79 @@ decision), and `finishBattle`/`assignDefault` in the test rig click the default 
 Tests: `100-elective-assign` (asked/overkill-front, default = pinned pre-R120 numbers,
 floors-only menus, silent trivial combats, {Deadly} floors, {Piercing} silent + unchanged
 overflow beside an election, mid-election JSON round-trips, block-side election).
+
+---
+
+## R121 — the ability-cost tax and the pay-to-trigger gate (Crevice Lurker)
+
+*(Card-drill follow-through, 2026-08-24. Designer rulings.)*
+
+**Crevice Lurker**: *"[Augment] Abilities cost [one] more to activate or
+trigger during battle. (Choosing to not pay this prevents the abilities from
+triggering.)"*
+
+R59's CostMod taxed CARD plays only: `doActivateAbility` had no
+cost-modification layer at all, and a trigger had no payment gate anywhere.
+Both halves shipped together.
+
+**The tax is the R59 layer, widened.** `CostCtx.purpose` grows two values —
+`'activate'` and `'trigger'` — and `E.abilityTax` folds the same radiating
+`costModsFor` walk (same R12 region scope, same R62 guard, same reentrancy
+latch) over them. Every pre-R121 CostMod gates on `=== 'play'`, so nothing
+else moves. Deltas SUM (two Lurkers = +2), exactly as card-play CostMods do.
+
+- **Activation**: the tax joins the printed mana in BOTH places the printed
+  mana lives — `canPayAbilityCost` (shared by `pushActivatedOptions`' offer
+  and `doActivateAbility`'s accept: an unaffordable taxed activation is
+  neither offered nor accepted) and `E.payActivationCost` (paid in the cast
+  window with the rest of the activation cost, announced when nonzero).
+- **Trigger**: `E.gateTaxedTrigger`, ONE choke point in `processTriggerQueue`
+  where every stack-bound trigger passes — card triggers, augment-donated
+  triggers and R51 zone triggers alike, never per-card. Under a nonzero tax
+  the trigger's CONTROLLER gets a real `payOrDecline` decision: pay and it
+  goes on the stack; decline and it simply does not happen. **The decision is
+  the player's** — the engine never chooses for them. The one promptless case
+  is zero open mana: with no legal way to pay, the trigger is prevented
+  outright and announced in the log ("… the trigger is prevented: Crevice
+  Lurker taxes it [1] and the mana is not there").
+
+**Designer rulings encoded:**
+
+- The card *"taxes the cost to activate or trigger abilities"* and can stop
+  e.g. Ruinbringer's "After combat, delete all units" **like a negate can**.
+- An ability's *"if you do"* clause is **not** its own trigger — it resolves
+  inside the one queued trigger's parts and is never double-taxed.
+- (R37 family) Augment/Ambush are alternative ways to PLAY a card, not
+  activated abilities — applying a mod is not taxed (`purpose: 'mod'`).
+
+**What counts as a trigger** (the taxed set): real triggered abilities headed
+to the STACK. Bookkeeping listeners whose `when()` returns false never queue
+and are untaxed by construction; R3's combat-sub-step triggers resolve
+immediately as special actions and never reach the stack, so the gate does
+not see them (Ruinbringer's after-combat trigger fires with `damageStep`
+already cleared, so it IS stack-bound and IS gated); zone-dispatched triggers
+that queue to the stack during battle ARE taxed. Resource activations and
+spell-token casts are not ability activations and are untaxed.
+
+**R108/R113 interaction**: a trigger DECLINED at the gate — or prevented with
+no mana — keeps its `[once]`: the bounded reservation `composeParts` wrote at
+queue time is handed back by `E.refundTriggerBudgets` ("declining never
+spends it"; "no offer could be made at all"). Paying spends it, resolve or
+not. A zone trigger's stand-in holder was never in `s.entities`, so its
+refund is correctly a no-op (its bound never persisted anyway — R51's flag).
+
+**Serialization**: the pending question is the `'payTrigger'` suspension arm
+— plain data (the dequeued `PendingTrigger` plus the tax) — so it survives a
+JSON round-trip and a replay; `doDecide` resumes through
+`E.resumeTriggerGate`, and `server/view.ts` needs no new redaction (the arm
+carries no snapshot and no hidden zone).
+
+### Tests
+
+`16-earth-a` — nine real tests (the promoted `{ todo: true }` park): taxed
+and refused activation in battle, untaxed in deployment, the pay / decline /
+zero-mana trigger gate, the kept `[once]` asking again the same turn, the
+untaxed battle mod application (R37), the donated-augment host-region form,
+two Lurkers summing to +2, and a JSON round-trip of the pending
+pay-decision. The card's ledger entry came off in the same commit, and the
+71-card-ledger CANARY moved on to Vengeance.

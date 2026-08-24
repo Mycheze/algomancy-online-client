@@ -20,11 +20,10 @@
  *    identical trigger defs (one pool copy each — unreachable in play).
  *
  * PARKED (needs engine machinery that does not exist yet):
- *  - Crevice Lurker: "[Augment] Abilities cost [one] more to activate or
- *    trigger during battle" is an ABILITY-COST TAXATION / pay-to-trigger
- *    hook — doActivateAbility has no cost-modification layer and triggers
- *    have no payment gate. Inert augmentText entry (Astralith precedent)
- *    keeps it recognised as an augment.
+ *  - Crevice Lurker: UN-PARKED (R121) — the ability-cost tax rides R59's
+ *    CostMod layer under the two new purposes ('activate'/'trigger'), and
+ *    the pay-to-trigger gate is E.gateTaxedTrigger at processTriggerQueue's
+ *    stack-bound choke point. See the card.
  *  - Hooba-Lan: UN-PARKED — E.createShard() (a real 'shard' ResourceKind,
  *    created dormant) exists, and the card calls it. The note that this
  *    "needs a Shard ResourceKind" outlived the primitive; see the card.
@@ -179,14 +178,36 @@ card('Bubb', {});
 
 // "[Augment] Abilities cost [one] more to activate or trigger during battle.
 // (Choosing to not pay this prevents the abilities from triggering.)" —
-// ee/2 2/3 Golem Beast Unit. PARKED (see header): ability-cost taxation /
-// pay-to-trigger hooks do not exist. Inert augmentText keeps it recognised
-// as an augment; it donates nothing yet.
+// ee/2 2/3 Golem Beast Unit. UN-PARKED (R121): the ability-cost half of the
+// R59 CostMod layer, consulted with the two new purposes — 'activate'
+// (E.payActivationCost + the shared canPayAbilityCost gate, so an
+// unaffordable taxed activation is neither offered nor accepted) and
+// 'trigger' (E.gateTaxedTrigger, the one pay-to-trigger choke point in
+// processTriggerQueue, where the reminder text's "choosing to not pay this
+// prevents the abilities from triggering" is a real payOrDecline for the
+// trigger's controller — never a choice the engine makes for them).
+//
+// Rulings (designer, current):
+//  · it "taxes the cost to activate or trigger abilities" — and can stop
+//    e.g. Ruinbringer's "After combat, delete all units" like a negate can;
+//  · an ability's "if you do" clause is NOT its own trigger — no double tax;
+//  · (R37 family) Augment/Ambush are ways to PLAY a card, not activated
+//    abilities — applying a mod is not taxed (purpose 'mod' is never
+//    'activate'/'trigger').
+// Clause by clause:
+//  · "Abilities" is unqualified — BOTH players' abilities; ctx.card ignored;
+//  · "during battle" — the phase gate below; deployment and haste are free;
+//  · region-scoped like every CostMod (R12), radiating from the card in play
+//    AND from the augment mod anchored on its host (Tranquility's shape:
+//    `augmentable: true`, text-box [Augment] live when played normally);
+//  · two Lurkers SUM to +2, as CostMod deltas always do (R59).
 card('Crevice Lurker', {
-  augmentText: [{
-    type: 'triggered', events: [],   // PARKED — never fires
-    label: 'abilities cost [one] more during battle (not implemented)',
-    effect: { run: () => { /* PARKED */ } },
+  augmentable: true,
+  costMods: [{
+    delta: (g, _self, ctx) =>
+      g.s.phase === 'battle'
+        && (ctx.purpose === 'activate' || ctx.purpose === 'trigger')
+        ? 1 : 0,
   }],
 });
 

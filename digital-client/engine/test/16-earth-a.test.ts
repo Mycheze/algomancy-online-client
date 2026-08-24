@@ -10,7 +10,10 @@
  * the Barrens, R6 payment), Hooba-Lan's real dormant Shard (unparked — see
  * E.createShard), the Manual p.18 affinity bonus the Earth Resource face
  * reprints as reminder text (R116/R54 — the rule lives in maybeGrantShard, not
- * on the card), and the still-parked Crevice Lurker.
+ * on the card), and Crevice Lurker's R121 ability-cost tax + pay-to-trigger
+ * gate (taxed and refused activations, the pay/decline/no-mana trigger gate,
+ * the kept [once], the untaxed mod application, the donated form, two-Lurker
+ * summing, and a JSON round-trip of the pending question).
  * States are built explicitly (give/spawn/giveResources).
  * Seeds 1600-1699. */
 import { test } from 'node:test';
@@ -93,7 +96,20 @@ test('Bubb: 5/6 Unaware; type-line [Augment] donates Unaware (attrs only, no sta
   assert.deepEqual(effStats(h, host), [1, 1], 'attr-only donation: stats unchanged');
 });
 
-test('Crevice Lurker: 2/3 body, augments crash-free (ability-cost tax PARKED)', { todo: true }, () => {
+// ── Crevice Lurker — R121: the ability-cost tax + pay-to-trigger gate ──
+// "[Augment] Abilities cost [one] more to activate or trigger during battle.
+// (Choosing to not pay this prevents the abilities from triggering.)"
+// Designer: it "taxes the cost to activate or trigger abilities" and can stop
+// e.g. Ruinbringer's after-combat trigger like a negate can. R12 region
+// scope; R37: applying a mod is not taxed; R108/R113: a declined trigger
+// keeps its [once].
+
+/** a seat's open resources — the taxed activations spend real mana */
+function openMana(h: Harness, seat: number): number {
+  return h.state.players[seat]!.resources.filter(r => r.state === 'open').length;
+}
+
+test('Crevice Lurker: 2/3 body, attaches cleanly as an augment', () => {
   const h = new Harness(1604);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -103,8 +119,195 @@ test('Crevice Lurker: 2/3 body, augments crash-free (ability-cost tax PARKED)', 
   giveResources(h, p, 'earth', 2);                    // ee / 2
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Crevice Lurker'), hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1, 'recognised as an augment, attaches cleanly');
-  // TODO(parked): "abilities cost [one] more to activate or trigger during
-  // battle" needs an ability-cost taxation / pay-to-trigger hook.
+});
+
+test('Crevice Lurker: R121 — in battle an activated [1] costs [2], and with only [1] open it is not activatable', () => {
+  const h = new Harness(1620);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const lurker = spawn(h, A, 'Crevice Lurker');
+  const auric = spawn(h, D, 'Auric Ascendant');       // "[once] [one], Recall another ally: …"
+  giveResources(h, D, 'water', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lurker]] });   // the Lurker walks into the battle
+  pass(h);                                            // priority → D
+  const offers = () => h.legal(D).filter(a => a.type === 'activateAbility' && a.entityId === auric);
+  assert.equal(offers().length, 0, 'printed [1] is taxed to [2] — with [1] open it is not offered');
+  assert.throws(() => h.do({ type: 'activateAbility', seat: D, entityId: auric, abilityIndex: 0 }),
+    /cannot pay the activation cost/, 'and it is refused, not just unoffered');
+  giveResources(h, D, 'water', 1);
+  assert.equal(offers().length, 1, 'with [2] open the taxed activation is offered');
+  h.do({ type: 'activateAbility', seat: D, entityId: auric, abilityIndex: 0 });
+  assert.equal(openMana(h, D), 0, 'the activation spent [1] printed + [1] tax');
+  pass(h); pass(h);                                   // resolve (no other ally — no recall)
+  finishBattle(h);
+});
+
+test('Crevice Lurker: R121 — outside battle the same activation costs its printed [1]', () => {
+  const h = new Harness(1621);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  spawn(h, p, 'Crevice Lurker');
+  const auric = spawn(h, p, 'Auric Ascendant');
+  giveResources(h, p, 'water', 1);
+  h.do({ type: 'activateAbility', seat: p, entityId: auric, abilityIndex: 0 });
+  assert.equal(openMana(h, p), 0, 'exactly the printed [1] — deployment is untaxed');
+  // the recall resolves immediately in deployment; the Lurker is the one
+  // other ally, so answer the recall pick if it is asked rather than auto-taken
+  if (h.state.decision) h.do({ type: 'decide', seat: p, choice: 0 });
+});
+
+test('Crevice Lurker: R121 — a taxed trigger ASKS its controller, and paying [1] puts it on the stack', () => {
+  const h = new Harness(1622);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const titan = spawn(h, A, 'Pestilent Titan');       // "When I attack/block, [once] plague"
+  const lurker = spawn(h, D, 'Crevice Lurker');
+  giveResources(h, A, 'fire', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[titan]] });
+  const dec = h.state.decision;
+  assert.ok(dec && dec.kind === 'payOrDecline' && dec.seat === A,
+    'the trigger controller is asked to pay — the engine never decides for the player');
+  pick(h, true);                                      // pay [1]
+  assert.equal(openMana(h, A), 0, 'the tax was paid');
+  pass(h); pass(h);                                   // the trigger resolves off the stack
+  assert.equal(h.state.players[A]!.rot, 1, "the Titan's plague went through");
+  assert.equal(h.state.players[D]!.rot, 1, 'both present players got a rot');
+  assert.equal(ent(h, lurker)!.counters, -1, 'each unit in the region got a -1/-1 counter');
+  finishBattle(h);
+});
+
+test('Crevice Lurker: R121 — declining prevents the trigger and does NOT spend its [once] (R108/R113)', () => {
+  // The [once] proof needs a bounded trigger that can fire TWICE in one
+  // battle — an attack/block trigger gets one event per battle, so the pair
+  // here is Astral Painseeker ("When a player loses life during battle,
+  // [Switch1] Draw a card") fed by Blob of the Dark Order's unbounded
+  // "Pay 1 life:" activation. Note the Blob activations are themselves taxed
+  // [1] each (mana), on top of their printed life cost.
+  const h = new Harness(1623);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const lurker = spawn(h, A, 'Crevice Lurker');
+  const seeker = spawn(h, D, 'Astral Painseeker');
+  const blob = spawn(h, D, 'Blob of the Dark Order');
+  giveResources(h, D, 'water', 3);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lurker]] });   // the tax walks in with the Lurker
+  pass(h);                                            // priority → D
+  const hand0 = h.state.players[D]!.hand.length;
+  h.do({ type: 'activateAbility', seat: D, entityId: blob, abilityIndex: 0, via: 'augment' });
+  assert.equal(h.state.decision?.kind, 'payOrDecline',
+    "the life loss queued the Painseeker draw — its controller is asked");
+  pick(h, false);                                     // decline — the draw does not happen
+  assert.equal(h.state.players[D]!.hand.length, hand0, 'prevented: no draw');
+  assert.ok(!('ability:Astral Painseeker#0' in ent(h, seeker)!.budgets),
+    'the declined trigger kept its [Switch1] (R108/R113)');
+  pass(h);                                            // A passes; D responds with a second activation
+  h.do({ type: 'activateAbility', seat: D, entityId: blob, abilityIndex: 0, via: 'augment' });
+  assert.equal(h.state.decision?.kind, 'payOrDecline',
+    'the SAME [Switch1] asks again the same turn — the budget really was kept');
+  pick(h, true);                                      // pay this time
+  assert.equal(openMana(h, D), 0, 'two taxed activations + the trigger tax = all [3] spent');
+  while (h.state.stack.length) { pass(h); }           // resolve the draw and both Blob activations
+  assert.equal(h.state.players[D]!.hand.length, hand0 + 1, 'paid: the draw resolves');
+  assert.equal(ent(h, seeker)!.budgets['ability:Astral Painseeker#0'], 1,
+    'paying SPENDS the [Switch1] (R113: put on the stack = spent, resolve or not)');
+  finishBattle(h);
+});
+
+test('Crevice Lurker: R121 — zero open mana: the trigger is prevented with a log line and no prompt', () => {
+  const h = new Harness(1624);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const titan = spawn(h, A, 'Pestilent Titan');
+  spawn(h, D, 'Crevice Lurker');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[titan]] });
+  assert.equal(h.state.decision, null, 'no legal way to pay — no question is asked');
+  assert.ok(h.log.some(l => l.includes('prevented') && l.includes('Crevice Lurker')),
+    `the prevention is announced in the log; got:\n${h.log.slice(-6).join('\n')}`);
+  assert.ok(!('ability:Pestilent Titan#0' in ent(h, titan)!.budgets),
+    'no offer could be made at all — the [once] is kept (R113)');
+  finishBattle(h);
+  assert.equal(h.state.players[A]!.rot, 0, 'the plague never happened');
+});
+
+test('Crevice Lurker: R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)', () => {
+  const h = new Harness(1625);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const lurker = spawn(h, A, 'Crevice Lurker');
+  const host = spawn(h, D, 'Unit Token');
+  giveResources(h, D, 'metal', 3);                    // Soul Reaver: mm / 3, a {Virus}
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[lurker]] });
+  pass(h);                                            // priority → D
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Soul Reaver'), hostId: host });
+  assert.equal(openMana(h, D), 0, 'exactly the printed [3] — the tax does not touch a mod application');
+  pass(h); pass(h);                                   // the Virus item resolves off the stack (R79)
+  assert.equal(ent(h, host)!.mods.length, 1);
+  finishBattle(h);
+});
+
+test("Crevice Lurker: R121 — donated as an augment, the HOST's region carries the tax", () => {
+  const h = new Harness(1626);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const titan = spawn(h, A, 'Pestilent Titan');
+  const host = spawn(h, D, 'Unit Token');
+  giveResources(h, D, 'earth', 2);                    // ee / 2 to donate the Lurker
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Crevice Lurker'), hostId: host });
+  giveResources(h, A, 'fire', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[titan]] });
+  assert.equal(h.state.decision?.kind, 'payOrDecline', 'the mod radiates the tax from its host');
+  pick(h, true);
+  pass(h); pass(h);
+  assert.equal(h.state.players[A]!.rot, 1);
+  finishBattle(h);
+});
+
+test('Crevice Lurker: R121 — two Lurkers compound: CostMod deltas SUM, so the tax is +2', () => {
+  const h = new Harness(1627);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const l1 = spawn(h, A, 'Crevice Lurker');
+  const l2 = spawn(h, A, 'Crevice Lurker');
+  const auric = spawn(h, D, 'Auric Ascendant');
+  giveResources(h, D, 'water', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[l1], [l2]] });
+  pass(h);
+  const offers = () => h.legal(D).filter(a => a.type === 'activateAbility' && a.entityId === auric);
+  assert.equal(offers().length, 0, '[1] + 2 tax = [3]; with [2] open it is not offered');
+  giveResources(h, D, 'water', 1);
+  assert.equal(offers().length, 1);
+  h.do({ type: 'activateAbility', seat: D, entityId: auric, abilityIndex: 0 });
+  assert.equal(openMana(h, D), 0, 'paid [3]');
+  pass(h); pass(h);
+  finishBattle(h);
+});
+
+test('Crevice Lurker: R121 — the pending pay-decision survives a JSON round-trip and keeps driving', () => {
+  const h = new Harness(1628);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const titan = spawn(h, A, 'Pestilent Titan');
+  spawn(h, D, 'Crevice Lurker');
+  giveResources(h, A, 'fire', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[titan]] });
+  const round = JSON.parse(JSON.stringify(h.state)) as typeof h.state;
+  assert.equal(round.suspension && (round.suspension as { type: string }).type, 'payTrigger',
+    'the gate is a serializable suspension');
+  assert.deepEqual(round.decision, h.state.decision, 'the question round-trips');
+  h.state = round;
+  pick(h, true);                                      // …and the revived state still drives
+  pass(h); pass(h);
+  assert.equal(h.state.players[A]!.rot, 1);
+  void titan;
+  finishBattle(h);
 });
 
 test('Deathglow Strider: after combat, deals its defense to each opponent', () => {

@@ -860,6 +860,17 @@ export type Suspension =
       key: string;
     }
   | {
+      /** R121: Crevice Lurker's pay-to-trigger gate — `trigger` has been
+       * taken off the triggerQueue and waits on its controller's
+       * payOrDecline answer: pay `tax` and it goes to the stack, decline and
+       * it simply does not happen (its bounded [once] handed back,
+       * R108/R113). Plain serializable data like every arm here, so the
+       * pending question survives a JSON round-trip and a replay. */
+      type: 'payTrigger';
+      trigger: PendingTrigger;
+      tax: number;
+    }
+  | {
       /** mid-resolution choice (R4 electric, R6 payments): replay item.parts[partIndex]
        * with answers filled in until it completes without suspending */
       type: 'resolve';

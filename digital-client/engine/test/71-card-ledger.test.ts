@@ -289,18 +289,21 @@ test('the sweep has teeth: it recognises the shape Harbinger of Immolation was f
   // channel and implemented it — so the canary moved on again, exactly the way
   // this assertion's own failure message told it to.
   //
-  // CREVICE LURKER is the canary now. R104 built the replacement-effect layer
-  // and un-parked Conduit of Pain with it (an `AmountMod` consulted by
-  // dealEffectDamageAll), so the canary moved on for the third time — exactly
-  // the way this assertion's own failure message told it to.
+  // CREVICE LURKER was the canary until 2026-08-24, when R121 built the
+  // ability-cost tax (CostCtx purposes 'activate'/'trigger' over R59's
+  // CostMod layer) and the pay-to-trigger gate (E.gateTaxedTrigger) and
+  // implemented it — so the canary moved on for the FOURTH time, exactly the
+  // way this assertion's own failure message told it to.
   //
-  // Its definition is byte-for-byte the shape Harbinger had, Envoy had and
-  // Conduit had — an inert augmentText entry, `events: []`, an empty run and a
-  // label ending "(not implemented)" — it is declared in the ledger, and it is
-  // genuinely parked: "[Augment] Abilities cost [one] more to activate or
-  // trigger during battle" needs ability-cost TAXATION (R59's CostMod taxes
-  // card plays only) plus a pay-to-trigger gate, and R104 built neither.
-  const CANARY = 'Crevice Lurker';
+  // VENGEANCE is the canary now. Its definition is byte-for-byte the shape
+  // Harbinger had, Envoy had, Conduit had and Crevice Lurker had — an inert
+  // augmentText entry, `events: []`, an empty run and a label ending "(not
+  // implemented)" — it is declared in the ledger, and it is genuinely
+  // parked: "[Augment] Cards your opponents play during battle gain
+  // '[Sacrifice a unit]'" needs a channel for IMPOSING an additional
+  // non-mana, non-life cast cost on another player's cards, and neither
+  // R59's CostMod (delta/life only) nor R121's purpose widening built one.
+  const CANARY = 'Vengeance';
   const shapes = deadShapes(CANARY);
   assert.ok(shapes.some(s => /events:\[\]/.test(s)),
     `${CANARY} no longer has the inert-augment shape — if it was implemented, `

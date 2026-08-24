@@ -444,15 +444,17 @@ export class E {
    * NOTE the returned `holder` is the ANCHOR (the entity the mod reads from),
    * while the mod list comes off the carrying entity's card.
    */
-  private costModsFor(region: number): { holder: Entity; mod: CostMod }[] {
+  private costModsFor(region: number): { holder: Entity; mod: CostMod; via: CardName }[] {
     if (this.inCostMods) return [];
-    const out: { holder: Entity; mod: CostMod }[] = [];
+    const out: { holder: Entity; mod: CostMod; via: CardName }[] = [];
     this.inCostMods = true;
     try {
       for (const { holder, anchor } of this.anchored((_h, a) =>
         a.region === region
         && !a.suppressed?.abilities)) {                         // R62, as staticsFor (shallow)
-        for (const mod of this.card(holder.card).costMods ?? []) out.push({ holder: anchor, mod });
+        // `via` is the card the mod is PRINTED on — the holder, which for a
+        // donated augment differs from the anchor (R121's logs name it)
+        for (const mod of this.card(holder.card).costMods ?? []) out.push({ holder: anchor, mod, via: holder.card });
       }
     } finally { this.inCostMods = false; }
     return out;
@@ -597,6 +599,41 @@ export class E {
     let total = 0;
     for (const { holder, mod } of this.costModsFor(region)) total += mod.life?.(this, holder, ctx) ?? 0;
     return Math.max(0, total);
+  }
+
+  /**
+   * R121: what the cost-modifier layer adds to an ability ACTIVATION or to a
+   * TRIGGER going to the stack — "[Augment] Abilities cost [one] more to
+   * activate or trigger during battle" (Crevice Lurker). Designer: the card
+   * "taxes the cost to activate or trigger abilities", and can stop e.g.
+   * Ruinbringer's "After combat, delete all units" the way a negate can.
+   *
+   * The SAME radiating CostMod layer as R59 — same anchored() walk, same R12
+   * region scope (the Lurker's own region, or its HOST's when donated), same
+   * shallow R62 guard, same reentrancy latch — consulted with the two R121
+   * purposes. Deltas SUM exactly as card-play CostMods do (two Lurkers =
+   * +2), clamped at zero. `byCard` names the cards whose deltas actually bit
+   * (deduped) for the gate's prompts and log lines — the card the mod is
+   * PRINTED on (`via`), not its anchor, so a donated Lurker is named
+   * "Crevice Lurker" and never after its host.
+   *
+   * `sourceCard` is the card whose ability is being activated or triggered,
+   * for any future modifier that filters by subject; Crevice Lurker's
+   * "Abilities" is unqualified and ignores it. NOT taxed, documented:
+   * resource activations and spell-token casts are not ability activations,
+   * and an ability's "if you do" clause is not its own trigger (designer) —
+   * it resolves inside its trigger's own parts and never re-enters here.
+   */
+  abilityTax(seat: Seat, sourceCard: CardName, region: number, purpose: 'activate' | 'trigger'): { total: number; byCard: CardName[] } {
+    const ctx = { seat, card: this.card(sourceCard), region, purpose };
+    let total = 0;
+    const byCard: CardName[] = [];
+    for (const { holder, mod, via } of this.costModsFor(region)) {
+      const d = mod.delta?.(this, holder, ctx) ?? 0;
+      if (d > 0 && !byCard.includes(via)) byCard.push(via);
+      total += d;
+    }
+    return { total: Math.max(0, total), byCard };
   }
 
   canPayCard(seat: Seat, name: CardName, opts: CostOpts = {}): boolean {
@@ -5448,7 +5485,20 @@ export class E {
     if (!cost) return;
     delete item.activationCost;
     const seat = item.controller;
-    this.payMana(seat, cost.mana ?? 0);
+    // R121: the ability-cost tax layer (Crevice Lurker) joins the printed
+    // mana — same cast-window moment, and legality-gated by the same
+    // canPayAbilityCost both the offer and the accept already share, so an
+    // unaffordable taxed activation was never offered in the first place.
+    // `item.card` is the card the ability is printed on (viaCard ?? face),
+    // the identity canPayAbilityCost taxed.
+    const tax = item.card !== undefined
+      ? this.abilityTax(seat, item.card, item.region, 'activate')
+      : { total: 0, byCard: [] as CardName[] };
+    this.payMana(seat, (cost.mana ?? 0) + tax.total);
+    if (tax.total > 0) {
+      this.ev('info', `${item.label} is taxed [${tax.total}] more (${tax.byCard.join(', ')}).`,
+        { seat, region: item.region, tax: tax.total });
+    }
     if (cost.life) {
       this.ev('info', `${this.pname(seat)} pays ${cost.life} life — the cost of ${item.label}.`);
       this.loseLife(seat, cost.life, `${item.label} (cost)`);
@@ -6616,20 +6666,109 @@ export class E {
         ? (itQ.length ? itQ[itQ.length - 1]! : nitQ[nitQ.length - 1]!)
         : (nitQ.length ? nitQ[0]! : itQ[0]!);
       this.s.triggerQueue.splice(this.s.triggerQueue.indexOf(next), 1);
-      const item: StackItem = {
-        id: this.s.nextId++, kind: 'triggered', card: next.sourceCard, label: next.label,
-        controller: next.controller,
-        // R70: the live source's CURRENT region if it is still in play (it may
-        // have moved between firing and resolving), else the region it fired
-        // in, and only then the controller's action region. That last fallback
-        // used to be the only answer for a dead source, which put every "when
-        // I die" trigger in the wrong region (R12).
-        region: this.entity(next.sourceId)?.region ?? next.region ?? this.actionRegion(next.controller),
-        negated: false, parts: next.parts, sourceId: next.sourceId, event: next.event,
-      };
-      const then = battleMode ? 'push' : 'resolve';
-      this.collectTargets(item, then, []);
-      this.commitItem(item, then);
+      // R121: the pay-to-trigger gate — ONE choke point for every trigger
+      // headed to the stack (card triggers, augment-donated triggers and R51
+      // zone triggers alike; never per-card). Only battleMode triggers pass
+      // through it: R3's combat-sub-step triggers resolve immediately as
+      // special actions and never reach the stack, and outside battle the
+      // taxing card's own "during battle" clause zeroes the tax anyway.
+      // Bookkeeping listeners whose when() returned false never queued and
+      // are untaxed by construction. The gate may suspend (asking the
+      // controller to pay) or swallow the trigger (no mana — prevented,
+      // announced); `continue` covers the swallowed case.
+      if (battleMode && this.gateTaxedTrigger(next)) continue;
+      this.stackPendingTrigger(next, battleMode ? 'push' : 'resolve');
+    }
+  }
+
+  /** The build-and-commit tail of processTriggerQueue, split out so the R121
+   * pay gate can resume a dequeued trigger from doDecide with the queue loop
+   * long unwound. */
+  stackPendingTrigger(next: PendingTrigger, then: 'push' | 'resolve'): void {
+    const item: StackItem = {
+      id: this.s.nextId++, kind: 'triggered', card: next.sourceCard, label: next.label,
+      controller: next.controller,
+      // R70: the live source's CURRENT region if it is still in play (it may
+      // have moved between firing and resolving), else the region it fired
+      // in, and only then the controller's action region. That last fallback
+      // used to be the only answer for a dead source, which put every "when
+      // I die" trigger in the wrong region (R12).
+      region: this.entity(next.sourceId)?.region ?? next.region ?? this.actionRegion(next.controller),
+      negated: false, parts: next.parts, sourceId: next.sourceId, event: next.event,
+    };
+    this.collectTargets(item, then, []);
+    this.commitItem(item, then);
+  }
+
+  /**
+   * R121: Crevice Lurker's pay-to-trigger gate ("choosing to not pay this
+   * prevents the abilities from triggering"). Returns true when the trigger
+   * must NOT be stacked here: either it was just prevented outright (its
+   * controller has no legal way to pay — announced, never silent), or its
+   * controller is being ASKED (suspend throws; doDecide resumes through
+   * resumeTriggerGate). THE DECISION IS THE PLAYER'S — with any legal way to
+   * pay, the engine never chooses for them; only the zero-mana case skips
+   * the prompt, because a question with one legal answer is not a question.
+   */
+  private gateTaxedTrigger(t: PendingTrigger): boolean {
+    const region = this.entity(t.sourceId)?.region ?? t.region ?? this.actionRegion(t.controller);
+    const { total: tax, byCard } = this.abilityTax(t.controller, t.sourceCard, region, 'trigger');
+    if (tax <= 0) return false;
+    const taxers = byCard.join(', ');
+    if (this.openMana(t.controller) < tax) {
+      // R108/R113: "no offer could be made at all" — the bounded reservation
+      // composeParts wrote at queue time goes back.
+      this.refundTriggerBudgets(t);
+      this.ev('info',
+        `${t.label} — the trigger is prevented: ${taxers} taxes it [${tax}] and the mana is not there.`,
+        { seat: t.controller, region, prevented: true, tax });
+      return true;
+    }
+    this.suspend({ type: 'payTrigger', trigger: t, tax }, {
+      seat: t.controller, kind: 'payOrDecline',
+      prompt: `${taxers} taxes the trigger [${tax}] — pay to let "${t.label}" happen?`,
+      options: [
+        { label: `Pay [${tax}]`, value: true },
+        { label: 'Decline (the trigger does not happen)', value: false },
+      ],
+    });
+  }
+
+  /** R121: the answer to a pay-to-trigger question. Pay: charge the tax and
+   * stack the trigger exactly where processTriggerQueue left off. Decline:
+   * the trigger simply does not happen — and does NOT spend its [once]
+   * (R108/R113: declining never spends it; the reservation goes back).
+   * settle() then drains whatever else the queue still holds. */
+  resumeTriggerGate(t: PendingTrigger, tax: number, pay: boolean): void {
+    if (pay) {
+      this.payMana(t.controller, tax);
+      this.ev('info',
+        `${this.pname(t.controller)} pays the [${tax}] tax — ${t.label} goes on the stack.`,
+        { seat: t.controller, tax });
+      this.stackPendingTrigger(t, 'push');
+    } else {
+      this.refundTriggerBudgets(t);
+      this.ev('info',
+        `${this.pname(t.controller)} declines to pay [${tax}] — ${t.label} is prevented.`,
+        { seat: t.controller, prevented: true });
+    }
+    this.settle();
+  }
+
+  /** R121 + R108/R113: hand back the bounded reservations composeParts wrote
+   * for a trigger that is now NOT happening (declined or unpayable at the
+   * pay gate). refundPart's bookkeeping keyed off the PendingTrigger instead
+   * of a StackItem — a mod-donated part's budget lives on the mod under
+   * 'graft', everything else on the source under the part's own effectKey. A
+   * zone trigger's stand-in source was never in s.entities, so there is
+   * nothing to refund onto and this is correctly a no-op for it. */
+  private refundTriggerBudgets(t: PendingTrigger): void {
+    for (const part of t.parts) {
+      const holder = part.fromMod !== undefined ? this.entity(part.fromMod) : this.entity(t.sourceId);
+      if (!holder) continue;
+      const key = part.fromMod !== undefined ? 'graft' : part.effectKey;
+      if ((holder.budgets[key] ?? 0) <= 0) continue;
+      delete holder.budgets[key];
     }
   }
 

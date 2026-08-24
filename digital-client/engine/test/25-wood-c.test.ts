@@ -232,8 +232,10 @@ test('Stellarspore Harvester: after combat it steals a target unit carrying a -1
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const harv = spawn(h, A, 'Stellarspore Harvester'); // 3/5
-  const lurk = spawn(h, D, 'Crevice Lurker');         // 2/3, gets a -1/-1 counter
-  new E(h.state).addCounters(ent(h, lurk)!, -1);      // white-box: 1/2 now
+  // R121 made Crevice Lurker (the original prop here) a live taxer that
+  // would gate this very trigger — the countered body is a vanilla 3/3 now.
+  const lurk = spawn(h, D, 'The Foretold');           // 3/3, gets a -1/-1 counter
+  new E(h.state).addCounters(ent(h, lurk)!, -1);      // white-box: 2/2 now
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[harv]] });
   pass(h); pass(h);
@@ -347,7 +349,8 @@ test('Wandering Blightshell: a -1/-1 counter you put on an enemy draws a card �
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const shell = spawn(h, A, 'Wandering Blightshell'); // 1/2 — must share the region
-  const lurk = spawn(h, D, 'Crevice Lurker');         // 2/3 victim
+  const lurk = spawn(h, D, 'The Foretold');           // 3/3 vanilla victim
+  // (was Crevice Lurker — R121 made it a live taxer that would gate the draw)
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[shell]] });
   const region = h.state.battle!.region;

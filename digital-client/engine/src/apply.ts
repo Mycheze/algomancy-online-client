@@ -846,8 +846,14 @@ function activationSource(e: E, u: Entity, via?: ActivateVia):
  * GATE — an ability whose cost cannot be paid is neither offered nor accepted.
  * `u` is the source, excluded from a "sacrifice another" count.
  */
-function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, region: number): boolean {
-  if (e.openMana(seat) < (cost.mana ?? 0)) return false;
+function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, region: number, taxCard: CardName): boolean {
+  // R121: the ability-cost tax (Crevice Lurker) is part of the mana gate —
+  // an activation that cannot pay printed + tax is neither offered
+  // (pushActivatedOptions) nor accepted (doActivateAbility), exactly like a
+  // card play that cannot pay a taxed cost (R59/R49). `taxCard` is the card
+  // the ability is printed on (the face, or the donating mod's card) — the
+  // same identity E.payActivationCost later taxes as `item.card`.
+  if (e.openMana(seat) < (cost.mana ?? 0) + e.abilityTax(seat, taxCard, region, 'activate').total) return false;
   if (cost.life !== undefined && !e.canPayLife(seat, cost.life)) return false;
   if (cost.discard !== undefined && e.player(seat).hand.length < cost.discard) return false;
   if (cost.sacrificeOther !== undefined
@@ -919,7 +925,7 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
     e.illegal('abilities are activated during battle or deployment');
   }
   const cost = ability.cost;
-  e.need(canPayAbilityCost(e, seat, cost, u, region), 'cannot pay the activation cost');
+  e.need(canPayAbilityCost(e, seat, cost, u, region, viaCard ?? e.faceName(u)), 'cannot pay the activation cost');
   // compose BEFORE paying costs: a spent bounded cause makes this illegal
   const parts = e.composeParts(u, abilityIndex, prefix, viaCard);
   e.need(parts, 'that ability was already used this turn');
@@ -1828,6 +1834,15 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     return;
   }
 
+  if (sus.type === 'payTrigger') {
+    // R121: the pay-to-trigger gate's answer. THE PLAYER decided — the
+    // engine never does (the zero-mana prevention happens before any
+    // question is raised, in E.gateTaxedTrigger).
+    e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
+    e.resumeTriggerGate(sus.trigger, sus.tax, dec.options[choice]!.value === true);
+    return;
+  }
+
   // sus.type === 'resolve': fill the answer and replay the part.
   // R85: the rollback to the part boundary happens HERE, not when the part
   // suspended — so the board everybody was looking at while this question was
@@ -2355,7 +2370,7 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         // R49: a per-ability {Battle}/{Deployment} marker, and the full
         // activation cost (life, discard, sacrifice-another, debt) as a gate
         if (ab.timing !== undefined && ab.timing !== (battle ? 'battle' : 'deploy')) return;
-        if (!canPayAbilityCost(e, seat, ab.cost, u, region)) return;
+        if (!canPayAbilityCost(e, seat, ab.cost, u, region, budgetCard)) return;
         if (ab.bounded && (u.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
         if (abilityUnusable(e, seat, ab, u, region)) return;                     // R64/R77
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });

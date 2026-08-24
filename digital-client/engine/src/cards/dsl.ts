@@ -751,9 +751,17 @@ export interface StaticMod {
  * ruling), so "spells cost [one] more to PLAY" must not tax an augment. */
 export interface CostCtx {
   seat: Seat;
+  /** the card being played or applied — or, for R121's 'activate'/'trigger'
+   * purposes, the card whose ability is being activated or triggered */
   card: CardDef;
   region: number;
-  purpose: 'play' | 'mod';
+  /** 'play'/'mod' is R59/R37's original split (applying a mod is not
+   * playing). R121 widens the union with the ability-cost purposes:
+   * 'activate' — a player is activating an ability; 'trigger' — a triggered
+   * ability is about to go on the stack (Crevice Lurker). Every pre-R121
+   * CostMod gates on === 'play' (or !== 'play'), so the widening changes
+   * nothing for them. */
+  purpose: 'play' | 'mod' | 'activate' | 'trigger';
 }
 
 /**
