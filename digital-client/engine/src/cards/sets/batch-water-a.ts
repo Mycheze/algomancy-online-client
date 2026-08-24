@@ -34,12 +34,84 @@
  *    composeParts now materializes the copies as separate parts, each with
  *    its own targets and [cost] — see EffectDef.graftCopies.
  */
-import type { Seat } from '../../types.ts';
+import type { Entity, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay, perSeatRows } from './helpers.ts';
+import { card, getCard, unitRestrict, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
+
+/**
+ * Play a card inline as part of an effect's resolution — Hooba-Pon's and
+ * Insidious Invitation's "play a unit from hand", Tides of the Cosmos'
+ * "play them now", Spell Excavation's bin play. ⚠ approximation: the played
+ * spell resolves immediately inside this resolution (no stack entry, no
+ * response window) — the closest the engine offers to a mid-resolution play.
+ * Units and spell-unit bodies spawn normally (their triggers fire);
+ * 'spellPlayed' is fired so play-a-spell triggers count it.
+ *
+ * `seat` is who is doing the playing (Insidious Invitation walks every seat in
+ * turn); it defaults to the effect's controller. `outcome` is 'unit' (a plain
+ * unit body), 'ok' (a spell, or a spell unit whose spell part resolved) or
+ * 'fizzled' (a targeted spell with no candidates — the body never arrives).
+ * `unit` is the spawned body when there is one, so a caller that has somewhere
+ * to put it (Hooba-Pon's formation) can. The CALLER decides where a spell card
+ * goes afterwards (bin / erased).
+ *
+ * It lives in THIS file, not helpers.ts, because it is card behaviour rather
+ * than a shared idiom, and in the water-A batch because index.ts imports this
+ * module before batch-water-b — the importing direction that leaves
+ * registration order (= deck order) untouched.
+ */
+export type InlinePlay = { outcome: 'unit' | 'ok' | 'fizzled'; unit?: Entity };
+export const playInline = (
+  g: E, ctx: EffectCtx, name: string, key: string, seat: Seat = ctx.controller,
+): InlinePlay => {
+  const def = getCard(name);
+  if (def.kind === 'unit') {
+    return { outcome: 'unit', unit: g.spawnUnit(seat, name, ctx.region) };
+  }
+  const ev = g.ev('spellPlayed',
+    `${g.pname(seat)} plays ${name} (via ${ctx.sourceName}).`,
+    { seat, card: name, token: false, region: ctx.region });
+  g.fireEvent('spellPlayed', ev);
+  const eff = def.spellEffect;
+  let fizzled = false;
+  if (eff) {
+    let targets: ResolvedTarget[] = [];
+    let refs: TargetRef[] = [];
+    if (eff.targets) {
+      const cands = g.targetCandidates(eff.targets, ctx.region, undefined, seat);
+      if (!cands.length) fizzled = true;
+      else {
+        const ref = (cands.length === 1 ? cands[0]! : ctx.choose(`${key}:t`, {
+          kind: 'electricPath', seat, prompt: eff.targets.prompt,
+          options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
+        })) as TargetRef;
+        const r = g.resolveTargetRef(ref);
+        if (r) { targets = [r]; refs = [ref]; }
+        else fizzled = true;
+      }
+    }
+    if (!fizzled) {
+      // R57: a modal card played inline has no cast window to declare its half
+      // in — it never reaches the stack — so it is asked here, through
+      // ctx.choose, exactly as it was before the mode moved. See inlineMode.
+      const mode = inlineMode(g, ctx, eff, `${key}:mode`, { card: name, targets: refs });
+      eff.run(g, {
+        controller: seat, sourceName: name, region: ctx.region,
+        targets, event: null, mode,
+        eraseSelf: () => {},   // an inline mod run has no stack item to erase
+        choose: (k, d) => ctx.choose(`${key}:${k}`, d),
+      });
+    }
+  }
+  if (fizzled) return { outcome: 'fizzled' };
+  if (def.kind === 'spellUnit') {
+    return { outcome: 'ok', unit: g.spawnUnit(seat, name, ctx.region) };
+  }
+  return { outcome: 'ok' };
+};
 
 /** Glimpse N for a seat (R45) — reveal the top N, cache exactly ONE of the
  * glimpser's choice and recycle the rest to the bottom of the deck; until end
@@ -354,6 +426,11 @@ card('Frosted Denial', {
 // visits the hand too, so it counts here; a CACHED unit still does not.
 // Draw path: the 'draw' event carries no region, so the when() pins the
 // listener to the battle region itself (R12).
+// ⚠ NEEDS ESCALATION: a recall and a draw are the only two channels there ARE.
+// A card moved into a hand any other way (Rippleback Skulker, Eldritch
+// Reclaimer, Collect Remains, Bioremediation …) is a bare `hand.push` that
+// announces nothing, so half this sentence is dead. See the batch-water-b
+// header for the engine seam that would close it.
 const galeriderSurge: EffectDef = {
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
@@ -385,6 +462,21 @@ card('Galerider Eel', {
 // controller WHICH open position — "an open position in my formation" names a
 // kind of slot, not a particular one, so it is the same choice every other
 // "in my formation" card now makes.
+//
+// "A UNIT" INCLUDES A SPELL UNIT, and the RAQ that says so is about THIS CARD:
+// "[Solved] Spell Units played when you can 'play a unit from hand'" — *"Q: If
+// you decide to use Hooba-Pon Effect to play Spell-Unit, does that units
+// 'spell' part happens? A: Yes, the spell part happens and if it resolves, the
+// unit will spawn into formation"*, and *"Q: Does that count as 'playing a
+// spell' for some triggers? A: Yes."* (docs/digital-rules, R97/R123 sections;
+// the same ruling is why Dispatch Courier and Writhing Host both read
+// `kind === 'unit' || kind === 'spellUnit'`.) This used to filter the hand on
+// `getCard(name).kind === 'unit'` alone, so a spell unit could not even be
+// offered — half the printed noun, and the half the designer was asked about.
+// It now goes through `playInline`: the spell part resolves, 'spellPlayed'
+// fires, and the body — if the spell part did not fizzle — takes the slot.
+// A fizzled spell unit spawns nothing and its card is binned, exactly as a
+// fizzled spell unit played normally is.
 card('Hooba-Pon', {
   augmentText: [{
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
@@ -402,7 +494,7 @@ card('Hooba-Pon', {
         const hand = g.player(seat).hand;
         const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
         hand.forEach((name, i) => {
-          if (getCard(name).kind === 'unit' && g.canPayCard(seat, name)) {
+          if (isUnitCard(name) && g.canPayCard(seat, name)) {
             options.push({ label: name, value: i, card: name });
           }
         });
@@ -419,8 +511,14 @@ card('Hooba-Pon', {
         if (name === undefined) { g.ev('info', 'Hooba-Pon: declined — nothing is played.'); return; }
         hand.splice(pick, 1);
         g.payCard(seat, name);
-        const u = g.spawnUnit(seat, name, ctx.region);
-        g.placeInFormation(u, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon' });
+        const played = playInline(g, ctx, name, 'hoobaPlay', seat);
+        if (played.unit) g.placeInFormation(played.unit, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon' });
+        else {
+          // a spell unit whose spell part found no target: no body, and the
+          // card is binned like any fizzled spell unit
+          g.toBin(seat, name, 'stack');
+          g.ev('info', `Hooba-Pon: ${name}'s spell part fizzled — no body joins the formation.`);
+        }
       },
     },
   }],
@@ -431,6 +529,13 @@ card('Hooba-Pon', {
 // — b/1 {Battle} Bedlam Occult Spell. The [Switch1] sentence is the bounded
 // graftable effect; each player in turn (caster first) may pay for and play
 // one unit-kind card from hand, spawning into the effect's region.
+//
+// "A UNIT" INCLUDES A SPELL UNIT — the same RAQ Hooba-Pon is quoted under
+// ("[Solved] Spell Units played when you can 'play a unit from hand'"), and the
+// same reading Dispatch Courier and Writhing Host already take. This used to
+// filter on `kind === 'unit'` alone; the spell part now happens through
+// `playInline` and the body follows it into the region, which is what the
+// designer answered.
 const insidiousInvite: EffectDef = {
   run: (g, ctx) => {
     const seats: Seat[] = [ctx.controller, ...g.s.players.map(p => p.seat).filter(s => s !== ctx.controller)];
@@ -438,7 +543,7 @@ const insidiousInvite: EffectDef = {
       const hand = g.player(seat).hand;
       const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
       hand.forEach((name, i) => {
-        if (getCard(name).kind === 'unit' && g.canPayCard(seat, name)) {
+        if (isUnitCard(name) && g.canPayCard(seat, name)) {
           options.push({ label: name, value: i, card: name });
         }
       });
@@ -458,7 +563,11 @@ const insidiousInvite: EffectDef = {
       }
       hand.splice(pick, 1);
       g.payCard(seat, name);
-      g.spawnUnit(seat, name, ctx.region);
+      const played = playInline(g, ctx, name, `invite:${seat}`, seat);
+      if (played.outcome === 'fizzled') {
+        g.toBin(seat, name, 'stack');   // a fizzled spell unit: no body, card to bin
+        g.ev('info', `Insidious Invitation: ${name}'s spell part fizzled — no body arrives.`);
+      }
     }
   },
 };

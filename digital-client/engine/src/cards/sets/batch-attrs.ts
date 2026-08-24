@@ -2,7 +2,14 @@
  * carry new attributes (Powerful / Vulnerable / Thieving / Resonant / Poisonous),
  * the two counter-placing spell tokens (Poison / Crystal), and the cards that
  * make or use them. Engine support for the attributes lives in engine.ts
- * (combatSubStep + dealEffectDamage). See docs/digital-rules R23-R24 (proposed).
+ * (combatSubStep + dealEffectDamage). See docs/digital-rules R23-R24.
+ *
+ * BOTH DAMAGE PATHS, checked 2026-08-24: {Powerful}, {Vulnerable}, {Poisonous}
+ * and {Resonant} are read in combat (colOutput / commitDamage) AND in
+ * dealEffectDamage, and the effect path reads the source's LIVE attrs plus
+ * `EffectCtx.grantedAttrs` (R79/R94), so a SPELL source carries them too.
+ * {Thieving} is combat-only by definition, not by omission — the glossary
+ * prints "when its COLUMN deals COMBAT damage to a player" (R24).
  *
  * Owned by one card-scripting agent; see sets/index.ts for ordering rules.
  */
@@ -14,7 +21,11 @@ import { isEnt } from './helpers.ts';
 // attribute is also live on the card played normally (printed.attrs). No
 // behavior beyond the printed data — the engine reads the attrs directly.
 
-// "[Augment] {Powerful} Insect {Virus} Unit" — 1/2, deals double combat damage
+// "[Augment] {Powerful} Insect {Virus} Unit" — 1/2. The glossary prints
+// {Powerful} as "It deals double damage" with NO combat clause, and the RAQ
+// "[Solved] Resonant, Combat Damage, Conduit and Powerful" doubles a Powerful
+// unit's noncombat ability damage as well; engine.ts doubles both paths. (This
+// line used to gloss it "deals double combat damage" — the narrower reading.)
 card('Chitin Shredder', {});
 
 // "[Augment] {Vulnerable} Ancient Rock {Virus} Unit" — 3/8, receives double damage

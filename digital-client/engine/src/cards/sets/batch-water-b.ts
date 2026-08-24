@@ -9,6 +9,22 @@
  * event region's present seats), R14 ("this battle" counters are per
  * region-battle).
  *
+ * ⚠ NEEDS ESCALATION — "a card enters a hand" is HALF IMPLEMENTED (2026-08-24).
+ *   Rider of the Tides and Xenopod Progenitor here, and Galerider Eel in
+ *   batch-water-a, all print "whenever (one or more other) cards enter a
+ *   player's hand during battle". They listen on 'despawned' (with `to:
+ *   'hand'`, R70) and 'draw' — a RECALL and a DRAW. A card moved into a hand
+ *   any OTHER way fires nothing, because nothing in the engine announces it:
+ *   `player(seat).hand.push(name)` is a bare array write in ~9 card files.
+ *   Rippleback Skulker (this batch!), Eldritch Reclaimer, Delver of Mysteries,
+ *   Reclaimer of Secrets, Bioremediation and Collect Remains all move a card
+ *   into a hand in silence, and several are {Battle}-timed, so the case is
+ *   reachable in the exact window these three cards are asking about.
+ *   The fix is an engine seam, not a card one: an `E.toHand(seat, name, from)`
+ *   primitive that pushes AND fires a 'handEntered' event ({ seat, card,
+ *   token, from }), every `hand.push` in the pool routed through it, and these
+ *   three `when()`s extended to hear it. Not done here — engine.ts is shared.
+ *
  * NOTHING IN THIS BATCH IS PARKED.
  *  - Water Resource: this header used to list it as parked on (a) resource
  *    cards modelled as playable resources and (b) a dispatched
@@ -23,11 +39,14 @@
  *    fire, water and earth, so routing a seven-element rule through them would
  *    silently drop the bonus for wood, metal, light and dark. R116, R54.
  */
-import type { EngineEvent, Entity, EntityId, Seat, TargetRef } from '../../types.ts';
+import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, isEntityTarget, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
-import type { ResolvedTarget } from '../dsl.ts';
-import { selfOf, isEnt, manaOf, chooseUnit, inlineMode, perSeatRows, lifeLostIn } from './helpers.ts';
+import { selfOf, isEnt, manaOf, chooseUnit, perSeatRows, lifeLostIn } from './helpers.ts';
+// `playInline` lives in batch-water-a (Hooba-Pon and Insidious Invitation need
+// it too). index.ts imports that module first, so importing it here cannot
+// disturb registration order — see the note on `playInline` itself.
+import { playInline } from './batch-water-a.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -59,62 +78,6 @@ const planEachPlayerRecall = (g: E, ctx: EffectCtx, tag: string): Entity[] => {
     if (u) picks.push(u);
   }
   return picks;
-};
-
-/**
- * Play a card inline as part of an effect's resolution (Tides of the Cosmos'
- * "play them now", Spell Excavation's bin play). ⚠ approximation: the played
- * spell resolves immediately inside this resolution (no stack entry, no
- * response window) — the closest the engine offers to a mid-resolution play.
- * Units and spell-unit bodies spawn normally (their triggers fire);
- * 'spellPlayed' is fired so play-a-spell triggers count it.
- * Returns 'unit' | 'ok' | 'fizzled' (targeted spell with no candidates).
- * The CALLER decides where the spell card goes afterwards (bin / erased).
- */
-const playInline = (g: E, ctx: EffectCtx, name: string, key: string): 'unit' | 'ok' | 'fizzled' => {
-  const def = getCard(name);
-  if (def.kind === 'unit') {
-    g.spawnUnit(ctx.controller, name, ctx.region);
-    return 'unit';
-  }
-  const ev = g.ev('spellPlayed',
-    `${g.pname(ctx.controller)} plays ${name} (via ${ctx.sourceName}).`,
-    { seat: ctx.controller, card: name, token: false, region: ctx.region });
-  g.fireEvent('spellPlayed', ev);
-  const eff = def.spellEffect;
-  let fizzled = false;
-  if (eff) {
-    let targets: ResolvedTarget[] = [];
-    let refs: TargetRef[] = [];
-    if (eff.targets) {
-      const cands = g.targetCandidates(eff.targets, ctx.region, undefined, ctx.controller);
-      if (!cands.length) fizzled = true;
-      else {
-        const ref = (cands.length === 1 ? cands[0]! : ctx.choose(`${key}:t`, {
-          kind: 'electricPath', seat: ctx.controller, prompt: eff.targets.prompt,
-          options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
-        })) as TargetRef;
-        const r = g.resolveTargetRef(ref);
-        if (r) { targets = [r]; refs = [ref]; }
-        else fizzled = true;
-      }
-    }
-    if (!fizzled) {
-      // R57: a modal card played inline has no cast window to declare its half
-      // in — it never reaches the stack — so it is asked here, through
-      // ctx.choose, exactly as it was before the mode moved. See inlineMode.
-      const mode = inlineMode(g, ctx, eff, `${key}:mode`, { card: name, targets: refs });
-      eff.run(g, {
-        controller: ctx.controller, sourceName: name, region: ctx.region,
-        targets, event: null, mode,
-        eraseSelf: () => {},   // an inline mod run has no stack item to erase
-        choose: (k, d) => ctx.choose(`${key}:${k}`, d),
-      });
-    }
-  }
-  if (fizzled) return 'fizzled';
-  if (def.kind === 'spellUnit') g.spawnUnit(ctx.controller, name, ctx.region);
-  return 'ok';
 };
 
 // ────────────────────────────── the cards ──────────────────────────────
@@ -608,7 +571,7 @@ card('Tides of the Cosmos', {
         // a played spell card is binned as normal; a fizzled spell unit never
         // spawns and is binned too; units stay in play
         const kind = getCard(name).kind;
-        if (kind === 'spell' || (kind === 'spellUnit' && r === 'fizzled')) {
+        if (kind === 'spell' || (kind === 'spellUnit' && r.outcome === 'fizzled')) {
           g.player(ctx.controller).bin.push(name);
         }
       }

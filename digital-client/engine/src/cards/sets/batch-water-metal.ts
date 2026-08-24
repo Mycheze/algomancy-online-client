@@ -35,7 +35,22 @@ import { selfOf, isEnt } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** the mana cost of the spell in the triggering event (R1: read from the event
- * snapshot). 'X'-cost spells report 0 — none in this pool. */
+ * snapshot).
+ *
+ * ⚠ APPROXIMATION, and the note that used to sit here ("'X'-cost spells report
+ * 0 — none in this pool") was simply false: the pool prints ELEVEN X spells
+ * (Wildfire, Gravitational Correction, Frosted Denial, Channel Through,
+ * Torrential Reclamation, Abduct, Floral Singularity, Blight's End, Grim
+ * Bargain, Mindburn, Siphon Life). Playing one gives Channeled Amalgam no
+ * counters and Arcane Concentrator no unit, because `printed.mana` is the
+ * string 'X' and the chosen X is nowhere on the 'spellPlayed' event.
+ *
+ * Not fixable from a card file: engine.ts fires 'spellPlayed' with
+ * `{ seat, card, token, region, from }` and pushes the stack item AFTERWARDS,
+ * so neither `when()` nor the effect can find the item to read `item.x` off.
+ * Escalated rather than guessed — it also needs a ruling on whether an X
+ * spell's "cost" is X alone (Null Drone's reading) or pips + X (what
+ * `printed.mana` means for every non-X card). */
 const eventSpellCost = (ctx: { event: { data?: Record<string, unknown> } | null }): number => {
   const name = ctx.event?.data?.card as string | undefined;
   if (!name) return 0;
