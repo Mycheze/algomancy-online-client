@@ -1854,15 +1854,16 @@ export function forcedAction(state: GameState): Action | null {
       // the difference between "no attack is possible" and a real choice
       .filter(u => (!b.attackerPool || b.attackerPool.includes(u.id)) && !u.allured);
     if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };
-    // round-2 counterattack with EXACTLY one sent unit and no sent spell
-    // token that could ride along: the only sensible formation is that unit
-    // alone — auto-declare it (the player already committed it at block time)
-    if (b.round === 2 && b.attackerPool !== null && eligible.length === 1) {
-      const ridableTokens = e.tokensOf(b.attacker, from).filter(t => b.attackerPool!.includes(t.id));
-      if (!ridableTokens.length) {
-        return { type: 'declareAttack', seat: b.attacker, columns: [[eligible[0]!.id]] };
-      }
-    }
+    // There used to be a second branch here: a round-2 counterattack with
+    // EXACTLY one sent unit and no ridable token auto-declared that unit
+    // ("the player already committed it at block time"). REMOVED 2026-08-24
+    // (decisions-for-the-player audit): sending a counterattacker and
+    // actually attacking with it are two different actions in this state
+    // machine — round 1's damage and priority windows sit between them, and
+    // legalDeclareAttackActions offers `columns: []` (decline) as a real,
+    // distinct choice the whole time. Auto-submitting took that choice away.
+    // If a ruling ever says a sent counterattacker MUST attack, the fix is to
+    // stop offering the decline, not to answer the question for the player.
   }
   if (b.step === 'blocks' && !e.unitsOf(b.defender, b.region).length) {
     return { type: 'declareBlocks', seat: b.defender, blocks: {} };

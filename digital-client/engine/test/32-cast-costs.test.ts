@@ -9,8 +9,9 @@
  *  - X spells: X is chosen AND paid at cast, stored on the stack item, and
  *    responses happen with X already fixed (the "Rashi paid 0" bug: X used
  *    to be chosen mid-resolution).
- *  - forcedAction(): a round-2 counterattack whose pool holds EXACTLY one
- *    unit and no spell token auto-declares that unit as the formation.
+ *  - forcedAction(): attacks are never auto-declared for the player — the
+ *    round-2 sole-counterattacker auto-form was removed 2026-08-24 (the
+ *    decisions-for-the-player audit); only truly choiceless boards submit.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -222,7 +223,11 @@ function throughRoundOne(h: Harness, A: number, atk: number, send: number[]): vo
   while (h.state.phase === 'battle' && h.state.battle!.round === 1) pass(h);
 }
 
-test('forcedAction: a single sent counterattacker is auto-formed in round 2', () => {
+test('forcedAction: a single sent counterattacker is NOT auto-formed — attacking is still a choice', () => {
+  // FLIPPED 2026-08-24 (decisions-for-the-player audit). This test used to
+  // assert the auto-declare; the branch is deleted. Sending a unit at block
+  // time and attacking with it in round 2 are two actions with a whole damage
+  // step between them, and declining (`columns: []`) is legal the whole time.
   const h = new Harness(3220);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -234,11 +239,17 @@ test('forcedAction: a single sent counterattacker is auto-formed in round 2', ()
   assert.equal(b.round, 2);
   assert.equal(b.attacker, D);
   assert.deepEqual(b.attackerPool, [d1], 'the pool holds exactly the sent unit');
-  const f = forcedAction(h.state);
-  assert.deepEqual(f, { type: 'declareAttack', seat: D, columns: [[d1]] },
-    'the only sensible formation is auto-declared');
-  h.do(f!);                                          // and it is legal
-  assert.ok(h.state.battle!.columns.flat().includes(d1), 'the unit is attacking');
+  assert.equal(forcedAction(h.state), null,
+    'one sent counterattacker is still a real choice: attack, or decline');
+  // both answers are legal — attack…
+  const fork = structuredClone(h.state);
+  h.do({ type: 'declareAttack', seat: D, columns: [[d1]] });
+  assert.ok(h.state.battle!.columns.flat().includes(d1), 'attacking is legal');
+  // …and decline
+  h.state = fork;
+  h.do({ type: 'declareAttack', seat: D, columns: [] });
+  assert.ok(h.state.phase !== 'battle' || h.state.battle!.round !== 2
+    || h.state.battle!.step !== 'declare', 'declining is legal too and the step advances');
 });
 
 test('forcedAction: NOT forced when a sent spell token could ride along', () => {
