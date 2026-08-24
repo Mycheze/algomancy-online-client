@@ -854,7 +854,7 @@ Left
 Linked Extinction
   Cost: m (total 1)   Type: {Battle} Technology Spell   P/T: 4/3
   Factions: metal   Complexity: Simple   Deck: Metal
-  Text: [Switch1] /[Sacrifce a unit]: Each opponent sacrifices a unit.
+  Text: [Switch1] /[Sacrifice a unit]: Each opponent sacrifices a unit.
 
 Lithoghul
   Cost: e (total 1)   Type: Occult Rock {Virus} Unit   P/T: 4/4

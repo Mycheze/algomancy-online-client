@@ -1845,8 +1845,10 @@ export const CARD_TODO: TodoEntry[] = [
       'Renderer half in ui/cardtext.ts, with a whole-pool sweep over text AND type lines so no '
       + 'formatting token or "/[" can survive again. Data half in scripts/extract-printed.mjs — '
       + 'printed.json is GENERATED, so a hand edit there is silently wiped on the next '
-      + 'regeneration. Linked Extinction\'s "Sacrifce a unit" is a typo in CALEB\'S SOURCE and '
-      + 'must not be silently rewritten.',
+      + 'regeneration. Linked Extinction\'s "Sacrifce a unit" was a typo in CALEB\'S SOURCE: the '
+      + 'owner corrected it AT SOURCE on 2026-08-24 ("that\'s a typo in the backend"), in the '
+      + 'oracle file, not by an extractor override. The general invariant replaced the '
+      + 'single-card record: the extractor may change LAYOUT but never a word.',
     proof: null,
     verify: 'Render every card\'s text and type line: no {i}/{/i}/{i1}/{g}/{p}/{/n} and no "/[" '
       + 'survives, while X/X and +1/+1 are untouched and {Battle}/{Virus}/{Haste} still show.',

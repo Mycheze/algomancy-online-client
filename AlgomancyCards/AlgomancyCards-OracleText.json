@@ -3878,7 +3878,7 @@
             "cost": "m",
             "total_cost": "1",
             "type": "{Battle} Technology Spell",
-            "text": "[Switch1] /[Sacrifce a unit]: Each opponent sacrifices a unit.",
+            "text": "[Switch1] /[Sacrifice a unit]: Each opponent sacrifices a unit.",
             "image": "images_out/Stable/ttransf3.png",
             "revision_date_time": "2024-03-14 14:26:18.405995",
             "details": "",

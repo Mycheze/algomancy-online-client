@@ -27,6 +27,9 @@
  * inside the client entry point.
  */
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
@@ -485,13 +488,44 @@ test('R142: printed text and type lines carry no whitespace runs', () => {
   assert.deepEqual(bad, [], `49 card texts and one type line had these:\n${bad.join('\n')}`);
 });
 
-test('R142: a typo in the DESIGNER\'s source data is left alone, on purpose', () => {
-  // Linked Extinction reads "Sacrifce a unit". That is Caleb's data, not a
-  // layout artifact, and the extractor does not silently rewrite a designer's
-  // words — it is reported upward instead. This test is the record of that
-  // decision: if it ever fails, either someone corrected the source (fine —
-  // delete this test) or someone added a fuzzy spellfix to the extractor (not
-  // fine, and this is the alarm).
-  assert.ok(getCard('Linked Extinction').text.includes('Sacrifce'),
-    'still spelled as the source spells it — normalisation fixes LAYOUT, never words');
+test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
+  // Linked Extinction used to read "Sacrifce a unit". The owner corrected it
+  // AT SOURCE on 2026-08-24 ("that's a typo in the backend"), so the old
+  // single-card record of that decision is gone — but the invariant it stood
+  // for is the valuable half, and it is generalised here.
+  //
+  // normalisePrinted() may collapse whitespace and rejoin a hyphen the card
+  // LAYOUT broke across a line. It may never alter a word. So: strip every
+  // space and hyphen from the oracle text and from what we generated, and the
+  // two must be character-identical. A fuzzy spellfix quietly added to the
+  // extractor changes a letter and fails here, naming the card it touched.
+  const oracle = JSON.parse(readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..',
+      'AlgomancyCards', 'AlgomancyCards-OracleText.json'), 'utf8')) as
+    Record<string, Array<{ name?: string; text?: string; type?: string }>>;
+  const canon = (v: string): string => v.replace(/\s+/g, '').replace(/-/g, '');
+
+  const drift: string[] = [];
+  for (const rows of Object.values(oracle)) {
+    for (const row of rows) {
+      if (!row?.name) continue;
+      let card;
+      try { card = getCard(row.name); } catch { continue; }   // not in the playable pool
+      for (const field of ['text', 'type'] as const) {
+        const src = row[field];
+        if (typeof src !== 'string') continue;
+        const got = (card[field] ?? '') as string;
+        // the extractor deliberately STRIPS a leading metadata segment — the
+        // prophecy / "Discard me" / "[Gain 4 debt]" line — because those are
+        // parsed into structured fields instead of left in the text. So what
+        // we keep must be a SUFFIX of the source, which still catches any
+        // altered letter inside the text that was retained.
+        if (!canon(src).endsWith(canon(got))) {
+          drift.push(`${row.name} (${field}):\n    oracle: ${src}\n    ours:   ${got}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(drift, [],
+    `the extractor altered words, not just layout:\n${drift.join('\n')}`);
 });
