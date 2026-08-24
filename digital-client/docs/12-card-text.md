@@ -47,7 +47,8 @@ Between them they un-parked **Suppression Field** (all three of its clauses), **
 ## Half two: the box
 
 `ui/cardtext.ts` is pure and DOM-free (the `ui/inspect.ts` convention), tested in
-`test/57-ui-cardtext.test.ts`. `ui/main.ts` renders it with `textBoxHtml()`.
+`test/57-ui-cardtext.test.ts` (the composition) and `test/122-cardtext-markup.test.ts` (the
+markup, and what the box must not repeat). `ui/main.ts` renders it with `textBoxHtml()`.
 
 Nothing in it re-derives a rule. Every line comes from a public engine query, and the stat
 arithmetic is `E.effStats` / `E.ownAttrs` / `E.projections` themselves — so **a box cannot
@@ -63,11 +64,43 @@ A live box is composed of:
 | `graft` | the host's cause + every grafted `[Switch]` clause, as the **one** ability they are (Manual p.33) |
 | `granted` | text handed to it until regroup (R63) |
 | `static` | a continuous projection radiating onto it from elsewhere, attributed to the card that authored it — not to the unit wearing it |
-| `note` | the one per-ability fact: a bounded `[Switch1]` whose budget is spent this turn |
+| `note` | the one per-ability fact: a once-per-turn budget already spent this turn |
 
 Plus: every attribute with **where it comes from** (printed / from a mod / projected / until
 regroup / **shared by the column**, which is the single most-missed thing on a board), the
-stat arithmetic term by term, and a banner naming whatever has switched a half off.
+stat arithmetic term by term, a banner naming whatever has switched a half off, and a
+`state` row for what happens to this card when it **leaves** play — token, sent to
+counterattack, and **{Unstable}**.
+
+### A line never repeats what its own tag already says (R135)
+
+Every line is rendered under a tag for its origin, and that tag is an **icon**: the augment
+symbol for an `augment`, ⇄ for a `graft`. A donated clause is sliced *from* its printed
+marker (that is where the donation starts), so the same symbol used to arrive twice — once
+on the tag, once at the head of the text. `dropOriginMarker()` takes the **leading** one
+off. Only the leading one: a `[Switch]` mid-sentence separates a graft's cause from its
+effect and is the printed card's own punctuation, which is why the composed graft line
+never goes through it.
+
+The spent-budget `note` is tagged **`[Once]`**, always — not the ability's printed marker.
+The note is not quoting the card (the printed line directly above it already does that);
+it is about the *budget*, and `[Switch1]`'s icon is the bounded-**graft** symbol, which
+badges a plain bounded trigger as though something had been grafted onto it. For the same
+reason the note does not restate `ab.label`: that is a paraphrase of the clause above it,
+and no card in the pool has two bounded abilities, so there is nothing to disambiguate.
+`[Switch1]` in **printed** text is untouched — 118 cards print one.
+
+### {Unstable} (R135)
+
+Unstable is a bin *replacement*, not a combat attribute — deliberately absent from the
+`Attr` union — so it was never going to show up in the attribute row, and for a long time
+it showed up nowhere. Two cards print `{Unstable}` on their type line (Oorblak, Aberrant
+Statweaver, from report #89) and the type line renders it; every *other* way in was
+invisible, including the common one, the Manual p.35 blanket rule that a **modded card is
+Unstable**. It rides in `state` now, beside "token — erased when it leaves play", which is
+the same class of fact, and it names *which* of `E.isUnstable`'s four ways in applies —
+they expire differently (a mod can be removed, an R96 stamp lapses at regroup, a printed
+marker never does). Read through `E.isUnstable`; never re-derived here.
 
 A clause that is present but doing nothing is **struck through, not hidden**. "It says Flying
 and Flying is off" is two facts and a player needs both.

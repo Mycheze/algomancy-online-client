@@ -30,9 +30,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
-import { iconizeText } from '../ui/cardtext.ts';
+import { Harness } from '../src/harness.ts';
+import { E } from '../src/engine.ts';
+import {
+  augmentClause, dropOriginMarker, entityTextBox, iconizeText, printedTextBox,
+} from '../ui/cardtext.ts';
+import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 
 const textOf = (n: string): string => getCard(n).text ?? '';
+const q = (h: Harness): E => new E(h.state);
 
 test('R134: {g} renders the keyword it marks, never a literal "g"', () => {
   const out = iconizeText(textOf('Beyond, Codex Incarnate'));
@@ -104,4 +110,128 @@ test('R134: the formatter still does its original job — icons, pips and breaks
   assert.ok(iconizeText('{Swift} unit').includes('Swift'), 'an unknown {attr} still bares its word');
   assert.ok(iconizeText('[weird] thing').includes('[weird]'), 'an unknown [token] keeps its brackets');
   assert.ok(iconizeText('<script>').includes('&lt;script&gt;'), 'and it still escapes first');
+});
+
+/* ── R135: the three cosmetic bugs in the text BOX ────────────────────
+ *
+ * Reported verbatim (2026-08-24, Bena): "When looking at a cards text, it
+ * duplicates icons. For example, an augmented thing will show the :augment:
+ * icon twice, once on each line. It also doesn't show unstable anywhere. And
+ * when a :once: per turn activated/triggered ability is depleted, it's nice
+ * that it greys it out, but it also duplicates the text, making it really
+ * long and uses the wrong icon [Switch1] rather than [Once]."
+ *
+ * Two of the three are the box repeating something it has already said; the
+ * third is the box failing to say the one thing only it can. R134 lifted the
+ * FORMATTER out of main.ts so it could be tested; these reach one level up, at
+ * the composed box, because that is where the repetition is decided. Seeds
+ * 12200-12299.
+ */
+
+test('R135: an augment line does not repeat the [Augment] icon its own tag shows', () => {
+  const h = new Harness(12200);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const host = spawn(h, A, 'Unit Token');
+  {
+    const e = q(h);
+    // "[Augment] Whenever another unit dies, put a +1/+1 counter on me."
+    e.attachMod(ent(h, host)!, 'Refuse Reclaimer', A, 'augment');
+    e.settle();
+  }
+  const donated = entityTextBox(q(h), ent(h, host)!).lines.find(l => l.origin === 'augment')!;
+  assert.ok(donated, 'the donated clause is still its own line');
+  assert.ok(donated.text.includes('+1/+1 counter'), `and still says what it does: ${donated.text}`);
+  // ui/main.ts renders LINE_TAG.augment — the augment ICON — beside this text,
+  // so a marker at the head of the text is the SECOND one on the same line
+  assert.ok(!/\[augment\]/i.test(donated.text),
+    `the tag already carries the symbol: ${donated.text}`);
+  assert.ok(!iconizeText(donated.text).includes('Icons/augment.webp'),
+    'so the rendered line paints the augment icon zero times, not once more');
+});
+
+test('R135: no augment-donating card in the pool leads its clause with the marker', () => {
+  // the general form: every text-box [Augment] in the pool is sliced by
+  // augmentClause and then rendered under the augment tag
+  const bad: string[] = [];
+  for (const name of allCardNames()) {
+    const clause = augmentClause(name);
+    if (!clause) continue;
+    if (/^\[augment\]/i.test(dropOriginMarker(clause))) bad.push(name);
+  }
+  assert.deepEqual(bad, [], 'a donated clause never opens with the icon its tag already shows');
+  // and the marker is only ever dropped from the FRONT — one mid-sentence
+  // separates a graft's cause from its effect and is the card's own punctuation
+  assert.equal(dropOriginMarker('When I spawn, [Switch] Create a Fireball 1.'),
+    'When I spawn, [Switch] Create a Fireball 1.');
+});
+
+test('R135: an Unstable card says so — the printed marker and the acquired kind', () => {
+  // (a) printed on the type line: report #89's two cards, off the table
+  const printedBox = printedTextBox('Aberrant Statweaver');
+  assert.ok(printedBox.state.some(s => /Unstable/.test(s)),
+    `a printed-{Unstable} card says so: ${JSON.stringify(printedBox.state)}`);
+  assert.ok(printedBox.state.some(s => /erased instead of binned/.test(s)),
+    'and says what that MEANS, which is the part a player needs');
+  assert.deepEqual(printedTextBox('Ignis Sprite').state, [],
+    'a card that is not Unstable says nothing — this is not a banner on every box');
+
+  // (b) the acquired kind, which is the common one: a modded card is Unstable
+  //     by the Manual's blanket rule (p.35), and nothing printed says it
+  const h = new Harness(12201);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const host = spawn(h, A, 'Unit Token');
+  const before = entityTextBox(q(h), ent(h, host)!);
+  assert.ok(!before.state.some(s => /Unstable/.test(s)), 'unmodded: nothing to say');
+  {
+    const e = q(h);
+    e.attachMod(ent(h, host)!, 'Refuse Reclaimer', A, 'augment');
+    e.settle();
+  }
+  const after = entityTextBox(q(h), ent(h, host)!);
+  assert.ok(after.state.some(s => /Unstable/.test(s)),
+    `sliding a mod under it made it Unstable: ${JSON.stringify(after.state)}`);
+  assert.ok(after.state.some(s => /modded/.test(s)),
+    'and the box says WHY, because the four ways in expire differently');
+  // the box may never re-derive the rule — the union lives in E.isUnstable
+  assert.equal(q(h).isUnstable(ent(h, host)!), true);
+});
+
+test('R135: a spent once-per-turn ability is one short [Once] note, not its text again', () => {
+  const h = new Harness(12202);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  // "After combat, [Switch1] Put a +1/+1 counter on each of your units."
+  const se = spawn(h, A, 'Synaptic Energizer');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[se]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);
+  pass(h); pass(h);                                   // the bounded trigger resolves
+  const box = entityTextBox(q(h), ent(h, se)!);
+  const note = box.lines.find(l => l.origin === 'note')!;
+  assert.ok(note, 'the spent budget is still on the box');
+  assert.equal(note.active, false, 'and still greys out — the owner asked to keep that');
+
+  // the wrong icon: [Switch1] is the bounded-GRAFT symbol; the note is about
+  // the BUDGET, and the budget symbol is [Once]
+  assert.ok(note.text.includes('[Once]'), `tagged [Once]: ${note.text}`);
+  assert.ok(!/\[switch1\]/i.test(note.text), `not [Switch1]: ${note.text}`);
+  assert.ok(iconizeText(note.text).includes('Icons/once.webp'), 'and it renders as the once icon');
+
+  // the duplication: the note used to restate the ability's label, which is a
+  // paraphrase of the printed clause sitting directly above it
+  assert.ok(!/counter on each of your units/i.test(note.text),
+    `the note does not say the ability's text a second time: ${note.text}`);
+  assert.ok(note.text.length < 40, `and it is SHORT — "really long" was the report: ${note.text}`);
+
+  // ⚠ and the printed line above it keeps its own [Switch1], which is a real
+  // token on 118 cards. Only the note's tag moved.
+  const printed = box.lines.find(l => l.origin === 'printed')!;
+  assert.ok(printed.text.includes('[Switch1]'), 'the printed card still reads as printed');
+  assert.ok(iconizeText(printed.text).includes('Icons/bounded_graft.webp'),
+    '[Switch1] in printed text is still the bounded-graft icon');
+  finishBattle(h);
 });

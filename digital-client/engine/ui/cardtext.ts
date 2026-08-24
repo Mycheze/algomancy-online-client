@@ -23,7 +23,7 @@
  *             own — a copy changes the game NAME but never the physical card,
  *             so the box has to say both
  *   static    a continuous projection radiating onto it from elsewhere
- *   note      the one per-ability fact: a bounded [Switch1] already spent
+ *   note      the one per-ability fact: a once-per-turn budget already spent
  *
  * An until-regroup change with no card text behind it is not a line: a temp
  * +X/+Y is a term in the stat arithmetic and a temp attribute is a chip in
@@ -42,12 +42,21 @@
  * per-CARD: a mod is its own card, a grant carries its own text, and
  * suppression (R62) is all-or-nothing by rule — "loses all abilities", never
  * "loses its second ability". The one genuinely per-ability fact, a bounded
- * [Switch1] whose budget is spent, rides as a `note` line naming the ability
- * by its label.
+ * ability whose once-per-turn budget is spent, rides as a `note` line.
+ *
+ * ── R135: a line never repeats what its own tag already says ──────────
+ *
+ * The renderer prefixes each line with a tag for its origin, and that tag is
+ * an ICON — the augment symbol for an augment, ⇄ for a graft. A donated clause
+ * is sliced FROM its printed marker, so the same symbol arrived twice, once on
+ * the tag and once at the head of the text. `dropOriginMarker` takes the
+ * leading one off; a marker sitting MID-sentence is load-bearing (it separates
+ * a graft's cause from its effect) and is never touched, which is also why the
+ * composed graft line keeps all of its own.
  */
-import { getCard, graftCauseIndex, isTriggered, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
+import { getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import { esc } from './util.ts';
-import type { Ability, CardDef } from '../src/cards/dsl.ts';
+import type { CardDef } from '../src/cards/dsl.ts';
 import type { E } from '../src/engine.ts';
 import type { CardName, Entity, EntityId } from '../src/types.ts';
 
@@ -148,6 +157,23 @@ export function augmentClause(name: CardName): string {
   return m ? clean(t.slice(m.index)) : '';
 }
 
+/**
+ * R135: drop the printed origin marker a line's own TAG already shows.
+ *
+ * Reported verbatim: "an augmented thing will show the :augment: icon twice,
+ * once on each line." Both halves are correct on their own — `augmentClause`
+ * slices the donated text from `[Augment]` because that is where the donation
+ * starts, and `LINE_TAG.augment` is the augment icon because that is what the
+ * line IS — so the fix belongs at the join, not in either half. Same shape for
+ * a lone graft clause under the ⇄ tag.
+ *
+ * LEADING only. A `[Switch]` mid-sentence separates a graft's cause from its
+ * effect and is the printed card's own punctuation; the composed graft line
+ * therefore never goes through here.
+ */
+export const dropOriginMarker = (text: string): string =>
+  text.replace(/^\[(?:augment|switch1?)\]\s*/i, '');
+
 function textOf(name: CardName): string {
   try { return getCard(name).text ?? ''; } catch { return ''; }
 }
@@ -155,8 +181,22 @@ function defOf(name: CardName): CardDef | null {
   try { return getCard(name); } catch { return null; }
 }
 
-/** an ability's printed budget marker, for the "already used" note */
-const boundedTag = (a: Ability): string => (isTriggered(a) ? '[Switch1]' : '[once]');
+/**
+ * R135: the "already used this turn" note is tagged `[Once]`, always.
+ *
+ * It used to print the ability's PRINTED marker — `[Switch1]` for a triggered
+ * ability, because that is genuinely what a bounded trigger prints ("When you
+ * play a nontoken spell, [Switch1] I deal 2 damage" — Rune Channeler). That
+ * was the wrong question. The note is not quoting the card; the printed line
+ * directly above it already does that. The note is about the BUDGET, and the
+ * budget symbol is [Once]. `[Switch1]`'s icon is the bounded-GRAFT symbol, so
+ * a plain bounded trigger was being badged as though something were grafted
+ * onto it — reported as "uses the wrong icon [Switch1] rather than [Once]".
+ *
+ * ⚠ This is the note line only. `[Switch1]` is a real token in printed card
+ * text (118 cards print one) and still renders as the graft symbol there.
+ */
+const SPENT_TAG = '[Once]';
 
 // ── the composed graft ability (Manual p.33) ──────────────────────────
 
@@ -279,6 +319,39 @@ export function statBreakdown(e: E, u: Entity): StatBreakdown {
   };
 }
 
+// ── {Unstable} (R135) ─────────────────────────────────────────────────
+
+/**
+ * "It also doesn't show unstable anywhere."
+ *
+ * It is a bin REPLACEMENT, not a combat attribute — deliberately absent from
+ * the `Attr` union (types.ts, dsl.ts) — so it was never going to arrive in the
+ * attribute row, and nothing else looked for it. Two of the pool's cards print
+ * `{Unstable}` in their TYPE LINE (Oorblak, Aberrant Statweaver), which the
+ * type line does render; every OTHER way in is invisible, and those are the
+ * ways that actually happen at the table. The blanket Manual p.35 rule is the
+ * common one: a modded card is Unstable, so the moment you slide a mod under a
+ * unit it stops going to a bin, and the box said nothing about it.
+ *
+ * So it rides in `state`, beside "token — erased when it leaves play", which
+ * is the same class of fact: what happens to this card when it leaves play.
+ *
+ * The reason is worth printing because there are FOUR ways in and they expire
+ * differently — a mod can be removed, an R96 stamp lapses at regroup, a printed
+ * marker never does. Read through `E.isUnstable`, never re-derived: the union
+ * lives in the engine and this asks it.
+ */
+const unstableState = (why: string): string =>
+  `Unstable — ${why}; it is erased instead of binned (Manual p.35)`;
+
+/** which of `E.isUnstable`'s four ways in applies, in the engine's own order */
+function unstableWhy(e: E, u: Entity): string {
+  if (u.mods.length > 0) return 'it is modded';
+  if (u.unstable === true) return 'stamped until regroup';
+  if (defOf(e.nameOf(u))?.unstable === true) return 'printed on its type line';
+  return 'it copies a card that was modded';       // R118 ruling 2
+}
+
 // ── the box ───────────────────────────────────────────────────────────
 
 /**
@@ -327,7 +400,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       const t = switchClause(m.card);
       if (t) {
         lines.push({
-          text: t, from: m.card, origin: 'graft', active: false,
+          // R135: the ⇄ tag beside it is already the [Switch] symbol
+          text: dropOriginMarker(t), from: m.card, origin: 'graft', active: false,
           why: `${u.card} has no [Switch] cause for it to join`,
         });
       }
@@ -340,7 +414,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       : '');
     if (!text) continue;
     lines.push({
-      text, from: m.card, origin: 'augment',
+      // R135: the augment icon is already on this line's tag
+      text: dropOriginMarker(text), from: m.card, origin: 'augment',
       active: !silenced,
     });
   }
@@ -404,14 +479,23 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
     lines.push({ text: `${bits.join(', ')}.`, from: p.from, origin: 'static', active: true });
   }
 
-  // 5. bounded abilities whose budget is spent — the one per-ability fact
+  // 5. bounded abilities whose budget is spent — the one per-ability fact.
+  //
+  //    R135: the note says WHICH BUDGET, not what the ability does. It used to
+  //    restate `ab.label`, which is the scripted paraphrase of the very clause
+  //    printed above it, so a spent ability read its own text twice and the box
+  //    doubled in height ("it also duplicates the text, making it really long").
+  //    Naming the ability by label was safe-looking and wrong: no card in the
+  //    pool has TWO bounded abilities, so within one source there is nothing to
+  //    disambiguate — only the SOURCE can repeat (a host plus two modded-on
+  //    ones), and that is what these lines name.
   if (!sup.abilities) {
     for (const [prefix, list] of [['ability', def?.abilities], ['augment', def?.augmentText]] as const) {
       (list ?? []).forEach((ab, i) => {
         if (!ab.bounded) return;
         if (!(u.budgets[`${prefix}:${u.card}#${i}`] ?? 0)) return;
         lines.push({
-          text: `${boundedTag(ab)} ${ab.label} — already used this turn.`,
+          text: `${SPENT_TAG} already used this turn.`,
           from: u.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
         });
       });
@@ -421,7 +505,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       if (!m) continue;
       if (m.appliedAs === 'graft' && (m.budgets['graft'] ?? 0)) {
         lines.push({
-          text: `[Switch1] ${m.card}'s grafted effect — already used this turn.`,
+          text: `${SPENT_TAG} ${m.card}'s grafted effect — already used this turn.`,
           from: m.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
         });
       }
@@ -433,7 +517,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
           if (!ab.bounded) return;
           if (!(u.budgets[`augment:${m.card}#${i}`] ?? 0)) return;
           lines.push({
-            text: `${boundedTag(ab)} ${ab.label} — already used this turn.`,
+            text: `${SPENT_TAG} ${m.card}'s ability — already used this turn.`,
             from: m.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
           });
         });
@@ -445,6 +529,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   if (u.absent) state.push('sent to counterattack — it does not exist until round 2');
   if (u.x !== undefined) state.push(`X = ${u.x}`);
   if (u.token) state.push('token — erased when it leaves play');
+  if (e.isUnstable(u)) state.push(unstableState(unstableWhy(e, u)));
 
   const attrs = attrLines(e, u);
   const stats = u.kind === 'mod' ? null : statBreakdown(e, u);
@@ -490,7 +575,8 @@ export function printedTextBox(name: CardName): CardTextBox {
     attrs: (def?.attrs ?? []).map(a => ({ attr: a, origin: 'printed' as const, from: null, active: true })),
     lines: text ? [{ text, from: name, origin: 'printed', active: true }] : [],
     suppressed: { attrs: false, abilities: false, by: [] },
-    state: [],
+    // R135: off the table the only Unstable a card can have is the printed one
+    state: def?.unstable ? [unstableState('printed on its type line')] : [],
     modified: false,
   };
 }
