@@ -705,9 +705,17 @@ export interface EffectDef {
    *
    * It is a WARNING, never a prohibition — X = 0 stays legal and the option is
    * still offered. That is the deliberate difference from `CastCost.xMin`,
-   * which forbids: use `xMin` where paying zero would burn something the payer
-   * cannot get back (No Hand Killer's `[once]` budget), and this where paying
-   * zero is merely a bad idea you are allowed to have.
+   * which forbids: use `xMin` only where the CARD PRINTS a floor ("X can't be
+   * zero" — Instrument of Reassignment), and this where paying zero is merely
+   * a bad idea you are allowed to have.
+   *
+   * ⚠ R157 §22 / R161 narrowed that. This used to say "use `xMin` where paying
+   * zero would burn something the payer cannot get back (No Hand Killer's
+   * `[once]` budget)". The owner ruled the opposite, verbatim: *"You can
+   * legally activate it and discard no cards."* Burning a budget for nothing
+   * is a bad idea you are allowed to have, like every other one — so an
+   * unprinted floor is never inferred from the consequences of a zero, and No
+   * Hand Killer carries this warning instead.
    *
    * Declared per effect because "X = 0 does nothing" is a fact about the
    * EFFECT, not about the cost kind: Necromantic Rebuke's ransom is trivially

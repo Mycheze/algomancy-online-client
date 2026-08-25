@@ -87,9 +87,12 @@ const MODAL = /\[[^\]]*\bor\b[^\]]*\]/i;
  * declaring modes, or stops printing a bracket, fails there.
  */
 const EXEMPT: Record<string, string> = {
-  'Retribution Thing':
-    "'the life you've [lost or gained]' — one QUANTITY (lost PLUS gained), not a choice. "
-    + 'Nobody picks a half; X is the sum, read live at resolution (R1).',
+  // R157 §21 (owner, 2026-08-25) DELETED Retribution Thing's exemption. It read
+  // "'the life you've [lost or gained]' — one QUANTITY (lost PLUS gained), not
+  // a choice", and the ruling is the general rule against exactly that:
+  // *"All text on cards that's in [square brackets] like that is either an
+  // additional cost or a modal choice."* It declares `modes` now, so the
+  // printed⇒declared test below covers it like the rest.
   'Void Memory':
     "'each opponent discards a [unit or spell]' — the DISCARDING player's own pick, made "
     + 'when the effect reaches them (R67 not-a-target carve-out). Never the caster\'s, so '

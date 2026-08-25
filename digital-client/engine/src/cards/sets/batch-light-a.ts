@@ -464,27 +464,69 @@ card('Prismatic Observer', {
 
 // "I deal X damage to target unit, where X is the life you've [lost or gained]
 // in this battle." — l/1 {Battle} Nature Spell.
-// ⚠ TRANSCRIPTION: "[lost or gained]" is bracketed like a symbol but is not
-// one — the printed text was read off card images. Taken at its word: X is the
-// life you have lost PLUS the life you have gained this battle, read off the
-// engine's two per-battle ledgers (`lifeLost:<seat>` from E.loseLife and,
-// since R49, `lifeGained:<seat>` from E.gainLife; both reset each battle
-// phase, R14). R1: the amount is computed at RESOLUTION.
+//
+// R157 §21 / R161 — THE BRACKET IS A MODE, and it is the GENERAL rule about
+// bracketed text, not this card's answer. Owner, 2026-08-25, verbatim: *"All
+// text on cards that's in [square brackets] like that is either an additional
+// cost or a modal choice. The additional cost must be paid in order to put it
+// on the stack and the modal choice (happening on this card) must be chosen
+// when putting it on the stack."*
+//
+// This used to read X as lost PLUS gained — the sum — on the ⚠ TRANSCRIPTION
+// note that "[lost or gained]" is bracketed like a symbol but is not one. The
+// bracket is exactly what makes it a choice: you name the ledger in the cast
+// window and X reads ONLY that one. It is Siphon Life's shape ("[gains or
+// loses]", R57) card for card, and for the same reason — an opponent
+// responding to a spell whose X is "one of these two numbers, decided later"
+// is responding to an undeclared effect (97-mode-conformance).
+//
+// The two ledgers are the engine's own per-battle counters: `lifeLost:<seat>`
+// from E.loseLife and, since R49, `lifeGained:<seat>` from E.gainLife; both
+// reset each battle phase (R14). R1: the mode is fixed at cast, the AMOUNT is
+// still read at resolution, so a mode chosen while the ledger said 3 deals
+// whatever that ledger says when it resolves.
+//
+// A ledger that is empty is not an illegal choice — it is X = 0, which the
+// pool treats as a legal pointless cast everywhere else (R157 §22). Both
+// options are therefore always offered; only a cast with NO battle behind it
+// (both ledgers 0) has nothing to distinguish them, and that is a real cast
+// too, so the question is still asked rather than silently auto-picked.
 card('Retribution Thing', {
   spellEffect: {
-    targets: { what: 'unit', prompt: "Retribution Thing: deal damage equal to the life you've lost this battle" },
+    targets: { what: 'unit', prompt: "Retribution Thing: deal damage equal to the life you've lost or gained this battle" },
+    modes: {
+      key: 'ledger',
+      prompt: (g, item) => {
+        const r = item.region;
+        return 'Retribution Thing: is X the life you have LOST this battle '
+          + `(${g.battleCounter(r, `lifeLost:${item.controller}`)}) or GAINED `
+          + `(${g.battleCounter(r, `lifeGained:${item.controller}`)})?`;
+      },
+      options: (g, item) => [
+        { label: `Lost (${g.battleCounter(item.region, `lifeLost:${item.controller}`)})`, value: 'lost' },
+        { label: `Gained (${g.battleCounter(item.region, `lifeGained:${item.controller}`)})`, value: 'gained' },
+      ],
+    },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      const x = g.battleCounter(ctx.region, `lifeLost:${ctx.controller}`)
-        + g.battleCounter(ctx.region, `lifeGained:${ctx.controller}`);
-      if (x <= 0) { g.ev('info', "Retribution Thing: your life has not moved this battle — X is 0."); return; }
+      const which = ctx.mode === 'gained' ? 'lifeGained' : 'lifeLost';   // R57: declared at cast
+      const x = g.battleCounter(ctx.region, `${which}:${ctx.controller}`);
+      if (x <= 0) {
+        g.ev('info', `Retribution Thing: you have ${ctx.mode === 'gained' ? 'gained' : 'lost'} `
+          + 'no life this battle — X is 0.');
+        return;
+      }
       g.dealEffectDamage(ctx, t, x);
     },
   },
-  // playtest #5 UI badge: what X would be if it resolved right now
-  xPreview: (g, seat, region) =>
-    g.battleCounter(region, `lifeLost:${seat}`) + g.battleCounter(region, `lifeGained:${seat}`),
+  // playtest #5 / #85 UI badge: X is now one of TWO numbers and the player
+  // picks which as they cast, so the badge has to show both — a single number
+  // could only be one of them or a sum nobody can choose.
+  xPreviewRows: (g, seat, region) => [
+    { label: 'lost', x: g.battleCounter(region, `lifeLost:${seat}`) },
+    { label: 'gained', x: g.battleCounter(region, `lifeGained:${seat}`) },
+  ],
 });
 
 // "When I spawn, [Switch1] You gain 3 life." — l/1 2/1 {Battle} Friend Unit.

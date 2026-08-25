@@ -148,12 +148,28 @@ test('#85: no preview outside battle — the ledgers only exist during one', () 
 });
 
 test('#85: the older single-number xPreview still reads as one unlabelled row', () => {
-  // the six cards that already had #5's xPreview must keep working unchanged,
-  // so every render site has exactly one shape to handle
+  // the cards that already had #5's xPreview must keep working unchanged, so
+  // every render site has exactly one shape to handle. Burning Vengeance is
+  // the example the xPreview doc comment itself names ("units that died this
+  // battle"); nobody has died here, so it is a flat 0.
   const { h, A } = battleWhereDefenderLost7(9606);
-  const rows = previewRows(h.state, 'Retribution Thing', A);
+  const rows = previewRows(h.state, 'Burning Vengeance', A);
   assert.deepEqual(rows, [{ label: '', x: 0 }], 'one row, no label — the #5 badge wording survives');
-  assert.equal(getCard('Retribution Thing').xPreviewRows, undefined, 'and it was not converted');
+  assert.equal(getCard('Burning Vengeance').xPreviewRows, undefined, 'and it was not converted');
+  finishBattle(h);
+});
+
+test('R157 §21: Retribution Thing previews BOTH ledgers, because the caster picks one', () => {
+  // It used to be a single-number xPreview showing lost PLUS gained. §21 makes
+  // the bracket a cast-time mode, so the badge has to show the two numbers the
+  // choice is between — a sum is a value nobody can now cast for.
+  const { h, A, D } = battleWhereDefenderLost7(9610);
+  assert.deepEqual(previewRows(h.state, 'Retribution Thing', D),
+    [{ label: 'lost', x: 7 }, { label: 'gained', x: 0 }],
+    'the bled defender sees a live 7 on the half they would choose');
+  assert.deepEqual(previewRows(h.state, 'Retribution Thing', A),
+    [{ label: 'lost', x: 0 }, { label: 'gained', x: 0 }],
+    'and the attacker, whose life has not moved, sees why theirs would do nothing');
   finishBattle(h);
 });
 

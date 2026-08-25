@@ -10677,3 +10677,148 @@ Stasis Sentry a flat +3 on an X spell. So:
 Consequence worth knowing at the table: with a Stasis Sentry in the region you
 need [3] open to begin casting ANY X spell, because every X below three costs
 three.
+
+---
+
+## R161 — six of R157's answers, and the one that was already true
+
+*2026-08-25. R157 §§15, 16, 21, 22, 24 and 26 implemented. Five of the six
+REVERSE something the engine shipped; the sixth turned out to need no code at
+all, and finding that out is most of what §26 was. Guarded in
+`test/136-triggers-and-modes.test.ts`.*
+
+### §15 — Stellarspore Harvester checks its condition at RESOLUTION only
+
+> *"The wording is such that you can target any enemy, it only checks whether
+> you gain control of it on resolution."*
+
+The 2026-08-24 literal-reading sweep escalated a `when` gate on **both** halves
+requiring some unit in the region to already carry a -1/-1 counter at event
+time, and offered three readings: (a) literal — drop the gate; (b) R64 — make
+it a targeting `restrict`; (c) as written. The ruling picks **(a)**, and it
+refuses (b) in the same sentence: *any* enemy is a legal target, so nothing
+narrows the menu either. Both gates are gone.
+
+The line this buys back is the one the escalation was written for: after
+combat, aim at a **clean** enemy, put a -1/-1 counter on it inside the
+after-combat window (the trigger sits on the stack, so there is a real response
+window), and steal it. Under the gate the trigger never fired at all whenever
+no *other* unit in the region already carried a counter.
+
+The `[Augment]` death half loses its gate for the same reason — the printed
+text states no trigger condition on that half either, and "each unit you
+control with a -1/-1 counter on it" is a quantity counted at resolution, which
+may legally be none.
+
+### §16 — a trigger fires ONCE PER TARGETED ALLY
+
+> *"Once per targeted ally — two targets, two triggers, two 1/1s."*
+
+Earnest Defender made **one** 1/1 for an enemy spell however many of your units
+it aimed at. It makes one per targeted ally now.
+
+⚠ **The approximation moved rather than vanished, and the shape is what is
+left.** The owner says two *triggers*; this is one trigger creating two tokens.
+The two differ in three places a card can reach: a negate takes both 1/1s
+instead of one, an ordering question that should list two entries lists one,
+and both tokens arrive in ONE creation batch (so an Automaton of Abundance adds
+one extra, not two).
+
+**The engine change that would close it** — not made here, because `engine.ts`
+was held by other agents this round: `E.commitItem` already dispatches
+`'targeted'` **once per target**, which is exactly the multiplicity wanted, but
+its payload is `{ item, unit, region }` — no controller, no kind — so "an
+enemy SPELL" cannot be recognised from it. Add `seat: item.controller` and
+`kind: item.kind` to that event and Earnest Defender listens on `'targeted'`
+with a three-line `when`, fires per target for free, and stops being a log-tail
+scrape. (`doAugment`'s two `'targeted'` events should grow the same two fields,
+for the same reason.)
+
+Until then the count is computed at event time in `when()` and **stamped onto
+the event**, which is the only durable place: `E.events` is per-`apply()`
+scratch, so the log tail the scan walks is gone by the time a battle trigger
+resolves off the stack one priority window later, while
+`PendingTrigger.event` → `StackItem.event` → `ctx.event` survives the
+`structuredClone` at the action boundary. The count is a fact of the event
+(the targets were declared in the cast window), so reading it at event time is
+R1-consistent.
+
+**The general-rule scan** over the six files in scope turned up no second
+instance. The other plural-looking triggers are all per-event already —
+"whenever one of your units dies" (Malicious Hardware, Soulforger) rides one
+`'died'` per unit, "when you put **one or more** counters" (Scrapyard
+Custodian) prints the quantity it means, "when you gain or lose life"
+(Deathcoil Construct) rides one event per change. Earnest Defender is the only
+card in the pool that prints "becomes the target" at all.
+
+### §21 — a `[bracketed]` clause is a COST or a MODE, fixed when it goes on the stack
+
+> *"All text on cards that's in [square brackets] like that is either an
+> additional cost or a modal choice. The additional cost must be paid in order
+> to put it on the stack and the modal choice … must be chosen when putting it
+> on the stack."*
+
+Retribution Thing read X as lost **plus** gained, on a ⚠ TRANSCRIPTION note
+that "[lost or gained]" was bracketed like a symbol but was not one. The
+bracket is exactly what makes it a choice. It is Siphon Life's shape now
+(`EffectDef.modes`, R57): the ledger is named in the cast window, X reads only
+that one, and R1 still reads the AMOUNT at resolution — a "gained" cast whose
+gained ledger grows in the response window deals the bigger number and never
+switches halves. Its `#5` badge became `xPreviewRows`, two labelled rows: a
+single number could only be one of the two, or a sum nobody can now cast for.
+
+**The general-rule scan** over the whole pool (every `[...]` in `printed.json`,
+20 cards with prose brackets) found every other bracketed clause already
+modelled as one or the other. In the six files in scope: Burgeon
+`[power or defense]` and Spirit of Nature `[Poison or Crystal]` are `modes`;
+Malevolent Machinations `[Sacrifice X units]`, Discharge `[Remove X +1/+1
+counters from allies]`, Flesh Tithe `[Pay X life]` and Trench Stalker
+`[Discard two cards]` are `castCost`. `97-mode-conformance` already enforces
+the printed⇒declared direction over the pool; Retribution Thing was one of its
+two hand-written EXEMPT entries and that entry is now deleted.
+
+### §22 — X = 0 is a legal activation
+
+> *"You can legally activate it and discard no cards."*
+
+No Hand Killer carried `xMin: 1` — an **unprinted** floor, inferred from the
+consequence that X = 0 does nothing AND burns the `[once]`. The ruling says
+that pointless activation is the player's to make. The floor is gone; the
+ability is offered with an empty hand, pays X = 0 with no menu at all, and
+really does spend the budget. It is not a `ctx.refundBudget` case either
+(R113 refunds a *decline* or an impossible offer — this player was asked and
+answered).
+
+`CastCost.xMin`'s doc comment named this card as the reason the seam exists;
+it now says the opposite, and names the printed floor ("X can't be zero" —
+Instrument of Reassignment) as the only reason to use it.
+
+### §24 — "unique token" means a unique (name, X) pair
+
+> *"'Unique' means unique (name, X) pair — you get two extras."*
+
+Automaton of Abundance keyed uniqueness on the card NAME alone, on the
+argument that `Entity.card` is the engine's definition of identity (R104
+flagged it as the one place the reading had a choice). The key is
+`(name, X)` now. Manufacture's Robot 3 / Robot 2 / Robot 1 pays out **three**
+extras rather than one; three identical Robot 2s still pay out one. Nothing
+else's notion of identity moved — this is one card's word, not a redefinition.
+
+### §26 — Rook grants {Virus} itself, and reaches stack hosts
+
+> *"(a) yes it does. and for (b) yes it can also go to an enemy. That's the
+> whole point of the card."*
+
+**No code changed, and that is the finding.** `{Virus}` gates exactly ONE thing
+in this engine: `battleAugmentAllowed`'s base case `c.virus && from === 'hand'`.
+Rook's `modPermissions` is the OR sitting beside it, through the same single
+predicate. Everything downstream is `doAugment`'s battle branch, which asks
+about priority and REGION and **never about who controls the host**;
+`pushBattleAugments` offers `unitsIn(region)` — both sides — and every stack
+item `STACK_VIRUS_HOSTS` allows. So (b) was already true the moment the
+permission returned true, and (a) shipped behind an ⚠ OPEN flag in `apply.ts`
+which this ruling closes.
+
+What changed is that both halves are now **guarded**, each against a no-Rook
+control: "it happens to work" and "it is meant to work" are the same board
+until a test says which.

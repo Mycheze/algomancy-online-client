@@ -647,10 +647,12 @@ test('No Hand Killer: [once] discard X cards → each opponent sacrifices X unit
   drainStack(h);
 });
 
-test('No Hand Killer: an empty hand makes the activation unpayable — the [once] survives', () => {
-  // R64 UN-PARKED, with the printed floor: the cost is `n: 'X', xMin: 1`, so
-  // X = 0 is not on offer. It used to be reachable by declining every discard,
-  // which did nothing AND burned the [once] budget for the turn.
+test('R157 §22: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent', () => {
+  // REVERSED by R157 §22, owner 2026-08-25: *"You can legally activate it and
+  // discard no cards."* The cost used to carry the unprinted floor `xMin: 1`
+  // so that X = 0 — which does nothing AND burns the [once] budget — could not
+  // be reached. The ruling says that pointless activation is the player's to
+  // make, so the floor is gone and the offer stands with an empty hand.
   const h = new Harness(4620);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -659,12 +661,26 @@ test('No Hand Killer: an empty hand makes the activation unpayable — the [once
   attackWith(h, A, [[v1]]);
   h.state.players[D]!.hand.length = 0;                     // empty hand
   pass(h);                                                 // priority → D
+  assert.ok(h.legal(D).some(a => a.type === 'activateAbility' && a.entityId === nhk),
+    'nothing to discard, and it is offered anyway');
+  h.do({ type: 'activateAbility', seat: D, entityId: nhk, abilityIndex: 0, via: 'augment' });
+  assert.equal(h.state.decision, null, 'no menu: an empty hand pays X = 0 outright');
+  drainStack(h);
+  assert.ok(ent(h, v1), 'X = 0 — nothing sacrificed');
   assert.ok(!h.legal(D).some(a => a.type === 'activateAbility' && a.entityId === nhk),
-    'nothing to discard → not offered');
-  assert.throws(() => h.do({ type: 'activateAbility', seat: D, entityId: nhk, abilityIndex: 0, via: 'augment' }),
-    /nothing it can be used on|cannot pay/);
-  assert.ok(ent(h, v1), 'nothing sacrificed');
-  // and the budget is intact: give them a card and it works this same turn
+    'and the [once] really was spent on it — that is the price the ruling accepts');
+  drainStack(h);
+});
+
+test('No Hand Killer: with a card in hand, X = 1 forces one sacrifice', () => {
+  const h = new Harness(4621);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const nhk = spawn(h, D, 'No Hand Killer');
+  const v1 = spawn(h, A, 'LDC Grunt');
+  attackWith(h, A, [[v1]]);
+  h.state.players[D]!.hand.length = 0;
+  pass(h);                                                 // priority → D
   give(h, D, 'LDC Grunt');
   h.do({ type: 'activateAbility', seat: D, entityId: nhk, abilityIndex: 0, via: 'augment' });
   pick(h, { discard: 0 });

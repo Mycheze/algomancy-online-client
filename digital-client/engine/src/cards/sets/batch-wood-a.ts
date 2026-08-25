@@ -36,14 +36,23 @@
  *    opposite guard was a literal-reading bug. (The old parenthetical said
  *    "R26's 'played' exclusion is about 'you play' triggers"; R26 is about
  *    token CREATION and settles nothing here either way.)
- *    ⚠ OPEN, literal-reading audit 2026-08-24: it is ONE firing per enemy
- *    spell even when that spell targets TWO allies, and the printed text is
- *    "whenever an ALLY becomes the target", which reads per-ally. A Twin
- *    Flame aimed at two of my units should then make two 1/1s, not one.
- *    Unfixed on purpose: trigger MULTIPLICITY is a rules question nobody has
- *    put to the owner, and the honest fix rides on the same engine change the
- *    note above is waiting for ('targeted' carrying the item's controller and
- *    kind), after which this stops being a log-tail scrape at all.
+ *    CLOSED by R157 §16 / R161, owner 2026-08-25, verbatim: *"Once per
+ *    targeted ally — two targets, two triggers, two 1/1s."* The count is the
+ *    number of TARGETED ALLIES, not the number of spells, and it is now
+ *    produced: `targetedAllies` is called twice — once from `when` (does this
+ *    spell touch any of mine, R1 at event time) and once from `run` (HOW MANY,
+ *    R1 at resolution, off the same event snapshot `ctx.event`).
+ *    ⚠ STILL AN APPROXIMATION, and now the approximation is the SHAPE rather
+ *    than the number: the owner says two TRIGGERS and this is one trigger
+ *    creating two tokens. The two differ in three places that a card could
+ *    reach — a negate takes both 1/1s instead of one, an ordering question
+ *    that should list two entries lists one, and both tokens land in ONE
+ *    creation batch (so an Automaton of Abundance adds one extra, not two).
+ *    Two real triggers need the multiplicity to come from the EVENT, i.e. the
+ *    per-target 'targeted' dispatch commitItem already does, and that needs
+ *    the engine change the note above is waiting for ('targeted' carrying the
+ *    item's controller and kind) — after which this card listens on 'targeted'
+ *    with a three-line `when` and stops being a log-tail scrape at all.
  *  - FUNGAL GARDENER: NO LONGER an approximation. This said "a died event
  *    carries no token flag … so nontoken-ness is read from the died message";
  *    R70 stamps `token` (with `counters`, `verb`, `seat`, `region`) onto every
@@ -76,7 +85,7 @@
  *
  * PARKED: none — all 16 cards are scripted (some approximated, see above).
  */
-import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
+import type { EngineEvent, Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, effectByKey, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, modeTargetOf } from './helpers.ts';
@@ -276,32 +285,65 @@ card('Corrupting Blight', {
 // kind, so an "enemy SPELL" cannot be recognised from it alone; see header.)
 // "Ally" = a unit my controller controls (me included).
 // R115: the 1/1 arrives where the source is (ctx.region).
+//
+// R157 §16 / R161 — ONE 1/1 PER TARGETED ALLY: *"Once per targeted ally — two
+// targets, two triggers, two 1/1s."* The count is a FACT OF THE EVENT (the
+// targets were declared in the cast window and the 'targeted' entries are
+// already logged when 'spellPlayed' fires), so it is read at event time, in
+// `when`, and STAMPED onto the event — the same place R70 keeps `token` and
+// R140 keeps the bin identity, and for the identical reason: nothing readable
+// at resolution can answer it. `E.events` is per-apply scratch, so the log
+// tail this scan walks is GONE by the time a battle trigger resolves off the
+// stack one priority window later; `PendingTrigger.event` is what survives
+// (E.queueTrigger keeps it, the stack item carries it, `ctx.event` is it).
+// Each 'targeted' entry counts once, which is exactly what a per-target
+// dispatch would produce — a spell that somehow aims two of its parts at the
+// same ally targeted it twice.
+const EARNEST_ALLIES = 'earnestDefenderAllies';
+
+/** how many of `seat`'s units this 'spellPlayed' event's item targeted — the
+ * log-tail reconstruction, run ONCE at event time and left on the event. */
+function targetedAllies(g: E, seat: Seat, ev: EngineEvent): number {
+  // walk the log tail backwards: skip anything logged after this spellPlayed
+  // (other listeners' 'triggered' entries), then collect the consecutive
+  // 'targeted' entries commitItem logged just before it.
+  const targets: EntityId[] = [];
+  let sawSpell = false;
+  for (let i = g.events.length - 1; i >= 0; i--) {
+    const e2 = g.events[i]!;
+    if (e2 === ev) { sawSpell = true; continue; }
+    if (!sawSpell) continue;
+    if (e2.type === 'targeted' && e2.data?.item !== undefined) {
+      targets.push(e2.data.unit as EntityId);
+      continue;
+    }
+    break;
+  }
+  return targets.filter(id => g.entity(id)?.controller === seat).length;
+}
+
 card('Earnest Defender', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'],
-    label: 'create a 1/1 unit (an ally was targeted by an enemy spell)',
+    label: 'create a 1/1 unit for each ally targeted by an enemy spell',
     when: (g, self, ev) => {
       if (ev.data?.seat === self.controller) return false;     // enemy spells only
-      // walk the log tail backwards: skip anything logged after this
-      // spellPlayed (other listeners' 'triggered' entries), then collect the
-      // consecutive 'targeted' entries commitItem logged just before it.
-      const targets: EntityId[] = [];
-      let sawSpell = false;
-      for (let i = g.events.length - 1; i >= 0; i--) {
-        const e2 = g.events[i]!;
-        if (e2 === ev) { sawSpell = true; continue; }
-        if (!sawSpell) continue;
-        if (e2.type === 'targeted' && e2.data?.item !== undefined) {
-          targets.push(e2.data.unit as EntityId);
-          continue;
-        }
-        break;
-      }
-      return targets.some(id => g.entity(id)?.controller === self.controller);
+      const n = targetedAllies(g, self.controller, ev);
+      // stamp it where resolution can still read it (see the note above).
+      // Two Earnest Defenders share one event and compute the same n.
+      if (n > 0) (ev.data ??= {})[EARNEST_ALLIES] = n;
+      return n > 0;
     },
     effect: {
       creates: ['Unit Token'],
-      run: (g, ctx) => { makeOneOne(g, ctx.controller, ctx.region); },
+      run: (g, ctx) => {
+        const stamped = ctx.event?.data?.[EARNEST_ALLIES];
+        const n = typeof stamped === 'number' && stamped > 0 ? stamped : 1;
+        for (let i = 0; i < n; i++) makeOneOne(g, ctx.controller, ctx.region);
+        if (n > 1) {
+          g.ev('info', `Earnest Defender: ${n} allies were targeted — ${n} 1/1 units.`);
+        }
+      },
     },
   }],
 });

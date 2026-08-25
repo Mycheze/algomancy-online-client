@@ -262,33 +262,34 @@ card('Sprouter', {
 // "After combat, gain control of target unit if it has a -1/-1 counter on it.
 // [Augment] When I die, give each unit you control with a -1/-1 counter on it
 // to target opponent." — ggg/5 3/5 Cosmic Fungus Unit.
-// After-combat half: the trigger only fires when a -1/-1-countered unit is in
-// the region at event time (R1 condition — no pointless targeting every
-// combat); the "if it has" rider is enforced again on the chosen target at
-// resolution (Minor Kraken precedent) — a clean target is a no-op.
-// ⚠ NEEDS-ESCALATION (2026-08-24 literal-reading sweep). That `when` gate is
-// the ONE qualifier here with no printed text under it: the card says "After
-// combat, gain control of target unit IF IT HAS a -1/-1 counter on it" — the
-// condition is on the TARGET, at resolution, and there is no trigger condition
-// at all. "No pointless targeting every combat" is a UX convenience promoted
-// into a rule about the card, which is exactly what R125 warns about, and it
-// costs a real line: after combat, target a clean enemy unit, then put a -1/-1
-// counter on it in the after-window (Noxious Demise is a {Battle} spell) and
-// steal it — legal on the printed card, unreachable here whenever no OTHER
-// unit in the region already carries a counter. Three readings are live and
-// the choice is the owner's, so nothing is changed here: (a) literal — drop
-// the gate, it always triggers and asks; (b) R64 — "if it has a -1/-1 counter"
-// is a targeting RESTRICTION, so it belongs in `restrict` and the trigger is
-// simply not offered with nothing legal to aim at; (c) as written. (b) and (c)
-// look alike today and differ exactly on the line above. Same question, same
-// answer, for the [Augment] half's `when` below.
+// R157 §15 / R161 — THE CONDITION IS CHECKED AT RESOLUTION ONLY. Owner,
+// 2026-08-25, verbatim: *"The wording is such that you can target any enemy, it
+// only checks whether you gain control of it on resolution."*
+//
+// The 2026-08-24 literal-reading sweep escalated a `when` gate on BOTH halves
+// that required some unit in the region to already carry a -1/-1 counter at
+// event time, and offered three readings: (a) literal — drop the gate; (b) R64
+// — make it a targeting `restrict`; (c) as written. The ruling picks (a), and
+// it picks it twice over: "you can target ANY enemy" refuses (b) as well as
+// (c). The trigger now always fires and always asks, the menu is every unit,
+// and the counter is looked for once — at resolution, on the chosen target.
+//
+// THE LINE THIS BUYS BACK, which is why the gate was escalated: after combat,
+// target a CLEAN enemy unit, then put a -1/-1 counter on it inside the
+// after-combat window (Noxious Demise is a {Battle} spell) and steal it. Under
+// the old gate that play was unreachable whenever no OTHER unit in the region
+// already carried a counter, and under (b) it would be unreachable always.
+// The resolution re-check below is not a leftover of the gate — it is the
+// whole condition now, and a clean target at resolution is a legal no-op.
 // [Augment] half: died trigger (self — the HOST when donated); "you" = the
-// carrier's controller. All handovers go through E.giveControl (R112).
+// carrier's controller. Its `when` goes for the same reason (the printed text
+// carries no trigger condition either — "give EACH unit … with a -1/-1
+// counter" is a quantity read at resolution, and none is a legal none). All
+// handovers go through E.giveControl (R112).
 card('Stellarspore Harvester', {
   abilities: [{
     type: 'triggered', events: ['afterCombat'],
     label: 'gain control of target unit (it needs a -1/-1 counter)',
-    when: (g, self) => g.unitsIn(self.region).some(u => u.counters < 0),
     effect: {
       targets: { what: 'unit', prompt: 'Stellarspore Harvester: gain control of target unit (must have a -1/-1 counter)' },
       run: (g, ctx) => {
@@ -305,9 +306,9 @@ card('Stellarspore Harvester', {
   augmentText: [{
     type: 'triggered', events: ['died'], self: true,
     label: 'give each of your units with a -1/-1 counter to target opponent',
-    // R1 condition: only fires when I leave behind a -1/-1-countered unit
-    when: (g, self) => g.unitsOf(self.controller, self.region)
-      .some(u => u.counters < 0 && u.id !== self.id),
+    // R157 §15 / R161: no `when`. The printed text states no trigger condition
+    // on this half either, and "each unit you control with a -1/-1 counter on
+    // it" is a quantity counted at RESOLUTION — which may be none.
     effect: {
       // R64/R82 (target audit, playtest round 15): the printed target is
       // "target OPPONENT", and 'opponent' is the kind that means it — measured

@@ -43,8 +43,9 @@
  *    per 'spawned', so a batch of N identical tokens yielded N extra copies
  *    instead of one per unique — playtest report #60's example. It now reads
  *    the whole creation (one resolving part = one batch, R80's unit) and adds
- *    one copy per unique token KIND. Nothing reaches the stack, and the
- *    module-level `let aoaCopying` guard is gone with the trigger.
+ *    one copy per unique token — which R157 §24 defines as the (name, X) PAIR,
+ *    so a Robot 2 and a Robot 5 are two of them. Nothing reaches the stack,
+ *    and the module-level `let aoaCopying` guard is gone with the trigger.
  *  - Borrower of Forms copies base stats, counters and temporary stat changes
  *    of the erased unit. UNPARKED by R118 (the COPY LAYER): card text,
  *    attributes, statics and activated abilities all copy now, via a permanent
@@ -322,21 +323,31 @@ card('Arcane Echo', {
 // `let aoaCopying` guard is deleted with the trigger: an extra is not part of
 // the batch that produced it, and the engine's own latch says so once.
 //
-// "UNIQUE" IS BY TOKEN KIND — the card NAME — and the X is not part of it. So
-// a batch of three Robots yields ONE extra Robot, and a batch of a Fireball 2
-// and a Fireball 5 yields ONE extra Fireball. The basis is the engine's own
-// definition of identity: `Entity.card` is what bins, "name a card" effects,
-// counters-by-name, DECK_LIST and the inspector all key off (R101 makes the
-// argument at length for the transform), and every Robot is the one registered
-// card `Robot` whatever number it is wearing. The X is a quantity ON the token,
-// not a different token — which is also why Cosmic Conspirator's reminder text
-// can say "(With the same X value.)" while swapping the KIND.
+// "UNIQUE" IS THE (NAME, X) PAIR — R157 §24 / R161, owner 2026-08-25,
+// verbatim: *"'Unique' means unique (name, X) pair — you get two extras."*
+// So a Robot 2 and a Robot 5 in one batch are TWO unique tokens and yield two
+// extras, one of each; three Robot 2s are one and yield one.
 //
-// THE COPY TAKES THE FIRST OF ITS KIND in the batch. "A copy of each unique
-// token you created" has to copy something, and the first is the deterministic
-// answer that does not need a ruling (a "largest X" reading would be a strictly
-// better card and nothing prints it). Flagged in R104 as the one place the
-// uniqueness reading had a choice.
+// This is a reversal, and it is the reading R104 flagged as the one place the
+// uniqueness question had a choice. The old key was `r.name` alone, on the
+// argument that `Entity.card` is the engine's definition of identity (it is
+// what bins, what "name a card" effects match, what counters-by-name and
+// DECK_LIST and the inspector key off) and that X is a quantity ON a token
+// rather than a different token. The owner's answer says the X is part of
+// WHICH TOKEN IT IS for this card's purposes, and the standing steer says to
+// take the reading that lets more happen when both are available.
+//
+// It does NOT redefine identity anywhere else, and nothing here asks it to:
+// Manufacture's Robot 3/2/1 now pays out three extras, a Fireball 2 and a
+// Fireball 5 pay out two, and every other card that matches on `Entity.card`
+// is untouched. Cosmic Conspirator's "(With the same X value.)" is the same
+// fact from the other side — the X travels with the token, so a swap that
+// keeps it is worth saying out loud.
+//
+// THE COPY IS OF THE FIRST REQUEST WITH THAT (name, X), which is now a
+// distinction without a difference for unit tokens — two requests with the
+// same name AND the same X are identical requests — and stays deterministic
+// if a request ever grows a third field.
 //
 // "UNIT TOKENS" only, printed: the batch may contain spell tokens (Biotoxicity's
 // Poisons) and this ignores them. "YOU would create": the batch belongs to the
@@ -349,8 +360,9 @@ card('Automaton of Abundance', {
     const extra: TokenRequest[] = [];
     for (const r of batch) {
       if (r.form !== 'unit' || r.seat !== self.controller) continue;
-      if (seen.has(r.name)) continue;              // one copy per unique KIND
-      seen.add(r.name);
+      const key = `${r.name} #${r.x}`;         // R157 §24: the (name, X) pair
+      if (seen.has(key)) continue;                 // one copy per unique pair
+      seen.add(key);
       extra.push({ ...r });
     }
     return extra.length ? extra : null;

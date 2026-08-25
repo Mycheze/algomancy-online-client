@@ -579,7 +579,7 @@ test('Prismatic Observer: "up to one" — with no cached card the 3 life still h
 
 // ── Retribution Thing ────────────────────────────────────────────────────
 
-test('Retribution Thing: X is the life you have lost in this battle', () => {
+test('Retribution Thing: the "lost" mode makes X the life you have lost in this battle', () => {
   const h = new Harness(3820);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -596,6 +596,7 @@ test('Retribution Thing: X is the life you have lost in this battle', () => {
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Retribution Thing') });
   pick(h, { unit: atk });
+  pick(h, 'lost');                                           // R157 §21: named at cast
   pass(h); pass(h);
   assert.ok(!ent(h, atk), '7 damage this battle kills the 7/5');
   assert.ok(h.state.players[A]!.bin.includes('Good Whale'));
@@ -603,7 +604,7 @@ test('Retribution Thing: X is the life you have lost in this battle', () => {
   finishBattle(h);
 });
 
-test('Retribution Thing: the printed "[lost or gained]" — X counts BOTH ledgers', () => {
+test('R157 §21: the printed "[lost or gained]" is a MODE, so X is one ledger and never the sum', () => {
   const h = new Harness(3832);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -619,8 +620,13 @@ test('Retribution Thing: the printed "[lost or gained]" — X counts BOTH ledger
   const [, tough] = effStats(h, victim);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Retribution Thing') });
   pick(h, { unit: victim });
+  // this used to read X as the SUM (5). The owner's R157 §21 says every
+  // [bracketed] clause is a cost or a cast-time mode, so the caster names one
+  // ledger and reads only that — see 136-triggers-and-modes for both halves.
+  assert.equal(h.state.decision?.kind, 'mode', 'the bracket is a cast-time choice');
+  pick(h, 'gained');
   pass(h); pass(h);
-  assert.equal(ent(h, victim)!.damage, 5, 'X = 2 lost + 3 gained');
+  assert.equal(ent(h, victim)!.damage, 3, 'X = the 3 GAINED alone — not 5, and not the 2 lost');
   assert.ok(tough > 5, 'the victim survives, so the damage is readable');
   finishBattle(h);
 });

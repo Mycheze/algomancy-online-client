@@ -655,11 +655,18 @@ card('Rotwall', {
 // answer a No Hand Killer whose X they can already see, instead of one whose
 // size was still unfixed while priority passed. `ctx.x` is what was paid.
 //
-// `xMin: 1` — the printed floor. Every other variable cost in the pool may be
-// paid down to 0 ("you may decline outright"), but here a 0 does nothing at
-// all AND burns the [once] budget, so an empty hand makes the whole activation
-// unpayable and legalActions stops offering it. ⚠ flagged: if Bena rules that
-// X = 0 is a legal (pointless) activation, drop the xMin.
+// NO `xMin`. R157 §22 / R161, owner 2026-08-25, verbatim: *"You can legally
+// activate it and discard no cards."* This carried `xMin: 1` on the reasoning
+// that X = 0 does nothing at all AND burns the [once] budget, so an empty hand
+// should make the whole activation unpayable and legalActions should stop
+// offering it. The ruling refuses that reading and, with it, the premise: the
+// ability IS offerable with an empty hand, X = 0 is a legal activation, and it
+// really does spend the [once] for nothing. That is not a bug to be routed
+// around with `ctx.refundBudget` either — R113 hands a budget back for a
+// DECLINE or an impossible offer, and this is neither: the player was asked,
+// answered 0, and the ability did the whole of what 0 asks for. Every other
+// variable cost in the pool is paid down to 0 the same way (R74's
+// `xZeroWarning` is the pool's standing shape for exactly this).
 //
 // Every discard is a TRASH (R40) and fires whatever trash triggers it should.
 // Then each opponent (region-scoped, R25) sacrifices X of their own units,
@@ -670,7 +677,8 @@ card('No Hand Killer', {
     type: 'activated', cost: {}, bounded: true,   // [once]
     label: 'discard X cards: each opponent sacrifices X units',
     effect: {
-      castCost: { kind: 'discardCard', n: 'X', xMin: 1 },
+      castCost: { kind: 'discardCard', n: 'X' },   // R157 §22: X = 0 is legal
+      xZeroWarning: 'X = 0 discards nothing and sacrifices nothing',   // R74
       run: (g, ctx) => {
         const x = ctx.x ?? 0;   // however many cards were discarded at cast
         if (x === 0) { g.ev('info', 'No Hand Killer: X = 0 — nothing is sacrificed.'); return; }

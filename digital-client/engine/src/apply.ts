@@ -1315,12 +1315,15 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     e.need(hostId === undefined, 'name one host, not two');
     e.need(e.s.phase === 'battle', 'a spell on the stack can only be augmented during battle');
     // R95: the permission layer, and the ONE predicate legalActions also uses.
-    // ⚠ OPEN: Rook says "as if they were [Virus]", and R79 is what a Virus may
-    // do to a spell on the stack, so the permissive reading unlocks this
-    // branch too and that is what ships. Flagged in R95: if the owner rules
-    // that the permission is only about hand-and-bin TIMING and not about
-    // stack hosts, this line goes back to `c.virus && from === 'hand'` and the
-    // unit branch below keeps the permission.
+    // R157 §26 / R161 CLOSED the ⚠ OPEN flag that stood here. It said: Rook
+    // says "as if they were [Virus]", and R79 is what a Virus may do to a
+    // spell on the stack, so the permissive reading unlocks this branch too
+    // and that is what ships — but if the owner ruled the permission was only
+    // about hand-and-bin TIMING, this line would go back to
+    // `c.virus && from === 'hand'`. The owner ruled the permissive way,
+    // verbatim: *"(a) yes it does. and for (b) yes it can also go to an enemy.
+    // That's the whole point of the card."* The line stays as it is; the two
+    // halves are guarded in 136-triggers-and-modes.
     e.need(battleAugmentAllowed(e, seat, c, from, e.s.battle!.region),
       'only Virus cards can augment from hand during battle');
     e.need(e.s.priority === seat, 'you do not have priority');

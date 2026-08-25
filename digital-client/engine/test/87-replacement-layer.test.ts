@@ -369,14 +369,21 @@ test('one resolving part is one creation batch, so unique is counted across the 
   // Report #60: "Automaton of Abundance fires per spawn so N identical tokens
   // yield N copies instead of one per unique." Manufacture creates three Robots
   // in one resolution.
+  //
+  // R157 §24 moved the COUNT, not the batch: uniqueness is the (name, X) pair,
+  // so Manufacture's Robot 3/2/1 is three unique tokens and pays out three
+  // extras. What this test is about is untouched — a per-spawn trigger would
+  // still fire three times and could not see a creation at all. The three
+  // identical Robots that make the batching visible are asserted next door, in
+  // 26-metal-a and 136-triggers-and-modes.
   const h = new Harness(8730);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   spawn(h, A, 'Automaton of Abundance');
   giveResources(h, A, 'metal', 6);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Manufacture') });
-  assert.equal(unitsOf(h, A).filter(u => u.card === 'Robot').length, 4,
-    'three printed Robots and ONE copy');
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Robot').length, 6,
+    'three printed Robots and one copy of each (name, X) pair');
 });
 
 test('a batch replacement adds its extras inside the same resolution, with no window between', () => {
@@ -394,7 +401,8 @@ test('a batch replacement adds its extras inside the same resolution, with no wi
   });
   assert.equal(typesIn(evs, 'triggered').length, 0, 'nothing was queued as a trigger');
   assert.equal(h.state.stack.length, 0, 'and the stack is empty when it is over');
-  assert.equal(typesIn(evs, 'spawned').length, 4, 'four spawns, all inside one resolution');
+  assert.equal(typesIn(evs, 'spawned').length, 6,
+    'six spawns (R157 §24: three printed, three extras), all inside one resolution');
 });
 
 test('a lone creation outside a resolving part is still a batch of one', () => {

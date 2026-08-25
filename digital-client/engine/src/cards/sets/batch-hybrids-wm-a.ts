@@ -345,6 +345,24 @@ card('Reconfigure', {
 // `ctx.from` is checked HERE rather than being hardcoded in apply.ts, because
 // the printed zone list is this card's, not the rules': Rook says "hand and
 // bin", so Rook is what refuses the cache.
+//
+// R157 §26 / R161 — IT CONFERS {Virus}, NOT MERELY THE WINDOW. Owner,
+// 2026-08-25, asked (a) does the permission reach spells on the stack and (b)
+// can the augment go on an ENEMY unit: *"(a) yes it does. and for (b) yes it
+// can also go to an enemy. That's the whole point of the card."*
+//
+// NO CODE CHANGED FOR THIS, and that is the finding rather than a shrug —
+// {Virus} gates exactly ONE thing in the engine, `battleAugmentAllowed`'s base
+// case (`c.virus && from === 'hand'`), and this permission is the OR beside
+// it. Everything downstream of that predicate is the battle-window branch of
+// `doAugment`, which asks about priority and REGION and never about who
+// controls the host; `pushBattleAugments` offers `unitsIn(region)` — both
+// sides — and every stack item R79 allows. So (b) was already true the moment
+// the permission returned true, and (a) was shipped behind an ⚠ OPEN flag in
+// apply.ts that this ruling closes. What changed is that both halves are now
+// GUARDED (136-triggers-and-modes): an enemy host and a stack host, each with
+// a no-Rook control, because "it happens to work" and "it is meant to work"
+// are the same board until something says so.
 card('Rook', {
   augmentable: true,
   modPermissions: [{

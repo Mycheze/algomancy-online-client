@@ -299,18 +299,17 @@ test('Automaton of Abundance: your unit tokens are duplicated; nontokens are not
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Unit Token').length, 1, 'nontoken spawns are not duplicated');
 });
 
-test('Automaton of Abundance: a batch of three Robots yields ONE extra, not three', () => {
+test('R157 §24: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extras', () => {
   // R104, and the exact defect playtest report #60 named: "Automaton of
   // Abundance fires per spawn so N identical tokens yield N copies instead of
   // one per unique." Manufacture creates a Robot 3, a Robot 2 and a Robot 1 in
-  // ONE resolution, which is one creation batch.
+  // ONE resolution, which is one creation batch — that half is unchanged.
   //
-  // UNIQUENESS IS BY TOKEN KIND, and the X is not part of it: three Robots are
-  // one unique token however different their numbers, so exactly one extra
-  // Robot is created. The basis is the engine's own definition of identity —
-  // `Entity.card` is what bins, "name a card" effects, counters-by-name,
-  // DECK_LIST and the inspector all key off — and every Robot is the one
-  // registered card `Robot`.
+  // WHAT "UNIQUE" MEANS IS REVERSED. This used to key on the card NAME alone
+  // (three Robots = one unique token = one extra) on the argument that
+  // `Entity.card` is the engine's definition of identity. R157 §24, owner
+  // 2026-08-25: *"'Unique' means unique (name, X) pair — you get two extras."*
+  // Three different X are three unique tokens, so three extras.
   const h = new Harness(2620);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -318,11 +317,9 @@ test('Automaton of Abundance: a batch of three Robots yields ONE extra, not thre
   giveResources(h, A, 'metal', 6);                          // mmm / 6
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Manufacture') });
   const robots = unitsOf(h, A).filter(u => u.card === 'Robot');
-  assert.equal(robots.length, 4, 'three printed Robots plus ONE copy (not three, and not six)');
-  // the copy is of the FIRST of its kind in the batch — the deterministic
-  // reading of "a copy of each unique token you created"
-  assert.deepEqual(robots.map(r => r.counters).sort((a, b) => a - b), [1, 2, 3, 3],
-    'the extra copies the first Robot of that kind, X and all');
+  assert.equal(robots.length, 6, 'three printed Robots plus THREE copies (not four)');
+  assert.deepEqual(robots.map(r => r.counters).sort((a, b) => a - b), [1, 1, 2, 2, 3, 3],
+    'one extra per (name, X) pair — a copy of each, X and all');
 });
 
 test('Automaton of Abundance: a mixed batch gets one extra per KIND, and spell tokens are not units', () => {
