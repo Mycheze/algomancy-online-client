@@ -87,7 +87,7 @@
  */
 import type { EngineEvent, Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, effectByKey, type EffectDef } from '../dsl.ts';
+import { card, effectByKey, isSpellEffect, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, modeTargetOf } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -291,62 +291,44 @@ card('Corrupting Blight', {
 // targets were declared in the cast window and the 'targeted' entries are
 // already logged when 'spellPlayed' fires), so it is read at event time, in
 // `when`, and STAMPED onto the event — the same place R70 keeps `token` and
-// R140 keeps the bin identity, and for the identical reason: nothing readable
-// at resolution can answer it. `E.events` is per-apply scratch, so the log
-// tail this scan walks is GONE by the time a battle trigger resolves off the
-// stack one priority window later; `PendingTrigger.event` is what survives
-// (E.queueTrigger keeps it, the stack item carries it, `ctx.event` is it).
-// Each 'targeted' entry counts once, which is exactly what a per-target
-// dispatch would produce — a spell that somehow aims two of its parts at the
-// same ally targeted it twice.
-const EARNEST_ALLIES = 'earnestDefenderAllies';
-
-/** how many of `seat`'s units this 'spellPlayed' event's item targeted — the
- * log-tail reconstruction, run ONCE at event time and left on the event. */
-function targetedAllies(g: E, seat: Seat, ev: EngineEvent): number {
-  // walk the log tail backwards: skip anything logged after this spellPlayed
-  // (other listeners' 'triggered' entries), then collect the consecutive
-  // 'targeted' entries commitItem logged just before it.
-  const targets: EntityId[] = [];
-  let sawSpell = false;
-  for (let i = g.events.length - 1; i >= 0; i--) {
-    const e2 = g.events[i]!;
-    if (e2 === ev) { sawSpell = true; continue; }
-    if (!sawSpell) continue;
-    if (e2.type === 'targeted' && e2.data?.item !== undefined) {
-      targets.push(e2.data.unit as EntityId);
-      continue;
-    }
-    break;
-  }
-  return targets.filter(id => g.entity(id)?.controller === seat).length;
-}
-
+// "[Augment] Whenever an ally becomes the target of an enemy spell, create a
+// 1/1 unit." — R157 §16, the owner, verbatim: *"Once per targeted ally — two
+// targets, two triggers, two 1/1s."*
+//
+// It listens on 'targeted', which `E.commitItem` dispatches ONCE PER TARGET —
+// so "two triggers" comes for free and this card does no counting at all.
+//
+// ⚠ It could not be written this way until R161 widened the event. The payload
+// was `{ item, unit, region }`: enough to know a unit was targeted, not enough
+// to know BY WHOM or by WHAT. The only way to answer "an enemy SPELL" was to
+// listen on 'spellPlayed' and scrape the log tail for the run of 'targeted'
+// lines commitItem had just written — and a scrape answers a yes/no about the
+// whole batch, so a two-target spell produced ONE trigger that made two tokens.
+// That is observably different from two triggers, and not cosmetically: a
+// negate took both tokens instead of one, an ordering question listed one entry
+// instead of two, and both tokens landed in a single creation batch (where an
+// Automaton of Abundance adds one extra, not two). `seat` + `kind` on the event
+// retire the whole apparatus.
+//
+// "Spell" is `isSpellEffect`: spell, spellUnit, spellToken — R157 §13, *"tokens
+// are spells"*.
 card('Earnest Defender', {
   augmentText: [{
-    type: 'triggered', events: ['spellPlayed'],
-    label: 'create a 1/1 unit for each ally targeted by an enemy spell',
+    type: 'triggered', events: ['targeted'],
+    label: 'create a 1/1 unit',
     when: (g, self, ev) => {
-      if (ev.data?.seat === self.controller) return false;     // enemy spells only
-      const n = targetedAllies(g, self.controller, ev);
-      // stamp it where resolution can still read it (see the note above).
-      // Two Earnest Defenders share one event and compute the same n.
-      if (n > 0) (ev.data ??= {})[EARNEST_ALLIES] = n;
-      return n > 0;
+      if (ev.data?.seat === self.controller) return false;          // an ENEMY's item
+      if (!isSpellEffect(ev.data?.kind as never)) return false;     // ...that is a spell
+      const t = g.entity(ev.data?.unit as EntityId);
+      return !!t && t.controller === self.controller;               // ...aimed at my ally
     },
     effect: {
       creates: ['Unit Token'],
-      run: (g, ctx) => {
-        const stamped = ctx.event?.data?.[EARNEST_ALLIES];
-        const n = typeof stamped === 'number' && stamped > 0 ? stamped : 1;
-        for (let i = 0; i < n; i++) makeOneOne(g, ctx.controller, ctx.region);
-        if (n > 1) {
-          g.ev('info', `Earnest Defender: ${n} allies were targeted — ${n} 1/1 units.`);
-        }
-      },
+      run: (g, ctx) => { makeOneOne(g, ctx.controller, ctx.region); },
     },
   }],
 });
+
 
 // "Whenever a nontoken enemy dies, [Switch] Create a 1/1 unit." — gg/2 1/2
 // Fungus Druid Unit. Died trigger, region-scoped by fireEvent; "enemy" =

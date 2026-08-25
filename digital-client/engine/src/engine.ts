@@ -6749,8 +6749,18 @@ export class E {
       for (const t of part.targets) {
         if (!('unit' in t)) continue;
         const u = this.s.entities[t.unit];
+        // R161/R157 §16: `seat` and `kind` ride the event so a listener can
+        // recognise "an ENEMY SPELL targeted my ally" from the event ALONE.
+        // Without them the only way to answer that was to scrape the event log
+        // for the run of 'targeted' lines commitItem had just written — which
+        // collapsed a two-target spell into ONE trigger, because a log scrape
+        // answers a yes/no about the whole batch rather than firing per target.
+        // The dispatch below was already once-per-target; only the payload was
+        // too thin to use it. (`kind` is the STACK item's kind — 'spell',
+        // 'spellUnit', 'unit', 'triggered', … — not the card's.)
         const ev = this.ev('targeted', `${item.label} targets ${this.targetLabel(t)}.`,
-          { item: item.id, unit: t.unit, ...(u ? { region: u.region } : {}) });
+          { item: item.id, unit: t.unit, seat: item.controller, kind: item.kind,
+            ...(u ? { region: u.region } : {}) });
         this.fireEvent('targeted', ev);
       }
     }

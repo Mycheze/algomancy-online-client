@@ -200,6 +200,31 @@ function twinFlameBoard(seed: number):
   return { h, A, D, allies, theirs };                       // A holds priority
 }
 
+test('R157 §16: two targeted allies are TWO TRIGGERS on the stack, not one that makes two', () => {
+  // The ruling is "two targets, two TRIGGERS, two 1/1s" — and the trigger count
+  // is not cosmetic. Under the old log-tail reconstruction one trigger made two
+  // tokens, so a negate aimed at it took BOTH, an ordering question listed one
+  // entry instead of two, and both tokens arrived in a single creation batch
+  // (where an Automaton of Abundance adds one extra, not two).
+  //
+  // Asserted on the STACK, before anything resolves, because that is where the
+  // difference lives; the token count downstream is identical either way and
+  // the sibling test above cannot tell them apart.
+  const { h, A, allies } = twinFlameBoard(13611);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Twin Flame') });
+  pick(h, { unit: allies[0]! });
+  pick(h, { unit: allies[1]! });
+  if (h.state.decision) pick(h, { doneTargets: true });
+
+  const mine = h.state.stack.filter(i => i.kind === 'triggered'
+    && (i.label ?? '').includes('1/1'));
+  assert.equal(mine.length, 2,
+    `two allies were targeted, so Earnest Defender is on the stack TWICE — one trigger per `
+    + `target, each separately respondable. Stack held: `
+    + JSON.stringify(h.state.stack.map(i => `${i.kind}:${i.label ?? ''}`)));
+  finishBattle(h);
+});
+
 test('R157 §16: an enemy spell targeting TWO allies makes TWO 1/1s', () => {
   const { h, A, D, allies } = twinFlameBoard(13610);
   const before = unitsOf(h, D).length;
