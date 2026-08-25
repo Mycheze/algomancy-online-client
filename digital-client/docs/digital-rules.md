@@ -9141,3 +9141,105 @@ so rather than to catch the regression.
 R143's reason: that census checks its exemption list in BOTH directions, so
 leaving the entry behind fails the suite. The deletion is enforced, not
 remembered.
+## R149 — the R120 elective damage split gets a ticker, and the engine asks one victim at a time
+
+**CT-34 / owner playtest report #100, room SMVJ**: *"The damage distribution UI
+is terrible and confusing. Better would to have a ticker counter thing on each
+unit that you click up/down and they always are forced to sum to the amount of
+damage you have."*
+
+**The mechanic is untouched.** [R120](#r120--the-elective-combat-damage-split-the-dealing-side-is-asked)
+made the combat split elective on *"never decide for the player"* and it stays
+elective. This is an affordance ruling only: not one line of `engine.ts` moved,
+and `100-elective-assign`'s nine pinned splits are byte-for-byte what they were.
+
+### ⚠ FOR THE OWNER: the report's shape is not the engine's shape
+
+The report asks for **N tickers on N units, forced to sum**. The engine does
+not raise that decision and never has. `E.electionWalk` asks **one victim at a
+time**, front-to-back, and each question is a single scalar — *"how much of
+`remaining` to <this unit>?"* — whose menu is exactly `[share .. remaining]`,
+with the last living victim auto-filled with whatever is left. Two things
+follow, and both are good news:
+
+1. **The sum is already forced by construction, and never by the client.** An
+   under-allocation (less than the unit in front is owed) and an
+   over-allocation (more than the strike has) are not *refused* by the UI —
+   upstream of any UI, they are not representable. A client that "enforced" the
+   sum would be re-deriving `victimShare` — printed-vs-effective defense under
+   {Unaware} (R106), doubled receipt under {Vulnerable} (R23), the {Deadly}
+   floor of 1 (R114), damage already marked — which is four rulings re-decided
+   in the client to draw a number. It does not. `min` and `max` are read off
+   the option **values** the engine emitted, and off nothing else.
+2. **What the player was missing was therefore not a constraint, it was the
+   arithmetic.** The old bar drew a flat wall of `1 to X / 2 to X / 3 to X /
+   4 to X (everything)` buttons: no running total, no sight of the units
+   behind, and no sign that answering this question schedules another. That is
+   the "terrible and confusing", and it is what the ticker replaces.
+
+So the ticker is **per-victim**, and around it goes the whole column: the
+victims already answered with their locked amounts, the one being asked with
+the live dial, the ones behind still waiting, and the remainder between them.
+The player watches the sum being forced instead of being told about it. Every
+legal split the engine offered stays reachable — the raw menu is behind an
+`every split` expander, because the ticker is an affordance **over** the menu
+and never a narrowing of it.
+
+Also worth saying plainly: a column is `[front, back?]`, so **a strike has at
+most two victims and therefore asks exactly one question** — the back one is
+always the auto-filled remainder. `AssignPlan.picks` is a list and the ticker
+draws locked rows for it, but the engine cannot produce a locked row today.
+That path is tested hand-built and labelled as such.
+
+### The affordance did NOT already exist
+
+BL-19 and BL-25 were both "the affordance is there and is merely unreachable",
+so that was checked first. This is not that: `assignDamage` appeared **nowhere**
+in `ui/`, and the decision fell through `decisionBarHtml` to the generic
+option-button branch. Nothing to reach.
+
+### REUSE: `counterStepper` was generalised, not forked
+
+BL-25/R139 built this control shape three days ago for counter removal, and
+BL-19 is the standing evidence of what a hand-written second copy costs. So the
+dial itself was lifted out of `counterStepper` into a shared core in
+`ui/inspect.ts` — `quantityStepper` / `stepQuantity` / `clampQuantity`, plus the
+`StepperAction { submit: false }` ruling and the `hintOnce` say-it-once helper —
+and **both** controls now build on it. `CounterStepperView extends
+QuantityStepperView`; `CounterStepperAction` is an alias of `StepperAction`;
+`clampCounterCount` delegates. Nothing in `main.ts` or in the fifteen BL-25
+tests had to change.
+
+What the two do **not** share, and must not, is the **range**. Counter removal
+is one unit choosing *k* off itself, ceiling `Decision.counterMax`; a damage
+split is one victim in a queue whose floor is *"lethal to this unit, because
+units in front must die before damage walks past them"* and whose ceiling is
+*"everything you have left"*. Those are different questions computed from
+different engine fields. They dial identically — and the dialling is the part
+that drifts.
+
+The BL-25 **clamp** carries over verbatim, and for the same reason: the dial is
+one stored number that outlives a single question, so a stored 4 can arrive at
+a victim whose menu caps at 2. It is clamped **on render**, not on submit, so
+the player reads 2 the instant that question paints rather than reading 4,
+clicking confirm, and being given 2.
+
+Tests: `126-assign-split` — the forced total and its reported remainder, the
+per-victim clamp, "All" without submitting, the locked/active/behind rows, and
+a **negative control** re-asserting BL-25's stepper on the shared core.
+
+**Red-checked, one mutation per claim.** Removing `assignSplitSubmit`'s bounds
+guard reddens (1) alone at `under.ok`. Widening the ticker's range off the
+engine's option values reddens (2) at *"above the ceiling lands on the ceiling"*
+(and (1)/(3)/(4) with it — they all read that range). Sending "All" to the floor
+reddens (3) alone; widening `StepperAction.submit` to `boolean` and having
+"All" auto-submit reddens (3), the negative control, **and** two BL-25 tests —
+the right co-red, since that is shared code. Drifting the counter path's floor
+from 1 to 0 reddens (5) and two BL-25 tests while every damage test stays green.
+
+And **the BL-25 reproduction**, which is what test (4) is for: drift the
+client's accepted option payload to `{to: n}` *and drift the hand-built menus in
+the test file with it* — exactly what BL-25 did, where every test hand-wrote the
+payload the handler expected. Tests (1), (2), (3) and (4b) all stay **green**.
+Only (4), whose expectations come from a real engine-produced decision, goes
+red. That is the assertion that would have caught BL-25, demonstrated.

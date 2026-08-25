@@ -8,6 +8,7 @@ import { getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import type { XPreviewRow } from '../src/cards/dsl.ts';
 import {
   actionNeedsMenu, activatableUnits, activationBadge, activationKeys, activationNeedsConfirm,
+  assignSplitStep, assignSplitStepper, assignSplitSubmit,
   blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens,
   counterAmountIndex, counterPickIndex, counterPickUnits, counterPickValue, counterStepper,
   counterStepperCount,
@@ -344,6 +345,12 @@ interface UiState {
    * offered it. */
   counterCount: number;
   counterFor: number;
+  /** CT-34/R149: how much combat damage the elective-split ticker is offering
+   * the victim currently being asked, and the decision id it was dialled for.
+   * A strike asks one question per victim, so a fresh id always restarts at
+   * that victim's floor rather than carrying a number its menu never had. */
+  assignCount: number;
+  assignFor: number;
   /** draft step: pile indices (into hand.concat(pack)) marked "leave in pack" */
   draftPack: number[] | null;
   /** which turn+seat draftPack was built for (re-init on change) */
@@ -451,6 +458,7 @@ const savedEls = (): string[] => {
 const freshUi = (): UiState => ({
   carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
   counterCount: 1, counterFor: -1,
+  assignCount: 0, assignFor: -1,
   draftPack: null, draftFor: '', autopass: false, autopassStack: 0,
   autopassSig: [], autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
   prefillFor: '', confirmDone: null, confirmPass: null,
@@ -961,6 +969,61 @@ function counterStepperHtml(dec: Decision): string {
     btn('ctrdown', '−', v.canDown, 'one fewer')}<b style="min-width:1.2em;text-align:center">${v.count}</b>${
     btn('ctrup', '+', v.canUp, 'one more')}${
     btn('ctrall', `All (${v.max})`, v.canAll, 'set the count to the most this can take — it does NOT submit')}${take}</span>`;
+}
+
+/* CT-34/R149 — the R120 elective damage-split ticker.
+ *
+ * Owner report #100: "The damage distribution UI is terrible and confusing.
+ * Better would to have a ticker counter thing on each unit that you click
+ * up/down and they always are forced to sum to the amount of damage you have."
+ *
+ * Every judgement — the floor, the ceiling, the clamp, which victims the
+ * strike has, which option index a number sends, and why a submit is refused —
+ * is in ui/inspect.ts and tested in test/126-assign-split. This is the drawing
+ * and the wiring only, for the same reason BL-25 was lifted out of here: a
+ * decision that only exists in main.ts is reachable only by playing a whole
+ * game over a websocket, and nobody writes that test.
+ */
+
+/** the amount the ticker is showing for the LIVE question, clamped into the
+ * menu the engine actually sent */
+function assignCount(): number {
+  const dec = h.state.decision;
+  if (!dec) return 0;
+  if (ui.assignFor !== dec.id) {
+    ui.assignFor = dec.id;
+    ui.assignCount = assignSplitStepper(dec, h.state, -Infinity).count;   // the floor
+  }
+  return assignSplitStepper(dec, h.state, ui.assignCount).count;
+}
+
+function assignSplitHtml(dec: Decision): string {
+  const v = assignSplitStepper(dec, h.state, assignCount());
+  if (v.mode === 'none') return '';
+  const sub = assignSplitSubmit(dec, v.count);
+  const btn = (act: string, txt: string, on: boolean, title: string): string =>
+    `<button data-btn="${act}" title="${esc(title)}"${on ? '' : ' disabled'}>${txt}</button>`;
+  // the whole column, so the player can SEE the sum being forced instead of
+  // being told about it: what the victims in front were already given, what
+  // this one is being offered, and what is left for the ones behind
+  const rows = v.rows.map(r => {
+    const live = r.state === 'active';
+    const dim = r.state === 'behind' ? 'var(--dim)' : 'inherit';
+    return `<span style="color:${dim}${live ? ';font-weight:700' : ''}">${
+      esc(r.card)} <b>${r.amount}</b>${r.state === 'locked' ? ' ✓' : ''}</span>`;
+  }).join('<span style="color:var(--dim)"> → </span>');
+  const left = `<span style="color:${v.remaining > 0 ? 'var(--dim)' : 'inherit'}">${
+    v.remaining > 0 ? `${v.remaining} still to assign behind` : 'all of it assigned'}</span>`;
+  const takeTitle = sub.ok ? `assign ${v.count} to this unit` : sub.why;
+  return `<span class="asgstep" style="display:inline-flex;align-items:center;gap:.3em;flex-wrap:wrap">${
+    v.hint ? `<span style="color:var(--dim)">${esc(v.hint)}</span>` : ''}${
+    rows ? `<span style="display:inline-flex;align-items:center;gap:.2em">${rows}</span>` : ''}${
+    btn('asgdown', '−', v.canDown, `one fewer (floor ${v.min} — lethal to this unit)`)}<b style="min-width:1.4em;text-align:center">${v.count}</b>${
+    btn('asgup', '+', v.canUp, 'one more')}${
+    btn('asgall', `All (${v.max})`, v.canAll, 'give this unit everything left — it does NOT submit')}${
+    btn('asgtake', `Assign ${v.count} of ${v.total}`, sub.ok, takeTitle)}${
+    v.defaultIndex >= 0 ? ` ${btn('asgdefault', 'Default split', true, 'share front-to-back, the whole column in one click')}` : ''
+    } ${left}</span>`;
 }
 
 function legalFor(seat: Seat): Action[] {
@@ -2360,6 +2423,20 @@ function decisionBarHtml(dec: Decision, err: string): string {
         ${stepperHtml}
         ${step.mode === 'pick' ? ctrCards() : cardRow('decide')} <span class="decpicks">${picks}</span>
         ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
+  }
+  // CT-34/R149: the elective split gets the ticker instead of the wall of
+  // "1 to X / 2 to X / 3 to X …" buttons the owner called terrible. The raw
+  // options stay reachable behind the expander below, because the ticker is an
+  // affordance over the menu, never a narrowing of it — every legal split the
+  // engine offered is still takeable.
+  const asg = assignSplitStepper(dec, h.state, assignCount());
+  if (asg.mode === 'assign') {
+    return `<div class="promptbar pending"><span class="who">${who}:</span>
+        ${iconizeText(dec.prompt)}
+        ${assignSplitHtml(dec)}
+        <details><summary style="color:var(--dim);cursor:pointer">every split</summary>
+          <span class="decpicks">${dec.options.map((_o, i) => optBtn(i)).join(' ')}</span></details>
+        ${castCancelBtnHtml()}${err}</div>`;
   }
   if (dec.kind === 'orderTriggers') {
     const btns = dec.options.map((o, i) => ui.orderPicked.includes(i)
@@ -4235,7 +4312,7 @@ function pinFocus(sub: FocusSubject, key: string): void {
  * including them would make every click look like it had done something. */
 const CLICK_STATE_KEYS = ['carrying', 'columns', 'send', 'spellTokens', 'modding', 'menu',
   'orderPicked', 'draftPack', 'bottomPick', 'confirmDone', 'confirmPass', 'confirmDeploy',
-  'confirmAct', 'confirmRide', 'counterCount'] as const;
+  'confirmAct', 'confirmRide', 'counterCount', 'assignCount'] as const;
 
 /** everything a click may move, as one string */
 function clickSig(): string {
@@ -4737,6 +4814,24 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   ctrtake: () => {
     const dec = h.state.decision;
     const i = dec ? counterAmountIndex(dec, counterStepper(dec, ui.counterCount).count) : -1;
+    if (i >= 0) act({ type: 'decide', seat: dec!.seat, choice: i });
+  },
+  // CT-34/R149 — the damage-split ticker. As with the counter stepper, −/+/All
+  // move the dial and NOTHING ELSE: assigning combat damage is irreversible,
+  // so the number is read before it is spent (StepperAction.submit is the
+  // literal false). asgtake and asgdefault are the only two that act.
+  asgup: () => { ui.assignCount = assignSplitStep(h.state.decision, h.state, ui.assignCount, 'up').count; },
+  asgdown: () => { ui.assignCount = assignSplitStep(h.state.decision, h.state, ui.assignCount, 'down').count; },
+  asgall: () => { ui.assignCount = assignSplitStep(h.state.decision, h.state, ui.assignCount, 'all').count; },
+  asgtake: () => {
+    const dec = h.state.decision;
+    const sub = assignSplitSubmit(dec, assignSplitStepper(dec, h.state, ui.assignCount).count);
+    if (sub.ok && sub.index >= 0) act({ type: 'decide', seat: dec!.seat, choice: sub.index });
+    else if (sub.why) uiError = sub.why;
+  },
+  asgdefault: () => {
+    const dec = h.state.decision;
+    const i = assignSplitStepper(dec, h.state, ui.assignCount).defaultIndex;
     if (i >= 0) act({ type: 'decide', seat: dec!.seat, choice: i });
   },
   orderpick: btn => {

@@ -2028,6 +2028,74 @@ export function prismiteClickPlan(
   return { kind: 'menu', actions, hidden: hidden.length };
 }
 
+// ═══ R149 — the SHARED quantity stepper ═══════════════════════════════════
+
+/**
+ * The dial itself: an integer held inside [min, max], and what −, + and "All"
+ * may do to it. Nothing about counters, nothing about damage — factored out
+ * of BL-25/R139's `counterStepper` (below) when CT-34 needed the same control
+ * for the R120 elective damage split.
+ *
+ * ⚠ WHY THIS IS ONE FUNCTION AND NOT TWO. BL-19 is the cautionary tale: three
+ * "clear" buttons each rolled its own "is anything built" gate and one board
+ * showed the player no button at all. A second hand-written stepper would
+ * drift the same way — one of them would learn that a non-number falls to the
+ * floor and the other would not. So the clamp, the arrow gates and the "All"
+ * gate live here once, and the two decision shapes above them differ only in
+ * where their min and max come from.
+ *
+ * What they do NOT share, and must not: the RANGE. Counter removal is one
+ * unit choosing k off itself; a damage split is one victim in a queue of
+ * victims whose floor is "lethal to the unit in front" and whose ceiling is
+ * "everything left". Those are different questions and they compute min/max
+ * differently — but they dial identically, and that is the part that drifts.
+ */
+export interface QuantityStepperView {
+  /** the dialled-in value, ALREADY clamped into [min, max] */
+  count: number;
+  min: number;
+  max: number;
+  canDown: boolean;
+  canUp: boolean;
+  /** "All" would move the count somewhere it is not already */
+  canAll: boolean;
+}
+
+/** a count, forced into the range the decision will actually accept. A
+ * non-number falls to the FLOOR, never to zero and never to NaN — a NaN in
+ * the dial renders as an empty button that answers nothing. */
+export function clampQuantity(want: number, min: number, max: number): number {
+  if (!Number.isFinite(want)) return min;
+  if (max < min) return min;
+  return Math.min(Math.max(Math.floor(want), min), max);
+}
+
+export function quantityStepper(want: number, min: number, max: number): QuantityStepperView {
+  const hi = Math.max(min, max);
+  const count = clampQuantity(want, min, hi);
+  return {
+    count, min, max: hi,
+    canDown: count > min, canUp: count < hi, canAll: count !== hi,
+  };
+}
+
+/**
+ * What −, + and All do to the count.
+ *
+ * `submit: false` is not decoration — it is the ruling, in the type. The owner
+ * said "All … jumps the count to the max (WITHOUT auto submitting)", and the
+ * point of that is a unit carrying a lot of counters (or a strike carrying a
+ * lot of damage): you want to SEE the number before you spend it. No path
+ * through this function produces a decision index, so no path through it can
+ * pay a cost or assign a point of damage.
+ */
+export interface StepperAction { count: number; submit: false }
+
+export function stepQuantity(v: QuantityStepperView, act: 'up' | 'down' | 'all'): StepperAction {
+  if (act === 'all') return { count: v.max, submit: false };
+  return { count: clampQuantity(v.count + (act === 'up' ? 1 : -1), v.min, v.max), submit: false };
+}
+
 // ═══ BL-25 / R139 — the counter-removal quantity stepper ══════════════════
 
 /**
@@ -2074,18 +2142,10 @@ export interface CounterDecisionLike {
   counterMax?: number;
 }
 
-export interface CounterStepperView {
+export interface CounterStepperView extends QuantityStepperView {
   mode: CounterMode;
-  /** the dialled-in count, ALREADY clamped into [min, max] */
-  count: number;
-  min: number;
-  max: number;
   /** what the bar must say, or '' when the engine's prompt already said it */
   hint: string;
-  canDown: boolean;
-  canUp: boolean;
-  /** "All" would move the count somewhere it is not already */
-  canAll: boolean;
 }
 
 /**
@@ -2118,15 +2178,16 @@ export function counterAmountValue(v: unknown): number | null {
   return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : null;
 }
 
-/** a count, forced into the range the decision will actually accept */
+/** a count, forced into the range the decision will actually accept.
+ * R149: the body moved to `clampQuantity` when the damage split needed the
+ * same clamp; this name stays because four tests and main.ts call it. */
 export function clampCounterCount(want: number, min: number, max: number): number {
-  if (!Number.isFinite(want)) return min;
-  if (max < min) return min;
-  return Math.min(Math.max(Math.floor(want), min), max);
+  return clampQuantity(want, min, max);
 }
 
-/** say the instruction ONCE: '' when the engine's prompt already carries it */
-function counterHint(prompt: string, hint: string): string {
+/** say the instruction ONCE: '' when the engine's prompt already carries it.
+ * R149: shared with the damage-split stepper below. */
+function hintOnce(prompt: string, hint: string): string {
   return prompt.toLowerCase().includes(hint.toLowerCase()) ? '' : hint;
 }
 
@@ -2138,10 +2199,9 @@ export function counterStepper(dec: CounterDecisionLike | null | undefined, want
   if (picks.length) {
     const offered = picks.reduce((m, p) => Math.max(m, p.n), 0);
     const max = dec.counterMax ?? offered;
-    const count = clampCounterCount(want, 1, max);
     return {
-      mode: 'pick', count, min: 1, max, hint: counterHint(dec.prompt, COUNTER_CLICK_HINT),
-      canDown: count > 1, canUp: count < max, canAll: max >= 1 && count !== max,
+      ...quantityStepper(want, 1, max),
+      mode: 'pick', hint: hintOnce(dec.prompt, COUNTER_CLICK_HINT),
     };
   }
   // an effect's own "how many?" menu — only ever a stepper when the ENGINE
@@ -2152,32 +2212,23 @@ export function counterStepper(dec: CounterDecisionLike | null | undefined, want
   const amounts = dec.options.flatMap(o => { const n = counterAmountValue(o.value); return n === null ? [] : [n]; });
   if (!amounts.length) return NO_STEPPER;
   const min = Math.min(...amounts);
-  const max = Math.max(min, dec.counterMax);
-  const count = clampCounterCount(want, min, max);
   return {
-    mode: 'amount', count, min, max, hint: counterHint(dec.prompt, COUNTER_AMOUNT_HINT),
-    canDown: count > min, canUp: count < max, canAll: count !== max,
+    ...quantityStepper(want, min, Math.max(min, dec.counterMax)),
+    mode: 'amount', hint: hintOnce(dec.prompt, COUNTER_AMOUNT_HINT),
   };
 }
 
-/**
- * What −, + and All do to the count.
- *
- * `submit: false` is not decoration — it is the ruling, in the type. The owner
- * said "All … jumps the count to the max (WITHOUT auto submitting)", and the
- * point of that is a unit carrying a lot of counters: you want to see the
- * number before you spend them. No path through this function produces a
- * decision index, so no path through it can pay a cost.
- */
-export interface CounterStepperAction { count: number; submit: false }
+/** R149: the shared `StepperAction` — kept under the old name for main.ts and
+ * the BL-25 tests. `submit: false` is the ruling, in the type; see
+ * `stepQuantity`. */
+export type CounterStepperAction = StepperAction;
 
 export function counterStepperCount(
   dec: CounterDecisionLike | null | undefined, want: number, act: 'up' | 'down' | 'all',
 ): CounterStepperAction {
   const v = counterStepper(dec, want);
   if (v.mode === 'none') return { count: want, submit: false };
-  if (act === 'all') return { count: v.max, submit: false };
-  return { count: clampCounterCount(v.count + (act === 'up' ? 1 : -1), v.min, v.max), submit: false };
+  return stepQuantity(v, act);
 }
 
 /**
@@ -2221,4 +2272,319 @@ export function counterPickUnits(dec: CounterDecisionLike | null | undefined): E
     if (p) seen.add(p.unit);
   }
   return [...seen];
+}
+
+// ═══ CT-34 / R149 — the R120 elective damage-split ticker ═════════════════
+
+/**
+ * Owner report #100, room SMVJ: *"The damage distribution UI is terrible and
+ * confusing. Better would to have a ticker counter thing on each unit that you
+ * click up/down and they always are forced to sum to the amount of damage you
+ * have."*
+ *
+ * The MECHANIC is not touched. R120 made the combat split elective on "never
+ * decide for the player" and it stays elective; this is the affordance.
+ *
+ * ⚠ WHAT THE ENGINE ACTUALLY ASKS — and it is NOT what the report assumes.
+ * `E.electionWalk` raises ONE decision per victim, front-to-back, and each one
+ * is a single scalar question: "how much of `remaining` to <this unit>?" There
+ * is no decision anywhere that carries all N victims at once, so there is no
+ * option payload a simultaneous N-ticker widget could answer. Two consequences,
+ * both load-bearing:
+ *
+ *  1. The sum is already forced BY CONSTRUCTION, not by this file. Each
+ *     question's menu is exactly [share .. remaining] — the floor is "lethal to
+ *     this unit, because units in front must die before damage walks past them"
+ *     and the ceiling is "everything you have left" — and the last living
+ *     victim is auto-filled with whatever is left. An under- or
+ *     over-allocation is not refused by the client; it is never representable.
+ *  2. What the player was missing is therefore not a constraint, it is the
+ *     ARITHMETIC. The old bar drew a flat wall of "1 to X / 2 to X / 3 to X /
+ *     4 to X (everything)" buttons with no running total, no sight of the units
+ *     behind, and no sense that answering this question schedules another. That
+ *     is the "terrible and confusing".
+ *
+ * So the ticker is per-victim, and around it goes the whole column: the
+ * victims already answered with their locked amounts, the one being asked with
+ * the live dial, the ones behind still waiting, and the remainder between them.
+ * The player sees the sum being forced instead of being told about it.
+ *
+ * ⚠ THE RANGE IS THE ENGINE'S, NEVER THIS FILE'S — the same doctrine as
+ * `counterStepper`'s counterMax, and here it matters more, because the floor is
+ * `victimShare`: printed-vs-effective defense under {Unaware} (R106), doubled
+ * receipt under {Vulnerable} (R23), the {Deadly} floor of 1 (R114), damage
+ * already marked. A client recomputing that from board state would be
+ * re-deciding four rulings to draw a number. `min`/`max` are read off the
+ * option VALUES the engine emitted and nothing else.
+ */
+export const ASSIGN_SPLIT_HINT =
+  'set how much this unit takes; the rest goes to the units behind it';
+
+/** the numeric amount an `assignDamage` option names, or null. The one-click
+ * default rides the same menu as the string 'default', so a plain number is
+ * how an amount is told apart from it. */
+export function assignSplitValue(v: unknown): number | null {
+  return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : null;
+}
+
+/** the shape of `GameState.decision` this module needs — structural, so a test
+ * can hand-build one without a whole engine. `kind` is REQUIRED: a bare number
+ * option is otherwise just a payload (an X amount, a hand index, R75's
+ * formation slot), and guessing at it is exactly the namespace collision that
+ * made BL-25 unreachable. */
+export interface AssignDecisionLike {
+  kind: string;
+  prompt: string;
+  options: readonly { label: string; value: unknown }[];
+}
+
+/** the slice of `GameState` the victim rows are derived from. Every field is
+ * one a client really has: `viewFor` nulls the suspension only for the seat it
+ * does NOT belong to, and this decision belongs to the seat reading it. */
+export interface AssignStateLike {
+  suspension?: { type: string; key?: string } | null;
+  battle?: {
+    columns: readonly (readonly EntityId[])[];
+    blocks: Readonly<Record<number, readonly EntityId[]>>;
+    assignPlans?: Readonly<Record<string, { picks: readonly number[]; def?: boolean }>> | null;
+  } | null;
+  entities: Readonly<Record<number, { card: CardName } | undefined>>;
+}
+
+export type AssignRowState = 'locked' | 'active' | 'behind';
+
+export interface AssignVictimRow {
+  unit: EntityId;
+  card: CardName;
+  /** locked: the answer already given. active: what the dial holds now.
+   * behind: 0 — it has not been asked yet, and `remaining` is what it is
+   * competing for. */
+  amount: number;
+  state: AssignRowState;
+}
+
+export interface AssignSplitView extends QuantityStepperView {
+  mode: 'none' | 'assign';
+  /** every victim of this strike front-to-back, or [] when the column could
+   * not be derived — see `assignSplitVictims`. The dial is valid either way. */
+  rows: AssignVictimRow[];
+  /** the strike's whole pool: what is already locked plus what is still left */
+  total: number;
+  /** locked answers plus the dial — what submitting now would have spent */
+  assigned: number;
+  /** what would still be left for the units BEHIND the active one */
+  remaining: number;
+  hint: string;
+  /** the option index that answers the dialled `count` (>= 0 in 'assign' mode) */
+  index: number;
+  /** the one-click "default — share front-to-back" option, or -1 */
+  defaultIndex: number;
+}
+
+const NO_ASSIGN: AssignSplitView = {
+  mode: 'none', count: 0, min: 0, max: 0, canDown: false, canUp: false, canAll: false,
+  rows: [], total: 0, assigned: 0, remaining: 0, hint: '', index: -1, defaultIndex: -1,
+};
+
+/**
+ * The victims of the pending strike, front-to-back, exactly as
+ * `E.electionWalk` walks them — or null when they cannot be derived.
+ *
+ * The suspension key is `${sub}:atk|blk:${colIdx}`, and it names the side
+ * DEALING: `atk` is the attacker striking, so its victims are the BLOCKERS of
+ * that column, and `blk` is the blockers striking back, so its victims are the
+ * attacking column. `aliveInCol` is just "the entity still exists", which is
+ * the same filter here.
+ *
+ * ⚠ R72: a column index is stable only for the length of combat, which is
+ * exactly as long as this decision lives. Never cache the result.
+ */
+export function assignSplitVictims(s: AssignStateLike | null | undefined): EntityId[] | null {
+  const key = s?.suspension?.type === 'combatAssign' ? s.suspension.key : undefined;
+  const b = s?.battle;
+  if (!key || !b) return null;
+  const parts = key.split(':');
+  if (parts.length !== 3) return null;
+  const side = parts[1], ci = Number(parts[2]);
+  if (!Number.isInteger(ci) || ci < 0) return null;
+  const ids = side === 'atk' ? b.blocks[ci] : side === 'blk' ? b.columns[ci] : undefined;
+  if (!ids) return null;
+  return ids.filter(id => !!s!.entities[id]);
+}
+
+/**
+ * The victim this question is about, as an index into `assignSplitVictims`.
+ *
+ * `AssignPlan.picks` holds the answers in ask order, and the walk consumes one
+ * pick per victim in lockstep with its own index — every branch that does NOT
+ * consume a pick (the last living victim, a remainder too small to unlock the
+ * unit behind) also ENDS the walk. So the victim being asked is simply
+ * `picks.length`. No prose is parsed out of the prompt to find it.
+ */
+function activeVictimIndex(s: AssignStateLike | null | undefined): number {
+  const key = s?.suspension?.type === 'combatAssign' ? s.suspension.key : undefined;
+  if (!key) return 0;
+  return s?.battle?.assignPlans?.[key]?.picks.length ?? 0;
+}
+
+/** the pool amounts already locked in by earlier answers to THIS strike */
+function lockedPicks(s: AssignStateLike | null | undefined): number[] {
+  const key = s?.suspension?.type === 'combatAssign' ? s.suspension.key : undefined;
+  if (!key) return [];
+  return [...(s?.battle?.assignPlans?.[key]?.picks ?? [])];
+}
+
+/**
+ * What the prompt bar draws over an elective-split decision — 'none' for every
+ * decision that is not one.
+ *
+ * ⚠ THE BL-25 CLAMP, and the reason it is applied on RENDER rather than on
+ * submit. The dial is ONE stored `ui.` number (like `ui.counterCount`) that
+ * outlives any single question — a reload restores it, and a strike asks one
+ * question per victim, each with its own narrower menu. So a stored 4 can
+ * arrive at a victim whose menu is [1..2]. Clamping downwards HERE means the
+ * player reads 2 the instant that question paints; clamping at submit time
+ * would let them read 4, click confirm, and be given 2. BL-25's lesson was
+ * exactly that: a stepper showing a number the click will not honour is a trap
+ * on precisely the crowded board the owner was complaining about.
+ *
+ * The rows degrade to [] rather than lie: if the derived column disagrees with
+ * the menu the engine actually sent — the active victim's card name is in every
+ * one of its option labels, so they are checkable against each other — the bar
+ * draws the dial and the remainder alone. A wrong column of scans would be a
+ * second BL-25.
+ */
+export function assignSplitStepper(
+  dec: AssignDecisionLike | null | undefined,
+  s: AssignStateLike | null | undefined,
+  want: number,
+): AssignSplitView {
+  if (!dec || dec.kind !== 'assignDamage') return NO_ASSIGN;
+  const amounts = dec.options.flatMap(o => {
+    const n = assignSplitValue(o.value);
+    return n === null ? [] : [n];
+  });
+  if (!amounts.length) return NO_ASSIGN;
+  const min = Math.min(...amounts), max = Math.max(...amounts);
+  const q = quantityStepper(want, min, max);
+  const picks = lockedPicks(s);
+  const total = picks.reduce((a, n) => a + n, 0) + max;
+  const assigned = picks.reduce((a, n) => a + n, 0) + q.count;
+  return {
+    ...q,
+    mode: 'assign',
+    rows: assignSplitRows(dec, s, q.count),
+    total, assigned, remaining: total - assigned,
+    hint: hintOnce(dec.prompt, ASSIGN_SPLIT_HINT),
+    index: assignSplitIndex(dec, q.count),
+    defaultIndex: dec.options.findIndex(o => o.value === 'default'),
+  };
+}
+
+/** the column as rows, or [] when it cannot be derived or does not agree with
+ * the menu the engine sent (see `assignSplitStepper`) */
+export function assignSplitRows(
+  dec: AssignDecisionLike | null | undefined,
+  s: AssignStateLike | null | undefined,
+  count: number,
+): AssignVictimRow[] {
+  const victims = assignSplitVictims(s);
+  if (!victims || !dec) return [];
+  const picks = lockedPicks(s);
+  const active = activeVictimIndex(s);
+  if (active >= victims.length) return [];
+  const cards = victims.map(id => s!.entities[id]?.card);
+  if (cards.some(c => !c)) return [];
+  // the agreement check: every amount option is labelled `${a} to ${card}` for
+  // the victim being asked, so a derived column that names someone else is
+  // wrong and must not be drawn
+  const activeCard = cards[active]!;
+  const labelled = dec.options.some(o => assignSplitValue(o.value) !== null && o.label.includes(activeCard));
+  if (!labelled) return [];
+  return victims.map((unit, i) => ({
+    unit, card: cards[i]!,
+    amount: i < active ? (picks[i] ?? 0) : i === active ? count : 0,
+    state: (i < active ? 'locked' : i === active ? 'active' : 'behind') as AssignRowState,
+  }));
+}
+
+/**
+ * The option index for "assign `want` to the unit being asked".
+ *
+ * Clamped DOWNWARDS to what is actually on the menu, the same rule and for the
+ * same reason as `counterPickIndex`: the dial carries over between the
+ * questions of one strike, and refusing the click instead of honouring the
+ * largest legal amount would make it a trap. -1 only for a want BELOW the
+ * floor — that is not a clamp, it is the rule that a unit in front must be
+ * assigned lethal before any damage goes behind it, and quietly rounding a
+ * player UP into killing something is deciding for them.
+ */
+export function assignSplitIndex(dec: AssignDecisionLike | null | undefined, want: number): number {
+  if (!dec || dec.kind !== 'assignDamage') return -1;
+  const cap = Number.isFinite(want) ? Math.floor(want) : -1;
+  let best = -1, bestN = -1;
+  dec.options.forEach((o, i) => {
+    const n = assignSplitValue(o.value);
+    if (n === null || n > cap || n <= bestN) return;
+    best = i; bestN = n;
+  });
+  return best;
+}
+
+export interface AssignSplitSubmit {
+  /** the option index to send, or -1 when the allocation is refused */
+  index: number;
+  ok: boolean;
+  /** '' when ok; otherwise why, naming the remainder */
+  why: string;
+  /** what would be left for the units behind — NEGATIVE when over-allocated */
+  remaining: number;
+}
+
+/**
+ * The guard on a RAW allocation — what `assignSplitStepper` has already
+ * clamped, checked against the unclamped number a caller holds.
+ *
+ * This is the function that answers the report's "they always are forced to
+ * sum to the amount of damage you have": an under-allocation (less than the
+ * unit in front is owed) and an over-allocation (more damage than the strike
+ * has) both come back `ok: false` with the remainder said out loud, so the bar
+ * can tell the player WHY confirm is dark instead of just darkening it.
+ */
+export function assignSplitSubmit(
+  dec: AssignDecisionLike | null | undefined, want: number,
+): AssignSplitSubmit {
+  const v = assignSplitStepper(dec, null, want);
+  if (v.mode === 'none') return { index: -1, ok: false, why: '', remaining: 0 };
+  const n = Number.isFinite(want) ? Math.floor(want) : NaN;
+  if (!Number.isFinite(n) || n < v.min) {
+    const short = v.min - (Number.isFinite(n) ? n : 0);
+    return {
+      index: -1, ok: false, remaining: v.max - (Number.isFinite(n) ? n : 0),
+      why: `assign at least ${v.min} here — a unit in front must be assigned lethal `
+        + `before any damage goes behind it (${short} short)`,
+    };
+  }
+  if (n > v.max) {
+    return {
+      index: -1, ok: false, remaining: v.max - n,
+      why: `only ${v.max} left to assign — that is ${n - v.max} more damage than this strike has`,
+    };
+  }
+  return { index: assignSplitIndex(dec, n), ok: true, why: '', remaining: v.max - n };
+}
+
+/** what −, + and All do to the damage dial — the SHARED `stepQuantity`, so the
+ * damage ticker and the counter ticker can never learn different arithmetic.
+ * "All" jumps to everything-left and does NOT submit (R139's ruling, in the
+ * type): with a strike big enough to kill the whole column you want to see the
+ * number before you spend it. */
+export function assignSplitStep(
+  dec: AssignDecisionLike | null | undefined,
+  s: AssignStateLike | null | undefined,
+  want: number, act: 'up' | 'down' | 'all',
+): StepperAction {
+  const v = assignSplitStepper(dec, s, want);
+  if (v.mode === 'none') return { count: want, submit: false };
+  return stepQuantity(v, act);
 }
