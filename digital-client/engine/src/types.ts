@@ -833,6 +833,35 @@ export interface StackItem {
    */
   unstable?: boolean;
   /**
+   * R164 — this item is a COPY of a spell (Earthbound Replicator, Maelstrom
+   * Charger), not the spell itself. It is a real stack item: respondable,
+   * negatable, targetable as an effect.
+   *
+   * RAQ "[Solved] Earthbound Replicator. No, it's not infinity" (_passer):
+   * *"Copy is new spell effect on stack"* and *"Copy spell is not a token."*
+   * — hence a genuine `StackItem` of the ORIGINAL's kind carrying this flag,
+   * rather than a reused `spellToken` kind.
+   *
+   * WHAT THE FLAG BUYS, and it is one thing: **a copy has no card.** The card
+   * is still the original's, sitting on the stack underneath it (or already in
+   * a bin). So every disposal path has to be told that this item's `card`
+   * names what it is a copy OF and is not an object it may move:
+   * `dischargeItem` bins nothing, `negate` bins nothing, `itemIsUnstable`
+   * cannot erase a card that does not exist, `disposeItemMods` does not erase
+   * the ORIGINAL's mods a second time, and `EffectCtx.eraseSelf()` — "Erase
+   * me." on Suspend / Temporal Rift — correctly does nothing at all.
+   *
+   * IT IS ALSO NOT PLAYED, which is the other half of the same RAQ: *"He
+   * copies only PLAYED non-unit Spells. This means targeting him with copy he
+   * created is possible, but he won't make 2nd copy, since 1st copy wasn't
+   * 'played'. Sorry. No infinite loop there."* So a copy fires no
+   * `spellPlayed` and no `cardPlayed`, bumps no `spellsPlayed:` ledger and
+   * spends no play discount — `E.pushSpellCopy` bypasses `commitItem` and
+   * pushes. It DOES dispatch `targeted` for its own targets: a copy that
+   * points at your unit is targeting it, whoever put it there.
+   */
+  copy?: boolean;
+  /**
    * The printed "Erase me." / "Erase this spell." clause — Collect Remains,
    * Suspend, Temporal Rift.
    *

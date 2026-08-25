@@ -1227,7 +1227,11 @@ export class E {
    */
   itemIsUnstable(item: StackItem): boolean {
     if ((item.augments?.length ?? 0) > 0 || item.unstable === true) return true;
-    if (item.card === undefined || !NEGATE_BINS.has(item.kind)) return false;
+    // R164: a COPY of a spell has no card, so the printed {Unstable} face
+    // below cannot apply to it — there is nothing to erase instead of binning,
+    // and reading the copied card's type line here would log an erase about a
+    // card that is still on the stack underneath as the ORIGINAL.
+    if (item.card === undefined || item.copy === true || !NEGATE_BINS.has(item.kind)) return false;
     return this.card(item.card).unstable === true;
   }
 
@@ -5559,7 +5563,10 @@ export class E {
   negate(stackId: number): void {
     const it = this.removeFromStack(stackId);
     if (!it) return;
-    const hasCard = it.card !== undefined && NEGATE_BINS.has(it.kind);
+    // R164: a COPY of a spell is not a card — `it.card` names what it is a
+    // copy OF, and that card is still the original's, on the stack underneath
+    // or already binned. Negating a copy removes an effect and moves nothing.
+    const hasCard = it.card !== undefined && it.copy !== true && NEGATE_BINS.has(it.kind);
     // R79: a carrier is Unstable, so even negation cannot put its card in a
     // bin — the card and its viruses are erased. (The Manual's "if a virus is
     // negated … it is placed into the bin" is about the VIRUS ITEM being
@@ -5797,6 +5804,12 @@ export class E {
    * the pile between.
    */
   disposeItemMods(item: StackItem): void {
+    // R164: a COPY carries the original's {Modular} mods so they still donate
+    // their [Augment] attributes to the copied effect (Caleb 2025-02-07: they
+    // "ride on the stack with the spell and a copy would copy them"), but the
+    // mod CARDS are the original's and are erased with the original exactly
+    // once. Without this the copy announces the same erase a second time.
+    if (item.copy === true) return;
     const mods = item.mods ?? [];
     if (!mods.length) return;
     const cards = mods.map(m => m.card);
@@ -6765,17 +6778,20 @@ export class E {
     }
   }
 
-  /** `moreItems` is the rest of the cast chain this item heads (castChain);
-   * when `then` is 'resolve' it rides on any mid-resolution suspension the
-   * item raises, so the chain is not lost if the player has to be asked. */
-  commitItem(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[] = []): void {
-    // "When I become targeted" (Mohruung). PLAYTEST BUG: this logged the event
-    // but never DISPATCHED it, so a spell aimed at Mohruung created no Crystal.
-    // Modding already fired it (doAugment/doGraft) — only the stack path was
-    // deaf. Dispatch carries the region so region-scoped listeners resolve;
-    // the targeted unit's own region is the authority (the item's region and
-    // the target's agree for every legal target, and `self: true` listeners
-    // match on `unit` anyway).
+  /**
+   * "When I become targeted" (Mohruung). PLAYTEST BUG: this logged the event
+   * but never DISPATCHED it, so a spell aimed at Mohruung created no Crystal.
+   * Modding already fired it (doAugment/doGraft) — only the stack path was
+   * deaf. Dispatch carries the region so region-scoped listeners resolve;
+   * the targeted unit's own region is the authority (the item's region and
+   * the target's agree for every legal target, and `self: true` listeners
+   * match on `unit` anyway).
+   *
+   * R164: split out of `commitItem` so `pushSpellCopy` can dispatch it too. A
+   * COPY is not played and fires no play event, but it does have targets of
+   * its own, and a copy pointing at your unit is targeting it.
+   */
+  private dispatchTargeted(item: StackItem): void {
     for (const part of item.parts) {
       for (const t of part.targets) {
         if (!('unit' in t)) continue;
@@ -6795,6 +6811,87 @@ export class E {
         this.fireEvent('targeted', ev);
       }
     }
+  }
+
+  /**
+   * R164 — put a COPY of a spell already on the stack onto the stack.
+   *
+   * The primitive Earthbound Replicator and Maelstrom Charger were waiting
+   * for. Both used to re-run the copied card's `spellEffect` IN PLACE, which
+   * answered "no" to every interaction question a copy raises: nobody could
+   * respond to it, no stack sweep (Dematerialize, Calming Force, Malevolent
+   * Machinations) could see it, and it never appeared on the stack at all.
+   *
+   * RAQ "[Solved] Earthbound Replicator. No, it's not infinity" and
+   * "[Solved] Maelstrom Charger - all you need to know." (_passer) settle
+   * every question this raises:
+   *
+   *  · *"Copy is new spell effect on stack"*, *"above original spell effect"*
+   *    — so it is a real item, pushed while the original sits below it, and it
+   *    therefore resolves FIRST.
+   *  · *"Copy spell is not a token."* — the copy keeps the ORIGINAL's kind and
+   *    is marked `copy` instead of being minted as a `spellToken`, which would
+   *    have made every "token" reading of it true and stamped `token: true` on
+   *    an event.
+   *  · *"the 1st copy wasn't 'played'"* — a copy is not a play, so this pushes
+   *    directly and deliberately does NOT go through `commitItem`: no
+   *    `spellPlayed`, no `cardPlayed`, no `spellsPlayed:` ledger bump, no
+   *    play-discount spend. That is also what makes the loop finite — the
+   *    Replicator triggers on a PLAY, so it cannot see its own copy.
+   *  · *"you DON'T pay additional cost again and the X value is the one from
+   *    original"* — R35's receipt (`part.costPaid`) and `item.x` are cloned,
+   *    never re-collected. R57's declared mode (`part.mode`) likewise: the
+   *    original said which half it was in its own cast window, in public.
+   *
+   * `targets`, when given, replaces the FIRST live part's targets — that is
+   * the part the copied card's own `spellEffect.targets` spec describes, and
+   * the only one a "you may choose new targets" re-collection can be judged
+   * against. Every other part (a graft rider) keeps the original's aim.
+   *
+   * Returns the pushed item, or null if `orig` carries nothing to copy.
+   */
+  pushSpellCopy(orig: StackItem, opts: { controller?: Seat; targets?: TargetRef[] } = {}): StackItem | null {
+    if (!orig.parts.length) return null;
+    const copy = structuredClone(orig) as StackItem;
+    copy.id = this.s.nextId++;
+    copy.copy = true;
+    copy.negated = false;
+    copy.controller = opts.controller ?? orig.controller;
+    copy.label = `${orig.label} (copy)`;
+    // A copy was played out of no zone (R49), it is nobody's card so it takes
+    // no R96/R105 Unstable stamp of its own, it has not been asked to erase
+    // itself, and any cost still OWED on the original is the original's to pay
+    // — cloning `pendingCosts`/`activationCost` would charge it twice.
+    delete copy.from;
+    delete copy.unstable;
+    delete copy.eraseSelf;
+    delete copy.pendingCosts;
+    delete copy.activationCost;
+    delete copy.paidCosts;
+    delete copy.formationSpot;
+    // R79 viruses were applied to the ORIGINAL ITEM as a response — they are
+    // mod cards sitting on that item, not part of the spell's declaration, and
+    // copying the list would erase them a second time when the copy discharges.
+    // (`mods`, the {Modular} CAST cost, IS copied: Caleb 2025-02-07 — they
+    // "ride on the stack with the spell and a copy would copy them".)
+    delete copy.augments;
+    if (opts.targets) {
+      const first = copy.parts.findIndex(p => !p.spent);
+      if (first !== -1) {
+        copy.parts[first]!.targets = opts.targets;
+        delete copy.parts[first]!.targetsDone;
+      }
+    }
+    this.dispatchTargeted(copy);
+    this.pushItem(copy);
+    return copy;
+  }
+
+  /** `moreItems` is the rest of the cast chain this item heads (castChain);
+   * when `then` is 'resolve' it rides on any mid-resolution suspension the
+   * item raises, so the chain is not lost if the player has to be asked. */
+  commitItem(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[] = []): void {
+    this.dispatchTargeted(item);
     if (item.kind === 'spell' || item.kind === 'spellUnit' || item.kind === 'spellToken') {
       // "spells you've played this battle" ledger (Animated Spark's static)
       if (this.s.phase === 'battle' && item.kind !== 'spellToken') {
@@ -7531,6 +7628,12 @@ export class E {
    * needs a card of its own and does nothing without one.
    */
   dischargeItem(item: StackItem, hasCard: boolean): void {
+    // R164: a COPY of a spell has no card of its own, whichever of the four
+    // exits it took (resolution, R5 fizzle, negation, virus fizzle). Applied
+    // HERE rather than at each caller for the same reason `itemIsUnstable`
+    // lives in one place: four sites computing "does this have a card?" is
+    // exactly how one of them ends up conjuring a card into a bin.
+    if (item.copy === true) hasCard = false;
     const viruses = item.augments ?? [];
     // THREE ways in, all meaning "this card is modded, was stamped, or prints
     // it": a virus rode it (derived, R79); it was played from a bin under a

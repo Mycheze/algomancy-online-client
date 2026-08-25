@@ -11086,3 +11086,136 @@ of adjacent allies") is `projects` for the statics/activated/behavior facets and
 `augmentText` for the triggered one — because what is projected is a
 neighbour's triggered ability, and a projected trigger fires and is responded to
 exactly like the original.
+
+---
+
+## R164 — a COPY of a spell is a spell ON THE STACK, and it was never played
+
+*(2026-08-25. CARD-TODO #50, inventory item SPELL-COPY — the biggest single
+entry in `docs/09-divergence-inventory.md` §2a.)*
+
+**Earthbound Replicator** — *"[Augment] Whenever a player plays a nonunit spell
+targeting me, they copy it and may choose new targets for the copy."*
+**Maelstrom Charger** — *"As you play a nonunit spell, you may sacrifice me. If
+you do, copy that spell and you may choose new targets for the copy."*
+
+Both printed the word **copy** and the engine answered it by re-running the
+copied card's `spellEffect` **in place**, off the stack (`runSpellCopy` →
+`def.run(g, {…})`). One call, no `StackItem`. The copy therefore did not exist
+as far as the rest of the game was concerned: nobody could respond to it, no
+negate could target it, and no stack sweep could see it.
+
+### The authority
+
+Two `[Solved]` RAQ threads answer every question this raises, and they are
+quoted rather than paraphrased because the second one reverses what the
+divergence inventory assumed.
+
+> **"[Solved] Earthbound Replicator. No, it's not infinity"** (`_passer`)
+>
+> · *"Copy is new spell effect on stack (So Invigorate is neat for 2x [draw
+> card and give +0/+1])"*
+> · *"Copy spell is not a token."*
+> · *"He copies only PLAYED non-unit Spells. This means targeting him with copy
+> he created is possible, but he won't make 2nd copy, since 1st copy wasn't
+> 'played'. Sorry. No infinite loop there."*
+
+> **"[Solved] Maelstrom Charger - all you need to know."** (`_passer`)
+>
+> · *"you can decide to Sacrifice Mael to put copy of spell effect on stack
+> (above original spell effect)"*
+> · *"If original spell have some additional cost (like [Sacrifice a unit]) or
+> any X values (like Wildfire), then you DON'T pay additional cost again and
+> the X value is the one from original spell."*
+
+### The ruling
+
+**A copy is a real `StackItem`** — `E.pushSpellCopy` clones the original item,
+stamps `copy: true`, and pushes it **above** the original, so it resolves
+first. It is respondable, it is a legal *"target effect"* (R128), and every
+stack sweep — Dematerialize, Calming Force, Malevolent Machinations — sees it
+because they all read `s.stack`.
+
+**A copy keeps the ORIGINAL's kind and is flagged, not re-kinded.** *"Copy
+spell is not a token."* Minting it as a `spellToken` would have been the cheap
+route and would have made every "token" reading of it true, `token: true` on
+its event included.
+
+**A copy is NOT PLAYED**, and this is the half the inventory got wrong. It
+fires **no `spellPlayed`**, **no `cardPlayed`**, bumps no `spellsPlayed:`
+battle counter and spends no play discount — `pushSpellCopy` deliberately
+bypasses `commitItem` and pushes directly. Three things follow:
+
+1. **It is finite.** Earthbound Replicator triggers on a PLAY, so it cannot see
+   its own copy. That is *"No, it's not infinity"* verbatim, and it is the only
+   thing standing between this ruling and an unbounded stack.
+2. **The eight cards the inventory listed as "missing the copy" correctly miss
+   it.** Stalwart Sentinel, Proph, Dragnol, Death Greeter, Aethercap Siphoner,
+   Void Mandible, Origon and The Silent every one print *play* or *played* —
+   checked against `printed.json`, not from memory. Firing the play events "so
+   they can see it" would have been the permissive reading of the wrong noun.
+3. **`targeted` DOES fire** for the copy's own targets (`E.dispatchTargeted`,
+   split out of `commitItem` for this). Targeting is not playing: a copy
+   pointing at your unit is targeting it, whoever put it there.
+
+**A copy has NO CARD.** `item.card` on a copy names what it is a copy *of*, and
+that card is the original's — on the stack underneath it, or already binned.
+So every disposal path is told so, in one place each:
+
+| site | what the guard says |
+| --- | --- |
+| `dischargeItem` | `hasCard = false` for a copy, on all four exits (resolution, R5 fizzle, negation, virus fizzle) |
+| `negate` | its log line does not say "→ bin" about a card that does not exist |
+| `itemIsUnstable` | a copy cannot take the printed-{Unstable} erase (R145) — there is nothing to erase |
+| `disposeItemMods` | the original's {Modular} mods are erased once, with the original |
+
+Two consequences worth naming because they look like bugs and are not:
+
+* **"Erase me." on a copy erases nothing.** A copy of Suspend or Temporal Rift
+  still ends the battle / freezes the life total; `EffectCtx.eraseSelf()` still
+  raises the flag; and `dischargeItem` correctly moves no card, because there
+  is no card. The inventory filed this as a divergence. It is the right
+  answer.
+* **The copy is not bin-fodder.** One Burgeon played is one Burgeon in a bin,
+  however many copies of it resolved.
+
+**A copy inherits the whole declaration.** R35's cast-cost receipt
+(`part.costPaid`), the item's `x`, and R57's declared modal half (`part.mode`)
+are cloned, never re-collected: *"you DON'T pay additional cost again and the X
+value is the one from original spell"*, and the original said which half it was
+in its own cast window, in public. R105's `{Modular}` `mods` ride along too, so
+their `[Augment]` attributes donate to the copy (Caleb 2025-02-07: they *"ride
+on the stack with the spell and a copy would copy them"*).
+
+⚠ **Still approximated, and named rather than hidden:** R79 viruses augmented
+onto the ORIGINAL while it sat on the stack are **not** copied, so their
+attributes do not donate to the copy. Those are physical mod cards attached to
+that item; copying the list would erase them a second time when the copy
+discharges. Everything else on the item is copied.
+
+### The second bug this uncovered
+
+Earthbound Replicator's keep-the-targets path passed **`[self]`** as the copy's
+target list — the carrier, and nothing else. *"They copy IT"* copies the spell
+**as it was declared**, so a two-target spell whose second slot happened to name
+the Replicator produced a copy that had lost its first slot entirely: a copied
+**Fight** ("target ally and another target unit fight") reported *"a target is
+gone — no fight"* and did nothing at all. Cloning the item's own `part.targets`
+fixes it by construction, and `138-spell-copy.test.ts` pins it with Fight.
+
+The re-collection half (`chooseCopyTargets`) is unchanged in spirit and now
+yields `TargetRef`s onto the copy's first live part, which is also what lets a
+copy **fizzle properly**: a target that dies between the copy being made and the
+copy resolving now takes the ordinary R86 fizzle path, announced, instead of
+being silently dropped from an already-resolved list.
+
+### What this does not settle
+
+`E.pushSpellCopy` is a general primitive, but the two cards that use it are the
+only "copy a spell" cards in the pool. **Maelstrom Charger's shape is still
+approximated** and the RAQ says so: *"Maelstrom Ability is neither Triggered nor
+Activated, so Crevice Lurker doesn't affect it"* and *"Meal copying is not an
+effect on the stack so enemy cannot interact with it. Opponent can only interact
+with copy of a spell effect."* The engine implements it as an ordinary triggered
+ability, so it goes on the stack, it can be negated before the copy is ever
+made, and R121's pay-to-trigger gate can tax it. That is a separate ticket.

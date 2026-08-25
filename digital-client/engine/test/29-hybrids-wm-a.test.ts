@@ -391,6 +391,9 @@ test('Earthbound Replicator: a nonunit spell targeting me is copied; declining t
   assert.equal(h.state.decision?.kind, 'payOrDecline', 'the retarget question is a real decision');
   assert.equal(h.state.decision?.seat, A, "Replicator's 'they' — the copying player answers, not the carrier's owner");
   pick(h, false);                                             // keep the original target
+  // R164: the copy is a real stack item now — it has its own priority window
+  assert.ok(h.state.stack.some(i => i.copy), 'the copy is ON the stack');
+  pass(h); pass(h);                                           // resolve the COPY
   pass(h); pass(h);                                           // then the original Fireball
   assert.ok(h.log.some(m => m.includes('copies Fireball')), 'the spell was copied');
   assert.equal(ent(h, repl)!.damage, 2, '1 original + 1 copy = 2 damage — exactly the pre-retarget behavior');
@@ -415,6 +418,7 @@ test('Earthbound Replicator: choosing NEW targets aims the copy elsewhere; the o
   // the re-collection is fresh against Fireball's own spec ('any') — units
   // and players alike are on the menu, R64-judged now
   pick(h, { unit: atk });                                     // aim the copy at A's own 1/1
+  pass(h); pass(h);                                           // resolve the COPY (R164: its own window)
   pass(h); pass(h);                                           // then the original Fireball
   assert.ok(!ent(h, atk), 'the copy hit the NEW target — the 1/1 died to it');
   assert.equal(ent(h, repl)!.damage, 1, 'only the ORIGINAL hit the Replicator — the copy did not touch it');
@@ -438,6 +442,7 @@ test('Earthbound Replicator: the retarget choice survives a JSON round-trip mid-
   pick(h, true);                                              // choose new targets
   h.state = JSON.parse(JSON.stringify(h.state));              // save + load mid-PICK too
   pick(h, { unit: atk });
+  pass(h); pass(h);                                           // resolve the COPY (R164)
   pass(h); pass(h);
   assert.ok(!ent(h, atk), 'the loaded state still drives the retargeted copy');
   assert.equal(ent(h, repl)!.damage, 1, 'and the copy still misses the original target');
@@ -495,6 +500,7 @@ test('Maelstrom Charger: sacrifice me as you play a nonunit spell → copy it; d
   assert.equal(h.state.decision?.seat, D, "Charger's 'you' — its controller answers");
   assert.ok(ent(h, chg), 'plan-then-commit: the Charger still stands while the retarget is asked');
   pick(h, false);                                             // keep the original targets
+  pass(h); pass(h);                                           // resolve the COPY (R164: its own window)
   pass(h); pass(h);                                           // resolve the original Fireball
   assert.ok(!ent(h, chg), 'the Charger was sacrificed');
   assert.ok(h.state.players[D]!.bin.includes('Maelstrom Charger'), 'sacrificed → bin');
@@ -520,6 +526,7 @@ test('Maelstrom Charger: choosing NEW targets re-aims the copy; the original sti
   pick(h, true);                                              // sacrifice → copy
   pick(h, true);                                              // choose new targets
   pick(h, { unit: atk });                                     // the copy re-aims at the attacker
+  pass(h); pass(h);                                           // resolve the COPY (R164: its own window)
   pass(h); pass(h);                                           // resolve the original Fireball
   assert.ok(!ent(h, chg), 'the Charger was sacrificed');
   assert.ok(!ent(h, atk), 'the copy killed its NEW target');
@@ -549,8 +556,12 @@ test('Maelstrom Charger: with NO legal new target there is no retarget question 
   // a genuinely empty choice is NOT a question: no retarget decision appears
   assert.ok(!h.state.decision, 'no retarget question when nothing is legal to aim at');
   assert.ok(h.log.some(m => m.includes('no legal new target')), 'and the log says why the originals ride');
-  assert.ok(h.log.some(m => m.includes('has no target — no effect')), 'the dead original then fizzles the copy, as ever');
   assert.ok(!ent(h, chg), 'the Charger was still sacrificed');
+  // R164: the copy is a stack item, so a dead target fizzles it through the
+  // ordinary R86 path — announced, in its own resolution, rather than being
+  // swallowed by an inline "no target — no effect" line.
+  pass(h); pass(h);                                           // the copy fizzles (target gone)
+  assert.ok(h.log.some(m => m.includes('(copy) fizzles')), 'the copy fizzles and says so');
   pass(h); pass(h);                                           // the original Echo fizzles too (target gone)
   finishBattle(h);
 });

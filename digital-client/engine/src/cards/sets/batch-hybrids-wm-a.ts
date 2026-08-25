@@ -15,30 +15,41 @@
  * immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - SPELL COPY (Earthbound Replicator, Maelstrom Charger): no STACK-ITEM copy
- *    machinery exists, so a "copy" re-runs the copied card's spellEffect in
- *    place —
- *    (⚠ checked against R118, 2026-08-24: the copy LAYER it built is an
- *    entity-identity layer — `Entity.copies`, a face in front of a unit in
- *    play, read through E.faceName / facesWith. It has no bearing on copying a
- *    SPELL that is resolving off the stack, so this note is not obsolete;
- *    what a real fix needs is a StackItem clone that gets pushed and can be
- *    responded to.)
- *    it never touches the stack (no responses to the copy), and a copy only
- *    happens while the original item is still ON the stack (found by id / by
- *    the Origon bottom-most-match pattern) — a deploy-phase spell that
- *    already resolved is not copyable (info line instead). "May choose new
- *    targets" IS supported now (it used to be silently skipped, which was the
- *    engine deciding for the player): before the copy runs, the COPYING
- *    player — Replicator's "they", Charger's "you"; both are the copy's
- *    controller — is offered a mid-resolution choice (R6) to keep the
- *    original targets or re-collect the copy's targets fresh against the
- *    copied spell's own TargetSpec, R64 legality judged AT the re-collection
- *    (chooseCopyTargets). Declining keeps the pre-existing behavior exactly:
- *    the original cast's still-legal targets / the carrier ride, and a
- *    target that has died still fizzles the copy. With no legal candidate at
- *    all the choice is genuinely empty, so no question is asked (not an
- *    auto-pick) and the originals ride with an info line.
+ *  - SPELL COPY (Earthbound Replicator, Maelstrom Charger): FIXED (R164).
+ *    A copy is a real `StackItem` now — `E.pushSpellCopy` clones the original
+ *    item, marks it `copy: true` and pushes it ABOVE the original, so it is
+ *    respondable, negatable (Dematerialize, Malevolent Machinations) and
+ *    caught by every stack sweep (Calming Force). It used to re-run the
+ *    copied card's `spellEffect` in place, off the stack, which answered "no"
+ *    to all of that. The two RAQ threads settle the details and are quoted in
+ *    `StackItem.copy` and `E.pushSpellCopy`:
+ *      · *"Copy is new spell effect on stack"* / *"above original spell
+ *        effect"* — so the copy resolves FIRST.
+ *      · *"Copy spell is not a token."* — it keeps the original's kind and is
+ *        flagged, rather than being minted as a `spellToken`.
+ *      · *"the 1st copy wasn't 'played'"* — a copy fires NO `spellPlayed` and
+ *        NO `cardPlayed`, bumps no `spellsPlayed:` ledger and spends no play
+ *        discount. That is the whole of "No, it's not infinity": Earthbound
+ *        Replicator triggers on a PLAY, so it cannot see its own copy. It is
+ *        also why Stalwart Sentinel, Proph, Dragnol, Death Greeter, Aethercap
+ *        Siphoner, Void Mandible, Origon and The Silent — every one of which
+ *        prints "play"/"played" — correctly do not see a copy either.
+ *      · *"you DON'T pay additional cost again and the X value is the one
+ *        from original"* — the R35 receipt (`part.costPaid`), `item.x` and
+ *        R57's declared `part.mode` are cloned, never re-collected.
+ *    A copy has no CARD (the card is the original's, on the stack underneath
+ *    or already binned), so it bins nothing on resolution or negation and
+ *    "Erase me." on a copy of Suspend / Temporal Rift correctly erases
+ *    nothing. "May choose new targets" is unchanged in spirit and now yields
+ *    TARGET REFS onto the copy's first live part (chooseCopyTargets); the
+ *    keep-path clones what the original declared, which fixed a second bug —
+ *    Earthbound Replicator used to force `[self]` as the copy's only target
+ *    and threw away every other target of a multi-target spell.
+ *    ⚠ STILL APPROXIMATED: R79 viruses augmented onto the ORIGINAL while it
+ *    sat on the stack are NOT copied (their attributes therefore do not
+ *    donate to the copy). Copying the list would erase those virus cards a
+ *    second time when the copy discharges; the {Modular} `mods` cast cost IS
+ *    copied, which is the case Caleb ruled on (2025-02-07).
  *  - Earthbound Replicator: written when spell-cast 'targeted' events were
  *    logged but never dispatched, so the trigger listens to 'spellPlayed'
  *    instead. Playtest 2026-08-19 FIXED that dispatch (R53) — this card could
@@ -99,7 +110,7 @@
  *    layer; the card is `augmentable: true` + a live `costMods` entry further
  *    down this file, with no inert augmentText anywhere near it.
  */
-import type { CardName, Entity, EntityId, Seat, TargetRef } from '../../types.ts';
+import type { CardName, Entity, EntityId, Seat, StackItem, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import {
   card, getCard, isAugment, specForSlot,
@@ -116,57 +127,67 @@ const NONUNIT_SPELL_KINDS = new Set(['spell', 'spellToken']);
 
 /**
  * "…may choose NEW targets for the copy" (Earthbound Replicator, Maelstrom
- * Charger) — the printed choice, asked before runSpellCopy runs the copy.
+ * Charger) — the printed choice, asked before the copy is put on the stack.
  *
  * The copying player (`copier` — the copy's controller on both cards) is
  * offered a mid-resolution decision (R6): keep the original cast's targets,
  * or re-collect the copy's targets FRESH against the copied spell's own
  * TargetSpec — slot by slot through E.targetCandidates, so R64 restrictions
  * (and R58 per-slot specs) are judged NOW, at the re-collection, not at the
- * original cast. Declining returns `original` untouched, so the pre-existing
- * behavior — still-legal originals ride, a dead original fizzles the copy —
- * is exactly preserved. If the FIRST slot has no legal candidate at all, the
- * "choose new targets" half would be an empty menu, so no question is asked
- * (a genuinely empty choice is not a choice, and silence here would be an
- * auto-pick): the originals ride, with an info line saying why.
+ * original cast.
+ *
+ * R164: returns TARGET REFS, not resolved targets, and `undefined` for "keep
+ * what the original declared". The copy is a `StackItem` now, and a stack item
+ * carries refs — which also means the keep-path no longer has to re-resolve
+ * anything: `E.pushSpellCopy` clones the original's own `part.targets` and
+ * `resolveParts` looks them up at resolution, exactly as it does for the
+ * original. A target that has died between the two therefore fizzles the copy
+ * through the ordinary R86 path with an announcement, instead of silently
+ * shortening a list.
+ *
+ * If the FIRST slot has no legal candidate at all, the "choose new targets"
+ * half would be an empty menu, so no question is asked (a genuinely empty
+ * choice is not a choice, and silence here would be an auto-pick): the
+ * originals ride, with an info line saying why.
  *
  * Plan-then-commit: nothing here mutates — every pick is a ctx.choose, so a
  * suspension replays the part cleanly (R85) and the picks survive the JSON
  * round trip on the suspension.
  */
 function chooseCopyTargets(
-  g: E, ctx: EffectCtx, cardName: CardName, copier: Seat,
-  x: number | undefined, original: ResolvedTarget[],
-): ResolvedTarget[] {
+  g: E, ctx: EffectCtx, cardName: CardName, copier: Seat, region: number,
+  x: number | undefined, originalCount: number,
+): TargetRef[] | undefined {
   const spec = getCard(cardName).spellEffect?.targets;
-  if (!spec) return original;   // a targetless spell has nothing to re-aim
+  if (!spec) return undefined;   // a targetless spell has nothing to re-aim
   // slot arithmetic mirrors E.collectPartTargets: count ('X' = the copy's
   // inherited X) plus R83's fixed extraSlots; min gates the "no more" option
   const counted = spec.count === 'X' ? (x ?? 0) : (spec.count ?? 1);
   const max = counted + (spec.extraSlots ?? 0);
   const min = Math.min(spec.min ?? 1, max);
-  if (max <= 0) return original;
+  if (max <= 0) return undefined;
   const candsFor = (n: number, chosen: ResolvedTarget[], taken: Set<string>): TargetRef[] =>
-    g.targetCandidates(specForSlot(spec, n), ctx.region, undefined, copier,
+    g.targetCandidates(specForSlot(spec, n), region, undefined, copier,
       undefined, x, chosen, null)
       .filter(c => !taken.has(JSON.stringify(c)));
   if (!candsFor(0, [], new Set()).length) {
     g.ev('info', `${ctx.sourceName}: no legal new target for the copy of ${cardName} — the original targets stand.`);
-    return original;
+    return undefined;
   }
   const fresh = ctx.choose('newTargets', {
     kind: 'payOrDecline', seat: copier,
     prompt: `${ctx.sourceName}: choose new targets for the copy of ${cardName}?`,
     options: [
       { label: 'Choose new targets', value: true },
-      { label: `Keep the original target${original.length === 1 ? '' : 's'}`, value: false },
+      { label: `Keep the original target${originalCount === 1 ? '' : 's'}`, value: false },
     ],
   }) as boolean;
-  if (!fresh) return original;
-  const picked: ResolvedTarget[] = [];
+  if (!fresh) return undefined;
+  const picked: TargetRef[] = [];
+  const resolved: ResolvedTarget[] = [];
   const taken = new Set<string>();
   for (let n = 0; n < max; n++) {
-    const cands = candsFor(n, picked, taken);
+    const cands = candsFor(n, resolved, taken);
     if (!cands.length) break;   // a later slot with nothing legal ends the collection
     const options: { label: string; value: unknown }[] =
       cands.map(c => ({ label: g.targetLabel(c), value: c }));
@@ -180,43 +201,35 @@ function chooseCopyTargets(
     if (!!v && typeof v === 'object' && 'doneTargets' in v) break;
     const ref = v as TargetRef;
     taken.add(JSON.stringify(ref));
+    picked.push(ref);
     const r = g.resolveTargetRef(ref);
-    if (r) picked.push(r);
+    if (r) resolved.push(r);
   }
   return picked;
 }
 
-/** ⚠ SPELL COPY approximation (see the batch header): run the copied card's
- * spellEffect in place — off the stack, with the given targets, under the
- * copying player. Nested chooses are namespaced so they can't collide with
- * the caller's own keys. */
+/**
+ * R164 — put a copy of `it` ON THE STACK, above the original, under the
+ * copying player, optionally re-aimed.
+ *
+ * This used to re-run the copied card's `spellEffect` in place, off the stack,
+ * which is the approximation the batch header spent forty lines apologising
+ * for. `E.pushSpellCopy` is the primitive it was waiting for; everything the
+ * old inline call had to hand-thread (the R35 cost receipt, the R57 declared
+ * mode, X, the inert `eraseSelf`) is now simply what a clone of the item
+ * already carries, and the copy is respondable, negatable and sweepable
+ * because it is genuinely there.
+ */
 function runSpellCopy(
-  g: E, ctx: EffectCtx, cardName: CardName, controller: Seat,
-  x: number | undefined, targets: ResolvedTarget[],
-  costPaid?: EffectCtx['costPaid'], mode?: unknown,
+  g: E, ctx: EffectCtx, it: StackItem, controller: Seat, targets?: TargetRef[],
 ): void {
-  const def = getCard(cardName).spellEffect;
-  if (!def) { g.ev('info', `${ctx.sourceName}: ${cardName} has no spell effect to copy.`); return; }
-  if (def.targets && !targets.length) {
-    g.ev('info', `${ctx.sourceName}: the copy of ${cardName} has no target — no effect.`);
+  const name = it.card;
+  if (name === undefined || !it.parts.length) {
+    g.ev('info', `${ctx.sourceName}: there is nothing on that item to copy.`);
     return;
   }
-  g.ev('info', `${ctx.sourceName}: ${g.pname(controller)} copies ${cardName}.`);
-  def.run(g, {
-    controller, sourceName: cardName, sourceId: undefined, region: ctx.region,
-    // a COPY is not cast: its cast cost is not paid again — it inherits the
-    // original's payment receipt (R35), like it inherits the original's X
-    // R57: a copy inherits the ORIGINAL's declared modal half, the same way it
-    // inherits its X and its cost receipt. The original said which half it was
-    // in its own cast window, in public; the copy is that spell again, not a
-    // second chance to pick.
-    targets, x, costPaid, mode, event: null,
-    // A COPY of a spell is not a card, so a copy of "Erase me" has nothing to
-    // erase — and it must not reach for the ORIGINAL's item, which is going to
-    // the bin or the erased pile on its own terms.
-    eraseSelf: () => {},
-    choose: (key, dec) => ctx.choose(`copy:${key}`, dec),
-  });
+  g.ev('info', `${ctx.sourceName}: ${g.pname(controller)} copies ${name} — the copy goes on the stack above it.`);
+  g.pushSpellCopy(it, { controller, ...(targets ? { targets } : {}) });
 }
 
 // ─────────────────────── EARTH / METAL (em/me) ────────────────────────
@@ -494,9 +507,23 @@ card('Decay Distributor', {
 // pattern — my trigger sits above the spell, so the copy resolves first).
 // The copy is controlled by the spell's player ("THEY copy it"), and that
 // player "may choose new targets for the copy": chooseCopyTargets asks them
-// to keep the carrier as the copy's target or re-aim it fresh (R64 legality
-// at the re-collection). Declining keeps the old behavior exactly — the copy
-// runs against the carrier itself.
+// to keep what the spell declared or re-aim the copy fresh (R64 legality at
+// the re-collection).
+//
+// R164: the copy is a real STACK ITEM now (E.pushSpellCopy), pushed above the
+// original, so it can be responded to and negated. Two consequences here:
+//
+//  · The KEEP half no longer forces the carrier as the copy's only target. It
+//    used to pass `[self]`, which silently threw away every OTHER target of a
+//    multi-target spell — "they copy it" copies the spell as it was declared,
+//    and `pushSpellCopy` clones `part.targets` wholesale. (I only have to be
+//    ONE of its targets for the trigger to fire; nothing says the copy points
+//    only at me.)
+//  · The stack lookup excludes copies. `spellPlayed` never fires for a copy
+//    (a copy is not played — the RAQ's "No, it's not infinity"), so this can
+//    only ever be reached by a real play; the `!i.copy` guard says so where
+//    a reader can see it, and keeps `.find()` honest if a copy of the same
+//    card is sitting on the stack at the same time.
 card('Earthbound Replicator', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'],
@@ -519,7 +546,7 @@ card('Earthbound Replicator', {
           return;
         }
         const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && NONUNIT_SPELL_KINDS.has(i.kind));
+          i.card === name && i.controller === seat && !i.copy && NONUNIT_SPELL_KINDS.has(i.kind));
         const targetsMe = !!it &&
           it.parts.some(p => p.targets.some(t => 'unit' in t && t.unit === self.id));
         if (!it || !targetsMe) {
@@ -527,9 +554,10 @@ card('Earthbound Replicator', {
           return;
         }
         // "may choose new targets for the copy" — THEY (the spell's player)
-        // choose; declining keeps the carrier as the copy's target, as ever
-        const targets = chooseCopyTargets(g, ctx, name, seat, it.x, [self]);
-        runSpellCopy(g, ctx, name, seat, it.x, targets, it.parts[0]?.costPaid, it.parts[0]?.mode);
+        // choose; declining keeps everything the spell declared (R164)
+        const declared = it.parts.reduce((n, p) => n + p.targets.length, 0);
+        const targets = chooseCopyTargets(g, ctx, name, seat, it.region, it.x, declared);
+        runSpellCopy(g, ctx, it, seat, targets);
       },
     },
   }],
@@ -602,7 +630,7 @@ card('Maelstrom Charger', {
         const seat = ctx.event?.data?.seat as Seat | undefined;
         if (name === undefined || seat === undefined) return;
         const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && NONUNIT_SPELL_KINDS.has(i.kind));
+          i.card === name && i.controller === seat && !i.copy && NONUNIT_SPELL_KINDS.has(i.kind));
         if (!it) { g.ev('info', `Maelstrom Charger: ${name} already left the stack — no copy.`); return; }
         const pay = ctx.choose('sac', {
           kind: 'payOrDecline', seat: ctx.controller,
@@ -616,22 +644,18 @@ card('Maelstrom Charger', {
           g.ev('info', `Maelstrom Charger: the sacrifice is declined — ${name} is not copied.`);
           return;
         }
-        // the original cast's still-legal targets — the "keep" half of the
-        // printed choice below
-        const original: ResolvedTarget[] = [];
-        for (const part of it.parts) {
-          for (const t of part.targets) {
-            const r = g.resolveTargetRef(t);
-            if (r) original.push(r);
-          }
-        }
         // "you may choose new targets for the copy" — asked BEFORE the
         // sacrifice commits (plan-then-commit: every choose precedes the
-        // mutation, so a suspension replays cleanly). Targets are resolved at
-        // choice time, exactly as the keep-path always resolved them.
-        const targets = chooseCopyTargets(g, ctx, name, seat, it.x, original);
+        // mutation, so a suspension replays cleanly).
+        //
+        // R164: the "keep" half no longer flattens and re-resolves the
+        // original's targets here. The copy is a clone of the ITEM, so each
+        // part keeps its own aim, and a target that dies before the copy
+        // resolves fizzles it through the ordinary R86 path.
+        const declared = it.parts.reduce((n, p) => n + p.targets.length, 0);
+        const targets = chooseCopyTargets(g, ctx, name, seat, it.region, it.x, declared);
         g.destroy(self, 'is sacrificed');
-        runSpellCopy(g, ctx, name, seat, it.x, targets, it.parts[0]?.costPaid, it.parts[0]?.mode);
+        runSpellCopy(g, ctx, it, seat, targets);
       },
     },
   }],
