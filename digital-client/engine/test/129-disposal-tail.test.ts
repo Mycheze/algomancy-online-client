@@ -359,7 +359,7 @@ test('R153 conformance: BOTH destroy() and Hooba-Mon’s exchange go through E.d
     exchangeAway(h2, A2, hooba, 'Skittering Blight');
     assert.equal(ent(h2, hooba), undefined, 'the exchange really happened');
     assert.equal(calls, 1,
-      'exchangeInPlace (src/cards/sets/batch-dark-b.ts) must run its disposal through '
+      'E.exchangeInPlace (Hooba-Mon, Necromorph) must run its disposal through '
       + 'E.disposeToBin. A hand-copy of the sequence is what R146 and R152 each spent a round '
       + 'repairing — push/announce/trash/sweep/erased-pile/delete has eight ordering constraints '
       + 'and not one of them is visible from a call site.');
@@ -386,24 +386,32 @@ test('R153 conformance: neither call site keeps a second copy of the tail', () =
       + 'It belongs in E.disposeToBin (R153/CT-43), which destroy() already calls.');
   }
 
-  // exchangeInPlace(): module-private, so it is read from the file. The slice
-  // is the function's own text, not the whole batch — other cards in the file
-  // legitimately trash and erase.
-  const file = src('src/cards/sets/batch-dark-b.ts');
-  const from = file.indexOf('function exchangeInPlace(');
-  assert.notEqual(from, -1, 'exchangeInPlace has been renamed or removed — retarget this test');
-  const end = file.indexOf('\n}\n', from);
-  assert.notEqual(end, -1, 'could not find the end of exchangeInPlace');
-  const body = file.slice(from, end)
-    // comments out: this file documents the tail it no longer implements, and
-    // the census sweep's own fixture line names `.bin.push(` on purpose
-    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-  assert.match(body, /disposeToBin\(/, 'exchangeInPlace no longer calls the primitive');
+  // exchangeInPlace(): R157 §3 moved it out of batch-dark-b.ts and onto E, so
+  // that Necromorph could stop calling destroy() and share it. It is a real
+  // method now, so it is read off the prototype exactly as destroy() is —
+  // which is strictly better than the file slice this used to take: a moved
+  // method or a renamed file cannot make the check silently stop measuring.
+  const exchangeSrc = E.prototype.exchangeInPlace.toString();
+  assert.match(exchangeSrc, /disposeToBin\(/, 'E.exchangeInPlace no longer calls the primitive');
   for (const banned of ['eraseFromZone(', 'noteTrashed(', '.bin']) {
-    assert.ok(!body.includes(banned),
-      `exchangeInPlace contains \`${banned}\` again — the hand-copy of destroy()'s disposal tail `
+    assert.ok(!exchangeSrc.includes(banned),
+      `E.exchangeInPlace contains \`${banned}\` again — the hand-copy of destroy()'s disposal tail `
       + 'is back. R146 and R152 were two rounds of repairing that copy; R153 removed it. '
       + 'Everything it did lives in E.disposeToBin.');
+  }
+
+  // and NEITHER card may grow one back. Both exchanges are one call to the
+  // primitive now (R157 §3); the file slices below are what would catch a
+  // "just this once" re-inline at either call site.
+  for (const rel of ['src/cards/sets/batch-dark-b.ts', 'src/cards/sets/batch-dark-c.ts']) {
+    const code = src(rel)
+      // comments out: both files document the tail they no longer implement,
+      // and the census sweep's own fixture line names `.bin.push(` on purpose
+      .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+    assert.match(code, /g\.exchangeInPlace\(/, `${rel} no longer calls E.exchangeInPlace`);
+    assert.ok(!code.includes('disposeToBin('),
+      `${rel} calls E.disposeToBin directly — an exchange is E.exchangeInPlace, which does the `
+      + 'slot swap, the despawn and the disposal together (R157 §3).');
   }
 });
 

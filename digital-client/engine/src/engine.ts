@@ -2220,9 +2220,15 @@ export class E {
    * formation gap. Returns the detached mods, or null when the unit was
    * already gone. The despawn event, the R40 mod trashes (afterDespawn) and
    * where the CARD goes stay with the caller — that is where the verbs differ.
+   *
+   * R157 §10: the face is turned back over HERE, before anything reads
+   * `u.card` — so `leftPlayFacts`, the log line, the hand/cache push and the
+   * R69 token sweep all name the FRONT face, which is the card that is really
+   * moving zones.
    */
   private leavePlay(u: Entity): Entity[] | null {
     if (!this.entity(u.id)) return null;
+    this.revertFace(u);
     delete this.s.entities[u.id];
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
     for (const m of mods) {
@@ -2231,6 +2237,70 @@ export class E {
     }
     this.removeFromFormation(u.id);
     return mods;
+  }
+
+  /**
+   * R101/R157 §10 — TURN `u` OVER onto its back face `back`.
+   *
+   * The same entity, the same id, the same slot, counters, damage, mods and
+   * `budgets`: a transform is not a new unit, it is one card with a different
+   * side up (R101's argument, unchanged — `Entity.card` IS the identity, so
+   * assigning it moves stats, name, text, targeting and the client render
+   * together). What R157 §10 adds is that the flip is REVERSIBLE, so the front
+   * face has to be remembered rather than discarded, and `Entity.frontFace` is
+   * where. That pairing is the whole reason this is a primitive and not two
+   * assignments in card code: `frontFace` set without `card` moved, or the
+   * other way round, is a card that is half turned over.
+   *
+   * ⚠ It does NOT set `token`, and that is the ruling: *"the back is NOT a
+   * token"*. Beyond, Codex Incarnate's type line says "Book Token Unit", which
+   * is what keeps it out of every deck list and draft pool (registry.ts), but
+   * the ENTITY is the physical Scholar of the Void the whole time — so it bins
+   * as Scholar and can be recurred, instead of being erased out of existence.
+   *
+   * Turning an already-turned card over again is a no-op with a log line, not
+   * a second layer: nothing in the pool grants a second back face, and
+   * silently overwriting `frontFace` would lose the physical card.
+   */
+  transformFace(u: Entity, back: CardName): void {
+    if (u.frontFace) {
+      this.ev('info', `${u.card} is already turned over — it has no second back face.`);
+      return;
+    }
+    const front = u.card;
+    u.frontFace = front;
+    u.card = back;
+    this.ev('info', `${front} transforms into ${back} — the same card, turned over.`);
+  }
+
+  /**
+   * R157 §10 — turn a transformed card BACK over as it leaves play: *"In all
+   * zones, other than play, it exists as the front side."*
+   *
+   * Run at the TOP of every route out of play (`leavePlay` for recall and
+   * cache, `disposeToBin` for a death and an exchange, `eraseFromPlay`), so
+   * every consumer downstream — the bin/hand/cache push, `leftPlayFacts`, the
+   * trash record, the R69 sweep, the erased pile and the log — sees the front
+   * face without any of them knowing transforms exist. A no-op for the
+   * overwhelming majority of entities, which were never turned over.
+   *
+   * The 'died'/'despawned' event therefore names the FRONT face too. That is
+   * deliberate: the event's job is to tell a listener which CARD moved and
+   * where it now is (R70/R140 — a listener reaches into the bin for it), and
+   * the card in the bin is the front one. Nothing in the pool triggers off a
+   * back face's name.
+   */
+  private revertFace(u: Entity): void {
+    if (!u.frontFace) return;
+    const back = u.card;
+    u.card = u.frontFace;
+    delete u.frontFace;
+    // R157 §10: the flip is a real, visible change of what the card IS —
+    // "it went to the bin as a 0/2 Scholar" is a fact a player plans around
+    // (it is recurrable now), so it is announced rather than done silently.
+    this.ev('info',
+      `${back} turns back over — it leaves play as ${u.card}, the front face of the card.`,
+      { unit: u.id, card: u.card, back });
   }
 
   /** The tail cacheUnit() and recall() share, once their despawn event is the
@@ -2275,21 +2345,40 @@ export class E {
    * designer ruling — Caleb's 2025-06-15 answer is about a HAND and there is
    * no statement about the cache at all. It is here because the alternative is
    * one zone behaving differently from the other two for no stated reason.
+   *
+   * R157 §27 — `opts.to` is WHOSE CACHE, and it exists because the owner
+   * default is only a default: *"Controller's cache — the printed text wins.
+   * Printed text always wins."* Grob prints "target unit's CONTROLLER caches
+   * it", and after a control change (Abduct, Download, Mindwarp Sporefrog,
+   * Bloppert) the controller is not the owner. So this grows the same seat
+   * parameter `recall(u, { to })` already has, for the same reason and with
+   * the same default — a card that says nothing about a seat (Waxen Witness,
+   * "Cache target unit") still goes to its owner's cache.
+   *
+   * ⚠ Only the DESTINATION moves. The card is still the target's, and
+   * `leftPlayFacts` still reports `owner`; caching to a controller is a zone
+   * change, not a change of ownership, so a Grob'd stolen card sits in the
+   * thief's cache and is theirs to release — which is exactly what the
+   * printed text buys.
    */
-  cacheUnit(u: Entity, opts: { prophecy?: string; playable?: boolean } = {}): void {
+  cacheUnit(u: Entity, opts: { prophecy?: string; playable?: boolean; to?: Seat } = {}): void {
     const mods = this.leavePlay(u);
     if (!mods) return;
-    const evData = { ...this.leftPlayFacts(u), to: 'cache' };
+    const seat = opts.to ?? u.owner;
+    // R70: the facts ride the event. `cache` mirrors recall()'s `hand` — WHERE
+    // the card went, which a listener cannot recover from `owner` once the two
+    // can differ.
+    const evData = { ...this.leftPlayFacts(u), to: 'cache', cache: seat };
     this.ev('despawned',
-      `${u.card} leaves play for ${this.pname(u.owner)}'s cache` +
+      `${u.card} leaves play for ${this.pname(seat)}'s cache` +
       (mods.length ? ` (its ${mods.length} mod(s) stay behind → bin)` : '') +
       (u.token ? ', then erased (token).' : '.'),
       evData);
     this.afterDespawn(u, mods);
-    const cc = this.cacheCard(u.owner, u.card, 'play', opts);
+    const cc = this.cacheCard(seat, u.card, 'play', opts);
     // R69's sweep, on the cache this time — `cc.uid` names the entry we just
     // made, so a second copy of the same card already sitting there is safe
-    if (u.token) this.eraseFromZone(u.owner, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, { uid: cc.uid });
+    if (u.token) this.eraseFromZone(seat, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, { uid: cc.uid });
   }
 
   /** Where cache entry `uid` sits in `seat`'s cache right now, or -1 when it
@@ -3834,6 +3923,11 @@ export class E {
     announce: (at: { binSeat: Seat; binIndex: number; unstable: boolean }) => void,
     opts: { binTo?: Seat; keepBinned?: boolean } = {},
   ): void {
+    // R157 §10: turn a transformed card back over FIRST — before the bin
+    // seat, the Unstable question, any push, the announce or the trash. The
+    // card that reaches the bin is the FRONT face, and everything below reads
+    // `u.card`.
+    this.revertFace(u);
     const binSeat = opts.binTo ?? u.owner;
     // R96/R118/#89: FOUR ways in, unioned by E.isUnstable. `mods.length` is the
     // derived one (a modded card is Unstable — R69); `u.unstable` is the
@@ -4062,6 +4156,92 @@ export class E {
       // why disposeToBin deletes them only at the very bottom)
       this.fireEvent('died', evDied, u);
     }, opts);
+  }
+
+  /**
+   * R157 §3 — AN EXCHANGE. `u` leaves play and `name` arrives in its place,
+   * taking its region and, in battle, its exact formation slot.
+   *
+   * > *"It's not a death, but it is a despawn and trashing. Weird corner
+   * > case."* (Bena, 2026-08-25.)
+   *
+   * That sentence is the whole method, and it is why an exchange cannot be
+   * `destroy()`:
+   *
+   *  · NOT A DEATH. No 'died' event, so no death trigger fires — not the
+   *    exchanged unit's own "when I die", not an ally's "whenever an ally
+   *    dies", not the enemy's "whenever a unit dies", and no battle
+   *    `allyDeaths` bump. The card was not killed; it was swapped out.
+   *  · IS A DESPAWN. A 'despawned' event, fired (not merely logged) anchored
+   *    on the departing entity, so "whenever a unit despawns" hears it and the
+   *    unit's OWN donated [Augment] text is scanned — R152 was the round that
+   *    repaired exactly this, when the announce logged a despawn it never
+   *    fired and every despawn watcher in the game was blind to an exchange.
+   *  · IS A TRASHING. Which is `E.disposeToBin`, unchanged and shared verbatim
+   *    with `destroy()`: push the nontoken mods, push the body, announce,
+   *    trash each one anchored (R70), sweep by slot index highest-first if the
+   *    body is {Unstable} (R137/R140), else sweep a token body (R69), file the
+   *    token mods on the erased pile (R65), delete the mod entities last.
+   *
+   * ⚠ WHY IT IS HERE and not in card code. It was a module-private function in
+   * batch-dark-b.ts serving Hooba-Mon, while Necromorph — the other exchange
+   * in the pool, and the one whose own printed text says "Exchange" — called
+   * `destroy(victim, 'is deleted')` and fired every death trigger in the
+   * region. R157 §3 makes them one behaviour, and the codebase's own lesson
+   * (R146, R152, R153/CT-43: three rounds of repairing a hand-copy of the
+   * disposal tail) says the fix for two routes that must agree is ONE method,
+   * not a second copy. `test/135-exchange-and-zones.test.ts` spies on this to
+   * prove both cards call it.
+   *
+   * `controller` is who the REPLACEMENT enters play under: its own controller
+   * for Necromorph ("in its controller's bin" — the victim's side keeps it),
+   * the triggering unit's controller for Hooba-Mon. Returns the fresh unit, or
+   * null when `u` was already gone.
+   */
+  exchangeInPlace(u: Entity, name: CardName, controller: Seat): Entity | null {
+    if (!this.entity(u.id)) return null;
+    // R152: resolved BEFORE `u` leaves the table, exactly as destroy() does —
+    // a mod id whose entity is already gone is not a mod any more
+    const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
+    const b = this.s.battle;
+    let slot: { col: EntityId[]; idx: number } | null = null;
+    if (b) {
+      for (const col of [...b.columns, ...Object.values(b.blocks)]) {
+        const idx = col.indexOf(u.id);
+        if (idx !== -1) { slot = { col, idx }; break; }
+      }
+    }
+    const outgoing = u.card;
+    const fresh = this.spawnUnit(controller, name, u.region);
+    if (slot) {
+      slot.col[slot.idx] = fresh.id;   // take the exact position in play
+      this.ev('info', `${name} takes ${outgoing}'s position in the formation.`);
+    }
+    delete this.s.entities[u.id];
+    this.disposeToBin(u, mods, () => {
+      // The unslot rides in the announce window because it belongs there:
+      // after the pushes, before the trashes. `removeFromFormation` is the
+      // wrong call — its R72 gap-closing would be looking at a column that has
+      // no gap, because `fresh` is standing in it — so this is the plain
+      // detach, for the other columns and the sent-attacker list.
+      if (b) {
+        for (const col of [...b.columns, ...Object.values(b.blocks)]) {
+          const i = col.indexOf(u.id);
+          if (i !== -1) col.splice(i, 1);
+        }
+        const si = b.sentAttackers.indexOf(u.id);
+        if (si !== -1) b.sentAttackers.splice(si, 1);
+      }
+      // R152(1): logged AND fired. Anchored on `u`, so its own donated
+      // [Augment] text is scanned. `u.card` is read live — R157 §10's
+      // revertFace ran at the top of disposeToBin, so a transformed body
+      // announces its despawn under the front face it is really leaving as.
+      const ev = this.ev('despawned', `${u.card} is exchanged for ${name}`
+        + (mods.length ? ` (its ${mods.length} mod(s) leave with it).` : '.'),
+        { ...this.leftPlayFacts(u), to: 'bin' });
+      this.fireEvent('despawned', ev, u);
+    });
+    return fresh;
   }
 
   /**
@@ -6211,6 +6391,10 @@ export class E {
    */
   eraseFromPlay(u: Entity, why = ''): void {
     if (!this.entity(u.id)) return;
+    // R157 §10: the erased pile is a zone other than play, so a transformed
+    // card is recorded there under its FRONT face — the piece of cardboard
+    // that left the game is the printed card, not the side it was showing.
+    this.revertFace(u);
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
     delete this.s.entities[u.id];
     for (const m of mods) delete this.s.entities[m.id];

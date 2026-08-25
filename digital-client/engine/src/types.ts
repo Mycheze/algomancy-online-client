@@ -232,6 +232,31 @@ export interface Entity {
    * Additive/optional, so states serialized before the field still load.
    */
   named?: CardName;
+  /**
+   * R101/R157 §10 — this physical card is TURNED OVER. `card` is the BACK
+   * face it is currently showing; this is the FRONT face printed on the other
+   * side of the same piece of cardboard.
+   *
+   * The owner (2026-08-25), asked what happens to a transformed Scholar of the
+   * Void when it leaves play: *"Turns back over. In all zones, other than
+   * play, it exists as the front side. And the back is NOT a token."* So a
+   * transform is no longer the permanent, total identity change R101 assumed
+   * (see `copies`' note, which said so): PLAY is the only zone where the back
+   * face exists at all, and the card that reaches a bin, a hand, a cache or
+   * the erased pile is the front one.
+   *
+   * That makes "which side is up" a fact about the ENTITY — it lives here
+   * rather than in a registry lookup, so the engine never has to know which
+   * cards have back faces, a GRANTED transform would work with no new data,
+   * and the pairing survives serialization. Written only by
+   * `E.transformFace`, cleared only by `E.revertFace`, which every leave-play
+   * route runs (`E.leavePlay`, `E.disposeToBin`, `E.eraseFromPlay`).
+   *
+   * Additive/optional, so states serialized before the field still load — and
+   * a state saved mid-transform under the old code reads as "not turned over",
+   * which is the pre-R157 behaviour rather than a crash.
+   */
+  frontFace?: CardName;
   /** unit token (erased on leaving play, survives regroup) */
   token?: boolean;
   tokenStats?: [number, number];

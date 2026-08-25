@@ -365,16 +365,17 @@ const BESPOKE_REGIONS: Bespoke[] = [
     why: '"its controller creates a 3/3 unit IN ITS POSITION IN PLAY" — the 3/3 takes the '
       + 'erased unit\'s region and its exact formation slot (local `region` = the target\'s)',
   },
-  {
-    where: 'sets/batch-dark-b.ts', expr: 'self.region', card: 'Bloated Manablub (exchangeInPlace)',
-    why: 'a transform-in-place: the replacement body takes the old one\'s region AND its slot. '
-      + 'Not a creation from nothing — nothing arrives from elsewhere',
-  },
-  {
-    where: 'sets/batch-dark-c.ts', expr: 'victim.region', card: 'Necromorph',
-    why: 'it puts the victim back where the victim was — the printed text names the place by '
-      + 'naming the unit',
-  },
+  // ⚠ TWO ENTRIES DELETED, R157 §3 (2026-08-25) — and their absence is now the
+  // stronger guarantee. `sets/batch-dark-b.ts | self.region` (Hooba-Mon's
+  // exchange) and `sets/batch-dark-c.ts | victim.region` (Necromorph) were the
+  // pool's two EXCHANGES, both hand-placing a replacement body into the
+  // outgoing unit's region and slot. R157 §3 ruled an exchange a despawn and a
+  // trashing but NOT a death, which Necromorph's `destroy()` could not express,
+  // so both moved onto one engine primitive — `E.exchangeInPlace`, which does
+  // the spawn. There is no card-code creation left to exempt: this sweep walks
+  // card sources only, and an exchange no longer creates anything in one.
+  // Re-adding either entry means someone has re-inlined an exchange; send them
+  // to E.exchangeInPlace and to test/129-disposal-tail.ts, which guards it.
   {
     where: 'sets/batch-wood-a.ts', expr: 'region', card: 'makeOneOne (shared helper)',
     why: 'the helper\'s own REQUIRED parameter. R115 deleted its `?? homeRegion(seat)` default; '

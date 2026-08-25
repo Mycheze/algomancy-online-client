@@ -71,10 +71,15 @@
  * ✔ "[Battle]" on Grox's activated ability is `ActivatedAbility.timing` now
  *    (R49), enforced at ACTIVATION: Grox is neither offered nor accepted during
  *    deployment.
- *  - "EXCHANGE" (Necromorph) is modelled as delete-then-spawn: the unit in
- *    play is deleted (dies → its owner's bin → R40 trash, death triggers fire)
- *    and the bin unit is spawned in its place, in the same region and, in
- *    battle, in the same formation slot (the ambushSwap pattern).
+ * ✔ "EXCHANGE" (Necromorph) IS NOT A DEATH as of R157 §3. This entry used to
+ *    read "modelled as delete-then-spawn: the unit in play is deleted (dies →
+ *    its owner's bin → R40 trash, DEATH TRIGGERS FIRE)". Bena, 2026-08-25:
+ *    "It's not a death, but it is a despawn and trashing. Weird corner case."
+ *    So the card calls `E.exchangeInPlace` — the primitive Hooba-Mon already
+ *    used, lifted out of batch-dark-b for this — which spawns the replacement
+ *    into the victim's region and formation slot and disposes the victim
+ *    through `E.disposeToBin`: bin, R40 trash, R137/R140 Unstable sweep, R69
+ *    token sweep, R65 erased pile, and a FIRED 'despawned' with no 'died'.
  * ✔ ENTROPIC ENTITY's "a unit with counters on it despawns" reads
  *    `ev.data.counters`: 'died'/'despawned' fire after the entity is already
  *    out of s.entities, so the event now carries the leaving unit's counter
@@ -538,9 +543,22 @@ card('Murkdrop Distiller', {
 // which is what TargetCtx.chosen is for; and the first slot is narrowed to
 // units whose controller actually has a replacement, so the spell can never
 // be aimed somewhere it must do nothing.
-// The exchange is still delete-then-spawn (⚠ header): the outgoing unit dies
-// (→ bin → R40 trash, death triggers fire) and the incoming one takes its
-// region and, in battle, its formation slot.
+//
+// R157 §3 — IT IS NOT A DEATH. This card called `g.destroy(victim, 'is
+// deleted')`, which fired every death trigger in the region: the victim's own
+// "when I die", its controller's "whenever an ally dies", the caster's
+// "whenever a unit dies", and in battle the `allyDeaths` counter. Bena,
+// 2026-08-25, asked directly: *"It's not a death, but it is a despawn and
+// trashing. Weird corner case."*
+//
+// So the exchange goes through `E.exchangeInPlace` — the primitive Hooba-Mon
+// already used, lifted out of batch-dark-b.ts for exactly this reason. It
+// spawns the replacement into the victim's region and formation slot, then
+// disposes the victim through `E.disposeToBin`: bin, R40 trash, R137/R140
+// Unstable sweep, R69 token sweep, R65 erased pile, and a FIRED 'despawned'
+// with no 'died' anywhere. The bin removal stays here because it is this
+// card's own targeting (R124's `removeFromBin`, its 'revived' verb, and the
+// R56 re-check above), not part of the exchange.
 const necroSwapFor = (g: E, victimCard: string, seat: Seat): [string, number][] =>
   binMatches(g, seat, n => isUnitCard(n) && manaOf(n) <= manaOf(victimCard));
 card('Necromorph', {
@@ -580,14 +598,10 @@ card('Necromorph', {
         return;
       }
       const name = b.binCard.card;
-      const slot = formationSlot(g, victim.id);
       g.removeFromBin(owner, b.binCard.index, 'revived');   // R124
-      const fresh = g.spawnUnit(owner, name, victim.region);
-      if (slot) {
-        slot.col[slot.idx] = fresh.id;                        // take the exact slot…
-        g.ev('info', `${name} takes ${victim.card}'s position in the formation.`);
-      }
-      g.destroy(victim, 'is deleted');                        // …then the old one leaves
+      // R157 §3: a despawn and a trashing, and NOT a death. The replacement
+      // takes the victim's region and slot inside the primitive.
+      g.exchangeInPlace(victim, name, owner);
     },
   },
 });
@@ -750,26 +764,30 @@ card('Rotling', {
 //  · KEEPS ITS MODS, and stays {Unstable} if it had any (R69/R96): the mods
 //    are still physically under the card. It also keeps its FORMATION SLOT,
 //    for free — the columns store ids, and the id did not change.
-//  · BECOMES A TOKEN (`self.token = true`). This is the consequential one.
-//    Beyond's type line says "Book TOKEN Unit", and the type line is this
-//    engine's own definition of a token (DECK_LIST's filter, ui/inspect's
-//    `tokenOnlyName`). `Entity.token` is the flag that carries that fact into
-//    every zone the body can leave play into, and setting it makes ALL of them
-//    correct with no new code: dying pushes to the bin and R69's state-based
-//    sweep immediately erases it with a public record (engine.ts's "then
-//    erased (token)"), and recall-to-hand / cache paths erase it the same way.
-//    Leaving the flag off would put the literal name "Beyond, Codex Incarnate"
-//    in a bin as though it were a card — a 0-cost 8/3 that every exhume,
-//    recall and bin-play effect in the pool could then fetch, which is both
-//    broken and a thing the owner explicitly said cannot happen ("can't be
-//    played cause it's on the back of a card").
-//    ⚠ REJECTED ALTERNATIVE: transform BACK to Scholar of the Void on the way
-//    out, so the physical card reaches the bin — the Magic rule for
-//    double-faced cards. It is a real reading and it loses the player less,
-//    but nothing on either face prints it, there is no Algomancy source for
-//    it anywhere in the corpus, and it needs a SECOND identity switch wired
-//    into the death path. Flagged for the owner in the report instead of
-//    invented here.
+//  · TURNS BACK OVER ON THE WAY OUT, and is NOT A TOKEN. ⚠ THIS REVERSES
+//    R101, which shipped `self.token = true` and called the transform
+//    permanent. R101's reasoning was that Beyond's type line says "Book TOKEN
+//    Unit", so `Entity.token` should carry that into every zone the body can
+//    leave play into — and it flagged the alternative ("transform BACK to
+//    Scholar on the way out, so the physical card reaches the bin") as a real
+//    reading it would not invent. R157 §10 is the owner ruling on it, and it
+//    is the alternative, in both halves at once. Bena, 2026-08-25:
+//
+//      "Turns back over. In all zones, other than play, it exists as the
+//       front side. And the back is NOT a token."
+//
+//    So `E.transformFace` records the front face on the entity and leaves
+//    `token` alone, and `E.revertFace` — run at the top of every route out of
+//    play — flips it back. The consequence R101 was avoiding does not arise:
+//    the name that reaches the bin is "Scholar of the Void", never "Beyond,
+//    Codex Incarnate", so no exhume, recall or bin-play effect can ever fetch
+//    a 0-cost 8/3, and the owner's "can't be played cause it's on the back of
+//    a card" still holds. What changes is that the PLAYER KEEPS THE CARD: a
+//    transformed Scholar that dies is a Scholar in the bin, recurrable like
+//    any other card, instead of being erased out of the game for having used
+//    its own printed ability. Beyond's "Token" type line still keeps it out of
+//    DECK_LIST and every draft pool (registry.ts) — that filter reads the TYPE
+//    LINE and never needed `Entity.token`.
 //
 // THE [Augment] HALF, refused on purpose. This whole text sits under
 // [Augment], so it transfers to a HOST when Scholar is applied as an augment
@@ -836,12 +854,16 @@ card('Scholar of the Void', {
         // …and turn the card over. Same entity, same id, same slot, same
         // counters/damage/mods — only the face, and with it every stat, name
         // and text lookup, changes.
-        self.card = back;
-        self.token = true;
+        //
+        // R157 §10: `E.transformFace` remembers the FRONT face on the entity,
+        // and it does NOT set `token`. Both halves are the ruling, verbatim:
+        // *"Turns back over. In all zones, other than play, it exists as the
+        // front side. And the back is NOT a token."*
+        g.transformFace(self, back);
         g.ev('info',
           `Scholar of the Void transforms into ${back} — the same unit, now a `
           + `${beyond.power}/${beyond.toughness} ${beyond.type} (it keeps its counters, damage and `
-          + 'mods, and as a token it is erased rather than binned when it leaves play).');
+          + 'mods, and it turns back over into Scholar of the Void the moment it leaves play).');
       },
     },
   }],

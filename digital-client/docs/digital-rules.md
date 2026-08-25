@@ -10279,7 +10279,18 @@ Already correct (`castCost: { kind: 'eraseBin', n: 'X' }`). No minimum — see 2
 > you do from hand, so it can be done during battle just fine."*
 
 The missing `{Battle}` marker is not a restriction. The discard-me mode must be
-usable in battle; inheriting deploy timing made it a dead mode.
+usable in battle. ⚠ ~~inheriting deploy timing made it a dead mode~~ — **the
+consequence half of this entry was wrong, and no code changed for it
+(2026-08-25, R160's round).** R65 had already ruled a missing marker to be no
+restriction, and the engine implements it in exactly that direction:
+`(c.discardMe.timing ?? c.timing) !== 'battle'` keeps a {Battle}-**marked** line
+(Nothyr) out of DEPLOYMENT, and the battle-window action list offers every
+payable discard-me line with no timing gate at all. Measured: Dropslime
+discarded through its own cost line during a battle deals 1 (its own trash bumps
+the ledger before the trigger fires). The owner's answer CONFIRMS the shipped
+behaviour rather than changing it. Pinned by
+`test/135-exchange-and-zones.test.ts`; the two comments in `batch-dark-b.ts`
+that asserted the opposite are corrected.
 
 ### 9. Unqualified "gain rot" is the controller
 > *"Cards always specify when something is an opponent. But just 'Gain rot'
@@ -10390,3 +10401,56 @@ The permission must confer {Virus}, not merely the battle-window timing.
 > *"Controller's cache — the printed text wins. Printed text always wins."*
 Grob caches to the target's CONTROLLER. `cacheUnit` grows a `to` seat, as
 `recall` already has.
+
+---
+
+## R160 — WHEN a transformed card turns back over, and what the event says it is
+
+**Engine's call, 2026-08-25, implementing [R157](#r157--the-owners-answers-to-the-27-card-questions-of-2026-08-25) §3/§10.** R157 §10 settles WHAT
+happens — *"Turns back over. In all zones, other than play, it exists as the
+front side. And the back is NOT a token."* — and leaves two things the engine
+has to decide because a table never has to.
+
+**1. The flip happens at the leave-play boundary, before anything reads the
+card.** `E.revertFace` runs at the TOP of every route out of play —
+`E.leavePlay` (recall, cache), `E.disposeToBin` (a death and an exchange) and
+`E.eraseFromPlay` — so the bin/hand/cache push, the R40 trash record, the R69
+token sweep, the R65 erased pile, the log line **and the `died`/`despawned`
+event itself** all name the FRONT face. The event data is the load-bearing part:
+R70/R140 exist so that a listener can reach into the bin for the card it just
+saw leave (Biomass Devourer erases it outright, Entropic Entity reads its
+counters), and if the event named "Beyond, Codex Incarnate" while the bin held
+"Scholar of the Void" that listener would find nothing. Nothing in the pool
+triggers off a back face's name, so there is no cost to the choice.
+
+Consequence worth knowing at the table: a transformed unit that dies **is
+announced as its front face**. "Beyond, Codex Incarnate turns back over — it
+leaves play as Scholar of the Void" is logged first, so the flip is visible
+rather than inferred.
+
+**2. The erased pile takes the front face too.** R157 §10 says "in all zones,
+other than play", and the public erased pile is a record of cards that left the
+game. So a transformed Scholar caught by Banishment is recorded as **Scholar of
+the Void**. ⚠ Only `E.eraseFromPlay` does this; the three card-side erase copies
+that predate the primitive (`helpers.ts`'s `eraseFromPlay`,
+`batch-hybrids-ld-a`'s `eraseUnit`, `batch-water-a`'s Celestial Purge) do not,
+and folding them in is the separate sweep the primitive's own comment already
+asks for.
+
+**Which side is up is a fact about the ENTITY** (`Entity.frontFace`), not a
+registry lookup: `E.transformFace` sets the pair and `E.revertFace` clears it,
+so the engine never has to know which cards have back faces, a GRANTED
+transform would work with no new data, and the pairing survives serialization.
+This reverses the note on `Entity.copies`, which said a transform "could get
+away with mutating" the identity "because a transform is permanent and total".
+It is not permanent.
+
+**And an exchange is one primitive.** R157 §3 made Hooba-Mon and Necromorph the
+same operation; `E.exchangeInPlace(unit, name, controller)` is it — spawn the
+replacement into the outgoing body's region and formation slot, then dispose the
+body through `E.disposeToBin` with a FIRED `despawned` and no `died` anywhere.
+Its despawn event now rides `leftPlayFacts` like every other leave-play event,
+which it did not before: the hand-rolled `{ unit, card, seat, region }` it used
+to emit carried no `counters`, so Entropic Entity ("a unit **with counters** on
+it despawns") was blind to an exchange. Same defect shape as R152's, one field
+over. Pinned by `test/135-exchange-and-zones.test.ts`.

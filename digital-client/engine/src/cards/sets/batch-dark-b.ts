@@ -61,7 +61,11 @@
  *    re-parented by hand (modOf/region/controller + the two mods arrays), the
  *    way Reconfigure already does it. No 'modApplied' event fires — moving is
  *    not applying (R37's spirit), so nothing re-triggers off it.
- *  - EXCHANGING A UNIT (Hooba-Mon) likewise: the exchanged unit leaves play
+ *  - EXCHANGING A UNIT (Hooba-Mon) HAS a primitive as of R157 §3 —
+ *    `E.exchangeInPlace`, lifted out of this file so Necromorph (batch-dark-c)
+ *    could stop calling `destroy()` and share it. The rest of this bullet is
+ *    what that primitive does, and it is now stated once in engine.ts:
+ *    the exchanged unit leaves play
  *    WITHOUT dying — no DEATH trigger — straight into its owner's bin, which
  *    is a trash from play (R40), and an {Unstable} body is swept out of that
  *    bin again (R137/R146). R152: it is not silent, though. The 'despawned'
@@ -100,24 +104,31 @@
  *    spell. Bena to rule; do not silently "fix" it.
  *  - Legion of the Depths prints "gain 2 Rot" with no subject; read as its
  *    controller gaining it (the drawback half of a free 8-mana 0/8).
- *  - Dropslime's cost line extracts as `{ cost: '', mana: 1 }` with no timing
- *    marker, while AlgomancyCards/light-and-dark-transcription-notes.json says
- *    the printed line has "its own dark pip". Two consequences: the pip is
- *    missing from printed.json, and with no {Battle} marker the mode is
- *    DEPLOYMENT timing — where the per-battle trash ledger is 0, so playing
- *    Dropslime through its own cost line can never deal damage. Either the
- *    marker was lost in transcription or the card only works when something
- *    else trashes it mid-battle. Not "fixed" here.
+ *  - Dropslime's cost line extracts as `{ cost: '', mana: 1 }`, while
+ *    AlgomancyCards/light-and-dark-transcription-notes.json says the printed
+ *    line has "its own dark pip". The PIP is still missing from printed.json
+ *    and that is still open. ⚠ The second half of this note — "with no
+ *    {Battle} marker the mode is DEPLOYMENT timing … so playing Dropslime
+ *    through its own cost line can never deal damage" — WAS WRONG WHEN
+ *    WRITTEN and is struck out. R65 had already made the discard-me mode
+ *    instant-speed: the timing field is consulted in exactly one direction
+ *    (apply.ts's `(c.discardMe.timing ?? c.timing) !== 'battle'` keeps a
+ *    {Battle}-MARKED line out of DEPLOYMENT — Nothyr), and the battle-window
+ *    action list offers every payable discard-me line with no timing gate at
+ *    all. R157 §8 confirms the reading rather than changing anything: Bena,
+ *    2026-08-25, "It doesn't have a battle icon, but that is just an
+ *    activated ability that you do from hand, so it can be done during battle
+ *    just fine." Pinned by test/135-exchange-and-zones.test.ts.
  *
  * Writhing Host is LIVE as of R123 (it was PARKED here through R97): the
  * bin-anchored grant is `CardBehavior.binPlayPermissions`, gathered by
  * `E.binHasteGrantorIndex` over the owner's own bin, and the erase is paid in
  * apply.ts's `playAtTiming` with the play's other costs.
  */
-import type { CardName, EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
+import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, isSelfMod, type EffectCtx, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, manaOf, isUnitCard, unslot } from './helpers.ts';
+import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -312,10 +323,26 @@ card('Cthyrian Culler', {
 // number of cards trashed in this battle to any target." — d/2 1/1 Blight
 // Unit. The discard-me play mode is entirely engine-side (printed.discardMe,
 // R40); this scripts only the trigger, which fires FROM THE BIN however the
-// card got there (discard, mill, sacrifice, death). ⚠ the printed cost line
-// carries no {Battle} marker, so that mode inherits the card's own DEPLOYMENT
-// timing — and the trash ledger is battle-scoped, so discarding it yourself
-// always counts 0. See the transcription note in the header.
+// card got there (discard, mill, sacrifice, death).
+//
+// R157 §8 — THE MODE WORKS IN BATTLE, and it always did under R65. The ⚠ that
+// used to sit here ("the printed cost line carries no {Battle} marker, so that
+// mode inherits the card's own DEPLOYMENT timing — and the trash ledger is
+// battle-scoped, so discarding it yourself always counts 0") was wrong about
+// the ENGINE, not just about the card. Bena, 2026-08-25: "It doesn't have a
+// battle icon, but that is just an activated ability that you do from hand, so
+// it can be done during battle just fine."
+//
+// R65 had already read a missing {Battle} marker as NO RESTRICTION rather than
+// as a deployment lock — "discarding is not playing (R37): the card never goes
+// to the stack, never spawns, and the only thing that reaches anyone is its own
+// 'when I am trashed' trigger" — so the timing field is consulted in exactly
+// one direction: `(c.discardMe.timing ?? c.timing) !== 'battle'` keeps a
+// {Battle}-MARKED line (Nothyr) out of DEPLOYMENT, and the battle-window action
+// list offers every payable discard-me line with no timing gate at all. The
+// ledger Dropslime then reads is the live per-battle count INCLUDING its own
+// trash, so discarding it into your own attack deals 1 as a floor. Pinned by
+// test/135-exchange-and-zones.test.ts.
 // ⚠ ctx.sourceId resolves to
 // nothing in a trash trigger, so nothing here reads it. The count is the
 // engine's per-battle trash ledger (bumped BEFORE the trigger fires, so my own
@@ -414,114 +441,29 @@ card('Grim Bargain', {
 // exactly like an Ambush swap, but sends the outgoing unit to its owner's BIN
 // — from play, so it is trashed (R40) — without dying (⚠ header).
 //
-// R146: …and if the outgoing body is {Unstable}, that bin entry is REPLACED by
-// an erase, exactly as it would be if the body had died. This is the ordinary
-// case rather than the exotic one: on the augment line `self` is the HOST
-// WEARING Hooba-Mon, so it carries at least one mod and is Unstable by
-// derivation (R69/R79). The line used to stop at the trash and leave the card
-// sitting in the bin, recurrable — the only bin entry in card code that did.
-// R137 is why the erase is not "skip the bin": from PLAY the card really does
-// enter the bin, is trashed there, and is only then swept out. Ordering below
-// is destroy()'s, statement for statement — push, trash, sweep — because a
-// second shape for the same disposal is how the two answers drift apart.
+// R146 / R152 / R153 / R157 §3 — FOUR ROUNDS, and the answer is one engine
+// primitive. `E.exchangeInPlace(unit, name, controller)` is the whole
+// operation now: the replacement takes the outgoing body's region and its
+// exact formation slot, and the outgoing body goes through `E.disposeToBin` —
+// the SAME method `destroy()` calls — for its bin push, its R40 trash, its
+// R137/R140 Unstable sweep, its R69 token sweep and its R65 erased-pile line.
 //
-// R152 finishes that job. R146 aligned the BODY's disposal with destroy() and
-// left three disagreements standing; two of them were here.
+// R157 §3 is what finally moved it out of this file. Bena, 2026-08-25, asked
+// whether an exchange is a death: *"It's not a death, but it is a despawn and
+// trashing. Weird corner case."* Hooba-Mon was already right; Necromorph
+// (batch-dark-c.ts), the other exchange in the pool, called
+// `g.destroy(victim, 'is deleted')` and fired every death trigger in the
+// region. Two cards, one printed operation, two implementations — the exact
+// shape R153/CT-43 removed from the disposal tail — so the function this file
+// used to own is `E.exchangeInPlace` and both cards call it. Read that method
+// for the argument in full; nothing about it is Hooba-Mon-specific.
 //
-//  (1) the despawn was LOGGED and never FIRED. `g.ev('despawned', …)` writes
-//      the line; `g.fireEvent('despawned', …)` is what a listener sees, and
-//      engine.ts calls it in exactly one place (afterDespawn). So an exchange
-//      was invisible to every "whenever a unit despawns" ability in the game,
-//      including the exchanged unit's own [Augment] despawn text. Same fix as
-//      afterDespawn: hold the event object and fire it, anchored on `self` so
-//      the departing unit sees its own departure (fireEvent's `dyingUnit`).
-//
-//  (2) the mods were DELETED — `delete g.s.entities[modId]` — with no bin, no
-//      trash and no 'erased' event, so a nontoken mod (Hooba-Mon itself, on
-//      the augment line) left the game with no record and never reached the
-//      public erased pile (R65). R137 states the principle for exactly this:
-//      "A nontoken mod on a dying carrier enters a bin and is trashed when the
-//      carrier is RECALLED or CACHED (leavePlay + afterDespawn, R70); if
-//      killing the carrier instead skipped that trash, the same mod card would
-//      behave differently depending on how its host left play." An exchange is
-//      a THIRD way the host leaves play and was the last one still skipping
-//      it. Nontoken mods now bin → trash → get swept with the body; a TOKEN
-//      mod has no card of its own (R69) and only reaches the erased pile, via
-//      the same bulk 'erased' event destroy() emits for them.
-//
-//  (3) a TOKEN BODY exchanged out of play reached no zone at all — the
-//      `if (!self.token)` guard skipped the bin, the trash and the sweep,
-//      while a DYING token bins, is trashed and is only then swept (R40's
-//      2026-08-21 amendment; destroy() does that today). R146 recorded this as
-//      an open question rather than fixing it. IT IS NOW RULED. Bena,
-//      2026-08-25:
-//
-//        "For all intents and purposes a token is a normal thing that just
-//         ceases to exist in all zones other than in play/stack whenever SBAs
-//         are checked."
-//
-//      "A normal thing that CEASES TO EXIST" — in that order. It really enters
-//      the bin, it is really trashed there, and the state-based check then
-//      removes it. It is not a thing that was never in the bin. So the guard is
-//      gone: the body takes the same path token or not, and only the SWEEP asks
-//      about tokenhood, exactly as destroy() does. Note the ruling is about a
-//      ZONE, not about dying — which is why it settles an exchange without
-//      anyone having to decide whether "exchanged" is "died".
-//
-//      Bena's aside in the same answer — "It can't target a token in the bin
-//      (tokens are removed from existence during SBA checks…)" — is about the
-//      OTHER side of the exchange, the card pulled OUT of the bin, and needs no
-//      code: a bin holds card names and nothing ever puts a token's name there.
-//      The HOST being a token is a different and genuinely reachable case (a
-//      Unit Token wearing Hooba-Mon on the augment line), and it is what this
-//      branch is for.
-function exchangeInPlace(g: E, self: Entity, name: CardName, controller: Seat): void {
-  // R152: resolved BEFORE `self` leaves the table, exactly as destroy() does —
-  // a mod id whose entity is already gone is not a mod any more
-  const mods = self.mods.map(id => g.entity(id)).filter((m): m is Entity => !!m);
-  const b = g.s.battle;
-  let slot: { col: EntityId[]; idx: number } | null = null;
-  if (b) {
-    for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-      const idx = col.indexOf(self.id);
-      if (idx !== -1) { slot = { col, idx }; break; }
-    }
-  }
-  const fresh = g.spawnUnit(controller, name, self.region);
-  if (slot) slot.col[slot.idx] = fresh.id;   // take the exact position in play
-  delete g.s.entities[self.id];
-  // R153 (CT-43): the disposal tail is `E.disposeToBin`, the SAME method
-  // destroy() calls — push the nontoken mods, push the body, announce, trash
-  // each one anchored (R70), sweep by slot index highest-first if the body is
-  // Unstable (R137/R140), else sweep a token body (R69), file the token mods on
-  // the erased pile (R65), delete the mod entities last. R146 and R152 were two
-  // rounds of repairing a hand-copy of that sequence that had drifted from it in
-  // three places; there is now nothing left here to drift. ⚠ Do not re-inline
-  // it — test/129-disposal-tail.test.ts fails if this stops going through the
-  // primitive, and the census sweep in 90-coverage-census fails if a bin push
-  // reappears in card code under any name.
-  //
-  // The callback is this card's ONE difference from a death: an exchange logs
-  // and FIRES a 'despawned' (R152(1) — the R146 code logged it and never fired
-  // it, so every "whenever a unit despawns" ability in the game, including the
-  // exchanged unit's own [Augment] text, was blind to an exchange), anchored on
-  // `self` so its own donated text is scanned. The unslot rides along because
-  // it belongs in the same window: after the pushes, before the trashes.
-  //
-  // ⚠ AND THIS LINE IS A LIVE FIXTURE, not decoration: it names `.bin.push(` in
-  // a comment inside src/cards/, where the R145 census sweep treats ANY hit as
-  // a bypass. Before R153 that sweep read raw lines and this sentence would
-  // have failed the suite — writing the rule down next to the code that obeys
-  // it was a test failure. It strips comments now (test/90-coverage-census
-  // `codeLines`), and if anyone takes that back out, this line reddens first.
-  g.disposeToBin(self, mods, () => {
-    unslot(g, self.id);
-    const ev = g.ev('despawned', `${self.card} is exchanged for ${name}`
-      + (mods.length ? ` (its ${mods.length} mod(s) leave with it).` : '.'),
-      { unit: self.id, card: self.card, seat: self.controller, region: self.region });
-    g.fireEvent('despawned', ev, self);
-  });
-}
+// ⚠ AND THIS LINE IS A LIVE FIXTURE, not decoration: it names `.bin.push(` in
+// a comment inside src/cards/, where the R145 census sweep treats ANY hit as
+// a bypass. Before R153 that sweep read raw lines and this sentence would
+// have failed the suite — writing the rule down next to the code that obeys
+// it was a test failure. It strips comments now (test/90-coverage-census
+// `codeLines`), and if anyone takes that back out, this line reddens first.
 card('Hooba-Mon', {
   augmentText: [{
     type: 'triggered', events: ['attacked'], self: true,
@@ -554,7 +496,7 @@ card('Hooba-Mon', {
         }
         const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // R124
         if (name === undefined) return;
-        exchangeInPlace(g, self, name, ctx.controller);
+        g.exchangeInPlace(self, name, ctx.controller);   // R157 §3
       },
     },
   }],

@@ -277,11 +277,24 @@ card('Glutton of Absolution', {
 // "Up to one" is min: 0, so declaring no target is legal and the part still
 // resolves (with an empty ctx.targets). E.cacheUnit does the R46 work: the
 // unit leaves play, its mods stay behind and go to their owners' bins (which
-// trashes them, R40), and the CARD lands in its owner's cache carrying the
-// granted prophecy. Note the printed text says the controller caches it while
-// the card can only go to its OWNER's cache — they differ only after a
-// control change (R8), and a stolen card returning to its owner's cache is
-// the same call the base rules make for every other zone change.
+// trashes them, R40), and the CARD lands in a cache carrying the granted
+// prophecy.
+//
+// R157 §27 — WHOSE cache. The note that used to sit here said the printed
+// text names the controller "while the card can only go to its OWNER's cache",
+// and shrugged that off as the base-rules default for a zone change. The owner
+// overruled it, 2026-08-25: *"Controller's cache — the printed text wins.
+// Printed text always wins."* So the target's CONTROLLER is passed explicitly,
+// through the `to` seat `E.cacheUnit` grew for this (the same parameter
+// `E.recall` has always had).
+//
+// It is only reachable after a control change (R8) — Abduct, Download,
+// Mindwarp Sporefrog and Bloppert all produce one — and then it matters a
+// great deal: attacking with Grob and caching a unit you have STOLEN puts the
+// card in YOUR cache with a prophecy you will fulfil, rather than handing it
+// back to the player you took it from. Contrast Waxen Witness below, which
+// prints a bare "Cache target unit" and so keeps the owner default: the seat
+// is not an engine preference, it is whatever the card says.
 const grobCache: EffectDef = {
   targets: { what: 'unit', min: 0, count: 1, prompt: "Grob: up to one unit — its controller caches it" },
   run: (g, ctx) => {
@@ -293,7 +306,8 @@ const grobCache: EffectDef = {
       g.ev('info', 'Grob: no unit is targeted (or it left play) — nothing is cached.');
       return;
     }
-    g.cacheUnit(t, { prophecy: 'Prophecy — One Battle Passes' });
+    // R157 §27: "target unit's CONTROLLER caches it" — printed text wins
+    g.cacheUnit(t, { to: t.controller, prophecy: 'Prophecy — One Battle Passes' });
   },
 };
 card('Grob', {

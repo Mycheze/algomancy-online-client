@@ -1154,31 +1154,41 @@ test('Scholar of the Void: R101 — the transform is the SAME unit: same id, and
     'R93: 2·base − current — the counters ride along and are then inverted');
 });
 
-test('Scholar of the Void: R101 — a transformed Scholar is a TOKEN: it is ERASED on death, never binned', () => {
-  // The single most consequential detail. Beyond's type line says "Book TOKEN
-  // Unit", and the type line is this engine's own definition of a token, so
-  // the transform sets Entity.token — which makes every leaves-play path
-  // correct at once (R69's state-based sweep). If it did NOT, the literal name
-  // "Beyond, Codex Incarnate" would sit in a bin as though it were a card, and
-  // every exhume/recall/bin-play effect in the pool could fetch a 0-cost 8/3.
+test('Scholar of the Void: R157 §10 — a transformed Scholar TURNS BACK OVER on death and bins as itself', () => {
+  // ⚠ THIS TEST IS THE REVERSE OF THE ONE IT REPLACES, and deliberately so.
+  // R101 shipped `token = true` on the transform and this test asserted the
+  // consequence: Beyond is erased on death, never binned, and "does NOT flip
+  // back to its front face on the way out: nothing prints that". R101 said as
+  // much in its own comment — it flagged the flip-back as a real reading it
+  // would not invent without the owner. The owner ruled it, 2026-08-25:
+  //
+  //   "Turns back over. In all zones, other than play, it exists as the front
+  //    side. And the back is NOT a token."
+  //
+  // Both halves, so both are asserted here. The thing R101 was protecting
+  // against still cannot happen — the name "Beyond, Codex Incarnate" never
+  // reaches a bin — but the player keeps their card instead of losing it to
+  // the game for having used its own ability.
   const h = new Harness(4341);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const sv = spawn(h, P, 'Scholar of the Void');
   toNextDeployment(h);
   pickBy(h, o => String(o.label).includes('transform into Beyond'));
-  assert.equal(ent(h, sv)!.token, true, 'the body is a token now');
+  assert.ok(!ent(h, sv)!.token, 'the back face is NOT a token');
+  assert.equal(ent(h, sv)!.card, 'Beyond, Codex Incarnate', 'but it really is turned over');
 
   const binBefore = [...bin(h, P)];
   whiteBox(h, e => e.destroy(e.entity(sv)!, 'dies'));
   assert.equal(ent(h, sv), undefined, 'it left play');
   assert.ok(!bin(h, P).includes('Beyond, Codex Incarnate'),
-    'a token has no card to bin — R69 sweeps it straight back out');
-  assert.ok(!bin(h, P).includes('Scholar of the Void'),
-    'and it does NOT flip back to its front face on the way out: nothing prints that');
-  assert.deepEqual(bin(h, P), binBefore, 'the bin is exactly as it was');
-  assert.ok((h.state.players[P]!.erased ?? []).includes('Beyond, Codex Incarnate'),
-    'R65: the erase still reaches the public record, so the player can see where it went');
+    'the back face reaches no zone but play — a 0-cost 8/3 is never fetchable');
+  const count = (xs: string[], n: string): number => xs.filter(x => x === n).length;
+  assert.equal(count(bin(h, P), 'Scholar of the Void'),
+    count(binBefore, 'Scholar of the Void') + 1,
+    'the card that bins is the FRONT face: the physical Scholar of the Void');
+  assert.ok(!(h.state.players[P]!.erased ?? []).includes('Beyond, Codex Incarnate'),
+    'and nothing is erased — it was never a token, so R69 has nothing to sweep');
 });
 
 test('Scholar of the Void: R101 — donated to a HOST the transform is refused, because the back face belongs to Scholar', () => {
@@ -1222,7 +1232,11 @@ test('Scholar of the Void: R101 — a Scholar augmented onto ANOTHER Scholar doe
     h.do({ type: 'decide', seat: h.state.decision.seat, choice: wants === -1 ? 0 : wants });
   }
   assert.equal(ent(h, host)!.card, 'Beyond, Codex Incarnate', 'the host really did have a back face');
-  assert.equal(ent(h, host)!.token, true);
+  // R157 §10: "the back is NOT a token". The entity is the physical Scholar
+  // the whole time, and it remembers which side is up.
+  assert.ok(!ent(h, host)!.token, 'turning a card over does not make it a token');
+  assert.equal(ent(h, host)!.frontFace, 'Scholar of the Void',
+    'and the front face is remembered, so it can turn back over on the way out');
 });
 
 test('Beyond, Codex Incarnate: R101 — registered, but it can never be drafted, decked or drawn', () => {
