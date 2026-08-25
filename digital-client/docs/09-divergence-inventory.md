@@ -64,6 +64,58 @@ gone.
 > so this question is irrelevant"* — the scope of a layer is read off the
 > printed text of the card that DEFINES it).
 
+> ## ⚠⚠ WAVE 2 OF ROUND 26 (same day) — §2 IS NEARLY EMPTY NOW
+>
+> Read this AFTER the wave-1 block below it. Between them they supersede most of
+> §2's tables; the tables themselves are left as written so the original
+> reasoning stays readable.
+>
+> **§2a CLOSED:** HAND-ENTRY (**R179** — `E.toHand` + `'handEntered'`;
+> ⚠ the table below says "14 bare sites", the real count is **18 across 11 card
+> files**, plus 2 in `engine.ts` the table never counted) · ROT/DEBT REMOVAL
+> (**R179**, `E.loseRot`/`E.loseDebt`) · REAPING AS A GENERAL HOOK (**R184** —
+> and it turned out **R48 had already built the machinery** for `{Afflicting}`,
+> so this was a SHARED hook, not a new one) · FORMATION AS A TARGET (**R184**,
+> a real `TargetRef` arm; the count never changed, per the owner's ruling) ·
+> MOVE-A-MOD (**R178**, `E.moveMod` — `{Unstable}` is DERIVED from
+> `mods.length`, not stored, so re-pointing one field moves it and all fourteen
+> radiated channels at once) · MID-BATTLE FORMATION JOIN (**R172**, ruled and
+> pinned; today's behaviour was correct but accidental).
+>
+> **§2b CLOSED:** ORIGON, SURVIVE-DAMAGE, KEEP-THIS-TARGET, DOUBLING OVERSHOOTS
+> (all **R166**) · MODULE-LEVEL LATCH (**R172**) · SPAWN-COUNTERS,
+> PLAY-VS-PUT-INTO-PLAY (**R165**) · STATIC-VS-TRIGGER (**R168**) ·
+> DESPAWN ON RECALL (**R167**).
+>
+> **§2c CLOSED** (**R172**/**R166**/**R178**) — and note the correction: there
+> were **two** hand-rolled erase copies, not three; Celestial Purge always
+> *called* the helper. The stack lookups are better than the table asks: R178
+> put the played item's **id on the `spellPlayed` payload**, so Earthbound
+> Replicator is an identity match rather than a reverse scan. Origon and Hexbane
+> Shiitake can follow — that is **CARD-TODO #69**.
+>
+> ### WHAT IS ACTUALLY LEFT IN §2
+> `PER-COLUMN FACE DAMAGE` · `RESPONSE WINDOW MID-RESOLUTION` ·
+> `VARIABLE-COST ACTIVATED ABILITIES` · `PREDICTION CAP` ·
+> `UNTIL-REGROUP PLAY WINDOW` · `MULTIPLAYER ATTRIBUTION`. That is the whole
+> remainder, and it is what **CARD-TODO #50** now means.
+>
+> ### ⚠ ONE ROW OF §2 WAS WRONG AND IS NOT A DEFECT AT ALL
+> An agent reported that `{Reaping}` had no COMBAT seam, since all four Reaping
+> cards are `{Battle}` spells with printed bodies that "stand in the formation
+> and fight". **Measured: a resolved spell leaves NO body**, `{Reaping}` is on
+> exactly four cards all `kind: spell`, none `virus`, none with `augmentAttrs`,
+> and **no card grants it by text**. A unit can never have `{Reaping}`, so the
+> gap is unreachable. A fix for it was written and **reverted** — no test could
+> have failed. Verify a reported bug's PREMISE before fixing it.
+>
+> ### §1 is nearly done — see CARD-TODO #49
+> 98/316 gated promises observed → **264/316**; never-observed **218 → 52**. The
+> `[Augment]` box went 0/152 → 129. **Zero broken cards**, measured. The 52 that
+> remain are named individually with the precondition each lacks; the biggest
+> family is REGION (R12, 6 cards) and the next thing worth building is **an
+> attacking position with the card actually IN the battle**.
+
 **Status key:** `DONE` fixed and guarded · `OPEN` real, unfixed · `STALE` a code
 comment that outlived its cause · `RULED-OK` the engine is right and an answer
 says so.
