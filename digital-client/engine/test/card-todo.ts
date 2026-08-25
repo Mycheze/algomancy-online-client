@@ -142,10 +142,80 @@ const setSrc = (file: string): string =>
  * this way, and a second copy of these three regexes is a second thing to get
  * wrong.
  */
+let reClass = false;   // open character class inside a regex literal
+
+const KEYWORDS_BEFORE_REGEX = new Set([
+  'return', 'typeof', 'case', 'in', 'of', 'new', 'delete', 'void',
+  'instanceof', 'do', 'else', 'yield', 'await', 'throw',
+]);
+
+/**
+ * Does the `/` at this point open a REGEX LITERAL, or is it division?
+ *
+ * The classic JS ambiguity, and the whole reason the old three-regex stripper
+ * was unsound. A `/` starts a regex when what precedes it cannot END an
+ * expression: an operator, an opening bracket, a comma, a semicolon — or one
+ * of the keywords that takes an expression next. It is DIVISION when it
+ * follows an identifier, a number, `)`, `]` or a closing quote.
+ *
+ * A misjudgement here is no longer catastrophic in either direction, because
+ * the scanner is line-preserving and re-synchronises at the next newline: the
+ * worst case is one mis-blanked span, not a file-long desync.
+ */
+function startsRegex(prev: string, out: string): boolean {
+  if (prev === '') return true;
+  if ('([{,;:=!&|?+-*%~^<>'.includes(prev)) return true;
+  if (/[)\]}\w$]/.test(prev)) {
+    const w = /([A-Za-z_$][\w$]*)\s*$/.exec(out);
+    return !!w && KEYWORDS_BEFORE_REGEX.has(w[1]!);
+  }
+  return true;
+}
+
 export function stripCode(src: string): string {
-  return src
-    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
-    .replace(/(['"`])(?:\\.|(?!\1)[\s\S])*?\1/g, "''");
+  let out = '';
+  let st: 'code' | 'line' | 'block' | 'sq' | 'dq' | 'tpl' | 're' = 'code';
+  let prev = '';   // last significant code char, for the regex/division call
+  reClass = false;
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i]!, n = src[i + 1];
+    if (st !== 'code') {
+      // BLANK, never delete: line and column must survive, because callers
+      // report `file:${n + 1}` from the stripped text.
+      // RESYNC AT END OF LINE. Only a block comment and a template literal may
+      // legally span a newline in JS/TS; a line comment, a quoted string and a
+      // regex literal may not. Ending those states here is what makes a
+      // misjudged `/` cost one line instead of the rest of the file — the
+      // failure that silently deleted 5128 of engine.ts's 8901 lines and blinded
+      // every sweep built on this helper.
+      if (c === '\n') {
+        out += '\n';
+        if (st === 'line' || st === 'sq' || st === 'dq' || st === 're') st = 'code';
+        continue;
+      }
+      out += ' ';
+      if (st === 'block') { if (c === '*' && n === '/') { out += ' '; i++; st = 'code'; } }
+      else if (st === 'sq') { if (c === '\\') { out += ' '; i++; } else if (c === "'") st = 'code'; }
+      else if (st === 'dq') { if (c === '\\') { out += ' '; i++; } else if (c === '"') st = 'code'; }
+      else if (st === 'tpl') { if (c === '\\') { out += ' '; i++; } else if (c === '`') st = 'code'; }
+      else {
+        if (c === '\\') { out += ' '; i++; }
+        else if (c === '[') reClass = true;
+        else if (c === ']') reClass = false;
+        else if (c === '/' && !reClass) st = 'code';
+      }
+      continue;
+    }
+    if (c === '/' && n === '*') { out += '  '; i++; st = 'block'; continue; }
+    if (c === '/' && n === '/') { out += '  '; i++; st = 'line'; continue; }
+    if (c === "'") { out += ' '; st = 'sq'; continue; }
+    if (c === '"') { out += ' '; st = 'dq'; continue; }
+    if (c === '`') { out += ' '; st = 'tpl'; continue; }
+    if (c === '/' && startsRegex(prev, out)) { out += ' '; reClass = false; st = 're'; continue; }
+    out += c;
+    if (!/\s/.test(c)) prev = c;
+  }
+  return out;
 }
 
 /** the source of a card's spell effect, comments and strings stripped */
