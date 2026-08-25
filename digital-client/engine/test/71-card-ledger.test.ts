@@ -165,7 +165,13 @@ export function deadShapes(name: string): string[] {
   // (a) bare definition, but the card prints rules text. Correct for a vanilla
   //     card, damning for one with text — Writhing Host, Rotling and Trench
   //     Stalker are all just `card('X', {})`.
-  if (!BEHAVIOR_KEYS.some(k => (c as unknown as Record<string, unknown>)[k] !== undefined) && meaningfulText(c)) {
+  //
+  //     R155: an EMPTY array does not count as behaviour. `statics: []` is
+  //     `!== undefined`, so before this the one-line difference between
+  //     `card('X', {})` and `card('X', { statics: [] })` was the difference
+  //     between "the sweep demands a ledger entry" and "the sweep says fine" —
+  //     for two definitions that do exactly the same nothing.
+  if (!BEHAVIOR_KEYS.some(k => hasBehaviour(c, k)) && meaningfulText(c)) {
     out.push('bare definition, but the card prints rules text');
   }
 
@@ -206,7 +212,135 @@ export function deadShapes(name: string): string[] {
     if (shape === 'log-only') out.push(`${where}: run only writes to the log`);
     if (codeAdmitsTheGap(bare(source(e.run)))) out.push(`${where}: says PARKED / not implemented`);
   }
+
+  // (d) R155: the shapes (a)-(c) are structurally blind to — a gap written as
+  //     a STATIC, a COST MOD or a `when()` rather than as a `run` body.
+  out.push(...inertShapes(name));
+
   return [...new Set(out)];
+}
+
+/* ── R155: THE STATIC/FLAG BLIND SPOT ─────────────────────────────────────
+ *
+ * Everything above reads bare definitions and `run` bodies. It is blind to a
+ * dead half expressed as a STATIC or a FLAG, and that is not a hypothetical
+ * hole: the two cards that have most recently been mistaken for parked are
+ * exactly that shape. Harbinger of Immolation — the card this whole file is
+ * named after — was fixed into `statics: [{ affects, survivesRegroup: true }]`
+ * with no `run` anywhere; Arbiter of Armistice's entire printed text is one
+ * `costMods` entry. A dead one of either would have read as a live card, and
+ * the sweep→ledger assertion would not have asked for a ledger entry.
+ *
+ * WHAT THIS SWEEP CAN SEE — literals, and only literals:
+ *
+ *   · a behaviour key that is PRESENT but EMPTY (`statics: []`, `costMods: []`,
+ *     `abilities: []`). Also folded into (a) above, because an empty array
+ *     defeated the bare-definition check for free.
+ *   · a `StaticMod` that projects NOTHING: no `dp`/`dt`/`baseP`/`baseT`/
+ *     `attrs`/`suppressAttrs`/`suppressAbilities`/`survivesRegroup` at all, or
+ *     every one it does carry provably zero (`0`, `false`, `[]`, `() => 0`).
+ *   · a predicate whose entire body is the literal `false`: `affects: () =>
+ *     false` (a static that can match nothing) and `when: () => false` (a
+ *     trigger that can never queue).
+ *   · a `CostMod` with no `delta`/`life`/`sacrifice` at all, or whose every
+ *     present channel is a constant `0`.
+ *
+ * WHAT IT CANNOT SEE, and never will — stated plainly, because a check that is
+ * trusted for more than it measures is CARD-TODO #9's 97-card phantom band:
+ *
+ *   · whether an arbitrary predicate can ever match. `affects: (g, self, t) =>
+ *     t.kind === 'unit'` on a card whose text is about spell tokens matches
+ *     nothing, forever, and reads here as perfectly live. (Harbinger's own
+ *     definition carries a comment warning about precisely that mistake.)
+ *     Deciding it is deciding an arbitrary program; this sweep does not try.
+ *   · a `when()` gated on a state the card's events never produce, or a cost
+ *     function whose arithmetic happens to cancel to zero on every real board.
+ *   · a live flag whose READER was deleted — `survivesRegroup: true` is not
+ *     inert by shape even if nothing in engine.ts asks about it any more.
+ *   · anything at all about whether the behaviour matches the PRINTED TEXT. A
+ *     card can carry a fully live static implementing the wrong sentence, and
+ *     that is bands 3-4 in 90-coverage-census, not this.
+ *
+ * So this is a narrow net, deliberately. It catches the author who wrote the
+ * scaffold and never filled it in — which is the shape a park takes when
+ * somebody stops using the word PARKED.
+ */
+
+/** the channels a `StaticMod` can project through. `affects` is the predicate;
+ *  a static carrying none of these changes nothing about anything it matches. */
+const STATIC_EFFECTS = ['dp', 'dt', 'baseP', 'baseT', 'attrs',
+  'suppressAttrs', 'suppressAbilities', 'survivesRegroup'] as const;
+/** the channels a `CostMod` can charge through */
+const COST_CHANNELS = ['delta', 'life', 'sacrifice'] as const;
+
+/** a behaviour key that is present AND carries something. An empty array is
+ *  not behaviour, however `!== undefined` it is. */
+function hasBehaviour(c: CardDef, k: string): boolean {
+  const v = (c as unknown as Record<string, unknown>)[k];
+  return v !== undefined && !(Array.isArray(v) && v.length === 0);
+}
+
+/** is this function's WHOLE body the literal `lit` and nothing else?
+ *  Comments and strings are stripped first (`bare`), so a note explaining a
+ *  `false` cannot make one. A body that MUTATES on the way to its return value
+ *  is not constant, which is what keeps the bookkeeping pattern out of this —
+ *  a `when()` that does its work and returns false so the trigger never queues
+ *  (Powerforge Synergist, Ancient One) has statements before the `false`. */
+function isConstBody(f: unknown, lit: string): boolean {
+  const s = bare(source(f));
+  const arrow = s.indexOf('=>');
+  if (arrow < 0) return false;              // not an arrow function: assume it works
+  const body = s.slice(arrow + 2).replace(/\s+/g, '');
+  return body === lit || body === `{return${lit};}` || body === `{return${lit}}`;
+}
+
+/** a static's channel that provably contributes nothing */
+function nilChannel(v: unknown): boolean {
+  if (v === undefined || v === 0 || v === false) return true;
+  if (Array.isArray(v)) return v.length === 0;
+  if (typeof v === 'function') return isConstBody(v, '0') || isConstBody(v, 'false');
+  return false;
+}
+
+export function inertShapes(name: string): string[] {
+  const c = getCard(name);
+  const raw = c as unknown as Record<string, unknown>;
+  const out: string[] = [];
+
+  for (const k of BEHAVIOR_KEYS) {
+    const v = raw[k];
+    if (Array.isArray(v) && v.length === 0) out.push(`${k}: [] — the key is present but empty`);
+  }
+
+  (c.statics ?? []).forEach((m, i) => {
+    const s = m as unknown as Record<string, unknown>;
+    if (isConstBody(m.affects, 'false')) {
+      out.push(`statics[${i}]: affects is a constant false — it can match nothing`);
+    }
+    if (STATIC_EFFECTS.every(k => nilChannel(s[k]))) {
+      out.push(`statics[${i}]: projects nothing — every effect channel is absent or zero`);
+    }
+  });
+
+  (c.costMods ?? []).forEach((m, i) => {
+    const cm = m as unknown as Record<string, unknown>;
+    const present = COST_CHANNELS.filter(k => cm[k] !== undefined);
+    if (!present.length) out.push(`costMods[${i}]: no delta/life/sacrifice — it charges nothing`);
+    else if (present.every(k => isConstBody(cm[k], '0'))) {
+      out.push(`costMods[${i}]: every cost channel returns a constant 0`);
+    }
+  });
+
+  const guards: [string, Ability][] = [
+    ...(c.abilities ?? []).map((a, i) => [`abilities[${i}]`, a] as [string, Ability]),
+    ...(c.augmentText ?? []).map((a, i) => [`augmentText[${i}]`, a] as [string, Ability]),
+  ];
+  for (const [where, a] of guards) {
+    if (a.type === 'triggered' && a.when && isConstBody(a.when, 'false')) {
+      out.push(`${where}: when() is a constant false — the trigger can never queue`);
+    }
+  }
+  return out;
 }
 
 /**
@@ -242,6 +376,12 @@ const NOT_A_GAP: Record<string, string> = {
     + 'test): it deliberately carries the Harbinger shape so the detector is proved '
     + 'on every run. It is not a pool card and has no ledger entry — this exemption '
     + 'is what keeps the sweep→ledger assertion from demanding one.',
+  'T71 Inert Canary':
+    'The R155 canary, and the same deal as T71 Canary one line up: a SYNTHETIC card '
+    + 'registered by this file carrying every inert LITERAL shape at once, so the '
+    + 'static/cost/when detector is proved on every run rather than the day somebody '
+    + 'needs it. Not a pool card, no ledger entry, exempted so the sweep→ledger '
+    + 'assertion does not demand one.',
   'Trench Stalker':
     'The spellEffect exists solely to carry the R49 "[Discard two cards]" CAST COST, '
     + 'chosen and paid in the cast window on every route into play (hand and bin '
@@ -337,6 +477,79 @@ test('the sweep has teeth: it recognises the shape Harbinger of Immolation was f
     assert.deepEqual(deadShapes(fine), [],
       `${fine} is correctly implemented and must not be flagged — a sweep that cries `
       + 'wolf is a sweep that gets ignored');
+  }
+});
+
+// ── R155: the second canary, for the static/cost/when blind spot ─────────
+//
+// Same device as T71 Canary and for the same reason — a detector nobody
+// exercises is a detector that quietly stops working — but carrying the
+// shapes `deadShapes` could not see before R155. Every field on it is inert
+// in a way that is decidable by READING it, which is the only thing
+// `inertShapes` claims to catch (see its doc comment for the rest).
+registerSynthetic({
+  name: 'T71 Inert Canary', cost: '', mana: 0, power: 1, toughness: 1,
+  type: 'Test Unit', kind: 'unit', timing: 'deploy', attrs: [],
+  virus: false, burst: false, augmentAttrs: [],
+  text: 'My allies gain +1/+1. Cards cost one more. When I attack, do nothing.',
+  image: '',
+}, {
+  effectAttrs: [],                                   // present, but empty
+  costMods: [
+    { delta: () => 0 },                              // charges a constant nothing
+    {},                                              // no channel at all
+  ],
+  statics: [
+    { affects: () => false, dp: 1, dt: 1 },          // real projection, matches nothing
+    { affects: (_g, self, t) => t.controller === self.controller },   // matches, projects nothing
+    { affects: (_g, self, t) => t.controller === self.controller, dp: 0, dt: () => 0, attrs: [] },
+  ],
+  abilities: [{
+    type: 'triggered', events: ['attacked'],
+    when: () => false,                               // can never queue
+    label: 'canary trigger behind a constant-false guard',
+    // a REAL run on purpose: the point is that runShape says 'real' and the
+    // ability is still dead, which is the whole shape of this blind spot.
+    effect: { run: (g) => { g.s.turn += 0; } },
+  }],
+});
+
+test('R155: the sweep sees a gap written as a static, a cost mod or a when() — and says what it cannot see', () => {
+  const shapes = inertShapes('T71 Inert Canary');
+  const wanted = [
+    /effectAttrs: \[\]/,                             // an empty behaviour key
+    /statics\[0\]: affects is a constant false/,     // a static that matches nothing
+    /statics\[1\]: projects nothing/,                // a static with no channel
+    /statics\[2\]: projects nothing/,                // every channel present but zero
+    /costMods\[0\]: every cost channel returns a constant 0/,
+    /costMods\[1\]: no delta\/life\/sacrifice/,
+    /abilities\[0\]: when\(\) is a constant false/,
+  ];
+  for (const re of wanted) {
+    assert.ok(shapes.some(s => re.test(s)),
+      `the R155 detector no longer recognises ${re} — it has lost that tooth. Fix `
+      + `inertShapes, do not touch the canary. (It reported: ${shapes.join(' | ')})`);
+  }
+  // and it must reach the sweep→ledger assertion, not just live beside it
+  assert.ok(deadShapes('T71 Inert Canary').length >= wanted.length,
+    'inertShapes is not folded into deadShapes, so the ledger sweep is still blind to it');
+
+  // THE POSITIVE CONTROLS, and the reason they are these two cards: they are
+  // the exact shapes this hole would have hidden, and both are LIVE.
+  //  · Harbinger of Immolation — the card this file is named after. Its fixed
+  //    [Augment] half is `statics: [{ affects, survivesRegroup: true }]`: no
+  //    run, no events, nothing (a)-(c) can read.
+  //  · Arbiter of Armistice — its ENTIRE printed text is one `costMods` entry
+  //    (R60's life channel), so a bad sweep would call the whole card dead.
+  //  · Life Power Dude carries a literal `dt: 0` beside a live `dp`, which is
+  //    the false positive the "every channel is zero" rule has to avoid.
+  //  · Beyond, Codex Incarnate's static grants `attrs: ['Inverted']` and
+  //    nothing else — a non-stat channel, which the rule must still count.
+  for (const live of ['Harbinger of Immolation', 'Arbiter of Armistice',
+    'Life Power Dude', 'Beyond, Codex Incarnate', 'Vengeance', 'Tranquility']) {
+    assert.deepEqual(inertShapes(live), [],
+      `${live} is LIVE and must not be flagged. A static/cost sweep that cries wolf on `
+      + 'working cards gets suppressed, and then the next Harbinger walks straight past it.');
   }
 });
 
@@ -514,4 +727,53 @@ test('the ledger reports honestly on how many card halves are dead', () => {
   console.log(
     `    ${untracked.length} have NO trace anywhere but this file — no readable shape, no `
     + `{ todo: true } test, nothing: ${untracked.join(', ')}`);
+});
+
+// ── (4) THE R155 TALLY: the static/cost/flag population, and how much of it
+//        is provably inert ────────────────────────────────────────────────
+//
+// Printed on every run for the same reason as (3): the denominator is the
+// honest part. "Zero inert shapes" means nothing without "out of how many
+// scanned", and a refactor that renamed `statics` would otherwise turn this
+// sweep into a green check over an empty set — which is how a guard dies
+// quietly rather than loudly.
+test('the static/cost/flag sweep reports its population, and none of it is provably inert', () => {
+  const pool = allCardNames().filter(n => !(n in NOT_A_GAP));
+  let statics = 0, costMods = 0, guards = 0;
+  const inert: string[] = [];
+  for (const name of pool) {
+    const c = getCard(name);
+    statics += (c.statics ?? []).length;
+    costMods += (c.costMods ?? []).length;
+    guards += [...(c.abilities ?? []), ...(c.augmentText ?? [])]
+      .filter(a => a.type === 'triggered' && a.when).length;
+    const shapes = inertShapes(name);
+    if (shapes.length) inert.push(`${name} — ${shapes.join('; ')}`);
+  }
+  console.log(
+    `    R155 inert-shape sweep: ${statics} statics · ${costMods} cost mods · `
+    + `${guards} when() guards, across ${pool.length} cards`);
+  console.log(
+    `      provably inert by literal shape: ${inert.length} `
+    + '(literals only — an `affects` that cannot match for a REASON is undecidable '
+    + 'and is not counted; see inertShapes)');
+
+  // FLOOR A — the population, set just BELOW what was measured on 2026-08-25
+  // (49 statics / 6 cost mods / 99 guards). Not a target: it is here so the
+  // sweep cannot go blind and keep reporting clean. If a card is legitimately
+  // removed and this trips, lower it deliberately and say so.
+  assert.ok(statics >= 45 && costMods >= 5 && guards >= 90,
+    `the sweep is scanning ${statics}/${costMods}/${guards} where it used to scan 49/6/99 — `
+    + 'either a lot of cards left the pool, or the sweep has stopped finding what it reads. '
+    + 'A guard over an empty set is worse than no guard.');
+
+  // FLOOR B — the inert count, floored at its real value of ZERO, so the next
+  // card that ships a scaffold instead of an implementation trips it.
+  assert.deepEqual(inert, [],
+    'these cards carry a static, cost mod or trigger guard that provably does nothing:\n  '
+    + inert.join('\n  ')
+    + '\n\nThis is the Harbinger shape wearing different clothes — a printed clause with a '
+    + 'definition that reads as implemented and is not. Implement it, or declare it in '
+    + 'test/card-ledger.ts, or (if it is a false positive) add the card to NOT_A_GAP with '
+    + 'a reason. Do NOT resolve it with a { todo: true } test.');
 });

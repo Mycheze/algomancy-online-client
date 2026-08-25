@@ -136,10 +136,18 @@ collides:
 | base hybrids | `sets/batch-hybrids-fwe.ts`, `batch-hybrids-wm-{a,b}.ts` | two-element cards |
 | **Light & Dark** | `sets/batch-{light,dark}-{a,b,c}.ts`, `batch-hybrids-ld-{a,b,c}.ts` | the expansion — see [../docs/08-light-and-dark.md](../docs/08-light-and-dark.md) |
 
-A handful of cards are deliberately **parked** rather than half-scripted: each
-registers crash-free with its printed body and carries a `{ todo: true }` test
-naming exactly the primitive it is waiting on. `npm test` reports them as todo,
-so the count is the backlog.
+**No card is parked.** `CARD_LEDGER` (`test/card-ledger.ts`), which declares
+card by card which printed clauses do nothing, is empty, and
+`71-card-ledger.test.ts` proves that in both directions on every run.
+
+This used to read "a handful of cards are deliberately parked … each carries a
+`{ todo: true }` test naming the primitive it is waiting on, so the count is the
+backlog". That was the practice that let Harbinger of Immolation's second half
+stay dead for two days behind a green suite: **a `{ todo: true }` test can never
+fail**, so it tracks nothing. The count of them in `test/` is now zero and
+`90-coverage-census.test.ts` asserts it stays there (R155). A gap that genuinely
+cannot be built yet goes in `test/card-ledger.ts` (a dead card half) or
+`test/card-todo.ts` (anything else) — both are checked against reality.
 
 Printed data is generated from `AlgomancyCards-OracleText.json` by
 `scripts/extract-printed.mjs` (pool list in `scripts/pool.mjs`) — only
@@ -154,12 +162,6 @@ hotseat UI doubles as the network client (`?ws=1&room=CODE&seat=0`). See
 
 ## Still cut (parked, not forgotten)
 
-- Stat layers 5-6 (Inverted/Unaware) — the seam is in `effStats`, no pool card
-  needs them; R10 is a `todo` test. (Layers 1-4 are all live. Layer 2, base
-  stats, arrived with Formless and Body Swap as an until-regroup stamp, and
-  R66 gave it its continuous half — `StaticMod.baseP`/`baseT`, so Aberrant
-  Statweaver's "your units are base 3/3" replaces the numbers instead of
-  handing a delta to layer 3.)
 - A true power/defense SWITCH (Invasive Reassignment) — done as a delta off the
   effective stats at resolution, which is right until something changes the two
   numbers asymmetrically afterwards. The last approximation in the stat layers
@@ -171,25 +173,37 @@ hotseat UI doubles as the network client (`?ws=1&room=CODE&seat=0`). See
 - Burst tokens cast in deterministic id order rather than player-chosen order.
   (WHICH tokens go together is exact as of R81: same name, not merely both
   Burst.)
-- Naming a card as a decision (The Everywhere's "During [Haste] name a card").
-  Attribute/ability **suppression** was on this list and is not any more —
-  it is a real layer now (R62), which took Monke, Suppression Field,
-  Transmogrifant and Formless's second clause off it. So was `{Pure}`, which
-  turned out to need one interaction's worth of scoping rather than a layer
-  (R61), and granting rules text (R63, Reforge the Dead). And so were
-  **targeting restrictions** (R64: `TargetSpec.restrict`, which also took
-  Gatekeeper of Souls off the parked list) and the wider **cast-time cost**
-  kinds (R64: `sacrificeUnits` / `removeCounters` / `eraseBin`, and `n: 'X'`
-  for all of them). R67 then spent those seams: eleven cards that printed
-  "target" but re-derived it mid-resolution now declare it and are aimed in
-  the cast window, and `what: 'player'` / `TargetCtx.event` were added for the
-  last two of them.
-- A *consumable* cost modifier (Deferral Drone). The continuous one is done in
-  both currencies: mana (R59) and life (R60).
+Attribute/ability **suppression** was on this list and is not any more — it is
+a real layer now (R62), which took Monke, Suppression Field, Transmogrifant and
+Formless's second clause off it. So was `{Pure}`, which turned out to need one
+interaction's worth of scoping rather than a layer (R61), and granting rules
+text (R63, Reforge the Dead). And so were **targeting restrictions** (R64:
+`TargetSpec.restrict`, which also took Gatekeeper of Souls off the parked list)
+and the wider **cast-time cost** kinds (R64: `sacrificeUnits` /
+`removeCounters` / `eraseBin`, and `n: 'X'` for all of them). R67 then spent
+those seams: eleven cards that printed "target" but re-derived it mid-resolution
+now declare it and are aimed in the cast window, and `what: 'player'` /
+`TargetCtx.event` were added for the last two of them.
 
 Shipped since this list was written, and no longer cut: **shards**
 (free-shard-at-3-affinity, Manual p.18) and the **live draft** (Manual
-p.16-17 — `mode: 'draft'`, per-player packs that pass).
+p.16-17 — `mode: 'draft'`, per-player packs that pass). Three more came off it
+on 2026-08-25, having shipped without the list being updated — the rot R155
+swept up:
+
+- **Stat layers 5 and 6.** Layer 5, `{Inverted}` (R93), negates the NET stat
+  change from base — `2·base − current`, applied once after layer 4
+  (`src/engine.ts`, `effStats`). Layer 6, `{Unaware}` (R106), reads at PRINTED
+  stats and drops everything above layer 1. All six layers are live; R10 is a
+  real passing test (`test/05-rulings.test.ts`), not a todo, and the layers
+  have their own files in `test/79-round17-layers.test.ts`,
+  `test/92-unaware.test.ts` and `test/43-dark-c.test.ts`.
+- **Naming a card as a decision** — R91. `Entity.named` (`src/types.ts`) holds
+  the memory; The Everywhere is built on it, with the region rule intact.
+- **A *consumable* cost modifier** — R119. `GameState.nextPlayDiscount` is a
+  per-seat charge set by Deferral Drone, read in `E.manaToPlay` and spent at
+  the two sites a play already emits from. Both continuous currencies were
+  already done: mana (R59) and life (R60).
 
 ## Files
 

@@ -820,10 +820,13 @@ test('a seat with a decision pending against the OTHER seat has no legal action'
  *
  * The round-7 commit message closed with "Still open, deliberately:" and four
  * items, and left ZERO trace in the repo — no PARKED comment, no ⚠ header, no
- * { todo: true } test. The engine README's own rule is that the todo count IS
- * the backlog; these four sat outside it, which is exactly why two of them
- * came back as fresh reports. The ledger lives here now (park-hygiene audit,
- * round 13, 2026-08-21):
+ * { todo: true } test. The engine README's rule AT THE TIME was that the todo
+ * count IS the backlog; these four sat outside it, which is exactly why two of
+ * them came back as fresh reports. (That rule is retired as of R155 — a todo
+ * can never fail, so it was never a backlog, and the count in test/ is now
+ * asserted to be zero. A gap that cannot be built goes in card-ledger.ts or
+ * card-todo.ts, both of which are checked.) The ledger lives here now
+ * (park-hygiene audit, round 13, 2026-08-21):
  *
  *   · Necromorph's second target — CLOSED. R64 gave bin cards a real TargetRef
  *     (`BinRef`); test/43-dark-c.test.ts exercises the exchange end to end.

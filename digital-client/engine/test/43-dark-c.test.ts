@@ -25,7 +25,7 @@ import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
-import type { DecisionOption, Entity, Seat } from '../src/types.ts';
+import type { DecisionOption, Entity, EntityId, Seat } from '../src/types.ts';
 
 // ── helpers ───────────────────────────────────────────────────────────
 
@@ -481,11 +481,138 @@ test('Its Dark Bubb: a printed {Inverted} 4/6 body', () => {
   assert.ok(ownAttrs(h, bubb).has('Inverted'), 'the attribute is carried');
 });
 
-test('Its Dark Bubb: {Inverted} actually inverting stat changes', { todo: true }, () => {
-  // PARKED: inversion is effStats stat layer 5, which the engine does not have
-  // ("layer 5 (Inverted), 6 (Unaware) go here"). Reality Bender (batch-earth-b)
-  // is parked on the same seam. The attribute is present; -1/+2 does not
-  // become +1/-2.
+/* ── Its Dark Bubb: stat layer 5 ({Inverted}) actually inverting ───────────
+ *
+ * These four replace a `{ todo: true }` that parked the card on "inversion is
+ * effStats stat layer 5, which the engine does not have". The engine has had
+ * it since R93 (`src/engine.ts`, the LAYER 5 block: `p = 2 * base[0]! - p`),
+ * and layer 6 ({Unaware}) since R106 — so the park outlived its reason by two
+ * engine waves while reading, on every run, as a tracked gap. That is the
+ * Harbinger failure exactly, in its quietest form: a todo can never fail, so
+ * nothing ever contradicted it. It was the last `{ todo: true }` in test/,
+ * and 90-coverage-census now asserts the count stays zero.
+ *
+ * WHAT LAYER 5 MEANS, precisely — the three readings that fit the printed
+ * sentence "invert the stat changes of inverted units", and which one shipped:
+ *
+ *   (i)  NET CHANGE FROM BASE, negated once: `2·base − current`. SHIPPED.
+ *   (ii) each source's delta measured IN ISOLATION against base, negated,
+ *        and summed.
+ *   (iii) each source's OPERATION run backwards in order — under which
+ *        {Tough} inverted would "halve" rather than "give back the +0/+N it
+ *        granted".
+ *
+ * Caleb's own worked example (1/4 Tough Balanced Inverted → -6/0, pinned in
+ * 79-round17-layers) does not separate (i) from (ii): with nothing but layer-4
+ * attributes in play their arithmetic agrees. The fourth test below is the one
+ * that separates all three, and it is why it is worth having.
+ *
+ * NOT DUPLICATING: 79-round17-layers pins the layer through DONATED
+ * {Inverted} (Reality Bender onto Malformed Monstrosity's self-static) and
+ * Caleb's example; 17-earth-b pins Reality Bender's own ±1 counter. Neither
+ * uses Bubb, whose {Inverted} is PRINTED on its own type line rather than
+ * granted, and neither uses a multi-source board.
+ */
+
+/** grant a layer-4/5 attribute WITHOUT settling. Deliberate: the third test
+ *  below lands on a negative defense, so the unit is dead the moment the board
+ *  is checked — and that is not a problem with the arithmetic. `effStats` is
+ *  atomic and the death check is the caller's ("imagine it as one big
+ *  equation… It is not a time thing"), so the number has to be readable
+ *  before anything settles. Same device as 79-round17-layers' `grant`. */
+function grantAttr(h: Harness, id: EntityId, attr: 'Tough' | 'Balanced' | 'Inverted'): void {
+  const e = new E(h.state);
+  e.addTempAttr(e.entity(id)!, attr);
+  h.state = e.s;
+}
+
+test('Its Dark Bubb: {Inverted} turns a real static BUFF into a debuff', () => {
+  const h = new Harness(4312);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  // Life Power Dude: "[Augment] As long as your life total is odd, all units
+  // gain -2/-0. Otherwise they gain +2/+0." Life starts at 30 — even — so the
+  // static is projecting +2/+0 onto every unit in the region, Bubb included.
+  // Pinned rather than assumed: a control token in the same region shows the
+  // contribution, so if the parity branch ever flips this test says which
+  // half moved.
+  assert.equal(h.state.players[P]!.life % 2, 0, 'even life → the +2/+0 branch');
+  spawn(h, P, 'Life Power Dude');
+  const control = spawn(h, P, 'Unit Token');
+  const bubb = spawn(h, P, 'Its Dark Bubb');
+  assert.deepEqual(effStats(h, control), [3, 1], 'the static really is +2/+0 (a 1/1 token reads 3/1)');
+  assert.deepEqual(effStats(h, bubb), [2, 6],
+    'R93: the same +2/+0 is inverted to -2/-0 off Bubb\'s printed 4/6');
+});
+
+test('Its Dark Bubb: {Inverted} turns a DEBUFF into a buff', () => {
+  const h = new Harness(4313);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const bubb = spawn(h, P, 'Its Dark Bubb');
+  // -1/-1 counters, the plainest debuff there is. Caleb, asked directly
+  // whether {Inverted} reverses counters: "yes".
+  whiteBox(h, e => e.addCounters(e.entity(bubb)!, -3));
+  assert.equal(ent(h, bubb)!.counters, -3, 'three -1/-1 counters really are on it');
+  assert.deepEqual(effStats(h, bubb), [7, 9],
+    'R93: a -3/-3 net change is inverted to +3/+3, so the printed 4/6 reads 7/9 — '
+    + 'and note it is BIGGER, not merely un-shrunk');
+});
+
+test('Its Dark Bubb: the printed reminder text, verbatim — "-1/+2 would become +1/-2"', () => {
+  const h = new Harness(4314);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const bubb = spawn(h, P, 'Its Dark Bubb');
+  // The card's own reminder text is the only ASYMMETRIC example in the rules,
+  // and it is the one that rules out "invert the final numbers": a 4/6 that
+  // took -1/+2 does not read -3/-8, it reads 5/4.
+  whiteBox(h, e => e.addTemp(e.entity(bubb)!, -1, 2));
+  assert.deepEqual(effStats(h, bubb), [5, 4],
+    'printed: "-1/+2 would become +1/-2" — off a 4/6 that is a 5/4');
+});
+
+test('Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own', () => {
+  // THE TEST THIS FILE IS FOR. Three sources, chosen so that the three
+  // readings of "invert the stat changes" give three DIFFERENT answers — the
+  // discrimination Caleb's own 1/4-tough-balanced example cannot make,
+  // because with only layer-4 attributes in play (i) and (ii) coincide.
+  //
+  //   printed base                                    4 / 6
+  //   + Life Power Dude's static  (+2/+0)             6 / 6
+  //   + one +1/+1 counter         (+1/+1)             7 / 7
+  //   + {Tough}                   (defense doubles)   7 / 14
+  //
+  //   (i)   NET, negated once   — 2·4−7 / 2·6−14  →  [1, -2]   ← SHIPPED
+  //   (ii)  isolated deltas     — static +2/+0, counter +1/+1, and {Tough}
+  //         measured on its own against the base 4/6 is +0/+6; the sum is
+  //         +3/+7, negated → [1, -1].
+  //   (iii) operations run backwards — -2/-0 → 2/6, -1/-1 → 1/5, and
+  //         "{Tough} inverted = halve" → [1, 2.5].
+  //
+  // (ii) is wrong because {Tough} doubled a defense that the counter had
+  // already raised: its real contribution to THIS board is +7, not +6. (iii)
+  // is the reading R93 rejects in so many words — "it is a mathematical
+  // operation, not a linguistic operation"; Tough inverted is "lose the +0/+N
+  // you gained", not "halve".
+  const h = new Harness(4315);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  assert.equal(h.state.players[P]!.life % 2, 0, 'even life → Life Power Dude projects +2/+0');
+  spawn(h, P, 'Life Power Dude');
+  const bubb = spawn(h, P, 'Its Dark Bubb');
+  assert.deepEqual(effStats(h, bubb), [2, 6], 'one source so far: +2/+0 inverted');
+
+  whiteBox(h, e => e.addCounters(e.entity(bubb)!, 1));
+  assert.deepEqual(effStats(h, bubb), [1, 5], 'two sources: a +3/+1 net inverted');
+
+  grantAttr(h, bubb, 'Tough');
+  assert.deepEqual(effStats(h, bubb), [1, -2],
+    'three sources: {Tough} doubled a defense the counter had already raised, so the '
+    + 'net change is +3/+8 and layer 5 negates THAT — [1, -2]. Per-source inversion '
+    + 'would say [1, -1]; running each operation backwards would say [1, 2.5].');
+  // and the attribute is still only counted once, however it arrived
+  assert.ok(ownAttrs(h, bubb).has('Inverted'), 'printed {Inverted}, not granted');
 });
 
 // ── Lurking Dread ────────────────────────────────────────────────────────

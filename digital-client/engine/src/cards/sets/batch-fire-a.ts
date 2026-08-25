@@ -570,14 +570,12 @@ card('Gravitational Correction', {
 
 // "At the end of turn, create a Fireball X, where X is one plus the number of
 // spell tokens you control. [Augment] Your spell tokens stay through regroup."
-// — rr/4 2/4. X is read at RESOLUTION from live state (R1). The trigger fires
-// after regroup wiped the battle's tokens, so X counts tokens made since
-// (e.g. during deployment) — exactly what "stay through regroup" would feed.
-// The [Augment] half is PARKED (see header): inert entry only.
-// "At the end of turn, create a Fireball X, where X is one plus the number of
-// spell tokens you control. [Augment] Your spell tokens stay through regroup."
-// — rr/3 2/3 Fire Unit. Text-box [Augment]: live on the card played normally
-// AND donated to a host (Hooba-Lin convention, below).
+// — rr/4 2/4 Infernal Elemental Unit. Text-box [Augment]: live on the card
+// played normally AND donated to a host (Hooba-Lin convention, below).
+//
+// The TRIGGER half: X is read at RESOLUTION from live state (R1). It fires
+// after regroup has wiped the battle's tokens, so X counts the ones made
+// since — exactly what "stay through regroup" feeds it.
 //
 // The [Augment] half is a STATIC, not a trigger and not a replacement hook
 // (playtest ZQPC/SAAY: "my fireball was erased during regroup even tho I have

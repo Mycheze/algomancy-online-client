@@ -167,13 +167,6 @@ function playedFromElsewhere(ev: EngineEvent): boolean {
 
 // ───────────────────────────── the cards ──────────────────────────────
 
-// "Cards played during battle gain [Pay 2 life]." — ll/2 2/2 {Haste} {Switch}
-// Holy Unit. PARKED (header): a blanket additional cast cost on every card
-// played in a phase is the general cost-modifier layer docs/08 puts out of
-// scope. Registered bare, so it plays and fights as a printed 2/2 haste unit.
-// ⚠ TRANSCRIPTION: the type line carries a bare `{Switch}` — the only card in
-// the whole pool that does, and the rules text has no [Switch]/[Switch1]
-// marker to go with it. Flagged, not guessed at: no graftEffect is invented.
 // "Cards played during battle gain [Pay 2 life]." — ll/2 2/2 {Haste}
 // {Switch} Holy Unit. R60: the life half of the cost-modifier layer (R59
 // brought the mana half in for Tranquility). Scoped exactly as printed:
@@ -183,6 +176,11 @@ function playedFromElsewhere(ev: EngineEvent): boolean {
 //  · everyone's cards, not just the opponent's — including my own.
 // Region-scoped like every other cost mod (R12): the Arbiter taxes the
 // battle it is standing in, not one happening elsewhere.
+//
+// ⚠ TRANSCRIPTION (still open, and NOT a park): the type line carries a bare
+// `{Switch}` — the only card in the whole pool that does — and the rules text
+// has no [Switch]/[Switch1] marker to go with it. Flagged, not guessed at: no
+// graftEffect is invented.
 card('Arbiter of Armistice', {
   costMods: [{
     life: (g, _self, ctx) =>

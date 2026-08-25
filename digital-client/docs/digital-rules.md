@@ -9873,3 +9873,126 @@ the whole tail back into `exchangeInPlace`. The last reddens both conformance
 tests and the widened census sweep, and nothing else in the suite. That is the
 measurement CT-43 asked for: the copy is invisible from the card's side, which
 is why the sharing has to be asserted directly.
+---
+
+## R155 — a `{ todo: true }` test is not a record of anything, and a static can be a park too
+
+**Bena, 2026-08-25.** Not a rules change; nothing in `engine/src/engine.ts` was
+touched. This is the tail of the park-hygiene programme that `CARD_LEDGER`
+started, and it closes the two ways a gap could still hide.
+
+### The incident this is still about
+
+Harbinger of Immolation's printed second half — "[Augment] Your spell tokens
+stay through regroup" — was dead for two days behind a fully green suite. It
+was "tracked" by a batch-header comment and by a `{ todo: true }` test naming
+the primitive it was waiting on. **A `{ todo: true }` test can never fail, and
+a comment cannot fail at all.** Two playtest reports and a conceded game went
+by while `npm test` reported a number nobody had to act on.
+
+### The rule
+
+**The count of `{ todo: true }` tests in `engine/test/` is ZERO, and stays
+zero.** Asserted by `90-coverage-census.test.ts`, over every `.ts` in `test/`
+(a helper can call `test()` too), printing the population it scanned so the
+zero has a denominator.
+
+It is a hard zero and not a floor, unlike every other census in that file. A
+todo is not a weak test; it is a test-shaped hole. A gap that genuinely cannot
+be built yet is declared where declarations get checked against reality:
+`test/card-ledger.ts` for a dead card half (both directions, every run) or
+`test/card-todo.ts` for anything else.
+
+The last one was Its Dark Bubb's `{Inverted}`, parked on "stat layer 5, which
+the engine does not have". The engine had had it since **R93**, and layer 6
+({Unaware}) since **R106** — the park outlived its reason by two engine waves
+while reading as a tracked gap on every run. It is four real tests now, in
+`test/43-dark-c.test.ts`, including the multi-source case that separates the
+three readings of "invert the stat changes": the net change from base negated
+once (R93, shipped), the per-source deltas negated and summed, and each
+operation run backwards ("{Tough} inverted = halve"). Caleb's own worked
+example cannot tell the first two apart, because with only layer-4 attributes
+in play they agree; a board with a `+1/+1` counter *under* a `{Tough}` can,
+and does — `[1, -2]` where the other readings say `[1, -1]` and `[1, 2.5]`.
+
+### The blind spot in the sweep that was supposed to catch this
+
+`71-card-ledger.test.ts::deadShapes` is the guard standing between this repo
+and the next Harbinger. It read bare definitions and the `run` bodies of
+`abilities` / `augmentText` / `spellEffect` / `graftEffect` — and was
+**structurally blind to a gap written as a static or a flag**. That is not
+hypothetical: Harbinger's *fixed* half is `statics: [{ affects,
+survivesRegroup: true }]` with no run anywhere, and Arbiter of Armistice's
+entire printed text is one `costMods` entry. A dead one of either read as a
+live card and had no ledger entry demanded of it.
+
+Worse, `statics: []` — an empty array — is `!== undefined`, so it satisfied the
+bare-definition check for free. The one-line difference between `card('X', {})`
+and `card('X', { statics: [] })` was the difference between "the sweep demands
+an entry" and "the sweep says fine", for two definitions that do the same
+nothing.
+
+`inertShapes` closes the decidable part, and **only** the decidable part.
+
+**What it can see** — literals:
+
+- a behaviour key present but EMPTY (`statics: []`, `costMods: []`), which also
+  no longer counts as behaviour for the bare-definition check;
+- a `StaticMod` that projects nothing: no `dp`/`dt`/`baseP`/`baseT`/`attrs`/
+  `suppressAttrs`/`suppressAbilities`/`survivesRegroup`, or every one it
+  carries provably zero (`0`, `false`, `[]`, `() => 0`);
+- a predicate whose whole body is the literal `false` — `affects: () => false`
+  (matches nothing), `when: () => false` (can never queue). A body that
+  *mutates* on the way to returning `false` is not constant, which is what
+  keeps the bookkeeping pattern (Powerforge Synergist, Ancient One) off the
+  list;
+- a `CostMod` with no channel, or whose every channel is a constant `0`.
+
+**What it cannot see, and never will:**
+
+- whether an arbitrary predicate can ever match. `affects: (g, self, t) =>
+  t.kind === 'unit'` on a card whose text is about spell tokens matches
+  nothing, forever, and reads as live — Harbinger's own definition carries a
+  comment warning about exactly that mistake. Deciding it is deciding an
+  arbitrary program;
+- a `when()` gated on a state the card's events never produce, or a cost
+  function whose arithmetic cancels on every real board;
+- a live flag whose READER was deleted;
+- anything about whether the behaviour matches the PRINTED TEXT. A card can
+  carry a fully live static implementing the wrong sentence.
+
+The narrowness is the point. **An honest floor beats a check that claims more
+than it does** — CARD-TODO #9's "97-card phantom band" is what the other thing
+looks like. Both halves carry a synthetic canary registered by the test file
+itself, so the detectors are proved on every run rather than on the day
+somebody needs them, and Harbinger and Arbiter are asserted as live positive
+controls: a sweep that cries wolf on working cards gets suppressed, and then
+the next Harbinger walks straight past it. The population it scans (49 statics
+/ 6 cost mods / 99 `when()` guards on 2026-08-25) is printed and floored from
+below for the same reason — a guard over an empty set is worse than no guard.
+
+### Notes deleted, because a park note that outlives its reason is the disease
+
+Four pre-fix blocks were still sitting in the tree directly above the code that
+had replaced them: Harbinger's "[Augment] half is PARKED … inert entry only"
+(`batch-fire-a.ts`), Arbiter's "PARKED (header) … Registered bare"
+(`batch-light-a.ts`, whose own batch header a hundred lines up already said
+"none left in this batch"), Beyond, Codex Incarnate's rot replacement as "the
+only clause still parked" (`batch-dark-c.ts` — shipped in R102, and
+`registry.ts` says so outright), and three "still cut" bullets in
+`engine/README.md` naming things that shipped in R93/R106, R91 and R119.
+
+⚠ **The stale block was the one with the RIGHT numbers.** Harbinger is printed
+`rr`/4 2/4; the surviving live block quoted "rr/3 2/3 Fire Unit", which is
+wrong on the mana, the defense and the type line, and the deleted block also
+carried the only note about the trigger's X being read at resolution (R1).
+Deleting a stale block is not the same as deleting a block — both were read
+before either was cut, and the survivor was corrected and given the R1 note
+back.
+
+The README's claim that "the todo count is the backlog" went with them;
+`test/53-playtest-round7.test.ts` cites that rule and now says it is retired.
+
+Still genuinely parked, and untouched: Blightwalker's `[Switch1]` graft rider,
+the power/defense SWITCH, voluntary combat-damage over-assignment, burst-token
+cast order, Rotbeast's mod-moving approximation.

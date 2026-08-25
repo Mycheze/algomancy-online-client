@@ -99,9 +99,15 @@
  *    owner supplied the "Beyond, Codex Incarnate" card face on 2026-08-22, so
  *    the transform target exists (a registerSynthetic in registry.ts); and no
  *    "transform machinery" was needed after all — `Entity.card` is the card's
- *    identity, so turning it over is one assignment. The only clause still
- *    parked is BEYOND's own rot replacement, which prints "target unit" and
- *    sits on a hook with no decision window; see the card comment and R101.
+ *    identity, so turning it over is one assignment. BEYOND's own rot
+ *    replacement was the one clause R101 left behind — it prints "target
+ *    unit" and sits on a hook with no decision window — and R102 built it:
+ *    `replaceRotDamage` does the substitution and fires a 'rotReplaced' event
+ *    (src/types.ts, src/engine.ts) that Beyond's own trigger answers, so the
+ *    targeting happens on the stack where a decision window exists.
+ *    registry.ts's Beyond comment says it outright: "LIVE as of R102". The
+ *    only entry on this list still describing a real gap is the structural
+ *    one at the bottom.
  *  - Its Dark Bubb WORKS as of R93 (playtest report #73, 2026-08-22). {Inverted}
  *    is stat layer 5 and it now exists: layer 5 negates the NET stat change
  *    from base, i.e. `2*base - current`, applied after layer 4. Caleb worked

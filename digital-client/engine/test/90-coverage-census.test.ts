@@ -178,6 +178,105 @@ function namedCounts(): Map<string, number> {
   return counts;
 }
 
+/* ── R155: THE HARBINGER TRAP IS BOLTED SHUT ──────────────────────────────
+ *
+ * The count of `{ todo: true }` tests in test/ is ZERO, and this is what keeps
+ * it there.
+ *
+ * WHY IT IS A HARD ZERO AND NOT A FLOOR. A todo can never fail. That single
+ * property is this repo's founding incident: Harbinger of Immolation's printed
+ * second half was dead for two days behind a fully green suite because it was
+ * "tracked" by a batch comment and a todo, and neither of those can contradict
+ * anything. Every other census in this file is a floor that may drift; a todo
+ * is not a weak test, it is a test-shaped hole, so the only honest number is
+ * none. The last one — Its Dark Bubb's {Inverted}, parked on a stat layer that
+ * had shipped two engine waves earlier — was promoted to four real tests in
+ * 43-dark-c on 2026-08-25.
+ *
+ * A gap still gets tracked, just not by something that cannot fail:
+ *   · a card half that does nothing → test/card-ledger.ts, checked in both
+ *     directions by 71-card-ledger (which now also reads statics, cost mods
+ *     and trigger guards — R155);
+ *   · anything else → test/card-todo.ts, whose entries are asserted to still
+ *     be true (83-card-todo).
+ *
+ * WHY IT LIVES HERE and not in 71-card-ledger. 71 is about the CARD POOL: its
+ * sweep reads card definitions and its exemption lists are card names, so a
+ * todo about the client, the server or the stack would be out of its scope
+ * entirely. This ban is over test/ as a corpus, which is the population this
+ * file already enumerates, prints and floors.
+ *
+ * ⚠ TWO false-positive traps, both hit while writing this:
+ *
+ *  1. A dozen files in test/ MENTION `{ todo: true }` in prose — the paragraph
+ *     you are reading does it twice — so the decision has to be made on CODE.
+ *     That is `stripCode` (R148), applied to each `test(` HEADER rather than
+ *     to the whole file, because:
+ *  2. `stripCode` is not sound over a whole test file. A REGEX LITERAL
+ *     containing a quote character — `/(['"`])…/`, which 71-card-ledger uses
+ *     to parse test titles — opens a string as far as the stripper is
+ *     concerned and desynchronises everything after it. Whole-file stripping
+ *     turned that file into garbage that contained a stray `todo: true`, and
+ *     the first draft of this check reported it as a violation. A `test(`
+ *     header is a title and an options object: no regex literals, so the
+ *     stripper is sound over one.
+ *
+ * And headers are found line-anchored (`^\s*test(`), which is how all 2228 of
+ * them are written — that alone drops `re.test(…)`, the other thing a bare
+ * `\btest\s*\(` matches.
+ */
+
+/** every `test(` header in `src`, bounded at the callback's `=>` or at the
+ *  next `test(`, whichever comes first — a `function () {}` callback has no
+ *  `=>` of its own and would otherwise swallow the file down to the next one. */
+function testHeaders(src: string): string[] {
+  const starts = [...src.matchAll(/^[ \t]*test\s*\(/gm)].map(m => m.index);
+  return starts.map((at, i) => {
+    const arrow = src.indexOf('=>', at);
+    const next = starts[i + 1] ?? src.length;
+    return src.slice(at, Math.min(arrow < 0 ? src.length : arrow, next));
+  });
+}
+/** the title, for a header that has one — every string literal in it, joined,
+ *  because titles here are routinely concatenations */
+const titleOf = (header: string) =>
+  [...header.matchAll(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g)].map(x => x[2]!).join('');
+
+test('R155: not one test in test/ is `{ todo: true }` — a todo can never fail (the Harbinger trap)', () => {
+  // every .ts, not just *.test.ts: a `test()` called from an imported helper
+  // registers exactly the same way, and card-todo.ts / card-ledger.ts are the
+  // two files most likely to grow one.
+  const files = fs.readdirSync(HERE).filter(f => f.endsWith('.ts')).sort();
+  const offenders: string[] = [];
+  let scanned = 0;
+  for (const f of files) {
+    const headers = testHeaders(fs.readFileSync(path.join(HERE, f), 'utf8'));
+    scanned += headers.length;
+    const todos = headers.filter(h => /todo\s*:\s*true/.test(stripCode(h)));
+    if (todos.length) offenders.push(`${f}: ${todos.length} — ${todos.map(titleOf).join(' | ')}`);
+  }
+
+  console.log(
+    `    todo census: ${scanned} tests across ${files.length} files in test/ · `
+    + `${offenders.length} files carry a { todo: true }`);
+
+  assert.deepEqual(offenders, [],
+    'these files contain a { todo: true } test:\n  ' + offenders.join('\n  ')
+    + '\n\nA { todo: true } test CANNOT FAIL, so it tracks nothing — it only makes the '
+    + 'suite report a number nobody has to act on. That is exactly how Harbinger of '
+    + "Immolation's second half stayed dead through two playtest reports and a conceded "
+    + 'game. Write the real test (it may fail — that is the point), or, if the gap is '
+    + 'genuinely not buildable yet, declare it where declarations get checked: '
+    + 'test/card-ledger.ts for a dead card half, test/card-todo.ts for anything else. '
+    + 'Both are asserted against reality on every run; a todo is asserted against nothing.');
+
+  // and the scan itself must not go blind: if `test(` stops being how a test
+  // is written here, this whole check silently passes over an empty set.
+  assert.ok(scanned > 1500,
+    `only ${scanned} test() headers found across test/ — the scan has stopped seeing the `
+    + 'suite, so its zero means nothing (measured 2026-08-25: comfortably above this).');
+});
+
 test('every excluded sweep file still exists — an exclusion cannot outlive its cause', () => {
   const present = new Set(testFiles().map(f => f.slice(0, 2)));
   const gone = Object.keys(SWEEPS).filter(p => !present.has(p));
