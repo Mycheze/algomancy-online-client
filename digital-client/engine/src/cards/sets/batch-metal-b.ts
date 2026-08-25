@@ -430,9 +430,17 @@ card('Perish', {
         ...present.filter(s => s === ctx.controller),
         ...present.filter(s => s !== ctx.controller),
       ];
+      // R1: "amounts are computed at RESOLUTION" — and Perish resolves ONCE, so
+      // every player's half is the half they had at that single moment. The
+      // count used to be recomputed as each seat's picks began, caster first,
+      // so a death trigger off the CASTER's own sacrifices could shrink the
+      // opponent's board before their number was taken — and the opponent then
+      // sacrificed half of an already-reduced army. Snapshot all of them first.
+      const quota = new Map<Seat, number>(
+        seats.map(s => [s, Math.ceil(g.unitsOf(s, ctx.region).length / 2)]));
       for (const seat of seats) {
         const units = () => g.unitsOf(seat, ctx.region);
-        const n = Math.ceil(units().length / 2);
+        const n = quota.get(seat)!;
         for (let i = 0; i < n; i++) {
           const pool = units();
           if (!pool.length) break;

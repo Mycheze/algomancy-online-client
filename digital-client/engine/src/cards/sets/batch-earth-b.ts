@@ -43,7 +43,7 @@
  *    but engine.ts commitItem only LOGGED it for spell and ability targets,
  *    so no spell in the game could trigger it. Playtest 2026-08-19 (R53).
  */
-import type { Entity, EntityId, Seat } from '../../types.ts';
+import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, isGraftMultiplier, type EffectDef } from '../dsl.ts';
 import { selfOf, chooseUnit } from './helpers.ts';
@@ -504,8 +504,27 @@ card('Return to Nature', {
         (e.kind === 'unit' || e.kind === 'spellToken') && e.region === ctx.region
         && !e.absent && e.mods.length > 0);
       for (const u of modded) {
+        // R65/R156: an erase must reach the PUBLIC ERASED PILE, and each card
+        // reaches its OWN owner's pile — a mod's owner is the player who
+        // applied it, not the unit's controller. This used to be a bare
+        // `delete` plus an 'info' line, so a nontoken mod card left the game
+        // and neither player could see where it went. `E.ev('erased', …)` is
+        // the only thing that files the pile (E.ev reads `seat` + `cards`),
+        // which is the same line disposeToBin emits for a token mod.
+        const mods = u.mods.map(id => g.entity(id)).filter((m): m is Entity => !!m);
+        const byOwner = new Map<Seat, CardName[]>();
+        for (const m of mods) {
+          const list = byOwner.get(m.owner) ?? [];
+          list.push(m.card);
+          byOwner.set(m.owner, list);
+        }
+        for (const [owner, cards] of byOwner) {
+          g.ev('erased', `${cards.join(', ')} — erased from ${u.card} by Return to Nature.`,
+            { seat: owner, cards });
+        }
+        const n = u.mods.length;
         for (const id of u.mods) delete g.s.entities[id];
-        g.ev('info', `Return to Nature erases ${u.mods.length} mod(s) from ${u.card}.`);
+        g.ev('info', `Return to Nature erases ${n} mod(s) from ${u.card}.`);
         u.mods = [];
         touched++;
       }

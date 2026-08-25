@@ -25,7 +25,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
-import { getCard, isAugment } from '../src/cards/dsl.ts';
+import { getCard, isAugment, type EffectCtx } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, offered, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,
@@ -642,6 +642,68 @@ test('Perish: each player here sacrifices half of their units, rounded up', () =
   assert.ok(h.state.players[D]!.bin.includes('Lurking Slimebeast'), 'sacrifices go to the bin');
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Unit Token').length, 2, 'both of A\'s picks binned');
   finishBattle(h);
+});
+
+test("Perish: every player's half is measured at RESOLUTION, before anyone sacrifices", () => {
+  // Found 2026-08-25 by the divergence sweep. R1: "amounts are computed at
+  // resolution" — and Perish resolves ONCE, so each player's half is the half
+  // they had at that single moment. The count used to be recomputed as each
+  // seat's picks began, CASTER FIRST, so anything that shrank the opponent's
+  // board while the caster was still sacrificing (a death trigger off the
+  // caster's own losses) meant the opponent then sacrificed half of an
+  // already-reduced army — paying twice for one spell.
+  //
+  // Driven through the effect directly with a `choose` stub, because the point
+  // is what happens BETWEEN two picks: the stub removes one of D's units while
+  // A is still choosing, exactly as a death trigger would.
+  const h = new Harness(2718);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const a1 = spawn(h, A, 'Unit Token');
+  const a2 = spawn(h, A, 'Unit Token');
+  const a3 = spawn(h, A, 'Unit Token');
+  const d1 = spawn(h, D, 'Unit Token');
+  const d2 = spawn(h, D, 'Unit Token');
+  const d3 = spawn(h, D, 'Unit Token');
+  // R25: a HOME region lists only its owner in presentSeats, so "each player"
+  // reaches nobody else outside battle. Both seats have to actually be present
+  // for this test to be about what it says it is about.
+  giveResources(h, A, 'metal', 4);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2], [a3]] });
+  const e = new E(h.state);
+  const region = e.s.battle!.region;
+  assert.equal(e.s.regions[region]!.presentSeats.length, 2, 'both seats are in the battle region');
+
+  const asked: Record<number, number> = { [A]: 0, [D]: 0 };
+  let sabotaged = false;
+  const choose = (_key: string, q: { seat: Seat; options: { value: unknown }[] }): unknown => {
+    asked[q.seat] = (asked[q.seat] ?? 0) + 1;
+    // while the CASTER is still picking, quietly remove one of D's units
+    if (q.seat === A && !sabotaged) {
+      sabotaged = true;
+      const victim = e.entity(d3);   // one of D's, mid-way through A's picks
+      if (victim) e.destroy(victim, 'is sacrificed');
+    }
+    return q.options[0]!.value;
+  };
+
+  getCard('Perish').spellEffect!.run(e, {
+    controller: A, sourceName: 'Perish', region, targets: [], x: undefined,
+    event: null, choose,
+  } as unknown as EffectCtx);
+
+  // Count units LOST, not `choose` calls: Perish auto-picks when only one
+  // option is left, so a call count undercounts by one on a board that runs
+  // down to a single unit. (I wrote it the wrong way round first.)
+  assert.equal(e.entity(d3), undefined, 'the sabotage really removed one of D\'s units mid-pick');
+  const dLeft = e.unitsOf(D, region).length;
+  assert.equal(dLeft, 0,
+    `D had 3 units when Perish RESOLVED, so D owes 2 — and one more was taken by the `
+    + `sabotage, leaving none. Recomputing the quota per seat would have asked D for only `
+    + `ceil(2/2) = 1 and left a unit standing, turning a death trigger off the caster's own `
+    + `sacrifices into a discount on the opponent's half. ${dLeft} left.`);
+  assert.equal(e.unitsOf(A, region).length, 1, 'and the caster still paid its own half of 3');
 });
 
 // ── Powerforge Synergist ─────────────────────────────────────────────────

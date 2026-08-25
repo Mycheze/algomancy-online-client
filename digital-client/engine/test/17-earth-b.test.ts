@@ -661,3 +661,45 @@ test('printed {Unstable} census: the flag mirrors the type line over the whole p
       `${n}: Printed.unstable must mirror the {Unstable} marker on "${def.type}"`);
   }
 });
+
+// ── R65: Return to Nature's erases reach the public pile ───────────────────
+//
+// Found 2026-08-25 by the 30-file divergence sweep. PRINTED: "Negate all
+// effects. Erase all mods." The mod erasure was a bare
+// `delete g.s.entities[id]` plus an 'info' line — so a nontoken mod card left
+// the game and NEITHER PLAYER COULD SEE WHERE IT WENT. `E.ev('erased', …)` is
+// the only thing that files the R65 pile, and every other erase in the pool
+// emits it (Finality, Necromantic Rebuke, Spore of Regenesis, and
+// disposeToBin's own token-mod line).
+//
+// The half that makes this worth a test rather than a one-liner: a mod's
+// OWNER is whoever applied it, not the unit's controller — so a host wearing
+// one mod from each player must file one card on EACH player's pile. Grouping
+// by the unit's controller would put both on one pile and read as correct on
+// any single-owner board.
+test('Return to Nature: each erased mod reaches its OWN owner\'s erased pile', () => {
+  const h = new Harness(4242);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const O = (1 - P) as Seat;
+  const hostId = spawn(h, P, 'Tidal Menace');
+  const e = new E(h.state);
+  const host = e.entity(hostId)!;
+  e.attachMod(host, 'Nothyr', P, 'augment');            // mine
+  e.attachMod(host, 'Chitin Shredder', O, 'graft');     // theirs
+  const beforeP = (h.state.players[P]!.erased ?? []).length;
+  const beforeO = (h.state.players[O]!.erased ?? []).length;
+
+  getCard('Return to Nature').spellEffect!.run(e, {
+    controller: P, sourceName: 'Return to Nature', region: host.region,
+    targets: [], x: undefined, event: null,
+    choose: () => { throw new Error('Return to Nature asked a question'); },
+  } as unknown as EffectCtx);
+
+  assert.deepEqual((h.state.players[P]!.erased ?? []).slice(beforeP), ['Nothyr'],
+    "the mod P applied must reach P's erased pile");
+  assert.deepEqual((h.state.players[O]!.erased ?? []).slice(beforeO), ['Chitin Shredder'],
+    "the mod O applied must reach O's pile — grouping by the HOST's controller would "
+    + 'put both cards on one pile, which reads as correct on a single-owner board');
+  assert.deepEqual(e.entity(hostId)?.mods ?? [], [], 'and the mods really are gone');
+});
