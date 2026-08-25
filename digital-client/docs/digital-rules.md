@@ -12083,3 +12083,78 @@ it had not reached, and it found three bare `return`s: Adversary of the Deep
 now. This is the Earthbound Replicator precedent, recorded in that card's own
 comment: *"R84 surfaced this one: the Alluring trigger changed what the
 conformance drive reaches, and this guard aborted in silence."*
+
+---
+
+## R173 — a guard that cannot reach the reported code path is not a guard
+
+*2026-08-25. No rule changed and no behaviour changed: this is a ruling about
+the ledger, and about four entries in it that were marked FIXED on the strength
+of tests that could never have failed on the bug.*
+
+`engine/test/playtest-ledger.ts` holds 103 reports the owner filed from inside a
+game, and a `fixed` entry cites `guards: ['<file>::<substring of a test name>']`.
+`83-card-todo.test.ts` checks that the named test **exists**. That is a weaker
+statement than it reads as, and the house rule is now written down:
+
+> **Check the guards, not the status.** A report marked FIXED whose guards
+> cannot reach the reported code path is not fixed. A test that cannot fail is
+> the worst artefact in this repo.
+
+### The shape that keeps recurring
+
+**A guard that unit-tests the last hop with a hand-built input, for a report
+about the whole chain.** `ui/inspect.ts` is the honest place to put the
+judgement, and the tests over it are the right tests *for it* — but a report is
+never about a function, it is about what reached the player's screen. Four
+entries were guarded only by tests of the form
+
+```ts
+stackItemX(xItem({ kind: 'triggered', card: 'Awoken Tomb', event: dmgEvent(2) }))
+```
+
+which proves the reader reads an event that is **already attached**. The
+player's complaint was that nothing reached them attached to anything.
+
+### What is actually unguarded, in each case
+
+The gap is never the function; it is the **seam** on either side of it.
+
+* **#45 / #43 — "the trigger on the stack doesn't say what X is."** The seam is
+  the engine pushing a real `StackItem`, and `server/view.ts` serving it to the
+  seat that has to respond. Deleting `event: ev` from `E.queueTrigger` *does*
+  redden the Awoken Tomb effect tests, because `EffectCtx.event` reads the same
+  field — the *existence* of the event is guarded. What was guarded nowhere is
+  that the item a **responder** is handed still carries `x` and `event`: a
+  view-layer redaction of those two fields blanks the badge exactly as
+  reported, with all 99 tests of `50-ui-inspect`, all 37 of `56-ui-flash` and
+  both effect files green.
+* **#18 — "it asks me to pass but I can't."** The cited guards were a rules fact
+  (`legalActions(state, other) === []`, true before the fix as well) and the
+  wording of `waitingNote`. Neither paints a bar. The fix is one branch in
+  `ui/main.ts::promptHtml`; nothing in the repo drove the client with the empty
+  legal list the branch exists for.
+* **#53 — "damage and all effects happened instantly."** `combatStages` was
+  tested on hand-written event arrays. Whether the **client feeds it** was not:
+  cutting `absorbBeats(events)` out of the update path leaves all 37 of them
+  green and puts the whole damage step back in one frame.
+
+### The rule for a new guard
+
+1. **Drive the real producer.** A real `Harness` for an engine fact, and the
+   real `ui/main.ts` through `test/ui-driver.ts` for anything the player *sees*.
+   A report about markup is not settled by a test of a pure function that
+   markup happens to call.
+2. **Read it where the player reads it.** For anything a responder is meant to
+   see, assert against `viewFor(state, seat)`, not `h.state`. The server is a
+   hop, and a hop that drops a field is invisible to every engine-side
+   assertion.
+3. **Assert the control case too.** "No Pass button" is satisfied by a board
+   that never draws one. The same fixture must show the button when the window
+   really is yours.
+4. **Red-check by mutating the code the REPORT is about, and report both
+   halves** — the old guard staying green *and* the new one reddening. A new
+   guard that reddens is worth nothing until the old one has been shown not to.
+
+Guards live in `engine/test/146-report-guards.test.ts`; the four measurements
+above are recorded in its header.
