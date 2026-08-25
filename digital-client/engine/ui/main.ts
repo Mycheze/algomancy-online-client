@@ -1554,7 +1554,15 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     for (const col of b.columns) col.forEach(id => inFormation.add(id));
     for (const col of Object.values(b.blocks)) col.forEach(id => inFormation.add(id));
   }
-  for (const col of ui.columns) col.forEach(id => inFormation.add(id));
+  // ⚠ `ui.columns` is SPARSE by construction: the drop handler writes
+  // `ui.columns[ci] = dropIntoRow(ui.columns[ci] ?? [], …)` into a `[]`, so
+  // blocking attacking column 2 first leaves holes at 0 and 1. `for…of` walks
+  // holes and yields `undefined` (unlike .map/.filter/.forEach, which skip
+  // them) — so this line threw a TypeError out of regionPanelHtml and the board
+  // stopped repainting, for every player whose first blocker did not go on
+  // column 0. Every other reader of ui.columns already skips holes; blockPlan()
+  // guards with the same `col &&`. 2026-08-25.
+  for (const col of ui.columns) if (col) col.forEach(id => inFormation.add(id));
   ui.send.forEach(id => inFormation.add(id));
   // ZQPC: a spell token you have chosen to bring along is part of the attack
   // being built, not part of the region any more — it renders in the battle

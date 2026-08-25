@@ -365,6 +365,35 @@ test('the row you click is the row you get — the second blocker stays behind t
     + 'that was clicked was thrown away and every drop became a front-row drop');
 });
 
+test('a first blocker on a column other than 0 does not crash the board (sparse ui.columns)', () => {
+  // FOUND 2026-08-25 by a driver probe, on its first click. `ui.columns` is
+  // SPARSE by construction — the drop handler writes
+  // `ui.columns[ci] = dropIntoRow(ui.columns[ci] ?? [], row, …)` into a `[]`,
+  // so blocking attacking column 2 FIRST leaves holes at 0 and 1.
+  //
+  // `regionPanelHtml` walked it with `for (const col of ui.columns)`, and
+  // for…of YIELDS holes as `undefined` — unlike .map / .filter / .forEach,
+  // which skip them, and unlike blockPlan(), which already guarded with
+  // `col && col.length`. So `col.forEach` threw a TypeError out of the render
+  // and THE BOARD STOPPED REPAINTING, in every network game, for any player
+  // whose first blocker did not go on column 0.
+  //
+  // The assertion is that the board still PAINTS and the blocker is really on
+  // column 2 — not merely that nothing threw, since a swallowed error would
+  // satisfy that.
+  const { h, D, def } = blockStep(5599,
+    ['The Foretold', 'The Foretold', 'The Foretold'], ['The Foretold']);
+  ui.join(h.state, D, legalActions(h.state, D));
+  ui.click({ act: 'unit', id: String(def[0]!) });
+  const board = ui.click({ act: 'slot', ci: '2', row: '0' });
+  assert.ok(board.includes('<div class="col"'),
+    'the board did not repaint after the drop — regionPanelHtml threw on a hole in ui.columns');
+  assert.deepEqual(blockersUnder(board, 2), [def[0]!],
+    'the blocker is on the column that was clicked');
+  assert.deepEqual(blockersUnder(board, 0), [],
+    'and columns 0 and 1 are still empty — the holes are holes, not misplaced blockers');
+});
+
 /* ⚠ dropIntoRow's OTHER half — dropping onto an occupied front row, which
  * pushes the sitting unit back — has no click that reaches it: once a row is
  * occupied the board draws the unit there instead of the slot, and clicking
