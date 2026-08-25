@@ -66,6 +66,136 @@ export function segmentKey(s: GameState): SegKey | null {
   return null;
 }
 
+/* ── R150 / CT-32: ONE SEAT'S TRIGGERS MUST NOT FREEZE THE OTHER SEAT ──────
+ *
+ * Playtest #98 (SMVJ, action 238): *"Rashi's start of combat (doing all her
+ * Wraith triggers) doesn't need to take away from what I'm doing in
+ * Deployment."*
+ *
+ * WHAT ACTUALLY BLOCKS — and it is NOT the presentation layer.
+ *
+ * The engine is a single pure reducer over ONE state, and `apply()` opens with
+ * a global gate:
+ *
+ *     if (e.s.decision && action.type !== 'decide' && action.type !== 'concede')
+ *       e.illegal(`a decision is pending for ${...}`);
+ *
+ * and `legalActions()` opens with the matching one — `if (s.decision) return
+ * legalDecisionActions(...)`, which returns [] for the seat that does not own
+ * it. So while the OPPONENT is mid-answer, this seat is handed an EMPTY legal
+ * list and every action it sends is refused by name. The client's "Waiting for
+ * X…" bar (ui/main.ts) is a faithful drawing of that — un-gating the UI alone
+ * would just turn a frozen screen into a screen full of refusals.
+ *
+ * That gate is right in BATTLE, where priority is sequential and an opponent
+ * mid-resolution genuinely does hold the game. It is wrong in a HIDDEN
+ * SIMULTANEOUS SEGMENT, where by construction both seats are acting at once
+ * and neither can see the other — R144 put deployment triggers on the stack,
+ * so from that ruling onward a pile of start-of-deployment Wraith triggers
+ * sits there suspended on its controller's decision while the other player is
+ * simply trying to deploy.
+ *
+ * THE FIX, IN TWO HALVES, BOTH HERE (the engine stays untouched and pure):
+ *
+ *   legalForSeat   what the server PUBLISHES to a seat. Inside a segment, a
+ *                  decision belonging to the other seat is answered against a
+ *                  shadow state with `decision` cleared, so this seat's own
+ *                  deployment options are offered as normal.
+ *   arrivalVerdict what the server DOES with an action that arrives while such
+ *                  a decision is open: it is DEFERRED, not refused, and
+ *                  applied the moment the decision closes. Serialising two
+ *                  concurrent seats by arrival order is what the room already
+ *                  does with every other simultaneous action; this only widens
+ *                  it across a decision boundary.
+ *
+ * Nothing about redaction changes. `viewFor` still nulls a decision that is
+ * not yours, still serves the opponent's half of a segment from the freeze,
+ * and `E.beginResolving` still publishes `s.resolving` in the battle phase
+ * only — a segment must not leak that you are mid-something.
+ */
+
+/** How many actions one seat may have parked behind an opponent's decision.
+ * A human deploying while a trigger pile resolves sends a handful; anything
+ * past this is a client fault or a firehose, and is refused rather than
+ * queued. */
+export const MAX_DEFERRED = 8;
+
+/**
+ * The legal actions the server publishes to `seat`.
+ *
+ * The ONLY divergence from `legalActions` is the one CT-32 is about: inside a
+ * hidden simultaneous segment, a decision that belongs to the OTHER seat is
+ * not this seat's business and must not empty their list. Outside a segment
+ * (i.e. in battle) this is `legalActions` exactly, because there the block is
+ * the rule working.
+ *
+ * The shadow drops `suspension` with `decision` because they are one fact —
+ * `legalActions` reads neither on the paths this reaches, but leaving a
+ * suspension standing next to a null decision would be a state the engine
+ * never produces, and nothing downstream should have to reason about it.
+ */
+export function legalForSeat(state: GameState, seat: Seat, segKey: SegKey | null): Action[] {
+  if (segKey === null || !state.decision || state.decision.seat === seat) {
+    return legalActions(state, seat);
+  }
+  return legalActions({ ...state, decision: null, suspension: null }, seat);
+}
+
+/** What to do with an arriving action. */
+export type ArrivalVerdict =
+  /** apply it now, the way the server always has */
+  | 'apply'
+  /** park it: an opponent's decision is open inside a simultaneous segment,
+   * and it lands as soon as that decision closes */
+  | 'defer'
+  /** hand it to the engine and let it refuse by name (or accept it) — the
+   * pre-R150 path, kept for every case deferral must not cover */
+  | 'refuse';
+
+/**
+ * Should this action be applied, parked, or left to the engine's refusal?
+ *
+ * The negative cases are the load-bearing ones:
+ *  - a `decide`/`concede` is never parked: `decide` is the very thing that
+ *    closes the decision, and a concede must always be reachable (R65).
+ *  - a decision belonging to the ACTING seat is never parked. It is their own
+ *    question, they must answer it, and the engine's refusal is the right
+ *    answer — this is the negative control the tests assert.
+ *  - outside a hidden segment there is no concurrency to protect: battle is
+ *    sequential and the block is correct.
+ */
+export function arrivalVerdict(
+  state: GameState, action: Action, segKey: SegKey | null, parked: number,
+): ArrivalVerdict {
+  if (!state.decision) return 'apply';
+  if (action.type === 'decide' || action.type === 'concede') return 'apply';
+  if (state.decision.seat === action.seat) return 'refuse';
+  if (segKey === null) return 'refuse';
+  if (parked >= MAX_DEFERRED) return 'refuse';
+  return 'defer';
+}
+
+/** Park an action behind the opponent's open decision. */
+export function deferAction(room: Room, action: Action): void {
+  room.deferred[action.seat]!.push(action);
+}
+
+/**
+ * The parked actions that are now free to run, oldest first, cleared off the
+ * room. Empty while any decision is still open — a queue drained halfway
+ * would just hit the same gate.
+ *
+ * Both seats' queues drain together, each seat in its own arrival order. The
+ * interleaving BETWEEN seats is arbitrary, which is exactly what it already
+ * is for two people deploying at the same time.
+ */
+export function takeDeferred(room: Room): Action[] {
+  if (room.state.decision) return [];
+  const out = [...room.deferred[0]!, ...room.deferred[1]!];
+  room.deferred = [[], []];
+  return out;
+}
+
 /** Did this action move the id clock or the RNG stream? (the undo gate) */
 const movedIdOrRng = (before: GameState, after: GameState): boolean =>
   before.nextId !== after.nextId || before.rngState !== after.rngState;
@@ -414,6 +544,18 @@ export interface Room {
   /** index into `actions` where the open segment began (-1 outside one) —
    * undo may splice a seat's own actions at/after this point */
   segStartIndex: number;
+  /**
+   * R150/CT-32: actions parked behind the OTHER seat's open decision inside a
+   * hidden simultaneous segment, per seat, in arrival order.
+   *
+   * DERIVED and never persisted — an action only reaches `actions` once it has
+   * actually been applied, so a saved log is still exactly the game that was
+   * played and `replay-room.ts` still replays it straight through. A queue
+   * that outlives its segment is drained or refused before then; a server
+   * restart simply drops it, which is the same as the client's action never
+   * arriving.
+   */
+  deferred: [Action[], Action[]];
   /**
    * Per-action: did it move the id clock or the RNG stream?
    *
@@ -784,7 +926,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     rematch: [false, false], rematchRoom: null,
     state, actions: [], events, sockets: [null, null], forks: [], lost: [],
     segKey: null, segSnapshot: null, heldEvents: [[], []], segStartIndex: -1, segTouched: [],
-    segIdFloor: [], segRefs: [],
+    segIdFloor: [], segRefs: [], deferred: [[], []],
     clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
     building: [null, null],
   };
@@ -1466,7 +1608,7 @@ export function restoreRooms(): void {
         winner: state.winner ?? savedWinner,
         state, actions, events,
         sockets: [null, null], segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
-        segIdFloor, segRefs,
+        segIdFloor, segRefs, deferred: [[], []],
         forks: Array.isArray(raw.forks) ? raw.forks : [], lost: skipped,
         // nobody is connected right after a restart, so no clock runs yet
         clockMs, clockStamp: Date.now(), clockRun: [false, false],

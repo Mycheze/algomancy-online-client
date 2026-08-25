@@ -25,10 +25,11 @@ import { checkDeck, forcedAction, legalActions, IllegalAction } from '../engine/
 import { other, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
-  applyToRoom, clockSnapshot, createRematch, decidedWinner, getRoom, joinableRoom, openSegment, renameSeat,
+  applyToRoom, arrivalVerdict, clockSnapshot, createRematch, decidedWinner, deferAction, getRoom,
+  joinableRoom, legalForSeat, openSegment, renameSeat,
   reserveRoomCode, resolveLobby, roomExistsOrReserved, roomLobby,
   restoreRooms, roomWaiting, segmentKey, setLobbyMethod, setLobbySubmission, setRoomDeck,
-  setSeatUser, settleClock, undoForSeat, unlockLobby,
+  setSeatUser, settleClock, takeDeferred, undoForSeat, unlockLobby,
   type Room, type SegKey,
 } from './rooms.ts';
 import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
@@ -272,10 +273,24 @@ const forEachSeat = (fn: (seat: Seat) => void): void => { fn(0); fn(1); };
 function baseView(room: Room, seat: Seat) {
   return {
     view: viewFor(room.state, seat, room.segSnapshot),
-    legal: legalActions(room.state, seat),
+    // R150/CT-32: `legalForSeat`, not `legalActions` — inside a hidden
+    // simultaneous segment the OTHER seat's open decision must not empty this
+    // seat's list. See rooms.ts for why the engine's global gate is right in
+    // battle and wrong here.
+    legal: legalForSeat(room.state, seat, room.segKey),
     peers: peersOf(room),
     clock: clockSnapshot(room),
   };
+}
+
+/** Drain the forced steps a state owes (an empty board "attacks"/"blocks" by
+ * itself), appending their events to `into`. */
+function drainForced(room: Room, into: import('../engine/src/types.ts').EngineEvent[]): void {
+  for (let guard = 0; guard < 8; guard++) {
+    const f = forcedAction(room.state);
+    if (!f) break;
+    into.push(...applyToRoom(room, f));
+  }
 }
 
 /** Lobby state, attached to every message while the room is not a game yet.
@@ -688,15 +703,45 @@ wss.on('connection', ws => {
         const room = conn.room;
         // which hidden segment (if any) this action was taken INSIDE
         const wasKey = room.segKey;
+        // R150/CT-32: an opponent's open decision inside a hidden simultaneous
+        // segment PARKS this action instead of getting it refused by the
+        // engine's global decision gate. Nothing goes back on the wire: the
+        // client's own send-latch already paints "Sent — waiting for the
+        // server…", which is the truth, and leaving the latch on is also what
+        // stops the player double-sending the same deploy while it waits.
+        if (arrivalVerdict(room.state, action, wasKey, room.deferred[conn.seat]!.length) === 'defer') {
+          deferAction(room, action);
+          return;
+        }
         const hadWinner = room.state.winner !== null;
         // the committed declaration supersedes every in-progress one
         room.building = [null, null];
         const events = applyToRoom(room, action);
-        // drain forced steps (an empty board "attacks"/"blocks" by itself)
-        for (let guard = 0; guard < 8; guard++) {
-          const f = forcedAction(room.state);
-          if (!f) break;
-          events.push(...applyToRoom(room, f));
+        drainForced(room, events);
+        // …and now that this action may have CLOSED a decision, whatever the
+        // other seat parked behind it lands, in arrival order. Their events are
+        // kept separate: inside a segment they are still hidden from this seat
+        // (applyToRoom has already put them in the held queue for the reveal),
+        // so they must not ride out on this seat's update.
+        const oppEvents: import('../engine/src/types.ts').EngineEvent[] = [];
+        for (const parked of takeDeferred(room)) {
+          // a parked action can itself open a decision for its own seat, which
+          // re-parks whatever was queued behind it for the other one
+          if (arrivalVerdict(room.state, parked, segmentKey(room.state),
+            room.deferred[parked.seat]!.length) === 'defer') {
+            deferAction(room, parked);
+            continue;
+          }
+          const into = parked.seat === conn.seat ? events : oppEvents;
+          try {
+            into.push(...applyToRoom(room, parked));
+            drainForced(room, into);
+          } catch (err) {
+            // the world moved under it while it waited — the same refusal the
+            // player would have got instantly, told to the seat it belongs to
+            if (!(err instanceof IllegalAction)) throw err;
+            sendToSeat(room, parked.seat, { t: 'error', msg: err.message });
+          }
         }
         // ONE rule for all three hidden segments: the key changed → flush the
         // old segment's reveal, snapshot the new one. (Note that 'deploy' →
@@ -706,27 +751,38 @@ wss.on('connection', ws => {
         const nowKey = segmentKey(room.state);
         if (wasKey === nowKey) {
           if (wasKey) {
-            // still inside the same hidden segment: the actor sees their own
-            // events; the opponent gets a view refresh only (their half is
-            // frozen, but the done-flags are public)
+            // still inside the same hidden segment: each seat sees their own
+            // events (the other seat's parked actions are theirs, and stay
+            // held); a seat with nothing of its own gets a view refresh only,
+            // because their half is frozen but the done-flags are public
             sendUpdate(room, conn.seat, events);
-            sendUpdate(room, other(conn.seat), []);
+            sendUpdate(room, other(conn.seat), oppEvents);
           } else {
-            broadcastAfterAction(room, events);
+            broadcastAfterAction(room, [...events, ...oppEvents]);
           }
         } else {
           const opp = other(conn.seat);
-          // the actor's own final events (incl. the step/turn end) are the
-          // tail of the opponent's held queue; split them out so the reveal
-          // holds only what was actually hidden
-          const theirsHeld = wasKey ? room.heldEvents[opp]!.filter(e => !events.includes(e)) : [];
-          const mineHeld = wasKey ? room.heldEvents[conn.seat]!.filter(e => !events.includes(e)) : [];
+          // the segment is over, so everything applied this tick is public —
+          // both seats' own final events (incl. the step/turn end) are the
+          // tail of the reveal; split them out so it holds only what was
+          // actually hidden
+          const tail = [...events, ...oppEvents];
+          const theirsHeld = wasKey ? room.heldEvents[opp]!.filter(e => !tail.includes(e)) : [];
+          const mineHeld = wasKey ? room.heldEvents[conn.seat]!.filter(e => !tail.includes(e)) : [];
+          // a parked action cannot survive the segment it was taken in: refuse
+          // it rather than let it land in a phase its author never saw
+          for (const seat of [0, 1] as Seat[]) {
+            for (const lost of room.deferred[seat]!) {
+              sendToSeat(room, seat, { t: 'error', msg: `${lost.type} was still waiting when the step ended` });
+            }
+          }
+          room.deferred = [[], []];
           openSegment(room);   // close the old freeze, open the new one
           if (wasKey) {
-            sendReveal(room, conn.seat, mineHeld, events, wasKey);
-            sendReveal(room, opp, theirsHeld, events, wasKey);
+            sendReveal(room, conn.seat, mineHeld, tail, wasKey);
+            sendReveal(room, opp, theirsHeld, tail, wasKey);
           } else {
-            broadcastAfterAction(room, events);
+            broadcastAfterAction(room, tail);
           }
         }
         // the transition into a decided game — record it once

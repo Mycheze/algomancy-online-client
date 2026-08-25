@@ -9546,3 +9546,157 @@ in this game, not a definition invented to make {Unstable} work.** Two unrelated
 questions — "where does an Unstable card stop being erased?" and "where does a
 token still exist?" — landed on the same boundary from opposite directions. See
 R145 for what the rule actually says; it is not restated here.
+## R150 — a readable ceiling on the client, and one seat's decision no longer freezes the other
+
+Two owner playtest reports from room SMVJ, carried as **CT-28** (#94) and
+**CT-32** (#98). Both are pacing/concurrency, neither is a rules change, and
+`engine/src/engine.ts` and `engine/src/apply.ts` were not touched.
+
+### CT-28 (#94) — "a max speed of 1 thing per second"
+
+> *"We need a 'max speed' that the gamestate can resolve/put things onto the
+> stack. When someone has auto pass on and has nothing left to do, it's
+> impossible to keep up with what's going on currently."*
+
+The engine is a pure reducer and must not learn about wall-clock time — a delay
+in it would make the suite and `server/replay-room.ts` time-dependent. So the
+ceiling is a client one, in a new pure module, **`engine/ui/pace.ts`**, with the
+clock passed in exactly as `ui/flash.ts` takes it.
+
+**Why the pacing that already existed was not enough.** `ui/flash.ts` paces the
+story *within* one server batch (R80's combat stages, docs/11's stack beats).
+But a resolving stack is not one batch — it is one `update` **per resolution**,
+and a new batch deliberately *replaces* the beat queue. With auto-pass armed the
+updates arrive back to back at machine speed, each one cancelling the
+explanation of the one before. The missing knob was **between** batches.
+
+- `PACE_MS = 1000` is the single named interval; nothing else spells a number.
+- The queue carries `last` — the moment of the most recent **release** — and
+  spaces from that, not merely from what is still waiting. ⚠ **The first
+  version did the latter and was wrong**: real server updates arrive a few
+  hundred ms apart and drain completely between arrivals, so every one of them
+  found an empty queue and went straight out. The unit tests all passed
+  (they enqueued a burst before draining, and so never emptied it); a headless
+  Chrome run against a real two-seat game is what caught it. There is now a
+  DRIP test beside every BURST test.
+- `holdable(gate)` decides whether an update may wait. It is deliberately
+  narrow: an update is eligible **only** when it is not the echo of something
+  this client sent, carries no decision (a decision the client can see is
+  always its own — `server/view.ts` nulls the other seat's), is not the game
+  ending, and either offers **zero** legal actions or arrives with auto-pass
+  armed. Auto-pass is the player having said out loud that these windows are
+  not to be put to them; holding one gives them a readable second where the
+  old `sendAutoPass` gave them 280ms.
+- **An un-holdable update FLUSHES the backlog rather than jumping it.** This is
+  the answer to "the throttle must never leave the client behind the server
+  when it is that player's turn to act": the moment anything actionable
+  arrives, everything queued ahead of it is released *with* it, in order. The
+  client can therefore never be painting an old board while asking a live
+  question, and the only states it ever holds are states with nothing to do.
+- **Skip**: a `catching up (n) — ⏭ skip` chip beside the auto-passing chip, and
+  the `S` key. `paceFlush` spends the whole queue in one step. Deliberately not
+  Enter or Space — those confirm game actions, and the skip must only ever move
+  the *screen* forward.
+- Input is never delayed: `NetBackend.do()` sends immediately and marks the
+  next update as its own echo, and an `error` flushes the queue first so a
+  refusal is never told about a board the player cannot see yet.
+
+### CT-32 (#98) — the blocking mechanism was **not** the presentation layer
+
+> *"Rashi's start of combat (doing all her Wraith triggers) doesn't need to take
+> away from what I'm doing in Deployment."*
+
+The brief for this work suspected a modal, an animation await or an input gate
+keyed on `state.resolving`. It is none of those. **It is the rules layer**, and
+`server/test-concurrency.ts` §0 asserts the diagnosis before it asserts any fix:
+
+- `apply.ts` opens with a **global** gate — `if (e.s.decision && action.type !==
+  'decide' && action.type !== 'concede') e.illegal('a decision is pending for
+  …')` — which refuses every non-decide action from **either** seat; and
+- `legalActions()` opens with `if (s.decision) return legalDecisionActions(…)`,
+  which returns `[]` for the seat that does not own it.
+
+So during simultaneous deployment the other seat is handed an empty legal list
+*and* has anything it sends refused by name. The client's "Waiting for X…" bar
+is a faithful drawing of that empty list — un-gating the UI on its own would
+only turn a frozen screen into a screen full of refusals. **This became
+reachable with R144**, which put start-of-deployment triggers on the stack.
+
+That gate is right in **battle**, where priority is sequential. It is wrong
+inside a **hidden simultaneous segment**, where both seats act at once by
+construction. The fix is two halves in `server/rooms.ts`, and they only work
+together:
+
+- **`legalForSeat(state, seat, segKey)`** — what a seat is *offered*. Inside a
+  segment, a decision belonging to the other seat is answered against a shadow
+  state with `decision`/`suspension` cleared. Outside a segment it is
+  `legalActions` byte for byte.
+- **`arrivalVerdict(state, action, segKey, parked)`** — what happens to what a
+  seat *sends*: `'defer'` instead of a refusal. The action is parked on
+  `room.deferred` and applied the moment the decision closes. `'decide'` and
+  `'concede'` are never parked, an action from the seat whose *own* decision it
+  is is never parked, nothing is parked outside a segment, and the queue is
+  capped at `MAX_DEFERRED = 8` per seat.
+
+`room.deferred` is **derived and never persisted**: an action reaches
+`room.actions` only once it has actually applied, so a saved game is still
+exactly the game that was played and `replay-room.ts` still replays it straight
+through. A parked action that outlives its segment is refused rather than landed
+in a phase its author never saw.
+
+**Privacy is untouched, and is now load-bearing in a way it was not before.**
+`viewFor` still nulls the other seat's decision and suspension, still serves
+their half of a segment from the freeze, and `s.resolving` is still published in
+the battle phase only. The sharp new guard is that seat 0's published legal list
+is **identical** to the one it had before seat 1 played anything — so the
+un-gating cannot itself be used to infer that the opponent is mid-something.
+
+### Tests
+
+- `engine/test/128-ui-pace.test.ts` — 18 cases on the drain arithmetic (burst
+  **and** drip), the skip, and the safety gate, all on an injected clock.
+  Nothing sleeps.
+- `server/test-concurrency.ts` — in-process, no sockets; §0 the diagnosis, §1
+  the deploy gate, §2 the negative controls, §3 the deferral round trip, §4 the
+  bounds and the two escapes, §5/§6 the privacy properties. Added to
+  `suite.test.ts`'s ledger.
+
+**Red-checked**, each by the wrong implementation it rules out. On the client:
+spacing from the waiting queue rather than from `last` reddens the drip test
+(this is the browser bug, now guarded); a cooldown (`at = now + PACE_MS`)
+instead of a rate limit reddens nine, including the quiet-spell one; advancing
+the floor to the wall clock reddens the jitter test; advancing it on a skip
+reddens the skip-then-next one; `holdable → true` (the naive
+throttle-everything) reddens all four safety tests and `holdable → false`
+reddens the two that say what *is* held; making an urgent arrival append rather
+than collapse reddens the flush tests; breaking the flush, the prefix order or
+`PACE_MS` itself reddens theirs. On the server: reverting
+`legalForSeat` to `legalActions` reddens §1 and §5's identity test; removing the
+`refuse` cases reddens all five of §2; removing deferral reddens §3 and §4;
+removing the escapes or the cap reddens §4; removing `viewFor`'s decision
+redaction reddens §5; removing the engine's `resolving` phase gates reddens §6.
+
+**Verified in a real browser** (headless Chrome over CDP, a local server on
+5177, two seats in one room): the demo board and a live two-seat game render
+with no console errors and reach deployment through the throttle; with one seat
+done planning and the other recycling back to back, the idle seat's chip counts
+up `catching up (1)…(2)…(3)` and one click on it empties the queue.
+
+### ⚠ FOR THE OWNER: two corrections to the brief, and one to a comment
+
+1. **CT-32 is not a presentation bug.** The brief's standing lesson — "the
+   presentation layer is the suspect when the rules layer tests clean" — did not
+   hold here, and §0 of the new test file records the counter-example so the
+   next reader does not go looking at the UI first.
+2. **`s.resolving` is guarded in THREE places, not one.** The brief (and
+   `E.beginResolving`'s own comment) describe it as *the* gate. Removing
+   `beginResolving`'s gate alone leaves the property intact, because
+   `resolveParts`' PartChoice catch and `E.suspend` each re-apply it. §6's
+   assertion names all three and says which one it actually exercises.
+3. **"Lift it into pure functions you can test" was necessary and not
+   sufficient.** Every decision here *is* lifted and tested, and the pacing
+   still shipped wrong for one round, because the unit tests chose the burst
+   shape and the server produces the drip shape. The thing that caught it was
+   twenty minutes of headless Chrome against a real two-seat game. For UI work
+   in this repo, the browser pass is not a nicety on top of the tests — it is
+   what tells the tests which shape to assert.

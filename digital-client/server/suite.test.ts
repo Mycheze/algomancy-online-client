@@ -59,6 +59,8 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-postgame.ts', covers: 'the post-game payload and the rematch handshake, from a saved decided game' },
   { file: 'test-view-snapshot.ts',
     covers: "R85: the suspension's rollback snapshot — a whole unredacted GameState — never reaches a client, not even the seat whose decision it is" },
+  { file: 'test-concurrency.ts',
+    covers: "R150/CT-32 (playtest #98): one seat's pending decision inside a hidden simultaneous segment must not freeze the other seat's deployment — the diagnosis (apply.ts's global decision gate), legalForSeat's narrow un-gating, the deferral round trip, its bounds, and the privacy properties it must not break" },
   { file: 'test-formation-decision.ts',
     covers: "BL-24: both formation asks (R75 resolve-time, R29 cast-time) reach the asked seat intact over viewFor + legalActions as kind 'formationSlot', with the decide answers offered, and redact to nothing for the opponent" },
 ];

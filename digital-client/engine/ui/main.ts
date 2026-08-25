@@ -52,6 +52,8 @@ import {
   pruneFlashes, queueBeats, queueFlashes, stackCaption, stackRows, STAGGER_MS,
 } from './flash.ts';
 import type { Beat, Flash } from './flash.ts';
+import { emptyPace, holdable, pace, paceDue, paceFlush, paceHeld, paceWake } from './pace.ts';
+import type { PaceQueue } from './pace.ts';
 import {
   armIdle, disarmIdle, playCue, primeAudio, setSoundOn, soundOn,
 } from './audio.ts';
@@ -76,6 +78,20 @@ let clockSnap: (ClockSnap & { rx: number }) | null = null;
 
 /** minimal backend contract the UI renders against — Harness (hotseat) or NetBackend (remote) */
 interface Backend { state: GameState; log: string[]; do(a: Action): void; }
+
+/** one message off the socket. Named (it used to be inline on onMsg) because
+ * R150 QUEUES the 'update' ones — see ui/pace.ts. */
+interface NetMsg {
+  t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
+  events?: EngineEvent[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
+  /** which hidden segment a reveal closes (server/main.ts sendReveal) */
+  step?: 'plan' | 'haste' | 'deploy';
+  clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby }; names?: [string, string];
+  trio?: lob.TrioReveal;
+  cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
+  me?: acct.Me;
+  rematch?: [boolean, boolean];
+}
 
 /** Remote backend: sends intents over WS, renders from server-pushed redacted views.
  * The server is authoritative — do() never mutates local state; a server 'update'
@@ -105,6 +121,23 @@ class NetBackend implements Backend {
   building: { cols: EntityId[][]; send: EntityId[] } | null = null;
   /** the last payload we sent, so a re-render does not re-send it */
   private sentBuilding = '';
+  /**
+   * R150/CT-28: authoritative updates waiting their turn on the clock, so the
+   * table can never move faster than a human can read it. See ui/pace.ts for
+   * the whole argument; the two invariants worth repeating here are that the
+   * queue only ever holds updates the player cannot act on, and that an
+   * un-holdable update FLUSHES everything ahead of it rather than jumping it.
+   */
+  private paced: PaceQueue<NetMsg> = emptyPace();
+  private paceTimer: ReturnType<typeof setTimeout> | null = null;
+  /**
+   * An intent of ours is on the wire, so the next update is (very probably)
+   * our own echo and must not be delayed — the throttle may never add latency
+   * to the player's own input. Over-eager by construction: if the opponent's
+   * update overtakes ours the worst case is one update surfacing early, which
+   * is the safe direction.
+   */
+  private mineInFlight = false;
   ws: WebSocket;
   private wantSeat: Seat | null;
   private mode?: string;
@@ -151,6 +184,7 @@ class NetBackend implements Backend {
     // [59] …and must take the latch with them. This state has now been spent;
     // nothing else may act on it until the server says what it became.
     this.latch();
+    this.mineInFlight = true;   // R150: our own echo is never paced
     this.sentBuilding = '';                       // a real action resets the relay
     this.ws.send(JSON.stringify({ t: 'action', action: a }));
   }
@@ -163,7 +197,42 @@ class NetBackend implements Backend {
     this.sentBuilding = payload;
     this.ws.send(payload);
   }
-  undo(): void { this.latch(); this.ws.send(JSON.stringify({ t: 'undo' })); }
+  undo(): void {
+    this.latch(); this.mineInFlight = true;
+    this.ws.send(JSON.stringify({ t: 'undo' }));
+  }
+
+  // ── R150/CT-28: the drain ───────────────────────────────────────────
+  /** release everything whose moment has come, then re-arm the timer */
+  private pumpPace(): void {
+    const { out, rest } = paceDue(this.paced, Date.now());
+    this.paced = rest;
+    for (const m of out) this.applyUpdate(m);
+    if (out.length) render();
+    this.schedulePace();
+  }
+
+  /** the skip / fast-forward affordance: jump to the live state in one step */
+  flushPace(): void {
+    const { out, rest } = paceFlush(this.paced);
+    this.paced = rest;
+    this.schedulePace();
+    for (const m of out) this.applyUpdate(m);
+    if (out.length) render();
+  }
+
+  /** how many updates the throttle is holding — what the skip chip counts */
+  heldUpdates(): number { return paceHeld(this.paced, Date.now()); }
+
+  private schedulePace(): void {
+    if (this.paceTimer !== null) { clearTimeout(this.paceTimer); this.paceTimer = null; }
+    const at = paceWake(this.paced, Date.now());
+    if (at === null) return;
+    this.paceTimer = setTimeout(() => {
+      this.paceTimer = null;
+      this.pumpPace();
+    }, Math.max(0, at - Date.now()));
+  }
   /** draft lobby: change the method, submit, lock or unlock (server/trio.ts) */
   lobby(msg: Record<string, unknown>): void {
     this.ws.send(JSON.stringify({ t: 'lobby', ...msg }));
@@ -172,20 +241,11 @@ class NetBackend implements Backend {
   rematch(msg: Record<string, unknown>): void {
     this.ws.send(JSON.stringify({ t: 'rematch', ...msg }));
   }
-  private onMsg(m: {
-    t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
-    events?: EngineEvent[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
-    /** which hidden segment a reveal closes (server/main.ts sendReveal) */
-    step?: 'plan' | 'haste' | 'deploy';
-    clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby }; names?: [string, string];
-    trio?: lob.TrioReveal;
-    cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
-    me?: acct.Me;
-    rematch?: [boolean, boolean];
-  }): void {
+  private onMsg(m: NetMsg): void {
     // the post-game screen: the whole payload on game over, then just the
     // rematch state as the two of you make up your minds
     if (m.t === 'gameover') {
+      this.flushPace();   // R150: nothing is left waiting behind the result
       postGame = m as unknown as pg.GameOver;
       postGameHidden = false;
       if (m.me) acct.applyMe(m.me);
@@ -235,66 +295,32 @@ class NetBackend implements Backend {
     }
     if (m.t === 'update') {
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? this.peers; render(); return; }
-      // [59] a fresh authoritative state supersedes a complaint about the
-      // previous one. uiError was cleared in act() and nowhere on the way IN,
-      // so a refusal earned by an automatic pass — which never goes through
-      // act() — stayed on screen for the rest of the game.
-      uiError = '';
-      rememberStack();   // R68: before the new view replaces the negated item
-      if (m.view) { this.state = m.view; this.building = null; }   // a real action supersedes
-      if (m.log) { this.log = m.log; this.logTypes = m.log.map(() => undefined); }   // full resync (undo shrank it)
-      if (m.events) {
-        // a signal-only event ('stackFlash') is not a log line — same rule the
-        // hotseat Harness and the server's redactLog follow, and the reason
-        // logTypes can stay index-aligned with the log
-        for (const e of m.events) {
-          if (!e.msg) continue;
-          this.log.push(e.msg);
-          this.logTypes.push(e.type);
-        }
-      }
-      if (m.legal) this.legal = m.legal;
-      if (m.peers) this.peers = m.peers;
-      // R78(b): a cast-time suspension is the ONE thing that changes the board
-      // and says nothing at all. A full log resync (`m.log` — an undo replayed
-      // the game) is a wholesale arrival, not an action, so it re-baselines.
-      noteCast(this.state, this.seat, !m.log
-        && !(m.events ?? []).some(e => e.msg) && !(m.reveal ?? []).some(e => e.msg));
-      // segment-end reveal: what the opponent secretly did while their half of
-      // the view was frozen. `step` names WHICH segment just closed: a 'plan'
-      // close fires every single turn and its payload is resource-step lines,
-      // so it lands as log lines and board motion only; 'haste' and 'deploy'
-      // closes earn the interstitial when there's more than the bare "is done"
-      // line. The state underneath applies normally — only the view is gated
-      // behind the overlay's Continue button. Signal-only events ('stackFlash')
-      // carry no line and are not part of the reveal.
-      const told = m.reveal?.filter(ev => ev.msg) ?? [];
-      // an older server sends no step, and the only reveal it ever sent was
-      // the deploy one — so that is what a missing step means
-      const step = m.step ?? 'deploy';
-      if (step !== 'plan' && told.some(ev => !/is done deploying/i.test(ev.msg))) {
-        pendingReveal = { step, msgs: told.map(ev => ev.msg) };
-      }
-      // The beats belong to the board, and behind the reveal overlay nobody is
-      // looking at the board — so a reveal holds them until you close it. That
-      // is also when they mean something: the reveal is the moment you find
-      // out the opponent deployed anything at all.
-      if (pendingReveal) heldFlashes.push(...(m.events ?? []));
-      else absorbFlashes(m.events ?? []);
-      // UFAB: the cast list grows from the batch BEFORE anything is drawn, or
-      // the very line announcing a card ("Ben plays Bripp → stack.") would be
-      // the one line that fails to link it.
-      noteCardsSeen(m.events ?? []);
-      // R80: and the combat beats are staged off the same batch, so the log
-      // lets go of a whole damage step one stage at a time. Behind the reveal
-      // overlay nobody is looking at the log, so that batch is not paced —
-      // and passing [] is also what clears a queue the reveal would otherwise
-      // leave holding lines that now belong to a different batch.
-      // (…and not off a full resync either: `m.log` means the log was
-      // REWRITTEN — an undo replayed the game — so its tail is not a story
-      // anybody just watched happen.)
-      absorbBeats(pendingReveal || m.log ? [] : (m.events ?? []));
-      render(); return;
+      // R150/CT-28: a readable ceiling on how fast the table may move. The
+      // gate is in ui/pace.ts and is tested there; all this does is ask it,
+      // queue, and pump.
+      const mine = this.mineInFlight;
+      this.mineInFlight = false;
+      const legal = m.legal ?? this.legal;
+      // "this window is going to be answered without asking the player" — two
+      // ways in. The Pass-all chip is a loud, visible arm with its own ✕ stop.
+      // The PREFERENCE only fires when passing is the sole legal action, so
+      // that case is tested rather than assumed: a window offering a real
+      // choice is never held on the strength of the preference alone.
+      const autoPassArmed = ui.autopass
+        || (localStorage.getItem('algoAutopass') === '1'
+          && legal.length > 0 && legal.every(a => a.type === 'passPriority'));
+      const hold = holdable({
+        mine,
+        // server/view.ts nulls a decision that is not yours, so a decision
+        // this client can see is always this seat's to answer
+        askedOfMe: !!m.view?.decision,
+        legal: legal.length,
+        autoPassArmed,
+        over: m.view?.phase === 'gameover',
+      });
+      this.paced = pace(this.paced, m, Date.now(), hold);
+      this.pumpPace();
+      return;
     }
     if (m.t === 'kicked') {
       this.dead = true;
@@ -305,12 +331,80 @@ class NetBackend implements Backend {
       return;
     }
     if (m.t === 'error') {
+      // R150: never say "no" about a board the player cannot see yet — spend
+      // the queue first, so the refusal lands on the state it is about
+      this.flushPace();
       // [59] a refusal leaves actionCount exactly where it was, so the latch
       // would never lift on its own — and the player would be locked out of a
       // state they are still holding. Release it here instead.
       ui.sentFor = -1; ui.autoAt = -1;
       ui.cancelling = false; uiError = m.msg ?? 'error'; playCue('error'); render(); return;
     }
+  }
+
+  /** One queued authoritative update, folded in. Everything here used to run
+   * inline in onMsg; R150 only moved WHEN it runs, never what it does. The
+   * caller renders — a flush folds several in and paints once. */
+  private applyUpdate(m: NetMsg): void {
+    // [59] a fresh authoritative state supersedes a complaint about the
+    // previous one. uiError was cleared in act() and nowhere on the way IN,
+    // so a refusal earned by an automatic pass — which never goes through
+    // act() — stayed on screen for the rest of the game.
+    uiError = '';
+    rememberStack();   // R68: before the new view replaces the negated item
+    if (m.view) { this.state = m.view; this.building = null; }   // a real action supersedes
+    if (m.log) { this.log = m.log; this.logTypes = m.log.map(() => undefined); }   // full resync (undo shrank it)
+    if (m.events) {
+      // a signal-only event ('stackFlash') is not a log line — same rule the
+      // hotseat Harness and the server's redactLog follow, and the reason
+      // logTypes can stay index-aligned with the log
+      for (const e of m.events) {
+        if (!e.msg) continue;
+        this.log.push(e.msg);
+        this.logTypes.push(e.type);
+      }
+    }
+    if (m.legal) this.legal = m.legal;
+    if (m.peers) this.peers = m.peers;
+    // R78(b): a cast-time suspension is the ONE thing that changes the board
+    // and says nothing at all. A full log resync (`m.log` — an undo replayed
+    // the game) is a wholesale arrival, not an action, so it re-baselines.
+    noteCast(this.state, this.seat, !m.log
+      && !(m.events ?? []).some(e => e.msg) && !(m.reveal ?? []).some(e => e.msg));
+    // segment-end reveal: what the opponent secretly did while their half of
+    // the view was frozen. `step` names WHICH segment just closed: a 'plan'
+    // close fires every single turn and its payload is resource-step lines,
+    // so it lands as log lines and board motion only; 'haste' and 'deploy'
+    // closes earn the interstitial when there's more than the bare "is done"
+    // line. The state underneath applies normally — only the view is gated
+    // behind the overlay's Continue button. Signal-only events ('stackFlash')
+    // carry no line and are not part of the reveal.
+    const told = m.reveal?.filter(ev => ev.msg) ?? [];
+    // an older server sends no step, and the only reveal it ever sent was
+    // the deploy one — so that is what a missing step means
+    const step = m.step ?? 'deploy';
+    if (step !== 'plan' && told.some(ev => !/is done deploying/i.test(ev.msg))) {
+      pendingReveal = { step, msgs: told.map(ev => ev.msg) };
+    }
+    // The beats belong to the board, and behind the reveal overlay nobody is
+    // looking at the board — so a reveal holds them until you close it. That
+    // is also when they mean something: the reveal is the moment you find
+    // out the opponent deployed anything at all.
+    if (pendingReveal) heldFlashes.push(...(m.events ?? []));
+    else absorbFlashes(m.events ?? []);
+    // UFAB: the cast list grows from the batch BEFORE anything is drawn, or
+    // the very line announcing a card ("Ben plays Bripp → stack.") would be
+    // the one line that fails to link it.
+    noteCardsSeen(m.events ?? []);
+    // R80: and the combat beats are staged off the same batch, so the log
+    // lets go of a whole damage step one stage at a time. Behind the reveal
+    // overlay nobody is looking at the log, so that batch is not paced —
+    // and passing [] is also what clears a queue the reveal would otherwise
+    // leave holding lines that now belong to a different batch.
+    // (…and not off a full resync either: `m.log` means the log was
+    // REWRITTEN — an undo replayed the game — so its tail is not a story
+    // anybody just watched happen.)
+    absorbBeats(pendingReveal || m.log ? [] : (m.events ?? []));
   }
 }
 
@@ -3231,6 +3325,9 @@ function renderNow(): boolean {
   // by itself decides what the prompt bar may claim. The send happens after
   // the paint (runAutoPass, at the bottom) — this only decides and disarms.
   autoPassing = planAutoPass();
+  // R150/CT-28: how many authoritative updates the throttle is still holding.
+  // Read once, before the markup, so the chip and its count agree.
+  const paceHeldNow = NET ? NET.heldUpdates() : 0;
   const snap = snapshotViewport();
   $app.innerHTML = `
     <div class="main">
@@ -3243,6 +3340,8 @@ function renderNow(): boolean {
           ${phaseTrackHtml()}
           <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
           ${ui.autopass ? '<button class="passallchip" data-btn="passallstop" title="click to stop passing">auto-passing… ✕ stop</button>' : ''}
+          ${paceHeldNow ? `<button class="passallchip" data-btn="paceskip"
+            title="the table is being shown to you one step per second — click (or press S) to jump straight to the live state">catching up (${paceHeldNow}) — ⏭ skip</button>` : ''}
         </div>
         ${shareBannerHtml()}
         ${promptHtml()}
@@ -4705,6 +4804,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // switching either of them off has to reach into the wait as well — the
   // whole point of the stop button is that this window becomes yours again.
   passallstop: () => { ui.autopass = false; cancelAutoPass(); },
+  // R150/CT-28: jump to the live state. flushPace() renders on its own, and
+  // the handler table's trailing render() is harmless on top of it.
+  paceskip: () => { NET?.flushPace(); },
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();
@@ -5445,6 +5547,16 @@ document.addEventListener('keydown', e => {
   if (inField) return;   // never fire game hotkeys while typing
   const overlayUp = reportOpen || judgeOpen || helpOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu;
+
+  // R150/CT-28: S skips the pacing. Deliberately a bare letter and not Enter
+  // or Space: those two are how game actions are confirmed, and the whole
+  // promise of the skip is that it only ever moves the SCREEN forward.
+  if (e.key === 's' || e.key === 'S') {
+    if (overlayUp || !NET || !NET.heldUpdates()) return;
+    e.preventDefault();
+    NET.flushPace();
+    return;
+  }
 
   if (e.key === ' ') {
     if (overlayUp) return;
