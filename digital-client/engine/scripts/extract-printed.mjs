@@ -137,17 +137,26 @@ const TYPE_OVERRIDES = {
     from: '{Haste} {Switch} Holy Unit',
     to: '{Haste} Holy Unit',
   },
-  // ⚠ NOT RULED — transcription repairs, reported alongside R157 §25 rather
-  // than authorised by it. Both are LAYOUT artifacts of the same shape as
-  // R142's hyphen join: a marker brace glued to the next word. They are the
-  // only two type lines in the whole oracle file matching /\}[A-Za-z]/, so a
-  // general rule would fire exactly here anyway — and a general rule could not
-  // also fix the duplicated word, which is why this is a named table.
+  // Both are LAYOUT artifacts of the same shape as R142's hyphen join: a marker
+  // brace glued to the next word. They are the only two type lines in the whole
+  // oracle file matching /\}[A-Za-z]/, so a general rule would fire exactly
+  // here anyway — and a general rule could not also fix the duplicated word,
+  // which is why this is a named table.
   //
-  // Might of the Grove additionally reads "Tree Tree". Every other Druid spell
-  // in the pool is "{Battle} <one subtype> Druid Spell" (Invigorate "Mystic",
-  // Wither and Bloom "Arcane", four others with none), and no card in the pool
-  // repeats a subtype, so the duplicate is transcription and not design.
+  // ✔ RULED, Bena 2026-08-25, on being shown the line:
+  //     "Might of the Grove should read '{Battle} Tree Druid Spell'"
+  // — which confirms BOTH halves for that card: the missing space and the
+  // duplicated "Tree". The reasoning that produced it independently is kept
+  // because it is what to reuse on the next one: every other Druid spell in the
+  // pool is "{Battle} <one subtype> Druid Spell" (Invigorate "Mystic", Wither
+  // and Bloom "Arcane", four with none), and no card in the pool repeats a
+  // subtype.
+  //
+  // ⚠ Interdiction Rift is still NOT RULED — a pure whitespace repair, reported
+  // alongside R157 §25 rather than authorised by it. Kept because the defect is
+  // identical in shape and nothing reads the line, but say so rather than
+  // letting the ruling above cover it by proximity.
+  //
   // Nothing reads either line: `kind` only asks whether "Spell" appears, and
   // the {Battle} marker is matched brace-to-brace. No behaviour changes.
   'Might of the Grove': {

@@ -530,11 +530,12 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
     },
     'Might of the Grove (type)': {
       to: '{Battle} Tree Druid Spell',
-      why: '⚠ NOT RULED. The oracle reads "{Battle}Tree Tree Druid Spell" — a marker glued '
-        + 'to the next word AND a duplicated subtype. Every other Druid spell in the pool is '
-        + '"{Battle} <one subtype> Druid Spell" and no card repeats a subtype, so the '
-        + 'duplicate is transcription rather than design. Reported to the owner beside '
-        + 'R157 §25; revert this entry if he says otherwise.',
+      why: '✔ RULED, Bena 2026-08-25: "Might of the Grove should read \'{Battle} Tree Druid '
+        + 'Spell\'" — confirming BOTH halves, the marker glued to the next word and the '
+        + 'duplicated subtype. The oracle reads "{Battle}Tree Tree Druid Spell". The '
+        + 'independent reasoning is kept because it is what to reuse next time: every other '
+        + 'Druid spell in the pool is "{Battle} <one subtype> Druid Spell" and no card in the '
+        + 'pool repeats a subtype, so the duplicate was transcription rather than design.',
     },
   };
 

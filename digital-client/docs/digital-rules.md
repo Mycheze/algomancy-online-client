@@ -10409,6 +10409,21 @@ Automaton of Abundance: a Robot 2 and a Robot 5 in one batch yield two extras.
 Correct the type line in the printed data. No behaviour change. Implemented in
 **R162**, as a named override in the EXTRACTOR (printed.json is generated).
 
+
+**Follow-up, Bena 2026-08-25**, shown the malformed type lines the same fix
+surfaced:
+> *"Might of the Grove should read `{Battle} Tree Druid Spell`"*
+
+That confirms BOTH halves for that card — the marker brace glued to the next
+word, and the duplicated "Tree" subtype — so it is a RULED repair, not a
+reported one. **Interdiction Rift (`{Battle}AI Cosmic Spell`) is still
+unruled**: a pure whitespace repair of identical shape, kept because nothing
+reads the line, but not covered by the ruling above.
+
+⚠ Both lines are still wrong UPSTREAM in `AlgomancyCards-OracleText.json`,
+which the RAG corpus and the Discord bot read directly. Only the digital
+client's extractor corrects them. One message to Caleb fixes it everywhere.
+
 ### 26. Rook grants {Virus} itself, and reaches stack hosts
 > *"(a) yes it does. and for (b) yes it can also go to an enemy. That's the
 > whole point of the card."*

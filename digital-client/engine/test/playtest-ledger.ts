@@ -338,7 +338,15 @@ export const LEDGER: LedgerEntry[] = [
     report: "Scholar of the Void doesn't say what the Beyond card it can transform into does",
     status: 'fixed',
     guards: ['43-dark-c.test.ts::R101 — discard your hand and transform into Beyond',
-      '43-dark-c.test.ts::R101 — a transformed Scholar is a TOKEN',
+      // ⚠ REPOINTED 2026-08-25. This used to cite
+      // "R101 — a transformed Scholar is a TOKEN", which R157 §10 OVERRULED:
+      // the owner ruled that a back face is not a token and that the card turns
+      // back over in every zone but play. The test was correctly inverted, and
+      // a guard pinning a test's TITLE then reads as a regression in a file the
+      // ruling never touched. Second time today (CT-14 was the first) — see
+      // CARD-TODO #42 on whether guards should cite titles at all.
+      '43-dark-c.test.ts::R157 §10 — a transformed Scholar TURNS BACK OVER on death and bins as itself',
+      '43-dark-c.test.ts::R101 — the transform is the SAME unit: same id',
       '50-ui-inspect.test.ts::the inspector says what Scholar of the Void transforms into',
       '50-ui-inspect.test.ts::a card that has already transformed shows no row',
       '75-ui-reachability.test.ts::the details page really renders the Transforms into row'],
