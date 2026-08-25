@@ -1994,12 +1994,21 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
     const val = dec.options[choice]!.value;
     if (sus.stage === 'x') {
-      // cast-time X (R35): store it, pay it — fixed before anyone responds
+      // cast-time X (R35): store it, pay it — fixed before anyone responds.
+      //
+      // R157 §1: what is paid is the WHOLE bill for this cast — "paying X
+      // replaces the letter X on the printed card temporarily", so the chosen
+      // X is the base cost and the CostMod layer prices it here rather than
+      // against the printed floor. E.payCard charged nothing for the play
+      // (see its X branch), and E.collectX only offered an X this seat can
+      // pay for, so this cannot outrun the open mana.
       const x = val as number;
       sus.item.x = x;
       sus.item.label = `${sus.item.card} (X=${x})`;
-      e.payMana(sus.item.controller, x);
-      e.ev('info', `${e.pname(seat)} chooses X = ${x} for ${sus.item.card} and pays it.`);
+      const bill = e.manaToPlay(sus.item.controller, sus.item.card!, { region: sus.item.region, x });
+      e.payMana(sus.item.controller, bill);
+      e.ev('info', `${e.pname(seat)} chooses X = ${x} for ${sus.item.card} and pays `
+        + (bill === x ? 'it.' : `[${bill}] for it.`));
     } else if (sus.stage === 'mods') {
       // {Modular}: a mod applied as the card is played — an additional cast
       // cost, paid now, riding on the stack with the spell (R35)

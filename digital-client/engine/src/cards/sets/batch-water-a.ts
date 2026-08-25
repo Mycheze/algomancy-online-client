@@ -706,6 +706,12 @@ card('Mirage Walker', {
 // X spell's is its X). Life lost read at resolution from the engine's
 // per-battle ledger (E.loseLife → battleCounter `lifeLost:<seat>`; R1 amount,
 // R14 region scope).
+//
+// R157 §1 CONFIRMS THIS READING and makes it the pool-wide one: *"Pips aren't
+// a relevant part of looking at the cost of a card in Algomancy. And paying X
+// replaces the letter X on the printed card temporarily."* `item.x` is the
+// paid X and it is the whole cost — not the pips, not pips-plus-X. This card
+// was the only one already right; nothing here changes.
 card('Null Drone', {
   spellEffect: {
     targets: { what: 'stackSpell', prompt: 'Null Drone: negate target spell effect (cost ≤ greatest life lost this battle)' },

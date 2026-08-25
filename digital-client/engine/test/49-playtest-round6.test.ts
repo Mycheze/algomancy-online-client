@@ -346,9 +346,15 @@ test('R59: with no cost modifiers in play, manaToPlay is exactly the printed cos
 });
 
 test('R59: an X spell pays the tax on top, and X is offered after it', () => {
-  // payCard runs before collectX, so the modifier must already be deducted
-  // when the X options are built — otherwise you could pick an X you cannot
-  // actually afford. Channel Through is eer/X, a {Battle} spell.
+  // The invariant: you can never be offered an X you cannot actually afford.
+  //
+  // It used to be kept by deducting the modifier in payCard, BEFORE collectX
+  // built its menu. R157 #1 moved the whole bill of an X spell to collectX —
+  // "paying X replaces the letter X on the printed card temporarily", so the
+  // chosen X is the base cost and nothing is owed until it is chosen — and the
+  // menu now prices each candidate X itself and drops the ones that do not
+  // fit. Same invariant, asserted where it now lives. Channel Through is
+  // eer/X, a {Battle} spell.
   const h = new Harness(4916, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -366,13 +372,15 @@ test('R59: an X spell pays the tax on top, and X is offered after it', () => {
 
   const open = e.openMana(D);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Channel Through') });
-  const afterPay = new E(h.state).openMana(D);
-  assert.equal(afterPay, open - 1, 'the [1] tax is taken before X is chosen');
-  const dec = h.state.decision;
-  if (dec && /choose X/i.test(dec.prompt)) {
-    const maxX = Math.max(...dec.options.map(o => o.value as number));
-    assert.ok(maxX <= afterPay, `X options (max ${maxX}) never exceed the ${afterPay} mana left`);
-  }
+  assert.equal(new E(h.state).openMana(D), open,
+    'R157 #1: nothing is owed until X is chosen — the bill is settled at collectX');
+  const dec = h.state.decision!;
+  assert.match(dec.prompt, /choose X/i, 'the X menu is the first question');
+  const maxX = Math.max(...dec.options.map(o => o.value as number));
+  assert.equal(maxX, open - 1, `every offered X leaves room for the [1] tax (${open} open)`);
+  assert.equal(dec.options[0]!.label, 'X = 0 — pay [1]', 'and the menu prices each candidate');
+  h.do({ type: 'decide', seat: dec.seat, choice: 2 });        // X = 2
+  assert.equal(new E(h.state).openMana(D), open - 3, 'X = 2 plus the [1] tax, taken together');
   while (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
   finishBattle(h);
 });

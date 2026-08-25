@@ -9248,6 +9248,9 @@ the test file with it* — exactly what BL-25 did, where every test hand-wrote t
 payload the handler expected. Tests (1), (2), (3) and (4b) all stay **green**.
 Only (4), whose expectations come from a real engine-produced decision, goes
 red. That is the assertion that would have caught BL-25, demonstrated.
+
+---
+
 ## R151 — a token prints the X it actually has, and a dormant resource stops reading as mana
 
 Two owner playtest reports, both **presentation only**: no rule moved, no
@@ -9551,6 +9554,9 @@ in this game, not a definition invented to make {Unstable} work.** Two unrelated
 questions — "where does an Unstable card stop being erased?" and "where does a
 token still exist?" — landed on the same boundary from opposite directions. See
 R145 for what the rule actually says; it is not restated here.
+
+---
+
 ## R150 — a readable ceiling on the client, and one seat's decision no longer freezes the other
 
 Two owner playtest reports from room SMVJ, carried as **CT-28** (#94) and
@@ -10040,6 +10046,9 @@ exactly this point. All three routes now file the mod.
 (`129-disposal-tail.test.ts::R65: a TOKEN mod reaches the erased pile however
 its host leaves play`) on purpose. A per-route test would have passed on
 `destroy` alone, which is precisely how the gap survived being written down.
+
+---
+
 ## R154 — the decision gate learns whose question it is, and what answering it will undo
 
 *2026-08-25. CARD-TODO #44 — the half R150 could not reach. Playtest #98
@@ -10590,3 +10599,66 @@ Guarded by
 `45-hybrids-ld-b.test.ts::Arbiter of Vitality`,
 `28-metal-c.test.ts::Worldbender` (draft and constructed, unchanged), and
 `122-cardtext-markup.test.ts::the extractor changes LAYOUT`.
+
+---
+
+## R158 — the three cost contexts of an X card, and where an X spell's bill is paid
+
+*Engine consequence of R157 §1 and §20, implemented 2026-08-25. R157 is the
+ruling; this is the shape the engine took to obey it, recorded so the next
+reader of `manaOf` does not re-open the question.*
+
+### 1. THE THREE CONTEXTS — one rule, three answers
+
+R157 §1 says an X card's cost is the X actually paid, and that pips are not
+part of a cost at all. That makes "what does this card cost?" a question about
+a CAST, not about a card:
+
+| context | answer | where |
+|---|---|---|
+| a spell being cast, or just cast | **the paid X** | `StackItem.x`; `castCostOf(card, x)` |
+| a card known only by name — bin, hand, cache, deck, or a unit standing in play | **0** | `manaOf(name)`, `dsl.printedCost` |
+| a quote for a cast whose X is not chosen yet (the castability gate) | **`xMin`** — the cheapest legal cast | `manaToPlay(seat, name)` |
+
+The middle row is a decision, not an approximation: nobody has paid an X for a
+card in a zone, so it has no cost. Zero rather than "excluded" follows the
+standing steer — a bin sweep or a cost bar should be able to REACH an X card,
+not refuse to see it. Three sites read it that way (Prophecy Bug's hand, Tides
+of the Cosmos' deck, Blurf's deck) and one still refuses (Living Vault's
+`printedMana` returns `null`, so an X card in hand is never offered); the odd
+one out should return 0 like the rest.
+
+### 2. THE PAID X RIDES ON THE PLAY EVENT
+
+`commitItem` puts `x` on 'spellPlayed' and 'cardPlayed', beside `card` and
+`seat`. `collectX` has already run (inside `collectTargets`) by then, so it is
+final. "Where X is that spell's cost" is therefore an R1 snapshot read like any
+other condition — Channeled Amalgam, Arcane Concentrator, Death Greeter.
+
+NOT a lookup of the item on the stack by (card, controller): the event fires
+before `pushItem`, and `commitItem(…, 'resolve')` never pushes at all, so a
+deploy-timing or haste-step X spell is never on the stack for a listener to
+find. Floral Singularity is exactly that card, and a stack lookup answers 0 for
+it while passing every battle-timing test.
+
+### 3. AN X SPELL'S WHOLE MANA BILL IS SETTLED AT `collectX`
+
+Because the chosen X IS the base cost, the cost-modifier layer cannot be run
+against a base of `xMin` and then have X charged on top — that is what made
+Stasis Sentry a flat +3 on an X spell. So:
+
+* `CostOpts.x` / `CostCtx.x` carry the chosen X into `manaToPlay` and into
+  every `CostMod.delta`. `undefined` means "not chosen yet"; a modifier that
+  filters on the base cost falls back to `xMin`, which is what makes the
+  castability gate price the CHEAPEST cast.
+* `payCard` charges **nothing** for PLAYING an X card. (Applying one as a mod
+  is not playing it, R37, and never chooses an X, so that path still bills the
+  modifier layer against the printed floor.)
+* `collectX` prices each candidate X with `manaToPlay(…, { x })` and offers
+  only the ones the seat can pay for; the answer pays that whole bill.
+  `bill(xMin)` is by construction the number `canPayCard` gated on, so the
+  smallest X is always affordable once the gate has passed.
+
+Consequence worth knowing at the table: with a Stasis Sentry in the region you
+need [3] open to begin casting ANY X spell, because every X below three costs
+three.

@@ -80,11 +80,60 @@ export function inlineMode(
   });
 }
 
-/** printed mana cost of a card; an X card reads as 0, its printed floor
- * (same rule as dsl's printedCost — kept here for the batch files' idiom) */
+/**
+ * The cost of a card KNOWN ONLY BY NAME — a card in a bin, a hand, a cache, a
+ * deck, or a unit standing in play. An X card reads as **0**.
+ *
+ * R157 §1 is why, and it is a decision rather than an approximation:
+ * *"Pips aren't a relevant part of looking at the cost of a card in Algomancy.
+ * And paying X replaces the letter X on the printed card temporarily."* So an
+ * X card's cost is the X that was paid for it — and a card that was never cast
+ * has had no X paid, so it has no cost. Zero, not its pips (the ruling says
+ * pips are not part of a cost at all) and not "excluded" (the standing steer
+ * says take the reading that lets more things happen: a bin-sweep with a cost
+ * bar should be able to reach an X card, not refuse to see it).
+ *
+ * A card that IS being cast, or has just been cast, has a real cost — use
+ * `castCostOf` with the item's / event's `x`.
+ */
 export const manaOf = (name: CardName): number => {
   const m = getCard(name).mana;
   return m === 'X' ? 0 : m;
+};
+
+/**
+ * R157 §1 — the cost of a spell that was ACTUALLY CAST: its printed mana, or,
+ * on an X card, the X its caster paid ("paying X replaces the letter X on the
+ * printed card temporarily").
+ *
+ * `x` is `StackItem.x` for an item on the stack, or the `x` the engine now
+ * carries on the 'spellPlayed' / 'cardPlayed' events. `undefined` means no X
+ * was paid — a free prophecy release casts an X spell for X = 0 (R111), and a
+ * card read out of a zone has no cast at all — so it reads as 0, exactly as
+ * `manaOf` does.
+ */
+export const castCostOf = (name: CardName, x?: number): number => {
+  const m = getCard(name).mana;
+  return m === 'X' ? (x ?? 0) : m;
+};
+
+/**
+ * R157 §1 — "that spell's cost" read off a 'spellPlayed' / 'cardPlayed' event
+ * (Channeled Amalgam, Arcane Concentrator, Death Greeter). The event carries
+ * both the card name and, on an X card, the X that was paid; R1 says a
+ * triggered ability reads its condition off the event snapshot, and this is
+ * that snapshot.
+ *
+ * Deliberately NOT a stack lookup by (card, controller): the event is fired
+ * before `pushItem`, and `commitItem(…, 'resolve')` — a deploy-timing or
+ * haste-step play — never pushes the item at all, so a deploy-timing X spell
+ * (Floral Singularity) would never be found. 0 when the event carries no card.
+ */
+export const eventCardCost = (ev: { data?: Record<string, unknown> } | null | undefined): number => {
+  const name = ev?.data?.card;
+  if (typeof name !== 'string') return 0;
+  const x = ev?.data?.x;
+  return castCostOf(name, typeof x === 'number' ? x : undefined);
 };
 
 /** is the card a unit when in play? (spell units are; spell tokens are not) */

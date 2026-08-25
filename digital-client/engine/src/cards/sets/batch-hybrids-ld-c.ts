@@ -180,9 +180,16 @@ card('Aurozoa', {
 // Spell Unit. The spell half caches; the 1/1 body then spawns (spellUnit).
 // R42/R43: the granted condition is minted as a string and normalised by the
 // engine (normalizeProphecy), and it counts FORWARD from this moment. X reads
-// the card's PRINTED mana — ⚠ an X-cost card counts as 0, giving "0 Turns
-// Pass", which the engine's turnsPass row fulfils immediately. Bounded graft
-// ([Switch1], R9) shares the effect.
+// the cached card's cost.
+//
+// An X-cost card in HAND counts as 0, giving "0 Turns Pass", which the
+// engine's turnsPass row fulfils immediately. That is R157 §1 rather than an
+// approximation: an X card's cost is the X that was paid for it ("paying X
+// replaces the letter X on the printed card temporarily"), a card sitting in
+// a hand has had no X paid, so it has no cost — and the standing steer says
+// take the reading that lets more things happen, which is offering the card
+// at 0 rather than refusing to see it. Bounded graft ([Switch1], R9) shares
+// the effect.
 const prophecyBugCache: EffectDef = {
   run: (g, ctx) => {
     const hand = g.player(ctx.controller).hand;

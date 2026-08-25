@@ -29,34 +29,32 @@
  * puts it and which covers both forms.)
  */
 import type { Seat } from '../../types.ts';
-import { card, getCard, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt } from './helpers.ts';
+import { card, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, eventCardCost } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** the mana cost of the spell in the triggering event (R1: read from the event
  * snapshot).
  *
- * ⚠ APPROXIMATION, and the note that used to sit here ("'X'-cost spells report
- * 0 — none in this pool") was simply false: the pool prints ELEVEN X spells
- * (Wildfire, Gravitational Correction, Frosted Denial, Channel Through,
- * Torrential Reclamation, Abduct, Floral Singularity, Blight's End, Grim
- * Bargain, Mindburn, Siphon Life). Playing one gives Channeled Amalgam no
- * counters and Arcane Concentrator no unit, because `printed.mana` is the
- * string 'X' and the chosen X is nowhere on the 'spellPlayed' event.
+ * R157 §1 SETTLED THE X QUESTION this used to be parked on: *"Pips aren't a
+ * relevant part of looking at the cost of a card in Algomancy. And paying X
+ * replaces the letter X on the printed card temporarily."* An X spell's cost
+ * is the X ACTUALLY PAID — Null Drone's reading, not pips-plus-X and not the
+ * flat 0 the old body returned. The pool prints eleven X spells (Wildfire,
+ * Gravitational Correction, Frosted Denial, Channel Through, Torrential
+ * Reclamation, Abduct, Floral Singularity, Blight's End, Grim Bargain,
+ * Mindburn, Siphon Life); every one of them used to give Channeled Amalgam no
+ * counters and Arcane Concentrator no unit.
  *
- * Not fixable from a card file: engine.ts fires 'spellPlayed' with
- * `{ seat, card, token, region, from }` and pushes the stack item AFTERWARDS,
- * so neither `when()` nor the effect can find the item to read `item.x` off.
- * Escalated rather than guessed — it also needs a ruling on whether an X
- * spell's "cost" is X alone (Null Drone's reading) or pips + X (what
- * `printed.mana` means for every non-X card). */
-const eventSpellCost = (ctx: { event: { data?: Record<string, unknown> } | null }): number => {
-  const name = ctx.event?.data?.card as string | undefined;
-  if (!name) return 0;
-  const mana = getCard(name).mana;
-  return typeof mana === 'number' ? mana : 0;
-};
+ * The paid X now rides on the 'spellPlayed' event itself (engine.ts, where
+ * `item.x` is final and in scope), so `eventCardCost` is a snapshot read like
+ * every other R1 condition. It is NOT a lookup of the item on the stack:
+ * 'spellPlayed' fires before `pushItem`, and a deploy-timing X spell
+ * (Floral Singularity) goes through `commitItem(…, 'resolve')` and is never
+ * pushed at all — a stack lookup would silently answer 0 for it. */
+const eventSpellCost = (ctx: { event: { data?: Record<string, unknown> } | null }): number =>
+  eventCardCost(ctx.event);
 
 // ─────────────────────────── WATER ───────────────────────────
 

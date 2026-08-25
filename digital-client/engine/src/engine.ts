@@ -66,7 +66,14 @@ type BehaviorChannel = (typeof BEHAVIOR_CHANNELS)[number];
  * `region` defaults to the seat's action region; `purpose` defaults to
  * 'play' — pass 'mod' when the card is being applied as an augment or graft,
  * which is not playing (R37). */
-export interface CostOpts { region?: number; purpose?: 'play' | 'mod' }
+export interface CostOpts {
+  region?: number;
+  purpose?: 'play' | 'mod';
+  /** R157 §1: the X the caster has chosen for an X-cost card. Omitted while
+   * the X is still open (the castability gate, a price quote), where the
+   * printed floor `xMin` stands in for it. See CostCtx.x in dsl.ts. */
+  x?: number;
+}
 
 /**
  * R98: what `E.preventUnitDamage` is being asked about — one recipient, one
@@ -753,9 +760,18 @@ export class E {
    */
   manaToPlay(seat: Seat, name: CardName, opts: CostOpts = {}): number {
     const c = this.card(name);
-    const base = c.mana === 'X' ? (c.xMin ?? 0) : c.mana;
+    // R157 §1: an X card's base cost IS the chosen X — "paying X replaces the
+    // letter X on the printed card temporarily". Until it is chosen the
+    // printed floor stands in, so the castability gate prices the cheapest
+    // legal cast. The chosen X rides into the CostMod layer too (ctx.x), which
+    // is how Stasis Sentry can raise a small X to three without taxing a big
+    // one (R157 §20).
+    const base = c.mana === 'X' ? (opts.x ?? c.xMin ?? 0) : c.mana;
     const region = opts.region ?? this.actionRegion(seat);
-    const ctx = { seat, card: c, region, purpose: opts.purpose ?? 'play' as const };
+    const ctx = {
+      seat, card: c, region, purpose: opts.purpose ?? 'play' as const,
+      ...(opts.x !== undefined ? { x: opts.x } : {}),
+    };
     let total = base;
     for (const { holder, mod } of this.costModsFor(region)) total += mod.delta?.(this, holder, ctx) ?? 0;
     // R119: Deferral Drone's resolved charge. Player-side, so it is NOT
@@ -899,10 +915,19 @@ export class E {
   }
   payCard(seat: Seat, name: CardName, opts: CostOpts = {}): void {
     const c = this.card(name);
-    // an X spell pays 0 here — X itself is chosen and paid at cast (R35) — but
-    // a cost modifier still applies to the non-X part of the bill (R59)
+    // R157 §1: an X spell's WHOLE mana bill — printed base and every cost
+    // modifier alike — is settled at `collectX`, the moment X is known, and
+    // nothing is owed before that. (It used to pay `manaToPlay - xMin` here,
+    // charging the modifier layer against a base of `xMin` and then charging X
+    // on top; that made Stasis Sentry a flat +3 on an X spell, which R157 §20
+    // rejects, and it capped `collectX`'s menu by mana it had already taken.)
+    //
+    // APPLYING an X card as a mod is not playing it (R37/R59) and never
+    // chooses an X, so that path still pays its modifier bill here, against
+    // the printed floor, exactly as before.
+    const isPlay = (opts.purpose ?? 'play') === 'play';
     const mana = c.mana === 'X'
-      ? Math.max(0, this.manaToPlay(seat, name, opts) - (c.xMin ?? 0))
+      ? (isPlay ? 0 : Math.max(0, this.manaToPlay(seat, name, opts) - (c.xMin ?? 0)))
       : this.manaToPlay(seat, name, opts);
     this.payMana(seat, mana);
     // R60: the life half of the bill, charged in the same breath as the mana
@@ -5536,16 +5561,33 @@ export class E {
 
   /** Cast-time X selection (R35): a spell played from hand with mana 'X'
    * asks its caster to pick X NOW — it is paid on the answer, stored on the
-   * item, and fixed before anyone can respond. Suspends via 'cast'/'x'. */
+   * item, and fixed before anyone can respond. Suspends via 'cast'/'x'.
+   *
+   * R157 §1: what is paid on the answer is `manaToPlay(…, { x })` — the whole
+   * bill, cost modifiers included, because the chosen X IS the base cost and
+   * nothing was owed before it was chosen (see `payCard`). So each candidate X
+   * is priced HERE, against the mana actually open, and one that cannot be
+   * paid for is not offered: a bare X is not the same as what it costs once a
+   * Stasis Sentry or a Tranquility has spoken.
+   *
+   * `min` is always offered: `canPayCard` gated the play on
+   * `manaToPlay(…)` with no x, which is by construction bill(min) — same base
+   * (`xMin`) and, for any modifier that falls back to `xMin` when `ctx.x` is
+   * undefined as CostCtx.x asks, the same delta. */
   private collectX(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
     if (item.x !== undefined || !item.card) return;
     if (item.kind !== 'spell' && item.kind !== 'spellUnit') return;
     const c = this.card(item.card);
     if (c.mana !== 'X') return;
     const min = c.xMin ?? 0;
-    const max = this.openMana(item.controller);   // canPayCard guaranteed max >= min
+    const open = this.openMana(item.controller);   // canPayCard guaranteed bill(min) <= open
     const options: DecisionOption[] = [];
-    for (let x = min; x <= max; x++) options.push({ label: `X = ${x}`, value: x });
+    for (let x = min; x <= open; x++) {
+      const bill = this.manaToPlay(item.controller, item.card, { region: item.region, x });
+      if (bill > open) continue;
+      options.push({ label: bill === x ? `X = ${x}` : `X = ${x} — pay [${bill}]`, value: x });
+    }
+    if (!options.length) options.push({ label: `X = ${min}`, value: min });
     this.suspend(
       { type: 'cast', stage: 'x', item, partIndex: 0, targetIndex: 0, then, moreItems },
       {
@@ -6722,6 +6764,19 @@ export class E {
         {
           seat: item.controller, card: item.card, token: item.kind === 'spellToken',
           region: item.region,
+          // R157 §1: THE X THAT WAS PAID — "paying X replaces the letter X on
+          // the printed card temporarily", so this is the played spell's cost
+          // and every "where X is that spell's cost" reads it (Channeled
+          // Amalgam, Arcane Concentrator, Death Greeter). It is already final:
+          // collectX runs inside collectTargets, which castChain/doDecide run
+          // to completion before this line. Absent on a non-X card, where the
+          // printed number is the cost.
+          //
+          // Deliberately on the EVENT and not left to a stack lookup: this
+          // event fires before pushItem, and `commitItem(…, 'resolve')` never
+          // pushes at all — a deploy-timing X spell (Floral Singularity) is
+          // never on the stack for a listener to find.
+          ...(item.x !== undefined ? { x: item.x } : {}),
           // R49: the zone it was played out of ('hand' / 'cache' / 'bin').
           // Absent on a spell TOKEN, which was never in a zone at all.
           ...(item.from ? { from: item.from } : {}),
@@ -6755,6 +6810,7 @@ export class E {
     if (CARD_PLAY_KINDS.has(item.kind)) {
       const ev = this.ev('cardPlayed', '', {
         seat: item.controller, card: item.card, token: false, region: item.region,
+        ...(item.x !== undefined ? { x: item.x } : {}),   // R157 §1: the X that was paid
         ...(item.from ? { from: item.from } : {}),   // R49: the zone it came out of
       });
       this.fireEvent('cardPlayed', ev);

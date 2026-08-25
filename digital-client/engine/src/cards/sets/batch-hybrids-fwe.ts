@@ -39,12 +39,15 @@
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import { card, getCard, isEntityTarget, unitRestrict, type EffectDef } from '../dsl.ts';
-import { selfOf, pickUnit } from './helpers.ts';
+import { selfOf, pickUnit, eventCardCost } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** printed mana of a card name; X counts as 0 (⚠ approximation — the event
- * snapshot carries no x, and X-cost items played from hand have x = 0). */
+/** the cost of a card known only by NAME — a unit standing in play, a card in
+ * a zone. R157 §1: an X card that was never cast has had no X paid for it, so
+ * it has no cost and counts as 0 (see sets/helpers.ts `manaOf`, the same rule;
+ * this local flavour only adds the unknown-input guard). For a spell that was
+ * actually cast, use `eventCardCost` — the paid X is on the event. */
 const manaOf = (name: unknown): number => {
   if (typeof name !== 'string') return 0;
   const m = getCard(name).mana;
@@ -150,14 +153,24 @@ card('Origon', {
 //    token is cast from play, not played; a unit is not a spell.
 //  - "to play" = playing it. Applying it as a mod is not playing (R37), which
 //    `purpose: 'mod'` excludes for free.
-//  - "base cost [three] or less" reads the PRINTED mana. ⚠ An X-COST SPELL IS
-//    EXCLUDED (flagged for a ruling): its base cost is not a number on the
-//    card, it is whatever the caster chooses to pay, so "with base cost three
-//    or less" does not name it. Reading X as its floor of 0 would instead put
-//    a +3 tax on every X spell in the game — including ones you meant to cast
-//    for more than three — which is plainly not what the card says.
+//  - "base cost [three] or less" reads the base cost, and R157 §1 settles what
+//    that is for an X card: *"Pips aren't a relevant part of looking at the
+//    cost of a card in Algomancy. And paying X replaces the letter X on the
+//    printed card temporarily."* The base cost of an X spell is THE X THE
+//    CASTER CHOSE — so there is no exclusion and no special case: one read of
+//    the base cost covers every card.
 //  - "have a base cost of [three]" is a RAISE to three, not a discount: the
-//    delta is `3 - printed`, which is 0 at exactly three and never negative.
+//    delta is `3 - base`, which is 0 at exactly three and never negative.
+//    R157 §20 says exactly this of an X spell — *"They're sort of exempt, but
+//    only if X => 3. If the player wants to cast it for 0, 1, or 2, they'd
+//    have to pay the tax to bring its cost to at least 3."* Wildfire for X=0
+//    costs [3]; for X=2 costs [3]; for X=3 costs [3]; for X=5 costs [5]. It is
+//    neither the flat exemption this used to ship nor a flat +3.
+//  - The chosen X reaches here as `ctx.x` (R157 §1, CostCtx.x). It is
+//    `undefined` while the X is still open — the castability gate, a price
+//    quote — and the printed floor stands in there, which is what makes the
+//    gate price the CHEAPEST cast: with this Sentry out you need [3] open to
+//    begin casting an X spell at all, because every X below three costs three.
 //  - Unqualified subject, so it hits BOTH players, and region-scoped (R12)
 //    like every continuous effect.
 card('Stasis Sentry', {
@@ -166,8 +179,8 @@ card('Stasis Sentry', {
     delta: (g, _self, ctx) => {
       if (g.s.phase !== 'battle' || ctx.purpose !== 'play') return 0;
       if (ctx.card.kind !== 'spell' && ctx.card.kind !== 'spellUnit') return 0;
-      if (ctx.card.mana === 'X') return 0;   // ⚠ see the note above
-      return ctx.card.mana <= 3 ? 3 - ctx.card.mana : 0;
+      const base = ctx.card.mana === 'X' ? (ctx.x ?? ctx.card.xMin ?? 0) : ctx.card.mana;
+      return base <= 3 ? 3 - base : 0;
     },
   }],
 });
@@ -209,10 +222,15 @@ card('Astral Painseeker', {
 // "[Augment] Whenever you play a spell during battle, each player sacrifices
 // a unit with cost less than or equal to the spell's cost. (If able.)" —
 // rb/3 4/2 Elemental Spirit Unit. Text-box [Augment]. Plain "spell" includes
-// spell tokens (⚠ header); the spell's cost is its printed mana read from
-// the event snapshot (⚠ an X spell counts as 0 — the event carries no x).
+// spell tokens (⚠ header); the spell's cost is read from the event snapshot
+// (R1) — and R157 §1 makes that the X ACTUALLY PAID on an X spell ("paying X
+// replaces the letter X on the printed card temporarily"), which the event now
+// carries. A Wildfire for X=4 makes both players sacrifice a unit costing 4 or
+// less; it used to make them sacrifice a 0-cost unit at most, i.e. a token.
 // "Each player" = the region's present seats (R25); each picks their own
-// eligible unit (unit cost = printed mana; tokens cost 0), plan-then-commit.
+// eligible unit (unit cost = printed mana — no X card in the pool is a unit,
+// and one that never was cast has no X to read; tokens cost 0),
+// plan-then-commit.
 card('Death Greeter', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'],
@@ -220,7 +238,7 @@ card('Death Greeter', {
     when: (g, self, ev) => g.s.phase === 'battle' && ev.data?.seat === self.controller,
     effect: {
       run: (g, ctx) => {
-        const cost = manaOf(ctx.event?.data?.card);
+        const cost = eventCardCost(ctx.event);   // R157 §1: the X paid, on an X spell
         const picks: EntityId[] = [];
         for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
           const pool = g.unitsOf(seat as Seat, ctx.region)

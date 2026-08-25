@@ -245,7 +245,10 @@ test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (
   const sentry = spawn(h, A, 'Stasis Sentry');                // cost 3 — the real target
   const atk = spawn(h, A, 'Unit Token');                      // cost 0 — the x=0 target
   giveResources(h, D, 'wood', 1);
-  giveResources(h, D, 'metal', 3);                            // gm affinity + mana for X = 3
+  // gm affinity + mana for BOTH casts. R157 #20: the Stasis Sentry attacking
+  // over there taxes any X below three up to [3], so the X = 0 cast costs [3]
+  // and the X = 3 cast costs [3] — six, not three.
+  giveResources(h, D, 'metal', 6);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[sentry], [atk]] });
   pass(h);                                                    // priority → D

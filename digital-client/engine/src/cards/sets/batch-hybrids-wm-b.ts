@@ -367,6 +367,11 @@ card('Transmutide Enigma', {
 // pay-or-decline (R6) for the target's controller, skipped when they cannot
 // pay (x more than their open mana). Control flip per the header's
 // E.giveControl (R112): the unit and its mods change controller.
+//
+// R157 §1 (an X card's cost is the X paid for it) does NOT reach the cost bar
+// here, and that was checked rather than assumed: the bar is read off a UNIT
+// IN PLAY, and all eleven `mana: 'X'` cards in the pool are `kind: 'spell'` —
+// none of them can ever be a unit. `manaOf` is the right read.
 card('Abduct', {
   spellEffect: {
     targets: {
@@ -709,6 +714,8 @@ card('Invasive Species', {
 // TargetSpec can express it now, so only recallable units are offered; the
 // resolution check stays, because the formation can shrink under the spell.
 // Not in any formation → the bar is 0 (only cost-0 units are recallable).
+// R157 §1 does not reach this bar either — same reason as Abduct's above: it
+// is read off a UNIT IN PLAY, and no `mana: 'X'` card in the pool is a unit.
 const formationSize = (g: E, sourceId?: number): number => {
   const self = sourceId !== undefined ? g.entity(sourceId) : undefined;
   const grid = self ? formationOf(g, self.id) : null;

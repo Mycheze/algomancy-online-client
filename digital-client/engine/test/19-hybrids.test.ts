@@ -156,8 +156,13 @@ test('Stasis Sentry: spells with base cost \u2264 [three] cost [three] in battle
   const pricey = 'Flame Shield';                              // printed 4
   assert.equal(getCard(pricey).mana, 4);
   assert.equal(e.manaToPlay(D, pricey), 4, 'a spell already above [three] is untouched');
-  assert.equal(e.manaToPlay(D, 'Torrential Reclamation'), 0,
-    '\u26a0 an X spell has no fixed base cost — excluded (see the card note)');
+  // R157 item 20: an X spell is NOT exempt. With the X still open this is the
+  // castability quote, priced at the cheapest legal X (xMin = 0), which the
+  // Sentry raises to [3]. The per-X behaviour lives in 133-x-cost-semantics.
+  assert.equal(e.manaToPlay(D, 'Torrential Reclamation'), 3,
+    'R157 #20: X below three is taxed up to three, so the cheapest cast is [3]');
+  assert.equal(e.manaToPlay(D, 'Torrential Reclamation', { x: 5 }), 5,
+    'R157 #20: "sort of exempt, but only if X >= 3"');
   assert.equal(e.manaToPlay(D, 'Bubb'), getCard('Bubb').mana as number, 'a unit is not a spell');
   finishBattle(h);
 });
@@ -422,8 +427,11 @@ test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifice
   const a2 = spawn(h, A, 'Unit Token');
   const sentry = spawn(h, D, 'Stasis Sentry');                // the recalled ally
   const tokD = spawn(h, D, 'Unit Token');                     // D's forced sacrifice
-  giveResources(h, D, 'water', 1);
-  giveResources(h, D, 'fire', 1);                             // br / X
+  // br / X — and R157 #20: the Stasis Sentry standing right there raises any
+  // X below three to [3], so [2] no longer starts this cast at all. Three
+  // water keeps the affinity and pays the taxed X = 1.
+  giveResources(h, D, 'water', 3);
+  giveResources(h, D, 'fire', 1);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2]] });
   pass(h);                                                    // priority → D

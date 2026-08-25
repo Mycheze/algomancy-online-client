@@ -396,8 +396,14 @@ export function unitRestrict(ok: (g: E, u: Entity, ctx: TargetCtx) => boolean): 
 }
 
 /** R64: "with cost N or less" / "with cost less than or equal to …" — read off
- * the PRINTED mana cost, which is what "cost" means on every card that says
- * it. An X card counts as 0, its printed floor. */
+ * the card's cost, which on a card known only by NAME is its printed mana.
+ *
+ * R157 §1: an X card counts as 0, and that is a decision rather than a floor —
+ * "paying X replaces the letter X on the printed card temporarily", so a card
+ * nobody has paid an X for has no cost at all. Where the card WAS cast, the
+ * paid X is the cost: read `StackItem.x`, or the `x` the engine puts on the
+ * 'spellPlayed' / 'cardPlayed' events (sets/helpers.ts `castCostOf` /
+ * `eventCardCost`). */
 export function printedCost(name: CardName): number {
   const m = getCard(name).mana;
   return m === 'X' ? 0 : m;
@@ -1007,6 +1013,21 @@ export interface CostCtx {
    * CostMod gates on === 'play' (or !== 'play'), so the widening changes
    * nothing for them. */
   purpose: 'play' | 'mod' | 'activate' | 'trigger';
+  /**
+   * R157 §1 — THE CHOSEN X, on an X-cost card only. *"Pips aren't a relevant
+   * part of looking at the cost of a card in Algomancy. And paying X replaces
+   * the letter X on the printed card temporarily."* So an X spell's base cost
+   * is not `xMin` and not the pips: it is the number the caster picked, and a
+   * cost modifier that reads "base cost" (Stasis Sentry) must read THAT.
+   *
+   * `undefined` means the X is not settled yet — the castability gate
+   * (`canPayCard`), a UI price quote, or any read of a card that is not being
+   * cast at all. A modifier that filters on the base cost should fall back to
+   * `ctx.card.xMin ?? 0` there, so the gate prices the CHEAPEST legal cast:
+   * `E.collectX` relies on that identity (bill(xMin) === the gate's number) to
+   * guarantee the smallest X is always affordable once the gate has passed.
+   */
+  x?: number;
 }
 
 /**

@@ -549,6 +549,12 @@ card('Tiderunner Initiate', { playsIntoFormation: true });
 // free plays go through playInline (units spawn, spells resolve immediately —
 // ⚠ see playInline; a played spell is then binned as usual). The rest recycle
 // to the bottom in revealed order.
+//
+// R157 §1: an X card among the eight counts as cost 0 against the [8] budget
+// — no X has been paid for a card sitting in a deck, so it has no cost, and
+// the standing steer takes the reading that lets more things happen (the card
+// is choosable, and plays for free at X = 0 like any other free release,
+// R111). `manaOf` is the right read here.
 card('Tides of the Cosmos', {
   spellEffect: {
     run: (g, ctx) => {
