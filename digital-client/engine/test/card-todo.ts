@@ -99,6 +99,15 @@ export interface TodoEntry {
    * days while the card was completely dead.
    */
   guards?: string[];
+  /**
+   * What actually closed it, written at the time. Distinct from `fix`, which is
+   * the plan BEFORE the work: this is the account afterwards, including the
+   * places the plan turned out to be wrong. Optional, and only meaningful on a
+   * `done` entry — the entries whose briefs were corrected by the agent doing
+   * the work are the ones worth reading later, and a plan that was never
+   * revisited is exactly how a "fixed" item stops describing reality.
+   */
+  closed?: string;
   /** set to 'done' when fixed — the test then stops requiring the proof */
   status: 'open' | 'done';
 }
@@ -2528,7 +2537,35 @@ export const CARD_TODO: TodoEntry[] = [
       'node server/replay-room.ts <game>.json on ANBB currently prints "126 replayed, 15 '
       + 'skipped" with no indication that 14 of the 15 are one cascade. It closes when the tool '
       + 'names action 125 as the divergence point.',
-    status: 'open',
+    closed:
+      'R169. Both halves. replay-room.ts leads with the DIVERGENCE POINT (index, type, seat, '
+      + 'the engine\'s own reason), says in words that everything after it is cascade, and '
+      + 'PROVES the wedge structurally rather than guessing — a run of consecutive refusals '
+      + 'whose standing decision is byte-for-byte the one standing at the divergence, so '
+      + 'nothing answered it in between. Message-independent, so it catches a wedge from any '
+      + 'cause. The engine half chose REFUSE over COERCE: processTriggerQueue only raises the '
+      + 'question at 2+ DISTINGUISHABLE triggers, so a scalar cannot name a permutation under '
+      + 'this encoding or any past one — there is no legacy scalar to be lenient about, and '
+      + 'coercing 0 to the identity order would invent an ordering the player never picked. '
+      + 'The arm splits three ways now: not-an-array and wrong-length are unanswerable; '
+      + 'right-length-junk stays an ordinary retryable refusal, because a live UI just clicks '
+      + 'again. Verified on ANBB: it names [125]. '
+      + '⚠ THE BRIEF WAS WRONG about the scalar being a legacy encoding — ANBB is three days '
+      + 'old and the current UI only ever sends an array, so the scalar is an answer to a '
+      + 'DIFFERENT question than the one the engine now raises there. That is what killed the '
+      + '"accept a legacy scalar" option. '
+      + '⚠ CAVEAT KEPT: [125] is the first REFUSED action, not provably the first DIVERGED '
+      + 'one — [124] succeeds and the silent drift may sit there. A replay can only ever name '
+      + 'the first refusal, and the report now says exactly that and no more. '
+      + 'The reframing opened CT-51, which is much larger than this ticket was.',
+    guards: [
+      '143-replay-divergence.test.ts::names the FIRST diverging action, not a skip count',
+      '143-replay-divergence.test.ts::the report says the remainder is CASCADE',
+      '143-replay-divergence.test.ts::a scalar answer to an orderTriggers question is refused as UNANSWERABLE',
+      '143-replay-divergence.test.ts::an ordering answer of the WRONG LENGTH is unanswerable too',
+      '143-replay-divergence.test.ts::a right-length ordering answer with junk indices is an ordinary retryable refusal',
+    ],
+    status: 'done',
   },
   {
     id: 46,
@@ -2553,7 +2590,32 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A hotseat game with one seat suspended on a trigger decision must offer the other seat '
       + 'its deployment affordances on screen, not merely accept them from apply().',
-    status: 'open',
+    closed:
+      'R170. FOUR independent gates in ui/main.ts all read a bare !!s.decision — the pre-R154 '
+      + 'reading — and all four now ask one predicate, decisionFreezes(seat). promptHtml split '
+      + 'into promptHtml + phaseBarHtml so hotseat shows the question on top and the free '
+      + 'seat\'s own bar under it. Online is a no-op BY CONSTRUCTION: server/view.ts nulls a '
+      + 'decision that is not yours, so a net client\'s s.decision is always its own and the '
+      + 'guard short-circuits to the old expression. '
+      + '⚠ THE BRIEF WAS WRONG THREE TIMES and the agent measured before complying. (1) It '
+      + 'said to suspect legalActions; the agent proved legalActions(state, 1) really does '
+      + 'offer the free seat its actions and apply() really accepts them, BEFORE un-gating — '
+      + 'the opposite mistake to CT-32, where un-gating would have opened a screen full of '
+      + 'refusals. (2) "The affordances gate the same way at ~1495" — that is '
+      + 'tokenToggleMode, battle-only, where both readings coincide; the real gates were '
+      + 'elsewhere. (3) "Gate on s.decision.seat === viewingSeat" is NOT IMPLEMENTABLE — '
+      + 'hotseat has no viewing seat, it is one screen showing both. Hence two bars. '
+      + '⚠ WORSE THAN REPORTED: the free seat\'s hand card was drawn with its green playable '
+      + 'ring the whole time (handHtml reads legalFor, which was never gated) and then '
+      + 'silently ate the click. Not a dead board — a LYING one.',
+    guards: [
+      '144-hotseat-decision-gate.test.ts::the rules layer really does offer AND accept what the client is about to draw',
+      '144-hotseat-decision-gate.test.ts::in hotseat the seat NOT being asked is offered its deployment affordances on screen',
+      '144-hotseat-decision-gate.test.ts::the seat being asked still gets its own decision bar',
+      '144-hotseat-decision-gate.test.ts::ONLINE the state that drives this branch cannot even reach the client',
+      '144-hotseat-decision-gate.test.ts::both seats can never have a question open',
+    ],
+    status: 'done',
   },
   {
     id: 47,
@@ -2581,7 +2643,26 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'The contract comment at the head of legalActions matches what apply() will actually '
       + 'accept, and the fuzzer names this exception rather than tripping over it.',
-    status: 'open',
+    closed:
+      'R169. The contract comment now names the R154 disturbance exception instead of claiming '
+      + 'something the code no longer does, and test/fuzz.ts names it too via an exported '
+      + 'isContractException() — recognised by the `disturbs` FLAG, never by a message; CHECKED '
+      + '(a disturbs refusal with no question standing, or on the asking seat\'s own action, '
+      + 'throws louder than an unflagged one); and COUNTED via FuzzResult.disturbed, so its use '
+      + 'stays visible rather than being swallowed. '
+      + '⚠ HONEST LIMIT, stated rather than papered over: disturbed is 0 across 180 fuzz games. '
+      + 'Random play enters R154\'s window only 39 times in 60 games and is offered 16 '
+      + 'free-seat actions there, disturbing none. The exception is REAL — a hand-built test '
+      + 'shows legalActions offering an action apply() refuses — but the fuzzer does not '
+      + 'currently explore it, so the guard pins the counter at zero rather than asserting it '
+      + 'fires. A fuzzer that tolerates a whole class of refusal silently is a fuzzer that '
+      + 'will hide the next real one; this at least makes the class countable.',
+    guards: [
+      '143-replay-divergence.test.ts::legalActions offers an action apply() refuses — the ONE exception its contract now names',
+      '143-replay-divergence.test.ts::the fuzzer refuses to widen that exception past what R154 actually promises',
+      '143-replay-divergence.test.ts::the fuzzer counts the exception rather than swallowing it',
+    ],
+    status: 'done',
   },
   {
     id: 48,
@@ -2609,7 +2690,35 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A card printing continuous text but implemented as a triggered ability must fail a named '
       + 'sweep. Today only the "would…instead" family is swept.',
-    status: 'open',
+    closed:
+      'R168. 142-static-conformance.test.ts, built in 88\'s shape and derived from '
+      + 'printed.json rather than a hardcoded list: 45 of 494 cards print a continuous-shaped '
+      + 'clause (46 clauses; the inventory guessed ~41), and 36 of those print nothing else, '
+      + 'so they may declare no stack-reaching channel at all. Every exemption carries its '
+      + 'reason and a third test fails when one outlives its cause. '
+      + 'IT FOUND A LIVE ONE ON ITS FIRST RUN: Aetherflux Golem printed "[Augment] I gain '
+      + '+2/+2" — report #46\'s own sentence, sign flipped — and was implemented as a '
+      + 'triggered ability adding two +1/+1 counters, while the two cards printing the '
+      + 'IDENTICAL sentence (Tenebrous Bulborb, Malformed Monstrosity) were statics. So the '
+      + 'class was still live in the pool while reports #46 and #75 both sat at "fixed". '
+      + 'Now a static, and both ledger entries are repointed here. '
+      + 'BLINDNESS MEASURED, not assumed: the sweep names 45 cards and can SEE all 45. '
+      + 'Red-checked by the orchestrator independently, by planting report #46\'s ORIGINAL '
+      + 'bug back onto Bulborb — the sweep reddens, which is exactly what '
+      + '88-replacement-conformance structurally could never do on that card. '
+      + 'On the allowlist rule: it applies to the DECLARATION side. On the TEXT side a '
+      + 'denylist is the loud-failing direction, so the classifier uses eight positively '
+      + 'matched buckets plus an UNCLASSIFIED bucket that fails — all 570 printed sentences '
+      + 'are accounted for.',
+    guards: [
+      '142-static-conformance.test.ts::a card printing a standing statement of fact declares a CONTINUOUS layer',
+      '142-static-conformance.test.ts::a card whose whole printed text is continuous declares NOTHING that reaches the stack',
+      '142-static-conformance.test.ts::the classifier accounts for every sentence in the pool',
+      '142-static-conformance.test.ts::every behaviour key in the pool is classified',
+      '142-static-conformance.test.ts::every exemption is still needed',
+      '142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC',
+    ],
+    status: 'done',
   },
 
   // ── filed 2026-08-25 as the NEXT ROUND'S WORK ───────────────────────────

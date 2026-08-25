@@ -87,7 +87,7 @@ test('#15 a pending trigger is ON THE STACK the instant another ally dies', () =
   const { h, me, reclaimer, victim } = reclaimerFixture(5960);
   const before = ent(h, reclaimer)!.counters;
 
-  whiteBox(h, e => e.destroy(e.entity(victim)!, 'is destroyed'));
+  whiteBox(h, e => e.destroy(e.entity(victim)!, 'is deleted'));
 
   // The counter has NOT landed yet — that is the whole report. What must be
   // true is that the reason is visible, not that the effect is instant.
@@ -104,7 +104,7 @@ test('#15 a pending trigger is ON THE STACK the instant another ally dies', () =
 
 test('#15 the pending trigger is visible to its own controller, not redacted away', () => {
   const { h, me, reclaimer, victim } = reclaimerFixture(5961);
-  whiteBox(h, e => e.destroy(e.entity(victim)!, 'is destroyed'));
+  whiteBox(h, e => e.destroy(e.entity(victim)!, 'is deleted'));
 
   // viewFor, not h.state: the owner's complaint was about what reached HIS
   // SCREEN. An engine-side assertion cannot see a redaction on the way out.
@@ -117,7 +117,7 @@ test('#15 the pending trigger is visible to its own controller, not redacted awa
 
 test('#15 the stack strip draws it, and the row names the unit it came from', () => {
   const { h, me, reclaimer, victim } = reclaimerFixture(5962);
-  whiteBox(h, e => e.destroy(e.entity(victim)!, 'is destroyed'));
+  whiteBox(h, e => e.destroy(e.entity(victim)!, 'is deleted'));
 
   const view = viewFor(h.state, me);
   const rows = stackRows(view.stack, [], 0, view.resolving ?? null);
