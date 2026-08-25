@@ -4020,13 +4020,28 @@ export class E {
       // removeFromFormation() below can now log a formation collapse, and a
       // trailing `this.events[length-1]` would hand every "when I die" trigger
       // that log line instead of the death it is listening for.
+      // ⚠ The message must read the SWEEP CONDITION, not `unstable` alone.
+      // These are not the same question: the sweep below runs on
+      // `unstable && !opts.keepBinned`, and Pull Under ("put it and all of its
+      // mods into your bin") passes keepBinned precisely to suppress it. Before
+      // 2026-08-25 this line asked only `unstable`, so Pull Under on a modded
+      // victim logged `…, then ERASED — Unstable (it and its 1 mod(s)).` while
+      // BOTH cards sat in the caster's bin and the erased pile was empty — the
+      // log flatly contradicting the state. That is not cosmetic: whether a
+      // card is recoverable from a bin is a real play decision, and the log is
+      // where a player reads it.
+      const willSweep = unstable && !opts.keepBinned;
       const evDied = this.ev('died',
         `${u.card} ${verb} → ${binSeat === u.owner ? 'bin' : `${this.pname(binSeat)}'s bin`}`
-        + (unstable
+        + (willSweep
           ? (mods.length
             ? `, then ERASED — Unstable (it and its ${mods.length} mod(s)).`
             : ', then ERASED — Unstable.')
-          : u.token ? ', then erased (token).' : '.'),
+          : unstable
+            ? (mods.length
+              ? `, and STAYS with its ${mods.length} mod(s) — the card's own destination overrides the Unstable sweep.`
+              : ", and STAYS — the card's own destination overrides the Unstable sweep.")
+            : u.token ? ', then erased (token).' : '.'),
         evData);
       // formation cleanup + back-row promotion + R72 column collapse
       // (state-based, no response window)

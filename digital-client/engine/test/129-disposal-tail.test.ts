@@ -506,3 +506,66 @@ test('R65: a TOKEN mod reaches the erased pile however its host leaves play', ()
       + 'caused it, so every route has to say so out loud.');
   }
 });
+
+// ── the log has to agree with the board ────────────────────────────────────
+//
+// `keepBinned` (Pull Under: "put it and all of its mods into your bin") is the
+// one card that overrides the Unstable sweep. The 'died' message used to pick
+// its wording from `erasedByUnstable` while the SWEEP ran on
+// `unstable && !keepBinned` — two different questions — so Pull Under on a
+// modded victim announced `, then ERASED — Unstable (it and its 1 mod(s)).`
+// with both cards sitting in the caster's bin and the erased pile empty.
+//
+// Asserted against the BOARD rather than against a fixed string: the point is
+// agreement between the two, not any particular phrasing.
+test('R156: a keepBinned death does not claim an erase that never happened', () => {
+  const h = new Harness(99);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const O = (1 - P) as Seat;
+  const victim = spawn(h, O, 'Tidal Menace');
+  withE(h, e => {
+    const u = e.entity(victim)!;
+    e.attachMod(u, 'Nothyr', O, 'augment');           // nontoken mod ⇒ Unstable (R69)
+    assert.ok(e.isUnstable(u), 'the premise: a modded body is Unstable');
+    const at = e.events.length;
+    e.destroy(u, 'is deleted', { binTo: P, keepBinned: true });   // Pull Under's own call
+    const died = e.events.slice(at).find(v => v.type === 'died');
+    assert.ok(died, 'a death was logged');
+
+    const bin = h.state.players[P]!.bin;
+    const pile = h.state.players[P]!.erased ?? [];
+    const reallyErased = pile.includes('Tidal Menace');
+    const reallyInBin = bin.includes('Tidal Menace');
+
+    assert.ok(reallyInBin && !reallyErased,
+      'the premise of this test: keepBinned leaves the body in the bin and off the erased pile');
+    assert.ok(!/ERASED/.test(died!.msg ?? ''),
+      `the log claims an erase that did not happen: ${JSON.stringify(died!.msg)} — but the bin `
+      + `holds ${JSON.stringify(bin)} and the erased pile is ${JSON.stringify(pile)}. Whether a `
+      + 'card is recoverable from a bin is a real play decision, and the log is where a player '
+      + 'reads it. The message must ask the SWEEP condition (unstable && !keepBinned), not '
+      + '`unstable` alone.');
+  });
+});
+
+// the negative control: WITHOUT keepBinned the same board really is erased, so
+// the test above cannot pass by the message simply never saying ERASED again.
+test('R156 control: the same death WITHOUT keepBinned still reports the erase', () => {
+  const h = new Harness(99);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const victim = spawn(h, P, 'Tidal Menace');
+  withE(h, e => {
+    const u = e.entity(victim)!;
+    e.attachMod(u, 'Nothyr', P, 'augment');
+    const at = e.events.length;
+    e.destroy(u, 'dies');
+    const died = e.events.slice(at).find(v => v.type === 'died');
+    assert.match(died!.msg ?? '', /ERASED/,
+      'an ordinary Unstable death must still announce its erase — otherwise the keepBinned test '
+      + 'above is satisfied by a message that never mentions an erase at all');
+    assert.ok((h.state.players[P]!.erased ?? []).includes('Tidal Menace'),
+      'and the board agrees with it');
+  });
+});
