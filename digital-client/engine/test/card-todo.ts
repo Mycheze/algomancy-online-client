@@ -3268,4 +3268,70 @@ export const CARD_TODO: TodoEntry[] = [
       + 'and clicking either plays it. With an unplayable one, it appears only in the cache.',
     status: 'open',
   },
+  {
+    id: 64,
+    area: 'client',
+    severity: 'minor',
+    title: 'A cached card takes two clicks to play, and the first one looks like the second',
+    detail:
+      "`regionCacheHtml` renders its thumbs as `cardHtml(card, { anim })` with **no `data-act`**, "
+      + 'while the entries in the full dialog (`cacheCardHtml`) carry `data-act="cache" data-p '
+      + 'data-i`. The whole panel is `data-btn="cacheopen"`, so clicking a thumb bubbles up and '
+      + 'OPENS THE DIALOG. It is therefore not a dead control — it is a two-click path where the '
+      + 'first click looks like it should have been the last one.',
+    evidence:
+      'Found by the R183 agent while building the hand-side surface for report #103. ⚠ It '
+      + 'characterised these thumbs as taking no card clicks, which is true of the thumbs '
+      + 'themselves; I checked the panel and the click is caught one level up, so nothing is '
+      + 'unreachable. That is exactly why it never read as broken. '
+      + 'It is plausibly part of why report #103 was filed at all — "harder to just forget '
+      + 'about" is partly "harder to actually reach".',
+    fix:
+      'Give the thumbs the same `data-act="cache" data-p data-i` the dialog entries use. '
+      + '⚠ THERE IS A REAL TRADE-OFF, so decide it rather than defaulting: if a thumb plays the '
+      + 'card directly, the one-click route to INSPECTING a cached card goes away, and the cache '
+      + 'is public (R41) precisely so both players can look at it. A middle answer — thumb plays '
+      + 'only when the card is playable right now, and opens the dialog otherwise — matches what '
+      + 'R183 just did in the hand strip and is probably right. '
+      + 'Much of the pressure is already off: R183 put the playable subset beside the hand with '
+      + 'a real one-click handler, so this is now a consistency fix rather than a reachability '
+      + 'one.',
+    proof: null,
+    verify:
+      'Clicking a playable cached card in the region cache panel plays it, or opens the dialog, '
+      + 'according to whatever is decided — and the decision is written down.',
+    status: 'open',
+  },
+  {
+    id: 65,
+    area: 'client',
+    severity: 'minor',
+    title: 'cardHtml emits runs of spaces in a badge class, and it made a test unfalsifiable',
+    detail:
+      "`cardHtml` builds a chip's class as `` `badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''} "
+      + "${b.cls ?? ''}` ``, so a plain chip renders a class attribute of `badge` followed by "
+      + 'THREE spaces, and a classed one `badge` + three spaces + `proph on` — two empty slots '
+      + 'in the middle and usually a trailing '
+      + 'space. CSS does not care. **Naive space-separated regexes and selectors written against '
+      + 'a badge\'s classes silently never match.**',
+    evidence:
+      'The R183 agent hit this in its own red-check: an assertion of the form `/badge offer/` '
+      + 'could NEVER have matched, so the test passed for a reason unrelated to what it claimed '
+      + 'to check. It found it only because a mutation that should have reddened the test did '
+      + 'not. It now reads `/badge[^"]*offer/`, with a comment. '
+      + 'This is the same family as CT-56 — a test that cannot fail on the thing it names — but '
+      + 'the CAUSE here is in the code under test rather than in the test, which makes it worse: '
+      + 'the next person writing a badge assertion will hit it too.',
+    fix:
+      "One line: `[...].filter(Boolean).join(' ')`. The R183 agent deliberately left it alone "
+      + 'because it churns expected markup in other agents\' test files mid-round. Do it when '
+      + 'the tree is quiet, then grep `test/` for badge-class assertions and check none of them '
+      + 'was passing only because of the extra spaces — that is the real work, and it is the '
+      + 'reason this is filed rather than done.',
+    proof: null,
+    verify:
+      'A badge chip\'s class attribute has single spaces and no trailing space, and every '
+      + 'existing badge assertion still passes for a reason it can state.',
+    status: 'open',
+  },
 ];
