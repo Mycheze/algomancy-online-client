@@ -2997,7 +2997,25 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A battle-timed spell in hand during deployment must not be drawn the same way as a '
       + 'castable deploy card. Drive it through test/ui-driver.ts.',
-    status: 'open',
+    closed:
+      'R183. The ring now answers THREE questions instead of one: does anything work (the ring '
+      + 'exists — unchanged, nothing that used to glow stopped), can I CAST it (plain green '
+      + 'yes · amber dashed = only the named verbs · doubled edge = more than one, the click '
+      + 'will ask), and WHICH verbs (a chip: graft / augment / recycle / cast+augment). '
+      + 'CASTING IS THE UNMARKED CASE on purpose — a "cast" chip would be noise on every card '
+      + 'in every hand, and the common case must not pay for the ambiguous ones. Entirely a '
+      + 'rendering change: legalActions always knew which kind was on offer, only the renderer '
+      + 'threw the discriminant away. '
+      + 'Done TOGETHER with CT-63 deliberately: adding a second CLASS of card to a strip whose '
+      + 'outline already OR-folds five action kinds makes the ambiguity worse unless the '
+      + 'vocabulary is designed once.',
+    guards: [
+      '155-hand-affordances.test.ts::a {Battle} spell in deployment is NOT drawn like a castable deployment card',
+      '155-hand-affordances.test.ts::a card offering two kinds at once says which two',
+      '155-hand-affordances.test.ts::the offer chip is the pure judgement',
+      '155-hand-affordances.test.ts::a plainly castable card in hand is drawn exactly as it always was',
+    ],
+    status: 'done',
   },
   {
     id: 55,
@@ -3231,7 +3249,31 @@ export const CARD_TODO: TodoEntry[] = [
       + '⚠ Expect the two undefined accesses to be real; check them before relaxing anything.',
     proof: null,
     verify: '`npm run check` typechecks the server, and passes.',
-    status: 'open',
+    closed:
+      'R181. `server/` had no tsconfig AT ALL, and the root `check` line READ as three projects '
+      + 'being checked while its middle leg ran `node --test` — and node TYPE-STRIPS, it does '
+      + 'not type-check. The compiler had never been pointed at the server. '
+      + '⚠ THE DEFECT IT WAS HIDING is the reason this was worth doing. `ActivateVia` has '
+      + 'three shapes and three sites in rooms.ts tested `typeof via === \'object\'` then read '
+      + '`.mod`. On a `{ face }` activation that is undefined, `undefined - shift` is NaN, and '
+      + 'renumberAction wrote NaN back over the face. Undoing an earlier action DESTROYED the '
+      + 'payload of any later face-granted activation — it stopped saying which ability it was '
+      + 'for, the rebuild refused it, and the undo was declined untraceably. The existing '
+      + "undo test could not see it: the payload was destroyed BEFORE it was measured. "
+      + '⚠ MY BRIEF WAS WRONG twice: rooms.ts had 5 errors not 7 (the others are in main.ts '
+      + 'and two test scripts), and the two `Object is possibly undefined` are STRICTNESS '
+      + 'NOISE, not defects — both are `heldEvents[other(seat)]` on a declared 2-tuple, and '
+      + '`Seat = number` is what defeats the checker. The agent added a narrowing rather than '
+      + 'a `!`, so a hypothetical third seat is a visibly wrong line and not a false assertion. '
+      + 'Deploy note: `npm --prefix server install` is needed once for @types/ws; `npm start` '
+      + 'and `npm test` are unaffected, so git-pull-and-restart is unchanged.',
+    guards: [
+      '153-typecheck-reach.test.ts::every .ts file in the client is covered by some tsconfig project',
+      '153-typecheck-reach.test.ts::the root `check` script invokes every tsconfig project',
+      '153-typecheck-reach.test.ts::every tsconfig has the load-bearing compiler flags on',
+      'server/test-forensics.ts::a constructed file with one unusable deck is REFUSED, not substituted',
+    ],
+    status: 'done',
   },
   {
     id: 60,
@@ -3255,7 +3297,28 @@ export const CARD_TODO: TodoEntry[] = [
       + 'compiler flag is the cheaper enforcement. Expect the flag to surface others.',
     proof: null,
     verify: '`npx tsc --noEmit` with noUnusedLocals is clean.',
-    status: 'open',
+    closed:
+      '`noUnusedLocals` is ON in engine/, server/ and backlog/, and the 46 dead bindings it '
+      + 'found in the engine are cleared — so `npm run check` is green end to end rather than '
+      + 'red on the engine leg. Both deferred helpers deleted. '
+      + '⚠ THE FLAG COVERS ONLY HALF THE CLASS, and this is the part worth remembering: **tsc '
+      + 'ignores EXPORTED declarations**, so `noUnusedLocals` would NEVER have caught '
+      + '`helpers.ts::lifeGainedIn`, which was exported. 147-comment-conformance §4\'s '
+      + 'call-site sweep is what catches exported dead code. Neither mechanism subsumes the '
+      + 'other and both are needed. '
+      + '⚠ The `_`-prefix escape hatch is narrower than it looks — measured: `_` exempts an '
+      + 'unused binding only inside a DESTRUCTURING PATTERN; a plain `const _x = …` and an '
+      + 'unused import still error. So plain `noUnusedLocals` with no convention. '
+      + 'Three of the 46 were more than tidying: an unused `ResourceKind[]` constant in '
+      + 'apply.ts; a `const A = initiative === deployPlayer ? deployPlayer! : deployPlayer!` in '
+      + '04-mods with BOTH BRANCHES IDENTICAL and then never read; and two dead helper '
+      + 'FUNCTIONS in test/ (28-metal-c::constructedTurn, 36-cache-prophecy::cacheIdx) that '
+      + 'sit outside 147 §4\'s sweep, which walks only src/cards/sets. That gap is CT-68.',
+    guards: [
+      '153-typecheck-reach.test.ts::every tsconfig has the load-bearing compiler flags on',
+      '147-comment-conformance.test.ts::no card-file helper has zero call sites',
+    ],
+    status: 'done',
   },
   {
     id: 61,
@@ -3401,7 +3464,25 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'With a playable cached card, it appears at the right of the hand AND in the cache row, '
       + 'and clicking either plays it. With an unplayable one, it appears only in the cache.',
-    status: 'open',
+    closed:
+      'R183, additive exactly as the owner asked — `regionCacheHtml` and the cache dialog are '
+      + 'untouched. The group carries the EXPIRY chip (this turn / free), not the price, '
+      + 'because a glimpse stamp dies silently at end of turn and forgetting it is the actual '
+      + 'loss he described. It reuses the cache row\'s own data-act/data-p/data-i so '
+      + '`handleCacheClick` stays the single handler and the two surfaces can never come to '
+      + 'play different cards, and it deliberately carries NO anim key, since the cache row '
+      + 'already draws these entries and a duplicate motion key would give one flight two '
+      + 'landing spots. '
+      + '⚠ MY BRIEF WAS WRONG that "clicking either plays it": the cache row\'s THUMBS carry '
+      + 'no handler at all — the click is caught one level up by the panel, which opens the '
+      + 'dialog. So playing a cached card was a two-click path whose first click looked like '
+      + 'the last. That is CT-64, and it is plausibly part of why this was reported.',
+    guards: [
+      '155-hand-affordances.test.ts::a playable cached card is drawn at the right of the hand AND left in the cache row',
+      '155-hand-affordances.test.ts::clicking the copy beside the hand plays the cached card',
+      '155-hand-affordances.test.ts::a cached card that is NOT playable now stays in the cache row and out of the hand',
+    ],
+    status: 'done',
   },
   {
     id: 64,

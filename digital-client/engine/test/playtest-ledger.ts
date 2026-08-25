@@ -2008,9 +2008,27 @@ export const LEDGER: LedgerEntry[] = [
       + 'RIGHT side of the hand area — it feels like they are in your hand (which they should), '
       + 'is clearly different from cards in hand (on the left), and they are harder to forget. '
       + 'They should stay in the cache area too; this is just an easier way to see and play them',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '155-hand-affordances.test.ts::a playable cached card is drawn at the right of the hand AND left in the cache row',
+      '155-hand-affordances.test.ts::clicking the copy beside the hand plays the cached card',
+      '155-hand-affordances.test.ts::a cached card that is NOT playable now stays in the cache row and out of the hand',
+    ],
     note:
-      'ARRIVED MID-SESSION on 2026-08-25 (12:15 UTC), while round 26 was running — the round '
+      'FIXED SAME DAY by R183 (CT-63), and additively exactly as asked — regionCacheHtml and the '
+      + 'cache dialog are untouched, and only the cards that are PLAYABLE RIGHT NOW appear beside '
+      + 'the hand. The group carries the EXPIRY chip rather than the price, because the loss he '
+      + 'described ("harder to just forget about") is a glimpse stamp dying silently at end of '
+      + 'turn. Both surfaces route through the one handleCacheClick, so they can never come to '
+      + 'play different cards. '
+      + '⚠ AND IT TURNED UP WHY THIS WAS PROBABLY REPORTED. The cache row\'s THUMBS carry no '
+      + 'click handler at all — the click is caught one level up by the panel, which opens the '
+      + 'dialog. So reaching a cached card was a two-click path whose first click looked like it '
+      + 'should have been the last, which reads as "easy to forget" from the inside. Filed as '
+      + 'CT-64, with the trade-off named rather than assumed: making a thumb play directly costs '
+      + 'the one-click route to INSPECTING a cached card, and the cache is public under R41 '
+      + 'precisely so both players can look. '
+      + 'ORIGINALLY: arrived mid-session on 2026-08-25 (12:15 UTC), while round 26 was running — the round '
       + 'had opened by confirming issues.jsonl was byte-identical to the 103-row snapshot, and '
       + 'it stopped being so three hours later. Caught only because the end-of-round replay '
       + 'check re-runs `md5sum issues.jsonl` on the server rather than trusting the opening '
