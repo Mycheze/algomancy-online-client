@@ -968,8 +968,8 @@ export const CARD_TODO: TodoEntry[] = [
       '86-ui-block-refusal.test.ts::what the verdict keeps is something the engine actually accepts',
       '86-ui-block-refusal.test.ts::a compulsory block is REQUIRED, not an offender',
       '86-ui-block-refusal.test.ts::widening the error did not widen the RULE',
-      '86-ui-block-refusal.test.ts::the plan is no longer wiped the moment the action is sent',
-      '86-ui-block-refusal.test.ts::with a Reset blockers? button',
+      '86-ui-block-refusal.test.ts::a sent block declaration leaves the plan standing on the board',
+      '86-ui-block-refusal.test.ts::the block legality the client could only reach by being refused is now askable',
     ],
     status: 'done',
   },
@@ -2443,6 +2443,172 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A Harness (hotseat) driven into deployment with one seat suspended on a trigger decision '
       + 'must still offer the other seat its deploy actions. Today it offers none.',
+    // DONE 2026-08-25 as R154. `decisionBlocks(state, seat)` in apply.ts is the
+    // one rule both named lines now route through: another seat's decision
+    // stops you only where the engine cannot PROVE it is none of your business
+    // — outside a hidden simultaneous segment, or where answering it would
+    // rewind the world past something you did. Battle is unchanged.
+    //
+    // ⚠ THIS ENTRY'S OWN `fix` TEXT WAS WRONG and is left above unedited as the
+    // record. It said the server compensation "becomes redundant and should be
+    // deleted in the same change". It is NOT redundant, for a reason neither I
+    // nor the entry had: a 'resolve' suspension carries an R85 WHOLE-GameState
+    // snapshot, and E.resumeResolve does `this.s = snap`, carrying forward only
+    // actionCount, decisionHigh and the seat names. Measured with that case
+    // deliberately un-gated:
+    //     seat 0 plays a card:  life 30 -> 33, hand 8 -> 7
+    //     seat 1 answers:       life 33 -> 30, hand 7, bin 0
+    // the life reverts and the card is in NEITHER hand nor bin — gone from the
+    // game, after seat 0 watched it happen. So the mid-resolution case keeps
+    // the full engine gate and the server's deferral queue is the serialiser
+    // that makes that invisible online. Deleting it would have traded a freeze
+    // for silent DATA LOSS. `rooms.ts segmentKey` was real duplication and is
+    // gone; legalForSeat shrank to that one case; arrivalVerdict now asks the
+    // same decisionBlocks.
+    //
+    // Clobber handling: apply() fingerprints what the other seat's pending
+    // question will read when answered, applies to the draft, and throws if the
+    // fingerprint moved (apply() is pure over structuredClone — asserted in its
+    // own test, since the fix rests on it). That surfaced a SECOND deadlock:
+    // 'orderTriggers' reads s.triggerQueue live and demands an exact-length
+    // answer, so an action queueing one more trigger made the open question
+    // permanently unanswerable. The queue joins the fingerprint for that arm.
+    //
+    // ⚠ My ANBB steer was WRONG and the agent disproved it: I read 13 replay
+    // skips saying 'a decision is pending for Ben' as 13 instances of this bug.
+    // They are ONE stuck decision at action [125] ('ordering expects an array
+    // of indices') cascading — all in phase=battle, seg=null, where the gate is
+    // correct. ANBB is 15 skips before and after, byte-identical; SMVJ 209
+    // likewise. Filed as CT-45.
+    guards: [
+      '130-seat-aware-gate.test.ts::R154 §1: every kind of action seat 0 had is still theirs',
+      '130-seat-aware-gate.test.ts::R154 §2: seat 0 may not overwrite seat 1',
+      '130-seat-aware-gate.test.ts::R154 §3: a mid-resolution suspension still blocks the other seat',
+      '130-seat-aware-gate.test.ts::R154 §4: in BATTLE the gate refuses the non-owning seat',
+      '130-seat-aware-gate.test.ts::R154 §5: apply() never mutates its input',
+      'server/test-concurrency.ts::seat 0 is still offered actions while seat 1 is mid-question',
+    ],
+    status: 'done',
+  },
+
+  // ── filed 2026-08-25 from the agents' own out-of-scope reports ──────────
+  // Every one of these came from an agent's closing "report any real defect
+  // that is out of scope for you". That line is the highest-yield input in the
+  // whole loop — CT-43 and CT-44 came from it last round, and so did the board
+  // crash fixed this round.
+  {
+    id: 45,
+    area: 'coverage',
+    severity: 'major',
+    title: 'A replay wedges permanently on one stale decision answer, and reports it as N small skips',
+    detail:
+      "`doDecide`'s orderTriggers arm recomputes `mine` from the LIVE trigger queue and "
+      + 'requires an exact-length array (apply.ts ~1902-1907). When a saved log\'s answer no '
+      + 'longer matches — an older log whose answer is a scalar, or any drift in what is queued '
+      + '— that decision can NEVER be answered. And `forcedAction` returns null whenever a '
+      + 'decision is pending (apply.ts ~2081), so from that action on NO action by EITHER seat '
+      + 'is ever legal again. One drifted action becomes a total replay loss.',
+    evidence:
+      'ANBB replays as "141 actions logged, 126 replayed, 15 skipped", which reads like a 89% '
+      + 'faithful replay with a few concurrency hiccups. It is not: action [125] is '
+      + '`decide (seat 0) -> ordering expects an array of indices`, and all 14 actions after it '
+      + 'are cascade from that one stuck decision. Thirteen of them report "a decision is '
+      + 'pending for Ben", which is exactly what CT-44\'s bug looks like — I misread them as 13 '
+      + 'instances of it and briefed an agent on that. The agent disproved it: every one is in '
+      + 'phase=battle, seg=null, where the gate is CORRECT.',
+    fix:
+      'Two halves. (1) replay-room.ts must report DIVERGENCE, not a skip count: name the first '
+      + 'action that failed and say everything after it is cascade. A skip count invites exactly '
+      + 'the misreading above, and this repo settles playtest reports by replay. (2) Decide '
+      + "whether doDecide's orderTriggers arm should accept a legacy scalar answer, or whether a "
+      + 'log that can no longer be answered should fail loudly at that action instead of quietly '
+      + 'poisoning the rest of the run.',
+    proof: null,
+    verify:
+      'node server/replay-room.ts <game>.json on ANBB currently prints "126 replayed, 15 '
+      + 'skipped" with no indication that 14 of the 15 are one cascade. It closes when the tool '
+      + 'names action 125 as the divergence point.',
+    status: 'open',
+  },
+  {
+    id: 46,
+    area: 'client',
+    severity: 'major',
+    title: "R154 un-froze the engine for hotseat, and the hotseat UI is still gated one layer above it",
+    detail:
+      'ui/main.ts ~2600 opens `if (s.decision) return decisionBarHtml(s.decision, err);` — the '
+      + "PENDING decision's bar is returned whenever ANY decision is open, whoever owns it, and "
+      + 'the affordances gate the same way (~1495). So after R154 the engine permits the other '
+      + "seat's deployment in hotseat and the screen still will not offer it.",
+    evidence:
+      'Reported by the R154 agent as out of scope. R154\'s reach deliberately stops at apply(); '
+      + 'online this is invisible because the server publishes legalForSeat and parks arrivals, '
+      + 'and hotseat has no server between the player and apply().',
+    fix:
+      'Gate the decision bar on `s.decision.seat === viewingSeat` in the hotseat path, and take '
+      + 'the affordances with it. ⚠ Check it against the redaction properties first: viewFor '
+      + 'nulls a decision that is not yours ONLINE, so the online client never had to make this '
+      + 'distinction — hotseat is the only caller that can see both seats at once.',
+    proof: null,
+    verify:
+      'A hotseat game with one seat suspended on a trigger decision must offer the other seat '
+      + 'its deployment affordances on screen, not merely accept them from apply().',
+    status: 'open',
+  },
+  {
+    id: 47,
+    area: 'engine',
+    severity: 'minor',
+    title: "legalActions can now offer an action apply() refuses, and the fuzzer assumes it cannot",
+    detail:
+      'R154\'s disturbance check throws IllegalAction when an action turns out to have moved '
+      + "state the other seat's open question will read. Whether a play suspends is not "
+      + 'predictable in advance, so `legalActions` cannot exclude it up front. That is a real, '
+      + 'deliberate crack in its documented contract — "Every action returned is legal" '
+      + '(apply.ts ~2010) — which the fuzzer relies on.',
+    evidence:
+      'Stated by the R154 agent as a knowing trade: widening legalActions to match would break '
+      + 'the contract in the other direction and mislead the fuzzer worse. Online it is '
+      + 'invisible (the room parks the action); in hotseat the player is told it lands once the '
+      + 'other seat has answered.',
+    fix:
+      'Decide which way the contract should read and write it down: either narrow the comment to '
+      + '"legal unless it disturbs an open question of another seat" and teach the fuzzer that '
+      + "exception by name, or have legalActions speculatively apply and filter. The second is "
+      + 'correct and probably too expensive; the first is honest. Do not leave the comment '
+      + 'claiming something the code no longer does.',
+    proof: null,
+    verify:
+      'The contract comment at the head of legalActions matches what apply() will actually '
+      + 'accept, and the fuzzer names this exception rather than tripping over it.',
+    status: 'open',
+  },
+  {
+    id: 48,
+    area: 'coverage',
+    severity: 'major',
+    title: 'R104 has a conformance sweep for its replacement half and none for its STATIC half',
+    detail:
+      '88-replacement-conformance.test.ts classifies cards printing "would … instead" and is the '
+      + 'class guard that closed reports #60/#75. R104\'s own text also covers "and static '
+      + 'effects" — and 88 never checks a static. So the class guard people believe exists for '
+      + 'the static half does not.',
+    evidence:
+      'Found 2026-08-25 when I asked an agent to back-fill 88 onto report #46 (Tenebrous '
+      + 'Bulborb, "the I get -2/-2 isn\'t a trigger that should go on the stack, it\'s a static '
+      + 'effect"). The agent REFUSED and was right: Bulborb prints "[Augment] I gain -2/-2" — '
+      + 'neither "would" nor "instead" — so 88 can never go red on that card however the -2/-2 '
+      + 'is built. Back-filling it would have added a second guard that cannot fail, to an entry '
+      + 'whose whole history is a one-card fix for a class of bug.',
+    fix:
+      'A statics conformance sweep of 88\'s shape: enumerate the cards whose printed text is '
+      + 'continuous-shaped (~41 by the agent\'s count) and assert each is built as a static '
+      + 'rather than as a triggered ability that goes on the stack. This is a project, not a '
+      + 'citation fix, which is why it is filed rather than done.',
+    proof: null,
+    verify:
+      'A card printing continuous text but implemented as a triggered ability must fail a named '
+      + 'sweep. Today only the "would…instead" family is swept.',
     status: 'open',
   },
 ];
