@@ -167,9 +167,10 @@ card('Debt Blep', {
 //
 // Gravitational Correction's shape minus the "unless its controller pays"
 // clause, plus the "you may": the caster is asked once whether to change
-// anything, then re-picks every declared target of every live part from the
-// CURRENT legal candidates. All choices are requested before any mutation
-// (the engine rolls back to the part boundary on suspension).
+// anything, and then, per declared target of every live part, either keeps it
+// or picks a new one out of the CURRENT legal candidates (R166 — see the run).
+// All choices are requested before any mutation (the engine rolls back to the
+// part boundary on suspension).
 card('Divine Intervention', {
   spellEffect: {
     targets: { what: 'stackEffect', prompt: 'Divine Intervention: change the targets of target effect' },
@@ -193,20 +194,48 @@ card('Divine Intervention', {
         g.ev('info', `${ctx.sourceName}: ${item.label}'s targets are left alone.`);
         return;
       }
+      // R166 — "YOU MAY CHANGE THE TARGETS", ONE TARGET AT A TIME.
+      //
+      // The "may" above is a single question about the whole spell, and under
+      // it every declared slot was re-picked from a menu with no way to say
+      // "leave this one". On a two-target effect that is not what the card
+      // prints: "you MAY change the targets" permits changing any of them, and
+      // a permission you cannot decline slot by slot is a requirement. So each
+      // slot's menu now leads with KEEP, carrying the ref already in the slot,
+      // and the candidate list has that ref filtered out of it so one target is
+      // never offered twice under two labels.
+      //
+      // Keeping is not a change: a kept slot is not written back and is not
+      // counted in the "changes N" line below, so a Divine Intervention that
+      // moved one target of two reads differently from one that moved both.
+      //
+      // ⚠ Gravitational Correction (batch-water-metal.ts) deliberately does NOT
+      // get this. It prints "Change the targets of target effect unless its
+      // controller pays [x]" — the same shape with no "may" in it: an
+      // unconditional change its victim can buy off with mana. The permission
+      // that differs is printed, so the behaviour differs (R166).
       const picks: [number, number, TargetRef][] = [];
+      let slots = 0;
       item.parts.forEach((part, pi) => {
         if (part.spent) return;
         const def = effectByKey(part.effectKey);
         if (!def.targets || !part.targets.length) return;
-        part.targets.forEach((_, ti) => {
+        part.targets.forEach((cur, ti) => {
           const cands = g.targetCandidates(def.targets!, item.region, item.id, item.controller);
           if (!cands.length) return;
+          slots++;
+          const curKey = JSON.stringify(cur);
           const chosen = ctx.choose(`retarget:${pi}:${ti}`, {
             kind: 'payOrDecline', seat: ctx.controller,
             prompt: `${ctx.sourceName}: choose a new target for ${item.label}`,
-            options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
-          });
-          picks.push([pi, ti, chosen as TargetRef]);
+            options: [
+              { label: `Keep ${g.targetLabel(cur)}`, value: cur },
+              ...cands.filter(c => JSON.stringify(c) !== curKey)
+                .map(c => ({ label: g.targetLabel(c), value: c })),
+            ],
+          }) as TargetRef;
+          if (JSON.stringify(chosen) === curKey) return;   // kept — not a change
+          picks.push([pi, ti, chosen]);
         });
       });
       // CARD-TODO #2: this was the SILENT half. The decline branch above logged
@@ -214,8 +243,10 @@ card('Divine Intervention', {
       // nothing at all, so the visible behaviour was backwards. The wording is
       // Gravitational Correction's, deliberately — the two cards do the same job
       // and must read the same in the log.
-      if (!picks.length) {
+      if (!slots) {
         g.ev('info', `Divine Intervention: ${item.label} has no target to change.`);
+      } else if (!picks.length) {
+        g.ev('info', `Divine Intervention: ${item.label}'s targets are all kept as they were.`);
       }
       for (const [pi, ti, ref] of picks) item.parts[pi]!.targets[ti] = ref;
       if (picks.length) {

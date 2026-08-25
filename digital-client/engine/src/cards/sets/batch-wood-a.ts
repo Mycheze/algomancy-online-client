@@ -70,9 +70,19 @@
  *    that forced this was report #96: while the body spawned under the caster
  *    and only then changed hands, the caster's own "whenever another ally
  *    spawns" watchers fired on it.
- *  - BURGEON: "double" adds the current EFFECTIVE stat as an until-regroup
- *    bonus (stat layer 3). Under a layer-4 multiplier (Tough/Balanced) the
- *    result overshoots ((base+eff)*2 > eff*2). No pool combo hits this today.
+ *  - BURGEON: NO LONGER an approximation (R166), and the note that used to sit
+ *    here was false in the one clause that mattered. It read: "'double' adds
+ *    the current EFFECTIVE stat as an until-regroup bonus (stat layer 3).
+ *    Under a layer-4 multiplier (Tough/Balanced) the result overshoots
+ *    ((base+eff)*2 > eff*2). **No pool combo hits this today.**"
+ *    ⚠ THE POOL DID HIT THIS, WITH NO COMBO AT ALL. Burgeon targets `what:
+ *    'unit'`, and Rampart Guardian is a printed {Tough} 0/4 while Child of
+ *    Aether is a printed {Balanced} one — both legal targets on their own, no
+ *    virus donation needed. A Burgeoned Rampart Guardian read 0/24 where
+ *    "double its defense (8)" is 16. (Its Dark Bubb prints {Inverted} and is
+ *    the layer-5 flavour of the same reading.) `doubleStats` above solves for
+ *    the layer-3 delta that lands the EFFECTIVE stat on the promised number
+ *    instead of assuming the layers above it are the identity.
  *  - HOOBA-NAN: NO LONGER an approximation, and no longer this card's problem.
  *    R75 put "adjacent" in the engine (E.adjacentSlots): sides and
  *    above/below, nothing diagonal, over the slots the formation actually has.
@@ -97,6 +107,117 @@ import { selfOf, isEnt, modeTargetOf } from './helpers.ts';
  * default is exactly how four cards silently inherited the wrong answer. */
 const makeOneOne = (g: E, seat: Seat, region: number): Entity =>
   g.spawnUnit(seat, 'Unit Token', region, { token: true, tokenStats: [1, 1] });
+
+/* ─────────────────── R166: "double" as a printed promise ────────────────
+ *
+ * "Double the power or defense of target unit" (Burgeon) and "Double my power
+ * and defense" (Surly Stalker, batch-water-b.ts) both used to be
+ * `addTemp(+current effective stat)` — a LAYER-3 delta carrying the LAYER-4
+ * number. {Tough} and {Balanced} apply at layer 4, ABOVE layer 3, so the layer
+ * they were read from re-multiplied them on the way back out: Burgeon on a
+ * {Tough} 0/4 (Rampart Guardian, printed) doubled a defense of 8 by adding 8
+ * at layer 3 and produced (4+8)x2 = 24, not 16. The in-code note claiming "no
+ * pool combo hits this today" was false in the plainest possible way — Rampart
+ * Guardian PRINTS {Tough}, and it, Child of Aether ({Balanced}) and Reality
+ * Bender ({Inverted}) are all `virus: true`, so any of the three can be
+ * augmented onto any unit during battle and hand it the attribute.
+ *
+ * The card promises a NUMBER ON THE BOARD: after this resolves the stat reads
+ * twice what it read before. So solve for the layer-3 delta that lands
+ * `effStats` on that number instead of assuming the layers above are the
+ * identity. Solving rather than dividing by a known multiplier is what makes
+ * this correct for all of layer 4-6 at once, including the couplings a formula
+ * would have to special-case: {Balanced} sets both stats to the higher of the
+ * two (so doubling a Balanced unit's defense necessarily lifts its power too —
+ * that is the attribute doing its job), and {Inverted} runs the whole thing
+ * backwards (R93: it reverses the CHANGE, so the delta that doubles the number
+ * is a negative one).
+ *
+ * `effStats` is a pure read with no memo, so the probe below is free to try a
+ * delta on the entity and put it back.
+ */
+
+/** how far either side of 0 the solver will look for a delta. Cheap: the
+ *  search is a bisection, so the range costs a logarithm. */
+const DOUBLE_SOLVE_RANGE = 1024;
+
+/** `effStats` as if `dp`/`dt` had been added at layer 3, unit restored. */
+function statsWithTemp(g: E, u: Entity, dp: number, dt: number): [number, number] {
+  const p = u.tempPower, t = u.tempToughness;
+  u.tempPower = p + dp;
+  u.tempToughness = t + dt;
+  try { return g.effStats(u); } finally { u.tempPower = p; u.tempToughness = t; }
+}
+
+/**
+ * The smallest-magnitude layer-3 delta on `axis` (0 = power, 1 = defense) that
+ * makes `effStats` read exactly `want`, holding the other axis at `other`, or
+ * `null` when no delta can get there — which is a real answer, not a failure:
+ * an {Unaware} unit reads at its printed numbers for every purpose (R106), so
+ * nothing applied at layer 3 moves them.
+ *
+ * Layers 4-6 are weakly monotone in one layer-3 axis ({Tough} scales, and only
+ * defense; {Balanced} is a max, so it plateaus; {Inverted} decreases), which is
+ * exactly what a bisection needs — plus the equality check at the end, because
+ * a plateau can step straight over `want`.
+ */
+function solveAxis(g: E, u: Entity, axis: 0 | 1, want: number, other: number): number | null {
+  const f = (d: number): number =>
+    statsWithTemp(g, u, axis === 0 ? d : other, axis === 0 ? other : d)[axis];
+  if (f(0) === want) return 0;                      // prefer "change nothing"
+  const lo = -DOUBLE_SOLVE_RANGE, hi = DOUBLE_SOLVE_RANGE;
+  const rising = f(hi) >= f(lo);
+  const at = (d: number): number => (rising ? f(d) : -f(d));
+  const goal = rising ? want : -want;
+  if (at(hi) < goal) return null;                   // out of reach in that direction
+  let a = lo, b = hi;
+  while (a < b) {                                   // smallest d with at(d) >= goal
+    const mid = Math.floor((a + b) / 2);
+    if (at(mid) >= goal) b = mid; else a = mid + 1;
+  }
+  return f(a) === want ? a : null;
+}
+
+/**
+ * Double `which` of a unit's EFFECTIVE stats until regroup, as one `addTemp`.
+ * 'both' solves the two axes alternately because {Balanced} couples them; four
+ * passes is far more than the couplings in the pool need, and the result is
+ * verified before it is applied.
+ */
+export function doubleStats(g: E, u: Entity, which: 'power' | 'defense' | 'both'): void {
+  const [p0, t0] = g.effStats(u);
+  let dp = 0, dt = 0, ok = true;
+  if (which === 'both') {
+    for (let pass = 0; pass < 4; pass++) {
+      const np = solveAxis(g, u, 0, p0 * 2, dt);
+      const nt = np === null ? null : solveAxis(g, u, 1, t0 * 2, np);
+      if (np === null || nt === null) { ok = false; break; }
+      if (np === dp && nt === dt) break;
+      dp = np; dt = nt;
+    }
+    if (ok) {
+      const [cp, ct] = statsWithTemp(g, u, dp, dt);
+      ok = cp === p0 * 2 && ct === t0 * 2;
+    }
+  } else {
+    const axis = which === 'power' ? 0 : 1;
+    const d = solveAxis(g, u, axis, (axis === 0 ? p0 : t0) * 2, 0);
+    if (d === null) ok = false;
+    else if (axis === 0) dp = d;
+    else dt = d;
+  }
+  if (!ok) {
+    // Nothing at layer 3 can move this unit's numbers ({Unaware}). The change
+    // is still a change — apply the plain doubling so it is there if the
+    // attribute goes away — but say that the board will not show it.
+    g.ev('info',
+      `${u.card} reads at its printed stats — doubling changes nothing while that holds.`,
+      { unit: u.id });
+    g.addTemp(u, which === 'defense' ? 0 : p0, which === 'power' ? 0 : t0);
+    return;
+  }
+  g.addTemp(u, dp, dt);
+}
 
 // ────────────────────────────── the cards ──────────────────────────────
 
@@ -238,8 +359,11 @@ const burgeonEffect: EffectDef = {
       return;
     }
     g.ev('info', `Burgeon doubles ${t.card}'s ${stat}: ${was} → ${was * 2} until regroup.`);
-    if (stat === 'defense') g.addTemp(t, 0, d);
-    else g.addTemp(t, p, 0);
+    // R166: NOT `addTemp(+was)` — `was` is the layer-4 number and addTemp
+    // writes at layer 3, so {Tough}/{Balanced} would apply to it a second
+    // time. `doubleStats` solves for the delta that makes the board read
+    // `was * 2`.
+    doubleStats(g, t, stat === 'defense' ? 'defense' : 'power');
   },
 };
 card('Burgeon', {
@@ -437,8 +561,18 @@ card('Hexbane Shiitake', {
         const seat = ctx.event?.data?.seat as Seat | undefined;
         if (cardName === undefined || seat === undefined) { ctx.refundBudget?.(); return; }
         const spellKinds = new Set(['spell', 'spellUnit', 'spellToken']);
+        // R166 / R164: NOT A COPY. `(card, controller)` stopped being unique on
+        // the stack the moment a copy became a real StackItem — a copy carries
+        // the ORIGINAL's card name and (for both copiers) its controller, and
+        // it is pushed ABOVE the original, so the reverse scan would reach the
+        // copy first. The printed pronoun decides: "whenever another player
+        // plays a spell, you may exchange control of me for THAT spell" — that
+        // spell is the one the play event named, and RAQ (_passer, quoted on
+        // StackItem.copy) says a copy is not played: *"the 1st copy wasn't
+        // 'played'"*. So the exchange is for the played spell, never for the
+        // copy standing on top of it.
         const item = [...g.s.stack].reverse().find(i =>
-          i.card === cardName && i.controller === seat && spellKinds.has(i.kind));
+          i.card === cardName && i.controller === seat && spellKinds.has(i.kind) && !i.copy);
         if (!item) { ctx.refundBudget?.(); g.ev('info', `Hexbane Shiitake: ${cardName} is no longer on the stack — no exchange.`); return; }
         // plan: every choice before any mutation (the part replays on suspension)
         //

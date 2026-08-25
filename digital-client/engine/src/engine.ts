@@ -3975,17 +3975,39 @@ export class E {
         if (!this.entity(u.id)) killed.push(u);
       } else {
         u.damage += through;
-        const ev = this.ev('damage', `${ctx.sourceName} deals ${through} to ${u.card}.`,
-          { unit: u.id, n: through, total, source: ctx.sourceName, controller: ctx.controller });
-        this.fireEvent('damage', ev);   // "when I am dealt damage" (Awoken Tomb)
         // R106: lethality on a collapsed hit is measured on PRINTED defense —
         // "Haboob kills anything that has 1 defense printed at the card level",
         // however many +1/+1 counters are on it. The kill itself is
         // `sweepCollapsedDeaths` below; `checkDeaths` reads effStats and would
         // let the pumped victim walk.
         const [, t] = collapsed(u) ? this.printedStats(u) : this.effStats(u);
+        /**
+         * R166 — `lethal` IS A FACT ABOUT THE HIT, and it rides the event.
+         *
+         * "Whenever I survive damage" (Molten Tormentor) is a condition at
+         * event time (R1), and the only thing a listener could read at event
+         * time was `u.damage < defense` — which a {Deadly} hit BELOW defense
+         * passes, so the card paid out for surviving a hit that killed it one
+         * line later. Marked damage is not the whole of what kills: R21's
+         * {Deadly} is the second half, and it is known HERE and nowhere else.
+         *
+         * Computed before the dispatch (the read is pure — `fireEvent` only
+         * evaluates `when` and queues, so nothing between the two lines can
+         * move the number) and reused for `killed`, so the fact on the event
+         * and the kill that follows can never disagree.
+         *
+         * {Deadly} is the only attribute that makes a sub-defense hit lethal
+         * to a UNIT: {Piercing} carries excess to the PLAYER, {Lethal} kills a
+         * player outright, {Resonant} drains life, {Poisonous} replaces the
+         * damage with counters and never reaches this branch at all, and
+         * {Vulnerable}'s doubling is already inside `u.damage`.
+         */
+        const lethal = u.damage >= t || srcAttrs.has('Deadly');
+        const ev = this.ev('damage', `${ctx.sourceName} deals ${through} to ${u.card}.`,
+          { unit: u.id, n: through, total, source: ctx.sourceName, controller: ctx.controller, lethal });
+        this.fireEvent('damage', ev);   // "when I am dealt damage" (Awoken Tomb)
         // R21: Deadly — any nonzero damage kills, regardless of toughness
-        if (u.damage >= t || srcAttrs.has('Deadly')) killed.push(u);
+        if (lethal) killed.push(u);
       }
       if (resonant) this.loseLife(u.controller, through, `${ctx.sourceName} (Resonant)`);
     }
@@ -7037,6 +7059,18 @@ export class E {
       if (this.s.phase === 'battle' && item.kind !== 'spellToken') {
         this.bumpBattleCounter(item.region, `spellsPlayed:${item.controller}`);
       }
+      // R166: the same ledger for a card that prints plain, unqualified
+      // "spell". R157 §13 — *"Tokens are spells"* — so an unqualified "spell"
+      // counts a spell token, and the narrow ledger above cannot simply be
+      // widened to say so: both its readers print the narrow noun (Animated
+      // Spark's "nontoken spell", The Silent's "spells … to play", which R59
+      // keeps off a token cast from play). Two printed nouns, two counters.
+      // Bumped BEFORE fireEvent exactly like its sibling, so a 'spellPlayed'
+      // listener asking "is this that seat's Nth spell this battle?" reads the
+      // answer straight off the counter (Origon).
+      if (this.s.phase === 'battle') {
+        this.bumpBattleCounter(item.region, `spellsPlayedAny:${item.controller}`);
+      }
       const ev = this.ev('spellPlayed',
         `${this.pname(item.controller)} plays ${item.label}${then === 'push' ? ' → stack' : ''}.`,
         {
@@ -9173,7 +9207,16 @@ export class E {
         this.addCounters(u, -received);   // permanent; addCounters runs checkDeaths
       } else {
         u.damage += received;
-        const ev = this.ev('damage', `${u.card} takes ${received} (${u.damage} total).`, { unit: id, n: received });
+        // R166: the same `lethal` fact the effect-damage path puts on its
+        // 'damage' event, computed against the three doors out of this
+        // sub-step in the order `combatSubStep` runs them — `sweepDeadly`
+        // (R21), `sweepCollapsedDeaths` (R106, printed defense) and the
+        // ordinary state check on effective defense. A listener asking "did I
+        // survive this?" (Molten Tormentor) may not read marked damage alone.
+        const [, ct] = L.collapsed.has(id) ? this.printedStats(u) : this.effStats(u);
+        const lethal = L.deadlyHit.has(id) || ct <= 0 || u.damage >= ct;
+        const ev = this.ev('damage', `${u.card} takes ${received} (${u.damage} total).`,
+          { unit: id, n: received, lethal });
         this.fireEvent('damage', ev);   // "when I am dealt damage"
       }
       if (hit.resonant) this.loseLife(u.controller, received, 'Resonant');

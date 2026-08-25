@@ -107,9 +107,18 @@ card('Flux Constructor', {
       run: (g, ctx) => {
         const n = (ctx.event?.data?.['counters'] as number | undefined) ?? 0;
         const t = ctx.targets[0];
-        if (!n || !isEnt(t)) return;
+        // R166: `min: 0` — declining is the ordinary answer, and test/65 is
+        // right that it has to be said out loud rather than returned in silence.
+        if (!n || !isEnt(t)) {
+          g.ev('info', 'Flux Constructor: no unit was chosen — the counters go nowhere.');
+          return;
+        }
         const u = g.entity(t.id);
-        if (u) g.addCounters(u, n);
+        if (!u) {
+          g.ev('info', 'Flux Constructor: the chosen unit is gone — the counters go nowhere.');
+          return;
+        }
+        g.addCounters(u, n);
       },
     },
   }],

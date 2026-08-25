@@ -47,6 +47,9 @@ import { selfOf, isEnt, manaOf, chooseUnit, perSeatRows, lifeLostIn } from './he
 // it too). index.ts imports that module first, so importing it here cannot
 // disturb registration order — see the note on `playInline` itself.
 import { playInline } from './batch-water-a.ts';
+// R166: "double a stat" is one shared solver — Burgeon and Surly Stalker print
+// the same verb and must give the same answer under {Tough}/{Balanced}.
+import { doubleStats } from './batch-wood-a.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -425,13 +428,25 @@ card('Spell Excavation', {
 // regroup." — bb/4 4/4 {Battle} Manatee Unit. "Alone" = the only living unit
 // in my whole formation grid (attackers when attacking, blockers when
 // blocking — the R20 Sneaky reading), checked at event time (R1). The DOUBLE
-// amount is my effective stats at RESOLUTION (R1), added as a temp change.
+// is read at RESOLUTION (R1).
+//
+// R166: this was `addTemp(+p, +t)` off `effStats`, which is the layer-4 number
+// written back in at layer 3 — so a {Tough} or {Balanced} Stalker had the
+// doubling doubled again on the way out. Unlike Burgeon's targets it prints no
+// stat-layer attribute of its own, so one has to be handed to it; the cheapest
+// door is not a virus at all but R19 COLUMN SHARING — attack in a column with
+// Rampart Guardian (a printed {Tough} 0/4) and the Stalker is {Tough} too,
+// "in all situations". A {Virus} augment (Rampart Guardian, Child of Aether)
+// is the other.
+// `doubleStats` (batch-wood-a.ts, shared with Burgeon, which prints the same
+// verb) solves for the layer-3 delta that makes the BOARD read twice what it
+// read — the promise the card actually makes — and does both stats together
+// because {Balanced} couples them.
 const doubleSelf: EffectDef = {
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
     if (!self) return;
-    const [p, t] = g.effStats(self);
-    g.addTemp(self, p, t);
+    doubleStats(g, self, 'both');
   },
 };
 card('Surly Stalker', {

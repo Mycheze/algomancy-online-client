@@ -645,11 +645,23 @@ card('Aethercap Siphoner', {
       },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        if (!self || self.counters === 0) return;
+        // R166: each of these three is a reachable decline, and test/65 is
+        // right that a decline has to SAY so — `min: 0` means "no target" is
+        // the ordinary answer, not an error.
+        if (!self || self.counters === 0) {
+          g.ev('info', 'Aethercap Siphoner: no counter to move (or my body is gone) — nothing moves.');
+          return;
+        }
         const tref = ctx.targets[0];
-        if (!isEnt(tref)) return;
+        if (!isEnt(tref)) {
+          g.ev('info', 'Aethercap Siphoner: no unit was chosen — the counter stays on me.');
+          return;
+        }
         const t = g.entity((tref as Entity).id);
-        if (!t || t.id === self.id) return;
+        if (!t || t.id === self.id) {
+          g.ev('info', 'Aethercap Siphoner: that unit is gone — the counter stays on me.');
+          return;
+        }
         const delta = self.counters > 0 ? 1 : -1;
         g.addCounters(self, -delta);
         g.addCounters(t, delta);

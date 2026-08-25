@@ -170,7 +170,15 @@ const adversaryGrow: EffectDef = {
   run: (g, ctx) => {
     const n = (ctx.event?.data?.n as number | undefined) ?? 0;
     const self = selfOf(g, ctx);
-    if (self && n > 0) g.addCounters(self, n);
+    // R166: the guard must say why (test/65). Reached whenever the carrier has
+    // left before the trigger resolves, or a 'lifeLost' event carries no
+    // amount — the Earthbound Replicator precedent, where another card's
+    // behaviour change moved the conformance drive onto a silent branch.
+    if (!self || n <= 0) {
+      g.ev('info', 'Adversary of the Deep: no life was lost (or my body is gone) — no counters.');
+      return;
+    }
+    g.addCounters(self, n);
   },
 };
 card('Adversary of the Deep', {

@@ -11923,3 +11923,163 @@ One existing assertion was **narrowed**: `89-self-erase.test.ts`'s Skybreaker
 case asserted "no death, no despawn and no trash". The despawn half was the
 engine's silence, not a ruling, and R157 §3 says the opposite; it now asserts
 exactly one despawn beside the two halves R157 §3 really states.
+
+---
+
+## R166 — four cards answered a layer, an event fact, or a permission short
+
+Four rows of `docs/09-divergence-inventory.md` §2b plus the Origon half of §2c.
+They have nothing in common as cards; they have one thing in common as bugs.
+In each, the code answered a question one step away from the question the card
+asks — the layer below the one the number lives on, the state instead of the
+event, the carrier instead of the seat, the whole spell instead of one target.
+
+### 1. Origon: "their first spell" is the SEAT's, and it is the spell PLAYED
+
+*"[Augment] Whenever a player plays their first spell in this battle, negate
+it."*
+
+Two defects, both the same shape.
+
+**(a) Whose first spell.** The count was a per-instance battle counter bumped
+inside `when()` (`origon:<self.id>:<seat>`), so it counted only the spells this
+CARRIER had been in play for. An Origon that arrived mid-battle — spawned by an
+effect, taken with `E.giveControl`, applied as an [Augment] under R95's
+battle-time permission — negated the first spell *it* saw, and two Origons that
+arrived at different moments each negated a different spell. The printed
+subject is the PLAYER. Nothing on the card is about when the Origon turned up.
+
+The fix is a seat-scoped ledger. `commitItem` already bumped
+`spellsPlayed:<seat>` per region before firing `spellPlayed`, but that one
+**skips `spellToken`** and cannot be widened: both its readers print the narrow
+noun — Animated Spark's *"for each **nontoken** spell you've played in this
+battle"*, and The Silent's *"Spells cost … to play"*, which R59 keeps off a
+token cast from play. Origon prints a plain, unqualified "spell", and R157 §13
+is *"Yes. Tokens are spells."*
+
+**So there are two printed nouns and there are now two ledgers.**
+`spellsPlayedAny:<seat>` is the token-inclusive one, bumped beside its narrow
+sibling, before the event, in the battle phase only. Widening the existing
+counter instead would have silently decided that casting a token is not playing
+a spell — the exact reading the pool's own "nontoken" wording refutes, and the
+one the Hexbane Shiitake audit already reversed once.
+
+**(b) Which item on the stack.** At event time the spell is not on the stack
+yet (`commitItem` fires `spellPlayed` before `pushItem`), so the effect finds it
+at resolution by `(card, controller)`. It used `.find()`, which scans from the
+BOTTOM — so with two copies of one card on the stack it negated the older one.
+It is `[...g.s.stack].reverse().find(...)` now, matching Hexbane Shiitake, which
+locates a spell the same way and was already right. The `[...]` spread is
+load-bearing: `Array.reverse()` reverses in place and would turn the real stack
+upside down.
+
+**(c) …and never a COPY (R164).** A copy of a spell is a real `StackItem` as of
+R164: it carries the ORIGINAL's card name and controller and is pushed ABOVE
+it, so `(card, controller)` stopped being unique and the reverse scan reaches
+the copy FIRST. Both remaining sites — Origon and Hexbane Shiitake — now carry
+`!i.copy`, and the two cards were read separately rather than assumed to agree:
+
+- Origon prints "negate **it**", where "it" is *their first spell*, the spell
+  that was played.
+- Hexbane Shiitake prints "exchange control of me for **that spell**", where
+  "that spell" is the one *another player plays*.
+
+Both pronouns point back at the played spell inside the trigger's own sentence,
+and RAQ (_passer, quoted at `StackItem.copy`) is explicit that a copy is not
+one: *"the 1st copy wasn't 'played'."* A copy remains negatable by anything
+aimed at an effect on the stack — *"Opponent can only interact with copy of a
+spell effect"* — it is simply not what either of these two sentences names.
+
+### 2. Molten Tormentor: lethality is a FACT ON THE DAMAGE EVENT
+
+*"[Augment] Whenever I survive damage, each opponent sacrifices that many
+units."*
+
+"Survive" was `u.damage < defense`, read at event time. Marked damage is not the
+whole of what kills: R21's {Deadly} kills through any nonzero hit. So a {Deadly}
+hit BELOW the Tormentor's defense passed the test, the payout resolved, and the
+sweep killed it a line later — the card was paid for surviving the one kind of
+hit nothing survives.
+
+`data.lethal` now rides every `'damage'` event aimed at a unit, computed at the
+damage site from the same expression that decides the kill, so the fact and the
+kill cannot disagree. Both unit-damage paths carry it:
+
+- `dealEffectDamageAll` — `u.damage >= t || srcAttrs.has('Deadly')`, with `t`
+  read at PRINTED defense on an R106-collapsed hit, exactly as the kill is.
+- `commitUnitDamage` — `L.deadlyHit.has(id) || ct <= 0 || u.damage >= ct`, the
+  three doors out of a combat sub-step (`sweepDeadly`, `sweepCollapsedDeaths`,
+  the ordinary state check) in the order `combatSubStep` runs them.
+
+{Deadly} is the ONLY attribute that makes a sub-defense hit lethal to a unit.
+{Piercing} carries excess to the PLAYER, {Lethal} kills a player outright,
+{Resonant} drains life, {Poisonous} replaces the damage with counters and never
+reaches the branch, and {Vulnerable}'s doubling is already inside `u.damage`.
+
+### 3. Burgeon / Surly Stalker: "double" is a promise about the BOARD
+
+*"Double the /[power or defense] of target unit until regroup."* ·
+*"Double my power and defense until regroup."*
+
+Both were `addTemp(+current effective stat)` — the LAYER-4 number written back
+in at LAYER 3, where {Tough} and {Balanced} apply to it a second time.
+
+The in-code note called the overshoot unreachable — *"No pool combo hits this
+today"* — and that was false with no combo at all. **Burgeon targets `what:
+'unit'`, and Rampart Guardian is a printed {Tough} 0/4.** A Burgeoned Rampart
+Guardian read 0/**24** where "double its defense (8)" is **16**. Child of Aether
+prints {Balanced} and Its Dark Bubb prints {Inverted}; all three are ordinary
+targets. (Surly Stalker doubles ITSELF and prints no stat-layer attribute, so it
+needs one handed to it — and the cheapest door is not a virus but R19 COLUMN
+SHARING: attack in a column with Rampart Guardian and the Stalker is {Tough}
+too, *"in all situations"*.)
+
+`doubleStats` (batch-wood-a.ts, shared by both cards because both print the same
+verb) SOLVES for the layer-3 delta that lands `effStats` on double what it read,
+rather than assuming the layers above are the identity. Solving instead of
+dividing by a known multiplier is what makes it right for all of layers 4-6 at
+once, including the couplings a formula would have to special-case:
+
+- {Tough} scales defense only, so the delta is halved on the way out.
+- {Balanced} sets both stats to the higher of the two, so doubling a Balanced
+  unit's defense necessarily lifts its power too. That is the attribute doing
+  its job, not an error, and it is why the two axes are solved alternately for
+  "both".
+- {Inverted} (R93) reverses the CHANGE, so the delta that doubles the number is
+  a NEGATIVE one — which the solver finds and a formula would not.
+- {Unaware} (R106) reads at printed for every purpose, so NO layer-3 delta can
+  move the number. That is a real answer, not a failure: the card says so out
+  loud and applies the plain doubling anyway, so the change is there if the
+  attribute goes away.
+
+Layers 4-6 are weakly monotone in one layer-3 axis, so the search is a
+bisection with an equality check at the end (a {Balanced} plateau can step over
+the target, which is "no delta lands there" and returns null).
+
+### 4. Divine Intervention: "you MAY change the targets", per target
+
+*"You may change the targets of target effect."*
+
+The "may" was one question about the whole spell; under it every declared slot
+was re-picked with no way to leave one alone. On a two-target effect that turns
+a permission into a requirement. Each slot's menu now leads with KEEP, carrying
+the ref already in the slot, with that ref filtered out of the candidate list so
+one target is never offered twice under two labels. Keeping is not changing: a
+kept slot is not written back and is not counted in the "changes N" line, so
+moving one target of two reads differently from moving both. (Hexbane Shiitake's
+own retarget menu already offered exactly this; the shape was in the file.)
+
+**Gravitational Correction deliberately does NOT get the same treatment.** It
+prints *"Change the targets of target effect unless its controller pays [x]"* —
+the same shape with no "may" in it: an unconditional change its victim can buy
+off with mana. The permission that differs is printed, so the behaviour differs.
+
+### 5. Three guards that aborted in silence
+
+Changing what fires moves the `65-effect-conformance` fuzz drive onto branches
+it had not reached, and it found three bare `return`s: Adversary of the Deep
+(carrier gone / no life lost), Aethercap Siphoner and Flux Constructor (both
+`min: 0` — declining the optional target is the ORDINARY answer). Each says why
+now. This is the Earthbound Replicator precedent, recorded in that card's own
+comment: *"R84 surfaced this one: the Alluring trigger changed what the
+conformance drive reaches, and this guard aborted in silence."*

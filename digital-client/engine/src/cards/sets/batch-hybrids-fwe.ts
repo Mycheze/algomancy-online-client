@@ -105,15 +105,51 @@ card('Mirrorback Ambusher', {
 
 // "[Augment] Whenever a player plays their first spell in this battle, negate
 // it." — be/5 6/7 Polyform Primordial Beast Unit. Text-box [Augment].
-// "First spell this battle" is a per-instance battle counter (R14) bumped
-// inside when() — fireEvent evaluates when() exactly once per event per
-// listener (the Seabed Shellcaster pattern), so the count is exact per
-// carrier. ⚠ only spells played while the carrier is in play in-region are
-// counted (a listener can't see earlier ones). Plain "spell" includes spell
-// tokens (⚠ header). At event time the spell is not yet on the stack
-// (commitItem fires spellPlayed before pushItem), so the effect finds it at
-// resolution: the BOTTOM-most un-negated spell-kind item matching the
-// event's card + controller (the trigger sits above it and resolves first).
+//
+// R166 — "THEIR FIRST SPELL" IS THE SEAT'S, NOT THE CARRIER'S.
+//
+// This used to count with a PER-INSTANCE battle counter bumped inside when()
+// (`origon:<self.id>:<seat>`), so it counted only the spells played while THIS
+// carrier was in play in-region: an Origon that arrived mid-battle — spawned
+// by an effect, taken with E.giveControl, or applied as an [Augment] under
+// R95's battle-time permission — negated the first spell IT saw rather than
+// the seat's actual first, and two Origons that arrived at different moments
+// each negated a different spell. The printed subject is the PLAYER ("a player
+// plays THEIR first spell in this battle"); nothing on the card is about when
+// I turned up.
+//
+// The seat's own ledger is `spellsPlayedAny:<seat>` (engine.ts, commitItem),
+// bumped BEFORE 'spellPlayed' fires, so the event whose counter reads 1 IS
+// that seat's first spell of this region's battle (R14). It is the
+// TOKEN-INCLUSIVE ledger deliberately: this card prints a plain, unqualified
+// "spell", and R157 §13 is *"Tokens are spells"* — the same audit that put
+// spell tokens back into Hexbane Shiitake's "a spell" (⚠ header). Its narrow
+// sibling `spellsPlayed:<seat>` belongs to the cards that PRINT the narrow
+// noun (Animated Spark's "nontoken spell"), and reusing it here would have
+// quietly decided that casting a token is not playing a spell.
+//
+// At event time the spell is not yet on the stack (commitItem fires
+// 'spellPlayed' before pushItem), so the effect finds it at resolution: the
+// TOP-most un-negated spell-kind item matching the event's card + controller
+// (the trigger sits above it and resolves first). TOP-most, not bottom — two
+// copies of one card can be on the stack together and the one this trigger is
+// about is the one played LAST, while `.find()` scans from the bottom and
+// answered with the older one. Hexbane Shiitake, the pool's other card that
+// locates a spell by (card, controller), already reads the stack this way, and
+// the `[...]` spread is not decoration: `Array.reverse()` reverses IN PLACE and
+// would turn the real stack upside down.
+//
+// …AND NOT A COPY (R164). A copy of a spell is a real stack item now, and it
+// carries the ORIGINAL's card name and controller and sits ABOVE it — so the
+// reverse scan reaches the copy FIRST, and `(card, controller)` stopped being
+// unique the day R164 landed. The printed pronoun settles it: "whenever a
+// player plays their first spell in this battle, negate IT" — "it" is the
+// spell that was played, and RAQ (_passer, quoted at `StackItem.copy`) is
+// explicit that a copy is not: *"the 1st copy wasn't 'played'"*. A copy is
+// negatable by anything that targets an effect on the stack; it is simply not
+// the thing this sentence points at. (Hexbane Shiitake answers the same way,
+// for the same reason and off its own pronoun — "that spell" — but the two
+// were read separately: their texts happen to agree, not their code.)
 card('Origon', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'],
@@ -121,7 +157,9 @@ card('Origon', {
     when: (g, self, ev) => {
       if (g.s.phase !== 'battle') return false;
       const region = (ev.data?.region as number | undefined) ?? self.region;
-      return g.bumpBattleCounter(region, `origon:${self.id}:${ev.data?.seat}`) === 1;
+      const seat = ev.data?.seat as Seat | undefined;
+      if (seat === undefined) return false;
+      return g.battleCounter(region, `spellsPlayedAny:${seat}`) === 1;
     },
     effect: {
       run: (g, ctx) => {
@@ -129,8 +167,8 @@ card('Origon', {
         const seat = ctx.event?.data?.seat as Seat | undefined;
         if (name === undefined || seat === undefined) return;
         const spellKinds = new Set(['spell', 'spellUnit', 'spellToken']);
-        const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && spellKinds.has(i.kind));
+        const it = [...g.s.stack].reverse().find(i =>
+          i.card === name && i.controller === seat && spellKinds.has(i.kind) && !i.copy);
         if (it) g.negate(it.id);
         else g.ev('info', `Origon: ${name} already left the stack — not negated.`);
       },
@@ -410,19 +448,27 @@ card('Channel Through', {
 
 // "[Augment] Whenever I survive damage, each opponent sacrifices that many
 // units." — err/7 7/6 Infernal Rock Elemental Unit. Text-box [Augment].
-// "Survive" is checked at event time (R1): the damage event fires after the
-// damage is marked, so I survived iff my marked damage is still below my
-// defense (⚠ a Deadly hit below toughness misfires — the kill lands after
-// the event). "That many" = the event's damage amount (snapshot); "each
-// opponent" is region-scoped (R25), each picks their own units,
-// plan-then-commit; fewer units than N sacrifices them all (if able).
+// "Survive" is checked at event time (R1). R166: it reads the `lethal` fact
+// the engine now puts on every 'damage' event aimed at a unit, and NOT
+// `u.damage < defense`, which was the whole bug — marked damage is not the
+// whole of what kills. A {Deadly} hit BELOW my defense left my marked damage
+// under the bar, so the old test said "survived", the payout resolved, and the
+// R21 sweep killed me one line later: the card was paid for surviving the one
+// kind of hit nothing survives. `lethal` is computed at the damage site, from
+// the same expression that decides the kill, so the two cannot disagree; the
+// `undefined` arm is the old reading, kept for any future 'damage' event that
+// reaches a unit without the fact. "That many" = the event's damage amount
+// (snapshot); "each opponent" is region-scoped (R25), each picks their own
+// units, plan-then-commit; fewer units than N sacrifices them all (if able).
 card('Molten Tormentor', {
   augmentText: [{
     type: 'triggered', events: ['damage'], self: true,
     label: 'each opponent sacrifices that many units (I survived damage)',
-    when: (g, self) => {
+    when: (g, self, ev) => {
       const u = g.entity(self.id);
-      return !!u && u.damage < g.effStats(u)[1];
+      if (!u) return false;
+      const lethal = ev.data?.lethal as boolean | undefined;
+      return lethal === undefined ? u.damage < g.effStats(u)[1] : !lethal;
     },
     effect: {
       run: (g, ctx) => {
