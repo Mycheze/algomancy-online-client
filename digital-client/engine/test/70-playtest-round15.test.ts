@@ -419,21 +419,48 @@ test('[59] the prompt bar checks the plan before it offers a Pass button', () =>
     'and the same for a pass sent by hand — the trailing render() repaints this bar');
 });
 
+/** the body of a CLASS METHOD (fn() only finds free functions) */
+function method(name: string): string {
+  // anchored at a two-space indent so `this.applyUpdate(` at a CALL SITE cannot
+  // be mistaken for the declaration — it appears ~140 lines earlier than one
+  const at = MAIN.search(new RegExp(`\\n  (private )?${name}\\(`));
+  assert.notEqual(at, -1, `ui/main.ts has no method ${name}`);
+  const end = MAIN.indexOf('\n  }\n', at);
+  return MAIN.slice(at, end === -1 ? MAIN.length : end);
+}
+
 test('[59] a fresh authoritative state clears the error from the previous one', () => {
   // uiError was cleared in act() and nowhere on the way IN, and the auto-pass
   // paths never go through act() — so a refusal one of them earned stayed on
-  // screen for the rest of the game
-  const at = MAIN.indexOf("m.t === 'update'");
-  assert.notEqual(at, -1);
-  const block = MAIN.slice(at, MAIN.indexOf("m.t === 'kicked'"));
-  assert.match(block, /uiError = '';/, "the 'update' handler must clear uiError");
+  // screen for the rest of the game.
+  //
+  // ⚠ REWRITTEN 2026-08-25. This used to slice MAIN between "m.t === 'update'"
+  // and "m.t === 'kicked'" and look for the assignment inside that window. R150
+  // put every inbound update through a pacing queue and moved the clear into
+  // applyUpdate — the ONE funnel the queue drains into — so the invariant was
+  // intact and the test failed anyway. It was asserting WHERE the line sat.
+  // It now asserts the shape that actually protects #59: updates funnel, the
+  // funnel clears, and no release path skips the funnel. That is three claims
+  // instead of one, and none of them cares about layout.
+  const handler = MAIN.slice(MAIN.indexOf("m.t === 'update'"), MAIN.indexOf("m.t === 'kicked'"));
+  assert.match(handler, /this\.paced = pace\(/,
+    "the 'update' handler must hand the message to the pacing queue (R150), not apply it inline");
+  assert.match(method('applyUpdate'), /uiError = '';/,
+    'applyUpdate is the one funnel every update reaches — it must clear uiError');
+  for (const release of ['pumpPace', 'flushPace']) {
+    assert.match(method(release), /this\.applyUpdate\(/,
+      `${release} must release through applyUpdate, or an update reaches the screen `
+      + 'without clearing the previous state\'s error — which is #59 exactly');
+  }
 });
 
 test('[59] every intent latches the state it spends, and a refusal releases it', () => {
   // bounded to do()'s own body — undo() latches a few lines below it
   const doBody = MAIN.slice(MAIN.indexOf('do(a: Action): void {'), MAIN.indexOf("t: 'action'"));
   assert.match(doBody, /this\.latch\(\);/, 'NetBackend.do() takes the latch');
-  assert.match(MAIN, /undo\(\): void \{ this\.latch\(\);/, '…and so does undo()');
+  // \s* rather than a literal space: this asserted single-LINE formatting until
+  // R150 wrapped the method, and a reformat is not a regression (2026-08-25).
+  assert.match(MAIN, /undo\(\): void \{\s*this\.latch\(\);/, '…and so does undo()');
   assert.match(MAIN, /ui\.sentFor = -1; ui\.autoAt = -1;/,
     'a refused action leaves actionCount alone — the latch must be let go by hand');
   assert.match(fn('act'), /if \(ui\.sentFor === h\.state\.actionCount\) return;/,
