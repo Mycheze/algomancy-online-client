@@ -241,8 +241,39 @@ export const LEDGER: LedgerEntry[] = [
     report: "Why didn't Refuse Reclaimer get a counter from my Oracle dying?",
     status: 'by-design',
     guards: ['28-metal-c.test.ts::a death in the battle region it attacked into',
-      '28-metal-c.test.ts::a death in a region it is not in'],
-    note: 'R12 — REGION SCOPING, and the caveat this entry carried since round 7 turns out to be '
+      '28-metal-c.test.ts::a death in a region it is not in',
+      '148-pending-trigger-visibility.test.ts::a pending trigger is ON THE STACK the instant another ally dies',
+      '148-pending-trigger-visibility.test.ts::the pending trigger is visible to its own controller',
+      '148-pending-trigger-visibility.test.ts::the stack strip draws it, and the row names the unit it came from'],
+    note: '⚠⚠ THE CAUSE BELOW IS WRONG, AND WAS WRONG FROM THE DAY IT WAS WRITTEN. Corrected '
+      + '2026-08-25 by replaying the game. REGION SCOPING WAS NEVER INVOLVED: at the moment of '
+      + 'this report both units were in REGION 1, in the SAME formation, both the reporter\'s. '
+      + 'BRDM replays 262/262 clean on the engine it was played on (322d536~1; at HEAD it '
+      + 'diverges at action 34 and cannot reach the moment at all — CARD-TODO #51), and the '
+      + 'sequence is: a177 the Reclaimer\'s trigger resolves, counters 0 -> 1 · a179 Oracle of '
+      + 'Foretelling dies -> bin · a179 the Reclaimer\'s trigger FIRES AGAIN · **a180 the report '
+      + 'is filed, with the trigger ON THE STACK** · a184 it resolves, counters 1 -> 2. '
+      + 'The full report text (trimmed in the row above) ends "It should have activated again" — '
+      + 'and it had. He was looking at a board that could not tell him so. THE OWNER CONFIRMED '
+      + 'THE CORRECTION, 2026-08-25: "It must have been a UI issue then." '
+      + 'Why it is not live: the stack was not on the table when he filed. The stack window '
+      + 'landed in 08575eb on 2026-08-21, THE DAY AFTER — there was no way to see a pending '
+      + 'trigger because there was nowhere to see the stack. '
+      + '⚠ HOW THIS ENTRY WENT WRONG, because it is the most instructive part: somebody '
+      + 'reconstructed a scenario that WOULD explain the complaint, verified the engine handles '
+      + 'THAT correctly, and closed it. The story is coherent, the rule it cites is real, the '
+      + 'quote is genuine, and the two guards below genuinely test it — they just test a '
+      + 'different game than the one he played. A 2026-08-25 audit of all 295 guard references '
+      + 'read this entry and CLEARED it, because nothing short of the replay could show the gap. '
+      + 'The R173 guards found four blind entries by reading; this one needed forensics. '
+      + 'The region guards are KEPT — R12 is real and worth pinning — and the visibility guards '
+      + 'the report was actually about are added beside them. Red-checked both ways, and the '
+      + 'asymmetry is the whole point: disabling the card\'s trigger reddens BOTH sets, but '
+      + 'redacting triggered items from the served stack in server/view.ts reddens ONLY the new '
+      + 'ones while 28-metal-c stays 30/30 green. That is precisely the hole the original close '
+      + 'left open. '
+      + 'THE ORIGINAL (WRONG) NOTE FOLLOWS, kept so nobody re-derives it: '
+      + 'R12 — REGION SCOPING, and the caveat this entry carried since round 7 turns out to be '
       + 'the whole explanation rather than a loose end. Caleb Gannon, #rules-questions 2025-03-09: '
       + '"Everything in the game is region specific. So nothing will ever impact anything in '
       + 'another region. You should be able to completely ignore cards in other regions when '
@@ -286,7 +317,23 @@ export const LEDGER: LedgerEntry[] = [
       + "asks me to pass but I can't, since it's not actually my priority",
     status: 'fixed',
     guards: ['53-playtest-round7.test.ts::a seat with a decision pending against the OTHER seat',
-      '50-ui-inspect.test.ts::waiting'],
+      '50-ui-inspect.test.ts::waiting',
+      '146-report-guards.test.ts::#18 a seat with nothing legal is never handed a Pass button',
+      '146-report-guards.test.ts::#18 …and that empty list is what the server really publishes'],
+    note: 'GUARDS WIDENED 2026-08-25 (R173). Both original guards are RULES-LAYER asserts for a '
+      + 'PRESENTATION-LAYER bug: one checks legalActions is empty, the other checks waitingNote\'s '
+      + 'wording. The fix is neither — it is the branch in ui/main.ts::promptHtml that returns '
+      + 'the "Waiting for X…" bar when the legal list is empty. Disable that branch and the '
+      + 'client falls through to the priority bar with a live Pass button again, exactly as '
+      + 'reported, while 53-playtest-round7 (40/40), 50-ui-inspect (99/99) and '
+      + '70-playtest-round15 (30/30) all stay green. Nothing in the repo had ever driven the UI '
+      + 'with an empty legal list. '
+      + 'The reported state is real and common, not exotic: a random-play sweep found '
+      + 'priority === X with decision.seat === other(X) in 6 of 400 seeds. '
+      + '⚠ The first attempt at this fixture did NOT discriminate — its board left priority with '
+      + 'the ASKING seat, so the bar refused the Pass button for an unrelated reason and the '
+      + 'test would have passed against the bug. Rebuilt around a genuine priority window for '
+      + 'the viewing seat.',
   },
   {
     id: 19, room: 'BRDM', date: '2026-08-20',
@@ -536,7 +583,22 @@ export const LEDGER: LedgerEntry[] = [
     report: "It's not possible to see the X value for an effect while it's on the stack",
     status: 'fixed',
     guards: ['50-ui-inspect.test.ts::stackItemX keeps the two X',
-      '50-ui-inspect.test.ts::the stack card', '50-ui-inspect.test.ts::a spent part'],
+      '50-ui-inspect.test.ts::the stack card', '50-ui-inspect.test.ts::a spent part',
+      '50-ui-inspect.test.ts::Necromantic Rebuke carries its paid X onto the real stack',
+      '56-ui-flash.test.ts::a flashed item still knows its X',
+      '146-report-guards.test.ts::#43 a cast X reaches the REAL stack wearing its number'],
+    note: 'GUARDS WIDENED 2026-08-25 (R173) after an audit found the first three are all pure '
+      + 'tests of ui/inspect.ts over the SAME hand-built xItem fixture. That is not wrong — '
+      + 'ui/inspect.ts is the right home for the judgement and those are the right tests for it '
+      + '— but this report is about a whole chain, and no cited guard drove any of it. '
+      + '⚠ The audit OVERSTATED it: two uncited real-engine guards already reached the cast-X '
+      + 'production path (56-ui-flash\'s real Floral Singularity at X=3, and 50-ui-inspect\'s '
+      + 'Necromantic Rebuke on a real state.stack). Both are cited now. '
+      + 'The hop genuinely nobody covered is the LAST one: what a RESPONDER is handed. The new '
+      + 'guard reads viewFor(state, responder).stack rather than state.stack, which is what '
+      + 'makes it bite — a plausible "the opponent\'s X is theirs" redaction in server/view.ts '
+      + 'blanks the responder\'s screen exactly as reported while every previously cited guard '
+      + 'stays green. Measured: 50-ui-inspect 99/99 green under that mutation, new guard red.',
   },
 
   // ── XCYX / VEAV, 2026-08-22 (rounds 14-15) ──────────────────────────────
@@ -557,7 +619,18 @@ export const LEDGER: LedgerEntry[] = [
     id: 45, room: 'VEAV', date: '2026-08-22',
     report: "Awoken Tomb's trigger, while on the stack, doesn't say what X is equal to",
     status: 'fixed',
-    guards: ["50-ui-inspect.test.ts::a triggered ability's X is the amount its event carried"],
+    guards: ["50-ui-inspect.test.ts::a triggered ability's X is the amount its event carried",
+      "146-report-guards.test.ts::#45 Awoken Tomb's trigger says what X is while it is ON the stack"],
+    note: 'GUARD WIDENED 2026-08-25 (R173). The cited test builds the StackItem BY HAND with the '
+      + 'event already attached and asserts the pure ui/inspect.ts::stackItemX reads it — so it '
+      + 'never asks the engine for an item, and the reported failure is upstream of it. '
+      + '⚠ The obvious proof of that is WRONG and was tried: deleting `event: ev` from '
+      + 'E.queueTrigger reddens 08-cards2 and 69-damage-batch, because EffectCtx.event is read '
+      + 'off the same field — the event\'s EXISTENCE is guarded by the effect tests. The '
+      + 'genuinely unguarded thing is narrower and worth more: that the item a RESPONDER is '
+      + 'handed still carries its x and its event. Isolated by a mutation that drops `event` '
+      + 'from the StackItem while stashing it so EffectCtx still gets it — 50-ui-inspect 99/99, '
+      + '08-cards2 14/14 and 69-damage-batch 10/10 all stay green, and only the new guard reddens.',
   },
   {
     id: 46, room: 'VEAV', date: '2026-08-22',
@@ -654,9 +727,24 @@ export const LEDGER: LedgerEntry[] = [
       + 'effects happened instantly. We should have been able to see it much slower',
     status: 'fixed',
     guards: ['56-ui-flash.test.ts::combat batch is cut at the seams',
-      '56-ui-flash.test.ts::three beats'],
+      '56-ui-flash.test.ts::three beats',
+      '146-report-guards.test.ts::#53 a real combat batch reaches the client PACED, not all in one frame',
+      '146-report-guards.test.ts::#53 …and the held lines are a curtain, not an edit'],
     note: 'Not a correctness bug. ui/flash.ts already was a beat queue but was fed only by '
-      + 'stackFlash; it now stages combat sub-steps too, and auto-passes are delayed.',
+      + 'stackFlash; it now stages combat sub-steps too, and auto-passes are delayed. '
+      + 'GUARDS WIDENED 2026-08-25 (R173). Both original guards call combatStages() on '
+      + 'HAND-WRITTEN event arrays: they prove the stager can stage, and cannot fail if the '
+      + 'client stops FEEDING it — which is the reported symptom. Cutting absorbBeats(events) to '
+      + 'absorbBeats([]) in applyUpdate leaves 56-ui-flash 37/37, 128-ui-pace 18/18 and '
+      + '70-playtest-round15 30/30 all green; only the new guards redden. '
+      + '⚠ The uncited guard an audit proposed instead — 56-ui-flash::the beats a real '
+      + 'end-of-combat produces — does NOT cover this: it drives a real engine but still ends at '
+      + 'combatStages(events) and never involves the client. It covers the stager\'s INPUT, not '
+      + 'the feeding. Both halves were needed and both were built. '
+      + 'Construction note: the new tests pass a NON-EMPTY legal list on purpose — R150\'s '
+      + 'holdable() holds an update the player cannot act on, and a held update never reaches '
+      + 'absorbBeats at all, so an empty list makes the result depend on how many updates ran '
+      + 'earlier in the same process.',
   },
   {
     id: 54, room: 'UFAB', date: '2026-08-22',
