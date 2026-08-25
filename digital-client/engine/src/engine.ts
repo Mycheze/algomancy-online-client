@@ -4028,20 +4028,41 @@ export class E {
    *   in a region its controller is not in until regroup walks it there.
    *   Mid-battle both seats are present and it stays on the board.
    * Returns false when nothing changed hands (unit gone, or already theirs).
+   *
+   * R148 — the two things that changed here, both driven by CT-38/CT-39:
+   *
+   * `opts.keepFormation` is the ONE deviation any printed card has needed, and
+   * it exists for exactly one shape: a symmetric EXCHANGE. The unslot is here
+   * because a unit that changes sides would otherwise stand in a formation its
+   * new controller does not own — "Exchange control of two target units and
+   * swap their positions" (Organic Exchange) preserves that invariant by
+   * construction, because each unit takes the OTHER's slot, which is a slot on
+   * its new controller's side. Such a caller re-slots both units itself and
+   * passes `keepFormation` so the choke point does not undo the swap. Any
+   * caller that is not re-slotting must leave it alone.
+   *
+   * It emits a real dispatched `controlChanged` (R148/CT-39) instead of the
+   * `info` line it used to, so "whenever you gain control of a unit" is a
+   * listenable seam. Same message, so the game log is unchanged. Region-scoped
+   * per R12 the ordinary way — `data.region` is the unit's region AFTER any
+   * relocation above, so both seats present there hear it and nobody else
+   * does — and `data.unit` makes the moved unit the event's source, so a
+   * `self:` listener on the unit that just changed hands matches.
    */
-  giveControl(u: Entity, to: Seat): boolean {
+  giveControl(u: Entity, to: Seat, opts?: { keepFormation?: boolean }): boolean {
     if (!this.entity(u.id)) { this.ev('info', `${u.card} is gone — nothing changes hands.`); return false; }
     if (u.controller === to) { this.ev('info', `${this.pname(to)} already controls ${u.card} — nothing changes hands.`); return false; }
     const from = u.controller;
     u.controller = to;
     for (const id of u.mods) { const m = this.entity(id); if (m) m.controller = to; }
-    this.removeFromFormation(u.id);
+    if (!opts?.keepFormation) this.removeFromFormation(u.id);
     if (!this.s.regions[u.region]!.presentSeats.includes(to)) {
       u.region = this.homeRegion(to);
       for (const id of u.mods) { const m = this.entity(id); if (m) m.region = u.region; }
     }
-    this.ev('info', `${this.pname(to)} gains control of ${u.card} (from ${this.pname(from)}).`,
-      { unit: u.id, card: u.card, from, to });
+    const ev = this.ev('controlChanged', `${this.pname(to)} gains control of ${u.card} (from ${this.pname(from)}).`,
+      { unit: u.id, card: u.card, from, to, region: u.region });
+    this.fireEvent('controlChanged', ev);
     return true;
   }
 

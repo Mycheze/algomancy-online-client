@@ -47,6 +47,7 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../src/cards/registry.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
+import { stripCode } from './card-todo.ts';   // R148, appended block at the end of this file
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -422,5 +423,139 @@ test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods li
   const legalHits = hits.filter(h => path.basename(h.file) === 'engine.ts').map(h => enclosing(h.line));
   for (const fn of LEGAL) {
     assert.ok(legalHits.includes(fn), `no bin.push left inside E.${fn} — the sweep's premise moved`);
+  }
+});
+
+// ════════════════════════════════════════════════════════════════════════
+// R148 / CT-38 — the CONTROL-CHANGE choke point stays the only way to
+// change a controller. (Appended as one self-contained block; nothing above
+// this line is touched.)
+// ════════════════════════════════════════════════════════════════════════
+//
+// Exactly R124's shape, one zone over. `E.giveControl` is the single primitive
+// for "this seat now controls that unit": it carries the unit's MODS across,
+// unslots it from a formation its new controller does not own, applies R112
+// region exclusivity, and (R148) fires the `controlChanged` event. A card that
+// assigns `u.controller` by hand gets none of that, and the failure is SILENT
+// — the unit does change sides, so every test that only checks `.controller`
+// still passes. Three cards did exactly that (Mindspore Fiend, Organic
+// Exchange, Download) and nothing caught them for a day; it took a hand sweep.
+// So the sweep is a test now.
+//
+// ⚠ THE TWO TRAPS this repo has hit with code-reading assertions, both real,
+// both inside one day, both avoided here by reading FILE SOURCE through
+// `stripCode`:
+//   · JSON.stringify on a card definition drops functions — a check written
+//     that way reads nothing and answers "clean".
+//   · Function.prototype.toString keeps comments and strings — a comment that
+//     merely mentions the idiom (usually the one explaining that the card no
+//     longer uses it) holds the check true.
+// `stripCode` is card-todo.ts's own helper, deliberately shared rather than
+// re-rolled: one copy of those regexes, one place to be wrong.
+
+/**
+ * `.controller =` sites in src/cards/ that are NOT a unit changing hands, each
+ * with the reason it is not. Keyed by file, matched as an exact statement in
+ * the STRIPPED source, so an entry cannot quietly cover a line it was not
+ * written for. Two shapes qualify and no third has come up:
+ *
+ *  · a MOD being re-parented onto a new host, taking that host's controller.
+ *    The mod is not changing hands, it is changing HOSTS; giveControl is about
+ *    units and would unslot and relocate the wrong thing entirely.
+ *  · a STACK ITEM's controller — "gain control of target effect" is a
+ *    different object (StackItem, not Entity) with no mods, no formation slot
+ *    and no region.
+ *
+ * If you are adding a third: it is far likelier that you want giveControl.
+ */
+const CONTROLLER_ASSIGN_OK: { file: string; stmt: string; why: string }[] = [
+  {
+    file: 'batch-hybrids-wm-a.ts', stmt: 'm.controller = b.controller;',
+    why: 'Reconfigure moves the mods off one unit onto another — a mod re-parenting to a new host, not a unit changing hands',
+  },
+  {
+    file: 'batch-dark-b.ts', stmt: 'mod.controller = host.controller;',
+    why: "Rotbeast moves its own mods onto enemy units — same re-parenting shape as Reconfigure's",
+  },
+  {
+    file: 'batch-wood-a.ts', stmt: 'item.controller = ctx.controller;',
+    why: 'Hexbane Shiitake takes control of an ITEM ON THE STACK (a StackItem, not an Entity); its own body goes through g.giveControl on the next line',
+  },
+];
+
+/** every .ts file under src/cards/, source stripped of comments and strings */
+function cardSources(): { file: string; src: string }[] {
+  const root = path.resolve(HERE, '..', 'src', 'cards');
+  const out: { file: string; src: string }[] = [];
+  const walk = (dir: string): void => {
+    for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, f.name);
+      if (f.isDirectory()) walk(p);
+      else if (f.name.endsWith('.ts')) out.push({ file: f.name, src: stripCode(fs.readFileSync(p, 'utf8')) });
+    }
+  };
+  walk(root);
+  return out;
+}
+
+/** assignments to a `.controller` property, one `file:line stmt` per hit.
+ * `=` only — `===` and `!==` are questions, not assignments. */
+function controllerAssignments(file: string, src: string): string[] {
+  const hits: string[] = [];
+  src.split('\n').forEach((line, i) => {
+    for (const m of line.matchAll(/[A-Za-z_$][\w$]*\.controller\s*=(?!=)/g)) {
+      hits.push(`${file}:${i + 1} ${line.slice(m.index).trim()}`);
+    }
+  });
+  return hits;
+}
+
+test('R148 stays solved: no card in src/cards/ assigns a unit\'s .controller — E.giveControl is the only way', () => {
+  const unexplained: string[] = [];
+  for (const { file, src } of cardSources()) {
+    for (const hit of controllerAssignments(file, src)) {
+      const stmt = hit.slice(hit.indexOf(' ') + 1);
+      if (CONTROLLER_ASSIGN_OK.some(e => e.file === file && stmt.startsWith(e.stmt))) continue;
+      unexplained.push(hit);
+    }
+  }
+  assert.deepEqual(unexplained, [],
+    `raw controller assignments in src/cards/ at [${unexplained.join(' | ')}]. A control change is `
+    + '`E.giveControl(unit, seat)` — it carries the unit\'s MODS across (a stolen unit whose '
+    + 'augments still answer to the old seat is CT-38, and it was invisible for a day because the '
+    + 'unit does change sides), unslots it from a formation its new controller does not own, '
+    + 'applies R112 region exclusivity and fires `controlChanged` (R148/CT-39). An exchange that '
+    + 're-slots both units itself passes `{ keepFormation: true }`. If the thing you are assigning '
+    + 'is genuinely NOT a unit changing hands — a mod moving to a new host, a StackItem — add it '
+    + 'to CONTROLLER_ASSIGN_OK with that reason.');
+
+  // and the allowlist cannot outlive its cause (the SELF_LOCATING_IN_BIN rule
+  // above, for the same reason): an entry whose line has moved on is a stale
+  // exemption, which is how an allowlist quietly turns back into a blanket.
+  const sources = new Map(cardSources().map(s => [s.file, s.src]));
+  for (const e of CONTROLLER_ASSIGN_OK) {
+    const src = sources.get(e.file);
+    assert.ok(src !== undefined, `CONTROLLER_ASSIGN_OK names ${e.file}, which is not a file in src/cards/`);
+    assert.ok(src.includes(e.stmt),
+      `${e.file} no longer contains \`${e.stmt}\`, so its exemption is stale — drop it. (Was: ${e.why})`);
+  }
+});
+
+test('R148: the only .controller assignments in engine.ts are inside giveControl', () => {
+  const SRC = path.resolve(HERE, '..', 'src');
+  const stripped = stripCode(fs.readFileSync(path.join(SRC, 'engine.ts'), 'utf8'));
+  const lines = stripped.split('\n');
+  const hits: number[] = [];
+  lines.forEach((line, i) => {
+    if (/[A-Za-z_$][\w$]*\.controller\s*=(?!=)/.test(line)) hits.push(i);
+  });
+  assert.ok(hits.length > 0, 'the primitive itself must still assign a controller somewhere');
+  for (const n of hits) {
+    // `giveControl(` opens within a few lines above every legal assignment —
+    // the same proximity read R124 uses for its one bin splice.
+    assert.ok(lines.slice(Math.max(0, n - 8), n + 1).join('\n').includes('giveControl('),
+      `engine.ts:${n + 1} assigns a controller outside giveControl: ${lines[n]!.trim()}. `
+      + 'The choke point is the whole point (R112/R148) — route it through giveControl, or, if '
+      + 'this really is a new primitive, say so here and widen this test on purpose.');
   }
 });

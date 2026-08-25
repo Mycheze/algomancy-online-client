@@ -77,7 +77,12 @@ export const EVIDENCE: Record<ClaimKind, EventType[]> = {
   discard: ['trashed'],
   sacrifice: ['died', 'trashed'],
   glimpse: ['glimpsed', 'cached'],
-  control: [],
+  // R148/CT-39: control USED to have no event of its own — `E.giveControl`
+  // emitted a plain `info` line — so the only evidence a "gain control" clause
+  // could offer was the STATE_EVIDENCE delta below. It has one now, and the
+  // delta is kept beside it: a card that hands a unit over during a phase the
+  // drill does not reach still shows up in the state read.
+  control: ['controlChanged'],
   negate: ['negated', 'fizzled'],
   rot: ['rotGained'],
   debt: ['debtGained'],

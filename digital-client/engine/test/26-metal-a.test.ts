@@ -1122,3 +1122,52 @@ test('Evolutionary Experiment: +2 counters when applied as a mod and on every la
   assert.equal(ent(h, host)!.counters, 6, '2 + (2 from each of the two mods)');
   assert.deepEqual(effStats(h, host), [7, 7]);
 });
+
+// ── R148 / CT-38: Download routes its steal through E.giveControl ─────────
+//
+// "Target token" is not only spell tokens — `pushUnitTargets` offers UNIT
+// tokens too, and a unit token can be augmented. Download used to flip
+// `tok.controller` by hand and unslot it locally, which stole the body and
+// left its augments answering to the seat it was taken from. The spell-token
+// case above never saw it, because a spell token has no mods.
+test('Download steals a MODDED unit token: the augment changes controller with it, and it leaves the blocker grid (R148/CT-38)', () => {
+  const h = new Harness(2696);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'metal', 2);                          // mm/1
+  toNextBattle(h, A);
+  const region = h.state.battle!.region;
+  let robot = 0, mod = 0;
+  withE(h, e => {
+    // counters: 2 — a Robot prints 0/0 and carries its size in +1/+1 counters,
+    // so a counterless one is a 0/0 and dies to the state-based sweep before
+    // it can be stolen. The augment is a VANILLA card on purpose: 'Bubb' would
+    // donate {Unaware} to its host, which then reads the printed 0/0 and
+    // ignores the counters — the Robot dies of being modded.
+    robot = e.spawnUnit(D, 'Robot', e.homeRegion(D), { token: true, counters: 2 }).id;
+    mod = e.attachMod(e.entity(robot)!, 'The Foretold', D, 'augment').id;
+  });
+  assert.equal(ent(h, mod)!.controller, D, 'the augment starts on the victim\'s side');
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [robot] } });
+  assert.deepEqual(h.state.battle!.blocks[0], [robot], 'the Robot is a declared blocker');
+  const mark = h.events.length;
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Download') });
+  pick(h, { unit: robot });
+  pass(h); pass(h);                                         // resolve
+
+  assert.equal(ent(h, robot)!.controller, A, 'the Robot swapped sides (R8)');
+  assert.equal(ent(h, robot)!.owner, D, 'owner unchanged');
+  assert.equal(ent(h, mod)!.controller, A, 'and its augment swapped sides WITH it (R112)');
+  assert.ok(!Object.values(h.state.battle!.blocks).some(col => col.includes(robot)),
+    'a stolen blocker leaves the grid it was declared in');
+  // CT-39: the typed event, with the seats and the region of the handover
+  const changes = h.events.slice(mark).filter(e => e.type === 'controlChanged');
+  assert.equal(changes.length, 1, 'exactly one controlChanged');
+  assert.deepEqual(
+    { from: changes[0]!.data!.from, to: changes[0]!.data!.to, region: changes[0]!.data!.region },
+    { from: D, to: A, region }, 'it names who lost it, who got it and where');
+  finishBattle(h);
+});

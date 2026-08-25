@@ -8863,3 +8863,139 @@ other eight green — including the R79 virused-spell case, which is the point:
 that one already worked, and if sharing the predicate had broken it, the sharing
 would be what is wrong. Reverting **only** the two fizzle sites reddens the
 fizzle test alone, so each half is independently pinned.
+## R148 — a control change is `E.giveControl` or it is a bug, and it is now an EVENT
+
+*(CARD-TODO #38 and #39, both found 2026-08-24 by the R143 agent's sweep, both
+closed 2026-08-25. No playtest report: this was latent, never observed at a
+table, which is exactly why it needed a test rather than a fix.)*
+
+### What was wrong
+
+[R112](#r112--a-stolen-units-mods-change-controller-with-it-one-control-change-primitive)
+made `E.giveControl(u, to)` the one
+control-change primitive, because four card batches had been carrying their own
+copy and the copies disagreed. Three cards never got the memo and kept flipping
+`controller` by raw assignment:
+
+| card | file | what the raw assignment skipped |
+| --- | --- | --- |
+| **Mindspore Fiend** | `batch-wood-b.ts` | the unit's MODS, and the formation unslot |
+| **Organic Exchange** | `batch-wood-b.ts` | the MODS, both directions |
+| **Download** | `batch-metal-a.ts` | the MODS (it unslotted by hand) |
+
+The **mods** are the whole of it. Bena, 2026-08-23:
+
+> "a stolen unit's mods are part of the unit, so yes, they go with them to the
+> unit's new controller — that's the whole point of some of the viruses which
+> force units to flip flop controllers"
+
+So all three handed over a unit whose augments and grafts still answered to the
+seat that lost it. The failure is **silent by construction**: the unit really
+does change sides, so every test that checks `.controller` still passes. It
+took a hand sweep to find, and it would have taken another to find the next
+one — which is the actual problem this ruling closes.
+
+### Two things in the ticket were wrong, and are corrected here
+
+**Mindspore Fiend did not "skip the region move".** It picks its recipient with
+`presentSeats(g, ctx.region)`, so the new controller is a seat **present in the
+unit's region by construction** and `giveControl`'s R112 exclusivity branch — a
+unit whose controller is not present goes home — cannot fire from that call
+site at all. What it skipped was the mods and the unslot. (It also carried a
+card-local note claiming the formation slot was kept *on purpose*, "for the
+(already finished) battle". That note had nothing behind it and described
+precisely the state the unslot exists to prevent: `afterCombat` is not the end
+of the battle, the `afterWindow` priority is still to come, and through it the
+unit would have been standing in its **old** controller's column while the
+**opponent** controlled it. The note went with the fix.)
+
+**Organic Exchange must NOT be unslotted — and that is not a bypass.** The
+unslot exists so a unit that changes sides does not stand in a formation its
+new controller does not own. *"Exchange control of two target units and swap
+their positions"* keeps that invariant **by construction**: each unit takes the
+other's slot, which is a slot on its new controller's side. So the primitive
+grew one option, and one caller in the whole pool passes it:
+
+```ts
+giveControl(u: Entity, to: Seat, opts?: { keepFormation?: boolean }): boolean
+```
+
+`keepFormation` means *"I am re-slotting this unit myself"*. Anything that is
+not a symmetric exchange must leave it alone. Organic Exchange's symmetric
+**region** swap went the other way and was simply deleted: both targets come
+out of one `targetCandidates` call, which enumerates `unitsIn(region)` for a
+single region, so the two regions were always equal and the swap could never
+do anything.
+
+### CT-39: the event, and why "wait for the first card that needs it" was overruled
+
+The ticket said to add the event *"WITH the first card that needs it, not
+before — an event nothing listens to is untested surface."* That reasoning was
+sound when it was written and is spent now: CT-38 routes **three printed
+cards** through `giveControl` in the same commit, so a typed event emitted
+there has three real drivers that can be observed today, and the tests drive it
+through all three. What stays untested is only the **listening** half — no card
+prints *"whenever you gain control of a unit"* yet — and that half is
+`fireEvent`'s, shared with every other dispatched event in the union.
+
+`giveControl` now emits `controlChanged` instead of the plain `info` line it
+used to, carrying `{ unit, card, from, to, region }`:
+
+- **`region` is where the unit stands AFTER any relocation**, so R12 scoping in
+  `fireEvent` hands it to **both** present seats' listeners and to nobody else.
+- **`unit` makes the moved unit the event's source**, so a `self:` listener on
+  the unit that just changed hands matches.
+- It is **not** signal-only: it carries the same message, word for word, so the
+  game log is unchanged.
+- The two "nothing changes hands" branches (the unit is gone; the seat already
+  controls it) still emit `info` and dispatch nothing, because no controller
+  changed.
+
+`claims.ts` had `control: []` — a claim kind with no event type in the whole
+vocabulary, evidenced only by a state delta. It reads `['controlChanged']` now,
+with the state delta kept beside it for cards that hand a unit over in a phase
+the drill does not reach.
+
+### The invariant is a test now, not a habit
+
+`90-coverage-census` gets R124's shape one zone over: **the only assignment to
+a `.controller` in `src/cards/` is none at all**, and in `engine.ts` every one
+is inside `giveControl`. Three sites in `src/cards/` are allowlisted with
+written reasons, and the allowlist is checked for staleness so it cannot outlive
+its cause — two mods being **re-parented onto a new host** (Reconfigure,
+Rotbeast), which is a mod changing hosts rather than a unit changing hands, and
+one **StackItem** controller (Hexbane Shiitake), which is a different object
+with no mods, no slot and no region.
+
+**⚠ Both code-reading traps this repo has hit were live here, and both are
+avoided the same way.** `JSON.stringify` on a card definition **drops
+functions**, so a check written that way reads nothing and answers "clean";
+`Function.prototype.toString()` **keeps comments and strings**, so a comment
+merely *mentioning* the bad idiom — usually the comment explaining that the
+card no longer does it — holds the check true. The sweep reads **file source**
+through `stripCode`, which is `card-todo.ts`'s own helper, now exported rather
+than re-rolled: one copy of those regexes, one place to be wrong.
+
+### Tests
+
+- `24-wood-b` — **"Mindspore Fiend gives away a MODDED blocker"**: one
+  assertion per skipped behaviour (mods / formation / region), so a partial
+  regression names itself.
+- `24-wood-b` — **"Organic Exchange hands over MODDED units"**: both
+  directions' mods follow, and the position swap survives the choke point.
+- `26-metal-a` — **"Download steals a MODDED unit token"**: "target token"
+  reaches **unit** tokens too, and those can be augmented — the spell-token
+  test above it could never have seen this.
+- `24-wood-b` — **"an UNMODDED control change behaves exactly as it did before
+  R148"**: the negative control, log line included.
+- `90-coverage-census` — **"R148 stays solved"** and **"the only `.controller`
+  assignments in engine.ts are inside giveControl"**.
+
+**Red-checked, one card at a time.** Reverting **any single** card to its raw
+assignment reddens that card's behaviour test *by name and for the stated
+reason* ("its augment changed hands WITH it: 1 !== 0"), **and** the static
+sweep, **and** `83-card-todo`'s "every item marked done is really done" via
+CT-38's proof — three layers on one revert. Reverting the `controlChanged`
+emission alone reddens all four behaviour tests on their event assertions and
+nothing else. Ignoring `keepFormation` inside the primitive reddens both
+Organic Exchange tests, including the pre-existing one from before this ruling.

@@ -101,8 +101,23 @@ card('Might of the Grove', {
 // region scoping keeps it to the battle I'm in. The ally is the cast-time
 // target; "you may" is a mid-resolution decline (R6). ⚠ header note: the
 // opponent is the other present seat (R25) — none present → no-op, no draw.
-// The unit keeps its formation slot for the (already finished) battle and
-// goes to its NEW controller's home region at regroup.
+//
+// R148/CT-38: the handover is E.giveControl, so the unit's MODS change
+// controller with it. It used to be a raw `u.controller = opp`, which left a
+// stolen unit's augments and grafts answering to the seat that gave it away —
+// latent, never reported, found by the R143 sweep.
+//
+// ⚠ The note that used to sit here — "the unit keeps its formation slot for
+// the (already finished) battle" — is GONE, and deliberately: it was a
+// card-local assertion with nothing behind it, and it described the one state
+// the choke point exists to prevent. `afterCombat` is not the end of the
+// battle; the afterWindow priority is still to come, and through it the unit
+// would have been standing in its OLD controller's column while the OPPONENT
+// controlled it. giveControl unslots it. Nothing is lost by that: combat
+// damage is over, and R72's horizontal collapse is already switched off after
+// blocks, so the line does not shuffle either. The region is unchanged (the
+// opponent is a present seat here by construction, so giveControl's exclusivity
+// branch does not fire) and regroup still sends it to its NEW controller's home.
 const mindsporeGive: EffectDef = {
   targets: { what: 'allyUnit', prompt: 'Mindspore Fiend: you may give an opponent control of target ally (if you do, draw a card)' },
   run: (g, ctx) => {
@@ -118,9 +133,7 @@ const mindsporeGive: EffectDef = {
       options: [{ label: 'Give control — draw a card', value: true }, { label: 'Decline', value: false }],
     });
     if (gives !== true) { g.ev('info', 'Mindspore Fiend: declined — no control change, no draw.'); return; }
-    u.controller = opp;
-    g.ev('info', `Mindspore Fiend: ${g.pname(opp)} gains control of ${u.card}.`);
-    g.draw(ctx.controller, 1);
+    if (g.giveControl(u, opp)) g.draw(ctx.controller, 1);   // "If you do, draw a card."
   },
 };
 card('Mindspore Fiend', {
@@ -206,9 +219,25 @@ card('Noxious Demise', {
 // the exchange needs both, so a gone target fizzles the whole part
 // (allOrNothing). ⚠ header note: position = formation slot — each unit takes
 // the other's slot in the attacker/blocker grids (a unit outside any
-// formation just trades controller); regions are swapped symmetrically
-// (same-region targets: no-op) and regroup sends everyone to their NEW
+// formation just trades controller), and regroup sends everyone to their NEW
 // controller's home.
+//
+// R148/CT-38: both handovers go through E.giveControl now (they were raw
+// `a.controller = cb`, which left both units' MODS behind with their old
+// controllers), and this is the one caller in the pool that passes
+// `keepFormation`. The unslot inside the choke point exists to stop a unit
+// standing in a formation its new controller does not own; an EXCHANGE keeps
+// that invariant by construction, because each unit takes the other's slot —
+// which is a slot on its new controller's side — so the swap below is the
+// re-slot and the choke point must not undo it. The positions are written
+// FIRST, so the `controlChanged` events fire over an already-consistent line.
+//
+// The symmetric REGION swap that used to sit here (`a.region = rb`) is gone:
+// it could never do anything. Both targets come out of one `targetCandidates`
+// call, which enumerates `unitsIn(region)` for a single region, so ra === rb
+// always. Region exclusivity is giveControl's job now anyway, and it is the
+// only thing here that can move a unit between regions (a new controller who
+// is not present goes home, mods included).
 card('Organic Exchange', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Organic Exchange: two target units — exchange control and swap positions', count: 2, min: 2 },
@@ -221,9 +250,6 @@ card('Organic Exchange', {
       }
       const a = g.entity(ta.id)!, b = g.entity(tb.id)!;
       const [ca, cb] = [a.controller, b.controller];
-      a.controller = cb; b.controller = ca;
-      const [ra, rb] = [a.region, b.region];
-      a.region = rb; b.region = ra;
       const bt = g.s.battle;
       if (bt) {
         const grids = [...bt.columns, ...Object.values(bt.blocks)];
@@ -239,15 +265,22 @@ card('Organic Exchange', {
         if (slotB) slotB[0][slotB[1]] = a.id;
       }
       // CARD-TODO #6: two targets under the SAME controller is a legal, useful
-      // line (the positions really do swap) — but the two control assignments
+      // line (the positions really do swap) — but the two control changes
       // cancel, and saying "Player 1 takes X, Player 1 takes Y" named the same
-      // player twice and read like a bug. Say what actually happened instead.
+      // player twice and read like a bug. Say what actually happened instead,
+      // and do not call giveControl at all: it would answer a same-seat
+      // handover with two "already controls it" lines, which is the same noise
+      // by another route.
       if (ca === cb) {
         g.ev('info',
           `Organic Exchange: ${a.card} and ${b.card} are both ${g.pname(ca)}'s — `
           + 'their positions swap and control does not change.');
       } else {
-        g.ev('info', `Organic Exchange: ${g.pname(cb)} takes ${a.card}, ${g.pname(ca)} takes ${b.card} — positions swapped.`);
+        // R148/CT-38: the choke point announces each handover itself, so this
+        // line says only the half it owns — the positions.
+        g.ev('info', `Organic Exchange: ${a.card} and ${b.card} swap positions.`);
+        g.giveControl(a, cb, { keepFormation: true });
+        g.giveControl(b, ca, { keepFormation: true });
       }
     },
   },

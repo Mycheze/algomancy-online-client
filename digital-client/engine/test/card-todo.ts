@@ -113,15 +113,45 @@ import { E } from '../src/engine.ts';
 import { spawn, toDeployment } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
-const ENGINE_SRC = fs.readFileSync(
-  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'engine.ts'), 'utf8');
+const SRC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'src');
+const ENGINE_SRC = fs.readFileSync(path.join(SRC_DIR, 'engine.ts'), 'utf8');
+/** a card-batch file's source, comments and strings stripped (R148) */
+const setSrc = (file: string): string =>
+  stripCode(fs.readFileSync(path.join(SRC_DIR, 'cards', 'sets', file), 'utf8'));
+
+/**
+ * TypeScript source with block comments, line comments and string literals
+ * removed, in that order. THE one place this repo strips code for reading, and
+ * it exists because both halves have burned it inside a single day:
+ *
+ *  · `JSON.stringify` on a card definition DROPS FUNCTIONS, so a check that
+ *    reads card behaviour that way silently answers "clean" (CARD-TODO #27's
+ *    first draft).
+ *  · `Function.prototype.toString()` KEEPS comments and strings, so a comment
+ *    that merely MENTIONS the bad idiom — very often the comment explaining
+ *    that the card no longer does it — holds the check true (R140's three
+ *    fixed cards).
+ *
+ * Strings go last so a `'` inside a comment ("a unit's mods") is already gone
+ * and cannot open a string that swallows the rest of the file. The one known
+ * limit is the mirror of that: a `//` INSIDE a string literal would eat the
+ * rest of its line. Nothing in src/ does that, and the cost of the miss is one
+ * unread line, never a false alarm.
+ *
+ * Exported (R148) because the sweeps in 90-coverage-census read whole FILES
+ * this way, and a second copy of these three regexes is a second thing to get
+ * wrong.
+ */
+export function stripCode(src: string): string {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
+    .replace(/(['"`])(?:\\.|(?!\1)[\s\S])*?\1/g, "''");
+}
 
 /** the source of a card's spell effect, comments and strings stripped */
 function runSrc(card: string): string {
   const f = getCard(card).spellEffect?.run;
-  return (f ? f.toString() : '')
-    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
-    .replace(/(['"`])(?:\\.|(?!\1)[\s\S])*?\1/g, "''");
+  return stripCode(f ? f.toString() : '');
 }
 
 /** a two-unit board; returns the engine, the seats and the spawned ids */
@@ -1931,11 +1961,37 @@ export const CARD_TODO: TodoEntry[] = [
       + 'choke point: a STATIC sweep in 90-coverage-census asserting that the only assignment to '
       + '`.controller` on a unit in src/cards/ is inside giveControl itself, so the next bypass '
       + 'fails a test instead of waiting to be swept up.',
-    proof: null,
+    // FIXED 2026-08-25 (R148). All three route through E.giveControl now, and
+    // the sweep is a test. TWO corrections to the entry above, from reading the
+    // three call sites rather than trusting the description:
+    //
+    //  · Mindspore Fiend did NOT skip a reachable "region move". It picks its
+    //    recipient out of `presentSeats(g, ctx.region)`, so the new controller
+    //    is a seat present in the unit's region BY CONSTRUCTION and
+    //    giveControl's exclusivity branch cannot fire from there. What it
+    //    really skipped was the mods and the formation unslot. (It also
+    //    carried a card-local note claiming the formation slot was kept on
+    //    purpose; that note had nothing behind it and described exactly the
+    //    state the choke point exists to prevent — the afterWindow priority is
+    //    still to come — so it went with the fix.)
+    //  · Organic Exchange must NOT be unslotted, and that is not a bypass: an
+    //    exchange re-slots both units into each other's places, which keeps
+    //    every unit in a formation its new controller owns. giveControl grew
+    //    `{ keepFormation: true }` for it — the one caller in the pool that
+    //    passes it. Its symmetric REGION swap was dead code (both targets come
+    //    from one region's `unitsIn`) and is gone.
+    proof: () => /[A-Za-z_$][\w$]*\.controller\s*=(?!=)/
+      .test(setSrc('batch-wood-b.ts') + '\n' + setSrc('batch-metal-a.ts')),
     verify:
       'Give a MODDED unit away with Mindspore Fiend: the mods must answer to the new controller, '
-      + 'and the unit must leave the old formation and move region.',
-    status: 'open',
+      + 'and the unit must leave the old formation.',
+    guards: [
+      '24-wood-b.test.ts::Mindspore Fiend gives away a MODDED blocker',
+      '24-wood-b.test.ts::Organic Exchange hands over MODDED units',
+      '26-metal-a.test.ts::Download steals a MODDED unit token',
+      '90-coverage-census.test.ts::R148 stays solved',
+    ],
+    status: 'done',
   },
   {
     id: 39,
@@ -1952,9 +2008,31 @@ export const CARD_TODO: TodoEntry[] = [
       "Emit a real typed event from giveControl (both seats' listeners, region-scoped per R12) "
       + 'and add it to the event vocabulary that 84-card-semantics reads. Do it WITH the first '
       + 'card that needs it, not before — an event nothing listens to is untested surface.',
-    proof: null,
-    verify: 'No card needs this yet; verify when one does.',
-    status: 'open',
+    // DONE 2026-08-25 (R148), and the "do it with the first card that needs
+    // it" instruction was deliberately overruled rather than ignored. Its
+    // objection was that the event would be untested surface. CT-38 removed
+    // that objection in the same commit: three real printed cards now route a
+    // control change through giveControl, so the event has three drivers that
+    // can be observed today, and the tests below drive it through all three.
+    // What remains untested is only the LISTENING half — no card prints
+    // "whenever you gain control of a unit" yet — and that half is
+    // `fireEvent`'s, shared with every other dispatched event in the union.
+    //
+    // `controlChanged` carries the log line giveControl used to emit as plain
+    // `info`, so it is not a signal-only event and the game log is unchanged.
+    // The two "nothing changes hands" branches still emit `info` and dispatch
+    // nothing, because no controller changed.
+    proof: () => !fs.readFileSync(path.join(SRC_DIR, 'types.ts'), 'utf8').includes("| 'controlChanged'"),
+    verify:
+      'Steal a unit with Download in a region both seats are in: an event of type '
+      + "'controlChanged' must appear, carrying { unit, card, from, to, region }.",
+    guards: [
+      '24-wood-b.test.ts::Mindspore Fiend gives away a MODDED blocker',
+      '24-wood-b.test.ts::Organic Exchange hands over MODDED units',
+      '26-metal-a.test.ts::Download steals a MODDED unit token',
+      '24-wood-b.test.ts::an UNMODDED control change behaves exactly as it did before R148',
+    ],
+    status: 'done',
   },
   // ── found by the R146 sweep of bin entries written by CARD code ───────
   {

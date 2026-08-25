@@ -452,3 +452,140 @@ test('Prickly Protector: +1/+1 per other ally — live count, played normally an
   assert.deepEqual(effStats(h, prick), [3, 4], 'live count: three other allies now');
   assert.deepEqual(effStats(h, t1), [4, 4], 'the augmented host grew too');
 });
+
+// ── R148 / CT-38 + CT-39: the control-change choke point ──────────────────
+//
+// Three cards used to flip `controller` by raw assignment and skip what
+// `E.giveControl` does for everyone else. Two of them are in this file. The
+// assertions below are deliberately ONE PER SKIPPED BEHAVIOUR rather than one
+// composite "it worked", so a partial regression names itself.
+//
+// ⚠ One claim in CT-38 is corrected here rather than tested: the ticket said
+// Mindspore Fiend also "skips the region move". It does not skip anything
+// reachable — the card picks its recipient with `presentSeats(g, ctx.region)`,
+// so the new controller is a seat PRESENT in the unit's region by
+// construction, and giveControl's exclusivity branch (move a unit whose
+// controller is not present) cannot fire from here. The region assertion below
+// therefore pins what is actually true: the unit STAYS put for the rest of the
+// battle, its mods stand with it, and regroup is what walks it home.
+
+/** the R148 control-change events since `from`, with their payloads */
+function controlEvents(h: Harness, from: number): { unit: number; from: Seat; to: Seat; region: number }[] {
+  return h.events.slice(from).filter(e => e.type === 'controlChanged').map(e => {
+    const d = e.data as unknown as { unit: number; from: Seat; to: Seat; region: number };
+    return { unit: d.unit, from: d.from, to: d.to, region: d.region };
+  });
+}
+
+test('Mindspore Fiend gives away a MODDED blocker: its mods change controller, it leaves the formation, and it stays in the battle region (R148/CT-38)', () => {
+  const h = new Harness(2420);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');              // 1/1 attacker
+  spawn(h, D, 'Mindspore Fiend');                     // 1/1, defender side
+  const gift = spawn(h, D, 'The Foretold');           // 3/3 vanilla — blocks and survives
+  let mod = 0;
+  whiteBox(h, e => { mod = e.attachMod(e.entity(gift)!, 'The Foretold', D, 'augment').id; });
+  assert.equal(ent(h, mod)!.controller, D, 'the augment starts on the giver\'s side');
+  toNextBattle(h, A);
+  const region = h.state.battle!.region;
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [gift] } });
+  assert.deepEqual(h.state.battle!.blocks[0], [gift], 'the gift is a declared blocker');
+  pass(h); pass(h);                                   // combat → afterCombat trigger
+  const mark = h.events.length;
+  pick(h, { unit: gift });                            // the cast-time target
+  pass(h); pass(h);                                   // resolve → pay-or-decline
+  pick(h, true);                                      // give control
+
+  // (1) THE MODS. This is the whole of CT-38's "major": the raw assignment
+  //     handed over a unit whose augments still answered to the old seat.
+  assert.equal(ent(h, gift)!.controller, A, 'the unit changed hands');
+  assert.equal(ent(h, mod)!.controller, A, 'and its augment changed hands WITH it (R112)');
+  // (2) THE FORMATION. A unit the opponent now controls must not still be
+  //     standing in the blocker grid of the seat that gave it away — the
+  //     afterWindow priority is still to come and can see that line.
+  assert.ok(!Object.values(h.state.battle!.blocks).some(col => col.includes(gift)),
+    'it left the blocker grid it was declared in');
+  // (3) THE REGION. Both seats are present here, so R112 exclusivity does not
+  //     fire and nothing moves mid-battle; the mod stands with its host.
+  assert.equal(ent(h, gift)!.region, region, 'it stays in the battle region for the rest of the battle');
+  assert.equal(ent(h, mod)!.region, region, 'and so does its augment');
+  // (4) THE EVENT (CT-39), with the seats and the region of the handover.
+  assert.deepEqual(controlEvents(h, mark), [{ unit: gift, from: D, to: A, region }],
+    'exactly one controlChanged, naming who lost it, who got it and where');
+
+  finishBattle(h);
+  assert.ok(unitsOf(h, A).some(u => u.id === gift), 'regroup: it went home with its NEW controller');
+  assert.equal(ent(h, mod)!.region, ent(h, gift)!.region, 'the augment went with it');
+});
+
+test('Organic Exchange hands over MODDED units: each unit\'s mods follow it, and the positions still swap (R148/CT-38)', () => {
+  const h = new Harness(2421);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const bubb = spawn(h, A, 'Bubb');                   // 5/6 — A's attacker
+  const dtok = spawn(h, D, 'Unit Token');             // 1/1 — D's, in no formation
+  let modA = 0, modD = 0;
+  whiteBox(h, e => {
+    modA = e.attachMod(e.entity(bubb)!, 'The Foretold', A, 'augment').id;
+    modD = e.attachMod(e.entity(dtok)!, 'The Foretold', D, 'augment').id;
+  });
+  giveResources(h, D, 'wood', 3);                     // gg / 3
+  toNextBattle(h, A);
+  const region = h.state.battle!.region;
+  h.do({ type: 'declareAttack', seat: A, columns: [[bubb]] });
+  pass(h);
+  const mark = h.events.length;
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Organic Exchange') });
+  pick(h, { unit: bubb });
+  pick(h, { unit: dtok });
+  pass(h); pass(h);                                   // resolve
+
+  assert.equal(ent(h, bubb)!.controller, D, 'Bubb changed sides');
+  assert.equal(ent(h, modA)!.controller, D, 'and its augment went with it');
+  assert.equal(ent(h, dtok)!.controller, A, 'the 1/1 changed sides');
+  assert.equal(ent(h, modD)!.controller, A, 'and its augment went with it');
+  // the exchange is the ONE caller that keeps the formation: each unit takes
+  // the other's slot, which is a slot on its new controller's side, so the
+  // choke point must not unslot them.
+  assert.deepEqual(h.state.battle!.columns[0], [dtok], 'the 1/1 took Bubb\'s attack slot');
+  assert.deepEqual(controlEvents(h, mark), [
+    { unit: bubb, from: A, to: D, region },
+    { unit: dtok, from: D, to: A, region },
+  ], 'one controlChanged per handover, both region-scoped to the battle');
+  finishBattle(h);
+});
+
+test('an UNMODDED control change behaves exactly as it did before R148 — the negative control', () => {
+  const h = new Harness(2422);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  spawn(h, D, 'Mindspore Fiend');
+  const gift = spawn(h, D, 'Unit Token');             // no mods, in no formation
+  toNextBattle(h, A);
+  const region = h.state.battle!.region;
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  const columns = h.state.battle!.columns.map(c => [...c]);
+  pass(h); pass(h);
+  const handD = h.state.players[D]!.hand.length;
+  const mark = h.events.length;
+  pick(h, { unit: gift });
+  pass(h); pass(h);
+  pick(h, true);
+  assert.equal(ent(h, gift)!.controller, A, 'control changed');
+  assert.equal(ent(h, gift)!.owner, D, 'owner never changes');
+  assert.deepEqual(ent(h, gift)!.mods, [], 'there were no mods to carry');
+  assert.equal(ent(h, gift)!.region, region, 'and nothing moved region');
+  assert.deepEqual(h.state.battle!.columns, columns, 'the attacking line is untouched');
+  assert.equal(h.state.players[D]!.hand.length, handD + 1, '"if you do, draw a card" still pays out');
+  assert.equal(controlEvents(h, mark).length, 1, 'one handover, one event');
+  // the log line is the choke point's, word for word, as it always was
+  assert.ok(h.events.slice(mark).some(e => e.type === 'controlChanged'
+    && e.msg === `${h.q.pname(A)} gains control of Unit Token (from ${h.q.pname(D)}).`),
+    'the message is unchanged — controlChanged carries the line info used to');
+});

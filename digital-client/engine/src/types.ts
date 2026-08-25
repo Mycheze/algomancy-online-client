@@ -1061,6 +1061,20 @@ export type EventType =
   // (the harness keeps empty messages out of the game log — the stackFlash
   // precedent).
   | 'leftBin'
+  // R148: a unit (or a spell token) CHANGED CONTROLLER. Fired by
+  // `E.giveControl` — the one control-change primitive every card routes
+  // through (CT-38) — with `data: { unit, card, from, to, region }`, where
+  // `region` is where the unit stands AFTER the move, so the R12 scoping in
+  // fireEvent hands it to both present seats' listeners and to nobody else.
+  // It carries the log line the primitive used to emit as plain `info`, so
+  // this is not a signal-only event: the message is unchanged.
+  //
+  // ⚠ It fires only when something really changed hands. The two "nothing
+  // changes hands" branches (the unit is gone, or the seat already controls
+  // it) still emit `info` and dispatch nothing, because no controller changed.
+  // Nothing in the pool listens for this YET — it was added WITH CT-38's three
+  // fixes, which is what makes it testable rather than untested surface.
+  | 'controlChanged'
   | 'regroup' | 'endOfTurn' | 'gameOver' | 'info'
   // CLIENT-ONLY, and the one event with no log line of its own (msg is ''):
   // an item that resolved with no response window ever gets to sit on the

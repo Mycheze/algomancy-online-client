@@ -96,7 +96,7 @@
 import type { Entity, EntityId, EventType, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, eventBinSlot, getCard, type EffectDef, type TokenRequest } from '../dsl.ts';
-import { selfOf, isEnt, unslot, eraseFromPlay } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -841,9 +841,17 @@ card('Dispatch Courier', {
 // (This note used to read "⚠ the token is picked at resolution (not
 // stack-targetable)" — six lines above the R64 spec that makes it a cast-time
 // target. It had outlived its own code; corrected here.)
-// The steal is R8's straight swap: controller flips (owner and region stay),
-// the token leaves its old formation. A stolen spell token is cast fresh by
-// its new controller, so "choose new targets" is automatic.
+// The steal is R8's straight swap: controller flips (owner stays), and the
+// token leaves its old formation. A stolen spell token is cast fresh by its
+// new controller, so "choose new targets" is automatic.
+//
+// R148/CT-38: the swap is E.giveControl, not a raw `tok.controller = …` plus a
+// local unslot. "Target token" reaches UNIT tokens as well as spell tokens
+// (pushUnitTargets offers both), and a unit token can be augmented or grafted
+// — so the hand-rolled version stole a modded Robot and left its mods behind,
+// still answering to the seat it was taken from. The choke point also owns the
+// region: R112 exclusivity applies here too (a spell token has no mods to
+// carry, and `mods` is [] on one, so the same call is correct for both kinds).
 card('Download', {
   spellEffect: {
     // R64: "target token" is a CAST-TIME target — the playtest report was
@@ -862,9 +870,9 @@ card('Download', {
         g.ev('info', 'Download: the token is gone or already yours — nothing changes hands.');
         return;
       }
-      tok.controller = ctx.controller;
-      unslot(g, tok.id);   // R8: it swaps sides — out of its old formation
-      g.ev('info', `${g.pname(ctx.controller)} gains control of ${tok.card}.`);
+      // R8: it swaps sides — mods, formation slot and region all handled by
+      // the choke point, which announces the handover itself.
+      g.giveControl(tok, ctx.controller);
     },
   },
 });
