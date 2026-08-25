@@ -1410,6 +1410,8 @@ export const LEDGER: LedgerEntry[] = [
       '17-earth-b.test.ts::Aberrant Statweaver: printed {Unstable} — it dies into the ERASED pile',
       '17-earth-b.test.ts::Oorblak: printed {Unstable} — erased on death while UNMODDED',
       '17-earth-b.test.ts::printed {Unstable} census',
+      '125-active-zone.test.ts::Aberrant Statweaver negated off the stack is ERASED, not binned',
+      '125-active-zone.test.ts::a printed-Unstable card DISCARDED FROM HAND bins and TRASHES',
     ],
     note:
       'The owner was right, and the gap was a whole CLASS with two cards in it: {Unstable} '
@@ -1421,9 +1423,17 @@ export const LEDGER: LedgerEntry[] = [
       + 'are the whole diff), and isUnstable reads it off the FACE as the fourth way in. A census '
       + 'test pins flag⇔marker over the whole pool so the two cannot drift apart again. '
       + 'Death triggers still fire — Unstable replaces the BIN, not the death (Caleb 2025-03-13). '
-      + '⚠ Scope note: this covers the leave-play path (destroy, R65 public erased pile). '
-      + 'Whether a printed-Unstable card DISCARDED from hand is also erased is unsourced and '
-      + 'deliberately unchanged.',
+      + '⚠ Scope note (2026-08-23): this covered the leave-play path only (destroy, R65 public '
+      + 'erased pile), and the reporter\'s own "unless I\'m misunderstanding what an ACTIVE ZONE '
+      + 'is" was left standing, because nothing sourced said which zones were active. '
+      + 'CLOSED BY R145 (2026-08-25), in both directions. The owner supplied the missing '
+      + 'definition — "in play and the stack are active zones" — so (a) the STACK was a second '
+      + 'gap of the same shape and Statweaver negated off it binned; that is fixed via '
+      + 'E.itemIsUnstable, and (b) the open question here is ANSWERED, in the direction of NO: '
+      + 'the hand is not an active zone, so a printed-Unstable card discarded from hand is '
+      + 'binned and TRASHED like any other card, and so is one milled from the deck or binned '
+      + 'from the cache. Both directions are pinned in 125-active-zone.test.ts. See '
+      + 'docs/digital-rules.md § R145.',
   },
   {
     id: 90, room: 'XVUR', date: '2026-08-23',

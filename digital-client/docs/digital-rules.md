@@ -8658,3 +8658,208 @@ rather than answered:
 3. **The exchange fires no despawn trigger.** `exchangeInPlace` calls
    `g.ev('despawned', …)` but never `g.fireEvent('despawned', …)`, so nothing
    watching units leave play sees it. Almost certainly just a gap.
+## R145 — the ACTIVE ZONE: in play and the stack
+
+**Owner ruling, 2026-08-25:**
+
+> "in play and the stack are active zones (which is relevant for cards that have
+> unstable). When Statweaver, which has Unstable naturally, gets negated from
+> the stack, it should be erased."
+
+This finishes a definition that had been sitting half-written for a year and a
+half. **Caleb supplied the PHRASE; Bena supplied the ZONE LIST.** Both halves
+have to be said out loud, because neither one is a rule on its own.
+
+### The phrase, and the hole in it
+
+Caleb's own glossary, posted as a rules-bot dump in `rules-questions`
+**2025-03-12** (`message-f307bada2ab3163e.txt:21`):
+
+> `"Unstable": "If an unstable card would enter a bin from an active zone,
+> erase it instead. This attribute is not shared in formation."`
+
+That sentence is the *entire* definition of {Unstable}, and the phrase **"active
+zone" appears exactly once in the whole rulings corpus** — this line. Caleb
+never enumerates the active zones anywhere. So until 2026-08-25 the engine had a
+replacement effect whose *trigger condition was undefined*, and it had been
+implemented as "always" by default. That is the hole Bena's ruling fills, and it
+is worth being honest that it is a fill and not a citation: **do not attribute
+the zone list to Caleb.**
+
+### The rule
+
+1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**
+   Hand, deck, bin, cache and the erased pile are **inactive**.
+2. {Unstable} replaces a bin entry with an **erase** only when the card is
+   leaving an **active** zone.
+   - **From play** — unchanged. It still routes bin → trashed → state-based
+     sweep (R137), and the death event still fires. Unstable replaces the
+     *bin*, not the *death* (Caleb 2025-03-13).
+   - **From the stack** — straight to the owner's public erased pile (R65).
+     R40 already says nothing leaving the stack is ever trashed, so there is no
+     trash window to preserve here and nothing to fire.
+3. A card leaving an **inactive** zone for a bin is **binned and trashed
+   normally**, printed {Unstable} or not. Discard from hand, mill from deck, a
+   cache entry binned unplayed (R41) — all ordinary.
+4. {Unstable} is a **non-combat attribute** and is **not shared in formation**.
+
+### The sources, one per clause
+
+**The stack case, ruled directly.** Caleb, `rules-questions` **2025-09-13**
+(msg idx 28028/28030):
+
+> Q: "negated spells go to the bin, even if they were played from the bin?"
+> A: "Yes, although most ways to play spells from the bin give them unstable"
+> — *[posts Spell Excavation]* — **"So they would be erased if you used
+> something like this and it got negated"**
+
+**The negative control, which is what makes clause 2 a *check* and not a
+blanket.** Caleb, **2025-03-31** (idx 21507/21508):
+
+> Q: "Negating an augment puts it in the bin or erase?" → A: **"Into the bin"**
+
+A non-{Unstable} card negated off the stack **bins**. Without this quote the
+easy misreading — "everything leaving the stack erases" — looks right, and it
+would delete the Manual p.34 virus-fizzle rule entirely.
+
+**Recall is untouched.** Caleb, **2025-04-16**:
+
+> "unstable doesn't stop recalling. So you could recall aberrant statweaver for
+> example if it was in play."
+
+Which follows from the glossary without needing a second ruling: {Unstable}
+replaces a **bin entry**, and a hand is not a bin. Play → hand is unaffected
+however active the origin zone is.
+
+**Clause 4 is printed rules, not a ruling.** `Rules/Algomancy-Manual.txt`
+~623-630, the NON-COMBAT ATTRIBUTES sidebar:
+
+> "Some attributes, like burst and unstable, are written in a purple text.
+> These attributes are referred to as non-combat attributes, since they
+> generally have nothing to do with combat. **These attributes are not shared in
+> formation**, and simply exist to modify cards. For example, the unstable
+> attribute is often given to cards that have been played from the bin as a way
+> to prevent them from being used more than once."
+
+Caleb's glossary line says the same thing in its second sentence.
+
+### The defect
+
+`E.isUnstable(entity)` unions four sources **including the printed face**
+(report #89), so the **in-play** half was already right. The **stack** had no
+equivalent reader at all:
+
+- `E.negate()` and `E.dischargeItem()` **each** computed
+  `(item.augments?.length ?? 0) > 0 || item.unstable === true` by hand — the
+  derived R79 case and the R96/R105 stamp, and **neither consulted the printed
+  face**;
+- `resolveItem`'s two virus-fizzle branches called
+  `toBin(item.controller, item.card!, 'stack')` **raw**, bypassing
+  `dischargeItem` and therefore any Unstable check whatsoever.
+
+Four sites; one missing question; the same expression written out twice, which
+is exactly how the printed face went missing from both copies at once.
+
+Printed {Unstable} is **exactly two cards pool-wide**: **Oorblak** and
+**Aberrant Statweaver** (`Abyssal Evocation` and `Spell Excavation` *grant* it).
+Both are `kind: 'unit'`, `timing: 'deploy'` and both are also **{Virus}** — and
+that combination is not a coincidence, it is the *only* route either card has to
+the stack. A deploy-timing unit played normally goes through
+`castChain(…, 'resolve')` with no stack window at all, so the only way to catch
+one mid-flight is to play it as a **battle Virus augment**, which builds a
+`kind: 'virus'` StackItem that can be negated or can fizzle. Both routes binned.
+
+### The fix
+
+`E.itemIsUnstable(item: StackItem)` — the stack twin of `isUnstable`, with the
+same "here are all the ways in, unioned in one place" shape. Three ways in:
+`augments.length > 0` (derived — a modded card is Unstable, R79),
+`item.unstable === true` (the R96 bin-play stamp / the R105 {Modular} cast
+stamp), and **`this.card(item.card).unstable === true`** (the printed face — the
+missing one).
+
+⚠ The printed face is consulted **only for the kinds whose `card` IS the object
+on the stack** (`NEGATE_BINS`). A triggered or activated item's `card` names its
+**source**, which is still standing in play; reading the printed flag off that
+would erase-log an *ability* because the unit that owns it happens to be an
+Aberrant Statweaver.
+
+`negate()` and `dischargeItem()` both **read** it rather than recomputing it,
+and the two virus-fizzle sites now route through `dischargeItem` too — so all
+three stack exits share one predicate. `dischargeItem` is the right choke there
+rather than a smaller helper because it already owns the whole disposition (the
+R65 per-owner erased pile, the R79 virus split, the `eraseSelf` branch, and
+`disposeItemMods`), and a fizzling item is entitled to every one of them: a
+{Modular} virus that fizzled previously stranded its mods nowhere. The fizzle's
+own log line stays at the call site, ahead of the call, for the same reason
+`negate()`'s does — otherwise it says "→ bin" about a card that is about to be
+erased.
+
+### What R145 does NOT change
+
+- **R137 — the from-play path.** An Unstable card dying still enters the bin, is
+  **trashed** there, and is then swept to the erased pile. Every "when I am
+  trashed" and "when a card is trashed" listener still fires. R137 is
+  load-bearing and recent, and nothing here touches it.
+- **R40.** Nothing leaving the stack is ever trashed — bin or erase, in either
+  direction.
+- **Recall.** Play → hand is untouched; a hand is not a bin.
+- **Manual p.34.** An ordinary virus that is negated, or whose target becomes
+  invalid, still goes to the **bin**. Only a virus that is *itself* {Unstable}
+  is erased.
+- **Column sharing.** Nothing needed doing: `unstable` and `burst` are their own
+  boolean fields on `CardDef`, deliberately **not** `Attr`s, so `colAttrs` /
+  `effAttrs` structurally *cannot* share them. That was true only by
+  construction, and is now pinned by a whole-pool census test so a future
+  extractor cannot "tidy" them into the `attrs` array.
+
+### A question this CLOSES
+
+Playtest report **#89** (room XVUR, 2026-08-23) fixed printed {Unstable} on the
+death path and recorded a scope note: *"Whether a printed-Unstable card
+DISCARDED from hand is also erased is unsourced and deliberately unchanged."*
+The reporter's own message even said *"unless I'm misunderstanding what an
+active zone is"*. **"From an active zone" is that source**, and it settles the
+question in the direction of **no — it bins**. The hand is inactive. The ledger
+note has been updated to point here rather than reading as open.
+
+### Tests
+
+New file `test/125-active-zone.test.ts`, deliberately built in both directions,
+because a naive fix that erases printed-Unstable cards *everywhere* is wrong and
+the negatives are the only thing that catches it.
+
+Positive (must be **erased**, into the correct owner's R65 pile):
+Statweaver negated off the stack · Oorblak negated off the stack · Statweaver
+fizzling when its host unit dies · a virused ordinary spell negated (the R79
+regression pin).
+
+Negative (must still reach a **bin**): a non-Unstable virus negated · Statweaver
+discarded from hand (bin **and** trash) · Oorblak milled from the deck · a
+Statweaver binned from the cache (R41) · an Unstable unit **recalled** (card in
+hand, nothing erased) · a modded unit's **column-mate** dying (bin + trash — the
+Manual sidebar).
+
+Conformance: the printed-{Unstable} population is exactly
+`{Aberrant Statweaver, Oorblak}`, and neither `unstable` nor `burst` appears in
+any card's `attrs`.
+
+Plus a static sweep in `90-coverage-census`, the **bin-ENTRY** twin of R124's
+bin-EXIT splice sweep: every `.bin.push(` in `src/` must be inside `toBin`,
+`destroy`, or the documented `leavePlay` mods line — the only three places that
+know which **zone** a card came from, which R145 makes the question {Unstable}
+turns on and R40 makes the question trashing turns on.
+
+⚠ That sweep carries a **dated, two-line exemption** for
+`cards/sets/batch-dark-b.ts:437` (Hooba-Mon) and
+`cards/sets/batch-water-b.ts:572` (Tides of the Cosmos), which push into a bin
+by hand. Both were owned by a different agent in the same round. It is keyed by
+**file and line** so it cannot silently cover a third site, and a stale entry is
+a hard failure — **when those two land, delete the entries.**
+
+**Red-checked.** Reverting `engine.ts` wholesale reddens the two negation tests
+(both cards land in a bin) and the fizzle test (it logs "→ bin"), and leaves the
+other eight green — including the R79 virused-spell case, which is the point:
+that one already worked, and if sharing the predicate had broken it, the sharing
+would be what is wrong. Reverting **only** the two fizzle sites reddens the
+fizzle test alone, so each half is independently pinned.

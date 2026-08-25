@@ -327,3 +327,100 @@ test('R140: no card responding to a bin-index event re-finds its card by lastInd
       `${name} no longer uses bin.lastIndexOf, so its exemption is stale — drop it. (Was: ${why})`);
   }
 });
+
+// ── R145: the bin-ENTRY choke point (the twin of R124's bin-EXIT sweep) ────
+//
+// R145 defines the ACTIVE ZONES — in play and the stack — and {Unstable}
+// replaces a bin entry with an erase exactly when a card leaves one of them.
+// Every bin entry therefore has to be a decision made somewhere that KNOWS
+// which zone the card came from, and there are exactly three such places:
+//
+//   · `E.toBin(seat, name, from)`  — the general entry, and the only one that
+//     classifies the R40 trash, because `from` IS the zone.
+//   · `E.destroy`                  — the death path, which pushes the BODY
+//     itself so it can remember the slot for R140's sweep and then run R137's
+//     bin → trash → Unstable-erase in that order.
+//   · `E.leavePlay`                — the documented MODS line: a nontoken mod
+//     of a unit leaving play enters its OWNER's bin, before the caller decides
+//     where the body goes (R69/R137).
+//
+// A fourth `bin.push` anywhere else is a bypass: it cannot be Unstable-aware
+// and it cannot be trash-aware. R145 was itself exactly that — negate() and
+// dischargeItem() each rebuilt the Unstable predicate by hand and neither
+// consulted the printed face, and resolveItem's two virus-fizzle branches
+// called toBin raw. So this is the ENTRY-side twin of R124's EXIT-side splice
+// sweep above, and it exists for the same reason: the next bypass should fail
+// a test rather than wait to be found by a playtester.
+//
+// The exemption list is EMPTY, and that is the point. It briefly held two
+// entries on 2026-08-25 — Hooba-Mon's exchange (batch-dark-b.ts) and Tides of
+// the Cosmos (batch-water-b.ts), both of which pushed into a bin by hand —
+// while R146 was fixing them in a parallel worktree. R146 landed (commit
+// 8377b26) and the stale-entry assert below is what forced the waivers out
+// again the moment it did. Keep it empty: a dated waiver that outlives its
+// cause is how a two-line exemption quietly becomes a blanket.
+const BIN_PUSH_EXEMPT: Record<string, string> = {};
+
+test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods line', () => {
+  const SRC = path.resolve(HERE, '..', 'src');
+  const files: string[] = [];
+  const walk = (dir: string): void => {
+    for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, f.name);
+      if (f.isDirectory()) walk(p);
+      else if (f.name.endsWith('.ts')) files.push(p);
+    }
+  };
+  walk(SRC);
+  // `.bin.push(` — a player-state bin pushed through its property, which is
+  // every form the codebase actually uses; the bare `bin.push(` arm also
+  // catches a local alias of one, so aliasing is not a way around the sweep.
+  const hits: { at: string; file: string; line: number }[] = [];
+  for (const file of files) {
+    fs.readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+      if (/\.bin\.push\(|\bbin\.push\(/.test(line)) {
+        hits.push({ at: `${path.basename(file)}:${i + 1}`, file, line: i + 1 });
+      }
+    });
+  }
+  const engineLines = fs.readFileSync(path.join(SRC, 'engine.ts'), 'utf8').split('\n');
+  /** the nearest `methodName(` header above `line` in engine.ts — the sweep
+   * asks WHICH METHOD a push sits in, not merely that it is in engine.ts. */
+  const enclosing = (line: number): string => {
+    for (let i = line - 1; i >= 0; i--) {
+      const m = /^ {2}(?:private |public |protected )?([A-Za-z_$][\w$]*)\(/.exec(engineLines[i]!);
+      if (m) return m[1]!;
+    }
+    return '(top level)';
+  };
+  const LEGAL = new Set(['toBin', 'destroy', 'leavePlay']);
+  const bypasses: string[] = [];
+  for (const h of hits) {
+    if (h.at in BIN_PUSH_EXEMPT) continue;
+    if (path.basename(h.file) !== 'engine.ts') { bypasses.push(`${h.at} (not in engine.ts)`); continue; }
+    const fn = enclosing(h.line);
+    if (!LEGAL.has(fn)) bypasses.push(`${h.at} (inside ${fn})`);
+  }
+  assert.deepEqual(bypasses, [],
+    `a card reaches a bin at [${bypasses.join(', ')}] without going through E.toBin, E.destroy `
+    + 'or the leavePlay mods line. Those three are the only places that know which ZONE the card '
+    + 'came from, and R145 makes that the question {Unstable} turns on (in play and the stack are '
+    + 'ACTIVE zones — leaving one for a bin erases instead), while R40 makes it the question '
+    + 'trashing turns on. Route the push through E.toBin(seat, name, from).');
+
+  // the exemption cannot outlive its cause — a stale entry is how a two-line
+  // dated waiver quietly becomes a blanket
+  const seen = new Set(hits.map(h => h.at));
+  for (const [at, why] of Object.entries(BIN_PUSH_EXEMPT)) {
+    assert.ok(seen.has(at),
+      `BIN_PUSH_EXEMPT still waives ${at}, but there is no bin.push there any more — delete the `
+      + `entry, the exemption has done its job. (Was: ${why})`);
+  }
+
+  // and all three legal sites must still exist, or the sweep has quietly
+  // stopped measuring anything at all
+  const legalHits = hits.filter(h => path.basename(h.file) === 'engine.ts').map(h => enclosing(h.line));
+  for (const fn of LEGAL) {
+    assert.ok(legalHits.includes(fn), `no bin.push left inside E.${fn} — the sweep's premise moved`);
+  }
+});

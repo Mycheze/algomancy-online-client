@@ -1068,6 +1068,51 @@ export class E {
     return (e.copies ?? []).some(c => c.modded);
   }
 
+  /**
+   * R145 — the STACK twin of `isUnstable`. Is this stack item's card ERASED
+   * instead of binned when it leaves the stack without arriving anywhere?
+   *
+   * ⚠ THE ACTIVE ZONE. Caleb's glossary (rules-bot dump, 2025-03-12) defines
+   * {Unstable} as "if an unstable card would enter a bin FROM AN ACTIVE ZONE,
+   * erase it instead" — and never says which zones are active. Bena supplied
+   * the list, 2026-08-25: **in play and the stack are the active zones.** So
+   * Unstable needs TWO readers, not one: `isUnstable` for the play half
+   * (R137's bin → trash → sweep) and this one for the stack half. Hand, deck,
+   * bin, cache and the erased pile are INACTIVE — a card leaving one of those
+   * for a bin is binned and trashed normally, printed {Unstable} or not (that
+   * is the open question in playtest-ledger #89, closed by "from an active
+   * zone" in the direction of "no, it bins").
+   *
+   * THREE ways in, and the third is the one that was missing (report R145):
+   *  · `augments` — a virus rode it, so the card is MODDED (R79, derived);
+   *  · `unstable` — the R96 bin-play stamp / the R105 {Modular} cast stamp;
+   *  · the PRINTED FACE — Aberrant Statweaver and Oorblak print {Unstable} on
+   *    the type line, and nothing on the stack path ever looked. Caleb rules
+   *    this case directly (rules-questions 2025-09-13, on Spell Excavation):
+   *    "So they would be erased if you used something like this and it got
+   *    negated". Its negative control is the same thread six months earlier
+   *    (2025-03-31) — "Negating an augment puts it in the bin or erase?" →
+   *    "Into the bin" — which is why the printed check is a check and not a
+   *    blanket erase for everything negated.
+   *
+   * ⚠ The printed face is consulted ONLY for the kinds whose `card` IS the
+   * object on the stack (NEGATE_BINS). A triggered or activated item's `card`
+   * names its SOURCE, which is still standing in play: reading the printed
+   * flag off that would erase-log an ability because the unit that owns it
+   * happens to be an Aberrant Statweaver. Same reason NEGATE_BINS excludes
+   * them from the bin push.
+   *
+   * `negate()`, `dischargeItem()` and the two virus-fizzle sites all read
+   * THIS. They used to compute `(augments?.length ?? 0) > 0 || unstable` twice
+   * in two methods, which is exactly how the printed face went missing from
+   * both at once.
+   */
+  itemIsUnstable(item: StackItem): boolean {
+    if ((item.augments?.length ?? 0) > 0 || item.unstable === true) return true;
+    if (item.card === undefined || !NEGATE_BINS.has(item.kind)) return false;
+    return this.card(item.card).unstable === true;
+  }
+
   // ── stats & attributes (the six-layer projection, all six built: see
   //    docs/03 §4, and R93 / R106 for layers 5 and 6) ──────────────────
   /** reentrancy guard for static-modifier evaluation (see StaticMod docs) */
@@ -5028,9 +5073,10 @@ export class E {
     // negated before it ever attached; that item has no augments of its own
     // and still takes the bin branch.)
     // R105: a {Modular} carrier is stamped Unstable at CAST, so a negated one
-    // is erased too. Read the same pair `dischargeItem` reads, or the log line
-    // says "→ bin" about a card that is about to be erased.
-    const unstable = (it.augments?.length ?? 0) > 0 || it.unstable === true;
+    // is erased too. R145: and so is a card that PRINTS {Unstable} — the stack
+    // is an active zone. Read the same predicate `dischargeItem` reads, or the
+    // log line says "→ bin" about a card that is about to be erased.
+    const unstable = this.itemIsUnstable(it);
     this.ev('negated',
       `${it.label} is negated${unstable ? ' → erased (Unstable)' : hasCard ? ' → bin' : ''}.`,
       { id: it.id });
@@ -6356,11 +6402,36 @@ export class E {
       // recalled, and the virus fizzles to the bin — Manual p.34, "If a virus
       // is negated or its target becomes invalid, it is placed into the bin,
       // and cannot be used as a virus again".
+      //
+      // R145 — ⚠ both fizzle branches used to call `toBin(…, 'stack')` RAW,
+      // which made them a third computation of "is this Unstable?" that simply
+      // said no. They go through `dischargeItem` now, exactly as `negate()`
+      // does, so the three stack exits share one predicate and one erase.
+      // dischargeItem is the right choke rather than a smaller helper because
+      // it already owns the whole disposition — the R65 per-owner erased pile,
+      // the R79 virus split, the eraseSelf branch, and `disposeItemMods` — and
+      // a fizzling item is entitled to every one of them (a {Modular} virus
+      // that fizzled used to strand its mods nowhere). Everything below the
+      // predicate is unchanged for the ordinary case: a plain virus item
+      // carries no augments, no stamp and no mods, so dischargeItem does
+      // precisely the `toBin(…, 'stack')` that was written here. The log line
+      // stays HERE, ahead of the call, for the same reason negate()'s does:
+      // the fizzle has to name its own destination or it says "→ bin" about a
+      // card that is about to be erased.
+      // ⚠ Manual p.34 is NOT overridden: an ordinary virus still fizzles to
+      // the bin. Only a virus that is ITSELF {Unstable} — the two printed ones
+      // (Aberrant Statweaver, Oorblak, both {Virus} {Unstable}) — is erased,
+      // because the stack is an active zone (Bena 2026-08-25).
+      const fizzle = (why: string): void => {
+        const erased = this.itemIsUnstable(item);
+        this.ev('fizzled', `${item.label} fizzles (${why}) → ${erased ? 'erased (Unstable)' : 'bin'}.`,
+          { id: item.id });
+        this.dischargeItem(item, true);   // R40: from the stack, no trash either way
+      };
       if (item.hostStack !== undefined) {
         const target = this.s.stack.find(it => it.id === item.hostStack);
         if (!target) {
-          this.ev('fizzled', `${item.label} fizzles (its host has left the stack) → bin.`, { id: item.id });
-          this.toBin(item.controller, item.card!, 'stack');   // R40: from the stack, no trash
+          fizzle('its host has left the stack');
           return;
         }
         this.augmentStackItem(target, item.card!, item.controller);
@@ -6368,8 +6439,7 @@ export class E {
       }
       const host = item.hostId !== undefined ? this.entity(item.hostId) : undefined;
       if (!host) {
-        this.ev('fizzled', `${item.label} fizzles (host is gone) → bin.`, { id: item.id });
-        this.toBin(item.controller, item.card!, 'stack');   // R40: from the stack, no trash
+        fizzle('host is gone');
         return;
       }
       this.attachMod(host, item.card!, item.controller, 'augment');
@@ -6920,15 +6990,19 @@ export class E {
    */
   dischargeItem(item: StackItem, hasCard: boolean): void {
     const viruses = item.augments ?? [];
-    // THREE ways in, all meaning "this card is modded, or was stamped": a
-    // virus rode it (derived, R79); it was played from a bin under a
-    // permission that stamped it (R96, Abyssal Evocation); or a {Modular} mod
-    // was applied to it as it was played (R105, stamped in payModularMod).
+    // THREE ways in, all meaning "this card is modded, was stamped, or prints
+    // it": a virus rode it (derived, R79); it was played from a bin under a
+    // permission that stamped it (R96, Abyssal Evocation) or a {Modular} mod
+    // was applied to it as it was played (R105, stamped in payModularMod); or
+    // R145 — its printed type line says {Unstable} and the STACK is an active
+    // zone. All three live in `E.itemIsUnstable`, which `negate()` reads too:
+    // the printed one went missing here and there simultaneously because the
+    // expression was written out twice instead of shared.
     // THIS is the site an ordinary bin-played spell hits — the one choke point
     // for both resolution and negation. The virus loop below is correctly a
     // no-op at zero, so it stays untouched, and `disposeItemMods` at the foot
     // of the method is R105's matching half.
-    if (viruses.length || item.unstable === true) {
+    if (this.itemIsUnstable(item)) {
       // R65: each card reaches ITS OWN owner's erased pile — a virus on an
       // enemy spell is the enemy's card, and the two piles are public.
       this.ev('erased',

@@ -448,10 +448,15 @@ function exchangeInPlace(g: E, self: Entity, name: CardName, controller: Seat): 
   g.ev('despawned', `${self.card} is exchanged for ${name}.`,
     { unit: self.id, card: self.card, seat: self.controller, region: self.region });
   if (!self.token) {
-    const bin = g.player(self.owner).bin;
-    bin.push(self.card);
-    const at = bin.length - 1;   // R140: name the SLOT, never search by name
-    g.noteTrashed(self.owner, self.card, 'play');   // R40: a bin, from play
+    // R145: through E.toBin, not a hand-rolled push. toBin is one of the three
+    // sites that know which ZONE the card came from, which is the question both
+    // {Unstable} (active zone → erase) and R40 (not the stack → trash) turn on,
+    // and 90-coverage-census now refuses any other bin entry in card code. It
+    // pushes and trashes in that order, which is the order this line needed
+    // anyway; the slot is read BEFORE the call so R140's "name the slot, never
+    // search by name" still holds for the sweep below.
+    const at = g.player(self.owner).bin.length;
+    g.toBin(self.owner, self.card, 'play');   // R40: from play, so it is trashed
     if (unstable) {
       // R137/R146 state-based sweep, the same call destroy() makes: the card
       // was in the bin for the whole trash window above (both `when` passes

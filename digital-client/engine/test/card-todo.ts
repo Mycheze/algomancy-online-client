@@ -2030,4 +2030,68 @@ export const CARD_TODO: TodoEntry[] = [
     ],
     status: 'done',
   },
+  {
+    id: 42,
+    area: 'engine',
+    severity: 'major',
+    cards: ['Aberrant Statweaver', 'Oorblak'],
+    title: 'Printed {Unstable} was invisible to every STACK exit — the bin-entry twin of CT-26',
+    detail:
+      'R145 (owner, 2026-08-25): "in play and the stack are active zones (which is relevant for '
+      + 'cards that have unstable). When Statweaver, which has Unstable naturally, gets negated '
+      + 'from the stack, it should be erased." Report #89 gave printed {Unstable} a carrier and '
+      + 'taught E.isUnstable to read it — but only for the IN-PLAY half. The stack had no '
+      + 'equivalent reader at all: E.negate and E.dischargeItem each rebuilt the predicate by '
+      + 'hand as `(item.augments?.length ?? 0) > 0 || item.unstable === true`, and neither ever '
+      + "consulted the printed face, while resolveItem's two virus-fizzle branches called "
+      + "`toBin(item.controller, item.card!, 'stack')` RAW and skipped dischargeItem entirely. "
+      + 'Four sites, one missing question. Both cards are {Virus} {Unstable} deploy units, and '
+      + 'the battle-Virus augment is their ONLY route to the stack (the deploy branch of '
+      + "doPlayCard casts with `then: 'resolve'`, so there is no stack window), so a negated or "
+      + 'fizzling Statweaver binned. ⚠ The other half of the ruling is a NEGATIVE: hand, deck, '
+      + 'bin and cache are INACTIVE zones, so a printed-Unstable card discarded, milled or '
+      + 'binned from the cache still bins AND trashes — that closes the question playtest '
+      + 'report #89 left explicitly open.',
+    evidence:
+      'Owner ruling 2026-08-25, plus Caleb rules-questions 2025-09-13 (Spell Excavation: "so '
+      + 'they would be erased if you used something like this and it got negated") and its '
+      + 'negative control 2025-03-31 ("Negating an augment puts it in the bin or erase?" → '
+      + '"Into the bin"). Reproduced at a4ecc5c on both routes: Statweaver played as a battle '
+      + 'Virus and negated, and the same item fizzling when its host died.',
+    fix:
+      'A stack twin of isUnstable — `E.itemIsUnstable(item)` — unioning the three ways in '
+      + '(augments; the R96/R105 stamp; the PRINTED face, read only for the NEGATE_BINS kinds, '
+      + "because a triggered ability's `card` names its still-in-play SOURCE). negate() and "
+      + 'dischargeItem() both read it instead of recomputing it, and the two virus-fizzle sites '
+      + 'route through dischargeItem so all three stack exits share one predicate. Plus a static '
+      + 'sweep in 90-coverage-census: every `.bin.push(` in src/ must be inside toBin, destroy '
+      + 'or the leavePlay mods line — the bin-ENTRY twin of CT-26/R124\'s bin-EXIT sweep. '
+      + '⚠ That sweep carries a dated two-line exemption for batch-dark-b.ts:437 and '
+      + 'batch-water-b.ts:572, which are owned by a different agent in the same round; when '
+      + 'those land the exemption entries must be DELETED (the sweep fails on a stale one). '
+      + 'Do not re-file those two as a new todo item — they are already claimed.',
+    proof: null,
+    verify:
+      'node --test test/125-active-zone.test.ts — four positives (Statweaver and Oorblak '
+      + 'negated; Statweaver fizzling when its host dies; a modded ordinary spell, the R79 '
+      + 'regression pin) and six negatives (a non-Unstable virus negated still bins; discard, '
+      + 'mill and cache still bin AND trash; a recall still reaches the hand; a modded unit\'s '
+      + 'column-mate does not inherit the erase), plus a whole-pool census that printed '
+      + '{Unstable} is exactly {Oorblak, Aberrant Statweaver} and that no non-combat attribute '
+      + 'is in any card\'s attrs array. Then test/90-coverage-census.test.ts for the sweep.',
+    // DONE 2026-08-25 in the same change that found it. Red-checked: reverting
+    // engine.ts wholesale reds tests 1-3 (the two negations land in a bin; the
+    // fizzle logs "→ bin") and leaves 4-11 green, which is the point — 4 is the
+    // R79 case that already worked. Reverting ONLY the two fizzle sites reds
+    // test 3 alone, so each half is independently pinned.
+    guards: [
+      '125-active-zone.test.ts::Aberrant Statweaver negated off the stack is ERASED, not binned',
+      '125-active-zone.test.ts::Oorblak — the other printed {Unstable} card — is erased the same way',
+      '125-active-zone.test.ts::a printed-Unstable virus whose HOST DIES fizzles to the erased pile',
+      '125-active-zone.test.ts::a NON-Unstable virus negated off the stack still BINS',
+      '125-active-zone.test.ts::a printed-Unstable card DISCARDED FROM HAND bins and TRASHES',
+      '90-coverage-census.test.ts::every bin ENTRY goes through toBin / destroy / the leavePlay mods line',
+    ],
+    status: 'done',
+  },
 ];
