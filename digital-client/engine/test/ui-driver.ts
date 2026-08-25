@@ -32,6 +32,7 @@
  *     ui.html();                         // what is on screen
  */
 import assert from 'node:assert/strict';
+import { Harness } from '../src/harness.ts';
 import type { Action, GameState, Seat } from '../src/types.ts';
 
 const RECT = { top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0, x: 0, y: 0 };
@@ -100,10 +101,19 @@ g.document = {
 g.window = globalThis;
 g.addEventListener = (t: string, fn: Listener) => listen(t, fn);
 // `?room=` is what makes main.ts build a NetBackend at import time rather than
-// painting the home screen — this driver always plays the ONLINE client,
+// painting the home screen — this driver plays the ONLINE client by default,
 // because that is the one where the server is authoritative and the client has
-// to hold a plan across a round trip
-g.location = { host: 'x', protocol: 'http:', search: '?room=UIDRIVER&seat=0', hash: '', href: 'http://x/' };
+// to hold a plan across a round trip.
+//
+// R170/CT-46: …but ONLINE is not the only caller, and it is the one that can
+// never see this bug. `server/view.ts` nulls a decision that is not yours, so
+// an online client's `s.decision` is always its own; HOTSEAT is the only
+// caller that sees both seats at once. A test asks for that client by setting
+// `globalThis.__UI_DRIVER_SEARCH = '?hotseat=1'` BEFORE importing this module
+// (i.e. `await import('./ui-driver.ts')`, not a static import — a static one
+// is hoisted and runs first) and then driving it with `local()` below.
+const SEARCH = (g['__UI_DRIVER_SEARCH'] as string | undefined) ?? '?room=UIDRIVER&seat=0';
+g.location = { host: 'x', protocol: 'http:', search: SEARCH, hash: '', href: 'http://x/' };
 // a real store: the client keeps preferences here (the auto-pass toggle, the
 // saved name) and a test that toggles one has to be able to read it back
 const STORE = new Map<string, string>();
@@ -136,7 +146,46 @@ g.innerWidth = 1200; g.innerHeight = 900; g.scrollX = 0; g.scrollY = 0; g.device
 g.getComputedStyle = () => new Proxy({}, { get: () => '' });
 g.fetch = () => new Promise(() => {});   // never resolves: no rulings, no /api
 
-await import('../ui/main.ts');
+/* HOTSEAT ONLY: every Harness main.ts builds, in construction order.
+ *
+ * main.ts keeps its backend in a module-local `let h` and exports nothing, so
+ * a hotseat test has no other way to put a game in front of it. Note what does
+ * NOT work: a prototype accessor for `state`. `Harness` declares `state` as a
+ * class FIELD, so every instance gets an own data property that shadows the
+ * prototype — measured, not assumed. Its METHODS are genuinely on the
+ * prototype, and the constructor calls one (`absorb`) before it returns, so
+ * wrapping them captures each instance at birth.
+ *
+ * Installed ONLY in hotseat mode: an online test builds no Harness at all and
+ * must not have the class it shares with the whole engine suite quietly
+ * re-shaped underneath it.
+ *
+ * ⚠ And REMOVED again the moment main.ts has loaded. A test builds Harnesses
+ * of its own to make fixtures with, and while the wrapper is on, every one of
+ * those lands in this list too — so `local()` would drive the fixture instead
+ * of the client, silently, and every assertion about the board would be about
+ * markup that was never repainted. (It did, before this line existed.)
+ */
+const HARNESSES: Harness[] = [];
+{
+  const proto = Harness.prototype as unknown as Record<string, unknown>;
+  const original: [string, unknown][] = [];
+  if (SEARCH.includes('hotseat')) {
+    for (const k of Object.getOwnPropertyNames(proto)) {
+      if (k === 'constructor') continue;
+      const d = Object.getOwnPropertyDescriptor(proto, k)!;
+      if (typeof d.value !== 'function') continue;   // getters are not called at birth
+      const fn = d.value as (...a: unknown[]) => unknown;
+      original.push([k, fn]);
+      proto[k] = function (this: Harness, ...a: unknown[]): unknown {
+        if (!HARNESSES.includes(this)) HARNESSES.push(this);
+        return fn.apply(this, a);
+      };
+    }
+  }
+  await import('../ui/main.ts');
+  for (const [k, fn] of original) proto[k] = fn;
+}
 
 // ── reading the markup ────────────────────────────────────────────────
 
@@ -247,6 +296,54 @@ function dispatch(type: string, want: Pick, paint: () => string): string {
   assert.ok(fns.length, `ui/main.ts registered no ${type} listener`);
   for (const fn of fns) fn(ev);
   return paint();
+}
+
+/** the HOTSEAT client (R170/CT-46): no socket, no server, no redaction — one
+ * screen showing both seats, and `h` a local `Harness` this puts a game into.
+ * Everything else (`html`, `click`, `has`) is the same real markup and the
+ * same real handlers the online `client()` drives. */
+export interface LocalClient {
+  /** the markup currently on screen */
+  html(): string;
+  /** click / right-click a real affordance, through the client's own handler */
+  click(want: Pick): string;
+  rightClick(want: Pick): string;
+  /** is such an element on screen at all? */
+  has(want: Pick): boolean;
+  /** run the callbacks the client booked with setTimeout */
+  tick(): void;
+  /** put this state in front of the client and repaint. Returns the markup. */
+  show(state: GameState): string;
+  /** the state the client is actually holding (it mutates it as you click) */
+  state(): GameState;
+}
+
+export function local(): LocalClient {
+  assert.ok(SEARCH.includes('hotseat'),
+    'local() is the hotseat client — set globalThis.__UI_DRIVER_SEARCH = \'?hotseat=1\' '
+    + 'before importing test/ui-driver.ts');
+  assert.ok(!SOCKET, 'ui/main.ts opened a socket — this is not a hotseat game');
+  assert.ok(HARNESSES.length, 'ui/main.ts built no Harness — the hotseat client did not start');
+  const paint = (): string => String(APP['innerHTML']);
+  const back = (): Harness => HARNESSES[HARNESSES.length - 1]!;
+  const base: LocalClient = {
+    html: paint,
+    has: want => !!findTag(paint(), want),
+    tick: () => { const t = TIMERS.splice(0, TIMERS.length); for (const fn of t) fn(); },
+    click: want => dispatch('click', want, paint),
+    rightClick: want => dispatch('contextmenu', want, paint),
+    state: () => back().state,
+    show(state) {
+      back().state = state;
+      // there is no `render()` to call from outside: main.ts exports nothing.
+      // The rules panel is chrome that is on screen in every game and whose
+      // two buttons do nothing but flip a flag — so open it and close it, and
+      // the close repaints the board over the state just installed.
+      base.click({ btn: 'helpopen' });
+      return base.click({ btn: 'helpclose' });
+    },
+  };
+  return base;
 }
 
 export async function client(): Promise<Client> {

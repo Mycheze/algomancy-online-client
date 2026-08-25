@@ -482,15 +482,51 @@ test('[59] …and the pass it painted really does go out, exactly once per state
     'a repaint of the SAME state sent a second pass — the one the server refuses');
 });
 
+/* R170: this used to be three `indexOf`s into the SOURCE of `promptHtml` —
+ * "is the autoPassing guard above the Pass button, is the sentFor guard above
+ * it". Which is the very thing the block above this file's driver tests
+ * complains about, one layer along: it asserts WHERE code sits. It went red
+ * the moment `promptHtml` was split in two (R170/CT-46 — a hotseat decision
+ * bar now has the phase bar UNDER it, so the phase bar had to become a
+ * function of its own), while the property it was about held perfectly. The
+ * second time this repo has paid that bill.
+ *
+ * So it asks the board instead. Both halves are the same claim — a window
+ * that has already been given away must not be painted as yours to spend —
+ * and the second half had no behavioural coverage at all before this. */
 test('[59] the prompt bar checks the plan before it offers a Pass button', () => {
-  const body = fn('promptHtml');
-  const guard = body.indexOf('autoPassing.pass');
-  const claim = body.indexOf('data-btn="pass"');
-  assert.ok(guard > -1, 'promptHtml never asks whether this window is already spent');
-  assert.ok(guard < claim, 'it would offer a Pass button for a window already given away');
-  const sent = body.indexOf('ui.sentFor ===');
-  assert.ok(sent > -1 && sent < claim,
-    'and the same for a pass sent by hand — the trailing render() repaints this bar');
+  const { h, seat } = priorityWindow(6012);
+  const passOnly: Action[] = [{ type: 'passPriority', seat }];
+
+  // the control: a live window really does offer the button. (The auto-pass
+  // preference lives in localStorage, which outlives a test — an earlier one
+  // in this file turns it on, so put it back before asking about the manual
+  // button at all.)
+  ui.join(h.state, seat, passOnly);
+  if (/Auto-passing…/.test(ui.html())) ui.click({ btn: 'autopasstoggle' });
+  ui.join(h.state, seat, passOnly);
+  ui.sent();
+  assert.ok(ui.has({ btn: 'pass' }), 'the control case: a live window offers a Pass button');
+
+  // …and the moment it is spent BY HAND, the same bar stops claiming it. The
+  // manual handler's trailing render() repaints this bar over a state whose
+  // priority has already gone to the socket; without the latch the button it
+  // draws sends the second pass that comes back "you do not have priority".
+  const after = ui.click({ btn: 'pass' });
+  assert.deepEqual(ui.actions(), [{ type: 'passPriority', seat }], 'the pass went out');
+  assert.match(after, /Sent — waiting for the server…/,
+    'the bar has to say the window is already spent');
+  assert.ok(!ui.has({ btn: 'pass' }),
+    'and must not offer a second Pass for the same window');
+
+  // the other half of the same claim, on the AUTOMATIC pass
+  ui.join(h.state, seat, passOnly);
+  if (!/Auto-passing…/.test(ui.html())) ui.click({ btn: 'autopasstoggle' });
+  ui.join(h.state, seat, passOnly);
+  ui.sent();
+  assert.match(ui.html(), /Auto-passing…/, 'the fixture really armed the automatic pass');
+  assert.ok(!ui.has({ btn: 'pass' }),
+    'a window a pass is already scheduled for is not offered a Pass button either');
 });
 
 /** the body of a CLASS METHOD (fn() only finds free functions) */

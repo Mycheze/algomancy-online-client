@@ -11336,3 +11336,146 @@ The fuzzer holds this list to its word, so it now names the exception too, in
   currently explore it. A fuzzer that tolerates a whole class of refusal
   silently is one that will hide the next real one, so the count is asserted at
   zero rather than assumed away: if it ever fires, that is worth a look.
+
+---
+
+## R170 — the hotseat screen learns whose question it is
+
+*2026-08-25. CARD-TODO #46 — the layer R154 deliberately stopped below, and
+which R154's own §"FOR THE OWNER" 3 filed as a ticket against itself: "The
+hotseat UI is still gated, one layer above this."*
+
+R154 taught `apply()` and `legalActions()` that a decision belongs to a **seat**
+(`decisionBlocks`). The client did not learn it. Every "a decision is up, take
+no input" branch in `ui/main.ts` still read a bare `!!s.decision`, so a hotseat
+player watching the other seat answer a trigger pile saw a board that was frozen
+one layer above an engine that was no longer frozen.
+
+### The rule
+
+> **Whether an open question stops you is a question about WHOSE question it
+> is — asked once, in one place, by the same predicate the engine asks.**
+
+That place is `decisionFreezes(seat)`:
+
+```ts
+function decisionFreezes(seat: Seat): boolean {
+  const s = h.state;
+  return !!s.decision && (!!NET || decisionBlocks(s, seat));
+}
+```
+
+### ⚠ Why the online half is a no-op, and written so it can be READ as one
+
+`server/view.ts` nulls a decision that is not yours (and the suspension
+carrying its private options) before it ever reaches the client. **A net
+client's `s.decision` is therefore always its own**, which is why the online
+client never had to make this distinction and why nobody noticed. `!!NET ||`
+short-circuits to *exactly* the pre-R170 expression, so the change cannot alter
+online behaviour even if a server one day pushed an unredacted view.
+
+**Hotseat is the only caller that can see both seats at once.** It is also the
+one with no server between the player and `apply()` — no `arrivalVerdict`, no
+deferral queue, no `legalForSeat`. Everything R150 and R154 built to make this
+invisible online is absent here by construction.
+
+### What was actually broken, measured
+
+With seat 0 suspended on a real start-of-deployment Wraith pile
+(`legalActions(s, 1)` = `['doneDeploying', 'playCard']`, and `apply()` accepting
+the play — checked BEFORE anything was un-gated, because the last round's
+near-miss was a client ticket whose refusals came from the rules layer):
+
+* **`promptHtml` — one bar, and the wrong one.** `if (s.decision) return
+  decisionBarHtml(...)` returned the *pending* decision's bar whoever owned it,
+  so the deployment bar — the bar that **carries "done deploying"** — was never
+  reached. Seat 1 had no way to end its own deployment step at all.
+* **`handleHandClick` — the worst half.** `handHtml` draws playability from
+  `legalFor`, which was **never gated**, so seat 1's hand card kept its green
+  `playable` ring the whole time and then ate the click. A live-looking
+  affordance that silently does nothing is worse than an absent one.
+* The unit-click branch (`if (u && !s.decision)`) and `handleCacheClick` the
+  same way: an activated ability and a glimpsed cached card, both legal, both
+  inert.
+
+### The fix, and the three judgements in it
+
+1. **Two bars, not one instead of the other.** `promptHtml` splits: the
+   question stays on top, and the free seat's own phase bar (`phaseBarHtml`,
+   extracted for exactly this) goes **under** it. Nothing is hidden and nothing
+   is reordered — the question is still the thing that has to be answered
+   before the step can end. There is no "viewing seat" to gate on in hotseat;
+   CT-46's suggested `s.decision.seat === viewingSeat` has no referent there.
+   One screen, both seats, so: both bars.
+2. **`doneRow` never offers a button `apply()` would throw on.** The seat being
+   asked is dimmed, not given a live "done deploying" — offering what the
+   engine refuses is the "screen full of refusals" R150's notes warn about, in
+   the other direction.
+3. **The option-pick always wins first.** On the board and in the cache a click
+   may be an ANSWER to the open question (`decisionOptionIndex`,
+   `counterPickIndex`), and those routes are tried before the new gate is
+   consulted, so nothing that was a target pick became a play. The hand needs
+   no such care: no `TargetRef` names a hand card (`types.ts`), so a hand click
+   can never have been an answer.
+
+### What "both seats have a decision open" turns out to mean
+
+**Nothing — it cannot happen.** `GameState.decision` is a single slot and
+`E.suspend` writes it unconditionally, which is exactly why R154 pairs its
+permissive gate with an after-the-fact `pendingFingerprint`. An action by the
+free seat that would raise a *second* question changes the slot, so the draft is
+discarded and `apply()` throws `disturbs`. In hotseat `act()` catches
+`IllegalAction` into `uiError`, so the player is **told** — "that would disturb
+the decision pending for …" — and both bars survive. Asserted directly (§4),
+not argued.
+
+The error text stays on the decision bar rather than the phase bar: that is
+where every refusal in this client has always appeared, and with two bars up
+there is no record of which seat produced it.
+
+### Not changed, and why
+
+`tokenToggleMode`'s `if (!b || s.decision) return null` (~1495) is what CT-46
+pointed at for "the affordances". It is **battle-only** — `!b` returns first
+outside battle — and in battle `decisionBlocks` is true for both seats
+(R154 case 2), so the two readings coincide there exactly. Left alone rather
+than churned.
+
+### Tests
+
+`engine/test/144-hotseat-decision-gate.test.ts` (11), driven through
+`test/ui-driver.ts` — real markup, real handlers, no source-text scanning.
+§0 proves the rules layer offers AND accepts before anything is un-gated; §1 is
+the fix across all three input paths (hand, board, cache) plus the done button;
+§2 the asker; §3 the two negative controls (R154's rewind case and its battle
+case, both still freezing the whole screen); §4 the single slot; §5 online.
+
+The driver grew a **hotseat mode**: `globalThis.__UI_DRIVER_SEARCH =
+'?hotseat=1'` before a dynamic import, and `local()` for a client with no
+socket. Two things it had to learn, both measured rather than assumed —
+a prototype accessor for `Harness.state` cannot capture the client's backend
+(`state` is a class FIELD, so every instance shadows the prototype), and the
+method wrappers that can must be **removed** once main.ts has loaded, or the
+fixtures a test builds afterwards land in the same list and `local()` drives
+one of those instead of the client.
+
+Red-checked by mutation, each reverted after: `promptHtml` returning only the
+decision bar reddens §1's bar and done-button tests and §4; the hand gate back
+to `!!s.decision` reddens §1's click test and §4; the unit gate and the cache
+gate each redden §1's board-and-cache test; `doneRow` without the gate reddens
+§2; `decisionFreezes` losing its `!!NET ||` reddens §5's online test; and
+`decisionFreezes` returning `false` outright — the over-permissive direction —
+reddens §2, both of §3 and §5.
+
+### ⚠ FOR THE OWNER
+
+1. **A source-scan test had to be rewritten, and it is the second time.**
+   `70-playtest-round15.test.ts`'s `[59] the prompt bar checks the plan before
+   it offers a Pass button` was three `indexOf`s into the *source of*
+   `promptHtml`; splitting that function reddened it while the property held
+   perfectly. It now asks the board through the driver — and the half about a
+   pass sent BY HAND (`ui.sentFor`) had no behavioural coverage at all before
+   this, only the source scan. Both halves red-checked.
+2. **CT-46's "gate on `s.decision.seat === viewingSeat`" was not implementable
+   as written** — see judgement 1 above. The consequence it named was real; the
+   fix it named had no referent.

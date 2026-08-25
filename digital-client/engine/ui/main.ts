@@ -3,7 +3,9 @@
  * Harness.do(action); pending decisions render as highlights or a prompt.
  * Both hands are visible: this is the M1 test rig, not the product. */
 import { Harness } from '../src/harness.ts';
-import { forcedAction, legalActions, IllegalAction, ALL_ELEMENTS } from '../src/apply.ts';
+import {
+  decisionBlocks, forcedAction, legalActions, IllegalAction, ALL_ELEMENTS,
+} from '../src/apply.ts';
 import { getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
 import type { XPreviewRow } from '../src/cards/dsl.ts';
 import {
@@ -1127,6 +1129,32 @@ function legalFor(seat: Seat): Action[] {
   // redaction problems client-side); the opponent's are unknown to me → none.
   if (NET) return seat === NET.seat ? NET.legal : [];
   return legalActions(h.state, seat);
+}
+
+/**
+ * R170/CT-46 — does the open question (if any) stop `seat` from touching the
+ * board? THE one predicate behind every "a decision is up, take no input"
+ * branch in this file, and the reason there is only one is that the two
+ * callers do not agree and used to.
+ *
+ * R154 taught `apply()` and `legalActions()` that a decision belongs to a
+ * SEAT: outside battle, and where answering it will not rewind the world, the
+ * other seat may keep deploying. The client stayed on the pre-R154 reading —
+ * a bare `!!s.decision` — and so drew a board it would then refuse to use:
+ * measured, seat 1's hand card still wearing its green `playable` ring, taking
+ * clicks and doing nothing, with no "done deploying" button anywhere on
+ * screen. A frozen board, one layer above an engine that was no longer frozen.
+ *
+ * ⚠ ONLINE THIS IS A NO-OP BY CONSTRUCTION, and deliberately written so that
+ * it can be read as one. `server/view.ts` nulls a decision that is not yours
+ * before it ever reaches this client, so a net client's `s.decision` is always
+ * its own and `!!NET ||` short-circuits to exactly the old expression.
+ * HOTSEAT is the only caller that can see both seats at once, and therefore
+ * the only one that ever needed the distinction.
+ */
+function decisionFreezes(seat: Seat): boolean {
+  const s = h.state;
+  return !!s.decision && (!!NET || decisionBlocks(s, seat));
 }
 
 /** hosts the in-progress mod (ui.modding) could legally land on — computed
@@ -2605,7 +2633,29 @@ function promptHtml(): string {
     return `<div class="promptbar waiting"><span class="who">Waiting for ${opp}…</span>
       <span style="color:var(--dim)">${esc(waitingNote(s, castWatch?.casting ?? false))}</span>${err}</div>`;
   }
-  if (s.decision) return decisionBarHtml(s.decision, err);
+  if (s.decision) {
+    const bar = decisionBarHtml(s.decision, err);
+    // R170/CT-46: ONLINE this is the whole truth and always was — view.ts
+    // nulls a decision that is not yours, so the only question a net client
+    // ever holds is its own, and `decisionFreezes` says so for both seats.
+    //
+    // HOTSEAT is different in kind: one screen, both seats, no redaction. R154
+    // taught the engine that the seat which is NOT being asked may carry on
+    // deploying, and returning only the asker's bar is what still froze them —
+    // it is the bar that carries "done deploying". So the free seat's own bar
+    // goes UNDER the question instead of being replaced by it. Nothing is
+    // hidden and nothing is reordered: the question is still on top, still the
+    // thing that has to be answered before the step can end.
+    return decisionFreezes(other(s.decision.seat)) ? bar : bar + phaseBarHtml('');
+  }
+  return phaseBarHtml(err);
+}
+
+/** The ordinary phase bar: whose turn it is to do what, and the buttons for
+ * doing it. Split out of `promptHtml` by R170 for one reason — with a decision
+ * open for ONE seat in hotseat, the other seat still needs this. */
+function phaseBarHtml(err: string): string {
+  const s = h.state;
   // network mode: if the current control belongs to the opponent, show a wait
   // banner instead of the opponent's buttons (their turn is theirs to drive).
   if (NET && !ui.modding) {
@@ -2625,8 +2675,13 @@ function promptHtml(): string {
       return `<div class="promptbar"><span class="who">${flavor}</span>${note}${err}</div>`;
     }
   }
+  // R170: …and never to a seat the engine would refuse. In hotseat this bar is
+  // now drawn UNDER an open question (promptHtml), and the seat being asked
+  // must not be handed a "done deploying" button that `apply()` throws on —
+  // that is the "screen full of refusals" R150's own notes warn about. A no-op
+  // online, where this bar is only ever reached with no decision at all.
   const doneRow = (done: boolean[], btn: string, label: string): string =>
-    ([0, 1] as Seat[]).map(p => (done[p] || (NET && p !== NET.seat))
+    ([0, 1] as Seat[]).map(p => (done[p] || (NET && p !== NET.seat) || decisionFreezes(p))
       ? `<span style="color:var(--dim)">${esc(s.players[p]!.name)} ${done[p] ? 'ready ✓' : '…'}</span>`
       : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${label} (enter)</button>`).join(' ');
   if (s.phase === 'planning' && s.hasteDone) {
@@ -5149,7 +5204,11 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     const u = s.entities[id];
     const b = s.battle;
     if (NET && u && u.controller !== NET.seat) return;   // in net mode I only manipulate my own units
-    if (u && !s.decision) {
+    // R170: both option-pick routes above have already been tried and missed,
+    // so an open question this unit IS part of can never reach here. What is
+    // left is "may its controller act at all", and since R154 that turns on
+    // whose question it is — see `decisionFreezes`.
+    if (u && !decisionFreezes(u.controller)) {
       // UZRG: the formation branch used to be tested FIRST, so during your own
       // declare (or block) step every click on your own unit picked it up for a
       // column and the ability branch below was unreachable — a {Battle}-timed
@@ -5255,7 +5314,13 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
   if (NET && p !== NET.seat) return;   // can't act from the opponent's hand
   const s = h.state;
   const name = s.players[p]!.hand[i];
-  if (!name || name === HIDDEN_CARD || s.decision) return;
+  // R170: `decisionFreezes`, not a bare `s.decision`. No TargetRef names a
+  // hand card (types.ts), so nothing here can ever be a decision OPTION and
+  // the gate is only ever "may this seat act at all" — which since R154 is a
+  // question about WHOSE question it is. It used to be answered wrong in the
+  // most misleading way available: the card kept its green `playable` ring
+  // (handHtml reads legalFor, which was never gated) and then ate the click.
+  if (!name || name === HIDDEN_CARD || decisionFreezes(p)) return;
 
   // during an open draft step the hand is drafted from the panel, not recycled
   if (s.mode === 'draft' && s.draftDone && !s.draftDone[p]) return;
@@ -5350,10 +5415,17 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent): void {
   const cc = cacheOf(p)[i];
   if (!cc) return;
   if (s.decision) {
-    if (cc.uid === undefined) return;   // cached before uids existed: untargetable
-    const idx = decisionOptionIndex({ cached: { seat: p, uid: cc.uid } });
-    if (idx >= 0) act({ type: 'decide', seat: s.decision.seat, choice: idx });
-    return;
+    // a cached card IS a legal target (Prismatic Observer), so the option-pick
+    // is tried first and wins — `cc.uid === undefined` means cached before
+    // uids existed, i.e. untargetable, and it simply cannot be one.
+    if (cc.uid !== undefined) {
+      const idx = decisionOptionIndex({ cached: { seat: p, uid: cc.uid } });
+      if (idx >= 0) { act({ type: 'decide', seat: s.decision.seat, choice: idx }); return; }
+    }
+    // R170: it is not an option. Then this is an ordinary click, and whether
+    // it is allowed is the R154 question of whose decision is open — not the
+    // pre-R154 "any decision at all".
+    if (decisionFreezes(p)) return;
   }
   if (NET && p !== NET.seat) return;   // I can look at their cache, not play from it
   const via = q().cachePermission(p, i);
