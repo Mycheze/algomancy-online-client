@@ -240,6 +240,20 @@ const NO_PREVIEW_NEEDED: Record<string, string> = {
   // route: the `bof:*` counters and the `copyParks` slot are gone, the copied
   // body rides the spell's own stack item (StackItem.spawnWearing), and the
   // self-spawn trigger that read them has been deleted.
+  Origon: 'FLAG-STYLE, and it arrived here as of R166 (2026-08-25) — before that it counted '
+    + 'spells on a PER-CARRIER counter, which is exactly the bug R166 fixed ("their first spell" '
+    + 'is the PLAYER\'s first, not the first this Origon has seen). Reading the seat-wide '
+    + '`spellsPlayedAny:<seat>` ledger is the fix, and it is what brings the card into this '
+    + 'census. There is no X and no hand card to hang a number on: the ledger is read inside a '
+    + '`when` predicate as a threshold (=== 1), on an [Augment] trigger of a unit already in '
+    + 'play. '
+    + '⚠ It is NOT nothing, though, and the right affordance is a different one. "Have I already '
+    + 'played a spell in this battle?" is hidden information that changes whether it is safe to '
+    + 'cast — the same family as reports #43/#45 ("not possible to see the X value for an effect '
+    + 'while it is on the stack"). An xPreviewRows entry is the wrong shape for it; a threat '
+    + 'indicator on the Origon, or a "first spell" marker on the caster, is the right one. '
+    + 'Recorded here rather than filed, because this census is the only thing in the repo that '
+    + 'currently knows the question exists.',
   'Echo of Despair': 'FLAG-STYLE, deferred with #85\'s other flags (Suspend\'s life-lock, '
     + 'Abyssal Evocation\'s bin-play permission). It reads the ledger as a BOOLEAN — "did a '
     + 'player lose life this battle" — on an afterCombat trigger of a unit already in play, '
