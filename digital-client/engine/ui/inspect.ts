@@ -177,10 +177,24 @@ export function activationNeedsConfirm(
  * several actions.
  */
 export function playableCachedNames(cache: { card: CardName }[], legal: Action[]): CardName[] {
+  return playableCachedIndexes(legal).map(i => cache[i]?.card).filter((n): n is CardName => !!n);
+}
+
+/**
+ * The same judgement as `playableCachedNames`, but keeping the HANDLE.
+ *
+ * CT-50 (#63): a cached card that can be played right now is drawn a second
+ * time, at the right-hand end of its owner's hand. A name is enough for a
+ * reminder sentence; a card you can CLICK needs the cache index, because that
+ * is what `data-act="cache"` carries and what `handleCacheClick` looks up. One
+ * implementation, so the hand strip and the reminder can never disagree about
+ * which entries are live.
+ */
+export function playableCachedIndexes(legal: Action[]): number[] {
   const idx = new Set(legal
     .filter((a): a is Extract<Action, { type: 'playCached' }> => a.type === 'playCached')
     .map(a => a.index));
-  return [...idx].sort((x, y) => x - y).map(i => cache[i]?.card).filter((n): n is CardName => !!n);
+  return [...idx].sort((x, y) => x - y);
 }
 
 /**
@@ -498,12 +512,26 @@ export interface CardFlags {
   /** UZRG: it has a legal activated ability — a DIFFERENT fact from `playable`
    * ("can be dragged into a formation"), and both can be true at once */
   activatable?: boolean;
+  /** CT-49 (#54): `.playable` is on, but CASTING is not one of the things on
+   * offer — the whole glow is augment/graft/prophesy/recycle. */
+  nocast?: boolean;
+  /** CT-49 (#54): more than one KIND of thing is on offer, so the click will
+   * open a menu rather than do the obvious thing. */
+  multi?: boolean;
+  /** CT-50 (#63): this scan is a card in the CACHE, drawn a second time next
+   * to the hand. The original is still in the cache row. */
+  cached?: boolean;
 }
 /**
  * The class list for a card scan. `.activatable` is the one that has to be
  * spelled out here rather than inlined: it is the only class with no click
  * behaviour of its own — deleting it breaks nothing but the green halo
  * (style.css `.card.activatable`), which is exactly the ask it answers.
+ *
+ * CT-49/CT-50 append `.nocast`, `.multi` and `.cached` AFTER `.activatable`,
+ * on purpose: the plain castable card in hand — far and away the common case —
+ * keeps the exact class string `card playable` it has always had, so the fix
+ * for the ambiguous ones cannot move the unambiguous one.
  */
 export function cardClasses(f: CardFlags): string[] {
   const cls = ['card'];
@@ -513,7 +541,93 @@ export function cardClasses(f: CardFlags): string[] {
   if (f.carrying) cls.push('carrying');
   if (f.modhost) cls.push('modhost');
   if (f.activatable) cls.push('activatable');
+  if (f.nocast) cls.push('nocast');
+  if (f.multi) cls.push('multi');
+  if (f.cached) cls.push('cached');
   return cls;
+}
+
+// ── CT-49 (#54): WHAT a card in hand is offering, not just THAT it is ─
+//
+// The hand's green ring used to be the OR of five different actions — play,
+// augment, graft, prophesy, recycle-for-resource — and said which only after
+// you had clicked it. Playtest report #80 is the receipt: the owner read a
+// glowing {Battle} spell during deployment as castable, went to cast it, and
+// found the client offering a GRAFT. Nothing was wrong with the rules; the ring
+// had folded "you can graft this" and "you can cast this" into one shape.
+//
+// THE VOCABULARY. Three channels, each answering exactly one question, so
+// adding CT-50's cached cards to the same strip does not make it ambiguous
+// again:
+//
+//   the ring EXISTS        → "something is on offer here"  (unchanged)
+//   the ring's LOOK        → "…can I cast it?"   green solid = yes (the
+//                            unmarked, default meaning of a card in hand);
+//                            `.nocast` amber dashed = no, only the named
+//                            verbs; `.multi` = more than one, the click asks
+//   an `offer` CHIP        → the verbs, by name
+//   `.cached` + its group  → "…and this one is not in your hand at all"
+//
+// The chip is SUPPRESSED in the two cases where another channel already says
+// the same thing better: a bare `cast` (the unmarked default — a chip there
+// would be noise on every card in every hand), and a bare `prophesy` (the hand
+// already pushes a richer `📜 prophesy [n]` chip carrying the banner cost).
+
+/** one of the five things a card in hand can be offering */
+export type OfferKind = 'cast' | 'augment' | 'graft' | 'prophesy' | 'recycle';
+
+/** drawn in this order wherever they are listed, so two cards offering the
+ * same pair never read differently */
+const OFFER_ORDER: OfferKind[] = ['cast', 'augment', 'graft', 'prophesy', 'recycle'];
+const OFFER_ICON: Record<OfferKind, string> = {
+  cast: '▶', augment: '⊕', graft: '⇄', prophesy: '📜', recycle: '♻',
+};
+
+/**
+ * Which of the five kinds `legal` is offering for hand card `index`.
+ *
+ * This is the same OR the ring was built from, taken apart again — the
+ * information was always computed, it was only ever thrown away at render
+ * time. `recycleForResource` is emitted by `legalPlanningActions` and nowhere
+ * else in apply.ts, so it needs no phase guard of its own here.
+ */
+export function handOffers(legal: Action[], index: number): OfferKind[] {
+  const seen = new Set<OfferKind>();
+  for (const a of legal) {
+    if (a.type === 'playCard' && a.handIndex === index) seen.add('cast');
+    else if (a.type === 'augment' && a.from === 'hand' && a.index === index) seen.add('augment');
+    else if (a.type === 'graft' && a.from === 'hand' && a.index === index) seen.add('graft');
+    else if (a.type === 'prophesy' && a.from === 'hand' && a.index === index) seen.add('prophesy');
+    else if (a.type === 'recycleForResource' && a.handIndex === index) seen.add('recycle');
+  }
+  return OFFER_ORDER.filter(k => seen.has(k));
+}
+
+/**
+ * The chip that names those kinds, or null when another channel already does.
+ *
+ * `cls` carries `offer` plus the same `nocast`/`multi` word the card wears, so
+ * the chip and the ring cannot drift apart in the stylesheet. The full list is
+ * always on the chip's own tooltip even when `packBadgeLine` has to squeeze the
+ * label — the strip is 74px and "cast/augment/graft" does not fit in it.
+ */
+export function handOfferBadge(kinds: OfferKind[]): Badge | null {
+  if (kinds.length === 0) return null;
+  if (kinds.length === 1 && (kinds[0] === 'cast' || kinds[0] === 'prophesy')) return null;
+  const words = kinds.join('/');
+  if (kinds.length === 1) {
+    const k = kinds[0]!;
+    return {
+      t: `${OFFER_ICON[k]} ${k}`,
+      cls: 'offer nocast',
+      title: `you cannot cast this right now — the only thing on offer from your hand is: ${k}`,
+    };
+  }
+  return {
+    t: `⑂ ${words}`,
+    cls: `offer multi${kinds.includes('cast') ? '' : ' nocast'}`,
+    title: `${kinds.length} different things on offer — clicking will ask which: ${kinds.join(' · ')}`,
+  };
 }
 
 // ── R136: the badge strip is ONE line ─────────────────────────────────

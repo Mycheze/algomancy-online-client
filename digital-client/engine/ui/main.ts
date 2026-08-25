@@ -15,9 +15,11 @@ import {
   counterAmountIndex, counterPickIndex, counterPickUnits, counterPickValue, counterStepper,
   counterStepperCount,
   dismissSeenCard, dismissSeenHand,
-  erasedPileView, groupReveal, growCardLedger, linkCardNames, modHostCount, modHostPhrase,
+  erasedPileView, groupReveal, growCardLedger, handOfferBadge, handOffers,
+  linkCardNames, modHostCount, modHostPhrase,
   modHosts, onlyKnownNames, optionPingId, packBadgeLine,
-  partitionOptions, planOffer, playableCachedNames, seenHandView, spellAugmentNote,
+  partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, seenHandView,
+  spellAugmentNote,
   stackAbilityRows, stackItemX, stackItemModes,
   prismiteClickPlan, resourceMenuElements,
   stackXMark, takeAutoPass, tokensCreatedBy, transformFaces, unitClickOptions, waitingNote,
@@ -1377,6 +1379,8 @@ function cardHtml(name: string, opts: {
   /** UZRG: it has a legal activated ability — a DIFFERENT fact from `playable`
    * ("can be dragged into a formation"), and both can be true at once */
   activatable?: boolean;
+  /** CT-49/CT-50 — what the ring MEANS. See ui/inspect.ts `cardClasses`. */
+  nocast?: boolean; multi?: boolean; cached?: boolean;
   badges?: Badge[]; stats?: string; dmg?: string; data?: string;
   /** ui/motion.ts slot key — what makes this card the SAME card next render */
   anim?: string;
@@ -1487,32 +1491,88 @@ function handZoneHtml(p: Seat): string {
   const pl = h.state.players[p]!;
   const legal = legalFor(p);
   const keys = nameKeys(pl.hand, `h${p}:`);
-  return pl.hand.map((n, i) => {
+  const cards = pl.hand.map((n, i) => {
     if (n === HIDDEN_CARD) return backHtml(keys[i]);
-    const playable = legal.some(a =>
-      (a.type === 'playCard' && a.handIndex === i) ||
-      (a.type === 'augment' && a.from === 'hand' && a.index === i) ||
-      (a.type === 'graft' && a.from === 'hand' && a.index === i) ||
-      (a.type === 'prophesy' && a.from === 'hand' && a.index === i) ||
-      (h.state.phase === 'planning' && a.type === 'recycleForResource' && a.handIndex === i));
+    // CT-49 (#54): the ring used to be this OR and nothing else, so a {Battle}
+    // spell in deployment — GRAFT only — was drawn exactly like a castable
+    // deploy card and disambiguated itself only after the click (report #80).
+    // handOffers takes the same OR apart again; ui/inspect.ts owns the words.
+    const offers = handOffers(legal, i);
+    const playable = offers.length > 0;
     // #5 / #85: live X preview during battle for cards reading a hidden
     // battle ledger — one row per player where the number differs by player
     const badges: Badge[] = [];
+    const offer = handOfferBadge(offers);
+    // first in push order and rank 0 (it carries a `cls`), so the one chip that
+    // says what a click will DO is the last thing packBadgeLine folds away
+    if (offer) badges.push(offer);
     const xrows = xPreviewFor(n, p);
     if (xrows) badges.push(xBadge(xrows));
     // R42: this card can be prophesied RIGHT NOW — the banner cost, up front
-    const proph = legal.find(a => a.type === 'prophesy' && a.from === 'hand' && a.index === i);
-    if (proph) {
+    if (offers.includes('prophesy')) {
       let mana: number | undefined;
       try { mana = getCard(n).prophecy?.mana; } catch { /* unknown */ }
       badges.push({ t: `📜 prophesy${mana === undefined ? '' : ` [${mana}]`}`, cls: 'proph on' });
     }
     return cardHtml(n, {
       playable, badges, anim: keys[i],
+      nocast: playable && !offers.includes('cast'),
+      multi: offers.length > 1,
       data: `data-act="hand" data-p="${p}" data-i="${i}"${
         xrows ? ` data-xnow="${esc(packXRows(xrows))}"` : ''}`,
     });
   }).join('');
+  return cards + handCachedHtml(p);
+}
+
+/**
+ * CT-50 (#63): the cached cards this seat can play RIGHT NOW, drawn again at
+ * the right-hand end of their hand.
+ *
+ * Owner, report #103: *"it feels like they're in your hand (which is should),
+ * is clearly different from cards in hand (they're on the left) and are harder
+ * to just forget about."* — and explicitly ADDITIVE: *"They should also be in
+ * the cache area as they are now, this is just an easier way to see and play
+ * them."* So `regionCacheHtml` is untouched and this is a second surface onto
+ * the same entries; only the ones that are playable this instant, because
+ * "harder to forget" is the whole point and a dead entry is not something to
+ * remember.
+ *
+ * The forgetting is a REAL loss: a glimpse stamp carries `playableUntilTurn`
+ * and expires silently at end of turn, so the one chip these wear is the
+ * window, not the price.
+ *
+ * ⚠ NO `anim` key. The cache row already draws these entries under `c<uid>`,
+ * and a second element wearing the same motion key would give ui/anim.ts two
+ * landing spots for one flight. The click, on the other hand, is deliberately
+ * the SAME `data-act="cache"` the cache row uses — one handler, so the two
+ * surfaces can never come to play different cards.
+ */
+function handCachedHtml(p: Seat): string {
+  const cache = cacheOf(p);
+  if (!cache.length) return '';
+  const idx = playableCachedIndexes(legalFor(p)).filter(i => cache[i]);
+  if (!idx.length) return '';
+  const e = q();
+  const cards = idx.map(i => {
+    const cc = cache[i]!;
+    const via = e.cachePermission(p, i);
+    // ONE chip, and it is the one you would otherwise lose money on. The full
+    // set (the condition, the affinity note, the price) is a glance away in the
+    // cache row, which this does not replace.
+    const badge: Badge = via === 'prophecy'
+      ? { t: '📜 free', cls: 'free' }
+      : { t: '👁 this turn', cls: 'glimpse on' };
+    return cardHtml(cc.card, {
+      playable: true, cached: true, badges: [badge],
+      candidate: cc.uid !== undefined && isCandidate({ cached: { seat: p, uid: cc.uid } }),
+      data: `data-act="cache" data-p="${p}" data-i="${i}"`,
+    });
+  }).join('');
+  return `<div class="handcached" title="R41: these are in your CACHE, not your hand — shown here so they are not forgotten. They are still in the cache row too.">
+    <div class="handcachedlabel">cached · playable now</div>
+    <div class="handcachedcards">${cards}</div>
+  </div>`;
 }
 
 /** what clicking a spell token does during formation building (C1):

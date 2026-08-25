@@ -12319,3 +12319,116 @@ through" assertion passes on a board where nothing was going to connect anyway.
 Related: R72 (the after-blocks lock), R172 (Download's steal sits out until
 regroup — the other half of the same card).
 
+---
+
+## R183 — the hand's ring said "something", not "what"; and the cache got a second surface
+
+**CT-49 (CARD-TODO #54) and CT-50 (CARD-TODO #63), landed together because they
+are the same strip.**
+
+### The defect
+
+A card in hand wore one undifferentiated `.card.playable` outline that was the
+**OR of five different actions** — `playCard`, `augment` (from hand), `graft`
+(from hand), `prophesy` (from hand), and `recycleForResource`. The disambiguation
+existed only *after* a click, in the menu `handleHandClick` builds.
+
+The consequence a human hit: **a {Battle} spell during deployment, which can
+only be GRAFTED, was drawn exactly like a castable deployment card.** That is
+playtest report #80. #80 itself is `by-design` — the owner withdrew it himself
+(*"It was offering me to GRAFT the ability from hand, which is legal"*) — but
+the reason he misread the board in the first place is the ring, and nothing was
+wrong at the rules layer at any point.
+
+⚠ **The finding had been recorded ONLY inside #80's closing note**, which claimed
+it was "filed as a separate UI item". No such item existed anywhere in the repo.
+A real defect stopped being work because the only record of it lived inside a
+report marked closed.
+
+### The vocabulary
+
+The information was never missing — `legalActions` knows which of the five kinds
+is on offer, and `handZoneHtml` was throwing that away at render time to build a
+boolean. So this is a **rendering** change. The strip now has to say **six**
+things (the five kinds, plus CT-50's cached cards), which is exactly why the two
+tickets could not be done separately: adding a sixth class of card to a strip
+that already OR-folds five makes the ambiguity worse.
+
+**Three channels, each answering exactly one question.** They compose; none of
+them replaces another.
+
+| channel | question | values |
+| --- | --- | --- |
+| the ring EXISTS | "is anything on offer here?" | unchanged — every affordance still glows |
+| the ring's LOOK | "…can I CAST it?" | plain green = yes · `.nocast` (amber, dashed) = no, only the named verbs · `.multi` (doubled edge) = more than one, so the click will ask |
+| the `offer` CHIP | "…which verbs, then?" | `⇄ graft`, `⊕ augment`, `♻ recycle`, `⑂ cast/augment`, … |
+| `.cached` + its group | "…and is this even in my hand?" | CT-50, below |
+
+**Casting is the unmarked case.** A plainly castable card in hand keeps the exact
+class string `card playable` it has always had and wears **no chip at all** — a
+chip saying "cast" would be noise on every card in every hand, and the common
+case must not pay for the ambiguous ones. `cardClasses` appends the three new
+words *after* `.activatable` for the same reason.
+
+The chip is suppressed in the one other case where a different channel already
+says the same thing better: a bare `prophesy`, because the hand already pushes a
+richer `📜 prophesy [n]` chip carrying the banner cost. Two chips saying one
+verb would only fold each other away — the strip is 74px (R136).
+
+`ui/inspect.ts` owns both halves as pure functions: `handOffers(legal, index)`
+takes the old OR apart, and `handOfferBadge(kinds)` turns the answer into words.
+Neither touches the document.
+
+### CT-50 — the cached cards, at the right of the hand
+
+**Owner, report #103 (room GYSR):** cached cards that CAN be played should appear
+on the right-hand side of the hand area — *"it feels like they're in your hand
+(which is should), is clearly different from cards in hand (they're on the left)
+and are harder to just forget about."*
+
+⚠ **Explicitly ADDITIVE:** *"They should also be in the cache area as they are
+now, this is just an easier way to see and play them."* `regionCacheHtml` and
+the cache dialog are untouched. This is a **second surface onto the same
+entries**, and only onto the ones that are playable this instant.
+
+The "harder to forget" half is the substance and it is a real loss: a glimpse
+stamp carries `playableUntilTurn` (R45) and expires **silently** at end of turn.
+So the one chip these wear is the **window**, not the price — `👁 this turn`, or
+`📜 free` for a fulfilled prophecy. The full detail (the condition, the affinity
+note, what it costs) is one glance away in the cache row, which this does not
+replace.
+
+Two decisions worth keeping:
+
+* **The click is the SAME `data-act="cache" data-p data-i` the cache row uses**,
+  so `handleCacheClick` is the one handler and the two surfaces can never come to
+  play different cards.
+* **No `anim` key on the hand-side copy.** The cache row already draws these
+  entries under `c<uid>`; a second element wearing the same motion key would give
+  `ui/anim.ts` two landing spots for one flight.
+
+The judgement is lifted, not re-derived: `playableCachedIndexes(legal)` is the
+same walk `playableCachedNames` already did — refactored to keep the cache INDEX,
+because a card you can click needs a handle and a reminder sentence only needs a
+name.
+
+### The guard
+
+`test/155-hand-affordances.test.ts`, driven through `test/ui-driver.ts` in
+hotseat mode: a fake DOM, no socket, main.ts's own `Harness`, clicks through
+main.ts's own handlers. **Nothing in it reads `ui/main.ts` as source text** — two
+tests that did broke last round on a pure refactor while the invariant they were
+about held perfectly.
+
+§1 is the brake (the plain card, byte for byte). §2 is #80's own position, and it
+**disbelieves the ticket first**: it measures that `legalActions` really is
+offering the graft and really is not offering the cast, before asserting anything
+about pixels — a "suspect the presentation layer" brief that turns out to be a
+rules bug would otherwise have been fixed by painting a lie.
+
+⚠ **One assertion in §1 could not fail when it was written.** `cardHtml` writes a
+chip's class as `badge ${mod} ${ctr} ${cls}`, so there are two empty slots in the
+middle and the obvious `/badge offer/` matches nothing, ever. The red-check
+caught it; the regex is now `/badge[^"]*offer/`. A test that cannot fail is the
+worst artefact in this repo, and this one was three characters away from being
+one.
