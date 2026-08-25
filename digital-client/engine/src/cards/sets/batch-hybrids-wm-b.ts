@@ -671,22 +671,33 @@ card('Aethercap Siphoner', {
 });
 
 // "Create a 1/1 unit for each unit in target formation." — bg/3 5/1
-// {Battle} Alien Fungus Spell. ⚠ "target formation" proxied by a target
-// unit (header): the grid side containing it at RESOLUTION is the
-// formation, counted live (R27). The 1/1 unit tokens arrive in the
-// caster's region at resolution (R115) — this is a {Battle} spell, so cast in
-// the enemy region the 1/1s are minted THERE, in no column.
+// {Battle} Alien Fungus Spell.
+//
+// R184: it TARGETS A FORMATION, for real. This used to be proxied by a target
+// UNIT, and the grid side containing that unit was taken as the formation —
+// which counted correctly (the owner confirmed on 2026-08-25 that "target
+// formation" is THE WHOLE SIDE, so the count was never the problem) but lied
+// about everything else: the log said it targeted a unit, a retarget effect
+// offered units, and no restriction or listener could read a formation as one.
+// `TargetRef` has a formation arm now and this card uses it; the COUNT is
+// unchanged, read live at resolution off `E.formationUnits` (R27/R72 — the
+// grid moves between cast and resolution, so nothing is snapshotted).
+//
+// The 1/1 unit tokens arrive in the caster's region at resolution (R115) —
+// this is a {Battle} spell, so cast in the enemy region the 1/1s are minted
+// THERE, in no column.
 card('Galactic Germination', {
   spellEffect: {
-    targets: { what: 'unit', prompt: 'Galactic Germination: a unit in target formation' },
+    targets: { what: 'formation', prompt: 'Galactic Germination: target formation' },
     creates: ['Unit Token'],
     run: (g, ctx) => {
       const t = ctx.targets[0];
-      if (!isEnt(t)) return;
-      const grid = formationOf(g, (t as Entity).id);
-      const n = grid ? grid.flat().filter(id => !!g.entity(id)).length : 0;
+      if (!t || !('formation' in t)) return;
+      const n = g.formationUnits(t.formation).length;
       if (n <= 0) {
-        g.ev('info', 'Galactic Germination: the target is in no formation — nothing is created.');
+        g.ev('info',
+          `Galactic Germination: there is nobody in ${g.pname(t.formation)}'s formation `
+          + '— nothing is created.');
         return;
       }
       for (let i = 0; i < n; i++) {

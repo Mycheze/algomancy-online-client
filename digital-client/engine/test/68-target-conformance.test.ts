@@ -252,6 +252,11 @@ const KIND_PHRASES: [RegExp, Kind][] = (() => {
     // and had no phrase, so a card printing it would have gone unread too.
     [new RegExp(String.raw`^targets? units?\b${upTo}\bcontrolled by an opponent\b`), 'enemyUnit'],
     [/^targets? units?\b/, 'unit'],
+    // R184: "Create a 1/1 unit for each unit in target formation." The owner
+    // ruled on 2026-08-25 that a formation is THE WHOLE SIDE, and `TargetRef`
+    // has an arm for it now — so the printed noun finally names a real kind
+    // and Galactic Germination's UNNAMED exemption is gone.
+    [/^targets? formations?\b/, 'formation'],
   ];
 })();
 
@@ -283,8 +288,8 @@ function kindsNamedBy(text: string): Set<Kind> {
 
 /** kinds whose printed phrase the matcher cannot read, and why. */
 const UNNAMED: Record<string, string> = {
-  'Galactic Germination': "'each unit in target formation' — there is no 'formation' kind, so the "
-    + "spell targets a unit in it and the printed noun names nothing the engine has",
+  // (R184 retired the only entry: Galactic Germination's "target formation"
+  // is a real kind now. The test below is what keeps this table honest.)
 };
 
 test('R64: every target kind a card declares is named by its printed text', () => {

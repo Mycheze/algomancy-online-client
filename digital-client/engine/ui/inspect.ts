@@ -1747,7 +1747,9 @@ const DECLINE_KEYS = ['doneTargets', 'doneCost', 'doneMods', 'declineCost'];
  * zone) — the kind the player is meant to click on the table */
 function isTargetRefValue(v: unknown): boolean {
   if (!v || typeof v !== 'object') return false;
-  return ['unit', 'player', 'stack', 'cached', 'bin'].some(k => k in (v as object));
+  // R184: 'formation' is a TargetRef arm too — a player's whole side of the
+  // battle grid, which is very much something on the board.
+  return ['unit', 'player', 'stack', 'cached', 'bin', 'formation'].some(k => k in (v as object));
 }
 
 /** a decision option that ENDS the step instead of answering it */

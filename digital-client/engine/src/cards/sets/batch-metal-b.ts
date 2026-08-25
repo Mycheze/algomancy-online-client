@@ -34,8 +34,11 @@
  *    The sacrifice may be any of your nontoken units, not region-limited.
  *  - Invasive Reassignment: the swap freezes the target's EFFECTIVE stats at
  *    resolution as a temp delta (later stat changes shift both sides).
- *    Its printed {Reaping} is honored in card code: the caster draws if the
- *    swap kills the target (the engine's Reaping hook is damage-only).
+ *    Its printed {Reaping} is NO LONGER hand-rolled here. R184 moved the
+ *    attribute out of `dealEffectDamageAll` (where a stat swap, dealing no
+ *    damage, could never reach it) onto the engine's kill diff at the
+ *    resolving-part boundary — the same diff {Afflicting} has ridden since
+ *    R48. The card just swaps stats; the draw is the printed attribute.
  *  - Powerforge Synergist: NO LONGER an approximation. This entry used to read
  *    '"I spawn with two +1/+1 counters" has no DSL hook … the counters are
  *    added synchronously in a bookkeeping when() at spawn-event time'. R165
@@ -305,8 +308,9 @@ card('Interdiction Rift', {
 // {Battle} {Reaping} Occult Technology Spell. ⚠ header approximation: the
 // EFFECTIVE stats at resolution are swapped via a temp delta (cleared at
 // regroup). If the swap kills (a 0-power unit becomes X/0), the printed
-// {Reaping} draws the caster a card (the engine's Reaping hook is
-// damage-only, so it is honored here in card code).
+// {Reaping} draws the caster a card — R184: through the ENGINE's kill diff,
+// off the printed attribute. The rider used to be hand-rolled HERE, because
+// {Reaping} lived in `dealEffectDamageAll` and a stat swap deals no damage.
 card('Invasive Reassignment', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Invasive Reassignment: switch the power and defense of target unit until regroup' },
@@ -316,10 +320,6 @@ card('Invasive Reassignment', {
       const [p, d] = g.effStats(t);
       g.addTemp(t, d - p, p - d);
       g.checkDeaths();
-      if (!g.entity(t.id)) {
-        g.ev('info', `Reaping: ${g.pname(ctx.controller)} draws a card.`);
-        g.draw(ctx.controller, 1);
-      }
     },
   },
 });

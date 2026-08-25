@@ -554,12 +554,32 @@ export interface CachedRef { seat: Seat; uid: number }
  * of one card in a bin are interchangeable. */
 export interface BinRef { seat: Seat; card: CardName; nth?: number }
 
+/**
+ * R184: a FORMATION — one player's whole side of the current battle's grid.
+ *
+ * RULED 2026-08-25 (owner): "target formation" is THE WHOLE SIDE — a player's
+ * entire formation in that region, every unit arrayed there. Not a column.
+ *
+ * The formation is named by the SEAT that owns it (attacking columns for the
+ * battle's attacker, blocking columns for its defender) rather than by a grid
+ * snapshot, because the grid moves under it: R72 lets columns close up and
+ * open while the battle runs, so a ref naming a column index would quietly
+ * become a different formation between cast and resolution.
+ *
+ * It exists because Galactic Germination prints "Create a 1/1 unit for each
+ * unit in target formation" and had no way to say so — it targeted a UNIT and
+ * took the grid side containing it. That COUNTED right (and still does, R184
+ * changes no count) but lied about everything else: nothing could redirect it
+ * as a formation, nothing could read it as one, and the log said it had
+ * targeted a unit.
+ */
 export type TargetRef =
   | { unit: EntityId }
   | { player: Seat }
   | { stack: number }
   | { cached: CachedRef }
-  | { bin: BinRef };
+  | { bin: BinRef }
+  | { formation: Seat };
 
 /**
  * One sub-effect of a stack item with its declared targets.

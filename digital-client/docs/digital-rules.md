@@ -12692,3 +12692,118 @@ double-fire at all: `'despawned'` carries the recalled unit's region
 event and the test passes with the bug in place. `declareAttack` is what moves a
 unit into the battle region, so the recalled unit has to be attacking too. The
 test says so inline.
+
+---
+
+## R184 — {Reaping} is a kill rider, and "target formation" can be targeted
+
+Two primitives the pool's printed text was already asking for. Neither is a new
+ruling on the game; both are the engine catching up with words already on the
+cards, plus the owner's 2026-08-25 answer about what a formation is.
+
+### 1. {Reaping} rides the kill diff, not the damage site
+
+`{Reaping}` lived inside `E.dealEffectDamageAll`, so it could only ever be paid
+out **by damage**. Two of the four {Reaping} cards in the pool do not kill with
+damage at all:
+
+| card | how it kills |
+|---|---|
+| Invasive Reassignment | "Switch the power and defense of target unit until regroup" — a 0/4 becomes a lethal 4/0 |
+| Noxious Demise | "Put a -1/-1 counter on target unit" |
+
+Both **hand-rolled the rider in card code** to compensate. That worked, and it
+is the shape this repo keeps paying for: an attribute honoured by two cards
+individually means the third card to want it silently does without.
+
+**The scope is a printed-text question, and the answer is not where it was
+expected to be.** `{Reaping}` has **NO printed reminder text** — none of Flame
+of History, Seismomancy, Invasive Reassignment or Noxious Demise carries one.
+`ui/glossary.ts` is the repo's own statement of the attribute, and it is what
+this ruling read:
+
+```
+{Reaping}     "When it KILLS a unit, its controller draws a card."   (glossary)
+{Afflicting}  "When an afflicting source KILLS one or more units, those
+               units' controllers gain a rot."             (printed, Umbral Decay)
+{Blessed}     "DAMAGE dealt by a blessed source causes its controller to gain
+               that much life."                            (printed, four cards)
+{Deadly}      "Any DAMAGE from a deadly source WILL KILL a unit."   (printed)
+{Lethal}      "Any combat damage from a lethal unit KILLS A PLAYER."(printed)
+```
+
+One word apart on purpose, exactly as `109-attr-channel-conformance` reads the
+source/unit split. So **{Reaping} and {Afflicting} are the KILL-scoped pair**,
+and {Blessed}/{Resonant}/{Deadly}/{Lethal} stay at the damage site.
+
+R48 had already built the right machinery for {Afflicting} and it is the
+designer's own formulation (Caleb 2024-09-10: *"we check damage and stats of
+units that were interacted with during spell resolutions"*): attribution is not
+done at the damage site but by **DIFFING** — snapshot who is alive, let the
+source act, see who is gone. That covers damage, counters, stat swaps, deletes
+and whatever a future card does.
+
+**The hook is now shared.** `E.KILL_RIDERS` names the kill-scoped attributes,
+`E.killRiders` closes one diff and pays every rider the source carries, and
+`resolveParts` opens the diff around a part whenever `E.wantsKillDiff` says the
+source wants one. Both hand-rolls are deleted. `E.killWatch` is the open diff
+and doubles as the flag that tells `dealEffectDamageAll` to stand down, so a
+damage kill is paid exactly once; the damage-site rider survives only for an
+effect-damage batch dealt outside a resolving part (engine-internal and
+direct-call test paths).
+
+⚠ **Left out on purpose, and it is a real gap: COMBAT.** {Afflicting} has a
+combat seam (`afflictingAftermath`, keyed off `L.afflicted` buckets);
+{Reaping} does not, and did not before this either. A {Reaping} card's BODY is
+a unit in play (Flame of History is a 2/3), so a {Reaping} unit killing a
+blocker in combat should draw and does not. Generalising the combat ledger's
+`Afflicting`-only bucket is a separate change; filed, not done here.
+
+### 2. "Target formation" is a real `TargetRef` arm
+
+**RULED 2026-08-25 (owner): "target formation" is THE WHOLE SIDE** — a player's
+entire formation in that region, every unit arrayed there. Not a column.
+
+Galactic Germination prints *"Create a 1/1 unit for each unit in target
+formation"* and `TargetRef` had no formation arm, so the engine proxied it: it
+targeted a UNIT and took the grid side containing it. Under the ruling that
+**counted correctly**, and R184 changes no count. What it changes is that the
+card stops lying about what it targets — nothing could redirect it as a
+formation, nothing could read it as one, and the log said it had targeted a
+unit.
+
+`TargetRef` gains `{ formation: Seat }`, `TargetSpec.what` gains `'formation'`.
+The ref names the **seat**, never a grid snapshot, because R72 lets columns
+close up and open mid-battle: `E.formationUnits(seat)` reads it live at the
+instant the effect asks.
+
+**Consumers wired:**
+
+| consumer | behaviour |
+|---|---|
+| `targetCandidates` | one candidate per side of the battle in that region, attacker first (deterministic on replay) |
+| `targetLabel` | "Bena's formation (attacking)" / "(blocking)" — which side is the whole choice |
+| `targetStillLegal` | legal exactly while its battle runs; **emptying it does not remove it** (an empty formation is still the place those units stand, and a card counting them is entitled to count zero) |
+| `resolveTargetRef` | resolves to the seat; `ResolvedTarget` gains `ResolvedFormation` |
+| retargeting (Gravitational Correction, Divine Intervention) | works untouched — both re-derive the slot's candidates through `targetCandidates` and label them through `targetLabel` |
+| `'targeted'` event | dispatched, carrying `formation` plus R163's `seat` + `kind`. **Deliberately no `unit`**: what was targeted is the formation, not each unit in it, so a `self: true` "when I become targeted" listener must not match |
+| UI | `tgtLabel` and `inspect.ts::isTargetRefValue` know the arm; `targetSelectors` points the arrow at that player's region zone (⚠ approximation — the battle grid has no per-side `data-animzone`) |
+
+**Consumers deliberately NOT given the arm, with reasons:**
+
+- **`{Alluring}`** — not a `TargetRef` consumer at all. R84's must-block duty is
+  combat machinery (`Entity.allured`, `apply.ts`); it never builds a ref, so
+  there was nothing to wire.
+- **"I must be targeted if able" (Gatekeeper of Souls)** — `compelledTargets`
+  filters unit refs, so a formation list is left alone. That is CORRECT, not a
+  gap: "if able" means "if it is a legal target for this effect", and a
+  formation-targeting spell has no unit slot for the Gatekeeper to occupy.
+- **"target effect" negates** — they target the STACK item, unaffected.
+- **`targetCardOf`** — returns `{}` for anything clicked on the board, and a
+  formation is clicked on the board. Unchanged.
+
+`68-target-conformance`'s `UNNAMED` table is now EMPTY: Galactic Germination
+was its only entry, exempted because *"there is no 'formation' kind"*. There is
+one, and the printed noun names it.
+
+**Guard:** `test/156-reaping-and-formation.test.ts`.

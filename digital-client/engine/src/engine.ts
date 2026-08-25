@@ -3477,6 +3477,21 @@ export class E {
 
   /** R104: the open token-creation batch, or null outside a resolving part. */
   private tokenBatch: TokenRequest[] | null = null;
+  /**
+   * R184: the OPEN kill diff — the units alive when the part currently
+   * resolving began, or null when no kill-scoped source is resolving.
+   *
+   * Same lifetime and same rollback story as `tokenBatch` directly above: it
+   * is opened at the part boundary and discarded on a suspension, because R85
+   * rolls the world back to that boundary and replays the part, which retakes
+   * the snapshot.
+   *
+   * `reaps` is the flag that tells `dealEffectDamageAll` the diff will pay
+   * {Reaping} for it, so a damage kill is never paid twice. It is narrower
+   * than "a diff is open" on purpose: a diff opened for {Afflicting} alone
+   * will NOT pay a {Reaping} draw, so the damage site must still do it.
+   */
+  private killWatch: { before: Map<EntityId, Seat>; reaps: boolean } | null = null;
   /** R104: a per-token replacement is already performing its substitute, so
    *  the substitute must not be offered for replacement again. */
   private substitutingToken = false;
@@ -4127,11 +4142,17 @@ export class E {
     // paid out after the whole batch is marked, so a shield cannot resolve a
     // death in the middle of damage R80 made simultaneous.
     this.settleDamagePrevention();
-    if (srcAttrs.has('Reaping')) {
-      for (const _ of killed) {
-        this.ev('info', `Reaping: ${this.pname(ctx.controller)} draws a card.`);
-        this.draw(ctx.controller, 1);
-      }
+    // R184: {Reaping} is a KILL rider, not a damage rider — "when it kills a
+    // unit, its controller draws a card" — so its real home is the kill diff
+    // at the resolving-part boundary (`killRiders`), which sees a kill however
+    // it happened. This line survives for the ONE case that boundary cannot
+    // cover: an effect-damage batch dealt OUTSIDE a resolving part (card code
+    // and tests that call `dealEffectDamageAll` directly), and the one where
+    // the open diff is somebody ELSE's — an {Afflicting}-only source, which
+    // pays no draw. `killWatch.reaps` says the diff has this covered, so
+    // exactly one of the two ever pays.
+    if (srcAttrs.has('Reaping') && !this.killWatch?.reaps) {
+      for (const _ of killed) this.reapingDraw(ctx.controller);
     }
     if (srcAttrs.has('Deadly')) {
       for (const u of killed) {
@@ -4174,22 +4195,48 @@ export class E {
     return [];
   }
 
-  // ── R48 {Afflicting} ────────────────────────────────────────────────
+  // ── R48 / R184: THE KILL-SCOPED ATTRIBUTES ──────────────────────────
   //
-  // "When an afflicting source kills one or more units, those units'
-  // controllers gain a rot." It must fire on -1/-1 COUNTER kills, not only
-  // damage kills (Caleb 2024-09-10: "we check damage and stats of units that
-  // were interacted with during spell resolutions") — which is the whole
-  // point, since the only afflicting card in the pool, Umbral Decay, kills
-  // purely by putting two -1/-1 counters on a unit.
+  // Two attributes in the pool are triggered by a KILL rather than by damage,
+  // and the set is read off the pool's own reminder wording, exactly as
+  // `109-attr-channel-conformance` reads the source/unit split:
   //
-  // So attribution is not done at the damage site but by DIFFING: snapshot who
-  // is alive, let the afflicting source act, then see who is gone. That covers
-  // damage, counters, delete effects and anything else a future afflicting
-  // card does, and it is exactly Caleb's own formulation.
+  //   {Afflicting}  "When an afflicting source KILLS one or more units, those
+  //                  units' controllers gain a rot."   (printed reminder)
+  //   {Reaping}     "When it KILLS a unit, its controller draws a card."
+  //                 (⚠ NOT printed — none of the four {Reaping} cards carries
+  //                  a reminder at all. `ui/glossary.ts` is the repo's own
+  //                  statement of it, and it is what R184 read.)
+  //
+  // Contrast the DAMAGE-scoped riders one word away — {Blessed} "DAMAGE dealt
+  // by a blessed source…", {Resonant} "when it DAMAGES a unit…", {Deadly}
+  // "any DAMAGE from a deadly source WILL KILL a unit" (a damage modifier, not
+  // a kill trigger). Those belong at the damage site and must stay there.
+  //
+  // R48 already had the right machinery for {Afflicting} and it is Caleb's own
+  // formulation (2024-09-10: "we check damage and stats of units that were
+  // interacted with during spell resolutions"): attribution is not done at the
+  // damage site but by DIFFING — snapshot who is alive, let the source act,
+  // then see who is gone. That covers damage, counters, stat swaps, delete
+  // effects and anything else a future card does.
+  //
+  // R184's whole change is that {Reaping} now rides the SAME diff. It used to
+  // live in `dealEffectDamageAll`, so a kill by a -1/-1 counter (Noxious
+  // Demise) or by a power/defense swap (Invasive Reassignment) never saw it,
+  // and both cards hand-rolled the rider in card code to compensate. Neither
+  // does any more.
+
+  /** R184: the attributes whose rider fires on a KILL, so one diff serves them
+   * all. Adding an attribute here is the whole cost of giving it kill scope. */
+  static readonly KILL_RIDERS: readonly Attr[] = ['Afflicting', 'Reaping'];
+
+  /** R184: does this source want a kill diff opened around it? */
+  wantsKillDiff(attrs: Set<string>): boolean {
+    return E.KILL_RIDERS.some(a => attrs.has(a));
+  }
 
   /** id -> controller for every unit in play right now (the "before" side of
-   * an afflicting diff; the controller has to be captured while the unit still
+   * a kill diff; the controller has to be captured while the unit still
    * exists). */
   snapshotUnits(): Map<EntityId, Seat> {
     const m = new Map<EntityId, Seat>();
@@ -4199,29 +4246,66 @@ export class E {
     return m;
   }
 
+  /** R184: the "after" side — every unit in `before` that is no longer in
+   * play, with the controller it had while it lived. `only` narrows the diff
+   * to ids the source is known to have interacted with (combat, where other
+   * units may be dying in the same sub-step from unrelated columns). */
+  private killDiff(before: Map<EntityId, Seat>, only?: Set<EntityId>): { id: EntityId; seat: Seat }[] {
+    const out: { id: EntityId; seat: Seat }[] = [];
+    for (const [id, seat] of before) {
+      if (this.entity(id)) continue;                 // survived
+      if (only && !only.has(id)) continue;           // not this source's doing
+      out.push({ id, seat });
+    }
+    return out;
+  }
+
+  /**
+   * R184: close a kill diff and pay out every kill-scoped rider the source
+   * carries. ONE call site per seam, so a new kill-scoped attribute never has
+   * to find the seams for itself.
+   *
+   * `attrs` is the SOURCE's live attribute set (`itemAttrs` at the resolution
+   * seam), which is why a virus-donated or mod-donated {Reaping} counts.
+   */
+  killRiders(before: Map<EntityId, Seat>, attrs: Set<string>, sourceName: string,
+    controller: Seat, only?: Set<EntityId>): void {
+    const dead = this.killDiff(before, only);
+    if (!dead.length) return;
+    if (attrs.has('Afflicting')) this.afflictingRot(dead, sourceName);
+    // "When it kills a unit, its controller draws a card" — per unit killed,
+    // which is the count the damage-site rider paid out too.
+    if (attrs.has('Reaping')) for (const _ of dead) this.reapingDraw(controller);
+  }
+
+  /** {Reaping}'s payout, in one place so the log line cannot drift between the
+   * kill diff and the direct-call damage site. */
+  reapingDraw(controller: Seat): void {
+    this.ev('info', `Reaping: ${this.pname(controller)} draws a card.`);
+    this.draw(controller, 1);
+  }
+
   /**
    * Close an afflicting diff: every unit in `before` that is no longer in play
    * was killed by the afflicting source, and its CONTROLLER gains a rot —
    * ⚠ R48 (Bena's reading): ONE rot per affected controller per kill event,
-   * however many of their units died. `only` narrows the diff to a set of ids
-   * the source is known to have interacted with (combat, where other units may
-   * be dying in the same sub-step from unrelated columns).
+   * however many of their units died. `only` narrows the diff as `killDiff`
+   * describes. Kept as its own entry point because the COMBAT seam
+   * (`afflictingAftermath`) still calls it per damage-source bucket.
    */
   afflictingKills(before: Map<EntityId, Seat>, sourceName: string, only?: Set<EntityId>): void {
-    const seats = new Set<Seat>();
-    const dead: string[] = [];
-    for (const [id, seat] of before) {
-      if (this.entity(id)) continue;                 // survived
-      if (only && !only.has(id)) continue;           // not this source's doing
-      seats.add(seat);
-      dead.push(String(id));
-    }
+    this.afflictingRot(this.killDiff(before, only), sourceName);
+  }
+
+  private afflictingRot(dead: { id: EntityId; seat: Seat }[], sourceName: string): void {
+    const seats = new Set<Seat>(dead.map(d => d.seat));
     if (!seats.size) return;
+    const ids = dead.map(d => String(d.id));
     // initiative order, so the rot events are deterministic on replay
     for (const seat of [this.initiative, this.nit]) {
       if (!seats.has(seat)) continue;
       this.ev('info', `Afflicting: ${sourceName} killed ${this.pname(seat)}'s unit(s) — they gain a rot.`,
-        { seat, source: sourceName, units: dead });
+        { seat, source: sourceName, units: ids });
       this.gainRot(seat, 1);
     }
   }
@@ -5271,6 +5355,43 @@ export class E {
     this.pushStackTargets(out, spec, excludeStackId);
     this.pushCachedCardTargets(out, spec);
     this.pushBinCardTargets(out, spec, ally);
+    this.pushFormationTargets(out, spec, region);
+    return out;
+  }
+
+  /**
+   * R184: "target formation" — one candidate per SIDE of the battle running in
+   * this region, in attacker-then-defender order (deterministic on replay).
+   *
+   * Owner, 2026-08-25: a formation is THE WHOLE SIDE, "a player's entire
+   * formation in that region, every unit arrayed there". So there are exactly
+   * two of them during a battle and none outside one — a {Battle} spell is the
+   * only thing that can print "target formation" in the first place.
+   *
+   * An EMPTY side is still a formation and still a legal target: the ruling
+   * describes a place units are arrayed, not a nonempty set, and a card that
+   * counts them is entitled to count zero. Appended LAST so the existing
+   * families keep the option order `targetFamilyCandidates` promises.
+   */
+  private pushFormationTargets(out: TargetRef[], spec: TargetSpec, region: number): void {
+    if (spec.what !== 'formation') return;
+    const b = this.s.battle;
+    if (!b || b.region !== region) return;
+    out.push({ formation: b.attacker }, { formation: b.defender });
+  }
+
+  /** R184: every unit currently arrayed in `seat`'s formation — the attacking
+   * columns if they are the battle's attacker, the blocking columns if they
+   * are its defender. Read LIVE (R27/R72: the grid moves), and the one place
+   * "which units are in that formation" is answered. */
+  formationUnits(seat: Seat): Entity[] {
+    const out: Entity[] = [];
+    for (const col of this.formationGrid(seat)) {
+      for (const id of col) {
+        const u = this.entity(id);
+        if (u) out.push(u);
+      }
+    }
     return out;
   }
 
@@ -5715,6 +5836,14 @@ export class E {
       return u ? `${u.card} (${this.pname(u.controller)}'s)` : '(gone)';
     }
     if ('player' in t) return this.pname(t.player);
+    // R184: a formation says WHOSE and which side of the battle it is, because
+    // "Rashi's formation" and "Bena's formation" are the whole choice.
+    if ('formation' in t) {
+      const b = this.s.battle;
+      const side = !b ? '' : t.formation === b.attacker ? ' (attacking)'
+        : t.formation === b.defender ? ' (blocking)' : '';
+      return `${this.pname(t.formation)}'s formation${side}`;
+    }
     if ('cached' in t) {
       const i = this.cacheIndexOf(t.cached.seat, t.cached.uid);
       return i === -1 ? '(gone)' : `${this.cache(t.cached.seat)[i]!.card} (${this.pname(t.cached.seat)}'s cache)`;
@@ -5730,6 +5859,14 @@ export class E {
   targetStillLegal(t: TargetRef): boolean {
     if ('unit' in t) { const u = this.entity(t.unit); return !!u && !u.absent; }
     if ('player' in t) return true;
+    // R184: a formation exists exactly while the battle it is a side OF does.
+    // Emptying it does NOT remove it (a formation with nobody in it is still
+    // the place that player's units stand); the battle ending does — and then
+    // the target is gone in R5's ordinary sense.
+    if ('formation' in t) {
+      const b = this.s.battle;
+      return !!b && (t.formation === b.attacker || t.formation === b.defender);
+    }
     if ('bin' in t) return this.binIndexOf(t.bin) !== -1;
     // the entry may have been played, grafted or recalled out of the cache
     // between cast and resolution — then it is simply gone (R5 fizzle)
@@ -5751,6 +5888,10 @@ export class E {
     if ('bin' in t) {
       return { binCard: { seat: t.bin.seat, index: this.binIndexOf(t.bin), card: t.bin.card } };
     }
+    // R184: a formation resolves to the SEAT that owns it, never to a grid
+    // snapshot — the units in it are read live (E.formationUnits) at the
+    // instant the effect asks, which is what R27 already required of the
+    // proxy this replaced.
     return t as ResolvedTarget;
   }
 
@@ -7074,6 +7215,22 @@ export class E {
   private dispatchTargeted(item: StackItem): void {
     for (const part of item.parts) {
       for (const t of part.targets) {
+        // R184: a FORMATION target is a real target and says so — the log line
+        // and the event both name it, so an "it was targeted" listener can see
+        // it at all. It carries `formation` (whose side) rather than `unit`,
+        // and DELIBERATELY does not fire "when I become targeted" for each
+        // unit standing in it: what was targeted is the formation, not the
+        // units, and a `self: true` listener matching on `unit` is exactly the
+        // thing that must not match. Same choice the player/stack/bin arms
+        // already make by falling through — this one is loud instead of
+        // silent, because the formation IS a target and they are not units.
+        if ('formation' in t) {
+          const ev = this.ev('targeted', `${item.label} targets ${this.targetLabel(t)}.`,
+            { item: item.id, formation: t.formation, seat: item.controller, kind: item.kind,
+              region: item.region });
+          this.fireEvent('targeted', ev);
+          continue;
+        }
         if (!('unit' in t)) continue;
         const u = this.s.entities[t.unit];
         // R161/R157 §16: `seat` and `kind` ride the event so a listener can
@@ -7646,12 +7803,20 @@ export class E {
           throw new PartChoice(k, { ...dec, options: dec.options });
         },
       };
-      // R48 {Afflicting}: snapshot the units in play, so the kills this part
-      // makes — by damage, by -1/-1 counters, by anything — can be diffed out
-      // once it has finished. Discarded on a suspension rollback and retaken
-      // when the part replays.
-      const afflicting = this.itemAttrs(item).has('Afflicting');
-      const beforeUnits = afflicting ? this.snapshotUnits() : null;
+      // R48/R184: snapshot the units in play, so the kills this part makes —
+      // by damage, by -1/-1 counters, by a stat swap, by anything — can be
+      // diffed out once it has finished and every KILL-scoped rider the source
+      // carries can be paid off that one diff. Discarded on a suspension
+      // rollback and retaken when the part replays.
+      const killAttrs = this.itemAttrs(item);
+      const beforeUnits = this.wantsKillDiff(killAttrs) ? this.snapshotUnits() : null;
+      // R184: published on the engine for the duration of the part, so the
+      // damage site knows the diff will pay and stands down (see
+      // `dealEffectDamageAll`). Saved and restored because resolution nests.
+      const outerKillWatch = this.killWatch;
+      this.killWatch = beforeUnits
+        ? { before: beforeUnits, reaps: killAttrs.has('Reaping') }
+        : null;
       // R85: the rollback state, carried ON the suspension and applied when
       // the answer comes back rather than here.
       const snap = structuredClone(this.s);
@@ -7727,6 +7892,7 @@ export class E {
         this.partChoose = outerChoose;
         this.partActor = outerActor;                      // R130
         this.tokenBatch = outerBatch;
+        this.killWatch = outerKillWatch;                  // R184
       }
       // the part finished: the same suppression, for the last replay of it
       if (shown) this.events.splice(evLen, Math.min(shown, this.events.length - evLen));
@@ -7735,7 +7901,10 @@ export class E {
       // part that is still being answered keeps its reservation.
       this.settleBudgetRefund(item, part);
       this.checkDeaths();   // sequential within the composite; triggers wait for settle()
-      if (beforeUnits) this.afflictingKills(beforeUnits, item.card ?? item.label);
+      // R184: one diff, every kill-scoped rider the source carries.
+      if (beforeUnits) {
+        this.killRiders(beforeUnits, killAttrs, item.card ?? item.label, item.controller);
+      }
     }
   }
 

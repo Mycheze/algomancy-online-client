@@ -71,7 +71,15 @@ export interface ResolvedCached { cached: { seat: Seat; uid: number; card: CardN
  * the moment of resolution — looked up then, never carried from cast. */
 export interface ResolvedBin { binCard: { seat: Seat; index: number; card: CardName } }
 
-export type ResolvedTarget = Entity | { player: Seat } | { stack: number } | ResolvedCached | ResolvedBin;
+/** R184: a resolved 'formation' target — one player's whole side of the
+ * battle grid, named by the seat that owns it (see `TargetRef` in types.ts;
+ * the owner ruled "target formation" is THE WHOLE SIDE). Read live through
+ * `E.formationUnits(seat)`, never carried as a grid snapshot: R72 moves
+ * columns between cast and resolution. */
+export interface ResolvedFormation { formation: Seat }
+
+export type ResolvedTarget = Entity | { player: Seat } | { stack: number } | ResolvedCached | ResolvedBin
+  | ResolvedFormation;
 
 export interface EffectCtx {
   controller: Seat;
@@ -283,7 +291,11 @@ export interface TargetSpec {
     | 'stackSpell' | 'stackEffect' | 'cachedCard'
     /** R64: a card in YOUR bin ("target unit … from your bin"); 'anyBinCard'
      * reaches either player's, which is what "target card in a bin" prints. */
-    | 'binCard' | 'anyBinCard';
+    | 'binCard' | 'anyBinCard'
+    /** R184: "target formation" (Galactic Germination) — a player's WHOLE
+     * SIDE of the battle grid, per the owner's 2026-08-25 ruling. One
+     * candidate per side of the current battle in the effect's region. */
+    | 'formation';
   prompt: string;
   /** maximum number of targets chosen AT CAST TIME (default 1). Distinct
    * targets; the chooser gets a "done" option once `min` are picked.

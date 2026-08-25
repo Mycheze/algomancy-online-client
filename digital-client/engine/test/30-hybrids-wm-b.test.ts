@@ -418,7 +418,11 @@ test('Galactic Germination: a 1/1 per unit in target formation — arriving in t
   toNextBattle(h, D);
   h.do({ type: 'declareAttack', seat: D, columns: [[u1], [u2]] });
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Galactic Germination') });
-  pick(h, { unit: u1 });                                      // a unit in the target formation
+  // R184: it targets the FORMATION itself now, not a unit standing in it.
+  // The count is unchanged — that is the whole point (the owner ruled on
+  // 2026-08-25 that "target formation" is the WHOLE SIDE, which is what the
+  // old unit proxy already counted).
+  pick(h, { formation: D });                                  // D's attacking formation
   pass(h); pass(h);                                           // resolve
   const battle = h.state.battle!.region;
   const made = unitsOf(h, D).filter(u => u.token && u.card === 'Unit Token' && u.region === battle);

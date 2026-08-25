@@ -22,10 +22,11 @@
  *    'spawned', a Poison/Crystal/Fireball fired nothing, and because the other
  *    half worked no sweep could see it. `createSpellToken` fires the event now
  *    (owner, 2026-08-24: spell tokens are still tokens).
- *  - NOXIOUS DEMISE is printed {Reaping}, but the engine's Reaping rider
- *    lives in dealEffectDamage and this spell kills via a -1/-1 counter —
- *    the "kill → its controller draws" rider is hand-rolled in the effect
- *    (mirrors the engine's own Reaping log line).
+ *  - NOXIOUS DEMISE is printed {Reaping} and kills via a -1/-1 counter. The
+ *    rider used to be hand-rolled in the effect, because the engine's
+ *    {Reaping} lived in dealEffectDamage and no damage is dealt. R184 moved
+ *    the attribute onto the engine's kill diff (the R48 {Afflicting} one), so
+ *    the card is back to doing only what it prints.
  *  - ORGANIC EXCHANGE "swap their positions": position = formation slot
  *    (attacker/blocker grids). Units outside any formation simply trade
  *    controllers (and regions, a no-op for same-region targets); at regroup
@@ -195,21 +196,17 @@ card('Noxious Deathcap', {
 });
 
 // "Put a -1/-1 counter on target unit." — gg/1 {Battle} {Reaping} Arcane
-// Blight Spell. ⚠ header note: the printed {Reaping} rider is hand-rolled —
-// the counter (not damage) is what kills, so the engine's dealEffectDamage
-// Reaping never sees it. Kill at resolution → the caster draws.
+// Blight Spell. The counter (not damage) is what kills, so R184 moved
+// {Reaping} out of `dealEffectDamageAll` onto the engine's kill diff — the
+// same one {Afflicting} has ridden since R48. The rider used to be
+// hand-rolled here; the card now only puts the counter on.
 card('Noxious Demise', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Noxious Demise: put a -1/-1 counter on target unit' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      const u = g.entity(t.id)!;
-      g.addCounters(u, -1);
-      if (!g.entity(u.id)) {
-        g.ev('info', `Reaping: ${g.pname(ctx.controller)} draws a card.`);
-        g.draw(ctx.controller, 1);
-      }
+      g.addCounters(g.entity(t.id)!, -1);
     },
   },
 });

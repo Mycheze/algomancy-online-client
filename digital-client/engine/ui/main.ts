@@ -3143,6 +3143,8 @@ function stackBoardHtml(): string {
 function tgtLabel(t: TargetRef): string {
   if ('unit' in t) return esc(h.state.entities[t.unit]?.card ?? 'gone');
   if ('player' in t) return esc(h.state.players[t.player]!.name);
+  // R184: "target formation" — a player's WHOLE SIDE of the battle grid
+  if ('formation' in t) return esc(`${h.state.players[t.formation]!.name}'s formation`);
   // R41: a card in someone's cache (Prismatic Observer) — the zone is public
   if ('cached' in t) {
     const cc = (h.state.players[t.cached.seat]!.cache ?? []).find(c => c.uid === t.cached.uid);
@@ -3757,6 +3759,12 @@ function targetSelectors(t: TargetRef): string[] {
   if ('player' in t) return [`[data-animzone="life:${t.player}"]`];
   if ('stack' in t) return [`.stackcard[data-anim="s${t.stack}"]`];
   if ('bin' in t) return [`[data-animzone="bin:${t.bin.seat}"]`];
+  // R184: a formation has no anchor of its own on the board — the battle
+  // panel renders both sides into one `.cols` container. ⚠ APPROXIMATION: the
+  // arrow points at that player's region zone, which is the right PLAYER and
+  // the right half of the screen but not the grid itself. A `data-animzone`
+  // on each side of the battle grid would make it exact.
+  if ('formation' in t) return [`[data-animzone="field:${t.formation}"]`];
   return [`[data-anim="c${t.cached.uid}"]`, `[data-animzone="cache:${t.cached.seat}"]`];
 }
 
