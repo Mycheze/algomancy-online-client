@@ -9377,3 +9377,172 @@ Poison 5 arguably now qualifies. It was left alone because badging *every* token
 on the table as modified would be noise and the `state` row already prints
 "X = 5" — but if the badge should follow the substitution, that is a deliberate
 call and not something R151 should have made on the side.
+
+## R152 — the other three ways an exchange disagreed with `destroy`, and one erase that reached no pile
+
+*2026-08-25. Follows directly from R146, which fixed the first of the four and listed these in its ⚠ section. Two of R146's three "not fixed" items are now fixed; the third is a RULING and is still open — see the bottom of this entry.*
+
+R146 aligned the **body's** disposal in `exchangeInPlace` (Hooba-Mon) with
+`E.destroy`. Everything else about that departure still disagreed with it.
+
+### (1) The despawn was logged and never fired
+
+`exchangeInPlace` called `g.ev('despawned', …)` and stopped. `E.ev` writes a log
+line and an event object; `E.fireEvent` is what a listener sees, and `engine.ts`
+has exactly one `fireEvent('despawned', …)` site — `afterDespawn`, the tail
+`recall()` and `cacheUnit()` share. This was not it.
+
+So **nothing in the game saw a Hooba-Mon exchange**. Not the host's own donated
+`[Augment] When I despawn` text (Gzxyclop), not a third-party watcher of "one of
+your units despawns" (Demon of the Depths), not `[Augment] Whenever a card enters
+a player's hand` (which reads a despawn's `to`). A unit left play and every
+"when a unit leaves play" ability in the pool was silent. The log said otherwise,
+which is why it survived this long — a test asserting the log line would have
+passed.
+
+Fixed: the event object is held and `g.fireEvent('despawned', ev, self)` is
+called, anchored on `self` so the departing unit sees its own departure
+(`fireEvent`'s `dyingUnit` parameter, which is also how `destroy` gives a dying
+unit its own death).
+
+### (2) The mods were deleted with no bin, no trash and no erase
+
+The line was `for (const modId of self.mods) delete g.s.entities[modId];`. No bin
+entry, no `noteTrashed`, no `'erased'` event. On the augment line — the line the
+card is printed for — **Hooba-Mon itself is one of those mods**, so the ordinary
+use of this card made a nontoken card vanish from the game with no record, and
+it never reached the public erased pile (R65).
+
+R137 already states the principle for exactly this case, and states it as a
+rule about *how the host left play* rather than about death:
+
+> "A nontoken mod on a dying carrier enters a bin and is trashed when the carrier
+> is RECALLED or CACHED (leavePlay + afterDespawn, R70). If killing the carrier
+> instead skipped that trash, the same mod card would behave differently
+> depending on how its host left play — the exact shape of the bug R137 removes."
+
+An **exchange is a third way the host leaves play**, and it was the last one
+still skipping it. `exchangeInPlace` now takes `destroy()`'s route, statement for
+statement:
+
+* every **nontoken** mod is pushed into its **own owner's** bin, before the
+  despawn event fires (so a despawn listener sees the board a death listener
+  would);
+* each is trashed there, anchored on the mod entity (R70), after the body's own
+  trash;
+* when the body is `{Unstable}` — which a modded host always is, by derivation
+  (R69/R79) — each is swept out of the bin again with `eraseFromZone`, **highest
+  index first** (R140: two mods of one card land at consecutive slots, and
+  erasing the lower one first slides the higher one under its recorded index);
+* a **TOKEN** mod has no card of its own (R69), so it never touches a bin and is
+  announced straight onto the erased pile by the same bulk `'erased'` event
+  `destroy` emits for that case;
+* and the mod **entities** are deleted last, not first — `fireEvent` walks
+  `u.mods` through the entity table to find donated `[Augment]` text, so deleting
+  them early is what silenced (1) for the host's own despawn sentence. `destroy`
+  delays the deletion for the same reason and says so.
+
+**This widens what fires.** It starts firing `trashed` triggers that did not fire
+before — the six "when I am trashed" cards and the eight watchers of someone
+else's trash. That is the *intended* consequence, and it is precisely what R137
+did for deaths. No existing test asserted the old silence; `42-dark-b`,
+`15-water-b`, `14-water-a`, `89-self-erase`, `04-mods`, `35-rot-debt-trash`,
+`60-cast-time-targets` and `90-coverage-census` were all checked and all pass
+unchanged, R146's three pinning tests included.
+
+### (3) Spell Excavation's played card reached NO ZONE
+
+`batch-water-b`. The card does `g.removeFromBin(ctx.controller, …, 'played')`,
+plays the spell inline (`playInline` never bins what it played — the caller
+decides), and then announced the disposal with:
+
+```ts
+g.ev('info', `${name} was unstable — erased instead of binned.`);
+```
+
+`E.ev` files the R65 public erased pile only when `type === 'erased'` **and**
+`data.seat` is a number. With an `'info'` event the card was out of the bin and
+**on no pile at all** — gone from the game with nowhere to look for it. That is
+the exact complaint R65 was opened to answer: *"there's currently no way to view
+erased cards."*
+
+The log sentence was already correct, which is why the existing test ("it is
+ERASED, not re-binned") passed the whole time: it asserted the card had left the
+bin and that the line was logged, and both were true. Only the event **type** was
+wrong. It is now a real `'erased'` event carrying `seat` and `card`.
+
+**The other two `removeFromBin(…, 'played')` sites are NOT this bug** and were
+deliberately left alone. The Bonesculptor (`batch-earth-c`) and Gridxlan
+(`batch-hybrids-ld-c`) both play a **unit** out of the bin and immediately
+`g.spawnUnit(...)`. The card becomes an entity in play, which is a zone; there is
+nothing missing. (A separate question — whether either should stamp R96's
+until-regroup `{Unstable}` on the body it spawned, the way the normal bin-play
+path does — is *not* part of R152 and is not answered here.)
+
+
+### (4) The TOKEN BODY — R146's open question, now RULED
+
+R146 flagged, and did not fix, that a **token body** exchanged out of play
+reached no zone at all: the `if (!self.token)` guard skipped the bin, the trash
+and the sweep, while a **dying** token bins, is trashed there and is only then
+swept (R40's 2026-08-21 amendment; `E.destroy` does that today). R146 recorded
+it as a ruling rather than an oversight, because "exchanged" is not "died".
+
+**Bena ruled on 2026-08-25:**
+
+> "Hooba-Mon can exchange itself with a thing in the bin. No token can ever be a
+> part of that exchange. It can't target a token in the bin (tokens are removed
+> from existence during SBA checks and Hooba itself is not a token). However,
+> yes. **For all intents and purposes a token is a normal thing that just ceases
+> to exist in all zones other than in play/stack whenever SBAs are checked.**"
+
+Note *what the ruling is about*: a **zone**, not dying. That is why it settles an
+exchange without anyone having to decide whether an exchange counts as a death —
+the question turns out not to have been the relevant one.
+
+"A normal thing that **ceases to exist**", in that order, is a bin entry followed
+by a removal, not an absence from the start. So the guard is gone. The body now
+bins, is trashed there for the whole trigger window, and is then swept — token or
+not — and only the **sweep** asks about tokenhood, exactly as `destroy` does:
+`unstable` first (a token host wearing a mod is Unstable by derivation, and takes
+that branch with the more specific message), then `else if (self.token)`, which
+is reachable on its own only for a token whose *face* became Hooba-Mon (R118
+layer 0) and which therefore carries no mod.
+
+Bena's aside — "it can't target a token in the bin" — is about the **other** side
+of the exchange, the card pulled *out* of the bin, and needs no code: a bin holds
+card names and nothing ever puts a token's name there. It did, however, show up
+an artifice in the tests, which pushed `'Unit Token'` into a bin to have something
+cheap to exchange in. R152's own tests now use a real card (`Skittering Blight`).
+The two R146 control tests still use the artificial entry and were left alone
+deliberately, so that they keep pinning exactly what R146 pinned; they are worth
+cleaning up next time that file is open.
+
+### ⚠ The one place this ruling and R69 do not meet — reported, not resolved
+
+Read literally, "a token … ceases to exist in all zones other than in play/stack"
+would send a **token MOD** through a bin as well. R69 says the opposite for mods
+— *"a token mod has no card of its own"* — and both `E.leavePlay` and `E.destroy`
+implement R69: nontoken mods bin, token mods never do and are announced straight
+onto the erased pile by a bulk `'erased'` event.
+
+That split is **older than this ruling** and lives in `engine.ts`, which R152 did
+not touch. R152 follows `destroy` on both halves, which is what keeps an exchange
+and a death giving the same answer — the entire point of this ruling and of R137
+before it. The token-body and token-mod tests do not contradict each other about
+any single object; they differ about whether a token sitting in a **mod slot** is
+"a thing with a card". If that is ever ruled the other way, the token-mod test
+and `destroy`'s `binnedMods` filter move together.
+
+### Cross-reference: R145's active zones, restated from the other side
+
+Bena's sentence names the two zones a token keeps existing in as **"in
+play/stack"** — the same pair R145 identifies as the active zones. He arrived
+there from tokens and state-based checks, with no mention of `{Unstable}` or of
+R145's question at all.
+
+That is independent corroboration worth recording: **play + stack is a real seam
+in this game, not a definition invented to make {Unstable} work.** Two unrelated
+questions — "where does an Unstable card stop being erased?" and "where does a
+token still exist?" — landed on the same boundary from opposite directions. See
+R145 for what the rule actually says; it is not restated here.

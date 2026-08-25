@@ -417,6 +417,41 @@ test('Spell Excavation: plays a spell from your bin (cost paid); it is ERASED, n
   finishBattle(h);
 });
 
+// ── R152: "erased" has to mean a PILE, not a sentence ─────────────────
+//
+// Spell Excavation lifts the card out of the bin (`removeFromBin(…, 'played')`)
+// and then announced the erase with `g.ev('info', …)`. E.ev() files the R65
+// public erased pile only for a `type === 'erased'` event with a numeric
+// `seat`, so an 'info' left the card out of the bin and on NO PILE AT ALL —
+// gone from the game with nowhere to look for it, which is the exact
+// complaint R65 was opened to answer ("there's currently no way to view
+// erased cards"). The log line was already right; only the event type was not,
+// which is why the test above passed all along and this one is needed.
+test('R152: the spell Spell Excavation played reaches the public ERASED pile (R65)', () => {
+  const h = new Harness(1592);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Curio Drifter');                // Arc's 2/2 victim
+  h.state.players[D]!.bin.push('Luminous Arc');
+  giveResources(h, D, 'water', 2);                         // Excavation: bb / 1
+  giveResources(h, D, 'fire', 2);                          // Arc: r / 2
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
+  decide(h, l => l.startsWith('Luminous Arc'));            // R67: declared at cast
+  pass(h); pass(h);
+  const e = new E(h.state);
+  assert.ok(!h.state.players[D]!.bin.includes('Luminous Arc'), 'it left the bin…');
+  assert.ok(e.erased(D).includes('Luminous Arc'),
+    '…and landed on the erased pile — not nowhere');
+  assert.equal(e.erased(D).filter(n => n === 'Luminous Arc').length, 1, 'exactly once');
+  // the erase is the OWNER's pile, and Excavation itself is untouched by it:
+  // it was cast from hand and bins normally (the assertion above pins that)
+  assert.ok(!e.erased(A).includes('Luminous Arc'), 'on the caster\'s pile, not the attacker\'s');
+  finishBattle(h);
+});
+
 test('Surly Stalker: attacking ALONE doubles it until regroup; with company it does not', () => {
   const h = new Harness(1509);
   toDeployment(h);

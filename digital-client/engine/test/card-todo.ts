@@ -2225,4 +2225,42 @@ export const CARD_TODO: TodoEntry[] = [
     ],
     status: 'done',
   },
+  {
+    id: 43,
+    area: 'engine',
+    severity: 'minor',
+    cards: ['Hooba-Mon'],
+    title: "destroy()'s disposal tail is hand-copied into card code, and the bin sweep can be aliased around",
+    detail:
+      'Two halves of one problem, both surfaced by R152 landing on top of R145. '
+      + '(a) `exchangeInPlace` (batch-dark-b.ts) is a FOURTH hand-copy of the sequence '
+      + '`E.destroy` runs when something leaves play for a bin: push the body and its nontoken '
+      + 'mods, fire the despawn, trash each one anchored (R70), then sweep highest-index-first '
+      + 'if the body is {Unstable} (R137/R145). It is correct today and fully pinned — but it is '
+      + 'PROSE COPIED INTO A CARD FILE, and every previous copy of this sequence drifted. It '
+      + 'cannot use E.toBin, which is the sanctioned choke point, because toBin takes neither '
+      + "R70's `anchor` nor reports the SLOT index R140's sweep needs. "
+      + '(b) 90-coverage-census\'s bin-ENTRY sweep matches `<expr>.bin.push(` textually, so '
+      + 'aliasing the bin to a local steps around it — `const mb = g.player(m.owner).bin; '
+      + 'mb.push(m.card);` is invisible to it, and exchangeInPlace contains exactly that shape '
+      + 'for its MOD pushes. Only its body push was caught, which is why the waiver below names '
+      + 'one line and not three.',
+    evidence:
+      'Found 2026-08-25 while cherry-picking R152 onto R145: the sweep R145 introduced went red '
+      + 'on R152\'s body push and stayed GREEN on its two mod pushes, which is how the alias hole '
+      + 'was noticed at all. A sweep that can be stepped around by a local variable measures its '
+      + 'own regex — the same failure as CARD-TODO #9\'s 97-card phantom band.',
+    fix:
+      "Extract destroy()'s disposal tail into one engine primitive (it needs entity + mods + "
+      + "'from' zone, and must return or apply the slot indices) and have both destroy() and "
+      + 'exchangeInPlace call it. Then DELETE the BIN_PUSH_EXEMPT waiver — the stale-entry assert '
+      + 'makes leaving it a hard failure. Widen the sweep to follow one level of aliasing in the '
+      + 'same change, or it will keep certifying code it cannot see.',
+    proof: null,
+    verify:
+      'Reverting the primitive in exchangeInPlace must redden 42-dark-b\'s despawn, mod-trash '
+      + 'and erased-pile assertions; adding a NEW aliased bin push anywhere in src/cards/ must '
+      + 'redden the census sweep.',
+    status: 'open',
+  },
 ];

@@ -406,7 +406,17 @@ card('Spell Excavation', {
       // {Unstable}, so the card is already gone), and "erase it twice" is not
       // a thing. A spell that prints "Erase me." lands in exactly the same
       // place here either way.
-      g.ev('info', `${name} was unstable — erased instead of binned.`);
+      //
+      // R152: …but "erased" has to actually SAY erased. This line was an
+      // `'info'` event, and E.ev() files the public erased pile (R65) only for
+      // a `type === 'erased'` event carrying a numeric `seat`. So the card was
+      // out of the bin (removeFromBin above) and on NO PILE AT ALL — the one
+      // thing R65 exists to prevent, since the owner's complaint that opened it
+      // was "there's currently no way to view erased cards". A real 'erased'
+      // event with `seat` + `card` is all it takes, and it is the same shape
+      // every other erase site uses.
+      g.ev('erased', `${name} was unstable — erased instead of binned.`,
+        { seat: ctx.controller, card: name });
     },
   },
 });

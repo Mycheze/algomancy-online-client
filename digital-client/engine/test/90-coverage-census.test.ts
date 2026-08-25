@@ -360,8 +360,33 @@ test('R140: no card responding to a bin-index event re-finds its card by lastInd
 // 8377b26) and the stale-entry assert below is what forced the waivers out
 // again the moment it did. Keep it empty: a dated waiver that outlives its
 // cause is how a two-line exemption quietly becomes a blanket.
-const BIN_PUSH_EXEMPT: Record<string, string> = {};
+const BIN_PUSH_EXEMPT: Record<string, string> = {
+  // ⚠ DATED WAIVER — 2026-08-25, R152. Hooba-Mon's exchangeInPlace is a FOURTH
+  // hand-copy of destroy()'s disposal tail: push body + nontoken mods, fire the
+  // despawn, trash each (anchored, R70), then sweep highest-index-first if the
+  // body is Unstable. It is correct — every assertion in 42-dark-b pins it —
+  // and it genuinely knows its zone ('play' is passed to noteTrashed by hand).
+  // It cannot use E.toBin because toBin cannot take R70's `anchor` and cannot
+  // report the SLOT R140 needs for the sweep.
+  //
+  // So the honest statement is: the sweep's premise is right and this call site
+  // is the exception that proves the real defect is one layer down — destroy()'s
+  // tail should be an engine primitive both callers share, not prose copied into
+  // a card file where it will drift. That is CT-43. DELETE this waiver when the
+  // primitive lands; the stale-entry assert below makes leaving it a hard error.
+  'batch-dark-b.ts:523':
+    "Hooba-Mon's exchange bins the departing body with destroy()'s full sequence, "
+    + 'which E.toBin cannot express (no anchor, no slot). Tracked as CT-43.',
+};
 
+// ⚠ KNOWN BLIND SPOT, stated rather than hidden: this matches `<expr>.bin.push(`
+// textually, so ALIASING THE BIN TO A LOCAL EVADES IT —
+// `const mb = g.player(m.owner).bin; mb.push(m.card);` is invisible here, and
+// exchangeInPlace contains exactly that shape today (its mod pushes). A sweep
+// that can be stepped around by a local variable measures its own regex, which
+// is the same failure as CARD-TODO #9's 97-card phantom band. Widening it to
+// track aliases is CT-43's job, together with the primitive that removes the
+// need for either. Until then: this sweep is a floor, not a proof.
 test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods line', () => {
   const SRC = path.resolve(HERE, '..', 'src');
   const files: string[] = [];

@@ -549,7 +549,24 @@ test('R146 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and s
     'and nothing erased it — the sweep is for Unstable cards only');
 });
 
-test('R146: Hooba-Mon exchanges a TOKEN host → nothing binned, nothing trashed', () => {
+// ⚠ SUPERSEDED BY A RULING, AND REWRITTEN RATHER THAN DELETED.
+//
+// R146 shipped this test asserting that a TOKEN host exchanged out of play was
+// never binned and never trashed, and R146's own write-up flagged that as an
+// OPEN QUESTION for the owner rather than a decision: `E.destroy` bins and
+// trashes a dying token before sweeping it (R40's 2026-08-21 amendment), so
+// the two departures disagreed.
+//
+// Bena ruled on 2026-08-25:
+//
+//   "For all intents and purposes a token is a normal thing that just ceases
+//    to exist in all zones other than in play/stack whenever SBAs are checked."
+//
+// So it DOES enter the bin and it IS trashed there — the sweep is what removes
+// it, afterwards. The assertions below are inverted deliberately: what R146
+// pinned was the behaviour of the day, not the rule. The test keeps its shape
+// and its seed so the change is legible in the diff.
+test('R152 (was R146): Hooba-Mon exchanges a TOKEN host → binned and trashed, THEN swept', () => {
   const h = new Harness(4292);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -566,12 +583,222 @@ test('R146: Hooba-Mon exchanges a TOKEN host → nothing binned, nothing trashed
   pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
   resolveAll(h);
   assert.equal(ent(h, host), undefined, 'the token host left play');
-  assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'a token has no card to bin (R69)');
-  assert.equal(trashes(h).slice(before).filter(t => t.data!['card'] === 'Unit Token').length, 0,
-    'so there is nothing to trash either');
+  assert.equal(trashes(h).slice(before).filter(t => t.data!['card'] === 'Unit Token').length, 1,
+    'RULED 2026-08-25: it was in the bin, so R40 trashed it (was 0 under R146)');
+  assert.ok(!h.state.players[A]!.bin.includes('Unit Token'),
+    '…and then ceased to exist there — the state-based sweep (was "never binned")');
   assert.ok(entsNamed(h, 'Skittering Blight').some(e => e.kind === 'unit'),
     'the exchange itself still happened');
 });
+
+// ── R152: an exchange is a leave-play, and behaves like one ────────────
+//
+// R146 aligned the BODY's disposal with E.destroy and left the rest of the
+// departure disagreeing with it. Two halves here:
+//
+//  (1) the 'despawned' event was LOGGED and never FIRED, so no listener in the
+//      game saw a Hooba-Mon exchange. The tests below drive REAL CARDS — the
+//      host's own donated [Augment] despawn text, and a third-party watcher
+//      standing in the battle region — rather than reading the log line, which
+//      was already there and already proved nothing.
+//
+//  (2) the host's MODS were `delete g.s.entities[modId]` and nothing else: no
+//      bin, no trash, no 'erased'. R137's argument applies verbatim — a
+//      nontoken mod is binned and trashed when its carrier is recalled or
+//      cached, so an exchange skipping that is the same mod card behaving
+//      differently by how its host left play.
+
+test('R152: the exchanged host\'s own [Augment] despawn text FIRES (not just logged)', () => {
+  const h = new Harness(4293);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const host = spawn(h, A, 'Rune Channeler');
+  giveResources(h, A, 'dark', 6);
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
+  // Gzxyclop: "[Augment] When I despawn, discard two cards." On the host, "I"
+  // is the host — a real card that watches units leaving play, and the same
+  // sentence a recall or a cache already honours through afterDespawn().
+  withE(h, e => { e.attachMod(e.entity(host)!, 'Gzxyclop', A, 'augment'); });
+  give(h, A, 'Good Whale'); give(h, A, 'Good Whale');      // something to discard
+  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
+  toNextBattle(h, A);
+  const before = handSize(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
+  resolveAll(h);
+  assert.equal(entsNamed(h, 'Rune Channeler').length, 0, 'the host left play');
+  assert.equal(handSize(h, A), before - 2,
+    'the despawn was FIRED: the donated "when I despawn" text discarded two');
+});
+
+test('R152: a THIRD-PARTY watcher of "one of your units despawns" sees the exchange', () => {
+  const h = new Harness(4294);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const host = spawn(h, A, 'Rune Channeler');
+  // Demon of the Depths: "[Augment] Whenever one of your units despawns, I
+  // deal 1 damage to any target." Its carrier must stand in the battle region
+  // for R12 to let it hear the event, so it attacks in its own column.
+  const carrier = spawn(h, A, 'Good Whale');
+  withE(h, e => { e.attachMod(e.entity(carrier)!, 'Demon of the Depths', A, 'augment'); });
+  giveResources(h, A, 'dark', 3);
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
+  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
+  toNextBattle(h, A);
+  const lifeD = h.state.players[D]!.life;
+  h.do({ type: 'declareAttack', seat: A, columns: [[host], [carrier]] });
+  pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });     // Hooba-Mon's pick
+  // …and the Demon's "any target", aimed at the defending player so its 1
+  // damage is visible as a life total rather than as a log line
+  resolveAll(h, o => JSON.stringify(o.value) === JSON.stringify({ player: D }));
+  assert.equal(entsNamed(h, 'Rune Channeler').length, 0, 'the host left play');
+  assert.equal(h.state.players[D]!.life, lifeD - 1,
+    'a unit despawned and the watcher fired — the exchange is not invisible');
+});
+
+test('R152: a NONTOKEN mod on an exchanged host is binned and TRASHED (R137)', () => {
+  const h = new Harness(4295);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const host = spawn(h, A, 'Rune Channeler');
+  giveResources(h, A, 'dark', 6);
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
+  // Afflicting Anima: "When I am trashed, you may pay [1] to create a Wraith."
+  // The assertion is that the TRIGGER runs, not that the bin held the name for
+  // a moment — a Wraith on the board is the only proof of that.
+  withE(h, e => { e.attachMod(e.entity(host)!, 'Afflicting Anima', A, 'augment'); });
+  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
+  toNextBattle(h, A);
+  giveResources(h, A, 'dark', 2);                          // the [1] the trigger asks for
+  assert.equal(entsNamed(h, 'Wraith').length, 0, 'no Wraith yet');
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
+  resolveAll(h);
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Afflicting Anima').length, 1,
+    'the mod entered a bin FROM PLAY, so R40 trashed it');
+  assert.ok(entsNamed(h, 'Wraith').some(e => e.kind === 'unit'),
+    'and its own "when I am trashed" trigger really ran');
+  // the same is true of Hooba-Mon, which is a mod on this line as well
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 1,
+    'Hooba-Mon is a mod here too, and takes the same route');
+});
+
+test('R152: the mods reach the public ERASED pile with the Unstable body (R65)', () => {
+  const h = new Harness(4296);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const host = spawn(h, A, 'Rune Channeler');
+  giveResources(h, A, 'dark', 6);
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
+  withE(h, e => { e.attachMod(e.entity(host)!, 'Nothyr', A, 'augment'); });
+  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
+  resolveAll(h);
+  const erased = new E(h.state).erased(A);
+  // a host wearing mods is {Unstable} by derivation (R69/R79), so the sweep
+  // takes the body AND the mods — exactly what a death does
+  assert.ok(erased.includes('Rune Channeler'), 'the body reaches the erased pile');
+  assert.ok(erased.includes('Hooba-Mon'), 'and so does the mod that did the exchanging');
+  assert.ok(erased.includes('Nothyr'), 'and every other nontoken mod');
+  const bin = h.state.players[A]!.bin;
+  assert.ok(!bin.includes('Hooba-Mon') && !bin.includes('Nothyr'),
+    'none of them is left sitting in the bin, recurrable');
+  // ORDERING, the half a "not in the bin" assertion alone would miss: the mod
+  // was trashed on the way IN and swept afterwards, never "skipped the trash"
+  const order = h.events
+    .filter(ev => (ev.type === 'trashed' || ev.type === 'erased') && ev.data!['card'] === 'Nothyr')
+    .map(ev => ev.type);
+  assert.deepEqual(order, ['trashed', 'erased'], 'R137 ordering: bin → trashed → swept');
+});
+
+test('R152: a TOKEN mod on an exchanged host is ERASED and never binned (R69)', () => {
+  const h = new Harness(4297);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const host = spawn(h, A, 'Rune Channeler');
+  giveResources(h, A, 'dark', 3);
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
+  withE(h, e => { e.augmentWraith(e.entity(host)!, A); });  // a TOKEN mod
+  h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
+  resolveAll(h);
+  assert.ok(!h.state.players[A]!.bin.includes('Wraith'),
+    'a token mod has no card of its own, so no bin entry (R69)');
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Wraith').length, 0,
+    'and therefore nothing to trash');
+  assert.ok(new E(h.state).erased(A).includes('Wraith'),
+    'it still has to be VISIBLE somewhere — the erased pile (R65)');
+});
+
+// R152, RULED by Bena on 2026-08-25 — the question R146 left open:
+//
+//   "For all intents and purposes a token is a normal thing that just ceases
+//    to exist in all zones other than in play/stack whenever SBAs are checked."
+//
+// A TOKEN BODY therefore takes the same route a dying token takes: bin, trash,
+// then the state-based sweep. Note what the ruling is ABOUT — a ZONE, not
+// dying — which is why it settles an exchange without anyone having to decide
+// whether "exchanged" counts as "died". The ORDER is the whole content of the
+// answer ("a normal thing that CEASES TO EXIST", in that order), so the
+// ordering assertion below is the one that matters; "not in the bin at the end"
+// was already true under the pre-ruling code and proves nothing on its own.
+test('R152 (ruled): a TOKEN BODY exchanged out of play bins → is trashed → is swept', () => {
+  const h = new Harness(4298);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  let host = -1;
+  withE(h, e => {
+    host = e.spawnUnit(A, 'Unit Token', e.homeRegion(A), { token: true, tokenStats: [3, 3] }).id;
+  });
+  giveResources(h, A, 'dark', 3);
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
+  h.state.players[A]!.bin.push('Skittering Blight');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
+  resolveAll(h);
+  assert.equal(ent(h, host), undefined, 'the token host left play');
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Unit Token').length, 1,
+    'it really was in the bin, so R40 trashed it there');
+  assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'and then ceased to exist there');
+  assert.ok(new E(h.state).erased(A).includes('Unit Token'),
+    'the sweep files it on the public erased pile (R65), as a death does');
+  // THE ORDER IS THE RULING. "A normal thing that ceases to exist" is a bin
+  // entry first and a removal second, not an absence from the start.
+  const order = h.events
+    .filter(ev => (ev.type === 'trashed' || ev.type === 'erased') && ev.data!['card'] === 'Unit Token')
+    .map(ev => ev.type);
+  assert.deepEqual(order, ['trashed', 'erased'], 'bin → trashed → swept, exactly as destroy()');
+  // and its NONTOKEN mod takes the same full route (R152(2)), on a token host
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 1,
+    'the mod on it is binned and trashed too');
+  assert.ok(new E(h.state).erased(A).includes('Hooba-Mon'),
+    'and swept — a token host wearing a mod is Unstable by derivation');
+});
+
+// ⚠ THE ONE PLACE THE RULING AND R69 DO NOT MEET — read before "fixing" either.
+//
+// Bena's sentence is about TOKENS ("a token ... ceases to exist in all zones
+// other than in play/stack"). Read literally it would send a token MOD through
+// a bin as well. R69 says the opposite for mods — "a token mod has no card of
+// its own" — and `E.leavePlay` and `E.destroy` both implement R69: nontoken
+// mods bin, token mods never do and are announced straight onto the erased
+// pile. That split is OLDER than this ruling and lives in engine.ts, which
+// R152 did not touch.
+//
+// R152 therefore follows `destroy` on both halves, which keeps the exchange and
+// the death giving the same answer — the whole point of the exercise — and
+// leaves the token-body/token-mod difference exactly where it already was.
+// It is REPORTED, not resolved here. The token-MOD test asserts R69; the
+// token-BODY test asserts the ruling; both are above.
+// They do not contradict each other about any single object; they differ about
+// whether a token in a MOD slot is "a thing with a card". If that is ever
+// ruled the other way, the token-MOD test above and `destroy`'s `binnedMods`
+// filter move together, and this comment is the reason to look at both.
 
 test('Hooba-Mon: an over-cost bin is no offer at all', () => {
   const h = new Harness(4214);
