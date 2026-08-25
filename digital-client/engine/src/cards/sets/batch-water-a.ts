@@ -287,7 +287,8 @@ card('Cosmic Reversal', {
         if (item.kind === 'spellToken') {
           g.ev('info', `Cosmic Reversal recalls ${item.label} — token: erased.`);
         } else {
-          g.player(item.controller).hand.push(item.card!);
+          // R179: off the STACK and into a hand — `from: 'stack'`
+          g.toHand(item.controller, item.card!, 'stack');
           g.ev('info', `Cosmic Reversal recalls ${item.label} to ${g.pname(item.controller)}'s hand.`);
         }
       }
@@ -392,7 +393,7 @@ card('Eldritch Reclaimer', {
       const name = bin[t.binCard.index];
       if (name === undefined) return;
       g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
-      g.player(ctx.controller).hand.push(name);
+      g.toHand(ctx.controller, name, 'bin');                          // R179
       g.ev('info', `${name} is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
     },
   },
@@ -447,24 +448,34 @@ card('Frosted Denial', {
 });
 
 // "Whenever one or more other cards enter your hand during battle, [Switch]
-// I gain +4/+4 and flying until regroup." — bb/3 0/4 Eel Unit. Cards enter
-// my hand mid-battle via recall ('despawned' to hand) or a battle DRAW
-// (E.draw fires 'draw' during battle only — a multi-card draw is ONE event,
-// matching "one or more"). Flying via E.addTempAttr (until regroup).
-// Recall path: the recalled card goes to its OWNER's hand — the event only
-// carries the controller (≈ owner in this pool). R70 says where it went ON THE
-// EVENT: the despawn carries `to` ('hand' | 'cache'), which is what the when()
-// below reads. (It used to be a match on the rendered message, "the data
-// carries no token flag" — which also read a unit going to a CACHE as one
-// entering a hand.) R69, extended to the hand 2026-08-22: a recalled TOKEN
-// visits the hand too, so it counts here; a CACHED unit still does not.
-// Draw path: the 'draw' event carries no region, so the when() pins the
-// listener to the battle region itself (R12).
-// ⚠ NEEDS ESCALATION: a recall and a draw are the only two channels there ARE.
-// A card moved into a hand any other way (Rippleback Skulker, Eldritch
-// Reclaimer, Collect Remains, Bioremediation …) is a bare `hand.push` that
-// announces nothing, so half this sentence is dead. See the batch-water-b
-// header for the engine seam that would close it.
+// I gain +4/+4 and flying until regroup." — bb/3 0/4 Eel Unit. Flying via
+// E.addTempAttr (until regroup).
+//
+// R179 CLOSED THE ESCALATION THIS BLOCK USED TO CARRY. A recall and a draw
+// were the only two channels there were; every other route into a hand was a
+// bare `hand.push` that announced nothing, so half this sentence was dead.
+// `E.toHand` is now the one hand-entry point and fires 'handEntered' — ONCE
+// per move, however many cards moved, which is what "one or more" asks for —
+// and this card listens on that ALONE. Keeping 'draw' or 'despawned' beside
+// it would double-fire, because both of those routes go through `toHand` now.
+//
+// "YOUR hand" is the DESTINATION, and `handEntered`'s `seat` is the hand that
+// was entered — never the card's owner and never the mover. That distinction
+// was won the hard way on the old 'despawned' path, where `seat` was the
+// recalled unit's CONTROLLER (leftPlayFacts) and the destination hand was
+// stamped separately as `hand`: reading `seat` was wrong in both directions
+// once owner ≠ controller (Ralph, Corrupting Blight, Hush Mush, Organic
+// Exchange, Rebalance, Stellarspore Harvester, Mindspore Fiend all produce
+// it). One field, one meaning, and that whole class is gone.
+// "OTHER" excludes the carrier's own card via `ev.data.unit`, which `toHand`
+// stamps on the recall route. (Rider of the Tides and Xenopod Progenitor
+// print "a player's hand" and are right to ignore `seat` entirely.)
+// R69, 2026-08-22: a recalled TOKEN visits the hand too, so it counts here —
+// Caleb was asked this about Rider of the Tides ("Oh dang yeah it should also
+// trigger it", 2025-04-24). A CACHED unit still does not: it goes to the
+// cache, not a hand, and never reaches `toHand`.
+// The event carries no region (like 'draw'), so the when() pins the listener
+// to the battle region itself (R12).
 const galeriderSurge: EffectDef = {
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
@@ -475,28 +486,12 @@ const galeriderSurge: EffectDef = {
 };
 card('Galerider Eel', {
   abilities: [{
-    type: 'triggered', events: ['despawned', 'draw'], graftCause: true,
+    type: 'triggered', events: ['handEntered'], graftCause: true,
     label: 'I gain +4/+4 and flying until regroup',
-    when: (g, self, ev) => {
-      if (g.s.phase !== 'battle') return false;
-      // 'draw': `seat` IS the drawer, so it is the right field here.
-      if (ev.type === 'draw') {
-        return ev.data?.seat === self.controller && g.s.battle?.region === self.region;
-      }
-      // 'despawned': ⚠ `seat` is the recalled unit's CONTROLLER (leftPlayFacts),
-      // while the hand it actually entered is stamped separately as `hand`
-      // (recall(): `{ ...leftPlayFacts(u), to: 'hand', hand: seat }`). This card
-      // prints "enter YOUR hand", so it must read the DESTINATION. Reading
-      // `seat` was wrong in both directions once owner ≠ controller — recalling
-      // a unit you control but do not own sent the card to the OPPONENT's hand
-      // and fired this anyway, and the mirror case stayed silent. Ralph,
-      // Corrupting Blight, Hush Mush, Organic Exchange, Rebalance, Stellarspore
-      // Harvester and Mindspore Fiend all produce owner ≠ controller, and any
-      // of them can then be recalled mid-battle. (Rider of the Tides and
-      // Xenopod Progenitor print "a player's hand" and are right to ignore it.)
-      return ev.data?.unit !== self.id && ev.data?.to === 'hand'
-        && ev.data?.hand === self.controller;
-    },
+    when: (g, self, ev) =>
+      g.s.phase === 'battle' && g.s.battle?.region === self.region
+      && ev.data?.seat === self.controller      // "YOUR hand" — the destination
+      && ev.data?.unit !== self.id,             // "OTHER cards"
     effect: galeriderSurge,
   }],
   graftEffect: { bounded: false, effect: galeriderSurge },

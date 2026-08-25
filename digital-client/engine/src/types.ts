@@ -1132,6 +1132,29 @@ export type EventType =
   | 'damage' | 'lifeLost' | 'lifeGained' | 'tokenCreated' | 'statChanged' | 'countersChanged'
   // Light & Dark player counters and the trash zone-change (R38/R39/R40)
   | 'rotGained' | 'debtGained' | 'debtPaid' | 'trashed'
+  // R179: the two player counters going the OTHER way (Burn the Blight,
+  // "Remove all counters from units and players"). Fired by E.loseRot /
+  // E.loseDebt with `{ seat, n, total }` — `n` is how much actually went,
+  // after the clamp at zero — so a card watching a player's counters can see
+  // them leave as well as arrive. NOT scaled by an AmountMod: the owner ruled
+  // that "Resonater says 'put on'", and a removal is not putting on.
+  | 'rotLost' | 'debtLost'
+  // R179: ONE OR MORE CARDS ENTERED A HAND. Fired by `E.toHand` — the one
+  // hand-entry point every route in the tree now goes through (a draw, a
+  // recall out of play, a bin recursion, a pull off the stack, an uncache,
+  // and a card taken out of an opponent's hand) — with
+  // `data: { seat, from, cards, card, n }`, plus `unit` when the move is a
+  // recall (so "one or more OTHER cards" can exclude the carrier) and `token`
+  // for R69's hand window. `seat` is the hand that was ENTERED, never the
+  // card's owner and never the mover.
+  //
+  // ⚠ A MULTI-CARD MOVE IS ONE EVENT, exactly as a multi-card 'draw' is
+  // (`n` carries the count), because the three cards that read it print
+  // "whenever ONE OR MORE other cards enter a player's hand".
+  //
+  // Signal-only (`msg` is ''): every call site already announces itself in its
+  // own words. Dispatched only during battle, for the reason `draw` gives.
+  | 'handEntered'
   // Light & Dark cache zone (R41-R46). 'prophecyFulfilled' and 'glimpsed' are
   // LOG-ONLY: they are emitted from sweep points (startTurn, endBattleRound)
   // that are not inside a settle() window, so they deliberately do not fire

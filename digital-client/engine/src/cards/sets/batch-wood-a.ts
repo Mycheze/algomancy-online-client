@@ -180,7 +180,8 @@ card('Bioremediation', {
       }) as number;
       const [name] = hand.splice(pick, 1);
       if (name === undefined) { g.ev('info', 'Bioremediation: that card is gone — nothing is taken.'); return; }
-      g.player(ctx.controller).hand.push(name);
+      // R179: out of one hand and into another — `from: 'hand'`
+      g.toHand(ctx.controller, name, 'hand');
       g.ev('info', `Bioremediation: ${g.pname(ctx.controller)} takes ${name}.`);
     },
   },

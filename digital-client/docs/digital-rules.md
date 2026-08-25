@@ -12537,3 +12537,158 @@ therefore can never pull `ws` in.
   the pure function, because that is the only place the corruption is visible:
   once the rebuild has replayed a mangled activation, it is indistinguishable
   from any other refusal.
+
+---
+
+## R179 — one hand-entry point, one event per move; and a removal is not a "put on"
+
+*(Round 26, ticket HAND-ENTRY + ROT/DEBT REMOVAL from
+`docs/09-divergence-inventory.md` §2a. The second half is an OWNER RULING,
+2026-08-25, quoted below.)*
+
+### The defect
+
+Three cards print *"whenever (one or more other) cards enter a player's hand
+during battle"*:
+
+- **Rider of the Tides** — *"[Augment] Whenever a card enters a player's hand
+  during battle, I gain +2/+2 until regroup."*
+- **Xenopod Progenitor** — *"[Augment] Whenever one or more other cards enter a
+  player's hand during battle, you may pay [one] to create a 2/2 unit."*
+- **Galerider Eel** — *"Whenever one or more other cards enter your hand during
+  battle, [Switch] I gain +4/+4 and flying until regroup."*
+
+There was no `E.toHand` and no `'handEntered'` event, so all three listened on
+`'despawned'` (a RECALL) and `'draw'` — the only two channels in the engine that
+announced anything at all. **Every other route into a hand was a bare
+`player(seat).hand.push(name)`, and there were 18 of them across 11 card
+files**, all silent:
+
+| route | `from` | cards |
+|---|---|---|
+| out of a BIN | `'bin'` | Blightwalker, Collect Remains, Cthyrian Rector, Xzydris, Cinder Scuttler, Delver of Mysteries, Reclaimer of Secrets, Combustible Bogwalker, Inexorable Miasma, Eldritch Reclaimer, Rippleback Skulker, Verdant Necrophage, Tilling the Graves, Zephyrzoa |
+| off the STACK | `'stack'` | Dream Lapse, Cosmic Reversal |
+| out of the CACHE | `'cache'` | Prismatic Observer |
+| out of another HAND | `'hand'` | Bioremediation |
+
+Several are `{Battle}`-timed, so the silence was in the exact window the three
+cards ask about. The inventory said 14 sites and `batch-water-b.ts`'s own header
+said "~9 card files"; **both undercounted**, and a fix scoped to either number
+would have left the primitive half-wired — the state the header was complaining
+about in the first place.
+
+### The fix
+
+`E.toHand(seat, cards, from, opts)` is now **the one place a card enters a
+hand**. It pushes and fires `'handEntered'` with
+`{ seat, from, cards, card, n }`, plus `unit` when the move is a recall and
+`token` for R69's hand window. `E.draw` and `E.recall` route through it like
+everything else, and all three cards listen on `'handEntered'` **alone**.
+
+Three things about the shape, each of which was a way to get this wrong:
+
+1. **ONE EVENT FOR A MULTI-CARD MOVE.** The printed text is "one or more", and
+   `'draw'` already had exactly this shape (`{ seat, n }` for an n-card draw).
+   Zephyrzoa recalling a fourteen-card bin is ONE entry, not fourteen; Tilling
+   the Graves' two units are one. A per-card announce would have pumped Rider of
+   the Tides +2/+2 *per card*, which no reading of the sentence supports.
+2. **`from` CARRIES THE ZONE**, with `toBin`'s vocabulary plus `'hand'`
+   (Bioremediation takes a card out of an opponent's hand, so one hand's loss is
+   another's entry). "A card enters your hand from your BIN" is a different fact
+   from a draw, and a listener may care.
+3. **`seat` IS THE HAND THAT WAS ENTERED** — never the card's owner, never the
+   mover. That distinction was won the hard way on the old `'despawned'` path,
+   where `seat` was the recalled unit's CONTROLLER (`leftPlayFacts`) and the
+   destination hand was stamped separately as `hand`. One field, one meaning.
+
+**Dropping `'draw'` and `'despawned'` from the three cards is load-bearing, not
+tidying.** Both of those routes go through `toHand` now, so a card left
+listening on either alongside `'handEntered'` fires TWICE for one card entering
+one hand — a worse bug than the one being fixed. Measured both ways in
+`test/152-hand-entry.test.ts`.
+
+`'handEntered'` carries **no region**, deliberately, exactly as `'draw'` does
+not: a bin, a stack and a cache have no region to report, and inventing one per
+route would make the field mean something different depending on how the card
+travelled. `fireEvent` therefore hands it to every region's listeners and the
+three cards pin themselves with `g.s.battle?.region === self.region` — the same
+guard the draw path already used. Dispatch is battle-only, in `draw`'s words and
+for `draw`'s reason: every consumer is battle-scoped, and firing triggers
+outside a `settle()` window would be unsound. The EVENT is always recorded, so
+the stream stays complete; `msg` is `''` because every call site already
+announces itself in its own words (the `'leftBin'` / `'cardPlayed'` precedent).
+
+### Rot and debt can now be REMOVED, and the removal is not scaled
+
+`gainRot(-n)` is a no-op by design (R38: rot never decreases on its own), so
+**Burn the Blight** — *"Remove all counters from units and players."* — zeroed
+`p.rot` and `p.debt` **directly**. Those were the only writes to either field
+outside `gainRot`/`gainDebt`, and being raw writes they announced nothing: a
+card watching a player's counters could see them arrive and never see them go.
+`E.loseRot` / `E.loseDebt` now do it, firing `'rotLost'` / `'debtLost'`
+(`{ seat, n, total }`, `n` clamped to what was actually there).
+
+The open question the inventory raised was whether an R104 `AmountMod` should
+scale a removal. **The owner ruled it, 2026-08-25, and the answer is NO:**
+
+> *"Resonater says 'put on' so this question is irrelevant. Removing counters
+> isn't 'putting on'."*
+
+So `loseRot`/`loseDebt` have no `amountDelta` call where `gainRot`/`gainDebt`
+both do, and a Proliferating Slime on the board does not deepen Burn the
+Blight's sweep by one.
+
+**THE GENERALISABLE FORM, which is the half worth keeping: the scope of a layer
+is read off the PRINTED TEXT OF THE CARD THAT DEFINES IT.** Flux Resonator
+prints *"If one or more counters would be **put on** a unit by an allied source
+…"*; Proliferating Slime prints the same verb for *"an enemy unit or player"*.
+"Remove all counters" is simply not the kind of quantity either card has an
+opinion about. Nothing had to be decided about removals in general, and this was
+not a policy call — it is R157's "printed text always wins" applied to the card
+that DECLARES a layer rather than to the card passing through it. Any future
+question of the form *"does layer X apply to quantity Y?"* is answered the same
+way: read X's printed sentence.
+
+### The guard
+
+`test/152-hand-entry.test.ts`, four sections:
+
+1. **The gap** — each of the three cards fires for a card entering a hand by a
+   route that is neither a draw nor a recall (Collect Remains out of a bin;
+   Bioremediation out of an opponent's hand), plus the Eel's mirror ("YOUR
+   hand" — a card entering the opponent's hand does not fire it).
+2. **One event per move, and no double-fire** — a two-card bin recall and a
+   three-card draw each fire exactly ONE `'handEntered'`; and each of the three
+   cards fires exactly ONCE for one card entering a hand by recall and by draw,
+   each measured alone in its own game (two queued triggers under one controller
+   raise an ordering question, and a test that has to answer one cannot count
+   what was queued).
+3. **A class guard in the shape of `88-replacement-conformance`** — a whole-tree
+   sweep asserting no bare `hand.push` survives outside the primitive, and none
+   of the card files writes `.rot`/`.debt` directly, so neither can be
+   reintroduced silently. It carries its own POSITIVE CONTROL: the matcher is
+   asked to flag a planted push and ignore a commented one before it is trusted,
+   because a sweep that cannot fail is worth less than no sweep (`stripCode`).
+4. **The ruling** — Burn the Blight announces what it removes, and `loseRot`
+   under a Proliferating Slime removes exactly what it was asked for while
+   `gainRot` on the same board is still scaled.
+
+Plus one guard for what the rewire could TAKE AWAY. **Ancient One** mimics an
+adjacent ally's triggered abilities and only scans on the events in its own
+`AO_EVENTS` list. All three cards listened on `'despawned'`+`'draw'`, both of
+which are in that list, so moving them to `'handEntered'` would have silently
+taken them away from the Ancient One. `'handEntered'` was added to `AO_EVENTS`
+and the test asserts the INVARIANT — every event those three cards declare is
+scanned — rather than the one edit, so the next card to move events cannot lose
+it either. (⚠ That guard was itself blind on its first draft: the array carries
+a prose comment naming the very events it checks, so matching over the raw block
+passed with the entry deleted. It strips comment lines now; measured under
+mutation both ways.)
+
+⚠ One trap worth recording, because the first version of §2 had it. A test that
+recalls a unit which is NOT in the battle region cannot see a `'despawned'`
+double-fire at all: `'despawned'` carries the recalled unit's region
+(`leftPlayFacts`) and `fireEvent` scopes on it, so the listener never hears the
+event and the test passes with the bug in place. `declareAttack` is what moves a
+unit into the battle region, so the recalled unit has to be attacking too. The
+test says so inline.

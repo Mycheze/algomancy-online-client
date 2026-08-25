@@ -211,7 +211,7 @@ const blightwalkerRecall: EffectDef = {
     if (name === undefined) { g.ev('info', 'Blightwalker: the card left the bin — nothing is recalled.'); return; }
     g.payMana(seat, 2);
     g.removeFromBin(seat, t.binCard.index, 'recalled');   // R124
-    g.player(seat).hand.push(name);
+    g.toHand(seat, name, 'bin');                          // R179
     g.ev('info', `Blightwalker recalls ${name} from ${g.pname(seat)}'s bin to their hand.`);
   },
 };
@@ -242,7 +242,7 @@ card('Collect Remains', {
         const name = bin[t.binCard.index];
         if (name !== undefined) {
           g.removeFromBin(t.binCard.seat, t.binCard.index, 'recalled');   // R124
-          g.player(ctx.controller).hand.push(name);
+          g.toHand(ctx.controller, name, 'bin');                          // R179
           g.ev('info', `Collect Remains: ${name} goes from ${g.pname(t.binCard.seat)}'s bin to ${g.pname(ctx.controller)}'s hand.`);
         }
       }
@@ -294,7 +294,7 @@ card('Cthyrian Rector', {
         // "your bin" and the recall lands in the same player's hand.
         if (slot.index === -1) { g.ev('info', `Cthyrian Rector: ${slot.card} is no longer in the bin.`); return; }
         g.removeFromBin(slot.seat, slot.index, 'recalled');   // R124
-        g.player(ctx.controller).hand.push(slot.card);
+        g.toHand(ctx.controller, slot.card, 'bin');          // R179
         g.ev('info', `Cthyrian Rector recalls ${slot.card} to ${g.pname(ctx.controller)}'s hand.`);
       },
     },
@@ -1030,7 +1030,7 @@ card('Xzydris', {
         const i = g.player(seat).bin.lastIndexOf('Xzydris');
         if (i === -1) { g.ev('info', 'Xzydris: it left the bin — nothing is recalled.'); return; }
         g.removeFromBin(seat, i, 'recalled');   // R124
-        g.player(seat).hand.push('Xzydris');
+        g.toHand(seat, 'Xzydris', 'bin');       // R179
         g.ev('info', `Xzydris is recalled from ${g.pname(seat)}'s bin to their hand.`);
       },
     },

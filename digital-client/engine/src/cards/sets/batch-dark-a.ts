@@ -54,9 +54,12 @@
  *    resolution-time ctx.choose"; that expired, and with it the "slightly
  *    stronger than printed: the pick cannot be responded to" caveat.
  *  - "REMOVE ALL COUNTERS FROM … PLAYERS" (Burn the Blight) reads rot and
- *    debt as the player counters (both are called counters by R38/R39). There
- *    is no loseRot/loseDebt primitive — gainRot(-n) is a no-op by design — so
- *    the fields are zeroed directly with an explanatory log line.
+ *    debt as the player counters (both are called counters by R38/R39).
+ *    R179 gave this a real primitive: E.loseRot / E.loseDebt, which fire
+ *    'rotLost' / 'debtLost'. It used to zero p.rot and p.debt DIRECTLY — the
+ *    only writes to either field outside gainRot/gainDebt — so nothing
+ *    watching a player's counters could see them go. NOT an approximation any
+ *    more, and no longer in this list's spirit; kept here as the pointer.
  *  - "NO STAT CHANGES" (Leave None Pure) = the unit's effective stats equal
  *    its printed/token base AND it carries no counters or until-regroup
  *    changes. That deliberately includes stat changes projected onto it by
@@ -178,9 +181,20 @@ card('Afflicting Anima', {
 // "Remove all counters from units and players." — dd/3 {Battle} Blight Spell.
 // Units: their net +1/+1 / -1/-1 counters, region-scoped (R12). Players: rot
 // and debt, the two player counters (R38/R39), for the seats present in this
-// region (R25). ⚠ header: no loseRot/loseDebt primitive exists, so the fields
-// are zeroed directly. Rot "never decreases on its own" (R38) — this is a
-// card decreasing it, which is exactly what the printed text says to do.
+// region (R25). Rot "never decreases on its own" (R38) — this is a card
+// decreasing it, which is exactly what the printed text says to do.
+//
+// R179: through E.loseRot / E.loseDebt, which ANNOUNCE the removal
+// ('rotLost' / 'debtLost'). This used to write p.rot = 0 / p.debt = 0 raw,
+// the only two such writes in the tree, so a card watching player counters
+// saw them arrive and never saw them leave.
+//
+// ⚠ THE REMOVAL IS NOT SCALED BY R104's AMOUNT LAYER, by owner ruling
+// (2026-08-25): *"Resonater says 'put on' so this question is irrelevant.
+// Removing counters isn't 'putting on'."* Flux Resonator and Proliferating
+// Slime price what is PUT ON; a removal is not in their scope, and the scope
+// of a layer is read off the printed text of the card that DEFINES it. So a
+// Proliferating Slime on the board does not deepen this sweep by one.
 card('Burn the Blight', {
   spellEffect: {
     run: (g, ctx) => {
@@ -191,8 +205,8 @@ card('Burn the Blight', {
       for (const seat of presentSeats(g, ctx.region)) {
         const rot = g.rot(seat), debt = g.debt(seat);
         if (!rot && !debt) continue;
-        g.player(seat).rot = 0;
-        g.player(seat).debt = 0;
+        g.loseRot(seat, rot);     // R179
+        g.loseDebt(seat, debt);   // R179
         g.ev('info',
           `Burn the Blight removes ${g.pname(seat)}'s counters: ${rot} rot, ${debt} debt.`,
           { seat, rot, debt });
@@ -661,8 +675,11 @@ card('Tilling the Graves', {
         const name = g.removeFromBin(seat, i, 'recalled');   // R124
         if (name !== undefined) taken.push(name);
       }
-      for (const name of taken.reverse()) {
-        g.player(seat).hand.push(name);
+      // R179: the whole recall is ONE move into a hand, so it announces ONE
+      // 'handEntered' — the printed shape is "one or more cards enter".
+      const order = taken.reverse();
+      g.toHand(seat, order, 'bin');
+      for (const name of order) {
         g.ev('info', `Tilling the Graves: ${name} returns to ${g.pname(seat)}'s hand.`);
       }
       if (!taken.length) g.ev('info', 'Tilling the Graves: no unit is targeted in your bin — nothing returns.');

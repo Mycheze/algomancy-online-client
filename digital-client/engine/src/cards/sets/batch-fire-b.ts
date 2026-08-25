@@ -156,7 +156,7 @@ card('Reclaimer of Secrets', {
         g.payMana(ctx.controller, 2);
         const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
         if (name !== undefined) {
-          g.player(ctx.controller).hand.push(name);
+          g.toHand(ctx.controller, name, 'bin');   // R179
           g.ev('info', `Reclaimer of Secrets: ${name} recalled to ${g.pname(ctx.controller)}'s hand.`);
         }
       },

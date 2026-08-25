@@ -195,6 +195,12 @@ card('Aberrant Statweaver', {
 // Ancient One (R9).
 const AO_EVENTS: EventType[] = [
   'spawned', 'died', 'despawned', 'draw', 'lifeLost', 'damage',
+  // R179: Rider of the Tides, Xenopod Progenitor and Galerider Eel moved OFF
+  // 'despawned'+'draw' and onto 'handEntered' (the one hand-entry event). All
+  // three were mimickable here before, so leaving this list alone would have
+  // quietly taken them away from the Ancient One — a regression caused by the
+  // rewire, not a pre-existing gap.
+  'handEntered',
   // R129: 'cardPlayed' rides beside 'spellPlayed' because Void Mandible's
   // augment text moved onto it — an adjacent ally wearing one must still be
   // mimicked ("it explicitly includes modded abilities").

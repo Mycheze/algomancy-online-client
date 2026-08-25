@@ -10,20 +10,24 @@
  * region-battle).
  *
  * ⚠ NEEDS ESCALATION — "a card enters a hand" is HALF IMPLEMENTED (2026-08-24).
- *   Rider of the Tides and Xenopod Progenitor here, and Galerider Eel in
- *   batch-water-a, all print "whenever (one or more other) cards enter a
- *   player's hand during battle". They listen on 'despawned' (with `to:
- *   'hand'`, R70) and 'draw' — a RECALL and a DRAW. A card moved into a hand
- *   any OTHER way fires nothing, because nothing in the engine announces it:
- *   `player(seat).hand.push(name)` is a bare array write in ~9 card files.
- *   Rippleback Skulker (this batch!), Eldritch Reclaimer, Delver of Mysteries,
- *   Reclaimer of Secrets, Bioremediation and Collect Remains all move a card
- *   into a hand in silence, and several are {Battle}-timed, so the case is
- *   reachable in the exact window these three cards are asking about.
- *   The fix is an engine seam, not a card one: an `E.toHand(seat, name, from)`
- *   primitive that pushes AND fires a 'handEntered' event ({ seat, card,
- *   token, from }), every `hand.push` in the pool routed through it, and these
- *   three `when()`s extended to hear it. Not done here — engine.ts is shared.
+ *   CLOSED BY R179. Rider of the Tides and Xenopod Progenitor here, and
+ *   Galerider Eel in batch-water-a, all print "whenever (one or more other)
+ *   cards enter a player's hand during battle". They used to listen on
+ *   'despawned' (with `to: 'hand'`, R70) and 'draw' — a RECALL and a DRAW —
+ *   and a card moved into a hand any OTHER way fired nothing, because nothing
+ *   in the engine announced it: `player(seat).hand.push(name)` was a bare
+ *   array write. The count in this note used to read "~9 card files"; it was
+ *   18 sites across 11, and Rippleback Skulker (this batch!), Eldritch
+ *   Reclaimer, Delver of Mysteries, Reclaimer of Secrets, Bioremediation and
+ *   Collect Remains were only six of them. Several are {Battle}-timed, so the
+ *   silence was in the exact window these three cards ask about.
+ *   `E.toHand(seat, cards, from)` is now the ONE hand-entry point — it pushes
+ *   AND fires 'handEntered' ONCE per move, however many cards moved — and all
+ *   three cards listen on that event ALONE. Dropping 'draw' and 'despawned'
+ *   is the load-bearing half of the rewire, not tidying: a draw and a recall
+ *   both go through `toHand` now, so keeping either would fire these cards
+ *   TWICE for one card entering one hand. 152-hand-entry guards both halves,
+ *   and sweeps the pool so a new card cannot reintroduce a raw push.
  *
  * NOTHING IN THIS BATCH IS PARKED.
  *  - Water Resource: this header used to list it as parked on (a) resource
@@ -39,7 +43,7 @@
  *    fire, water and earth, so routing a seven-element rule through them would
  *    silently drop the bonus for wood, metal, light and dark. R116, R54.
  */
-import type { EngineEvent, Entity, Seat } from '../../types.ts';
+import type { Entity, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, isEntityTarget, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, manaOf, chooseUnit, perSeatRows, lifeLostIn, doubleStats } from './helpers.ts';
@@ -57,18 +61,6 @@ const presentSeats = (g: E, region: number): Seat[] => {
   const present = g.s.regions[region]!.presentSeats;
   return [g.initiative, g.nit].filter(s => present.includes(s));
 };
-
-/** R70: "a card entered a hand" is now a fact ON THE DESPAWN EVENT — `to` is
- * where the card actually went ('hand' | 'cache'). It used to be approximated
- * by the card TYPE ("Token" in the type line), which also read a unit going to
- * a CACHE as one entering a hand.
- *
- * R69, extended to the hand 2026-08-22: a recalled TOKEN says `to: 'hand'` as
- * well — it really does enter the hand before the state-based sweep erases it,
- * and Caleb was asked this about THIS CARD ("does recalling a spell token
- * trigger Rider of the Tides?" → *"Oh dang yeah it should also trigger it."*,
- * 2025-04-24). A CACHED unit still says 'cache' and is correctly no match. */
-const enteredAHand = (ev: EngineEvent): boolean => ev.data?.['to'] === 'hand';
 
 /** "Each player recalls a unit" (R12/R25: the region's present seats; each
  * player picks their own). All picks are gathered before any recall. */
@@ -162,20 +154,26 @@ card('Recall', {
 });
 
 // "[Augment] Whenever a card enters a player's hand during battle, I gain
-// +2/+2 until regroup." — b/1 2/2 Fish Unit. Text-box [Augment]. Cards enter
-// hands mid-battle via recall ('despawned' with to: 'hand'; a token recall is
-// erased and a cached unit goes to the cache, both excluded) or a
-// battle DRAW (E.draw fires 'draw' during battle only; drawn cards are deck
-// cards, always nontoken; the event carries no region, so the when() pins the
-// listener to the battle region, R12).
+// +2/+2 until regroup." — b/1 2/2 Fish Unit. Text-box [Augment].
+//
+// R179: ONE listener, on 'handEntered' — the event `E.toHand` fires, and
+// `E.toHand` is now the only way a card reaches a hand. That covers the recall
+// (a token recall included: R69's hand window is a real entry, and Caleb was
+// asked about THIS card — "Oh dang yeah it should also trigger it"), the
+// battle draw, and the fourteen bin/stack/cache/hand routes that used to be
+// silent. "A player's hand" carries no ownership clause, so either seat's
+// hand counts and no `seat` check belongs here.
+//
+// ⚠ It listened on 'despawned' + 'draw' before. Keeping either alongside
+// 'handEntered' would DOUBLE-FIRE, because a recall and a draw both go
+// through `toHand` now. The event carries no region (like 'draw'), so the
+// when() still pins the listener to the battle region itself (R12).
 card('Rider of the Tides', {
   augmentText: [{
-    type: 'triggered', events: ['despawned', 'draw'],
+    type: 'triggered', events: ['handEntered'],
     label: 'I gain +2/+2 until regroup (a card entered a hand)',
-    when: (g, self, ev) =>
-      g.s.phase === 'battle' &&
-      (ev.type === 'draw' ? g.s.battle?.region === self.region
-        : enteredAHand(ev)),
+    when: (g, self) =>
+      g.s.phase === 'battle' && g.s.battle?.region === self.region,
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
@@ -233,7 +231,7 @@ card('Rippleback Skulker', {
         }
         const taken = g.removeFromBin(t.binCard.seat, t.binCard.index, 'recalled');   // R124
         if (taken !== undefined) {
-          g.player(ctx.controller).hand.push(taken);
+          g.toHand(ctx.controller, taken, 'bin');   // R179
           g.ev('info', `Rippleback Skulker: ${taken} → ${g.pname(ctx.controller)}'s hand.`);
         }
       },
@@ -710,20 +708,23 @@ card('Water Resource', {});
 
 // "[Augment] Whenever one or more other cards enter a player's hand during
 // battle, you may pay [one] to create a 2/2 unit." — b/5 3/3. Text-box
-// [Augment]. Same channels as Rider of the Tides: recall ('despawned' — where
-// "other" excludes the carrier's own recall) and battle DRAWS ('draw', fired
-// by E.draw during battle only; a drawn card is never the carrier, and a
-// multi-card draw is ONE event, matching "one or more"). The [one] payment is
-// a mid-resolution pay-or-decline (R6), skipped outright when the controller
-// cannot pay.
+// [Augment]. Same channel as Rider of the Tides, and R179's same rewire onto
+// 'handEntered' alone (see that card for why keeping 'draw'/'despawned' would
+// double-fire).
+//
+// "ONE OR MORE" IS WHY THE EVENT IS PER-MOVE AND NOT PER-CARD: Zephyrzoa
+// recalling a fourteen-card bin is ONE firing, exactly as a two-card draw
+// always was. "OTHER" excludes the carrier's own card — `ev.data.unit` is the
+// recalled entity, stamped by `toHand`'s `from: 'play'` route.
+// The [one] payment is a mid-resolution pay-or-decline (R6), skipped outright
+// when the controller cannot pay.
 card('Xenopod Progenitor', {
   augmentText: [{
-    type: 'triggered', events: ['despawned', 'draw'],
+    type: 'triggered', events: ['handEntered'],
     label: 'you may pay [one] to create a 2/2 unit (a card entered a hand)',
     when: (g, self, ev) =>
-      g.s.phase === 'battle' &&
-      (ev.type === 'draw' ? g.s.battle?.region === self.region
-        : ev.data?.unit !== self.id && enteredAHand(ev)),
+      g.s.phase === 'battle' && g.s.battle?.region === self.region
+      && ev.data?.unit !== self.id,
     effect: {
       creates: ['Unit Token'],
       run: (g, ctx) => {

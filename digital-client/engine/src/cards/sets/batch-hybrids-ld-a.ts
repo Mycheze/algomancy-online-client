@@ -579,7 +579,8 @@ card('Dream Lapse', {
       const recallable = it.card !== undefined
         && (it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'virus' || it.kind === 'ambush');
       if (recallable) {
-        g.player(it.controller).hand.push(it.card!);
+        // R179: off the STACK and into a hand — `from: 'stack'`
+        g.toHand(it.controller, it.card!, 'stack');
         g.ev('info', `Dream Lapse: ${it.card} is recalled to ${g.pname(it.controller)}'s hand.`);
       } else {
         g.ev('info', `Dream Lapse: ${it.label} has no card to recall — it is simply gone.`);
@@ -624,7 +625,8 @@ card('Zephyrzoa', {
           // 'leftBin'; the order into the hand is preserved
           const moved: string[] = [];
           while (bin.length) moved.unshift(g.removeFromBin(ctx.controller, bin.length - 1, 'recalled')!);
-          g.player(ctx.controller).hand.push(...moved);
+          // R179: the whole bin arrives at once — ONE 'handEntered'
+          g.toHand(ctx.controller, moved, 'bin');
           g.ev('info', `Zephyrzoa: ${g.pname(ctx.controller)} recalls their whole bin (${n} card(s)) to hand.`);
         } else {
           g.ev('info', 'Zephyrzoa: the bin is empty — nothing to recall.');

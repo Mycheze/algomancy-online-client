@@ -242,7 +242,7 @@ card('Cinder Scuttler', {
           return;
         }
         g.removeFromBin(ctx.controller, i, 'recalled');   // R124
-        g.player(ctx.controller).hand.push('Cinder Scuttler');
+        g.toHand(ctx.controller, 'Cinder Scuttler', 'bin');  // R179
         g.ev('info', `Cinder Scuttler is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
       },
     },
@@ -304,7 +304,7 @@ card('Delver of Mysteries', {
       if (!t || !('binCard' in t) || t.binCard.index === -1) return;
       const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
       if (name !== undefined) {
-        g.player(ctx.controller).hand.push(name);
+        g.toHand(ctx.controller, name, 'bin');   // R179
         g.ev('info', `${name} is recalled to ${g.pname(ctx.controller)}'s hand.`);
       }
     },

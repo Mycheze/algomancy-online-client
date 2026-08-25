@@ -1756,13 +1756,19 @@ export class E {
     return this.s.sharedDeck;
   }
   draw(seat: Seat, n: number, silent = false): void {
-    let got = 0;
+    const drawn: CardName[] = [];
     for (let i = 0; i < n; i++) {
       const c = this.deckOf(seat).shift();
       if (c === undefined) break;
-      this.player(seat).hand.push(c);
-      got++;
+      drawn.push(c);
     }
+    const got = drawn.length;
+    // R179: a draw is a card entering a hand, and it is announced as one — a
+    // multi-card draw is ONE 'handEntered' exactly as it is ONE 'draw'. The
+    // 'draw' event is NOT replaced: it keeps its own narrow meaning ("when you
+    // DRAW", which a bin recursion is not), and Ancient One's AO_EVENTS scan
+    // still reads it.
+    if (got) this.toHand(seat, drawn, 'deck');
     if (!silent && got > 0) {
       const ev = this.ev('draw', `${this.pname(seat)} draws ${got}.`, { seat, n: got });
       // dispatch to trigger listeners only during battle: every current
@@ -1771,6 +1777,63 @@ export class E {
       if (this.s.battle) this.fireEvent('draw', ev);
     }
   }
+
+  /**
+   * R179: **the one place a card enters a hand.** Pushes `cards` onto `seat`'s
+   * hand and announces it as `'handEntered'`.
+   *
+   * Three cards print *"whenever (one or more other) cards enter a player's
+   * hand during battle"* — Rider of the Tides, Xenopod Progenitor, Galerider
+   * Eel — and before this there was nothing to listen to. They listened on
+   * `'despawned'` (a recall) and `'draw'`, the only two channels that
+   * announced anything at all, while **18 bare `player(seat).hand.push(name)`
+   * writes across 11 card files** moved a card into a hand in total silence:
+   * a bin recursion (Blightwalker, Collect Remains, Cthyrian Rector,
+   * Xzydris, Cinder Scuttler, Delver of Mysteries, Reclaimer of Secrets,
+   * Combustible Bogwalker, Inexorable Miasma, Eldritch Reclaimer,
+   * Rippleback Skulker, Verdant Necrophage, Tilling the Graves, Zephyrzoa),
+   * a pull off the STACK (Dream Lapse, Cosmic Reversal), a recall out of the
+   * CACHE (Prismatic Observer) and a card taken out of an opponent's HAND
+   * (Bioremediation). Several are {Battle}-timed, so the silence was in the
+   * exact window those three cards ask about.
+   *
+   * ⚠ **ONE EVENT FOR A MULTI-CARD MOVE**, which is the shape `'draw'` already
+   * has (`{ seat, n }` for an n-card draw) and the shape the printed text asks
+   * for: *"whenever ONE OR MORE other cards enter a player's hand"*. Zephyrzoa
+   * recalls a whole bin and that is one entry, not fourteen.
+   *
+   * `from` is the zone the cards came FROM, the same vocabulary `toBin` uses
+   * plus `'hand'` (Bioremediation takes a card out of an opponent's hand, so
+   * one hand's loss is another's entry). A listener may well care: "a card
+   * enters your hand from your BIN" is a different fact from a draw.
+   * `opts.unit` is the entity that was in play when the move is a recall — it
+   * is what lets Xenopod Progenitor read "one or more OTHER cards" and exclude
+   * its own carrier, and it is safe to put in `data` because by the time
+   * `recall` calls this the entity is already out of `s.entities`, so
+   * `fireEvent`'s region derivation finds nothing and the event stays
+   * region-less like `'draw'`.
+   *
+   * DISPATCH IS BATTLE-ONLY, for `draw`'s reason and in `draw`'s words: every
+   * consumer is battle-scoped and firing triggers outside a `settle()` window
+   * would be unsound. The EVENT is always recorded, so the stream is complete
+   * either way; `msg` is `''` because every call site already announces itself
+   * in its own words (the `'leftBin'` / `'cardPlayed'` precedent — the harness
+   * keeps an empty message out of the log).
+   */
+  toHand(seat: Seat, cards: CardName | readonly CardName[],
+         from: 'deck' | 'bin' | 'play' | 'stack' | 'cache' | 'hand',
+         opts: { unit?: EntityId; token?: boolean } = {}): void {
+    const names: CardName[] = typeof cards === 'string' ? [cards] : [...cards];
+    if (!names.length) return;
+    this.player(seat).hand.push(...names);
+    const ev = this.ev('handEntered', '', {
+      seat, from, cards: names, card: names[0], n: names.length,
+      ...(opts.unit !== undefined ? { unit: opts.unit } : {}),
+      ...(opts.token ? { token: true } : {}),
+    });
+    if (this.s.battle) this.fireEvent('handEntered', ev);
+  }
+
   recycleToBottom(seat: Seat, name: CardName): void {
     this.deckOf(seat).push(name);
   }
@@ -1982,6 +2045,55 @@ export class E {
     const ev = this.ev('debtGained', `${p.name} gains ${n} debt (${p.debt} total).`,
       { seat, n, total: p.debt });
     this.fireEvent('debtGained', ev);
+  }
+
+  /**
+   * R179: **removing** rot / debt from a player. `gainRot(-n)` is a no-op by
+   * design (R38: rot "never decreases on its own"), so Burn the Blight —
+   * *"Remove all counters from units and players"* — used to zero `p.rot` and
+   * `p.debt` by hand. Those were the only writes to either field outside
+   * `gainRot`/`gainDebt`, and being raw writes they announced nothing: a card
+   * watching a player's counters could see them arrive and never see them go.
+   *
+   * ⚠ **A REMOVAL IS NOT SCALED BY R104's AMOUNT LAYER, and that is an owner
+   * ruling and not a policy call** (2026-08-25, asked directly whether an
+   * `AmountMod` should scale a removal): *"Resonater says 'put on' so this
+   * question is irrelevant. Removing counters isn't 'putting on'."* So there is
+   * deliberately no `amountDelta` call here, where `gainRot`/`gainDebt` both
+   * have one.
+   *
+   * The generalisable form, which is the half worth keeping: **the scope of a
+   * layer is read off the PRINTED TEXT OF THE CARD THAT DEFINES IT.** Flux
+   * Resonator and Proliferating Slime both print "put on"/"put … counters", so
+   * "remove all counters" is simply not the kind of quantity they have an
+   * opinion about. Nothing had to be decided about removals in general.
+   *
+   * Clamped at zero — you cannot remove counters that are not there — and
+   * returns how many actually went, so a caller can say "if you do".
+   */
+  loseRot(seat: Seat, n: number): number {
+    const have = this.rot(seat);
+    const lost = Math.min(Math.max(0, Math.trunc(n)), have);
+    if (lost <= 0) return 0;
+    const p = this.player(seat);
+    p.rot = have - lost;
+    const ev = this.ev('rotLost', `${p.name} loses ${lost} rot (${p.rot} left).`,
+      { seat, n: lost, total: p.rot });
+    this.fireEvent('rotLost', ev);
+    return lost;
+  }
+
+  /** R179: debt's half of `loseRot` — same ruling, same shape. */
+  loseDebt(seat: Seat, n: number): number {
+    const have = this.debt(seat);
+    const lost = Math.min(Math.max(0, Math.trunc(n)), have);
+    if (lost <= 0) return 0;
+    const p = this.player(seat);
+    p.debt = have - lost;
+    const ev = this.ev('debtLost', `${p.name} loses ${lost} debt (${p.debt} left).`,
+      { seat, n: lost, total: p.debt });
+    this.fireEvent('debtLost', ev);
+    return lost;
   }
 
   /**
@@ -5085,7 +5197,13 @@ export class E {
     // went, which is what "when a unit is recalled to a HAND" wants to read —
     // it used to be recovered by matching the word "hand" in the log message.
     const evData = { ...this.leftPlayFacts(u), to: 'hand', hand: seat };
-    this.player(seat).hand.push(u.card);
+    // R179: the card really enters the hand, so it goes through the ONE hand
+    // entry point and announces itself as 'handEntered' — BEFORE the
+    // 'despawned' line, which afterDespawn() recovers as `events[length-1]`.
+    // Both events fire for one recall and they are different facts; the three
+    // "a card enters a player's hand" cards read only the second one now, so
+    // nothing double-counts.
+    this.toHand(seat, u.card, 'play', { unit: u.id, token: !!u.token });
     this.ev('despawned',
       `${u.card} is ${verb} ${this.pname(seat)}'s hand`
       + (mods.length ? ` (its ${mods.length} mod(s) → bin)` : '')

@@ -464,7 +464,7 @@ card('Combustible Bogwalker', {
         }
         const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // R124
         if (name !== undefined) {
-          g.player(ctx.controller).hand.push(name);
+          g.toHand(ctx.controller, name, 'bin');   // R179
           g.ev('info', `Combustible Bogwalker: ${name} is recalled to ${g.pname(ctx.controller)}'s hand.`);
         }
       },
@@ -651,7 +651,7 @@ card('Inexorable Miasma', {
         const idx = g.player(ctx.controller).bin.lastIndexOf('Inexorable Miasma');
         if (idx === -1) { g.ev('info', 'Inexorable Miasma: it left the bin — nothing is recalled.'); return; }
         g.removeFromBin(ctx.controller, idx, 'recalled');   // R124
-        g.player(ctx.controller).hand.push('Inexorable Miasma');
+        g.toHand(ctx.controller, 'Inexorable Miasma', 'bin');   // R179
         g.ev('info', `Inexorable Miasma is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
       },
     },
