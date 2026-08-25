@@ -183,6 +183,15 @@ button:disabled { opacity: .4; cursor: default; }
 .rescard.expended .resplate { transform: rotate(90deg) scale(.82); }
 .rescard.dormant { cursor: pointer; }
 .rescard.canact { outline: 2px solid var(--glow); border-radius: 3px; }
+/* R151 (report #97): a dormant resource cannot be spent, and outside planning
+   it cannot be woken either — but it sits in the same row as the ones that can
+   and gets counted as mana under battle-clock pressure. ui/resources.ts decides
+   WHEN (battle and deployment; planning shows the row normally, because
+   planning is where you click these); this only says what "muted" looks like.
+   Shrunk and half-faded rather than hidden: they are still yours, and a row
+   that changes length between phases is its own miscount. */
+.rescard.muted { opacity: .38; transform: scale(.8); filter: grayscale(.6); }
+.rescard.muted .reschip { opacity: .7; }
 .reschip { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%;
   font: 700 9px/14px system-ui; text-align: center; color: #fff; border: 1px solid #0008; }
 .reschip.fire { background: var(--fire); } .reschip.water { background: var(--water); }

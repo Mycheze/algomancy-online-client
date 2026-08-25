@@ -9243,3 +9243,137 @@ the test file with it* — exactly what BL-25 did, where every test hand-wrote t
 payload the handler expected. Tests (1), (2), (3) and (4b) all stay **green**.
 Only (4), whose expectations come from a real engine-produced decision, goes
 red. That is the assertion that would have caught BL-25, demonstrated.
+## R151 — a token prints the X it actually has, and a dormant resource stops reading as mana
+
+Two owner playtest reports, both **presentation only**: no rule moved, no
+engine file was touched.
+
+### CT-33 (report #99) — "a Poison 5 should say *Put 5 -1/-1 counters*"
+
+> *"Tokens should have their X value in their text box modified to say the
+> actual number, rather than X. So a Poison 5 would say 'Put 5 -1/-1 counters
+> on target unit'."* — Bena
+
+**This is NOT the R134/R141/R142 markup class,** and reading it as one is the
+trap. Those three were each *a formatter failing to consume a printed token and
+emitting it verbatim* — `{g}`, `[2]`, `{i1}`, `/[`. Nothing fails here. `X` is
+genuinely the word printed on the card, because the card is a **template**: 44
+of the pool's 492 printed texts carry a bare X, and 40 of them define it with a
+"where X is …" clause that has no instance behind it at all. What was missing
+was a **live per-instance value**.
+
+**Where the substitution lives: the text box, at render time**
+(`ui/cardtext.ts`, `liveX` + `substituteX`, applied at the end of
+`entityTextBox`). Two reasons, and the second is the stronger one:
+
+1. `src/cards/printed.json` is **generated** from
+   `AlgomancyCards/AlgomancyCards-OracleText.json`. A per-instance number
+   stamped into it would confuse the transcription of the physical card with
+   one copy of it, and the next `npm run extract` would wipe it.
+2. Stamping onto the **entity at creation** was the alternative, and the pool
+   rules it out in its own words. Robot prints
+   *"{i}(If the number of counters changes, so does the X value.)"* — a Robot 3
+   that gains a counter **is** a Robot 4. An X frozen at creation starts lying
+   the first time anything touches it; one read at render time cannot.
+
+**Where X actually lives in the engine** — two places, because `dsl.ts` says so
+("`x` is deliberately ONE field for two things: a spell token's X, and a unit
+token's spawn counters"):
+
+| token kind | source | cards |
+| --- | --- | --- |
+| spell token | `Entity.x`, stamped by `E.createSpellToken` | Fireball, Poison, Crystal |
+| unit token | its **counters** (not the spawn request's number — `E.spawnUnit` puts them on and drops it, after the amount layer has had its say: an allied Flux Resonator makes a Robot X enter with X+1, report #88) | Robot |
+
+**Every spelling of X the pool uses**, censused over all 492 printed texts
+before the regex was written — R141's lesson is that the pool spells the same
+thing more than one way and a rule that knows one spelling looks green while
+covering half the cards:
+
+| spelling | count | handled? |
+| --- | --- | --- |
+| `X` (bare) | 59 | **substituted** — this is the value |
+| `X/X` | 9 | never touched — **stat notation** |
+| `+X/+X` | 1 (Life Channel) | never touched — stat notation |
+| `-X/-X` | 1 (Burden of Life) | never touched — stat notation |
+| `[x]` | 8 | never touched — a **cost pip**: variable *mana*, drawn as `Icons/cost_x`. A digit substituted in there silently becomes a different cost icon. |
+| `X+1` | 1 (Flamebreath Initiate) | substituted like a bare X; no token prints one |
+| `{X}` | **0** | the brief expected this spelling; the pool does not use it. Excluded anyway. |
+
+The stat forms are excluded by refusing an X glued to a `/`, `+` or `-` on the
+side that would make it half of a pair — the same anchoring discipline R142
+used for `/[`, and test/122's whole-pool sweep still proves no `X/X` moves.
+
+**Reminder text is carved out.** Only three cards put an X inside `{i}…`
+(Robot, Premonition, Cosmic Conspirator) and only Robot is a token, but that
+one is the whole reason the carve-out exists: substituting into *"so does the X
+value"* yields *"so does the 3 value"*, which is not a specialised card, it is a
+broken one. Reminder text **names** the variable; it does not use it.
+
+Applied to the **whole box**, not just the printed line: a grant, an augment's
+donated clause or a projection landing on a Fireball describes the same spell,
+and would otherwise disagree with the line directly above it.
+
+### CT-31 (report #97) — dormant resources read as active outside planning
+
+> *"Dormant resources can misleadingly look like they're active. Maybe have
+> them not show up (or something) during battle/deployment so players don't
+> think they're active. During planning they should show normally tho."* — Bena
+
+New pure module **`ui/resources.ts`** (DOM-free, like `ui/cardtext.ts` and
+`ui/inspect.ts`): `resourceRow(e, seat)` returns one `ResourceView` per
+resource carrying `spendable`, `active`, `emphasis` and the hover `title`.
+`main.ts` only draws it — three edited lines in `resHtml` and its one caller.
+
+**`emphasis` is a value, not a colour.** A CSS rule cannot fail a test, which is
+how a presentation bug comes back; `'normal' | 'muted'` is a discrete state on a
+pure function's output, so the phase rule is pinned by an assertion and the
+stylesheet is free to express it however it likes (currently `opacity: .38`,
+scaled down, desaturated — **shrunk, not hidden**: they are still yours, and a
+row that changes length between phases is its own miscount).
+
+**Phase scoping is the owner's own**, and planning is the right exception for a
+reason beyond taste: planning is the phase you **act** on a dormant resource in,
+and the row is where you click. Dimming what you are being asked to click would
+be worse than the bug. Regroup and gameover are left normal — nothing is being
+spent and nobody is counting mana against a clock.
+
+**The split comes from the engine.** R132 just reversed R116 (a Prismite DOES
+activate its new resource), so "what is spendable" is live rules surface and a
+UI that re-derived it would drift the next time the rule moved. `ResourceRow`
+carries `mana = E.openMana(seat)` and an `agreesWithEngine` flag checked against
+**two** independent engine queries, because they disagree exactly where a future
+change would land: `E.openMana` counts what can still be **spent**, `E.affinity`
+counts what is **awake** ("dormant gives no affinity"; "expended still counts").
+Only `dormant` is muted — an expended resource was spent, which is a thing the
+player did and remembers, and it is already drawn turned sideways.
+
+### Tests — `test/127-token-x-and-dormant.test.ts` (10, seeds 5900-5999)
+
+All ten **red-checked** by mutation, not by "the tests pass":
+
+| mutation | reddens |
+| --- | --- |
+| the substitution call removed from `entityTextBox` | the four CT-33 positives (1-4) |
+| `X_VALUE_RE` unanchored (`/X/g`) | 5 — `X/X`, `+X/+X`, `-X/-X`, `[x]` all move |
+| the reminder carve-out removed | 3 — Robot reads "so does the 3 value" |
+| `liveX` reads only `Entity.x` (unit-token counters dropped) | 3 **and the sweep, 4** — this is the R141 shape: 3 of 4 cards fixed still looks green without it |
+| `liveX` drops the `token` check (any unit's counters become X) | 6 — Awoken Tomb's `X/X` template specialises |
+| the box *annotates* every token line with "(X = n)" instead of substituting | 7 — a Wisp, which has no X, stops matching its printed card |
+| `emphasisOf` always `'normal'` (CT-31 reverted) | 8, 9 |
+| `planning` added to `MUTED_PHASES` | 8, 9 |
+| `spendable` re-derived as "not dormant" instead of the engine's "open" | 10 |
+
+The sweep (4) is the guard that stops the fix being one-card-deep: it asserts
+the census itself — the pool's token cards with an X placeholder are exactly
+**Fireball, Robot, Poison, Crystal** (Wisp and Wraith print none) — and then
+mints one of each through the engine and checks no literal X survives.
+
+### ⚠ FOR THE OWNER — an out-of-scope wrinkle worth a ticket
+
+`CardTextBox.modified` stays **false** for a specialised token. It is the flag
+the UI badges a card with when its box "is not simply the printed card", and a
+Poison 5 arguably now qualifies. It was left alone because badging *every* token
+on the table as modified would be noise and the `state` row already prints
+"X = 5" — but if the badge should follow the substitution, that is a deliberate
+call and not something R151 should have made on the side.

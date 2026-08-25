@@ -36,6 +36,8 @@ import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardt
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
 import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts';
 import { mdToHtml } from './markdown.ts';
+import { resourceRow } from './resources.ts';
+import type { ResourceView } from './resources.ts';
 import type { GlossEntry } from './glossary.ts';
 import type { Census } from './motion.ts';
 import {
@@ -1334,7 +1336,7 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
   });
 }
 
-function resHtml(r: { kind: string; state: string }, p: Seat, i: number): string {
+function resHtml(r: ResourceView, p: Seat, i: number): string {
   const canact = legalFor(p).some(a =>
     (a.type === 'activateResource' || a.type === 'exchangePrismite') && a.index === i);
   // docs/07 §9.2 (decided): literal resource-card scans. Dormant = the face-down
@@ -1347,11 +1349,12 @@ function resHtml(r: { kind: string; state: string }, p: Seat, i: number): string
     r.kind.charAt(0).toUpperCase() + r.kind.slice(1) + '-Resource';
   const chip = r.state === 'dormant' && r.kind !== 'hidden'
     ? `<span class="reschip ${r.kind}">${r.kind === 'prismite' ? 'P' : r.kind.charAt(0).toUpperCase()}</span>` : '';
-  const title = r.kind === 'hidden' ? 'dormant (element hidden)' : `${r.kind} (${r.state})`;
+  // R151 (CT-31): `title` and `emphasis` come from ui/resources.ts, so the
+  // "dormant is not spendable here" rule is a tested value rather than a class.
   // Light and Dark have no resource-card scan in AlgomancyCards/ yet, so the
   // face 404s. Degrade to a coloured element plate rather than a broken image:
   // `onerror` tags the wrapper and CSS swaps the plate in.
-  return `<span class="rescard ${r.state} ${r.kind} ${canact ? 'canact' : ''}" title="${title}"
+  return `<span class="rescard ${r.state} ${r.kind} ${canact ? 'canact' : ''} ${r.emphasis === 'muted' ? 'muted' : ''}" title="${r.title}"
     data-act="res" data-p="${p}" data-i="${i}" data-prev="${face}"><img src="${art(face)}" alt=""
       onerror="this.closest('.rescard').classList.add('noart')"
     ><span class="resplate">${esc(r.kind === 'hidden' ? '?' : r.kind)}</span>${chip}</span>`;
@@ -1577,7 +1580,7 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
       <span class="life ${isCandidate({ player: p }) ? 'candidate' : ''}" data-act="player" data-p="${p}"
         data-animzone="life:${p}">♥ ${pl.life}</span>
       ${counters}
-      <span class="resrow" data-animzone="res:${p}">${pl.resources.map((r, i) => resHtml(r, p, i)).join('')}
+      <span class="resrow" data-animzone="res:${p}">${resourceRow(e, p).resources.map(r => resHtml(r, p, r.index)).join('')}
         <span style="color:var(--dim)">(${e.openMana(p)} mana open${s.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
       </span>
       ${miniHand}

@@ -178,6 +178,121 @@ export function augmentClause(name: CardName): string {
 export const dropOriginMarker = (text: string): string =>
   text.replace(/^\[(?:augment|switch1?)\]\s*/i, '');
 
+// ── R151: a token's X, printed as the number it actually is ───────────
+
+/**
+ * Report #99 (CT-33), Bena: *"Tokens should have their X value in their text
+ * box modified to say the actual number, rather than X. So a Poison 5 would
+ * say 'Put 5 -1/-1 counters on target unit'."*
+ *
+ * ⚠ THIS IS NOT THE MARKUP CLASS. R134/R141/R142 were each a formatter failing
+ * to consume a token and printing it verbatim. Nothing fails here: `X` is
+ * genuinely the word printed on the card, and it is printed on the card
+ * because the card is a template — 44 of the pool's 492 cards carry a bare X
+ * and 40 of them define it with a "where X is …" clause that has no instance
+ * behind it. What is missing is a LIVE PER-INSTANCE VALUE, so the fix is a
+ * display-time substitution, not a change to any token table.
+ *
+ * WHY IT LIVES IN THE BOX AND NOT ON THE CARD DATA. `src/cards/printed.json`
+ * is GENERATED from `AlgomancyCards/AlgomancyCards-OracleText.json`; a
+ * per-instance number stamped into it would confuse the transcription of the
+ * physical card with one copy of it, and would be overwritten by the next
+ * extract. Stamping onto the ENTITY at creation was the alternative and is
+ * also wrong, for a reason the pool states out loud: Robot prints "{i}(If the
+ * number of counters changes, so does the X value.)" — a Robot 3 that gains a
+ * counter is a Robot 4, so an X frozen at creation would start lying the first
+ * time anything touched it. Read at render time, it cannot.
+ */
+
+/**
+ * The X this entity's text box should print, or undefined if it has none.
+ *
+ * Two sources, because the engine keeps X in two places and says so
+ * (dsl.ts `TokenRequest`: "`x` is deliberately ONE field for two things: a
+ * spell token's X, and a unit token's spawn counters"):
+ *
+ *   spell token   `Entity.x`, stamped by `E.createSpellToken` (Fireball,
+ *                 Poison, Crystal) — the only entities in the game that carry
+ *                 the field at all
+ *   unit token    its COUNTERS (Robot). Not the spawn amount: the card's own
+ *                 reminder text makes X track the counters for life, and
+ *                 `E.spawnUnit` does not keep the request's number anyway (it
+ *                 puts counters on and drops it, after the amount layer has
+ *                 had its say — an allied Flux Resonator makes a Robot X enter
+ *                 with X+1, report #88).
+ *
+ * A token whose text has no X (Wisp, Wraith) is unaffected — the substitution
+ * below is a no-op on text with nothing to substitute.
+ */
+export function liveX(u: Entity): number | undefined {
+  if (u.x !== undefined) return u.x;
+  if (u.token && u.kind === 'unit') return u.counters;
+  return undefined;
+}
+
+/**
+ * The one X the pool spells as a VALUE, and every spelling it is not.
+ *
+ * R141's lesson is that the pool spells the same thing more than one way and a
+ * regex that knows about one of them looks green while covering half the
+ * cards, so this was censused over all 492 printed texts before it was
+ * written. What is actually in there:
+ *
+ *   `X`      59×  the value. THE ONE THIS SUBSTITUTES.
+ *   `X/X`     9×  STAT notation (Awoken Tomb, Arcane Concentrator, Embermaw
+ *                 Fledgling, Perpetual Construct, Soul Siphon, Flesh Tithe,
+ *                 Keeper of Tithes, Floral Singularity ×2). NOT touched.
+ *   `+X/+X`   1×  stat notation (Life Channel). NOT touched.
+ *   `-X/-X`   1×  stat notation (Burden of Life). NOT touched.
+ *   `[x]`     8×  a COST PIP, lower-case and bracketed (Gravitational
+ *                 Correction, Frosted Denial, Abduct ×2, Living Vault,
+ *                 Celestial Shifter, Instrument of Reassignment). It is the
+ *                 variable MANA a player pays, not the token's X, and
+ *                 `iconizeText` draws it as `Icons/cost_x`. NOT touched — a
+ *                 digit substituted in there would silently become a
+ *                 different cost icon.
+ *   `X+1`     1×  arithmetic on the value (Flamebreath Initiate, "create a
+ *                 Fireball X+1"). Substituted like a bare X; no token prints
+ *                 one, so this is reach rather than a live case.
+ *   `{X}`     0×  the brief expected this spelling; the pool does not use it.
+ *                 Excluded anyway so it can never be mistaken for a value.
+ *
+ * The stat forms are excluded by refusing an X that touches a `/`, `+` or `-`
+ * on the side that would make it half of a stat pair — the same anchoring
+ * discipline R142 used for `/[`, and test/122's sweep still proves no `X/X`
+ * in the pool moves.
+ */
+const X_VALUE_RE = /(?<![\w+\-/[{])X(?![\w/\]}])/g;
+
+/**
+ * A reminder-text span, which NAMES the variable instead of using its value.
+ *
+ * Only three cards put an X inside `{i}…` and only one of them is a token, but
+ * that one is the whole reason this carve-out exists: Robot's reminder is
+ * "{i}(If the number of counters changes, so does the X value.)" — a sentence
+ * whose entire job is to talk ABOUT X. Substituting there yields "so does the
+ * 3 value", which is not a specialised card, it is a broken one.
+ *
+ * `{i}` is very often left unclosed by the printed text (`formatting()` closes
+ * it at the reminder's own ')'), so an unterminated span runs to end of line.
+ */
+const REMINDER_RE = /\{i\}[\s\S]*?(?:\{\/i\}|$)/g;
+
+/** Print `x` wherever this text uses X as a value; leave stat notation, cost
+ * pips and reminder text exactly as printed. */
+export function substituteX(text: string, x: number): string {
+  const n = String(x);
+  let out = '';
+  let last = 0;
+  REMINDER_RE.lastIndex = 0;
+  for (let m = REMINDER_RE.exec(text); m; m = REMINDER_RE.exec(text)) {
+    out += text.slice(last, m.index).replace(X_VALUE_RE, n) + m[0];
+    last = m.index + m[0].length;
+    if (m[0].length === 0) { REMINDER_RE.lastIndex++; }
+  }
+  return out + text.slice(last).replace(X_VALUE_RE, n);
+}
+
 function textOf(name: CardName): string {
   try { return getCard(name).text ?? ''; } catch { return ''; }
 }
@@ -527,6 +642,17 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
         });
       }
     }
+  }
+
+  // R151 (CT-33): this instance's X, printed as the number it is. Applied to
+  // the WHOLE box rather than to the printed line alone: a grant, an augment's
+  // donated clause or a projection landing on a Fireball describes the same
+  // spell and would otherwise disagree with the line above it. Everything
+  // above has already been assembled from the engine's own queries, so this is
+  // the last step and it only ever rewrites the display string.
+  const x = liveX(u);
+  if (x !== undefined) {
+    for (const l of lines) l.text = substituteX(l.text, x);
   }
 
   const state: string[] = [];
