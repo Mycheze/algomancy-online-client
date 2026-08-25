@@ -50,6 +50,17 @@ function replicatorBattle(h: Harness): { A: Seat; D: Seat; atk: EntityId; repl: 
 
 const copies = (h: Harness) => h.state.stack.filter(i => i.copy);
 
+/** R178: answer the pending decision by option LABEL. Maelstrom Charger's
+ * as-you-play option (E.collectAsYouPlay) carries bookkeeping values rather
+ * than target refs, so `pick` — which matches on the value — cannot name it. */
+function say(h: Harness, label: string): void {
+  const dec = h.state.decision;
+  if (!dec) throw new Error(`no decision is pending; expected one offering "${label}"`);
+  const idx = dec.options.findIndex(o => o.label.includes(label));
+  if (idx === -1) throw new Error(`no option labelled "${label}" in [${dec.options.map(o => o.label)}]`);
+  h.do({ type: 'decide', seat: dec.seat, choice: idx });
+}
+
 // ── the copy is REALLY on the stack ──────────────────────────────────────
 
 test('R164 Earthbound Replicator: the copy is a real stack item, pushed ABOVE the original', () => {
@@ -108,7 +119,11 @@ test('R164 Earthbound Replicator: the copy is offered as a "target effect" and D
   assert.ok(offered(h).includes(JSON.stringify({ stack: copy.id })),
     'the COPY is a legal "target effect" — every stack sweep can see it now');
   pick(h, { stack: copy.id });
-  pass(h); pass(h);                     // the Replicator trigger on Dematerialize (no copy)
+  // R178: Dematerialize targets an EFFECT, not the Replicator, so the
+  // Replicator's trigger no longer queues at all — "targeting me" is asked in
+  // `when`, at the moment of the play. It used to queue on every nonunit spell
+  // and print a no-op line at resolution, which is the pair of passes that
+  // used to be here.
   pass(h); pass(h);                     // Dematerialize resolves
   assert.equal(copies(h).length, 0, 'R68: the negated copy left the stack at once');
   assert.ok(h.log.some(l => l.includes('Burgeon (copy) is negated')), 'and the negation is announced');
@@ -212,8 +227,10 @@ test('R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Volatile Toxicity') });
   pick(h, { unit: food });                                    // R35: the bracket is paid AT CAST
   assert.ok(!ent(h, food), 'the cast cost was paid once, on the way to the stack');
-  pass(h); pass(h);                                           // resolve the Charger trigger
-  pick(h, true);                                              // sacrifice the Charger → copy
+  // R178: the Charger's option is a stage of the CAST WINDOW now, not a
+  // trigger — so it is asked here, before anyone has priority, rather than
+  // after a pair of passes resolves a trigger off the stack.
+  say(h, 'Sacrifice Maelstrom Charger');
   assert.ok(!ent(h, chg), 'the Charger is gone');
   // no second sacrifice is asked for, and none is possible: D has no unit left
   assert.ok(!h.state.decision, 'RAQ: "you DON\'T pay additional cost again" — nothing is asked'); 
@@ -276,9 +293,8 @@ test('R164 Maelstrom Charger: a resolved copy bins nothing, and "Erase me." on a
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Suspend') });
   pick(h, { player: A });                                     // "target player's life can't change"
-  pass(h); pass(h);                                           // resolve the Charger trigger
-  pick(h, true);                                              // sacrifice → copy
-  pick(h, false);                                             // keep the target
+  say(h, 'Sacrifice Maelstrom Charger');                      // R178: in the cast window
+  say(h, 'Keep the original targets');
   pass(h); pass(h);                                           // the COPY resolves — "Erase me."
   const erasedSuspends = () => (h.state.players[D]!.erased ?? []).filter(c => c === 'Suspend').length;
   assert.equal(erasedSuspends(), 0,

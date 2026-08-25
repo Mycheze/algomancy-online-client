@@ -2038,6 +2038,13 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
       // can go STALE: several triggers may all name one unit, and the ones
       // that outlive it fizzle in resolveItem rather than being re-aimed.
       sus.item.parts[sus.partIndex]!.subject = val as EntityId;
+    } else if (sus.stage === 'asYouPlay') {
+      // R178: a cost-shaped, NON-STACK option that ANOTHER card in play offers
+      // as this one is played ("As you play a nonunit spell, you may sacrifice
+      // me…" — Maelstrom Charger). Neither triggered nor activated, so it
+      // reaches no stack and no ability gate; the answers land on
+      // StackItem.asYouPlay and E.applyAsYouPlay pays for the accepted ones.
+      e.applyAsYouPlay(sus.item, val, sus.partIndex);
     } else if (typeof val === 'object' && val !== null && 'doneTargets' in val) {
       sus.item.parts[sus.partIndex]!.targetsDone = true;
     } else {

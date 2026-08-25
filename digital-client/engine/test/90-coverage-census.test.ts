@@ -685,14 +685,15 @@ test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods li
  * If you are adding a third: it is far likelier that you want giveControl.
  */
 const CONTROLLER_ASSIGN_OK: { file: string; stmt: string; why: string }[] = [
-  {
-    file: 'batch-hybrids-wm-a.ts', stmt: 'm.controller = b.controller;',
-    why: 'Reconfigure moves the mods off one unit onto another — a mod re-parenting to a new host, not a unit changing hands',
-  },
-  {
-    file: 'batch-dark-b.ts', stmt: 'mod.controller = host.controller;',
-    why: "Rotbeast moves its own mods onto enemy units — same re-parenting shape as Reconfigure's",
-  },
+  // R178 DROPPED TWO ENTRIES, and dropping them is what this list is for.
+  // Reconfigure ('m.controller = b.controller;') and Rotbeast
+  // ('mod.controller = host.controller;') each re-parented a mod BY HAND —
+  // five fields and two arrays spelled out, in two places — which is exactly
+  // the shape the header above warned about ("If you are adding a third: it is
+  // far likelier that you want giveControl"). The third never came; the
+  // primitive did. Both cards call `E.moveMod` now, so there is no card-side
+  // assignment left to exempt, and the engine-side one carries its reason in
+  // the engine test below.
   {
     file: 'batch-wood-a.ts', stmt: 'item.controller = ctx.controller;',
     why: 'Hexbane Shiitake takes control of an ITEM ON THE STACK (a StackItem, not an Entity); its own body goes through g.giveControl on the next line',
@@ -780,6 +781,16 @@ test('R148: the only .controller assignments in engine.ts are inside giveControl
    * exist a statement earlier.
    */
   const STACKITEM_CONTROLLER_EXEMPT: Record<string, string> = {
+    'mod.controller = newHost.controller;':
+      'R178 E.moveMod — a MOD being re-parented onto a new host, taking that host\'s '
+      + 'controller. Not an entity changing hands: giveControl is about UNITS, and would '
+      + 'unslot a formation spot a mod never had and relocate the wrong object entirely. '
+      + 'This assignment used to live in TWO CARD FILES (Reconfigure, Rotbeast) with an '
+      + 'exemption each in CONTROLLER_ASSIGN_OK above; R178 collapsed both into this one '
+      + 'primitive, which is why those two entries are gone. The owner ruled what a move '
+      + 'carries (2026-08-25: "Unstable is just an attribute granted to all entities that '
+      + 'are modded. Of course it moves with the mods."), and this line is the only stored '
+      + 'part of that answer — everything else is derived off `modOf`.',
     'copy.controller = opts.controller ?? orig.controller;':
       'R164 pushSpellCopy — stamping the controller onto a freshly structuredClone\'d '
       + 'StackItem, not moving an entity between players. A spell copy is cast by whoever the '

@@ -23,6 +23,7 @@ import type {
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
   isAugment, isGraftable, isTriggered, specForSlot, zoneTriggersFor,
+  type AsYouPlayOption,
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
 } from './cards/dsl.ts';
@@ -55,6 +56,10 @@ const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'trigger
 const BEHAVIOR_CHANNELS = [
   'costMods', 'effectAttrs', 'amountMods', 'amountMultipliers',
   'modPermissions', 'playPermissions',
+  // R178: the as-you-play option is text-box text radiating from a unit in
+  // play, so an Ancient One next to a Maelstrom Charger offers it too — RAQ,
+  // verbatim: *"This works with Ancient One adjacent to Maelstrom Charger."*
+  'asYouPlay',
   'mustBeTargeted', 'replaceRotDamage', 'replaceCombatDamageToPlayer',
   'replaceLifeGain', 'replaceCounters', 'replaceTokenCreation',
   'replaceTokenBatch', 'replaceCardStep',
@@ -6899,6 +6904,216 @@ export class E {
     this.payActivationCost(item);                   // R57: choice-free half
     this.collectItemCosts(item, then, moreItems);   // R49: the choice-bearing half
     this.collectCastCosts(item, then, moreItems, 'fixed');
+    // R178: LAST — "As you play a nonunit spell, you may sacrifice me…"
+    // (Maelstrom Charger). Everything about the play is declared by now, which
+    // is what makes the option answerable, and nothing about the option itself
+    // ever reaches the stack.
+    this.collectAsYouPlay(item, then, moreItems);
+  }
+
+  /**
+   * R178 — every AS-YOU-PLAY option this play offers right now, in a
+   * deterministic order.
+   *
+   * The `anchored()` walk every `CardBehavior` channel uses: units in play and
+   * augment mods read from their HOST, R12-scoped to the region the card is
+   * being played into, with the shallow R62 guard (a silenced unit offers
+   * nothing — the printed line is text-box text, and "loses all abilities"
+   * takes text-box text with it). `behaviorFaces` is what makes the RAQ's last
+   * line true: an Ancient One standing next to a Maelstrom Charger wears the
+   * Charger's face, so it offers the option and sacrifices ITSELF for it.
+   *
+   * `self` is the ANCHOR — the body that would pay — because that is what
+   * "[Augment]"-style anchoring means everywhere else, and `key` is
+   * (anchor, face) rather than a card name for exactly the Ancient One reason:
+   * two bodies offering the same face are two separate offers.
+   */
+  private asYouPlayOffers(item: StackItem): { self: Entity; via: CardName; key: string; opt: AsYouPlayOption }[] {
+    const out: { self: Entity; via: CardName; key: string; opt: AsYouPlayOption }[] = [];
+    const holders = this.anchored((h, a) =>
+      a.region === item.region && !a.suppressed?.abilities && this.donates(h, a, 'asYouPlay'));
+    for (const { holder, anchor } of holders) {
+      for (const via of this.behaviorFaces(holder, anchor)) {
+        for (const opt of this.card(via).asYouPlay ?? []) {
+          if (!opt.when(this, anchor, item)) continue;
+          out.push({ self: anchor, via, key: `${anchor.id}:${via}`, opt });
+        }
+      }
+    }
+    return out;
+  }
+
+  /**
+   * R178 — the AS-YOU-PLAY stage of the cast window.
+   *
+   * Three questions, in this order, all of them through the ordinary 'cast'
+   * suspension so a saved game replays them like any other cast-time answer:
+   *
+   *  1. per offer, "pay it?" — a *may*, so Decline is always there;
+   *  2. per copy bought, "choose new targets for the copy?";
+   *  3. per copy re-aiming, its targets slot by slot.
+   *
+   * `suspend` throws, so each loop simply stops at the first unanswered
+   * question and `collectTargets` re-enters here from the top on resume; every
+   * "have I asked this already" test therefore reads state on the ITEM
+   * (`asked`, `aim`, `targets`, `done`) rather than a local.
+   *
+   * NOTHING HERE IS ON THE STACK. There is no item to negate, no trigger to
+   * order, nothing for R121's `gateTaxedTrigger` to tax (it only ever sees a
+   * `PendingTrigger`) and no window in which an opponent may act — the RAQ:
+   * *"Meal copying is not an effect on the stack so enemy cannot interact with
+   * it. Opponent can only interact with copy of a spell effect."* The copies
+   * themselves are materialised in `commitItem`, once the original is on the
+   * stack, so they land above it.
+   */
+  private collectAsYouPlay(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+    // plays only: a triggered/activated item on the stack is not a card being
+    // played, and a virus is a mod being applied (R37), which is not a play.
+    if (!CARD_PLAY_KINDS.has(item.kind) && item.kind !== 'spellToken') return;
+    const offers = this.asYouPlayOffers(item);
+    if (!offers.length && !item.asYouPlay) return;
+    const st = (item.asYouPlay ??= { asked: [], copies: [] });
+    for (const o of offers) {
+      if (st.asked.includes(o.key)) continue;
+      // the label names the BODY that would pay, not the card the text is
+      // printed on — an Ancient One wearing this face sacrifices itself
+      const take = o.opt.label(this, o.self, item);
+      this.suspend(
+        { type: 'cast', stage: 'asYouPlay', item, partIndex: 0, targetIndex: 0, then, moreItems },
+        {
+          seat: o.self.controller, kind: 'payOrDecline',
+          prompt: `${o.via}, as you play ${item.label}: ${take}?`,
+          options: [
+            { label: take, value: { ayp: 'take', key: o.key } },
+            { label: 'Decline', value: { ayp: 'skip', key: o.key } },
+          ],
+        },
+      );
+    }
+    // "…and you may choose new targets for the copy" (R57: declared here, so
+    // the first response window sees a finished copy)
+    for (let i = 0; i < st.copies.length; i++) {
+      const c = st.copies[i]!;
+      if (c.done) continue;
+      const spec = item.card !== undefined ? this.card(item.card).spellEffect?.targets : undefined;
+      // ⚠ read off the FACE, not off the accepted option: `via` is all the
+      // ledger keeps, so a face declaring TWO options that disagree about
+      // `reaim` would collapse them. No card declares two; the day one does,
+      // the ledger has to carry the option index too.
+      const reaim = !!this.card(c.via).asYouPlay?.some(o => o.copySpell?.reaim);
+      if (!spec || !reaim) { c.done = true; continue; }
+      const counted = spec.count === 'X' ? (item.x ?? 0) : (spec.count ?? 1);
+      const max = counted + (spec.extraSlots ?? 0);
+      const min = Math.min(spec.min ?? 1, max);
+      const picked = c.targets ?? [];
+      const taken = new Set(picked.map(r => JSON.stringify(r)));
+      const chosen = picked
+        .map(r => this.resolveTargetRef(r))
+        .filter((r): r is ResolvedTarget => !!r);
+      const cands = max <= picked.length ? [] : this.targetCandidates(
+        specForSlot(spec, picked.length), item.region, item.id, item.controller,
+        undefined, item.x, chosen, null,
+      ).filter(cd => !taken.has(JSON.stringify(cd)));
+      if (c.aim === undefined) {
+        // a genuinely empty menu is not a choice — the originals ride, said out
+        // loud rather than silently (test/65: a guard that aborts must log)
+        if (!cands.length) {
+          this.ev('info', `${c.via}: no legal new target for the copy of ${item.card} — the original targets stand.`);
+          c.aim = 'keep'; c.done = true; continue;
+        }
+        this.suspend(
+          // `partIndex` carries WHICH COPY is being aimed, so the answer itself
+          // can be the plain value the base target stage already uses — a bare
+          // boolean here, a bare TargetRef below.
+          { type: 'cast', stage: 'asYouPlay', item, partIndex: i, targetIndex: 0, then, moreItems },
+          {
+            seat: item.controller, kind: 'payOrDecline',
+            prompt: `${c.via}: choose new targets for the copy of ${item.card}?`,
+            options: [
+              { label: 'Choose new targets', value: true },
+              { label: 'Keep the original targets', value: false },
+            ],
+          },
+        );
+      }
+      if (c.aim === 'keep') { c.done = true; continue; }
+      if (!cands.length) { c.done = true; continue; }   // a later slot with nothing legal ends it
+      const options: DecisionOption[] = cands.map(cd =>
+        ({ label: this.targetLabel(cd), value: cd }));
+      if (picked.length >= min) options.push({ label: 'No more targets', value: { doneTargets: true } });
+      this.suspend(
+        { type: 'cast', stage: 'asYouPlay', item, partIndex: i, targetIndex: 0, then, moreItems },
+        {
+          seat: item.controller, kind: 'electricPath',
+          prompt: `${c.via}: new target for the copy of ${item.card}`
+            + (max > 1 ? ` (target ${picked.length + 1} of up to ${max})` : ''),
+          options,
+        },
+      );
+    }
+  }
+
+  /**
+   * R178 — record one answer to the as-you-play stage (called from doDecide).
+   *
+   * `take` is where the option's cost is PAID, and it is paid the instant the
+   * controller accepts: cost-shaped means spent as you play, with no window
+   * between the yes and the payment for anything to happen in.
+   */
+  applyAsYouPlay(item: StackItem, val: unknown, copyIndex: number): void {
+    const v = (val ?? {}) as { ayp?: string; key?: string; doneTargets?: boolean };
+    const st = (item.asYouPlay ??= { asked: [], copies: [] });
+    if (v.ayp === 'take' || v.ayp === 'skip') {
+      const o = this.asYouPlayOffers(item).find(x => x.key === v.key);
+      if (v.key !== undefined && !st.asked.includes(v.key)) st.asked.push(v.key);
+      if (v.ayp === 'skip' || !o) {
+        // test/85's rule, and the old trigger version's own line: a declined
+        // *may* must SAY it was declined, or the log shows a question with no
+        // answer. Named after the FACE, so an Ancient One wearing the option
+        // is reported as the Ancient One declining a Charger's line.
+        if (o) this.ev('info', `${o.via}: ${this.pname(o.self.controller)} declines — ${item.card} is not copied.`);
+        return;
+      }
+      o.opt.pay(this, o.self, item);
+      if (o.opt.copySpell) st.copies.push({ by: o.self.id, via: o.via });
+      return;
+    }
+    // Everything below is about ONE copy — which one is `sus.partIndex`, not a
+    // field of the answer, so the answers themselves keep the shapes the base
+    // cast stage already uses: a bare boolean for the keep/re-aim question, a
+    // bare TargetRef (or `{ doneTargets }`) for a slot.
+    const c = st.copies[copyIndex];
+    if (!c) return;
+    if (typeof val === 'boolean') { c.aim = val ? 'new' : 'keep'; return; }
+    if (v.doneTargets) { c.done = true; return; }
+    (c.targets ??= []).push(val as TargetRef);
+  }
+
+  /**
+   * R178 — materialise the copies an as-you-play option bought.
+   *
+   * Called from `commitItem` AFTER the original has been pushed, so each copy
+   * lands above it and resolves first — RAQ: *"put copy of spell effect on
+   * stack (above original spell effect)"*. Two of them make two copies, in the
+   * order the options were accepted.
+   *
+   * The copy is `E.pushSpellCopy`'s ordinary R164 copy: a real, respondable,
+   * negatable stack item, which is the ONLY thing the opponent may interact
+   * with here (*"Opponent can only interact with copy of a spell effect."*).
+   * It inherits the original's paid cost receipt and X — *"you DON'T pay
+   * additional cost again and the X value is the one from original spell"* —
+   * because a clone of the item simply carries them.
+   */
+  private makeAsYouPlayCopies(item: StackItem): StackItem[] {
+    const made: StackItem[] = [];
+    for (const c of item.asYouPlay?.copies ?? []) {
+      const targets = c.aim === 'new' && c.targets?.length ? c.targets : undefined;
+      this.ev('info', `${c.via}: ${this.pname(item.controller)} copies ${item.card}`
+        + ' — the copy goes on the stack above it.');
+      const copy = this.pushSpellCopy(item, { controller: item.controller, ...(targets ? { targets } : {}) });
+      if (copy) made.push(copy);
+    }
+    return made;
   }
 
   /**
@@ -7306,6 +7521,10 @@ export class E {
     delete copy.activationCost;
     delete copy.paidCosts;
     delete copy.formationSpot;
+    // R178: the as-you-play answers are facts about a PLAY, and a copy is not
+    // played. Cloning them would also re-materialise the same copies a second
+    // time the moment `makeAsYouPlayCopies` saw them.
+    delete copy.asYouPlay;
     // R79 viruses were applied to the ORIGINAL ITEM as a response — they are
     // mod cards sitting on that item, not part of the spell's declaration, and
     // copying the list would erase them a second time when the copy discharges.
@@ -7367,6 +7586,30 @@ export class E {
           // R49: the zone it was played out of ('hand' / 'cache' / 'bin').
           // Absent on a spell TOKEN, which was never in a zone at all.
           ...(item.from ? { from: item.from } : {}),
+          // R178: WHICH ITEM this play is, and WHAT IT WAS AIMED AT as it was
+          // played. Same reason as `x` above, and the same two consequences:
+          // this event fires BEFORE pushItem, so a `when` cannot look the item
+          // up on the stack at all, and `commitItem(…, 'resolve')` never
+          // pushes one.
+          //
+          // "Whenever a player plays a nonunit spell TARGETING ME" is a
+          // condition, and R1 puts a condition at EVENT time. Reading the
+          // item's live targets at resolution instead answered a different
+          // question — RAQ "[Solved] Earthbound Replicator. No, it's not
+          // infinity": *"He must be targeted while playing the spell. If the
+          // spell is played and target is changed later to him (through
+          // Gravitational Correction or Enigmatic Warder mod), you don't get a
+          // copy"*. Both halves were wrong: a retarget ONTO the listener
+          // conjured a copy that was never owed, and a retarget AWAY cancelled
+          // one that was.
+          //
+          // `targets` is the flat TargetRef list (every part, every slot) so a
+          // listener asks the same question of it that it used to ask of the
+          // item; `item` is the id, which is how a resolution-time lookup finds
+          // the RIGHT item when two same-card same-seat spells are on the stack
+          // at once (identity, not a top-down scan — cf. R166).
+          item: item.id,
+          targets: item.parts.flatMap(p => p.targets),
         });
       // R119: playing a spell burns the Deferral Drone charge — but a spell
       // TOKEN is cast from play, not played (R59), so it does not. Same test
@@ -7402,7 +7645,25 @@ export class E {
       });
       this.fireEvent('cardPlayed', ev);
     }
-    if (then === 'push') { this.pushItem(item); return; }
+    if (then === 'push') {
+      this.pushItem(item);
+      // R178: the as-you-play copies go on AFTER the original, so they sit
+      // above it and resolve first (RAQ: "above original spell effect").
+      this.makeAsYouPlayCopies(item);
+      return;
+    }
+    // R178, the no-stack branch: this play never reaches the stack at all, so
+    // "above the original" can only mean "resolves before it". Each copy is
+    // still made through pushSpellCopy — it IS a stack item for as long as it
+    // exists, which is what keeps `resolveTop`'s bookkeeping honest — and then
+    // taken straight off again, newest first, before the original runs.
+    for (let n = this.makeAsYouPlayCopies(item).length; n > 0; n--) {
+      const copy = this.s.stack.pop();
+      if (!copy) break;
+      const co = this.beginResolving(copy);
+      this.resolveItem(copy, { then, moreItems: [] });
+      this.endResolving(co);
+    }
     // Nobody may respond to this one — the haste step, deployment, an
     // activation outside battle, a trigger between combat sub-steps. It goes
     // straight from wherever it was to done, which on screen is no journey at
@@ -8289,6 +8550,63 @@ export class E {
       { host: host.id, mod: mod.id, appliedAs });
     this.fireEvent('modApplied', ev);
     return mod;
+  }
+
+  /**
+   * R178 — MOVE an existing mod entity onto another host. `attachMod`'s
+   * sibling: that one MINTS a mod, this one RE-PARENTS the one already there.
+   *
+   * Two cards print it — Reconfigure ("Augment target unit and all of its mods
+   * onto another target unit") and Rotbeast ("[Augment] After combat, move all
+   * my other Augments onto one or more enemies") — and both used to do it by
+   * hand, five fields and two arrays each, in two places. There was no
+   * primitive because there was no ruling on what a move takes with it.
+   *
+   * THE OWNER RULED IT (2026-08-25), verbatim: *"Unstable is just an attribute
+   * granted to all entities that are modded. Of course it moves with the
+   * mods."* So EVERYTHING follows the mod, and the mechanism the ruling does
+   * not name turns out to be "nothing" — every consequence is DERIVED, not
+   * stored, and this method only has to keep the derivation's inputs honest:
+   *
+   *  · {Unstable}. `isUnstable` reads `e.mods.length > 0` LIVE, so the old host
+   *    stops being Unstable the moment its last mod leaves and the new host
+   *    starts being Unstable the moment one arrives. No stamp is moved, and
+   *    `Entity.unstable` (R96's until-regroup stamp, a different thing) is
+   *    deliberately untouched: that one is about how a CARD was played.
+   *  · Statics, cost modifiers, permissions, attribute donations, triggered
+   *    text. Every one of these radiates through `anchored()`, which resolves
+   *    an augment mod's anchor by `this.entity(holder.modOf)` at READ time —
+   *    so re-pointing `modOf` re-anchors all fourteen channels at once, and a
+   *    "+1/+1 to my host" mod stops helping the old host in the same tick.
+   *  · CONTROLLER. It follows the new host, exactly as `attachMod` sets it, so
+   *    a mod moved onto an enemy now radiates for the enemy — which is the
+   *    whole point of Rotbeast's printed line.
+   *  · BOUNDED BUDGETS (R9) RIDE ALONG, because the ENTITY is the same one.
+   *    A [Switch1] graft already spent this turn stays spent after the move;
+   *    the move is not a new mod and must not refresh a per-card budget.
+   *
+   * NOT an `attachMod`: no 'modApplied' event fires, because moving is not
+   * applying (R37's spirit) — nothing that watches for a mod being applied
+   * re-triggers off a mod merely changing hosts. The caller announces the move
+   * in its own printed words, and the caller owns `checkDeaths()` afterwards
+   * (a host that loses a +X/+X mod can die of it).
+   *
+   * Returns false and does nothing if this is not a move at all — not a mod,
+   * already on that host, or onto itself.
+   */
+  moveMod(mod: Entity, newHost: Entity): boolean {
+    if (mod.kind !== 'mod') return false;
+    if (mod.id === newHost.id || mod.modOf === newHost.id) return false;
+    const old = mod.modOf !== undefined ? this.entity(mod.modOf) : undefined;
+    if (old) {
+      const i = old.mods.indexOf(mod.id);
+      if (i !== -1) old.mods.splice(i, 1);
+    }
+    mod.modOf = newHost.id;
+    mod.region = newHost.region;
+    mod.controller = newHost.controller;
+    newHost.mods.push(mod.id);
+    return true;
   }
 
   /** Compose the parts of a firing ability: base effect + graft-mod effects,

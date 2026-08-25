@@ -1342,6 +1342,73 @@ export interface PlayPermission {
 }
 
 /**
+ * R178 — AN AS-YOU-PLAY OPTION: a cost-shaped, NON-STACK, optional decision
+ * offered to this card's controller while they play ANOTHER card.
+ *
+ * ONE card prints it, and the designer describes it as its own kind of thing.
+ * RAQ "[Solved] Maelstrom Charger - all you need to know." (_passer), in full:
+ *
+ *   · *"Maelstrom Charger Ability has unique wording, which works kinda like
+ *     cost (but is still optional due to* **may***). As you play spell you can
+ *     decide to Sacrifice Mael to put copy of spell effect on stack (above
+ *     original spell effect)."*
+ *   · *"Meal copying is not an effect on the stack so enemy cannot interact
+ *     with it. Opponent can only interact with copy of a spell effect."*
+ *   · *"Maelstrom Ability is neither Triggered nor Activated, so Crevice
+ *     Lurker doesn't affect it."*
+ *   · *"If multiple Maelstrom Chargers are in play, while playing a spell you
+ *     can decide to Sac none/one/two for 0/1/2 copies of spell effect. This
+ *     works with Ancient One adjacent to Maelstrom Charger."*
+ *
+ * The engine built it as an ordinary `triggered` ability, which answered "no"
+ * to three of those four: the trigger reached the stack (so it could be
+ * negated BEFORE the copy was ever made — the enemy interacting with the
+ * copying, not the copy), R121's pay-to-trigger gate taxed it, and anything
+ * else keying on the two ability KINDS reached it too.
+ *
+ * SO IT IS NOT AN ABILITY, IT IS A STAGE OF THE CAST WINDOW. `E.collectTargets`
+ * runs it last, after X, {Modular} mods, targets, subjects, modes, the
+ * formation spot and the costs — everything about the play is settled, and the
+ * option is the final thing asked before the item is committed. Nothing about
+ * it is ever on the stack; only what it BUYS is.
+ *
+ * ⚠ WHY IT IS NOT `pendingCosts` / `CostMod.sacrifice` (R122), which is the
+ * near neighbour and the first thing to reach for: a cost is MANDATORY once
+ * the play is declared. `playAtTiming` attaches R122's imposed
+ * "[Sacrifice a unit]" precisely because castability was already gated on it
+ * being payable, and `collectItemCosts` then makes the player pick WHICH unit,
+ * never WHETHER. This is a *may* — declining is always legal and always free —
+ * so it cannot ride that collector without teaching it an "opt out" that no
+ * real cost has. Hence its own stage. It is cost-SHAPED (paid as you play,
+ * off the stack, uninteractable) without being a cost.
+ *
+ * RADIATED like every other `CardBehavior` channel: `anchored()`, R12 region
+ * scope, the shallow R62 guard — and it is a member of `BEHAVIOR_CHANNELS`, so
+ * an Ancient One standing next to a Maelstrom Charger offers the option off
+ * the PROJECTED FACE and sacrifices ITSELF for it, which is the RAQ's last
+ * line. That is also why the engine keys its "already asked" ledger on
+ * (anchor id, face) and not on a card name.
+ */
+export interface AsYouPlayOption {
+  /** Is the option offered against this play at all? `self` is the ANCHOR —
+   * the unit that would pay — and `item` is the card being played, fully
+   * declared (targets, modes, X and costs are all settled by now). */
+  when: (g: E, self: Entity, item: StackItem) => boolean;
+  /** The ACCEPT label ("Sacrifice Maelstrom Charger — copy Wildfire"). The
+   * decline half is the engine's, because declining is always the same. */
+  label: (g: E, self: Entity, item: StackItem) => string;
+  /** Paid the instant the controller accepts. Irreversible and immediate: the
+   * whole point of a cost-shaped decision is that it is spent as you play. */
+  pay: (g: E, self: Entity, item: StackItem) => void;
+  /** The acceptance buys ONE COPY of the played spell, pushed ABOVE the
+   * original once the original is on the stack (so the copy resolves first).
+   * `reaim` additionally offers the printed "you may choose new targets for
+   * the copy", collected in this same window so the opponent's first response
+   * window sees a fully declared copy (R57). */
+  copySpell?: { reaim?: boolean };
+}
+
+/**
  * R123: a play permission whose GRANTOR IS A CARD SITTING IN A BIN — "If I am
  * in your bin, you may play a unit as if it had [Haste] by erasing me as an
  * additional cost to play that unit." (Writhing Host).
@@ -1562,6 +1629,11 @@ export interface CardBehavior {
    * you may play a unit during the mana step as if it had [Haste]" — Dispatch
    * Courier) */
   playPermissions?: PlayPermission[];
+  /** R178: cost-shaped, NON-STACK, optional decisions offered to this card's
+   * controller as they play another card ("As you play a nonunit spell, you
+   * may sacrifice me…" — Maelstrom Charger). Neither triggered nor activated;
+   * see `AsYouPlayOption`. Same radiation rules as `costMods`. */
+  asYouPlay?: AsYouPlayOption[];
   /** R123: PERMISSIONS to play a card at haste timing granted by a card
    * SITTING IN ITS OWNER'S BIN, paid for by erasing the grantor ("If I am in
    * your bin, you may play a unit as if it had [Haste] by erasing me as an

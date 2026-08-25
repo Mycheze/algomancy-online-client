@@ -313,6 +313,18 @@ const INERT_KEYS: Record<string, string> = {
     + 'is not an effect anyone may respond to. That is exactly what R165 fixed: Aethercap '
     + 'Siphoner queued a real stack item for it while Powerforge Synergist did not, so the same '
     + 'printed sentence was negatable on one card and not the other.',
+  asYouPlay:
+    'R178 — a COST-SHAPED, NON-STACK, optional decision offered as ANOTHER card is played ("As '
+    + 'you play a nonunit spell, you may sacrifice me…" — Maelstrom Charger, the only card in '
+    + 'the pool printing one). INERT is the designer\'s own answer rather than a convenience: '
+    + 'RAQ "[Solved] Maelstrom Charger - all you need to know." — "Meal copying is not an effect '
+    + 'on the stack so enemy cannot interact with it. Opponent can only interact with copy of a '
+    + 'spell effect." and "Maelstrom Ability is neither Triggered nor Activated, so Crevice '
+    + 'Lurker doesn\'t affect it." It is collected as a stage of the CAST WINDOW '
+    + '(E.collectAsYouPlay) and is never an item. ⚠ Not continuous either: it is asked once, per '
+    + 'play, and answered — nothing about it is standing. The COPY it can buy DOES reach the '
+    + 'stack, but that is R164\'s clone of the PLAYED SPELL\'s own item — the one thing the '
+    + 'designer says the opponent may interact with — and not this channel putting an item there.',
   augmentable:
     'a FLAG, not a layer — "this card may be applied as an augment even though it declares no '
     + 'augmentAttrs/augmentText, because its [Augment] text lives in `statics`". Deliberately NOT '

@@ -882,6 +882,43 @@ export interface StackItem {
    */
   copy?: boolean;
   /**
+   * R178 — the answers to every AS-YOU-PLAY option offered against this play
+   * (`CardBehavior.asYouPlay`; Maelstrom Charger is the only card printing one
+   * today). Collected in the cast window, LAST, by `E.collectAsYouPlay`.
+   *
+   * ON THE ITEM for `formationSpot`'s and `mode`'s reason: the collector is
+   * resumable — `collectTargets` re-runs from the top after every answered
+   * decision — so where it had got to has to be serializable state and not a
+   * local. `asked` is the idempotence guard and holds `${anchorId}:${face}`
+   * keys, NOT card names: an Ancient One projecting a Charger's face is a
+   * second, separate offer made by a different body (RAQ: *"This works with
+   * Ancient One adjacent to Maelstrom Charger"*), and one anchor can in
+   * principle carry two faces that both print an option.
+   *
+   * `copies` is what the accepted options BOUGHT: one entry per copy owed,
+   * materialised by `E.pushSpellCopy` only once the original is on the stack,
+   * so the copy lands ABOVE it (RAQ: *"above original spell effect"*) and
+   * resolves first. `aim`/`targets` are the printed "you may choose new
+   * targets for the copy", asked in this same window so that the opponent's
+   * first response window sees a fully declared copy (R57).
+   *
+   * ⚠ NOT cloned onto a copy by `pushSpellCopy`: these are facts about a PLAY,
+   * and a copy is not played.
+   */
+  asYouPlay?: {
+    asked: string[];
+    copies: {
+      /** the anchor that paid — for the log, and it may be dead by now */
+      by: EntityId;
+      /** the face the option was printed on (Ancient One projects it) */
+      via: CardName;
+      /** undefined = not yet asked; 'keep' = the original's targets ride */
+      aim?: 'keep' | 'new';
+      targets?: TargetRef[];
+      done?: boolean;
+    }[];
+  };
+  /**
    * The printed "Erase me." / "Erase this spell." clause — Collect Remains,
    * Suspend, Temporal Rift.
    *
@@ -1040,8 +1077,15 @@ export type Suspension =
        * ("put a -1/-1 counter on an ally"), answered onto
        * `parts[partIndex].subject`. Same window and same reason as 'mode' —
        * the aim is part of declaring the effect — but it can go STALE, and a
-       * part whose subject has left play fizzles. */
-      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation' | 'mode' | 'subject';
+       * part whose subject has left play fizzles.
+       * 'asYouPlay' (R178): a cost-shaped, NON-STACK, optional decision that
+       * ANOTHER card in play offers while this one is being played ("As you
+       * play a nonunit spell, you may sacrifice me…" — Maelstrom Charger).
+       * The LAST stage of the window, so everything else about the play is
+       * declared before it is asked; the answers land on
+       * `StackItem.asYouPlay`, and `E.applyAsYouPlay` reads them back. */
+      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation' | 'mode' | 'subject'
+        | 'asYouPlay';
     }
   | {
       /** ordering simultaneous triggers for one seat (R2) */

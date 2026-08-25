@@ -152,6 +152,13 @@ const BEHAVIOR_KEYS = [
   // has no abilities and no spellEffect by construction — same reason as the
   // R104 hooks above.
   'replaceCardStep',
+  // R178: Maelstrom Charger's whole text is an AS-YOU-PLAY option — a
+  // cost-shaped, non-stack decision collected in the cast window — and the
+  // designer's ruling is that it is *"neither Triggered nor Activated"*, so
+  // it has no abilities and no spellEffect BY CONSTRUCTION. Same reason as the
+  // R104 hooks above: without this line the card reads as a bare definition
+  // the moment it is built the way the RAQ describes.
+  'asYouPlay',
 ] as const;
 
 /**

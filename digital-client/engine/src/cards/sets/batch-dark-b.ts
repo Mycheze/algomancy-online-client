@@ -57,10 +57,19 @@
  *    region lists only its owner, so Cthyrian Culler's life loss and Grim
  *    Bargain's sacrifices reach nobody else during deployment — the standing
  *    R25 behaviour, flagged there, not worked around here.
- *  - MOVING A MOD (Rotbeast) has no engine primitive: the mod entity is
- *    re-parented by hand (modOf/region/controller + the two mods arrays), the
- *    way Reconfigure already does it. No 'modApplied' event fires — moving is
- *    not applying (R37's spirit), so nothing re-triggers off it.
+ *  - MOVING A MOD (Rotbeast) HAS a primitive as of R178 — `E.moveMod`, beside
+ *    `attachMod` in engine.ts, shared with Reconfigure (batch-hybrids-wm-a).
+ *    This entry used to say there was none and that the entity was re-parented
+ *    by hand in two places; the reason there was none is that nothing had
+ *    ruled on what a move CARRIES. The owner did, 2026-08-25: *"Unstable is
+ *    just an attribute granted to all entities that are modded. Of course it
+ *    moves with the mods."* Everything follows the mod, and the mechanism is
+ *    that there is no mechanism — {Unstable} is derived from `mods.length` and
+ *    every radiated channel re-anchors through `anchored()`'s live `modOf`
+ *    lookup, so re-pointing one field moves all of it. Bounded budgets (R9)
+ *    ride along because the entity is the same one. Still no 'modApplied'
+ *    event — moving is not applying (R37's spirit), so nothing re-triggers
+ *    off it.
  *  - EXCHANGING A UNIT (Hooba-Mon) HAS a primitive as of R157 §3 —
  *    `E.exchangeInPlace`, lifted out of this file so Necromorph (batch-dark-c)
  *    could stop calling `destroy()` and share it. The rest of this bullet is
@@ -744,12 +753,15 @@ card('Rotbeast', {
           const mod = g.entity(modId);
           const host = g.entity(hostId);
           if (!mod || !host) continue;
-          const i = self.mods.indexOf(modId);
-          if (i !== -1) self.mods.splice(i, 1);
-          mod.modOf = host.id;
-          mod.region = host.region;
-          mod.controller = host.controller;
-          host.mods.push(mod.id);
+          // R178: E.moveMod. Everything follows the mod — the ruling is the
+          // owner's, 2026-08-25: *"Unstable is just an attribute granted to
+          // all entities that are modded. Of course it moves with the mods."*
+          // Nothing is bookkept for that: {Unstable} is DERIVED from
+          // `mods.length`, so I stop being Unstable when my last augment leaves
+          // and the enemy starts being Unstable when it arrives. The mod's
+          // controller follows its new host too, which is the sting in the
+          // printed line — the augments now radiate for the enemy.
+          if (!g.moveMod(mod, host)) continue;
           g.ev('info', `Rotbeast moves ${mod.card} from ${self.card} onto ${host.card}.`);
         }
         g.checkDeaths();

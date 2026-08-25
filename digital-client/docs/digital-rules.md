@@ -12807,3 +12807,179 @@ was its only entry, exempted because *"there is no 'formation' kind"*. There is
 one, and the printed noun names it.
 
 **Guard:** `test/156-reaping-and-formation.test.ts`.
+
+---
+
+## R178 — a condition belongs at the event; a *may* offered as you play is not an ability; and moving a mod moves everything, because nothing about it is stored
+
+Four things, and three of them are one shape: **the engine was asking the right
+question at the wrong moment.**
+
+### 1. "Whenever a player plays a nonunit spell TARGETING ME" — asked at the play
+
+Earthbound Replicator's `when` did not test targeting at all. It fired on every
+nontoken spell in the region and read the item's **current** targets inside
+`run`, at resolution. Two live wrong answers followed, and the RAQ names both:
+
+> *"He must be targeted while playing the spell. If the spell is played and
+> target is changed later to him (through Gravitational Correction or Enigmatic
+> Warder mod), you don't get a copy"*
+> — `[Solved] Earthbound Replicator. No, it's not infinity` (_passer)
+
+So a retarget resolving in between **earned** a copy that was never owed, and
+retargeting away **cancelled** one that was. R1 already says where a condition
+lives: in `when`, at event time. What was missing was the information — and
+this is the load-bearing engine fact, because it is why the card was written
+this way in the first place:
+
+**`commitItem` fires `spellPlayed` BEFORE `pushItem`.** A `when` running on that
+event cannot look the item up on the stack, because the item is not on the stack
+yet — and `commitItem(…, 'resolve')` never pushes one at all. That is the exact
+reason `x` was already on the event payload, with a comment saying so. R178 adds
+the other two fields the same argument demands:
+
+- **`targets`** — the flat `TargetRef[]` the item declared, so "targeting me" is
+  a question about the play;
+- **`item`** — the stack item's id (see §2).
+
+The card's own header proposed a different fix — listen to `'targeted'`, which
+R53 made a real dispatch. **That would have been wrong three ways**, and the
+reasoning is worth keeping because the option looks obviously right: `'targeted'`
+fires once **per target** (a two-target spell aimed at me twice would copy
+twice); it fires for a **copy's** targets, which is precisely the infinite loop
+the RAQ's title refuses; and it fires from `doAugment`/`doGraft`, where modding
+is not playing a spell.
+
+### 2. The third bottom-up `.find()`
+
+`g.s.stack.find(i => i.card === name && …)` scans from the **bottom**, so with
+two same-card same-seat spells on the stack the trigger acted on the **older**
+one. R166 fixed exactly this on Origon and Hexbane Shiitake with
+`[...stack].reverse().find(...)`; this is the third instance, and it did not
+need the precedent, because the event now carries the item **id**. Identity
+beats a top-down scan: the reverse-find is a heuristic that happens to be right
+under today's push order, and an id is right under any of them. Maelstrom
+Charger's copy of the same lookup went away entirely with §3.
+
+⚠ The other two sites still use `[...stack].reverse().find(...)`. They could
+now take the id off the event too; that is a follow-up, not this ruling.
+
+### 3. Maelstrom Charger is neither Triggered nor Activated
+
+> *"Maelstrom Charger Ability has unique wording, which works kinda like cost
+> (but is still optional due to* **may***). As you play spell you can decide to
+> Sacrifice Mael to put copy of spell effect on stack (above original spell
+> effect)."*
+> *"Meal copying is not an effect on the stack so enemy cannot interact with it.
+> Opponent can only interact with copy of a spell effect."*
+> *"Maelstrom Ability is neither Triggered nor Activated, so Crevice Lurker
+> doesn't affect it."*
+> *"If multiple Maelstrom Chargers are in play, while playing a spell you can
+> decide to Sac none/one/two for 0/1/2 copies of spell effect. This works with
+> Ancient One adjacent to Maelstrom Charger."*
+> — `[Solved] Maelstrom Charger - all you need to know.` (_passer)
+
+The engine built it as an ordinary `triggered` ability, which made three of
+those four false: the trigger reached the **stack**, so Dematerialize could eat
+it before the copy was ever made — the opponent interacting with the *copying*
+rather than with the *copy*; R121's pay-to-trigger gate **taxed** it (and on a
+board with a Crevice Lurker and no open mana, *prevented* it outright, with the
+player never even asked); and anything else keying off the two ability KINDS
+reached it too. All three follow from the kind, so all three are fixed by the
+kind.
+
+**The seam: `CardBehavior.asYouPlay`, and a new stage of the cast window.**
+
+- `E.collectAsYouPlay` runs **last** in `collectTargets` — after X, {Modular}
+  mods, targets, subjects, modes, the formation spot and every cost. Everything
+  about the play is declared before the option is asked, which is what makes it
+  answerable.
+- It suspends through the ordinary `'cast'` suspension (`stage: 'asYouPlay'`),
+  so a saved game replays it like any other cast-time answer. The progress
+  ledger is `StackItem.asYouPlay`, on the item for `mode`'s and
+  `formationSpot`'s reason: the collector re-enters from the top after every
+  answer, so "have I asked this yet" has to be serializable state.
+- **Nothing about it is ever an item.** There is no trigger to order, nothing to
+  negate, no window for an opponent to act in, and `gateTaxedTrigger` only ever
+  sees a `PendingTrigger`. The copy it buys is `E.pushSpellCopy`'s ordinary R164
+  item, pushed **after** the original so it lands above it and resolves first —
+  which is exactly the one thing the designer says the opponent may interact
+  with.
+- It is a `BEHAVIOR_CHANNELS` member, so it radiates off the **FACE**: an
+  Ancient One standing next to a Maelstrom Charger offers the option and
+  **sacrifices itself** for it. That is why the "already asked" ledger is keyed
+  on `(anchor id, face)` and not on a card name, and why the prompt names the
+  body that would pay rather than the card the text is printed on.
+
+**⚠ WHY IT IS NOT A COST**, which is the first thing to reach for and is wrong:
+`pendingCosts` / R122's imposed `[Sacrifice a unit]` is **mandatory** once the
+play is declared — `playAtTiming` attaches it precisely because castability was
+already gated on it being payable, and `collectItemCosts` then asks *which*
+unit, never *whether*. This is a *may*. Declining is always legal and always
+free, and teaching that collector to opt out would give every real cost a door
+it must not have. It is cost-**shaped** — paid as you play, off the stack,
+uninteractable — without being a cost.
+
+**Does it generalise?** No, and that is stated rather than assumed: "as you
+play" appears on exactly one card in the pool. `Spellbind`'s "as it is played"
+is {Modular}, which is already a cast-window stage, and `Writhing Host`'s is an
+additional cost to play, which is already `binPlayPermissions`. The channel is
+built to the general shape (a predicate, a label, a payment, and what the
+payment buys) but it is carrying one card, and a second one should be the
+occasion to check the shape rather than to assume it.
+
+### 4. Moving a mod: `E.moveMod`
+
+Two cards re-parented a mod entity **by hand** — five fields and two arrays,
+spelled out twice: Reconfigure (*"Augment target unit and all of its mods onto
+another target unit"*) and Rotbeast (*"[Augment] After combat, move all my other
+Augments onto one or more enemies"*). There was no primitive because nothing had
+ruled on what a move **carries**. The owner did, 2026-08-25, verbatim:
+
+> *"Unstable is just an attribute granted to all entities that are modded. Of
+> course it moves with the mods."*
+
+So: **everything follows the mod.** The ruling gives the answer; it does not
+give the mechanism, and the mechanism turns out to be that **there is no
+mechanism** — every consequence is DERIVED rather than stored, and checking
+which it was is the whole of the design question:
+
+- **{Unstable}** — `E.isUnstable` reads `e.mods.length > 0` **live**. The old
+  host stops being Unstable the instant its last mod leaves and the new host
+  starts the instant one arrives. No stamp is moved, and `Entity.unstable`
+  (R96's until-regroup stamp, a different thing about how a CARD was played) is
+  deliberately untouched.
+- **Statics, cost mods, permissions, donated text — all fourteen channels** —
+  radiate through `anchored()`, which resolves an augment mod's anchor by
+  `this.entity(holder.modOf)` at **read** time. Re-pointing one field re-anchors
+  all of them at once.
+- **Controller** follows the new host, exactly as `attachMod` sets it. That is
+  the sting in Rotbeast's printed line: the augments radiate for the enemy now.
+- **Bounded budgets (R9) ride along**, because the ENTITY is the same one. A
+  `[Switch1]` already spent this turn stays spent; a move is not a new mod and
+  must not refresh a per-card budget.
+- **No `modApplied` event.** Moving is not applying (R37's spirit), so nothing
+  that watches for a mod being applied re-triggers off a mod changing hosts. The
+  caller announces the move in its own printed words and owns `checkDeaths()`
+  afterwards — a host that loses a `+X/+X` mod can die of it.
+
+`test/90-coverage-census.test.ts` recorded this arriving: its
+`CONTROLLER_ASSIGN_OK` allowlist carried an entry for each card's hand-rolled
+`.controller =`, above a comment reading *"If you are adding a third: it is far
+likelier that you want giveControl."* The third never came; the primitive did,
+and **both entries are gone**.
+
+### Classification
+
+`asYouPlay` is filed **INERT** in `142-static-conformance` — it reaches no stack
+and is not a continuous layer. The copy it can buy does reach the stack, but
+that copy is the *played spell's* item, which is the designer's own line about
+what the opponent may interact with, and not this channel putting an item there.
+
+### Guards
+
+`test/151-copy-and-moved-mods.test.ts` (10 tests). Every one was red-checked by
+mutation: the `when` targeting test removed (1, 2 go red); the id lookup
+replaced by the bottom-up `.find()` (3 goes red); Maelstrom restored as a
+triggered ability (4, 5, 6, 7, 10 go red — 5 with exactly the Crevice Lurker
+prevention it names); `moveMod` not re-pointing `modOf` (8, 9 go red).

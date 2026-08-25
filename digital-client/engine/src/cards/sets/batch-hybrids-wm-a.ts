@@ -15,6 +15,14 @@
  * immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
+ *  - MAELSTROM CHARGER IS NOT AN ABILITY (R178). Its printed line is a
+ *    `CardBehavior.asYouPlay` option — a cost-shaped, non-stack, as-you-play
+ *    decision collected by `E.collectAsYouPlay` in the cast window. It used to
+ *    be an ordinary `triggered` ability, which made three things false that
+ *    the designer names: it reached the stack (so it could be negated before
+ *    the copy was ever made), R121's pay-to-trigger gate taxed it, and
+ *    anything keying off the two ability KINDS reached it. See the card's own
+ *    block below and `AsYouPlayOption` in dsl.ts for the RAQ in full.
  *  - SPELL COPY (Earthbound Replicator, Maelstrom Charger): FIXED (R164).
  *    A copy is a real `StackItem` now — `E.pushSpellCopy` clones the original
  *    item, marks it `copy: true` and pushes it ABOVE the original, so it is
@@ -50,16 +58,23 @@
  *    donate to the copy). Copying the list would erase those virus cards a
  *    second time when the copy discharges; the {Modular} `mods` cast cost IS
  *    copied, which is the case Caleb ruled on (2025-02-07).
- *  - Earthbound Replicator: written when spell-cast 'targeted' events were
- *    logged but never dispatched, so the trigger listens to 'spellPlayed'
- *    instead. Playtest 2026-08-19 FIXED that dispatch (R53) — this card could
- *    now listen to 'targeted' directly, which would be exact rather than
- *    approximate. Left as-is for now: the current path is correct, just
- *    roundabout. The event carries no targets, so it queues
- *    on EVERY nonunit spell in the region and checks "targeting me" at
- *    resolution against the item's collected targets on the stack (no-op
- *    info line when it doesn't target me). "Nonunit" = kind spell/spellToken
- *    (spellUnits and ambushes excluded).
+ *  - Earthbound Replicator: NO LONGER an approximation (R178). This entry used
+ *    to end "the current path is correct, just roundabout", and it was not
+ *    correct: the trigger queued on EVERY nonunit spell and checked "targeting
+ *    me" at RESOLUTION, against the item's live targets. So a retarget landing
+ *    in between wrongly earned a copy and a retarget away wrongly cancelled
+ *    one — RAQ, verbatim: *"He must be targeted while playing the spell. If
+ *    the spell is played and target is changed later to him (through
+ *    Gravitational Correction or Enigmatic Warder mod), you don't get a
+ *    copy"*. It is a CONDITION, so R1 puts it in `when`: the 'spellPlayed'
+ *    event carries the item's declared `targets` (and its `item` id) now,
+ *    because that event fires before pushItem and there is no stack for a
+ *    `when` to consult. Listening to 'targeted' instead — the alternative this
+ *    entry proposed — would have been wrong twice over: it fires per TARGET
+ *    (so a spell targeting me twice would copy twice), it fires for a COPY's
+ *    targets (which is the infinite loop the RAQ's title refuses), and it
+ *    fires for modding, which is not playing a spell. "Nonunit" = kind
+ *    spell/spellToken (spellUnits and ambushes excluded).
  *  - Ember of Life: FIXED (playtest 2026-08-18) — 'damage' events now carry
  *    the effect's controller and spell-effect damage to PLAYERS emits a
  *    damage event too (engine dealEffectDamage), so "one of YOUR spell
@@ -87,8 +102,9 @@
  *    resolves without effect". `AbilityCost.sacrificeOther` is the real slot:
  *    it gates the activation and is paid in the cast window, before priority.
  *  - Reconfigure: the moved unit leaves play SILENTLY (no died/despawned
- *    event — it is moved, not removed); its mod entities move along with
- *    budgets intact. R64: "the first target must have [Augment]" is a
+ *    event — it is moved, not removed); its mod entities move along through
+ *    `E.moveMod` (R178, shared with Rotbeast) with budgets intact — the entity
+ *    is the same one, so a bounded [Switch1] already spent stays spent. R64: "the first target must have [Augment]" is a
  *    TARGETING restriction on slot 0 — only augments are offered — and the
  *    resolution check stays for a redirect that lands a non-augment there.
  *  - "your units" amounts (Colossal Construction's greatest defense) and
@@ -306,6 +322,9 @@ card('Reconfigure', {
       const movedMods = a.mods.map(id => g.entity(id)).filter((m): m is Entity => !!m);
       // the moved unit leaves play WITHOUT dying/despawning (⚠ header)
       delete g.s.entities[a.id];
+      // …which means the old host is not there to be spliced out of, so the
+      // move below is a re-parent onto `b` with nothing to detach from. That
+      // is exactly what E.moveMod's `old` lookup answers `undefined` to.
       // formation cleanup (mirror of the engine's private removeFromFormation)
       const bt = g.s.battle;
       if (bt) {
@@ -317,12 +336,12 @@ card('Reconfigure', {
         if (si !== -1) bt.sentAttackers.splice(si, 1);
       }
       g.attachMod(b, a.card, a.owner, 'augment');
-      for (const m of movedMods) {
-        m.modOf = b.id;
-        m.region = b.region;
-        m.controller = b.controller;
-        b.mods.push(m.id);
-      }
+      // R178: one primitive, no hand-rolled re-parenting. Everything follows
+      // the mod — statics, cost mods and donated text re-anchor through
+      // `anchored()`, {Unstable} is derived from `mods.length` so it lands on
+      // `b` by itself, and each mod's bounded budgets ride along because the
+      // ENTITY is the same one.
+      for (const m of movedMods) g.moveMod(m, b);
       if (movedMods.length) g.ev('info', `Reconfigure: ${movedMods.length} mod(s) move along with ${a.card}.`);
     },
   },
@@ -525,6 +544,29 @@ card('Decay Distributor', {
 //    only ever be reached by a real play; the `!i.copy` guard says so where
 //    a reader can see it, and keeps `.find()` honest if a copy of the same
 //    card is sitting on the stack at the same time.
+//
+// R178 — "TARGETING ME" IS ASKED AT THE MOMENT OF THE PLAY, AND THE ITEM IS
+// FOUND BY IDENTITY. Two live wrong answers, both from doing the work at
+// resolution instead of at event time:
+//
+//  · The `when` did not test targeting AT ALL — it fired on every nontoken
+//    spell and read the item's CURRENT targets in `run`. So a retarget that
+//    resolved in between (Enigmatic Warder augmented onto me, Gravitational
+//    Correction) wrongly EARNED a copy, and a retarget AWAY wrongly CANCELLED
+//    one that was already owed. The RAQ is explicit — *"He must be targeted
+//    while playing the spell. If the spell is played and target is changed
+//    later to him (through Gravitational Correction or Enigmatic Warder mod),
+//    you don't get a copy"* — and R1 already says where a condition belongs:
+//    in `when`, at event time. `spellPlayed` now carries the item's declared
+//    targets (R178, engine.ts) precisely because the event fires BEFORE
+//    pushItem and there is no stack to consult yet.
+//  · The lookup was a bottom-up `.find()`, the third instance of the bug R166
+//    fixed on Origon and Hexbane Shiitake: with two same-card same-seat spells
+//    on the stack it copied the OLDER one. The event carries `item`, the id,
+//    so this is now identity rather than any kind of scan — strictly better
+//    than R166's `[...stack].reverse().find(...)`, which is a top-down
+//    heuristic that only happens to be right. The `!i.copy` /
+//    NONUNIT_SPELL_KINDS guards stay as assertions of what that id must be.
 card('Earthbound Replicator', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'],
@@ -532,12 +574,17 @@ card('Earthbound Replicator', {
     when: (g, self, ev) => {
       const name = ev.data?.card;
       if (typeof name !== 'string') return false;
-      try { return NONUNIT_SPELL_KINDS.has(getCard(name).kind); } catch { return false; }
+      try { if (!NONUNIT_SPELL_KINDS.has(getCard(name).kind)) return false; } catch { return false; }
+      // R178: "targeting me", asked NOW (R1) against what the spell declared
+      // as it was played — not against what it is aimed at when I resolve.
+      const targets = (ev.data?.['targets'] ?? []) as TargetRef[];
+      return targets.some(t => !!t && typeof t === 'object' && 'unit' in t && t.unit === self.id);
     },
     effect: {
       run: (g, ctx) => {
         const name = ctx.event?.data?.card as CardName | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
+        const itemId = ctx.event?.data?.['item'] as number | undefined;
         const self = selfOf(g, ctx);
         // R84 surfaced this one: the Alluring trigger changed what the
         // conformance drive reaches, and this guard aborted in silence.
@@ -547,11 +594,9 @@ card('Earthbound Replicator', {
           return;
         }
         const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && !i.copy && NONUNIT_SPELL_KINDS.has(i.kind));
-        const targetsMe = !!it &&
-          it.parts.some(p => p.targets.some(t => 'unit' in t && t.unit === self.id));
-        if (!it || !targetsMe) {
-          g.ev('info', `Earthbound Replicator: ${name} does not target me (or already left the stack) — no copy.`);
+          i.id === itemId && i.controller === seat && !i.copy && NONUNIT_SPELL_KINDS.has(i.kind));
+        if (!it) {
+          g.ev('info', `Earthbound Replicator: ${name} already left the stack — no copy.`);
           return;
         }
         // "may choose new targets for the copy" — THEY (the spell's player)
@@ -603,62 +648,64 @@ card('Spirit of Nature', {
 
 // "As you play a nonunit spell, you may sacrifice me. If you do, copy that
 // spell and you may choose new targets for the copy." — rm/3 4/2 Elemental
-// Maelstrom Unit. ⚠ SPELL COPY approximation (header): a 'spellPlayed'
-// trigger (your spell, kind spell/spellToken); at resolution the original is
-// found on the stack (the Origon bottom-most-match pattern) — my trigger
-// sits above it, so the copy resolves first. The sacrifice is a
-// mid-resolution pay-or-decline (R6) and is offered wherever this resolves,
-// the end-of-turn window included (R85). "YOU may choose new targets for the
-// copy": chooseCopyTargets asks the controller — keep the original cast's
-// still-legal targets, or re-aim the copy fresh (R64 legality at the
-// re-collection). All choices come before the sacrifice commits
-// (plan-then-commit), so the Charger is still standing while it is asked.
+// Maelstrom Unit.
+//
+// R178 — THIS IS NOT AN ABILITY. It was built as an ordinary `triggered`
+// ability on 'spellPlayed', and the designer names three things that made
+// false. RAQ "[Solved] Maelstrom Charger - all you need to know." (_passer):
+//
+//   *"Maelstrom Charger Ability has unique wording, which works kinda like
+//    cost (but is still optional due to* may*). As you play spell you can
+//    decide to Sacrifice Mael to put copy of spell effect on stack (above
+//    original spell effect)."*
+//   *"Meal copying is not an effect on the stack so enemy cannot interact with
+//    it. Opponent can only interact with copy of a spell effect."*
+//   *"Maelstrom Ability is neither Triggered nor Activated, so Crevice Lurker
+//    doesn't affect it."*
+//
+// As a trigger it reached the stack, so it could be NEGATED before the copy
+// was ever made — the enemy interacting with the copying rather than with the
+// copy — and R121's pay-to-trigger gate (Crevice Lurker) taxed it, because
+// that gate is applied to every `PendingTrigger` on its way to the stack.
+// Both follow from the KIND, so both are fixed by the kind: `asYouPlay` is a
+// `CardBehavior` channel and a stage of the CAST WINDOW (E.collectAsYouPlay),
+// asked last, after the spell is fully declared. Nothing about it is ever an
+// item; only the copy it buys is, which is exactly the RAQ's line about what
+// the opponent may interact with.
+//
+// The four consequences, each of them the printed word:
+//  · "AS YOU PLAY" — the question is asked in the cast window, before the
+//    opponent has any window at all, and the answer is spent immediately.
+//  · "YOU MAY" — a *may*, which is why this is not `pendingCosts`/R122's
+//    imposed [Sacrifice a unit]: a cost is mandatory once the play is
+//    declared, and Decline here is always legal and always free.
+//  · "COPY THAT SPELL … above original spell effect" — commitItem pushes the
+//    copy AFTER the original, so it sits above it and resolves first, and it
+//    inherits the paid cost and X (*"you DON'T pay additional cost again and
+//    the X value is the one from original spell"*) because it is a clone of
+//    the item, R164's `E.pushSpellCopy`.
+//  · MULTIPLE CHARGERS — *"you can decide to Sac none/one/two for 0/1/2
+//    copies"*: the collector asks once per offering BODY, so two Chargers are
+//    two questions and two copies. *"This works with Ancient One adjacent to
+//    Maelstrom Charger"* — `asYouPlay` is in BEHAVIOR_CHANNELS, so the offer
+//    is read off the FACE and an Ancient One wearing this one offers it and
+//    sacrifices itself.
+//
+// "you may choose new targets for the copy" is collected in the same window
+// (`copySpell.reaim`), so the copy is fully declared before anyone answers it
+// — R57, and the same rule the trigger version already followed for a
+// different reason.
 card('Maelstrom Charger', {
-  abilities: [{
-    type: 'triggered', events: ['spellPlayed'],
-    label: 'you may sacrifice me to copy your nonunit spell',
-    when: (g, self, ev) => {
-      if (ev.data?.seat !== self.controller) return false;
-      const name = ev.data?.card;
-      if (typeof name !== 'string') return false;
-      try { return NONUNIT_SPELL_KINDS.has(getCard(name).kind); } catch { return false; }
-    },
-    effect: {
-      run: (g, ctx) => {
-        const self = selfOf(g, ctx);
-        if (!self) { g.ev('info', 'Maelstrom Charger: the carrier is gone — no copy.'); return; }
-        const name = ctx.event?.data?.card as CardName | undefined;
-        const seat = ctx.event?.data?.seat as Seat | undefined;
-        if (name === undefined || seat === undefined) return;
-        const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && !i.copy && NONUNIT_SPELL_KINDS.has(i.kind));
-        if (!it) { g.ev('info', `Maelstrom Charger: ${name} already left the stack — no copy.`); return; }
-        const pay = ctx.choose('sac', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: `Maelstrom Charger: sacrifice me to copy ${name}?`,
-          options: [
-            { label: `Sacrifice — copy ${name}`, value: true },
-            { label: 'Decline', value: false },
-          ],
-        });
-        if (!pay) {
-          g.ev('info', `Maelstrom Charger: the sacrifice is declined — ${name} is not copied.`);
-          return;
-        }
-        // "you may choose new targets for the copy" — asked BEFORE the
-        // sacrifice commits (plan-then-commit: every choose precedes the
-        // mutation, so a suspension replays cleanly).
-        //
-        // R164: the "keep" half no longer flattens and re-resolves the
-        // original's targets here. The copy is a clone of the ITEM, so each
-        // part keeps its own aim, and a target that dies before the copy
-        // resolves fizzles it through the ordinary R86 path.
-        const declared = it.parts.reduce((n, p) => n + p.targets.length, 0);
-        const targets = chooseCopyTargets(g, ctx, name, seat, it.region, it.x, declared);
-        g.destroy(self, 'is sacrificed');
-        runSpellCopy(g, ctx, it, seat, targets);
-      },
-    },
+  asYouPlay: [{
+    // "As you play a NONUNIT SPELL" — the item's own kind, and YOUR play
+    // ("you may sacrifice me" is addressed to my controller).
+    when: (_g, self, item) =>
+      item.controller === self.controller && NONUNIT_SPELL_KINDS.has(item.kind),
+    // named after the BODY that would pay, not after this card: an Ancient One
+    // wearing this face sacrifices ITSELF, and the prompt has to say so.
+    label: (g, self, item) => `Sacrifice ${g.faceName(self)} — copy ${item.card}`,
+    pay: (g, self) => { g.destroy(self, 'is sacrificed'); },
+    copySpell: { reaim: true },
   }],
 });
 

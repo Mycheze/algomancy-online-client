@@ -314,7 +314,15 @@ const CARRIER_GONE: [string, EffectDef][] = [
   ['Auric Ascendant', abilityOf('Auric Ascendant')],
   ['Corrupting Blight', augmentOf('Corrupting Blight')],
   ['Hexbane Shiitake', augmentOf('Hexbane Shiitake')],
-  ['Maelstrom Charger', abilityOf('Maelstrom Charger')],
+  // R178 removed Maelstrom Charger from this list, and from the declined-pay
+  // section below. It has NO EffectDef at all any more: the designer's ruling
+  // is that its printed line is *"neither Triggered nor Activated"*, so it is a
+  // `CardBehavior.asYouPlay` option collected in the cast window, and there is
+  // no resolving effect for either of those situations to arise in. Its
+  // carrier cannot be gone when the option is offered (the offer is read off
+  // the live board), and the declined half is now guarded where it lives —
+  // test/151-copy-and-moved-mods.test.ts, "R178 Maelstrom Charger: declining
+  // the sacrifice says so and copies nothing".
 ];
 
 for (const [card, def] of CARRIER_GONE) {
@@ -435,17 +443,14 @@ test('Hexbane Shiitake that declines the exchange announces that the spell is le
   assert.equal(g.s.stack[0]!.controller, D, 'and the spell stayed with its caster');
 });
 
-test('Maelstrom Charger that declines the sacrifice announces that nothing is copied', () => {
-  const { g, A } = board(8570);
-  const carrier = g.spawnUnit(A, 'Maelstrom Charger', g.homeRegion(A));
-  bait(g, A, carrier.id);
-  const evs = resolve(abilityOf('Maelstrom Charger'), g, {
-    controller: A, sourceName: 'Maelstrom Charger', sourceId: carrier.id,
-    event: { type: 'spellPlayed', msg: '', data: { card: 'Overbloom', seat: A } },
-  }, { sac: false });
-  assertSpoke(evs, 'Maelstrom Charger with the sacrifice declined');
-  assert.ok(g.entity(carrier.id), 'and it did not sacrifice itself for nothing');
-});
+// (R178: Maelstrom Charger's declined sacrifice used to be tested here, as a
+// resolving EffectDef with `{ sac: false }` pre-answered. It has no EffectDef
+// now — the designer's *"neither Triggered nor Activated"* makes it a cast-
+// window `asYouPlay` option, which this file's `resolve()` harness cannot
+// reach because there is nothing to resolve. The decline still has to speak,
+// and is guarded through a real play in
+// test/151-copy-and-moved-mods.test.ts: "R178 Maelstrom Charger: declining the
+// sacrifice says so and copies nothing".)
 
 // ── 8. AN X THAT IS ZERO, AND AN EMPTY ZONE ─────────────────────────────
 

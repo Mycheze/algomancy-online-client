@@ -25,6 +25,17 @@ import {
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
+/** R178: answer the pending decision by option LABEL. Maelstrom Charger's
+ * as-you-play option carries a bookkeeping value (which offering BODY is being
+ * asked) rather than a target ref, so `pick` cannot name it. */
+function say(h: Harness, label: string): void {
+  const dec = h.state.decision;
+  if (!dec) throw new Error(`no decision is pending; expected one offering "${label}"`);
+  const idx = dec.options.findIndex(o => o.label.includes(label));
+  if (idx === -1) throw new Error(`no option labelled "${label}" in [${dec.options.map(o => o.label)}]`);
+  h.do({ type: 'decide', seat: dec.seat, choice: idx });
+}
+
 /** run engine mutations white-box; a trigger's decision may suspend —
  * the suspension is recorded in state and answered via h.do('decide'). */
 function whiteBox(h: Harness, f: (e: E) => void): void {
@@ -493,12 +504,16 @@ test('Maelstrom Charger: sacrifice me as you play a nonunit spell → copy it; d
   const lifeA = h.state.players[A]!.life;
   h.do({ type: 'castSpellToken', seat: D, entityId: fb });    // D plays a nonunit spell
   pick(h, { player: A });                                     // Fireball 1 at the opponent
-  pass(h); pass(h);                                           // resolve the Charger trigger
-  pick(h, true);                                              // sacrifice → copy
-  // "YOU may choose new targets" — the Charger's controller is asked, before
-  // the sacrifice commits. Declining pins the pre-choice behavior exactly.
+  // R178: the option is a stage of the CAST WINDOW, not a trigger — asked here,
+  // with nobody having had priority, and it is neither on the stack nor
+  // negatable. (This used to be `pass; pass` to resolve a trigger off the
+  // stack, which is exactly what the designer says it is not.)
+  say(h, 'Sacrifice Maelstrom Charger');
+  // "YOU may choose new targets" — the Charger's controller is asked.
   assert.equal(h.state.decision?.seat, D, "Charger's 'you' — its controller answers");
-  assert.ok(ent(h, chg), 'plan-then-commit: the Charger still stands while the retarget is asked');
+  assert.ok(!ent(h, chg),
+    'R178: the sacrifice is COST-SHAPED, so it is spent the instant the option is taken — '
+    + 'the re-aim that follows is about a copy already bought, not a plan that might be abandoned');
   pick(h, false);                                             // keep the original targets
   pass(h); pass(h);                                           // resolve the COPY (R164: its own window)
   pass(h); pass(h);                                           // resolve the original Fireball
@@ -522,8 +537,7 @@ test('Maelstrom Charger: choosing NEW targets re-aims the copy; the original sti
   const lifeA = h.state.players[A]!.life;
   h.do({ type: 'castSpellToken', seat: D, entityId: fb });
   pick(h, { player: A });                                     // the original: 1 at A's face
-  pass(h); pass(h);                                           // resolve the Charger trigger
-  pick(h, true);                                              // sacrifice → copy
+  say(h, 'Sacrifice Maelstrom Charger');                      // R178: in the cast window
   pick(h, true);                                              // choose new targets
   pick(h, { unit: atk });                                     // the copy re-aims at the attacker
   pass(h); pass(h);                                           // resolve the COPY (R164: its own window)
@@ -549,10 +563,13 @@ test('Maelstrom Charger: with NO legal new target there is no retarget question 
   pass(h);                                                    // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Arcane Echo') });
   pick(h, { unit: tok });                                     // Echo targets the token
-  // A answers by removing the only token: now 'target token' has NO candidate
+  // the only token leaves the board: now 'target token' has NO candidate. R178
+  // moved the Charger's option into the CAST WINDOW, so this has to happen
+  // before the option is taken rather than between a trigger and its
+  // resolution — there is no longer any window of that kind, which is the
+  // whole point ("Meal copying is not an effect on the stack").
   whiteBox(h, e => { delete e.s.entities[tok]; });
-  pass(h); pass(h);                                           // resolve the Charger trigger
-  pick(h, true);                                              // sacrifice → copy
+  say(h, 'Sacrifice Maelstrom Charger');
   // a genuinely empty choice is NOT a question: no retarget decision appears
   assert.ok(!h.state.decision, 'no retarget question when nothing is legal to aim at');
   assert.ok(h.log.some(m => m.includes('no legal new target')), 'and the log says why the originals ride');
