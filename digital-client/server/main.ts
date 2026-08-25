@@ -21,7 +21,10 @@ import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
 import type { Action, CardName, Seat } from '../engine/src/types.ts';
-import { checkDeck, forcedAction, legalActions, IllegalAction } from '../engine/src/apply.ts';
+// R181: `legalActions` was imported here and never called — the seat-legality
+// question goes through rooms.ts's `legalForSeat`. Removed; `noUnusedLocals`
+// on server/tsconfig.json now catches the next one.
+import { checkDeck, forcedAction, IllegalAction } from '../engine/src/apply.ts';
 import { other, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
@@ -504,9 +507,15 @@ const peersOf = (room: Room): [boolean, boolean] => [!!room.sockets[0], !!room.s
  * occupied (the old connection is kicked): with two known players, a stale tab
  * must never dead-end the real person behind "seat taken". Auto-join (no seat
  * requested) only takes a free seat. */
-function pickSeat(room: Room, requested: number | undefined): { seat: Seat; kicked: WebSocket | null } | null {
+// R181: the return type says `0 | 1`, not `Seat`. The engine declares
+// `type Seat = number` ("0 | 1 in 1v1"), so the three room mutators that
+// genuinely only accept a slot — renameSeat, setSeatUser, setRoomDeck — could
+// not be handed this seat without a cast, and setRoomDeck below carried one.
+// The narrowing belongs where the value is actually decided, which is here:
+// every branch returns a literal or a value already compared to one.
+function pickSeat(room: Room, requested: number | undefined): { seat: 0 | 1; kicked: WebSocket | null } | null {
   if (requested === 0 || requested === 1) {
-    return { seat: requested as Seat, kicked: room.sockets[requested] };
+    return { seat: requested, kicked: room.sockets[requested] };
   }
   if (!room.sockets[0]) return { seat: 0, kicked: null };
   if (!room.sockets[1]) return { seat: 1, kicked: null };
@@ -593,7 +602,7 @@ wss.on('connection', ws => {
       // constructed lobby: register this seat's deck; when it completes the
       // pair the real game is dealt and BOTH seats get a fresh 'joined'
       const gameJustStarted = roomWaiting(room) && deckCards
-        ? setRoomDeck(room, seat as 0 | 1, deckCards) : false;
+        ? setRoomDeck(room, seat, deckCards) : false;
       settleClock(room);   // a connected seat with pending work goes on the clock
       const joinedMsg = (s: Seat): unknown => roomWaiting(room)
         ? {

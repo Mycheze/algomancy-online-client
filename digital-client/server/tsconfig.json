@@ -1,0 +1,31 @@
+{
+  "//": [
+    "R181 (CARD-TODO #59). server/ had NO tsconfig at all, so nothing typechecked",
+    "it — `npm run check` at the client root ran the server's node --test and",
+    "called that covered. Nine real type errors had accumulated, including one",
+    "that destroyed an action payload during undo. The flags below deliberately",
+    "match engine/tsconfig.json so the two projects cannot drift into different",
+    "notions of 'checked'; 153-typecheck-reach.test.ts asserts each of them by",
+    "name. `typeRoots` borrows the engine's @types/node exactly as backlog/ does",
+    "(no third node_modules tree); @types/ws is a real devDependency here",
+    "because ws is the server's own dependency and ships no types of its own."
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "typeRoots": ["../engine/node_modules/@types", "./node_modules/@types"],
+    "skipLibCheck": true
+  },
+  "include": ["*.ts"]
+}

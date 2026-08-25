@@ -6,6 +6,14 @@
     "lib": ["ES2022", "DOM"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
+    // R181 (CARD-TODO #60). `payLife` sat in batch-light-a.ts with zero call
+    // sites and a doc comment asserting a life-cost model all three life-cost
+    // cards had abandoned rulings ago — a dead function was the file's most
+    // confident wrong statement about how those cards work. This flag is what
+    // makes the next one a compile error. It does NOT cover exported dead code
+    // (tsc ignores exports); 147-comment-conformance.test.ts §4 is the sweep
+    // that does, and both are needed.
+    "noUnusedLocals": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,

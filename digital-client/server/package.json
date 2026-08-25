@@ -3,13 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "M2 slice: server-authoritative 1v1 Algomancy over WebSockets.",
+  "description": "M2 slice: server-authoritative 1v1 Algomancy over WebSockets. `typecheck` borrows the engine's tsc the way backlog/ does, so there is no third node_modules tree; @types/ws is local because ws is this package's own dependency and ships no types. `check` is what the client root calls — before R181 the root called `test` and nothing here typechecked at all.",
   "scripts": {
     "start": "node main.ts",
+    "typecheck": "../engine/node_modules/.bin/tsc --noEmit",
+    "check": "npm run typecheck && npm test",
     "test": "node --test suite.test.ts",
     "test-drive": "node test-drive.ts"
   },
   "dependencies": {
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
   }
 }

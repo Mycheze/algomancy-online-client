@@ -73,12 +73,12 @@
  * which asserts a refusal decided before any rebuild runs, injects.
  */
 import { rmSync } from 'node:fs';
-import type { Action, GameState, Seat } from '../engine/src/types.ts';
+import type { Action, ActivateVia, GameState, Seat } from '../engine/src/types.ts';
 import { apply, forcedAction, legalActions } from '../engine/src/apply.ts';
 import { gameFile } from './test-util.ts';
 import {
-  applyToRoom, createRoom, openSegment, segmentFloor, segmentKey, spliceable, undoActionAt,
-  undoForSeat, type Room,
+  applyToRoom, createRoom, openSegment, renumberAction, segmentFloor, segmentKey, spliceable,
+  undoActionAt, undoForSeat, type Room,
 } from './rooms.ts';
 
 let failures = 0;
@@ -115,8 +115,12 @@ function drain(room: Room): void {
 function entityIdsOf(a: Action): number[] {
   switch (a.type) {
     case 'castSpellToken': return [a.entityId];
+    // R181: only a `{ mod }` via names an id. `{ face }` (R63's granted-face
+    // channel) is also an object and has no `.mod`; the old `typeof === 'object'`
+    // test read `undefined` out of one and reported it as a referenced id.
     case 'activateAbility':
-      return typeof a.via === 'object' && a.via ? [a.entityId, a.via.mod] : [a.entityId];
+      return typeof a.via === 'object' && a.via !== null && 'mod' in a.via
+        ? [a.entityId, a.via.mod] : [a.entityId];
     case 'augment': return a.hostId === undefined ? [] : [a.hostId];
     case 'graft': return [a.hostId];
     case 'declareAttack': return [...a.columns.flat(), ...(a.spellTokens ?? [])];
@@ -753,6 +757,55 @@ function positionOf(s: GameState, seat: Seat): string {
   // ever say that again, whatever the reason for the refusal is.
   ok(!shut.ok && !/opponent has already acted/.test(shut.why),
     'and the reported error text is gone for good');
+}
+
+// ══ 8. R181: a `via: { face }` activation survives its own renumbering ═══
+//
+// `ActivateVia` has three shapes: the string 'augment', `{ mod }` (activate
+// through a mod sitting on the unit) and `{ face }` (activate through a
+// granted face's text — R63, and R118's "an activateAbility carrying via:{face}
+// replays byte for byte"). `renumberAction` tested `typeof via === 'object'`
+// and rewrote `via.mod`, which was written when `{ mod }` was the only OBJECT
+// shape. On a `{ face }` activation `.mod` is `undefined`, `undefined < hi` is
+// false, so `one()` set moved and returned `undefined - shift` = NaN — and the
+// spread wrote `{ mod: NaN }` OVER the face. The action stopped saying which
+// ability it was even for.
+//
+// It is asserted on the pure function rather than through a game because that
+// is the only place the corruption is visible: once the rebuild has replayed a
+// mangled activation and the engine has refused it, it is indistinguishable
+// from any other refusal, and the undo is simply declined for a reason nobody
+// can trace. This is exactly the class the reference-key measurement above
+// cannot see — the payload was destroyed BEFORE it was measured.
+{
+  console.log('\n[R181: renumbering does not eat a via:{face}]');
+  type Activate = Extract<Action, { type: 'activateAbility' }>;
+  const at = (via: ActivateVia): Activate =>
+    ({ type: 'activateAbility', seat: 0, entityId: 40, abilityIndex: 0, via });
+
+  const face = renumberAction(at({ face: 'Omniwield Evoker' }), 30, 33) as Activate;
+  ok(face.entityId === 37, `the entity id still moves down by the spliced block (${face.entityId})`);
+  ok(JSON.stringify(face.via) === JSON.stringify({ face: 'Omniwield Evoker' }),
+    `and the face is carried through untouched (${JSON.stringify(face.via)})`);
+
+  const faceText = renumberAction(at({ face: 'Debt Blep', text: 'augment' }), 30, 33) as Activate;
+  ok(JSON.stringify(faceText.via) === JSON.stringify({ face: 'Debt Blep', text: 'augment' }),
+    `so is which of the face's texts it was reached through (${JSON.stringify(faceText.via)})`);
+
+  const mod = renumberAction(at({ mod: 41 }), 30, 33) as Activate;
+  ok(JSON.stringify(mod.via) === JSON.stringify({ mod: 38 }),
+    `a { mod } via — the one that really does name an id — still renumbers (${JSON.stringify(mod.via)})`);
+
+  const aug = renumberAction(at('augment'), 30, 33) as Activate;
+  ok(aug.via === 'augment', `and the bare 'augment' string is left alone (${String(aug.via)})`);
+
+  // the ids BELOW the splice must not move at all, or the repair would be
+  // renumbering things the splice never touched
+  const below = renumberAction(
+    { type: 'activateAbility', seat: 0, entityId: 12, abilityIndex: 0, via: { face: 'Omniwield Evoker' } },
+    30, 33) as Activate;
+  ok(below.entityId === 12 && JSON.stringify(below.via) === JSON.stringify({ face: 'Omniwield Evoker' }),
+    'an activation that predates the splice comes back completely unchanged');
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');

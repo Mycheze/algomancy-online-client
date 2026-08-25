@@ -6,6 +6,11 @@
     "lib": ["ES2022"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
+    // R181: matches engine/ and server/. Every project under digital-client/
+    // is checked to the same standard, so code that moves between them does
+    // not change meaning; 153-typecheck-reach.test.ts asserts the three
+    // load-bearing flags by name in every config.
+    "noUnusedLocals": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,

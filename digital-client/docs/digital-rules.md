@@ -12432,3 +12432,108 @@ middle and the obvious `/badge offer/` matches nothing, ever. The red-check
 caught it; the regex is now `/badge[^"]*offer/`. A test that cannot fail is the
 worst artefact in this repo, and this one was three characters away from being
 one.
+
+---
+
+## R181 — a check that never ran is worse than no check, because the config is what everyone reads as proof
+
+**CARD-TODO #59 and #60. Not a rules ruling: this one is about the tooling that
+is supposed to keep the rulings true.**
+
+### What was actually wrong
+
+`digital-client/server/` had **no `tsconfig.json` at all**. Not a lax one —
+none. And the client root's `check` script read:
+
+```
+npm --prefix engine run check && npm --prefix server test && npm --prefix backlog run check
+```
+
+Every person who read that line saw three projects being checked. What the
+middle one did was run `node --test suite.test.ts`, and `node` **type-strips**.
+It does not type-check. The server had been imported, tested, deployed and
+played on for months with the compiler never once pointed at it.
+
+Nine type errors had accumulated in there. One of them was a live defect, and
+it is worth stating in full because it is the kind this repo cares about:
+
+> `ActivateVia` has three shapes — the string `'augment'`, `{ mod }` (activate
+> through a mod on the unit) and `{ face }` (activate through a granted face's
+> text, R63/R118). `rooms.ts` tested `typeof via === 'object'` and read
+> `via.mod`, which was correct when `{ mod }` was the only OBJECT shape. On a
+> `{ face }` activation `.mod` is `undefined`; `undefined < hi` is `false`, so
+> the renumberer marked it moved and returned `undefined - shift` = **NaN**, and
+> the spread wrote `{ mod: NaN }` **over the face**. Undoing an action earlier
+> in the log destroyed the payload of any later face-granted activation — it
+> stopped saying which ability it was even for, the rebuild refused it, and the
+> undo was declined for a reason nobody could trace.
+
+The reference-key measurement that `undoActionAt` uses as its proof could not
+see this: **the payload was destroyed before it was measured.**
+
+The second half (#60) is the same failure in the other project.
+`engine/tsconfig.json` had `strict` and not `noUnusedLocals`, so
+`batch-light-a::payLife` sat with zero call sites and a doc comment asserting
+that life is paid *"as a COST at resolution"* — a model all three life-cost
+cards had moved away from rulings earlier. **A dead function was the file's
+most confident wrong statement about how those cards work.**
+
+### The ruling
+
+1. **Every directory under `digital-client/` that holds `.ts` files is inside
+   some `tsconfig.json` project.** A new top-level directory is unchecked from
+   the moment it exists until someone notices, and nobody notices.
+2. **Every one of those projects is reached by a real `tsc` from the root
+   `check`.** "The suite is green" is not evidence about types.
+3. **`strict`, `noUnusedLocals` and `noUncheckedIndexedAccess` are on in every
+   one of them.** Not "in the important one" — a flag on in one project and off
+   in another means code that moves between them changes meaning, and *"it
+   typechecks"* stops being a single claim.
+
+`server/` now has a config (borrowing the engine's `tsc` and `@types/node` the
+way `backlog/` does; `@types/ws` is a real devDependency there because `ws` is
+the server's own and ships no types). The root `check` calls
+`npm --prefix server run check`. `backlog/` and `engine/` gained
+`noUnusedLocals`.
+
+### Two things worth knowing about the flag
+
+**`noUnusedLocals` does not cover exported dead code.** `tsc` ignores exports,
+on the reasonable assumption that something outside might import them. So the
+flag would *not* have caught `helpers.ts::lifeGainedIn`, which was exported,
+dead, and whose only other appearance tree-wide was inside a **regex literal**
+in `96-x-preview.test.ts` — not a call. The sweep that catches those is
+`147-comment-conformance.test.ts` §4, which counts real call sites over the code
+view of the whole tree. **Both are needed and neither subsumes the other.**
+
+**The `_` escape hatch is narrower than it looks.** An unused binding whose
+name starts with `_` is exempt only inside a **destructuring pattern**
+(`const { h, D: _D } = board(...)`). A plain `const _x = …` is still an error,
+and so is an unused import. Measured, not assumed.
+
+### The on-disk shapes got a home
+
+`replay-room.ts` used to restate `Fork` and `LostAction` structurally, with a
+comment explaining why it had to: `rooms.ts` imports `ws`, `engine/test/143`
+imports `replay-room.ts`, and importing even a *type* from `rooms.ts` dragged
+the socket layer into the engine's typecheck (clean → 7 errors). The
+restatement was rot-prone in exactly the way that matters — a **rename** in
+`rooms.ts` would leave the replay tool compiling happily against a field the
+disk no longer carries, its fork block would stop printing, and `unexplained`
+would go quietly empty, which is the opposite of loud. They now live in
+`server/types.ts`, which imports only engine types, declares no values, and
+therefore can never pull `ws` in.
+
+### The guards
+
+* **`engine/test/153-typecheck-reach.test.ts`** — asserts the three points of
+  the ruling above, one section each, by asking `tsc --showConfig` what each
+  project actually covers rather than reimplementing glob matching, and by
+  following the root `check` through the npm script graph rather than assuming
+  what it says. Each required flag is named individually with the incident that
+  argues for it, so turning one off fails by name. Every section is also
+  guarded against going vacuous.
+* **`server/test-undo-segment.ts` §8** — the `via: { face }` renumbering, on
+  the pure function, because that is the only place the corruption is visible:
+  once the rebuild has replayed a mangled activation, it is indistinguishable
+  from any other refusal.

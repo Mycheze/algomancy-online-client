@@ -223,9 +223,17 @@ export const perSeatRows = (g: E, seat: Seat, f: (s: Seat) => number): XPreviewR
  * previews cannot read the counter two different ways. */
 export const lifeLostIn = (g: E, region: number, seat: Seat): number =>
   g.battleCounter(region, `lifeLost:${seat}`);
-/** the `lifeGained:<seat>` twin of `lifeLostIn` (E.gainLife bumps it, R49) */
-export const lifeGainedIn = (g: E, region: number, seat: Seat): number =>
-  g.battleCounter(region, `lifeGained:${seat}`);
+/* R181: `lifeGainedIn` — the `lifeGained:<seat>` twin of `lifeLostIn` — was
+ * exported from here with zero call sites. Its only other appearance tree-wide
+ * was inside a REGEX LITERAL in `96-x-preview.test.ts`, which is not a call, so
+ * a grep made it look alive. Deleted; it was a one-line read of
+ * `g.battleCounter(region, 'lifeGained:' + seat)` if a card ever needs it back.
+ *
+ * NOTE, because it matters for what R181 actually bought: `noUnusedLocals`
+ * would NOT have caught this one. The flag ignores EXPORTED declarations, and
+ * an export with no importer is exactly the dead helper that hides longest.
+ * The sweep that catches those is `147-comment-conformance.test.ts` §4, which
+ * counts call sites over the code view of the whole tree. Keep both. */
 
 /* ── doubling a unit's effective stats (Burgeon, Surly Stalker) ─────────
  *

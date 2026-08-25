@@ -60,23 +60,24 @@ import type { Action, CardName, Element, EngineEvent, GameMode, Seat } from '../
 import { apply, checkDeck, createGame, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 
 /**
- * `Fork` / `LostAction` are CANONICALLY `server/rooms.ts`'s — that is what
- * writes them. They are restated here, structurally, on purpose:
+ * `Fork` / `LostAction` are the shapes `server/rooms.ts` WRITES into a saved
+ * game. Until R181 they were restated here, structurally, because `rooms.ts`
+ * pulls in `ws` and the whole socket layer and importing even a TYPE from it
+ * dragged that into any project checking this analysis — engine/test/143
+ * imports this file, and its `tsc` went from clean to 7 errors.
  *
- *   · this tool's input is a FILE, not a live `Room`, so the shape it should
- *     hold itself to is the shape on disk (and it already reads every field
- *     defensively, because an old file may not have them all);
- *   · `rooms.ts` pulls in `ws` and the whole socket layer, and importing even
- *     a type from it drags that into any project that wants to check this
- *     analysis — engine/test/143 does exactly that, and would otherwise
- *     typecheck the server's tsconfig against the engine's.
+ * The restatement was rot-prone in the one way that matters: a RENAME in
+ * `rooms.ts` would leave this file compiling happily against a field the disk
+ * no longer carries, the fork block below would stop printing, and
+ * `unexplained` would go quietly empty — the opposite of loud. So the shapes
+ * moved to `./types.ts`, which imports only engine types, declares no values,
+ * and therefore can never pull `ws` in. Both sides now name the same interface
+ * and a rename is a compile error on both.
  *
- * Anything rooms.ts ADDS to a fork is ignored here rather than mis-read; if it
- * ever RENAMES one of these fields, the fork block below stops printing and
- * `unexplained` goes empty, which is loud.
+ * This file still reads every field defensively: its input is a FILE, and an
+ * old one may predate any of them.
  */
-interface LostAction { i: number; type: Action['type']; seat: Seat; why: string }
-interface Fork { at: string; logged: number; lost: LostAction[]; turn: number; phase: string }
+import type { Fork, LostAction } from './types.ts';
 
 /** the shape a game file has to have for this tool to say anything about it */
 export interface RoomFile {

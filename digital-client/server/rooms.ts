@@ -14,9 +14,15 @@ import { fileURLToPath } from 'node:url';
 // type-only, so rooms.ts gains no runtime dependency on ws — the sockets are
 // the real WebSockets main.ts plugs in; this module only checks presence
 import type { WebSocket } from 'ws';
-import type { Action, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Seat } from '../engine/src/types.ts';
+import type { Action, ActivateVia, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Seat } from '../engine/src/types.ts';
 import { apply, checkDeck, createGame, decisionBlocks, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 import { other } from './view.ts';
+// R181: the on-disk shapes moved to types.ts so replay-room.ts can name them
+// without importing this module (and `ws` with it). Re-exported here because
+// this is still where they are WRITTEN, and the old import path is the one
+// every reader knows.
+import type { Fork, LostAction } from './types.ts';
+export type { Fork, LostAction } from './types.ts';
 import {
   resolveTrio, sanitizeMethod, sanitizeSubmission, submissionReady,
   type TrioHistoryRow, type TrioMethod, type TrioResult, type TrioSubmission,
@@ -330,11 +336,52 @@ function tagOf(a: Action): string {
  * what it means" — is now made once, generally, by returning nothing for them
  * here and by their reference key being their bare type.
  */
+/**
+ * The entity id an activation's `via` names, or null when it names none.
+ *
+ * R181, and this was a live bug rather than a tidy-up. `ActivateVia` has THREE
+ * shapes — the string `'augment'`, `{ mod }` (activate through a mod on the
+ * unit), and `{ face }` (activate through a granted face's text, R63). The
+ * three sites below were written when `{ mod }` was the only OBJECT shape, so
+ * they tested `typeof via === 'object'` and read `.mod` — which on a `{ face }`
+ * activation is `undefined`. `entityRefs` then reported `undefined` as a
+ * referenced id, and `renumberAction` wrote `{ mod: NaN }` back OVER the face,
+ * erasing which ability the action was even for. An undo segment containing a
+ * face-granted activation could not survive its own renumbering.
+ */
+/**
+ * Which slot of a two-seat pair a seat is.
+ *
+ * The engine declares `type Seat = number` (with `// 0 | 1 in 1v1` next to it),
+ * so `heldEvents[other(seat)]` on a `[T, T]` reads as `T | undefined` — that is
+ * where R181's two "Object is possibly 'undefined'" errors came from, and they
+ * are strictness noise, not defects: every seat reaching those lines came from
+ * `pickSeat` (which returns 0 or 1 and nothing else) or from an action the
+ * engine already accepted. Written as a narrowing rather than a `!` so that if
+ * the game ever grows a third seat this is a visibly wrong line instead of an
+ * assertion that was silently false.
+ */
+const seatSlot = (seat: Seat): 0 | 1 => seat === 0 ? 0 : 1;
+
+const viaMod = (via: ActivateVia | undefined): EntityId | null =>
+  typeof via === 'object' && via !== null && 'mod' in via ? via.mod : null;
+
+/** how a `via` reads in a reference key: the mod's symbol when it names one,
+ * otherwise the face (and which of its texts) the ability was reached through
+ * — `String({face})` would flatten every face to "[object Object]" and make
+ * two different faces compare equal. */
+const viaKey = (via: ActivateVia | undefined, sym: (id: EntityId) => string): string =>
+  typeof via !== 'object' || via === null ? String(via ?? '-')
+    : 'mod' in via ? `mod:${sym(via.mod)}`
+      : `face:${via.face}:${via.text ?? '-'}`;
+
 function entityRefs(a: Action): EntityId[] {
   switch (a.type) {
     case 'castSpellToken': return [a.entityId];
-    case 'activateAbility':
-      return typeof a.via === 'object' && a.via ? [a.entityId, a.via.mod] : [a.entityId];
+    case 'activateAbility': {
+      const m = viaMod(a.via);
+      return m === null ? [a.entityId] : [a.entityId, m];
+    }
     case 'augment': return a.hostId === undefined ? [] : [a.hostId];
     case 'graft': return [a.hostId];
     case 'declareAttack': return [...a.columns.flat(), ...(a.spellTokens ?? [])];
@@ -409,8 +456,7 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
     case 'playCached': parts.push(at(p?.cache, a.index)); break;
     case 'castSpellToken': parts.push(sym(a.entityId)); break;
     case 'activateAbility':
-      parts.push(sym(a.entityId), String(a.abilityIndex),
-        typeof a.via === 'object' && a.via ? `mod:${sym(a.via.mod)}` : String(a.via ?? '-'));
+      parts.push(sym(a.entityId), String(a.abilityIndex), viaKey(a.via, sym));
       break;
     case 'augment':
       parts.push(a.from, at(modZone(a.from), a.index),
@@ -508,39 +554,11 @@ function zoneDelta(before: GameState, after: GameState, seat: Seat): string {
 // explicit and checkable instead: **seed + actions, minus the forks this file
 // declares, reproduces this game.** replay-room.ts verifies exactly that.
 
-/** One logged action a rebuild could not apply. */
-export interface LostAction {
-  /** index into the room's `actions` */
-  i: number;
-  type: Action['type'];
-  seat: Seat;
-  /** the engine's own refusal */
-  why: string;
-  /**
-   * WHICH failure this is, so the refusal a player reads names the real
-   * reason instead of a guess (additive; absent on a restore's skip list,
-   * which is always 'lost').
-   *
-   *   'lost'     the action no longer replays at all — the rebuild refused it.
-   *   'changed'  the action still replays and is still legal, but it now
-   *              REFERS to something else (another unit, another card in hand,
-   *              another roll). The dangerous one: nothing downstream would
-   *              ever notice, which is exactly why it is measured.
-   */
-  kind?: 'lost' | 'changed';
-}
-
-/** A restore that could not faithfully rebuild a game still being played. */
-export interface Fork {
-  /** when the restore happened (ISO) */
-  at: string;
-  /** what the log claimed vs what could actually be replayed */
-  logged: number;
-  lost: LostAction[];
-  /** where the rebuild landed — the board play resumed from */
-  turn: number;
-  phase: string;
-}
+/* `LostAction` and `Fork` — the two shapes this file WRITES into the saved
+ * game — are declared in `./types.ts` and re-exported from the import block at
+ * the top. They live there so `replay-room.ts`, which reads them back off
+ * disk, can name the same interface instead of restating it structurally; see
+ * that file's header for the `ws` problem that forced the restatement. */
 
 /** Two skip sets describe the same fork iff they lost the same indices. */
 const sameLoss = (a: LostAction[], b: LostAction[]): boolean =>
@@ -955,7 +973,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
     state = r.state;
     all.push(...r.events);
     segTouched.push(movedIdOrRng(before, state));
-    if (holding) heldEvents[other(a.seat)].push(...r.events);
+    if (holding) heldEvents[seatSlot(other(a.seat))].push(...r.events);
     const now = segmentKey(state);
     if (now !== segKey) {
       segKey = now;
@@ -1081,7 +1099,7 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   room.segRefs.push(referenceKey(before, r.state, action, sym, before.rngState !== r.state.rngState));
   room.segTouched.push(movedIdOrRng(before, r.state));
   room.events.push(...r.events);
-  if (holding) room.heldEvents[other(action.seat)].push(...r.events);
+  if (holding) room.heldEvents[seatSlot(other(action.seat))].push(...r.events);
   if (room.state.winner !== null) room.winner = room.state.winner;   // stamp it
   settleClock(room);   // recompute who is on the clock under the NEW state
   persist(room);
@@ -1207,7 +1225,11 @@ export function spliceable(room: Room, index: number, seat: Seat): boolean {
  * the reference keys on both sides of the comparison have to agree about that
  * or every entity it created would look like a different entity.
  */
-function renumberAction(a: Action, lo: number, hi: number): Action {
+/** Exported for `test-undo-segment.ts` §8: this is a pure function of an
+ * action and an id range, and R181's `via: { face }` corruption is only
+ * observable in its OUTPUT — by the time the rebuild has run, a mangled
+ * activation is indistinguishable from an action the engine simply refused. */
+export function renumberAction(a: Action, lo: number, hi: number): Action {
   const shift = hi - lo;
   let moved = false;
   const one = (id: EntityId): EntityId => {
@@ -1219,11 +1241,15 @@ function renumberAction(a: Action, lo: number, hi: number): Action {
   let out: Action;
   switch (a.type) {
     case 'castSpellToken': out = { ...a, entityId: one(a.entityId) }; break;
-    case 'activateAbility':
-      out = typeof a.via === 'object' && a.via
-        ? { ...a, entityId: one(a.entityId), via: { mod: one(a.via.mod) } }
-        : { ...a, entityId: one(a.entityId) };
+    case 'activateAbility': {
+      // only a `{ mod }` via names an id to move; 'augment' and `{ face }` are
+      // carried through untouched by the spread (see viaMod)
+      const m = viaMod(a.via);
+      out = m === null
+        ? { ...a, entityId: one(a.entityId) }
+        : { ...a, entityId: one(a.entityId), via: { mod: one(m) } };
       break;
+    }
     case 'augment': out = a.hostId === undefined ? a : { ...a, hostId: one(a.hostId) }; break;
     case 'graft': out = { ...a, hostId: one(a.hostId) }; break;
     case 'declareAttack':

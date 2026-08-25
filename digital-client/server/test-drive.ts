@@ -193,7 +193,11 @@ async function main(): Promise<void> {
     ok(a2Join.seat === 0, 'reconnected into seat 0');
     ok(a2.log.length > 0, `resynced the full game log (${a2.log.length} lines)`);
     ok(a2.view.players[1].hand.every((n: string) => n === HIDDEN_CARD), 'resynced view is still redacted');
-    ok(a2.view.turn >= a.view?.turn ?? 0, 'resynced state reflects prior progress');
+    // R181: the parens are load-bearing. `>=` binds tighter than `??`, so this
+    // read `(a2.view.turn >= a.view?.turn) ?? 0` — a boolean, never nullish, so
+    // the fallback was dead code and a missing `a.view` made the comparison
+    // `>= undefined`, i.e. false, i.e. a failing assertion for the wrong reason.
+    ok(a2.view.turn >= (a.view?.turn ?? 0), 'resynced state reflects prior progress');
     ok(a2.leaks.length === 0, 'reconnect view had no leaks');
 
     b.close(); a2.close();

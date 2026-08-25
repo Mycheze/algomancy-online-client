@@ -115,12 +115,13 @@ import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** all tokens (unit tokens + spell tokens) in a region, absent ones excluded */
-function tokensInRegion(g: E, region: number): Entity[] {
-  return Object.values(g.s.entities).filter(e =>
-    e.region === region && !e.absent &&
-    ((e.kind === 'unit' && !!e.token) || e.kind === 'spellToken'));
-}
+/* R181: `tokensInRegion(g, region)` lived here — "all tokens (unit tokens +
+ * spell tokens) in a region, absent ones excluded" — with zero call sites.
+ * Deleted rather than wired up: nothing in this batch counts tokens by region.
+ * A dead helper's doc comment is a confident description of machinery nobody
+ * runs (`batch-light-a::payLife` asserted a life-cost model all three life-cost
+ * cards had abandoned). `noUnusedLocals` is on now, so the next one reddens
+ * `tsc` instead of ageing in place. */
 
 /** "my column deals combat damage TO AN OPPONENT": the shared engine
  * predicate, E.columnDealtCombatDamage, on the FACE channel only — the "to an
