@@ -3207,7 +3207,31 @@ export const CARD_TODO: TodoEntry[] = [
       + "R172's doing, so flipping it later touches one assertion.",
     proof: null,
     verify: 'The answer is written down as a ruling, whichever way it goes.',
-    status: 'open',
+    closed:
+      'R185 — the owner ruled it and NO BEHAVIOUR CHANGED: the column stays blocked. Removing a '
+      + 'blocker mid-combat does not un-declare the block; in his framing removal "protected '
+      + 'nothing but still cost them a card". The alternative was put to him explicitly (killing '
+      + 'or stealing a blocker becomes a way to push damage through, making every mid-combat '
+      + 'removal much stronger) and declined. '
+      + 'What changed is that it is a RULE with a test under it, on all FOUR routes a blocker '
+      + 'can leave — dies, recalled, erased, stolen (Download, R172) — where only the death '
+      + 'route had ever been tested. '
+      + '⚠ AND THE DEATH-ROUTE TEST DID NOT GUARD THIS RULE. 02-combat\'s "blocked column stays '
+      + 'blocked" uses Good Whale, which is {Piercing}, and Piercing carries through a '
+      + 'blocked-but-empty column BY DESIGN. Measured: inverting the rule reddens all four cases '
+      + 'in 157 and leaves 02-combat at 5/5 GREEN. It measures the piercing rule, not the '
+      + 'blocking rule — the same "a guard that cannot fail on the behaviour it names" shape as '
+      + 'CT-56, found here by mutation rather than by reading. The attacker in 157 is '
+      + 'deliberately vanilla, and a negative control leads the file so the four assertions '
+      + 'cannot pass on a board where nothing was going to connect anyway.',
+    guards: [
+      '157-blocked-stays-blocked.test.ts::an UNBLOCKED column really does connect',
+      '157-blocked-stays-blocked.test.ts::a blocker that DIES leaves the column blocked',
+      '157-blocked-stays-blocked.test.ts::a blocker that is RECALLED leaves the column blocked',
+      '157-blocked-stays-blocked.test.ts::a blocker that is ERASED leaves the column blocked',
+      '157-blocked-stays-blocked.test.ts::a blocker STOLEN mid-combat (Download) leaves the column blocked',
+    ],
+    status: 'done',
   },
   {
     id: 63,

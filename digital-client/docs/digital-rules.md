@@ -12276,3 +12276,46 @@ absent from the stripped view entirely. That is precisely the failure the
 helper's own doc comment says it exists to prevent. `test/card-todo.ts` is
 reserved to the orchestrator, so 147 works around it with the smallest sound
 repair and asserts the result is clean; the fix itself is a ticket.
+
+---
+
+## R185 — a blocked column stays blocked, however the blocker leaves
+
+**CARD-TODO #62.** The engine has always behaved this way and until now it was
+an ACCIDENT rather than a decision. `exchangeAt` reads
+`blockedEver = b.blocks[ci] !== undefined`, so once a column has been blocked it
+stays blocked for the rest of the sub-step whatever becomes of the blocker —
+with a one-line comment (*"blocked stays blocked: only Piercing carries through
+dead blockers"*) and no ruling behind it.
+
+The asymmetry is what made it worth asking. The Manual is explicit about the
+MIRROR case — a blocker whose attackers have all died *"stays, but has nothing
+to deal damage to"* — so one direction was a written rule and the other was an
+implementation detail.
+
+**THE OWNER'S ANSWER (2026-08-25): the column stays blocked.** Removing a
+blocker mid-combat does not un-declare the block; the attacker still deals
+nothing. In his framing, removal *"protected nothing but still cost them a
+card"*. The alternative was put to him explicitly — that killing or stealing a
+blocker becomes a way to push damage through, making every mid-combat removal
+considerably stronger — and declined.
+
+So no behaviour changed here. What changed is that it is now a rule with a test
+under it, on **all four** routes a blocker can leave: it DIES, it is RECALLED,
+it is ERASED, or it is STOLEN (Download's mid-battle steal, R172). Only the
+death route had ever been tested.
+
+⚠ **And the existing death-route test does not actually guard this rule.**
+`02-combat.test.ts::blocked column stays blocked; piercing still carries through
+dead blockers` uses **Good Whale**, which is `{Piercing}` — and Piercing carries
+through a blocked-but-empty column by design. Measured: inverting the rule to
+"the column connects" reddens all four cases in
+`157-blocked-stays-blocked.test.ts` and leaves `02-combat` at 5/5 GREEN. That
+test measures the piercing rule; the attacker in 157 is deliberately vanilla.
+
+⚠ A negative control leads the file, because without one every "no damage
+through" assertion passes on a board where nothing was going to connect anyway.
+
+Related: R72 (the after-blocks lock), R172 (Download's steal sits out until
+regroup — the other half of the same card).
+
