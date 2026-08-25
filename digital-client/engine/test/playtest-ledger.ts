@@ -2002,4 +2002,26 @@ export const LEDGER: LedgerEntry[] = [
       + 'data and the owner then corrected it AT SOURCE in the oracle file; the extractor still '
       + 'never rewrites a word, now pinned generally rather than per-card. Carried as CT-36.',
   },
+  {
+    id: 103, room: 'GYSR', date: '2026-08-25',
+    report: 'Cached cards (from glimpse or prophecy) that can be played should show up on the '
+      + 'RIGHT side of the hand area — it feels like they are in your hand (which they should), '
+      + 'is clearly different from cards in hand (on the left), and they are harder to forget. '
+      + 'They should stay in the cache area too; this is just an easier way to see and play them',
+    status: 'live',
+    note:
+      'ARRIVED MID-SESSION on 2026-08-25 (12:15 UTC), while round 26 was running — the round '
+      + 'had opened by confirming issues.jsonl was byte-identical to the 103-row snapshot, and '
+      + 'it stopped being so three hours later. Caught only because the end-of-round replay '
+      + 'check re-runs `md5sum issues.jsonl` on the server rather than trusting the opening '
+      + 'check. Refresh the snapshot at the END of a round as well as the start. '
+      + '⚠ GYSR WAS STILL LIVE when this was ledgered (game file and server clock both read '
+      + '12:20 UTC), so the log is not final and must not be used for forensics yet — a '
+      + 'truncated copy does not error, it reassures. '
+      + 'The owner calls it a UX improvement idea rather than a bug, and it is explicitly '
+      + 'ADDITIVE ("they should also be in the cache area as they are now"), so it is not a '
+      + 'defect in the cache UI — it is a second, closer surface for the same cards. Carried as '
+      + 'CT-63. It belongs with BL-16/BL-21 (the deployment-reveal readability items) rather '
+      + 'than with the card work, and nothing in it outranks card-todo.',
+  },
 ];

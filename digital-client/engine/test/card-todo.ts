@@ -3209,4 +3209,39 @@ export const CARD_TODO: TodoEntry[] = [
     verify: 'The answer is written down as a ruling, whichever way it goes.',
     status: 'open',
   },
+  {
+    id: 63,
+    area: 'client',
+    severity: 'minor',
+    reportId: 103,
+    title: 'Playable cached cards should sit at the RIGHT of the hand, as well as in the cache',
+    detail:
+      'Owner, GYSR 2026-08-25: cached cards (from a glimpse or a prophecy) that CAN BE PLAYED '
+      + 'should appear on the right-hand side of the hand area — "it feels like they are in your '
+      + 'hand (which they should), is clearly different from cards in hand (they are on the '
+      + 'left) and they are harder to just forget about." '
+      + '⚠ It is explicitly ADDITIVE: "They should also be in the cache area as they are now, '
+      + 'this is just an easier way to see and play them." So this is not a defect in the cache '
+      + 'UI and the cache row must not be moved or emptied — it is a SECOND, closer surface for '
+      + 'the same cards, and only for the ones that are actually playable right now.',
+    evidence:
+      'Playtest report #103, filed mid-round. The "harder to forget" half is the substance: a '
+      + 'cached card expires (playableUntilTurn), so forgetting it is a real, silent loss, and '
+      + 'the cache row sits away from where a player is looking when they decide what to play. '
+      + 'Same family as BL-16 and BL-21, which are both about a surface being present but '
+      + 'unreadable at the moment it matters.',
+    fix:
+      'Render the playable subset of the cache into the right of the hand strip, keeping the '
+      + 'cache row unchanged. `ui/inspect.ts::playableCachedNames(cache, legal)` already answers '
+      + 'exactly "which cached cards are playable right now" and is tested — so this is a '
+      + 'rendering change with the judgement already lifted out, not new logic. '
+      + '⚠ Check it against CT-54 first: the hand\'s `.card.playable` outline OR-folds five '
+      + 'different actions into one glow, so adding a second CLASS of card to that strip without '
+      + 'fixing the outline makes the ambiguity worse, not better. Do CT-54 with it or before it.',
+    proof: null,
+    verify:
+      'With a playable cached card, it appears at the right of the hand AND in the cache row, '
+      + 'and clicking either plays it. With an unplayable one, it appears only in the cache.',
+    status: 'open',
+  },
 ];
