@@ -242,9 +242,16 @@ card('Bripp', {
 });
 
 // "Erase target unit. Its controller Glimpses 3." — bb/1 {Battle} Cosmic
-// Spell. Erase = remove from the game entirely: no bin, no died/despawned
-// triggers; its mods are erased with it. The Glimpse is real (R45) and goes
-// to the ERASED unit's controller — a consolation the opponent usually gets.
+// Spell. Erase = remove from the game entirely: no bin, no 'died' trigger and
+// (R40) no trash; its mods are erased with it. The Glimpse is real (R45) and
+// goes to the ERASED unit's controller — a consolation the opponent usually
+// gets.
+//
+// R172: it DOES fire 'despawned' — "not a death, but it is a despawn"
+// (R157 §3) — and reaches that by going through the engine choke point. ⚠ The
+// divergence inventory listed Celestial Purge as a THIRD hand-rolled erase
+// beside helpers.ts and batch-hybrids-ld-a. It never was one: it has always
+// CALLED the helpers copy, which is now a shim over `E.eraseFromPlay`.
 card('Celestial Purge', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Celestial Purge: erase target unit (its controller Glimpses 3)' },

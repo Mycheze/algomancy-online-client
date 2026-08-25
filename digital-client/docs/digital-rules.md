@@ -11740,3 +11740,186 @@ cannot be an empty check.
 Gated coverage stands at **98/316**. The remaining 218 are 152 `[Augment]`
 clauses, 54 trigger clauses and 12 condition clauses, and each of those three
 numbers is now a ticket with a shape rather than a share of one big number.
+
+---
+
+## R172 — an ERASE is a despawn; the erase copies are one primitive; and a unit stolen mid-battle sits out until regroup
+
+*2026-08-25. Three related defects, all of the same shape: a route OUT of play
+that did not behave like the other routes out of play. R167 is the template and
+the immediate predecessor — this is R167's bug one verb over, plus the sweep
+R167's own ⚠ section asked for.*
+
+### 1. `E.eraseFromPlay` fired no `'despawned'`
+
+It reverted the face, deleted the unit and every mod entity, unslotted the unit
+and emitted a single `'erased'` event. `'erased'` is a **log-and-pile** type:
+`E.ev` writes it into the public erased pile (R65) and there is **no
+`fireEvent('erased', …)` site anywhere in the engine or the card pool**. So an
+erase was invisible to the game — which is precisely the failure R152 §1 found
+on `exchangeInPlace` ("the despawn was logged and never fired"), reached by a
+different road.
+
+The repo had already ruled the general case, twice:
+
+> **R157 §3** — *"It's not a death, but it IS a despawn and a trashing. Weird
+> corner case."*
+
+and R152, which repaired this same omission for an exchange. An erase is the
+**third** non-death departure and was the last one still silent. Two printed
+things were dead on it:
+
+* every *"whenever a unit despawns"* watcher — Demon of the Depths' `[Augment]
+  Whenever one of your units despawns, I deal 1 damage to any target` heard a
+  death, a recall, a cache and an exchange, and not a Banishment;
+* every donated `[Augment] When I despawn` — R167's case, on the one route
+  R167 did not have. And because `eraseFromPlay` deleted its mods as its third
+  statement, R167's anchoring fix had to be repeated here or the new event
+  would fire with nothing left to donate.
+
+**Reachable today** through Banishment, Celestial Purge, Zephyrzoa's "erase
+me", Borrower of Forms, Feed to Hooba, Reap the Due, Stellar Fission and
+Skybreaker's `Erase me:` activation cost.
+
+#### `'despawned'` AND `'erased'`, and nothing double-counts
+
+The brief asked whether firing both double-counts anything downstream. It
+cannot, and the reason is structural rather than a survey:
+
+* `'erased'` reaches **two** consumers — the game log, and the erased pile,
+  which `E.ev` fills from `type === 'erased'` alone. No `fireEvent` dispatches
+  it, so no triggered ability has ever been able to hear it.
+* `'despawned'` reaches **one** consumer — `fireEvent`'s trigger scan. It never
+  touches the pile.
+
+Disjoint. The one thing that WOULD have double-counted was rejected: the tail
+is **not** `afterDespawn`. That method calls `noteTrashed` on every nontoken
+mod (R40 — wrong here: an erase never touches a bin, so it is never a trash)
+and emits its own `'erased'` line for the token mods, which would have filed
+them on the pile a second time on top of `eraseFromPlay`'s own bulk `cards`
+array. `eraseFromPlay` keeps its own tail.
+
+#### The order: pile first, then the despawn
+
+`destroy` and `afterDespawn` both put their `'erased'` lines AFTER the announce
+— but those announce a card being swept back **out of a bin**, a *second*
+departure. Here the erased pile is the card's **destination**, the analogue of
+`disposeToBin`'s bin push, which lands **before** the announce so that "a death
+listener sees the same board a despawn listener would" (R152/R167). Same rule,
+applied to the zone that is actually the destination: a leave-play listener
+always sees the card already in the zone it went to.
+
+The mod entities are deleted in the **last** statement, exactly as
+`disposeToBin` and `afterDespawn` do it (R167). The window is inert for the
+same three reasons R167 gives: `fireEvent` only queues; an orphaned mod
+radiates nothing (`E.anchored` resolves it through `entity(modOf)`, and the
+host is already gone); kind `'mod'` keeps it out of the listener scan.
+
+The event carries `leftPlayFacts` (R70) plus `to: 'erased'`, filling the slot a
+recall puts `'hand'` in. The only two readers of that slot in the pool both
+test `=== 'hand'`, so nothing matches — correctly, because **no card enters a
+zone here**.
+
+**What did NOT widen.** An erase is still not a death and still not a trash.
+No `'died'`, no `'trashed'`, no bin entry. R40 turns on a card entering a bin
+and nothing here enters one.
+
+### 2. The card-side erase copies are folded into the choke point
+
+The divergence inventory §2c named three hand-rolled erases. **It was wrong
+about one of them**: `batch-water-a`'s Celestial Purge is not a copy and never
+was — it has always *called* `helpers.ts`'s. There were **two**:
+
+* `helpers.ts`'s `eraseFromPlay`, reached by **eight** card sites across six
+  batches (Banishment, Celestial Purge, Borrower of Forms, Feed to Hooba, Reap
+  the Due, Stellar Fission …);
+* `batch-hybrids-ld-a`'s `eraseUnit`, reached by Zephyrzoa.
+
+Both are one-line shims over `E.eraseFromPlay` now, so §1 reaches every card
+call site for free. Four things the hand-rolled bodies got wrong, all silently:
+
+1. **No `revertFace`.** R157 §10: *"In all zones, other than play, it exists as
+   the front side."* A transformed card erased through either copy did not turn
+   back over, so the erased pile — the only record that a card has left the
+   GAME — named "Beyond, Codex Incarnate", a face that exists nowhere but play,
+   and the Scholar of the Void that really left was recorded nowhere at all.
+2. **No despawn** (§1).
+3. **The wrong seat.** They filed the card under `u.controller`, so a stolen
+   unit was erased out of the THIEF's pile. The engine files it under
+   `u.owner`, the seat whose card it is, as every bin route does.
+4. **`unslot` instead of `removeFromFormation`.** The local mirrors spliced the
+   columns without R72's `repairFormation`, so erasing the last unit of a
+   column left the gap open until some later death happened to close it.
+   `helpers.ts`'s `unslot` had no other caller and is gone with the body.
+
+The mods also reach the pile now (R65), which neither copy did.
+
+### 3. Ancient One's module-level reentrancy latch
+
+`let aoScanning = false` at module scope was the last of the five reentrancy
+flags playtest report #60 named (R104 removed the others). Two things were
+wrong, and only one was visible: it is **not part of `GameState`**, so a JSON
+round trip resets it; and it was **global** where the thing it guards is
+per-unit — `fireEvent` dispatches sequentially, so a second Ancient One's
+`when()` runs strictly after the first one's `finally`, and the case its
+comment claimed to cover ("two adjacent Ancient Ones must not mimic each
+other") is handled by the `cardName === 'Ancient One'` skip instead.
+
+**Measured, not argued.** Instrumented across all 135 test files, the guard is
+hit **0 times**, while the `when()` body it guards runs **64 times in
+26-metal-a alone** and 191 times in the largest single run — so the probe is
+not blind. It is dead code, structurally: the body is one synchronous pass
+whose only card-authored call is a neighbour's `ab.when`, and **none of the 72
+`when`s in the pool dispatches an event**.
+
+It is kept rather than deleted, because "no `when` fires an event" is a fact
+about today's pool and not an invariant the engine enforces — but moved onto
+the ENTITY, as `budgets['ao:scanning']`, which IS part of `GameState`. Set and
+cleared inside one call, so it is never observable between actions, and
+entity-scoped, which is the true scope of reentrancy. **No module-level mutable
+state is left in this batch.**
+
+### 4. DOWNLOAD — a unit stolen mid-battle SITS OUT UNTIL REGROUP
+
+> **Owner, 2026-08-25** (asked about Download, "Gain control of target token",
+> a `{Battle}` spell, so the theft can land with the formations already
+> declared): **it sits out until regroup.**
+
+It changes controller **immediately**, is **out of the formation for the rest
+of this battle** — it attacks for nobody and blocks for nobody — and **joins
+its new controller's side at regroup**.
+
+**That is exactly what the engine already did, and the point of this section is
+that it was an ACCIDENT.** `E.giveControl` unslots and never re-slots, because
+there is no mid-battle formation-join primitive; `startRegroup` then sends every
+unit to `homeRegion(e.controller)` and tears the battle down, so the next
+battle builds the thief's line with the stolen unit on it. The batch header
+filed this under "ENGINE APPROXIMATIONS … cannot slot it into the thief's". The
+behaviour was right; only the label was wrong. `E.giveControl` now carries the
+ruling and a "do not fix this into a re-slot" ⚠, and two tests pin it.
+
+There is also a principled reason not to want the re-slot: a unit appearing in
+a declared line after blocks were answered would break R72's *"after blocks,
+columns will not move to fill gaps"* as surely as a collapsing column would.
+
+⚠ **Unrelated, pinned in passing, and NOT Download's doing:** the attacking
+column the stolen blocker was declared against stays **blocked** — *"Column 1
+is blocked (blockers gone) — no damage through."* The steal removes a blocker;
+it does not un-declare the block. That is the existing after-blocks lock, and
+R172 changes nothing about it.
+
+### Tests
+
+`engine/test/145-erase-routes.test.ts`, twelve cases: the despawn firing and a
+third-party Demon of the Depths hearing it; the R70 fact bundle on the new
+event; A Pile of Runes' donated text firing on an erase, and the mod-entity
+anchoring window opening and closing around it; the transformed Scholar of the
+Void reaching the pile as its FRONT face through **each** of Banishment,
+Celestial Purge and Zephyrzoa's "erase me"; one-erased-pile-entry/no-bin/no-
+trash for a nontoken mod and for a token mod; the "still no death, still no
+trash" guard on Banishment; and the two Download cases.
+
+One existing assertion was **narrowed**: `89-self-erase.test.ts`'s Skybreaker
+case asserted "no death, no despawn and no trash". The despawn half was the
+engine's silence, not a ruling, and R157 §3 says the opposite; it now asserts
+exactly one despawn beside the two halves R157 §3 really states.

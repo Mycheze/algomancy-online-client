@@ -4594,6 +4594,27 @@ export class E {
    * relocation above, so both seats present there hear it and nobody else
    * does — and `data.unit` makes the moved unit the event's source, so a
    * `self:` listener on the unit that just changed hands matches.
+   *
+   * ⚠ **R172 — A UNIT STOLEN MID-BATTLE SITS OUT UNTIL REGROUP. THIS IS A
+   * RULING, NOT A LIMITATION.** Owner, 2026-08-25, asked about Download
+   * ("Gain control of target token", a `{Battle}` spell, so the theft can land
+   * with the formations already declared): *it sits out until regroup* — the
+   * unit changes controller IMMEDIATELY, is OUT of the formation for the rest
+   * of this battle, and joins its new controller's side at regroup.
+   *
+   * That is what the two statements below already do, and they must be left
+   * alone. The `removeFromFormation` above unslots it and never re-slots it;
+   * regroup then sends every unit to `homeRegion(e.controller)` and tears the
+   * battle down, so the very next battle builds the thief's formation with the
+   * stolen unit on it. **Do not "fix" this into a mid-battle re-slot.** There
+   * is no re-slot primitive because none is wanted: a unit that appeared in a
+   * declared line after blocks were answered would break R72's "after blocks,
+   * columns will not move" as surely as a collapsing column would. Pinned by
+   * `145-erase-routes.test.ts`, the two Download cases.
+   *
+   * The batch-metal-a header used to file this under "ENGINE APPROXIMATIONS …
+   * cannot slot it into the thief's (no mid-battle formation-join primitive)".
+   * The behaviour was right; only the label was wrong.
    */
   giveControl(u: Entity, to: Seat, opts?: { keepFormation?: boolean }): boolean {
     if (!this.entity(u.id)) { this.ev('info', `${u.card} is gone — nothing changes hands.`); return false; }
@@ -6640,25 +6661,62 @@ export class E {
       // Skybreaker's printed "Erase me:". Being a COST it is paid here, on the
       // way to the stack — the unit is gone before anybody may respond to the
       // ability, exactly as the sacrifice above is. Not `destroy`: an erase is
-      // not a death, so nothing triggers off it and no card reaches a bin.
+      // not a death and no card reaches a bin, so no 'died' and (R40) no
+      // trash. R172: it IS a despawn, and fires one.
       const u = item.sourceId !== undefined ? this.entity(item.sourceId) : undefined;
       if (u && u.kind === 'unit') this.eraseFromPlay(u, `— the cost of ${item.label}.`);
     }
   }
 
   /**
-   * Remove a unit from play ENTIRELY: no bin, no death, no despawn, so nothing
-   * triggers off it, and (R40) no trash either — Caleb: erasing never touches a
-   * bin, so it is never a trash. Its mods go with it, having nothing left to be
-   * attached to. R65: the card reaches its controller's public erased pile,
-   * which ev() keeps off the 'erased' event.
+   * Remove a unit from play ENTIRELY: no bin, **no death**, and (R40) no trash
+   * either — Caleb: erasing never touches a bin, so it is never a trash. Its
+   * mods go with it, having nothing left to be attached to. R65: the card and
+   * its mods reach the public erased pile, which ev() keeps off the 'erased'
+   * event.
    *
-   * ⚠ Three card-side copies of this predate it and are still in use
-   * (helpers.ts's `eraseFromPlay`, batch-hybrids-ld-a's `eraseUnit`,
-   * batch-water-a's Celestial Purge) — the batch headers say out loud that
-   * "the engine has no shared erase primitive". It has one now; folding those
-   * three into it is a separate sweep, since each carries its own log wording
-   * that card tests read.
+   * ⚠ **R172: an erase IS A DESPAWN.** This used to say "no despawn, so
+   * nothing triggers off it", and it fired only `'erased'` — a type no
+   * `fireEvent` site anywhere dispatches, so an erase was invisible to the
+   * game in exactly the way R152 found a Hooba-Mon exchange to be. The repo
+   * had already ruled the general case twice: **R157 §3** — *"It's not a
+   * death, but it IS a despawn and a trashing"* — and **R152**, which repaired
+   * this same omission on `exchangeInPlace`. An erase is the third non-death
+   * departure and was the last one still silent, so every "whenever a unit
+   * despawns" watcher (Demon of the Depths) was blind to Banishment and every
+   * donated `[Augment] When I despawn` was dead on this route — R167's bug,
+   * one verb over. The one thing an erase still does NOT do is TRASH: R40 is
+   * about a card entering a bin, and nothing here enters one.
+   *
+   * ORDER, and why it differs from the `'erased'` lines in `destroy` /
+   * `afterDespawn`: those two announce a card being swept back OUT of a bin, a
+   * SECOND departure, so they land after the announce. Here the erased pile is
+   * the card's DESTINATION, the analogue of `disposeToBin`'s bin push — so it
+   * is filled BEFORE `'despawned'` fires, and a despawn listener sees the card
+   * already sitting where it went, exactly as a death listener sees it already
+   * in the bin.
+   *
+   * NOTHING DOUBLE-COUNTS. `'erased'` is a log-and-pile event with no
+   * `fireEvent` site anywhere in the engine or the card pool, and `'despawned'`
+   * never touches the pile (only `ev()`'s `type === 'erased'` branch writes
+   * it). The two events reach two disjoint consumers: the pile and the log
+   * hear the erase, triggered abilities hear the despawn.
+   *
+   * R167 anchoring, repeated here because this route needed it too:
+   * `fireEvent` finds a mod's donated `[Augment]` text by walking `u.mods`
+   * THROUGH the entity table, so the mod entities are deleted in the LAST
+   * statement rather than before the announce — otherwise the new event fires
+   * with nothing left to donate. The window is inert for the same reasons it
+   * is inert in `leavePlay`/`disposeToBin`: `fireEvent` only queues, nothing
+   * resolves until `settle()`; an orphaned mod radiates nothing (`E.anchored`
+   * resolves it through `entity(modOf)`, and the host is already gone); and
+   * kind `'mod'` keeps it out of the listener scan.
+   *
+   * R172 also folded the card-side copies of this into it — helpers.ts's
+   * `eraseFromPlay` and batch-hybrids-ld-a's `eraseUnit` are now one-line
+   * shims, so all eight card call sites arrive here. (This ⚠ used to name a
+   * third copy, "batch-water-a's Celestial Purge". That was wrong: Celestial
+   * Purge has always CALLED the helpers one.)
    */
   eraseFromPlay(u: Entity, why = ''): void {
     if (!this.entity(u.id)) return;
@@ -6668,7 +6726,6 @@ export class E {
     this.revertFace(u);
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
     delete this.s.entities[u.id];
-    for (const m of mods) delete this.s.entities[m.id];
     this.removeFromFormation(u.id);
     // R65: the host AND its mods reach the public erased pile, under the
     // host's OWNER — the same seat and the same one-event shape `destroy`
@@ -6680,6 +6737,19 @@ export class E {
         unit: u.id, card: u.card, seat: u.owner, region: u.region,
         cards: [u.card, ...mods.map(m => m.card)],
       });
+    // R172: …and it despawns. R70's fact bundle rides the event, because the
+    // entity is already out of s.entities and a listener has no other way to
+    // read what left. `to: 'erased'` fills the destination slot `recall` puts
+    // 'hand' in and `cacheUnit` puts 'cache' in; the two readers of that slot
+    // both test `=== 'hand'`, so nothing in the pool matches — which is right,
+    // because no card enters a zone here.
+    const ev = this.ev('despawned',
+      `${u.card} despawns as it is erased — not a death, and not a trash.`,
+      { ...this.leftPlayFacts(u), to: 'erased' });
+    this.fireEvent('despawned', ev, u);
+    // R167: last, exactly as `disposeToBin` and `afterDespawn` do it — see the
+    // anchoring paragraph above.
+    for (const m of mods) delete this.s.entities[m.id];
   }
 
   private collectPartTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {

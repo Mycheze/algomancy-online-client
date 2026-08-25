@@ -266,11 +266,21 @@ test('Skybreaker: "Erase me" is paid as the activation cost, and an erase is not
   // AN ERASE IS NOT A DEATH — this is the whole difference from the
   // `sacrificeSelf` stand-in it replaced, and it is what makes the card
   // unrecurrable. R40 cannot reach it either: nothing entered a bin to trash.
+  //
+  // ⚠ NARROWED BY R172 (2026-08-25). This assertion used to include
+  // `'despawned'` and expect the empty list. That was the engine's silence,
+  // not a ruling: R157 §3 says an erase is *"not a death, but it IS a
+  // despawn"*, and `E.eraseFromPlay` now fires one — see
+  // 145-erase-routes.test.ts. The two halves R157 §3 actually states are
+  // still pinned here, and they are the halves this test was about.
   const since = h.events.slice(before);
   assert.deepEqual(
-    since.filter(ev => (ev.type === 'died' || ev.type === 'despawned' || ev.type === 'trashed')
+    since.filter(ev => (ev.type === 'died' || ev.type === 'trashed')
       && ev.data?.['card'] === 'Skybreaker'),
-    [], 'no death, no despawn and no trash — an erase is none of those');
+    [], 'no death and no trash — an erase is neither of those');
+  assert.equal(
+    since.filter(ev => ev.type === 'despawned' && ev.data?.['card'] === 'Skybreaker').length, 1,
+    'but it IS a despawn, and fires exactly one (R157 §3 / R172)');
 
   pass(h); pass(h);                                  // the ability resolves
   assert.equal(h.state.stack.length, 0, 'R68: the negated Boon left the stack at once');

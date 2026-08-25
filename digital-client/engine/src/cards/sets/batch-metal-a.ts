@@ -74,13 +74,20 @@
  *    innocent same-named copy instead; and with nothing to erase it makes no
  *    offer at all — the printed text is one package, so there is no [two] to
  *    pay and no counters.
- *  - Celestial Fluxmorph's donated "[Augment] when I despawn" does not fire
- *    when the HOST is recalled — E.recall erases mods before firing the
- *    despawn event (engine limitation; death and self-play despawn do fire).
- *  - Download's steal removes the token from its old formation but cannot
- *    slot it into the thief's (no mid-battle formation-join primitive; R8's
- *    "joins the new controller's formations" is otherwise honored: the token
- *    swaps sides, its region and owner unchanged).
+ *  - (Celestial Fluxmorph's donated "[Augment] when I despawn" NO LONGER
+ *    misses a recall. This entry used to read "E.recall erases mods before
+ *    firing the despawn event (engine limitation)"; R167 moved that deletion
+ *    to the bottom of afterDespawn, so the donated sentence now fires on a
+ *    recall and a cache exactly as it does on a death — and R172 adds the
+ *    third route, an ERASE. Not an approximation any more.)
+ *  - (Download's steal was listed here as "removes the token from its old
+ *    formation but cannot slot it into the thief's (no mid-battle
+ *    formation-join primitive)". IT IS NOT AN APPROXIMATION — R172: the owner
+ *    ruled on 2026-08-25 that a unit stolen mid-battle SITS OUT UNTIL REGROUP,
+ *    which is precisely what the engine does. See the ⚠ on E.giveControl and
+ *    the two Download cases in 145-erase-routes.test.ts. R8's "joins the new
+ *    controller's formations" is honored AT REGROUP, which is when formations
+ *    are next built; the token swaps sides immediately, owner unchanged.)
  *  - Deformant's "delete all units" is region-scoped (R12) and unit cost is
  *    the printed mana (X-cost cards count as 0).
  *
@@ -194,7 +201,43 @@ const AO_EVENTS: EventType[] = [
   'attackDeclared', 'attacked', 'blocksDeclared', 'blocked',
   'afterCombat', 'endOfTurn',
 ];
-let aoScanning = false;   // reentrancy guard: two adjacent Ancient Ones must not mimic each other
+/**
+ * R172 — the reentrancy guard, and the last of the module-level latches
+ * playtest report #60 named (R104 removed the other five).
+ *
+ * It used to be `let aoScanning = false` at module scope. Two things were
+ * wrong with that, and only one of them was visible:
+ *
+ *  · **Not serialised.** `GameState` is the whole of the game; a module-level
+ *    `let` is not in it, so a JSON round trip (save, replay, the playtest
+ *    report loop) silently resets it. A flag whose value cannot survive a
+ *    reload is a flag whose value nothing may depend on.
+ *  · **Global, when the thing it guards is per-unit.** Its comment said "two
+ *    adjacent Ancient Ones must not mimic each other" — but `fireEvent`
+ *    dispatches to listeners SEQUENTIALLY, so a second Ancient One's `when()`
+ *    runs strictly after the first one's `finally` has cleared the flag, and
+ *    the global never saw that case at all. What actually stops mutual mimicry
+ *    is the `cardName === 'Ancient One'` skip inside the loop.
+ *
+ * MEASURED, not argued — "what would this look like if it were blind?" asked
+ * and answered. Instrumented across all 135 test files, the guard is hit
+ * **0 times**, while the `when()` body it guards runs **64 times in
+ * 26-metal-a alone** and 191 times in the largest single run: the probe is not
+ * blind, it is reporting a real zero. The reason is structural. The body below
+ * is one synchronous pass whose only card-authored call is a neighbour's
+ * `ab.when(g, self, ev)`, and no `when` in the pool dispatches an event —
+ * none of the 72 of them calls `g.fireEvent`, `g.ev`, `g.destroy`,
+ * `g.spawnUnit` or `g.dealDamage` (R1 wants conditions pure: they read state
+ * at event time and answer a boolean). `g.s.triggerQueue.push` only queues.
+ * So there is no nesting today and the guard is dead code.
+ *
+ * It is kept anyway, because "no `when` in the pool fires an event" is a fact
+ * about today's pool and not an invariant the engine enforces — but kept on
+ * the ENTITY, in `budgets`, which IS part of GameState and therefore survives
+ * a round trip. Set and cleared inside one call, so it is never observable
+ * between actions; entity-scoped, which is the true scope of reentrancy.
+ */
+const AO_SCAN_KEY = 'ao:scanning';
 /** the FACES an Ancient One (or its host) borrows right now: every adjacent
  * ally's own face plus every card augmented onto it ("this includes modded
  * abilities"). Geometry and raw fields only — R118 forbids reading a number
@@ -227,8 +270,8 @@ card('Ancient One', {
     type: 'triggered', events: AO_EVENTS,
     label: 'I have all abilities of adjacent allies (triggered abilities)',
     when: (g, self, ev) => {
-      if (aoScanning) return false;
-      aoScanning = true;
+      if (self.budgets[AO_SCAN_KEY]) return false;   // R172: see AO_SCAN_KEY
+      self.budgets[AO_SCAN_KEY] = 1;
       try {
         const src = ev.data?.['unit'] as EntityId | undefined;
         for (const n of g.adjacentInFormation(self.id)) {
@@ -267,7 +310,7 @@ card('Ancient One', {
             });
           }
         }
-      } finally { aoScanning = false; }
+      } finally { delete self.budgets[AO_SCAN_KEY]; }
       return false;   // the mimic itself never queues — the copies above do
     },
     effect: { run: () => { /* copies are queued in when() — this never runs */ } },
@@ -546,8 +589,10 @@ card('Borrower of Forms', {
 // Cosmic Spirit {Virus} Unit. The first sentence stays with the card (plain
 // ability); the [Augment] sentence transfers ("I" = the host). "Your units"
 // is region-scoped (R12/R25). Despawn = ANY leave-play (died + despawned —
-// Bloated Manablub's precedent); ⚠ header: the donated form misses host
-// RECALLS (mods are erased before the despawn event fires).
+// Bloated Manablub's precedent). ⚠ This used to end "the donated form misses
+// host RECALLS (mods are erased before the despawn event fires)" — R167 fixed
+// that, and R172 added the third route: the donated sentence now fires on a
+// death, a recall, a cache, an exchange and an ERASE alike.
 card('Celestial Fluxmorph', {
   abilities: [{
     type: 'triggered', events: ['spawned', 'modApplied'],
@@ -857,6 +902,17 @@ card('Dispatch Courier', {
 // still answering to the seat it was taken from. The choke point also owns the
 // region: R112 exclusivity applies here too (a spell token has no mods to
 // carry, and `mods` is [] on one, so the same call is correct for both kinds).
+//
+// ⚠ R172 — MID-BATTLE, THE STOLEN TOKEN SITS OUT UNTIL REGROUP, AND THAT IS
+// THE RULE, NOT A GAP. Download is a {Battle} spell, so it can steal a Robot
+// with the formations already declared. Owner, 2026-08-25: *it sits out until
+// regroup* — controller changes at once, the unit is OUT of the formation for
+// the rest of this battle (it attacks for nobody and blocks for nobody), and
+// it joins its new controller's side at regroup, which is when formations are
+// next built. `E.giveControl`'s unslot is what delivers that; it must NOT grow
+// a re-slot. The engine has done this since R148 by accident of having no
+// formation-join primitive — R172 only writes the decision down and pins it,
+// so the next reader does not "repair" a correct behaviour.
 card('Download', {
   spellEffect: {
     // R64: "target token" is a CAST-TIME target — the playtest report was

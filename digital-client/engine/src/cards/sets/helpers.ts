@@ -2,8 +2,15 @@
  * as a per-batch copy (the batches were scripted by separate agents); the
  * bodies here are the common versions, hoisted verbatim once the copies were
  * audited as identical. A batch that needs a genuinely different flavor keeps
- * its own local (e.g. batch-hybrids-ld-a's eraseUnit carries a different
- * 'erased' payload) — divergence is a reason to stay local, not to grow flags.
+ * its own local — divergence is a reason to stay local, not to grow flags.
+ *
+ * R172 retired the standing example of that. batch-hybrids-ld-a's `eraseUnit`
+ * "carried a different 'erased' payload", and the different payload was the
+ * whole of the difference: both bodies were hand-rolled erases that predated
+ * `E.eraseFromPlay`, and both were missing the same three things (the R157 §10
+ * face revert, the R172 despawn, R72's formation repair). Divergence is a
+ * reason to stay local only when the DIVERGENCE is the point; two copies of a
+ * primitive that disagree by accident are one primitive with two bugs.
  */
 import type {
   CardName, EffectPart, EngineEvent, Entity, EntityId, Seat, StackItem, TargetRef,
@@ -171,27 +178,31 @@ export const pickUnit = (
   }) as EntityId;
 };
 
-/** remove an id from every formation column / the sent-attacker list (mirror
- * of the engine's private removeFromFormation) */
-export function unslot(g: E, id: EntityId): void {
-  const b = g.s.battle;
-  if (!b) return;
-  for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-    const i = col.indexOf(id);
-    if (i !== -1) col.splice(i, 1);
-  }
-  const si = b.sentAttackers.indexOf(id);
-  if (si !== -1) b.sentAttackers.splice(si, 1);
-}
-
-/** Erase an entity from play entirely: no bin, no death/despawn triggers, and
- * so (R40) no trash either; its mods are erased with it (Celestial Purge's
- * pattern). */
+/**
+ * Erase an entity from play entirely — **now a one-line shim over the engine
+ * choke point** (R172). Eight card sites across six batches call this
+ * (Banishment, Celestial Purge, Borrower of Forms, Feed to Hooba, Reap the
+ * Due, …), so re-pointing the body was the whole of "route the copies through
+ * `E.eraseFromPlay`".
+ *
+ * What the hand-rolled body used to get wrong, all four of them silently:
+ *  · **no `revertFace`** — R157 §10 says a transformed card exists as its
+ *    FRONT side in every zone but play, so a Beyond, Codex Incarnate erased by
+ *    Banishment was filed on the erased pile under the BACK face, and the
+ *    Scholar of the Void that really left the game was never recorded;
+ *  · **no despawn** — R157 §3 / R172: an erase is not a death but it IS a
+ *    despawn, and this route fired nothing a listener could hear;
+ *  · **the wrong seat** — it filed the card under `u.controller`, so a stolen
+ *    unit was erased out of the THIEF's pile; the engine files it under
+ *    `u.owner`, the seat whose card it is, as every bin route does;
+ *  · **`unslot` instead of `removeFromFormation`** — the local mirror skipped
+ *    `repairFormation`, so erasing the last unit of a column left the R72 gap
+ *    open until some later death happened to close it. That helper had no
+ *    other caller and is gone with the body.
+ * The mods also reach the pile now (R65), which the local copy never did.
+ */
 export function eraseFromPlay(g: E, u: Entity): void {
-  for (const modId of u.mods) delete g.s.entities[modId];
-  delete g.s.entities[u.id];
-  unslot(g, u.id);
-  g.ev('erased', `${u.card} is ERASED (no bin, no death).`, { unit: u.id, card: u.card, seat: u.controller });
+  g.eraseFromPlay(u);
 }
 
 /* ── UI-only X previews (#85) ──────────────────────────────────────────── */

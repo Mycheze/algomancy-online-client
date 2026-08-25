@@ -114,25 +114,18 @@ const binUnits = (g: E, seat: Seat): [CardName, number][] =>
     .map((n, i) => [n, i] as [CardName, number])
     .filter(([n]) => isUnitCard(n));
 
-/** ⚠ "erase me" (see header): the unit and its mods cease to exist — no bin,
- * no death, no despawn, so nothing triggers off it (Caleb: erasing never
- * touches a bin, so it is never a trash either — R40). */
-const eraseUnit = (g: E, u: Entity): void => {
-  if (!g.entity(u.id)) return;
-  for (const id of u.mods) delete g.s.entities[id];
-  delete g.s.entities[u.id];
-  const b = g.s.battle;
-  if (b) {
-    for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-      const i = col.indexOf(u.id);
-      if (i !== -1) col.splice(i, 1);
-    }
-    const si = b.sentAttackers.indexOf(u.id);
-    if (si !== -1) b.sentAttackers.splice(si, 1);
-  }
-  g.ev('erased', `${u.card} is erased.`,
-    { unit: u.id, card: u.card, seat: u.controller, region: u.region });
-};
+/** "erase me" (Zephyrzoa): the unit and its mods cease to exist — no bin, no
+ * death, and so (R40, Caleb: erasing never touches a bin) no trash either.
+ *
+ * R172 — this is now a shim over `E.eraseFromPlay`, the engine choke point.
+ * The hand-rolled body it replaces was written before that primitive existed
+ * and had drifted three ways from it: it never turned a transformed card back
+ * over (R157 §10, so the erased pile recorded the BACK face), it fired no
+ * despawn (R157 §3 — an erase is not a death but it IS a despawn), and it
+ * spliced the formation columns without R72's `repairFormation`. Its comment
+ * also still claimed "no despawn, so nothing triggers off it", which is the
+ * sentence R172 overturned. */
+const eraseUnit = (g: E, u: Entity): void => { g.eraseFromPlay(u); };
 
 /** ⚠ "my column deals combat damage TO AN OPPONENT" (see header): the shared
  * engine predicate, on the FACE channel only. The "to an opponent" narrowing
@@ -613,8 +606,9 @@ card('Dream Lapse', {
 // column"/"me" read from the HOST when donated. ⚠ header: the column-connected
 // test is reconstructed at event time from the combat 'lifeLost' (R1), and
 // "recall" means "put into your hand" (Manual) — the whole bin at once.
-// "Erase me" removes the anchor and its mods without a bin, a death or a
-// despawn, so nothing triggers off it (R40: erasing is never trashing).
+// "Erase me" removes the anchor and its mods without a bin and without a
+// death (R40: erasing is never trashing). R172: it IS a despawn, and fires
+// one — "not a death, but it is a despawn" (R157 §3).
 card('Zephyrzoa', {
   augmentText: [{
     type: 'triggered', events: ['lifeLost'],
