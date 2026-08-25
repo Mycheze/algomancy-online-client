@@ -1791,7 +1791,17 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify: 'During battle, dormant resources must be visually distinct from (or absent beside) '
       + 'active ones; during planning they appear as they do today.',
-    status: 'open',
+    // CLOSED by R151. ui/resources.ts::resourceRow returns a DOM-free view model with a
+    // discrete `emphasis` per resource, so the muting is asserted rather than being a CSS
+    // colour nobody can test. `spendable`/`active` are read from E.openMana and E.affinity —
+    // NOT re-derived in the UI — so a future rules change cannot desync the two (R132 just
+    // moved this surface once already).
+    guards: [
+      '127-token-x-and-dormant.test.ts::dormant resources are muted in battle and deployment, normal in planning',
+      '127-token-x-and-dormant.test.ts::only DORMANT is muted — an expended resource is not',
+      '127-token-x-and-dormant.test.ts::the spendable/dormant split is the ENGINE',
+    ],
+    status: 'done',
   },
   {
     id: 32, area: 'client', severity: 'minor', reportId: 98,
@@ -1826,7 +1836,20 @@ export const CARD_TODO: TodoEntry[] = [
       + 'Poison.',
     proof: null,
     verify: 'Create a Poison with X=5; its text box reads "5", not "X".',
-    status: 'open',
+    // CLOSED by R151, and the reason it is a RENDER-TIME substitution rather than a stamp at
+    // creation is Robot: "if the number of counters changes, so does the X value", so a Robot 3
+    // that gains a counter IS a Robot 4 and a frozen X starts lying immediately. X comes from
+    // Entity.x for a spell token and from live COUNTERS for a unit token. Reminder text ({i}…)
+    // is carved out — substituting there gives Robot "so does the 3 value", a broken sentence.
+    // Census first, per R141: the pool spells it X, X/X, +X/+X, -X/-X and [x] (a cost PIP), and
+    // only the bare X moves. 4 of the 6 token cards carry one; the sweep pins that census.
+    guards: [
+      '127-token-x-and-dormant.test.ts::a Poison created with X=5 says',
+      '127-token-x-and-dormant.test.ts::sweep: EVERY token card with an X placeholder renders a number',
+      '127-token-x-and-dormant.test.ts::a Robot reads its X off its COUNTERS',
+      '127-token-x-and-dormant.test.ts::are STAT notation and never substituted',
+    ],
+    status: 'done',
   },
   {
     id: 34, area: 'client', severity: 'major', reportId: 100,
@@ -1844,7 +1867,21 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify: 'Assign combat damage across several blockers with steppers; the total is forced to '
       + 'match the damage available and nothing submits until you confirm.',
-    status: 'open',
+    // CLOSED by R149 — but NOT in the shape the report asked for, and that matters. The engine
+    // (E.electionWalk) asks ONE victim at a time, front to back; each decision is a single
+    // scalar and the last living victim is auto-filled. So no decision ever carries N victims,
+    // the sum is forced by construction upstream of any client, and an over-allocation is not
+    // representable rather than refused. What the player was missing was the ARITHMETIC: the
+    // old bar was a flat wall of "1 to X / 2 to X / 3 to X" with no running total and no sign
+    // another question was coming. Built on the SHARED quantityStepper lifted out of BL-25's
+    // counterStepper, not a second one — BL-19 is what happens when one control is hand-copied.
+    guards: [
+      '126-assign-split.test.ts::the total is forced',
+      '126-assign-split.test.ts::the ticker clamps to what THIS victim can take',
+      '126-assign-split.test.ts::jumps to everything-left and does NOT submit',
+      '126-assign-split.test.ts::NEGATIVE CONTROL',
+    ],
+    status: 'done',
   },
   {
     id: 35, area: 'engine', severity: 'major', reportId: 101,

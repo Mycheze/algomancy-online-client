@@ -1630,13 +1630,23 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Dormant resources can misleadingly look like they\'re active. Maybe have them not '
       + 'show up (or something) during battle/deployment so players don\'t think they\'re active. '
       + 'During planning they should show normally tho',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '127-token-x-and-dormant.test.ts::dormant resources are muted in battle and deployment, normal in planning',
+      '127-token-x-and-dormant.test.ts::only DORMANT is muted — an expended resource is not',
+      '127-token-x-and-dormant.test.ts::the spendable/dormant split is the ENGINE',
+    ],
     note:
       'Client presentation. A dormant resource is not spendable until it activates, but it is '
       + 'drawn similarly enough to an active one to be misread mid-battle, when a player is '
       + 'counting available mana under time pressure. The owner\'s own proposal is phase-scoped: '
       + 'de-emphasise or hide dormant resources during battle/deployment, show them normally in '
-      + 'planning (which is when you act on them). Carried as CT-31.',
+      + 'planning (which is when you act on them). Carried as CT-31.'
+      + ' FIXED by R151 (2026-08-25): ui/resources.ts::resourceRow is a DOM-free view model '
+      + 'carrying a discrete `emphasis` per resource, so the muting is asserted rather than '
+      + 'being an untestable CSS colour. spendable/active are READ FROM the engine (E.openMana, '
+      + 'E.affinity) rather than re-derived in the UI, so a rules change cannot desync them — '
+      + 'R132 moved exactly this surface a day earlier.',
   },
   {
     id: 98, room: 'SMVJ', date: '2026-08-24',
@@ -1653,28 +1663,54 @@ export const LEDGER: LedgerEntry[] = [
     id: 99, room: 'SMVJ', date: '2026-08-24',
     report: 'Tokens should have their X value in their text box modified to say the actual number, '
       + 'rather than X. So a Poison 5 would say "Put 5 -1/-1 counters on target unit"',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '127-token-x-and-dormant.test.ts::a Poison created with X=5 says',
+      '127-token-x-and-dormant.test.ts::sweep: EVERY token card with an X placeholder renders a number',
+      '127-token-x-and-dormant.test.ts::a Robot reads its X off its COUNTERS',
+      '127-token-x-and-dormant.test.ts::are STAT notation and never substituted',
+    ],
     note:
       'A token created with X=5 still prints the GENERIC text with a literal "X", so the player '
       + 'has to remember what it was made for. The number is known at creation. NOT the same class '
       + 'as the markup bugs (R134/R141/R142): those are a formatter failing to consume a token, '
       + 'this is a live VALUE that should be substituted into the printed text for that instance. '
       + 'Needs a decision on where the substitution lives — on the token entity at creation, or in '
-      + 'the text box reading the entity\'s stored X. Carried as CT-33.',
+      + 'the text box reading the entity\'s stored X. Carried as CT-33.'
+      + ' FIXED by R151 (2026-08-25). The decision the note asked for went to RENDER TIME, and '
+      + 'Robot is why: "if the number of counters changes, so does the X value", so a Robot 3 '
+      + 'that gains a counter IS a Robot 4 and an X stamped at creation starts lying at once. X '
+      + 'is read from Entity.x for a spell token and from live counters for a unit token. '
+      + 'Reminder text is carved out (Robot would read "so does the 3 value"). Censused first '
+      + 'per R141: the pool spells it X, X/X, +X/+X, -X/-X and [x] (a cost PIP) — only bare X '
+      + 'moves, and 4 of the 6 token cards carry one.',
   },
   {
     id: 100, room: 'SMVJ', date: '2026-08-24',
     report: 'The damage distribution UI is terrible and confusing. Better would to have a ticker '
       + 'counter thing on each unit that you click up/down and they always are forced to sum to '
       + 'the amount of damage you have.',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '126-assign-split.test.ts::the total is forced',
+      '126-assign-split.test.ts::the ticker clamps to what THIS victim can take',
+      '126-assign-split.test.ts::jumps to everything-left and does NOT submit',
+      '126-assign-split.test.ts::NEGATIVE CONTROL',
+    ],
     note:
       'The UI for R120, the ELECTIVE combat damage split (built because "never decide for the '
       + 'player"). The mechanic is right; the affordance is not. The owner names the fix exactly: '
       + 'a per-unit up/down stepper, constrained to sum to the damage available. NOTE the shape is '
       + 'the one R139/BL-25 just built for counter removal (stepper + max + "All", clamped, does '
       + 'not auto-submit) — reuse that lifted, tested logic in ui/inspect.ts rather than writing a '
-      + 'second stepper. Carried as CT-34.',
+      + 'second stepper. Carried as CT-34.'
+      + ' FIXED by R149 (2026-08-25) — but the report\'s premise was wrong in a way worth '
+      + 'keeping: E.electionWalk asks ONE victim at a time, front to back, each decision a '
+      + 'single scalar with the last living victim auto-filled. No decision carries N victims, '
+      + 'so the sum is forced upstream of any client and an over-allocation was never '
+      + 'representable. What was missing was the ARITHMETIC — a flat wall of "1 to X / 2 to X" '
+      + 'with no running total and no sign another question was coming. Built on the SHARED '
+      + 'quantityStepper factored out of BL-25\'s counterStepper, not a second one.',
   },
   {
     id: 101, room: 'SMVJ', date: '2026-08-24',
