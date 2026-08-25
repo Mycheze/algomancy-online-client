@@ -2340,12 +2340,31 @@ export class E {
   /**
    * Shared leave-play-WITHOUT-DYING bookkeeping (cacheUnit / recall — NOT
    * destroy, whose mods are erased by Unstable rather than binned and whose
-   * formation cleanup lands after the death event): pull the unit and its
-   * mods out of s.entities, push each nontoken mod into its owner's bin
+   * formation cleanup lands after the death event): pull the unit out of
+   * s.entities, resolve its mods, push each nontoken mod into its owner's bin
    * (R69: a token mod has no card of its own — erased), and close the
    * formation gap. Returns the detached mods, or null when the unit was
    * already gone. The despawn event, the R40 mod trashes (afterDespawn) and
    * where the CARD goes stay with the caller — that is where the verbs differ.
+   *
+   * ⚠ **The mod ENTITIES are deliberately left in `s.entities` here, and are
+   * deleted at the bottom of `afterDespawn` (R167).** This half of the pair is
+   * not optional: `leavePlay` must always be followed by `afterDespawn`, or
+   * the mod entities leak into a state whose host is gone. Both callers
+   * (`recall`, `cacheUnit`) do exactly that; a third one must too.
+   *
+   * R167 — why. `fireEvent` finds a mod's donated `[Augment]` text by walking
+   * `u.mods` through the entity table, so a mod that has already been deleted
+   * donates nothing. This method used to delete them BEFORE the caller fired
+   * `'despawned'`, which meant a printed `[Augment] When I despawn, …` worked
+   * on a DEATH (`disposeToBin` deletes its mods at the very bottom, and says
+   * so) and was silently dead on a RECALL or a CACHE — half a printed word,
+   * and the same object behaving differently depending on how its host left
+   * play, which is the shape R137 exists to remove. Measured before the fix,
+   * a Growing Plague grafted onto one host: destroy 1 trigger, recall 0,
+   * cache 0. The bin pushes stay HERE, before the announce, exactly as
+   * `disposeToBin` does them — a despawn listener and a death listener see
+   * the same board.
    *
    * R157 §10: the face is turned back over HERE, before anything reads
    * `u.card` — so `leftPlayFacts`, the log line, the hand/cache push and the
@@ -2358,7 +2377,6 @@ export class E {
     delete this.s.entities[u.id];
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
     for (const m of mods) {
-      delete this.s.entities[m.id];
       if (!m.token) this.player(m.owner).bin.push(m.card);   // R69: a token MOD has no card of its own — erased
     }
     this.removeFromFormation(u.id);
@@ -2431,16 +2449,27 @@ export class E {
 
   /** The tail cacheUnit() and recall() share, once their despawn event is the
    * last event logged: fire it, then (R40, after the despawn so the log reads
-   * in order) trash every nontoken mod — they entered a bin from play. */
+   * in order) trash every nontoken mod — they entered a bin from play — and
+   * only THEN delete the mod entities.
+   *
+   * R167: the delete is the second half of `leavePlay`, moved here so that the
+   * despawn window can still walk `u.mods` for donated `[Augment] When I
+   * despawn` text — the same reason `disposeToBin` deletes its mods at the
+   * very bottom, and the same place in the sequence. Nothing between the two
+   * halves can RESOLVE (fireEvent and noteTrashed only queue triggers), so a
+   * listener cannot move, re-bin or re-erase a mod inside this window; it can
+   * only read one, which is exactly the point. Every caller of `leavePlay`
+   * must reach here — see the ⚠ on `leavePlay`. */
   private afterDespawn(u: Entity, mods: Entity[]): void {
     const ev = this.events[this.events.length - 1]!;
     this.fireEvent('despawned', ev, u);
     for (const m of mods) if (!m.token) this.noteTrashed(m.owner, m.card, 'play', m);   // R70
     // R65 (2026-08-25): and the TOKEN mods reach the public erased pile, which
     // is the one branch of that rule that never had a sweep OR an announcement.
-    // leavePlay() deletes a token mod outright — its own comment already calls
-    // that an erase ("a token MOD has no card of its own — erased") — but
-    // nothing said so out loud, so a Wraith grafted onto a unit was filed on
+    // leavePlay()/this method erase a token mod outright — leavePlay's own
+    // comment already calls that an erase ("a token MOD has no card of its own
+    // — erased") — but nothing said so out loud, so a Wraith grafted onto a
+    // unit was filed on
     // the pile when its host DIED or was EXCHANGED (disposeToBin emits exactly
     // this line, R153) and vanished in silence when the host was RECALLED or
     // CACHED. Measured before the fix, one Wraith on one host:
@@ -2457,6 +2486,8 @@ export class E {
         `${tokenMods.map(m => m.card).join(', ')} — erased with ${u.card}: a token mod has no card to bin.`,
         { seat: u.owner, cards: tokenMods.map(m => m.card) });
     }
+    // R167: last, exactly as disposeToBin does it — see the comment above.
+    for (const m of mods) delete this.s.entities[m.id];
   }
 
   /**

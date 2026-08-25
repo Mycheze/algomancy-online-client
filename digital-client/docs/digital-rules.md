@@ -10822,3 +10822,143 @@ which this ruling closes.
 What changed is that both halves are now **guarded**, each against a no-Rook
 control: "it happens to work" and "it is meant to work" are the same board
 until a test says which.
+
+---
+
+## R167 — a printed "when I despawn" means it whichever way the unit leaves play
+
+*(CARD-TODO #50, inventory row **DESPAWN ON RECALL**, 2026-08-25. Structural —
+no player quote needed: the engine was already giving two different answers to
+one printed sentence, which is R137's defect one object over.)*
+
+`E.fireEvent` finds a mod's donated `[Augment]` text by walking the host's
+`u.mods` **through the entity table**:
+
+```ts
+for (const modId of u.mods) {
+  const mod = this.entity(modId);
+  if (mod && mod.appliedAs === 'augment') { …collect… }
+}
+```
+
+A mod that is not in `s.entities` any more donates nothing. `E.destroy` knows
+this and keeps the mod entities alive across the whole death window on purpose
+— `disposeToBin` deletes them in its very last statement and carries a comment
+saying why (*"delete the mod entities last so the announce window can still
+read them"*). `E.leavePlay`, the recall/cache half of the same job, did the
+exact opposite:
+
+```ts
+delete this.s.entities[u.id];
+const mods = u.mods.map(id => this.entity(id)).filter(…);
+for (const m of mods) {
+  delete this.s.entities[m.id];          // ← every mod, gone
+  if (!m.token) this.player(m.owner).bin.push(m.card);
+}
+```
+
+and only *then* did the caller build its event and hand it to `afterDespawn`,
+which fires `'despawned'`. So a card printing **"[Augment] When I despawn, …"**
+fired on a **death** and did **nothing at all** on a **recall** or a **cache**.
+Measured before the fix, one Growing Plague grafted onto one host, counting the
+queued trigger:
+
+```
+destroy   1
+recall    0
+cache     0
+```
+
+That is half a printed word, and the standing steer (R157) is that printed text
+always wins. It is also the same object behaving differently depending on how
+its host left play, which is exactly the shape R137 removed for the bin and R65
+removed for the erased pile. R160 had already added `revertFace` at the top of
+`leavePlay` and left the deletion where it was.
+
+### The fix
+
+The deletion did not disappear, it **moved**: out of `leavePlay`, down to the
+last statement of `afterDespawn`. That is the same position in the sequence
+`disposeToBin` already uses, so the two tails now agree:
+
+```
+leavePlay        detach body · resolve mods · push nontoken mods to their owners' bins · unslot
+caller           push the card to its hand/cache · log 'despawned'
+afterDespawn     FIRE 'despawned' · trash each nontoken mod (R40/R70)
+                 · file the token mods on the erased pile (R65)
+                 · DELETE the mod entities            ← R167
+```
+
+Three things this deliberately did **not** change:
+
+* **The bin pushes stay in `leavePlay`, before the announce.** `disposeToBin`
+  pushes there too, and says why: *"a death listener sees the same board a
+  despawn listener would"*. Moving them down as well would have been the easy
+  symmetrical-looking mistake and would have changed what a despawn listener
+  reads out of a bin.
+* **`afterDespawn`'s R40 trash loop and R65 erased line are untouched**, and
+  each still runs exactly once. They read the `mods` array the caller already
+  holds, not the entity table, so their behaviour never depended on the
+  deletion's position.
+* **`leavePlay`'s two callers, `recall` and `cacheUnit`, are unchanged.** They
+  both already called `afterDespawn`.
+
+### What can happen inside the window, and what cannot
+
+The window between the two halves is now longer, so the question "can a
+listener touch a mod that is about to be binned?" has to be answered rather
+than assumed. **It cannot.** Everything in that window only *queues*:
+`fireEvent` composes triggers and pushes them onto `s.triggerQueue`, and
+`noteTrashed` does the same through `fireEvent` / `fireOwnTrashTrigger`.
+Nothing resolves until `settle()`, which is after `afterDespawn` returns and
+the mod entities are gone. So a despawn listener can **read** an orphaned mod
+and can never move, re-bin or re-erase one. This is the identical guarantee
+`disposeToBin` relies on for its `binnedAt` slot indices (R140).
+
+An orphaned mod also **radiates nothing** during the window: `E.anchored`
+resolves an augment mod to its host via `this.entity(holder.modOf)`, and the
+host was deleted in `leavePlay`'s first statement, so the mod is skipped by
+every static, behaviour and stat channel. And a mod is `kind: 'mod'`, so it
+never enters `fireEvent`'s listener scan (`kind === 'unit'`) as a unit of its
+own. The window is readable and inert, which is what it was for a death
+already.
+
+R69 (a token mod has no card and is erased) and R70 (trash classification) are
+both unchanged: a token mod still never reaches a bin, is never trashed, and
+reaches the public erased pile exactly once on each of the three routes.
+
+### The cards
+
+Six cards in the pool print text that this fixes — every one of them was alive
+on a death and dead on a recall and a cache:
+
+| card | printed | why it was dead |
+|---|---|---|
+| A Pile of Runes | `[Augment] When I despawn, create a Crystal X…` | donated, host's own departure |
+| Celestial Fluxmorph | `[Augment] When I despawn, remove all counters from your units.` | " |
+| Growing Plague | `[Augment] When I despawn, each other player draws two cards.` | " |
+| Pathogenic Enclave | `[Augment] When I despawn, delete all token allies.` | " |
+| Verdant Necrophage | `[Augment] When I despawn, each opponent recalls a unit from their bin.` | " |
+| Demon of the Depths | `[Augment] Whenever one of your units despawns, …` | no "another" clause, so the CARRIER'S OWN departure counts — and that is the case the mod scan could not reach |
+
+⚠ **The divergence inventory's row named a seventh card, Tempest Oracle, and
+that was wrong.** Its "When I despawn" has no `[Augment]` marker in
+`printed.json` and lives in `abilities`, not `augmentText`. It is the card's
+own text, found through `fireEvent`'s `dyingUnit` unshift rather than the mod
+scan, and it fired on a recall before this ruling and after it. Pinned as a
+control in `141-despawn-mods.test.ts` so the claim cannot come back.
+
+The five `[Augment] When I despawn` batch files each carry a comment saying the
+donated form *"misses host RECALLS (mods are erased before the despawn event
+fires)"*. **Those comments are now stale and should be struck** — a
+comment-only follow-up in files this ruling does not own.
+
+### Tests
+
+`engine/test/141-despawn-mods.test.ts`, eight cases: the recall and the cache
+firings (red before the fix), the death firing pinned at **exactly once** (the
+regression guard — the risk in moving a delete later is a second scan, not a
+missing one), one-bin/one-trash for a nontoken mod and one-erased-pile-entry
+for a token mod on all three routes, the whole six-card table asserting recall
+now equals death, the Tempest Oracle control, and a leak guard that the mod
+entities really are gone once the window closes.
