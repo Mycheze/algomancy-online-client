@@ -487,9 +487,6 @@ card('Grim Bargain', {
 //      Unit Token wearing Hooba-Mon on the augment line), and it is what this
 //      branch is for.
 function exchangeInPlace(g: E, self: Entity, name: CardName, controller: Seat): void {
-  // asked BEFORE the mods are detached: `E.isUnstable` derives Unstable from
-  // `self.mods` (R69/R79), and the entity table is emptied under it below
-  const unstable = g.isUnstable(self);
   // R152: resolved BEFORE `self` leaves the table, exactly as destroy() does —
   // a mod id whose entity is already gone is not a mod any more
   const mods = self.mods.map(id => g.entity(id)).filter((m): m is Entity => !!m);
@@ -504,77 +501,37 @@ function exchangeInPlace(g: E, self: Entity, name: CardName, controller: Seat): 
   const fresh = g.spawnUnit(controller, name, self.region);
   if (slot) slot.col[slot.idx] = fresh.id;   // take the exact position in play
   delete g.s.entities[self.id];
-  // R137/R152: every nontoken mod enters its OWN owner's bin, pushed BEFORE
-  // the despawn event fires — destroy() pushes before the death event for the
-  // same reason, so a despawn listener sees the board a death listener would.
-  // R140: remember WHERE each push landed rather than searching by name later;
-  // nothing between here and the sweep can resolve, so the indices stay exact.
-  const binnedMods = mods.filter(m => !m.token);
-  const binnedAt = new Map<EntityId, number>();
-  for (const m of binnedMods) {
-    const mb = g.player(m.owner).bin;
-    mb.push(m.card);
-    binnedAt.set(m.id, mb.length - 1);
-  }
-  // R152(3): the BODY bins whether or not it is a token — "a normal thing that
-  // just ceases to exist … whenever SBAs are checked" puts the token in the bin
-  // first and takes it out afterwards. Same unconditional push destroy() makes.
-  const bin = g.player(self.owner).bin;
-  bin.push(self.card);
-  const bodyAt = bin.length - 1;   // R140: name the SLOT, never search by name
-  unslot(g, self.id);
-  const ev = g.ev('despawned', `${self.card} is exchanged for ${name}`
-    + (mods.length ? ` (its ${mods.length} mod(s) leave with it).` : '.'),
-    { unit: self.id, card: self.card, seat: self.controller, region: self.region });
-  // R152(1): the event is FIRED, not merely logged. Anchored on `self` so its
-  // own donated [Augment] despawn text is scanned (fireEvent walks `u.mods`
-  // through the entity table, which is why the mod entities are still there —
-  // they are deleted at the very bottom, as destroy() deletes them last).
-  g.fireEvent('despawned', ev, self);
-  // R40: a bin entered FROM PLAY is a trash — body first, then each mod, which
-  // is destroy()'s and afterDespawn()'s order. Each mod trash is anchored on
-  // the mod ENTITY so its own "when I am trashed" text keeps the right region.
-  // R152(3): a token body is trashed too — it is in the bin at this moment,
-  // and R40 keys on the destination, not on the object (R133).
-  g.noteTrashed(self.owner, self.card, 'play', self);
-  for (const m of binnedMods) g.noteTrashed(m.owner, m.card, 'play', m);
-  if (unstable) {
-    // R137/R146 state-based sweep, the same calls destroy() makes: each card
-    // was in the bin for the whole trash window above (both `when` passes and
-    // the per-battle ledger saw it there) and now leaves it. R124:
-    // eraseFromZone is the one sanctioned way out of a bin, and it is also
-    // what puts the card on the public erased pile (R65) — it ends in an
-    // 'erased' event carrying `seat`+`card`, which is what E.ev() reads.
-    g.eraseFromZone(self.owner, self.card, 'bin',
-      `${self.card} is erased from the bin — Unstable.`, { index: bodyAt });
-    // R140: HIGHEST index first, destroy()'s reason verbatim — two mods of one
-    // card land in one bin at consecutive slots, and erasing the lower one
-    // first slides the higher one down under the index recorded for it.
-    for (const m of [...binnedMods].reverse()) {
-      g.eraseFromZone(m.owner, m.card, 'bin',
-        `${m.card} is erased from the bin — it modded an Unstable card.`,
-        { index: binnedAt.get(m.id) });
-    }
-  } else if (self.token) {
-    // R152(3)/R69: the token sweep, destroy()'s `else if (u.token)` branch. It
-    // is reachable without the Unstable one only when the token carries NO mod
-    // — a Unit Token whose FACE became Hooba-Mon (R118 layer 0) playing its own
-    // text-box [Augment]. A token host wearing Hooba-Mon as a real mod is
-    // Unstable by derivation and took the branch above, which erases it just
-    // the same and says so with the more specific reason.
-    g.eraseFromZone(self.owner, self.card, 'bin',
-      `${self.card} is erased from the bin — it is a token.`, { index: bodyAt });
-  }
-  // R65/R69: a TOKEN mod never reaches a bin (it has no card of its own), so
-  // it has no sweep to announce it — this is the one line that files it on the
-  // public erased pile, and it is destroy()'s line for the same case.
-  const tokenMods = mods.filter(m => m.token);
-  if (tokenMods.length) {
-    g.ev('erased',
-      `${tokenMods.map(m => m.card).join(', ')} — erased with ${self.card}: a token mod has no card to bin.`,
-      { seat: self.owner, cards: tokenMods.map(m => m.card) });
-  }
-  for (const m of mods) delete g.s.entities[m.id];
+  // R153 (CT-43): the disposal tail is `E.disposeToBin`, the SAME method
+  // destroy() calls — push the nontoken mods, push the body, announce, trash
+  // each one anchored (R70), sweep by slot index highest-first if the body is
+  // Unstable (R137/R140), else sweep a token body (R69), file the token mods on
+  // the erased pile (R65), delete the mod entities last. R146 and R152 were two
+  // rounds of repairing a hand-copy of that sequence that had drifted from it in
+  // three places; there is now nothing left here to drift. ⚠ Do not re-inline
+  // it — test/129-disposal-tail.test.ts fails if this stops going through the
+  // primitive, and the census sweep in 90-coverage-census fails if a bin push
+  // reappears in card code under any name.
+  //
+  // The callback is this card's ONE difference from a death: an exchange logs
+  // and FIRES a 'despawned' (R152(1) — the R146 code logged it and never fired
+  // it, so every "whenever a unit despawns" ability in the game, including the
+  // exchanged unit's own [Augment] text, was blind to an exchange), anchored on
+  // `self` so its own donated text is scanned. The unslot rides along because
+  // it belongs in the same window: after the pushes, before the trashes.
+  //
+  // ⚠ AND THIS LINE IS A LIVE FIXTURE, not decoration: it names `.bin.push(` in
+  // a comment inside src/cards/, where the R145 census sweep treats ANY hit as
+  // a bypass. Before R153 that sweep read raw lines and this sentence would
+  // have failed the suite — writing the rule down next to the code that obeys
+  // it was a test failure. It strips comments now (test/90-coverage-census
+  // `codeLines`), and if anyone takes that back out, this line reddens first.
+  g.disposeToBin(self, mods, () => {
+    unslot(g, self.id);
+    const ev = g.ev('despawned', `${self.card} is exchanged for ${name}`
+      + (mods.length ? ` (its ${mods.length} mod(s) leave with it).` : '.'),
+      { unit: self.id, card: self.card, seat: self.controller, region: self.region });
+    g.fireEvent('despawned', ev, self);
+  });
 }
 card('Hooba-Mon', {
   augmentText: [{

@@ -51,6 +51,86 @@ import { stripCode } from './card-todo.ts';   // R148, appended block at the end
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
+// ════════════════════════════════════════════════════════════════════════
+// R153 / CT-43 — what the two BIN sweeps in this file read.
+// ════════════════════════════════════════════════════════════════════════
+//
+// R124's sweep (bin EXIT) and R145's sweep (bin ENTRY) are source-reading
+// assertions, and a source-reading assertion has exactly two ways to lie.
+// Both helpers below exist to close both of them, for both sweeps.
+//
+// (1) COMMENTS. Both sweeps used to read RAW lines, so a comment that merely
+//     MENTIONS `.bin.push(` — this paragraph, for instance — failed the suite
+//     for no reason. That is a false positive that punishes writing the rule
+//     down next to the code it governs, which is most of what this repo does.
+//
+// (2) ALIASING. Both matched `<expr>.bin.push(` and a local literally NAMED
+//     `bin`, so `const mb = g.player(m.owner).bin; mb.push(m.card);` walked
+//     straight past — and Hooba-Mon's `exchangeInPlace` contained exactly that
+//     shape until R153 (only its BODY push was caught, which is why the old
+//     BIN_PUSH_EXEMPT waived one line of three). A sweep that a local variable
+//     steps around measures its own regex, not the codebase.
+
+/**
+ * A file's lines with comments and string bodies removed, ONE LINE AT A TIME,
+ * so line `n` of the result is still line `n` of the file.
+ *
+ * ⚠ `stripCode` (card-todo.ts, shared with the R148 sweep below) is the
+ * codebase's stripper and it is what does the work here — but it CANNOT be
+ * applied to a whole file for this job, and both reasons are live in this repo:
+ *
+ *  · it deletes a block comment outright, newlines and all, so every line
+ *    number after the first block comment would name the wrong line; and
+ *  · its string arm has no notion of a REGEX LITERAL, so the lone `'` inside
+ *    `/[[\]().,;:!?'"]/g` at src/engine.ts:175 pairs with the next quote in the
+ *    file and everything between is deleted. Whole-file, that swallows 742
+ *    quote-free lines of engine.ts — including all three of its `bin.push`
+ *    lines, which would leave the R145 sweep below measuring nothing at all.
+ *
+ * Per line neither can happen: a runaway quote cannot leave the line it opened
+ * on, and the line count is preserved by construction. Block comments are
+ * blanked to SPACES first (rather than removed) for the same reason.
+ */
+function codeLines(src: string): string[] {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, c => c.replace(/[^\n]/g, ' '))
+    .split('\n')
+    .map(stripCode);
+}
+
+/**
+ * The local names bound DIRECTLY to a player's bin in this file — one level of
+ * aliasing, which is what the two sweeps follow.
+ *
+ * The initializer must END at `.bin`: `const n = p.bin.length` binds a number,
+ * not a bin, and treating `n.push(` as a bin write would false-positive in a
+ * dozen card files (`n`, `i`, `idx`, `name`, `gone`, `options` are all bound
+ * off a bin somewhere in src/).
+ *
+ * ⚠ STILL OPEN, stated rather than hidden: a CONDITIONAL binding is not
+ * followed — `const zone = from === 'bin' ? e.player(seat).bin : …hand;`
+ * (src/apply.ts:634). There is exactly one in the codebase and it is NOT a
+ * bypass: its `zone.splice` branch is unreachable when the zone is a bin,
+ * because the line above it routes that case through `E.removeFromBin` (R124).
+ * Checked by hand on 2026-08-25. A SECOND one would be invisible here.
+ */
+function binAliases(lines: string[]): string[] {
+  const out = new Set<string>();
+  const decl = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=]*)?=\s*[^;]*\.bin\s*;/g;
+  for (const line of lines) {
+    let m: RegExpExecArray | null;
+    decl.lastIndex = 0;
+    while ((m = decl.exec(line)) !== null) out.add(m[1]!);
+  }
+  return [...out];
+}
+
+/** `X.push(` / `X.splice(` for every alias `X`, or null when the file has none */
+function aliasCall(aliases: string[], verb: 'push' | 'splice'): RegExp | null {
+  if (!aliases.length) return null;
+  return new RegExp(`(?:^|[^\\w$.])(?:${aliases.join('|')})\\.${verb}\\(`);
+}
+
 /**
  * Files whose card mentions are NOT evidence that anyone tested the card.
  * Each carries its reason; the test below fails if one stops existing, so the
@@ -208,11 +288,17 @@ test('R124 stays solved: the only direct bin splice in src is inside removeFromB
   walk(SRC);
   const hits: string[] = [];
   for (const file of files) {
-    fs.readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+    // R153: comments stripped (a comment naming `.bin.splice(` is not a splice)
+    // and one level of ALIASING followed — see codeLines / binAliases above.
+    const lines = codeLines(fs.readFileSync(file, 'utf8'));
+    const alias = aliasCall(binAliases(lines), 'splice');
+    lines.forEach((line, i) => {
       // `.bin.splice(` — any player-state bin spliced through its property;
       // `bin.splice(` — a local alias of one; `[from].splice(` — a computed
-      // zone access that can reach a bin (the shape bypass A hid behind).
-      if (/\.bin\.splice\(|\bbin\.splice\(|\[from\]\.splice\(/.test(line))
+      // zone access that can reach a bin (the shape bypass A hid behind);
+      // `alias` — a local bound to a bin under ANY name (R153).
+      if (/\.bin\.splice\(|\bbin\.splice\(|\[from\]\.splice\(/.test(line)
+        || (alias !== null && alias.test(line)))
         hits.push(`${path.basename(file)}:${i + 1}`);
     });
   }
@@ -338,9 +424,11 @@ test('R140: no card responding to a bin-index event re-finds its card by lastInd
 //
 //   · `E.toBin(seat, name, from)`  — the general entry, and the only one that
 //     classifies the R40 trash, because `from` IS the zone.
-//   · `E.destroy`                  — the death path, which pushes the BODY
-//     itself so it can remember the slot for R140's sweep and then run R137's
-//     bin → trash → Unstable-erase in that order.
+//   · `E.disposeToBin`             — R153, the LEAVE-PLAY-FOR-A-BIN disposal
+//     tail. It pushes the body and its nontoken mods itself so it can remember
+//     the slots R140's sweep needs, and then runs R137's bin → trash →
+//     Unstable-erase in that order. `E.destroy` used to hold this code; it is
+//     the primitive now, and Hooba-Mon's exchange calls the same one (CT-43).
 //   · `E.leavePlay`                — the documented MODS line: a nontoken mod
 //     of a unit leaving play enters its OWNER's bin, before the caller decides
 //     where the body goes (R69/R137).
@@ -360,34 +448,31 @@ test('R140: no card responding to a bin-index event re-finds its card by lastInd
 // 8377b26) and the stale-entry assert below is what forced the waivers out
 // again the moment it did. Keep it empty: a dated waiver that outlives its
 // cause is how a two-line exemption quietly becomes a blanket.
-const BIN_PUSH_EXEMPT: Record<string, string> = {
-  // ⚠ DATED WAIVER — 2026-08-25, R152. Hooba-Mon's exchangeInPlace is a FOURTH
-  // hand-copy of destroy()'s disposal tail: push body + nontoken mods, fire the
-  // despawn, trash each (anchored, R70), then sweep highest-index-first if the
-  // body is Unstable. It is correct — every assertion in 42-dark-b pins it —
-  // and it genuinely knows its zone ('play' is passed to noteTrashed by hand).
-  // It cannot use E.toBin because toBin cannot take R70's `anchor` and cannot
-  // report the SLOT R140 needs for the sweep.
-  //
-  // So the honest statement is: the sweep's premise is right and this call site
-  // is the exception that proves the real defect is one layer down — destroy()'s
-  // tail should be an engine primitive both callers share, not prose copied into
-  // a card file where it will drift. That is CT-43. DELETE this waiver when the
-  // primitive lands; the stale-entry assert below makes leaving it a hard error.
-  'batch-dark-b.ts:523':
-    "Hooba-Mon's exchange bins the departing body with destroy()'s full sequence, "
-    + 'which E.toBin cannot express (no anchor, no slot). Tracked as CT-43.',
-};
+//
+// R153 (CT-43) emptied it AGAIN, and this time removed the reason to refill it.
+// It held one dated waiver for `exchangeInPlace` (batch-dark-b.ts), a fourth
+// hand-copy of destroy()'s disposal tail that could not use `E.toBin` because
+// toBin takes neither R70's `anchor` nor reports the SLOT R140's sweep needs.
+// The answer was not a waiver: the tail is `E.disposeToBin` now and the card
+// calls it, so there is no bin push in card code left to waive. ⚠ If you are
+// about to add an entry here, the odds are you are re-inlining a sequence that
+// already exists one layer down. Read E.disposeToBin first.
+const BIN_PUSH_EXEMPT: Record<string, string> = {};
 
-// ⚠ KNOWN BLIND SPOT, stated rather than hidden: this matches `<expr>.bin.push(`
-// textually, so ALIASING THE BIN TO A LOCAL EVADES IT —
-// `const mb = g.player(m.owner).bin; mb.push(m.card);` is invisible here, and
-// exchangeInPlace contains exactly that shape today (its mod pushes). A sweep
-// that can be stepped around by a local variable measures its own regex, which
-// is the same failure as CARD-TODO #9's 97-card phantom band. Widening it to
-// track aliases is CT-43's job, together with the primitive that removes the
-// need for either. Until then: this sweep is a floor, not a proof.
-test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods line', () => {
+// R153: this sweep FOLLOWS ONE LEVEL OF ALIASING and strips comments — see
+// codeLines / binAliases at the top of this file, and the two ways a
+// source-reading assertion lies that they close. The blind spot that used to be
+// declared here (`const mb = g.player(m.owner).bin; mb.push(m.card);` walks
+// past a `\bbin\.push\(` regex, and exchangeInPlace contained exactly that
+// shape) is closed: a local bound to a bin under ANY name is a hit now.
+// ⚠ THE NAME IS PINNED. CARD-TODO #42's `guard` field names this test by the
+// substring 'every bin ENTRY goes through toBin / destroy / the leavePlay mods
+// line', and 83-card-todo asserts that a real test carries it — so renaming
+// the `destroy` in it is a hard failure in another file. R153 moved that half
+// of the work into E.disposeToBin; the addition below says so without breaking
+// the pin. Rename it properly when CT-42 is next edited, not before.
+test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods line'
+  + ' (R153: the destroy half is E.disposeToBin now)', () => {
   const SRC = path.resolve(HERE, '..', 'src');
   const files: string[] = [];
   const walk = (dir: string): void => {
@@ -399,12 +484,16 @@ test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods li
   };
   walk(SRC);
   // `.bin.push(` — a player-state bin pushed through its property, which is
-  // every form the codebase actually uses; the bare `bin.push(` arm also
-  // catches a local alias of one, so aliasing is not a way around the sweep.
+  // every form the codebase actually uses; the bare `bin.push(` arm catches a
+  // local alias NAMED `bin`; and `alias` (R153) catches one under any other
+  // name, which is how the last bypass in card code hid.
   const hits: { at: string; file: string; line: number }[] = [];
   for (const file of files) {
-    fs.readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
-      if (/\.bin\.push\(|\bbin\.push\(/.test(line)) {
+    const lines = codeLines(fs.readFileSync(file, 'utf8'));
+    const alias = aliasCall(binAliases(lines), 'push');
+    lines.forEach((line, i) => {
+      if (/\.bin\.push\(|\bbin\.push\(/.test(line)
+        || (alias !== null && alias.test(line))) {
         hits.push({ at: `${path.basename(file)}:${i + 1}`, file, line: i + 1 });
       }
     });
@@ -419,7 +508,10 @@ test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods li
     }
     return '(top level)';
   };
-  const LEGAL = new Set(['toBin', 'destroy', 'leavePlay']);
+  // R153: `destroy` is no longer one of them — its tail moved WHOLESALE into
+  // `disposeToBin`, which is now the only method that pushes a leaving-play
+  // body (and its mods) into a bin, for a death and for an exchange alike.
+  const LEGAL = new Set(['toBin', 'disposeToBin', 'leavePlay']);
   const bypasses: string[] = [];
   for (const h of hits) {
     if (h.at in BIN_PUSH_EXEMPT) continue;
@@ -428,7 +520,7 @@ test('R145: every bin ENTRY goes through toBin / destroy / the leavePlay mods li
     if (!LEGAL.has(fn)) bypasses.push(`${h.at} (inside ${fn})`);
   }
   assert.deepEqual(bypasses, [],
-    `a card reaches a bin at [${bypasses.join(', ')}] without going through E.toBin, E.destroy `
+    `a card reaches a bin at [${bypasses.join(', ')}] without going through E.toBin, E.disposeToBin `
     + 'or the leavePlay mods line. Those three are the only places that know which ZONE the card '
     + 'came from, and R145 makes that the question {Unstable} turns on (in play and the stack are '
     + 'ACTIVE zones — leaving one for a bin erases instead), while R40 makes it the question '

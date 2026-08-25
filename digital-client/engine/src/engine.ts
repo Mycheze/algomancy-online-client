@@ -3748,6 +3748,148 @@ export class E {
   }
 
   /**
+   * R153 — THE DISPOSAL TAIL. One body and its mods leave PLAY for a bin;
+   * this is the whole of what happens to them, and it is the only copy.
+   *
+   * ⚠ WHY THIS EXISTS. The sequence below — push the mods, push the body,
+   * announce, trash each one ANCHORED (R70), then sweep by SLOT INDEX
+   * highest-first if the body is {Unstable} (R137/R140/R145), else sweep just
+   * the body if it is a token (R69), then file the TOKEN mods on the public
+   * erased pile (R65), then delete the mod entities last — has eight ordering
+   * constraints and not one of them is visible from a call site. Every time it
+   * was hand-copied it drifted: the copy in `exchangeInPlace` (Hooba-Mon,
+   * batch-dark-b.ts) logged a despawn it never fired, deleted its mods with no
+   * bin and no trash, and skipped a token body's bin entirely — three separate
+   * repairs (R146, then R152) to make one copy say what the original said.
+   * CT-43 is the conclusion: there is now ONE implementation and both leave-
+   * play-for-a-bin routes call it. Do not re-inline it. `test/129-disposal-
+   * tail.test.ts` fails if you do — behaviourally, not by reading the source.
+   *
+   * `E.toBin` cannot express this and is not meant to: it takes neither R70's
+   * `anchor` (so a mod's own "when I am trashed" text would lose the region it
+   * left play in) nor reports the slot it pushed to (so R140's sweep would be
+   * back to `bin.lastIndexOf(name)`, which eats an innocent older copy of the
+   * same card). `toBin` is for a card entering a bin from a zone that is not
+   * play; this is for one leaving play.
+   *
+   * `announce` is the callers' ONE difference, and it is held to the middle of
+   * the sequence on purpose: a death logs 'died' and a leave-play logs
+   * 'despawned', both AFTER every push and BEFORE every trash, because that is
+   * the board a listener must see (R137). It receives the body's bin slot —
+   * `binSeat` + `binIndex`, R131's bin identity, which only this method knows
+   * — and `unstable`, which decides the wording of the caller's own log line.
+   * Anything the caller must do inside that window (a formation collapse, an
+   * unslot) goes in the callback too; nothing else belongs there, because
+   * `fireEvent` only QUEUES triggers and the slot indices stay exact.
+   *
+   * The caller detaches the body from `s.entities` and resolves `mods` BEFORE
+   * calling — a mod id whose entity is already gone is not a mod any more —
+   * and this method deletes the mod entities at the very bottom, so the
+   * `announce` window can still walk `u.mods` for donated [Augment] text.
+   *
+   * `opts.binTo` redirects BOTH the body's bin and its mods' (Pull Under: "it
+   * and all of its mods into YOUR bin"); `opts.keepBinned` is that same card's
+   * override of the Unstable sweep — the card's own stated destination wins.
+   * A TOKEN body is still swept under `keepBinned`: Pull Under moves cards and
+   * a token has none (R69).
+   *
+   * NOT folded in: `leavePlay` / `afterDespawn` (recall and cache). They run
+   * the mods HALF of this and nothing else — their body goes to a hand or a
+   * cache, so there is no body push, no body slot, no Unstable sweep (a
+   * recalled carrier's mods stay in the bin whatever the carrier was) and no
+   * token-mod erased line. Threading a "no body" mode through here would add a
+   * branch to every one of the eight ordering constraints above to save four
+   * lines; the two shapes are kept apart deliberately. See CT-43's report.
+   */
+  disposeToBin(
+    u: Entity, mods: Entity[],
+    announce: (at: { binSeat: Seat; binIndex: number; unstable: boolean }) => void,
+    opts: { binTo?: Seat; keepBinned?: boolean } = {},
+  ): void {
+    const binSeat = opts.binTo ?? u.owner;
+    // R96/R118/#89: FOUR ways in, unioned by E.isUnstable. `mods.length` is the
+    // derived one (a modded card is Unstable — R69); `u.unstable` is the
+    // until-regroup STAMP a bin play leaves on the body it spawned; and R118
+    // ruling 2 adds the COPY of a modded unit ("the copy is still considered
+    // modded"). Read off the detached entity, so it is the same answer whether
+    // the caller asked before or after the body left the table.
+    const unstable = this.isUnstable(u);
+    // R137: the nontoken mods enter their own owners' bins too — `binTo`
+    // redirects them with the body. Pushed BEFORE the announce, exactly as
+    // leavePlay() does for a recall, so a death listener sees the same board a
+    // despawn listener would.
+    const modBin = (m: Entity): Seat => opts.binTo ?? m.owner;
+    const binnedMods = mods.filter(m => !m.token);
+    // R140: remember WHERE each push landed. The whole window between here and
+    // the state-based sweep below only QUEUES (fireEvent composes triggers, it
+    // never resolves one), so nothing can leave a bin in between and these
+    // indices are still exact when the sweep uses them.
+    const binnedAt = new Map<EntityId, number>();
+    for (const m of binnedMods) {
+      const b = this.player(modBin(m)).bin;
+      b.push(m.card);
+      binnedAt.set(m.id, b.length - 1);
+    }
+    // R40/R137: EVERYTHING leaving play for a bin enters one — token, Unstable
+    // carrier and plain card alike — so R40 trashes it. The trash fires AFTER
+    // the caller's event below so the log reads "X dies → bin" then "…trashes
+    // X", and the erase comes after that again.
+    this.player(binSeat).bin.push(u.card);
+    const bodyBinIndex = this.player(binSeat).bin.length - 1;
+    announce({ binSeat, binIndex: bodyBinIndex, unstable });
+    // R40/R70: the trash fires anchored on the departing entity itself, so its
+    // own "when I am trashed" trigger keeps the region it left play in — body
+    // first, then each mod anchored on the MOD entity, which is the order
+    // afterDespawn() uses for a recall.
+    this.noteTrashed(binSeat, u.card, 'play', u);
+    for (const m of binnedMods) this.noteTrashed(modBin(m), m.card, 'play', m);
+    // R69/R137 state-based sweep: the card has been in the bin for the whole
+    // event window above (both `when` passes and the ledger saw it there) and
+    // now leaves it, before anything queued has resolved. R124: eraseFromZone
+    // is the sanctioned route out of a bin, and the reason it records is
+    // 'erased' — the same verb the token sweep uses, because it is the same
+    // state-based action and not a new kind of departure.
+    //
+    // R140: each sweep names the SLOT it pushed (`binnedAt` / `bodyBinIndex`),
+    // not the card's name. Without the index this reads `bin.lastIndexOf(name)`,
+    // which is the copy just pushed only by luck of ordering — and an older
+    // copy of the same name resting in that bin is one reordering away from
+    // being the one eaten, leaving the token / Unstable card in the bin and
+    // taking an innocent card out of the game in its place.
+    if (unstable && !opts.keepBinned) {
+      this.eraseFromZone(binSeat, u.card, 'bin', `${u.card} is erased from the bin — Unstable.`,
+        { index: bodyBinIndex });
+      // R140: HIGHEST index first. Two mods of the same card on one carrier land
+      // in one bin at consecutive slots, and erasing the lower one first slides
+      // the higher one down under the index we recorded for it — after which a
+      // named slot that no longer holds that card is "gone" (eraseFromZone
+      // deliberately does not fall back to a name search) and the second mod
+      // would survive the sweep. Descending order never disturbs an index still
+      // to be used. The body is above every mod in its own bin and was already
+      // taken, for the same reason.
+      for (const m of [...binnedMods].reverse()) {
+        this.eraseFromZone(modBin(m), m.card, 'bin',
+          `${m.card} is erased from the bin — it modded an Unstable card.`,
+          { index: binnedAt.get(m.id) });
+      }
+    } else if (u.token) {
+      this.eraseFromZone(binSeat, u.card, 'bin', `${u.card} is erased from the bin — it is a token.`,
+        { index: bodyBinIndex });
+    }
+    // R65: an erase must reach the public erased pile like every other erase
+    // (ev() keeps the pile off 'erased' events). The body and the nontoken mods
+    // put themselves there via eraseFromZone above; this covers the TOKEN mods,
+    // which never reach a bin at all (R69: a token has no card of its own) and
+    // so have no sweep to announce them.
+    const tokenMods = mods.filter(m => m.token);
+    if (tokenMods.length) {
+      this.ev('erased', `${tokenMods.map(m => m.card).join(', ')} — erased with ${u.card}: a token mod has no card to bin.`,
+        { seat: binSeat, cards: tokenMods.map(m => m.card) });
+    }
+    for (const m of mods) delete this.s.entities[m.id];
+  }
+
+  /**
    * `opts.binTo` (R40) redirects the bin the dying card enters — Pull Under
    * ("delete target unit; it and its mods go to YOUR bin"). It has to be an
    * argument rather than a fix-up afterwards: the bin push and the trash
@@ -3825,128 +3967,58 @@ export class E {
     opts: { binTo?: Seat; keepBinned?: boolean } = {}): void {
     if (!this.entity(u.id)) return;
     delete this.s.entities[u.id];
+    // R152/R153: resolved BEFORE the disposal runs — a mod id whose entity is
+    // already gone is not a mod any more, and disposeToBin deletes them last.
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
-    // R70: every fact a death listener could want RIDES THE EVENT (see
-    // leftPlayFacts) — `verb` (Ghord's "sacrificed", which used to
-    // string-match the log message) is the death-only extra.
-    const binSeat = opts.binTo ?? u.owner;
-    // R96/R118/#89: FOUR ways in, unioned by E.isUnstable. `mods.length` is the
-    // derived one (a modded card is Unstable — R69); `u.unstable` is the
-    // until-regroup STAMP a bin play leaves on the body it spawned; and R118
-    // ruling 2 adds the COPY of a modded unit ("the copy is still considered
-    // modded"). Same destination, same 'died' event.
-    const erasedByUnstable = this.isUnstable(u);
-    // R137: `to` is 'bin' for EVERY death now, Unstable included — the same
-    // answer a dying token already gave (R70/R69). It reports where the card
-    // is DURING the event window, which is what a listener can act on; where
-    // it ends up is announced by the 'erased' event a few statements later.
-    const evData: Record<string, unknown> = {
-      ...this.leftPlayFacts(u), verb, to: 'bin',
-    };
-    // R137: the nontoken mods enter their own owners' bins too — `binTo`
-    // redirects them with the body (Pull Under: "it and its mods go to YOUR
-    // bin"). Pushed BEFORE the death event, exactly as leavePlay() does for a
-    // recall, so a death listener sees the same board a despawn listener would.
-    const modBin = (m: Entity): Seat => opts.binTo ?? m.owner;
-    const binnedMods = mods.filter(m => !m.token);
-    // R140: remember WHERE each push landed. The whole window between here and
-    // the state-based sweep below only QUEUES (fireEvent composes triggers, it
-    // never resolves one), so nothing can leave a bin in between and these
-    // indices are still exact when the sweep uses them.
-    const binnedAt = new Map<EntityId, number>();
-    for (const m of binnedMods) {
-      const b = this.player(modBin(m)).bin;
-      b.push(m.card);
-      binnedAt.set(m.id, b.length - 1);
-    }
-    // R72: hold the death event ITSELF, not "whatever the last event was".
-    // removeFromFormation() below can now log a formation collapse, and a
-    // trailing `this.events[length-1]` would hand every "when I die" trigger
-    // that log line instead of the death it is listening for.
-    //
-    // R40/R137: EVERYTHING dying enters a bin FROM PLAY — token, Unstable
-    // carrier and plain card alike — so R40 trashes it. The trash event fires
-    // AFTER the death below so the log reads "X dies → bin" then "…trashes X",
-    // and the erase (token sweep or Unstable sweep) comes after that again.
-    this.player(binSeat).bin.push(u.card);
-    const trashedTo: Seat = binSeat;   // R40: the trasher is the owner of the bin it entered
-    const bodyBinIndex = this.player(binSeat).bin.length - 1;
-    // R140: a 'died' listener that reaches into the bin for the card it just
-    // saw die (Biomass Devourer erases it OUTRIGHT) needs to name the exact
-    // copy, and only this method knows which one it is. `seat` on a death event
-    // is the CONTROLLER while the card bins to its OWNER, so the bin's seat is
-    // stamped too — the pair (binSeat, binNth) is R131's bin identity, the same
-    // one `noteTrashed` stamps on 'trashed', read back by `eventBinSlot`.
-    evData['binSeat'] = binSeat;
-    evData['binNth'] = binNthAt(this, binSeat, bodyBinIndex);
-    const evDied = this.ev('died',
-      `${u.card} ${verb} → ${binSeat === u.owner ? 'bin' : `${this.pname(binSeat)}'s bin`}`
-      + (erasedByUnstable
-        ? (mods.length
-          ? `, then ERASED — Unstable (it and its ${mods.length} mod(s)).`
-          : ', then ERASED — Unstable.')
-        : u.token ? ', then erased (token).' : '.'),
-      evData);
-    // formation cleanup + back-row promotion + R72 column collapse
-    // (state-based, no response window)
-    this.removeFromFormation(u.id);
-    if (this.s.phase === 'battle') {
-      this.bumpBattleCounter(u.region, `allyDeaths:${u.controller}`);
-    }
-    // fire the death BEFORE erasing the mod entities: the dying unit's mods
-    // still count as sources of donated "[Augment] when I die" text (the
-    // fireEvent mod scan resolves u.mods through the entity table)
-    this.fireEvent('died', evDied, u);
-    // R40/R70: the trash fires anchored on the dying unit itself, so its own
-    // "when I am trashed" trigger keeps the region it died in
-    this.noteTrashed(trashedTo, u.card, 'play', u);
-    // R70/R137: and each nontoken mod, anchored on the mod entity — the same
-    // line afterDespawn() runs for a recall
-    for (const m of binnedMods) this.noteTrashed(modBin(m), m.card, 'play', m);
-    // R69/R137 state-based sweep: the card has been in the bin for the whole
-    // event window above (both `when` passes and the ledger saw it there) and
-    // now leaves it, before anything queued has resolved. R124: eraseFromZone
-    // is the sanctioned route out of a bin, and the reason it records is
-    // 'erased' — the same verb the token sweep uses, because it is the same
-    // state-based action and not a new kind of departure.
-    //
-    // R140: each sweep names the SLOT it pushed (`binnedAt` / `bodyBinIndex`),
-    // not the card's name. Without the index this reads `bin.lastIndexOf(name)`,
-    // which is the copy just pushed only by luck of ordering — and an older
-    // copy of the same name resting in that bin is one reordering away from
-    // being the one eaten, leaving the token / Unstable card in the bin and
-    // taking an innocent card out of the game in its place.
-    const sweepUnstable = erasedByUnstable && !opts.keepBinned;
-    if (sweepUnstable) {
-      this.eraseFromZone(trashedTo, u.card, 'bin', `${u.card} is erased from the bin — Unstable.`,
-        { index: bodyBinIndex });
-      // R140: HIGHEST index first. Two mods of the same card on one carrier land
-      // in one bin at consecutive slots, and erasing the lower one first slides
-      // the higher one down under the index we recorded for it — after which a
-      // named slot that no longer holds that card is "gone" (below) and the
-      // second mod would survive the sweep. Descending order never disturbs an
-      // index still to be used. The body is above every mod in its own bin and
-      // was already taken, for the same reason.
-      for (const m of [...binnedMods].reverse()) {
-        this.eraseFromZone(modBin(m), m.card, 'bin',
-          `${m.card} is erased from the bin — it modded an Unstable card.`,
-          { index: binnedAt.get(m.id) });
+    // R153: push, announce, trash, sweep, erased-pile, delete — the whole tail
+    // is `disposeToBin`, shared verbatim with Hooba-Mon's exchange. Everything
+    // left here is what makes this disposal a DEATH rather than some other way
+    // of leaving play: the verb, the 'died' event, and the formation collapse.
+    this.disposeToBin(u, mods, ({ binSeat, binIndex, unstable }) => {
+      // R70: every fact a death listener could want RIDES THE EVENT (see
+      // leftPlayFacts) — `verb` (Ghord's "sacrificed", which used to
+      // string-match the log message) is the death-only extra.
+      //
+      // R137: `to` is 'bin' for EVERY death now, Unstable included — the same
+      // answer a dying token already gave (R70/R69). It reports where the card
+      // is DURING the event window, which is what a listener can act on; where
+      // it ends up is announced by the 'erased' event a few statements later.
+      //
+      // R140: a 'died' listener that reaches into the bin for the card it just
+      // saw die (Biomass Devourer erases it OUTRIGHT) needs to name the exact
+      // copy, and only the disposal knows which one it is. `seat` on a death
+      // event is the CONTROLLER while the card bins to its OWNER, so the bin's
+      // seat is stamped too — the pair (binSeat, binNth) is R131's bin
+      // identity, the same one `noteTrashed` stamps on 'trashed', read back by
+      // `eventBinSlot`.
+      const evData: Record<string, unknown> = {
+        ...this.leftPlayFacts(u), verb, to: 'bin',
+        binSeat, binNth: binNthAt(this, binSeat, binIndex),
+      };
+      // R72: hold the death event ITSELF, not "whatever the last event was".
+      // removeFromFormation() below can now log a formation collapse, and a
+      // trailing `this.events[length-1]` would hand every "when I die" trigger
+      // that log line instead of the death it is listening for.
+      const evDied = this.ev('died',
+        `${u.card} ${verb} → ${binSeat === u.owner ? 'bin' : `${this.pname(binSeat)}'s bin`}`
+        + (unstable
+          ? (mods.length
+            ? `, then ERASED — Unstable (it and its ${mods.length} mod(s)).`
+            : ', then ERASED — Unstable.')
+          : u.token ? ', then erased (token).' : '.'),
+        evData);
+      // formation cleanup + back-row promotion + R72 column collapse
+      // (state-based, no response window)
+      this.removeFromFormation(u.id);
+      if (this.s.phase === 'battle') {
+        this.bumpBattleCounter(u.region, `allyDeaths:${u.controller}`);
       }
-    } else if (u.token) {
-      this.eraseFromZone(trashedTo, u.card, 'bin', `${u.card} is erased from the bin — it is a token.`,
-        { index: bodyBinIndex });
-    }
-    // R65: an Unstable erase must reach the public erased pile like every
-    // other erase (ev() keeps the pile off 'erased' events). The body and the
-    // nontoken mods put themselves there via eraseFromZone above; this covers
-    // the TOKEN mods, which never reach a bin at all (R69: a token has no card
-    // of its own) and so have no sweep to announce them.
-    const tokenMods = mods.filter(m => m.token);
-    if (tokenMods.length) {
-      this.ev('erased', `${tokenMods.map(m => m.card).join(', ')} — erased with ${u.card}: a token mod has no card to bin.`,
-        { seat: binSeat, cards: tokenMods.map(m => m.card) });
-    }
-    for (const m of mods) delete this.s.entities[m.id];
+      // fire the death BEFORE erasing the mod entities: the dying unit's mods
+      // still count as sources of donated "[Augment] when I die" text (the
+      // fireEvent mod scan resolves u.mods through the entity table, which is
+      // why disposeToBin deletes them only at the very bottom)
+      this.fireEvent('died', evDied, u);
+    }, opts);
   }
 
   /**

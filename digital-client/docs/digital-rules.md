@@ -9700,3 +9700,176 @@ up `catching up (1)…(2)…(3)` and one click on it empties the queue.
    twenty minutes of headless Chrome against a real two-seat game. For UI work
    in this repo, the browser pass is not a nicety on top of the tests — it is
    what tells the tests which shape to assert.
+
+## R153 — the disposal tail is one primitive, and the bin sweeps can no longer be aliased around
+
+*2026-08-25, CARD-TODO #43. Closes the loop R137 opened, R146 half-closed and
+R152 finished by hand: the sequence those three rulings are about existed in
+four copies, and every copy drifted. It is one method now. No behaviour changes
+— this entry is about where the behaviour LIVES, which is why it can be read as
+a refactor and why it is a ruling anyway: the ordering constraints below are
+rules, and rules that are re-typed at each call site are rules that diverge.*
+
+### What the disposal tail is
+
+When something leaves **play** for a bin, exactly one sequence runs:
+
+1. push each **nontoken** mod into **its own owner's** bin, remembering the slot
+   index each landed at (R69, R137, R140);
+2. push the **body** into its bin (`binTo` redirects both halves), remembering
+   its slot (R40, R137);
+3. **announce** — the caller's own event, logged *and fired*, after every push
+   and before every trash, so a death listener and a despawn listener see the
+   same board (R70, R137, R152(1));
+4. **trash** the body, then each nontoken mod, each **anchored** on the detached
+   entity it was, so its own "when I am trashed" text keeps the region it left
+   play in (R40, R70, R131);
+5. **sweep**, by slot index, **highest first**: if the body is {Unstable}, the
+   body and every nontoken mod; else if the body is a token, just the body
+   (R69, R137, R140, R145);
+6. file the **token mods** on the public erased pile — they never reached a bin,
+   so no sweep announces them (R65, R69);
+7. delete the mod entities **last**, so step 3's window can still walk `u.mods`
+   for donated `[Augment]` text.
+
+Eight ordering constraints, and **not one of them is visible from a call site.**
+
+### Why it is a primitive now
+
+The sequence had four hand-copies. Their history is the argument:
+
+* `E.destroy` — the original.
+* `E.leavePlay` + `E.afterDespawn` — the recall/cache pair, which run steps 1,
+  3 and 4 and nothing else.
+* `exchangeInPlace` (Hooba-Mon, `src/cards/sets/batch-dark-b.ts`) — prose copied
+  into a **card file**. R146 repaired the body's half of it. R152 then found
+  three more disagreements in the same forty lines: the despawn was logged and
+  never fired, the mods were `delete`d with no bin, no trash and no erased-pile
+  entry, and a token body reached no zone at all.
+
+Two repair rounds on one copy, with every fix landing as *another* hand-typed
+statement next to the ones already there. The copy was **correct** on the day
+CT-43 was filed and fully pinned by `test/42-dark-b.test.ts` — and that is the
+strongest form of the argument, not a weakening of it: a copy that is right
+today is a copy whose next divergence is invisible, because the tests that pin
+it are written from the card's side, where "the same as `destroy`" is not
+something an assertion can see.
+
+So: **`E.disposeToBin(u, mods, announce, opts)`** (`src/engine.ts`). `E.destroy`
+and `exchangeInPlace` both call it; there is deliberately no second
+implementation.
+
+```ts
+disposeToBin(
+  u: Entity, mods: Entity[],
+  announce: (at: { binSeat: Seat; binIndex: number; unstable: boolean }) => void,
+  opts: { binTo?: Seat; keepBinned?: boolean } = {},
+): void
+```
+
+`announce` is held to the **middle** of the sequence on purpose — after every
+push, before every trash — and receives the body's bin slot (`binSeat` +
+`binIndex`, which is R131's bin identity and which only the disposal knows) plus
+`unstable`, which the caller needs for the wording of its own log line. A death
+logs `died` there and collapses its formation; an exchange logs `despawned` and
+unslots. Anything else a caller must do inside that window goes in the callback;
+nothing else belongs there, because `fireEvent` only *queues* triggers and the
+recorded slot indices therefore stay exact.
+
+`E.toBin` cannot express any of this and is not meant to: it takes neither R70's
+`anchor` (so a mod's trash would lose the region it left play in) nor reports
+the slot R140's sweep needs (so the sweep would be back to
+`bin.lastIndexOf(name)`, which is how an innocent older copy of the same card
+gets erased out of the game). `toBin` is for a card entering a bin from a zone
+that is **not** play; `disposeToBin` is for one leaving play.
+
+### What was NOT folded in, and why
+
+`E.leavePlay` / `E.afterDespawn` (recall, cache) stay separate. They run step 1
+and steps 3–4 for the **mods only**, because their body goes to a hand or a
+cache rather than a bin: there is no body push, no body slot, no {Unstable}
+sweep (a recalled carrier's mods stay in the bin whatever the carrier was) and
+no token-mod erased line. Threading a "no body" mode through `disposeToBin`
+would put a branch on every one of the eight constraints above to save four
+lines, and would make all three paths harder to read. The R137 principle the
+split has to preserve — *the same mod card behaves the same however its host
+left play* — is asserted directly instead, in
+`test/129-disposal-tail.test.ts`.
+
+### The two bin census sweeps could be stepped around by a local variable
+
+`test/90-coverage-census.test.ts` holds two source-reading guards: R124's bin
+**exit** sweep (every removal goes through `E.removeFromBin`, so `leftBin`
+fires) and R145's bin **entry** sweep (every entry goes through a method that
+knows which zone the card came from). Both had the same two holes.
+
+**Aliasing.** Both matched `<expr>.bin.push(` and a local literally *named*
+`bin`. `const mb = g.player(m.owner).bin; mb.push(m.card);` walked straight
+past — and `exchangeInPlace` contained exactly that shape for its mod pushes,
+which is why the old `BIN_PUSH_EXEMPT` waived one line of the three it should
+have caught. Both sweeps now follow **one level of aliasing**: a
+`const X = <…>.bin;` anywhere in a file makes `X.push(` / `X.splice(` a hit in
+that file. The initializer must *end* at `.bin` — `const n = p.bin.length` binds
+a number, and a dozen card files would false-positive otherwise.
+
+⚠ Still open, stated rather than hidden: a **conditional** binding
+(`const zone = from === 'bin' ? e.player(seat).bin : …hand;`, `src/apply.ts:634`)
+is not followed. There is exactly one in the codebase and it is **not** a
+bypass — its `zone.splice` branch is unreachable when the zone is a bin, because
+the line above routes that case through `E.removeFromBin`. Checked by hand,
+2026-08-25. A second one would be invisible.
+
+**Comments.** Both read raw lines, so a comment that merely *mentioned*
+`.bin.push(` was a false positive that failed the suite. Writing the rule down
+next to the code that obeys it was a test failure. Both sweeps strip comments
+now. `exchangeInPlace` carries a deliberate live fixture — a comment naming
+`.bin.push(` inside `src/cards/`, where any hit is an automatic bypass — so
+removing the strip reddens immediately.
+
+⚠ **`stripCode` cannot be used whole-file**, and the reason is worth recording
+because the R148 sweep in the same file does exactly that. `stripCode`
+(`test/card-todo.ts`) deletes a block comment newlines and all, so every
+reported line number after the first block comment names the wrong line; and its
+string arm has no notion of a **regex literal**, so the lone `'` inside
+`/[[\]().,;:!?'"]/g` at `src/engine.ts:175` pairs with the next quote in the
+file and everything between is deleted. Whole-file, that swallows **742
+quote-free lines of `engine.ts`** — including all three of its `bin.push` lines.
+The bin sweeps apply it **one line at a time** instead: a runaway quote cannot
+leave the line it opened on, and the line count is preserved by construction.
+
+`BIN_PUSH_EXEMPT` is empty again, and this time the reason to refill it is gone:
+there is no bin push left in card code to waive.
+
+### Tests
+
+`test/129-disposal-tail.test.ts`, nine cases. Five drive the disposal through
+Hooba-Mon's exchange — a plain body (the default branch, no sweep), nontoken
+mods (the despawn *fires*, and each mod bins to **its own owner**), an
+{Unstable} body including **two mods of one card in one bin** (the only shape
+that can tell the descending sweep from the ascending one), a **token body with
+no mods** (the `else if (token)` branch, reachable on its own only when a
+token's face is Hooba-Mon), and a token mod reaching the erased pile through the
+bulk event rather than a sweep. Three assert the sharing: a spy proving both
+`destroy` and the exchange *run* the primitive, a structural check that neither
+call site keeps a **second** copy beside it (a re-inline that also calls the
+primitive would satisfy the spy and double every trash), and a shape guard on
+the primitive itself. One asserts R137 across the split above: a mod's fate is
+identical whether its host died or was exchanged.
+
+**Red-checked, each by the wrong implementation it rules out.** Making the body
+sweep unconditional (`else if (u.token)` → `else`) reddens the plain case;
+logging the despawn without firing it reddens the mod case (and R152's two
+despawn tests in 42-dark-b); dropping `.reverse()` from the mod sweep reddens
+the two-of-one-card case; disabling the token branch reddens the token-body
+case; dropping the bulk erased event reddens the token-mod case; pointing
+`modBin` at the body's bin reddens the mod-owner assertion; handing the disposal
+an empty `mods` reddens the cross-route case; renaming the `announce` call
+reddens the shape guard.
+
+Three of those mutations are worth naming, because **42-dark-b stays green
+through all of them**: disabling the token-body branch, sending mods to the
+wrong owner's bin, and — the one CT-43 is about — a **faithful re-inline** of
+the whole tail back into `exchangeInPlace`. The last reddens both conformance
+tests and the widened census sweep, and nothing else in the suite. That is the
+measurement CT-43 asked for: the copy is invisible from the card's side, which
+is why the sharing has to be asserted directly.
