@@ -470,6 +470,37 @@ test('Life Channel: the [Switch1] graft rider reads the ledger straight', () => 
   finishBattle(h);
 });
 
+test('Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)', () => {
+  // R157 §1: an X card's cost is the X actually PAID, and a card in a HAND has
+  // had no X paid — so its cost is 0, not "unknown". `printedMana` used to
+  // return null for X and the option filter dropped it, so an X card was never
+  // offered AT ALL. That was a THIRD answer to one question: manaOf said 0,
+  // this said "excluded", Null Drone said "the paid X". One rule now.
+  const h = new Harness(9001);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  h.state.players[P]!.hand.length = 0;
+  h.state.players[P]!.hand.push('Mindburn');          // printed mana: 'X'
+  const e = new E(h.state);
+  assert.equal(e.card('Mindburn').mana, 'X', 'the premise: Mindburn is an X spell');
+
+  let labels: string[] = [];
+  const def = e.card('Living Vault').augmentText![0]!.effect;
+  def.run(e, {
+    controller: P, sourceName: 'Living Vault', region: e.homeRegion(P),
+    targets: [], x: undefined, event: null,
+    choose: (_k: string, q: { options: { label: string }[] }) => {
+      labels = q.options.map(o => o.label);
+      return -1;                                       // decline; we only want the menu
+    },
+  } as never);
+
+  assert.ok(labels.some(l => l.includes('Mindburn')),
+    `an X card in hand must be OFFERED — its cost is 0 because no X has been paid. `
+    + `Offered: ${JSON.stringify(labels)}`);
+  assert.ok(labels.some(l => l.includes('Mindburn') && l.includes('[0]')),
+    `and priced at [0], not at a pip total. Offered: ${JSON.stringify(labels)}`);
+});
 // ── Living Vault ─────────────────────────────────────────────────────────
 
 test("Living Vault: end of turn, pay [x] to bank a hand card with 'Prophecy — One Turn Passes'", () => {

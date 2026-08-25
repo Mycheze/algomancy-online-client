@@ -73,12 +73,23 @@ const lifeLostThisBattle = (g: E, region: number, seat: Seat): number =>
 const lifeGainedThisBattle = (g: E, region: number, seat: Seat): number =>
   g.battleCounter(region, `lifeGained:${seat}`);
 
-/** printed mana cost as a number ("gain debt equal to its cost", "a card with
- * cost [x]"): an X-cost card has no fixed printed number, so it counts as 0
- * and is never offered as a payable [x]. */
-const printedMana = (g: E, name: string): number | null => {
+/**
+ * Printed mana cost as a number ("gain debt equal to its cost", "a card with
+ * cost [x]").
+ *
+ * R157 §1: an X card's cost is the X ACTUALLY PAID — *"pips aren't a relevant
+ * part of looking at the cost of a card"* — and a card sitting in a HAND has
+ * had no X paid, so its cost is **0**. It used to return `null` here, which
+ * Living Vault's `.filter(o => o.cost !== null)` turned into "an X card is
+ * never offered at all". That was a THIRD answer to the one question: `manaOf`
+ * said 0, this said "excluded", Null Drone said "the paid X". One rule now.
+ *
+ * The standing steer settles the direction: take the reading that lets more
+ * things happen. An X card is offerable at "pay [0]".
+ */
+const printedMana = (g: E, name: string): number => {
   const m = g.card(name).mana;
-  return m === 'X' ? null : m;
+  return m === 'X' ? 0 : m;
 };
 
 // ───────────────────────────── the cards ──────────────────────────────
@@ -124,7 +135,7 @@ card('Blurf', {
           g.ev('info', `${ctx.sourceName}: the deck is empty — nothing to cache.`);
           return;
         }
-        const cost = printedMana(g, name) ?? 0;
+        const cost = printedMana(g, name);
         g.gainDebt(ctx.controller, cost);
       },
     },
@@ -420,7 +431,7 @@ card('Living Vault', {
         const open = g.openMana(seat);
         const options = g.player(seat).hand
           .map((name, i) => ({ name, i, cost: printedMana(g, name) }))
-          .filter((o): o is { name: string; i: number; cost: number } => o.cost !== null && o.cost <= open)
+          .filter(o => o.cost <= open)
           .map(o => ({ label: `${o.name} — pay [${o.cost}]`, value: o.i, card: o.name }));
         if (!options.length) {
           g.ev('info', 'Living Vault: no hand card whose cost you can still pay — nothing is cached.');
