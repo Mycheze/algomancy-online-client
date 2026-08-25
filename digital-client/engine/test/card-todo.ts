@@ -207,6 +207,24 @@ export function stripCode(src: string): string {
       else if (st === 'sq') { if (c === '\\') { out += ' '; i++; } else if (c === "'") st = 'code'; }
       else if (st === 'dq') { if (c === '\\') { out += ' '; i++; } else if (c === '"') st = 'code'; }
       else if (st === 'tpl') { if (c === '\\') { out += ' '; i++; } else if (c === '`') st = 'code'; }
+      // A LINE COMMENT ENDS AT THE NEWLINE AND AT NOTHING ELSE. It needs its
+      // own branch — without one it fell through to the regex arm below, where
+      // an unescaped `/` outside a character class does `st = 'code'`, so the
+      // comment ENDED AT ITS FIRST SLASH and its tail was handed back as code.
+      // `+1/+1`, `ll/2`, `and/or` and every file path make that near-universal:
+      // 927 line-comment lines across the 28 batch files leaked, plus 86 in
+      // engine.ts. Worse, a leaked backtick opened a TEMPLATE-LITERAL state,
+      // which may legally span newlines, so the desync then swallowed real
+      // code — ten `card()` definitions vanished from the stripped view of
+      // batch-hybrids-ld-c.ts and batch-light-a.ts, and every sweep resting on
+      // this helper was reading English as TypeScript.
+      //
+      // This is the SECOND time this one function has gone blind (the first was
+      // the regex-literal hole that deleted 5128 of engine.ts's 8901 lines).
+      // Both times it was found the same way — an agent saying "my sweep says
+      // clean and I don't believe it" — and never by the sweeps themselves.
+      // 149-strip-code.test.ts measures it directly now.
+      else if (st === 'line') { /* consumed above; only a newline leaves this state */ }
       else {
         if (c === '\\') { out += ' '; i++; }
         else if (c === '[') reClass = true;
