@@ -180,10 +180,19 @@ card('Bloodwind Revenant', {
       // R117: fires only in the sub-step MY OWN COLUMN strikes in. Missed when
       // R117 was applied — see the matching note on Flowstone Arcanite.
       if (!g.strikesInCurrentSubStep(self)) return false;
-      // a DEAD unit's {Piercing} must not still carry the column, and a
-      // 0-power column deals no combat damage at all. Flowstone Arcanite and
-      // Blightmound both gate on both; this card gated on neither, so a column
-      // of corpses could pay out and a 0-power column counted as "dealing".
+      // A 0-power column deals no combat damage at all — Flowstone Arcanite and
+      // Blightmound both gate on that and this card gated on neither, so a
+      // 0-power column counted as "dealing". THAT half is a real fix.
+      //
+      // ⚠ The `alive` filter passed to colAttrs below is NOT. My commit message
+      // for 49666eb claimed a dead unit's {Piercing} still carried the column;
+      // it does not. `E.destroy` calls `removeFromFormation`, which splices the
+      // dead id out of `b.columns` immediately (measured: `[[1,2]]` → `[[2]]`),
+      // so `alive` and `col` hold the same ids on every reachable board. It is
+      // consistency with the rest of the pool and defence against a future path
+      // that removes a unit without unslotting it — not a defect that was
+      // paying anyone out. Corrected 2026-08-25, when the red-check for the
+      // matching Sarcophage change refused to go red.
       const alive = col.filter(id => g.entity(id));
       const power = alive.reduce((s, id) => s + Math.max(0, g.effStats(g.entity(id)!)[0]), 0);
       if (power <= 0) return false;

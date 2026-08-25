@@ -203,16 +203,29 @@ function unitsThatHit(g: E, victim: Seat): Entity[] {
   const out: Entity[] = [];
   const live = (ids: EntityId[]): Entity[] =>
     ids.map(id => g.entity(id)).filter((u): u is Entity => !!u);
+  // colAttrs on the LIVE column, for consistency with every other Piercing
+  // reader in the pool (water-a, water-b, fire-a, earth-a). These two were the
+  // last raw ones.
+  //
+  // ⚠ NOT A BUG FIX, and said out loud so nobody writes a test that cannot
+  // fail: `E.destroy` calls `removeFromFormation`, which splices the dead id
+  // out of `b.columns` immediately — measured, `[[1,2]]` becomes `[[2]]` — so
+  // `live(col)` and `col` hold the same ids and no reachable board tells them
+  // apart. Reverting this line reddens nothing. It is defence against a future
+  // path that removes a unit WITHOUT unslotting it, not a defect that was
+  // stripping anyone's counters. (I reported it as a live bug first; the
+  // red-check is what caught me.) 2026-08-25.
   if (victim === b.defender) {
     b.columns.forEach((col, ci) => {
       const alive = live(col);
       if (!alive.length) return;
-      if (b.blocks[ci] === undefined || g.colAttrs(col).has('Piercing')) out.push(...alive);
+      const ids = alive.map(u => u.id);
+      if (b.blocks[ci] === undefined || g.colAttrs(ids).has('Piercing')) out.push(...alive);
     });
   } else if (victim === b.attacker) {
     for (const col of Object.values(b.blocks)) {
       const alive = live(col);
-      if (alive.length && g.colAttrs(col).has('Piercing')) out.push(...alive);
+      if (alive.length && g.colAttrs(alive.map(u => u.id)).has('Piercing')) out.push(...alive);
     }
   }
   return out;
