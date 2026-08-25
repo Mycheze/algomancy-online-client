@@ -10204,3 +10204,189 @@ what the queue still exists for; §3b and §4b are new.
    returns the pending decision's bar whenever `s.decision` is set, so a hotseat
    player still cannot use the other seat's now-legal deployment options. That
    is a presentation change, out of R154's scope, and reported rather than made.
+
+## R157 — the owner's answers to the 27 card questions of 2026-08-25
+
+*Bena, 2026-08-25, answering `Downloads/algomancy-card-rulings.md` in full.
+Verbatim quotes; the engine consequence follows each. Where the answer says the
+engine is already right, that is recorded so nobody re-opens it.*
+
+**THE STANDING STEER, and it governs every future ambiguity:**
+> *"You seem to want to make cards only work in a very conservative way.
+> Algomancy is meant to be a highly exploratory and synergistic game where
+> anything is possible. You can do so many things never seen before."*
+
+and, on Grob: **"Printed text always wins."** When two readings are available
+and neither is absurd, take the one that lets more things happen.
+
+### 1. An X spell's cost is X ALONE — the pips are not part of it
+> *"Pips aren't a relevant part of looking at the cost of a card in Algomancy.
+> And paying X replaces the letter X on the printed card temporarily."*
+
+So "that spell's cost" = **the X actually paid**. `manaOf`/`eventSpellCost`
+returning 0 for `mana: 'X'` is wrong wherever a paid X is knowable. Null Drone
+was already right; Channeled Amalgam and Arcane Concentrator were dead against
+eleven spells. Affects also Death Greeter, Covenant of the Damned, Prophecy Bug,
+Abduct, Lumengrove Lurker, Blurf, Living Vault.
+
+### 2. `shared` mode is not a real format
+> *"Shared mode isn't a real thing. You invented it for testing. So I guess
+> it'd be constructed?"*
+
+Worldbender takes the **constructed** branch in `shared`.
+
+### 3. An exchange is NOT a death — but it IS a despawn and a trashing
+> *"It's not a death, but it is a despawn and trashing. Weird corner case."*
+
+Hooba-Mon was right. **Necromorph is wrong** and must leave `destroy()` for the
+same `disposeToBin` route.
+
+### 4. A column deals combat damage if THE COLUMN has positive power
+> *"Only if the other unit in the column has a positive power. 0 power units do
+> no damage. But the other thing in the column can still contribute to the
+> shared column power."*
+
+The gate is the **column's** total power, not the anchor's own. Zephyrzoa and
+Vroot were right; **Blightmound** (anchor's own power) and **Eldritch
+Dreamtender** (no gate) are wrong. One shared predicate.
+
+### 5. {Swift} + {Sluggish} strikes in BOTH sub-steps — deliberately
+> *"Both apply. It's Algomancy's answer to double strike. A Swift+Sluggish unit
+> that's in combat with a normal unit will (potentially, assuming they all
+> survive all damage) end up having damage done in all three sub damage steps."*
+
+The damage behaviour is CORRECT as shipped. What is wrong is
+`E.combatSubStepOf`, which returns only the FIRST match, so R117's
+`strikesInCurrentSubStep` fires a column's triggers once while its damage lands
+twice. It must answer true for **every** sub-step the column strikes in.
+
+### 6. "You" on a {Virus} [Augment] is the unit's CONTROLLER
+> *"The unit's controller. But why would that be a problem for Doot? You virus
+> it onto your unit during a battle, then all your units get larger as long as
+> your opponent has more life than you. It plays into the whole 13 life thing."*
+
+Already correct. The Mighty Doot is a POSITIVE virus for your own unit — the
+premise that nobody would apply it was mine and it was wrong.
+
+### 7. Necromantic Rebuke's X is the printed additional cost
+> *"It literally says on the card that there's an additional cost to erase X
+> cards from your bin. THAT's what X is."*
+
+Already correct (`castCost: { kind: 'eraseBin', n: 'X' }`). No minimum — see 22.
+
+### 8. Dropslime's discard line is an activated ability from HAND
+> *"It doesn't have a battle icon, but that is just an activated ability that
+> you do from hand, so it can be done during battle just fine."*
+
+The missing `{Battle}` marker is not a restriction. The discard-me mode must be
+usable in battle; inheriting deploy timing made it a dead mode.
+
+### 9. Unqualified "gain rot" is the controller
+> *"Cards always specify when something is an opponent. But just 'Gain rot'
+> refers to YOU, the controller/caster of the effect."*
+
+Already correct — Legion of the Depths, Cosmic Devourer, Primordial Coalescence.
+
+### 10. A transformed card turns back over, and a back face is NOT a token
+> *"Turns back over. In all zones, other than play, it exists as the front
+> side. And the back is NOT a token."*
+
+Scholar of the Void must lose `token = true`, and revert to its front face on
+leaving play (so it BINS as "Scholar of the Void" and can be recurred).
+
+### 11. {Deadly} has no damage cap — it changes lethality, not amount
+> *"Deadly doesn't have a cap?? A 10/10 deadly unit still deals 10 damage to
+> something, the only difference is that any amount of damage is enough to kill
+> a unit."*
+
+The "1-point cap" in my question does not exist. Oorblak absorbing its full
+lethal share is right; verify nothing in the engine reduces a Deadly source's
+damage.
+
+### 12. A bin-play grant does NOT waive printed timing
+> *"Cards that let you ignore timing say something like 'You may play them
+> **now**'."*
+
+Already correct — Abyssal Evocation, Writhing Host.
+
+### 13. Tokens ARE spells
+> *"Yes. Tokens are spells."*
+Already correct — Emberflame Enlightener doubles a Burst Fireball.
+
+### 14. Any difference from printed stats is a stat change
+> *"Literally any change to a unit's stats counts. If they're different from the
+> printed stats, they are changed."*
+Already correct — Leave None Pure sees another player's aura.
+
+### 15. Stellarspore Harvester's condition is checked at RESOLUTION only
+> *"The wording is such that you can target any enemy, it only checks whether
+> you gain control of it on resolution."*
+Drop the `when` gate on both halves; the trigger always fires.
+
+### 16. A trigger fires ONCE PER TARGETED ALLY
+> *"Once per targeted ally — two targets, two triggers, two 1/1s."*
+Earnest Defender, and the general multiplicity rule.
+
+### 17. Torrential Reclamation distributes over both clauses
+> *"First, you recall X of your target nontoken units. Then, when it resolves,
+> the card checks how many units you recalled and forces each player to
+> sacrifice that many units and you lose that much life."*
+Already correct.
+
+### 18. "The deck" is the effect controller's; the targeted opponent splits
+> *"Your deck. It will be shared during live draft and solo in constructed.
+> 'The deck' always refers to the deck of the effect's controller. The targeted
+> opponent is the splitter."*
+Already correct — Big Glimpse Card.
+
+### 19. A tie on Bloppert does nothing
+> *"Nothing happening is good."*
+Already correct.
+
+### 20. Stasis Sentry taxes an X spell only up to a floor of 3
+> *"They're sort of exempt, but only if X => 3. If the player wants to cast it
+> for 0, 1, or 2, they'd have to pay the tax to bring its cost to at least 3."*
+
+Not a flat exemption and not a flat +3: the cost mod raises the spell TO 3 when
+the chosen X is below 3, and does nothing at X ≥ 3.
+
+### 21. A `[bracketed]` clause is a COST or a MODE, chosen when it goes on the stack
+> *"All text on cards that's in [square brackets] like that is either an
+> additional cost or a modal choice. The additional cost must be paid in order
+> to put it on the stack and the modal choice (happening on this card) must be
+> chosen when putting it on the stack."*
+
+Retribution Thing's "[lost or gained]" is a **cast-time mode**, not a sum. This
+is a GENERAL rule about bracketed text, not one card's answer.
+
+### 22. X = 0 is a legal activation
+> *"You can legally activate it and discard no cards."*
+No Hand Killer drops its `xMin: 1`.
+
+### 23. Arbiters of Vitality multiply, and they stack
+> *"quadruple it!! So always n*2*v (n is num of arbiters, v is original
+> damage/life gain value)"*
+
+Two Arbiters = 4×. The stated formula is **v × 2 × n**, so three Arbiters = 6×
+(not 8×). Implement the formula as written. ⚠ NOT ANSWERED: how a multiplier
+composes with an additive amount mod. Applying the multiplier AFTER additive
+mods until ruled.
+
+### 24. "Unique token" means a unique (name, X) pair
+> *"'Unique' means unique (name, X) pair — you get two extras."*
+Automaton of Abundance: a Robot 2 and a Robot 5 in one batch yield two extras.
+
+### 25. Arbiter of Armistice has no {Switch} — the transcription is wrong
+> *"That's an error on your part. The card does not have a [Switch] thing. It
+> just adds an additional cost to all spells cast in battle to pay 2 life."*
+Correct the type line in the printed data. No behaviour change.
+
+### 26. Rook grants {Virus} itself, and reaches stack hosts
+> *"(a) yes it does. and for (b) yes it can also go to an enemy. That's the
+> whole point of the card."*
+The permission must confer {Virus}, not merely the battle-window timing.
+
+### 27. Printed text beats the owner/controller default
+> *"Controller's cache — the printed text wins. Printed text always wins."*
+Grob caches to the target's CONTROLLER. `cacheUnit` grows a `to` seat, as
+`recall` already has.
