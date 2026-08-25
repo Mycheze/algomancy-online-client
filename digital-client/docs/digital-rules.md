@@ -12983,3 +12983,122 @@ mutation: the `when` targeting test removed (1, 2 go red); the id lookup
 replaced by the bottom-up `.find()` (3 goes red); Maelstrom restored as a
 triggered ability (4, 5, 6, 7, 10 go red — 5 with exactly the Crevice Lurker
 prevention it names); `moveMod` not re-pointing `modOf` (8, 9 go red).
+
+---
+
+## R182 — a conformance drive must not depend on behaviour it is not testing; and what a guard DRIVES cannot tell you what it GUARDS
+
+Two verification questions, one round. Both were asked as *"is this checker
+telling us the truth?"*, and both were answered by measuring rather than
+reasoning — which is the standing rule R176 left behind after `stripCode` went
+blind twice under green sweeps.
+
+### 1. `65-effect-conformance`'s fuzz drive was the defect, not its assertions
+
+The file asserts two things about every card effect: that it declares the tokens
+it creates (R69), and that a run which completes emits at least one event —
+*"nothing happened" is a legitimate outcome; not saying so never is*. Both are
+right and both stay.
+
+It drove them with **140 fuzz games**, and that made the test's reach a function
+of *unrelated behaviour*. A change to one card file moved the random walk onto a
+pre-existing bare `return` in a **different** card file, so an agent's own
+change reddened a test in code it did not own, and the fix was always "add a
+`g.ev('info', …)` to somebody else's card". It happened under R84 (Channeled
+Amalgam's comment records it), again under R166 (three cards, and that agent
+wrote *"this will recur every round"*), and it was CARD-TODO #61.
+
+**The drive is now a deterministic pass over every `EffectDef` the registry
+holds**, in two fixed board states, with a context built from the engine's own
+machinery: targets from `targetCandidates` + `specForSlot` + `resolveTargetRef`
+(the calls `collectTargets` itself makes), a triggered ability's event accepted
+only if that ability's own `when` returns true for it, a mode from the effect's
+own `modes.options`. Measured on the same pool:
+
+| | 140-game fuzz | deterministic pass |
+|---|---|---|
+| EffectDefs entered | 280 / 431 | **431 / 431** |
+| cards with effects reached | 272 / 414 | **414 / 414** |
+| token-making defs seen creating | 49 / 84 | **76 / 84** |
+| completed runs that said nothing | 0 | **16** |
+| wall clock | ~45 s | **~2 s** |
+
+Wider on every axis the old drive had, which was the bar: *a stabler test that
+reached less would have been a bad trade, and it has to be measured, not
+assumed.*
+
+**THE RULING THIS PRODUCED, and it is about the cards.** Fifteen of the sixteen
+silent completions are ONE shape — **R25's "each opponent" over a region that
+holds nobody else**. "Each opponent" / "each other player" reads the effect
+region's `presentSeats`, and a home region out of battle lists only its owner,
+so the loop runs zero times, nothing happens, and nothing is said.
+`85-silent-branches` §9 fixed exactly this for Restitution, Vroot and Flzzz —
+the three the fuzz happened to reach. The other twelve sat there for weeks:
+Bloated Manablub, Blightmound, Linked Extinction, Void Memory (whose own comment
+cites R25 and still does not announce the case), Growing Plague, Malicious
+Hardware, Pestilent Mycelion, Rotwall, Verdant Necrophage — each on both its
+spell and its graft route where it has one. Stellarspore Harvester is the
+sixteenth and a near neighbour: "each of your units with a -1/-1 counter" is a
+quantity counted at resolution, and it gives nothing away and says nothing when
+the count is zero. All sixteen are itemised in `SILENT_KNOWN` with their reason
+and a self-invalidating test, so the list can only shrink.
+
+Three effects cannot be furnished with what they DECLARE they need (Ancient One
+needs a formation neighbour, Riftwalker needs to be inside a battle grid, Roving
+Quillback needs a blocked column). They are still driven; they are simply not
+convicted of silence, and they are **named individually rather than counted** —
+a count is how a hole becomes invisible.
+
+### 2. What a guard DRIVES does not tell you what it GUARDS — measured, and the screen refused
+
+CARD-TODO #56 asked for a mechanical screen over the report ledger: classify
+each cited guard by what its body drives (a real `Harness`, the `ui-driver`, a
+whole-pool sweep, a pure function on a hand-built fixture, a source regex, a
+server script) and require a report describing **a symptom the player saw** to
+cite at least one guard that drives the real thing.
+
+**It cannot be built, and `154-guard-shape.test.ts` is the measurement that says
+so.** The classifier exists and works; its verdicts are the finding:
+
+- the four entries the R173 audit caught, in their pre-R173 state:
+  **#43 pure · #45 pure · #53 pure · #18 harness**
+- the six CARD-TODO #56 itself calls correctly pure:
+  **#22 pure · #26 pure · #82 pure · #94 pure · #100 pure ·
+  #77 harness+uidriver+source**
+
+Three of the blind four are cited by nothing but pure tests — **and so are five
+of the six correct ones.** Any "must drive the real thing" rule flags #22, #26,
+#82, #94 and #100 alongside #43, #45 and #53, and still misses #18 outright,
+because #18's blind guard drives a real `Harness` and then asserts
+`legalActions(state, D) === []` — a rules fact that was just as true before the
+fix.
+
+The fact that separates them is *"is the pure function under test the ROOT
+CAUSE?"* — #22's `publishCols` test IS the fix; #45's `stackItemX` test is a
+correct test of a correct reader that was never the bug — **and that fact is
+nowhere in the repo in machine-readable form.** So the screen is not shipped.
+What is shipped is the instrument, proof that it is not blind, and **the
+negative result as a falsifiable assertion**: if the two populations ever become
+separable, that test fails and says to go and build the screen.
+
+The one rule the shape can carry is stated with exactly how much less it is: an
+entry closed against nothing but pure tests must at least carry a `note`,
+because that is the population where every automatic check in this repo is
+silent. Applied to the four, it would have caught **#43 and #45** (closed with
+no note at all) and not #53 or #18. Two of four is a ratchet on how the four
+ENTERED the ledger, not the screen that was asked for, and it is labelled as
+such. Being pure-only is **not** a fault — five of the seven entries in that
+population are the ticket's own examples of doing it right.
+
+### The general rule both halves share
+
+> Ask of any checker: *"what would this look like if it were blind?"* — then
+> measure it, and write the number down.
+
+This file's own classifier went blind twice while being built, in the two ways
+R176 named: brace-matching RAW source, where an apostrophe inside a comment
+(`// … the attacker's screen`) opened a string and ran one small test's "body"
+24 660 characters past its own closing brace; and taking "the next `{`" as a
+function's body, where `function f(x): { a: T } { … }` hands you the RETURN TYPE
+and the whole helper-expansion silently stops working. Both are pinned by tests
+in `154-guard-shape.test.ts`, against the real files that exposed them.
