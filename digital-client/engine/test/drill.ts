@@ -41,6 +41,13 @@ import type { Action, Element, GameState, Seat } from '../src/types.ts';
 
 const ELEMENTS: Element[] = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
 
+/** how many windows activate mode keeps walking with nothing left to activate
+ *  before it calls the card done. A battle-timing ability is not offered until
+ *  the next battle, which is tens of windows away from a deployment-phase
+ *  play, so this has to be generous — but it is bounded, because an unbounded
+ *  walk costs 600 steps on every card that has no ability at all. */
+const ACTIVATE_PATIENCE = 90;
+
 export interface DrillResult {
   card: string;
   /** the card became a legal `playCard` at some window and was played */
@@ -73,6 +80,19 @@ export interface DrillResult {
    *  it means the drill did NOT observe the card's payload, so a human has to
    *  say whether the condition should have been met. */
   guarded: boolean;
+  /** `activate` mode: the abilities of THIS card that were actually paid for
+   *  and put on the stack, as `<abilityIndex>:<label>`. Empty means the card
+   *  has no activated ability, or none of them was ever legal. */
+  activated: string[];
+  /** `activate` mode: event types emitted strictly AFTER the first activation.
+   *  Taken from the activation onward and not from the play, because a unit's
+   *  own arrival is a `spawned` — scoring an ability that prints "Create a
+   *  Poison 1" against the whole post-play window would let the unit's own
+   *  body be the evidence for its ability. Oracle of the Flame and Sprouter
+   *  both read as delivering without this. */
+  activateTypes: string[];
+  /** `activate` mode: the state delta from the first activation onward */
+  activateChanged: string[];
 }
 
 /** every resource kind open, in bulk, so affinity and mana are never the
@@ -195,6 +215,17 @@ export function drillCard(
      *  empty stack, and correctly so — without bait they all report
      *  "never legal" and look broken when they are not. */
     bait?: boolean;
+    /** CARD-TODO #49 stage 2: after the card is in play, PAY FOR AND ACTIVATE
+     *  every activated ability it has, then keep going.
+     *
+     *  35 of the 439 printed promises sit behind an activated ability's colon
+     *  or a bracketed cost. Nothing new is needed to reach them: `legalActions`
+     *  already offers `activateAbility`, so the drill can simply take it — the
+     *  engine's own legality decides when, exactly as it does for `playCard`.
+     *  Without this the drill stops the instant the play resolves, so an
+     *  ability could be entirely unimplemented and the card would still look
+     *  alive on the strength of its body. */
+    activate?: boolean;
   } = {},
 ): DrillResult {
   const maxSteps = opts.maxSteps ?? 600;
@@ -202,6 +233,7 @@ export function drillCard(
     card, played: false, resolved: false, events: [], types: [],
     outcome: 'never-legal', windows: [], newEntities: [], changed: [],
     effectEvents: [], effectTypes: [], guarded: false,
+    activated: [], activateTypes: [], activateChanged: [],
   };
   let { state } = createGame(seed);
   const seat: Seat = 0;
@@ -211,6 +243,24 @@ export function drillCard(
   let playedAt = -1;
   const BAIT = 'Protective Adaptations';   // b1, one plain unit target
   let baited = false;
+
+  // ── activate mode bookkeeping ───────────────────────────────────────────
+  /** entity ids that existed before the play — anything not in here and
+   *  carrying the card's own name is the body the play just produced */
+  let preIds = new Set<string>();
+  /** `${entityId}#${abilityIndex}#${via}` for every activation already taken,
+   *  so one ability is not re-activated in a loop */
+  const usedAbilities = new Set<string>();
+  /** the state and event position at the activation currently on the stack.
+   *  The window CLOSES when that activation has resolved, and that matters:
+   *  the first cut of this ran the window to game over, so every ability's
+   *  evidence included the next three turns of combat damage, draws and
+   *  spawns, and any claim of any kind read as delivered. */
+  let pendingAct: { snap: ReturnType<typeof snapshot>; marker: number } | null = null;
+  /** windows spent since the play with nothing left to activate — the stop
+   *  condition for activate mode, so a card with no ability does not walk the
+   *  whole 600 steps */
+  let idleWindows = 0;
 
   for (let step = 0; step < maxSteps; step++) {
     if (state.phase === 'gameover') break;
@@ -249,7 +299,31 @@ export function drillCard(
         // snapshot AT the play, so the delta is the card's doing and not the
         // drill's board-keeping
         before = snapshot(state, seat);
+        preIds = new Set(Object.keys(state.entities));
         chosen = play;
+      }
+    }
+
+    // ── the card's OWN activated abilities, once its body is on the table ─
+    // Only abilities on an entity THIS play produced: seedBoard puts five
+    // vanilla bodies on each side and a donated mod can move an ability
+    // around, and scoring somebody else's activation as this card's would be
+    // the bait bug all over again.
+    if (!chosen && opts.activate && res.played && !state.decision) {
+      const act = safeLegal(state, seat).find(a => {
+        if (a.type !== 'activateAbility') return false;
+        const u = state.entities[a.entityId];
+        if (!u || u.card !== card || preIds.has(String(a.entityId))) return false;
+        return !usedAbilities.has(`${a.entityId}#${a.abilityIndex}#${JSON.stringify(a.via ?? null)}`);
+      });
+      if (act && act.type === 'activateAbility') {
+        usedAbilities.add(`${act.entityId}#${act.abilityIndex}#${JSON.stringify(act.via ?? null)}`);
+        res.activated.push(`${act.abilityIndex}${act.via ? `/${JSON.stringify(act.via)}` : ''}`);
+        pendingAct = { snap: snapshot(state, seat), marker: res.types.length };
+        chosen = act;
+        idleWindows = 0;
+      } else if (res.played) {
+        idleWindows++;
       }
     }
 
@@ -282,9 +356,27 @@ export function drillCard(
 
     if (wasPlay) { res.played = true; playedAt = step; }
 
+    // an activation has resolved: close its evidence window
+    if (pendingAct && !state.decision && state.stack.length === 0) {
+      for (const t of res.types.slice(pendingAct.marker)) res.activateTypes.push(t);
+      // no `card` argument: the hand→bin correction is for a SPELL's own
+      // migration at the moment it is cast, and this window opens long after
+      // that. Passing it would subtract a card that never moved.
+      for (const c of diff(pendingAct.snap, snapshot(state, seat))) res.activateChanged.push(c);
+      pendingAct = null;
+    }
+
     // once played, stop as soon as the stack is empty and nothing is pending
     if (res.played && !state.decision && state.stack.length === 0 && step > playedAt) {
-      res.resolved = true; res.outcome = 'resolved'; break;
+      // …EXCEPT in activate mode, where stopping here is exactly the bug: an
+      // activated ability is legal at a LATER window than the one the play
+      // resolved in (`timing: 'battle'`, or deployment after the battle that
+      // was already in progress), so quitting at stack-empty means most
+      // abilities are never offered at all. Keep walking phases until a run of
+      // windows has gone by with nothing of this card's left to activate.
+      if (!opts.activate || idleWindows >= ACTIVATE_PATIENCE) {
+        res.resolved = true; res.outcome = 'resolved'; break;
+      }
     }
   }
 
@@ -300,6 +392,10 @@ export function drillCard(
   res.effectTypes = res.types.slice();
   const after = snapshot(state, seat);
   res.changed = diff(before, after, card, state);
+  if (pendingAct) {   // the drill ran out of steps mid-activation
+    for (const t of res.types.slice(pendingAct.marker)) res.activateTypes.push(t);
+    for (const c of diff(pendingAct.snap, after)) res.activateChanged.push(c);
+  }
   for (const [id, e] of Object.entries(state.entities)) {
     if (!before.entities.has(id)) res.newEntities.push(e.card);
   }

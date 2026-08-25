@@ -11654,3 +11654,89 @@ played it. A borrowed card is still played by you.
   and skips the spell, and has since it was written; `playInline` (batch-water-a)
   is the routine that does it right, but it takes no `owner`, so using it would
   trade this defect for CARD-TODO #17's. Both halves want one primitive.
+
+---
+
+## R171 — a gated promise needs evidence from a run that could satisfy its gate
+
+CARD-TODO #49 counts 439 printed promises across 347 cards and, until this
+round, put **316 of them into one undifferentiated heap** labelled
+"conditional". That label answered the wrong question. It said *"the drill's
+board may not fire this"*, when the question the ticket has to answer is
+*"what would have to happen before this clause is owed?"* — and the four
+answers need four completely different pieces of machinery.
+
+### The partition (stage 1)
+
+`Claim.gate` now carries the reason, and `Claim.conditional` is exactly
+`gate !== null`. Measured 2026-08-25 over the whole pool:
+
+| gate | claims | what it needs |
+|---|---:|---|
+| `augment` | **152** | a graft HOST — the clause is in the `[Augment]` box |
+| `trigger` | **110** | a fixture that fires the EVENT ("When I die…") |
+| `activated` | **35** | somebody to PAY and ACTIVATE |
+| `condition` | **19** | a BOARD that meets the clause ("if you control…") |
+
+The single biggest slice is the `[Augment]` box at **48%** of the heap. The
+plan the ticket was filed with calls activated abilities "the cheap third";
+they are a cheap **ninth**. Whoever takes stage 3 or stage 4 should read that
+table before choosing.
+
+The split is asserted to be a split: `TRIGGER_WORDS ∪ CONDITION_WORDS` is
+compared structurally against the alternation they were cut out of, and every
+claim in the pool is re-scored against a copied-out reference implementation
+of the pre-partition boolean. Both halves matter — the first cut of the
+reference implementation imported `TRIGGER_WORDS` instead of copying it, and a
+deliberate corruption of that regex changed the test and the thing under test
+together and stayed green.
+
+### What counts as evidence (stage 2)
+
+The rule this round adds, and it is a **tightening**:
+
+> A gated promise is "observed being delivered" only when the evidence comes
+> from a run that could have satisfied its gate.
+
+Before, a claim was scored against everything the card was seen doing in any
+run. For a gated clause that is barely evidence at all. Oracle of the Flame
+prints *"Sacrifice me: Create a Fireball 1"*, and Oracle's own body arriving
+is a `spawned` — so its ability read as delivered on runs where **nobody
+activated anything**. Under the rule:
+
+- `augment` claims are scored **0/152**, because no scenario grafts yet. They
+  are not credited to the body's doings.
+- an `activated` claim on a card with an ability of its own is scored only
+  against the window that OPENS at the activation and CLOSES when it resolves.
+  Both cuts are load-bearing: an uncut window swallowed the next three turns
+  of combat damage, draws and spawns, and evidenced every claim of every kind.
+- an `activated` claim on one of the twelve SPELLS whose colon is an
+  additional cast cost (`[Switch1] /[Sacrifice a unit]: Draw a card`) is
+  scored against the ordinary post-play window — that cost is paid during the
+  cast, not by a later activation.
+
+The three numbers, in the order they should be read:
+
+- **157/316** — the naive score, every claim against every run. Worthless for
+  the gated ones, for the Oracle reason above.
+- **80/316** — attributed, before the drill could activate anything. That is
+  what the ticket's "316 have never been observed being delivered" was really
+  worth: 80 already had honest evidence, mostly trigger clauses the drill's
+  ordinary combat and end-of-turn walk happens to fire.
+- **98/316** — attributed, after stage 2. The +18 is the activated abilities.
+
+The 80 is not a hand-count: blinding the drill's activation path drops the
+measured figure to exactly 80, which is one of this round's red-checks.
+
+### The finding
+
+Driving the activations found **no broken card**. All twelve cards with an
+activated ability of their own that prints a countable promise deliver it, and
+so do the eleven cast-cost spells: **35/35**. A null result, but a measured
+one — it is now floored, and the positive controls (the drill really did
+activate on ≥12 cards; the window really is closed) mean an empty failure list
+cannot be an empty check.
+
+Gated coverage stands at **98/316**. The remaining 218 are 152 `[Augment]`
+clauses, 54 trigger clauses and 12 condition clauses, and each of those three
+numbers is now a ticket with a shape rather than a share of one big number.

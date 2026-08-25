@@ -47,6 +47,33 @@ export type ClaimKind =
   | 'destroy' | 'erase' | 'recall' | 'discard' | 'sacrifice' | 'glimpse'
   | 'control' | 'negate' | 'rot' | 'debt' | 'trash' | 'cache';
 
+/**
+ * WHY a claim is gated — CARD-TODO #49, stage 1.
+ *
+ * `conditional` alone said "the drill's board may not fire this" and stopped
+ * there, which is why 316 of 439 promises sat in one undifferentiated heap.
+ * They do not all need the same thing:
+ *
+ *  · `augment`   — the clause lives in the card's `[Augment]` text box. It is
+ *                  live only when the card is grafted onto a HOST, so nothing
+ *                  in it is owed when the body is cast. Needs a host.
+ *  · `activated` — the clause sits on the far side of an activated ability's
+ *                  colon, or inside a bracketed cost. Needs somebody to PAY
+ *                  and ACTIVATE — no board state, no event.
+ *  · `trigger`   — the clause is gated on an EVENT ("When I die…", "Whenever a
+ *                  card is trashed…", "At the end of turn…"). Needs a fixture
+ *                  that makes the event happen.
+ *  · `condition` — the clause is gated on a STATE or a choice ("if you control
+ *                  …", "unless …", "you may …", "as long as …"). Needs a board
+ *                  that satisfies the predicate, or a decision answered a
+ *                  particular way.
+ *
+ * The partition is the deliverable, not a nicety: it says how much of the heap
+ * is reachable by activation alone (cheap) versus needs an event fixture
+ * (stage 3) or a graft host (stage 4).
+ */
+export type ClaimGate = 'augment' | 'activated' | 'trigger' | 'condition';
+
 export interface Claim {
   kind: ClaimKind;
   /** the promised amount, when the text states one. 'X' means chosen at cast. */
@@ -56,6 +83,9 @@ export interface Claim {
   /** true when the clause sits behind a trigger ("When…", "Whenever…"), a
    *  condition ("if…"), an activated ability (":") or an optional ("you may") */
   conditional: boolean;
+  /** WHY it is gated, or null when it is owed on every resolution.
+   *  `conditional === (gate !== null)`, always — see `gateOf`. */
+  gate: ClaimGate | null;
 }
 
 /** the event type(s) that would evidence each kind of claim */
@@ -147,27 +177,75 @@ export function rulesText(card: string): string {
  *  · A bracketed `[…]` clause is a COST or a marker, never a promise.
  *  · Delayed triggers ("At the end of turn …") are gated on reaching that step.
  */
-function isConditional(sentence: string, upto: number, fullText: string, at: number): boolean {
+/**
+ * The trigger words and the condition words, split out of what used to be one
+ * alternation. Their UNION is exactly the old regex — this split renames the
+ * partition, it does not move the boundary between gated and owed. The test
+ * `the gate partition covers exactly the claims the old boolean called
+ * conditional` in 84-card-semantics recomputes the old predicate from these
+ * two halves and asserts the agreement, so a future edit that widens one half
+ * without noticing cannot slip through.
+ */
+export const TRIGGER_WORDS = /\b(when|whenever|after|at the end|at the start)\b/;
+export const CONDITION_WORDS = /\b(if|unless|may|instead|as long as|while|each turn|would)\b/;
+
+/**
+ * Is this clause GATED — and if so, by WHAT?
+ *
+ * Returns null when the clause is owed on every resolution, otherwise the
+ * ClaimGate saying which kind of gate stands in front of it. `conditional`
+ * is exactly `gateOf(...) !== null`; the categories are a partition OF the
+ * old boolean, never a change to it.
+ *
+ * The first version of this asked only whether a condition appeared BEFORE the
+ * clause in its sentence, and it was wrong three ways at once. All three were
+ * found by running it: 66 cards reported an unmet promise and almost none of
+ * them was a real defect.
+ *
+ *  · `[Augment]` text is only live when the card is used as an augment. The
+ *    drill casts the body, so nothing in that text box is owed. (Animated
+ *    Spark, Soul Swallower, Debt Blep, Spawning Ground …)
+ *  · An ACTIVATED ability gates its whole line, including the cost that sits
+ *    to the LEFT of the colon: "Sacrifice X units: Create X Fireball 1" owes
+ *    neither the sacrifice nor the Fireballs until somebody activates it. The
+ *    colon has to gate the sentence, not just what follows it — this alone was
+ *    16 of the false sacrifices and 7 of the discards.
+ *  · A bracketed `[…]` clause is a COST or a marker, never a promise.
+ *  · Delayed triggers ("At the end of turn …") are gated on reaching that step.
+ *
+ * ORDER OF THE TESTS IS THE PRIORITY OF THE CATEGORIES, and it is chosen so
+ * each claim lands in the bucket naming the HARDEST thing it needs: an
+ * activated ability printed inside an `[Augment]` box needs a host before it
+ * needs an activation, so it reads `augment`; a trigger with an `if` rider
+ * needs the event before it needs the predicate, so it reads `trigger`.
+ * Because every predicate is still evaluated as part of the same union,
+ * re-ordering these would repartition the count and could never change the
+ * boolean.
+ */
+export function gateOf(sentence: string, upto: number, fullText: string, at: number): ClaimGate | null {
   const head = sentence.slice(0, upto).toLowerCase();
   const whole = sentence.toLowerCase();
-  // "if" / "unless" / "up to" gate the clause from EITHER side — the qualifier
-  // routinely trails it ("… unless its controller gains debt", "Negate up to
-  // one target effect", "you also lose 3 life if playing a constructed format")
-  if (/\b(unless|up to|if )\b/.test(whole)) return true;
   // [Augment] anywhere before this clause puts it in the augment text box
-  if (/\[augment\]/i.test(fullText.slice(0, at))) return true;
+  if (/\[augment\]/i.test(fullText.slice(0, at))) return 'augment';
   // An activated ability gates its entire line, cost included — and it gates
   // the sentences that FOLLOW it too. Prismatic Observer is "Sacrifice me:
   // [Switch1] Recall up to one target cached card. You gain 3 life." — the
   // life gain is a second sentence, so a per-sentence test alone declared it
   // owed on a card that has to be activated before anything happens at all.
-  if (whole.includes(':') || fullText.slice(0, at).includes(':')) return true;
-  // the clause is inside brackets — a cost, not an effect
+  if (whole.includes(':') || fullText.slice(0, at).includes(':')) return 'activated';
+  // the clause is inside brackets — a cost, not an effect. A bracketed cost
+  // with no colon is still something a player must PAY, which is why it shares
+  // the `activated` bucket rather than getting one of its own.
   const open = fullText.lastIndexOf('[', at);
   const close = fullText.lastIndexOf(']', at);
-  if (open > close) return true;
-  return /\b(when|whenever|if|after|unless|may|instead|as long as|while|at the end|at the start|each turn|would)\b/
-    .test(head);
+  if (open > close) return 'activated';
+  // an EVENT has to happen before the clause is owed
+  if (TRIGGER_WORDS.test(head)) return 'trigger';
+  // "if" / "unless" / "up to" gate the clause from EITHER side — the qualifier
+  // routinely trails it ("… unless its controller gains debt", "Negate up to
+  // one target effect", "you also lose 3 life if playing a constructed format")
+  if (/\b(unless|up to|if )\b/.test(whole)) return 'condition';
+  return CONDITION_WORDS.test(head) ? 'condition' : null;
 }
 
 const PATTERNS: { kind: ClaimKind; re: RegExp; amount?: number }[] = [
@@ -214,16 +292,25 @@ export function claimsOf(card: string): Claim[] {
       // sacrifice themselves after combat" promises the opposite of a sacrifice
       const before = text.slice(Math.max(0, at - 12), at).toLowerCase();
       if (/\b(not|never|don't|do)\s*$/.test(before)) continue;
+      const gate = gateOf(sentence, at - start, text, at);
       out.push({
         kind,
         n: amount ? num(m[amount]) : undefined,
         raw: m[0].trim(),
-        conditional: isConditional(sentence, at - start, text, at),
+        conditional: gate !== null,
+        gate,
       });
     }
   }
   // one claim per (kind, n) — "deals 2 damage … deals 2 damage" is one promise
-  // as far as evidence goes, and duplicates would just inflate the tally
+  // as far as evidence goes, and duplicates would just inflate the tally.
+  //
+  // `gate` is DELIBERATELY not part of this key. Adding it would split a card
+  // that promises the same countable thing behind two different gates into two
+  // claims and push the headline total above 439, which is the number
+  // CARD-TODO #49 is measured against — a coverage ticket whose denominator
+  // moves cannot be read. The first occurrence in printed order carries the
+  // gate; the effect on the partition is a handful of claims at most.
   const seen = new Set<string>();
   return out.filter(c => {
     const k = `${c.kind}:${c.n ?? ''}:${c.conditional}`;

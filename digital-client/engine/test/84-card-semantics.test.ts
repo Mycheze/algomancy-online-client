@@ -50,13 +50,30 @@
  * or an `[Augment]` box may legitimately not fire on the drill's board, and
  * demanding those would produce a wall of false failures. The conditional ones
  * are counted out loud instead.
+ *
+ * WHAT THE GATED COUNT IS FOR — CARD-TODO #49 (R171)
+ *
+ * "Counted out loud" was 316 promises in one heap, which is a number nobody
+ * can plan against. Each gated claim now says WHY it is gated (`Claim.gate`),
+ * and the tally prints the partition: 152 need a graft host, 110 need an event
+ * fixture, 35 need an activation, 19 need a board. Stage 2 built the
+ * activation — the drill pays the cost and takes `activateAbility` out of
+ * `legalActions` like any other action — and all 35 are delivered.
+ *
+ * Evidence for a gated claim is ATTRIBUTED: it must come from a run that could
+ * have satisfied the gate. That is a tightening. Scored the old loose way,
+ * Oracle of the Flame's "Sacrifice me: Create a Fireball 1" was evidenced by
+ * Oracle's own body arriving on a run where nothing was activated at all.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { drillCard, drillable } from './drill.ts';
-import { claimsOf, EVIDENCE, STATE_EVIDENCE, rulesText, type Claim } from './claims.ts';
+import {
+  claimsOf, EVIDENCE, STATE_EVIDENCE, rulesText, gateOf,
+  TRIGGER_WORDS, CONDITION_WORDS, type Claim, type ClaimGate,
+} from './claims.ts';
 import { E } from '../src/engine.ts';
 import type { GameState, Seat } from '../src/types.ts';
 
@@ -74,37 +91,98 @@ const SCENARIOS: Parameters<typeof drillCard>[2][] = [
   { bait: true }, {}, { setup: lonelyBoard },
 ];
 
+/** does the card declare an activated ability of its OWN — one somebody can
+ *  pay for and put on the stack once the body is in play? Distinguished from
+ *  the `[Augment]`-box activated abilities (29 cards), which need a HOST
+ *  before anybody can activate anything, and from the twelve SPELLS whose
+ *  colon is an additional CAST cost (`[Switch1] /[Sacrifice a unit]: Draw a
+ *  card`) paid during the cast rather than by a later activation. */
+function hasOwnActivated(card: string): boolean {
+  return (getCard(card).abilities ?? []).some(a => a.type === 'activated');
+}
+
 /** what the card was observed doing, across every board state */
-interface Observed { types: Set<string>; changed: Set<string>; played: boolean }
+interface Observed {
+  types: Set<string>; changed: Set<string>; played: boolean;
+  /** evidence from strictly AFTER one of this card's own abilities was
+   *  activated, and only up to that activation resolving — see `activateTypes`
+   *  in drill.ts for why the window has to be cut at both ends */
+  actTypes: Set<string>; actChanged: Set<string>;
+  /** the drill actually paid for and activated an ability of this card */
+  activated: boolean;
+}
 
 function observe(card: string): Observed {
   const types = new Set<string>();
   const changed = new Set<string>();
+  const actTypes = new Set<string>();
+  const actChanged = new Set<string>();
   let played = false;
-  for (const opts of SCENARIOS) {
+  let activated = false;
+  const runs = [...SCENARIOS];
+  // CARD-TODO #49 stage 2. The extra run is targeted rather than universal:
+  // it is only meaningful where something can be activated, and running the
+  // patient activate loop over all 347 cards would pay for 600 steps of
+  // phase-walking on every card that has no ability at all.
+  const wantsActivation = hasOwnActivated(card) || claimsOf(card).some(c => c.gate === 'activated');
+  if (wantsActivation) runs.push({ activate: true });
+  for (const opts of runs) {
     let r;
     try { r = drillCard(card, 900_000, opts); } catch { continue; }
     if (r.played) played = true;
     for (const t of r.effectTypes) types.add(t);
     for (const c of r.changed) changed.add(c);
     if (r.newEntities.length) types.add('spawned');
+    if (r.activated.length) activated = true;
+    for (const t of r.activateTypes) actTypes.add(t);
+    for (const c of r.activateChanged) actChanged.add(c);
   }
-  return { types, changed, played };
+  return { types, changed, played, actTypes, actChanged, activated };
 }
 
-function met(c: Claim, o: Observed): boolean {
-  if (EVIDENCE[c.kind].some(t => o.types.has(t))) return true;
+function evidenced(c: Claim, types: Set<string>, changed: Set<string>): boolean {
+  if (EVIDENCE[c.kind].some(t => types.has(t))) return true;
   const st = STATE_EVIDENCE[c.kind];
-  if (st === 'hand') return [...o.changed].some(x => x.startsWith('hand'));
-  if (st === 'control') return [...o.changed].some(x => x.includes('control'));
-  if (st === 'stats') return [...o.changed].some(x => x.includes('stats'));
-  if (st === 'counters') return [...o.changed].some(x => x.includes('counters'));
+  if (st === 'hand') return [...changed].some(x => x.startsWith('hand'));
+  if (st === 'control') return [...changed].some(x => x.includes('control'));
+  if (st === 'stats') return [...changed].some(x => x.includes('stats'));
+  if (st === 'counters') return [...changed].some(x => x.includes('counters'));
   return false;
+}
+
+/**
+ * Was this promise observed being delivered — by a run that could actually
+ * satisfy its GATE?
+ *
+ * The attribution is the point, and it is a TIGHTENING, not a loosening. The
+ * evidence a claim is scored against used to be "anything this card was seen
+ * doing in any run", which for a gated clause is barely evidence at all:
+ * Oracle of the Flame prints "Sacrifice me: Create a Fireball 1", and the
+ * arrival of Oracle's own body is a `spawned`, so its ability read as
+ * delivered on a run where nobody activated anything. So:
+ *
+ *  · `augment` — the clause is live only on a HOST. No scenario grafts yet
+ *    (CARD-TODO #49 stage 4), so NOTHING can evidence these and they are
+ *    scored 0 rather than credited to the body's own doings.
+ *  · `activated`, on a card with an ability of its own — only the window that
+ *    opens at the activation and closes when it resolves.
+ *  · `activated`, on a spell whose colon is a CAST cost — the cost is paid
+ *    during the cast, so the ordinary post-play window is the right one.
+ *  · `trigger` / `condition` / ungated — the ordinary post-play window.
+ */
+function met(c: Claim, o: Observed, card: string): boolean {
+  if (c.gate === 'augment') return false;
+  if (c.gate === 'activated' && hasOwnActivated(card)) return evidenced(c, o.actTypes, o.actChanged);
+  return evidenced(c, o.types, o.changed);
 }
 
 const POOL = allCardNames().filter(drillable);
 const observations = new Map<string, Observed>();
 const unmet = new Map<string, Claim[]>();
+/** every GATED promise that no run could evidence, by gate — CARD-TODO #49 */
+const unobserved = new Map<ClaimGate, { card: string; claim: Claim }[]>();
+/** gate → [observed, total] */
+const partition = new Map<ClaimGate | 'OWED', [number, number]>();
 
 test('drive every card and check it against its printed promises', () => {
   for (const card of POOL) {
@@ -112,8 +190,16 @@ test('drive every card and check it against its printed promises', () => {
     if (!claims.length) continue;
     const o = observe(card);
     observations.set(card, o);
-    const missing = claims.filter(c => !c.conditional && !met(c, o));
+    const missing = claims.filter(c => !c.conditional && !met(c, o, card));
     if (missing.length) unmet.set(card, missing);
+    for (const c of claims) {
+      const g = c.gate ?? 'OWED';
+      const row = partition.get(g) ?? [0, 0];
+      row[1]++;
+      if (met(c, o, card)) row[0]++;
+      else if (c.gate) (unobserved.get(c.gate) ?? unobserved.set(c.gate, []).get(c.gate)!).push({ card, claim: c });
+      partition.set(g, row);
+    }
   }
   assert.ok(observations.size > 300, 'the semantic pass covers the pool');
 });
@@ -248,6 +334,153 @@ test('the "Erase me" class is exactly the four cards CARD-TODO #15 names', () =>
     'Zephyrzoa erases in its [Augment] box — the reason the check reads augmentText');
 });
 
+// ── CARD-TODO #49 stage 1: WHY each gated promise is gated ──────────────
+
+/**
+ * THE BLIND-CHECK ON THE PARTITION.
+ *
+ * Splitting `conditional` into four named gates is only safe if it is exactly
+ * that — a split. If a future edit widened `TRIGGER_WORDS` or dropped a
+ * predicate out of `gateOf`, claims would quietly move from "gated" to "owed"
+ * (a wall of false failures) or, far worse, from "owed" to "gated", which is
+ * the failure mode CARD-TODO #49 warns about twice: the unchecked count going
+ * down because the EXTRACTOR got weaker rather than because coverage grew.
+ *
+ * So the OLD boolean is recomputed here from first principles — the same five
+ * predicates, written out, in the order the pre-partition code used — and
+ * asserted to agree with `gate !== null` on every claim in the pool.
+ *
+ * ⚠ THE ALTERNATION BELOW IS COPIED OUT ON PURPOSE and must never be rewritten
+ * as `TRIGGER_WORDS.test(head) || CONDITION_WORDS.test(head)`. The first cut of
+ * this test did exactly that, and it was BLIND: a deliberate `deals|` spliced
+ * into `TRIGGER_WORDS` changed both the thing under test and the thing testing
+ * it, and the suite stayed green. A reference implementation that imports the
+ * value it is checking is not a reference implementation.
+ */
+const OLD_CONDITION_RE =
+  /\b(when|whenever|if|after|unless|may|instead|as long as|while|at the end|at the start|each turn|would)\b/;
+
+function oldConditional(sentence: string, upto: number, fullText: string, at: number): boolean {
+  const head = sentence.slice(0, upto).toLowerCase();
+  const whole = sentence.toLowerCase();
+  if (/\b(unless|up to|if )\b/.test(whole)) return true;
+  if (/\[augment\]/i.test(fullText.slice(0, at))) return true;
+  if (whole.includes(':') || fullText.slice(0, at).includes(':')) return true;
+  const open = fullText.lastIndexOf('[', at);
+  const close = fullText.lastIndexOf(']', at);
+  if (open > close) return true;
+  return OLD_CONDITION_RE.test(head);
+}
+
+test('the gate partition covers exactly the claims the old boolean called conditional', () => {
+  // THE UNION OF THE TWO WORD LISTS MUST STILL BE THE ONE ALTERNATION THEY
+  // WERE SPLIT OUT OF. Read structurally, off the regex sources, because the
+  // per-claim check below can only see words this pool happens to print: a
+  // word ADDED to TRIGGER_WORDS that no card uses would sail through it, and
+  // would then start silently re-gating claims the day a card prints it.
+  const words = (re: RegExp): string[] =>
+    (/\(([^)]*)\)/.exec(re.source)?.[1] ?? '').split('|').filter(Boolean).sort();
+  assert.deepEqual(
+    [...words(TRIGGER_WORDS), ...words(CONDITION_WORDS)].sort(), words(OLD_CONDITION_RE),
+    'TRIGGER_WORDS ∪ CONDITION_WORDS is no longer exactly the alternation they were split '
+    + 'out of. A word added to either one re-gates claims; a word dropped un-gates them.');
+  for (const w of words(OLD_CONDITION_RE)) {
+    assert.ok(TRIGGER_WORDS.test(` ${w} `) !== CONDITION_WORDS.test(` ${w} `),
+      `"${w}" must be in exactly one of TRIGGER_WORDS / CONDITION_WORDS`);
+  }
+  const disagreements: string[] = [];
+  for (const card of POOL) {
+    const text = rulesText(card);
+    for (const c of claimsOf(card)) {
+      const at = text.indexOf(c.raw);
+      if (at < 0) continue;
+      const start = text.lastIndexOf('.', at) + 1;
+      const endDot = text.indexOf('.', at + c.raw.length);
+      const sentence = text.slice(start, endDot === -1 ? text.length : endDot + 1);
+      const old = oldConditional(sentence, at - start, text, at);
+      if (old !== (gateOf(sentence, at - start, text, at) !== null)) {
+        disagreements.push(`${card}: "${c.raw}" — old=${old}, gate=${gateOf(sentence, at - start, text, at)}`);
+      }
+    }
+  }
+  assert.deepEqual(disagreements, [],
+    'gateOf() no longer partitions the SAME set the boolean did. Either a predicate was '
+    + 'dropped (claims moved to "owed") or one was widened (claims moved out of the required '
+    + 'set) — the second is how CARD-TODO #49 gets closed by accident instead of by work.');
+});
+
+test('the gate partition keeps its floor in every category', () => {
+  const at = (g: ClaimGate) => partition.get(g)?.[1] ?? 0;
+  // FLOORS, the way `req >= 115` floors the unconditional count. Measured
+  // 2026-08-25: augment 152, trigger 110, activated 35, condition 19, owed 123
+  // — 439 promises over 347 cards. These are set a little below the measured
+  // values so that adding cards or refining a pattern is free, and hollowing
+  // out a category is not.
+  assert.ok(at('augment') >= 140, `only ${at('augment')} [Augment]-box promises — the augment scan lost reach`);
+  assert.ok(at('trigger') >= 100, `only ${at('trigger')} trigger-gated promises — the trigger scan lost reach`);
+  assert.ok(at('activated') >= 30, `only ${at('activated')} activation-gated promises — the colon/cost scan lost reach`);
+  assert.ok(at('condition') >= 15, `only ${at('condition')} condition-gated promises — the condition scan lost reach`);
+  const cond = (['augment', 'trigger', 'activated', 'condition'] as ClaimGate[])
+    .reduce((n, g) => n + at(g), 0);
+  assert.ok(cond >= 300,
+    `only ${cond} gated promises (was 316) — CARD-TODO #49's denominator has SHRUNK. That is `
+    + 'the one way this ticket must never be closed: the number is meant to fall because more '
+    + 'promises are observed, never because fewer are extracted.');
+});
+
+// ── CARD-TODO #49 stage 2: the activated abilities, driven ──────────────
+
+/**
+ * Cards whose activation-gated promise the drill still cannot evidence. EMPTY
+ * as of stage 2 — all twelve cards that carry an activated ability of their own
+ * AND print a countable promise behind it deliver what the far side of their
+ * colon says, and so do the twelve spells whose colon is a cast cost.
+ *
+ * An entry here means one of two things and must say which: REAL (the ability
+ * is not implemented — cite a CARD-TODO id) or BOARD (implemented, but the
+ * drill cannot make the ability legal or cannot pay its cost).
+ */
+const KNOWN_UNACTIVATED: Record<string, string> = {};
+
+test('every activation-gated promise is delivered when the drill pays and activates', () => {
+  const surprises: string[] = [];
+  for (const { card, claim } of unobserved.get('activated') ?? []) {
+    if (card in KNOWN_UNACTIVATED) continue;
+    surprises.push(`${card} — promises ${claim.kind}${claim.n !== undefined ? `(${claim.n})` : ''} `
+      + `"${claim.raw}" behind an activation; the drill ${observations.get(card)?.activated
+        ? 'DID activate an ability of this card and saw no such thing'
+        : 'could not activate anything on this card'}; printed: "${rulesText(card)}"`);
+  }
+  assert.deepEqual(surprises.sort(), [],
+    'these cards print a promise behind an activated ability or a paid cost and nothing '
+    + 'delivered it:\n  ' + surprises.join('\n  '));
+
+  // THE POSITIVE CONTROLS. An empty `surprises` is worth nothing unless the
+  // drill really did pay for and resolve abilities — a broken `activate` loop
+  // that activated NOTHING would leave `actTypes` empty, `met` false and the
+  // list full, so this half guards the opposite blindness: an attribution that
+  // silently fell back to the loose whole-run evidence and passed everything.
+  // 12, not 13: thirteen cards declare an activated ability of their own, but
+  // The Bonesculptor's ("You may play one unit with no abilities from your bin
+  // each deployment") prints no countable promise, so it carries no claims and
+  // never reaches `observations` at all.
+  const activatedCards = [...observations].filter(([, o]) => o.activated).map(([n]) => n);
+  assert.ok(activatedCards.length >= 12,
+    `the drill activated an ability on only ${activatedCards.length} cards — it was 12 when `
+    + 'stage 2 landed, so the activation path has stopped firing and the green above is empty');
+  for (const control of ['Oracle of the Flame', 'Glararr', 'Prismatic Observer']) {
+    assert.ok(activatedCards.includes(control),
+      `${control} is a positive control for the activation path and was not activated`);
+  }
+  // and the window must be CUT: Oracle of the Flame's own body arriving is a
+  // `spawned`, so an uncut window would evidence "Create a Fireball 1" on a
+  // run where nothing was activated at all
+  const oracle = observations.get('Oracle of the Flame')!;
+  assert.ok(!oracle.actTypes.has('phase'),
+    'the post-activation evidence window is not being closed when the activation resolves — '
+    + 'it has swallowed a phase change, so it is collecting the rest of the game');
+});
+
 // ── the tally ───────────────────────────────────────────────────────────
 
 test('the semantic pass reports honestly on what it could and could not check', () => {
@@ -262,10 +495,61 @@ test('the semantic pass reports honestly on what it could and could not check', 
     + `(${req} unconditional, ${cond} behind a trigger/condition/activation)`);
   console.log(
     `    ${req - unmetCount}/${req} unconditional promises were observed being delivered`);
-  const real = Object.values(KNOWN_UNMET).filter(w => w.startsWith('REAL')).length;
+  // ── UNITS. These two lines used to disagree without saying so ─────────
+  // `unmetCount` counts CLAIMS (9); `KNOWN_UNMET` is keyed by CARD (8). The
+  // old output printed "114/123" and then accounted for "0 REAL + 8 BOARD",
+  // and a reader — the orchestrator, on this very ticket — went looking for a
+  // tenth card that does not exist. One card carries TWO unmet claims:
+  // Suppression Field, whose "erase all of its mods and negate all of its
+  // effects" is two promises against a target that has neither. Both units are named now, and the relationship between them
+  // is ASSERTED below rather than left to be inferred from a printed number,
+  // because an unstated invariant is how this repo's tallies have rotted.
+  const realCards = Object.entries(KNOWN_UNMET).filter(([, w]) => w.startsWith('REAL'));
+  const boardCards = Object.entries(KNOWN_UNMET).filter(([, w]) => !w.startsWith('REAL'));
+  const claimsIn = (cards: [string, string][]) =>
+    cards.reduce((n, [c]) => n + (unmet.get(c)?.length ?? 0), 0);
   console.log(
-    `    ${real} of the rest are REAL defects (each cites its CARD-TODO id); `
-    + `the other ${Object.keys(KNOWN_UNMET).length - real} are board preconditions the drill cannot make`);
+    `    the other ${unmetCount} unconditional promises are carried by `
+    + `${unmet.size} cards: ${realCards.length} cards (${claimsIn(realCards)} claims) are REAL `
+    + `defects, each citing its CARD-TODO id; ${boardCards.length} cards `
+    + `(${claimsIn(boardCards)} claims) are board preconditions the drill cannot make`);
+
+  // EVERY unmet claim belongs to a card that KNOWN_UNMET accounts for. The
+  // `no card silently fails…` test already refuses an unlisted CARD; this says
+  // the CLAIM arithmetic closes too, so the two printed lines can be added up.
+  assert.equal(unmet.size, Object.keys(KNOWN_UNMET).length,
+    'the cards with an unmet unconditional promise and the KNOWN_UNMET keys have diverged');
+  assert.equal(claimsIn(realCards) + claimsIn(boardCards), unmetCount,
+    `${unmetCount} unmet claims but only ${claimsIn(realCards) + claimsIn(boardCards)} of them `
+    + 'belong to a KNOWN_UNMET card — the honesty tally no longer adds up');
+
+  // ── CARD-TODO #49: the gated promises, partitioned by WHAT THEY NEED ──
+  // Until stage 1 these were one undifferentiated heap of 316 and the ticket
+  // could not be planned against. The partition says which stage owns which
+  // slice, and the per-gate delivered count says how far each has got.
+  const GATE_NEEDS: Record<ClaimGate, string> = {
+    augment: 'a graft HOST                (stage 4)',
+    trigger: 'a fixture firing the EVENT  (stage 3)',
+    activated: 'somebody to PAY & ACTIVATE  (stage 2 — done)',
+    condition: 'a BOARD meeting the clause  (stage 3)',
+  };
+  let gTot = 0, gHit = 0;
+  console.log('    gated promises, by what would have to happen before they are owed:');
+  for (const g of ['augment', 'trigger', 'activated', 'condition'] as ClaimGate[]) {
+    const [hit, tot] = partition.get(g) ?? [0, 0];
+    gTot += tot; gHit += hit;
+    console.log(`      ${g.padEnd(10)} ${String(tot).padStart(3)} — needs ${GATE_NEEDS[g]}  ·  ${hit} observed delivered`);
+  }
+  console.log(
+    `    ${gHit}/${gTot} gated promises were observed being delivered by a run that could `
+    + `satisfy their gate; ${gTot - gHit} have still never been observed`);
+  // The delivered count is floored too, in the other direction: coverage that
+  // has been paid for once must not be lost silently.
+  assert.ok(gHit >= 90,
+    `only ${gHit} gated promises observed delivered (was 98 when stage 2 landed) — coverage `
+    + 'has regressed');
+  assert.equal(partition.get('activated')?.[0], partition.get('activated')?.[1],
+    'stage 2 delivered EVERY activation-gated promise; one has stopped being delivered');
   // A floor on the promises the suite actually REQUIRES. It is far below the
   // 439 total on purpose: tightening what counts as conditional (the [Augment]
   // box, an activated ability's colon, a bracketed cost, a trailing "unless")
