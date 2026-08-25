@@ -193,7 +193,12 @@ test('R115: Galactic Germination cast in the enemy region creates its 1/1s in th
   const home = homeOf(h, A);
   assert.notEqual(battle, home, 'the spell is cast in the enemy region');
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Galactic Germination') });
-  pick(h, { unit: u1 });                                      // a unit in the target formation
+  // R184 gave "target formation" a real TargetRef arm, so the menu offers
+  // formations and no longer offers the units in them. This test is about
+  // REGION, not about targeting — picking A's own formation keeps the count
+  // (two attackers) and the assertion (they arrive where the spell resolved)
+  // exactly as they were.
+  pick(h, { formation: A });
   pass(h); pass(h);
 
   const made = unitsOf(h, A).filter(u => u.card === 'Unit Token' && u.id !== u1 && u.id !== u2);
