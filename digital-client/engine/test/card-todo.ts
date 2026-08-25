@@ -2700,4 +2700,159 @@ export const CARD_TODO: TodoEntry[] = [
       + 'behaviour. The inventory itself closes when §2 is empty.',
     status: 'open',
   },
+
+  // ── filed 2026-08-25 (round 26) ─────────────────────────────────────────
+  // #51 and #54..#56 all come from the same place: a read-only audit that
+  // resolved all 295 guard references in playtest-ledger.ts and asked of each
+  // one "could this test have gone RED on the behaviour in the report?".
+  // Four fixed reports could not. That question is not the one
+  // 83-card-todo.test.ts asks, and it is the one that matters.
+  {
+    id: 51,
+    area: 'coverage',
+    severity: 'blocker',
+    title: 'Only the first ~15% of most saved games replays at all, and the tail is not evidence',
+    detail:
+      'This repo settles playtest reports by replaying saved games. R169 rewrote '
+      + 'replay-room.ts to report a DIVERGENCE POINT instead of a skip count, and the '
+      + 'reframing is alarming: a log that read as "375 actions, 166 replayed, 209 refused" '
+      + 'is not 209 problems, it is ONE divergence at action [121] and 208 lines of cascade — '
+      + 'and everything after [121] is a board the logged game never had. Measured at HEAD: '
+      + 'WEHH diverges at [56] of 385 · XVUR [51] of 352 · VEAV [113] of 371 · SMVJ [121] of '
+      + '375 · UZRG [154] of 276 · ANBB [125] of 141.',
+    evidence:
+      'Found by the R169 agent and re-measured by the orchestrator on freshly fetched copies '
+      + '(SMVJ: 375 actions on the server, 375 in the file, 209 refused). '
+      + '⚠ THE NUMBERS ARE NOT NEW — rounds 24 and 25 both recorded "pre-existing divergence: '
+      + 'ANBB 15, SMVJ 209, unchanged" and treated the MATCHING COUNT as reassurance that a '
+      + 'round had added no drift. It was a true statement about drift and a false sense of the '
+      + 'corpus: those logs were already unreplayable past their first sixth. '
+      + 'The distinct first-refusal causes across the corpus — "no decision is pending", "not '
+      + 'your attack step", "not your draw phase", "you do not have priority" — each look like '
+      + 'their own rules drift and none has been chased.',
+    fix:
+      'Two halves, and the first is cheap. (1) Take the six divergence points one at a time and '
+      + 'find what changed under each; each is a candidate regression or a deliberate rules '
+      + 'change nobody recorded. Bisecting is cheap and known to work: git checkout per '
+      + 'candidate commit, re-run replay-room.ts on the SAME file. (2) Decide what the corpus '
+      + 'is FOR. If a saved game stops being replayable the moment the rules move, then either '
+      + 'logs need versioning against the engine that produced them, or forensics needs to stop '
+      + 'being the primary evidence route and unit tests need to take over at the point of '
+      + 'divergence. Today the repo believes it can replay these games and it cannot. '
+      + '⚠ A replay can only ever name the first REFUSED action, not the first DIVERGED one — '
+      + 'ANBB [124] succeeds and the silent drift may sit there. Do not overstate what the '
+      + 'divergence point proves.',
+    proof: null,
+    verify:
+      'node server/replay-room.ts <game>.json on each of the six games names its divergence '
+      + 'point. This closes when each of those points has been explained — either as a known '
+      + 'rules change or as a fixed regression — rather than when the counts change.',
+    status: 'open',
+  },
+  {
+    id: 54,
+    area: 'client',
+    severity: 'major',
+    // NOT `reportId: 80`, deliberately. Report #80 is `by-design` and was
+    // WITHDRAWN BY ITS AUTHOR; this item is a defect found while auditing it,
+    // not an answer to it. Claiming the link makes the ledger cross-check fail,
+    // and it should: an open todo pointing at a settled report would say the
+    // report is unanswered when it is not.
+    title: "The hand's playable outline OR-folds five different actions into one glow",
+    detail:
+      'A card in hand gets a single undifferentiated `.card.playable` outline that is the OR of '
+      + 'playCard / augment / graft / prophesy / recycleForResource. So a BATTLE spell during '
+      + 'deployment — which can only be GRAFTED — looks exactly like a castable card, and the '
+      + 'disambiguation only exists after a click.',
+    evidence:
+      'This is the one real finding that survived report #80\'s audit. #80 is `by-design` '
+      + '(the author withdrew it himself: "It was offering me to GRAFT the ability from hand, '
+      + 'which is legal") — but the reason he misread the board in the first place is this '
+      + 'outline. '
+      + '⚠ THE ENTRY CLAIMED IT WAS ALREADY FILED. #80\'s note read "filed as a separate UI item '
+      + '(not a playtest report id)", and a 2026-08-25 guard audit found no such item anywhere — '
+      + 'not in backlog/backlog.ts (BL-01..BL-25), not here. It existed only inside that '
+      + 'sentence. A finding recorded only in prose inside a closed entry is a finding that has '
+      + 'stopped being work; that is the same shape as the two items round 17 lost to a commit '
+      + 'message with no PARKED note and no test.',
+    fix:
+      'Differentiate the affordance before the click. The information is already computed — '
+      + '`legalFor` knows which of the five kinds is on offer — so this is a rendering change, '
+      + 'not a rules one. Decide what a card offering two kinds at once looks like. '
+      + '⚠ Check it against BL-20 first, which asks for the right-click card menu to be '
+      + 'NARROWED; these two want the same surface to say different amounts.',
+    proof: null,
+    verify:
+      'A battle-timed spell in hand during deployment must not be drawn the same way as a '
+      + 'castable deploy card. Drive it through test/ui-driver.ts.',
+    status: 'open',
+  },
+  {
+    id: 55,
+    area: 'client',
+    severity: 'minor',
+    reportId: 66,
+    title: 'A round-2 attacker who declines strands the defender with no token warning',
+    detail:
+      'Report #66 asked for the unused-spell-token warning to fire only right before Regroup, '
+      + 'and R-whatever built exactly that as a pure predicate in ui/battle.ts, asserted against '
+      + "the engine's own chain at every priority window of a real battle. One case has no "
+      + 'window to hang it on: if the round-2 attacker DECLINES, `doDeclareAttack` calls '
+      + '`endBattleRound` directly, so a defender holding castable tokens gets no pass to be '
+      + 'warned on and loses them silently.',
+    evidence:
+      'The gap is recorded in #66\'s own note, which called it "a known gap that cannot be '
+      + 'closed client-side". A 2026-08-25 guard audit downgraded the entry from `fixed` to '
+      + '`partial` on the strength of that sentence: **a report whose note admits a reachable '
+      + 'case it does not cover is not fixed**, and calling it fixed is how the case stops being '
+      + 'tracked. Filing it here is what the `partial` status now requires.',
+    fix:
+      '"Cannot be closed CLIENT-side" is true and is not the same as cannot be closed. The '
+      + 'warning is missing because the ENGINE takes a path with no priority window on it, so '
+      + 'the fix is engine-side: either `doDeclareAttack`\'s decline route opens the window it '
+      + 'skips, or the token loss is announced as part of Regroup so it is never silent. '
+      + 'Prefer the second if the first changes battle timing — a warning is not worth a rules '
+      + 'change.',
+    proof: null,
+    verify:
+      'A defender holding a castable spell token whose opponent declines the round-2 attack is '
+      + 'told the tokens are about to be removed.',
+    status: 'open',
+  },
+  {
+    id: 56,
+    area: 'coverage',
+    severity: 'major',
+    title: 'A guard built from a hand-made fixture cannot answer a report about a whole chain',
+    detail:
+      'playtest-ledger.ts requires a `fixed` entry to cite guards, and 83-card-todo.test.ts '
+      + 'checks the named test EXISTS and can fail. Neither asks the question that matters: '
+      + '**could this test have gone red on the behaviour in the report?** A 2026-08-25 audit '
+      + 'resolved all 295 guard references and read ~30 bodies. Four fixed reports were blind, '
+      + 'all the same shape — a guard that unit-tests the LAST HOP with a hand-built input, for '
+      + 'a report about the whole chain. #45 and #43 both assert a pure function reads an X off '
+      + 'a StackItem the test constructed itself, while the reported failure is whether the '
+      + 'ENGINE ever puts the event on the item. #18 answers a presentation bug with two '
+      + 'rules-layer asserts. #53 proves the stager can stage, on hand-written event arrays.',
+    evidence:
+      'The audit. Its own structural point: a cheap mechanical screen exists — flag a guard '
+      + 'whose body constructs its own fixture (no `Harness`, no `ui.join`, no pool read). That '
+      + 'is not automatically wrong (#22, #26, #77, #82, #94, #100 are all correctly pure, '
+      + 'because the root cause WAS a pure function), but for a report whose symptom is "I could '
+      + 'not see" / "I was offered" / "it happened instantly", a fixture-built guard is the '
+      + 'tell — and in four of four cases chased down, it was blind.',
+    fix:
+      'Add the screen as a test over playtest-ledger.ts: classify each guard body by what it '
+      + 'drives, and require a report whose text describes a SYMPTOM the player saw to cite at '
+      + 'least one guard that drives the real thing (Harness / ui-driver / pool sweep). '
+      + 'Exemptions carry their reason inline and are asserted to be still needed, the way '
+      + '68-target-conformance and 142-static-conformance do it. '
+      + '⚠ Do not make this a denylist of "bad" test shapes — a pure test of the function that '
+      + 'WAS the root cause is correct, and six entries prove it.',
+    proof: null,
+    verify:
+      'A `fixed` entry whose report describes a visible symptom, cited only to a guard that '
+      + 'builds its own fixture, fails a named test.',
+    status: 'open',
+  },
 ];

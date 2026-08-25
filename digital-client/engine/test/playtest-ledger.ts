@@ -565,19 +565,29 @@ export const LEDGER: LedgerEntry[] = [
     status: 'fixed',
     guards: ['18-earth-c.test.ts::Tenebrous Bulborb: played normally',
       '18-earth-c.test.ts::Tenebrous Bulborb: augmenting a host gives THE HOST -2/-2',
-      '18-earth-c.test.ts::Tenebrous Bulborb: two of them on one host stack to -4/-4'],
-    note: '⚠ THE CLASS GUARD FOR THIS REPORT DOES NOT EXIST, and the ledger should stop '
-      + 'looking as though it does. #75\'s own note says the right thing — "this was reported '
-      + 'three times (#46 as one card, then #60 and #75 as a class) and a one-card fix is what '
-      + 'makes a class of bug recur" — but the sweep those two cite, '
-      + '88-replacement-conformance, is a REPLACEMENT sweep: it classifies cards printing '
-      + '"would … instead". Tenebrous Bulborb prints "[Augment] I gain -2/-2", which contains '
-      + 'neither word, so that sweep cannot fail on this card no matter how the -2/-2 is built. '
-      + 'Citing it here would be a guard that can never go red — the exact trap this ledger '
-      + 'exists to catch. The missing half of R104 is a STATICS conformance sweep of 88\'s '
-      + 'shape (~41 cards print continuous-shaped text: "as long as", "while", "for each", '
-      + '"your units", "all units"); until somebody writes it, the three guards above are '
-      + 'honest about being one card.',
+      '18-earth-c.test.ts::Tenebrous Bulborb: two of them on one host stack to -4/-4',
+      '142-static-conformance.test.ts::a card printing a standing statement of fact declares a CONTINUOUS layer',
+      '142-static-conformance.test.ts::a card whose whole printed text is continuous declares NOTHING that reaches the stack',
+      '142-static-conformance.test.ts::the classifier accounts for every sentence in the pool',
+      '142-static-conformance.test.ts::every exemption is still needed'],
+    note: 'THE CLASS GUARD NOW EXISTS — R168 / CARD-TODO #48, 2026-08-25, '
+      + '142-static-conformance.test.ts. This note used to open "⚠ THE CLASS GUARD FOR THIS '
+      + 'REPORT DOES NOT EXIST" and it was right at the time, for a reason worth keeping: the '
+      + 'sweep #75 cites, 88-replacement-conformance, is a REPLACEMENT sweep — it classifies '
+      + 'cards printing "would … instead". Tenebrous Bulborb prints "[Augment] I gain -2/-2", '
+      + 'which contains neither word, so that sweep can never fail on this card however the '
+      + '-2/-2 is built. An agent asked to back-fill 88 onto this entry REFUSED on exactly '
+      + 'those grounds, and the refusal is what filed CARD-TODO #48. '
+      + 'The replacement was built in 88\'s shape and derived from printed.json: 45 of 494 '
+      + 'cards print a continuous-shaped clause, 36 of them print nothing else, and each must '
+      + 'declare a CONTINUOUS layer rather than something that reaches the stack. '
+      + '⚠ IT FOUND A LIVE ONE ON ITS FIRST RUN: Aetherflux Golem printed "[Augment] I gain '
+      + '+2/+2" — this report\'s sentence, sign flipped — and was implemented as a triggered '
+      + 'ability adding two +1/+1 counters, while the two cards printing the identical sentence '
+      + '(Bulborb, Malformed Monstrosity) were statics. So the class was still live in the pool '
+      + 'while this entry and #75 both sat at "fixed". That is the whole argument for auditing '
+      + 'guards rather than statuses. Red-checked by planting THIS REPORT\'S ORIGINAL BUG back '
+      + 'onto Bulborb — the sweep reddens, which is precisely what 88 structurally could not do.',
   },
   {
     id: 47, room: 'VEAV', date: '2026-08-22',
@@ -842,7 +852,7 @@ export const LEDGER: LedgerEntry[] = [
     report: 'The UI is reminding me I have unused tokens at EVERY chance it has. It should only '
       + 'warn right before moving to Regroup ("You\'re about to move to Regroup which will remove '
       + 'your Spell Tokens. Are you sure?")',
-    status: 'fixed',
+    status: 'partial',
     guards: ['77-playtest-round17.test.ts::[66] passEndsBattlePhase agrees with the engine',
       '77-playtest-round17.test.ts::[66] the pass confirm is wired to the end-of-battle question'],
     note: 'The C5 guard fired on EVERY pass while you held a castable token. The warning was '
@@ -856,7 +866,17 @@ export const LEDGER: LedgerEntry[] = [
       + 'is at most one extra confirm per battle instead of one per window. Known gap that cannot '
       + 'be closed client-side: if the round-2 attacker DECLINES, doDeclareAttack calls '
       + 'endBattleRound with no priority window, so a defender holding tokens gets no pass to '
-      + 'warn on.',
+      + 'warn on. '
+      + '⚠ DOWNGRADED fixed -> partial on 2026-08-25 by a guard audit, and the reason is this '
+      + 'entry\'s own last sentence: a report whose note admits a reachable case it does not '
+      + 'cover is not fixed, and calling it fixed is how the case stops being tracked. The gap '
+      + 'is CARD-TODO #55. "Cannot be closed client-side" is true and is not the same as '
+      + 'cannot be closed — the missing warning is missing because the ENGINE takes a path with '
+      + 'no window on it, which is an engine-side ticket, not an impossibility. '
+      + '⚠ Second finding from the same audit: the second guard here is an assert.match over '
+      + 'the TEXT of ui/main.ts. It pins how the code is spelled, not what the player sees, and '
+      + 'would stay green if the confirm bar stopped rendering entirely. Same family as the '
+      + 'layout-coupled tests that broke on a pure refactor in round 23.',
   },
   {
     id: 67, room: 'GETD', date: '2026-08-22',
@@ -1064,6 +1084,9 @@ export const LEDGER: LedgerEntry[] = [
       '88-replacement-conformance.test.ts::a replacement that DOES name a target still uses the stack',
       '88-replacement-conformance.test.ts::the classifier finds the replacement clauses',
       '88-replacement-conformance.test.ts::every exemption is still needed',
+      '142-static-conformance.test.ts::a card printing a standing statement of fact declares a CONTINUOUS layer',
+      '142-static-conformance.test.ts::a card whose whole printed text is continuous declares NOTHING that reaches the stack',
+      '142-static-conformance.test.ts::every behaviour key in the pool is classified',
     ],
     note: 'The owner restating id 60 as a RULE rather than a symptom, and it is the sharpest '
       + 'statement of it we have: the test for "does this use the stack" is the printed WORD. '
@@ -1078,7 +1101,12 @@ export const LEDGER: LedgerEntry[] = [
       + 'the pool (11 cards, after four rounds of narrowing: 63 → 19 → 11 → 10, plus the one '
       + '"deals X as Y" card), and fails when a new card prints "would … instead" and is built as '
       + 'a trigger. Every exemption carries its reason and the list is asserted to be exactly '
-      + 'right. It also asserts the OTHER direction, so nobody "fixes" R102 into the wrong shape.',
+      + 'right. It also asserts the OTHER direction, so nobody "fixes" R102 into the wrong shape. '
+      + 'THE STATIC THIRD OF THIS REPORT GOT ITS OWN SWEEP ON 2026-08-25 (R168, CARD-TODO '
+      + '#48): this report names THREE mechanisms — "replacement effects and triggered effects '
+      + 'and static effects" — and until then only the replacement one had a class guard. '
+      + '142-static-conformance.test.ts is the static half, and it found Aetherflux Golem live '
+      + 'in the pool on its first run. See #46.',
   },
   {
     id: 76, room: 'WEHH', date: '2026-08-22',
@@ -1221,7 +1249,10 @@ export const LEDGER: LedgerEntry[] = [
       + 'converse is also clean — 355 of 358 deploy/haste cards are offered, and the 3 that are '
       + 'not (Delver of Mysteries, Resurrect, Covenant of the Damned) are bin-targeting spells '
       + 'refused by R64\'s empty-candidate rule; stock the bin and all 3 appear. '
-      + '⚠ ONE REAL FINDING SURVIVES, filed as a separate UI item (not a playtest report id): the hand\'s `.card.playable` outline is a '
+      + '⚠ ONE REAL FINDING SURVIVES. It is CARD-TODO #54 as of 2026-08-25; this note used to say '
+      + '"filed as a separate UI item" and a guard audit found NO SUCH ITEM — not in backlog.ts, '
+      + 'not in card-todo.ts. It existed only inside this sentence, which is the precise way a '
+      + 'real defect stops being work. The finding: the hand\'s `.card.playable` outline is a '
       + 'single undifferentiated glow that OR-folds playCard/augment/graft/prophesy/'
       + 'recycleForResource, so a battle spell that can only be GRAFTED looks exactly like a '
       + 'castable card. The disambiguation exists only after a click. That is what made this '
@@ -1527,6 +1558,8 @@ export const LEDGER: LedgerEntry[] = [
     id: 90, room: 'XVUR', date: '2026-08-23',
     report: 'Hooba bot made 2 robots I think',
     status: 'by-design',
+    guards: ['27-metal-b.test.ts::Hooba-Bot + Automaton of Abundance: the reported two robots, by design',
+      '27-metal-b.test.ts::Hooba-Bot: one attack trigger makes exactly ONE Robot'],
     note:
       'SOLVED by the owner himself (2026-08-24): "Hooba bot actually wasn\'t a bug. There was '
       + 'an Automaton of Abundance in play." That is R104\'s batch replacement doing its printed '
