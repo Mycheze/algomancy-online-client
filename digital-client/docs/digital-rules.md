@@ -8508,3 +8508,153 @@ keeps it. R144's fizzle is an ordinary fizzle and gets the ordinary treatment.
 Six refund calls were deleted from the card pool when R113 landed. If R108's
 first reading is meant to come back, it is a change to R113 and not something
 R144 should have quietly done on the side.
+
+## R146 — a card entering a bin goes through the choke point, and an inline play can still erase itself
+
+**Date:** 2026-08-25. **Source:** the engine's call, derived from
+[R40](#r40--trashing-a-card-entering-a-bin-from-anywhere-but-the-stack),
+[R65](#r65--discarding-is-not-playing-conceding-the-erased-pile), R69/R79,
+[R137](#r137--an-unstable-unit-that-dies-is-trashed-it-passes-through-the-bin-then-is-erased)
+and R145. Nothing new was asked of the owner: both halves are existing rules
+applied to two sites that had never been held to them.
+
+`E.toBin(seat, name, from)` is the one legitimate way a card enters a bin —
+plus `E.destroy` and the mods line inside `engine.ts`, which push first and
+fire their own events for ordering reasons. An audit of every write to
+`player(seat).bin` in `src/cards/` found **two** sites that went around it.
+Both are fixed, and both were wrong in a way the card's other half hid.
+
+### (1) Hooba-Mon exchanged an {Unstable} body into a bin and left it there
+
+> "[Augment] When I attack, you may exchange me for target unit in your bin
+> with cost 3 or less." — Hooba-Mon, d/1 1/1
+
+`exchangeInPlace` sends the outgoing body to its owner's bin **from play**, and
+it used to push the card, trash it, and stop:
+
+```ts
+if (!self.token) {
+  g.player(self.owner).bin.push(self.card);
+  g.noteTrashed(self.owner, self.card, 'play');   // R40: a bin, from play
+}
+```
+
+On the **augment** line — the line the card is printed for — `self` is the HOST
+WEARING Hooba-Mon. A host carrying a mod is {Unstable} by derivation (R69/R79),
+so this is the ordinary case for this card and not a corner of it. R137/R145: an
+Unstable card leaving an active zone into a bin is binned, **trashed there**,
+and only then swept out into the erased pile. This one stayed in the bin —
+fully recurrable, and still counting toward every "cards in your bin" effect and
+every "erase X cards from your bin" cost. It was the last bin entry in card code
+that disagreed with `E.destroy` about the same disposal.
+
+The fix asks `g.isUnstable(self)` **before** the mods are deleted (isUnstable
+derives Unstable from `self.mods`, and the delete loop empties that out from
+under it), then follows `destroy()`'s statement order exactly:
+
+```
+push → noteTrashed → eraseFromZone(…, 'bin', { index })
+```
+
+Three deliberate points:
+
+- **"Erased" does not mean "skipped the trash."** R137 is explicit that from
+  PLAY the card really does enter the bin and really is trashed there. The test
+  asserts the ORDER (`['trashed', 'erased']`), because a "not in the bin
+  afterwards" assertion on its own passes for the wrong reason if someone later
+  "optimises" the bin visit away.
+- **The sweep names the SLOT it pushed** (R140), never a name search — an older
+  copy of the same card resting in that bin must not be the one eaten.
+- **A TOKEN host is unchanged**: still nothing binned and nothing trashed. See
+  the ⚠ below; that is a pin of today's answer, not an endorsement of it.
+
+### (2) A spell played free by Tides of the Cosmos could not obey its own "Erase me."
+
+`playInline` (batch-water-a) is the shared "play this card as part of my
+resolution" helper behind Tides of the Cosmos, Hooba-Pon, Insidious Invitation
+and Spell Excavation. It passed:
+
+```ts
+eraseSelf: () => {},   // an inline mod run has no stack item to erase
+```
+
+The comment is true about the mechanism and wrong as an answer. **Collect
+Remains, Suspend and Temporal Rift each print a self-erase sentence**, and
+played for free off the top of the deck by Tides they were binned and stayed
+recurrable. That is [CARD-TODO #15](../engine/test/card-todo.ts) — *"'Erase me'
+is unimplemented"* — arriving a second time by a second route, hidden the same
+way it was hidden the first time: the card's OTHER half worked.
+
+`InlinePlay` now carries an `eraseSelf` flag. `playInline` RECORDS the request;
+the CALLER, which is the thing that decides where the card goes, honours it —
+the same split `StackItem.eraseSelf` / `E.dischargeItem` already uses, and for
+the same reason. All four call sites were checked rather than assumed:
+
+| call site | what it plays | effect of the flag |
+| --- | --- | --- |
+| Tides of the Cosmos | anything off the top of the deck | **erases instead of binning** |
+| Hooba-Pon | `isUnitCard` only; disposes on FIZZLE | none — a fizzle never ran the effect, so the flag cannot be set |
+| Insidious Invitation | as Hooba-Pon | none, same reason |
+| Spell Excavation | a spell out of a bin | none — it never bins what it played (R96) |
+
+**⚠ For the record: `Skybreaker` is NOT in this class.** The brief that
+commissioned this work named four cards; there are three. Skybreaker's
+"[Augment] Erase me:" is an activation **cost** on a unit in play
+(`AbilityCost.eraseSelf`), which CARD-TODO #15 had already separated out for
+exactly this reason. It cannot reach `playInline` at all.
+
+### The question this ruling had to decide: is a free inline play a TRASH?
+
+Tides' bin entry was a raw `bin.push`, so it had never had to answer. Routing it
+through `toBin` forces a `from`, and `from` decides whether R40 trashes.
+
+**Answer: `from: 'stack'` — it is NOT a trash.** Written down explicitly so a
+future reader can see this was decided rather than overlooked.
+
+The card left the DECK and never touched the stack, so a literal zone reading
+says 'deck', which trashes. That reading is rejected. R40's own sentence is:
+
+> "A spell or ability going to the bin **after resolving** does NOT [trash] (it
+> comes from the stack)."
+
+The parenthesis is how "played, and resolved" is normally *detected*; it is not
+what the rule means. `playInline` skips the stack for an engine reason and
+nothing else — there is no priority window to open on a free mid-resolution
+play — and the spell was played, and it did resolve.
+
+The decisive argument is consistency. If an inline play trashed, the same spell
+would trash when Tides played it and not trash when it was cast from hand: two
+routes to "play a spell", two answers, with all fourteen trash triggers and the
+per-battle trash ledger firing on one of them. That is precisely the bug class
+[R133](#r133--tokens-are-not-cards-and-trashing-never-needed-them-to-be) and
+R137 closed when they made R40 key on the destination rather than on the object.
+
+It also matches the pool as it already stood: Hooba-Pon and Insidious
+Invitation, the other two `playInline` callers that dispose of a card, already
+passed `'stack'` for a fizzled spell unit. All four sites now agree. The
+assertion pinning this is in `15-water-b.test.ts` ("Tides plays an ORDINARY
+spell for free"); flipping it means flipping all four call sites, not one.
+
+### ⚠ THREE THINGS THIS RULING DID **NOT** FIX — for the owner
+
+All three were found while doing the above, all three are in `exchangeInPlace`,
+and the first two are rules questions rather than typos, so they are recorded
+rather than answered:
+
+1. **A TOKEN host exchanged out of play never reaches a bin at all.** The
+   `if (!self.token)` guard skips the bin, the trash and the sweep. But R40's
+   2026-08-21 amendment says a dying token *does* enter the bin and *is*
+   trashed there before being erased — "the destination, not the object" — and
+   `E.destroy` does exactly that for a token today. So the exchange and the
+   death disagree about a token: the same shape of divergence part (1) above
+   just removed for an Unstable card. R146 pins today's answer in a test rather
+   than changing it, because it is a ruling and not an oversight.
+2. **The mods on the exchanged host are deleted silently.**
+   `for (const modId of self.mods) delete g.s.entities[modId]` — no bin, no
+   trash, no `erased` event, so those cards never reach the public erased pile
+   (R65) and Hooba-Mon itself simply vanishes from the game with no record.
+   `destroy()` bins, trashes and sweeps each nontoken mod (R137). The same
+   divergence again, one level down.
+3. **The exchange fires no despawn trigger.** `exchangeInPlace` calls
+   `g.ev('despawned', …)` but never `g.fireEvent('despawned', …)`, so nothing
+   watching units leave play sees it. Almost certainly just a gap.

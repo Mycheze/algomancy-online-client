@@ -485,6 +485,94 @@ test('Hooba-Mon: attacking may exchange it for a cheap unit in your bin', () => 
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'it left the bin');
 });
 
+// ── R146: Hooba-Mon's exchange obeys the {Unstable} bin replacement ────
+//
+// The three tests below are ONE rule seen from three sides. `exchangeInPlace`
+// sends the outgoing body to a bin FROM PLAY, and R137/R145 say an {Unstable}
+// card making that trip is binned, TRASHED there, and only then swept into the
+// erased pile — the exact route E.destroy takes. Before R146 the card was
+// binned and simply left there, recurrable.
+
+test('R146: Hooba-Mon exchanges a MODDED host → the host is trashed, then ERASED (not left in a bin)', () => {
+  const h = new Harness(4290);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const host = spawn(h, A, 'Rune Channeler');              // 4/3, no printed attrs
+  giveResources(h, A, 'dark', 3);
+  // Hooba-Mon goes on as an AUGMENT, which is the line the ⚠ is about: `self`
+  // is now the HOST, and a host wearing a mod is {Unstable} by derivation
+  // (R69/R79) — this is the ORDINARY case for this card, not a corner one.
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
+  assert.equal(ent(h, host)!.mods.length, 1, 'the host really is modded…');
+  assert.ok(new E(h.state).isUnstable(ent(h, host)!), '…and therefore Unstable');
+  h.state.players[A]!.bin.push('Unit Token');              // a [0] unit — cost ≤ 3
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  pickRef(h, { bin: { seat: A, card: 'Unit Token' } });
+  resolveAll(h);
+  assert.equal(entsNamed(h, 'Rune Channeler').length, 0, 'the host left play');
+  // R137: it passed THROUGH the bin and was trashed there…
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Rune Channeler').length, 1,
+    'a bin entered from play is a trash, Unstable or not (R40/R137)');
+  // …and the sweep then took it out again, onto the public pile (R65)
+  assert.ok(!h.state.players[A]!.bin.includes('Rune Channeler'),
+    'the Unstable card does NOT stay in the bin');
+  assert.ok(new E(h.state).erased(A).includes('Rune Channeler'),
+    'it reaches the public erased pile');
+  // ORDERING, which is the half a "not in the bin" assertion alone would miss:
+  // trash first, erase after. "Erased" here must not mean "skipped the trash".
+  const order = h.events
+    .filter(ev => (ev.type === 'trashed' || ev.type === 'erased')
+      && ev.data!['card'] === 'Rune Channeler')
+    .map(ev => ev.type);
+  assert.deepEqual(order, ['trashed', 'erased'], 'R137 ordering: bin → trashed → swept');
+});
+
+test('R146 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there', () => {
+  const h = new Harness(4291);
+  toDeployment(h);
+  const A = h.state.initiative;
+  // played normally, Hooba-Mon's text-box [Augment] is live on itself, so
+  // `self` is Hooba-Mon: no mods, no stamp, no printed {Unstable}
+  const hooba = spawn(h, A, 'Hooba-Mon');
+  assert.equal(new E(h.state).isUnstable(ent(h, hooba)!), false, 'nothing makes it Unstable');
+  h.state.players[A]!.bin.push('Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[hooba]] });
+  pickRef(h, { bin: { seat: A, card: 'Unit Token' } });
+  resolveAll(h);
+  assert.equal(entsNamed(h, 'Hooba-Mon').length, 0, 'Hooba-Mon left play…');
+  assert.ok(h.state.players[A]!.bin.includes('Hooba-Mon'), '…and STAYS in the bin');
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 1,
+    'trashed on the way in (R40)');
+  assert.ok(!new E(h.state).erased(A).includes('Hooba-Mon'),
+    'and nothing erased it — the sweep is for Unstable cards only');
+});
+
+test('R146: Hooba-Mon exchanges a TOKEN host → nothing binned, nothing trashed', () => {
+  const h = new Harness(4292);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  let host = -1;
+  withE(h, e => {
+    host = e.spawnUnit(A, 'Unit Token', e.homeRegion(A), { token: true, tokenStats: [3, 3] }).id;
+  });
+  giveResources(h, A, 'dark', 3);
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
+  h.state.players[A]!.bin.push('Skittering Blight');       // a [1] unit — cost ≤ 3
+  toNextBattle(h, A);
+  const before = trashes(h).length;
+  h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
+  pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
+  resolveAll(h);
+  assert.equal(ent(h, host), undefined, 'the token host left play');
+  assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'a token has no card to bin (R69)');
+  assert.equal(trashes(h).slice(before).filter(t => t.data!['card'] === 'Unit Token').length, 0,
+    'so there is nothing to trash either');
+  assert.ok(entsNamed(h, 'Skittering Blight').some(e => e.kind === 'unit'),
+    'the exchange itself still happened');
+});
+
 test('Hooba-Mon: an over-cost bin is no offer at all', () => {
   const h = new Harness(4214);
   toDeployment(h);

@@ -63,7 +63,22 @@ import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } fro
  * module before batch-water-b — the importing direction that leaves
  * registration order (= deck order) untouched.
  */
-export type InlinePlay = { outcome: 'unit' | 'ok' | 'fizzled'; unit?: Entity };
+export type InlinePlay = {
+  outcome: 'unit' | 'ok' | 'fizzled';
+  unit?: Entity;
+  /**
+   * R146(b): the resolving effect raised **"Erase me."** (`ctx.eraseSelf()`).
+   * There is still no stack item to flag — `playInline` is the whole point of
+   * not making one — so the request is RECORDED here and the CALLER, which is
+   * the thing that decides where the card goes, honours it by erasing instead
+   * of binning. That mirrors `E.dischargeItem`, where the same flag rides
+   * `StackItem.eraseSelf` and the same single site reads it.
+   *
+   * Never true on `'fizzled'`: a fizzle means `eff.run` never ran, so nothing
+   * could have raised it (the same reason a negated spell never self-erases).
+   */
+  eraseSelf?: boolean;
+};
 export const playInline = (
   g: E, ctx: EffectCtx, name: string, key: string, seat: Seat = ctx.controller,
 ): InlinePlay => {
@@ -77,6 +92,7 @@ export const playInline = (
   g.fireEvent('spellPlayed', ev);
   const eff = def.spellEffect;
   let fizzled = false;
+  let eraseSelf = false;
   if (eff) {
     let targets: ResolvedTarget[] = [];
     let refs: TargetRef[] = [];
@@ -101,16 +117,22 @@ export const playInline = (
       eff.run(g, {
         controller: seat, sourceName: name, region: ctx.region,
         targets, event: null, mode,
-        eraseSelf: () => {},   // an inline mod run has no stack item to erase
+        // R146(b): an inline run has no stack item to flag — but "Erase me."
+        // is a printed sentence (Collect Remains, Suspend, Temporal Rift) and
+        // swallowing it left those spells BINNED and recurrable when they were
+        // played for free. Record it; the caller honours it. This used to be
+        // `() => {}` with the comment "an inline mod run has no stack item to
+        // erase", which described the mechanism and mistook it for the answer.
+        eraseSelf: () => { eraseSelf = true; },
         choose: (k, d) => ctx.choose(`${key}:${k}`, d),
       });
     }
   }
   if (fizzled) return { outcome: 'fizzled' };
   if (def.kind === 'spellUnit') {
-    return { outcome: 'ok', unit: g.spawnUnit(seat, name, ctx.region) };
+    return { outcome: 'ok', unit: g.spawnUnit(seat, name, ctx.region), eraseSelf };
   }
-  return { outcome: 'ok' };
+  return { outcome: 'ok', eraseSelf };
 };
 
 /** Glimpse N for a seat (R45) — reveal the top N, cache exactly ONE of the
@@ -520,7 +542,12 @@ card('Hooba-Pon', {
         if (played.unit) g.placeInFormation(played.unit, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon' });
         else {
           // a spell unit whose spell part found no target: no body, and the
-          // card is binned like any fizzled spell unit
+          // card is binned like any fizzled spell unit.
+          // R146(b): no `eraseSelf` check here, and that is not an oversight —
+          // this branch is reached only on `outcome: 'fizzled'`, where the
+          // effect never ran and so cannot have asked to be erased. (The menu
+          // is `isUnitCard`-filtered anyway, and none of the three "Erase me."
+          // cards is a unit or a spell unit.)
           g.toBin(seat, name, 'stack');
           g.ev('info', `Hooba-Pon: ${name}'s spell part fizzled — no body joins the formation.`);
         }
@@ -570,6 +597,8 @@ const insidiousInvite: EffectDef = {
       g.payCard(seat, name);
       const played = playInline(g, ctx, name, `invite:${seat}`, seat);
       if (played.outcome === 'fizzled') {
+        // R146(b): 'fizzled' means the effect never ran, so `played.eraseSelf`
+        // cannot be set here — same confirmation as Hooba-Pon above.
         g.toBin(seat, name, 'stack');   // a fizzled spell unit: no body, card to bin
         g.ev('info', `Insidious Invitation: ${name}'s spell part fizzled — no body arrives.`);
       }

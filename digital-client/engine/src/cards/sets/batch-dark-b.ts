@@ -417,7 +417,21 @@ card('Grim Bargain', {
 // formation slot,
 // exactly like an Ambush swap, but sends the outgoing unit to its owner's BIN
 // — from play, so it is trashed (R40) — without dying (⚠ header).
+//
+// R146: …and if the outgoing body is {Unstable}, that bin entry is REPLACED by
+// an erase, exactly as it would be if the body had died. This is the ordinary
+// case rather than the exotic one: on the augment line `self` is the HOST
+// WEARING Hooba-Mon, so it carries at least one mod and is Unstable by
+// derivation (R69/R79). The line used to stop at the trash and leave the card
+// sitting in the bin, recurrable — the only bin entry in card code that did.
+// R137 is why the erase is not "skip the bin": from PLAY the card really does
+// enter the bin, is trashed there, and is only then swept out. Ordering below
+// is destroy()'s, statement for statement — push, trash, sweep — because a
+// second shape for the same disposal is how the two answers drift apart.
 function exchangeInPlace(g: E, self: Entity, name: CardName, controller: Seat): void {
+  // asked BEFORE the mods are deleted: `E.isUnstable` derives Unstable from
+  // `self.mods`, and the loop below empties the entity table under it
+  const unstable = g.isUnstable(self);
   const b = g.s.battle;
   let slot: { col: EntityId[]; idx: number } | null = null;
   if (b) {
@@ -434,8 +448,20 @@ function exchangeInPlace(g: E, self: Entity, name: CardName, controller: Seat): 
   g.ev('despawned', `${self.card} is exchanged for ${name}.`,
     { unit: self.id, card: self.card, seat: self.controller, region: self.region });
   if (!self.token) {
-    g.player(self.owner).bin.push(self.card);
+    const bin = g.player(self.owner).bin;
+    bin.push(self.card);
+    const at = bin.length - 1;   // R140: name the SLOT, never search by name
     g.noteTrashed(self.owner, self.card, 'play');   // R40: a bin, from play
+    if (unstable) {
+      // R137/R146 state-based sweep, the same call destroy() makes: the card
+      // was in the bin for the whole trash window above (both `when` passes
+      // and the per-battle ledger saw it there) and now leaves it. R124:
+      // eraseFromZone is the one sanctioned way out of a bin, and it is also
+      // what puts the card on the public erased pile (R65) — it ends in an
+      // 'erased' event carrying `seat`+`card`, which is what E.ev() reads.
+      g.eraseFromZone(self.owner, self.card, 'bin',
+        `${self.card} is erased from the bin — Unstable.`, { index: at });
+    }
   }
 }
 card('Hooba-Mon', {

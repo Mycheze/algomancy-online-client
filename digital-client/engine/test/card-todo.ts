@@ -1956,4 +1956,78 @@ export const CARD_TODO: TodoEntry[] = [
     verify: 'No card needs this yet; verify when one does.',
     status: 'open',
   },
+  // ── found by the R146 sweep of bin entries written by CARD code ───────
+  {
+    id: 40,
+    area: 'card',
+    severity: 'major',
+    cards: ['Hooba-Mon'],
+    title: "Hooba-Mon's exchange binned an {Unstable} body and left it there",
+    detail:
+      '"[Augment] When I attack, you may exchange me for target unit in your bin with cost 3 or '
+      + 'less." The exchange sends the outgoing body to its owner\'s bin FROM PLAY, and '
+      + '`exchangeInPlace` pushed the card and trashed it and stopped. On the AUGMENT line — the '
+      + 'line the card is printed for — `self` is the HOST WEARING Hooba-Mon, so it carries a mod '
+      + 'and is {Unstable} by derivation (R69/R79). R137/R145: an Unstable card leaving an active '
+      + 'zone into a bin is binned, trashed there, and then SWEPT into the erased pile. This one '
+      + 'stayed in the bin instead — fully recurrable, and still counting toward every "cards in '
+      + 'your bin" effect and every "erase X from your bin" cost. It was the only bin entry in '
+      + 'card code that disagreed with E.destroy about the same disposal.',
+    evidence:
+      'Found 2026-08-25 by the R146 audit of every site in src/cards/ that writes to a bin '
+      + 'without going through E.toBin or E.destroy. Two sites; this was one of them.',
+    fix:
+      'FIXED 2026-08-25 (R146). `exchangeInPlace` asks `g.isUnstable(self)` BEFORE deleting the '
+      + "host's mods (isUnstable derives from `self.mods`), then follows destroy()'s statement "
+      + 'order exactly: push, `noteTrashed`, and — when Unstable — `eraseFromZone(..., "bin", '
+      + '{ index })` naming the slot it just pushed (R140, never a name search). A TOKEN host is '
+      + 'unchanged: no card, so nothing to bin, trash or erase.',
+    proof: null,
+    verify:
+      'Augment Hooba-Mon onto a host, attack, and take the exchange: the HOST card must fire a '
+      + '`trashed` event and then an `erased` one, in that order, and must not be in the bin '
+      + 'afterwards. Played NORMALLY (unmodded) it must still be binned and stay there.',
+    guards: [
+      '42-dark-b.test.ts::Hooba-Mon exchanges a MODDED host',
+      '42-dark-b.test.ts::Hooba-Mon exchanges an UNMODDED host',
+      '42-dark-b.test.ts::Hooba-Mon exchanges a TOKEN host',
+    ],
+    status: 'done',
+  },
+  {
+    id: 41,
+    area: 'card',
+    severity: 'major',
+    cards: ['Tides of the Cosmos', 'Collect Remains', 'Suspend', 'Temporal Rift'],
+    title: 'A spell played free by Tides of the Cosmos could not obey its own "Erase me."',
+    detail:
+      '`playInline` (batch-water-a) — the shared "play this card as part of my resolution" helper '
+      + 'behind Tides of the Cosmos, Hooba-Pon, Insidious Invitation and Spell Excavation — passed '
+      + '`eraseSelf: () => {}` to the effect it ran, with the comment "an inline mod run has no '
+      + 'stack item to erase". True about the mechanism, wrong as an answer: Collect Remains, '
+      + 'Suspend and Temporal Rift each print a self-erase sentence, and played for free off the '
+      + 'top of the deck by Tides they were BINNED and stayed recurrable. This is CARD-TODO #15 '
+      + 'over again on a second route — and hidden the same way, because the other half of each '
+      + "card worked. Tides also wrote its bin entry as a raw `bin.push`, bypassing E.toBin.",
+    evidence:
+      'Found 2026-08-25 by the R146 audit of bin writes in src/cards/, which turned up the raw '
+      + 'push and then the swallowed eraseSelf one line above it.',
+    fix:
+      'FIXED 2026-08-25 (R146). `InlinePlay` carries an `eraseSelf` flag: playInline records the '
+      + 'request and the CALLER, which is what decides where the card goes, honours it — the same '
+      + 'split `StackItem.eraseSelf`/`dischargeItem` uses. Tides erases instead of binning when it '
+      + 'is set, and otherwise goes through `E.toBin(..., "stack")`. The other three call sites '
+      + 'were checked: Hooba-Pon and Insidious Invitation only reach their disposal on a FIZZLE, '
+      + 'where the effect never ran and the flag cannot be set, and Spell Excavation never bins '
+      + 'what it played (R96).',
+    proof: null,
+    verify:
+      'Stack Suspend on top of the deck and cast Tides of the Cosmos; take Suspend as a free play. '
+      + "It must reach the caster's erased pile and must not appear in the bin.",
+    guards: [
+      '15-water-b.test.ts::for free → the ERASED pile',
+      '15-water-b.test.ts::Tides plays an ORDINARY spell for free',
+    ],
+    status: 'done',
+  },
 ];

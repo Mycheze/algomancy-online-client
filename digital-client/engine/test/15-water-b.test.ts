@@ -566,6 +566,90 @@ test('Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for fr
   finishBattle(h);
 });
 
+// ── R146: what Tides of the Cosmos does with the card it played ───────
+//
+// Two halves of one line. (a) the card goes through E.toBin, not a raw
+// `bin.push` — and the `from` is 'stack', i.e. NOT a trash, because the spell
+// was played and it RESOLVED; `playInline` skips the stack for engine reasons
+// only, and R40's own sentence is "a spell going to the bin after resolving
+// does not trash". (b) a spell that prints "Erase me." said so as it resolved,
+// and that request now survives the inline play instead of being swallowed.
+
+test('R146: Tides plays "Erase me." (Suspend) for free → the ERASED pile, never a bin', () => {
+  const h = new Harness(1590);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Curio Drifter');
+  giveResources(h, D, 'water', 11);                        // bbb / 8 for Tides
+  toNextBattle(h, A);
+  h.state.sharedDeck = [
+    'Suspend',                                             // ll/2, "…Erase me."
+    'Good Whale', 'Good Whale', 'Good Whale', 'Good Whale',
+    'Good Whale', 'Good Whale', 'Good Whale',
+    'Rune Channeler',
+  ];
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
+  pass(h); pass(h);                                        // resolve → pick #1
+  decide(h, l => l.startsWith('Suspend'));
+  // Suspend's "target player" is asked inside playInline (no stack item, so no
+  // cast-time declaration) — and then the second Tides pick, which we decline
+  while (h.state.decision) {
+    const dec = h.state.decision;
+    const i = dec.options.findIndex(o => o.label === 'Done');
+    h.do({ type: 'decide', seat: dec.seat, choice: i === -1 ? 0 : i });
+  }
+  assert.ok(h.log.some(l => l.includes("life total can't change")),
+    'the spell really resolved (its first sentence happened)');
+  assert.ok(!h.state.players[D]!.bin.includes('Suspend'),
+    '"Erase me." is not swallowed by the inline play — no bin entry');
+  assert.ok(new E(h.state).erased(D).includes('Suspend'),
+    'it reaches the public erased pile (R65), like the stack route');
+  // R40 never enters into it: nothing was binned, so nothing can be trashed
+  assert.equal(h.events.filter(ev => ev.type === 'trashed' && ev.data!['card'] === 'Suspend').length, 0,
+    'an erase never touches a bin, so it is not a trash');
+  finishBattle(h);
+});
+
+test('R146: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash', () => {
+  const h = new Harness(1591);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Curio Drifter');
+  giveResources(h, D, 'water', 11);
+  toNextBattle(h, A);
+  h.state.sharedDeck = [
+    'Burn the Blight',                                     // [3], no targets, no picks
+    'Good Whale', 'Good Whale', 'Good Whale', 'Good Whale',
+    'Good Whale', 'Good Whale', 'Good Whale',
+    'Rune Channeler',
+  ];
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
+  pass(h); pass(h);
+  decide(h, l => l.startsWith('Burn the Blight'));
+  while (h.state.decision) {
+    const dec = h.state.decision;
+    const i = dec.options.findIndex(o => o.label === 'Done');
+    h.do({ type: 'decide', seat: dec.seat, choice: i === -1 ? 0 : i });
+  }
+  assert.ok(h.state.players[D]!.bin.includes('Burn the Blight'), 'the played spell → bin');
+  assert.ok(!new E(h.state).erased(D).includes('Burn the Blight'), 'and not erased');
+  // ⚠ THE PINNED ANSWER (R146a). The card left the DECK, never touched the
+  // stack, and still this is NOT a trash: it was PLAYED and it RESOLVED, which
+  // is the side of R40's line that "comes from the stack" is shorthand for.
+  // Reading it the other way would make the same spell trash when Tides played
+  // it and not trash when it was cast from hand. If this assertion is ever
+  // flipped, flip `from: 'stack'` in batch-water-b with it — and Hooba-Pon's
+  // and Insidious Invitation's matching lines, which say the same thing.
+  assert.equal(
+    h.events.filter(ev => ev.type === 'trashed' && ev.data!['card'] === 'Burn the Blight').length, 0,
+    'a free inline play that RESOLVED is not a trash (R40, R146a)');
+  finishBattle(h);
+});
+
 test('Upheaval: each player recalls two units; 4+ recalled → it repeats (then stops)', () => {
   const h = new Harness(1517);
   toDeployment(h);

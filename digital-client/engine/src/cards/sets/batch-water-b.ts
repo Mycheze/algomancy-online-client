@@ -400,7 +400,12 @@ card('Spell Excavation', {
       g.removeFromBin(ctx.controller, t.binCard.index, 'played');   // R124
       g.payCard(ctx.controller, name);
       playInline(g, ctx, name, 'x');
-      // unstable: the spell card is erased instead of returning to a bin
+      // unstable: the spell card is erased instead of returning to a bin.
+      // R146(b): the returned `eraseSelf` is deliberately not read — this card
+      // never bins what it played in the first place (R96: a bin play is
+      // {Unstable}, so the card is already gone), and "erase it twice" is not
+      // a thing. A spell that prints "Erase me." lands in exactly the same
+      // place here either way.
       g.ev('info', `${name} was unstable — erased instead of binned.`);
     },
   },
@@ -569,7 +574,36 @@ card('Tides of the Cosmos', {
         // spawns and is binned too; units stay in play
         const kind = getCard(name).kind;
         if (kind === 'spell' || (kind === 'spellUnit' && r.outcome === 'fizzled')) {
-          g.player(ctx.controller).bin.push(name);
+          if (r.eraseSelf) {
+            // R146(b): the spell printed "Erase me." and said so as it
+            // resolved. Same shape (and same log sentence) as the eraseSelf
+            // branch of E.dischargeItem — no bin, so R40 never comes up, and
+            // the 'erased' event is what files it on the public pile (R65).
+            g.ev('erased', `${name} erases itself — it does not go to a bin.`,
+              { seat: ctx.controller, card: name });
+          } else {
+            // R146(a): through the choke point, not a raw `bin.push`.
+            //
+            // ⚠ THE `from` IS THE RULES QUESTION, and it is 'stack' — NOT a
+            // trash. The card was PLAYED and it RESOLVED; `playInline` skips
+            // the stack for engine reasons (there is no priority window to
+            // open on a free mid-resolution play), and R40's stack clause is
+            // not really about the zone, it is R40's own sentence *"a spell or
+            // ability going to the bin AFTER RESOLVING does not [trash]"*. The
+            // zone is how that is normally detected, not what it means.
+            //
+            // Reading it the other way ('deck', the zone the card physically
+            // left) would trash it, and then the SAME spell would trash when
+            // Tides played it and not trash when it was cast from hand — two
+            // routes to "play a spell", two answers. That is precisely the bug
+            // class R133/R137 closed when they made R40 key on the
+            // destination rather than on the object.
+            //
+            // It also matches the pool: the other two `playInline` callers
+            // that dispose of a card (Hooba-Pon, Insidious Invitation) already
+            // pass 'stack' for a fizzled spell unit. All four sites agree.
+            g.toBin(ctx.controller, name, 'stack');
+          }
         }
       }
       for (let i = 0; i < top.length; i++) {
