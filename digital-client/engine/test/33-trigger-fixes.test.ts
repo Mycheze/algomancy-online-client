@@ -147,16 +147,23 @@ test('R34: MIXED simultaneous triggers (different cards) still ask for an order'
   const h = new Harness(3304);
   const p = 0 as const;
   const flora = spawn(h, p, 'Flourishing Flora');            // +1/+1 on another ally spawn
-  // Bloomcaster's own nontoken spawn fires BOTH its own trigger ("you play a
-  // unit" is not self-excluded) and Flora's — two DIFFERENT triggers at once
-  whiteBox(h, e => { e.spawnUnit(p, 'Bloomcaster', e.homeRegion(p)); });
+  // ⚠ This used to use Bloomcaster, whose trigger fired on 'spawned'. It now
+  // fires on 'cardPlayed' (it prints "whenever you PLAY a unit", and
+  // spawnUnit is a PUT INTO PLAY), so it no longer fires here and there was
+  // only one trigger left to order. The subject of this test is R2/R34 trigger
+  // ORDERING, not Bloomcaster — so it takes a card that genuinely triggers on
+  // its own spawn. Pathogenic Enclave prints "When I spawn, create two 1/1
+  // units", which fires alongside Flora's "another ally spawned".
+  whiteBox(h, e => { e.spawnUnit(p, 'Pathogenic Enclave', e.homeRegion(p)); });
   const dec = h.state.decision;
   assert.equal(dec?.kind, 'orderTriggers', 'different triggers still ask (R2)');
-  assert.equal(dec!.options.length, 2, 'one Flora + one Bloomcaster');
+  assert.equal(dec!.options.length, 2, 'one Flora + one Pathogenic Enclave');
   assert.notEqual(dec!.options[0]!.label, dec!.options[1]!.label, 'distinguishable labels');
   h.do({ type: 'decide', seat: p, choice: [0, 1] });
-  // Bloomcaster's 1/1 token spawn re-fires Flora (a singleton — no ask)
-  assert.equal(h.state.decision, null, 'the follow-up single trigger resolves without asking');
-  assert.deepEqual(effStats(h, flora), [2, 3], 'Flora grew from Bloomcaster AND from the created token');
-  assert.equal(unitsOf(h, p).filter(u => u.card === 'Unit Token').length, 1, 'Bloomcaster made its 1/1');
+  // the Enclave's two token spawns re-fire Flora; each is a singleton (no ask)
+  assert.equal(h.state.decision, null, 'the follow-up single triggers resolve without asking');
+  assert.equal(unitsOf(h, p).filter(u => u.card === 'Unit Token').length, 2,
+    'the Enclave made its two 1/1s');
+  assert.deepEqual(effStats(h, flora), [3, 4],
+    'Flora grew from the Enclave AND from each of its two created tokens');
 });

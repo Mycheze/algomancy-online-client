@@ -203,17 +203,35 @@ test('Forager of the Fallen: an enemy dying in-region creates a 2/2', () => {
   assert.ok(ent(h, forager), 'Forager survived the 1/1 blocker');
 });
 
-test('Bloomcaster: [Augment] — playing a (nontoken) unit makes a 1/1; the 1/1 does not loop', () => {
+test('Bloomcaster: PLAYING a unit makes a 1/1 — and putting one into play does not', () => {
+  // ⚠ THIS TEST USED TO ASSERT THE BUG. It called the `spawn` helper, which
+  // puts a unit straight into play, and expected a 1/1 — because the card
+  // listened on 'spawned'. But the card prints "whenever you PLAY a unit", and
+  // Exhume, Resurrect, Wake the Dead, Rousing Spirit and Lurking Dread all
+  // print "put into play", not "play". Every one of them wrongly paid out.
+  // R129's 'cardPlayed' is the real event; the negative half below is the
+  // whole point and the old test had no way to express it.
   const h = new Harness(610);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  spawn(h, p, 'Bloomcaster');                             // "you play a unit" includes itself
-  let made = unitsOf(h, p).filter(u => u.card === 'Unit Token');
-  assert.equal(made.length, 1, 'playing Bloomcaster itself made one 1/1 (no "another" clause)');
-  spawn(h, p, 'Good Whale');                              // another nontoken unit
-  made = unitsOf(h, p).filter(u => u.card === 'Unit Token');
-  assert.equal(made.length, 2, 'a second nontoken play → a second 1/1 (no runaway loop)');
-  assert.ok(made.every(u => effStats(h, u.id)[0] === 1 && effStats(h, u.id)[1] === 1), 'each is 1/1');
+  const count = (): number => unitsOf(h, p).filter(u => u.card === 'Unit Token').length;
+
+  spawn(h, p, 'Bloomcaster');                       // put into play: not a play
+  assert.equal(count(), 0,
+    'putting Bloomcaster into play is not PLAYING a unit — the old test asserted 1 here');
+
+  giveResources(h, p, 'water', 6);   // Good Whale is b/6
+  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Good Whale') });
+  assert.equal(count(), 1, 'a real play of a nontoken unit makes one 1/1');
+
+  // the loop guard is structural now: a created TOKEN never fires 'cardPlayed'
+  // at all, so there is nothing to guard against by hand
+  assert.ok(unitsOf(h, p).filter(u => u.card === 'Unit Token')
+    .every(u => effStats(h, u.id)[0] === 1 && effStats(h, u.id)[1] === 1), 'each is 1/1');
+
+  // and a SECOND put-into-play still pays nothing
+  spawn(h, p, 'Good Whale');
+  assert.equal(count(), 1, 'a second put-into-play adds no 1/1');
 });
 
 test('Flourishing Flora: [Augment] — another ally spawning (token or not) grows me +1/+1', () => {

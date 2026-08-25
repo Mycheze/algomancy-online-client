@@ -12,9 +12,9 @@
  * Nothing parked in this batch — every printed behavior maps onto existing
  * engine primitives.
  */
-import type { EntityId } from '../../types.ts';
+import type { CardName, EntityId } from '../../types.ts';
 import { card, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt } from './helpers.ts';
+import { selfOf, isEnt, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── EARTH (augments) ───────────────────────────
 
@@ -183,24 +183,42 @@ card('Forager of the Fallen', {
   graftEffect: { bounded: true, effect: foragerSpawn },
 });
 
-// "[Augment] Whenever you play a unit, create a 1/1 unit." — there is no
-// 'unitPlayed' event; units entering play fire 'spawned'. when(): same
-// controller, and the spawned entity is not a token — the "not a token" guard
-// is exactly the loop guard (the created 1/1 IS a token, so its spawn can't
-// re-trigger). The text says "you play a unit" (NOT "another"), so unlike
-// Flourishing Flora it is NOT self-excluded: playing Bloomcaster itself also
-// makes a 1/1. Region auto-scoped (R12). See ⚠ note in the report.
+// "[Augment] Whenever you play a unit, create a 1/1 unit."
+//
+// It listens on 'cardPlayed', not on 'spawned'. The old note here said "there
+// is no 'unitPlayed' event" — that expired with R129, which fires
+// 'cardPlayed' for exactly the four kinds that ARE plays (unit / spell /
+// spellUnit / ambush; a spell TOKEN is cast from play, not played — R59, and a
+// mod is not a play — R37). Void Mandible already reads it.
+//
+// The bug that fixed: 'spawned' fires for a unit ENTERING PLAY by any route, so
+// Exhume, Resurrect, Wake the Dead, Rousing Spirit and Lurking Dread — all of
+// which print "put into play", not "play" — each wrongly made a 1/1.
+//
+// `isUnitCard` is the pool's settled membership for "a unit": unit + spellUnit,
+// never spellToken. Not a fresh judgement call — helpers.ts already owns it.
+//
+// ⚠ 'cardPlayed' fires at COMMIT time, so the 1/1 arrives while the played unit
+// is still on the stack and it triggers even if that unit is later negated. That
+// is what the printed word "play" means — you played it — and the old 'spawned'
+// version silently gave the opposite answer.
+//
+// The loop guard is structural now rather than a token check: a created token
+// never fires 'cardPlayed' at all. The text says "you play a unit" (NOT
+// "another"), so unlike Flourishing Flora it is NOT self-excluded — playing
+// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12).
 const bloomcasterMake: EffectDef = {
   creates: ['Unit Token'],
   run: (g, ctx) => { g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] }); },
 };
 card('Bloomcaster', {
   augmentText: [{
-    type: 'triggered', events: ['spawned'],
+    type: 'triggered', events: ['cardPlayed'],
     label: 'create a 1/1 unit',
-    when: (g, self, ev) =>
-      ev.data?.seat === self.controller &&
-      !g.entity(ev.data?.unit as EntityId)?.token,
+    when: (_g, self, ev) =>
+      ev.data?.seat === self.controller
+      && ev.data?.token !== true
+      && isUnitCard(ev.data?.card as CardName),
     effect: bloomcasterMake,
   }],
 });
