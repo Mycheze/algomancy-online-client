@@ -36,12 +36,15 @@
  *    resolution as a temp delta (later stat changes shift both sides).
  *    Its printed {Reaping} is honored in card code: the caster draws if the
  *    swap kills the target (the engine's Reaping hook is damage-only).
- *  - Powerforge Synergist: "I spawn with two +1/+1 counters" has no DSL hook
- *    for played cards, and a queued spawn-trigger is TOO LATE — settle()'s
- *    death check erases the 0/0 before any trigger resolves. The counters
- *    are added synchronously in a bookkeeping when() at spawn-event time
- *    (Mirage Walker precedent; silent — no countersChanged event, matching
- *    Robot's spawn-with-counters). "Move my counters" needs NO snapshot of its
+ *  - Powerforge Synergist: NO LONGER an approximation. This entry used to read
+ *    '"I spawn with two +1/+1 counters" has no DSL hook … the counters are
+ *    added synchronously in a bookkeeping when() at spawn-event time'. R165
+ *    built the hook — `CardBehavior.spawnsWithCounters`, applied by
+ *    E.spawnUnit before the 'spawned' event and THROUGH R104's amount layer,
+ *    which the raw `self.counters += 2` bypassed (an allied Flux Resonator gave
+ *    this card 2 where it gave "Create a Robot 2" 3). Still silent — no
+ *    countersChanged event, matching Robot's spawn-with-counters (R130).
+ *    "Move my counters" needs NO snapshot of its
  *    own: R70 stamps `counters` onto every leave-play event (E.leftPlayFacts),
  *    which is the same fact the note two paragraphs down credits for
  *    un-parking Flux Constructor — the effect reads ctx.event.data.counters.
@@ -458,25 +461,36 @@ card('Perish', {
 });
 
 // "I spawn with two +1/+1 counters. [Augment] When I despawn, you may move
-// my counters onto target unit." — m/2 0/0 Robot Unit. ⚠ header
-// approximations: the spawn counters are added synchronously in a
-// bookkeeping when() at spawn-event time (a queued trigger is too late —
-// the 0/0 would die to settle()'s death check first); the despawn amount is
-// snapshotted into the event during when() (the unit is gone at
-// resolution). Despawn = ANY leave-play ('died' + 'despawned', Bloated
-// Manablub precedent). "You may": min 0 lets the chooser decline. The first
-// sentence sits above the [Augment] marker → `abilities` (it does NOT
-// transfer); the move-my-counters text transfers with the augment.
+// my counters onto target unit." — m/2 0/0 Robot Unit.
+//
+// R165: the first sentence is `spawnsWithCounters: 2` — a DECLARATION about
+// the body, applied by E.spawnUnit before the 'spawned' event fires. It used
+// to be a bookkeeping `triggered` whose `when()` wrote `self.counters += 2`
+// and returned false, with a comment explaining that a queued trigger would
+// be too late (settle()'s death check would erase the 0/0 first). The
+// diagnosis was right and the workaround still had a hole in it: writing the
+// field RAW walks straight past R104's AMOUNT layer, so an allied Flux
+// Resonator made this card enter with 2 counters while "Create a Robot 2" —
+// the same printed sentence with a number in it — entered with 3. One field
+// on the card definition, one application site, one answer for both.
+//
+// The hole ran the other way on the card that prints the SAME sentence:
+// Aethercap Siphoner ("I spawn with three -1/-1 counters on me") used a real
+// triggered ability, so ITS arrival size queued a stack item an opponent could
+// respond to or negate, while this card's could not be answered at all. Two
+// mechanisms for one printed idea, disagreeing about both the amount layer and
+// the stack. `spawnsWithCounters` is neither: it is a declaration, so it is
+// never on the stack on either card, and it is scaled on both.
+//
+// ⚠ Header note retired with it: the spawn-counter approximation is gone.
+// The DESPAWN amount is still read off the event (R70's leftPlayFacts), which
+// is not an approximation at all. Despawn = ANY leave-play ('died' +
+// 'despawned', Bloated Manablub precedent). "You may": min 0 lets the chooser
+// decline. The first sentence sits above the [Augment] marker, so it does NOT
+// transfer — and a declaration about MY body could not transfer in any case;
+// the move-my-counters text below does.
 card('Powerforge Synergist', {
-  abilities: [{
-    type: 'triggered', events: ['spawned'], self: true,
-    label: '(bookkeeping) I spawn with two +1/+1 counters',
-    when: (_g, self) => {
-      self.counters += 2;   // synchronous, before any death check; silent
-      return false;         // never queues — the when() IS the effect
-    },
-    effect: { run: () => { /* never queues */ } },
-  }],
+  spawnsWithCounters: 2,
   augmentText: [{
     type: 'triggered', events: ['died', 'despawned'], self: true,
     label: 'move my counters onto target unit',

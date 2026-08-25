@@ -1615,6 +1615,24 @@ export interface CardBehavior {
    * Distinct from R75's `E.placeInFormation`, which is for an EFFECT that
    * creates a unit in a formation and rightly places at resolution. */
   playsIntoFormation?: boolean;
+  /**
+   * R165: "I spawn with N counters" printed on the card's own body —
+   * Powerforge Synergist ("two +1/+1 counters"), Aethercap Siphoner ("three
+   * -1/-1 counters on me"). DECLARATIVE, and read by `E.spawnUnit`, because
+   * the counters are part of the body that ARRIVES: they go on before the
+   * `'spawned'` event fires, so no watcher and no player ever sees the printed
+   * 0/0 or 4/4 standing there. This is R147's shape one field over — a fact
+   * about the body applied ahead of `fireEvent`, the single door every
+   * listener goes through — and it is exactly why this cannot be a triggered
+   * ability: a trigger cannot run before the event that raised it.
+   *
+   * SIGNED, like every counter total in the engine (R130): positive is +1/+1,
+   * negative is -1/-1. It reaches R104's AMOUNT layer exactly as a Robot X's
+   * spawn counters do, so an allied Flux Resonator scales both — two cards
+   * printing the same kind of sentence must not disagree about whether a
+   * replacement effect touches them.
+   */
+  spawnsWithCounters?: number;
   /** effect of a spell / spell unit / spell token when played */
   spellEffect?: EffectDef;
   /** the [Switch]-marked effect that transfers when this card is grafted */

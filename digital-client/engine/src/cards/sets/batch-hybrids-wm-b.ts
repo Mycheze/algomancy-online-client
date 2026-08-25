@@ -69,9 +69,12 @@
  *    (R45, E.glimpse): three are revealed, ONE of the glimpser's choice is
  *    cached (playable until end of turn, ignoring affinity) and the other two
  *    are recycled — it used to keep one card, permanently, in hand.
- *  - AETHERCAP SIPHONER "spawns with" its three -1/-1 counters via an
- *    on-spawn self trigger — the counters land immediately after the spawn
- *    event rather than being on the unit as it spawns.
+ *  - AETHERCAP SIPHONER: NO LONGER an approximation. This entry used to read
+ *    '"spawns with" its three -1/-1 counters via an on-spawn self trigger —
+ *    the counters land immediately after the spawn event rather than being on
+ *    the unit as it spawns'. R165 made that a DECLARATION on the card
+ *    (`spawnsWithCounters: -3`) which E.spawnUnit applies before the event, so
+ *    the card is the 1/1 it prints at the moment every watcher reads it.
  *  - GALACTIC GERMINATION's "target formation" is proxied by targeting a
  *    UNIT: the formation is the battle grid side (attacking columns or
  *    blocking columns) containing it, counted live at resolution (R27); a
@@ -597,25 +600,39 @@ card('Wither and Bloom', {
 
 // "I spawn with three -1/-1 counters on me. [Augment] Whenever you play a
 // nontoken spell, you may move a counter from me onto another target unit."
-// — gb/3 4/4 Cosmic Fungus Blight Unit. The spawn clause is a normal
-// on-spawn self trigger (⚠ header: counters land right after the spawn
-// event). The [Augment] clause transfers: "me" = the carrier, "you" = its
+// — gb/3 4/4 Cosmic Fungus Blight Unit.
+//
+// R165: the spawn clause is `spawnsWithCounters: -3` — a DECLARATION about the
+// body, applied by E.spawnUnit before the 'spawned' event fires. It used to be
+// an ordinary on-spawn self trigger, which is a contradiction in terms: a
+// trigger cannot run before the event that raised it (R147), so this card
+// stood on the board as a 4/4 for the whole of its own spawn and only became
+// the 1/1 it prints a resolution later. Iyngstra ("gain life equal to their
+// defense") gained 4, and the caster was stopped and asked to ORDER their own
+// spawn against the card's own arithmetic, a question with no answer.
+//
+// ⚠ AND IT WAS ON THE STACK — the worst of the three, and the one the
+// divergence inventory did not name. A triggered ability QUEUES, so in battle
+// this card's own printed arrival size was a stack item an opponent could
+// respond to or NEGATE, while Powerforge Synergist — printing the same kind of
+// sentence — could not be answered at all. "I spawn with three -1/-1 counters
+// on me" is a statement about what this card IS on arrival, not an effect
+// aimed at it: there is nothing there to answer, and above all the two cards
+// must not differ about whether there is.
+//
+// Nothing else about the number moved: it is still SIGNED, still
+// silent (no countersChanged — R130: nobody PUTS a spawn's own counters on
+// it), and it still reaches R104's amount layer, so an allied Flux Resonator
+// still makes it -4 exactly as the addCounters call it replaced did.
+//
+// The [Augment] clause transfers: "me" = the carrier, "you" = its
 // controller; "a counter" is one of the NET counters (the engine's signed
 // counter model — pairs cancel, Manual), so a -1/-1 moves while net
 // negative and a +1/+1 moves while net positive; nothing moves at net 0.
 // R64: "another target unit" is a declared target chosen as the trigger goes
 // on the stack (min 0 carries the "may"), and "another" excludes the carrier.
 card('Aethercap Siphoner', {
-  abilities: [{
-    type: 'triggered', events: ['spawned'], self: true,
-    label: 'I spawn with three -1/-1 counters',
-    effect: {
-      run: (g, ctx) => {
-        const self = selfOf(g, ctx);
-        if (self) g.addCounters(self, -3);
-      },
-    },
-  }],
+  spawnsWithCounters: -3,
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'],
     label: 'you may move a counter from me onto another unit (you played a nontoken spell)',

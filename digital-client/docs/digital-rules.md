@@ -11479,3 +11479,178 @@ reddens §2, both of §3 and §5.
 2. **CT-46's "gate on `s.decision.seat === viewingSeat`" was not implementable
    as written** — see judgement 1 above. The consequence it named was real; the
    fix it named had no referent.
+
+---
+
+## R165 — "I spawn with N counters" is a fact about the body; "play" is not "put into play"
+
+*(2026-08-25. Two rows of `docs/09-divergence-inventory.md` §2b, four cards, and
+one shape in common: the engine knew a thing about a unit arriving and applied
+it a beat too late, or not at all.)*
+
+### (a) SPAWN-COUNTERS — Powerforge Synergist, Aethercap Siphoner
+
+Three printings in the pool say a body arrives already holding counters:
+
+| card | printed | printed stats | as it arrives |
+|---|---|---|---|
+| **Robot** (token) | "I spawn with X +1/+1 counters on me." | 0/0 | X/X |
+| **Powerforge Synergist** | "I spawn with two +1/+1 counters." | 0/0 | 2/2 |
+| **Aethercap Siphoner** | "I spawn with three -1/-1 counters on me." | 4/4 | 1/1 |
+
+Only the Robot went through `E.spawnUnit`'s `opts.counters`, which puts the
+counters on **before** the `'spawned'` event and consults R104's **amount
+layer** on the way (report #88 — an allied Flux Resonator makes a Robot 2 enter
+as a 3/3). The two printed cards each did it themselves, afterwards, and each
+was wrong in its own direction.
+
+**Aethercap Siphoner did it with a triggered ability, and a trigger cannot run
+before the event that raised it.** This is [R147](#r147--a-spell-unit-that-becomes-a-copy-enters-as-the-copy-and-copying-is-not-a-trigger)'s
+defect exactly, one field over — R147 was about a body's IDENTITY, this is about
+its SIZE — and it produced the same two symptoms:
+
+```
+Player 1 spawns Aethercap Siphoner.                    ← a 4/4, briefly
+Order your triggers (first picked resolves first)      ← a question with no answer
+  · Iyngstra: gain life equal to the spawned ally's defense
+  · Aethercap Siphoner: I spawn with three -1/-1 counters
+```
+
+**Iyngstra** — *"[Augment] Whenever another ally spawns, you gain life equal to
+their defense"* — gained **4** for a card that prints 1, and the caster was
+stopped and asked to order their own spawn against the card's own arithmetic.
+Picking the other order gained 1. A card's own size is not something an
+opponent's trigger gets to race.
+
+**Powerforge Synergist did it with a `when()` side effect that wrote the field
+raw.** The diagnosis in its comment was right — a queued trigger really would
+have been too late, because `settle()`'s death check would have erased the 0/0
+first — but `self.counters += 2` is not a *placement*, so nothing could replace
+it. Under a **Flux Resonator** (*"if one or more counters would be put on a unit
+by an allied source, put that many counters plus one instead"*) this card
+entered with **2** where *"Create a Robot 2"* entered with **3**. Two printings
+of the same sentence must not disagree about whether a replacement effect
+touches them.
+
+**And it was a REAL stack item, which is the worst of the three.** Aethercap's
+clause queued like any other triggered ability, so in battle it pushed an item
+onto the stack: **an opponent could respond to, or negate, a card's own printed
+arrival size** — and a Powerforge Synergist printing the same kind of sentence
+could not be answered at all, because its `when()` never queued. (Found by the
+statics-sweep agent, not by the inventory row; it is not one of the two defects
+the row describes.) *"I spawn with N counters"* is a statement about what the
+card **is** on arrival, not an effect aimed at it. There is nothing there to
+answer, and there certainly must not be something to answer on one card and not
+on the other.
+
+**The ruling: "I spawn with N counters" is a DECLARATION about the body, not an
+ability.** It is `CardBehavior.spawnsWithCounters` (dsl.ts), applied by
+`E.spawnUnit` in the same expression as `opts.counters`, through the same
+`amountDelta`, before `fireEvent` — the single door every listener goes through.
+One field, one layer, one moment, for all three printings — and never on the
+stack, so all three defects close on one mechanism: the right body at the event,
+scaled by the amount layer, and nothing for an opponent to negate.
+
+This is the same argument [R168] settles for **Aetherflux Golem**, where
+*"[Augment] I gain +2/+2"* was a trigger adding counters and is a static now: a
+sentence about what a card IS should not be implemented as a thing that happens
+to it.
+
+Three details, each chosen rather than found:
+
+- **SIGNED.** [R130](#r130--every-counter-is-a-counter-and-a-placement-carries-its-actor)'s
+  *"all counters count as counters"*: positive is +1/+1, negative is -1/-1, and
+  the amount gate moved from `>= 1` to `!== 0`. "If ONE OR MORE counters would
+  be put" is about a placement existing, not about its sign, and Flux
+  Resonator's own delta already answers both directions
+  (`ctx.amount > 0 ? 1 : -1`) — which is what `addCounters` had been feeding it
+  from Aethercap's trigger all along. No caller passes a negative
+  `opts.counters`, so nothing that was already there changed.
+- **SILENT.** No `countersChanged` fires, so no "when **you** put a counter"
+  trigger hears a spawn — R130 again: nobody *puts* a spawn's own counters on
+  it, it arrives holding them. That was already true of a Robot X and was **not**
+  true of Aethercap, whose `addCounters` call drew a card off **Scrapyard
+  Custodian** (*"When you put one or more counters on an ally, draw a card"*).
+  It no longer does, and the Robot answer is the one both now give.
+- **The spawn LINE is sign-aware.** It read `(-3 +1/+1)` the moment a card
+  printed a negative one.
+
+**What was NOT true, and the inventory said it was.** The row claimed every
+spawn watcher read the wrong body for *both* cards. For Powerforge that is
+false: its `when()` ran synchronously during the dispatch, so the counters were
+already on by the time any trigger resolved, and Iyngstra read the 2/2
+correctly. Nor can any watcher in the pool tell its 0/0 from its 2/2 at
+`when()` time — the only event-time stat reader, **Nectar Ridge Oracle**
+(*"defense greater than power"*), is blind to a symmetric ±N. Powerforge's real
+and only defect was the amount layer. Aethercap's was the other two: the late
+body, and the stack item.
+
+### (b) PLAY-VS-PUT-INTO-PLAY — Wake the Dead, The Bonesculptor
+
+Six cards in the pool put a unit into play from somewhere other than a hand.
+**Four print "put into play"** — Exhume, Resurrect, Rousing Spirit, Lurking
+Dread. **Two print "play":**
+
+> **Wake the Dead** — *"Play up to two units in any bin with total cost [8] or
+> less now, for free."*
+>
+> **The Bonesculptor** — *"You may play one unit with no abilities from your bin
+> each deployment."*
+
+All six were the same `spawnUnit` call, so nothing in the game could tell them
+apart. [R129](#r129--a-spell-token-is-a-token-and-a-unit-is-a-card-two-events-that-were-logged-but-never-fired)'s
+`'cardPlayed'` never fired for the two that really were plays, and R49's `from`
+was absent from their `'spawned'` events, so **Bloomcaster** (*"whenever you
+play a unit, create a 1/1 unit"*), **Stalwart Sentinel** (*"when you play a card
+from anywhere other than your hand, put two +1/+1 counters on me"*) and **Proph**
+were all deaf to them.
+
+This is the mirror of commit `36bb4ed`, which fixed **Bloomcaster** by moving it
+off `'spawned'` onto `'cardPlayed'` — and that commit's own message named Wake
+the Dead among the cards that *"wrongly paid out"*. It was right about five of
+the six. Wake the Dead was the one that should have.
+
+**The ruling: the printed verb decides.** `E.spawnUnit` takes `asPlay`, which
+fires `'cardPlayed'` immediately before the spawn dispatch — the order
+`commitItem` puts them in for every ordinary play — and it rides **with**
+`opts.from`, never instead of it, because a play always comes out of a zone.
+Each watcher hears each played unit exactly once, on whichever of the two events
+it listens to.
+
+**Why a flag on the spawn and not a stack item.** An effect that plays a card
+mid-resolution has no cast window to build one in. That is the standing
+`playInline` approximation (batch-water-a, and R129's own "deliberately NOT
+changed" list): the played card arrives inside the playing effect's resolution,
+so **nobody may respond to it and nothing can negate it**. Wake the Dead's units
+are therefore a real play in every respect the pool can observe except that one,
+which is documented on both cards rather than quietly widened here.
+
+**"For free" is untouched.** Nothing is paid on Wake the Dead's route and
+nothing was added; The Bonesculptor still pays the played unit's full cost, one
+line above the spawn. Being a play is about what the game **hears**, not about
+what it costs.
+
+**The borrowed-card split survives it** (CARD-TODO #17): a unit raised out of
+the opponent's bin is still controlled by the caster and **owned** by the
+opponent, and the `'cardPlayed'` event names the **caster** as the seat that
+played it. A borrowed card is still played by you.
+
+### Left open, and filed rather than fixed
+
+- **The Bonesculptor's permission is an ACTIVATED ABILITY, so it reaches the
+  stack.** *"You may play one unit with no abilities from your bin each
+  deployment"* is not an effect anyone should be able to answer, but it is built
+  as a free bounded activated ability, so **Containment Protocol** (*"negate all
+  activated and triggered effects"*) can negate a permission that should simply
+  be true. Same class as playtest reports #60/#75, and the same shape as (a)
+  above one zone over. Not fixed here: the right home is a permission
+  (`CardBehavior.binPlayPermissions` is the nearest existing seam, R123), which
+  is a redesign of the card plus `legalActions` plumbing rather than a flag.
+- **A SPELL UNIT raised by Wake the Dead does not cast its spell.** *"Up to two
+  UNITS"* is `isUnitCard` — unit **and** spell unit — and the RAQ that settles
+  what playing one means is about Hooba-Pon: *"the spell part happens and if it
+  resolves, the unit will spawn into formation"*, and *"Does that count as
+  'playing a spell' for some triggers? A: Yes."* Wake the Dead spawns the body
+  and skips the spell, and has since it was written; `playInline` (batch-water-a)
+  is the routine that does it right, but it takes no `owner`, so using it would
+  trade this defect for CARD-TODO #17's. Both halves want one primitive.

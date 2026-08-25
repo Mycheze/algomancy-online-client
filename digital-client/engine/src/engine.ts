@@ -2655,12 +2655,13 @@ export class E {
    * into play under an OPPONENT's control") passes the opponent as `seat` and
    * its owner as `opts.owner`.
    */
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace; asPlay?: boolean } = {}): Entity {
     /**
      * R104: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
-     * `spawnUnit` is a real card being put into play (Exhume, Wake the Dead),
-     * which creates nothing and is not replaceable.
+     * `spawnUnit` is a real card being put into play (Exhume, Resurrect,
+     * Rousing Spirit, Lurking Dread — all four print "put into play"), which
+     * creates nothing and is not replaceable.
      *
      * The substitution may cross the unit/spell divide, because Cosmic
      * Conspirator's four named types do ("a Robot, Poison, Crystal or
@@ -2714,8 +2715,28 @@ export class E {
     // Resonator still makes a Robot X enter as X+1, report #88, which is the
     // behaviour this line has to preserve); no `countersChanged` fires here, so
     // no "when YOU put a counter" trigger sees a spawn, exactly as before.
-    let spawnCounters = opts.counters ?? 0;
-    if (spawnCounters >= 1) {
+    //
+    // R165: …and the same field carries what the CARD ITSELF prints —
+    // `CardBehavior.spawnsWithCounters` ("I spawn with two +1/+1 counters",
+    // Powerforge Synergist; "three -1/-1 counters on me", Aethercap Siphoner).
+    // ONE field, ONE layer, ONE moment, for the printed sentence and for a
+    // Robot's X alike: two cards printing the same kind of thing must not
+    // disagree about whether a replacement effect scales them, and a spawn
+    // watcher must read the body the card prints. Both cards used to do this
+    // themselves after the fact — Aethercap through a queued `spawned` trigger,
+    // which cannot run before the event that raised it (R147) and which made
+    // Iyngstra gain 4 for a 1/1; Powerforge through a `when()` that wrote
+    // `self.counters` RAW and so walked straight past this layer.
+    let spawnCounters = (opts.counters ?? 0) + (getCard(name).spawnsWithCounters ?? 0);
+    // R165: the gate is `!== 0`, not `>= 1`. "If ONE OR MORE counters would be
+    // put" is about a placement EXISTING, not about its sign — the engine keeps
+    // one SIGNED total (R130: "all counters count as counters"), and Flux
+    // Resonator's own delta answers both directions already
+    // (`ctx.amount > 0 ? 1 : -1`), which is what `addCounters` has always fed
+    // it. No caller passes a negative `opts.counters`, so nothing that was
+    // here before changes; it only stops the declarative half above from
+    // getting a different answer than the `addCounters` call it replaced.
+    if (spawnCounters !== 0) {
       spawnCounters += this.amountDelta({
         kind: 'counters', region, amount: spawnCounters, unit: u, combat: false,
         sourceSeat: seat,
@@ -2726,6 +2747,44 @@ export class E {
     // BEFORE the spawn event exists, so no listener and no player ever sees it
     // standing anywhere else. See takeSpot.
     const placed = opts.spot ? this.takeSpot(u, seat, opts.spot) : null;
+    /**
+     * R165 — PLAY vs PUT INTO PLAY. Four cards in the pool print "put into
+     * play" (Exhume, Resurrect, Rousing Spirit, Lurking Dread) and two print
+     * "**play**": Wake the Dead ("Play up to two units in any bin … now, for
+     * free") and The Bonesculptor ("You may play one unit with no abilities
+     * from your bin each deployment"). All six called this method and were
+     * therefore indistinguishable — no play event of any kind, so R129's
+     * `'cardPlayed'` never fired and every "whenever you play a card / a unit"
+     * watcher in the pool was deaf to the two that really were plays.
+     *
+     * `asPlay` is that one printed word, and it is deliberately a flag on the
+     * SPAWN rather than a stack item: an effect that plays a card
+     * mid-resolution has no cast window to build one in, which is the standing
+     * approximation `playInline` (batch-water-a) already carries — the played
+     * card arrives inside the playing effect's resolution and nobody may
+     * respond to it or negate it. It rides WITH `opts.from`, never instead of
+     * it: a play always comes out of a zone, and R49's `from` on the 'spawned'
+     * event below is the other half of the same fact — the half Stalwart
+     * Sentinel and Proph read for "a card played from anywhere other than your
+     * hand". Each watcher therefore hears the play exactly once, on whichever
+     * of the two events it listens to.
+     *
+     * The event is BUILT here, above the spawn line, and DISPATCHED below it,
+     * immediately before the spawn dispatch: the play precedes the arrival —
+     * the order `commitItem` puts them in for every ordinary play — but no
+     * listener may run against a body that is still being dressed (R147's
+     * `wearing`, R29's placement). Signal-only (`msg: ''`), the R129
+     * convention; the spawn line already announces it.
+     *
+     * ⚠ NEVER on a token: `token: false` is a fact here, not a default. A
+     * created token is not a card (R129) and no caller passes both.
+     */
+    const playEv = opts.asPlay
+      ? this.ev('cardPlayed', '', {
+        seat, card: name, token: false, region,
+        ...(opts.from ? { from: opts.from } : {}),
+      })
+      : null;
     // R49: `from` is set only when this spawn IS a card being PLAYED out of a
     // zone (resolveItem for a unit / spell unit card). A unit created by an
     // effect carries no zone, which is what keeps "when you play a card from
@@ -2736,7 +2795,11 @@ export class E {
     // `owner` key is emitted only when it differs, so every existing reader of
     // a 'spawned' event keeps the payload it already had.
     const ev = this.ev('spawned',
-      `${this.pname(seat)} spawns ${name}${spawnCounters ? ` (${spawnCounters} +1/+1)` : ''}`
+      // R165: the counter note is SIGN-AWARE now that a card can print a
+      // negative spawn ("three -1/-1 counters on me"). It used to read
+      // "(-3 +1/+1)" the moment one did.
+      `${this.pname(seat)} spawns ${name}`
+      + (spawnCounters ? ` (${Math.abs(spawnCounters)} ${spawnCounters > 0 ? '+1/+1' : '-1/-1'})` : '')
       + (owner !== seat ? ` — ${this.pname(owner)}'s card.` : '.'),
       {
         seat, unit: u.id, region, card: name,
@@ -2773,6 +2836,8 @@ export class E {
     // bookkeeping trigger used to read it — the spend is engine-side now so a
     // dead Drone cannot leave a paid-for charge unspendable.
     if (opts.from !== undefined) this.spendNextPlayDiscount(seat);
+    // R165: the play, then the arrival — see the `playEv` block above.
+    if (playEv) this.fireEvent('cardPlayed', playEv);
     this.fireEvent('spawned', ev);
     // R104: record the creation in the open batch, so "each unique token you
     // created" has a creation to be unique across. After the spawn event, so a

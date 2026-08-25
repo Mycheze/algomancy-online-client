@@ -43,7 +43,11 @@
  *    modelled as a free bounded activated ability (deploy plays resolve
  *    immediately, so the shapes match); the full cost of the played unit is
  *    still paid. Activating it outside deployment (or with no eligible card)
- *    wastes the once-per-turn budget.
+ *    wastes the once-per-turn budget. R165: the played unit really is PLAYED
+ *    now — it fires R129's 'cardPlayed' from R49's 'bin' — where it used to be
+ *    put into play in silence while the log line above it said "plays". What
+ *    it still lacks is a stack item of its own (nothing may respond to it),
+ *    the standing `playInline` approximation for a mid-resolution play.
  *  - Throwing Boulder: the sacrifice and the "only if I have an adjacent
  *    ally" precondition are checked/paid at RESOLUTION (the Immolate
  *    precedent — there is no activation-precondition hook). No adjacent ally
@@ -418,7 +422,18 @@ card('The Bonesculptor', {
         g.removeFromBin(ctx.controller, pick, 'played');   // R124
         g.payCard(ctx.controller, name);
         g.ev('info', `The Bonesculptor: ${g.pname(ctx.controller)} plays ${name} from the bin.`);
-        g.spawnUnit(ctx.controller, name, ctx.region);
+        // R165: the printed verb is "PLAY", and the log line directly above has
+        // said so all along while the engine put the unit into play in silence.
+        // The two are a real distinction in this pool — Exhume, Resurrect,
+        // Rousing Spirit and Lurking Dread print "put into play" and are rightly
+        // plain spawns. `asPlay` fires R129's 'cardPlayed' immediately before
+        // the body arrives; `from: 'bin'` is R49's other half of the same fact.
+        // So "whenever you play a unit" (Bloomcaster) and "when you play a card
+        // from anywhere other than your hand" (Stalwart Sentinel, Proph) hear
+        // it, each exactly once — and note the cost really was paid one line up,
+        // which is what the card's own "(You still pay the cost.)" siblings mean
+        // and what makes calling this a play honest rather than generous.
+        g.spawnUnit(ctx.controller, name, ctx.region, { from: 'bin', asPlay: true });
       },
     },
   }],

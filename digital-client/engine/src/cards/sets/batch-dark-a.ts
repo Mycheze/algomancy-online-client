@@ -29,10 +29,16 @@
  *    targetable zone at all. R64 made it one — 'binCard' / 'anyBinCard' — and
  *    R67 moved every card here that DOES print "target" onto it; Tilling the
  *    Graves is one of them, and no longer belongs in this list.)
- *  - "PUT INTO PLAY" / "PLAY … NOW, FOR FREE" is spawnUnit: the unit arrives
- *    directly in play and fires its spawn triggers, with no stack step. Wake
- *    the Dead reaches into ANY bin, and it is NO LONGER an approximation that
- *    a unit raised out of the opponent's bin becomes the caster's card:
+ *  - "PUT INTO PLAY" (Exhume) is spawnUnit: the unit arrives directly in play
+ *    and fires its spawn triggers, with no stack step and no play event —
+ *    which is exactly right, because putting a card into play is not playing
+ *    it. R165 split "PLAY … NOW, FOR FREE" (Wake the Dead) back off it: that
+ *    card prints the other verb, so its units spawn `asPlay` and fire R129's
+ *    'cardPlayed' from R49's 'bin'. What they still do NOT get is a stack item
+ *    of their own — no response window, nothing to negate — which is the
+ *    standing `playInline` approximation for a card played mid-resolution.
+ *    Wake the Dead reaches into ANY bin, and it is NO LONGER an approximation
+ *    that a unit raised out of the opponent's bin becomes the caster's card:
  *    CARD-TODO #17 gave spawnUnit an `owner` option (defaulting to the seat it
  *    enters play under), and Wake the Dead passes the bin's own seat. The
  *    caster CONTROLS it; the opponent still OWNS it, so it dies to THEIR bin
@@ -671,9 +677,11 @@ card('Tilling the Graves', {
 // "Play up to two units in any bin with total cost [8] or less now, for
 // free." — ddd/8 {Battle} Occult Spell. ANY bin: both players'. "Up to two"
 // with a running budget — the second pick is offered only from what still
-// fits under 8 minus the first. ⚠ header: "play … now, for free" is modelled
-// as putting the units straight into play (spawn triggers fire, no stack
-// step).
+// fits under 8 minus the first. ⚠ header: "play … now" resolves inside this
+// spell's own resolution — the units arrive with no stack item of their own,
+// so nobody may respond to them and nothing can negate one. R165 made them a
+// real PLAY in every other respect (see below); the missing response window is
+// the standing `playInline` approximation, not this card's.
 //
 // CARD-TODO #17, fixed 2026-08-23: a unit taken out of the OPPONENT's bin is
 // BORROWED, not naturalised. `spawnUnit` now takes an owner (defaulting to the
@@ -717,8 +725,24 @@ card('Wake the Dead', {
       // CARD-TODO #17: "any bin" means the card may be the OPPONENT'S, and the
       // two seats are different facts. The CONTROLLER is the caster; the OWNER
       // is whichever bin it came out of, and it goes back there when it dies.
+      //
+      // R165: the printed verb is "PLAY", not "put into play", and the two are
+      // a real distinction in this pool — Exhume, Resurrect, Rousing Spirit and
+      // Lurking Dread all print "put into play" and are rightly plain spawns.
+      // `asPlay` fires R129's 'cardPlayed' for each unit immediately before it
+      // arrives, and `from: 'bin'` is R49's other half of the same fact, so
+      // "whenever you play a unit" (Bloomcaster) and "when you play a card from
+      // anywhere other than your hand" (Stalwart Sentinel, Proph) both hear it
+      // — each exactly once, because the spawn-watchers read 'spawned' and
+      // Bloomcaster reads 'cardPlayed'.
+      //
+      // "FOR FREE" is untouched: nothing is paid here and nothing is added.
+      // Being a play is about what the game HEARS, not about what it costs.
+      // `seat` on the play event is the CASTER (the one doing the playing),
+      // never the bin's owner — a borrowed card is still played by you.
       for (const c of chosen) {
-        g.spawnUnit(ctx.controller, c.name, ctx.region, { owner: c.seat });
+        g.spawnUnit(ctx.controller, c.name, ctx.region,
+          { owner: c.seat, from: 'bin', asPlay: true });
       }
     },
   },
