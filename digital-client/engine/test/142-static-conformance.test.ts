@@ -305,6 +305,14 @@ const CONTINUOUS_KEYS: Record<string, string> = {
  * fails loudly instead of quietly widening the hole.
  */
 const INERT_KEYS: Record<string, string> = {
+  spawnsWithCounters:
+    'R165 — a DECLARATION of what the body arrives holding ("I spawn with three -1/-1 counters '
+    + 'on me"), applied by spawnUnit through the R104 amount layer BEFORE it fires \'spawned\'. '
+    + 'Inert rather than continuous on purpose: it is not a standing layer, it is a one-time '
+    + 'property of the arrival, and it must reach no stack — a card\'s own printed arrival size '
+    + 'is not an effect anyone may respond to. That is exactly what R165 fixed: Aethercap '
+    + 'Siphoner queued a real stack item for it while Powerforge Synergist did not, so the same '
+    + 'printed sentence was negatable on one card and not the other.',
   augmentable:
     'a FLAG, not a layer — "this card may be applied as an augment even though it declares no '
     + 'augmentAttrs/augmentText, because its [Augment] text lives in `statics`". Deliberately NOT '

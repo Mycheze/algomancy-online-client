@@ -766,12 +766,44 @@ test('R148: the only .controller assignments in engine.ts are inside giveControl
     if (/[A-Za-z_$][\w$]*\.controller\s*=(?!=)/.test(line)) hits.push(i);
   });
   assert.ok(hits.length > 0, 'the primitive itself must still assign a controller somewhere');
+
+  /**
+   * Named exemptions, each carrying its reason — and each asserted below to
+   * still be PRESENT, so an exemption cannot outlive its cause (the same rule
+   * the exemption list above this test runs on).
+   *
+   * R148/R112's choke point is about an ENTITY IN PLAY changing hands, which is
+   * a real game event with triggers hanging off it. A `StackItem`'s controller
+   * is a different field on a different type: it records who is casting this
+   * item, it is written once while the item is being BUILT, and nothing
+   * observes a change to it because there is no change — the item did not
+   * exist a statement earlier.
+   */
+  const STACKITEM_CONTROLLER_EXEMPT: Record<string, string> = {
+    'copy.controller = opts.controller ?? orig.controller;':
+      'R164 pushSpellCopy — stamping the controller onto a freshly structuredClone\'d '
+      + 'StackItem, not moving an entity between players. A spell copy is cast by whoever the '
+      + 'copying card says casts it (Earthbound Replicator: "for any player targeting him"), so '
+      + 'the field has to be settable at construction. Routing this through giveControl would be '
+      + 'a category error — giveControl takes an Entity.',
+  };
+
   for (const n of hits) {
+    const stmt = lines[n]!.trim();
+    if (stmt in STACKITEM_CONTROLLER_EXEMPT) continue;
     // `giveControl(` opens within a few lines above every legal assignment —
     // the same proximity read R124 uses for its one bin splice.
     assert.ok(lines.slice(Math.max(0, n - 8), n + 1).join('\n').includes('giveControl('),
-      `engine.ts:${n + 1} assigns a controller outside giveControl: ${lines[n]!.trim()}. `
+      `engine.ts:${n + 1} assigns a controller outside giveControl: ${stmt}. `
       + 'The choke point is the whole point (R112/R148) — route it through giveControl, or, if '
       + 'this really is a new primitive, say so here and widen this test on purpose.');
+  }
+
+  // An exemption that no longer names real code is a hole nobody is watching.
+  const present = new Set(hits.map(n => lines[n]!.trim()));
+  for (const [stmt, why] of Object.entries(STACKITEM_CONTROLLER_EXEMPT)) {
+    assert.ok(present.has(stmt),
+      `engine.ts no longer contains \`${stmt}\`, so its exemption is stale — drop it. `
+      + `(Was: ${why})`);
   }
 });
