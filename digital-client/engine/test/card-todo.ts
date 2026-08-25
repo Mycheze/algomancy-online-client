@@ -1388,7 +1388,23 @@ export const CARD_TODO: TodoEntry[] = [
     // serialized. The census's premise changed with it — from "ban the
     // combination" to "enumerate the population" — and its guard substring
     // below still names it.
-    guards: ['90-coverage-census.test.ts::no ability is both bounded and zone-dispatched'],
+    // ⚠ GUARD REPAIR 2026-08-25. The census guard below is a STATIC ENUMERATION
+    // — it walks `getCard(name).abilities`/`augmentText` and asserts the set of
+    // bounded+zone abilities equals ["Rotling (zone 'bin')"]. It never builds a
+    // GameState and never touches `zoneBudgets`; the only mention of that field
+    // in it is inside an assertion MESSAGE. So reverting composeParts' stand-in
+    // branch to write `budgetHolder.budgets[key] = 1` onto E.standIn's throwaway
+    // `budgets: {}` — i.e. restoring the exact defect in this entry's title —
+    // leaves the census output byte-identical and the guard green.
+    // The behavioural protection existed all along and was simply never cited.
+    // This is the failure mode the audit of 2026-08-25 was looking for: the
+    // structural check in 83-card-todo.test.ts can only ask whether a guard
+    // EXISTS, never whether it could fail.
+    guards: [
+      '90-coverage-census.test.ts::no ability is both bounded and zone-dispatched',
+      '43-dark-c.test.ts::Rotling: the [Switch1] bounds it once per turn',
+      '43-dark-c.test.ts::zoneBudgets reservation survive a JSON round-trip',
+    ],
     status: 'done',
   },
   {
