@@ -108,6 +108,14 @@ export interface TodoEntry {
    * revisited is exactly how a "fixed" item stops describing reality.
    */
   closed?: string;
+  /**
+   * For a long-lived entry that is being worked down rather than finished in
+   * one go: what the last round actually established, including where THIS
+   * entry's own plan turned out to be wrong. CT-49's "activated abilities are
+   * the cheap third" was off by a factor of four, and an entry that cannot
+   * record that keeps sending the next round down the same path.
+   */
+  progress?: string;
   /** set to 'done' when fixed — the test then stops requiring the proof */
   status: 'open' | 'done';
 }
@@ -2784,6 +2792,26 @@ export const CARD_TODO: TodoEntry[] = [
       + 'unconditional with 316 unchecked when this was filed. This closes when the '
       + 'unchecked count is small AND the remainder are clauses no fixture can reach, named '
       + 'individually rather than counted.',
+    progress:
+      'STAGES 1 AND 2 DONE, R171 (2026-08-25). The tally now prints a PARTITION, and the '
+      + 'partition overturns this entry\'s own plan. '
+      + '  augment    152 claims / 117 cards — needs a graft HOST (stage 4)   ·   0 observed '
+      + '  trigger    110 / 99 — needs a fixture firing the EVENT (stage 3)   ·  56 observed '
+      + '  activated   35 / 24 — needs somebody to PAY & ACTIVATE (stage 2)   ·  35 observed '
+      + '  condition   19 / 17 — needs a BOARD meeting the clause (stage 3)   ·   7 observed '
+      + '⚠ "ACTIVATED abilities are the cheap third" WAS WRONG — they are a cheap NINTH, 11% of '
+      + 'the heap. The [Augment] box is 48%. Re-order the remaining work: stage 4 unblocks '
+      + 'nearly half, stage 3 a third. Only 13 cards in the pool declare an activated ability of '
+      + 'their own; 29 have them only inside an [Augment] box, which is stage 4. '
+      + '⚠ "316 have NEVER been observed" was also wrong: attributed honestly, 80 already had '
+      + 'evidence. Stage 2 took it to 98/316. Do NOT quote the naive 157/316 — it counts a '
+      + "card's own body arriving as evidence for its activated ability, which is how Oracle of "
+      + 'the Flame scored on runs where nothing was activated at all. '
+      + 'Stage 2 found ZERO broken cards, and the null result is MEASURED: all 35 activated '
+      + 'promises deliver, guarded by three positive controls (>=12 cards actually activated, '
+      + 'three named among them, the evidence window provably closed). '
+      + 'Floors added so the numbers cannot fall because the extractor got weaker: augment>=140, '
+      + 'trigger>=100, activated>=30, condition>=15, gated>=300, gated-delivered>=90.',
     status: 'open',
   },
   {
@@ -2825,6 +2853,30 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'An inventory entry closes when its cards have a named test that reddens on the old '
       + 'behaviour. The inventory itself closes when §2 is empty.',
+    progress:
+      'ROUND 26 (2026-08-25) closed twelve rows. §2a SPELL-COPY (R164 — the biggest single '
+      + 'item). §2b SPAWN-COUNTERS and PLAY-VS-PUT-INTO-PLAY (R165), DOUBLING OVERSHOOTS, '
+      + 'ORIGON both halves, SURVIVE-DAMAGE, KEEP-THIS-TARGET (R166), DESPAWN ON RECALL (R167), '
+      + 'STATIC-VS-TRIGGER (R168), MODULE-LEVEL LATCH and MID-BATTLE FORMATION JOIN (R172). '
+      + '§2c: both erase copies routed through the choke point (R172) and both stack lookups '
+      + 'reversed (R166). §3 cleared — 18 comments, plus 147-comment-conformance so the shapes '
+      + 'cannot rot again. '
+      + 'STILL OPEN in §2a: HAND-ENTRY (⚠ the site count is wrong in BOTH the inventory and the '
+      + 'card comment — it is 18 sites across 11 files, not 14 and not ~9; a fix scoped to '
+      + 'either number leaves the primitive half-wired), PER-COLUMN FACE DAMAGE, RESPONSE WINDOW '
+      + 'MID-RESOLUTION, VARIABLE-COST ACTIVATED ABILITIES, REAPING AS A GENERAL HOOK, '
+      + 'MOVE-A-MOD, ROT/DEBT REMOVAL, FORMATION AS A TARGET. In §2b: PREDICTION CAP, '
+      + 'UNTIL-REGROUP PLAY WINDOW, MULTIPLAYER ATTRIBUTION. '
+      + 'THREE OF THOSE ARE NOW UNBLOCKED BY OWNER RULINGS (2026-08-25): "target formation" is '
+      + 'the WHOLE SIDE, so the count is right and only the TargetRef arm is missing; a mod that '
+      + 'moves takes everything with it INCLUDING {Unstable} ("Unstable is just an attribute '
+      + 'granted to all entities that are modded. Of course it moves with the mods.") — check '
+      + 'whether the derivation is computed or stored before building E.moveMod; and a counter '
+      + 'REMOVAL is NOT scaled by the amount layer ("Resonater says put on so this question is '
+      + 'irrelevant"), which settles the open question in ROT/DEBT REMOVAL. '
+      + 'Read docs/09-divergence-inventory.md — its header block now carries the corrections '
+      + 'this round cost, including that SPELL-COPY\'s consequence list was BACKWARDS and that '
+      + '§3 was wrong about Counter Theif in a way that would have destroyed a real fact.',
     status: 'open',
   },
 
@@ -2980,6 +3032,181 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A `fixed` entry whose report describes a visible symptom, cited only to a guard that '
       + 'builds its own fixture, fails a named test.',
+    status: 'open',
+  },
+
+  // ── filed 2026-08-25 (round 26), from agents' closing "report any real
+  // defect that is out of scope for you". That line remains the highest-yield
+  // input in the loop: nine of this round's fourteen findings came from it.
+  {
+    id: 57,
+    area: 'card',
+    severity: 'major',
+    cards: ['Earthbound Replicator', 'Maelstrom Charger'],
+    title: 'Two RAQ-settled facts about the copy cards that R164 did not reach',
+    detail:
+      'R164 made a spell copy a real StackItem. Two things the designer RAQ states plainly are '
+      + 'still wrong, and both are now easier to fix than before. '
+      + '(a) **Earthbound Replicator checks "targeting me" at RESOLUTION, not at event time.** '
+      + 'Its `when` does not test targeting at all — it fires on every nontoken spellPlayed and '
+      + "reads the item's CURRENT targets in `run`. So a Divine Intervention or Gravitational "
+      + 'Correction retarget resolving in between WRONGLY PRODUCES A COPY, and retargeting away '
+      + 'wrongly cancels one that was owed. '
+      + '(b) **Maelstrom Charger is built as an ordinary triggered ability**, so it reaches the '
+      + 'stack, can be negated BEFORE the copy is ever made, and R121\'s pay-to-trigger gate '
+      + '(Crevice Lurker) can tax it.',
+    evidence:
+      'Both from `[Solved]` threads in `rulings/exports/`, quoted verbatim and verified in place '
+      + 'by the orchestrator: *"He must be targeted while playing the spell. If the spell is '
+      + 'played and target is changed later to him (through Gravitational Correction or '
+      + 'Enigmatic Warder mod), you don\'t get a copy"* — and *"Maelstrom Ability is neither '
+      + 'Triggered nor Activated, so Crevice Lurker doesn\'t affect it"*, *"Meal copying is not '
+      + 'an effect on the stack so enemy cannot interact with it. Opponent can only interact '
+      + 'with copy of a spell effect."* '
+      + '(a) was found by the R166 agent while working on Origon; (b) by the R164 agent as it '
+      + 'landed the copy primitive.',
+    fix:
+      '(a) is small: move the `targetsMe` test into `when` (R1), so the question is asked at the '
+      + 'moment the spell is played. (b) needs a seam that does not exist — a cost-shaped, '
+      + 'non-stack, as-you-play decision. The RAQ says it works "kinda like cost (but is still '
+      + 'optional due to *may*)". Do (a) first; it is a live wrong answer, and (b) is a shape '
+      + 'question worth its own design pass.',
+    proof: null,
+    verify:
+      'Play a spell targeting something else, retarget it onto Earthbound Replicator with '
+      + 'Gravitational Correction, let it resolve: no copy. And a negate aimed at Maelstrom '
+      + "Charger's ability finds nothing on the stack to hit.",
+    status: 'open',
+  },
+  {
+    id: 58,
+    area: 'engine',
+    severity: 'minor',
+    cards: ['Earthbound Replicator'],
+    title: 'A third bottom-up `.find()` on the stack survives R166',
+    detail:
+      'R166 fixed Origon and Hexbane Shiitake, which located a spell on the stack with '
+      + '`.find()` — a BOTTOM-UP scan, so with two same-card same-seat items they acted on the '
+      + 'older one. Earthbound Replicator (`batch-hybrids-wm-a.ts`) still does it. R164 made the '
+      + 'case commoner rather than rarer: a copy and its original are two items with the same '
+      + 'card and the same controller by construction.',
+    evidence:
+      'Reported by the R166 agent, which fixed the two sites it owned and could not touch the '
+      + 'third. R164 had already added `!i.copy` to that lookup but not the reverse scan. The '
+      + 'correct precedent is in the repo: `[...g.s.stack].reverse().find(...)`. '
+      + '⚠ NOT `g.s.stack.reverse()` — that reverses in place.',
+    fix:
+      'One line, plus a test with two genuine same-card spells on the stack (not a copy — R164 '
+      + "already excludes those, so a copy fixture cannot prove the ordering).",
+    proof: null,
+    verify: 'With two copies of one card on the stack from the same seat, the card acts on the TOP one.',
+    status: 'open',
+  },
+  {
+    id: 59,
+    area: 'coverage',
+    severity: 'major',
+    title: 'The server typechecks nothing, and two of its errors look real',
+    detail:
+      '`digital-client/server/` has NO `tsconfig.json`, so nothing typechecks it — `npm run '
+      + 'check` covers engine and backlog only. `rooms.ts` carries at least 7 pre-existing type '
+      + "errors, including two `Object is possibly 'undefined'` at lines 958 and 1084 that read "
+      + 'like real defects rather than strictness noise.',
+    evidence:
+      'Found by the R169 agent while working in replay-room.ts. Related symptom from the same '
+      + 'agent: `replay-room.ts` cannot import even a TYPE from `rooms.ts` without dragging `ws` '
+      + "and the whole socket layer into any project checking the analysis — the engine's tsc "
+      + 'went from clean to 7 errors — so it restates `Fork`/`LostAction` structurally instead, '
+      + 'which will silently rot on a rename.',
+    fix:
+      'Add `server/tsconfig.json`, fix what it finds, and wire it into `npm run check`. Then '
+      + 'give the on-disk shapes a shared `server/types.ts` so the analysis tools can import '
+      + 'them without importing the socket layer. '
+      + '⚠ Expect the two undefined accesses to be real; check them before relaxing anything.',
+    proof: null,
+    verify: '`npm run check` typechecks the server, and passes.',
+    status: 'open',
+  },
+  {
+    id: 60,
+    area: 'coverage',
+    severity: 'minor',
+    title: 'Dead helpers in card files survive because tsconfig has no noUnusedLocals',
+    detail:
+      'Four zero-call-site helpers were found in `src/cards/sets/`: `batch-light-a::payLife` and '
+      + '`batch-dark-c::formationSlot` (both deleted by R174), plus `batch-metal-a::tokensInRegion` '
+      + 'and `helpers.ts::lifeGainedIn`, which the R174 agent did not own. `payLife` additionally '
+      + 'carried a doc comment asserting a behaviour ("pay n life as a COST at resolution") that '
+      + 'all three life-cost cards had moved away from — so a dead function was also the file\'s '
+      + 'most confident wrong statement about how those cards work.',
+    evidence:
+      '`tsconfig` has `strict` but no `noUnusedLocals`, which is why they survived. Found by a '
+      + 'zero-call-site scan the R174 agent generalised from the one dead helper it was told '
+      + 'about — a good illustration of "if the worklist names one, sweep for the class".',
+    fix:
+      'Delete the two remaining helpers, then turn on `noUnusedLocals` so the class cannot come '
+      + 'back. `147-comment-conformance.test.ts` already guards it from the test side; the '
+      + 'compiler flag is the cheaper enforcement. Expect the flag to surface others.',
+    proof: null,
+    verify: '`npx tsc --noEmit` with noUnusedLocals is clean.',
+    status: 'open',
+  },
+  {
+    id: 61,
+    area: 'coverage',
+    severity: 'major',
+    title: '65-effect-conformance is a knife edge that any behaviour change trips',
+    detail:
+      'The R166 agent had to edit three card files it did not own — Adversary of the Deep, '
+      + 'Aethercap Siphoner, Flux Constructor — because its behaviour changes moved '
+      + "`65-effect-conformance`'s 140-game FUZZ DRIVE onto three pre-existing bare `return`s "
+      + 'that nothing had reached before. It reported: **"this will recur every round".** It is '
+      + 'right, and it already recurred once — Earthbound Replicator\'s own comment records the '
+      + 'same thing happening under R84.',
+    evidence:
+      'The assertion is correct and worth keeping (a silent `return` is the single most '
+      + 'productive bug shape this repo has found). The problem is the DRIVE: which branches a '
+      + 'fuzz reaches is a function of unrelated behaviour, so the test fails in files the '
+      + 'change never touched, and the fix is always "add a g.ev(\'info\') to a card you do not '
+      + 'own" — which is how an agent ends up editing outside its file set, twice in one round.',
+    fix:
+      'Two candidates, and the choice is the ticket. (1) Replace the fuzz drive with a '
+      + 'deterministic pass over every effect branch, so reach stops depending on unrelated '
+      + 'behaviour — the same argument that made 81-card-drill walk every card instead of '
+      + 'sampling. (2) Or keep the fuzz and pre-emptively sweep every bare `return` in the card '
+      + 'files NOW, so there is nothing left for a future change to uncover. '
+      + '(2) is cheaper today and (1) is the actual fix.',
+    proof: null,
+    verify:
+      'A behaviour change in one card file does not redden 65-effect-conformance in another.',
+    status: 'open',
+  },
+  {
+    id: 62,
+    // 'engine' rather than a new 'rules' area: what is wrong here is an ENGINE
+    // DEFAULT that nobody ever decided, which is exactly the shape this area
+    // describes. The ruling is the fix, not a separate kind of work.
+    area: 'engine',
+    severity: 'major',
+    title: 'A blocked column whose blockers have all left deals no damage — engine default, never ruled',
+    detail:
+      'If every blocker on a column is removed mid-combat, the attacking column still connects '
+      + 'with nothing: *"Column 1 is blocked (blockers gone) — no damage through."* Reachable '
+      + "today by Download's mid-battle steal, and by every other mid-combat removal.",
+    evidence:
+      'Found by the R172 agent while pinning Download. It is plausibly the correct reading of '
+      + "R72's after-blocks lock — but **nothing in `docs/digital-rules.md` or the Manual says "
+      + 'so**, whereas the Manual IS explicit about the mirror case (a blocker whose attackers '
+      + 'all died "stays, but has nothing to deal damage to"). So one direction is ruled and the '
+      + 'other is an accident of implementation.',
+    fix:
+      'ASK THE OWNER. Given the standing steer — take the permissive reading, more things happen '
+      + '— "the column connects" is at least as defensible and makes every mid-combat removal '
+      + 'considerably stronger. The current behaviour is pinned in `145-erase-routes.test.ts` '
+      + 'test (viii) with a comment saying explicitly that it is the pre-existing rule and not '
+      + "R172's doing, so flipping it later touches one assertion.",
+    proof: null,
+    verify: 'The answer is written down as a ruling, whichever way it goes.',
     status: 'open',
   },
 ];

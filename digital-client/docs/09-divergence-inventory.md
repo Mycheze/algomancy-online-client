@@ -5,6 +5,65 @@
 27 answers (**R157**). This file is the durable record; the sweep itself is
 gone.
 
+> ## ⚠ ROUND 26 (2026-08-25) WORKED THIS FILE. Read this block first.
+>
+> **§1 has a real number now.** The 316 gated promises were partitioned by WHAT
+> WOULD HAVE TO HAPPEN before they are owed, and the drill learned to activate
+> (R171). The suggested attack below was WRONG about where the mass is —
+> activated abilities are **35 of 316 (11%)**, a cheap ninth and not "the cheap
+> third". The `[Augment]` box is **152 (48%)**. Re-order the next round
+> accordingly: stage 4 unblocks nearly half the heap, stage 3 a third.
+>
+> | gate | claims | cards | needs | observed |
+> |---|---:|---:|---|---:|
+> | `augment` | 152 | 117 | a graft HOST | 0 |
+> | `trigger` | 110 | 99 | a fixture firing the EVENT | 56 |
+> | `activated` | 35 | 24 | somebody to PAY & ACTIVATE | **35** |
+> | `condition` | 19 | 17 | a BOARD meeting the clause | 7 |
+>
+> **"316 have never been observed" was itself wrong**: attributed honestly, 80
+> already had evidence. Stage 2 took it to **98/316**. The number to NOT quote
+> is the naive 157/316 — it is inflated by counting a card's own body arriving
+> as evidence for its activated ability.
+>
+> **§2 CLOSED, with rulings:** SPELL-COPY (R164) · SPAWN-COUNTERS (R165) ·
+> PLAY-VS-PUT-INTO-PLAY (R165) · DOUBLING OVERSHOOTS (R166) · ORIGON, both
+> halves (R166) · SURVIVE-DAMAGE (R166) · KEEP-THIS-TARGET (R166) ·
+> DESPAWN ON RECALL (R167) · STATIC-VS-TRIGGER (R168) · MODULE-LEVEL LATCH
+> (R172) · MID-BATTLE FORMATION JOIN (R172, ruled) · both §2c erase copies and
+> both §2c stack lookups (R172/R166).
+>
+> **§3 CLEARED** — 18 comments, plus a guard (`147-comment-conformance`) so the
+> shapes cannot rot again. **§3 was WRONG about Counter Theif** — see below.
+>
+> **Corrections this file needs to carry** (each cost real work to find):
+> - **DESPAWN ON RECALL named 7 cards; it is 6.** Tempest Oracle was never
+>   affected — its "When I despawn" is in `abilities` with no `[Augment]`
+>   marker, so it rides `fireEvent`'s `dyingUnit` unshift. Pinned as a control.
+> - **SPELL-COPY's consequence list was BACKWARDS.** Two `[Solved]` designer RAQ
+>   threads (verified verbatim in `rulings/exports/`) say *"he won't make 2nd
+>   copy, since 1st copy wasn't 'played'. Sorry. No infinite loop there."* The
+>   eight cards listed as "missing it" all print "play"/"played" and correctly
+>   miss a copy. `eraseSelf: () => {}` was CORRECT, not a defect.
+> - **§2c said three erase copies; there are two.** Celestial Purge always
+>   *called* the helper.
+> - **§3 said "Nothing is misspelled" about Counter Theif. It is wrong.** The
+>   PHYSICAL card prints "Theif"; our data was corrected at the owner's
+>   instruction on 2026-08-24 and `registerAlias` keeps the printed spelling
+>   resolving. Writing §3's line into the file would have destroyed a real fact.
+> - **Burgeon's overshoot needs NO combo**: Rampart Guardian is a printed
+>   `{Tough}` 0/4 and a legal target. A Burgeoned one read 24 where the card
+>   promises 16.
+>
+> **New owner rulings**, recorded in `digital-rules.md`: "target formation" is
+> the WHOLE SIDE · a token stolen mid-battle SITS OUT UNTIL REGROUP (today's
+> behaviour, now deliberate and pinned) · a mod that moves takes everything
+> with it including `{Unstable}` (*"Unstable is just an attribute granted to
+> all entities that are modded. Of course it moves with the mods."*) · a
+> counter REMOVAL is not scaled by the amount layer (*"Resonater says 'put on'
+> so this question is irrelevant"* — the scope of a layer is read off the
+> printed text of the card that DEFINES it).
+
 **Status key:** `DONE` fixed and guarded · `OPEN` real, unfixed · `STALE` a code
 comment that outlived its cause · `RULED-OK` the engine is right and an answer
 says so.
@@ -154,5 +213,5 @@ everywhere instead of three extractor overrides.
 ## 5. Still needing an owner answer
 
 - **R157 §23's second half.** The multiplier formula is `v × 2 × n`, but how a multiplier composes with an ADDITIVE amount mod was never answered. Implemented as multiplier-AFTER-additive, marked unruled, pinned by a test in `137-multiplier-and-mode.test.ts` so a future ruling changes two lines and one test. ⚠ The formula is also LINEAR in n — three Arbiters give 6×, where a purely multiplicative reading gives 8×. Worth confirming.
-- **"Formation" for Galactic Germination** — the whole grid side, or the target's column?
+- ~~**"Formation" for Galactic Germination**~~ — **ANSWERED 2026-08-25: the WHOLE SIDE.** So the engine's proxy gives the right count; what is still missing is a real `TargetRef` formation arm, so "target formation" can be targeted, redirected and read as a formation by anything else.
 - **Interdiction Rift's type line** (above).
