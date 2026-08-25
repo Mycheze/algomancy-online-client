@@ -19,11 +19,13 @@
  * halo's wiring.
  *
  * ui/main.ts is a boot script — it takes the document, the socket and the URL
- * on the way in, so it cannot be imported here. Everything with a judgement in
- * it has been pulled out into ui/inspect.ts and ui/anim.ts and is tested
- * directly; what is left in main.ts is the wiring between those answers and
- * the DOM, and that gets read as text at the bottom of this file (see the
- * comment there). ui/style.css gets the same treatment for the two fixes that
+ * on the way in. Everything with a judgement in it has been pulled out into
+ * ui/inspect.ts and ui/anim.ts and is tested directly; the wiring between those
+ * answers and the DOM is read as text at the bottom of this file (see the
+ * comment there), EXCEPT [59] itself, which is now driven — test/ui-driver.ts
+ * gives main.ts the browser it is asking for, so the report can be asserted as
+ * what the player sees rather than as the order of three lines inside
+ * renderNow. ui/style.css gets the text treatment too, for the two fixes that
  * are literally CSS arithmetic.
  *
  * Seeds 6000-6099.
@@ -40,9 +42,13 @@ import {
 import type { AutoPassArm, SendLatch } from '../ui/inspect.ts';
 import { arrowGeometry, HEAD_INSET } from '../ui/anim.ts';
 import { give, giveResources, spawn, toDeployment, toNextBattle } from './util.ts';
+import { client } from './ui-driver.ts';
 import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
 
 /* ── [59] the automatic pass: one decision, made before the paint ──────── */
+
+/** the real client, driven — see test/ui-driver.ts */
+const ui = await client();
 
 /** a battle-ish state with `stack` on it and priority to seat 0 */
 function stacked(kinds: { kind: string; sourceId?: EntityId }[]): GameState {
@@ -395,17 +401,85 @@ function fn(name: string): string {
   return MAIN.slice(at, end === -1 ? MAIN.length : end);
 }
 
-test('[59] renderNow decides about auto-passing BEFORE it writes the markup', () => {
-  // the "one frame of priority" was never a frame: the send is a ws.send, so
-  // the bar claiming priority stayed up for a whole server round trip. The
-  // decision has to be made before $app.innerHTML, and the send after it.
-  const body = fn('renderNow');
-  const decide = body.indexOf('planAutoPass()');
-  const paint = body.indexOf('$app.innerHTML');
-  const send = body.indexOf('runAutoPass(');
-  assert.ok(decide > -1 && paint > -1 && send > -1, 'all three steps are present');
-  assert.ok(decide < paint, 'the plan is made before the board is painted');
-  assert.ok(paint < send, 'and the intent goes out after it, never before');
+/* [59] "I see a flash of the top of the screen that looks like it's giving me
+ * prio for like 1 frame AND I see a 'You do not have priority' note."
+ *
+ * This used to be asserted as SOURCE ORDER inside renderNow — three
+ * `indexOf`s and two `<` comparisons. Source order is not execution order:
+ * wrapping `planAutoPass()` in `if (false)` keeps every one of those
+ * comparisons true, and hoisting the decision into a helper makes them
+ * falsely red. Neither of those is what the report is about.
+ *
+ * What the report is about is what the player SEES, so that is what these
+ * assert now, by driving the real client (test/ui-driver.ts): on a window
+ * that is going to be given away automatically, the board must never paint
+ * the claim that the window is yours — and the pass must actually go out. */
+
+/** a real priority window, with the seat that holds it */
+function priorityWindow(seed: number): { h: Harness; seat: Seat } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'The Foretold');
+  spawn(h, D, 'The Foretold');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  for (let guard = 0; guard < 40 && h.state.priority === null; guard++) {
+    const dec = h.state.decision;
+    if (dec) h.do({ type: 'decide', seat: dec.seat, choice: 0 });
+    else break;
+  }
+  assert.notEqual(h.state.priority, null, 'the fixture really opened a priority window');
+  return { h, seat: h.state.priority! };
+}
+
+test('[59] a window that is being auto-passed is never painted as yours to spend', () => {
+  const { h, seat } = priorityWindow(6010);
+  const passOnly: Action[] = [{ type: 'passPriority', seat }];
+
+  // …with the preference OFF, this is an ordinary window: the board offers
+  // the button and sends nothing on its own.
+  ui.join(h.state, seat, passOnly);
+  const manual = ui.html();
+  assert.ok(ui.has({ btn: 'pass' }), 'the control case: a live window offers a Pass button');
+  assert.deepEqual(ui.actions(), [], 'and nothing has been sent for it');
+  assert.doesNotMatch(manual, /Auto-passing…/);
+
+  // …and with it ON, the very same window paints as already given away.
+  ui.click({ btn: 'autopasstoggle' });
+  ui.sent();
+  const auto = ui.join(h.state, seat, passOnly);
+  assert.match(auto, /Auto-passing…/,
+    'the bar has to say the window is being spent for you');
+  assert.ok(!ui.has({ btn: 'pass' }),
+    'the board painted "you have priority — Pass" over a window a pass was already scheduled for. '
+    + 'That is the flash in the report, and clicking that button is the second pass that came '
+    + 'back "you do not have priority".');
+});
+
+test('[59] …and the pass it painted really does go out, exactly once per state', () => {
+  const { h, seat } = priorityWindow(6011);
+  const passOnly: Action[] = [{ type: 'passPriority', seat }];
+  ui.join(h.state, seat, passOnly);
+  if (!/Auto-passing…/.test(ui.html())) ui.click({ btn: 'autopasstoggle' });
+  ui.join(h.state, seat, passOnly);
+  ui.sent();
+  assert.match(ui.html(), /Auto-passing…/, 'the fixture really armed the automatic pass');
+
+  // the send is held until the story on screen has finished telling itself —
+  // sendAutoPass books it rather than firing it, so this is where it goes out
+  ui.tick();
+  assert.deepEqual(ui.actions(), [{ type: 'passPriority', seat }],
+    'painting the window is not enough — the intent has to reach the wire, or the board sits '
+    + 'saying "Auto-passing…" for ever');
+
+  // the board is repainted many times per authoritative state (a hover, a
+  // beat waking the log, the chip disarming). One state, one pass.
+  ui.click({ btn: 'soundtoggle' });
+  ui.click({ btn: 'motiontoggle' });
+  ui.tick();
+  assert.deepEqual(ui.actions().filter(a => a.type === 'passPriority'), [],
+    'a repaint of the SAME state sent a second pass — the one the server refuses');
 });
 
 test('[59] the prompt bar checks the plan before it offers a Pass button', () => {

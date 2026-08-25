@@ -12,7 +12,8 @@
  * shipped in ui/main.ts with nothing at all asserting it:
  *  · "Sometimes the system wants you to block in a specific order. I was
  *    forced to do creature B as a blocker before creature A despite it being
- *    pointless" — dropIntoRow
+ *    pointless" — dropIntoRow, and (at the bottom of this file) the board that
+ *    calls it, driven through test/ui-driver.ts rather than read as source
  *
  * …and one owner request, BL-19 (2026-08-24), two words long:
  *  · "reset blocks" — hasBuild / clearBuild
@@ -24,6 +25,14 @@ import type { Build } from '../ui/formation.ts';
 import {
   clearBuild, dropIntoRow, halfRows, hasBuild, MAX_ROWS, publishCols, rekeyBuild,
 } from '../ui/formation.ts';
+import { Harness } from '../src/harness.ts';
+import { legalActions } from '../src/apply.ts';
+import { spawn, toDeployment, toNextBattle } from './util.ts';
+import { client, idsIn } from './ui-driver.ts';
+import type { EntityId, Seat } from '../src/types.ts';
+
+/** the real client, driven — see test/ui-driver.ts */
+const ui = await client();
 
 // ── publishCols ───────────────────────────────────────────────────────
 
@@ -292,23 +301,79 @@ test('dropIntoRow: the caller keeps its own column, and a wild row is clamped', 
   assert.deepEqual(dropIntoRow([5], -3, 7), [7, 5], 'and one before the start lands at the front');
 });
 
-test('the block builder in ui/main.ts really routes its drop through dropIntoRow', () => {
-  // main.ts takes the document at import time and cannot be loaded here, so
-  // the three lines between this function and the page are read as text (the
-  // house pattern — see 74-ui-stack-mod-host). Deleting any one of them puts
-  // the forced order back with every test above still green.
-  const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
-  assert.match(MAIN, /ui\.columns\[ci\] = dropIntoRow\(ui\.columns\[ci\] \?\? \[\], row, ui\.carrying\);/,
-    'the slot click must delegate the insert, not splice by hand');
-  assert.match(MAIN, /const row = Number\(t\.dataset\['row'\]\) \|\| 0;/,
-    'and it must read WHICH row was clicked — without this every drop is a front-row drop');
-  assert.match(MAIN, /data-act="slot" data-ci="\$\{ci\}" data-row="\$\{row\}"/,
-    'the slot has to carry its row');
-  const cols = MAIN.slice(MAIN.indexOf('function colSlotsHtml('));
-  const body = cols.slice(0, cols.indexOf('\n}\n'));
-  assert.match(body, /slotHtml\(ci, 0,/, 'the front row is always drawn…');
-  assert.match(body, /slotHtml\(ci, 1,/, '…and so is the back row, or there is nothing to click');
+/* ── and the same question asked of the real board ──────────────────────
+ *
+ * This used to be five `assert.match(MAIN, /…/)` reads of ui/main.ts, with
+ * the exact spacing of each line written into the pattern — "the slot click
+ * must delegate the insert", "it must read WHICH row was clicked". Every one
+ * of them asserted the SHAPE of a line rather than what the line does, so a
+ * reformat deleted the guard and a rewrite that kept the shape kept the guard
+ * while breaking the behaviour.
+ *
+ * ui/main.ts can be driven (test/ui-driver.ts), so the report — "I was forced
+ * to do creature B as a blocker before creature A despite it being pointless"
+ * — is now asserted by clicking blockers into rows and looking at where they
+ * stand. */
+
+/** the blockers standing under attacking column `ci`, FRONT row first */
+function blockersUnder(html: string, ci: number): number[] {
+  const col = html.split('<div class="col"')[ci + 1];
+  assert.ok(col, `the board is not showing an attacking column ${ci}`);
+  const bot = col.indexOf('bhalf bot');
+  assert.ok(bot >= 0, `column ${ci} has no defending half`);
+  return idsIn(col.slice(bot));
+}
+
+/** a block step: `attackers` in one column each, `defenders` free to block */
+function blockStep(seed: number, attackers: string[], defenders: string[]):
+{ h: Harness; D: Seat; def: EntityId[] } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = attackers.map(n => spawn(h, A, n));
+  const def = defenders.map(n => spawn(h, D, n));
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: atk.map(id => [id]) });
+  for (let guard = 0; guard < 40 && h.state.battle!.step !== 'blocks'; guard++) {
+    const dec = h.state.decision;
+    if (dec) h.do({ type: 'decide', seat: dec.seat, choice: dec.options.map((_, i) => i) });
+    else h.do({ type: 'passPriority', seat: h.state.priority! });
+  }
+  assert.equal(h.state.battle!.step, 'blocks', 'the block step is open');
+  return { h, D, def };
+}
+
+test('the block builder offers BOTH rows, so there is a choice to make at all', () => {
+  const { h, D } = blockStep(5501, ['The Foretold'], ['The Foretold']);
+  ui.join(h.state, D, legalActions(h.state, D));
+  assert.ok(ui.has({ act: 'slot', ci: '0', row: '0' }), 'the front row is a place you can click…');
+  assert.ok(ui.has({ act: 'slot', ci: '0', row: '1' }),
+    '…and so is the back row, or the order is decided for you — which is the report');
 });
+
+test('the row you click is the row you get — the second blocker stays behind the first', () => {
+  // THE REPORT (DEYK): the column used to offer one slot and just push, so the
+  // ORDER you clicked units in was the order they stood in.
+  const { h, D, def } = blockStep(5502, ['The Foretold'], ['The Foretold', 'The Foretold']);
+  ui.join(h.state, D, legalActions(h.state, D));
+  ui.click({ act: 'unit', id: String(def[0]!) });
+  ui.click({ act: 'slot', ci: '0', row: '0' });
+  ui.click({ act: 'unit', id: String(def[1]!) });
+  const board = ui.click({ act: 'slot', ci: '0', row: '1' });
+  assert.deepEqual(blockersUnder(board, 0), [def[0]!, def[1]!],
+    'clicking the BACK row put the blocker in front of the one already standing there — the row '
+    + 'that was clicked was thrown away and every drop became a front-row drop');
+});
+
+/* ⚠ dropIntoRow's OTHER half — dropping onto an occupied front row, which
+ * pushes the sitting unit back — has no click that reaches it: once a row is
+ * occupied the board draws the unit there instead of the slot, and clicking
+ * the unit takes it OUT of the column. So it is asserted directly against the
+ * function above ('dropIntoRow: dropping into an occupied FRONT row pushes the
+ * sitting unit back') and not from the board. Saying so rather than writing a
+ * board test that quietly asserts something else.
+ * (The front slot's tooltip promises that push, which no player can currently
+ * trigger — a wording question, not a bug.) */
 
 // ── hasBuild / clearBuild (BL-19: "reset blocks") ─────────────────────
 //

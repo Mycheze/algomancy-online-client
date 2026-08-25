@@ -66,8 +66,29 @@ export interface LedgerEntry {
   status: ReportStatus;
   /**
    * Test(s) that keep this fixed. Each is `file::substring-of-the-test-name`.
-   * The substring must appear in a `test('...')` title in that file. Required
-   * when status is 'fixed'; a `{todo:true}` test does not qualify.
+   *
+   * The substring must appear in a `test('...')` title in that file, and — as
+   * of 2026-08-25 — in EXACTLY ONE of them. Both halves were loopholes:
+   *
+   *  · it used to be enough to match an `assert.ok(…, 'message')` label, so a
+   *    guard could point at a sentence inside a test rather than at a test.
+   *  · a substring matching SEVERAL titles pinned none of them. `#43` cited
+   *    `50-ui-inspect.test.ts::X`, which matched twelve — every X-on-stack test
+   *    could have been deleted and this ledger would have stayed green.
+   *
+   * Where a report really is held down by a family of tests, list the family:
+   * one entry per test, each naming its own. Required when status is 'fixed';
+   * a `{todo:true}` test does not qualify.
+   *
+   * ⚠ AND THE PART NO TEST CAN CHECK. `70-playtest-ledger.test.ts` proves a
+   * guard EXISTS. It cannot prove the guard is about the report. Three entries
+   * were closed for months against tests that could not fail on the reported
+   * behaviour (#25's guards read only ui/style.css; #44's named the one
+   * Throwing Boulder test that was the POSITIVE case; #46's class guard was a
+   * replacement sweep that never looks at the card). The only thing that
+   * settles it is a MUTATION: break the reported behaviour on purpose and
+   * watch the named guard go red. If you have not done that, you do not know
+   * that you have a guard.
    */
   guards?: string[];
   /** required for every status except 'fixed' */
@@ -86,25 +107,30 @@ export const LEDGER: LedgerEntry[] = [
     id: 1, room: 'MNWK', date: '2026-08-19',
     report: "Mohruung didn't activate for some reason after being targeted",
     status: 'fixed',
-    guards: ['48-playtest-hotfix.test.ts::Mohruung', '17-earth-b.test.ts::Mohruung'],
+    guards: ['48-playtest-hotfix.test.ts::Mohruung has a live targeted trigger',
+      '48-playtest-hotfix.test.ts::a spell aimed at Mohruung actually creates the Crystal 2',
+      '17-earth-b.test.ts::Mohruung'],
   },
   {
     id: 2, room: 'MNWK', date: '2026-08-19',
     report: "I can't mod Brough from my bin to a unit for some reason",
     status: 'fixed',
-    guards: ['48-playtest-hotfix.test.ts::[Augment]'],
+    guards: ['48-playtest-hotfix.test.ts::every card printing a text-box [Augment] marker',
+      '48-playtest-hotfix.test.ts::merely mentions [Augment] in reminder text'],
   },
   {
     id: 3, room: 'MNWK', date: '2026-08-19',
     report: "Tranquility isn't making spells more expensive",
     status: 'fixed',
-    guards: ['49-playtest-round6.test.ts::Tranquility'],
+    guards: ['49-playtest-round6.test.ts::R59: Tranquility taxes spells [1] more during battle',
+      '49-playtest-round6.test.ts::R59: Tranquility is recognised as an augment'],
   },
   {
     id: 4, room: 'MNWK', date: '2026-08-19',
     report: "Flight doesn't make me pick two targets when casting it. It just has me pick an ally",
     status: 'fixed',
-    guards: ['49-playtest-round6.test.ts::Fight', '68-target-conformance.test.ts::target'],
+    guards: ['49-playtest-round6.test.ts::R58: Fight takes both units as CAST-time targets',
+      '68-target-conformance.test.ts::a card printing N targets declares N cast-time target slots'],
     note: 'There is no card called "Flight" — the card is FIGHT. Fixed in round 6 (R58).',
   },
   {
@@ -117,7 +143,8 @@ export const LEDGER: LedgerEntry[] = [
     id: 6, room: 'MNWK', date: '2026-08-19',
     report: "I'm unable to cast Divine Intervention at all",
     status: 'fixed',
-    guards: ['23-wood-a.test.ts::target effect', '39-light-b.test.ts::Divine Intervention',
+    guards: ['23-wood-a.test.ts::"target effect" reaches a TRIGGERED ability',
+      '39-light-b.test.ts::Divine Intervention: may change the targets of an effect on the stack',
       '39-light-b.test.ts::reaches a TRIGGER on the stack'],
     note: 'R60. CLOSED in round 17. The two original DI tests only ever aimed at a SPELL, so both '
       + 'would have survived a revert of the spec to `stackSpell` — the only thing actually '
@@ -130,14 +157,16 @@ export const LEDGER: LedgerEntry[] = [
     id: 7, room: 'MNWK', date: '2026-08-19',
     report: 'Burgeon resolving didn\'t give me the choice to double the power or defense. It just did nothing',
     status: 'fixed',
-    guards: ['23-wood-a.test.ts::Burgeon', '65-effect-conformance.test.ts::silence'],
+    guards: ['23-wood-a.test.ts::Burgeon: doubles the chosen stat of target unit until regroup',
+      '23-wood-a.test.ts::Burgeon: doubling a 0 says so instead of resolving into silence',
+      '65-effect-conformance.test.ts::silence'],
   },
   {
     id: 8, room: 'MNWK', date: '2026-08-19',
     report: 'I was able to Prophecy Air Plant without having any Wood resources. I just wanted to '
       + 'click the card to see what would happen and it just immediately went to the Cache zone',
     status: 'fixed',
-    guards: ['36-cache-prophecy.test.ts::banner',
+    guards: ['36-cache-prophecy.test.ts::with less than the banner mana the prophecy is refused',
       '70-playtest-round15.test.ts::only option is prophesy opens a menu'],
     note: 'The COST half was always correct: R42 says the banner costs plain mana with no '
       + 'affinity, so no Wood was needed. The CLICK half was the real bug — offer() auto-fired '
@@ -167,7 +196,7 @@ export const LEDGER: LedgerEntry[] = [
     status: 'fixed',
     guards: ['53-playtest-round7.test.ts::R84 UFAB',
       '53-playtest-round7.test.ts::the minimal form',
-      '75-ui-reachability.test.ts::declining is illegal here'],
+      '75-ui-reachability.test.ts::R84: the client names the compulsory block'],
     note: 'THE RECURRENCE THAT MOTIVATED THIS LEDGER, and it took two fixes. Round 7 built an '
       + 'engine rule and tested it hard, but every scenario attacked with ONLY Alluring columns, '
       + 'so the mixed-attack shape — where a blocker can be dumped on a plain column — was never '
@@ -181,27 +210,31 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Eldritch Dreamtender needs to be sacrificed for its ability to go on the stack, but '
       + "it's still visually in play while resolving its trigger",
     status: 'fixed',
-    guards: ['26-metal-a.test.ts::sacrifice', '32-cast-costs.test.ts::sacrifice'],
+    guards: ['26-metal-a.test.ts::Eldritch Dreamtender: the sacrifice is paid on the way to the stack',
+      '32-cast-costs.test.ts::Immolate: the sacrifice is chosen and paid AT CAST'],
   },
   {
     id: 12, room: 'BRDM', date: '2026-08-20',
     report: 'Body Swap puts into the log that the units get -X/+X for the swap. It\'s supposed to '
       + 'just be a pure swap of numbers',
     status: 'fixed',
-    guards: ['53-playtest-round7.test.ts::Body Swap', '59-base-stats.test.ts::base'],
+    guards: ['53-playtest-round7.test.ts::Body Swap exchanges bases, and says so in the log',
+      '59-base-stats.test.ts::the text box says "is base 3/3", not a +0/+0 projection'],
   },
   {
     id: 13, room: 'BRDM', date: '2026-08-20',
     report: 'Formless is broken — it should have set Manablub to a 4/4. Stats need to be able to '
       + 'be set without using + or -',
     status: 'fixed',
-    guards: ['53-playtest-round7.test.ts::Formless', '59-base-stats.test.ts::base'],
+    guards: ['53-playtest-round7.test.ts::Formless SETS the base',
+      '59-base-stats.test.ts::Statweaver REPLACES the base'],
   },
   {
     id: 14, room: 'BRDM', date: '2026-08-20',
     report: "Necromorph doesn't have me select two targets on cast",
     status: 'fixed',
-    guards: ['43-dark-c.test.ts::Necromorph', '68-target-conformance.test.ts::target'],
+    guards: ['43-dark-c.test.ts::Necromorph',
+      '68-target-conformance.test.ts::a card printing N targets declares N cast-time target slots'],
   },
   {
     id: 15, room: 'BRDM', date: '2026-08-20',
@@ -226,7 +259,9 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Sometimes the system wants you to block in a specific order. I was forced to do '
       + 'creature B as a blocker before creature A despite it being pointless',
     status: 'fixed',
-    guards: ['55-ui-formation.test.ts::dropIntoRow', '55-ui-formation.test.ts::block builder in ui/main.ts',
+    guards: ['55-ui-formation.test.ts::dropIntoRow: the row you click is the row you get',
+      '55-ui-formation.test.ts::the block builder offers BOTH rows',
+      '55-ui-formation.test.ts::the second blocker stays behind the first',
       '75-ui-reachability.test.ts::affordance for every offered shape'],
     note: 'The insert itself is now ui/formation.ts dropIntoRow — both rows always drawn, and '
       + 'dropping into an occupied FRONT row pushes the sitting unit back rather than refusing. '
@@ -250,14 +285,16 @@ export const LEDGER: LedgerEntry[] = [
     report: 'When a decision is pending for the other player, I get the window for priority and it '
       + "asks me to pass but I can't, since it's not actually my priority",
     status: 'fixed',
-    guards: ['53-playtest-round7.test.ts::pending', '50-ui-inspect.test.ts::waiting'],
+    guards: ['53-playtest-round7.test.ts::a seat with a decision pending against the OTHER seat',
+      '50-ui-inspect.test.ts::waiting'],
   },
   {
     id: 19, room: 'BRDM', date: '2026-08-20',
     report: 'When a column becomes empty during combat, the columns to the right should '
       + 'immediately collapse and fill the gap',
     status: 'by-design',
-    guards: ['64-formation-collapse.test.ts::collapse', '64-formation-collapse.test.ts::blocks'],
+    guards: ['64-formation-collapse.test.ts::a middle column emptied before blocks collapses',
+      '64-formation-collapse.test.ts::after blocks are declared, an emptied column stays as a HOLE'],
     note: 'DIVERGES FROM THE REPORT ON PURPOSE. R72: vertical gravity is untimed, but horizontal '
       + 'collapse only runs BEFORE blocks are declared, citing Manual p.22 — "This only happens '
       + 'before blocks are declared. After blocks, columns will not move to fill gaps." Tested '
@@ -270,7 +307,8 @@ export const LEDGER: LedgerEntry[] = [
     id: 20, room: 'DEYK', date: '2026-08-20',
     report: 'Pure units should be able to block evasive or flying units',
     status: 'fixed',
-    guards: ['40-light-c.test.ts::Pure'],
+    guards: ['40-light-c.test.ts::{Pure} blocks a Flying column, and only it can',
+      '40-light-c.test.ts::{Pure} blocks an Evasive column alone'],
   },
   {
     id: 21, room: 'DEYK', date: '2026-08-20',
@@ -291,7 +329,7 @@ export const LEDGER: LedgerEntry[] = [
     id: 23, room: 'DEYK', date: '2026-08-20',
     report: "I'm not able to cast Hush Mush, though I have priority and there's an effect I want to negate",
     status: 'fixed',
-    guards: ['23-wood-a.test.ts::Hush Mush'],
+    guards: ['23-wood-a.test.ts::Hush Mush: negates target effect'],
   },
 
   // ── ZQPC, 2026-08-20 ────────────────────────────────────────────────────
@@ -332,10 +370,20 @@ export const LEDGER: LedgerEntry[] = [
     report: 'The spell tokens shouldn\'t get smushed in with the units. They should have their own '
       + 'spot, over by the bin',
     status: 'fixed',
-    guards: ['70-playtest-round15.test.ts::floor still fits two cards abreast',
-      '70-playtest-round15.test.ts::.zone still wraps'],
+    guards: ['132-token-separation.test.ts::the formation zone holds units and only units',
+      '132-token-separation.test.ts::the spell tokens get their own container',
+      '132-token-separation.test.ts::that container sits beside the bin',
+      '132-token-separation.test.ts::an invader',
+      '70-playtest-round15.test.ts::floor still fits two cards abreast'],
     note: 'The strip existed but was a fixed 118px against 108px for two cards — one per row by '
-      + 'arithmetic. Now fluid with a cap. Reported twice; the follow-up was id 61.',
+      + 'arithmetic. Now fluid with a cap. Reported twice; the follow-up was id 61. '
+      + '⚠ 2026-08-25: for three rounds this entry was closed against the two [61] CSS guards '
+      + 'and nothing else. Both read ui/style.css only — they measure the strip\'s flex '
+      + 'arithmetic, so they answer "does the box wrap two cards abreast", never "is there a '
+      + 'box at all". Deleting the separation entirely (putting the tokens straight back among '
+      + 'the units) left both of them green; verified by mutation. 132-token-separation drives '
+      + 'the real client and reads the markup it produces, and four of its five tests go red on '
+      + 'that same mutation.',
   },
   {
     id: 26, room: 'ZQPC', date: '2026-08-20',
@@ -385,14 +433,16 @@ export const LEDGER: LedgerEntry[] = [
     id: 31, room: 'PEMC', date: '2026-08-21',
     report: "I don't think there's currently a way to view erased cards",
     status: 'fixed',
-    guards: ['58-playtest-round9.test.ts::erased', '50-ui-inspect.test.ts::erased',
+    guards: ['58-playtest-round9.test.ts::R65: erased cards are kept in a public pile',
+      '50-ui-inspect.test.ts::erased',
       '70-playtest-round15.test.ts::board menu offers BOTH erased piles'],
   },
   {
     id: 32, room: 'PEMC', date: '2026-08-21',
     report: "Download didn't have me target anything",
     status: 'fixed',
-    guards: ['58-playtest-round9.test.ts::Download', '68-target-conformance.test.ts::target'],
+    guards: ['58-playtest-round9.test.ts::Download',
+      '68-target-conformance.test.ts::a card printing "target" at all declares a target somewhere'],
   },
   {
     id: 33, room: 'PEMC', date: '2026-08-21',
@@ -421,7 +471,8 @@ export const LEDGER: LedgerEntry[] = [
     id: 36, room: 'UZRG', date: '2026-08-21',
     report: "Primordial Coalescence isn't showing the Tokens it creates in the details page",
     status: 'fixed',
-    guards: ['50-ui-inspect.test.ts::Primordial Coalescence', '65-effect-conformance.test.ts::creates'],
+    guards: ['50-ui-inspect.test.ts::Primordial Coalescence',
+      '65-effect-conformance.test.ts::every token an effect creates is declared in EffectDef.creates'],
   },
   {
     id: 37, room: 'UZRG', date: '2026-08-21',
@@ -444,7 +495,8 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Tokens aren\'t technically erased when they leave play — they should go to another '
       + 'zone and cease to exist when state based actions are checked',
     status: 'fixed',
-    guards: ['35-rot-debt-trash.test.ts::erase', '37-attrs-wight.test.ts::Unstable'],
+    guards: ['35-rot-debt-trash.test.ts::a TOKEN dying enters the bin, IS trashed, and is then erased',
+      '37-attrs-wight.test.ts::Unstable'],
   },
   {
     id: 40, room: 'UZRG', date: '2026-08-21',
@@ -461,13 +513,13 @@ export const LEDGER: LedgerEntry[] = [
     id: 41, room: 'UZRG', date: '2026-08-21',
     report: 'Is negate supposed to remove effects from the stack? Not just grey them out',
     status: 'fixed',
-    guards: ['61-negation.test.ts::negate'],
+    guards: ['61-negation.test.ts::a mass negate empties the stack of its victims AT ONCE'],
   },
   {
     id: 42, room: 'UZRG', date: '2026-08-21',
     report: "Necromantic Rebuke didn't properly negate my effect",
     status: 'fixed',
-    guards: ['42-dark-b.test.ts::X = 0'],
+    guards: ['42-dark-b.test.ts::Necromantic Rebuke: stopping at X = 0 is offered WITH a warning'],
     note: 'Behaviour was correct as printed — X=0 makes the ransom trivially met. Owner ruled '
       + '(R74) that this warrants a warning, not a prohibition; the warning is what was added.',
   },
@@ -475,7 +527,8 @@ export const LEDGER: LedgerEntry[] = [
     id: 43, room: 'UZRG', date: '2026-08-21',
     report: "It's not possible to see the X value for an effect while it's on the stack",
     status: 'fixed',
-    guards: ['50-ui-inspect.test.ts::X'],
+    guards: ['50-ui-inspect.test.ts::stackItemX keeps the two X',
+      '50-ui-inspect.test.ts::the stack card', '50-ui-inspect.test.ts::a spent part'],
   },
 
   // ── XCYX / VEAV, 2026-08-22 (rounds 14-15) ──────────────────────────────
@@ -484,7 +537,10 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Throwing Boulder was allowed to be activated without having adjacent allies, and '
       + 'sacrificing him should have been a cost to even put the ability on the stack',
     status: 'fixed',
-    guards: ['18-earth-c.test.ts::Throwing Boulder'],
+    guards: ['18-earth-c.test.ts::R77: Throwing Boulder with an adjacent ally',
+      '18-earth-c.test.ts::R77: with NO adjacent ally',
+      '18-earth-c.test.ts::R77: an ALLY is required',
+      '18-earth-c.test.ts::R77: out of formation'],
     note: 'R77: a printed precondition is a GATE checked before anything is paid; a self-sacrifice '
       + 'is a COST. Ordering is load-bearing — the gate is checked first so the cost cannot '
       + 'invalidate its own condition.',
@@ -493,13 +549,27 @@ export const LEDGER: LedgerEntry[] = [
     id: 45, room: 'VEAV', date: '2026-08-22',
     report: "Awoken Tomb's trigger, while on the stack, doesn't say what X is equal to",
     status: 'fixed',
-    guards: ['50-ui-inspect.test.ts::event'],
+    guards: ["50-ui-inspect.test.ts::a triggered ability's X is the amount its event carried"],
   },
   {
     id: 46, room: 'VEAV', date: '2026-08-22',
     report: 'The "I get -2/-2" isn\'t a trigger that should go on the stack. It\'s a static effect',
     status: 'fixed',
-    guards: ['18-earth-c.test.ts::Bulborb'],
+    guards: ['18-earth-c.test.ts::Tenebrous Bulborb: played normally',
+      '18-earth-c.test.ts::Tenebrous Bulborb: augmenting a host gives THE HOST -2/-2',
+      '18-earth-c.test.ts::Tenebrous Bulborb: two of them on one host stack to -4/-4'],
+    note: '⚠ THE CLASS GUARD FOR THIS REPORT DOES NOT EXIST, and the ledger should stop '
+      + 'looking as though it does. #75\'s own note says the right thing — "this was reported '
+      + 'three times (#46 as one card, then #60 and #75 as a class) and a one-card fix is what '
+      + 'makes a class of bug recur" — but the sweep those two cite, '
+      + '88-replacement-conformance, is a REPLACEMENT sweep: it classifies cards printing '
+      + '"would … instead". Tenebrous Bulborb prints "[Augment] I gain -2/-2", which contains '
+      + 'neither word, so that sweep cannot fail on this card no matter how the -2/-2 is built. '
+      + 'Citing it here would be a guard that can never go red — the exact trap this ledger '
+      + 'exists to catch. The missing half of R104 is a STATICS conformance sweep of 88\'s '
+      + 'shape (~41 cards print continuous-shaped text: "as long as", "while", "for each", '
+      + '"your units", "all units"); until somebody writes it, the three guards above are '
+      + 'honest about being one card.',
   },
   {
     id: 47, room: 'VEAV', date: '2026-08-22',
@@ -513,7 +583,8 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Squish, on cast, only has you select 1 target unit, but it needs 2. This is a '
       + 'recurring issue — do a full text search for anything that has 2 targets',
     status: 'fixed',
-    guards: ['18-earth-c.test.ts::Squish', '68-target-conformance.test.ts::target'],
+    guards: ['18-earth-c.test.ts::Squish',
+      '68-target-conformance.test.ts::a card printing N targets declares N cast-time target slots'],
     note: 'The owner asked for a sweep; the answer was a permanent conformance test instead, '
       + 'because a one-time sweep is what makes a class of bug recur.',
   },
@@ -521,7 +592,7 @@ export const LEDGER: LedgerEntry[] = [
     id: 49, room: 'VEAV', date: '2026-08-22',
     report: 'Channel Through caused Restitution to make 2 triggers, but it should have made one',
     status: 'fixed',
-    guards: ['69-damage-batch.test.ts::batch'],
+    guards: ['69-damage-batch.test.ts::two hits on one unit in a batch are ONE damage event'],
     note: 'R80: one effect resolution is ONE batch of damage.',
   },
   {
@@ -529,7 +600,7 @@ export const LEDGER: LedgerEntry[] = [
     report: 'I only made 2 units from my Channel Through, but it dealt 12 damage total, so I '
       + 'should have made 12 units',
     status: 'fixed',
-    guards: ['69-damage-batch.test.ts::total'],
+    guards: ['69-damage-batch.test.ts::every event in a batch carries the WHOLE batch as'],
   },
   {
     id: 51, room: 'VEAV', date: '2026-08-22',
@@ -574,7 +645,7 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Tiderunner Initiate should never have entered the Invader\'s zone. It gets played '
       + 'directly into the formation, not as a trigger that happens when it enters',
     status: 'fixed',
-    guards: ['73-play-into-formation.test.ts::THE REPORT',
+    guards: ['73-play-into-formation.test.ts::R29 THE REPORT: Tiderunner is never in the invader',
       '73-play-into-formation.test.ts::THE REPORTED SHAPE',
       '73-play-into-formation.test.ts::spawn event itself already sees it'],
     note: 'R29. Modelled as a triggered ability on its own spawned event, so playing it spawned '
@@ -603,7 +674,8 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Bripp can target units. All cards that say "target player" or "target opponent" '
       + 'should only be able to have PLAYERS selected',
     status: 'fixed',
-    guards: ['14-water-a.test.ts::Bripp', '68-target-conformance.test.ts::any target'],
+    guards: ['14-water-a.test.ts::Bripp', '68-target-conformance.test.ts::any target',
+      '68-target-conformance.test.ts::every target kind a card declares is named by its printed text'],
     note: 'Nine cards had the same defect, all traceable to a false comment repeated across the '
       + 'card files claiming "the engine has no player-only scope — the Bripp precedent". It has '
       + 'had one since R64/R67. The new conformance test needs zero exemptions.',
@@ -620,7 +692,7 @@ export const LEDGER: LedgerEntry[] = [
     id: 58, room: 'UFAB', date: '2026-08-22',
     report: "lurking slimebeast ambush ability can't be activated",
     status: 'fixed',
-    guards: ['14-water-a.test.ts::Lurking Slimebeast'],
+    guards: ['14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush'],
     note: 'The printed cost word [three_blue] was not understood by the card extractor, so the '
       + 'card had no ambush data at all. Fixed ~13 minutes after this report was filed.',
   },
@@ -632,7 +704,8 @@ export const LEDGER: LedgerEntry[] = [
       + 'giving me prio for 1 frame AND a "You do not have priority" note',
     status: 'fixed',
     guards: ['70-playtest-round15.test.ts::produce ONE pass, not two',
-      '70-playtest-round15.test.ts::decides about auto-passing BEFORE it writes the markup',
+      '70-playtest-round15.test.ts::is never painted as yours to spend',
+      '70-playtest-round15.test.ts::the pass it painted really does go out',
       '70-playtest-round15.test.ts::clears the error from the previous one'],
     note: 'Two defects, one mechanism. The paint happened before the auto-pass decision (and the '
       + 'send is a round trip, so the wrong bar stood for the whole RTT); and three separate '
@@ -673,8 +746,12 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Instead of all the spell tokens stacking up vertically, their box can expand and they '
       + 'can be grouped horizontally',
     status: 'fixed',
-    guards: ['70-playtest-round15.test.ts::floor still fits two cards abreast'],
-    note: 'Follow-up to id 25, fixed with it.',
+    guards: ['70-playtest-round15.test.ts::floor still fits two cards abreast',
+      '70-playtest-round15.test.ts::.zone still wraps'],
+    note: 'Follow-up to id 25, fixed with it. These two are CSS-arithmetic guards and this is '
+      + 'the report they are ABOUT — "their box can expand and they can be grouped '
+      + 'horizontally" is a question about flex, and the other end of the wire (that the '
+      + 'markup exists to be styled) is id 25\'s 132-token-separation.',
   },
   {
     id: 62, room: 'SAAY', date: '2026-08-22',
@@ -741,7 +818,8 @@ export const LEDGER: LedgerEntry[] = [
       + 'spells with X should be clear what X is when they\'re cast',
     status: 'fixed',
     guards: ['50-ui-inspect.test.ts::Volatile Toxicity: the X read off its cost RECEIPT reaches the stack',
-      '50-ui-inspect.test.ts::a sacrifice cost whose clause names no stat wears no X'],
+      '50-ui-inspect.test.ts::a sacrifice cost whose clause names no stat wears no X',
+      "50-ui-inspect.test.ts::Structural Collapse's bar is the same snapshot"],
     note: 'Report 43 fixed X-on-stack for the mana X and the event X, and the guess that this was '
       + 'a third kind (R64\'s variable `costPaid.x`) was WRONG in an instructive way: Volatile '
       + 'Toxicity\'s cost is a FIXED `sacrificeUnit` of one, so `finishVariableCost` never runs '
@@ -1046,8 +1124,10 @@ export const LEDGER: LedgerEntry[] = [
       '86-ui-block-refusal.test.ts::a compulsory block is REQUIRED, not an offender',
       '86-ui-block-refusal.test.ts::widening the error did not widen the RULE',
       '86-ui-block-refusal.test.ts::and it did not narrow it either',
-      '86-ui-block-refusal.test.ts::the plan is no longer wiped the moment the action is sent',
-      '86-ui-block-refusal.test.ts::with a Reset blockers? button',
+      '86-ui-block-refusal.test.ts::a sent block declaration leaves the plan standing on the board',
+      '86-ui-block-refusal.test.ts::drops it only when an authoritative state says the declaration landed',
+      '86-ui-block-refusal.test.ts::never reaches the wire at all',
+      '86-ui-block-refusal.test.ts::the post-send verdict branch is still there',
     ],
     note:
       'Two halves, and the second was the real cause. (a) `doDeclareBlocks` is split into '

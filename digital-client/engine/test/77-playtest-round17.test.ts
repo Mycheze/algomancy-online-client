@@ -32,10 +32,13 @@
  * ui/battle.ts passEndsBattlePhase, and the first section here holds it against
  * the engine's own transition rather than against a description of it.
  *
- * ui/main.ts takes the document and the socket at import time, so it cannot be
- * loaded here; the judgements live in ui/battle.ts and are tested directly, and
- * the one-line wiring between them and the DOM is read as text at the bottom.
- * That is the house pattern (test/70-playtest-round15.test.ts header).
+ * The judgements live in ui/battle.ts and are tested directly here. The WIRING
+ * between them and the board used to be read as text ("ui/main.ts takes the
+ * document and the socket at import time, so it cannot be loaded here") — it
+ * can: test/ui-driver.ts hands main.ts a small browser and a socket, so [67]
+ * and [69] are now asserted by clicking Attack!/Confirm and reading what goes
+ * out on the wire. Two source reads survive, both marked, both about things a
+ * rendered board cannot answer.
  *
  * Seeds 7700-7799.
  */
@@ -53,7 +56,11 @@ import {
 } from '../ui/battle.ts';
 import { modHostPhrase, modHosts, spellAugmentNote } from '../ui/inspect.ts';
 import { give, giveResources, pass, spawn, toDeployment, toNextBattle } from './util.ts';
+import { client } from './ui-driver.ts';
 import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
+
+/** the real client, driven — see test/ui-driver.ts */
+const ui = await client();
 
 const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
 
@@ -471,6 +478,20 @@ test('R89: the augment the client offers on a token is one the engine really tak
 
 /* ── the wiring in ui/main.ts, read as text ───────────────────────────── */
 
+/* ⚠ DELIBERATELY STILL READ AS TEXT, and why.
+ *
+ * Everything [66] is about — WHICH pass costs you your tokens — is
+ * `passEndsBattlePhase`, and the section at the top of this file holds it
+ * against the engine's own transition at every priority window of a real
+ * battle. That is the strong guard, and it is already here.
+ *
+ * What is left below is the wiring, and it is two things a rendered board
+ * cannot be asked about: a string of copy the OWNER wrote (the client must use
+ * his words, not a paraphrase, and no board test can tell the two apart), and a
+ * `doesNotMatch` proving the OLD trigger is gone — an assertion about absence,
+ * which by definition has no behaviour to drive. Neither is anchored on an
+ * indent or a line break. Left as it is on purpose: an honest weak guard beats
+ * a behavioural-looking test that actually asserts something else. */
 test('[66] the pass confirm is wired to the end-of-battle question, not to holding a token', () => {
   assert.match(MAIN, /passEndsBattlePhase\(s, s\.priority\)\s+&& castableTokenCount\(s\.priority\) > 0\)/,
     'the C5 guard must fire on the pass that reaches Regroup');
@@ -488,48 +509,173 @@ test('[68] planAutoPass asks ui/battle.ts for the release list', () => {
     'main.ts must not reach past the release list to the raw plan');
 });
 
+/* [69] "It's very easy to attack without bringing along any spell tokens into
+ * the new region." Of the eleven attacks declared in GETD, exactly one carried
+ * a token.
+ *
+ * This was asserted with eleven `assert.match(MAIN, /…/)` reads, three of them
+ * anchored on a TWO-SPACE INDENT (`/^  ridenone: \(\) =>/m`) and one on a
+ * whole statement staying on one line. Those are claims about how the file is
+ * formatted. The client can be driven (test/ui-driver.ts), so the ones that
+ * are really about behaviour are now driven; the rest are kept, unanchored,
+ * because they are about COPY the owner wrote and about a keybinding table. */
+
+/** a declare step with `n` spell tokens standing at home, ready to ride */
+function rideStep(seed: number, n = 1): { h: Harness; A: Seat; atk: EntityId; toks: EntityId[] } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const atk = spawn(h, A, 'The Foretold');
+  const e = new E(h.state);
+  const toks = Array.from({ length: n }, () => e.createSpellToken(A, 'Poison', 1, e.homeRegion(A)).id);
+  e.settle();
+  toNextBattle(h, A);
+  assert.equal(h.state.battle!.step, 'declare', 'the fixture really is at the declare step');
+  return { h, A, atk, toks };
+}
+
 test('[69] the Attack! button holds the declaration until the ride question is answered', () => {
-  assert.match(MAIN, /if \(shouldAskRide\(s, atk, ui\.spellTokens, ui\.rideAnswered\)\) \{/,
-    'the interposition itself');
-  assert.match(MAIN, /columns: cols, spellTokens: ui\.spellTokens\.slice\(\)/,
-    'and the declaration still carries the riders (75-ui-reachability depends on this line)');
-  assert.match(MAIN, /Select the spell tokens you wish to bring into the attacked region, or select Bring none\./,
-    'the report wrote this copy too');
-  for (const b of ['ridenone', 'rideconfirm', 'ridecancel']) {
-    // a handler of its own in the BOARD_BTNS table (handleButton dispatches by data-btn name)
-    assert.match(MAIN, new RegExp(`^  ${b}: \\(\\) =>`, 'm'), `${b} must be handled`);
-  }
-  for (const b of ['ridenone', 'rideconfirm']) {
-    assert.ok(MAIN.includes(`data-btn="${b}"`), `${b} must be reachable from the bar`);
-  }
+  const { h, A, atk, toks } = rideStep(7769);
+  ui.join(h.state, A, legalActions(h.state, A));
+  ui.click({ act: 'unit', id: String(atk) });
+  ui.click({ act: 'slot', ci: '0', row: '0' });
+  ui.sent();
+
+  const asked = ui.click({ btn: 'confirmattack' });
+  assert.deepEqual(ui.actions(), [],
+    'the attack went out with no tokens and no question asked — which is report [69] verbatim');
+  assert.match(asked, /Select the spell tokens you wish to bring into the attacked region/,
+    'the bar has to ask, in the copy the report asked for');
+  assert.ok(ui.has({ btn: 'ridenone' }), 'deliberately bringing none is one of the answers…');
+  assert.ok(ui.has({ act: 'token', id: String(toks[0]!) }),
+    '…and every ridable token is a chip you can pick');
+
+  // pick the token the same way you would in the strip, then confirm
+  ui.click({ act: 'token', id: String(toks[0]!) });
+  assert.ok(ui.has({ btn: 'rideconfirm' }), 'picking one offers the confirm that carries it');
+  ui.click({ btn: 'rideconfirm' });
+  const acts = ui.actions();
+  assert.equal(acts.length, 1, 'answering the question sends the attack');
+  assert.equal(acts[0]!.type, 'declareAttack');
+  assert.deepEqual((acts[0] as { spellTokens?: EntityId[] }).spellTokens, [toks[0]!],
+    'and it carries the riders that were picked — the whole point of asking');
+});
+
+test('[69] "Bring none" is an answer, not a refusal — the attack still goes', () => {
+  const { h, A, atk } = rideStep(7770);
+  ui.join(h.state, A, legalActions(h.state, A));
+  ui.click({ act: 'unit', id: String(atk) });
+  ui.click({ act: 'slot', ci: '0', row: '0' });
+  ui.click({ btn: 'confirmattack' });
+  ui.sent();
+  ui.click({ btn: 'ridenone' });
+  const acts = ui.actions();
+  assert.equal(acts.length, 1, 'declining is a decision, and the attack is declared');
+  assert.deepEqual((acts[0] as { spellTokens?: EntityId[] }).spellTokens, [],
+    'with nothing riding along');
+});
+
+test('[69] a board with no ridable token is never asked the question at all', () => {
+  const { h, A, atk } = rideStep(7771, 0);
+  ui.join(h.state, A, legalActions(h.state, A));
+  ui.click({ act: 'unit', id: String(atk) });
+  ui.click({ act: 'slot', ci: '0', row: '0' });
+  ui.sent();
+  const board = ui.click({ btn: 'confirmattack' });
+  assert.ok(!/Select the spell tokens you wish to bring/.test(board),
+    'an interposed question with no possible answer is a click tax on every attack in the game');
+  assert.equal(ui.actions().length, 1, 'the attack goes straight out');
+});
+
+test('[69] the ride bar: the wiring the board cannot be asked about', () => {
+  // what is left after the driving above: a keybinding table, and the Esc
+  // path. Both are read as text — deliberately unanchored, so a reformat
+  // cannot silently delete a guard.
   assert.ok(MAIN.includes('\'[data-btn="rideconfirm"]\''), 'Enter sends the attack you picked riders for');
   assert.ok(!MAIN.includes('\'[data-btn="ridenone"]\''),
     'and Enter must NOT be able to decline for you — that is the accident being fixed');
-  assert.match(MAIN, /data-act="token" data-id="\$\{t\.id\}"/,
-    'each chip is the same clickable token as the one in the strip');
-  assert.match(MAIN, /if \(ui\.confirmRide !== null\) \{ ui\.confirmRide = null; render\(\); return; \}/,
+  assert.match(MAIN, /\bridecancel\s*:\s*\(\s*\)\s*=>/, 'the "go back" answer is handled');
+  assert.match(MAIN, /if \(ui\.confirmRide !== null\)[\s\S]{0,80}?ui\.confirmRide = null;/,
     'Esc is its "Go back", like every other confirm bar');
 });
 
+/** the block step of round 1, with a counterattacker and a spell token that
+ * could travel with it — the GETD shape */
+function sendStep(seed: number): { h: Harness; D: Seat; ctr: EntityId; tok: EntityId } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'The Foretold');
+  const ctr = spawn(h, D, 'The Foretold');
+  const e = new E(h.state);
+  const tok = e.createSpellToken(D, 'Poison', 1, e.homeRegion(D)).id;
+  e.settle();
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  for (let g = 0; g < 40 && h.state.battle!.step !== 'blocks'; g++) {
+    const dec = h.state.decision;
+    if (dec) h.do({ type: 'decide', seat: dec.seat, choice: dec.options.map((_, i) => i) });
+    else h.do({ type: 'passPriority', seat: h.state.priority! });
+  }
+  assert.equal(h.state.battle!.step, 'blocks', 'the fixture really is at the block step');
+  return { h, D, ctr, tok };
+}
+
 test('[67] the Confirm button holds the block declaration until the ride question is answered', () => {
-  assert.match(MAIN, /if \(shouldAskSend\(s, def, ui\.send, ui\.rideAnswered\)\) \{/,
-    'the interposition itself, on the counterattack side');
-  assert.match(MAIN, /const \{ send, spellTokens \} = splitCounterattack\(s, ui\.send\);/,
-    'one list on the board, two fields in the action');
-  assert.match(MAIN, /act\(\{ type: 'declareBlocks', seat: s\.battle!\.defender, blocks, send, spellTokens \}\)/,
-    'and the declaration carries the riders (75-ui-reachability depends on this line)');
-  assert.match(MAIN, /sendableTokens\(s, ui\.confirmRide\)/,
-    'the chips are the tokens the ENGINE would accept, not a second opinion');
-  assert.match(MAIN, /sendableTokens\(s, b\.defender\)\.includes\(t\.id\)/,
-    'and so is the click that toggles one in the strip (tokenToggleMode)');
+  // "What happened to Rashi's Poison tokens here? She just wanted to bring them
+  // with her attackers but they somehow went onto the stack." Driven rather
+  // than read as source: the old version of this test matched the exact text
+  // of four statements in ui/main.ts, spacing and all.
+  const { h, D, ctr, tok } = sendStep(7767);
+  ui.join(h.state, D, legalActions(h.state, D));
+  ui.click({ act: 'unit', id: String(ctr) });
+  ui.click({ act: 'sendslot' });
+  ui.sent();
+
+  const asked = ui.click({ btn: 'confirmblocks' });
+  assert.deepEqual(ui.actions(), [],
+    'the counterattack went out leaving the tokens behind, with nothing asked');
+  assert.match(asked, /Select the spell tokens you wish to bring into the attacked region/,
+    'the counterattack side asks the same question the attack side does');
+  assert.ok(ui.has({ act: 'token', id: String(tok) }), 'and the token is a chip you can pick');
+
+  ui.click({ act: 'token', id: String(tok) });
+  ui.click({ btn: 'rideconfirm' });
+  const acts = ui.actions();
+  assert.equal(acts.length, 1, 'answering it declares the blocks');
+  const a = acts[0] as { type: string; send?: EntityId[]; spellTokens?: EntityId[] };
+  assert.equal(a.type, 'declareBlocks');
+  // one list on the board, TWO fields in the action (R87 splitCounterattack)
+  assert.deepEqual(a.send, [ctr], 'the unit travels in `send`…');
+  assert.deepEqual(a.spellTokens, [tok], '…and the token in `spellTokens`, which is the fix');
+});
+
+test('[67] the chips are the tokens the ENGINE would accept, not a second opinion', () => {
+  // a token that is NOT ridable must not be offered: the engine refuses it, and
+  // an offer the engine refuses is how the report happened in the first place.
+  const { h, D, ctr } = sendStep(7768);
+  const e = new E(h.state);
+  // a token of mine standing somewhere the counterattack does not leave from
+  const far = e.createSpellToken(D, 'Crystal', 1, (e.homeRegion(D) + 1) % 3).id;
+  e.settle();
+  assert.ok(!sendableTokens(h.state, D).includes(far), 'the engine would not take it (fixture)');
+  ui.join(h.state, D, legalActions(h.state, D));
+  ui.click({ act: 'unit', id: String(ctr) });
+  ui.click({ act: 'sendslot' });
+  ui.click({ btn: 'confirmblocks' });
+  assert.ok(!ui.has({ act: 'token', id: String(far) }),
+    'a token the engine will refuse was offered as a rider — the client is holding a second '
+    + 'opinion about what can travel');
+});
+
+test('[67] wiring: the copy and the keybinding the board cannot be asked about', () => {
   // the same asymmetry [69] fixed: Enter confirms a ride, Enter never declines
   assert.ok(MAIN.includes('\'[data-btn="rideconfirm"]\''), 'Enter sends the counterattack you picked riders for');
   assert.ok(!MAIN.includes('\'[data-btn="ridenone"]\''),
     'and Enter must NOT be able to decline for you — that is the accident being fixed');
-  // the block bar reuses the [69] copy, chips and all
   assert.match(MAIN, /Counterattack — \$\{n\} token/,
     'the confirm button says how many are riding');
-  assert.match(MAIN, /h\.state\.battle\?\.step !== 'declare' && h\.state\.battle\?\.step !== 'blocks'/,
+  assert.match(MAIN, /battle\?\.step !== 'declare' && h\.state\.battle\?\.step !== 'blocks'/,
     'and the question is cleared when BOTH steps it belongs to are over');
 });
 

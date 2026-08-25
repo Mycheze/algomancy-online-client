@@ -86,16 +86,29 @@ function callStrings(src: string, from: number): string[] {
  * ledger would reject perfectly good server guards: `engine/test/` uses
  * node:test `test('title', …)`, while `server/` uses its own
  * `ok(condition, 'label')` assertion helper and runs as a plain script.
+ *
+ * ⚠ WHICH CONVENTION APPLIES IS DECIDED BY THE FILE, and that is the whole
+ * point. This used to harvest `ok(` from EVERY file — and `assert.ok(` matches
+ * it. So an assertion MESSAGE buried inside some unrelated test satisfied a
+ * guard reference, and the ledger could then claim a report was held down by a
+ * "test" that has no name of its own and cannot be run, found or deleted
+ * independently of whatever test it happens to sit inside. Exactly one
+ * engine-side reference was resolving that way when this was tightened (#10,
+ * pointing at the `assert.ok` message 'declining is illegal here' instead of
+ * at the test around it); every other one was a server file, where it is the
+ * house convention and stays supported.
  */
-function testTitles(src: string): { title: string; todo: boolean }[] {
+function testTitles(rel: string, src: string): { title: string; todo: boolean }[] {
   const out: { title: string; todo: boolean }[] = [];
   for (const m of src.matchAll(/\btest\(\s*(['"`])((?:\\.|(?!\1)[^\\])*)\1([^)]*)/g)) {
     out.push({ title: m[2]!, todo: /todo\s*:\s*true/.test(m[3] ?? '') });
   }
   // server style: the label is the last string literal in the ok(…) call, and
   // several are template strings spanning lines, so take them all
-  for (const m of src.matchAll(/\bok\(/g)) {
-    for (const s of callStrings(src, m.index)) out.push({ title: s, todo: false });
+  if (rel.startsWith('server/')) {
+    for (const m of src.matchAll(/\bok\(/g)) {
+      for (const s of callStrings(src, m.index)) out.push({ title: s, todo: false });
+    }
   }
   return out;
 }
@@ -201,10 +214,24 @@ test('every guard a ledger entry names is a real test that can fail', () => {
       assert.ok(file && needle, `malformed guard reference "${ref}" on report #${e.id}`);
       const src = sourceOf(file!);
       if (src === null) { problems.push(`#${e.id}: no such test file "${file}"`); continue; }
-      const titles = testTitles(src);
+      const titles = testTitles(file!, src);
       const hits = titles.filter(t => t.title.includes(needle!));
       if (!hits.length) {
         problems.push(`#${e.id}: no test in ${file} has a name containing "${needle}"`);
+        continue;
+      }
+      // A needle that matches SEVERAL tests pins none of them. #43 used to cite
+      // `50-ui-inspect.test.ts::X`, which matched TWELVE titles — every
+      // X-on-stack test in that file could have been deleted and this stayed
+      // green, because one unrelated survivor ("the shortfall is held until it
+      // is EXPLAINED…") still contained an X. A guard reference has to name the
+      // test it means; where a report really is held down by a family, the
+      // family is listed, one entry each.
+      if (hits.length > 1) {
+        problems.push(`#${e.id}: "${needle}" matches ${hits.length} tests in ${file} `
+          + `(${hits.map(t => JSON.stringify(t.title)).join(', ')}) — a substring that matches `
+          + 'several pins none of them. Name the one this report is about, or list each of them '
+          + 'as its own guard.');
         continue;
       }
       // A {todo:true} test never fails, so it guards nothing. This is exactly

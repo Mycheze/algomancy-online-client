@@ -89,6 +89,7 @@ import {
 import { sendableTokens, shouldAskSend, splitCounterattack } from '../ui/battle.ts';
 import { dropIntoRow } from '../ui/formation.ts';
 import { give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
+import { client } from './ui-driver.ts';
 import type {
   Action, CardName, Entity, EntityId, GameState, Seat,
 } from '../src/types.ts';
@@ -473,6 +474,9 @@ type Evidence =
 
 /** the legal-action list a sample's client would be rendering from */
 const legalAt = (s: Sample): Action[] => legalActions(s.state, s.seat);
+
+/** the real client, driven — see test/ui-driver.ts */
+const ui = await client();
 
 /** the mod-placement helper check both augment and graft rows use */
 const modReach = (kind: 'augment' | 'graft', want: 'units' | 'stack' | 'tokens') => (s: Sample): void => {
@@ -935,6 +939,19 @@ test('the affordance for every offered shape is really in ui/main.ts', () => {
   // the 'wiring' half of the ledger, and the wiring that hangs off the
   // 'helper' half. A missing pattern is a line that was refactored away; if the
   // line moved, move the pattern with it — do not delete the row.
+  //
+  // ⚠ AND THAT SENTENCE IS AN ADMISSION. "If the line moved, move the pattern"
+  // is what a layout-coupled guard sounds like from the inside: these patterns
+  // assert WHERE code sits, so a harmless refactor turns this red and a rewrite
+  // that keeps the line while breaking what it does leaves it green. It is
+  // deliberately not repaired here, because the repair is not a rewording — it
+  // is moving each row from 'wiring' to 'helper', or driving the board
+  // (test/ui-driver.ts, which did not exist when this file was written and is
+  // now used for the #16/#24/#67/#69 rows elsewhere). That is per-facet work
+  // over ~40 rows and a project of its own; doing it badly in bulk would trade
+  // a guard that is honest about being weak for one that lies about being
+  // strong. The direction is already written down eighty lines above: "Where a
+  // helper can own the judgement, move the row to 'helper'.".
   const missing: string[] = [];
   for (const [facet, ev] of Object.entries(REACH)) {
     for (const re of ev.needs ?? []) {
@@ -1061,19 +1078,53 @@ test('R84: the block bar and the Confirm button read the same plan, and both gat
 test('the details page really renders the Transforms into row for the back face', () => {
   // Ledger #24 (ZQPC, 2026-08-20): "Scholar of the Void doesn't say what the
   // Beyond card it can transform into does". transformFaces (ui/inspect.ts) has
-  // been right about the DATA and is tested for real in test/50-ui-inspect; the
-  // report stays open until the inspector draws it, because the alternative way
-  // to find out what you become is discarding your entire hand.
-  assert.match(MAIN, /const transformRows = transformFaces\(name, u \? \{ e: q\(\), unit: u \} : undefined\)/,
-    'the row must be built, and with the LIVE entity — a Scholar that already '
-    + 'transformed, and a host merely wearing the mod, must show nothing');
-  assert.match(MAIN, /\.map\(tokenRowHtml\)\.join\(''\);\s*\n\s*\/\/ Ledger #24/,
-    'built with the same row builder the tokens use — it prints stats, type line '
-    + 'and rules text off a bare name, which is what "say what it does" means');
-  assert.match(MAIN, /\$\{transformRows \? `<h4>Transforms into<\/h4>\$\{transformRows\}` : ''\}/,
-    'and really placed in the overlay, beside the token rows');
-  assert.match(MAIN, /\btransformFaces\b[\s\S]*?\} from '\.\/inspect\.ts';/,
-    'imported from ui/inspect.ts rather than re-derived here');
+  // been right about the DATA all along and is tested for real in
+  // test/50-ui-inspect; the report stayed open until the inspector DREW it,
+  // because the alternative way to find out what you become is discarding your
+  // entire hand.
+  //
+  // This used to be four source reads, one of which — `/\.map\(tokenRowHtml\)
+  // \.join\(''\);\s*\n\s*\/\/ Ledger #24/` — demanded a particular COMMENT on
+  // the line after a particular expression. It made no claim about behaviour at
+  // all: deleting the comment broke it, and deleting the whole feature while
+  // keeping the two lines would not have. So: open the page and read it.
+  const h = new Harness(7524);
+  toDeployment(h);
+  const seat = h.state.initiative;
+  const i = give(h, seat, 'Scholar of the Void');
+  ui.join(h.state, seat, legalActions(h.state, seat));
+
+  // right-click a card → "📖 … details, attributes & rulings" is the way in
+  ui.rightClick({ act: 'hand', p: String(seat), i: String(i) });
+  const page = ui.click({ btn: 'menuitem', i: '0' });
+
+  assert.match(page, /Scholar of the Void/, 'the details page for the card that was clicked');
+  const at = page.indexOf('Transforms into');
+  assert.ok(at > 0,
+    'the page never says what the back face is — which is ledger #24 exactly. The only other way '
+    + 'to find out is to discard your entire hand and look.');
+  const row = page.slice(at, at + 1200);
+  // "say what it does" is stats, type line AND rules text — the same row the
+  // token list uses, not a bare name
+  assert.match(row, /Beyond, Codex Incarnate/, 'the back face is named');
+  assert.match(row, /<b>8\/3<\/b>/, 'with its stats');
+  assert.match(row, /Book Token Unit/, 'its type line');
+  assert.match(row, /inverted/, 'and its rules text');
+});
+
+test('a card with no back face gets no Transforms into section at all', () => {
+  // the other half: an empty heading over nothing is its own bug, and it is
+  // what "only when there is one" is worth asserting against.
+  const h = new Harness(7525);
+  toDeployment(h);
+  const seat = h.state.initiative;
+  const i = give(h, seat, 'The Foretold');
+  ui.join(h.state, seat, legalActions(h.state, seat));
+  ui.rightClick({ act: 'hand', p: String(seat), i: String(i) });
+  const page = ui.click({ btn: 'menuitem', i: '0' });
+  assert.match(page, /The Foretold/, 'the details page rendered');
+  assert.ok(!page.includes('Transforms into'),
+    'a card that transforms into nothing is given a heading and an empty space under it');
 });
 
 test('both resource menus default to the deck elements through the one shared helper', () => {

@@ -26,12 +26,16 @@
  *
  * WHAT THESE TESTS ASSERT. The STRUCTURE the client receives — which units are
  * named, what survives, what is compulsory — never log prose and never
- * rendered strings, both of which get rewritten. The two exceptions are the
- * three `MAIN` text reads at the bottom, which are the house 'wiring' evidence
- * (see the header of 75-ui-reachability.test.ts): ui/main.ts takes the
- * document and the socket at import time and cannot be loaded here, so the
- * lines that hang the notice and the button off the verdict are read as text
- * and each one says that it is the weak form.
+ * rendered strings, both of which get rewritten.
+ *
+ * …and then the WIRING, which used to be three `assert.match(MAIN, /…/)` reads
+ * of ui/main.ts because "main.ts takes the document and the socket at import
+ * time and cannot be loaded here". It can: test/ui-driver.ts gives it a small
+ * browser and a socket we hold the far end of, so the report is now asserted
+ * by placing a blocker, pressing Confirm and looking at the board. Exactly one
+ * source read survives, on the one branch no sequence of clicks can reach (the
+ * post-send verdict — see the comment on that test), and it is written without
+ * an indent or a line-break anchor so a reformat cannot quietly delete it.
  *
  * NOT CHANGED, AND ASSERTED NOT CHANGED: which blocks are legal. `checkBlocks`
  * is the same checks in the same order, and the last test in the R84 section
@@ -46,7 +50,8 @@ import { E } from '../src/engine.ts';
 import { blockDeclarationIssue, legalActions } from '../src/apply.ts';
 import { blockVerdict } from '../ui/battle.ts';
 import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
-import { pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
+import { finishBattle, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
+import { client, idsIn, zone } from './ui-driver.ts';
 
 const MAIN = readFileSync(fileURLToPath(new URL('../ui/main.ts', import.meta.url)), 'utf8');
 const BATTLE = readFileSync(fileURLToPath(new URL('../ui/battle.ts', import.meta.url)), 'utf8');
@@ -293,34 +298,127 @@ test('#77: and it did not narrow it either — every refusal is a refusal the en
   }
 });
 
-// ── the wiring in ui/main.ts (the weak form — read as text) ───────────
+/* ── the wiring, driven ────────────────────────────────────────────────
+ *
+ * These three used to be `assert.match(MAIN, /…/)` reads of ui/main.ts, and
+ * two of them were anchored on FORMATTING — `/^  resetblocks: \(\) =>/m`
+ * demanded a two-space indent, and one demanded a statement stay on a single
+ * line. That is a guard that breaks on a reformat and holds while the
+ * behaviour rots, which is what commit e43e51a repaired two of elsewhere.
+ *
+ * ui/main.ts can in fact be driven — see test/ui-driver.ts. So the report is
+ * now asserted the way a player would find it: place a blocker, press Confirm,
+ * and look at the board.
+ */
 
-test('#77 wiring: the plan is no longer wiped the moment the action is sent', () => {
-  assert.match(MAIN, /if \(NET\) ui\.blockSent = true;/,
-    'over a socket the board keeps the plan until an authoritative state says the declaration landed');
-  assert.match(MAIN, /if \(ui\.blockSent && !mine\)/,
-    'and ensureBlockKeys is what drops it, on the state where the step has moved on');
-  assert.doesNotMatch(MAIN, /act\(\{ type: 'declareBlocks'[\s\S]{0,200}?\n\s*ui\.columns = \[\]; ui\.send = \[\];\s*ui\.carrying/,
-    'the unconditional post-send wipe is gone');
+const ui = await client();
+
+/** put the board in front of seat D at the block step, as the server does */
+const seated = (h: Harness, D: Seat): string => ui.join(h.state, D, legalActions(h.state, D));
+
+/** place `blocker` into the front row of attacking column `ci` by clicking */
+function placeBlocker(blocker: EntityId, ci: number): string {
+  ui.click({ act: 'unit', id: String(blocker) });
+  return ui.click({ act: 'slot', ci: String(ci), row: '0' });
+}
+
+test('#77: a sent block declaration leaves the plan standing on the board', () => {
+  // THE REPORT. Over a socket, `act()` returns the moment the intent is on the
+  // wire — the old code cleared ui.columns right there, so the whole plan was
+  // gone before the server had said anything about it at all.
+  const { h, D, def } = battlefield(7720, ['The Foretold', 'The Foretold'], ['The Foretold']);
+  seated(h, D);
+  ui.sent();                                        // drop the 'building' relay
+  placeBlocker(def[0]!, 0);
+  const board = ui.click({ btn: 'confirmblocks' });
+
+  const acts = ui.actions();
+  assert.equal(acts.length, 1, 'exactly one declaration went out');
+  assert.equal(acts[0]!.type, 'declareBlocks');
+  assert.deepEqual((acts[0] as { blocks: Record<number, EntityId[]> }).blocks, { 0: [def[0]!] });
+
+  // …and the plan is STILL on the board. A placed blocker is out of its
+  // region (it is standing in the column), so finding it back home is exactly
+  // the reported symptom — the board reset itself.
+  assert.ok(!idsIn(zone(board, `field:${D}`)).includes(def[0]!),
+    'the blocker fell back into its region the instant Confirm was pressed — the plan was wiped '
+    + 'before the server ever answered, which is ledger #77 verbatim');
+  assert.ok(ui.has({ btn: 'clearform' }),
+    'and the board still knows it is holding a declaration being built');
 });
 
-test('#77 wiring: the refusal reaches the bar as structure, with a Reset blockers? button', () => {
-  assert.match(MAIN, /const verdict = blockVerdict\(s, s\.battle!\.defender, blocks, send, spellTokens\);/,
-    'the click handler asks before it sends');
-  assert.match(MAIN, /ui\.blockRefusal = verdict;/, 'and holds the verdict for the bar');
-  assert.match(MAIN, /ui\.columns = columnsFromPlan\(verdict\.keep\.blocks\);/,
-    'putting the surviving plan back on the board');
+test('#77: …and drops it only when an authoritative state says the declaration landed', () => {
+  // the other half: holding the plan for ever would be its own bug of exactly
+  // the same shape. A unit the board still believes is placed is filtered out
+  // of its region (it is supposed to be standing in a column), so a survivor
+  // that never comes home is what a plan outliving its declaration looks like.
+  const { h, D, def } = battlefield(7721, ['The Foretold'], ['Towering Colossus']);
+  seated(h, D);
+  placeBlocker(def[0]!, 0);
+  ui.click({ btn: 'confirmblocks' });
+  ui.sent();
+
+  // the server applies it, plays the battle out, and pushes the state back
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [def[0]!] }, send: [] });
+  finishBattle(h);
+  assert.notEqual(h.state.phase, 'battle', 'the fixture really got past the battle');
+  assert.ok(h.state.entities[def[0]!], 'and the blocker survived it, so it has a region to be in');
+
+  const after = ui.update(h.state, legalActions(h.state, D));
+  assert.ok(idsIn(zone(after, `field:${D}`)).includes(def[0]!),
+    'the blocker never came home: the board is still holding a build the engine consumed a whole '
+    + 'battle ago, so the unit is filtered out of its own region for ever');
+});
+
+test('#77: a plan the engine would refuse never reaches the wire at all', () => {
+  // The R84 pre-gate is why the post-send verdict branch is belt to braces
+  // rather than the main road: an illegal declaration is named in the bar and
+  // Confirm is turned off BEFORE anything is sent. Asserted here by pressing
+  // it anyway, which is what Enter would do.
+  const { h, D, def } = battlefield(7722, ['The Foretold', 'Tempest Wrangler'], ['The Foretold']);
+  const board = seated(h, D);
+  assert.ok(/Alluring/.test(board), 'the fixture really raises a compulsory block');
+  ui.sent();
+  placeBlocker(def[0]!, 0);                    // block the plain column, not the lure
+  const bar = ui.html();
+  assert.match(bar, /data-btn="confirmblocks" disabled/,
+    'Confirm must be off while the plan is one the engine has already said it will refuse');
+  assert.match(bar, /Alluring: The Foretold was lured by Tempest Wrangler/,
+    'and the duty is NAMED — the report is that you found out only after committing');
+  ui.click({ btn: 'confirmblocks' });
+  assert.deepEqual(ui.actions(), [],
+    'pressing it anyway (which is what Enter does) must still send nothing');
+});
+
+test('#77 wiring: the post-send verdict branch is still there for what the pre-gate cannot see', () => {
+  // ⚠ THE ONE THING THAT CANNOT BE DRIVEN, and why. `blockVerdict` only fires
+  // on a plan `blockPlanIssue` let through, and both ask the same engine
+  // validator — so by construction no sequence of clicks reaches this branch.
+  // It exists for the network race the report was actually about (a state that
+  // changed under the plan between build and send). These reads are therefore
+  // the honest weak form: they name the seam, and NOT its indentation or its
+  // line breaks, so a reformat cannot delete a guard by accident.
+  assert.match(MAIN, /blockVerdict\(\s*s,\s*s\.battle!\.defender,\s*blocks,\s*send,\s*spellTokens\s*\)/,
+    'the click handler asks the verdict before it sends');
+  assert.match(MAIN, /ui\.blockRefusal\s*=\s*verdict;/, 'and holds the verdict for the bar');
+  assert.match(MAIN, /ui\.columns\s*=\s*columnsFromPlan\(\s*verdict\.keep\.blocks\s*\)/,
+    'putting the surviving plan back on the board rather than clearing it');
   assert.match(MAIN, /data-btn="resetblocks"/, 'the report asked for this button by name');
-  assert.match(MAIN, /^  resetblocks: \(\) =>/m, 'and it is handled (a BOARD_BTNS entry — see test 75 for the shape)');
-  assert.match(MAIN, /r\.offenders\.map\(o => o\.card\)/,
+  assert.match(MAIN, /\bresetblocks\s*:\s*\(\s*\)\s*=>/,
+    'and it is handled — a BOARD_BTNS entry (unanchored: WHERE the table sits is not the claim)');
+  assert.match(MAIN, /offenders\.map\(o => o\.card\)/,
     'the notice NAMES the units rather than counting them');
 });
 
 test('#77 wiring: blockVerdict is a read of the engine, never a second opinion', () => {
   assert.match(BATTLE, /blockDeclarationIssue\(e, seat, bl, \[\.\.\.out\]\)/,
     'every judgement is a question put to the engine');
-  assert.doesNotMatch(BATTLE.split('// ── [77]')[1] ?? '', /Feeble|Evasive|Sneaky|Flying/,
-    'and no block rule is restated in the client');
+  // was: BATTLE.split('// ── [77]')[1] — a slice taken on a COMMENT BANNER, so
+  // renaming the banner silently emptied the haystack and the assertion passed
+  // over nothing. The claim is about the whole file: no block rule is restated
+  // in the client, anywhere.
+  assert.doesNotMatch(BATTLE, /\b(Feeble|Evasive|Sneaky|Flying)\b/,
+    'ui/battle.ts must not name a block attribute — every block rule belongs to the engine');
 });
 
 // ── the state the tests above are read against is a real one ──────────
