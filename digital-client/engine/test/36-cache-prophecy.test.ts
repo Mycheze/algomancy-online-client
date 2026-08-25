@@ -197,10 +197,6 @@ function nextTurnsDeployment(h: Harness): void {
   intoDeployment(h);
 }
 
-/** the cache index of `name` in `seat`'s cache */
-function cacheIdx(h: Harness, seat: Seat, name: string): number {
-  return cacheOf(h, seat).findIndex(cc => cc.card === name);
-}
 
 // ── R42: the prophesy action ──────────────────────────────────────────
 

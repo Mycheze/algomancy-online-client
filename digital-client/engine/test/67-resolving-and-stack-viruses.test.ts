@@ -66,7 +66,7 @@ function walk(seed: number, steps: number): { state: GameState; actions: Action[
 // ── R78: the resolving state ────────────────────────────────────────────
 
 test('R78: an item that suspends mid-resolution is off the stack but flagged as RESOLVING', () => {
-  const { h, A, D } = attackWindow(6700);
+  const { h, D } = attackWindow(6700);
   giveResources(h, D, 'water', 3);                   // Premonition b/1 → Glimpse 3
   pass(h);                                           // A declines
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Premonition') });
@@ -175,7 +175,7 @@ test('R78: fuzzed play never strands a resolving item outside a pending decision
   // A purely random walk almost never plays the one card that suspends
   // mid-resolution, so the walk is SEEDED with a real suspension and then let
   // loose from there.
-  const { h, A, D } = attackWindow(6704);
+  const { h, D } = attackWindow(6704);
   giveResources(h, D, 'water', 3);
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Premonition') });
@@ -326,7 +326,7 @@ test('R79: a virus whose host leaves the stack first fizzles to the bin', () => 
 });
 
 test('R79: only SPELLS are legal hosts — not abilities, not units mid-cast', () => {
-  const { h, A, D } = attackWindow(6716);
+  const { h, A } = attackWindow(6716);
   giveResources(h, A, 'earth', 4);
   const virus = give(h, A, 'Chitin Shredder');
   // Warbloom Herald's attack trigger puts a `triggered` item on the stack

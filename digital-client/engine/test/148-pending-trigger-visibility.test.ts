@@ -84,7 +84,7 @@ function reclaimerFixture(seed: number): { h: Harness; me: Seat; reclaimer: numb
 }
 
 test('#15 a pending trigger is ON THE STACK the instant another ally dies', () => {
-  const { h, me, reclaimer, victim } = reclaimerFixture(5960);
+  const { h, reclaimer, victim } = reclaimerFixture(5960);
   const before = ent(h, reclaimer)!.counters;
 
   whiteBox(h, e => e.destroy(e.entity(victim)!, 'is deleted'));

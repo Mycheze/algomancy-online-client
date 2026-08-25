@@ -1341,7 +1341,7 @@ test('Beyond, Codex Incarnate: R102 — the counters make your own units BIGGER,
   const h = new Harness(4349);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const sv = spawn(h, P, 'Scholar of the Void');
+  spawn(h, P, 'Scholar of the Void');
   toNextDeployment(h);
   pickBy(h, o => String(o.label).includes('transform into Beyond'));
   const ally = spawn(h, P, 'Good Whale');                 // 7/5

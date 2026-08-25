@@ -6,7 +6,7 @@ import { Harness } from '../src/harness.ts';
 import {
   decisionBlocks, forcedAction, legalActions, IllegalAction, ALL_ELEMENTS,
 } from '../src/apply.ts';
-import { getCard, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
+import { getCard } from '../src/cards/dsl.ts';
 import type { XPreviewRow } from '../src/cards/dsl.ts';
 import {
   actionNeedsMenu, activatableUnits, activationBadge, activationKeys, activationNeedsConfirm,

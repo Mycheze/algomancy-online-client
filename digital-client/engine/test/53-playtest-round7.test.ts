@@ -601,7 +601,7 @@ test('R84 + R61: an Alluring column that is itself {Pure} never even triggers', 
   const A = h.state.initiative, D = (1 - A) as Seat;
   const lure = spawn(h, A, 'Tempest Wrangler');
   const pure = spawn(h, A, 'Just a Unit');                    // {Pure}
-  const d1 = spawn(h, D, 'The Foretold');
+  spawn(h, D, 'The Foretold');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[lure, pure]] });
   assert.equal(h.state.decision, null, 'no target is asked for');

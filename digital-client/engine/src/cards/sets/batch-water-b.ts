@@ -39,7 +39,7 @@
  *    fire, water and earth, so routing a seven-element rule through them would
  *    silently drop the bonus for wood, metal, light and dark. R116, R54.
  */
-import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
+import type { EngineEvent, Entity, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, isEntityTarget, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, manaOf, chooseUnit, perSeatRows, lifeLostIn, doubleStats } from './helpers.ts';

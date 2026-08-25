@@ -12,7 +12,7 @@ import { E } from '../src/engine.ts';
 import type { EntityId, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, ownAttrs,
-  pass, pick, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  pass, pick, spawn, toDeployment, toNextBattle, tokensOf, 
 } from './util.ts';
 
 const drainStack = (h: Harness) => { while (h.state.stack.length) pass(h); };
@@ -260,7 +260,7 @@ test('Poison token: casts to put X -1/-1 counters on target unit', () => {
 test('Crystal token: casts to put X +1/+1 counters on target unit', () => {
   const h = new Harness(416);
   toDeployment(h);
-  const A = h.state.initiative, D = 1 - A;
+  const A = h.state.initiative;
   const atk = spawn(h, A, 'Ignis Sprite');         // 1/1 target for the buff
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });

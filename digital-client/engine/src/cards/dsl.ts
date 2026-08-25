@@ -13,7 +13,6 @@
  */
 import type {
   Attr, CardName, EffectPart, EngineEvent, Entity, EventType, Seat, SpawnFace, StackItem,
-  TargetRef,
 } from '../types.ts';
 import type { E } from '../engine.ts';
 import printedJson from './printed.json' with { type: 'json' };

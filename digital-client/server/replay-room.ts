@@ -129,19 +129,69 @@ const CLI = process.argv[1] !== undefined
 
 /** constructed games are dealt from the two saved decks — replaying one
  * without them is not a replay of the same game at all */
+/**
+ * The two constructed decks, or `undefined` for a non-constructed game.
+ *
+ * ⚠ THIS USED TO SUBSTITUTE ONE SEAT'S DECK FOR THE OTHER'S, SILENTLY. The old
+ * body was `const a = ok[0].ok ? ok[0].cards : ok[1].ok ? ok[1].cards : null`
+ * — so a deck that failed `checkDeck` was replaced by the OPPONENT'S, with no
+ * warning, and the tool went on to replay a game nobody had ever played. It
+ * threw only when BOTH decks were bad.
+ *
+ * That is the worst possible failure for a forensics tool: this repo settles
+ * playtest reports by replaying saved games, so a quietly-wrong deck produces a
+ * confident wrong answer about a real bug. And it was one rename away from
+ * firing — `checkDeck` rejects unknown card names, and commit 3063f2b renamed
+ * "Counter Theif" to "Counter Thief". Any stored deck holding the old spelling
+ * would have made all eight constructed logs replay with BOTH SEATS ON ONE
+ * DECK, reported not as "this file's deck no longer validates" but as a mystery
+ * divergence somewhere in the midgame. (All eight validate at HEAD today, so
+ * this was a live hazard rather than a live bug.)
+ *
+ * Now it names the seat and the reason and refuses. A replay that cannot be
+ * trusted must not run.
+ */
 function decksOf(raw: RoomFile, mode: GameMode): [CardName[], CardName[]] | undefined {
   if (mode !== 'constructed') return undefined;
-  const ok = [0, 1].map(s => checkDeck(raw.decks?.[s as 0 | 1]));
-  const a = ok[0]!.ok ? ok[0]!.cards : ok[1]!.ok ? ok[1]!.cards : null;
-  const b = ok[1]!.ok ? ok[1]!.cards : a;
-  if (!a || !b) throw new Error('constructed game file has no usable deck');
-  return [a, b];
+  const checked = [0, 1].map(s => checkDeck(raw.decks?.[s as 0 | 1]));
+  const bad = checked
+    .map((c, s) => (c.ok ? null : `seat ${s}: ${c.error}`))
+    .filter((m): m is string => m !== null);
+  if (bad.length) {
+    throw new Error(
+      `constructed game file has an unusable deck, so it cannot be replayed:\n  ${bad.join('\n  ')}\n`
+      + '  (Refusing rather than substituting the other seat\'s deck — a replay of the wrong\n'
+      + '   game is worse than no replay, because it answers confidently.)');
+  }
+  return [(checked[0] as { cards: CardName[] }).cards, (checked[1] as { cards: CardName[] }).cards];
+}
+
+/**
+ * The recorded element trio, refusing the silent default.
+ *
+ * `sanitizeTrio(undefined)` returns `DRAFT_TRIO`, which is right for STARTING a
+ * game and wrong for replaying one: a draft file with no recorded trio gets a
+ * completely different deal, and the tool reports the result as engine drift.
+ * Two files in the corpus are like this (GAXG and HDGG, both saved before
+ * a890788 "Live draft: choose the three elements together"), and GAXG dies at
+ * action [10] with "not an element of this game" — a message that blames the
+ * engine for a missing field.
+ */
+function trioOf(raw: RoomFile, mode: GameMode): Element[] {
+  if (mode === 'draft' && !Array.isArray(raw.els)) {
+    throw new Error(
+      'this draft game recorded no element trio (`els` is absent), so its deal cannot be\n'
+      + '  reproduced — sanitizeTrio would substitute the default and replay a different game.\n'
+      + '  Files saved before the live-draft change (a890788) are in this state and are\n'
+      + '  permanently unreplayable; they are not evidence about anything.');
+  }
+  return sanitizeTrio(raw.els);
 }
 
 function runOnce(raw: RoomFile): Pick<Analysis, 'events' | 'state' | 'refusals'> {
   const names = raw.names ?? ['Player 1', 'Player 2'];
   const mode = raw.mode ?? 'shared';
-  let { state, events } = createGame(raw.seed, names, mode, sanitizeTrio(raw.els), decksOf(raw, mode));
+  let { state, events } = createGame(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode));
   const all = [...events];
   const refusals: Refusal[] = [];
   raw.actions.forEach((a, i) => {

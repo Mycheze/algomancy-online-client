@@ -178,7 +178,7 @@ test('Delver of the Ephemeral: after combat, caches a cost-1 card from your bin,
 test('Feed to Hooba: erases a unit and gives its controller a 3/3 in its formation slot', () => {
   const h = new Harness(4003);
   toDeployment(h);
-  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const A = h.state.deployPlayer!;
   const front = spawn(h, A, 'Unit Token');
   const back = spawn(h, A, 'Unit Token');
   giveResources(h, A, 'light', 2);                            // l/2

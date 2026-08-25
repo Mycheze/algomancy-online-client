@@ -64,7 +64,7 @@ import { Harness } from '../src/harness.ts';
 import {
   ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
 } from './util.ts';
-import type { EngineEvent, Entity, EntityId, Seat } from '../src/types.ts';
+import type { EngineEvent, Entity, Seat } from '../src/types.ts';
 
 // ── 1 & 2. the pattern itself ───────────────────────────────────────────
 

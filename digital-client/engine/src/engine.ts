@@ -15,15 +15,15 @@
  * the RNG state rolled back with everything else).
  */
 import type {
-  Action, Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef,
+  Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef,
   Decision, DecisionOption,
   EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, PendingTrigger,
-  ResourceKind, Seat, SpawnFace, StackItem, Suspension, TargetRef,
+  Seat, SpawnFace, StackItem, Suspension, TargetRef,
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
   isAugment, isGraftable, isTriggered, specForSlot, zoneTriggersFor,
-  type Ability, type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
+  type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
 } from './cards/dsl.ts';
 import { rngShuffle } from './rng.ts';

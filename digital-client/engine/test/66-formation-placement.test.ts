@@ -288,7 +288,7 @@ test('R75 adjacency: my own back slot, and the same ROW of each neighbour', () =
 test('R75 adjacency: the same row of a neighbour IS adjacent when it is empty', () => {
   // a hole (R72) is an existing column with an empty front row: my left-hand
   // neighbour's front slot, at my row
-  const { h, A, D, atk } = board(6612, 3);
+  const { h, D, atk } = board(6612, 3);
   const e0 = new E(h.state);
   const big = e0.spawnUnit(D, 'The Foretold', h.state.battle!.region);
   e0.setBase(big, 9, 9);

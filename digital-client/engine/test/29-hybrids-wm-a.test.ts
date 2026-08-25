@@ -110,7 +110,7 @@ test('Reconfigure: moves target augment unit AND its mods onto another target un
 test('Rook: a NON-virus augment from HAND during battle — refused without it, legal with it', () => {
   const h = new Harness(2910);
   toDeployment(h);
-  const A = h.state.initiative, D = (1 - A) as Seat;
+  const A = h.state.initiative;
   const host = spawn(h, A, 'Unit Token');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });

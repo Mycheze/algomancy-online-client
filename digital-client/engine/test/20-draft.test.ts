@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { createGame, DRAFT_TRIO, IllegalAction, legalActions } from '../src/apply.ts';
+import { DRAFT_TRIO, IllegalAction, legalActions } from '../src/apply.ts';
 import { packCycle } from '../src/engine.ts';
 import { draftDeckList, DECK_LIST } from '../src/cards/registry.ts';
 import { getCard } from '../src/cards/dsl.ts';

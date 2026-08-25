@@ -34,7 +34,7 @@ import { getCard, type EffectCtx, type EffectDef } from '../src/cards/dsl.ts';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { spawn, toDeployment, giveResources } from './util.ts';
-import type { Entity, Seat, StackItem } from '../src/types.ts';
+import type { Seat, StackItem } from '../src/types.ts';
 
 function board(seed: number): { g: E; h: Harness; A: Seat; D: Seat } {
   const h = new Harness(seed);

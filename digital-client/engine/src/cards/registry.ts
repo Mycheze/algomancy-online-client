@@ -7,7 +7,7 @@
  * when grafted under a host); if the marker sits on the card's own triggered/
  * activated ability, that ability is a graft cause (graftCause: true).
  */
-import type { EngineEvent, Entity, Seat, StackItem } from '../types.ts';
+import type { Entity, Seat, StackItem } from '../types.ts';
 import {
   allCardNames, card, getCard, registerAlias, registerSynthetic, unitRestrict,
   type EffectCtx, type EffectDef,

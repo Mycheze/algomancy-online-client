@@ -70,9 +70,7 @@
  *    the same static that gives +2/+1 switches the self-sacrifice off.
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
-import type { E } from '../../engine.ts';
 import { card, effectByKey, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
-import { selfOf } from './helpers.ts';
 
 /** a card that is a SPELL for bin purposes — a spell unit is one too (playing
  * it from the bin casts the spell and then spawns the body). */

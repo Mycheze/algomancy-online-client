@@ -59,7 +59,6 @@
  *    branch there. No mode declines any more.
  */
 import type { EntityId } from '../../types.ts';
-import type { E } from '../../engine.ts';
 import { card, unitRestrict, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt } from './helpers.ts';
 

@@ -53,7 +53,7 @@
  *  - `Entity.spawnedTurn` unparked Banishment.
  *  - `data.from` on the play events unparked Proph.
  */
-import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
+import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, effectByKey, getCard, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';

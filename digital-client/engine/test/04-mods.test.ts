@@ -87,7 +87,11 @@ function graft(h: Harness, seat: number, name: string, hostId: number, position 
 test('graft composition: composite fires as ONE stack item, top-to-bottom', () => {
   const h = new Harness(90);
   toDeployment(h);
-  const A = h.state.initiative === h.state.deployPlayer ? h.state.deployPlayer! : h.state.deployPlayer!;
+  // (There was an `A` here whose ternary had the SAME expression in both
+  // branches — `initiative === deployPlayer ? deployPlayer! : deployPlayer!` —
+  // and which nothing then read. Somebody meant to distinguish the two seats
+  // and it never landed. Deleted rather than guessed at: this test is about
+  // graft composition on ONE seat's unit, and `p` below is that seat.)
   const p = h.state.deployPlayer!;
   giveResources(h, p, 'fire', 10); giveResources(h, p, 'wood', 4);
   const oracle = spawn(h, p, 'Oracle of the Flame');   // "Sacrifice me: [Switch] Create a Fireball 1"

@@ -624,7 +624,6 @@ function rollTurn(h: Harness): void {
 }
 
 const draftTurn = (h: Harness): void => { commitBoth(h); rollTurn(h); };
-const constructedTurn = (h: Harness): void => { bottomBoth(h); rollTurn(h); };
 
 const constructedGame = (seed: number): Harness =>
   new Harness(seed, undefined, 'constructed', undefined, [DECK_LIST.slice(0, 30), DECK_LIST.slice(30, 60)]);

@@ -164,7 +164,7 @@ test('Awoken Tomb: dealt damage → X/X unit token, [once] per turn', () => {
 test('Aberrant Populace: attack → two Wisps out of formation; Wisps sacrifice after combat', () => {
   const h = new Harness(309);
   toDeployment(h);
-  const A = h.state.initiative, D = 1 - A;
+  const A = h.state.initiative;
   const pop = spawn(h, A, 'Aberrant Populace');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[pop]] });

@@ -86,7 +86,7 @@
  *  - (Calming Force COMPLETE as of R100, round 17: "I can't be played from your
  *    hand" is the `noPlayFromHand` flag — see the card.)
  */
-import type { Entity, EntityId, Seat } from '../../types.ts';
+import type { EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { CARD_PLAY_KINDS, card, getCard, isGraftMultiplier, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';

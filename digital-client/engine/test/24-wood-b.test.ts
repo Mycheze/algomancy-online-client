@@ -76,7 +76,7 @@ test('Mindspore Fiend: after combat, may give an opponent control of target ally
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const atk = spawn(h, A, 'Unit Token');              // 1/1 — attacks so combat happens
-  const fiend = spawn(h, D, 'Mindspore Fiend');       // 1/1, defender side (in the battle region)
+  spawn(h, D, 'Mindspore Fiend');   // 1/1, defender side (in the battle region)
   const gift = spawn(h, D, 'Unit Token');             // the ally D gives away
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });

@@ -95,7 +95,7 @@
  *
  * PARKED: none — all 16 cards are scripted (some approximated, see above).
  */
-import type { EngineEvent, Entity, EntityId, Seat, TargetRef } from '../../types.ts';
+import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, effectByKey, isSpellEffect, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, modeTargetOf, doubleStats } from './helpers.ts';

@@ -60,7 +60,7 @@ import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { allCardNames, ambushEffect, getCard, type EffectDef } from '../src/cards/dsl.ts';
 import { effectsOf } from '../src/cards/registry.ts';
-import { drillCard, drillable, seedBoard } from './drill.ts';
+import { drillCard, drillable } from './drill.ts';
 import { E } from '../src/engine.ts';
 import type { GameState, Seat } from '../src/types.ts';
 

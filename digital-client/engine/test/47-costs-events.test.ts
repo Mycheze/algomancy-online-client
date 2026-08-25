@@ -28,7 +28,7 @@ import { E, Suspended } from '../src/engine.ts';
 import { IllegalAction } from '../src/apply.ts';
 import { registerSynthetic, type Printed } from '../src/cards/dsl.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick, skipHasteStep,
+  effStats, ent, finishBattle, give, giveResources, pass, skipHasteStep,
   spawn, toDeployment, unitsOf,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';

@@ -215,7 +215,7 @@ test('R93 layer 5: {Inverted} is shared down the COLUMN, like every other attrib
   // would share inverted attribute with" it.
   const h = new Harness(7904);
   toDeployment(h);
-  const A = h.state.initiative, D = (1 - A) as Seat;
+  const A = h.state.initiative;
   const front = spawnToken(h, A, 4, 4);
   const back = spawnToken(h, A, 6, 6);
   ent(h, front)!.counters = -2;                       // → 2/2

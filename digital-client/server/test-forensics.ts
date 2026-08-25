@@ -16,6 +16,8 @@ import { readFileSync, writeFileSync, rmSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
+import { spawnSync } from 'node:child_process';
+import { DECK_LIST } from '../engine/src/cards/registry.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DIR = join(tmpdir(), `algo-forensics-${process.pid}`);
@@ -198,6 +200,73 @@ ok(c.actions.length === beforeLen - 1, 'the action left the log');
 ok(JSON.stringify(c.state) !== beforeState, 'and the state moved back with it');
 ok(replay(c.actions).skips.length === 0, 'the log still replays with zero skips');
 ok(c.lost.length === 0 && c.forks.length === 0, 'and the room is still fork-free');
+
+/* ── R186: the replay tool must REFUSE a file it cannot faithfully reproduce ──
+ *
+ * Two silent substitutions used to make `replay-room.ts` answer confidently
+ * about a game nobody had played. Both are the same shape and both are the
+ * worst possible failure in a forensics tool, because this repo settles real
+ * playtest reports by replaying these files.
+ *
+ *  (a) `decksOf` fell back to the OTHER SEAT'S DECK when one failed checkDeck.
+ *      One card rename away from firing: checkDeck rejects unknown names, and
+ *      3063f2b renamed "Counter Theif" -> "Counter Thief". A stored deck with
+ *      the old spelling would have replayed all eight constructed logs with
+ *      BOTH SEATS ON ONE DECK, reported as a mystery midgame divergence.
+ *  (b) a draft file with no recorded `els` got `sanitizeTrio`'s default trio,
+ *      so the whole deal was guessed. GAXG and HDGG (saved before a890788) are
+ *      in this state; GAXG dies at [10] blaming the engine for a missing field.
+ */
+/** a deck the real `checkDeck` accepts: 30+ cards from the scripted pool, no
+ *  more than 2 of any one. Built from the pool rather than hand-listed so a
+ *  pool change cannot silently turn this control into an invalid deck. */
+function validDeck(): string[] {
+  const out: string[] = [];
+  for (const n of DECK_LIST) { out.push(n, n); if (out.length >= 30) break; }
+  return out;
+}
+
+console.log('\n[the replay tool refuses a file it cannot reproduce]');
+{
+  const rr = join(HERE, 'replay-room.ts');
+  const run = (file: string): { code: number | null; err: string } => {
+    const r = spawnSync(process.execPath, [rr, file], { encoding: 'utf8' });
+    return { code: r.status, err: (r.stderr ?? '') + (r.stdout ?? '') };
+  };
+  const write = (name: string, obj: unknown): string => {
+    const f = join(DIR, name); writeFileSync(f, JSON.stringify(obj)); return f;
+  };
+
+  // (a) seat 0's deck is junk, seat 1's is fine — the substitution case.
+  // ⚠ The first version of this fixture used 30 copies of one card, which fails
+  // checkDeck's max-2-copies rule — so BOTH decks were bad, the old code threw
+  // on that path anyway, and the red-check refused to go red. The fixture was
+  // wrong, not the fix. A valid deck has to come from the real pool.
+  const goodDeck = validDeck();
+  const badDecks = run(write('BADDECK.json', {
+    seed: 1, mode: 'constructed', names: ['A', 'B'], actions: [],
+    decks: [['No Such Card Exists'], goodDeck],
+  }));
+  ok(badDecks.code !== 0, 'a constructed file with one unusable deck is REFUSED, not substituted');
+  ok(/seat 0/.test(badDecks.err), 'and the refusal names WHICH seat has the bad deck');
+
+  // (b) a draft file with no recorded trio — the guessed-deal case
+  const noTrio = run(write('NOTRIO.json', { seed: 1, mode: 'draft', names: ['A', 'B'], actions: [] }));
+  ok(noTrio.code !== 0, 'a draft file with no recorded element trio is REFUSED, not guessed');
+  ok(/els/.test(noTrio.err), 'and the refusal names the missing field rather than blaming the engine');
+
+  // THE CONTROL, and it took two goes to state correctly. A well-formed file
+  // must still be ANALYSED — that is what makes the two refusals above targeted
+  // rather than the tool having stopped working. It must NOT be "exit code 0":
+  // FORK.json is deliberately divergent, so a non-zero exit is the right answer
+  // for it, and asserting 0 made this control fail for the one reason that has
+  // nothing to do with what it is controlling for.
+  const fine = run(FILE);
+  ok(/actions logged/.test(fine.err),
+    'a well-formed game file is still analysed and reported on — the refusals are targeted');
+  ok(!/cannot be replayed|recorded no element trio/.test(fine.err),
+    'and it is not caught by either refusal');
+}
 
 console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 rmSync(DIR, { recursive: true, force: true });

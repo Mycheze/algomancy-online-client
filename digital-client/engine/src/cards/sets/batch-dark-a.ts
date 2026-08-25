@@ -649,7 +649,7 @@ card('Tilling the Graves', {
     },
     run: (g, ctx) => {
       const seat = ctx.controller;
-      const bin = g.player(seat).bin;
+      g.player(seat).bin;
       // resolve every ref to a live index FIRST, then splice from the back —
       // an index read before an earlier splice would be stale
       const chosen = ctx.targets

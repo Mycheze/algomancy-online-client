@@ -11,7 +11,7 @@ import type {
 } from './types.ts';
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest } from './engine.ts';
 import {
-  affinityPips, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
+  affinityPips, getCard, graftCauseIndex, isAugment, isGraftable,
   registerSynthetic, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
   type EffectDef,
 } from './cards/dsl.ts';
@@ -20,7 +20,6 @@ import { rngShuffle, rngNext } from './rng.ts';
 
 export { IllegalAction };
 
-const ELEMENTS: ResourceKind[] = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
 
 // ── game creation ─────────────────────────────────────────────────────
 

@@ -662,8 +662,8 @@ test("Perish: every player's half is measured at RESOLUTION, before anyone sacri
   const a1 = spawn(h, A, 'Unit Token');
   const a2 = spawn(h, A, 'Unit Token');
   const a3 = spawn(h, A, 'Unit Token');
-  const d1 = spawn(h, D, 'Unit Token');
-  const d2 = spawn(h, D, 'Unit Token');
+  spawn(h, D, 'Unit Token');
+  spawn(h, D, 'Unit Token');
   const d3 = spawn(h, D, 'Unit Token');
   // R25: a HOME region lists only its owner in presentSeats, so "each player"
   // reaches nobody else outside battle. Both seats have to actually be present

@@ -110,7 +110,7 @@ test('Astralith: [three] activated ability puts a +1/+1 counter on a target unit
 test('Construct Overseer: after combat → a Robot 1 (0/0 + one counter), unbounded [Switch]', () => {
   const h = new Harness(506);
   toDeployment(h);
-  const A = h.state.initiative, D = 1 - A;
+  const A = h.state.initiative;
   const overseer = spawn(h, A, 'Construct Overseer');       // 2/2
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[overseer]] }); // into the battle region

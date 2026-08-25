@@ -24,7 +24,6 @@
  *    a bin holds names, so naming the card IS the reference (BinRef).
  */
 import type { EntityId, Seat } from '../../types.ts';
-import type { E } from '../../engine.ts';
 import { card, getCard, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt } from './helpers.ts';
 

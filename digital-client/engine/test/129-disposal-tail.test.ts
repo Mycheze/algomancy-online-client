@@ -31,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { ent, give, giveResources, pass, spawn, toDeployment, toNextBattle } from './util.ts';
-import type { DecisionOption, EngineEvent, Entity, EntityId, Seat } from '../src/types.ts';
+import type { DecisionOption, EngineEvent, EntityId, Seat } from '../src/types.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 

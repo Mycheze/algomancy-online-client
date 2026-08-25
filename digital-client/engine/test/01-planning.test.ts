@@ -6,7 +6,7 @@ import { Harness } from '../src/harness.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 import { E } from '../src/engine.ts';
 import { IllegalAction, legalActions } from '../src/apply.ts';
-import { give, giveResources, toDeployment, tokensOf, unitsOf } from './util.ts';
+import { giveResources, toDeployment, tokensOf, unitsOf } from './util.ts';
 
 test('setup & planning', () => {
   const h = new Harness(1);

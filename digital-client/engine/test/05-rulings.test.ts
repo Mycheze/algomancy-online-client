@@ -41,7 +41,7 @@ test('R1: trigger conditions check at event time; amounts compute at resolution'
 test('R2: simultaneous triggers — owners order their own, NIT resolves first', () => {
   const h = new Harness(102);
   toDeployment(h);
-  const A = h.state.initiative, D = 1 - A;
+  const A = h.state.initiative;
   giveResources(h, A, 'fire', 3);
   // both sides get an "after combat, sacrifice me" via Smouldering augment text
   const aUnit = spawn(h, A, 'Rune Channeler');
