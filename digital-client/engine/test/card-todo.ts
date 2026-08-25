@@ -2926,7 +2926,40 @@ export const CARD_TODO: TodoEntry[] = [
       'node server/replay-room.ts <game>.json on each of the six games names its divergence '
       + 'point. This closes when each of those points has been explained — either as a known '
       + 'rules change or as a fixed regression — rather than when the counts change.',
-    status: 'open',
+    closed:
+      'DIAGNOSED IN FULL (2026-08-25). This entry asked for each divergence to be explained, and '
+      + 'all six now are. ALL SIX ARE DELIBERATE, RECORDED RULES CHANGES. **No regressions. No '
+      + 'restart corruption.** The logs are TRUE RECORDS; only the reader moved. '
+      + 'WEHH [56] <- R97/report #74, a granted-haste play now opens the haste step · '
+      + 'XVUR [51] <- report #87, Worldbender replaces the draw step · '
+      + 'VEAV [113] <- report #81/R57, modal modes moved from resolution to the cast seam · '
+      + 'SMVJ [121] <- R143, Hush Mush enters as the OPPONENT\'s unit so the handover trigger is '
+      + 'gone · UZRG [154] <- negation leaves the stack, so two logged passes are superfluous · '
+      + 'ANBB [125] <- R137, an Unstable death bins first, so Dropslime\'s trashed-trigger now '
+      + 'exists and must be ORDERED against Thoughtripper\'s. '
+      + '⚠ THE REPORTED DIVERGENCE POINT IS WRONG IN ALL SIX CASES — late by 1, 1, 1, 1, 3 and '
+      + 'SIX actions. XVUR\'s advertised [51] is six actions and a whole turn boundary after the '
+      + 'real event at [45], where Ben silently loses 3 life and draws one card fewer. **A '
+      + 'refusal index is never the finding; it is only ever an upper bound.** Only diffing a '
+      + 'per-action state signature against a reference engine finds the true point. '
+      + '⚠ THE CORPUS IS 20 GAMES, NOT 6, and 20 of 22 diverge. Median replayable prefix ~30%; '
+      + 'the oldest half is effectively dead (GAXG 6%, ZQPC 7%, BRDM 13%). Only SAAY (the '
+      + 'shortest real game) and an empty stub replay clean. '
+      + '⚠ AND THE DECISIVE NUMBER: a saved game survives about THREE HOURS of rules work. UZRG '
+      + 'stayed clean 2 commits/~3h; XVUR 3 commits/~1.5h; SMVJ 59 commits/~4.5h. The corpus is '
+      + 'not decaying slowly, it is a wasting asset with a half-life shorter than one working '
+      + 'session, and every round from here adds another dead prefix. '
+      + 'Two things were fixed on the way: replay-room.ts no longer SUBSTITUTES one seat\'s deck '
+      + 'for the other\'s when a deck fails validation, and no longer guesses a draft trio when '
+      + '`els` is absent (R186). GAXG and HDGG have no recorded trio at all and are permanently '
+      + 'unreplayable — they are not evidence about anything. '
+      + 'THE REMAINING WORK IS CT-66: version the logs.',
+    guards: [
+      'server/test-forensics.ts::a constructed file with one unusable deck is REFUSED, not substituted',
+      'server/test-forensics.ts::a draft file with no recorded element trio is REFUSED, not guessed',
+      '143-replay-divergence.test.ts::names the FIRST diverging action, not a skip count',
+    ],
+    status: 'done',
   },
   {
     id: 54,
@@ -3332,6 +3365,107 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A badge chip\'s class attribute has single spaces and no trailing space, and every '
       + 'existing badge assertion still passes for a reason it can state.',
+    status: 'open',
+  },
+  {
+    id: 66,
+    area: 'coverage',
+    severity: 'blocker',
+    title: 'Version the saved games against the engine that produced them',
+    detail:
+      'CT-51 established the diagnosis: every divergence in the corpus is a DELIBERATE rules '
+      + 'change, none is a regression, and a saved game survives about three hours of rules '
+      + 'work. The logs are sound; the reader moved. That is exactly the failure versioning '
+      + 'fixes, and the alternative — retiring forensics for unit tests — would be throwing away '
+      + 'good evidence because we lost the decoder ring.',
+    evidence:
+      'The CT-51 investigation replayed all 22 server games across 170 commits. 20 of 22 '
+      + 'diverge; median replayable prefix ~30%. It also hand-built the proposed tool six times '
+      + '(detached worktree at the recorded SHA) and got a CLEAN replay in 5 of 6 cases in '
+      + 'seconds each — so the approach is demonstrated, not theoretical.',
+    fix:
+      'Four parts, in order. '
+      + '(1) Stamp `engineVersion` (commit SHA) into the room file at creation AND on every fork '
+      + 'entry — VEAV proves one stamp per file is not enough, because a forked file is two '
+      + 'games recorded against two engines. No such field exists today. '
+      + '(2) `replay-room.ts --as-recorded`: spin a detached worktree at that SHA and replay '
+      + 'there. '
+      + '(3) **Report the DELTA between the two replays, not the refusal.** This is the part '
+      + 'that matters: without a reference engine to diff against, the tool structurally CANNOT '
+      + 'name the real divergence, which is why it is off by up to six actions today. A ~50-line '
+      + 'per-action state-signature probe is the working prototype. '
+      + '(4) Mark GAXG and HDGG unreplayable (no recorded trio) so they stop being counted. '
+      + '⚠ Unit tests remain the right answer for games ALREADY past saving — everything '
+      + 'recorded before `engineVersion` exists. Versioning only helps from here forward, so do '
+      + 'it soon: the cost of waiting is measured in dead prefixes per round.',
+    proof: null,
+    verify:
+      'A game saved today still replays cleanly a week and fifty rules commits later, via '
+      + '--as-recorded, and the tool names what changed between then and HEAD.',
+    status: 'open',
+  },
+  {
+    id: 67,
+    area: 'engine',
+    severity: 'minor',
+    title: 'Three small truth-in-reporting defects found while building the hand-entry primitive',
+    detail:
+      '(a) **Worldbender fabricates a `draw` event for a draw that does not happen.** '
+      + '`batch-metal-c.ts` emits `g.ev(\'draw\', "…skips the draw phase…")` as a LOG LINE. It '
+      + 'is a real `draw` event in the stream with no `n`, and inside a battle window it would '
+      + 'be dispatched to draw listeners as a draw that moved no cards. It should be `info`, or '
+      + 'a real draw. '
+      + '(b) **`afterDespawn` recovers the despawn event as `this.events[this.events.length - '
+      + '1]`** — a positional read of a global array, now one line further from its `ev()` call '
+      + 'because `toHand` runs just before it and appends events of its own. Correct today by '
+      + 'ordering alone; a future edit that moves the push after the announce breaks despawn '
+      + 'dispatch SILENTLY. It deserves an explicit handle, not an index. '
+      + '(c) **A fork records only refusals, never silent state change.** `LostAction.kind` has '
+      + 'a `\'changed\'` arm and the restore path only ever pushes `\'lost\'`. A restart onto '
+      + 'an engine that ACCEPTS every action while producing a different board leaves no trace '
+      + 'at all — which is precisely the case CT-66 is being built to detect.',
+    evidence:
+      '(a) and (b) from the R179 agent, (c) from the CT-51 investigation. All three are '
+      + '"the record says something that is not so", which is the class that made CT-51 take a '
+      + 'full round to diagnose.',
+    fix:
+      'Each is small and independent. (c) is the one to do alongside CT-66, since a fork that '
+      + 'cannot record a silent divergence undercuts the whole versioning story.',
+    proof: null,
+    verify:
+      'No card emits a typed event for something that did not happen; afterDespawn names its '
+      + 'event rather than indexing for it; a restart that changes the board without refusing an '
+      + 'action is recorded.',
+    status: 'open',
+  },
+  {
+    id: 68,
+    area: 'coverage',
+    severity: 'minor',
+    title: 'The dead-code sweeps have a gap and a stale exemption list',
+    detail:
+      '`147-comment-conformance.test.ts` §4 sweeps for zero-call-site helpers, and two things '
+      + 'are wrong with it now. (a) Its `DEAD_EXEMPT` list names `tokensInRegion` and '
+      + '`lifeGainedIn`, **both of which were deleted by R181** — and nothing asserts that an '
+      + 'exemption still matches something, so the list is silently lying. That is the same '
+      + 'failure class as a park note that outlived its cause, which is the very thing R174 '
+      + 'built that file to prevent. (b) It sweeps only `src/cards/sets`, so dead helper '
+      + 'FUNCTIONS in `test/` are outside its reach — `28-metal-c::constructedTurn` and '
+      + '`36-cache-prophecy::cacheIdx` were found by `noUnusedLocals` instead, and only because '
+      + 'they happened not to be exported.',
+    evidence:
+      'Reported by the R181 agent, which also established the important limit: **`tsc` ignores '
+      + 'EXPORTED declarations**, so `noUnusedLocals` would never have caught `lifeGainedIn`. '
+      + 'The two mechanisms are complementary and neither subsumes the other — which is exactly '
+      + 'why the exemption list going stale matters.',
+    fix:
+      'Assert every `DEAD_EXEMPT` entry still resolves to a real declaration (drop the two that '
+      + 'do not), and widen §4 past `src/cards/sets`. '
+      + '⚠ The `_`-prefix escape hatch is narrower than it looks: measured, `_` exempts an '
+      + 'unused binding only inside a DESTRUCTURING PATTERN. A plain `const _x = …` and an '
+      + 'unused import still error.',
+    proof: null,
+    verify: 'A stale exemption fails the suite, and a dead helper in test/ is caught by the sweep.',
     status: 'open',
   },
 ];
