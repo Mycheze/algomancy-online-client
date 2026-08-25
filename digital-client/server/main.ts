@@ -25,7 +25,8 @@ import { checkDeck, forcedAction, legalActions, IllegalAction } from '../engine/
 import { other, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
-  applyToRoom, arrivalVerdict, clockSnapshot, createRematch, decidedWinner, deferAction, getRoom,
+  applyToRoom, arrivalVerdict, clockSnapshot, createRematch, decidedWinner, deferAction,
+  deferrableRefusal, getRoom,
   joinableRoom, legalForSeat, openSegment, renameSeat,
   reserveRoomCode, resolveLobby, roomExistsOrReserved, roomLobby,
   restoreRooms, roomWaiting, segmentKey, setLobbyMethod, setLobbySubmission, setRoomDeck,
@@ -716,7 +717,19 @@ wss.on('connection', ws => {
         const hadWinner = room.state.winner !== null;
         // the committed declaration supersedes every in-progress one
         room.building = [null, null];
-        const events = applyToRoom(room, action);
+        // R154: the engine now takes most of what arrives during an opponent's
+        // question, and refuses (atomically, draft discarded) only what would
+        // have disturbed it — which cannot be known until it has run. That
+        // refusal is a "not yet", so it goes in the same queue rather than
+        // back on the wire.
+        let events: import('../engine/src/types.ts').EngineEvent[];
+        try {
+          events = applyToRoom(room, action);
+        } catch (err) {
+          if (!deferrableRefusal(room, action, err)) throw err;
+          deferAction(room, action);
+          return;
+        }
         drainForced(room, events);
         // …and now that this action may have CLOSED a decision, whatever the
         // other seat parked behind it lands, in arrival order. Their events are
@@ -737,6 +750,10 @@ wss.on('connection', ws => {
             into.push(...applyToRoom(room, parked));
             drainForced(room, into);
           } catch (err) {
+            // R154: a released action can hit a question the action ahead of
+            // it in this same drain has just opened — re-park it rather than
+            // refuse it, exactly as on arrival
+            if (deferrableRefusal(room, parked, err)) { deferAction(room, parked); continue; }
             // the world moved under it while it waited — the same refusal the
             // player would have got instantly, told to the seat it belongs to
             if (!(err instanceof IllegalAction)) throw err;

@@ -10035,3 +10035,172 @@ exactly this point. All three routes now file the mod.
 (`129-disposal-tail.test.ts::R65: a TOKEN mod reaches the erased pile however
 its host leaves play`) on purpose. A per-route test would have passed on
 `destroy` alone, which is precisely how the gap survived being written down.
+## R154 — the decision gate learns whose question it is, and what answering it will undo
+
+*2026-08-25. CARD-TODO #44 — the half R150 could not reach. Playtest #98
+(SMVJ, action 238): "Rashi's start of combat (doing all her Wraith triggers)
+doesn't need to take away from what I'm doing in Deployment."*
+
+R150 fixed #98 entirely in `server/rooms.ts`, on the stated belief that the
+engine had to remain a single pure reducer with a **global** decision gate. It
+worked over the wire. It left every caller that goes through `apply()` directly
+frozen exactly as before: **hotseat, and the `Harness` the whole engine test
+suite is written on.**
+
+### The rule
+
+> **A decision belonging to another seat stops you only where the engine cannot
+> prove it is none of your business — outside a hidden simultaneous segment, or
+> where answering it will rewind the world past anything you did.**
+
+`decisionBlocks(state, seat)` in `apply.ts` is that sentence, and it is now the
+single thing consulted by both places R150's §0 named:
+
+* `dispatch()` — was `if (e.s.decision && type !== 'decide' && type !== 'concede')`
+* `legalActions()` — was `if (s.decision) return legalDecisionActions(e, seat)`
+
+It blocks in three cases, and each is a different rule:
+
+1. **It is your own question.** You must answer it, or concede (R65).
+2. **You are not inside a hidden simultaneous segment** — i.e. you are in
+   battle, where priority is sequential and an opponent mid-resolution really
+   does hold the game. Unchanged, deliberately; the gate there is the rule
+   working. `hiddenSegment()` moved into the engine for this, and
+   `rooms.ts segmentKey` is now a one-line wrapper over it rather than a second
+   copy (BL-19's drift, avoided).
+3. **Answering it will rewind the world.** See below.
+
+### ⚠ Case 3, which the ticket did not know about, and which the fix turns on
+
+A **`'resolve'` suspension** (a resolution that stopped halfway) carries an R85
+`snapshot: GameState` taken at the effect *part boundary*, and
+`E.resumeResolve` does `this.s = snap`, carrying forward only `actionCount`,
+`decisionHigh` and the seat names. Everything else — entities, zones, life, the
+RNG stream — goes back.
+
+So an action the **other** seat lands between the question and the answer is not
+reordered. It is **erased**, silently, after they have already watched it
+happen. Measured directly, with case 3 removed from `decisionBlocks` (turn-1
+deployment, seed 424242, seat 1 mid-resolution):
+
+```
+seat 0 plays a card:   life 30 → 33,  hand 8 → 7
+seat 1 answers:        life 33 → 30,  hand 7,  bin 0
+```
+
+The life is back. The card is in neither hand nor bin: it is **gone from the
+game**. A freeze traded for lost state is the worse trade, so case 3 keeps the
+full gate — and `server/rooms.ts`'s deferral queue is what makes that invisible
+to an online player.
+
+### The two gates, and why one of them has to be after the fact
+
+`GameState.decision` is a **single slot** (`types.ts`) and `E.suspend` writes it
+**unconditionally**. A permissive gate alone therefore lets seat B's action
+overwrite seat A's open question, taking the suspension with it — one seat's
+click destroying the other's game state. Whether an action will suspend cannot
+be predicted: it depends on the card, its targets and the board.
+
+So the check is made **after** the action has run, on the draft:
+
+* `pendingFingerprint(state)` captures everything the other seat's pending
+  question will read when it is answered — derived per suspension arm from what
+  `doDecide` actually touches, not guessed. `'cast'` and `'payTrigger'` read
+  only the suspension; **`'orderTriggers'` reads `s.triggerQueue` live** and
+  insists `choice.length === mine.length`, so an action that queues one more
+  trigger while that question is open would make it *permanently unanswerable*
+  — the queue joins the fingerprint for that arm. The segment key is in it too,
+  so nobody's last `donePlanning`/`doneDeploying` can end the step out from
+  under a question.
+* If it changed, `apply()` throws `IllegalAction` with `disturbs = true` and the
+  **whole draft is discarded**. The caller keeps the state it passed in, so the
+  clobbered decision never existed.
+
+This is only sound because `apply()` works on a `structuredClone` and returns a
+new state — a caller that never sees the draft cannot be hurt by one that is
+thrown away. That property is now asserted as a test in its own right, because
+the fix rests on it.
+
+### A third change, in `settle()`
+
+`E.settle` already refused to drain the deployment stack (`&& !this.s.decision`)
+or run the damage pump while a question was open. The **trigger queue** never
+needed the same guard, because before R154 nothing could run at all while a
+decision was open, so `settle()` was only ever entered with the slot empty.
+
+R154 changes that, and without a guard `processTriggerQueue` would build, aim
+and resolve the **asking** seat's trigger batch on the **acting** seat's tick —
+and re-enter `suspend` doing it. `settle()` now returns early on any open
+decision, after `checkDeaths` and `refreshProphecies` (state-based bookkeeping
+with no choices in it, and a unit the acting seat just killed must still die).
+
+### What the server keeps — correcting CT-44's own fix text
+
+CT-44 said: *"Then the server's compensation becomes redundant and should be
+deleted in the same change."* **It is not redundant, and deleting it would have
+been a regression.** Precisely:
+
+* **`legalForSeat` — shrank to a sliver, and the sliver is load-bearing.** Its
+  R150 shadow (a state with `decision`/`suspension` nulled) is gone for every
+  case the engine now handles itself. What is left is case 3 alone: there the
+  engine must keep *refusing* while the server may still *offer*, because the
+  server has a queue and the engine does not. `legalActions` must **not** be
+  widened to match — its contract is "every action returned is legal", the
+  fuzzer checks it, and an engine that offers what it refuses is the exact
+  half-fix R150's notes warn about.
+* **`arrivalVerdict` — narrowed, not deleted.** It now asks `decisionBlocks`,
+  the same predicate the engine asks, so an action the engine will take is
+  applied **on arrival** instead of on the answer. That is the user-visible half
+  of R154: under R150, a player deploying against a twelve-trigger pile watched
+  their own clicks queue up and land in a burst thirty seconds later, which is
+  still #98's complaint one layer along.
+* **The deferral queue — kept whole, and given a second door.** `MAX_DEFERRED`,
+  the `decide`/`concede` escapes and the drain are unchanged. `deferrableRefusal`
+  routes the after-the-fact `disturbs` refusal into the same queue, so the
+  player is told "waiting", never "illegal".
+
+Two implementations of one rule is real drift (BL-19). A serialiser standing
+between a single-slot decision and two concurrent seats is not a second
+implementation — it is the thing a rule cannot be.
+
+### Tests
+
+`engine/test/130-seat-aware-gate.test.ts` (10), driven from a `Harness` — i.e.
+hotseat, the caller R150 could not reach — with a **real** start-of-deployment
+Wraith pile, not a stub. §1 asserts the list *and* that `apply()` accepts, in
+that order. §2 is the clobber. §3 is the rewind. §4 is four negative controls
+(a battle-phase state; a *real* battle with a real priority window and the same
+`'cast'` suspension kind §1 lets through, so only the phase can differ; your own
+question; concede from either seat). §5 is purity.
+
+Every one red-checked by mutating the source and confirming failure: dropping
+case 2 reddens both battle controls; dropping case 3 reddens §3 and four of
+`test-concurrency`'s; dropping case 1 reddens §1, §2 and the own-question
+control; making `decisionBlocks` always block reddens all of §1 and §2 and five
+of `test-concurrency`'s; removing the fingerprint check reddens §2 and three of
+`test-concurrency` §4b; removing the `settle()` guard reddens §1's trigger-pile
+test; `const draft = state` reddens §5.
+
+`server/test-concurrency.ts` §0 was **rewritten, not deleted**: it asserted the
+two blocking lines by name so the diagnosis was executable, and it now asserts
+the properties those same two lines were replaced by. §3 moved from the cast-time
+scenario (which R154 lets straight through) to the mid-resolution one, which is
+what the queue still exists for; §3b and §4b are new.
+
+### ⚠ FOR THE OWNER
+
+1. **CT-44's "delete the server compensation" is wrong**, for the reason in the
+   section above. The queue is not a duplicated rule; it is a serialiser in
+   front of a single slot, and R85's rollback is what it is serialising.
+2. **Saved game ANBB does not move, and should not.** Its 15 skips are
+   unchanged (13 of them the message `a decision is pending for Ben`), but every
+   one is in **`phase=battle`**, behind an `orderTriggers` decision for seat 0
+   that is stuck open because action [125]'s logged answer is a *number* and the
+   current engine's ordering question wants an *array* — engine drift since the
+   game was played (it predates R144). Nothing in that cascade is inside a
+   hidden simultaneous segment, so R154 cannot and must not touch it. SMVJ is
+   unchanged at 209, as required.
+3. **The hotseat UI is still gated, one layer above this.** `ui/main.ts:2600`
+   returns the pending decision's bar whenever `s.decision` is set, so a hotseat
+   player still cannot use the other seat's now-legal deployment options. That
+   is a presentation change, out of R154's scope, and reported rather than made.

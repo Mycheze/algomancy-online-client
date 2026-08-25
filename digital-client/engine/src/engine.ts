@@ -99,7 +99,14 @@ export class GameEnded { }
  * with — threaded commitItem → resolveItem → resolveParts so that a
  * mid-resolution suspension can carry it (see Suspension 'resolve'). */
 export interface ChainRest { then: 'push' | 'resolve'; moreItems: StackItem[] }
-export class IllegalAction extends Error { }
+export class IllegalAction extends Error {
+  /** R154: this refusal is not "you may not do that" but "not YET" — the
+   * action was applied to the draft, turned out to disturb the OTHER seat's
+   * open question, and the whole draft was thrown away. The server reads this
+   * flag and parks the action instead of relaying a refusal (rooms.ts
+   * `deferrableRefusal`); a hotseat caller may simply retry after the answer. */
+  disturbs?: boolean;
+}
 /** thrown by ctx.choose inside an effect part; converted to a 'resolve' suspension */
 class PartChoice {
   key: string;
@@ -7754,6 +7761,31 @@ export class E {
       // totals, units in play); the counting ones latch at their own moments
       // (startTurn / endBattleRound / end of the haste step).
       this.refreshProphecies();
+      /**
+       * R154: A PENDING QUESTION STOPS THE WORLD — for everyone.
+       *
+       * Two lines below already say this for their own piece of business:
+       * the deployment stack drain is guarded `&& !this.s.decision`, and the
+       * combat-damage pump opens `if (this.s.decision || …) return`. The
+       * trigger queue never needed it, because before R154 nothing could run
+       * at all while a decision was open — apply()'s gate refused every
+       * action from BOTH seats, so settle() was only ever entered with the
+       * slot empty.
+       *
+       * R154 lets the other seat act inside a hidden simultaneous segment,
+       * and their action reaches settle() with somebody else's question open.
+       * Without this line `processTriggerQueue` would drain the ASKING seat's
+       * trigger batch on the acting seat's tick — building, aiming and
+       * resolving triggers whose owner is in the middle of being asked
+       * something about them, and (worse) re-entering `suspend`, which would
+       * overwrite the open decision.
+       *
+       * `checkDeaths` and `refreshProphecies` stay ABOVE the line on purpose:
+       * they are state-based bookkeeping with no choices in them, and a unit
+       * the acting seat just killed must die now. What they queue simply
+       * waits, exactly like anything else the batch is holding.
+       */
+      if (this.s.decision) return;
       if (!this.s.triggerQueue.length) {
         /**
          * R144(a): DRAIN THE DEPLOYMENT STACK.

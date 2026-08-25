@@ -60,7 +60,7 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-view-snapshot.ts',
     covers: "R85: the suspension's rollback snapshot — a whole unredacted GameState — never reaches a client, not even the seat whose decision it is" },
   { file: 'test-concurrency.ts',
-    covers: "R150/CT-32 (playtest #98): one seat's pending decision inside a hidden simultaneous segment must not freeze the other seat's deployment — the diagnosis (apply.ts's global decision gate), legalForSeat's narrow un-gating, the deferral round trip, its bounds, and the privacy properties it must not break" },
+    covers: "R150+R154/CT-32+CT-44 (playtest #98): one seat's pending decision inside a hidden simultaneous segment must not freeze the other seat's deployment — the two engine lines that used to block (now apply.ts's seat-aware decisionBlocks), the one case the deferral queue still exists for (an R85 snapshot-carrying mid-resolution suspension, whose answer would rewind the other seat's work away), the cast-time case that no longer waits at all, the after-the-fact clobber refusal, the queue's bounds and escapes, and the privacy properties none of it may break" },
   { file: 'test-formation-decision.ts',
     covers: "BL-24: both formation asks (R75 resolve-time, R29 cast-time) reach the asked seat intact over viewFor + legalActions as kind 'formationSlot', with the decide answers offered, and redact to nothing for the opponent" },
 ];

@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 // the real WebSockets main.ts plugs in; this module only checks presence
 import type { WebSocket } from 'ws';
 import type { Action, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Seat } from '../engine/src/types.ts';
-import { apply, checkDeck, createGame, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { apply, checkDeck, createGame, decisionBlocks, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 import { other } from './view.ts';
 import {
   resolveTrio, sanitizeMethod, sanitizeSubmission, submissionReady,
@@ -56,14 +56,20 @@ const GAMES_DIR = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
  */
 export type SegKey = 'plan' | 'haste' | 'deploy';
 
-/** Which hidden segment is this state in, if any? */
+/** Which hidden segment is this state in, if any?
+ *
+ * R154 moved the predicate itself into the engine (`hiddenSegment` in
+ * apply.ts) because the engine's own decision gate now turns on it, and two
+ * copies of one rule is the drift BL-19 is this repo's standing example of.
+ * The doc block above stays here, where the segments are actually about the
+ * server's reveal machinery; this is the same function under the name the
+ * server has always called it by.
+ *
+ * (hasteEnding: the haste step's end-of-step triggers may suspend on a
+ * decision with hasteDone already conceptually spent — the resource step is
+ * definitively over, so this is never 'plan' again.) */
 export function segmentKey(s: GameState): SegKey | null {
-  // hasteEnding: the haste step's end-of-step triggers may suspend on a
-  // decision with hasteDone already conceptually spent — the resource step is
-  // definitively over, so this is never 'plan' again.
-  if (s.phase === 'planning') return (s.hasteDone || s.hasteEnding) ? 'haste' : 'plan';
-  if (s.phase === 'deploy') return 'deploy';
-  return null;
+  return hiddenSegment(s);
 }
 
 /* ── R150 / CT-32: ONE SEAT'S TRIGGERS MUST NOT FREEZE THE OTHER SEAT ──────
@@ -123,21 +129,43 @@ export const MAX_DEFERRED = 8;
 /**
  * The legal actions the server publishes to `seat`.
  *
- * The ONLY divergence from `legalActions` is the one CT-32 is about: inside a
- * hidden simultaneous segment, a decision that belongs to the OTHER seat is
- * not this seat's business and must not empty their list. Outside a segment
- * (i.e. in battle) this is `legalActions` exactly, because there the block is
- * the rule working.
+ * ⚠ R154 SHRANK THIS, and the sliver that is left is the interesting part.
  *
- * The shadow drops `suspension` with `decision` because they are one fact —
- * `legalActions` reads neither on the paths this reaches, but leaving a
- * suspension standing next to a null decision would be a state the engine
- * never produces, and nothing downstream should have to reason about it.
+ * R150 wrote this as a shadow state with `decision`/`suspension` nulled,
+ * because `legalActions` opened with a global `if (s.decision) return
+ * legalDecisionActions(...)` and there was no other way past it. That made the
+ * server the second place the "who may act while a question is open" rule was
+ * written, and the FIRST place — the engine — went on freezing hotseat and
+ * the whole test suite (CARD-TODO #44). R154 moved the rule into the engine,
+ * so for almost everything this is now `legalActions`, once, with no shadow.
+ *
+ * THE EXCEPTION, and why deleting this function outright was wrong: the
+ * snapshot-carrying mid-resolution suspension (apply.ts `decisionBlocks`,
+ * case 3). There the engine must keep REFUSING the other seat — answering
+ * rewinds the whole GameState past anything they did — but the server can
+ * still OFFER them their options and park what arrives, because parking is
+ * not applying. The two layers disagree ON PURPOSE:
+ *
+ *      engine   "not yet"          (and it means it — R85 would erase you)
+ *      server   "go ahead, I'll hold it"   (arrivalVerdict → 'defer')
+ *
+ * `legalActions` must NOT be widened to match, whatever the symmetry argues:
+ * its contract is "every action returned is legal", the fuzzer checks it, and
+ * an engine that offers what it refuses is the exact half-fix R150's notes
+ * warn about. An offer the SERVER makes good on with a queue is a different
+ * thing from an offer the engine breaks.
+ *
+ * The `segKey` argument is now ignored — the engine derives the segment from
+ * the state, which beats trusting the room's cached copy — and is kept only so
+ * this stays a drop-in for every existing call site.
  */
-export function legalForSeat(state: GameState, seat: Seat, segKey: SegKey | null): Action[] {
-  if (segKey === null || !state.decision || state.decision.seat === seat) {
-    return legalActions(state, seat);
-  }
+export function legalForSeat(state: GameState, seat: Seat, _segKey?: SegKey | null): Action[] {
+  // everything the engine is now seat-aware about, and every case where the
+  // block is simply correct (your own question; battle): ask it directly
+  if (!decisionBlocks(state, seat)) return legalActions(state, seat);
+  if (!state.decision || state.decision.seat === seat) return legalActions(state, seat);
+  if (hiddenSegment(state) === null) return legalActions(state, seat);
+  // what is left is case 3 alone: offer, and let the queue make it true
   return legalActions({ ...state, decision: null, suspension: null }, seat);
 }
 
@@ -163,6 +191,20 @@ export type ArrivalVerdict =
  *    answer — this is the negative control the tests assert.
  *  - outside a hidden segment there is no concurrency to protect: battle is
  *    sequential and the block is correct.
+ *
+ * R154 NARROWED IT. Before, every action arriving while the opponent held a
+ * question was parked, because the engine refused all of them — which meant a
+ * player deploying against a twelve-trigger pile watched their own clicks
+ * queue up and land in a burst thirty seconds later. That is still #98's
+ * complaint, one layer along. Now the engine takes the action outright
+ * wherever it can prove the question is undisturbed, so the room only parks
+ * what the engine will still refuse: `decisionBlocks` is the same predicate on
+ * both sides of the wire, asked once.
+ *
+ * What is left to park is exactly the snapshot-carrying mid-resolution
+ * suspension (apply.ts `decisionBlocks`, case 3): answering it rewinds the
+ * whole GameState to the part boundary, so anything the other seat landed in
+ * the meantime would be erased. THAT is why this queue is not redundant.
  */
 export function arrivalVerdict(
   state: GameState, action: Action, segKey: SegKey | null, parked: number,
@@ -171,8 +213,27 @@ export function arrivalVerdict(
   if (action.type === 'decide' || action.type === 'concede') return 'apply';
   if (state.decision.seat === action.seat) return 'refuse';
   if (segKey === null) return 'refuse';
+  if (!decisionBlocks(state, action.seat)) return 'apply';
   if (parked >= MAX_DEFERRED) return 'refuse';
   return 'defer';
+}
+
+/**
+ * R154's second door onto the same queue: the engine ACCEPTED the action into
+ * a draft, discovered on the way out that it had disturbed the other seat's
+ * open question, and threw the draft away whole (`IllegalAction.disturbs`).
+ *
+ * Whether an action suspends cannot be known before it runs — it depends on
+ * the card, its targets and the board — so `arrivalVerdict` cannot predict
+ * this case and must not try. Park it here instead, where it is now a fact
+ * rather than a forecast: the player gets the same "lands when they answer"
+ * they would have got from a prediction, and R150's promise that nothing goes
+ * back on the wire as a refusal survives R154's narrowing.
+ */
+export function deferrableRefusal(room: Room, action: Action, err: unknown): boolean {
+  return err instanceof IllegalAction && err.disturbs === true
+    && room.segKey !== null
+    && room.deferred[action.seat]!.length < MAX_DEFERRED;
 }
 
 /** Park an action behind the opponent's open decision. */

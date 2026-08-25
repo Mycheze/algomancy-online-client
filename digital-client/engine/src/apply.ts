@@ -161,8 +161,133 @@ export function createGame(
 
 // ── the reducer ───────────────────────────────────────────────────────
 
+/* ── R154: THE SEAT-AWARE DECISION GATE ───────────────────────────────────
+ *
+ * CARD-TODO #44, the half R150 could not reach. Playtest #98: *"Rashi's start
+ * of combat (doing all her Wraith triggers) doesn't need to take away from
+ * what I'm doing in Deployment."* R150 fixed that entirely in server/rooms.ts
+ * — which left hotseat, the `Harness`, and therefore the whole engine test
+ * suite still frozen, because they go through `apply()` directly.
+ *
+ * The rule, in one sentence: **a decision belonging to another seat stops you
+ * only where the engine cannot prove it is none of your business — outside a
+ * hidden simultaneous segment, or where answering it will rewind the world
+ * past anything you did.**
+ *
+ * It is TWO gates, and only both together are safe. `GameState.decision` is a
+ * single slot (types.ts) and `E.suspend` overwrites it unconditionally, so a
+ * permissive gate alone would let one seat's action silently destroy the
+ * other's open question — a freeze traded for lost state, which is worse.
+ *
+ *   BEFORE (`decisionBlocks`, below)  a static "may this seat act at all".
+ *   AFTER  (`pendingFingerprint`)     the action is applied to the draft and
+ *                                     the other seat's pending question is
+ *                                     compared byte for byte. Changed by so
+ *                                     much as a field? The draft is thrown
+ *                                     away whole and the action is refused
+ *                                     with `disturbs`, so the server parks it.
+ *
+ * The after-gate is only sound because `apply()` works on a `structuredClone`
+ * and returns a NEW state: a caller that never sees the draft cannot be hurt
+ * by one that is discarded. That is the whole reason the check may be made
+ * after the fact rather than predicted, and predicting it is not possible —
+ * whether a play suspends depends on the card, its targets and the board.
+ */
+
+/** Which hidden simultaneous segment is this state in, if any?
+ *
+ * THE definition, and server/rooms.ts `segmentKey` is a thin wrapper over it
+ * (its doc block is the long-form ruling). Two copies of this predicate is
+ * exactly the drift BL-19 is this repo's standing example of, and R154 needs
+ * it in the engine because the engine's own gate now turns on it. */
+export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {
+  if (s.phase === 'planning') return (s.hasteDone || s.hasteEnding) ? 'haste' : 'plan';
+  if (s.phase === 'deploy') return 'deploy';
+  return null;
+}
+
+/**
+ * R154 — does the open decision (if any) stop `seat` from acting?
+ *
+ * Three ways it does, and each is a different rule:
+ *
+ *  1. **It is yours.** Your own question gates your own input, exactly as
+ *     before R154. You must answer it (or concede — R65).
+ *  2. **You are not inside a hidden simultaneous segment.** In battle,
+ *     priority is sequential and an opponent mid-resolution genuinely does
+ *     hold the game; the gate there is the rule working, not a bug.
+ *  3. **The answer will rewind the world.** ⚠ THE ONE THE TICKET DID NOT
+ *     KNOW ABOUT. A mid-resolution ('resolve') suspension carries an R85
+ *     `snapshot` of the whole GameState taken at the part boundary, and
+ *     `E.resumeResolve` does `this.s = snap`, carrying forward only
+ *     `actionCount`, `decisionHigh` and the seat names. Anything the OTHER
+ *     seat did between the question and the answer is therefore ERASED — the
+ *     unit they deployed, the mana they spent, the card that left their hand.
+ *     Letting them act into that window would not freeze them; it would show
+ *     them a move that later un-happened, which is the worse failure.
+ *     Snapshot-carrying suspensions keep the full gate, and server/rooms.ts's
+ *     deferral queue is what makes that invisible to an online player.
+ *
+ * Note what is NOT here: the SHAPE of the acting seat's action. That cannot be
+ * decided in advance (see the block above); it is decided after the fact, by
+ * `pendingFingerprint` in `apply()`.
+ */
+export function decisionBlocks(s: GameState, seat: Seat): boolean {
+  const dec = s.decision;
+  if (!dec) return false;
+  if (dec.seat === seat) return true;
+  if (hiddenSegment(s) === null) return true;
+  if (s.suspension?.type === 'resolve' && s.suspension.snapshot) return true;
+  return false;
+}
+
+/**
+ * Everything the OTHER seat's pending question will read when it is answered.
+ * Two states with the same fingerprint answer that question identically, so
+ * an action that leaves it unchanged is invisible to the seat being asked.
+ *
+ * Derived per suspension arm from what `doDecide` actually touches, not from
+ * a guess:
+ *
+ *   'cast'          reads `sus.item` / `sus.partIndex` / the decision options,
+ *                   all carried ON the suspension. Covered by the pair.
+ *   'payTrigger'    reads `sus.trigger` and `sus.tax`. Same.
+ *   'orderTriggers' ⚠ reads `s.triggerQueue` LIVE — `mine = queue.filter(t =>
+ *                   t.controller === sus.seat)` — and then insists
+ *                   `choice.length === mine.length`. An action that queues one
+ *                   more trigger while the ordering question is open makes it
+ *                   PERMANENTLY unanswerable ('bad ordering' on every reply),
+ *                   so the queue joins the fingerprint for this arm. The whole
+ *                   queue, not just the asking seat's slice: `triggerOrderedSeats`
+ *                   is shared bookkeeping and a batch that grew under an
+ *                   ordering question is not the batch that was asked about.
+ *   'combatAssign'  battle-only, so `decisionBlocks` never lets anything past
+ *                   it in the first place.
+ *   'resolve'       likewise excluded, for the snapshot reason above.
+ *
+ * Cheap by construction: it is only ever computed on the path `decisionBlocks`
+ * has already let through, which is exactly the path where `s.suspension`
+ * carries no GameState snapshot.
+ */
+function pendingFingerprint(s: GameState): string {
+  const sus = s.suspension;
+  return JSON.stringify([
+    s.decision, sus,
+    // the acting seat may not end the segment out from under a question either
+    // (the last `donePlanning` / `doneHaste` / `doneDeploying` runs the step's
+    // end and the next step's start): the answer would land in a phase its
+    // asker never saw.
+    hiddenSegment(s),
+    sus?.type === 'orderTriggers' ? s.triggerQueue : null,
+  ]);
+}
+
 export function apply(state: GameState, action: Action): ApplyResult {
   if (state.phase === 'gameover') throw new IllegalAction('the game is over');
+  // R154: only on the path the seat-aware gate deliberately opens. A concede
+  // is exempt — it ends the game, so there is no later answer to protect.
+  const guard = state.decision && action.type !== 'concede'
+    && !decisionBlocks(state, action.seat) ? pendingFingerprint(state) : null;
   const draft = structuredClone(state);
   draft.actionCount++;
   const e = new E(draft);
@@ -170,6 +295,17 @@ export function apply(state: GameState, action: Action): ApplyResult {
     dispatch(e, action);
   } catch (sig) {
     if (!(sig instanceof Suspended) && !(sig instanceof GameEnded)) throw sig;
+  }
+  if (guard !== null && e.s.phase !== 'gameover' && pendingFingerprint(e.s) !== guard) {
+    // The draft is discarded by throwing: the caller keeps `state`, so the
+    // clobbered decision never existed. This is the ONLY thing standing
+    // between R154's permissive gate and one seat's action destroying the
+    // other's open question in a slot that holds exactly one.
+    const err = new IllegalAction(
+      `that would disturb the decision pending for ${e.pname(state.decision!.seat)}`
+      + ' — it lands once they have answered');
+    err.disturbs = true;
+    throw err;
   }
   return {
     state: e.s,
@@ -193,8 +329,12 @@ export function replay(seed: number, actions: Action[], names?: [string, string]
 function dispatch(e: E, action: Action): void {
   // R65: conceding is the one thing you may always do — including while the
   // pending decision is the reason you want to stop.
-  if (e.s.decision && action.type !== 'decide' && action.type !== 'concede') {
-    e.illegal(`a decision is pending for ${e.pname(e.s.decision.seat)}`);
+  // R154: `decisionBlocks`, not a bare `e.s.decision` — a question that is not
+  // yours, inside a hidden simultaneous segment, is not your business and must
+  // not freeze you. See its doc block for the three ways it still does block,
+  // and apply()'s after-gate for what stops you clobbering it.
+  if (decisionBlocks(e.s, action.seat) && action.type !== 'decide' && action.type !== 'concede') {
+    e.illegal(`a decision is pending for ${e.pname(e.s.decision!.seat)}`);
   }
   // Report #86 / CARD-TODO 22: during deployment, ANY action a seat takes
   // other than hitting Done marks that seat as having acted (owner's ruling:
@@ -2022,7 +2162,14 @@ export function legalActions(state: GameState, seat: Seat): Action[] {
   const e = new E(structuredClone(state));   // E for queries only
   const s = e.s;
   if (s.phase === 'gameover') return [];
-  if (s.decision) return legalDecisionActions(e, seat);
+  // R154: a decision empties your list only while it BLOCKS you. When it is
+  // the other seat's question inside a hidden simultaneous segment, fall
+  // through to your own options — offering an empty list is what drew the
+  // client's "Waiting for X…" bar over a player who was free to keep
+  // deploying (playtest #98). The branches below read neither `s.decision` nor
+  // `s.suspension` on any path this reaches, which is why falling THROUGH and
+  // R150's shadow-clone-with-decision-nulled produce the same list.
+  if (s.decision && decisionBlocks(s, seat)) return legalDecisionActions(e, seat);
   if (s.phase === 'planning' && s.hasteDone) return legalHasteActions(e, seat);   // haste step (R18)
   if (s.phase === 'planning' && !s.planningDone[seat]) return legalPlanningActions(e, seat);
   if (s.phase === 'battle' && s.battle) return legalBattleActions(e, seat);
