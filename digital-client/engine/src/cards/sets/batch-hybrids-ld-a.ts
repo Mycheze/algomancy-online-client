@@ -42,9 +42,15 @@
  *    Bloodwind Revenant / Rippleback Skulker reconstruction: combat damage to a
  *    player emits only 'lifeLost' ({ why: 'combat' }), with no column
  *    attribution, so when() rebuilds "my column connected" (attacking and never
- *    blocked, or Piercing / a Piercing blocking column). "Erase me" deletes the
- *    entity and its mods without a bin, a death or a despawn — resolution has
- *    no erase hook, so it is done inline (the Reconfigure precedent).
+ *    blocked, or Piercing / a Piercing blocking column). R157 §4 (owner,
+ *    2026-08-25) moved that reconstruction into ONE engine predicate,
+ *    E.columnDealtCombatDamage, shared with Vroot, Eldritch Dreamtender and
+ *    Blightmound; "to an opponent" is what makes this card ask for the FACE
+ *    channel alone. Zephyrzoa's power gate (the LIVE COLUMN's total, not the
+ *    anchor's own) was already the reading the ruling confirmed.
+ *    "Erase me" deletes the entity and its mods without a bin, a death or a
+ *    despawn — resolution has no erase hook, so it is done inline (the
+ *    Reconfigure precedent).
  *  - DREAM LAPSE's "recall target spell effect" is R68's removeFromStack()
  *    with a different destination: the item leaves the stack and its CARD goes
  *    to its controller's hand rather than to a bin. A triggered/activated item
@@ -91,7 +97,7 @@
  *    the amount is latched at that instant).
  *  - Hyper Beam's [Gain 4 debt] is a real cast cost, charged by playAtTiming.
  */
-import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
+import type { CardName, EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, manaOf, isUnitCard, pickUnit } from './helpers.ts';
@@ -128,38 +134,21 @@ const eraseUnit = (g: E, u: Entity): void => {
     { unit: u.id, card: u.card, seat: u.controller, region: u.region });
 };
 
-/** ⚠ "my column deals combat damage to an opponent" (see header): checked at
- * EVENT time on the combat 'lifeLost'. My column has to connect — attacking
- * and never blocked (or Piercing), or blocking with Piercing — in the sub-step
- * MY column strikes in (R117). */
-const myColumnConnected = (g: E, self: Entity, ev: { data?: Record<string, unknown> }): boolean => {
-  if (ev.data?.why !== 'combat') return false;
-  const b = g.s.battle;
-  if (!b) return false;
-  const victim = ev.data?.seat as Seat | undefined;
-  if (victim === undefined || victim === self.controller) return false;
-  // R117 (owner, 2026-08-23): the trigger fires in the sub-step MY OWN COLUMN
-  // strikes in — same gate, same reason, as Eldritch Dreamtender's copy in
-  // batch-metal-a. `when()` only: see E.strikesInCurrentSubStep on the timing.
-  if (!g.strikesInCurrentSubStep(self)) return false;
-  const col = g.columnOf(self.id);
-  if (!col) return false;
-  const alive = col.filter(id => g.entity(id));
-  // combat face damage is AGGREGATED into one 'lifeLost' per seat per sub-step,
-  // so "my column connected" is not enough on its own: a 0-power column (a 0/x
-  // body, or one whose hitters already died in the Swift sub-step) would read
-  // someone ELSE'S damage as its own. Match batch-light-a's Vroot, which sums
-  // the whole live column rather than only the anchor (batch-dark-b's
-  // Blightmound checks the anchor alone — flagged as a three-way divergence).
-  const power = alive.reduce((n, id) => n + Math.max(0, g.effStats(g.entity(id)!)[0]), 0);
-  if (power <= 0) return false;
-  const ci = b.columns.indexOf(col);
-  if (ci !== -1) {
-    return victim === b.defender
-      && (b.blocks[ci] === undefined || g.colAttrs(alive).has('Piercing'));
-  }
-  return victim === b.attacker && g.colAttrs(alive).has('Piercing');
-};
+/** ⚠ "my column deals combat damage TO AN OPPONENT" (see header): the shared
+ * engine predicate, on the FACE channel only. The "to an opponent" narrowing
+ * is exactly what excludes the unit-damage channels — this text pays out on
+ * damage dealt to a PLAYER, so it hears the aggregated combat 'lifeLost' and
+ * nothing else. Everything else (R117's sub-step gate, R157 §4's live-column
+ * power gate, the connect test) lives in E.columnDealtCombatDamage, which
+ * Vroot, Eldritch Dreamtender and Blightmound now share — the three-way
+ * divergence this comment used to flag is gone.
+ *
+ * R157 §4 (owner, 2026-08-25): the power gate is the COLUMN's, never the
+ * anchor's own — "0 power units do no damage. But the other thing in the
+ * column can still contribute to the shared column power." This reading was
+ * already right; it is now the only reading. */
+const myColumnConnected = (g: E, self: Entity, ev: EngineEvent): boolean =>
+  g.columnDealtCombatDamage(self, ev, ['face']);
 
 // ═══════════════════════ LIGHT / FIRE (lr) ════════════════════════════
 

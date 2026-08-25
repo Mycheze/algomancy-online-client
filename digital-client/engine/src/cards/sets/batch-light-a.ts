@@ -37,15 +37,20 @@
  *    "stays at resolution … CastCost carries a FIXED amount"; R64 added the
  *    variable form.) It obeys the same R49 ruling either way: each point is
  *    re-checked, so a life cost you cannot survive is never payable.
- *  - "MY COLUMN DEALS COMBAT DAMAGE" (Vroot) is read off the combat events the
- *    way Amphivore / Blightmound read it: a 'damage' event with no `source`
- *    tag against the directly opposing column, or the aggregated combat
- *    'lifeLost' with my column connecting — and, since R117, only in the
- *    SUB-STEP MY OWN COLUMN STRIKES IN (E.strikesInCurrentSubStep). A column
- *    that both kills blockers and pierces through fires once per damage
- *    instance. What is STILL approximate is R117's own residue: face damage
- *    arrives as one aggregated `lifeLost` per seat per sub-step, so two of my
- *    columns connecting in the SAME sub-step are indistinguishable here.
+ *  - "MY COLUMN DEALS COMBAT DAMAGE" (Vroot) is read off the combat events: a
+ *    'damage' event with no `source` tag against the directly opposing column,
+ *    or the aggregated combat 'lifeLost' with my column connecting — and,
+ *    since R117, only in a SUB-STEP MY OWN COLUMN STRIKES IN
+ *    (E.strikesInCurrentSubStep; R157 §5 made that "a", not "the", because a
+ *    {Swift}{Sluggish} column strikes in two). A column that both kills
+ *    blockers and pierces through fires once per damage instance.
+ *    R157 §4 (owner, 2026-08-25) made this ONE shared predicate,
+ *    E.columnDealtCombatDamage, over the four cards printing the clause;
+ *    Vroot's own reading — the LIVE COLUMN's total power, not the anchor's —
+ *    was already the right one and is now the only one. What is STILL
+ *    approximate is R117's own residue: face damage arrives as one aggregated
+ *    `lifeLost` per seat per sub-step, so two of my columns connecting in the
+ *    SAME sub-step are indistinguishable here.
  *
  *  - (THE EVERYWHERE is NO LONGER approximated, 2026-08-23. This entry used to
  *    describe an until-regroup silence applied once at naming time, and named
@@ -104,49 +109,27 @@ const opponentsOf = (g: E, region: number, seat: Seat): Seat[] =>
   g.s.regions[region]!.presentSeats.filter(s => s !== seat);
 
 /**
- * "My column deals combat damage" (header approximation), evaluated at EVENT
- * time (R1) on the two channels combat damage can take:
- *  - 'damage' with no `source` tag (combat, never effect damage) against a
- *    unit in the column DIRECTLY OPPOSING mine;
- *  - the aggregated combat 'lifeLost' where my column connects to the victim
- *    (attacking unblocked, or blocked/blocking with Piercing).
- * Mirrors batch-dark-b's function of the same name so every "when my column
- * deals combat damage" card reads the same combat the same way. Returns false
- * outside battle and for a 0-power column.
+ * "My column deals combat damage" (header approximation): the shared engine
+ * predicate, E.columnDealtCombatDamage, on the two channels this UNQUALIFIED
+ * text is entitled to hear — 'units' (a combat 'damage' event against the
+ * column directly opposing mine) and 'face' (the aggregated combat 'lifeLost'
+ * where my column connects). No 'poison': Vroot is not {Poisonous} and no
+ * column it stands in emits -1/-1 counters in place of its damage unless a
+ * {Poisonous} ally is in it, in which case that ally's channel is that ally's
+ * business, not this text's. Zephyrzoa and Eldritch Dreamtender print "to an
+ * opponent" and take 'face' alone; Blightmound adds 'poison'.
  *
  * R117 (owner, 2026-08-23): the clause fires in the sub-step MY OWN COLUMN
- * strikes in. `commitPlayerDamage` aggregates EVERY connecting column's face
- * damage into one `loseLife` per seat per sub-step, so without the gate a
- * normal column hears the Swift sub-step whenever any Swift column also
- * connects — and Vroot paid the opponent for damage its column had not dealt.
- * The gate belongs in `when()` and nowhere else: `b.damageStep` reads the
- * CURRENT sub-step at event time and the NEXT one by the time the queued
- * trigger settles (see E.strikesInCurrentSubStep).
+ * strikes in — and, R157 §5, in EVERY such sub-step, so a {Swift}{Sluggish}
+ * column pays out twice because it really does strike twice.
+ *
+ * R157 §4 (owner, 2026-08-25): the power gate is the LIVE COLUMN's total, not
+ * the anchor's own — "0 power units do no damage. But the other thing in the
+ * column can still contribute to the shared column power." Vroot's own reading
+ * was already this one; it is now the only one in the pool.
  */
-function myColumnDealtCombatDamage(g: E, self: Entity, ev: { type: string; data?: Record<string, unknown> }): boolean {
-  const b = g.s.battle;
-  if (!b) return false;
-  const col = g.columnOf(self.id);
-  if (!col) return false;
-  if (!g.strikesInCurrentSubStep(self)) return false;        // R117
-  const alive = col.filter(id => g.entity(id));
-  const power = alive.reduce((s, id) => s + Math.max(0, g.effStats(g.entity(id)!)[0]), 0);
-  if (power <= 0) return false;
-  const ci = b.columns.indexOf(col);
-  if (ev.type === 'damage') {
-    if (ev.data?.['source'] !== undefined) return false;      // effect damage, not combat
-    const uid = ev.data?.['unit'] as EntityId | undefined;
-    if (uid === undefined) return false;
-    if (ci !== -1) return !!b.blocks[ci]?.includes(uid);       // attacking: hit my blockers
-    const entry = Object.entries(b.blocks).find(([, c]) => c === col);
-    return !!entry && !!b.columns[Number(entry[0])]?.includes(uid);   // blocking: hit the attackers
-  }
-  if (ev.data?.['why'] !== 'combat' || ev.data?.['seat'] === self.controller) return false;
-  if (ci !== -1) {
-    return ev.data?.['seat'] === b.defender
-      && (b.blocks[ci] === undefined || g.colAttrs(alive).has('Piercing'));
-  }
-  return ev.data?.['seat'] === b.attacker && g.colAttrs(alive).has('Piercing');
+function myColumnDealtCombatDamage(g: E, self: Entity, ev: EngineEvent): boolean {
+  return g.columnDealtCombatDamage(self, ev, ['units', 'face']);
 }
 
 /**

@@ -7908,8 +7908,8 @@ export class E {
   }
 
   /**
-   * R117: WHICH of the three combat-damage sub-steps `u`'s column strikes in —
-   * 'Swift', 'normal' or 'Sluggish', or null when `u` is not in a column at all.
+   * R117 + R157 §5: EVERY combat-damage sub-step `u`'s column strikes in, in
+   * running order, or `[]` when `u` is not in a column at all.
    *
    * The owner's ruling (2026-08-23): a "when my column deals combat damage"
    * trigger fires in the sub-step its OWN COLUMN strikes in. A {Swift} column
@@ -7920,19 +7920,28 @@ export class E {
    * sub-step's `lifeLost` and sacrificed itself a sub-step early whenever any
    * Swift column also connected.
    *
-   * The answer is `scheduled()`'s, asked over the three sub-steps in order —
-   * exactly one is true — with the pairing's `pure` threaded in the way
-   * `assignCombatDamage` threads it, because R61 {Pure} collapses a whole
-   * exchange (both sides, in both directions) into the normal sub-step whatever
-   * the columns are printed with. Reconstructing `pure` here rather than
-   * reading the column's own attributes is the entire reason this is an engine
-   * method and not three lines of card code.
+   * R157 §5 (owner, 2026-08-25) is why this is a LIST and not one answer:
+   * *"Both apply. It's Algomancy's answer to double strike. A Swift+Sluggish
+   * unit that's in combat with a normal unit will (potentially, assuming they
+   * all survive all damage) end up having damage done in all three sub damage
+   * steps."* `scheduled()` has always said true for BOTH sub-steps of a
+   * {Swift}{Sluggish} column — the damage lands twice and that is correct —
+   * but the singular `combatSubStepOf` below stopped at the first match, so
+   * a Rime Wraith column's triggers fired once while its damage landed twice.
+   *
+   * The answer is `scheduled()`'s, asked over the three sub-steps in order,
+   * with the pairing's `pure` threaded in the way `assignCombatDamage` threads
+   * it, because R61 {Pure} collapses a whole exchange (both sides, in both
+   * directions) into the normal sub-step whatever the columns are printed
+   * with. Reconstructing `pure` here rather than reading the column's own
+   * attributes is the entire reason this is an engine method and not three
+   * lines of card code.
    *
    * ⚠ Ask it from `when()`, not from `run()` — see `strikesInCurrentSubStep`.
    */
-  combatSubStepOf(u: Entity): 'Swift' | 'normal' | 'Sluggish' | null {
+  combatSubStepsOf(u: Entity): ('Swift' | 'normal' | 'Sluggish')[] {
     const b = this.s.battle;
-    if (!b) return null;
+    if (!b) return [];
     const alive = (ids: EntityId[]) => ids.filter(id => this.entity(id));
     let mine: EntityId[] | null = null;
     let pure = false;
@@ -7954,17 +7963,34 @@ export class E {
         break;
       }
     }
-    if (!mine) return null;
-    for (const sub of ['Swift', 'normal', 'Sluggish'] as const) {
-      if (this.scheduled(mine, sub, pure)) return sub;
-    }
-    return null;
+    if (!mine) return [];
+    return (['Swift', 'normal', 'Sluggish'] as const)
+      .filter(sub => this.scheduled(mine!, sub, pure));
   }
 
   /**
-   * R117, as card text asks it: is the sub-step running RIGHT NOW the one `u`'s
-   * column strikes in? The one shared gate behind every "when my column deals
-   * combat damage" trigger (Eldritch Dreamtender, Zephyrzoa, Blightmound).
+   * R117, singular: the FIRST sub-step `u`'s column strikes in, or null when it
+   * is in no column. Kept as the readable one-answer form for the ordinary
+   * column, which strikes in exactly one sub-step.
+   *
+   * ⚠ LOSSY, by R157 §5: a {Swift}{Sluggish} column strikes in TWO sub-steps
+   * and this reports only the Swift one. Card text must never gate on it —
+   * `strikesInCurrentSubStep` (which reads the full list) is the gate.
+   */
+  combatSubStepOf(u: Entity): 'Swift' | 'normal' | 'Sluggish' | null {
+    return this.combatSubStepsOf(u)[0] ?? null;
+  }
+
+  /**
+   * R117, as card text asks it: is the sub-step running RIGHT NOW one that
+   * `u`'s column strikes in? The one shared gate behind every "when my column
+   * deals combat damage" trigger — reached through `columnDealtCombatDamage`
+   * by Zephyrzoa, Vroot, Eldritch Dreamtender and Blightmound, and directly by
+   * Flowstone Arcanite and Bloodwind Revenant.
+   *
+   * R157 §5: "is one that", not "is the one" — a {Swift}{Sluggish} column
+   * strikes in both the Swift and the Sluggish sub-step, so its triggers fire
+   * in both, matching the damage that really lands in both.
    *
    * ⚠ TIMING — this is only true inside `when()`. `when()` is evaluated at
    * event time (R1), which is inside `combatSubStep(sub)`, and `b.damageStep`
@@ -7981,8 +8007,85 @@ export class E {
    */
   strikesInCurrentSubStep(u: Entity): boolean {
     const b = this.s.battle;
-    if (!b || !b.damageStep) return false;
-    return b.damageStep === this.combatSubStepOf(u);
+    if (!b || !b.damageStep || b.damageStep === 'after') return false;
+    return this.combatSubStepsOf(u).includes(b.damageStep);
+  }
+
+  /**
+   * R157 §4 — THE one shared "my column deals combat damage" predicate.
+   *
+   * Verbatim (Bena, 2026-08-25): *"Only if the other unit in the column has a
+   * positive power. 0 power units do no damage. But the other thing in the
+   * column can still contribute to the shared column power."*
+   *
+   * So the gate is the LIVE COLUMN's total power, never the anchor's own: a
+   * 0-power anchor standing beside a 2-power ally is in a column that deals
+   * combat damage, and its trigger fires. Four cards print this clause and
+   * carried four different readings of it — Zephyrzoa and Vroot summed the
+   * column (right), Blightmound read `effStats(self)[0]` (the anchor alone),
+   * Eldritch Dreamtender had no power gate at all. All four now call this.
+   *
+   * WHY A CHANNEL PARAMETER RATHER THAN ONE FLAT FUNCTION. Combat damage
+   * reaches card code on three different events, and which of them a card is
+   * entitled to hear is decided by its PRINTED TEXT, not by this method:
+   *
+   *  · 'units' — the plain 'damage' event, untagged by `source` (combat, never
+   *    effect damage), against a unit in the column directly opposing mine.
+   *    Only for text that is not narrowed to a player: Vroot ("my column deals
+   *    combat damage") and Blightmound ("when I deal combat damage") hear it;
+   *    Zephyrzoa and Eldritch Dreamtender print "to an opponent" and must not.
+   *  · 'poison' — 'countersChanged' with a negative delta during a damage
+   *    sub-step. The {Poisonous} channel, where a source's unit damage arrives
+   *    as -1/-1 counters and NO 'damage' event is emitted at all. Blightmound
+   *    is {Poisonous}, so without this it would never hear its own unit
+   *    damage; nothing else in the four needs it.
+   *  · 'face' — the aggregated combat 'lifeLost' against a seat that is not
+   *    mine, with my column connecting (attacking and never blocked, or
+   *    blocked/blocking with {Piercing}). All four hear this one.
+   *
+   * ⚠ `when()` only, because `strikesInCurrentSubStep` is `when()` only.
+   */
+  columnDealtCombatDamage(self: Entity, ev: EngineEvent,
+    channels: readonly ('units' | 'poison' | 'face')[]): boolean {
+    const b = this.s.battle;
+    if (!b) return false;
+    const col = this.columnOf(self.id);
+    if (!col) return false;
+    // R117 / R157 §5: only in a sub-step my own column strikes in.
+    if (!this.strikesInCurrentSubStep(self)) return false;
+    const alive = col.filter(id => this.entity(id));
+    // R157 §4: the LIVE column's power, not mine. A column whose hitters all
+    // died in an earlier sub-step deals nothing either.
+    const power = alive.reduce((n, id) => n + Math.max(0, this.effStats(this.entity(id)!)[0]), 0);
+    if (power <= 0) return false;
+    const ci = b.columns.indexOf(col);
+    /** is `uid` in the column mine is paired against? combat damage between
+     * units is pairwise, so that is the whole test on both unit channels */
+    const opposing = (uid: EntityId | undefined): boolean => {
+      if (uid === undefined) return false;
+      if (ci !== -1) return !!b.blocks[ci]?.includes(uid);          // attacking: my blockers
+      const entry = Object.entries(b.blocks).find(([, c]) => c === col);
+      return !!entry && !!b.columns[Number(entry[0])]?.includes(uid);   // blocking: the attackers
+    };
+    if (ev.type === 'damage') {
+      if (!channels.includes('units')) return false;
+      if (ev.data?.['source'] !== undefined) return false;          // effect damage, not combat
+      return opposing(ev.data?.['unit'] as EntityId | undefined);
+    }
+    if (ev.type === 'countersChanged') {
+      if (!channels.includes('poison')) return false;
+      if (!b.damageStep || ((ev.data?.['n'] as number | undefined) ?? 0) >= 0) return false;
+      return opposing(ev.data?.['unit'] as EntityId | undefined);
+    }
+    if (ev.type !== 'lifeLost' || !channels.includes('face')) return false;
+    if (ev.data?.['why'] !== 'combat') return false;
+    const victim = ev.data?.['seat'] as Seat | undefined;
+    if (victim === undefined || victim === self.controller) return false;
+    if (ci !== -1) {
+      return victim === b.defender
+        && (b.blocks[ci] === undefined || this.colAttrs(alive).has('Piercing'));
+    }
+    return victim === b.attacker && this.colAttrs(alive).has('Piercing');
   }
 
   /** One sub-step of simultaneous damage, in two halves over one ledger:

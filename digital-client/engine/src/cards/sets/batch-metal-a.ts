@@ -100,7 +100,7 @@
  *    bookkeeping when() — it labels each mimicked trigger "Ancient One (as X)",
  *    which the generic face machinery cannot do.)
  */
-import type { Entity, EntityId, EventType, Seat } from '../../types.ts';
+import type { EngineEvent, Entity, EntityId, EventType, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, eventBinSlot, getCard, type EffectDef, type TokenRequest } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
@@ -114,28 +114,22 @@ function tokensInRegion(g: E, region: number): Entity[] {
     ((e.kind === 'unit' && !!e.token) || e.kind === 'spellToken'));
 }
 
-/** "my column deals combat damage to an opponent", read off the aggregated
- * combat lifeLost event (Amphivore's approximation): my column connects if it
- * is attacking unblocked, or blocked/blocking with Piercing — and the sub-step
- * now running has to be MY column's (R117). */
-function myColumnConnected(g: E, self: Entity, ev: { data?: Record<string, unknown> }): boolean {
-  if (g.s.phase !== 'battle' || ev.data?.['why'] !== 'combat' || ev.data?.['seat'] === self.controller) return false;
-  const b = g.s.battle;
-  if (!b) return false;
-  // R117 (owner, 2026-08-23): the trigger fires in the sub-step MY OWN COLUMN
-  // strikes in. Without this the aggregated per-seat `lifeLost` makes a normal
-  // column hear the Swift sub-step whenever any Swift column also connects.
-  // It belongs in when() and nowhere else — `b.damageStep` reads the CURRENT
-  // sub-step at event time and the NEXT one by resolution (see
-  // E.strikesInCurrentSubStep).
-  if (!g.strikesInCurrentSubStep(self)) return false;
-  const atkCi = b.columns.findIndex(col => col.includes(self.id));
-  if (atkCi !== -1) {
-    const alive = b.columns[atkCi]!.filter(id => g.entity(id));
-    return b.blocks[atkCi] === undefined || g.colAttrs(alive).has('Piercing');
-  }
-  const blkCol = Object.values(b.blocks).find(col => col.includes(self.id));
-  return !!blkCol && g.colAttrs(blkCol.filter(id => g.entity(id))).has('Piercing');
+/** "my column deals combat damage TO AN OPPONENT": the shared engine
+ * predicate, E.columnDealtCombatDamage, on the FACE channel only — the "to an
+ * opponent" narrowing is exactly what excludes the unit-damage channels, so
+ * this hears the aggregated combat 'lifeLost' and nothing else. My column
+ * connects if it is attacking unblocked, or blocked/blocking with {Piercing},
+ * and the sub-step now running has to be one MY column strikes in (R117, and
+ * R157 §5 for the {Swift}{Sluggish} column that strikes in two of them).
+ *
+ * R157 §4 (owner, 2026-08-25) is what changed here: this copy carried NO POWER
+ * GATE AT ALL, so a 0-power column read another column's aggregated `lifeLost`
+ * as its own. The gate is the LIVE COLUMN's total power — never the anchor's
+ * own, which is what Blightmound wrongly read: "0 power units do no damage.
+ * But the other thing in the column can still contribute to the shared column
+ * power." So a 0-power Dreamtender beside a 2-power ally still fires. */
+function myColumnConnected(g: E, self: Entity, ev: EngineEvent): boolean {
+  return g.columnDealtCombatDamage(self, ev, ['face']);
 }
 
 // ───────────────────────────── the cards ──────────────────────────────

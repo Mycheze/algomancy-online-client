@@ -38,12 +38,17 @@
  * counters on).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - "WHEN I DEAL COMBAT DAMAGE" (Blightmound) is the Flowstone Arcanite
- *    column approximation: combat damage is dealt per COLUMN in this engine,
- *    so "I" is read as "my column, which I contribute nonzero power to".
- *    Blightmound is {Poisonous}, so its unit damage arrives as -1/-1 counters
- *    and not as a 'damage' event — the condition therefore also watches
- *    'countersChanged' during a combat sub-step.
+ *  - "WHEN I DEAL COMBAT DAMAGE" (Blightmound): combat damage is dealt per
+ *    COLUMN in this engine, so "I" is read as "my column". R157 §4 (owner,
+ *    2026-08-25) settled the power gate that goes with it and this entry used
+ *    to state the wrong one — it said "which I contribute nonzero power to",
+ *    and the answer is the COLUMN's power: "0 power units do no damage. But
+ *    the other thing in the column can still contribute to the shared column
+ *    power." All four cards printing the clause (Blightmound, Zephyrzoa,
+ *    Vroot, Eldritch Dreamtender) now go through the ONE engine predicate,
+ *    E.columnDealtCombatDamage. Blightmound is {Poisonous}, so its unit damage
+ *    arrives as -1/-1 counters and not as a 'damage' event — which is why the
+ *    predicate takes CHANNELS and this card asks for all three.
  *  - "A UNIT DEALS COMBAT DAMAGE TO A PLAYER" (Sarcophage) is the same
  *    approximation in reverse: every unit in a column that connected with the
  *    damaged player loses its counters, since the engine cannot attribute
@@ -150,49 +155,33 @@ function discardOne(g: E, ctx: EffectCtx, seat: Seat, source: string, key: strin
 }
 
 /**
- * "When I deal combat damage" — the Flowstone Arcanite column approximation
- * (⚠ header). True when the event is combat damage my column dealt:
- *  - 'damage' with no `source` tag whose victim sits in the column directly
- *    opposing mine (combat damage is pairwise);
- *  - 'countersChanged' during a combat sub-step on such a victim — the
- *    {Poisonous} channel, where damage is replaced by -1/-1 counters;
- *  - 'lifeLost' why 'combat' where my column connects to the victim
- *    (attacking unblocked/Piercing, or blocking with Piercing).
- * A column I contribute no power to deals nothing, so it never counts, and
- * R117 adds the sub-step: it has to be the one MY column strikes in.
+ * "When I deal combat damage" — the shared engine predicate,
+ * E.columnDealtCombatDamage, on ALL THREE channels. The clause is unqualified
+ * (no "to an opponent"), so it hears unit damage as well as face damage, and
+ * Blightmound is {Poisonous}, so its unit damage arrives as -1/-1 counters
+ * with no 'damage' event at all — which is the entire reason the 'poison'
+ * channel exists and the entire reason the predicate takes channels rather
+ * than being one flat function:
+ *  - 'units'  — 'damage' with no `source` tag whose victim sits in the column
+ *               directly opposing mine (combat damage is pairwise);
+ *  - 'poison' — 'countersChanged' with a negative delta during a combat
+ *               sub-step on such a victim;
+ *  - 'face'   — 'lifeLost' why 'combat' where my column connects to the victim
+ *               (attacking unblocked/Piercing, or blocking with Piercing).
+ * R117 adds the sub-step gate: it has to be one MY column strikes in — and,
+ * R157 §5, a {Swift}{Sluggish} column strikes in two of them.
+ *
+ * ⚠ R157 §4 (owner, 2026-08-25) is what changed here. This copy read
+ * `g.effStats(self)[0] <= 0` — MY OWN power — and the owner's answer is the
+ * COLUMN's: *"Only if the other unit in the column has a positive power. 0
+ * power units do no damage. But the other thing in the column can still
+ * contribute to the shared column power."* So a Blightmound shrunk to 0 power
+ * standing beside a live hitter is still in a column that deals combat damage,
+ * and the rot still lands. The printed "I" is not a narrower subject than
+ * Zephyrzoa's "my column": the ruling was given about this card.
  */
 function myColumnDealtCombatDamage(g: E, self: Entity, ev: EngineEvent): boolean {
-  const b = g.s.battle;
-  if (!b) return false;
-  const col = g.columnOf(self.id);
-  if (!col) return false;
-  if (g.effStats(self)[0] <= 0) return false;
-  // R117 (owner, 2026-08-23): the third copy of the gate Eldritch Dreamtender
-  // and Zephyrzoa carry — the trigger fires in the sub-step MY OWN COLUMN
-  // strikes in. It matters most on the aggregated per-seat 'lifeLost' below,
-  // but it is true of the unit-damage branch as well (a column's damage is
-  // assigned in its own sub-step), so the gate sits above both rather than
-  // being duplicated inside one. `when()` only — see E.strikesInCurrentSubStep.
-  if (!g.strikesInCurrentSubStep(self)) return false;
-  const alive = col.filter(id => g.entity(id));
-  const ci = b.columns.indexOf(col);
-  if (ev.type === 'damage' || ev.type === 'countersChanged') {
-    if (ev.type === 'damage' && ev.data?.['source'] !== undefined) return false;   // effect damage
-    if (ev.type === 'countersChanged'
-      && (!b.damageStep || ((ev.data?.['n'] as number | undefined) ?? 0) >= 0)) return false;
-    const uid = ev.data?.['unit'] as EntityId | undefined;
-    if (uid === undefined) return false;
-    if (ci !== -1) return !!b.blocks[ci]?.includes(uid);          // attacking: hit my blockers
-    const entry = Object.entries(b.blocks).find(([, c]) => c === col);
-    return !!entry && !!b.columns[Number(entry[0])]?.includes(uid);   // blocking: hit the attackers
-  }
-  if (ev.type !== 'lifeLost') return false;
-  if (ev.data?.['why'] !== 'combat' || ev.data?.['seat'] === self.controller) return false;
-  if (ci !== -1) {
-    return ev.data?.['seat'] === b.defender
-      && (b.blocks[ci] === undefined || g.colAttrs(alive).has('Piercing'));
-  }
-  return ev.data?.['seat'] === b.attacker && g.colAttrs(alive).has('Piercing');
+  return g.columnDealtCombatDamage(self, ev, ['units', 'poison', 'face']);
 }
 
 /** every unit in a column that connected with `victim` this combat (⚠ header:
