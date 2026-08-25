@@ -429,6 +429,30 @@ export interface CopyRef {
   modText?: string[];
 }
 
+/**
+ * R147 — the whole BODY a spell unit enters play wearing, when it is not the
+ * body its own card prints. Borrower of Forms is the only card that has one:
+ * *"Erase target unit. I become an exact copy of that unit."*
+ *
+ * Everything here has to be in place BEFORE the `spawned` event fires, because
+ * that event is the only moment the rest of the board gets to look. The face
+ * carries the name, the text and the layer-1 numbers (`CopyRef.printedStats`);
+ * the three numbers beside it are the parts of *"I copy all stat changes,
+ * counters, card text and mods"* that are facts about the UNIT rather than
+ * about its identity, and so cannot ride a face.
+ *
+ * Plain serializable data, for `StackItem`'s R85 reason: it is prepared while
+ * the spell part runs and read a moment later in `E.afterParts`, with a
+ * possible suspension and a structuredClone in between.
+ */
+export interface SpawnFace {
+  copy: CopyRef;
+  /** the copied unit's +1/+1 counters — real counters, put on the body */
+  counters?: number;
+  tempPower?: number;
+  tempToughness?: number;
+}
+
 // ── battle ────────────────────────────────────────────────────────────
 
 export type BattleStep =
@@ -828,6 +852,32 @@ export interface StackItem {
    * cannot share an answer.
    */
   spawnUnder?: Seat;
+  /**
+   * R147 — *"I become an exact copy of that unit."* on a SPELL UNIT (Borrower
+   * of Forms): the BODY the spell unit enters play wearing.
+   *
+   * `spawnUnder` directly above answers "whose is it?"; this answers "what is
+   * it?", and for exactly the same reason and in exactly the same place. The
+   * body is spawned by `afterParts`, after every part has run, so an effect
+   * cannot reach it; raised by `EffectCtx.spawnWearing()` while the spell part
+   * runs, and ON THE ITEM so it survives an R85 suspension round trip.
+   *
+   * WHY IT IS NOT A TRIGGER. Borrower of Forms used to park the copied face on
+   * a per-REGION ledger (`copyParks`) with the copied numbers on `bof:*`
+   * battle counters, and claim both from the body's own `spawned` trigger. The
+   * body therefore ENTERED as a plain 2/2 Borrower of Forms and became the
+   * copy a whole resolution later: R1's own worked example, Nectar Ridge
+   * Oracle's *"when an ally with greater defense than power spawns"*, read the
+   * wrong body, and the caster was asked to order the copy trigger against
+   * every other ally-spawn trigger it raced. One spell resolution, one body.
+   *
+   * The ledger was also a COLLISION: keyed by region and not by caster, two
+   * Borrowers resolving in one region before the first's trigger resolved shared
+   * one slot — the second ate the first's face and both sets of copied
+   * counters, and the first body stayed a Borrower of Forms for good. Per ITEM,
+   * that cannot be expressed.
+   */
+  spawnWearing?: SpawnFace;
   /** triggered/activated: source entity (may be gone by resolution) */
   sourceId?: EntityId;
   /** R131: carried over from PendingTrigger — the MOD ENTITY whose donated
@@ -1311,22 +1361,12 @@ export interface GameState {
   battleRound: 0 | 1 | 2;
   /** per-seat counters reset each battle PHASE ("second ally death this battle") */
   battleCounters: Record<string, number>[];
-  /**
-   * R118: prepared COPY FACES parked between two resolutions, keyed
-   * `${region}:${key}`.
-   *
-   * `battleCounters`' sibling and for the same reason — a card whose two
-   * halves resolve separately has to relay something across the gap in
-   * SERIALIZABLE state or the replay diverges. Counters can carry numbers;
-   * this carries the one thing they cannot, a face (a card name plus the mods
-   * that make R118 ruling 2's copy Unstable). Borrower of Forms is the only
-   * card that needs it: it erases its target in one resolution and spawns the
-   * body that wears the face in the next, so the source entity is gone.
-   *
-   * Written by `E.parkCopySource`, taken exactly once by `E.takeCopySource`,
-   * and wiped by regroup. Additive/optional so older states still load.
-   */
-  copyParks?: Record<string, CopyRef>;
+  /* R147 DELETED `copyParks`, the per-region slot Borrower of Forms parked a
+   * prepared face in between its spell resolution and its body's own spawn
+   * trigger. There is no gap to relay across any more: the face rides the
+   * spell's own `StackItem.spawnWearing` and is worn AS the body spawns. The
+   * slot was keyed by region rather than by caster, so it was a collision as
+   * well as a window — see `StackItem.spawnWearing`. */
   priority: Seat | null;
   passes: number;
   planningDone: boolean[];

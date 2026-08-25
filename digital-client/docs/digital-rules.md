@@ -8999,3 +8999,145 @@ CT-38's proof — three layers on one revert. Reverting the `controlChanged`
 emission alone reddens all four behaviour tests on their event assertions and
 nothing else. Ignoring `keepFormation` inside the primitive reddens both
 Organic Exchange tests, including the pre-existing one from before this ruling.
+## R147 — a spell unit that becomes a copy ENTERS as the copy, and copying is not a trigger
+
+*(CARD-TODO #37, closed 2026-08-25. Found by the R143 agent while sweeping the
+pool for the shape it had just fixed. The same defect class as CT-29/CT-30 one
+layer over: R143 was about CONTROL, this is about IDENTITY.)*
+
+### The card
+
+**Borrower of Forms** — `mmm`/7, 2/2, `{Battle}` Squid Mimic **Spell Unit**:
+
+> Erase target unit. I become an exact copy of that unit. *(I copy all stat
+> changes, counters, card text and mods)*
+
+Two sentences, **one spell resolution** — exactly Hush Mush's shape. The engine
+implemented the second one as a `triggered` ability on the body's own `spawned`
+event: the copied face was parked on a per-region ledger (`GameState.copyParks`,
+key `${region}:bof`) and the copied numbers on six battle counters
+(`bof:pending`, `bof:p`, `bof:t`, `bof:c`, `bof:tp`, `bof:tt`), and the trigger
+claimed both.
+
+### Why that is wrong
+
+A trigger cannot run before the event that raised it. So the body **entered
+play as a plain 2/2 Borrower of Forms** and turned into the thing it copied a
+whole resolution later, and everything watching the spawn read the wrong body:
+
+```
+Resolving Borrower of Forms:
+Bumblecrab is ERASED (no bin, no death).
+Player 1 spawns Borrower of Forms.                              ← a 2/2, briefly
+Trigger: Boreal Wanderer — deal 2 damage to each opponent.
+Trigger: Borrower of Forms — I become an exact copy … (R118).
+  → "Order your triggers (first picked resolves first)"         ← a question with no answer
+```
+
+**Nectar Ridge Oracle** — *"[once] When another ally with greater defense than
+power spawns, draw a card"* — is [R1](#r1--trigger-conditions-vs-effect-values)'s
+own worked example of an event-time condition, and it read 2/2 instead of the
+borrowed 2/3: no trigger, no card. And any other ally-spawn watcher in the
+region was raced by a copy trigger that should not exist, so the caster was
+stopped and asked to order them.
+
+### The ruling
+
+**A spell unit whose own text says it becomes a copy ENTERS PLAY as that copy.**
+There is no moment at which it is standing there as itself, so there is nothing
+for a watcher to observe and nothing to order.
+
+This is [R143](#r143--gains-control-of-me-on-a-spell-unit-is-where-it-enters-not-a-handover)'s
+ruling one question over. R143: *whose is the body when it arrives?* R147:
+*what is the body when it arrives?* Both are answered by the printed text of the
+one spell that is resolving, and both therefore have to be answered before the
+`spawned` event fires.
+
+[R118](#r118--the-copy-layer-a-face-in-front-of-the-identity-at-layer-0)'s split
+identity is untouched: `Entity.card` is still `Borrower of Forms`, the face is
+still what `nameOf` reads, and the card that reaches a bin is still the one that
+came out of the deck. Only the MOMENT the face goes on has moved.
+
+### The mechanism, and what it deleted
+
+`ctx.spawnWearing(face)` raises **`StackItem.spawnWearing`** — the exact seam
+`ctx.spawnUnder(seat)` uses, in the same place, on the ITEM rather than in a
+closure for the same [R85](#r85--a-suspended-resolution-rolls-back-on-resume-not-when-it-suspends)
+reason (a part can suspend mid-resolution and be replayed out of the serialised
+suspension, and `item` is what the suspension carries). `E.afterParts` passes it
+to `spawnUnit`, which puts it on **after the spawn line is logged and before
+`fireEvent`** — precisely where [R29](#r29-%EF%B8%8F--an-open-spot-in-your-formation-tiderunner-initiate)
+already puts a formation placement, and for the identical reason: `fireEvent` is
+the single door every listener goes through.
+
+`SpawnFace` carries the prepared `CopyRef` plus the three things a face cannot
+hold because they are facts about the unit and not about its identity — the
+copied counters and the two temp deltas. They are applied **before** the face,
+so that `wearCopy`'s closing `checkDeaths()` sees a finished body rather than a
+half-dressed one; the final numbers are the same either way.
+
+**Deleted:** the `triggered` ability, `E.parkCopySource`, `E.takeCopySource`,
+`GameState.copyParks` and its regroup wipe, and all six `bof:*` battle counters.
+`E.prepareCopy` — the serializable half of R118 that made the park possible —
+stays, and is now called at the only place it was ever needed. Borrower of Forms
+has no `abilities` at all any more.
+
+### The ledger was a COLLISION, not only a window
+
+The park slot was keyed by **region**, not by caster. Two Borrowers resolving in
+one region before the first's trigger resolved shared one slot:
+
+1. Borrower #1 resolves — face #1 parked, `bof:pending` = 1, body #1 spawns,
+   trigger #1 queued.
+2. Someone responds to trigger #1 with Borrower #2 — face #2 **overwrites**
+   face #1, `bof:pending` = 2, body #2 spawns, trigger #2 queued on top.
+3. Trigger #2 resolves. Its `take()` drains each counter *whole*, so it claims
+   both castings' counters and temp deltas, and it takes face #2.
+4. Trigger #1 resolves to `pending === 0` and returns. **Body #1 stays a plain
+   Borrower of Forms for the rest of the game.**
+
+Unlike R143's retired Hush Mush worry this was **reachable with one copy per
+deck**: the ledger is shared by everyone present in the region, so one Borrower
+each in a two-player battle is enough. `26-metal-a` pins it. Per ITEM, the
+collision cannot be expressed at all.
+
+### Tests
+
+`26-metal-a` — five new, plus two existing tests that lost the two `pass()`es
+they used to need for the second resolution:
+
+- **The Oracle** sees a 2/3 body and its trigger is QUEUED (checked on the
+  queueing, R143's preference — the card lands a resolution later), and it is
+  the only trigger, so nothing is ordered.
+- **No spurious ordering question**, with a Boreal Wanderer standing in the
+  region (asserted to be there, or the test would pass for the wrong reason):
+  exactly one trigger waits afterwards and it is the Wanderer's.
+- **The identity at the instant**, read from inside `E.fireEvent` — the door
+  every listener goes through — because "afterwards" is exactly what already
+  worked. Name, stats and attributes are the borrowed ones there.
+- **Negative control**: a Borrower whose target walks away fizzles whole (R5),
+  spawns no body, bins the card, and leaves no half-asked question.
+- **Two Borrowers in one region**, the collision above.
+
+⚠ Every test in this batch needs the caster to be the **DEFENDER**. A spell
+unit's body arrives in the region the spell resolved in — the BATTLE region —
+while a unit the test rig spawns stands in its controller's HOME region. Only
+when the caster defends are those the same region, and only then can any watcher
+of theirs see the body at all. Each test asserts the watcher's region against
+`battle.region`, so the arrangement cannot rot into a test that passes because
+nobody was looking.
+
+**Red-checked** by reverting `engine/src` and keeping the tests: the Oracle test
+fails on `Borrower of Forms enters as a 2/3 Bumblecrab, so the Oracle triggers`;
+the ordering test fails with the real `orderTriggers` decision, listing
+`Borrower of Forms: I become an exact copy of the erased unit (R118)` as its
+second option; the identity test fails with `'Borrower of Forms'` where
+`'Sporebloom Siren'` belongs; the two-Borrowers test fails with body #1 still
+named `Borrower of Forms`. The negative control stays GREEN on the revert — it
+pins the fizzle path, which neither shape ever got wrong, and it is there to say
+so rather than to catch the regression.
+
+⚠ **`96-x-preview`'s ledger census loses its `Borrower of Forms` exemption** for
+R143's reason: that census checks its exemption list in BOTH directions, so
+leaving the entry behind fails the suite. The deletion is enforced, not
+remembered.

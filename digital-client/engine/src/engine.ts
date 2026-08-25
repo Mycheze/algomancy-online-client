@@ -18,7 +18,7 @@ import type {
   Action, Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef,
   Decision, DecisionOption,
   EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, PendingTrigger,
-  ResourceKind, Seat, StackItem, Suspension, TargetRef,
+  ResourceKind, Seat, SpawnFace, StackItem, Suspension, TargetRef,
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
@@ -1021,28 +1021,13 @@ export class E {
     return ref;
   }
 
-  /**
-   * R118: hold a prepared face in serializable state until the resolution
-   * that will wear it. Region-keyed for `battleCounters`' reason — it is a
-   * fact about this battle in this region — and taken exactly once.
-   */
-  parkCopySource(region: number, key: string, src: Entity, opts: {
-    from: CardName;
-    until: 'regroup' | 'permanent';
-    facets?: CopyFacet[];
-    printedStats?: [number, number];
-  }): void {
-    (this.s.copyParks ??= {})[`${region}:${key}`] = this.prepareCopy(src, opts);
-  }
-  /** R118: claim a parked face (see `parkCopySource`). Removes it. */
-  takeCopySource(region: number, key: string): CopyRef | undefined {
-    const parks = this.s.copyParks;
-    if (!parks) return undefined;
-    const k = `${region}:${key}`;
-    const ref = parks[k];
-    delete parks[k];
-    return ref;
-  }
+  /* R147 DELETED `parkCopySource` / `takeCopySource`. They existed for one
+   * card — Borrower of Forms, whose face was prepared in its spell resolution
+   * and worn in the next one — and the gap they bridged is gone: the face
+   * rides the spell's own `StackItem.spawnWearing` and `spawnUnit` puts it on
+   * as the body enters. `prepareCopy` above is still what builds it; there is
+   * simply nowhere to park it now, which is the point (the slot was keyed by
+   * REGION, so two Borrowers in one region shared it). */
 
   /** R118: is this entity already wearing `name` as its identity face? The
    * idempotence check a repeating copy trigger needs. */
@@ -2387,7 +2372,7 @@ export class E {
    * into play under an OPPONENT's control") passes the opponent as `seat` and
    * its owner as `opts.owner`.
    */
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin'; spot?: FormationSpot; owner?: Seat } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace } = {}): Entity {
     /**
      * R104: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
@@ -2478,6 +2463,27 @@ export class E {
     // under the spawn line, before anything the spawn triggers: the placement
     // is part of the play, not a consequence of it
     if (placed) this.ev('info', placed, { unit: u.id, region, seat });
+    /**
+     * R147 — and the same for a body that ENTERS as something else (Borrower
+     * of Forms). Exactly R29's placement rule one field over: applied before
+     * `fireEvent`, which is the single door every listener goes through, so no
+     * watcher and no player ever sees the body standing here as itself.
+     * Logged UNDER the spawn line for the same reason the placement is —
+     * R118 ruling 1 keeps `Entity.card` as the physical card, so the spawn
+     * line still names Borrower of Forms and the line beneath says what it is.
+     *
+     * COUNTERS AND TEMP CHANGES FIRST, face last. The final numbers are the
+     * same either way, but `wearCopy` ends in `checkDeaths()` and a face is
+     * the one thing here that can be lethal on arrival (a borrowed base 0
+     * defense); putting the copied counters on first means that check sees the
+     * finished body rather than a half-dressed one.
+     */
+    if (opts.wearing) {
+      const w = opts.wearing;
+      if (w.counters) this.addCounters(u, w.counters);
+      if (w.tempPower || w.tempToughness) this.addTemp(u, w.tempPower ?? 0, w.tempToughness ?? 0);
+      this.wearCopy(u, w.copy);
+    }
     // R119: a unit that came from a ZONE was PLAYED, so it burns the Deferral
     // Drone charge; one that came from nowhere was CREATED and does not. Same
     // `opts.from` test R49 uses just above, and the same place the card's own
@@ -6717,6 +6723,10 @@ export class E {
         // says who it ENTERS under rather than moving it afterwards. Same
         // on-the-item shape as eraseSelf above, same R85 reason.
         spawnUnder: (seat: Seat) => { item.spawnUnder = seat; },
+        // R147: "I become an exact copy of that unit." on a SPELL UNIT — the
+        // same seam one question over (spawnUnder says whose the body is,
+        // this says what it is), and on the item for the same R85 reason.
+        spawnWearing: (face: SpawnFace) => { item.spawnWearing = face; },
         // CARD-TODO #18: "I did nothing — give the [once] back." The same
         // shape as eraseSelf directly above, and for the same R85 reason: the
         // flag lives on the PART (which the suspension carries), not in this
@@ -7061,6 +7071,11 @@ export class E {
       const u = this.spawnUnit(item.spawnUnder ?? item.controller, item.card!, item.region, {
         owner: item.controller,
         ...(item.from ? { from: item.from } : {}),
+        // R147: …and WEARING what its own text made it, if its own text made
+        // it anything (Borrower of Forms). Same shape, same place, same
+        // reason: one spell resolution is one body arriving, not a body
+        // arriving and then changing.
+        ...(item.spawnWearing ? { wearing: item.spawnWearing } : {}),
       });
       // R79: a spell UNIT's card does not leave — it arrives. Its viruses ride
       // it in, as the augment mods they always were, which is also what makes
@@ -8636,7 +8651,6 @@ export class E {
     this.s.hastePlaysUsed = this.s.players.map(() => 0);   // R97, beside its R43 sibling
     this.s.phase = 'battle';
     this.s.battleCounters = this.s.regions.map(() => ({}));
-    delete this.s.copyParks;   // R118: parked faces are a fact about ONE battle
     this.s.battleRound = 1;
     this.startBattleRound(this.initiative);
   }

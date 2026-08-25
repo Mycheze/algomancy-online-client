@@ -46,11 +46,18 @@
  *    one copy per unique token KIND. Nothing reaches the stack, and the
  *    module-level `let aoaCopying` guard is gone with the trigger.
  *  - Borrower of Forms copies base stats, counters and temporary stat changes
- *    of the erased unit (relayed through battle counters into a self-spawn
- *    trigger). UNPARKED by R118 (the COPY LAYER): card text, attributes,
- *    statics and activated abilities all copy now, via a permanent FACE. It
- *    still BINS as "Borrower of Forms" — that is the owner's split-identity
- *    ruling, not a gap: the game name is the face, the physical card is not.
+ *    of the erased unit. UNPARKED by R118 (the COPY LAYER): card text,
+ *    attributes, statics and activated abilities all copy now, via a permanent
+ *    FACE. It still BINS as "Borrower of Forms" — that is the owner's
+ *    split-identity ruling, not a gap: the game name is the face, the physical
+ *    card is not.
+ *    ✔ R147 CHANGED HOW THE FACE ARRIVES. It used to be relayed through battle
+ *    counters and a region ledger into a SELF-SPAWN TRIGGER, so the body
+ *    entered play as a plain 2/2 Borrower of Forms and became the copy one
+ *    resolution later — every spawn watcher in the region read the wrong body,
+ *    and two Borrowers in one region ate each other's answer. The face now
+ *    rides the spell's own stack item (`ctx.spawnWearing`) and is worn AS the
+ *    body spawns. The trigger and the ledger are gone.
  *  - Ancient One copies TRIGGERED abilities of adjacent allies only, and only
  *    while a formation exists (adjacency is a battle concept). Copied "when
  *    I ..." abilities read the Ancient One as "I"; bounded copies burn a
@@ -446,8 +453,10 @@ card('Body Swap', {
 // exact copy" prints no duration, so the face is stamped `until: 'permanent'`
 // and survives regroup (there is a live test that says so).
 //
-// The spell erases the target and relays its body through battle counters;
-// the spell unit's own spawn trigger claims it. What travels now:
+// R147 — and it is ONE RESOLUTION. The spell erases the target, prepares the
+// face, and hands it to its OWN stack item (`ctx.spawnWearing`); `E.afterParts`
+// spawns the body already wearing it, before the `spawned` event fires. What
+// travels:
 //   · the NAME, and with it the type line, the printed text, the statics and
 //     the triggered text — one `E.becomeCopy` face, not four grants;
 //   · the STAT CHANGES, verbatim from the reminder text. The face carries an
@@ -473,7 +482,29 @@ card('Body Swap', {
 // write made R106 {Unaware} read the BORROWED numbers as printed. The face
 // carries them now, at layer 0, where {Unaware} reads them correctly.
 //
-// Target gone at resolution → the spell fizzles and Borrower is binned (R5).
+// Target gone at resolution → the spell fizzles and Borrower is binned (R5),
+// and no body spawns at all, so there is nothing to dress.
+//
+// ⚠ R147 (CARD-TODO #37) — WHAT THIS USED TO BE, and why it is not that.
+// The face was parked on a per-region ledger (`copyParks`) with the copied
+// numbers spread across `bof:*` battle counters, and a `spawned` trigger on
+// the body claimed them. The body therefore ENTERED as a plain 2/2 Borrower of
+// Forms and became the copy one resolution later. Two things followed, both
+// wrong:
+//   · Anything watching the spawn read the wrong body. Nectar Ridge Oracle —
+//     "when another ally with greater defense than power spawns" — is R1's own
+//     worked example and it read 2/2 instead of the borrowed body; and the
+//     caster was stopped and asked to ORDER the copy trigger against whatever
+//     else the spawn had triggered, a question with no answer worth giving.
+//   · The ledger was keyed by REGION, not by caster. Two Borrowers resolving
+//     in one region before the first's trigger resolved shared one slot: the
+//     second wore the first's face-slot and took BOTH sets of copied counters,
+//     and the first body stayed a Borrower of Forms permanently. That is not
+//     a theoretical worry — one Borrower each in a two-player region reaches
+//     it, and 26-metal-a pins it.
+// The trigger and the ledger are both gone. R143's shape, one question over:
+// `spawnUnder` says whose the body is when it arrives, `spawnWearing` says
+// what it is.
 card('Borrower of Forms', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Borrower of Forms: erase target unit — I become a copy of it' },
@@ -486,54 +517,22 @@ card('Borrower of Forms', {
       // the base it HAS (layer 2 included — a Formless'd or Statweavered
       // body is the body you are borrowing), not the one it was printed with
       const [p, dt] = g.baseStatsOf(t);
-      const r = ctx.region;
-      g.bumpBattleCounter(r, 'bof:pending', 1);
-      g.bumpBattleCounter(r, 'bof:p', p);
-      g.bumpBattleCounter(r, 'bof:t', dt);
-      g.bumpBattleCounter(r, 'bof:c', t.counters);
-      g.bumpBattleCounter(r, 'bof:tp', t.tempPower);
-      g.bumpBattleCounter(r, 'bof:tt', t.tempToughness);
-      // R118: the FACE cannot ride a battle counter (it is a name, and the mods
-      // are a list), so it is parked on the spell's own region ledger and
-      // claimed by the spawn trigger below — the same relay, one channel wider.
-      g.parkCopySource(r, 'bof', t, {
-        from: 'Borrower of Forms', until: 'permanent', printedStats: [p, dt],
+      // "I become an exact copy": one PERMANENT face, every facet, with the
+      // borrowed base as its layer-1 numbers ("I copy all stat changes"), plus
+      // the three per-unit facts a face cannot carry. Prepared HERE, while the
+      // target still exists, and worn by the body as it spawns — the target is
+      // erased on the very next line and could not be read again.
+      ctx.spawnWearing?.({
+        copy: g.prepareCopy(t, {
+          from: 'Borrower of Forms', until: 'permanent', printedStats: [p, dt],
+        }),
+        counters: t.counters,
+        tempPower: t.tempPower,
+        tempToughness: t.tempToughness,
       });
       eraseFromPlay(g, t);
     },
   },
-  abilities: [{
-    type: 'triggered', events: ['spawned'], self: true,
-    label: 'I become an exact copy of the erased unit (R118)',
-    when: (g, self) => g.battleCounter(self.region, 'bof:pending') > 0,
-    effect: {
-      run: (g, ctx) => {
-        const self = selfOf(g, ctx);
-        if (!self) return;
-        const r = ctx.region;
-        const take = (k: string): number => {
-          const v = g.battleCounter(r, k);
-          if (v) g.bumpBattleCounter(r, k, -v);
-          return v;
-        };
-        const pending = take('bof:pending');
-        const p = take('bof:p'); const t = take('bof:t');
-        const c = take('bof:c');
-        const tp = take('bof:tp'); const tt = take('bof:tt');
-        const parked = g.takeCopySource(r, 'bof');
-        if (!pending) return;
-        if (parked) {
-          // "I become an exact copy": one PERMANENT face, every facet, with
-          // the borrowed base as its layer-1 numbers ("I copy all stat changes")
-          g.wearCopy(self, parked);
-        } else {
-          g.ev('info', `${self.card} takes the erased unit's form: base ${p}/${t}.`);
-        }
-        if (c) g.addCounters(self, c);
-        if (tp || tt) g.addTemp(self, tp, tt);
-      },
-    },
-  }],
 });
 
 // "When I spawn or become modded, put a +1/+1 counter on each of your units.

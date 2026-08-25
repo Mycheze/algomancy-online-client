@@ -458,8 +458,7 @@ test('Borrower of Forms: erases the target and takes its stats and counters', ()
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: whale });
-  pass(h); pass(h);                                         // resolve: erase + spawn, self-trigger → stack
-  pass(h); pass(h);                                         // resolve the become-a-copy trigger
+  pass(h); pass(h);                                         // R147: ONE resolution — erase, spawn, copy
   assert.ok(!ent(h, whale), 'the target was erased');
   assert.ok(!h.state.players[D]!.bin.includes('Good Whale'), 'erased, not binned');
   const bof = unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
@@ -469,14 +468,15 @@ test('Borrower of Forms: erases the target and takes its stats and counters', ()
   assert.deepEqual(effStats(h, bof.id), [9, 7], '"become" is permanent — survives regroup');
 });
 
-/** R118: cast Borrower of Forms at `target` and resolve it and its
- * become-a-copy trigger. Returns the spawned Borrower body. */
+/** R118: cast Borrower of Forms at `target` and resolve it. Returns the
+ * spawned Borrower body, already wearing the borrowed face — R147: the copy is
+ * part of the one resolution that spawns the body, so there is no second
+ * resolution to pass through here. */
 function borrow(h: Harness, A: Seat, target: EntityId): Entity {
   giveResources(h, A, 'metal', 7);                          // mmm/7
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
   pick(h, { unit: target });
-  pass(h); pass(h);                                         // resolve: erase + spawn
-  pass(h); pass(h);                                         // resolve the become-a-copy trigger
+  pass(h); pass(h);                                         // resolve: erase + spawn, already copied
   return unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
 }
 
@@ -585,6 +585,162 @@ test('R118: Borrower of Forms offers the borrowed ACTIVATED ability, and keeps i
   h.do({ type: 'declareAttack', seat: A, columns: [[bof.id]] });
   assert.deepEqual(activations(h, A, bof.id), ['own'],
     '"become" is permanent — the borrowed ability survives regroup with the face');
+  finishBattle(h);
+});
+
+/* ── R147: the body ENTERS as the copy ─────────────────────────────────────
+ *
+ * CARD-TODO #37. Every test below needs the caster's own ally-spawn watchers
+ * to be standing WHERE THE BODY ARRIVES, and a spell unit's body arrives in
+ * the region the spell resolved in — the BATTLE region. A unit spawned by the
+ * test rig stands in its controller's HOME region, so the caster has to be the
+ * DEFENDER: only then are the two the same region and only then can a watcher
+ * see anything at all. `toNextBattle(h, D)` hands the initiative to the
+ * opponent; the assertion on `battle.region` right after the declaration is
+ * there so the arrangement can never rot into a test that passes because
+ * nobody was looking.
+ */
+
+/** R147: set up "A defends at home, D attacks", leaving A holding priority in
+ * the attack window with `metal` to spend. Returns the battle region. */
+function defendingCaster(h: Harness, A: Seat, D: Seat, metal = 7): number {
+  const raider = spawn(h, D, 'Unit Token');
+  giveResources(h, A, 'metal', metal);
+  toNextBattle(h, D);
+  h.do({ type: 'declareAttack', seat: D, columns: [[raider]] });
+  pass(h);                                                  // D's window pass → A has priority
+  return h.state.battle!.region;
+}
+
+test('R147: the Oracle\'s "defense > power" watcher sees the COPIED body, not Borrower of Forms', () => {
+  const h = new Harness(2640);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const crab = spawn(h, A, 'Bumblecrab');                   // 2/3 — defense > power
+  const oracle = spawn(h, A, 'Nectar Ridge Oracle');        // "[once] when another ally with
+  const region = defendingCaster(h, A, D);                  //  greater defense than power spawns"
+  assert.equal(ent(h, oracle)!.region, region,
+    'the Oracle is standing in the battle region — or it could not see the spawn at all');
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
+  pick(h, { unit: crab });
+  const hand = h.state.players[A]!.hand.length;
+  pass(h); pass(h);                                         // resolve the spell
+  // R143's preference: check the QUEUEING, which is the instant the watcher
+  // read the body — not the card, which lands a whole resolution later.
+  assert.ok(h.log.some(l => l.includes('Trigger: Nectar Ridge Oracle')),
+    'Borrower of Forms enters as a 2/3 Bumblecrab, so the Oracle triggers');
+  assert.equal(h.state.decision, null, 'and it is the only trigger, so nothing is ordered');
+  pass(h); pass(h);                                         // resolve the Oracle's trigger
+  assert.equal(h.state.players[A]!.hand.length, hand + 1, 'the card is drawn');
+  finishBattle(h);
+});
+
+test('R147: becoming the copy is NOT a trigger — no spurious trigger-ordering question', () => {
+  const h = new Harness(2641);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const crab = spawn(h, A, 'Bumblecrab');
+  const wanderer = spawn(h, A, 'Boreal Wanderer');          // "when another ally spawns during
+  const region = defendingCaster(h, A, D);                  //  battle, deal 2 to each opponent"
+  assert.equal(ent(h, wanderer)!.region, region, 'the watcher is where the body will arrive');
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
+  pick(h, { unit: crab });
+  pass(h); pass(h);                                         // resolve the spell
+  assert.equal(h.state.decision, null,
+    'the Borrower has no trigger of its own to race the Wanderer, so nothing is ordered');
+  assert.deepEqual(h.state.stack.map(i => i.label), ['Boreal Wanderer: deal 2 damage to each opponent'],
+    'exactly one trigger is waiting, and it is the watcher\'s — not "I become an exact copy"');
+  finishBattle(h);
+});
+
+/** R147: what a `spawned` watcher SEES, at the instant the event fires.
+ * `E.fireEvent` is the single door every listener goes through, so patching it
+ * reads the body at exactly the moment the whole board reads it — which is the
+ * only moment in question, since "afterwards" is what already worked. */
+function watchBorrowerSpawn(h: Harness, fn: () => void): { name: string; stats: [number, number]; attrs: Set<string> } | null {
+  type Fire = E['fireEvent'];
+  let seen: { name: string; stats: [number, number]; attrs: Set<string> } | null = null;
+  const orig: Fire = E.prototype.fireEvent;
+  E.prototype.fireEvent = function (this: E, ...args: Parameters<Fire>): void {
+    const [type, ev] = args;
+    const u = ev.data?.['unit'] !== undefined ? this.entity(ev.data['unit'] as EntityId) : undefined;
+    if (type === 'spawned' && u && u.card === 'Borrower of Forms' && !seen) {
+      seen = {
+        name: this.nameOf(u),
+        stats: this.effStats(u),
+        attrs: new Set<string>([...this.ownAttrs(u)] as string[]),
+      };
+    }
+    orig.apply(this, args);
+  };
+  try { fn(); } finally { E.prototype.fireEvent = orig; }
+  void h;
+  return seen;
+}
+
+test('R147: the body wears the borrowed IDENTITY from the instant it enters play', () => {
+  const h = new Harness(2642);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const siren = spawn(h, A, 'Sporebloom Siren');            // 2/2 {Poisonous}
+  defendingCaster(h, A, D);
+  const seen = watchBorrowerSpawn(h, () => {
+    h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
+    pick(h, { unit: siren });
+    pass(h); pass(h);
+  });
+  assert.ok(seen, 'the body spawned and the spawn event fired');
+  assert.equal(seen!.name, 'Sporebloom Siren',
+    'R147: it ENTERS as the thing it copied — it is never a plain Borrower of Forms in play');
+  assert.deepEqual(seen!.stats, [2, 2], 'with the borrowed body, not the Borrower\'s own 2/2… ');
+  assert.ok(seen!.attrs.has('Poisonous'), '…and the borrowed attributes');
+  finishBattle(h);
+});
+
+test('R147 (negative control): a Borrower whose target is gone spawns no body at all', () => {
+  const h = new Harness(2643);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const crab = spawn(h, A, 'Bumblecrab');
+  spawn(h, A, 'Nectar Ridge Oracle');
+  defendingCaster(h, A, D);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
+  pick(h, { unit: crab });
+  withE(h, e => e.destroy(e.entity(crab)!, 'dies'));         // the form walks away in response
+  pass(h); pass(h);
+  assert.ok(!unitsOf(h, A).some(u => u.card === 'Borrower of Forms'),
+    'R5: the whole item fizzles, so there is no body to wear anything');
+  assert.ok(h.state.players[A]!.bin.includes('Borrower of Forms'), 'and the card is binned (R40)');
+  assert.ok(!h.log.some(l => l.includes('Trigger: Nectar Ridge Oracle')),
+    'nothing spawned, so nothing was watched');
+  assert.equal(h.state.decision, null, 'and nothing is left half-asked');
+  finishBattle(h);
+});
+
+test('R147: two Borrowers of Forms in ONE region each keep their own borrowed face', () => {
+  const h = new Harness(2644);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const crab = spawn(h, A, 'Bumblecrab');                   // 2/3
+  const slink = spawn(h, A, 'Slink');                       // 2/3, a different name
+  const region = defendingCaster(h, A, D, 14);              // two castings
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
+  pick(h, { unit: crab });
+  pass(h); pass(h);                                         // #1 resolves — body #1 is in play
+  const first = unitsOf(h, A).find(u => u.card === 'Borrower of Forms')!;
+  assert.ok(first, 'the first body spawned');
+  pass(h);                                                  // priority comes back round to A
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Borrower of Forms') });
+  pick(h, { unit: slink });
+  pass(h); pass(h);                                         // #2 resolves in the SAME region
+  const second = unitsOf(h, A).find(u => u.card === 'Borrower of Forms' && u.id !== first.id)!;
+  assert.ok(second, 'the second body spawned');
+  const e = new E(h.state);
+  assert.equal(e.nameOf(ent(h, first.id)!), 'Bumblecrab',
+    'the answer rides each spell\'s own stack item — the second casting cannot eat the first\'s face');
+  assert.equal(e.nameOf(ent(h, second.id)!), 'Slink');
+  assert.equal(ent(h, first.id)!.region, region);
+  assert.equal(ent(h, second.id)!.region, region, 'both of them, in one region');
   finishBattle(h);
 });
 

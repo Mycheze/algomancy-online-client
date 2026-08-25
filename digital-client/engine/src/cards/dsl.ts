@@ -12,7 +12,8 @@
  *   augment:<Card>#<i> the effect of augmentText[i] (text-box [Augment] text)
  */
 import type {
-  Attr, CardName, EffectPart, EngineEvent, Entity, EventType, Seat, StackItem, TargetRef,
+  Attr, CardName, EffectPart, EngineEvent, Entity, EventType, Seat, SpawnFace, StackItem,
+  TargetRef,
 } from '../types.ts';
 import type { E } from '../engine.ts';
 import printedJson from './printed.json' with { type: 'json' };
@@ -153,6 +154,30 @@ export interface EffectCtx {
    * only `kind: 'spellUnit'` spawns a body in `afterParts`. Last call wins.
    */
   spawnUnder?: (seat: Seat) => void;
+  /**
+   * R147 — "I become an exact copy of that unit." on a SPELL UNIT (Borrower of
+   * Forms): the BODY the spell unit's own body ENTERS play wearing.
+   *
+   * `spawnUnder` directly above is the same seam one question over — that one
+   * says WHOSE the body is as it arrives, this one says WHAT it is — and it is
+   * here for the same reason: `E.afterParts` spawns the body after every part
+   * has run, so an effect has no handle on it, and the answer therefore has to
+   * be left ON THE ITEM (R85: a part can suspend and be replayed out of the
+   * serialised suspension, and `item` is what the suspension carries).
+   *
+   * IT IS NOT A "BECOME" AFTERWARDS. The card used to park the face on a
+   * region ledger and claim it from the body's own `spawned` trigger, so the
+   * body entered as a plain Borrower of Forms and turned into the copy one
+   * resolution later. Every spawn watcher in the region read the wrong body —
+   * Nectar Ridge Oracle's "an ally with greater defense than power" is R1's own
+   * worked example — and the caster was asked to order a trigger that should
+   * not exist (CARD-TODO #37).
+   *
+   * Optional for `spawnUnder`'s reason: an EffectCtx with no stack item behind
+   * it has no body to dress, so call it as `ctx.spawnWearing?.(face)`. Inert on
+   * any item that is not a `kind: 'spellUnit'`. Last call wins.
+   */
+  spawnWearing?: (face: SpawnFace) => void;
   /**
    * CARD-TODO #18 — "I did nothing; do not spend the [once]."
    *

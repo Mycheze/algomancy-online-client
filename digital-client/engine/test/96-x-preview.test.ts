@@ -220,8 +220,10 @@ const NO_PREVIEW_NEEDED: Record<string, string> = {
   // negated effect's controller rides on its own stack item (StackItem
   // .spawnUnder) and the body ENTERS as that seat's unit — the `hushMushGiveTo`
   // scratch slot and the spawn trigger that read it are both gone.
-  'Borrower of Forms': 'same shape — `bof:pending` relays the erased unit\'s stats from the '
-    + 'spell effect into its own self-spawn trigger. Intra-resolution plumbing, not state.',
+  // R147 removed Borrower of Forms' entry for the same reason and by the same
+  // route: the `bof:*` counters and the `copyParks` slot are gone, the copied
+  // body rides the spell's own stack item (StackItem.spawnWearing), and the
+  // self-spawn trigger that read them has been deleted.
   'Echo of Despair': 'FLAG-STYLE, deferred with #85\'s other flags (Suspend\'s life-lock, '
     + 'Abyssal Evocation\'s bin-play permission). It reads the ledger as a BOOLEAN — "did a '
     + 'player lose life this battle" — on an afterCombat trigger of a unit already in play, '

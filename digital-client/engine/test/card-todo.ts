@@ -1933,12 +1933,28 @@ export const CARD_TODO: TodoEntry[] = [
       + 'the body spawns, rather than parking it on a shared region ledger for a follow-up '
       + 'trigger to claim. R143 added `ctx.spawnUnder(seat)` for the controller; this wants the '
       + 'equivalent for the copied face/stats. Deletes the trigger and the ledger, as R143 did.',
-    proof: null,
+    proof: () => {
+      // TRUE while becoming the copy is still a separate triggered ability on
+      // the body's own spawn — which is the whole defect: a trigger cannot run
+      // before the event that raised it, so the body has to enter as itself
+      // first. R147 deleted it; `abilities` is now empty.
+      const abil = (getCard('Borrower of Forms').abilities ?? []) as Array<{ type?: string }>;
+      return abil.some(a => a.type === 'triggered');
+    },
     verify:
       'Control a Nectar Ridge Oracle; cast Borrower of Forms copying something with greater '
       + 'defense than power. The Oracle must see the COPIED body, and no trigger-ordering '
       + 'question should be raised.',
-    status: 'open',
+    status: 'done',
+    guards: [
+      // no apostrophe in the needle: the title scanner reads the SOURCE, so an
+      // escaped `\'` in a test name is a backslash the needle would have to match
+      '26-metal-a.test.ts::watcher sees the COPIED body, not Borrower of Forms',
+      '26-metal-a.test.ts::R147: becoming the copy is NOT a trigger',
+      '26-metal-a.test.ts::R147: the body wears the borrowed IDENTITY from the instant',
+      '26-metal-a.test.ts::R147 (negative control): a Borrower whose target is gone',
+      '26-metal-a.test.ts::R147: two Borrowers of Forms in ONE region',
+    ],
   },
   {
     id: 38,
