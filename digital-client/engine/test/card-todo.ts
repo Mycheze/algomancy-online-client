@@ -3065,7 +3065,38 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A `fixed` entry whose report describes a visible symptom, cited only to a guard that '
       + 'builds its own fixture, fails a named test.',
-    status: 'open',
+    closed:
+      'R182 BUILT THE CLASSIFIER, MEASURED IT, AND REFUSED TO SHIP THE SCREEN — and the refusal '
+      + 'is the finding. Applied to the ten entries this ticket rests on, the shape rule does not '
+      + 'separate them: the four KNOWN-BLIND classify #43 pure, #45 pure, #53 pure, #18 harness; '
+      + 'the six KNOWN-GOOD classify #22 pure, #26 pure, #82 pure, #94 pure, #100 pure, #77 '
+      + 'harness. **Three of the blind four are pure-only and so are five of the correct six.** '
+      + 'Same shape, opposite verdicts. And #18 breaks it from the other side: its blind guard '
+      + 'DOES drive a real Harness and then asserts `legalActions(state, D) === []`, a rules fact '
+      + 'that was already true before the fix. So any "a symptom report must cite a guard that '
+      + 'drives the real thing" rule flags five honest entries AND still misses one of the four. '
+      + 'THE SEPARATING FACT IS "was the tested function the ROOT CAUSE?" — #22\'s publishCols '
+      + 'test IS the fix; #45\'s stackItemX test is a correct test of a reader that was never the '
+      + 'bug — and that fact exists nowhere in this repo in machine-readable form. '
+      + 'WHAT SHIPPED INSTEAD, in 154-guard-shape.test.ts: the instrument, proof it is not blind, '
+      + 'the reach measurement, the negative result as a FALSIFIABLE assertion (if the four ever '
+      + 'do become distinguishable by shape, that test fails and this can be reopened), and one '
+      + 'much weaker rule that IS sound — an entry closed against nothing but pure tests must at '
+      + 'least carry a `note`. That catches 2 of the 4, flags #36 and #38, and both are REAL '
+      + 'gaps in the record rather than false positives. The pure-only population is 7 of 96. '
+      + '⚠ THE CLASSIFIER WENT BLIND TWICE WHILE BEING BUILT, in exactly R176\'s two ways: '
+      + 'brace-matching RAW source ran one small test\'s body 24,660 characters past its closing '
+      + 'brace (an apostrophe in a comment), crediting a pure test with driving a Harness; and '
+      + '`function f(x): { a: T } { … }` handed back the RETURN TYPE as the body. Both are pinned '
+      + 'as tests against the real files that exposed them. That is the third and fourth time a '
+      + 'source-reading checker in this repo has been caught lying about what it can see.',
+    guards: [
+      '154-guard-shape.test.ts::the four blind entries are not distinguishable by SHAPE',
+      '154-guard-shape.test.ts::an entry closed against nothing but pure tests leaves something behind',
+      '154-guard-shape.test.ts::a comment apostrophe does not run a test body away',
+      '154-guard-shape.test.ts::every guard reference in the ledger resolves to something this classifier can read',
+    ],
+    status: 'done',
   },
 
   // ── filed 2026-08-25 (round 26), from agents' closing "report any real
@@ -3109,7 +3140,39 @@ export const CARD_TODO: TodoEntry[] = [
       'Play a spell targeting something else, retarget it onto Earthbound Replicator with '
       + 'Gravitational Correction, let it resolve: no copy. And a negate aimed at Maelstrom '
       + "Charger's ability finds nothing on the stack to hit.",
-    status: 'open',
+    closed:
+      'R178, both halves, and the owner chose the full seam over the narrow fix. '
+      + '(a) Earthbound Replicator now asks the targeting question in `when` (R1). '
+      + '⚠ THE BRIEF SAID "move the targetsMe test into when" and that was not achievable as '
+      + 'stated — and the reason is load-bearing: **commitItem fires spellPlayed BEFORE '
+      + 'pushItem**, so a `when` has no stack to consult. That is exactly why the card was '
+      + 'written to read current targets at resolution in the first place. The fix was to put '
+      + 'the declared targets and the item id ON THE EVENT, the same argument already made for '
+      + '`x`. That also turned CT-58 into an IDENTITY lookup rather than the reverse-scan the '
+      + 'brief asked for — reverse-find is a heuristic that happens to be right under today\'s '
+      + 'push order; an id is right under any of them. '
+      + '(b) Maelstrom Charger: `CardBehavior.asYouPlay` + `E.collectAsYouPlay`, the last '
+      + 'stage of the cast window, riding the ordinary cast suspension. All three RAQ facts '
+      + 'are now TRUE and each is asserted: it is neither triggered nor activated (Crevice '
+      + 'Lurker cannot tax it, guarded on a board where the Lurker DOES stop a real trigger); '
+      + 'it is not on the stack (the stack is literally empty while the question is open); and '
+      + 'the copy lands above the original. Multi-Charger none/one/two works, and Ancient One '
+      + 'projecting the face works because it is a BEHAVIOR_CHANNELS member. '
+      + '⚠ WHY NOT pendingCosts/CostMod.sacrifice (R122), which I suggested: R122\'s own doc '
+      + 'says an unpayable count gates castability exactly as unaffordable mana does — a cost '
+      + 'is MANDATORY once declared, and this is a *may*. Making that collector opt-out-able '
+      + 'would give every real cost a door it must not have. '
+      + 'It does NOT generalise, and that was measured rather than assumed: "as you play" is '
+      + 'on exactly one card in printed.json. Spellbind\'s "as it is played" is {Modular}; '
+      + 'Writhing Host\'s is an additional cost. So the seam stays small deliberately.',
+    guards: [
+      '151-copy-and-moved-mods.test.ts::a spell played at something ELSE and retargeted onto me makes NO copy',
+      '151-copy-and-moved-mods.test.ts::a spell played AT ME and retargeted away still makes its copy',
+      '151-copy-and-moved-mods.test.ts::the option is asked in the cast window and never reaches the stack',
+      '151-copy-and-moved-mods.test.ts::Crevice Lurker cannot tax it',
+      '151-copy-and-moved-mods.test.ts::two Chargers are two questions and two copies',
+    ],
+    status: 'done',
   },
   {
     id: 58,
@@ -3133,7 +3196,17 @@ export const CARD_TODO: TodoEntry[] = [
       + "already excludes those, so a copy fixture cannot prove the ordering).",
     proof: null,
     verify: 'With two copies of one card on the stack from the same seat, the card acts on the TOP one.',
-    status: 'open',
+    closed:
+      'R178, and better than the ticket asked. With the item id on the spellPlayed payload the '
+      + 'lookup is an IDENTITY match, not `[...stack].reverse().find(...)`. '
+      + '⚠ STILL OPEN ELSEWHERE, and now cheaply: Origon (batch-hybrids-fwe.ts) and Hexbane '
+      + 'Shiitake (batch-wood-a.ts) both listen to spellPlayed and still carry R166\'s reverse '
+      + 'scan plus a paragraph of comment explaining why it happens to work. Both can become '
+      + 'identity lookups and lose the paragraph. Carried as CT-69.',
+    guards: [
+      '151-copy-and-moved-mods.test.ts::with two identical spells on the stack it copies the TOP one',
+    ],
+    status: 'done',
   },
   {
     id: 59,
@@ -3212,7 +3285,36 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify:
       'A behaviour change in one card file does not redden 65-effect-conformance in another.',
-    status: 'open',
+    closed:
+      'R182 took option (1): the 140-game FUZZ drive is replaced by a DETERMINISTIC pass over '
+      + 'every EffectDef in the registry, in two fixed board states, with the context built '
+      + "from the engine's own machinery (targets from targetCandidates + specForSlot + "
+      + 'resolveTargetRef; a triggered ability\'s event accepted only if that ability\'s own '
+      + '`when` returns true, asked on a CLONE because R172\'s Ancient One mutates in `when`). '
+      + 'Reach is an EQUALITY now, not a floor, so the test can no longer be satisfied by a '
+      + 'drive that quietly stops reaching things. '
+      + 'REACH MEASURED BOTH WAYS, which is what the ticket demanded: fuzz 280/431 defs, '
+      + '272/413 cards, 49 token-makers, ~45s -> deterministic 430/430 defs, 413/413 cards, '
+      + '76/84 token-makers, ~2s. Strictly better on every axis, so no bad trade was made '
+      + 'silently. '
+      + 'AND IT FOUND SIXTEEN SILENT BRANCHES the fuzz never reached, FIFTEEN OF ONE SHAPE: '
+      + 'R25\'s "each opponent" loop over a region that holds nobody else runs zero times and '
+      + 'says nothing (Bloated Manablub, Blightmound, Linked Extinction, Void Memory — whose '
+      + 'own comment CITES R25 and still does not announce it — Growing Plague, Malicious '
+      + 'Hardware, Pestilent Mycelion, Rotwall, Verdant Necrophage, and their graft halves). '
+      + 'All are in SILENT_KNOWN with reasons and a self-invalidating test, so a fix cannot '
+      + 'land without the entry coming off. Carried as CT-70. '
+      + 'Three effects are named residue the rig cannot furnish (Ancient One needs a formation '
+      + 'column, Riftwalker a battle grid holding both, Roving Quillback a blocked column), '
+      + 'and the R104 replacement path is stated as a coverage loss the fuzz occasionally had '
+      + '— named individually rather than counted, which is what the ticket asked for.',
+    guards: [
+      '65-effect-conformance.test.ts::drive every effect in the registry',
+      '65-effect-conformance.test.ts::no effect resolves into silence',
+      '65-effect-conformance.test.ts::the drive actually covers the pool',
+      '65-effect-conformance.test.ts::the residue is named individually',
+    ],
+    status: 'done',
   },
   {
     id: 62,
@@ -3466,6 +3568,65 @@ export const CARD_TODO: TodoEntry[] = [
       + 'unused import still error.',
     proof: null,
     verify: 'A stale exemption fails the suite, and a dead helper in test/ is caught by the sweep.',
+    status: 'open',
+  },
+  {
+    id: 69,
+    area: 'card',
+    severity: 'minor',
+    cards: ['Origon', 'Hexbane Shiitake'],
+    title: 'Two stack lookups can stop being heuristics now that the event carries the item',
+    detail:
+      'R178 put the played item\'s ID on the `spellPlayed` payload, so a card that wants "the '
+      + 'spell that was just played" can match on identity. Origon (`batch-hybrids-fwe.ts`) and '
+      + 'Hexbane Shiitake (`batch-wood-a.ts`) still use R166\'s `[...g.s.stack].reverse().find('
+      + 'i => i.card === name && i.controller === seat && !i.copy)`, and each carries a paragraph '
+      + 'of comment explaining why a reverse scan happens to be right.',
+    evidence:
+      'Reported by the R178 agent, which converted Earthbound Replicator the same way. Reverse-'
+      + 'find is correct under TODAY\'s push order and is a heuristic under any other; an id is '
+      + 'correct under all of them. The paragraph of justification is itself the tell.',
+    fix:
+      'Match on `ev.data.item`. The explanatory comments come out with the scan. '
+      + '⚠ Keep the `!i.copy` reasoning: R164 established that a copy is not PLAYED, so a card '
+      + 'keying off a play must still not see one — that is a separate question from which item '
+      + 'the lookup finds, and switching to an id must not quietly answer it differently.',
+    proof: null,
+    verify: 'Both cards act on the item the event names, with two identical spells on the stack.',
+    status: 'open',
+  },
+  {
+    id: 70,
+    area: 'card',
+    severity: 'major',
+    title: 'Fifteen effects go silent on the same clause: "each opponent" in a region holding nobody else',
+    detail:
+      'R25 scopes an effect to its region, and these read the region\'s `presentSeats` to find '
+      + '"each opponent". A HOME region out of battle lists only its owner, so the loop runs zero '
+      + 'times and the effect resolves saying NOTHING — the player is told neither what happened '
+      + 'nor why it did not. `85-silent-branches` §9 already fixed exactly this for the three the '
+      + 'old fuzz happened to reach (Restitution, Vroot, Flzzz); the rest were never driven.',
+    evidence:
+      'Found by R182\'s deterministic drive, which reaches 430/430 EffectDefs where the fuzz it '
+      + 'replaced reached 280/431. By effect label: `ability:Bloated Manablub#0` + its graft, '
+      + '`ability:Blightmound#0` + its graft, `spell:Linked Extinction` + graft (its cost-declined '
+      + 'branch DOES announce; the opponent loop below it does not), `spell:Void Memory` + graft '
+      + '(⚠ its own comment CITES R25 and still does not announce the case), and the augment '
+      + 'halves of Growing Plague, Malicious Hardware, Pestilent Mycelion, Rotwall and Verdant '
+      + 'Necrophage. '
+      + 'A near neighbour rather than the same shape: `augment:Stellarspore Harvester#0` counts '
+      + '"each of your units with a -1/-1 counter" at resolution and says nothing when the count '
+      + 'is zero.',
+    fix:
+      'One `g.ev(\'info\', …)` per branch, saying the region held no opponent — the same repair '
+      + '85-silent-branches §9 made for the first three, so there is a precedent to copy '
+      + 'verbatim. All sixteen are listed in 65\'s `SILENT_KNOWN` with reasons and a '
+      + 'self-invalidating test, so **a fix cannot land without the entry coming off**, and the '
+      + 'ticket closes when the list is empty. '
+      + '⚠ Do not "fix" these by making the loop run — the region genuinely holds nobody else and '
+      + 'the effect genuinely does nothing. The defect is the silence, not the no-op.',
+    proof: null,
+    verify: '65-effect-conformance\'s SILENT_KNOWN list is empty for the R25 family.',
     status: 'open',
   },
 ];
