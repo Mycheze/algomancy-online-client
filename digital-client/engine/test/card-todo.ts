@@ -1719,7 +1719,22 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify: 'Play a battle with auto-yield on and a multi-item stack; the items should appear one '
       + 'at a time at a readable rate rather than all at once.',
-    status: 'open',
+    // CLOSED by R150. ui/pace.ts, clock injected, PACE_MS the single named knob — the engine
+    // never learns about wall-clock time, so replay-room.ts and the suite stay deterministic.
+    // ⚠ THE LESSON OF THE ROUND, recorded because it nearly shipped: the decisions WERE lifted
+    // into a pure module and 14 tests passed, and the pacing was still WRONG — it spaced from
+    // the waiting queue, which empties between real server updates, so nothing was ever held.
+    // A headless-Chrome run against a live two-seat game is what caught it. The queue carries
+    // `last` now and there is a DRIP test beside every BURST test. Lifting a decision into a
+    // testable function does not tell you that you tested the right thing.
+    guards: [
+      '128-ui-pace.test.ts::a BURST of updates surfaces ONE per PACE_MS, on an injected clock',
+      '128-ui-pace.test.ts::a DRIP is throttled too — the queue emptying is not a reset',
+      '128-ui-pace.test.ts::skip flushes the whole queue to the live state in ONE step',
+      '128-ui-pace.test.ts::an urgent arrival FLUSHES the backlog rather than jumping it',
+      '128-ui-pace.test.ts::a decision of MINE is never held',
+    ],
+    status: 'done',
   },
   {
     id: 29, area: 'card', severity: 'major', reportId: 95, cards: ['Hush Mush'],
@@ -1817,7 +1832,24 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify: 'While the opponent resolves start-of-combat triggers, you can still place and confirm '
       + 'deployment moves without waiting.',
-    status: 'open',
+    // CLOSED by R150 — and the diagnosis reversed my brief, which said to suspect the
+    // presentation layer. It is the RULES layer: apply.ts's global `if (e.s.decision && …)`
+    // gate refuses every non-decide action from EITHER seat, and legalActions returns [] to
+    // the seat that does not own the decision. The client's "Waiting for X…" bar was a
+    // faithful drawing of an empty legal list — un-gating the UI alone would have turned a
+    // frozen screen into a screen full of refusals. Reachable only since R144 put
+    // start-of-deployment triggers on the stack. CT-28 and CT-32 do NOT share a root cause.
+    // Fixed at the server (legalForSeat + a deferral queue) because the engine gate is CORRECT
+    // in battle, where priority is sequential. ⚠ That makes it a COMPENSATION, not the real
+    // fix: hotseat still freezes, because Harness goes through apply() directly. Carried as
+    // CT-44 — the gate should become seat-aware during simultaneous phases.
+    guards: [
+      'server/test-concurrency.ts::seat 0 is still offered actions while seat 1 is mid-question — the whole of #98',
+      'server/test-concurrency.ts::deploy action is DEFERRED, not refused',
+      'server/test-concurrency.ts::and it is the SAME set of action kinds they had a moment earlier',
+      'server/test-concurrency.ts::seat 1 is mid-question in the authoritative state',
+    ],
+    status: 'done',
   },
   {
     id: 33, area: 'client', severity: 'minor', reportId: 99,
@@ -2261,6 +2293,38 @@ export const CARD_TODO: TodoEntry[] = [
       'Reverting the primitive in exchangeInPlace must redden 42-dark-b\'s despawn, mod-trash '
       + 'and erased-pile assertions; adding a NEW aliased bin push anywhere in src/cards/ must '
       + 'redden the census sweep.',
+    status: 'open',
+  },
+  {
+    id: 44,
+    area: 'engine',
+    severity: 'minor',
+    title: "apply.ts's pending-decision gate is not seat-aware, so hotseat still freezes",
+    detail:
+      'R150 fixed report #98 (one player\'s triggers freezing the other\'s simultaneous '
+      + 'deployment) at the SERVER layer, with `legalForSeat` and a deferral queue in rooms.ts. '
+      + 'The cause is one layer down and untouched: `apply.ts`\'s global gate refuses every '
+      + 'non-decide action while any decision is pending, from either seat, and `legalActions` '
+      + 'opens by handing the non-owning seat an empty list. That gate is CORRECT during battle, '
+      + 'where priority is sequential; it is wrong during a hidden simultaneous segment, which is '
+      + 'the only place R144 can now raise one seat\'s trigger decision while the other is still '
+      + 'deploying. Because the fix lives in the server, anything going through `apply()` '
+      + 'directly still freezes — which is hotseat, and the Harness the whole test suite uses.',
+    evidence:
+      'Reported by the R150 agent 2026-08-25 as out of scope, having diagnosed the real mechanism '
+      + 'at apply.ts:196 and apply.ts:2025 and been told not to edit the engine that round. '
+      + 'server/test-concurrency.ts §0 asserts BOTH engine lines by name before it asserts any '
+      + 'fix, so the diagnosis is recorded as a live test rather than as prose.',
+    fix:
+      'Make the gate seat-aware during simultaneous phases: a decision belonging to seat A must '
+      + 'not empty seat B\'s legal list or refuse B\'s actions while a hidden segment is open. '
+      + 'Then the server\'s compensation becomes redundant and should be deleted in the same '
+      + 'change rather than left as a second implementation of the same rule — two answers to '
+      + 'one question is the drift that BL-19 is the standing example of.',
+    proof: null,
+    verify:
+      'A Harness (hotseat) driven into deployment with one seat suspended on a trigger decision '
+      + 'must still offer the other seat its deploy actions. Today it offers none.',
     status: 'open',
   },
 ];

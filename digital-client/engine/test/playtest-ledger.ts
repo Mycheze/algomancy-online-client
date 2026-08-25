@@ -1570,14 +1570,25 @@ export const LEDGER: LedgerEntry[] = [
       + 'someone has auto pass on and has nothing left to do, it\'s impossible to keep up with '
       + 'what\'s going on currently. Things should go onto the stack and then resolve at a max '
       + 'speed of 1 thing per second, I think.',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '128-ui-pace.test.ts::a BURST of updates surfaces ONE per PACE_MS, on an injected clock',
+      '128-ui-pace.test.ts::a DRIP is throttled too — the queue emptying is not a reset',
+      '128-ui-pace.test.ts::skip flushes the whole queue to the live state in ONE step',
+      '128-ui-pace.test.ts::a decision of MINE is never held',
+    ],
     note:
       'PACING, not correctness. With auto-yield on and nothing to respond to, the whole stack '
       + 'resolves in one frame and the log scrolls past faster than a human can read, so a player '
       + 'cannot tell WHY the board changed. The owner proposes a ceiling of ~1 item/second. '
       + 'Presentation-only: the engine is pure and must NOT learn about wall-clock time — the '
       + 'throttle belongs in the client\'s render/animation layer, replaying the event list it '
-      + 'already receives. Carried as CT-28.',
+      + 'already receives. Carried as CT-28.'
+      + ' FIXED by R150 (2026-08-25): ui/pace.ts, a 1/sec ceiling with the clock injected and '
+      + 'PACE_MS as the one named knob. The ENGINE never learns about wall-clock time — a delay '
+      + 'in the reducer would make replay-room.ts and the whole suite time-dependent. Skip chip '
+      + 'and S key, and an un-holdable arrival FLUSHES the backlog ahead of itself, so the '
+      + 'client is never behind the server when it is your turn to act.',
   },
   {
     id: 95, room: 'SMVJ', date: '2026-08-24',
@@ -1652,12 +1663,25 @@ export const LEDGER: LedgerEntry[] = [
     id: 98, room: 'SMVJ', date: '2026-08-24',
     report: 'Rashi\'s start of combat (doing all her Wraith triggers) doesn\'t need to take away '
       + 'from what I\'m doing in Deployment',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      'server/test-concurrency.ts::seat 0 is still offered actions while seat 1 is mid-question — the whole of #98',
+      'server/test-concurrency.ts::deploy action is DEFERRED, not refused',
+      'server/test-concurrency.ts::seat 1 is mid-question in the authoritative state',
+    ],
     note:
       'Concurrency/flow. Deployment is SIMULTANEOUS (both players act, moves revealed when both '
       + 'are done — R-deployment), so one player resolving a pile of start-of-combat triggers '
       + 'should not seize the other player\'s screen or block their input. Related to #101, which '
-      + 'is the rules-side proposal for the same pile of Wraith triggers. Carried as CT-32.',
+      + 'is the rules-side proposal for the same pile of Wraith triggers. Carried as CT-32.'
+      + ' FIXED by R150 (2026-08-25), and the diagnosis is the part worth keeping: this was NOT '
+      + 'the presentation layer. apply.ts refuses every non-decide action from EITHER seat while '
+      + 'a decision is pending, and legalActions hands the non-owning seat an empty list, so the '
+      + '"Waiting for X…" bar was drawing an empty legal list faithfully — un-gating the UI '
+      + 'alone would have produced a screen full of refusals. Only reachable since R144 put '
+      + 'start-of-deployment triggers on the stack. Fixed in the server (legalForSeat + a '
+      + 'deferral queue) because the engine gate is right in battle; that leaves hotseat still '
+      + 'freezing, carried as CT-44.',
   },
   {
     id: 99, room: 'SMVJ', date: '2026-08-24',
