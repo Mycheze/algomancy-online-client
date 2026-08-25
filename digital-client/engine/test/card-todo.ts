@@ -2611,4 +2611,93 @@ export const CARD_TODO: TodoEntry[] = [
       + 'sweep. Today only the "would…instead" family is swept.',
     status: 'open',
   },
+
+  // ── filed 2026-08-25 as the NEXT ROUND'S WORK ───────────────────────────
+  // Full detail for both lives in `digital-client/docs/09-divergence-inventory.md`
+  // — a three-agent sweep of all 30 card files. Read that before starting.
+  {
+    id: 49,
+    area: 'coverage',
+    severity: 'blocker',
+    title: '316 of 439 printed promises have never been observed being delivered',
+    detail:
+      '84-card-semantics prints it on every run: "347 cards carry 439 printed promises '
+      + '(123 unconditional, 316 behind a trigger/condition/activation)". Only the '
+      + 'UNCONDITIONAL ones are required — a clause behind "When…", "if…", an activated '
+      + "ability's colon or an [Augment] box may legitimately not fire on the drill's board, "
+      + 'and demanding them would produce a wall of false failures. So 72% of what the cards '
+      + 'promise is counted out loud and never checked. '
+      + '⚠ The floor is lower than it looks even where it passes: the file states its own '
+      + 'limit — a card printing "deal 3 damage to target unit" that deals 3 to the WRONG '
+      + 'unit passes. It catches "promises something countable, delivers nothing of the '
+      + 'kind"; it does not check correctness.',
+    evidence:
+      'The tally in 84-card-semantics.test.ts, printed on every run. Unchanged by the R157 '
+      + 'ruling round (2026-08-25) — those 27 answers fixed CORRECTNESS, not COVERAGE, and '
+      + 'the number moved not at all. Drill reach is 490/491 and has been for weeks; reach is '
+      + 'not the problem, delivery is.',
+    fix:
+      'Staged, re-measuring after each stage. (1) Extend `claims.ts` to tag each conditional '
+      + 'claim with WHY it is conditional (trigger event / activated cost / augment box / '
+      + 'conditional clause) — that partition says how many need a board and how many need '
+      + 'only an activation. (2) ACTIVATED abilities are the cheap third: the drill can pay a '
+      + 'cost and activate with no new machinery. (3) Trigger-gated promises need a per-EVENT '
+      + 'fixture library (a unit dies / a card is trashed / a spell is played / a player loses '
+      + 'life / a counter is placed), then every card whose claim is gated on that event is '
+      + 'driven through the matching fixture. (4) [Augment] boxes need a host; the drill '
+      + 'already grafts. '
+      + '⚠ Do NOT close this by loosening what counts as a promise. Tightening the '
+      + 'conditional test moved 316 claims out of the required set once already, and every '
+      + 'one of those moves removed a FALSE FAILURE rather than weakening a check. Add a '
+      + 'floor to the conditional count the way `req >= 115` floors the unconditional one, so '
+      + 'the number cannot fall because the extractor got weaker.',
+    proof: null,
+    verify:
+      'node --test test/84-card-semantics.test.ts prints the tally. It was 114/123 '
+      + 'unconditional with 316 unchecked when this was filed. This closes when the '
+      + 'unchecked count is small AND the remainder are clauses no fixture can reach, named '
+      + 'individually rather than counted.',
+    status: 'open',
+  },
+  {
+    id: 50,
+    area: 'card',
+    severity: 'major',
+    title: 'The open approximations from the 30-file divergence sweep',
+    detail:
+      'A three-agent sweep of all 30 files in src/cards/sets/ (457 cards) on 2026-08-25 '
+      + 'inventoried every place the engine knowingly diverges from printed text. The '
+      + 'R157 ruling round fixed some; the rest are catalogued in '
+      + 'docs/09-divergence-inventory.md §2, grouped by what a fix needs. '
+      + 'Biggest single item: SPELL COPY never touches the stack — Earthbound Replicator and '
+      + "Maelstrom Charger call the copied spell's `run` in place, so the copy is "
+      + 'unrespondable, un-negatable by four cards that sweep the stack, fires no play event '
+      + 'for eight cards that watch one, and cannot erase itself. '
+      + 'Others needing an engine primitive: no `E.toHand`/"handEntered" (three cards); '
+      + 'face damage aggregated per seat so "a unit deals combat damage to a player" cannot '
+      + 'be attributed (six cards); no response window mid-resolution (four cards); '
+      + '`AbilityCost` has no variable-N atom (six cards pay at resolution); {Reaping} is '
+      + 'damage-only so a kill by stat swap or counter never sees it (two cards). '
+      + 'Card-local ones are cheaper: spawn counters landing AFTER the spawn event so every '
+      + 'watcher reads the wrong body; two cards printing "play" that call spawnUnit; '
+      + '"double" applied at layer 3 under a layer-4 multiplier; donated "[Augment] when I '
+      + 'despawn" text that is dead on a RECALL and works on a DEATH.',
+    evidence:
+      'docs/09-divergence-inventory.md, built from the sweep. Each entry names its cards, '
+      + 'its file, what diverges and what makes a fix non-trivial.',
+    fix:
+      'Work §2 of the inventory. Take 2b (card-local, no new primitive) first — those are '
+      + 'individually small and each one is a card that stops lying. Then 2a, biggest first: '
+      + 'SPELL-COPY unblocks the most cards. 2c is drift risk rather than live defect and can '
+      + 'wait, EXCEPT Origon, which uses `.find()` where it needs `.reverse().find()` and so '
+      + 'negates the WRONG stack item when two copies of a card are on the stack — that one '
+      + 'is a live bug hiding in a tidy-up bucket. '
+      + 'Inventory §3 lists ~20 STALE comments; each makes a live card look parked or an '
+      + 'approximation look present, and clearing them is nearly free.',
+    proof: null,
+    verify:
+      'An inventory entry closes when its cards have a named test that reddens on the old '
+      + 'behaviour. The inventory itself closes when §2 is empty.',
+    status: 'open',
+  },
 ];
