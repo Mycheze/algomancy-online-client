@@ -419,6 +419,13 @@ card('Flowstone Arcanite', {
       if (!b) return false;
       const col = g.columnOf(self.id);
       if (!col) return false;
+      // R117: the trigger fires in the sub-step MY OWN COLUMN strikes in.
+      // Blightmound, Zephyrzoa, Eldritch Dreamtender and the ld-a/light-a/
+      // metal-a copies all carry this gate; batch-earth-a and batch-fire-a were
+      // missed when R117 was applied, so both of their column-damage triggers
+      // fired on damage dealt in a sub-step they take no part in (Swift /
+      // normal / Sluggish). `when()` only — see E.strikesInCurrentSubStep.
+      if (!g.strikesInCurrentSubStep(self)) return false;
       const alive = col.filter(id => g.entity(id));
       const power = alive.reduce((s, id) => s + Math.max(0, g.effStats(g.entity(id)!)[0]), 0);
       if (power <= 0) return false;                       // a 0-power column deals nothing

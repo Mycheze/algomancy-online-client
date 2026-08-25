@@ -177,13 +177,23 @@ card('Bloodwind Revenant', {
       if (!b || ev.data?.seat === self.controller) return false;
       const col = g.columnOf(self.id);
       if (!col) return false;
+      // R117: fires only in the sub-step MY OWN COLUMN strikes in. Missed when
+      // R117 was applied — see the matching note on Flowstone Arcanite.
+      if (!g.strikesInCurrentSubStep(self)) return false;
+      // a DEAD unit's {Piercing} must not still carry the column, and a
+      // 0-power column deals no combat damage at all. Flowstone Arcanite and
+      // Blightmound both gate on both; this card gated on neither, so a column
+      // of corpses could pay out and a 0-power column counted as "dealing".
+      const alive = col.filter(id => g.entity(id));
+      const power = alive.reduce((s, id) => s + Math.max(0, g.effStats(g.entity(id)!)[0]), 0);
+      if (power <= 0) return false;
       const ci = b.columns.indexOf(col);
       if (ci >= 0) {   // attacking: connects if never blocked, or Piercing
         return ev.data?.seat === b.defender
-          && (b.blocks[ci] === undefined || g.colAttrs(col).has('Piercing'));
+          && (b.blocks[ci] === undefined || g.colAttrs(alive).has('Piercing'));
       }
       // blocking: only a Piercing blocking column reaches the attacker
-      return ev.data?.seat === b.attacker && g.colAttrs(col).has('Piercing');
+      return ev.data?.seat === b.attacker && g.colAttrs(alive).has('Piercing');
     },
     effect: revenantSac,
   }],

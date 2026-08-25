@@ -471,11 +471,24 @@ card('Galerider Eel', {
     type: 'triggered', events: ['despawned', 'draw'], graftCause: true,
     label: 'I gain +4/+4 and flying until regroup',
     when: (g, self, ev) => {
-      if (g.s.phase !== 'battle' || ev.data?.seat !== self.controller) return false;
-      if (ev.type === 'draw') return g.s.battle?.region === self.region;
-      // R70: the despawn event says where the card WENT; this used to match
-      // the word "hand" in the log message
-      return ev.data?.unit !== self.id && ev.data?.to === 'hand';
+      if (g.s.phase !== 'battle') return false;
+      // 'draw': `seat` IS the drawer, so it is the right field here.
+      if (ev.type === 'draw') {
+        return ev.data?.seat === self.controller && g.s.battle?.region === self.region;
+      }
+      // 'despawned': ⚠ `seat` is the recalled unit's CONTROLLER (leftPlayFacts),
+      // while the hand it actually entered is stamped separately as `hand`
+      // (recall(): `{ ...leftPlayFacts(u), to: 'hand', hand: seat }`). This card
+      // prints "enter YOUR hand", so it must read the DESTINATION. Reading
+      // `seat` was wrong in both directions once owner ≠ controller — recalling
+      // a unit you control but do not own sent the card to the OPPONENT's hand
+      // and fired this anyway, and the mirror case stayed silent. Ralph,
+      // Corrupting Blight, Hush Mush, Organic Exchange, Rebalance, Stellarspore
+      // Harvester and Mindspore Fiend all produce owner ≠ controller, and any
+      // of them can then be recalled mid-battle. (Rider of the Tides and
+      // Xenopod Progenitor print "a player's hand" and are right to ignore it.)
+      return ev.data?.unit !== self.id && ev.data?.to === 'hand'
+        && ev.data?.hand === self.controller;
     },
     effect: galeriderSurge,
   }],
