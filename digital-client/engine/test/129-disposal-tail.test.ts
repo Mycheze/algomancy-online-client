@@ -458,3 +458,51 @@ test('R153: E.disposeToBin exists and takes (entity, mods, announce, opts)', () 
       + 'of the primitive, which is how the copies drifted the first three times.');
   }
 });
+
+// ── R65, the branch that never had an announcement ─────────────────────────
+//
+// Found 2026-08-25 while closing CT-43: the R65 rule is that EVERY erase
+// reaches the public erased pile, and a TOKEN mod is erased whichever way its
+// host leaves play (R69 — it has no card of its own, so it can never bin).
+// `disposeToBin` says so for a death and for Hooba-Mon's exchange. `leavePlay`
+// deleted it in total silence, so the SAME Wraith on the SAME host was public
+// when the host died and invisible when the host was recalled or cached —
+// R137's defect one object over.
+//
+// This is deliberately asserted over all three routes together: a per-route
+// test would have passed on `destroy` alone, which is exactly how the gap
+// survived. Nothing about zones, entities or timing changed with the fix; it
+// only announces what was already happening.
+test('R65: a TOKEN mod reaches the erased pile however its host leaves play', () => {
+  const seen: Record<string, { pile: number; events: number }> = {};
+  for (const how of ['destroy', 'recall', 'cache'] as const) {
+    const h = new Harness(99);
+    toDeployment(h);
+    const P = h.state.deployPlayer!;
+    const hostId = spawn(h, P, 'Tidal Menace');
+    withE(h, e => {
+      const host = e.entity(hostId)!;
+      e.attachMod(host, E.WRAITH, P, 'augment', undefined, { token: true });
+      const pileBefore = (h.state.players[P]!.erased ?? []).length;
+      const evBefore = e.events.length;
+      if (how === 'destroy') e.destroy(host, 'dies');
+      else if (how === 'recall') e.recall(host);
+      else e.cacheUnit(host);
+      seen[how] = {
+        pile: (h.state.players[P]!.erased ?? []).length - pileBefore,
+        events: e.events.slice(evBefore).filter(v => v.type === 'erased').length,
+      };
+    });
+  }
+  // recall and cache each announce exactly the token mod; a death also erases
+  // the Unstable body it was riding (a modded card is Unstable — R69/R96), so
+  // it legitimately files two.
+  assert.equal(seen['recall']!.pile, 1, 'a RECALLED host left its token mod off the erased pile');
+  assert.equal(seen['cache']!.pile, 1, 'a CACHED host left its token mod off the erased pile');
+  assert.ok(seen['destroy']!.pile >= 1, 'a dying host must still file its token mod');
+  for (const how of ['destroy', 'recall', 'cache'] as const) {
+    assert.ok(seen[how]!.events >= 1,
+      `${how} produced no 'erased' event at all — R65 is about the ERASE, not the verb that `
+      + 'caused it, so every route has to say so out loud.');
+  }
+});

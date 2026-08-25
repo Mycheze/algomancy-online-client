@@ -2233,6 +2233,27 @@ export class E {
     const ev = this.events[this.events.length - 1]!;
     this.fireEvent('despawned', ev, u);
     for (const m of mods) if (!m.token) this.noteTrashed(m.owner, m.card, 'play', m);   // R70
+    // R65 (2026-08-25): and the TOKEN mods reach the public erased pile, which
+    // is the one branch of that rule that never had a sweep OR an announcement.
+    // leavePlay() deletes a token mod outright — its own comment already calls
+    // that an erase ("a token MOD has no card of its own — erased") — but
+    // nothing said so out loud, so a Wraith grafted onto a unit was filed on
+    // the pile when its host DIED or was EXCHANGED (disposeToBin emits exactly
+    // this line, R153) and vanished in silence when the host was RECALLED or
+    // CACHED. Measured before the fix, one Wraith on one host:
+    //     destroy  erased-pile +2, 2 'erased' events
+    //     recall   erased-pile +0, 0 events
+    //     cache    erased-pile +0, 0 events
+    // That is R137's defect one object over — the same mod behaving differently
+    // depending on how its host left play — and R65 turns on the ERASE, not on
+    // the verb that caused it. No zone, entity or timing changes here; this
+    // only announces something that was already happening.
+    const tokenMods = mods.filter(m => m.token);
+    if (tokenMods.length) {
+      this.ev('erased',
+        `${tokenMods.map(m => m.card).join(', ')} — erased with ${u.card}: a token mod has no card to bin.`,
+        { seat: u.owner, cards: tokenMods.map(m => m.card) });
+    }
   }
 
   /**

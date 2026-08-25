@@ -9996,3 +9996,42 @@ The README's claim that "the todo count is the backlog" went with them;
 Still genuinely parked, and untouched: Blightwalker's `[Switch1]` graft rider,
 the power/defense SWITCH, voluntary combat-damage over-assignment, burst-token
 cast order, Rotbeast's mod-moving approximation.
+
+## R156 — R65 is about the ERASE, not about the verb that caused it
+
+*2026-08-25. Found while closing CARD-TODO #43; reported by the R153 agent as
+out of scope and confirmed by measurement before it was touched.*
+
+R65 says every erased card reaches the public erased pile. R69 says a TOKEN mod
+has no card of its own, so it can never enter a bin — whichever way its host
+leaves play, the mod is simply erased.
+
+`E.disposeToBin` states that out loud for the two routes it owns (a death, and
+Hooba-Mon's exchange). `E.leavePlay` did not. Its own comment already called
+the deletion an erase — *"R69: a token MOD has no card of its own — erased"* —
+but nothing emitted an event, so the pile never heard about it.
+
+The result was that the SAME mod on the SAME host behaved differently
+depending on the verb. One Wraith grafted to one Tidal Menace, measured:
+
+| host leaves play by | erased-pile entries | `erased` events |
+|---|---|---|
+| `destroy` | +2 | 2 |
+| `recall`  | **+0** | **0** |
+| `cacheUnit` | **+0** | **0** |
+
+That is exactly the shape R137 removed one object over: *"if killing the
+carrier skipped that trash, the same mod card would behave differently
+depending on how its host left play."* The rule turns on the destination, not
+on the route.
+
+**The fix** is an announcement, not a mechanic: `afterDespawn` — the tail
+`recall()` and `cacheUnit()` already share — now emits the same bulk `'erased'`
+event `disposeToBin` emits, anchored on the host's owner. No zone changes, no
+entity changes, no timing changes; the token mods were already being deleted at
+exactly this point. All three routes now file the mod.
+
+⚠ It is asserted over all three routes **in one test**
+(`129-disposal-tail.test.ts::R65: a TOKEN mod reaches the erased pile however
+its host leaves play`) on purpose. A per-route test would have passed on
+`destroy` alone, which is precisely how the gap survived being written down.
