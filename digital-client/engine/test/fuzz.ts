@@ -12,6 +12,12 @@ export interface FuzzResult {
   finished: boolean;      // reached gameover (vs action cap)
   turns: number;
   state: GameState;
+  /** R169 / CT-47: how many times legalActions' ONE documented exception
+   * actually fired in this game (see the catch block below). Exposed so a test
+   * can assert the exception is EXERCISED rather than merely tolerated — a
+   * fuzzer that swallows a whole class of refusal without ever proving it
+   * happens is a fuzzer that will swallow the next real one too. */
+  disturbed: number;
 }
 
 export function fuzzGame(seed: number, maxActions = 3000, mode: 'shared' | 'draft' = 'shared', els?: import('../src/types.ts').Element[]): FuzzResult {
@@ -21,6 +27,7 @@ export function fuzzGame(seed: number, maxActions = 3000, mode: 'shared' | 'draf
 
   let { state } = createGame(seed, undefined, mode, els);
   const actions: Action[] = [];
+  let disturbed = 0;
 
   for (let i = 0; i < maxActions && state.phase !== 'gameover'; i++) {
     checkInvariants(state);
@@ -52,13 +59,53 @@ export function fuzzGame(seed: number, maxActions = 3000, mode: 'shared' | 'draf
       actions.push(action);
     } catch (err) {
       if (err instanceof IllegalAction) {
+        if (isContractException(state, action, err, `seed ${seed}, action ${i}`)) {
+          disturbed++;
+          continue;   // the state is untouched; pick again next iteration
+        }
         throw new Error(`legalActions lied: ${JSON.stringify(action)} rejected: ${(err as Error).message} (seed ${seed}, action ${i})`);
       }
       throw new Error(`engine crash on ${JSON.stringify(action)} (seed ${seed}, action ${i}): ${(err as Error).stack}`);
     }
   }
   checkInvariants(state);
-  return { seed, actions, finished: state.phase === 'gameover', turns: state.turn, state };
+  return { seed, actions, finished: state.phase === 'gameover', turns: state.turn, state, disturbed };
+}
+
+/**
+ * R169 / CT-47 — THE ONE NAMED EXCEPTION to `legalActions`' contract
+ * ("every action returned is legal", apply.ts). Nothing else may pass.
+ *
+ * R154 lets a seat act while the OTHER seat holds an open question, so long as
+ * the engine can prove the question is none of its business. Whether the action
+ * it picks will DISTURB that question cannot be known until the action has run
+ * — it depends on the card, its targets and the board — so `legalActions`
+ * offers it and `apply()` discards the draft afterwards, flagging `disturbs`.
+ * That refusal means "not YET", never "not ever": the server parks the action
+ * and lands it once the question is answered (rooms.ts `deferrableRefusal`).
+ *
+ * Three properties keep this from being a hole the fuzzer falls through:
+ *   · it is recognised BY THE FLAG, never by matching on a message;
+ *   · it is CHECKED, not assumed — a disturbance is only the R154 exception
+ *     when a question is actually standing and belongs to somebody else, so a
+ *     mis-flagged refusal is louder here than an unflagged one;
+ *   · `fuzzGame` COUNTS it (`FuzzResult.disturbed`), so a test can assert the
+ *     exception is exercised rather than merely tolerated.
+ *
+ * Widen this and the whole class of bug the fuzzer exists to find goes quiet.
+ */
+export function isContractException(
+  state: GameState, action: Action, err: unknown, where = '',
+): boolean {
+  if (!(err instanceof IllegalAction) || err.disturbs !== true) return false;
+  const at = where ? ` (${where})` : '';
+  if (!state.decision) {
+    throw new Error(`\`disturbs\` refusal with NO decision standing — that is not the R154 exception: ${JSON.stringify(action)}${at}`);
+  }
+  if (state.decision.seat === action.seat) {
+    throw new Error(`\`disturbs\` refusal on the ASKING seat's own action — that is not the R154 exception: ${JSON.stringify(action)}${at}`);
+  }
+  return true;
 }
 
 /** random hand↔pack merges beyond legalActions' single-swap set */

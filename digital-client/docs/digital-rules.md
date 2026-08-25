@@ -11219,3 +11219,120 @@ effect on the stack so enemy cannot interact with it. Opponent can only interact
 with copy of a spell effect."* The engine implements it as an ordinary triggered
 ability, so it goes on the stack, it can be negated before the copy is ever
 made, and R121's pay-to-trigger gate can tax it. That is a separate ticket.
+
+---
+
+## R169 — A replay that misreports is a tool that manufactures wrong conclusions
+
+*(CT-45 + CT-47, 2026-08-25. `server/replay-room.ts`, `engine/src/apply.ts`,
+`engine/test/fuzz.ts`; guards in `engine/test/143-replay-divergence.test.ts`.)*
+
+This repo settles playtest bug reports **by replaying saved games**. That makes
+the worst failure of `replay-room.ts` not "it missed something" but "it said
+something confident and wrong" — and it had been doing exactly that.
+
+### §1 The misreading, and the mechanism under it
+
+ANBB replayed as *"141 actions logged, 126 replayed, 15 skipped"*: a
+89%-faithful replay with fifteen small independent hiccups. It is **one**
+failure.
+
+Action `[125]` is `decide (seat 0)` answering an `orderTriggers` question with
+a scalar `0`. `doDecide`'s orderTriggers arm recomputes `mine` from the LIVE
+trigger queue and requires an exact-length permutation, so that answer cannot
+be applied. The decision therefore stays open — and `decisionBlocks` /
+`forcedAction` refuse **every** later action by **either** seat while it does.
+Fourteen of the fifteen "skips" are that one stuck decision wearing fourteen
+hats, and thirteen of them say *"a decision is pending for Ben"*, which is what
+a different, real bug (CT-44) looks like. They were read that way and briefed
+as thirteen findings. All thirteen were phantom.
+
+**A cascade of failures reads exactly like N instances of a bug.** The tool now
+refuses to present it that way:
+
+* the headline **never carries a count alone** — it names the divergence in the
+  same breath;
+* the verdict leads with the **DIVERGENCE POINT**: the first action this engine
+  refused, with index, type, seat and the engine's own reason, and the sentence
+  *"this is the only refusal in this file that is evidence on its own"*;
+* everything after it is stated as **cascade** — later refusals are not second
+  findings and later successes are not second confirmations, because from that
+  action on the replay is running a board the logged game never had;
+* a **WEDGE** is proved rather than guessed: a run of consecutive refusals whose
+  standing decision is byte-for-byte the one standing at the divergence. Nothing
+  answered it in between, so the engine is being asked the same question again
+  and its refusal carries no new information. The test is structural, not
+  message-matching, so it catches a wedge from any cause — including ones that
+  do not exist yet.
+* the **final position** is flagged as *not* the position the logged game
+  reached, whenever there was a divergence.
+
+The corpus looks very different under the new report. Every one of these was
+previously a "skips" count that invited a partial reading:
+
+| game | logged | diverges at |
+|---|---|---|
+| ANBB | 141 | **[125]** (total wedge, 14 cascade) |
+| SMVJ | 375 | **[121]** |
+| UZRG | 276 | **[154]** |
+| VEAV | 371 | **[113]** (beyond 4 declared forks) |
+| WEHH | 385 | **[56]** |
+| XVUR | 352 | **[51]** |
+
+### §2 The engine's half — refuse, never coerce
+
+The tempting fix is to read a bare `0` as "the identity order" and let the
+replay carry on. **No.** `processTriggerQueue` only ever raises the ordering
+question when a seat holds **≥2 distinguishable** triggers, so a scalar cannot
+name a permutation of them under this encoding *or any past one* — there has
+never been a legacy scalar form of this answer to be lenient about. Coercing
+would **invent an ordering the player never picked** and carry the replay on
+over a board they never saw. For a tool whose whole job is settling bug reports,
+a fabricated answer is strictly worse than a stopped run.
+
+So the arm refuses, and refuses in a way the replay can name. It now separates
+three cases, where it used to have two:
+
+| the answer | verdict |
+|---|---|
+| not an array | `unanswerable` — a different KIND of question was answered |
+| array, wrong length | `unanswerable` — the trigger batch drifted under the question |
+| right length, junk indices | ordinary `bad ordering` — a bad click, retryable |
+
+`IllegalAction.unanswerable` means *"no reply of this shape can ever be accepted
+for the question now pending"*, as against *"wrong right now"*. Only a caller
+that cannot ask again cares: a live UI simply sends a better answer on the next
+click, while a saved log has only the answer it recorded. `replay-room.ts` reads
+the flag to say that the log and the engine disagree about what was being asked,
+which is the whole finding.
+
+### §3 CT-47 — `legalActions` no longer claims what the code does not do
+
+`legalActions` opened with *"Every action returned is legal."* Since R154 that
+is false, in exactly one place: an action may turn out to **disturb an open
+question of another seat**, and `apply()` then throws the whole draft away with
+`IllegalAction.disturbs`. Whether a play suspends — and so whether it disturbs —
+depends on the card, its targets and the board, and cannot be known before it
+runs, so the list **cannot** exclude it up front. (Speculatively applying every
+candidate and filtering is correct and far too expensive: `legalActions` is
+called on every render.)
+
+The honest resolution is to narrow the claim and name the exception, which is
+what R169 does. Note its shape: it is *"not YET"*, never *"not ever"* — the
+server parks the action and lands it once the question is answered.
+
+The fuzzer holds this list to its word, so it now names the exception too, in
+`isContractException()`:
+
+* recognised **by the flag**, never by matching on a message;
+* **checked, not assumed** — a `disturbs` refusal with no question standing, or
+  one on the asking seat's own action, is *louder* than an unflagged refusal,
+  because that is a mislabelled freeze;
+* **counted** (`FuzzResult.disturbed`), so its use stays visible. Measured today:
+  **zero** across 180 fuzz games — random play reaches R154's window only 39
+  times in 60 games and is offered only 16 free-seat actions in it, and disturbs
+  nothing. The exception is real (test §3 builds the position by hand and shows
+  `legalActions` offering an action `apply()` refuses) but the fuzzer does not
+  currently explore it. A fuzzer that tolerates a whole class of refusal
+  silently is one that will hide the next real one, so the count is asserted at
+  zero rather than assumed away: if it ever fires, that is worth a look.

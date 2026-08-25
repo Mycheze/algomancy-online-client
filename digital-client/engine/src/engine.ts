@@ -114,6 +114,11 @@ export class IllegalAction extends Error {
    * flag and parks the action instead of relaying a refusal (rooms.ts
    * `deferrableRefusal`); a hotseat caller may simply retry after the answer. */
   disturbs?: boolean;
+  /** R169: "no answer of this shape can EVER be accepted for the question now
+   * pending", as opposed to "wrong right now". Only a caller that cannot ask
+   * again cares — see the orderTriggers arm of `doDecide` (apply.ts), which is
+   * the only thing that sets it, and `server/replay-room.ts`, which reads it. */
+  unanswerable?: boolean;
 }
 /** thrown by ctx.choose inside an effect part; converted to a 'resolve' suspension */
 class PartChoice {

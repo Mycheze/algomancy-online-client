@@ -27,32 +27,108 @@
  * Before `forks` existed the two presented identically — a heap of skips —
  * which is exactly how playtest game UZRG came to reject 79 of its 276 actions
  * with nobody noticing for weeks.
+ *
+ * ── R169 / CT-45: A SKIP COUNT IS NOT A REPORT ────────────────────────
+ *
+ * This tool used to lead with "141 actions logged, 126 replayed, 15 skipped",
+ * which reads as a 89%-faithful replay with a handful of independent hiccups.
+ * On ANBB it was nothing of the kind. Action [125] is a `decide` the engine can
+ * no longer accept; the decision it was meant to answer therefore stays open
+ * forever, and `apply()` refuses EVERY later action by EITHER seat with "a
+ * decision is pending for Ben". Fourteen of those fifteen "skips" are one
+ * failure wearing fourteen hats. The orchestrator read them as fourteen
+ * findings and briefed an agent on thirteen of them; all thirteen were phantom.
+ *
+ * So the shape of the report is now:
+ *
+ *   1. the FIRST action this engine refused — index, type, seat, reason. That
+ *      is the DIVERGENCE POINT, and it is the only refusal in the file that is
+ *      evidence about anything on its own.
+ *   2. everything after it, stated as cascade. From the divergence point on,
+ *      the replay is running a board the logged game never had, so a later
+ *      refusal is not a second finding and a later SUCCESS is not a second
+ *      confirmation.
+ *   3. the WEDGE, when there is one, proved rather than guessed: a run of
+ *      consecutive refusals all standing under the same still-open decision.
+ *      That is a total replay loss, not a partial one.
+ *
+ * The count is still printed. It is never printed alone.
  */
 import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import type { Action, CardName, Element, EngineEvent, GameMode, Seat } from '../engine/src/types.ts';
 import { apply, checkDeck, createGame, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
-import type { Fork, LostAction } from './rooms.ts';
 
-const file = process.argv[2];
-const showLog = process.argv.includes('--log');
-if (!file) {
-  console.error('usage: node replay-room.ts games/<CODE>.json [--log]');
-  process.exit(1);
-}
+/**
+ * `Fork` / `LostAction` are CANONICALLY `server/rooms.ts`'s — that is what
+ * writes them. They are restated here, structurally, on purpose:
+ *
+ *   · this tool's input is a FILE, not a live `Room`, so the shape it should
+ *     hold itself to is the shape on disk (and it already reads every field
+ *     defensively, because an old file may not have them all);
+ *   · `rooms.ts` pulls in `ws` and the whole socket layer, and importing even
+ *     a type from it drags that into any project that wants to check this
+ *     analysis — engine/test/143 does exactly that, and would otherwise
+ *     typecheck the server's tsconfig against the engine's.
+ *
+ * Anything rooms.ts ADDS to a fork is ignored here rather than mis-read; if it
+ * ever RENAMES one of these fields, the fork block below stops printing and
+ * `unexplained` goes empty, which is loud.
+ */
+interface LostAction { i: number; type: Action['type']; seat: Seat; why: string }
+interface Fork { at: string; logged: number; lost: LostAction[]; turn: number; phase: string }
 
-const raw = JSON.parse(readFileSync(file, 'utf8')) as {
+/** the shape a game file has to have for this tool to say anything about it */
+export interface RoomFile {
   seed: number; mode?: GameMode; els?: Element[]; names?: [string, string]; actions: Action[];
   winner?: number | null; forks?: Fork[];
   decks?: [CardName[] | null, CardName[] | null];
-};
-const names = raw.names ?? ['Player 1', 'Player 2'];
-const mode = raw.mode ?? 'shared';
-const els = sanitizeTrio(raw.els);
-const declared: Fork[] = Array.isArray(raw.forks) ? raw.forks : [];
+}
+
+/**
+ * One logged action the current engine refused, plus the two facts that make
+ * a cascade provable rather than assumed:
+ *   `pending`  the decision standing when it was refused (JSON, or null).
+ *              Two refusals under the SAME standing decision are one wedge.
+ *   `unanswerable`  the engine said this answer can never be accepted at all
+ *              (`IllegalAction.unanswerable`), not merely that it is wrong
+ *              right now. That is a divergence with no way back.
+ */
+export interface Refusal extends LostAction {
+  pending: string | null;
+  unanswerable: boolean;
+}
+
+export interface Analysis {
+  events: EngineEvent[];
+  state: ReturnType<typeof createGame>['state'];
+  refusals: Refusal[];
+  /** refusals the file's own `forks` block already accounts for */
+  declaredLost: LostAction[];
+  /** declared forks this engine can no longer reproduce */
+  unexplained: number[];
+  /** refusals beyond what the file admits to */
+  extra: Refusal[];
+  /** the FIRST refusal this file does not already declare — the divergence
+   * point. Null means the replay never diverged. */
+  divergedAt: Refusal | null;
+  /** the consecutive refusals immediately after `divergedAt` that stand under
+   * the very same unanswered decision. Cascade, provably. */
+  cascade: Refusal[];
+  /** true when `cascade` runs to the end of the log (or to the point the game
+   * ended): from `divergedAt` on, nothing either seat logged was ever legal
+   * again. A total replay loss. */
+  wedged: boolean;
+  /** the first index after the cascade that DID replay, if any */
+  resumedAt: number | null;
+}
+
+const CLI = process.argv[1] !== undefined
+  && import.meta.url === pathToFileURL(process.argv[1]).href;
 
 /** constructed games are dealt from the two saved decks — replaying one
  * without them is not a replay of the same game at all */
-function decksOf(): [CardName[], CardName[]] | undefined {
+function decksOf(raw: RoomFile, mode: GameMode): [CardName[], CardName[]] | undefined {
   if (mode !== 'constructed') return undefined;
   const ok = [0, 1].map(s => checkDeck(raw.decks?.[s as 0 | 1]));
   const a = ok[0]!.ok ? ok[0]!.cards : ok[1]!.ok ? ok[1]!.cards : null;
@@ -61,116 +137,239 @@ function decksOf(): [CardName[], CardName[]] | undefined {
   return [a, b];
 }
 
-function run(): { events: EngineEvent[]; skipped: LostAction[]; state: ReturnType<typeof createGame>['state'] } {
-  let { state, events } = createGame(raw.seed, names, mode, els, decksOf());
+function runOnce(raw: RoomFile): Pick<Analysis, 'events' | 'state' | 'refusals'> {
+  const names = raw.names ?? ['Player 1', 'Player 2'];
+  const mode = raw.mode ?? 'shared';
+  let { state, events } = createGame(raw.seed, names, mode, sanitizeTrio(raw.els), decksOf(raw, mode));
   const all = [...events];
-  const skipped: LostAction[] = [];
+  const refusals: Refusal[] = [];
   raw.actions.forEach((a, i) => {
     try {
       const r = apply(state, a);
       state = r.state;
       all.push(...r.events);
     } catch (err) {
-      if (err instanceof IllegalAction) skipped.push({ i, type: a.type, seat: a.seat as Seat, why: err.message });
-      else throw err;
+      if (!(err instanceof IllegalAction)) throw err;
+      // `apply` is pure over a clone, so `state` is untouched by a refusal —
+      // the decision recorded here is the one that was standing at the time,
+      // which is exactly what makes the cascade test below sound.
+      refusals.push({
+        i, type: a.type, seat: a.seat as Seat, why: err.message,
+        pending: state.decision ? JSON.stringify(state.decision) : null,
+        unanswerable: err.unanswerable === true,
+      });
     }
   });
-  return { events: all, skipped, state };
+  return { events: all, state, refusals };
 }
 
-const a = run();
-const b = run();   // determinism double-check
-const deterministic = JSON.stringify(a.state) === JSON.stringify(b.state);
+/**
+ * Replay the file and work out WHERE it stopped being a replay.
+ *
+ * The cascade test is deliberately structural rather than message-matching: a
+ * refusal counts as cascade when the decision standing over it is byte-for-byte
+ * the decision that was standing when the divergence happened. Nothing has
+ * answered it in between, so the engine is not being asked a new question — it
+ * is being asked the same one again, and its refusal carries no new
+ * information. That catches a wedge from ANY cause, including ones that do not
+ * exist yet, where matching on "a decision is pending for X" would not.
+ */
+export function analyze(raw: RoomFile): Analysis {
+  const a = runOnce(raw);
+  const declared: Fork[] = Array.isArray(raw.forks) ? raw.forks : [];
+  const declaredLost = declared.flatMap(f => f.lost ?? []);
+  const declaredIdx = new Set(declaredLost.map(l => l.i));
+  const todayIdx = new Set(a.refusals.map(l => l.i));
+  const unexplained = [...declaredIdx].filter(i => !todayIdx.has(i));
+  const extra = a.refusals.filter(l => !declaredIdx.has(l.i));
 
-const declaredLost = declared.flatMap(f => f.lost ?? []);
-const declaredIdx = new Set(declaredLost.map(l => l.i));
-const todayIdx = new Set(a.skipped.map(l => l.i));
-/** a declared fork this engine can no longer reproduce */
-const unexplained = [...declaredIdx].filter(i => !todayIdx.has(i));
-/** skips beyond what the file already admits to */
-const extra = a.skipped.filter(l => !declaredIdx.has(l.i));
-
-console.log(`\n═ ${file}`);
-console.log(`  mode ${mode}${mode === 'draft' ? ` · trio ${els.join('+')}` : ''} · seed ${raw.seed} · ${names.join(' vs ')}`);
-console.log(`  ${raw.actions.length} actions logged, ${raw.actions.length - a.skipped.length} replayed, ${a.skipped.length} skipped`);
-console.log(`  determinism: ${deterministic ? 'OK (two runs identical)' : '⚠ DIVERGED — engine bug, report this'}`);
-
-if (showLog) {
-  console.log('\n── game log ──');
-  for (const ev of a.events) console.log('  ' + ev.msg);
-}
-
-const s = a.state;
-console.log('\n── final position ──');
-console.log(`  turn ${s.turn} · phase ${s.phase}${s.winner !== null ? ` · WINNER: ${names[s.winner]}` : ''}`);
-s.players.forEach(p => console.log(
-  `  ${p.name}: ${p.life} life · ${p.hand.length} in hand · ${p.bin.length} in bin · ${p.resources.length} resources`));
-const units = Object.values(s.entities).filter(e => e.kind === 'unit');
-console.log(`  units in play: ${units.map(u => `${u.card} (${names[u.controller]})`).join(', ') || 'none'}`);
-
-// ── what the file says about itself ──────────────────────────────────
-if (declared.length) {
-  console.log('\n── this file declares that it FORKED ──');
-  console.log('  The server restarted mid-game onto an engine that could not replay');
-  console.log('  part of the log, rebuilt the game without those actions, and play');
-  console.log('  continued from there. The log below is not one game end to end.');
-  for (const f of declared) {
-    console.log(`  · ${f.at}: ${f.lost.length} of ${f.logged} actions could not be replayed;`);
-    console.log(`      the game resumed at turn ${f.turn} ${f.phase}`);
-    const byType = new Map<string, number>();
-    for (const l of f.lost) byType.set(l.type, (byType.get(l.type) ?? 0) + 1);
-    console.log(`      lost: ${[...byType].map(([t, n]) => `${n}× ${t}`).join(', ')}`);
-    console.log(`      first at action ${f.lost[0]?.i} — "${f.lost[0]?.why}"`);
+  const divergedAt = extra[0] ?? null;
+  const byIndex = new Map(a.refusals.map(r => [r.i, r]));
+  const cascade: Refusal[] = [];
+  if (divergedAt && divergedAt.pending !== null) {
+    for (let i = divergedAt.i + 1; i < raw.actions.length; i++) {
+      const r = byIndex.get(i);
+      if (!r || r.pending !== divergedAt.pending) break;
+      cascade.push(r);
+    }
   }
+  const after = divergedAt ? divergedAt.i + 1 + cascade.length : raw.actions.length;
+  const resumedAt = divergedAt && after < raw.actions.length ? after : null;
+  // a wedge that runs to the last logged action, or to the one action that can
+  // always end a game under an open question (R65: concede is exempt from the
+  // decision gate on purpose), is a total loss of the rest of the log
+  const wedged = cascade.length > 0
+    && (resumedAt === null || raw.actions[resumedAt]!.type === 'concede');
+
+  return { ...a, declaredLost, unexplained, extra, divergedAt, cascade, wedged, resumedAt };
 }
 
-// ── the verdict ──────────────────────────────────────────────────────
-console.log('\n── verdict ──');
+/** the report, as lines. Exported so a test can read what the tool SAYS,
+ * not merely what it computes — the misreading CT-45 is about happened in
+ * the prose, not in the numbers. */
+export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
+  showLog?: boolean; deterministic?: boolean;
+} = {}): { lines: string[]; exit: number } {
+  const out: string[] = [];
+  const say = (s: string): void => { out.push(s); };
+  const names = raw.names ?? ['Player 1', 'Player 2'];
+  const mode = raw.mode ?? 'shared';
+  const els = sanitizeTrio(raw.els);
+  const n = raw.actions.length;
+  const d = an.divergedAt;
 
-function listSkips(list: LostAction[], limit = 20): void {
-  for (const sk of list.slice(0, limit)) {
-    console.log(`  [${sk.i}] ${sk.type} (seat ${sk.seat})\n      → ${sk.why}`);
+  say(`\n═ ${file}`);
+  say(`  mode ${mode}${mode === 'draft' ? ` · trio ${els.join('+')}` : ''} · seed ${raw.seed} · ${names.join(' vs ')}`);
+  // CT-45: the count NEVER stands on its own line. Whatever else this says, it
+  // says on the same breath whether the replay is still a replay.
+  say(`  ${n} actions logged · ${n - an.refusals.length} replayed · ${an.refusals.length} refused`
+    + (d
+      ? `\n  ⛔ DIVERGES at action [${d.i}]`
+        + (an.cascade.length
+          ? ` — everything after it is CASCADE, and ${an.cascade.length} of those`
+            + `\n     refusal${an.cascade.length === 1 ? ' is' : 's are'} that one failure wearing `
+            + `${an.cascade.length === 1 ? 'a second hat' : 'many hats'}. Read the verdict, not the count.`
+          : ' — everything after it is CASCADE, not separate\n     findings. Read the verdict, not the count.')
+      : an.refusals.length
+        ? '\n  (every refusal is a fork this file declares — see below)'
+        : '\n  ✓ no divergence'));
+  if (opts.deterministic !== undefined) {
+    say(`  determinism: ${opts.deterministic ? 'OK (two runs identical)' : '⚠ DIVERGED — engine bug, report this'}`);
   }
-  if (list.length > limit) console.log(`  … and ${list.length - limit} more`);
+
+  if (opts.showLog) {
+    say('\n── game log ──');
+    for (const ev of an.events) say('  ' + ev.msg);
+  }
+
+  const s = an.state;
+  say('\n── final position ──');
+  if (d) {
+    say(`  ⚠ NOT the position the logged game reached — the replay left that`);
+    say(`    board at action [${d.i}]. This is where THIS run ended up.`);
+  }
+  say(`  turn ${s.turn} · phase ${s.phase}${s.winner !== null ? ` · WINNER: ${names[s.winner]}` : ''}`);
+  s.players.forEach(p => say(
+    `  ${p.name}: ${p.life} life · ${p.hand.length} in hand · ${p.bin.length} in bin · ${p.resources.length} resources`));
+  const units = Object.values(s.entities).filter(e => e.kind === 'unit');
+  say(`  units in play: ${units.map(u => `${u.card} (${names[u.controller]})`).join(', ') || 'none'}`);
+
+  // ── what the file says about itself ──────────────────────────────────
+  const declared: Fork[] = Array.isArray(raw.forks) ? raw.forks : [];
+  if (declared.length) {
+    say('\n── this file declares that it FORKED ──');
+    say('  The server restarted mid-game onto an engine that could not replay');
+    say('  part of the log, rebuilt the game without those actions, and play');
+    say('  continued from there. The log below is not one game end to end.');
+    for (const f of declared) {
+      say(`  · ${f.at}: ${f.lost.length} of ${f.logged} actions could not be replayed;`);
+      say(`      the game resumed at turn ${f.turn} ${f.phase}`);
+      const byType = new Map<string, number>();
+      for (const l of f.lost) byType.set(l.type, (byType.get(l.type) ?? 0) + 1);
+      say(`      lost: ${[...byType].map(([t, k]) => `${k}× ${t}`).join(', ')}`);
+      say(`      first at action ${f.lost[0]?.i} — "${f.lost[0]?.why}"`);
+    }
+  }
+
+  // ── the verdict ──────────────────────────────────────────────────────
+  say('\n── verdict ──');
+
+  function listRefusals(list: Refusal[], limit = 20): void {
+    for (const sk of list.slice(0, limit)) {
+      const tag = d && sk.i > d.i ? '  (cascade)' : '';
+      say(`  [${sk.i}] ${sk.type} (seat ${sk.seat})${tag}\n      → ${sk.why}`);
+    }
+    if (list.length > limit) say(`  … and ${list.length - limit} more`);
+  }
+
+  /** the block CT-45 exists to make impossible to skim past */
+  function divergence(dv: Refusal): void {
+    say(`  ⛔ DIVERGENCE at action [${dv.i}] — ${dv.type} (seat ${dv.seat}, ${names[dv.seat]})`);
+    say(`       → ${dv.why}`);
+    say('    THIS IS THE ONLY REFUSAL IN THIS FILE THAT IS EVIDENCE ON ITS OWN.');
+    say('    From here on the replay is running a board the logged game never');
+    say('    had, so every later refusal is CASCADE and every later success is');
+    say('    coincidence. Do not count them, and do not file them.');
+    if (dv.unanswerable) {
+      say('    The engine reports this answer as UNANSWERABLE: not "wrong now"');
+      say('    but "no reply of this shape can ever be accepted for the question');
+      say('    now pending". The log and the engine disagree about what was');
+      say('    being asked, so this is the whole finding.');
+    }
+    if (an.cascade.length) {
+      const last = an.cascade[an.cascade.length - 1]!;
+      say(`    ⛔ WEDGED: the decision open at [${dv.i}] (${names[JSON.parse(dv.pending!).seat]}: `
+        + `"${JSON.parse(dv.pending!).prompt}")`);
+      say(`       is still unanswered at [${last.i}]. All ${an.cascade.length} action(s) from`);
+      say(`       [${an.cascade[0]!.i}] to [${last.i}] were refused under that same standing`);
+      say('       question — ONE failure, not ' + an.cascade.length + '.');
+      if (an.wedged) {
+        say('       It never clears: this is a TOTAL loss of the log from');
+        say(`       [${dv.i}] onward, reported above as ${an.refusals.length} refusals.`);
+      } else if (an.resumedAt !== null) {
+        say(`       Action [${an.resumedAt}] replayed again, but on a board that`);
+        say('       had already parted company with the log.');
+      }
+    }
+    say(`    Fix [${dv.i}] and re-run before drawing any conclusion from the rest.`);
+  }
+
+  let exit = 0;
+
+  if (an.unexplained.length) {
+    // The file claims actions could not be replayed that THIS engine accepts.
+    // Nothing the server does can produce that: it means the engine moved back
+    // under the file (a rules commit reverted), or the file has been edited.
+    say('  ⚠ INCONSISTENT — the file declares forks this engine cannot reproduce.');
+    say(`    ${an.unexplained.length} action(s) recorded as unreplayable now replay fine:`);
+    say(`    indices ${an.unexplained.slice(0, 20).join(', ')}${an.unexplained.length > 20 ? ' …' : ''}`);
+    say('    Either a rules change was reverted (re-check the fork against the');
+    say('    engine it was recorded on) or this file has been hand-edited.');
+    exit = 3;
+  } else if (declared.length && !an.extra.length) {
+    say('  ⚠ FORKED, and the file\'s own account of itself checks out.');
+    say(`    Every one of the ${an.refusals.length} refusals above is a fork this file already`);
+    say('    declares. Not a server bug: the game was interrupted by a rules');
+    say('    change and rebuilt. Read the two halves as separate games.');
+    exit = 2;
+  } else if (declared.length && d) {
+    say('  ⚠ FORKED, and the engine has drifted FURTHER since.');
+    say(`    ${an.declaredLost.length} refusal(s) are declared forks. Beyond those:`);
+    divergence(d);
+    say(`    the ${an.extra.length} undeclared refusal(s):`);
+    listRefusals(an.extra);
+    exit = 2;
+  } else if (d) {
+    say('  ⚠ ENGINE DRIFT — the current engine refuses a move that was legal');
+    say('    when this game was played. The FILE is fine: it is a true record');
+    say('    of the game, and the rules have changed under it since. Expected');
+    say('    after a rules commit; a surprise otherwise, and then this log has');
+    say('    found you a regression.');
+    divergence(d);
+    say(`    all ${an.refusals.length} refusal(s), in order:`);
+    listRefusals(an.refusals);
+    exit = 2;
+  } else {
+    say('  ✓ FAITHFUL — every logged action replays cleanly under the current');
+    say('    engine, and the file declares no forks. seed + actions reproduces');
+    say('    this game exactly.');
+  }
+
+  if (opts.deterministic === false) exit = 3;
+  return { lines: out, exit };
 }
 
-let exit = 0;
-
-if (unexplained.length) {
-  // The file claims actions could not be replayed that THIS engine accepts.
-  // Nothing the server does can produce that: it means the engine moved back
-  // under the file (a rules commit reverted), or the file has been edited.
-  console.log('  ⚠ INCONSISTENT — the file declares forks this engine cannot reproduce.');
-  console.log(`    ${unexplained.length} action(s) recorded as unreplayable now replay fine:`);
-  console.log(`    indices ${unexplained.slice(0, 20).join(', ')}${unexplained.length > 20 ? ' …' : ''}`);
-  console.log('    Either a rules change was reverted (re-check the fork against the');
-  console.log('    engine it was recorded on) or this file has been hand-edited.');
-  exit = 3;
-} else if (declared.length && !extra.length) {
-  console.log('  ⚠ FORKED, and the file\'s own account of itself checks out.');
-  console.log(`    Every one of the ${a.skipped.length} skips above is a fork this file already`);
-  console.log('    declares. Not a server bug: the game was interrupted by a rules');
-  console.log('    change and rebuilt. Read the two halves as separate games.');
-  exit = 2;
-} else if (declared.length && extra.length) {
-  console.log('  ⚠ FORKED, and the engine has drifted FURTHER since.');
-  console.log(`    ${declaredLost.length} skip(s) are declared forks; ${extra.length} more are new:`);
-  listSkips(extra);
-  exit = 2;
-} else if (a.skipped.length) {
-  console.log('  ⚠ ENGINE DRIFT — the current engine rejects moves that were legal');
-  console.log('    when this game was played. The FILE is fine: it is a true record');
-  console.log('    of the game, and the rules have changed under it since. Expected');
-  console.log('    after a rules commit; a surprise otherwise, and then this log has');
-  console.log('    found you a regression.');
-  console.log(`    ${a.skipped.length} of ${raw.actions.length} actions:`);
-  listSkips(a.skipped);
-  exit = 2;
-} else {
-  console.log('  ✓ FAITHFUL — every logged action replays cleanly under the current');
-  console.log('    engine, and the file declares no forks. seed + actions reproduces');
-  console.log('    this game exactly.');
+if (CLI) {
+  const file = process.argv[2];
+  if (!file) {
+    console.error('usage: node replay-room.ts games/<CODE>.json [--log]');
+    process.exit(1);
+  }
+  const raw = JSON.parse(readFileSync(file, 'utf8')) as RoomFile;
+  const an = analyze(raw);
+  const b = analyze(raw);   // determinism double-check
+  const deterministic = JSON.stringify(an.state) === JSON.stringify(b.state);
+  const r = reportLines(file, raw, an, { showLog: process.argv.includes('--log'), deterministic });
+  for (const line of r.lines) console.log(line);
+  process.exit(r.exit);
 }
-
-if (!deterministic) exit = 3;
-process.exit(exit);

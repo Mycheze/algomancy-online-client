@@ -256,7 +256,8 @@ export function decisionBlocks(s: GameState, seat: Seat): boolean {
  *                   t.controller === sus.seat)` — and then insists
  *                   `choice.length === mine.length`. An action that queues one
  *                   more trigger while the ordering question is open makes it
- *                   PERMANENTLY unanswerable ('bad ordering' on every reply),
+ *                   PERMANENTLY unanswerable (R169: `IllegalAction.unanswerable`
+ *                   on every reply, whatever its shape),
  *                   so the queue joins the fingerprint for this arm. The whole
  *                   queue, not just the asking seat's slice: `triggerOrderedSeats`
  *                   is shared bookkeeping and a batch that grew under an
@@ -2053,8 +2054,45 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
 
   if (sus.type === 'orderTriggers') {
     const mine = e.s.triggerQueue.filter(t => t.controller === sus.seat);
-    e.need(Array.isArray(choice), 'ordering expects an array of indices');
-    e.need(choice.length === mine.length && new Set(choice).size === mine.length
+    /**
+     * R169 / CT-45 — THE ANSWER THAT CAN NEVER BE ACCEPTED.
+     *
+     * `processTriggerQueue` only raises this question when `mine.length >= 2`
+     * and the triggers are not all `sameTrigger`. So a permutation of ≥2
+     * distinguishable things is the ONLY thing that can answer it, under this
+     * encoding or any past one: there has never been a scalar form of this
+     * answer to be lenient about, because a scalar cannot name a permutation
+     * of two. Playtest game ANBB action [125] is `decide seat 0 choice 0`
+     * against exactly this question, and the tempting fix — read a bare `0` as
+     * "the identity order" — would INVENT an ordering the player never picked
+     * and carry the replay on over a board they never saw. For a tool whose
+     * whole job is settling bug reports by replay, a fabricated answer is
+     * strictly worse than a stopped run. So: refuse, and refuse in a way the
+     * replay can name.
+     *
+     * Two of the three refusals below are `unanswerable` — no retry can fix
+     * them, because the log and the engine disagree about what was asked:
+     *   · not an array at all — a different KIND of question was answered;
+     *   · right kind, wrong length — the trigger batch drifted under it (the
+     *     hazard `pendingFingerprint` guards live, and cannot guard a log).
+     * The third is an ordinary bad click (right length, junk indices): a live
+     * caller retries and gets it right, so it carries no flag.
+     */
+    const dead = (why: string): IllegalAction => {
+      const err = new IllegalAction(why);
+      err.unanswerable = true;
+      return err;
+    };
+    const got = JSON.stringify(choice);
+    if (!Array.isArray(choice)) {
+      throw dead(`ordering expects an array of ${mine.length} indices, got ${got}`
+        + ' — this question can only be answered with a permutation');
+    }
+    if (choice.length !== mine.length) {
+      throw dead(`ordering expects ${mine.length} indices, got ${choice.length} (${got})`
+        + ' — the queued triggers are not the ones this answer was written for');
+    }
+    e.need(new Set(choice).size === mine.length
       && choice.every(i => Number.isInteger(i) && i >= 0 && i < mine.length), 'bad ordering');
     const reordered = choice.map(i => mine[i]!);
     let k = 0;
@@ -2160,7 +2198,30 @@ export function forcedAction(state: GameState): Action | null {
 // ── legalActions ──────────────────────────────────────────────────────
 
 /**
- * Every action returned is legal. For formation-shaped actions
+ * Every action returned is legal — UNLESS IT DISTURBS AN OPEN QUESTION OF
+ * ANOTHER SEAT. That exception is real, deliberate, and exactly one item long;
+ * it is named here because the fuzzer holds this list to its word and would
+ * otherwise report it as "legalActions lied" (test/fuzz.ts).
+ *
+ * R169 / CT-47, the exception in full: R154's disturbance check runs the action
+ * against a draft and, if the draft turns out to have moved something the OTHER
+ * seat's pending decision will read, throws the whole draft away with
+ * `IllegalAction.disturbs === true`. Whether a play suspends — and so whether
+ * it disturbs — depends on the card, its targets and the board, and cannot be
+ * known before it runs. So this list CANNOT exclude it up front, and the
+ * honest thing is to say so rather than to claim a contract the code stopped
+ * honouring. (The alternative, speculatively applying every candidate here and
+ * filtering, is correct and far too expensive: `legalActions` is called on
+ * every render.)
+ *
+ * Note the shape of the exception: it is "not YET", never "not ever". The
+ * server parks such an action and lands it once the question is answered
+ * (rooms.ts `deferrableRefusal`); a hotseat caller may simply retry. So a
+ * caller may still treat this list as a menu — it just has to know that one
+ * dish can come back "in a moment", and it can tell WHICH by the flag rather
+ * than by matching on a message.
+ *
+ * For formation-shaped actions
  * (declareAttack / declareBlocks) the enumeration is representative, not
  * exhaustive — the UI builds formations interactively and the fuzzer has its
  * own generator; apply() validates whatever they produce.
