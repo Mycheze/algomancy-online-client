@@ -14,10 +14,12 @@
  *  - FIGHT: modelled as simultaneous effect damage — powers are snapshotted,
  *    then each unit's damage is dealt via dealEffectDamage with THAT unit's
  *    card as the source (so Deadly/Poisonous/etc. on a fighter applies).
- *  - Aetherflux Golem's permanent "+2/+2" is modelled as two +1/+1 counters
- *    (the engine's only permanent stat layer). Deviation: counter-matters
- *    effects see them; two Golems augmenting one host would double-fire the
- *    identical trigger defs (one pool copy each — unreachable in play).
+ *  - Aetherflux Golem: NO LONGER an approximation (R168, CARD-TODO #48). This
+ *    note used to read '"+2/+2" is modelled as two +1/+1 counters (the engine's
+ *    only permanent stat layer) … counter-matters effects see them'. Playtest
+ *    #46 rejected exactly that shape on the card printing the same sentence
+ *    (Tenebrous Bulborb): it is a real StaticMod on the anchor now — continuous,
+ *    never on the stack, and it leaves with the virus. See the card.
  *
  * PARKED (needs engine machinery that does not exist yet):
  *  - Crevice Lurker: UN-PARKED (R121) — the ability-cost tax rides R59's
@@ -119,31 +121,39 @@ card('A Fast Pile of Rocks', {
 });
 
 // "[Augment] I gain +2/+2." — ee/1 1/1 Golem Sprite {Virus} Unit. Text-box
-// [Augment]: donated, "I" is the host — it gains +2/+2 when the Golem
-// attaches (augment or Virus, both attach as 'augment' mods); played
-// normally its own [Augment] text is live (Manual Q&A) — a 3/3 in effect.
-// ⚠ header approximation: the permanent gain is two +1/+1 counters.
-const golemGrow: EffectDef = {
-  run: (g, ctx) => {
-    const self = selfOf(g, ctx);
-    if (!self) { g.ev('info', `${ctx.sourceName}: the carrier is gone — no +2/+2.`); return; }
-    g.addCounters(self, 2);
-  },
-};
+// [Augment]: donated, "I" is the host — it gains +2/+2 while the Golem is
+// attached (augment or Virus, both attach as 'augment' mods); played normally
+// its own [Augment] text is live (Manual Q&A) — a 3/3 in effect.
+//
+// R168 (CARD-TODO #48): a plain STATIC now, not a triggered ability adding two
+// +1/+1 counters. Three cards print this identical sentence — "[Augment] I gain
+// ±N/±N" — and the other two (Malformed Monstrosity, Tenebrous Bulborb) became
+// statics after playtest report #46, where the owner ruled on Bulborb: "The 'I
+// get -2/-2' isn't a trigger that should go on the stack. It's a static
+// effect." One printed sentence, one mechanism; this was the last of the three
+// still on the old shape. `affects` matches the ANCHOR itself, which is what
+// "[Augment] I …" means — the card when it is a unit in play, and the HOST when
+// it is worn as a mod (staticsFor's anchored() walk). Two Golems on one host
+// stack, each its own +2/+2.
+//
+// WHAT ELSE THE CHANGE MOVES, deliberately:
+//  · counter-matters cards no longer see it. It placed two REAL +1/+1 counters,
+//    so Soul Reaver could spend them, Buffer Overflow doubled them and Reality
+//    Siphoner counted them. A layer is not a counter and none of that happens
+//    now — which is the correct reading: the card says "I gain +2/+2", not
+//    "put two +1/+1 counters on me" (Powerforge Synergist is what that sentence
+//    looks like when it is meant).
+//  · it is no longer respondable or negatable. The trigger reached the stack,
+//    so Containment Protocol ("negate all activated and triggered effects")
+//    could eat the +2/+2 while leaving the mod attached. Playtest #60/#75 name
+//    exactly that as the bug.
+//  · it no longer cancels pairwise with -1/-1 counters, and it LEAVES with the
+//    virus. Erasing the mod used to leave the +2 behind (the counters were
+//    permanent); now the host drops back to its printed stats, the same way
+//    Bulborb's -2/-2 does.
 card('Aetherflux Golem', {
-  augmentText: [{
-    type: 'triggered', events: ['spawned', 'modApplied'],
-    label: 'I gain +2/+2',
-    // spawned: my own arrival (played normally). modApplied: an Aetherflux
-    // Golem just attached to me (the donated copy fires exactly once, at
-    // attach time). Conditions at event time (R1).
-    when: (g, self, ev) =>
-      ev.type === 'spawned'
-        ? ev.data?.unit === self.id
-        : ev.data?.host === self.id && ev.data?.appliedAs === 'augment'
-          && g.entity(ev.data?.mod as EntityId)?.card === 'Aetherflux Golem',
-    effect: golemGrow,
-  }],
+  augmentable: true,
+  statics: [{ affects: (_g, self, t) => t.id === self.id, dp: 2, dt: 2 }],
 });
 
 // "Two target units fight. (They deal damage to each other equal to their

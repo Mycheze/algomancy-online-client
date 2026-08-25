@@ -1,6 +1,6 @@
 /* Per-card tests for batch-earth-a (project rule: a test for every card).
  * Covers the Rockfall death graft (A Fast Pile of Rocks, R25 per-seat picks),
- * the counters-as-permanent-buff approximation (Aetherflux Golem), the two
+ * the R168 static +2/+2 (Aetherflux Golem — was a counters approximation), the two
  * fight effects (Battle / Fight — cast-time first target + mid-resolution
  * second pick), type-line and text-box augments (Bubb, Deathglow Strider,
  * Lithoghul), activated abilities living in [Augment] text (Enigmatic
@@ -59,8 +59,20 @@ test('Aetherflux Golem: +2/+2 for itself when played normally; +2/+2 to the host
   giveResources(h, p, 'earth', 2);                    // ee / 1
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Aetherflux Golem'), hostId: host });
   assert.deepEqual(effStats(h, host), [3, 3], 'host 1/1 + donated +2/+2 = 3/3');
-  assert.equal(ent(h, host)!.counters, 2, 'modelled as two +1/+1 counters (approximation)');
+  // R168: a LAYER, not two +1/+1 counters. This line used to read
+  // `assert.equal(ent(h, host)!.counters, 2, 'modelled as two +1/+1 counters
+  // (approximation)')`. The approximation is gone — counter-matters cards no
+  // longer see counters the Golem never printed, the +2/+2 cannot be negated
+  // off the stack, and it LEAVES with the virus. Same correction Tenebrous
+  // Bulborb got after playtest ledger #46; see test/142-static-conformance.
+  assert.equal(ent(h, host)!.counters, 0,
+    'no counters — the +2/+2 is a continuous layer on the anchor, not two +1/+1 counters');
   assert.deepEqual(effStats(h, golem), [3, 3], 'the in-play Golem did not double-fire on the attach');
+  // and the layer leaves with the mod: erase the virus, the host is a 1/1 again
+  const mod = ent(h, host)!.mods[0]!;
+  h.state.entities[host]!.mods = [];
+  delete h.state.entities[mod];
+  assert.deepEqual(effStats(h, host), [1, 1], 'the +2/+2 goes when the mod goes — a layer, not a write');
 });
 
 test('Battle: two target units fight (mutual power damage; both targets at cast)', () => {

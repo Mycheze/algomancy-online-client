@@ -10962,3 +10962,127 @@ missing one), one-bin/one-trash for a nontoken mod and one-erased-pile-entry
 for a token mod on all three routes, the whole six-card table asserting recall
 now equals death, the Tempest Oracle control, and a leak guard that the mod
 entities really are gone once the window closes.
+
+---
+
+## R168 — the STATIC half of #75 gets its class guard, and Aetherflux Golem stops being a trigger
+
+**CARD-TODO #48.** Playtest ledger #75 names three mechanisms — *"replacement
+effects and triggered effects **and static effects** are being handled wrong by
+the system, still"* — and only one of them had a class guard.
+`88-replacement-conformance.test.ts` classifies cards whose printed text matches
+"would … instead" and closed reports #60 and #75; it never checks a static, and
+it structurally cannot. The first of the owner's three reports in this family
+was about a static and not a replacement at all — ledger #46, VEAV, on
+Tenebrous Bulborb:
+
+> *"The 'I get -2/-2' isn't a trigger that should go on the stack. It's a
+> static effect."*
+
+Bulborb prints "[Augment] I gain -2/-2", which contains neither "would" nor
+"instead", so 88's text pass can never redden on it however the -2/-2 is built.
+A guard that cannot fail on the card its report was about is not a guard. The
+guard people believed existed for the static half **did not exist**.
+
+### The card the missing guard was hiding
+
+Three cards in the pool print the same sentence — **"[Augment] I gain ±N/±N"**.
+Two of them (Malformed Monstrosity "-7/-7", Tenebrous Bulborb "-2/-2") became
+plain `statics` after #46. The third, **Aetherflux Golem "+2/+2"**, was still a
+triggered ability that added two +1/+1 counters. One printed sentence, two
+mechanisms, and nothing in the suite could see the difference.
+
+It is a `StaticMod` on the anchor now, and the ruling is that the printed
+sentence decides the mechanism — the same rule 88 already runs on. Three things
+move with it, all of them corrections:
+
+* **counter-matters cards stop seeing counters.** The card says "I gain +2/+2",
+  not "put two +1/+1 counters on me"; Powerforge Synergist is what that other
+  sentence looks like when it is meant. Soul Reaver can no longer spend them,
+  Buffer Overflow can no longer double them.
+* **it stops being respondable.** A triggered ability reaches the stack, so
+  Containment Protocol ("negate all activated and triggered effects") could eat
+  the +2/+2 and leave the mod attached. That is #60 and #75 in one sentence.
+* **it stops cancelling pairwise with -1/-1 counters, and it leaves with the
+  virus.** The counters were permanent, so erasing the mod left the +2 behind.
+  A layer is true while its source is there and false afterwards.
+
+### The sweep: `142-static-conformance.test.ts`
+
+Built in 88's shape and derived from `printed.json`, never from a list of card
+names. **45 of 494 cards** print at least one continuous-shaped clause; **36**
+print nothing else and therefore may not declare a single stack-reaching
+channel.
+
+A clause is **continuous-shaped** when it is a standing statement of fact about
+the board: a subject naming a CLASS of things ("Your other units", "Spells",
+"Everything", "Columns", "I"), a present-tense STATE predicate
+(gain/have/are/cost/can/may/stay/spawn with/lose all), and no bound on when it
+is true. It is decided by elimination against eight positively-matched buckets —
+GRAFT, REPLACEMENT (88's population, and the two classifiers are asserted to
+agree on all eleven cards), ACTIVATED, TRIGGER, ANAPHOR (a continuation
+inherits its neighbour's bucket, which is why Life Power Dude's "Otherwise they
+gain +2/+0" is continuous and Grob's "It gains 'Prophecy — One Battle Passes'"
+is not), TARGETED (the owner's own switch, and 88 turns on the same one),
+BOUNDED (a duration means a one-shot installing a temporary layer), CONTINUOUS,
+ONESHOT.
+
+**A sentence matching no bucket is `UNCLASSIFIED` and fails a test.** That is
+the answer to "what does this sweep look like if it is blind": a classifier that
+silently drops what it cannot read shrinks its own population and goes green,
+which is what `stripCode` did for weeks. All 570 printed sentences in the pool
+are accounted for.
+
+### Two things the sweep is deliberately blind to
+
+Recorded rather than papered over. A sentence opening with **"If"** is read as a
+trigger, because that is also how every replacement in 88 opens and this file
+must not fight that one — so Monke ("If I spawned this turn, other units lose
+all attributes and abilities during battle", really a `statics` suppressor),
+Gridxlan and Writhing Host are outside the population. And **Arbiter of
+Vitality** ("[Augment] Double all life gain and life loss") is outside it
+because its clause is an imperative with no subject, identical in shape to
+Buffer Overflow's one-shot spell; the only thing separating them is the
+[Augment] marker, and a fallback built on that marker alone was tried and
+scored one right out of two. It is R162 `amountMultipliers` and 88 guards it.
+
+### The declaration side is an ALLOWLIST, inverted
+
+`abilityFree` in `batch-earth-c.ts` tested four behaviour channels for "does
+this card have an ability" and so offered 44 cards with statics, cost mods,
+permissions and replacements as ability-free. Listing behaviour fields rots
+silently the day a `CardDef` field is added. So this file names **every**
+non-printed key with what it is — 22 continuous layers, 5 inert, 2
+stack-reaching — and **anything unnamed counts as stack-reaching**, the loud
+direction. A separate test fails the moment a key appears in the pool that is
+named nowhere, and fails again the moment a key is named here that no card
+uses (a hook nothing declares reads as implemented — the Harbinger of
+Immolation incident).
+
+### What the sweep found beyond its own ticket
+
+Five cards print a standing fact and declare no layer. Each is exempted with
+its reason inline, and 68-target-conformance's rule applies: an exemption that
+outlives its cause fails as loudly as a card that breaks the rule.
+
+* **The Bonesculptor** — "You may play one unit with no abilities from your bin
+  each deployment" is a free bounded **activated ability**, so a permission that
+  should simply be true reaches the stack and Containment Protocol can negate
+  it. Already filed as PLAY-VS-PUT-INTO-PLAY in the divergence inventory; this
+  is a second, independent reason to fix it.
+* **Aethercap Siphoner** vs **Powerforge Synergist** — the Aetherflux Golem
+  shape again, in another pair. Both print "I spawn with N counters"; Aethercap
+  queues a real `spawned` triggered ability (respondable, and the counters land
+  after the spawn event) while Powerforge does the write inside `when()` and
+  returns false so it never queues. Filed as SPAWN-COUNTERS.
+* **Robot** — a token; its X is the number the creating effect passes, so there
+  is nothing on the card to declare.
+* **Instrument of Reassignment** — "X can't be 0" is the ACTIVATED ABILITY's X,
+  chosen at resolution, and `xMin` is a cast-cost field. The floor is enforced
+  where the number is chosen. Not a defect; verified in the code.
+
+And one card legitimately declares BOTH: **Ancient One** ("I have all abilities
+of adjacent allies") is `projects` for the statics/activated/behavior facets and
+`augmentText` for the triggered one — because what is projected is a
+neighbour's triggered ability, and a projected trigger fires and is responded to
+exactly like the original.
