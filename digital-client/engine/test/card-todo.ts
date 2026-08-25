@@ -2379,7 +2379,39 @@ export const CARD_TODO: TodoEntry[] = [
       'Reverting the primitive in exchangeInPlace must redden 42-dark-b\'s despawn, mod-trash '
       + 'and erased-pile assertions; adding a NEW aliased bin push anywhere in src/cards/ must '
       + 'redden the census sweep.',
-    status: 'open',
+    // DONE 2026-08-25 as R153. (a) `E.disposeToBin(u, mods, announce, opts)`
+    // owns the whole tail — push nontoken mods (own owner's bin, slot
+    // recorded) -> push body (slot recorded) -> `announce` -> trash body then
+    // each mod anchored (R70) -> Unstable sweep DESCENDING / else token sweep
+    // -> token-mod bulk 'erased' (R65) -> delete mod entities last. destroy()
+    // and exchangeInPlace are each one call now. `announce` is a callback and
+    // not two half-primitives on purpose: the event must land after every push
+    // and before every trash, and a two-call API lets a caller slip something
+    // between them.
+    //   leavePlay/afterDespawn were deliberately NOT folded in — they run the
+    // mods half only (body goes to a hand or cache: no body push, no body
+    // slot, no Unstable sweep, no token-mod line), so a "no body" mode would
+    // branch all eight ordering constraints to save four lines. The R137
+    // property the split must preserve is asserted directly instead: the same
+    // mod driven through a death and through an exchange, deepEqual'd.
+    // (b) BOTH bin sweeps follow one level of aliasing now, so
+    // `const mb = g.player(m.owner).bin; mb.push(m.card)` is visible; both run
+    // through stripCode, so a comment naming `.bin.push(` cannot false-alarm.
+    // BIN_PUSH_EXEMPT is `{}` and the stale-entry assert keeps it that way.
+    // The R124 exit sweep had NO live bypass hiding behind its alias hole.
+    //   ⚠ Verified independently, not taken on report: planting
+    // `const aliasProbe = …bin; aliasProbe.push('Bubb')` in batch-water-b.ts
+    // reddens the sweep by name (`batch-water-b.ts:390 (not in engine.ts)`) —
+    // neither old regex matched that shape. Reverted after.
+    guards: [
+      '129-disposal-tail.test.ts::R153 conformance: BOTH destroy() and Hooba-Mon',
+      '129-disposal-tail.test.ts::R153 conformance: neither call site keeps a second copy of the tail',
+      '129-disposal-tail.test.ts::R153 (iii): an Unstable body is swept with its mods',
+      '129-disposal-tail.test.ts::a nontoken mod is binned and trashed the same whether its host dies or is exchanged',
+      '90-coverage-census.test.ts::every bin ENTRY goes through',
+      '42-dark-b.test.ts::R146: Hooba-Mon exchanges a MODDED host',
+    ],
+    status: 'done',
   },
   {
     id: 44,
