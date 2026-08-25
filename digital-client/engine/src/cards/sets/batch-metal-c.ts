@@ -24,21 +24,29 @@
  *    dsl.ts names this card in its doc comment — and the ability declares it,
  *    so the counters come off as the ability is activated and X is fixed
  *    before anyone can answer it.
- *  - Technological Superiority: counters are modelled as one NET signed int
- *    (Manual: +1/+1 and -1/-1 cancel pairwise), so "duplicate each counter"
- *    doubles the net — identical whenever all counters share a sign, which
- *    the net model guarantees.
  *  - Unstable Refactor: "becomes base 5/0" REWRITES stat layer 2 (E.setBase),
  *    so a second application re-bases instead of stacking and layer-4 Tough
  *    doubles a true base of 0. Counters, temps and statics apply on top.
  *  - Unmake's "base power 2 or less" reads layer 2 (E.baseStatsOf), so a
  *    rewritten base is the base it asks about — Unstable Refactor makes a
  *    target Unmake-proof, Aberrant Statweaver makes a Good Whale Unmakeable.
- *  - Void Memory: every pool card is a unit or a spell, so "discards a unit
- *    or spell if able" = "discards a card if their hand is nonempty"; the
- *    discarding player picks the card.
  *  - Transmogrifant / Synaptic Energizer: "your (other) units" is read
  *    region-scoped (R12, the Flowstone Arcanite precedent).
+ *
+ * ✔ EXACT, recorded so nobody re-files them as approximations (R174):
+ *  - Technological Superiority: counters are modelled as one NET signed int
+ *    (Manual: +1/+1 and -1/-1 cancel pairwise). "Duplicate each counter" is a
+ *    LINEAR operation, so doubling the net equals doubling each counter for
+ *    ANY mix of signs, not merely for a uniform sign. This entry used to be
+ *    filed as an approximation hedged with "identical whenever all counters
+ *    share a sign"; the hedge was unnecessary — given the net model there is
+ *    no case where the two differ.
+ *  - Void Memory: "discards a unit or spell if able" = "discards a card if
+ *    their hand is nonempty". Verified against printed.json (R174): all 492
+ *    entries are `unit` (337), `spell` (138), `spellUnit` (14) or
+ *    `spellToken` (3); a spellToken's printed type still reads "Spell Token",
+ *    so even were one somehow in hand it is a spell. No pool card is neither.
+ *    The discarding player picks the card.
  *
  *  - Worldbender is fully LIVE as of playtest report #87, which is where its
  *    numbers come from. It is a STATIC card-step replacement (the new
@@ -290,8 +298,9 @@ card('Synaptic Energizer', {
 });
 
 // "[Switch1] Duplicate each counter on target unit." — m/2 {Battle}
-// Technology Spell. ⚠ net-counter model (header): the net doubles, negatives
-// included. No counters → nothing happens.
+// Technology Spell. ✔ EXACT (header): counters are one net signed int, and
+// duplication is linear, so the net doubles — negatives included — for any mix
+// of signs. No counters → nothing happens.
 const duplicateCounters: EffectDef = {
   targets: { what: 'unit', prompt: 'Technological Superiority: duplicate each counter on target unit' },
   run: (g, ctx) => {
@@ -411,8 +420,8 @@ card('Unstable Singularity', {
 });
 
 // "[Switch1] Each opponent discards a unit or spell if able. Otherwise, they
-// reveal their hand." — m/2 {Battle} Technology Spell. ⚠ every pool card is
-// a unit or a spell (header), so "if able" = nonempty hand; the discarding
+// reveal their hand." — m/2 {Battle} Technology Spell. ✔ EXACT (header): every
+// pool card is a unit or a spell, so "if able" = nonempty hand; the discarding
 // player picks the card (→ their bin, and R40 TRASHES it, attributed to them
 // as the bin's owner). An empty hand is revealed instead.
 const voidMemory: EffectDef = {

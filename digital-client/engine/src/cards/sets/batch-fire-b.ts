@@ -10,11 +10,15 @@
  * per card), R12/R25 ("each opponent/player" is region-scoped), R26 ("play"
  * excludes token creation — the nontoken gate doubles as the loop guard).
  *
- * Approximations (existing primitives, semantics slightly reshaped — each
- * flagged ⚠ at the card):
- *  - Costs the DSL cannot express as costs ("Sacrifice a unit:" on a spell,
- *    "Sacrifice another unit:" on an activated ability, Wildfire's X) are
- *    handled mid-resolution via ctx.choose, R6-style.
+ * Approximations (existing primitives, semantics slightly reshaped):
+ *  - (The "costs the DSL cannot express as costs" bullet that used to head
+ *    this list is GONE, and so is its "each flagged ⚠ at the card" promise —
+ *    the per-card ⚠ markers it promised never existed anywhere in this file.
+ *    All three cards it named carry REAL costs now: Sacrificial Burst
+ *    `castCost: { kind: 'sacrificeUnit' }` (R35), Soul Swallower
+ *    `cost: { sacrificeOther: 1 }` (R49, see its own UN-PARKED note), and
+ *    Wildfire's X is chosen and paid at cast (R35), so `ctx.x` is fixed before
+ *    anyone can respond.)
  *  - "target ... in your bin" (Resurrect, Reclaimer of Secrets, Rousing
  *    Spirit) is REAL TARGETING as of R64: TargetSpec has a 'binCard' kind, and
  *    a bin holds names, so naming the card IS the reference (BinRef).

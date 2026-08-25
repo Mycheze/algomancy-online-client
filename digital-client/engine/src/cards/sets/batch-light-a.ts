@@ -85,21 +85,13 @@ import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/**
- * Pay `n` life as a COST at resolution (header note). Returns false — having
- * paid nothing — when the payer cannot afford it, which for life means "the
- * payment would not leave them alive": loseLife() ends the game at 0, and no
- * card in this batch is meant to be a suicide button.
- */
-function payLife(g: E, seat: Seat, n: number, why: string): boolean {
-  if (n <= 0) return true;
-  if (g.player(seat).life <= n) {
-    g.ev('info', `${g.pname(seat)} cannot pay ${n} life for ${why} — the cost is unpaid.`);
-    return false;
-  }
-  g.loseLife(seat, n, `${why} (cost)`);
-  return true;
-}
+/* A local `payLife(g, seat, n, why)` helper used to sit here, documented as
+ * "pay `n` life as a COST at resolution (header note)". It was DEAD — zero
+ * call sites — and had been since all three life-cost cards in this batch
+ * moved to real R49/R64 `castCost: { kind: 'payLife' }` costs, which the file
+ * header records. `tsconfig` has `strict` but not `noUnusedLocals`, which is
+ * why it survived. Deleted by R174; `E.canPayLife` / `E.payActivationCost` are
+ * the live route and enforce R49's "only while you have MORE than N life". */
 
 /** R25: "each opponent" is the seats PRESENT IN THE EFFECT'S REGION, not every
  * seat at the table. Vroot only ever fires on combat damage, so its region
@@ -160,10 +152,20 @@ function playedFromElsewhere(ev: EngineEvent): boolean {
 // Region-scoped like every other cost mod (R12): the Arbiter taxes the
 // battle it is standing in, not one happening elsewhere.
 //
-// ⚠ TRANSCRIPTION (still open, and NOT a park): the type line carries a bare
-// `{Switch}` — the only card in the whole pool that does — and the rules text
-// has no [Switch]/[Switch1] marker to go with it. Flagged, not guessed at: no
-// graftEffect is invented.
+// ✔ TRANSCRIPTION: CLOSED by R157 §25 (owner, 2026-08-25, verbatim): *"That's
+// an error on your part. The card does not have a [Switch] thing. It just adds
+// an additional cost to all spells cast in battle to pay 2 life."* This note
+// used to read "⚠ still open, and NOT a park: the type line carries a bare
+// {Switch} — the only card in the whole pool that does". BOTH halves are now
+// false: the ruling settled it, and the DATA no longer carries it —
+// `printed.json` gives `type: "{Haste} Holy Unit"` and zero cards pool-wide
+// have "Switch" in `type`. The correction lives in
+// `engine/scripts/extract-printed.mjs`'s `TYPE_OVERRIDES` (which fails loudly
+// if the upstream oracle ever changes), because the UPSTREAM
+// `AlgomancyCards-OracleText.json` still says "{Haste} {Switch} Holy Unit".
+// So the divergence is deliberate and traceable, and no graftEffect was ever
+// invented for it. Correctly, so: nothing reads a type-line {Switch} —
+// graftability is `CardDef.graftEffect`.
 card('Arbiter of Armistice', {
   costMods: [{
     life: (g, _self, ctx) =>

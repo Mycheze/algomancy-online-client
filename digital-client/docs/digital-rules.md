@@ -12158,3 +12158,121 @@ The gap is never the function; it is the **seam** on either side of it.
 
 Guards live in `engine/test/146-report-guards.test.ts`; the four measurements
 above are recorded in its header.
+
+---
+
+## R174 — a park note is a claim with a DATE on it, and three of them had outlived their reason
+
+*(Round 26 stale-comment sweep. Structural — no player quote needed: every item
+below is a comment in `src/cards/sets/**` contradicted by the code sitting
+directly beneath it.)*
+
+A stale comment in the card files is not a tidiness problem. A park note says
+*"this card is waiting on machinery that does not exist"* — which was true on
+the day it was written and is a claim about the engine, not about the card. When
+the primitive ships and the note stays, the next person reads it, believes the
+card is blocked, and moves on. That is where a previous round traced the owner's
+*"these bugs keep recurring"*.
+
+### The rot has four shapes, and the fourth is the dangerous one
+
+1. **A `PARKED` heading whose every entry says UN-PARKED.** Seven of them. The
+   entries beneath were all correct and dated; only the heading lied, and the
+   heading is what a reader skims.
+2. **A cost documented as paid at RESOLUTION on a card that declares a real
+   `castCost`.** Grox, No Hand Killer, Sacrificial Burst, Soul Swallower,
+   Throwing Boulder, The Bonesculptor, Gridxlan, Hearthwood Ancient. R49/R64/R77
+   made every one of them a real cost gated at activation; eight notes still
+   described the pre-R49 world, several of them contradicted twenty lines below
+   by the card's own UN-PARKED block.
+3. **A REASON that rotted out from under a conclusion that survived.** See
+   below — the most interesting one.
+4. **A NEGATIVE claim about the card pool.** *"No pool combo hits this today."*
+   *"The only card in the whole pool that does."* This is the shape that leaves
+   a real defect alone: nobody re-derives a claim that says there is nothing to
+   find. `batch-wood-a.ts`'s Burgeon copy of it is FALSE — Rampart Guardian is a
+   printed `{Tough}` unit and a legal Burgeon target with no virus needed — and
+   the overshoot it describes is reachable with two cards.
+
+### The reason that rotted: trash triggers and graft riders
+
+`batch-dark-c.ts` said Blightwalker's `[Switch1]` trash trigger can carry no
+graft riders **because a modded unit that dies is ERASED (Unstable) and never
+reaches a bin at all**, so a card that is trashed provably carries no mods —
+i.e. the case was unreachable.
+
+**R137 made the case fully reachable.** `E.disposeToBin` now pushes the body into
+the bin, fires `'died'`, calls `noteTrashed(binSeat, u.card, 'play', u)`, and
+only *then* lets the state-based sweep erase it — for **every** death, Unstable
+included. A modded Blightwalker that dies does reach a bin and its trash trigger
+does fire.
+
+The **conclusion** survives, for a different and structural reason:
+`E.fireOwnTrashTrigger` anchors the trigger on a detached ghost built with an
+explicit `mods: []`, so no rider can ever be found on it. `batch-dark-a.ts` has
+always carried that reason correctly, for Afflicting Anima and Maw of Despair.
+
+⚠ **Open question for the owner.** Before R137, *"the ghost carries no mods"*
+described an impossible case. It now describes a real, silent drop of every
+graft rider on a modded unit's death-trash, with no log line. Nobody has asked
+whether that is still the right answer.
+
+### Two closed divergences that were still recorded as open
+
+- **Arbiter of Armistice has no `{Switch}`.** R157 §25 ruled it (*"That's an
+  error on your part. The card does not have a [Switch] thing."*) and
+  `printed.json` no longer carries it — zero cards pool-wide have `Switch` in
+  `type`. The correction lives in `extract-printed.mjs`'s `TYPE_OVERRIDES`, which
+  fails loudly if the upstream oracle changes. ⚠ The upstream
+  `AlgomancyCards-OracleText.json` STILL says `{Haste} {Switch} Holy Unit`, so
+  the Discord bot and the RAG corpus remain wrong about this card.
+- **Counter Thief is spelled correctly on purpose.** The PHYSICAL CARD prints
+  "Counter Theif"; our data was corrected on 2026-08-24 at the owner's
+  instruction and the card is registered under the CORRECTED spelling, with
+  `registerAlias('Counter Theif', 'Counter Thief')` keeping older rulings
+  resolving. `docs/09-divergence-inventory.md` §3's *"Nothing is misspelled"* is
+  wrong about this card, and the card file now says so.
+
+### Two exact behaviours were mis-filed as approximations
+
+Moved out from under `⚠ ENGINE APPROXIMATIONS` in `batch-metal-c.ts` into a
+`✔ EXACT` block, so nobody re-files them:
+
+- **Technological Superiority.** Counters are one net signed int and duplication
+  is LINEAR, so doubling the net equals doubling each counter for **any** mix of
+  signs — the old note hedged it with "whenever all counters share a sign", and
+  the hedge was never needed.
+- **Void Memory.** Verified against `printed.json`: all 492 entries are `unit`
+  (337), `spell` (138), `spellUnit` (14) or `spellToken` (3), and a spellToken's
+  printed type still reads "Spell Token". No pool card is neither.
+
+### Dead helpers are comment rot with a signature
+
+`tsconfig` has `strict` but **not** `noUnusedLocals`, so a helper with zero call
+sites survives indefinitely, carrying a doc comment that reads exactly like a
+description of how the cards work. Four were found; two deleted here
+(`batch-light-a.ts::payLife`, documented as paying life "as a COST at
+resolution" long after all three life-cost cards moved to real `castCost`
+costs; `batch-dark-c.ts::formationSlot`, left behind when Necromorph moved to
+`E.exchangeInPlace`). Two more are named and deferred:
+`batch-metal-a.ts::tokensInRegion` and `helpers.ts::lifeGainedIn`.
+
+### The guard
+
+`test/147-comment-conformance.test.ts`. A comment cannot be unit-tested, so it
+tests the FACTS the comments assert, wherever a fact is machine-checkable — the
+four shapes above, plus a §0 that measures its own reach before any check runs.
+
+⚠ **`stripCode` is blind again, and this is the round's biggest find.** Its
+`st === 'line'` state has no branch of its own: it falls through to the
+regex-literal `else`, where an unescaped `/` outside a `[…]` class does
+`st = 'code'`. **A line comment therefore ends at its first slash** and its tail
+is returned as CODE. `+1/+1`, `ll/2`, `and/or` and every file path make this
+near-universal — **927 line-comment lines across the 28 card batch files leak**,
+plus 86 in `engine.ts`. Worse, a leaked backtick opens a template-literal state,
+which legally spans newlines, so the desync then swallows real code: ten
+`card()` definitions in `batch-hybrids-ld-c.ts` and `batch-light-a.ts` are
+absent from the stripped view entirely. That is precisely the failure the
+helper's own doc comment says it exists to prevent. `test/card-todo.ts` is
+reserved to the orchestrator, so 147 works around it with the smallest sound
+repair and asserts the result is clean; the fix itself is a ticket.

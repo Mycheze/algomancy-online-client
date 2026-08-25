@@ -40,11 +40,16 @@
  *    shrinking their own unit fired it; a +1/+1 counter I put on an enemy did
  *    not), and Flux Resonator came off its own half of the same approximation
  *    in the same change.
- *  - Verdant Necrophage's donated "[Augment] when I despawn" fires on the
- *    host's DEATH but not its recall — recall() erases mod entities before
- *    firing the event (the batch-hybrids-fwe Bloated Manablub asymmetry).
- *    Played normally, both channels work ('died' + 'despawned', despawn =
- *    any leave-play per that batch's precedent).
+ *  - (Verdant Necrophage's entry here is NO LONGER an approximation. It read
+ *    "the donated '[Augment] when I despawn' fires on the host's DEATH but not
+ *    its recall — recall() erases mod entities before firing the event". R167
+ *    fixed exactly that: `E.leavePlay` used to delete the mod entities before
+ *    the caller built its event, so `fireEvent`'s walk of `u.mods` through the
+ *    entity table found nothing to donate; the deletion MOVED to the last
+ *    statement of `afterDespawn`, matching the tail `disposeToBin` already
+ *    used. Death, recall and cache now all fire the donated trigger. Played
+ *    normally both channels work as before ('died' + 'despawned', despawn =
+ *    any leave-play per the batch-hybrids-fwe precedent).)
  *
  * PARKED: none — all fifteen cards are live (three under the documented
  * approximations above).
@@ -368,7 +373,10 @@ card('Sylvan Sprouting', {
 // recalls a unit from their bin." — gg/3 2/4 Fungus Slime Unit.
 // Spawn half: a Poison 6 at ctx.region (spell-token rule).
 // [Augment] half: "despawn" = ANY leave-play (batch-hybrids-fwe precedent:
-// 'died' + 'despawned'; ⚠ header: the DONATED copy misses host recalls).
+// 'died' + 'despawned'). R167: the DONATED copy fires on a host recall and
+// cache too — `leavePlay` used to delete the mod entities before the event was
+// built, so the donated text was unreachable on those two routes. (The header
+// note that flagged this as an asymmetry is retired with it.)
 // "Each opponent" is region-scoped (R25); each recalls (bin → hand) a card
 // of their choice that is a unit (spell-units count), auto-picked only when
 // forced — a despawn in the end-of-turn window still asks (R85). Plan-then-

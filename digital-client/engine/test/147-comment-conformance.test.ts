@@ -1,0 +1,569 @@
+/* COMMENT CONFORMANCE — the in-code notes on the card files must not rot.
+ *
+ * WHY THIS FILE EXISTS (R174)
+ *
+ * A stale comment in `src/cards/sets/**` is not a tidiness problem. A previous
+ * round traced the owner's *"these bugs keep recurring"* complaint almost
+ * entirely to stale in-code PARKED notes: a park note is a claim about the
+ * engine AS OF THE DAY IT WAS WRITTEN, and several had outlived the primitive
+ * they were waiting for. Somebody reads the note, believes the card is
+ * blocked, and moves on. The card is live; nobody looks again.
+ *
+ * The sharpest version is a comment asserting that NOTHING IN THE POOL hits a
+ * case. `batch-wood-a.ts`'s Burgeon note said *"No pool combo hits this
+ * today"*; it is false (Rampart Guardian is a printed {Tough} unit and a legal
+ * Burgeon target), and the bug it was guarding is real and reachable with two
+ * cards. A negative claim about the pool is the one comment shape that can
+ * make a live defect look unreachable.
+ *
+ * A comment cannot be unit-tested directly. So this file tests the FACTS the
+ * comments assert, wherever a fact is machine-checkable, and nothing else. All
+ * four checks are pure text/data properties, so they cost nothing to run and
+ * stay true forever.
+ *
+ *   §1  A `PARKED` heading whose every bullet is already resolved fails.
+ *   §2  A "the cost is paid at RESOLUTION" claim on a card that declares a
+ *       real `castCost` fails.
+ *   §3  A comment asserting a NEGATIVE about the card pool fails unless it is
+ *       on an allowlist carrying its reason — and two of those reasons are
+ *       themselves asserted here against `printed.json`.
+ *   §4  A local helper in `src/cards/sets/**` with zero call sites fails.
+ *
+ * ── ON BLINDNESS ────────────────────────────────────────────────────────
+ *
+ * `stripCode` (test/card-todo.ts) went silently blind for weeks once already
+ * and every sweep resting on it stayed green. So §0 MEASURES THE REACH of
+ * every scan in this file before any of them runs: how many files were opened,
+ * how many card blocks were parsed, how many declarations were seen, and
+ * whether any comment text survives into the code view. A check whose
+ * population silently collapses fails there instead of passing vacuously.
+ *
+ * ⚠ AND IT IS BLIND AGAIN TODAY, IN A SECOND PLACE. Measured while writing
+ * this file (R174): `stripCode`'s `st === 'line'` state has no branch of its
+ * own — it falls through to the REGEX-LITERAL `else`, where an unescaped `/`
+ * outside a `[…]` class does `st = 'code'`. So a LINE COMMENT ENDS AT ITS
+ * FIRST SLASH and everything after it is returned as code:
+ *
+ *     stripCode('// a comment with a / slash then {x:1}')
+ *       → '                      slash then {x:1}'
+ *
+ * `+1/+1`, `ll/2`, `and/or` and every file path make this near-universal:
+ * **927 line-comment lines across the 28 card batch files leak**, plus 86 in
+ * engine.ts. Worse, a leaked backtick opens a TEMPLATE-LITERAL state, which
+ * legally spans newlines, so the desync then swallows real code — 10 `card()`
+ * definitions in batch-hybrids-ld-c.ts and batch-light-a.ts vanish entirely
+ * from the stripped view. That is the exact failure the helper's own doc
+ * comment says it exists to prevent ("a comment that merely MENTIONS the bad
+ * idiom holds the check true").
+ *
+ * `test/card-todo.ts` is RESERVED to the orchestrator, so the fix is not made
+ * here; it is reported. What this file does instead is the smallest sound
+ * repair, and it does NOT roll a second stripper:
+ *
+ *   1. blank every line whose first non-space characters are `//` — such a
+ *      line is entirely a comment, no string can start there, and this is
+ *      where every leaked backtick in these files lives;
+ *   2. hand THAT to `stripCode`, which then never desyncs across a newline;
+ *   3. truncate any surviving trailing `//` comment at the index `stripCode`
+ *      itself identified as the comment start.
+ *
+ * `§0 the code view carries no comment text` asserts the result is clean, so
+ * if either half rots this goes red instead of quietly shrinking.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { stripCode } from './card-todo.ts';
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const ENGINE = path.resolve(HERE, '..');
+const SETS = path.join(ENGINE, 'src', 'cards', 'sets');
+
+/** every card-batch file. `helpers.ts` and `index.ts` are in the directory too
+ * and are scanned by §4 (they can hold dead helpers) but carry no card
+ * comments, so §1-§3 read the `batch-*` files. */
+const ALL_FILES = fs.readdirSync(SETS).filter(f => f.endsWith('.ts')).sort();
+const BATCH_FILES = ALL_FILES.filter(f => f.startsWith('batch-'));
+
+const raw = (f: string): string => fs.readFileSync(path.join(SETS, f), 'utf8');
+
+/**
+ * A LINE-PRESERVING code view: comments and string literals blanked, real code
+ * kept. `stripCode` does the work; steps 1 and 3 repair its line-comment
+ * early-exit (see the header). Line and column survive, so `file:${i + 1}` in
+ * a failure message is the real line.
+ */
+function codeView(src: string): string {
+  // 1 · a line that BEGINS with `//` is entirely a comment. Blanking it here
+  //     keeps its backticks out of stripCode's template-literal state, which
+  //     is the only state in this corpus that can desync across a newline.
+  const pre = src.split('\n').map(L => (/^\s*\/\//.test(L) ? ' '.repeat(L.length) : L)).join('\n');
+  const out = stripCode(pre).split('\n');
+  const lines = src.split('\n');
+  // 3 · a TRAILING `//` comment: stripCode marks the two comment-start columns
+  //     as blanks, so that index is its own answer to "where does the comment
+  //     begin"; everything from there to end of line is comment.
+  return out.map((o, i) => {
+    const r = lines[i] ?? '';
+    for (let k = 0; k < r.length - 1; k++) {
+      if (r[k] === '/' && r[k + 1] === '/' && o[k] === ' ' && o[k + 1] === ' ') {
+        return o.slice(0, k) + ' '.repeat(Math.max(0, o.length - k));
+      }
+    }
+    return o;
+  }).join('\n');
+}
+
+/** printed.json, the source of truth for every pool-wide claim below */
+type Printed = { name: string; kind: string; type?: string; attrs?: string[] };
+const PRINTED: Printed[] = (() => {
+  const j = JSON.parse(fs.readFileSync(path.join(ENGINE, 'src', 'cards', 'printed.json'), 'utf8'));
+  return (Array.isArray(j) ? j : Object.values(j)) as Printed[];
+})();
+
+// ─────────────────────────── §0 · REACH ───────────────────────────────
+
+/**
+ * Parse a file into `card('Name', { … })` blocks paired with the contiguous
+ * comment block immediately above them. Brace-matched over the CODE VIEW so a
+ * `{` inside a comment or a string cannot desync the span.
+ *
+ * The NAME comes from the raw line: the code view blanks string literals, so
+ * the stripped line reads `card(       , {` and carries no name at all. §0
+ * caught this parser silently returning ZERO blocks on its first draft, which
+ * is precisely what §0 exists for.
+ */
+type CardBlock = { file: string; line: number; name: string; comment: string; def: string };
+function cardBlocks(f: string): CardBlock[] {
+  const lines = raw(f).split('\n');
+  const code = codeView(raw(f)).split('\n');
+  const out: CardBlock[] = [];
+  for (let i = 0; i < code.length; i++) {
+    if (!/^card\(/.test(code[i]!)) continue;
+    const m = /^card\('([^']+)'/.exec(lines[i]!);
+    if (!m) continue;
+    let s = i;
+    while (s > 0 && /^\s*(?:\/\/|\/\*|\*)/.test(lines[s - 1]!)) s--;
+    let depth = 0, e = i;
+    for (; e < code.length; e++) {
+      for (const ch of code[e]!) { if (ch === '{') depth++; else if (ch === '}') depth--; }
+      if (depth === 0 && e >= i) break;
+    }
+    out.push({
+      file: f, line: i + 1, name: m[1]!,
+      comment: lines.slice(s, i).join('\n'),
+      def: code.slice(i, e + 1).join('\n'),
+    });
+  }
+  return out;
+}
+
+const BLOCKS: CardBlock[] = BATCH_FILES.flatMap(cardBlocks);
+
+test('§0 the scans reach the whole card pool — nothing here can pass vacuously', () => {
+  // 30 files today (28 batches + helpers + index). A DROP is the blindness
+  // signal; a rise is a new batch and only needs the number bumped.
+  assert.ok(ALL_FILES.length >= 30,
+    `only ${ALL_FILES.length} files in src/cards/sets — the directory scan has gone blind`);
+  assert.ok(BATCH_FILES.length >= 28,
+    `only ${BATCH_FILES.length} batch-*.ts files — the batch filter has gone blind`);
+
+  // Every card block the parser found must have brace-matched to a real span.
+  for (const b of BLOCKS) {
+    assert.ok(b.def.trimEnd().endsWith('});') || b.def.trimEnd().endsWith('}'),
+      `${b.file}:${b.line} card('${b.name}') — the brace match ran off the end; stripCode may be blind`);
+  }
+
+  // EVERY top-level `card('…', …)` line in the batch files must have been
+  // parsed. Counted straight off the raw text, so this compares the parser
+  // against the ground truth rather than against a remembered number — a
+  // desync that swallows ten definitions (which is what the unrepaired
+  // stripCode does to batch-hybrids-ld-c.ts and batch-light-a.ts) is caught
+  // exactly, not approximately.
+  const declared = BATCH_FILES.flatMap(f =>
+    raw(f).split('\n').map((L, i) => [f, i + 1, L] as const).filter(([, , L]) => /^card\('/.test(L)));
+  assert.equal(BLOCKS.length, declared.length,
+    `${declared.length} top-level card() lines exist but only ${BLOCKS.length} were parsed — `
+    + 'the code view has gone blind and every check below is looking at less than it thinks');
+  assert.ok(BLOCKS.length >= 450,
+    `only ${BLOCKS.length} card() blocks in the batch files — expected ~455`);
+
+  // And it must actually be able to SEE a castCost, which is what §2 rests on.
+  const withCastCost = BLOCKS.filter(b => /castCost\s*:/.test(b.def));
+  assert.ok(withCastCost.length >= 5,
+    `only ${withCastCost.length} card blocks show a castCost — §2 would be vacuous`);
+
+  assert.equal(PRINTED.length, 492, 'printed.json is the 492-card pool');
+});
+
+test('§0 the code view carries no comment text', () => {
+  // The anti-blindness assertion for `codeView` itself. If either half of the
+  // repair described in the header stops working — or if `stripCode` grows a
+  // third leak — comment prose starts arriving as code, and every scan below
+  // begins reading English as TypeScript.
+  // Nothing in src/cards/sets/** puts a `//` inside a string literal (measured:
+  // zero lines), so the FIRST `//` on a line is always where its comment
+  // begins — and everything from there to end of line must be blank in the
+  // view. That covers a full-line comment and a trailing one with one rule.
+  const leaks: string[] = [];
+  for (const f of ALL_FILES) {
+    const lines = raw(f).split('\n');
+    const code = codeView(raw(f)).split('\n');
+    lines.forEach((L, i) => {
+      const k = L.indexOf('//');
+      const o = code[i] ?? '';
+      const tail = k >= 0 ? o.slice(k) : (/^\s*(?:\*|\/\*)/.test(L) ? o : '');
+      if (tail.trim() === '') return;
+      leaks.push(`${f}:${i + 1}  leaked ${JSON.stringify(tail.trim().slice(0, 60))}`
+               + `\n      from: ${L.trim().slice(0, 90)}`);
+    });
+  }
+  assert.deepEqual(leaks.slice(0, 12), [],
+    `${leaks.length} comment line(s) survive into the code view. See this file's header:\n`
+    + "`stripCode`'s line-comment state falls through to the regex branch, so a `//`\n"
+    + 'comment ends at its first `/`. codeView repairs that; if this is red, the repair\n'
+    + 'has stopped matching what stripCode does.\n');
+});
+
+// ────────────── §1 · a PARKED heading with nothing parked ──────────────
+
+/**
+ * The rot: a `PARKED (needs engine machinery that does not exist yet):`
+ * heading under which EVERY bullet already says UN-PARKED / NOT PARKED / LIVE
+ * / COMPLETE. The heading is what a reader skims, and it is a lie.
+ *
+ * A heading is ACQUITTED when it, or its section body, says out loud that
+ * nothing is parked — `PARKED: none`, `nothing in this batch is parked`, and
+ * the parenthetical form several batches use. That cures the skim, which is
+ * the whole harm.
+ */
+const RESOLVED = new RegExp([
+  // "unparked" / "UN-PARKED" is a verdict word: it cannot occur in this corpus
+  // by accident, so it is matched case-INsensitively. batch-light-c.ts writes
+  // one of its five as lowercase "fully unparked", and a case-sensitive match
+  // missed it — which ACQUITTED that section and made §1 unable to fail on it.
+  '[uU][nN]-?[pP][aA][rR][kK][eE][dD]',
+  // The rest stay SHOUTY. `\bLIVE\b` case-insensitively matches "live when
+  // played normally", which appears in dozens of honest approximation bullets;
+  // it would mark them resolved, acquit a genuinely parked section, and turn a
+  // real rot green. Same for "complete" and "gone" in ordinary prose.
+  'NOT PARKED', '\\bLIVE\\b', '\\bCOMPLETE\\b', 'NO LONGER', 'is REAL', '\\bGONE\\b', 'WORKS as of',
+].join('|'));
+const DISCLAIMED = /PARKED: none|nothing (?:is |left )?parked|Nothing is parked|no card in this batch is parked|nothing in this batch is parked|none left in this batch/i;
+
+/** heading lines that CLAIM something is parked. `UN-PARKED (…)` and
+ * `UNPARKED by R…` headings claim the opposite and are not candidates. */
+const isParkedHeading = (L: string): boolean =>
+  /^\s*\*\s*(?:⚠\s*)?PARKED\b/.test(L) && !/^\s*\*\s*[-·✔✘]/.test(L);
+
+type Section = { file: string; line: number; head: string; bullets: string[]; body: string };
+function parkedSections(f: string): Section[] {
+  const lines = raw(f).split('\n');
+  const out: Section[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (!isParkedHeading(lines[i]!)) continue;
+    const body: string[] = [];
+    for (let j = i + 1; j < lines.length; j++) {
+      const L = lines[j]!;
+      if (!/^\s*\*/.test(L) || /^\s*\*\//.test(L)) break;
+      if (isParkedHeading(L)) break;
+      if (/^\s*\*\s*(?:⚠\s*)?(?:UN-?PARKED|UNPARKED)\b/.test(L) && !/^\s*\*\s*[-·✔✘]/.test(L)) break;
+      body.push(L);
+    }
+    const bullets: string[][] = [];
+    for (const L of body) {
+      if (/^\s*\*\s*(?:⚠\s*)?[-·✔✘]\s/.test(L)) bullets.push([L]);
+      else if (bullets.length && L.trim() !== '*') bullets[bullets.length - 1]!.push(L);
+    }
+    out.push({
+      file: f, line: i + 1, head: lines[i]!.trim(),
+      bullets: bullets.map(b => b.join(' ')), body: body.join('\n'),
+    });
+  }
+  return out;
+}
+
+/**
+ * KNOWN-ROTTEN, held by another agent's worktree in round 26. Each carries the
+ * reason it is not fixed here. An entry that no longer matches any section is
+ * dead weight and should be deleted, but it does NOT fail the test: these two
+ * files are being edited in parallel and a passing fix must not turn this red.
+ */
+const PARKED_EXEMPT: { file: string; head: string; why: string }[] = [
+  {
+    file: 'batch-metal-a.ts',
+    head: 'PARKED (needs engine primitives that do not exist; subsets',
+    why: 'R174: all three bullets beneath are already UN-PARKED. batch-metal-a.ts was '
+       + 'held by another agent for the whole of round 26 (see STALE-WORKLIST DEFERRED); '
+       + 'retitling it here would have collided on a live worktree.',
+  },
+  {
+    file: 'batch-water-a.ts',
+    head: 'PARKED (needs engine primitives that do not exist; subsets',
+    why: 'R174: same shape, same round, same reason — every entry beneath says '
+       + '"NO LONGER parked", one of them out loud. batch-water-a.ts was held by '
+       + 'another agent.',
+  },
+];
+
+test('§1 no PARKED heading survives every card beneath it being un-parked', () => {
+  const sections = BATCH_FILES.flatMap(parkedSections);
+  assert.ok(sections.length >= 6,
+    `only ${sections.length} PARKED headings found across the batch files — the scan has gone blind`);
+
+  const bad: string[] = [];
+  for (const s of sections) {
+    if (s.bullets.length === 0) continue;                       // a bare "PARKED: none." line
+    if (!s.bullets.every(b => RESOLVED.test(b))) continue;      // something really is parked
+    if (DISCLAIMED.test(s.head) || DISCLAIMED.test(s.body)) continue;
+    if (PARKED_EXEMPT.some(e => e.file === s.file && s.head.includes(e.head))) continue;
+    bad.push(`${s.file}:${s.line}  ${s.head}\n      all ${s.bullets.length} bullets beneath are already resolved`);
+  }
+  assert.deepEqual(bad, [],
+    'A PARKED heading whose every entry has shipped makes a LIVE card look blocked.\n'
+    + 'Retitle the heading (UN-PARKED … / PARKED: none.) or say in the section which\n'
+    + 'entry is the survivor. Do NOT delete the history beneath it.\n'
+    + bad.join('\n'));
+});
+
+// ───────── §2 · "paid at RESOLUTION" over a real declared cost ──────────
+
+/**
+ * `castCost` is the bracketed cost slot: whatever it names is chosen and paid
+ * in the CAST WINDOW, before the item is respondable. A comment on a card that
+ * declares one, saying that same cost is paid at RESOLUTION, is a flat
+ * contradiction — and it is the exact shape that made Grox, No Hand Killer and
+ * Sacrificial Burst look approximated for months after R49/R64 made them real.
+ *
+ * ⚠ DELIBERATELY NOT WIDENED TO `cost:`. Auric Ascendant (batch-hybrids-wm-b)
+ * declares `cost: { mana: 1 }` AND its comment correctly says "the recall is
+ * paid at resolution" — the mana is a real activation cost, the recall half is
+ * not. A card can have a mixed cost, so `cost:` proves nothing about which
+ * half a sentence is talking about. `castCost` has no such ambiguity. Widening
+ * this check produces a false positive on an honest comment, which is worse
+ * than the check missing a case.
+ */
+const RESOLUTION_COST_CLAIM = /STILL AT RESOLUTION|(?:paid|checked\/paid|checked and paid)\s+at\s+RESOLUTION/i;
+/** the comment is QUOTING the old claim in order to retract it */
+const RETRACTED = /used to|USED TO|no longer|NO LONGER|UN-?PARKED|\bGONE\b|this (?:note|entry|line)|it read|✔|retired|overturned|is a real|REAL CAST COST/;
+
+test('§2 no card declaring a castCost is documented as paying it at resolution', () => {
+  const bad: string[] = [];
+  for (const b of BLOCKS) {
+    if (!/castCost\s*:/.test(b.def)) continue;
+    if (!RESOLUTION_COST_CLAIM.test(b.comment)) continue;
+    if (RETRACTED.test(b.comment)) continue;
+    bad.push(`${b.file}:${b.line}  card('${b.name}') declares a castCost, and its own comment `
+           + 'says the cost is paid at RESOLUTION');
+  }
+
+  // The same claim can sit in a FILE HEADER bullet naming the card. Bind a
+  // header bullet to any card defined in that same file whose name it mentions.
+  for (const f of BATCH_FILES) {
+    const lines = raw(f).split('\n');
+    const mine = BLOCKS.filter(b => b.file === f);
+    lines.forEach((L, i) => {
+      if (!/^\s*\*/.test(L) || !RESOLUTION_COST_CLAIM.test(L)) return;
+      // the whole bullet: this line plus its continuations
+      let s = i; while (s > 0 && /^\s*\*/.test(lines[s - 1]!) && !/^\s*\*\s*(?:⚠\s*)?[-·✔✘]\s/.test(lines[s]!)) s--;
+      let e = i; while (e + 1 < lines.length && /^\s*\*/.test(lines[e + 1]!) && !/^\s*\*\s*(?:⚠\s*)?[-·✔✘]\s/.test(lines[e + 1]!)) e++;
+      const bullet = lines.slice(s, e + 1).join('\n');
+      if (RETRACTED.test(bullet)) return;
+      for (const b of mine) {
+        if (!bullet.includes(b.name)) continue;
+        if (!/castCost\s*:/.test(b.def)) continue;
+        bad.push(`${f}:${i + 1}  header bullet says the cost of '${b.name}' is paid at RESOLUTION, `
+               + 'but the card declares a castCost');
+      }
+    });
+  }
+
+  assert.deepEqual(bad, [],
+    'A castCost is collected in the CAST WINDOW by definition. A comment saying\n'
+    + 'otherwise makes a real, respondable cost look like an approximation.\n'
+    + bad.join('\n'));
+});
+
+// ────────── §3 · negative claims about the card pool ───────────────────
+
+/**
+ * The category that hides real bugs. Every one of these must be on the
+ * allowlist WITH ITS REASON, because the reason is the only thing that can be
+ * re-checked when the pool grows. Two of the four reasons are asserted against
+ * `printed.json` in the test below, so they cannot rot silently.
+ */
+const NEGATIVE_POOL_CLAIM: RegExp[] = [
+  /no pool combo/i,
+  /nothing in the (?:set|pool)/i,
+  /no (?:such |other )?card in the (?:whole )?(?:pool|set)/i,
+  /no other card in the pool/i,
+  /nothing else in the pool/i,
+  /the only card in the (?:whole )?pool/i,
+  /no pool card/i,
+  /not a single card/i,
+];
+
+const POOL_CLAIM_ALLOWLIST: { file: string; text: string; why: string }[] = [
+  {
+    file: 'batch-wood-a.ts', text: 'No pool combo hits this today',
+    why: 'KNOWN FALSE (R174 audit). Rampart Guardian is a printed {Tough} unit and a '
+       + 'legal Burgeon target with no virus needed, so the overshoot IS reachable with '
+       + 'two cards. batch-wood-a.ts was held by another agent for all of round 26 and '
+       + 'is assigned to whoever fixes Burgeon. Listed here so it is not mistaken for '
+       + 'a verified claim.',
+  },
+  {
+    file: 'batch-dark-c.ts', text: 'the only card in the whole pool with a',
+    why: 'PAST TENSE and self-limiting: "Rotling WAS the only card in the pool with a '
+       + '[Switch]-marked effect that could not be grafted at all". The condition it '
+       + 'describes was removed by R124 giving Rotling its graftEffect, so the sentence '
+       + 'is history, not a live search of the pool.',
+  },
+  {
+    file: 'batch-light-a.ts', text: 'the only card in the whole pool that does',
+    why: 'A QUOTED RETRACTION: the line quotes the old note in order to close it '
+       + '(R157 §25). Verified below — zero cards pool-wide carry "Switch" in `type`.',
+  },
+  {
+    file: 'batch-metal-c.ts', text: 'No pool card is neither',
+    why: 'Void Memory: "discards a unit or spell if able" = "discards a card if their '
+       + 'hand is nonempty". Verified below against printed.json kinds.',
+  },
+];
+
+test('§3 every negative claim about the card pool is allowlisted with its reason', () => {
+  const hits: { file: string; line: number; text: string }[] = [];
+  for (const f of BATCH_FILES) {
+    raw(f).split('\n').forEach((L, i) => {
+      if (!/^\s*(?:\*|\/\/)/.test(L)) return;
+      if (!NEGATIVE_POOL_CLAIM.some(r => r.test(L))) return;
+      hits.push({ file: f, line: i + 1, text: L.trim() });
+    });
+  }
+  assert.ok(hits.length >= 4,
+    `only ${hits.length} negative pool claims found — the comment scan has gone blind`);
+
+  const bad = hits
+    .filter(h => !POOL_CLAIM_ALLOWLIST.some(a => a.file === h.file && h.text.includes(a.text)))
+    .map(h => `${h.file}:${h.line}  ${h.text}`);
+
+  assert.deepEqual(bad, [],
+    '"Nothing in the pool hits this" is the comment shape that leaves real defects\n'
+    + 'alone. Burgeon\'s copy of it was FALSE and was hiding a two-card bug. Verify the\n'
+    + 'claim against printed.json and add it to POOL_CLAIM_ALLOWLIST with the reason,\n'
+    + 'or rewrite the comment so it does not assert a pool-wide negative.\n'
+    + bad.join('\n'));
+});
+
+test('§3 the two allowlisted pool claims that CAN be checked are checked', () => {
+  // batch-light-a.ts, Arbiter of Armistice: "the only card in the whole pool
+  // that [carries a bare {Switch} on its type line]" — closed by R157 §25 and
+  // stripped from the data by extract-printed.mjs's TYPE_OVERRIDES.
+  const switchTyped = PRINTED.filter(c => /Switch/i.test(c.type ?? '')).map(c => c.name);
+  assert.deepEqual(switchTyped, [],
+    'a card carries {Switch} on its type line again — batch-light-a.ts\'s '
+    + 'CLOSED-by-R157-§25 note and extract-printed.mjs\'s TYPE_OVERRIDES both need re-reading');
+
+  // batch-metal-c.ts, Void Memory: every pool card is a unit or a spell, so
+  // "discards a unit or spell if able" = "discards a card if the hand is
+  // nonempty". A spellToken's printed type still reads "Spell Token", so even
+  // one somehow in hand is a spell.
+  const kinds = new Set(PRINTED.map(c => c.kind));
+  assert.deepEqual([...kinds].sort(), ['spell', 'spellToken', 'spellUnit', 'unit'],
+    'a new card KIND exists — Void Memory\'s "unit or spell" note in batch-metal-c.ts '
+    + 'is no longer exhaustive and must be re-derived');
+  for (const c of PRINTED.filter(x => x.kind === 'spellToken')) {
+    assert.match(c.type ?? '', /Spell/,
+      `${c.name} is a spellToken whose type line does not say "Spell" — Void Memory's note breaks`);
+  }
+});
+
+// ───────────────── §4 · dead helpers in the card files ─────────────────
+
+/**
+ * `payLife` sat in `batch-light-a.ts` with a doc comment saying it paid life
+ * "as a COST at resolution (header note)" and ZERO call sites, long after all
+ * three life-cost cards moved to real R49/R64 `castCost` costs. It is a
+ * comment rot that a type-checker would normally catch — but `tsconfig` has
+ * `strict` and NOT `noUnusedLocals`, so nothing did.
+ *
+ * Counting is done over the CODE VIEW of every .ts/.mjs in src/, test/ and
+ * scripts/, so a name that appears only inside a comment or a string literal
+ * does not count as a use. That matters twice over: `helpers.ts::lifeGainedIn`'s
+ * only other appearance in the tree is inside a REGEX LITERAL in
+ * `96-x-preview.test.ts`, which is not a call — and under the unrepaired
+ * `stripCode` a leaked comment mentioning a helper's name would have counted
+ * as a use, so a dead helper would have looked alive.
+ */
+function allSources(): string[] {
+  const out: string[] = [];
+  const walk = (d: string): void => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      if (e.name === 'node_modules') continue;
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (/\.(ts|mts|mjs|js)$/.test(e.name)) out.push(codeView(fs.readFileSync(p, 'utf8')));
+    }
+  };
+  for (const d of ['src', 'test', 'scripts']) {
+    const p = path.join(ENGINE, d);
+    if (fs.existsSync(p)) walk(p);
+  }
+  return out;
+}
+
+const DECL = /^(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][\w$]*)|^(?:export\s+)?const\s+([A-Za-z_$][\w$]*)\s*[:=]/;
+
+/**
+ * Dead helpers held by another agent's worktree in round 26 — same reason as
+ * PARKED_EXEMPT. Deleting a function is a real code change and could not be
+ * made on a file another agent had open.
+ */
+const DEAD_EXEMPT: { file: string; name: string; why: string }[] = [
+  {
+    file: 'batch-metal-a.ts', name: 'tokensInRegion',
+    why: 'R174: dead, zero call sites. batch-metal-a.ts was held by another agent for '
+       + 'all of round 26 (STALE-WORKLIST DO-NOT-TOUCH), so the deletion is deferred.',
+  },
+  {
+    file: 'helpers.ts', name: 'lifeGainedIn',
+    why: 'R174: exported and dead — its only other appearance tree-wide is inside a '
+       + 'regex literal in 96-x-preview.test.ts, which is not a call. helpers.ts was '
+       + 'held by another agent for all of round 26, so the deletion is deferred. '
+       + 'Its sibling lifeLostIn IS used.',
+  },
+];
+
+test('§4 no card-file helper has zero call sites', () => {
+  const sources = allSources();
+  assert.ok(sources.length >= 150,
+    `only ${sources.length} source files scanned for call sites — the walk has gone blind`);
+
+  let declsSeen = 0;
+  const dead: string[] = [];
+  for (const f of ALL_FILES) {
+    codeView(raw(f)).split('\n').forEach((L, i) => {
+      const m = DECL.exec(L);
+      const name = m?.[1] ?? m?.[2];
+      if (!name) return;
+      declsSeen++;
+      const re = new RegExp(`\\b${name}\\b`, 'g');
+      let uses = 0;
+      for (const s of sources) uses += (s.match(re) ?? []).length;
+      if (uses > 1) return;                                  // the declaration itself is 1
+      if (DEAD_EXEMPT.some(e => e.file === f && e.name === name)) return;
+      dead.push(`${f}:${i + 1}  ${name} — declared, never called anywhere in src/ test/ scripts/`);
+    });
+  }
+  assert.ok(declsSeen >= 200,
+    `only ${declsSeen} helper declarations seen across ${ALL_FILES.length} files — the scan has gone blind`);
+
+  assert.deepEqual(dead, [],
+    'A dead helper carries a doc comment describing machinery nobody uses, which reads\n'
+    + 'exactly like a description of how the cards work. tsconfig has `strict` but not\n'
+    + '`noUnusedLocals`, so nothing else catches this. Delete it (leaving a note saying\n'
+    + 'what it was and why it went), or wire it up.\n'
+    + dead.join('\n'));
+});

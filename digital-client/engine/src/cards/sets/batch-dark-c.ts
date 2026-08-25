@@ -63,11 +63,6 @@
  *    ACTIVATION cost now (R49, `discardOrSacrifice: 1`): it gates the
  *    activation and is paid in the cast window, before the item reaches the
  *    stack.
- *  - ⚠ STILL AT RESOLUTION: Grox's "Erase two cards in your bin:" — a BIN-ZONE
- *    cost, which AbilityCost does not model (its atoms are life / debt /
- *    discard N / sacrifice-another N / discard-or-sacrifice N). Consequence for
- *    a graft CAUSE: the grafted riders still resolve even when the bin turns
- *    out too small to pay (Deformant has the same hole).
  * ✔ "[Battle]" on Grox's activated ability is `ActivatedAbility.timing` now
  *    (R49), enforced at ACTIVATION: Grox is neither offered nor accepted during
  *    deployment.
@@ -92,7 +87,7 @@
  *    stand-in owned by the zone's seat.
  *  - Xzydris and Scholar of the Void hear the new 'startOfDeployment' event.
  *
- * PARKED (needs engine primitives that do not exist — see the report):
+ * MOSTLY UN-PARKED — one real limitation survives, at the bottom:
  *  - Rotling is UNPARKED as of R124: E.removeFromBin is the choke point every
  *    bin removal in the tree goes through, and it fires the 'leftBin' event
  *    the card was waiting on. See the card comment — which now also carries
@@ -120,11 +115,30 @@
  *    8/8 to 1/4, it's +7/+4. Which also works to invert to a -6/0". The card
  *    needed NO change here at all: the whole card is the printed attribute,
  *    and the layer does the rest.
- *  - ⚠ TRASH TRIGGERS CANNOT CARRY GRAFT RIDERS (Blightwalker's [Switch1]) —
- *    and R51 did NOT change that, because it is structural rather than a
- *    missing hook: a MODDED unit that dies is ERASED (Unstable) and never
- *    reaches a bin at all, so a card that IS trashed provably carries no mods.
- *    Documented as a known limitation in docs/digital-rules.md (R51).
+ *  - ⚠ TRASH TRIGGERS CANNOT CARRY GRAFT RIDERS (Blightwalker's [Switch1]).
+ *    The CONCLUSION still holds; the REASON this entry used to give was
+ *    OVERTURNED BY R137, and is recorded here so nobody re-derives it.
+ *
+ *    ✘ The old reason (do NOT reuse): "a MODDED unit that dies is ERASED
+ *      (Unstable) and never reaches a bin at all, so a card that IS trashed
+ *      provably carries no mods" — i.e. the case was unreachable.
+ *    ✔ R137 made the case FULLY REACHABLE. `E.disposeToBin` pushes the body
+ *      into the bin, fires 'died', calls `noteTrashed(binSeat, u.card,
+ *      'play', u)` and only THEN lets the state-based sweep erase it — for
+ *      EVERY death, Unstable included. So a modded Blightwalker that dies
+ *      does reach a bin and its trash trigger DOES fire.
+ *    ✔ The conclusion survives for a different, structural reason:
+ *      `E.fireOwnTrashTrigger` anchors the trigger on a DETACHED ghost built
+ *      with an explicit `mods: []` (and `budgets: {}`), so no rider can ever
+ *      be found on it. Same statement as batch-dark-a.ts's entry for
+ *      Afflicting Anima / Maw of Despair, which always carried the right
+ *      reason. `graftCause` is kept for fidelity; the donatable graftEffect
+ *      (the interesting half) works normally.
+ *    ⚠ OPEN QUESTION (R174, for the owner): before R137, "the ghost carries no
+ *      mods" was a statement about an impossible case. It is now a real,
+ *      silent drop of every graft rider on a modded unit's death-trash, with
+ *      no log line. Nobody has asked whether that is still the right answer.
+ *    Documented as a known limitation in docs/digital-rules.md (R51, R174).
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -142,17 +156,13 @@ const binMatches = (g: E, seat: Seat, ok: (name: string) => boolean): [string, n
 const opponentsIn = (g: E, region: number, me: Seat): Seat[] =>
   g.s.regions[region]!.presentSeats.filter(s => s !== me);
 
-/** the formation slot an entity occupies right now, if any (ambushSwap's
- * bookkeeping: found BEFORE anything moves, so a replacement can take it) */
-function formationSlot(g: E, id: EntityId): { col: EntityId[]; idx: number } | null {
-  const b = g.s.battle;
-  if (!b) return null;
-  for (const col of [...b.columns, ...Object.values(b.blocks)]) {
-    const idx = col.indexOf(id);
-    if (idx !== -1) return { col, idx };
-  }
-  return null;
-}
+/* A local `formationSlot(g, id)` used to sit here ("the formation slot an
+ * entity occupies right now"). It was DEAD — zero call sites — left behind
+ * when Necromorph moved to `E.exchangeInPlace` (R157 §3), which does the slot
+ * bookkeeping itself. Deleted by R174. `batch-light-c.ts::slotOf` is the
+ * surviving copy of the same walk, and it IS called. `tsconfig` has `strict`
+ * but not `noUnusedLocals`, which is why this survived; 147-comment-conformance
+ * is the guard that now catches the shape. */
 
 // ───────────────────────────── the cards ──────────────────────────────
 
@@ -218,8 +228,10 @@ card('Blightwalker', {
 // Spell. "A bin" is unowned, so EITHER player's bin is fair game ('anyBinCard')
 // and the card comes to the caster's hand. R64: it is a real declared target
 // now — it used to be a mid-resolution pick, so the spell sat on the stack
-// aiming at nothing. "Erase me" is still approximated by the spell being
-// binned normally afterwards.
+// aiming at nothing. "Erase me" is REAL (R65, header ~50-56): `ctx.eraseSelf()`
+// raises `StackItem.eraseSelf` and `E.dischargeItem` sends the card to the
+// erased pile instead of a bin. This note used to say it was "still
+// approximated by the spell being binned normally afterwards" — it is not.
 card('Collect Remains', {
   spellEffect: {
     targets: { what: 'anyBinCard', prompt: 'Collect Remains: put target card in a bin into your hand' },

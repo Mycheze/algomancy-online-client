@@ -94,7 +94,8 @@
  *  - "your units" amounts (Colossal Construction's greatest defense) and
  *    "each player/opponent" are region-scoped at resolution (R12/R25/R27).
  *
- * PARKED (needs engine machinery that does not exist yet):
+ * UN-PARKED (kept as history; nothing in this batch is parked — the ⚠ markers
+ * below are two open sub-QUESTIONS, not parks):
  *  - Rook: UN-PARKED (R95). The permission layer it was waiting on exists now
  *    and is `CardBehavior.modPermissions` — CostMod's sibling in shape,
  *    OR-folded rather than summed because a permission is granted or it is
@@ -814,8 +815,10 @@ card('Ember of Life', {
 // "[Augment] Sacrifice another unit: Your units gain +1/+1 until regroup."
 // — rg/4 0/4 Ancient Tree Structure Unit. An ACTIVATED ability in the
 // [Augment] text box (the Slag Spewer precedent): live when played normally
-// (via: 'augment') and donated to hosts (via: { mod }). The sacrifice is
-// paid at resolution (⚠ header); "another" excludes the activating unit
+// (via: 'augment') and donated to hosts (via: { mod }). The sacrifice is a
+// real ACTIVATION cost (R49, `cost: { sacrificeOther: 1 }` — see two lines
+// below); it gates the activation and is paid in the cast window, not at
+// resolution as this line used to say. "another" excludes the activating unit
 // (the carrier / the host when donated). The buff lands after the sacrifice
 // (the sacrificed unit never benefits), on the controller's units in the
 // region, until regroup (addTemp).

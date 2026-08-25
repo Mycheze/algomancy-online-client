@@ -9,8 +9,10 @@
  * per card), R12/R25 ("each player/opponent" and "your units" are
  * region-scoped via presentSeats / unitsOf(region)).
  *
- * PARKED (needs engine machinery that does not exist yet — each card still
- * registers so nothing crashes, and each has a todo test):
+ * UN-PARKED (history kept; NO card in this batch is parked. Every entry below
+ * records a park that has since shipped, and is kept so nobody re-derives the
+ * old conclusion. The inline ⚠ markers are two still-open QUESTIONS and one
+ * do-not-implement warning — none of them is a park):
  *  - Abyssal Evocation: UN-PARKED (R96). A `playFromBin` action gated on a
  *    battle-scoped permission (E.mayPlaySpellsFromBin), plus a real
  *    {Unstable} stamp on the item and on any body it spawns. ⚠ Open: a
@@ -283,11 +285,11 @@ card('Conduit of Pain', {
 });
 
 // "Recall target spell in your bin. (Put it into your hand.)" — rr/4 2/2
-// Arcane Elemental Spell Unit. The bin isn't a target zone in TargetSpec, so
-// the pick is a mid-resolution choice by the controller (R6 model) — an
-// approximation of targeting (opponents can't respond to the specific pick,
-// only to the spell). No spell in the bin → the recall part does nothing and
-// the body still spawns.
+// Arcane Elemental Spell Unit. No spell in the bin → the recall part does
+// nothing and the body still spawns. (The paragraph that used to sit here —
+// "the bin isn't a target zone in TargetSpec, so the pick is a mid-resolution
+// choice by the controller (R6 model)" — was made false by R64/R67 and is
+// contradicted by the card's own comment two lines below.)
 card('Delver of Mysteries', {
   spellEffect: {
     // R67: "target spell in your bin" is a DECLARED target, chosen as the

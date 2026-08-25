@@ -35,7 +35,7 @@
  *    present seat of the effect's region (R25) — resolving with no opponent
  *    present (out-of-battle graft timing) is a no-op, no draw.
  *
- * PARKED (needs engine machinery that does not exist yet):
+ * PARKED: none. (Kept as history — the one entry below has shipped.)
  *  - (Phytochemical Protection UNPARKED by R98, round 17 — see the card. The
  *    prevention layer it waited on is `E.preventUnitDamage`, the one choke
  *    point both unit-damage commits now pass through, with the shield kept on

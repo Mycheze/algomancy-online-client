@@ -42,20 +42,31 @@
  *  - The Bonesculptor: "play one unit ... from your bin each deployment" is
  *    modelled as a free bounded activated ability (deploy plays resolve
  *    immediately, so the shapes match); the full cost of the played unit is
- *    still paid. Activating it outside deployment (or with no eligible card)
- *    wastes the once-per-turn budget. R165: the played unit really is PLAYED
- *    now — it fires R129's 'cardPlayed' from R49's 'bin' — where it used to be
+ *    still paid. (R77 retired the sentence that used to sit here — "activating
+ *    it outside deployment (or with no eligible card) wastes the once-per-turn
+ *    budget". Both halves are ACTIVATION gates now: `timing: 'deploy'` and
+ *    `usableWhen: bonesculptorPicks(...).length > 0`; and the two paths that
+ *    can still reach an empty offer call `ctx.refundBudget?.()` (R113).)
+ *    R165: the played unit really is PLAYED now — it fires R129's 'cardPlayed'
+ *    from R49's 'bin' — where it used to be
  *    put into play in silence while the log line above it said "plays". What
  *    it still lacks is a stack item of its own (nothing may respond to it),
  *    the standing `playInline` approximation for a mid-resolution play.
- *  - Throwing Boulder: the sacrifice and the "only if I have an adjacent
- *    ally" precondition are checked/paid at RESOLUTION (the Immolate
- *    precedent — there is no activation-precondition hook). No adjacent ally
- *    at resolution → nothing happens, the Boulder survives.
- *  - Squish: the damage source's attrs are the ally CARD's printed attrs
- *    (dealEffectDamage reads the card name).
- *    (Two entries used to sit here: Throw off a Cliff enforcing "4 or more
- *    defense" at resolution because TargetSpec had no filters, and Squish
+ *  - (Throwing Boulder's entry is GONE. It read "the sacrifice and the 'only
+ *    if I have an adjacent ally' precondition are checked/paid at RESOLUTION
+ *    (the Immolate precedent — there is no activation-precondition hook)".
+ *    R77 built both hooks: `cost: { sacrificeSelf: true }` and
+ *    `usableWhen: g.adjacentInFormation(self.id).some(...)`. See the card.)
+ *  - (Squish's entry is GONE too. It read "the damage source's attrs are the
+ *    ally CARD's printed attrs (dealEffectDamage reads the card name)".
+ *    R94 changed that: `dealEffectDamageAll` resolves `ctx.sourceId` to the
+ *    LIVE entity and reads `ownAttrs`, and Squish passes `sourceId: a.id` —
+ *    so a GRANTED {Powerful}/{Deadly} on the ally counts, exactly as combat
+ *    damage has always counted it. The printed-card read survives only as the
+ *    fallback for a source with no entity, which is why Seismomancy's note
+ *    ~135 is still correct and must NOT be "fixed" to match this one.)
+ *  - (Two further entries used to sit here: Throw off a Cliff enforcing "4 or
+ *    more defense" at resolution because TargetSpec had no filters, and Squish
  *    picking its second target mid-resolution because a spec held one target
  *    per part. R64 added the restriction seam and R58 the per-slot one, and
  *    both cards use them — the restriction is now part of what makes a target
@@ -187,7 +198,9 @@ card('Skybreaker', {
 
 // "[Switch1] Target ally deals damage equal to its defense to another target
 // unit." — e/2, {Battle} Rock Spell. The amount is the ally's defense at
-// RESOLUTION (R1); the damage source is the ALLY (its printed attrs apply).
+// RESOLUTION (R1); the damage source is the LIVE ALLY entity, so its CURRENT
+// attrs apply — a GRANTED {Powerful}/{Deadly} counts, not just a printed one
+// (R94; this line used to say "its printed attrs apply").
 // Bounded graft ([Switch1], R9).
 //
 // R67/R82 (playtest VEAV): "Squish, on cast, only has you select 1 target
@@ -224,7 +237,10 @@ const squishEffect: EffectDef = {
     }
     const dmg = g.effStats(a)[1];
     if (dmg <= 0) { g.ev('info', `Squish: ${a.card} has no defense left — no damage.`); return; }
-    // the ALLY deals the damage: its card's printed attrs drive the riders
+    // the ALLY deals the damage, and `sourceId` makes it the LIVE entity:
+    // dealEffectDamageAll reads g.ownAttrs(src), so riders see attrs the ally
+    // was GRANTED as well as printed ones (R94 — this used to read "its card's
+    // printed attrs drive the riders", which was the pre-R94 behaviour).
     g.dealEffectDamage({ ...ctx, sourceName: a.card, sourceId: a.id }, b, dmg);
   },
 };

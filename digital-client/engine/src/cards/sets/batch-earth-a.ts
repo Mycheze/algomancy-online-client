@@ -21,7 +21,7 @@
  *    (Tenebrous Bulborb): it is a real StaticMod on the anchor now — continuous,
  *    never on the stack, and it leaves with the virus. See the card.
  *
- * PARKED (needs engine machinery that does not exist yet):
+ * UN-PARKED (kept as history; nothing in this batch is parked):
  *  - Crevice Lurker: UN-PARKED (R121) — the ability-cost tax rides R59's
  *    CostMod layer under the two new purposes ('activate'/'trigger'), and
  *    the pay-to-trigger gate is E.gateTaxedTrigger at processTriggerQueue's

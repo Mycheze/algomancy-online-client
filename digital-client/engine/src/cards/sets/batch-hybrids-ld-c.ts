@@ -46,16 +46,28 @@
  *    printed either/or shape, `cost: { discardOrSacrifice: 1 }` — also real,
  *    also paid before the item reaches the stack, and it gates the activation
  *    (so the [once] budget is no longer burned on an unpayable one).
- *  - ⚠ STILL AT RESOLUTION: No Hand Killer's "Discard X cards", where X is a
- *    VARIABLE amount the activator chooses one card at a time. AbilityCost
- *    models a conjunction of FIXED atoms, so this shape does not fit. It is
- *    mandatory once activated; no eligible payment means the ability resolves
- *    with no effect and the [once] budget is still spent. Flagged, not faked.
+ * ✔ No Hand Killer's "Discard X cards" is a REAL CAST COST (R64):
+ *    `castCost: { kind: 'discardCard', n: 'X' }`, and collectCastCosts runs
+ *    for ACTIVATED items too, so the discards are collected in the CAST
+ *    WINDOW and `ctx.x` is what was paid — an opponent answers an X they can
+ *    already see. This entry used to read "⚠ STILL AT RESOLUTION … AbilityCost
+ *    models a conjunction of FIXED atoms, so this shape does not fit"; that
+ *    stopped being true when castCost grew the variable form.
+ *    R157 §22 / R161 then REMOVED `xMin`: X = 0 is a legal activation, offered
+ *    even with an empty hand, and it really does spend the [once] for nothing
+ *    — owner verbatim, *"You can legally activate it and discard no cards."*
+ *    Not a refund case (R113 is for a decline or an impossible offer). See the
+ *    card's own note.
  *  - "PLAY ONE UNIT FROM YOUR BIN" (Gridxlan) is modelled as a free bounded
  *    activated ability, exactly the way The Bonesculptor models the same text:
- *    there is no bin-play action in apply.ts. The "if your hand is empty" and
- *    "during deployment" conditions are checked at RESOLUTION, so activating
- *    it with cards in hand wastes the once-per-turn budget.
+ *    there is no bin-play action in apply.ts. R77: all three preconditions are
+ *    ACTIVATION gates now — `timing: 'deploy'` for the window, and `usableWhen`
+ *    for the printed "if your hand is empty" and for "is there anything in the
+ *    bin I could actually play". This entry used to read "the 'if your hand is
+ *    empty' and 'during deployment' conditions are checked at RESOLUTION, so
+ *    activating it with cards in hand wastes the once-per-turn budget"; the
+ *    analogy to The Bonesculptor is still apt, and so is the fix — R77 gated
+ *    both cards in the same round.
  *  - "WHENEVER YOU PLAY A SPELL" (Dragnol) listens to the engine's own
  *    'spellPlayed' event, which fires for spell, spellUnit AND spellToken —
  *    the batch-hybrids-fwe convention that unqualified "spell" includes
@@ -73,8 +85,7 @@
  *    Players' counters are rot and debt (R38/R39), the only two that exist.
  *    Region-scoped at resolution (R12/R25).
  *
- * PARKED (needs engine machinery that does not exist yet — both cards still
- * register crash-free and have a todo test):
+ * UN-PARKED (kept as history; nothing in this batch is parked):
  *  - Counter Thief: UN-PARKED (R104). "those counters are placed on me instead"
  *    is a REDIRECT — the second family of the replacement layer — expressed as
  *    `replaceCounters`, a first-claimant-consumes hook E.addCounters consults
@@ -470,8 +481,17 @@ card('Buffer Overflow', {
 // E.inCostMods' shape, and NOT as a module-level `let` in this file — which is
 // the correction report #60 asked for.
 //
-// ⚠ TRANSCRIPTION: the printed NAME is misspelled ("Counter Thief") in the
-// card data; registered under the printed spelling deliberately.
+// ⚠ TRANSCRIPTION — a DELIBERATE, RECORDED divergence from the printed card.
+// The physical card prints the name "Counter Theif". Our data spells it
+// "Counter Thief", corrected on 2026-08-24 at the owner's instruction ("fix
+// clear typo issues and references"), and this card is registered under the
+// CORRECTED spelling — not the printed one, which is what this note used to
+// claim. `AlgomancyCards/light-and-dark-transcription-notes.json` carries the
+// full record (including how to revert), and registry.ts keeps
+// `registerAlias('Counter Theif', 'Counter Thief')` so every older ruling,
+// Discord answer and note that uses the printed spelling still resolves.
+// ⚠ docs/09-divergence-inventory.md §3 says "Nothing is misspelled" — that is
+// wrong about this card; the misspelling is on the physical card itself.
 card('Counter Thief', {
   augmentable: true,
   replaceCounters: (g, self, target) => {
