@@ -42,14 +42,13 @@
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, isEntityTarget, getCard, type EffectCtx, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, manaOf, chooseUnit, perSeatRows, lifeLostIn } from './helpers.ts';
+import { selfOf, isEnt, manaOf, chooseUnit, perSeatRows, lifeLostIn, doubleStats } from './helpers.ts';
 // `playInline` lives in batch-water-a (Hooba-Pon and Insidious Invitation need
 // it too). index.ts imports that module first, so importing it here cannot
 // disturb registration order — see the note on `playInline` itself.
 import { playInline } from './batch-water-a.ts';
 // R166: "double a stat" is one shared solver — Burgeon and Surly Stalker print
 // the same verb and must give the same answer under {Tough}/{Balanced}.
-import { doubleStats } from './batch-wood-a.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 

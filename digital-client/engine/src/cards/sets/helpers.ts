@@ -226,3 +226,100 @@ export const lifeLostIn = (g: E, region: number, seat: Seat): number =>
 /** the `lifeGained:<seat>` twin of `lifeLostIn` (E.gainLife bumps it, R49) */
 export const lifeGainedIn = (g: E, region: number, seat: Seat): number =>
   g.battleCounter(region, `lifeGained:${seat}`);
+
+/* ── doubling a unit's effective stats (Burgeon, Surly Stalker) ─────────
+ *
+ * MOVED HERE FROM batch-wood-a.ts, 2026-08-25 (R177), and the reason is not
+ * tidiness. `batch-water-b.ts` imported it from `batch-wood-a.ts`, and a card
+ * batch importing a LATER card batch pulls that batch's module evaluation
+ * forward — so its `card()` calls registered early, `allCardNames()` came back
+ * in a different order, and EVERY SEEDED DEAL IN THE GAME CHANGED. Saved game
+ * SMVJ went from 166 replayable actions to 65. Nothing failed; the pool was
+ * still 494 cards and the suite was still green.
+ *
+ * `helpers.ts` registers no cards, so anything shared between batches belongs
+ * here. 150-registration-order.test.ts now fails on the import shape AND on
+ * the resulting order, so this cannot recur silently.
+ */
+
+/** how far either side of 0 the solver will look for a delta. Cheap: the
+ *  search is a bisection, so the range costs a logarithm. */
+const DOUBLE_SOLVE_RANGE = 1024;
+
+/** `effStats` as if `dp`/`dt` had been added at layer 3, unit restored. */
+function statsWithTemp(g: E, u: Entity, dp: number, dt: number): [number, number] {
+  const p = u.tempPower, t = u.tempToughness;
+  u.tempPower = p + dp;
+  u.tempToughness = t + dt;
+  try { return g.effStats(u); } finally { u.tempPower = p; u.tempToughness = t; }
+}
+
+/**
+ * The smallest-magnitude layer-3 delta on `axis` (0 = power, 1 = defense) that
+ * makes `effStats` read exactly `want`, holding the other axis at `other`, or
+ * `null` when no delta can get there — which is a real answer, not a failure:
+ * an {Unaware} unit reads at its printed numbers for every purpose (R106), so
+ * nothing applied at layer 3 moves them.
+ *
+ * Layers 4-6 are weakly monotone in one layer-3 axis ({Tough} scales, and only
+ * defense; {Balanced} is a max, so it plateaus; {Inverted} decreases), which is
+ * exactly what a bisection needs — plus the equality check at the end, because
+ * a plateau can step straight over `want`.
+ */
+function solveAxis(g: E, u: Entity, axis: 0 | 1, want: number, other: number): number | null {
+  const f = (d: number): number =>
+    statsWithTemp(g, u, axis === 0 ? d : other, axis === 0 ? other : d)[axis];
+  if (f(0) === want) return 0;                      // prefer "change nothing"
+  const lo = -DOUBLE_SOLVE_RANGE, hi = DOUBLE_SOLVE_RANGE;
+  const rising = f(hi) >= f(lo);
+  const at = (d: number): number => (rising ? f(d) : -f(d));
+  const goal = rising ? want : -want;
+  if (at(hi) < goal) return null;                   // out of reach in that direction
+  let a = lo, b = hi;
+  while (a < b) {                                   // smallest d with at(d) >= goal
+    const mid = Math.floor((a + b) / 2);
+    if (at(mid) >= goal) b = mid; else a = mid + 1;
+  }
+  return f(a) === want ? a : null;
+}
+
+/**
+ * Double `which` of a unit's EFFECTIVE stats until regroup, as one `addTemp`.
+ * 'both' solves the two axes alternately because {Balanced} couples them; four
+ * passes is far more than the couplings in the pool need, and the result is
+ * verified before it is applied.
+ */
+export function doubleStats(g: E, u: Entity, which: 'power' | 'defense' | 'both'): void {
+  const [p0, t0] = g.effStats(u);
+  let dp = 0, dt = 0, ok = true;
+  if (which === 'both') {
+    for (let pass = 0; pass < 4; pass++) {
+      const np = solveAxis(g, u, 0, p0 * 2, dt);
+      const nt = np === null ? null : solveAxis(g, u, 1, t0 * 2, np);
+      if (np === null || nt === null) { ok = false; break; }
+      if (np === dp && nt === dt) break;
+      dp = np; dt = nt;
+    }
+    if (ok) {
+      const [cp, ct] = statsWithTemp(g, u, dp, dt);
+      ok = cp === p0 * 2 && ct === t0 * 2;
+    }
+  } else {
+    const axis = which === 'power' ? 0 : 1;
+    const d = solveAxis(g, u, axis, (axis === 0 ? p0 : t0) * 2, 0);
+    if (d === null) ok = false;
+    else if (axis === 0) dp = d;
+    else dt = d;
+  }
+  if (!ok) {
+    // Nothing at layer 3 can move this unit's numbers ({Unaware}). The change
+    // is still a change — apply the plain doubling so it is there if the
+    // attribute goes away — but say that the board will not show it.
+    g.ev('info',
+      `${u.card} reads at its printed stats — doubling changes nothing while that holds.`,
+      { unit: u.id });
+    g.addTemp(u, which === 'defense' ? 0 : p0, which === 'power' ? 0 : t0);
+    return;
+  }
+  g.addTemp(u, dp, dt);
+}
