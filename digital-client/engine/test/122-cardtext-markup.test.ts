@@ -505,7 +505,41 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
     Record<string, Array<{ name?: string; text?: string; type?: string }>>;
   const canon = (v: string): string => v.replace(/\s+/g, '').replace(/-/g, '');
 
+  /**
+   * R162: the NAMED type-line overrides, and the only holes in this net.
+   *
+   * `scripts/extract-printed.mjs` grew a `TYPE_OVERRIDES` table — keyed by card
+   * name, one entry per correction, asserting the source still says what it
+   * claims — precisely because `normalisePrinted`'s own comment demands that
+   * shape ("a named one-entry override, never a fuzzy spellfix"). These are
+   * word changes, so they belong here rather than in the layout rules above,
+   * and each carries its reason. Interdiction Rift is NOT here: adding the
+   * missing space after `{Battle}` is pure layout and `canon()` never saw it.
+   *
+   * The list is asserted to be EXACTLY right below (88-replacement-conformance's
+   * rule), so an entry that stops being needed — because Caleb corrects the
+   * source, say — fails just as loudly as a new unexplained word change.
+   */
+  const WORD_OVERRIDES: Record<string, { to: string; why: string }> = {
+    'Arbiter of Armistice (type)': {
+      to: '{Haste} Holy Unit',
+      why: 'R157 §25, owner: "That\'s an error on your part. The card does not have a '
+        + '[Switch] thing." The transcription\'s bare {Switch} is the only one in the pool '
+        + 'and nothing reads a type-line {Switch} (graftability is CardDef.graftEffect), '
+        + 'so it is a display correction with no behaviour attached.',
+    },
+    'Might of the Grove (type)': {
+      to: '{Battle} Tree Druid Spell',
+      why: '⚠ NOT RULED. The oracle reads "{Battle}Tree Tree Druid Spell" — a marker glued '
+        + 'to the next word AND a duplicated subtype. Every other Druid spell in the pool is '
+        + '"{Battle} <one subtype> Druid Spell" and no card repeats a subtype, so the '
+        + 'duplicate is transcription rather than design. Reported to the owner beside '
+        + 'R157 §25; revert this entry if he says otherwise.',
+    },
+  };
+
   const drift: string[] = [];
+  const used = new Set<string>();
   for (const rows of Object.values(oracle)) {
     for (const row of rows) {
       if (!row?.name) continue;
@@ -521,6 +555,9 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
         // we keep must be a SUFFIX of the source, which still catches any
         // altered letter inside the text that was retained.
         if (!canon(src).endsWith(canon(got))) {
+          const key = `${row.name} (${field})`;
+          const ex = WORD_OVERRIDES[key];
+          if (ex && ex.to === got) { used.add(key); continue; }
           drift.push(`${row.name} (${field}):\n    oracle: ${src}\n    ours:   ${got}`);
         }
       }
@@ -528,4 +565,8 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
   }
   assert.deepEqual(drift, [],
     `the extractor altered words, not just layout:\n${drift.join('\n')}`);
+  // and every exemption is still EARNING its place — a stale one is as loud as
+  // an unexplained change, because it means nobody noticed the source moved
+  assert.deepEqual([...used].sort(), Object.keys(WORD_OVERRIDES).sort(),
+    'a named override no longer changes anything: delete it, or its `to` has drifted');
 });

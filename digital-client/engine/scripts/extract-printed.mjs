@@ -110,6 +110,72 @@ const normalisePrinted = s => (typeof s === 'string'
   ? s.replace(/([A-Za-z])-[ \t]+([a-z])/g, '$1$2').replace(/[ \t]+/g, ' ').trim()
   : s);
 
+/**
+ * R162 — NAMED TYPE-LINE OVERRIDES, the exception `normalisePrinted` above
+ * demands: *"If it is ever corrected here it must be a named one-entry
+ * override, never a fuzzy spellfix."*
+ *
+ * WHY HERE AND NOT IN printed.json, AND NOT IN THE ORACLE FILE. printed.json is
+ * generated, so a hand-edit there is destroyed by the next `npm run extract`.
+ * The oracle file `AlgomancyCards-OracleText.json` is Caleb's, is shared with
+ * the rules bot / corpus / Discord pipeline outside this package, and is not
+ * this client's to rewrite — so the correction lives in the one place that is
+ * both durable and scoped to the client: this extractor, keyed by card name, in
+ * a table anybody can grep and revert entry by entry.
+ *
+ * Each entry needs a reason, and only the FIRST is an owner ruling.
+ */
+const TYPE_OVERRIDES = {
+  // R157 §25, owner, verbatim: "That's an error on your part. The card does not
+  // have a [Switch] thing. It just adds an additional cost to all spells cast
+  // in battle to pay 2 life." The transcription's bare "{Switch}" is the only
+  // one of its kind in the pool (every other [Switch] is a rules-text marker on
+  // a graftable effect), and nothing reads a type-line {Switch} — graftability
+  // is `CardDef.graftEffect` — so this is a display correction with no
+  // behaviour attached.
+  'Arbiter of Armistice': {
+    from: '{Haste} {Switch} Holy Unit',
+    to: '{Haste} Holy Unit',
+  },
+  // ⚠ NOT RULED — transcription repairs, reported alongside R157 §25 rather
+  // than authorised by it. Both are LAYOUT artifacts of the same shape as
+  // R142's hyphen join: a marker brace glued to the next word. They are the
+  // only two type lines in the whole oracle file matching /\}[A-Za-z]/, so a
+  // general rule would fire exactly here anyway — and a general rule could not
+  // also fix the duplicated word, which is why this is a named table.
+  //
+  // Might of the Grove additionally reads "Tree Tree". Every other Druid spell
+  // in the pool is "{Battle} <one subtype> Druid Spell" (Invigorate "Mystic",
+  // Wither and Bloom "Arcane", four others with none), and no card in the pool
+  // repeats a subtype, so the duplicate is transcription and not design.
+  // Nothing reads either line: `kind` only asks whether "Spell" appears, and
+  // the {Battle} marker is matched brace-to-brace. No behaviour changes.
+  'Might of the Grove': {
+    from: '{Battle}Tree Tree Druid Spell',
+    to: '{Battle} Tree Druid Spell',
+  },
+  'Interdiction Rift': {
+    from: '{Battle}AI Cosmic Spell',
+    to: '{Battle} AI Cosmic Spell',
+  },
+};
+
+/** Apply the named override for `name`, asserting the source still says what
+ * the table claims. A silent no-op the day Caleb fixes his file would leave a
+ * stale entry nobody notices; this fails the build instead. */
+function overrideType(name, type) {
+  const o = TYPE_OVERRIDES[name];
+  if (!o) return type;
+  if (type !== o.from) {
+    console.error(
+      `TYPE_OVERRIDES is stale for ${name}: expected ${JSON.stringify(o.from)}, `
+      + `oracle now has ${JSON.stringify(type)}. Re-check the entry and delete it `
+      + 'if the source has been corrected.');
+    process.exit(1);
+  }
+  return o.to;
+}
+
 /** The transcription joins the printed lines of a text box with "{/n}". */
 const LINE_SEP = '{/n}';
 const splitLines = text => text.split(LINE_SEP);
@@ -187,7 +253,9 @@ for (const name of POOL) {
   // R142: layout artifacts out before anything reads the strings — the banner,
   // ambush and attribute parsers all see the normalised form, so there is one
   // spelling of the printed text in the whole pipeline
-  const type = normalisePrinted(e.type);
+  // R162: the named type-line corrections go on FIRST, so every parser below
+  // (markers, attrs, timing, kind, [Augment] attrs) sees the corrected line
+  const type = overrideType(name, normalisePrinted(e.type));
   const markers = [...type.matchAll(/\{([A-Za-z]+)\}/g)].map(m => m[1]);
   const attrs = markers.filter(m => ATTRS.has(m));
   const timing = markers.includes('Battle') ? 'battle' : markers.includes('Haste') ? 'haste' : 'deploy';

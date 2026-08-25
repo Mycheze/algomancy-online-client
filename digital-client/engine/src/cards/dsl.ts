@@ -1349,8 +1349,17 @@ export interface BinPlayPermission {
  * every one of them is greppable. There is no "any event" form.
  */
 export interface AmountCtx {
-  /** which quantity is passing through */
-  kind: 'counters' | 'effectDamage' | 'rot' | 'debt';
+  /**
+   * which quantity is passing through
+   *
+   * R162 adds the two LIFE quantities. They are asked of both amount families
+   * — `AmountMod` (additive) and `AmountMultiplier` (multiplicative) — from
+   * `E.gainLife` / `E.loseLife`, which are the only two ways a life total ever
+   * moves. Damage to a player is a `lifeLoss` (Arbiter of Vitality's own
+   * reminder text: "Damage causes loss of life"), so it is priced here once,
+   * after `effectDamage` has already been priced at the damage site.
+   */
+  kind: 'counters' | 'effectDamage' | 'rot' | 'debt' | 'lifeGain' | 'lifeLoss';
   /**
    * the region it happens in (R12) — a mod only sees its own region.
    *
@@ -1410,6 +1419,54 @@ export interface AmountCtx {
  */
 export interface AmountMod {
   delta: (g: E, self: Entity, ctx: AmountCtx) => number;
+}
+
+/**
+ * R162: a continuous MULTIPLICATIVE amount modifier — the second amount family,
+ * and the one R104 explicitly left unbuilt ("Giving it a hook would need a
+ * multiplicative amount family, and how that composes with the additive one is
+ * a ruling nobody has made").
+ *
+ * `factor` returns what to MULTIPLY the quantity by. Returning exactly 1 means
+ * "no opinion" and takes the mod out of the composition entirely — that is the
+ * whole opt-out, and it matters because of how these compose:
+ *
+ *   THE COMPOSITION RULE IS THE OWNER'S FORMULA, VERBATIM (R157 §23):
+ *     "quadruple it!! So always n*2*v (n is num of arbiters, v is original
+ *      damage/life gain value)"
+ *
+ * so the factors of the mods that CLAIM the quantity are SUMMED, not
+ * multiplied: n Arbiters each declaring ×2 give ×2n. That is LINEAR in n. A
+ * purely multiplicative reading would give 2^n and therefore ×8 at three
+ * Arbiters, where the formula gives ×6. The owner wrote the formula out, so the
+ * formula is what is implemented.
+ *
+ * ⚠ n ≥ 3 WAS NOT SEPARATELY CONFIRMED. The owner was asked about two Arbiters
+ * and answered with a general formula; ×6 at three is that formula's own
+ * arithmetic and nothing more. If it is ever re-asked, `E.amountFactor` is the
+ * one line to change.
+ *
+ * ⚠ AND HOW A MULTIPLIER COMPOSES WITH AN ADDITIVE `AmountMod` IS *NOT*
+ * ANSWERED. R157 §23 records the interim decision — apply the multiplier AFTER
+ * the additive mods, i.e. `(v + Σdelta) × factor` — and `E.lifeAmount` is where
+ * that order is written down. A future ruling changes it there.
+ *
+ * Shaped exactly like `AmountMod`: the same `anchored()` walk, the same R12
+ * region scope, the same shallow R62 guard, the same reentrancy latch, and the
+ * same rule that `factor` must not call anything that re-enters amount
+ * evaluation.
+ *
+ * ⚠ NARROWER THAN `AmountMod`, DELIBERATELY: `E.amountFactor` has exactly ONE
+ * consult site today, `E.lifeAmount`, so only `'lifeGain'` and `'lifeLoss'` are
+ * ever asked. A multiplier that claims `'counters'`, `'effectDamage'`, `'rot'`
+ * or `'debt'` is DEAD TEXT until a consult site is added beside that quantity's
+ * `amountDelta` call — which is `AmountCtx`'s own closed-list doctrine ("a new
+ * replaceable quantity gets a new member here AND a new consult site in the
+ * engine"), not an oversight. One card declares this channel and it claims only
+ * life, so nothing is dead today.
+ */
+export interface AmountMultiplier {
+  factor: (g: E, self: Entity, ctx: AmountCtx) => number;
 }
 
 /**
@@ -1585,6 +1642,13 @@ export interface CardBehavior {
    * `AmountMod` for why the two families compose differently.
    */
   amountMods?: AmountMod[];
+  /**
+   * R162: continuous MULTIPLICATIVE amount modifiers — "double all life gain
+   * and life loss" (Arbiter of Vitality). Same radiation rules as `amountMods`,
+   * but the claiming factors are SUMMED into one multiplier (the owner's
+   * `n*2*v`) and applied AFTER them. See `AmountMultiplier`.
+   */
+  amountMultipliers?: AmountMultiplier[];
   /**
    * Replacement: `seat` is about to take their turn's CARD STEP — the draft
    * step in mode 'draft' (look at your pack, merge, leave 10), the draw phase

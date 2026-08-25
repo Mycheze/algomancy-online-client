@@ -46,13 +46,14 @@
  *    stack — so the counters arrive once with the right number on them, and the
  *    module-level `let proliferating` that guarded the old trigger's
  *    re-entrancy is deleted (report #60 counted those flags as the symptom).
- *  - ⚠ ARBITER OF VITALITY is still a TRIGGER, and deliberately so: "Double all
- *    life gain and life loss" prints neither "would" nor "instead", so it is
- *    outside the class report #75 defines and R104 implements. It is a
- *    multiplier on a life change rather than a substitution of one, and giving
- *    it a hook would need a MULTIPLICATIVE amount family whose composition with
- *    the additive one nobody has ruled on. Flagged in R104's "still not
- *    replaceable" list rather than guessed at.
+ * ✔ ARBITER OF VITALITY IS A REAL REPLACEMENT NOW (R162). It used to be a pair
+ *    of triggers, parked in R104's "still not replaceable" list because it is a
+ *    MULTIPLIER on a life change rather than a substitution of one, and the
+ *    multiplicative amount family did not exist. R157 §23 supplies both the
+ *    family and its composition rule — *"always n*2*v"* — so it is one
+ *    `AmountMultiplier` consulted by gainLife/loseLife before the total moves:
+ *    two Arbiters quadruple (they used to triple) and a lethal loss is
+ *    multiplied BEFORE the lethal check rather than after it.
  * ✔ "[Battle]" ON AN ACTIVATED ability is `ActivatedAbility.timing` now (R49),
  *    enforced at ACTIVATION: Cadaverous Cultivator is not offered during
  *    deployment and apply() refuses it there.
@@ -170,52 +171,55 @@ card('Equilibriate', {
 
 // ─────────────────────── LIGHT / FIRE (lr) ────────────────────────────
 
-/** the `why` string the doubling gain/loss is logged under — also the
- * re-entrancy guard: an Arbiter never doubles its own doubling */
-const ARBITER_WHY = 'Arbiter of Vitality doubles it';
-
 // "[Augment] Double all life gain and life loss. {i}(Damage causes loss of
 // life.)" — lr/8 6/3 Cosmic Horror Unit.
 //
-// ⚠ REPLACEMENT APPROXIMATION (header): doubling is a replacement effect and
-// the engine has no hook for life changes, so this is a pair of triggers that
-// deal out the SECOND helping after the first has landed. Consequences:
-//  - "all" is unqualified, so BOTH players' gains and losses double.
-//  - a loss that was already lethal ends the game before the doubling
-//    resolves, which is harmless (it was lethal either way).
-//  - two Arbiters give 3x, not 4x — each hears only the original event,
-//    because the guard below excludes every doubling from re-triggering.
-// The parenthetical "(Damage causes loss of life.)" is why this listens on
-// 'lifeLost' rather than 'damage': damage already routes through loseLife.
+// R162 UN-PARKS THE REPLACEMENT APPROXIMATION. This used to be a pair of
+// triggers that dealt out a SECOND helping after the first had landed, and
+// R104's own "what is still NOT replaceable" list named it: a multiplicative
+// amount family did not exist, and how one would compose with the additive one
+// was a ruling nobody had made. R157 §23 is that ruling, verbatim:
+//
+//   "quadruple it!! So always n*2*v (n is num of arbiters, v is original
+//    damage/life gain value)"
+//
+// So it is now ONE `AmountMultiplier` (dsl.ts), consulted by E.gainLife and
+// E.loseLife before the total moves. What that buys, against the three
+// consequences the old approximation had to admit to:
+//  - "all" is still unqualified, so BOTH players' gains and losses are
+//    multiplied — the mod claims the quantity whoever is receiving it.
+//  - a LETHAL loss now resolves in the right order. The multiplied number is
+//    subtracted in one go and the lethal check sees it, where the trigger
+//    version ended the game on the first helping and never dealt the second.
+//    (Harmless for the win/loss, wrong for every life total anyone reads.)
+//  - TWO ARBITERS GIVE 4x. Each declares ×2, the engine SUMS the claiming
+//    factors (E.amountFactor), and 2+2 = 4. The trigger pair gave 3× because
+//    each Arbiter heard only the original event.
+//
+// ⚠ n ≥ 3 WAS NOT SEPARATELY CONFIRMED. v × 2 × n is LINEAR in n, so three
+// Arbiters sextuple; a purely multiplicative reading would give 2^n = ×8. The
+// owner wrote the formula out rather than the word "double", so the formula is
+// what is implemented — but he was answering about TWO, and the third has
+// never been put to him.
+//
+// ⚠ AND ITS COMPOSITION WITH AN ADDITIVE `AmountMod` IS STILL UNRULED. R157
+// §23's interim decision — multiplier AFTER the additive layer — lives in
+// E.lifeAmount, not here.
+//
+// The parenthetical "(Damage causes loss of life.)" is why the mod claims
+// 'lifeLoss' rather than damage: damage to a player already routes through
+// loseLife, so claiming it here prices it once and claiming 'effectDamage' too
+// would quadruple a burn spell off one Arbiter.
+//
+// `augmentable: true` is what keeps the card recognised as an augment now that
+// the two augmentText triggers are gone — the Conduit of Pain / Proliferating
+// Slime precedent for [Augment] text implemented as a continuous mod.
 card('Arbiter of Vitality', {
-  augmentText: [
-    {
-      type: 'triggered', events: ['lifeGained'],
-      label: 'double that life gain',
-      when: (_g, _self, ev) => ev.data?.why !== ARBITER_WHY,
-      effect: {
-        run: (g, ctx) => {
-          const n = (ctx.event?.data?.n as number | undefined) ?? 0;
-          const seat = ctx.event?.data?.seat as Seat | undefined;
-          if (seat === undefined || n <= 0) return;
-          g.gainLife(seat, n, ARBITER_WHY);
-        },
-      },
-    },
-    {
-      type: 'triggered', events: ['lifeLost'],
-      label: 'double that life loss',
-      when: (_g, _self, ev) => ev.data?.why !== ARBITER_WHY,
-      effect: {
-        run: (g, ctx) => {
-          const n = (ctx.event?.data?.n as number | undefined) ?? 0;
-          const seat = ctx.event?.data?.seat as Seat | undefined;
-          if (seat === undefined || n <= 0) return;
-          g.loseLife(seat, n, ARBITER_WHY);
-        },
-      },
-    },
-  ],
+  augmentable: true,
+  amountMultipliers: [{
+    factor: (_g, _self, ctx) =>
+      (ctx.kind === 'lifeGain' || ctx.kind === 'lifeLoss' ? 2 : 1),
+  }],
 });
 
 // "[Augment] Cards your opponents play during battle gain '[Sacrifice a

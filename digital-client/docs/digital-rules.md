@@ -5357,9 +5357,11 @@ thieves would bounce one placement between them forever.
 
 ### What is still NOT replaceable, stated plainly
 
-* **`E.loseLife` has no card hook.** Only the lock stops it. Nothing in the pool
-  prints "if you would lose life, … instead", so the hook would be a hook with
-  no card, and the layer's narrowness is deliberate.
+* **`E.loseLife` has no SUBSTITUTION hook.** Only the lock stops a loss
+  happening. Nothing in the pool prints "if you would lose life, … instead", so
+  the hook would be a hook with no card, and the layer's narrowness is
+  deliberate. (R162 gives `loseLife` an AMOUNT seam — `E.lifeAmount`, both
+  families — which changes the NUMBER and never what happens.)
 * **Combat damage to a UNIT.** `preventUnitDamage` (R98) only ever *reduces*;
   there is no substitute-or-redirect hook for it. Oorblak's parked Piercing-
   excess half is on `replaceCombatDamageToPlayer`, a different seam, and is
@@ -5368,11 +5370,14 @@ thieves would bounce one placement between them forever.
   {Unstable} bin→erase is a *stamp* and not a replacement seam a card may ask
   for about itself, which is why Suspend's "Erase me" is still parked (with
   Temporal Rift, the other card printing it).
-* **MULTIPLICATIVE amounts.** `Arbiter of Vitality` — *"Double all life gain and
-  life loss"* — prints neither "would" nor "instead", so it is outside the class
-  #75 defines and stays a trigger. Giving it a hook would need a multiplicative
-  amount family, and how that composes with the additive one is a ruling nobody
-  has made.
+* ~~**MULTIPLICATIVE amounts.**~~ **SUPERSEDED BY R162.** This read: *"`Arbiter
+  of Vitality` … prints neither 'would' nor 'instead', so it is outside the
+  class #75 defines and stays a trigger. Giving it a hook would need a
+  multiplicative amount family, and how that composes with the additive one is a
+  ruling nobody has made."* R157 §23 made that ruling — *"always n*2*v"* — so
+  the family exists (`AmountMultiplier`, folded by `E.amountFactor`) and the
+  Arbiter is a replacement. The composition with the ADDITIVE family is still
+  unruled; R162 carries the interim decision.
 * **Prevention is still not replacement.** R98 settled it and nothing here
   changes it: *"if there is not damage being dealt, then no counters are
   placed."* Phytochemical Protection prints "would" and no "instead", and the
@@ -10233,7 +10238,8 @@ Abduct, Lumengrove Lurker, Blurf, Living Vault.
 > *"Shared mode isn't a real thing. You invented it for testing. So I guess
 > it'd be constructed?"*
 
-Worldbender takes the **constructed** branch in `shared`.
+Worldbender takes the **constructed** branch in `shared` — and `E.startTurn` has
+to consult `replaceCardStep` at all, which it did not. Implemented in **R162**.
 
 ### 3. An exchange is NOT a death — but it IS a despawn and a trashing
 > *"It's not a death, but it is a despawn and trashing. Weird corner case."*
@@ -10381,7 +10387,8 @@ No Hand Killer drops its `xMin: 1`.
 Two Arbiters = 4×. The stated formula is **v × 2 × n**, so three Arbiters = 6×
 (not 8×). Implement the formula as written. ⚠ NOT ANSWERED: how a multiplier
 composes with an additive amount mod. Applying the multiplier AFTER additive
-mods until ruled.
+mods until ruled. Implemented in **R162** (`AmountMultiplier`, `E.amountFactor`,
+`E.lifeAmount`).
 
 ### 24. "Unique token" means a unique (name, X) pair
 > *"'Unique' means unique (name, X) pair — you get two extras."*
@@ -10390,7 +10397,8 @@ Automaton of Abundance: a Robot 2 and a Robot 5 in one batch yield two extras.
 ### 25. Arbiter of Armistice has no {Switch} — the transcription is wrong
 > *"That's an error on your part. The card does not have a [Switch] thing. It
 > just adds an additional cost to all spells cast in battle to pay 2 life."*
-Correct the type line in the printed data. No behaviour change.
+Correct the type line in the printed data. No behaviour change. Implemented in
+**R162**, as a named override in the EXTRACTOR (printed.json is generated).
 
 ### 26. Rook grants {Virus} itself, and reaches stack hosts
 > *"(a) yes it does. and for (b) yes it can also go to an enemy. That's the
@@ -10454,3 +10462,131 @@ which it did not before: the hand-rolled `{ unit, card, seat, region }` it used
 to emit carried no `counters`, so Entropic Entity ("a unit **with counters** on
 it despawns") was blind to an exchange. Same defect shape as R152's, one field
 over. Pinned by `test/135-exchange-and-zones.test.ts`.
+
+---
+
+## R162 — the MULTIPLICATIVE amount layer, and 'shared' is constructed
+
+*(Implements R157 §2, §23 and §25. R104 built the additive amount family and
+named the multiplicative one as the thing it could not build; R157 §23 is the
+ruling that unblocks it.)*
+
+### The multiplicative family
+
+R104 split "text that changes a number" into two shapes and shipped one of
+them: `AmountMod`, ADDITIVE and SUMMED (two Conduits of Pain make a 1 into a
+3), plus the first-claimant `replaceX` hooks. Its own "what is still NOT
+replaceable" list named the gap:
+
+> **MULTIPLICATIVE amounts.** `Arbiter of Vitality` … Giving it a hook would
+> need a multiplicative amount family, and how that composes with the additive
+> one is a ruling nobody has made.
+
+`AmountMultiplier` (dsl.ts) is that family. It is `AmountMod` line for line —
+the same `anchored()` walk, the same R12 region scope, the same shallow R62
+guard, its own reentrancy latch — and only the FOLD differs.
+
+**The fold is the owner's formula, verbatim:**
+
+> *"quadruple it!! So always n*2*v (n is num of arbiters, v is original
+> damage/life gain value)"*
+
+So the factors of the mods that CLAIM the quantity are **summed**, not
+multiplied: n mods each declaring ×2 give ×2n. `E.amountFactor` is the one
+place that fold lives. A factor of exactly 1 is "no opinion" and drops out of
+the fold; no claim at all is the identity.
+
+⚠ **LINEAR, and n ≥ 3 was not separately confirmed.** Three Arbiters sextuple.
+A purely multiplicative reading would give 2^n = ×8. The owner wrote the
+formula out while answering a question about TWO, so the formula is what is
+implemented and the third Arbiter has never been put to him.
+
+⚠ **Composition with the ADDITIVE family is STILL UNRULED.** R157 §23 answers
+how multipliers compose with each other and explicitly does not answer this.
+The interim decision — recorded in R157 and written down in `E.lifeAmount` — is
+`(v + Σdelta) × factor`: **the multiplier applies AFTER the additive mods.**
+The reason is the one `dealEffectDamageAll` already gives for sitting the
+Conduit of Pain after {Powerful}: the other order silently turns a printed
+"plus 1" into plus 2 in front of any multiplier, which is not what the card
+says. A ruling that reverses it changes two lines in `E.lifeAmount` and one
+test.
+
+### What it buys: Arbiter of Vitality
+
+*"[Augment] Double all life gain and life loss. (Damage causes loss of life.)"*
+used to be a PAIR OF TRIGGERS dealing a second helping after the first had
+landed. Three things were wrong and all three are fixed by making it a
+replacement:
+
+* **Two Arbiters gave 3×.** Each heard only the original event, because the
+  guard that stopped a doubling doubling itself also stopped the second Arbiter
+  hearing the first. 2 + 2 = 4 now.
+* **A lethal loss resolved in the wrong order.** `loseLife` committed the first
+  helping, ran the lethal check, ended the game, and the second helping never
+  resolved — the player died having lost 5 where the card says 10. The winner
+  was right and every number a human reads was wrong. The multiplied amount is
+  now committed in one go, BEFORE the lethal check.
+* **The `lifeLost` event carried half the number.** One event, with the whole
+  amount on it, is what a "when a player loses life" card should see.
+
+`E.lifeAmount` is the single consult site: `gainLife` and `loseLife` are the
+only two ways a life total moves, so pricing life there prices all of it —
+combat face damage, effect damage to a player, rot, {Lethal}, printed costs and
+{Blessed} — exactly once. In `gainLife` it sits AFTER `replaceLifeGain`, so
+Nullbringer's substituted LOSS is priced by `loseLife` on its own rather than
+twice.
+
+⚠ **Narrower than the additive family, deliberately.** `E.amountFactor` has
+exactly one consult site, so only `'lifeGain'` and `'lifeLoss'` are ever asked.
+A multiplier claiming `'counters'`, `'effectDamage'`, `'rot'` or `'debt'` is
+dead text until a consult site is added beside that quantity's `amountDelta`
+call — `AmountCtx`'s own closed-list doctrine, not an oversight.
+
+### 'shared' is constructed (R157 §2)
+
+> *"Shared mode isn't a real thing. You invented it for testing. So I guess
+> it'd be constructed?"*
+
+Worldbender's `replaceCardStep` handled `'draft'` and `'constructed'` and
+declined in `'shared'` — which is the engine's DEFAULT mode, so a 2-mana 2/2
+{Feeble} was a blank card in most games. The card was only half of it:
+`replaceCardStep` was reached from `startDraftStep` / `startConstructedDraw`
+and **neither runs in shared**, so the hook was never consulted at all and
+changing the card alone would have changed nothing.
+
+Shared has no draft step and no draw phase, so its card step is the flat
+2-card turn draw — the whole of what a turn gives a seat. `E.startTurn`
+consults `replaceCardStep` there, INSTEAD of making that draw, and the card
+takes the constructed branch: all three cards out of the card, and 3 life with
+them. The same line constructed produces, by the same arithmetic. No mode
+declines any more.
+
+### The printed type line (R157 §25)
+
+> *"That's an error on your part. The card does not have a [Switch] thing."*
+
+`printed.json` is GENERATED, so a hand-edit there is destroyed by the next
+`npm run extract`; and `AlgomancyCards-OracleText.json` is Caleb's, shared with
+the rules bot and corpus outside this package. The correction therefore lives
+in `scripts/extract-printed.mjs` as a named, card-keyed `TYPE_OVERRIDES` entry
+that asserts the source still says what it claims — the exact shape
+`normalisePrinted`'s comment already demanded ("a named one-entry override,
+never a fuzzy spellfix"). Nothing read a type-line `{Switch}` (graftability is
+`CardDef.graftEffect`), so there is no behaviour change; the pool now has none.
+
+Two malformed type lines were repaired in the same table and are ⚠ **NOT
+RULED**: `Might of the Grove` read `{Battle}Tree Tree Druid Spell` and
+`Interdiction Rift` read `{Battle}AI Cosmic Spell`. Both are the same defect —
+a marker brace glued to the next word in the ORACLE SOURCE, not the extractor's
+`{/n}` line-join, which never touches a type line — and they are the only two
+in the file. Might of the Grove's duplicated subtype is the part that is a
+judgement: every other Druid spell in the pool is `{Battle} <one subtype> Druid
+Spell` and no card repeats a subtype. `122-cardtext-markup`'s "the extractor
+changes LAYOUT, never a designer's words" sweep now carries both as named
+exemptions with reasons, asserted to be exactly right.
+
+Guarded by
+`137-multiplier-and-mode.test.ts` (the whole file),
+`45-hybrids-ld-b.test.ts::Arbiter of Vitality`,
+`28-metal-c.test.ts::Worldbender` (draft and constructed, unchanged), and
+`122-cardtext-markup.test.ts::the extractor changes LAYOUT`.

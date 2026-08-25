@@ -44,9 +44,11 @@
  *    numbers come from. It is a STATIC card-step replacement (the new
  *    `CardBehavior.replaceCardStep`, consulted by E.startDraftStep and
  *    E.startConstructedDraw), not a one-shot on-spawn skip: the owner reported
- *    it while he "had it in play", describing what happens every turn. Only
- *    mode 'shared' is unanswered — it has no card step at all, so the card is
- *    inert there and nobody has said whether it should be.
+ *    it while he "had it in play", describing what happens every turn.
+ *    R162 (R157 §2) closes the last open mode: 'shared' is "not a real thing …
+ *    I guess it'd be constructed", so its flat 2-card turn draw IS its card
+ *    step (E.startTurn consults the hook) and the card takes the constructed
+ *    branch there. No mode declines any more.
  */
 import type { EntityId } from '../../types.ts';
 import type { E } from '../../engine.ts';
@@ -468,6 +470,19 @@ card('Void Memory', {
 // "Cube" has no mode in this engine (GameMode is 'shared' | 'draft' |
 // 'constructed'); the owner groups it with constructed, so it falls into this
 // branch the day the mode exists.
+//
+// R162 (R157 §2) closes the mode that report #87 left open. Owner, verbatim:
+//
+//   "Shared mode isn't a real thing. You invented it for testing. So I guess
+//    it'd be constructed?"
+//
+// So 'shared' takes the CONSTRUCTED branch, and the arithmetic lands on the
+// same place: shared has no draft step and no draw phase, so the flat 2-card
+// turn draw is the whole of its card step, `E.startTurn` consults the hook
+// INSTEAD of making that draw, and the card owes all three cards plus the 3
+// life — exactly the constructed line. Before this the hook was never
+// consulted in shared at all, which is why changing only the card would have
+// changed nothing: a 2-mana 2/2 {Feeble} was a blank in the DEFAULT mode.
 card('Worldbender', {
   replaceCardStep: (g, _self, seat) => {
     if (g.s.mode === 'draft') {
@@ -475,16 +490,15 @@ card('Worldbender', {
       g.draw(seat, 1);
       return true;
     }
-    if (g.s.mode === 'constructed') {
-      g.ev('draw', `Worldbender: ${g.pname(seat)} skips the draw phase — 2 cards for the turn plus 1 for Worldbender, and 3 life.`, { seat });
-      // drawn BEFORE the life is paid: 3 life can be lethal, and loseLife ends
-      // the game where it lands, so the cards the player is owed are already in
-      // hand when it does
-      g.draw(seat, 3);
-      g.loseLife(seat, 3, 'Worldbender');
-      return true;
-    }
-    // mode 'shared' never asks (it has no card step to replace) — see dsl.ts
-    return false;
+    // 'constructed' and — R162 — 'shared': the turn's cards come entirely out
+    // of here, so there is no fall-through branch left and no mode that
+    // silently declines.
+    g.ev('draw', `Worldbender: ${g.pname(seat)} skips the draw phase — 2 cards for the turn plus 1 for Worldbender, and 3 life.`, { seat });
+    // drawn BEFORE the life is paid: 3 life can be lethal, and loseLife ends
+    // the game where it lands, so the cards the player is owed are already in
+    // hand when it does
+    g.draw(seat, 3);
+    g.loseLife(seat, 3, 'Worldbender');
+    return true;
   },
 });

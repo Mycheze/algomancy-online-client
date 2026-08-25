@@ -53,7 +53,8 @@ const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'trigger
  * formation. There is nothing for an Ancient One to donate them to.
  */
 const BEHAVIOR_CHANNELS = [
-  'costMods', 'effectAttrs', 'amountMods', 'modPermissions', 'playPermissions',
+  'costMods', 'effectAttrs', 'amountMods', 'amountMultipliers',
+  'modPermissions', 'playPermissions',
   'mustBeTargeted', 'replaceRotDamage', 'replaceCombatDamageToPlayer',
   'replaceLifeGain', 'replaceCounters', 'replaceTokenCreation',
   'replaceTokenBatch', 'replaceCardStep',
@@ -412,6 +413,10 @@ export class E {
   private inPlayPermissions = false;
   /** R104: reentrancy guard for amount-modifier evaluation (mirrors inCostMods) */
   private inAmountMods = false;
+  /** R162: reentrancy guard for amount-MULTIPLIER evaluation. Its own latch and
+   * not `inAmountMods`: the two families are consulted one after the other for
+   * the same quantity, so sharing a latch would silently blank the second. */
+  private inAmountMultipliers = false;
   /** R118: reentrancy guard for the CONTINUOUS half of the copy layer
    * (mirrors inStatics). See `facesOf` — it sits UNDER effStats, so a nested
    * query gets the identity face and nothing projected. */
@@ -637,6 +642,102 @@ export class E {
       }
     } finally { this.inAmountMods = false; }
     return total;
+  }
+
+  /**
+   * R162: every active `AmountMultiplier`'s claim on one quantity, folded into
+   * ONE multiplier. `amountDelta`'s walk line for line — the same `anchored()`
+   * radiators, the same R12 region scope, the same shallow R62 guard, its own
+   * latch — and only the fold differs.
+   *
+   * THE FOLD IS THE OWNER'S FORMULA (R157 §23), verbatim: *"quadruple it!! So
+   * always n*2*v (n is num of arbiters, v is original damage/life gain
+   * value)"*. So the claiming factors are SUMMED and not multiplied: n mods
+   * each declaring ×2 give ×2n, which is LINEAR in n. Two Arbiters quadruple
+   * (the reported bug: the trigger pair gave 3×), three sextuple.
+   *
+   * ⚠ n ≥ 3 IS THE FORMULA'S ARITHMETIC AND NOT A SEPARATE ANSWER. The owner
+   * was asked about two and replied with a general rule; a purely
+   * multiplicative reading would give 2^n = ×8 at three. Implemented as
+   * written, flagged here, and this is the one line to change if it is
+   * re-asked.
+   *
+   * A factor of exactly 1 is "no opinion" and is dropped from the fold rather
+   * than summed — otherwise a mod that declined a quantity would still push the
+   * total up by one. No claim at all is the identity, 1.
+   */
+  private amountFactor(ctx: import('./cards/dsl.ts').AmountCtx, by?: CardName[]): number {
+    if (this.inAmountMultipliers) return 1;
+    let claims = 0;
+    let sum = 0;
+    this.inAmountMultipliers = true;
+    try {
+      for (const { holder, anchor } of this.anchored((h, a) =>
+        this.donates(h, a, 'amountMultipliers')                // R127: off the FACES
+        && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
+        && !a.suppressed?.abilities)) {                        // R62, as amountDelta (shallow)
+        for (const face of this.behaviorFaces(holder, anchor)) {
+          for (const mod of this.card(face).amountMultipliers ?? []) {
+            const f = mod.factor(this, anchor, ctx);
+            if (f === 1) continue;                             // declined
+            claims++;
+            sum += f;
+            by?.push(face);
+          }
+        }
+      }
+    } finally { this.inAmountMultipliers = false; }
+    return claims === 0 ? 1 : sum;
+  }
+
+  /**
+   * R162: `n` life is about to move — what number actually lands?
+   *
+   * The ONE place both amount families meet, and therefore the one place the
+   * composition order is written down. `gainLife` and `loseLife` are the only
+   * two ways a life total ever moves (combat face damage, effect damage to a
+   * player, rot damage, {Lethal}, printed costs and {Blessed} all route through
+   * them), so pricing life here prices all of it exactly once.
+   *
+   * ⚠ THE ORDER IS AN INTERIM DECISION, NOT A RULING. R157 §23 answers how
+   * multipliers compose with EACH OTHER and explicitly does not answer how one
+   * composes with an additive `AmountMod`. Until it is ruled the multiplier is
+   * applied AFTER the additive layer — `(v + Σdelta) × factor` — which is the
+   * reading that leaves a printed "plus 1" worth one card rather than two, the
+   * same argument `dealEffectDamageAll` makes for sitting the Conduit of Pain
+   * after {Powerful}. A future ruling changes these two lines and nothing else.
+   *
+   * Region scope is `replaceLifeGain`'s, for its reason: `gainLife`/`loseLife`
+   * write a region onto their events only inside a battle, and `fireEvent`
+   * dispatches a region-less event to EVERY listener, so a life change outside
+   * a battle is not a regional thing.
+   *
+   * Rounded to an integer (life totals are integers) and never below zero. No
+   * card prints a fractional factor today; if one ever does, half of 3 is 2.
+   */
+  private lifeAmount(kind: 'lifeGain' | 'lifeLoss', seat: Seat, n: number, why: string): number {
+    // Nothing to price, and NOT an early exit the callers may take: `loseLife`
+    // is also the state check (`killPlayer` calls it with the player's whole
+    // life total, which can be 0), so a zero must come back a zero and still
+    // reach the lethal test.
+    if (n <= 0) return n;
+    const base = {
+      kind, region: this.s.battle ? this.s.battle.region : undefined,
+      player: seat, combat: false,
+    } as const;
+    const added = n + this.amountDelta({ ...base, amount: n });
+    if (added <= 0) return 0;
+    const by: CardName[] = [];
+    const factor = this.amountFactor({ ...base, amount: added }, by);
+    const out = factor === 1 ? added : Math.max(0, Math.round(added * factor));
+    if (out !== n) {
+      const verb = kind === 'lifeGain' ? 'gain' : 'lose';
+      this.ev('info',
+        `${[...new Set(by)].join(', ') || 'Amount modifiers'}: the ${n} life `
+        + `${this.pname(seat)} would ${verb} (${why}) becomes ${out} (×${factor}).`,
+        { seat, was: n, now: out, factor, why });
+    }
+    return out;
   }
 
   /**
@@ -2833,6 +2934,14 @@ export class E {
       return;
     }
     if (this.replaceLifeGain(seat, n, why)) return;
+    // R162: the two AMOUNT families, after the first-true-consumes substitution
+    // above and before anything is committed. Deliberately AFTER
+    // `replaceLifeGain`: Nullbringer turns a gain into a LOSS, and that loss is
+    // a fresh life change that `loseLife` prices on its own — pricing here too
+    // would double-count it. Every life change that actually lands is scaled
+    // exactly once, which is what retires the old doubling triggers' `why`
+    // guard.
+    n = this.lifeAmount('lifeGain', seat, n, why);
     const p = this.player(seat);
     p.life += n;
     // per-battle life-GAIN ledger, the exact mirror of loseLife's `lifeLost`
@@ -2875,6 +2984,12 @@ export class E {
         { seat, n, why, locked: true });
       return;
     }
+    // R162: the two AMOUNT families, before the total moves and therefore
+    // before the lethal check below. THAT ORDERING IS THE FIX: the doubling
+    // used to be a trigger that dealt a second helping AFTER the first landed,
+    // so a loss that was already lethal ended the game before the doubling
+    // resolved — the multiplied number never appeared anywhere.
+    n = this.lifeAmount('lifeLoss', seat, n, why);
     const p = this.player(seat);
     p.life -= n;
     // per-battle life-loss ledger (R14 battle counters; read by e.g. Soul Siphon)
@@ -8811,7 +8926,16 @@ export class E {
       // draft mode: turn 1's draws were dealt with the opening hand (Manual
       // p.16), and later draws go clockwise from initiative like the packs.
       // constructed: the combined draw phase (draw 4, bottom 2) is below.
-      if (this.s.mode === 'shared') this.draw(p.seat, 2);
+      // R162 (R157 §2): 'shared' has no draft step and no draw phase, so this
+      // flat 2 IS its card step — the whole of what the turn gives a seat — and
+      // it is therefore what `replaceCardStep` replaces here. Owner: *"Shared
+      // mode isn't a real thing. You invented it for testing. So I guess it'd
+      // be constructed?"* — so a replacement in shared has to reach the same
+      // place constructed's does, and it cannot if the hook is never consulted.
+      // Consulting it AT the draw (rather than beside startDraftStep /
+      // startConstructedDraw at the foot of this method) is what keeps the
+      // replaced seat from drawing its 2 and then being handed a third.
+      if (this.s.mode === 'shared' && !this.replaceCardStep(p.seat)) this.draw(p.seat, 2);
     }
     if (this.s.mode === 'draft' && this.s.turn > 1) {
       for (const seat of this.dealOrder()) this.draw(seat, 2);
@@ -8889,7 +9013,10 @@ export class E {
    * Every format gives a seat cards once per turn, and the shape differs:
    * mode 'draft' opens a draft step (look at your pack, merge, leave 10) on
    * top of the flat 2-card turn draw; mode 'constructed' has no pack and
-   * folds the turn draw into its draw phase (draw 4, put 2 back). A card that
+   * folds the turn draw into its draw phase (draw 4, put 2 back); mode
+   * 'shared' — R157 §2, *"not a real thing … I guess it'd be constructed"* —
+   * has neither, so its card step is the bare 2-card turn draw and it is
+   * consulted from `startTurn` itself. A card that
    * REPLACES that step therefore cannot be written as "skip and draw one
    * more" in one place — the card has to say what happens instead, per mode,
    * which is exactly what `CardBehavior.replaceCardStep` is for.

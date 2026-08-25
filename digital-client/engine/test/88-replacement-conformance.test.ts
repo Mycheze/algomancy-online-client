@@ -151,7 +151,10 @@ function replacementClauses(name: string): string[] {
  *  `CardBehavior` and forgetting this line makes the sweep report a card that
  *  really was fixed, which is the failure direction that gets noticed. */
 const REPLACEMENT_KEYS = [
-  'amountMods', 'replaceLifeGain', 'replaceCounters',
+  // R162: the MULTIPLICATIVE amount family, beside R104's additive one. Same
+  // reason as the comment above — a hook added to CardBehavior and left out of
+  // this line makes the sweep report a card that really was fixed.
+  'amountMods', 'amountMultipliers', 'replaceLifeGain', 'replaceCounters',
   'replaceTokenCreation', 'replaceTokenBatch',
   'replaceRotDamage', 'replaceCombatDamageToPlayer',
 ] as const;

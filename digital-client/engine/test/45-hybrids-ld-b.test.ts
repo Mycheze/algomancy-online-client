@@ -95,15 +95,20 @@ test('Air Plant: prophesied for [2], released free once four unique unit costs a
 
 // ── Arbiter of Vitality ──────────────────────────────────────────────────
 
-test('Arbiter of Vitality: doubles life GAIN (⚠ trigger approximation)', () => {
+// R162: no longer a trigger approximation — it is one `AmountMultiplier` now,
+// applied before the total moves. The NUMBERS here are unchanged, which is the
+// point of keeping the two tests: one Arbiter still doubles. What moved is in
+// 137-multiplier-and-mode.test.ts (two Arbiters, lethal ordering, composition).
+test('Arbiter of Vitality: doubles life GAIN', () => {
   const h = new Harness(4503);
   toDeployment(h);
   const p = h.state.deployPlayer!;
   spawn(h, p, 'Arbiter of Vitality');
   const before = h.state.players[p]!.life;
   whiteBox(h, e => e.gainLife(p, 3, 'a test'));
-  assert.equal(h.state.players[p]!.life, before + 6, '3 gained, then 3 more');
-  assert.ok(h.log.some(m => m.includes('Arbiter of Vitality doubles it')), 'logged as the doubling');
+  assert.equal(h.state.players[p]!.life, before + 6, '3 gained, doubled to 6');
+  assert.ok(h.log.some(m => m.includes('Arbiter of Vitality') && m.includes('×2')),
+    'logged as the multiplication, by name');
 });
 
 test('Arbiter of Vitality: doubles life LOSS, and never doubles its own doubling', () => {
@@ -113,7 +118,7 @@ test('Arbiter of Vitality: doubles life LOSS, and never doubles its own doubling
   spawn(h, p, 'Arbiter of Vitality');
   h.state.players[p]!.life = 40;
   whiteBox(h, e => e.loseLife(p, 5, 'a test'));
-  assert.equal(h.state.players[p]!.life, 30, '5 lost, then 5 more — and no runaway recursion');
+  assert.equal(h.state.players[p]!.life, 30, '5 lost, doubled to 10 — and no runaway recursion');
 });
 
 // ── Blight's End ─────────────────────────────────────────────────────────

@@ -145,7 +145,8 @@ const BEHAVIOR_KEYS = [
   // the layer, not a gap — so the sweep has to see these or every one of the
   // seven cards report #60 named would read as a bare definition the moment it
   // was fixed. (Cosmic Conspirator did exactly that until this line existed.)
-  'amountMods', 'replaceLifeGain', 'replaceCounters',
+  // R162 adds the multiplicative half of that layer (Arbiter of Vitality).
+  'amountMods', 'amountMultipliers', 'replaceLifeGain', 'replaceCounters',
   'replaceTokenCreation', 'replaceTokenBatch',
   // Worldbender's whole text is a card-step replacement (report #87), so it
   // has no abilities and no spellEffect by construction — same reason as the
