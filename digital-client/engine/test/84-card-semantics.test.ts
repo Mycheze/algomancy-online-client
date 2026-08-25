@@ -69,7 +69,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
-import { drillCard, drillable } from './drill.ts';
+import { drillCard, drillable, ownResolution } from './drill.ts';
 import {
   claimsOf, EVIDENCE, STATE_EVIDENCE, rulesText, gateOf,
   TRIGGER_WORDS, CONDITION_WORDS, type Claim, type ClaimGate,
@@ -110,6 +110,21 @@ interface Observed {
   actTypes: Set<string>; actChanged: Set<string>;
   /** the drill actually paid for and activated an ability of this card */
   activated: boolean;
+  /** CARD-TODO #49 stage 4: evidence from a run in which the card was applied
+   *  to a HOST as an `[Augment]` mod — the only state in which its `[Augment]`
+   *  text box is live at all. Nothing else may evidence an augment-gated
+   *  claim, for exactly the reason nothing but the activation window may
+   *  evidence an activation-gated one. */
+  augTypes: Set<string>; augChanged: Set<string>;
+  /** the augment actually landed on a host */
+  attached: boolean;
+  /** CARD-TODO #49 stage 3: evidence from inside a resolution HEADED BY THIS
+   *  CARD'S NAME — its own triggered abilities firing, wherever they were
+   *  provoked from. See `ownResolution` in drill.ts for why the window is
+   *  bound by the engine's own stack-item label and not by a stretch of time. */
+  trigTypes: Set<string>; trigChanged: Set<string>;
+  /** the fixtures the press run actually got through */
+  fired: string[];
 }
 
 function observe(card: string): Observed {
@@ -117,18 +132,64 @@ function observe(card: string): Observed {
   const changed = new Set<string>();
   const actTypes = new Set<string>();
   const actChanged = new Set<string>();
+  const augTypes = new Set<string>();
+  const augChanged = new Set<string>();
+  const trigTypes = new Set<string>();
+  const trigChanged = new Set<string>();
+  let fired: string[] = [];
   let played = false;
   let activated = false;
+  let attached = false;
+  const claims = claimsOf(card);
   const runs = [...SCENARIOS];
   // CARD-TODO #49 stage 2. The extra run is targeted rather than universal:
   // it is only meaningful where something can be activated, and running the
   // patient activate loop over all 347 cards would pay for 600 steps of
   // phase-walking on every card that has no ability at all.
-  const wantsActivation = hasOwnActivated(card) || claimsOf(card).some(c => c.gate === 'activated');
+  const wantsActivation = hasOwnActivated(card) || claims.some(c => c.gate === 'activated');
   if (wantsActivation) runs.push({ activate: true });
+  // …and stage 4's, targeted the same way: only the 117 cards that print
+  // something inside an `[Augment]` box have anything a host could unlock.
+  const wantsHost = claims.some(c => c.gate === 'augment');
+  if (wantsHost) runs.push({ augment: true, press: true });
+  // …and stage 3's. A "When …" clause is owed only once its EVENT has
+  // happened, and the drill stops the instant the card's own play resolves,
+  // so before this the event simply never came: 54 of the 110 trigger-gated
+  // promises and 12 of the 19 condition-gated ones had never been observed at
+  // all. The press run keeps the game going and fires the fixture library at
+  // the card — a unit dies, a card is trashed, a spell is played, a player
+  // loses life, a counter is placed, damage lands, a battle is fought.
+  const wantsEvent = claims.some(c => c.gate === 'trigger' || c.gate === 'condition');
+  if (wantsEvent) runs.push({ press: true });
   for (const opts of runs) {
     let r;
     try { r = drillCard(card, 900_000, opts); } catch { continue; }
+    if (opts?.augment) {
+      if (r.attached) attached = true;
+      for (const t of r.ownTypes) augTypes.add(t);
+      for (const c of r.attachChanged) augChanged.add(c);
+      for (const c of r.ownChanged) augChanged.add(c);
+      // …and the ACTIVATION window, on the same terms stage 2 set: it opens at
+      // the `activateAbility` action and closes when the item resolves. That
+      // is wider than the `Resolving <card>` label window by exactly one
+      // thing, and it is the thing these cards are about — an activation COST
+      // is charged on the way to the stack, BEFORE the "Resolving" line, so a
+      // label-bounded window can never see "Sacrifice another unit:",
+      // "Discard a card:", "Gain 2 debt:" or "Erase me:" being paid. Seven
+      // cards' costs are the promise (Soul Swallower, Scavenging Sentry,
+      // Hearthwood Ancient, Pallid Gorger, Combustible Bogwalker, Lilbot,
+      // No Hand Killer) and every one of them read as undelivered without it.
+      for (const t of r.activateTypes) augTypes.add(t);
+      for (const c of r.activateChanged) augChanged.add(c);
+      // an `[Augment]` box that CREATES something is evidenced by the body
+      // arriving, exactly as a cast is — but only inside the attached run,
+      // and only for entities the augment's own resolution produced, which is
+      // what `ownTypes` already carries as `tokenCreated`/`spawned`.
+      continue;
+    }
+    if (opts?.press) fired = r.fired;
+    for (const t of r.ownTypes) trigTypes.add(t);
+    for (const c of r.ownChanged) trigChanged.add(c);
     if (r.played) played = true;
     for (const t of r.effectTypes) types.add(t);
     for (const c of r.changed) changed.add(c);
@@ -137,7 +198,10 @@ function observe(card: string): Observed {
     for (const t of r.activateTypes) actTypes.add(t);
     for (const c of r.activateChanged) actChanged.add(c);
   }
-  return { types, changed, played, actTypes, actChanged, activated };
+  return {
+    types, changed, played, actTypes, actChanged, activated,
+    augTypes, augChanged, attached, trigTypes, trigChanged, fired,
+  };
 }
 
 function evidenced(c: Claim, types: Set<string>, changed: Set<string>): boolean {
@@ -171,8 +235,9 @@ function evidenced(c: Claim, types: Set<string>, changed: Set<string>): boolean 
  *  · `trigger` / `condition` / ungated — the ordinary post-play window.
  */
 function met(c: Claim, o: Observed, card: string): boolean {
-  if (c.gate === 'augment') return false;
+  if (c.gate === 'augment') return evidenced(c, o.augTypes, o.augChanged);
   if (c.gate === 'activated' && hasOwnActivated(card)) return evidenced(c, o.actTypes, o.actChanged);
+  if (c.gate === 'trigger') return evidenced(c, o.trigTypes, o.trigChanged);
   return evidenced(c, o.types, o.changed);
 }
 
@@ -202,6 +267,7 @@ test('drive every card and check it against its printed promises', () => {
     }
   }
   assert.ok(observations.size > 300, 'the semantic pass covers the pool');
+
 });
 
 /**
@@ -481,6 +547,349 @@ test('every activation-gated promise is delivered when the drill pays and activa
     + 'it has swallowed a phase change, so it is collecting the rest of the game');
 });
 
+// ── CARD-TODO #49 stages 3 & 4: the fixtures and the host ───────────────
+
+/**
+ * Every gated promise no fixture in the library can reach, NAMED — which is
+ * the form CARD-TODO #49 says it closes in ("the remainder are clauses no
+ * fixture can reach, named individually rather than counted").
+ *
+ * 52 claims over 45 cards, down from 218 over the whole gated heap. Each entry
+ * opens with WHAT KIND of unreachable it is:
+ *
+ *   REAL   — the clause is not implemented. Cite a CARD-TODO id. (None yet:
+ *            stages 3 and 4 found no broken card, and that null result is
+ *            measured by the positive controls below, not assumed.)
+ *   REGION — R12. The clause is scoped to the region its event fires in, and
+ *            the card is standing in its home region while the battle is being
+ *            fought in the other seat's. This is the single biggest remaining
+ *            family and it is a property of the drill's board, not of the card.
+ *   BOARD  — implemented, but the drill cannot build the precondition.
+ *   CHOICE — implemented, but it is behind a decision `progressAction` answers
+ *            the other way (it takes option 0, which is "pay" / "decline" /
+ *            "no" depending on the card).
+ *   VOCAB  — the card really does the thing and the engine really emits an
+ *            event for it, but no event in `EVIDENCE[kind]` names that event.
+ *            ⚠ The fix is NOT to widen EVIDENCE: "create a Shard" evidenced by
+ *            `resourceActivated` would let a card promising "create a 2/2
+ *            unit" pass by making a resource instead.
+ *   EXTRACT— the phrase `claims.ts` matched is not a promise at all — it is the
+ *            card's own trigger clause, or a zone name. These are the ones the
+ *            extractor should eventually stop counting; until it does, they are
+ *            honest members of the denominator.
+ */
+const UNREACHED: Record<string, string> = {
+  // ── REGION (R12): the clause needs the card to be IN the battle's region ──
+  'Bloated Manablub':
+    'REGION — "each opponent loses 3 life" loops over `regions[ctx.region].presentSeats`, and the '
+    + "trigger resolves in the drill's home region where no opponent is present, so the loop runs "
+    + 'zero times. ⚠ It does this SILENTLY; its sibling Boreal Wanderer announces the same no-op.',
+  'Boreal Wanderer':
+    'REGION — same `presentSeats` scope, and this one says so out loud: '
+    + '"Boreal Wanderer: no opponent is present here — no damage."',
+  'Galerider Eel':
+    'REGION — the `when` reads `g.s.battle?.region === self.region`, so the in-battle draw has to '
+    + 'happen while the card is standing IN the battle. The drill draws at a battle priority '
+    + "window, when the card is still at home and the battle is in the other seat's region.",
+  'Colony of the Interworld':
+    'REGION — "when you gain or lose life during battle": `E.loseLife` stamps the event with '
+    + '`battle.region` (R12), so only units in the battle hear it, and the card is at home.',
+  'Rider of the Tides':
+    'REGION — "whenever a card enters a player\'s hand DURING BATTLE", same battle-region scope as '
+    + 'Galerider Eel. The trigger does fire and resolve; its own guard reports no carrier in scope.',
+  'Xenopod Progenitor': 'REGION — the same in-battle hand-entry clause as Rider of the Tides.',
+
+  // ── BOARD: implemented, precondition unbuildable by the drill ────────────
+  'Fire Resource':
+    'BOARD — "when I activate" needs a resource activated for mana through the real path, and '
+    + '`fundSeat` hands the seat open resources in bulk instead, so the event never fires.',
+  'Water Resource': 'BOARD — the same "when I activate" precondition as Fire Resource.',
+  'Earth Resource': 'BOARD — the same "when I activate" precondition as Fire Resource.',
+  'Nimbus Eel':
+    'BOARD — "when you play a TOKEN spell". A spell token is cast from play, never played from '
+    + 'hand, and the fixture library has nothing that casts one.',
+  'Spiteful Shadow':
+    "BOARD — the press run ends with 20 of the 22 fixtures fired on this card, so `die` — the beat "
+    + 'its "When I die" clause needs — never becomes eligible. Two completed battles are the gate '
+    + 'and this game does not get there.',
+  'Mirage Walker':
+    'BOARD — "if you took no actions during deployment". The drill deploys, plays and fires '
+    + 'fixtures every deployment, so the condition is false by construction.',
+  'Seabed Shellcaster':
+    'BOARD — "when the SECOND nontoken spell is played in this battle". press mode plays one spell '
+    + 'and one unit, and both land in the same window rather than in one battle.',
+  Proph:
+    'BOARD — "when you play a card from anywhere other than your hand". Every press play is from '
+    + 'hand; there is no bin- or cache-play fixture.',
+  'Stalwart Sentinel': 'BOARD — the same play-from-elsewhere precondition as Proph.',
+  Worldbender:
+    'BOARD — "skip your draft step" only exists in a drafted game; the drill plays constructed.',
+  'Prediction Prophet':
+    'BOARD — "create a 5/5 unit IF YOU MATCHED THE PREDICTION". The trigger fires and resolves; '
+    + 'the drill answers the prediction decision with option 0 and the life total moves.',
+  'Sporebloom Siren':
+    'BOARD — "delete all units with -1/-1 counters on them", resolved on a board where the units '
+    + 'carrying the `counters` fixture\'s minus counters are already dead. It fires and announces '
+    + 'the empty sweep.',
+  'Stellarspore Harvester':
+    'BOARD — "gain control of target unit IF IT HAS a -1/-1 counter on it" at the after-combat '
+    + 'step. The minus counters the fixture places do not survive to that step on a unit that is '
+    + 'still a legal target.',
+  Nothyr:
+    'BOARD — "negate up to one target NONSPELL effect". The bait the drill can put on the stack is '
+    + 'a spell effect, so there is correctly nothing of that kind to aim at.',
+  'Perpetual Construct':
+    'BOARD — "whenever a mod is applied to ME". The `modApplied` fixture deliberately mods somebody '
+    + 'else: modding the card under test makes it {Unstable} (R79), which turns its next death into '
+    + 'an erase and takes it out of the game for every later beat.',
+  'Animated Spark':
+    'BOARD — "+1/+0 for each nontoken spell you have played IN THIS BATTLE". The augment is applied '
+    + 'in deployment and the spell press plays lands in a different battle, so the count is 0 and '
+    + 'the layer is a no-op that changes no stat.',
+  'Riftspawn Remnant':
+    'BOARD — "if you have gained or lost life IN THIS BATTLE". Same shape: the life beats and the '
+    + 'attach do not share a battle.',
+  Inspiration:
+    'BOARD — "your units ADJACENT TO ME gain +2/+2" needs a formation with neighbours; the drill '
+    + 'seeds bodies without building one.',
+  'Earnest Defender':
+    'BOARD — "whenever an ally becomes the target of an ENEMY SPELL". The `targeted` fixture is a '
+    + "synthesised targeting, not an enemy's spell, and the bait scenario does not run under the "
+    + 'augment host.',
+  'Mindwarp Sporefrog':
+    'BOARD — "whenever YOU are dealt combat damage". The host is an attacker in every battle the '
+    + 'drill reaches, and the seat that takes face damage is the defender.',
+  'Keeper of Tithes':
+    'BOARD — "if X is not 0, where X is the number of EXPENDED resources you have". `fundSeat` '
+    + 'refills the seat with OPEN resources at every window, so X is always 0. The trigger fires, '
+    + 'resolves and says so.',
+  'Debt Plant': 'BOARD — the same expended-resource count as Keeper of Tithes, and the same X = 0.',
+  Ploosh:
+    'BOARD — "you gain 3 life and draw a card IF YOUR LIFE TOTAL IS ODD. Otherwise, sacrifice me '
+    + 'and you lose 3 life." The odd branch is the one the drill lands on, and it IS observed; the '
+    + 'even branch is the unobserved half of the same clause.',
+  'Molten Riftbreaker':
+    'BOARD — "when I despawn, negate all ALLIED SPELLS". Nothing of the seat\'s own is on the stack '
+    + 'when the host leaves play, and the trigger announces the empty sweep.',
+  Skybreaker:
+    'BOARD — "Erase me: negate all SPELL EFFECTS", activated at a window where the stack holds no '
+    + 'spell. The erase half of the same line IS observed.',
+  'Void Mandible':
+    'BOARD — "sacrifice me. If you do, negate that effect." The negate IS observed; the sacrifice '
+    + 'is a MOD leaving play, which is not a `died` and not a `trashed`, so nothing in '
+    + 'EVIDENCE.sacrifice can name it.',
+  'Cthyrian Rector':
+    'BOARD — same shape: the recall half is observed (`leftBin`), the self-sacrifice is a mod '
+    + 'leaving play and emits neither `died` nor `trashed`.',
+  'Pestilent Mycelion':
+    'BOARD — "whenever one or more -1/-1 counters are put on a unit, each opponent loses 1 life". '
+    + 'The trigger fires and resolves; the life loss is region-scoped to the opponents present.',
+  'Automaton of Abundance':
+    'BOARD — a REPLACEMENT ("if you would create one or more unit tokens, instead …"). It needs a '
+    + 'token creation by the HOST\'s controller while the augment is on, which no beat provides.',
+  'Skittering Blight':
+    'BOARD — a REPLACEMENT on rot damage ("if rot would deal damage to you, instead put that many '
+    + '+1/+1 counters on me"). Nothing in the library gives the seat rot and then lets it tick.',
+  Vengeance:
+    'BOARD — "cards your opponents play during battle gain [Sacrifice a unit]". It grants a COST to '
+    + "somebody else's cards; the drill never has the opponent play a card while the augment is on.",
+
+  // ── CHOICE: behind a decision answered the other way ────────────────────
+  'Soul Tithe':
+    'CHOICE — "the controller of target effect MAY PAY [one]. If they don\'t, negate that effect '
+    + 'and draw a card." `progressAction` answers a payOrDecline with option 0, which is PAY, so '
+    + 'the negate branch is never taken.',
+  'Frosted Denial': 'CHOICE — the same payOrDecline, answered the same way.',
+  'Necromantic Rebuke':
+    'CHOICE — "negate up to one target effect UNLESS its controller erases X cards from their bin". '
+    + 'The controller is offered the escape and takes it.',
+  'Null Drone':
+    'CHOICE — "negate target spell effect IF ITS COST is less than or equal to the greatest amount '
+    + 'of life lost by a player in this battle". No life has been lost in the bait battle, so the '
+    + 'threshold is 0 and no cost clears it.',
+  'Scholar of the Void':
+    'CHOICE — "you MAY discard your hand and transform me". The trigger fires and resolves; the '
+    + 'offer is declined.',
+
+  // ── VOCAB: the engine emits a real event; no EVIDENCE entry names it ────
+  'Hooba-Lan':
+    'VOCAB — "create a Shard" makes a RESOURCE and emits `resourceActivated`. EVIDENCE.create is '
+    + 'tokenCreated/spawned. ⚠ Widening it would let a card promising "create a 2/2 unit" pass by '
+    + 'making a resource instead.',
+  'Swirling Shardform': 'VOCAB — the same Shard/resource mismatch as Hooba-Lan.',
+  'Cinder Scuttler':
+    'VOCAB — the card recalls itself from the BIN into play. `recall` has no event type of its own '
+    + '(EVIDENCE.recall is empty) and its state evidence is a HAND delta, which a bin→play recall '
+    + 'never makes. `leftBin` is observed instead.',
+
+  // ── EXTRACT: the matched phrase is not a promise ────────────────────────
+  'Mycelial Mentor':
+    'EXTRACT — the "create a" matched is inside the TRIGGER CLAUSE ("when you create a token"), not '
+    + 'the promise. The actual promise — "target ally gains +3/+3" — is observed as `statChanged`.',
+  'Lurking Dread':
+    'EXTRACT — the word "cache" matched is a ZONE ("put me into play from your bin OR FROM CACHE"), '
+    + 'not the verb. The clause itself is observed: the sacrifices, the trash and the spawn are all '
+    + 'in the window.',
+};
+
+test('every gated promise the fixtures cannot reach is NAMED, with the precondition that is missing', () => {
+  // The shape CARD-TODO #49 asks to close in. Asserted in BOTH directions, the
+  // way KNOWN_UNMET is: a card cannot quietly join the list, and an entry
+  // cannot outlive its reason.
+  const surprises: string[] = [];
+  for (const g of ['augment', 'trigger', 'condition'] as ClaimGate[]) {
+    for (const { card, claim } of unobserved.get(g) ?? []) {
+      if (card in UNREACHED) continue;
+      surprises.push(`${card} — ${g}-gated ${claim.kind}`
+        + `${claim.n !== undefined ? `(${claim.n})` : ''} "${claim.raw}"; printed: "${rulesText(card)}"`);
+    }
+  }
+  assert.deepEqual([...new Set(surprises)].sort(), [],
+    'these cards print a gated promise that no fixture in the library reached, and nothing says '
+    + 'why:\n  ' + [...new Set(surprises)].sort().join('\n  ')
+    + '\n\nEither a fixture stopped firing (a regression — the floors below should have caught it), '
+    + 'or the clause is unimplemented (open a CARD-TODO item and add it here as REAL), or the drill '
+    + 'cannot build its precondition (add it here saying WHICH one). Do NOT widen EVIDENCE to make '
+    + 'it disappear.');
+
+  const stale: string[] = [];
+  const stuck = new Set<string>();
+  for (const g of ['augment', 'trigger', 'condition'] as ClaimGate[]) {
+    for (const { card } of unobserved.get(g) ?? []) stuck.add(card);
+  }
+  for (const [card, why] of Object.entries(UNREACHED)) {
+    if (!/^(REAL|REGION|BOARD|CHOICE|VOCAB|EXTRACT)/.test(why)) {
+      stale.push(`${card}: must open with REAL / REGION / BOARD / CHOICE / VOCAB / EXTRACT`);
+    }
+    if (/^REAL/.test(why) && !/CARD-TODO #\d+/.test(why)) {
+      stale.push(`${card}: a REAL entry must cite its CARD-TODO id`);
+    }
+    if (!stuck.has(card)) stale.push(`${card} is now observed delivering — delete this entry`);
+  }
+  assert.deepEqual(stale, []);
+});
+
+/**
+ * THE BLIND-CHECK ON THE ATTRIBUTION SEAM.
+ *
+ * `ownResolution` is what stages 3 and 4 rest on: it decides which slice of the
+ * event stream is THIS CARD'S OWN ability firing. Ask the question this repo
+ * has learned to ask — *what would it look like if it were blind?* — and there
+ * are two answers, in opposite directions:
+ *
+ *   ALWAYS FALSE — nothing is ever attributed, every gated promise reads as
+ *     undelivered, and the count collapses. Loud. The floors below catch it.
+ *   ALWAYS TRUE — every event in the game is attributed to whatever card is
+ *     under test, and every claim of every kind reads as delivered. SILENT,
+ *     and it is the exact failure the ticket warns about twice.
+ *
+ * So both directions are measured, against a REFERENCE WRITTEN OUT HERE from
+ * the label grammar in the engine (`queueTrigger` builds `${card}: ${label}`,
+ * `doActivateAbility` builds `${card}: ${label}` or `${card} (on ${face}): …`,
+ * `resolveItem` logs `Resolving ${label}:`) rather than by importing the thing
+ * under test. Stage 2's own agent caught its first reference implementation
+ * importing the regexes it was checking, which moved the test and the tested
+ * together.
+ */
+function ownReference(msg: string, card: string): boolean {
+  const HEAD = 'Resolving ';
+  if (!msg.startsWith(HEAD)) return false;
+  const label = msg.slice(HEAD.length).replace(/:$/, '');
+  if (label === card) return false;                    // the card's own CAST
+  const rest = label.startsWith(card) ? label.slice(card.length) : null;
+  if (rest === null) return false;
+  return rest.startsWith(': ') || rest.startsWith(' (on ');
+}
+
+test('the own-resolution window can SEE, and can also say NO — measured in both directions', () => {
+  // 1. the hand-written cases, each one a mistake that was actually available
+  assert.equal(ownResolution('Resolving Immolate:', 'Immolate'), false,
+    "a card's own CAST is not its own ABILITY. Letting it count is the Oracle-of-the-Flame bug: "
+    + 'the body arriving evidences the clause behind the gate.');
+  assert.equal(ownResolution('Resolving Geode: Create a Crystal 1:', 'Geode'), true,
+    'a triggered ability logs `Resolving <card>: <label>:` and must be attributed');
+  assert.equal(ownResolution('Resolving Skybreaker (on Tidal Menace): Negate all spell effects:',
+    'Skybreaker'), true,
+    'an [Augment]-donated ability logs `Resolving <card> (on <host>): …` — stage 4 rests on this');
+  assert.equal(ownResolution('Resolving Wispweaver: something:', 'Wisp'), false,
+    '`Resolving Wisp` is a PREFIX of `Resolving Wispweaver: …` — a bare startsWith would attribute '
+    + "one card's trigger to another card entirely");
+  assert.equal(ownResolution('Player 1 draws 1.', 'Immolate'), false);
+
+  // 2. the same question asked of every `Resolving` line a real run produces,
+  //    against the independent reference above
+  const lines: string[] = [];
+  const disagreements: string[] = [];
+  for (const card of ['Geode', 'Immolate', 'Oracle of the Flame', 'Megadeath', 'Blightmound',
+    'Ghord', 'Sporebloom Siren', 'Muck Rummager', 'Splort', 'Rune Channeler',
+    'Bellowing Boulder', 'Palewing']) {
+    const r = drillCard(card, 900_000, { press: true });
+    for (const msg of r.events) {
+      if (!msg.startsWith('Resolving ')) continue;
+      lines.push(msg);
+      if (ownResolution(msg, card) !== ownReference(msg, card)) {
+        disagreements.push(`${card}: "${msg}" — ownResolution=${ownResolution(msg, card)}`);
+      }
+    }
+  }
+  assert.ok(lines.length >= 25,
+    `only ${lines.length} "Resolving" lines harvested — this measurement has lost its reach and `
+    + 'would agree vacuously');
+  assert.deepEqual(disagreements, [],
+    'ownResolution no longer agrees with the engine label grammar:\n  ' + disagreements.join('\n  '));
+
+  // 3. THE POSITIVE CONTROL FOR "ALWAYS TRUE". Immolate is a plain spell —
+  //    "[Sacrifice a unit] Draw a card" — with no triggered ability, no
+  //    activated ability and no [Augment] box, so its own-window MUST be empty
+  //    while its ordinary post-play window is not.
+  const immolate = observations.get('Immolate');
+  assert.ok(immolate, 'Immolate must be in the semantic pass for this control to mean anything');
+  assert.deepEqual([...immolate.trigTypes], [],
+    'Immolate has no ability of its own, so nothing may be attributed to one. A non-empty window '
+    + 'here means the attribution has gone ALWAYS-TRUE and every gated count above is inflated.');
+  assert.ok(immolate.types.has('draw'),
+    'and its ordinary post-play window still sees the draw it prints — so the empty own-window '
+    + 'above is a real distinction and not a dead observation');
+});
+
+test('the fixture library actually fires, and the augment actually lands on a host', () => {
+  // The positive controls for stages 3 and 4. Without these, an empty
+  // `surprises` above is worth nothing: a press run that fired no fixture and
+  // an augment run that never attached would produce exactly the same green.
+  const pressed = drillCard('Megadeath', 900_000, { press: true });
+  assert.ok(pressed.fired.length >= 20,
+    `the press run got through only ${pressed.fired.length} of the ${pressed.fired.length} fixtures `
+    + '— the beat scheduler has stopped firing and stage 3 is measuring nothing');
+  for (const beat of ['die', 'despawn', 'trash', 'allySpawn', 'damage', 'counters']) {
+    assert.ok(pressed.fired.includes(beat), `the "${beat}" fixture never fired`);
+  }
+  assert.ok(pressed.ownTypes.includes('tokenCreated'),
+    'Megadeath prints "When I attack, create a Poison 5" and the press run must see it attack — '
+    + 'if the destructive beats stop being held back until two battles have finished, the card is '
+    + 'killed before it ever swings and 38 trigger promises go dark at once');
+
+  const hosted = drillCard('Astralith', 900_000, { augment: true, press: true });
+  assert.ok(hosted.attached, 'Astralith must land on a host — stage 4 measures nothing otherwise');
+  assert.ok(hosted.host !== undefined && hosted.host !== 'Astralith',
+    'the host is another card, not the augment itself');
+  assert.ok(hosted.activated.length > 0,
+    'Astralith prints "[Augment] [three]: put a +1/+1 counter on target unit" — its ability is '
+    + 'offered on the HOST with `via: { mod }`, and this is the only path that reaches it');
+
+  // and the CONTINUOUS half, which has no event at all and is measured by
+  // taking the mod out of the game and reading the stats again
+  const golem = drillCard('Aetherflux Golem', 900_000, { augment: true, press: true });
+  assert.ok(golem.attachChanged.includes('unit stats/attributes changed'),
+    'Aetherflux Golem prints "[Augment] I gain +2/+2" — a layer, not an action, so the ONLY '
+    + 'evidence it can ever have is that removing the mod changes somebody\'s power/defence');
+  const rubbish = drillCard('A Pile of Rubbish', 900_000, { augment: true, press: true });
+  assert.deepEqual(rubbish.attachChanged.filter(c => c.includes('stats')), [],
+    'A Pile of Rubbish\'s [Augment] box is a TRIGGER ("when I die, draw a card") and grants no '
+    + 'stats. Reading a stat change here means the continuous check has gone always-true — which '
+    + 'it did once, because every augment makes its host {Unstable} and the first version compared '
+    + 'attributes as well as numbers.');
+});
+
 // ── the tally ───────────────────────────────────────────────────────────
 
 test('the semantic pass reports honestly on what it could and could not check', () => {
@@ -528,10 +937,10 @@ test('the semantic pass reports honestly on what it could and could not check', 
   // could not be planned against. The partition says which stage owns which
   // slice, and the per-gate delivered count says how far each has got.
   const GATE_NEEDS: Record<ClaimGate, string> = {
-    augment: 'a graft HOST                (stage 4)',
-    trigger: 'a fixture firing the EVENT  (stage 3)',
+    augment: 'an [Augment] HOST           (stage 4 — done)',
+    trigger: 'a fixture firing the EVENT  (stage 3 — done)',
     activated: 'somebody to PAY & ACTIVATE  (stage 2 — done)',
-    condition: 'a BOARD meeting the clause  (stage 3)',
+    condition: 'a BOARD meeting the clause  (stage 3 — done)',
   };
   let gTot = 0, gHit = 0;
   console.log('    gated promises, by what would have to happen before they are owed:');
@@ -545,9 +954,23 @@ test('the semantic pass reports honestly on what it could and could not check', 
     + `satisfy their gate; ${gTot - gHit} have still never been observed`);
   // The delivered count is floored too, in the other direction: coverage that
   // has been paid for once must not be lost silently.
-  assert.ok(gHit >= 90,
-    `only ${gHit} gated promises observed delivered (was 98 when stage 2 landed) — coverage `
-    + 'has regressed');
+  // FLOORS ON THE DELIVERED COUNTS, one per gate, raised as each stage paid
+  // for them. Measured 2026-08-25 at the end of R180: augment 129, trigger 86,
+  // activated 35, condition 14 — 264 of 316. Set a little below so that a
+  // refinement is free and a silent give-back is not.
+  const hit = (g: ClaimGate) => partition.get(g)?.[0] ?? 0;
+  assert.ok(hit('augment') >= 120,
+    `only ${hit('augment')} [Augment] promises observed delivered (was 129 when stage 4 landed, `
+    + 'and 0 before it) — the host path has regressed');
+  assert.ok(hit('trigger') >= 78,
+    `only ${hit('trigger')} trigger-gated promises observed delivered (was 86 when stage 3 landed) `
+    + '— a fixture has stopped firing, or the destructive beats are no longer being held back '
+    + 'until two battles have finished');
+  assert.ok(hit('condition') >= 12,
+    `only ${hit('condition')} condition-gated promises observed delivered (was 14)`);
+  assert.ok(gHit >= 250,
+    `only ${gHit} gated promises observed delivered (98 when stage 2 landed, 264 at the end of `
+    + 'R180) — coverage has regressed');
   assert.equal(partition.get('activated')?.[0], partition.get('activated')?.[1],
     'stage 2 delivered EVERY activation-gated promise; one has stopped being delivered');
   // A floor on the promises the suite actually REQUIRES. It is far below the

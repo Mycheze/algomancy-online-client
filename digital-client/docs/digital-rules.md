@@ -13102,3 +13102,132 @@ R176 named: brace-matching RAW source, where an apostrophe inside a comment
 function's body, where `function f(x): { a: T } { … }` hands you the RETURN TYPE
 and the whole helper-expansion silently stops working. Both are pinned by tests
 in `154-guard-shape.test.ts`, against the real files that exposed them.
+
+---
+
+## R180 — the [Augment] box and the trigger fixtures: 218 unchecked printed promises down to 52
+
+CARD-TODO #49, stages 3 and 4. `84-card-semantics` reads every card's PRINTED
+text out of `printed.json`, turns it into typed promises and checks each one
+against the engine's own event vocabulary. R171 (stages 1 and 2) split the
+gated heap into four named gates and drove the activated abilities. What was
+left:
+
+```
+augment    152 — needs an [Augment] HOST      ·   0 observed
+trigger    110 — needs a fixture firing the EVENT ·  56 observed
+activated   35 — needs somebody to PAY & ACTIVATE ·  35 observed
+condition   19 — needs a BOARD meeting the clause ·   7 observed
+```
+
+At the end of this round:
+
+```
+augment    152 · 129 observed        trigger    110 · 86 observed
+activated   35 ·  35 observed        condition   19 · 14 observed
+264 of 316 gated promises delivered; 52 never observed, each one NAMED.
+```
+
+### Stage 4 — the `[Augment]` box is only live on a HOST
+
+48% of everything gated is printed inside an `[Augment]` text box, and none of
+it is owed when the body is cast. The drill now has an `augment` mode: it takes
+the `augment` action out of `legalActions` exactly as it takes `playCard`, and
+lands the card on a vanilla host. Three different things then become reachable
+and each needed its own evidence:
+
+* **triggered `[Augment]` text** (76 cards) resolves as a normal stack item
+  whose label the engine builds as `` `${cardName}: ${ability.label}` ``;
+* **activated `[Augment]` text** (23 cards) is offered on the HOST with
+  `via: { mod }` — unreachable through any test that looks at the card's own
+  entity, because the entity is a Tidal Menace;
+* **continuous `[Augment]` statics** (18 cards) emit no event ever. Their only
+  evidence is that **removing the mod from the game changes somebody's
+  power/defence** — measured directly rather than inferred from a delta.
+
+⚠ **Grafting is not what these need.** The ticket said "[Augment] boxes need a
+host; the drill already grafts". Neither half is true: `drill.ts` had no graft
+of any kind, and all 117 cards with an augment-gated promise are `isAugment`
+and none of them is `isGraftable`. The action is `augment`, not `graft`.
+
+⚠ **Apply it in DEPLOYMENT, not in battle.** A card that is also a `{Virus}`
+is offered in battle too (R79), and that route puts the augment on the STACK —
+so the window from the action to the next quiescence swallows the whole combat
+damage step. Ploosh and Skybreaker both read as granting stats their boxes
+never mention.
+
+### Stage 3 — a fixture library, and a subject to fire it at
+
+Fourteen fixtures, each making ONE thing happen in the world: an ally spawns, a
+token is created, an enemy stands in this region, counters go on, damage lands,
+life moves, cards are drawn, a card is trashed, a mod is applied, a card leaves
+the bin, something is targeted, an enemy dies, an ally dies, the subject is
+recalled, the subject is destroyed. Seven of them are listed a second time
+pinned to the BATTLE phase, because "during battle" is a printed qualifier on
+nine cards. The pokes are engine-level, exactly as `seedBoard` is — the fixture
+is the WORLD acting, and the card still has to hear it through `E.fireEvent`,
+queue its own trigger, reach the stack and resolve.
+
+Three things about the schedule turned out to be load-bearing:
+
+* **the destructive beats wait for TWO COMPLETED BATTLES.** Ungated, `die`
+  killed the card's body inside the same deployment step it arrived in and
+  every "when I attack" / "when I block" / "after combat" trigger in the pool
+  was listening from the bin. Measured: 48 trigger promises without the gate,
+  86 with it.
+* **the card is put back on the table when it dies.** press mode blocks as hard
+  as it can (so "when I block" happens at all) and its own beats land on the
+  subject, so a small body is dead before it ever swings.
+* **the mod goes on somebody else.** R79 makes a modded card `{Unstable}`, so
+  modding the card under test turns its next death into an ERASE and removes it
+  from the game for every later beat.
+
+### The attribution seam, and what makes it not blind
+
+R171 established that a gated claim must be evidenced by a run that could
+satisfy its gate, and did it with a TIME window. **A trigger fixture cannot use
+a time window and stay honest**: the fixtures that matter most are combat ones,
+and combat emits `damage`, `died`, `lifeLost` and `draw` of its own. So the
+window is bound by the ENGINE'S OWN STACK-ITEM LABEL instead —
+`Resolving ${card}: …` for a trigger or an activation, `Resolving ${card} (on
+${host}): …` for text donated by a mod, and **`Resolving ${card}:` with nothing
+after the colon is the card's own CAST and is deliberately excluded**. That last
+distinction is the Oracle-of-the-Flame bug one layer in: without it a unit's own
+body arriving evidences its "when I die" clause.
+
+Four blindnesses were found by asking *"what would this look like if it were
+blind?"* and then measuring, and every one of them made the numbers go UP:
+
+1. `staticBite` first compared the joined stat readings of all entities. The
+   mod IS an entity, so removing it always changed the string: **every augment
+   in the pool, triggered ones included, "changed somebody's stats."**
+2. The evidence window persisted across fixture beats, so Spirit of Vengeance's
+   "when I die, deal 1 damage" collected the draw, the trash, the targeting and
+   the mod application of every beat after it.
+3. A state DELTA cannot be attributed the way an event stream can — the
+   smallest measurable unit is one `apply`, and one `apply` can carry a whole
+   combat damage step. Deltas are now refused out of any batch that also
+   carried `combatDamage` / `phase` / `turn`, and a fixture beat measures from
+   AFTER its own poke.
+4. Attaching any mod makes the host `{Unstable}` and lengthens the counters
+   array, so a coarse diff evidenced a pump and a counter for all 117 cards.
+   `modestDiff` recomputes both readings over the entities present in BOTH
+   snapshots, on the numbers only.
+
+`ownResolution` is now measured in both directions by a reference written out
+from the engine's label grammar (never importing the thing under test), plus a
+positive control that Immolate — a plain spell with no ability of any kind —
+has an EMPTY own-window while its ordinary window still sees its draw.
+
+### What is left, and why
+
+52 claims over 45 cards, named individually in `UNREACHED` in
+`84-card-semantics.test.ts`, each tagged with the kind of unreachable it is.
+**None of them is REAL: stages 3 and 4 found no broken card**, and that null
+result is guarded by positive controls rather than assumed. The biggest
+remaining family is REGION (R12): a clause scoped to the region its event fires
+in cannot be reached by a fixture that fires at a battle priority window,
+because the card is standing at home while the battle is being fought in the
+other seat's region. That is a property of the drill's board and it is the next
+thing worth building — an attacking position, with the card actually in the
+battle.
