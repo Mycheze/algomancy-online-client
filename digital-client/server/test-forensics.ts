@@ -268,6 +268,80 @@ console.log('\n[the replay tool refuses a file it cannot reproduce]');
     'and it is not caught by either refusal');
 }
 
+/* ── R191 (CARD-TODO #67c): THE FORK THAT REFUSES NOTHING ─────────────────
+ *
+ * Everything above this line is about a restore that LOSES actions. The
+ * quieter half had no record at all: an engine that ACCEPTS every logged
+ * action while producing a different board leaves a skip list of length zero,
+ * so `recordFork` declined to record anything and the file went on claiming to
+ * be a straight-through account of a game it no longer describes. That is the
+ * worse of the two, because a refusal at least announces itself.
+ *
+ * `LostAction.kind` has always had a `'changed'` arm for it and the restore
+ * path only ever pushed `'lost'`. It is measured now, the same way
+ * `undoActionAt` measures its own splice: `persist` writes each action's
+ * REFERENCE KEY (what it referred to when it was taken) and a restore compares.
+ *
+ * THE FIXTURE. A different deal is what a rules change looks like from an
+ * action log's side — the actions are all still legal (hand indices, resource
+ * indices, "done" barriers), they simply name other cards. Re-seeding the file
+ * is the cheapest honest way to produce exactly that: nothing is refused, and
+ * everything means something else. If the re-seed ever starts REFUSING an
+ * action, the first assertion below fails and says so rather than passing for
+ * the wrong reason.
+ */
+console.log('\n[a restart that changes the board without refusing an action]');
+const DRIFT_FILE = join(DIR, 'DRIFT.json');
+const drift = createRoom('DRIFT', SEED);
+for (let i = 0; i < 200 && drift.actions.length < 40; i++) {
+  const a = mundane(drift.state, 0) ?? mundane(drift.state, 1);
+  if (!a) break;
+  act(drift, a);
+}
+ok(drift.actions.length >= 40, `played a clean game (${drift.actions.length} actions)`);
+ok(drift.drifted.length === 0 && drift.forks.length === 0, 'nothing has drifted yet');
+{
+  const rawD = JSON.parse(readFileSync(DRIFT_FILE, 'utf8')) as { seed: number; refs?: unknown };
+  ok(Array.isArray(rawD.refs) && rawD.refs.length === drift.actions.length,
+    'the file records what each action MEANT when it was taken — one key per action');
+  rawD.seed = SEED + 1;                       // the same log, a different board
+  writeFileSync(DRIFT_FILE, JSON.stringify(rawD));
+}
+restoreRooms();
+const d3 = getRoom('DRIFT')!;
+ok(d3.lost.length === 0,
+  'the rebuild refused NOTHING — every logged action still replays (the premise of this case)');
+ok(d3.drifted.length > 0,
+  `and yet ${d3.drifted.length} of them no longer mean what they meant — the silent divergence`);
+ok(d3.drifted.every(l => l.kind === 'changed'),
+  "recorded under kind 'changed', which is the arm that had never been reachable");
+ok(d3.forks.length === 1, 'a fork IS recorded for a restore that refused nothing');
+ok(!!d3.forks[0]?.lost.some(l => l.kind === 'changed'),
+  'and the fork carries the changed entries, so the file admits to them');
+ok(d3.events.some(e => /refer to something else/.test(e.msg) && !/no longer replay/.test(e.msg)),
+  'the players are told the truth about it: not "actions were dropped", but "they mean something else"');
+{
+  const savedD = JSON.parse(readFileSync(DRIFT_FILE, 'utf8')) as { forks?: unknown[] };
+  ok(Array.isArray(savedD.forks) && savedD.forks.length === 1,
+    'and it is in the FILE, not just in memory');
+}
+restoreRooms();
+ok(getRoom('DRIFT')!.forks.length === 1,
+  'restoring again does not invent a second fork — the keys were rewritten with the record');
+
+console.log('\n[a file that never recorded what its actions meant is not accused of drift]');
+{
+  // The additive-field case, and the one that must stay silent: every game
+  // saved before R191 has no `refs`, and "I cannot tell" is not "it drifted".
+  const old = JSON.parse(readFileSync(join(DIR, 'CLEAN.json'), 'utf8')) as { refs?: unknown };
+  delete old.refs;
+  writeFileSync(join(DIR, 'CLEAN.json'), JSON.stringify(old));
+  restoreRooms();
+  const c2 = getRoom('CLEAN')!;
+  ok(c2.drifted.length === 0, 'no keys on disk, no drift reported');
+  ok(c2.forks.length === 0, 'and no fork invented for a file that simply predates the field');
+}
+
 console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 rmSync(DIR, { recursive: true, force: true });
 void HERE;

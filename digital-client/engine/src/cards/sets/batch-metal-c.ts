@@ -508,7 +508,13 @@ card('Worldbender', {
     // 'constructed' and — R162 — 'shared': the turn's cards come entirely out
     // of here, so there is no fall-through branch left and no mode that
     // silently declines.
-    g.ev('draw', `Worldbender: ${g.pname(seat)} skips the draw phase — 2 cards for the turn plus 1 for Worldbender, and 3 life.`, { seat });
+    // R191: 'info', not 'draw'. This line ANNOUNCES a draw that is about to
+    // happen three lines down; it is not itself one. Typed 'draw' it was a
+    // draw event in the stream with no `n`, so anything reading the stream for
+    // "how many cards did this player draw" — the log, a replay, any future
+    // consumer of the event type — saw a draw that moved nothing. The real
+    // draw below emits the real 'draw' event, with its count.
+    g.ev('info', `Worldbender: ${g.pname(seat)} skips the draw phase — 2 cards for the turn plus 1 for Worldbender, and 3 life.`, { seat });
     // drawn BEFORE the life is paid: 3 life can be lethal, and loseLife ends
     // the game where it lands, so the cards the player is owed are already in
     // hand when it does

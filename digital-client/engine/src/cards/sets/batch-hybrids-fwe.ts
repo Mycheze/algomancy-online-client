@@ -129,20 +129,25 @@ card('Mirrorback Ambusher', {
 // quietly decided that casting a token is not playing a spell.
 //
 // At event time the spell is not yet on the stack (commitItem fires
-// 'spellPlayed' before pushItem), so the effect finds it at resolution: the
-// TOP-most un-negated spell-kind item matching the event's card + controller
-// (the trigger sits above it and resolves first). TOP-most, not bottom — two
-// copies of one card can be on the stack together and the one this trigger is
-// about is the one played LAST, while `.find()` scans from the bottom and
-// answered with the older one. Hexbane Shiitake, the pool's other card that
-// locates a spell by (card, controller), already reads the stack this way, and
-// the `[...]` spread is not decoration: `Array.reverse()` reverses IN PLACE and
-// would turn the real stack upside down.
+// 'spellPlayed' before pushItem), so the effect finds it at resolution — BY
+// ITS ID (R191). The event carries `item`, the played item's id (R178), so
+// "negate IT" is answered by IDENTITY and not by a scan at all. This used to
+// be `[...g.s.stack].reverse().find(i => i.card === name && i.controller ===
+// seat && …)` under a paragraph explaining why the TOP match is the right one
+// — true under today's push order (the trigger sits above the spell and
+// resolves first) and a heuristic under any other, which is what a paragraph
+// of justification was really admitting. Earthbound Replicator converted first
+// (R178); Hexbane Shiitake, the pool's other card that located a spell by
+// (card, controller), converts in this same ruling.
 //
-// …AND NOT A COPY (R164). A copy of a spell is a real stack item now, and it
-// carries the ORIGINAL's card name and controller and sits ABOVE it — so the
-// reverse scan reaches the copy FIRST, and `(card, controller)` stopped being
-// unique the day R164 landed. The printed pronoun settles it: "whenever a
+// …AND NOT A COPY (R164) — a SEPARATE question from WHICH item is found, and
+// one the id must not quietly answer differently. A copy of a spell is a real
+// stack item carrying the ORIGINAL's card name and controller, which is what
+// made it reachable by the scan; it is not reachable by an id, because
+// `pushSpellCopy` deliberately does not go through `commitItem`, so no
+// 'spellPlayed' event ever names a copy. The guard therefore stays, as an
+// ASSERTION of what that id must be (the Earthbound Replicator precedent) —
+// and it is the assertion the printed pronoun demands: "whenever a
 // player plays their first spell in this battle, negate IT" — "it" is the
 // spell that was played, and RAQ (_passer, quoted at `StackItem.copy`) is
 // explicit that a copy is not: *"the 1st copy wasn't 'played'"*. A copy is
@@ -165,10 +170,11 @@ card('Origon', {
       run: (g, ctx) => {
         const name = ctx.event?.data?.card as string | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
+        const itemId = ctx.event?.data?.['item'] as number | undefined;
         if (name === undefined || seat === undefined) return;
         const spellKinds = new Set(['spell', 'spellUnit', 'spellToken']);
-        const it = [...g.s.stack].reverse().find(i =>
-          i.card === name && i.controller === seat && spellKinds.has(i.kind) && !i.copy);
+        const it = g.s.stack.find(i =>
+          i.id === itemId && i.controller === seat && spellKinds.has(i.kind) && !i.copy);
         if (it) g.negate(it.id);
         else g.ev('info', `Origon: ${name} already left the stack — not negated.`);
       },

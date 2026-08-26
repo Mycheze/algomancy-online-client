@@ -560,9 +560,13 @@ function zoneDelta(before: GameState, after: GameState, seat: Seat): string {
  * disk, can name the same interface instead of restating it structurally; see
  * that file's header for the `ws` problem that forced the restatement. */
 
-/** Two skip sets describe the same fork iff they lost the same indices. */
+/** Two skip sets describe the same fork iff they lost the same indices IN THE
+ *  SAME WAY. R191 added the second half: a restore can now report an action
+ *  index as 'changed' (it still replays, it just means something else) where a
+ *  previous one reported it as 'lost', and those are different facts about the
+ *  same game — collapsing them would leave the file claiming the first. */
 const sameLoss = (a: LostAction[], b: LostAction[]): boolean =>
-  a.length === b.length && a.every((x, i) => x.i === b[i]!.i);
+  a.length === b.length && a.every((x, i) => x.i === b[i]!.i && x.kind === b[i]!.kind);
 
 export interface Room {
   code: string;
@@ -608,6 +612,31 @@ export interface Room {
    * undoActionAt() measures against to guarantee an undo never loses a play.
    */
   lost: LostAction[];
+  /**
+   * R191 — actions the most recent RESTORE replayed happily while they came to
+   * mean something else. DERIVED (never persisted), always `kind: 'changed'`,
+   * and deliberately NOT part of `lost`.
+   *
+   * `lost` is the refusals, and it is undoActionAt()'s baseline for "an undo
+   * must never cost anybody a move"; padding it with actions that still apply
+   * would raise that baseline and silence a real loss. So drift travels beside
+   * it, and the two meet again in `recordFork`, which writes both into the
+   * file under the `kind` that says which is which.
+   *
+   * WHY IT EXISTS. A restore that refuses nothing used to leave no trace at
+   * all — an engine that ACCEPTS every logged action while producing a
+   * different board is invisible to a skip list, and it is the worse of the
+   * two cases, because the log goes on reading as a faithful record. It is
+   * measured the way undoActionAt() measures its own splice: every action's
+   * REFERENCE KEY (see referenceKey) is compared against the key the same
+   * action had when it was played, which persist() writes into the file. A key
+   * that moved is an action whose author would not recognise it any more.
+   *
+   * ⚠ Only ever computed when the rebuild refused NOTHING. Once one action is
+   * refused, every key after it is measured against a board the log stopped
+   * describing, and calling that "drift" would bury the refusal in noise.
+   */
+  drifted: LostAction[];
   /** full authoritative event history, for per-seat redacted log resync */
   events: EngineEvent[];
   /** connected client per seat (null = nobody there) */
@@ -985,6 +1014,47 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
   return { state, events: all, segKey, segSnapshot, heldEvents, segStartIndex, segTouched, segIdFloor, segRefs, skipped };
 }
 
+/**
+ * R191 — WHAT THIS REBUILD QUIETLY CHANGED (see `Room.drifted`).
+ *
+ * `saved` is the per-action reference keys the file recorded as the game was
+ * played; `refs` is what the same actions mean under the engine that has just
+ * replayed them. Every index where the two disagree is an action that still
+ * applies and no longer refers to what its author was looking at — another
+ * unit, another card at that hand index, another roll of the dice.
+ *
+ * Returns [] and says nothing when there is no honest comparison to make:
+ *
+ *  · the file predates the field (`saved` absent) — silence, never a fork.
+ *    An old file is not evidence of drift; it is evidence of nothing.
+ *  · the lengths disagree — the file is not describing this action list at
+ *    all (a still-waiting room whose strays were dropped, a hand edit), and a
+ *    per-index comparison would be meaningless rather than wrong.
+ *  · the rebuild refused something — see the ⚠ on `Room.drifted`.
+ *
+ * ⚠ THE KEY FORMAT IS THE COMPARISON. `referenceKey` writes what an action
+ * meant, and changing HOW it writes it would move every key in every file at
+ * once and report every game as drifted. That is a real hazard and it is
+ * deliberately not solved here: a stamp saying which format a file's keys are
+ * in belongs to the saved-game versioning work (CARD-TODO #66), which is the
+ * consumer of this signal. Until then, a change to referenceKey's spelling
+ * must be treated as a change to this file's on-disk format.
+ */
+function driftedAgainst(saved: unknown, refs: string[], actions: Action[], skipped: LostAction[]): LostAction[] {
+  if (skipped.length) return [];
+  if (!Array.isArray(saved) || saved.length !== actions.length) return [];
+  const out: LostAction[] = [];
+  for (let i = 0; i < actions.length; i++) {
+    if (saved[i] === refs[i]) continue;
+    const a = actions[i]!;
+    out.push({
+      i, type: a.type, seat: a.seat, kind: 'changed',
+      why: 'it still replays, but it now refers to a different unit, card or outcome',
+    });
+  }
+  return out;
+}
+
 export function getRoom(code: string): Room | undefined {
   return rooms.get(code);
 }
@@ -1003,7 +1073,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     code, seed, mode, els: trio, decks, names, users: [null, null], winner: null,
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
-    state, actions: [], events, sockets: [null, null], forks: [], lost: [],
+    state, actions: [], events, sockets: [null, null], forks: [], lost: [], drifted: [],
     segKey: null, segSnapshot: null, heldEvents: [[], []], segStartIndex: -1, segTouched: [],
     segIdFloor: [], segRefs: [], deferred: [[], []],
     clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
@@ -1132,6 +1202,7 @@ function resetSegment(room: Room): void {
   // a fork is a claim about THIS log, and this is a different one
   room.forks = [];
   room.lost = [];
+  room.drifted = [];
   openSegment(room);
 }
 
@@ -1493,28 +1564,42 @@ function undoRefusal(refused: LostAction[]): string {
  * loses the same actions, and that is one fork, not one per boot.
  */
 function recordFork(room: Room): boolean {
-  if (!room.lost.length) return false;
+  // R191: EITHER kind of divergence. A restore that refused nothing and still
+  // produced a different board is a fork too — the quieter one, and the one
+  // the file had no way of admitting to before.
+  const entries = [...room.lost, ...room.drifted];
+  if (!entries.length) return false;
   const previous = room.forks[room.forks.length - 1];
-  if (previous && sameLoss(previous.lost, room.lost)) return false;   // already known
+  if (previous && sameLoss(previous.lost, entries)) return false;   // already known
   room.forks.push({
     at: new Date().toISOString(),
     logged: room.actions.length,
-    lost: room.lost.map(l => ({ ...l })),
+    lost: entries.map(l => ({ ...l })),
     turn: room.state.turn,
     phase: room.state.phase,
   });
   // and say it OUT LOUD, in the game's own log, where both players see it on
-  // their next join. Degrading quietly is the whole failure mode here.
-  room.events.push({
-    type: 'note',
-    msg: `⚠ This game could not be fully restored: ${room.lost.length} of ${room.actions.length} `
+  // their next join. Degrading quietly is the whole failure mode here — and a
+  // silent change of meaning degrades more quietly than a refusal, so it gets
+  // its own sentence rather than being counted in with the losses.
+  const msg = room.lost.length
+    ? `⚠ This game could not be fully restored: ${room.lost.length} of ${room.actions.length} `
       + `logged actions no longer replay under the current rules, so it has been rebuilt without `
       + `them and stands at turn ${room.state.turn}. Everything before this line describes a `
-      + `different board.`,
-    data: { lost: room.lost.length, logged: room.actions.length },
+      + `different board.`
+    : `⚠ This game was restored onto changed rules: all ${room.actions.length} logged actions still `
+      + `replay, but ${room.drifted.length} of them now refer to something else (another unit, `
+      + `another card, another roll), so the board at turn ${room.state.turn} is not the one they `
+      + `were taken on. Everything before this line describes a different board.`;
+  room.events.push({
+    type: 'note',
+    msg,
+    data: { lost: room.lost.length, changed: room.drifted.length, logged: room.actions.length },
   } as unknown as EngineEvent);
   console.warn(`[rooms] ${room.code} FORKED on restore: ${room.lost.length} of ${room.actions.length} `
-    + `actions could not be replayed; the game resumes at turn ${room.state.turn} ${room.state.phase}`);
+    + `actions could not be replayed`
+    + (room.drifted.length ? `, ${room.drifted.length} changed meaning` : '')
+    + `; the game resumes at turn ${room.state.turn} ${room.state.phase}`);
   return true;
 }
 
@@ -1537,6 +1622,10 @@ function assignRebuild(room: Room, rb: Rebuilt): void {
   room.segIdFloor = rb.segIdFloor;
   room.segRefs = rb.segRefs;
   room.lost = rb.skipped;
+  // R191: drift is a claim about the FILE this room was restored from, and this
+  // rebuild has just superseded it (a persist() follows every one of these and
+  // rewrites the keys). Only restoreRooms() sets it.
+  room.drifted = [];
 }
 
 /**
@@ -1616,6 +1705,15 @@ function persist(room: Room): void {
       // them (additive field)
       ...(room.lobby ? { lobby: room.lobby } : {}),
       actions: room.actions, clockMs: room.clockMs,
+      // R191: WHAT EACH ACTION MEANT WHEN IT WAS TAKEN (referenceKey), so a
+      // later restore can tell that the log still replays and no longer
+      // describes the same game — see driftedAgainst(). Parallel to `actions`.
+      // Additive: a file without it is compared against nothing and reports no
+      // drift, which is the only honest answer for a file that never recorded
+      // what its actions meant.
+      ...(room.segRefs.length === room.actions.length && room.actions.length
+        ? { refs: room.segRefs }
+        : {}),
       // every restore that could not faithfully rebuild this game. Without
       // it the file goes on claiming to be a straight-through record of a
       // game it no longer describes (additive field)
@@ -1650,6 +1748,8 @@ export function restoreRooms(): void {
         lobby?: Lobby;
         decks?: [CardName[] | null, CardName[] | null];
         forks?: Fork[];
+        /** R191: per-action reference keys, as of when the game was played */
+        refs?: unknown;
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const users: [string | null, string | null] = [raw.users?.[0] ?? null, raw.users?.[1] ?? null];
@@ -1697,6 +1797,8 @@ export function restoreRooms(): void {
         sockets: [null, null], segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
         segIdFloor, segRefs, deferred: [[], []],
         forks: Array.isArray(raw.forks) ? raw.forks : [], lost: skipped,
+        // R191: and what this rebuild changed WITHOUT refusing anything
+        drifted: driftedAgainst(raw.refs, segRefs, actions, skipped),
         // nobody is connected right after a restart, so no clock runs yet
         clockMs, clockStamp: Date.now(), clockRun: [false, false],
         building: [null, null],
@@ -1706,7 +1808,8 @@ export function restoreRooms(): void {
       const restored = rooms.get(code)!;
       if (decidedWinner(restored) === null && recordFork(restored)) persist(restored);
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions`
-        + `${skipped.length ? `, ${skipped.length} unreplayable` : ''})`);
+        + `${skipped.length ? `, ${skipped.length} unreplayable` : ''}`
+        + `${restored.drifted.length ? `, ${restored.drifted.length} changed meaning` : ''})`);
     } catch (err) {
       console.error(`[rooms] could not restore ${code}:`, err instanceof Error ? err.message : err);
     }

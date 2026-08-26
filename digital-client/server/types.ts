@@ -19,18 +19,20 @@
  */
 import type { Action, Seat } from '../engine/src/types.ts';
 
-/** One logged action a rebuild could not apply. */
+/** One logged action a rebuild could not apply FAITHFULLY — it was refused,
+ *  or (R191) it was accepted and came to mean something else. */
 export interface LostAction {
   /** index into the room's `actions` */
   i: number;
   type: Action['type'];
   seat: Seat;
-  /** the engine's own refusal */
+  /** the engine's own refusal, or — for a 'changed' entry, which nothing
+   *  refused — what moved under it */
   why: string;
   /**
    * WHICH failure this is, so the refusal a player reads names the real
-   * reason instead of a guess (additive; absent on a restore's skip list,
-   * which is always 'lost', and absent in files written before it existed).
+   * reason instead of a guess (additive; absent in files written before it
+   * existed).
    *
    *   'lost'     the action no longer replays at all — the rebuild refused it.
    *   'changed'  the action still replays and is still legal, but it now

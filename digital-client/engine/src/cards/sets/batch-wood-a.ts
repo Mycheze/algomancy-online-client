@@ -443,8 +443,9 @@ card('Growing Plague', {
 // "[Augment][once] Whenever another player plays a spell, you may exchange
 // control of me for that spell. If you do, you may choose new targets for
 // that spell." — g/4 3/3 Arcane Fungus Unit. [once] = bounded (R9). The
-// trigger stacks above the spell and resolves first; the spell is found by
-// card+controller on the stack (batch-hybrids-fwe precedent). All choices
+// trigger stacks above the spell and resolves first; the spell is found on the
+// stack BY ITS ID, which the play event carries (R191 / R178 — see the lookup
+// below and the Origon note in batch-hybrids-fwe). All choices
 // are gathered before mutating (plan-then-commit, R6): the exchange
 // (pay-or-decline), then a new-target pick per declared target (keep is
 // always offered). Committing flips item.controller to me and hands the
@@ -483,20 +484,29 @@ card('Hexbane Shiitake', {
         if (!me) { ctx.refundBudget?.(); g.ev('info', 'Hexbane Shiitake: the carrier is gone — no exchange.'); return; }
         const cardName = ctx.event?.data?.card as string | undefined;
         const seat = ctx.event?.data?.seat as Seat | undefined;
+        const itemId = ctx.event?.data?.['item'] as number | undefined;
         if (cardName === undefined || seat === undefined) { ctx.refundBudget?.(); return; }
         const spellKinds = new Set(['spell', 'spellUnit', 'spellToken']);
-        // R166 / R164: NOT A COPY. `(card, controller)` stopped being unique on
-        // the stack the moment a copy became a real StackItem — a copy carries
-        // the ORIGINAL's card name and (for both copiers) its controller, and
-        // it is pushed ABOVE the original, so the reverse scan would reach the
-        // copy first. The printed pronoun decides: "whenever another player
-        // plays a spell, you may exchange control of me for THAT spell" — that
-        // spell is the one the play event named, and RAQ (_passer, quoted on
+        // R191: BY ID. "That spell" is the item the play event named, and the
+        // event names it — `spellPlayed` carries `item` (R178). This used to be
+        // R166's `[...g.s.stack].reverse().find(i => i.card === cardName && …)`,
+        // which is correct only while the push order keeps the played item
+        // above every other item with the same (card, controller); an id is
+        // correct under any order. Earthbound Replicator is the precedent.
+        //
+        // R164: AND NOT A COPY — a separate question, kept as an ASSERTION
+        // rather than dropped with the scan. A copy carries the ORIGINAL's card
+        // name and (for both copiers) its controller, which is what made it
+        // reachable by (card, controller) at all; it is unreachable by id,
+        // because `pushSpellCopy` never goes through `commitItem` and no
+        // 'spellPlayed' event ever names a copy. The printed pronoun demands
+        // it: "you may exchange control of me for THAT spell" — that spell is
+        // the one the play event named, and RAQ (_passer, quoted on
         // StackItem.copy) says a copy is not played: *"the 1st copy wasn't
         // 'played'"*. So the exchange is for the played spell, never for the
         // copy standing on top of it.
-        const item = [...g.s.stack].reverse().find(i =>
-          i.card === cardName && i.controller === seat && spellKinds.has(i.kind) && !i.copy);
+        const item = g.s.stack.find(i =>
+          i.id === itemId && i.controller === seat && spellKinds.has(i.kind) && !i.copy);
         if (!item) { ctx.refundBudget?.(); g.ev('info', `Hexbane Shiitake: ${cardName} is no longer on the stack — no exchange.`); return; }
         // plan: every choice before any mutation (the part replays on suspension)
         //

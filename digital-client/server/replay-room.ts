@@ -229,7 +229,14 @@ export function analyze(raw: RoomFile): Analysis {
   const a = runOnce(raw);
   const declared: Fork[] = Array.isArray(raw.forks) ? raw.forks : [];
   const declaredLost = declared.flatMap(f => f.lost ?? []);
-  const declaredIdx = new Set(declaredLost.map(l => l.i));
+  // R191: a fork's list is no longer all refusals. A `kind: 'changed'` entry
+  // says the OPPOSITE of a refusal — that action replayed fine and came to
+  // mean something else — so it must not join `declaredIdx`, which exists to
+  // answer "the file says this index does not replay". Counting one there
+  // would make every drifted action `unexplained` (this engine accepts it, as
+  // the file already said it would) and exit 3 on a file that is telling the
+  // exact truth.
+  const declaredIdx = new Set(declaredLost.filter(l => l.kind !== 'changed').map(l => l.i));
   const todayIdx = new Set(a.refusals.map(l => l.i));
   const unexplained = [...declaredIdx].filter(i => !todayIdx.has(i));
   const extra = a.refusals.filter(l => !declaredIdx.has(l.i));

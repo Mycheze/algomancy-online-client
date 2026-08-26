@@ -13819,3 +13819,135 @@ or die, Create a Crystal 1") block two attacking columns:
   resolved when the normal sub-step kills the other two. ONE update, TWO
   generations: `flashBatches` cuts it `[1, 2]`, and the screen shows one card,
   then two cards together a stagger later. #53's direction, preserved.
+
+---
+
+## R191 — the item the event NAMES, and three records that said something that was not so
+
+CARD-TODO #69 and two thirds of #67. One class throughout: **a record whose
+form claims more than it knows.** A stack scan that answers "the spell that was
+just played" by looking for the right card name; an event typed `draw` for a
+draw that does not happen; a dispatch that recovers its event by counting
+backwards from the end of a global array. Each is right today and right by
+accident, and each carries the paragraph of explanation that is the tell.
+
+### 1. Origon and Hexbane Shiitake stop scanning and read the id
+
+R166 gave both cards this lookup:
+
+```ts
+[...g.s.stack].reverse().find(i =>
+  i.card === name && i.controller === seat && spellKinds.has(i.kind) && !i.copy)
+```
+
+and a paragraph each explaining why scanning from the TOP is the right answer:
+the trigger stacks above the spell that fired it, so the played item is the
+top-most match. True — under **today's** push order, and a heuristic under any
+other. `spellPlayed` has carried `item`, the played item's id, since R178
+(precisely because the event fires before `pushItem` and a `when` has no stack
+to consult), and R178 converted Earthbound Replicator that day. These are the
+other two, and the rule they settle is general:
+
+> **A card that acts on "the thing the event was about" matches the event's
+> identity, never a description of it.** A name-and-controller match is a
+> description; two items can satisfy it at once, and which one a scan reaches
+> is a fact about push order rather than about the card.
+
+The explanatory paragraphs came out with the scans.
+
+**The `!i.copy` guard is a different question and it stays.** R164 makes a copy
+a real stack item carrying the ORIGINAL's card name and controller, and RAQ
+(_passer, two [Solved] threads) is explicit that a copy was not played —
+*"he won't make 2nd copy, since 1st copy wasn't 'played'. Sorry. No infinite
+loop there."* Switching a lookup to an id must not quietly answer that
+differently, so it was checked from both ends rather than assumed:
+
+* the cards still skip a copy standing on top of the played spell, and
+* **no play event can ever name one.** `pushSpellCopy` deliberately does not go
+  through `commitItem`, so a copy raises no `spellPlayed` at all and there is
+  no `item` id for an identity lookup to reach. The guard is therefore an
+  ASSERTION of what that id must be — the Earthbound Replicator precedent —
+  rather than a filter doing live work.
+
+Origon's OTHER half (R166: "their first spell" is the SEAT's, counted off the
+token-inclusive `spellsPlayedAny:` ledger, not the carrier's) is untouched. Two
+printed nouns still need two ledgers.
+
+### 2. An announcement is not the thing it announces
+
+Worldbender's constructed/shared branch emitted
+
+```ts
+g.ev('draw', "Worldbender: … skips the draw phase — 2 cards for the turn plus 1 …")
+```
+
+as a LOG LINE, three lines above the `g.draw(seat, 3)` that really moves the
+cards. It was a real `draw` event in the stream with no `n`: a draw that drew
+nothing, sitting in the same channel as the draws that did. It is `info` now.
+
+> **A typed event is a claim that the thing happened.** Announcing that
+> something is being SKIPPED is `info`. The rule is about the type, never about
+> the silence — the line stays, and the branch that skips a step still says so.
+
+⚠ The ticket's stronger claim — that inside a battle window the fabricated
+event "would be dispatched to draw listeners" — **is not true and was not
+fixed, because there is nothing to fix.** `E.ev()` only appends; dispatch is
+`E.fireEvent`, and nothing ever fired this one. The defect is in the STREAM
+(the log, a replay, any future consumer of the event type), not in the
+listeners.
+
+### 3. A dispatch names its event instead of counting backwards
+
+`afterDespawn` recovered the despawn event as
+`this.events[this.events.length - 1]` — a positional read of a global array,
+correct by ORDERING ALONE. Nothing enforced the ordering and nothing would have
+failed loudly if a later edit broke it: `fireEvent` would hand the wrong event
+to every `[Augment] When I despawn` listener, and one that reads the event's
+DATA — Entropic Entity's "a unit with counters despawned" reads
+`ev.data.counters`, which is the only place that fact still exists once the
+unit is out of `s.entities` — would simply stop firing. Both callers already
+hold what `ev()` handed back, so they pass it.
+
+⚠ The ticket says the index got "one line further from its `ev()` call because
+`toHand` (R179) runs just before it". **`toHand` runs before the `ev()`, not
+between the `ev()` and the read**, so the distance never changed and the index
+is still right at HEAD. The defect is the fragility, not a live miss — and the
+guard for it has to CREATE the future edit (an event appended after the despawn
+line) rather than wait for one.
+
+### 4. A fork can now record a restore that refused nothing
+
+`LostAction.kind` has had a `'changed'` arm since it was written — *"the action
+still replays and is still legal, but it now REFERS to something else"* — and
+the restore path only ever pushed `'lost'`. So the loud half of a divergence
+was recorded and the quiet half was not: **an engine that ACCEPTS every logged
+action while producing a different board left no trace at all**, and the file
+went on reading as a faithful record. That is the worse of the two, because a
+refusal at least announces itself.
+
+It is measured the way `undoActionAt` measures its own splice, and for the same
+reason (*a measurement beats a prediction*): `persist` writes each action's
+REFERENCE KEY — what it referred to when it was taken, in resolved terms rather
+than in the payload that replays verbatim — and a restore compares. Every index
+that moved is a `LostAction` with `kind: 'changed'`, they reach the file
+through the same `Fork.lost` array, and the players' note says which kind of
+divergence it was.
+
+Three limits, deliberate:
+
+* **`Room.drifted` is not folded into `Room.lost`.** `lost` is the refusals and
+  it is `undoActionAt`'s baseline for "an undo must never cost anybody a move";
+  padding it with actions that still apply would raise that baseline and
+  silence a real loss.
+* **Drift is measured only when the rebuild refused NOTHING.** After a refusal
+  every later key is measured against a board the log stopped describing.
+* **A file with no recorded keys is not accused of anything.** "I cannot tell"
+  is not "it drifted", so every game saved before this ruling reports no drift
+  and forks nothing.
+
+⚠ And the hazard this ruling does NOT solve: the key format IS the comparison,
+so changing how `referenceKey` spells a key would move every key in every file
+at once and report every game as drifted. A stamp saying which format a file's
+keys are in belongs to the saved-game versioning work (CARD-TODO #66), which is
+the consumer of this signal. Until it lands, **a change to `referenceKey`'s
+spelling is a change to the saved-game format.**

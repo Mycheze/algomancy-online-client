@@ -297,8 +297,12 @@ function hexbane(seed: number, opts: { endOfTurn?: boolean; answers?: Record<str
   // the state in which nobody has a deployment. The card used to refuse to
   // raise a decision there; it no longer does (see below).
   if (opts.endOfTurn) g.s.deployPlayer = null;
+  // R191: `item` is the played item's id, and it is how this card finds the
+  // spell now — R178 puts it on every real 'spellPlayed', so a fixture without
+  // it is not the event `commitItem` emits.
   const ev: EngineEvent = {
-    type: 'spellPlayed', msg: '', data: { card: 'Overbloom', seat: D, region: g.homeRegion(A) },
+    type: 'spellPlayed', msg: '',
+    data: { card: 'Overbloom', seat: D, region: g.homeRegion(A), item: bait.id },
   };
   const run = (): void => {
     const parts = g.composeParts(carrier, 0, 'augment');

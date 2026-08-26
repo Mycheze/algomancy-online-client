@@ -2594,9 +2594,18 @@ export class E {
    * halves can RESOLVE (fireEvent and noteTrashed only queue triggers), so a
    * listener cannot move, re-bin or re-erase a mod inside this window; it can
    * only read one, which is exactly the point. Every caller of `leavePlay`
-   * must reach here — see the ⚠ on `leavePlay`. */
-  private afterDespawn(u: Entity, mods: Entity[]): void {
-    const ev = this.events[this.events.length - 1]!;
+   * must reach here — see the ⚠ on `leavePlay`.
+   *
+   * R191: the despawn event is a PARAMETER. It used to be recovered as
+   * `this.events[this.events.length - 1]` — a positional read of a global
+   * array that was correct by ORDERING ALONE, and only for as long as the
+   * caller's `ev('despawned', …)` stayed the very last thing appended before
+   * the call. Nothing enforced that and nothing would have failed loudly if it
+   * stopped being true: `fireEvent` would have dispatched the wrong event to
+   * every `[Augment] When I despawn` listener, which reads its `data` for the
+   * seat, the region and R70's leave-play facts. Both callers already hold the
+   * event `ev()` handed back, so they hand it over. */
+  private afterDespawn(u: Entity, mods: Entity[], ev: EngineEvent): void {
     this.fireEvent('despawned', ev, u);
     for (const m of mods) if (!m.token) this.noteTrashed(m.owner, m.card, 'play', m);   // R70
     // R65 (2026-08-25): and the TOKEN mods reach the public erased pile, which
@@ -2661,12 +2670,12 @@ export class E {
     // the card went, which a listener cannot recover from `owner` once the two
     // can differ.
     const evData = { ...this.leftPlayFacts(u), to: 'cache', cache: seat };
-    this.ev('despawned',
+    const ev = this.ev('despawned',
       `${u.card} leaves play for ${this.pname(seat)}'s cache` +
       (mods.length ? ` (its ${mods.length} mod(s) stay behind → bin)` : '') +
       (u.token ? ', then erased (token).' : '.'),
       evData);
-    this.afterDespawn(u, mods);
+    this.afterDespawn(u, mods, ev);
     const cc = this.cacheCard(seat, u.card, 'play', opts);
     // R69's sweep, on the cache this time — `cc.uid` names the entry we just
     // made, so a second copy of the same card already sitting there is safe
@@ -5297,17 +5306,19 @@ export class E {
     const evData = { ...this.leftPlayFacts(u), to: 'hand', hand: seat };
     // R179: the card really enters the hand, so it goes through the ONE hand
     // entry point and announces itself as 'handEntered' — BEFORE the
-    // 'despawned' line, which afterDespawn() recovers as `events[length-1]`.
+    // 'despawned' line. (R191: which afterDespawn() is now HANDED, rather than
+    // recovering it as `events[length-1]`; this call appends events of its own
+    // and the ordering that made the index right was never enforced.)
     // Both events fire for one recall and they are different facts; the three
     // "a card enters a player's hand" cards read only the second one now, so
     // nothing double-counts.
     this.toHand(seat, u.card, 'play', { unit: u.id, token: !!u.token });
-    this.ev('despawned',
+    const ev = this.ev('despawned',
       `${u.card} is ${verb} ${this.pname(seat)}'s hand`
       + (mods.length ? ` (its ${mods.length} mod(s) → bin)` : '')
       + (u.token ? ', then erased (token).' : '.'),
       evData);
-    this.afterDespawn(u, mods);
+    this.afterDespawn(u, mods, ev);
     // R69's sweep, on the hand this time
     if (u.token) this.eraseFromZone(seat, u.card, 'hand', `${u.card} is erased from the hand — it is a token.`);
   }

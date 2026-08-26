@@ -72,9 +72,14 @@ function resolve(
   return g.events.slice(before);
 }
 
-/** a 'spellPlayed' event as `commitItem` builds it, for a trigger run by hand */
-const spellPlayedEvent = (card: string, seat: Seat, region: number): EngineEvent =>
-  ({ type: 'spellPlayed', msg: '', data: { card, seat, region } });
+/** a 'spellPlayed' event as `commitItem` builds it, for a trigger run by hand.
+ *
+ *  R191: `item` — the id of the item that was played — is part of that event
+ *  and has been since R178, and Origon and Hexbane Shiitake now read it
+ *  instead of scanning the stack for (card, controller). A fixture without it
+ *  is not the event the engine emits, so it is passed here. */
+const spellPlayedEvent = (card: string, seat: Seat, region: number, item: number): EngineEvent =>
+  ({ type: 'spellPlayed', msg: '', data: { card, seat, region, item } });
 
 /** put a unit into a REGION rather than into its controller's home region —
  *  `util.spawn`'s battle-time sibling, for a body that arrives mid-battle. */
@@ -105,7 +110,7 @@ test('Origon negates the TOP of two identical stack items, not the bottom', () =
   g.s.stack.push(copy(7002));   // the copy the 'spellPlayed' event names
   resolve(getCard('Origon').augmentText![0]!.effect, g, {
     controller: D, sourceName: 'Origon', region,
-    event: spellPlayedEvent('Fight', A, region),
+    event: spellPlayedEvent('Fight', A, region, 7002),
   });
   assert.deepEqual(g.s.stack.map(i => i.id), [7001],
     'the TOP copy is the one that was just played, and the one negated — `.find()` '
@@ -132,7 +137,7 @@ test('Origon negates the spell that was PLAYED, not the R164 copy standing above
   g.s.stack.push(played, dup);
   resolve(getCard('Origon').augmentText![0]!.effect, g, {
     controller: D, sourceName: 'Origon', region,
-    event: spellPlayedEvent('Fight', A, region),
+    event: spellPlayedEvent('Fight', A, region, 7101),
   });
   assert.deepEqual(g.s.stack.map(i => i.id), [7102],
     '"negate IT" points at the spell that was played; RAQ: "the 1st copy wasn\'t \'played\'"');
@@ -155,7 +160,7 @@ test('Hexbane Shiitake exchanges control for the spell that was PLAYED, not for 
   resolve(getCard('Hexbane Shiitake').augmentText![0]!.effect, g,
     {
       controller: D, sourceId: hex, sourceName: 'Hexbane Shiitake', region,
-      event: spellPlayedEvent('Fight', A, region),
+      event: spellPlayedEvent('Fight', A, region, 7201),
     },
     { swap: true });
   assert.equal(g.s.stack.find(i => i.id === 7201)!.controller, D,
