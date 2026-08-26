@@ -14509,3 +14509,100 @@ Un-gating anything would have re-opened the hazard R154 §3 exists to close.
   resolution, which is exactly the thing the R85 snapshot makes unsafe. The
   approximation that remains is an ORDERING one, and it is a much smaller one
   than "there is no window".
+
+---
+
+## R197b — "look at" is a PRIVATE look; three cards published the whole hand
+
+The pool prints two verbs about a hand and they mean opposite things.
+*"**Look at** target player's hand"* is a private look — you see it, the table
+does not. *"Target player **reveals** their hand"* is public. `E.revealHandTo`
+already implements the private half: it stores the look in `seenHand[viewer]`
+(the client's note-taking strip) and writes only *"X looks at Y's hand"*, which
+deliberately names nothing.
+
+Five registered cards print "look at …hand": **Divine Foresight, Thought
+Extraction, Eldritch Dreamtender, Bripp, Hand Peeper**. Hand Peeper calls
+`revealHandTo` and stops — correct, and proof the private mechanism suffices
+alone. The other four also build a convenience line naming the whole hand, and
+**only Divine Foresight tagged it `privateTo`** (R125's literal-reading audit,
+`batch-light-a.ts:239-247`, whose comment names the class outright). Its three
+siblings carried the identical line untagged. `redactLog` gates on
+`visibleToSeat`; `visibleToSeat` gates on `data.privateTo`; an untagged line
+goes to every seat. `grep -rn privateTo engine/src/cards/sets/` returned that
+one file, pool-wide.
+
+**How reachable, honestly — the report overstated this and the correction is
+load-bearing.** `server/view.ts::other()` is hardcoded 2-seat, so the game is
+1v1. An untagged whole-hand line therefore reaches exactly two seats: the
+LOOKER and the hand's OWNER. When those are different seats both are already
+entitled to every word of it. So for **Eldritch Dreamtender**, whose `who` is
+by construction an opponent of `ctx.controller`, the leak is **latent** — real
+in the code, not observable at a 1v1 table. The same is true of Divine
+Foresight, the precedent, which prints "target OPPONENT" and cannot self-aim.
+
+**Thought Extraction and Bripp print "target PLAYER", and both of their R64
+targeting comments say in as many words that yourself is a legal choice.** Aim
+either at your own hand and the looker IS the owner — so the one other seat
+the line reached was your OPPONENT, reading your entire hand off a spell you
+cast on yourself. That half is materially real and reachable in a shipped
+game, and `173-look-at-a-hand.test.ts` drives it as its own case per card.
+
+All four are tagged uniformly regardless. `Seat = number` and
+`players: PlayerState[]` are N-player in the engine's own types, and a
+`who === ctx.controller ? private : public` test is a denylist of exactly the
+shape R196 argues against.
+
+**Bripp's second line, and the ruling that goes with it.** Bripp also logged
+*"Bripp recycles \<card\> from Y's hand"* publicly. That card went out of a
+HIDDEN hand and onto the HIDDEN bottom of a deck — `viewFor` maps every entry
+of both zones to `HIDDEN_CARD` — and nothing Bripp prints says "reveal", so the
+name is not the table's. It is split: a `privateTo` line carries the NAME to
+the looker (who chose it), and a public line says a card moved without saying
+which; `E.draw`'s own *"Y draws 1."* completes the public story. The hand's
+OWNER is deliberately not the seat that gets the name — they need no log line
+to learn what left their own hand, which the state channel serves them in full,
+and `privateTo` names one seat. **Not** routed through `redactEvent`'s
+`recycle` arm, which was the obvious alternative: that arm keys on
+`ev.type === 'recycle'`, rewrites the message to *"…for a dormant resource"*
+(the resource-step recycle, the wrong reason here), and blurs for every seat
+BUT the owner — the exact inverse of what is wanted. `E.recycleToBottom` emits
+no event at all, so there was nothing to piggyback on either.
+
+**Why the engine suite could not see any of it.** `Harness` is the HOTSEAT
+driver: `absorb()` pushes every event's `msg` into one `log`, with no seat
+separation and no `visibleToSeat` anywhere near it. `42-dark-b` asserts
+`h.log.some(l => l.includes('Thought Extraction reveals'))` and passed before
+the fix and after it. Every assertion in the new file goes through
+`server/view.ts` instead — `visibleToSeat` for the tag, `redactLog` for the
+line a seat is actually served. An assertion on `h.log` cannot fail.
+
+**The class guard is §3 of `173-look-at-a-hand.test.ts`, and it matters more
+than the three fixes** (R196: a per-card fix for a class is this repo's most
+expensive recurring failure — one report was filed three times because of it).
+It derives the card list from PRINTED TEXT via `allCardNames()` — not
+`printed.json`, which misses `registerSynthetic` cards — sweeps all of
+`engine/src/` for `.ev()` calls that interpolate hand CONTENTS (paren-balanced
+over `stripCode`, so a paren in a string or comment cannot unbalance it),
+attributes each to the card it names, and asserts the partition **both ways**:
+a card printing "look at …hand" MUST tag; a card printing "reveals their hand"
+must NOT; a card printing neither fails until someone decides which verb it is
+on the card. All five real instances are found and all three arms were
+red-checked with planted source. Per R176 the matcher is itself measured first
+— a sweep that cannot fail is worse than no sweep.
+
+⚠ **What the guard cannot see, said here rather than left to be discovered.**
+It matches an `\bhand\b` IDENTIFIER surviving `stripCode` inside the call, so
+it is blind to (a) a line naming ONE card taken out of a hand through a local
+(`${name}` — Bripp's recycle line: no `hand` token survives there), and (b) a
+hand published through a helper taking the names as an argument. (a) is not
+statically expressible and is R196 §2's runtime invariant; (b) has no instance
+in the pool today. Neither hole is a reason to skip the part that is
+expressible.
+
+Registry size measured during this work: `allCardNames().length` is **494**,
+not the 495 the report carried. `printed.json` holds 492 and all 492 are
+registered; the two registry names it does not carry are `Unit Token` and
+`Beyond, Codex Incarnate`. So the split is 492 + 2, not 492 + 3. (The report's
+warning itself stands, and is why the guard reads `allCardNames()`: a sweep
+driven off `printed.json` alone misses the synthetics.)

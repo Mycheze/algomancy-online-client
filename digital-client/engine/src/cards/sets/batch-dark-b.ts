@@ -836,7 +836,16 @@ card('Thought Extraction', {
       if (t && 'player' in t) {
         const who = t.player;
         const hand = g.player(who).hand;
-        g.ev('info', `Thought Extraction reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
+        // R197b: "LOOK AT target player's hand" — YOU look, the table does
+        // not. The line that NAMES the cards is tagged `privateTo` the looker
+        // (server/view.ts::visibleToSeat drops it for every other seat);
+        // E.revealHandTo below writes the public "X looks at Y's hand" and is
+        // deliberately careful not to name anything. Untagged, this put the
+        // whole opposing hand in the SHARED log. Divine Foresight
+        // (batch-light-a) was fixed for exactly this and named the class;
+        // three siblings carrying the identical line were not.
+        g.ev('info', `Thought Extraction reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`,
+          { privateTo: ctx.controller });
         if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);
         if (hand.length) {
           const i = hand.length === 1 ? 0 : ctx.choose('te', {

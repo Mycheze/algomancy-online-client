@@ -368,7 +368,16 @@ const brippEffect: EffectDef = {
     if (!t || !('player' in t)) return;
     const who = t.player;
     const hand = g.player(who).hand;
-    g.ev('info', `Bripp reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
+    // R197b: "LOOK AT target player's hand" — a PRIVATE look. The line that
+    // NAMES the cards is tagged `privateTo` the looker
+    // (server/view.ts::visibleToSeat drops it for every other seat);
+    // E.revealHandTo below writes the public "X looks at Y's hand", which is
+    // deliberately careful not to name anything. Same class and same
+    // one-argument fix as Divine Foresight (batch-light-a). Untagged, this put
+    // the whole hand in the SHARED log — and Bripp is also a bounded GRAFT, so
+    // the same line rode every carrier it was ever grafted onto.
+    g.ev('info', `Bripp reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`,
+      { privateTo: ctx.controller });
     // the looker keeps what they saw (client-side note-taking strip)
     if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);
     if (!hand.length) return;
@@ -383,7 +392,34 @@ const brippEffect: EffectDef = {
     }
     const [name] = hand.splice(pick, 1);
     g.recycleToBottom(who, name!);
-    g.ev('info', `Bripp recycles ${name} from ${g.pname(who)}'s hand.`);
+    // R197b (the secondary leak, same card). This card went out of a HIDDEN
+    // hand and onto the HIDDEN bottom of a deck — `viewFor` maps every entry
+    // of both zones to HIDDEN_CARD — and nothing Bripp prints says "reveal".
+    // So the NAME rides a private line and the public line says a card moved
+    // without saying which; `E.draw`'s own "Y draws 1." then completes the
+    // public story. The looker is the seat that gets the name because the
+    // looker CHOSE it; the owner needs no log line to be told what left their
+    // own hand, which the state channel shows them in full.
+    //
+    // NOT routed through `redactEvent`'s `recycle` arm, which was the obvious
+    // alternative: that arm keys on `ev.type === 'recycle'` and rewrites the
+    // message to "…recycles a card for a dormant resource" — the RESOURCE-STEP
+    // recycle, the wrong reason here — and it blurs for every seat but the
+    // card's OWNER, which is precisely the one seat that does not need it
+    // while hiding it from the one that chose it. `E.recycleToBottom` emits no
+    // event at all, so there is no `recycle` event to piggyback on either: it
+    // would have to be minted, and that arm would then be serving two
+    // unrelated causes.
+    //
+    // ⚠ In strict 1v1 the leak is only REALISED on a self-target — "target
+    // player" includes yourself (see the targeting comment above), and
+    // otherwise the audience {looker, owner} happens to be both seats. Fixed
+    // unconditionally anyway: a `who === ctx.controller ? private : public`
+    // test is a denylist of exactly the shape R196 argues against, and it rots
+    // the moment a third seat can watch.
+    g.ev('info', `Bripp recycles ${name} from ${g.pname(who)}'s hand.`,
+      { privateTo: ctx.controller });
+    g.ev('info', `Bripp recycles a card from ${g.pname(who)}'s hand; they draw.`);
     g.draw(who, 1);
   },
 };

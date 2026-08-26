@@ -988,7 +988,15 @@ card('Eldritch Dreamtender', {
         const who = ctx.event?.data?.['seat'] as Seat | undefined;
         if (who === undefined) return;
         const hand = g.player(who).hand;
-        g.ev('info', `Eldritch Dreamtender reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
+        // R197b: "look at that player's hand" — a PRIVATE look, not a reveal.
+        // The naming line belongs to the looker alone (`privateTo`, dropped
+        // for every other seat by server/view.ts::visibleToSeat); the public
+        // line is E.revealHandTo's "X looks at Y's hand", which names nothing.
+        // Same class and same one-argument fix as Divine Foresight
+        // (batch-light-a). Untagged, a damaged opponent's whole hand went into
+        // the shared log every time this trigger resolved.
+        g.ev('info', `Eldritch Dreamtender reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`,
+          { privateTo: ctx.controller });
         if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);
         if (!hand.length) return;
         const pick = ctx.choose('dream', {
