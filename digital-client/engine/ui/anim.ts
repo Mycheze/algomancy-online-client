@@ -118,6 +118,52 @@ function rectOf(f: Frame, key: string | null, anchor: string | null): { r: DOMRe
 const flightRank = (m: Move): number => (m.kind === 'move' ? 0 : m.kind === 'leave' ? 1 : 2);
 
 /**
+ * CT-82(d)/R205 — R189's rule, one layer down.
+ *
+ * R189 fixed `queueFlashes`: **a batch that is simultaneous in the rules must
+ * look simultaneous, and a sequence must look sequential.** It fixed the beat
+ * queue and nothing else, and a SECOND serialiser was still live here and
+ * named nowhere: every flight of a render was stamped `i * STAGGER_MS` where
+ * `i` is its INDEX IN THE ARRAY. That index carries no information at all —
+ * the list has already been re-sorted by `flightRank`, so the order that sets
+ * the delays is "moves before leaves before enters", not anything that
+ * happened in the game. Four units dying at once and four triggers landing on
+ * the stack in one update were drawn 45ms apart, one at a time, for the same
+ * reason report #105 complained about the beats.
+ *
+ * THE UNIT OF SPACING IS A JOURNEY, NOT AN ITEM. Cards that left the same
+ * place for the same place in one render are one thing happening and share a
+ * beat; groups are `STAGGER_MS` apart, exactly as items used to be.
+ *
+ * **POSITIVE EVIDENCE ONLY**, R189's third consequence held to literally: a
+ * flight joins its neighbours only when BOTH ends of its journey are named
+ * anchors. A move with an unnamed end (`leave` — erased, trashed; `enter` — a
+ * token out of nowhere) is a batch the client can read nothing about, so it
+ * keeps its own step and behaves exactly as it did before this existed.
+ *
+ * Pure, and exported, because `playMotion` needs a real DOM and this does not:
+ * `test/176-nested-affordance-and-serialiser.test.ts` is the only channel this
+ * decision has ever had.
+ *
+ * @param moves flights in the order they will be played
+ * @returns the delay in ms for each, positionally
+ */
+export function flightDelays(
+  moves: readonly { fromAnchor: string | null; toAnchor: string | null }[],
+): number[] {
+  const step = new Map<string, number>();
+  let next = 0;
+  return moves.map(mv => {
+    const journey = mv.fromAnchor && mv.toAnchor ? `${mv.fromAnchor}>${mv.toAnchor}` : null;
+    let at: number;
+    if (journey === null) at = next++;
+    else if (step.has(journey)) at = step.get(journey)!;
+    else { at = next++; step.set(journey, at); }
+    return Math.min(at * STAGGER_MS, STAGGER_MAX);
+  });
+}
+
+/**
  * Slot keys whose real element is hidden because a ghost is still flying to
  * it, and how many flights are in the air for each.
  *
@@ -176,22 +222,23 @@ export function playMotion(prev: Frame, m: Motion): void {
   // air. A no-op re-render must leave them alone — otherwise the second render
   // of a single click wipes the flight the first one just launched.
   if (flights.length) ghosts().replaceChildren();
-  let i = 0;
-  for (const mv of flights) {
+  // CT-82(d)/R205: one delay per flight, spaced by JOURNEY rather than by
+  // array index — see `flightDelays`. Cards that made the same trip in this
+  // render leave together.
+  const delays = flightDelays(flights);
+  flights.forEach((mv, i) => {
     const src = rectOf(prev, mv.from, mv.fromAnchor);
     const dst = rectOf(next, mv.to, mv.toAnchor);
-    const delay = Math.min(i * STAGGER_MS, STAGGER_MAX);
+    const delay = delays[i]!;
 
     if (mv.kind === 'enter' || !src) {
       // came from nowhere we can point at (spawned token, drawn-from-nothing):
       // pop it where it landed instead of flying a lie across the screen
       if (mv.to) pop(mv.to, delay);
-      i++;
-      continue;
+      return;
     }
     fly(mv, src.r, dst, next.has(mv.to ?? ''), prev.has(mv.to ?? ''), delay);
-    i++;
-  }
+  });
 
   // 3. pulses — same card, different numbers
   for (const p of m.pulses) {

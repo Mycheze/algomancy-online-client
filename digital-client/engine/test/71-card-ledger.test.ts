@@ -44,7 +44,11 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import '../src/cards/registry.ts';
+// R214: the PUBLIC entry point, not `cards/registry.ts`. registry.ts registers
+// only 494 of the 495 cards — the third synthetic (`Alluring Attribute`) is
+// registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
+// at the foot of this file and test/180-pool-sight.test.ts.
+import '../src/index.ts';
 import { allCardNames, getCard, registerSynthetic } from '../src/cards/dsl.ts';
 import type { Ability, CardDef, EffectDef } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
@@ -425,7 +429,78 @@ const NOT_A_GAP: Record<string, string> = {
   'Fire Resource': RESOURCE_FACE_REASON,
   'Water Resource': RESOURCE_FACE_REASON,
   'Earth Resource': RESOURCE_FACE_REASON,
+
+  // ── R214 (2026-08-26) ──────────────────────────────────────────────────
+  //
+  // The card this ledger could not see. Until R214 this file imported
+  // `src/cards/registry.ts` alone, which registers 494 of the 495 cards —
+  // `Alluring Attribute` is registered by `src/apply.ts`. So the "no dead
+  // cards" clean sheet below covered 494 cards while reading as though it
+  // covered the pool. Widening the import to `src/index.ts` made BOTH sweeps
+  // in this file go red on it at once, which is the correct outcome and the
+  // proof the blindness was load-bearing here rather than cosmetic.
+  'Alluring Attribute':
+    'R84/R214. `abilities[0].when` really is `() => false`, and that is deliberate rather '
+    + 'than a scaffold: the trigger is NEVER queued by the event system. `apply.ts::'
+    + 'queueAlluringTriggers` pushes it onto `s.triggerQueue` by hand from '
+    + '`doDeclareAttack`, because the thing that fires is a COLUMN attribute and no '
+    + 'entity in play owns the ability. The card exists only so `effectByKey` can '
+    + 'resolve `ability:Alluring Attribute#0` when Divine Intervention / Gravitational '
+    + 'Correction / Hexbane Shiitake retarget the trigger. `when` is belt-and-braces '
+    + 'against a scan finding it anyway, and its comment in apply.ts says so. The '
+    + 'behaviour is live and tested — R84, and 68-target-conformance now reads its '
+    + "declared 'enemyUnit' kind off the printed text, which before R214 it could not "
+    + 'see either.',
 };
+
+/* ── R210 (CT-83) · THE STALENESS ASSERTION NOT_A_GAP NEVER HAD ─────────
+ *
+ * `NOT_A_GAP` had NINE entries and ZERO assertions. Its only four references
+ * were `if (name in NOT_A_GAP) continue;` skip-filters and two mentions in
+ * failure prose — so an entry whose card was implemented, renamed or deleted
+ * went on waiving nothing, forever, and the list could only ever grow. That
+ * is the exact failure CT-68 caught in `DEAD_EXEMPT` (R174 wrote entries for
+ * two helpers, R181 deleted the helpers, the entries sat on for a round) —
+ * running here on the file whose entire subject is a claim outliving its
+ * reason.
+ *
+ * The check is deliberately NOT "the reason string is long enough", which is
+ * how `SILENT_KNOWN`'s reasons are guarded in 65-effect-conformance and which
+ * a stale reason passes trivially. It re-derives the fact from the registry:
+ * an exemption exists to stop a DETECTOR firing, so if neither detector fires
+ * on that card any more, the exemption is waiving nothing and has to go.
+ */
+test('CT-83: every NOT_A_GAP exemption still waives a real sweep hit', () => {
+  const registered = new Set(allCardNames());
+  const stale: string[] = [];
+
+  for (const [name, why] of Object.entries(NOT_A_GAP)) {
+    if (!registered.has(name)) {
+      stale.push(`${name}: NOT_A_GAP exempts it, but it is not a registered card. Either it was `
+        + 'renamed/removed (delete the entry), or this file has lost sight of part of the pool '
+        + `— see the R214 pool floor at the foot of this file. (Was: ${why.slice(0, 80)}…)`);
+      continue;
+    }
+    const dead = deadShapes(name);
+    const inert = inertShapes(name);
+    if (!dead.length && !inert.length) {
+      stale.push(`${name}: NOT_A_GAP exempts it, but NEITHER sweep flags it any more — `
+        + 'deadShapes() and inertShapes() both come back empty. The exemption has done its '
+        + `job and is now a hole in the net that nobody is watching. Delete it. (Was: ${why})`);
+    }
+  }
+
+  assert.deepEqual(stale, [],
+    'NOT_A_GAP entries that have outlived their reason:\n  ' + stale.join('\n  ')
+    + '\n\nAn exemption is a claim about the code AS OF THE DAY IT WAS WRITTEN. This list '
+    + 'carried nine of them for months with nothing checking any of them.');
+
+  // The denominator, so the assertion above cannot pass by scanning nothing.
+  assert.ok(Object.keys(NOT_A_GAP).length >= 9,
+    `NOT_A_GAP is down to ${Object.keys(NOT_A_GAP).length} entries — if that is a real `
+    + 'deletion, lower this floor in the same commit; if it is not, something has emptied '
+    + 'the table and this test is now vacuous.');
+});
 
 // ── (1) SWEEP → LEDGER: the assertion that would have caught Harbinger ──
 
@@ -784,4 +859,27 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
     + 'definition that reads as implemented and is not. Implement it, or declare it in '
     + 'test/card-ledger.ts, or (if it is a false positive) add the card to NOT_A_GAP with '
     + 'a reason. Do NOT resolve it with a { todo: true } test.');
+});
+
+// ── R214 · POOL SIGHT ───────────────────────────────────────────────────
+//
+// This file sweeps the WHOLE card pool. `src/cards/registry.ts` is the natural
+// card entry point and it registers 494 of the 495 cards: two of the three
+// `registerSynthetic` calls are its own, and the third — `Alluring Attribute`
+// — is in `src/apply.ts`. Eight sweeps imported registry.ts alone, saw 494,
+// and NOT ONE OF THEM ASSERTED A POOL SIZE, so every clean sheet they produced
+// silently covered one card fewer than it claimed.
+//
+// The floor is what stops that being reintroduced by an import change nobody
+// reads as a behaviour change. `test/180-pool-sight.test.ts` holds the same
+// floor for the whole suite and the guard that catches a ninth sweep.
+test('R214: this sweep sees the whole card pool', () => {
+  const n = allCardNames().length;
+  assert.ok(n >= 495,
+    `this sweep sees ${n} cards, not the full 495 — its imports reach src/cards/registry.ts `
+    + 'but not src/apply.ts, so the synthetic Alluring Attribute is invisible to it and every '
+    + 'verdict above covers one card fewer than it says. Import ../src/index.ts.');
+  assert.ok(allCardNames().includes('Alluring Attribute'),
+    'the pool is big enough but Alluring Attribute is not in it — the count floor above has '
+    + 'been satisfied by some other card, which is not the thing being guarded');
 });

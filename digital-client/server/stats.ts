@@ -19,7 +19,11 @@
 import type {
   Action, CardName, Element, EngineEvent, GameMode, GameState, Seat,
 } from '../engine/src/types.ts';
-import { apply, createGame, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { apply, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+// R216 — the third deal site (see scenarios.ts). The post-game screen and
+// the accounts fold both replay a game to count it; a scenario room counted
+// without its board is a made-up game in somebody's profile.
+import { dealScenario } from './scenarios.ts';
 import { getCard } from '../engine/src/cards/dsl.ts';
 
 export const ELEMENTS: Element[] = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
@@ -122,6 +126,8 @@ export interface GameRecord {
    * being able to say who won. A fact recorded at the time cannot rot.
    */
   winner?: Seat | null;
+  /** R216: the scenario this game was dealt with, if any. */
+  scenario?: string;
 }
 
 const emptySeat = (name: string): SeatStats => ({
@@ -202,7 +208,7 @@ export function summarizeGame(rec: GameRecord): GameSummary {
   let state: GameState;
   let events: EngineEvent[];
   try {
-    const g = createGame(rec.seed, names, mode, els, decks);
+    const g = dealScenario(rec.seed, names, mode, els, decks, rec.scenario);
     state = g.state;
     events = [...g.events];
   } catch (err) {

@@ -465,6 +465,15 @@ card('Perish', {
       // sacrificed half of an already-reduced army. Snapshot all of them first.
       const quota = new Map<Seat, number>(
         seats.map(s => [s, Math.ceil(g.unitsOf(s, ctx.region).length / 2)]));
+      // R209/CT-74: half of nothing is nothing. Every present seat can be here
+      // with no units — after a trade-off, or grafted onto a deployment cause
+      // — and every quota is then 0, so the loops below never run and the
+      // spell resolved in total silence. Perish was on NO ticket; the 'barren'
+      // board added to 65-effect-conformance for CT-74 is what found it.
+      if (seats.every(s => quota.get(s) === 0)) {
+        g.ev('info', 'Perish: nobody here has a unit — nothing is sacrificed.');
+        return;
+      }
       for (const seat of seats) {
         const units = () => g.unitsOf(seat, ctx.region);
         const n = quota.get(seat)!;

@@ -671,11 +671,13 @@ card('Reclaim the Fallen', {
         g.ev('info', `Reclaim the Fallen: ${host.card} carries no unit mod — no effect.`);
         return;
       }
-      for (const m of mods) {
-        delete g.s.entities[m.id];
-        const k = host.mods.indexOf(m.id);
-        if (k !== -1) host.mods.splice(k, 1);
-      }
+      // R208 / CT-86: through `E.eraseMod`, which is the same unlink-and-delete
+      // this hand-rolled. ⚠ `leavesGame: false` is the one thing this site says
+      // that the other four do not: THIS IS NOT AN ERASE. The mod ENTITY is
+      // destroyed, but the CARD is about to be put into play as a unit two
+      // lines down, so it never leaves the game and must never reach the R65
+      // public erased pile whatever round-27's Q3 answers.
+      for (const m of mods) g.eraseMod(m, { leavesGame: false });
       for (const m of mods) {
         // CARD-TODO #17: "under their CONTROLLER's control" — a mod's
         // controller is its host's (attachMod), while its OWNER is whoever

@@ -125,6 +125,25 @@ interface Observed {
   trigTypes: Set<string>; trigChanged: Set<string>;
   /** the fixtures the press run actually got through */
   fired: string[];
+  /**
+   * R211 / CARD-TODO #87: THE THIRD STATE. Runs that ended with one of this
+   * card's activations still on the stack, so the drill could not close its
+   * evidence window and this card's activation-gated promises are UNDECIDED
+   * by that run rather than unobserved.
+   *
+   * It has to be printed, not swallowed. Folding an inconclusive run into
+   * "observed" is the bug CT-87 fixes (the drill used to credit every event
+   * from the stuck activation to the end of the run, and Slag Spewer read as
+   * OBSERVED on somebody else's `erased` — CT-86). Folding it into "never
+   * observed" is the opposite lie and would put a card in UNREACHED under a
+   * precondition it does not actually lack.
+   *
+   * Measured over the whole pool at R211: 0 of 1296 runs. That zero is only
+   * worth something because the channel has a positive control proving it can
+   * be non-zero — `181-inconclusive-activation-window.test.ts` forces one and
+   * shows the refusal. See docs/13-assessment.md §7.4.
+   */
+  inconclusive: { opts: string; reason: string; refused: string[] }[];
 }
 
 function observe(card: string): Observed {
@@ -137,6 +156,7 @@ function observe(card: string): Observed {
   const trigTypes = new Set<string>();
   const trigChanged = new Set<string>();
   let fired: string[] = [];
+  const inconclusive: Observed['inconclusive'] = [];
   let played = false;
   let activated = false;
   let attached = false;
@@ -164,6 +184,16 @@ function observe(card: string): Observed {
   for (const opts of runs) {
     let r;
     try { r = drillCard(card, 900_000, opts); } catch { continue; }
+    // R211 / CT-87. Recorded BEFORE the branch below, because both the augment
+    // run and the activate run open activation windows and either can end with
+    // one still on the stack.
+    if (r.actInconclusive) {
+      inconclusive.push({
+        opts: JSON.stringify(opts ?? {}),
+        reason: r.actInconclusiveReason ?? 'maxSteps',
+        refused: [...new Set(r.actInconclusiveTail)],
+      });
+    }
     if (opts?.augment) {
       if (r.attached) attached = true;
       for (const t of r.ownTypes) augTypes.add(t);
@@ -200,7 +230,7 @@ function observe(card: string): Observed {
   }
   return {
     types, changed, played, actTypes, actChanged, activated,
-    augTypes, augChanged, attached, trigTypes, trigChanged, fired,
+    augTypes, augChanged, attached, trigTypes, trigChanged, fired, inconclusive,
   };
 }
 
@@ -549,202 +579,8 @@ test('every activation-gated promise is delivered when the drill pays and activa
 
 // ── CARD-TODO #49 stages 3 & 4: the fixtures and the host ───────────────
 
-/**
- * Every gated promise no fixture in the library can reach, NAMED — which is
- * the form CARD-TODO #49 says it closes in ("the remainder are clauses no
- * fixture can reach, named individually rather than counted").
- *
- * 38 claims over 37 cards, down from 52 at the end of R180 and from 218 over
- * the whole gated heap when the ticket was filed. Each entry opens with WHAT
- * KIND of unreachable it is:
- *
- *   REAL   — the clause is not implemented. Cite a CARD-TODO id. (None yet:
- *            stages 3 and 4 found no broken card, and that null result is
- *            measured by the positive controls below, not assumed.)
- *   REGION — R12. The clause is scoped to the region its event fires in, and
- *            the card is standing in its home region while the battle is being
- *            fought in the other seat's. ⚠ R199 CLOSED FIVE OF THE SIX — see
- *            the block on the family below, and 170-battle-position-promises
- *            for the per-card assertions that keep them closed.
- *   EVENTLESS
- *          — the clause IS implemented and it really happens, but the code that
- *            does it emits no event of the right type, so nothing in the game —
- *            not this checker, not a listener, not a public zone — can see it.
- *            This is a REAL DEFECT in the card and differs from VOCAB in the
- *            direction that matters: VOCAB says our vocabulary is too narrow,
- *            EVENTLESS says the card is not speaking. It has its own opener
- *            rather than REAL's because REAL is contracted to cite a CARD-TODO
- *            id and only the ticket owner opens those; an EVENTLESS entry is a
- *            defect REPORTED to that owner and waiting for one.
- *   BOARD  — implemented, but the drill cannot build the precondition.
- *   CHOICE — implemented, but it is behind a decision `progressAction` answers
- *            the other way (it takes option 0, which is "pay" / "decline" /
- *            "no" depending on the card).
- *   VOCAB  — the card really does the thing and the engine really emits an
- *            event for it, but no event in `EVIDENCE[kind]` names that event.
- *            ⚠ The fix is NOT to widen EVIDENCE: "create a Shard" evidenced by
- *            `resourceActivated` would let a card promising "create a 2/2
- *            unit" pass by making a resource instead.
- *   EXTRACT— the phrase `claims.ts` matched is not a promise at all — it is the
- *            card's own trigger clause, or a zone name. These are the ones the
- *            extractor should eventually stop counting; until it does, they are
- *            honest members of the denominator.
- */
-const UNREACHED: Record<string, string> = {
-  // ── REGION (R12): the clause needs the card to be IN the battle's region ──
-  //
-  // ⚠ R199 CLOSED FIVE OF THE SIX. The family was never a property of the
-  // cards and it was not, as the plan assumed, a missing attacking position
-  // either: `progressAction` has always declared the fullest attack on offer,
-  // so the card marches into the defender's region every game. What was missing
-  // was a BEAT that waits for it — the `@battle` repeats all fired in the
-  // DECLARE step, before attacks exist, with the card still at home. The
-  // `inBattle` pin fires a beat only while the subject stands in the battle's
-  // region, and the beats behind it aim at THAT region instead of at home.
-  // Galerider Eel, Colony of the Interworld, Rider of the Tides, Xenopod
-  // Progenitor and Boreal Wanderer all deliver now, each with a named
-  // assertion in 170-battle-position-promises quoting its printed clause.
-  'Bloated Manablub':
-    'REGION — "each opponent loses 3 life" loops over `regions[ctx.region].presentSeats`, and the '
-    + "trigger resolves in the drill's home region where no opponent is present, so the loop runs "
-    + 'zero times. ⚠ It does this SILENTLY; its sibling Boreal Wanderer announces the same no-op. '
-    + '⚠ THE LAST OF THE SIX, and R199 measured exactly why the `inBattle` pin does not reach it: '
-    + 'this card is a 2/2 that the `counters` and `damage` beats leave dead before the declare '
-    + 'step, and the drill\'s "keep the card on the table" respawn puts it back AT HOME, mid-battle '
-    + 'and too late to join the attack. It never stands in a battle at all (`inBattleBeats` is '
-    + 'empty for it), so both beats that make it leave play fire at home. The precondition it '
-    + 'still lacks is a body that survives to the declare step, or a respawn that puts it into the '
-    + 'battle region its seat is already present in.',
+import { UNREACHED } from './unreached.ts';
 
-  // ── BOARD: implemented, precondition unbuildable by the drill ────────────
-  'Fire Resource':
-    'BOARD — "when I activate" needs a resource activated for mana through the real path, and '
-    + '`fundSeat` hands the seat open resources in bulk instead, so the event never fires.',
-  'Water Resource': 'BOARD — the same "when I activate" precondition as Fire Resource.',
-  'Earth Resource': 'BOARD — the same "when I activate" precondition as Fire Resource.',
-  'Nimbus Eel':
-    'BOARD — "when you play a TOKEN spell". A spell token is cast from play, never played from '
-    + 'hand, and the fixture library has nothing that casts one.',
-  'Mirage Walker':
-    'BOARD — "if you took no actions during deployment". The drill deploys, plays and fires '
-    + 'fixtures every deployment, so the condition is false by construction.',
-  'Seabed Shellcaster':
-    'BOARD — "when the SECOND nontoken spell is played in this battle". press mode plays one spell '
-    + 'and one unit, and both land in the same window rather than in one battle.',
-  Proph:
-    'BOARD — "when you play a card from anywhere other than your hand". Every press play is from '
-    + 'hand; there is no bin- or cache-play fixture.',
-  'Stalwart Sentinel': 'BOARD — the same play-from-elsewhere precondition as Proph.',
-  Worldbender:
-    'BOARD — "skip your draft step" only exists in a drafted game; the drill plays constructed.',
-  'Prediction Prophet':
-    'BOARD — "create a 5/5 unit IF YOU MATCHED THE PREDICTION". The trigger fires and resolves; '
-    + 'the drill answers the prediction with the FLOOR of R197\'s numeric entry (0) and the life '
-    + 'total moves.',
-  'Sporebloom Siren':
-    'BOARD — "delete all units with -1/-1 counters on them", resolved on a board where the units '
-    + 'carrying the `counters` fixture\'s minus counters are already dead. It fires and announces '
-    + 'the empty sweep.',
-  'Stellarspore Harvester':
-    'BOARD — "gain control of target unit IF IT HAS a -1/-1 counter on it" at the after-combat '
-    + 'step. The minus counters the fixture places do not survive to that step on a unit that is '
-    + 'still a legal target.',
-  Nothyr:
-    'BOARD — "negate up to one target NONSPELL effect". The bait the drill can put on the stack is '
-    + 'a spell effect, so there is correctly nothing of that kind to aim at.',
-  'Perpetual Construct':
-    'BOARD — "whenever a mod is applied to ME". The `modApplied` fixture deliberately mods somebody '
-    + 'else: modding the card under test makes it {Unstable} (R79), which turns its next death into '
-    + 'an erase and takes it out of the game for every later beat.',
-  'Earnest Defender':
-    'BOARD — "whenever an ally becomes the target of an ENEMY SPELL". The `targeted` fixture is a '
-    + "synthesised targeting, not an enemy's spell, and the bait scenario does not run under the "
-    + 'augment host.',
-  'Keeper of Tithes':
-    'BOARD — "if X is not 0, where X is the number of EXPENDED resources you have". `fundSeat` '
-    + 'refills the seat with OPEN resources at every window, so X is always 0. The trigger fires, '
-    + 'resolves and says so.',
-  'Debt Plant': 'BOARD — the same expended-resource count as Keeper of Tithes, and the same X = 0.',
-  'Molten Riftbreaker':
-    'BOARD — "when I despawn, negate all ALLIED SPELLS". Nothing of the seat\'s own is on the stack '
-    + 'when the host leaves play, and the trigger announces the empty sweep.',
-  Skybreaker:
-    'BOARD — "Erase me: negate all SPELL EFFECTS", activated at a window where the stack holds no '
-    + 'spell. The erase half of the same line IS observed.',
-  'Void Mandible':
-    'BOARD — "sacrifice me. If you do, negate that effect." The negate IS observed; the sacrifice '
-    + 'is a MOD leaving play, which is not a `died` and not a `trashed`, so nothing in '
-    + 'EVIDENCE.sacrifice can name it.',
-  'Cthyrian Rector':
-    'BOARD — same shape: the recall half is observed (`leftBin`), the self-sacrifice is a mod '
-    + 'leaving play and emits neither `died` nor `trashed`.',
-  'Pestilent Mycelion':
-    'BOARD — "whenever one or more -1/-1 counters are put on a unit, each opponent loses 1 life". '
-    + 'The trigger fires and resolves; the life loss is region-scoped to the opponents present.',
-  'Automaton of Abundance':
-    'BOARD — a REPLACEMENT ("if you would create one or more unit tokens, instead …"). It needs a '
-    + 'token creation by the HOST\'s controller while the augment is on, which no beat provides.',
-  'Skittering Blight':
-    'BOARD — a REPLACEMENT on rot damage ("if rot would deal damage to you, instead put that many '
-    + '+1/+1 counters on me"). Nothing in the library gives the seat rot and then lets it tick.',
-  Vengeance:
-    'BOARD — "cards your opponents play during battle gain [Sacrifice a unit]". It grants a COST to '
-    + "somebody else's cards; the drill never has the opponent play a card while the augment is on.",
-
-  // ── CHOICE: behind a decision answered the other way ────────────────────
-  'Soul Tithe':
-    'CHOICE — "the controller of target effect MAY PAY [one]. If they don\'t, negate that effect '
-    + 'and draw a card." `progressAction` answers a payOrDecline with option 0, which is PAY, so '
-    + 'the negate branch is never taken.',
-  'Frosted Denial': 'CHOICE — the same payOrDecline, answered the same way.',
-  'Necromantic Rebuke':
-    'CHOICE — "negate up to one target effect UNLESS its controller erases X cards from their bin". '
-    + 'The controller is offered the escape and takes it.',
-  'Null Drone':
-    'CHOICE — "negate target spell effect IF ITS COST is less than or equal to the greatest amount '
-    + 'of life lost by a player in this battle". No life has been lost in the bait battle, so the '
-    + 'threshold is 0 and no cost clears it.',
-  'Scholar of the Void':
-    'CHOICE — "you MAY discard your hand and transform me". The trigger fires and resolves; the '
-    + 'offer is declined.',
-
-  // ── EVENTLESS: it happens, and nothing in the game can see it happen ────
-  'Slag Spewer':
-    'EVENTLESS — "[Augment][once] [one], Erase one of my mods: I deal 2 damage to any target." '
-    + 'The erase HAPPENS: batch-hybrids-fwe.ts splices the mod out of `self.mods` and does '
-    + "`delete g.s.entities[id]`. But it announces it with `g.ev('info', `${mod.card} is ERASED "
-    + "(Slag Spewer).`)` — an `info` line, not an `erased` event — and the card never reaches the "
-    + "player's public erased pile, which R65 says is where erasing puts a card. Every other erase "
-    + "site in the codebase emits `erased`: `E.eraseFromPlay`, Spore of Regenesis's cost, and both "
-    + 'bin-erase sites in batch-metal-a / batch-dark-b. '
-    + '⚠ THIS ENTRY IS NEW IN R199 AND IT IS NOT A REGRESSION. Before R199 the claim read as '
-    + 'observed, and it was observed by ACCIDENT: the press run used to end mid-activation, and '
-    + '`drillCard`\'s "ran out of steps" tail dumps everything from that activation to the end of '
-    + 'the game into `activateTypes` — which swallowed the `erased` that the `die` beat produced '
-    + 'when the HOST was destroyed. R199 made the runs end cleanly, the unbounded window closed, '
-    + 'and the card stopped borrowing somebody else\'s event. REPORTED to the ticket owner; it '
-    + 'needs a CARD-TODO id and then this entry becomes a REAL one.',
-
-  // ── VOCAB: the engine emits a real event; no EVIDENCE entry names it ────
-  'Hooba-Lan':
-    'VOCAB — "create a Shard" makes a RESOURCE and emits `resourceActivated`. EVIDENCE.create is '
-    + 'tokenCreated/spawned. ⚠ Widening it would let a card promising "create a 2/2 unit" pass by '
-    + 'making a resource instead.',
-  'Swirling Shardform': 'VOCAB — the same Shard/resource mismatch as Hooba-Lan.',
-  'Cinder Scuttler':
-    'VOCAB — the card recalls itself from the BIN into play. `recall` has no event type of its own '
-    + '(EVIDENCE.recall is empty) and its state evidence is a HAND delta, which a bin→play recall '
-    + 'never makes. `leftBin` is observed instead.',
-
-  // ── EXTRACT: the matched phrase is not a promise ────────────────────────
-  'Mycelial Mentor':
-    'EXTRACT — the "create a" matched is inside the TRIGGER CLAUSE ("when you create a token"), not '
-    + 'the promise. The actual promise — "target ally gains +3/+3" — is observed as `statChanged`.',
-  'Lurking Dread':
-    'EXTRACT — the word "cache" matched is a ZONE ("put me into play from your bin OR FROM CACHE"), '
-    + 'not the verb. The clause itself is observed: the sacrifices, the trash and the spawn are all '
-    + 'in the window.',
-};
 
 test('every gated promise the fixtures cannot reach is NAMED, with the precondition that is missing', () => {
   // The shape CARD-TODO #49 asks to close in. Asserted in BOTH directions, the
@@ -754,8 +590,18 @@ test('every gated promise the fixtures cannot reach is NAMED, with the precondit
   for (const g of ['augment', 'trigger', 'condition'] as ClaimGate[]) {
     for (const { card, claim } of unobserved.get(g) ?? []) {
       if (card in UNREACHED) continue;
+      // R211 / CT-87: say WHICH of the three states this is. A card whose run
+      // ended mid-activation has an UNDECIDED promise, not an unreached one,
+      // and telling the reader "no fixture reached it" would send them to
+      // build a board precondition that is already being built.
+      const inc = observations.get(card)?.inconclusive ?? [];
       surprises.push(`${card} — ${g}-gated ${claim.kind}`
-        + `${claim.n !== undefined ? `(${claim.n})` : ''} "${claim.raw}"; printed: "${rulesText(card)}"`);
+        + `${claim.n !== undefined ? `(${claim.n})` : ''} "${claim.raw}"; printed: "${rulesText(card)}"`
+        + (inc.length
+          ? `\n    ⚠ INCONCLUSIVE, not unreached (CT-87): ${inc.length} run(s) ended with an `
+            + `activation still on the stack (${inc.map(i => i.reason).join(', ')}). Raise `
+            + `maxSteps for this card before adding it to UNREACHED.`
+          : ''));
     }
   }
   assert.deepEqual([...new Set(surprises)].sort(), [],
@@ -958,6 +804,38 @@ test('the semantic pass reports honestly on what it could and could not check', 
     `${unmetCount} unmet claims but only ${claimsIn(realCards) + claimsIn(boardCards)} of them `
     + 'belong to a KNOWN_UNMET card — the honesty tally no longer adds up');
 
+  // ── CARD-TODO #87 / R211: THE THIRD STATE, printed whether or not it is 0 ──
+  // A run that ended with an activation still on the stack knows nothing about
+  // what that activation delivered. Before R211 the drill credited it with
+  // every event from the stuck activation to wherever the run stopped, so an
+  // inconclusive run read as a POSITIVE one — that is how Slag Spewer came to
+  // be scored on an `erased` its host's death produced (CT-86). Now it is
+  // refused, and refusals are counted here so the refusal is visible rather
+  // than a silent subtraction.
+  const incCards = [...observations].filter(([, o]) => o.inconclusive.length);
+  const incRuns = incCards.reduce((n, [, o]) => n + o.inconclusive.length, 0);
+  console.log(
+    `    INCONCLUSIVE (CT-87): ${incRuns} run(s) across ${incCards.length} card(s) ended with an `
+    + 'activation still on the stack, so their activation-gated promises are UNDECIDED — neither '
+    + 'observed nor never-observed');
+  for (const [card, o] of incCards) {
+    for (const i of o.inconclusive) {
+      console.log(`      ${card} ${i.opts} — ${i.reason}; refused [${i.refused.join(', ')}]`);
+    }
+  }
+
+  // …and a FLOOR in the honest direction: here a number going UP is the bad
+  // news. Measured 0 of 1296 runs at R211, over the whole pool, in exactly
+  // these scenarios. A non-zero means some card's activation-gated promise
+  // went UNDECIDED — raise `maxSteps` for that run until the window closes, or
+  // say in UNREACHED that the drill cannot finish the activation. Do NOT make
+  // this pass by crediting the tail again; that is CT-87.
+  assert.equal(incRuns, 0,
+    `${incRuns} drill run(s) ended with an activation still on the stack, so the promises behind `
+    + 'those activations are undecided and the gated counts below are missing evidence they '
+    + 'cannot go and get. Named above. The refusal itself is controlled for in '
+    + '181-inconclusive-activation-window.test.ts.');
+
   // ── CARD-TODO #49: the gated promises, partitioned by WHAT THEY NEED ──
   // Until stage 1 these were one undifferentiated heap of 316 and the ticket
   // could not be planned against. The partition says which stage owns which
@@ -978,6 +856,26 @@ test('the semantic pass reports honestly on what it could and could not check', 
   console.log(
     `    ${gHit}/${gTot} gated promises were observed being delivered by a run that could `
     + `satisfy their gate; ${gTot - gHit} have still never been observed`);
+  // ⚠ R217: PRINT THE UNIT, BECAUSE THIS LINE HAS BEEN MIS-SUMMARISED THREE
+  // TIMES. The number above counts CLAIMS; `UNREACHED` is keyed by CARD, and
+  // several cards carry more than one unobserved claim. Every hand-written
+  // summary of this tally so far — docs/13-assessment.md twice, and a
+  // class-widening audit once — silently switched between the two and
+  // published a card count that was really a claim count, or a partition that
+  // did not sum to its own total. The suite was right every time; the prose
+  // was not. So the partition is printed HERE, derived, next to the number it
+  // partitions, and anyone quoting it can copy both units instead of inferring
+  // one. docs/13 §5: a number nobody re-derives decays no matter who handles it.
+  const opener = (why: string): string => /^([A-Z]+)/.exec(why)?.[1] ?? '??';
+  const byOpener = new Map<string, number>();
+  for (const why of Object.values(UNREACHED)) {
+    const k = opener(why);
+    byOpener.set(k, (byOpener.get(k) ?? 0) + 1);
+  }
+  const parts = [...byOpener].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  console.log(
+    `    those ${gTot - gHit} CLAIMS are spread over ${Object.keys(UNREACHED).length} CARDS, `
+    + `named individually in UNREACHED: ${parts.map(([k, n]) => `${k} ${n}`).join(' · ')}`);
   // The delivered count is floored too, in the other direction: coverage that
   // has been paid for once must not be lost silently.
   // FLOORS ON THE DELIVERED COUNTS, one per gate, raised as each stage paid

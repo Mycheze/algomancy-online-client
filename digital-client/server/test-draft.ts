@@ -10,15 +10,10 @@
  *   - undo of a draft commit rolls back and re-opens the draft step
  *   - persistence: the room file records mode and replays on restart
  */
-import { spawn } from 'node:child_process';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { readFileSync, rmSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
-import { freePort, gameFile, mintRoom } from './test-util.ts';
+import { gameFile, mintRoom, spawnServer, type ServerHandle } from './test-util.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = await freePort();
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';
@@ -68,17 +63,17 @@ class Client {
   send(obj: unknown): void { this.ws.send(JSON.stringify(obj)); }
 }
 
-function startServer() {
-  const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
-    env: { ...process.env, PORT: String(PORT) },
-    stdio: ['ignore', 'pipe', 'inherit'],
-  });
-  const up = new Promise<void>((res, rej) => {
-    server.stdout.on('data', (d: Buffer) => { if (String(d).includes('Algomancy server')) res(); });
-    server.on('exit', () => rej(new Error('server died on startup')));
-    setTimeout(() => rej(new Error('server startup timeout')), 10000);
-  });
-  return { server, up };
+/* R204/CT-85: the server picks its own port and tells us which — see
+ * test-util.ts. It used to be `freePort()` in the parent then PORT=<number>
+ * in the child, which left the port held by nobody for as long as node took
+ * to boot; anything else on the box could take it in that window.
+ *
+ * This test RESTARTS the server mid-run, so PORT is a `let`: the restarted
+ * process gets a fresh port and every client built after it uses that one.
+ * Re-binding the same number would reintroduce the same window, at the one
+ * moment in the run when the old process is still shutting down. */
+async function startServer(): Promise<ServerHandle> {
+  return await spawnServer();
 }
 
 /** the no-op commit for a redacted view (indices only need pile positions) */
@@ -88,8 +83,8 @@ function noopCommit(view: any, seat: Seat): Action {
   return { type: 'draftCommit', seat, packIndices } as Action;
 }
 
-let { server, up } = startServer();
-await up;
+let server = await startServer();
+let PORT = server.port;
 ROOM = await mintRoom(PORT);
 
 try {
@@ -149,10 +144,9 @@ try {
   const raw = JSON.parse(readFileSync(gameFile(ROOM), 'utf8'));
   ok(raw.mode === 'draft', 'room file records mode: draft');
   ok(raw.actions.some((a: Action) => a.type === 'draftCommit'), 'room file holds the commits');
-  server.kill();
-  await new Promise(res => server.on('exit', res));
-  ({ server, up } = startServer());
-  await up;
+  await server.stop();   // stop() waits for the exit; a restart must not overlap
+  server = await startServer();
+  PORT = server.port;
   const c2 = new Client(PORT);
   await c2.open();
   c2.send({ t: 'join', room: ROOM, seat: 0 });
@@ -162,7 +156,7 @@ try {
 
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {
-  server.kill();
+  await server.stop();
   rmSync(gameFile(ROOM), { force: true });
 }
 process.exit(failures ? 1 : 0);

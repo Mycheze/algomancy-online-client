@@ -187,6 +187,25 @@ export interface ProbeInput {
   names?: [string, string];
   actions: unknown[];
   decks?: unknown;
+  /**
+   * R216 — the scenario this room was dealt with, if any.
+   *
+   * ⚠ THIS FILE CANNOT HONOUR IT, AND SAYS SO RATHER THAN GUESSING. Everything
+   * else here is written to run against an engine checked out at a PAST
+   * commit: it reaches for `createGame` by name, tolerates `sanitizeTrio` and
+   * `checkDeck` being absent, and never assumes an argument exists. A
+   * scenario's board mutation is not in that engine — it lives in
+   * `server/scenarios.ts` beside TODAY's rules, uses today's `E` and today's
+   * card definitions, and there is no honest way to replay it inside a
+   * historical worktree.
+   *
+   * Probing a scenario room anyway would deal the plain opening board, replay
+   * a log written for a completely different one, and report the resulting
+   * mess as a rules change — which is precisely the wrong answer R200 exists
+   * to stop being given. So `probe()` refuses by name. A refusal is a true
+   * statement about the file; a divergence report would be a false one.
+   */
+  scenario?: string;
 }
 
 /**
@@ -198,6 +217,18 @@ export interface ProbeInput {
  * side would throw away the part of the comparison that matters.
  */
 export async function probe(raw: ProbeInput): Promise<ProbeResult> {
+  // R216 — see ProbeInput.scenario. Refused before the engine is even loaded,
+  // because there is nothing an engine of any vintage could do about it.
+  if (raw.scenario) {
+    return {
+      ok: false,
+      error: `this room was dealt with scenario '${raw.scenario}' (R216), and a scenario board `
+        + 'is built by server/scenarios.ts against the CURRENT engine. A historical engine '
+        + 'cannot reproduce it, so probing here would replay the log onto the wrong board and '
+        + 'report a rules change that did not happen. Use --as-recorded on this build instead.',
+      sigs: [], refusals: [],
+    };
+  }
   let engine: Rec;
   try {
     engine = rec(await import('../engine/src/apply.ts'));

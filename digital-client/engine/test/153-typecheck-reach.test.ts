@@ -60,7 +60,26 @@ const CLIENT = path.resolve(ENGINE, '..');
 const TSC = path.join(ENGINE, 'node_modules', '.bin', 'tsc');
 
 /** Directories that hold no source: dependencies, VCS, and the server's
- * runtime data (`games/`, `accounts/` — both .gitignored, neither .ts). */
+ * runtime data (`games/`, `accounts/` — both .gitignored, neither .ts).
+ *
+ * ── R210 (CT-83): WHY A WALKER CONFIG IS ON AN EXEMPTION-LIST TICKET ────
+ *
+ * CT-83 listed this among the tables with no staleness assertion and flagged
+ * it as "walker config, not a waiver — argue whether it belongs at all".
+ *
+ * It belongs, and it is the most dangerous kind. An exemption list at least
+ * NAMES what it waives: `DEAD_EXEMPT` says "printedCost is dead and here is
+ * why", so the thing waived is visible in the source even while unchecked.
+ * A skipped DIRECTORY is invisible in both directions — nothing in this file's
+ * output mentions it, and §1's verdict ("every .ts file in the client is
+ * covered by some tsconfig project") is quantified over a corpus this set
+ * defines. Add one wrong name here and §1 goes on passing while meaning
+ * strictly less, which is R181's failure — THE REACH OF THE CHECK SHRANK AND
+ * NOTHING SAID SO — reproduced inside the file written to prevent it.
+ *
+ * So each name is treated as the claim it is: "no source we own lives under
+ * here". That is re-derived from git on every run, below.
+ */
 const SKIP_DIRS = new Set(['node_modules', '.git', 'games', 'accounts', 'dist', 'coverage']);
 
 function walk(dir: string, onFile: (p: string) => void): void {
@@ -123,6 +142,45 @@ function resolveConfig(config: string): Resolved {
     files: (parsed.files ?? []).map(f => path.resolve(dir, f)),
   };
 }
+
+// ─────────────── §0 · the corpus every section below is quantified over ────
+
+test('§0 R210: every SKIP_DIRS name still hides no source we own', () => {
+  // The staleness assertion CT-83 asked for, in the only form that means
+  // anything for a corpus definition: ask GIT what source the repo tracks, and
+  // require that none of it is behind a name this walk refuses to enter.
+  //
+  // git rather than the filesystem on purpose. `games/` and `accounts/` are
+  // .gitignored runtime data and `node_modules/` is vendored — walking them to
+  // prove they hold no .ts costs seconds and proves the wrong thing anyway
+  // (a stray build artefact is not source we own). What matters is whether a
+  // TRACKED .ts file has ended up somewhere this file will never look.
+  const tracked = execFileSync('git', ['ls-files', '-z', '--', '*.ts', '*.mts', '*.cts'],
+    { cwd: CLIENT, encoding: 'utf8' }).split('\0').filter(Boolean);
+  assert.ok(tracked.length > 200,
+    `git lists only ${tracked.length} tracked .ts files under ${CLIENT} — the query has gone `
+    + 'blind and the check below would pass over nothing');
+
+  const hidden: string[] = [];
+  for (const tracked1 of tracked) {
+    const seg = tracked1.split('/').slice(0, -1).find(d => SKIP_DIRS.has(d));
+    if (seg) hidden.push(`${tracked1} — behind SKIP_DIRS entry '${seg}'`);
+  }
+  assert.deepEqual(hidden, [],
+    'these TRACKED TypeScript files sit behind a directory name this file refuses to walk, so '
+    + '§1 cannot see them and will report "every .ts file is covered" without having looked:\n  '
+    + hidden.join('\n  ')
+    + '\n\nEither the file is in the wrong place, or the SKIP_DIRS entry is. Do not resolve '
+    + 'this by adding the path to a tsconfig — §1 would then pass for the wrong reason.');
+
+  // The two entries that are not a claim about this repo at all — without them
+  // the walk descends into vendored code and .git objects and never finishes.
+  for (const required of ['node_modules', '.git']) {
+    assert.ok(SKIP_DIRS.has(required),
+      `SKIP_DIRS has lost '${required}'. That is not an exemption, it is what stops the walk `
+      + 'inventorying tens of thousands of vendored files as "source the client owns".');
+  }
+});
 
 // ────────────────────────── §1 · nothing outside a project ──────────────────
 

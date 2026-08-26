@@ -439,6 +439,15 @@ card('Grim Bargain', {
           if (id !== null) planned.push(id);
         }
       }
+      // R209/CT-74: `pickUnit` returns null on an empty pool, so with every
+      // present seat out of units `planned` is empty, nothing is destroyed and
+      // — with `draws` then 0 — the whole run said nothing. 65 could not reach
+      // it: the rig's X ladder lands on rounds = 0, which the guard above
+      // already announces.
+      if (!planned.length) {
+        g.ev('info', 'Grim Bargain: nobody here has a unit to sacrifice — nothing is drawn.');
+        return;
+      }
       let draws = 0;
       for (const id of planned) {
         const u = g.entity(id);

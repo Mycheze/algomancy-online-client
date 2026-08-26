@@ -18,6 +18,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
+import '../src/index.ts';   // R214: the WHOLE pool — registry.ts alone is 494 of 495
 import {
   EXPANSION_GUIDE, GLOSSARY, KEYWORDS, MECHANICS, glossaryHits, matcherFor,
 } from '../ui/glossary.ts';
@@ -61,7 +62,19 @@ test('every attribute printed on a real card has reminder text', () => {
  * The TEXT cannot be checked automatically: no machine can read "its column
  * can only be blocked by a column with Flying" and tell you whether the engine
  * agrees. The few sentences that a ruling has already caught out are pinned by
- * name at the bottom of this file; everything else is on the author. */
+ * name at the bottom of this file; everything else is on the author.
+ *
+ * ⚠ THAT LAST PARAGRAPH IS NOW ONLY HALF TRUE (R206 / CT-76, 2026-08-26), and
+ * it was quoted in the ticket as the statement of the gap. It cost FIFTEEN
+ * wrong rows out of 43 — five of them on a list that said they had already
+ * been checked — so `177-glossary-conformance.test.ts` takes two bites out of
+ * "everything else is on the author":
+ *   · every row now carries `ruling`, and its citations must RESOLVE to a
+ *     `## R<n>` in digital-rules.md that is not withdrawn/superseded/narrowed;
+ *   · for the 15 attributes that carry a PRINTED reminder, the row is compared
+ *     against the card's own words, derived from printed.json.
+ * What is still on the author is the prose of the rows that have neither —
+ * 177 names that set (`Evasive`, `Resonant`) rather than leaving it implied. */
 
 const TYPES = readFileSync(new URL('../src/types.ts', import.meta.url), 'utf8');
 
@@ -271,4 +284,14 @@ test('every entry compiles to a usable matcher', () => {
     assert.ok(re instanceof RegExp, `${e.term} has no matcher`);
     assert.ok(re.flags.includes('i'), `${e.term}'s matcher must be case-insensitive`);
   }
+});
+
+// R214 — this file sweeps the whole pool, and `cards/registry.ts` registers
+// only 494 of the 495 cards (`Alluring Attribute` is registered by apply.ts).
+// The shared floor and its rationale live in test/180-pool-sight.test.ts.
+test('R214: this sweep sees the whole card pool', () => {
+  const n = allCardNames().length;
+  assert.ok(n >= 495 && allCardNames().includes('Alluring Attribute'),
+    `this sweep sees ${n} cards, not the full 495 — it reaches src/cards/registry.ts but not `
+    + 'src/apply.ts. Import ../src/index.ts. See test/180-pool-sight.test.ts.');
 });

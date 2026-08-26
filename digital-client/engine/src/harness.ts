@@ -8,6 +8,15 @@ import { E } from './engine.ts';
 
 export class Harness {
   state: GameState;
+  /** THE HOTSEAT FIREHOSE — every seat's lines in one array, in order.
+   *
+   * ⚠ R203 / CT-84: there are no seats in here and no `visibleToSeat` near it,
+   * so `log` cannot answer "who was allowed to read this?" and an assertion
+   * written against it is unfalsifiable as a secrecy claim. It stays flat
+   * because the hotseat UI has exactly one screen and genuinely wants that.
+   * A test that cares who saw a line uses `test/util.ts::logFor(h, seat)`,
+   * which runs `h.events` through server/view.ts's production redactor —
+   * it cannot live on this class, because engine/src must not import server/. */
   log: string[] = [];
   /** EventType per LOG LINE, index-aligned with `log`. Not the same list as
    * `events`: an event with an empty message ('stackFlash' — a signal for the

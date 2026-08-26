@@ -29,13 +29,40 @@ gated behind a trigger, condition, activation or `[Augment]` box.
 Real progress. But "evidence of the right kind" is a far smaller claim than it
 sounds — see §2.
 
-### ③ Cards do what they print — right target, right amount, right timing. — **UNMEASURED**
+### ③ Cards do what they print — right target, right amount, right timing. — **SAMPLED, 2026-08-26**
 
-Nothing in the repository measures this pool-wide.
+> **Round 28 executed §7.1.** This claim read **UNMEASURED** until then, and the
+> paragraph it replaced is kept below because the reasoning still stands.
 
-Not "we measured it and it is bad". **We have never measured it.** This is the
-honest answer to "are the cards working as printed", and it is the single most
-important line in this document.
+**125 of 127 clauses correct — 98.4%** — over 30 cards drawn at seed 212 from
+the full 495, with exact assertions for right target, right amount, right
+timing and right duration (`182-correctness-sample.test.ts`, which prints the
+tally every run and re-derives the sample from the seed so it cannot be
+curated after the fact).
+
+Both failures are **one sentence on one card** (Torrential Reclamation, CT-91),
+and it is a ruling question rather than an obvious bug.
+
+**Read this number carefully, in three ways:**
+
+1. **It is a sample, not the pool.** 30 of 495. It says the happy path is
+   solid; it does not say the pool is 98.4% correct.
+2. **It covers the happy path and little else.** The file's own header names
+   what it does not reach: fizzle and target-loss (R86), trigger order, R118
+   copies, and — the biggest hole — **the donated `[Augment]` path for ten of
+   the eleven augment cards in the sample.** Only one is checked on a host, and
+   "me"/"you" resolve differently there under R131. That is where the last three
+   rounds' real bugs actually came from.
+3. **A high number is the suspicious outcome, and §7.1 said so in advance.** It
+   was hardened against itself: three assertions that turned out to be
+   tautologies — reading a printed flag back out of `printed.json` — were
+   rewritten as behaviour, and six were break-tested by breaking the
+   implementation and watching them redden.
+
+*The original text, still true of everything outside the sample:* Nothing in the
+repository measures this pool-wide. Not "we measured it and it is bad" — for
+465 of 495 cards **we have never measured it**, and that remains the honest
+answer to "are the cards working as printed".
 
 ---
 
@@ -65,9 +92,30 @@ Gated promises — the hard 316 — across the last four rounds:
 | 26 | 264 / 316 | 52  | +166 | building a graft host and firing trigger events |
 | 27 | 278 / 316 | 38  | +14  | a whole round, eighteen agents |
 
-The remaining 38 claims across 37 cards are named individually in
+The remaining **38 claims across 37 cards** are named individually in
 `84-card-semantics`'s `UNREACHED` with the precondition each lacks:
-**BOARD 25 · CHOICE 6 · VOCAB 3 · REGION 1 · EVENTLESS 1.**
+**BOARD 25 · CHOICE 5 · VOCAB 3 · EXTRACT 2 · REGION 1 · EVENTLESS 1.**
+
+> ⚠ **This line was got wrong three times on 2026-08-26 (round 28), twice by
+> the person correcting it. The suite now prints it, derived, so nobody
+> hand-summarises it again.**
+>
+> As first published it read `BOARD 25 · CHOICE 6 · VOCAB 3 · REGION 1 ·
+> EVENTLESS 1` — summing to **36** against a stated total of 38, with `EXTRACT`
+> (Mycelial Mentor, Lurking Dread) missing entirely. A class-widening audit
+> caught that and reported the partition above, which is **correct**.
+>
+> I then "corrected" the audit to *32 cards, BOARD 20* — and was wrong. Two
+> independent scrapes of the source literal agreed on 32, and both were blind:
+> the live object has **37** keys, which is what `Object.keys(UNREACHED).length`
+> reports on every run. **The scrapes were confidently, reproducibly, and
+> identically wrong**, which is precisely why agreement between two readings of
+> the same text is not evidence — they shared the assumption, not the answer.
+>
+> That is `stripCode`'s failure (§5) reproduced by the author of this
+> paragraph, inside the document that warns about it, while correcting somebody
+> else's version of the same mistake. **The tally the suite prints has been
+> right every single time.** Quote it; do not re-derive it.
 
 `EVENTLESS` is new and is the interesting one: *implemented, really happens, and
 nothing in the game can see it happen.*
@@ -144,6 +192,30 @@ Not bugs in the game — bugs in the things that tell us whether the game works.
 - **The server suite fails about one run in three** (CT-85), on a different test
   each time.
 
+**Round 28 added four more, and closed six of the ten above** (CT-84, CT-85,
+CT-87, CT-75, and `stripCode`/`$` via R201's late register entry):
+
+- **Eight pool-wide conformance sweeps could only see 494 of 495 cards**, and
+  nothing said so. `allCardNames()` is complete only if `src/apply.ts` has been
+  imported, because one of the three synthetics is registered there. The
+  *determinism* test pinned the wrong number outright (`=== 494`). It mattered
+  to four: `63-card-art` was hiding a real failure, `71-card-ledger`'s "no dead
+  cards" clean sheet covered 494, and **`68-target-conformance`'s entry for
+  `'enemyUnit'` had zero live subjects and was never once exercised** — while
+  both its own comment and `apply.ts` asserted it covered that card.
+- **`65-effect-conformance`'s empty-collection branch was not rare, it was
+  unreachable.** Every board it drove gave each present seat a unit. Given a
+  third board it convicted seven labels on its first run, before a line of card
+  code changed — one of them on no ticket and in no report.
+- **Two closed tickets rested on closure criteria that could not fail.** CT-70's
+  read *"`SILENT_KNOWN` is empty for the R25 family"*, which is satisfiable
+  while members remain; CT-64's said *"according to whatever is decided"*, which
+  any outcome satisfies. The §5 pattern reaching the **closure conditions**, not
+  just the checkers.
+- **Twelve ruling numbers were cited in code with no entry in the register.**
+  R142 forty times, R134 thirty-two. Rulings made, implemented, cited — and the
+  reasoning never written down anywhere (R215).
+
 > **Every one of these was found by a person saying "this says clean and I don't
 > believe it." Not one was found by the suite.**
 
@@ -186,6 +258,16 @@ none of them.
 ---
 
 ## 7. Four moves, in priority order
+
+> **Status after round 28 (2026-08-26).** Moves 1, 2 and 4 were executed;
+> **move 3 was not, and cannot be by an agent.** Move 1 produced the number now
+> in §1③. Move 2 is a standing rule and was enforced in every brief that round
+> — the derived Glimpse list (5 hardcoded → 11 computed) and the derived
+> `endBattleRound` call-site list are its output. Move 4 produced the four
+> findings added to §5. **Move 3 remains the highest-value thing available and
+> it needs the owner**, which is why round 28 ended by designing an in-client
+> scenario tester: a human oracle is the only instrument that can judge a card
+> the author of the test did not already understand.
 
 ### 1. Change what we measure — sample for correctness
 

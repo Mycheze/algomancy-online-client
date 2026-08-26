@@ -7,14 +7,11 @@
  * test is everything downstream of "this game is decided": the payload the
  * post-game screen is built from, and the rematch handshake.
  */
-import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { freePort } from './test-util.ts';
+import { join } from 'node:path';
+import { spawnServer } from './test-util.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-postgame-test-'));
 const GAMES = join(SCRATCH, 'games');
 mkdirSync(GAMES, { recursive: true });
@@ -53,8 +50,6 @@ console.log('\n[trio: run it back]');
 
 // ── 2. the live server ────────────────────────────────────────────────
 
-const PORT = await freePort();
-
 /** A finished game, saved the way rooms.ts saves one: a real (short) log plus
  * the winner stamped at the time. */
 const FINISHED = 'OVER';
@@ -67,15 +62,11 @@ writeFileSync(join(GAMES, `${FINISHED}.json`), JSON.stringify({
   ],
 }));
 
-const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
-  env: { ...process.env, PORT: String(PORT) },
-  stdio: ['ignore', 'pipe', 'inherit'],
-});
-await new Promise<void>((res, rej) => {
-  server.stdout.on('data', (d: Buffer) => { if (String(d).includes('Algomancy server')) res(); });
-  server.on('exit', () => rej(new Error('server died on startup')));
-  setTimeout(() => rej(new Error('server startup timeout')), 15000);
-});
+// R204/CT-85: the server picks its own port and tells us which — see
+// test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
+// port unheld for as long as node took to boot.
+const server = await spawnServer();
+const PORT = server.port;
 
 interface Msg { t: string; [k: string]: any }
 class Client {
@@ -173,18 +164,15 @@ try {
     actions: [],
   }));
   // restart so the room is restored from that file
-  server.kill();
-  await new Promise(r => setTimeout(r, 400));
-  const server2 = spawn(process.execPath, [join(HERE, 'main.ts')], {
-    env: { ...process.env, PORT: String(PORT + 1) },
-    stdio: ['ignore', 'pipe', 'inherit'],
-  });
-  await new Promise<void>((res, rej) => {
-    server2.stdout.on('data', (dd: Buffer) => { if (String(dd).includes('Algomancy server')) res(); });
-    setTimeout(() => rej(new Error('server2 startup timeout')), 15000);
-  });
+  await server.stop();
+  // R204/CT-85: this used to bind PORT + 1 — a port nothing had ever checked
+  // was free, chosen by arithmetic on a port that WAS. It also never rejected
+  // on the child's exit, so when the bind failed the only symptom was
+  // `server2 startup timeout` fifteen seconds later, naming nothing. Both are
+  // gone: the second server picks its own port the same way the first does.
+  const server2 = await spawnServer();
   try {
-    const mk = (): WebSocket => new WebSocket(`ws://localhost:${PORT + 1}`);
+    const mk = (): WebSocket => new WebSocket(`ws://localhost:${server2.port}`);
     const msgs: [Msg[], Msg[]] = [[], []];
     const socks = [mk(), mk()];
     await Promise.all(socks.map((w, i) => new Promise<void>(res => {
@@ -204,11 +192,11 @@ try {
     eq(nextSaved.lobby.method, 'again', 'and starts on "run it back", the likeliest answer');
     socks.forEach(w => w.close());
   } finally {
-    server2.kill();
+    await server2.stop();
   }
   a.ws.close(); b.ws.close(); c.ws.close(); d.ws.close();
 } finally {
-  server.kill();
+  await server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });
 }
 

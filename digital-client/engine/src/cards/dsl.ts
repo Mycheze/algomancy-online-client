@@ -411,19 +411,30 @@ export function unitRestrict(ok: (g: E, u: Entity, ctx: TargetCtx) => boolean): 
   return (g, t, ctx) => !isEntityTarget(t) || ok(g, t, ctx);
 }
 
-/** R64: "with cost N or less" / "with cost less than or equal to …" — read off
- * the card's cost, which on a card known only by NAME is its printed mana.
+/* R210 (CT-83) — `export function printedCost(name)` WAS HERE, AND IS GONE.
  *
- * R157 §1: an X card counts as 0, and that is a decision rather than a floor —
- * "paying X replaces the letter X on the printed card temporarily", so a card
- * nobody has paid an X for has no cost at all. Where the card WAS cast, the
- * paid X is the cost: read `StackItem.x`, or the `x` the engine puts on the
- * 'spellPlayed' / 'cardPlayed' events (sets/helpers.ts `castCostOf` /
- * `eventCardCost`). */
-export function printedCost(name: CardName): number {
-  const m = getCard(name).mana;
-  return m === 'X' ? 0 : m;
-}
+ * It read `getCard(name).mana`, returning 0 for 'X', and it had ZERO call
+ * sites anywhere in digital-client — engine, ui and server alike. Being
+ * EXPORTED is precisely why `noUnusedLocals` could not see it, which is what
+ * `147-comment-conformance.test.ts` §4 exists to catch; R193 caught it, wrote
+ * a DEAD_EXEMPT waiver saying "not deleted here because dsl.ts is a shared
+ * file and seven agents were editing this tree", and that waiver is deleted
+ * with the function.
+ *
+ * ⚠ THE COST OF LEAVING IT WAS NOT THE NINE DEAD LINES, IT WAS THE NINE-LINE
+ * DOC COMMENT ABOVE THEM. It described R64's "with cost N or less" reading and
+ * R157 §1's X rule as though this were the code that implemented them. It is
+ * not, and never was — every live reading of a card's cost goes through
+ * `sets/helpers.ts::castCostOf` / `eventCardCost` (which read `StackItem.x` or
+ * the `x` on the 'spellPlayed' / 'cardPlayed' event) and through the
+ * `unitRestrict` predicates above. A dead function carrying a live-sounding
+ * description of the rules is the most confident wrong statement a file can
+ * make, and it reads exactly like documentation.
+ *
+ * R157 §1's actual ruling, which outlives the function: an X card counts as 0,
+ * as a decision rather than a floor — "paying X replaces the letter X on the
+ * printed card temporarily", so a card nobody has paid an X for has no cost
+ * at all. Where the card WAS cast, the paid X is the cost. */
 
 /* ── R131: "other" / "another" is a DIFFERENT ENTITY ───────────────────
  *

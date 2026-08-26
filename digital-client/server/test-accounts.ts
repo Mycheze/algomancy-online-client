@@ -13,14 +13,11 @@
  * Everything runs against ALGO_ACCOUNTS_FILE / ALGO_GAMES_DIR temp paths: the
  * real store holds password hashes and must never be a test fixture.
  */
-import { spawn } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { freePort } from './test-util.ts';
+import { join } from 'node:path';
+import { spawnServer } from './test-util.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-accounts-test-'));
 const STORE = join(SCRATCH, 'accounts.json');
 const GAMES = join(SCRATCH, 'games');
@@ -336,16 +333,11 @@ console.log('\n[seeding: import saved games, claim by name]');
 // ── 7. the live server: a seat bound to an account ────────────────────
 
 console.log('\n[server: joining while logged in]');
-const PORT = await freePort();
-const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
-  env: { ...process.env, PORT: String(PORT), ALGO_ACCOUNTS_FILE: STORE, ALGO_GAMES_DIR: GAMES },
-  stdio: ['ignore', 'pipe', 'inherit'],
-});
-await new Promise<void>((res, rej) => {
-  server.stdout.on('data', (d: Buffer) => { if (String(d).includes('Algomancy server')) res(); });
-  server.on('exit', () => rej(new Error('server died on startup')));
-  setTimeout(() => rej(new Error('server startup timeout')), 15000);
-});
+// R204/CT-85: the server picks its own port and tells us which — see
+// test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
+// port unheld for as long as node took to boot.
+const server = await spawnServer({ ALGO_ACCOUNTS_FILE: STORE, ALGO_GAMES_DIR: GAMES });
+const PORT = server.port;
 
 const base = `http://localhost:${PORT}`;
 const post = async (path: string, body: unknown, token?: string): Promise<Record<string, any>> => {
@@ -401,7 +393,7 @@ try {
   eq(asked['me'].outgoing.length, 1, 'and comes back in the refreshed profile');
   ws.close();
 } finally {
-  server.kill();
+  await server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });
 }
 

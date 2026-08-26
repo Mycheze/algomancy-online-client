@@ -22,6 +22,23 @@
  * which is the honest failure: nobody is left believing a render happened when
  * it did not.
  *
+ * WHAT IT DOES HAVE, SINCE R205/CT-75: ANCESTORS. This comment used to say the
+ * clicked element never needs any, "which is true of every affordance in the
+ * board markup: they carry their own data-btn / data-act". That was FALSE, and
+ * the falsehood is what let the bug survive. `.regioncache` (main.ts:2109) and
+ * `.regionbin` (main.ts:1816) are `data-btn` CONTAINERS full of card scans, and
+ * main.ts's click delegator (main.ts:4805) asks `closest('[data-btn]')` before
+ * `closest('[data-act]')` — so a `data-act` nested anywhere inside one of them
+ * loses to the container in a real browser, at any depth. With no ancestors
+ * there was no container to lose to, so a test about a nested affordance went
+ * GREEN in this driver and was WRONG on screen. CARD-TODO #64's prescribed fix
+ * was exactly that shape; only somebody reading the delegator caught it.
+ *
+ * So `dispatch` now rebuilds the real ancestor chain out of the rendered HTML
+ * (see `ancestorsOf`) and `closest()` walks it, nearest first, the way the
+ * browser's does. `contains()` and `parentElement` come with it. If you are
+ * about to write "this element has no ancestors" again: measure it.
+ *
  * USE. Import this module BEFORE anything that touches ui/main.ts — importing
  * it installs the globals and loads the client. Then:
  *
@@ -50,6 +67,10 @@ function mkEl(props: Record<string, unknown> = {}): Record<string, unknown> {
       if (k === 'style') return (t['style'] = new Proxy({}, { get: () => '', set: () => true }));
       if (k === 'classList') return { add: noop, remove: noop, toggle: noop, contains: () => false };
       if (k === 'getBoundingClientRect') return () => RECT;
+      // the default for an element NOBODY placed in the markup — one main.ts
+      // built with createElement (the hover tip, a ghost). A clicked element
+      // gets a real ancestor-walking `closest` from `elementAt` (R205/CT-75),
+      // which overwrites this.
       if (k === 'closest') return () => null;
       if (k === 'querySelector') return () => null;
       if (k === 'querySelectorAll' || k === 'getElementsByClassName') return () => [];
@@ -202,9 +223,72 @@ function attrsOf(tag: string): { attrs: Record<string, string>; dataset: Record<
   return { attrs, dataset };
 }
 
+/* R205/CT-75: element tags that never open a scope, so they must never push
+ * onto the ancestor stack. Only the ones the board can actually emit are
+ * listed plus the rest of the HTML void set, because a missing entry here
+ * silently shifts every ancestor computed after it. */
+const VOID_TAGS = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+  'link', 'meta', 'param', 'source', 'track', 'wbr',
+]);
+
+interface ScanTag { tag: string; name: string; close: boolean; at: number }
+
+/* R205/CT-75: one QUOTE-AWARE scan of the markup, opening tags and closing
+ * tags alike. The old `tags()` was `/<[a-zA-Z][^>]*>/g`, which ends a tag at
+ * the first `>` even when it sits inside a quoted attribute value — and the
+ * board writes prose into `title="…"` (main.ts:2111 is one). That is harmless
+ * while nothing but the tag's own attributes are read, and it is NOT harmless
+ * once tag boundaries have to nest correctly, so the ancestor walk and the
+ * affordance lookup are now the same scan and cannot disagree. */
+function scan(html: string): ScanTag[] {
+  const out: ScanTag[] = [];
+  let i = 0;
+  while (i < html.length) {
+    const lt = html.indexOf('<', i);
+    if (lt < 0) break;
+    const m = /^<(\/?)([a-zA-Z][a-zA-Z0-9]*)/.exec(html.slice(lt, lt + 32));
+    if (!m) { i = lt + 1; continue; }   // a stray `<` in text: not a tag
+    let j = lt + m[0]!.length, quote = '';
+    while (j < html.length) {
+      const c = html[j]!;
+      if (quote) { if (c === quote) quote = ''; }
+      else if (c === '"' || c === '\'') quote = c;
+      else if (c === '>') break;
+      j++;
+    }
+    out.push({ tag: html.slice(lt, j + 1), name: m[2]!.toLowerCase(), close: m[1] === '/', at: lt });
+    i = j + 1;
+  }
+  return out;
+}
+
 /** every opening tag in `html`, in document order */
 function tags(html: string): { tag: string; at: number }[] {
-  return [...html.matchAll(/<[a-zA-Z][^>]*>/g)].map(m => ({ tag: m[0]!, at: m.index }));
+  return scan(html).filter(t => !t.close).map(({ tag, at }) => ({ tag, at }));
+}
+
+/** the enclosing opening tags of the tag that starts at `at`, NEAREST FIRST —
+ * the chain a browser's `closest()` walks after the element itself.
+ *
+ * R205/CT-75. A close tag pops back to its own name rather than popping the
+ * top blindly: if the board ever emits something unbalanced, the chain above
+ * the damage stays right instead of the whole rest of the document sliding by
+ * one. An unmatched close is ignored for the same reason. */
+function ancestorsOf(html: string, at: number): string[] {
+  const stack: ScanTag[] = [];
+  for (const t of scan(html)) {
+    if (t.at >= at) break;
+    if (t.close) {
+      for (let i = stack.length - 1; i >= 0; i--) {
+        if (stack[i]!.name === t.name) { stack.length = i; break; }
+      }
+      continue;
+    }
+    if (VOID_TAGS.has(t.name) || /\/\s*>$/.test(t.tag)) continue;
+    stack.push(t);
+  }
+  return stack.reverse().map(t => t.tag);
 }
 
 /** the whole `<div …>…</div>` whose opening tag contains offset `at` */
@@ -230,6 +314,58 @@ export const zone = (html: string, key: string): string =>
 /** the entity ids of the cards inside a chunk of board markup */
 export const idsIn = (chunk: string): number[] =>
   [...chunk.matchAll(/data-id="(\d+)"/g)].map(m => Number(m[1]));
+
+/* ── R205/CT-75: the affordance census ────────────────────────────────
+ *
+ * docs/13-assessment.md §7.2: "a new guard's card list is COMPUTED from
+ * printed data, not typed from the cards in the report." The same applies to
+ * affordances. A guard that names `cacheopen`, `binopen` and `cacheplay` goes
+ * stale the day somebody adds a fourth panel — and the whole point of CT-75 is
+ * that nobody notices when a checker stops seeing. So: derive the list from
+ * the markup the client really painted, and let a new panel walk into the
+ * guard on its own. */
+export interface Affordance {
+  /** the element's own opening tag */
+  tag: string;
+  at: number;
+  /** its own handles, if any */
+  btn: string | null;
+  act: string | null;
+  /** enclosing opening tags, nearest first */
+  ancestors: string[];
+  /** the nearest ENCLOSING `data-btn` — the value that would claim a click on
+   * this element before its own `data-act` ever got a look in (main.ts:4805) */
+  enclosingBtn: string | null;
+  /** the nearest enclosing `data-act`, same idea one rung down */
+  enclosingAct: string | null;
+}
+
+/** every element in `html` that carries `data-btn` or `data-act`, in document
+ * order, each with the chain main.ts's delegator would walk from it */
+export function affordances(html: string): Affordance[] {
+  const out: Affordance[] = [];
+  for (const { tag, at } of tags(html)) {
+    const own = attrsOf(tag).attrs;
+    if (own['data-btn'] === undefined && own['data-act'] === undefined) continue;
+    const ancestors = ancestorsOf(html, at);
+    const near = (k: string): string | null => {
+      for (const a of ancestors) {
+        const v = attrsOf(a).attrs[k];
+        if (v !== undefined) return v;
+      }
+      return null;
+    };
+    out.push({
+      tag, at,
+      btn: own['data-btn'] ?? null,
+      act: own['data-act'] ?? null,
+      ancestors,
+      enclosingBtn: near('data-btn'),
+      enclosingAct: near('data-act'),
+    });
+  }
+  return out;
+}
 
 export interface Pick { [dataAttr: string]: string | number }
 
@@ -269,25 +405,65 @@ export interface Client {
   tick(): void;
 }
 
+/** does `sel` — a comma-separated list of bare `[data-*]` attribute selectors,
+ * which is exactly what main.ts ever asks `closest()` — match these attrs? */
+function selMatches(sel: string, attrs: Record<string, string>): boolean {
+  return sel.split(',').map(x => x.trim()).some(x => {
+    const m = /^\[([a-zA-Z-]+)\]$/.exec(x);
+    return m ? attrs[m[1]!] !== undefined : false;
+  });
+}
+
+/** the clicked element, WITH the ancestor chain it really has in the markup.
+ *
+ * R205/CT-75. `closest()` here is the browser's algorithm: the element itself
+ * first, then each enclosing tag outward, and the NEAREST match wins. That is
+ * the whole point — main.ts's delegator asks for `[data-btn]` and `[data-act]`
+ * in two separate calls, so a container's `data-btn` beats a nested
+ * `data-act` at any depth, and until this existed the driver could not see it.
+ * `contains()` and `parentElement` are built from the same chain so a
+ * depth-aware rule in main.ts can be tested here at all. */
+function elementAt(html: string, found: { tag: string; at: number }): Record<string, unknown> {
+  // index 0 is the clicked element; the rest are its ancestors, nearest first
+  const chainTags = [found.tag, ...ancestorsOf(html, found.at)];
+  const parsed = chainTags.map(tag => ({ tag, ...attrsOf(tag) }));
+  const els: Record<string, unknown>[] = parsed.map(p => mkEl({
+    dataset: p.dataset,
+    tagName: (/^<([a-zA-Z]+)/.exec(p.tag) ?? [])[1]?.toUpperCase() ?? 'DIV',
+  }));
+  els.forEach((el, i) => {
+    el['closest'] = (sel: string): unknown => {
+      for (let j = i; j < parsed.length; j++) if (selMatches(sel, parsed[j]!.attrs)) return els[j];
+      return null;
+    };
+    // `a.contains(b)` — true when b is a, or is inside a. Deeper elements sit
+    // at LOWER indexes, so everything from 0..i is inside els[i].
+    el['contains'] = (other: unknown): boolean => els.slice(0, i + 1).includes(other as never);
+    el['parentElement'] = els[i + 1] ?? null;
+    el['parentNode'] = els[i + 1] ?? null;
+  });
+  return els[0]!;
+}
+
+/** the element a click on `want` would be delivered TO, with its chain, for a
+ * test that wants to interrogate the chain rather than fire it. `dispatch`
+ * builds the same thing — this is the one seam that lets 176 §1 check that
+ * `closest`, `contains` and `parentElement` agree with each other, which is the
+ * only reason to trust any of the three. */
+export function elementFor(html: string, want: Pick): Record<string, unknown> {
+  const found = findTag(html, want);
+  assert.ok(found, `nothing in this markup carries ${JSON.stringify(want)}`);
+  return elementAt(html, found);
+}
+
 /** send one real DOM event of `type` at the element carrying `want`, through
  * whatever listeners ui/main.ts registered for it */
 function dispatch(type: string, want: Pick, paint: () => string): string {
-  const found = findTag(paint(), want);
+  const html = paint();
+  const found = findTag(html, want);
   assert.ok(found, `nothing on screen carries ${JSON.stringify(want)} — the affordance the test `
     + 'is about is not there at all');
-  const { attrs, dataset } = attrsOf(found.tag);
-  const el: Record<string, unknown> = mkEl({
-    dataset, tagName: (/^<([a-zA-Z]+)/.exec(found.tag) ?? [])[1]?.toUpperCase() ?? 'DIV',
-  });
-  // `closest(sel)` answers only what main.ts asks: a comma-separated list of
-  // bare [data-*] attribute selectors. The clicked element IS the match when it
-  // carries one of them — this fake has no ancestors, which is true of every
-  // affordance in the board markup: they carry their own data-btn / data-act.
-  el['closest'] = (sel: string): unknown =>
-    sel.split(',').map(x => x.trim()).some(x => {
-      const m = /^\[([a-zA-Z-]+)\]$/.exec(x);
-      return m ? attrs[m[1]!] !== undefined : false;
-    }) ? el : null;
+  const el = elementAt(html, found);
   const ev = {
     target: el, currentTarget: el, clientX: 10, clientY: 10,
     preventDefault: () => {}, stopPropagation: () => {}, button: 0,

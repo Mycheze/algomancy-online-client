@@ -20,6 +20,20 @@
  * graft rider are the SAME object). This file is the per-card regression net
  * for all nine, plus the near neighbour that travelled with them.
  *
+ * ⚠ R209 / CARD-TODO #74: **the family now lives HERE and only here.** 85's §9
+ * three have been moved into §11 below. They were split across two files whose
+ * class tests each claimed the two lists were disjoint, which meant that when
+ * the family next grew, neither file owned it — the exact failure mode
+ * docs/13-assessment.md §4 keeps naming. §13's count is the guard on that.
+ *
+ * ── ITS SIBLING FILE, AND WHERE THE LINE BETWEEN THEM IS
+ *
+ * `test/179-empty-collection-branches.test.ts` (CT-74/CT-81b) watches the
+ * OTHER cause of the same player-facing defect: the opponent IS present, and
+ * every present seat has nothing to give, so the collection comes back empty.
+ * Same silence, different reason, twelve more cards. §13 asserts the two lists
+ * stay disjoint so that each card has exactly one owner.
+ *
  * WHAT EACH TEST ASSERTS, IN ORDER
  *
  *   1. the PRECONDITION — the effect's region really does hold no opponent,
@@ -320,7 +334,43 @@ test('Stellarspore Harvester — "each of your units with a -1/-1 counter" count
     + "controller's, and the target opponent received no gift he was never owed");
 });
 
-// ── 11. THE GRAFT RIDER IS THE SAME OBJECT ──────────────────────────────
+// ── 11. THE THREE THE OLD FUZZ REACHED (moved here from 85-silent-branches §9)
+//
+// R209 / CARD-TODO #74. These three were repaired FIRST — 85-silent-branches
+// §9 fixed them because the old fuzz drive happened to walk into them — and
+// the other ten arrived here later, which left one family split across two
+// files with each file's class test claiming the lists were disjoint. Neither
+// file owned the family, so the next member to appear would have been nobody's.
+// They are the same defect, the same repair and the same board; they belong in
+// one place, and this is it.
+//
+// Restitution and Vroot drain on DAMAGE, Flzzz on a LIFE GAIN — the events are
+// what their own `when` reads, so each is handed the one it would really see.
+
+const MOVED_FROM_85: [string, EffectDef, string, Partial<EffectCtx>][] = [
+  ['Restitution', augmentOf('Restitution'), 'each opponent loses that much life',
+    { event: { type: 'damage', msg: '', data: { n: 3 } } }],
+  ['Vroot', augmentOf('Vroot'), 'each opponent loses that much life',
+    { event: { type: 'damage', msg: '', data: { n: 3 } } }],
+  ['Flzzz', augmentOf('Flzzz'), 'each opponent loses that much life',
+    { event: { type: 'lifeGained', msg: '', data: { n: 3 } } }],
+];
+
+for (const [card, def, clause, extra] of MOVED_FROM_85) {
+  test(`${card} — "${clause}" in a region holding no opponent says so and takes no life`, () => {
+    const b = board(8590);
+    assertNoOpponentPresent(b, card);
+    const lives = b.g.s.players.map(p => p.life);
+    assert.ok(lives[b.D]! > 3,
+      `${card}: the opponent HAS life to lose — a no-op here is R25, not exhaustion`);
+    const evs = resolve(def, b, { sourceName: card, ...extra });
+    assertSpoke(evs, card, clause);
+    assert.deepEqual(b.g.s.players.map(p => p.life), lives,
+      `${card}: nobody gained or lost life — the repair is a line, not a branch`);
+  });
+}
+
+// ── 12. THE GRAFT RIDER IS THE SAME OBJECT ──────────────────────────────
 
 test('the four grafted R25 riders are the same EffectDef object the tests above drove', () => {
   // 65-effect-conformance labels a card's spell/ability and its graft rider
@@ -344,7 +394,7 @@ test('the four grafted R25 riders are the same EffectDef object the tests above 
   }
 });
 
-// ── 12. THE CLASS ITSELF ────────────────────────────────────────────────
+// ── 13. THE CLASS ITSELF ────────────────────────────────────────────────
 
 test('every card repaired for CARD-TODO #70 is one the whole-pool sweeps also watch', () => {
   // 65-effect-conformance drives every EffectDef in the registry and 81-card-drill
@@ -356,7 +406,13 @@ test('every card repaired for CARD-TODO #70 is one the whole-pool sweeps also wa
     'Bloated Manablub', 'Blightmound', 'Linked Extinction', 'Void Memory',
     'Growing Plague', 'Malicious Hardware', 'Pestilent Mycelion', 'Rotwall',
     'Verdant Necrophage', 'Stellarspore Harvester',
+    // R209/CT-74: moved here from 85-silent-branches §9 so the family has ONE
+    // owner. 85's own class test no longer claims them.
+    ...MOVED_FROM_85.map(([c]) => c),
   ];
+  assert.equal(fixed.length, 13,
+    'the whole R25 family lives in THIS file now — ten from R187 plus the three 85-silent-branches '
+    + '§9 reached first. If the family grows, it grows here.');
   const missing = fixed.filter(c => effectsOf(c).length === 0);
   assert.deepEqual(missing, [],
     'these cards carry no EffectDef the registry can see, so the whole-pool sweeps cannot watch them');

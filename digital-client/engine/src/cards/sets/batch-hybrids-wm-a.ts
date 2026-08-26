@@ -792,6 +792,15 @@ card('Maw of Damnation', {
             picks.push(id);
           }
         }
+        // R209/CT-74: `pickUnit` returns null on an empty pool, so a round in
+        // which no present seat has a unit collects NOTHING, commits nothing
+        // and — before this — broke out saying nothing at all.
+        if (!picks.length) {
+          g.ev('info', round === 0
+            ? 'Maw of Damnation: nobody here has a unit to sacrifice.'
+            : 'Maw of Damnation: no units are left here to sacrifice — it stops.');
+          break;
+        }
         for (const id of picks) {
           const u = g.entity(id);
           if (u) g.destroy(u, 'is sacrificed');

@@ -22,7 +22,20 @@
  *
  * There is no `test:integration` split. Eleven of the thirteen bind a port,
  * so splitting on "binds a port" would leave `npm test` running two files and
- * reintroduce exactly the problem this fixes. The whole suite is ~35s.
+ * reintroduce exactly the problem this fixes. The whole suite is ~30s.
+ *
+ * R204 / CT-85 — WHY THIS FILE IS NOT WHERE THE FLAKE LIVED. The suite went
+ * red about one run in three and named a different test each time, and the
+ * obvious suspicion was this runner. It was not: node:test gives a single
+ * file's top-level tests concurrency 1, and the proof is in any run's TAP
+ * output — the nineteen subtest durations sum to the total. Nothing here runs
+ * beside anything else, so there was no serialisation left to add.
+ *
+ * The contention was with processes this file has never heard of: a dozen
+ * agents each running this same suite on the same box. Ports and CPU are
+ * shared whatever this runner does. Fixed where it was caused — see
+ * test-util.ts's spawnServer() for the port race, and test-clock.ts's
+ * quiesce() for the one assertion that was reading a stale view.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -61,6 +74,8 @@ const SUITE: { file: string; covers: string }[] = [
     covers: "R85: the suspension's rollback snapshot — a whole unredacted GameState — never reaches a client, not even the seat whose decision it is" },
   { file: 'test-concurrency.ts',
     covers: "R150+R154/CT-32+CT-44 (playtest #98): one seat's pending decision inside a hidden simultaneous segment must not freeze the other seat's deployment — the two engine lines that used to block (now apply.ts's seat-aware decisionBlocks), the one case the deferral queue still exists for (an R85 snapshot-carrying mid-resolution suspension, whose answer would rewind the other seat's work away), the cast-time case that no longer waits at all, the after-the-fact clobber refusal, the queue's bounds and escapes, and the privacy properties none of it may break" },
+  { file: 'test-scenario.ts',
+    covers: "R216 / docs/14 — the scenario tester's vertical slice: the admin route 404s without ALGO_TESTER_TOKEN (this is a PUBLIC deploy), a scenario room puts the DECLARED board in the seat's redacted view, the scripted opponent moves the game with one human at the table, ⭐ the room still rebuilds BYTE-IDENTICALLY across a server restart (the property the whole design rests on — docs/14 §8.1), and a verdict lands in ALGO_VERDICTS_FILE stamped with the scenario id, the engine SHA (R200), the room code and the action index" },
   { file: 'test-formation-decision.ts',
     covers: "BL-24: both formation asks (R75 resolve-time, R29 cast-time) reach the asked seat intact over viewFor + legalActions as kind 'formationSlot', with the decide answers offered, and redact to nothing for the opponent" },
 ];
@@ -68,7 +83,7 @@ const SUITE: { file: string; covers: string }[] = [
 /** Files that match the test-file naming but are NOT test scripts. Each needs
  * a reason, and the ledger below fails if one stops being true. */
 const NOT_A_TEST: { file: string; reason: string }[] = [
-  { file: 'test-util.ts', reason: 'shared helper (mintRoom / freePort / gameFile) — exports only, no assertions, no main' },
+  { file: 'test-util.ts', reason: 'shared helper (mintRoom / spawnServer / gameFile) — exports only, no assertions, no main' },
 ];
 
 /** Run one test script to completion; resolve with its exit code and output. */
@@ -88,6 +103,10 @@ function runScript(file: string): Promise<{ code: number; out: string }> {
         ALGO_GAMES_DIR: join(scratch, 'games'),
         ALGO_ACCOUNTS_FILE: join(scratch, 'accounts.json'),
         ALGO_ISSUES_FILE: join(scratch, 'issues.jsonl'),
+        // R216: and the scenario tester's verdict store, for the same reason —
+        // on the deploy box server/verdicts.jsonl is the only copy of the
+        // owner's judgements about the cards.
+        ALGO_VERDICTS_FILE: join(scratch, 'verdicts.jsonl'),
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     });

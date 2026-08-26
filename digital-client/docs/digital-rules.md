@@ -15041,3 +15041,1609 @@ drill's "keep the card on the table" respawn puts it back AT HOME, mid-battle
 and too late to join the attack. Its `inBattleBeats` is empty in every run. The
 precondition it still lacks is a body that survives to the declare step, or a
 respawn that puts it into the battle region its seat is already present in.
+
+---
+
+## R201
+
+### `${ … }` inside a template literal is CODE, and every sweep in the repo rests on knowing that
+
+*(2026-08-26, round 27, CARD-TODO #68. Filed retroactively in round 28 — the
+fix shipped and the register entry did not. See R215 for why that is now a test
+failure rather than a thing somebody notices a week later.)*
+
+`stripCode` is the helper every whole-file sweep in this repository stands on:
+`90-coverage-census`, `147-comment-conformance`, `164-sweep-sight` and the
+dead-code scan all blank out strings and comments through it before they look
+for anything. It has now gone blind **three separate times**, and each time the
+sweeps above reported *clean* while seeing a fraction of the file.
+
+This is the third. Its `tpl` state had no notion of `${ … }`, so a **nested
+template literal inverted the parity**: the inner opening backtick read as the
+outer's closing tick, which swallowed the code before it and handed the inner
+string's body back to the caller **as code**.
+
+**Measured, not estimated.** `engine.ts` leaked 10 lines. `ui/main.ts` leaked
+368 lines and **blanked 911 lines of real code**.
+
+**What that cost, concretely.** A real `z.bin.push()` planted inside a nested
+template in `src/rng.ts` left **all nine tests of `90-coverage-census` green** —
+a live bypass of the R124/R145 bin choke point, invisible to every sweep resting
+on this helper. Nine of the ten "dead helpers" the widened scan reported in the
+same round were false positives *of this blindness*.
+
+**The rule:** an interpolation's contents are code, and only an interpolation's
+**closing** brace ends it. `stripCode` now tracks brace depth on a stack, so a
+`}` inside the interpolated expression does not end the interpolation and a
+backtick inside it opens a genuinely new template. The `ui/` exclusion R193 had
+just been forced to add came straight back out.
+
+### The second defect the same investigation exposed
+
+The dead-code sweep built its matcher as `new RegExp('\\b' + name + '\\b')`.
+**`$` is both a legal JavaScript identifier character and a regex end-anchor**,
+so `\b$app\b` reads as *"end of input, then `app`"* and can never match anything.
+`ui/main.ts::$app` is used on eight lines and read as dead. `\b` is the wrong
+boundary for `$` in either direction; it is an identifier lookaround now,
+red-checked both ways.
+
+### Why this keeps happening, and the only defence that has worked
+
+Every one of `stripCode`'s three blindnesses — no regex literals, no line
+comments, no nested templates — made a sweep report **more sight than it had**,
+and each was found by a person distrusting a clean result rather than by the
+suite. `164-sweep-sight` exists to invert that: it plants a violation and
+asserts the sweep can still see it. **A sweep with no positive control is not
+evidence of absence**, and `docs/13-assessment.md` §5 is the longer argument.
+
+---
+
+## R203 — a secrecy assertion must be able to fail, so the test log grew seats
+
+`Harness.absorb()` pushes every event's `msg` into ONE seatless `log` array and
+`visibleToSeat` is nowhere near it. So **every secrecy claim written against
+`h.log` is unfalsifiable**: the assertion reads exactly the same whether the
+information is public or private. The instance the ticket names,
+42-dark-b:1331:
+
+    assert.ok(h.log.some(l => l.includes('Thought Extraction reveals')), 'the hand was revealed');
+
+That line published an **opponent's entire hand** to the shared log, and this
+assertion passed before R197b fixed it and passed after. Two genuine
+information leaks survived 153 test files for exactly this reason — R197b's
+three "look at a hand" cards and R202's `handEntered` — and **both** had to be
+caught from a server-adjacent file, because nothing in `engine/test` could
+express the sentence "seat D must not read this."
+
+**The fix is `test/util.ts::logFor(h, seat)`** — `h.events` run through
+`server/view.ts::redactLog`, i.e. the log that seat is actually served in
+production. A card that publishes a hidden zone to the shared log now fails a
+test **written in the card's own test file, with no server import at the call
+site**. Demonstrated, not asserted: removing `{ privateTo: ctx.controller }`
+from batch-dark-b:848 reddens 42-dark-b with the opponent's whole hand printed
+in the failure message.
+
+**It is a free function over a Harness, not a method on one, and that is
+forced.** `engine/src/**` must not import `server/**` — `server/view.ts`
+already imports `engine/src/engine.ts`, so an accessor on `Harness` would close
+a cycle. Engine *tests* import `server/view.ts` freely (144, 159, 173), so the
+seam belongs on the test side. `util.ts` and not a new module because 140 of
+the 170 test files, and 74 of the 84 that read a log, already import it: the
+call site costs nothing.
+
+**It is built from `h.events`, never from `h.log`.** Redaction operates on
+events — a `privateTo` tag and a per-type rewrite — and `msg` has already
+thrown both away. That also means it cannot re-make the drift `harness.ts`
+documents between `log` and `logTypes`, because there is only one list to read.
+
+**The half that stops it recurring is the lint,
+`174-secrecy-is-seat-aware.test.ts`:** an assertion that names a card and a
+secret in the same breath must not be reading the flat log. **Both halves of
+the rule are derived and nothing is allowlisted** (CT-83 is an open ticket
+about prose-reasoned allowlists, and this file adds no tenth one):
+
+  - **private-look cards** from PRINTED TEXT — R197b's partition, "look at
+    …hand" is private and "reveals their hand" is public. A sixth card printing
+    the verb joins the set on its own.
+  - **private fragments** from the ENGINE — the static text of every `.ev(`
+    call under `engine/src` carrying `privateTo`. A line the engine only ever
+    emits privately is a line no flat-log assertion may quote, whether or not
+    it names the card.
+
+The two cover each other's blind spot, and the lint follows a hoisted
+`const iPay = h.log.findIndex(…)` because otherwise moving the read one line up
+walks straight past it.
+
+**The controls the ticket names both survive, without an exemption.**
+Bioremediation and Void Memory print *reveals*, so the derivation never puts
+them in the private set — which is the whole reason the rule is keyed on
+printed text and not on vocabulary. A vocabulary rule (`hand`, `reveal`,
+`look at`) flags Void Memory's `hand is empty — revealed` and Worldbender's
+`does not look at their pack`, and would need a prose exemption for each.
+Measured: the derived rule flags **one** assertion in the corpus and needs
+none. (⚠ correction to the ticket: Bioremediation's own test asserts on
+`state.seenHand` and reads no log at all, so it is a control for the partition,
+not for the flat-log reader.)
+
+**A flag is not an accusation.** Reading the flat log for a PUBLIC line of a
+private-look card — 26-metal-a's Dreamtender sacrifice ordering — is not a bug;
+it is simply weaker than it needs to be. So the fix for a flag is always "use
+the seat log", never "add an exemption". That is what keeps the rule blunt and
+the file free of an allowlist.
+
+**And the honest size of the blind spot: ONE.** 165 assertions across 84 files
+read a seatless Harness log, but 164 of them assert on public events and are
+correct as written; exactly one was a secrecy claim. The "153 test files"
+figure is the size of the *capability* gap — nowhere to write the claim — not
+the number of unfalsifiable assertions. Two tests changed behaviour.
+
+Every observation channel needs a positive control showing it can SEE
+(docs/13 §7.4), so §1 drives a real private line and asserts the flat log and
+the seat log **disagree** about it — `logFor(h, A).length === h.log.length` and
+`logFor(h, D).length === h.log.length - 1` — while the public half of the same
+resolution still reaches both seats. A channel that quietly returned nothing
+would pass every secrecy assertion ever written against it.
+
+---
+
+## R204
+
+### A test may not hold a resource it is not using, nor believe a view that has a message still in flight
+
+*(2026-08-26, round 27, CARD-TODO #85. The server suite went red about one run
+in three, on a different test each time. Two of the ticket's three prescriptions
+were already true at HEAD; the third was right and is now shipped. The failure
+that was actually caught in the act was none of the three.)*
+
+CT-85 is the last entry in `docs/13-assessment.md` §5 — the list of defects
+found **in the measurement system**, not in the game. It belongs there for the
+reason the ticket gives: *a suite that goes red at random cannot be trusted to
+go red for a reason.* This ruling is about the two ways a test can be wrong
+about the world while asserting something true about the code.
+
+---
+
+#### 1. What the numbers actually were
+
+The flake does not exist on an idle box. **Ten consecutive `npm test` runs at
+HEAD, all 19/19 green** — matching an independent auditor's five, and matching
+the ticket's own note that each test passes standalone. That is not a refutation
+of the report; it is the shape of the bug. The report was filed on a day fifteen
+agents were running.
+
+Reproduced by supplying the missing ingredient: **four copies of the suite at
+once on an eight-core box. 2 failures in 12 runs (17%)** — close to the reported
+one-in-three, and zero in ten runs of the same suite alone. Load is the
+variable, and the suite must be measured under it or not at all.
+
+#### 2. A test must not hold a port it is not listening on
+
+`test-util.ts::freePort()` bound `:0`, read the assigned number back, **closed
+the socket**, and returned the bare number; the caller then spawned `main.ts`
+with `PORT=<that number>`. Between the parent's close and the child's bind the
+port belongs to nobody, and on a busy box somebody takes it. The child dies on
+`EADDRINUSE` and the test that follows reports `ECONNREFUSED` — which is exactly
+the symptom in the report, and exactly why it named a different test each time.
+
+Its own docstring called this "a tiny race with anything else grabbing it in the
+same millisecond". **The window is not a millisecond. It is however long node
+takes to boot** — the whole of `main.ts`'s startup, including its history sync.
+
+The ticket prescribed "bind port 0 and read back the assigned port", and a
+reasonable reading of that is *already done — see `freePort`*. It is done in the
+wrong process. **The window closes only if the process that will USE the port is
+the one that binds it.** So `main.ts` now takes `PORT=0`, and prints the port it
+actually bound rather than the one it was asked for; `spawnServer()` reads the
+number out of the server's own ready line. Nobody ever holds a port they are not
+listening on.
+
+*The general rule, which outlives this bug: a handle obtained on behalf of
+another process is not a reservation. Either pass the handle, or let the other
+process obtain it.*
+
+#### 3. A fixed deadline is a claim about the machine, not about the code
+
+The eleven hand-rolled copies of "spawn the server and wait" had drifted, and
+each drift was the same mistake in a different disguise — **a constant that is
+true on an idle box**:
+
+* `test-building.ts` did not wait for the server at all. It slept **1200ms** and
+  started making requests. This is the file the `ECONNREFUSED` was reported
+  against, and it had two independent reasons to produce one.
+* `test-postgame.ts` bound **`PORT + 1`** for its second server — a port nothing
+  had ever checked was free, arrived at by arithmetic on a port that was. It
+  also never rejected on the child's exit, so a failed bind surfaced fifteen
+  seconds later as a bare `server2 startup timeout` naming no cause.
+* `test-clock.ts` asserted seat 0's pre-`donePlanning` sliver was **`<= 1000`ms**
+  and the billing gap **`>= 1000`ms**. Both silently assume one join round trip
+  costs under 300ms. On a loaded box it need not.
+
+The port constants are gone. The time constants are now **measured rather than
+guessed**: the test records how long the window it is bounding actually lasted
+and asserts against that. It still tests that real elapsed time is billed to the
+right seat — which is the whole point of a chess clock — while no longer also
+testing that the machine was quiet.
+
+#### 4. THE ONE THAT WAS CAUGHT IN THE ACT: a view with a successor in flight
+
+Both failures in the reproduction were the same, and it was in none of the
+ticket's causes. `test-clock.ts::advanceUntil` drives two clients until a
+predicate holds on **both**, testing it against `a.view` / `b.view` — whatever
+the last message on each socket said.
+
+One action pushes an update to **both** seats, and the two pushes do not land at
+the same instant. The loop only ever awaited the update for the client it had
+just driven. So: seat 0 commits, reaches turn 2, its update lands. Seat 1's
+update for that same turn is still on the wire. `done()` reads seat 1's *turn 1*
+view, concludes "not there yet", and drives seat 1 — using seat 1's *turn 1*
+`legal`, which still offers a `draftCommit`. **Seat 1 drafts twice.** The loop
+returns satisfied, and the caller reads `picksMade === 2` where the pack has
+been picked over once:
+
+```
+✗ each pack has been picked over once
+```
+
+The helper's own docstring warns about precisely this class ("returning as soon
+as a's arrived is a race the caller always eventually loses") and then fixes
+only half of it — it waits for the driven client, never for the other one.
+
+**A longer sleep is not the fix; it is the same bug with a bigger number.** The
+fix is to stop reading a view that has a known-pending successor: wait for both
+sockets to fall *quiet* — an actual observed gap in traffic — before believing
+either of them. Quiet is load-adaptive in a way a constant can never be.
+
+*The general rule: in a two-client test, "both clients agree" is only meaningful
+when neither client has a message in flight. Quiescence, not delay.*
+
+#### 5. What was already true, and why saying so matters
+
+Two of the ticket's three prescriptions were satisfied at HEAD:
+
+* **"Bind port 0 and read back the assigned port."** `freePort()` did. In the
+  wrong process — §2. Shipping it as written would have changed nothing.
+* **"`server/package.json` should run the suite SERIALLY."** It already does,
+  and not by accident: `test` names **one** file, and node:test gives a single
+  file's top-level tests concurrency 1. The proof is in any run's own TAP
+  output — the nineteen subtest durations sum to the total (28.5s of 28.6s).
+  There is no `--test-concurrency` flag left to add.
+
+The ticket's stated reason for that fallback — *"the engine suite has the same
+property and is already run serially from a script"* — **is not true either.**
+`engine/package.json` is `node --test 'test/**/*.test.ts'`; node runs those in
+parallel across cores, and there is no script. The root `package.json` chains
+the three suites with `&&`, which is serial *between* projects only.
+
+And serialisation could not have helped in any case. **Everything this suite
+contends with is outside it.** Fifteen agents each running the same nineteen
+tests compete for ports and CPU no matter what order any one runner uses. A
+fallback that cannot touch the cause is not a fallback; it is a place to stop
+looking.
+
+*The general rule: before hardening a runner against a flake, establish that the
+contention is inside the runner. "Make it serial" is the reflex, and here it was
+already true, already documented, and already irrelevant.*
+
+#### 6. What was deliberately NOT done: injecting the clock
+
+The ticket asks to "inject the clock rather than reading `Date.now()`", by
+analogy with `ALGO_ISSUES_FILE` and `ALGO_ENGINE_VERSION`. **The analogy does
+not hold, and this was left alone on purpose.**
+
+Those two are ambient dependencies a test wants *out of the way* — a file path
+and a version string, incidental to what is being checked. `Date.now()` in
+`rooms.ts::settleClock` is not incidental: **elapsed wall time is the feature.**
+A chess clock that bills the right seat the right number of real milliseconds is
+the entire claim. Replace the clock with a fake one the test advances and
+`test-clock.ts` stops testing the clock and starts testing arithmetic — a
+strictly weaker guard, of exactly the shape §5 of the assessment calls out
+("unit-testing the last hop with a hand-built input, for a report about the
+whole chain").
+
+Nor was it the flake. Across twelve loaded runs every clock-billing assertion
+passed with slivers of 6ms and 8ms. What was fragile was not the clock but
+**three hardcoded numbers asserted against it** — fixed in §3, by measuring the
+window instead of assuming it.
+
+If injection is wanted later it should be wanted for determinism in a *new*
+test, alongside the real-time one, not in place of it. **Recorded as a
+re-scoping, not as a deferral.**
+
+---
+
+**Verified:** 10 runs idle at HEAD, all green (the flake needs load). 12 runs at
+four-way concurrency at HEAD: **2 failures**, both §4. After the fix, 24 runs at
+the same four-way concurrency: all green. What twenty-four green runs at a 17%
+per-run baseline establish is that the observed failure mode is gone
+(p ≈ 0.011 under the null); what they cannot establish is behaviour at the
+fifteen-agent load the original report was filed under, which was not available
+to reproduce. Stated rather than rounded up.
+
+---
+
+## R205 — a checker that cannot see a container reports more sight than it has
+
+CARD-TODO #75, and #82's (b), (c) and (d). Not a rules question: a question
+about what the test suite can *observe* about the client, and about two places
+where the answer was "less than it said".
+
+### The delegator, and the one thing it does not do
+
+`ui/main.ts` routes every click through one document listener:
+
+```js
+const btn = (e.target).closest('[data-btn]');
+if (btn) { handleButton(btn, e); return; }
+if (!inGame) return;
+const t = (e.target).closest('[data-act]');
+```
+
+Two `closest` calls, asked in order, each answered independently. `closest`
+walks *outward*, so the first call sees the whole ancestor chain before the
+second call is ever made. **A `data-act` element inside a `data-btn` container
+is therefore dead — at one level of nesting or ten.** The board has exactly two
+container-shaped `data-btn` affordances, `.regioncache` (`cacheopen`) and
+`.regionbin` (`binopen`), and both are panels full of card scans.
+
+This is not news to the client — R192 wrote the reasoning into `main.ts` when it
+fixed the cache thumb. It was news to the *test suite*.
+
+### The blind spot
+
+`test/ui-driver.ts` clicks a real affordance through main.ts's real listener.
+Its fake element had no ancestors, and its own header said so approvingly: the
+clicked element carries its own `data-btn`/`data-act`, "which is true of every
+affordance in the board markup". That sentence was false, and being false is
+what let it stand — with no container in the fake, an inner element had nothing
+to lose the click to, so **a test about a nested affordance passed in the driver
+and was wrong on screen.**
+
+CARD-TODO #64 is the proof. Its `fix` field prescribed "give the thumbs the same
+`data-act="cache"` the dialog entries use". In a browser that does nothing at
+all. R205 planted exactly that markup and ran the test #64 would have had:
+
+| driver | result |
+| --- | --- |
+| pre-R205 (no ancestors) | `ok 1 — the data-act thumb plays on the first click` |
+| R205 (real ancestors) | `not ok 1 … expected 33, actual 30` — the click opened the panel |
+
+Same client, same test, opposite verdicts. The suite was the thing that was
+wrong.
+
+### The rule
+
+> **A fake that answers a question about the DOM must model the part of the DOM
+> the answer depends on.** `closest` depends on ancestors; a `closest` without
+> ancestors is not a cheap approximation of `closest`, it is a different
+> function that agrees with it only on the cases nobody was worried about.
+
+`ui-driver.ts` now rebuilds the real ancestor chain out of the rendered HTML
+(one quote-aware scan, a tag stack, void elements excluded) and `closest` walks
+it nearest-first, as the browser's does. `contains()` and `parentElement` come
+off the same chain, and 176 §1 checks the three agree — the two nobody calls are
+otherwise free to become the next lie of the same species.
+
+### The routing decision, and why it was NOT changed
+
+The obvious follow-on is to make the delegator depth-aware — prefer whichever of
+the two matches is *nearer*. R205 declines, on evidence rather than caution.
+
+Every `data-btn` and `data-act` in `main.ts` was enumerated, statically and from
+rendered markup. Only two `data-btn` elements are containers at all
+(`.regionbin`, `.regioncache`); everything else is a `<button>` or a card scan,
+and the only thing either container contains is `cardHtml` output, whose one
+attribute slot the two builders control. **Not one `data-act` in the client is
+nested inside a `data-btn` today.** So a depth-aware delegator would change no
+current behaviour — which also means there is nothing to red-check it against.
+It would be an untestable change to global click routing whose only effect is on
+markup nobody has written yet.
+
+What the class actually needs is for the trap to be *loud*, not for it to be
+survivable. So the rule stands as it is, and the shape is guarded instead:
+
+> **An affordance nested inside a `data-btn` container carries its own
+> `data-btn`, never a `data-act`.** `closest` matches the element before any
+> ancestor, so the inner `data-btn` wins in the browser and in the driver alike.
+
+`cacheplay` (R192) and `binplay` (below) are the two instances.
+`176-nested-affordance-and-serialiser.test.ts` §2 computes the affordance census
+from the markup the client really painted and fails if any `data-act` has a
+`data-btn` above it — so a panel added next year walks into the guard by itself,
+rather than the guard needing to be told about it (docs/13 §7.2).
+
+### CT-82(b) — the bin panel
+
+`.regionbin`'s thumbs carried no affordance at all, so a bin card that could be
+*played* right now (R96/R123), *prophesied* (R42) or *applied as a mod* took two
+clicks from the panel and one from the dialog. Fixed the same way R192 fixed the
+cache: a live thumb carries `data-btn="binplay"` and hands to `handleBinClick`,
+which is the dialog's own handler, extracted so the two surfaces cannot come to
+do different things with the same card. Which entries are live comes from one
+predicate, `binUsableIndexes`, read by both the panel and the dialog's glow —
+two copies of that disjunction is how the panel would come to offer a click the
+dialog says is not there.
+
+### CT-82(c) — an attribute a regex can span
+
+R192 fixed `cardHtml`'s badge chip. Sixteen more `class=` templates had a slot
+that could come out empty and leave a stray space behind — and one more defect
+sat three lines below the line R192 repaired:
+`class="${cls.join(' ')}" ${opts.data ?? ''} data-prev=` rendered
+`class="card"␣␣data-prev=` whenever a scan had no data, defeating any regex
+spanning the pair. All seventeen now carry the space inside the conditional
+(`${x ? ' on' : ''}`), the idiom the file already used in a dozen places. 176 §5
+holds the line over rendered markup rather than over source: **no class
+attribute has a doubled, leading or trailing space, and no two attributes on one
+line are separated by more than one.**
+
+### CT-82(d) — the second serialiser
+
+R189 fixed `queueFlashes` and nothing else. `ui/anim.ts` was still stamping every
+card flight of a render at `i * 45ms`, where `i` is its **index in the array** —
+and the array has already been re-sorted by `flightRank`, so the order setting
+the delays is "moves before leaves before enters", not anything that happened in
+the game. Four units dying at once and four triggers landing on the stack in one
+update were drawn one at a time, for the same reason report #105 complained
+about the beats.
+
+R189's rule, one layer down:
+
+> **The unit of spacing is a JOURNEY, not an item.** Flights that left the same
+> place for the same place in one render are one thing happening and share a
+> beat; groups are `STAGGER_MS` apart, exactly as items used to be.
+
+**Positive evidence only**, R189's third consequence held to literally: a flight
+joins its neighbours only when *both* ends of its journey are named anchors. A
+`leave` with no destination (erased, trashed) and an `enter` with no origin (a
+token from nowhere) cannot be shown to be simultaneous with anything, so each
+keeps its own step and behaves exactly as it did before. Twelve cards on twelve
+different trips get the identical delays they got before this existed; twelve
+cards on one trip leave together.
+
+The decision is now a pure exported function (`flightDelays`) because
+`playMotion` needs a real DOM and this does not — `test/176` is the only
+observation channel this layer has ever had.
+
+---
+
+## R211 — an evidence window that never closed is INCONCLUSIVE, not evidence
+
+CARD-TODO #87, and the fifth blindness found in the same checker in three
+rounds. Not a rule about the game: a rule about the instrument that tells us
+whether the game works, which `docs/13-assessment.md` §5 argues is where our
+defects actually live.
+
+`drillCard` opens an evidence window at every `activateAbility` it takes and
+closes it when that activation resolves. Both cuts are deliberate and both have
+been paid for: the first cut of stage 2 ran the window to game over, and every
+ability's evidence then included the next three turns of combat damage, draws
+and spawns, so every claim of every kind read as delivered.
+
+**The window had a third exit that closed nothing.** When the loop ended with an
+activation still on the stack, a tail at the bottom of `drillCard` ran the same
+two lines against the FINAL state — crediting `activateTypes` and
+`activateChanged` with every event from the stuck activation to wherever the run
+stopped. Any event any card produced in that span became the card-under-test's
+evidence. It had a live victim: **Slag Spewer read as OBSERVED** because the
+span swallowed an `erased` its HOST's later destruction produced (CT-86). R199
+made runs end cleanly, the span shut, and the card went dark — which is how the
+`EVENTLESS` category was discovered at all.
+
+### The ruling
+
+**A run that could not close an activation's evidence window knows nothing
+about what that activation delivered, and must say so.** It is a THIRD STATE,
+distinct from both "observed" and "never observed", and it is reported out
+loud beside them.
+
+An honest *could not tell* is worth more than a credited event that belongs to
+another card. Folding the unclosed window into "observed" is the bug above.
+Folding it into "never observed" is the opposite lie: it would file the card in
+`84-card-semantics`'s `UNREACHED` under a board precondition it does not
+actually lack, and send the next agent to build a fixture that already exists.
+
+Concretely, in `test/drill.ts`:
+
+* the tail no longer credits anything. It sets `actInconclusive`, records
+  `actInconclusiveReason` (`maxSteps` or `gameover` — two different diagnoses,
+  and only the first is fixable by turning a knob), and keeps the refused
+  types, state delta and log lines so the refusal can be measured rather than
+  taken on trust;
+* `84-card-semantics` prints an `INCONCLUSIVE (CT-87)` line on every run
+  alongside the `UNREACHED` partition, names each affected card and run, and
+  **asserts the count is 0** — a floor in the honest direction, where a number
+  going UP is the bad news.
+
+### The measurement came first, and it is a null result
+
+Over all 491 drillable cards, in the exact scenario set `84-card-semantics`
+drives — **1296 runs, the tail fired 0 times.** The ticket's "mostly moot since
+R199" is right: no card at HEAD was standing on this accident, and the whole
+pool tally is byte-identical after the fix (114/123 unconditional; augment
+152·137, trigger 110·92, activated 35·35, condition 19·14; 278/316 gated).
+Nothing changed state, because nothing could have.
+
+The same sweep measured a second, adjacent hazard in the same bookkeeping — a
+new activation OVERWRITING a window that is still open, which would silently
+DROP evidence rather than borrow it — and found 0 occurrences as well. Recorded
+here so the next person does not have to re-derive that it is dormant.
+
+### Which is exactly why the control is not optional
+
+A channel that prints `0` with nothing proving it can print anything else is
+the failure §5 catalogues: *six checkers in one round reported more sight than
+they had.* §7.4 makes it a rule — **a positive control for every observation
+channel.** `181-inconclusive-activation-window.test.ts` forces the clip and
+drives one run both ways:
+
+```
+Slag Spewer, { augment, press, maxSteps: 47 }   (the clip is SEARCHED FOR, not typed)
+
+  inside the unclosed window:
+    | Slag Spewer (on The Foretold): … erase one of my mods … → stack.
+    | Player 1 plays Protective Adaptations → stack.
+    | Resolving Protective Adaptations:
+    | The Foretold gets +1/+1 until regroup.
+
+  BEFORE  activateTypes  [info, targeted, stackFlash, resolved, damage,
+                          info, targeted, stackPushed, targeted, spellPlayed,
+                          cardPlayed, stackPushed, resolved, statChanged, statChanged]
+  AFTER   activateTypes  [info, targeted, stackFlash, resolved, damage]
+```
+
+`EVIDENCE.pump` is `['statChanged']` and nothing else, so the pre-R211 window
+scored a **pump** promise for a card that prints no pump, off another card's
++1/+1, arriving after the drill had stopped watching. That is the CT-86
+mechanism reproduced end to end. The flag that reinstates it,
+`unboundedActTailForControl`, is asserted by a tree scan to have exactly two
+mentions in the repository — where it is defined and where it is controlled for.
+
+Two things the ticket said that the measurement corrected:
+
+* it is **not** press runs. `press` alone never opens an activation window; only
+  `activate` and `augment` runs do, and the natural instance is an
+  `{ augment, press }` run.
+* `maxSteps` was **not** the only way in. The `gameover` break at the top of the
+  loop reached the identical tail and the ticket does not mention it. The
+  seeded board is lethal enough that R199 had to raise the life top-up; a game
+  ending mid-activation would have borrowed evidence exactly the same way.
+
+---
+
+## R206 — the glossary is a rules document, and 15 of its 43 rows were wrong
+
+*(CT-80 + CT-76, 2026-08-26. Round 28. Written to the round scratchpad because
+the working agent may not edit this file; the orchestrator lands it.)*
+
+`ui/glossary.ts` holds one plain-English reminder per keyword, and the card
+inspector prints one row per keyword a card mentions. To a player that row IS
+the reminder text. For an attribute with **no printed reminder** it is the only
+statement of the rule this repository has, and the engine has already relied on
+it as such: `engine.ts`, on {Reaping}, *"none of the four cards carries a
+reminder at all. ui/glossary.ts is the repo's own statement of it, AND IT IS
+WHAT R184 READ."*
+
+Measured, not assumed: **ten of the 25 attributes** in the table carry no
+printed reminder anywhere in the pool — {Evasive}, {Sneaky}, {Alluring},
+{Tough}, {Vulnerable}, {Feeble}, {Resonant}, {Thieving}, {Reaping}, {Unaware} —
+and neither do the four printed markers {Burst}, {Virus}, {Ambush},
+{Unstable}. So a wrong row is a rules bug, not a UI nit.
+
+All 43 rows were read against the engine. **Fifteen were wrong.** Twelve stated
+a rule the engine does not have; three omitted one it does. Five of the fifteen
+were on CT-80's own *"checked and correct, do not re-audit"* list.
+
+### The rule this ruling states
+
+1. **Printed text wins.** Where a card prints a reminder and the glossary
+   disagrees, the card is right and the glossary is behind. This is the third
+   time that shape has cost something — Glimpse (report #106, R190), Piercing
+   and Electric (here) — and in all three the report or the audit went to the
+   printed data first and found it correct.
+2. **A reminder must cite the ruling it paraphrases, and the citation must
+   resolve to a LIVE ruling.** Not "an R-number exists in a comment": the
+   number must have a `## R<n>` section in `digital-rules.md` that is not
+   withdrawn, superseded or narrowed. {Unaware} carried R10's wording for three
+   days after R106 replaced it, and R10 is *marked* replaced — in a blockquote
+   under its header, which is why a header-only check is not enough.
+3. **An omission is a wrong row.** For an attribute with no printed reminder
+   the sentence is the whole rule, so "It cannot block." with no mention of the
+   {Pure} carve-out the engine implements twice is as wrong as a false clause.
+
+### The fifteen
+
+| Row | What it said | What the engine does |
+|---|---|---|
+| **Trash** | "a **NONTOKEN** card entering a bin…" | `E.toBin` (engine.ts:1950) has **no token check**; its docstring says why — "trashing is defined by the destination, not by the object" (R133). The lone printed "nontoken" wording came from Void Scavenger, **a card cut from the set**. |
+| **Piercing** | excess from the **blocked column** to the **defending player** | Printed on Protective Adaptations *and* Pernicious Photosynthesis: *"Excess damage from piercing sources is dealt to the **recipient's controller**."* R103 generalised it off the column onto all damage (engine.ts:4095-4119); a piercing **blocker** pierces into the **attacking** player (engine.ts:10102). |
+| **Unaware** | "Everything counts as interacting with it." (R10) | R106: a **stat layer**. `effStats` returns `printedStats` (engine.ts:1536) and the pairwise read collapses **both** sides (engine.ts:3976). Column-shared. **Targeting is deliberately not implemented** — R10's word for it, and R106's one named open edge. |
+| **Virus** | may be augmented in battle onto an **ENEMY** unit | Wrong in both directions. `battleAugmentAllowed` is `c.virus && from === 'hand'` (apply.ts:1262) — the row omitted the real restriction — and the battle branch checks priority and region and **never** `host.controller` (apply.ts:1412-1418). R157 §26, owner verbatim: *"yes it can also go to an enemy. That's the whole point of the card."* Reach: 64 cards. |
+| **Electric** | "arcs to **an** adjacent unit" | A `visited` chain (engine.ts:4123-4160), and Envoy of Lightning's printed reminder names it: *"directed to an adjacent unit, **recursively**"*. Composes with {Piercing} when the chain runs out. |
+| **Pure** ⚠ | switches off "**Flying, Evasive and Sneaky**" | The engine empties the **entire** set: `pure ? new Set<string>() : this.colAttrs(ids)` (engine.ts:9887). Its own docstring names Piercing/Deadly/Powerful/Swift; {Feeble} is switched off at apply.ts:1662 and 1902. The printed reminder on Just a Unit says *"ignore all other attributes"* — no list. **This row was on the do-not-re-audit list.** |
+| **Feeble** | "It cannot block." | …unless it is {Pure}: apply.ts:1662 and apply.ts:1902, *"R61: a Pure card ignores its OWN other attributes too, so Pure+Feeble blocks."* |
+| **Unstable** | "**a modded card** ends up erased … instead of resting in a bin" | `isUnstable` has **four** ways in (engine.ts:1272) — mods, the R96 stamp, the **printed** type line (Aberrant Statweaver, Oorblak), a copy of something modded — and the row never said a card can simply print it. And R145 scopes the erase to the **ACTIVE ZONES**: leaving hand, deck, bin or cache for a bin, it bins normally. |
+| **Prophecy** | "normal timing still applies" | `cachedTiming` returns the **banner's** release timing first (engine.ts:2801). Divine Intervention's banner is *"Your life is 5 or less [Haste]"*, and `startHasteStep` opens a step for it (engine.ts:10650). Source zone was missing too: hand only, unless the card prints otherwise (apply.ts:780). |
+| **Augment** | "slide **under a unit** from hand, bin or cache" | Never said **when**: apply.ts:1457, *"modding is a deployment action (or a battle Virus)"*, plus `deploying(seat)` and a host in your own region. And R89 made your own **spell token** in play a legal deployment host (apply.ts:1407). |
+| **Graft** | "[Switch1] is bounded — once per turn per card" | Contradicted by **R110**: a multiplier in the composite ("Trigger two copies of this graft ability") re-pushes every other graft part N times, *"bounded grafts included"* (engine.ts:9092-9105). Deployment gate missing as on Augment (apply.ts:1473). |
+| **Haste** ⚠ | "the step only happens when somebody **holds** a payable haste card" | `canHaste` opens the step on **five** conditions (engine.ts:10599-10657): a payable haste card in hand, an R97 grant from a unit **in play**, an R123 grantor **in a bin**, an R95 mod window, and a **cached** release timed [Haste]. Each of the four extras is report #74's fatal gate in a different form. And a {Haste} card is playable in **deployment** too (apply.ts:566). **On the do-not-re-audit list.** |
+| **Shard** ⚠ | granted "whenever you **activate** an element resource at 3+" | `maybeGrantShard` has **two** callers since R132 — apply.ts:463 *and* apply.ts:527, a prismite exchanged into an element. R132 reversed R116 on the owner's reading of the card's own text. **On the do-not-re-audit list.** |
+| **Prismite** ⚠ | exchange for a resource "of **any** element" | `e.need((e.s.elements).includes(element))` (apply.ts:499) — this game's elements, which in a draft is its trio. Same for the Shard it now owes. **On the do-not-re-audit list.** |
+| **Recycle** | "a dormant resource of **an element you choose**" | Same gate (apply.ts:444) — in a draft the choice is the game's trio (R99). |
+
+Four more rows were tightened without being wrong: {Afflicting} (the kill diff
+catches any death the source caused, not only damage and counters — R184),
+{Inverted} (base rewrites are what it inverts *from*), {Glimpse} ("inert" is
+over-broad — an expired glimpse card is still public, targetable and moddable),
+{Once} (a **decline** is refunded, R113 — the row over-counted a player's uses).
+
+### One finding where the ENGINE looks wrong, not the row
+
+`startHasteStep` declares its own divergence in a comment (engine.ts:10599-10607):
+`canHaste` and `apply.ts`'s `castable()` disagree about targets, min-0 "up to N"
+specs, and bracketed cast costs, so the haste step can open with nothing
+playable, or be **skipped** while a playable card sits in hand. Not fixed here —
+`engine/src/**` was another agent's territory this round — and not a glossary
+defect: the row now describes what `canHaste` asks.
+
+### The guard (CT-76)
+
+`test/177-glossary-conformance.test.ts`. Two derived checks and six engine pins,
+each with a positive control:
+
+* **Citations resolve and are live.** The retirement marker is read from the
+  header *or the leading blockquote* — R10 and R76 are marked only in the
+  blockquote, and R10 is the one that mattered. Two false-positive classes were
+  found by measuring and are pinned as negative controls: R9's body is two lines
+  long, so a fixed-size window ran into R10's marker; and R18's body says *"The
+  ⚠ is withdrawn"* about its own warning, not about the ruling.
+* **Printed text wins.** For the 15 attributes with a printed reminder, the row
+  may not drop a rules-significant word the card uses. Derived from
+  `printed.json`, so a new reminder extends the check the day it ships. Run
+  cold against the pre-R206 table it named {Piercing} and {Electric} and nothing
+  else — 2 finds, 0 false positives, after two narrowings that took the noise
+  from 17 to 0.
+* **Positive control on every run**: nine rows broken on purpose (including the
+  real pre-R206 {Piercing} and {Electric} sentences and a citation to R10) must
+  each be named by the exact complaint expected.
+
+What it still cannot see: the prose of a row with neither a ruling nor a printed
+reminder. That set is asserted **by name** — `Evasive`, `Resonant` — so its size
+is a number rather than a feeling.
+
+---
+
+## R207 — the WIDE play event learns which item it is, and the last card in the class stops guessing
+
+CT-79. Void Mandible prints *"[Augment] When a nontoken card is played during
+battle, sacrifice me. If you do, negate that effect."* — the pronoun R164/R166
+settled for Origon and Hexbane Shiitake, and the one R178/R191 finished by
+matching on the id the play event carries.
+
+**That fix was impossible for this card until now.** `spellPlayed` has carried
+`item: item.id` since R178 (`engine.ts:7908`); `cardPlayed` did not
+(`engine.ts:7963-7984`). And Void Mandible must hear `cardPlayed`, because R129
+is what gave it the other half of its printed noun: a {Battle}-timing UNIT and
+an Ambush are "a card played during battle" exactly as much as a spell is, and
+`spellPlayed` never fires for either. So the card was left on a stack scan
+after the rest of its class had moved off one.
+
+### What was actually wrong — three defects, not two
+
+The ticket named two. The third turned up while enumerating the emitters, and
+it is the one no ticket could have found from the card file alone.
+
+* **(a) the scan ran FORWARD from index 0** while `pushItem` appends. With two
+  same-card same-seat plays on the stack it negated the **older** one. Not even
+  R166's `.reverse()`, which the other two cards at least had.
+* **(b) no `!i.copy` guard at all.** R164 established that a copy is not
+  played — RAQ (_passer): *"the 1st copy wasn't 'played'"* — so a card keying
+  off a play must not see one. It could.
+* **(c) `cardPlayed` HAS A SECOND EMITTER, and on that one there is no stack
+  item at all.** `spawnUnit`'s `opts.asPlay` branch (`engine.ts:2997`, R165 —
+  Wake the Dead and The Bonesculptor print "play", not "put into play") fires
+  the event for a card that arrives as a spawn. **Wake the Dead is a {Battle}
+  spell**, so a unit it raises out of a bin can share a name with an unrelated
+  item standing on the stack, and Void Mandible negated *that*. Reachable in
+  legal play, and driven as a test.
+
+### The ruling
+
+**A play event names the item it made, and a listener matches on that id.** The
+id goes on `cardPlayed` for the same reason and with the same caveats R178 put
+it on `spellPlayed`:
+
+* the event fires **before** `pushItem`, so a `when` cannot look the item up —
+  match at RESOLUTION;
+* `commitItem(…, 'resolve')` never pushes, so the id can name an item that is
+  never on the stack, and a resolution-time lookup correctly finds nothing.
+
+**Absence of the field is itself a fact: "this play put no effect on the
+stack".** The `asPlay` emitter deliberately omits `item` rather than nulling it,
+and a listener must read that as "there is nothing to negate" — never as
+licence to fall back to a name scan. That is defect (c) closed by construction.
+
+The kind membership (`CARD_PLAY_KINDS`) and `!i.copy` stay, as **assertions
+about what that id must be** rather than as a search — exactly as R191 kept them
+on Origon and Hexbane Shiitake. By id, `!i.copy` is true for a stronger reason
+than a flag test: `pushSpellCopy` never routes through `commitItem`, so no play
+event can ever name a copy.
+
+### What else hears `cardPlayed`, and what the new field means for each
+
+Enumerated before the payload was touched, because a new field on a widely-heard
+event is the kind of change that looks free.
+
+| listener | what it does with the event | effect of `item` |
+| --- | --- | --- |
+| **Void Mandible** (`batch-light-c.ts`) | the card this ruling is about | it is the whole fix |
+| **Bloomcaster** (`batch-fire-wood.ts`) | `when`: same controller, `token !== true`, `isUnitCard(data.card)` → create a 1/1 | none: it reads `seat`/`card`/`token` and never the stack |
+| **The Ancient One** (`AO_EVENTS`, `batch-metal-a.ts`) | mimics adjacent allies' triggered text; `'cardPlayed'` is in the list *because* Void Mandible's text moved onto it (R129) | none directly — but a mimicked Void Mandible now reads the id the same way, which is the point |
+| `test/drill.ts` `WINDOW_CLOSERS` | uses the event TYPE to close an evidence window | none: types, not payloads |
+| `139-spawn-and-play`, `119-play-and-token-events`, `11-fire-wood`, `33-trigger-fixes` | count events and read `data.card` | none: no test asserts the payload's key set. All re-run green. |
+
+No `ui/` source reads `cardPlayed` (only the generated `ui/bundle.js`).
+
+### The class, swept rather than trusted
+
+Exhaustive over every `s.stack` access in all 30 files under
+`src/cards/sets/` — 39 sites. **Exactly four cards ever asked "which item is
+the one the play event means", and Void Mandible was the last of them:**
+
+* Earthbound Replicator — `batch-hybrids-wm-a.ts:596`, converted by **R178**
+* Origon — `batch-hybrids-fwe.ts:176`, converted by **R191**
+* Hexbane Shiitake — `batch-wood-a.ts:508`, converted by **R191**
+* Void Mandible — `batch-light-c.ts:696`, **this ruling**
+
+Every one of the other 35 sites is either an identity match on a `{ stack: id }`
+target ref (scan direction cannot matter) or a whole-stack sweep (neither defect
+can matter). The ticket's "the class is THREE cards" counted the three that were
+still on scans when R191 swept; counting the precedent it is four. Both numbers
+are right about different things and neither is wrong.
+
+**⚠ This class has now been closed one card at a time across three tickets —
+CT-58 → CT-69 → CT-79 — each closure naming the next remainder.** docs/13 §4
+names that exact shape as recurring. So R207 ships a **derived guard**
+(`178-played-item-and-erased-mods.test.ts`, "R207 class guard"): it computes,
+over every file in `src/cards/sets/`, every `s.stack.find/filter/some` whose
+predicate keys on `.card ===` and not on `.id ===`, and fails naming file:line.
+It has a positive control (Void Mandible's own pre-R207 line, and R166's
+reverse-scan shape), a negative control (an id match that also asserts a name),
+and a prose control (R191's superseded scan is quoted verbatim in two card
+files and must not be a hit). A fifth card fails on arrival instead of being
+found by the next audit.
+
+### The divergence this leaves standing, named rather than papered over
+
+**The sacrifice is still paid on a play with no item to negate.** "Sacrifice me.
+If you do, negate that effect" is a CAST COST (R73) — mandatory, and the negate
+is conditional on it, not the other way round. Under **R198** a card played
+mid-resolution goes on the stack and is respondable and negatable; the `asPlay`
+spawn path predates R198 and still spawns in place, so a unit played out of a
+bin during battle can be answered by nobody. That is an engine approximation,
+not a rule, and gating Void Mandible's `when` on it would have quietly rewritten
+when the card triggers. It is recorded at `spawnUnit`'s `playEv` block and left
+for whoever takes R198's remainder. (Wake the Dead's own card comment already
+carried the same ⚠ from the other side.)
+
+### Evidence
+
+Four permanent tests in `test/178-played-item-and-erased-mods.test.ts`, all
+driving the real stack through `Harness.do` — no hand-built event, no hand-built
+stack item (docs/13 §5). Void Mandible is single-use by construction, so a board
+holding it can never reach a *second* play with an older item still up; the
+Mandible therefore arrives mid-battle as a **real augment applied from hand**,
+which R95's permission layer allows through Rook, ruled to confer {Virus}
+outright (R157 §26 / R161). Everything else is ordinary legal play.
+
+Each test was run against the pre-fix code and observed to fail:
+
+* card reverted (forward `.find()`, no `!i.copy`, no absent-id branch):
+  * *"R207: the SECOND Burgeon is negated — the one `cardPlayed` named. A forward
+    .find() from index 0 negates the older one instead. `+ [ 9 ] - [ 4 ]`"*
+  * *"R164: the COPY survives and the played Burgeon is the one negated. (the
+    played item was 17.) A scan with no !i.copy guard eats the copy instead.
+    `+ copy: false, id: 17 / - copy: true`"*
+  * *"R207 (c): the raised unit put no effect on the stack, so there is nothing
+    to negate"*
+* engine reverted only (`item: item.id` removed from the `cardPlayed` payload),
+  card left fixed — tests 1, 2 **and 4** fail, the last with
+  *"R68: the negated Burgeon left the stack at once"*: with no id the card
+  correctly refuses to guess, which is exactly why the payload change and the
+  card change are one ruling.
+* class guard, with the real card reverted:
+  `+ [ 'batch-light-c.ts:695' ] - []`.
+
+---
+
+## R208 — `E.eraseMod`: one door for taking a mod off a living host, built so a ruling can still be answered in one place
+
+CT-86's buildable half. The ticket's other half — *does a mod erased as a COST
+belong on the R65 public erased pile?* — is round-27's **Q3/Q9 and is
+UNANSWERED**. The R196 agent deliberately left it rather than guess. **So does
+this ruling. Nothing a player can see changed.**
+
+### What was missing
+
+R178 built `E.moveMod` — "re-parent an existing mod" — because there was no
+primitive and two cards hand-rolled five fields each. The **erase** sibling did
+not exist at all, and the two lines it would have owned (`host.mods.splice(…)`
+plus `delete s.entities[id]`) were written out longhand at **five** sites, each
+with its own announcement and its own answer to the pile question:
+
+| site | announcement today |
+| --- | --- |
+| Slag Spewer's `[Erase one of my mods]` cast cost — `payCastCost`, `engine.ts:6923` | `'info'` |
+| Suppression Field — `batch-metal-c.ts:269-271` | `'info'`, and it says "ERASES" in its own words |
+| Ominous Growth — `batch-hybrids-wm-b.ts:513-522` | `'info'`, per mod |
+| Return to Nature — `batch-earth-b.ts:514-529` | **`'erased'` + `'info'`** |
+| Reclaim the Fallen — `batch-hybrids-ld-a.ts:674-678` | none of its own (a summary line) |
+
+**The ticket said three and the grep that produced it said three. It is five.**
+Two were invisible to a `mods.splice` sweep because they clear the list instead
+of splicing it (`t.mods = []` / `u.mods = []`) — Suppression Field, which erases
+**real nontoken mod cards** and files nothing, and Return to Nature, which is
+the one site that already gets R65 right and is therefore the template the
+primitive was written against.
+
+### The ruling
+
+**Taking a mod off a host that stays in play is a primitive, and it is the only
+place that decides where the card goes.**
+
+```ts
+eraseMod(mod: Entity, opts: { leavesGame?: boolean } = {}): boolean
+```
+
+`attachMod`'s inverse and `moveMod`'s sibling: unlink from `host.mods`, delete
+the entity, emit nothing. Not a despawn and not a death — a mod is not a body
+and has no death of its own to run — and the **caller owns `checkDeaths()`**
+afterwards, exactly as `moveMod` leaves it, because a host that loses a +X/+X
+mod can die of it.
+
+**`opts.leavesGame` is a fact about the CARD, not about the announcement, and it
+is the one thing the five sites really differ on.** Reclaim the Fallen destroys
+the mod entity and then puts the card **into play** as a unit; the card never
+leaves the game and must never reach the erased pile whatever Q3 answers. Every
+other site is a real erase. Nothing reads the flag today, and the `void` beside
+it is what keeps it from being tidied away as dead before the ruling that needs
+it arrives — **delete the `void`, not the parameter.**
+
+### ⚠ The whole value of this refactor is that it changed nothing
+
+Every caller keeps the exact announcement it had, **including Slag Spewer's
+`'info'`**. A choke point that quietly started emitting `'erased'` would have
+answered Q3 by accident, in a refactor, without the owner — which is precisely
+the failure the ticket was filed to avoid. What the primitive buys is that when
+Q3 *is* answered, the pile line goes in **one place**, behind
+`opts.leavesGame !== false`, instead of being reasoned about at five call sites
+that do not agree with each other today.
+
+The seam comment also names what Q3 has to settle beyond the cost question: R69
+says a token mod has no card of its own, and the two existing precedents
+disagree about it — `disposeToBin` **does** announce token mods on the erased
+pile when their host leaves play, while Ominous Growth (whose mods are token
+mods, R71's Wraith) announces none. That is worth answering in the same breath.
+
+### What is NOT this primitive
+
+Every remaining `delete this.s.entities[m.id]` in the engine is a
+**host-leaves-play disposal** — `leavePlay`, `disposeToBin`, `eraseFromPlay`,
+`eraseUnit`, `exchangeInPlace`, the regroup spell-token sweep, and apply.ts's
+deployment-augment ride. There the host is already gone, so there is no
+`host.mods` to unlink from, and where the mods go is **R40's** question, not
+this one. They stay where they are. Same for `batch-hybrids-wm-a.ts:324`
+(Reconfigure: the mod's old host leaves play, which is exactly the
+`old === undefined` case `moveMod` documents).
+
+### Evidence
+
+Four permanent tests in `test/178-played-item-and-erased-mods.test.ts`, one per
+distinct answer to the pile question, all driving real plays and real
+activations:
+
+* **Slag Spewer** — the cost erases the mod off the host, the `'info'` line is
+  verbatim, and `erased` events / the public pile are asserted **empty**, with
+  the assertion message saying out loud that Q3 is what would change it.
+* **Suppression Field** — the host survives, the nontoken mod is unlinked and
+  deleted, the `'info'` line is verbatim, and nothing reaches the pile.
+* **Return to Nature** — the contrast case: a real `'erased'` event, and the
+  pile is the **mod owner's**, not the host controller's.
+* **Reclaim the Fallen** — the mod entity is gone, the host is unlinked, the
+  **card is standing in play**, and no `erased` event ever names it.
+
+Falsification, since a no-behaviour-change refactor cannot redden by being
+reverted: `eraseMod` was made to emit
+`ev('erased', …, { seat: mod.owner, cards: [mod.card] })` behind
+`leavesGame !== false` — i.e. Q3 answered "yes" without asking — and three of
+the four went red, verbatim:
+
+* *"⚠ Q3 IS UNANSWERED: a cost-erased mod files NO \"erased\" event today, and
+  R208 did not change that"* (Slag Spewer)
+* *"⚠ the same open Q3: a real NONTOKEN mod card leaves the game and no
+  \"erased\" event says so"* (Suppression Field)
+* Return to Nature failed on a **duplicated** pile entry — which is itself the
+  finding that the pile line belongs in exactly one of the two places.
+
+Reclaim the Fallen stayed green under that change, which is the `leavesGame`
+flag doing its job.
+
+### One correction owed elsewhere
+
+`84-card-semantics.test.ts`'s `UNREACHED` entry for Slag Spewer describes
+deleted code: it still says *"batch-hybrids-fwe.ts splices the mod out of
+`self.mods` and does `delete g.s.entities[id]`"* and quotes a message
+(`${mod.card} is ERASED (Slag Spewer).`) that no longer exists. R196 moved the
+erase into `payCastCost`; R208 moved it again, into `E.eraseMod`. The entry's
+CLAIM — implemented, really happens, announced with `'info'`, reaches no public
+pile — is still exactly true. That file is another agent's territory this round
+and was not touched.
+
+---
+
+## R209 — a clause that delivers nothing must say so, and a rig's blind spot is a property of the rig
+
+**CARD-TODO #74 and #81. 2026-08-26.**
+
+### 1. The rule, stated once for the whole class
+
+> **A printed clause that promises a per-seat outcome and then resolves over an
+> empty collection — of seats, or of picks — must emit a line saying so, FOR
+> THAT CLAUSE, even when another clause of the same card is speaking.**
+
+This generalises R25's family (CT-70) rather than sitting beside it. CT-70's
+members were silent because *no seat qualified*; CT-74's are silent because
+*every qualifying seat had nothing to give*. That difference decides the WORDING
+of the announcement and nothing else, and it is invisible to the player, who in
+both cases watches a card resolve and is told neither what happened nor why it
+did not.
+
+**Two consequences, both of which cost this repo a round already.**
+
+**(a) The code shape is not the class.** CT-74's wording is "collect into a
+list, commit the list, no else-branch". CT-81(b)'s two cards are a bare
+`for (const seat of opponentsIn(…))` with no accumulator at all. `Perish` has no
+accumulator either — it sacrifices as it goes — and is unambiguously a member.
+Reading the ticket by its code shape gives 7, 9 or 10 members depending on which
+clause of the sentence you weight, and every one of those readings leaves the
+other shape orphaned on no ticket. **Sweep the promise, not the loop.**
+
+**(b) "The effect said something" is not "the clause said something".** Four of
+the twelve members always emit: `Recall` takes 2 life whether or not anybody
+recalled; `Dragnol` gains its 2 life before it drains; `Shoreline Specter`
+announces its recall while the life loss its own prompt promised does not
+happen. A checker that convicts only a WHOLLY silent run — which is what
+`65-effect-conformance` is — can never see these, on any board, ever. That is
+not a gap to widen; it is a limit to write down, and to cover somewhere else.
+
+### 2. What that means for a guard's card list
+
+Derive it. `161-printed-text-overrides` shipped last round with a hand-typed
+list of the five Glimpse cards a report happened to name; the pool holds
+**eleven**, and that list drove all three of the file's loops, so six cards —
+including `Visionary Construct`, which prints the full reminder the guard exists
+to police — were uncovered. The derivation is one line
+(`allCardNames().filter(n => /Glimpse/i.test(getCard(n).text ?? ''))`) plus an
+asserted count, and with it a new Glimpse card fails on arrival instead of
+slipping in unwatched. docs/13-assessment.md §7.2, now with a second instance.
+
+**Derive from PRINTED TEXT, not from call sites.** A `.glimpse(` grep misses
+four of the eleven, because two card files route through a file-local wrapper.
+The printed-text derivation has no such hole, and it is right on principle: the
+subject is what the card SAYS.
+
+**And assert the pool size.** `allCardNames()` returns 495 only if `src/apply.ts`
+has been imported — `registerSynthetic` is called at `registry.ts:384`,
+`registry.ts:433` **and `apply.ts:1830`**. A file importing only the registry
+silently gets 494. A sweep that ran against a smaller pool than it thought is
+how a card goes uncovered while the count looks right.
+
+### 3. An exemption's REASON must be falsifiable, not just long
+
+`65-effect-conformance`'s `SILENT_KNOWN` mapped a label to a reason string, and
+the accuracy test checked that reason only for `length > 40`. That makes it
+unfalsifiable: the entry keeps passing while its stated cause stops being the
+cause, because "still silent" is the whole test and an effect that goes silent
+for a *different* reason is still silent.
+
+The reason is now carried with **the set of boards the effect is silent on**,
+asserted by equality. Which boards is a fingerprint of why: `run: () => {}` is
+silent on all three, an empty-collection branch on `barren` and nowhere else. A
+change of cause now reddens the file even when "is it still silent?" says yes.
+
+The same disease produced CT-70's closure: it was closed against
+*"SILENT_KNOWN's list is empty for the R25 family"*, which is satisfiable while
+members remain — and CT-81(b) then produced the members. **A closure condition
+that cannot go red is not a closure condition.**
+
+### 4. What a deterministic rig cannot reach is decided by the rig
+
+`65-effect-conformance` drove every EffectDef in the registry, in two fixed
+boards, and reported this whole family clean — because **both of its boards gave
+every present seat a unit**. `furnish` spawns four bodies, a token and a Wraith
+per side and nothing removes them. The empty-collection branch was not rare
+there; it was unreachable. A third board (`barren`: an attack declared, then
+every unit in the region gone) convicted six labels on its first run, one of
+which — `Perish` — was on no ticket and in no report.
+
+The instrument, not the cards, was the defect. docs/13-assessment.md §7.4 asks
+for this audit on a schedule; the question that finds it is **"what do this
+rig's boards have in common, and is that a fact about the game or about the
+rig?"**
+
+### 5. What is NOT the fix
+
+Do not make the loop run. The region genuinely holds nobody, the seats
+genuinely have nothing, and the effect genuinely does nothing. Every repair
+under this ruling is an added `g.ev('info', …)`; not one changed a board
+outcome, and every regression test asserts both halves — that the player was
+told, **and** that nothing moved.
+
+### 6. Where it is enforced
+
+* `test/179-empty-collection-branches.test.ts` — twelve repair sites over
+  fifteen conformance labels, one named test each, all twelve proved to redden.
+* `test/158-silent-region-branches.test.ts` — R25's family, now **entirely**
+  here: 85-silent-branches §9's three (Restitution, Vroot, Flzzz) were merged in,
+  because two files each asserting the other's list was disjoint meant neither
+  owned the family when it next grew.
+* `test/65-effect-conformance.test.ts` — the `barren` board, and
+  `SILENT_KNOWN`'s falsifiable reason.
+* `test/161-printed-text-overrides.test.ts` — the derived Glimpse list, the
+  asserted count, and the asserted pool size.
+
+---
+
+## R210 (CT-83) — an exemption list is a claim about the code, and six of them had nothing checking it
+
+**2026-08-26.** The ticket said *"nine allowlists have no staleness test"*. The
+real number is **six**, out of **35 exemption/waiver tables**, and **three of
+the six were empty**. That correction matters as much as the fix: **29 of 35
+tables already carried a staleness assertion**, several of them very good ones.
+This is a repo that mostly does this well, and over-counting the gap costs the
+same credibility as under-counting it.
+
+### The ruling
+
+**A waiver must carry a reason the machine re-derives, not a reason it stores.**
+The shape R193 gave `DEAD_EXEMPT` is the standard: *every entry must still
+resolve to the thing it exempts*.
+
+Two anti-patterns are named and must not be copied:
+
+* **`SILENT_KNOWN` (65-effect-conformance)** checks its reason strings for
+  `length > 40`. A stale reason is still a long reason.
+* **A comment describing a guard that does not exist.** `NOT_SCANNED`'s doc
+  comment read *"THE EXCLUSION IS THEREFORE ITS OWN EXPIRY CONDITION, and the
+  test below is what enforces that it expired."* **There was no such test.**
+
+### The six, and what was done
+
+| list | file | state | disposition |
+|---|---|---|---|
+| `NOT_A_GAP` | `71-card-ledger.test.ts:368` | 9 entries, **zero assertions** | staleness test: every entry must still be flagged by `deadShapes()` or `inertShapes()` |
+| `POOL_CLAIM_ALLOWLIST` | `147-comment-conformance.test.ts:466` | 4 entries, one already stale | entry [0] retired; `basis: 'verified' \| 'retracted'` + executable `check`; staleness test |
+| `PARKED_EXEMPT` | `147-comment-conformance.test.ts:352` | 2 entries — **a third list the ticket never named** | staleness test: entry must still name a heading §1 would flag |
+| `NOT_SCANNED` | `147-comment-conformance.test.ts:584` | `[]`, and its comment claimed a test that did not exist | the missing test, written |
+| `SKIP_DIRS` | `153-typecheck-reach.test.ts:64` | walker config | argued in-scope; asserted against `git ls-files` |
+| `KNOWN_UNACTIVATED` | `84-card-semantics.test.ts:509` | `{}` | **not landed — file is another agent's**; exact change handed over |
+
+Only **three** were non-empty and genuinely waiving: `NOT_A_GAP` (9),
+`POOL_CLAIM_ALLOWLIST` (4), `PARKED_EXEMPT` (2).
+
+### `POOL_CLAIM_ALLOWLIST[0]` — the one that had already rotted
+
+It said Burgeon's *"No pool combo hits this today"* was *"KNOWN FALSE (R174
+audit) … assigned to whoever fixes Burgeon"*. **Burgeon was fixed by R166**
+(`doubleStats` in `sets/helpers.ts:300`, regression at
+`140-layers-and-riders.test.ts:245`) and `batch-wood-a.ts:73-85` rewrote the
+comment into a quoted retraction that opens *"BURGEON: NO LONGER an
+approximation (R166)"*. No Burgeon ticket exists. The entry outlived every word
+of its own reason and nothing could notice, because the only thing that
+referred to the list was a `.filter()`.
+
+**The mechanism was already in the file.** §2 has read retractions at *bullet*
+granularity since it was written — a claim and the words that withdraw it are
+almost never on the same line. §3 matched line by line, so the only way to
+silence a self-withdrawing comment was an allowlist entry. The bullet reader is
+now a shared `enclosingBullet()` used by both, entry [0] is deleted, and the
+comment acquits itself.
+
+### `SKIP_DIRS` belongs on this ticket, and is the *more* dangerous kind
+
+CT-83 flagged it as "walker config, not a waiver". It is config, and that is
+exactly why. An exemption list at least **names** what it waives —
+`DEAD_EXEMPT` says "printedCost is dead and here is why", visible in the source
+even while unchecked. A skipped **directory** is invisible in both directions:
+nothing in the output mentions it, and §1's verdict ("every .ts file in the
+client is covered by some tsconfig project") is quantified over a corpus that
+set defines. One wrong name and §1 goes on passing while meaning strictly less
+— which is R181's own failure, *the reach of the check shrank and nothing said
+so*, reproduced inside the file written to prevent it.
+
+Each name is now treated as the claim it is — *"no source we own lives under
+here"* — re-derived from `git ls-files` on every run.
+
+### `printedCost` — a cleanup, not a discovery
+
+`export function printedCost` was at **`src/cards/dsl.ts:423`** (not
+`dsl.ts:418`; there is no `engine/src/dsl.ts`) with a **9-line** doc comment at
+`:414-422` (not 8). Zero call sites tree-wide: confirmed.
+
+The ticket's claim that it was *"outside src/cards/sets so §4 never saw it"* is
+**false at HEAD**. R193 widened §4's `SCAN_DIRS` to `['src','test','scripts']`
+and R201 added `'ui'`; §4 found it, and `DEAD_EXEMPT` waived it explicitly with
+a written expiry — *"deleting it is a one-line change for a quiet tree"* —
+guarded by the staleness test at `:716-729`. **The machinery worked as
+designed.** R210 made the deletion and removed the waiver with it. The list
+stays, empty, with its staleness test — the way `81`'s `SILENT_KNOWN`, `90`'s
+`BIN_PUSH_EXEMPT` and `99`'s `EXEMPT` do.
+
+The cost of leaving it was never the nine dead lines. It was the nine-line doc
+comment above them, which described R64's "with cost N or less" reading and
+R157 §1's X rule as though this were the code implementing them. It was not —
+every live cost reading goes through `sets/helpers.ts::castCostOf` /
+`eventCardCost`. **A dead function carrying a live-sounding description of the
+rules is the most confident wrong statement a file can make, and it reads
+exactly like documentation.**
+
+---
+
+## R212 — "for each" binds to the clause it is attached to, not to the whole sentence
+
+**Card:** Torrential Reclamation (br/X, 1/3, {Battle} Elemental Spell)
+
+> *"Recall X target nontoken allies. Then each player sacrifices a unit and you
+> lose 1 life for each ally recalled this way."*
+
+The engine reads the trailing `for each ally recalled this way` as distributing
+over **both** conjuncts: with X = 2 each player sacrifices **two** units and the
+caster loses 2 life. The card file says so deliberately
+(`batch-hybrids-fwe.ts`: *"The 'for each' distributes over both clauses"*).
+
+**This ruling takes the other reading: the modifier scales only the clause it is
+attached to — the life loss. Each player sacrifices exactly ONE unit, whatever
+X is.**
+
+Three reasons, all derived from the pool's own printed data rather than from
+taste:
+
+1. **The pool never writes a scaled sacrifice as a trailing "for each".** Every
+   card that wants one puts the scaling where the scaling goes:
+   *"Each opponent sacrifices units UNTIL their total defense is at least equal
+   to the defense of your sacrificed unit"* (Structural Collapse),
+   *"Discard X cards: Each opponent sacrifices X units"* (No Hand Killer),
+   *"Negate up to X target effects"* (Malevolent Machinations). The article in
+   Torrential Reclamation's own sentence is **"a unit"**, singular and
+   indefinite — the same article Ghord and Linked Extinction use for exactly
+   one.
+
+2. **The distributive reading makes the card's cost curve incoherent.** X is
+   paid at cast (R35). Under the engine's reading a player who pays for X = 4
+   recalls four allies, loses 4 life, and *sacrifices four more of their own
+   units* — a spell that gets strictly worse for its caster the more they pay
+   for it, while the opponent's downside scales identically. Under this ruling
+   X buys recall volume and life is the price, which is what the card's
+   two clauses each say on their own.
+
+3. **The permissive steer (R157) points the same way.** Where a sentence admits
+   two readings, take the one that lets the card do what it says without
+   inventing extra costs for its controller.
+
+### The corollary, which is the same ruling seen from X = 0
+
+`if (x <= 0) … return` makes the whole spell a no-op. Under this reading the
+second sentence is **not gated on the first**: X = 0 recalls nobody, costs 0
+life, and still costs **each player one unit**. That is a separate line to
+change and is listed as a separate row in `182-correctness-sample`'s
+`KNOWN_WRONG`.
+
+### Status
+
+**PROPOSED — needs the owner's one-line confirmation.** The engine's reading is
+defensible English and was written on purpose; this is a disagreement about a
+sentence, not a discovered defect. `182-correctness-sample.test.ts` pins the
+CURRENT behaviour in `KNOWN_WRONG` so that whichever way the owner rules, the
+change is a visible edit rather than a silent drift.
+
+The question, in one line:
+
+> *Torrential Reclamation — does "for each ally recalled this way" scale the
+> sacrifice as well as the life loss, or only the life loss?*
+
+---
+
+## R214 — the card pool is 495, and eight pool-wide sweeps could only see 494
+
+**2026-08-26. Not on a ticket; found by audit, verified by probe.**
+
+`allCardNames()` returns **495 cards — 492 printed + 3 synthetics** — but only
+once `src/apply.ts` has been imported. The three `registerSynthetic` calls are
+not in one place:
+
+| call site | card |
+|---|---|
+| `src/cards/registry.ts:384` | `Unit Token` |
+| `src/cards/registry.ts:433` | `Beyond, Codex Incarnate` |
+| **`src/apply.ts:1830`** | **`Alluring Attribute`** |
+
+`src/cards/registry.ts` is the natural card entry point and it is what a
+pool-wide sweep reaches for. A file that imports it and nothing else is shown
+**494**, silently, and **not one of the eight sweeps that did so asserted a pool
+size**. `150-registration-order.test.ts` — the determinism test — went further
+and *pinned* `names.length === 494`.
+
+### The ruling
+
+**A test that quantifies over "the whole card pool" must import
+`src/index.ts` (the engine's public API) and assert a floor of 495.** The pool
+is not what `cards/registry.ts` registers; it is what the *game* registers, and
+the game's entry point is `apply.ts`.
+
+Corollary, for whoever owns `src/apply.ts`: **the registration belongs in
+`registry.ts`.** The move is feasible — the Alluring block needs only `E` and
+`Entity` (registry.ts already imports both as types) plus `alluringColumn`,
+which apply.ts would import from registry.ts alongside the `DECK_LIST` it
+already imports; there is no cycle. It is deal-safe: `createGame` shuffles
+`DECK_LIST`, which excludes every Token/Attribute face, so *where* a synthetic
+registers cannot change a seeded deal.
+
+### What being blind actually cost, measured
+
+Each of the eight was re-run with the import widened.
+
+* **`63-card-art`** — was hiding a real failure: `Alluring Attribute: (no image
+  field)`. Correct finding. The card is a rules-owned effect holder with
+  `image: ''` on purpose; now exempted via `ART_EXEMPT` with a **predicate**
+  (not in `DECK_LIST`, nothing `creates` it, image is `''` rather than broken).
+* **`71-card-ledger`** — was hiding two: both the "no dead cards" sweep and the
+  R155 inert-shape sweep flag `abilities[0].when` being a constant `false`. The
+  ledger's clean sheet covered 494 cards, not the pool. Now in `NOT_A_GAP`.
+* **`68-target-conformance`** — the worst one, and it *failed nothing*.
+  `'enemyUnit'` is declared by **exactly one card in the pool** — this one — so
+  68's `KIND_PHRASES` entry for `enemyUnit` had **zero live subjects and had
+  never once been exercised**. Two comments asserted otherwise: 68's own (*"R84
+  {Alluring} is the only thing in the pool that prints this"*) and `apply.ts`'s
+  (*"its own `text` is the attribute written out as rules text, which is what
+  test/68's target conformance reads the declared kind off"*). Neither was true.
+  It passes now, and the phrase has a subject for the first time.
+* **`150-registration-order`** — pinned the wrong count and the wrong hash.
+* **`52` / `88` / `109` / `142`** — blind but unharmed: the card declares no
+  glossary term, no replacement clause, no attribute channel and no static, so
+  their verdicts were **right by luck rather than by coverage**.
+
+### `150` needed more than a number
+
+Changing `494` → `495` there is not a one-token edit, because the pinned
+fingerprint is over the *whole* name list and the file's subject is that a
+reordered registry silently invalidates every saved game.
+
+Measured: `Alluring Attribute` lands at **index 494 — last**, because
+`apply.ts` imports `registry.ts` and therefore evaluates after it. sha256 over
+the **first 494** names is still `96e1ffbb40fdc926`, byte-for-byte the hash the
+file pinned before R214. **So the pool grew by an append; nothing reordered; no
+seeded deal changed; the saved-game corpus is untouched.**
+
+`150` now pins three things instead of one:
+
+1. `names.length === 495`;
+2. the **append-not-reorder invariant** — the first-494 hash, kept at its
+   pre-R214 value, so a future hash change with this still green is a card
+   added at the end and one with this red is a real reorder;
+3. **`DECK_LIST` itself** (`8aa69af98fafda61`, 483 cards) — because
+   `createGame` deals from `DECK_LIST`, never from `allCardNames()`, so the
+   pool hash was always a proxy. A synthetic can now join or leave the pool
+   without touching a deal, and the two pins say which of those happened.
+
+### Nine, not eight
+
+`161-printed-text-overrides.test.ts` (R209, earlier the same round) is a ninth
+pool-touching file the audit's table did not list. It is **not blind — it is
+aware and pinned**: it asserts `POOL === 494`, names all three
+`registerSynthetic` sites in a comment, and argues that no synthetic prints
+"Glimpse" so its derived eleven is unaffected. R214 leaves it alone and
+allowlists it in `test/180-pool-sight.test.ts` with that argument re-checked as
+a predicate rather than believed.
+
+---
+
+## R213 — four paths end a battle, and the announcement reaches all of them by structure rather than by luck
+
+*(2026-08-26, round 28, CARD-TODO #82(a).)*
+
+R194 put the spell-token loss announcement on the way into Regroup. It is
+correct. But the count everyone was working from was **one path**, and there
+are **four**:
+
+| caller | what it means |
+|---|---|
+| `apply.ts` | a player DECLINES the counterattack |
+| `engine.ts` (`advanceBattleStep`) | the ordinary close of `afterWindow` |
+| `engine.ts` (`endBattleRound`) | the RECURSIVE call — round 2 opened to a defender who had sent nobody |
+| `batch-hybrids-wm-b.ts` | **Temporal Rift — a CARD ending the battle mid-resolution** |
+
+R194 is class-complete anyway, and the reason is worth stating because nobody
+had: **every exit from `endBattleRound` funnels through `startRegroup`**, which
+is where the announcement lives. That is now asserted, and a fifth caller that
+does not hold it fails the suite by name.
+
+### The half that was a real defect
+
+`passEndsBattlePhase` (`ui/battle.ts`) is the client's *"passing now will erase
+your spell tokens"* warning, and its doc comment enumerated the transitions
+that end a battle. It listed three of the four.
+
+The function is **correct**. It answers *"would passing RIGHT NOW end the
+battle"* from the state at pass time, and whether some card later on the stack
+will end the battle is not predictable from there. So the warning genuinely
+cannot fire on the Temporal Rift path, and that is not a bug.
+
+**It is a bug to enumerate the transitions as if they were all of them.** A
+documented invariant that is false is worse than no invariant, because the next
+reader budgets against it. The comment now names the card and says why it is
+uncoverable.
+
+### Why the guard derives its call-site list
+
+Every one of CT-82(a)'s four line numbers was stale by the time anybody read
+the ticket (`apply.ts:1516`, `engine.ts:9140`, `engine.ts:10234`,
+`batch-hybrids-wm-b.ts:309`; they are `:1541`, `:9563`, `:10749`, `:316`). A
+guard pinned to those numbers would have been wrong on arrival. It scans the
+source and asserts by **file and by reason**, never by line —
+`docs/13-assessment.md` §7.2 applied to a call-site list rather than a card list.
+
+---
+
+## R215 — a ruling number cited in the code must resolve to a ruling
+
+*(2026-08-26, round 28. Not a rules question: a bookkeeping one that had been
+losing rules.)*
+
+Nothing checked that a cited `R<n>` resolves to a `## R<n>` section, and
+**twelve did not**.
+
+Round 27's own commit message reads *"Renumber my two rulings out of collision:
+R195->R201 (stripCode), R196->R202 (the leak)"*. R202 got an entry. **R201 did
+not**, and was cited thirteen times across three files before anybody noticed —
+a round later, by somebody sweeping for something else.
+
+R201 was not the interesting one. **R142 is cited forty times across ten files
+and had no entry.** So did R134 (32 citations), R141 (18), R135 (15). Those are
+not typos. They are rulings that were made, implemented, cited — and never
+written down. The reasoning behind forty citations lived nowhere.
+
+### The mechanism, and why it is a ledger and not an allowlist
+
+CARD-TODO #83 is a ticket about exactly the failure of prose-reasoned exemption
+lists, so this must not become another one. `UNREGISTERED` in
+`184-ruling-register.test.ts` is a **debt ledger asserted by equality**, so it
+fails in *both* directions:
+
+- a **new** ruling number minted without an entry → fails, which is the point;
+- one of the eleven **finally written up** → fails, naming it, so the row gets
+  deleted rather than outliving its reason (CT-68's bug).
+
+Each row also has to still point at a file that really cites it, and to say
+what the ruling is *about*, so whoever writes the entry has a starting point.
+
+**One row is different and must stay.** `R159` is cited six times and the repo
+already knows it does not exist — `docs/09-divergence-inventory.md` says
+outright *"There is no R159."* A separate assertion keeps it non-existent:
+writing an R159 to make a test pass would be **inventing a rule**, and a
+numbering hole that got referenced is not the same thing as a ruling that went
+unwritten.
+
+### The rule
+
+**Mint a number, write the section.** The register is the only place the
+reasoning survives; a citation to nothing is a comment that looks like evidence
+and is not — the same family as every checker in `docs/13-assessment.md` §5
+that reported more sight than it had.
+
+---
+
+## R217 — two readings of the same text that agree are not two pieces of evidence
+
+*(2026-08-26, round 28. Not a rules question. The scenario queue's ranking, and
+the blindness that produced it.)*
+
+`docs/14-scenario-tester.md` §7 needs a risk-ranked list of cards for the owner
+to test by hand. Its most valuable input is `UNREACHED` — the cards carrying a
+printed promise the drill has **never once observed** being delivered, 25 of
+which are `BOARD`: *implemented, but the drill cannot build the precondition.*
+Those are precisely the cards a human placing cards solves in seconds and a
+fixture cannot solve at all.
+
+The first ranking read that ledger by scraping the test file it lived in:
+
+```
+/^  '([^']+)':/
+```
+
+**It found 32 keys. The object has 37.** Five entries — `Worldbender`, `Nothyr`,
+`Proph`, `Skybreaker`, `Vengeance` — are single-word card names written as
+**bare JavaScript identifiers**, unquoted, and the pattern demanded a quote.
+
+### Why it survived being checked
+
+The count was checked. Twice. A line-based scan and a string-aware brace walk
+were written independently, and **both returned 32**, which read as
+confirmation. It was not: both were reading the source text, and **both carried
+the same assumption — that a key is quoted.** Agreement between two readings
+that share a premise is one piece of evidence, not two.
+
+The contradiction only surfaced because a third channel disagreed:
+`Object.keys(UNREACHED).length`, evaluated at runtime, printing 37 on every
+suite run. **The object had been right the whole time; three successive human
+summaries of it were not**, and one of those was written while correcting
+another.
+
+### What it would have cost
+
+All five dropped entries were `BOARD`. Two of them, Nothyr and Skybreaker, rank
+**3rd and 4th** in the finished queue. The blindness was silently deleting the
+queue's best cards — and the resource it would have wasted is the one that
+cannot be parallelised or re-run: **an hour of the owner's clicking.**
+
+### The rule
+
+**Import the object; do not parse the file it lives in.** `UNREACHED` moved to
+`engine/test/unreached.ts` so it can be imported rather than scraped, and
+`187-scenario-queue.test.ts` pins the count at 37 and names all five bare-key
+entries individually, so a ledger that drifts fails loudly instead of producing
+a shorter queue that still looks like a queue.
+
+This is `docs/13-assessment.md` §7.2 — *derive, never enumerate* — and §5's
+whole argument, reproduced by the author of the round that closed six §5
+tickets. **The instruments do not stay honest on their own, and neither does
+anybody auditing them.**
+
+---
+
+## R216 — a scenario is a DEAL, not a state; and "you" on donated text is the host's controller
+
+*(2026-08-26, round 28. Two things at once: the architecture of the scenario
+tester, and the first card ruling it was built to settle.)*
+
+### 1. The architecture: a scenario is part of the deal
+
+`docs/14-scenario-tester.md` §2 commissioned this and got the shape right:
+
+> A room's state is a function of `(seed, mode, els, decks, actions)`. …
+> **A scenario is therefore a deterministic mutation applied inside `fresh()`,
+> whose id is recorded in the room file beside `seed`.**
+
+The rule, stated as a rule:
+
+> **A scenario room is an ordinary room with a different deal.** Its file holds
+> a seed, a mode, a trio, a scenario ID and an action log — and never a
+> `GameState`. Everything that reads a room file goes on working, because the
+> board is still *derived*.
+
+That is what keeps `rebuild()`, `restoreRooms()`, `undoActionAt()`,
+`replay-room.ts` and the R200 divergence diff alive for the games we most want
+to re-examine. Measured, not assumed: `server/test-scenario.ts` §4 plays a
+scenario room, kills the server, restores from the file and compares the pushed
+view **byte for byte**.
+
+**⚠ The brief's one wrong sentence, and it matters.** docs/14 §2 says
+"`fresh()` is the single choke point — `rebuild()` calls it — so a scenario room
+rebuilds, replays, undoes, saves and diffs like any other." `fresh()` is the
+choke point *for `rooms.ts`*. The repository has **four** deal sites:
+
+| site | what it feeds | honours a scenario? |
+| --- | --- | --- |
+| `rooms.ts` `fresh()` | the live room, `rebuild()`, restore, undo | yes |
+| `replay-room.ts` `runOnce()` | the forensic replay + the R200 diff | yes |
+| `stats.ts` `summarizeGame()` | the post-game screen + the accounts fold | yes |
+| `replay-probe.ts` | a **historical** engine, dynamically imported | **no — it refuses** |
+
+Had the mutation gone into `fresh()` alone, a scenario room would have replayed,
+diffed and been counted on the plain opening board: a silent, total divergence
+inside the one tool built to explain divergences. So the choke point is
+`dealScenario()` in `server/scenarios.ts`, and the first three call it.
+
+The fourth **cannot**, and the ruling is that it must say so:
+
+> **A tool that cannot reproduce a board refuses by name. It never guesses.**
+
+`replay-probe.ts` loads `createGame` out of a worktree at a past commit; a
+scenario's board is built against *today's* engine, today's `E`, today's card
+definitions. Probing anyway would replay a log onto the wrong board and report
+a rules change that never happened — which is precisely the wrong answer R200
+exists to stop being given. A refusal is a true statement about the file; a
+divergence report would be a false one.
+
+Two corollaries, both encoded:
+
+- **A room naming a scenario this build does not define is not restored as an
+  ordinary game.** Its log was recorded against a board that came from
+  somewhere, and replaying it without that board produces a plausible-looking
+  room describing a game nobody played.
+- **A scenario room is a fixture, not a game.** It is skipped by the stats fold
+  (`history.ts` `syncGamesDir`, `main.ts` `recordFinishedGame`). Counting it
+  would let the instrument quietly rewrite the numbers it exists to check.
+
+**⚠ docs/14 §3's `phase` and `priority` are not fields.** `GameState.phase` is
+not a knob — it is the consequence of the actions taken to reach it, and
+assigning it directly leaves `battle`, `priority`, `hasteDone` and the segment
+key describing a game that never happened. A scenario therefore reaches its
+window by a **prologue** of real actions through the real `apply`, and *declares*
+where it lands. The declaration is asserted after the prologue, which is the
+anti-rot guard docs/14 §9 asks for: a rules change that makes a setup step
+illegal is a red suite naming the scenario, not a confused owner at 40 cards an
+hour.
+
+### 2. The card ruling: "you" on a donated [Augment] is the HOST's controller
+
+The vertical slice's one scenario settles a clause that three tests name and
+none has ever let resolve.
+
+> **Lithoghul** — *"[Augment] Whenever I am dealt damage, I deal that much
+> damage to you."*
+
+R131 already established that on donated text **"me"/"my" is the HOST**. This
+completes the pair:
+
+> **On text donated by a mod, "you" is the controller of the HOST, not the
+> owner of the augment.** The trigger's controller is the carrier's controller.
+
+Lithoghul is a `{Virus}`, so it may be augmented from hand onto **any** unit in
+the battle region during battle — an enemy's included. Worn by an enemy unit, it
+turns that unit's own damage against *its own controller*. `batch-earth-a.ts`'s
+comment has called that "the whole point of the card" since it was written, and
+the engine has always done it. Nothing in the suite had ever observed it:
+
+- `16-earth-a` and `105-semantics-playwatch` spawn Lithoghul as its **own body**;
+- `112-literal-wood` is the only test that augments a host with it, and its
+  whole point is that the virus is **negated** — so it never attaches and the
+  donated text never runs.
+
+Three citations, zero observations. That is the shape `docs/13-assessment.md`
+§1③ names as the biggest hole in the round-28 correctness sample — "the donated
+`[Augment]` path for ten of the eleven augment cards … 'me'/'you' resolve
+differently there under R131" — and what R212 found independently.
+
+Measured now, three ways: in-process
+(`185-scenario-determinism.test.ts` §1), over the wire against the real server
+(`server/test-scenario.ts` §3), and by hand in a browser. All three agree: a
+6-damage hit on the augmented enemy unit costs **the opponent** 6 life and costs
+the augment's owner nothing.
+
+The engine was right. The instruments could not see it.
+
+### 3. The gate
+
+The tester deals a board of your choosing. This client is heading for a **public
+deploy** (`docs/05`, BL-28), so:
+
+> **With no `ALGO_TESTER_TOKEN` in the environment, the scenario routes do not
+> exist.** Not 403 — **404**, indistinguishable from any other unserved path. A
+> wrong or missing token on a configured server gets the same 404, compared in
+> constant time.
+
+Filing a verdict is deliberately *not* behind the token: the gate guards
+**creating** a board, and whoever is sitting in a scenario room has already been
+let in. Making them carry a secret in order to say "this is broken" is the
+fastest way to lose a verdict.
+
+### 4. What a verdict is
+
+One JSON line in `server/verdicts.jsonl` (`ALGO_VERDICTS_FILE` overrides it, for
+the same reason `ALGO_ISSUES_FILE` exists — on the deploy box that file is the
+only copy of the owner's judgements). Every fact the server can know is stamped
+**by the server**: scenario id, card, engine SHA (R200), room code, action
+index. Only the judgement and the optional prose come from the client.
+
+> **A verdict whose engine SHA came from the browser is worth nothing the
+> moment anybody wants to re-run it.**
+
+Four buttons, not three: `works` / `broken` / `slightly-off` / `bad-scenario`.
+`bad-scenario` is not optional — without it a wrong *setup* becomes a card bug
+report, which is the failure `docs/13` §6 records three times over (#15, #104
+and #106 were all presentation problems misdiagnosed as rules problems). And
+**typing is never required to advance**: at 40 cards an hour there are ninety
+seconds per card, and a runner that wants a sentence before it will accept
+"works" is a runner that gets used twice.
+
+Pinned by `engine/test/185-scenario-determinism.test.ts`,
+`engine/test/186-scenario-library.test.ts` and `server/test-scenario.ts`.

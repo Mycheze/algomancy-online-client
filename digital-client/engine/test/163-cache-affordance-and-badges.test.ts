@@ -34,20 +34,28 @@
  * that did were coupled to LAYOUT rather than behaviour and both failed on a
  * pure refactor that preserved every invariant they named.
  *
- * ⚠ WHAT THIS FILE CANNOT ASSERT, said out loud. The driver's fake `closest()`
- * has no ancestors, so it cannot model a click BUBBLING from a thumb to the
- * panel around it. §2 therefore asserts the two facts that compose to the
- * bubble — the thumb carries no affordance of its own, and the element
- * containing it is the `cacheopen` panel — plus that `cacheopen` really opens
- * the dialog. It does not, and cannot here, watch the event travel.
+ * ⚠ WHAT THIS FILE COULD NOT ASSERT, AND NOW CAN (R205/CT-75). This paragraph
+ * used to say the driver's fake `closest()` had no ancestors, so it could not
+ * model a click BUBBLING from a thumb to the panel around it — and that §2
+ * therefore asserted the two facts that COMPOSE to the bubble rather than
+ * watching the event travel. That was true and it was the bug: a `data-act`
+ * nested in a `data-btn` is dead in a browser and was green in the driver, so
+ * a whole class of click bug could not be written down here at all.
  *
- * That gap is also why the fix is a `data-btn` and NOT the `data-act="cache"`
+ * R205 gave `test/ui-driver.ts` real ancestors, resolved out of the rendered
+ * HTML, and `closest()` is now the browser's algorithm. §2 below still asserts
+ * the composing facts, because they are the ones that say WHY, but the bubble
+ * itself is now watched in `test/176-nested-affordance-and-serialiser.test.ts`
+ * — which also guards, over the markup the client really paints, that no
+ * `data-act` anywhere sits inside a `data-btn`.
+ *
+ * That is why the fix here is a `data-btn` and NOT the `data-act="cache"`
  * CARD-TODO #64 proposed: the click listener asks `closest('[data-btn]')`
  * first and only then `closest('[data-act]')`, so a `data-act` on a thumb
- * would lose to the panel's `data-btn` in a real browser at any depth — while
- * passing in this driver, which has no panel to lose to. `closest` matches the
- * element itself before any ancestor, so a `data-btn` on the thumb is the one
- * attribute that wins in both.
+ * loses to the panel's `data-btn` in a real browser at any depth. `closest`
+ * matches the element itself before any ancestor, so a `data-btn` on the thumb
+ * is the one attribute that wins. 176 §3 plants #64's version and shows it go
+ * red; before R205 it went green.
  *
  * Seeds 16300-16399.
  */
@@ -177,8 +185,9 @@ test('R192 §2: an unplayable cache thumb carries no affordance, so the click st
   const html = ui.show(structuredClone(h.state));
   const panel = panelOf(html, SEAT);
 
-  // the two facts that compose to "the click reaches the panel". The driver
-  // cannot watch a click bubble (see the header), so they are asserted apart.
+  // the two facts that compose to "the click reaches the panel" — asserted
+  // apart because they are the ones that say WHY. R205 made the bubble itself
+  // watchable; 176 §2 does the watching.
   const thumb = scanTag(panel, LATER);
   assert.doesNotMatch(thumb, /data-btn=/, 'the unplayable thumb claims no click of its own');
   assert.doesNotMatch(thumb, /data-act=/, 'and offers no action either');

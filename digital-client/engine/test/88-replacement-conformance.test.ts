@@ -96,7 +96,11 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import '../src/cards/registry.ts';
+// R214: the PUBLIC entry point, not `cards/registry.ts`. registry.ts registers
+// only 494 of the 495 cards — the third synthetic (`Alluring Attribute`) is
+// registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
+// at the foot of this file and test/180-pool-sight.test.ts.
+import '../src/index.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import type { CardDef } from '../src/cards/dsl.ts';
 
@@ -355,4 +359,27 @@ test('the tally: how much of the pool is a replacement, printed on every run', (
     + `${untargeted.length} never reach the stack, ${targeted.length} do (they name a target)`);
   console.log(`    exemptions: ${Object.keys(EXEMPT).length}`);
   assert.ok(REPLACEMENT_CARDS.length > 0, 'the classifier found nothing at all');
+});
+
+// ── R214 · POOL SIGHT ───────────────────────────────────────────────────
+//
+// This file sweeps the WHOLE card pool. `src/cards/registry.ts` is the natural
+// card entry point and it registers 494 of the 495 cards: two of the three
+// `registerSynthetic` calls are its own, and the third — `Alluring Attribute`
+// — is in `src/apply.ts`. Eight sweeps imported registry.ts alone, saw 494,
+// and NOT ONE OF THEM ASSERTED A POOL SIZE, so every clean sheet they produced
+// silently covered one card fewer than it claimed.
+//
+// The floor is what stops that being reintroduced by an import change nobody
+// reads as a behaviour change. `test/180-pool-sight.test.ts` holds the same
+// floor for the whole suite and the guard that catches a ninth sweep.
+test('R214: this sweep sees the whole card pool', () => {
+  const n = allCardNames().length;
+  assert.ok(n >= 495,
+    `this sweep sees ${n} cards, not the full 495 — its imports reach src/cards/registry.ts `
+    + 'but not src/apply.ts, so the synthetic Alluring Attribute is invisible to it and every '
+    + 'verdict above covers one card fewer than it says. Import ../src/index.ts.');
+  assert.ok(allCardNames().includes('Alluring Attribute'),
+    'the pool is big enough but Alluring Attribute is not in it — the count floor above has '
+    + 'been satisfied by some other card, which is not the thing being guarded');
 });

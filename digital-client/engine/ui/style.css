@@ -1472,3 +1472,35 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 @media (prefers-reduced-motion: reduce) {
   .hovertip { transition: none; }
 }
+
+/* ── R216: the scenario tester's runner strip (docs/14 §3/§5) ─────────────
+   Lives in the side rail, above the focus viewer. It is deliberately loud —
+   a distinct border colour and a flask — because a scenario room is NOT a
+   real game and mistaking one for the other is how a fixture ends up in a
+   bug report. The four buttons are sized to be hit without aiming: the whole
+   instrument is built around ~90 seconds per card. */
+.scnpanel { background: var(--panel); border: 1px solid var(--pending); border-radius: 8px;
+  padding: 8px 10px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px;
+  font-size: 12px; }
+.scnhead { color: var(--pending); font-size: 13px; }
+.scnid { float: right; color: var(--dim); font-size: 10px; letter-spacing: .04em; cursor: help; }
+/* the `expect` line is the load-bearing field — it gets the readable size */
+.scnexpect { color: var(--text); line-height: 1.45; background: var(--panel2);
+  border-radius: 6px; padding: 6px 8px; }
+.scnexpect div:empty { height: 4px; }
+.scnhint { color: var(--dim); font-size: 11px; }
+.scnhint.scnok { color: var(--glow); }
+.scnwarn { color: var(--danger); font-size: 11px; line-height: 1.4;
+  border: 1px solid var(--danger); border-radius: 6px; padding: 5px 7px; }
+.scnwarn a { color: var(--accent); }
+.scnbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.scnbtn { padding: 7px 4px; font-size: 12px; }
+.scnbtn.scn-works { border-color: var(--glow); color: var(--glow); }
+.scnbtn.scn-broken { border-color: var(--danger); color: var(--danger); }
+.scnbtn.scn-slightly-off { border-color: var(--accent); color: var(--accent); }
+.scnbtn.scn-bad-scenario { border-color: var(--dim); color: var(--dim); }
+.scndetail summary { cursor: pointer; color: var(--dim); font-size: 11px; }
+.scndetail select, .scndetail textarea { width: 100%; margin-top: 5px; font-size: 11px; }
+.scnstamp { color: var(--dim); font-size: 10px; }
+.scnstamp code { color: var(--text); }
+.scnstatus { color: var(--glow); font-size: 11px; }

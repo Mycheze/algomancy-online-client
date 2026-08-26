@@ -2,7 +2,38 @@
  * set up states directly, then drive real actions through the reducer. */
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
+import { redactLog } from '../../server/view.ts';
 import type { Entity, EntityId, ResourceKind, Seat } from '../src/types.ts';
+
+/**
+ * R203 / CT-84 — the log the SEAT is actually served. Use this, not `h.log`,
+ * for anything that claims a piece of information is or is not shared.
+ *
+ * `h.log` is the HOTSEAT firehose: `Harness.absorb()` pushes every event's
+ * `msg` into one seatless array and `visibleToSeat` is nowhere near it, so an
+ * assertion written against it reads exactly the same whether the information
+ * is public or private. 42-dark-b's
+ * `h.log.some(l => l.includes('Thought Extraction reveals'))` passed while the
+ * card was publishing an opponent's entire hand to the shared log, and passed
+ * again after R197b fixed it. Two genuine leaks (R197b's three "look at a
+ * hand" cards, R202's `handEntered`) survived 153 test files for that reason
+ * alone, and both had to be caught from a server-adjacent file.
+ *
+ * Built from `h.events`, never from `h.log`. Redaction operates on EVENTS — a
+ * `privateTo` tag and a per-type rewrite, both of which `msg` has already
+ * thrown away — so there is only one list to read and this cannot drift from
+ * `log` the way `logTypes` did (see harness.ts).
+ *
+ * ⚠ It lives here rather than on `Harness` because `engine/src/**` must not
+ * import `server/**`: server/view.ts already imports engine/src/engine.ts, so
+ * the accessor would close a cycle. Engine TESTS import server/view.ts freely
+ * (144-hotseat-decision-gate, 159-glimpse-reveal-visibility, 173-look-at-a-hand),
+ * which is why this is a free function over a Harness and not a method on one.
+ * 174-secrecy-is-seat-aware is the lint that keeps secrecy assertions here.
+ */
+export function logFor(h: Harness, seat: Seat): string[] {
+  return redactLog(h.events, seat, h.state.players.map(p => p.name));
+}
 
 export function giveResources(h: Harness, seat: Seat, kind: ResourceKind, n: number, state: 'open' | 'dormant' | 'expended' = 'open'): void {
   for (let i = 0; i < n; i++) h.state.players[seat]!.resources.push({ kind, state });

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "M2 slice: server-authoritative 1v1 Algomancy over WebSockets. `typecheck` borrows the engine's tsc the way backlog/ does, so there is no third node_modules tree; @types/ws is local because ws is this package's own dependency and ships no types. `check` is what the client root calls — before R181 the root called `test` and nothing here typechecked at all.",
+  "description": "M2 slice: server-authoritative 1v1 Algomancy over WebSockets. `typecheck` borrows the engine's tsc the way backlog/ does, so there is no third node_modules tree; @types/ws is local because ws is this package's own dependency and ships no types. `check` is what the client root calls — before R181 the root called `test` and nothing here typechecked at all. `test` names ONE file on purpose: node:test runs a single file's top-level tests one at a time, so the suite is already strictly serial (R204/CT-85 measured it — the nineteen subtest durations sum to the run's total), and there is no `--test-concurrency` flag to add. CT-85 asked for serialisation as a fallback; it was already true, and it was never the problem. Every test here spawns the REAL server, and the flake came from processes OUTSIDE this suite competing for ports and CPU — which nothing inside `test` can serialise away. That is fixed at the source instead: see test-util.ts's spawnServer().",
   "scripts": {
     "start": "node main.ts",
     "typecheck": "../engine/node_modules/.bin/tsc --noEmit",

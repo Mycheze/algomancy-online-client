@@ -144,6 +144,12 @@ const recallSpellEffect: EffectDef = {
   run: (g, ctx) => {
     const picks = planEachPlayerRecall(g, ctx, 'rc');
     const seats = presentSeats(g, ctx.region);
+    // R209/CT-74/CT-81. HALF-SILENT, which is why no sweep could see it: the
+    // life loss below is unconditional and always speaks, so the run is never
+    // WHOLLY silent and `65-effect-conformance` — which convicts only a run
+    // that emits nothing AT ALL — is structurally blind to it forever. The
+    // recall clause promised something and delivered nothing without saying so.
+    if (!picks.length) g.ev('info', 'Recall: nobody here has a unit to recall.');
     for (const u of picks) g.recall(u);
     for (const seat of seats) g.loseLife(seat, 2, ctx.sourceName);
   },
@@ -242,7 +248,17 @@ card('Rippleback Skulker', {
 // (R1); [Switch1] bounded (R9); the recall effect is the bounded graft.
 const eachPlayerRecalls: EffectDef = {
   run: (g, ctx) => {
-    for (const u of planEachPlayerRecall(g, ctx, 'ssc')) g.recall(u);
+    const picks = planEachPlayerRecall(g, ctx, 'ssc');
+    // R209/CT-74: `planEachPlayerRecall` skips a seat with nothing to recall,
+    // so with every present seat empty it returns [] and this ran to
+    // completion emitting nothing. ONE object, TWO conformance labels
+    // (`ability:Seabed Shellcaster#0` and `graft:Seabed Shellcaster`) — one
+    // repair closes both, which is the double-counting trap CT-70 paid for.
+    if (!picks.length) {
+      g.ev('info', 'Seabed Shellcaster: nobody here has a unit to recall.');
+      return;
+    }
+    for (const u of picks) g.recall(u);
   },
 };
 card('Seabed Shellcaster', {
@@ -283,6 +299,14 @@ card('Shoreline Specter', {
         if (!yes) { g.ev('info', 'Shoreline Specter: declined — no recall, no life loss.'); return; }
         const opponents = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
         g.recall(u);
+        // R209/CT-81(b): the recall above always speaks, so no silence sweep
+        // could ever convict this — and the prompt the player just answered
+        // said "(each opponent loses 2 life)". With no opponent here (R25: a
+        // home region out of battle lists only its owner) that half simply did
+        // not happen, and the player was told nothing.
+        if (!opponents.length) {
+          g.ev('info', 'Shoreline Specter: no opponent is present here — nobody loses 2 life.');
+        }
         for (const s of opponents) g.loseLife(s, 2, 'Shoreline Specter');
       },
     },
@@ -675,6 +699,15 @@ card('Upheaval', {
             if (u) chosen.push(u);
           }
           picks.push(...chosen);
+        }
+        // R209/CT-74: every present seat can be here with no unit to recall —
+        // the pools are all empty, `picks` comes back empty and the iteration
+        // broke out in silence.
+        if (!picks.length) {
+          g.ev('info', iter === 0
+            ? 'Upheaval: nobody here has a unit to recall.'
+            : 'Upheaval: no units are left here to recall — it stops.');
+          break;
         }
         for (const u of picks) g.recall(u);
         if (picks.length < 4) break;

@@ -484,26 +484,19 @@ test('Perpetual Construct modded with a zero-cost mod announces that no unit is 
 
 // ── 9. "EACH OPPONENT" WITH NOBODY THERE ────────────────────────────────
 //
-// R25: "each opponent" reads the effect region's PRESENT seats, and a home
-// region out of battle lists only its owner. The loop then runs zero times —
-// a real, ordinary, reachable situation that used to produce no log line at
-// all. Spirit of Vengeance and Cthyrian Culler already say it; these did not.
-
-const NO_OPPONENT: [string, EffectDef, Partial<EffectCtx>][] = [
-  ['Restitution', augmentOf('Restitution'), { event: { type: 'damage', msg: '', data: { n: 3 } } }],
-  ['Vroot', augmentOf('Vroot'), { event: { type: 'damage', msg: '', data: { n: 3 } } }],
-  ['Flzzz', augmentOf('Flzzz'), { event: { type: 'lifeGained', msg: '', data: { n: 3 } } }],
-];
-
-for (const [card, def, extra] of NO_OPPONENT) {
-  test(`${card} resolving in a region with no opponent present announces that`, () => {
-    const { g, A } = board(8590);
-    const lives = g.s.players.map(p => p.life);
-    const evs = resolve(def, g, { controller: A, sourceName: card, ...extra });
-    assertSpoke(evs, `${card} with no opponent in the region`);
-    assert.deepEqual(g.s.players.map(p => p.life), lives, 'and nobody gained or lost life');
-  });
-}
+// ⚠ MOVED OUT — R209 / CARD-TODO #74. Restitution, Vroot and Flzzz used to be
+// tested here, and they were the three members of R25's "each opponent over a
+// region holding nobody else" family that the OLD FUZZ happened to reach. R187
+// then repaired the other ten and put them in
+// `test/158-silent-region-branches.test.ts`, which left the family split across
+// two files — and §11 below and 158's own class test made the SAME house-rule
+// claim about disjoint card lists, so when the family next grew neither file
+// owned it. CT-74 asked for the merge; the three now live in 158 §11 with the
+// rest of their family, driven by 158's rig against the same board.
+//
+// This section is deliberately left as a signpost rather than deleted: the next
+// person looking for "each opponent with nobody there" will grep this file
+// first, because that is where it was for two rounds.
 
 // ── 10. ORGANIC EXCHANGE (CARD-TODO #6) ─────────────────────────────────
 //
@@ -578,7 +571,7 @@ test('every card fixed here is one the whole-pool drill also watches', () => {
     ...STACK_GONE.map(([c]) => c),
     ...TARGET_GONE.map(([c]) => c),
     ...CARRIER_GONE.map(([c]) => c),
-    ...NO_OPPONENT.map(([c]) => c),
+    // (NO_OPPONENT's three moved to 158 with the rest of their family — R209)
     'Abduct', 'Divine Intervention', 'Organic Exchange', 'Siphon Life',
     'Tides of the Cosmos', 'Perpetual Construct', 'Afflicting Anima', 'Swarmling',
     'Dragnol', 'Spore of Regenesis', 'Murkdrop Distiller', 'The Bonesculptor',

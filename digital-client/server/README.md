@@ -245,7 +245,7 @@ block this round.
 | `test-accounts.ts` | the accounts test suite (stats fold, achievements, friends, live server) |
 | `accounts/accounts.json` | the whole account store — **holds password hashes, gitignored** |
 | `suite.test.ts` | **`npm test`** — runs every script below, plus the ledger that fails when a test file exists and nothing runs it |
-| `test-util.ts` | shared test helpers: `mintRoom` (a server-minted code), `freePort`, `gameFile` |
+| `test-util.ts` | shared test helpers: `mintRoom` (a server-minted code), `spawnServer` (boots main.ts on an OS-assigned port and reads the port back — R204/CT-85), `gameFile` |
 | `test-new-features.ts` | join / rename / seat takeover / undo — and **the UZRG report**: the resource step is hidden, and your undo survives the opponent acting |
 | `test-clock.ts` | the chess clock, `POST /api/report`, and the draft's `packInfo` |
 | `test-draft.ts` | live-draft rooms: pack redaction, `draftCommit`, pack passing, undo, persistence |

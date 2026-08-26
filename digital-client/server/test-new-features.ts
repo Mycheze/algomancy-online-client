@@ -7,15 +7,10 @@
  *   - joining an occupied seat kicks the old connection (takeover)
  *   - undo: single-step, actor-only, rolls the state back and resyncs the log
  */
-import { spawn } from 'node:child_process';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { rmSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
-import { freePort, gameFile } from './test-util.ts';
+import { gameFile, spawnServer } from './test-util.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = await freePort();
 // minted from /api/new below: only a server-minted code may create a room
 let ROOM = '';
 
@@ -69,15 +64,11 @@ class Client {
 
 // ── spawn the server ──────────────────────────────────────────────────
 rmSync(gameFile(ROOM), { force: true });
-const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
-  env: { ...process.env, PORT: String(PORT) },
-  stdio: ['ignore', 'pipe', 'inherit'],
-});
-await new Promise<void>((res, rej) => {
-  server.stdout.on('data', (d: Buffer) => { if (String(d).includes('Algomancy server')) res(); });
-  server.on('exit', () => rej(new Error('server died on startup')));
-  setTimeout(() => rej(new Error('server startup timeout')), 10000);
-});
+// R204/CT-85: the server picks its own port and tells us which — see
+// test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
+// port unheld for as long as node took to boot.
+const server = await spawnServer();
+const PORT = server.port;
 
 try {
   console.log('\n[api/new]');
@@ -201,7 +192,7 @@ try {
   const fullErr = await full.next(m => m.t === 'error');
   ok(/full/.test(fullErr.msg ?? ''), 'auto-join into a full room still politely fails');
 } finally {
-  server.kill();
+  await server.stop();
   rmSync(gameFile(ROOM), { force: true });
 }
 

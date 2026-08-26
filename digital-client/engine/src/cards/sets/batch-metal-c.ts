@@ -266,8 +266,18 @@ card('Suppression Field', {
       g.suppress(t, 'Suppression Field', { attrs: true, abilities: true });
       if (!g.entity(t.id)) return;                 // suppression can be lethal
       if (t.mods.length) {
-        for (const modId of t.mods) delete g.s.entities[modId];
-        g.ev('info', `Suppression Field ERASES ${t.mods.length} mod(s) on ${t.card}.`);
+        // R208 / CT-86: through `E.eraseMod`. This site is why the ticket's
+        // `mods.splice` grep undercounted — it cleared `t.mods = []` instead
+        // of splicing, so it looked like a different operation while doing
+        // exactly the same thing to real, NONTOKEN mod cards. ⚠ The 'info'
+        // line is unchanged: it says "ERASES" in its own words and files
+        // nothing on the R65 public pile, which is round-27's Q3 and is
+        // UNANSWERED. The count is taken BEFORE the loop, because eraseMod
+        // splices `t.mods` as it goes — the old code read it afterwards and
+        // only got away with it because the delete left the id list alone.
+        const n = t.mods.length;
+        for (const m of t.mods.map(id => g.entity(id))) if (m) g.eraseMod(m);
+        g.ev('info', `Suppression Field ERASES ${n} mod(s) on ${t.card}.`);
         t.mods = [];
       }
       for (const item of [...g.s.stack]) {   // R68: negate() splices

@@ -15,7 +15,14 @@ import { fileURLToPath } from 'node:url';
 // the real WebSockets main.ts plugs in; this module only checks presence
 import type { WebSocket } from 'ws';
 import type { Action, ActivateVia, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Seat } from '../engine/src/types.ts';
-import { apply, checkDeck, createGame, decisionBlocks, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { apply, checkDeck, decisionBlocks, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+// R216 — the scenario tester. `dealScenario` IS `createGame` when no scenario
+// id is passed, byte for byte, so every ordinary room is unaffected; when one
+// is passed it applies the scenario's deterministic board mutation. It is
+// imported instead of `createGame` rather than beside it, deliberately: a
+// second `createGame` call site in this file would be a deal that forgets the
+// scenario, which is exactly the bug docs/14 §2 is written to prevent.
+import { dealScenario, isScenarioId } from './scenarios.ts';
 import { other } from './view.ts';
 // R181: the on-disk shapes moved to types.ts so replay-room.ts can name them
 // without importing this module (and `ws` with it). Re-exported here because
@@ -578,6 +585,20 @@ export interface Room {
   /** constructed mode: each seat's deck list (null = not brought yet). The
    * game does not really start until both are in — see roomWaiting(). */
   decks: [CardName[] | null, CardName[] | null];
+  /**
+   * R216 — the scenario this room was dealt with, if any. PERSISTED, beside
+   * `seed`, because it is part of the deal.
+   *
+   * A room's state is a function of `(seed, mode, els, decks, scenario,
+   * actions)`. Recording the id (and not a `GameState`) is the whole design:
+   * `rebuild()`, `restoreRooms()`, `undoActionAt()`, `replay-room.ts` and the
+   * R200 divergence diff all keep working on a scenario room, because it is
+   * still a seed and a log. See scenarios.ts's header for the four deal sites
+   * this had to reach and the one it deliberately does not.
+   *
+   * Additive: a file without it restores exactly as it always did.
+   */
+  scenario?: string;
   names: [string, string];
   /** ACCOUNT id per seat (null = whoever sat here was not logged in). Set on
    * join from the token, persisted with the room, and read back when the game
@@ -823,9 +844,14 @@ export function clockSnapshot(room: Room): { ms: [number, number]; running: [boo
 
 const rooms = new Map<string, Room>();
 
-/** Build a fresh game and its initial event list. */
-function fresh(seed: number, names: [string, string], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]]): { state: GameState; events: EngineEvent[] } {
-  const r = createGame(seed, names, mode, els, decks);
+/** Build a fresh game and its initial event list.
+ *
+ * R216: `scenario` rides along, and every caller in this file passes the
+ * room's own. It is the LAST argument on purpose — a caller that forgets it
+ * deals an ordinary game, which is the safe direction, and the two tests that
+ * matter (185/186 + test-scenario.ts) fail loudly if a room path forgets. */
+function fresh(seed: number, names: [string, string], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string): { state: GameState; events: EngineEvent[] } {
+  const r = dealScenario(seed, names, mode, els, decks, scenario);
   return { state: r.state, events: r.events };
 }
 
@@ -919,7 +945,7 @@ export function resolveLobby(room: Room, history: TrioHistoryRow[]): TrioResult 
   });
   lobby.result = result;
   room.els = sanitizeTrio(result.els);
-  const { state, events } = fresh(room.seed, room.names, room.mode, room.els);
+  const { state, events } = fresh(room.seed, room.names, room.mode, room.els, undefined, room.scenario);
   room.state = state;
   room.actions = [];
   room.events = events;
@@ -949,7 +975,7 @@ export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[]): boolean
   room.decks[seat] = [...cards];
   const complete = !!room.decks[0] && !!room.decks[1];
   if (complete) {
-    const { state, events } = fresh(room.seed, room.names, room.mode, room.els, decksFor(room));
+    const { state, events } = fresh(room.seed, room.names, room.mode, room.els, decksFor(room), room.scenario);
     room.state = state;
     room.actions = [];
     room.events = events;
@@ -979,8 +1005,8 @@ interface Rebuilt {
  * hidden-segment bookkeeping. Tolerant: an action the (possibly newer) engine
  * now rejects is skipped with a warning instead of killing the whole room — a
  * personal server should never eat a live game over a rules tweak. */
-function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]]): Rebuilt {
-  let { state, events } = fresh(seed, names, mode, els, decks);
+function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string): Rebuilt {
+  let { state, events } = fresh(seed, names, mode, els, decks, scenario);
   const all = [...events];
   // SEED THE SEGMENT FROM THE INITIAL STATE: createGame already ends inside
   // turn 1's planning, and turn-1 planning has no preceding action — a
@@ -1083,15 +1109,18 @@ export function getRoom(code: string): Room | undefined {
 /** `creatorDeck` (constructed only): the first joiner's deck, used to build
  * the waiting room's placeholder state — setRoomDeck assigns it to the actual
  * seat once main.ts has picked one. */
-export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[]): Room {
+export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string): Room {
   const trio = sanitizeTrio(els);
   if (mode === 'constructed' && !creatorDeck) throw new IllegalAction('a constructed room needs a deck');
   const decks: [CardName[] | null, CardName[] | null] = [null, null];
   const { state, events } = mode === 'constructed'
-    ? fresh(seed, names, mode, trio, [creatorDeck!, creatorDeck!])
-    : fresh(seed, names, mode, trio);
+    ? fresh(seed, names, mode, trio, [creatorDeck!, creatorDeck!], scenario)
+    : fresh(seed, names, mode, trio, undefined, scenario);
   const room: Room = {
     code, seed, mode, els: trio, decks, names, users: [null, null], winner: null,
+    // R216: only a scenario room carries one; `undefined` is the normal case
+    // and is not persisted (see persist()).
+    ...(scenario ? { scenario } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
     state, actions: [], events, sockets: [null, null], forks: [], lost: [], drifted: [],
@@ -1692,7 +1721,7 @@ function recordFork(room: Room): boolean {
 /** rebuild() for a room that already knows its own seed/mode/els/decks. */
 function rebuildRoom(room: Room): Rebuilt {
   return rebuild(room.seed, room.names, room.actions, room.mode, room.els,
-    room.mode === 'constructed' ? decksFor(room) : undefined);
+    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario);
 }
 
 /** Adopt a rebuild's results wholesale (state + event history + the derived
@@ -1730,7 +1759,7 @@ export function createRematch(old: Room, code: string): Room {
     : createRoom(code, seed, [...old.names], old.mode, old.mode === 'draft' ? undefined : old.els);
   if (old.mode === 'constructed' && old.decks[0] && old.decks[1]) {
     room.decks = [[...old.decks[0]!], [...old.decks[1]!]];
-    const { state, events } = fresh(seed, room.names, room.mode, room.els, [room.decks[0]!, room.decks[1]!]);
+    const { state, events } = fresh(seed, room.names, room.mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario);
     room.state = state;
     room.events = events;
   } else if (old.mode === 'draft') {
@@ -1790,6 +1819,10 @@ function persist(room: Room): void {
       // two rankings to a deploy would be a genuinely annoying way to lose
       // them (additive field)
       ...(room.lobby ? { lobby: room.lobby } : {}),
+      // R216: the scenario is part of the DEAL, so it sits beside `seed`
+      // rather than anywhere near the log. Additive: absent on every ordinary
+      // room and on every file written before the tester existed.
+      ...(room.scenario ? { scenario: room.scenario } : {}),
       actions: room.actions, clockMs: room.clockMs,
       // R191: WHAT EACH ACTION MEANT WHEN IT WAS TAKEN (referenceKey), so a
       // later restore can tell that the log still replays and no longer
@@ -1842,12 +1875,26 @@ export function restoreRooms(): void {
         /** R191: per-action reference keys, as of when the game was played */
         refs?: unknown;
         versions?: VersionStamp[];
+        /** R216: the scenario this room was dealt with */
+        scenario?: unknown;
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const users: [string | null, string | null] = [raw.users?.[0] ?? null, raw.users?.[1] ?? null];
       const savedWinner: Seat | null = raw.winner === 0 || raw.winner === 1 ? raw.winner : null;
       const mode = raw.mode ?? 'shared';
       const els = sanitizeTrio(raw.els);
+      // R216. A file naming a scenario this build does not have is NOT
+      // restored as an ordinary game: the log was recorded against a board
+      // that came from somewhere, and replaying it without that board would
+      // produce a plausible-looking room describing a game nobody played.
+      // Loud, and the catch below turns it into a skipped room with a reason.
+      const scenario = raw.scenario === undefined || raw.scenario === null
+        ? undefined
+        : String(raw.scenario);
+      if (scenario !== undefined && !isScenarioId(scenario)) {
+        throw new Error(`saved with scenario '${scenario}', which this build does not define`
+          + ' — refusing to replay its log onto an ordinary deal');
+      }
       const decks: [CardName[] | null, CardName[] | null] = [null, null];
       if (mode === 'constructed') {
         for (const s of [0, 1] as const) {
@@ -1876,12 +1923,13 @@ export function restoreRooms(): void {
       const { state, events, segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
         segIdFloor, segRefs, skipped } = rebuild(
         raw.seed, names, actions, mode, els,
-        mode === 'constructed' ? decksFor({ decks }) : undefined);
+        mode === 'constructed' ? decksFor({ decks }) : undefined, scenario);
       const clockMs: [number, number] = Array.isArray(raw.clockMs) && raw.clockMs.length === 2
         ? [Math.max(0, Number(raw.clockMs[0]) || 0), Math.max(0, Number(raw.clockMs[1]) || 0)]
         : [CLOCK_START_MS, CLOCK_START_MS];
       rooms.set(code, {
         code, seed: raw.seed, mode, els, decks, names, users, lobby,
+        ...(scenario ? { scenario } : {}),
         rematch: [false, false], rematchRoom: null,
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,

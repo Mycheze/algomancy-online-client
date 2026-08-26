@@ -11,15 +11,12 @@
  * person picks the elements" problem and the "and then stares at pack 1 pick
  * 1 while the other one finds the link" one.
  */
-import { spawn } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import type { Element } from '../engine/src/types.ts';
-import { freePort } from './test-util.ts';
+import { spawnServer } from './test-util.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-lobby-test-'));
 const GAMES = join(SCRATCH, 'games');
 process.env['ALGO_ACCOUNTS_FILE'] = join(SCRATCH, 'accounts.json');
@@ -171,16 +168,11 @@ console.log('\n[submissions]');
 // ── 6. the live server ────────────────────────────────────────────────
 
 console.log('\n[server: no cards until both are in]');
-const PORT = await freePort();
-const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
-  env: { ...process.env, PORT: String(PORT) },
-  stdio: ['ignore', 'pipe', 'inherit'],
-});
-await new Promise<void>((res, rej) => {
-  server.stdout.on('data', (d: Buffer) => { if (String(d).includes('Algomancy server')) res(); });
-  server.on('exit', () => rej(new Error('server died on startup')));
-  setTimeout(() => rej(new Error('server startup timeout')), 15000);
-});
+// R204/CT-85: the server picks its own port and tells us which — see
+// test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
+// port unheld for as long as node took to boot.
+const server = await spawnServer();
+const PORT = server.port;
 
 interface Msg { t: string; seat?: number; view?: any; waiting?: any; trio?: any; msg?: string; log?: string[] }
 
@@ -264,7 +256,7 @@ try {
 
   a.ws.close(); b.ws.close(); c.ws.close();
 } finally {
-  server.kill();
+  await server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });
 }
 

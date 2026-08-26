@@ -69,6 +69,10 @@ import type {
 import * as acct from './account.ts';
 import * as lob from './lobby.ts';
 import * as pg from './postgame.ts';
+// R216 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
+// unless a SERVER push says this room was dealt with a scenario, so nothing a
+// client can set makes it appear over a real game.
+import * as scn from './scenario.ts';
 import { elIcon as elIconOf, esc, shareBar } from './util.ts';
 
 const ART = '../../../AlgomancyCards/';
@@ -95,6 +99,8 @@ interface NetMsg {
   cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
   me?: acct.Me;
   rematch?: [boolean, boolean];
+  /** R216: present only for a room the SERVER dealt with a scenario id */
+  scenario?: scn.ScenarioInfo;
 }
 
 /** Remote backend: sends intents over WS, renders from server-pushed redacted views.
@@ -279,6 +285,9 @@ class NetBackend implements Backend {
     }
     if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };
     if (m.names) this.names = m.names;
+    // R216: every scenario push carries the whole brief (the action index and
+    // the opponent's presence move), so this is a set rather than a set-once.
+    if (m.scenario) scn.setScenario(m.scenario);
     if (m.t === 'joined') {
       this.joined = true; this.seat = m.seat!;
       this.wantSeat = m.seat!;   // reconnect/deck-rejoin keeps this seat
@@ -1464,7 +1473,7 @@ function cardHtml(name: string, opts: {
   const badges = [...line.shown, ...(line.more ? [line.more] : [])].map(b => `<span class="${
     ['badge', b.mod ? 'mod' : '', b.ctr ? 'ctr' : '', b.cls ?? ''].filter(Boolean).join(' ')}"${
     b.title ? ` title="${esc(b.title)}"` : ''}>${b.html ? b.t : esc(b.t)}</span>`).join('');
-  return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}>
+  return `<div class="${cls.join(' ')}"${opts.data ? ` ${opts.data}` : ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}>
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
     <div class="artfallback">${esc(name)}</div>
     ${badges ? `<div class="badges${line.more ? ' hasmore' : ''}"${line.more ? ` title="${esc(line.title)}"` : ''}>${badges}</div>` : ''}
@@ -1547,7 +1556,7 @@ function resHtml(r: ResourceView, p: Seat, i: number): string {
   // Light and Dark have no resource-card scan in AlgomancyCards/ yet, so the
   // face 404s. Degrade to a coloured element plate rather than a broken image:
   // `onerror` tags the wrapper and CSS swaps the plate in.
-  return `<span class="rescard ${r.state} ${r.kind} ${canact ? 'canact' : ''} ${r.emphasis === 'muted' ? 'muted' : ''}" title="${r.title}"
+  return `<span class="rescard ${r.state} ${r.kind}${canact ? ' canact' : ''}${r.emphasis === 'muted' ? ' muted' : ''}" title="${r.title}"
     data-act="res" data-p="${p}" data-i="${i}" data-prev="${face}"><img src="${art(face)}" alt=""
       onerror="this.closest('.rescard').classList.add('noart')"
     ><span class="resplate">${esc(r.kind === 'hidden' ? '?' : r.kind)}</span>${chip}</span>`;
@@ -1809,15 +1818,36 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   // the bin lives IN its player's region: a mini stack on the right that
   // opens a full dialog (bin-play clicks work from the dialog).
   // #4: when bin cards are legally usable as mods right now, say so loudly.
-  const binUsable = legal.some(a =>
-    ((a.type === 'augment' || a.type === 'graft') && a.from === 'bin') ||
-    (a.type === 'prophesy' && a.from === 'bin'));
+  const binLive = binUsableIndexes(legal);
+  const binUsable = binLive.size > 0;
   const binKeys = nameKeys(pl.bin, `b${p}:`);
-  const binMini = `<div class="regionbin ${binUsable ? 'hasmods' : ''}" data-btn="binopen" data-p="${p}"
+  // CT-82(b)/R205: the twin of CT-64 that nobody filed. These thumbs used to
+  // carry no affordance at all, so a bin card that could be PLAYED right now
+  // (R96/R123 — Abyssal Evocation's grant, Trench Stalker's own line) took two
+  // clicks from the panel while the same card in the dialog took one. Same
+  // predicate as the dialog's own glow (`binUsableIndexes`), so the two
+  // surfaces cannot come to disagree about which entry is live.
+  //
+  // ⚠ `data-btn`, NOT `data-act` — the same trap R192 documented on the cache
+  // and CT-75 turned into a guard. The click delegator asks
+  // `closest('[data-btn]')` FIRST, and this panel IS a `data-btn="binopen"`
+  // ancestor, so a `data-act` on a thumb would lose to the panel at any depth.
+  // CARD-TODO #64's prescribed fix was exactly that shape, and test/176 now
+  // fails loudly if anyone writes it again.
+  //
+  // The first bin index a thumb is drawn for: the strip shows the LAST three.
+  const binBase = pl.bin.length - Math.min(3, pl.bin.length);
+  const binMini = `<div class="regionbin${binUsable ? ' hasmods' : ''}" data-btn="binopen" data-p="${p}"
       data-animzone="bin:${p}" title="open ${esc(pl.name)}'s bin">
       <div class="zonelabel">bin (${pl.bin.length})</div>
-      <div class="regionbinthumbs">${pl.bin.slice(-3).map((n, k) =>
-        cardHtml(n, { anim: binView === p ? undefined : binKeys[pl.bin.length - Math.min(3, pl.bin.length) + k] })).join('') || '<span class="binempty">empty</span>'}</div>
+      <div class="regionbinthumbs">${pl.bin.slice(-3).map((n, k) => {
+        const i = binBase + k;
+        return cardHtml(n, {
+          anim: binView === p ? undefined : binKeys[i],
+          playable: binLive.has(i),
+          data: binLive.has(i) ? `data-btn="binplay" data-p="${p}" data-i="${i}"` : '',
+        });
+      }).join('') || '<span class="binempty">empty</span>'}</div>
       ${binUsable ? `<div class="binmodhint">${txtIcon('augment', '+')}${txtIcon('graft', '[Switch]')} playable as mods</div>` : ''}
     </div>`;
 
@@ -1831,10 +1861,10 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     (rot ? `<span class="pcount rot" title="R38: at the start of every deployment you take ${rot} damage from your own rot. Rot never decreases on its own.">☠ rot ${rot}</span>` : '') +
     (debt ? `<span class="pcount debt" title="R39: at the very END of your next resource step you must pay 1 mana per debt (${debt} mana). Whatever you cannot pay carries over.">⛓ debt ${debt}</span>` : '');
 
-  return `<div class="player region ${acting ? '' : 'inactive'} ${focus}">
+  return `<div class="player region${acting ? '' : ' inactive'}${focus ? ` ${focus}` : ''}">
     <div class="pheader">
       <span class="pname">${esc(pl.name)}${s.initiative === p ? ' ⭐' : ''}</span>
-      <span class="life ${isCandidate({ player: p }) ? 'candidate' : ''}" data-act="player" data-p="${p}"
+      <span class="life${isCandidate({ player: p }) ? ' candidate' : ''}" data-act="player" data-p="${p}"
         data-animzone="life:${p}">♥ ${pl.life}</span>
       ${counters}
       <span class="resrow" data-animzone="res:${p}">${resourceRow(e, p).resources.map(r => resHtml(r, p, r.index)).join('')}
@@ -1859,6 +1889,25 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   </div>`;
 }
 
+/** CT-82(b)/R205: the bin indexes `seat` can do something with RIGHT NOW.
+ *
+ * ONE predicate, two surfaces. The dialog glows an entry and the region panel
+ * hands its thumb a first-click affordance off the same set, so the two can
+ * never come to disagree about which card is live — the argument R192 made for
+ * the cache's `playableCachedIndexes`, and the reason that pair has stayed
+ * honest. Every route a bin card can take that STARTS with a click on the card
+ * is here: applied as a mod (#4), prophesied (R42), or played outright
+ * (R96/R123). Nothing else in the bin is clickable at all. */
+function binUsableIndexes(legal: readonly Action[]): Set<number> {
+  const out = new Set<number>();
+  for (const a of legal) {
+    if ((a.type === 'augment' || a.type === 'graft' || a.type === 'prophesy') && a.from === 'bin') {
+      out.add(a.index);
+    } else if (a.type === 'playFromBin') out.add(a.binIndex);
+  }
+  return out;
+}
+
 /** the full-bin dialog (opened from a region's mini bin) — bin cards keep
  * their data-act so augment/graft-from-bin still works from here */
 let binView: Seat | null = null;
@@ -1868,6 +1917,7 @@ function binDialogHtml(): string {
   const pl = h.state.players[p]!;
   const legal = legalFor(p);
   const binKeys = nameKeys(pl.bin, `b${p}:`);
+  const live = binUsableIndexes(legal);
   let anyUsable = false;
   const items = pl.bin.map((n, i) => {
     // #4: bin cards that can be applied as mods RIGHT NOW carry a badge and glow
@@ -1880,7 +1930,12 @@ function binDialogHtml(): string {
     // Evocation's battle grant, or the card's own "played from your bin" line
     // (Trench Stalker). legalActions already knows which; this just renders it.
     const canPlay = legal.some(a => a.type === 'playFromBin' && a.binIndex === i);
-    const usable = canAug || canGraft || canProph || canPlay;
+    // CT-82(b)/R205: the badges above are per-ROUTE; "does this entry glow" is
+    // the one fact the region panel's thumb needs too, so it is READ from the
+    // shared predicate rather than recomputed here. Two copies of this
+    // disjunction is how the panel would come to offer a click the dialog says
+    // is not there.
+    const usable = live.has(i);
     anyUsable ||= usable;
     const badges: Badge[] = [];
     if (canAug || canGraft) {
@@ -1998,7 +2053,7 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
         : why === 'timing' && when ? `<div class="cachepay none">…but only during ${when}</div>`
           : '';
   const meta = [
-    pr ? `<div class="cachecond ${met ? 'met' : ''}">📜 ${esc(pr.condition)}${pr.release === 'haste' ? ' <i>(released at haste)</i>' : ''}</div>` : '',
+    pr ? `<div class="cachecond${met ? ' met' : ''}">📜 ${esc(pr.condition)}${pr.release === 'haste' ? ' <i>(released at haste)</i>' : ''}</div>` : '',
     via === 'prophecy' ? '<div class="cachepay free">free · ignores affinity</div>' :
       via === 'glimpse' ? '<div class="cachepay">pay its mana · ignores affinity</div>' :
         '<div class="cachepay none">not playable from here</div>',
@@ -2106,7 +2161,7 @@ function regionCacheHtml(p: Seat): string {
   // wins. `cacheplay` hands straight to `handleCacheClick`, the dialog's own
   // handler, so the two routes play the same card by the same code.
   const playNow = mine ? new Set(playableCachedIndexes(legal)) : new Set<number>();
-  return `<div class="regioncache ${hot ? 'hasplay' : ''}" data-btn="cacheopen" data-p="${p}"
+  return `<div class="regioncache${hot ? ' hasplay' : ''}" data-btn="cacheopen" data-p="${p}"
       data-animzone="cache:${p}"
       title="R41: the cache is public — both players see every cached card. Click to open — or click a glowing card to play it (CT-64).">
     <div class="zonelabel">cache (${liveIdx.length}${spent ? ` +${spent} spent` : ''})</div>
@@ -2460,7 +2515,7 @@ function battleHtml(): string {
     ? (iBlock
       ? `<div class="col sendcol"><div class="collabel">send to counterattack</div>
           <div class="sendrow">${ui.send.map(sendEntHtml).join('')}
-          <div class="slot ${ui.carrying ? 'open' : ''}" data-act="sendslot">send</div></div></div>`
+          <div class="slot${ui.carrying ? ' open' : ''}" data-act="sendslot">send</div></div></div>`
       : (NET?.building?.send?.length
         ? `<div class="col sendcol"><div class="collabel">being sent to counterattack</div>
             ${pendingColHtml(NET.building.send, { across: true })}</div>` : ''))
@@ -2524,7 +2579,7 @@ function colSlotsHtml(col: EntityId[], ci: number): string {
   return front + back;
 }
 function slotHtml(ci: number, row: number, open: boolean): string {
-  return `<div class="slot ${open ? 'open' : ''}" data-act="slot" data-ci="${ci}" data-row="${row}"
+  return `<div class="slot${open ? ' open' : ''}" data-act="slot" data-ci="${ci}" data-row="${row}"
     title="${row === 0 ? 'front row — takes the damage, and dropping here pushes a unit already standing there to the back' : 'back row'}">${row === 0 ? 'front' : 'back'}</div>`;
 }
 function blockBuilderHtml(ci: number): string {
@@ -2924,7 +2979,7 @@ function phaseBarHtml(err: string): string {
       // surfaced as a red error after the fact. blockPlanIssue (ui/inspect.ts)
       // asks the engine's own validator what it would say to this declaration.
       const duty = blockPlanIssue(s, b.defender, blockPlan());
-      return `<div class="promptbar ${duty || ui.blockRefusal ? 'pending' : ''}"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
+      return `<div class="promptbar${duty || ui.blockRefusal ? ' pending' : ''}"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
         ${blockRefusalHtml()}${duty
           ? `<b class="duty">${esc(duty)}</b> — that block is compulsory, so nothing can be confirmed until it is assigned.`
           : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
@@ -3279,7 +3334,7 @@ function phaseTrackHtml(): string {
   ];
   if (s.phase === 'gameover') return `<span class="phasetrack"><span class="ph cur">game over</span></span>`;
   return `<span class="phasetrack">${steps.map(p =>
-    `<span class="ph ${p.cur ? 'cur' : ''}">${p.label}</span>`).join('<span class="phsep">▸</span>')}</span>`;
+    `<span class="ph${p.cur ? ' cur' : ''}">${p.label}</span>`).join('<span class="phsep">▸</span>')}</span>`;
 }
 
 /** Share banner: shown while the opponent's seat is empty in network mode.
@@ -3288,6 +3343,13 @@ function phaseTrackHtml(): string {
 function shareBannerHtml(): string {
   if (!NET || NET.peers[other(NET.seat)]) return '';
   if (h.state.phase === 'gameover' || postGame) return '';
+  // R216: a scenario room with a scripted opponent has nobody to wait for, and
+  // "waiting for your opponent" across the top of it is exactly the misreading
+  // docs/14 §4 warns about — the owner goes looking for a second tab he does
+  // not need. The runner strip says which of the two this room is; this banner
+  // stays out of its way. A scenario that DOES need a live opponent keeps the
+  // banner, because then the sentence is true.
+  if (scn.needsSecondTab() === false) return '';
   const link = `${location.origin}/?ws=1&room=${encodeURIComponent(NET.room)}&seat=${other(NET.seat)}&mode=${h.state.mode}`;
   return shareBar('Waiting for your opponent — send them the room code', NET.room, link);
 }
@@ -3581,16 +3643,17 @@ function renderNow(): boolean {
           <button data-btn="helpopen" title="rules reference: phases + keywords">? rules</button>
           <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
           ${NET ? '<button data-btn="reportopen" title="report an issue — the server logs this exact game moment">🐛 bug</button>' : ''}
-          ${NET ? `<button data-btn="autopasstoggle" class="aptoggle ${autoPref ? 'on' : ''}"
+          ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref ? ' on' : ''}"
             title="when ON: automatically pass whenever passing is your only legal action">auto-pass: ${autoPref ? 'on' : 'off'}</button>` : ''}
-          <button data-btn="motiontoggle" class="aptoggle ${motionOn() ? 'on' : ''}"
+          <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}"
             title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
-          <button data-btn="soundtoggle" class="aptoggle ${soundOn() ? 'on' : ''}"
+          <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}"
             title="notification sounds: phase and sub-step changes, priority, decisions${NET ? ", and a nudge if you haven't reacted in 15s" : ''}">${soundOn() ? '🔊' : '🔇'} sound: ${soundOn() ? 'on' : 'off'}</button>
           ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
           ${NET ? '' : '<button data-btn="restart">New game</button>'}
         </div>
       </div>
+      ${NET ? scn.panelHtml(NET.room) : ''}
       <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
       <div class="logpanel" id="log"><h3>Game log</h3>${logItems}</div>
     </div>
@@ -3743,6 +3806,10 @@ function rewireInputs(snap: ViewportSnap): void {
       if (send) send.disabled = reportBusy || !reportDraft.trim();
     });
   }
+  // R216: the runner strip's optional note/ruling/clause boxes, for the same
+  // reason — the moment a note is lost to a repaint the owner stops writing
+  // notes, and an optional field nobody fills in is a field that is not there.
+  scn.rewire();
   // R197: the numeric-entry box is a typing box too, and it is fresh DOM after
   // every paint. Its draft lives in `ui.numberCount` so a re-render (an
   // opponent's action, a log line) cannot swallow half-typed digits, and Enter
@@ -4272,7 +4339,7 @@ function renderHome(): void {
         <details class="fixedtrio" ${ui.homeFixedTrio ? 'open' : ''}>
           <summary>…or fix the trio now, and skip the lobby</summary>
           <div class="elrow">${ALL_ELEMENTS.map(el =>
-            `<button class="elchip ${el} ${ui.homeEls.includes(el) ? 'on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
+            `<button class="elchip ${el}${ui.homeEls.includes(el) ? ' on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
             <button data-btn="elrandom" title="pick a random trio — any of the ${TRIO_COUNT}">🎲</button>
           </div>
           <button data-btn="newgame" data-mode="draft" data-els="1" ${ui.homeEls.length === 3 ? '' : 'disabled'}>
@@ -4362,11 +4429,11 @@ function renderWaiting(): void {
 
     <div class="lobbyfoot">
       <div class="lobbyseats">
-        <span class="lobbyseat"><i class="seatdot ${mineIn ? 'ready' : ''}"></i>
+        <span class="lobbyseat"><i class="seatdot${mineIn ? ' ready' : ''}"></i>
           <span>${esc(net.names[me] ?? 'You')} (you) — ${mineIn
             ? `<b class="lockedin">deck is in</b>${deck ? ` — ${esc(deck.name)} by ${esc(deck.author)}` : ''}`
             : '<span class="dim">pick a deck above</span>'}</span></span>
-        <span class="lobbyseat"><i class="seatdot ${w.have[opp] ? 'ready' : net.peers[opp] ? '' : 'away'}"></i>
+        <span class="lobbyseat"><i class="seatdot${w.have[opp] ? ' ready' : net.peers[opp] ? '' : ' away'}"></i>
           <span>${esc(net.names[opp] ?? 'Opponent')} — ${w.have[opp]
             ? '<b class="lockedin">deck is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
       </div>
@@ -5214,6 +5281,13 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     }
   },
   binopen: btn => { binView = Number(btn.dataset['p']) as Seat; },
+  // CT-82(b)/R205: the region-bin thumb of a card that is usable RIGHT NOW —
+  // playable (R96/R123), prophesiable (R42) or applicable as a mod (#4). It
+  // hands to `handleBinClick`, the dialog's own handler, so the panel and the
+  // dialog can never come to do different things with the same card.
+  binplay: (btn, e) => {
+    handleBinClick(Number(btn.dataset['p']) as Seat, Number(btn.dataset['i']), e);
+  },
   binclose: () => { binView = null; },
   seendrop: btn => forgetSeen('card', Number(btn.dataset['i'])),
   seenhideall: () => forgetSeen('all'),
@@ -5276,6 +5350,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
     rerender: render,
     dismiss: () => { postGameHidden = true; render(); },
   })) return;
+  // and the scenario runner everything prefixed scn- (R216)
+  if (NET && scn.handleButton(btn, { room: NET.room, seat: NET.seat, rerender: render })) return;
   // and the draft lobby everything prefixed lobby-
   if (NET?.waiting?.trio && lob.handleLobbyButton(btn, {
     lobby: NET.waiting.trio,
@@ -5488,30 +5564,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     handleHandClick(Number(t.dataset['p']) as Seat, Number(t.dataset['i']), e);
   }
   if (kind === 'bin') {
-    const p = Number(t.dataset['p']) as Seat, i = Number(t.dataset['i']);
-    const legal = legalFor(p);
-    // R42: Angel of Anguish prints "I can be prophesied from your bin" — the
-    // bin is a prophesy source too, so a bin card can offer both.
-    const proph = legal.filter(a => a.type === 'prophesy' && a.from === 'bin' && a.index === i);
-    const mods = legal.filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
-    // R96/R123: playing a card straight out of the bin (Abyssal Evocation's
-    // grant, or the card's own line — Trench Stalker)
-    const plays = legal.filter(a => a.type === 'playFromBin' && a.binIndex === i);
-    if (plays.length || proph.length) {
-      const name = h.state.players[p]!.bin[i] ?? '?';
-      const items: MenuItem[] = [
-        ...plays.map(a => ({ label: `Play ${name} from your bin`,
-          go: () => { binView = null; act(a); render(); } })),
-        // [08b] same rule as the hand: never on the revealing click
-        ...(proph.length ? [{ label: prophesyLabel(name), confirm: actionNeedsMenu(proph[0]!),
-          go: () => { binView = null; act(proph[0]!); render(); } }] : []),
-        ...modMenuItems(p, 'bin', i, name, mods, { close: () => { binView = null; } }),
-      ];
-      offer(items, e);
-    } else {
-      if (mods.length) binView = null;   // close the bin dialog so the host pick is visible
-      startModding(p, 'bin', i, mods, e);
-    }
+    handleBinClick(Number(t.dataset['p']) as Seat, Number(t.dataset['i']), e);
   }
   if (kind === 'cache') {
     handleCacheClick(Number(t.dataset['p']) as Seat, Number(t.dataset['i']), e);
@@ -5614,6 +5667,38 @@ function discardMeLabel(name: string): string {
     if (dm) cost = ` for [${dm.cost ? `${dm.mana}${dm.cost}` : MANA_WORDS[dm.mana] ?? dm.mana}]`;
   } catch { /* not a registry card */ }
   return `Discard ${name}${cost} — pay and trash it (fires its own trashed trigger)`;
+}
+
+/** Clicking a bin card — from the DIALOG's `data-act="bin"` entry or, since
+ * CT-82(b)/R205, from the region panel's `data-btn="binplay"` thumb. One
+ * handler for both so the two surfaces can never come to play different cards,
+ * and so a bin card that needs a menu still gets the same menu either way.
+ * (`binView = null` inside the menu items is a no-op when the dialog was never
+ * open, which is exactly what the panel route wants.) */
+function handleBinClick(p: Seat, i: number, e: MouseEvent): void {
+  const legal = legalFor(p);
+  // R42: Angel of Anguish prints "I can be prophesied from your bin" — the
+  // bin is a prophesy source too, so a bin card can offer both.
+  const proph = legal.filter(a => a.type === 'prophesy' && a.from === 'bin' && a.index === i);
+  const mods = legal.filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'bin' && a.index === i);
+  // R96/R123: playing a card straight out of the bin (Abyssal Evocation's
+  // grant, or the card's own line — Trench Stalker)
+  const plays = legal.filter(a => a.type === 'playFromBin' && a.binIndex === i);
+  if (plays.length || proph.length) {
+    const name = h.state.players[p]!.bin[i] ?? '?';
+    const items: MenuItem[] = [
+      ...plays.map(a => ({ label: `Play ${name} from your bin`,
+        go: () => { binView = null; act(a); render(); } })),
+      // [08b] same rule as the hand: never on the revealing click
+      ...(proph.length ? [{ label: prophesyLabel(name), confirm: actionNeedsMenu(proph[0]!),
+        go: () => { binView = null; act(proph[0]!); render(); } }] : []),
+      ...modMenuItems(p, 'bin', i, name, mods, { close: () => { binView = null; } }),
+    ];
+    offer(items, e);
+  } else {
+    if (mods.length) binView = null;   // close the bin dialog so the host pick is visible
+    startModding(p, 'bin', i, mods, e);
+  }
 }
 
 /** R41/R42/R45: clicking a cached card — play it (free via a fulfilled

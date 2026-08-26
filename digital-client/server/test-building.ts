@@ -10,11 +10,8 @@
  * about it — hence this. Spawns the real server on a random port and drives
  * two sockets, same harness style as test-clock.ts.
  */
-import { spawn } from 'node:child_process';
 import { WebSocket } from 'ws';
-import { freePort, mintRoom } from './test-util.ts';
-
-const PORT = await freePort();
+import { mintRoom, spawnServer } from './test-util.ts';
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';
@@ -50,13 +47,18 @@ class Client {
   close(): void { this.ws.close(); }
 }
 
-const srv = spawn('node', [new URL('main.ts', import.meta.url).pathname], {
-  env: { ...process.env, PORT: String(PORT) }, stdio: ['ignore', 'pipe', 'pipe'],
-});
-srv.stdout.on('data', () => { /* quiet */ });
+/* R204/CT-85: this file was the one the flake was reported against, and it had
+ * TWO reasons to be. It took a port from the old freePort() — which released
+ * the port before the child bound it — and then, instead of waiting for the
+ * server to say it was listening, it slept 1200ms and started making requests.
+ * Both are the same mistake: a number that is true on an idle box. Under four
+ * concurrent suites the boot is slower and the port may already be gone, and
+ * the symptom is the ECONNREFUSED in the report. spawnServer() waits for the
+ * server's own ready line and reads the port out of it. */
+const srv = await spawnServer();
+const PORT = srv.port;
 
 try {
-  await sleep(1200);
   ROOM = await mintRoom(PORT);
   console.log(`[live formation relay on :${PORT}, room ${ROOM}]`);
 
@@ -127,6 +129,6 @@ try {
   a2.close(); a4.close(); b.close();
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {
-  srv.kill();
+  await srv.stop();
 }
 process.exit(failures ? 1 : 0);

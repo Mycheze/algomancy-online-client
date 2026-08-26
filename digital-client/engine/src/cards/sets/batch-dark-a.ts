@@ -253,6 +253,13 @@ const cullSacrifices: EffectDef = {
       }) as EntityId;
       picks.push(id);
     }
+    // R209/CT-74: every present seat may be here with NOTHING to sacrifice —
+    // an attack whose columns all traded off leaves exactly that board. The
+    // loop is then correct and the silence is not (Ghord's precedent).
+    if (!picks.length) {
+      g.ev('info', 'Cull: nobody here has a unit to sacrifice.');
+      return;
+    }
     for (const id of picks) {
       const u = g.entity(id);
       if (u) g.destroy(u, 'is sacrificed');

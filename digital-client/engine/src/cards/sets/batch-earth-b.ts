@@ -523,7 +523,13 @@ card('Return to Nature', {
             { seat: owner, cards });
         }
         const n = u.mods.length;
-        for (const id of u.mods) delete g.s.entities[id];
+        // R208 / CT-86: through `E.eraseMod`, the choke point. This site is the
+        // one that already got the R65 announcement RIGHT (the 'erased' event
+        // above), which is why it is the template the primitive was written
+        // against — but it hand-rolled the delete like the other four. Nothing
+        // it emits changed. `u.mods = []` stays as the belt for an id whose
+        // entity was already gone, which eraseMod declines to touch.
+        for (const m of mods) g.eraseMod(m);
         g.ev('info', `Return to Nature erases ${n} mod(s) from ${u.card}.`);
         u.mods = [];
         touched++;

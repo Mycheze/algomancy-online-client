@@ -26,7 +26,7 @@ import { E, Suspended } from '../src/engine.ts';
 import { apply, legalActions } from '../src/apply.ts';
 import type { Entity, EntityId, Seat } from '../src/types.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, handIdx, notOffered, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, handIdx, logFor, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -1227,8 +1227,17 @@ test('Eldritch Dreamtender: the sacrifice is paid on the way to the stack, '
   // the log order is the proof: the payment lands between the trigger being
   // QUEUED and the trigger RESOLVING — i.e. in the cast window, which is where
   // a bracketed cost belongs (R64/R67)
-  const iPay = h.log.findIndex(l => l.includes('sacrifices Eldritch Dreamtender'));
-  const iRes = h.log.findIndex(l => l.includes('Eldritch Dreamtender: sacrifice me')
+  //
+  // Read through `logFor(h, A)` and not `h.log` (R203 / CT-84). Both lines are
+  // PUBLIC and this test is about ordering, not secrecy — but the Dreamtender
+  // also prints "look at that player's hand", and 174-secrecy-is-seat-aware
+  // will not let an assertion name a private-look card while reading the
+  // seatless firehose. The rule is deliberately blunt there: `logFor` costs
+  // nothing, says which seat, and an exemption would have to be argued in
+  // prose (CT-83). Ordering is preserved by redaction, which only ever drops
+  // or rewrites lines — it never reorders them.
+  const iPay = logFor(h, A).findIndex(l => l.includes('sacrifices Eldritch Dreamtender'));
+  const iRes = logFor(h, A).findIndex(l => l.includes('Eldritch Dreamtender: sacrifice me')
     && l.startsWith('Resolving '));
   assert.ok(iPay !== -1, 'the sacrifice is logged as a cost payment');
   assert.ok(iRes !== -1 && iPay < iRes, 'and it is paid BEFORE the effect resolves');

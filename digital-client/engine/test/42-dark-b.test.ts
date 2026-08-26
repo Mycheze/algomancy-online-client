@@ -19,7 +19,7 @@ import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
-  effStats, ent, give, giveResources, handIdx, ownAttrs, pass, skipHasteStep, spawn,
+  effStats, ent, give, giveResources, handIdx, logFor, ownAttrs, pass, skipHasteStep, spawn,
   toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 import type { Action, DecisionOption, EngineEvent, Entity, EntityId, Seat } from '../src/types.ts';
@@ -1328,7 +1328,17 @@ test('Thought Extraction: strip a card from a hand you can see, at the cost of a
   assert.ok(h.state.players[D]!.bin.includes('Good Whale'), 'into their bin');
   assert.equal(trashes(h).filter(t => t.data!['seat'] === D).length, 1, 'which trashes it (R40)');
   assert.equal(rotOf(h, A), 1, 'and you take the rot');
-  assert.ok(h.log.some(l => l.includes('Thought Extraction reveals')), 'the hand was revealed');
+  // R203 / CT-84: this line used to read `h.log`, and `h.log` is the seatless
+  // hotseat firehose — so it said nothing about WHO was shown the hand and
+  // passed identically before and after R197b stopped the card publishing the
+  // whole hand to the table. `logFor(h, seat)` is the log server/view.ts
+  // actually serves that seat, so the claim is now falsifiable in both
+  // directions: drop the `{ privateTo: ctx.controller }` in batch-dark-b and
+  // the second assertion reddens here, in the card's own test file.
+  assert.ok(logFor(h, A).some(l => l.includes('Thought Extraction reveals')),
+    'the LOOKER was shown the hand — a look still tells the looker');
+  assert.deepEqual(logFor(h, D).filter(l => l.includes('Thought Extraction reveals')), [],
+    'and nobody else was: "look at" is a private look, not a reveal to the table (R197b)');
 });
 
 // ── Umbral Decay ──────────────────────────────────────────────────────

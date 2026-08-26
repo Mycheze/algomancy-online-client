@@ -240,6 +240,45 @@ export interface DrillResult {
    * is recorded and not merely the beat.
    */
   inBattleBeats: string[];
+  /**
+   * R211 / CARD-TODO #87: the run ENDED with an activation still unresolved,
+   * so its evidence window was never closed and this run can say NOTHING about
+   * what that activation delivered.
+   *
+   * This is the THIRD STATE, and it exists because the previous code had only
+   * two. When the loop ran out (`maxSteps`) or the game ended mid-activation,
+   * the tail below credited EVERY event from the activation to wherever the
+   * drill stopped — the rest of the game — to `activateTypes`. Anything any
+   * card did in that span became this card's evidence. Slag Spewer read as
+   * OBSERVED on exactly that accident: the window swallowed an `erased` its
+   * HOST's later destruction produced (CT-86). R199 made press runs end
+   * cleanly, which closed the window and the card went dark — that is how the
+   * whole EVENTLESS category was found.
+   *
+   * "Rarely reached" is not "cannot fire", so the window is now bounded and an
+   * unclosable one is recorded here instead of guessed at. An honest "could
+   * not tell" is worth more than a credited event that belongs to another card.
+   */
+  actInconclusive: boolean;
+  /** why the run could not close the window — which of the two loop exits it
+   *  took. Recorded separately because they mean different things: `maxSteps`
+   *  says the drill is too impatient for this card, `gameover` says the board
+   *  killed somebody before the stack drained, and only the first is fixable
+   *  by turning a knob. */
+  actInconclusiveReason?: 'maxSteps' | 'gameover';
+  /** the event types the OLD unbounded tail WOULD have credited to this card,
+   *  kept but never scored. This is the measurement CT-87 part 1 asks for and
+   *  it is also the positive control's read-out: a test can point at a run
+   *  where this is non-empty, `activateTypes` does not contain it, and the
+   *  claim is therefore refused rather than credited. Do not let anything
+   *  score off this array — it is the borrowed evidence, by construction. */
+  actInconclusiveTail: string[];
+  /** the same for the state delta the old tail would have credited */
+  actInconclusiveTailChanged: string[];
+  /** the LOG LINES over the same span. Types alone cannot show WHOSE event a
+   *  borrowed event was; the message can ("Player 1 plays <some other card>"),
+   *  and the CT-87 positive control quotes these verbatim. */
+  actInconclusiveTailEvents: string[];
 }
 
 /**
@@ -961,6 +1000,15 @@ export function drillCard(
      *  per quiescent window, so the events its "When …" clauses listen for
      *  actually happen. */
     press?: boolean;
+    /** R211 / CARD-TODO #87 POSITIVE CONTROL ONLY. Reinstates the pre-R211
+     *  unbounded "ran out of steps" tail, which credited every event from an
+     *  unresolved activation to the end of the run as this card's evidence.
+     *  It exists so `181-inconclusive-activation-window.test.ts` can drive one
+     *  run BOTH ways and show, verbatim, that the fix refuses an event the old
+     *  code credited — per docs/13-assessment.md §7.4, an observation channel
+     *  with no control proving it can see is worth nothing. Nothing else in
+     *  the repository may pass this, and `181` asserts that. */
+    unboundedActTailForControl?: boolean;
   } = {},
 ): DrillResult {
   // press mode has to outlast two whole battles before its destructive beats
@@ -975,6 +1023,8 @@ export function drillCard(
     activated: [], activateTypes: [], activateChanged: [],
     attached: false, attachChanged: [], ownTypes: [], ownChanged: [], fired: [],
     staticBit: false, inBattleBeats: [],
+    actInconclusive: false, actInconclusiveTail: [], actInconclusiveTailChanged: [],
+    actInconclusiveTailEvents: [],
   };
   let { state } = createGame(seed);
   const seat: Seat = 0;
@@ -1002,7 +1052,14 @@ export function drillCard(
    *  the first cut of this ran the window to game over, so every ability's
    *  evidence included the next three turns of combat damage, draws and
    *  spawns, and any claim of any kind read as delivered. */
-  let pendingAct: { snap: ReturnType<typeof snapshot>; marker: number } | null = null;
+  let pendingAct: {
+    snap: ReturnType<typeof snapshot>;
+    marker: number;
+    /** R211: the same cut into `res.events`. `types` and `events` are NOT
+     *  parallel — a typed event with no `msg` pushes only the type — so the
+     *  message span has to be marked separately. */
+    evMarker: number;
+  } | null = null;
   /** windows spent since the play with nothing left to activate — the stop
    *  condition for activate mode, so a card with no ability does not walk the
    *  whole 600 steps */
@@ -1114,8 +1171,13 @@ export function drillCard(
     return s !== undefined && s.region === state.battle.region;
   };
 
+  /** R211 / CT-87: WHICH exit the loop took, so an unclosed activation window
+   *  can say why it could not be closed. Defaults to `maxSteps` because that
+   *  is the exit taken by falling out of the `for`, and the two `break`s below
+   *  overwrite it. */
+  let loopExit: 'maxSteps' | 'gameover' | 'quiescent' = 'maxSteps';
   for (let step = 0; step < maxSteps; step++) {
-    if (state.phase === 'gameover') break;
+    if (state.phase === 'gameover') { loopExit = 'gameover'; break; }
     // ⚠ THE EVIDENCE WINDOW NEVER SPANS TWO WINDOWS OF THE GAME. It survives
     // an action boundary only while a resolution is genuinely SUSPENDED
     // waiting for an answer. Without this line the fixture beats — which
@@ -1238,7 +1300,9 @@ export function drillCard(
       if (act && act.type === 'activateAbility') {
         usedAbilities.add(`${act.entityId}#${act.abilityIndex}#${JSON.stringify(act.via ?? null)}`);
         res.activated.push(`${act.abilityIndex}${act.via ? `/${JSON.stringify(act.via)}` : ''}`);
-        pendingAct = { snap: snapshot(state, seat), marker: res.types.length };
+        pendingAct = {
+          snap: snapshot(state, seat), marker: res.types.length, evMarker: res.events.length,
+        };
         chosen = act;
         idleWindows = 0;
       } else if (res.played) {
@@ -1448,7 +1512,7 @@ export function drillCard(
         stillPending(x => x.phase !== 'inBattle') ? FIXTURE_PATIENCE
           : stillPending(x => x.phase === 'inBattle') ? BATTLE_PATIENCE : SETTLE_PATIENCE);
       if (!busy && !pressing) {
-        res.resolved = true; res.outcome = 'resolved'; break;
+        res.resolved = true; res.outcome = 'resolved'; loopExit = 'quiescent'; break;
       }
     }
   }
@@ -1465,9 +1529,46 @@ export function drillCard(
   res.effectTypes = res.types.slice();
   const after = snapshot(state, seat);
   res.changed = diff(before, after, card, state);
-  if (pendingAct) {   // the drill ran out of steps mid-activation
-    for (const t of res.types.slice(pendingAct.marker)) res.activateTypes.push(t);
-    for (const c of diff(pendingAct.snap, after)) res.activateChanged.push(c);
+  if (pendingAct) {
+    // ── R211 / CARD-TODO #87: THE WINDOW THAT NEVER CLOSED ────────────────
+    //
+    // The loop ended with an activation still on the stack. The window that
+    // opened at `activateAbility` (line ~1241) is closed in-loop only by the
+    // "an activation has resolved" branch; getting here means that branch
+    // never ran, so the drill genuinely does not know what this activation
+    // delivered — or whether it delivered at all.
+    //
+    // ⚠ WHAT USED TO HAPPEN HERE, and why it is worth reading twice: these two
+    // lines used to be the same two lines the in-loop branch runs, against
+    // `after` — i.e. it credited `activateTypes` with EVERY event from the
+    // activation to wherever the drill stopped, which in `maxSteps` mode is
+    // the rest of the game. Any event any card produced in that span became
+    // this card's evidence. It had a live victim: Slag Spewer read as OBSERVED
+    // because the span swallowed an `erased` emitted when its HOST was
+    // destroyed several beats later (CT-86). R199 made press runs end cleanly,
+    // which shut the window and the card went dark — that is how the EVENTLESS
+    // category in 84-card-semantics was discovered at all.
+    //
+    // R199 reported it rather than changing it, correctly: a late unverified
+    // edit to the drill would have invalidated that round's measurements.
+    // CT-87 is the follow-through. The tail is now a REFUSAL: the events are
+    // recorded so the refusal can be measured and controlled for, and nothing
+    // scores off them. An honest "could not tell" is worth more than a
+    // credited event that belongs to another card.
+    res.actInconclusive = true;
+    res.actInconclusiveReason = loopExit === 'gameover' ? 'gameover' : 'maxSteps';
+    for (const t of res.types.slice(pendingAct.marker)) res.actInconclusiveTail.push(t);
+    for (const c of diff(pendingAct.snap, after)) res.actInconclusiveTailChanged.push(c);
+    for (const m of res.events.slice(pendingAct.evMarker)) res.actInconclusiveTailEvents.push(m);
+    // …unless the caller has explicitly asked for the OLD, unbounded behaviour.
+    // The only caller that may is the CT-87 positive control in
+    // 181-inconclusive-activation-window.test.ts, which needs to show the same
+    // run scoring the borrowed event before the fix and refusing it after. If
+    // you are reading this from anywhere else, you are re-opening the bug.
+    if (opts.unboundedActTailForControl) {
+      for (const t of res.actInconclusiveTail) res.activateTypes.push(t);
+      for (const c of res.actInconclusiveTailChanged) res.activateChanged.push(c);
+    }
   }
   for (const [id, e] of Object.entries(state.entities)) {
     if (!before.entities.has(id)) res.newEntities.push(e.card);

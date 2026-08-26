@@ -291,6 +291,12 @@ card('Death Greeter', {
             `Death Greeter: sacrifice a unit with cost ${cost} or less`);
           if (id !== null) picks.push(id);   // (If able.) — empty pool skips the seat
         }
+        // R209/CT-74: "if able" can be true of NOBODY — every present seat can
+        // be out of units cheap enough, or out of units entirely.
+        if (!picks.length) {
+          g.ev('info', `Death Greeter: nobody here has a unit costing ${cost} or less to sacrifice.`);
+          return;
+        }
         for (const id of picks) {
           const u = g.entity(id);
           if (u) g.destroy(u, 'is sacrificed');
@@ -370,6 +376,13 @@ card('Torrential Reclamation', {
         }
       }
       // commit
+      // R209/CT-74: the recall and the life loss below announce themselves, so
+      // 65-effect-conformance can never see this branch (it convicts only a
+      // WHOLLY silent run — CT-81). The sacrifice clause still promised
+      // something and still has to say when it delivers nothing.
+      if (!sacs.length) {
+        g.ev('info', 'Torrential Reclamation: nobody here has a unit to sacrifice.');
+      }
       for (const u of recalled) g.recall(u);
       for (const id of sacs) {
         const u = g.entity(id);

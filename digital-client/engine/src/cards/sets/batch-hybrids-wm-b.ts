@@ -513,11 +513,14 @@ card('Ominous Growth', {
         for (const m of Object.values(g.s.entities)) {
           if (m.kind !== 'mod' || !m.token || m.region !== ctx.region) continue;
           const host = m.modOf !== undefined ? g.entity(m.modOf) : undefined;
-          if (host) {
-            const k = host.mods.indexOf(m.id);
-            if (k !== -1) host.mods.splice(k, 1);
-          }
-          delete g.s.entities[m.id];
+          // R208 / CT-86: through `E.eraseMod` — the unlink-and-delete pair
+          // this used to hand-roll is a primitive now, and this is one of five
+          // sites that had its own copy. ⚠ The 'info' line below is unchanged
+          // on purpose: whether an erased mod reaches the R65 public pile is
+          // round-27's Q3, unanswered. (These are TOKEN mods, so R69 may
+          // exempt them from that question entirely — a token has no card of
+          // its own to file. Named here so it is not re-derived.)
+          g.eraseMod(m);
           g.ev('info',
             `${m.card} is deleted off ${host?.card ?? 'its host'} (Ominous Growth).`,
             host ? { unit: host.id } : {});

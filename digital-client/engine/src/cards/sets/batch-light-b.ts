@@ -386,6 +386,15 @@ card('Insatiable Want', {
         });
         picks.push(chosen as EntityId);
       }
+      // R209/CT-74: with no even-life player present, or with every even-life
+      // player out of units here, the sacrifice clause delivers nothing. The
+      // draw clause below may still speak, so this has to be said for its own
+      // clause rather than for the whole effect.
+      if (!picks.length) {
+        g.ev('info', even.length
+          ? 'Insatiable Want: nobody with an even life total has a unit here to sacrifice.'
+          : 'Insatiable Want: nobody here has an even life total — nothing is sacrificed.');
+      }
       for (const id of picks) {
         const u = g.entity(id);
         if (u) g.destroy(u, 'is sacrificed');

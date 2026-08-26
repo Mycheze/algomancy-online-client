@@ -1,14 +1,9 @@
 /* Trio selection over the wire (run: node test-trio.ts): a join with
  * els creates the room with that trio; persistence records it; a joiner
  * without els lands in the same trio; bad trios sanitize to the default. */
-import { spawn } from 'node:child_process';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { readFileSync, rmSync } from 'node:fs';
-import { freePort, gameFile, mintRoom } from './test-util.ts';
+import { gameFile, mintRoom, spawnServer } from './test-util.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = await freePort();
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';
@@ -32,15 +27,11 @@ function joinRoom(room: string, seat: number, els?: string[]): Promise<any> {
   });
 }
 
-const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
-  env: { ...process.env, PORT: String(PORT) },
-  stdio: ['ignore', 'pipe', 'inherit'],
-});
-await new Promise<void>((res, rej) => {
-  server.stdout.on('data', (d: Buffer) => { if (String(d).includes('Algomancy server')) res(); });
-  server.on('exit', () => rej(new Error('server died')));
-  setTimeout(() => rej(new Error('startup timeout')), 10000);
-});
+// R204/CT-85: the server picks its own port and tells us which — see
+// test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
+// port unheld for as long as node took to boot.
+const server = await spawnServer();
+const PORT = server.port;
 ROOM = await mintRoom(PORT);
 ROOM2 = await mintRoom(PORT);
 
@@ -60,7 +51,7 @@ try {
   a.ws.close(); b.ws.close(); c.ws.close();
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {
-  server.kill();
+  await server.stop();
   rmSync(gameFile(ROOM), { force: true });
   rmSync(gameFile(ROOM2), { force: true });
 }

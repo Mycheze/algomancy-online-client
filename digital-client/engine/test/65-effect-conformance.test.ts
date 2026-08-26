@@ -16,9 +16,27 @@
  * arriving at a pre-existing hole on a schedule nobody chose.
  *
  * So the drive is now a DETERMINISTIC PASS OVER EVERY EFFECT the registry
- * holds: each `EffectDef` is resolved in two fixed board states with a context
- * built from the engine's own machinery. What this file reaches is now a
- * function of THIS FILE and the effect under test, and of nothing else.
+ * holds: each `EffectDef` is resolved in three fixed board states with a
+ * context built from the engine's own machinery. What this file reaches is now
+ * a function of THIS FILE and the effect under test, and of nothing else.
+ *
+ * ── THE THIRD BOARD, AND THE CLASS ITS ABSENCE HID (CT-74 / R209, 2026-08-26)
+ *
+ * The pass shipped with two boards and reported the pool clean, and the reason
+ * it could was a property of the RIG that nobody had written down: **both
+ * boards give every present seat a unit.** `furnish` spawns four bodies, a
+ * token and a Wraith per side, and nothing removes them. So the branch where a
+ * "one pick per present seat, then commit the list" effect finds NOTHING to
+ * collect was unreachable here — not rare, unreachable — and eight effects sat
+ * in the pool resolving into total silence with this file green above them.
+ *
+ * `barren` is that board: an attack is declared, so both seats are present in
+ * the region, and then every unit in it has gone. It convicted six labels on
+ * its first run, one of which (`spell:Perish`) was on no ticket and in no
+ * report. The lesson generalises past this ticket: **what a deterministic rig
+ * cannot reach is decided by the rig, and is invisible until someone asks what
+ * the boards have in common.** docs/13-assessment.md §7.4 asks for exactly that
+ * audit on a schedule.
  *
  * MEASURED, 2026-08-25, on the same pool (431 EffectDefs over 414 cards):
  *
@@ -274,7 +292,49 @@ function battleBoard(): Board {
   return { name: 'battle', state: h.state, A: att, D: (1 - att) as Seat, region: h.state.battle!.region };
 }
 
-const BOARDS: Board[] = [homeBoard(), battleBoard()];
+/**
+ * 'barren' — an attack was declared, so BOTH seats are present in the battle
+ * region, and then every unit in it left. CT-74 / R209.
+ *
+ * ⚠ WHY THIS BOARD EXISTS, AND WHY ITS ABSENCE HID A WHOLE BRANCH CLASS.
+ * The two boards above share a property nobody had written down: **every seat
+ * they list as present also has a unit there.** `furnish` spawns four bodies,
+ * a token and a Wraith per side and nothing ever removes them. So an effect
+ * shaped "one pick per present seat, collect the picks, then commit the list"
+ * — Cull, Upheaval, Maw of Damnation, Death Greeter, Grim Bargain, Insatiable
+ * Want, Recall, Seabed Shellcaster, Torrential Reclamation — never once saw
+ * its collection come back EMPTY on either board, so the branch where it
+ * commits nothing and says nothing was unreachable BY THE RIG, and this file
+ * reported the whole family clean. CT-81 filed the same blindness from the
+ * other end (`SILENT_KNOWN` cannot see a half-silent effect at all); CT-74 is
+ * the half that is fixable here, and this board is the fix.
+ *
+ * It is a real board, not a contrived one: every attacker traded off in the
+ * combat step, or was recalled, leaves exactly this. `presentSeats` is set at
+ * declaration and is not recomputed when the last body leaves — which is
+ * precisely why "each player" clauses still enumerate two seats over an empty
+ * region in a real game.
+ *
+ * The board self-limits, which is what makes it affordable: an effect that
+ * DECLARES targets cannot be furnished here (nothing to point at), so it comes
+ * back `fair: false` and is never convicted on it. What it convicts is the
+ * family that takes no targets and enumerates seats — the family this is for.
+ */
+function barrenBoard(): Board {
+  const b = battleBoard();
+  const state = structuredClone(b.state) as GameState;
+  // mods live INLINE on their host (`Entity.mods`), so dropping the hosts
+  // drops the mods with them — there is no orphan left behind.
+  for (const [id, e] of Object.entries(state.entities)) {
+    if (e.region === b.region) delete state.entities[id as unknown as EntityId];
+  }
+  // the grids referenced the units that are now gone; an attack whose columns
+  // have all emptied is `columns: []`, not columns full of dangling ids.
+  if (state.battle) { state.battle.columns = []; state.battle.blocks = {}; }
+  return { name: 'barren', state, A: b.A, D: b.D, region: b.region };
+}
+
+const BOARDS: Board[] = [homeBoard(), battleBoard(), barrenBoard()];
 
 // ── the rig ───────────────────────────────────────────────────────────
 
@@ -320,6 +380,9 @@ interface Run {
 }
 
 const runs: Run[] = [];
+/** runs the rig could not furnish AND that then threw — see the catch below.
+ * Reported, never asserted on: a game fizzles these before `run` is called. */
+const unfairThrows: string[] = [];
 
 function driveOne(board: Board, s: Slot): void {
   const g = new E(structuredClone(board.state) as GameState);
@@ -472,7 +535,23 @@ function driveOne(board: Board, s: Slot): void {
     // a Suspended is not a completed run and never was — the engine replays a
     // suspended run from the top once the decision is answered. Anything else
     // rethrows: a card that throws is a defect this file must not swallow.
-    if (!(err instanceof Suspended)) throw err;
+    //
+    // ⚠ ONE NARROW EXCEPTION, ADDED WITH THE 'barren' BOARD (CT-74 / R209).
+    // A run the rig could NOT furnish is being asked a question a game never
+    // asks, and the silence check already refuses to convict on it (`fair`).
+    // A THROW on such a run is the same artifact wearing a louder hat: on the
+    // barren board `Luminous Arc` — `g.dealEffectDamage(ctx, ctx.targets[0]!, 6)`
+    // — is handed an empty `targets` and dereferences `undefined`, which in a
+    // real game cannot happen because R86 fizzles an item that has lost every
+    // target it declared BEFORE `run` is ever called (E.resolveItem; see
+    // engine.ts's collectSubjects comment). So an unfair throw is recorded and
+    // printed, never rethrown, and a FAIR run that throws still takes the file
+    // down exactly as before. Widening this to fair runs would be how a real
+    // card defect goes quiet.
+    if (!(err instanceof Suspended)) {
+      if (fair) throw err;
+      unfairThrows.push(`${s.label} @${board.name}: ${(err as Error).message} [${why}]`);
+    }
   } finally {
     live = false; frame = null;
   }
@@ -486,6 +565,10 @@ test('effect conformance: drive every effect in the registry', () => {
   for (const board of BOARDS) for (const s of slots) driveOne(board, s);
   assert.equal(runs.length, slots.length * BOARDS.length,
     'every effect must be driven in every board state');
+  if (unfairThrows.length) {
+    console.log(`    R209: ${unfairThrows.length} unfurnishable run(s) threw and were NOT `
+      + `convicted (a game fizzles these before \`run\` — R86):\n      ${unfairThrows.join('\n      ')}`);
+  }
 });
 
 /** the verdict per slot: judged on its FAIR runs where it has any, and on all
@@ -607,7 +690,34 @@ test('tokens are the only thing declared: no deck card is listed as created', ()
  * ⚠ THIS LIST MUST ONLY SHRINK. A new silent branch is a defect to fix in the
  * card, not an entry to add here.
  */
-const SILENT_KNOWN: Record<string, string> = {
+interface KnownSilence {
+  /** EVERY board this effect is silent on, exhaustively. Not documentation:
+   * the assertion below is an EQUALITY against what the drive saw, so an entry
+   * that starts being silent somewhere NEW fails even though it is still
+   * silent where it always was. See the note above the interface. */
+  boards: string[];
+  why: string;
+}
+
+/**
+ * ⚠ R209/CT-74 — WHY THIS IS A RECORD AND NOT A STRING ANY MORE.
+ *
+ * The entry used to be `label -> reason`, and the accuracy test below checked
+ * the reason ONLY for `length > 40`. That makes the reason unfalsifiable: an
+ * entry could keep passing forever while its stated cause stopped being the
+ * cause, because "still silent" was the whole test and an effect that went
+ * silent for a completely different reason is still silent. CT-74 named this
+ * as a weakness of the machinery; CT-70 was closed against a verify line with
+ * the same shape ("SILENT_KNOWN is empty for the R25 family" — satisfiable
+ * while members remain), and CT-81(b) then produced the members.
+ *
+ * `boards` is the falsifiable half. WHICH boards an effect is silent on is a
+ * fingerprint of WHY: `Trench Stalker` is silent on all three because it is
+ * `run: () => {}`, whereas an empty-collection branch is silent on 'barren'
+ * and nowhere else. Assert the set by equality and a change of cause reddens
+ * the file even when "is it still silent?" would have said yes.
+ */
+const SILENT_KNOWN: Record<string, KnownSilence> = {
   // ── R25's "each opponent" over a region that holds nobody else: GONE.
   //
   // Thirteen labels (nine EffectDefs — four of them reached twice, once as an
@@ -625,11 +735,17 @@ const SILENT_KNOWN: Record<string, string> = {
   // count now says so instead of handing the opponent nothing in silence.
 
   // ── not a gap: an effect that exists only to carry a cost.
-  'spell:Trench Stalker':
+  'spell:Trench Stalker': {
+    // silent EVERYWHERE, on every board, because there is no code to run — the
+    // fingerprint of a `run: () => {}` and of nothing else. An entry silent on
+    // only some boards is silent for a board-dependent reason instead.
+    boards: ['home', 'battle', 'barren'],
+    why:
     "R123 — `run: () => {}` BY CONSTRUCTION. The spellEffect exists solely to hang the "
     + '"[Discard two cards]" cast cost on; a `kind: \'unit\'` StackItem resolves by spawning '
     + 'and `resolveItem` returns before parts ever run, so this run is unreachable in a game. '
     + "Already declared in 71-card-ledger's NOT_A_GAP for the same reason.",
+  },
 };
 
 test('no effect resolves into silence — every completed run says something', () => {
@@ -652,11 +768,23 @@ test('no effect resolves into silence — every completed run says something', (
 test('the known-silent list is still accurate — tick an entry off when it is fixed', () => {
   const v = verdicts();
   const stale: string[] = [];
-  for (const [label, why] of Object.entries(SILENT_KNOWN)) {
-    assert.ok(why.length > 40, `${label}: a known-silent entry needs a reason, not a shrug`);
+  for (const [label, entry] of Object.entries(SILENT_KNOWN)) {
+    assert.ok(entry.why.length > 40, `${label}: a known-silent entry needs a reason, not a shrug`);
+    assert.ok(entry.boards.length > 0, `${label}: name the boards, or the entry asserts nothing`);
     const seen = v.get(label);
     if (!seen) { stale.push(`${label}: no such effect any more — delete the entry`); continue; }
-    if (!seen.silent) stale.push(`${label} no longer resolves silently — delete its SILENT_KNOWN entry`);
+    if (!seen.silent) { stale.push(`${label} no longer resolves silently — delete its SILENT_KNOWN entry`); continue; }
+    // R209/CT-74: the half that makes the REASON falsifiable. Silence on a set
+    // of boards the entry does not claim means the effect is silent for a
+    // cause the entry does not describe — a NEW defect wearing an old
+    // exemption, which the previous `length > 40` check could never see.
+    const got = [...new Set(seen.where)].sort();
+    const want = [...new Set(entry.boards)].sort();
+    if (got.join() !== want.join()) {
+      stale.push(`${label} is silent on [${got.join(', ')}] but its entry claims [${want.join(', ')}] `
+        + '— the stated cause no longer describes the silence. Do NOT edit `boards` to match: '
+        + `work out what changed. The entry says:\n      ${entry.why}`);
+    }
   }
   assert.deepEqual(stale, [],
     `known-silent entries that have outlived their cause:\n  ${stale.join('\n  ')}`);

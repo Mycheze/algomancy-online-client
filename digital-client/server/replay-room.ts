@@ -99,6 +99,12 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import type { Action, CardName, Element, EngineEvent, GameMode, Seat } from '../engine/src/types.ts';
 import { apply, checkDeck, createGame, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+// R216 — a scenario room's board is part of its DEAL, not of its log. This
+// file is the second of the four deal sites scenarios.ts's header lists, and
+// it is the one that matters most: without this import the R200 divergence
+// diff would report every scenario game as diverging from action 0, which is
+// the exact failure mode R200 exists to remove.
+import { dealScenario } from './scenarios.ts';
 import { UNKNOWN_VERSION, isEngineVersion, repoDir } from './engine-version.ts';
 import { digest, probe, type ProbeRefusal } from './replay-probe.ts';
 
@@ -130,6 +136,9 @@ export interface RoomFile {
   /** R200: which engine recorded which stretch of this log. Absent in every
    * file written before R200 — see versionsOf(). */
   versions?: VersionStamp[];
+  /** R216: the scenario this room was dealt with. Absent on every ordinary
+   * game; present means the deal was not a plain `createGame`. */
+  scenario?: string;
 }
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -598,7 +607,7 @@ export async function delta(file: string, raw: RoomFile, sha: string): Promise<D
 function runOnce(raw: RoomFile): Pick<Analysis, 'events' | 'state' | 'refusals'> {
   const names = raw.names ?? ['Player 1', 'Player 2'];
   const mode = raw.mode ?? 'shared';
-  let { state, events } = createGame(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode));
+  let { state, events } = dealScenario(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode), raw.scenario);
   const all = [...events];
   const refusals: Refusal[] = [];
   raw.actions.forEach((a, i) => {

@@ -606,8 +606,47 @@ card('Tithe Enforcer', {});
 //
 // The Origon pattern: at play time the card is not on the stack yet
 // (commitItem fires the event before pushItem), so the item is found at
-// RESOLUTION — the bottom-most un-negated played-kind item matching the
-// event's card and controller, with this trigger sitting above it.
+// RESOLUTION, with this trigger sitting above it.
+//
+// R207 / CT-79 — BY ID, and the engine had to be taught to say which id.
+// "Negate THAT EFFECT" is the pronoun R164/R166 settled for Origon and Hexbane
+// Shiitake, and R178/R191 finished those two by matching on the id the play
+// event carries. That fix was IMPOSSIBLE here until now: `spellPlayed` carries
+// `item`, `cardPlayed` did not, and this card must hear `cardPlayed` because
+// it must see UNITS as well as spells (R129, below). So the id went onto
+// `cardPlayed` too (engine.ts, `commitItem`) and this is the fourth and last
+// card in that class — Earthbound Replicator (R178), Origon, Hexbane Shiitake
+// (both R191), and this. The class was closed one card at a time across three
+// tickets (CT-58 → CT-69 → CT-79); the sweep that ends it is exhaustive over
+// every `g.s.stack` access in all 30 set files, and every other one either
+// matches an id off a target ref or sweeps the whole stack.
+//
+// THE THREE DEFECTS IT CLOSES, all of them live:
+//  (a) the scan ran FORWARD from index 0 while `pushItem` appends, so with two
+//      same-card same-seat plays on the stack it negated the OLDER one. (Not
+//      even R166's `.reverse()`, which the other two cards at least had.)
+//  (b) NO `!i.copy` guard at all, so it could negate a COPY where the original
+//      never reached the stack. R164: a copy is NOT played — *"the 1st copy
+//      wasn't 'played'"* — so a card keying off a play must not see one. By id
+//      that is now true for a STRONGER reason than a flag test: `pushSpellCopy`
+//      never routes through `commitItem`, so no play event can ever name a
+//      copy. The guard stays as an ASSERTION of what the id must be, exactly
+//      as R191 kept it on the other two.
+//  (c) the one no ticket named: the OTHER `cardPlayed` emitter, the `asPlay`
+//      spawn (R165 — Wake the Dead, The Bonesculptor), has no stack item at
+//      all. Wake the Dead is a {Battle} spell, so a unit it raises out of a
+//      bin could share a name with an unrelated item standing on the stack and
+//      this card negated THAT. Absent `item` now means "this play put no
+//      effect on the stack" and nothing is negated.
+//
+// ⚠ (c) LEAVES A DIVERGENCE, deliberately: the sacrifice is still paid on a
+// play that has no item to negate, because "sacrifice me. If you do, negate
+// that effect" (R73) makes the cost mandatory and the negate conditional on
+// it, not the other way round. Under R198 that play WOULD be on the stack and
+// the sacrifice would buy something; the `asPlay` path predates R198 and still
+// spawns in place. That is an engine approximation, not a rule, and it is
+// named at `spawnUnit`'s `playEv` rather than papered over with a `when` guard
+// that would quietly rewrite when this card triggers.
 //
 // R129: it hears 'cardPlayed', not 'spellPlayed'. The printed noun is CARD,
 // and "everything is a card, including units" (owner, 2026-08-24) — so a
@@ -635,14 +674,26 @@ card('Void Mandible', {
       run: (g, ctx) => {
         const name = ctx.event?.data?.['card'] as string | undefined;
         const seat = ctx.event?.data?.['seat'] as Seat | undefined;
+        const itemId = ctx.event?.data?.['item'] as number | undefined;
         if (name === undefined || seat === undefined) {
           g.ev('info', 'Void Mandible: the event names no card — nothing is negated.');
           return;
         }
-        // R129: the same membership 'cardPlayed' fires for — the item to
-        // negate is a played CARD, so a {Battle} unit and an Ambush are in it.
+        // R207 (c): the play never built a stack item — an `asPlay` spawn.
+        // There is no effect standing there, so there is nothing to negate;
+        // the old (card, controller) scan would have found somebody else's.
+        if (itemId === undefined) {
+          g.ev('info', `Void Mandible: ${name} was played with no effect on the stack — nothing is negated.`);
+          return;
+        }
+        // R207: BY ID — the item the event NAMES. The rest are assertions
+        // about what that id must be, not a search:
+        //  · R129's membership, the same one 'cardPlayed' fires for, so a
+        //    {Battle} unit and an Ambush are in it and a spell token is not;
+        //  · R164's `!i.copy` — a copy was never played, and by id it is
+        //    unreachable anyway (`pushSpellCopy` bypasses `commitItem`).
         const it = g.s.stack.find(i =>
-          i.card === name && i.controller === seat && CARD_PLAY_KINDS.has(i.kind));
+          i.id === itemId && i.controller === seat && !i.copy && CARD_PLAY_KINDS.has(i.kind));
         if (it) g.negate(it.id);
         else g.ev('info', `Void Mandible: ${name} already left the stack — not negated.`);
       },

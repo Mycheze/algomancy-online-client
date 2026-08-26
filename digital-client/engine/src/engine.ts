@@ -2992,6 +2992,25 @@ export class E {
      *
      * ⚠ NEVER on a token: `token: false` is a fact here, not a default. A
      * created token is not a card (R129) and no caller passes both.
+     *
+     * ⚠ R207 / CT-79 — NO `item` FIELD, AND THAT IS THE FACT IT REPORTS.
+     * `commitItem` puts the played item's id on its `cardPlayed`; here there
+     * is no `StackItem` to name, because this play IS the spawn (R165's
+     * printed "play", not a cast). A listener that wants "the effect that was
+     * just played" must therefore read `data.item === undefined` as "this play
+     * put no effect on the stack" and do nothing to the stack — NOT fall back
+     * to a (card, controller) scan, which is exactly the bug CT-79 closed:
+     * Wake the Dead is a {Battle} spell, so a unit raised here can share a
+     * name with an unrelated item standing on the stack, and Void Mandible
+     * used to negate that one.
+     *
+     * ⚠ THE DIVERGENCE THIS LEAVES STANDING (R207, reported not fixed): under
+     * R198's ruling a card played mid-resolution goes on the stack and is
+     * respondable and negatable. This path predates that and still spawns in
+     * place, so a unit played out of a bin during battle cannot be answered at
+     * all. Making it an item is a much larger change than CT-79 (a spawn is
+     * not a cast; there is no cast window to declare it in) and it is filed
+     * rather than guessed at.
      */
     const playEv = opts.asPlay
       ? this.ev('cardPlayed', '', {
@@ -6904,8 +6923,13 @@ export class E {
       const mod = this.entity(modId);
       this.need(mod && host && host.mods.includes(modId), 'bad cost choice');
       (paid.erasedMods ??= []).push({ mod: modId, card: mod!.card });
-      host!.mods.splice(host!.mods.indexOf(modId), 1);
-      delete this.s.entities[modId];
+      // R208 / CT-86: through `E.eraseMod`, the one choke point, instead of
+      // the splice+delete this used to hand-roll. ⚠ THE ANNOUNCEMENT BELOW IS
+      // UNCHANGED, 'info' AND ALL: whether a mod erased as a COST reaches the
+      // R65 public erased pile is round-27's Q3 and it is UNANSWERED. This
+      // refactor exists so that answer is a one-line change inside eraseMod
+      // rather than a judgement call repeated at five sites.
+      this.eraseMod(mod!);
       this.ev('info', `${mod!.card} is ERASED off ${host!.card} — the cost of ${item.label}.`);
       return;
     }
@@ -7939,6 +7963,25 @@ export class E {
         seat: item.controller, card: item.card, token: false, region: item.region,
         ...(item.x !== undefined ? { x: item.x } : {}),   // R157 §1: the X that was paid
         ...(item.from ? { from: item.from } : {}),   // R49: the zone it came out of
+        // R207 / CT-79: WHICH ITEM this play is — the same field R178 put on
+        // `spellPlayed` a few lines up, for the same reason and with the same
+        // caveats. `cardPlayed` is the WIDE event (R129), so it is the only
+        // one a card watching for a played UNIT can read; Void Mandible's
+        // "negate THAT EFFECT" had no way to name the item and fell back to a
+        // (card, controller) scan, which negates the wrong one whenever two
+        // same-card same-seat plays are on the stack at once.
+        //
+        // ⚠ TWO THINGS THE ID DOES NOT PROMISE, both inherited from where this
+        // event fires:
+        //  · The item is NOT on the stack yet — this fires before `pushItem`
+        //    below — so a `when` cannot look it up. Match at RESOLUTION.
+        //  · `commitItem(…, 'resolve')` never pushes at all (a deploy-timing
+        //    play), so the id can name an item that is never on the stack.
+        //    A resolution-time lookup finds nothing, which is correct: there
+        //    is no effect standing there to answer.
+        // The OTHER `cardPlayed` emitter (the `asPlay` spawn in `spawnUnit`)
+        // omits this field entirely — see the comment there.
+        item: item.id,
       });
       this.fireEvent('cardPlayed', ev);
     }
@@ -8914,6 +8957,78 @@ export class E {
     mod.region = newHost.region;
     mod.controller = newHost.controller;
     newHost.mods.push(mod.id);
+    return true;
+  }
+
+  /**
+   * R208 / CT-86 — take a mod OFF a host that stays in play, and remove the
+   * entity from the game. `attachMod`'s inverse and `moveMod`'s (R178)
+   * sibling: that one re-parents, this one unlinks and deletes.
+   *
+   * WHY IT EXISTS. There was no choke point for this at all, and five sites
+   * hand-rolled the same two lines — `host.mods.splice(…)` plus
+   * `delete s.entities[id]` — each with its own announcement and its own
+   * answer to the R65 public-erased-pile question:
+   *
+   *  · Slag Spewer's `[Erase one of my mods]` cast cost (`payCastCost`) — 'info'
+   *  · Suppression Field (batch-metal-c)                                 — 'info'
+   *  · Ominous Growth (batch-hybrids-wm-b), token mods only              — 'info'
+   *  · Return to Nature (batch-earth-b)                          — 'erased' + 'info'
+   *  · Reclaim the Fallen (batch-hybrids-ld-a) — not an erase at all, see below
+   *
+   * ⚠ THIS REFACTOR DELIBERATELY CHANGES NOTHING A PLAYER CAN SEE, AND THAT IS
+   * THE ENTIRE POINT. Whether a mod erased as a COST reaches the R65 public
+   * erased pile is an OPEN OWNER RULING (round-27 Q3/Q9, unanswered): R157 §3
+   * arguably wants it there, and the R196 agent left it rather than guess. So
+   * every caller keeps the exact announcement it had, including Slag Spewer's
+   * 'info', and this method emits NOTHING. What the choke point buys is that
+   * when Q3 is answered the pile line goes in ONE place — right here, guarded
+   * by `opts.leavesGame` — instead of being reasoned about at five call sites.
+   * A refactor that quietly emitted 'erased' would have pre-empted the ruling.
+   *
+   * `opts.leavesGame` (default true) is the one distinction the sites really
+   * differ on, and it is a fact about the CARD, not about the announcement:
+   * Reclaim the Fallen removes the mod entity and then puts the card INTO PLAY
+   * as a unit, so the card never leaves the game and must never reach the
+   * erased pile whatever Q3 answers. Everything else is a real erase.
+   *
+   * NOT a despawn and NOT a death: a mod is not a body and has no death of its
+   * own to run (the Ominous Growth comment says the same in longhand). No
+   * event fires. The CALLER owns `checkDeaths()` afterwards — a host that
+   * loses a +X/+X mod can die of it — exactly as `moveMod` leaves it.
+   *
+   * ⚠ CALLERS THAT ARE NOT THIS. Every `delete this.s.entities[m.id]` left in
+   * the engine is a HOST-LEAVES-PLAY disposal (`leavePlay`, `disposeToBin`,
+   * `eraseFromPlay`, `eraseUnit`, the regroup token sweep, `exchangeInPlace`,
+   * apply.ts's deployment-augment ride). There the host is already gone, so
+   * there is no `host.mods` to unlink from and the mods' destination is R40's
+   * question, not this one. They stay where they are.
+   *
+   * Returns false and does nothing if this is not a mod, or its entity is
+   * already gone.
+   */
+  eraseMod(mod: Entity, opts: { leavesGame?: boolean } = {}): boolean {
+    if (mod.kind !== 'mod') return false;
+    if (!this.entity(mod.id)) return false;
+    const host = mod.modOf !== undefined ? this.entity(mod.modOf) : undefined;
+    if (host) {
+      const i = host.mods.indexOf(mod.id);
+      if (i !== -1) host.mods.splice(i, 1);
+    }
+    delete this.s.entities[mod.id];
+    // ⚠ THE Q3 SEAM, deliberately empty. `opts.leavesGame` is read here and
+    // nowhere else; when the owner rules that an erased mod card reaches the
+    // R65 public pile, the `ev('erased', …, { seat: mod.owner, cards: [mod.card] })`
+    // goes on this line, behind `opts.leavesGame !== false`. R69 will want a
+    // word about `mod.token` too — a token mod has no card of its own — and
+    // the two existing precedents disagree, which is part of what Q3 has to
+    // settle: `disposeToBin` DOES announce token mods on the erased pile,
+    // Return to Nature only ever erases nontoken bodies' mods.
+    //
+    // `leavesGame` is therefore read NOWHERE today, and the `void` is what
+    // keeps it from being tidied away as dead before the ruling that needs it
+    // arrives. Delete the `void`, not the parameter.
+    void opts.leavesGame;
     return true;
   }
 

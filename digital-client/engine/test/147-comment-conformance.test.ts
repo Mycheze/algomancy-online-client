@@ -24,11 +24,23 @@
  *   §1  A `PARKED` heading whose every bullet is already resolved fails.
  *   §2  A "the cost is paid at RESOLUTION" claim on a card that declares a
  *       real `castCost` fails.
- *   §3  A comment asserting a NEGATIVE about the card pool fails unless it is
- *       on an allowlist carrying its reason — and two of those reasons are
- *       themselves asserted here against `printed.json`.
- *   §4  A helper in `src/**`, `test/**` or `scripts/**` with zero call sites
- *       fails (R193 — it used to read `src/cards/sets/**` alone).
+ *   §3  A comment asserting a NEGATIVE about the card pool fails unless it
+ *       WITHDRAWS itself (R210 — read over the enclosing bullet, as §2 always
+ *       has) or is on an allowlist carrying its reason; every allowlisted
+ *       reason is re-derived on each run, and the machine-checkable ones are
+ *       asserted here against `printed.json`.
+ *   §4  A helper in `src/**`, `test/**`, `scripts/**` or `ui/**` with zero
+ *       call sites fails (R193/R201 — it used to read `src/cards/sets/**`
+ *       alone).
+ *
+ * ⚠ R210 (CT-83): ALL FOUR SECTIONS' EXEMPTION LISTS NOW HAVE STALENESS TESTS.
+ * §4's `DEAD_EXEMPT` got one from R193 after CT-68 caught it waiving two
+ * deleted helpers. `PARKED_EXEMPT` (§1), `POOL_CLAIM_ALLOWLIST` (§3) and
+ * `NOT_SCANNED` (§4) had none — a `.filter()` each and nothing else — and
+ * `POOL_CLAIM_ALLOWLIST[0]` had already gone stale, still calling a fixed bug
+ * "KNOWN FALSE … assigned to whoever fixes Burgeon" months after R166 fixed
+ * it. An exemption list in the file built to stop claims outliving their
+ * reasons is the last place that should happen.
  *
  * ── ON BLINDNESS ────────────────────────────────────────────────────────
  *
@@ -386,6 +398,61 @@ test('§1 no PARKED heading survives every card beneath it being un-parked', () 
     + bad.join('\n'));
 });
 
+test('§1 every PARKED_EXEMPT entry still names a heading this sweep flags', () => {
+  // R210 (CT-83) — the third list in this file with no staleness test, and the
+  // one the ticket did not name. Its own doc comment said "an entry that no
+  // longer matches any section is dead weight and should be deleted, but it
+  // does NOT fail the test", which was the right call in round 26 (both files
+  // were held by other worktrees) and is exactly how a temporary waiver becomes
+  // permanent: the sentence describing the cleanup is the only thing that was
+  // ever going to do it.
+  //
+  // ⚠ THE SOFT/HARD SPLIT IS DELIBERATE AND KEPT. An entry that no longer
+  // matches ANY heading is still not a hard failure of §1 — a passing fix
+  // landing in a parallel worktree must not turn this red for the agent who
+  // did not make it. But it is a hard failure HERE, in a test whose only
+  // subject is the list, so the cleanup has an owner and a deadline instead of
+  // a comment.
+  const sections = BATCH_FILES.flatMap(parkedSections);
+  const stale: string[] = [];
+
+  for (const e of PARKED_EXEMPT) {
+    if (!BATCH_FILES.includes(e.file)) {
+      stale.push(`${e.file} is not a batch file the scan reads — delete the entry or fix the `
+        + `path. (Was: ${e.why})`);
+      continue;
+    }
+    const matched = sections.filter(s => s.file === e.file && s.head.includes(e.head));
+    if (!matched.length) {
+      stale.push(`${e.file}: no PARKED heading containing "${e.head}" exists any more — the `
+        + `heading was retitled or removed and the exemption waives nothing. Delete it. `
+        + `(Was: ${e.why})`);
+      continue;
+    }
+    // and it must still be a heading §1 WOULD flag: every bullet resolved, no
+    // disclaimer. Otherwise §1 already lets it through and the entry is dead
+    // weight for the other reason.
+    const stillFlagged = matched.some(s =>
+      s.bullets.length > 0
+      && s.bullets.every(b => RESOLVED.test(b))
+      && !DISCLAIMED.test(s.head) && !DISCLAIMED.test(s.body));
+    if (!stillFlagged) {
+      stale.push(`${e.file}: the heading "${e.head}" is no longer one §1 would flag — it has `
+        + 'a genuinely parked bullet again, or it now carries a disclaimer. Either way the '
+        + `exemption is doing nothing. Delete it. (Was: ${e.why})`);
+    }
+  }
+
+  assert.deepEqual(stale, [],
+    'PARKED_EXEMPT entries that have outlived their reason:\n  ' + stale.join('\n  ')
+    + '\n\nThese were written in round 26 as "known-rotten, held by another worktree". '
+    + 'The worktrees are gone; the entries are not supposed to outlive them.');
+
+  assert.ok(PARKED_EXEMPT.length >= 2,
+    `PARKED_EXEMPT is down to ${PARKED_EXEMPT.length} entries — if a heading really was `
+    + 'retitled, lower this floor in the same commit and say which.');
+});
+
 // ───────── §2 · "paid at RESOLUTION" over a real declared cost ──────────
 
 /**
@@ -407,6 +474,31 @@ const RESOLUTION_COST_CLAIM = /STILL AT RESOLUTION|(?:paid|checked\/paid|checked
 /** the comment is QUOTING the old claim in order to retract it */
 const RETRACTED = /used to|USED TO|no longer|NO LONGER|UN-?PARKED|\bGONE\b|this (?:note|entry|line)|it read|✔|retired|overturned|is a real|REAL CAST COST/;
 
+/** does a line START a doc-comment bullet? (`* - …`, `* · …`, `* ⚠ ✔ …`) */
+const isBulletStart = (L: string): boolean => /^\s*\*\s*(?:⚠\s*)?[-·✔✘]\s/.test(L);
+
+/**
+ * The whole BULLET that line `i` belongs to: that line plus the continuation
+ * lines above and below it, stopping at the next bullet marker in either
+ * direction.
+ *
+ * ⚠ R210: THIS IS WHY §3 COULD NOT SEE A RETRACTION. §2 has read retractions
+ * at bullet granularity since it was written, because the claim and the words
+ * that withdraw it are almost never on the same LINE — a bullet opens "BURGEON:
+ * NO LONGER an approximation (R166), and the note that used to sit here was
+ * false…" and the sentence being quoted lands four lines further down. §3
+ * matched line by line, so it saw the quoted claim and none of the retraction
+ * around it, and the only way to silence it was an allowlist entry. Lifted out
+ * of §2 verbatim so both sections read a comment the same way.
+ */
+function enclosingBullet(lines: string[], i: number): string {
+  let s = i;
+  while (s > 0 && /^\s*\*/.test(lines[s - 1]!) && !isBulletStart(lines[s]!)) s--;
+  let e = i;
+  while (e + 1 < lines.length && /^\s*\*/.test(lines[e + 1]!) && !isBulletStart(lines[e + 1]!)) e++;
+  return lines.slice(s, e + 1).join('\n');
+}
+
 test('§2 no card declaring a castCost is documented as paying it at resolution', () => {
   const bad: string[] = [];
   for (const b of BLOCKS) {
@@ -424,10 +516,7 @@ test('§2 no card declaring a castCost is documented as paying it at resolution'
     const mine = BLOCKS.filter(b => b.file === f);
     lines.forEach((L, i) => {
       if (!/^\s*\*/.test(L) || !RESOLUTION_COST_CLAIM.test(L)) return;
-      // the whole bullet: this line plus its continuations
-      let s = i; while (s > 0 && /^\s*\*/.test(lines[s - 1]!) && !/^\s*\*\s*(?:⚠\s*)?[-·✔✘]\s/.test(lines[s]!)) s--;
-      let e = i; while (e + 1 < lines.length && /^\s*\*/.test(lines[e + 1]!) && !/^\s*\*\s*(?:⚠\s*)?[-·✔✘]\s/.test(lines[e + 1]!)) e++;
-      const bullet = lines.slice(s, e + 1).join('\n');
+      const bullet = enclosingBullet(lines, i);       // this line plus its continuations
       if (RETRACTED.test(bullet)) return;
       for (const b of mine) {
         if (!bullet.includes(b.name)) continue;
@@ -463,47 +552,132 @@ const NEGATIVE_POOL_CLAIM: RegExp[] = [
   /not a single card/i,
 ];
 
-const POOL_CLAIM_ALLOWLIST: { file: string; text: string; why: string }[] = [
-  {
-    file: 'batch-wood-a.ts', text: 'No pool combo hits this today',
-    why: 'KNOWN FALSE (R174 audit). Rampart Guardian is a printed {Tough} unit and a '
-       + 'legal Burgeon target with no virus needed, so the overshoot IS reachable with '
-       + 'two cards. batch-wood-a.ts was held by another agent for all of round 26 and '
-       + 'is assigned to whoever fixes Burgeon. Listed here so it is not mistaken for '
-       + 'a verified claim.',
-  },
+/**
+ * ⚠ R210 (CT-83) — THIS LIST HAD NO STALENESS TEST, AND ITS FIRST ENTRY HAD
+ * ALREADY GONE STALE.
+ *
+ * Entry [0] said Burgeon's "No pool combo hits this today" was *"KNOWN FALSE
+ * … assigned to whoever fixes Burgeon"*. Burgeon was fixed by R166 —
+ * `doubleStats` in `sets/helpers.ts`, regression at
+ * `140-layers-and-riders.test.ts:245` — and `batch-wood-a.ts` rewrote the
+ * comment into a QUOTED RETRACTION that opens "BURGEON: NO LONGER an
+ * approximation (R166)" and says out loud "⚠ THE POOL DID HIT THIS, WITH NO
+ * COMBO AT ALL". There is no Burgeon ticket. The entry outlived every word of
+ * its own reason and nothing could notice, because the only thing referring to
+ * this list was a `.filter()`.
+ *
+ * TWO CHANGES, and the second is the one that matters:
+ *
+ *  1. §3 now reads a retraction the way §2 always has — over the enclosing
+ *     BULLET rather than the line. That acquits `batch-wood-a.ts` on the
+ *     comment's own words, so entry [0] is deleted rather than reworded.
+ *  2. EVERY REMAINING ENTRY IS RE-DERIVED ON EVERY RUN (the test below). It
+ *     must still match a claim that the sweep actually finds and that the
+ *     retraction filter does NOT already acquit, and its `basis` has to be
+ *     machine-checkable:
+ *       · 'retracted' — RETRACTED matches its bullet. Then it is redundant and
+ *         is REPORTED AS SUCH, because a redundant waiver is how a list starts
+ *         growing again.
+ *       · 'verified' — it carries a `check` that re-runs the verification
+ *         against `printed.json`, and the test runs it. Not a sentence saying
+ *         somebody verified it once.
+ *
+ * Deliberately NOT the `SILENT_KNOWN` shape (65-effect-conformance), which
+ * asserts `why.length > 40`. A stale reason is still a long reason.
+ */
+type PoolClaim = {
+  file: string;
+  text: string;
+  basis: 'verified' | 'retracted';
+  why: string;
+  /** required when basis is 'verified': re-run the check, throw if it fails */
+  check?: () => void;
+};
+
+const POOL_CLAIM_ALLOWLIST: PoolClaim[] = [
   {
     file: 'batch-dark-c.ts', text: 'the only card in the whole pool with a',
-    why: 'PAST TENSE and self-limiting: "Rotling WAS the only card in the pool with a '
-       + '[Switch]-marked effect that could not be grafted at all". The condition it '
-       + 'describes was removed by R124 giving Rotling its graftEffect, so the sentence '
-       + 'is history, not a live search of the pool.',
+    basis: 'verified',
+    why: 'PAST TENSE and self-limiting: "Rotling WAS the only card in the whole pool with a '
+       + '[Switch]-marked EFFECT and no `graftEffect`". R124 gave Rotling a graftEffect, '
+       + 'which is what puts the sentence in the past — so the thing to re-check is not the '
+       + 'pool-wide search (it is history) but that Rotling still HAS one. If it loses it, '
+       + 'the sentence silently becomes a live and unverified pool-wide negative again.\n'
+       + '⚠ R210: this entry read `basis: retracted` for about ten minutes and the staleness '
+       + 'test below immediately said no — RETRACTED reads `*`-doc bullets and this claim is '
+       + 'in a `//` block, so the retraction filter never sees it. That is the difference '
+       + 'between a reason and a checked reason, on the first run.',
+    check: () => {
+      const rotling = BLOCKS.find(b => b.file === 'batch-dark-c.ts' && b.name === 'Rotling');
+      assert.ok(rotling, 'batch-dark-c.ts no longer defines Rotling — the note above is orphaned');
+      assert.match(rotling!.def, /graftEffect\s*:/,
+        "Rotling has lost its `graftEffect`. batch-dark-c.ts's note says it WAS the only card "
+        + 'in the pool with a [Switch]-marked effect and no graft — put in the past tense by '
+        + 'R124 giving it one. Without that, the sentence is a live pool-wide negative that '
+        + 'nobody has checked, and the [Switch1] marker is dead text again (R125).');
+    },
   },
   {
     file: 'batch-light-a.ts', text: 'the only card in the whole pool that does',
-    why: 'A QUOTED RETRACTION: the line quotes the old note in order to close it '
-       + '(R157 §25). Verified below — zero cards pool-wide carry "Switch" in `type`.',
+    basis: 'verified',
+    why: 'A QUOTED RETRACTION that is ALSO checkable: the line quotes the old note in '
+       + 'order to close it (R157 §25), and the thing it claims — that no card carries '
+       + '{Switch} on its type line — is a fact about printed.json.',
+    check: () => {
+      // batch-light-a.ts, Arbiter of Armistice: "the only card in the whole pool
+      // that [carries a bare {Switch} on its type line]" — closed by R157 §25 and
+      // stripped from the data by extract-printed.mjs's TYPE_OVERRIDES.
+      const switchTyped = PRINTED.filter(c => /Switch/i.test(c.type ?? '')).map(c => c.name);
+      assert.deepEqual(switchTyped, [],
+        'a card carries {Switch} on its type line again — batch-light-a.ts\'s '
+        + 'CLOSED-by-R157-§25 note and extract-printed.mjs\'s TYPE_OVERRIDES both need re-reading');
+    },
   },
   {
     file: 'batch-metal-c.ts', text: 'No pool card is neither',
+    basis: 'verified',
     why: 'Void Memory: "discards a unit or spell if able" = "discards a card if their '
-       + 'hand is nonempty". Verified below against printed.json kinds.',
+       + 'hand is nonempty", which holds only while every pool card is a unit or a spell.',
+    check: () => {
+      // batch-metal-c.ts, Void Memory: every pool card is a unit or a spell, so
+      // "discards a unit or spell if able" = "discards a card if the hand is
+      // nonempty". A spellToken's printed type still reads "Spell Token", so even
+      // one somehow in hand is a spell.
+      const kinds = new Set(PRINTED.map(c => c.kind));
+      assert.deepEqual([...kinds].sort(), ['spell', 'spellToken', 'spellUnit', 'unit'],
+        'a new card KIND exists — Void Memory\'s "unit or spell" note in batch-metal-c.ts '
+        + 'is no longer exhaustive and must be re-derived');
+      for (const c of PRINTED.filter(x => x.kind === 'spellToken')) {
+        assert.match(c.type ?? '', /Spell/,
+          `${c.name} is a spellToken whose type line does not say "Spell" — Void Memory's note breaks`);
+      }
+    },
   },
 ];
 
-test('§3 every negative claim about the card pool is allowlisted with its reason', () => {
-  const hits: { file: string; line: number; text: string }[] = [];
+/** every negative pool claim the comment scan finds, with the bullet it sits in */
+function poolClaimHits(): { file: string; line: number; text: string; bullet: string }[] {
+  const out: { file: string; line: number; text: string; bullet: string }[] = [];
   for (const f of BATCH_FILES) {
-    raw(f).split('\n').forEach((L, i) => {
+    const lines = raw(f).split('\n');
+    lines.forEach((L, i) => {
       if (!/^\s*(?:\*|\/\/)/.test(L)) return;
       if (!NEGATIVE_POOL_CLAIM.some(r => r.test(L))) return;
-      hits.push({ file: f, line: i + 1, text: L.trim() });
+      out.push({ file: f, line: i + 1, text: L.trim(), bullet: enclosingBullet(lines, i) });
     });
   }
+  return out;
+}
+
+test('§3 every negative claim about the card pool is allowlisted with its reason', () => {
+  const hits = poolClaimHits();
   assert.ok(hits.length >= 4,
     `only ${hits.length} negative pool claims found — the comment scan has gone blind`);
 
   const bad = hits
+    // R210: a comment that QUOTES a pool-wide negative in order to withdraw it is
+    // not asserting it. §2 has read retractions this way since it was written.
+    .filter(h => !RETRACTED.test(h.bullet))
     .filter(h => !POOL_CLAIM_ALLOWLIST.some(a => a.file === h.file && h.text.includes(a.text)))
     .map(h => `${h.file}:${h.line}  ${h.text}`);
 
@@ -515,26 +689,68 @@ test('§3 every negative claim about the card pool is allowlisted with its reaso
     + bad.join('\n'));
 });
 
-test('§3 the two allowlisted pool claims that CAN be checked are checked', () => {
-  // batch-light-a.ts, Arbiter of Armistice: "the only card in the whole pool
-  // that [carries a bare {Switch} on its type line]" — closed by R157 §25 and
-  // stripped from the data by extract-printed.mjs's TYPE_OVERRIDES.
-  const switchTyped = PRINTED.filter(c => /Switch/i.test(c.type ?? '')).map(c => c.name);
-  assert.deepEqual(switchTyped, [],
-    'a card carries {Switch} on its type line again — batch-light-a.ts\'s '
-    + 'CLOSED-by-R157-§25 note and extract-printed.mjs\'s TYPE_OVERRIDES both need re-reading');
+test('§3 every POOL_CLAIM_ALLOWLIST entry still waives a live claim, and its basis holds', () => {
+  // CT-83's assertion, on the list CT-83 named. An allowlist entry is a claim
+  // about a COMMENT and a claim about the POOL, and both go stale.
+  const hits = poolClaimHits();
+  const stale: string[] = [];
 
-  // batch-metal-c.ts, Void Memory: every pool card is a unit or a spell, so
-  // "discards a unit or spell if able" = "discards a card if the hand is
-  // nonempty". A spellToken's printed type still reads "Spell Token", so even
-  // one somehow in hand is a spell.
-  const kinds = new Set(PRINTED.map(c => c.kind));
-  assert.deepEqual([...kinds].sort(), ['spell', 'spellToken', 'spellUnit', 'unit'],
-    'a new card KIND exists — Void Memory\'s "unit or spell" note in batch-metal-c.ts '
-    + 'is no longer exhaustive and must be re-derived');
-  for (const c of PRINTED.filter(x => x.kind === 'spellToken')) {
-    assert.match(c.type ?? '', /Spell/,
-      `${c.name} is a spellToken whose type line does not say "Spell" — Void Memory's note breaks`);
+  for (const a of POOL_CLAIM_ALLOWLIST) {
+    assert.ok(BATCH_FILES.includes(a.file),
+      `POOL_CLAIM_ALLOWLIST names ${a.file}, which is not a batch file the scan reads — `
+      + `delete the entry or fix the path. (Was: ${a.why})`);
+
+    const matched = hits.filter(h => h.file === a.file && h.text.includes(a.text));
+    if (!matched.length) {
+      stale.push(`${a.file}: no comment matching "${a.text}" is found by the pool-claim scan any `
+        + `more — the entry waives nothing. Delete it. (Was: ${a.why})`);
+      continue;
+    }
+
+    const retracted = matched.every(h => RETRACTED.test(h.bullet));
+    if (a.basis === 'retracted' && !retracted) {
+      stale.push(`${a.file}: basis is 'retracted', but the bullet around "${a.text}" no longer `
+        + 'reads as a withdrawal. Either the comment was rewritten into a live assertion — in '
+        + 'which case verify it against printed.json and change the basis — or RETRACTED has '
+        + `stopped matching it. (Was: ${a.why})`);
+    }
+    if (a.basis === 'verified') {
+      // collected, not thrown: one broken entry must not hide the others
+      if (!a.check) {
+        stale.push(`${a.file}: basis is 'verified' but the entry carries no \`check\`. `
+          + '"Verified" in prose is exactly what CT-83 is about — a claim nothing re-runs.');
+        continue;
+      }
+      a.check();
+      if (retracted) {
+        stale.push(`${a.file}: the comment around "${a.text}" now retracts itself, so §3 acquits `
+          + 'it without this entry and the entry is dead weight. Delete it (keep the `check` if '
+          + `it is worth having, as a test of its own). (Was: ${a.why})`);
+      }
+    }
+  }
+
+  assert.deepEqual(stale, [],
+    'POOL_CLAIM_ALLOWLIST entries that have outlived their reason:\n  ' + stale.join('\n  '));
+
+  // the denominator: an emptied list would make every loop above vacuous
+  assert.ok(POOL_CLAIM_ALLOWLIST.length >= 3,
+    `POOL_CLAIM_ALLOWLIST is down to ${POOL_CLAIM_ALLOWLIST.length} entries — if that is a `
+    + 'deliberate deletion lower this floor in the same commit, and say which claim went.');
+});
+
+test('§3 the allowlisted pool claims that CAN be checked are checked', () => {
+  // R210: these two checks used to live HERE, as loose code beside a list that
+  // did not know about them — so an entry could be deleted and leave its check
+  // behind, or gain a "verified below" reason with nothing below. They now hang
+  // off the entries they verify (`check`), and this runs them.
+  const verified = POOL_CLAIM_ALLOWLIST.filter(a => a.basis === 'verified');
+  assert.ok(verified.length >= 2,
+    `only ${verified.length} allowlisted pool claims are machine-verifiable — if one was `
+    + 'downgraded to \'retracted\' or deleted, lower this floor deliberately and say why');
+  for (const a of verified) {
+    assert.ok(a.check, `${a.file}: 'verified' with no check`);
+    a.check!();
   }
 });
 
@@ -552,9 +768,10 @@ test('§3 the two allowlisted pool claims that CAN be checked are checked', () =
  * the next unexported dead local a compile error — that is how
  * `28-metal-c::constructedTurn` and `36-cache-prophecy::cacheIdx` were caught.
  * But **`tsc` does not report an EXPORTED declaration**, no matter how dead, so
- * it would never have seen `helpers.ts::lifeGainedIn`, and it does not see
- * `src/cards/dsl.ts::printedCost` today. Do not "simplify" this away in favour
- * of the compiler flag; the exemption list below going stale is exactly why the
+ * it would never have seen `helpers.ts::lifeGainedIn`, and it did not see
+ * `src/cards/dsl.ts::printedCost` — which R193 found here, R210 deleted, and
+ * `tsc` was clean over on both days. Do not "simplify" this away in favour of
+ * the compiler flag; the exemption list below going stale is exactly why the
  * distinction has to stay written down.
  * (Also measured, because it looks like a way out and is not: the `_` prefix
  * exempts an unused binding only inside a DESTRUCTURING PATTERN. A plain
@@ -580,6 +797,15 @@ const SCAN_DIRS = ['src', 'test', 'scripts', 'ui'];
  * have been a waiver outliving its reason, which is the exact failure class
  * this whole file exists to prevent — and which its own DEAD_EXEMPT list had
  * just been caught committing.
+ *
+ * ⚠ R210 (CT-83): "THE TEST BELOW IS WHAT ENFORCES THAT IT EXPIRED" WAS NOT
+ * TRUE. There was no such test. `NOT_SCANNED` had exactly two references in
+ * the file — this declaration and the `[...SCAN_DIRS, ...NOT_SCANNED]` spread
+ * in `allSources()` — and nothing anywhere asserted that `ui/` had come back
+ * into `SCAN_DIRS`, that the list was empty, or that a name in it meant
+ * anything. A comment describing a guard that does not exist is the same lie
+ * as an exemption outliving its reason, and it was sitting in the file whose
+ * entire subject is that lie. The test now exists, below.
  */
 const NOT_SCANNED: string[] = [];
 
@@ -653,14 +879,22 @@ function declarationsIn(rel: string): [string, number][] {
  * on for a further round waiving nothing at all.
  */
 const DEAD_EXEMPT: { file: string; name: string; why: string }[] = [
-  {
-    file: 'src/cards/dsl.ts', name: 'printedCost',
-    why: 'R193, and it is the first thing the widened sweep found. `export function '
-       + 'printedCost(name)` has zero call sites anywhere in digital-client — engine, '
-       + 'ui and server alike — and being EXPORTED is exactly why noUnusedLocals cannot '
-       + 'see it. Not deleted here because dsl.ts is a shared file and seven agents were '
-       + 'editing this tree in round 27; deleting it is a one-line change for a quiet tree.',
-  },
+  // R210 (CT-83): EMPTY, and that is the whole point of the entry that was
+  // here. `src/cards/dsl.ts::printedCost` was waived by R193 with an explicit
+  // expiry — "deleting it is a one-line change for a quiet tree" — and R210
+  // made that deletion, so the waiver goes with it. It is worth saying that
+  // this list did its job exactly as designed: the sweep found the function,
+  // the waiver named it with a reason and a condition, the staleness test
+  // below kept the name honest, and the entry lived one round. That is the
+  // shape CT-83 asked the other lists to grow, and it is why `printedCost` was
+  // a CLEANUP rather than a discovery — the ticket called it an unseen gap
+  // ("outside src/cards/sets so §4 never saw it"), which stopped being true
+  // when R193 widened SCAN_DIRS to src/ test/ scripts/ and then ui/.
+  //
+  // The list stays, empty, with its staleness test — the same way
+  // 81-card-drill's SILENT_KNOWN, 90-coverage-census's BIN_PUSH_EXEMPT and
+  // 99-endofturn's EXEMPT do. An empty exemption list that is still asserted
+  // over is a guard; a deleted one is a hole waiting to be re-dug.
 ];
 
 // ⚠ THE NAME IS PINNED. CARD-TODO #60's `guards` field names this test by the
@@ -668,6 +902,41 @@ const DEAD_EXEMPT: { file: string; name: string; why: string }[] = [
 // that a real, non-todo test carries it — so dropping those words is a hard
 // failure in another file. R193 widened the sweep well past the card files; the
 // addition says so without breaking the pin.
+test('§4 R210: the R201 ui/ exclusion really did expire, and NOT_SCANNED is honest', () => {
+  // The assertion `NOT_SCANNED`'s own comment claimed already existed. Three
+  // separate things, because the exclusion could rot in three ways.
+  //
+  //  1. `ui/` is back in the DECLARATION sweep. This is the R201 expiry
+  //     condition itself. A directory can silently drop out of SCAN_DIRS in a
+  //     one-word edit and the sweep just reports fewer dead helpers.
+  assert.ok(SCAN_DIRS.includes('ui'),
+    'ui/ has left SCAN_DIRS, so its 108-template-literal files are back outside the dead-helper '
+    + 'sweep. R201 put it back deliberately after teaching stripCode a `${ … }` brace stack; if '
+    + 'that is being undone, the ten false positives it fixed are the thing to re-read first.');
+
+  //  2. Every NOT_SCANNED entry names a real directory that is NOT already
+  //     swept — an entry naming a swept dir is a no-op pretending to be a
+  //     waiver, and one naming nothing is dead weight.
+  const stale: string[] = [];
+  for (const d of NOT_SCANNED) {
+    if (!fs.existsSync(path.join(ENGINE, d))) {
+      stale.push(`${d} is in NOT_SCANNED but does not exist under engine/ — delete the entry`);
+    } else if (SCAN_DIRS.includes(d)) {
+      stale.push(`${d} is in NOT_SCANNED and in SCAN_DIRS — the exclusion expired and the entry `
+        + 'is doing nothing but making the sweep look narrower than it is');
+    }
+  }
+  assert.deepEqual(stale, [], 'NOT_SCANNED entries that mean nothing:\n  ' + stale.join('\n  '));
+
+  //  3. And the sweep actually reads ui/ — a directory in the list that the
+  //     walk never reaches is the failure the list cannot see.
+  const files = scanFiles();
+  const uiFiles = files.filter(f => f.startsWith('ui' + path.sep));
+  assert.ok(uiFiles.length >= 5,
+    `SCAN_DIRS names ui/ but the declaration walk found only ${uiFiles.length} files there — `
+    + 'the directory is listed and unread, which reports as clean either way');
+});
+
 test('§4 no card-file helper has zero call sites — nor (R193) any helper in src/ test/ scripts/', () => {
   const sources = allSources();
   assert.ok(sources.length >= 200,

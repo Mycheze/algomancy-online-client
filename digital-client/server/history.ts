@@ -98,11 +98,18 @@ export function recordLiveGame(room: {
   names: [string, string]; users: [string | null, string | null];
   winner?: GameRecord['winner'];
   actions: GameRecord['actions']; decks: GameRecord['decks'];
+  scenario?: string;
 }): ImportedRow {
   const row = importGame(
     {
       seed: room.seed, mode: room.mode, els: room.els, names: room.names,
       actions: room.actions, decks: room.decks, users: room.users,
+      // R216: carried so the replay inside summarizeGame deals the same board
+      // the game was played on. (A scenario room is normally filtered out
+      // before it gets here — see the guard in syncGamesDir and main.ts's
+      // recordFinishedGame — but a record that reaches the fold must still
+      // describe the game that happened.)
+      scenario: room.scenario,
       // the room stamped this when the game was decided — do not re-derive it
       winner: room.winner,
     } as SavedRoom,
@@ -150,6 +157,15 @@ export function syncGamesDir(dir: string, opts: ImportOptions = {}): SyncReport 
       playedAt = statSync(path).mtime.toISOString();
     } catch (err) {
       console.warn(`[history] ${code}: unreadable — ${err instanceof Error ? err.message : err}`);
+      report.skipped++;
+      continue;
+    }
+    // R216: a scenario room is a TEST FIXTURE, not a game. It has a dealt
+    // board, a scripted opponent and a purpose, and folding it into somebody's
+    // win/loss record would make the tester quietly rewrite the stats it is
+    // supposed to be checking. Skipped here, at the one place every saved file
+    // enters the history.
+    if (raw.scenario) {
       report.skipped++;
       continue;
     }

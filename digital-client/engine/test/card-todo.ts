@@ -4253,10 +4253,10 @@ export const CARD_TODO: TodoEntry[] = [
     guards: [
       '161-printed-text-overrides.test.ts::the Glimpse glossary reminder names the recycle and the bottom of the deck',
       '161-printed-text-overrides.test.ts::the Recycle reminder no longer denies what the Glimpse one now says',
-      '161-printed-text-overrides.test.ts::the four N>1 reminders say cache-ONE-and-recycle, matching E.glimpse',
+      '161-printed-text-overrides.test.ts::every printed N>1 reminder says cache-ONE-and-recycle, matching E.glimpse',
       // ⚠ static tail only — the title is `§1 ${name}'s printed reminder ${...}`, a template
       // literal, so no static substring carries the card name.
-      '161-printed-text-overrides.test.ts::glimpses one, so there is no rest to recycle',
+      '161-printed-text-overrides.test.ts::every printed N=1 reminder says cache-IT and claims no rest',
       '161-printed-text-overrides.test.ts::an override whose upstream has been fixed FAILS instead of applying',
     ],
     closed:
@@ -4322,7 +4322,54 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A card whose collected list comes back empty says so, and 65 drives a board that reaches '
       + 'that branch.',
-    status: 'open',
+    guards: [
+      '179-empty-collection-branches.test.ts::Shoreline Specter — its prompt promises "each opponent loses 2 life"',
+      '65-effect-conformance.test.ts::no effect resolves into silence — every completed run says something',
+      '65-effect-conformance.test.ts::the known-silent list is still accurate',
+      '158-silent-region-branches.test.ts::every card repaired for CARD-TODO #70 is one the whole-pool sweeps also watch',
+    ],
+    closed:
+      'R209 (2026-08-26). CT-74 (the class) and CT-81 (the derived lists) landed together, because '
+      + 'CT-81\'s own fix said of Dragnol and Shoreline Specter "that is CT-74, and these two are its'
+      + 'first members". PART A — THE GLIMPSE LIST IS DERIVED. 161-printed-text-overrides\''
+      + 'GLIMPSE_CARDS went from FIVE hardcoded names to ELEVEN computed from printed text, and all'
+      + 'three of the file\'s loops with it. `recycles` is computed from the parsed N; a third derived'
+      + 'field, `reminder`, had to be added because five of the eleven print the keyword bare and the'
+      + 'recycle assertion cannot be asked of them. Big Glimpse Card is correctly excluded and two'
+      + 'assertions pin WHY (the word is in its NAME, not its text). ⚠ BOTH WARNED TRAPS WERE REAL:'
+      + 'four of the eleven route through file-local `glimpse()` wrappers, so a call-site sweep'
+      + 'misses them and the printed-text derivation is the only safe one. Positive control:'
+      + 'appending "Glimpse 2" to a card\'s text reddens three tests AND drives the intruder through'
+      + 'every loop. ⚠ PART B — ALL THREE CODE-SHAPE READINGS WERE REJECTED, AND THAT IS THE FINDING.'
+      + 'The agent swept on the PLAYER-FACING property instead: a clause that promises a per-seat'
+      + 'outcome, resolves over an empty collection — of seats or of picks — and emits nothing for'
+      + 'that clause. Its reasoning: the accumulator is not the class (Perish has none), the cause is'
+      + 'not the class (CT-70 vs CT-74 changes only the wording), and every shape reading orphans the'
+      + 'other shape onto no ticket, which is the docs/13 §4 failure this ticket pair exists to'
+      + 'correct. Result: 12 REPAIR SITES, 15 CONFORMANCE LABELS — Cull, Seabed Shellcaster and'
+      + 'Recall each back two labels with one shared EffectDef object, pinned by an assertion each,'
+      + 'which is the double-counting trap CT-70 paid for once already. ⚠ THE TICKET\'S EXEMPLAR WAS'
+      + 'ALREADY FIXED: Malicious Hardware carries its empty-picks line at'
+      + 'batch-hybrids-wm-a.ts:761-764, landed by R187 in the same commit that spun CT-74 off. ⚠⚠'
+      + 'PART C IS THE DELIVERABLE THAT OUTLASTS THE TWELVE REPAIRS. 65-effect-conformance has a'
+      + 'THIRD BOARD, `barren`. Both existing boards gave every present seat a unit, so the empty'
+      + 'branch was not rare — IT WAS UNREACHABLE, and the sweep reported clean forever. On its first'
+      + 'run, before a single card was changed, it convicted SEVEN LABELS — including `spell:Perish`,'
+      + 'which is on no ticket and in no report. And SILENT_KNOWN\'s reason is falsifiable at last:'
+      + 'entries carry the SET OF BOARDS they are silent on, asserted by equality, so "silent for a'
+      + 'NEW reason" reddens where the old `length > 40` check let a stale reason outlive its truth.'
+      + 'That repairs the unfalsifiable closure the round-28 audit found in CT-70, whose verify line'
+      + '— "SILENT_KNOWN is empty for the R25 family" — was satisfiable while members remained. 85'
+      + '§9\'s three cards (Restitution, Vroot, Flzzz) are merged into 158, so the R25 family has one'
+      + 'owner. REPORTED, NOT FIXED, CORRECTLY: Luminous Arc and Dreadwave Devourer THROW on'
+      + '`ctx.targets[0]!` with no targets. Unreachable in a real game because R86 fizzles first, and'
+      + 'the fix is engine-side; 65 now prints them by name every run instead of counting them.'
+      + 'ORCHESTRATOR VERIFIED INDEPENDENTLY: removing Shoreline Specter\'s new line reddens 179 and'
+      + 'the failure message SHOWS THE OTHER HALF\'S EVENTS — "resolved over an EMPTY collection and'
+      + 'said nothing about it. The 2 event(s) it did emit are the OTHER half of the card" — which'
+      + 'demonstrates CT-81(b)\'s claim rather than asserting it. Restored; 107/107 across 161, 65,'
+      + '158 and 85.',
+    status: 'done',
   },
   {
     id: 75,
@@ -4367,7 +4414,46 @@ export const CARD_TODO: TodoEntry[] = [
       'ui-driver.ts resolves closest() through real ancestors; the number of tests that changed '
       + 'behaviour is recorded; and a data-act nested inside a data-btn either works or fails '
       + 'loudly.',
-    status: 'open',
+    guards: [
+      '176-nested-affordance-and-serialiser.test.ts::the driver resolves closest() through REAL ancestors',
+      '176-nested-affordance-and-serialiser.test.ts::closest() prefers the element itself, then the nearest ancestor',
+      '176-nested-affordance-and-serialiser.test.ts::no data-act in the rendered board sits inside a data-btn container',
+      '176-nested-affordance-and-serialiser.test.ts::shown the swallowed shape, the detector says so',
+    ],
+    closed:
+      'R205 (2026-08-26). `test/ui-driver.ts` rebuilds a REAL ancestor chain from the rendered '
+      + 'markup and `closest()` walks it, nearest first. The header comment that asserted the '
+      + 'opposite — "this fake has no ancestors, which is true of every affordance in the board '
+      + 'markup" — is gone; it was the falsehood that let this survive. '
+      + '⚠ THE MEASUREMENT THE TICKET ASKED FOR CAME BACK **ZERO**, and the reason is measured, '
+      + 'not lucky: 194 tests across the 13 ui-driver files pass identically before and after. '
+      + 'An affordance census computed from the rendered markup shows NO `data-act` anywhere in '
+      + 'the client is currently nested inside a `data-btn` — R192 had already fixed the only '
+      + 'instance, correctly. So the blind spot was LATENT, not cashed in: the suite could not '
+      + 'have caught the NEXT one. That was proven directly rather than inferred — planting '
+      + 'CARD-TODO #64\'s prescribed `data-act="cache"` on the cache thumb gives OLD driver `ok`, '
+      + 'NEW driver `not ok` (expected 33, actual 30 — the panel ate the click). Same client, '
+      + 'same test, opposite verdicts. '
+      + 'PART 2 DECLINED, WITH THE ENUMERATION, AND THAT IS THE RIGHT CALL: 71 `data-btn` values '
+      + 'and 12 `data-act` values were enumerated; exactly TWO `data-btn` elements are containers '
+      + '(.regionbin :1816, .regioncache :2109), both hold only `cardHtml` output whose single '
+      + 'attribute slot the builders control, and every `data-act` renders at board top level or '
+      + 'inside an overlay dialog that is a SIBLING of the panel, not a descendant. A depth-aware '
+      + 'delegator would therefore change nothing today — an untestable change to GLOBAL click '
+      + 'routing, red-checkable against no real affordance. Instead the trap is made LOUD: §2 '
+      + 'computes the census from rendered markup and fails if any `data-act` has a `data-btn` '
+      + 'above it, so a panel added next year walks into the guard by itself (docs/13 §7.2). '
+      + 'ORCHESTRATOR VERIFIED INDEPENDENTLY: planting the swallowed shape reddens THREE tests and '
+      + 'names it verbatim — "data-act=\"cache\" is inside data-btn=\"cacheopen\" … CARD-TODO #64 '
+      + 'prescribed the data-act and it could not have worked." Reverted; 12/12. '
+      + '⚠ TICKET CLAIMS CORRECTED: `.regionbin` is :1816, not :1755 (cited wrong in CT-75 AND '
+      + 'CT-82b); and CT-75\'s implied premise that tests were passing for the wrong reason is '
+      + 'NOT borne out — zero changed. '
+      + 'ALSO FOUND, on no ticket: ui-driver\'s tag regex `/<[a-zA-Z][^>]*>/g` was not '
+      + 'quote-aware, so a `title="…"` containing `>` (the board writes prose into those) ended '
+      + 'the tag early — harmless when reading one tag, but it would have silently corrupted the '
+      + 'ancestor stack this ticket exists to build. Fixed as part of the same change.',
+    status: 'done',
   },
   {
     id: 76,
@@ -4412,7 +4498,19 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A glossary row whose ruling has been corrected fails the suite, naming the row and the '
       + 'ruling.',
-    status: 'open',
+    guards: [
+      '177-glossary-conformance.test.ts::every glossary row cites a ruling, and every citation RESOLVES and is LIVE',
+      '177-glossary-conformance.test.ts::printed text wins — no row drops a rules word its own card prints',
+      '177-glossary-conformance.test.ts::every attribute with a printed reminder ADMITS it',
+      '177-glossary-conformance.test.ts::the rows resting on NEITHER a ruling NOR printed text, by name',
+      '177-glossary-conformance.test.ts::the staleness detector can tell a retired ruling from a live one',
+      '177-glossary-conformance.test.ts::the printed-reminder scrape finds the pool it is supposed to read',
+      '177-glossary-conformance.test.ts::every check above goes RED on a row broken on purpose',
+      '177-glossary-conformance.test.ts::and stays GREEN on the rows as they really are',
+    ],
+    closed:
+      'R206 (2026-08-26). CT-80 (the rows) and CT-76 (the checker) landed together, because splitting them is how the rows get reworded and the checker never arrives. ⚠⚠ THE CLASS IS **15 WRONG ROWS OUT OF 43 — A 35% BASE RATE**. The ticket said four; the orchestrator\'s audit found seven; reading the 26 rows NOBODY had ever examined found eight more: Unstable (omitted the printed type line entirely AND stated the erase unconditionally — R145 scopes it to the ACTIVE ZONES, so from hand/deck/bin/cache it bins normally), Prophecy (\"normal timing still applies\" is flatly false for a banner ending [Haste]), Augment and Graft (neither said WHEN — both are deployment actions — and Graft\'s \"[Switch1] is bounded\" is contradicted by R110\'s multiplier), Haste (canHaste opens the step on FIVE conditions; the row named one), Shard (two callers since R132), Prismite and Recycle (\"any element\" is gated to the game\'s elements). ⚠⚠ **FIVE OF THE FIFTEEN WERE ON CT-80\'S OWN \"CHECKED AND CORRECT, DO NOT RE-AUDIT\" LIST** — Pure, Graft, Haste, Shard, Prismite. That list was not a saving; it was a liability, and it should be read as a warning about protected lists generally rather than re-trusted. THE CHECKER: two derived checks plus six engine pins. The one that matters is PRINTED TEXT WINS — for the 15 attributes carrying a printed reminder, the row may not drop a rules word the card uses, derived from printed.json so a new card extends it for free. Run cold against the OLD table it named {Piercing} and {Electric} and nothing else. Citations must resolve to a LIVE ruling, with retirement read from the header OR the leading blockquote — R10 and R76 are marked only in the blockquote, and R10 is exactly what {Unaware} was still teaching. ⚠ CT-76\'S \"every entry must cite an R-number\" IS NOT ACHIEVABLE and was replaced with something honest: Flying, Evasive, Poisonous, Resonant and Lethal have no ruling and never did. The rule is now \"cite a SOURCE\" — an R-number that resolves and is live, or \'printed\' which must be true of the pool — and the residue with neither is asserted BY NAME (Evasive, Resonant) rather than left implied. ⚠ THE AGENT MEASURED ITS OWN INSTRUMENT and pinned two false-positive classes as negative controls: a fixed-size body window marks R9 and R17 retired (their bodies are two lines, so it runs into the next ruling\'s marker), and a body-wide match marks R18 retired because it says \"The ⚠ is withdrawn\" about its own warning. Either would have falsely accused the {Haste}, {Once} and {Prismite} rows. Nine mutants run in-suite every run. ⚠ NEITHER TICKET NAMED R103, which is IN THE REGISTER titled \"{Piercing} pierces on NON-COMBAT damage too, into the unit\'s controller\" — the rule WAS written down; only the glossary never heard. Both tickets\' Piercing and Electric line numbers were also wrong (:4088-4119 and :4123-4160, not :3978-3995 and :4021-4045). REPORTED, NOT FIXED (correctly — the engine is another agent\'s territory and a row is not the place to change behaviour): engine.ts:10599-10607 declares its own canHaste/castable() divergence, so the haste step can open with nothing playable or be skipped while a playable card sits in hand. The {Cache} row\'s \"you both see every cached card\" is qualified by R188, which is CT-77\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-R206 wording reddens two tests and names the card AND the dropped word — \"the PRINTED reminder on Protective Adaptations says ... and the glossary row drops [controller]. Printed text wins — reword the row, not the card.\" Reverted; 15/15.',
+    status: 'done',
   },
   {
     id: 77,
@@ -4529,7 +4627,45 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'Void Mandible negates the item the event names, with two identical spells on the stack '
       + 'and with a copy on the stack.',
-    status: 'open',
+    guards: [
+      '178-played-item-and-erased-mods.test.ts::with two same-card same-seat spells up, it negates THE ONE THE EVENT NAMES',
+      '178-played-item-and-erased-mods.test.ts::a COPY on the stack is never negated',
+      '178-played-item-and-erased-mods.test.ts::the ordinary case still works',
+      '178-played-item-and-erased-mods.test.ts::asPlay',
+    ],
+    closed:
+      'R207 (2026-08-26). `cardPlayed` now carries `item: item.id` at engine.ts:7984 (the '
+      + 'commitItem emitter), the way R178 put it on `spellPlayed`, and Void Mandible matches on it'
+      + '(batch-light-c.ts:696) with `!i.copy` and CARD_PLAY_KINDS kept as assertions rather than as'
+      + 'a search — R191\'s shape. ⚠ THREE DEFECTS, NOT TWO. (a) the forward `.find()` and (b) the'
+      + 'missing `!i.copy` are both real and confirmed at source. (c) IS NEW AND WAS ON NO TICKET:'
+      + '`cardPlayed` has a SECOND emitter — spawnUnit\'s `opts.asPlay` path (engine.ts:2997, R165) —'
+      + 'where there is NO STACK ITEM AT ALL. Wake the Dead is a {Battle} spell, so a unit it raises'
+      + 'can share a name with an unrelated item on the stack, and the old (card, controller) scan'
+      + 'negated THAT. An absent `item` now means "this play put no effect on the stack", which is'
+      + 'the honest encoding. LISTENERS ENUMERATED BEFORE THE PAYLOAD CHANGED, as the ticket asked:'
+      + 'Void Mandible; Bloomcaster (reads seat/card/token, never the stack); The Ancient One\'s'
+      + 'AO_EVENTS mimic list; drill.ts\'s WINDOW_CLOSERS (types only); and five test files that count'
+      + 'events. Nothing asserts the payload\'s key set and no ui/ source reads the event. No listener'
+      + 'is affected. ⚠ THE CLASS WAS ONE CARD AT HEAD, NOT THREE. An exhaustive sweep of all 30 set'
+      + 'files found 39 `s.stack` accesses, of which exactly FOUR cards ever ask "which item did the'
+      + 'event name": Earthbound Replicator (fixed R178), Origon and Hexbane Shiitake (both fixed'
+      + 'R191), and Void Mandible. "Three" was the round-27 snapshot of how many were still on scans'
+      + 'when R191 swept. The other 35 accesses are id-by-target-ref or whole-stack sweeps, and'
+      + 'neither defect can touch them. ⚠ AND THE CLASS IS NOW ENDED BY A DERIVED GUARD RATHER THAN A'
+      + 'LIST, which is the point: test 9 computes every `s.stack.find/filter/some` keyed on `.card'
+      + '===` instead of `.id ===` across src/cards/sets/, with positive, negative and prose'
+      + 'controls. A FIFTH card fails on arrival. This class had previously been closed one card at a'
+      + 'time across three tickets — CT-58, CT-69, CT-79 — each closure naming the next remainder,'
+      + 'which is exactly the docs/13 §4 failure mode caught mid-flight. ⚠ EVERY FILE:LINE IN THE'
+      + 'TICKET WAS STALE: batch-light-c.ts:644-645 not :633-635; spellPlayed\'s item at'
+      + 'engine.ts:7908 not :7612; the cardPlayed payload at :7938-7944 not :7641-7645. ORCHESTRATOR'
+      + 'VERIFIED INDEPENDENTLY: reverting the ENGINE half alone (dropping `item: item.id`) reddens'
+      + 'exactly three tests — the two-spells case, the copy case, AND the ordinary case. Restored;'
+      + '9/9. The nine tests drive the real stack throughout: the Mandible arrives mid-battle as a'
+      + 'real `augment` action under Rook\'s R95 permission, with no hand-built events or items, which'
+      + 'is the shape docs/13 §5 lists four `fixed` reports for getting wrong.',
+    status: 'done',
   },
   {
     id: 80,
@@ -4580,7 +4716,19 @@ export const CARD_TODO: TodoEntry[] = [
       + 'base rate that survives being fixed one at a time.',
     proof: null,
     verify: 'Each of the four rows states the rule the engine implements, and cites it.',
-    status: 'open',
+    guards: [
+      '177-glossary-conformance.test.ts::every glossary row cites a ruling, and every citation RESOLVES and is LIVE',
+      '177-glossary-conformance.test.ts::printed text wins — no row drops a rules word its own card prints',
+      '177-glossary-conformance.test.ts::every attribute with a printed reminder ADMITS it',
+      '177-glossary-conformance.test.ts::the rows resting on NEITHER a ruling NOR printed text, by name',
+      '177-glossary-conformance.test.ts::the staleness detector can tell a retired ruling from a live one',
+      '177-glossary-conformance.test.ts::the printed-reminder scrape finds the pool it is supposed to read',
+      '177-glossary-conformance.test.ts::every check above goes RED on a row broken on purpose',
+      '177-glossary-conformance.test.ts::and stays GREEN on the rows as they really are',
+    ],
+    closed:
+      'R206 (2026-08-26). CT-80 (the rows) and CT-76 (the checker) landed together, because splitting them is how the rows get reworded and the checker never arrives. ⚠⚠ THE CLASS IS **15 WRONG ROWS OUT OF 43 — A 35% BASE RATE**. The ticket said four; the orchestrator\'s audit found seven; reading the 26 rows NOBODY had ever examined found eight more: Unstable (omitted the printed type line entirely AND stated the erase unconditionally — R145 scopes it to the ACTIVE ZONES, so from hand/deck/bin/cache it bins normally), Prophecy (\"normal timing still applies\" is flatly false for a banner ending [Haste]), Augment and Graft (neither said WHEN — both are deployment actions — and Graft\'s \"[Switch1] is bounded\" is contradicted by R110\'s multiplier), Haste (canHaste opens the step on FIVE conditions; the row named one), Shard (two callers since R132), Prismite and Recycle (\"any element\" is gated to the game\'s elements). ⚠⚠ **FIVE OF THE FIFTEEN WERE ON CT-80\'S OWN \"CHECKED AND CORRECT, DO NOT RE-AUDIT\" LIST** — Pure, Graft, Haste, Shard, Prismite. That list was not a saving; it was a liability, and it should be read as a warning about protected lists generally rather than re-trusted. THE CHECKER: two derived checks plus six engine pins. The one that matters is PRINTED TEXT WINS — for the 15 attributes carrying a printed reminder, the row may not drop a rules word the card uses, derived from printed.json so a new card extends it for free. Run cold against the OLD table it named {Piercing} and {Electric} and nothing else. Citations must resolve to a LIVE ruling, with retirement read from the header OR the leading blockquote — R10 and R76 are marked only in the blockquote, and R10 is exactly what {Unaware} was still teaching. ⚠ CT-76\'S \"every entry must cite an R-number\" IS NOT ACHIEVABLE and was replaced with something honest: Flying, Evasive, Poisonous, Resonant and Lethal have no ruling and never did. The rule is now \"cite a SOURCE\" — an R-number that resolves and is live, or \'printed\' which must be true of the pool — and the residue with neither is asserted BY NAME (Evasive, Resonant) rather than left implied. ⚠ THE AGENT MEASURED ITS OWN INSTRUMENT and pinned two false-positive classes as negative controls: a fixed-size body window marks R9 and R17 retired (their bodies are two lines, so it runs into the next ruling\'s marker), and a body-wide match marks R18 retired because it says \"The ⚠ is withdrawn\" about its own warning. Either would have falsely accused the {Haste}, {Once} and {Prismite} rows. Nine mutants run in-suite every run. ⚠ NEITHER TICKET NAMED R103, which is IN THE REGISTER titled \"{Piercing} pierces on NON-COMBAT damage too, into the unit\'s controller\" — the rule WAS written down; only the glossary never heard. Both tickets\' Piercing and Electric line numbers were also wrong (:4088-4119 and :4123-4160, not :3978-3995 and :4021-4045). REPORTED, NOT FIXED (correctly — the engine is another agent\'s territory and a row is not the place to change behaviour): engine.ts:10599-10607 declares its own canHaste/castable() divergence, so the haste step can open with nothing playable or be skipped while a playable card sits in hand. The {Cache} row\'s \"you both see every cached card\" is qualified by R188, which is CT-77\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-R206 wording reddens two tests and names the card AND the dropped word — \"the PRINTED reminder on Protective Adaptations says ... and the glossary row drops [controller]. Printed text wins — reword the row, not the card.\" Reverted; 15/15.',
+    status: 'done',
   },
   {
     id: 81,
@@ -4623,7 +4771,53 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A new Glimpse card fails the guard on arrival; Dragnol and Shoreline Specter announce '
       + 'their empty branches.',
-    status: 'open',
+    guards: [
+      '161-printed-text-overrides.test.ts::the Glimpse list is DERIVED and complete — a NEW Glimpse card fails here',
+      '161-printed-text-overrides.test.ts::the parsed N and the derived `recycles` agree with what each card prints',
+      '179-empty-collection-branches.test.ts::Shoreline Specter — its prompt promises "each opponent loses 2 life"',
+    ],
+    closed:
+      'R209 (2026-08-26). CT-74 (the class) and CT-81 (the derived lists) landed together, because '
+      + 'CT-81\'s own fix said of Dragnol and Shoreline Specter "that is CT-74, and these two are its'
+      + 'first members". PART A — THE GLIMPSE LIST IS DERIVED. 161-printed-text-overrides\''
+      + 'GLIMPSE_CARDS went from FIVE hardcoded names to ELEVEN computed from printed text, and all'
+      + 'three of the file\'s loops with it. `recycles` is computed from the parsed N; a third derived'
+      + 'field, `reminder`, had to be added because five of the eleven print the keyword bare and the'
+      + 'recycle assertion cannot be asked of them. Big Glimpse Card is correctly excluded and two'
+      + 'assertions pin WHY (the word is in its NAME, not its text). ⚠ BOTH WARNED TRAPS WERE REAL:'
+      + 'four of the eleven route through file-local `glimpse()` wrappers, so a call-site sweep'
+      + 'misses them and the printed-text derivation is the only safe one. Positive control:'
+      + 'appending "Glimpse 2" to a card\'s text reddens three tests AND drives the intruder through'
+      + 'every loop. ⚠ PART B — ALL THREE CODE-SHAPE READINGS WERE REJECTED, AND THAT IS THE FINDING.'
+      + 'The agent swept on the PLAYER-FACING property instead: a clause that promises a per-seat'
+      + 'outcome, resolves over an empty collection — of seats or of picks — and emits nothing for'
+      + 'that clause. Its reasoning: the accumulator is not the class (Perish has none), the cause is'
+      + 'not the class (CT-70 vs CT-74 changes only the wording), and every shape reading orphans the'
+      + 'other shape onto no ticket, which is the docs/13 §4 failure this ticket pair exists to'
+      + 'correct. Result: 12 REPAIR SITES, 15 CONFORMANCE LABELS — Cull, Seabed Shellcaster and'
+      + 'Recall each back two labels with one shared EffectDef object, pinned by an assertion each,'
+      + 'which is the double-counting trap CT-70 paid for once already. ⚠ THE TICKET\'S EXEMPLAR WAS'
+      + 'ALREADY FIXED: Malicious Hardware carries its empty-picks line at'
+      + 'batch-hybrids-wm-a.ts:761-764, landed by R187 in the same commit that spun CT-74 off. ⚠⚠'
+      + 'PART C IS THE DELIVERABLE THAT OUTLASTS THE TWELVE REPAIRS. 65-effect-conformance has a'
+      + 'THIRD BOARD, `barren`. Both existing boards gave every present seat a unit, so the empty'
+      + 'branch was not rare — IT WAS UNREACHABLE, and the sweep reported clean forever. On its first'
+      + 'run, before a single card was changed, it convicted SEVEN LABELS — including `spell:Perish`,'
+      + 'which is on no ticket and in no report. And SILENT_KNOWN\'s reason is falsifiable at last:'
+      + 'entries carry the SET OF BOARDS they are silent on, asserted by equality, so "silent for a'
+      + 'NEW reason" reddens where the old `length > 40` check let a stale reason outlive its truth.'
+      + 'That repairs the unfalsifiable closure the round-28 audit found in CT-70, whose verify line'
+      + '— "SILENT_KNOWN is empty for the R25 family" — was satisfiable while members remained. 85'
+      + '§9\'s three cards (Restitution, Vroot, Flzzz) are merged into 158, so the R25 family has one'
+      + 'owner. REPORTED, NOT FIXED, CORRECTLY: Luminous Arc and Dreadwave Devourer THROW on'
+      + '`ctx.targets[0]!` with no targets. Unreachable in a real game because R86 fizzles first, and'
+      + 'the fix is engine-side; 65 now prints them by name every run instead of counting them.'
+      + 'ORCHESTRATOR VERIFIED INDEPENDENTLY: removing Shoreline Specter\'s new line reddens 179 and'
+      + 'the failure message SHOWS THE OTHER HALF\'S EVENTS — "resolved over an EMPTY collection and'
+      + 'said nothing about it. The 2 event(s) it did emit are the OTHER half of the card" — which'
+      + 'demonstrates CT-81(b)\'s claim rather than asserting it. Restored; 107/107 across 161, 65,'
+      + '158 and 85.',
+    status: 'done',
   },
   {
     id: 82,
@@ -4662,7 +4856,44 @@ export const CARD_TODO: TodoEntry[] = [
       + 'built, applied one layer down.',
     proof: null,
     verify: 'Each of the four is either fixed or has a named reason it is not.',
-    status: 'open',
+    guards: [
+      '183-end-battle-round-paths.test.ts::exactly four call sites reach endBattleRound',
+      '183-end-battle-round-paths.test.ts::every path funnels through startRegroup',
+      '183-end-battle-round-paths.test.ts::passEndsBattlePhase names Temporal Rift',
+      '183-end-battle-round-paths.test.ts::stripCode really is blanking the prose mentions',
+      '176-nested-affordance-and-serialiser.test.ts::a bin card usable RIGHT NOW is one click from the region panel',
+      '176-nested-affordance-and-serialiser.test.ts::an unusable bin thumb keeps the old route',
+      '176-nested-affordance-and-serialiser.test.ts::nothing the client writes has a doubled or trailing space in a class',
+      '176-nested-affordance-and-serialiser.test.ts::flights that made the same journey in one render share a beat',
+      '176-nested-affordance-and-serialiser.test.ts::POSITIVE EVIDENCE ONLY',
+    ],
+    closed:
+      'ALL FOUR RESIDUES CLOSED. (b)(c)(d) by R205 with CT-75; (a) by R213. '
+      + '(a) — the four paths are now DERIVED from source and asserted by file and by REASON, '
+      + 'never by line, and the reason that matters is the invariant nobody had written down: '
+      + 'every exit from endBattleRound funnels through startRegroup, which is WHY R194 is '
+      + 'class-complete. A fifth caller fails the suite and names the file. The real defect was '
+      + 'the other half — `passEndsBattlePhase`\'s doc comment enumerated the transitions as if '
+      + 'they were all of them, which made a documented invariant FALSE for Temporal Rift. It '
+      + 'now names that path and says why it is uncoverable: the warning answers "would passing '
+      + 'RIGHT NOW end the battle" from the state at pass time, and whether a card later on the '
+      + 'stack will end the battle is not predictable from there. Not a bug that it cannot fire; '
+      + 'a bug to imply it could. '
+      + '(b) `binplay` on live bin thumbs, `handleBinClick` extracted so panel and dialog share '
+      + 'one handler, one `binUsableIndexes` predicate feeding both the affordance and the glow. '
+      + '(c) 17 sites fixed, guarded over RENDERED markup with its own red-check: 12 bad class '
+      + 'attributes plus the `class="card"␣␣data-prev=` gap, now 0. '
+      + '(d) `flightDelays` extracted pure from anim.ts; JOURNEY, not array index, is the unit of '
+      + 'spacing, positive evidence only (a move with either anchor null keeps its own step). '
+      + '⚠ EVERY LINE NUMBER IN THIS TICKET WAS WRONG EXCEPT (d)\'s. (a): :1541/:9563/:10749/:316, '
+      + 'not :1516/:9140/:10234/:309. (b): .regionbin is :1816, not :1755. (c): the cardHtml site '
+      + 'is :1467 not :1400, and the "three multi-slot class builders" at :1261/:1483/:1767 are '
+      + 'NONE OF THEM class builders — the real count is two, and "~23 trailing-space sites" is '
+      + '16. That is why 183 derives its call-site list instead of pinning the ticket\'s lines: a '
+      + 'guard built on those numbers would have been wrong on arrival. '
+      + 'ORCHESTRATOR VERIFIED (a) INDEPENDENTLY: planted a fifth caller in batch-fire-a.ts, §2 '
+      + 'reddened and named the file; reverted, 5/5.',
+    status: 'done',
   },
   {
     id: 83,
@@ -4693,7 +4924,48 @@ export const CARD_TODO: TodoEntry[] = [
       + 'nothing today. Then retire POOL_CLAIM_ALLOWLIST[0] and printedCost.',
     proof: null,
     verify: 'A stale entry in any of the nine fails the suite, naming the entry and its reason.',
-    status: 'open',
+    guards: [
+      '180-pool-sight.test.ts::every test file that sweeps the card pool can see all of it',
+      '180-pool-sight.test.ts::every BLIND_ON_PURPOSE entry still names a file, and its reason still holds',
+      '180-pool-sight.test.ts::the import walker finds a blind file, a sighted one, and a bare import',
+      '180-pool-sight.test.ts::the pool floor the eight sweeps carry can actually fail',
+      '71-card-ledger.test.ts::NOT_A_GAP',
+      '147-comment-conformance.test.ts::POOL_CLAIM_ALLOWLIST',
+      '153-typecheck-reach.test.ts::SKIP_DIRS',
+    ],
+    closed:
+      'R210 (2026-08-26). ⚠ THE HEADLINE NUMBER WAS WRONG IN THE TICKET\'S OWN FAVOUR AND THE '
+      + 'CLOSURE HAS TO SAY SO: 37 waiver tables exist (34 excluding 142\'s three classification'
+      + 'maps), and 31 ALREADY CARRIED A STALENESS ASSERTION. Six did not — not nine — and only three'
+      + 'of those six were non-empty and genuinely waiving. Over-counting a gap costs the same'
+      + 'credibility as under-counting one, and the honest summary is that the repo was already doing'
+      + 'this right 31 times out of 37. Two of the existing ones — 122\'s WORD_OVERRIDES and 182\'s'
+      + 'KNOWN_WRONG — pin EXACT MEMBERSHIP, which is stronger than CT-83 asks for. The independent'
+      + 'audit reached 33/27 on a different waiver-vs-classification boundary; THE SIX ARE IDENTICAL'
+      + 'either way, which is the number that matters. LANDED: NOT_A_GAP, POOL_CLAIM_ALLOWLIST,'
+      + 'PARKED_EXEMPT, NOT_SCANNED and SKIP_DIRS all re-derive from the registry, the source or git.'
+      + 'NO LENGTH-OF-REASON CHECKS ANYWHERE — the ticket named that failure (SILENT_KNOWN checks its'
+      + 'reason for `length > 40` and nothing else, so a stale reason outlives its truth) and this'
+      + 'deliberately does not repeat it. ⚠ POOL_CLAIM_ALLOWLIST[0] RETIRED, AND THE REASON IT'
+      + 'SURVIVED IS THE REAL FIND: §2 has read retractions over the ENCLOSING BULLET since it was'
+      + 'written, but §3 matched line by line — so §3 could never see batch-wood-a.ts withdraw'
+      + 'itself, and the Burgeon waiver sat there after Burgeon was fixed. §2\'s walk is lifted out as'
+      + 'a shared `enclosingBullet()`. The new `basis` field then CAUGHT THE AGENT\'S OWN ERROR ON ITS'
+      + 'FIRST RUN: it recorded batch-dark-c.ts as `retracted` when that claim is a `//` block rather'
+      + 'than a `*` bullet, and the test refused it; re-based as `verified` with a real check. ⚠'
+      + 'SKIP_DIRS BELONGS, AND IS THE MORE DANGEROUS KIND, which is the argument the ticket did not'
+      + 'make: a waiver names what it waives, but a SKIPPED DIRECTORY is invisible in both directions'
+      + '— and §1\'s verdict is quantified over the corpus SKIP_DIRS defines. That is R181\'s own'
+      + 'failure reproduced inside the file written to prevent it. Now asserted against `git'
+      + 'ls-files`. ⚠ ALL THREE OF THE TICKET\'S printedCost CLAIMS WERE WRONG: it is dsl.ts:423 not'
+      + ':418 (there is no engine/src/dsl.ts); the doc comment is 9 lines not 8; and "outside'
+      + 'src/cards/sets so §4 never saw it" is FALSE — R193 widened §4, which SAW it, waived it with'
+      + 'a written expiry, and guarded the waiver. So retiring it is a cleanup and the machinery'
+      + 'worked as designed. Deleted, waiver removed, DEAD_EXEMPT kept empty-with-guard. STILL OPEN,'
+      + 'HANDED BACK: the KNOWN_UNACTIVATED patch (84-card-semantics was another agent\'s territory'
+      + 'this round) — mirrors KNOWN_UNMET\'s check and enforces the REAL/BOARD rule its own comment'
+      + 'already states. Exact wording is in the agent\'s report.',
+    status: 'done',
   },
   {
     id: 84,
@@ -4731,7 +5003,45 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A card that publishes a hidden zone to the shared log fails a test written in the card\'s '
       + 'own test file, without importing the server.',
-    status: 'open',
+    guards: [
+      '174-secrecy-is-seat-aware.test.ts::logFor(h, seat) CAN SEE',
+      '174-secrecy-is-seat-aware.test.ts::the seat log is built from EVENTS',
+      '174-secrecy-is-seat-aware.test.ts::the lint is not blind',
+      '174-secrecy-is-seat-aware.test.ts::no assertion names a card and a secret in the same breath',
+      '174-secrecy-is-seat-aware.test.ts::the lint has reach',
+      '174-secrecy-is-seat-aware.test.ts::Bioremediation and Void Memory print REVEALS',
+      '42-dark-b.test.ts::Thought Extraction: strip a card from a hand you can see',
+      '26-metal-a.test.ts::Dreamtender',
+    ],
+    closed:
+      'R203 (2026-08-26). `test/util.ts::logFor(h, seat)` runs `h.events` through '
+      + 'server/view.ts::redactLog — the log that seat is ACTUALLY served — and '
+      + '174-secrecy-is-seat-aware is the lint that keeps secrecy claims off `h.log`. '
+      + 'It is a free function over a Harness, not a method on it, because engine/src must not '
+      + 'import server/ (server/view.ts already imports engine/src/engine.ts, so a method would '
+      + 'close a cycle); engine TESTS import view.ts freely, which is what makes this legal. '
+      + 'Built from `h.events`, never `h.log`, so it cannot re-make the log/logTypes drift. '
+      + 'THE LINT HAS ZERO PROSE EXEMPTIONS, and that is the point: both halves are DERIVED — '
+      + 'the private-look card set from PRINTED TEXT via allCardNames(), and the private-fragment '
+      + 'set by scanning every `privateTo`-tagged `.ev(` under engine/src. A vocabulary rule '
+      + 'would have needed three prose waivers (exactly the CT-83 shape); the derived rule needs '
+      + 'none, and Void Memory / Worldbender are planted as controls proving it stays quiet on '
+      + 'legitimate public reveals. '
+      + 'ORCHESTRATOR VERIFIED INDEPENDENTLY: dropping `{ privateTo: ctx.controller }` from '
+      + 'batch-dark-b.ts:848 reddens 42-dark-b IN THE CARD\'S OWN FILE with no server import, and '
+      + 'the failure message is the leak itself — ten of the opponent\'s card names printed in '
+      + 'full. Reverted; 131/131 across 42-dark-b, 174, 26-metal-a, 172 and 173. '
+      + '⚠ TWO TICKET CLAIMS WERE WRONG, BOTH IN THE FLATTERING DIRECTION FOR THE TICKET. '
+      + '(1) Bioremediation is NOT a flat-log control — its test (23-wood-a:54) reads no log at '
+      + 'all, it asserts on `state.seenHand`. Only Void Memory is; §5 pins both facts. '
+      + '(2) "153 files still asserting against the flat log" OVERSTATES it: measured, 167 '
+      + 'assertions read a seatless Harness log and EXACTLY ONE was a secrecy claim. The other '
+      + '166 assert on public events and are correct. 153 is the size of the CAPABILITY gap, not '
+      + 'a count of unfalsifiable assertions — so this lint\'s value is prospective, and saying '
+      + 'so is the honest close. Only 2 existing tests changed behaviour (42-dark-b, 26-metal-a). '
+      + 'The lint follows hoisted `const x = h.log.…` bindings, because 26-metal-a already had '
+      + 'that shape and a one-line hoist would otherwise evade the rule.',
+    status: 'done',
   },
   {
     id: 85,
@@ -4764,7 +5074,51 @@ export const CARD_TODO: TodoEntry[] = [
       + '(153 files, 2-minute foreground timeout) and is already run serially from a script.',
     proof: null,
     verify: 'Twenty consecutive server suite runs under load are all green.',
-    status: 'open',
+    guards: [
+      'server/test-clock.ts::each pack has been picked over once',
+      'server/test-building.ts::both seats joined',
+      'server/test-postgame.ts::joining a decided game gets the post-game payload, not just a dead board',
+    ],
+    closed:
+      'R204 (2026-08-26), AND THE TICKET NEEDED RE-SCOPING BEFORE IT COULD BE FIXED. '
+      + '⚠⚠ BOTH PRESCRIBED FIXES WERE ALREADY IN THE TREE — this ticket would have been closed '
+      + 'by doing nothing. "Bind port 0 and read back the assigned port": test-util.ts::freePort '
+      + 'already did that. "package.json should run the suite SERIALLY and say why": already '
+      + 'true, and MEASURED true — the 19 subtest durations sum to 28.5s of a 28.6s total. A '
+      + 'third ticket claim was simply false: "the engine suite is already run serially from a '
+      + 'script" — engine/package.json is plain `node --test`, run in parallel across cores, and '
+      + 'no such script exists. There was nothing to match. '
+      + 'MEASUREMENT FIRST: 10 runs on an idle box = 10/10 green (an unloaded box cannot measure '
+      + 'a contention bug). 12 runs under 4 concurrent copies = **2 failures, 17%** — and both '
+      + 'were the SAME assertion in test-clock.ts, which is on no ticket. '
+      + 'THE REAL CAUSE, CAUGHT IN THE ACT: `test-clock.ts::advanceUntil` tested its predicate '
+      + 'against a view while a message for the OTHER client was still in flight, then drove that '
+      + 'client off its STALE `legal` — so seat 1 drafted twice. Its own docstring warns about '
+      + 'this class and fixed only half of it. '
+      + 'FOUR MORE, of which the ticket named none: (1) `freePort()` binds :0, reads the port and '
+      + 'CLOSES it before handing the bare number to the child — a TOCTOU whose window is however '
+      + 'long main.ts takes to boot, and which produces exactly the reported ECONNREFUSED; used '
+      + 'by ELEVEN tests, not three. (2) test-building.ts discarded the ready line and slept '
+      + '1200ms — the file the ECONNREFUSED was reported against had TWO independent reasons to '
+      + 'produce one. (3) test-postgame.ts bound PORT+1 unchecked, and its readiness promise was '
+      + 'the only one of eleven with NO exit rejection, so a failed bind became a silent 15s '
+      + 'timeout naming nothing. (4) two time bounds assuming a join round trip costs under 300ms. '
+      + 'SHIPPED: main.ts supports PORT=0 and prints the port it ACTUALLY bound; spawnServer() '
+      + 'reads it back from the ready line; freePort() deleted; 11 tests converted; quiesce() '
+      + 'waits for both sockets to fall quiet instead of sleeping longer; the time bounds derive '
+      + 'from a MEASURED window. '
+      + '⚠ THE CLOCK WAS DELIBERATELY NOT INJECTED, and the reasoning is right: `Date.now()` in '
+      + 'settleClock is not ambient — elapsed wall time IS the feature. Faking it turns '
+      + 'test-clock.ts into an arithmetic test, the exact "unit-test the last hop" shape '
+      + 'docs/13 §5 lists as a defect. It also was not the flake. '
+      + 'ORCHESTRATOR VERIFIED INDEPENDENTLY: 19 consecutive runs under ~7 concurrent suites '
+      + '(heavier than the agent\'s 4-way), 19/19 green, 19 pass / 0 fail each. With the agent\'s '
+      + 'own 24 that is 43 loaded runs green against a measured 17% baseline. '
+      + '⚠ HONEST LIMIT, stated by the agent and worth keeping: the port race was never caught in '
+      + 'the act. It is fixed on the strength of reading the code plus the argument that it '
+      + 'produces precisely the reported ECONNREFUSED. The stale-view race IS the one that was '
+      + 'reproduced, and it was in no ticket at all.',
+    status: 'done',
   },
   {
     id: 86,
@@ -4809,7 +5163,36 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'The mod Slag Spewer erases as a cost is on a pile the players can see, or a ruling says it '
       + 'deliberately is not.',
-    status: 'open',
+    guards: [
+      '178-played-item-and-erased-mods.test.ts::an erase paid as a COST still announces itself with "info" — Q3 is OPEN',
+      '178-played-item-and-erased-mods.test.ts::Suppression Field: mods leave host and game, the host lives, and the pile is untouched',
+      '178-played-item-and-erased-mods.test.ts::Return to Nature: the site that already got R65 right still files the public pile',
+    ],
+    closed:
+      'R208 (2026-08-26), THE BUILDABLE HALF ONLY — Q3 REMAINS OPEN AND BEHAVIOUR IS '
+      + 'BYTE-IDENTICAL. `E.eraseMod(mod, { leavesGame? })` now sits beside R178\'s `E.moveMod`:'
+      + 'unlink from the host, delete the entity, and EMIT NOTHING — every caller keeps its own'
+      + 'announcement, including Slag Spewer\'s plain `info`. That is the whole value of the choke'
+      + 'point while the ruling is outstanding: when the owner answers Q3 it is ONE guarded line'
+      + 'inside `eraseMod` instead of five scattered edits, and the seam is commented in place saying'
+      + 'exactly which line the `ev(\'erased\', …)` goes on. ⚠ THE TICKET SAID THREE HAND-ROLLED SITES.'
+      + 'IT IS FIVE. Two were invisible to the ticket\'s own `mods.splice` grep because they clear the'
+      + 'list instead (`t.mods = []`): Suppression Field (batch-metal-c.ts:269) and Return to Nature'
+      + '(batch-earth-b.ts:514). ⚠⚠ SUPPRESSION FIELD IS A SECOND LIVE INSTANCE OF THE SAME R65'
+      + 'DEFECT AND WAS ON NO TICKET: real nontoken mod cards leave the game, the card says "ERASES"'
+      + 'in its own log line, and nothing reaches the public pile. It belongs in Q3\'s scope and the'
+      + 'owner should be told so before answering. Reclaim the Fallen routes with `leavesGame: false`'
+      + 'because the card goes INTO PLAY — it is not an erase at all. ⚠ THE TOKEN HALF OF Q3 IS'
+      + 'SELF-CONTRADICTORY TODAY and the owner should settle it in the same breath:'
+      + '`disposeToBin`/`eraseUnit` DO file token mods on the erased pile; Ominous Growth does not.'
+      + 'Ominous Growth\'s mods are token mods, so R133 may exempt them — that is a ruling, not a'
+      + 'guess to make here. ORCHESTRATOR VERIFIED THE RULING IS GENUINELY PINNED OPEN, which is the'
+      + 'claim that mattered: making `eraseMod` emit `erased` — i.e. answering Q3 in code without'
+      + 'asking — reddens three tests by name (Slag Spewer, Suppression Field, Return to Nature).'
+      + 'Restored; 9/9. So the next agent cannot quietly decide this one. STILL OPEN AND NOT CLOSED'
+      + 'BY THIS: whether a mod erased as a COST reaches the R65 public pile. Q3/Q9 of the round-27'
+      + 'owner questions.',
+    status: 'done',
   },
   {
     id: 87,
@@ -4840,6 +5223,246 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A press run that ends mid-activation credits the card under test with nothing that '
       + 'happened after it.',
+    guards: [
+      '181-inconclusive-activation-window.test.ts::a later card emits inside the unclosed window, and it is refused',
+      '181-inconclusive-activation-window.test.ts::the borrowed evidence was SCORING evidence, not harmless noise',
+      '181-inconclusive-activation-window.test.ts::the inconclusive flag can also say NO',
+      '181-inconclusive-activation-window.test.ts::the pre-R211 behaviour is reachable ONLY from this control',
+      '84-card-semantics.test.ts::drive every card and check it against its printed promises',
+    ],
+    closed:
+      'R211 (2026-08-26). The tail is a REFUSAL now, not evidence: an activation still '
+      + 'unresolved when the run ends records `actInconclusive` + a reason, and nothing scores '
+      + 'off the span. 84-card-semantics prints an INCONCLUSIVE tally beside UNREACHED with '
+      + '`assert.equal(incRuns, 0)` as a floor IN THE HONEST DIRECTION, and the `surprises` '
+      + 'message now says "⚠ INCONCLUSIVE, not unreached" so nobody files a board precondition '
+      + 'the card does not lack. '
+      + '⚠ PART 1 MEASURED THE TAIL AT **ZERO**: 491 cards, 1296 drill runs, 0 ended '
+      + 'mid-activation. The ticket\'s "mostly moot since R199" was UNDERSTATED — at HEAD it is '
+      + 'entirely moot, and Part 3 re-measured the whole tally to a null: every number identical '
+      + '(114/123, 278/316, augment 137, trigger 92, activated 35, condition 14, UNREACHED '
+      + 'untouched), NO card changed state, no floor approached. So NO card was standing on '
+      + 'borrowed evidence — measured, not assumed. '
+      + 'THE WHOLE VALUE THEREFORE RESTS ON THE POSITIVE CONTROL, and it is a good one: an '
+      + '`{augment, press}` Slag Spewer run, clipped at a maxSteps SEARCHED FOR AT TEST TIME (a '
+      + 'hardcoded step would rot into a vacuous pass). The old window credited '
+      + '`statChanged` from ANOTHER CARD\'s Protective Adaptations +1/+1 — and `EVIDENCE.pump` '
+      + 'is `[\'statChanged\']` and nothing else, so the borrowed event was SCORING a pump '
+      + 'promise for a card that prints no pump. CT-86\'s mechanism reproduced end to end. '
+      + '⚠ THE TICKET WAS WRONG TWICE. (1) "a press run" — `press` ALONE never opens an '
+      + 'activation window; `pendingAct` is set only under `activate` or `augment`, so a pure '
+      + 'press run cannot reach the tail at all. (2) **`maxSteps` was not the only way in**: the '
+      + '`gameover` break sits at the TOP of the loop, before the branch that closes a resolved '
+      + 'activation, so a game ending mid-activation reached the identical unbounded tail. That '
+      + 'matters because the drill\'s board is lethal by design (R199 raised the life top-up for '
+      + 'exactly this). Both exits are covered and the reason is recorded: `maxSteps` means the '
+      + 'drill is too impatient, `gameover` means the board killed somebody first, and only the '
+      + 'first is fixable by turning a knob. '
+      + 'ALSO FOUND, DORMANT, on no ticket: `pendingAct` is a SINGLE SLOT and the '
+      + 'activation-taking branch does not require an empty stack, so a second activation offered '
+      + 'while the first is unresolved would OVERWRITE the open window and silently DROP '
+      + 'evidence — the UNflattering direction, which is why it would never have surfaced as a '
+      + 'false positive. 0 occurrences over the same 1296 runs. '
+      + 'ORCHESTRATOR VERIFIED: 181 is 4/4, and its opt-in flag for the OLD unbounded tail appears in '
+      + 'exactly two files — drill.ts and 181 itself — which 181 asserts, so the pre-R211 behaviour '
+      + 'cannot leak back into a scoring path. (That assertion caught this very closure note when '
+      + 'it first named the flag verbatim, which is the guard working: it counts FILES, not call '
+      + 'sites, and prose is exactly how such a hatch gets quietly re-adopted.)',
+    status: 'done',
+  },
+  {
+    id: 88,
+    area: 'coverage',
+    severity: 'minor',
+    title:
+      'Seventy test-local withE helpers hand-roll Harness.absorb, and sixty-two of them do it wrong ',
+    detail:
+      'R203 measured it while building the seat-aware log: 70 test files declare their own local '
+      + '`withE` helper that re-implements what `Harness.absorb()` does, and only 8 of them reproduce'
+      + 'the rule absorb states in its own docstring — "a signal-only event is not a log line". Only'
+      + '2 keep `logTypes` index-aligned with `log`. So 62 files hold empty strings in `h.log` that a'
+      + 'real hotseat log never contains, and 68 files have a `logTypes` array that has silently'
+      + 'drifted out of alignment with the messages it is supposed to index. That is the exact bug'
+      + '`src/harness.ts` warns about in the comment above `logTypes`, re-made sixty-eight times by'
+      + 'copy-paste.',
+    evidence:
+      'Found by the R203 agent while building `logFor(h, seat)` for CT-84, and reported rather than '
+      + 'fixed because it is 70 files. It is CURRENTLY LATENT and that is why this is minor, not'
+      + 'major: no file both reads `logTypes` and has an unguarded push, so nothing is wrong today.'
+      + '`logFor` is immune by construction because it reads `h.events`, never `h.log`. It is a'
+      + 'loaded gun, not a firing one.',
+    fix:
+      'Export `absorb`/`withE` from `test/util.ts` and route all 70 files through it, so the rule '
+      + 'lives in one place and cannot be re-derived wrongly. Then add a lint of the'
+      + '`154-guard-shape` family asserting no test file declares its own. Do NOT hand-fix 62 files'
+      + 'one at a time — that reproduces the cause. ⚠ Check as you go whether any of the 62 has a'
+      + 'test that only passes BECAUSE its log holds an empty string; that would be a live defect'
+      + 'hiding behind a latent one.',
+    proof: null,
+    verify:
+      'No test file declares its own absorb; `logTypes` is index-aligned with `log` everywhere; and '
+      + 'a lint names any file that reintroduces a local copy.',
+    status: 'open',
+  },
+  {
+    id: 89,
+    area: 'engine',
+    severity: 'minor',
+    title:
+      'Two cards throw a TypeError when they resolve with no legal target, instead of fizzling ',
+    detail:
+      'On 65-effect-conformance\'s new `barren` board — opponents present, nothing for them to give '
+      + '— `Luminous Arc` and `Dreadwave Devourer` do not fizzle, they THROW: "Cannot use \'in\''
+      + 'operator to search for \'player\' in undefined" and "... for \'stack\' in undefined". Both'
+      + 'dereference `ctx.targets[0]!` unconditionally, and the non-null assertion is exactly the lie'
+      + 'it looks like. R86 fizzles a spell whose target has gone away, so in a real game the throw'
+      + 'is unreachable — but "unreachable today" is not "cannot fire", and the same shape on a card'
+      + 'R86 does not cover would be a crash in a live game rather than a caught test error.',
+    evidence:
+      'Surfaced by the `barren` board R209 added for CT-74; 65 now prints both cards by name on '
+      + 'every run rather than folding them into a count. Reported and deliberately not fixed by that'
+      + 'agent, correctly — the fix is engine-side and `engine.ts` was another agent\'s territory that'
+      + 'round.',
+    fix:
+      'Decide the general rule first, then apply it to the class rather than to these two: should '
+      + 'an effect that reaches resolution with an empty `ctx.targets` fizzle quietly, announce, or'
+      + 'be impossible by construction? Then sweep every `ctx.targets[0]!` in the pool — the'
+      + 'assertion is the smell, and there will be more than two. ⚠ Per docs/13 §7.2 the guard\'s card'
+      + 'list must be COMPUTED from that sweep, not typed from this ticket.',
+    proof: null,
+    verify:
+      'A spell resolving with no target behaves the same way on every card in the pool, and a new '
+      + '`ctx.targets[0]!` fails a sweep.',
+    status: 'open',
+  },
+  {
+    id: 90,
+    area: 'engine',
+    severity: 'minor',
+    title:
+      'The haste step can open with nothing playable, or be skipped while a playable card sits in '
+      + 'hand',
+    detail:
+      'engine.ts:10599-10607 declares its own divergence in a comment: `canHaste` and `castable()` '
+      + 'do not agree, so the haste step is offered on a condition that is not "you can actually do'
+      + 'something here". Both failure directions are live — the step opens on an empty'
+      + 'hand-of-options, and it is skipped while a card the player could legally haste sits in their'
+      + 'hand. The second is the one a player would report as a bug, because a window they were'
+      + 'entitled to never appeared.',
+    evidence:
+      'Found by the R206 agent while checking the {Haste} glossary row against the engine — the row '
+      + 'named ONE of the five conditions `canHaste` actually tests, which is what led to reading the'
+      + 'function. Reported, not fixed: the row was the ticket, the engine was not, and rewording a'
+      + 'glossary row is not the place to change behaviour.',
+    fix:
+      'Work out which of the two is authoritative — most likely `castable()`, since the step exists '
+      + 'to let somebody cast — and make `canHaste` ask it rather than approximating it. ⚠ This'
+      + 'changes when a priority window opens, so it is a rules-visible change and wants a ruling,'
+      + 'not just a patch. Check it against R97\'s battle-timing refusals: a {Battle} card prophesied'
+      + 'with a [Haste] banner would bypass both, which is unreachable today only because no such'
+      + 'card exists.',
+    proof: null,
+    verify:
+      'The haste step opens exactly when the player has something they can legally do in it, '
+      + 'demonstrated in both directions.',
+    status: 'open',
+  },
+  {
+    id: 91,
+    area: 'card',
+    severity: 'major',
+    cards: ['Torrential Reclamation'],
+    title:
+      'Torrential Reclamation scales the sacrifice as well as the life loss, and no-ops entirely at '
+      + 'X=0',
+    detail:
+      'Prints "Recall X target nontoken allies. Then each player sacrifices a unit and you lose 1 '
+      + 'life for each ally recalled this way." Two defects found by the R212 correctness sample. (a)'
+      + 'AMOUNT: with X=2 each player sacrifices TWO units, not one — batch-hybrids-fwe.ts wraps the'
+      + 'seat loop in `for (let r = 0; r < recalled.length; r++)`. The trailing "for each ally'
+      + 'recalled this way" should bind to the life loss it is attached to; no other card in the pool'
+      + 'writes a scaled sacrifice that way, and Structural Collapse and No Hand Killer both put the'
+      + 'scaling inline. (b) TIMING: at X=0 the whole spell returns early, so the second sentence'
+      + 'never happens at all — it is not gated on the first in the printed text.',
+    evidence:
+      'The only two failures in R212\'s 30-card correctness sample: 125 of 127 clauses correct, and '
+      + 'both misses are this one sentence. Pinned in `182-correctness-sample.test.ts`\'s KNOWN_WRONG'
+      + 'by exact membership, so the suite reddens the moment either is fixed. The card\'s own comment'
+      + 'says the distribution is deliberate, which is why this is a ruling question and not an'
+      + 'obvious bug.',
+    fix:
+      '⚠ ASK BEFORE CHANGING (a). It is Q1 of the round-28 owner questions: does "for each ally '
+      + 'recalled this way" scale the sacrifice too, or only the life loss? (b) is answerable without'
+      + 'a ruling — the early return at X=0 skips a sentence the card prints unconditionally — but do'
+      + 'both in one change once the ruling lands, and remove the KNOWN_WRONG rows rather than'
+      + 'editing them.',
+    proof: null,
+    verify:
+      'Both clauses do what the card prints, the KNOWN_WRONG rows are deleted, and 182 goes green '
+      + 'with 127/127.',
+    status: 'open',
+  },
+  {
+    id: 92,
+    area: 'coverage',
+    severity: 'minor',
+    title:
+      'The drill keeps one activation window in a single slot, so a second activation silently '
+      + 'drops it',
+    detail:
+      '`pendingAct` in `test/drill.ts` is a single slot, and the branch that takes an activation '
+      + 'does not require an empty stack. So a second activation offered while the first is still'
+      + 'unresolved OVERWRITES the open evidence window, and everything the first activation'
+      + 'delivered is dropped without a trace. This is the mirror of CT-87: that one CREDITED'
+      + 'evidence that was not the card\'s, this one DISCARDS evidence that is. Both make the drill'
+      + 'lie about what a card did.',
+    evidence:
+      'Found and measured by the R211 agent while fixing CT-87, in the same instrumented run: ZERO '
+      + 'occurrences across 491 cards and 1296 drill runs. ⚠ Note WHICH direction it errs in — it'
+      + 'makes a card read as delivering LESS than it did, so unlike round 26\'s four blindnesses it'
+      + 'would never have surfaced as a flattering number. That is exactly why nobody would have'
+      + 'caught it: it produces a plausible "never observed", which is a state the suite already'
+      + 'expects to see.',
+    fix:
+      'Make `pendingAct` a stack rather than a slot, or refuse to take a second activation while '
+      + 'one is open and record that refusal the way CT-87\'s `actInconclusive` records the other one.'
+      + 'Then re-run the whole-pool measurement to confirm it is still zero, and keep the counter — a'
+      + 'dormant defect with a live counter is cheap; a dormant defect with nothing watching it is'
+      + 'how this class returns.',
+    proof: null,
+    verify:
+      'A second activation opened while one is pending either nests correctly or is recorded as '
+      + 'refused, and the whole-pool count of both is printed.',
+    status: 'open',
+  },
+  {
+    id: 93,
+    area: 'coverage',
+    severity: 'minor',
+    title:
+      'The card-ledger guard tally dropped seven guards with no explanation, and the floor does not '
+      + 'care',
+    detail:
+      '71-card-ledger.test.ts carries an R155 tally comment reading 49/6/99, and the file now '
+      + 'reports 50/6/92. The first two numbers moved for understandable reasons; the third means'
+      + 'SEVEN GUARDS ARE GONE and nothing in the repository says which, when, or why. The floor'
+      + 'assertion below it is a lower bound that 92 still clears, so the suite is content. A guard'
+      + 'count that falls silently is the same shape as the exemption lists CT-83 was about: a claim'
+      + 'about the code that nothing re-checks.',
+    evidence:
+      'Found by the R210 agent while giving the file\'s exemption lists their staleness assertions. '
+      + 'It fixed the lists it was sent for and reported this rather than quietly updating the'
+      + 'comment to match, which is the right call — rewriting the number to 92 would destroy the'
+      + 'only evidence that seven went missing.',
+    fix:
+      'Find the seven: `git log -p` on the file against the R155 commit will name them. Then decide '
+      + 'per guard whether it was deliberately retired (say so, with the ruling) or lost in a'
+      + 'refactor (restore it). ⚠ Then make the tally a real assertion rather than a comment — an'
+      + 'exact expected count, or a floor that is raised when guards are added — because a lower'
+      + 'bound nothing raises is a number that can only ever drift downwards.',
+    proof: null,
+    verify:
+      'The seven are each accounted for, and the guard count is asserted rather than described. ',
     status: 'open',
   },
 ];

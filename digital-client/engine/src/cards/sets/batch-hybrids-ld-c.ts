@@ -260,7 +260,19 @@ card('Dragnol', {
         // the gain first: a life total that ends at 0 must not be reached by
         // an opponent's loss before mine lands (loseLife ends the game inline)
         g.gainLife(ctx.controller, 2, 'Dragnol');
-        for (const seat of opponentsIn(g, ctx.region, ctx.controller)) {
+        // R209/CT-81(b): the [2] was paid and the 2 life gained, so this run
+        // is never WHOLLY silent and 65's silence check cannot see it. The
+        // drain half is what the player paid for, and R25 empties it whenever
+        // the region holds nobody else — say so rather than pocketing the mana
+        // in silence. (Rotwall, further down this file, is the same repair on
+        // an effect whose OTHER half does not speak, which is why that one was
+        // already caught by CT-70 and this one was not.)
+        const foes = opponentsIn(g, ctx.region, ctx.controller);
+        if (!foes.length) {
+          g.ev('info', 'Dragnol: no opponent is present here — nobody is drained.');
+          return;
+        }
+        for (const seat of foes) {
           g.loseLife(seat, 2, 'Dragnol');
         }
       },

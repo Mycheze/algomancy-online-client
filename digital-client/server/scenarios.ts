@@ -1,0 +1,514 @@
+/* THE SCENARIO TESTER — a deterministic board, dealt inside the deal.
+ *
+ * Commissioned in `docs/14-scenario-tester.md` (round 28). The owner is the
+ * rules authority, and his "that's broken" is ground truth in a way no
+ * assertion is; this module is the half of that instrument that puts a
+ * REPRODUCIBLE board in front of him.
+ *
+ * ── THE ONE ARCHITECTURAL DECISION (docs/14 §2) ──────────────────────────
+ *
+ * A room's state is a function of `(seed, mode, els, decks, scenario, actions)`.
+ * Injecting a hand-built `GameState` into a room would break `replay-room.ts`,
+ * `replay-probe.ts` and the R200 divergence diff permanently, for exactly the
+ * games we most want to re-examine. So a scenario is instead a **deterministic
+ * mutation applied inside the deal**, and its id is recorded in the room file
+ * beside `seed`.
+ *
+ * ⚠ CORRECTION TO docs/14 §2, found while building this (R216). The doc says
+ * "`fresh()` is the single choke point — `rebuild()` calls it — so a scenario
+ * room rebuilds, replays, undoes, saves and diffs like any other." That is
+ * true of `rooms.ts` and FALSE of the repository. There are four deal sites in
+ * `server/`, not one:
+ *
+ *   rooms.ts:fresh()        the live room (and rebuild(), and restore)
+ *   replay-room.ts:runOnce() the forensic replay + the R200 divergence diff
+ *   stats.ts:summarizeGame() the post-game screen and the accounts fold
+ *   replay-probe.ts          a HISTORICAL engine, dynamically imported
+ *
+ * Putting the mutation in `fresh()` alone would have left a scenario room
+ * replaying, diffing and being counted as if the scenario had never happened
+ * — a silent, total divergence in the one tool built to explain divergences.
+ * `dealScenario()` below is therefore the choke point, and the first three
+ * sites all call it. The fourth CANNOT: it loads `createGame` out of a
+ * worktree at an old commit, and this module's mutation is written against
+ * TODAY's engine. `replay-probe.ts` refuses a scenario room by name rather
+ * than probing it wrong (see `probe()`), which is the R200 lesson exactly —
+ * a wrong answer about a divergence is worse than no answer.
+ *
+ * ── PURITY (docs/14 §2's ⚠, and the reason it is there) ──────────────────
+ *
+ * Same scenario id + same engine → the same board, every time. No wall clock,
+ * no unseeded randomness, no reading the filesystem. `150-registration-order`
+ * is the precedent: a batch importing another batch reshuffled every deck and
+ * nothing in the suite noticed. `185-scenario-determinism.test.ts` is the
+ * positive control for this file — it deals every scenario twice and compares
+ * the two states byte for byte, and it breaks that on purpose to prove it can
+ * see.
+ *
+ * ⚠ That file also SCANS THIS ONE — raw, comments included — for the spelling
+ * of a clock read or an unseeded random call. The scan is deliberately dumb:
+ * docs/13 §5 records `stripCode` going blind three separate times, and every
+ * sweep in the repo rests on it, so this one has nothing to go blind about. It
+ * costs one thing, and this note is it: do not write those calls out literally
+ * in this file's PROSE either. Say what they are instead.
+ *
+ * ── THE VOCABULARY IS BORROWED, NOT REINVENTED ───────────────────────────
+ *
+ * `engine/test/util.ts` (`give`, `spawn`, `giveResources`) and `drill.ts` build
+ * boards with `E.spawnUnit` / `E.homeRegion` / pushing onto `player.hand` and
+ * `player.resources`. So does this. It is deliberately NOT an import of
+ * `engine/test/util.ts`: that file imports `server/view.ts`, and a server
+ * module reaching into the engine's test tree would make the deploy depend on
+ * test code.
+ *
+ * ── SEATS ────────────────────────────────────────────────────────────────
+ *
+ * The owner is always SEAT 0 in a scenario room ("you"); seat 1 is "the
+ * opponent", driven by the scripted bot in main.ts unless the scenario sets
+ * `needsLiveOpponent`. That is a convention, and it is pinned by
+ * `186-scenario-library.test.ts` rather than left to memory.
+ *
+ * ── HOW TO ACTUALLY RUN ONE ──────────────────────────────────────────────
+ *
+ * The whole feature is gated on ONE environment variable, and without it the
+ * routes 404 (see main.ts's TESTER_TOKEN — this is a public deploy). So:
+ *
+ *     ALGO_TESTER_TOKEN=<a long random string> node main.ts
+ *
+ * then open, in a browser:
+ *
+ *     /api/scenario/open?token=<that string>&id=lithoghul-donated
+ *
+ * which deals the room and 302s straight onto the board. `&json=1` returns the
+ * room code instead of redirecting; `&seed=<n>` re-deals with a different
+ * library shuffle (the BOARD does not depend on the seed, the deck does).
+ * `/api/scenario/list?token=…` says what is in the queue.
+ *
+ * Verdicts land in `server/verdicts.jsonl`, overridable with
+ * ALGO_VERDICTS_FILE. "The link doesn't work" is almost always the token.
+ */
+import type {
+  Action, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Phase,
+  ResourceKind, Seat,
+} from '../engine/src/types.ts';
+import { apply, createGame, IllegalAction } from '../engine/src/apply.ts';
+import { E } from '../engine/src/engine.ts';
+import { getCard } from '../engine/src/cards/dsl.ts';
+
+/** The owner's seat in every scenario room. Not configurable: the runner
+ * screen, the bot and the verdict record all name "you" and "the opponent",
+ * and a per-scenario seat would make those three disagree. */
+export const YOU: Seat = 0;
+export const OPPONENT: Seat = 1;
+
+/** One unit to stand on the board before the owner touches anything. */
+export interface Placed {
+  card: CardName;
+  /** +1/+1 counters, for making a body survive (or not survive) a known hit */
+  counters?: number;
+  token?: boolean;
+}
+
+/** Resources to hand a seat, all OPEN (a scenario is not a mana puzzle unless
+ * it says so — the point is to reach the clause, not to ration). */
+export type ResSpec = Partial<Record<ResourceKind, number>>;
+
+export interface ScenarioSide {
+  hand: CardName[];
+  play: Placed[];
+  resources: ResSpec;
+}
+
+/** The entity ids the board patch minted, in `play` order, so a prologue can
+ * name "my attacker" and "their unit" without guessing at numbers. */
+export interface ScenarioIds { you: EntityId[]; opponent: EntityId[] }
+
+export interface Scenario {
+  /** stable forever: a verdict cites it years later */
+  id: string;
+  /** the card under test */
+  card: CardName;
+  /** why THIS card is in the queue — the risk it represents */
+  why: string;
+  /** plain English, shown on screen. THE load-bearing field: it is what lets
+   * the owner tell "the card is wrong" from "the setup is wrong", which is
+   * what the fourth verdict button exists for (docs/14 §5). */
+  expect: string;
+  you: ScenarioSide;
+  opponent: ScenarioSide;
+  /** who has the round-1 attack. Set before the prologue runs; `undefined`
+   * leaves whatever the seed dealt, which is NOT deterministic across seeds
+   * and so is only right for scenarios that never reach a battle. */
+  initiative?: Seat;
+  /**
+   * Engine actions applied after the board patch to walk the game into the
+   * window the scenario is about.
+   *
+   * ⚠ docs/14 §3 lists `phase` and `priority` as FIELDS of a scenario. They
+   * cannot be: `GameState.phase` is not a knob, it is the consequence of the
+   * actions taken to reach it, and assigning it directly would leave
+   * `battle`, `priority`, `hasteDone` and the segment key describing a game
+   * that never happened. So they are DECLARATIONS instead — `phase` and
+   * `priority` below are asserted after the prologue, and a scenario whose
+   * prologue stops landing where it claims fails loudly rather than opening
+   * a board nobody meant.
+   *
+   * The prologue is the rot surface of this whole design (docs/14 §9). It is
+   * a list of real actions through the real `apply`, so a rules change can
+   * refuse one — and when that happens the deal throws, by name, rather than
+   * dealing half a setup.
+   */
+  prologue?: (ids: ScenarioIds, state: GameState) => Action[];
+  /** asserted after the prologue */
+  phase: Phase;
+  /** asserted after the prologue; null = nobody holds priority there */
+  priority: Seat | null;
+  /**
+   * TRUE when the scenario genuinely needs a second human decision (a block,
+   * a response, "each player chooses").
+   *
+   * ⚠ docs/14 §4: getting this wrong in the PERMISSIVE direction is the
+   * expensive mistake. A scenario that silently needs an opponent reads as a
+   * hung game, and a hung game reads as a bug — which costs a round.
+   */
+  needsLiveOpponent?: boolean;
+}
+
+// ── the library ──────────────────────────────────────────────────────────
+//
+// ONE scenario. This is the vertical slice (docs/14 §8) and the library is
+// deliberately the next agent's job: 20 working scenarios beat 120 unplayable
+// ones, and the plumbing is the risky part.
+
+export const SCENARIOS: Record<string, Scenario> = {
+  /**
+   * WHY THIS CARD (R216).
+   *
+   * `docs/13-assessment.md` §1③ names the biggest hole in the round-28
+   * correctness sample by name: "the donated `[Augment]` path for ten of the
+   * eleven augment cards in the sample. Only one is checked on a host, and
+   * 'me'/'you' resolve differently there under R131." R212 found the same
+   * thing independently.
+   *
+   * Lithoghul is the sharpest case in that family that a human can settle in
+   * ninety seconds:
+   *
+   *  1. Its printed text is "[Augment] Whenever I am dealt damage, I deal that
+   *     much damage to you", and `batch-earth-a.ts`'s own comment says the
+   *     donated reading is "the whole point of the card" — as a {Virus} on an
+   *     ENEMY unit, "you" is the HOST's controller.
+   *  2. That path is observed NOWHERE in the suite. `16-earth-a` and
+   *     `105-semantics-playwatch` both spawn Lithoghul as its own body.
+   *     `112-literal-wood` is the only test that ever augments a host with it
+   *     — and its whole point is that the virus gets NEGATED, so it never
+   *     attaches and the donated text never runs. Three tests name the card;
+   *     zero exercise the clause.
+   *  3. The observable is a LIFE TOTAL, and a wrong answer points the other
+   *     way. If "you" resolved to the augment's owner instead of the host's
+   *     controller, the owner would watch his OWN life drop. There is no
+   *     reading of the board where the tester cannot tell.
+   *  4. It exercises the whole of the plumbing rather than a corner of it: a
+   *     hand, resources, units on both sides, a prologue that walks into a
+   *     battle window, a targeted cast, a stack, and a triggered ability.
+   *
+   * It also sits in `84-card-semantics`'s BOARD category — the 25 unreached
+   * promises no fixture can build, because they need a situation rather than
+   * an input. That is the category this whole instrument exists for.
+   */
+  'lithoghul-donated': {
+    id: 'lithoghul-donated',
+    card: 'Lithoghul',
+    why: 'donated [Augment] text on an ENEMY host — R131 "me"/"you", named by '
+      + 'docs/13 §1③ and R212 as the single biggest untested hole. Three tests '
+      + 'name Lithoghul; none has ever let its donated text resolve.',
+    expect:
+      // plain English, deliberately: the printed notation is "{Virus}", and the
+      // runner escapes what it is given rather than iconizing it, so braces in
+      // this field read as a template artifact to somebody skimming in ninety
+      // seconds. The clause dropdown carries the printed wording; this line is
+      // for the human.
+      'Lithoghul is a Virus card, so you can augment it onto THEIR unit during battle.\n'
+      + '1. Play Lithoghul onto the enemy Towering Colossus, then pass so it resolves and attaches.\n'
+      + '2. Play Luminous Arc at the same Colossus (6 damage), then pass.\n'
+      + "3. Lithoghul triggers: “I deal that much damage to you.”\n"
+      + 'EXPECTED: the OPPONENT goes 30 → 24. You stay on 30. The augment is worn '
+      + "by their unit, so “you” is its controller — not you.",
+    initiative: YOU,
+    you: {
+      hand: ['Lithoghul', 'Luminous Arc'],
+      // a body to attack with, so there is a battle to have a window in. It
+      // is not part of the clause under test and is expected to do nothing.
+      play: [{ card: 'The Foretold' }],
+      // Lithoghul is e/1, Luminous Arc is r/2. Deliberately more than enough:
+      // a scenario that fails on mana is a `bad scenario` verdict about the
+      // wrong thing.
+      resources: { earth: 3, fire: 3 },
+    },
+    opponent: {
+      hand: [],
+      // 10/15. Its own printed text is an [Augment] box, which does nothing
+      // while it is a body in play — so as a host it is inert, and it survives
+      // the 6 with room to spare. A host that DIED to the Arc would make the
+      // owner adjudicate two clauses at once.
+      play: [{ card: 'Towering Colossus' }],
+      resources: { earth: 2 },
+    },
+    prologue: (ids, s) => [
+      { type: 'donePlanning', seat: YOU },
+      { type: 'donePlanning', seat: OPPONENT },
+      // the R18 haste step only engages when somebody holds a payable haste
+      // card; neither side does here, and `dealScenario` skips it if it is
+      // open anyway (see runPrologue) rather than depending on that.
+      { type: 'declareAttack', seat: s.battle?.attacker ?? YOU, columns: [[ids.you[0]!]] },
+    ],
+    phase: 'battle',
+    priority: YOU,
+    // the bot only ever has to pass and decline blocks here — see main.ts's
+    // scriptedOpponent, and §4's ⚠ on getting this flag wrong the permissive
+    // way. Checked by hand: the whole scenario resolves with seat 1 passing.
+    needsLiveOpponent: false,
+  },
+};
+
+export type ScenarioId = keyof typeof SCENARIOS & string;
+
+export const isScenarioId = (x: unknown): x is ScenarioId =>
+  typeof x === 'string' && Object.prototype.hasOwnProperty.call(SCENARIOS, x);
+
+/** Every scenario id, sorted — for the admin index and for the sweeps. */
+export const scenarioIds = (): string[] => Object.keys(SCENARIOS).sort();
+
+// ── the mutation ─────────────────────────────────────────────────────────
+
+/** A scenario that cannot be dealt is a loud failure, never a quiet half-board.
+ * It carries the id so a room-restore log line names the scenario, not just a
+ * stack. */
+export class ScenarioError extends Error {
+  /** the scenario that could not be dealt. A plain field, not a parameter
+   * property: node's type-stripping loader runs this file directly and refuses
+   * `constructor(public …)` outright. */
+  scenario: string;
+  constructor(scenario: string, msg: string) {
+    super(`scenario '${scenario}': ${msg}`);
+    this.name = 'ScenarioError';
+    this.scenario = scenario;
+  }
+}
+
+/** Put a side's hand, resources and units on the board. Mutates `state`.
+ *
+ * The hand and the resource pool are REPLACED, not appended to: a scenario
+ * says what the board is, and seven random opening cards beside two named ones
+ * is noise the owner has to read past on every single card. The deck is left
+ * exactly as the seed dealt it — draws still work and still replay. */
+function patchSide(e: E, seat: Seat, side: ScenarioSide, out: EntityId[]): void {
+  const p = e.player(seat);
+  p.hand = [...side.hand];
+  p.resources = [];
+  // ordered by the ResSpec's own key order so two runs push the same pool in
+  // the same order — an object literal's key order is stable in JS, and the
+  // resource ARRAY is indexed by actions, so its order is part of the board.
+  for (const [kind, n] of Object.entries(side.resources)) {
+    for (let i = 0; i < (n ?? 0); i++) p.resources.push({ kind: kind as ResourceKind, state: 'open' });
+  }
+  for (const placed of side.play) {
+    const u = e.spawnUnit(seat, placed.card, e.homeRegion(seat), {
+      ...(placed.token ? { token: true } : {}),
+      ...(placed.counters ? { counters: placed.counters } : {}),
+    });
+    out.push(u.id);
+  }
+}
+
+/** Apply the prologue, refusing to hand back a half-built board. */
+function runPrologue(sc: Scenario, ids: ScenarioIds, state: GameState, events: EngineEvent[]): GameState {
+  let s = state;
+  if (!sc.prologue) return s;
+  for (const a of sc.prologue(ids, s)) {
+    try {
+      const r = apply(s, a);
+      s = r.state;
+      events.push(...r.events);
+    } catch (err) {
+      if (err instanceof IllegalAction) {
+        // SCENARIO ROT, caught at the deal (docs/14 §9). A rules change that
+        // makes a setup step illegal must not be discoverable as "the board
+        // looks odd" — it is a broken scenario and it says so.
+        throw new ScenarioError(sc.id,
+          `setup action ${a.type} (seat ${a.seat}) was refused by this engine: ${err.message}`
+          + ' — the scenario no longer describes a legal game');
+      }
+      throw err;
+    }
+  }
+  return s;
+}
+
+/**
+ * Deal a game and apply a scenario to it. THE choke point.
+ *
+ * Same arguments as `createGame`, plus the scenario id. Returns the same shape,
+ * so every deal site is a one-word change.
+ *
+ * `id` undefined → a plain `createGame`, byte for byte. That matters more than
+ * it looks: every ordinary room in `server/games/` goes through this function
+ * once `rooms.ts` adopts it, and an ordinary game must be unchanged by the
+ * existence of the tester.
+ */
+export function dealScenario(
+  seed: number,
+  names: [string, string],
+  mode: GameMode,
+  els: Element[],
+  decks: [CardName[], CardName[]] | undefined,
+  id?: string,
+): { state: GameState; events: EngineEvent[] } {
+  const base = createGame(seed, names, mode, els, decks);
+  if (id === undefined) return { state: base.state, events: base.events };
+  const sc = SCENARIOS[id];
+  if (!sc) throw new ScenarioError(id, 'no such scenario');
+
+  let state = base.state;
+  const events = [...base.events];
+
+  const e = new E(state);
+  if (sc.initiative !== undefined) state.initiative = sc.initiative;
+  const ids: ScenarioIds = { you: [], opponent: [] };
+  patchSide(e, YOU, sc.you, ids.you);
+  patchSide(e, OPPONENT, sc.opponent, ids.opponent);
+  e.settle();
+  e.ev('info', `Scenario ${sc.id} — ${sc.card}. ${sc.expect.split('\n')[0]}`,
+    { scenario: sc.id, card: sc.card });
+  events.push(...e.events);
+
+  // a spawn trigger that opened a question would make the prologue's first
+  // action illegal for a reason that has nothing to do with the prologue —
+  // say so here, where the cause is
+  if (state.decision) {
+    throw new ScenarioError(sc.id,
+      `the board patch left a decision open (${state.decision.prompt}); a scenario board must settle`);
+  }
+
+  state = runPrologue(sc, ids, state, events);
+
+  // THE DECLARATIONS (see `Scenario.prologue`). These are the anti-rot guard:
+  // a scenario claims where it lands, and lands there or fails.
+  if (state.phase !== sc.phase) {
+    throw new ScenarioError(sc.id,
+      `declares phase '${sc.phase}' and the setup landed in '${state.phase}'`);
+  }
+  const prio = state.priority ?? null;
+  if (prio !== (sc.priority ?? null)) {
+    throw new ScenarioError(sc.id,
+      `declares priority ${sc.priority ?? 'nobody'} and the setup landed on ${prio ?? 'nobody'}`);
+  }
+  return { state, events };
+}
+
+// ── what the runner screen is told ───────────────────────────────────────
+
+/**
+ * The printed clauses of a card, DERIVED from `printed.json` (docs/13 §7.2's
+ * standing rule: derive, never enumerate).
+ *
+ * This is what fills the runner's "which clause was off" dropdown. The owner
+ * has ~90 seconds per card and typing must never be required to advance
+ * (docs/14 §5), so the clauses have to come from the card rather than from
+ * him — and hand-typing them per scenario is the enumeration the rule exists
+ * to stop: a card whose text is edited would keep the old dropdown forever.
+ *
+ * Splitting is on sentence boundaries, after the printed markup is stripped:
+ * `{i}(…)` is reminder text, `{/n}` is a line break in the card frame, and
+ * `{Braced}` terms are attribute keywords that read fine inline.
+ */
+export function printedClauses(card: CardName): string[] {
+  const def = getCard(card);
+  const raw = (def.text ?? '')
+    .replace(/\{\/n\}/g, ' ')
+    .replace(/\{i\}\([^)]*\)/g, ' ')
+    .replace(/\{([^}]*)\}/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!raw) return [];
+  // keep the terminator, so a clause reads the way it is printed
+  return raw.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+}
+
+// ── the scripted opponent's rule ─────────────────────────────────────────
+
+/**
+ * The action TYPES the scripted opponent will take, most passive first
+ * (docs/14 §4).
+ *
+ * It lives here rather than in main.ts — where the bot itself runs — for one
+ * reason: `186-scenario-library.test.ts` asserts, for every scenario in the
+ * library, that this rule can always answer for seat 1. A second copy of the
+ * order in the test would make that guard a check on the copy, which is the
+ * `stripCode`/`65-effect-conformance` shape docs/13 §5 lists twice.
+ *
+ * Within a type it takes the FIRST offer, and that is not an accident of
+ * ordering: `legalActions` pushes `declareAttack {columns: []}` and
+ * `declareBlocks {blocks: {}}` before any real formation, so "the first one"
+ * IS the declining one.
+ *
+ * `decide` is last and is the only entry that is not a decline. A decision has
+ * no null answer, and a bot that refused to answer one would hang the table —
+ * which docs/14 §4 names as the expensive failure ("a hung game looks like a
+ * bug"). It takes option 0, and the runner screen says so on screen.
+ */
+export const PASSIVE_ORDER: readonly string[] = [
+  'passPriority',      // the answer to every window
+  'declareBlocks',     // first offer = block nothing
+  'declareAttack',     // first offer = attack with nobody
+  'donePlanning', 'doneHaste', 'doneDeploying',
+  'decide',            // last resort — see above
+];
+
+/** The bot's move, given what the seat may legally do. `undefined` means the
+ * board is asking seat 1 for a real decision this bot has no business
+ * inventing — the caller stops, and the runner's "open the other seat" notice
+ * does its job. */
+export function passiveMove(legal: readonly Action[]): Action | undefined {
+  for (const type of PASSIVE_ORDER) {
+    const hit = legal.find(a => a.type === type);
+    if (hit) return hit;
+  }
+  return undefined;
+}
+
+/**
+ * The four buttons (docs/14 §5), in the order the runner shows them.
+ *
+ * FOUR, not three. `bad-scenario` is not optional: without it a wrong SETUP
+ * becomes a card bug report, and an agent spends a round chasing it — which is
+ * the failure `docs/13-assessment.md` §6 records three times (#15, #104 and
+ * #106 were all presentation problems misdiagnosed as rules problems).
+ *
+ * `slightly-off` is the other one people would cut: right outcome, wrong
+ * amount / timing / wording / feel. Collapsing it into `broken` loses the
+ * distinction that decides whether a fix is a rules change or a polish item.
+ */
+export const VERDICTS = ['works', 'broken', 'slightly-off', 'bad-scenario'] as const;
+export type Verdict = typeof VERDICTS[number];
+
+/** Everything the runner screen needs. Sent on join and on every update for a
+ * scenario room; `null` for every ordinary room, which is what keeps the
+ * tester out of normal play. */
+export interface ScenarioBrief {
+  id: string;
+  card: CardName;
+  why: string;
+  expect: string;
+  clauses: string[];
+  needsLiveOpponent: boolean;
+}
+
+export function scenarioBrief(id: string): ScenarioBrief | null {
+  const sc = SCENARIOS[id];
+  if (!sc) return null;
+  return {
+    id: sc.id, card: sc.card, why: sc.why, expect: sc.expect,
+    clauses: printedClauses(sc.card),
+    needsLiveOpponent: sc.needsLiveOpponent === true,
+  };
+}

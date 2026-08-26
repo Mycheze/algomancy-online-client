@@ -13,6 +13,8 @@
  *
  *   npm install && node main.ts            # serves + listens on :8080
  *   PORT=9000 node main.ts                 # custom port
+ *   PORT=0    node main.ts                 # let the OS pick — the ready line
+ *                                          # below prints the port it got
  */
 import { createServer } from 'node:http';
 import { appendFileSync } from 'node:fs';
@@ -28,7 +30,7 @@ import { checkDeck, forcedAction, IllegalAction } from '../engine/src/apply.ts';
 import { other, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import {
-  applyToRoom, arrivalVerdict, clockSnapshot, createRematch, decidedWinner, deferAction,
+  applyToRoom, arrivalVerdict, clockSnapshot, createRematch, createRoom, decidedWinner, deferAction,
   deferrableRefusal, getRoom,
   joinableRoom, legalForSeat, openSegment, renameSeat,
   reserveRoomCode, resolveLobby, roomExistsOrReserved, roomLobby,
@@ -36,6 +38,13 @@ import {
   setSeatUser, settleClock, takeDeferred, undoForSeat, unlockLobby,
   type Room, type SegKey,
 } from './rooms.ts';
+// R216 — the scenario tester (docs/14). Everything about it is gated on
+// ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
+import {
+  OPPONENT, SCENARIOS, VERDICTS, isScenarioId, passiveMove, scenarioBrief, scenarioIds,
+  ScenarioError, type Verdict,
+} from './scenarios.ts';
+import { engineVersion } from './engine-version.ts';
 import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
 import { accountRoutes } from './api-accounts.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
@@ -60,6 +69,54 @@ const GAMES_DIR = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
 const ISSUES_FILE = process.env['ALGO_ISSUES_FILE'] ?? join(HERE, 'issues.jsonl');
 const ART_DIR = join(HERE, '..', '..', 'AlgomancyCards');
 const PORT = Number(process.env['PORT'] ?? 8080);
+
+// ── R216: the scenario tester's gate ──────────────────────────────────
+//
+// THIS CLIENT IS HEADING FOR A PUBLIC DEPLOY (docs/05, backlog BL-28). A route
+// that mints a room with a hand-picked board, hand-picked resources and a
+// scripted opponent is a cheating vector, not a debug convenience: anyone who
+// found it could deal themselves whatever they liked and then invite a real
+// opponent into it.
+//
+// So the gate is load-bearing and it fails CLOSED in two stages:
+//
+//  1. No ALGO_TESTER_TOKEN in the environment → the routes do not exist at
+//     all. Not 403, not "forbidden" — 404, indistinguishable from any other
+//     path this server does not serve. A deploy that never sets the variable
+//     cannot leak the feature's existence, let alone the feature.
+//  2. Token set, token wrong or missing on the request → 404 as well, and a
+//     constant-time comparison so the response cannot be used to guess it.
+//
+// The scenario ROOM itself is an ordinary room once it exists (join by code
+// like any other), which is deliberate: the design's whole point is that a
+// scenario room is a normal room with a different deal, and giving it a
+// second, privileged join path would be a second thing to get wrong.
+const TESTER_TOKEN = process.env['ALGO_TESTER_TOKEN'] ?? '';
+/**
+ * Where the scenario tester's verdicts land, one JSON line each.
+ *
+ * Env-overridable for exactly the reason ISSUES_FILE above is: on the deploy
+ * box this is the only copy of the owner's judgements, and `npm test` has to
+ * be safe to run there. server/test-scenario.ts points it at a scratch file.
+ */
+const VERDICTS_FILE = process.env['ALGO_VERDICTS_FILE'] ?? join(HERE, 'verdicts.jsonl');
+
+/** Constant-time string compare, so a wrong token cannot be narrowed down by
+ * timing. Length is allowed to leak — it always is, via the request. */
+function sameToken(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/** Is this request allowed to touch the tester at all? See TESTER_TOKEN. */
+function testerAllowed(req: import('node:http').IncomingMessage, url: URL): boolean {
+  if (!TESTER_TOKEN) return false;
+  const header = req.headers['x-algo-tester'];
+  const given = (typeof header === 'string' ? header : url.searchParams.get('token')) ?? '';
+  return sameToken(given, TESTER_TOKEN);
+}
 
 // ── who is logged in right now ────────────────────────────────────────
 //
@@ -177,6 +234,132 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  // ── R216: the scenario tester (docs/14) ──────────────────────────
+  //
+  // Both routes 404 unless ALGO_TESTER_TOKEN is set AND matched — see
+  // testerAllowed(). The 404 is the point: an unconfigured deploy does not
+  // admit that these paths mean anything.
+  if (path.startsWith('/api/scenario/')) {
+    if (!testerAllowed(req, url)) {
+      res.writeHead(404, { 'content-type': 'text/plain' });
+      return res.end('not found');
+    }
+    // what is in the queue
+    if (path === '/api/scenario/list') {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({
+        engine: engineVersion(),
+        scenarios: scenarioIds().map(id => {
+          const sc = SCENARIOS[id]!;
+          return { id, card: sc.card, why: sc.why, expect: sc.expect,
+            needsLiveOpponent: sc.needsLiveOpponent === true };
+        }),
+      }));
+    }
+    // deal one and go. The room is created OUTRIGHT (like a rematch) rather
+    // than reserved: a reservation is spent by the first joiner and carries
+    // only mode/els/deck, so there would be nowhere to put the scenario id.
+    if (path === '/api/scenario/open') {
+      const id = url.searchParams.get('id') ?? '';
+      if (!isScenarioId(id)) {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: `no scenario '${id}'`, scenarios: scenarioIds() }));
+      }
+      // The seed is a normal room seed and the scenario board does not depend
+      // on it — but the DECK does, and a scenario that draws a card should
+      // draw the same one twice. So it is fixed unless asked otherwise, which
+      // makes "open it again and try that differently" actually reproducible.
+      const seedParam = Number(url.searchParams.get('seed'));
+      const seed = Number.isFinite(seedParam) && seedParam > 0 ? (seedParam >>> 0) : 216216216;
+      const code = freshRoomCode();
+      let room;
+      try {
+        room = createRoom(code, seed, ['You', 'Tester Bot'], 'shared', undefined, undefined, id);
+      } catch (err) {
+        // a scenario whose setup this engine no longer accepts (ScenarioError)
+        // is a BROKEN SCENARIO and says so — never a half-dealt board
+        const why = err instanceof ScenarioError ? err.message
+          : `could not deal ${id}: ${err instanceof Error ? err.message : String(err)}`;
+        console.error(`[scenario] ${why}`);
+        res.writeHead(500, { 'content-type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: why }));
+      }
+      const brief = scenarioBrief(id)!;
+      const join = `/?room=${room.code}&seat=0`;
+      console.log(`[scenario] ${id} → room ${room.code} (${brief.card})`);
+      if (url.searchParams.get('json') === '1') {
+        res.writeHead(200, { 'content-type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, code: room.code, join, scenario: brief }));
+      }
+      // the owner types ONE url and lands on the board
+      res.writeHead(302, { location: join });
+      return res.end();
+    }
+    res.writeHead(404, { 'content-type': 'text/plain' });
+    return res.end('not found');
+  }
+
+  /**
+   * R216 — the verdict, one JSON line per judgement (docs/14 §5).
+   *
+   * Same shape and the same reasons as /api/report above: append-only JSONL,
+   * an env-overridable path, and every fact the SERVER can know is stamped by
+   * the server rather than trusted from the client. The client sends its
+   * judgement; the room code, the scenario id, the action index and the engine
+   * SHA are read off the room here. A verdict whose engine SHA came from the
+   * browser would be worth nothing the moment anyone wanted to re-run it.
+   *
+   * Deliberately NOT behind the tester token. The token guards CREATING a
+   * board; whoever is sitting in a scenario room has already been let in, and
+   * making them carry a secret in order to say "this is broken" is the fastest
+   * way to lose a verdict.
+   */
+  if (path === '/api/verdict' && req.method === 'POST') {
+    try {
+      const body = await readJson(req) as {
+        room?: string; seat?: number; verdict?: string;
+        note?: string; ruling?: string; clause?: string;
+      };
+      const code = String(body.room ?? '').toUpperCase().trim();
+      const r = getRoom(code);
+      const verdict = String(body.verdict ?? '');
+      if (!VERDICTS.includes(verdict as Verdict)) {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: `verdict must be one of ${VERDICTS.join(', ')}` }));
+      }
+      if (!r || !r.scenario) {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: `room ${code || '(none)'} is not a scenario room` }));
+      }
+      const entry = {
+        ts: new Date().toISOString(),
+        scenario: r.scenario,
+        card: SCENARIOS[r.scenario]?.card ?? null,
+        verdict,
+        // R200: WHICH ENGINE this judgement was made against. Without it a
+        // verdict is a claim about a game nobody can find again — the whole
+        // reason the saved-game corpus is only ~39% usable.
+        engine: engineVersion(),
+        room: code,
+        seat: body.seat === 0 || body.seat === 1 ? body.seat : null,
+        // where in the log the owner was standing when he judged, so the
+        // moment can be replayed (replay-room.ts + slicing the action log)
+        actionIndex: r.actions.length,
+        clause: typeof body.clause === 'string' && body.clause ? body.clause.slice(0, 400) : null,
+        note: String(body.note ?? '').slice(0, 4000) || null,
+        ruling: String(body.ruling ?? '').slice(0, 4000) || null,
+      };
+      appendFileSync(VERDICTS_FILE, JSON.stringify(entry) + '\n');
+      console.log(`[verdict] ${entry.scenario} ${entry.verdict} (${entry.room} @action ${entry.actionIndex})`);
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ ok: true }));
+    } catch (err) {
+      res.writeHead(400, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: String(err instanceof Error ? err.message : err) }));
+    }
+    return;
+  }
+
   // constructed: the bundled test decks (attributed to their builders)
   if (path === '/api/deck/defaults') {
     res.writeHead(200, { 'content-type': 'application/json' });
@@ -270,6 +453,101 @@ function sendToSeat(room: Room, seat: Seat, obj: unknown): void {
 /** Both seats, in seat order. */
 const forEachSeat = (fn: (seat: Seat) => void): void => { fn(0); fn(1); };
 
+/**
+ * R216 — what the runner screen is told about the room it is in.
+ *
+ * The static half comes from scenarios.ts (`expect`, the derived clause list);
+ * the moving half is the action index and the engine SHA, so the verdict bar
+ * can show the owner exactly what a verdict would be stamped with before he
+ * presses anything.
+ */
+function scenarioInfo(room: Room): unknown {
+  const brief = room.scenario ? scenarioBrief(room.scenario) : null;
+  if (!brief) return undefined;
+  return {
+    ...brief,
+    verdicts: [...VERDICTS],
+    actionIndex: room.actions.length,
+    engine: engineVersion(),
+    // docs/14 §4's ⚠ made visible rather than left implicit: the runner tells
+    // the owner to open the other seat, and it can only do that if it knows
+    // whether anybody is sitting there.
+    opponentSeated: !!room.sockets[OPPONENT],
+  };
+}
+
+/**
+ * R216 — THE SCRIPTED OPPONENT (docs/14 §4).
+ *
+ * Most scenarios must not need a second tab. This drives seat 1 with the most
+ * PASSIVE legal action available, so the owner drives one seat and the game
+ * still moves: it passes priority, declines attacks, declines blocks, and
+ * finishes every simultaneous step.
+ *
+ * ── the rules it plays by ────────────────────────────────────────────
+ *
+ * · It only ever runs in a scenario room, only when the scenario has not set
+ *   `needsLiveOpponent`, and only while nobody is actually sitting in seat 1.
+ *   A human who opens the other seat takes over mid-scenario and the bot goes
+ *   quiet — which is what makes `needsLiveOpponent` a hint rather than a lock.
+ * · Its actions are REAL actions through `applyToRoom`, so they are logged,
+ *   replayed and undone like anything else. The bot does not need to be
+ *   deterministic for a replay to be — the log already holds what it did —
+ *   but it IS deterministic (first match in a fixed preference order), because
+ *   a scenario that behaves differently on the second run is not a test.
+ * · The CHOICE ITSELF is `passiveMove()` in scenarios.ts, not a rule written
+ *   here. `186-scenario-library.test.ts` asserts that every scenario in the
+ *   library can be answered by it, and a second copy of the preference order
+ *   would turn that guard into a check on the copy — the `stripCode` /
+ *   `65-effect-conformance` shape docs/13 §5 lists twice.
+ */
+
+/** Is the bot in charge of seat 1 right now? */
+function botDrives(room: Room): boolean {
+  if (!room.scenario) return false;
+  if (SCENARIOS[room.scenario]?.needsLiveOpponent) return false;
+  if (room.sockets[OPPONENT]) return false;   // a human took the seat
+  return decidedWinner(room) === null && !roomWaiting(room);
+}
+
+/**
+ * Run the scripted opponent until it has nothing passive left to do, appending
+ * its events to `into`.
+ *
+ * Called from inside the action tick, BEFORE the segment bookkeeping runs, so
+ * the bot's moves are part of the same push as the move that provoked them and
+ * the hidden-segment reveal logic sees the state it actually ends on.
+ *
+ * The step cap is not decoration. A scenario is a board somebody built, and a
+ * bot that could be handed a state where its own passive move re-offers itself
+ * would spin the event loop forever inside a request. Sixty is far more than
+ * any scenario needs and small enough to notice.
+ */
+function scriptedOpponent(room: Room, into: import('../engine/src/types.ts').EngineEvent[]): void {
+  if (!botDrives(room)) return;
+  for (let step = 0; step < 60; step++) {
+    const legal = legalForSeat(room.state, OPPONENT, room.segKey);
+    if (!legal.length) return;
+    // nothing passive on offer means the board is asking seat 1 for a real
+    // decision this bot has no business inventing — stop, and let the runner
+    // screen's "open the other seat" notice do its job
+    const pick = passiveMove(legal);
+    if (!pick) return;
+    try {
+      into.push(...applyToRoom(room, pick));
+      drainForced(room, into);
+    } catch (err) {
+      // legalForSeat offered it and apply refused it: a real disagreement,
+      // and one worth seeing rather than retrying around
+      console.warn(`[scenario] ${room.code}: bot's ${pick.type} was refused —`,
+        err instanceof Error ? err.message : err);
+      return;
+    }
+    if (decidedWinner(room) !== null) return;
+  }
+  console.warn(`[scenario] ${room.code}: scripted opponent hit its 60-step cap`);
+}
+
 /** The fields every state push shares: redacted view, this seat's legal
  * actions, presence, clock. Each caller spreads its own extras on top — the
  * per-site drift (log replace vs incremental events, reveal, trio) is
@@ -277,6 +555,11 @@ const forEachSeat = (fn: (seat: Seat) => void): void => { fn(0); fn(1); };
 function baseView(room: Room, seat: Seat) {
   return {
     view: viewFor(room.state, seat, room.segSnapshot),
+    // R216: the runner screen's payload, on every push. `undefined` for every
+    // ordinary room — which is what keeps the tester out of normal play: a
+    // client only ever draws the verdict bar when the SERVER says this room is
+    // a scenario, and no client-side flag can make it appear.
+    ...(room.scenario ? { scenario: scenarioInfo(room) } : {}),
     // R150/CT-32: `legalForSeat`, not `legalActions` — inside a hidden
     // simultaneous segment the OTHER seat's open decision must not empty this
     // seat's list. See rooms.ts for why the engine's global gate is right in
@@ -398,6 +681,11 @@ function pushView(room: Room, seat: Seat): void {
  * sync over server/games/ — see history.ts.
  */
 function recordFinishedGame(room: Room): void {
+  // R216: a scenario room is a test fixture, not a game — see history.ts's
+  // matching guard in syncGamesDir(). Folding one into somebody's win/loss
+  // record would let the instrument quietly rewrite the numbers it exists to
+  // check. The post-game screen still works; only the RECORD is skipped.
+  if (room.scenario) return;
   const before = new Map<string, Set<string>>();
   for (const id of room.users) {
     const a = accountById(id);
@@ -475,6 +763,9 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
     code: room.code, seed: room.seed, mode: room.mode, els: room.els,
     names: room.names, actions: room.actions, winner: room.winner,
     decks: room.mode === 'constructed' ? room.decks : undefined,
+    // R216: without this the post-game screen would replay a scenario room on
+    // the plain opening board and print numbers from a game nobody played
+    scenario: room.scenario,
   });
   return {
     code: s.code, playedAt: s.playedAt, recordedAt: s.playedAt, mode: s.mode,
@@ -635,6 +926,19 @@ wss.on('connection', ws => {
         else pushView(room, otherSeat);
       }
       console.log(`[ws] ${code}: seat ${seat} joined${roomWaiting(room) ? ' (waiting for decks)' : gameJustStarted ? ' (constructed game started)' : ''}`);
+      // R216: a scenario room may open with the table already waiting on seat
+      // 1 (a scenario whose prologue ends on the opponent's window). Without
+      // this the owner would join a board that never moves — which docs/14 §4
+      // says reads as a hung game, and a hung game reads as a bug.
+      if (room.scenario && !roomWaiting(room)) {
+        const wasKey = room.segKey;
+        const botEvents: import('../engine/src/types.ts').EngineEvent[] = [];
+        scriptedOpponent(room, botEvents);
+        if (botEvents.length) {
+          if (segmentKey(room.state) !== wasKey) openSegment(room);
+          forEachSeat(s => sendUpdate(room, s, botEvents));
+        }
+      }
       return;
     }
 
@@ -769,6 +1073,14 @@ wss.on('connection', ws => {
             sendToSeat(room, parked.seat, { t: 'error', msg: err.message });
           }
         }
+        // R216 — the scripted opponent takes its turn INSIDE this tick, before
+        // the segment bookkeeping below. Its events belong to the other seat,
+        // so they ride in `oppEvents` exactly as a released deferred action of
+        // theirs would; nothing here needs to know that a bot rather than a
+        // person produced them. Placing it here (rather than after the
+        // broadcast) is what keeps `nowKey` describing the state the players
+        // are actually shown.
+        scriptedOpponent(room, oppEvents);
         // ONE rule for all three hidden segments: the key changed → flush the
         // old segment's reveal, snapshot the new one. (Note that 'deploy' →
         // 'plan' is a close and an immediate re-open on the SAME action —
@@ -905,6 +1217,21 @@ restoreRooms();
       `(${Date.now() - t0}ms)`);
   }
 }
+/* R204 / CT-85: print the port we ACTUALLY bound, not the one we asked for.
+ *
+ * The two are the same for `PORT=9000` and for the default, and different for
+ * exactly one caller that matters: `PORT=0`, where the OS picks. That is how
+ * the test suite now starts a server — bind :0, read the number back out of
+ * this line — because the old way (a helper bound :0, read the number, CLOSED
+ * the socket, and handed the bare number to a child that re-bound it) left a
+ * window in which anything else on the box could take the port. With fifteen
+ * agents running suites at once that window is not theoretical.
+ *
+ * So: if you change this line, keep a decimal port immediately after
+ * `localhost:`. test-util.ts's spawnServer() parses it, and every server test
+ * boots through that. */
 server.listen(PORT, () => {
-  console.log(`Algomancy server on http://localhost:${PORT}  (open it, or /?ws=1&room=CODE&seat=0)`);
+  const addr = server.address();
+  const bound = typeof addr === 'object' && addr ? addr.port : PORT;
+  console.log(`Algomancy server on http://localhost:${bound}  (open it, or /?ws=1&room=CODE&seat=0)`);
 });

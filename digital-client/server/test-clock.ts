@@ -13,17 +13,13 @@
  * Same harness style as test-new-features.ts: spawn the real server on an
  * ephemeral port, drive it with raw WebSockets, no test framework.
  */
-import { spawn } from 'node:child_process';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import type { Action, Seat } from '../engine/src/types.ts';
 import { CLOCK_START_MS } from './rooms.ts';
-import { freePort, gameFile, mintRoom } from './test-util.ts';
+import { gameFile, mintRoom, spawnServer, type ServerHandle } from './test-util.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = await freePort();
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';
@@ -75,8 +71,11 @@ class Client {
     if (this.ws.readyState === WebSocket.OPEN) return Promise.resolve();
     return new Promise(res => this.ws.addEventListener('open', () => res(), { once: true }));
   }
+  /** wall time of the last message on this socket — see quiesce() below */
+  lastAt = 0;
   private onMsg(m: Msg): void {
     this.msgs.push(m);
+    this.lastAt = Date.now();
     if (m.view) this.view = m.view;
     if (m.legal) this.legal = m.legal;
     if (m.clock) this.clock = m.clock;
@@ -96,17 +95,15 @@ class Client {
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-function startServer() {
-  const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
-    env: { ...process.env, PORT: String(PORT) },
-    stdio: ['ignore', 'pipe', 'inherit'],
-  });
-  const up = new Promise<void>((res, rej) => {
-    server.stdout.on('data', (d: Buffer) => { if (String(d).includes('Algomancy server')) res(); });
-    server.on('exit', () => rej(new Error('server died on startup')));
-    setTimeout(() => rej(new Error('server startup timeout')), 10000);
-  });
-  return { server, up };
+/* R204/CT-85: the server picks its own port and tells us which — see
+ * test-util.ts. It used to be `freePort()` in the parent then PORT=<number>
+ * in the child, which left the port held by nobody for as long as node took
+ * to boot. This test restarts the server mid-run, so PORT is a `let`: the
+ * restarted process gets a fresh port, and re-binding the old number would
+ * reintroduce that window at the worst possible moment — while the process
+ * that held it is still shutting down. */
+async function startServer(): Promise<ServerHandle> {
+  return await spawnServer();
 }
 
 /** the no-op draft commit for a redacted view */
@@ -114,6 +111,41 @@ function noopCommit(view: any, seat: Seat): Action {
   const H = view.players[seat].hand.length;
   const packIndices = view.packs[seat].map((_: unknown, i: number) => H + i);
   return { type: 'draftCommit', seat, packIndices } as Action;
+}
+
+/* R204 / CT-85 — THE FLAKE THIS FILE ACTUALLY HAD.
+ *
+ * `advanceUntil` below decides whether to drive a client by testing pred()
+ * against `a.view` and `b.view`. Those are whatever the last message on each
+ * socket said. One action can push an update to BOTH seats, and the two
+ * pushes do not land at the same instant; the loop only ever awaited the
+ * update for the client it had just driven.
+ *
+ * So: seat 0 commits, reaches turn 2, and its update lands. Seat 1's update
+ * for the same turn is still on the wire. done() reads seat 1's turn-1 view,
+ * says "not there yet", and drives seat 1 — using seat 1's turn-1 `legal`,
+ * which still offers a draftCommit. Seat 1 commits a SECOND time. The loop
+ * then returns happily, and the caller reads picksMade === 2 where the draft
+ * has only been picked over once. Observed as `✗ each pack has been picked
+ * over once`, twice in twelve runs at four concurrent suites, never once in
+ * ten runs on an idle box — because widening the inter-socket skew is exactly
+ * what load does.
+ *
+ * The fix is not a longer sleep. It is to stop reading a view that has a
+ * known-pending successor: wait for both sockets to go quiet before believing
+ * either of them. Quiet, not a fixed delay — a fixed delay is the same bug
+ * with a bigger number.
+ */
+
+/** Resolve once neither client has received a message for `quietMs`, or after
+ * `maxMs` regardless (a genuinely idle board never goes quiet "again"). */
+async function quiesce(a: Client, b: Client, quietMs = 120, maxMs = 3000): Promise<void> {
+  const deadline = Date.now() + maxMs;
+  for (;;) {
+    const since = Date.now() - Math.max(a.lastAt, b.lastAt);
+    if (since >= quietMs || Date.now() >= deadline) return;
+    await sleep(Math.min(quietMs - since, 40));
+  }
 }
 
 /** Drive both clients forward with "mundane" actions (done/pass/empty
@@ -127,9 +159,11 @@ function noopCommit(view: any, seat: Seat): Action {
 async function advanceUntil(a: Client, b: Client, pred: (v: any) => boolean, label: string): Promise<void> {
   const done = (): boolean => pred(a.view) && pred(b.view);
   for (let i = 0; i < 120; i++) {
+    await quiesce(a, b);
     if (done()) return;
     let sent = false;
     for (const c of [a, b]) {
+      await quiesce(a, b);
       if (done()) return;
       const seat = c === a ? a.view?.players?.[0]?.seat ?? 0 : 1;
       void seat;
@@ -158,8 +192,8 @@ async function advanceUntil(a: Client, b: Client, pred: (v: any) => boolean, lab
   throw new Error(`advanceUntil(${label}): gave up after 120 rounds`);
 }
 
-let { server, up } = startServer();
-await up;
+let server = await startServer();
+let PORT = server.port;
 ROOM = await mintRoom(PORT);
 
 try {
@@ -178,6 +212,13 @@ try {
 
   await sleep(700);   // waiting alone must cost seat 0 nothing
 
+  /* R204/CT-85: seat 0's clock starts the instant seat 1 connects and stops
+   * when the donePlanning below lands, so the "sliver" it loses is one real
+   * round trip on a real box. The assertion further down used to compare that
+   * sliver to a hardcoded 1000ms — a statement about an idle machine, not
+   * about the clock, and the first thing to go wrong when the box is busy. So
+   * measure how long the window actually was and bound the sliver by that. */
+  const sliverStart = Date.now();
   const b = new Client(PORT);
   await b.open();
   b.send({ t: 'join', room: ROOM, seat: 1, name: 'Tock' });
@@ -193,6 +234,8 @@ try {
   a.send({ t: 'action', action: done0 });
   // match the ACTION's update (planningDone flipped), not the join-refresh push
   const au = await a.next(m => m.t === 'update' && m.view?.planningDone?.[0] === true && !!m.clock, 5000, am);
+  // the window seat 0's clock was actually allowed to run for (see sliverStart)
+  const sliverMax = Date.now() - sliverStart + 250;   // + slack for clock granularity
   ok(au.clock!.running[0] === false && au.clock!.running[1] === true,
     `after donePlanning only the still-deciding seat runs (${au.clock!.running})`);
 
@@ -205,17 +248,23 @@ try {
   const bu = await b.next(m => m.t === 'update' && !!m.clock, 5000, bm);
   const ms = bu.clock!.ms;
   ok(START - ms[1] >= 1200, `seat 1 was billed the thinking time (spent ${START - ms[1]}ms)`);
-  ok(ms[0] - ms[1] >= 1000, `seat 0 billed much less than seat 1 (${ms[0]} vs ${ms[1]})`);
-  ok(START - ms[0] <= 1000, `seat 0 lost only its pre-done sliver (${START - ms[0]}ms)`);
+  /* R204/CT-85: this gap is (the 1300ms seat 1 spent thinking) minus (the
+   * sliver seat 0 lost before it said done). The constant used to be a flat
+   * 1000, which silently assumed the sliver could never exceed 300ms — true
+   * on an idle box, and a coin flip on a busy one, where a join round trip
+   * alone can cost that. Derive the bound from the sliver we measured. */
+  ok(ms[0] - ms[1] >= 1300 - sliverMax,
+    `seat 0 billed much less than seat 1 (${ms[0]} vs ${ms[1]}, gap ${ms[0] - ms[1]}ms, need ${1300 - sliverMax}ms)`);
+  ok(START - ms[0] <= sliverMax,
+    `seat 0 lost only its pre-done sliver (${START - ms[0]}ms of at most ${sliverMax}ms)`);
 
   console.log('\n[clock: persists across a server restart]');
   const persisted = JSON.parse(readFileSync(gameFile(ROOM), 'utf8'));
   ok(Array.isArray(persisted.clockMs) && persisted.clockMs[1] <= START - 1200,
     `room file records clockMs (${JSON.stringify(persisted.clockMs)})`);
-  server.kill();
-  await new Promise(res => server.on('exit', res));
-  ({ server, up } = startServer());
-  await up;
+  await server.stop();   // stop() waits for the exit; a restart must not overlap
+  server = await startServer();
+  PORT = server.port;
   const b2 = new Client(PORT);
   await b2.open();
   b2.send({ t: 'join', room: ROOM, seat: 1 });
@@ -315,7 +364,7 @@ try {
 
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {
-  server.kill();
+  await server.stop();
   rmSync(gameFile(ROOM), { force: true });
   rmSync(gameFile(DROOM), { force: true });
   rmSync(SCRATCH, { recursive: true, force: true });

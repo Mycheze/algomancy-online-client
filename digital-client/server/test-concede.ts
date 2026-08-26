@@ -10,15 +10,9 @@
  * result, and survive a restart — and it must be refused when it is not yours
  * to concede.
  */
-import { spawn } from 'node:child_process';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { readFileSync, rmSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
-import { freePort, gameFile, mintRoom } from './test-util.ts';
-
-const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = await freePort();
+import { gameFile, mintRoom, spawnServer } from './test-util.ts';
 
 let failures = 0;
 function ok(cond: unknown, label: string): void {
@@ -67,15 +61,11 @@ class Client {
   send(obj: unknown): void { this.ws.send(JSON.stringify(obj)); }
 }
 
-const server = spawn(process.execPath, [join(HERE, 'main.ts')], {
-  env: { ...process.env, PORT: String(PORT) },
-  stdio: ['ignore', 'pipe', 'inherit'],
-});
-await new Promise<void>((res, rej) => {
-  server.stdout.on('data', (d: Buffer) => { if (String(d).includes('Algomancy server')) res(); });
-  server.on('exit', () => rej(new Error('server died on startup')));
-  setTimeout(() => rej(new Error('server startup timeout')), 10000);
-});
+// R204/CT-85: the server picks its own port and tells us which — see
+// test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
+// port unheld for as long as node took to boot.
+const server = await spawnServer();
+const PORT = server.port;
 
 let ROOM = '';
 try {
@@ -120,7 +110,7 @@ try {
 
   a.ws.close(); b.ws.close();
 } finally {
-  server.kill();
+  await server.stop();
   if (ROOM) rmSync(gameFile(ROOM), { force: true });
 }
 

@@ -49,6 +49,23 @@ import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
  *                    sent nobody: `endBattleRound` then declines round 2 on the
  *                    spot and recurses straight into `startRegroup`.
  *
+ * ⚠ R213 / CARD-TODO #82(a): THAT LIST IS THREE OF FOUR, AND THE FOURTH IS
+ * NOT COVERABLE HERE. `endBattleRound` has a caller that is not the engine
+ * deciding anything — **Temporal Rift** (`batch-hybrids-wm-b.ts`), a CARD that
+ * ends the battle mid-resolution. This function answers "would passing RIGHT
+ * NOW end the battle", and it answers it from the state at pass time; whether
+ * some card later on the stack will end the battle cannot be predicted from
+ * there. So the warning genuinely cannot fire for that path, and it is not a
+ * bug that it does not.
+ *
+ * It IS a bug to enumerate the transitions as if they were all of them, which
+ * is how CT-82(a) came to be filed: the comment read as a complete invariant
+ * and was not one. R194's token-loss announcement still reaches all four
+ * paths, because every exit from `endBattleRound` funnels through
+ * `startRegroup` — that is asserted in `183-end-battle-round-paths.test.ts`,
+ * along with the caller count, so a fifth path fails the suite instead of
+ * quietly widening this gap.
+ *
  * Note what is deliberately NOT required: `s.passes >= 1`, i.e. "mine is the
  * second pass, the one that actually advances the step". Priority in every
  * window opens on the initiative player (E.openPriority), so gating on the

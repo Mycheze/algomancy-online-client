@@ -12,16 +12,11 @@
  *
  * Uses Node's built-in global WebSocket + fetch (Node 22). No test framework.
  */
-import { spawn } from 'node:child_process';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { rmSync } from 'node:fs';
 import type { Action, Seat } from '../engine/src/types.ts';
 import { HIDDEN_CARD } from './view.ts';
-import { freePort, gameFile, mintRoom } from './test-util.ts';
+import { gameFile, mintRoom, spawnServer } from './test-util.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const PORT = await freePort();
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';
@@ -105,12 +100,13 @@ function passAction(legal: Action[]): Action | null {
 async function main(): Promise<void> {
   setTimeout(() => { console.error('TEST TIMEOUT (something hung)'); process.exit(3); }, 45000).unref();
   // ── boot the server on an ephemeral port ─────────────────────────────
-  const srv = spawn(process.execPath, [join(HERE, 'main.ts')], {
-    env: { ...process.env, PORT: String(PORT) },
-    stdio: ['ignore', 'pipe', 'inherit'],
-  });
-  srv.stdout.on('data', () => {});
-  await waitForServer(PORT);
+  /* R204/CT-85: the server picks its own port and tells us which — see
+   * test-util.ts. It used to be `freePort()` in the parent then PORT=<number>
+   * in the child, which left the port held by nobody for as long as node took
+   * to boot. spawnServer() also waits for the real ready line, which is what
+   * the hand-rolled waitForServer() poll used to approximate (now gone). */
+  const srv = await spawnServer();
+  const PORT = srv.port;
   ROOM = await mintRoom(PORT);
   console.log(`server up on :${PORT}, room ${ROOM}`);
 
@@ -202,23 +198,12 @@ async function main(): Promise<void> {
 
     b.close(); a2.close();
   } finally {
-    srv.kill('SIGTERM');
+    await srv.stop();
     try { rmSync(gameFile(ROOM)); } catch { /* ignore */ }
   }
 
   console.log(`\n${failures === 0 ? 'ALL PASS ✓' : `${failures} FAILURE(S) ✗`}`);
   process.exit(failures === 0 ? 0 : 1);
-}
-
-async function waitForServer(port: number): Promise<void> {
-  for (let i = 0; i < 100; i++) {
-    try {
-      const res = await fetch(`http://localhost:${port}/index.html`);
-      if (res.ok || res.status === 404) return;
-    } catch { /* not up yet */ }
-    await new Promise(r => setTimeout(r, 100));
-  }
-  throw new Error('server did not start');
 }
 
 main().catch(err => { console.error(err); process.exit(1); });
