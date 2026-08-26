@@ -2704,3 +2704,104 @@ export function assignSplitStep(
   if (v.mode === 'none') return { count: want, submit: false };
   return stepQuantity(v, act);
 }
+
+// ═══ R197 — the NUMERIC ENTRY bar ═════════════════════════════════════════
+//
+// `kind: 'number'` is the one DecisionKind whose answer is NOT an index into
+// `options`: `options` is empty and the `decide` action carries the VALUE. A
+// decision kind is a contract about what its values mean, and the reason this
+// judgement lives here rather than inline in ui/main.ts is the cautionary tale
+// in `optionPingId` above — `electricPath`'s values are raw entity ids while
+// `formationSlot`'s are slot indexes, one client read them as one namespace,
+// and the player saw "placement isn't working". So the client's whole
+// understanding of a numeric question is these two functions, and they are
+// tested.
+//
+// The dial is the SHARED `quantityStepper` wherever it can be: a numeric entry
+// with a ceiling dials exactly like a counter stepper. What it cannot share is
+// an unbounded max — `quantityStepper` needs a finite `hi` to clamp to — so an
+// open-ended range gets its ceiling from the dial itself and `canUp` is always
+// true. That is the honest shape: there is no top, and the box the player
+// types into is what makes the range reachable in one gesture rather than in
+// two hundred clicks.
+
+/** the slice of a `Decision` a numeric bar reads */
+export interface NumberDecisionLike {
+  kind: string;
+  prompt: string;
+  numeric?: { min: number; max: number | null; suggest: number; suggestLabel?: string } | undefined;
+}
+
+export interface NumberEntryView {
+  /** this decision is a numeric entry at all */
+  active: boolean;
+  /** the dialled-in value, already clamped into the accepted range */
+  value: number;
+  min: number;
+  /** null means NO CEILING — the card takes any number (Prediction Prophet) */
+  max: number | null;
+  canDown: boolean;
+  canUp: boolean;
+  /** the values worth a one-click button of their own: the floor, the
+   * suggestion, and the ceiling when there is one. Never empty. */
+  quick: { label: string; value: number }[];
+}
+
+const NO_NUMBER: NumberEntryView = {
+  active: false, value: 0, min: 0, max: null, canDown: false, canUp: false, quick: [],
+};
+
+export function numberEntry(
+  dec: NumberDecisionLike | null | undefined, want: number,
+): NumberEntryView {
+  if (!dec || dec.kind !== 'number' || !dec.numeric) return NO_NUMBER;
+  const { min, max, suggest, suggestLabel } = dec.numeric;
+  // an unbounded range still needs a finite number to clamp against; the dial
+  // supplies it, which is why `canUp` below is true regardless
+  const ceiling = max ?? Math.max(min, suggest, Number.isFinite(want) ? Math.floor(want) : min);
+  const value = clampQuantity(want, min, Math.max(min, ceiling));
+  const quick: { label: string; value: number }[] = [{ label: String(min), value: min }];
+  if (suggest !== min) {
+    quick.push({ label: suggestLabel ? `${suggest} (${suggestLabel})` : String(suggest), value: suggest });
+  }
+  if (max !== null && max !== min && max !== suggest) quick.push({ label: String(max), value: max });
+  return {
+    active: true, value, min, max,
+    canDown: value > min,
+    canUp: max === null || value < max,
+    quick,
+  };
+}
+
+/** `choice` for a numeric decision — the VALUE, never an index. `ok: false`
+ * carries the reason out loud, so the bar can say why confirm is dark rather
+ * than merely darkening it. */
+export interface NumberEntrySubmit { choice: number; ok: boolean; why: string }
+
+export function numberEntrySubmit(
+  dec: NumberDecisionLike | null | undefined, want: number,
+): NumberEntrySubmit {
+  const v = numberEntry(dec, want);
+  if (!v.active) return { choice: -1, ok: false, why: '' };
+  const n = Number.isFinite(want) ? Math.floor(want) : NaN;
+  if (!Number.isFinite(n)) return { choice: -1, ok: false, why: 'type a whole number' };
+  if (n < v.min) return { choice: -1, ok: false, why: `the smallest legal answer is ${v.min}` };
+  if (v.max !== null && n > v.max) {
+    return { choice: -1, ok: false, why: `the largest legal answer is ${v.max}` };
+  }
+  return { choice: n, ok: true, why: '' };
+}
+
+/** what −, +, −10 and +10 do to the numeric dial. Like every other stepper in
+ * this file it NEVER submits (R139's ruling, in the type): the number is read
+ * before it is spent. */
+export function stepNumberEntry(
+  dec: NumberDecisionLike | null | undefined, want: number,
+  act: 'up' | 'down' | 'up10' | 'down10',
+): StepperAction {
+  const v = numberEntry(dec, want);
+  if (!v.active) return { count: want, submit: false };
+  const by = act === 'up' ? 1 : act === 'down' ? -1 : act === 'up10' ? 10 : -10;
+  const hi = v.max ?? Math.max(v.min, v.value + Math.max(by, 0));
+  return { count: clampQuantity(v.value + by, v.min, Math.max(v.min, hi)), submit: false };
+}

@@ -49,14 +49,19 @@
  *    (`E.eraseFromPlay` exists now — CARD-TODO #15 needed one engine side for
  *    Skybreaker's "Erase me:" cost — but the card-side copies still carry their
  *    own log wording that card tests read, so folding them in is its own sweep.)
- *  - PREDICTION PROPHET's "predict your life total" is a Decision, and a
- *    Decision carries a finite option list — so the menu runs 0 … your current
- *    life + 5. Any number is legal on the printed card; a prediction more than
- *    5 above where you stand during [Haste] cannot be entered here. (Everything
- *    else about the card is exact: the prediction is taken in R50's
- *    'endOfHaste' settle window and kept in the entity's own `budgets`, which
- *    only E.startTurn wipes, so it survives battle and regroup into the same
- *    turn's deployment.) See R90.
+ * ✔ PREDICTION PROPHET TAKES ANY NUMBER NOW (R197). This entry used to read
+ *    "a Decision carries a finite option list — so the menu runs 0 … your
+ *    current life + 5", and that cap was an engine limit wearing the card's
+ *    clothes: gaining more than five life between [Haste] and deployment is
+ *    ordinary, and the winning prediction was simply not on the menu.
+ *    `DecisionKind` grew a real numeric entry (`kind: 'number'`, where the
+ *    answer IS the number and `options` is empty — see `NumericEntry`), the
+ *    client renders it as a typed box with a −/+ dial, and the floor is 0
+ *    only because a game ending at 0 life means no deployment step can ever
+ *    observe a negative total. (Everything else about the card was already
+ *    exact: the prediction is taken in R50's 'endOfHaste' settle window and
+ *    kept in the entity's own `budgets`, which only E.startTurn wipes, so it
+ *    survives battle and regroup into the same turn's deployment.) R90, R197.
  * ✔ SUSPEND IS COMPLETE. The LIFE LOCK shipped with R104 — a region-keyed
  *    battleCounter read by E.gainLife and E.loseLife alike, so "can't change"
  *    really is both directions. "ERASE ME" shipped with CARD-TODO #15: this
@@ -363,13 +368,22 @@ card('Nullbringer', {
 // problems) — so the +1 keeps "never predicted" distinguishable and the
 // start-of-deployment trigger can say which of the two happened.
 //
-// ⚠ APPROXIMATION (batch header): "predict your life total" is any number, and
-// a Decision carries a finite option list, so the menu is 0 … your current
-// life + PREDICTION_HEADROOM. Predicting a total more than that far ABOVE
-// where you stand during [Haste] is not offered.
+// R197: "PREDICT YOUR LIFE TOTAL" IS ANY NUMBER, AND NOW IT REALLY IS.
+// This used to be a `payOrDecline` menu running `0 … life + 5`, so a
+// prediction more than five above where you stood during [Haste] could not be
+// entered — and life climbing more than five between the haste step and
+// deployment is ordinary (Life Leech, Serene Sanctuary, any drain in battle).
+// The cap was an engine limit wearing the card's clothes, and the owner's
+// standing steer forbids exactly that: *"Don't assume that cards are limited,
+// they're designed to be open ended … It's not on rails."*
+// `kind: 'number'` is a real numeric entry — `options` is empty, `choice` is
+// the number, and there is NO ceiling at all. The floor is 0, and that is not
+// a narrowing: E.loseLife ends the game the moment a total reaches 0 or below,
+// so `startOfDeployment` — the step this prediction is read at — can never be
+// reached with a negative life total, and a prediction below 0 could not be
+// matched by any reachable board. See NumericEntry in types.ts for the
+// contract and ui/inspect.ts::numberEntry for the client affordance.
 const PREDICTION_KEY = 'predictedLife';
-/** how far above your current life the prediction menu reaches (see above) */
-const PREDICTION_HEADROOM = 5;
 card('Prediction Prophet', {
   abilities: [{
     type: 'triggered', events: ['endOfHaste'],
@@ -381,14 +395,11 @@ card('Prediction Prophet', {
         // R1/R27: the amount is read at RESOLUTION, off the live life total —
         // a haste-step play that moved your life moves the menu with it.
         const life = g.player(ctx.controller).life;
-        const options: { label: string; value: unknown }[] = [];
-        for (let n = 0; n <= life + PREDICTION_HEADROOM; n++) {
-          options.push({ label: n === life ? `${n} (where you stand now)` : `${n}`, value: n });
-        }
         const n = ctx.choose('predict', {
-          kind: 'payOrDecline', seat: ctx.controller,
+          kind: 'number', seat: ctx.controller,
           prompt: `${ctx.sourceName}: predict your life total at the start of deployment`,
-          options,
+          options: [],                             // R197: the value IS the answer
+          numeric: { min: 0, max: null, suggest: life, suggestLabel: 'where you stand now' },
         }) as number;
         self.budgets[PREDICTION_KEY] = n + 1;    // +1: 0 is a real prediction
         g.ev('info', `${ctx.sourceName}: ${g.pname(ctx.controller)} predicts ${n}.`);

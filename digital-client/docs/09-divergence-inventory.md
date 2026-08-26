@@ -250,6 +250,57 @@ gone.
 >   not OFFERED, so the `[once]` survives and the `[one]` is never paid (R49).
 >   Ruled in **R196**.
 
+> ## ⚠ ROUND 27 (2026-08-26) — R197 CLOSED THREE MORE §2b ROWS (one of them by NOT fixing it)
+>
+> Read this AFTER both blocks above. The tables below are still left as
+> written; this records what closed and what the closing cost.
+>
+> **§2b CLOSED: PREDICTION CAP** (**R197**). `DecisionKind` grew `'number'` —
+> the ONE kind whose `Action.choice` is the VALUE and whose `options` is empty
+> (`Decision.numeric` / `NumericEntry` carries the range). Prediction Prophet
+> takes any number now, with no ceiling at all; the floor of 0 is not a
+> narrowing, because `E.loseLife` ends the game at 0 and `startOfDeployment`
+> can never observe a negative total. ⚠ A decision kind is a CONTRACT: the
+> client was wired too (`ui/inspect.ts::numberEntry` + a real typed box and
+> dial in `ui/main.ts`), `legalActions` offers representatives the way
+> `pickOrder` does for permutations, and the fuzzer's `decision with no
+> options` invariant moved onto the RANGE instead of being deleted.
+>
+> **§2b CLOSED: UNTIL-REGROUP PLAY WINDOW** (**R197**). Spell Excavation grants
+> `E.grantBinCardPlay` — R96's blanket bin-play permission, one card wide and
+> phase-wide — instead of playing the spell inline. ⚠ The inline play was ALSO
+> a silent timing waiver (`playInline` never reaches `playAtTiming`), so a
+> deploy-timing spell in the bin was castable mid-battle; R157 §12 says a
+> bin-play grant waives no timing, and it no longer does. The card's target
+> restriction lost its affordability check and its `targetCandidates` probe —
+> both are questions for when you PLAY it, which is later — and the `probing`
+> re-entrancy guard went with the nesting that needed it.
+>
+> **§2b CLOSED: MULTIPLAYER ATTRIBUTION** (**R197**) — **as UNREACHABLE, with
+> nothing built.** Measured: `createGame` takes a two-tuple of names and builds
+> exactly two players and two regions, `other(seat)` is the literal `1 - seat`
+> (so `other(2)` is -1), and `commitPlayerDamage`/`thievingDraws` iterate the
+> literal `[initiative, nit]`. There is no board on which a third player's
+> damage can fire Cinder Scuttler. Deliberately NOT built, for a second reason:
+> the honest fix reads `CombatLedger.playerHits`, which is PER-COLUMN FACE
+> DAMAGE's seam, and two implementations of one seam is how `legalActions` and
+> `apply` drift apart. Pinned with a test for the 1v1 reading instead.
+>
+> ### ⚠ ONE REACHABLE 1v1 GAP THE MEASUREMENT TURNED UP, still open
+> A combat hit that is **fully REPLACED** — Blightsea Polyp's *"as 1 rot"*,
+> `E.replaceCombatDamage` returning 0 — fires no `lifeLost` at all, and Caleb
+> ruled (2024-10-24) that a replaced hit still counts as DEALT ({Thieving} and
+> {Blessed} read `playerHits` for exactly that reason). So Cinder Scuttler
+> misses a hit the rules say it saw. Suspend's life lock is the same shape from
+> the other side. **This belongs to PER-COLUMN FACE DAMAGE**, and is one line
+> per card once `playerHits` is readable from card code.
+>
+> ### WHAT IS LEFT IN §2 AFTER THIS ROUND
+> `PER-COLUMN FACE DAMAGE` · `RESPONSE WINDOW MID-RESOLUTION` ·
+> `VARIABLE-COST ACTIVATED ABILITIES`. Three rows, all §2a, all needing an
+> engine primitive.
+>
+
 **Status key:** `DONE` fixed and guarded · `OPEN` real, unfixed · `STALE` a code
 comment that outlived its cause · `RULED-OK` the engine is right and an answer
 says so.

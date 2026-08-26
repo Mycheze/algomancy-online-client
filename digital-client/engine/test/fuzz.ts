@@ -215,7 +215,17 @@ export function checkInvariants(s: GameState): void {
   }
   if (s.decision) {
     if (!s.suspension) die('decision without suspension');
-    if (!s.decision.options.length) die('decision with no options');
+    // R197: `kind: 'number'` is the ONE decision with no options, by contract —
+    // `choice` is the value itself and an option list cannot express "any
+    // number". It owes a RANGE instead, and the invariant moves onto that, so
+    // "a question nobody can answer" is still caught for every kind.
+    if (s.decision.kind === 'number') {
+      const n = s.decision.numeric;
+      if (!n) die('numeric decision with no range');
+      else if (s.decision.options.length) die('numeric decision carrying options too');
+      else if (!Number.isInteger(n.min) || (n.max !== null && n.max < n.min)) die('numeric range is empty');
+      else if (n.suggest < n.min || (n.max !== null && n.suggest > n.max)) die('numeric suggestion outside its own range');
+    } else if (!s.decision.options.length) die('decision with no options');
   }
   if (s.suspension && !s.decision) die('suspension without decision');
   if (s.phase === 'battle' && !s.battle) die('battle phase without battle state');

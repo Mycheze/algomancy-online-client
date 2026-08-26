@@ -243,9 +243,21 @@ test('R67: declaring the target is what lets R5 fizzle it when it disappears', (
   finishBattle(h);
 });
 
-/* ── a restriction that probes ANOTHER card's spec must not self-recurse ── */
+/* ── the restriction that used to probe ANOTHER card's spec ──────────── */
 
-test('R67: Spell Excavation in the bin does not recurse into its own restriction', () => {
+// R197 RETIRED THE HAZARD THIS TEST WAS WRITTEN FOR, and the test is kept
+// because the CARD is still the one that would have hit it. Spell Excavation's
+// restriction used to ask targetCandidates about the bin card's OWN spec —
+// "could that spell actually be played right now" — which is a nested query,
+// self-referential when the bin card is another Spell Excavation, and it
+// needed a `probing` re-entrancy guard. The card grants a play window until
+// regroup now instead of playing the spell inline, so affordability and "can
+// it find a target" are asked when the spell is actually PLAYED, later; the
+// restriction is a printed-noun test (a spell, of battle timing) with no
+// nested query in it at all. What is asserted below is unchanged and still
+// worth asserting: a Spell Excavation in the bin is a legal target, and asking
+// about it terminates.
+test('R67/R197: a Spell Excavation in the bin is a legal target of another Spell Excavation', () => {
   const h = new Harness(6009);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -256,10 +268,8 @@ test('R67: Spell Excavation in the bin does not recurse into its own restriction
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
-  // "target spell from your bin" is restricted to spells that could actually
-  // be played, which means asking targetCandidates about the BIN card's own
-  // spec. When that card is another Spell Excavation the question is
-  // self-referential; the guard answers it instead of overflowing the stack.
+  // "target spell from your bin" is a spell of battle timing — which the bin
+  // copy is — and the question terminates because nothing about it is nested.
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   assert.equal(h.state.decision?.kind, 'targets');
   assert.ok(h.state.decision!.options.some(o => o.label.startsWith('Spell Excavation')),

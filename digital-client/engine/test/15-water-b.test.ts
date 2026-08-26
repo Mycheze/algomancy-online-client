@@ -396,7 +396,7 @@ test('Spawntender: creates an 8/8, then its own 2/2 body spawns (spell unit)', (
   finishBattle(h);
 });
 
-test('Spell Excavation: plays a spell from your bin (cost paid); it is ERASED, not re-binned', () => {
+test('Spell Excavation: GRANTS the bin play until regroup; playing it costs mana and ERASES it, not re-bins it', () => {
   const h = new Harness(1508);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -409,18 +409,22 @@ test('Spell Excavation: plays a spell from your bin (cost paid); it is ERASED, n
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   decide(h, l => l.startsWith('Luminous Arc'));            // R67: declared at cast
-  pass(h); pass(h);                                        // Arc auto-targets the only unit
-  // R198: the excavated spell is a real stack item now, so it gets its own
-  // response window before it resolves — these two passes ARE that window.
-  assert.ok(h.state.stack.some(i => i.card === 'Luminous Arc'),
-    'the bin play is on the stack, respondable, with the Excavation already binned');
+  pass(h); pass(h);                                        // the Excavation resolves
+  // R197: what resolved is a PERMISSION, not the play. The Arc is still in
+  // the bin, unpaid for, and the seat picks its own moment before regroup.
+  assert.ok(h.state.players[D]!.bin.includes('Luminous Arc'), 'still in the bin — the grant is the effect');
+  assert.ok(ent(h, atk), 'and nothing has been dealt yet');
+  const bi = h.state.players[D]!.bin.indexOf('Luminous Arc');
+  if (h.state.priority !== D) pass(h);                     // the window comes back round
+  h.do({ type: 'playFromBin', seat: D, binIndex: bi });
+  // and it is a REAL cast now: a stack item with a declared target (R64/R67),
+  // where the inline play used to pick for you and resolve unrespondably
+  pick(h, { unit: atk });
   pass(h); pass(h);
   assert.ok(!ent(h, atk), 'Luminous Arc dealt its 6 — the 2/2 died');
   assert.ok(!h.state.players[D]!.bin.includes('Luminous Arc'), 'unstable: erased, not binned');
   assert.ok(h.state.players[D]!.bin.includes('Spell Excavation'), 'Excavation itself → bin');
-  // R198: the sentence is `E.dischargeItem`'s now — the R96 stamp rides the
-  // item and the ONE erase site every stack exit shares announces it.
-  assert.ok(h.log.some(l => l.includes('Unstable — it is ERASED')), 'erase logged');
+  assert.ok(h.log.some(l => l.includes('Unstable until regroup')), 'the {Unstable} stamp is logged');
   finishBattle(h);
 });
 
@@ -448,7 +452,12 @@ test('R152: the spell Spell Excavation played reaches the public ERASED pile (R6
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   decide(h, l => l.startsWith('Luminous Arc'));            // R67: declared at cast
   pass(h); pass(h);
-  pass(h); pass(h);                                        // R198: the bin play's own window
+  // R197: the grant resolved; taking it up is a real play from the bin, and
+  // the {Unstable} stamp E.dischargeItem reads is what files the erase
+  if (h.state.priority !== D) pass(h);
+  h.do({ type: 'playFromBin', seat: D, binIndex: h.state.players[D]!.bin.indexOf('Luminous Arc') });
+  pick(h, { unit: atk });
+  pass(h); pass(h);
   const e = new E(h.state);
   assert.ok(!h.state.players[D]!.bin.includes('Luminous Arc'), 'it left the bin…');
   assert.ok(e.erased(D).includes('Luminous Arc'),

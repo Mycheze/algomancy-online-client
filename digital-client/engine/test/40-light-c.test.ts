@@ -525,6 +525,16 @@ test('Nullbringer: the replacement never reaches the stack, so nothing can negat
 
 // ── Prediction Prophet ───────────────────────────────────────────────────
 
+/** R197: answer the prediction. `kind: 'number'` is the one decision whose
+ * `choice` IS the value rather than an index into `options` (there are none),
+ * which is what lets the card take ANY number — see `NumericEntry`. */
+function predict(h: Harness, n: number): void {
+  const dec = h.state.decision!;
+  assert.equal(dec.kind, 'number', 'the prediction is a numeric entry (R197)');
+  assert.deepEqual(dec.options, [], 'a numeric entry carries no options');
+  h.do({ type: 'decide', seat: dec.seat, choice: n });
+}
+
 /** finish this turn's deployment and run the next turn's planning + haste
  * step, stopping the moment a decision is raised — Prediction Prophet's
  * prediction is asked for inside R50's end-of-haste settle window, which is
@@ -547,10 +557,10 @@ test('Prediction Prophet: the [Haste] prediction is a real decision, and matchin
   // (a) THE ACTION: R50's endOfHaste window may suspend on a decision, so the
   // prediction is asked for there — this is the half the park note called
   // "a player action that does not exist".
-  assert.equal(h.state.decision!.kind, 'payOrDecline', 'the prediction is asked for during [Haste]');
+  assert.equal(h.state.decision!.kind, 'number', 'the prediction is asked for during [Haste]');
   assert.equal(h.state.decision!.seat, A);
   const life = h.state.players[A]!.life;
-  pick(h, life);                                             // nothing will change it
+  predict(h, life);                                          // nothing will change it
   assert.ok(h.log.some(l => l.includes(`predicts ${life}`)), 'the prediction is on the record');
   finishBattle(h);
   assert.equal(h.state.phase, 'deploy');
@@ -568,7 +578,7 @@ test('Prediction Prophet: the prediction survives battle and regroup, and a MISS
   const before = unitsOf(h, A).length;
   toPrediction(h);
   const life = h.state.players[A]!.life;
-  pick(h, life);                                             // predict "unchanged"…
+  predict(h, life);                                          // predict "unchanged"…
   whiteBox(h, e => e.loseLife(A, 3, 'test'));                // …then lose 3 in battle
   finishBattle(h);
   assert.equal(h.state.phase, 'deploy');
@@ -586,7 +596,7 @@ test('Prediction Prophet: predicting the life total you will END the battle on c
   const life = h.state.players[A]!.life;
   // the whole point of the card: you predict where you will BE, not where you
   // are. battleCounters would have been wiped between here and the check.
-  pick(h, life - 4);
+  predict(h, life - 4);
   whiteBox(h, e => e.loseLife(A, 4, 'test'));
   finishBattle(h);
   assert.equal(h.state.players[A]!.life, life - 4);

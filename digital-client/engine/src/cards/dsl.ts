@@ -12,7 +12,8 @@
  *   augment:<Card>#<i> the effect of augmentText[i] (text-box [Augment] text)
  */
 import type {
-  Attr, CardName, EffectPart, EngineEvent, Entity, EventType, Seat, SpawnFace, StackItem,
+  Attr, CardName, EffectPart, EngineEvent, Entity, EventType, NumericEntry, Seat, SpawnFace,
+  StackItem,
 } from '../types.ts';
 import type { E } from '../engine.ts';
 import printedJson from './printed.json' with { type: 'json' };
@@ -249,12 +250,16 @@ export interface EffectCtx {
    * request all choices before mutating state, or use plan-then-commit —
    * the engine rolls back to the part boundary on suspension. */
   choose: (key: string, dec: {
-    kind: 'payOrDecline' | 'electricPath' | 'formationSlot'; seat: Seat; prompt: string;
+    kind: 'payOrDecline' | 'electricPath' | 'formationSlot' | 'number'; seat: Seat; prompt: string;
     options: { label: string; value: unknown; card?: CardName }[];
     /** BL-25/R139: set this when the menu is "HOW MANY counters?" — it is the
      * biggest amount offered, and a client draws a −/+ stepper and an "All"
      * button over the menu instead of one button per amount. */
     counterMax?: number;
+    /** R197: set this — and pass `options: []` — when the question is "TYPE A
+     * NUMBER" rather than "pick one of these". The answer arrives as the
+     * NUMBER ITSELF, not as an index. See `NumericEntry` in types.ts. */
+    numeric?: NumericEntry;
   }) => unknown;
 }
 

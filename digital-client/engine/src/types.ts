@@ -1028,8 +1028,45 @@ export type DecisionKind =
   | 'formationSlot'  // R75/R29: which open formation slot a unit joins (values are NOT entity ids)
   | 'payOrDecline'   // "unless its controller pays [x]" (R6)
   | 'mode'           // which half of a modal effect (R57, EffectPart.mode)
-  | 'assignDamage';  // R120: elective combat-damage split over a column's victims
+  | 'assignDamage'   // R120: elective combat-damage split over a column's victims
+  | 'number';        // R197: TYPE A NUMBER — `choice` IS the value, not an index
   // (graft insert position rides on the graft ACTION itself, not a decision)
+
+/**
+ * R197 — the range a `kind: 'number'` decision will accept.
+ *
+ * ⚠ THIS KIND CHANGES WHAT `Action.choice` MEANS, and that is exactly why it
+ * is a kind of its own. For every other DecisionKind `choice` is an INDEX into
+ * `options`; for `'number'` it is **the number itself**, and `options` is
+ * EMPTY so that no caller can read an index out of it by habit. A decision
+ * kind is a CONTRACT about what its values mean, and the last time one was
+ * reused loosely — `electricPath`, whose values are raw entity ids, beside
+ * `formationSlot`, whose values are slot indexes — the client pinged the wrong
+ * units and it read to the player as "placement isn't working".
+ *
+ * WHY it exists: "Predict your life total" (Prediction Prophet) takes ANY
+ * number. An option list is finite, so the menu ran `0 … life + 5` and a
+ * prediction further above where you stand could not be entered at all. The
+ * owner's standing steer (2026-08-24) is that cards are literal and open —
+ * *"Don't assume that cards are limited, they're designed to be open ended…
+ * It's not on rails"* — so an arbitrary cap is precisely the narrowing that
+ * steer forbids, and the answer is a real numeric entry, not a bigger guess.
+ *
+ * `legalActions` cannot enumerate an unbounded range, so — exactly as
+ * `pickOrder` already does for permutations — it offers REPRESENTATIVES and
+ * `apply()` validates any value in range the client builds.
+ */
+export interface NumericEntry {
+  /** smallest accepted value (inclusive) */
+  min: number;
+  /** largest accepted value (inclusive), or `null` for "no ceiling at all" */
+  max: number | null;
+  /** where a client's dial starts, and the value the prompt is anchored on
+   * ("where you stand now"). Always inside [min, max]. */
+  suggest: number;
+  /** how the client labels the suggestion, when it is worth naming */
+  suggestLabel?: string;
+}
 
 export interface DecisionOption {
   label: string;
@@ -1061,6 +1098,10 @@ export interface Decision {
    * the payability check does, so the two cannot drift). Absent on every
    * decision that is not about a quantity of counters. */
   counterMax?: number;
+  /** R197: present on exactly the `kind: 'number'` decisions, and on nothing
+   * else. See `NumericEntry` — it is the whole question, because `options` is
+   * empty and `choice` is the value. */
+  numeric?: NumericEntry;
 }
 
 /** Why the engine is paused, and how to resume. All serializable data. */

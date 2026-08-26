@@ -14770,3 +14770,142 @@ what its resolution-time loop offered too.
 quoting its printed clause, each asserting the cost is spent while the ability
 is still on the stack and that the opponent holding priority can read the chosen
 N off it before deciding. Every one reddens when its card is reverted.
+---
+
+## R197 — an option list is not "any number"; a play window is not "right now"; and an unreachable premise is a finding, not a fix
+
+Three rows of `docs/09-divergence-inventory.md` §2b, one card each. Two were
+real and are closed. **The third had an unreachable premise and nothing was
+built for it** — which is the outcome the same inventory's `{Reaping}` row
+already paid for once.
+
+### 1. PREDICTION CAP — a new `DecisionKind`, and the contract that goes with it
+
+Prediction Prophet prints *"predict your life total"*. That was implemented as
+a `payOrDecline` menu running `0 … life + 5`, because a `Decision` carries a
+finite `options` list and somebody had to pick a ceiling. Gaining more than
+five life between the haste step and deployment is ordinary, so the winning
+prediction was routinely not on the menu — the cap was an engine limit wearing
+the card's clothes, and the standing owner steer (2026-08-24) forbids exactly
+that shape: *"Don't assume that cards are limited, they're designed to be open
+ended… Algomancy is inherently a creative, synergistic game. It's not on
+rails."*
+
+**`DecisionKind` grew `'number'`.** It is the one kind whose `Action.choice` is
+**the value itself** rather than an index into `options`, and its `options` is
+therefore EMPTY. The range travels with the question as `Decision.numeric`
+(`NumericEntry`: `min`, `max | null`, `suggest`), and `apply` validates any
+value in range.
+
+⚠ **A decision kind is a CONTRACT about what its values mean.** The reason this
+got its own kind — rather than a flag on `payOrDecline` — is the precedent that
+cost a playtest report: `electricPath`'s option values are raw entity ids and
+`formationSlot`'s are slot indexes, one client treated them as one namespace,
+and it read to the player as *"placement isn't working"*. So the encoding
+change is stated in the type, in `DecisionKind`'s own comment, and in the ONE
+function that now decides which encoding an answer uses (`decisionValue`, in
+apply.ts). Nothing else reads `dec.options[choice]` for a numeric question,
+because there is nothing there to read.
+
+Three consequences, each of which had to be wired rather than assumed:
+
+* **`legalActions` cannot enumerate an unbounded range.** It offers
+  REPRESENTATIVES (`min`, `suggest`, `suggest + 1`, `max` when there is one)
+  and `apply` accepts anything in range — the same bargain the `pickOrder`
+  branch beside it already strikes for permutations. The list must never be
+  empty: a client reads an empty legal list as *"nothing here is mine"* and
+  paints "waiting for the opponent" over a bar only that seat can answer.
+* **The client must RENDER it.** `ui/inspect.ts` gained `numberEntry` /
+  `numberEntrySubmit` / `stepNumberEntry` beside the two existing steppers, and
+  `ui/main.ts` a real bar: a typed box **first** and a −10/−1/+1/+10 dial
+  second, because a range with no ceiling is not reachable by clicking `+`. The
+  box is what makes "any number" true for the player rather than only true in
+  the engine. As with both other steppers, moving the dial never submits; only
+  `numtake` answers, and what it sends is the value.
+* **The fuzzer's `decision with no options` invariant is now wrong for exactly
+  one kind**, so it moved onto the range instead: a numeric decision owes a
+  well-formed `numeric` and no options, and "a question nobody can answer" is
+  still caught for every kind.
+
+The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the
+moment a total reaches 0, so no `startOfDeployment` — the step this prediction
+is read at — is reachable with a negative life total.
+
+### 2. UNTIL-REGROUP PLAY WINDOW — the window is R96's mechanism, one card wide
+
+Spell Excavation prints *"You may play target spell from your bin **until
+regroup**. It gains {Unstable} until regroup."* It played the chosen spell
+**inline, immediately, during its own resolution**. Three printed words were
+lost with that: you could not hold the spell for a better moment, the play was
+unrespondable and un-negatable because it never reached the stack, and — the
+one that matters most — an inline play never asks `playAtTiming`, so a
+**deploy-timing spell in the bin was castable in the middle of a battle**.
+
+⚠ **R157 §12 rules the opposite: a bin-play grant does NOT waive printed
+timing.** So what this card grants is *when you may play it*, and the card's
+own printed timing still applies inside that window.
+
+The window is R96's `mayPlaySpellsFromBin` machinery with the card's own two
+printed differences:
+
+* **ONE named card.** `E.grantBinCardPlay(seat, card)` /
+  `E.mayPlayCardFromBin(seat, region, card)` / `E.useBinCardPlay(seat, card)` —
+  the grant is SPENT when the play commits, because *"target spell"* is
+  singular and a second copy of the same name in the bin is not what was
+  targeted.
+* **UNTIL REGROUP, not "in this battle".** R14 scopes "this battle" to one
+  region, which is why R96's blanket grant is region-keyed and round 1's
+  permission cannot leak into round 2. "Until regroup" is the whole battle
+  phase, so this grant is bumped in EVERY region and read in the current one.
+
+`battleCounters` is the exact lifetime and needs no cleanup of its own:
+`finishHasteEnd` wipes it as the battle phase opens and regroup ends that
+phase, so the grant expires at regroup and cannot reach another turn. Nothing
+outside a battle can consume it either — `doPlayFromBin` reads
+`s.battle.region`, and there is none.
+
+Everything downstream then falls into its ordinary place instead of being
+hand-rolled: the item goes on the stack and can be responded to, `payCard`
+takes the cost when you play rather than when the Excavation resolves, and R96's
+`viaGrant` stamp is what carries *"{Unstable} until regroup … erase it instead
+of binning it"* — so the card no longer erases anything by hand.
+
+**Two things the old card asked that a window must not ask.** The target
+restriction dropped its affordability check and its "can it find a target"
+probe: both are right for an immediate play and wrong for a window, because you
+pay and you aim LATER. Losing the probe also retired the `probing` re-entrancy
+guard — with no nested query about another card's spec, a Spell Excavation in
+the bin cannot recurse into its own restriction. The restriction keeps a
+timing filter, and that is not narrowing either: R157 §12 makes a non-battle
+target a permission that is dead before it can be used, and it is the same
+filter `pushBinPlays` already applies to R96's grant.
+
+### 3. MULTIPLAYER ATTRIBUTION — the premise is unreachable, so nothing was built
+
+Cinder Scuttler reads *"you deal combat damage"* off the aggregated `lifeLost`
+event, and the inventory says that in multiplayer a third player's damage would
+fire it. **Measured first, per the rule this inventory's own `{Reaping}` row
+wrote:**
+
+* `createGame` takes `names: [string, string]` and builds exactly **two**
+  players and **two** regions;
+* `other(seat)` is the literal `1 - seat`, so `other(2)` is **-1** — a third
+  seat is not representable at all;
+* `commitPlayerDamage` and `thievingDraws` both iterate the literal
+  `[initiative, nit]`.
+
+There is no board on which the described bug can occur. **Nothing was built for
+it**, and that is deliberate for a second reason: the honest fix is to read
+`CombatLedger.playerHits` instead of `lifeLost`, which is precisely the
+per-column face-damage attribution seam six other cards are waiting on. Two
+implementations of one seam is how `legalActions` and `apply` drift apart. What
+was added is a test pinning the 1v1 reading the row itself calls exact.
+
+⚠ **THE MEASUREMENT DID TURN UP A REACHABLE 1v1 GAP, and it belongs to that
+same seam.** A combat hit that is fully REPLACED — Blightsea Polyp's *"as 1
+rot"* — produces no `lifeLost` at all, and Caleb ruled (2024-10-24) that a
+replaced hit still counts as DEALT: `{Thieving}` and `{Blessed}` read
+`playerHits` for exactly that reason. Cinder Scuttler reads `lifeLost`, so it
+misses a hit the rules say it saw. Suspend's life lock is the same shape from
+the other direction. Reported, not fixed: it is one line once `playerHits` is
+readable by card code.

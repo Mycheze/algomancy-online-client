@@ -1176,6 +1176,15 @@ function safeLegal(s: GameState, seat: Seat): Action[] {
 function progressAction(s: GameState, answerSeat?: Seat, blockFully = false): Action | null {
   if (s.decision) {
     const d = s.decision;
+    // R197: a numeric entry carries NO options — `choice` is the value itself.
+    // The FLOOR is the answer, because that is what this driver was already
+    // sending when the same question was a menu (it took option 0, and the
+    // menu opened at its smallest legal value). Deliberately not `suggest`:
+    // changing the encoding of a question must not change any card's drill
+    // result, and 84-card-semantics asserts those results in both directions.
+    if (d.kind === 'number') {
+      return { type: 'decide', seat: d.seat, choice: d.numeric?.min ?? 0 } as Action;
+    }
     const first = d.options[0];
     if (!first) return null;
     if (d.kind === 'orderTriggers') {

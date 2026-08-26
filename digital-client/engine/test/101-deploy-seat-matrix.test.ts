@@ -54,7 +54,7 @@ import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
 import {
-  effStats, ent, give, giveResources, pick, skipHasteStep,
+  effStats, ent, give, giveResources, skipHasteStep,
   spawn, toDeployment, unitsOf, finishBattle,
 } from './util.ts';
 import type { DecisionOption, Seat } from '../src/types.ts';
@@ -257,7 +257,10 @@ for (const [owner, init] of COMBOS) {
     assert.equal(h.state.decision!.seat, owner,
       '"your life total" — the OWNER predicts, whichever seat holds initiative');
     const life = h.state.players[owner]!.life;
-    pick(h, life);                              // nothing will change it
+    // R197: `kind: 'number'` — `choice` IS the value, not an index (there are
+    // no options at all), which is what lets the card take ANY number
+    assert.equal(h.state.decision!.kind, 'number');
+    h.do({ type: 'decide', seat: owner, choice: life });   // nothing will change it
     skipHasteStep(h);
     finishBattle(h);
     assert.equal(h.state.phase, 'deploy');

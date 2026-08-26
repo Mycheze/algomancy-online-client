@@ -17,8 +17,8 @@
 import type {
   Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef,
   Decision, DecisionOption,
-  EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, PendingTrigger,
-  Seat, SpawnFace, StackItem, Suspension, TargetRef,
+  EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, NumericEntry,
+  PendingTrigger, Seat, SpawnFace, StackItem, Suspension, TargetRef,
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
@@ -129,11 +129,14 @@ export class IllegalAction extends Error {
 class PartChoice {
   key: string;
   dec: {
-    kind: 'payOrDecline' | 'electricPath' | 'formationSlot'; seat: Seat; prompt: string;
+    kind: 'payOrDecline' | 'electricPath' | 'formationSlot' | 'number'; seat: Seat; prompt: string;
     options: DecisionOption[];
     /** BL-25/R139: a card effect asking HOW MANY counters — the ceiling its
      * stepper maxes at. Passed straight through onto the Decision. */
     counterMax?: number;
+    /** R197: a card effect asking for a NUMBER rather than a pick. Passed
+     * straight through onto the Decision, and `options` is empty. */
+    numeric?: NumericEntry;
   };
   constructor(key: string, dec: PartChoice['dec']) {
     this.key = key;
@@ -421,6 +424,51 @@ export class E {
   /** R96: grant the above for the rest of this region's battle. */
   grantBinSpellPlay(seat: Seat, region: number): void {
     this.bumpBattleCounter(region, `binPlaySpells:${seat}`);
+  }
+
+  /**
+   * R197: may `seat` play ONE named card out of their own bin right now?
+   *
+   * "You may play target spell from your bin **until regroup**." (Spell
+   * Excavation.) R96's sibling above is the BLANKET version — every spell,
+   * this region's battle. This one is the single-card version with the longer
+   * window, and the two differences are both printed on the card:
+   *
+   *  · ONE CARD. The key names it, and `useBinCardPlay` spends the grant when
+   *    the play commits, because "target spell" is singular — a second copy of
+   *    the same name in the bin is not what was targeted.
+   *  · UNTIL REGROUP, not "in this battle". R14 scopes "this battle" to one
+   *    region, which is why `mayPlaySpellsFromBin` is region-keyed and round
+   *    1's permission cannot leak into round 2. "Until regroup" is the WHOLE
+   *    battle phase, both rounds and both regions — so the grant is bumped in
+   *    every region and read in the current one.
+   *
+   * `battleCounters` is exactly the right lifetime and needs no cleanup of its
+   * own: `finishHasteEnd` wipes it as the battle phase opens, and regroup ends
+   * that phase, so a grant made during battle expires at regroup and cannot
+   * survive into another turn. Nothing outside a battle can consume it either
+   * — `doPlayFromBin` reads `s.battle.region` and there is none.
+   *
+   * ⚠ R157 §12: this is a permission to PLAY, and it waives nothing else. The
+   * card still goes through `playAtTiming`, so its PRINTED timing applies —
+   * the same restrictive answer R42/R45 gave for the cache and R96 gave for
+   * the blanket grant. A bin-play grant does not make a deploy spell castable
+   * in battle.
+   */
+  mayPlayCardFromBin(seat: Seat, region: number, card: CardName): boolean {
+    return this.battleCounter(region, `binPlayCard:${seat}:${card}`) > 0;
+  }
+  /** R197: grant the above until regroup (see the note — every region). */
+  grantBinCardPlay(seat: Seat, card: CardName): void {
+    for (let r = 0; r < this.s.regions.length; r++) {
+      this.bumpBattleCounter(r, `binPlayCard:${seat}:${card}`, 1);
+    }
+  }
+  /** R197: spend one such grant — "target spell", singular, is now played. */
+  useBinCardPlay(seat: Seat, card: CardName): void {
+    for (let r = 0; r < this.s.regions.length; r++) {
+      this.bumpBattleCounter(r, `binPlayCard:${seat}:${card}`, -1);
+    }
   }
 
   // ── resources & payment ─────────────────────────────────────────────
@@ -8394,6 +8442,9 @@ export class E {
               // BL-25/R139: an effect that removes counters says its own
               // ceiling here — the quantity stepper is not a cost-only thing.
               ...(sig.dec.counterMax !== undefined ? { counterMax: sig.dec.counterMax } : {}),
+              // R197: a `kind: 'number'` question carries its whole range here
+              // — `options` is empty and `choice` is the value itself.
+              ...(sig.dec.numeric !== undefined ? { numeric: sig.dec.numeric } : {}),
             },
           );
         }

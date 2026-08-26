@@ -17,10 +17,10 @@ import {
   dismissSeenCard, dismissSeenHand,
   erasedPileView, groupReveal, growCardLedger, handOfferBadge, handOffers,
   linkCardNames, modHostCount, modHostPhrase,
-  modHosts, onlyKnownNames, optionPingId, packBadgeLine,
+  modHosts, numberEntry, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
   partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, seenHandView,
   spellAugmentNote,
-  stackAbilityRows, stackItemX, stackItemModes,
+  stackAbilityRows, stackItemX, stackItemModes, stepNumberEntry,
   prismiteClickPlan, resourceMenuElements,
   stackXMark, takeAutoPass, tokensCreatedBy, transformFaces, unitClickOptions, waitingNote,
   watchCast,
@@ -451,6 +451,12 @@ interface UiState {
    * that victim's floor rather than carrying a number its menu never had. */
   assignCount: number;
   assignFor: number;
+  /** R197: the number dialled or typed into a `kind: 'number'` decision, and
+   * the decision id it was dialled for. A fresh question restarts at the
+   * engine's own suggestion — carrying the last answer onto a different
+   * question is how a client answers something nobody asked. */
+  numberCount: number;
+  numberFor: number;
   /** draft step: pile indices (into hand.concat(pack)) marked "leave in pack" */
   draftPack: number[] | null;
   /** which turn+seat draftPack was built for (re-init on change) */
@@ -559,6 +565,7 @@ const freshUi = (): UiState => ({
   carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
   counterCount: 1, counterFor: -1,
   assignCount: 0, assignFor: -1,
+  numberCount: 0, numberFor: -1,
   draftPack: null, draftFor: '', autopass: false, autopassStack: 0,
   autopassSig: [], autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
   prefillFor: '', confirmDone: null, confirmPass: null,
@@ -1084,6 +1091,59 @@ function counterStepperHtml(dec: Decision): string {
  * decision that only exists in main.ts is reachable only by playing a whole
  * game over a websocket, and nobody writes that test.
  */
+
+/* R197 — THE NUMERIC ENTRY BAR.
+ *
+ * `kind: 'number'` is the one decision whose `choice` is the VALUE and not an
+ * index (see `NumericEntry` in types.ts). Prediction Prophet is the card that
+ * needed it: "predict your life total" takes ANY number, and an option list
+ * running `0 … life + 5` was an engine cap wearing the card's clothes.
+ *
+ * The affordance is a typed box FIRST and a dial second, and that order is the
+ * whole point — a range with no ceiling is not reachable by clicking `+`. The
+ * box is the thing that makes "any number" true for the player and not merely
+ * true in the engine. The judgement (clamping, the quick picks, what the
+ * arrows do, and the refusal message) lives in ui/inspect.ts beside the other
+ * two steppers, so it is testable without playing a whole game over a socket.
+ */
+
+/** the number the entry is showing for the LIVE question, clamped into the
+ * range the engine actually sent */
+function numberCount(): number {
+  const dec = h.state.decision;
+  if (!dec || dec.kind !== 'number') return 0;
+  if (ui.numberFor !== dec.id) {
+    ui.numberFor = dec.id;
+    ui.numberCount = dec.numeric?.suggest ?? 0;    // the engine's own suggestion
+  }
+  return numberEntry(dec, ui.numberCount).value;
+}
+
+/** the typed box, the dial, the quick picks and the confirm */
+function numberEntryHtml(dec: Decision): string {
+  const v = numberEntry(dec, numberCount());
+  if (!v.active) return '';
+  const sub = numberEntrySubmit(dec, v.value);
+  const btn = (act: string, txt: string, on: boolean, title: string): string =>
+    `<button data-btn="${act}" title="${esc(title)}"${on ? '' : ' disabled'}>${txt}</button>`;
+  const range = v.max === null
+    ? `any number from ${v.min} up — there is no ceiling`
+    : `${v.min} … ${v.max}`;
+  const quick = v.quick.map(q =>
+    `<button data-btn="numquick" data-n="${q.value}">${esc(q.label)}</button>`).join(' ');
+  return `<span class="numentry">
+      ${btn('numdown10', '−10', v.canDown, 'ten lower')}
+      ${btn('numdown', '−', v.canDown, 'one lower')}
+      <input id="num-entry" type="number" inputmode="numeric" value="${v.value}"
+        min="${v.min}"${v.max === null ? '' : ` max="${v.max}"`}
+        title="${esc(range)}" style="width:5em;text-align:center">
+      ${btn('numup', '+', v.canUp, 'one higher')}
+      ${btn('numup10', '+10', v.canUp, 'ten higher')}
+      ${btn('numtake', 'Confirm', sub.ok, sub.ok ? `answer ${sub.choice}` : sub.why)}
+      <span style="color:var(--dim)"> ${esc(range)}</span>
+      ${quick ? `<span class="decpicks"> ${quick}</span>` : ''}
+    </span>`;
+}
 
 /** the amount the ticker is showing for the LIVE question, clamped into the
  * menu the engine actually sent */
@@ -2656,6 +2716,15 @@ function decisionBarHtml(dec: Decision, err: string): string {
           <span class="decpicks">${dec.options.map((_o, i) => optBtn(i)).join(' ')}</span></details>
         ${castCancelBtnHtml()}${err}</div>`;
   }
+  // R197: TYPE A NUMBER. There are no options to render — the answer is the
+  // value — so this bar is the entry itself, and it must exist: a decision
+  // kind whose client shows nothing at all is a frozen game for the seat that
+  // has to answer it.
+  if (dec.kind === 'number') {
+    return `<div class="promptbar pending"><span class="who">${who}:</span>
+        ${iconizeText(dec.prompt)}
+        ${numberEntryHtml(dec)} ${castCancelBtnHtml()}${err}</div>`;
+  }
   if (dec.kind === 'orderTriggers') {
     const btns = dec.options.map((o, i) => ui.orderPicked.includes(i)
       ? `<span style="color:var(--dim)">${ui.orderPicked.indexOf(i) + 1}. ${iconizeText(o.label)}</span>`
@@ -3602,12 +3671,15 @@ function snapshotViewport(): ViewportSnap {
   // deliberately not in the list, because it always wants to be at the bottom.
   const scroll = SCROLLERS.map(sel =>
     [sel, document.querySelector(sel)?.scrollTop ?? 0] as const);
-  // same discipline for the two text inputs a server push can repaint
-  // mid-word: remember which one (if either) owned focus and where the caret
-  // sat, so the rebuilt input neither steals focus nor teleports the caret
+  // same discipline for the text inputs a server push can repaint mid-word:
+  // remember which one (if any) owned focus and where the caret sat, so the
+  // rebuilt input neither steals focus nor teleports the caret. R197 adds the
+  // third — a numeric answer is typed, and an opponent's action landing while
+  // you type must not eat the digits or the caret.
   const focusedBox = document.activeElement;
   const keepFocus = (focusedBox instanceof HTMLInputElement || focusedBox instanceof HTMLTextAreaElement)
-    && (focusedBox.id === 'judge-q' || focusedBox.id === 'report-note')
+    && (focusedBox.id === 'judge-q' || focusedBox.id === 'report-note'
+      || focusedBox.id === 'num-entry')
     ? { id: focusedBox.id, start: focusedBox.selectionStart ?? 0, end: focusedBox.selectionEnd ?? 0 }
     : null;
   const hadJudge = !!document.getElementById('judge-q');
@@ -3669,6 +3741,22 @@ function rewireInputs(snap: ViewportSnap): void {
       reportDraft = rn.value;
       const send = document.querySelector('[data-btn="reportsend"]') as HTMLButtonElement | null;
       if (send) send.disabled = reportBusy || !reportDraft.trim();
+    });
+  }
+  // R197: the numeric-entry box is a typing box too, and it is fresh DOM after
+  // every paint. Its draft lives in `ui.numberCount` so a re-render (an
+  // opponent's action, a log line) cannot swallow half-typed digits, and Enter
+  // confirms — the box is the affordance that makes an unbounded range
+  // reachable, so it has to behave like one.
+  const ne = document.getElementById('num-entry') as HTMLInputElement | null;
+  if (ne) {
+    if (keepFocus?.id === 'num-entry') { ne.focus(); ne.setSelectionRange(keepFocus.start, keepFocus.end); }
+    ne.addEventListener('input', () => {
+      const n = Number(ne.value);
+      if (ne.value.trim() !== '' && Number.isFinite(n)) ui.numberCount = Math.floor(n);
+    });
+    ne.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') (document.querySelector('[data-btn="numtake"]') as HTMLElement | null)?.click();
     });
   }
 }
@@ -4570,7 +4658,7 @@ function pinFocus(sub: FocusSubject, key: string): void {
  * including them would make every click look like it had done something. */
 const CLICK_STATE_KEYS = ['carrying', 'columns', 'send', 'spellTokens', 'modding', 'menu',
   'orderPicked', 'draftPack', 'bottomPick', 'confirmDone', 'confirmPass', 'confirmDeploy',
-  'confirmAct', 'confirmRide', 'counterCount', 'assignCount'] as const;
+  'confirmAct', 'confirmRide', 'counterCount', 'assignCount', 'numberCount'] as const;
 
 /** everything a click may move, as one string */
 function clickSig(): string {
@@ -5094,6 +5182,27 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     const dec = h.state.decision;
     const i = assignSplitStepper(dec, h.state, ui.assignCount).defaultIndex;
     if (i >= 0) act({ type: 'decide', seat: dec!.seat, choice: i });
+  },
+  // R197 — the numeric entry. −/+ and the quick picks MOVE the number and
+  // nothing else, the same ruling the other two steppers carry in their types;
+  // `numtake` is the only one that answers, and what it sends is the VALUE,
+  // never an index, because that is what `kind: 'number'` means.
+  numup: () => { ui.numberCount = stepNumberEntry(h.state.decision, numberCount(), 'up').count; },
+  numdown: () => { ui.numberCount = stepNumberEntry(h.state.decision, numberCount(), 'down').count; },
+  numup10: () => { ui.numberCount = stepNumberEntry(h.state.decision, numberCount(), 'up10').count; },
+  numdown10: () => { ui.numberCount = stepNumberEntry(h.state.decision, numberCount(), 'down10').count; },
+  numquick: btn => {
+    ui.numberCount = numberEntry(h.state.decision, Number(btn.dataset['n'])).value;
+  },
+  numtake: () => {
+    const dec = h.state.decision;
+    // the typed box wins when it holds anything — it is the affordance that
+    // makes an unbounded range reachable, and the dial is only its shortcut
+    const box = (document.getElementById('num-entry') as HTMLInputElement | null)?.value ?? '';
+    const want = box.trim() === '' ? numberCount() : Number(box);
+    const sub = numberEntrySubmit(dec, want);
+    if (sub.ok) act({ type: 'decide', seat: dec!.seat, choice: sub.choice });
+    else if (sub.why) uiError = sub.why;
   },
   orderpick: btn => {
     const s = h.state;

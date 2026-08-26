@@ -626,7 +626,8 @@ const UNREACHED: Record<string, string> = {
     'BOARD — "skip your draft step" only exists in a drafted game; the drill plays constructed.',
   'Prediction Prophet':
     'BOARD — "create a 5/5 unit IF YOU MATCHED THE PREDICTION". The trigger fires and resolves; '
-    + 'the drill answers the prediction decision with option 0 and the life total moves.',
+    + 'the drill answers the prediction with the FLOOR of R197\'s numeric entry (0) and the life '
+    + 'total moves.',
   'Sporebloom Siren':
     'BOARD — "delete all units with -1/-1 counters on them", resolved on a board where the units '
     + 'carrying the `counters` fixture\'s minus counters are already dead. It fires and announces '

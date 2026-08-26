@@ -6,8 +6,8 @@
  * caller keeps the old state.
  */
 import type {
-  Action, ActivateVia, ApplyResult, CardName, EffectPart, Element, EngineEvent, Entity, EntityId,
-  FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
+  Action, ActivateVia, ApplyResult, CardName, Decision, EffectPart, Element, EngineEvent, Entity,
+  EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest } from './engine.ts';
 import {
@@ -863,7 +863,14 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
   // "IN THIS BATTLE": no battle, no R96 permission — which is also why the
   // grant's region comes from the battle rather than from the seat's home.
   const region = e.s.battle?.region;
-  const viaGrant = region !== undefined && e.mayPlaySpellsFromBin(seat, region) && binPlayable(c);
+  const viaBlanket = region !== undefined && e.mayPlaySpellsFromBin(seat, region) && binPlayable(c);
+  // R197: the SINGLE-CARD grant, "until regroup" (Spell Excavation). Same
+  // permission layer, same {Unstable} clause, same printed timing — it differs
+  // from R96's blanket grant only in naming one card and in outliving this
+  // region's battle. See E.mayPlayCardFromBin.
+  const viaCard = region !== undefined && !viaBlanket
+    && e.mayPlayCardFromBin(seat, region, name) && binPlayable(c);
+  const viaGrant = viaBlanket || viaCard;
   // R123: `playsFromBin` is the card's OWN printed permission (Trench
   // Stalker) — no grant needed, and printed timing then does the gating
   // through playAtTiming (a {Battle} card still needs battle, exactly as it
@@ -874,6 +881,10 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
     () => { e.removeFromBin(seat, binIndex, 'played'); },   // R124
     () => {
       e.payCard(seat, name);
+      // R197: "target spell" is singular — spend the grant as the play
+      // commits, so a second copy of the same name still in the bin is not
+      // carried along by a permission that named one card.
+      if (viaCard) e.useBinCardPlay(seat, name);
       // R96 vs R123 on {Unstable}: the stamp is the GRANTING card's own text
       // ("If you do, they gain {p}unstable until regroup" — Abyssal
       // Evocation / Spell Excavation), NOT a fact about bins. The Manual's
@@ -1999,6 +2010,39 @@ function doDoneDeploying(e: E, seat: Seat): void {
 
 // ── decisions ─────────────────────────────────────────────────────────
 
+/**
+ * R197 — the VALUE a `decide` answer names, and the one place that decides
+ * whether `choice` is an index or the answer itself.
+ *
+ * For every DecisionKind but one, `choice` is an INDEX into `dec.options`.
+ * `kind: 'number'` is the exception and says so in its own name: its `options`
+ * is empty and `choice` IS the number (see `NumericEntry` in types.ts for why
+ * an option list cannot express "any number"). Reading that distinction in one
+ * function rather than at each `dec.options[choice]` site is deliberate — the
+ * two encodings differ by nothing a type can catch, and the cautionary tale is
+ * `electricPath`'s raw entity ids being read as `formationSlot`'s slot indexes
+ * by a client that assumed one contract covered both.
+ *
+ * Only a 'resolve' suspension can be numeric today: `ctx.choose` is the only
+ * door onto this kind, and it always suspends as 'resolve'. The other arms
+ * build their own decisions with their own fixed kinds and keep the plain
+ * index read.
+ */
+function decisionValue(e: E, dec: Decision, choice: number | number[]): unknown {
+  if (dec.kind === 'number') {
+    const num = dec.numeric;
+    e.need(!!num, 'that numeric question carries no range');
+    e.need(typeof choice === 'number' && Number.isInteger(choice),
+      'a numeric answer must be a whole number');
+    const n = choice as number;
+    e.need(n >= num!.min, `the smallest legal answer is ${num!.min}`);
+    e.need(num!.max === null || n <= num!.max, `the largest legal answer is ${num!.max}`);
+    return n;
+  }
+  e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
+  return dec.options[choice as number]!.value;
+}
+
 function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   const dec = e.s.decision;
   const sus = e.s.suspension;
@@ -2157,8 +2201,9 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   // suspended — so the board everybody was looking at while this question was
   // open showed the resolution as far as it had actually got. `shown` is how
   // much of the part's log they were shown, which the replay must not repeat.
-  e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
-  sus.answers[sus.pendingKey] = dec.options[choice]!.value;
+  // R197: `decisionValue` — an index for every kind but 'number', where the
+  // answer IS the number and `options` is empty.
+  sus.answers[sus.pendingKey] = decisionValue(e, dec, choice);
   const shown = e.resumeResolve(sus);
   // the rest of the cast chain this item heads (a {Burst} token's siblings),
   // handed back to the replay so a SECOND question from the same item keeps
@@ -2289,6 +2334,23 @@ function legalDecisionActions(e: E, seat: Seat): Action[] {
       const identity = Array.from({ length: n }, (_, i) => i);
       out.push({ type: 'decide', seat, choice: identity });
       out.push({ type: 'decide', seat, choice: [...identity].reverse() });
+    }
+  } else if (dec.kind === 'number') {
+    // R197: `choice` IS the value here, and the range can be unbounded — an
+    // enumeration is impossible in principle, not merely large. So this offers
+    // REPRESENTATIVES and `apply` validates any value the client builds, which
+    // is precisely what the `pickOrder` branch above already does for
+    // permutations ("apply() validates ANY permutation the UI builds").
+    //
+    // The list must never be EMPTY: a client reads an empty legal list as "no
+    // question here is mine" and paints "waiting for the opponent" over a bar
+    // it is the only one who can answer.
+    const num = dec.numeric!;
+    const above = num.suggest + 1;
+    const reps = [num.min, num.suggest, num.max ?? above, above]
+      .filter(n => n >= num.min && (num.max === null || n <= num.max));
+    for (const n of [...new Set(reps)].sort((a, z) => a - z)) {
+      out.push({ type: 'decide', seat, choice: n });
     }
   } else {
     dec.options.forEach((_, i) => out.push({ type: 'decide', seat, choice: i }));
@@ -2605,10 +2667,15 @@ function pushBinPlays(e: E, seat: Seat, region: number, out: Action[]): void {
   const grant = e.mayPlaySpellsFromBin(seat, region);   // R96, battle-scoped
   e.player(seat).bin.forEach((name, i) => {
     const c = getCard(name);
-    // R96's grant reaches SPELLS; R123's `playsFromBin` is the card's OWN
+    // R96's grant reaches SPELLS; R197's names ONE card and runs until
+    // regroup (Spell Excavation); R123's `playsFromBin` is the card's OWN
     // printed line ("…and played from your bin" — Trench Stalker) and needs
-    // no grant. Same action, same doPlayFromBin gate.
-    if (!((grant && binPlayable(c)) || c.playsFromBin)) return;
+    // no grant. Same action, same doPlayFromBin gate — routed through the
+    // SAME two predicates apply enforces, because a permission with two
+    // implementations is how the fuzzer's "legalActions lied" check gets
+    // tripped.
+    if (!(((grant || e.mayPlayCardFromBin(seat, region, name)) && binPlayable(c))
+      || c.playsFromBin)) return;
     // R42/R45: printed timing applies, so the battle window offers {Battle}
     // cards only (see doPlayFromBin's note).
     if (c.timing !== 'battle') return;

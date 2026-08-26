@@ -335,38 +335,53 @@ card('Spawntender', {
 
 // "You may play target spell from your bin until regroup. It gains unstable
 // until regroup. (If it would enter a bin, erase it instead.)" — bb/1,
-// {Battle} Arcane Spell. ⚠ approximations: "until regroup" play-permission
-// windows don't exist, so the chosen spell is played immediately as part of
-// resolution (cost still paid normally — canPayCard/payCard); the unstable
-// clause is applied by ERASING the spell instead of binning it after it
-// resolves. A spell unit played this way spawns its body; the body's own
-// later bin-entry is not tracked as unstable (edge, noted for review).
+// {Battle} Arcane Spell.
+//
+// R197: "UNTIL REGROUP" IS A REAL WINDOW NOW. This card used to play the
+// chosen spell IMMEDIATELY, inline, as part of its own resolution — the whole
+// printed permission collapsed to "right now". Three printed words were lost
+// with it: you could not hold the spell for a better moment, you could not
+// decline after seeing what the Excavation drew out, and — the one that
+// mattered most — an inline play has no `playAtTiming`, so a DEPLOY-timing
+// spell in the bin was castable in the middle of a battle. R157 §12 rules the
+// opposite: **a bin-play grant does not waive printed timing.**
+//
+// What it does instead is grant, and the grant is R96's mechanism with the
+// card's own two differences printed on it: ONE named card (`E.grantBinCardPlay`
+// / `useBinCardPlay` — "target spell" is singular) and a window that runs to
+// REGROUP rather than to the end of this region's battle. Everything after
+// that is the ordinary `playFromBin` road: the player picks their own moment
+// in their own priority window, `playAtTiming` applies the printed timing,
+// `payCard` takes the cost then and not now, the item goes on the STACK where
+// it can be responded to and negated, and R96's `viaGrant` stamp is what
+// carries "{Unstable} until regroup … erase it instead of binning it".
+// The card no longer erases anything by hand: `dischargeItem` does it, on the
+// real R65 pile, because the item is really {Unstable}.
 /**
- * The restriction Spell Excavation aims under: a spell in the bin that could
- * actually be played right now — affordable, and, if it targets, able to find
- * a target. Asked at CAST as part of what makes a target legal (R64), and
- * again in run(), because the board may have moved in between (R56).
+ * The restriction Spell Excavation aims under (R64: asked at CAST, as part of
+ * what makes a target legal).
  *
- * The "can it find a target" probe asks targetCandidates about ANOTHER card's
- * spec, which is a nested query — and a Spell Excavation sitting in the bin
- * makes that nesting self-referential (its own restriction scans the bin,
- * finds itself, and asks again). `probing` is the reentrancy guard, the same
- * shape as E.inStatics: a re-entered probe answers on kind and affordability
- * alone. That can only make the outer menu MORE permissive, and run() re-asks
- * the full question before it commits to anything.
+ * R197 shrank this to what the printed noun and R157 §12 between them allow:
+ * a SPELL (kind spell/spellUnit — R157 §13's "tokens are spells" cannot apply,
+ * a token is never in a bin), whose PRINTED TIMING can still be met before the
+ * window closes. The window ends at regroup and regroup ends the battle phase,
+ * so a card that is not {Battle}-timed could never be played under this grant
+ * at all — offering it would be granting a permission that is dead on arrival,
+ * which is the same filter `pushBinPlays` already applies to R96's grant.
+ *
+ * ⚠ WHAT IS DELIBERATELY NOT ASKED ANY MORE: affordability, and "can it find a
+ * target". Both were right for an immediate play and are wrong for a window —
+ * you pay when you play, which is later, and the target is picked then too. So
+ * this no longer probes `targetCandidates` about ANOTHER card's spec, and the
+ * `probing` re-entrancy guard that nesting needed is gone with it: with no
+ * nested query, a Spell Excavation in the bin cannot recurse into its own
+ * restriction. (That guard was real — see 60-cast-time-targets — and it is the
+ * hazard, not the guard, that has been removed.)
  */
-let probing = false;
-const excavatable = (g: E, seat: Seat, region: number, n: string): boolean => {
+const excavatable = (n: string): boolean => {
   const d = getCard(n);
   if (d.kind !== 'spell' && d.kind !== 'spellUnit') return false;
-  if (!g.canPayCard(seat, n)) return false;
-  if (probing || !d.spellEffect?.targets) return true;
-  probing = true;
-  try {
-    return g.targetCandidates(d.spellEffect.targets, region, undefined, seat).length > 0;
-  } finally {
-    probing = false;
-  }
+  return d.timing === 'battle';                   // R157 §12: timing is not waived
 };
 card('Spell Excavation', {
   spellEffect: {
@@ -375,9 +390,10 @@ card('Spell Excavation', {
     // pick. min 0 carries the "You may".
     targets: {
       what: 'binCard', min: 0,
-      prompt: 'Spell Excavation: play target spell from your bin (it will be erased, not binned)',
+      prompt: 'Spell Excavation: you may play target spell from your bin until regroup '
+        + '(it will be erased, not binned)',
       restrict: (g, t, tc) => 'binCard' in t && tc.ally !== undefined
-        && excavatable(g, tc.ally, tc.region, t.binCard.card),
+        && excavatable(t.binCard.card),
     },
     run: (g, ctx) => {
       const bin = g.player(ctx.controller).bin;
@@ -387,43 +403,25 @@ card('Spell Excavation', {
         return;
       }
       const name = bin[t.binCard.index];
-      if (name === undefined || !excavatable(g, ctx.controller, ctx.region, name)) {
+      if (name === undefined || !excavatable(name)) {
         g.ev('info', 'Spell Excavation: that spell can no longer be played from the bin — nothing happens.');
         return;
       }
-      g.removeFromBin(ctx.controller, t.binCard.index, 'played');   // R124
-      g.payCard(ctx.controller, name);
-      // R198: in battle this play goes on the STACK, and the R96 Unstable
-      // stamp goes with it — `E.dischargeItem` then owns the erase on every
-      // exit the item can take (resolution, an R5 fizzle, a NEGATION), which
-      // is more of the printed sentence than this site could reach: an
-      // excavated spell answered by Dematerialize used to fall into the bin
-      // the card says it never returns to.
-      const played = playInline(g, ctx, name, 'x', ctx.controller, { unstable: true });
-      // unstable: the spell card is erased instead of returning to a bin.
-      // R146(b): the returned `eraseSelf` is deliberately not read — this card
-      // never bins what it played in the first place (R96: a bin play is
-      // {Unstable}, so the card is already gone), and "erase it twice" is not
-      // a thing. A spell that prints "Erase me." lands in exactly the same
-      // place here either way.
-      //
-      // R152: …but "erased" has to actually SAY erased. This line was an
-      // `'info'` event, and E.ev() files the public erased pile (R65) only for
-      // a `type === 'erased'` event carrying a numeric `seat`. So the card was
-      // out of the bin (removeFromBin above) and on NO PILE AT ALL — the one
-      // thing R65 exists to prevent, since the owner's complaint that opened it
-      // was "there's currently no way to view erased cards". A real 'erased'
-      // event with `seat` + `card` is all it takes, and it is the same shape
-      // every other erase site uses.
-      //
-      // R198: …and only on the in-place path. `'stacked'` means the item is on
-      // the stack wearing the stamp, so announcing the erase here would file
-      // the card on the public pile before it has resolved — and a second time
-      // when it does.
-      if (played.outcome !== 'stacked') {
-        g.ev('erased', `${name} was unstable — erased instead of binned.`,
-          { seat: ctx.controller, card: name });
-      }
+      // ⚠ R198 -> R197: this card used to call `playInline` here, and R198 taught
+      // that call to push a real StackItem so the play could be answered. R197
+      // then removed the call site altogether — "you MAY play it until regroup"
+      // is a GRANT, not a play — so `doPlayFromBin` now carries the stack, the
+      // cost, the printed timing, the {Unstable} stamp and the R65 erase in
+      // their ordinary places. R198's inline work still serves the other three
+      // mid-resolution plays (Hooba-Pon, Insidious Invitation, Tides).
+      // R197: the grant, not the play. It stays live until regroup, across
+      // both battle rounds and both regions — see E.grantBinCardPlay — and
+      // `doPlayFromBin` is what honours it, with the printed timing, the
+      // stack, the cost and the {Unstable} stamp all in their ordinary places.
+      g.grantBinCardPlay(ctx.controller, name);
+      g.ev('info', `Spell Excavation: ${g.pname(ctx.controller)} may play ${name} from their bin `
+        + 'until regroup — it will be Unstable (erased instead of binned).',
+        { seat: ctx.controller, card: name });
     },
   },
 });
