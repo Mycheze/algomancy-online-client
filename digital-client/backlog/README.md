@@ -64,3 +64,34 @@ what a new entry is missing. Two rules worth stating out loud:
 useful assertion is that every path in `touches` still exists — when a file
 moves, the suite names the entry that is now pointing at nothing, which is the
 specific way a list like this usually rots into a text file again.
+
+## Answers folded 2026-08-25
+
+The 29 questions this backlog was carrying in `asks` were exported with
+`node report.ts --asks`, put to the owner as a fill-in-the-blanks file, and all
+29 came back answered. Every answer is now folded into `backlog.ts`: out of
+`asks`, into `decided`, in his verbatim words, dated 2026-08-25.
+
+**The source file was `~/Downloads/algomancy-open-questions.md`. It is not in
+git and will not survive** — the `decided` lines are the only record of it, which
+is exactly why they quote rather than summarise.
+
+Three of the answers did more than close a question:
+
+- **The clock is 60 minutes, not 40.** BL-04's question said "the 40:00 chess
+  clock already exists per room"; `CLOCK_START_MS` in `server/rooms.ts` has been
+  `60 * 60 * 1000` since 2026-08-20. `backlog.test.ts` now reads that constant
+  and checks BL-26 against it, so the number cannot drift in prose again.
+- **Four answers created work with no entry:** BL-26 and BL-27 (make the timers
+  optional and configurable, then make running out of time lose the game),
+  BL-28 (name-claiming is wrong for a public deploy), BL-29 (spectators and
+  replays).
+- **BL-09 lost its footing.** Asked whether docs/07 was still the visual brief,
+  the owner answered "I don't know what docs/07 is". The entry is re-framed as a
+  documentation reconciliation rather than kept or dropped quietly, and the real
+  visual brief — "general light sprucing up ... mostly in non gameplay related
+  areas" — now lives on BL-10.
+
+`node report.ts` went from **3 ready of 20 open** to **15 ready of 24 open**.
+One question is open again, on BL-29, and it was asked by this pass rather than
+left over from the last one.

@@ -142,6 +142,26 @@ test('nothing is done without a commit and a guard', () => {
   }
 });
 
+test('the chess-clock bank the backlog states is the one the code uses', () => {
+  // A NUMBER RESTATED IN PROSE IS A NUMBER THAT DRIFTS. BL-04's question told
+  // four days of readers that "the 40:00 chess clock already exists per room"
+  // after rooms.ts had moved to 60 minutes, and nothing here noticed — the
+  // owner caught it by hand on 2026-08-25. server/test-clock.ts learned the
+  // same lesson earlier and now imports the constant instead of restating it;
+  // this reads it back out of the source of truth for the same reason.
+  const src = fs.readFileSync(path.join(ROOT, 'digital-client/server/rooms.ts'), 'utf8');
+  const m = /export const CLOCK_START_MS = (\d+) \* (\d+) \* (\d+);/.exec(src);
+  assert.ok(m, 'CLOCK_START_MS is not declared the way this assertion reads it — fix the regex, then re-check every clock number in backlog.ts by hand');
+  const minutes = (Number(m[1]!) * Number(m[2]!) * Number(m[3]!)) / 60_000;
+  const owner = byId.get('BL-26');
+  assert.ok(owner, 'BL-26 owns the clock setting — if it was renumbered, this assertion needs the new id');
+  const text = [owner.means, ...owner.doneWhen, ...(owner.decided ?? [])].join(' ');
+  assert.match(
+    text, new RegExp(`\\b${minutes}[ -]minutes?\\b`),
+    `BL-26 must state the real starting bank, which server/rooms.ts says is ${minutes} minutes`,
+  );
+});
+
 test('an entry with open questions is not being built', () => {
   for (const e of active) {
     assert.ok(

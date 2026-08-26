@@ -45,6 +45,29 @@
  *   5. an entry with open `asks` is not `active` — you cannot be building
  *      something whose design question the owner has not answered.
  *
+ * THE SECOND PASS — 2026-08-25
+ *
+ * The 29 questions this file was carrying in `asks` were put to the owner in
+ * writing, and all 29 came back answered. Every one has moved out of `asks`
+ * and into `decided`, carrying his verbatim words and that date — the answer
+ * sheet itself was a file in ~/Downloads that is not in the repo and will not
+ * survive, so these entries are now the only record of it.
+ *
+ * Three things from that pass are worth knowing before you read on:
+ *
+ *   - Four answers created work that had no entry: BL-26 and BL-27 (make the
+ *     timers optional and configurable, THEN make running out of time lose the
+ *     game), BL-28 (name-claiming is wrong for a public deploy), and BL-29
+ *     (spectators and replays, which he split off from tournaments by name).
+ *   - One answer corrected THIS FILE. BL-04's question stated that the 40:00
+ *     chess clock already exists per room. It has been 60 minutes since
+ *     2026-08-20, and the owner said so. Checked against `CLOCK_START_MS` in
+ *     server/rooms.ts, which is where the number actually lives.
+ *   - One answer knocked the ground out from under an entry. Asked whether
+ *     docs/07 was still the visual brief, he answered "I don't know what
+ *     docs/07 is". BL-09 is re-framed rather than quietly kept or quietly
+ *     dropped — read the entry.
+ *
  * SCOPE, AS OF THE INTERVIEW
  *
  * The single most important thing established: **the target is a public
@@ -167,10 +190,9 @@ export const BACKLOG: readonly Entry[] = [
     decided: [
       'Queue AND rating AND leaderboard are all wanted (owner, 2026-08-24) — the queue is this entry, the rating is BL-02',
       'Accounts are required to queue: playing signed out already records nothing (see server/accounts).',
+      'Pairing is FIRST-COME, not rated. Owner, 2026-08-25: "For now, anyone with anyone. If we get enough oplayers to be picky, we can do that later." — build strictly first-two-in-line. Rating-aware pairing is a later option that needs a population to be worth anything, so do not build the widening-search version now.',
     ],
-    asks: [
-      'Does the queue pair by rating (skill-based, widening with wait time) or strictly first-two-in-line? The owner picked "queue + rating + leaderboard" over the skill-based-pairing option, which reads as first-two-in-line for now — confirm before building the harder one.',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/server/main.ts',
@@ -204,15 +226,16 @@ export const BACKLOG: readonly Entry[] = [
       'A leaderboard page ranks accounts, and says how many games back the rating goes',
       'Re-running the seed/rebuild reproduces the exact same ratings from the game files — no drift',
       'A game with no stamped winner and a diverged replay does NOT move anybody\'s rating (it is unknown, not a loss)',
+      'A new account starts at 1000, can see its own standing immediately, and is absent from the PUBLIC leaderboard until its 5th rated game',
+      'A game both seats abandoned (`finished: false`, no stamped winner) moves nobody\'s rating and is not counted as a loss for either side',
     ],
     decided: [
       'Ratings are per format (constructed vs draft rated separately) — one number across formats would be misleading given draft decks are random.',
       'Rating comes from the stamp, not from replaying the log: old logs diverge on newer engines (this already burned 5 of the first 8 games).',
+      'Start at 1000; public after 5 rated games. Owner, 2026-08-25: "I think standard is to start with 1000 elo. Someone can always see where they are on the leaderboard, but don\'t appear publically until 5 rated games are finished." — the rating exists and moves from game 1 and the player can always see their own position; it is the PUBLIC listing that waits for the 5th finished rated game.',
+      'A doubly-abandoned game counts as nothing. Owner, 2026-08-25: "Both players abandon? Just don\'t count it. But we\'ll make the timer actally cause a game loss before launching to prevent BMing." — server/history.ts already lands these as `finished: false`, so the fold skips them. The second half of that answer is not this entry: it is BL-27, and once it lands, a player who walks away from a running clock loses rather than producing one of these.',
     ],
-    asks: [
-      'Provisional rating for a new account, and how many games before you appear on the leaderboard?',
-      'Does an unfinished/abandoned game count as a loss, or not count at all? Concessions already stamp a winner, so this is only about true abandonment.',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/server/stats.ts',
@@ -255,14 +278,14 @@ export const BACKLOG: readonly Entry[] = [
       'The opponent takes its turn through the same legalActions/apply path as a human seat — no engine-side special cases',
       'The game ends, scores, and reaches the post-game screen like any other game',
       'Adding a third opponent is a small self-contained file, not a refactor',
+      'A finished challenge game records nothing — no stats, no achievements, no rating movement — exactly as signed-out play records nothing',
     ],
     decided: [
       'Opponents are scripted plans, not search or evaluation. "Probably easy to beat" is the intent, not a compromise.',
       'They are opponents in a normal game, not puzzle scenarios — the board starts empty.',
+      'Challenge results are EXCLUDED from stats, achievements and rating. Owner, 2026-08-25, asked whether they should count or be excluded like signed-out play: "Excluded as well" — so a challenge game must not reach the stats fold at all, rather than reaching it and being filtered later.',
     ],
-    asks: [
-      'Should challenge results count toward account stats/achievements/rating, or be excluded like signed-out play?',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/engine/src/apply.ts',
@@ -308,16 +331,18 @@ export const BACKLOG: readonly Entry[] = [
       'Exhibition: pairing prefers opponents you have not yet played, and the event ends on the configured time limit or game minimum',
       'A standings page updates live and names a winner at the end',
       'An odd entrant count is handled (bye) and a no-show does not wedge the round',
+      'Standings break ties on opponents\' match win percentage',
+      'A round deadline is expressed with the configurable timer from BL-26, and an expired game resolves by BL-27\'s rule instead of sitting unfinished forever',
     ],
     decided: [
       'Tournaments and cube are TWO features that overlap: cube (BL-05) reuses this pairing infrastructure but is not part of it.',
       'Games are ordinary 1v1 rooms — the tournament schedules them, it does not change how they play.',
+      'Swiss tiebreak is OMW%. Owner, 2026-08-25: "OMW% is fine. Just standard stuff." — opponents\' match win percentage, computed the ordinary way; do not invent a house tiebreaker.',
+      'THE CLOCK IS 60 MINUTES, NOT 40 — this entry\'s own question had it wrong. Owner, 2026-08-25: "Chess clock is actually 60. Timer going off will eventually lose the game. But we need to make timers optional and configurable first." VERIFIED against the code: `CLOCK_START_MS = 60 * 60 * 1000` in server/rooms.ts, changed from 40 minutes on 2026-08-20 after 40 ran out mid-playtest ("a draft game with real decisions wants an hour"). The question that said "The 40:00 chess clock already exists per room" was stale when it was asked.',
+      'Round deadlines wait on two new entries, in the owner\'s stated order: BL-26 (timers optional and configurable) then BL-27 (running out loses the game). Neither existed when this entry was written; both were created by that answer.',
+      'Spectators are wanted, but NOT as part of this. Owner, 2026-08-25: "We want to allow spectators and match replays, but that\'s its own feature, yes." — filed as BL-29. A tournament may link to it; it must not block on it.',
     ],
-    asks: [
-      'Tiebreakers for Swiss standings — opponents\' match win %, head-to-head, something simpler?',
-      'Does a tournament round have a clock/deadline, and what happens to an unfinished game when time expires? The 40:00 chess clock already exists per room.',
-      'Can spectators watch, or is that strictly later?',
-    ],
+    asks: [],
     deps: ['BL-01'],
     touches: [
       'digital-client/server/main.ts',
@@ -361,6 +386,9 @@ export const BACKLOG: readonly Entry[] = [
       'A cube larger than needed just leaves cards undrafted — no error',
       'Each player builds a 30-card deck from their pool in a deckbuilder, and the deck locks',
       'The pod then plays a normal tournament with those decks',
+      'Deckbuilding runs on a 10-minute default timer that the organizer can change or turn off',
+      'A deck that is not a legal 30 cannot be submitted — the builder shows an error and keeps you there, rather than accepting it and fixing it later',
+      'A cube list saves to the organizer\'s account like a deck, and can be picked again for a later event without re-entering it',
     ],
     decided: [
       'Pregame, not live. The existing in-game live draft is a different format and stays.',
@@ -369,11 +397,10 @@ export const BACKLOG: readonly Entry[] = [
       'Duplicates come from the CUBE LIST containing duplicates, not from the tool inventing them to fill packs.',
       'Default pack structure: 4 packs of 10.',
       'After deckbuilding, a cube draft is indistinguishable from normal constructed.',
+      'Deckbuilding is timed, organizer-overridable, and an illegal deck is simply refused. Owner, 2026-08-25: "10 minutes to build is standard. Let the organizer configure and override things. Players just can\'t submit a non-legal deck. It should show an error." — 10 minutes is the DEFAULT, not the rule; the organizer configures it, the same way they configure everything else about the event.',
+      'A cube list is saved to an account like a deck. Owner, 2026-08-25: "Save it like a constructed deck to the user\'s account." — it lives in the same locker as decks (BL-14) and is reusable across events, so it is not per-event configuration that has to be re-entered.',
     ],
-    asks: [
-      'Is there a deckbuilding time limit, and what happens if someone does not submit a legal 30?',
-      'Can a cube list be saved and reused/shared between events, or is it configured per event?',
-    ],
+    asks: [],
     deps: ['BL-04', 'BL-14'],
     touches: [
       'digital-client/server/main.ts',
@@ -387,7 +414,16 @@ export const BACKLOG: readonly Entry[] = [
       'Trap: the existing draft code is the LIVE draft (draftDeckList, draftCommit, packs '
       + 'refreshed every N+1 turns, redaction of your own pack during the draft step). Almost '
       + 'none of it transfers — this is a separate pregame pod draft. Reuse the deckbuilder '
-      + 'from BL-14 rather than writing a second one.',
+      + 'from BL-14 rather than writing a second one. '
+      + 'FOR INFORMATION, not an override: the printed manual (Rules/Algomancy-Manual.txt, '
+      + '"CUBE DRAFT") describes two procedures and the owner\'s default matches neither. '
+      + 'ALGOMANCY CUBE DRAFT — deal each player a pack of 10, then 15 times over: draw 2 '
+      + 'from the cube, combine hand with pack, choose 10, pass clockwise, until each player '
+      + 'has 30. TRADITIONAL CUBE DRAFT — three packs of 13 to 15 (15 for 6 players, 13 for '
+      + '8), pick and pass, alternating direction. The manual also sizes the cube at 320 '
+      + 'cards from one box, 640 for groups larger than 8. The owner said "4 packs of 10" '
+      + 'and that is the default this entry builds; the manual\'s two are worth offering as '
+      + 'presets, and are part of why the pack structure has to be configurable at all.',
   },
   {
     id: 'BL-06',
@@ -412,14 +448,15 @@ export const BACKLOG: readonly Entry[] = [
       'You can advance or jump phases without needing a legal action',
       'Cards summoned this way behave under normal rules — triggers fire, statics apply, combat resolves',
       'Nothing from test mode is recorded to account stats or the metagame',
+      'The SECOND seat can be stocked the same way — cards, mana, life — so an interaction across the table can be set up and run',
+      'The opponent\'s side can be driven from a second tab rather than crowding both boards\' controls onto one screen',
     ],
     decided: [
       'It is a sandbox for exploration as much as a debug harness — the UI should be usable by a player, not just by an agent.',
+      'Open to everyone on a public deploy — no flag, no badge. Owner, 2026-08-25, asked whether it should be gated: "Yes, for anyone."',
+      'The sandbox is TWO-SIDED, and the second side gets its own tab. Owner, 2026-08-25: "Yes, you should be able to contruct game states and test things. Maybe allowing players to open the opponent\'s side in another tab would be great for that and keep the interface less cluttered." — so the second seat is a real seat you can also stock, and the preferred UI is a second tab/window driving it, precisely to keep one screen from carrying two sets of cheats. Treat the tab as the owner\'s suggestion ("maybe") rather than a hard requirement, but the two-sided part is not optional.',
     ],
-    asks: [
-      'Should test mode be available to everyone on a public deploy, or gated behind a flag/judge badge? (It trivially reveals nothing secret, but it is also an odd thing to hand a new player.)',
-      'Two-sided sandbox — do you want to be able to give the empty second seat a board too, to test interactions across the table?',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/engine/src/apply.ts',
@@ -453,17 +490,28 @@ export const BACKLOG: readonly Entry[] = [
       'Regions/adjacency are correct for the table size — each pair of neighbours has its shared space',
       'Attack declaration and the counterattack work with more than one possible defender',
       'Initiative and turn order are correct for N players',
-      'The fuzzer runs clean at 3, 4 and 6 seats',
+      'The fuzzer runs clean at 3 and 4 seats (6+ is a later look — owner, 2026-08-25)',
       'Per-seat redaction is still leak-free with more than one opponent',
+      'FFA has NO counterattack, and the client does not offer one',
+      'FFA attacks are declared simultaneously and revealed at once — the commit-reveal the deployment phase already does at 1v1',
+      'Priority passes CLOCKWISE from the player nearest the initiative player, not back and forth',
+      'Two players attacking the same player produces ONE battle in that region with all three participating',
+      '2v2 resolves battles region by region: NIT regions first, then IT regions, each clockwise from the IT player',
     ],
     decided: [
       'Both FFA and teams are wanted.',
+      'Build 3 and 4 seats first. Owner, 2026-08-25: "Start with 3 and 4. If it all works we can look into doing larger tables." — 6+ is explicitly a later look, so the fuzzer criterion for THIS entry stops at 4. BL-08 (pacing) still talks about 6, because that is the size where the pacing problem bites.',
+      'Teams means 2v2. Owner, 2026-08-25: "Team drafting is just 2v2 and has special rules." — note he answered about team DRAFTING. The manual lists team setups as "2v2 or 3v3, can be played either as split teams (multiple regions) or joint players sharing a single region", but 3v3 is six seats, which the same day\'s answer defers. So: 2v2 now, arbitrary splits not now, and the "special rules" of team draft belong to BL-05\'s neighbourhood rather than here (manual: each team brings one 30-card-per-player constructed deck with up to 2 copies of a card, and live-drafts from it during the game).',
+      'THE MULTIPLAYER COMBAT RULES ARE PRINTED, AND THEY ARE DETAILED. Owner, 2026-08-25, asked whether the 1v1 counterattack generalises: "It\'s all in the manual and fairly detailed." Checked — Rules/Algomancy-Manual.txt, the "_ MULTIPLAYER" spread. It does not generalise; it depends on the format. Every line below this one is quoted from that spread, so nobody has to go hunting for it — but go and read it anyway before designing any of this.',
+      'FFA HAS NO COUNTERATTACK. Manual: "The FFA battle structure is simpler than the teams/1v1 structure since there is no attack/counter-attack", and again in a note: "There are no counterattacks in FFA, which gives this format a different feel to teams/1v1." After a simultaneous attack declaration, each region runs: attacker sets units into Formation → priority window → defender sets blocking formation → priority window → Combat Step, all units in formation dealing damage simultaneously → one last after-combat priority window before Regroup.',
+      'FFA ATTACKS ARE COMMIT-REVEAL. Manual, "INTENT CARDS": "In FFA, players declare their attacks simultaneously by placing intent cards face down in front of each of their units and other cards such as spell tokens with their intended action. Once all players have finished this, all of the cards are flipped up and the chosen attacks take place instantly!" Units may be grouped behind one intent card. This is the same shape as the simultaneous hidden deployment the engine already implements (deployDone[]/deploySnapshot).',
+      'TEAMS KEEP THE 1v1 FLOW, ACROSS SEVERAL REGIONS AT ONCE. Manual, "TEAM BATTLE STRUCTURE": "The battle structure in team games is identical to that of 1v1, meaning it has the same attack-counter attack flow to it. The only difference is that now, attacks and blocks take place across multiple regions, so there are multiple separated priority windows to resolve between each step." In 2v2 there are two NIT and two IT regions; IT declare their attacks all at once into multiple regions, priority resolves in each NIT region clockwise from the IT player, NIT declare blocks AND counterattacks all at once into multiple regions, then each region resolves its own priority/damage/after-damage windows — NIT regions finish first, then IT regions, each in clockwise order from the IT player.',
+      'PRIORITY GOES ROUND, NOT BACK AND FORTH. Manual, "MULTIPLAYER PRIORITY": "The stack functions identically in 3 player situations as it does in 1v1, but priority is passed in a circle instead of back and forth. The player closest to the initiative player in a clockwise direction gains priority first and priority is passed from that player clockwise during each priority window."',
+      'THREE PLAYERS IN ONE REGION IS A REAL CASE, not an edge case. Manual: when two players attack the same player, all three take part in that battle together in one region; the defender defends against both incoming formations and all three players may interact with each other and their units there. The manual warns that symmetric effects get extremely powerful in that situation.',
+      'FFA IS SIMULTANEOUS OUTSIDE BATTLE. Manual, "SIMULTANEOUS TURNS": every phase other than battle can be completed by all players at once — resources in planning, units in deployment — with a clockwise-from-initiative fallback for players who are learning or playing competitively. That fallback is worth building as an option, not just the fast path.',
+      'Team initiative is per TEAM. Manual: whichever team holds the initiative token has the initiative, and teams act together — in deployment a team deploys in any order it likes before passing to the other team.',
     ],
-    asks: [
-      'Table sizes to actually support — 3–4, or all the way to 6+?',
-      'Teams: 2v2 only, or arbitrary team splits?',
-      'Does the 1v1 counterattack rule generalize, or is there a different multiplayer rule? This is a RULES question, not an engine one — it may need a judge/creator answer.',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/engine/src/engine.ts',
@@ -474,7 +522,12 @@ export const BACKLOG: readonly Entry[] = [
       'digital-client/engine/ui/main.ts',
     ],
     notes:
-      'doc 06 M5 already lists "FFA intents (commit-reveal); teams" as beyond-v1 work. '
+      'doc 06 M5 already lists "FFA intents (commit-reveal); teams" as beyond-v1 work — and '
+      + 'the manual confirms that framing exactly: FFA really is intent cards flipped at '
+      + 'once. READ THE MANUAL BEFORE DESIGNING ANY OF THIS: Rules/Algomancy-Manual.txt, the '
+      + 'pages headed "_ MULTIPLAYER" (grep for "FREE FOR ALL" and "TEAM BATTLE STRUCTURE"). '
+      + 'It answers the region/priority/counterattack questions this entry used to be '
+      + 'blocked on, and the answers are in `decided` above verbatim. '
       + 'Related but separate: BL-08, keeping a big table fast.',
   },
   {
@@ -501,10 +554,10 @@ export const BACKLOG: readonly Entry[] = [
     ],
     decided: [
       'This is a separate entry from BL-07 on purpose: multiplayer can ship correct-but-slow first, and should.',
+      'There is no target yet, and that is the answer. Owner, 2026-08-25, asked whether there is a table size where slow is acceptable or whether 6 should feel like 2: "No idea yet, tbh." — so the instrument-first acceptance criterion stands. Measure a 6-player game, show the numbers, and ask again with data rather than picking a target now.',
+      'The manual makes the target easier than it looks: outside battle, FFA phases are meant to be played by everyone at once (Rules/Algomancy-Manual.txt, "SIMULTANEOUS TURNS"). Parallel planning and deployment are the PRINTED rule, not an optimisation this entry has to justify.',
     ],
-    asks: [
-      'Is there a table size where you would accept it being slow, or is the goal that 6 players feels like 2?',
-    ],
+    asks: [],
     deps: ['BL-07'],
     touches: [
       'digital-client/engine/src/engine.ts',
@@ -518,28 +571,39 @@ export const BACKLOG: readonly Entry[] = [
   },
   {
     id: 'BL-09',
-    slug: 'visual-redesign-r0-r5',
-    title: 'Finish the docs/07 visual redesign (R0–R5)',
+    slug: 'docs-07-reconcile',
+    title: 'docs/07 is not a brief — reconcile it with what shipped, and stop citing it',
     area: 'client',
-    size: 'L',
+    size: 'M',
     status: 'open',
     track: 'feature',
     said: 'Visual sprucing up',
     means:
-      'The concrete half of "visual sprucing up": docs/07-visual-redesign.md is a complete '
-      + 'spec with the decisions already made, and R0–R5 were never built. There are also '
-      + 'owner-authored per-phase layouts (layouts.json, layout-editor.html) and two later '
-      + 'visual docs (09-visual-clarification, 12-card-text) that have not been fully '
-      + 'reconciled with what shipped.',
+      'THIS ENTRY CHANGED ON 2026-08-25 and the old version should not be resurrected. It '
+      + 'used to be "finish the docs/07 visual redesign (R0–R5)", on the assumption that '
+      + 'docs/07-visual-redesign.md was the owner\'s standing visual brief. Asked to confirm '
+      + 'that, he answered "I don\'t know what docs/07 is". The doc is real — it is in the '
+      + 'tree, dated 2026-07-17, and it says on its own first page that it is written from '
+      + '"Bena\'s brief" — but it is an agent-authored spec he does not recognise as a thing '
+      + 'he is waiting on, and its R0–R5 are therefore NOT sanctioned work. What is left is a '
+      + 'documentation job: a spec nobody has read in a month, describing as pending things '
+      + 'that shipped, is exactly the rot this backlog exists to catch. Mark what it is, '
+      + 'reconcile it with the client that actually exists, and point the next agent at '
+      + 'BL-10, which now carries the owner\'s real and much smaller visual brief.',
     doneWhen: [
-      'R0–R5 from docs/07 are either built or explicitly re-decided against, in writing, in that doc',
-      'docs/07 no longer describes anything as pending that has shipped',
+      'docs/07 carries a status line saying it is a historical spec, when it was written, and that the owner did not recognise it as a current brief on 2026-08-25',
+      'Anything in docs/07 that has since shipped is no longer described there as pending',
+      'Any R0–R5 item that is still genuinely wanted is moved to BL-10 as a named sub-task, in the owner\'s terms — light, mostly non-gameplay — rather than left in a doc nobody is reading',
       'The per-phase layouts in layouts.json are actually used by the client, or the file is retired',
+      'Nothing anywhere cites docs/07 as a source of pending requirements',
     ],
-    decided: [],
-    asks: [
-      'Is docs/07 still what you want visually, ~13 months after writing it? Re-read it before building; parts may have been overtaken by the playtest-driven UI work.',
+    decided: [
+      'THE OWNER DOES NOT KNOW THIS DOCUMENT. Owner, 2026-08-25, asked whether docs/07 is still what he wants visually: "I don\'t know what docs/07 is." That is an answer, not a non-answer: it removes docs/07 as evidence of what he wants. Do not build R0–R5 off the strength of it.',
+      'The real visual brief is BL-10\'s. Owner, 2026-08-25, in the very next question: "It\'s honestly pretty much, just some general light sprucing up is all that\'s needed. Mostly in non gameplay related areas." A ground-up client rebuild is not that.',
+      'The entry is kept rather than dropped because the doc is still in the tree and still reads as a live plan. Deleting the entry would leave the misleading document behind with nobody assigned to it; that is how the last three "wait, is this still true?" surprises happened.',
+      'Correction to this entry\'s own question, which said "~13 months after writing it": docs/07 is dated 2026-07-17 and came into the repo on 2026-08-18. It was about five weeks old when the question was asked, not thirteen months.',
     ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/docs/07-visual-redesign.md',
@@ -549,6 +613,11 @@ export const BACKLOG: readonly Entry[] = [
       'digital-client/engine/ui/style.css',
       'digital-client/engine/ui/main.ts',
     ],
+    notes:
+      'The slug was `visual-redesign-r0-r5` until 2026-08-25 — grep for that if an older note '
+      + 'or branch name cites it. The id is unchanged, as ids always are. '
+      + 'Size dropped L → M with the scope: this is now a reconciliation pass over one doc '
+      + 'plus a decision about layouts.json, not a client rebuild.',
   },
   {
     id: 'BL-10',
@@ -562,14 +631,18 @@ export const BACKLOG: readonly Entry[] = [
     means:
       'The open-ended half. Card art presentation, animation on attack/damage/death, table '
       + 'texture and depth, readable typography and spacing. Split from BL-09 because that '
-      + 'one has a written spec to finish and this one is a judgement call each time.',
+      + 'one had a written spec attached to it and this one is a judgement call each time. '
+      + 'Since 2026-08-25 this is ALSO the whole of the visual brief: the owner asked for '
+      + '"general light sprucing up", "mostly in non gameplay related areas", which is a much '
+      + 'smaller thing than BL-09 used to imply.',
     doneWhen: [
       'A named, bounded improvement ships and the owner agrees it looks better — this entry never "completes", it gets re-opened',
+      'The work lands in the non-gameplay screens first — home, lobby, account/profile, post-game — and does not re-open the table layout unless something there is actually unreadable',
     ],
-    decided: [],
-    asks: [
-      'Is there a reference or mood you want it to look like, or is "less programmer-art" the whole brief?',
+    decided: [
+      'No reference, no mood board, and the brief is small. Owner, 2026-08-25, asked whether there is a look he wants or whether "less programmer-art" is the whole brief: "It\'s honestly pretty much, just some general light sprucing up is all that\'s needed. Mostly in non gameplay related areas." — so: light, and aimed away from the play area. Do not read this as licence for a redesign, and do not go looking for one in docs/07 (see BL-09).',
     ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/engine/ui/style.css',
@@ -602,19 +675,29 @@ export const BACKLOG: readonly Entry[] = [
       'It covers every interaction that is not discoverable by looking: column building, sends, grafting, auto-pass/auto-yield, undo, the report button',
       'It does not teach rules — that is BL-12',
       'Skipping it is one click and it does not nag',
+      'It is a played scripted game, not an overlay on the live client',
+      'It walks the owner\'s whole checklist: planning, priority passing, yielding, modding, using the bin, multiple targets, complicated graft effects, attacks and counterattacks, and bringing spell tokens along',
     ],
     decided: [
       'This and learn-to-play (BL-12) are distinct: this one is client-only.',
+      'A SCRIPTED QUICK GAME, not coach-marks. Owner, 2026-08-25, given both options: "Scripted quick game that shows how to do the actions and how cards work is fine. Make sure they understand planning, priority passing, yielding, modding, using the bin, multiple targets, complicated graft effects, attacks/counter attacks, bringing along spell tokens, etc." — the second sentence is a content checklist and it is now in `doneWhen` line by line.',
     ],
-    asks: [
-      'Coach-marks over the live client, or a scripted sandbox game you play through?',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/engine/ui/main.ts',
       'digital-client/engine/ui/glossary.ts',
       'digital-client/engine/ui/index.html',
     ],
+    notes:
+      'FLAG, raised 2026-08-25 rather than resolved: the owner\'s checklist crosses the line '
+      + 'this entry drew between itself and BL-12. "Make sure they understand planning, '
+      + 'priority passing ... attacks/counter attacks" is understanding the GAME, which the '
+      + 'entry says explicitly is BL-12\'s job ("It does not teach rules — that is BL-12"). '
+      + 'The reading that fits both: teach every item on the list AS AN INTERACTION — where '
+      + 'you click to pass priority, how you set up a graft, how a spell token comes along — '
+      + 'and leave WHY you would to BL-12. If you cannot do one without the other for a '
+      + 'given item, build it once, here, and have BL-12 reuse it rather than repeat it.',
   },
   {
     id: 'BL-12',
@@ -635,14 +718,14 @@ export const BACKLOG: readonly Entry[] = [
       'It teaches through a played game with a stacked/scripted board, not a document',
       'It covers the concepts a new player actually stumbles on: affinity and resources, the counterattack, columns sharing attributes, grafting',
       'It is one of the first things visible to a signed-out visitor — this client exists partly to teach newcomers',
+      'It ends by pointing at the shop: both links from BL-15, with an honest line about supporting the creator',
     ],
     decided: [
       'Contrived game, not a rules document. The owner said "with a contrived game of some kind".',
       'Teaching newcomers is a stated reason the project exists, so this is not a nice-to-have.',
+      'It ends with the buy links. Owner, 2026-08-25: "Yes. Give them the links and recommend buying the game or AT LEAST the print and play version to support the creator of this excellent game." — the two exact URLs are recorded on BL-15; use those, do not go looking for others.',
     ],
-    asks: [
-      'Does it end with a nudge to buy the physical game / print-and-play? That is the natural place for it (see BL-15).',
-    ],
+    asks: [],
     deps: ['BL-11', 'BL-03'],
     touches: [
       'digital-client/engine/ui/main.ts',
@@ -673,14 +756,14 @@ export const BACKLOG: readonly Entry[] = [
       'No individual decklist is reachable from it, by URL or otherwise',
       'It is recomputed by the same fold as profiles, so the two can never disagree',
       'A format with too few games says so rather than showing noise as signal',
+      'The same aggregates can be read all-time and over a recent window, off one fold rather than two code paths',
     ],
     decided: [
       'Decklists are secret; aggregates are public. Owner, 2026-08-24, unprompted and explicit.',
+      'Archetypes are COMPUTED, not tagged — and not soon. Owner, 2026-08-25: "We won\'t implement this for a long while, but I think we can do it based on calculations of \'cards in common\' and multidimentional space. Something like \'this set of XYZ cards in this combination of elements defines this deck\'. Then players can give it a name somehow." — cluster on card overlap plus element combination, and let players name a cluster after the fact. Note the first clause: he expects this to be far off, so SHIP THE PAGE WITHOUT ARCHETYPES. Card, element and trio aggregates are a complete first version.',
+      'Both time windows. Owner, 2026-08-25, asked all-time only or 30-day slices: "Both, why not."',
     ],
-    asks: [
-      'What counts as an "archetype" — is that a manual tag, a clustering of lists, or just element combination?',
-      'Time windows: all-time only, or last-30-days style slices?',
-    ],
+    asks: [],
     deps: ['BL-14'],
     touches: [
       'digital-client/server/stats.ts',
@@ -713,15 +796,16 @@ export const BACKLOG: readonly Entry[] = [
       'Joining a constructed room offers your saved decks instead of a blank builder',
       'A deck can be exported to and imported from plain text',
       'A deck is 30 cards and the builder enforces it',
+      'A 21st deck is refused with a message that says why, not silently dropped',
+      'Editing a deck that has already been played in a rated game produces a NEW version; the played one stays exactly as history recorded it',
     ],
     decided: [
       '30 cards is the constructed deck size.',
       'Lists are private by default (BL-13); sharing one is a deliberate act.',
+      'Twenty decks per account. Owner, 2026-08-25: "Let\'s set it at like 20 just to help people stay organized and not overwhelm our db (despite deck lists being so tiny)." — the stated reason is tidiness, not storage, so the limit wants a friendly message rather than a hard error page.',
+      'A deck played in a rated game is FROZEN. Owner, 2026-08-25: "Correct. Don\'t let deck edits mess with history. But minor edits will likely mean its the same archetype." — an edit to a played deck must fork a new version rather than rewrite the one BL-02 and BL-13 point at. The archetype remark is guidance for BL-13\'s clustering (near-identical lists should cluster together), NOT permission to let a small edit through to a played deck.',
     ],
-    asks: [
-      'Is there a deck limit per account?',
-      'Should a deck be frozen once played in a rated game, so history is not rewritten by editing it? (Affects BL-02 and BL-13.)',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/server/decks.ts',
@@ -764,16 +848,17 @@ export const BACKLOG: readonly Entry[] = [
       'Card art and IP are attributed',
       'A privacy policy states exactly what is stored (username, scrypt password hash, game logs) and that there is no email and no password reset',
       'A terms page states the client is free, has no economy, and makes no money',
+      'The two buy links are exactly https://shop.calebgannon.com/products/algomancy-the-base-game (physical) and https://shop.calebgannon.com/products/algomancy-print-and-play-edition (print-and-play)',
+      'Caleb has actually been asked, and the answer is recorded, before anything is deployed publicly',
     ],
     decided: [
       'Free, no economy, no monetization, owner-funded. Not negotiable and should be stated plainly.',
       'There is NO shipped official client — do not write copy implying one exists. The Steam page is an intent that is not currently being worked on.',
       'The pitch order is: buy physical > buy print-and-play > play here for free.',
+      'CALEB\'S BLESSING IS STILL A PRECONDITION OF GOING PUBLIC. Owner, 2026-08-25, asked whether he wants explicit blessing or whether a clear unofficial notice is enough: "I\'ll get it before making it ublick." — doc 06\'s standing item stands, and the unofficial notice is not a substitute for it. Nobody deploys publicly until the owner says he has it.',
+      'THE TWO URLS, exactly as the owner gave them on 2026-08-25: https://shop.calebgannon.com/products/algomancy-print-and-play-edition and https://shop.calebgannon.com/products/algomancy-the-base-game. Use these verbatim; do not "helpfully" swap in a store search page or a shortened link.',
     ],
-    asks: [
-      'Do you want Caleb\'s explicit blessing before the public deploy, or is a clear unofficial notice enough? doc 06 records "Caleb\'s blessing before any public deploy" as a standing item — is that still your position?',
-      'Exact URLs for the physical game and the print-and-play.',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/engine/ui/index.html',
@@ -803,14 +888,15 @@ export const BACKLOG: readonly Entry[] = [
       'Live rooms are visible with their seats and status',
       'Bug reports from the in-client 🐛 button are readable and closable in the browser',
       'Everything on the page is refused to non-admins, server-side, not just hidden in the UI',
+      'Admin is a flag on an account, grantable only by another admin, and independent of any judge badge',
+      'Ben\'s account has the flag and no other account does until he grants it',
     ],
     decided: [
       'Needed because the target is a public deploy with strangers.',
+      'ADMIN IS A FLAG ON AN ACCOUNT, and it is NOT the judge badge. Owner, 2026-08-25, asked exactly that: "Ben is an admin and L1 judge. He will set the other accounts when anyone else maybe ends up joining." — note that he puts himself at L1 while holding admin, which settles the question outright: the two are independent axes. One admin to start, who grants the rest by hand; there is no self-service path to it.',
+      'The account-claiming problem is NOT this entry. Owner, 2026-08-25, asked whether fixing it belongs here or in its own entry, answered with the rule instead: "When live, no, you will not claim the games unless you make an account right after finishing playing, in which case that becomes your first tracked game." That is a change to server/accounts.ts, not to the admin page, so it is filed as BL-28.',
     ],
-    asks: [
-      'Who is an admin — a flag on an account, or is L3 judge (BL-17) the same thing?',
-      'The account-claiming rule ("registering with a name claims saved games played under it") is explicitly "fine for a 2-person LAN box, wrong for anything public". Does fixing that belong here, or as its own entry?',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'digital-client/server/accounts.ts',
@@ -820,9 +906,11 @@ export const BACKLOG: readonly Entry[] = [
       'digital-client/engine/ui/account.ts',
     ],
     notes:
-      'Related and urgent for a public deploy, but NOT in the owner\'s list and so not '
-      + 'invented as an entry here: name claiming, and the fact that there is no email and '
-      + 'therefore no password reset. Raise both with the owner rather than silently fixing.',
+      'Two things were flagged here as "raise with the owner rather than silently fix". '
+      + 'NAME CLAIMING was raised on 2026-08-25 and answered — it is now BL-28, with his rule '
+      + 'recorded verbatim. NO EMAIL AND THEREFORE NO PASSWORD RESET is still unraised: it '
+      + 'was not among the 29 questions, and it is still a real problem for a public deploy '
+      + 'with strangers. Ask it next time; do not invent an answer.',
   },
   {
     id: 'BL-17',
@@ -849,15 +937,18 @@ export const BACKLOG: readonly Entry[] = [
       'Rules questions and bug reports from badged accounts are surfaced ahead of unbadged ones',
       'An L3 answer is recorded as authoritative and is distinguishable from an L2 or L1 opinion',
       'Only an admin can grant or revoke a badge',
+      'A badged account can review the questions players asked the rules bot, and flag a bad or problematic one',
+      'A flagged question lands in a queue that survives a restart and is visibly ahead of unflagged reports when the owner works through them',
+      'Nothing a judge writes is returned into a live game — no human answer appears in the in-game "Ask the judge" box',
+      'Nothing a judge does edits digital-rules.md or the rulings corpus',
     ],
     decided: [
       'Humans, not the bot. The existing in-client "Ask the judge" box goes to the rules bot; badges are about people.',
       'L3 = word of law / creators. L2 = highly knowledgeable community, long-time players. L1 = above genpop, not yet fully trusted.',
+      'NO LIVE ESCALATION. Judges review and flag instead. Owner, 2026-08-25, asked whether a human answer can flow back into the in-game box: "Not live, but judges should be able to review questions and flag problematic ones." — so the in-game box stays bot-answered, and what badges buy is an after-the-fact review queue over the questions that were asked, with a flag on the bad ones. Do not build in-game escalation.',
+      'AN L3 JUDGE MAY NOT EDIT THE RULINGS CORPUS. Owner, 2026-08-25: "No, but their feedback needs to be prioritized during updates and engine fixes." — digital-rules.md and the rulings corpus stay the owner\'s hand. The obligation this creates is on the OTHER side: a judge\'s flag has to land somewhere durable and visibly prioritized, so that the next rules update or engine fix actually sees it. A flag that only exists as a chat message does not satisfy this.',
     ],
-    asks: [
-      'Does a human judge answer flow BACK into the client\'s "Ask the judge" box — i.e. can an unanswerable bot question be escalated to a human and the answer returned in-game?',
-      'Should an L3 ruling be able to update digital-rules.md / the rulings corpus, or is that always the owner\'s hand?',
-    ],
+    asks: [],
     deps: ['BL-16'],
     touches: [
       'digital-client/server/accounts.ts',
@@ -1272,5 +1363,212 @@ export const BACKLOG: readonly Entry[] = [
       + 'counter…" string, and the eligibility filter requiring u.counters > 0). The engine '
       + 'side already computes the max available via counterPool() — the UI can ask it rather '
       + 'than recomputing.',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // FILED FROM THE 2026-08-25 ANSWERS — work the owner's answers created that
+  // had no entry anywhere. These are features, not QoL; they sit down here
+  // rather than up with BL-01 because ids are allocated in order and never
+  // renumbered. Each one quotes the answer that created it.
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'BL-26',
+    slug: 'configurable-timers',
+    title: 'Make the clock optional and configurable, per room',
+    area: 'server',
+    size: 'M',
+    status: 'open',
+    track: 'feature',
+    said:
+      'Chess clock is actually 60. Timer going off will eventually lose the game. But we '
+      + 'need to make timers optional and configurable first.',
+    means:
+      'Today the clock is a module constant — `CLOCK_START_MS = 60 * 60 * 1000` in '
+      + 'server/rooms.ts — that every room gets and nobody can change or switch off, and it '
+      + 'is display-only: settleClock() clamps at zero and nothing reads the result. The '
+      + 'owner named making it optional and configurable as the PREREQUISITE for making time '
+      + 'run out matter (BL-27), so it is its own entry and it comes first. Make the starting '
+      + 'bank a per-room setting chosen when the room is made — including "no clock at all" — '
+      + 'persisted with the room and visible to both seats before the game starts.',
+    doneWhen: [
+      'A room can be created with the 60-minute default, some other bank, or no clock at all',
+      'The chosen bank is persisted with the room and survives a server restart',
+      'A saved game from before the setting existed still loads, with the bank it was saved with',
+      'A room with the clock off shows no clocks at all, rather than a frozen 60:00',
+      'Both seats can see the clock setting before the first action',
+      'CLOCK_START_MS becomes the DEFAULT rather than the rule — nothing outside room creation reads the constant',
+    ],
+    decided: [
+      'The clock is 60 minutes, not 40. `CLOCK_START_MS = 60 * 60 * 1000`, raised from 40 on 2026-08-20 after 40 minutes ran out mid-playtest ("a draft game with real decisions wants an hour"). BL-04\'s old question said 40:00 and was wrong; the owner corrected it on 2026-08-25.',
+      'Configurability comes FIRST. Owner, 2026-08-25: "we need to make timers optional and configurable first." BL-27 depends on this entry, not the other way round.',
+      'Off is a real setting, not a very large number. A room with no clock must not run one invisibly.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'digital-client/server/rooms.ts',
+      'digital-client/server/main.ts',
+      'digital-client/server/test-clock.ts',
+      'digital-client/engine/ui/lobby.ts',
+      'digital-client/engine/ui/main.ts',
+    ],
+    notes:
+      'server/test-clock.ts is the guard, and it already learned this lesson once: its '
+      + 'comment says it "hardcoded 40:00 and silently went red when rooms.ts moved to '
+      + '60:00", so it imports CLOCK_START_MS now. Extend it rather than restating numbers. '
+      + 'The clock is genuinely display-only today — rooms.ts: "clamp at zero (display only '
+      + '— no enforcement)" — so nothing depends on the current value except the display and '
+      + 'that test. clockMs is already persisted per room, which is most of the persistence '
+      + 'half of this entry.',
+  },
+  {
+    id: 'BL-27',
+    slug: 'clock-expiry-loses',
+    title: 'Running out of time loses the game — the anti-BM rule, before launch',
+    area: 'server',
+    size: 'M',
+    status: 'open',
+    track: 'feature',
+    said:
+      'Timer going off will eventually lose the game. But we need to make timers optional '
+      + 'and configurable first. ... we\'ll make the timer actally cause a game loss before '
+      + 'launching to prevent BMing.',
+    means:
+      'When a seat\'s bank reaches zero in a room that HAS a clock, that seat loses and the '
+      + 'game ends. The reason the owner gave is not pacing, it is BM: today a player who is '
+      + 'losing can simply stop acting and the game never ends — it lands in history as '
+      + '`finished: false` with no stamped winner, which is indistinguishable from an honest '
+      + '"we both had to go". The loss must be STAMPED the way a concession is, so the '
+      + 'history sync and the rating fold (BL-02) see an ordinary decided game.',
+    doneWhen: [
+      'A seat whose clock reaches zero loses, and the game ends at that moment',
+      'The result is stamped like a concession — decidedWinner() names the other seat, and the saved file records it',
+      'Nothing expires in a room whose clock is off (BL-26)',
+      'A merely disconnected seat does not bleed time — clockRunning() already stops both clocks when a socket is missing, and that stays true',
+      'A room restored from disk resumes with the time it had, and nobody loses on the strength of wall-clock time that passed while the server was down',
+      'Both players see the clock going critical before it happens — a loss on time must never be a surprise',
+    ],
+    decided: [
+      'This is an ANTI-BM rule, in the owner\'s words: "to prevent BMing". That is what it is for, and it is why a stalled game has to end in a result rather than in silence.',
+      'It is a LAUNCH BLOCKER. Owner, 2026-08-25: "we\'ll make the timer actally cause a game loss before launching".',
+      'It comes after BL-26: "we need to make timers optional and configurable first."',
+      'It does not change the abandonment rule. Owner, same day, on BL-02: "Both players abandon? Just don\'t count it." Once this lands, a player who walks away from a running clock produces a LOSS rather than an abandonment, and only a game where nobody\'s clock ran out stays uncounted.',
+    ],
+    asks: [],
+    deps: ['BL-26'],
+    touches: [
+      'digital-client/server/rooms.ts',
+      'digital-client/server/main.ts',
+      'digital-client/server/history.ts',
+      'digital-client/server/test-clock.ts',
+      'digital-client/engine/ui/main.ts',
+    ],
+    notes:
+      'The seam is settleClock() in server/rooms.ts, which is called after anything that '
+      + 'changes the running set and already clamps at zero. The winner stamp is Room.winner '
+      + 'and decidedWinner(); read the comment on decidedWinner first — it exists precisely '
+      + 'because a game can be decided without the live state saying so. '
+      + 'REAL TRAP: nothing polls. settleClock() only runs when something happens, so a room '
+      + 'where both players have stopped acting never settles and never notices the zero. '
+      + 'Expiry needs a timer of its own, or the check has to be driven from somewhere that '
+      + 'still ticks when neither player is doing anything.',
+  },
+  {
+    id: 'BL-28',
+    slug: 'claiming-past-games',
+    title: 'Name-claiming is wrong on a public deploy — claim the game you just played, nothing else',
+    area: 'accounts',
+    size: 'M',
+    status: 'open',
+    track: 'feature',
+    said:
+      'When live, no, you will not claim the games unless you make an account right after '
+      + 'finishing playing, in which case that becomes your first tracked game.',
+    means:
+      'register() currently calls claimSeats(), which walks the entire saved history and '
+      + 'attaches every seat ever played under a matching name. That is right for a '
+      + 'two-person LAN box — it is how the first eight games landed in Ben\'s profile the '
+      + 'moment he registered — and wrong the instant strangers can register: "Ben" is not a '
+      + 'rare name. The owner\'s rule replaces it with something much narrower: no retroactive '
+      + 'sweep, but a player who finishes a signed-out game and registers RIGHT AFTER gets '
+      + 'that game, and it becomes their first tracked game.',
+    doneWhen: [
+      'Registering a username no longer sweeps up past games played under that name',
+      'A player who finishes a signed-out game and registers straight afterwards gets that game, and only that game, as their first tracked game',
+      'The window is bounded and defined in one place — a stranger cannot register tomorrow and take a game they did not play',
+      'What happens to the LAN-era claims already in the store is decided explicitly and written down, not left to whatever the code happens to do',
+      'server/test-accounts.ts covers both halves: the sweep is gone, and the just-finished attach works',
+    ],
+    decided: [
+      'THE RULE, from the owner, 2026-08-25: "When live, no, you will not claim the games unless you make an account right after finishing playing, in which case that becomes your first tracked game."',
+      'Split out of BL-16 (admin panel) deliberately: he was asked where the fix belongs and answered with the rule instead. The change lands in server/accounts.ts, which is not the admin page, so it is its own entry.',
+      'The LAN behaviour was not a bug — accounts.ts says so itself: "On a two-person LAN server \'whoever registers the name is that player\' is the right trade; on anything public it would not be." This entry is the public-deploy half of a trade that was made knowingly.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'digital-client/server/accounts.ts',
+      'digital-client/server/api-accounts.ts',
+      'digital-client/server/history.ts',
+      'digital-client/server/test-accounts.ts',
+      'digital-client/engine/ui/account.ts',
+    ],
+    notes:
+      'claimSeats() in server/accounts.ts is the exact function, called from register(). It '
+      + 'matches `game.names[seat]` lowercased against `account.key`, skips seats that '
+      + 'already have a user, and calls rebuildProfiles() — so profiles follow whatever this '
+      + 'ends up doing and the fold does not need touching. '
+      + 'The "right after finishing" half needs something the server does not have yet: a '
+      + 'handle on the game you just played that survives you leaving the page and '
+      + 'registering. The post-game screen is the natural place to hang it (server/history.ts '
+      + 'already summarises the finished game there).',
+  },
+  {
+    id: 'BL-29',
+    slug: 'spectators-and-replays',
+    title: 'Spectators and match replays',
+    area: 'server',
+    size: 'L',
+    status: 'open',
+    track: 'feature',
+    said: 'We want to allow spectators and match replays, but that\'s its own feature, yes.',
+    means:
+      'Two related things the owner split off from tournaments by name when asked whether '
+      + 'spectators were in scope there. SPECTATE: join a live room as a seatless viewer. '
+      + 'REPLAY: watch a finished game back from its saved file. Most of the replay machinery '
+      + 'exists — every room file is seed plus action log, and server/replay-room.ts already '
+      + 'replays one through the current engine — but that same tool documents the trap: an '
+      + 'old log on a newer engine DRIFTS (moves that were legal then are refused now) or '
+      + 'FORKS (the server rebuilt the game mid-match and play continued from the rebuilt '
+      + 'board). A replay viewer that quietly showed the reconstructed game instead of saying '
+      + 'so would be lying to the viewer.',
+    doneWhen: [
+      'A viewer can watch a live room without occupying a seat, and their joining or leaving does not disturb the players',
+      'A finished game can be watched back from its saved file, with step and scrub controls',
+      'A replay whose log no longer reproduces SAYS so, and distinguishes drift from a fork — replay-room.ts already makes that verdict, so reuse it rather than re-deriving it',
+      'No hidden information reaches a spectator that the seats did not have at that moment',
+      'Whether the players can see that they are being watched is decided deliberately, and the entry records which way',
+    ],
+    decided: [
+      'It is its own feature, not part of tournaments. Owner, 2026-08-25, asked whether spectators could watch a tournament or whether that was strictly later: "We want to allow spectators and match replays, but that\'s its own feature, yes." BL-04 may link to this; it must not block on it.',
+      'Spectating and replay are one entry because they are the same viewer over two sources — a live redacted stream and a saved log. Building two viewers would be the mistake.',
+    ],
+    asks: [
+      'Does a spectator see the game seat-by-seat, with each side\'s hidden information still hidden (which is what viewFor() already produces), or an omniscient broadcast view showing both hands? It changes the whole build, and an omniscient LIVE view is a cheating vector the moment a spectator can talk to a player — a delay is the usual answer elsewhere, and that is a decision, not a default.',
+    ],
+    deps: [],
+    touches: [
+      'digital-client/server/rooms.ts',
+      'digital-client/server/view.ts',
+      'digital-client/server/replay-room.ts',
+      'digital-client/server/main.ts',
+      'digital-client/engine/ui/main.ts',
+    ],
+    notes:
+      'viewFor(state, seat, frozenOpp) in server/view.ts is the per-seat redaction and is the '
+      + 'natural basis for a spectator view; server/test-hidden.ts and '
+      + 'server/test-view-snapshot.ts are the leak guards to extend. Do NOT build a spectator '
+      + 'view that bypasses viewFor() — that is how a redaction hole gets in through a door '
+      + 'the leak tests do not watch.',
   },
 ];
