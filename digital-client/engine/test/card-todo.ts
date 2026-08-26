@@ -4621,4 +4621,72 @@ export const CARD_TODO: TodoEntry[] = [
     verify: 'A stale entry in any of the nine fails the suite, naming the entry and its reason.',
     status: 'open',
   },
+  {
+    id: 84,
+    area: 'coverage',
+    severity: 'blocker',
+    title: 'The engine suite structurally cannot catch a secrecy bug — h.log has no seats in it',
+    detail:
+      '`Harness.absorb()` pushes every event\'s `msg` into ONE `log` array with no seat '
+      + 'separation, and `visibleToSeat` is nowhere near it. So **any secrecy assertion written '
+      + 'against `h.log` is unfalsifiable**, and the suite reads green whether the information is '
+      + 'public or private. '
+      + 'The concrete instance: `42-dark-b.test.ts:1331` asserts '
+      + '`h.log.some(l => l.includes(\'Thought Extraction reveals\'))`. That passed BEFORE the '
+      + 'leak was fixed and passes after it. The card was publishing an opponent\'s entire hand '
+      + 'to the shared log and its own test could not tell.',
+    evidence:
+      'Found by the R197b agent while fixing the three "look at a hand" leaks, and it is the '
+      + 'structural reason that class survived: 173-look-at-a-hand.test.ts had to reach past the '
+      + 'Harness into `server/view.ts::visibleToSeat` to say anything at all. '
+      + '⚠ THE SAME BLINDNESS COVERS R202. The `handEntered` leak — the opponent\'s incoming '
+      + 'card names on the wire in every phase — was likewise invisible to every engine test, and '
+      + '172-event-channel-secrecy.test.ts also had to import `server/view.ts` to see it. '
+      + 'TWO independent information leaks in one round, both invisible to 153 test files for the '
+      + 'same reason. This is the highest-value checker gap currently known.',
+    fix:
+      'Give the Harness a seat-aware log — either `h.logFor(seat)` built through `redactLog` / '
+      + '`visibleToSeat`, or a `h.visibleLog` pair — so a secrecy claim can be written where the '
+      + 'cards are tested instead of only in a server-adjacent file. '
+      + 'Then add a `154-guard-shape`-style LINT: an assertion that names a card and a secret in '
+      + 'the same breath must not be reading `h.log`. That is the half that stops it recurring — '
+      + 'the Harness change alone leaves 153 files still asserting against the flat log. '
+      + '⚠ Expect the lint to flag existing tests that are fine (a PUBLIC reveal legitimately '
+      + 'reads the shared log). Bioremediation and Void Memory are the controls.',
+    proof: null,
+    verify:
+      'A card that publishes a hidden zone to the shared log fails a test written in the card\'s '
+      + 'own test file, without importing the server.',
+    status: 'open',
+  },
+  {
+    id: 85,
+    area: 'server',
+    severity: 'major',
+    title: 'The server suite fails about one run in three, on a different test each time',
+    detail:
+      'Measured by the orchestrator: three consecutive `npm --prefix server test` runs gave '
+      + '`fail 1`, `fail 0`, `fail 0`, and an earlier pair gave `fail 2` then `fail 0`. The '
+      + 'failing test differs run to run — `test-building.ts` (ECONNREFUSED) and '
+      + '`test-postgame.ts` have both been seen — and each passes standalone.',
+    evidence:
+      'Reported INDEPENDENTLY by two agents this round (R191 and R200) before the orchestrator '
+      + 'reproduced it, both correctly identifying it as contention rather than a regression: the '
+      + 'suite binds real ports and reads a real clock, and fifteen agents were running. '
+      + '⚠ THE REASON THIS IS `major` AND NOT A NUISANCE: a suite that goes red at random cannot '
+      + 'be trusted to go red for a REASON. Every agent this round was told "I run the full suite '
+      + 'myself"; a flaky red is exactly the signal that gets waved through as "probably the '
+      + 'flake" on the day it is real. It also cost real time this round — one agent re-ran its '
+      + 'entire verification serially to be sure.',
+    fix:
+      'Bind port 0 and read back the assigned port instead of hardcoding one, and inject the '
+      + 'clock rather than reading `Date.now()` — the same treatment `ALGO_ISSUES_FILE` and '
+      + '`ALGO_ENGINE_VERSION` already give the other two ambient dependencies. '
+      + '⚠ Until then, `server/package.json` should run the suite SERIALLY and say why, so a red '
+      + 'run means something. Note the engine suite has the same property for a different reason '
+      + '(153 files, 2-minute foreground timeout) and is already run serially from a script.',
+    proof: null,
+    verify: 'Twenty consecutive server suite runs under load are all green.',
+    status: 'open',
+  },
 ];
