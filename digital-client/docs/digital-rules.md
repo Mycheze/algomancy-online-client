@@ -13321,3 +13321,111 @@ exactly its own assertion red, plus 65's whole-pool silence sweep. Nothing else.
   `{ owner, presentSeats }` and the UI never labels one. Every existing member
   of this family says **"here"** (`'<Card>: no opponent is present here — …'`),
   so the precedent was copied verbatim rather than invented past.
+
+---
+
+## R192 — a cache thumb's first click, and the badge class nobody could match
+
+**CT-64 (CARD-TODO #64) and CT-65 (CARD-TODO #65), landed together because both
+are markup that LOOKED right and could not be interrogated.**
+
+### CT-65 first — a class attribute with holes in it
+
+`cardHtml` built a chip's class from a template with three slots:
+
+```
+`badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''} ${b.cls ?? ''}`
+```
+
+A plain chip therefore rendered `class="badge   "` — **badge followed by three
+spaces** — and a classed one `badge` + three spaces + `proph on`, with two empty
+slots in the middle and usually a trailing space. CSS does not care. **Regexes
+do**: `/badge offer/` could never match, so an assertion written that way passed
+for a reason unrelated to what it claimed to check. The R183 agent found it only
+because a mutation that *should* have reddened its test did not, and worked
+around it with `/badge[^"]*offer/` rather than fixing the emitter mid-round.
+
+The fix is `['badge', …].filter(Boolean).join(' ')`. Same family as CT-56 — a
+test that cannot fail on the thing it names — but with the cause in the code
+under test, so the next person to write a badge assertion would have hit it too.
+
+**THE TAIL, which is why the ticket was filed rather than done.** Every badge
+assertion in `engine/test/` was audited. There are exactly **four assertions
+against a badge's class attribute in the whole suite**, all in
+`155-hand-affordances.test.ts` (§1 `doesNotMatch(/badge[^"]*offer/)`, §2, §3, §7),
+and all four already carry R183's `[^"]*` workaround — so all four match exactly
+the same set of chips before and after, and **none was lying**. Measured, not
+assumed: 155 is 10/10 green under both shapes of the emitter. Everything else
+that mentions "badge" in `test/` (123-badge-line, 57-ui-cardtext, 96-x-preview)
+asserts on `Badge` **objects** and `packBadgeLine`'s pure output, never on a
+class string, and `packBadgeLine` is untouched. `cardHtml` is module-private to
+`ui/main.ts`, so the only tests that can see its markup at all are the nine that
+drive `test/ui-driver.ts`; all nine were run and are green. **No test needed
+repair, and no test was renamed.**
+
+### CT-64 — the decision, written down
+
+`regionCacheHtml` drew its thumbs with no affordance of their own, inside a
+panel that is itself `data-btn="cacheopen"`. Clicking a cached card you could
+play *right now* bubbled up and opened the dialog: never a dead control, but a
+**two-click path where the first click looked like it should have been the
+last**.
+
+**THE TRADE-OFF IS REAL.** If a thumb plays the card, the one-click route to
+*inspecting* a cached card goes away — and the cache is public (R41) precisely
+so that both players can look at it.
+
+**THE DECISION: a thumb plays on the first click when — and only when — the
+entry is playable right now; every other thumb, and every other pixel of the
+panel, still opens the dialog.**
+
+The reasons, in order of weight:
+
+1. **Consistency, not reachability.** R183/CT-50 already put the playable subset
+   beside the hand with a real one-click handler, so a playable cached card was
+   *already* one click away — from one surface but not the other, for no reason
+   a player could see. This makes the two surfaces agree. The predicate is
+   literally the same one: `playableCachedIndexes(legalFor(p))`, so the hand
+   strip and the cache row cannot come to disagree about which entry is live.
+2. **Inspection is barely touched.** The panel still opens from the `cache (n)`
+   label, the summary line, and every unplayable thumb — and right-click still
+   opens the card inspector on any thumb, playable or not, because `data-prev`
+   is unchanged. At most three thumbs are drawn, and only the playable ones
+   change behaviour.
+3. **One handler.** `cacheplay` hands straight to `handleCacheClick`, the
+   dialog's own handler, so the panel and the dialog play the same card by the
+   same code, and an entry that needs a menu (two modes, an augment/graft) still
+   gets the same menu here.
+
+**What was deliberately NOT changed**: an entry whose only offer is an augment
+or a graft from cache keeps the dialog route (the dialog is where "still
+graftable" is explained), and a cached card that is a legal decision TARGET
+(Prismatic Observer, R41) likewise — the dialog is where its candidate highlight
+is drawn. Only a real `playCached` promotes a thumb.
+
+### ⚠ THE TICKET'S OWN FIX WOULD NOT HAVE WORKED
+
+CARD-TODO #64 proposed *"give the thumbs the same `data-act="cache"` the dialog
+entries use."* That fails in a browser. The document click listener is:
+
+```
+const btn = (e.target as HTMLElement).closest('[data-btn]');
+if (btn) { handleButton(btn); return; }
+…
+const t = (e.target as HTMLElement).closest('[data-act]');
+```
+
+`[data-btn]` is asked **first**, and the panel is a `data-btn="cacheopen"`
+ancestor — so a `data-act` on a thumb loses to the panel *at any depth*. The
+attribute that wins is a `data-btn` **on the thumb itself**, because `closest`
+matches the element before any ancestor.
+
+This is also a trap for the test: `test/ui-driver.ts`'s fake `closest()` has no
+ancestors, so a `data-act` thumb would have passed there while the real client
+stayed broken. `163-cache-affordance-and-badges.test.ts` says so in its header
+and asserts the two composable facts instead — the unplayable thumb carries no
+affordance of its own, and the element it is drawn inside is the `cacheopen`
+panel — rather than pretending to watch an event bubble it cannot see.
+
+`BtnHandler` now takes the `MouseEvent` as a second argument, because
+`handleCacheClick` needs it to position the menu it may open.

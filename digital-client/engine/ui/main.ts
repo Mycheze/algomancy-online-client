@@ -1395,7 +1395,14 @@ function cardHtml(name: string, opts: {
   // 123-badge-line can reach it. Nothing is dropped: what does not fit rides in
   // the "+N" chip's tooltip, and the strip itself carries the full list.
   const line = packBadgeLine(opts.badges ?? []);
-  const badges = [...line.shown, ...(line.more ? [line.more] : [])].map(b => `<span class="badge ${b.mod ? 'mod' : ''} ${b.ctr ? 'ctr' : ''} ${b.cls ?? ''}"${
+  // CT-65/R192: `filter(Boolean).join(' ')`, not a template with three holes in
+  // it. The template wrote `class="badge   "` for a plain chip — badge plus
+  // THREE spaces — and `badge` + three spaces + `proph on` for a classed one.
+  // CSS did not care; regexes did. `/badge offer/` could never match, so an
+  // assertion written that way passed for a reason unrelated to what it named,
+  // and the R183 agent only caught it because a mutation failed to redden it.
+  const badges = [...line.shown, ...(line.more ? [line.more] : [])].map(b => `<span class="${
+    ['badge', b.mod ? 'mod' : '', b.ctr ? 'ctr' : '', b.cls ?? ''].filter(Boolean).join(' ')}"${
     b.title ? ` title="${esc(b.title)}"` : ''}>${b.html ? b.t : esc(b.t)}</span>`).join('');
   return `<div class="${cls.join(' ')}" ${opts.data ?? ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}>
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
@@ -2025,12 +2032,30 @@ function regionCacheHtml(p: Seat): string {
   const liveIdx = cache.map((_, i) => i).filter(i => !cacheSpent(p, i));
   const spent = cache.length - liveIdx.length;
   const thumbs = liveIdx.slice(-3);
+  // CT-64/R192: a thumb that can be PLAYED right now plays on one click; every
+  // other thumb — and every other pixel of the panel — still opens the dialog.
+  // Same predicate as the hand-side strip (handCachedHtml), so the two surfaces
+  // cannot disagree about which entry is live.
+  //
+  // ⚠ `data-btn`, NOT the `data-act="cache"` the dialog entries carry. The
+  // click listener asks `closest('[data-btn]')` FIRST and only then
+  // `closest('[data-act]')`, and this panel IS a `data-btn="cacheopen"`
+  // ancestor — so a `data-act` on a thumb would lose to the panel in a real
+  // browser no matter how deep it sat. `closest` matches the element itself
+  // before any ancestor, so a `data-btn` on the thumb is the one attribute that
+  // wins. `cacheplay` hands straight to `handleCacheClick`, the dialog's own
+  // handler, so the two routes play the same card by the same code.
+  const playNow = mine ? new Set(playableCachedIndexes(legal)) : new Set<number>();
   return `<div class="regioncache ${hot ? 'hasplay' : ''}" data-btn="cacheopen" data-p="${p}"
       data-animzone="cache:${p}"
-      title="R41: the cache is public — both players see every cached card. Click to open.">
+      title="R41: the cache is public — both players see every cached card. Click to open — or click a glowing card to play it (CT-64).">
     <div class="zonelabel">cache (${liveIdx.length}${spent ? ` +${spent} spent` : ''})</div>
     <div class="regionbinthumbs">${thumbs.map(i =>
-      cardHtml(cache[i]!.card, { anim: cacheView === p ? undefined : keys[i] })).join('')
+      cardHtml(cache[i]!.card, {
+        anim: cacheView === p ? undefined : keys[i],
+        playable: playNow.has(i), cached: playNow.has(i),
+        data: playNow.has(i) ? `data-btn="cacheplay" data-p="${p}" data-i="${i}"` : '',
+      })).join('')
       || '<span class="binempty">nothing live</span>'}</div>
     ${note}
   </div>`;
@@ -4691,7 +4716,7 @@ document.addEventListener('keydown', primeAudio);
 
 document.addEventListener('click', e => {
   const btn = (e.target as HTMLElement).closest('[data-btn]') as HTMLElement | null;
-  if (btn) { handleButton(btn); return; }
+  if (btn) { handleButton(btn, e as MouseEvent); return; }
   // outside a game (home screen / kicked screen) a stray click must not
   // trigger the game render() — it would paint the hotseat board over the UI.
   if (!inGame) return;
@@ -4782,7 +4807,7 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
  * wanted. `'no-repaint'` says it is not: either the reply to a send will paint
  * (undo, the judge, a bug report) or the handler painted by hand. Everything
  * else mutates and lets the shared render() show the result. */
-type BtnHandler = (btn: HTMLElement) => void | 'no-repaint';
+type BtnHandler = (btn: HTMLElement, e: MouseEvent) => void | 'no-repaint';
 
 /** the chip: keep passing until the battle ends or something new is played */
 function armPassAll(): void {
@@ -5092,6 +5117,13 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   },
   // R41: the cache is public — either seat's zone opens for either player
   cacheopen: btn => { cacheView = Number(btn.dataset['p']) as Seat; },
+  // CT-64/R192: the region-cache thumb of a card that is playable RIGHT NOW.
+  // It hands to `handleCacheClick` — the dialog's own handler — so the panel
+  // and the dialog can never come to play different cards, and so a cached
+  // card that needs a menu (two modes, a mod) still gets the same menu here.
+  cacheplay: (btn, e) => {
+    handleCacheClick(Number(btn.dataset['p']) as Seat, Number(btn.dataset['i']), e);
+  },
   cacheclose: () => { cacheView = null; },
   helpopen: () => { helpOpen = true; },
   helpclose: () => { helpOpen = false; },
@@ -5125,7 +5157,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   menuclose: () => { ui.menu = null; },
 };
 
-function handleButton(btn: HTMLElement): void {
+function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // accounts own everything prefixed acct- (sign-in, profile, friends)
   if (acct.handleButton(btn)) return;
   // and the post-game screen everything prefixed pg-
@@ -5145,7 +5177,7 @@ function handleButton(btn: HTMLElement): void {
   if (handlePregameButton(b, btn)) return;
   // a board button: the table's handler mutates, the repaint is shared — and a
   // name the table does not know still repaints (a stray data-btn closes a menu)
-  if (BOARD_BTNS[b ?? '']?.(btn) === 'no-repaint') return;
+  if (BOARD_BTNS[b ?? '']?.(btn, e) === 'no-repaint') return;
   render();
 }
 
