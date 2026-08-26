@@ -2397,6 +2397,15 @@ export class E {
    * "Glimpse 1, X times" is X separate one-card glimpses. `Big Glimpse Card`
    * is a deliberate PILE variant and does not route through here.
    *
+   * ✔ RE-VERIFIED 2026-08-26 (R190, report #106) against
+   * AlgomancyCards-OracleText.json and the generated printed.json: those four
+   * reminders really do end "Recycle the rest.", so the quote above is exact
+   * and the printed data is RIGHT. Report #106 ("the reminder text for
+   * Glimpsing … does not mention that the other cards not chosen are
+   * recycled") was triaged as an upstream data error and is not one — the
+   * reminder the player actually reads is `ui/glossary.ts`'s Glimpse entry,
+   * which the 2026-08-19 correction never reached. Fixed there.
+   *
    * The choice is raised through the resolving part's own `ctx.choose`
    * (`partChoose`), so every caller stays `g.glimpse(seat, n)` and no card code
    * changes. N=1 raises no decision — there is nothing to choose.

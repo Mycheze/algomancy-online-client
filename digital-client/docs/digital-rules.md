@@ -13429,3 +13429,94 @@ panel — rather than pretending to watch an event bubble it cannot see.
 
 `BtnHandler` now takes the `MouseEvent` as a second argument, because
 `handleCacheClick` needs it to position the menu it may open.
+
+---
+
+## R190 — Reminder text: the printed card, the glossary, and the one list of upstream errors
+
+**Report #106 (GYSR, action 154) was triaged wrong, and the wrong triage is the
+interesting part.** The report says: *"The reminder text for Glimpsing is wrong — it
+does not mention that the other cards not chosen are recycled."* Both the playtest
+ledger and CARD-TODO #73 recorded it as an upstream DATA error — *"Oracle of
+Foretelling reads … and stops"* — and routed it to `AlgomancyCards-OracleText.json`,
+which is Caleb's file and out of this repo's reach.
+
+**That is not what happened. The printed data is correct.** Verified 2026-08-26
+against both the oracle file and the generated `printed.json`: Oracle of Foretelling,
+Premonition, Celestial Purge and Dematerialize all end their reminder with
+"**Recycle the rest.**", exactly as R45's doc comment quotes them. Foretell is
+Glimpse **1** — one card is revealed and cached, there is no "rest" — and its
+reminder correctly does not claim otherwise, which is R45's own N=1 reading. So R45's
+comment was never a misquote either; the note added to it now records the
+verification, so the next triage does not repeat the mistake.
+
+**What the player was actually reading is `ui/glossary.ts`.** The card inspector
+prints a reminder row for every keyword a card mentions (Bena, 2026-08-20: *"all
+referenced keywords should have their reminder text right there to see"*), and the
+Glimpse row still described R45 **as it read before the 2026-08-19 correction** —
+"reveal the top N and cache them", all N, no recycle at all. On those four cards the
+panel therefore contradicted itself: the printed box said "cache one … Recycle the
+rest" and the reminder directly beneath it said the opposite. That is the defect, and
+it is a CODE fix in this repo, not a data fix in Caleb's.
+
+**Two glossary rows are corrected**, off `E.glimpse` and `doRecycle` rather than off
+prose:
+
+- **Glimpse** — "Reveal the top N cards of your deck and cache exactly ONE of your
+  choice; the rest are recycled to the bottom of your deck. Until end of turn you may
+  play the cached card as if it were in hand, ignoring affinity but still paying its
+  mana and obeying its timing. Afterwards it stays cached, inert." (R45; the three
+  limits are Caleb 2024-10-28, 2023-08-13 and 2025-12-28.)
+- **Recycle** — the row printed *beside* Glimpse on all four of those cards said the
+  recycled card was "gone for the rest of the game", which is the one thing recycling
+  never does. Recycling has a single meaning in Algomancy — put a card on the bottom
+  of the deck (Rulebook 2023-07: *"recycling a card in your hand (putting it on the
+  bottom of the deck)"*; Manual: *"recycled (put on the bottom of the deck)"*) — and
+  `doRecycle` calls `e.recycleToBottom` on the line before it pushes the dormant
+  resource. Fixed alongside, because leaving it would have made the corrected Glimpse
+  row wrong on screen.
+
+### The override table, and what it does NOT fix
+
+There **are** real upstream errors, and R162 already answered them with a named
+`TYPE_OVERRIDES` table in `scripts/extract-printed.mjs` that asserts the source still
+says what it claims. R190 moves that table to **`scripts/printed-overrides.mjs`** as a
+single declared `PRINTED_OVERRIDES` list and makes it field-general (`type` | `text`),
+each entry carrying **card, field, from, to, since, by, why**. The entries are
+unchanged — no Glimpse entry was added, because none is needed. Two reasons for the
+move: the next upstream error will not necessarily be on a type line, and a table a
+TEST can import is a table whose staleness is checked without running the build.
+
+**The property that matters is that a stale override breaks the build.** This repo has
+repeatedly been bitten by exemption lists that outlived their cause, so
+`applyOverride` throws `StaleOverrideError` — extractor exits non-zero, writes
+nothing, names the card — the moment the upstream value stops matching `from`. The day
+Caleb corrects his file, the entry here must be DELETED, not have its `from` updated
+to make things pass.
+
+⚠ **AN OVERRIDE HERE FIXES ONE CONSUMER OF THREE.** `bot.py`/`cards.py` (the Discord
+bot) and `build_corpus.py`/`corpus/` (the RAG corpus) read
+`AlgomancyCards-OracleText.json` **directly**. They never see `printed.json` and they
+never see this table, so every entry in it is a thing the bot and the corpus are still
+wrong about. The list below is therefore also the message that has to go to Caleb;
+only a fix at source reaches all three.
+
+**Known-wrong upstream printed data, 2026-08-26** (all three are type lines):
+
+| Card | Oracle file says | Should say | Ruled |
+| --- | --- | --- | --- |
+| Arbiter of Armistice | `{Haste} {Switch} Holy Unit` | `{Haste} Holy Unit` | Bena, R157 §25 |
+| Might of the Grove | `{Battle}Tree Tree Druid Spell` | `{Battle} Tree Druid Spell` | Bena, 2026-08-25 |
+| Interdiction Rift | `{Battle}AI Cosmic Spell` | `{Battle} AI Cosmic Spell` | ⚠ **unruled** — whitespace repair, reported not authorised |
+
+`Linked Extinction`'s "Sacrifce" was the fourth and **was fixed at source** (commit
+`0818074`), which is the proof that the source route works and is the one to prefer.
+
+**Tests.** `161-printed-text-overrides.test.ts`: §1 asserts per card that the four N>1
+Glimpse reminders name the recycle and that Foretell, at N=1, correctly does not; §2
+pins both glossary rows and checks them through `glossaryHits` on each card's real
+printed text, i.e. the panel the player reads; §3 checks every override entry against
+the live oracle file and against `printed.json`; §4 provokes the stale case and proves
+the check fires. `122-cardtext-markup.test.ts` independently asserts that
+`printed.json` differs from the oracle file in exactly these places and nowhere else.
+(Claude 2026-08-26, report #106 / CARD-TODO #73.)

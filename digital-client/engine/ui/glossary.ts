@@ -92,9 +92,17 @@ export const EXPANSION_GUIDE: GlossEntry[] = [
     term: 'Prophecy', alt: ['prophesy', 'prophesied', 'prophesies'],
     text: 'During DEPLOYMENT, pay a card’s banner cost to cache it with its condition attached. Once the condition has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity — normal timing still applies.',
   },
+  // R190 (2026-08-26), report #106 — "the reminder text for Glimpsing is wrong,
+  // it does not mention that the other cards not chosen are recycled". THIS
+  // entry is the reminder text a player reads: the inspector prints it under
+  // every card whose text says Glimpse. It still described R45 as it read
+  // BEFORE the 2026-08-19 correction ("cache them", all N) and never mentioned
+  // the recycle at all — so it contradicted E.glimpse, and it contradicted the
+  // four cards that print "Recycle the rest" in the panel directly above it.
+  // Reworded off R45 as corrected and off what E.glimpse actually does.
   {
     term: 'Glimpse',
-    text: 'Reveal the top N cards of your deck and cache them. Until end of turn you may play them as if they were in hand, ignoring affinity but still paying their mana. Afterwards they stay cached, inert.',
+    text: 'Reveal the top N cards of your deck and cache exactly ONE of your choice; the rest are recycled to the bottom of your deck. Until end of turn you may play the cached card as if it were in hand, ignoring affinity but still paying its mana and obeying its timing. Afterwards it stays cached, inert.',
   },
   {
     term: 'Trash',
@@ -132,9 +140,18 @@ export const MECHANICS: GlossEntry[] = [
     term: 'Once', re: /[[{]once[\]}]/i,
     text: 'Bounded: this ability may be used only once per turn, tracked per card.',
   },
+  // R190: fixed alongside Glimpse, because the two rows print TOGETHER on the
+  // four cards that say "Recycle the rest" and this one used to deny what that
+  // one now says. Recycling has exactly ONE meaning in Algomancy — put a card
+  // on the bottom of the deck (Rulebook 2023-07: "recycling a card in your hand
+  // (putting it on the bottom of the deck)"; Manual: "recycled (put on the
+  // bottom of the deck)") — and `doRecycle` in apply.ts calls
+  // `e.recycleToBottom` on the line before it pushes the dormant resource. The
+  // old text said the card was "gone for the rest of the game", which is the
+  // one thing recycling never does.
   {
     term: 'Recycle', alt: ['recycled', 'recycles'],
-    text: 'Turn a card from hand face-down into a dormant resource of an element you choose. Planning only, and the card is gone for the rest of the game.',
+    text: 'Put a card on the bottom of its owner’s deck. During planning you may recycle a card from your hand to gain a dormant resource of an element you choose — the card goes to the bottom of your deck, not out of the game. Glimpse recycles the revealed cards it did not cache the same way.',
   },
   {
     term: 'Shard',

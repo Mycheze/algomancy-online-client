@@ -22,6 +22,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { POOL } from './pool.mjs';
+import { applyOverride, StaleOverrideError } from './printed-overrides.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SOURCE = join(here, '../../../AlgomancyCards/AlgomancyCards-OracleText.json');
@@ -111,80 +112,21 @@ const normalisePrinted = s => (typeof s === 'string'
   : s);
 
 /**
- * R162 — NAMED TYPE-LINE OVERRIDES, the exception `normalisePrinted` above
- * demands: *"If it is ever corrected here it must be a named one-entry
- * override, never a fuzzy spellfix."*
+ * R162/R190 — the NAMED PRINTED-DATA OVERRIDES, the exception
+ * `normalisePrinted` above demands: *"If it is ever corrected here it must be a
+ * named one-entry override, never a fuzzy spellfix."*
  *
- * WHY HERE AND NOT IN printed.json, AND NOT IN THE ORACLE FILE. printed.json is
- * generated, so a hand-edit there is destroyed by the next `npm run extract`.
- * The oracle file `AlgomancyCards-OracleText.json` is Caleb's, is shared with
- * the rules bot / corpus / Discord pipeline outside this package, and is not
- * this client's to rewrite — so the correction lives in the one place that is
- * both durable and scoped to the client: this extractor, keyed by card name, in
- * a table anybody can grep and revert entry by entry.
- *
- * Each entry needs a reason, and only the FIRST is an owner ruling.
+ * R162 shipped this as a `TYPE_OVERRIDES` object literal in this file, keyed by
+ * card name and covering the type line only. R190 moved it to
+ * `scripts/printed-overrides.mjs` and made it field-general, for two reasons:
+ * the next upstream error will not necessarily be on a type line, and a table
+ * that a TEST can import is a table whose staleness is checked without running
+ * the build. See that file's header for why the correction lives in this
+ * package at all rather than in printed.json or in Caleb's oracle file — and
+ * for the standing warning that an override here fixes ONE of the three
+ * consumers of the oracle data and leaves the Discord bot and the RAG corpus
+ * wrong until the source is corrected.
  */
-const TYPE_OVERRIDES = {
-  // R157 §25, owner, verbatim: "That's an error on your part. The card does not
-  // have a [Switch] thing. It just adds an additional cost to all spells cast
-  // in battle to pay 2 life." The transcription's bare "{Switch}" is the only
-  // one of its kind in the pool (every other [Switch] is a rules-text marker on
-  // a graftable effect), and nothing reads a type-line {Switch} — graftability
-  // is `CardDef.graftEffect` — so this is a display correction with no
-  // behaviour attached.
-  'Arbiter of Armistice': {
-    from: '{Haste} {Switch} Holy Unit',
-    to: '{Haste} Holy Unit',
-  },
-  // Both are LAYOUT artifacts of the same shape as R142's hyphen join: a marker
-  // brace glued to the next word. They are the only two type lines in the whole
-  // oracle file matching /\}[A-Za-z]/, so a general rule would fire exactly
-  // here anyway — and a general rule could not also fix the duplicated word,
-  // which is why this is a named table.
-  //
-  // ✔ RULED, Bena 2026-08-25, on being shown the line:
-  //     "Might of the Grove should read '{Battle} Tree Druid Spell'"
-  // — which confirms BOTH halves for that card: the missing space and the
-  // duplicated "Tree". The reasoning that produced it independently is kept
-  // because it is what to reuse on the next one: every other Druid spell in the
-  // pool is "{Battle} <one subtype> Druid Spell" (Invigorate "Mystic", Wither
-  // and Bloom "Arcane", four with none), and no card in the pool repeats a
-  // subtype.
-  //
-  // ⚠ Interdiction Rift is still NOT RULED — a pure whitespace repair, reported
-  // alongside R157 §25 rather than authorised by it. Kept because the defect is
-  // identical in shape and nothing reads the line, but say so rather than
-  // letting the ruling above cover it by proximity.
-  //
-  // Nothing reads either line: `kind` only asks whether "Spell" appears, and
-  // the {Battle} marker is matched brace-to-brace. No behaviour changes.
-  'Might of the Grove': {
-    from: '{Battle}Tree Tree Druid Spell',
-    to: '{Battle} Tree Druid Spell',
-  },
-  'Interdiction Rift': {
-    from: '{Battle}AI Cosmic Spell',
-    to: '{Battle} AI Cosmic Spell',
-  },
-};
-
-/** Apply the named override for `name`, asserting the source still says what
- * the table claims. A silent no-op the day Caleb fixes his file would leave a
- * stale entry nobody notices; this fails the build instead. */
-function overrideType(name, type) {
-  const o = TYPE_OVERRIDES[name];
-  if (!o) return type;
-  if (type !== o.from) {
-    console.error(
-      `TYPE_OVERRIDES is stale for ${name}: expected ${JSON.stringify(o.from)}, `
-      + `oracle now has ${JSON.stringify(type)}. Re-check the entry and delete it `
-      + 'if the source has been corrected.');
-    process.exit(1);
-  }
-  return o.to;
-}
-
 /** The transcription joins the printed lines of a text box with "{/n}". */
 const LINE_SEP = '{/n}';
 const splitLines = text => text.split(LINE_SEP);
@@ -251,6 +193,20 @@ function typeAugmentAttrs(type) {
     .map(m => m[1]).filter(a => ATTRS.has(a));
 }
 
+/** R190: a stale override is a BUILD FAILURE, never a silent no-op. The day
+ * Caleb corrects his file, the entry here stops matching and this exits
+ * non-zero naming the card, instead of quietly rewriting a field that is
+ * already right. See scripts/printed-overrides.mjs. */
+function ov(card, field, value) {
+  try {
+    return applyOverride(card, field, value);
+  } catch (err) {
+    if (!(err instanceof StaleOverrideError)) throw err;
+    console.error(err.message);
+    process.exit(1);
+  }
+}
+
 const db = JSON.parse(readFileSync(SOURCE, 'utf8'));
 const out = {};
 const missing = [];
@@ -262,9 +218,10 @@ for (const name of POOL) {
   // R142: layout artifacts out before anything reads the strings — the banner,
   // ambush and attribute parsers all see the normalised form, so there is one
   // spelling of the printed text in the whole pipeline
-  // R162: the named type-line corrections go on FIRST, so every parser below
-  // (markers, attrs, timing, kind, [Augment] attrs) sees the corrected line
-  const type = overrideType(name, normalisePrinted(e.type));
+  // R162/R190: the named corrections go on FIRST, so every parser below
+  // (markers, attrs, timing, kind, [Augment] attrs, banners, ambush) sees the
+  // corrected string rather than the one the oracle file got wrong
+  const type = ov(name, 'type', normalisePrinted(e.type));
   const markers = [...type.matchAll(/\{([A-Za-z]+)\}/g)].map(m => m[1]);
   const attrs = markers.filter(m => ATTRS.has(m));
   const timing = markers.includes('Battle') ? 'battle' : markers.includes('Haste') ? 'haste' : 'deploy';
@@ -272,7 +229,7 @@ for (const name of POOL) {
     : /Spell Unit/.test(type) ? 'spellUnit'
     : /Spell/.test(type) ? 'spell' : 'unit';
   const cost = e.cost === 'empty' ? '' : e.cost;
-  const rawText = normalisePrinted(e.text ?? '');
+  const rawText = ov(name, 'text', normalisePrinted(e.text ?? ''));
   // an alternative battle play mode: pay <digits> mana with <pips> affinity
   // (Manual p.40, Ambush) — printed in either order, see AMBUSH_RES
   const ambush = parseAmbush(rawText);

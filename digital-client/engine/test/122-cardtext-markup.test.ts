@@ -511,7 +511,11 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
    * `scripts/extract-printed.mjs` grew a `TYPE_OVERRIDES` table — keyed by card
    * name, one entry per correction, asserting the source still says what it
    * claims — precisely because `normalisePrinted`'s own comment demands that
-   * shape ("a named one-entry override, never a fuzzy spellfix"). These are
+   * shape ("a named one-entry override, never a fuzzy spellfix"). R190 moved
+   * that table to `scripts/printed-overrides.mjs` as `PRINTED_OVERRIDES` and
+   * made it field-general (`type` | `text`); the entries are unchanged, and
+   * `161-printed-text-overrides.test.ts` checks them from the other side.
+   * These are
    * word changes, so they belong here rather than in the layout rules above,
    * and each carries its reason. Interdiction Rift is NOT here: adding the
    * missing space after `{Battle}` is pure layout and `canon()` never saw it.
