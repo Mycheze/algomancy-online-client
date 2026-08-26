@@ -110,12 +110,96 @@ export function flashItems(events: readonly EngineEvent[]): StackItem[] {
 }
 
 /**
+ * R189 — playtest report #105 (GYSR, 2026-08-25): *"All triggers from death
+ * (and after combat) should go onto the stack VISUALLY at the same time. The
+ * Geode's trigger did, but not visually."*
+ *
+ * ONE BATCH IS ONE BEAT. `queueFlashes` used to stamp every item of an
+ * arriving batch STAGGER_MS apart, unconditionally, which draws a death sweep
+ * — several triggers queued together and drained back to back — as several
+ * separate things happening one after another. It is ONE thing happening, and
+ * the screen said otherwise.
+ *
+ * The instructive counterpart is report #53 (*"damage and all effects happened
+ * instantly"*), which asked for the opposite. So the rule here is neither
+ * "stage more" nor "stage less": **a batch that is simultaneous in the rules
+ * must LOOK simultaneous, and a sequence must look sequential.** Both halves
+ * fall out of the same fixture — a Swift sub-step's death and the normal
+ * sub-step's two deaths arrive in ONE server update and must be TWO beats, the
+ * second of which shows two cards at once.
+ *
+ * ── HOW A BATCH IS RECOGNISED ────────────────────────────────────────
+ *
+ * A trigger that is QUEUED (`triggered`) leaves the queue exactly one of two
+ * ways: onto the real stack (`stackPushed`), or — nobody may respond to it —
+ * resolving on the spot (`stackFlash`). Everything queued before the drain
+ * starts is simultaneous; anything queued after it has started is the next
+ * generation. That is the whole test, and it is legible in the event ORDER
+ * with no engine change at all. From the real corpus (SMVJ, one action each):
+ *
+ *     died · triggered · FLASH(12) · resolved                    ← one beat
+ *     died · triggered · died · triggered · FLASH(14) · FLASH(16)
+ *                                             ← one LATER beat, two cards
+ *
+ * ⚠ POSITIVE EVIDENCE ONLY. A flash joins its neighbours only when THIS batch
+ * carries the `triggered` marker that put it in the queue — `armed` below is
+ * that unspent-marker count. Three consequences, all wanted:
+ *
+ *   · a spell, a unit or an activation is never grouped. It is not a trigger,
+ *     and a deployment reveal of six cards stays the six beats docs/11 asked
+ *     for.
+ *   · a trigger whose marker arrived in an EARLIER update gets its own beat.
+ *     That is GYSR's own moment: three death triggers were queued together at
+ *     action 135 and each stopped on a decision, so each reached the client in
+ *     an update of its own. They were not simultaneous ON THE WIRE and no
+ *     pacing rule can honestly make them so.
+ *   · a batch this module can read nothing about behaves exactly as it did
+ *     before R189.
+ *
+ * R68's negated items are appended after, one group each, exactly as before:
+ * they are not trigger drains and nothing here knows whether two negations
+ * were one act.
+ */
+export function flashBatches(
+  events: readonly EngineEvent[], remembered: ReadonlyMap<number, StackItem> = new Map(),
+): StackItem[][] {
+  const groups: StackItem[][] = [];
+  let cur: StackItem[] = [];
+  /** triggers queued in this batch that have not yet left the queue */
+  let armed = 0;
+  const close = (): void => { if (cur.length) { groups.push(cur); cur = []; } };
+  for (const ev of events) {
+    if (ev.type === 'triggered') {
+      // a new arrival in the queue AFTER this generation began draining ends
+      // it: that is a cascade, and a cascade is a sequence
+      close();
+      armed++;
+      continue;
+    }
+    if (ev.type === 'stackPushed') { if (armed > 0) armed--; continue; }
+    if (ev.type !== 'stackFlash') continue;
+    const item = ev.data?.['item'] as StackItem | undefined;
+    if (!item || typeof item.id !== 'number') continue;
+    if (item.kind !== 'triggered' || armed === 0) { close(); groups.push([item]); continue; }
+    armed--;
+    cur.push(item);
+  }
+  close();
+  for (const item of negatedFlashItems(events, remembered)) groups.push([item]);
+  return groups;
+}
+
+/**
  * Fold one action's events into the queue.
  *
  * New arrivals line up BEHIND whatever is already pending, so two clicks in
  * quick succession read as two beats rather than one pile — up to MAX_LEAD_MS,
  * after which they land together instead of drifting further from the board
  * they are supposed to be explaining.
+ *
+ * R189: the unit of spacing is a `flashBatches` GROUP, not an item. Everything
+ * inside one group shares an arrival; groups are STAGGER_MS apart, as items
+ * used to be.
  */
 export function queueFlashes(
   existing: readonly Flash[], events: readonly EngineEvent[], now: number,
@@ -123,17 +207,22 @@ export function queueFlashes(
 ): Flash[] {
   // two sources, one queue: items that never reached the stack (the engine's
   // own snapshots) and items R68 took OFF it without resolving (ours)
-  const items = [...flashItems(events), ...negatedFlashItems(events, remembered)];
-  if (!items.length) return existing as Flash[];
+  const groups = flashBatches(events, remembered);
+  if (!groups.length) return existing as Flash[];
   const out = existing.slice();
   const seen = new Set(out.map(f => f.item.id));
   let at = now;
   for (const f of out) at = Math.max(at, f.at + STAGGER_MS);
-  for (const item of items) {
-    if (seen.has(item.id)) continue;   // a resync must not replay a beat
-    seen.add(item.id);
+  for (const group of groups) {
+    // a resync must not replay a beat — and a group whose every item has
+    // already had one must not spend a stagger step either
+    const fresh = group.filter(i => !seen.has(i.id));
+    if (!fresh.length) continue;
     at = Math.min(at, now + MAX_LEAD_MS);
-    out.push({ item, at, until: at + HOLD_MS });
+    for (const item of fresh) {
+      seen.add(item.id);
+      out.push({ item, at, until: at + HOLD_MS });
+    }
     at += STAGGER_MS;
   }
   return out;

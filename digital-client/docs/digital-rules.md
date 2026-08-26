@@ -13720,3 +13720,102 @@ screen AND the pass is held back off the wire; a mid-battle window's Pass goes
 straight out with the token still in hand; the copy is read off the board
 verbatim; and the bar is watched leaving when the window moves on underneath
 it.
+
+---
+
+## R189 — a batch that is simultaneous in the rules must LOOK simultaneous, and a sequence must look sequential
+
+Playtest report #105 (GYSR, 2026-08-25), carried as CARD-TODO #72:
+
+> *"All triggers from death (and after combat) should go onto the stack
+> VISUALLY at the same time. The Geode's trigger did, but not visually."*
+
+**Note the precision of the complaint.** He says the trigger DID reach the
+stack. The objection is that the SCREEN staged them one after another, so this
+is the pacing layer (`ui/flash.ts`, R150's `holdable`) and the fix changes
+nothing about when anything resolves. The board underneath a beat was final
+before R189 and is final after it — docs/11's contract is that a beat explains
+and never gates.
+
+### Why it is not simply "stage less"
+
+The instructive counterpart is report #53 (UFAB, *"damage and all effects
+happened instantly"*), which asked for the opposite and got R80's beat queue.
+Read as "stage more" and "stage less" the two reports contradict each other.
+They do not. They are one rule seen from two sides:
+
+> **A batch that is simultaneous in the rules must look simultaneous, and a
+> sequence must look sequential.**
+
+`queueFlashes` was staging correctly for #53 and incorrectly for #105 because it
+did not distinguish the two cases at all: every item of an arriving batch was
+stamped `STAGGER_MS` after the one before it, unconditionally. A death sweep —
+several triggers queued together and drained back to back — is ONE thing
+happening and was drawn as several.
+
+### What the replay showed
+
+GYSR replays 306/306 FAITHFUL. The moment is **action [135]**, not [140] (the
+report indexes by his own count). Combat damage kills four units at once and
+queues three death triggers in one sweep:
+
+```
+[135]  died · triggered(Maw of Despair) · died · triggered(Sacrifice Dude)
+            · died · triggered(Geode)
+[136]  stackFlash(53) …      ⎫ each trigger stopped on a decision of his, so
+[137]  stackFlash(56) …      ⎬ each reached the client in an update of its own
+[138]  stackFlash(58) …      ⎭
+```
+
+So **at his own moment the three flashes were three separate server round-trips
+with his own answers in between**, and no pacing rule can honestly merge them —
+they were not simultaneous on the wire. What the fix owes him is the general
+form of the same complaint, which the corpus supplies one game over in SMVJ
+[141]: `triggered ×4 · FLASH(59) · FLASH(60) · FLASH(62) · FLASH(64)` — four
+death triggers, one action, one update, drawn 280ms apart one at a time. SMVJ
+[94] is the mirror image and must not change: `triggered · FLASH(36) · resolved
+· spawned · triggered · FLASH(38)` is a genuine cascade, a sequence, and reads
+as one.
+
+### The rule, and how a batch is recognised
+
+A trigger that is QUEUED (`triggered`) leaves the queue exactly one of two ways:
+onto the real stack (`stackPushed`), or — nobody may respond to it — resolving
+on the spot (`stackFlash`). **Everything queued before the drain starts is
+simultaneous; anything queued after it has started is the next generation.**
+That is legible in the event ORDER with no engine change at all, and it is what
+`flashBatches` reads. `queueFlashes` then spaces GROUPS, not items: one group is
+one arrival, groups are `STAGGER_MS` apart exactly as items used to be.
+
+**POSITIVE EVIDENCE ONLY.** A flash joins its neighbours only when *this* batch
+carries the `triggered` marker that put it in the queue. Three consequences,
+all wanted:
+
+* a spell, a unit or an activation is never grouped — it is not a trigger, and
+  a deployment reveal of six cards stays the six beats docs/11 asked for;
+* a trigger whose marker arrived in an earlier update gets its own beat, which
+  is GYSR's own moment and the honest answer to it;
+* a batch the client can read nothing about behaves exactly as it did before.
+
+That gate is load-bearing rather than decorative: removing it reddens three of
+`56-ui-flash.test.ts`'s docs/11 guards, which is precisely why R189 does not
+have to widen a single one of them.
+
+### Guards
+
+`160-simultaneous-trigger-beats.test.ts`, four of whose six tests drive the real
+`ui/main.ts` through `test/ui-driver.ts` — R173's lesson, applied without having
+to relearn it: a test that ends at `queueFlashes(events)` proves the queue CAN
+group and cannot fail if the client stops feeding it. Cutting
+`absorbFlashes(m.events)` to `absorbFlashes([])` reddens all four.
+
+One fixture carries both directions, because a one-directional test is exactly
+how #53 and #105 came to contradict each other. Three 1/1 Geodes ("When I spawn
+or die, Create a Crystal 1") block two attacking columns:
+
+* **all normal speed** — one death sweep, three triggers, one beat. The report.
+* **a Swift leader** — `pumpCombatDamage` runs Swift → normal → Sluggish with
+  `checkDeaths` between each, so the Swift blocker's trigger has already
+  resolved when the normal sub-step kills the other two. ONE update, TWO
+  generations: `flashBatches` cuts it `[1, 2]`, and the screen shows one card,
+  then two cards together a stagger later. #53's direction, preserved.
