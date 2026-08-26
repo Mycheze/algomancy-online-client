@@ -301,6 +301,40 @@ gone.
 > engine primitive.
 >
 
+> ## ✅✅ ROUND 27 (2026-08-26) — **§2 IS EMPTY.** Read this first.
+>
+> The last three rows closed today, and with them CARD-TODO #50.
+>
+> | row | closed by | the correction it cost |
+> |---|---|---|
+> | `PER-COLUMN FACE DAMAGE` | **R195** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited "R159's shared predicate"; **there is no R159** — it is R157 §4 with R117's sub-step gate inside it. |
+> | `VARIABLE-COST ACTIVATED ABILITIES` | **R196** | "all six paid at RESOLUTION" is half wrong for two (Auric Ascendant and Slag Spewer's printed `[one]` was always charged at activation), and the title fits four of the six — "recall another ally" and "erase one of my mods" are FIXED N=1 and *choice-bearing*, so what they lacked was an atom of any kind, not a variable one. **And the prescribed fix was wrong**: the engine already had complete variable-cost machinery (`CastCost` + `n: 'X'`), so two of the six closed with **no new engine code at all**. |
+> | `RESPONSE WINDOW MID-RESOLUTION` | **R198** | called "structurally the hardest item here", and it was buildable safely — because the safe shape is not the one the row implies. "Suspend mid-resolution and hand out priority" is the unsafe move; "defer the play to the stack and let the resolution finish" is the safe one, and **R164 had already built it** for a spell copy. `apply.ts` was never touched. |
+> | `PREDICTION CAP` · `UNTIL-REGROUP PLAY WINDOW` | **R197** | Spell Excavation was worse than the row said: not merely "collapsed to right now" but a **silent timing waiver**, a deploy-timing spell castable mid-battle, which is exactly what R157 §12 forbids. |
+> | `MULTIPLAYER ATTRIBUTION` | **R197 — measured UNREACHABLE, nothing built** | `createGame` builds exactly 2 players, `other(seat)` is the literal `1 - seat`, and combat iterates `[initiative, nit]`. No third seat is representable, so there is no misattribution to fix. The deliverable is the measurement plus tests pinning the 1v1 reading. |
+>
+> ### ⚠ FOUR ROWS IN THE §2a TABLE BELOW WERE ALREADY FIXED IN ROUND 26 AND STILL READ AS OPEN
+> `REAPING AS A GENERAL HOOK` (R184), `MOVE-A-MOD` (R178, `E.moveMod`), `ROT/DEBT REMOVAL`
+> (R179, `E.loseRot`/`E.loseDebt`), `FORMATION AS A TARGET` (R184, a real `TargetRef`
+> arm), and `HAND-ENTRY` (R179, `E.toHand`). Verified at HEAD by the round-27 class
+> audit, each against the primitive's existence. **A closure recorded only in a header
+> block is a closure the table still contradicts** — which is the same failure mode as a
+> stale PARKED note, one level up.
+>
+> ### ⚠ ONE ROW SUPERSEDED ANOTHER, SAME DAY
+> R198 taught Spell Excavation's inline play to push a real StackItem; R197 then removed
+> that call site entirely, because "you MAY play target spell from your bin **until
+> regroup**" is a GRANT, not a play. `doPlayFromBin` now carries the window. R198's inline
+> work still serves the other three mid-resolution plays. **Both rulings are correct and
+> the later one wins for this card** — recorded rather than quietly overwritten.
+>
+> ### What round 27 found that was NOT in this file
+> Two hidden-information leaks, neither of them a divergence from printed text and so
+> invisible to a sweep built on this file's question: **R202** (`handEntered` named the
+> opponent's incoming cards on the wire, in every phase) and **R197b** (three cards
+> printing "look at" published a whole hand to the shared log). Both were invisible to all
+> 153 engine test files for the same structural reason — see CARD-TODO #84.
+
 **Status key:** `DONE` fixed and guarded · `OPEN` real, unfixed · `STALE` a code
 comment that outlived its cause · `RULED-OK` the engine is right and an answer
 says so.

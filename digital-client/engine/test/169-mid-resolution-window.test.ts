@@ -262,9 +262,24 @@ test('R198 Tides of the Cosmos "You may play them now, for free": a free play is
  * The window is the first half. The second half is what the window makes
  * REACHABLE: the excavated spell can now be negated, and R96 has to survive
  * that exit too — the card must not fall into the bin it never returns to.
+ *
+ * ⚠⚠ R198 -> R197, SAME DAY, AND THE CLAIM SURVIVED THE MECHANISM.
+ *
+ * R198 made this card's INLINE play push a real StackItem. Hours later R197
+ * established that the printed sentence is "you MAY play target spell from
+ * your bin UNTIL REGROUP" — a GRANT, not a play — and removed the inline call
+ * site altogether. The window R198 built for it is now supplied by
+ * `doPlayFromBin`, where the cost, the printed timing (R157 §12), the stack,
+ * the {Unstable} stamp and the R65 erase all live already.
+ *
+ * So the test is REWRITTEN, not deleted: everything it asserted is still true
+ * and still worth guarding — an excavated spell is respondable, and R96's
+ * erase survives a NEGATION rather than dropping the card into the bin it
+ * says it never returns to. Only the route to the window changed. The three
+ * other cards in this file still take R198's inline path and are unchanged.
  */
 
-test('R198 Spell Excavation "play target spell from your bin": the bin play gets a window, and R96’s erase survives being negated in it', () => {
+test('R198/R197 Spell Excavation "play target spell from your bin": the bin play gets a window, and R96’s erase survives being negated in it', () => {
   const h = new Harness(16904, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -280,6 +295,16 @@ test('R198 Spell Excavation "play target spell from your bin": the bin play gets
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   decide(h, l => l.startsWith('Luminous Arc'));          // R67: declared at cast
   pass(h); pass(h);                                      // the Excavation resolves
+
+  // R197: what resolved is the PERMISSION. The Arc is still in the bin,
+  // unpaid for, and D picks its own moment — any time before regroup.
+  assert.ok(h.state.players[D]!.bin.includes('Luminous Arc'),
+    'R197: the grant is the effect — the spell has not been played yet');
+  assert.ok(ent(h, atk), 'and nothing has been dealt');
+  const bi = h.state.players[D]!.bin.indexOf('Luminous Arc');
+  if (h.state.priority !== D) pass(h);
+  h.do({ type: 'playFromBin', seat: D, binIndex: bi });
+  decide(h, () => true);                                 // R64/R67: the Arc declares its target
 
   windowIsOpen(h, 'Luminous Arc', D, 'Spell Excavation');
   assert.ok(ent(h, atk), 'the excavated spell has NOT dealt its damage yet');

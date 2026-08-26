@@ -2904,6 +2904,42 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'An inventory entry closes when its cards have a named test that reddens on the old '
       + 'behaviour. The inventory itself closes when §2 is empty.',
+    guards: [
+      '166-face-damage-attribution.test.ts::a combat \'lifeLost\' names the columns that dealt it',
+      '167-variable-ability-costs.test.ts::R196',
+      '169-mid-resolution-window.test.ts::the deferral gate: only a live battle priority window defers a mid-resolution play',
+      '168-three-card-divergences.test.ts::Prediction Prophet: "predict your life total" is UNCAPPED',
+      '168-three-card-divergences.test.ts::Spell Excavation: the window SURVIVES to regroup',
+      '168-three-card-divergences.test.ts::Cinder Scuttler: the MULTIPLAYER premise is UNREACHABLE',
+    ],
+    closed:
+      '**§2 IS EMPTY** (2026-08-26). The last five rows closed in one round: PER-COLUMN FACE '
+      + 'DAMAGE (R195), VARIABLE-COST ACTIVATED ABILITIES (R196), RESPONSE WINDOW '
+      + 'MID-RESOLUTION (R198), PREDICTION CAP + UNTIL-REGROUP PLAY WINDOW (R197), and '
+      + 'MULTIPLAYER ATTRIBUTION — which was **measured UNREACHABLE and nothing was built**: '
+      + 'createGame makes exactly 2 players, other(seat) is the literal 1 - seat, and combat '
+      + 'iterates [initiative, nit]. No third seat is representable. '
+      + '⚠⚠ EVERY ONE OF THE FIVE CORRECTED ITS OWN ROW, and the pattern is worth more than the '
+      + 'fixes: face damage said 6 cards and is 9 (**Flowstone Arcanite\'s own comment named all '
+      + 'three missing ones** while the row did not) and cited an R159 that DOES NOT EXIST; '
+      + 'variable-cost was half wrong about when two of six are paid AND its prescribed fix was '
+      + 'wrong (the engine already had the machinery, so two cards closed with no new engine code '
+      + 'at all); the response window was called "structurally the hardest item here" and was '
+      + 'buildable safely, because the safe shape is the R164 one (defer the play to the stack) '
+      + 'not the row\'s implied one (suspend mid-resolution) — apply.ts was never touched; and '
+      + 'Spell Excavation was worse than described, a silent TIMING WAIVER that R157 §12 forbids. '
+      + '⚠ FOUR ROWS OF §2a WERE ALREADY FIXED IN ROUND 26 AND STILL READ AS OPEN in the table '
+      + '(REAPING, MOVE-A-MOD, ROT/DEBT REMOVAL, FORMATION AS A TARGET, plus HAND-ENTRY). A '
+      + 'closure recorded only in a header block is a closure the table still contradicts — the '
+      + 'stale-PARKED-note failure one level up. Recorded in the inventory\'s round-27 block. '
+      + '⚠ R198 AND R197 COLLIDED ON SPELL EXCAVATION and the later one wins: R198 taught the '
+      + 'inline play to push a StackItem; R197 removed the call site, because "you MAY play it '
+      + 'until regroup" is a GRANT. R198\'s test was REWRITTEN rather than deleted — every claim '
+      + 'it made is still true, only the route to the window changed. '
+      + '⚠ WHAT THIS TICKET COULD NOT SEE: two hidden-information leaks (R202, R197b), neither a '
+      + 'divergence from PRINTED TEXT and so outside this inventory\'s whole question. The sweep '
+      + 'that built this file could not have found them.',
+    status: 'done',
     progress:
       'ROUND 26 (2026-08-25) closed twelve rows. §2a SPELL-COPY (R164 — the biggest single '
       + 'item). §2b SPAWN-COUNTERS and PLAY-VS-PUT-INTO-PLAY (R165), DOUBLING OVERSHOOTS, '
@@ -2928,7 +2964,6 @@ export const CARD_TODO: TodoEntry[] = [
       + 'Read docs/09-divergence-inventory.md — its header block now carries the corrections '
       + 'this round cost, including that SPELL-COPY\'s consequence list was BACKWARDS and that '
       + '§3 was wrong about Counter Theif in a way that would have destroyed a real fact.',
-    status: 'open',
   },
 
   // ── filed 2026-08-25 (round 26) ─────────────────────────────────────────
@@ -4661,7 +4696,10 @@ export const CARD_TODO: TodoEntry[] = [
   },
   {
     id: 85,
-    area: 'server',
+    // 'server' is not a TodoArea — the enum is card/attribute/engine/client/
+    // coverage. A flaky suite is a COVERAGE defect: it is the tests failing to
+    // tell the truth about the code, not the code failing.
+    area: 'coverage',
     severity: 'major',
     title: 'The server suite fails about one run in three, on a different test each time',
     detail:
