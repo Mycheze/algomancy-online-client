@@ -608,52 +608,21 @@ test('tokens are the only thing declared: no deck card is listed as created', ()
  * card, not an entry to add here.
  */
 const SILENT_KNOWN: Record<string, string> = {
-  // ── R25's "each opponent" over a region that holds nobody else.
+  // ── R25's "each opponent" over a region that holds nobody else: GONE.
   //
-  // "Each opponent" reads the EFFECT REGION's `presentSeats`, and a home
-  // region out of battle lists only its owner — so the loop runs zero times,
-  // nothing happens, and nothing is said. 85-silent-branches §9 fixed exactly
-  // this for Restitution, Vroot and Flzzz; these are the rest of the family,
-  // and the fuzz never reached one of them in that situation.
-  'ability:Bloated Manablub#0':
-    'R25 family — `eachOpponentLoses3` loops over presentSeats and says nothing when the '
-    + 'region holds no opponent. Same shape as 85-silent-branches §9 (Restitution/Vroot/Flzzz).',
-  'graft:Bloated Manablub':
-    'R25 family — the same `eachOpponentLoses3` object, reached as the graft rider.',
-  'ability:Blightmound#0':
-    'R25 family — `blightmoundRot` gains each opponent 1 rot over presentSeats; with no '
-    + 'opponent present the loop is empty and silent.',
-  'graft:Blightmound':
-    'R25 family — the same `blightmoundRot` object, reached as the graft rider.',
-  'spell:Linked Extinction':
-    'R25 family — the cost-declined branch announces itself, but the "each opponent '
-    + 'sacrifices" loop below it says nothing when no opponent is present.',
-  'graft:Linked Extinction':
-    'R25 family — the same `linkedExtinction` object, reached as the graft rider.',
-  'spell:Void Memory':
-    'R25 family — its own comment cites R25 ("grafted onto a deployment-firing cause it '
-    + 'reaches nobody who is not there") and then does not say so when that happens.',
-  'graft:Void Memory':
-    'R25 family — the same `voidMemory` object, reached as the graft rider.',
-  'augment:Growing Plague#0':
-    'R25 family — "each other player draws two cards" over presentSeats; alone in a home '
-    + 'region the loop is empty and silent.',
-  'augment:Malicious Hardware#0':
-    'R25 family — "each opponent sacrifices a unit" collects picks per present seat; with '
-    + 'no opponent present there is no pick and no announcement.',
-  'augment:Pestilent Mycelion#0':
-    'R25 family — "each opponent loses 1 life" over presentSeats, silent when empty.',
-  'augment:Rotwall#0':
-    'R25 family — `opponentsIn(...)` yields nobody in a home region and the rot loop is silent.',
-  'augment:Verdant Necrophage#0':
-    'R25 family — the per-opponent branch announces an empty bin, but the loop itself says '
-    + 'nothing when there is no opponent to loop over.',
-
-  // ── a quantity counted at resolution that may be none.
-  'augment:Stellarspore Harvester#0':
-    'The non-opponent guard announces itself, but "each of your units with a -1/-1 counter" '
-    + 'is counted at RESOLUTION (its own comment, R157 §15/R161, says so) and gives nothing '
-    + 'away and says nothing when the count is zero.',
+  // Thirteen labels (nine EffectDefs — four of them reached twice, once as an
+  // ability/spell and once as the graft rider on the same object) sat here
+  // until R187/CT-70. "Each opponent" reads the EFFECT REGION's `presentSeats`
+  // and a home region out of battle lists only its owner, so the loop ran zero
+  // times and said nothing. Each now announces the empty region the way
+  // 85-silent-branches §9 made Restitution, Vroot and Flzzz announce it, and
+  // `test/158-silent-region-branches.test.ts` holds one named regression per
+  // card. The loops were NOT made to run — the region genuinely holds nobody
+  // else and the effect genuinely does nothing; only the silence was the bug.
+  //
+  // `augment:Stellarspore Harvester#0` went with them (R187): its "each of your
+  // units with a -1/-1 counter" is a quantity counted at RESOLUTION, and a zero
+  // count now says so instead of handing the opponent nothing in silence.
 
   // ── not a gap: an effect that exists only to carry a cost.
   'spell:Trench Stalker':

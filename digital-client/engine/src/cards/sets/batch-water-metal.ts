@@ -69,9 +69,15 @@ card('Ambling Mountaintop', {});
 // (R12): the opponents present in the event's region (in battle, both seats).
 const eachOpponentLoses3: EffectDef = {
   run: (g, ctx) => {
-    for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-      if (seat !== ctx.controller) g.loseLife(seat as Seat, 3, ctx.sourceName);
+    // R187/CT-70: a HOME region out of battle lists only its owner, so this
+    // loop legitimately runs zero times. Saying nothing is the defect, not the
+    // no-op — Boreal Wanderer below is the same repair.
+    const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+    if (!foes.length) {
+      g.ev('info', `${ctx.sourceName}: no opponent is present here — nobody loses 3 life.`);
+      return;
     }
+    for (const seat of foes) g.loseLife(seat as Seat, 3, ctx.sourceName);
   },
 };
 card('Bloated Manablub', {

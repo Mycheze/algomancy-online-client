@@ -251,9 +251,15 @@ function unitsThatHit(g: E, victim: Seat): Entity[] {
 // scoped (R25); the rot lands at resolution (R1).
 const blightmoundRot: EffectDef = {
   run: (g, ctx) => {
-    for (const s of presentSeats(g, ctx.region)) {
-      if (s !== ctx.controller) g.gainRot(s, 1);
+    // R187/CT-70: R25 scopes "each opponent" to the effect's region, and a home
+    // region out of battle holds only its owner. The empty loop is correct; the
+    // silence was not (Cthyrian Culler below already says it).
+    const foes = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
+    if (!foes.length) {
+      g.ev('info', `${ctx.sourceName}: no opponent is present here — nobody gains rot.`);
+      return;
     }
+    for (const s of foes) g.gainRot(s, 1);
   },
 };
 card('Blightmound', {

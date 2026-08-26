@@ -427,9 +427,14 @@ card('Growing Plague', {
     label: 'each other player draws two cards (I despawned)',
     effect: {
       run: (g, ctx) => {
-        for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-          if (seat !== ctx.controller) g.draw(seat as Seat, 2);
+        // R187/CT-70: "each OTHER player" is region-scoped (R25), so alone in a
+        // home region the loop is empty. Announce the empty case.
+        const others = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+        if (!others.length) {
+          g.ev('info', 'Growing Plague: no other player is present here — nobody draws two cards.');
+          return;
         }
+        for (const seat of others) g.draw(seat as Seat, 2);
       },
     },
   }],

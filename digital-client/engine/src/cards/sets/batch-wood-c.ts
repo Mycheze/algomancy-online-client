@@ -329,9 +329,16 @@ card('Stellarspore Harvester', {
           return;
         }
         const to = (t as { player: Seat }).player;
-        for (const u of g.unitsOf(ctx.controller, ctx.region)) {
-          if (u.counters < 0 && g.entity(u.id)) g.giveControl(u, to);
+        // R187/CT-70: "each of your units with a -1/-1 counter" is a quantity
+        // counted at RESOLUTION and none is a legal none — but a legal none
+        // still has to be SAID, or the trigger leaves the stack in silence.
+        const giving = g.unitsOf(ctx.controller, ctx.region)
+          .filter(u => u.counters < 0 && g.entity(u.id));
+        if (!giving.length) {
+          g.ev('info', `Stellarspore Harvester: you have no unit with a -1/-1 counter here — ${g.pname(to)} takes nothing.`);
+          return;
         }
+        for (const u of giving) g.giveControl(u, to);
       },
     },
   }],
@@ -392,9 +399,15 @@ card('Verdant Necrophage', {
     label: 'each opponent recalls a unit from their bin',
     effect: {
       run: (g, ctx) => {
+        // R187/CT-70: the per-opponent branch below announces an empty bin,
+        // but the LOOP said nothing when R25 left it with nobody to walk.
+        const foes = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
+        if (!foes.length) {
+          g.ev('info', 'Verdant Necrophage: no opponent is present here — nobody recalls a unit.');
+          return;
+        }
         const plans: { seat: Seat; idx: number }[] = [];
-        for (const seat of presentSeats(g, ctx.region)) {
-          if (seat === ctx.controller) continue;
+        for (const seat of foes) {
           const options = g.player(seat).bin
             .map((n, i) => [n, i] as const)
             .filter(([n]) => isUnitCard(n));

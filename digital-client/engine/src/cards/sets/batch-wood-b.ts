@@ -384,9 +384,14 @@ card('Pestilent Mycelion', {
     when: (g, self, ev) => ((ev.data?.n as number) ?? 0) < 0,
     effect: {
       run: (g, ctx) => {
-        for (const seat of presentSeats(g, ctx.region)) {
-          if (seat !== ctx.controller) g.loseLife(seat, 1, 'Pestilent Mycelion');
+        // R187/CT-70: region-scoped (R25) — alone in a home region the loop is
+        // empty, which is correct, and used to be silent, which was not.
+        const foes = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
+        if (!foes.length) {
+          g.ev('info', 'Pestilent Mycelion: no opponent is present here — nobody loses 1 life.');
+          return;
         }
+        for (const seat of foes) g.loseLife(seat, 1, 'Pestilent Mycelion');
       },
     },
   }],

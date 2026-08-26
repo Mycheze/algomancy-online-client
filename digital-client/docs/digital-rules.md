@@ -13231,3 +13231,93 @@ because the card is standing at home while the battle is being fought in the
 other seat's region. That is a property of the drill's board and it is the next
 thing worth building — an attacking position, with the card actually in the
 battle.
+
+## R187 — "each opponent" in a region that holds nobody else: the loop is right, the silence was not
+
+CARD-TODO #70. R25 scopes an effect to its region, and "each opponent" is read
+as *the seats present in the effect's region*. A HOME region out of battle
+lists only its owner, so the loop runs **zero times** — a real, ordinary,
+reachable situation. Nine effects then resolved, changed nothing, and **said
+nothing at all**: the item left the stack, the log stayed empty, and the player
+was told neither what happened nor why it did not.
+
+`85-silent-branches` §9 had already made exactly this repair for the three the
+old fuzz happened to reach (Restitution, Vroot, Flzzz), and `batch-fire-b`'s
+Spirit of Vengeance, `batch-water-metal`'s Boreal Wanderer, `batch-dark-b`'s
+Cthyrian Culler and `batch-hybrids-ld-c`'s No Hand Killer already carried the
+line. R182's deterministic drive — which reaches every EffectDef rather than
+the 280 the fuzz managed — found the rest of the family sitting in
+`65-effect-conformance`'s `SILENT_KNOWN`.
+
+**The repair is one `g.ev('info', …)` per branch and nothing else.** No loop was
+made to run. The region genuinely holds nobody else and the effect genuinely
+does nothing; *"nothing happened" is a legitimate outcome, not SAYING so never
+is*. Every card keeps the same board behaviour it had before.
+
+Repaired, with the printed clause each one went quiet about:
+
+| card | route(s) | clause |
+| --- | --- | --- |
+| Bloated Manablub | ability #0 + graft | "Each opponent loses 3 life" |
+| Blightmound | ability #0 + graft | "Each opponent gains 1 rot" |
+| Linked Extinction | spell + graft | "Each opponent sacrifices a unit" |
+| Void Memory | spell + graft | "Each opponent discards a unit or spell if able" |
+| Growing Plague | augment #0 | "each other player draws two cards" |
+| Malicious Hardware | augment #0 | "each opponent sacrifices a unit" |
+| Pestilent Mycelion | augment #0 | "each opponent loses 1 life" |
+| Rotwall | augment #0 | "each opponent gains a rot" |
+| Verdant Necrophage | augment #0 | "each opponent recalls a unit from their bin" |
+
+Two of those were already half-honest and that is what made them worth naming.
+**Linked Extinction** announced its declined-`[Sacrifice a unit]` branch and
+then went quiet on the loop underneath it, so a *paid* cost with nobody in the
+region was the silent path — which is why the regression test pays the cost
+rather than declining it. **Void Memory** carried a comment citing R25 for this
+exact case ("grafted onto a deployment-firing cause it reaches nobody who is not
+there") and did not say so when the case arrived. **Verdant Necrophage**
+announced a per-opponent EMPTY BIN but never announced having no opponent to
+walk, so its test stocks the opponent's bin to keep the two apart.
+
+A tenth went with them, a near neighbour rather than the same shape:
+**Stellarspore Harvester**'s augment half gives "each of your units with a -1/-1
+counter" to a *target opponent* who really is there. The quantity is counted at
+RESOLUTION (R157 §15 / R161) and may be none — a legal none, and one that now
+says so instead of handing the opponent nothing in silence.
+
+### What guards it
+
+`test/158-silent-region-branches.test.ts`, one named test per card, each driving
+the real registry effect through a real deployment board where `presentSeats` is
+`[owner]`. Every test asserts four things in order: the **precondition** (the
+region really does hold no opponent, so the test is aimed where it claims), that
+the opponent **had something to lose** somewhere else (life, a hand, a unit, a
+stocked bin, cards left in deck), that the effect **spoke** (at least one event,
+carrying a non-empty message), and that the guard **really was a guard** (the
+board did not move — the fix must never be "make the loop run"). No prose is
+pinned; the card and its printed clause are named in the assertion messages
+instead. Two structural tests back them: one asserting the four graft riders are
+still the SAME `EffectDef` object as the card's own text (which is why one
+repair covered thirteen of 65's labels with nine fixes), and one asserting every
+repaired card is still visible to the whole-pool sweeps.
+
+Ten red-checks were run — each card's fix reverted in turn — and each put
+exactly its own assertion red, plus 65's whole-pool silence sweep. Nothing else.
+
+`SILENT_KNOWN` is now **one entry**: `spell:Trench Stalker`, which is
+`run: () => {}` by construction and declared not-a-gap in `71-card-ledger`'s
+`NOT_A_GAP` for the same reason. The R25 family is empty.
+
+### Corrections to the brief
+
+- The family was **thirteen labels over nine EffectDefs**, not fifteen or
+  sixteen. Four cards (Bloated Manablub, Blightmound, Linked Extinction, Void
+  Memory) appear twice because `65` labels the ability/spell route and the graft
+  route separately while both read the *same object*, so one repair closed both.
+  Counting labels as effects double-counts those four. With Stellarspore
+  Harvester the list held fourteen live entries plus Trench Stalker's
+  declaration; sixteen was never on it.
+- "Name the region" is not something this codebase can do. There is no region
+  name anywhere in the engine, the types or the client — a `Region` is
+  `{ owner, presentSeats }` and the UI never labels one. Every existing member
+  of this family says **"here"** (`'<Card>: no opponent is present here — …'`),
+  so the precedent was copied verbatim rather than invented past.

@@ -744,13 +744,23 @@ card('Malicious Hardware', {
     when: (g, self, ev) => ev.data?.seat === self.controller,
     effect: {
       run: (g, ctx) => {
+        // R187/CT-70: R25 scopes "each opponent" to the effect's region, and a
+        // home region out of battle holds only the carrier's controller.
+        const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+        if (!foes.length) {
+          g.ev('info', 'Malicious Hardware: no opponent is present here — nobody sacrifices a unit.');
+          return;
+        }
         const picks: EntityId[] = [];
-        for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-          if (seat === ctx.controller) continue;
+        for (const seat of foes) {
           const pool = g.unitsOf(seat as Seat, ctx.region).filter(u => !picks.includes(u.id));
           const id = pickUnit(ctx, `sac:${seat}`, seat as Seat, pool,
             'Malicious Hardware: sacrifice a unit');
           if (id !== null) picks.push(id);
+        }
+        if (!picks.length) {
+          g.ev('info', 'Malicious Hardware: no opponent here has a unit to sacrifice.');
+          return;
         }
         for (const id of picks) {
           const u = g.entity(id);

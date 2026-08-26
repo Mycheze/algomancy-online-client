@@ -654,7 +654,14 @@ card('Rotwall', {
     label: 'each opponent gains a rot (I was dealt damage)',
     effect: {
       run: (g, ctx) => {
-        for (const seat of opponentsIn(g, ctx.region, ctx.controller)) g.gainRot(seat, 1);
+        // R187/CT-70: `opponentsIn` yields nobody in a home region out of
+        // battle. No Hand Killer below already announces the same emptiness.
+        const foes = opponentsIn(g, ctx.region, ctx.controller);
+        if (!foes.length) {
+          g.ev('info', 'Rotwall: no opponent is present here — nobody gains a rot.');
+          return;
+        }
+        for (const seat of foes) g.gainRot(seat, 1);
       },
     },
   }],

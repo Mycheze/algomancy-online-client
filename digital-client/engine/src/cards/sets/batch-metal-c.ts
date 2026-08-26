@@ -429,6 +429,13 @@ const voidMemory: EffectDef = {
     // other "each opponent" in the pool (Thoughtripper) — grafted onto a
     // deployment-firing cause it reaches nobody who is not there.
     const present = g.s.regions[ctx.region]!.presentSeats;
+    // R187/CT-70: the comment above described this case and the code then said
+    // nothing when it happened. It happens whenever the region holds only the
+    // caster — a home region out of battle.
+    if (!present.some(s => s !== ctx.controller)) {
+      g.ev('info', 'Void Memory: no opponent is present here — nobody discards or reveals.');
+      return;
+    }
     for (const p of g.s.players) {
       if (p.seat === ctx.controller || !present.includes(p.seat)) continue;
       if (!p.hand.length) {

@@ -341,8 +341,14 @@ const linkedExtinction: EffectDef = {
       g.ev('info', 'Linked Extinction: no unit was sacrificed — nobody sacrifices.');
       return;   // rider declined / unpayable
     }
-    for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
-      if (seat === ctx.controller) continue;
+    // R187/CT-70: the declined-cost branch above announces itself; this loop
+    // did not, and R25 empties it whenever the region holds nobody else.
+    const foes = g.s.regions[ctx.region]!.presentSeats.filter(s => s !== ctx.controller);
+    if (!foes.length) {
+      g.ev('info', 'Linked Extinction: no opponent is present here — nobody sacrifices a unit.');
+      return;
+    }
+    for (const seat of foes) {
       const units = g.unitsOf(seat, ctx.region);
       if (!units.length) { g.ev('info', `Linked Extinction: ${g.pname(seat)} has no unit here.`); continue; }
       const id = units.length === 1 ? units[0]!.id : ctx.choose(`leOpp:${seat}`, {
