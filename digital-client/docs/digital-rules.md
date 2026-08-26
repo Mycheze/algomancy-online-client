@@ -16647,3 +16647,73 @@ seconds per card, and a runner that wants a sentence before it will accept
 
 Pinned by `engine/test/185-scenario-determinism.test.ts`,
 `engine/test/186-scenario-library.test.ts` and `server/test-scenario.ts`.
+
+---
+
+## R218 — twenty-four scenarios, four authors, one keyspace: what parallel authoring needs
+
+*(2026-08-26, round 28. Not a rules question. The scenario library's first
+batch, and the four things that had to be true before four people could write
+into it at once.)*
+
+The owner ran the first scenario, recorded `works`, and asked for more. Four
+agents then authored six scenarios each. That worked, and the reasons are worth
+writing down because none of them was obvious from the vertical slice.
+
+### One shared object literal is the worst possible merge surface
+
+`SCENARIOS` was a single literal, so every author would have edited the same
+closing brace. Batches now live in their own modules and are spread in.
+
+⚠ **A duplicate id does not collide — the later spread silently WINS**, and the
+earlier author's scenario vanishes with nothing said. `186 §0` sums the batches
+and asserts the total equals the merged key count.
+
+> **The comment introducing that guard originally cited
+> `189-scenario-library.test.ts`, which did not exist.** Two of the four authors
+> caught it independently and one wrote the check themselves rather than trust
+> it. A comment naming a guard that is not there is worse than no comment: it is
+> `docs/13-assessment.md` §5 exactly — a claim of coverage nobody verified — and
+> with four parallel authors on one keyspace it was live.
+
+### A batch may import only TYPES from `scenarios.ts`
+
+`scenarios.ts` imports every batch, so a batch importing a **value** back closes
+a cycle and the server dies at boot with `Cannot access 'YOU' before
+initialization`. **It fails at startup, not at typecheck**, so `tsc` says
+nothing. All four authors hit it; one took the running server down for ~40s
+while another was polling it.
+
+### A prologue may SPEND a card, but never draw one
+
+`186 §1` asserted the post-prologue hand still equalled the dealt hand — an
+undocumented rule, and too strict. A non-`{Virus}` `[Augment]` only ever
+attaches as a **deployment action** (`doAugment`: *"modding is a deployment
+action (or a battle Virus)"*), so a scenario about its donated text **cannot**
+be reached without playing it first.
+
+`handAfterPrologue` declares the remainder, and the guard requires it to be a
+**subset** of what was dealt. Spending is legal; drawing is not — **a drawn card
+is seed-dependent, and then the board the owner opens is not the board that was
+tested.** Every batch verified determinism across 7–8 seeds for exactly this
+reason.
+
+### The thing worth more than the scenarios
+
+Building boards found two engine behaviours no sweep had:
+
+- **`Stalwart Sentinel` only hears plays made in its OWN region.** `fireEvent`
+  scopes listeners by region (R12); the printed text says only *"when you play a
+  card"*. Measured: Sentinel at home with the battle away queues **nothing**. If
+  that clause is ever ruled table-wide, Sentinel, Proph and their family all
+  change **and nothing in the suite would notice.**
+- **`Skybreaker`'s "Erase me" on a host erases the HOST** — a 2-mana augment
+  costs the unit it rides, out of the game. Nothing rules on that price.
+
+And a correction to the queue's own weighting: **`Vengeance` and `Automaton`'s
+donated `[Augment]` path is untestable by construction.** Neither is a
+`{Virus}`, so neither can ever ride an enemy unit, and *"your opponents"*
+resolves identically on every legal board. `scenario-queue.ts` gives an
+`[Augment]` bonus for a path that, for a non-Virus card, does not exist — that
+weight wants qualifying, or the ranking keeps promoting cards for a reason that
+cannot pay out.

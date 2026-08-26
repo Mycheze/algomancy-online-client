@@ -88,15 +88,26 @@ interface Scenario {
   card: CardName;             // the card under test
   why: string;                // why THIS card is in the queue
   expect: string;             // plain English, shown on screen
-  board: {
-    you:      { hand: CardName[]; play: Placed[]; resources: ResSpec };
-    opponent: { hand: CardName[]; play: Placed[]; resources: ResSpec };
-  };
-  phase: Phase;               // where the game starts
-  priority: Seat;
+  you:      { hand: CardName[]; play: Placed[]; resources: ResSpec };
+  opponent: { hand: CardName[]; play: Placed[]; resources: ResSpec };
+  initiative?: Seat;
+  prologue?: (ids, state) => Action[];   // real actions, walked in
+  phase: Phase;               // ASSERTED after the prologue, not a knob
+  priority: Seat | null;      // asserted too
+  handAfterPrologue?: CardName[];  // when the prologue spends a card
   needsLiveOpponent?: boolean; // see §4
 }
 ```
+
+> ⚠ **Corrected 2026-08-26.** The sketch above originally wrapped the two sides
+> in a `board: { … }` and listed `phase`/`priority` as *inputs*. Neither is true:
+> the sides sit at top level, and phase/priority are **asserted after the
+> prologue** rather than set. `handAfterPrologue` was added when a scenario had
+> to spend a card to reach its clause — a non-`{Virus}` `[Augment]` only ever
+> attaches as a deployment action, so its donated text is unreachable otherwise.
+> `186 §1` requires the declared remainder to be a **subset** of what was dealt:
+> a prologue may spend, never draw, because a drawn card is seed-dependent and
+> the board the owner opens would stop being the board that was tested.
 
 `expect` is the load-bearing field. It is what lets the owner tell **"the card is
 wrong"** from **"the setup is wrong"** — and that distinction is what the fourth

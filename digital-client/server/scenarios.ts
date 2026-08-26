@@ -123,6 +123,17 @@ export interface ScenarioSide {
  * name "my attacker" and "their unit" without guessing at numbers. */
 export interface ScenarioIds { you: EntityId[]; opponent: EntityId[] }
 
+/* ⚠ R218 — A BATCH FILE MAY IMPORT ONLY *TYPES* FROM THIS MODULE.
+ *
+ * `scenarios.ts` imports every batch (see BATCHES above), so a batch importing
+ * a VALUE back out of it closes a cycle and the server dies at BOOT with
+ * `Cannot access 'YOU' before initialization`. `import type { Scenario }` is
+ * fine; `import { YOU, OPPONENT }` is not.
+ *
+ * It fails at startup, not at typecheck, so `tsc` will not warn you — which is
+ * why this warning is here rather than in a lint. Restate the seat constants
+ * locally in your batch file; they are two lines and they cannot drift, because
+ * `YOU`/`OPPONENT` are 0/1 by the definition of a two-seat game. */
 export interface Scenario {
   /** stable forever: a verdict cites it years later */
   id: string;
@@ -159,6 +170,26 @@ export interface Scenario {
    * dealing half a setup.
    */
   prologue?: (ids: ScenarioIds, state: GameState) => Action[];
+  /**
+   * R218 — WHAT THE HAND HOLDS ONCE THE PROLOGUE IS DONE, when the prologue
+   * SPENDS one.
+   *
+   * `you.hand` / `opponent.hand` say what the board patch DEALS. Most prologues
+   * only pass priority and declare an attack, so the two are the same and this
+   * field is omitted — `186 §1` then asserts the dealt hand is still intact,
+   * which is the anti-rot check docs/14 §9 asks for.
+   *
+   * ⚠ But some clauses cannot be reached without spending a card first. A
+   * non-`{Virus}` `[Augment]` can only ever attach as a DEPLOYMENT action
+   * (`doAugment`: "modding is a deployment action (or a battle Virus)"), so a
+   * scenario about donated text on such a card MUST play it in the prologue.
+   * Batch A hit exactly this and went red against an undocumented rule.
+   *
+   * When set, this is asserted instead. It must be a SUBSET of the dealt hand —
+   * a prologue may spend cards, never conjure them — and `186 §1` checks that
+   * too, so this cannot be used to paper over a prologue that drew.
+   */
+  handAfterPrologue?: CardName[];
   /** asserted after the prologue */
   phase: Phase;
   /** asserted after the prologue; null = nobody holds priority there */
@@ -180,7 +211,36 @@ export interface Scenario {
 // deliberately the next agent's job: 20 working scenarios beat 120 unplayable
 // ones, and the plumbing is the risky part.
 
-export const SCENARIOS: Record<string, Scenario> = {
+/* R218 — BATCH FILES.
+ *
+ * Scenarios are authored in parallel, several at a time, and one shared object
+ * literal is the worst possible merge surface for that: every author edits the
+ * same closing brace. So each batch lives in its own module exporting a
+ * `Record<string, Scenario>` and is spread in below. Adding a batch is two
+ * lines here and one new file — no author ever edits another author's text.
+ *
+ * ⚠ A DUPLICATE ID WOULD SILENTLY WIN, because a later spread overwrites an
+ * earlier key and nothing would say so. `186-scenario-library.test.ts` sums
+ * the batches and asserts the total equals the merged key count, so a
+ * collision fails loudly instead of deleting somebody's scenario.
+ *
+ * ⚠ THIS COMMENT ORIGINALLY CITED `189-scenario-library.test.ts`, WHICH DOES
+ * NOT EXIST — two of the four batch authors caught it independently, and one
+ * wrote the collision check itself rather than trust the promise. A comment
+ * naming a guard that is not there is worse than no comment: it is exactly the
+ * `docs/13-assessment.md` §5 shape, a claim of coverage nobody verified, and
+ * with four parallel authors on one keyspace it was live. */
+import { BATCH_A } from './scenarios-a.ts';
+import { BATCH_B } from './scenarios-b.ts';
+import { BATCH_C } from './scenarios-c.ts';
+import { BATCH_D } from './scenarios-d.ts';
+
+/** every batch, in registration order — exported so the collision guard can
+ *  sum them without re-listing the imports */
+export const BATCHES: readonly Record<string, Scenario>[] =
+  [BATCH_A, BATCH_B, BATCH_C, BATCH_D];
+
+const CORE: Record<string, Scenario> = {
   /**
    * WHY THIS CARD (R216).
    *
@@ -256,9 +316,17 @@ export const SCENARIOS: Record<string, Scenario> = {
     prologue: (ids, s) => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // the R18 haste step only engages when somebody holds a payable haste
-      // card; neither side does here, and `dealScenario` skips it if it is
-      // open anyway (see runPrologue) rather than depending on that.
+      // The R18 haste step only engages when somebody holds a payable haste
+      // card, and neither side does here.
+      //
+      // ⚠ R218 — THIS COMMENT USED TO CLAIM `dealScenario` SKIPS THE HASTE STEP
+      // IF IT IS OPEN. IT DOES NOT. `runPrologue` does no such thing, and batch
+      // A hit it: any scenario whose board holds a `{Haste}` card must put its
+      // own `doneHaste` in the prologue or the deal throws "not your attack
+      // step". This board is safe because of the sentence above, not because
+      // anything skips anything — which is exactly the distinction the wrong
+      // comment erased. A scenario author reading it would have built a haste
+      // board and been told the engine was broken.
       { type: 'declareAttack', seat: s.battle?.attacker ?? YOU, columns: [[ids.you[0]!]] },
     ],
     phase: 'battle',
@@ -270,7 +338,10 @@ export const SCENARIOS: Record<string, Scenario> = {
   },
 };
 
-export type ScenarioId = keyof typeof SCENARIOS & string;
+export const SCENARIOS: Record<string, Scenario> =
+  Object.assign({}, CORE, ...BATCHES) as Record<string, Scenario>;
+
+export type ScenarioId = string;
 
 export const isScenarioId = (x: unknown): x is ScenarioId =>
   typeof x === 'string' && Object.prototype.hasOwnProperty.call(SCENARIOS, x);

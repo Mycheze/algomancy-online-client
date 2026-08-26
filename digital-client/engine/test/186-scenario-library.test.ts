@@ -40,8 +40,7 @@ import { apply, legalActions } from '../src/apply.ts';
 // incidental.
 import { allCardNames } from '../src/cards/dsl.ts';
 import {
-  OPPONENT, SCENARIOS, YOU, dealScenario, passiveMove, printedClauses, scenarioIds,
-} from '../../server/scenarios.ts';
+  OPPONENT, SCENARIOS, YOU, dealScenario, passiveMove, printedClauses, scenarioIds, BATCHES } from '../../server/scenarios.ts';
 import { analyze, type RoomFile } from '../../server/replay-room.ts';
 import { probe } from '../../server/replay-probe.ts';
 import { summarizeGame } from '../../server/stats.ts';
@@ -55,6 +54,25 @@ const deal = (id?: string): { state: GameState } =>
 const REGISTERED = new Set<string>(allCardNames());
 
 // ── §1 every scenario is still describable ───────────────────────────────
+
+
+/* ══ §0 · NO BATCH SILENTLY EATS ANOTHER ═════════════════════════════ */
+
+test('R218 §0: no two scenario batches share an id', () => {
+  // SCENARIOS is `Object.assign({}, CORE, ...BATCHES)`, so a duplicate key does
+  // not collide — the later spread just WINS, and the earlier author's scenario
+  // vanishes with nothing said. Four people authored into this keyspace in
+  // parallel; two of them noticed the promised guard did not exist and one
+  // wrote their own. This is it, in the file the comment now points at.
+  const summed = BATCHES.reduce((n, b) => n + Object.keys(b).length, 0);
+  const merged = new Set(BATCHES.flatMap(b => Object.keys(b))).size;
+  assert.equal(merged, summed,
+    `${summed - merged} scenario id(s) appear in more than one batch, so a later batch is `
+    + 'overwriting an earlier one and somebody\'s scenario is silently gone. Ids: '
+    + BATCHES.flatMap(b => Object.keys(b))
+        .filter((id, i, all) => all.indexOf(id) !== i).join(', '));
+  assert.ok(summed > 0, 'no batches are registered at all — this guard is watching nothing');
+});
 
 test('§1 every scenario names cards this build actually has', () => {
   let checked = 0;
@@ -107,7 +125,28 @@ test('§1 every scenario deals, and lands where it declares it lands', () => {
     assert.equal(state.decision, null, `'${id}' opens with an unanswered decision`);
     assert.equal(state.winner, null, `'${id}' opens on a decided game`);
     // the board it claims is the board it has
-    assert.deepEqual(state.players[YOU]!.hand, sc.you.hand, `'${id}': your hand`);
+    // R218 — a prologue MAY spend a hand card, and some clauses cannot be
+    // reached without it: a non-{Virus} [Augment] only ever attaches as a
+    // DEPLOYMENT action, so a scenario about its donated text has to play it
+    // before the owner takes over. When it does, the scenario declares what is
+    // left in `handAfterPrologue` and that is asserted instead.
+    //
+    // ⚠ The anti-rot property is kept, not weakened: whatever is declared must
+    // be a SUBSET of what was dealt. A prologue may spend cards; it may never
+    // conjure or draw them, because a drawn card is seed-dependent and the
+    // board the owner opens would stop being the board that was tested.
+    const wantHand = sc.handAfterPrologue ?? sc.you.hand;
+    if (sc.handAfterPrologue) {
+      const dealt = [...sc.you.hand];
+      for (const c of sc.handAfterPrologue) {
+        const i = dealt.indexOf(c);
+        assert.ok(i >= 0,
+          `'${id}': handAfterPrologue lists ${c}, which was never dealt — a prologue may spend `
+          + 'cards but never conjure them, and a drawn card makes the board seed-dependent');
+        dealt.splice(i, 1);
+      }
+    }
+    assert.deepEqual(state.players[YOU]!.hand, wantHand, `'${id}': your hand`);
     assert.deepEqual(state.players[OPPONENT]!.hand, sc.opponent.hand, `'${id}': their hand`);
   }
 });
