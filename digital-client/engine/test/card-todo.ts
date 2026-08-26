@@ -3718,7 +3718,44 @@ export const CARD_TODO: TodoEntry[] = [
       + 'the effect genuinely does nothing. The defect is the silence, not the no-op.',
     proof: null,
     verify: '65-effect-conformance\'s SILENT_KNOWN list is empty for the R25 family.',
-    status: 'open',
+    guards: [
+      '158-silent-region-branches.test.ts::Bloated Manablub',
+      '158-silent-region-branches.test.ts::Blightmound',
+      '158-silent-region-branches.test.ts::Linked Extinction',
+      '158-silent-region-branches.test.ts::Void Memory',
+      '158-silent-region-branches.test.ts::Growing Plague',
+      '158-silent-region-branches.test.ts::Malicious Hardware',
+      '158-silent-region-branches.test.ts::Pestilent Mycelion',
+      '158-silent-region-branches.test.ts::Rotwall',
+      '158-silent-region-branches.test.ts::Verdant Necrophage',
+      '158-silent-region-branches.test.ts::Stellarspore Harvester',
+      '158-silent-region-branches.test.ts::the four grafted R25 riders are the same EffectDef object',
+      '65-effect-conformance.test.ts::no effect resolves into silence',
+    ],
+    closed:
+      'R187 (2026-08-26). Nine EffectDefs got one g.ev(\'info\', ...) guard each, copying the '
+      + '85-silent-branches §9 wording verbatim. NO loop was made to run — every card keeps '
+      + 'identical board behaviour, which is what this entry asked for. SILENT_KNOWN went from '
+      + '14 live entries to ONE (spell:Trench Stalker, `run: () => {}` by construction), so the '
+      + 'R25 family is empty and the entry\'s own verify line is satisfied. '
+      + '⚠ THIS TICKET\'S OWN COUNT WAS WRONG AND THE AGENT CORRECTED IT: the family is '
+      + 'THIRTEEN LABELS OVER NINE EffectDefs, not fifteen effects. Four cards (Bloated '
+      + 'Manablub, Blightmound, Linked Extinction, Void Memory) appear TWICE in SILENT_KNOWN '
+      + 'because 65 labels the ability/spell route and the graft route separately while both '
+      + 'read the SAME OBJECT — one repair closed both labels. "Sixteen" was never on the list. '
+      + 'Test #11 pins the shared-object claim so it cannot silently stop being true. '
+      + '⚠ A SECOND CORRECTION: my brief said to NAME THE REGION. A Region is { owner, '
+      + 'presentSeats } — there is no name field, no naming helper, and the client never labels '
+      + 'a region. Every existing member of this family says "here"; the agent copied the '
+      + 'precedent rather than inventing a region vocabulary across ten card files. '
+      + 'NEW DEFECT FOUND WHILE FIXING: Malicious Hardware was silent on a SECOND branch nobody '
+      + 'had listed — every present opponent having no unit to sacrifice (`picks` empty). '
+      + 'Neither 65\'s drive nor SILENT_KNOWN had it, because 65\'s board happens to give every '
+      + 'present opponent a unit. Fixed here; the general sweep for it is CT-74. '
+      + 'Orchestrator verified independently: deleting Pestilent Mycelion\'s info line reddens '
+      + '158 BY CARD AND PRINTED CLAUSE and reddens 65\'s whole-pool silence sweep; restored, '
+      + 'both green.',
+    status: 'done',
   },
   {
     id: 71,
@@ -3805,6 +3842,49 @@ export const CARD_TODO: TodoEntry[] = [
       + 'fixes one of them and leaves the bot wrong.',
     proof: null,
     verify: 'The Glimpse reminder says what happens to the cards not chosen.',
+    status: 'open',
+  },
+
+  // ── filed 2026-08-26 (round 27) ─────────────────────────────────────────
+  // From the agents' own out-of-scope findings. Those have been the highest-
+  // yield input of several rounds and they only exist because every brief ends
+  // with "report any real defect that is out of scope for you to file".
+  {
+    id: 74,
+    area: 'coverage',
+    severity: 'minor',
+    title: 'A loop that commits a collected list says nothing when the list comes back empty',
+    detail:
+      'CT-70 repaired the R25 "no opponent in this region" family. While inside Malicious '
+      + 'Hardware the R187 agent found a SECOND silent branch that was on no list at all: an '
+      + 'opponent IS present, and every one of them has no unit to sacrifice, so `picks` comes '
+      + 'back empty, the run completes and emits nothing. Ghord and Molten Tormentor already '
+      + 'carry a line for exactly this; Malicious Hardware did not. '
+      + 'The general shape is "a loop that collects picks and then commits them, with no '
+      + 'announcement when the collection is empty" — distinct from CT-70, whose loop never ran '
+      + 'because the region held nobody.',
+    evidence:
+      '⚠ THE REASON IT WAS INVISIBLE IS THE INTERESTING PART: 65-effect-conformance drives every '
+      + 'EffectDef deterministically, but its BOARD happens to give every present opponent a '
+      + 'unit — so the empty-picks branch is never taken and the sweep reports clean. That is a '
+      + 'checker blind spot of the same family as the four found in round 26, and it was found '
+      + 'the same way all of them were: by somebody working nearby, never by the suite.',
+    fix:
+      'Sweep the pool for the shape (collect into a list, commit the list, no else-branch) and '
+      + 'give each an info line. Then decide the harder half: 65\'s drive needs a SECOND board '
+      + 'where the opponents are present but empty-handed, or the sweep keeps being blind to '
+      + 'this whole branch class no matter how many cards are repaired. '
+      + 'Two related weaknesses in the machinery, from the same agent: '
+      + '(a) `SILENT_KNOWN`\'s self-invalidation only catches "no longer silent", never "silent '
+      + 'for a NEW reason" — the reason string is checked for length (> 40) and nothing else, so '
+      + 'a stale reason outlives its truth. '
+      + '(b) 85-silent-branches §11 and 158\'s test #12 now make the SAME house-rule claim about '
+      + 'disjoint card lists, so if the R25 family grows again no single file owns it. Merging '
+      + '§9\'s three cards (Restitution, Vroot, Flzzz) into 158 puts the whole family in one place.',
+    proof: null,
+    verify:
+      'A card whose collected list comes back empty says so, and 65 drives a board that reaches '
+      + 'that branch.',
     status: 'open',
   },
 ];
