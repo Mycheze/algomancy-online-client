@@ -199,7 +199,7 @@ export function redactEvent(ev: EngineEvent, seat: Seat, names: string[]): Engin
     const who = names[ev.data['seat'] as number] ?? 'Opponent';
     return { ...ev, msg: `${who} recycles a card for a dormant resource.` };
   }
-  // R196: `handEntered` NAMED THE OPPONENT'S INCOMING CARDS, IN EVERY PHASE.
+  // R202: `handEntered` NAMED THE OPPONENT'S INCOMING CARDS, IN EVERY PHASE.
   //
   // R179's `E.toHand` emits `{ seat, from, cards: names, card: names[0], n }`
   // for every route a card takes into a hand — a draw, a bin recursion, a

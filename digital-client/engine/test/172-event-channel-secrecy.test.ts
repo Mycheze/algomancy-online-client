@@ -1,4 +1,4 @@
-/* R196 — THE EVENT CHANNEL LEAKED WHAT THE STATE CHANNEL HID.
+/* R202 — THE EVENT CHANNEL LEAKED WHAT THE STATE CHANNEL HID.
  *
  * ── THE DEFECT
  *
@@ -64,7 +64,7 @@ function namesIn(ev: EngineEvent): string[] {
 /* ── §1. the reported defect, per route ──────────────────────────────────── */
 
 for (const from of ['deck', 'bin', 'play', 'stack', 'cache', 'hand'] as const) {
-  test(`R196 §1: a card entering the opponent's hand from the ${from} is not named to the other seat`, () => {
+  test(`R202 §1: a card entering the opponent's hand from the ${from} is not named to the other seat`, () => {
     const h = new Harness(4242);
     const e = new E(h.state);
     const secret = ['Rampart Guardian', 'Retribution Thing'];
@@ -93,7 +93,7 @@ for (const from of ['deck', 'bin', 'play', 'stack', 'cache', 'hand'] as const) {
   });
 }
 
-test('R196 §1: the state channel and the event channel now agree about one hand', () => {
+test('R202 §1: the state channel and the event channel now agree about one hand', () => {
   const h = new Harness(4242);
   const e = new E(h.state);
   const before = e.events.length;
@@ -114,7 +114,7 @@ test('R196 §1: the state channel and the event channel now agree about one hand
 
 /* ── §2. the class: no event may name a card in a zone viewFor hides ─────── */
 
-test('R196 §2: no event names a card in a zone the state channel hides — the invariant, not the instance', () => {
+test('R202 §2: no event names a card in a zone the state channel hides — the invariant, not the instance', () => {
   const h = new Harness(4242);
   const e = new E(h.state);
 

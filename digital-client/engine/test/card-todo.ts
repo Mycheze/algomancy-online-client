@@ -194,7 +194,7 @@ export function stripCode(src: string): string {
   let st: 'code' | 'line' | 'block' | 'sq' | 'dq' | 'tpl' | 're' = 'code';
   let prev = '';   // last significant code char, for the regex/division call
   reClass = false;
-  // R195 / CT-68: `${ … }` INSIDE A TEMPLATE LITERAL IS CODE, NOT STRING, and
+  // R201 / CT-68: `${ … }` INSIDE A TEMPLATE LITERAL IS CODE, NOT STRING, and
   // this is the THIRD time this one function has been caught blind.
   //
   // Without the stack below, a NESTED template inverts parity: the inner
@@ -278,7 +278,7 @@ export function stripCode(src: string): string {
     if (c === "'") { out += ' '; st = 'sq'; continue; }
     if (c === '"') { out += ' '; st = 'dq'; continue; }
     if (c === '`') { out += ' '; st = 'tpl'; continue; }
-    // R195: track brace depth so an interpolation's CLOSING `}` — and no other
+    // R201: track brace depth so an interpolation's CLOSING `}` — and no other
     // `}` — returns to the template it opened inside.
     if (c === '{') braceDepth++;
     if (c === '}') {

@@ -567,14 +567,14 @@ test('§3 the two allowlisted pool claims that CAN be checked are checked', () =
 const SCAN_DIRS = ['src', 'test', 'scripts', 'ui'];
 
 /**
- * ⚠ `ui/` WAS EXCLUDED FOR ONE DAY AND IS SCANNED AGAIN (R195). The exclusion
+ * ⚠ `ui/` WAS EXCLUDED FOR ONE DAY AND IS SCANNED AGAIN (R201). The exclusion
  * was honest and correctly reasoned — `stripCode` mis-parsed nested template
  * literals, `ui/main.ts` has 108 of them, 911 lines of its real code were
  * blanked, and a scan over `ui/` reported 10 dead helpers of which ALL TEN were
  * false (`saveDeck`, `renderNow`, `blockBuilderHtml` and the rest are called
  * from lines the stripper could not see).
  *
- * R195 taught `stripCode` a `${ … }` brace stack, which is the cause those ten
+ * R201 taught `stripCode` a `${ … }` brace stack, which is the cause those ten
  * false positives had. THE EXCLUSION IS THEREFORE ITS OWN EXPIRY CONDITION, and
  * the test below is what enforces that it expired: leaving it in place would
  * have been a waiver outliving its reason, which is the exact failure class

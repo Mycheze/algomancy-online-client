@@ -14060,7 +14060,7 @@ when something does.
 
 ---
 
-## R196 — the event channel leaked what the state channel hid
+## R202 — the event channel leaked what the state channel hid
 
 `server/view.ts` opens by stating its own contract: *"What is hidden from a
 seat … the OPPONENT's hand contents -> count only (card backs)."* `viewFor`
