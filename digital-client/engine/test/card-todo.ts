@@ -3526,7 +3526,32 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'Clicking a playable cached card in the region cache panel plays it, or opens the dialog, '
       + 'according to whatever is decided — and the decision is written down.',
-    status: 'open',
+    guards: [
+      '163-cache-affordance-and-badges.test.ts::a playable cached card plays on the FIRST click',
+      '163-cache-affordance-and-badges.test.ts::an unplayable cache thumb carries no affordance',
+      '163-cache-affordance-and-badges.test.ts::with two live entries the thumb plays the one it was drawn for',
+    ],
+    closed:
+      'R192 (2026-08-26). THE DECISION, as this entry\'s verify line required it to be written '
+      + 'down: a thumb plays on the first click WHEN AND ONLY WHEN the entry is playable right '
+      + 'now; every other thumb, and every other pixel of the panel, still opens the dialog. '
+      + 'It uses literally the same predicate as the hand-side strip '
+      + '(playableCachedIndexes(legalFor(p))), so the two surfaces cannot disagree about which '
+      + 'entry is live. R41 inspection is barely touched — the label, the summary line and every '
+      + 'unplayable thumb still open the zone in one click, and right-click still inspects any '
+      + 'thumb. Augment/graft-only entries and decision-target candidates deliberately keep the '
+      + 'dialog route. '
+      + '⚠⚠ THIS ENTRY\'S OWN PRESCRIBED FIX WAS WRONG, AND WOULD HAVE PASSED THE TEST ANYWAY. '
+      + 'It said "give the thumbs the same data-act=\"cache\" the dialog entries use". The '
+      + 'document click listener asks closest(\'[data-btn]\') FIRST and only then '
+      + 'closest(\'[data-act]\'), and the panel IS a data-btn="cacheopen" ANCESTOR — so a '
+      + 'data-act on a thumb loses to it at any depth in a real browser. The attribute that wins '
+      + 'is a data-btn ON THE THUMB ITSELF (closest matches the element before any ancestor). '
+      + 'And it would have gone GREEN in ui-driver.ts, whose fake closest() has no ancestors and '
+      + 'so has no panel to lose to. That driver blindness is now CT-75. '
+      + 'Orchestrator verified independently: applying the NAIVE version (every thumb gets the '
+      + 'affordance) reddens §2 and §3; restored, 5/5 green.',
+    status: 'done',
   },
   {
     id: 65,
@@ -3558,7 +3583,26 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A badge chip\'s class attribute has single spaces and no trailing space, and every '
       + 'existing badge assertion still passes for a reason it can state.',
-    status: 'open',
+    guards: [
+      '163-cache-affordance-and-badges.test.ts::a badge chip class has single spaces and no trailing space',
+    ],
+    closed:
+      'R192 (2026-08-26). One line, as the entry said: the chip class is now '
+      + "['badge', mod, ctr, cls].filter(Boolean).join(' '). "
+      + 'THE TAIL — which is why this was filed rather than done — came back CLEAN, and it was '
+      + 'MEASURED rather than assumed. All 57 `badge` mentions in engine/test/ were '
+      + 'cross-checked against the 12 cls values the UI actually emits. Exactly FOUR assert '
+      + 'against a badge CLASS ATTRIBUTE, all in 155-hand-affordances (lines 189/220/241/386), '
+      + 'and all four already carry R183\'s [^"]* workaround — so all four match the SAME set of '
+      + 'chips before and after. **None was lying and none needed repair**; 155 is 10/10 green '
+      + 'under both shapes of the emitter. Everything else asserts on Badge OBJECTS or '
+      + 'packBadgeLine\'s pure output, never on a class string. No test repaired, none renamed. '
+      + '⚠ THE SAME DEFECT SURVIVES ONE ELEMENT UP: cardHtml\'s card div emits '
+      + '`class="${cls.join(\' \')}" ${opts.data ?? \'\'} data-prev=…`, a double space when '
+      + '`data` is absent. Left alone deliberately — it churns card-div markup in other agents\' '
+      + 'expected strings mid-round, which is the exact reason this entry existed. Carried as '
+      + 'CT-75.',
+    status: 'done',
   },
   {
     id: 66,
@@ -3885,6 +3929,51 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A card whose collected list comes back empty says so, and 65 drives a board that reaches '
       + 'that branch.',
+    status: 'open',
+  },
+  {
+    id: 75,
+    area: 'client',
+    severity: 'major',
+    title: 'The UI driver cannot see a nested affordance, so a whole class of click bug tests green',
+    detail:
+      'Three findings from the R192 agent, all one mechanism. '
+      + '(a) **`data-btn` beats `data-act` regardless of DOM DEPTH.** The document click listener '
+      + '(ui/main.ts ~4716) asks `closest(\'[data-btn]\')` first and only then '
+      + '`closest(\'[data-act]\')`. So ANY data-act element placed inside a data-btn container is '
+      + 'silently swallowed, however deep. '
+      + '(b) **`test/ui-driver.ts` is STRUCTURALLY BLIND to (a)**, because its fake `closest()` has '
+      + 'no ancestors — there is no container for the inner element to lose to. A test about a '
+      + 'nested affordance therefore PASSES in the driver and is WRONG in the browser. '
+      + '(c) The driver\'s own header comment ASSERTS the opposite: it says having no ancestors '
+      + '"is true of every affordance in the board markup: they carry their own data-btn/data-act". '
+      + 'The regioncache panel is a data-btn affordance CONTAINING card scans and was so before '
+      + 'this round, and the bin panel (data-btn="binopen", regionbinthumbs) is identical in shape.',
+    evidence:
+      '⚠ THIS IS NOT THEORETICAL — IT ALREADY PRODUCED A WRONG TICKET. CARD-TODO #64\'s own `fix` '
+      + 'field prescribed exactly the swallowed shape ("give the thumbs the same data-act=\"cache\" '
+      + 'the dialog entries use"). In a real browser it does nothing. In ui-driver it would have '
+      + 'gone green. The R192 agent found this only by reading the listener rather than trusting '
+      + 'the driver, and shipped a data-btn instead. '
+      + 'Same family as the four blind guards found by the round-26 audit and as stripCode going '
+      + 'blind twice: a CHECKER that reports more sight than it has, found by somebody working '
+      + 'nearby rather than by the suite.',
+    fix:
+      'Two halves, and the first is the one that matters. '
+      + '(1) Give ui-driver.ts a `closest()` WITH ancestors, then re-run every test that drives '
+      + 'it and see which ones were only ever passing because the fake had none. That measurement '
+      + 'IS the deliverable — the count of tests that change is the size of the blind spot. '
+      + '(2) Then decide (a) on its merits: a depth-aware rule (prefer whichever match is NEARER, '
+      + 'e.g. `btn.contains(actEl)`) fixes the whole class, but it changes GLOBAL click routing, '
+      + 'so it needs its own red-checks against every existing affordance. '
+      + 'Also fold in the cardHtml card-div double space from CT-65 (`class="${cls.join(\' \')}" '
+      + '${opts.data ?? \'\'}`), which is the same one-liner and was deliberately deferred to a '
+      + 'quiet tree.',
+    proof: null,
+    verify:
+      'ui-driver.ts resolves closest() through real ancestors; the number of tests that changed '
+      + 'behaviour is recorded; and a data-act nested inside a data-btn either works or fails '
+      + 'loudly.',
     status: 'open',
   },
 ];
