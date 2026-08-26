@@ -410,10 +410,17 @@ test('Spell Excavation: plays a spell from your bin (cost paid); it is ERASED, n
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   decide(h, l => l.startsWith('Luminous Arc'));            // R67: declared at cast
   pass(h); pass(h);                                        // Arc auto-targets the only unit
+  // R198: the excavated spell is a real stack item now, so it gets its own
+  // response window before it resolves — these two passes ARE that window.
+  assert.ok(h.state.stack.some(i => i.card === 'Luminous Arc'),
+    'the bin play is on the stack, respondable, with the Excavation already binned');
+  pass(h); pass(h);
   assert.ok(!ent(h, atk), 'Luminous Arc dealt its 6 — the 2/2 died');
   assert.ok(!h.state.players[D]!.bin.includes('Luminous Arc'), 'unstable: erased, not binned');
   assert.ok(h.state.players[D]!.bin.includes('Spell Excavation'), 'Excavation itself → bin');
-  assert.ok(h.log.some(l => l.includes('unstable — erased')), 'erase logged');
+  // R198: the sentence is `E.dischargeItem`'s now — the R96 stamp rides the
+  // item and the ONE erase site every stack exit shares announces it.
+  assert.ok(h.log.some(l => l.includes('Unstable — it is ERASED')), 'erase logged');
   finishBattle(h);
 });
 
@@ -441,6 +448,7 @@ test('R152: the spell Spell Excavation played reaches the public ERASED pile (R6
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   decide(h, l => l.startsWith('Luminous Arc'));            // R67: declared at cast
   pass(h); pass(h);
+  pass(h); pass(h);                                        // R198: the bin play's own window
   const e = new E(h.state);
   assert.ok(!h.state.players[D]!.bin.includes('Luminous Arc'), 'it left the bin…');
   assert.ok(e.erased(D).includes('Luminous Arc'),
@@ -590,6 +598,11 @@ test('Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for fr
   assert.ok(!dec2.options.some(o => o.label.startsWith('Good Whale')),
     'Good Whale [6] exceeds the remaining budget of 5');
   decide(h, l => l.startsWith('Curio Drifter'));           // cost 1
+  // R198: both free plays are real plays, so both are on the stack and each is
+  // drained through its own priority window (the second pick resolves first).
+  assert.deepEqual(h.state.stack.map(i => i.card), ['Tidal Menace', 'Curio Drifter'],
+    'the two free plays are respondable before they land');
+  pass(h); pass(h); pass(h); pass(h);
   assert.ok(unitsOf(h, D).some(u => u.card === 'Tidal Menace'), 'played free');
   assert.ok(unitsOf(h, D).some(u => u.card === 'Curio Drifter'), 'played free');
   assert.deepEqual(h.state.sharedDeck, [
@@ -628,17 +641,20 @@ test('R146: Tides plays "Erase me." (Suspend) for free → the ERASED pile, neve
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Tides of the Cosmos') });
   pass(h); pass(h);                                        // resolve → pick #1
   decide(h, l => l.startsWith('Suspend'));
-  // Suspend's "target player" is asked inside playInline (no stack item, so no
-  // cast-time declaration) — and then the second Tides pick, which we decline
+  // R198: Suspend's "target player" is DECLARED with the play (it goes on the
+  // stack, so R67 applies to it like any other cast) — and then the second
+  // Tides pick, which we decline
   while (h.state.decision) {
     const dec = h.state.decision;
     const i = dec.options.findIndex(o => o.label === 'Done');
     h.do({ type: 'decide', seat: dec.seat, choice: i === -1 ? 0 : i });
   }
+  assert.ok(h.state.stack.some(i => i.card === 'Suspend'), 'the free play is respondable');
+  pass(h); pass(h);                                        // R198: its own window
   assert.ok(h.log.some(l => l.includes("life total can't change")),
     'the spell really resolved (its first sentence happened)');
   assert.ok(!h.state.players[D]!.bin.includes('Suspend'),
-    '"Erase me." is not swallowed by the inline play — no bin entry');
+    '"Erase me." is not swallowed by the free play — no bin entry');
   assert.ok(new E(h.state).erased(D).includes('Suspend'),
     'it reaches the public erased pile (R65), like the stack route');
   // R40 never enters into it: nothing was binned, so nothing can be trashed
@@ -670,18 +686,19 @@ test('R146: Tides plays an ORDINARY spell for free → the bin, and it is NOT a 
     const i = dec.options.findIndex(o => o.label === 'Done');
     h.do({ type: 'decide', seat: dec.seat, choice: i === -1 ? 0 : i });
   }
+  pass(h); pass(h);                                        // R198: the free play's own window
   assert.ok(h.state.players[D]!.bin.includes('Burn the Blight'), 'the played spell → bin');
   assert.ok(!new E(h.state).erased(D).includes('Burn the Blight'), 'and not erased');
-  // ⚠ THE PINNED ANSWER (R146a). The card left the DECK, never touched the
-  // stack, and still this is NOT a trash: it was PLAYED and it RESOLVED, which
-  // is the side of R40's line that "comes from the stack" is shorthand for.
-  // Reading it the other way would make the same spell trash when Tides played
-  // it and not trash when it was cast from hand. If this assertion is ever
-  // flipped, flip `from: 'stack'` in batch-water-b with it — and Hooba-Pon's
-  // and Insidious Invitation's matching lines, which say the same thing.
+  // ⚠ THE PINNED ANSWER (R146a). The card left the DECK and is NOT a trash: it
+  // was PLAYED and it RESOLVED, which is the side of R40's line that "comes
+  // from the stack" is shorthand for. Reading it the other way would make the
+  // same spell trash when Tides played it and not trash when it was cast from
+  // hand. R198 makes the shorthand literal — the card really does come off the
+  // stack now, and `E.dischargeItem` gives the same answer this card used to
+  // give itself, which is what makes this assertion a control on the move.
   assert.equal(
     h.events.filter(ev => ev.type === 'trashed' && ev.data!['card'] === 'Burn the Blight').length, 0,
-    'a free inline play that RESOLVED is not a trash (R40, R146a)');
+    'a free play that RESOLVED is not a trash (R40, R146a)');
   finishBattle(h);
 });
 

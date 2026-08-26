@@ -14378,3 +14378,134 @@ untouched here. It is now answerable for free — `hits[].by` is the dealing sea
 and a bin-resident card with no column of its own can ask that directly — but
 the card is another agent's this round and reconciling two commits over one
 `when()` is worse than leaving it.
+---
+
+## R198 — a card played mid-resolution is PLAYED, so it goes on the stack; and why that cannot wake the R85 snapshot
+
+The last structural row of the divergence inventory's §2a, and the one it named
+*"structurally the hardest item here"*: four cards play another card as part of
+their own resolution — Hooba-Pon, Insidious Invitation, Tides of the Cosmos,
+Spell Excavation — and the shared helper they use, `playInline`
+(`batch-water-a.ts`), built **no `StackItem` at all**. The played card's effect
+ran in place, inside the resolution that played it. So nobody ever held
+priority between *"you play it"* and *"it resolves"*.
+
+**The premise was measured before anything was changed**, on all four cards
+individually: zero `stackPushed` events naming the played card, an empty stack
+the instant the outer effect finished, and the played card's effect already
+done (the unit in play, the damage dealt). There was no window to be found on
+any of them.
+
+### The ruling
+
+**Playing a card during a resolution is playing a card.** It goes on the stack;
+the resolution that played it finishes; then priority is handed out with the
+played card sitting there, respondable, negatable and visible with its cost
+already paid. That is the Manual's stack, it is what MTG does with a spell cast
+during another spell's resolution, and it is the answer this repo already gave
+once — **R164** made a spell COPY a real stack item for exactly these reasons
+(*"Copy is new spell effect on stack"*), after the same complaint that it was
+"unrespondable, un-negatable, invisible".
+
+Everything about the play that has to be DECLARED is declared before the item
+reaches the stack, so nobody responds to an undeclared spell: its target
+(**R67**), its modal half (**R57**), and — Hooba-Pon's *"into an open position
+in my formation"* — the spot it is played into (**R29**, `formationSpot`, taken
+atomically with the spawn, never `E.placeInFormation` afterwards). Those
+questions are asked exactly where they always were, through the OUTER
+resolution's `ctx.choose`, so they ride the outer suspension; then
+`E.commitItem(item, 'push')` does the rest.
+
+Three things fall out of going through the choke point rather than past it, and
+all three are the printed text getting MORE of what it says:
+
+* **R129's `cardPlayed` fires.** The hand-rolled `spellPlayed` in `playInline`
+  was the only play event a mid-resolution play ever emitted, and it emitted
+  nothing at all for a plain unit. Void Mandible's *"when a card is played"*
+  could not see one.
+* **The `spellsPlayed:` battle ledgers are bumped** (both of them, R166's
+  included), so Origon and Animated Spark count these plays like any other.
+* **`E.dischargeItem` owns the disposal.** The bin, the "Erase me." redirect
+  and R96's Unstable erase are one site now, not three hand-rolled copies in
+  three card files — and they apply on EVERY exit the item can take, which
+  reaches a case no card could reach before: an excavated bin spell answered by
+  Dematerialize is still **erased**, where before a negation had no path to the
+  Unstable stamp at all and the card would have fallen into the bin Spell
+  Excavation says it never returns to.
+
+### Where it deliberately still resolves in place
+
+`inlinePlayGoesToStack` gates the deferral on the same rule `playAtTiming`
+already uses for a card played out of a hand: **battle pushes, everything else
+resolves.** Concretely `phase === 'battle' && priority !== null &&
+!battle.damageStep`.
+
+This is not an approximation left standing — outside a battle priority window
+there is **nobody to hand priority to**. Deployment and the haste step are
+hidden simultaneous segments with no response windows at all; between combat
+sub-steps triggers are special actions and R3 says nobody gets priority. And
+pushing there would not merely be wrong, it would **strand the game**: nothing
+drains a planning-phase stack, and `pumpCombatDamage` refuses to run while the
+stack is non-empty. The gate is narrow on purpose and is asserted in both
+directions.
+
+### How the R85 snapshot hazard is prevented
+
+This is the part that had to be got right, and the reason is on record: a
+`'resolve'` suspension carries a **whole-`GameState` snapshot** and
+`E.resumeResolve` does `this.s = snap`. R154/CT-44 §3 established what that
+means if a second seat is ever allowed to act while such a snapshot is live —
+their action is silently erased by somebody else's answer, taking a life total
+back with it and leaving a played card in neither hand nor bin. A priority
+window is *precisely* "the other player acts". So the window and a live
+snapshot must never overlap.
+
+**They cannot, and the reason is structural rather than defensive: the window
+opens only after the resolution has completely finished.**
+
+1. Every question this play asks is a `ctx.choose` on the OUTER resolution, so
+   it raises the ordinary `'resolve'` suspension — never a nested one, which
+   `GameState.decision`'s single slot could not hold anyway.
+2. While any such question is open, `apply()` refuses every action from **both**
+   seats. `decisionBlocks` blocks the asked seat always; it blocks the other
+   seat outside a hidden segment (a battle decision is never in one); and R154
+   already added the belt for the hidden-segment case — *"a live resolve
+   snapshot blocks the other seat"*. Nothing about that gate was changed, and
+   nothing about it should be relaxed for this.
+3. Priority is handed out by `finishResolutionTail`, which runs **after**
+   `resolveItem` has returned — after the last suspension has been answered and
+   cleared. `state.suspension` and `state.decision` are both `null` at the
+   instant the window opens, and `169-mid-resolution-window` asserts exactly
+   that before every response it drives.
+
+So there is no instant at which a rollback snapshot is live and somebody else
+may act. Nothing done in the window can be rewound by an answer, because by
+then there is no answer outstanding. The hazard test drives it rather than
+arguing it: the seat that did NOT answer last plays a real card inside the
+window, and neither player's life, neither played card, nor the responding card
+is lost or duplicated.
+
+**⚠ The brief for this work asked for the seat-aware gate in `apply.ts` to be
+solved. It did not need solving.** `apply.ts` is untouched by R198: the correct
+design makes the gate irrelevant to the window rather than wrong about it, and
+the seat-awareness R154 already built is what makes the *questions* safe.
+Un-gating anything would have re-opened the hazard R154 §3 exists to close.
+
+### Two consequences worth naming rather than hiding
+
+* **Who speaks first in the window is the INITIATIVE player, not the
+  responder.** `pushItem` hands priority to `other(controller)`, but
+  `finishResolutionTail` then restarts the window from initiative because the
+  stack length it compares against was measured after the resolution that
+  pushed. That is the engine's standing convention for every window
+  (`openPriority` does the same) and both seats get priority before the item
+  resolves, so it is left alone rather than special-cased.
+* **Insidious Invitation's per-seat loop still asks everybody before anybody
+  responds.** "Starting with you, players may play a unit" collects both
+  declarations inside the one resolution and then opens one window per item
+  (the last-played resolves first, as a stack must). A perfectly faithful
+  reading would let the second player respond to the first player's play before
+  declaring their own; that would require the window to open INSIDE the
+  resolution, which is exactly the thing the R85 snapshot makes unsafe. The
+  approximation that remains is an ORDERING one, and it is a much smaller one
+  than "there is no window".

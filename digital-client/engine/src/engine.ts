@@ -8466,6 +8466,14 @@ export class E {
         // reason: one spell resolution is one body arriving, not a body
         // arriving and then changing.
         ...(item.spawnWearing ? { wearing: item.spawnWearing } : {}),
+        // R198: …and INTO THE SPOT it was played into, if it was played into
+        // one. `resolveItem`'s `kind === 'unit'` arm already passes this; the
+        // spell-unit arm did not, so a spell unit played into a formation
+        // (Hooba-Pon's menu offers them — the RAQ that card is quoted under)
+        // would have declared a spot at cast and then arrived beside the line.
+        // Dormant until now: `playsIntoFormation` is on one card and it is a
+        // plain unit, so no item reached here carrying a spot.
+        ...(item.formationSpot ? { spot: item.formationSpot } : {}),
       });
       // R79: a spell UNIT's card does not leave — it arrives. Its viruses ride
       // it in, as the augment mods they always were, which is also what makes

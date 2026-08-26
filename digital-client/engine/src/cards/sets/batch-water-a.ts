@@ -34,7 +34,7 @@
  *    composeParts now materializes the copies as separate parts, each with
  *    its own targets and [cost] — see EffectDef.graftCopies.
  */
-import type { Entity, Seat, TargetRef } from '../../types.ts';
+import type { EffectPart, Entity, FormationSpot, Seat, StackItem, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, isGraftMultiplier, unitRestrict, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
 import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } from './helpers.ts';
@@ -42,21 +42,63 @@ import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } fro
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /**
- * Play a card inline as part of an effect's resolution — Hooba-Pon's and
- * Insidious Invitation's "play a unit from hand", Tides of the Cosmos'
- * "play them now", Spell Excavation's bin play. ⚠ approximation: the played
- * spell resolves immediately inside this resolution (no stack entry, no
- * response window) — the closest the engine offers to a mid-resolution play.
- * Units and spell-unit bodies spawn normally (their triggers fire);
- * 'spellPlayed' is fired so play-a-spell triggers count it.
+ * Play a card as part of an effect's resolution — Hooba-Pon's and Insidious
+ * Invitation's "play a unit from hand", Tides of the Cosmos' "play them now",
+ * Spell Excavation's bin play.
+ *
+ * ── R198: THIS IS A REAL PLAY, AND A REAL PLAY GOES ON THE STACK ─────────
+ *
+ * It used to run the played card's effect IN PLACE, inside the resolution that
+ * played it, so nobody ever held priority between "you play it" and "it
+ * resolves" (divergence inventory §2a, RESPONSE WINDOW MID-RESOLUTION). It
+ * does not any more, wherever there is a priority regime to hand a window to:
+ * the card is built into a `StackItem`, everything about the play that has to
+ * be DECLARED is declared here (its target R67, its mode R57 and — Hooba-Pon —
+ * the formation spot it is played into, R29), and `E.commitItem(…, 'push')`
+ * puts it on the stack exactly as `playAtTiming` does for a card played out of
+ * a hand. The outer resolution finishes, `finishResolutionTail` hands out
+ * priority, and the played card is sitting there: respondable, negatable,
+ * visible, with its cost already paid.
+ *
+ * ⚠ WHERE IT STILL RESOLVES IN PLACE, and why that is not an approximation.
+ * `then` is chosen by the same rule `playAtTiming` uses: **battle pushes,
+ * everything else resolves.** Outside a battle priority window there is nobody
+ * to hand priority to — deployment and the haste step are hidden simultaneous
+ * segments with no response windows at all, and between combat sub-steps
+ * triggers are special actions with no priority (R3). Pushing there would be
+ * worse than wrong: nothing drains a planning-phase stack, and
+ * `pumpCombatDamage` refuses to run while the stack is non-empty, so an item
+ * pushed in either place would strand the game. `inlinePlayGoesToStack` is
+ * that gate and it is deliberately narrow.
+ *
+ * ⚠ HOW THIS CANNOT REPRODUCE THE R85 SNAPSHOT HAZARD. A `'resolve'`
+ * suspension carries a whole-`GameState` snapshot and `E.resumeResolve` does
+ * `this.s = snap`, so anything a SECOND seat landed while that question was
+ * open would be erased by the answer (130-seat-aware-gate §3). Nothing here is
+ * ever exposed to that, and the reason is structural rather than defensive:
+ * **the window opens only after the resolution has completely finished.** The
+ * questions below are asked through `ctx.choose`, which rides the OUTER
+ * suspension, and while any of them is open `apply()` refuses every action
+ * from both seats (`decisionBlocks`: a battle decision is never inside a
+ * hidden segment, and a live resolve-snapshot blocks the other seat even in
+ * one). Priority is handed out by `finishResolutionTail`, which runs after
+ * `resolveItem` has RETURNED — after the last suspension was answered and
+ * cleared. There is no instant at which a snapshot is live and somebody else
+ * may act, so nothing done in the window can be rewound by an answer. No gate
+ * in `apply.ts` had to change for this, and none should be relaxed for it.
  *
  * `seat` is who is doing the playing (Insidious Invitation walks every seat in
- * turn); it defaults to the effect's controller. `outcome` is 'unit' (a plain
- * unit body), 'ok' (a spell, or a spell unit whose spell part resolved) or
- * 'fizzled' (a targeted spell with no candidates — the body never arrives).
+ * turn); it defaults to the effect's controller. `outcome` is:
+ *  · `'stacked'` — R198's path. The card is ON THE STACK and the ENGINE owns
+ *    everything from here: its resolution, its R5 fizzle, and where its card
+ *    goes afterwards (`dischargeItem` — a bin, an "Erase me.", or the R96
+ *    Unstable erase). A caller must not bin it, place it or erase it.
+ *  · `'unit'` (a plain unit body), `'ok'` (a spell, or a spell unit whose
+ *    spell part resolved) or `'fizzled'` (a targeted spell with no candidates
+ *    — the body never arrives): the in-place path, unchanged.
  * `unit` is the spawned body when there is one, so a caller that has somewhere
- * to put it (Hooba-Pon's formation) can. The CALLER decides where a spell card
- * goes afterwards (bin / erased).
+ * to put it (Hooba-Pon's formation) can. Never set on `'stacked'`, where the
+ * body does not exist yet and the spot was declared with the play instead.
  *
  * It lives in THIS file, not helpers.ts, because it is card behaviour rather
  * than a shared idiom, and in the water-A batch because index.ts imports this
@@ -64,7 +106,7 @@ import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } fro
  * registration order (= deck order) untouched.
  */
 export type InlinePlay = {
-  outcome: 'unit' | 'ok' | 'fizzled';
+  outcome: 'unit' | 'ok' | 'fizzled' | 'stacked';
   unit?: Entity;
   /**
    * R146(b): the resolving effect raised **"Erase me."** (`ctx.eraseSelf()`).
@@ -79,9 +121,121 @@ export type InlinePlay = {
    */
   eraseSelf?: boolean;
 };
+
+/** What a caller may ask a mid-resolution play to carry onto its stack item. */
+export type InlinePlayOpts = {
+  /**
+   * R96: the play makes the card {Unstable} — Spell Excavation's bin play,
+   * *"it will be erased, not binned"*. On the stack that is a STAMP, read by
+   * the one predicate every stack exit shares (`E.itemIsUnstable`), so the
+   * erase happens at `dischargeItem` on resolution, on an R5 fizzle and on a
+   * NEGATION alike. That last one is new and is the point: an excavated spell
+   * answered by Dematerialize is now erased rather than falling into a bin the
+   * card says it never reaches.
+   */
+  unstable?: boolean;
+  /**
+   * R29: the card is played INTO the player's formation (Hooba-Pon's "into an
+   * open position in my formation"), so WHERE is part of the play and is
+   * declared here, before anyone may respond — never afterwards, which is what
+   * `E.placeInFormation` is for and why the two are different rules.
+   */
+  intoFormation?: boolean;
+};
+
+/**
+ * R198 — is there a priority window to hand this play to?
+ *
+ * The same test `playAtTiming` makes, written once: a card played during
+ * BATTLE goes on the stack ('push'), and a card played anywhere else resolves
+ * where it stands ('resolve'). `priority !== null` and the damage-step
+ * exclusion are the two ways a battle can be running with no window open — a
+ * combat sub-step (R3: triggers there are special actions) and the interval
+ * `advanceBattleStep` nulls priority in. Pushing in either would strand the
+ * item: `pumpCombatDamage` will not run with a non-empty stack, and nothing
+ * outside `settle`'s deployment drain resolves one.
+ */
+export const inlinePlayGoesToStack = (g: E): boolean =>
+  g.s.phase === 'battle' && g.s.priority !== null && !g.s.battle?.damageStep;
+
+/**
+ * R198's push path: declare the play, then put it on the stack.
+ *
+ * Everything asked here is asked with `ctx.choose`, so it rides the OUTER
+ * resolution's suspension exactly as the in-place path's questions always did
+ * — no nested `'cast'` suspension, which `GameState.decision`'s single slot
+ * could not hold anyway. That is also what keeps R35/R57/R67's rule true for a
+ * mid-resolution play: X, mode, target and formation spot are all fixed before
+ * the opponent sees the item, so nobody responds to an undeclared spell.
+ *
+ * NOT hand-rolled past the choke point: `E.commitItem` fires 'spellPlayed' and
+ * R129's 'cardPlayed', bumps the two `spellsPlayed:` ledgers, dispatches
+ * 'targeted' and pushes. The in-place path fires a hand-rolled 'spellPlayed'
+ * and none of the rest, which is a second divergence this closes on the way
+ * past — a mid-resolution play is a play, and Void Mandible's "when a card is
+ * played" could never see one.
+ */
+const pushInlinePlay = (
+  g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, opts: InlinePlayOpts,
+): InlinePlay => {
+  const def = getCard(name);
+  const eff = def.spellEffect;
+  const parts: EffectPart[] = eff ? [{ effectKey: `spell:${name}`, targets: [] }] : [];
+  const part = parts[0];
+  if (eff?.targets && part) {
+    // R67: declared as the card is played, like every other target. An empty
+    // candidate list is NOT special-cased into an early bin here — the item is
+    // pushed with no target and `resolveItem`'s R5 branch fizzles it and
+    // discharges its card, which is the same destination the caller used to
+    // hand-roll plus a real 'fizzled' event for the reader.
+    const cands = g.targetCandidates(eff.targets, ctx.region, undefined, seat);
+    if (cands.length) {
+      part.targets = [(cands.length === 1 ? cands[0]! : ctx.choose(`${key}:t`, {
+        kind: 'electricPath', seat, prompt: eff.targets.prompt,
+        options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
+      })) as TargetRef];
+    }
+  }
+  if (eff && part) {
+    // R57: the modal half, declared before the item is respondable — which is
+    // what collectModes does for a card played from a hand, and what the
+    // in-place path could only approximate.
+    const mode = inlineMode(g, ctx, eff, `${key}:mode`, { card: name, targets: part.targets });
+    if (mode !== undefined) part.mode = mode;
+  }
+  let spot: FormationSpot | undefined;
+  if (opts.intoFormation && (def.kind === 'unit' || def.kind === 'spellUnit')) {
+    const slots = g.formationSlots(seat);
+    if (slots.length) {
+      // BL-24: kind 'formationSlot', never 'electricPath' — an electricPath's
+      // numeric values are entity ids by contract (R4) and the client pings
+      // them on the board. These are placements. Same kind, and the same
+      // opaque `FormationSpot` values, that R29's own cast-window ask uses.
+      spot = (slots.length === 1 ? slots[0]!.spot : ctx.choose(`${key}:spot`, {
+        kind: 'formationSlot', seat,
+        prompt: `${ctx.sourceName}: where does ${name} join the formation?`,
+        options: slots.map(s => ({ label: s.label, value: s.spot })),
+      })) as FormationSpot;
+    }
+  }
+  // The id is taken LAST, after every question: `ctx.choose` throws, R85 rewinds
+  // `nextId` to the part boundary and the part replays from the top, so an id
+  // spent before a question is spent again on every attempt.
+  const item: StackItem = {
+    id: g.s.nextId++, kind: def.kind, card: name, label: name,
+    controller: seat, region: ctx.region, negated: false, parts,
+    ...(spot ? { formationSpot: spot } : {}),
+    ...(opts.unstable ? { unstable: true } : {}),
+  };
+  g.commitItem(item, 'push');
+  return { outcome: 'stacked' };
+};
+
 export const playInline = (
   g: E, ctx: EffectCtx, name: string, key: string, seat: Seat = ctx.controller,
+  opts: InlinePlayOpts = {},
 ): InlinePlay => {
+  if (inlinePlayGoesToStack(g)) return pushInlinePlay(g, ctx, name, key, seat, opts);
   const def = getCard(name);
   if (def.kind === 'unit') {
     return { outcome: 'unit', unit: g.spawnUnit(seat, name, ctx.region) };
@@ -550,9 +704,15 @@ card('Hooba-Pon', {
         if (name === undefined) { g.ev('info', 'Hooba-Pon: declined — nothing is played.'); return; }
         hand.splice(pick, 1);
         g.payCard(seat, name);
-        const played = playInline(g, ctx, name, 'hoobaPlay', seat);
+        // R198 `intoFormation`: in battle this play goes on the stack, so
+        // "into an open position in my formation" is declared WITH the play
+        // (R29's `formationSpot`, taken atomically with the spawn) rather than
+        // chosen afterwards — the same distinction `E.placeInFormation`'s own
+        // note draws, and the same UFAB report: a card played into the line was
+        // never in the region to be answered.
+        const played = playInline(g, ctx, name, 'hoobaPlay', seat, { intoFormation: true });
         if (played.unit) g.placeInFormation(played.unit, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon' });
-        else {
+        else if (played.outcome === 'fizzled') {
           // a spell unit whose spell part found no target: no body, and the
           // card is binned like any fizzled spell unit.
           // R146(b): no `eraseSelf` check here, and that is not an oversight —

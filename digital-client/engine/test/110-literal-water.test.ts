@@ -43,12 +43,19 @@ test('Hooba-Pon: a SPELL UNIT is a unit — it is offered, its spell part happen
     `the spell unit in hand is offered as "a unit"; menu was [${offered(h)}]`);
   pick(h, 0);
 
+  // R198 reordered the two questions, and the order is the ruling: the spot is
+  // part of the PLAY (R29), so it is declared before the spell part resolves —
+  // the card then goes on the stack and the opponent gets their window.
+  pick(h, { kind: 'behind', unit: hooba });            // the open back slot
+  assert.ok(h.state.stack.some(i => i.card === 'Spawntender'),
+    'the played spell unit is ON THE STACK, respondable, before it resolves');
+  pass(h); pass(h);
+
   // 2. "the spell part happens" — Spawntender's spell half makes an 8/8
   const eights = unitsOf(h, A).filter(u => u.card === 'Unit Token' && u.tokenStats?.[0] === 8);
   assert.equal(eights.length, 1, "the spell unit's SPELL part resolved (8/8 token)");
 
   // 3. "…and if it resolves, the unit will spawn into formation"
-  pick(h, 1);                                          // R75: the open back slot
   const col = h.state.battle!.columns[0]!;
   assert.equal(col.length, 2, 'the body joined my formation');
   assert.equal(ent(h, col[1]!)!.card, 'Spawntender', 'and it is the spell unit body');
@@ -77,14 +84,18 @@ test('Insidious Invitation: "play a unit from hand" lets each player play a SPEL
   const mine = h.state.players[A]!.hand.indexOf('Spawntender');
   assert.ok(offered(h).includes(String(mine)), 'A is offered their spell unit');
   pick(h, mine);
-  assert.ok(unitsOf(h, A).some(u => u.card === 'Spawntender'), "A's spell-unit body arrived");
-  assert.ok(unitsOf(h, A).some(u => u.card === 'Unit Token' && u.tokenStats?.[0] === 8),
-    "…and its spell part resolved (the 8/8)");
+  // R198: the play is on the stack now, so the body has not arrived yet — what
+  // the opponent is looking at while THEY are asked is the declared play.
+  assert.ok(h.state.stack.some(i => i.card === 'Spawntender'), "A's play is on the stack");
 
   assert.equal(h.state.decision!.seat, D, 'then the opponent');
   const theirs = h.state.players[D]!.hand.indexOf('Oracle of Foretelling');
   assert.ok(offered(h).includes(String(theirs)), 'D is offered theirs too');
   pick(h, -1);                                         // D declines — the offer is the point
+  pass(h); pass(h);                                    // the window, then A's play resolves
+  assert.ok(unitsOf(h, A).some(u => u.card === 'Spawntender'), "A's spell-unit body arrived");
+  assert.ok(unitsOf(h, A).some(u => u.card === 'Unit Token' && u.tokenStats?.[0] === 8),
+    "…and its spell part resolved (the 8/8)");
   finishBattle(h);
 });
 
@@ -101,7 +112,8 @@ test('Hooba-Pon: a plain unit still plays into the formation exactly as before',
   h.do({ type: 'declareAttack', seat: A, columns: [[hooba]] });
   pass(h); pass(h);
   pick(h, h.state.players[A]!.hand.indexOf('Hooba-Pon'));
-  pick(h, 1);
+  pick(h, { kind: 'behind', unit: hooba });            // R198: declared with the play
+  pass(h); pass(h);                                    // …and answered on the stack
   const col = h.state.battle!.columns[0]!;
   assert.equal(col.length, 2);
   assert.equal(ent(h, col[1]!)!.card, 'Hooba-Pon');

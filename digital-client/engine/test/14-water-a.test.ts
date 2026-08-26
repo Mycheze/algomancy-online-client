@@ -385,7 +385,12 @@ test('Hooba-Pon: attack → you may pay for a unit from hand into my formation',
   h.do({ type: 'declareAttack', seat: A, columns: [[hooba]] });
   pass(h); pass(h);                                         // resolve the trigger
   pick(h, h.state.players[A]!.hand.indexOf('Hooba-Pon'));   // play the second Hooba-Pon
-  pick(h, 1);                                               // R75: and where it goes — behind me
+  // R198: where it goes is declared WITH the play now — an R29 `FormationSpot`
+  // on the stack item, not R75's post-spawn slot index — and the play itself
+  // goes on the stack, so the two passes below are the response window the
+  // opponent is owed before the body arrives.
+  pick(h, { kind: 'behind', unit: hooba });                 // behind me
+  pass(h); pass(h);
   const col = h.state.battle!.columns[0]!;
   assert.equal(col.length, 2, 'played into the open back position of my column');
   assert.equal(ent(h, col[1]!)!.card, 'Hooba-Pon');
@@ -413,6 +418,9 @@ test('Insidious Invitation: draw, then each player (you first) may play a unit a
   pick(h, h.state.players[A]!.hand.indexOf('Echo of Despair'));
   assert.equal(h.state.decision!.seat, D, 'then the opponent');
   pick(h, h.state.players[D]!.hand.indexOf('Hooba-Pon'));
+  // R198: both plays are on the stack (D's above A's, since D played second),
+  // and each is drained by its own priority window — which is the whole change.
+  pass(h); pass(h); pass(h); pass(h);
   assert.ok(unitsOf(h, A).some(u => u.card === 'Echo of Despair'), 'A played a deploy-timing unit in battle');
   assert.ok(unitsOf(h, D).some(u => u.card === 'Hooba-Pon'), 'D did too');
   assert.equal(h.state.players[A]!.resources.filter(r => r.state === 'open').length, 0, 'A paid 1 + 4');

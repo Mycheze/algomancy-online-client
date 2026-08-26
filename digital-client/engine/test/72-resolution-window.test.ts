@@ -25,7 +25,7 @@ import { Harness } from '../src/harness.ts';
 import { apply, replay } from '../src/apply.ts';
 import { registerSynthetic, type Printed } from '../src/cards/dsl.ts';
 import type { GameState, Seat } from '../src/types.ts';
-import { finishBattle, spawn, toDeployment, toNextBattle, unitsOf } from './util.ts';
+import { finishBattle, pass, spawn, toDeployment, toNextBattle, unitsOf } from './util.ts';
 
 const openMana = (s: GameState, seat: Seat): number =>
   s.players[seat]!.resources.filter(r => r.state === 'open').length;
@@ -62,17 +62,26 @@ test('R85 Insidious Invitation: at the OPPONENT’s prompt, the caster’s play 
   const events = answer(h, 'Echo of Despair');
 
   // ── the SECOND question: everything the caster just did is public.
+  //
+  // ⚠ R198 changed WHAT there is to look at and did not weaken the report. The
+  // play goes on the STACK now — that is the whole ruling, the opponent is
+  // owed a window before it lands — so at their prompt they are looking at a
+  // declared, paid-for stack item instead of a body already in the region. The
+  // complaint this file exists for ("I couldn't see ANYTHING until I
+  // declined") is answered by the same three facts it always was: the play is
+  // public, the payment is public, the card has left the hand.
   assert.equal(h.state.decision!.seat, D, 'the opponent is asked next');
-  assert.ok(unitsOf(h, A).some(u => u.card === 'Echo of Despair'),
-    'THE REPORT: the caster’s unit is in play while the opponent is being asked');
+  assert.ok(h.state.stack.some(i => i.card === 'Echo of Despair'),
+    'THE REPORT: the caster’s play is on the table while the opponent is being asked');
   assert.equal(openMana(h.state, A), paidBefore - 4,
     '…and what they PAID for it is visible too (Echo of Despair is b/4)');
   assert.equal(h.state.players[A]!.hand.length, 1, 'the card left their hand');
-  assert.ok(events.some(e => e.type === 'spawned' && e.data?.['card'] === 'Echo of Despair'),
-    'the spawn was published with the opponent’s prompt, not held until the end');
+  assert.ok(events.some(e => e.type === 'stackPushed' && e.msg.includes('Echo of Despair')),
+    'the play was published with the opponent’s prompt, not held until the end');
 
   // ── and the resolution still finishes exactly as it always did.
   answer(h, 'Hooba-Pon');
+  pass(h); pass(h); pass(h); pass(h);                       // R198: one window per play
   assert.ok(unitsOf(h, D).some(u => u.card === 'Hooba-Pon'), 'D played theirs too');
   assert.equal(openMana(h.state, A), 0, 'A paid 1 + 4');
   assert.equal(openMana(h.state, D), 0, 'D paid 2');
@@ -96,9 +105,14 @@ test('R85 Insidious Invitation: the replay narrates nothing twice', () => {
   h.do({ type: 'passPriority', seat: h.state.priority! });
   answer(h, 'Echo of Despair');
   answer(h, 'Hooba-Pon');
+  pass(h); pass(h); pass(h); pass(h);                       // R198: one window per play
 
   // The part ran three times over (once per suspension plus the finish) and
   // re-emitted its whole prefix each time. Exactly one of each line survives.
+  // R198 moved the spawns OUT of the replayed part and onto the stack, which
+  // is a stronger form of the same guarantee — but the line that is now
+  // re-emitted per attempt is the PLAY, so that is counted too.
+  assert.equal(lines(h, 'Echo of Despair → stack.'), 1, 'the caster’s play was announced once');
   assert.equal(lines(h, 'spawns Echo of Despair'), 1, 'the caster’s unit spawned once in the log');
   assert.equal(lines(h, 'spawns Hooba-Pon'), 1, 'the opponent’s did too');
   assert.equal(h.logTypes.slice(from).filter(t => t === 'draw').length, 1,

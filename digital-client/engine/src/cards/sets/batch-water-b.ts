@@ -393,7 +393,13 @@ card('Spell Excavation', {
       }
       g.removeFromBin(ctx.controller, t.binCard.index, 'played');   // R124
       g.payCard(ctx.controller, name);
-      playInline(g, ctx, name, 'x');
+      // R198: in battle this play goes on the STACK, and the R96 Unstable
+      // stamp goes with it — `E.dischargeItem` then owns the erase on every
+      // exit the item can take (resolution, an R5 fizzle, a NEGATION), which
+      // is more of the printed sentence than this site could reach: an
+      // excavated spell answered by Dematerialize used to fall into the bin
+      // the card says it never returns to.
+      const played = playInline(g, ctx, name, 'x', ctx.controller, { unstable: true });
       // unstable: the spell card is erased instead of returning to a bin.
       // R146(b): the returned `eraseSelf` is deliberately not read — this card
       // never bins what it played in the first place (R96: a bin play is
@@ -409,8 +415,15 @@ card('Spell Excavation', {
       // was "there's currently no way to view erased cards". A real 'erased'
       // event with `seat` + `card` is all it takes, and it is the same shape
       // every other erase site uses.
-      g.ev('erased', `${name} was unstable — erased instead of binned.`,
-        { seat: ctx.controller, card: name });
+      //
+      // R198: …and only on the in-place path. `'stacked'` means the item is on
+      // the stack wearing the stamp, so announcing the erase here would file
+      // the card on the public pile before it has resolved — and a second time
+      // when it does.
+      if (played.outcome !== 'stacked') {
+        g.ev('erased', `${name} was unstable — erased instead of binned.`,
+          { seat: ctx.controller, card: name });
+      }
     },
   },
 });
@@ -594,8 +607,16 @@ card('Tides of the Cosmos', {
         const r = playInline(g, ctx, name, `play${i}`);
         // a played spell card is binned as normal; a fizzled spell unit never
         // spawns and is binned too; units stay in play
+        //
+        // ⚠ R198: NONE of that is this card's business once the play is on the
+        // stack. `'stacked'` means `E.dischargeItem` owns the disposal — and it
+        // reaches the SAME two destinations by the same two rules (the R146(b)
+        // "Erase me." branch and `toBin(…, 'stack')`, i.e. R146(a)'s pinned
+        // not-a-trash), so the answer below is unchanged and only the hand
+        // that gives it moved.
         const kind = getCard(name).kind;
-        if (kind === 'spell' || (kind === 'spellUnit' && r.outcome === 'fizzled')) {
+        if (r.outcome !== 'stacked'
+          && (kind === 'spell' || (kind === 'spellUnit' && r.outcome === 'fizzled'))) {
           if (r.eraseSelf) {
             // R146(b): the spell printed "Erase me." and said so as it
             // resolved. Same shape (and same log sentence) as the eraseSelf

@@ -121,7 +121,12 @@ test('BL-24 Hooba-Pon: the pay question, THEN the slot question, and the paid un
   assert.equal(h.state.decision?.kind, 'payOrDecline', 'first: whether (and what) to pay for');
   pick(h, h.state.players[A]!.hand.indexOf('Hooba-Pon'));
   expectSlotAsk(h, A, 'Hooba-Pon');
-  pick(h, 1);                                         // behind me
+  // R198: still kind 'formationSlot' — which is what this file is about — but
+  // the VALUES are R29 `FormationSpot`s now rather than R75 slot indexes,
+  // because the answer is stamped on the stack item and taken at the spawn.
+  // Both shapes are opaque to the client, which is exactly BL-24's point.
+  pick(h, { kind: 'behind', unit: pon });             // behind me
+  pass(h); pass(h);                                   // the play's own response window
   const col = h.state.battle!.columns[0]!;
   assert.equal(col.length, 2, 'the paid-for unit joined the column');
   assert.equal(ent(h, col[1]!)!.card, 'Hooba-Pon');

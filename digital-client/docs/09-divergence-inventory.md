@@ -64,6 +64,60 @@ gone.
 > so this question is irrelevant"* — the scope of a layer is read off the
 > printed text of the card that DEFINES it).
 
+> ## ⚠⚠⚠ ROUND 27 (2026-08-26) — RESPONSE WINDOW MID-RESOLUTION IS CLOSED
+>
+> Read this before the two blocks below it. As always, the tables themselves are
+> left exactly as written so the original reasoning stays readable; closure is
+> recorded here.
+>
+> **§2a `RESPONSE WINDOW MID-RESOLUTION` CLOSED (R198).** The row was right on
+> every fact and the premise was re-measured per card before anything changed —
+> Hooba-Pon, Insidious Invitation, Tides of the Cosmos and Spell Excavation each
+> produced zero `stackPushed` events for the card they played, an empty stack
+> the instant the outer effect finished, and the played card's effect already
+> done. `playInline` now builds a real `StackItem`, declares the play's target
+> (R67), mode (R57) and formation spot (R29) through the OUTER resolution's
+> `ctx.choose`, and hands it to `E.commitItem(…, 'push')`; the resolution
+> finishes and `finishResolutionTail` opens the window. Guarded by
+> `169-mid-resolution-window.test.ts` (7 tests, one per card plus the gate and
+> the hazard), every one red-checked against the old behaviour.
+>
+> **The row said the engine "has no pause-resume seam". It does not need one.**
+> The seam that was missing is not "suspend a resolution and hand out priority
+> in the middle of it" — that shape is UNSAFE at this commit and would have
+> re-opened the R85 hazard R154 §3 closed (a `'resolve'` suspension carries a
+> whole-`GameState` snapshot; `resumeResolve` does `this.s = snap`). The seam
+> that was missing is **defer the play to the stack and let the resolution
+> finish**, which is what R164 had already built for a spell copy. The window
+> therefore never coexists with a live snapshot, and **`apply.ts` is untouched**
+> — the seat-aware gate did not need widening and must not be widened for this.
+>
+> **Three corrections to the row, and one to the brief that drove it:**
+> - The helper is at `batch-water-a.ts:82` as stated, but the four callers all
+>   had to change too (a `'stacked'` outcome the caller must not bin, place or
+>   erase). Spell Excavation's body was touched in exactly two places, both
+>   inside its `run`.
+> - `E.afterParts` never passed `formationSpot` to a SPELL UNIT's body, so a
+>   spell unit played into a formation would have declared a spot and then
+>   arrived beside the line. Dormant until now (`playsIntoFormation` is on one
+>   card and it is a plain unit); one line in `engine.ts`.
+> - The apply.ts gate is **already seat-aware** (R154's `decisionBlocks`), and
+>   already blocks the other seat specifically when a resolve-snapshot is live.
+>   "A global gate that refuses actions from EITHER seat" describes the
+>   pre-R154 engine.
+>
+> **What is left in §2 after this:** `PER-COLUMN FACE DAMAGE` ·
+> `VARIABLE-COST ACTIVATED ABILITIES` · `PREDICTION CAP` ·
+> `UNTIL-REGROUP PLAY WINDOW` · `MULTIPLAYER ATTRIBUTION`.
+>
+> **Two approximations R198 leaves standing, deliberately, and names in the
+> ruling rather than hiding:** the window starts with the INITIATIVE player
+> rather than the responder (the engine's standing convention for every window,
+> and both seats get priority before the item resolves); and Insidious
+> Invitation still collects every seat's declaration before opening any window,
+> so the second player cannot respond to the first player's play before making
+> their own. Both are ORDERING, not absence.
+
 > ## ⚠⚠ WAVE 2 OF ROUND 26 (same day) — §2 IS NEARLY EMPTY NOW
 >
 > Read this AFTER the wave-1 block below it. Between them they supersede most of
