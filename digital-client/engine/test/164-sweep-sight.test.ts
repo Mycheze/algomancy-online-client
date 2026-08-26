@@ -54,31 +54,36 @@ const ENGINE_TS = path.join(ENGINE, 'src', 'engine.ts');
  * know, so the inner opening backtick reads as the outer's CLOSING one and
  * string/code parity inverts for everything up to the following backtick.
  *
- * This is pinned as a CHARACTERISATION, not a wish: the fix belongs in
- * `card-todo.ts`, which is reserved to the orchestrator. When it lands, this
- * test fails, and the right response is to rewrite it as the correct
- * expectation — not to widen it. §C is what says whether the hole is currently
- * hiding anything.
+ * ✔ CLOSED THE SAME DAY IT WAS FOUND (R195). This test was written as a
+ * CHARACTERISATION of the hole, with instructions to rewrite it as the correct
+ * expectation once `card-todo.ts` learned `${ … }` — which is what happened
+ * within the hour, and this is that rewrite. The instruction worked exactly as
+ * designed: the test failed, said which of the two possible causes it was, and
+ * named the follow-up. Keep writing them that way.
  */
-test('§A stripCode is blind to a NESTED template literal — the parity inverts', () => {
+test('§A stripCode reads `${ … }` inside a template literal as CODE (R195)', () => {
   const src = 'const a = `x ${ f(`y`) } z`;';
   const out = stripCode(src);
   assert.equal(out.length, src.length, 'stripCode must stay length-preserving');
 
-  // What a CORRECT stripper gives back as code: `f(` and `)`, with `x `, `y`
-  // and ` z` blanked. What stripCode gives instead, measured 2026-08-26: the
-  // inner opening backtick closes the outer literal, so `f(` is swallowed as
-  // string and the string body `y` is handed back as CODE. Exactly inverted.
-  assert.equal(out, 'const a =          y       ;',
-    'stripCode\'s handling of a nested template literal has changed. If the `tpl` state '
-    + 'has learned about `${ … }`, that is the fix — rewrite this test to the correct '
-    + 'expectation and delete the ui/ exclusion in 147-comment-conformance.test.ts §4. '
-    + 'If it has changed some OTHER way, a third stripper regression is in flight.');
+  // The CORRECT answer, and the one it now gives: `f(` and `)` survive as code;
+  // `x `, the inner body `y` and ` z` are blanked as string.
+  //
+  // Before R195 it returned 'const a =          y       ;' — exactly inverted,
+  // `f(` swallowed and the string body `y` promoted to code — because the inner
+  // opening backtick was read as the OUTER literal's closing tick.
+  assert.equal(out, 'const a =       f(   )     ;',
+    'stripCode\'s handling of a nested template literal has changed AGAIN. R195 taught '
+    + 'the `tpl` state a `${ … }` brace stack; if this no longer holds, a FOURTH stripper '
+    + 'regression is in flight and every sweep in the repo is downstream of it.');
 
-  // and the consequence that matters: comment text arriving as code
-  const withComment = 'const a = `x ${ f(`y`) } z`;\nconst b = `p ${ g(`q`) } r`;';
-  assert.ok(stripCode(withComment).includes('y'),
-    'the inner template body is handed back as code — that is the whole hole');
+  // and the consequence that mattered: the inner body must NOT come back as code
+  const two = 'const a = `x ${ f(`y`) } z`;\nconst b = `p ${ g(`q`) } r`;';
+  const stripped = stripCode(two);
+  assert.ok(!/\by\b/.test(stripped) && !/\bq\b/.test(stripped),
+    'an inner template body handed back as code is the whole hole R195 closed');
+  assert.ok(stripped.includes('f(') && stripped.includes('g('),
+    'and the code around it must survive — swallowing `f(` was the other half');
 });
 
 // ───────────── §B · plant a violation, count what is seen ─────────────────
@@ -139,18 +144,17 @@ test('§B a violation planted anywhere in engine.ts is seen by all three whole-f
       + 'any green run of 90-coverage-census.');
   }
 
-  // ⚠ THE ONE PLACE A VIOLATION IS STILL INVISIBLE, stated rather than hidden:
-  // inside a `${ … }` interpolation. `stripCode` blanks a template literal
-  // whole, interpolations included, so a bin write or a controller assignment
-  // written there is not read by ANY of the three sweeps. Nothing in src/ does
-  // this today (§C measures it), and the shape is unnatural enough that saying
-  // so is cheaper than closing it — but it is a hole, and an unwritten hole is
-  // how the last two got their long lives.
+  // ✔ AND THE INTERPOLATION IS NO LONGER A HOLE (R195). This block used to
+  // assert the opposite — that a bin write or controller assignment inside a
+  // `${ … }` was invisible to all three sweeps — and said so out loud rather
+  // than hiding it, which is why it took under an hour to close once measured.
+  // `${ … }` is code, so a violation written there is read like any other.
   const hidden = stripCode('const s = `${ (e.player(0).bin.push(n), u.controller = 1) }`;');
   for (const { what, re } of SWEEP_PATTERNS.slice(1)) {
-    assert.ok(!re.test(hidden),
-      `${what} can now see inside a \`\${ … }\` interpolation — that is an IMPROVEMENT, and `
-      + 'this note in 164-sweep-sight.test.ts is what needs updating, not the sweep.');
+    assert.ok(re.test(hidden),
+      `${what} can no longer see inside a \`\${ … }\` interpolation. R195 made an `
+      + 'interpolation code; if this reddens, that has been undone and a real bypass can '
+      + 'hide there again — which is exactly how a live bin.push sat unseen in src/rng.ts.');
   }
 });
 

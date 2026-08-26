@@ -194,6 +194,34 @@ export function stripCode(src: string): string {
   let st: 'code' | 'line' | 'block' | 'sq' | 'dq' | 'tpl' | 're' = 'code';
   let prev = '';   // last significant code char, for the regex/division call
   reClass = false;
+  // R195 / CT-68: `${ … }` INSIDE A TEMPLATE LITERAL IS CODE, NOT STRING, and
+  // this is the THIRD time this one function has been caught blind.
+  //
+  // Without the stack below, a NESTED template inverts parity: the inner
+  // opening backtick reads as the OUTER one's closing tick, so the code before
+  // it is swallowed as string and the inner string body comes back as CODE.
+  //
+  //     stripCode('const a = `x ${ f(`y`) } z`;')  ->  'const a =          y       ;'
+  //
+  // `f(` gone, `y` promoted to code. Measured across engine/: src/engine.ts has
+  // 12 nested templates and leaks those 10 lines; ui/main.ts has 108, leaking
+  // 368 lines and BLANKING 911 lines of real code — which is why 147's helper
+  // sweep had to exclude ui/ to stay honest.
+  //
+  // The cost was not theoretical. A real `z.bin.push(1)` planted inside a
+  // nested template in src/rng.ts left all nine tests of 90-coverage-census
+  // GREEN — a live bypass of the R124/R145 bin choke point, invisible to every
+  // sweep that rests on this helper. 164-sweep-sight.test.ts §C runs an
+  // INDEPENDENT oracle beside this function over all of src/ and reports only
+  // the disagreements, because a checker cannot audit itself: measuring
+  // stripCode's blind spots with stripCode is exactly the move that let the
+  // first two live for weeks.
+  //
+  // `braceDepth` counts `{` in code; `tplStack` remembers the depth at which
+  // each interpolation opened, so the matching `}` — and only that one — hands
+  // control back to the template.
+  let braceDepth = 0;
+  const tplStack: number[] = [];
   for (let i = 0; i < src.length; i++) {
     const c = src[i]!, n = src[i + 1];
     if (st !== 'code') {
@@ -214,7 +242,11 @@ export function stripCode(src: string): string {
       if (st === 'block') { if (c === '*' && n === '/') { out += ' '; i++; st = 'code'; } }
       else if (st === 'sq') { if (c === '\\') { out += ' '; i++; } else if (c === "'") st = 'code'; }
       else if (st === 'dq') { if (c === '\\') { out += ' '; i++; } else if (c === '"') st = 'code'; }
-      else if (st === 'tpl') { if (c === '\\') { out += ' '; i++; } else if (c === '`') st = 'code'; }
+      else if (st === 'tpl') {
+        if (c === '\\') { out += ' '; i++; }
+        else if (c === '`') st = 'code';
+        else if (c === '$' && n === '{') { out += ' '; i++; tplStack.push(braceDepth); braceDepth++; st = 'code'; }
+      }
       // A LINE COMMENT ENDS AT THE NEWLINE AND AT NOTHING ELSE. It needs its
       // own branch — without one it fell through to the regex arm below, where
       // an unescaped `/` outside a character class does `st = 'code'`, so the
@@ -246,6 +278,15 @@ export function stripCode(src: string): string {
     if (c === "'") { out += ' '; st = 'sq'; continue; }
     if (c === '"') { out += ' '; st = 'dq'; continue; }
     if (c === '`') { out += ' '; st = 'tpl'; continue; }
+    // R195: track brace depth so an interpolation's CLOSING `}` — and no other
+    // `}` — returns to the template it opened inside.
+    if (c === '{') braceDepth++;
+    if (c === '}') {
+      braceDepth--;
+      if (tplStack.length && braceDepth === tplStack[tplStack.length - 1]) {
+        tplStack.pop(); out += ' '; st = 'tpl'; continue;
+      }
+    }
     if (c === '/' && startsRegex(prev, out)) { out += ' '; reClass = false; st = 're'; continue; }
     out += c;
     if (!/\s/.test(c)) prev = c;

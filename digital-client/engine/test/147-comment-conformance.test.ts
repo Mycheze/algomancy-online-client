@@ -277,6 +277,26 @@ test('§0 the code view carries no comment text', () => {
  * the parenthetical form several batches use. That cures the skim, which is
  * the whole harm.
  */
+/**
+ * A word-boundary matcher for a JS IDENTIFIER, which `\b${name}\b` is not.
+ *
+ * Two bugs in one, both found on 2026-08-26 by re-enabling the `ui/` scan:
+ *
+ *  1. **`$` IS A REGEX ANCHOR.** `$` is a perfectly legal identifier character
+ *     in JS, and `new RegExp('\\b$app\\b')` reads as "end of input, then the
+ *     literal `app`" — it can NEVER match. `ui/main.ts::$app` is used on eight
+ *     lines and the sweep reported it dead. Any identifier holding a regex
+ *     metacharacter was invisible in the same way.
+ *  2. **`\b` IS THE WRONG BOUNDARY FOR `$`.** `$` is not a word character, so
+ *     even escaped, `\b\$app\b` fails at the leading edge. `_` happens to work
+ *     (it IS a word char), which is why nobody hit this before.
+ *
+ * A lookaround over the identifier alphabet is right in both directions, and
+ * it also stops `foo` matching inside `$foo` or `foo$`.
+ */
+const identRe = (name: string): RegExp =>
+  new RegExp(`(?<![\\w$])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w$])`, 'g');
+
 const RESOLVED = new RegExp([
   // "unparked" / "UN-PARKED" is a verdict word: it cannot occur in this corpus
   // by accident, so it is matched case-INsensitively. batch-light-c.ts writes
@@ -544,19 +564,24 @@ test('§3 the two allowlisted pool claims that CAN be checked are checked', () =
  * `test/**` and `scripts/**`. A dead helper in `test/` was outside the old
  * sweep's reach entirely.
  */
-const SCAN_DIRS = ['src', 'test', 'scripts'];
+const SCAN_DIRS = ['src', 'test', 'scripts', 'ui'];
 
 /**
- * ⚠ `ui/` IS DELIBERATELY NOT SCANNED, and the reason is a measurement rather
- * than an opinion: `stripCode` mis-parses nested template literals (see the
- * header), `ui/main.ts` contains 108 of them, and 911 lines of its real code
- * are consequently blanked. Running the scan over `ui/` on 2026-08-26 reported
- * 10 dead helpers, ALL TEN of them false — `saveDeck`, `renderNow`,
- * `blockBuilderHtml` and the rest are called from lines the stripper cannot
- * see. `ui/` is still in the CALL-SITE corpus below, where a missed line can
- * only cost a use (a false positive we would notice), never invent one.
+ * ⚠ `ui/` WAS EXCLUDED FOR ONE DAY AND IS SCANNED AGAIN (R195). The exclusion
+ * was honest and correctly reasoned — `stripCode` mis-parsed nested template
+ * literals, `ui/main.ts` has 108 of them, 911 lines of its real code were
+ * blanked, and a scan over `ui/` reported 10 dead helpers of which ALL TEN were
+ * false (`saveDeck`, `renderNow`, `blockBuilderHtml` and the rest are called
+ * from lines the stripper could not see).
+ *
+ * R195 taught `stripCode` a `${ … }` brace stack, which is the cause those ten
+ * false positives had. THE EXCLUSION IS THEREFORE ITS OWN EXPIRY CONDITION, and
+ * the test below is what enforces that it expired: leaving it in place would
+ * have been a waiver outliving its reason, which is the exact failure class
+ * this whole file exists to prevent — and which its own DEAD_EXEMPT list had
+ * just been caught committing.
  */
-const NOT_SCANNED = ['ui'];
+const NOT_SCANNED: string[] = [];
 
 /**
  * Counting is done over the USE VIEW of every .ts/.mjs in src/, test/, scripts/
@@ -659,7 +684,7 @@ test('§4 no card-file helper has zero call sites — nor (R193) any helper in s
     for (const [name, line] of declarationsIn(f)) {
       declsSeen++;
       if (f.startsWith(path.join('src', 'cards', 'sets'))) setsDeclsSeen++;
-      const re = new RegExp(`\\b${name}\\b`, 'g');
+      const re = identRe(name);
       let uses = 0;
       for (const s of sources) uses += (s.match(re) ?? []).length;
       if (uses > 1) continue;                                // the declaration itself is 1
@@ -724,7 +749,7 @@ test('§4 the sweep can see a dead helper — positive control over a synthetic 
     const name = m?.[1] ?? m?.[2];
     if (!name) return;
     let uses = 0;
-    for (const s of corpus) uses += (s.match(new RegExp(`\\b${name}\\b`, 'g')) ?? []).length;
+    for (const s of corpus) uses += (s.match(identRe(name)) ?? []).length;
     if (uses <= 1) seen.push(name);
   });
   assert.deepEqual(seen.sort(), ['r27CommentOnlyHelper', 'r27DeadHelper'],
