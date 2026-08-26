@@ -10317,7 +10317,17 @@ export class E {
       this.ev('erased',
         `${this.pname(seat)} loses ${mine.length} unused spell token(s) to regroup: `
         + `${mine.map(e => `${e.card} ${e.x ?? ''}`.trimEnd()).join(', ')}.`,
-        { seat, ids: mine.map(e => e.id), cards: mine.map(e => e.card) });
+        // ⚠ NO `cards` KEY, AND THAT IS LOAD-BEARING RATHER THAN AN OMISSION.
+        // `ev()` keeps the R65 erased pile centrally: any 'erased' event with
+        // a numeric `seat` has its `cards` pushed onto that seat's PUBLIC
+        // erased list. Passing them here put every unused spell token into the
+        // pile — reversing the rule stated ten lines below, in the R89 block:
+        // a spell token is not a card and has never been recorded there. The
+        // message already names them as text and `ids` carries them for the
+        // client, so the key bought nothing and cost a zone query its meaning.
+        // Caught by the round-27 class audit hours after R194 landed; the
+        // announcement was right and its payload was not.
+        { seat, ids: mine.map(e => e.id) });
     }
     const spared: EntityId[] = [];
     for (const e of Object.values(this.s.entities)) {

@@ -265,6 +265,35 @@ test('[CT-55] the client puts the announcement in front of the player who lost t
   assert.equal(h.state.entities[toks[0]!], undefined);
 });
 
+/* ── §2b. THE REGRESSION R194 ALMOST SHIPPED ───────────────────────────
+ *
+ * `ev()` keeps the R65 erased pile centrally: ANY `'erased'` event carrying a
+ * numeric `seat` has its `cards` (or `card`) pushed onto that seat's public
+ * erased list. R194's announcement is an `'erased'` event with a `seat`, so
+ * passing `cards` put every unused spell token into the pile.
+ *
+ * That reverses a rule stated TEN LINES BELOW the announcement, in the R89
+ * block: *"The augment reaches the public erased pile (R65) exactly as it
+ * would if the token had been cast and discharged; the TOKEN itself does not,
+ * because a spell token is not a card and has never been recorded there."*
+ *
+ * The log line already names the tokens as text and `ids` carries them for the
+ * client, so the payload key was pure leakage into a zone query. Found by the
+ * round-27 class-widening audit, hours after R194 landed — the announcement
+ * was correct and its PAYLOAD was not.
+ */
+test('[CT-55] the announcement does not put spell tokens into the public erased pile (R65)', () => {
+  const { h, A, D, toks } = tokensAtHome(1661);
+  assert.equal(h.state.entities[toks[0]!]!.kind, 'spellToken', 'fixture: a token to lose');
+  const before = [...(h.state.players[A]!.erased ?? [])];
+  h.do({ type: 'declareAttack', seat: A, columns: [] });
+  h.do({ type: 'declareAttack', seat: D, columns: [] });
+  assert.equal(h.state.entities[toks[0]!], undefined, 'fixture: the token really was erased');
+  assert.deepEqual(h.state.players[A]!.erased ?? [], before,
+    'a spell token is not a card and has never been recorded in the erased pile — '
+    + 'the R89 block ten lines below startRegroup says so');
+});
+
 /* ── §3. the controls: report #66 itself, still fixed ─────────────────── */
 
 test('[66] control: the Regroup confirm still fires on the pass that reaches Regroup', () => {
