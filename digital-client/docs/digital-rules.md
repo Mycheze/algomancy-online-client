@@ -13520,3 +13520,100 @@ the live oracle file and against `printed.json`; §4 provokes the stale case and
 the check fires. `122-cardtext-markup.test.ts` independently asserts that
 `printed.json` differs from the oracle file in exactly these places and nowhere else.
 (Claude 2026-08-26, report #106 / CARD-TODO #73.)
+
+---
+
+## R188 ⚠ OPEN QUESTION — a Glimpse reveal is public, but is it public *at the barrier* or *at the moment*?
+
+**Report #104 (GYSR, CT-71), the owner's words:** *"Glimpse is supposed to
+REVEAL the cards, but opponents cannot see them right now."*
+
+### What the evidence says, before any of the code was touched
+
+GYSR replays FAITHFUL (306/306, 0 refused), so the reported moment was
+reconstructed rather than argued about. Three glimpses happen in that game —
+actions [54], [107] and [136], all Maw of Despair or Grox, all `glimpse 2`,
+and the report's "action 110" is [107]. **Every one of them is in the BATTLE
+phase, and every one of them reaches the other seat.** Two independent
+measurements:
+
+* **On the wire.** `apply` produces `glimpsed` with
+  `data.cards = ['Muck Rummager','Palewing']` and a message naming both.
+  `visibleToSeat` passes it (no `privateTo`), `redactEvent` does not touch it
+  (it blurs `recycle` only), `viewFor` does not touch the cache. The
+  non-glimpsing seat's `update` frame carries the reveal verbatim.
+* **On the screen.** The room was restored from a truncated copy of GYSR at
+  action 107 and driven in headless Chrome as SEAT 1 — the opponent — with
+  seat 0 driven from a socket. Seat 1's log gained
+  *"Ben glimpses 2: Muck Rummager, Palewing — …"* with **both names rendered
+  as inspectable `.logcard` spans**, and after the choice seat 1's board grew
+  the public cache panel *"cache (1) · Muck Rummager · 1 ready"*. A fresh
+  reload re-links both names, so the resync path is not lossy either.
+
+So the two candidate causes that were briefed for CT-71 are both wrong for the
+reported moment: nothing in the redaction layer removes a `glimpsed`, and the
+client does render it, names and all.
+
+### The one place a reveal really is invisible
+
+A glimpse that happens inside a **hidden simultaneous segment**. `rooms.ts`
+pushes the acting seat's events into `heldEvents[other]`, so the opponent's
+copy of the reveal is parked until the barrier and arrives with the deployment
+interstitial. Proven end to end through `applyToRoom` + `viewFor` +
+`redactLog`: mid-segment the opponent's visible log has **nothing**, and at the
+barrier they receive the whole thing at once —
+*"Player 1 glimpses 5: Reconfigure, Molten Riftbreaker, Divine Foresight,
+Shard Sprite, Stasis Sentry…"*.
+
+This is not a redaction bug, and it is not fixable without a ruling, because
+holding the whole segment is the entire point of the segment. It bites:
+
+| card | how it lands in a hidden segment |
+| --- | --- |
+| **Oracle of Foretelling** | printed `timing: deploy` — its Glimpse 5 is **always** inside the segment |
+| Glook · Lilbot · Visionary Construct | activated abilities, usable during deployment |
+| Maw of Despair | "when I am trashed" fires wherever the trash happens |
+| Seer of Empty Spaces | "when I spawn" — including a haste-step spawn |
+
+(Premonition, Celestial Purge, Dematerialize and Foretell are all `{Battle}`,
+so they are never held.)
+
+### THE QUESTION FOR THE OWNER
+
+> Is a reveal that happens inside a hidden simultaneous step (deployment, the
+> haste step, the resource step) public **immediately** — the segment freeze
+> parting for it alone — or only **at the barrier**, with the rest of the
+> step's reveal?
+
+Answering it in code would be inventing a rule, so nothing was implemented on
+that axis. What the answer changes:
+
+* **"at the barrier"** — today's behaviour is correct and R188 closes as a
+  clarification of R41/R45. The remaining ask is presentational (see below).
+* **"immediately"** — `heldEvents` needs a per-event exemption for public
+  reveals, which is a new seam: today the hold is all-or-nothing per segment,
+  and letting one event through means deciding what else escapes with it (the
+  `resolved` line that frames it, the `cached` line that follows it, the stack
+  item it is resolving off).
+
+### The presentational half, which is probably the real ask
+
+The glimpser is shown the N revealed cards as **full card scans** in the
+decision modal. The opponent is shown **one line of prose in an 80-line log**.
+Both are "the reveal", and only one of them looks like one. That is the same
+complaint family as report #103/CT-63 ("they should also be in the cache area
+as they are now") and the deployment interstitial exists for exactly this
+reason. It is a client surface, not a rules change, and it is worth doing
+whichever way the question above is answered.
+
+### The guard
+
+`engine/test/159-glimpse-reveal-visibility.test.ts` pins the public half for
+all five printed-reveal cards, driving each card's REAL resolution and reading
+the result through `server/view.ts` — `viewFor`, `visibleToSeat`, `redactEvent`
+and `redactLog`, the four functions `server/main.ts` composes for a seat — so
+the assertion is about what a seat RECEIVES and not about what the engine
+happened to append to a list. The Oracle case asserts only what stays true
+under either answer above: the event exists, carries all five names, is not
+`privateTo` anybody, and would be delivered unchanged by view.ts. The hold is
+a hold, not a redaction, and that distinction is the thing R188 is about.
