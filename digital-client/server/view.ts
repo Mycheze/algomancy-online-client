@@ -199,6 +199,35 @@ export function redactEvent(ev: EngineEvent, seat: Seat, names: string[]): Engin
     const who = names[ev.data['seat'] as number] ?? 'Opponent';
     return { ...ev, msg: `${who} recycles a card for a dormant resource.` };
   }
+  // R196: `handEntered` NAMED THE OPPONENT'S INCOMING CARDS, IN EVERY PHASE.
+  //
+  // R179's `E.toHand` emits `{ seat, from, cards: names, card: names[0], n }`
+  // for every route a card takes into a hand — a draw, a bin recursion, a
+  // recall, an uncache, a pull off the stack, a card taken out of a hand. The
+  // STATE channel redacts an opponent's hand to `HIDDEN_CARD` (see `viewFor`,
+  // and this file's own header says so at the top: "the OPPONENT's hand
+  // contents -> count only"). The EVENT channel did not, and `sendUpdate`
+  // ships raw event objects filtered only by `visibleToSeat` — which gates on
+  // `data.privateTo`, a field `handEntered` never carried. So the same update
+  // that hid nine card backs also carried the two names that had just gone in.
+  //
+  // `msg` is '' (an empty line never reaches the log), which is exactly why it
+  // went unnoticed for a week: nothing was VISIBLE. But the client parses
+  // `data.cards[]` deliberately — `ui/inspect.ts::namesInEvents` feeds
+  // `growCardLedger` from it — so the names were not merely on the wire, they
+  // were being read.
+  //
+  // Redacted rather than tagged `privateTo`, and that choice is load-bearing:
+  // `toHand` DISPATCHES `handEntered` to card listeners inside a battle
+  // (Rider of the Tides, Xenopod Progenitor, Galerider Eel all print "whenever
+  // a card enters a player's hand during battle"), so suppressing the event
+  // engine-side would silently break three cards. The count stays — hand SIZE
+  // is already public from the card backs — and only the names go.
+  if (ev.type === 'handEntered' && typeof ev.data?.['seat'] === 'number'
+      && ev.data['seat'] !== seat) {
+    const { cards: _cards, card: _card, ...rest } = ev.data as Record<string, unknown>;
+    return { ...ev, data: rest };
+  }
   return ev;
 }
 

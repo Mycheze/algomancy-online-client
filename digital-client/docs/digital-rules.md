@@ -14057,3 +14057,52 @@ One hole is left open and stated rather than hidden: a bin write or a controller
 assignment written INSIDE a `${ … }` interpolation is invisible to all three
 whole-file sweeps. Nothing in `src/` does that today, and §C is what will say so
 when something does.
+
+---
+
+## R196 — the event channel leaked what the state channel hid
+
+`server/view.ts` opens by stating its own contract: *"What is hidden from a
+seat … the OPPONENT's hand contents -> count only (card backs)."* `viewFor`
+honoured it. The EVENT channel did not.
+
+R179's `E.toHand` emits `handEntered` carrying
+`{ seat, from, cards: names, card: names[0], n }` for **every** route a card
+takes into a hand — a draw, a bin recursion, a recall, an uncache, a pull off
+the stack, a card taken out of an opponent's hand. `sendUpdate` ships raw event
+objects, filtered only by `visibleToSeat` (which gates on `data.privateTo`, a
+field `handEntered` never carried) and mapped by `redactEvent` (which touched
+only `recycle`). So **the same update that drew nine card backs also carried
+the two names that had just gone in**, in every phase of every game.
+
+Measured, seat 0 receiving about seat 1:
+
+    {"type":"handEntered","msg":"","data":{"seat":1,"from":"deck",
+      "cards":["Rampart Guardian","Retribution Thing"],"card":"Rampart Guardian","n":2}}
+    viewFor(state, 0).players[1].hand -> ["__HIDDEN__", … x9]
+
+**Why it survived a week unnoticed: `msg` is `''`.** An empty message never
+reaches the log, so the leak had no visible line to be spotted in. It was not
+inert, though — `ui/inspect.ts::namesInEvents` walks `data.cards[]`
+deliberately, feeding `growCardLedger`, so the names were being *read* by the
+client, not merely carried.
+
+**Redacted server-side, NOT tagged `privateTo`, and the choice is
+load-bearing.** `toHand` dispatches `handEntered` to card listeners inside a
+battle, and three cards print *"whenever a card enters a player's hand during
+battle"* — Rider of the Tides, Xenopod Progenitor, Galerider Eel. Suppressing
+the event engine-side would have silently killed all three. The count stays
+(hand size is already public from the card backs); only the names go.
+
+**The guard is `172-event-channel-secrecy.test.ts`, and §2 is the point.** §1
+pins the six routes. §2 asserts the INVARIANT — no event may name a card in a
+zone `viewFor` hides — because a per-event redaction rule is a **denylist**, and
+R179 is exactly what a denylist rots against: it added a new event carrying a
+secret and the existing rule could not know. The next `toHand`-shaped addition
+now fails in §2 instead of shipping.
+
+Found by the round-27 class-widening audit, which read all 183 `ev()` call
+sites in `engine.ts`/`apply.ts` for hidden-zone contents in `data` and reports
+`handEntered` as **the only one**. `glimpsed` also carries `cards` and is a
+public reveal by design (R41/R45); `recycle` carries only `{ seat }`, with the
+card name in `msg` precisely so `redactEvent` can rewrite it.
