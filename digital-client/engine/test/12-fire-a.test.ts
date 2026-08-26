@@ -1121,9 +1121,11 @@ test('Infernal Cultivator: [once] sacrifice X units → X Fireball 1; once per t
   const f1 = spawn(h, p, 'Conduit of Pain');
   const f2 = spawn(h, p, 'Conduit of Pain');
   h.do({ type: 'activateAbility', seat: p, entityId: cult, abilityIndex: 0, via: 'augment' });
-  pick(h, f1);                                       // first sacrifice
-  pick(h, f2);                                       // second
-  pick(h, false);                                    // Done → X = 2
+  // R196: "Sacrifice X units" is a real cast COST now, so the picks are the
+  // cost collector's, made in the cast window before the item is respondable
+  pick(h, { unit: f1 });                             // first sacrifice
+  pick(h, { unit: f2 });                             // second
+  pick(h, { doneCost: true });                       // "That's enough" → X = 2
   assert.ok(!ent(h, f1) && !ent(h, f2), 'both sacrificed');
   assert.equal(h.state.players[p]!.bin.filter(n => n === 'Conduit of Pain').length, 2);
   const fires = tokensOf(h, p).filter(t => t.card === 'Fireball');

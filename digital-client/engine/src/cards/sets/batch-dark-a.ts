@@ -290,38 +290,32 @@ card('Exhume', {
 });
 
 // "[once] Discard X cards: Glimpse 1, X times." — d/2 1/3 Alien Fungus Unit.
-// [once] = bounded (R9). X is the cost, so it is chosen card-by-card at
-// RESOLUTION (the Discharge pattern): plan every pick first, then commit the
-// discards — each of which is a TRASH (R40) that fires its own trigger — and
-// finally glimpse (R45) once per discarded card. "Glimpse 1, X times" is
-// deliberately X separate glimpses, which is what makes N a count of CARDS.
+// [once] = bounded (R9). "Glimpse 1, X times" is deliberately X separate
+// glimpses (R45), which is what makes X a count of CARDS.
+//
+// R196 — X IS PAID AT ACTIVATION. The discards used to be chosen card-by-card
+// at RESOLUTION, so the ability reached the stack with X unknown and the
+// opponent had to decide whether to answer without knowing how many glimpses
+// were coming. That is the exact complaint R64 was raised on for Discharge
+// ("Shouldn't Discharge have you remove counters as an ADDITIONAL COST? Not on
+// resolution"), and the answer is the same: `castCost: { kind: 'discardCard',
+// n: 'X' }`. Nothing new was needed — the variable machinery a spell's
+// bracketed cost already used simply reaches an activated ability through
+// `EffectDef.castCost`, and `ctx.x` is what was paid.
+//
+// Each discard is still a TRASH (R40) firing its own trigger; the only change
+// is that they are committed one at a time as they are chosen, in the cast
+// window, instead of being planned and then committed at resolution.
 card('Glook', {
   abilities: [{
     type: 'activated', cost: {}, bounded: true,
     label: 'discard X cards: glimpse 1, X times',
     effect: {
+      castCost: { kind: 'discardCard', n: 'X' },
       run: (g, ctx) => {
-        const hand = g.player(ctx.controller).hand;
-        const picked: number[] = [];
-        for (let k = 0; ; k++) {
-          const opts: { label: string; value: number; card?: CardName }[] = [
-            { label: `done (X = ${picked.length})`, value: -1 },
-          ];
-          for (let i = 0; i < hand.length; i++) {
-            if (!picked.includes(i)) opts.push({ label: hand[i]!, value: i, card: hand[i]! });
-          }
-          if (opts.length === 1) break;
-          const pick = ctx.choose(`glook:${k}`, {
-            kind: 'payOrDecline', seat: ctx.controller,
-            prompt: `Glook: discard a card to glimpse 1 (X = ${picked.length} so far)`,
-            options: opts,
-          }) as number;
-          if (pick === -1) break;
-          picked.push(pick);
-        }
-        if (!picked.length) { g.ev('info', 'Glook: X = 0 — nothing discarded, nothing glimpsed.'); return; }
-        discardHand(g, ctx.controller, picked);
-        for (let i = 0; i < picked.length; i++) g.glimpse(ctx.controller, 1);
+        const x = ctx.x ?? 0;
+        if (!x) { g.ev('info', 'Glook: X = 0 — nothing discarded, nothing glimpsed.'); return; }
+        for (let i = 0; i < x; i++) g.glimpse(ctx.controller, 1);
       },
     },
   }],

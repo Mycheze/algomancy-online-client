@@ -168,8 +168,10 @@ test('Glook: [once] discard X cards → glimpse 1, X times (R45)', () => {
   const hand = h.state.players[A]!.hand.slice();
   assert.ok(hand.length >= 3, 'the opening hand is big enough to pay with');
   h.do({ type: 'activateAbility', seat: A, entityId: glook, abilityIndex: 0 });
-  pick(h, 0); pick(h, 1);                               // discard two named cards
-  pick(h, -1);                                          // done: X = 2
+  // R196: "Discard X cards" is a real cast COST now — the picks belong to the
+  // cost collector and are made before the ability is respondable
+  pick(h, { discard: 0 }); pick(h, { discard: 0 });      // discard two named cards
+  pick(h, { doneCost: true });                          // "That's enough" → X = 2
   assert.equal(h.state.players[A]!.hand.length, hand.length - 2, 'two cards discarded');
   assert.ok(h.state.players[A]!.bin.includes(hand[0]!), 'discards are trashes into the bin (R40)');
   assert.ok(h.state.players[A]!.bin.includes(hand[1]!));

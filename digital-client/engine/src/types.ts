@@ -668,6 +668,15 @@ export interface EffectPart {
     counters?: { unit: EntityId; card: CardName; n: number }[];
     /** 'eraseBin': the cards erased out of the bin, in the order chosen */
     erased?: CardName[];
+    /** R196 'payMana': the mana actually paid for a printed "[x]" — which
+     * under R157 §1 IS what the ability cost, and (for `n: 'X'`) is its X. */
+    mana?: number;
+    /** R196 'recallUnit': the ally recalled to pay the cost, snapshotted at
+     * payment — it is in a hand, not on the board, by the time this resolves. */
+    recalled?: { unit: EntityId; card: CardName }[];
+    /** R196 'eraseMod': the mod erased off the source to pay the cost. The
+     * entity is GONE, so the receipt is the only record the resolution has. */
+    erasedMods?: { mod: EntityId; card: CardName }[];
     /** R64: a VARIABLE cast cost ('X') defines the spell's X — the number of
      * units actually paid. Read by the effect as ctx.x, which prefers this
      * over the item-wide mana X so a grafted rider paying its own variable
@@ -812,7 +821,13 @@ export interface StackItem {
    * Attached by playAtTiming with `n` = the summed count, paid by the paying
    * player's own picks through the same collector, mandatory once the play
    * is declared (castability already gated on it being payable). */
-  pendingCosts?: { kind: 'discard' | 'sacrificeOther' | 'discardOrSacrifice' | 'playSacrifice'; n: number }[];
+  pendingCosts?: {
+    kind: 'discard' | 'sacrificeOther' | 'discardOrSacrifice' | 'playSacrifice';
+    n: number;
+    /** R196 (`AbilityCost.sacrificeNontoken`): "another NONTOKEN unit" —
+     * narrows which units this atom may name, and what payability asks about. */
+    nontoken?: true;
+  }[];
   /** R57: the choice-free half of an activation cost (mana, life, debt,
    * sacrifice-self), carried on the item so it can be charged AFTER the
    * ability's targets are chosen rather than at the moment of activation.

@@ -14606,3 +14606,167 @@ registered; the two registry names it does not carry are `Unit Token` and
 `Beyond, Codex Incarnate`. So the split is 492 + 2, not 492 + 3. (The report's
 warning itself stands, and is why the guard reads `allCardNames()`: a sweep
 driven off `printed.json` alone misses the synthetics.)
+
+---
+
+## R196 — an activation cost is a COST: variable and choice-bearing halves are paid on the way to the stack
+
+The last cost row of `docs/09-divergence-inventory.md` §2a. Six cards printed an
+activation cost that `AbilityCost` had no atom for — an X-mana `[x]`, "Sacrifice
+X units", "Discard X cards", "Recall another ally", "Erase one of my mods" — so
+all six **chose and paid at RESOLUTION**.
+
+### The premise, measured before anything was changed
+
+The inventory's claim was checked by activating all six **in battle**, with the
+ability on the stack and the opponent holding priority. It held, and the
+measurement is worth quoting because it is what makes this a defect rather than
+a style question:
+
+| card | on the stack, opponent on priority |
+|---|---|
+| Celestial Shifter | 5 mana still open, `costPaid` null |
+| Instrument of Reassignment | 3 mana still open, the victim still standing |
+| Auric Ascendant | **the [one] WAS paid**; the ally still standing |
+| Slag Spewer | **the [one] WAS paid**; the mod still attached |
+| Glook | hand untouched |
+| Infernal Cultivator | every unit still standing |
+
+So the opponent decided whether to answer a "base X/X" without knowing X, and a
+negation removed the ability without a single point of it ever being paid. That
+is R64's founding complaint one card family over — the playtest report it was
+raised on reads *"Shouldn't Discharge have you remove counters as an additional
+cost? Not on resolution"* — and **R157 §21** settles the general shape: any
+`[bracketed]` clause is a COST or a MODE, fixed when the item goes on the stack.
+
+⚠ **The brief that opened this work said all four kinds were paid at
+resolution. Two of the six were half right already**: Auric Ascendant's and Slag
+Spewer's printed `[one]` is an `AbilityCost.mana` and was always charged in the
+cast window. Only the OTHER half of each compound was late.
+
+### Where an ability's X lives, and how that differs from a spell's X
+
+There are two X's in this engine and they meet inside `E.collectTargets`.
+
+* **A SPELL's X is the printed `mana: 'X'` on the CARD.** `E.collectX` prices
+  each candidate through `manaToPlay` and pays the whole bill on the answer,
+  writing `StackItem.x`. It runs inside `castChain`, i.e. **after**
+  `playAtTiming`'s `take(); payAll();`. That ordering is load-bearing and was
+  established the hard way: because the bill is already paid against `xMin`, a
+  cost mod that wants to raise an X spell **to** 3 (Stasis Sentry, R157 §20) was
+  not implementable as a card change at all and needed an engine seam; and
+  because Floral Singularity is `timing: deploy` and therefore never pushed, the
+  paid X had to ride the play **event** rather than be looked up on the stack.
+* **An ABILITY's X is a BRACKETED COST.** There is no card being played, no mana
+  bill and no `manaToPlay` to modify, so none of that applies. It belongs where
+  every other bracketed cost already goes: `EffectDef.castCost` with `n: 'X'`,
+  collected by `E.collectCastCosts(…, 'variable')`, landing in `costPaid.x` and
+  read back as `ctx.x`.
+
+**So this row did NOT need a variable-N atom bolted onto `AbilityCost`**, and
+building one would have been a second implementation of machinery the engine
+already has — the split the Deformant comment argues against in so many words
+(*"`castCost` is one collector, one window, and it is what `abilityUnusable`
+already gates the OFFER on"*). Two of the six close with **no new engine code at
+all**: Glook is `discardCard n:'X'` and Infernal Cultivator is
+`sacrificeUnits n:'X'`, both of which already existed and both of which reach an
+activated ability through `EffectDef.castCost`.
+
+### What was added
+
+Three `CastCost` kinds, each serving printed text the union could not say:
+
+* **`payMana`** (`n: number | 'X'`, `xMin?`) — the printed `[x]`. Iterated a
+  point at a time, exactly like `payLife`, so the reserve below is re-read
+  before each point. Instrument's `xMin: 1` is its printed *"X can't be 0"*: a
+  floor that FORBIDS, which is the standing distinction from R157 §22/R161's
+  `xZeroWarning`, where paying zero is merely a bad idea you are allowed to
+  have.
+* **`recallUnit`** — "[Recall another ally]". The source is excluded.
+* **`eraseMod`** — "[Erase one of my mods]". "My" is `item.sourceId`, which
+  reads correctly for donated text (the host is the carrier). Still an erase and
+  not a death: no bin, no despawn, nothing triggers. Only the moment moved.
+
+Plus **`AbilityCost.sacrificeNontoken`**, a flag narrowing `sacrificeOther`'s
+menu and its payability gate to nontoken units — Instrument's printed "another
+**nontoken** unit". A flag rather than a fourth atom kind, because it changes
+which units the one atom may name and nothing else.
+
+`E.activationManaReserve` is the one genuinely new idea. `collectCastCosts`'s
+variable pass runs **before** `payActivationCost`, so a `[x]` could otherwise
+spend the money the fixed `AbilityCost.mana` and R121's activation tax are about
+to need — a Celestial Shifter under a Crevice Lurker putting every point into X
+and then under-paying the tax. The reserve is read off `item.activationCost`,
+which `payActivationCost` deletes the instant it charges, so it is self-clearing
+and is 0 for every collector that runs afterwards.
+
+### Two rulings this forces, and they are the same ruling
+
+**An unpayable cost GATES; it does not whiff.** Auric Ascendant's "no other ally
+to recall — no effect" and Slag Spewer's "no mod to erase — no effect" were
+`run` branches that R113 put in the SPENDS family: you activated it, you paid
+the `[one]`, you whiffed, the `[once]` is gone. **A cost cannot whiff.** With
+nothing to recall or erase the cost is unpayable, so `abilityUnusable` never
+offers the ability, the `[one]` is never paid and the `[once]` is never spent.
+That is R49's own reading (*"an ability whose cost cannot be paid is not offered
+by legalActions and is refused by apply(), instead of fizzling at resolution"*)
+and it is exactly what `canPayCastCost` already gives Deformant's "sacrifice me
+AND another ally". Instrument's two "no effect" bail-outs go the same way.
+
+### The compound half-pay, and why the fix is a gate rather than a refund
+
+`collectItemCosts` has carried this since the 2026-08-23 audit:
+
+> "nothing is paid" holds only because no pool ability combines a choice-free
+> half (mana/life/debt/sacrifice-me, charged by `payActivationCost` one call
+> EARLIER) with a choice half like this one. The first card that does will reach
+> here with its mana already spent — **refund it or reorder the two collectors
+> then; a ruling is needed on which**.
+
+Three cards are compound now (Instrument, Auric Ascendant, Slag Spewer), so the
+ruling is owed. **It is neither refund nor reorder: it is ALL OR NOTHING, asked
+once, before the first payment** — which is not a new principle but R110's, one
+scope up. R110 already says a graft cost multiplied by Lost Guardian *"must be
+paid twice … if the whole N-fold cost is not payable up front, none of it is
+paid"*, and `collectCastCosts` already asks that **before the first copy pays**.
+`E.gateCompoundCost` is the same sentence about a compound activation cost: at
+the top of `E.collectTargets`, where nothing has been charged, every other half
+of the same cost is checked, and if any is unpayable the whole activation is
+abandoned having paid nothing. A refund would have had to un-expend specific
+resources; a reorder would have moved the sacrifice ahead of the mana and broken
+R57's "nothing irreversible until the effect is fully declared" for the other
+direction. Neither is needed if you never charge the first half.
+
+⚠ **And the honest half of that finding: the audit's own scenario was never
+reachable.** It imagined *"a response took the last unit"* between the
+activation gate and the collection. Nothing can act inside the cast window —
+every suspension it raises is a question for the PAYER, triggers only queue
+(`settle()` runs after `castChain`), and the opponent never holds priority in
+between; `test/167` measures that directly (`h.legal(opponent)` is empty while
+the window is open). What CAN make a later half unpayable is **the payer's own
+earlier atom eating a later one's pool** — a variable cost that sacrifices units
+followed by an atom that wants another unit. No card in the pool has that shape
+today. The gate is therefore belt-and-braces, and it is tested as such: a
+white-box test builds exactly that item and asserts the mana is untouched, and
+it reddens when the gate is removed.
+
+### The row's six cards, after
+
+| card | printed cost | now |
+|---|---|---|
+| Celestial Shifter | `[x]` | `castCost: payMana n:'X'` |
+| Instrument of Reassignment | `[x]`, sacrifice another nontoken unit | `castCost: payMana n:'X' xMin:1` + `sacrificeOther`/`sacrificeNontoken` |
+| Auric Ascendant | `[one]`, recall another ally | `mana: 1` + `castCost: recallUnit` |
+| Slag Spewer | `[one]`, erase one of my mods | `mana: 1` + `castCost: eraseMod` |
+| Glook | discard X cards | `castCost: discardCard n:'X'` |
+| Infernal Cultivator | sacrifice X units | `castCost: sacrificeUnits n:'X'` |
+
+Infernal Cultivator's pool is deliberately the plain `sacrificeUnits` one —
+every unit you control in the region, **the carrier included** — because the
+printed line is "Sacrifice X units" and not "X other units", and because that is
+what its resolution-time loop offered too.
+
+`test/167-variable-ability-costs.test.ts` is the guard: one named case per card
+quoting its printed clause, each asserting the cost is spent while the ability
+is still on the stack and that the opponent holding priority can read the chosen
+N off it before deciding. Every one reddens when its card is reverted.

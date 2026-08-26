@@ -125,9 +125,10 @@ test('Auric Ascendant: [once] [one] + recall another ally → Flying and +2/+0 u
   toDeployment(h);
   const p = h.state.deployPlayer!;
   const auric = spawn(h, p, 'Auric Ascendant');               // 2/1
-  const ally = spawn(h, p, 'Unit Token');                     // the recall cost (auto-picked)
+  const ally = spawn(h, p, 'Unit Token');                     // the recall cost
   giveResources(h, p, 'metal', 2);                            // [one] ×2 (second activation attempt)
   h.do({ type: 'activateAbility', seat: p, entityId: auric, abilityIndex: 0 });
+  pick(h, { recall: ally });                                  // R196: the recall is a COST
   assert.ok(!ent(h, ally), 'the ally left play (recalled)');
   assert.ok(ownAttrs(h, auric).has('Flying'), 'gained {Flying}');
   assert.deepEqual(effStats(h, auric), [4, 1], '+2/+0 until regroup');

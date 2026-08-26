@@ -180,10 +180,14 @@ test('Celestial Shifter twice: the later X replaces the earlier one', () => {
   const sh = spawn(h, A, 'Celestial Shifter');               // 2/2
   giveResources(h, A, 'metal', 7);
   h.do({ type: 'activateAbility', seat: A, entityId: sh, abilityIndex: 0, via: 'augment' });
-  pick(h, 5);
+  // R196: the [x] is a `payMana` cast cost, paid a point at a time
+  for (let k = 0; k < 5; k++) pick(h, { payMana1: true });
+  pick(h, { doneCost: true });
   assert.deepEqual(baseOf(h, sh), [5, 5], 'base 5/5');
   h.do({ type: 'activateAbility', seat: A, entityId: sh, abilityIndex: 0, via: 'augment' });
-  pick(h, 2);
+  // only [2] are left, so the cost closes itself at X = 2 with no "that's
+  // enough" to answer — a variable cost stops when nothing more can be paid
+  pick(h, { payMana1: true }); pick(h, { payMana1: true });
   // as a delta this was 2 + (5−2) + (2−2) = 5 power: the second, SMALLER X
   // could not shrink it, because it re-derived off the printed 2/2
   assert.deepEqual(baseOf(h, sh), [2, 2], 'the later, smaller X wins');

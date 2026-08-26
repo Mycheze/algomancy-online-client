@@ -150,7 +150,7 @@ gone.
 >
 > ### WHAT IS ACTUALLY LEFT IN §2
 > `PER-COLUMN FACE DAMAGE` · `RESPONSE WINDOW MID-RESOLUTION` ·
-> `VARIABLE-COST ACTIVATED ABILITIES` · `PREDICTION CAP` ·
+> ~~`VARIABLE-COST ACTIVATED ABILITIES`~~ (**R196**, wave 3) · `PREDICTION CAP` ·
 > `UNTIL-REGROUP PLAY WINDOW` · `MULTIPLAYER ATTRIBUTION`. That is the whole
 > remainder, and it is what **CARD-TODO #50** now means.
 >
@@ -213,6 +213,42 @@ gone.
 > `RESPONSE WINDOW MID-RESOLUTION` · `VARIABLE-COST ACTIVATED ABILITIES` ·
 > `PREDICTION CAP` · `UNTIL-REGROUP PLAY WINDOW` · `MULTIPLAYER ATTRIBUTION`
 > (minus whatever else round 27 closed in parallel).
+
+> ## ⚠⚠⚠ WAVE 3 OF ROUND 27 (2026-08-26) — §2a's LAST COST ROW IS CLOSED
+>
+> **§2a CLOSED: VARIABLE-COST ACTIVATED ABILITIES (R196).** All six cards pay
+> in the cast window now: Celestial Shifter, Instrument of Reassignment, Auric
+> Ascendant, Slag Spewer, Glook, Infernal Cultivator. Guarded by
+> `test/167-variable-ability-costs.test.ts` — one NAMED case per card quoting
+> its printed clause, each red on a revert of that card.
+>
+> **Corrections the table below needs** (measured, not argued):
+> - **"all … are paid at RESOLUTION" was half wrong for TWO of the six.** Auric
+>   Ascendant's and Slag Spewer's printed `[one]` is an `AbilityCost.mana` and
+>   was ALWAYS charged in the cast window. Only the other half of each was late.
+>   Measured by activating all six in battle with the opponent on priority.
+> - **The row's own title fits four of its six cards.** "Variable-cost" is
+>   Celestial Shifter, Instrument, Glook and Infernal Cultivator. "Recall
+>   another ally" and "erase one of my mods" are FIXED N = 1 and choice-bearing;
+>   what they lacked was an atom of any kind, not a variable one.
+> - **The fix the row implies — a variable-N atom on `AbilityCost` — is the
+>   wrong one.** The engine already has variable-cost machinery
+>   (`CastCost` + `n: 'X'`), and `EffectDef.castCost` already reaches an
+>   activated ability and is already what `abilityUnusable` gates the OFFER on
+>   (the Deformant precedent). **Two of the six needed NO new engine code at
+>   all.** The other four needed three new `CastCost` kinds — `payMana`,
+>   `recallUnit`, `eraseMod` — plus `AbilityCost.sacrificeNontoken`.
+> - **The half-pay warning on the row is real but was never reachable.** It
+>   imagined a response taking the payment away mid-window; nothing can act
+>   inside the cast window at all. The live shape is the PAYER's own earlier
+>   atom eating a later one's pool, which no card has. Fixed at the root anyway
+>   (`E.gateCompoundCost`, R110's all-or-nothing one scope up) and tested
+>   white-box, because three cards are compound now.
+> - **It changes when a `[once]` is SPENT, for two cards.** Auric Ascendant and
+>   Slag Spewer used to whiff ("no other ally", "no mod to erase") and R113 put
+>   that in the SPENDS family. A cost cannot whiff: with nothing to pay they are
+>   not OFFERED, so the `[once]` survives and the `[one]` is never paid (R49).
+>   Ruled in **R196**.
 
 **Status key:** `DONE` fixed and guarded · `OPEN` real, unfixed · `STALE` a code
 comment that outlived its cause · `RULED-OK` the engine is right and an answer

@@ -504,37 +504,37 @@ card('Molten Tormentor', {
 // "[Augment][once] [one], Erase one of my mods: I deal 2 damage to any
 // target." — er/2 2/2 Slag Beast {Virus} Unit. An ACTIVATED ability in the
 // [Augment] text box: live when played normally (via: 'augment') and donated
-// to hosts (via: { mod }) — the Infernal Cultivator precedent. The mana is a
-// real activation cost; the mod erasure happens at resolution (⚠
-// approximation of a true cost, same precedent): pick one of my mods, remove
-// it from the game entirely (no bin, no triggers), then deal the 2. With no
-// mods to erase the cost is unpayable — the ability resolves without effect.
-// [once] = bounded per card (R9). {Virus} play mode is engine-level.
+// to hosts (via: { mod }) — the Infernal Cultivator precedent. [once] =
+// bounded per card (R9). {Virus} play mode is engine-level.
+//
+// R196 — THE MOD ERASURE IS A REAL COST NOW. The [one] always was; the erasure
+// happened at RESOLUTION, so the item reached the stack without saying which
+// mod was going and the opponent answered blind. R157 §21: everything before
+// the colon is a COST, fixed when the item goes on the stack.
+// `castCost: { kind: 'eraseMod' }` is that — "my mods" is `item.sourceId`'s
+// mods, which reads correctly for the donated case too (the host is the
+// carrier). Still an erase and not a death: no bin, no despawn, no triggers.
+// Only the MOMENT moved.
+//
+// ⚠ IT CHANGES WHEN THE [once] IS SPENT, and deliberately — the same call
+// Auric Ascendant records. The "no mod to erase — no effect" branch R113 put
+// in the SPENDS family is gone: a cost cannot whiff, so a Slag Spewer with no
+// mod is not OFFERED, the [one] is never paid and the use is never spent
+// (R49). R57 is unchanged and visible in the collector order: the damage
+// target is chosen BEFORE the mod is erased, because a FIXED castCost is
+// collected after `collectPartTargets`.
 card('Slag Spewer', {
   augmentText: [{
     type: 'activated', cost: { mana: 1 }, bounded: true,   // [once]
     label: '[one], erase one of my mods: I deal 2 damage to any target',
     effect: {
+      castCost: { kind: 'eraseMod' },
       targets: { what: 'any', prompt: 'Slag Spewer: deal 2 damage to any target' },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        // R113: an ACTIVATED [once] with no "you may" in it. The player paid
-        // [one] to use it; finding nothing to erase does not hand the use back.
-        if (!self) { g.ev('info', 'Slag Spewer: the carrier is gone — no mod to erase, no damage.'); return; }
-        const mods = self.mods
-          .map(id => g.entity(id))
-          .filter((m): m is Entity => !!m);
-        if (!mods.length) {
-          g.ev('info', 'Slag Spewer: no mod to erase — no effect.');
-          return;
-        }
-        const id = pickUnit(ctx, 'mod', ctx.controller, mods,
-          'Slag Spewer: erase which of my mods?')!;
-        const mod = g.entity(id);
-        if (!mod) return;
-        self.mods.splice(self.mods.indexOf(id), 1);
-        delete g.s.entities[id];
-        g.ev('info', `${mod.card} is ERASED (Slag Spewer).`);
+        // R113: an ACTIVATED [once] with no "you may" in it. The cost is paid;
+        // a carrier removed in response does not hand the use back.
+        if (!self) { g.ev('info', 'Slag Spewer: the carrier is gone — no damage.'); return; }
         const t = ctx.targets[0];
         if (t) g.dealEffectDamage(ctx, t, 2);
       },

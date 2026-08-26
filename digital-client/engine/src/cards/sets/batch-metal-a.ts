@@ -21,16 +21,14 @@
  *  - TOKEN COPIES (Arcane Echo / Automaton of Abundance): a token is fully
  *    described by card + tokenStats/counters/x, so copies are re-created via
  *    spawnUnit/createSpellToken. Mods on the original are not copied.
- *  - X COSTS AT RESOLUTION (Celestial Shifter / Deformant): X is chosen and
- *    paid (and Deformant's sacrifices happen) at RESOLUTION, Frosted
- *    Denial-style. DISCHARGE IS NO LONGER ONE OF THEM: R64 made its bracket a
- *    real cast cost, paid before the spell is respondable, and the counters
- *    removed ARE X. ⚠ The old reason given here — "the engine has no compound
- *    activation costs" — was STALE for Deformant: one `AbilityCost` carries
- *    `sacrificeSelf` and `sacrificeOther` together and both are paid in the
- *    one cast window. What blocks Deformant is the RECEIPT (its effect needs
- *    the sacrificed units' COUNTERS and neither writer records them), plus
- *    two engine edits on the `CastCost` route. Spelled out on the card.
+ * ✔ X COSTS AT RESOLUTION: NONE LEFT IN THIS FILE. This entry used to name
+ *    Celestial Shifter and Deformant and to say both chose and paid X at
+ *    RESOLUTION, Frosted Denial-style. Deformant went first (a real
+ *    `castCost`, both sacrifices in the cast window, the receipt carrying
+ *    their counters); R196 took Celestial Shifter the same way, with a
+ *    `payMana` cast cost so the [x] is a bracketed cost like every other one
+ *    and the opponent sees X before responding. Discharge stopped being one
+ *    of them at R64.
  *  - BASE-STAT CHANGES (Aberrant Statweaver / Body Swap / Celestial Shifter /
  *    Borrower of Forms) are real REPLACEMENTS of stat layer 2 — the number on
  *    the card changes — not deltas. The one-shots stamp Entity.baseSet via
@@ -633,26 +631,27 @@ card('Celestial Fluxmorph', {
 // "[Augment] [x]: I become base X/X until regroup." — m/2 2/2 {Haste} Cosmic
 // Alien Unit. An activated ability inside the [Augment] box: usable on the
 // card itself when played normally (via 'augment') and on a host when
-// donated (via { mod }). ⚠ header: X is chosen and paid at RESOLUTION
-// (Frosted Denial's pattern); "base X/X" is a temp delta from the base, so
-// counters stay on top and regroup restores the printed body.
+// donated (via { mod }). "Base X/X" is a layer-2 rewrite, so counters stay on
+// top and regroup restores the printed body.
+//
+// R196 — THE [x] IS A REAL COST NOW. It used to be chosen and paid at
+// RESOLUTION with a `ctx.choose`, which meant the item sat on the stack with
+// its size unknown and the opponent had to decide whether to answer a "base
+// X/X" without knowing X. R157 §21: any [bracketed] clause is a COST or a
+// MODE, fixed when the item goes on the stack — never a resolution-time pick.
+// `castCost: { kind: 'payMana', n: 'X' }` is that, and it is the SAME
+// collector an X SPELL's bracketed cost uses; `ctx.x` reads back what was
+// paid, which under R157 §1 is what the ability cost.
 card('Celestial Shifter', {
   augmentText: [{
     type: 'activated', cost: {},
     label: '[x]: I become base X/X until regroup',
     effect: {
+      castCost: { kind: 'payMana', n: 'X' },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
         if (!self) { g.ev('info', 'Celestial Shifter: the carrier is gone — no re-base.'); return; }
-        const open = g.openMana(ctx.controller);
-        const opts = [];
-        for (let x = 0; x <= open; x++) opts.push({ label: `X = ${x}`, value: x });
-        const x = ctx.choose('shiftX', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Celestial Shifter: choose X (paid now — engine approximation); I become base X/X until regroup',
-          options: opts,
-        }) as number;
-        g.payMana(ctx.controller, x);
+        const x = ctx.x ?? 0;
         if (x === 0) g.ev('info', `Celestial Shifter: X = 0 — ${self.card} becomes base 0/0.`);
         g.setBase(self, x, x);   // layer 2: "become base X/X", not +X/+X
       },

@@ -383,9 +383,12 @@ const NO_LAYER: Record<string, string> = {
     + 'layer, which is what the inventory entry asks for.',
   'Instrument of Reassignment':
     '"X can\'t be 0." — this X is the ACTIVATED ABILITY\'s X ("[x], Sacrifice another nontoken '
-    + 'unit: Create a Robot X"), chosen at resolution, and `xMin` is a CAST-cost field. The floor '
-    + 'is enforced where the number is actually chosen: the option list is built `for (let x = 1; '
-    + 'x <= open; x++)` and the run bails when no mana is open. Verified in batch-metal-b.ts.',
+    + 'unit: Create a Robot X"), and as of R196 it is a real CAST COST (`castCost: { kind: '
+    + '"payMana", n: "X", xMin: 1 }`), so the printed floor IS `xMin` — the field that forbids, '
+    + 'as against R157 §22/R161\'s warning-only `xZeroWarning`. ⚠ This entry used to say the X '
+    + 'was "chosen at resolution" and that `xMin` was a cast-cost field this ability could not '
+    + 'use, with the floor enforced by a hand-rolled `for (let x = 1; x <= open; x++)` option '
+    + 'list. That option list is gone. Verified in batch-metal-b.ts.',
   'The Bonesculptor':
     '"You may play one unit with no abilities from your bin each deployment." — a standing '
     + 'permission modelled as a free bounded activated ability, documented as an approximation in '

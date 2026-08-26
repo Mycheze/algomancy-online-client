@@ -321,7 +321,8 @@ test('Slag Spewer: [once] [one] + erase a mod → 2 damage to any target', () =>
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'A Pile of Runes'), hostId: spewer });
   const modId = ent(h, spewer)!.mods[0]!;
   h.do({ type: 'activateAbility', seat: p, entityId: spewer, abilityIndex: 0, via: 'augment' });
-  pick(h, { unit: victim });
+  pick(h, { unit: victim });                                  // R57: the target first…
+  pick(h, { eraseMod: modId });                               // …then R196's mod-erase COST
   assert.ok(!ent(h, victim), 'the 2 damage killed the 1/1');
   assert.equal(ent(h, spewer)!.mods.length, 0, 'the mod was consumed');
   assert.ok(!ent(h, modId), 'the mod entity is erased outright');

@@ -604,11 +604,60 @@ export type CastCost =
    * Reaver). `from: 'self'` spends the SOURCE unit's own counters. */
   | { kind: 'removeCounters'; from: 'allies' | 'self'; n: number | 'X'; xMin?: number }
   /** "[Erase X cards from your bin]" (Necromantic Rebuke) */
-  | { kind: 'eraseBin'; n: number | 'X'; xMin?: number };
+  | { kind: 'eraseBin'; n: number | 'X'; xMin?: number }
+  /**
+   * R196 — THE PRINTED BRACKETED MANA COST OF AN ACTIVATED ABILITY: "[x]"
+   * (Celestial Shifter's "[x]: I become base X/X until regroup", Instrument of
+   * Reassignment's "[x], Sacrifice another nontoken unit: Create a Robot X").
+   *
+   * `AbilityCost.mana` is the FIXED half — "[one]", "[two]" — charged
+   * choice-free by `E.payActivationCost`. There is no fixed amount to charge
+   * when the card prints the LETTER, so the variable half lives here, in the
+   * one collector that already knows how to size a cost: it is paid a point at
+   * a time (exactly as `payLife` is), the number paid IS the ability's X, and
+   * `ctx.x` reads it back at resolution. R157 §1 — *"paying X replaces the
+   * letter X on the printed card temporarily"* — so what the ability COSTS is
+   * the number actually paid, and it is settled before the item is respondable.
+   *
+   * ⚠ IT NEVER EATS THE ABILITY'S OWN FIXED MANA. `E.activationManaReserve`
+   * holds back whatever `payActivationCost` still owes — the printed fixed
+   * `AbilityCost.mana` plus R121's activation tax (Crevice Lurker) — because
+   * this collector runs BEFORE that one. Without the reserve a Celestial
+   * Shifter under a Crevice Lurker could spend the tax money on X and then
+   * under-pay the tax.
+   *
+   * `xMin` is the printed floor and FORBIDS ("X can't be 0" — Instrument of
+   * Reassignment), exactly as it does for every other variable cost.
+   */
+  | { kind: 'payMana'; n: number | 'X'; xMin?: number }
+  /**
+   * R196 — "[Recall another ally]" (Auric Ascendant's "[once] [one], Recall
+   * another ally: I gain {g}flying and +2/+0 until regroup").
+   *
+   * A COST, so it is paid on the way to the stack and the opponent sees which
+   * ally went back to a hand before deciding whether to answer. The source is
+   * excluded — "another" — and its unpayability is what GATES the ability:
+   * with no other ally it is not offered at all, so the [once] is never spent
+   * and the [one] is never paid. That is R49's reading, the same one
+   * `canPayCastCost` already gives Deformant's "me and another ally".
+   */
+  | { kind: 'recallUnit' }
+  /**
+   * R196 — "[Erase one of my mods]" (Slag Spewer's "[Augment][once] [one],
+   * Erase one of my mods: I deal 2 damage to any target").
+   *
+   * "My" is the SOURCE — the carrier the ability is anchored on, which is the
+   * HOST when the sentence was donated — so the menu is `item.sourceId`'s mods
+   * and nobody else's. An erase, not a death: no bin, no despawn, nothing
+   * triggers off it (the reading the card has always had; only the MOMENT
+   * moves, from resolution into the cast window).
+   */
+  | { kind: 'eraseMod' };
 
 /** R64: the fixed amount a cost demands, or null when it is variable ('X'). */
 export function costAmount(cost: CastCost): number | null {
-  if (cost.kind === 'sacrificeUnit') return 1;
+  // R196: the kinds that name ONE thing and carry no `n` at all
+  if (cost.kind === 'sacrificeUnit' || cost.kind === 'recallUnit' || cost.kind === 'eraseMod') return 1;
   if (cost.kind === 'gainDebt') return cost.n;
   return cost.n === 'X' ? null : cost.n;
 }
@@ -859,6 +908,14 @@ export interface AbilityCost {
   discard?: number;
   /** "Sacrifice a unit:" — N units you control OTHER than the source */
   sacrificeOther?: number;
+  /**
+   * R196: "Sacrifice another NONTOKEN unit:" (Instrument of Reassignment) —
+   * narrows `sacrificeOther`'s menu and its payability gate the same way
+   * `discardOrSacrifice` already narrows its own. A flag rather than a fourth
+   * atom kind, because it changes WHICH units the one atom may name and
+   * nothing else about how it is collected.
+   */
+  sacrificeNontoken?: true;
   /** "Discard a card OR sacrifice a nontoken unit:" — N payments, each of
    * which may be either a hand card or another NONTOKEN unit you control.
    * The one either/or shape the pool actually prints (Pallid Gorger,

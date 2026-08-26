@@ -657,33 +657,33 @@ card('Immolate', {
 // An ACTIVATED ability in the [Augment] text box: live when played normally
 // (via: 'augment') and donated to hosts (via: { mod }) — apply.ts activates
 // augmentText abilities directly. X = however many of your in-region units
-// you pick (sequential choices, then 'Done'); the sacrifices happen at
-// resolution (approximation of a true activation cost). [once] = bounded (R9).
+// you pick. [once] = bounded (R9).
+//
+// R196 — THE SACRIFICES ARE PAID AT ACTIVATION. They used to be picked one at
+// a time at RESOLUTION, so the ability reached the stack with X unknown: the
+// opponent had to decide whether to answer without knowing whether one
+// Fireball was coming or five, and a negation removed the ability without a
+// single unit having been paid for it. R157 §21 — a bracketed clause is a COST
+// — and R64's own founding complaint about Discharge, one card over.
+//
+// `castCost: { kind: 'sacrificeUnits', n: 'X' }` needed NO new engine code:
+// the variable machinery a spell's bracketed cost already used reaches an
+// activated ability through `EffectDef.castCost`, and `ctx.x` is what was
+// paid. The printed line says "Sacrifice X units" and not "X OTHER units", so
+// the plain `sacrificeUnits` pool — every unit you control in the region,
+// INCLUDING the carrier — is the right one, and it is what the old
+// resolution-time loop offered too.
 card('Infernal Cultivator', {
   augmentText: [{
     type: 'activated', cost: {}, bounded: true,   // [once]
     label: 'Sacrifice X units: create X Fireball 1',
     effect: {
+      castCost: { kind: 'sacrificeUnits', n: 'X' },
       creates: ['Fireball'],
       run: (g, ctx) => {
-        const picks: EntityId[] = [];
-        for (let i = 0; ; i++) {
-          const units = g.unitsOf(ctx.controller, ctx.region).filter(u => !picks.includes(u.id));
-          if (!units.length) break;
-          const c = ctx.choose(`sac:${i}`, {
-            kind: 'payOrDecline', seat: ctx.controller,
-            prompt: `Infernal Cultivator: sacrifice units (${picks.length} picked so far)`,
-            options: [...units.map(u => ({ label: u.card, value: u.id })), { label: 'Done', value: false }],
-          });
-          if (c === false) break;
-          picks.push(c as EntityId);
-        }
-        if (!picks.length) g.ev('info', 'Infernal Cultivator: no unit is sacrificed — X = 0, no Fireballs.');
-        for (const id of picks) {
-          const u = g.entity(id);
-          if (u) g.destroy(u, 'is sacrificed');
-        }
-        for (let i = 0; i < picks.length; i++) g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region);
+        const x = ctx.x ?? 0;
+        if (!x) { g.ev('info', 'Infernal Cultivator: no unit is sacrificed — X = 0, no Fireballs.'); return; }
+        for (let i = 0; i < x; i++) g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region);
       },
     },
   }],

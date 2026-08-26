@@ -1076,7 +1076,9 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
   if (cost.life !== undefined && !e.canPayLife(seat, cost.life)) return false;
   if (cost.discard !== undefined && e.player(seat).hand.length < cost.discard) return false;
   if (cost.sacrificeOther !== undefined
-    && e.unitsOf(seat, region).filter(o => o.id !== u.id).length < cost.sacrificeOther) return false;
+    && e.unitsOf(seat, region)
+      .filter(o => o.id !== u.id && (!cost.sacrificeNontoken || !o.token))   // R196
+      .length < cost.sacrificeOther) return false;
   if (cost.discardOrSacrifice !== undefined) {
     const sacs = e.unitsOf(seat, region).filter(o => o.id !== u.id && !o.token).length;
     if (e.player(seat).hand.length + sacs < cost.discardOrSacrifice) return false;
@@ -1099,8 +1101,9 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
  * you cannot cast.
  */
 function abilityUnusable(
-  e: E, seat: Seat, ab: { effect: EffectDef; usableWhen?: ActivatedAbility['usableWhen'] },
-  u: Entity, region: number,
+  e: E, seat: Seat,
+  ab: { effect: EffectDef; usableWhen?: ActivatedAbility['usableWhen']; cost?: AbilityCost },
+  u: Entity, region: number, taxCard: CardName,
 ): string | null {
   // R77 first: the precondition is about the source, and a self-sacrificing
   // ability's cost would otherwise remove the thing the condition asks about
@@ -1108,7 +1111,13 @@ function abilityUnusable(
     return 'that ability cannot be activated right now';
   }
   const eff = ab.effect;
-  if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, 0, u.id)) {
+  // R196: the ability's OWN fixed mana + R121's activation tax are reserved,
+  // because a variable "[x]" castCost is collected before either is charged —
+  // so "can you pay [x]" must mean "…on top of what you already owe".
+  const manaReserve = ab.cost
+    ? (ab.cost.mana ?? 0) + e.abilityTax(seat, taxCard, region, 'activate').total
+    : 0;
+  if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, 0, u.id, manaReserve)) {
     return 'that ability has nothing it can be used on';
   }
   if (eff.targets && (eff.targets.min ?? 1) > 0
@@ -1149,7 +1158,7 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   const parts = e.composeParts(u, abilityIndex, prefix, viaCard);
   e.need(parts, 'that ability was already used this turn');
   // R64: …and only then, whether the effect has anything to spend itself on
-  const unusable = abilityUnusable(e, seat, ability, u, region);
+  const unusable = abilityUnusable(e, seat, ability, u, region, viaCard ?? e.faceName(u));
   e.need(!unusable, unusable ?? '');
   // R118: the log and the stack row name the FACE — the card this unit
   // currently IS. For anything not wearing a copy that is `u.card` verbatim,
@@ -1172,7 +1181,12 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   item.activationCost = cost;
   const pending: NonNullable<StackItem['pendingCosts']> = [];
   if (cost.discard) pending.push({ kind: 'discard', n: cost.discard });
-  if (cost.sacrificeOther) pending.push({ kind: 'sacrificeOther', n: cost.sacrificeOther });
+  if (cost.sacrificeOther) {
+    pending.push({
+      kind: 'sacrificeOther', n: cost.sacrificeOther,
+      ...(cost.sacrificeNontoken ? { nontoken: true as const } : {}),   // R196
+    });
+  }
   if (cost.discardOrSacrifice) pending.push({ kind: 'discardOrSacrifice', n: cost.discardOrSacrifice });
   if (pending.length) item.pendingCosts = pending;
   e.castChain([item], then);
@@ -2709,7 +2723,7 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         if (ab.timing !== undefined && ab.timing !== (battle ? 'battle' : 'deploy')) return;
         if (!canPayAbilityCost(e, seat, ab.cost, u, region, budgetCard)) return;
         if (ab.bounded && (u.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
-        if (abilityUnusable(e, seat, ab, u, region)) return;                     // R64/R77
+        if (abilityUnusable(e, seat, ab, u, region, budgetCard)) return;         // R64/R77
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });
       });
     };

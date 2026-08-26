@@ -139,6 +139,10 @@ test('Crevice Lurker: R121 — in battle an activated [1] costs [2], and with on
   const A = h.state.initiative, D = 1 - A;
   const lurker = spawn(h, A, 'Crevice Lurker');
   const auric = spawn(h, D, 'Auric Ascendant');       // "[once] [one], Recall another ally: …"
+  // R196: the recall is a real cast COST, so an Auric with no other ally is
+  // not offered at all. This test is about the TAX, so give it something to
+  // pay the other half with — otherwise it measures the wrong refusal.
+  const ally = spawn(h, D, 'Unit Token');
   giveResources(h, D, 'water', 1);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[lurker]] });   // the Lurker walks into the battle
@@ -151,7 +155,8 @@ test('Crevice Lurker: R121 — in battle an activated [1] costs [2], and with on
   assert.equal(offers().length, 1, 'with [2] open the taxed activation is offered');
   h.do({ type: 'activateAbility', seat: D, entityId: auric, abilityIndex: 0 });
   assert.equal(openMana(h, D), 0, 'the activation spent [1] printed + [1] tax');
-  pass(h); pass(h);                                   // resolve (no other ally — no recall)
+  pick(h, { recall: ally });                          // R196: the recall half of the cost
+  pass(h); pass(h);                                   // resolve
   finishBattle(h);
 });
 
@@ -287,6 +292,7 @@ test('Crevice Lurker: R121 — two Lurkers compound: CostMod deltas SUM, so the 
   const l1 = spawn(h, A, 'Crevice Lurker');
   const l2 = spawn(h, A, 'Crevice Lurker');
   const auric = spawn(h, D, 'Auric Ascendant');
+  const ally = spawn(h, D, 'Unit Token');             // R196: the recall half of the cost
   giveResources(h, D, 'water', 2);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[l1], [l2]] });
@@ -297,6 +303,7 @@ test('Crevice Lurker: R121 — two Lurkers compound: CostMod deltas SUM, so the 
   assert.equal(offers().length, 1);
   h.do({ type: 'activateAbility', seat: D, entityId: auric, abilityIndex: 0 });
   assert.equal(openMana(h, D), 0, 'paid [3]');
+  pick(h, { recall: ally });
   pass(h); pass(h);
   finishBattle(h);
 });

@@ -6280,7 +6280,7 @@ export class E {
    * counters anywhere is a legal cast that does nothing, exactly as X = 0 on a
    * mana-X spell is — so the gate is real only where a card sets a floor.
    */
-  canPayCastCost(seat: Seat, cost: CastCost, region: number, handReserve = 0, sourceId?: EntityId): boolean {
+  canPayCastCost(seat: Seat, cost: CastCost, region: number, handReserve = 0, sourceId?: EntityId, manaReserve = 0): boolean {
     const want = costAmount(cost) ?? costXMin(cost);
     switch (cost.kind) {
       case 'sacrificeUnit': return this.unitsOf(seat, region).length > 0;
@@ -6309,7 +6309,43 @@ export class E {
       case 'gainDebt': return true;   // debt is always takeable (R39)
       case 'removeCounters': return this.counterPool(seat, region, cost.from, sourceId) >= want;
       case 'eraseBin': return this.player(seat).bin.length >= want;
+      // R196: a printed "[x]". `manaReserve` is what the SAME activation still
+      // owes its fixed `AbilityCost.mana` plus R121's tax — this collector runs
+      // first, so the money for those must not be on the table.
+      case 'payMana': return this.openMana(seat) - manaReserve >= want;
+      // R196: "[Recall another ally]" — ANOTHER, so the source never counts.
+      case 'recallUnit':
+        return this.unitsOf(seat, region).filter(u => u.id !== sourceId).length >= want;
+      // R196: "[Erase one of my mods]" — MINE, so the pool is the source's own
+      case 'eraseMod': return this.modsOnSource(seat, sourceId).length >= want;
     }
+  }
+
+  /** R196: the mod entities on a "[Erase one of my mods]" cost's source — the
+   * carrier the ability is anchored on, which is the HOST for donated text. */
+  private modsOnSource(seat: Seat, sourceId?: EntityId): Entity[] {
+    const u = sourceId !== undefined ? this.entity(sourceId) : undefined;
+    if (!u || u.controller !== seat || u.absent) return [];
+    return u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
+  }
+
+  /**
+   * R196 — the mana this item's ACTIVATION cost has not been charged yet:
+   * the printed fixed `AbilityCost.mana` plus R121's activation tax.
+   *
+   * `E.collectCastCosts('variable')` runs BEFORE `E.payActivationCost`, so a
+   * "[x]" paid there would otherwise be free to spend money the fixed half is
+   * about to need — a Celestial Shifter under a Crevice Lurker could put every
+   * point into X and then under-pay the tax. Reading `item.activationCost`
+   * makes this self-clearing: `payActivationCost` deletes the field the moment
+   * it charges, so the reserve is 0 for every collector that runs after it.
+   */
+  private activationManaReserve(item: StackItem): number {
+    const cost = item.activationCost;
+    if (!cost) return 0;
+    const tax = item.card !== undefined
+      ? this.abilityTax(item.controller, item.card, item.region, 'activate').total : 0;
+    return (cost.mana ?? 0) + tax;
   }
 
   /** R64: how many +1/+1 counters a "[Remove X +1/+1 counters …]" cost can
@@ -6372,7 +6408,12 @@ export class E {
     return cost.kind === 'sacrificeUnit'
       || (cost.kind === 'sacrificeUnits' && cost.from !== 'self')
       || cost.kind === 'discardCard' || cost.kind === 'removeCounters'
-      || cost.kind === 'eraseBin' || costAmount(cost) === null;
+      // R196: 'payMana' iterates like 'payLife' (a point at a time, so the
+      // reserve is re-read before each one); 'recallUnit' and 'eraseMod' name
+      // a thing, so they carry a choice and cannot be charged outright.
+      || cost.kind === 'eraseBin' || cost.kind === 'payMana'
+      || cost.kind === 'recallUnit' || cost.kind === 'eraseMod'
+      || costAmount(cost) === null;
   }
 
   /** R64: how much of an iterated cost `part` has already paid. */
@@ -6387,6 +6428,9 @@ export class E {
       case 'eraseBin': return paid.erased?.length ?? 0;
       case 'payLife': return paid.life ?? 0;
       case 'gainDebt': return paid.debt ?? 0;
+      case 'payMana': return paid.mana ?? 0;                  // R196
+      case 'recallUnit': return paid.recalled?.length ?? 0;   // R196
+      case 'eraseMod': return paid.erasedMods?.length ?? 0;   // R196
     }
   }
 
@@ -6446,7 +6490,7 @@ export class E {
       // not happen at all — asked ONCE, before the first copy pays.
       if (total !== null && optional && !part.costPaid) {
         const copies = this.costCopySiblings(item, part);
-        if (copies.length > 1 && !this.canPayCastCost(seat, this.costTimes(cost, copies.length), item.region, 0, item.sourceId)) {
+        if (copies.length > 1 && !this.canPayCastCost(seat, this.costTimes(cost, copies.length), item.region, 0, item.sourceId, this.activationManaReserve(item))) {
           for (const p of copies) p.spent = true;
           this.ev('info', `${item.label}: the [${this.castCostLabel(cost)}] cost must be paid ${copies.length} times and cannot be — nothing is paid and that effect is skipped.`);
           continue;
@@ -6455,7 +6499,7 @@ export class E {
       while (!this.costSettled(part, cost)) {
         const done = this.costPaidSoFar(part, cost);
         const owed = total === null ? 1 : total - done;
-        if (!this.canPayCastCost(seat, this.costOwing(cost, owed, done), item.region, 0, item.sourceId)) {
+        if (!this.canPayCastCost(seat, this.costOwing(cost, owed, done), item.region, 0, item.sourceId, this.activationManaReserve(item))) {
           if (total === null) {
             // a variable cost simply stops when nothing more can be paid —
             // what was paid stands, and X is what it is
@@ -6556,6 +6600,9 @@ export class E {
       case 'sacrificeUnit': return { kind: 'sacrificeUnits', n: k };
       case 'sacrificeUnits': return cost.from === 'self' ? cost : { ...cost, n: n * k };
       case 'gainDebt': return cost;
+      // R196: these two carry no `n` at all — one ally, one mod — so there is
+      // nothing to multiply and a spread would invent a field the union lacks.
+      case 'recallUnit': case 'eraseMod': return cost;
       default: return { ...cost, n: n * k } as CastCost;
     }
   }
@@ -6563,7 +6610,9 @@ export class E {
   /** R64: the same cost, restated as the amount still owing — what payability
    * must be asked about mid-payment. */
   private costOwing(cost: CastCost, owed: number, done = 0): CastCost {
-    if (cost.kind === 'sacrificeUnit' || cost.kind === 'gainDebt') return cost;
+    // R196: 'recallUnit'/'eraseMod' join the no-`n` list for the same reason
+    if (cost.kind === 'sacrificeUnit' || cost.kind === 'gainDebt'
+      || cost.kind === 'recallUnit' || cost.kind === 'eraseMod') return cost;
     // `includeSelf`: the source half is paid first and choice-free, so once it
     // IS paid what is still owing is a plain n-unit sacrifice. Asking about
     // `includeSelf` again would look for a source that is now dead and declare
@@ -6604,6 +6653,9 @@ export class E {
       case 'gainDebt': return `gain ${cost.n} debt`;
       case 'removeCounters': return `remove ${n === null ? 'X' : n} +1/+1 counter${n === 1 ? '' : 's'} from ${cost.from === 'self' ? 'me' : 'allies'}`;
       case 'eraseBin': return `erase ${n === null ? 'X' : n} card${n === 1 ? '' : 's'} from your bin`;
+      case 'payMana': return `pay [${n === null ? 'X' : n}]`;      // R196
+      case 'recallUnit': return 'recall another ally';             // R196
+      case 'eraseMod': return 'erase one of my mods';              // R196
     }
   }
 
@@ -6635,6 +6687,27 @@ export class E {
       const seen = new Set<string>();
       return this.player(seat).bin.filter(n => !seen.has(n) && seen.add(n))
         .map(n => ({ label: n, value: { erase: n }, card: n }));
+    }
+    // R196: a printed "[x]" is paid a point at a time for the same reason a
+    // variable life cost is — the reserve `payActivationCost` still needs is
+    // re-read before each point, so X can never eat the fixed half or the tax.
+    if (cost.kind === 'payMana') {
+      const so = part.costPaid?.mana ?? 0;
+      const spare = this.openMana(seat) - this.activationManaReserve(item);
+      return spare >= 1
+        ? [{ label: `Pay [1] more — X = ${so + 1}`, value: { payMana1: true } }]
+        : [];
+    }
+    // R196: "[Recall another ally]" — the source is never on the menu
+    if (cost.kind === 'recallUnit') {
+      return this.unitsOf(seat, item.region)
+        .filter(u => u.id !== item.sourceId)
+        .map(u => ({ label: this.targetLabel({ unit: u.id }), value: { recall: u.id }, card: u.card }));
+    }
+    // R196: "[Erase one of my mods]" — the SOURCE's mods, nobody else's
+    if (cost.kind === 'eraseMod') {
+      return this.modsOnSource(seat, item.sourceId)
+        .map(m => ({ label: `Erase ${m.card}`, value: { eraseMod: m.id }, card: m.card }));
     }
     // R64: a VARIABLE life cost is paid a point at a time, so that R49's
     // "never your last life" is re-asked before each one.
@@ -6751,6 +6824,43 @@ export class E {
       this.loseLife(item.controller, 1, `${item.label} (cost)`);
       return;
     }
+    // R196: one point of a printed "[x]". The reserve is re-checked here and
+    // not only in the option list, because `need` is what a hand-written or
+    // replayed action has to get past.
+    if ('payMana1' in obj) {
+      this.need(this.openMana(item.controller) - this.activationManaReserve(item) >= 1, 'bad cost choice');
+      paid.mana = (paid.mana ?? 0) + 1;
+      this.payMana(item.controller, 1);
+      this.ev('info', `${this.pname(item.controller)} pays [1] — the cost of ${item.label} (X = ${paid.mana}).`);
+      return;
+    }
+    // R196: "[Recall another ally]". A real R70 recall through the one entry
+    // point, so 'handEntered' and 'despawned' both fire — the cost is paid in
+    // the cast window, so those triggers queue and settle after the item is on
+    // the stack, exactly as a "[Sacrifice a unit]" cost's death trigger does.
+    if ('recall' in obj) {
+      const u = this.entity(obj['recall'] as EntityId);
+      this.need(u && u.kind === 'unit' && u.controller === item.controller && !u.absent
+        && u.region === item.region && u.id !== item.sourceId, 'bad cost choice');
+      (paid.recalled ??= []).push({ unit: u!.id, card: u!.card });
+      this.ev('info', `${this.pname(item.controller)} recalls ${u!.card} — the cost of ${item.label}.`);
+      this.recall(u!);
+      return;
+    }
+    // R196: "[Erase one of my mods]". Not `destroy` and not `disposeToBin`:
+    // an erase removes the mod from the game outright, which is the reading
+    // Slag Spewer has always had — only the MOMENT has moved into the window.
+    if ('eraseMod' in obj) {
+      const modId = obj['eraseMod'] as EntityId;
+      const host = item.sourceId !== undefined ? this.entity(item.sourceId) : undefined;
+      const mod = this.entity(modId);
+      this.need(mod && host && host.mods.includes(modId), 'bad cost choice');
+      (paid.erasedMods ??= []).push({ mod: modId, card: mod!.card });
+      host!.mods.splice(host!.mods.indexOf(modId), 1);
+      delete this.s.entities[modId];
+      this.ev('info', `${mod!.card} is ERASED off ${host!.card} — the cost of ${item.label}.`);
+      return;
+    }
     if ('discard' in obj) {
       const idx = obj['discard'] as number;
       const name = this.player(item.controller).hand[idx];
@@ -6824,6 +6934,81 @@ export class E {
     this.destroy(u!, 'is sacrificed');
   }
 
+  /** R49/R196: the units one choice-bearing activation-cost atom may name.
+   * The source is never one of them ("another"), and a `discardOrSacrifice`
+   * or a `nontoken`-flagged atom may not name a token. The ONE reading the
+   * option list, the payability gate and `payItemCost`'s validation share. */
+  private itemCostSacrifices(item: StackItem, atom: NonNullable<StackItem['pendingCosts']>[number]): Entity[] {
+    const nontokenOnly = atom.kind === 'discardOrSacrifice' || atom.nontoken === true;
+    return this.unitsOf(item.controller, item.region)
+      .filter(u => u.id !== item.sourceId && (!nontokenOnly || !u.token));
+  }
+
+  /** R196: can this ONE choice-bearing atom still be paid, right now? */
+  private itemCostAtomPayable(item: StackItem, atom: NonNullable<StackItem['pendingCosts']>[number]): boolean {
+    const hand = this.player(item.controller).hand.length;
+    const sacs = this.itemCostSacrifices(item, atom).length;
+    switch (atom.kind) {
+      case 'discard': return hand >= atom.n;
+      case 'sacrificeOther': case 'playSacrifice': return sacs >= atom.n;
+      case 'discardOrSacrifice': return hand + sacs >= atom.n;
+    }
+  }
+
+  /**
+   * R196 — THE COMPOUND-COST GATE, and the fix for the half-pay hazard the
+   * 2026-08-23 audit left documented inside `collectItemCosts`.
+   *
+   * An activation cost is collected by up to three collectors in one window,
+   * in this order: a VARIABLE `castCost` (R64), then the choice-free half
+   * (`payActivationCost` — mana, life, debt, sacrifice-me), then the
+   * choice-bearing atoms (`collectItemCosts`), then a FIXED `castCost`. Each
+   * charges as it goes. So a COMPOUND cost — one that uses more than one of
+   * them — could charge its first half and only then discover the second half
+   * unpayable, at which point "nothing is paid and the ability does nothing"
+   * is a lie about the mana.
+   *
+   * R110 already answers this shape for a multiplied graft cost: *all or
+   * nothing, asked ONCE, before the first copy pays*. This is that, for a
+   * compound activation cost — asked at the TOP of the window, where nothing
+   * has been charged yet, so abandoning really does pay nothing. `collectTargets`
+   * re-runs from the top after every answered decision and `activationCost` is
+   * deleted the moment the choice-free half is charged, so this asks exactly
+   * once per activation, before the first payment.
+   *
+   * ⚠ IT IS A GATE, NOT A REPAIR, and the reachability matters. Nothing can
+   * act inside the cast window — every suspension raised there is a question
+   * for the PAYER, triggers only queue, and the opponent never holds priority
+   * — so the audit's "a response took the last unit" cannot actually happen.
+   * What CAN happen is a payer's own earlier atom eating a later one's pool
+   * (pay X by sacrificing units, then owe a sacrifice). The per-collector
+   * "cost can no longer be paid" branches stay as belt-and-braces beneath it.
+   */
+  private gateCompoundCost(item: StackItem): void {
+    const cost = item.activationCost;
+    if (!cost) return;                                   // already charged, or not an activation
+    const charges = this.activationManaReserve(item) > 0
+      || !!(cost.life || cost.debt || cost.sacrificeSelf || cost.eraseSelf);
+    if (!charges) return;                                // not compound: only one collector will charge
+    const atomsBad = (item.pendingCosts ?? []).some(a => !this.itemCostAtomPayable(item, a));
+    const partsBad = item.parts.some(p => {
+      if (p.spent || p.costPaid) return false;
+      const cc = effectByKey(p.effectKey).castCost;
+      // a VARIABLE cost is never "unpayable" — it simply closes at what was
+      // paid, and X = 0 is legal (R74). Only a FIXED one can fail.
+      if (!cc || costAmount(cc) === null) return false;
+      return !this.canPayCastCost(item.controller, cc, item.region, 0, item.sourceId,
+        this.activationManaReserve(item));
+    });
+    if (!atomsBad && !partsBad) return;
+    this.ev('info', `${item.label}: part of the activation cost can no longer be paid — `
+      + 'nothing is paid and the ability does nothing.');
+    // CARD-TODO #18: nothing was paid and nothing will resolve, so no use is spent.
+    for (const p of item.parts) { p.spent = true; this.refundPart(item, p); }
+    delete item.pendingCosts;
+    delete item.activationCost;
+  }
+
   /**
    * R49: the ITEM-level activation costs that carry a choice — "Discard a
    * card:", "Sacrifice a unit:". Collected in the same window as the cast
@@ -6838,9 +7023,10 @@ export class E {
       const atom = item.pendingCosts[0]!;
       const seat = item.controller;
       // "sacrifice a NONTOKEN unit" is the printed wording of the either/or
-      // shape; the plain sacrifice-another cost takes any unit you control
-      const sacs = this.unitsOf(seat, item.region)
-        .filter(u => u.id !== item.sourceId && (atom.kind !== 'discardOrSacrifice' || !u.token));
+      // shape; the plain sacrifice-another cost takes any unit you control —
+      // unless R196's `nontoken` flag is set (Instrument of Reassignment's
+      // "Sacrifice another nontoken unit"), which narrows it the same way.
+      const sacs = this.itemCostSacrifices(item, atom);
       const discards: DecisionOption[] = this.player(seat).hand
         .map((n, i) => ({ label: atom.kind === 'discard' ? n : `Discard ${n}`, value: { discard: i }, card: n }));
       const sacrifices: DecisionOption[] = sacs
@@ -6853,12 +7039,18 @@ export class E {
         // the payment vanished between activation and collection (a response
         // took the last unit): the cost is unpayable, so nothing is paid and
         // the whole activation is skipped — R35's unpayable-cost reading.
-        // ⚠ LATENT (2026-08-23 audit): "nothing is paid" holds only because
-        // no pool ability combines a choice-free half (mana/life/debt/
-        // sacrifice-me, charged by payActivationCost one call EARLIER) with a
-        // choice half like this one. The first card that does will reach
-        // here with its mana already spent — refund it or reorder the two
-        // collectors then; a ruling is needed on which.
+        // ⚠ THE 2026-08-23 AUDIT'S LATENT HALF-PAY IS FIXED (R196), and this
+        // branch is now the belt to that braces. It used to read: "nothing is
+        // paid" holds only because no pool ability combines a choice-free half
+        // (charged by payActivationCost one call EARLIER) with a choice half
+        // like this one — the first card that does will reach here with its
+        // mana already spent. FOUR cards now do (Instrument of Reassignment,
+        // Auric Ascendant, Slag Spewer, and any future compound), and the
+        // answer chosen was neither "refund" nor "reorder" but R110's: the
+        // ALL-OR-NOTHING gate `E.gateCompoundCost`, asked at the top of the
+        // cast window BEFORE anything is charged. See its comment for why the
+        // audit's own scenario ("a response took the last unit") is not in
+        // fact reachable, and what is.
         // R122: for a 'playSacrifice' atom this branch is unreachable by
         // construction today — canPayCard gated the play on the count, and
         // nothing may act between the gate and this collection — but it is
@@ -6905,9 +7097,9 @@ export class E {
     } else {
       const id = (val as { unit: EntityId }).unit;
       const u = this.entity(id);
-      this.need(u && u.kind === 'unit' && u.controller === item.controller && !u.absent
-        && u.region === item.region && u.id !== item.sourceId
-        && (atom!.kind !== 'discardOrSacrifice' || !u.token), 'bad cost choice');
+      // R196: the ONE reading of "which units may this atom name" — the same
+      // helper the option list and the payability gate use.
+      this.need(u && this.itemCostSacrifices(item, atom!).some(o => o.id === u.id), 'bad cost choice');
       (receipt.sacrificed ??= []).push(u!.card);
       this.ev('info', `${this.pname(item.controller)} sacrifices ${u!.card} — the cost of ${item.label}.`);
       this.destroy(u!, 'is sacrificed');
@@ -6928,6 +7120,9 @@ export class E {
    * player who cannot aim the ability anywhere still has their unit.
    */
   collectTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+    // R196: FIRST, before any collector charges anything — a COMPOUND
+    // activation cost is all or nothing (R110's rule, one scope up).
+    this.gateCompoundCost(item);
     this.collectX(item, then, moreItems);
     // R64: a VARIABLE bracketed cost is where X comes from ("[Remove X +1/+1
     // counters from allies]", "[Sacrifice X units]"), so it is paid up here

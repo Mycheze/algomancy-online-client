@@ -28,10 +28,14 @@
  *  - Formless: "becomes a base 4/4" REWRITES layer 2 (E.setBase), and the
  *    "loses all attributes until regroup" half is R62's until-regroup
  *    suppression — both cleared at regroup.
- *  - Instrument of Reassignment: the "[x], Sacrifice another nontoken unit"
- *    COSTS are paid at RESOLUTION (the DSL's activated-cost shape has no X
- *    and no sacrifice-another; Frosted Denial precedent for X-at-resolution).
- *    The sacrifice may be any of your nontoken units, not region-limited.
+ * ✔ Instrument of Reassignment: its "[x], Sacrifice another nontoken unit"
+ *    costs are REAL COSTS as of R196, paid in the cast window. This entry used
+ *    to say they were paid at RESOLUTION because "the DSL's activated-cost
+ *    shape has no X and no sacrifice-another" — it has both now
+ *    (`CastCost.payMana` with `n: 'X'`, and `AbilityCost.sacrificeNontoken`),
+ *    and the sacrifice is region-scoped like every other cost the collectors
+ *    pay. It is the pool's first COMPOUND activation cost, so it is also the
+ *    card `E.gateCompoundCost` was written for.
  *  - Invasive Reassignment: the swap freezes the target's EFFECTIVE stats at
  *    resolution as a temp delta (later stat changes shift both sides).
  *    Its printed {Reaping} is NO LONGER hand-rolled here. R184 moved the
@@ -240,38 +244,43 @@ card('Hooba-Bot', {
 // "[Augment] [x], Sacrifice another nontoken unit: Create a Robot X. X can't
 // be 0." — mm/2 3/1 Spirit Construct Unit. An ACTIVATED ability in the
 // [Augment] text box: live when played normally (via: 'augment') and donated
-// to hosts (via: { mod }). ⚠ header approximation: both costs are paid at
-// RESOLUTION — X is chosen (1..open mana) and paid there, and the sacrifice
-// is any of your nontoken units other than the carrier. No mana or no victim
-// → no effect. The Robot arrives at the carrier's region (R115).
+// to hosts (via: { mod }). The Robot arrives at the carrier's region (R115).
+//
+// R196 — BOTH COSTS ARE REAL COSTS NOW, and this is the card that made the
+// COMPOUND shape a real one. They used to be chosen and paid at RESOLUTION, so
+// the ability reached the stack with X unknown and the victim unnamed and the
+// opponent answered blind. R157 §21: a [bracketed] clause is a COST, fixed
+// when the item goes on the stack — never a resolution-time pick.
+//
+//  · "[x]" is `castCost: { kind: 'payMana', n: 'X', xMin: 1 }`, collected by
+//    the same machinery an X SPELL's bracketed cost uses. `xMin` is the
+//    printed "X can't be 0" — a floor that FORBIDS, which is exactly what
+//    `xMin` is for (contrast R157 §22/R161's `xZeroWarning`, where paying zero
+//    is merely a bad idea you are allowed to have).
+//  · "Sacrifice another nontoken unit" is `AbilityCost.sacrificeOther` with
+//    R196's `sacrificeNontoken` flag: "another" is the collector's own source
+//    exclusion, "nontoken" is the flag.
+//
+// ⚠ IT IS THE FIRST COMPOUND ACTIVATION COST IN THE POOL — a variable
+// `castCost` charged by one collector and a choice-bearing atom by another —
+// which is the shape the 2026-08-23 "latent half-pay" audit note was about.
+// `E.gateCompoundCost` is the answer that was chosen over refunding or
+// reordering: all or nothing, asked at the top of the cast window before
+// either collector has charged anything.
+//
+// Both halves GATE the activation (R49), so an Instrument with no open mana or
+// no other nontoken unit is not offered at all. The two "no effect" bail-outs
+// this run used to carry went with them — an unpayable cost is not something
+// you discover after activating.
 card('Instrument of Reassignment', {
   augmentText: [{
-    type: 'activated', cost: {},   // [x] + the sacrifice, paid at resolution
+    type: 'activated', cost: { sacrificeOther: 1, sacrificeNontoken: true },
     label: '[x], sacrifice another nontoken unit: create a Robot X',
     effect: {
+      castCost: { kind: 'payMana', n: 'X', xMin: 1 },
       creates: ['Robot'],
       run: (g, ctx) => {
-        const open = g.openMana(ctx.controller);
-        if (open < 1) { g.ev('info', "Instrument of Reassignment: X can't be 0 and no mana is open — no effect."); return; }
-        const victims = g.unitsOf(ctx.controller).filter(u => !u.token && u.id !== ctx.sourceId);
-        if (!victims.length) { g.ev('info', 'Instrument of Reassignment: no other nontoken unit to sacrifice — no effect.'); return; }
-        const xOpts: { label: string; value: unknown }[] = [];
-        for (let x = 1; x <= open; x++) xOpts.push({ label: `X = ${x}`, value: x });
-        const x = ctx.choose('iorX', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Instrument of Reassignment: choose X (paid now — engine approximation)',
-          options: xOpts,
-        }) as number;
-        const sacId = ctx.choose('iorSac', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Instrument of Reassignment: sacrifice another nontoken unit',
-          options: victims.map(u => ({ label: u.card, value: u.id, card: u.card })),
-        }) as EntityId;
-        const victim = g.entity(sacId);
-        if (!victim) return;
-        g.payMana(ctx.controller, x);
-        g.destroy(victim, 'is sacrificed');
-        makeRobot(g, ctx.controller, x, ctx.region);
+        makeRobot(g, ctx.controller, ctx.x ?? 1, ctx.region);
       },
     },
   }],

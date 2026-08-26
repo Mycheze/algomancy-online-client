@@ -767,15 +767,17 @@ test('Celestial Fluxmorph: counters on spawn and on being modded; all removed at
 
 // ── Celestial Shifter ────────────────────────────────────────────────────
 
-test('Celestial Shifter: [x] makes it base X/X until regroup (X paid at resolution)', () => {
+test('Celestial Shifter: [x] makes it base X/X until regroup (X paid at ACTIVATION)', () => {
   const h = new Harness(2609);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   const sh = spawn(h, A, 'Celestial Shifter');              // 2/2
   giveResources(h, A, 'metal', 5);
   h.do({ type: 'activateAbility', seat: A, entityId: sh, abilityIndex: 0, via: 'augment' });
-  assert.equal(h.state.decision!.options.length, 6, 'X offered 0..open mana (5)');
-  pick(h, 5);
+  // R196: the [x] is a `payMana` cast COST, paid a point at a time in the cast
+  // window — "pay 1 more" plus "that's enough", the shape every variable cost
+  // in the pool has, instead of one X=0..5 menu at resolution.
+  for (let k = 0; k < 5; k++) pick(h, { payMana1: true });
   assert.deepEqual(effStats(h, sh), [5, 5], 'base 5/5');
   assert.equal(h.state.players[A]!.resources.filter(r => r.state === 'open').length, 0, 'X = 5 was paid');
   toNextBattle(h, A);

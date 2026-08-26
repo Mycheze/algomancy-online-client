@@ -262,6 +262,16 @@ test('R113 SPENDS the use where an activated ability was used and simply whiffed
   // Both of these are `type: 'activated'`. The player chose to activate and
   // paid the [one]; there is no "you may" inside either of them to decline,
   // so finding nothing to work on cannot hand the use back.
+  //
+  // ⚠ R196 MOVED THE GROUND UNDER BOTH SUBJECTS, and the rule survives it.
+  // "Recall another ally" and "Erase one of my mods" are real cast COSTS now,
+  // so the boards below cannot be reached through the reducer at all: an
+  // unpayable cost means the ability is not OFFERED, the [one] is never paid
+  // and the [once] is never spent (R49, ruled in R196 —
+  // test/167-variable-ability-costs.test.ts pins that direction). What these
+  // two direct-run assertions still guard is the R113 half that did not
+  // change: neither RUN asks for its budget back. A `refundBudget()` appearing
+  // in either of them would be the wrong family however the board got here.
   const { g, h, A } = board(9412);
   const auric = getCard('Auric Ascendant').abilities![0]!;
   assert.equal(auric.type, 'activated');
@@ -270,7 +280,7 @@ test('R113 SPENDS the use where an activated ability was used and simply whiffed
   assert.equal(g.unitsOf(A, self.region).filter(u => u.id !== self.id).length, 0,
     'there is no other ally — the whiff branch');
   assert.ok(!refunds(auric.effect, g, { controller: A, sourceId: self.id }),
-    'Auric Ascendant with nobody to recall has SPENT its [once] (R113)');
+    'Auric Ascendant resolving with no recall in its receipt does not ask for its [once] back');
 
   const slag = getCard('Slag Spewer').augmentText![0]!;
   assert.equal(slag.type, 'activated');
@@ -278,7 +288,7 @@ test('R113 SPENDS the use where an activated ability was used and simply whiffed
   const spewer = g.entity(spawn(h, A, 'Slag Spewer'))!;
   assert.equal(spewer.mods.length, 0, 'it carries no mod — the whiff branch');
   assert.ok(!refunds(slag.effect, g, { controller: A, sourceId: spewer.id }),
-    'Slag Spewer with no mod to erase has SPENT its [once] (R113)');
+    'Slag Spewer resolving with no mod in its receipt does not ask for its [once] back');
 });
 
 test('R113 SPENDS the use where a TARGETED bounded ability missed (Graxxlid)', () => {

@@ -367,10 +367,14 @@ test('Instrument of Reassignment: [x] + sacrifice another nontoken unit → a Ro
   const slime = spawn(h, p, 'Lurking Slimebeast');
   giveResources(h, p, 'metal', 3);
   h.do({ type: 'activateAbility', seat: p, entityId: inst, abilityIndex: 0, via: 'augment' });
-  assert.equal(h.state.decision!.options.length, 3, 'X = 1..open mana');
-  pick(h, 2);                                               // X = 2
+  // R196: "[x]" is a `payMana` cast cost with xMin 1 — at X = 0 the only
+  // option is to pay, because the card prints "X can't be 0"
+  assert.deepEqual(offered(h), ['{"payMana1":true}'], "X can't be 0 — no way to stop at zero");
+  pick(h, { payMana1: true });
+  pick(h, { payMana1: true });                              // X = 2
+  pick(h, { doneCost: true });                              // that's enough
   assert.equal(h.state.decision!.options.length, 1, 'only ANOTHER nontoken unit is offered (not me)');
-  pick(h, slime);
+  pick(h, { unit: slime });
   assert.ok(!ent(h, slime), 'sacrificed');
   assert.ok(h.state.players[p]!.bin.includes('Lurking Slimebeast'), 'nontoken sacrifice → bin');
   const robot = unitsOf(h, p).find(u => u.card === 'Robot')!;

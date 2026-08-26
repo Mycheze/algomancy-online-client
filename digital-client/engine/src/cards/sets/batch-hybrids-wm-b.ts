@@ -16,11 +16,14 @@
  * R31 (combat-damage-sub-step triggers resolve immediately).
  *
  * ⚠ ENGINE APPROXIMATIONS shared by this batch:
- *  - RESOLUTION-TIME COSTS (Auric Ascendant's "Recall another ally", and
- *    Abduct's "unless its controller pays [x]" ransom): rider costs on
- *    ACTIVATED abilities / R6 ransoms are still mid-resolution choices —
- *    with nothing to pay, the effect resolves without effect. Volatile
- *    Toxicity's "/[Sacrifice a unit]" is a true CAST COST now (R35).
+ *  - RESOLUTION-TIME COSTS: only Abduct's "unless its controller pays [x]"
+ *    ransom is left, and an R6 ransom is a mid-resolution choice by design —
+ *    it is the OPPONENT's decision, made after the spell resolved. This entry
+ *    used to name AURIC ASCENDANT's "Recall another ally" beside it; R196 made
+ *    that a real `castCost` (`kind: 'recallUnit'`), paid in the cast window,
+ *    so with no other ally the ability is not offered at all rather than
+ *    resolving without effect. Volatile Toxicity's "/[Sacrifice a unit]" has
+ *    been a true CAST COST since R35.
  *  - X SPELLS (Abduct, Floral Singularity): X is chosen and paid AT CAST
  *    (R35) and stored on the item. Abduct's "with cost [x] or less" is a real
  *    TARGETING restriction — R64 put the item's X on TargetCtx (dsl.ts names
@@ -101,7 +104,7 @@
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, notSelf, unitRestrict, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, manaOf, pickUnit } from './helpers.ts';
+import { selfOf, isEnt, manaOf } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -209,35 +212,39 @@ card('Volatile Toxicity', {
 // ─────────────────────── WATER / METAL (bm) ───────────────────────────
 
 // "[once] [one], Recall another ally: I gain {g}flying and +2/+0 until
-// regroup." — bm/2 2/1 Mystic Avatar Unit. Activated: the mana is a real
-// activation cost; the recall is paid at resolution (⚠ header — with no
-// other ally the ability resolves without effect). [once] = bounded (R9).
+// regroup." — bm/2 2/1 Mystic Avatar Unit. [once] = bounded (R9).
+//
+// R196 — BOTH HALVES OF THE COST ARE PAID IN THE CAST WINDOW NOW. The [one]
+// always was (`AbilityCost.mana`, charged by `E.payActivationCost`); the
+// RECALL was picked at RESOLUTION, so the item reached the stack without
+// naming which ally was going away and the opponent answered blind. R157 §21
+// settles it: everything before the colon is a COST, fixed when the item goes
+// on the stack. `castCost: { kind: 'recallUnit' }` is that half.
+//
+// ⚠ IT CHANGES WHEN THE [once] IS SPENT, and deliberately. This run used to
+// carry a "no other ally to recall — no effect" branch that R113 put in the
+// SPENDS family (you activated it and whiffed). A cost cannot whiff: with no
+// other ally the recall is unpayable, so `abilityUnusable` never offers the
+// ability, the [one] is never paid and the use is never spent. That is R49's
+// reading and it is the same one `canPayCastCost` gives Deformant's "me and
+// another ally" — an ability you cannot pay for is not offered, not fizzled.
+//
+// The [one] plus a choice-bearing `castCost` is a COMPOUND cost, so this card
+// stands on `E.gateCompoundCost` (all or nothing, before anything is charged)
+// rather than on the half-pay note it replaced.
 card('Auric Ascendant', {
   abilities: [{
     type: 'activated', cost: { mana: 1 }, bounded: true,   // [once]
     label: '[one], recall another ally: I gain {Flying} and +2/+0 until regroup',
     effect: {
+      castCost: { kind: 'recallUnit' },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        // R113: this is an ACTIVATED [once] — the player chose to activate it
-        // and paid [one]. There is no "you may" inside it to decline, so both
-        // of these branches SPEND the use ("regardless of if that ability
-        // resolves or doesn't"). No refund, deliberately.
-        if (!self) { g.ev('info', 'Auric Ascendant: the carrier is gone — no recall, no {Flying}.'); return; }
-        const pool = g.unitsOf(ctx.controller, ctx.region).filter(u => u.id !== self.id);
-        if (!pool.length) {
-          g.ev('info', 'Auric Ascendant: no other ally to recall — no effect.');
-          return;
-        }
-        const id = pickUnit(ctx, 'recall', ctx.controller, pool,
-          'Auric Ascendant: recall another ally')!;
-        const ally = g.entity(id);
-        if (!ally) return;
-        g.recall(ally);
-        const me = g.entity(self.id);
-        if (!me) return;
-        g.addTempAttr(me, 'Flying');
-        g.addTemp(me, 2, 0);
+        // R113: an ACTIVATED [once] with no "you may" in it. The cost is paid;
+        // a carrier removed in response does not hand the use back.
+        if (!self) { g.ev('info', 'Auric Ascendant: the carrier is gone — no {Flying}, no +2/+0.'); return; }
+        g.addTempAttr(self, 'Flying');
+        g.addTemp(self, 2, 0);
       },
     },
   }],
