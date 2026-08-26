@@ -179,23 +179,6 @@ export const UNREACHED: Record<string, string> = {
     + 'offer is declined.',
 
   // ── EVENTLESS: it happens, and nothing in the game can see it happen ────
-  'Slag Spewer':
-    'EVENTLESS — "[Augment][once] [one], Erase one of my mods: I deal 2 damage to any target." '
-    + 'The erase HAPPENS: batch-hybrids-fwe.ts splices the mod out of `self.mods` and does '
-    + "`delete g.s.entities[id]`. But it announces it with `g.ev('info', `${mod.card} is ERASED "
-    + "(Slag Spewer).`)` — an `info` line, not an `erased` event — and the card never reaches the "
-    + "player's public erased pile, which R65 says is where erasing puts a card. Every other erase "
-    + "site in the codebase emits `erased`: `E.eraseFromPlay`, Spore of Regenesis's cost, and both "
-    + 'bin-erase sites in batch-metal-a / batch-dark-b. '
-    + '⚠ THIS ENTRY IS NEW IN R199 AND IT IS NOT A REGRESSION. Before R199 the claim read as '
-    + 'observed, and it was observed by ACCIDENT: the press run used to end mid-activation, and '
-    + '`drillCard`\'s "ran out of steps" tail dumps everything from that activation to the end of '
-    + 'the game into `activateTypes` — which swallowed the `erased` that the `die` beat produced '
-    + 'when the HOST was destroyed. R199 made the runs end cleanly, the unbounded window closed, '
-    + 'and the card stopped borrowing somebody else\'s event. REPORTED to the ticket owner; it '
-    + 'needs a CARD-TODO id and then this entry becomes a REAL one.',
-
-  // ── VOCAB: the engine emits a real event; no EVIDENCE entry names it ────
   'Hooba-Lan':
     'VOCAB — "create a Shard" makes a RESOURCE and emits `resourceActivated`. EVIDENCE.create is '
     + 'tokenCreated/spawned. ⚠ Widening it would let a card promising "create a 2/2 unit" pass by '

@@ -279,13 +279,17 @@ test('R208 Slag Spewer: an erase paid as a COST still announces itself with "inf
   assert.equal(ent(h, modId), undefined, 'and deleted from the game');
   assert.ok(!h.state.players[D]!.bin.includes('A Pile of Runes'), 'an erase is not a bin');
 
-  // …and the ANNOUNCEMENT, unchanged, which is the open question
+  // …and the ANNOUNCEMENT. R219 — ANSWERED, and the question should never have
+  // been asked: the card says "erase", which names the destination. The owner,
+  // asked it: "Obviously the card says where it should end up. It's erased…
+  // It should just end up in the erased zone."
   assert.ok(h.log.some(l => l.startsWith('A Pile of Runes is ERASED off Slag Spewer — the cost of ')),
-    'the "info" line is verbatim what it was before the refactor');
-  assert.ok(!erasedEvents(h).includes('A Pile of Runes'),
-    '⚠ Q3 IS UNANSWERED: a cost-erased mod files NO "erased" event today, and R208 did not change that');
-  assert.deepEqual(erasedPile(h, D), [],
-    '…so it reaches no public erased pile either. Answering Q3 "yes" edits eraseMod, and then this line.');
+    'the wording is unchanged — only the event TYPE and the pile moved');
+  assert.ok(erasedEvents(h).includes('A Pile of Runes'),
+    'a cost-erase emits a real `erased` event, like every other erase in the game');
+  assert.deepEqual(erasedPile(h, D), ['A Pile of Runes'],
+    'and it reaches the R65 public pile — which exists BECAUSE of the complaint that "there is '
+    + 'currently no way to view erased cards". A card erased to nowhere is that bug.');
 });
 
 test('R208 Suppression Field: mods leave host and game, the host lives, and the pile is untouched', () => {
@@ -306,9 +310,15 @@ test('R208 Suppression Field: mods leave host and game, the host lives, and the 
   assert.deepEqual(ent(h, host)!.mods, [], 'unlinked');
   assert.equal(ent(h, modId), undefined, 'and deleted');
   assert.ok(h.log.some(l => l === `Suppression Field ERASES 1 mod(s) on ${ent(h, host)!.card}.`),
-    'its own "info" wording, unchanged — this site says ERASES and files nothing');
-  assert.ok(!erasedEvents(h).includes('A Pile of Runes'),
-    '⚠ the same open Q3: a real NONTOKEN mod card leaves the game and no "erased" event says so');
+    'its own summary line is unchanged');
+  // R219 — this card was the SECOND live instance of the same defect and was on
+  // no ticket: it removes real nontoken mod CARDS from the game, says "ERASES"
+  // in its own log line, and filed nothing. It is fixed for free by the ruling,
+  // because eraseMod is the choke point every one of these routes through — the
+  // whole point of building the primitive before answering the question.
+  assert.ok(erasedEvents(h).includes('A Pile of Runes'),
+    'a real nontoken mod card leaving the game files the pile, wherever it leaves from');
+  assert.deepEqual(erasedPile(h, D), ['A Pile of Runes'], 'and it is visible to both players');
   finishBattle(h);
 });
 

@@ -36,13 +36,20 @@ test('R217 §1: the UNREACHED ledger is imported whole — 37 cards, not a scrap
   // The exact number the scrape got wrong. If the ledger legitimately changes,
   // this fails and names it — which is the point: the queue's contents should
   // never move silently.
-  assert.equal(UNREACHED_CARDS.length, 37,
-    `the UNREACHED ledger now has ${UNREACHED_CARDS.length} cards, not 37. If that is a real `
+  // 37 -> 36 on 2026-08-26: SLAG SPEWER LEFT THE LEDGER. It was the sole
+  // EVENTLESS entry — "implemented, really happens, and nothing in the game can
+  // see it happen" — and R219 (an erased card goes to the erased pile) made its
+  // promise observable. The category is now empty and gone from the partition.
+  // A card leaving this ledger is the good direction; the assertion exists so
+  // it cannot happen SILENTLY, and this is it working.
+  assert.equal(UNREACHED_CARDS.length, 36,
+    `the UNREACHED ledger now has ${UNREACHED_CARDS.length} cards, not 36. If that is a real `
     + 'change (a card was reached, or a new one went unreached) update this number AND re-read '
     + 'the queue — every entry here is a card only a human can set up. If it is NOT a real '
     + 'change, something is reading the ledger wrongly again.');
 
   // the five the scrape dropped, by name, because they are the proof
+  // ⚠ 'Slag Spewer' is deliberately NOT in this list any more — see above.
   for (const card of ['Worldbender', 'Nothyr', 'Proph', 'Skybreaker', 'Vengeance']) {
     assert.ok(UNREACHED_CARDS.includes(card),
       `${card} is one of the five entries written as a BARE identifier that the original file `

@@ -16717,3 +16717,64 @@ resolves identically on every legal board. `scenario-queue.ts` gives an
 `[Augment]` bonus for a path that, for a non-Virus card, does not exist — that
 weight wants qualifying, or the ranking keeps promoting cards for a reason that
 cannot pay out.
+
+---
+
+## R219 — an erased card goes to the erased pile, and nobody needed to be asked
+
+*(2026-08-26, round 28. The owner's ruling, and a note on the cost of inventing
+a question.)*
+
+`Slag Spewer` prints *"[Augment][once] [one], **Erase one of my mods**: I deal 2
+damage to any target."* The erase happened. The card went nowhere — deleted,
+one `info` line, and unlike every other erase in the game it never reached the
+player's public erased pile.
+
+That shipped as an **open question**. It was written up as round-27 **Q3 and
+again as Q9**, it held **CARD-TODO #86** open across two rounds, `E.eraseMod`
+was built with a deliberately empty "Q3 seam" and a `void opts.leavesGame` to
+stop the unused parameter being tidied away, and finally a scenario was put in
+front of the owner asking him to rule on it.
+
+His answer, in full:
+
+> **"Obviously the card says where it should end up. It's erased… It should just
+> end up in the erased zone."**
+
+He is right, and the question should never have been asked. **The card says
+"erase". That names the destination.** R65 exists *because* of his earlier
+complaint that *"there's currently no way to view erased cards"* — a card
+erased to nowhere is that same bug, not a design question.
+
+### The fix, and why building the primitive first still paid
+
+`E.eraseMod` files the pile now, so the ruling is one line at one site — which
+is what R208's refactor was for, even though the question it was waiting on was
+imaginary. That immediately fixed a **second live instance nobody had filed**:
+`Suppression Field` removes real nontoken mod cards from the game, says
+*"ERASES"* in its own log line, and filed nothing.
+
+Two deliberate exclusions:
+
+- **`leavesGame: false` skips the pile.** Reclaim the Fallen "erases" a mod that
+  is going **into play**. A pile listing a card you can see on the table is
+  worse than no pile.
+- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a
+  list of cards. (`disposeToBin` does file token mods; that disagreement
+  predates this and was left alone rather than widened.)
+
+### What it cost, and the rule that follows
+
+Three tests had pinned *"it reaches no pile"* as settled behaviour, and
+`84-card-semantics` carried Slag Spewer as **EVENTLESS** — *implemented, really
+happens, and nothing in the game can see it happen*. **Fixing the announcement
+made the promise observable, and the card left the unreached ledger.** A whole
+category entry existed because of a question that had an answer printed on the
+card.
+
+> **If the printed text answers it, it is not a question.** A ticket, a ruling
+> slot and a scenario were all spent hedging on one — and the hedge propagated:
+> every artefact downstream repeated it as though it were open. `docs/13`
+> §5 is about checkers that report more sight than they have; this is the same
+> failure in the other direction — **an instrument reporting less certainty than
+> the data actually carried.**

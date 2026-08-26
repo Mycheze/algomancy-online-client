@@ -6923,14 +6923,27 @@ export class E {
       const mod = this.entity(modId);
       this.need(mod && host && host.mods.includes(modId), 'bad cost choice');
       (paid.erasedMods ??= []).push({ mod: modId, card: mod!.card });
-      // R208 / CT-86: through `E.eraseMod`, the one choke point, instead of
-      // the splice+delete this used to hand-roll. ⚠ THE ANNOUNCEMENT BELOW IS
-      // UNCHANGED, 'info' AND ALL: whether a mod erased as a COST reaches the
-      // R65 public erased pile is round-27's Q3 and it is UNANSWERED. This
-      // refactor exists so that answer is a one-line change inside eraseMod
-      // rather than a judgement call repeated at five sites.
-      this.eraseMod(mod!);
-      this.ev('info', `${mod!.card} is ERASED off ${host!.card} — the cost of ${item.label}.`);
+      // R208 / CT-86, ANSWERED 2026-08-26 (R219). An erased card goes to the
+      // erased pile. The card says "erase"; that names the destination, and
+      // there was never a question here — the owner, asked it: "Obviously the
+      // card says where it should end up. It's erased… It should just end up
+      // in the erased zone."
+      //
+      // ⚠ WHAT THE WRONG QUESTION COST: this shipped as `ev('info', …)` with a
+      // comment calling the destination "UNANSWERED", it was written up as
+      // round-27 Q3 AND Q9, it kept CT-86 open across two rounds, and it put a
+      // scenario in front of the owner asking him to rule on something his
+      // cards already say. R65 exists because of his complaint that "there's
+      // currently no way to view erased cards" — a cost-erase that files
+      // nowhere is that same bug, not an open design question.
+      //
+      // `leavesGame` is now READ (it was `void`ed while this was "open"), so a
+      // site that erases something which is NOT leaving the game — Reclaim the
+      // Fallen puts the card into play — passes `false` and stays off the pile.
+      this.eraseMod(mod!, {
+        leavesGame: true,
+        msg: `${mod!.card} is ERASED off ${host!.card} — the cost of ${item.label}.`,
+      });
       return;
     }
     if ('discard' in obj) {
@@ -9007,7 +9020,8 @@ export class E {
    * Returns false and does nothing if this is not a mod, or its entity is
    * already gone.
    */
-  eraseMod(mod: Entity, opts: { leavesGame?: boolean } = {}): boolean {
+  eraseMod(mod: Entity,
+    opts: { leavesGame?: boolean; msg?: string; alreadyFiled?: boolean } = {}): boolean {
     if (mod.kind !== 'mod') return false;
     if (!this.entity(mod.id)) return false;
     const host = mod.modOf !== undefined ? this.entity(mod.modOf) : undefined;
@@ -9016,19 +9030,33 @@ export class E {
       if (i !== -1) host.mods.splice(i, 1);
     }
     delete this.s.entities[mod.id];
-    // ⚠ THE Q3 SEAM, deliberately empty. `opts.leavesGame` is read here and
-    // nowhere else; when the owner rules that an erased mod card reaches the
-    // R65 public pile, the `ev('erased', …, { seat: mod.owner, cards: [mod.card] })`
-    // goes on this line, behind `opts.leavesGame !== false`. R69 will want a
-    // word about `mod.token` too — a token mod has no card of its own — and
-    // the two existing precedents disagree, which is part of what Q3 has to
-    // settle: `disposeToBin` DOES announce token mods on the erased pile,
-    // Return to Nature only ever erases nontoken bodies' mods.
+    // R219 — AN ERASED CARD GOES TO THE ERASED PILE. This was written as "the
+    // Q3 seam, deliberately empty" and left `void`ed across two rounds while a
+    // question was carried to the owner. There was no question: the card says
+    // "erase", which names the destination. His answer, when finally asked:
+    // "Obviously the card says where it should end up. It's erased… It should
+    // just end up in the erased zone."
     //
-    // `leavesGame` is therefore read NOWHERE today, and the `void` is what
-    // keeps it from being tidied away as dead before the ruling that needs it
-    // arrives. Delete the `void`, not the parameter.
-    void opts.leavesGame;
+    // R65 exists because of his complaint that "there's currently no way to
+    // view erased cards". A site that erases a card and files it NOWHERE is
+    // that bug, and every such site is now this one.
+    //
+    // Two things it deliberately does NOT do:
+    //  · `leavesGame: false` skips the pile. Reclaim the Fallen "erases" a mod
+    //    that is going INTO PLAY, not out of the game, and a pile listing a
+    //    card you can see on the table is worse than no pile.
+    //  · A TOKEN mod is not filed. R133: a token is not a card, it has no card
+    //    to show, and R65's pile is a list of cards. (`disposeToBin` files
+    //    token mods today; that disagreement predates this and is left alone
+    //    rather than widened here.)
+    //  · `alreadyFiled` is for the ONE caller that files the pile itself and
+    //    files it BETTER: Return to Nature groups every mod it erases into a
+    //    single `erased` line per owner, which reads as one event because it
+    //    is one. Per-mod lines underneath would be the same cards twice.
+    if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {
+      this.ev('erased', opts.msg ?? `${mod.card} is erased.`,
+        { seat: mod.owner, cards: [mod.card] });
+    }
     return true;
   }
 

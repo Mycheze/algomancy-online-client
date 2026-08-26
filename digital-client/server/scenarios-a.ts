@@ -137,40 +137,22 @@ export const BATCH_A: Record<string, Scenario> = {
   },
 
   /**
-   * WHY THIS CARD (#3: UNREACHED:EVENTLESS · ruled×16 · [Augment] · CT-86).
+   * ⚠ R219 — THIS SCENARIO USED TO ASK THE OWNER A QUESTION THAT WAS NOT ONE,
+   * and it is worth leaving the note here because the mistake was expensive.
    *
-   * Printed: "[Augment][once] [one], Erase one of my mods: I deal 2 damage to
-   * any target."
+   * It presented "where should an erased mod end up?" as an open ruling. It was
+   * never open. The card says **erase**, and that names the destination. Asked
+   * directly, the owner: *"Obviously the card says where it should end up. It's
+   * erased… It should just end up in the erased zone."*
    *
-   * This is the ONE `EVENTLESS` entry in the whole ledger, and the category
-   * exists for it: the erase really happens, and nothing in the game can see it
-   * happen. `batch-hybrids-fwe.ts` splices the mod out and deletes the entity,
-   * then announces it with `g.ev('info', …)` — an `info` line, not an `erased`
-   * event. Every other erase site in the codebase emits `erased`, and `E.ev()`
-   * is what files a card into `PlayerState.erased`, the public erased pile R65
-   * says erasing puts a card into. So this card's erase reaches no pile and no
-   * listener. `178-played-item-and-erased-mods.test.ts` pins that behaviour
-   * under a heading that says out loud it is OPEN (round-27 Q3); CT-86 is the
-   * ticket.
+   * What the invented question cost: it shipped as `ev('info', …)` with a
+   * comment calling the destination UNANSWERED, was written up as round-27 Q3
+   * AND Q9, kept CT-86 open across two rounds, and then spent ninety seconds of
+   * the owner's testing time asking him to rule on his own card text.
    *
-   * SO THIS SCENARIO IS NOT ASKING "DID IT WORK". It is asking the owner to
-   * rule on a destination, and the `expect` says so rather than implying the
-   * current behaviour is settled. What he can actually SEE is only: the 2
-   * damage landed where he aimed it, the mod vanished off the unit, and one log
-   * line said ERASED. What he cannot see — measured, not observed — is that the
-   * card reached no pile at all. The client draws no erased pile anywhere
-   * (there is no such element in `engine/ui/index.html`), which is R65
-   * predicting itself: "there's currently no way to view erased cards."
-   *
-   * The mod it erases is ITSELF, because "my mods" is the CARRIER's mods
-   * (`E.modsOnSource`) and Slag Spewer is the only one riding this host. That
-   * is the smallest board that reaches the clause, and it puts the question in
-   * its sharpest form: the card erases itself to pay for its own damage, and
-   * then is nowhere.
-   *
-   * The wrong answer still points somewhere else: the damage is aimed at the
-   * OPPONENT, so a mis-resolved "any target" would take 2 off the owner's own
-   * life instead.
+   * The lesson for whoever writes the next scenario: **`expect` states what
+   * should happen.** If the printed text answers it, it is not a question — and
+   * a scenario that hedges teaches the tester to distrust the ones that don't.
    */
   'slag-spewer-erase': {
     id: 'slag-spewer-erase',
@@ -189,13 +171,8 @@ export const BATCH_A: Record<string, Scenario> = {
       + '   is the only one there. Pick it, then pass.\n'
       + 'EXPECTED: the opponent goes 30 -> 28. You stay on 30.\n'
       + 'EXPECTED: Slag Spewer is gone off the unit, and is NOT in your bin (an erase is not a death).\n'
-      + '\n'
-      + 'THE OPEN QUESTION, and the reason this card is in the queue — where should an erased\n'
-      + 'mod END UP? Right now it goes nowhere at all: it is deleted, one log line says ERASED,\n'
-      + 'and unlike every other erase in the game it never reaches your erased pile, so nothing\n'
-      + 'in a game could ever react to it. That is ticket CT-86 and it is UNANSWERED. If the\n'
-      + 'damage and the disappearance look right to you, the card is doing what it prints; the\n'
-      + 'destination is a separate ruling, and the note field is the place for it.',
+      + 'EXPECTED: Slag Spewer appears in your ERASED pile. An erased card goes to the erased\n'
+      + '   zone — the card says so, and this used to file nowhere at all (CT-86, fixed R219).',
     initiative: YOU,
     you: {
       hand: ['Slag Spewer'],

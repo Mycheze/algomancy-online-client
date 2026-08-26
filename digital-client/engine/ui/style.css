@@ -947,6 +947,33 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    not, so the column is always exactly full and never dead. The stack used to
    live here too; it is on the table now (see .stackboard). */
 #app.board .sidehead { flex: none; }
+
+/* R219 — THE SCENARIO PANEL NEEDS ITS OWN SHARE OF THE RAIL, like everything
+ * else in here. `#app.board .side` is `overflow: hidden` ON PURPOSE (the rail
+ * must not scroll away while you act), so every child has to manage its own
+ * height. `.scnpanel` was added after that rule and never got one — so it took
+ * its natural height and the bottom of it simply fell off the screen with no
+ * way to reach it.
+ *
+ * MEASURED in a real browser at 1280x800 before the fix: side scrollHeight
+ * 1162 vs clientHeight 697, panel bottom 1018 against a 713px viewport, and
+ * the ruling textarea's bottom at 970 — 257px below the fold, unreachable,
+ * with `overflow-y: hidden` on the only thing that could have scrolled.
+ *
+ * The owner hit it on his third card and had to report the verdict in chat
+ * instead. THE DETAIL BOX IS THE FEEDBACK CHANNEL: losing it costs the exact
+ * thing this instrument exists to collect (docs/14 §5).
+ *
+ * The split below is about what must never move at 90 seconds per card:
+ *   · head and the four buttons are `flex: none` — always on screen, always
+ *     hittable without aiming or scrolling;
+ *   · the `expect` prose and the detail box each scroll on their own, because
+ *     they are the parts that can be arbitrarily long. */
+#app.board .scnpanel { flex: 0 1 auto; min-height: 0; max-height: 70%; overflow: hidden; }
+#app.board .scnexpect { flex: 0 1 auto; min-height: 3.5em; overflow-y: auto; }
+#app.board .scnhead, #app.board .scnbtns, #app.board .scnstamp { flex: none; }
+#app.board .scndetail { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
+#app.board .scndetail[open] { min-height: 6em; }
 #app.board .preview { flex: 0 1 auto; min-height: 0; max-height: 62%; overflow-y: auto; }
 /* The art is how you recognise the card; the text box is how you play it
    correctly. The first attempt at that balance (2026-08-21) capped the scan at

@@ -440,12 +440,19 @@ async function main(): Promise<void> {
       eq(lives(c), [30, 28], '   THE CLAUSE: the 2 went to the OPPONENT, not to you');
       eq(modsOf(c, 'Ambling Mountaintop'), [], '   the mod is gone off the unit');
       eq(bin(c), [], '   and it is NOT in your bin — an erase is not a death');
-      // THE POINT OF THE TICKET, asserted so it cannot quietly change under the
-      // owner's answer: the erase emits `info`, never `erased`, so `E.ev()`
-      // never files the card into R65's public pile. Skybreaker's cost below is
-      // the positive control — same round trip, and its pile IS filled.
-      eq(c.view.players[0].erased, undefined,
-        '   CT-86: and it reached NO public erased pile either (an `info` line, not an `erased` event)');
+      // R219 — CT-86 ANSWERED AND CLOSED. This used to assert `erased ===
+      // undefined` and call it "the point of the ticket": the cost-erase filed
+      // NOWHERE, and that was carried to the owner as an open question across
+      // two rounds. It was never a question — the card says "erase", which
+      // names the destination:
+      //   "Obviously the card says where it should end up. It's erased…
+      //    It should just end up in the erased zone."
+      // Every erase now routes through E.eraseMod, so this and Suppression
+      // Field were both fixed by one line.
+      // the mod here is Slag Spewer's OWN body, augmented onto the Mountaintop —
+      // this scenario is the card eating itself as its own activation cost.
+      eq(c.view.players[0].erased, ['Slag Spewer'],
+        '   CT-86: the cost-erased mod is on the R65 public pile, like every other erase');
       c.ws.close();
     }
 

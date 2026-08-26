@@ -529,7 +529,12 @@ card('Return to Nature', {
         // against — but it hand-rolled the delete like the other four. Nothing
         // it emits changed. `u.mods = []` stays as the belt for an id whose
         // entity was already gone, which eraseMod declines to touch.
-        for (const m of mods) g.eraseMod(m);
+        // R219 — `alreadyFiled`: the grouped `erased` line above IS the pile
+        // entry, one per owner. eraseMod files the pile itself now, so without
+        // this every card would be listed twice. This site also files TOKEN
+        // mods (matching disposeToBin), which eraseMod deliberately does not —
+        // another reason it keeps its own line rather than delegating.
+        for (const m of mods) g.eraseMod(m, { alreadyFiled: true });
         g.ev('info', `Return to Nature erases ${n} mod(s) from ${u.card}.`);
         u.mods = [];
         touched++;
