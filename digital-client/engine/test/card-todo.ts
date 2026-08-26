@@ -2858,6 +2858,45 @@ export const CARD_TODO: TodoEntry[] = [
       + 'makes the host {Unstable} and lengthens its counters array, so a coarse diff evidenced a '
       + 'pump and a counter for all 117 cards. A COVERAGE NUMBER THAT GOES UP IS NOT '
       + 'SELF-EVIDENTLY GOOD NEWS — ask what a blind checker would report, every time. '
+      + 'ROUND 27 (2026-08-26): 264/316 -> **278/316**; never-observed **52 -> 38** (45 cards -> 37). '
+      + 'augment 129->137, trigger 86->92, activated 35 unchanged, condition 14 unchanged. '
+      + '⚠⚠ MY BRIEF NAMED THE WRONG NEXT STEP, AND THE CORRECTION IS THE FINDING: the '
+      + 'attacking position with the card actually IN the battle ALREADY EXISTED. progressAction has '
+      + 'declared the fullest attack on offer since the drill was written, and doDeclareAttack moves '
+      + 'every attacker into the defender’s region — the card marches every game. What was '
+      + 'missing was A BEAT THAT WAITS FOR IT: all seven @battle repeats fired at steps 29-35, every '
+      + 'one in the DECLARE step with the card still at home, so the world acted at home too. '
+      + 'Fixture.phase gained inBattle (fires only while subject.region === battle.region) with nine '
+      + 'region-aware beats aiming at subject.region. '
+      + '⚠ THE REGION FAMILY WAS 6 AND FIVE FELL. The sixth, Bloated Manablub, is NOT a '
+      + 'region-scope problem: it is a 2/2 the counters/damage beats kill before the declare step, and '
+      + 'the drill’s respawn puts it back AT HOME mid-battle, too late to join. '
+      + '⚠ SIX OF THE BOARD 26 FELL OUT OF SOMETHING UNRELATED, and it is PROVEN unrelated: '
+      + 'disabling the position pin entirely leaves those six green. What unlocked them was the LIFE '
+      + 'TOP-UP — nextBeat holds die/despawn until two battles finish, the top-up ran once per '
+      + 'WINDOW while a whole combat damage step happens inside one apply, and a traced game hit '
+      + 'gameover at step 55 with battlesSeen=1, one short of the gate, 29 of 31 fixtures fired. '
+      + '⚠ A CARD TAUGHT THE AGENT A RULE: a bounded [Switch1] spends its one use per turn (R9) '
+      + 'when the trigger is QUEUED, not when the payload finds work. Boreal Wanderer heard a home '
+      + 'spawn while at home, queued into a region holding only itself, said no opponent is present, '
+      + 'and was spent. Pinning ALL SEVEN beats that way was MEASURED AND WAS A NET LOSS — it '
+      + 'gained two cards and lost three, 276 vs 278, at twice the runtime. '
+      + 'WHAT A BLIND CHECKER WOULD PRINT, measured BOTH ways: pin always TRUE -> beats act at '
+      + 'subject.region, which at home IS home, and every clause in the family tests the battle region '
+      + 'explicitly, so coverage FALLS; pin always FALSE -> the six go dark and the per-gate floors '
+      + 'catch it. R199 ADDS NO EVIDENCE CHANNEL AT ALL — attribution is still ownResolution and '
+      + 'the continuous-layer read is still staticBite, both R180’s, both untouched. Only WHEN and '
+      + 'WHERE the world acts changed. And the first number measured WENT DOWN (227/316) before the '
+      + 'life top-up was raised. Every beat now records home=/at=/battle=: at === battle is the pin '
+      + 'and proves nothing; **at !== home is the fact that cannot be faked.** '
+      + '15 tests, 15 individual breaks, each reddening EXACTLY its own named card and nothing else. '
+      + 'THE 38 THAT REMAIN are named individually in 84-card-semantics UNREACHED with the '
+      + 'precondition each lacks: BOARD 25, CHOICE 6, VOCAB 3, REGION 1 (Bloated Manablub), and a NEW '
+      + 'opener EVENTLESS 1 — implemented, really happens, but nothing in the game can see it '
+      + 'happen (Slag Spewer, CT-86). Next cheap wins: CHOICE (progressAction always answers option 0) '
+      + 'and the resource-activation and expended-resource boards, which fundSeat’s bulk open makes '
+      + 'unreachable. '
+      + 'PRIOR ROUND (26): '
       + 'THE 52 THAT REMAIN are named individually with their missing precondition, which is what '
       + 'this entry says closes it. Biggest family is REGION (R12, 6 cards): a clause scoped to '
       + 'its event\'s region cannot be reached by a fixture fired at a battle window while the '
@@ -4725,6 +4764,82 @@ export const CARD_TODO: TodoEntry[] = [
       + '(153 files, 2-minute foreground timeout) and is already run serially from a script.',
     proof: null,
     verify: 'Twenty consecutive server suite runs under load are all green.',
+    status: 'open',
+  },
+  {
+    id: 86,
+    area: 'card',
+    severity: 'minor',
+    cards: ['Slag Spewer'],
+    title: 'A mod erased as a COST reaches no pile at all, and the drill was reading somebody else\'s event for it',
+    detail:
+      'Slag Spewer prints *"[Augment][once] [one], Erase one of my mods: I deal 2 damage to any '
+      + 'target."* The erase really happens — R196 moved it into `payCastCost` as a proper '
+      + '`castCost: { kind: \'eraseMod\' }` — but it is announced with '
+      + '`g.ev(\'info\', "... is ERASED off ... — the cost of ...")` (engine.ts:6909). '
+      + '`E.ev()` files the R65 PUBLIC ERASED PILE only for a `type: \'erased\'` event carrying a '
+      + 'numeric `seat`, so the mod is **out of play and on no pile at all** — the one thing R65 '
+      + 'exists to prevent, since the complaint that opened it was "there is currently no way to '
+      + 'view erased cards". Every other erase site emits `erased`: E.eraseFromPlay, Spore of '
+      + 'Regenesis\'s cost, both bin-erase sites in batch-metal-a / batch-dark-b.',
+    evidence:
+      '⚠ FOUND INDEPENDENTLY BY TWO AGENTS in the same round, from opposite directions — the '
+      + 'R196 agent while rewriting the cost, and the R199 agent while chasing why the card read '
+      + 'as OBSERVED. That second half is the more valuable finding: '
+      + '**IT READ AS OBSERVED BY ACCIDENT.** The drill\'s press run used to end mid-activation, '
+      + 'and `drillCard`\'s "ran out of steps" tail dumps everything from that activation to the '
+      + 'END OF THE GAME into `activateTypes` — which swallowed the `erased` event produced when '
+      + 'the HOST was later destroyed by the `die` beat. The card was borrowing somebody else\'s '
+      + 'event. Making runs end cleanly closed that unbounded window and the card went dark. '
+      + 'That is a new opener in 84-card-semantics\' UNREACHED — **EVENTLESS**: implemented, '
+      + 'really happens, and nothing in the game can see it happen. Distinct from VOCAB, which '
+      + 'says our vocabulary is too narrow.',
+    fix:
+      '⚠ THIS NEEDS A RULING, NOT A GUESS, and the R196 agent deliberately left it rather than '
+      + 'change behaviour: **does a mod erased as a COST belong on the public erased pile?** '
+      + 'R157 §3 arguably wants it there. Asked as Q3 of the round-27 owner questions. '
+      + 'If yes it is one line — `\'info\'` -> `\'erased\'` with `{ seat, card }` — and the card '
+      + 'stops being EVENTLESS for free. '
+      + 'RELATED AND ALSO UNFIXED (R196 agent): there is **no choke point for erasing a mod off a '
+      + 'host** at all. Three card-local sites hand-roll `host.mods.splice(...)` + '
+      + '`delete s.entities[id]` (batch-hybrids-wm-b.ts:510, batch-hybrids-ld-a.ts:676, and Slag '
+      + 'Spewer\'s, now in payCastCost). R178 built `E.moveMod`; the ERASE sibling does not '
+      + 'exist, and this ticket is what a missing choke point looks like from the outside.',
+    proof: null,
+    verify:
+      'The mod Slag Spewer erases as a cost is on a pile the players can see, or a ruling says it '
+      + 'deliberately is not.',
+    status: 'open',
+  },
+  {
+    id: 87,
+    area: 'coverage',
+    severity: 'minor',
+    title: 'drillCard\'s "ran out of steps" tail is an unbounded evidence window',
+    detail:
+      'When a press run hits `maxSteps` mid-activation, `drillCard` dumps everything from that '
+      + 'activation to the END OF THE GAME into `activateTypes`. Any event any card produces in '
+      + 'that span is then credited to the card under test.',
+    evidence:
+      'This is exactly the blindness class CT-49 warns about, in CT-49\'s own instrument, and it '
+      + 'had a live victim: **Slag Spewer read as OBSERVED because the window swallowed an '
+      + '`erased` event produced when its HOST was destroyed several beats later** (CT-86). '
+      + 'Round 26 found four blindnesses in this same checker and every one had made a number go '
+      + 'UP — the direction that flatters. This is a fifth of the same shape. '
+      + '⚠ MOSTLY MOOT NOW, which is why it is `minor` and not `major`: R199 made runs end '
+      + 'cleanly, so the tail is rarely reached. But `maxSteps` can still be hit, and "rarely '
+      + 'reached" is not "cannot fire". The R199 agent REPORTED rather than changed it, correctly '
+      + '— a late unverified edit to the drill would have invalidated the round\'s measurements.',
+    fix:
+      'Bound the window: credit only events up to the end of the activation being pressed, and '
+      + 'when `maxSteps` is hit mid-activation, record the run as INCONCLUSIVE for that claim '
+      + 'rather than as evidence. An honest "could not tell" is worth more than a credited event '
+      + 'that belongs to another card. '
+      + 'Then re-measure the whole tally — some other card may be standing on the same accident.',
+    proof: null,
+    verify:
+      'A press run that ends mid-activation credits the card under test with nothing that '
+      + 'happened after it.',
     status: 'open',
   },
 ];
