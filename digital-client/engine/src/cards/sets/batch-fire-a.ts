@@ -161,49 +161,29 @@ card('Animated Spark', {
 
 // "When my column deals combat damage to an opponent, [Switch1] You may
 // sacrifice a unit. If you do, draw a card." — r/2 1/2 {Flying}. Condition at
-// event time (R1) on the 'lifeLost' fired during combat: why === 'combat', the
-// victim is an opponent, and my column connects — attacking and unblocked (or
-// Piercing), or blocking with Piercing. Approximation: lifeLost is aggregated
-// per damage sub-step, so a connecting zero-power column alongside another
-// dealing column would also pass; no such column exists in normal play.
+// event time (R1) on the 'lifeLost' fired during combat.
+//
+// R195 — THE ONE SHARED PREDICATE, `E.columnDealtCombatDamage`, on the 'face'
+// channel ("to an opponent" excludes the unit channels). This card hand-rolled
+// the reconstruction — R117's sub-step gate, R157 §4's column power gate, then
+// "attacking and unblocked, or {Piercing}" — and every line of it is now
+// inside the predicate, including the R195 attribution the comment here used
+// to hedge as "a connecting zero-power column alongside another dealing column
+// would also pass". The real reachable version of that hedge is a {Piercing}
+// column the blockers absorb whole: it connects, deals the player nothing, and
+// used to read a second column's hit as its own. It is now asked, not derived.
+//
+// (The note this replaced also recorded, correctly, that filtering the column
+// for LIVING members reddens nothing — `E.destroy` unslots immediately, so
+// `alive` and `col` hold the same ids on every reachable board. Kept here
+// because it is the kind of fact a future rewrite would otherwise re-discover
+// as a "bug": it is defence, not a fix.)
 const revenantSac = sacrificeToDraw('Bloodwind Revenant');
 card('Bloodwind Revenant', {
   abilities: [{
     type: 'triggered', events: ['lifeLost'], bounded: true, graftCause: true,
     label: 'you may sacrifice a unit to draw a card',
-    when: (g, self, ev) => {
-      if (ev.data?.why !== 'combat') return false;
-      const b = g.s.battle;
-      if (!b || ev.data?.seat === self.controller) return false;
-      const col = g.columnOf(self.id);
-      if (!col) return false;
-      // R117: fires only in the sub-step MY OWN COLUMN strikes in. Missed when
-      // R117 was applied — see the matching note on Flowstone Arcanite.
-      if (!g.strikesInCurrentSubStep(self)) return false;
-      // A 0-power column deals no combat damage at all — Flowstone Arcanite and
-      // Blightmound both gate on that and this card gated on neither, so a
-      // 0-power column counted as "dealing". THAT half is a real fix.
-      //
-      // ⚠ The `alive` filter passed to colAttrs below is NOT. My commit message
-      // for 49666eb claimed a dead unit's {Piercing} still carried the column;
-      // it does not. `E.destroy` calls `removeFromFormation`, which splices the
-      // dead id out of `b.columns` immediately (measured: `[[1,2]]` → `[[2]]`),
-      // so `alive` and `col` hold the same ids on every reachable board. It is
-      // consistency with the rest of the pool and defence against a future path
-      // that removes a unit without unslotting it — not a defect that was
-      // paying anyone out. Corrected 2026-08-25, when the red-check for the
-      // matching Sarcophage change refused to go red.
-      const alive = col.filter(id => g.entity(id));
-      const power = alive.reduce((s, id) => s + Math.max(0, g.effStats(g.entity(id)!)[0]), 0);
-      if (power <= 0) return false;
-      const ci = b.columns.indexOf(col);
-      if (ci >= 0) {   // attacking: connects if never blocked, or Piercing
-        return ev.data?.seat === b.defender
-          && (b.blocks[ci] === undefined || g.colAttrs(alive).has('Piercing'));
-      }
-      // blocking: only a Piercing blocking column reaches the attacker
-      return ev.data?.seat === b.attacker && g.colAttrs(alive).has('Piercing');
-    },
+    when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['face']),
     effect: revenantSac,
   }],
   graftEffect: { bounded: true, effect: revenantSac },

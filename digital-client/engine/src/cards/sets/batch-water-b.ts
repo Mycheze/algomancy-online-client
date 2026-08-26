@@ -188,29 +188,23 @@ card('Rider of the Tides', {
 
 // "[Augment] Whenever my column deals combat damage to a player, put target
 // card from that player's bin into your hand." — b/2 2/1 {Evasive}. Text-box
-// [Augment]. The engine's combat lifeLost event ({ why: 'combat' }) doesn't
-// attribute columns, so when() reconstructs "my column connected" at event
-// time: I'm in a column with power, and it reaches the player (attacking and
-// unblocked, or Piercing — ⚠ approximation: a Piercing column whose overflow
-// was fully absorbed can misfire). The bin pick happens at RESOLUTION from
-// the live bin (R1).
+// [Augment]. The bin pick happens at RESOLUTION from the live bin (R1).
+//
+// R195 — "my column deals combat damage to a player" is the ONE shared engine
+// predicate, `E.columnDealtCombatDamage`, on the 'face' channel (the clause is
+// narrowed to a player, so no unit channel). The reconstruction that used to
+// live here — in a column with power, and it reaches the player (attacking and
+// unblocked, or {Piercing}) — carried this comment's own ⚠ approximation, "a
+// Piercing column whose overflow was fully absorbed can misfire", and it did:
+// measured, a fully-absorbed column claimed a second column's hit and took a
+// card off that player's bin for damage it never dealt. The event now carries
+// the per-column breakdown, so the predicate asks instead of re-deriving, and
+// this copy also picks up R117's sub-step gate, which it never had.
 card('Rippleback Skulker', {
   augmentText: [{
     type: 'triggered', events: ['lifeLost'],
     label: "put target card from that player's bin into your hand",
-    when: (g, self, ev) => {
-      if (ev.data?.why !== 'combat' || ev.data?.seat === self.controller) return false;
-      const b = g.s.battle;
-      if (!b) return false;
-      const col = g.columnOf(self.id);
-      if (!col) return false;
-      const alive = col.filter(id => g.entity(id));
-      const power = alive.reduce((s, id) => s + Math.max(0, g.effStats(g.entity(id)!)[0]), 0);
-      if (power <= 0) return false;
-      const ci = b.columns.indexOf(col);
-      if (ci !== -1) return b.blocks[ci] === undefined || g.colAttrs(alive).has('Piercing');
-      return g.colAttrs(alive).has('Piercing');   // blocking column: only Piercing connects
-    },
+    when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['face']),
     effect: {
       // R67: "target card from that player's bin" is a DECLARED target,
       // chosen as the trigger goes on the stack. "That player" is the one the

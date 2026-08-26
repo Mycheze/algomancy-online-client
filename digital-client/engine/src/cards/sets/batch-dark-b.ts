@@ -49,10 +49,14 @@
  *    E.columnDealtCombatDamage. Blightmound is {Poisonous}, so its unit damage
  *    arrives as -1/-1 counters and not as a 'damage' event — which is why the
  *    predicate takes CHANNELS and this card asks for all three.
- *  - "A UNIT DEALS COMBAT DAMAGE TO A PLAYER" (Sarcophage) is the same
- *    approximation in reverse: every unit in a column that connected with the
- *    damaged player loses its counters, since the engine cannot attribute
- *    face damage to one unit inside a column.
+ *  - "A UNIT DEALS COMBAT DAMAGE TO A PLAYER" (Sarcophage) IS NO LONGER AN
+ *    APPROXIMATION (R195, 2026-08-26). This entry used to say that every unit
+ *    in a column that connected with the damaged player loses its counters
+ *    because the engine could not attribute face damage to one unit. It can
+ *    now: the combat 'lifeLost' carries a per-column breakdown naming the
+ *    units that dealt it (`E.unitsDealingFaceDamage`), so a 0-power passenger
+ *    keeps its counters and a column the blockers absorbed whole strips
+ *    nobody. Damage is still DEALT per column; only the reading changed.
  *  - "EACH PLAYER/OPPONENT" is region-scoped (R25). Out of battle a home
  *    region lists only its owner, so Cthyrian Culler's life loss and Grim
  *    Bargain's sacrifices reach nobody else during deployment — the standing
@@ -204,40 +208,33 @@ function myColumnDealtCombatDamage(g: E, self: Entity, ev: EngineEvent): boolean
   return g.columnDealtCombatDamage(self, ev, ['units', 'poison', 'face']);
 }
 
-/** every unit in a column that connected with `victim` this combat (⚠ header:
- * face damage cannot be attributed to one unit inside a column) */
-function unitsThatHit(g: E, victim: Seat): Entity[] {
-  const b = g.s.battle;
-  if (!b) return [];
-  const out: Entity[] = [];
-  const live = (ids: EntityId[]): Entity[] =>
-    ids.map(id => g.entity(id)).filter((u): u is Entity => !!u);
-  // colAttrs on the LIVE column, for consistency with every other Piercing
-  // reader in the pool (water-a, water-b, fire-a, earth-a). These two were the
-  // last raw ones.
-  //
-  // ⚠ NOT A BUG FIX, and said out loud so nobody writes a test that cannot
-  // fail: `E.destroy` calls `removeFromFormation`, which splices the dead id
-  // out of `b.columns` immediately — measured, `[[1,2]]` becomes `[[2]]` — so
-  // `live(col)` and `col` hold the same ids and no reachable board tells them
-  // apart. Reverting this line reddens nothing. It is defence against a future
-  // path that removes a unit WITHOUT unslotting it, not a defect that was
-  // stripping anyone's counters. (I reported it as a live bug first; the
-  // red-check is what caught me.) 2026-08-25.
-  if (victim === b.defender) {
-    b.columns.forEach((col, ci) => {
-      const alive = live(col);
-      if (!alive.length) return;
-      const ids = alive.map(u => u.id);
-      if (b.blocks[ci] === undefined || g.colAttrs(ids).has('Piercing')) out.push(...alive);
-    });
-  } else if (victim === b.attacker) {
-    for (const col of Object.values(b.blocks)) {
-      const alive = live(col);
-      if (alive.length && g.colAttrs(alive.map(u => u.id)).has('Piercing')) out.push(...alive);
-    }
-  }
-  return out;
+/**
+ * R195 — the units that dealt THIS combat 'lifeLost'. `E.unitsDealingFaceDamage`
+ * reads the per-column breakdown the event now carries, so the answer is the
+ * damage that was actually dealt rather than a re-derivation of the formation.
+ *
+ * WHAT IT REPLACED, because the difference is the whole ruling. This used to
+ * walk every column and keep the ones that CONNECT — attacking and never
+ * blocked, or blocking/blocked with {Piercing} — and hand back every living
+ * member of each. Two things were wrong with that, both measured:
+ *  · a 0-POWER PASSENGER was stripped. R157 §4 (owner, 2026-08-25): *"0 power
+ *    units do no damage. But the other thing in the column can still
+ *    contribute to the shared column power."* A 0/3 riding beside a 2/2 deals
+ *    nothing and Sarcophage's "a unit deals combat damage to a player" is not
+ *    about it. The COLUMN is the dealer of a column-scoped clause; only the
+ *    positive-power members are dealers of this UNIT-scoped one.
+ *  · a {Piercing} COLUMN THE BLOCKERS ABSORBED WHOLE still connects by that
+ *    test and dealt the player nothing; with a second column connecting for
+ *    real, its units were stripped off another column's hit.
+ *
+ * The old note here — that `live(col)` and `col` hold the same ids on every
+ * reachable board because `E.destroy` unslots immediately, so filtering for
+ * living members reddens nothing — is still true and is why the breakdown
+ * carries ids rather than entities: `E.unitsDealingFaceDamage` resolves them
+ * at event time and drops whatever has since left.
+ */
+function unitsThatHit(g: E, ev: EngineEvent | null | undefined): Entity[] {
+  return ev ? g.unitsDealingFaceDamage(ev) : [];
 }
 
 // ───────────────────────────── the cards ──────────────────────────────
@@ -778,10 +775,14 @@ card('Rotbeast', {
 
 // "[Augment] Whenever a unit deals combat damage to a player, remove all
 // counters from it." — d/3 2/4 {Virus} Alien Unit. Unowned wording: BOTH
-// sides' units are stripped, whoever is hit. ⚠ header: the engine deals
-// combat damage per column, so "it" is every unit in a column that connected
-// with the damaged player. Counters are net (+1/+1 and -1/-1 cancel), so
-// "remove all" is a single cancelling delta.
+// sides' units are stripped, whoever is hit — the clause has no "your" in it
+// and nothing may be invented for it. Counters are net (+1/+1 and -1/-1
+// cancel), so "remove all" is a single cancelling delta.
+//
+// R195: "it" is now a real unit and not a whole column. Face damage is still
+// DEALT per column, but the event carries which units dealt it, so a 0-power
+// passenger (R157 §4) and a column whose {Piercing} pool the blockers absorbed
+// whole are both out — see `unitsThatHit` above for what that replaced.
 card('Sarcophage', {
   augmentText: [{
     type: 'triggered', events: ['lifeLost'],
@@ -792,10 +793,10 @@ card('Sarcophage', {
         const victim = ctx.event?.data?.['seat'] as Seat | undefined;
         if (victim === undefined) { g.ev('info', 'Sarcophage: no damaged player on the event — no counters removed.'); return; }
         let stripped = 0;
-        for (const u of unitsThatHit(g, victim)) {
+        for (const u of unitsThatHit(g, ctx.event)) {
           if (u.counters !== 0) { g.addCounters(u, -u.counters); stripped++; }
         }
-        if (!stripped) g.ev('info', 'Sarcophage: none of the units that connected carries a counter.');
+        if (!stripped) g.ev('info', 'Sarcophage: none of the units that dealt that damage carries a counter.');
       },
     },
   }],

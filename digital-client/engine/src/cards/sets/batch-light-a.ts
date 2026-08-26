@@ -761,9 +761,18 @@ card('Triskaidekaphage', {
 // life." — l/1 4/4 {Virus} Cosmic Unit. A 4/4 for [1] with a drawback you are
 // meant to hand to somebody else: as a Virus the text reads from the HOST, so
 // "my column" is the host's column and "each opponent" is the host
-// controller's opponent. ⚠ header: the column-connect test and the amount come
-// off the combat events (Flowstone Arcanite's reading); a column that both
-// kills blockers and pierces through pays out once per damage instance.
+// controller's opponent. The column-connect test and the amount come off the
+// combat events; a column that both kills blockers and pierces through pays
+// out once per damage instance.
+//
+// ⚠ R195 — "THAT MUCH" IS MY COLUMN'S, NOT THE TABLE'S. On the 'units'
+// channel the 'damage' event's `n` is already exactly what my column dealt to
+// that unit. On the 'face' channel it is NOT: `lifeLost` is aggregated per
+// seat per sub-step, so `data.n` is what EVERY connecting column of my side
+// dealt. Measured before the fix: a 4-power Vroot column and a separate 1/1
+// column, both unblocked, handed the opponent 5 life back for a column that
+// dealt 4. `E.faceDamageDealtBy` reads my column's own share off the event's
+// R195 breakdown.
 card('Vroot', {
   augmentText: [{
     type: 'triggered', events: ['damage', 'lifeLost'],
@@ -771,7 +780,11 @@ card('Vroot', {
     when: (g, self, ev) => myColumnDealtCombatDamage(g, self, ev),
     effect: {
       run: (g, ctx) => {
-        const n = Number(ctx.event?.data?.['n'] ?? 0);
+        const self = selfOf(g, ctx);
+        const ev = ctx.event;
+        const n = ev && ev.type === 'lifeLost' && self
+          ? g.faceDamageDealtBy(self, ev)
+          : Number(ev?.data?.['n'] ?? 0);
         if (n <= 0) { g.ev('info', 'Vroot: no combat damage was dealt — nobody gains life.'); return; }
         const foes = opponentsOf(g, ctx.region, ctx.controller);
         if (!foes.length) { g.ev('info', 'Vroot: no opponent is present here — nobody gains life.'); return; }

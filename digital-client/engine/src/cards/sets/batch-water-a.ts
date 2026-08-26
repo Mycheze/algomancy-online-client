@@ -159,10 +159,18 @@ const lifeLostThisBattle = (g: E, region: number, seat: Seat): number =>
 // → G2 → G1 → G2). Per the ruling this card is named in ("Amphivore / Lost
 // Guardian. Bounded Grafts and Ralph explained", 2025-03-21) bounded grafts
 // ARE repeated, targeted grafts pick a target per copy, and a "[cost]:
-// effect" graft pays its cost three times or not at all. ⚠ approx:
-// "my column deals combat damage to an opponent" is read off the aggregated
-// combat lifeLost event — my column counts as connecting if it is attacking
-// unblocked, or blocked/blocking with Piercing.
+// effect" graft pays its cost three times or not at all.
+//
+// R195 — "MY COLUMN DEALS COMBAT DAMAGE TO AN OPPONENT" is the ONE shared
+// engine predicate now, `E.columnDealtCombatDamage`, on the 'face' channel
+// alone ("to an opponent" is what excludes the unit channels). This card used
+// to hand-roll the reconstruction and was the last copy carrying neither of
+// the two gates the shared one has: R117's sub-step gate (it fired on a
+// {Swift} column's hit while standing in a normal column) and R157 §4's power
+// gate (a 0-power column "connected"). Measured before the fix, it also fired
+// off a second column's hit while its own {Piercing} pool was absorbed whole
+// by the blockers — that is the attribution R195 added, and it is why the
+// predicate is asked rather than re-derived here.
 const amphivoreEcho: EffectDef = {
   graftCopies: 3,
   run: (g, ctx) => {
@@ -184,18 +192,7 @@ card('Amphivore', {
   abilities: [{
     type: 'triggered', events: ['lifeLost'], bounded: true, graftCause: true,
     label: 'trigger three copies of the grafted abilities (one single trigger)',
-    when: (g, self, ev) => {
-      if (g.s.phase !== 'battle' || ev.data?.why !== 'combat' || ev.data?.seat === self.controller) return false;
-      const b = g.s.battle;
-      if (!b) return false;
-      const atkCi = b.columns.findIndex(col => col.includes(self.id));
-      if (atkCi !== -1) {
-        const alive = b.columns[atkCi]!.filter(id => g.entity(id));
-        return b.blocks[atkCi] === undefined || g.colAttrs(alive).has('Piercing');
-      }
-      const blkCol = Object.values(b.blocks).find(col => col.includes(self.id));
-      return !!blkCol && g.colAttrs(blkCol.filter(id => g.entity(id))).has('Piercing');
-    },
+    when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['face']),
     effect: amphivoreEcho,
   }],
   // grafted elsewhere, Amphivore contributes its tripling to the host's cause

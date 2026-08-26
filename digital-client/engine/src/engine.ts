@@ -230,6 +230,28 @@ interface CombatUnitHit {
   attrs?: Set<string>; label?: string;
 }
 
+/**
+ * R195 — ONE column's share of a combat `lifeLost`, carried on the event as
+ * `data.hits`. This is what makes "a unit deals combat damage to a player"
+ * answerable: the loss stays aggregated per seat (it is one simultaneous
+ * strike), and the breakdown says who made it up.
+ *
+ * `amount` is post-replacement (R38) and pre-`lifeAmount` (R162), so the
+ * shares sum to the raw loss the sub-step dealt — the event's own `n` is that
+ * total after the multiplicative amount layer has had it.
+ */
+export interface FaceDamageHit {
+  /** the seat whose column dealt it */
+  by: Seat;
+  /** how much of the seat's total loss this column dealt */
+  amount: number;
+  /** the whole live column — the subject of "MY COLUMN deals combat damage" */
+  col: EntityId[];
+  /** its positive-power members — the subject of "A UNIT deals combat damage
+   * to a player" (R157 §4: a 0-power passenger deals nothing) */
+  units: EntityId[];
+}
+
 /** The scratch shared by `E.combatSubStep`'s halves, alive for exactly one
  * sub-step: the assignment half fills it, the commit half and the aftermath
  * read it. See the method for the order. */
@@ -243,7 +265,16 @@ interface CombatLedger {
   /** R48: combat damage a column deals to a PLAYER, one entry per column —
    * per-column granularity is required by the Blightsea Polyp replacement
    * ("as 1 rot", whatever the column's power) and by {Lethal}. */
-  playerHits: { seat: Seat; amount: number; by: Seat; attrs: Set<string>; label: string; pure: boolean }[];
+  playerHits: {
+    seat: Seat; amount: number; by: Seat; attrs: Set<string>; label: string; pure: boolean;
+    /** R195: the LIVE column that dealt this hit — the subject of every
+     * "my column deals combat damage to a player" clause. */
+    col: EntityId[];
+    /** R195: the members of `col` that actually DEAL its damage (R157 §4:
+     * "0 power units do no damage") — the subject of Sarcophage's
+     * UNIT-scoped "whenever a unit deals combat damage to a player". */
+    dealers: EntityId[];
+  }[];
   /** R48 {Afflicting}: units each afflicting column damaged this sub-step,
    * keyed by column, so its kills can be diffed out afterwards */
   afflicted: Map<string, { dealer: Seat; label: string; ids: Set<EntityId> }>;
@@ -3236,7 +3267,10 @@ export class E {
     this.gainLife(controller, n, `${sourceName} is Blessed`);
   }
 
-  loseLife(seat: Seat, n: number, why: string): void {
+  /** `extra` (R195) is stamped onto the emitted 'lifeLost' — combat damage
+   * uses it to carry `hits`, the per-column breakdown of an aggregated loss.
+   * It is never read here; it is data for whoever hears the event. */
+  loseLife(seat: Seat, n: number, why: string, extra?: Record<string, unknown>): void {
     // R104: "Target player's life total CAN'T CHANGE during this battle"
     // (Suspend) is not "can't be gained" — it locks both directions, so a
     // locked player cannot be burned out, cannot take rot damage to the face
@@ -3260,7 +3294,7 @@ export class E {
     // per-battle life-loss ledger (R14 battle counters; read by e.g. Soul Siphon)
     if (this.s.battle) this.bumpBattleCounter(this.s.battle.region, `lifeLost:${seat}`, n);
     const ev = this.ev('lifeLost', `${p.name} loses ${n} life (${why}) → ${p.life}.`,
-      { seat, n, why, ...(this.s.battle ? { region: this.s.battle.region } : {}) });
+      { seat, n, why, ...(this.s.battle ? { region: this.s.battle.region } : {}), ...(extra ?? {}) });
     this.fireEvent('lifeLost', ev);   // "when a player loses life" triggers (region-scoped in battle, R12)
     if (p.life <= 0 && this.s.winner === null) {
       this.s.winner = other(seat);
@@ -9283,8 +9317,9 @@ export class E {
    * R117, as card text asks it: is the sub-step running RIGHT NOW one that
    * `u`'s column strikes in? The one shared gate behind every "when my column
    * deals combat damage" trigger — reached through `columnDealtCombatDamage`
-   * by Zephyrzoa, Vroot, Eldritch Dreamtender and Blightmound, and directly by
-   * Flowstone Arcanite and Bloodwind Revenant.
+   * by Zephyrzoa, Vroot, Eldritch Dreamtender, Blightmound, Amphivore,
+   * Rippleback Skulker, Flowstone Arcanite and Bloodwind Revenant (R195 put
+   * the last four through it too).
    *
    * R157 §5: "is one that", not "is the one" — a {Swift}{Sluggish} column
    * strikes in both the Swift and the Sluggish sub-step, so its triggers fire
@@ -9296,12 +9331,15 @@ export class E {
    * sub-step here and the NEXT one by the time the queued trigger settles.
    * Putting this gate in a `run()` would read the wrong sub-step every time.
    *
-   * ⚠ WHAT THIS DOES NOT CLOSE: face damage still arrives as one aggregated
-   * `lifeLost` per seat per sub-step, so two of the SAME controller's columns
-   * connecting in the SAME sub-step remain indistinguishable to card text. The
-   * sub-step gate narrows that a great deal but does not close it; closing it
-   * means carrying live column ids on the combat ledger, which touches
-   * Amphivore, Vroot, Zephyrzoa and Blightmound as well.
+   * ⚠ WHAT THIS DOES NOT CLOSE — CLOSED BY R195, and this note is kept
+   * because it says what the sub-step gate is and is not. Face damage still
+   * arrives as one aggregated `lifeLost` per seat per sub-step (it is one
+   * simultaneous strike and splitting the event would make "when a player
+   * loses life" fire once per column), so this gate alone left two of the SAME
+   * controller's columns indistinguishable to card text. R195 carried the live
+   * column ids onto the ledger and out on the event as `hits` — see
+   * `FaceDamageHit`, `faceDamageDealtBy` and `unitsDealingFaceDamage` — so the
+   * face channel is now ATTRIBUTION and this is only the timing gate.
    */
   strikesInCurrentSubStep(u: Entity): boolean {
     const b = this.s.battle;
@@ -9338,8 +9376,14 @@ export class E {
    *    is {Poisonous}, so without this it would never hear its own unit
    *    damage; nothing else in the four needs it.
    *  · 'face' — the aggregated combat 'lifeLost' against a seat that is not
-   *    mine, with my column connecting (attacking and never blocked, or
-   *    blocked/blocking with {Piercing}). All four hear this one.
+   *    mine, of which MY COLUMN dealt a share. All four hear this one.
+   *    ⚠ R195 changed what this arm asks. It used to RECONSTRUCT "my column
+   *    connected" from the formation — attacking and never blocked, or
+   *    blocked/blocking with {Piercing} — which is a statement about
+   *    geometry, not about damage: a {Piercing} pool the blockers absorbed
+   *    whole connects and deals nothing, and it would then read another
+   *    column's hit as its own. The event now carries the breakdown
+   *    (`FaceDamageHit`), so the arm asks `faceDamageDealtBy`.
    *
    * ⚠ `when()` only, because `strikesInCurrentSubStep` is `when()` only.
    */
@@ -9379,11 +9423,63 @@ export class E {
     if (ev.data?.['why'] !== 'combat') return false;
     const victim = ev.data?.['seat'] as Seat | undefined;
     if (victim === undefined || victim === self.controller) return false;
-    if (ci !== -1) {
-      return victim === b.defender
-        && (b.blocks[ci] === undefined || this.colAttrs(alive).has('Piercing'));
+    // R195: ASKED, not reconstructed. The event names the columns that made
+    // this loss up, so "did my column connect?" is membership rather than a
+    // re-derivation of the formation — and a column that connects but deals
+    // NOTHING (a {Piercing} pool the blockers absorbed whole, a strike a
+    // shield prevented entirely) is no longer able to claim another column's
+    // hit, because it contributed no share to claim.
+    return this.faceDamageDealtBy(self, ev) > 0;
+  }
+
+  /** R195 — the per-column breakdown a combat 'lifeLost' carries, or `[]` for
+   * any other life loss. A combat loss with no breakdown means no column is
+   * claiming it, which is the same answer as an empty one. */
+  combatFaceHits(ev: EngineEvent): FaceDamageHit[] {
+    if (ev.type !== 'lifeLost' || ev.data?.['why'] !== 'combat') return [];
+    const hits = ev.data['hits'];
+    return Array.isArray(hits) ? hits as FaceDamageHit[] : [];
+  }
+
+  /**
+   * R195 — how much of this combat 'lifeLost' `self`'s OWN COLUMN dealt; 0
+   * when it dealt none of it. This is the amount "each opponent gains that
+   * much life" (Vroot) is about: the aggregate on the event is every column's
+   * total, and a card printed about MY column is owed only my column's share.
+   *
+   * ⚠ pre-`lifeAmount` (R162): the shares sum to the raw loss, and the event's
+   * `n` is that total after the multiplicative layer. A doubler on the LIFE
+   * LOSS is not a doubler on the combat damage a column dealt.
+   */
+  faceDamageDealtBy(self: Entity, ev: EngineEvent): number {
+    return this.combatFaceHits(ev)
+      .filter(h => h.col.includes(self.id))
+      .reduce((n, h) => n + h.amount, 0);
+  }
+
+  /**
+   * R195 — every UNIT that dealt combat damage to a player on this event, in
+   * assignment order and deduplicated. Sarcophage's "whenever a unit deals
+   * combat damage to a player" asks exactly this, and the printed clause has
+   * no "your" in it (owner, 2026-08-24: *"All the cards in Algomancy are
+   * pretty literal"*) — so BOTH sides' units are here, whoever was hit.
+   *
+   * A 0-power passenger is NOT in this list: R157 §4, *"0 power units do no
+   * damage"*. Nor is a member of a column whose damage never reached the
+   * player at all.
+   */
+  unitsDealingFaceDamage(ev: EngineEvent): Entity[] {
+    const out: Entity[] = [];
+    const seen = new Set<EntityId>();
+    for (const h of this.combatFaceHits(ev)) {
+      for (const id of h.units) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const u = this.entity(id);
+        if (u) out.push(u);
+      }
     }
-    return victim === b.attacker && this.colAttrs(alive).has('Piercing');
+    return out;
   }
 
   /** One sub-step of simultaneous damage, in two halves over one ledger:
@@ -9446,6 +9542,20 @@ export class E {
       const [p] = collapsed ? this.printedStats(u) : this.effStats(u);
       return s + Math.max(0, p);
     }, 0);
+  }
+
+  /** R195: which members of a column actually DEAL its combat damage — the
+   * ones `colPower` above counts a positive contribution from, read with the
+   * same {Unaware} collapse. R157 §4 (owner, 2026-08-25) is the whole rule:
+   * *"0 power units do no damage. But the other thing in the column can still
+   * contribute to the shared column power."* So the COLUMN is the dealer of a
+   * column-scoped clause and this list is the dealer of a UNIT-scoped one. */
+  private dealersIn(ids: EntityId[], collapsed: boolean): EntityId[] {
+    return ids.filter(id => {
+      const u = this.entity(id);
+      if (!u) return false;
+      return (collapsed ? this.printedStats(u) : this.effStats(u))[0] > 0;
+    });
   }
 
   /** Powerful column: its whole combat output is doubled at the source, before
@@ -9662,7 +9772,10 @@ export class E {
           toPlayer = pow;
         }
         if (toPlayer > 0) {
-          L.playerHits.push({ seat: b.defender, amount: toPlayer, by: b.attacker, attrs: atkAttrs, label: src.label, pure });
+          L.playerHits.push({
+            seat: b.defender, amount: toPlayer, by: b.attacker, attrs: atkAttrs, label: src.label, pure,
+            col: [...atk], dealers: this.dealersIn(atk, collapsed),   // R195
+          });
           if (atkAttrs.has('Thieving')) L.thievingDraw[b.attacker] = (L.thievingDraw[b.attacker] ?? 0) + 1;
         }
       }
@@ -9695,7 +9808,10 @@ export class E {
           const left = this.assignColumnDamage(L, atk, blkPow, blkAttrs, src, pure, collapsed,
             this.electionWalk(b, `${sub}:blk:${ci}`, b.defender, atk, blkPow, blkAttrs, pure, collapsed, src.label, false));
           if (blkAttrs.has('Piercing') && left > 0) {
-            L.playerHits.push({ seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label, pure });
+            L.playerHits.push({
+              seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label, pure,
+              col: [...blk], dealers: this.dealersIn(blk, collapsed),   // R195
+            });
             if (blkAttrs.has('Thieving')) L.thievingDraw[b.defender] = (L.thievingDraw[b.defender] ?? 0) + 1;
           }
         }
@@ -9893,15 +10009,25 @@ export class E {
     // players — "as 1 rot", whatever the column's power. Offered per hit, and
     // a replaced hit still counts as DEALT (Caleb 2024-10-24), which is why
     // Thieving above and Lethal below read playerHits, not playerDmg.
+    // R195: the ATTRIBUTION carried alongside the aggregate. One `lifeLost`
+    // per seat per sub-step is still emitted — splitting it would make "when a
+    // player loses life" fire once per column for one simultaneous strike —
+    // but the event now says WHICH columns made it up, so card text can stop
+    // reconstructing "did my column connect?" from the formation.
+    const breakdown: FaceDamageHit[][] = this.s.players.map(() => []);
     for (const hit of L.playerHits) {
       const left = this.replaceCombatDamage(hit.seat, hit.amount,
         { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure });
       if (left <= 0) continue;
       playerDmg[hit.seat] = (playerDmg[hit.seat] ?? 0) + left;
+      // the POST-replacement amount, so the shares sum to the loss this event
+      // reports: a hit Blightsea Polyp turned into rot dealt the player no
+      // combat damage and is not part of what the columns dealt.
+      breakdown[hit.seat]!.push({ by: hit.by, amount: left, col: [...hit.col], units: [...hit.dealers] });
     }
     for (const seat of [this.initiative, this.nit]) {
       const n = playerDmg[seat] ?? 0;
-      if (n > 0) this.loseLife(seat, n, 'combat');
+      if (n > 0) this.loseLife(seat, n, 'combat', { hits: breakdown[seat] ?? [] });
     }
     // R48 {Lethal}: "Any combat damage from a lethal unit will kill a player."
     // Last, because a normal-damage kill above already ended the game (and a

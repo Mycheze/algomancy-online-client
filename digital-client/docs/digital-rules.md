@@ -14235,3 +14235,146 @@ recorded before `engineVersion` existed and cannot be given one after the fact;
 somewhere else. Unit tests remain the right answer for games already past
 saving. What this buys is that no game recorded from now on joins them — and
 the cost of waiting was measured in dead prefixes per round.
+
+---
+
+## R195 — a combat life loss says WHICH columns dealt it, so "a unit deals combat damage to a player" is a question with an answer
+
+`docs/09-divergence-inventory.md` §2a, row **PER-COLUMN FACE DAMAGE**;
+CARD-TODO #50. Nine cards, not the six the inventory names.
+
+### What was wrong
+
+`commitPlayerDamage` folds every connecting column's face damage into ONE
+`lifeLost` per seat per sub-step. The event said how much a seat lost and
+nothing about who dealt it, so eight cards RECONSTRUCTED the missing half at
+event time, each with its own copy of the same sentence:
+
+> my column connected if it is attacking and was never blocked, or if it is
+> blocked/blocking and carries {Piercing}
+
+**That is a statement about geometry, not about damage.** A column can satisfy
+it and deal the player nothing at all, and then read another column's hit as
+its own. R117 (the sub-step gate) and R157 §4 (the column power gate) narrowed
+it — the engine's own comment on `strikesInCurrentSubStep` said so — but the
+hole they left is reachable on ordinary boards, and every one of these was
+MEASURED on the old code before a line was changed:
+
+* **Vroot** — "each opponent gains **that much** life" read `data.n` off the
+  aggregate. A 4-power Vroot column beside a separate 1/1 column, both
+  unblocked: the opponent lost 5 and Vroot handed back 5, for a column that
+  dealt 4. The card gave away another column's damage.
+* **A {Piercing} column the blockers absorbed whole** connects by the old test
+  and pierces nothing. With a second column connecting for 1, **Zephyrzoa**
+  erased itself and recalled its bin, **Amphivore** tripled its grafts,
+  **Rippleback Skulker** took a card off the damaged player's bin, and
+  **Bloodwind Revenant** offered its sacrifice — all off a hit their own
+  column had no part in.
+* **Sarcophage** — "whenever **a unit** deals combat damage to a player, remove
+  all counters from **it**" — stripped a passenger poisoned to 0 power, a unit
+  that by R157 §4 *"does no damage"*.
+* **Blightmound** and **Flowstone Arcanite**, whose columns were emptied by an
+  R98 shield (`preventUnitDamage` returns 0, the commit loop `continue`s, and
+  no `damage` and no `countersChanged` is emitted at all), fired off the other
+  column's hit having dealt nothing to anything.
+
+### The ruling
+
+**Face damage is attributed. The event is not split.**
+
+One `lifeLost` per seat per sub-step is still correct and is kept: combat
+damage is one simultaneous strike, and emitting one event per column would make
+"when a player loses life" fire twice for one strike and hand every life-loss
+watcher in the pool a behaviour change nobody asked for. What changes is that
+the event now CARRIES the breakdown.
+
+`CombatLedger.playerHits` already had one entry per column (R48 needs it for
+{Blessed}, {Lethal} and the Blightsea Polyp replacement). Each entry gained two
+fields — `col`, the live column, and `dealers`, its positive-power members —
+and `commitPlayerDamage` passes the surviving hits out on the event as
+`data.hits`, typed `FaceDamageHit[]`:
+
+```ts
+export interface FaceDamageHit {
+  by: Seat;            // the seat whose column dealt it
+  amount: number;      // this column's share of the seat's loss
+  col: EntityId[];     // "MY COLUMN deals combat damage"
+  units: EntityId[];   // "A UNIT deals combat damage to a player"
+}
+```
+
+Three readers, all on `E`:
+
+* `combatFaceHits(ev)` — the breakdown, or `[]` for any other life loss.
+* `faceDamageDealtBy(self, ev)` — how much of it `self`'s own column dealt.
+  `columnDealtCombatDamage`'s `'face'` arm is now `> 0` on this, and Vroot's
+  "that much" is this number.
+* `unitsDealingFaceDamage(ev)` — the units, for Sarcophage.
+
+**Who is the dealer.** R157 §4 (owner, 2026-08-25) decides it and the answer is
+different for the two kinds of clause: *"0 power units do no damage. But the
+other thing in the column can still contribute to the shared column power."*
+So the COLUMN is the dealer of a column-scoped clause — a 0-power anchor beside
+a hitter still fires, exactly as R157 §4 already required — and only its
+positive-power members are dealers of a UNIT-scoped one. Sarcophage prints
+"a unit", not "a column", and the standing steer is the owner's, 2026-08-24:
+*"All the cards in Algomancy are pretty literal."* Nothing is invented for it —
+in particular there is no "your" in the clause, so both sides' units are in
+scope, whoever was hit, and that stays true.
+
+**Two amounts, and which one is a column's.** The shares are recorded
+POST-replacement (R38) and PRE-`lifeAmount` (R162), so they sum to the raw loss
+the sub-step dealt while the event's own `n` is that total after the
+multiplicative amount layer. A doubler on a LIFE LOSS is not a doubler on the
+combat damage a column dealt, and Vroot pays out the damage. A hit Blightsea
+Polyp turned entirely into rot contributes no share, which is the same answer
+the engine already gave by another route: with every hit replaced there is no
+`lifeLost` at all and no card could hear one. R48's ruling that a replaced hit
+still counts as DEALT is untouched — {Thieving} and {Lethal} still read
+`playerHits`, not the breakdown.
+
+### The nine cards
+
+Six were named in the inventory; **the row's card list was two short and one
+of its six is barely affected**:
+
+| card | clause | what changed |
+|---|---|---|
+| Sarcophage | "Whenever **a unit** deals combat damage to a player, remove all counters from it" | `unitsThatHit` is now one call to `unitsDealingFaceDamage`; the 0-power passenger and the absorbed column are both out |
+| Zephyrzoa | "When my column deals combat damage **to an opponent**" | free, through the shared predicate |
+| Eldritch Dreamtender | same clause | free, through the shared predicate — **not in the inventory's list** |
+| Vroot | "When my column deals combat damage, each opponent gains **that much** life" | the predicate, AND the amount: its own column's share |
+| Blightmound | "When I deal combat damage or die" | free, through the shared predicate — but see below |
+| Amphivore | "When my column deals combat damage to an opponent" | hand-rolled predicate deleted; it also had NO sub-step gate and NO power gate |
+| Rippleback Skulker | "Whenever my column deals combat damage to a player" | hand-rolled predicate deleted; it had no sub-step gate |
+| Bloodwind Revenant | "When my column deals combat damage to an opponent" | hand-rolled predicate deleted — **not in the inventory's list** |
+| Flowstone Arcanite | "When my column deals combat damage" | hand-rolled predicate deleted — **not in the inventory's list** |
+
+**Blightmound is the one the inventory over-claims**, and the correction is
+pinned as a control test. Its clause is UNQUALIFIED — "when I deal combat
+damage", with no "to an opponent" — so it hears unit damage too, and on every
+ordinary board where the old face reconstruction was wrong its column HAD dealt
+real combat damage to the blockers. Firing there is correct. Its face bug is
+reachable only when the column deals literally nothing, which needs an R98
+shield. The same is true of Vroot and Flowstone Arcanite, which print the
+unqualified clause as well. A test built for any of the three on the absorbed
+board cannot go red and would be a lie about what was fixed.
+
+### Guard
+
+`166-face-damage-attribution.test.ts`: a named case per card quoting its
+printed clause, the two consequences the inventory names as their own cases (a
+0-power passenger does not trigger Sarcophage; a {Piercing} column absorbed
+whole does not claim another column's hit), the shape of the breakdown itself,
+and eight positive controls — including the one that says Blightmound is right
+to fire on an ordinary blocked board. Ten of the eighteen redden on the old
+code; the eight that do not are the controls.
+
+### What this does NOT close
+
+`MULTIPLAYER ATTRIBUTION` (Cinder Scuttler, "when **you** deal combat damage to
+an opponent") is a different row of the same inventory and is deliberately
+untouched here. It is now answerable for free — `hits[].by` is the dealing seat
+and a bin-resident card with no column of its own can ask that directly — but
+the card is another agent's this round and reconciling two commits over one
+`when()` is worse than leaving it.

@@ -116,6 +116,50 @@ gone.
 > family is REGION (R12, 6 cards) and the next thing worth building is **an
 > attacking position with the card actually IN the battle**.
 
+> ## ⚠⚠⚠ ROUND 27 (2026-08-26) — §2a `PER-COLUMN FACE DAMAGE` is **CLOSED (R195)**
+>
+> The table row below is left exactly as it was written, so the reasoning stays
+> readable. This block is the closure record.
+>
+> **CLOSED: PER-COLUMN FACE DAMAGE — R195.** The `lifeLost` stays ONE event per
+> seat per sub-step (it is one simultaneous strike; splitting it would make
+> "when a player loses life" fire once per column) and now CARRIES the
+> breakdown: `data.hits: FaceDamageHit[]`, one entry per column, with `col`
+> (the live column — the dealer of a column-scoped clause) and `units` (its
+> positive-power members — the dealer of a UNIT-scoped one, R157 §4). Read
+> through `E.combatFaceHits` / `E.faceDamageDealtBy` / `E.unitsDealingFaceDamage`;
+> `columnDealtCombatDamage`'s `'face'` arm ASKS instead of reconstructing.
+> Guarded by `166-face-damage-attribution.test.ts` (18 cases, 10 of them red on
+> the old code; the other 8 are controls).
+>
+> **Corrections this row cost, each one measured:**
+> - **"R159's shared predicate" does not exist.** There is no R159. The shared
+>   predicate is **R157 §4**'s `E.columnDealtCombatDamage`, with **R117**'s
+>   sub-step gate inside it. Building on it was still the right instruction.
+> - **The row names six cards; it is NINE.** Missing: **Eldritch Dreamtender**
+>   (free, it already shared the predicate), **Bloodwind Revenant**
+>   (`batch-fire-a.ts`) and **Flowstone Arcanite** (`batch-earth-a.ts`) — both
+>   hand-rolled the identical geometric reconstruction, and Bloodwind Revenant's
+>   own comment hedged it as "no such column exists in normal play". One does.
+> - **The row over-claims Blightmound**, and Vroot and Flowstone Arcanite in the
+>   same way. Their clause is UNQUALIFIED — no "to an opponent" — so they hear
+>   UNIT damage too, and on the absorbed-{Piercing} board their column really
+>   had dealt combat damage to the blockers. Firing there is CORRECT. Their face
+>   bug needs a column that deals literally nothing, which needs an R98 shield.
+>   A test for any of the three on the absorbed board **cannot go red**; the
+>   Blightmound control is pinned so nobody writes one.
+> - **The real defect is bigger than "cannot be attributed" for Vroot**: it read
+>   the AGGREGATE as "that much", so it handed an opponent another column's
+>   damage back as life. Measured: dealt 4, gave 5.
+> - **`MULTIPLAYER ATTRIBUTION` (Cinder Scuttler) is now free** — `hits[].by` is
+>   the dealing seat, which is exactly what a bin-resident card with no column
+>   needs. Deliberately NOT taken here; that row belongs to another commit.
+>
+> ### WHAT IS LEFT IN §2 AFTER THIS
+> `RESPONSE WINDOW MID-RESOLUTION` · `VARIABLE-COST ACTIVATED ABILITIES` ·
+> `PREDICTION CAP` · `UNTIL-REGROUP PLAY WINDOW` · `MULTIPLAYER ATTRIBUTION`
+> (minus whatever else round 27 closed in parallel).
+
 **Status key:** `DONE` fixed and guarded · `OPEN` real, unfixed · `STALE` a code
 comment that outlived its cause · `RULED-OK` the engine is right and an answer
 says so.

@@ -404,13 +404,18 @@ card('Fight', {
 
 // "When my column deals combat damage, [Switch1] Put a +1/+1 counter on each
 // of your units." — ee/3 1/3 {Swift} Luminary Primordial Unit. Condition at
-// event time (R1) on the two channels combat damage can take:
-//  - 'damage' with no source tag (combat, not effect damage) whose victim is
-//    in the column DIRECTLY OPPOSING mine (combat damage is pairwise, so
-//    that damage came from my column);
-//  - 'lifeLost' why 'combat' where my column connects to the victim
-//    (attacking unblocked/Piercing, or blocking with Piercing — the
-//    Bloodwind Revenant approximation).
+// event time (R1) on the two channels combat damage can take, which is exactly
+// what `E.columnDealtCombatDamage`'s CHANNEL parameter names. The clause is
+// UNQUALIFIED — no "to an opponent" — so it hears both:
+//  - 'units' — 'damage' with no source tag (combat, not effect damage) whose
+//    victim is in the column DIRECTLY OPPOSING mine (combat damage is
+//    pairwise, so that damage came from my column);
+//  - 'face'  — 'lifeLost' why 'combat' of which my column dealt a share.
+// R195 routed this card into the shared predicate; the hand-rolled copy that
+// used to sit here carried R117's sub-step gate and R157 §4's power gate
+// correctly and the face arm as "my column connects", which is geometry rather
+// than damage: a {Piercing} column the blockers absorbed whole connects, deals
+// the player nothing, and used to claim another column's hit.
 // [Switch1] bounded (R9) — one firing per turn no matter how many hits.
 // "Your units" is region-scoped (R12); counters land at RESOLUTION (R1).
 const flowstoneCounters: EffectDef = {
@@ -424,36 +429,7 @@ card('Flowstone Arcanite', {
   abilities: [{
     type: 'triggered', events: ['damage', 'lifeLost'], bounded: true, graftCause: true,
     label: 'put a +1/+1 counter on each of your units',
-    when: (g, self, ev) => {
-      const b = g.s.battle;
-      if (!b) return false;
-      const col = g.columnOf(self.id);
-      if (!col) return false;
-      // R117: the trigger fires in the sub-step MY OWN COLUMN strikes in.
-      // Blightmound, Zephyrzoa, Eldritch Dreamtender and the ld-a/light-a/
-      // metal-a copies all carry this gate; batch-earth-a and batch-fire-a were
-      // missed when R117 was applied, so both of their column-damage triggers
-      // fired on damage dealt in a sub-step they take no part in (Swift /
-      // normal / Sluggish). `when()` only — see E.strikesInCurrentSubStep.
-      if (!g.strikesInCurrentSubStep(self)) return false;
-      const alive = col.filter(id => g.entity(id));
-      const power = alive.reduce((s, id) => s + Math.max(0, g.effStats(g.entity(id)!)[0]), 0);
-      if (power <= 0) return false;                       // a 0-power column deals nothing
-      const ci = b.columns.indexOf(col);
-      if (ev.type === 'damage') {
-        if (ev.data?.source !== undefined) return false;  // effect damage, not combat
-        const uid = ev.data?.unit as EntityId | undefined;
-        if (uid === undefined) return false;
-        if (ci !== -1) return !!b.blocks[ci]?.includes(uid);   // attacking: hit my blockers
-        const entry = Object.entries(b.blocks).find(([, c]) => c === col);
-        return !!entry && !!b.columns[Number(entry[0])]?.includes(uid);  // blocking: hit the attackers
-      }
-      // lifeLost: combat damage to an opponent, my column connecting
-      if (ev.data?.why !== 'combat' || ev.data?.seat === self.controller) return false;
-      if (ci !== -1) return ev.data?.seat === b.defender
-        && (b.blocks[ci] === undefined || g.colAttrs(alive).has('Piercing'));
-      return ev.data?.seat === b.attacker && g.colAttrs(alive).has('Piercing');
-    },
+    when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['units', 'face']),
     effect: flowstoneCounters,
   }],
   graftEffect: { bounded: true, effect: flowstoneCounters },
