@@ -10282,6 +10282,43 @@ export class E {
     //     runs over every entity, so the survivor's own temporary changes are
     //     still cleaned up. Its `x` — the Fireball's number — is not something
     //     regroup touches at all, so it carries over intact.
+    //     R194 / CT-55: …AND ANNOUNCED, PER SEAT, BEFORE IT HAPPENS.
+    //
+    //     Report #66 asked for the unused-token warning to fire only on the
+    //     pass that reaches Regroup, and ui/battle.ts `passEndsBattlePhase`
+    //     built exactly that. ONE case has no pass to hang it on: a round-2
+    //     attacker who DECLINES goes `doDeclareAttack` → `endBattleRound` →
+    //     `startRegroup` without opening a single priority window, so the
+    //     defender's castable tokens were deleted with no line in the log at
+    //     all. No client can close that — the engine took a path with no
+    //     window on it — and it is reachable in two shapes, not one: a
+    //     declined round 1 gives the whole battle phase ZERO windows.
+    //
+    //     Opening the window the decline skips was the other candidate and it
+    //     is NOT timing-neutral: it would hand the defender a casting
+    //     opportunity the rules do not have (a declined attack fights no
+    //     combat, so there is no after-combat step for a window to belong to),
+    //     and it would invalidate every saved game — 47,247 of the declines in
+    //     server/games are followed immediately by something that is not a
+    //     `passPriority`, and each one would replay into "you do not have
+    //     priority". So the loss is ANNOUNCED rather than made preventable: a
+    //     warning is not worth a rules change.
+    //
+    //     Emitted BEFORE the erase loop, so the tokens are still there to be
+    //     named, and ordered seat-then-id so two runs of one game read alike.
+    //     `ev` only logs: startRegroup is outside any settle() window, so this
+    //     dispatches to nothing, exactly like the 'spared' line below.
+    const doomed = Object.values(this.s.entities)
+      .filter(e => e.kind === 'spellToken' && !this.spellTokenSurvivesRegroup(e))
+      .sort((a, b) => a.controller - b.controller || a.id - b.id);
+    for (const seat of [0, 1] as Seat[]) {
+      const mine = doomed.filter(e => e.controller === seat);
+      if (!mine.length) continue;
+      this.ev('erased',
+        `${this.pname(seat)} loses ${mine.length} unused spell token(s) to regroup: `
+        + `${mine.map(e => `${e.card} ${e.x ?? ''}`.trimEnd()).join(', ')}.`,
+        { seat, ids: mine.map(e => e.id), cards: mine.map(e => e.card) });
+    }
     const spared: EntityId[] = [];
     for (const e of Object.values(this.s.entities)) {
       if (e.kind !== 'spellToken') continue;

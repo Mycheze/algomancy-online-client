@@ -13617,3 +13617,106 @@ happened to append to a list. The Oracle case asserts only what stays true
 under either answer above: the event exists, carries all five names, is not
 `privateTo` anybody, and would be delivered unchanged by view.ts. The hold is
 a hold, not a redaction, and that distinction is the thing R188 is about.
+
+---
+
+## R194 — a warning is not worth a rules change: the token loss with no window to warn in
+
+CARD-TODO #55, out of playtest report #66 (GETD).
+
+The report was *"The UI is reminding me I have unused tokens at EVERY chance it
+has. It should only warn right before moving to Regroup ('You're about to move
+to Regroup which will remove your Spell Tokens. Are you sure?')"* — the owner's
+own replacement copy. That shipped as `passEndsBattlePhase` in `ui/battle.ts`:
+a pure predicate over "would passing RIGHT NOW take the game out of the battle
+phase", derived from the engine's chain (`passPriority` → `advanceBattleStep`
+→ `endBattleRound` → `startRegroup`) and asserted against it at every priority
+window of a real battle.
+
+A confirm can only hang on a pass, and #66's own note admitted a case with no
+pass in it. A 2026-08-25 guard audit downgraded the report from `fixed` to
+`partial` on the strength of that sentence, which is the right call: **a report
+whose note admits a reachable case it does not cover is not fixed, and calling
+it fixed is how the case stops being tracked.**
+
+### The premise, established before anything was written
+
+The last round generalised a combat seam on a reported gap that turned out to
+be unreachable and had to be reverted, so this one was measured first. The gap
+is not only reachable, it is sharper than the report says:
+
+* Round 2's attacker is the NIT, so its **defender is the initiative player**,
+  and `startBattleRound` puts the battle in the defender's region. A token
+  standing in IT's home is therefore castable in round 2's windows **and in no
+  round-1 window at all** — round 1 is fought in the other seat's region.
+* So a round-2 decline is the whole difference between a live Fireball and
+  nothing, and it takes every window away at once.
+* And there are **two** shapes, not one. `doDeclareAttack`'s decline route is
+  the one the ticket names; a battle in which round 1 is ALSO declined gives
+  the entire battle phase **zero** priority windows.
+
+`165-token-loss-warning.test.ts` §1 pins all of that, including the
+counterfactual on the same position: if the round-2 attacker attacks instead,
+the token is castable in three of the round's windows and `tokensAtRisk` warns
+in exactly one of them.
+
+### Which route, and why
+
+**Route (1) — have the decline open the window it skips — is not
+timing-neutral, and it is not close.** Two independent reasons:
+
+1. **It is a rules change.** A declined attack fights no combat, so there is no
+   after-combat step for a priority window to belong to. Opening one hands the
+   defender a casting opportunity the rules do not give them — and the tokens
+   are live ammunition, so this is not a cosmetic window.
+2. **It invalidates every saved game.** Of the declines in `server/games`,
+   **47,247 are followed immediately by something that is not a
+   `passPriority`** (`declareAttack`, `doneDeploying`, …). Every one of those
+   would replay into *"you do not have priority"*. The decline route is shared
+   by both rounds, so narrowing it to round 2 does not rescue it: a round-2
+   decline into `doneDeploying` is the single commonest shape in the corpus.
+
+**So route (2): the loss is ANNOUNCED rather than made preventable.**
+`E.startRegroup` now emits one `erased` event per seat, naming that seat's own
+doomed tokens, immediately BEFORE the erase loop — so the entities are still
+there to be named, and the line reads *"Player 1 loses 2 unused spell token(s)
+to regroup: Fireball 2, Poison 1."* Ordered seat-then-id, so two runs of one
+game read alike. `ev` only logs; `startRegroup` is outside any `settle()`
+window, so this dispatches to no listener, exactly like the `spared` line
+beside it.
+
+It is deliberately silent when nothing is lost. #66 is a report about being
+told the same thing too often, and a line in every regroup forever would be the
+same mistake moved into the log.
+
+**What this does and does not claim.** It does not restore the choice — nothing
+can, without changing the rules — and it is not a confirm. It makes the loss
+legible, which is what CT-55 asked for and all R11 allows. The client half is
+unchanged: `passEndsBattlePhase` still owns every case that HAS a pass, and the
+controls in §3 of the new file prove it still fires on that pass and on no
+other window of the same battle.
+
+### The second finding: a source regex cannot see a bar that stopped rendering
+
+Report #66's second guard was four `assert.match(readFileSync(ui/main.ts))`
+reads, and the comment defending them argued that the owner's copy and the
+"old trigger is gone" `doesNotMatch` were *"two things a rendered board cannot
+be asked about"*. Both can be, and the argument had the failure mode backwards.
+
+Measured, not supposed: with `promptHtml`'s `if (ui.confirmPass !== null)`
+branch switched off — the confirm bar gone from the client entirely — **all
+four of the old assertions stay green.** The copy is still in the file; the
+`passClick` line is still spelled the same way. The replacement is driven
+through `test/ui-driver.ts` and goes red on that same mutation, at *"the
+confirm bar is on screen"*.
+
+Old: `77-playtest-round17.test.ts::[66] the pass confirm is wired to the
+end-of-battle question, not to holding a token`
+New: `77-playtest-round17.test.ts::[66] the Pass button asks before the pass
+that reaches Regroup, and only that one`
+
+Each of the four claims came out stronger for being driven: the bar is on
+screen AND the pass is held back off the wire; a mid-battle window's Pass goes
+straight out with the token still in hand; the copy is read off the board
+verbatim; and the bar is watched leaving when the window moves on underneath
+it.

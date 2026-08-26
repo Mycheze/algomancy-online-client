@@ -476,31 +476,90 @@ test('R89: the augment the client offers on a token is one the engine really tak
   assert.equal(h.state.entities[tok]!.mods.length, 1, 'the mod is on the token');
 });
 
-/* ── the wiring in ui/main.ts, read as text ───────────────────────────── */
+/* ── the wiring in ui/main.ts, driven ─────────────────────────────────── */
 
-/* ⚠ DELIBERATELY STILL READ AS TEXT, and why.
+/* ⚠ THIS USED TO BE READ AS TEXT, and the note that justified it was wrong.
  *
- * Everything [66] is about — WHICH pass costs you your tokens — is
- * `passEndsBattlePhase`, and the section at the top of this file holds it
- * against the engine's own transition at every priority window of a real
- * battle. That is the strong guard, and it is already here.
+ * R194/CT-55. The old guard was four `assert.match(MAIN, /…/)` reads, and its
+ * own comment argued that the copy and the "old trigger is gone" `doesNotMatch`
+ * were "two things a rendered board cannot be asked about". A rendered board
+ * can be asked about both, and the argument had the failure mode backwards: a
+ * source regex pins how the code is SPELLED, so every one of those four reads
+ * would have stayed green if the confirm bar had stopped rendering entirely —
+ * the same family as the layout-coupled tests that broke on a pure refactor in
+ * round 23.
  *
- * What is left below is the wiring, and it is two things a rendered board
- * cannot be asked about: a string of copy the OWNER wrote (the client must use
- * his words, not a paraphrase, and no board test can tell the two apart), and a
- * `doesNotMatch` proving the OLD trigger is gone — an assertion about absence,
- * which by definition has no behaviour to drive. Neither is anchored on an
- * indent or a line break. Left as it is on purpose: an honest weak guard beats
- * a behavioural-looking test that actually asserts something else. */
-test('[66] the pass confirm is wired to the end-of-battle question, not to holding a token', () => {
-  assert.match(MAIN, /passEndsBattlePhase\(s, s\.priority\)\s+&& castableTokenCount\(s\.priority\) > 0\)/,
-    'the C5 guard must fire on the pass that reaches Regroup');
-  assert.doesNotMatch(MAIN, /s\.phase === 'battle' && s\.priority !== null && castableTokenCount\(s\.priority\) > 0/,
-    'the old "any castable token, any pass" trigger must be gone');
-  assert.match(MAIN, /You're about to move to Regroup, which will remove your spell tokens\./,
-    'the owner wrote this copy — use it');
-  // the confirm bar must also go stale on the same question it was raised on
-  assert.match(MAIN, /!passEndsBattlePhase\(h\.state, h\.state\.priority\)/);
+ * Driven instead, through test/ui-driver.ts, and each of the four claims comes
+ * out stronger for it:
+ *
+ *   "fires on the pass that reaches Regroup"  the bar is on screen and the
+ *                                             pass is HELD BACK off the wire
+ *   "the old any-token trigger is gone"       a mid-battle window's Pass goes
+ *                                             straight out, token in hand
+ *   "the owner wrote this copy"               read off the board, verbatim
+ *   "and it goes stale on the same question"  the window moves on and the bar
+ *                                             leaves with it
+ */
+test('[66] the Pass button asks before the pass that reaches Regroup, and only that one', () => {
+  const { h, A, D, atk } = battleWithToken(7704);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+
+  // A MID-BATTLE WINDOW. The defender holds a castable token and passing costs
+  // them nothing — the whole of report #66 is that this used to ask.
+  assert.equal(h.state.priority, D);
+  const mid = legalActions(h.state, D);
+  assert.ok(mid.some(a => a.type === 'castSpellToken'), 'the token really is castable here');
+  ui.join(h.state, D, mid);
+  ui.sent();
+  ui.click({ btn: 'pass' });
+  assert.deepEqual(ui.actions(), [{ type: 'passPriority', seat: D }],
+    '[66] "reminding me I have unused tokens at EVERY chance it has" — this pass just goes');
+  assert.equal(ui.has({ btn: 'passconfirm' }), false, 'and nothing was asked');
+
+  // THE LAST WINDOW OF THE BATTLE, where the pass really does erase them.
+  pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [] });
+  pass(h); pass(h);
+  while (h.state.decision) {
+    const dec = h.state.decision;
+    h.do({ type: 'decide', seat: dec.seat, choice: dec.options.map((_, i) => i) });
+  }
+  assert.equal(h.state.battle!.step, 'afterWindow');
+  if (h.state.priority !== D) pass(h);
+  const endState = structuredClone(h.state);
+  const end = legalActions(endState, D);
+  ui.join(endState, D, end);
+  ui.sent();
+  const bar = ui.click({ btn: 'pass' });
+  assert.deepEqual(ui.actions(), [], 'the pass is HELD until the question is answered');
+  assert.ok(ui.has({ btn: 'passconfirm' }), 'the confirm bar is on screen');
+  assert.ok(bar.includes("You're about to move to Regroup, which will remove your spell tokens."),
+    'the owner wrote this copy — the board must say his words, not a paraphrase');
+  assert.ok(bar.includes('(1 still castable)'), 'and name what is at stake');
+
+  // "Go back" is a real answer: nothing goes out and the bar leaves
+  ui.click({ btn: 'passcancel' });
+  assert.deepEqual(ui.actions(), []);
+  assert.equal(ui.has({ btn: 'passconfirm' }), false);
+
+  // THE BAR GOES STALE ON THE SAME QUESTION IT WAS RAISED ON: raise it again,
+  // then let the window move on underneath it.
+  ui.click({ btn: 'pass' });
+  assert.ok(ui.has({ btn: 'passconfirm' }), 'raised');
+  pass(h);
+  assert.notEqual(h.state.phase, 'battle', 'the battle really did end');
+  ui.update(h.state, legalActions(h.state, D));
+  assert.equal(ui.has({ btn: 'passconfirm' }), false,
+    'a question about a pass that is no longer yours to make must not survive the answer');
+
+  // …and confirming sends the pass it was holding
+  ui.join(endState, D, end);
+  ui.click({ btn: 'pass' });
+  ui.sent();
+  ui.click({ btn: 'passconfirm' });
+  assert.deepEqual(ui.actions(), [{ type: 'passPriority', seat: D }],
+    'Pass anyway is the same pass, one click later');
 });
 
 test('[68] planAutoPass asks ui/battle.ts for the release list', () => {
