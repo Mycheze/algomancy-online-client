@@ -940,9 +940,19 @@ export const LEDGER: LedgerEntry[] = [
     report: 'The UI is reminding me I have unused tokens at EVERY chance it has. It should only '
       + 'warn right before moving to Regroup ("You\'re about to move to Regroup which will remove '
       + 'your Spell Tokens. Are you sure?")',
-    status: 'partial',
+    status: 'fixed',
     guards: ['77-playtest-round17.test.ts::[66] passEndsBattlePhase agrees with the engine',
-      '77-playtest-round17.test.ts::[66] the pass confirm is wired to the end-of-battle question'],
+      // ⚠ REPOINTED 2026-08-26. The old citation was
+      // '[66] the pass confirm is wired to the end-of-battle question', an
+      // assert.match over the TEXT of ui/main.ts. R194 replaced it with a
+      // DRIVEN test and renamed it, which broke this citation in a file the
+      // change never touched — CARD-TODO #42's complaint, hit for the fourth
+      // time. Measured: switching promptHtml's `if (ui.confirmPass !== null)`
+      // branch off so the confirm bar STOPS RENDERING ENTIRELY leaves all four
+      // old text assertions GREEN and reddens only the driven one.
+      '77-playtest-round17.test.ts::[66] the Pass button asks before the pass that reaches Regroup',
+      '165-token-loss-warning.test.ts::a round-2 attacker who declines no longer erases',
+      '165-token-loss-warning.test.ts::a battle both players decline opens no priority window at all'],
     note: 'The C5 guard fired on EVERY pass while you held a castable token. The warning was '
       + 'right; only its trigger point was wrong, and the owner supplied the replacement copy. '
       + 'The judgement "would this pass end the battle?" is now a pure predicate in the new '
@@ -955,6 +965,21 @@ export const LEDGER: LedgerEntry[] = [
       + 'be closed client-side: if the round-2 attacker DECLINES, doDeclareAttack calls '
       + 'endBattleRound with no priority window, so a defender holding tokens gets no pass to '
       + 'warn on. '
+      + '✔ CLOSED 2026-08-26 (R194). Both halves of the downgrade are answered. The gap is '
+      + 'shut ENGINE-side, as CARD-TODO #55 argued it had to be: E.startRegroup now emits one '
+      + 'erased event per seat naming that seat\'s own doomed tokens, before the erase loop, '
+      + 'silent when nothing is lost (a line in every regroup forever would be this very '
+      + 'report\'s complaint moved into the log). '
+      + '⚠ THE OTHER ROUTE WAS MEASURED AND REFUSED: opening the window doDeclareAttack skips is '
+      + 'NOT timing-neutral. 47,247 empty declareAttacks across 4,841 saved games are followed '
+      + 'immediately by declareAttack (23,629) or doneDeploying (22,704) and never by a pass — '
+      + 'the whole corpus holds only 579 passPriority actions. Every one of those declines would '
+      + 'replay into "you do not have priority". Orchestrator re-counted this independently and '
+      + 'got the same 47,247. A warning is not worth a rules change. '
+      + '⚠ AND THE REACHABLE CASE IS WIDER THAN THIS ENTRY OR CT-55 SAID: a battle whose ROUND 1 '
+      + 'is also declined opens ZERO priority windows in the entire battle phase, so the defender '
+      + 'could never be warned by any mechanism at all. Both shapes are pinned. '
+      + 'The second guard is replaced rather than kept — see the citation note above. '
       + '⚠ DOWNGRADED fixed -> partial on 2026-08-25 by a guard audit, and the reason is this '
       + 'entry\'s own last sentence: a report whose note admits a reachable case it does not '
       + 'cover is not fixed, and calling it fixed is how the case stops being tracked. The gap '
@@ -2045,9 +2070,37 @@ export const LEDGER: LedgerEntry[] = [
   {
     id: 104, room: 'GYSR', date: '2026-08-25',
     report: 'Glimpse is supposed to REVEAL the cards, but opponents cannot see them right now',
-    status: 'live',
+    status: 'partial',
+    guards: ['159-glimpse-reveal-visibility.test.ts::the Glimpse 5 reveal is public to the opponent',
+      '159-glimpse-reveal-visibility.test.ts::its reveal happens inside the hidden deployment segment',
+      '159-glimpse-reveal-visibility.test.ts::the Glimpse 1 reveal is public to the opponent'],
     note:
-      'The printed reminder on every Glimpse card says REVEAL — "Reveal the top five cards of '
+      '⚠⚠ THE REPORTED MOMENT IS NOT BROKEN, AND THAT WAS ESTABLISHED BY LOOKING RATHER THAN BY '
+      + 'READING (2026-08-26, R188). GYSR replays 306/306 FAITHFUL. Its three glimpses are at '
+      + 'actions [54], [107] and [136] — all Maw of Despair / Grox, all glimpse 2, all '
+      + 'phase=battle with segmentKey null before and after. The report\'s "action 110" is [107], '
+      + 'and at [107] the SEAT-1 payload carries `glimpsed` with '
+      + 'data.cards = ["Muck Rummager","Palewing"], UNREDACTED. A truncated GYSR was then '
+      + 'restored into a real server and opened in HEADLESS CHROME AS SEAT 1: the opponent\'s log '
+      + 'gained "Ben glimpses 2: Muck Rummager, Palewing" with both names as inspectable '
+      + '.logcard spans, and the public cache panel appeared. A fresh reload re-links both, so '
+      + 'the resync path is not lossy either. '
+      + 'THE ONE PLACE A REVEAL GENUINELY IS INVISIBLE is a glimpse inside a HIDDEN SIMULTANEOUS '
+      + 'SEGMENT, where rooms.ts parks the opponent\'s copy in heldEvents until the barrier. '
+      + 'Proven end to end with Oracle of Foretelling (timing: deploy, so ALWAYS inside the '
+      + 'segment): mid-segment the opponent\'s visible log is empty; at the barrier they get the '
+      + 'whole line at once. Glook, Lilbot, Visionary Construct, Maw of Despair and Seer of Empty '
+      + 'Spaces reach the same state; the other four printed-reveal cards are {Battle} and are '
+      + 'never held. '
+      + '⚠ THAT IS A RULES QUESTION AND WAS DELIBERATELY NOT ANSWERED IN CODE — see CT-77. '
+      + '⚠ WHAT THE OWNER PROBABLY MEANT IS PRESENTATIONAL AND IS STILL OPEN (CT-78): the '
+      + 'glimpser gets N full card SCANS in a decision modal; the opponent gets one line of prose '
+      + 'in an 80-line log. Both are "the reveal" and only one looks like one. That is why this '
+      + 'sits `partial` and not `by-design`. '
+      + 'SUPERSEDED TRIAGE, kept because it was wrong in an instructive way — every candidate '
+      + 'below was checked and only the segment one survived, for a card family the note never '
+      + 'named: '
+      + 'The printed reminder on every Glimpse card says REVEAL — "Reveal the top five cards of '
       + 'the deck and cache one" — and the engine agrees with itself in a comment: glimpse() '
       + 'says "The reveal is genuinely public — the cache is public information (R41)" and emits '
       + 'a `glimpsed` event carrying `cards: revealed`. '
@@ -2064,9 +2117,36 @@ export const LEDGER: LedgerEntry[] = [
     id: 105, room: 'GYSR', date: '2026-08-25',
     report: 'All triggers from death (and after combat) should go onto the stack VISUALLY at the '
       + 'same time. The Geode\'s trigger did, but not visually',
-    status: 'live',
+    status: 'fixed',
+    guards: ['160-simultaneous-trigger-beats.test.ts::THE REPORT: a death sweep puts every trigger on the strip in ONE frame',
+      '160-simultaneous-trigger-beats.test.ts::a Swift wave and a normal wave are TWO beats',
+      '160-simultaneous-trigger-beats.test.ts::a second batch queues behind the first',
+      '160-simultaneous-trigger-beats.test.ts::flashBatches cuts a real combat batch where the RULES cut it'],
     note:
-      'Note the precision of the complaint: the trigger DID reach the stack — he says so — and '
+      '✔ FIXED 2026-08-26 (R189) in ui/flash.ts alone — no engine change, so nothing resolves at '
+      + 'a different time. queueFlashes stamped EVERY item of an arriving batch STAGGER_MS after '
+      + 'the one before it, unconditionally, so a death sweep (several triggers queued together '
+      + 'and drained back to back) was one thing drawn as several. It now spaces GROUPS, cut '
+      + 'where the rules cut them: a trigger leaves the queue by stackPushed or stackFlash, so '
+      + 'everything queued before the drain is simultaneous and anything queued after it has '
+      + 'started is the next generation. POSITIVE EVIDENCE ONLY — a flash is grouped only when '
+      + 'its own `triggered` marker is in the same batch, so plays, units and activations are '
+      + 'never grouped and a marker-less batch behaves exactly as before. That gate is '
+      + 'load-bearing, not decoration: removing it reddens three existing docs/11 guards in '
+      + '56-ui-flash, whose synthetic helper builds markerless triggered items. '
+      + '⚠ THE REPORTED ACTION NUMBER IS WRONG AND SO WAS THIS NOTE\'S PREMISE. Action 140 is a '
+      + 'passPriority that ends the battle round and contains no triggered and no stackFlash at '
+      + 'all; the moment is [135] (died/triggered x3 — Maw of Despair, Sacrifice Dude, Geode). '
+      + 'AND HIS OWN CASE HAS NO PACING FIX: each of those three stopped on a DECISION of his, so '
+      + 'the three flashes arrived in three separate server round-trips with his answers in '
+      + 'between, and no honest pacing rule merges three round-trips. R189 deliberately gives '
+      + 'those three a beat each and says so. The general form IS real and the corpus supplied '
+      + 'it one game over — SMVJ [141], four death triggers in ONE action and ONE update, drawn '
+      + '280ms apart. SMVJ [94] is the control in the other direction: a genuine cascade that '
+      + 'must stay sequential. '
+      + '⚠ This note used to end "Carried as CT-71" — it is CT-72; CT-71 is report #104. '
+      + 'ORIGINAL TRIAGE, still correct as far as it went: '
+      + 'Note the precision of the complaint: the trigger DID reach the stack — he says so — and '
       + 'the objection is that the SCREEN staged them one after another. So this is the pacing '
       + 'layer (ui/flash.ts beats, R150\'s holdable), not the rules layer, and the fix must not '
       + 'change when anything actually resolves. '

@@ -1603,7 +1603,7 @@ function persist(room: Room): void {
     // would silently skip the corrupt room and the game would be lost)
     const tmp = `${path}.tmp`;
     // clockMs is persisted too: elapsed time cannot be reconstructed from a
-    // replay. (Additive field — older files without it restore at 40:00.)
+    // replay. (Additive field — older files without it restore at CLOCK_START_MS, which is 60:00 — this comment said 40:00 until 2026-08-26 and was wrong from the day the constant moved.)
     writeFileSync(tmp, JSON.stringify({
       seed: room.seed, mode: room.mode, els: room.els, names: room.names,
       // accounts: who each seat belonged to, so the stats fold knows whose

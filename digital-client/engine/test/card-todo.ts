@@ -3057,7 +3057,43 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A defender holding a castable spell token whose opponent declines the round-2 attack is '
       + 'told the tokens are about to be removed.',
-    status: 'open',
+    guards: [
+      '165-token-loss-warning.test.ts::the premise: a round-2 defender really is holding castable tokens',
+      '165-token-loss-warning.test.ts::a round-2 attacker who declines no longer erases',
+      '165-token-loss-warning.test.ts::a battle both players decline opens no priority window at all',
+      '165-token-loss-warning.test.ts::the announcement is per seat, in a fixed order',
+      '165-token-loss-warning.test.ts::the client puts the announcement in front of the player who lost the tokens',
+      '77-playtest-round17.test.ts::[66] the Pass button asks before the pass that reaches Regroup',
+    ],
+    closed:
+      'R194 (2026-08-26). ROUTE (2) — announce at Regroup — and the entry\'s steer to prefer it '
+      + '"if route (1) changes battle timing" turned out to be decidable by MEASUREMENT rather '
+      + 'than judgement. Route (1) is not timing-neutral on two independent grounds: a declined '
+      + 'attack fights no combat, so there is no after-combat step for a window to belong to; '
+      + 'and 47,247 empty declareAttacks across 4,841 saved games are followed immediately by '
+      + 'declareAttack (23,629) or doneDeploying (22,704) and NEVER by a pass — the corpus holds '
+      + 'only 579 passPriority actions in total. Every decline would replay into "you do not '
+      + 'have priority". (Orchestrator re-counted independently: same 47,247.) '
+      + 'E.startRegroup now emits one erased event per seat, before the erase loop, naming that '
+      + 'seat\'s own doomed tokens; ordered seat-then-id; SILENT when nothing is lost, because '
+      + 'report #66 is a complaint about being told the same thing too often and a line in every '
+      + 'regroup forever is that same mistake moved into the log. '
+      + '⚠ THE REACHABLE CASE IS WIDER THAN THIS ENTRY SAID — there are TWO shapes, not one. A '
+      + 'battle whose ROUND 1 is also declined opens ZERO priority windows in the whole battle '
+      + 'phase, so the defender can never be warned by any mechanism at all. Both are pinned. '
+      + '⚠ AND THE PREMISE NEEDED A QUALIFICATION THE ENTRY DID NOT MAKE: at the round-2 DECLARE '
+      + 'step legalActions offers the defender nothing, so castableTokens is 0 THERE. The tokens '
+      + 'are castable in the round-2 WINDOWS the decline destroys, so the test asserts the '
+      + 'counterfactual rather than the declare step. Sharper still: round 2\'s attacker is the '
+      + 'NIT, so its defender is the INITIATIVE player and the battle sits in the defender\'s '
+      + 'region — a token in IT\'s home is castable in round 2 and in NO round-1 window at all. '
+      + 'THE TEXT-COUPLED GUARD IS GONE (the audit\'s second finding): #66\'s old second guard '
+      + 'was an assert.match over ui/main.ts source. Measured — switching promptHtml\'s confirm '
+      + 'branch off so the bar STOPS RENDERING ENTIRELY leaves all four old text assertions GREEN '
+      + 'and reddens only the driven replacement. Orchestrator reproduced that. '
+      + 'The rename broke ledger #66\'s citation in a file the change never touched, for the '
+      + 'FOURTH time — see CT-42.',
+    status: 'done',
   },
   {
     id: 56,
@@ -3805,7 +3841,13 @@ export const CARD_TODO: TodoEntry[] = [
     id: 71,
     area: 'client',
     severity: 'major',
-    reportId: 104,
+    // ⚠ `reportId: 104` deliberately MOVED to CT-78 on 2026-08-26. Report #104
+    // has two halves. This one — "is the reveal actually reaching the opponent?"
+    // — is answered and `done`. The half the owner most likely meant, that a
+    // reveal he can technically read is not one he NOTICES, is CT-78 and is
+    // open, so #104 sits `partial` and the report pointer belongs on the open
+    // half. Splitting the pointer is what keeps 83-card-todo's cross-check
+    // honest instead of letting a `done` ticket close a live complaint.
     cards: ['Oracle of Foretelling', 'Premonition', 'Celestial Purge', 'Dematerialize', 'Foretell'],
     title: 'Glimpse says REVEAL and the opponent cannot see the cards',
     detail:
@@ -3830,7 +3872,39 @@ export const CARD_TODO: TodoEntry[] = [
       + 'answer that one in code.',
     proof: null,
     verify: 'An opponent sees the revealed cards at the moment they are revealed.',
-    status: 'open',
+    guards: [
+      '159-glimpse-reveal-visibility.test.ts::the Glimpse 5 reveal is public to the opponent',
+      '159-glimpse-reveal-visibility.test.ts::its reveal happens inside the hidden deployment segment',
+      '159-glimpse-reveal-visibility.test.ts::the Glimpse X reveal is public to the opponent',
+      '159-glimpse-reveal-visibility.test.ts::the Glimpse 1 reveal is public to the opponent',
+    ],
+    closed:
+      'R188 (2026-08-26). THE REPORTED MOMENT IS NOT BROKEN — and the entry\'s own instruction '
+      + '("investigate before touching anything; I could not find the cause by reading") is what '
+      + 'produced that answer instead of a fix for an imaginary bug. GYSR replays 306/306; its '
+      + 'three glimpses are [54]/[107]/[136], all battle-phase with segmentKey null, and at [107] '
+      + 'the SEAT-1 payload carries glimpsed with data.cards unredacted. A truncated GYSR was '
+      + 'then restored into a real server and opened in HEADLESS CHROME AS SEAT 1: the names '
+      + 'render as inspectable .logcard spans and the public cache panel appears; a reload '
+      + 're-links them. NO ENGINE OR SERVER CODE CHANGED. '
+      + 'The one genuinely invisible case is a glimpse inside a HIDDEN SIMULTANEOUS SEGMENT '
+      + '(heldEvents parks the opponent\'s copy until the barrier), proven end to end with Oracle '
+      + 'of Foretelling — timing: deploy, so ALWAYS inside the segment. Glook, Lilbot, Visionary '
+      + 'Construct, Maw of Despair and Seer of Empty Spaces reach it too; the other four printed-'
+      + 'reveal cards are {Battle} and are never held. THAT IS A RULES QUESTION, deliberately not '
+      + 'answered in code — CT-77. '
+      + '⚠ BOTH OF MY NAMED CANDIDATES WERE WRONG. The hidden segment is wrong FOR THE REPORTED '
+      + 'MOMENT (all battle-phase) and right for a card family I never named — which is exactly '
+      + 'how the ticket survives. "The client does not render it" is wrong outright, verified in '
+      + 'a real browser. My read-and-rule-out was right on all three counts (redactEvent touches '
+      + 'only recycle, visibleToSeat gates only privateTo, viewFor does not touch the cache). '
+      + '⚠ WITH NO FIX TO REVERT, the guards were red-checked against deliberate mutants of the '
+      + 'mechanism each claims: blurring glimpsed in redactEvent (5/6 red), making it privateTo '
+      + '(6/6), redacting the opponent\'s cache (4/6), dropping the names from E.glimpse (5/6). '
+      + 'THE OWNER\'S ACTUAL ASK IS PROBABLY PRESENTATIONAL and is still open as CT-78 — the '
+      + 'glimpser gets N card SCANS in a modal, the opponent gets one line of prose in an 80-line '
+      + 'log. Report #104 therefore sits `partial`, not `fixed`.',
+    status: 'done',
   },
   {
     id: 72,
@@ -3856,7 +3930,37 @@ export const CARD_TODO: TodoEntry[] = [
       + 'test/ui-driver.ts.',
     proof: null,
     verify: 'Triggers that reach the stack in one batch appear on screen in one beat.',
-    status: 'open',
+    guards: [
+      '160-simultaneous-trigger-beats.test.ts::THE REPORT: a death sweep puts every trigger on the strip in ONE frame',
+      '160-simultaneous-trigger-beats.test.ts::a beat explains and never gates',
+      '160-simultaneous-trigger-beats.test.ts::a Swift wave and a normal wave are TWO beats',
+      '160-simultaneous-trigger-beats.test.ts::a second batch queues behind the first',
+      '160-simultaneous-trigger-beats.test.ts::flashBatches cuts a real combat batch where the RULES cut it',
+      '160-simultaneous-trigger-beats.test.ts::positive evidence only',
+    ],
+    closed:
+      'R189 (2026-08-26), in ui/flash.ts ALONE — nothing in engine/src or ui/main.ts, so no '
+      + 'change to when anything resolves, which is what this entry required. queueFlashes '
+      + 'stamped EVERY item of an arriving batch STAGGER_MS after the one before it, '
+      + 'unconditionally; it now spaces GROUPS cut where the rules cut them (a trigger leaves the '
+      + 'queue by stackPushed or stackFlash, so everything queued before the drain is '
+      + 'simultaneous). POSITIVE EVIDENCE ONLY — grouped only when its own `triggered` marker is '
+      + 'in the same batch — and that gate is load-bearing: removing it reddens three existing '
+      + 'docs/11 guards in 56-ui-flash, whose synthetic helper builds markerless triggered items. '
+      + 'My literal framing ("a batch that arrives together looks together") would have widened '
+      + 'those three. '
+      + '⚠⚠ THE REPORTED ACTION IS WRONG AND HIS OWN CASE HAS NO PACING FIX. Action 140 is a '
+      + 'passPriority ending the battle round with no triggered and no stackFlash in it; the '
+      + 'moment is [135] (three death triggers in one sweep). But each of those three stopped on '
+      + 'a DECISION of his, so the three flashes arrived in THREE SEPARATE SERVER ROUND-TRIPS '
+      + 'with his answers in between, and no honest pacing rule merges three round-trips. R189 '
+      + 'deliberately gives them a beat each and says so. The general form is real and the corpus '
+      + 'supplied it one game over: SMVJ [141] is four death triggers in ONE action and ONE '
+      + 'update drawn 280ms apart. SMVJ [94] is the control in the other direction. '
+      + '⚠ MY SEAM WAS RIGHT AND THE PART I POINTED AT WAS NOT: R150\'s holdable and R80\'s '
+      + 'Beat/combatStages are not involved at all; the defect is in queueFlashes, the older '
+      + 'docs/11 flash queue.',
+    status: 'done',
   },
   {
     id: 73,
@@ -4052,6 +4156,81 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A glossary row whose ruling has been corrected fails the suite, naming the row and the '
       + 'ruling.',
+    status: 'open',
+  },
+  {
+    id: 77,
+    area: 'engine',
+    severity: 'major',
+    title: 'OWNER RULING NEEDED: is a reveal inside a hidden simultaneous step public now, or at the barrier?',
+    cards: ['Oracle of Foretelling', 'Glook', 'Lilbot', 'Visionary Construct', 'Maw of Despair',
+      'Seer of Empty Spaces'],
+    detail:
+      'THE QUESTION, in one sentence: **is a reveal that happens inside a hidden simultaneous '
+      + 'step (deployment, the haste step, the resource step) public IMMEDIATELY, or only at the '
+      + 'BARRIER with the rest of that step?** '
+      + 'Every printed Glimpse reminder says REVEAL, and R41 makes the cache public information. '
+      + 'But `rooms.ts` parks the opponent\'s copy of every event in a hidden segment in '
+      + '`heldEvents` until the barrier, so mid-segment the opponent\'s visible log is EMPTY and '
+      + 'at the barrier they receive the whole line at once. '
+      + 'Six cards reach this state. Oracle of Foretelling is `timing: deploy`, so it is ALWAYS '
+      + 'inside the segment. The other four printed-reveal Glimpse cards are {Battle} and are '
+      + 'never held.',
+    evidence:
+      'R188 (2026-08-26), proven end to end through applyToRoom + viewFor + redactLog, and '
+      + 'guarded by 159-glimpse-reveal-visibility.test.ts, which pins TODAY\'s behaviour so '
+      + 'whichever way the ruling goes it is one test to change. '
+      + 'Arose from report #104, where the owner said opponents could not see a Glimpse. The '
+      + 'reported moment turned out to be fine (verified in a real browser); this is the case '
+      + 'that is genuinely invisible, and it is a DIFFERENT card family from the one he played.',
+    fix:
+      '⚠ DO NOT ANSWER THIS ONE IN CODE — ask. R188 already prices both answers: '
+      + '"AT THE BARRIER" closes it as a clarification, costing one comment and one test rename. '
+      + '"IMMEDIATELY" needs a new PER-EVENT exemption in heldEvents, which is all-or-nothing per '
+      + 'segment today, and forces a second decision about what escapes ALONGSIDE the reveal — '
+      + 'the framing `resolved` line, the following `cached` line, the stack item. That second '
+      + 'decision is where the work is, not the exemption itself. '
+      + '⚠ The standing steer (printed text wins; take the permissive reading) points at '
+      + '"immediately", since the card says REVEAL without qualification — but a hidden '
+      + 'simultaneous step is a deliberate information rule, not an engine accident, so this is '
+      + 'genuine ambiguity and not a case the steer settles.',
+    proof: null,
+    verify: 'The owner has answered, and digital-rules.md records it.',
+    status: 'open',
+  },
+  {
+    id: 78,
+    area: 'client',
+    severity: 'major',
+    reportId: 104,
+    title: 'A reveal the opponent can read is not a reveal the opponent NOTICES',
+    detail:
+      'The glimpser gets N full card SCANS in a decision modal. The opponent gets ONE LINE OF '
+      + 'PROSE in an 80-line log. Both are "the reveal", and only one of them looks like one. '
+      + 'The names ARE there and ARE inspectable — that was verified in a real browser as the '
+      + 'opponent seat — so this is not a correctness bug, which is exactly why it is easy to '
+      + 'close the report and leave the complaint standing.',
+    evidence:
+      '⚠ THIS IS THE MOST LIKELY THING REPORT #104 ACTUALLY MEANT. The owner wrote "Glimpse is '
+      + 'supposed to REVEAL the cards, but opponents cannot see them right now". R188 proved the '
+      + 'data reaches the opponent and renders. What is missing is that it does not READ as a '
+      + 'reveal. '
+      + 'Same family as BL-19 and BL-25, both of which taught the same lesson from the other '
+      + 'side: an affordance complaint can be a dead code path wearing a UX costume — and here '
+      + 'it is the mirror, a live code path wearing no costume at all. Also the same family as '
+      + 'report #103 / CT-63 and the deployment interstitial.',
+    fix:
+      'A card-sized reveal surface for the non-glimpsing seat — the same scans, briefly, on the '
+      + 'opponent\'s screen. '
+      + '⚠ ONE REAL OBSTACLE, reported by the R188 agent: `E.glimpse` leaves NO STRUCTURED RECORD '
+      + 'of a reveal in GameState, only the transient event. So a client that reconnects a second '
+      + 'later has nothing to render from, and any card-sized surface has to decide whether the '
+      + 'reveal is a moment or a piece of state. That is a design call. '
+      + '⚠ Do NOT build this before CT-77 is answered — if a reveal in a hidden segment is public '
+      + 'only at the barrier, then WHEN the surface appears is part of the ruling.',
+    proof: null,
+    verify:
+      'An opponent who was not looking at the log knows a reveal happened and what was in it.',
     status: 'open',
   },
 ];
