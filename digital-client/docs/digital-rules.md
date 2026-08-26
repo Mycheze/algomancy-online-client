@@ -14909,3 +14909,135 @@ replaced hit still counts as DEALT: `{Thieving}` and `{Blessed}` read
 misses a hit the rules say it saw. Suspend's life lock is the same shape from
 the other direction. Reported, not fixed: it is one line once `playerHits` is
 readable by card code.
+---
+
+## R199
+
+### The card was already in the battle. Nothing was waiting for it there.
+
+*(2026-08-26, round 27, CARD-TODO #49. Closes five of the six R12 cards R180
+left named, and six more board-precondition ones beside them: **264/316 gated
+promises observed → 278/316**, 52 never-observed → 38.)*
+
+R180 ended with 52 printed promises that no fixture in the drill's library
+could reach, each named individually with the precondition it lacked. The
+biggest family was REGION (R12) — six cards whose clause is scoped to the
+region its event fires in — and the note it left behind for this round was
+blunt: **"AN ATTACKING POSITION WITH THE CARD ACTUALLY IN THE BATTLE is the
+next thing worth building."**
+
+**The drill had one already.** `progressAction` has declared the fullest attack
+on offer since the drill was written — that is what opens the battle priority
+windows every `{Battle}` card in the pool is played in — and `doDeclareAttack`
+moves every attacker into the DEFENDER's region and adds the attacking seat to
+that region's `presentSeats`. Traced on Galerider Eel at the head of this
+round: `subjReg=1, battleReg=1` from step 37 onward. A textbook attacking
+position, reached in every press run, and never used.
+
+What was missing was a BEAT that waits for it. All seven `@battle` repeats
+fired at steps 29–35, and every one of them landed in the **DECLARE step**:
+`battleReg=1, subjReg=0`. The battle phase had begun, no attack had been
+declared yet, the card was still at home, and the world acted at home too. A
+clause that reads `g.s.battle?.region === self.region` was correctly silent
+about a battle neither of them was in.
+
+So `Fixture.phase` gained a third pin, strictly narrower than `battle`:
+
+* **`inBattle`** — fires only while the SUBJECT is standing in the battle's
+  region (`subject.region === battle.region`, the engine's own answer to "am I
+  in this battle", written out by hand in six cards' `when` clauses).
+* The nine beats behind it are **region-aware where their `@battle` twins are
+  not**: they spawn, count, damage and mod inside `subject.region` instead of
+  inside `homeRegion(seat)`. Copying the soft beats verbatim would have been
+  pointless — R12 makes a home-region spawn inaudible to a card that has
+  marched out to attack. The pin says WHEN; the region says WHERE; both are
+  needed and neither is sufficient.
+
+**One beat needed a fourth pin, and it took a card to find it.** A bounded
+(`[Switch1]`/`[once]`) trigger has one use per turn (R9) and the budget is
+spent when the trigger is QUEUED, not when its payload finds something to do.
+Boreal Wanderer heard `allySpawn@battle`'s home-region spawn while standing at
+home, queued its one use into a region whose `presentSeats` held nobody but
+itself, announced *"no opponent is present here — no damage"*, and was out of
+uses before it had marched. `allySpawn@battle` therefore waits for
+`battle.happened` (`phase: 'battleJoined'`) — and **only that beat**: pinning
+all seven the same way was measured and it took Wisp, Synaptic Energizer and
+Delver of the Ephemeral ("After combat, …") out in exchange, for a net loss.
+
+### The seeded board was killing the game before the beats could finish
+
+Not a new problem — a pre-existing one this round's extra bodies made visible.
+`nextBeat` holds `die` and `despawn` back until TWO battles have finished, and
+the life top-up (`p.life < 12 → 25`) runs once per WINDOW while a whole combat
+damage step happens inside one `apply`. Traced on Ghord: `gameover` at step 55
+with `battlesSeen=1`, one short of the gate, so 29 of the 31 fixtures fired and
+the last two never became eligible. Raising the top-up to `< 40 → 61` — still
+an ODD total, because "if your life total is odd" is a printed condition on
+Ploosh and Insatiable Want — fixes it, and it is what unlocked the six
+board-precondition cards (Spiteful Shadow, Animated Spark, Riftspawn Remnant,
+Inspiration, Mindwarp Sporefrog, Ploosh) that the position pin does not touch.
+A game that does not end early is simply a longer game; press mode's single
+patience expression was split into three so the cost of that is bounded —
+measured over the whole pool at the loose setting and the tight one, coverage
+is identical (278/316, the same 38 claims name for name) and the tight one is
+far the faster. `84-card-semantics` runs in **1m33s**, against 1m05s before this
+round.
+
+### What a blind checker would print, and why it is not this one
+
+**R199 adds no evidence channel at all.** Attribution is still `ownResolution`,
+a slice of the event stream bounded by the engine's own stack-item label, and
+the continuous-layer reading is still `staticBite`; both were built and
+blind-checked in R180 and neither is touched here. Only WHEN and WHERE the
+world acts changed. That is why this round's failure modes are the loud ones:
+
+* **pin always TRUE** — beats fire at any quiescent window and act at
+  `subject.region`, which at home is the home region. Every clause in the
+  family tests the battle region explicitly, so they stay dark and coverage
+  FALLS. Pinned anyway, by a control asserting that Immolate — a spell, with no
+  body to stand anywhere — reports no battle position at all.
+* **pin always FALSE** — the six go dark; the per-gate floors in
+  `84-card-semantics` catch it.
+
+Every beat that fires in a battle records `home=/at=/battle=`. `at === battle`
+is the pin and proves nothing; **`at !== home` is the fact that cannot be
+faked** — it says the card left its own region. `170-battle-position-promises`
+asserts it.
+
+### The one card that went the other way, and it is a real defect
+
+**Slag Spewer's `[Augment]` erase emits no event and reaches no zone.** It
+prints *"[one], Erase one of my mods: I deal 2 damage to any target"*, and the
+erase happens — `batch-hybrids-fwe.ts` splices the mod out of `self.mods` and
+does `delete g.s.entities[id]`. But it announces it with
+`g.ev('info', '<mod> is ERASED (Slag Spewer).')` instead of an `erased` event,
+and the card never reaches the owner's **public erased pile**, which R65 says
+is where erasing puts a card. Every other erase site emits `erased`:
+`E.eraseFromPlay`, Spore of Regenesis's cost, and both bin-erase sites.
+
+It read as observed before this round, and it was observed **by accident**: the
+press run used to end mid-activation, and `drillCard`'s "ran out of steps" tail
+dumps everything from that activation to the end of the game into
+`activateTypes` — which swallowed the `erased` the `die` beat produced when the
+HOST was destroyed. R199 made the runs end cleanly, the unbounded window closed,
+and the card stopped borrowing somebody else's event. Recorded in `UNREACHED`
+under a new opener, `EVENTLESS`: *the clause is implemented and it really
+happens, but nothing in the game — no listener, no public zone, no checker —
+can see it happen.* That is a different and more useful thing to say than
+`VOCAB` (our vocabulary is too narrow) and it needs a CARD-TODO id.
+
+### What is left: 38 claims over 37 cards
+
+Named individually in `UNREACHED`. **Still no REAL defect among them** except
+the EVENTLESS one above, and that null result is measured, not assumed — every
+one of the fifteen assertions in `170-battle-position-promises` was red-checked
+by breaking a real card and confirming the suite names that card and its
+printed clause.
+
+The sixth REGION card, **Bloated Manablub**, is the one the position could not
+reach, and the reason is measured rather than guessed: it is a 2/2 that the
+`counters` and `damage` beats leave dead before the declare step, and the
+drill's "keep the card on the table" respawn puts it back AT HOME, mid-battle
+and too late to join the attack. Its `inBattleBeats` is empty in every run. The
+precondition it still lacks is a body that survives to the declare step, or a
+respawn that puts it into the battle region its seat is already present in.

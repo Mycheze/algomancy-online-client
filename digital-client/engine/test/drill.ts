@@ -111,6 +111,49 @@ export function ownResolution(msg: string, card: string): boolean {
  *  walk costs 600 steps on every card that has no ability at all. */
 const ACTIVATE_PATIENCE = 90;
 
+/**
+ * PRESS MODE'S THREE PATIENCES — R199.
+ *
+ * These used to be one expression, `(fired < all || idle < 90) && idle < 720`,
+ * and it was tuned against a board that KILLED ITSELF: the seeded position is
+ * lethal, so a press run reliably hit `gameover` in the fifties and the 720 cap
+ * was never reached by anything at all.
+ *
+ * ⚠ AND THE EARLY DEATH WAS SILENTLY COSTING COVERAGE. `nextBeat` will not let
+ * `die` or `despawn` fire until TWO battles have finished, and traced on Ghord
+ * the game ended at step 55 with `battlesSeen=1` — so those two beats never
+ * became eligible and only 29 of the 31 fixtures fired. The extra bodies the
+ * `inBattle` beats put on the board made that worse, not better. Raising the
+ * life top-up (`< 12 → 25` became `< 40 → 61`, still an ODD total, because "if
+ * your life total is odd" is a printed condition on Ploosh and Insatiable Want)
+ * fixes it and all 31 fire — and it turned the dead cap into the live one,
+ * because the run now spends its time walking phases after the last beat has
+ * fired instead of dying part-way through.
+ *
+ * So the cases are separated and each is given the number it actually needs.
+ * MEASURED over the whole pool at both the loose setting and this one, same
+ * commit: coverage is IDENTICAL — 278/316, and the same 38 claims unobserved,
+ * name for name — and the tight one is the faster of the two by a wide margin.
+ * 84-card-semantics runs in 1m33s at these numbers, against 1m05s before R199;
+ * a game that does not end early is simply a longer game, and that length is
+ * what the fourteen extra promises are bought with.
+ *
+ * ⚠ FIXTURE_PATIENCE MUST STAY ABOVE 60. `nextBeat`'s escape hatch — the one
+ * that lets `die` fire on a card whose remaining soft beat needs a phase this
+ * game will not reach — is spelled `stalled < 60`, and `stalled` IS this
+ * counter. Cutting this below that number silently deletes the hatch.
+ */
+const FIXTURE_PATIENCE = 65;
+/** windows to keep walking when the ONLY beats left are `inBattle` ones. They
+ *  need the card to march into a battle, which is a whole phase away — but
+ *  unlike every other beat they may be unreachable FOREVER (a spell has no
+ *  body to stand anywhere), so they get their own, shorter rope. */
+const BATTLE_PATIENCE = 24;
+/** windows to keep walking after the LAST fixture has fired, so a death
+ *  trigger queued by `die` gets its resolution counted. A trigger reaches the
+ *  stack in the same window and resolves in the next few. */
+const SETTLE_PATIENCE = 10;
+
 export interface DrillResult {
   card: string;
   /** the card became a legal `playCard` at some window and was played */
@@ -172,6 +215,31 @@ export interface DrillResult {
   ownChanged: string[];
   /** the fixtures that actually fired, in order */
   fired: string[];
+  /**
+   * R199: the augment's CONTINUOUS text was seen BITING — `staticBite` said that
+   * taking this mod out of the game changes somebody's effective power/defence,
+   * and putting it back changes it again.
+   *
+   * Reported separately from `attachChanged` because that array is a mixture: it
+   * also carries the coarse attach delta and the "the host DIED of it" push
+   * (Malformed Monstrosity), so a test that wants to say *this layer works*
+   * cannot read it without accepting a host's death as proof of a pump. This
+   * flag has exactly one writer, `staticBite`.
+   */
+  staticBit: boolean;
+  /**
+   * R199: every beat that fired while the card was STANDING IN THE BATTLE, as
+   * `<beat>:home=<n>:at=<n>:battle=<n>`.
+   *
+   * The three numbers are the whole point and none of them is redundant.
+   * `at === battle` is true by construction — that is the pin — so on its own it
+   * proves nothing. `at !== home` is the fact that cannot be faked: it says the
+   * card LEFT ITS HOME REGION and was standing in the defender's when the world
+   * acted on it. A test that reads only the beat names would pass just as
+   * happily against a predicate hard-wired to `true`, which is why the position
+   * is recorded and not merely the beat.
+   */
+  inBattleBeats: string[];
 }
 
 /**
@@ -213,10 +281,37 @@ type Fixture = {
    *  augment during battle", "when you gain or lose life during battle") and
    *  the beats naturally land in deployment, where those clauses are correctly
    *  silent. So the soft fixtures are listed TWICE — once wherever the game
-   *  happens to be quiet, once pinned to the battle phase. */
-  phase?: 'deploy' | 'battle';
+   *  happens to be quiet, once pinned to the battle phase.
+   *
+   *  ⚠⚠ `inBattle` IS A THIRD, STRICTLY NARROWER PIN, and R199 exists because
+   *  `battle` turned out not to be it. Measured on Galerider Eel at the head of
+   *  R199: all seven `@battle` repeats fired at steps 29–35 and every one of
+   *  them landed in the DECLARE step — `battleReg=1, subjReg=0`. The battle
+   *  phase had begun and the card was still standing at home, because attacks
+   *  had not been declared yet. Its clause reads
+   *  `g.s.battle?.region === self.region`, so the whole family was silent for a
+   *  reason that has nothing to do with the card.
+   *
+   *  `inBattle` fires a beat only while the SUBJECT IS STANDING IN the battle's
+   *  region. That position is one the drill already reaches — the same trace
+   *  shows `subjReg=1` from step 37 on, because `progressAction` declares the
+   *  fullest attack on offer and `doDeclareAttack` moves every attacker into
+   *  the defender's region. What was missing was never the attack; it was a
+   *  beat that waits for it. */
+  phase?: 'deploy' | 'battle' | 'battleJoined' | 'inBattle';
   run: (e: E, seat: Seat, subject: Entity | undefined, card: string) => void;
 };
+
+/**
+ * WHERE THE SUBJECT IS STANDING — the region an `inBattle` beat must act in.
+ *
+ * ⚠ NOT `homeRegion`, and that is the entire point of the family. R12 scopes
+ * every event to the region it fires in, so a beat that spawns an ally, places
+ * a counter or applies a mod in the seat's HOME region is inaudible to a card
+ * that has marched into the defender's region to attack. The soft beats all
+ * aim at home; these aim at wherever the card actually is.
+ */
+const at = (subject: Entity | undefined): number | undefined => subject?.region;
 
 const SOFT_BY_NAME: Record<string, Fixture> = {};
 
@@ -395,7 +490,7 @@ const FIXTURES: Fixture[] = [
   },
   // ── the same soft beats again, pinned to the BATTLE phase, for the nine
   //    cards whose clause carries a printed "during battle" ──────────────
-  ...(['allySpawn', 'counters', 'life', 'draw', 'trash', 'modApplied', 'damage'] as const)
+  ...(['counters', 'life', 'draw', 'trash', 'modApplied', 'damage'] as const)
     .map(name => ({
       name: `${name}@battle`,
       phase: 'battle' as const,
@@ -403,6 +498,157 @@ const FIXTURES: Fixture[] = [
         SOFT_BY_NAME[name]!.run(e, seat, subject, card);
       },
     })),
+  {
+    // ⚠ `allySpawn@battle` IS PINNED ONE NOTCH LATER THAN ITS SIX SIBLINGS, and
+    // R199 paid for the distinction card by card. A BOUNDED ([Switch1]/[once])
+    // trigger has ONE use per turn (R9), and the budget is spent the moment the
+    // trigger is QUEUED — whether or not its payload finds anything to do. The
+    // battle phase opens in the DECLARE step, before attacks exist, and this
+    // beat spawns at home: so Boreal Wanderer ("When another ally spawns during
+    // battle, I deal 2 damage to each opponent") heard the home spawn while
+    // standing at home, queued its one bounded use into a region where
+    // `presentSeats` holds nobody but itself, announced "no opponent is present
+    // here — no damage", and was out of uses for the turn before it had even
+    // marched. Waiting for `battle.happened` costs nothing — a card that never
+    // leaves home still hears this beat, because it is still spawning at home —
+    // and it hands the bounded use to the `@inBattle` twin, where an opponent
+    // IS present.
+    //
+    // ⚠⚠ AND ONLY THIS ONE. Pinning all seven this way was measured: Boreal
+    // Wanderer and Bloated Manablub came in, but Wisp, Synaptic Energizer and
+    // Delver of the Ephemeral ("After combat, …") went dark and the total FELL
+    // by one, at twice the runtime. The other six beats do not gate a bounded
+    // trigger on a region-scoped payload; they had no reason to move.
+    name: 'allySpawn@battle',
+    phase: 'battleJoined',
+    run: (e: E, seat: Seat, subject: Entity | undefined, card: string) => {
+      SOFT_BY_NAME['allySpawn']!.run(e, seat, subject, card);
+    },
+  },
+
+  // ── R199: the same world, acting IN THE BATTLE THE CARD IS STANDING IN ──
+  //
+  // Every beat below is region-aware where its `@battle` twin is not: it aims
+  // at `subject.region`, which during an attack is the DEFENDER's region.
+  // Copying the soft beats verbatim (the way the `@battle` repeats do) would
+  // have been pointless here — `allySpawn` spawns into `e.homeRegion(who)`, and
+  // R12 makes a home-region spawn inaudible to a card that has marched out to
+  // attack. The pin says WHEN; the region says WHERE; both are needed.
+  {
+    name: 'allySpawn@inBattle',
+    phase: 'inBattle',
+    // Boreal Wanderer: "When another ally spawns during battle, I deal 2 damage
+    // to each opponent." `fireEvent` region-scopes the listener, and
+    // `dealTwoToEachOpponent` then reads `regions[ctx.region].presentSeats` —
+    // which in the DEFENDER's region during an attack contains both seats. Both
+    // halves need the same thing and neither gets it from a home-region spawn.
+    run: (e, seat, subject) => {
+      const r = at(subject);
+      if (r === undefined) return;
+      for (const body of ['The Foretold', 'Bubb']) {
+        try { e.spawnUnit(seat, body, r, {}); } catch { /* unregistered */ }
+      }
+    },
+  },
+  {
+    name: 'draw@inBattle',
+    phase: 'inBattle',
+    // Galerider Eel ("whenever one or more OTHER cards enter YOUR hand during
+    // battle"), Rider of the Tides and Xenopod Progenitor ("a player's hand").
+    // A draw is a `toHand`, so it fires 'handEntered' (R179) — the event does
+    // NOT carry a region, which is exactly why all three cards pin the listener
+    // to `g.s.battle?.region === self.region` themselves.
+    run: (e, seat) => { for (const who of [seat, (1 - seat) as Seat]) e.draw(who, 1); },
+  },
+  {
+    name: 'life@inBattle',
+    phase: 'inBattle',
+    // Colony of the Interworld: "When you gain or lose life during battle, put
+    // three +1/+1 counters on me." `E.loseLife` stamps the event with
+    // `battle.region` (R12), so only units standing in the battle hear it.
+    run: (e, seat) => {
+      e.gainLife(seat, 3, 'drill fixture');
+      e.loseLife(seat, 3, 'drill fixture');
+      e.loseLife((1 - seat) as Seat, 3, 'drill fixture');
+    },
+  },
+  {
+    name: 'counters@inBattle',
+    phase: 'inBattle',
+    run: (e, seat, subject) => {
+      const r = at(subject);
+      if (r === undefined) return;
+      for (const who of [seat, (1 - seat) as Seat]) {
+        const us = e.unitsOf(who, r).filter(u => u.id !== subject?.id);
+        if (us[0]) e.addCounters(us[0], 1, seat);
+        if (us[1]) e.addCounters(us[1], -1, seat);
+      }
+      if (subject && e.entity(subject.id)) e.addCounters(subject, 1, seat);
+    },
+  },
+  {
+    name: 'damage@inBattle',
+    phase: 'inBattle',
+    // one point, so the subject SURVIVES it — same reasoning as the soft twin.
+    // ⚠ `region` on the ctx is the SUBJECT's region and not home: a
+    // region-scoped "whenever I am dealt damage" rider reads it.
+    run: (e, seat, subject) => {
+      const r = at(subject);
+      if (r === undefined) return;
+      const ctx = {
+        controller: seat, sourceName: 'The Foretold', region: r,
+        targets: [], event: null,
+        eraseSelf: () => { /* no stack item here — a direct-run ctx */ },
+        choose: () => { throw new Error('no choice expected'); },
+      } as unknown as Parameters<E['dealEffectDamage']>[0];
+      if (subject && e.entity(subject.id)) e.dealEffectDamage(ctx, subject, 1);
+      const foe = e.unitsOf((1 - seat) as Seat, r)[0];
+      if (foe) e.dealEffectDamage(ctx, foe, 1);
+    },
+  },
+  {
+    name: 'trash@inBattle',
+    phase: 'inBattle',
+    run: (e, seat) => {
+      for (const who of [seat, (1 - seat) as Seat]) {
+        const hand = e.player(who).hand;
+        if (!hand.includes('Tidal Menace')) hand.push('Tidal Menace');
+        e.discardFromHand(who, hand.indexOf('Tidal Menace'));
+      }
+    },
+  },
+  {
+    name: 'modApplied@inBattle',
+    phase: 'inBattle',
+    // ⚠ ON SOMEBODY ELSE, never on the subject — R79 would make the card
+    // {Unstable} and turn its next death into an erase. Same rule as the soft
+    // twin; the only difference is which region the ally is found in.
+    run: (e, seat, subject) => {
+      const r = at(subject);
+      if (r === undefined) return;
+      const host = e.unitsOf(seat, r).find(u => u.id !== subject?.id && !u.token);
+      if (host) e.attachMod(host, 'Curio Drifter', seat, 'augment');
+    },
+  },
+  {
+    name: 'token@inBattle',
+    phase: 'inBattle',
+    run: (e, seat, subject) => {
+      const r = at(subject);
+      if (r === undefined) return;
+      try { e.spawnUnit(seat, 'Unit Token', r, { token: true }); } catch { /* unregistered */ }
+    },
+  },
+  {
+    name: 'targeted@inBattle',
+    phase: 'inBattle',
+    run: (e, seat, subject) => {
+      if (!subject || !e.entity(subject.id)) return;
+      const ev = e.ev('targeted', `The Foretold targets ${subject.card}.`,
+        { unit: subject.id, region: subject.region });
+      e.fireEvent('targeted', ev);
+    },
+  },
 
   // ── and the destructive ones last, and only once the card has had a
   //    BATTLE to attack, block and survive in first.
@@ -642,8 +888,10 @@ for (const f of FIXTURES) if (!f.phase) SOFT_BY_NAME[f.name] = f;
  * early. Trigger promises observed: 82 with the battle gate, 48 without it.
  */
 function nextBeat(pending: Fixture[], phase: string, stalled: number,
-  battles: number): Fixture | undefined {
-  const here = (x: Fixture): boolean => x.phase === undefined || x.phase === phase;
+  battles: number, inBattle: boolean, battleOn: boolean): Fixture | undefined {
+  const here = (x: Fixture): boolean => x.phase === 'inBattle' ? inBattle
+    : x.phase === 'battleJoined' ? battleOn
+      : x.phase === undefined || x.phase === phase;
   const soft = pending.filter(x => !x.last);
   const pick = soft.find(here);
   if (pick) return pick;
@@ -654,7 +902,19 @@ function nextBeat(pending: Fixture[], phase: string, stalled: number,
   // took Megadeath off the table two events before it would have swung.
   // `battlesSeen` counts `afterCombat`, which is a battle that FINISHED.
   if (battles < 2) return undefined;
-  if (soft.length && stalled < 60) return undefined;
+  // ⚠ AN `inBattle` BEAT MUST NOT HOLD THE DESTRUCTIVE ONES HOSTAGE. Every
+  // other soft beat is reachable for every card — the game always gets to a
+  // deployment window and always gets to a battle phase — so "some soft beat is
+  // still pending" is a fair reason to keep waiting. An `inBattle` beat is not
+  // like that: a SPELL has no body to stand anywhere, and a unit that is killed
+  // before it ever swings never gets back into a battle, so those beats can be
+  // permanently pending through no fault of the scheduler. Counting them here
+  // would make every such card sit out 60 idle windows before `die` and
+  // `despawn` became eligible, on top of a `press` run that is already the most
+  // expensive thing in this suite — and `die` alone is worth more trigger
+  // promises than this whole family.
+  const blocking = soft.filter(x => x.phase !== 'inBattle');
+  if (blocking.length && stalled < 60) return undefined;
   return pending.find(x => x.last && here(x));
 }
 
@@ -714,6 +974,7 @@ export function drillCard(
     effectEvents: [], effectTypes: [], guarded: false,
     activated: [], activateTypes: [], activateChanged: [],
     attached: false, attachChanged: [], ownTypes: [], ownChanged: [], fired: [],
+    staticBit: false, inBattleBeats: [],
   };
   let { state } = createGame(seed);
   const seat: Seat = 0;
@@ -832,6 +1093,27 @@ export function drillCard(
     return undefined;
   };
 
+  /**
+   * R199: IS THE CARD ACTUALLY IN THE BATTLE?
+   *
+   * Not "is it the battle phase" — that was already true while the card stood
+   * at home in the declare step, and it is why the whole REGION family read as
+   * unreachable. The engine's own answer to "am I in this battle" is the one
+   * six cards' `when` clauses write out by hand
+   * (`g.s.battle?.region === self.region`), so it is the one asked here.
+   *
+   * ⚠ It deliberately does NOT consult `battle.columns`. A unit that was sent
+   * out at block time, or one spawned into the battle region by another card's
+   * text, is standing in the battle just as much as a declared attacker is —
+   * and every clause in the family is written against the REGION, not against
+   * membership of a column.
+   */
+  const standingInBattle = (): boolean => {
+    if (state.phase !== 'battle' || !state.battle) return false;
+    const s = subject();
+    return s !== undefined && s.region === state.battle.region;
+  };
+
   for (let step = 0; step < maxSteps; step++) {
     if (state.phase === 'gameover') break;
     // ⚠ THE EVIDENCE WINDOW NEVER SPANS TWO WINDOWS OF THE GAME. It survives
@@ -854,7 +1136,20 @@ export function drillCard(
     // already is; it is deliberately a top-up to an ODD total, because
     // "if your life total is odd" is a printed condition (Ploosh, Insatiable
     // Want) and pinning it even would decide those clauses for them.
-    if (tracking) for (const p of state.players) if (p.life < 12) p.life = 25;
+    //
+    // ⚠ R199 RAISED IT FROM `< 12 → 25`. The top-up runs once per window, but a
+    // whole combat damage step happens inside ONE `apply`, so a seat sitting on
+    // 25 can be taken to zero between two top-ups — and the old numbers had
+    // only just enough margin for the old board. Adding the `inBattle` beats
+    // spent that margin: traced on Ghord, `gameover` arrived at step 55 with
+    // `battlesSeen=1`, one short of the gate `nextBeat` puts in front of `die`
+    // and `despawn`, so those two beats never became eligible and only 29 of
+    // the 31 fixtures fired. Measured over the pool at that intermediate point:
+    // 227/316, against the 264 the round started from — A Pile of Rubbish,
+    // Spirit of Vengeance, Ghord, Blightmound and their whole "when I die"
+    // family, a far bigger loss than the R12 family this round set out to win.
+    // The numbers stay ODD for the reason above; only the headroom changed.
+    if (tracking) for (const p of state.players) if (p.life < 40) p.life = 61;
 
     // keep the card in hand and the seat solvent at every window: a previous
     // window may have shuffled the hand, and resources expend as they are used
@@ -976,7 +1271,9 @@ export function drillCard(
     // read as evidence (see `ownResolution`).
     const dueFixture = opts.press && res.played && !state.decision && state.stack.length === 0
       && step > playedAt
-      ? nextBeat(FIXTURES.filter(x => !firedFixtures.has(x.name)), state.phase, pressIdle, battlesSeen)
+      ? nextBeat(FIXTURES.filter(x => !firedFixtures.has(x.name)), state.phase, pressIdle,
+        battlesSeen, standingInBattle(),
+        state.phase === 'battle' && !!state.battle?.happened)
       : undefined;
     if (!chosen && dueFixture) {
       const f = dueFixture;
@@ -989,8 +1286,13 @@ export function drillCard(
        *  delta taken from before the poke reads "counters/damage changed" and
        *  would evidence a `counters` promise the card never kept. */
       let mid: ReturnType<typeof snapshot> | null = null;
+      // R199: the subject and the battle AS THEY STAND when the beat becomes
+      // eligible, read before the beat's own poke can move either.
+      const sBefore = subject();
+      const bRegBefore = state.battle?.region;
+      const homeBefore = e.homeRegion(seat);
       try {
-        f.run(e, seat, subject(), card);
+        f.run(e, seat, sBefore, card);
         // ⚠ RE-ATTACH. `despawn` recalls the host, which sends every mod on it
         // to the bin, so by the time `die` fired the augment was not there any
         // more and its "[Augment] When I die, draw a card" could not fire —
@@ -1010,12 +1312,17 @@ export function drillCard(
         e.settle();
       } catch { /* a trigger may suspend for a decision */ }
       res.fired.push(f.name);
+      if (f.phase === 'inBattle') {
+        res.inBattleBeats.push(
+          `${f.name}:home=${homeBefore}:at=${sBefore?.region}:battle=${bRegBefore}`);
+      }
       // asked again after every beat, because a static's SUBJECT can arrive
       // later than the augment does: Towering Colossus's "Enemies gain +2/+2"
       // is region-scoped (R12) and there is no enemy in this region until the
       // `enemyHere` fixture puts one there.
       if (!biting && staticBite(state, modId)) {
         biting = true;
+        res.staticBit = true;
         res.attachChanged.push('unit stats/attributes changed');
       }
       if (ingest(e.events, true)) {
@@ -1090,7 +1397,10 @@ export function drillCard(
       if (hostId !== undefined && !state.entities[hostId]) {
         res.attachChanged.push('unit stats/attributes changed');
       }
-      if (staticBite(state, modId)) res.attachChanged.push('unit stats/attributes changed');
+      if (staticBite(state, modId)) {
+        res.staticBit = true;
+        res.attachChanged.push('unit stats/attributes changed');
+      }
       // the mod this card became, so its donated activated abilities can be
       // told apart from the host's own
       for (const [id, u] of Object.entries(state.entities)) {
@@ -1132,9 +1442,11 @@ export function drillCard(
       // events (attacked, blocked, afterCombat) are a whole battle away from
       // the deployment window most cards are played in.
       const busy = (opts.activate || opts.augment) && idleWindows < ACTIVATE_PATIENCE;
-      const pressing = opts.press
-        && (firedFixtures.size < FIXTURES.length || pressIdle < ACTIVATE_PATIENCE)
-        && pressIdle < ACTIVATE_PATIENCE * 8;
+      const stillPending = (f: (x: Fixture) => boolean): boolean =>
+        FIXTURES.some(x => !firedFixtures.has(x.name) && f(x));
+      const pressing = opts.press && pressIdle < (
+        stillPending(x => x.phase !== 'inBattle') ? FIXTURE_PATIENCE
+          : stillPending(x => x.phase === 'inBattle') ? BATTLE_PATIENCE : SETTLE_PATIENCE);
       if (!busy && !pressing) {
         res.resolved = true; res.outcome = 'resolved'; break;
       }
