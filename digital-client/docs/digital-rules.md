@@ -13951,3 +13951,109 @@ at once and report every game as drifted. A stamp saying which format a file's
 keys are in belongs to the saved-game versioning work (CARD-TODO #66), which is
 the consumer of this signal. Until it lands, **a change to `referenceKey`'s
 spelling is a change to the saved-game format.**
+---
+
+## R193 — an exemption list that nothing checks is a blanket; and the sweep that says "clean" over `ui/` is not looking
+
+CARD-TODO #68. Two defects in `147-comment-conformance.test.ts` §4, the sweep
+that fails a helper with zero call sites. Both are the same shape as the rot the
+file was built to catch, which is the interesting part.
+
+### (a) The exemptions had outlived the code — confirmed
+
+`DEAD_EXEMPT` waived `batch-metal-a.ts::tokensInRegion` and
+`helpers.ts::lifeGainedIn`. **R181 deleted both helpers.** Re-measured today,
+neither name exists anywhere in `src/` except in the tombstone comments R181
+left behind, so for a whole round the list waived nothing at all while reading
+like a live statement about two dead functions. Nothing asserted otherwise,
+because nothing asserted anything: the file had a staleness check for its
+PARKED allowlist and its pool-claim allowlist and none for this one.
+
+`§4 every DEAD_EXEMPT entry still names a real declaration` is that check. An
+entry must name a file the scan reads AND a declaration that file still makes;
+either half failing is red, and the message quotes the exemption's own reason
+back at whoever has to decide.
+
+**The two mechanisms are complementary and neither subsumes the other**, which
+is exactly why a stale exemption matters here. Measured today, with the same
+dead helper planted twice:
+
+| | `noUnusedLocals` | §4 |
+|---|---|---|
+| `const dead = …` (not exported) | **error TS6133** | caught |
+| `export const dead = …` | **silent, exit 0** | caught |
+
+`tsc` does not report an exported declaration however dead it is. It would never
+have caught `lifeGainedIn`, and it does not catch **`src/cards/dsl.ts::printedCost`**,
+which the widened sweep found today: exported, and with zero call sites anywhere
+in `digital-client` — engine, ui and server alike. It is waived with its reason
+rather than deleted, because seven other agents held this tree.
+
+Also measured, because it looks like an escape hatch and mostly is not: `_`
+exempts an unused binding only inside a DESTRUCTURING PATTERN.
+`const { a: _x } = o;` is accepted; a plain `const _x = 1;` is still TS6133.
+
+### (b) The scan stopped at `src/cards/sets`
+
+§4 now sweeps `src/**`, `test/**` and `scripts/**` — 204 files, 1392
+declarations, up from 30 and 231. A dead helper in `test/` was previously
+outside its reach entirely.
+
+Widening it required fixing a blind spot first. **`stripCode` blanks a template
+literal whole, interpolations included, so `${resHtml(r)}` did not count as a
+call.** That single hole was 34 of the 45 helpers the widened sweep reported
+dead on its first run — a 75% false-positive rate, i.e. a sweep nobody would run
+twice. Call sites are now counted over the code view PLUS the `${ … }` spans,
+brace-matched out of the raw text.
+
+Two floors, not one, because **a number going up is not by itself good news**:
+the old floor is kept on the old population (≥200 declarations in
+`src/cards/sets`) beside the new total, so the widening cannot mask the original
+scan collapsing.
+
+### The third hole in `stripCode`, and what it hides
+
+`stripCode` has now gone blind three times. The first two are closed (the regex
+literal that deleted 5128 lines of `engine.ts`; the line comment that ended at
+its first slash — R181 fixed that one, and R174's repair for it in `codeView`
+has been retired, because over the wider corpus the repair itself mangled 40
+lines by truncating at a `//` inside a string or a regex).
+
+The live one: **`stripCode`'s template state has no notion of `${ … }`, so a
+NESTED template literal inverts string/code parity.** The inner opening backtick
+reads as the outer's closing one:
+
+```
+stripCode('const a = `x ${ f(`y`) } z`;')
+  → 'const a =          y       ;'      // `f(` swallowed, the string body `y` returned as CODE
+```
+
+Measured across `engine/`: `src/engine.ts` has 12 of them and the leak is
+confined to those 10 lines (a well-formed nested template has an even backtick
+count, so parity restores at its own closing tick). `ui/main.ts` has 108, which
+leak 368 lines and blank 911 lines of real code — running §4 over `ui/` reported
+10 dead helpers of which **all ten were false**. That is why §4 does not scan
+`ui/`, and the exclusion is written down with its measurement rather than left
+as an unexplained gap.
+
+### The measurement is the deliverable
+
+`164-sweep-sight.test.ts` plants known violations into an in-memory copy of the
+files the sweeps read and asserts they see N of N. Today, eight violations
+spread the length of `engine.ts` are seen 8/8 by all three whole-file sweeps in
+`90-coverage-census.test.ts`. The patterns it measures are pinned to that file's
+source, so the second opinion cannot drift into being about a retired regex.
+
+Its §C is the one that earns its place. An ORACLE — a stripper that differs from
+`stripCode` in exactly one respect, the `${ … }` stack — is run beside it over
+all of `src/`, and only their DISAGREEMENT on the swept idioms is reported. A
+checker cannot audit itself; auditing `stripCode` with `stripCode` is the move
+that gave the first two holes their long lives. Red-checked with a real bin
+write hidden inside a nested template in `src/rng.ts`: **`90-coverage-census`
+reported all nine of its tests green** — the exact blind-and-clean failure — and
+§C named the file, the line and the direction of the disagreement.
+
+One hole is left open and stated rather than hidden: a bin write or a controller
+assignment written INSIDE a `${ … }` interpolation is invisible to all three
+whole-file sweeps. Nothing in `src/` does that today, and §C is what will say so
+when something does.

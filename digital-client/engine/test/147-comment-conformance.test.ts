@@ -27,48 +27,56 @@
  *   §3  A comment asserting a NEGATIVE about the card pool fails unless it is
  *       on an allowlist carrying its reason — and two of those reasons are
  *       themselves asserted here against `printed.json`.
- *   §4  A local helper in `src/cards/sets/**` with zero call sites fails.
+ *   §4  A helper in `src/**`, `test/**` or `scripts/**` with zero call sites
+ *       fails (R193 — it used to read `src/cards/sets/**` alone).
  *
  * ── ON BLINDNESS ────────────────────────────────────────────────────────
  *
- * `stripCode` (test/card-todo.ts) went silently blind for weeks once already
- * and every sweep resting on it stayed green. So §0 MEASURES THE REACH of
- * every scan in this file before any of them runs: how many files were opened,
- * how many card blocks were parsed, how many declarations were seen, and
- * whether any comment text survives into the code view. A check whose
+ * `stripCode` (test/card-todo.ts) went silently blind for weeks twice, and
+ * every sweep resting on it stayed green both times. So §0 MEASURES THE REACH
+ * of every scan in this file before any of them runs: how many files were
+ * opened, how many card blocks were parsed, how many declarations were seen,
+ * and whether any comment text survives into the code view. A check whose
  * population silently collapses fails there instead of passing vacuously.
  *
- * ⚠ AND IT IS BLIND AGAIN TODAY, IN A SECOND PLACE. Measured while writing
- * this file (R174): `stripCode`'s `st === 'line'` state has no branch of its
- * own — it falls through to the REGEX-LITERAL `else`, where an unescaped `/`
- * outside a `[…]` class does `st = 'code'`. So a LINE COMMENT ENDS AT ITS
- * FIRST SLASH and everything after it is returned as code:
+ * ✔ R193 — THE HOLE THIS HEADER USED TO DESCRIBE IS CLOSED, and saying so is
+ * the point of the file. R174 measured `stripCode`'s `st === 'line'` state
+ * falling through to the REGEX-LITERAL arm, so a line comment ended at its
+ * first `/` and 927 comment lines across the batch files leaked into the code
+ * view. `card-todo.ts` has had its own `st === 'line'` branch since R181;
+ * 149-strip-code.test.ts pins the behaviour directly, and re-measured on
+ * 2026-08-26 the leak over `src/cards/sets/**` is ZERO lines.
  *
- *     stripCode('// a comment with a / slash then {x:1}')
- *       → '                      slash then {x:1}'
+ * So `codeView` no longer carries the repair R174 wrote for it. Retiring it
+ * was not tidiness: over the WIDER corpus §4 now reads, the repair did real
+ * damage. Its step 3 truncated a line at the first `//` `stripCode` had
+ * blanked — which is also what a `//` inside a STRING or a REGEX looks like —
+ * and that mangles 40 lines across src/ + test/ + ui/, e.g.
+ * `71-card-ledger.test.ts:93`'s `.replace(/\/\*[\s\S]*?\*\//g, '')`. Every one
+ * of those is a lost call site, i.e. a §4 false positive. An exemption that
+ * outlives its cause is this file's own subject; so is a repair.
  *
- * `+1/+1`, `ll/2`, `and/or` and every file path make this near-universal:
- * **927 line-comment lines across the 28 card batch files leak**, plus 86 in
- * engine.ts. Worse, a leaked backtick opens a TEMPLATE-LITERAL state, which
- * legally spans newlines, so the desync then swallows real code — 10 `card()`
- * definitions in batch-hybrids-ld-c.ts and batch-light-a.ts vanish entirely
- * from the stripped view. That is the exact failure the helper's own doc
- * comment says it exists to prevent ("a comment that merely MENTIONS the bad
- * idiom holds the check true").
+ * ⚠ AND IT IS BLIND TODAY, IN A THIRD PLACE — measured, not assumed (R193).
+ * `stripCode`'s `tpl` state has no notion of `${ … }`, so a NESTED template
+ * literal INVERTS STRING/CODE PARITY: the inner opening backtick is read as
+ * the outer's closing one, and everything up to the next backtick swaps role.
  *
- * `test/card-todo.ts` is RESERVED to the orchestrator, so the fix is not made
- * here; it is reported. What this file does instead is the smallest sound
- * repair, and it does NOT roll a second stripper:
+ *     stripCode('`a ${ x ? `b` : `` } c`')   // the ` b ` arrives as CODE
  *
- *   1. blank every line whose first non-space characters are `//` — such a
- *      line is entirely a comment, no string can start there, and this is
- *      where every leaked backtick in these files lives;
- *   2. hand THAT to `stripCode`, which then never desyncs across a newline;
- *   3. truncate any surviving trailing `//` comment at the index `stripCode`
- *      itself identified as the comment start.
+ * The measured damage on 2026-08-26, over engine/:
+ *   · `src/engine.ts` — 12 nested templates, and the leak is confined to
+ *     those 10 lines (a nested template re-inverts at its own closing
+ *     backtick, so the desync cannot run away in this corpus);
+ *   · `ui/main.ts` — 108 of them, 368 leaked lines and 911 lines of real code
+ *     blanked. That is why §4 does NOT scan `ui/` (see allSources below), and
+ *     it is stated here rather than left as an unexplained gap.
+ * `164-sweep-sight.test.ts` plants violations into the swept files and
+ * measures what the sweeps actually see, so the bound above is a test rather
+ * than a paragraph.
  *
- * `§0 the code view carries no comment text` asserts the result is clean, so
- * if either half rots this goes red instead of quietly shrinking.
+ * `§0 the code view carries no comment text` asserts the code view is clean
+ * over the card files, so if `stripCode` grows a fourth hole this goes red
+ * instead of quietly shrinking.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -91,30 +99,60 @@ const raw = (f: string): string => fs.readFileSync(path.join(SETS, f), 'utf8');
 
 /**
  * A LINE-PRESERVING code view: comments and string literals blanked, real code
- * kept. `stripCode` does the work; steps 1 and 3 repair its line-comment
- * early-exit (see the header). Line and column survive, so `file:${i + 1}` in
- * a failure message is the real line.
+ * kept. `stripCode` is the codebase's stripper and does all of the work — this
+ * is deliberately a one-line wrapper and NOT a second stripper. Line and column
+ * survive, so `file:${i + 1}` in a failure message is the real line.
+ *
+ * R174 wrapped a two-step repair around this call for `stripCode`'s
+ * line-comment early-exit. R181 fixed the stripper itself and R193 measured the
+ * repair to be both unnecessary here (zero leaks over the card files) and
+ * actively harmful over the wider corpus §4 now reads — see the header.
  */
-function codeView(src: string): string {
-  // 1 · a line that BEGINS with `//` is entirely a comment. Blanking it here
-  //     keeps its backticks out of stripCode's template-literal state, which
-  //     is the only state in this corpus that can desync across a newline.
-  const pre = src.split('\n').map(L => (/^\s*\/\//.test(L) ? ' '.repeat(L.length) : L)).join('\n');
-  const out = stripCode(pre).split('\n');
-  const lines = src.split('\n');
-  // 3 · a TRAILING `//` comment: stripCode marks the two comment-start columns
-  //     as blanks, so that index is its own answer to "where does the comment
-  //     begin"; everything from there to end of line is comment.
-  return out.map((o, i) => {
-    const r = lines[i] ?? '';
-    for (let k = 0; k < r.length - 1; k++) {
-      if (r[k] === '/' && r[k + 1] === '/' && o[k] === ' ' && o[k + 1] === ' ') {
-        return o.slice(0, k) + ' '.repeat(Math.max(0, o.length - k));
-      }
+const codeView = (src: string): string => stripCode(src);
+
+/**
+ * A `${ … }` interpolation inside a template literal is CODE, and `stripCode`
+ * blanks it along with the rest of the literal. That is fine for a scan that
+ * looks for DECLARATIONS (nobody declares a helper inside an interpolation)
+ * and wrong for one that counts CALL SITES: `${resHtml(r)}` is a call.
+ *
+ * Measured on 2026-08-26, this single blind spot was 34 of the 45 helpers the
+ * widened §4 reported dead on its first run — `142-static-conformance`'s
+ * `continuousOf`, `70-playtest-ledger`'s `REFRESH`, `98-spawn-region`'s
+ * `lineOf` and `extract-printed.mjs`'s `PIP`/`COST_WORDS` are all called only
+ * from inside a `${ … }`. A sweep whose false-positive rate is 75% does not
+ * get run twice, so this is not cosmetic.
+ *
+ * Restored from the RAW text by brace-matching from each `${`, because that is
+ * the one place `stripCode` cannot help. Lines that OPEN with a comment marker
+ * are skipped (56 of the tree's 4173 `${` spans sit in prose — `types.ts`
+ * documents keys like `` `${seat}:${prefix}` ``), which keeps a comment from
+ * resurrecting a dead helper. The residual error is one-directional and small:
+ * a `${` in a trailing comment could still count as a use, i.e. this can MISS
+ * a dead helper, never invent one.
+ */
+function interpolations(src: string): string {
+  const isComment = src.split('\n').map(L => /^\s*(?:\*|\/\/|\/\*)/.test(L));
+  const out: string[] = [];
+  let line = 0;
+  for (let i = 0; i + 1 < src.length; i++) {
+    if (src[i] === '\n') { line++; continue; }
+    if (src[i] !== '$' || src[i + 1] !== '{' || isComment[line]) continue;
+    let depth = 0, j = i + 1;
+    for (; j < src.length; j++) {
+      const c = src[j];
+      if (c === '{') depth++;
+      else if (c === '}') { depth--; if (depth === 0) break; }
     }
-    return o;
-  }).join('\n');
+    out.push(src.slice(i + 2, j));
+  }
+  return out.join('\n');
 }
+
+/** the view §4 counts CALL SITES over: the code view plus the interpolations
+ *  `stripCode` blanked. Not line-preserving, and it does not need to be — it is
+ *  only ever `.match`ed for a count. */
+const useView = (src: string): string => codeView(src) + '\n' + interpolations(src);
 
 /** printed.json, the source of truth for every pool-wide claim below */
 type Printed = { name: string; kind: string; type?: string; attrs?: string[] };
@@ -480,22 +518,53 @@ test('§3 the two allowlisted pool claims that CAN be checked are checked', () =
   }
 });
 
-// ───────────────── §4 · dead helpers in the card files ─────────────────
+// ──────────────────── §4 · helpers with zero call sites ────────────────────
 
 /**
  * `payLife` sat in `batch-light-a.ts` with a doc comment saying it paid life
  * "as a COST at resolution (header note)" and ZERO call sites, long after all
- * three life-cost cards moved to real R49/R64 `castCost` costs. It is a
- * comment rot that a type-checker would normally catch — but `tsconfig` has
- * `strict` and NOT `noUnusedLocals`, so nothing did.
+ * three life-cost cards moved to real R49/R64 `castCost` costs. A dead function
+ * is the most confident wrong statement a file can make about how its cards
+ * work, and it reads exactly like documentation.
  *
- * Counting is done over the CODE VIEW of every .ts/.mjs in src/, test/ and
- * scripts/, so a name that appears only inside a comment or a string literal
- * does not count as a use. That matters twice over: `helpers.ts::lifeGainedIn`'s
- * only other appearance in the tree is inside a REGEX LITERAL in
- * `96-x-preview.test.ts`, which is not a call — and under the unrepaired
- * `stripCode` a leaked comment mentioning a helper's name would have counted
- * as a use, so a dead helper would have looked alive.
+ * ⚠ THIS SWEEP AND `noUnusedLocals` ARE COMPLEMENTARY, AND NEITHER SUBSUMES
+ * THE OTHER. `tsconfig.json` grew `noUnusedLocals` in R181, which is what makes
+ * the next unexported dead local a compile error — that is how
+ * `28-metal-c::constructedTurn` and `36-cache-prophecy::cacheIdx` were caught.
+ * But **`tsc` does not report an EXPORTED declaration**, no matter how dead, so
+ * it would never have seen `helpers.ts::lifeGainedIn`, and it does not see
+ * `src/cards/dsl.ts::printedCost` today. Do not "simplify" this away in favour
+ * of the compiler flag; the exemption list below going stale is exactly why the
+ * distinction has to stay written down.
+ * (Also measured, because it looks like a way out and is not: the `_` prefix
+ * exempts an unused binding only inside a DESTRUCTURING PATTERN. A plain
+ * `const _x = …` and an unused import are still errors.)
+ *
+ * R193 WIDENED THE DECLARATION SCAN from `src/cards/sets/**` to `src/**`,
+ * `test/**` and `scripts/**`. A dead helper in `test/` was outside the old
+ * sweep's reach entirely.
+ */
+const SCAN_DIRS = ['src', 'test', 'scripts'];
+
+/**
+ * ⚠ `ui/` IS DELIBERATELY NOT SCANNED, and the reason is a measurement rather
+ * than an opinion: `stripCode` mis-parses nested template literals (see the
+ * header), `ui/main.ts` contains 108 of them, and 911 lines of its real code
+ * are consequently blanked. Running the scan over `ui/` on 2026-08-26 reported
+ * 10 dead helpers, ALL TEN of them false — `saveDeck`, `renderNow`,
+ * `blockBuilderHtml` and the rest are called from lines the stripper cannot
+ * see. `ui/` is still in the CALL-SITE corpus below, where a missed line can
+ * only cost a use (a false positive we would notice), never invent one.
+ */
+const NOT_SCANNED = ['ui'];
+
+/**
+ * Counting is done over the USE VIEW of every .ts/.mjs in src/, test/, scripts/
+ * and ui/, so a name that appears only inside a comment or a string literal
+ * does not count as a use — while a name inside a `${ … }` interpolation, which
+ * IS a call, does. `helpers.ts::lifeGainedIn`'s last appearance tree-wide was
+ * inside a REGEX LITERAL in `96-x-preview.test.ts`, which is not a call, and
+ * that is the shape this view exists to see through.
  */
 function allSources(): string[] {
   const out: string[] = [];
@@ -504,66 +573,163 @@ function allSources(): string[] {
       if (e.name === 'node_modules') continue;
       const p = path.join(d, e.name);
       if (e.isDirectory()) walk(p);
-      else if (/\.(ts|mts|mjs|js)$/.test(e.name)) out.push(codeView(fs.readFileSync(p, 'utf8')));
+      else if (/\.(ts|mts|mjs|js)$/.test(e.name)) out.push(useView(fs.readFileSync(p, 'utf8')));
     }
   };
-  for (const d of ['src', 'test', 'scripts']) {
+  for (const d of [...SCAN_DIRS, ...NOT_SCANNED]) {
     const p = path.join(ENGINE, d);
     if (fs.existsSync(p)) walk(p);
   }
   return out;
 }
 
+/** every file whose top-level declarations are swept, as a path relative to
+ *  `engine/` — which is also the key `DEAD_EXEMPT` entries are written in. */
+function scanFiles(): string[] {
+  const out: string[] = [];
+  const walk = (d: string): void => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      if (e.name === 'node_modules') continue;
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (/\.(ts|mts|mjs|js)$/.test(e.name)) out.push(path.relative(ENGINE, p));
+    }
+  };
+  for (const d of SCAN_DIRS) {
+    const p = path.join(ENGINE, d);
+    if (fs.existsSync(p)) walk(p);
+  }
+  return out.sort();
+}
+
 const DECL = /^(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][\w$]*)|^(?:export\s+)?const\s+([A-Za-z_$][\w$]*)\s*[:=]/;
 
+/** the top-level declarations in one file, as `[name, line]` */
+function declarationsIn(rel: string): [string, number][] {
+  const out: [string, number][] = [];
+  codeView(fs.readFileSync(path.join(ENGINE, rel), 'utf8')).split('\n').forEach((L, i) => {
+    const m = DECL.exec(L);
+    const name = m?.[1] ?? m?.[2];
+    if (name) out.push([name, i + 1]);
+  });
+  return out;
+}
+
 /**
- * Dead helpers held by another agent's worktree in round 26 — same reason as
- * PARKED_EXEMPT. Deleting a function is a real code change and could not be
- * made on a file another agent had open.
+ * Dead helpers that this round could not delete, each with the reason.
+ * `file` is a path relative to `engine/`.
+ *
+ * ⚠ EVERY ENTRY IS ASSERTED TO STILL NAME A REAL DECLARATION (R193). Without
+ * that, a waiver survives the code it waives and the list quietly turns back
+ * into a blanket — the same failure as a PARKED note outliving its cause,
+ * which is the thing this whole file was built to prevent. It had already
+ * happened here: R174 wrote entries for `batch-metal-a.ts::tokensInRegion` and
+ * `helpers.ts::lifeGainedIn`, R181 DELETED both helpers, and the two entries sat
+ * on for a further round waiving nothing at all.
  */
 const DEAD_EXEMPT: { file: string; name: string; why: string }[] = [
   {
-    file: 'batch-metal-a.ts', name: 'tokensInRegion',
-    why: 'R174: dead, zero call sites. batch-metal-a.ts was held by another agent for '
-       + 'all of round 26 (STALE-WORKLIST DO-NOT-TOUCH), so the deletion is deferred.',
-  },
-  {
-    file: 'helpers.ts', name: 'lifeGainedIn',
-    why: 'R174: exported and dead — its only other appearance tree-wide is inside a '
-       + 'regex literal in 96-x-preview.test.ts, which is not a call. helpers.ts was '
-       + 'held by another agent for all of round 26, so the deletion is deferred. '
-       + 'Its sibling lifeLostIn IS used.',
+    file: 'src/cards/dsl.ts', name: 'printedCost',
+    why: 'R193, and it is the first thing the widened sweep found. `export function '
+       + 'printedCost(name)` has zero call sites anywhere in digital-client — engine, '
+       + 'ui and server alike — and being EXPORTED is exactly why noUnusedLocals cannot '
+       + 'see it. Not deleted here because dsl.ts is a shared file and seven agents were '
+       + 'editing this tree in round 27; deleting it is a one-line change for a quiet tree.',
   },
 ];
 
-test('§4 no card-file helper has zero call sites', () => {
+// ⚠ THE NAME IS PINNED. CARD-TODO #60's `guards` field names this test by the
+// substring 'no card-file helper has zero call sites', and 83-card-todo asserts
+// that a real, non-todo test carries it — so dropping those words is a hard
+// failure in another file. R193 widened the sweep well past the card files; the
+// addition says so without breaking the pin.
+test('§4 no card-file helper has zero call sites — nor (R193) any helper in src/ test/ scripts/', () => {
   const sources = allSources();
-  assert.ok(sources.length >= 150,
+  assert.ok(sources.length >= 200,
     `only ${sources.length} source files scanned for call sites — the walk has gone blind`);
 
+  const files = scanFiles();
+  assert.ok(files.length >= 190,
+    `only ${files.length} files in the declaration scan — the walk has gone blind`);
+
   let declsSeen = 0;
+  let setsDeclsSeen = 0;
   const dead: string[] = [];
-  for (const f of ALL_FILES) {
-    codeView(raw(f)).split('\n').forEach((L, i) => {
-      const m = DECL.exec(L);
-      const name = m?.[1] ?? m?.[2];
-      if (!name) return;
+  for (const f of files) {
+    for (const [name, line] of declarationsIn(f)) {
       declsSeen++;
+      if (f.startsWith(path.join('src', 'cards', 'sets'))) setsDeclsSeen++;
       const re = new RegExp(`\\b${name}\\b`, 'g');
       let uses = 0;
       for (const s of sources) uses += (s.match(re) ?? []).length;
-      if (uses > 1) return;                                  // the declaration itself is 1
-      if (DEAD_EXEMPT.some(e => e.file === f && e.name === name)) return;
-      dead.push(`${f}:${i + 1}  ${name} — declared, never called anywhere in src/ test/ scripts/`);
-    });
+      if (uses > 1) continue;                                // the declaration itself is 1
+      if (DEAD_EXEMPT.some(e => e.file === f && e.name === name)) continue;
+      dead.push(`${f}:${line}  ${name} — declared, never called anywhere in `
+        + `${SCAN_DIRS.join('/ ')}/ or ui/`);
+    }
   }
-  assert.ok(declsSeen >= 200,
-    `only ${declsSeen} helper declarations seen across ${ALL_FILES.length} files — the scan has gone blind`);
+
+  // TWO reach floors, not one. The widened scan makes the TOTAL go up by ~1150,
+  // and a number going up is not by itself good news — it can hide the original
+  // population collapsing to nothing. So the old floor is kept, on the old
+  // population, and the new one is additional. Measured 2026-08-26: 1392 total,
+  // 231 in src/cards/sets.
+  assert.ok(setsDeclsSeen >= 200,
+    `only ${setsDeclsSeen} declarations seen in src/cards/sets — the card-file scan has gone `
+    + 'blind, whatever the total below says');
+  assert.ok(declsSeen >= 1300,
+    `only ${declsSeen} declarations seen across ${files.length} files — the scan has gone blind`);
 
   assert.deepEqual(dead, [],
     'A dead helper carries a doc comment describing machinery nobody uses, which reads\n'
-    + 'exactly like a description of how the cards work. tsconfig has `strict` but not\n'
-    + '`noUnusedLocals`, so nothing else catches this. Delete it (leaving a note saying\n'
-    + 'what it was and why it went), or wire it up.\n'
+    + 'exactly like a description of how the code works. `noUnusedLocals` catches the\n'
+    + 'unexported ones; it CANNOT see an exported declaration, which is what this is for.\n'
+    + 'Delete it (leaving a note saying what it was and why it went), or wire it up.\n'
     + dead.join('\n'));
+});
+
+test('§4 every DEAD_EXEMPT entry still names a real declaration', () => {
+  // The staleness check R174 left out, and the reason CARD-TODO #68 exists. An
+  // exemption is a claim about the code AS OF THE DAY IT WAS WRITTEN; unchecked,
+  // it outlives the code and nobody finds out.
+  const files = new Set(scanFiles());
+  for (const e of DEAD_EXEMPT) {
+    assert.ok(files.has(e.file),
+      `DEAD_EXEMPT waives ${e.file}::${e.name}, but ${e.file} is not a file the scan reads — `
+      + `delete the entry or fix the path. (Was: ${e.why})`);
+    assert.ok(declarationsIn(e.file).some(([n]) => n === e.name),
+      `DEAD_EXEMPT waives ${e.file}::${e.name}, but ${e.file} declares no such thing any more — `
+      + `the exemption has done its job, delete it. (Was: ${e.why})`);
+  }
+});
+
+test('§4 the sweep can see a dead helper — positive control over a synthetic file', () => {
+  // §4 answers "no dead helpers" and the honest question about any such answer
+  // is whether it could still say that if it were blind. So: run its own two
+  // primitives over a corpus built to contain exactly one dead helper, one live
+  // one, one whose only call is inside a `${ … }`, and one named only in prose.
+  const file = [
+    'export function r27LiveHelper(): number { return 1; }',
+    'const r27DeadHelper = (): number => 2;',
+    'const r27InterpolatedHelper = (): string => "x";',
+    'function r27CommentOnlyHelper(): number { return 3; }',
+    '// r27CommentOnlyHelper is mentioned here and nowhere else.',
+    'export const r27Use = (): string => `${r27InterpolatedHelper()}` + r27LiveHelper();',
+    'void r27Use();',
+  ].join('\n');
+  const corpus = [useView(file)];
+  const seen: string[] = [];
+  codeView(file).split('\n').forEach(L => {
+    const m = DECL.exec(L);
+    const name = m?.[1] ?? m?.[2];
+    if (!name) return;
+    let uses = 0;
+    for (const s of corpus) uses += (s.match(new RegExp(`\\b${name}\\b`, 'g')) ?? []).length;
+    if (uses <= 1) seen.push(name);
+  });
+  assert.deepEqual(seen.sort(), ['r27CommentOnlyHelper', 'r27DeadHelper'],
+    'the §4 predicate no longer separates a dead helper from a live one. Either it stopped '
+    + 'seeing declarations (it would report none, and the whole sweep is vacuous) or it '
+    + 'stopped seeing call sites (it would report all four, and the sweep is crying wolf). '
+    + 'Both have happened to sweeps in this repo; this is the control that says which.');
 });
