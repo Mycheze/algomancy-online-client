@@ -14106,3 +14106,132 @@ sites in `engine.ts`/`apply.ts` for hidden-zone contents in `data` and reports
 `handEntered` as **the only one**. `glimpsed` also carries `cards` and is a
 public reveal by design (R41/R45); `recycle` carries only `{ seat }`, with the
 card name in `msg` precisely so `redactEvent` can rewrite it.
+
+---
+
+## R200 — a saved game names the engine that recorded it, and a divergence is measured rather than bounded
+
+**CARD-TODO #66, a blocker.** The corpus is the project's primary forensic
+evidence: this repo settles playtest bug reports by replaying
+`server/games/<CODE>.json`. It is rotting. 20 of the 22 saved games diverge on
+replay, the median replayable prefix is about 30%, and a saved game survives
+roughly three hours of rules work.
+
+Every one of those divergences was chased. **Every one is a deliberate rules
+change. None is a regression and none is corruption.** The logs are sound; the
+READER moved. That is precisely the failure versioning fixes, and the
+alternative — retiring forensics for unit tests — is throwing away good
+evidence because we lost the decoder ring.
+
+### The file now says which engine recorded which stretch of it
+
+`versions: [{ at, sha, from }]` on the room file. `from` is an index into
+`actions`: from there to the next stamp (or to the end), this game was recorded
+under `sha`. Resolved from `git rev-parse HEAD` at the recording server,
+overridable with `ALGO_ENGINE_VERSION` (a tarball deploy has no `.git`), and
+`'unknown'` rather than a guess when neither is available — a WRONG stamp sends
+the replay to an engine this game was never played on and reports the resulting
+mess as a rules change.
+
+**One stamp per file is not enough**, and the file that proves it is already in
+the corpus. A fork is a restart onto a changed engine that could not replay part
+of the log, rebuilt the game without those actions, and let play CONTINUE. Game
+VEAV is two games in one file recorded against two engines. So the stamp is a
+LEDGER, appended on any restore of a live room whose commit differs — *whether
+or not anything was lost*, because a rules change that costs no action still
+changes what every action after it means, and that is the case which used to
+leave no trace whatsoever. `Fork.engineVersion` restates the same SHA so a fork
+record reads standalone, and `replay-room.ts` calls it INCONSISTENT when the two
+disagree.
+
+**The reference for a replay is the LAST stamp, not the first.** A forked file
+was rebuilt from action 0 by the last engine to restore it; that rebuild is the
+board the players were sitting in. Replaying at the first stamp reproduces a
+real game, but not the one the file ends with.
+
+### `--as-recorded`, and why the delta is the whole point
+
+`replay-room.ts --as-recorded` checks the recorded commit out into a throwaway
+detached worktree, drops a ~200-line probe into it, runs it there, and compares
+per-action board SIGNATURES with the same probe at HEAD. The probe is *copied
+into* the old worktree rather than run from HEAD: it imports
+`../engine/src/apply.ts` by relative path, so the copy in commit X binds to
+commit X's engine while the identical file here binds to HEAD's. Same signature
+code on both ends — a diff between two different signature functions measures
+the functions, not the engines.
+
+**A refusal index is an upper bound, never a finding.** Without a reference
+engine the tool can only report where the current engine finally REFUSED
+something, and the rules moved earlier: the action stayed legal, quietly meant
+something else, and the boards drifted apart in silence until something became
+illegal. Measured at this commit against `dbe6f84` (2026-08-24), which replays
+SMVJ's and ANBB's whole logs with **zero** refusals of its own and is therefore
+a sound reference for both:
+
+| game | first refusal at HEAD | boards actually part | gap |
+|---|---:|---:|---:|
+| SMVJ | [121] | **[120]** | 1 action |
+| ANBB | [125] | **[32]** | **93 actions** |
+
+The divergence point the tool used to print was late in both cases, and on ANBB
+it was late by ninety-three actions — an investigation starting at [125] is
+looking at a board that stopped being the logged game a third of the way
+through. (The brief for this ticket said "late by up to six"; the real number is
+much worse.)
+
+**And a clean replay is not proof the log still describes the game that was
+played.** GYSR replays at HEAD with 0 refusals and is reported ✓ FAITHFUL. Run
+against `dbe6f84` its boards part at [135] and never rejoin — `Unstable Form` is
+erased out of the other seat's pile, a `Crystal` spell token is absent, and a
+trigger-ordering question exists on one engine and not the other. `dbe6f84`
+refuses 142 of GYSR's actions, so it is demonstrably NOT the engine that
+recorded GYSR and this is not a claim about GYSR's fidelity to its own engine —
+**which is exactly the gap.** GYSR does not say what recorded it, so nothing can
+tell us whether HEAD's clean replay is the game that was played or merely a game.
+The tool now says so out loud rather than diffing against the wrong commit in
+silence: a reference engine that refuses actions the file does not already
+declare is evidence about the SHA, not about the rules.
+
+### The first DIFFERENCE is not the finding either
+
+Two engines can part and come back. SMVJ's boards differ from signature 100 — a
+stale `passes` counter the newer engine zeroes — agree again from 111, and only
+part for good at 121. Leading with the first difference swaps a divergence point
+measured LATE for one measured EARLY, which is not an improvement. So the tool
+reports **the index after which they never agree again** as the finding, and
+lists healed differences separately as rules changes the log survived. (One of
+them, on a fuzz fixture, is the `Counter Theif` → `Counter Thief` rename that
+R186's comment already warned about.)
+
+The signature is a SEMANTIC projection, not `JSON.stringify(state)` — that would
+compare struct layout, so one new optional field on `GameState` would report
+every game as diverging at action 0. Entity ids are deliberately excluded (two
+engines numbering the same board differently is not a rules change); zone
+contents go in **by name**, because an action that stays legal while drawing a
+different card is the entire failure being hunted.
+
+### Two smaller things that were making the corpus look worse than it is
+
+**A stale copy does not error — it reassures.** A truncated 104-action copy of a
+375-action game reported "✓ FAITHFUL" three times over several hours. Nothing
+inside the file can catch that: a prefix of a good log IS a good log. Only the
+file it was copied from can, so the tool cross-checks against the canonical
+games directory and refuses a short copy outright (exit 5); when there is no
+canonical copy to check against it says THAT, because silence next to a ✓ reads
+as "verified".
+
+**Permanently unreplayable is not a divergence.** GAXG and HDGG were saved
+before `a890788` recorded the element trio, so nothing anywhere says what deal
+they were played from. They used to reach the CLI as an uncaught throw —
+indistinguishable from the tool crashing — and every sweep counted them among
+the divergences. They now get their own verdict and their own exit code (4), so
+a sweep can exclude them. No amount of rules work can ever fix them.
+
+### The honest limit
+
+**Versioning only helps from here forward.** Every game already on disk was
+recorded before `engineVersion` existed and cannot be given one after the fact;
+`--as-recorded --at <sha>` works on them only when the commit is known from
+somewhere else. Unit tests remain the right answer for games already past
+saving. What this buys is that no game recorded from now on joins them — and
+the cost of waiting was measured in dead prefixes per round.

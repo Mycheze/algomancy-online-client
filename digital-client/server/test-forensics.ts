@@ -29,7 +29,18 @@ const { apply, createGame, forcedAction, legalActions, sanitizeTrio, IllegalActi
   await import('../engine/src/apply.ts');
 const { applyToRoom, createRoom, getRoom, restoreRooms, undoActionAt } = await import('./rooms.ts');
 import type { Action, GameState } from '../engine/src/types.ts';
+// R200: the version stamp is resolved once per process and cached, so a test
+// that wants to pretend the engine moved has to be able to clear it. Imported
+// BEFORE rooms.ts so the first stamp any room gets is one this file chose.
+process.env['ALGO_ENGINE_VERSION'] = 'e'.repeat(40);
+const { resetEngineVersionCache } = await import('./engine-version.ts');
+import type { VersionStamp } from './types.ts';
 import type { Room } from './rooms.ts';
+
+const runningAt = (sha: string): void => {
+  process.env['ALGO_ENGINE_VERSION'] = sha;
+  resetEngineVersionCache();
+};
 
 let failures = 0;
 const ok = (cond: unknown, label: string): void => {
@@ -341,6 +352,126 @@ console.log('\n[a file that never recorded what its actions meant is not accused
   ok(c2.drifted.length === 0, 'no keys on disk, no drift reported');
   ok(c2.forks.length === 0, 'and no fork invented for a file that simply predates the field');
 }
+
+/* ── R200 / CT-66: the file names the engine that recorded it ──────────
+ *
+ * The corpus's problem is not that the logs are wrong. Every divergence anyone
+ * has chased is a DELIBERATE rules change and none is a regression — the logs
+ * are sound and the READER moved. A file that does not say which engine wrote
+ * it cannot say that for itself, so replaying it months later reports the
+ * difference as if the file were at fault.
+ *
+ * ⚠ ONE STAMP PER FILE IS NOT ENOUGH. A forked file is two games recorded
+ * against two engines (game VEAV is exactly this), so the stamp is a LEDGER:
+ * one entry per engine, each naming the action index it took over at.
+ */
+console.log('\n[R200: a new game is stamped with the engine that is recording it]');
+const ENGINE_1 = 'e'.repeat(40);
+const ENGINE_2 = 'f'.repeat(40);
+{
+  runningAt(ENGINE_1);
+  const v = createRoom('VSTAMP', SEED);
+  ok(v.versions.length === 1, 'a new room carries exactly one version stamp');
+  ok(v.versions[0]!.sha === ENGINE_1, 'and it names the engine the server is running');
+  ok(v.versions[0]!.from === 0, 'covering the log from action 0 — the whole game so far');
+  const onDisk = JSON.parse(readFileSync(join(DIR, 'VSTAMP.json'), 'utf8')) as { versions?: VersionStamp[] };
+  ok(Array.isArray(onDisk.versions) && onDisk.versions.length === 1,
+    'and it is in the FILE, not just in memory — a stamp that never persists decodes nothing');
+  ok(onDisk.versions![0]!.sha === ENGINE_1, 'with the same commit on disk as in the room');
+}
+
+console.log('\n[R200: a redeploy under a LIVE game stamps the boundary, whether or not anything was lost]');
+{
+  runningAt(ENGINE_1);
+  const g = createRoom('VLIVE', SEED);
+  for (let i = 0; i < 60 && g.actions.length < 20; i++) {
+    const a = mundane(g.state, 0) ?? mundane(g.state, 1);
+    if (!a) break;
+    act(g, a);
+  }
+  const played = g.actions.length;
+  ok(played >= 20, `played ${played} actions under ${ENGINE_1.slice(0, 6)}`);
+
+  // the server restarts on the SAME commit: that is not a boundary
+  restoreRooms();
+  ok(getRoom('VLIVE')!.versions.length === 1,
+    'restarting on the same commit does NOT add a stamp — the deploy box restarts constantly');
+
+  // now it restarts on a DIFFERENT commit, losing nothing at all. This is the
+  // case that used to leave no trace whatsoever: a rules change that costs no
+  // action still changes what every action after it means.
+  runningAt(ENGINE_2);
+  restoreRooms();
+  const v2 = getRoom('VLIVE')!;
+  ok(v2.lost.length === 0, 'this rebuild lost nothing — every logged action still replays');
+  ok(v2.versions.length === 2, 'and the engine change is STILL stamped, because play continues under it');
+  ok(v2.versions[1]!.sha === ENGINE_2, 'naming the new commit');
+  ok(v2.versions[1]!.from === played,
+    `and the exact action the new engine took over at (${played})`);
+  const disk = JSON.parse(readFileSync(join(DIR, 'VLIVE.json'), 'utf8')) as { versions?: VersionStamp[] };
+  ok(disk.versions?.length === 2, 'persisted, so the boundary survives the next restart');
+
+  restoreRooms();
+  ok(getRoom('VLIVE')!.versions.length === 2,
+    'and restarting again on the same commit does not add a third — idempotent, like recordFork');
+}
+
+console.log('\n[R200: a FORK names the engine that refused, so the fork record reads standalone]');
+{
+  runningAt(ENGINE_1);
+  const f = createRoom('VFORK', SEED);
+  for (let i = 0; i < 200 && f.actions.length < 40; i++) {
+    const a = mundane(f.state, 0) ?? mundane(f.state, 1);
+    if (!a) break;
+    act(f, a);
+  }
+  const len = f.actions.length;
+  // one action becomes illegal, which is all an engine change looks like from
+  // rebuild()'s side
+  const fRaw = JSON.parse(readFileSync(join(DIR, 'VFORK.json'), 'utf8')) as { actions: Action[] };
+  const vict = fRaw.actions.findIndex(a => a.type === 'donePlanning');
+  fRaw.actions[vict] = { type: 'activateResource', seat: fRaw.actions[vict]!.seat, index: 99 };
+  writeFileSync(join(DIR, 'VFORK.json'), JSON.stringify(fRaw));
+
+  runningAt(ENGINE_2);
+  restoreRooms();
+  const f2 = getRoom('VFORK')!;
+  ok(f2.forks.length === 1, 'the restore recorded a fork');
+  ok(f2.forks[0]!.engineVersion === ENGINE_2,
+    'and the fork names the engine that REFUSED those actions — not the one that wrote them');
+  const stamp = f2.versions[f2.versions.length - 1]!;
+  ok(stamp.sha === ENGINE_2 && stamp.from === f2.forks[0]!.logged,
+    'and the version stamp and the fork agree on where the join is, so nothing has to be inferred');
+  ok(len === f2.forks[0]!.logged, `both point at action ${len}`);
+}
+
+console.log('\n[R200: a file written before the stamp existed still loads — the deploy is additive]');
+{
+  runningAt(ENGINE_1);
+  const o = createRoom('VOLD', SEED);
+  for (let i = 0; i < 60 && o.actions.length < 12; i++) {
+    const a = mundane(o.state, 0) ?? mundane(o.state, 1);
+    if (!a) break;
+    act(o, a);
+  }
+  const beforeLen = o.actions.length;
+  // strip the field, exactly as every file on the deploy box looks today
+  const raw2 = JSON.parse(readFileSync(join(DIR, 'VOLD.json'), 'utf8')) as Record<string, unknown>;
+  delete raw2['versions'];
+  writeFileSync(join(DIR, 'VOLD.json'), JSON.stringify(raw2));
+
+  restoreRooms();
+  const o2 = getRoom('VOLD');
+  ok(!!o2, 'a room file with no `versions` field restores exactly as it always did');
+  ok(o2!.actions.length === beforeLen, 'with its whole log intact');
+  // ⚠ AND IT IS NOT BACKDATED. Stamping the CURRENT commit at `from: 0` over a
+  // log an older engine wrote would send --as-recorded to the wrong rules and
+  // report the mismatch as a rules change. The truthful statement is "from
+  // HERE on, this engine".
+  ok(o2!.versions.length === 1 && o2!.versions[0]!.from === beforeLen,
+    'and its first stamp starts where the unstamped log ENDS — never backdated to action 0');
+}
+
 
 console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 rmSync(DIR, { recursive: true, force: true });

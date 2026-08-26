@@ -53,4 +53,44 @@ export interface Fork {
   /** where the rebuild landed — the board play resumed from */
   turn: number;
   phase: string;
+  /**
+   * R200: the engine that DID this rebuild — the one that refused the actions
+   * in `lost`, and the one play then continued under.
+   *
+   * Restated here rather than living only in `VersionStamp` below, so a fork
+   * record reads standalone: "these 15 actions stopped replaying, and here is
+   * the commit that stopped replaying them" is one fact, and splitting it
+   * across two arrays is how a reader ends up pairing the wrong halves.
+   * `replay-room.ts` checks the two agree and says INCONSISTENT when they do
+   * not, so the redundancy is guarded rather than merely duplicated.
+   *
+   * Additive/optional — every file written before R200 lacks it.
+   */
+  engineVersion?: string;
+}
+
+/**
+ * R200 — one stretch of a game, and the engine it was recorded against.
+ *
+ * WHY A LIST AND NOT ONE FIELD. A forked file is not one game: the server
+ * restarted onto a changed engine, rebuilt the room without the actions it
+ * could no longer replay, and play CONTINUED from there. Game VEAV is two
+ * games in one file recorded against two engines, so a single `engineVersion`
+ * on the room would be a true statement about the first half and a false one
+ * about the second — and `--as-recorded` would check out the wrong commit for
+ * the tail, replay garbage against it, and report the result as a rules
+ * change. One stamp per file is not enough, and the file that proves it is
+ * already in the corpus.
+ *
+ * `from` is an index into `actions`: from there up to the next stamp's `from`
+ * (or to the end of the log), this game was recorded under `sha`.
+ * `versions[0].from` is always 0 — the stamp written when the room was made.
+ */
+export interface VersionStamp {
+  /** when this stamp was written (ISO) */
+  at: string;
+  /** the engine's commit SHA, or 'unknown' when git could not be consulted */
+  sha: string;
+  /** index into `actions`: everything from here on was recorded under `sha` */
+  from: number;
 }

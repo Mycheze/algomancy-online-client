@@ -229,7 +229,9 @@ block this round.
 | `view.ts` | `viewFor(state, seat)` redaction + per-seat event/log blurring |
 | `rooms.ts` | in-memory room store, apply-to-room, hidden-segment bookkeeping, JSON persistence + replay restore |
 | `test-hidden.ts` | the three hidden segments: freeze, holdback, reveal, the segment undo and its splice gate (was `test-deploy.ts`) |
-| `replay-room.ts` | replay a saved game and say whether the file still describes it — faithful / engine drift / forked / inconsistent |
+| `replay-room.ts` | replay a saved game and say whether the file still describes it — faithful / engine drift / forked / inconsistent / unreplayable / stale copy; `--as-recorded` diffs it against the engine that recorded it |
+| `engine-version.ts` | R200: which commit this engine is, for stamping into a room file (`ALGO_ENGINE_VERSION` overrides; `'unknown'` rather than a guess) |
+| `replay-probe.ts` | R200: the reference engine's half of a `--as-recorded` diff — a per-action semantic board signature, written to survive being run inside a checkout of an arbitrary past commit |
 | `test-forensics.ts` | the log's contract: the fork record, the cascade one skip causes, and the undo roll-back guarantee |
 | `test-drive.ts` | integration test: boots the server, two clients, asserts redaction + reconnect |
 | `test-concede.ts` | R65 concede: the opponent's update, the stamped result, the refusals |
@@ -440,9 +442,33 @@ Two more guarantees fell out:
 | **FORKED** | 2 | the file declares forks and this replay reproduces exactly them. Not a server bug; read the halves as separate games |
 | **FORKED + FURTHER DRIFT** | 2 | declared forks, plus new skips on top |
 | **INCONSISTENT** | 3 | the file declares forks this engine replays fine. No server behaviour can produce that — a rules change was reverted, or the file was hand-edited |
+| **UNREPLAYABLE** | 4 | R200: the deal itself cannot be reproduced (GAXG/HDGG record no element trio). *Not* a divergence, and no rules work can ever fix it — a corpus sweep must EXCLUDE these rather than count them |
+| **STALE COPY** | 5 | R200: the canonical `games/<CODE>.json` has more actions than the file you passed in. A prefix of a good log replays clean, which is how a truncated 104-action copy of a 375-action game reported ✓ FAITHFUL three times |
 
 `replay-room.ts` also deals constructed games from their two saved decks now;
 it used to replay them from a shared deck, which diverged at the first draw.
+
+### R200: `--as-recorded`, and why a refusal index is not a finding
+
+Room files now carry `versions: [{ at, sha, from }]` — one entry per engine the
+game has been played under, each naming the action index it took over at. A
+FORKED file is two games recorded against two engines, so one stamp per file is
+not enough; `Fork.engineVersion` restates the same SHA so a fork record reads
+standalone, and the tool says INCONSISTENT when the two disagree. Both fields
+are **additive**: a file without them restores exactly as it always did.
+
+With the commit in the file, `--as-recorded` checks it out into a throwaway
+detached worktree, runs `replay-probe.ts` there, and diffs per-action board
+signatures against the same probe at HEAD. That matters because a refusal is
+where the engine finally NOTICED, not where the rules moved — on ANBB the two
+are 93 actions apart, and GYSR replays with zero refusals while its boards part
+from an older engine's at [135] and never rejoin. The finding is the index after
+which the two never agree again; differences that HEAL are reported separately
+as rules changes the log survived.
+
+⚠ **Versioning only helps from here forward.** Every file already on disk was
+recorded before the field existed; `--at <sha>` works on them only when the
+commit is known from somewhere else.
 
 ### Why a result is stamped and not derived
 

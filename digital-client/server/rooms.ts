@@ -21,8 +21,9 @@ import { other } from './view.ts';
 // without importing this module (and `ws` with it). Re-exported here because
 // this is still where they are WRITTEN, and the old import path is the one
 // every reader knows.
-import type { Fork, LostAction } from './types.ts';
-export type { Fork, LostAction } from './types.ts';
+import type { Fork, LostAction, VersionStamp } from './types.ts';
+export type { Fork, LostAction, VersionStamp } from './types.ts';
+import { engineVersion } from './engine-version.ts';
 import {
   resolveTrio, sanitizeMethod, sanitizeSubmission, submissionReady,
   type TrioHistoryRow, type TrioMethod, type TrioResult, type TrioSubmission,
@@ -607,6 +608,26 @@ export interface Room {
    */
   forks: Fork[];
   /**
+   * R200 — which engine recorded which stretch of this log. Persisted.
+   *
+   * One entry per engine this game has been played under, in order, each
+   * naming the action index it took over at. `versions[0]` is stamped at
+   * creation; a restore under a different commit appends another, because
+   * from that moment on play continues under different rules.
+   *
+   * This is what makes `replay-room.ts --as-recorded` possible, and it is the
+   * whole answer to the divergence problem: without a reference engine to diff
+   * against, a replay months later can report THAT a file diverges but not
+   * WHAT changed — and its "divergence point" is only ever the first REFUSAL,
+   * which is an upper bound, late by up to six actions in every case anyone
+   * has measured.
+   *
+   * Additive: a file written before R200 has no `versions` and restores
+   * exactly as it always did. It simply cannot be replayed --as-recorded,
+   * which is a true statement about it rather than a failure.
+   */
+  versions: VersionStamp[];
+  /**
    * Actions the most recent rebuild could not apply. DERIVED (never
    * persisted): it is `forks` restated for the CURRENT engine, and it is what
    * undoActionAt() measures against to guarantee an undo never loses a play.
@@ -1074,6 +1095,12 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
     state, actions: [], events, sockets: [null, null], forks: [], lost: [], drifted: [],
+    // R200: stamped a line below, by resetSegment(), which is where EVERY
+    // fresh action log gets its first version stamp — a new room and a re-deal
+    // are the same event as far as "which engine is recording this" goes.
+    // Setting it here as well would be dead code the moment resetSegment runs,
+    // and dead code is exactly what a red-check cannot see through.
+    versions: [],
     segKey: null, segSnapshot: null, heldEvents: [[], []], segStartIndex: -1, segTouched: [],
     segIdFloor: [], segRefs: [], deferred: [[], []],
     clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
@@ -1203,6 +1230,11 @@ function resetSegment(room: Room): void {
   room.forks = [];
   room.lost = [];
   room.drifted = [];
+  // R200: and so is the version ledger, for exactly the same reason — the old
+  // stamps index an action log that no longer exists, and a `from` pointing
+  // into a discarded log is worse than no stamp at all. The re-deal happens on
+  // the running engine, so the new log starts stamped with it from action 0.
+  room.versions = [{ at: new Date().toISOString(), sha: engineVersion(), from: 0 }];
   openSegment(room);
 }
 
@@ -1550,6 +1582,56 @@ function undoRefusal(refused: LostAction[]): string {
 }
 
 /**
+ * R200 — read a file's version ledger back, keeping only entries that could
+ * have been written by this server.
+ *
+ * Defensive because the input is a FILE: it may predate the field entirely
+ * (→ `[]`, which is honest — "this game does not say what recorded it"), and
+ * a hand-edited one may hold anything. A malformed entry is DROPPED rather
+ * than repaired: an invented `from` would send `--as-recorded` to the wrong
+ * commit for part of the log, which is the exact failure the ledger exists to
+ * prevent. `from` must be non-decreasing for the segments to mean anything.
+ */
+function sanitizeVersions(raw: unknown): VersionStamp[] {
+  if (!Array.isArray(raw)) return [];
+  const out: VersionStamp[] = [];
+  for (const v of raw as VersionStamp[]) {
+    if (!v || typeof v.sha !== 'string' || !v.sha) continue;
+    if (typeof v.from !== 'number' || !Number.isInteger(v.from) || v.from < 0) continue;
+    if (out.length && v.from < out[out.length - 1]!.from) continue;
+    out.push({ at: typeof v.at === 'string' ? v.at : '', sha: v.sha, from: v.from });
+  }
+  return out;
+}
+
+/**
+ * R200 — this room is about to be played on THIS engine: say so in the file if
+ * it is not already what the file says.
+ *
+ * Returns true when something was appended (so the caller persists).
+ *
+ * Idempotent by construction: the stamp only appends when the running SHA
+ * differs from the last one recorded, so restarting ten times on one commit
+ * writes one stamp, not ten — the same discipline `recordFork` uses, and for
+ * the same reason (the deploy box restarts a lot).
+ *
+ * A room whose file predates the field gets its FIRST stamp here, with
+ * `from` = however many actions are already logged. That is the truthful
+ * statement available: everything before this index was recorded by an engine
+ * this file never named, and everything after it by this one. It deliberately
+ * does NOT claim `from: 0` — backdating the current SHA over a log recorded by
+ * an older engine would make `--as-recorded` confidently replay the wrong
+ * rules and call the mismatch a rules change.
+ */
+function stampVersion(room: Room): boolean {
+  const sha = engineVersion();
+  const last = room.versions[room.versions.length - 1];
+  if (last && last.sha === sha) return false;
+  room.versions.push({ at: new Date().toISOString(), sha, from: room.actions.length });
+  return true;
+}
+
+/**
  * A restore could not faithfully rebuild this game: write that into the file,
  * and tell the players.
  *
@@ -1577,6 +1659,10 @@ function recordFork(room: Room): boolean {
     lost: entries.map(l => ({ ...l })),
     turn: room.state.turn,
     phase: room.state.phase,
+    // R200: WHICH engine refused these actions, and therefore which engine the
+    // rest of this log was recorded against. Without it the fork block says a
+    // game broke without saying what broke it.
+    engineVersion: engineVersion(),
   });
   // and say it OUT LOUD, in the game's own log, where both players see it on
   // their next join. Degrading quietly is the whole failure mode here — and a
@@ -1718,6 +1804,11 @@ function persist(room: Room): void {
       // it the file goes on claiming to be a straight-through record of a
       // game it no longer describes (additive field)
       ...(room.forks.length ? { forks: room.forks } : {}),
+      // R200: which engine recorded which stretch of this log — the decoder
+      // ring `replay-room.ts --as-recorded` needs to check the file's claim
+      // against the rules as they actually were. Additive: a file without it
+      // restores exactly as before, it just cannot be replayed as-recorded.
+      ...(room.versions.length ? { versions: room.versions } : {}),
       // constructed: decks are part of the replay config (additive field)
       ...(room.mode === 'constructed' ? { decks: room.decks } : {}),
     }));
@@ -1750,6 +1841,7 @@ export function restoreRooms(): void {
         forks?: Fork[];
         /** R191: per-action reference keys, as of when the game was played */
         refs?: unknown;
+        versions?: VersionStamp[];
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const users: [string | null, string | null] = [raw.users?.[0] ?? null, raw.users?.[1] ?? null];
@@ -1799,6 +1891,7 @@ export function restoreRooms(): void {
         forks: Array.isArray(raw.forks) ? raw.forks : [], lost: skipped,
         // R191: and what this rebuild changed WITHOUT refusing anything
         drifted: driftedAgainst(raw.refs, segRefs, actions, skipped),
+        versions: sanitizeVersions(raw.versions),
         // nobody is connected right after a restart, so no clock runs yet
         clockMs, clockStamp: Date.now(), clockRun: [false, false],
         building: [null, null],
@@ -1806,7 +1899,14 @@ export function restoreRooms(): void {
       // a LIVE room whose log could not be fully replayed has just forked:
       // record it in the file and in the game's own log before play resumes
       const restored = rooms.get(code)!;
-      if (decidedWinner(restored) === null && recordFork(restored)) persist(restored);
+      let dirty = decidedWinner(restored) === null && recordFork(restored);
+      // R200: and a LIVE room now continues under THIS engine, whether or not
+      // anything was lost. A rules change that costs no action still changes
+      // what the actions after it mean, so the boundary is stamped on any
+      // engine change — the loss-free case is the one that used to leave no
+      // trace at all.
+      if (decidedWinner(restored) === null && stampVersion(restored)) dirty = true;
+      if (dirty) persist(restored);
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions`
         + `${skipped.length ? `, ${skipped.length} unreplayable` : ''}`
         + `${restored.drifted.length ? `, ${restored.drifted.length} changed meaning` : ''})`);
