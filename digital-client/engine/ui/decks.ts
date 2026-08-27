@@ -133,9 +133,23 @@ function adopt(reply: DecksReply): void {
   }
 }
 
-/** Load the collection. Safe to call repeatedly; only one fetch is in the air. */
+/**
+ * Load the collection, once. `then` fires ONLY when a fetch actually completed
+ * — never on the nothing-to-do path.
+ *
+ * ⚠ THAT IS A RE-ENTRANCY CONTRACT, NOT A STYLE CHOICE, and getting it wrong
+ * shipped a 2.3-second home screen. The home picker calls this from
+ * `wireDeckPicker(renderHome)`, i.e. `then` IS `renderHome`, and `renderHome`
+ * ends by calling `wireDeckPicker` again. So a version that called `then()`
+ * when the collection was already loaded re-entered the render from inside the
+ * render: one click on the home screen repainted it 2,696 times before the
+ * stack gave out. `ensureDefaultDecks` in main.ts has always returned bare
+ * here, for exactly this reason; this now matches it.
+ *
+ * Callers that need a paint regardless do it themselves — see renderScreen().
+ */
 export function ensureCollection(then: () => void = () => {}): void {
-  if (decks || loading || !acct.token()) { then(); return; }
+  if (decks || loading || !acct.token()) return;
   loading = true;
   fetch('/api/decks', { headers: authHeaders() })
     .then(r => r.json() as Promise<DecksReply>)
