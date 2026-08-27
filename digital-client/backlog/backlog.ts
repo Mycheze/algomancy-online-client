@@ -782,7 +782,21 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Deck locker — save, view and edit constructed decks on your account',
     area: 'accounts',
     size: 'M',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: '90ec026',
+      guards: [
+        // the server scripts run through the suite runner — see BL-24's row
+        'suite.test.ts::test-collection.ts — the starter five seeded once and NEVER re-seeded after a delete',
+        'suite.test.ts::test-collection.ts — a half-built deck saves, reports its shortfall, and is refused for play',
+        'suite.test.ts::test-collection.ts — twenty decks is the limit, and the refusal says what to do',
+        'suite.test.ts::test-collection.ts — a deck id claimed over the wire that is not yours is IGNORED, so no win can be credited to somebody else\'s deck',
+        'suite.test.ts::test-collection.ts — the record is a fold: a full rebuildProfiles() leaves it intact',
+        '188-deck-stats.test.ts::§3 the cumulative column carries a requirement DOWN the curve, never up',
+        '188-deck-stats.test.ts::§3 `first` fires exactly once per level of a requirement',
+        '188-deck-stats.test.ts::§6 a deck exported as text imports back as the same deck',
+      ],
+    },
     track: 'feature',
     said: 'Saving/viewing constructed decks with account',
     means:
@@ -799,6 +813,15 @@ export const BACKLOG: readonly Entry[] = [
       'A 21st deck is refused with a message that says why, not silently dropped',
       'Editing a deck that has already been played in a rated game produces a NEW version; the played one stays exactly as history recorded it',
     ],
+    // ⚠ SHIPPED WITH ONE doneWhen LINE OPEN, on purpose and said out loud: the
+    // fork-on-edit rule above is NOT built. There is no rated play yet (BL-02
+    // is open), so there is no history it could corrupt — and fork-on-edit
+    // fights the make-cuts-and-tweaks loop this was actually asked for
+    // ("I could save all my decks there and see them visually and make
+    // cuts/tweaks", 2026-08-27). Build it WITH rated play, where it has a
+    // meaning, rather than now, where it would only be friction. Everything
+    // else on the list is in, plus duplicate and a text export that
+    // round-trips through the real importer.
     decided: [
       '30 cards is the constructed deck size.',
       'Lists are private by default (BL-13); sharing one is a deliberate act.',
@@ -808,16 +831,28 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
+      'digital-client/server/collection.ts',
+      'digital-client/server/api-decks.ts',
+      'digital-client/server/api-util.ts',
       'digital-client/server/decks.ts',
       'digital-client/server/default-decks.json',
-      'digital-client/server/api-accounts.ts',
-      'digital-client/engine/ui/account.ts',
+      'digital-client/server/accounts.ts',
+      'digital-client/server/rooms.ts',
+      'digital-client/server/history.ts',
+      'digital-client/engine/ui/decks.ts',
+      'digital-client/engine/ui/deckstats.ts',
+      'digital-client/engine/ui/util.ts',
       'digital-client/engine/ui/main.ts',
     ],
     notes:
-      'server/decks.ts and default-decks.json already exist — READ THEM FIRST. Some of this '
-      + 'may be partly built, and the entry should be narrowed to the gap rather than '
-      + 'reimplemented.',
+      'server/decks.ts and default-decks.json already existed and were the right starting '
+      + 'point — the importer and the bundled five were reused whole, and the new work is the '
+      + 'collection ON the account plus the page. Two things worth knowing before touching it: '
+      + "(1) a deck's record is DERIVED from the game history by deck id, never counted, so it "
+      + 'cannot drift — which means the id has to survive the wire, and the server re-reads the '
+      + 'deck out of the account behind the token rather than trusting the id sent; (2) the '
+      + 'curve/split/affinity arithmetic lives in a pure DOM-free module (engine/ui/deckstats.ts) '
+      + 'precisely because sums a player makes cuts on are the kind that go quietly wrong.',
   },
   {
     id: 'BL-15',
