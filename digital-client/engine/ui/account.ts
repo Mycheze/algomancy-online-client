@@ -49,6 +49,8 @@ export interface FriendView {
 
 export interface MatchRow {
   code: string; playedAt: string; mode: string; els: string[]; turns: number;
+  /** the collection deck this seat brought, if any (ui/decks.ts filters on it) */
+  deckId: string | null;
   finished: boolean; diverged: boolean; result: 'win' | 'loss' | 'unknown';
   opponent: string; opponentId: string | null;
   life: [number, number];

@@ -67,13 +67,14 @@ import type {
   GameState, Seat, StackItem, TargetRef,
 } from '../src/types.ts';
 import * as acct from './account.ts';
+import * as dk from './decks.ts';
 import * as lob from './lobby.ts';
 import * as pg from './postgame.ts';
 // R216 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
 // client can set makes it appear over a real game.
 import * as scn from './scenario.ts';
-import { elIcon as elIconOf, esc, shareBar } from './util.ts';
+import { chooseDeck, chosenDeck, elIcon as elIconOf, esc, shareBar, type ChosenDeck } from './util.ts';
 
 const ART = '../../../AlgomancyCards/';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -183,7 +184,10 @@ class NetBackend implements Backend {
       // accounts: the session token binds this seat to an account server-side,
       // which is what makes the game count toward your stats
       ...(acct.token() ? { token: acct.token() } : {}),
-      mode: this.mode, els: this.els, ...(deck ? { deck: deck.cards } : {}),
+      mode: this.mode, els: this.els,
+      // …and, when the deck came out of the saved collection, WHICH deck it
+      // is, so the game counts toward that deck's record (server/collection.ts)
+      ...(deck ? { deck: deck.cards, ...(deck.id ? { deckId: deck.id } : {}) } : {}),
     }));
   }
   do(a: Action): void {
@@ -587,17 +591,13 @@ const freshUi = (): UiState => ({
 
 // ── constructed decks (algomancer.cc format, docs: server/decks.ts) ────
 
-/** the deck this browser will bring to constructed games (persisted) */
-interface SavedDeck { name: string; author: string; url?: string; cards: string[] }
-const savedDeck = (): SavedDeck | null => {
-  try {
-    const d = JSON.parse(localStorage.getItem('algoDeck') ?? '') as SavedDeck;
-    return Array.isArray(d.cards) && d.cards.length ? d : null;
-  } catch { return null; }
-};
-const saveDeck = (d: SavedDeck): void => {
-  localStorage.setItem('algoDeck', JSON.stringify({ name: d.name, author: d.author, url: d.url, cards: d.cards }));
-};
+/* The deck this browser brings to constructed games lives in ui/util.ts —
+ * the decks page (ui/decks.ts) writes it too, and neither screen can import
+ * the other. These two names are kept because this file reads them in a dozen
+ * places, and `SavedDeck` is the shape the picker below builds. */
+type SavedDeck = ChosenDeck;
+const savedDeck = chosenDeck;
+const saveDeck = chooseDeck;
 /** the bundled default decks — fetched once from the server */
 let defaultDeckList: SavedDeck[] | null = null;
 let defaultDecksLoading = false;
@@ -4252,13 +4252,49 @@ function renderConnecting(): void {
     ${uiError ? '<button class="primary" data-btn="gohome">← Back to the home screen</button>' : ''}</div>`;
 }
 
-/** The constructed deck picker: the bundled algomancer.cc test decks (with
- * their builders credited), plus import-by-link and paste-a-list. Used on the
- * home screen and on the constructed waiting screen. */
+/**
+ * The constructed deck picker: which deck this browser brings to a game.
+ *
+ * Two sources, and only ever one of them at a time. Signed in, it is YOUR
+ * saved collection (ui/decks.ts) — which already holds copies of the five
+ * bundled decks, seeded at first sight, so offering both would list the same
+ * decks twice under two different identities. Signed out there is no
+ * collection, so it falls back to the bundled five plus import-by-link, which
+ * is exactly what this picker was before the collection existed.
+ *
+ * Only LEGAL decks are offered: a picker that lets you choose a 27-card deck
+ * and then refuses the game is a worse way to say "not yet" than not offering
+ * it. The decks page says which ones those are and why.
+ */
 function deckPickerHtml(): string {
   const cur = savedDeck();
+  const mine = acct.token() ? dk.playableDecks() : [];
+  const manage = acct.token()
+    ? '<button class="deckmanage" data-btn="deck-openpage">My decks — build, cut, see the curve →</button>'
+    : '';
+
+  if (mine.length) {
+    const opts = mine.map((d, i) =>
+      `<option value="c${i}" ${cur && cur.id === d.id ? 'selected' : ''}>${esc(d.name)}${
+        d.author && d.author !== 'you' ? ` — by ${esc(d.author)}` : ''}</option>`).join('');
+    const strayOpt = cur && !mine.some(d => d.id === cur.id)
+      ? `<option value="stray" selected>${esc(cur.name)} (not in your collection)</option>` : '';
+    const info = cur
+      ? `<div class="deckinfo">${cur.cards.length} cards${cur.url
+          ? ` · <a href="${esc(cur.url)}" target="_blank" rel="noopener">algomancer.cc</a>` : ''}</div>`
+      : '<div class="deckinfo">pick a deck to play constructed</div>';
+    return `<select id="h-deck" class="deckselect">
+        ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${strayOpt}
+      </select>
+      ${info}${manage}
+      ${deckMsg ? `<div class="deckmsg">${esc(deckMsg)}</div>` : ''}`;
+  }
+
   const defaults = defaultDeckList;
-  if (!defaults) return `<div class="hint">loading the deck list…</div>${deckMsg ? `<div class="deckmsg">${esc(deckMsg)}</div>` : ''}`;
+  if (!defaults) {
+    return `<div class="hint">${acct.token() ? 'loading your decks…' : 'loading the deck list…'}</div>${
+      deckMsg ? `<div class="deckmsg">${esc(deckMsg)}</div>` : ''}${manage}`;
+  }
   const isDefault = !!cur && defaults.some(d => d.name === cur.name && d.url === cur.url);
   const opts = defaults.map((d, i) =>
     `<option value="d${i}" ${cur && d.name === cur.name && d.url === cur.url ? 'selected' : ''}>${esc(d.name)} — by ${esc(d.author)}</option>`).join('');
@@ -4271,7 +4307,7 @@ function deckPickerHtml(): string {
   return `<select id="h-deck" class="deckselect">
       ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${customOpt}
     </select>
-    ${info}
+    ${info}${manage}
     <div class="joinrow deckimport">
       <input id="h-deckurl" placeholder="algomancer.cc deck link" spellcheck="false">
       <button data-btn="deckimporturl">Load</button>
@@ -4285,11 +4321,18 @@ function deckPickerHtml(): string {
 
 /** wire the picker's <select> after (re)rendering the screen holding it */
 function wireDeckPicker(rerender: () => void): void {
+  // BOTH sources, always: a signed-in player whose collection is empty (they
+  // deleted the starters) falls through to the bundled list, and fetching only
+  // the collection would leave that picker saying "loading…" for ever
   ensureDefaultDecks(rerender);
+  if (acct.token()) dk.ensureCollection(rerender);
   const sel = document.getElementById('h-deck') as HTMLSelectElement | null;
   sel?.addEventListener('change', () => {
     const v = sel.value;
-    if (v.startsWith('d') && defaultDeckList) {
+    if (v.startsWith('c')) {
+      const d = dk.playableDecks()[Number(v.slice(1))];
+      if (d) { saveDeck(d); deckMsg = ''; }
+    } else if (v.startsWith('d') && defaultDeckList) {
       const d = defaultDeckList[Number(v.slice(1))];
       if (d) { saveDeck(d); deckMsg = ''; }
     }
@@ -4325,8 +4368,12 @@ function importDeck(body: { url?: string; text?: string }, rerender: () => void)
 function renderHome(): void {
   dropBaselines();
   $app.classList.remove('board');
+  // a logged-out browser has no collection to remember
+  if (!acct.token()) dk.resetCollection();
   // an open account screen (sign-in / profile) owns the page instead
   if (acct.screen()) { acct.renderScreen(); return; }
+  // …and so does the deck collection
+  if (dk.screen()) { dk.renderScreen(); return; }
   const user = acct.currentUser();
   const name = user ? user.username : (localStorage.getItem('algoName') ?? '');
   const deck = savedDeck();
@@ -4338,6 +4385,7 @@ function renderHome(): void {
           ? `<div class="namerow fixedname">Playing as <b>${esc(user.username)}</b></div>`
           : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
         ${acct.barHtml()}
+        ${user ? '<button class="homedecks" data-btn="deck-openpage" title="your saved decks: build, cut, and see the curve">🗂 My decks</button>' : ''}
       </div>
     </div>
 
@@ -4362,8 +4410,9 @@ function renderHome(): void {
 
       <div class="homecard offer deckpicker">
         <h2>Constructed</h2>
-        <p class="cardsub">Bring a deck you already built. Pick one of the bundled algomancer.cc
-          decks, or import your own by link or list.</p>
+        <p class="cardsub">Bring a deck you already built — 30 cards, max 2 of each. Signed in,
+          this picks from your saved decks; the collection page is where you build them, cut them
+          and read the curve.</p>
         ${deckPickerHtml()}
         <div class="spacer"></div>
         <button class="cta primary" data-btn="newgame" data-mode="constructed" ${deck ? '' : 'disabled'}>
@@ -5354,6 +5403,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
 function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // accounts own everything prefixed acct- (sign-in, profile, friends)
   if (acct.handleButton(btn)) return;
+  // and the deck collection everything prefixed deck- (NB: the older picker
+  // buttons below are `deckimporturl`/`deckjoin`, with no hyphen)
+  if (dk.handleButton(btn)) return;
   // and the post-game screen everything prefixed pg-
   if (postGame && pg.handlePostGameButton(btn, {
     over: postGame,
@@ -6070,6 +6122,7 @@ const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.ha
 // way to repaint. In a game the repaint is a no-op — a profile push arriving
 // mid-game must never paint the home screen over the board.
 acct.initAccounts({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 if (params.has('room') && params.get('room')!.trim()) {
   const room = params.get('room')!.toUpperCase().trim();
   const sp = params.get('seat');

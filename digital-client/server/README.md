@@ -241,6 +241,11 @@ block this round.
 | `stats.ts` | `summarizeGame(savedRoom)` — replays a game and tallies both players |
 | `history.ts` | summarize → stash → rebuild: the one path every recorded game takes |
 | `api-accounts.ts` | `/api/auth/*`, `/api/me`, `/api/player(s)`, `/api/friends/*` |
+| `api-util.ts` | the four lines every JSON route needs: reply, read a **capped** body, find the bearer token, clamp a string |
+| `decks.ts` | the bundled decks and the algomancer.cc / pasted-list importer — the signed-out deck path |
+| `collection.ts` | the saved deck collection on an account: the starter seed, the edits, and the fold that turns the game history into a per-deck record |
+| `api-decks.ts` | `/api/decks` + `/create`, `/update`, `/delete`, `/duplicate`, `/import` |
+| `test-collection.ts` | the collection: seeding, the edits, the twenty-deck limit, the routes, and a spoofed deck id being ignored |
 | `seed-accounts.ts` | CLI: import `games/` into the record (aliases, `--force`, `--dry`) |
 | `test-accounts.ts` | the accounts test suite (stats fold, achievements, friends, live server) |
 | `accounts/accounts.json` | the whole account store — **holds password hashes, gitignored** |
@@ -520,11 +525,13 @@ fixture.
 ## Test it
 
 ```bash
-npm test          # all 13 test files, ~30s, hermetic
+npm test          # every test file, ~70s, hermetic
 ```
 
-That is the whole suite: **465 assertions across 13 files**, plus two ledger
-checks. Expected tail: `# pass 15 / # fail 0` (13 scripts + 2 ledger).
+That is the whole suite, plus two ledger checks. The ledger is the part that
+matters: every `test-*.ts` on disk is either listed in `suite.test.ts` (and
+therefore runs) or listed as not-a-test **with a reason**, and it fails both
+ways round — so a new test file that nothing runs cannot go unnoticed.
 
 Any one file still runs on its own, the way it always did:
 
@@ -640,3 +647,51 @@ Server → client:
   through their `/api/decks/<id>` JSON) or `{ text }` (a pasted list, one card
   per line with optional leading count) → `{ ok, deck: { name, author, url?,
   cards, problems } }`
+
+These two are the SIGNED-OUT path: they turn a link or a paste into card names
+and hand them back to the browser, which keeps the choice in `localStorage`.
+A signed-in player has a collection instead (below), and the home screen's
+picker offers that rather than the bundled five — the collection already holds
+copies of them.
+
+## The deck collection (`collection.ts`, `api-decks.ts`)
+
+A signed-in player's saved decks, stored on the account in `accounts.json`.
+Three commitments, each argued in `collection.ts`'s header:
+
+1. **The record is derived, never stored.** A deck's W/L is a fold over the
+   account's game history filtered by deck id — the same shape as a `Profile` —
+   so `rebuildProfiles()` keeps working and a deck can never carry a count that
+   disagrees with the games list. The id reaches the record through the wire:
+   the client sends `deckId` on the constructed join, the server **re-reads that
+   deck out of the account behind the token** (an id you do not own is ignored),
+   `rooms.ts` persists it beside `decks`, and `history.ts` carries it into the
+   `RecordedGame`.
+2. **A saved deck may be illegal.** 29 cards is a deck mid-edit, not an error.
+   Legality is reported on every read as `problems` and enforced at the one
+   place it matters — bringing the deck to a game.
+3. **The starter five are a seed, not a link.** A collection is seeded lazily
+   with copies of the bundled decks the first time anybody looks at it, keeping
+   the builder's name and link as attribution. Nothing re-seeds a collection
+   that already exists, so deleting all five is a decision.
+
+Twenty decks per account (the owner's number, for tidiness — the refusal is a
+sentence, not an error page).
+
+- `GET  /api/decks` → `{ ok, decks: DeckView[] }` — every deck plus its derived
+  `problems` and `record`
+- `POST /api/decks/create` `{ name, cards?, maybe? }`
+- `POST /api/decks/update` `{ id, name?, cards?, maybe?, cover? }` — only the
+  fields SENT are applied, so a rename need not resend 30 card names
+- `POST /api/decks/delete` / `duplicate` `{ id }`
+- `POST /api/decks/import` `{ url | text, name? }` — straight into the collection
+
+Every route is authed (401 without a token) and every write answers with the
+**whole** collection: `problems` and `record` are derived, and a rename can
+rename another deck out of a name clash, so a partial update is a stale client
+waiting to happen.
+
+The client half is `engine/ui/decks.ts` (the page) and `engine/ui/deckstats.ts`
+(the curve / split / affinity arithmetic — pure, DOM-free and tested in
+`engine/test/188-deck-stats.test.ts`, including the export text round-tripping
+back through `importDeckText`).

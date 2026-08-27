@@ -13,6 +13,7 @@
  * and dropped without parsing.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { json, readBody, str, tokenOf } from './api-util.ts';
 import {
   accountByName, acceptFriend, accountForToken, changePassword, leaderboard,
   login, logout, privateView, publicView, register, removeFriend, requestFriend,
@@ -25,38 +26,6 @@ export interface ApiContext {
   online: (userId: string) => boolean;
 }
 
-const json = (res: ServerResponse, body: unknown, status = 200): void => {
-  res.writeHead(status, { 'content-type': 'application/json' });
-  res.end(JSON.stringify(body));
-};
-
-/** Read a JSON body, capped — an unbounded read on an open port is a gift to
- * anyone who finds it, even on a LAN. */
-function readBody(req: IncomingMessage, limit = 64 * 1024): Promise<Record<string, unknown>> {
-  return new Promise(resolve => {
-    let body = '';
-    let over = false;
-    req.on('data', (c: Buffer) => {
-      if (over) return;
-      body += c;
-      if (body.length > limit) { over = true; body = ''; }
-    });
-    req.on('end', () => {
-      try { resolve(over ? {} : JSON.parse(body || '{}') as Record<string, unknown>); }
-      catch { resolve({}); }
-    });
-    req.on('error', () => resolve({}));
-  });
-}
-
-/** The bearer token on a request, if any. */
-export function tokenOf(req: IncomingMessage): string | null {
-  const auth = req.headers['authorization'];
-  if (typeof auth === 'string' && auth.toLowerCase().startsWith('bearer ')) return auth.slice(7).trim();
-  return null;
-}
-
-const str = (v: unknown, max = 200): string => String(v ?? '').slice(0, max);
 
 /**
  * A very small brake on password guessing: after 10 failed logins from one

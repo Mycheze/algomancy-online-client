@@ -28,6 +28,9 @@ import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord } from './stats.ts';
 interface SavedRoom extends GameRecord {
   /** account id per seat, written by rooms.ts once accounts existed */
   users?: [string | null, string | null];
+  /** constructed: the collection deck id per seat (rooms.ts, additive) —
+   * what a deck's win/loss record is folded out of */
+  deckIds?: [string | null, string | null];
   // `winner`, the result stamped at the time, comes from GameRecord — it is
   // what keeps an old game's outcome readable after the rules have moved
 }
@@ -80,6 +83,16 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
         ?? accountByName(names[seat])?.id
         ?? null;
     }) as [string | null, string | null],
+    // Which saved deck each seat brought. Same "best source first" shape as
+    // `users`, and the same reason: a re-import must not lose an attribution
+    // the live room recorded. Omitted entirely when neither seat had one, so
+    // no draft or shared game grows a field of nulls.
+    ...(raw.deckIds?.[0] || raw.deckIds?.[1] || previous?.deckIds?.[0] || previous?.deckIds?.[1]
+      ? { deckIds: [
+          raw.deckIds?.[0] ?? previous?.deckIds?.[0] ?? null,
+          raw.deckIds?.[1] ?? previous?.deckIds?.[1] ?? null,
+        ] as [string | null, string | null] }
+      : {}),
     names,
     seats: summary.seats,
   };
@@ -98,12 +111,15 @@ export function recordLiveGame(room: {
   names: [string, string]; users: [string | null, string | null];
   winner?: GameRecord['winner'];
   actions: GameRecord['actions']; decks: GameRecord['decks'];
+  deckIds?: [string | null, string | null];
   scenario?: string;
 }): ImportedRow {
   const row = importGame(
     {
       seed: room.seed, mode: room.mode, els: room.els, names: room.names,
       actions: room.actions, decks: room.decks, users: room.users,
+      // constructed: which saved deck each seat brought (collection.ts)
+      deckIds: room.deckIds,
       // R216: carried so the replay inside summarizeGame deals the same board
       // the game was played on. (A scenario room is normally filtered out
       // before it gets here — see the guard in syncGamesDir and main.ts's

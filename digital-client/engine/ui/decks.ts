@@ -1,0 +1,894 @@
+/* The deck collection: the page you build, cut and tune constructed decks on.
+ *
+ * Same contract as ui/account.ts, which main.ts already knows how to drive:
+ * screen() says whether this page owns the app element, renderScreen() paints
+ * it, handleButton() is offered every click first (everything here is prefixed
+ * `deck-`), and the collection itself — the fetches, the pending edit, the
+ * open deck — lives in this file and nowhere else.
+ *
+ * THE EDIT MODEL, which is the only genuinely tricky thing here. A deckbuilder
+ * that asks you to press Save is a deckbuilder that loses work, so every click
+ * edits the local copy at once and a debounced PUT follows. That means the
+ * server's answer can arrive describing a deck you have since changed again,
+ * so:
+ *
+ *   - the local copy is the truth WHILE anything is in flight or pending, and
+ *     the server's list is adopted only once the queue is empty (`settled()`);
+ *   - legality and every number on the page are computed HERE, from
+ *     ui/deckstats.ts, never from the server's `problems` — so the count, the
+ *     curve and the "not legal yet" line all move on the same click that made
+ *     them true, with no round trip in between;
+ *   - `record` is the one field only the server can know, and it does not
+ *     change while you edit, so it survives the local copy untouched.
+ *
+ * Art is the point of the page — "I want to see my decks visually and make
+ * cuts" — so the card grid is real card scans, and the deck list wears the
+ * cover card you picked.
+ */
+import { getCard } from '../src/cards/dsl.ts';
+import { DECK_LIST } from '../src/cards/registry.ts';
+import * as acct from './account.ts';
+import { txtIcon } from './cardtext.ts';
+import {
+  ELEMENTS, analyzeDeck, cardFacts, deckElements, deckListText,
+  type CardFacts, type DeckAnalysis,
+} from './deckstats.ts';
+import { chooseDeck, chosenDeck, elIcon, esc } from './util.ts';
+
+// ── the shapes the server sends (server/collection.ts) ────────────────
+
+export interface DeckRecord {
+  games: number; wins: number; losses: number; unresolved: number; lastPlayed: string | null;
+}
+
+export interface DeckView {
+  id: string;
+  name: string;
+  cards: string[];
+  maybe: string[];
+  cover: string | null;
+  author: string;
+  url?: string;
+  createdAt: string;
+  updatedAt: string;
+  /** the server's own legality read — this page recomputes it locally instead
+   * (see the header), and keeps this only for the first paint after a load */
+  problems: string[];
+  record: DeckRecord;
+}
+
+// ── module state ──────────────────────────────────────────────────────
+
+const ART = '../../../AlgomancyCards/';
+/** art for a card: the registry's own image override, else derived */
+const art = (name: string): string => {
+  try {
+    const img = getCard(name).image;
+    if (img) return ART + img;
+  } catch { /* not a registry card */ }
+  return ART + name.replace(/ /g, '-') + '.jpg';
+};
+
+type Tab = 'cards' | 'mana' | 'maybe' | 'games';
+
+let $app: HTMLElement | null = null;
+let rerenderHost: () => void = () => {};
+let open = false;
+let decks: DeckView[] | null = null;
+let loading = false;
+let openId: string | null = null;
+let tab: Tab = 'cards';
+/** how the card grid is grouped */
+let group: 'mana' | 'element' | 'type' = 'mana';
+/** the add-cards drawer */
+let adding = false;
+let search = '';
+let searchEl = '';
+let searchKind: '' | 'unit' | 'spell' = '';
+/** the status line under the header */
+let msg = '';
+/** the delete button asks once — a 30-card deck is an hour of somebody's day */
+let confirmDelete: string | null = null;
+/** the import box */
+let importing = false;
+let importMsg = '';
+/** the export panel — the deck as the text format the importer reads back */
+let exporting = false;
+
+export const screen = (): 'decks' | null => (open ? 'decks' : null);
+
+/** Wire the page up. `rerender` repaints the home screen when this closes. */
+export function initDecks(opts: { app: HTMLElement; rerender: () => void }): void {
+  $app = opts.app;
+  rerenderHost = opts.rerender;
+}
+
+const current = (): DeckView | null => decks?.find(d => d.id === openId) ?? null;
+
+// ── talking to the server ─────────────────────────────────────────────
+
+const authHeaders = (): Record<string, string> => {
+  const t = acct.token();
+  return { 'content-type': 'application/json', ...(t ? { authorization: `Bearer ${t}` } : {}) };
+};
+
+interface DecksReply { ok: boolean; error?: string; note?: string; decks?: DeckView[]; id?: string }
+
+/** saves scheduled but not yet sent, plus saves sent but not yet answered —
+ * while either is non-zero the LOCAL copy is the truth (see the header) */
+let queued = 0;
+let inflight = 0;
+const settled = (): boolean => queued === 0 && inflight === 0;
+
+/** Adopt a server list, but only if nothing local is newer than it. */
+function adopt(reply: DecksReply): void {
+  if (reply.decks && settled()) decks = reply.decks;
+  else if (reply.decks && decks) {
+    // keep our own cards/name, take the fields only the server knows
+    const byId = new Map(reply.decks.map(d => [d.id, d]));
+    decks = decks.map(d => {
+      const server = byId.get(d.id);
+      return server ? { ...d, record: server.record } : d;
+    });
+  }
+}
+
+/** Load the collection. Safe to call repeatedly; only one fetch is in the air. */
+export function ensureCollection(then: () => void = () => {}): void {
+  if (decks || loading || !acct.token()) { then(); return; }
+  loading = true;
+  fetch('/api/decks', { headers: authHeaders() })
+    .then(r => r.json() as Promise<DecksReply>)
+    .then(r => {
+      loading = false;
+      if (r.ok && r.decks) { decks = r.decks; if (!openId) openId = decks[0]?.id ?? null; }
+      else msg = r.error ?? 'could not load your decks';
+      then();
+    })
+    .catch(() => { loading = false; msg = 'could not reach the server'; then(); });
+}
+
+/** Forget everything (logging out). */
+export function resetCollection(): void {
+  decks = null; openId = null; open = false; msg = '';
+}
+
+/** The legal decks in the collection, for the home screen's picker. */
+export function playableDecks(): { id: string; name: string; author: string; url?: string; cards: string[] }[] {
+  return (decks ?? [])
+    .filter(d => analyzeDeck(d.cards).legal)
+    .map(d => ({ id: d.id, name: d.name, author: d.author, ...(d.url ? { url: d.url } : {}), cards: d.cards }));
+}
+
+const SAVE_MS = 500;
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let savePending: string | null = null;
+
+/** Send whatever edit is waiting, now. */
+function flushSave(): void {
+  if (!saveTimer) return;
+  clearTimeout(saveTimer);
+  saveTimer = null;
+  queued--;
+  const deck = decks?.find(d => d.id === savePending);
+  savePending = null;
+  if (!deck) return;
+  inflight++;
+  void post('/api/decks/update', {
+    id: deck.id, name: deck.name, cards: deck.cards, maybe: deck.maybe, cover: deck.cover,
+  }).then(r => {
+    inflight--;
+    if (!r.ok) { msg = r.error ?? 'could not save that change'; paint(); return; }
+    if (r.note) msg = r.note;
+    adopt(r);
+    // repaint only when the answer could have changed anything on screen — a
+    // silent successful save must not steal the cursor out of the name box
+    if (r.note) paint();
+  }).catch(() => { inflight--; msg = 'could not reach the server — that change is not saved'; paint(); });
+}
+
+/**
+ * Push the open deck's current local state, coalescing rapid edits — rapid is
+ * the normal case, because cutting four cards is four clicks in three seconds.
+ *
+ * One pending save, deliberately, so an edit to a DIFFERENT deck flushes the
+ * one already waiting rather than replacing it. Without that, cutting a card
+ * and clicking another deck inside the debounce window silently threw the cut
+ * away: the timer would fire against the new id and the old edit — still shown
+ * on screen, because the local copy is the truth — would never be sent.
+ */
+function scheduleSave(id: string): void {
+  if (savePending && savePending !== id) flushSave();
+  savePending = id;
+  if (saveTimer) clearTimeout(saveTimer);
+  else queued++;
+  saveTimer = setTimeout(flushSave, SAVE_MS);
+}
+
+async function post(path: string, body: unknown): Promise<DecksReply> {
+  const res = await fetch(path, { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) });
+  return await res.json() as DecksReply;
+}
+
+// ── little pieces ─────────────────────────────────────────────────────
+
+const shortDate = (iso: string | null): string => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};
+
+/** a card's printed cost as the game's own icons: [3][r][r] */
+function costBadge(f: CardFacts): string {
+  const mana = f.isX ? txtIcon('cost_x', 'X')
+    // the icon set stops at 9; the pool's few double-digit costs print as text
+    : f.mana <= 9 ? txtIcon(`cost_${f.mana}`, String(f.mana))
+    : `<span class="costnum">${f.mana}</span>`;
+  const pips = ELEMENTS.flatMap(el => Array.from({ length: f.pips[el] ?? 0 }, () => elIcon(el, el))).join('');
+  return `<span class="costbox">${mana}${pips}</span>`;
+}
+
+const elChips = (a: DeckAnalysis): string => deckElements(a)
+  .map(e => `<span class="acctel ${e.el}" title="${Math.round(e.share * 100)}% of the deck">${e.el}</span>`)
+  .join('');
+
+/** the record line: "3W–1L" and nothing at all before the first game */
+function recordLine(r: DeckRecord): string {
+  if (!r.games) return '<span class="dim">no games yet</span>';
+  return `<b class="${r.wins >= r.losses ? 'good' : 'bad'}">${r.wins}W–${r.losses}L</b>` +
+    `<span class="dim"> in ${r.games} game${r.games === 1 ? '' : 's'}${
+      r.unresolved ? ` · ${r.unresolved} with no result` : ''}</span>`;
+}
+
+/** One card tile: art, how many, and the controls that change that. `where`
+ * decides which way the move arrow points. */
+function tile(name: string, n: number, where: 'deck' | 'maybe' | 'add', cover: string | null): string {
+  const f = cardFacts(name);
+  const overCap = n > 2;
+  return `<div class="dktile${name === cover ? ' iscover' : ''}${overCap ? ' overcap' : ''}"
+      title="${esc(name)}${f ? ` — ${esc(f.type)}` : ''}">
+    <img class="dkart" src="${esc(art(name))}" alt="${esc(name)}" loading="lazy"
+      onerror="this.style.visibility='hidden'">
+    ${/* no cost badge here: the scan prints its own cost in this exact corner,
+        and the two on top of each other made both unreadable */ ''}
+    ${where === 'add' || n < 2 ? '' : `<span class="dkn${overCap ? ' bad' : ''}">×${n}</span>`}
+    <span class="dkname">${esc(name)}</span>
+    <span class="dkbtns">
+      ${where === 'add'
+        ? `<button data-btn="deck-add" data-card="${esc(name)}" title="add a copy to the deck">+</button>
+           <button data-btn="deck-add-maybe" data-card="${esc(name)}" title="add to the maybeboard">»</button>`
+        : where === 'deck'
+          ? `<button data-btn="deck-less" data-card="${esc(name)}" title="cut one">−</button>
+             <button data-btn="deck-more" data-card="${esc(name)}" title="another copy">+</button>
+             <button data-btn="deck-to-maybe" data-card="${esc(name)}" title="move one to the maybeboard">»</button>
+             <button data-btn="deck-cover" data-card="${esc(name)}" title="use this art for the deck">★</button>`
+          : `<button data-btn="deck-maybe-less" data-card="${esc(name)}" title="drop one">−</button>
+             <button data-btn="deck-maybe-more" data-card="${esc(name)}" title="another copy">+</button>
+             <button data-btn="deck-from-maybe" data-card="${esc(name)}" title="move one into the deck">«</button>`}
+    </span>
+  </div>`;
+}
+
+/** the deck's cards, bucketed the way the toolbar says */
+function groupedTiles(a: DeckAnalysis, cover: string | null, where: 'deck' | 'maybe'): string {
+  if (!a.copies.length) {
+    return `<div class="hint">${where === 'deck'
+      ? 'Nothing in here yet — open “Add cards” below and start putting things in.'
+      : 'Nothing on the maybeboard. It is the shelf for cards you are still thinking about; nothing here is ever shuffled into a game.'}</div>`;
+  }
+  const buckets = new Map<string, { label: string; sort: number; names: string[] }>();
+  for (const c of a.copies) {
+    const f = c.facts;
+    let key: string, label: string, sortAt: number;
+    if (group === 'element') {
+      key = f?.factions.join('/') || 'no element';
+      label = key;
+      sortAt = f ? ELEMENTS.indexOf(f.factions[0] ?? '') * 10 + (f.factions.length - 1) : 99;
+    } else if (group === 'type') {
+      key = !f ? 'unknown' : f.kind === 'spellUnit' ? 'spell units' : f.kind === 'spell' ? 'spells' : 'units';
+      label = key;
+      sortAt = key === 'units' ? 0 : key === 'spells' ? 1 : key === 'spell units' ? 2 : 3;
+    } else {
+      key = !f ? 'unknown' : f.isX ? 'X' : String(f.mana);
+      label = !f ? 'unknown' : f.isX ? 'X cost' : `${f.mana} mana`;
+      sortAt = !f ? 999 : f.isX ? 998 : f.mana;
+    }
+    const b = buckets.get(key) ?? { label, sort: sortAt, names: [] };
+    b.names.push(c.name);
+    buckets.set(key, b);
+  }
+  const counted = (name: string): number => a.copies.find(c => c.name === name)?.n ?? 0;
+  return [...buckets.values()].sort((x, y) => x.sort - y.sort).map(b => {
+    const cards = b.names.reduce((n, name) => n + counted(name), 0);
+    return `<div class="dkgroup">
+      <div class="dkgrouphead">${esc(b.label)} <span class="dim">${cards} card${cards === 1 ? '' : 's'}</span></div>
+      <div class="dkgrid">${b.names
+        .sort((x, y) => x.localeCompare(y))
+        .map(name => tile(name, counted(name), where, cover)).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── the add-cards drawer ──────────────────────────────────────────────
+
+/** The pool, filtered by the drawer's three controls. Capped, and the cap is
+ * SAID — a silently truncated list reads as "that is all there is". */
+const SEARCH_CAP = 60;
+
+function searchResults(): { names: string[]; total: number } {
+  const q = search.trim().toLowerCase();
+  const hits = DECK_LIST.filter(name => {
+    const f = cardFacts(name);
+    if (!f) return false;
+    if (searchEl && !f.factions.includes(searchEl)) return false;
+    if (searchKind === 'unit' && f.kind !== 'unit') return false;
+    if (searchKind === 'spell' && f.kind !== 'spell' && f.kind !== 'spellUnit') return false;
+    if (!q) return true;
+    return name.toLowerCase().includes(q) || f.text.toLowerCase().includes(q) || f.type.toLowerCase().includes(q);
+  });
+  return { names: hits.slice(0, SEARCH_CAP), total: hits.length };
+}
+
+function addDrawerHtml(): string {
+  if (!adding) {
+    return `<button class="dkadd" data-btn="deck-adding">+ Add cards</button>`;
+  }
+  const { names, total } = searchResults();
+  return `<section class="dkdrawer">
+    <div class="dkdrawerhead">
+      <input id="dk-search" class="dksearch" placeholder="search the pool — name, type, or card text"
+        spellcheck="false" value="${esc(search)}">
+      <button data-btn="deck-adding-close">done</button>
+    </div>
+    <div class="dkfilters">
+      ${ELEMENTS.map(el => `<button class="elchip ${el}${searchEl === el ? ' on' : ''}"
+        data-btn="deck-filter-el" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
+      <span class="dkfilterspacer"></span>
+      ${(['unit', 'spell'] as const).map(k => `<button class="dkkind${searchKind === k ? ' on' : ''}"
+        data-btn="deck-filter-kind" data-kind="${k}">${k}s</button>`).join('')}
+      ${searchEl || searchKind || search ? '<button data-btn="deck-filter-clear">clear</button>' : ''}
+    </div>
+    <div class="dkresultcount">${total} card${total === 1 ? '' : 's'}${
+      total > names.length ? ` — showing the first ${names.length}, narrow the search to see the rest` : ''}</div>
+    <div id="dk-results" class="dkgrid">${names.map(n => tile(n, 0, 'add', null)).join('')}</div>
+  </section>`;
+}
+
+// ── the mana / curve tab ──────────────────────────────────────────────
+
+function curveHtml(a: DeckAnalysis): string {
+  const peak = Math.max(1, ...a.curve.map(c => c.total));
+  return `<div class="dkcurve">${a.curve.map(c => `
+    <div class="dkcurverow${c.total ? '' : ' empty'}">
+      <span class="dkcurvem">${c.mana}</span>
+      <span class="dkcurvebar">
+        ${c.units ? `<span class="seg units" style="flex:${c.units}" title="${c.units} unit${c.units === 1 ? '' : 's'} at ${c.mana}"></span>` : ''}
+        ${c.spellUnits ? `<span class="seg spellunits" style="flex:${c.spellUnits}" title="${c.spellUnits} spell unit${c.spellUnits === 1 ? '' : 's'} at ${c.mana}"></span>` : ''}
+        ${c.spells ? `<span class="seg spells" style="flex:${c.spells}" title="${c.spells} spell${c.spells === 1 ? '' : 's'} at ${c.mana}"></span>` : ''}
+        <span class="pad" style="flex:${peak - c.total}"></span>
+      </span>
+      <span class="dkcurven">${c.total || ''}</span>
+    </div>`).join('')}
+    ${a.xCards ? `<div class="dkcurverow x">
+      <span class="dkcurvem">X</span>
+      <span class="dkcurvebar"><span class="seg spells" style="flex:${a.xCards}"></span>
+        <span class="pad" style="flex:${peak - a.xCards}"></span></span>
+      <span class="dkcurven">${a.xCards}</span>
+    </div>` : ''}
+    <div class="dkcurvekey">
+      <span><i class="seg units"></i> units</span>
+      ${a.spellUnits ? '<span><i class="seg spellunits"></i> spell units</span>' : ''}
+      <span><i class="seg spells"></i> spells</span>
+      ${a.xCards ? '<span class="dim">X-cost cards sit on no rung — they cost what you pay</span>' : ''}
+    </div>`;
+}
+
+/** The affinity table: what you must have OPEN, and by when. */
+function affinityHtml(a: DeckAnalysis): string {
+  const live = ELEMENTS.filter(el => (a.maxAffinity[el] ?? 0) > 0);
+  if (!live.length) return '<div class="hint">Nothing in the deck asks for affinity yet.</div>';
+  const rows = a.rows.filter(r => r.count > 0 || live.some(el => (r.need[el] ?? 0) > 0));
+  const cell = (r: typeof a.rows[number], el: string): string => {
+    const cum = r.cumulative[el] ?? 0;
+    if (!cum) return '<td class="dknone">·</td>';
+    const isNew = r.first.includes(el);
+    return `<td class="${isNew ? 'dknew' : ''}" title="${isNew
+      ? `a card at ${r.mana} mana is the first thing that needs ${cum} ${el}`
+      : 'carried up from a cheaper card'}">${cum}</td>`;
+  };
+  return `<table class="dkaff">
+    <thead><tr><th>by mana</th><th>cards</th>${live.map(el =>
+      `<th class="acctel ${el}">${elIcon(el)}${el}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r => `<tr>
+      <td class="dkmana">${r.mana}</td>
+      <td class="dim">${r.count || ''}</td>
+      ${live.map(el => cell(r, el)).join('')}
+    </tr>`).join('')}
+    <tr class="dkmaxrow"><td>everything</td><td class="dim">${a.total - a.unknown.length}</td>
+      ${live.map(el => `<td><b>${a.maxAffinity[el] ?? 0}</b></td>`).join('')}</tr>
+    </tbody>
+  </table>
+  <div class="hint">Each number is how much affinity of that element you need <b>open by then</b> to
+    cast everything at that mana value or below — a requirement never goes down as you climb, so it
+    is carried up the table. <b>Bold</b> is where a new requirement first appears. The bottom row is
+    the ceiling: ${live.map(el => `${a.maxAffinity[el]} ${el}`).join(' + ')} —
+    ${a.affinityFloor} resources of named elements — casts every card in the deck.</div>`;
+}
+
+function manaTab(a: DeckAnalysis): string {
+  const pct = (n: number): string => a.total ? `${Math.round((n / a.total) * 100)}%` : '0%';
+  const elTotal = ELEMENTS.reduce((n, el) => n + (a.elements[el] ?? 0), 0);
+  return `<section class="acctcard">
+      <h3>Curve</h3>
+      ${curveHtml(a)}
+      <div class="hint">Average cost ${a.avgMana.toFixed(1)} mana${
+        a.xCards ? `, not counting ${a.xCards} X-cost card${a.xCards === 1 ? '' : 's'}` : ''}.</div>
+    </section>
+    <section class="acctcard">
+      <h3>What is in it</h3>
+      <div class="statgrid">
+        <div class="statcell"><div class="statval">${a.units}</div><div class="statlab">units (${pct(a.units)})</div></div>
+        <div class="statcell"><div class="statval">${a.spells}</div><div class="statlab">spells (${pct(a.spells)})</div></div>
+        ${a.spellUnits ? `<div class="statcell"><div class="statval">${a.spellUnits}</div><div class="statlab">spell units</div></div>` : ''}
+        <div class="statcell" title="cards printed {Battle} — playable during a battle rather than in deployment"><div class="statval">${a.battle}</div><div class="statlab">battle cards</div></div>
+        ${a.haste ? `<div class="statcell"><div class="statval">${a.haste}</div><div class="statlab">haste cards</div></div>` : ''}
+        <div class="statcell"><div class="statval">${a.copies.length}</div><div class="statlab">different cards</div></div>
+      </div>
+    </section>
+    <section class="acctcard">
+      <h3>Elements</h3>
+      ${elTotal ? `<div class="elbar">${ELEMENTS.map(el => {
+        const w = a.elements[el] ?? 0;
+        return w > 0 ? `<span class="elbarseg ${el}" style="flex:${w}"
+          title="${el}: ${Math.round((w / elTotal) * 100)}%"></span>` : '';
+      }).join('')}</div>
+      <div class="ellegend">${deckElements(a).map(e =>
+        `<span class="acctel ${e.el}">${e.el} ${Math.round(e.share * 100)}%</span>`).join('')}</div>`
+      : '<div class="hint">Nothing in the deck yet.</div>'}
+      <div class="hint">Share of the deck by card. A hybrid counts half to each of its elements.</div>
+    </section>
+    <section class="acctcard wide">
+      <h3>Affinity — what you need open, and by when</h3>
+      ${affinityHtml(a)}
+    </section>
+    ${a.demanding.length ? `<section class="acctcard wide">
+      <h3>The greediest costs</h3>
+      <div class="dkdemand">${a.demanding.slice(0, 8).map(d => {
+        const f = cardFacts(d.name);
+        return `<span class="dkdemandrow">${f ? costBadge(f) : ''} ${esc(d.name)}</span>`;
+      }).join('')}</div>
+      <div class="hint">These set the ceiling above. If a requirement is out of reach, this is the
+        list to cut from.</div>
+    </section>` : ''}`;
+}
+
+// ── the games tab ─────────────────────────────────────────────────────
+
+function gamesTab(deck: DeckView): string {
+  const rows = (acct.currentUser()?.history ?? []).filter(g => g.deckId === deck.id);
+  if (!rows.length) {
+    return `<section class="acctcard"><div class="hint">
+      No recorded games with this deck yet. A game counts toward a deck when you were logged in and
+      brought it from here — press <b>Play this deck</b>, then start a constructed game.
+      ${deck.record.games ? `<br>(Your record with it is ${deck.record.wins}W–${deck.record.losses}L,
+        but those games are older than the last 25 shown on your profile.)` : ''}
+    </div></section>`;
+  }
+  return `<section class="acctcard wide">
+    <h3>Games with this deck <span class="acctcount">${rows.length}</span></h3>
+    <table class="accttable games"><thead><tr>
+      <th>result</th><th>opponent</th><th>turns</th><th>life</th><th>played</th><th>room</th>
+    </tr></thead><tbody>${rows.map(g => `<tr class="res-${g.result}">
+      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}</td>
+      <td>${esc(g.opponent)}</td>
+      <td>${g.turns}</td>
+      <td>${g.life[0]}–${g.life[1]}</td>
+      <td>${shortDate(g.playedAt)}</td>
+      <td class="roomcell">${esc(g.code)}</td>
+    </tr>`).join('')}</tbody></table>
+    <div class="hint">The last 25 games on your profile, filtered to this deck. Its full record is
+      ${deck.record.wins}W–${deck.record.losses}L.</div>
+  </section>`;
+}
+
+// ── the page ──────────────────────────────────────────────────────────
+
+function deckRow(d: DeckView): string {
+  const a = analyzeDeck(d.cards);
+  const cover = d.cover ?? d.cards[0] ?? null;
+  return `<button class="deckrow${d.id === openId ? ' on' : ''}" data-btn="deck-open" data-id="${esc(d.id)}">
+    <span class="deckrowart">${cover
+      ? `<img src="${esc(art(cover))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`
+      : ''}</span>
+    <span class="deckrowbody">
+      <span class="deckrowname">${esc(d.name)}</span>
+      <span class="deckrowmeta">${a.total} card${a.total === 1 ? '' : 's'}${
+        d.maybe.length ? ` · ${d.maybe.length} maybe` : ''}</span>
+      <span class="deckrowmeta">${elChips(a) || '<span class="dim">empty</span>'}</span>
+      <span class="deckrowrec">${d.record.games ? `${d.record.wins}W–${d.record.losses}L` : ''}</span>
+    </span>
+    <span class="deckflag ${a.legal ? 'ok' : 'bad'}"
+      title="${a.legal ? 'legal — ready to play' : esc(a.problems.concat(a.unknown.length ? [`${a.unknown.length} card(s) this build cannot play`] : []).join(' · ') || 'not legal yet')}">${
+      a.legal ? '✓' : '!'}</span>
+  </button>`;
+}
+
+function importHtml(): string {
+  if (!importing) {
+    return `<div class="deckmakebtns">
+      <button class="primary" data-btn="deck-new">+ New deck</button>
+      <button data-btn="deck-import-open">Import…</button>
+    </div>`;
+  }
+  return `<div class="deckimportbox">
+    <div class="zonelabel">Import a deck</div>
+    <div class="joinrow">
+      <input id="dk-url" placeholder="algomancer.cc deck link" spellcheck="false">
+      <button data-btn="deck-import-url">Load</button>
+    </div>
+    <details class="deckpaste" open>
+      <summary>…or paste a list</summary>
+      <textarea id="dk-text" rows="5" spellcheck="false"
+        placeholder="2 Ignis Sprite&#10;2 Rune Channeler&#10;…"></textarea>
+      <button data-btn="deck-import-text">Import the list</button>
+    </details>
+    ${importMsg ? `<div class="deckmsg">${esc(importMsg)}</div>` : ''}
+    <button data-btn="deck-import-close">cancel</button>
+  </div>`;
+}
+
+function detailHtml(d: DeckView): string {
+  const a = analyzeDeck(d.cards);
+  const maybe = analyzeDeck(d.maybe);
+  const chosen = chosenDeck();
+  const isChosen = chosen?.id === d.id;
+  const trouble = [...a.problems, ...(a.unknown.length
+    ? [`this build cannot play: ${a.unknown.slice(0, 3).join(', ')}${a.unknown.length > 3 ? ` (+${a.unknown.length - 3})` : ''}`]
+    : [])];
+  const tabs = ([
+    ['cards', `cards <span class="acctcount">${a.total}</span>`],
+    ['mana', 'curve &amp; affinity'],
+    ['maybe', `maybeboard <span class="acctcount">${d.maybe.length}</span>`],
+    ['games', `games <span class="acctcount">${d.record.games}</span>`],
+  ] as [Tab, string][]).map(([t, label]) =>
+    `<button class="accttab ${tab === t ? 'on' : ''}" data-btn="deck-tab" data-tab="${t}">${label}</button>`).join('');
+
+  return `<div class="deckhero">
+      <div class="deckcover">${d.cover
+        ? `<img src="${esc(art(d.cover))}" alt="${esc(d.cover)}" onerror="this.style.visibility='hidden'">`
+        : '<span class="hint">no cover — press ★ on a card</span>'}</div>
+      <div class="deckheroinfo">
+        <input id="dk-name" class="deckname" maxlength="60" value="${esc(d.name)}"
+          aria-label="deck name" spellcheck="false">
+        <div class="deckfacts">${a.total} cards · ${a.units} unit${a.units === 1 ? '' : 's'} /
+          ${a.spells + a.spellUnits} spell${a.spells + a.spellUnits === 1 ? '' : 's'} ·
+          avg ${a.avgMana.toFixed(1)} mana ${elChips(a)}</div>
+        <div class="deckstatus ${a.legal ? 'ok' : 'bad'}">${a.legal
+          ? `✓ legal — 30 minimum, max 2 of a card${isChosen ? ' · <b>this is the deck you are bringing</b>' : ''}`
+          : esc(trouble.join(' · ') || 'not legal yet')}</div>
+        <div class="deckrecline">${recordLine(d.record)}${
+          d.author && d.author !== 'you' ? ` <span class="dim">· built by ${esc(d.author)}</span>` : ''}${
+          d.url ? ` <a href="${esc(d.url)}" target="_blank" rel="noopener">algomancer.cc</a>` : ''}</div>
+        <div class="deckbtns">
+          <button class="${isChosen ? '' : 'primary'}" data-btn="deck-play" ${a.legal ? '' : 'disabled'}>${
+            isChosen ? 'Bringing this deck' : a.legal ? 'Play this deck' : 'not legal yet'}</button>
+          <button data-btn="deck-duplicate">Duplicate</button>
+          ${confirmDelete === d.id
+            ? `<button class="dkdanger" data-btn="deck-delete-yes">Delete “${esc(d.name)}” for good</button>
+               <button data-btn="deck-delete-no">keep it</button>`
+            : `<button data-btn="deck-delete">Delete</button>`}
+        </div>
+      </div>
+    </div>
+    <div class="accttabs">${tabs}</div>
+    <div class="acctbody deckbody">${
+      tab === 'cards' ? `<section class="acctcard wide">
+          <div class="dktoolbar">
+            <span class="zonelabel">group by</span>
+            ${(['mana', 'element', 'type'] as const).map(g =>
+              `<button class="dkkind${group === g ? ' on' : ''}" data-btn="deck-group" data-group="${g}">${g}</button>`).join('')}
+            <span class="dkfilterspacer"></span>
+            <span class="hint">− cuts a copy · + adds one · » sends one to the maybeboard · ★ picks the cover</span>
+          </div>
+          ${groupedTiles(a, d.cover, 'deck')}
+          ${addDrawerHtml()}
+          ${exporting
+            ? `<div class="dkexport">
+                 <div class="dktoolbar"><span class="zonelabel">the list as text</span>
+                   <button data-btn="deck-copy-list">copy</button>
+                   <button data-btn="deck-export-close">close</button>
+                   <span class="hint">the same format the paste box reads — send it to
+                     somebody, or paste it back in here</span></div>
+                 <textarea class="dkexporttext" rows="10" readonly
+                   onclick="this.select()">${esc(deckListText(d.name, d.cards, d.maybe, d.url))}</textarea>
+               </div>`
+            : '<button class="dkadd" data-btn="deck-export">Export as text</button>'}
+        </section>`
+      : tab === 'mana' ? manaTab(a)
+      : tab === 'maybe' ? `<section class="acctcard wide">
+          <h3>Maybeboard <span class="acctcount">${d.maybe.length}</span></h3>
+          <div class="hint">Not a sideboard — Algomancy has none. This is the shelf: cards you cut and
+            might put back, or cards you want to try. Nothing here is shuffled into any game, and no
+            deck rules apply to it.</div>
+          ${groupedTiles(maybe, null, 'maybe')}
+        </section>`
+      : gamesTab(d)}</div>`;
+}
+
+function paint(): void {
+  if (!$app) return;
+  $app.classList.remove('board');
+  if (!acct.token()) {
+    $app.innerHTML = `<div class="joinscreen home acctscreen">
+      <h1 class="homelogo">ALGOMANCY</h1>
+      <h2>Decks</h2>
+      <p class="hint">A deck collection hangs off an account — that is what remembers your decks
+        between machines and keeps your record with each of them. Log in and they will be here,
+        starting with the five bundled decks.</p>
+      <div class="homebtns">
+        <button class="primary" data-btn="acct-open-auth">Log in / Sign up</button>
+        <button data-btn="deck-close">Back</button>
+      </div>
+    </div>`;
+    return;
+  }
+  const d = current();
+  $app.innerHTML = `<div class="deckpage">
+    <div class="accthead">
+      <div>
+        <h1>Decks</h1>
+        <div class="hint">${decks
+          ? `${decks.length} saved · edits save themselves${msg ? ` · ${esc(msg)}` : ''}`
+          : loading ? 'loading…' : esc(msg || 'no decks loaded')}</div>
+      </div>
+      <div class="accthbtns">
+        <button data-btn="deck-refresh" title="reload from the server">↻</button>
+        <button class="primary" data-btn="deck-close">Back to games</button>
+      </div>
+    </div>
+    <div class="deckmain">
+      <aside class="decklist">
+        ${importHtml()}
+        ${decks?.length
+          ? decks.map(deckRow).join('')
+          : `<div class="hint">${loading ? 'loading…' : 'No decks yet — make one.'}</div>`}
+      </aside>
+      <section class="deckdetail">${d
+        ? detailHtml(d)
+        : '<div class="hint">Pick a deck on the left, or make a new one.</div>'}</section>
+    </div>
+  </div>`;
+  wire();
+}
+
+/** the two live inputs — they must not repaint the page under the cursor */
+function wire(): void {
+  const name = document.getElementById('dk-name') as HTMLInputElement | null;
+  name?.addEventListener('input', () => {
+    const d = current();
+    if (!d) return;
+    d.name = name.value;
+    // the rail label follows without a repaint, so the caret stays put
+    const label = document.querySelector(`.deckrow.on .deckrowname`);
+    if (label) label.textContent = name.value;
+    scheduleSave(d.id);
+  });
+
+  const box = document.getElementById('dk-search') as HTMLInputElement | null;
+  box?.addEventListener('input', () => {
+    search = box.value;
+    const out = document.getElementById('dk-results');
+    const count = document.querySelector('.dkresultcount');
+    if (!out) return;
+    const { names, total } = searchResults();
+    out.innerHTML = names.map(n => tile(n, 0, 'add', null)).join('');
+    if (count) {
+      count.textContent = `${total} card${total === 1 ? '' : 's'}` +
+        (total > names.length ? ` — showing the first ${names.length}, narrow the search to see the rest` : '');
+    }
+  });
+  box?.focus();
+  if (box) box.selectionStart = box.selectionEnd = box.value.length;
+}
+
+export function renderScreen(): void {
+  ensureCollection(paint);
+  paint();
+}
+
+// ── edits ─────────────────────────────────────────────────────────────
+
+/** Change the open deck's card list, then save. Every editing button goes
+ * through here so nothing can edit without scheduling the save. */
+function edit(fn: (d: DeckView) => void): void {
+  const d = current();
+  if (!d) return;
+  fn(d);
+  d.updatedAt = new Date().toISOString();
+  scheduleSave(d.id);
+  paint();
+}
+
+const removeOne = (list: string[], name: string): string[] => {
+  const i = list.indexOf(name);
+  return i < 0 ? list : [...list.slice(0, i), ...list.slice(i + 1)];
+};
+
+// ── clicks ────────────────────────────────────────────────────────────
+
+/** main.ts offers every button here. Returns true when it was ours. */
+export function handleButton(btn: HTMLElement): boolean {
+  const b = btn.dataset['btn'] ?? '';
+  if (!b.startsWith('deck-')) return false;
+  const card = btn.dataset['card'] ?? '';
+
+  switch (b) {
+    case 'deck-openpage':
+      open = true; msg = ''; confirmDelete = null;
+      renderScreen();
+      return true;
+
+    case 'deck-close':
+      // leaving the page must not outrun the debounce — the next thing the
+      // user does may be starting a game, which navigates this module away
+      flushSave();
+      open = false; adding = false; importing = false; confirmDelete = null;
+      rerenderHost();
+      return true;
+
+    case 'deck-refresh':
+      flushSave();
+      decks = null; msg = '';
+      renderScreen();
+      return true;
+
+    case 'deck-open':
+      flushSave();
+      openId = btn.dataset['id'] ?? null;
+      tab = 'cards'; confirmDelete = null; adding = false; exporting = false; msg = '';
+      paint();
+      return true;
+
+    case 'deck-tab':
+      tab = (btn.dataset['tab'] ?? 'cards') as Tab;
+      paint();
+      return true;
+
+    case 'deck-group':
+      group = (btn.dataset['group'] ?? 'mana') as typeof group;
+      paint();
+      return true;
+
+    // ── making decks ──
+    case 'deck-new':
+      void post('/api/decks/create', { name: 'New deck', cards: [] }).then(r => {
+        if (!r.ok) { msg = r.error ?? 'could not make a deck'; paint(); return; }
+        adopt(r);
+        openId = r.id ?? openId; tab = 'cards'; adding = true; msg = '';
+        paint();
+      }).catch(() => { msg = 'could not reach the server'; paint(); });
+      return true;
+
+    case 'deck-import-open':
+      importing = true; importMsg = ''; paint(); return true;
+    case 'deck-import-close':
+      importing = false; importMsg = ''; paint(); return true;
+
+    case 'deck-import-url':
+    case 'deck-import-text': {
+      const url = (document.getElementById('dk-url') as HTMLInputElement | null)?.value.trim() ?? '';
+      const text = (document.getElementById('dk-text') as HTMLTextAreaElement | null)?.value.trim() ?? '';
+      const body = b === 'deck-import-url' ? { url } : { text };
+      if (!(b === 'deck-import-url' ? url : text)) return true;
+      importMsg = 'importing…';
+      paint();
+      void post('/api/decks/import', body).then(r => {
+        if (!r.ok) { importMsg = r.error ?? 'import failed'; paint(); return; }
+        adopt(r);
+        openId = r.id ?? openId;
+        importing = false; tab = 'cards';
+        // the import's own complaints (an unscripted card, 27 cards) are the
+        // useful half of the answer and belong where they can be read
+        msg = r.note ?? 'imported';
+        paint();
+      }).catch(() => { importMsg = 'could not reach the server'; paint(); });
+      return true;
+    }
+
+    case 'deck-duplicate': {
+      const d = current();
+      if (!d) return true;
+      void post('/api/decks/duplicate', { id: d.id }).then(r => {
+        if (!r.ok) { msg = r.error ?? 'could not copy that deck'; paint(); return; }
+        adopt(r);
+        openId = r.id ?? openId;
+        msg = 'copied';
+        paint();
+      }).catch(() => { msg = 'could not reach the server'; paint(); });
+      return true;
+    }
+
+    case 'deck-delete':
+      confirmDelete = current()?.id ?? null; paint(); return true;
+    case 'deck-delete-no':
+      confirmDelete = null; paint(); return true;
+    case 'deck-delete-yes': {
+      const d = current();
+      if (!d) return true;
+      confirmDelete = null;
+      void post('/api/decks/delete', { id: d.id }).then(r => {
+        if (!r.ok) { msg = r.error ?? 'could not delete that deck'; paint(); return; }
+        adopt(r);
+        openId = decks?.[0]?.id ?? null;
+        msg = `deleted “${d.name}”`;
+        paint();
+      }).catch(() => { msg = 'could not reach the server'; paint(); });
+      return true;
+    }
+
+    case 'deck-play': {
+      flushSave();
+      const d = current();
+      if (!d) return true;
+      chooseDeck({ id: d.id, name: d.name, author: d.author, ...(d.url ? { url: d.url } : {}), cards: d.cards });
+      msg = `“${d.name}” is the deck you are bringing to constructed games`;
+      paint();
+      return true;
+    }
+
+    // ── editing the list ──
+    case 'deck-more':
+      edit(d => { d.cards = [...d.cards, card]; }); return true;
+    case 'deck-less':
+      edit(d => { d.cards = removeOne(d.cards, card); }); return true;
+    case 'deck-add':
+      edit(d => { d.cards = [...d.cards, card]; }); return true;
+    case 'deck-add-maybe':
+      edit(d => { d.maybe = [...d.maybe, card]; }); return true;
+    case 'deck-to-maybe':
+      edit(d => { d.cards = removeOne(d.cards, card); d.maybe = [...d.maybe, card]; }); return true;
+    case 'deck-from-maybe':
+      edit(d => { d.maybe = removeOne(d.maybe, card); d.cards = [...d.cards, card]; }); return true;
+    case 'deck-maybe-more':
+      edit(d => { d.maybe = [...d.maybe, card]; }); return true;
+    case 'deck-maybe-less':
+      edit(d => { d.maybe = removeOne(d.maybe, card); }); return true;
+    case 'deck-cover':
+      edit(d => { d.cover = card; }); return true;
+
+    // ── the add drawer ──
+    case 'deck-export':
+      exporting = true; paint(); return true;
+    case 'deck-export-close':
+      exporting = false; paint(); return true;
+    case 'deck-copy-list': {
+      const d = current();
+      if (!d) return true;
+      const text = deckListText(d.name, d.cards, d.maybe, d.url);
+      // navigator.clipboard needs a secure context; the LAN deploy is plain
+      // http, so the textarea it is already sitting in is the fallback
+      void (navigator.clipboard?.writeText(text) ?? Promise.reject(new Error('no clipboard')))
+        .then(() => { msg = 'the list is on your clipboard'; paint(); })
+        .catch(() => {
+          const ta = document.querySelector('.dkexporttext') as HTMLTextAreaElement | null;
+          ta?.select();
+          msg = 'select-all and copy — this browser will not let a page write to the clipboard';
+          paint();
+        });
+      return true;
+    }
+
+    case 'deck-adding':
+      adding = true; paint(); return true;
+    case 'deck-adding-close':
+      adding = false; paint(); return true;
+    case 'deck-filter-el':
+      searchEl = searchEl === btn.dataset['el'] ? '' : (btn.dataset['el'] ?? ''); paint(); return true;
+    case 'deck-filter-kind':
+      searchKind = (searchKind === btn.dataset['kind'] ? '' : btn.dataset['kind']) as typeof searchKind;
+      paint(); return true;
+    case 'deck-filter-clear':
+      search = ''; searchEl = ''; searchKind = ''; paint(); return true;
+  }
+  return false;
+}

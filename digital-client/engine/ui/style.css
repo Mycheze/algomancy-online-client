@@ -1536,3 +1536,142 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .scnstamp { color: var(--dim); font-size: 10px; }
 .scnstamp code { color: var(--text); }
 .scnstatus { color: var(--glow); font-size: 11px; }
+
+/* ── the deck collection (ui/decks.ts) ─────────────────────────────────
+   A two-column page: the decks you own down the left, the open one on the
+   right. The card grid is real card art on purpose — the whole request was
+   "I want to see my decks visually and make cuts" — so a tile is a scan with
+   its controls sitting on top of it rather than a row in a list. Sizes are
+   set so a 30-card deck grouped by mana is one screenful on a laptop. */
+.deckpage { max-width: 1400px; margin: 0 auto; padding: 4px 2px 24px; }
+.deckpage h1 { margin: 0; font-size: 22px; letter-spacing: .04em; }
+.deckmain { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 900px) { .deckmain { grid-template-columns: 1fr; } }
+
+.homedecks { margin-top: 6px; }
+
+/* ── the rail ── */
+.decklist { display: flex; flex-direction: column; gap: 6px; position: sticky; top: 8px; }
+.deckmakebtns { display: flex; gap: 6px; }
+.deckmakebtns button { flex: 1; }
+.deckimportbox { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.deckimportbox textarea { width: 100%; }
+
+.deckrow { display: grid; grid-template-columns: 46px minmax(0, 1fr) 18px; gap: 8px; align-items: center;
+  text-align: left; padding: 6px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; cursor: pointer; }
+.deckrow.on { border-color: var(--accent); background: var(--panel2); }
+.deckrowart { width: 46px; height: 46px; border-radius: 5px; overflow: hidden; background: var(--panel2);
+  display: block; }
+/* the scan is 63:88 — crop to the art, which is the top of the card */
+.deckrowart img { width: 100%; height: auto; margin-top: -18%; display: block; }
+.deckrowbody { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+/* the bundled deck names are long and differ only at the end
+   ("Single-Box Battle Deck - Water v1.1.0"), so a one-line ellipsis made all
+   five rows read identically — two lines is what tells them apart */
+.deckrowname { font-weight: 700; overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; }
+.deckrowmeta { color: var(--dim); font-size: 11px; }
+.deckrowrec { font-size: 11px; color: var(--text); }
+.deckflag { font-weight: 700; text-align: center; }
+.deckflag.ok { color: var(--glow); }
+.deckflag.bad { color: var(--accent); }
+
+/* ── the open deck ── */
+.deckdetail { min-width: 0; }
+.deckhero { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 14px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px;
+  margin-bottom: 8px; }
+.deckcover { width: 132px; border-radius: 6px; overflow: hidden; background: var(--panel2);
+  display: flex; align-items: center; justify-content: center; min-height: 100px; }
+.deckcover img { width: 100%; display: block; }
+.deckheroinfo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.deckname { font: 700 19px/1.2 inherit; background: var(--panel2); color: var(--text);
+  border: 1px solid transparent; border-radius: 5px; padding: 5px 8px; width: 100%; }
+.deckname:hover { border-color: var(--line); }
+.deckname:focus { border-color: var(--accent); outline: none; }
+.deckfacts { color: var(--dim); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.deckstatus { font-size: 12px; border-radius: 5px; padding: 4px 8px; }
+.deckstatus.ok { color: var(--glow); background: #1c2a1c; }
+.deckstatus.bad { color: var(--accent); background: #2a2314; }
+.deckrecline { font-size: 12px; }
+.deckrecline a { color: var(--accent); margin-left: 6px; }
+.deckbtns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.dkdanger { border-color: var(--danger); color: var(--danger); }
+.deckbody { margin-top: 8px; }
+
+/* ── the card grid ── */
+.dktoolbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.dktoolbar .hint { margin: 0; }
+.dkkind { padding: 3px 9px; font-size: 12px; }
+.dkkind.on { border-color: var(--accent); color: var(--accent); }
+.dkfilterspacer { flex: 1; }
+
+.dkgroup { margin-bottom: 12px; }
+.dkgrouphead { color: var(--accent); text-transform: uppercase; letter-spacing: .06em;
+  font-size: 11px; border-bottom: 1px solid var(--line); padding-bottom: 3px; margin-bottom: 6px; }
+.dkgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 7px; }
+
+.dktile { position: relative; border-radius: 6px; overflow: hidden; background: var(--panel2);
+  border: 1px solid var(--line); aspect-ratio: 63 / 88; }
+.dktile.iscover { border-color: var(--accent); }
+.dktile.overcap { border-color: var(--danger); }
+.dkart { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+.dkn { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,.7); color: #fff;
+  border-radius: 9px; padding: 0 5px; font-size: 11px; font-weight: 700; }
+.dkn.bad { background: var(--danger); }
+/* the name is the fallback when the scan is missing, and the label when it is
+   not — small, on a scrim, at the bottom where the printed name is anyway */
+.dkname { position: absolute; left: 0; right: 0; bottom: 20px; font-size: 10px; line-height: 1.15;
+  padding: 2px 4px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.8) 40%);
+  text-align: center; }
+.dkbtns { position: absolute; left: 0; right: 0; bottom: 0; display: flex;
+  background: rgba(0,0,0,.72); }
+.dkbtns button { flex: 1; background: none; border: none; border-radius: 0; color: #fff;
+  padding: 2px 0; font-size: 12px; line-height: 1.3; }
+.dkbtns button:hover { background: var(--accent); color: #12151a; }
+
+.dkadd { margin-top: 6px; }
+.dkdrawer { margin-top: 10px; border: 1px solid var(--accent); border-radius: 8px; padding: 8px;
+  background: var(--panel2); }
+.dkdrawerhead { display: flex; gap: 6px; margin-bottom: 6px; }
+.dksearch { flex: 1; }
+.dkfilters { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+.dkresultcount { color: var(--dim); font-size: 11px; margin-bottom: 6px; }
+
+/* ── the curve ── */
+.dkcurve { display: flex; flex-direction: column; gap: 3px; }
+.dkcurverow { display: grid; grid-template-columns: 22px minmax(0, 1fr) 28px; gap: 8px; align-items: center; }
+.dkcurverow.empty { opacity: .55; }
+.dkcurvem { text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; }
+.dkcurven { color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+.dkcurvebar { display: flex; height: 16px; border-radius: 3px; overflow: hidden; background: var(--panel2); }
+.dkcurvebar .seg { display: block; }
+.dkcurvebar .pad { background: transparent; }
+.seg.units { background: #4e7fa8; }
+.seg.spells { background: #9a6fb8; }
+.seg.spellunits { background: #6f9ab8; }
+.dkcurvekey { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; color: var(--dim); font-size: 11px; }
+.dkcurvekey i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
+
+/* ── the affinity table ── */
+.dkaff { border-collapse: collapse; width: 100%; margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+.dkaff th, .dkaff td { padding: 3px 8px; text-align: center; border-bottom: 1px solid var(--line); }
+.dkaff th:first-child, .dkaff td:first-child { text-align: right; }
+.dkaff thead th { color: var(--dim); font-weight: 400; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .05em; }
+.dkaff thead th img { width: 13px; height: 13px; vertical-align: -2px; margin-right: 3px; }
+.dkaff .dkmana { color: var(--dim); }
+.dkaff .dknone { color: #3a434f; }
+/* where a requirement first appears — the turn it starts mattering */
+.dkaff .dknew { color: var(--accent); font-weight: 700; }
+.dkaff .dkmaxrow td { border-bottom: none; border-top: 2px solid var(--line); padding-top: 6px; }
+.dkdemand { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.dkdemandrow { display: inline-flex; align-items: center; gap: 5px; }
+.dkdemandrow .costbox { display: inline-flex; gap: 1px; }
+.dkdemandrow img { width: 14px; height: 14px; }
+.dkexport { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 8px;
+  background: var(--panel2); }
+.dkexporttext { width: 100%; font: 12px/1.45 ui-monospace, monospace; background: var(--bg);
+  color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; }

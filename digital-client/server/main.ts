@@ -47,6 +47,8 @@ import {
 import { engineVersion } from './engine-version.ts';
 import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
 import { accountRoutes } from './api-accounts.ts';
+import { deckRoutes } from './api-decks.ts';
+import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
 import { recordLiveGame, syncGamesDir } from './history.ts';
@@ -194,6 +196,8 @@ const server = createServer(async (req, res) => {
   // accounts, stats, achievements and friends live in their own module; it
   // answers true when the request was one of its own
   if (await accountRoutes(req, res, path, url, { online: isOnline })) return;
+  // …and the saved deck collection everything under /api/decks
+  if (await deckRoutes(req, res, path)) return;
 
   // home screen asks here for an unused room code. The room itself is only
   // created when the first player joins it over WS — but the code is RESERVED
@@ -824,7 +828,7 @@ wss.on('connection', ws => {
   ws.on('error', err => console.warn('[ws] socket error:', err instanceof Error ? err.message : err));
   ws.on('message', raw => {
     let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
-      token?: string; deck?: unknown; action?: Action; cols?: unknown; send?: unknown;
+      token?: string; deck?: unknown; deckId?: unknown; action?: Action; cols?: unknown; send?: unknown;
       method?: unknown; submission?: unknown; lock?: unknown; want?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
@@ -892,8 +896,14 @@ wss.on('connection', ws => {
       conns.set(ws, { room, seat, userId: account?.id ?? null });
       // constructed lobby: register this seat's deck; when it completes the
       // pair the real game is dealt and BOTH seats get a fresh 'joined'
+      // Which SAVED deck this is, when the player brought one out of their
+      // collection. Re-read server-side from the account rather than trusted
+      // off the wire: the id is what a deck's win/loss record is folded on,
+      // and a client that could name any id could credit any deck.
+      const claimed = typeof msg.deckId === 'string' ? msg.deckId : null;
+      const owned = deckForPlay(account?.id ?? null, claimed);
       const gameJustStarted = roomWaiting(room) && deckCards
-        ? setRoomDeck(room, seat, deckCards) : false;
+        ? setRoomDeck(room, seat, deckCards, owned ? owned.id : null) : false;
       settleClock(room);   // a connected seat with pending work goes on the clock
       const joinedMsg = (s: Seat): unknown => roomWaiting(room)
         ? {

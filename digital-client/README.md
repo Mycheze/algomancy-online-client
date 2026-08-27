@@ -76,6 +76,19 @@ played, finished or not, and re-running the fold after a change to how a stat is
 updates the numbers instead of doubling them. Signing up with a name you have already
 played under claims those games. Playing signed out records nothing.
 
+Since **2026-08-27** an account also carries a **deck collection** (BL-14): the five bundled
+algomancer.cc decks are copied into it the first time you look, and from there you build,
+rename, cut, duplicate, delete and import decks, pick the card whose art the deck wears, and
+bring one to a constructed game. The page draws the deck as card scans grouped by mana value,
+and beside it the three numbers a build is actually decided on — the curve, the unit/spell
+split, and **the affinity table**: how much of each element you need *open by then* at every
+mana value, carried up the curve, with the ceiling that casts the whole deck on the bottom
+row. Editing saves itself; a deck may sit at 29 cards and simply say so, and only a legal one
+is offered to a game. Each deck's win/loss record is a fold over the game history filtered by
+the deck id the seat brought, so it can never disagree with the games list. See
+`server/collection.ts` for the three design commitments and `engine/ui/deckstats.ts` for the
+arithmetic (tested, DOM-free, in `engine/test/188-deck-stats.test.ts`).
+
 ## The old prototype
 
 The pre-engine JavaScript prototype (`prototype/` — a no-build `index.html`, its own

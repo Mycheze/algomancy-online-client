@@ -586,6 +586,16 @@ export interface Room {
    * game does not really start until both are in — see roomWaiting(). */
   decks: [CardName[] | null, CardName[] | null];
   /**
+   * Constructed: the COLLECTION deck id (server/collection.ts) each seat's
+   * deck came from, when the seat was logged in and brought one from their
+   * saved decks. Persisted beside `decks` and carried into the game record,
+   * which is the whole reason it exists: it is what lets a deck's win/loss
+   * record be folded out of the history rather than kept as a counter that
+   * can drift. Null everywhere else — a logged-out seat, a pasted list, a
+   * game played before decks had ids.
+   */
+  deckIds: [string | null, string | null];
+  /**
    * R216 — the scenario this room was dealt with, if any. PERSISTED, beside
    * `seed`, because it is part of the deal.
    *
@@ -970,9 +980,10 @@ function decksFor(room: Pick<Room, 'decks'>): [CardName[], CardName[]] {
 /** Register `seat`'s deck (validated!) while the room is waiting. When it
  * completes the pair, the REAL game is dealt (the placeholder state and the
  * empty action log are discarded). Returns true when the game just started. */
-export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[]): boolean {
+export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: string | null = null): boolean {
   if (!roomWaiting(room)) return false;
   room.decks[seat] = [...cards];
+  room.deckIds[seat] = deckId;
   const complete = !!room.decks[0] && !!room.decks[1];
   if (complete) {
     const { state, events } = fresh(room.seed, room.names, room.mode, room.els, decksFor(room), room.scenario);
@@ -1117,7 +1128,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     ? fresh(seed, names, mode, trio, [creatorDeck!, creatorDeck!], scenario)
     : fresh(seed, names, mode, trio, undefined, scenario);
   const room: Room = {
-    code, seed, mode, els: trio, decks, names, users: [null, null], winner: null,
+    code, seed, mode, els: trio, decks, deckIds: [null, null], names, users: [null, null], winner: null,
     // R216: only a scenario room carries one; `undefined` is the normal case
     // and is not persisted (see persist()).
     ...(scenario ? { scenario } : {}),
@@ -1759,6 +1770,7 @@ export function createRematch(old: Room, code: string): Room {
     : createRoom(code, seed, [...old.names], old.mode, old.mode === 'draft' ? undefined : old.els);
   if (old.mode === 'constructed' && old.decks[0] && old.decks[1]) {
     room.decks = [[...old.decks[0]!], [...old.decks[1]!]];
+    room.deckIds = [...old.deckIds];
     const { state, events } = fresh(seed, room.names, room.mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario);
     room.state = state;
     room.events = events;
@@ -1843,7 +1855,7 @@ function persist(room: Room): void {
       // restores exactly as before, it just cannot be replayed as-recorded.
       ...(room.versions.length ? { versions: room.versions } : {}),
       // constructed: decks are part of the replay config (additive field)
-      ...(room.mode === 'constructed' ? { decks: room.decks } : {}),
+      ...(room.mode === 'constructed' ? { decks: room.decks, deckIds: room.deckIds } : {}),
     }));
     renameSync(tmp, path);
   } catch (err) {
@@ -1871,6 +1883,7 @@ export function restoreRooms(): void {
         winner?: number | null;
         lobby?: Lobby;
         decks?: [CardName[] | null, CardName[] | null];
+        deckIds?: [string | null, string | null];
         forks?: Fork[];
         /** R191: per-action reference keys, as of when the game was played */
         refs?: unknown;
@@ -1903,6 +1916,10 @@ export function restoreRooms(): void {
         }
         if (!decks[0] && !decks[1]) throw new Error('constructed room with no decks');
       }
+      const deckIds: [string | null, string | null] = [
+        typeof raw.deckIds?.[0] === 'string' ? raw.deckIds[0] : null,
+        typeof raw.deckIds?.[1] === 'string' ? raw.deckIds[1] : null,
+      ];
       // a draft lobby that never resolved: keep the method and both
       // submissions, and make sure the placeholder is rebuilt, not replayed
       const lobby: Lobby | null = raw.lobby
@@ -1928,7 +1945,7 @@ export function restoreRooms(): void {
         ? [Math.max(0, Number(raw.clockMs[0]) || 0), Math.max(0, Number(raw.clockMs[1]) || 0)]
         : [CLOCK_START_MS, CLOCK_START_MS];
       rooms.set(code, {
-        code, seed: raw.seed, mode, els, decks, names, users, lobby,
+        code, seed: raw.seed, mode, els, decks, deckIds, names, users, lobby,
         ...(scenario ? { scenario } : {}),
         rematch: [false, false], rematchRoom: null,
         // the replay may not reach the ending this game actually had

@@ -69,6 +69,8 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-lobby.ts', covers: 'the draft lobby: trio methods, and a draft room dealing no cards until both players lock in' },
   { file: 'test-clock.ts', covers: 'chess clock, POST /api/report to issues.jsonl, and draft packInfo' },
   { file: 'test-accounts.ts', covers: 'accounts: the stat fold, achievements, friends, passwords, claiming past games, and the seat/account binding over a socket' },
+  { file: 'test-collection.ts',
+    covers: 'the saved deck collection: the starter five seeded once (and never re-seeded after a delete), the edits, a half-built deck saved but refused for play, the /api/decks routes, and — the load-bearing one — a deck id claimed over the wire that is not yours being ignored, so a win can never be credited to somebody else\'s deck' },
   { file: 'test-postgame.ts', covers: 'the post-game payload and the rematch handshake, from a saved decided game' },
   { file: 'test-view-snapshot.ts',
     covers: "R85: the suspension's rollback snapshot — a whole unredacted GameState — never reaches a client, not even the seat whose decision it is" },

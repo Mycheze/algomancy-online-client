@@ -19,6 +19,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { CardName, Element, GameMode, Seat } from '../engine/src/types.ts';
+import type { CollectionDeck } from './collection.ts';
 import { ELEMENTS, favoriteElement, zeroElements, type GameSummary, type SeatStats } from './stats.ts';
 import { evaluateAchievements, type AchievementState } from './achievements.ts';
 
@@ -101,6 +102,13 @@ export interface Account {
   /** game codes already folded in — makes recording idempotent, which matters
    * because a finished game can be un-finished by an undo and finish again */
   recorded: string[];
+  /**
+   * The saved deck collection (collection.ts). Optional and lazily seeded:
+   * `undefined` is an account that has never opened the decks page and gets
+   * the five starters on its next visit; `[]` is somebody who deleted them
+   * all, which nothing here second-guesses.
+   */
+  decks?: CollectionDeck[];
 }
 
 interface Session { token: string; userId: string; createdAt: string; lastSeen: string }
@@ -129,6 +137,14 @@ export interface RecordedGame {
   diverged: boolean;
   /** account id per seat (null = a seat nobody was logged in on) */
   users: [string | null, string | null];
+  /**
+   * Constructed: the COLLECTION deck id each seat brought (collection.ts), so
+   * a deck's win/loss record can be folded out of this history the same way a
+   * profile is. Absent on every draft/shared game, on a seat that was not
+   * logged in, and on every game played before decks had ids — see
+   * deckRecords(), which counts only what it can attribute.
+   */
+  deckIds?: [string | null, string | null];
   names: [string, string];
   seats: [SeatStats, SeatStats];
 }
@@ -628,6 +644,9 @@ function friendView(id: string, online: (id: string) => boolean): FriendView | n
 /** One row of the match history, from the point of view of one account. */
 export interface MatchRow {
   code: string; playedAt: string; mode: GameMode; els: Element[]; turns: number;
+  /** the collection deck this seat brought, if any — what the decks page
+   * filters on to show "your games with this deck" */
+  deckId: string | null;
   finished: boolean; diverged: boolean; result: 'win' | 'loss' | 'unknown';
   opponent: string; opponentId: string | null;
   life: [number, number];
@@ -646,6 +665,7 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
       const me = g.seats[seat]!, them = g.seats[seat === 0 ? 1 : 0]!;
       return {
         code: g.code, playedAt: g.playedAt, mode: g.mode, els: g.els, turns: g.turns,
+        deckId: g.deckIds?.[seat] ?? null,
         finished: g.finished, diverged: !!g.diverged,
         result: (!g.finished ? 'unknown' : me.won ? 'win' : 'loss') as MatchRow['result'],
         opponent: g.names[seat === 0 ? 1 : 0],
