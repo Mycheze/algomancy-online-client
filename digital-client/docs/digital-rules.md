@@ -16778,3 +16778,84 @@ card.
 > §5 is about checkers that report more sight than they have; this is the same
 > failure in the other direction — **an instrument reporting less certainty than
 > the data actually carried.**
+
+## R220 — rank scenarios by how RARE the action is, and build every board out of two rules meeting
+
+*(2026-08-26/27. Scenario batch E — `server/scenarios-e.ts`, frozen in
+`server/test-scenario.ts`. A method ruling, like R218: it settles how the
+instrument picks its next eight boards, not a point of game rules.)*
+
+Batches A–D ranked candidate scenarios on **`UNREACHED`** — "the drill has never
+observed this promise deliver". The owner ran three of them and stopped:
+
+> **"These tests seem silly. They all work fine. You're having me do generic
+> tests of basic game functions basically… You made it sound like there was a
+> lot of stuff out there that's entirely untested and totally new (drawing extra
+> cards in the draft step, not erasing spell tokens or wisps not sacrificing
+> themselves, etc). Not all this basic shit that has been working in all our
+> games so far."**
+
+He is right, and the cause is diagnosable rather than a matter of taste.
+**`UNREACHED` measures the FIXTURE'S inability to stage a board, not risk.** A
+card can appear in every game ever played and still be UNREACHED because the
+drill cannot arrange an attack into the right region — which is how the queue
+came to promote Virus, negate and pronoun resolution, all with hundreds of real
+repetitions behind them.
+
+### The signal that does measure risk
+
+Action frequency across the 23 real saved games in `server/games` (4,000+
+actions):
+
+| action | times fired | |
+|---|---|---|
+| `passPriority` | 2215 | saturated |
+| `playCard` | 489 | saturated |
+| `doneHaste` | 46 | thin |
+| `castSpellToken` | 40 | thin |
+| `graft` | 36 | thin |
+| `playCached` | 10 | very thin |
+| `prophesy` | 2 | almost never |
+
+**Rarity of the ACTION is the risk.** A rule that has fired twice in the
+project's history is where the bugs are; a rule that has fired 2,215 times is
+not what to spend the owner's ninety seconds on. Six of batch E's eight boards
+are built on `prophesy` / `playCached` / `graft` / `doneHaste` for that reason.
+
+### And a board must be a CONJUNCTION
+
+The owner's own three examples are all two rules meeting, not single cards:
+"drawing extra cards in the draft step" is the card step meeting an effect that
+draws; "not erasing spell tokens" is regroup meeting R11; "wisps not sacrificing
+themselves" is a self-sacrifice clause meeting whatever is supposed to stop it.
+**Batches A–D were entirely single-clause, and a single-clause scenario
+structurally cannot find any of those.** Each batch-E entry names the two rules
+it joins, and its `expect` line is written about the join rather than about
+either rule alone.
+
+### The one that is not a confirmation
+
+`wispweaver-wisps-attack-alone` is the find. Infernal Wispweaver prints *"Your
+wisps gain +2/+1 and do not sacrifice themselves after combat"* with **no region
+qualifier**, and R12 scopes every static to its own region (`E.staticsFor`:
+`a.region === target.region`). Send the wisps in and keep the 2/1 weaver at home
+— which is how anybody would play the card — and the wisps drop from 2/2 to 0/1
+as they cross and sacrifice themselves after combat exactly as if the weaver
+were not there. That is the original playtest complaint (*"I have infernal
+wispweaver, but my wisps sacrificed themselves anyway!!!"*) still reproducible in
+the most natural line of play.
+
+Per docs/14 §6, the frozen test **pins current behaviour next to the printed
+text it contradicts**: if the owner rules the other way, that block is the
+failing test that proves the fix.
+
+### What could not be built, said out loud
+
+⚠ **The draft step is unreachable from a scenario.** The owner's first example
+is "drawing extra cards in the draft step", and `/api/scenario/open` deals every
+scenario room `'shared'` — the mode is a literal in `main.ts` and `Scenario` has
+no field for it. R162 folded 'shared' into the *constructed* branch of the card
+step, so `blurf-worldbender-card-step` reaches the same **place** the draft
+step's replacement reaches, but it is not the draft step and this batch does not
+claim it is. Giving `Scenario` a `mode` is a one-line change in `scenarios.ts`
+and `main.ts`, and is the next thing to do here.

@@ -1081,6 +1081,22 @@ export interface DecisionOption {
    * so a client that cares can STYLE it as a warning rather than as prose.
    * Never a prohibition: the option is offered and may be taken. */
   warning?: string;
+  /** HOW MANY objects this one option stands for. Only set where the menu
+   * deliberately collapses indistinguishable copies into a single row — today
+   * that is the bin (R124/R131: a bin holds bare card names, so `{erase: name}`
+   * names the card and two rows reading "The Foretold" would be the same
+   * option twice).
+   *
+   * The count is NOT in `label`, and that is deliberate: `referenceKey`
+   * (server/rooms.ts) records a `decide` by its chosen options' labels, so
+   * moving the count into the label would re-key every saved game holding one
+   * of these decisions and report cosmetic drift as R200 divergence.
+   *
+   * Playtest report DWYV/2026-08-27: a two-card bin drew ONE scan with nothing
+   * saying so, which reads as "there is one card here". The owner picked twice
+   * to make it register, paid X = 2 on a scenario built to test X = 1, and the
+   * branch under test never ran. */
+  count?: number;
 }
 
 export interface Decision {

@@ -6751,9 +6751,21 @@ export class E {
       return this.player(seat).hand.map((n, i) => ({ label: n, value: { discard: i }, card: n }));
     }
     if (cost.kind === 'eraseBin') {
-      const seen = new Set<string>();
-      return this.player(seat).bin.filter(n => !seen.has(n) && seen.add(n))
-        .map(n => ({ label: n, value: { erase: n }, card: n }));
+      // R124/R131: `{erase: name}` names the CARD, not a slot — copies in a bin
+      // are genuinely indistinguishable, so two rows reading "The Foretold"
+      // would be one option offered twice. The collapse is right; what was
+      // missing is that the menu never said it had collapsed anything.
+      // Report DWYV/2026-08-27: a two-card bin drew one scan, the owner picked
+      // it twice to make it register, and paid X = 2 on the one scenario built
+      // to reach the X = 1 refusal branch. `count` carries the multiplicity to
+      // the client without touching `label` — see DecisionOption.count for why
+      // the label must not move.
+      const tally = new Map<CardName, number>();
+      for (const n of this.player(seat).bin) tally.set(n, (tally.get(n) ?? 0) + 1);
+      // insertion order = first-occurrence order in the bin, which is the order
+      // the old `filter(seen)` produced. Menu order is part of the replay key,
+      // so it stays exactly where it was.
+      return [...tally].map(([n, k]) => ({ label: n, value: { erase: n }, card: n, count: k }));
     }
     // R196: a printed "[x]" is paid a point at a time for the same reason a
     // variable life cost is — the reserve `payActivationCost` still needs is

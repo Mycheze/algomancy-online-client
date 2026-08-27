@@ -351,6 +351,11 @@ button:disabled { opacity: .4; cursor: default; }
 /* +1/+1 (and −1/−1) counter badge on units */
 .card .badge.ctr { border-color: var(--glow); color: var(--glow); font-weight: 700; }
 
+/* DWYV: "×N" on a decision scan that stands for N indistinguishable copies
+   (a bin pick). Deliberately NOT .ctr's glow — this is a count of cards in a
+   zone, not counters on a body, and the two must not read as the same thing. */
+.card .badge.count { border-color: #9aa7b8; color: #cdd6e2; font-weight: 700; }
+
 /* opponent's hidden hand: compact overlapping mini-backs */
 .minihand { display: flex; align-items: center; }
 .miniback { width: 30px; height: 42px; border-radius: 3px; margin-right: -18px;

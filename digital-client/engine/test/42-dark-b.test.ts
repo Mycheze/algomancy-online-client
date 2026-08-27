@@ -908,6 +908,54 @@ test('Necromantic Rebuke: negates unless its controller erases X from their bin'
   assert.ok(h.log.some(l => l.includes('is negated')));
 });
 
+/**
+ * PLAYTEST REPORT, room DWYV, 2026-08-27 — the owner, mid-scenario:
+ * *"when there are multiple cards with the same name in the yard, only 1 card
+ * shows up in the selector… It looks like there's just 1 card in my bin,
+ * despite there being two (identical) cards."*
+ *
+ * The collapse itself is correct and must stay: R124/R131 make copies in a bin
+ * indistinguishable and `{erase: name}` names the CARD, so a second row would
+ * be the same option offered twice. What was missing is that the row never
+ * said it stood for two — so the pick read as not having registered, he made
+ * it again, and paid X = 2 on `rebuke-refused`, the one scenario built to
+ * reach the X = 1 refusal branch. The branch still has never executed.
+ *
+ * ⚠ The count rides in `DecisionOption.count`, NOT in `label`. `referenceKey`
+ * (server/rooms.ts) keys a recorded `decide` on its chosen options' labels, so
+ * putting "×2" in the label would re-key every saved game holding one of these
+ * decisions and report the cosmetic change as R200 divergence.
+ */
+test('Necromantic Rebuke: the bin menu says how many copies one row stands for', () => {
+  const h = new Harness(4221);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  const victim = spawn(h, A, 'Good Whale');
+  giveResources(h, A, 'dark', 2);
+  giveResources(h, D, 'fire', 2);
+  give(h, A, 'Necromantic Rebuke');
+  give(h, D, 'Flame of History');
+  h.state.players[A]!.bin.push('Unit Token', 'Unit Token');
+  attackWith(h, A, [[atk, victim]]);
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: handIdx(h, D, 'Flame of History') });
+  pickRef(h, { unit: victim });
+  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Necromantic Rebuke') });
+
+  const rows = (): DecisionOption[] =>
+    h.state.decision!.options.filter(o => o.card === 'Unit Token');
+  assert.equal(rows().length, 1,
+    'the two copies stay ONE row — picking either is the same pick (R124/R131)');
+  assert.equal(rows()[0]!.count, 2, 'and the row says it stands for two');
+  assert.equal(rows()[0]!.label, 'Unit Token',
+    'the count is NOT in the label — referenceKey reads labels, so moving it there '
+    + 'would re-key every saved game holding this decision');
+
+  pickRef(h, { erase: 'Unit Token' });
+  assert.equal(rows()[0]!.count, 1, 'and it counts down as copies are paid');
+});
+
 test('Necromantic Rebuke: the ransom saves the effect', () => {
   const h = new Harness(4220);
   toDeployment(h);

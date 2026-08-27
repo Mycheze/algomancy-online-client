@@ -24,7 +24,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../src/index.ts';
 import { allCardNames } from '../src/cards/dsl.ts';
-import { UNREACHED_CARDS, unreachedOpener } from './unreached.ts';
+import { UNREACHED_CARDS, UNWITNESSED_CARDS, WITNESSED, unreachedOpener } from './unreached.ts';
 import { buildQueue, rankCards, rulingWeight } from './scenario-queue.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -55,6 +55,45 @@ test('R217 §1: the UNREACHED ledger is imported whole — 37 cards, not a scrap
       `${card} is one of the five entries written as a BARE identifier that the original file `
       + 'scrape could not see. If it has left the ledger, say so deliberately — do not let it '
       + 'disappear the way it did the first time.');
+  }
+});
+
+/**
+ * The witness record and the queue must not be able to drift apart. They are
+ * one fact expressed twice — `unreached.ts` says who watched what, the queue
+ * reports it — and the way that fact rots is somebody adding a card to one and
+ * not the other. So: derived, then asserted derived.
+ *
+ * 21 of the 36 were witnessed in the owner's 2026-08-27 pass (docs/14 §5). The
+ * count is asserted for the same reason §1 asserts 36: a witness record that
+ * silently shrinks would quietly re-add cards to a queue he has already judged,
+ * and he would notice by being asked the same question twice.
+ */
+test('the witness record and the queue agree on who has been watched', () => {
+  const witnessed = Object.keys(WITNESSED);
+  assert.equal(witnessed.length, 21,
+    'the witness record changed — update this count in the same commit');
+  for (const card of witnessed) {
+    assert.ok(UNREACHED_CARDS.includes(card),
+      `${card} is witnessed but not in UNREACHED — a witness for a card the drill `
+      + 'already reaches is a note about nothing');
+    assert.ok(!UNWITNESSED_CARDS.includes(card),
+      `${card} is in both lists — UNWITNESSED_CARDS is meant to be derived`);
+  }
+  assert.equal(UNWITNESSED_CARDS.length, UNREACHED_CARDS.length - witnessed.length,
+    'the two halves must partition the ledger exactly');
+
+  // and the queue reports it, so the next author does not re-ask a settled card
+  const ranked = rankCards(REGISTER);
+  for (const card of witnessed) {
+    const row = ranked.find(r => r.card === card);
+    if (!row) continue;                       // scored zero; nothing to report on
+    assert.ok(row.witnessed && row.why.includes('WITNESSED'),
+      `${card} has a human verdict but the queue does not say so`);
+  }
+  for (const card of UNWITNESSED_CARDS) {
+    const row = ranked.find(r => r.card === card);
+    assert.ok(!row?.witnessed, `${card} is marked witnessed and has no verdict behind it`);
   }
 });
 

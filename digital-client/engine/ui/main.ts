@@ -2710,7 +2710,18 @@ function decisionBarHtml(dec: Decision, err: string): string {
   const split = partitionOptions(dec.options);
   const cardRow = (btn: string, skip?: (i: number) => boolean): string => {
     const cards = dec.options.map((o, i) => (o.card && !skip?.(i))
-      ? cardHtml(o.card, { playable: true, data: `data-btn="${btn}" data-i="${i}"${pingAttrs(o)}` }) : '').join('');
+      ? cardHtml(o.card, {
+        playable: true,
+        // DWYV/2026-08-27: an option that stands for several indistinguishable
+        // copies (a bin pick — see DecisionOption.count) drew one scan and said
+        // nothing, which reads as "there is one card here". One chip is the
+        // whole fix: the menu still offers ONE row, because picking either copy
+        // is the same pick, but it no longer lies about how many are there.
+        ...(o.count && o.count > 1
+          ? { badges: [{ t: `×${o.count}`, cls: 'count', title: `${o.count} copies in the bin — picking this erases one` }] }
+          : {}),
+        data: `data-btn="${btn}" data-i="${i}"${pingAttrs(o)}`,
+      }) : '').join('');
     return cards ? `<div class="deccards">${cards}</div>` : '';
   };
   /** one option as a real button (ui/inspect.ts decides which bucket it is in) */

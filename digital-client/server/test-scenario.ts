@@ -1583,3 +1583,468 @@ import type { Action as BAction, GameState as BState } from '../engine/src/types
     ok(r.said('Worldbender: You skips the draw phase'), 'Worldbender: and it announced itself');
   }
 }
+
+/**
+ * R220 — BATCH E, FROZEN (docs/14 §6: "a verdict is not a report, it is a
+ * test").
+ *
+ * EIGHT CONJUNCTIONS. Batches A–D were ranked on `UNREACHED` — "the drill has
+ * never observed this promise" — which measures the FIXTURE'S inability to
+ * stage a board and not risk, and the owner said so after running three of
+ * them ("generic tests of basic game functions … basic shit that has been
+ * working in all our games so far"). Batch E is ranked on how rare the ACTION
+ * is in the 23 real saved games instead — `prophesy` has fired twice in the
+ * project's history, `playCached` ten times, `graft` thirty-six — and every
+ * board puts TWO RULES IN CONTACT rather than checking one clause.
+ *
+ * Each block below drives its scenario through the REAL action path —
+ * `dealScenario`, `apply`, and `passiveMove` for seat 1, the same three pieces
+ * the live room uses — and asserts the concrete observable its `expect` line
+ * promises the owner. Every number here was read off a real drive before it was
+ * written down, never predicted.
+ *
+ * ⚠ ONE OF THESE IS NOT A CONFIRMATION, AND IS PINNED AS-IS ON PURPOSE.
+ * `wispweaver-wisps-attack-alone` asserts that three Wisps DO sacrifice
+ * themselves while their Infernal Wispweaver is standing at home, because that
+ * is what this engine does: the printed line ("Your wisps … do not sacrifice
+ * themselves after combat") carries no region qualifier, and R12 scopes every
+ * static to its own region (`E.staticsFor`: `a.region === target.region`), so
+ * sending the wisps into the defender's region turns their protector off. The
+ * assertions below therefore pin CURRENT BEHAVIOUR next to the printed text
+ * they contradict — if the owner rules the other way, this block is the failing
+ * test that proves the fix, which is docs/14 §6 exactly.
+ *
+ * ⚠ WHY THIS BLOCK IS SYNCHRONOUS: same as batch C's. `main()` above is already
+ * suspended on its first `await`, so a synchronous block runs to completion
+ * before it resumes and before its `process.exit(failures ? 1 : 0)`. It shares
+ * the same `failures` counter, spawns no server, opens no socket and touches no
+ * file.
+ *
+ * ⚠ AND THE POSITIVE CONTROL (docs/14 §9: "freezing a `works` verdict into a
+ * test that cannot fail is §5 with extra steps"). Broken and reverted while
+ * writing this: changing the Harbinger's surviving-token expectation from
+ * `['Fireball 2', 'Fireball 3']` to `['Fireball 1']` reddens with
+ * `✗ Harbinger: the board ends on a Fireball 3 AND a Fireball 2`, and the run
+ * exits 1.
+ */
+import { apply as eapply, forcedAction as eforced, legalActions as elegal, sanitizeTrio as etrio } from '../engine/src/apply.ts';
+import { E as EEng } from '../engine/src/engine.ts';
+import { BATCH_E } from './scenarios-e.ts';
+import { dealScenario as edeal, passiveMove as epassive, OPPONENT as E_OPP } from './scenarios.ts';
+import type { Action as EAction, GameState as EState } from '../engine/src/types.ts';
+
+{
+  console.log('\nR220 batch E — eight conjunctions, each driven to the join');
+
+  /** One scenario room off the real choke point, with the arguments
+   * `/api/scenario/open` passes (mode 'shared', default trio, its fixed seed). */
+  class ERig {
+    s: EState;
+    log: string[] = [];
+    constructor(id: string, seed = 216216216) {
+      const r = edeal(seed, ['You', 'Tester Bot'], 'shared', etrio(undefined), undefined, id);
+      this.s = r.state;
+      for (const e of r.events) this.log.push(`[${e.type}] ${e.msg}`);
+      this.forced(); this.bot();
+    }
+    private absorb(r: { state: EState; events: { type: string; msg: string }[] }): void {
+      this.s = r.state;
+      for (const e of r.events) this.log.push(`[${e.type}] ${e.msg}`);
+    }
+    private forced(): void {
+      for (let i = 0; i < 40; i++) {
+        const f = eforced(this.s);
+        if (!f) return;
+        this.absorb(eapply(this.s, f));
+      }
+    }
+    /** THE REAL SCRIPTED OPPONENT: main.ts's loop minus the room bookkeeping,
+     * and `passiveMove` itself rather than a copy of its preference order — a
+     * copy would make this a check on the copy (docs/13 §5). */
+    private bot(): void {
+      for (let step = 0; step < 80; step++) {
+        if (this.s.phase === 'gameover') return;
+        const pick = epassive(elegal(this.s, E_OPP));
+        if (!pick) return;
+        this.absorb(eapply(this.s, pick));
+        this.forced();
+      }
+      throw new Error('batch E: the scripted opponent hit its 80-step cap');
+    }
+    act(a: EAction): void { this.absorb(eapply(this.s, a)); this.forced(); this.bot(); }
+    legal(seat: 0 | 1 = 0): EAction[] { return elegal(this.s, seat); }
+    /** the FIRST legal action of a type, optionally narrowed — never a
+     * hand-built action, so a rules change that stops offering it fails here
+     * rather than being applied behind `legalActions`' back */
+    pick(t: string, pred: (a: any) => boolean = () => true): EAction {
+      const hit = this.legal().find(a => a.type === t && pred(a));
+      if (!hit) {
+        throw new Error(`batch E: no legal ${t}; seat 0 has `
+          + JSON.stringify(this.legal().map(a => a.type)));
+      }
+      return hit;
+    }
+    do(t: string, pred?: (a: any) => boolean): void { this.act(this.pick(t, pred)); }
+    said(s: string): boolean { return this.log.some(l => l.includes(s)); }
+    life(seat: 0 | 1): number { return this.s.players[seat]!.life; }
+    hand(seat: 0 | 1 = 0): string[] { return [...this.s.players[seat]!.hand]; }
+    bin(seat: 0 | 1 = 0): string[] { return [...this.s.players[seat]!.bin]; }
+    erased(seat: 0 | 1 = 0): string[] { return [...((this.s.players[seat] as any).erased ?? [])]; }
+    cache(seat: 0 | 1 = 0): any[] { return [...((this.s.players[seat] as any).cache ?? [])]; }
+    debt(seat: 0 | 1 = 0): number { return (this.s.players[seat] as any).debt ?? 0; }
+    openMana(seat: 0 | 1 = 0): number {
+      return this.s.players[seat]!.resources.filter(r => r.state === 'open').length;
+    }
+    unit(card: string, seat?: 0 | 1): any {
+      return Object.values(this.s.entities as Record<string, any>)
+        .find(e => e.kind === 'unit' && e.card === card && !e.absent
+          && (seat === undefined || e.controller === seat));
+    }
+    units(seat: 0 | 1): string[] {
+      return Object.values(this.s.entities as Record<string, any>)
+        .filter(e => e.kind === 'unit' && e.controller === seat && !e.absent)
+        .map(e => String(e.card)).sort();
+    }
+    /** spell tokens by name and X, sorted — the observable ① is measured in */
+    spellTokens(seat: 0 | 1): string[] {
+      return Object.values(this.s.entities as Record<string, any>)
+        .filter(e => e.kind === 'spellToken' && e.controller === seat && !e.absent)
+        .map(e => `${e.card} ${e.x ?? ''}`.trimEnd()).sort();
+    }
+    /** the live projected stat line, which is what the owner reads off a card */
+    stats(card: string, seat?: 0 | 1): string {
+      const u = this.unit(card, seat);
+      return u ? new EEng(this.s).effStats(u).join('/') : 'gone';
+    }
+    flying(card: string, seat?: 0 | 1): boolean {
+      const u = this.unit(card, seat);
+      return !!u && new EEng(this.s).ownAttrs(u).has('Flying');
+    }
+    /** the cards a `playCard` offer would let the owner play, BY NAME */
+    playable(): string[] {
+      return this.legal().filter(a => a.type === 'playCard')
+        .map(a => this.hand()[(a as any).handIndex] as string).sort();
+    }
+    labels(): string[] {
+      return ((this.s.decision?.options ?? []) as { label?: string }[]).map(o => String(o.label ?? ''));
+    }
+    /** answer the open decision by the option LABEL the runner shows, never by
+     * a raw index — an index silently means something else after a menu moves */
+    aim(sub: string): void {
+      const i = this.labels().findIndex(l => l.includes(sub));
+      if (i < 0) throw new Error(`batch E: no option matching "${sub}"; menu = ${JSON.stringify(this.labels())}`);
+      this.act({ type: 'decide', seat: 0, choice: i } as EAction);
+    }
+    /** click through, the way the owner would, until a phase (and optionally a
+     * turn) is reached */
+    passTo(phase: string, turn?: number): void {
+      for (let i = 0; i < 40; i++) {
+        if (this.s.phase === phase && (turn === undefined || this.s.turn === turn)) return;
+        const l = this.legal();
+        const p = l.find(a => a.type === 'passPriority') ?? l.find(a => a.type === 'declareBlocks')
+          ?? l.find(a => a.type === 'declareAttack') ?? l.find(a => a.type === 'doneHaste')
+          ?? l.find(a => a.type === 'doneDeploying') ?? l.find(a => a.type === 'donePlanning') ?? l[0];
+        if (!p) throw new Error(`batch E: nothing legal for seat 0 in ${this.s.phase}`);
+        this.act(p);
+      }
+      throw new Error(`batch E: never reached ${phase}`);
+    }
+  }
+
+  /** THE BOARD A SCENARIO OPENS ON, as the owner sees it — everything except
+   * the deck and bin, which the seed legitimately owns. */
+  const eBoard = (s: EState): string => JSON.stringify({
+    phase: s.phase, prio: s.priority ?? null, turn: s.turn, initiative: s.initiative,
+    hasteDone: s.hasteDone, battle: s.battle, present: s.regions.map(r => r.presentSeats),
+    players: s.players.map((p: any) => ({
+      life: p.life, rot: p.rot ?? 0, debt: p.debt ?? 0,
+      hand: p.hand, res: p.resources, cache: p.cache ?? [],
+    })),
+    entities: Object.values(s.entities as Record<string, any>).map(e => ({
+      id: e.id, card: e.card, kind: e.kind, seat: e.controller, region: e.region,
+      counters: e.counters ?? 0, token: !!e.token, x: e.x ?? null,
+    })),
+    stack: s.stack.length, decision: s.decision?.kind ?? null,
+  });
+
+  /* THE ANTI-ROT SWEEP (docs/14 §9) over the whole batch at once: every
+   * scenario deals, lands where it DECLARES it lands, opens with no unanswered
+   * decision, hands the owner something to do — and opens on the SAME BOARD
+   * whatever seed the room was given.
+   *
+   * ⚠ THE SEED SWEEP IS THE LOAD-BEARING ONE, and it is wider here than in the
+   * other batches (EIGHT seeds) because three of these scenarios are ABOUT a
+   * turn boundary and it would be very easy to reach for a prologue that walks
+   * across one. A prologue that does draws cards, and a drawn card is
+   * seed-dependent: the owner would then open a different board from the one
+   * that was tested. Every batch-E prologue stays inside turn 1, and the OWNER
+   * crosses the boundary himself; this loop is what keeps that true. */
+  const E_SEEDS = [1, 7, 99, 4242, 216216216, 999983, 31337, 2];
+  for (const [id, sc] of Object.entries(BATCH_E)) {
+    const rig = new ERig(id);
+    eq(rig.s.phase, sc.phase, `${id}: deals into the phase it declares`);
+    eq(rig.s.priority ?? null, sc.priority ?? null, `${id}: and the priority it declares`);
+    eq(rig.s.decision, null, `${id}: opens with no unanswered decision`);
+    eq(rig.hand(0), sc.handAfterPrologue ?? sc.you.hand, `${id}: and with the hand it puts on screen`);
+    ok(rig.legal(0).length > 0, `${id}: the table is waiting on the OWNER, not on seat 1`);
+    ok(sc.needsLiveOpponent !== true, `${id}: is driveable with the scripted opponent alone`);
+    const seen = new Set(E_SEEDS.map(seed => eBoard(
+      edeal(seed, ['You', 'Tester Bot'], 'shared', etrio(undefined), undefined, id).state)));
+    eq(seen.size, 1, `${id}: one board across ${E_SEEDS.length} seeds — the owner opens what was tested`);
+  }
+
+  // ── ① Harbinger of Immolation: R11's regroup erase MEETS a static that
+  //    spares it, with the token standing in the ENEMY region when the step
+  //    begins — and the survivor then feeds the Harbinger's own X.
+  {
+    const r = new ERig('harbinger-tokens-through-regroup');
+    eq(r.s.hasteDone, [false, true],
+      'Harbinger: the board opens INSIDE the haste step, which is where the token is made');
+    r.do('playCard');                                   // Molten Upheaval
+    eq(r.spellTokens(0), ['Fireball 3'], 'Harbinger: Molten Upheaval left a Fireball 3');
+    r.do('doneHaste');
+    const fb = Object.values(r.s.entities as Record<string, any>).find(e => e.kind === 'spellToken')!;
+    const ft = r.unit('The Foretold', 0)!;
+    // the token RIDES OUT with the formation (R87) — this is what puts it in
+    // the defender's region when regroup starts, which is the whole point
+    r.act({ type: 'declareAttack', seat: 0, columns: [[ft.id]], spellTokens: [fb.id] } as EAction);
+    eq((r.s.entities as any)[fb.id].region, 1,
+      'Harbinger: the Fireball rode out — it is standing in THEIR region, not next to its protector');
+    r.passTo('planning', 2);
+    ok(r.said('spell token(s) stay through regroup'),
+      'Harbinger: THE CLAUSE — regroup announced that a token was spared');
+    ok(!r.said('unused spell token(s) to regroup'),
+      'Harbinger: and nothing was erased for it to announce the other way');
+    eq(r.spellTokens(0), ['Fireball 2', 'Fireball 3'],
+      'Harbinger: the board ends on a Fireball 3 AND a Fireball 2 — the 3 survived the '
+      + 'regroup, and the end-of-turn X counted it (1 + 1). Without the static the 3 is '
+      + 'erased and the second token is a Fireball 1.');
+    eq((r.s.entities as any)[fb.id].region, 0,
+      'Harbinger: and the survivor came HOME — R11 step (1) moves spell tokens too, which is '
+      + 'what lets the region-scoped survival query (R12) still see its protector');
+    eq(r.life(1), 27, 'Harbinger: the 3/3 that carried the token connected for 3');
+  }
+
+  // ── ② Blurf × Worldbender: the card step MEETS an effect that adds a card
+  //    outside it, and R43's tick lands between them in the same `startTurn`.
+  {
+    const r = new ERig('blurf-worldbender-card-step');
+    eq([r.hand(0).length, r.life(0), r.debt(0), r.cache(0).length], [0, 30, 0, 0],
+      'Blurf/Worldbender: before the turn rolls — empty hand, 30 life, no debt, empty cache');
+    const openBefore = r.openMana();
+    r.do('doneDeploying');
+    eq(r.s.turn, 2, 'Blurf/Worldbender: the turn rolled on the owner\'s own click');
+    eq(r.cache(0).length, 1, 'Blurf: one card went from the top of the deck into the cache');
+    eq(r.cache(0)[0].prophecy?.condition, '1 turn passes',
+      'Blurf: carrying the prophecy it prints, transcription and all (normalizeProphecy folds it)');
+    eq(r.debt(0), 1,
+      'Blurf: and the debt is the cached card\'s printed cost — Divine Foresight is ll/1 at this seed');
+    eq([r.life(0), r.hand(0).length], [27, 3],
+      'Worldbender: THE CARD STEP — three cards and three life (the constructed branch, R162), '
+      + 'not the two-and-nothing an unreplaced step gives');
+    eq([r.life(1), r.hand(1).length], [30, 2],
+      'Blurf/Worldbender: the opponent, same turn same table, took the ordinary card step');
+    eq(r.cache(0)[0].prophecy?.fulfilled, true,
+      'THE RULING: a card cached at the END of turn 1 is fulfilled at the TOP of turn 2. R43 '
+      + 'counts forward from the moment of caching, so "1 turn passes" is satisfied by the very '
+      + 'next turn — not by a whole turn having to elapse first (which would be turn 3).');
+    ok(r.said('may now be played from cache for free'),
+      'Blurf: and it announced itself, in the same instant the card step paid out');
+    r.do('donePlanning');
+    eq(r.debt(0), 0, 'Blurf: the debt is cleared by the resource step (R39), not by the owner');
+    eq(r.openMana(), openBefore - 1, 'Blurf: and it cost exactly one open resource to clear');
+  }
+
+  // ── ③ Infernal Wispweaver: a self-sacrifice clause MEETS the static that
+  //    suppresses it, at R12's region boundary.
+  //    ⚠ THIS PINS CURRENT BEHAVIOUR AGAINST THE PRINTED LINE. See the block
+  //    header: the card says "your wisps", with no region in it.
+  {
+    const r = new ERig('wispweaver-wisps-attack-alone');
+    eq([r.stats('Wisp'), r.units(0).length], ['2/2', 4],
+      'Wispweaver: at home the Wisps read 2/2, not the 0/1 they print — the static is live');
+    const wisps = Object.values(r.s.entities as Record<string, any>)
+      .filter(e => e.kind === 'unit' && e.card === 'Wisp' && e.controller === 0);
+    eq(wisps.length, 3, 'Wispweaver: three Wisps to send');
+    r.act({ type: 'declareAttack', seat: 0, columns: wisps.map(w => [w.id]) } as EAction);
+    eq(r.stats('Wisp'), '0/1',
+      'Wispweaver: the instant they cross into the defender\'s region they lose the +2/+1 — '
+      + 'R12 scopes a static to its own region and the 2/1 weaver stayed home');
+    r.passTo('deploy');
+    ok(r.said('Wisp: sacrifice me (after combat)'),
+      'Wispweaver: THE CLAUSE — the self-sacrifice trigger fired, on all of them');
+    eq(r.units(0), ['Infernal Wispweaver'],
+      'Wispweaver: ⚠ ALL THREE WISPS SACRIFICED THEMSELVES while their weaver was standing at '
+      + 'home. The printed line is "Your wisps … do not sacrifice themselves after combat", with '
+      + 'no region qualifier — so this assertion pins what the engine does, next to the text it '
+      + 'contradicts. It is the failing test the day the owner rules the other way.');
+    eq(r.life(1), 30, 'Wispweaver: 0/1 attackers dealt nothing, which is the same fact from the other side');
+  }
+
+  // ── ④ Waxen Witness: a GRANTED prophecy fulfilled by R43's battle tick
+  //    inside one turn, MEETING "the cache holds a card, not the unit".
+  {
+    const r = new ERig('waxen-witness-battle-prophecy');
+    eq(r.stats('Hammer of Justice', 0), '13/6',
+      'Waxen Witness: the Hammer is a printed 10/3 wearing three +1/+1 counters');
+    const h = r.unit('Hammer of Justice', 0)!;
+    r.act({ type: 'declareAttack', seat: 0, columns: [[h.id]] } as EAction);
+    r.do('playCard');                                   // Waxen Witness, a {Battle} spell unit
+    ok(r.labels().some(l => l.includes('Hammer')), 'Waxen Witness: your own unit is a legal target');
+    r.aim('Hammer');
+    r.passTo('deploy');
+    eq(r.cache(0).map((c: any) => c.card), ['Hammer of Justice'],
+      'Waxen Witness: THE CLAUSE — the unit left play for the cache');
+    eq(r.cache(0)[0].prophecy?.condition, 'One Battle Passes',
+      'Waxen Witness: carrying the prophecy it grants');
+    eq(r.cache(0)[0].prophecy?.fulfilled, true,
+      'Waxen Witness: and ONE battle round was enough — R43 ticks on the initiative battle and '
+      + 'the counterattack alike, so it comes true in the turn it was granted');
+    eq(r.units(0), ['Waxen Witness'],
+      'Waxen Witness: the spell resolved first and the 3/3 body spawned behind it (spellUnit)');
+    const before = r.openMana();
+    r.do('playCached');
+    eq(r.openMana(), before,
+      'Waxen Witness: the release cost NOTHING — a fulfilled prophecy waives the mana (R42)');
+    eq(r.stats('Hammer of Justice', 0), '10/3',
+      'Waxen Witness: THE JOIN — a 13/6 went into the cache and a 10/3 came back. The cache '
+      + 'holds the CARD; the three +1/+1 counters belonged to the entity, and the entity is gone.');
+    eq(r.unit('Hammer of Justice', 0).counters, 0, 'Waxen Witness: zero counters, explicitly');
+    eq(r.life(1), 30,
+      'Waxen Witness: the opponent took nothing — the attacker was pulled out before combat');
+  }
+
+  // ── ⑤ Proph: two cards leave the same zone one step apart, and only one of
+  //    them is a PLAY (R49's `from` against R37's "a mod is not a play").
+  {
+    const r = new ERig('proph-cache-release-vs-mod');
+    eq(r.hand(0), ['Air Plant', 'Air Plant'], 'Proph: two Air Plants to spend down the two paths');
+    const mana0 = r.openMana();
+    r.do('prophesy');
+    eq(r.cache(0)[0]?.prophecy?.fulfilled, true,
+      'Proph: the banner condition ("four unique costs") is true the instant it is made — the '
+      + 'four units on the board cost 1, 2, 3 and 4');
+    r.do('prophesy');
+    eq([r.hand(0).length, r.cache(0).length], [0, 2], 'Proph: hand empty, both copies cached');
+    eq(r.openMana(), mana0 - 4, 'Proph: two banners at [2] each, and nothing else spent yet');
+    const ft = r.unit('The Foretold', 0)!;
+    // ⚠ ORDER IS LOAD-BEARING: Proph's trigger is [Switch1] (bounded, once a
+    // turn). Playing first would spend the budget and make the augment's
+    // silence unreadable.
+    r.do('augment', (a: any) => a.from === 'cache' && a.hostId === ft.id);
+    eq(r.hand(0).length, 0,
+      'Proph: THE CLAUSE, negative half — the augment came OUT OF THE CACHE and Proph drew '
+      + 'NOTHING. R37: applying a mod is not playing a card, so there was no play event to hear.');
+    eq(r.openMana(), mana0 - 4,
+      'Proph: and the mod was free — a fulfilled prophecy waives an augment too (R42), so the '
+      + 'two paths differ in nothing but the rule');
+    eq([r.stats('Proph', 0), r.stats('Bumblecrab', 0), r.stats('Resonant Form', 0)],
+      ['4/3', '4/5', '4/6'],
+      'Proph: the donated static is live — your OTHER units are +2/+2');
+    eq(r.stats('The Foretold', 0), '3/3',
+      'Proph: and the HOST is the one unit that does not grow — it is wearing the mod, and the '
+      + 'text says your other units');
+    ok(r.flying('Proph', 0) && !r.flying('The Foretold', 0),
+      'Proph: the granted Flying splits the same way');
+    r.do('playCached');
+    eq(r.hand(0).length, 1,
+      'Proph: THE CLAUSE, positive half — the cache RELEASE is a play from somewhere other than '
+      + 'your hand, so Proph drew. Same zone, same price, same step; different rule.');
+    ok(r.said('Trigger: Proph — draw a card'), 'Proph: and the trigger named itself');
+    eq([r.stats('Proph', 0), r.stats('The Foretold', 0), r.stats('Air Plant', 0)],
+      ['6/5', '5/5', '4/4'],
+      'Proph: the second Air Plant is a BODY now, so everything grows again — and the new body '
+      + 'is itself 4/4, because the AUGMENTED copy riding The Foretold counts it as one of "your '
+      + 'other units". Each copy excludes only itself.');
+  }
+
+  // ── ⑥ Vaporweave Eidolon: R79 {Unstable} MEETS leaving play without dying,
+  //    with the graft rider resolving while its host removes itself.
+  {
+    const r = new ERig('graft-host-recalls-itself');
+    r.do('graft');
+    ok(r.said('Flame Juggle grafts onto Vaporweave Eidolon'), 'Vaporweave: the graft landed');
+    ok(r.said('it is now Unstable'),
+      'Vaporweave: and the host is Unstable — R79\'s "it and all of its mods are erased with it" '
+      + 'is now armed, which is what makes the next click a question');
+    eq(r.unit('Vaporweave Eidolon', 0).mods.length, 1, 'Vaporweave: one mod riding');
+    r.do('activateAbility');                            // [zero]: recall me
+    eq(r.hand(0), ['Vaporweave Eidolon'], 'Vaporweave: the host recalled itself to hand');
+    eq(r.bin(0), ['Flame Juggle'],
+      'Vaporweave: THE JOIN — the grafted card is in the BIN, not the erased pile. Unstable '
+      + 'erases the mods when the host DIES or IS ERASED, and a recall is neither.');
+    eq(r.erased(0), [],
+      'Vaporweave: nothing reached the R65 erased pile at all — the negative half of the same claim');
+    eq(r.spellTokens(0), ['Fireball 1', 'Fireball 1', 'Fireball 1'],
+      'Vaporweave: and the RIDER still delivered — three tokens — even though the card it was '
+      + 'riding on left play in the same resolution (R167: this family was silently dead on '
+      + 'recalls and caches while working on deaths)');
+    eq(r.units(0), [], 'Vaporweave: the Eidolon really is off the board');
+  }
+
+  // ── ⑦ Dispatch Courier: R18's "only haste cards" MEETS R97's granted play,
+  //    and the join is the one-per-turn allowance.
+  {
+    const r = new ERig('dispatch-courier-haste-unit');
+    eq(r.s.hasteDone, [false, true],
+      'Dispatch Courier: THE HASTE STEP IS OPEN with no [Haste] card anywhere in the owner\'s '
+      + 'hand — `canHaste` consulted the grant (report #74: nothing used to ask)');
+    eq(r.playable(), ['Curio Drifter', 'The Foretold'],
+      'Dispatch Courier: both UNITS are offered, and Waxen Witness is not — a {Battle} card '
+      + 'cannot be hasted however much permission you have (RAQ, "Dispatch Courier vs Battle Timing")');
+    r.do('playCard', (a: any) => r.hand()[a.handIndex] === 'The Foretold');
+    eq(r.units(0), ['Dispatch Courier', 'The Foretold'],
+      'Dispatch Courier: THE CLAUSE — a deploy-timing unit spawned during the haste step');
+    eq(r.playable(), [],
+      'Dispatch Courier: THE JOIN — Curio Drifter is no longer offered. "Each turn" is an '
+      + 'allowance of exactly one, charged to `hastePlaysUsed`; a standing permission would '
+      + 'still be offering it.');
+    r.do('doneHaste');
+    eq(r.s.phase, 'battle', 'Dispatch Courier: the step closed into the battle phase');
+    const ft = r.unit('The Foretold', 0)!;
+    ok(r.legal().some(a => a.type === 'declareAttack'
+      && JSON.stringify((a as any).columns).includes(String(ft.id))),
+      'Dispatch Courier: and the unit MAY ATTACK THIS TURN, which is the entire point of '
+      + 'playing it in the haste step');
+  }
+
+  // ── ⑧ Tithe Enforcer: prophesy × doneHaste × playCached — the three
+  //    thinnest actions in the corpus, in one line.
+  {
+    const r = new ERig('tithe-enforcer-haste-release');
+    const mana0 = r.openMana();
+    r.do('prophesy');
+    eq(r.cache(0).map((c: any) => c.card), ['Tithe Enforcer'], 'Tithe Enforcer: cached for [2]');
+    eq(r.openMana(), mana0 - 2, 'Tithe Enforcer: and the banner cost exactly [2], plain mana (R42)');
+    eq(r.cache(0)[0].prophecy?.fulfilled ?? false, false,
+      'Tithe Enforcer: NOT fulfilled yet — "End [Haste] with used mana" needs a haste step to end');
+    r.do('doneDeploying');
+    eq(r.s.turn, 2, 'Tithe Enforcer: turn 2');
+    r.do('donePlanning');
+    eq(r.s.hasteDone, [false, true], 'Tithe Enforcer: turn 2\'s haste step, opened by the card in hand');
+    r.do('playCard', (a: any) => r.hand()[a.handIndex] === 'Molten Upheaval');
+    ok(!r.legal().some(a => a.type === 'playCached'),
+      'Tithe Enforcer: the release is NOT offered yet — the tally is nonzero but the step has not '
+      + 'ended, and `hasteWithUsedMana` requires BOTH');
+    r.do('doneHaste');
+    eq(r.cache(0)[0].prophecy?.fulfilled, true,
+      'Tithe Enforcer: THE LATCH — it comes true as `finishHasteEnd` closes the step, one '
+      + 'statement before the tally is zeroed. A window one line wide.');
+    r.passTo('planning', 3);
+    ok(!r.hand(0).some(c => ['Molten Upheaval'].includes(c)),
+      'Tithe Enforcer: the haste card is spent and gone from hand');
+    r.do('donePlanning');
+    eq(r.s.hasteDone, [false, true],
+      'Tithe Enforcer: TURN 3\'S HASTE STEP OPENS FOR A CARD THAT IS NOT IN HAND — `canHaste` '
+      + 'counts a fulfilled cache release. Without this the card is stranded in the cache '
+      + 'forever, because its printed timing is [Haste] and nothing else would open a window.');
+    const before = r.openMana();
+    r.do('playCached');
+    eq(r.units(0).includes('Tithe Enforcer'), true,
+      'Tithe Enforcer: THE CLAUSE — a 7-mana body released in the haste step');
+    eq(r.stats('Tithe Enforcer', 0), '4/6', 'Tithe Enforcer: at its printed size');
+    eq(r.openMana(), before,
+      'Tithe Enforcer: and NOTHING was spent on it. Total outlay for a 7-drop: [2] on turn 1 and '
+      + '[1] on turn 2.');
+  }
+}

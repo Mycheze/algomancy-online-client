@@ -209,3 +209,79 @@ export function unreachedOpener(card: string): string | null {
   const why = UNREACHED[card];
   return why ? (/^([A-Z]+)/.exec(why)?.[1] ?? null) : null;
 }
+
+// ── WITNESSED — the entries a human has now watched deliver ────────────
+// (docs/14 §5, the verdict log. No ruling number: nothing here decides a rule,
+//  it records who watched what. R215 §2 fails a minted-but-unwritten R-number,
+//  and inventing one to look official is how that gap gets minted.)
+/**
+ * **An entry here is still unreached, and stays in `UNREACHED` above.** The
+ * drill's reach did not change; nothing about the fixture library moved. What
+ * changed is that the promise has now been SEEN to happen, by the rules
+ * authority, on a real board, through the real client.
+ *
+ * The distinction is the whole point of docs/14. `UNREACHED` records what our
+ * instruments cannot observe. This records what a human observed anyway. They
+ * are different facts and merging them would destroy both: deleting an entry
+ * here would tell the next reader the drill can reach it (it cannot, and the
+ * fixture they go looking for does not exist), while leaving no record at all
+ * would keep 21 cards on a "never once observed" list that is no longer true.
+ *
+ * ⚠ A witness is not a regression test. It cannot fail. It says a specific
+ * human saw a specific clause work on a specific engine, and it goes stale the
+ * moment that engine moves — which is why `engine` is recorded per entry and
+ * why the scenario id is here: `(scenario, engine, action log)` is replayable,
+ * so any of these can be re-watched rather than re-argued.
+ *
+ * Source of truth is `server/verdicts.jsonl` on the deploy box; this is a
+ * transcription of the LATEST verdict per scenario, taken 2026-08-27.
+ */
+export interface Witness {
+  /** the scenario id in server/scenarios*.ts that built the board */
+  scenario: string;
+  /** engine SHA the judgement was made against (R200) */
+  engine: string;
+  /** ISO date of the verdict */
+  on: string;
+}
+
+export const WITNESSED: Readonly<Record<string, Witness>> = {
+  'Cthyrian Rector': { scenario: 'cthyrian-rector-sacrifice', engine: '7864bb8', on: '2026-08-27' },
+  'Nothyr': { scenario: 'nothyr-negates-a-trigger', engine: 'ca91df7', on: '2026-08-26' },
+  'Skybreaker': { scenario: 'skybreaker-negates-spells', engine: '7864bb8', on: '2026-08-27' },
+  'Void Mandible': { scenario: 'void-mandible-negates', engine: '7864bb8', on: '2026-08-27' },
+  'Cinder Scuttler': { scenario: 'cinder-scuttler-recall', engine: '7864bb8', on: '2026-08-27' },
+  'Automaton of Abundance': { scenario: 'automaton-augmented-batch', engine: '7864bb8', on: '2026-08-27' },
+  'Scholar of the Void': { scenario: 'scholar-transforms', engine: '7864bb8', on: '2026-08-27' },
+  'Stellarspore Harvester': { scenario: 'stellarspore-steals', engine: '7864bb8', on: '2026-08-27' },
+  'Vengeance': { scenario: 'vengeance-taxes-their-play', engine: '7864bb8', on: '2026-08-27' },
+  'Worldbender': { scenario: 'worldbender-card-step', engine: '7864bb8', on: '2026-08-27' },
+  'Skittering Blight': { scenario: 'skittering-blight-rot-into-counters', engine: '7864bb8', on: '2026-08-27' },
+  'Earnest Defender': { scenario: 'earnest-defender-enemy-spell', engine: '7864bb8', on: '2026-08-27' },
+  'Bloated Manablub': { scenario: 'manablub-dies-in-their-region', engine: '7864bb8', on: '2026-08-27' },
+  'Molten Riftbreaker': { scenario: 'riftbreaker-negates-your-own-spell', engine: '7864bb8', on: '2026-08-27' },
+  'Prediction Prophet': { scenario: 'prediction-prophet-predict-the-future', engine: '7864bb8', on: '2026-08-27' },
+  'Stalwart Sentinel': { scenario: 'stalwart-sentinel-from-bin', engine: '7864bb8', on: '2026-08-27' },
+  'Hooba-Lan': { scenario: 'hooba-lan-attack-shard', engine: '7864bb8', on: '2026-08-27' },
+  'Null Drone': { scenario: 'null-drone-negates', engine: '7864bb8', on: '2026-08-27' },
+  'Keeper of Tithes': { scenario: 'keeper-of-tithes-expended', engine: '7864bb8', on: '2026-08-27' },
+  'Debt Plant': { scenario: 'debt-plant-expended', engine: '7864bb8', on: '2026-08-27' },
+  'Proph': { scenario: 'proph-from-cache', engine: '7864bb8', on: '2026-08-27' },
+};
+
+/**
+ * The entries nobody has watched yet — the honest remainder, DERIVED rather
+ * than typed out, because a hand-kept second list is the exact mistake the
+ * header of this file is a post-mortem of.
+ *
+ * 15 of 36 as of 2026-08-27. Two of them are one board away:
+ *   · Pestilent Mycelion — `mycelion-minus-counters-in-battle` exists, never opened.
+ *   · Necromantic Rebuke — `rebuke-refused` was opened and MISPLAYED (X paid as 2,
+ *     which empties the bin and suppresses the ransom), so the refusal branch
+ *     the scenario exists to reach still has not executed. The cause was the
+ *     bin menu not saying it had collapsed two identical cards into one row;
+ *     fixed in the same round (see DecisionOption.count), the board is unchanged.
+ * The other 13 have no scenario built for them.
+ */
+export const UNWITNESSED_CARDS: readonly string[] =
+  UNREACHED_CARDS.filter(c => !(c in WITNESSED));

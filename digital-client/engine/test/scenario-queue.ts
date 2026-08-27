@@ -48,7 +48,7 @@
  * count so a drifted ledger fails loudly instead of shrinking the queue.
  */
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
-import { UNREACHED_CARDS, unreachedOpener } from './unreached.ts';
+import { UNREACHED_CARDS, UNWITNESSED_CARDS, unreachedOpener } from './unreached.ts';
 
 export interface QueueEntry {
   card: string;
@@ -60,6 +60,15 @@ export interface QueueEntry {
   augment: boolean;
   /** the UNREACHED opener (BOARD / CHOICE / VOCAB / …), or null */
   unreached: string | null;
+  /**
+   * A human has already watched this card's unreached promise deliver, and
+   * ruled on it (`unreached.ts` WITNESSED). Reported, deliberately NOT scored:
+   * the ranking is round 28's and re-weighting it here would quietly reorder a
+   * queue whose interleave and top-20 shape are asserted in 187. What this
+   * does is stop the next author spending ninety seconds of the owner's time
+   * re-confirming a card he confirmed on 2026-08-27.
+   */
+  witnessed: boolean;
 }
 
 /** Printed-text shapes that keep producing bugs. Deliberately coarse: this
@@ -90,6 +99,9 @@ export function rulingWeight(card: string, register: string): number {
 /** Score every card in the pool. `register` is docs/digital-rules.md's text. */
 export function rankCards(register: string): QueueEntry[] {
   const unreached = new Map(UNREACHED_CARDS.map(c => [c, unreachedOpener(c)]));
+  // DERIVED from the witness record, never a second hand-kept list — the
+  // header of unreached.ts is a post-mortem of exactly that mistake.
+  const unwitnessed = new Set(UNWITNESSED_CARDS);
   const out: QueueEntry[] = [];
   for (const card of allCardNames()) {
     const text = (getCard(card) as { text?: string }).text ?? '';
@@ -98,6 +110,9 @@ export function rankCards(register: string): QueueEntry[] {
 
     const opener = unreached.get(card) ?? null;
     if (opener) { score += 25; why.push(`UNREACHED:${opener}`); }
+    // reported, not scored — see QueueEntry.witnessed
+    const witnessed = opener !== null && !unwitnessed.has(card);
+    if (witnessed) why.push('WITNESSED');
 
     const ruled = rulingWeight(card, register);
     if (ruled >= 2) { score += Math.min(ruled, 8) * 2; why.push(`ruled×${ruled}`); }
@@ -108,7 +123,7 @@ export function rankCards(register: string): QueueEntry[] {
     for (const [tag, re] of SHAPES) if (re.test(text)) { score += 3; why.push(tag); }
     if (text.split(/\s+/).length > 30) score += 2;
 
-    if (score > 0) out.push({ card, score, why, augment, unreached: opener });
+    if (score > 0) out.push({ card, score, why, augment, unreached: opener, witnessed });
   }
   out.sort((a, b) => b.score - a.score || a.card.localeCompare(b.card));
   return out;
