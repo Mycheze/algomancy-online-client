@@ -26,7 +26,9 @@
  * cover card you picked.
  */
 import { getCard } from '../src/cards/dsl.ts';
-import { DECK_LIST } from '../src/cards/registry.ts';
+import * as cb from './cards.ts';
+import { allRows } from './cardindex.ts';
+import { chipState, nextChipState, search as runSearch, withChip } from './cardsearch.ts';
 import * as acct from './account.ts';
 import { txtIcon } from './cardtext.ts';
 import {
@@ -80,11 +82,12 @@ let openId: string | null = null;
 let tab: Tab = 'cards';
 /** how the card grid is grouped */
 let group: 'mana' | 'element' | 'type' = 'mana';
-/** the add-cards drawer */
+/** the add-cards drawer. `search` is a QUERY, in the language of
+ * ui/cardsearch.ts — the chips below it write into this same string rather
+ * than holding filter state of their own, which is why they can never
+ * disagree with what is typed. See ui/cards.ts's header. */
 let adding = false;
 let search = '';
-let searchEl = '';
-let searchKind: '' | 'unit' | 'spell' = '';
 /** the status line under the header */
 let msg = '';
 /** the delete button asks once — a 30-card deck is an hour of somebody's day */
@@ -325,46 +328,77 @@ function groupedTiles(a: DeckAnalysis, cover: string | null, where: 'deck' | 'ma
 
 // ── the add-cards drawer ──────────────────────────────────────────────
 
-/** The pool, filtered by the drawer's three controls. Capped, and the cap is
- * SAID — a silently truncated list reads as "that is all there is". */
+/**
+ * The pool, filtered by the drawer's query.
+ *
+ * This used to be a private predicate: a substring over name/text/type, one
+ * element chip and a unit/spell toggle. It is now the same parser and the same
+ * rows the card browser runs (ui/cardsearch.ts over ui/cardindex.ts), because
+ * two filters over one pool is two answers to "what is a fire spell" and the
+ * drawer's answer was the one nobody could extend.
+ *
+ * The pool is narrowed to what is DECK-LEGAL before the query sees it, so
+ * `class:token` here honestly returns nothing rather than offering you a
+ * Fireball as a two-of. The full 537 live one button away, in the browser.
+ *
+ * Still capped, and the cap is still SAID — a silently truncated list reads as
+ * "that is all there is".
+ */
 const SEARCH_CAP = 60;
 
+const deckPool = (): ReturnType<typeof allRows> => allRows().filter(r => r.playable);
+
 function searchResults(): { names: string[]; total: number } {
-  const q = search.trim().toLowerCase();
-  const hits = DECK_LIST.filter(name => {
-    const f = cardFacts(name);
-    if (!f) return false;
-    if (searchEl && !f.factions.includes(searchEl)) return false;
-    if (searchKind === 'unit' && f.kind !== 'unit') return false;
-    if (searchKind === 'spell' && f.kind !== 'spell' && f.kind !== 'spellUnit') return false;
-    if (!q) return true;
-    return name.toLowerCase().includes(q) || f.text.toLowerCase().includes(q) || f.type.toLowerCase().includes(q);
-  });
+  const hits = runSearch(search, {
+    pool: deckPool(),
+    ctx: { copies: countIn, maybe: countInMaybe },
+  }).rows.map(r => r.name);
   return { names: hits.slice(0, SEARCH_CAP), total: hits.length };
+}
+
+/** copies of a card in the open deck / on its maybeboard — what `in:` and
+ * `copies:` answer from, and what the browser's bridge lends out */
+function countIn(name: string): number {
+  return current()?.cards.filter(c => c === name).length ?? 0;
+}
+function countInMaybe(name: string): number {
+  return current()?.maybe.filter(c => c === name).length ?? 0;
 }
 
 function addDrawerHtml(): string {
   if (!adding) {
-    return `<button class="dkadd" data-btn="deck-adding">+ Add cards</button>`;
+    return `<div class="dkaddrow">
+      <button class="dkadd" data-btn="deck-adding">+ Add cards</button>
+      <button class="dkbrowse" data-btn="deck-browse" title="the full card browser, with the whole filter syntax">🔍 Browse all cards</button>
+    </div>`;
   }
   const { names, total } = searchResults();
+  const chip = (key: string, value: string, label: string, extra = ''): string => {
+    const state = chipState(search, key, value);
+    return `<button class="${extra}${state === 'on' ? ' on' : state === 'off' ? ' off' : ''}"
+      data-btn="deck-chip" data-key="${esc(key)}" data-value="${esc(value)}"
+      title="${state === 'on' ? 'click again to exclude' : state === 'off' ? 'click again to clear' : 'include'}"
+      >${label}</button>`;
+  };
   return `<section class="dkdrawer">
     <div class="dkdrawerhead">
-      <input id="dk-search" class="dksearch" placeholder="search the pool — name, type, or card text"
-        spellcheck="false" value="${esc(search)}">
+      <input id="dk-search" class="dksearch" spellcheck="false"
+        placeholder="search the pool — name, type, text, or a filter like  mana:2 -kw:virus"
+        value="${esc(search)}">
+      <button data-btn="deck-browse" title="the full browser, with the facet rail and the syntax help">🔍 browse</button>
       <button data-btn="deck-adding-close">done</button>
     </div>
     <div class="dkfilters">
-      ${ELEMENTS.map(el => `<button class="elchip ${el}${searchEl === el ? ' on' : ''}"
-        data-btn="deck-filter-el" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
+      ${ELEMENTS.map(el => chip('el', el, `${elIcon(el)}${el}`, `elchip ${el}`)).join('')}
       <span class="dkfilterspacer"></span>
-      ${(['unit', 'spell'] as const).map(k => `<button class="dkkind${searchKind === k ? ' on' : ''}"
-        data-btn="deck-filter-kind" data-kind="${k}">${k}s</button>`).join('')}
-      ${searchEl || searchKind || search ? '<button data-btn="deck-filter-clear">clear</button>' : ''}
+      ${chip('kind', 'unit', 'units', 'dkkind')}
+      ${chip('kind', 'spell', 'spells', 'dkkind')}
+      ${chip('in', 'deck', 'in the deck', 'dkkind')}
+      ${search ? '<button data-btn="deck-filter-clear">clear</button>' : ''}
     </div>
     <div class="dkresultcount">${total} card${total === 1 ? '' : 's'}${
-      total > names.length ? ` — showing the first ${names.length}, narrow the search to see the rest` : ''}</div>
-    <div id="dk-results" class="dkgrid">${names.map(n => tile(n, 0, 'add', null)).join('')}</div>
+      total > names.length ? ` — showing the first ${names.length}, narrow the search or open the browser to see the rest` : ''}</div>
+    <div id="dk-results" class="dkgrid">${names.map(n => tile(n, countIn(n), 'add', null)).join('')}</div>
   </section>`;
 }
 
@@ -631,6 +665,15 @@ function detailHtml(d: DeckView): string {
 
 function paint(): void {
   if (!$app) return;
+  // THE CARD BROWSER CAN BE OPEN ON TOP OF THIS PAGE. When it is, this page is
+  // still `open` — that is how `back()` is a repaint rather than a reload — so
+  // every edit the browser made through the bridge landed here, painted the
+  // DECK page into #app, and was immediately painted over by the browser.
+  // Two writes per click instead of one, the second of them wrong.
+  // Measured over CDP: 6 writes for 3 add-clicks, now 3. (The 2,696-write home
+  // screen this repo shipped in BL-14 started exactly this way; see
+  // test/189-collection-loading.test.ts.)
+  if (cb.screen()) return;
   $app.classList.remove('board');
   if (!acct.token()) {
     $app.innerHTML = `<div class="joinscreen home acctscreen">
@@ -695,7 +738,7 @@ function wire(): void {
     const count = document.querySelector('.dkresultcount');
     if (!out) return;
     const { names, total } = searchResults();
-    out.innerHTML = names.map(n => tile(n, 0, 'add', null)).join('');
+    out.innerHTML = names.map(n => tile(n, countIn(n), 'add', null)).join('');
     if (count) {
       count.textContent = `${total} card${total === 1 ? '' : 's'}` +
         (total > names.length ? ` — showing the first ${names.length}, narrow the search to see the rest` : '');
@@ -727,6 +770,46 @@ const removeOne = (list: string[], name: string): string[] => {
   const i = list.indexOf(name);
   return i < 0 ? list : [...list.slice(0, i), ...list.slice(i + 1)];
 };
+
+/**
+ * The handle the card browser builds through.
+ *
+ * EVERY mutation here goes through `edit()`, which is the file's single
+ * funnel into `scheduleSave()`. That is the whole reason the browser is given
+ * a bridge instead of the deck: a second writer touching `decks` directly
+ * would sidestep the debounce rules in this file's header, and the bug those
+ * rules exist to prevent (an edit to one deck thrown away by the pending save
+ * of another) is invisible until somebody loses a cut.
+ */
+function bridgeToOpenDeck(): cb.DeckBridge {
+  return {
+    id: () => openId,
+    name: () => current()?.name ?? 'this deck',
+    copies: countIn,
+    maybe: countInMaybe,
+    add: name => edit(d => { d.cards = [...d.cards, name]; }),
+    remove: name => edit(d => { d.cards = removeOne(d.cards, name); }),
+    toMaybe: name => edit(d => { d.maybe = [...d.maybe, name]; }),
+    summary: () => {
+      const d = current();
+      if (!d) return { total: 0, legal: false, problems: ['no deck open'], curve: [], elements: {} };
+      const a = analyzeDeck(d.cards);
+      return {
+        total: a.total,
+        legal: a.legal,
+        problems: [...a.problems, ...(a.unknown.length
+          ? [`${a.unknown.length} card(s) this build cannot play`] : [])],
+        curve: a.curve.map(c => ({ mana: c.mana, total: c.total })),
+        elements: a.elements,
+      };
+    },
+    // the deck page never closed, so coming back is a repaint — and `paint()`
+    // rather than `renderScreen()` so it does not re-enter the collection
+    // loader (test/189: a `then()` on the already-loaded path repainted the
+    // home screen 2,696 times)
+    back: () => { cb.useDeck(null); paint(); },
+  };
+}
 
 // ── clicks ────────────────────────────────────────────────────────────
 
@@ -896,13 +979,24 @@ export function handleButton(btn: HTMLElement): boolean {
       adding = true; paint(); return true;
     case 'deck-adding-close':
       adding = false; paint(); return true;
-    case 'deck-filter-el':
-      searchEl = searchEl === btn.dataset['el'] ? '' : (btn.dataset['el'] ?? ''); paint(); return true;
-    case 'deck-filter-kind':
-      searchKind = (searchKind === btn.dataset['kind'] ? '' : btn.dataset['kind']) as typeof searchKind;
-      paint(); return true;
+    case 'deck-chip': {
+      const key = btn.dataset['key'] ?? '';
+      const value = btn.dataset['value'] ?? '';
+      search = withChip(search, key, value, nextChipState(chipState(search, key, value)));
+      paint();
+      return true;
+    }
     case 'deck-filter-clear':
-      search = ''; searchEl = ''; searchKind = ''; paint(); return true;
+      search = ''; paint(); return true;
+
+    case 'deck-browse':
+      // hand the browser this deck and step aside. The deck page stays `open`,
+      // so `back()` is just a repaint — and every edit the browser makes still
+      // goes through edit()/scheduleSave() below, never round the side.
+      flushSave();
+      cb.useDeck(bridgeToOpenDeck());
+      cb.openBrowser(search);
+      return true;
   }
   return false;
 }

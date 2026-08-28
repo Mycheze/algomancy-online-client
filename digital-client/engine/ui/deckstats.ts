@@ -25,8 +25,9 @@
  *    three buckets sum to the deck size. Fourteen cards in the pool are one,
  *    and a split that does not add up is worse than a third bar.
  */
-import { affinityPips, getCard, type Printed } from '../src/cards/dsl.ts';
+import { type Printed } from '../src/cards/dsl.ts';
 import { ALL_ELEMENTS, checkDeck } from '../src/apply.ts';
+import { rowFor } from './cardindex.ts';
 
 /** the engine's own element list — a new element must never need an edit here */
 export const ELEMENTS: readonly string[] = ALL_ELEMENTS;
@@ -48,22 +49,31 @@ export interface CardFacts {
   type: string;
 }
 
-/** Printed facts for a card, or null when the engine does not script it. */
+/**
+ * Printed facts for a card, or null when the engine does not script it.
+ *
+ * A VIEW OF ui/cardindex.ts, not a second projection of the same printed data.
+ * It used to read `getCard()` and rebuild these eleven fields itself, which was
+ * fine while it was the only such projection; the card browser made it the
+ * second, and two projections of one record is how the deck page and the
+ * browser end up disagreeing about what a card costs. The shape stays exactly
+ * as it was — 188-deck-stats.test.ts pins it — so nothing downstream moves.
+ */
 export function cardFacts(name: string): CardFacts | null {
-  let c: Printed;
-  try { c = getCard(name); } catch { return null; }
+  const r = rowFor(name);
+  if (!r?.scripted) return null;
   return {
     name,
-    mana: c.mana === 'X' ? 0 : c.mana,
-    isX: c.mana === 'X',
-    pips: affinityPips(c.cost),
-    kind: c.kind,
-    timing: c.timing,
-    factions: c.factions ?? [],
-    power: c.power,
-    toughness: c.toughness,
-    text: c.text,
-    type: c.type,
+    mana: r.mana,
+    isX: r.isX,
+    pips: r.pips,
+    kind: r.kind,
+    timing: r.timing,
+    factions: r.factions,
+    power: r.power,
+    toughness: r.toughness,
+    text: r.text,
+    type: r.type,
   };
 }
 

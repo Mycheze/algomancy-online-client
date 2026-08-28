@@ -1675,3 +1675,182 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
   background: var(--panel2); }
 .dkexporttext { width: 100%; font: 12px/1.45 ui-monospace, monospace; background: var(--bg);
   color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; }
+
+/* ── the card browser (ui/cards.ts) ────────────────────────────────────
+   A three-column page: the facet rail, the results, and a detail pane that
+   only exists when you have asked for one. The rail and the query bar are two
+   editors of ONE string, so a chip has three looks and not two — neutral,
+   including (.on), excluding (.off) — and the excluding one has to read as
+   "this is being kept OUT" at a glance, which is why it is struck through and
+   not merely dimmer. Two states that differ only in opacity are two states
+   nobody can tell apart.
+   The grid, the tiles and the element chips are the deck page's (.dkgrid,
+   .dktile, .elchip) on purpose: one card grid in the client, not two. */
+.cbpage { max-width: 1500px; margin: 0 auto; padding: 4px 2px 24px; }
+
+.cbbar { display: flex; gap: 6px; align-items: center; margin: 10px 0 4px; }
+.cbq { flex: 1; min-width: 0; font: 15px/1.4 ui-monospace, monospace;
+  background: var(--bg); color: var(--text); border: 1px solid var(--line);
+  border-radius: 7px; padding: 9px 11px; }
+.cbq:focus { outline: none; border-color: var(--accent); }
+.cbclear { padding: 4px 10px; }
+.cberr { color: var(--danger); font-size: 12px; margin: 2px 2px 4px; }
+.cbsuggest { color: var(--dim); font-size: 12px; margin: 2px 2px 6px; }
+.cblink { background: none; border: none; color: var(--accent); cursor: pointer;
+  padding: 0 3px; font: inherit; }
+.cblink:hover { text-decoration: underline; }
+
+.cbtools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 12px; color: var(--dim); margin-bottom: 8px; }
+.cbtools select { background: var(--panel2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 5px; padding: 2px 4px; }
+.cbspacer { flex: 1; }
+.cbviews button { padding: 2px 8px; font-size: 12px; }
+.cbviews button.on { border-color: var(--accent); color: var(--accent); }
+
+.cbmain { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 12px; align-items: start; }
+.cbmain:has(.cbdetail) { grid-template-columns: 220px minmax(0, 1fr) 320px; }
+@media (max-width: 1100px) { .cbmain, .cbmain:has(.cbdetail) { grid-template-columns: 1fr; } }
+
+/* the facet rail */
+.cbrail { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 4px;
+  max-height: calc(100vh - 20px); overflow-y: auto; }
+.cbsection { border: 1px solid var(--line); border-radius: 7px; background: var(--panel);
+  overflow: hidden; }
+.cbsectionhead { width: 100%; display: flex; align-items: center; gap: 6px; text-align: left;
+  background: none; border: none; color: var(--text); padding: 7px 9px; cursor: pointer;
+  font-size: 12px; letter-spacing: .03em; text-transform: uppercase; }
+.cbsectionhead:hover { background: var(--panel2); }
+.cbsectionhead > span:first-child { flex: 1; }
+.cbcaret { color: var(--dim); }
+.cbactive { background: var(--accent); color: #17130a; border-radius: 9px;
+  padding: 0 6px; font-size: 11px; font-weight: 700; }
+.cbchips { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 8px 8px; }
+.cbnote { color: var(--dim); font-size: 11px; padding: 0 9px 8px; line-height: 1.4; }
+.cbchip { padding: 3px 8px; font-size: 12px; text-transform: none; }
+.cbchip.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+/* excluded: read as "kept out", not as "slightly less on" */
+.cbchip.off { border-color: var(--danger); color: var(--danger); text-decoration: line-through; }
+.cbn { color: var(--dim); font-size: 10px; margin-left: 5px; }
+.cbchip.on .cbn, .cbchip.off .cbn { color: inherit; opacity: .8; }
+
+/* results */
+.cbcount { font-size: 13px; color: var(--dim); margin: 0 2px 7px; }
+.cbcount b { color: var(--text); font-size: 15px; }
+.cbimplicit { display: block; margin-top: 2px; font-size: 11px; color: var(--dim); }
+.cbcount .hint { display: block; margin-top: 3px; }
+/* SIX ABREAST, not eight. The deck page's 112px tiles are for cards you have
+   already chosen; here you are reading them, and at eight to a row the printed
+   rules text was too small to take in at a glance. Owner, 2026-08-28: "If it
+   was 6 per row in that same space, it'd be easier to read text at a glance."
+   170px is the width that lands on six in the default layout. */
+.cbgrid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+/* the whole tile pins the detail pane, so it has to look clickable */
+.cbtile { cursor: pointer; }
+.cbtile:hover { border-color: var(--accent); }
+/* …and the name banner is gone (see tileHtml), so the scan is unobstructed */
+.cbtile .dkname { display: none; }
+/* a token, a resource or a reference card is not a card you can play, and the
+   tile says so rather than looking identical to one you can */
+.cbtile.noncard { opacity: .82; }
+.cbclass { position: absolute; top: 3px; right: 3px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 4px; color: var(--dim);
+  font-size: 9px; padding: 0 4px; text-transform: uppercase; letter-spacing: .04em; }
+.cbmore { margin: 10px auto 0; display: block; }
+
+.cblist { display: flex; flex-direction: column; gap: 1px; }
+/* the fixed columns are as narrow as they can be read at, because the LAST
+   one is the rules text and that is what the list view exists to scan */
+.cbrow { display: grid; grid-template-columns: 76px 172px 164px 40px minmax(0, 1fr) auto auto;
+  align-items: center; gap: 8px; padding: 4px 6px; border-radius: 5px; font-size: 12px;
+  cursor: pointer; }
+.cbrow:nth-child(odd) { background: var(--panel); }
+.cbrow:hover { background: var(--panel2); }
+/* a five-symbol cost (X plus four pips) must not wrap onto a second line and
+   double the row height */
+.cbrowcost { white-space: nowrap; }
+.cbrowcost img { width: 13px; height: 13px; vertical-align: -2px; }
+.cbrowname { color: var(--text); font: 600 13px/1.3 inherit; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+.cbrow:hover .cbrowname { color: var(--accent); }
+.cbrowtype, .cbrowtext { color: var(--dim); overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+/* always present, empty for a spell — an omitted cell slides the rules text
+   into this 44px column and clips it */
+.cbpt { color: var(--dim); font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) { .cbrow { grid-template-columns: 60px 1fr auto; }
+  .cbrowtype, .cbrowtext, .cbpt { display: none; } }
+
+.cbtext { width: 100%; font: 12px/1.5 ui-monospace, monospace; background: var(--bg);
+  color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+
+/* the detail pane */
+.cbdetail { position: relative; border: 1px solid var(--line); border-radius: 9px;
+  background: var(--panel); padding: 12px; position: sticky; top: 4px;
+  max-height: calc(100vh - 20px); overflow-y: auto; }
+.cbclose { position: absolute; top: 6px; right: 6px; padding: 1px 8px; }
+.cbdetailart { width: 100%; border-radius: 7px; display: block; margin-bottom: 9px; }
+.cbdetail h2 { margin: 0 0 4px; font-size: 17px; }
+.cbdetailcost img { width: 16px; height: 16px; vertical-align: -3px; }
+.cbdetailtype { color: var(--dim); font-size: 12px; margin: 4px 0 8px; }
+.cbdetailtext p { margin: 0 0 6px; font-size: 13px; line-height: 1.5; }
+.cbdetailtext img { width: 14px; height: 14px; vertical-align: -2px; }
+.cbfact { color: var(--dim); font-size: 12px; margin: 6px 0; }
+.cbgloss { border-top: 1px solid var(--line); margin-top: 9px; padding-top: 8px;
+  font-size: 12px; color: var(--dim); line-height: 1.45; }
+.cbgloss b { color: var(--text); }
+.cbfacts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px;
+  font-size: 12px; margin: 9px 0 0; }
+.cbfacts dt { color: var(--dim); }
+.cbfacts dd { margin: 0; }
+.cbdetailbtns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+.cbrulings { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px;
+  font-size: 12px; line-height: 1.5; }
+
+/* the syntax sheet — printed from the parser's own tables, so it cannot rot */
+.cbhelp { position: relative; border: 1px solid var(--line); border-radius: 9px;
+  background: var(--panel); padding: 14px 16px; margin-bottom: 10px; }
+.cbhelp h2 { margin: 0 0 6px; font-size: 18px; }
+.cbhelp h3 { margin: 14px 0 4px; font-size: 13px; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--dim); }
+.cbhelp p { margin: 0 0 6px; font-size: 13px; line-height: 1.55; }
+.cbhelp code { background: var(--bg); border: 1px solid var(--line); border-radius: 4px;
+  padding: 0 4px; font-size: 12px; }
+.cbexample { background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; font-size: 13px; overflow-x: auto; margin: 6px 0 10px; }
+.cbkeys { border-collapse: collapse; width: 100%; font-size: 12px; }
+.cbkeys th { text-align: left; color: var(--dim); font-weight: 600; padding: 3px 8px 5px 0; }
+.cbkeys td { padding: 2px 8px 2px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.cbflags { font-size: 12px; line-height: 1.9; }
+
+/* deckbuilding mode */
+.cbdeckbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  border: 1px solid var(--accent); border-radius: 8px; background: var(--panel2);
+  padding: 7px 11px; font-size: 13px; margin-bottom: 8px; }
+.cbdeckbar .ok { color: var(--glow); }
+.cbdeckbar .warn { color: var(--accent); }
+
+/* the deck page's own drawer grew a way in here */
+.dkaddrow { display: flex; gap: 6px; margin-top: 6px; }
+.dkkind.off, .elchip.off { border-color: var(--danger); color: var(--danger);
+  text-decoration: line-through; opacity: 1; }
+/* a card with no scan at all — nine Kickstarter Glitch cards. The tile prints
+   the name rather than requesting a file that is known not to exist. */
+.cbnoart { display: flex; align-items: center; justify-content: center; text-align: center;
+  aspect-ratio: 63 / 88; padding: 6px; font-size: 11px; line-height: 1.3;
+  color: var(--dim); background: var(--panel2); }
+.cbdetailart.cbnoart { border-radius: 7px; margin-bottom: 9px; }
+/* the keyboard cursor through the results */
+.cbtile.sel { outline: 2px solid var(--accent); outline-offset: -2px; }
+.cbrow.sel { background: var(--panel2); box-shadow: inset 2px 0 0 var(--accent); }
+/* the deckbuilding strip's curve and element spread */
+.cbdeckname, .cbdeckcount { white-space: nowrap; }
+.cbminicurve { display: inline-flex; align-items: flex-end; gap: 2px; height: 26px; }
+.cbcbar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  width: 15px; height: 100%; }
+.cbcbar i { display: block; width: 100%; min-height: 1px; background: var(--accent);
+  opacity: .75; border-radius: 1px 1px 0 0; }
+.cbcbar em { font-style: normal; font-size: 9px; color: var(--dim); line-height: 1.1; }
+.cbdeckels { display: inline-flex; gap: 7px; align-items: center; }
+.cbdeckel { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; color: var(--dim); }
+.cbdeckel .elicon { width: 13px; height: 13px; }

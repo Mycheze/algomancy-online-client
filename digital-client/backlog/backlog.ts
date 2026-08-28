@@ -1749,4 +1749,78 @@ export const BACKLOG: readonly Entry[] = [
       + 'the dock in net mode, so removing it from the DOM BREAKS CARD FLIGHTS. Tuck it '
       + 'off-screen; do not unmount it.',
   },
+  {
+    id: 'BL-33',
+    slug: 'card-browser',
+    title: 'Card browser — search and filter the whole pool, and build from it',
+    area: 'client',
+    size: 'L',
+    status: 'active',
+    track: 'feature',
+    said:
+      'The digital client desperatly needs a card viewer/searcher/scryfall like interface/'
+      + 'filtering syntax. Please plan how to add all that and make it fully functional. I want '
+      + 'to easily be able to find cards with certain text and features and everything including '
+      + 'negative filtering, inclusive and exclusive searches, etc. It should also be nice and '
+      + 'easy to use for deck building. I have an agent doing some work in the oracle text '
+      + 'storage, but we may also need to do some more improvement and auditing to ensure it\'s '
+      + 'all accurate and easy to work with and maintain.',
+    means:
+      'A browse page over EVERY card the oracle file knows (534, plus the three engine '
+      + 'synthetics), driven by a Scryfall-shaped query language with AND/OR, parentheses and '
+      + 'negation on both terms and groups. The query STRING is the page state: the facet rail '
+      + 'rewrites it rather than holding filters of its own, and it rides in the URL, so a search '
+      + 'is a link. The deck drawer runs the same parser over the same rows, so the two surfaces '
+      + 'cannot disagree. And the oracle data underneath it is audited on every `npm test`.',
+    doneWhen: [
+      'A Cards page opens from the home screen and shows every card in the box, tokens and reference cards included and marked as not deck-legal',
+      'The query bar takes `-el:fire (sub:sprite OR sub:demon) mana<=3` and answers it',
+      'Clicking a facet chip once includes, twice excludes, and a third time clears it — and the query string in the box follows every click',
+      'Typing in the box makes the chips follow, so the two never disagree',
+      'A search can be sent to someone as a link and opens with the same results',
+      'From a deck, the browser adds and cuts cards and the deck count moves as you do it',
+      'The in-app syntax sheet lists every filter, and each example in it actually returns something',
+      '`npm run audit:cards` is clean, and a stale entry in the accepted-findings list fails it',
+    ],
+    decided: [
+      'Coverage is EVERYTHING. Owner, 2026-08-28: "Everything, but treat tokens, resources and the \'help\' cards as special, non-card cards." Hence the `class` field and `class:card` as a visible, removable chip rather than a hidden default.',
+      'A bare word searches name, type line AND rules text — the owner\'s choice, and what the old drawer did, so nothing regressed.',
+      'Synonyms are SUGGESTED, never applied. cards.py silently expands "deathtouch" to "deadly"; this does not, because a bar that searches for a word you did not type cannot answer "does any card actually say trample".',
+      'catalogue.json is a SECOND file, not extra columns on printed.json: the engine spreads every printed field onto CardDef, and browse metadata has no business widening that trust boundary.',
+      'The browser never touches deck state — it goes through a bridge into ui/decks.ts\'s single edit()/scheduleSave() funnel, so BL-14\'s debounce rules still hold.',
+    ],
+    asks: [],
+    deps: ['BL-14'],
+    touches: [
+      'digital-client/engine/ui/cards.ts',
+      'digital-client/engine/ui/cardindex.ts',
+      'digital-client/engine/ui/cardsearch.ts',
+      'digital-client/engine/ui/cardsynonyms.ts',
+      'digital-client/engine/ui/decks.ts',
+      'digital-client/engine/ui/main.ts',
+      'digital-client/engine/ui/style.css',
+      'digital-client/engine/scripts/extract-printed.mjs',
+      'digital-client/engine/scripts/audit-cards.mjs',
+      'digital-client/engine/scripts/card-audit-known.mjs',
+      'digital-client/engine/src/cards/catalogue.json',
+      'digital-client/docs/15-card-browser.md',
+    ],
+    notes:
+      'UNBLOCKS TWO ENTRIES, and both should reuse rather than rebuild. BL-06 (test mode) asks to '
+      + '"search the whole card registry by name and put a chosen card into your hand" — that is '
+      + '`ui/cardsearch.ts` over an unfiltered pool with a different tile button. BL-05 (cube) '
+      + 'already says to reuse the card grid/search "rather than writing a second one".\n\n'
+      + 'THE TRAP THAT COST THE MOST HERE: `src/apply.ts` registers a third synthetic card '
+      + '(\'Alluring Attribute\'), so `allCardNames()` answers 494 or 495 depending on whether '
+      + 'apply.ts happens to have been imported yet. The index had a different number of rows in '
+      + 'a test than in the browser. ui/cardindex.ts now imports apply.ts for the side effect and '
+      + 'says why. Suspect any count derived from the registry that was taken without it.',
+    // ACTIVE, NOT DONE, and the difference is a real one rather than modesty:
+    // every doneWhen line above is built and guarded by
+    // test/210-cardsearch.test.ts (30 tests), test/211-card-audit.test.ts (7)
+    // and test/212-card-browser-wiring.test.ts (6) — but `evidence.commit` has
+    // to be a real sha, and this is not committed yet. Flip to `done` with the
+    // sha and those three guards when it lands; the backlog's own test is what
+    // stops that being written ahead of time.
+  },
 ];

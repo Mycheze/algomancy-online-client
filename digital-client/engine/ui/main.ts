@@ -68,6 +68,7 @@ import type {
 } from '../src/types.ts';
 import * as acct from './account.ts';
 import * as dk from './decks.ts';
+import * as cb from './cards.ts';
 import * as lob from './lobby.ts';
 import * as pg from './postgame.ts';
 // R216 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
@@ -4486,6 +4487,9 @@ function renderHome(): void {
   // an open account screen (sign-in / profile) owns the page instead
   if (acct.screen()) { acct.renderScreen(); return; }
   // …and so does the deck collection
+  // …and the card browser, which is checked FIRST because it can be opened
+  // from ON TOP of the deck page (deckbuilding mode leaves that page open)
+  if (cb.screen()) { cb.renderScreen(); return; }
   if (dk.screen()) { dk.renderScreen(); return; }
   const user = acct.currentUser();
   const name = user ? user.username : (localStorage.getItem('algoName') ?? '');
@@ -4499,6 +4503,7 @@ function renderHome(): void {
           : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
         ${acct.barHtml()}
         ${user ? '<button class="homedecks" data-btn="deck-openpage" title="your saved decks: build, cut, and see the curve">🗂 My decks</button>' : ''}
+        <button class="homedecks" data-btn="cards-openpage" title="every card in the box: search, filter, read">🔍 Cards</button>
       </div>
     </div>
 
@@ -5569,6 +5574,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // and the deck collection everything prefixed deck- (NB: the older picker
   // buttons below are `deckimporturl`/`deckjoin`, with no hyphen)
   if (dk.handleButton(btn)) return;
+  // and the card browser everything prefixed cards-
+  if (cb.handleButton(btn)) return;
   // and the post-game screen everything prefixed pg-
   if (postGame && pg.handlePostGameButton(btn, {
     over: postGame,
@@ -6120,6 +6127,9 @@ const ENTER_BTNS = [
   '[data-btn="donedeploy"]', '[data-btn="doneplan"]', '[data-btn="donehaste"]',
 ];
 document.addEventListener('keydown', e => {
+  // the card browser is a pre-game page, so its keys are handled before the
+  // in-game guard below turns everything else off
+  if (cb.handleKey(e)) return;
   if (!inGame) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.repeat) return;   // held key must not machine-gun actions
@@ -6304,6 +6314,7 @@ const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.ha
 // mid-game must never paint the home screen over the board.
 acct.initAccounts({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 if (params.has('room') && params.get('room')!.trim()) {
   const room = params.get('room')!.toUpperCase().trim();
   const sp = params.get('seat');

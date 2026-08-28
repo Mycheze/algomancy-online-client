@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "scripts": {
     "extract": "node scripts/extract-printed.mjs",
+    "audit:cards": "node scripts/audit-cards.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --test 'test/**/*.test.ts'",
     "fuzz": "node test/fuzz-run.ts",
