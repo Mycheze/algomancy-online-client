@@ -1755,7 +1755,7 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Card browser — search and filter the whole pool, and build from it',
     area: 'client',
     size: 'L',
-    status: 'active',
+    status: 'done',
     track: 'feature',
     said:
       'The digital client desperatly needs a card viewer/searcher/scryfall like interface/'
@@ -1815,12 +1815,16 @@ export const BACKLOG: readonly Entry[] = [
       + 'apply.ts happens to have been imported yet. The index had a different number of rows in '
       + 'a test than in the browser. ui/cardindex.ts now imports apply.ts for the side effect and '
       + 'says why. Suspect any count derived from the registry that was taken without it.',
-    // ACTIVE, NOT DONE, and the difference is a real one rather than modesty:
-    // every doneWhen line above is built and guarded by
-    // test/210-cardsearch.test.ts (30 tests), test/211-card-audit.test.ts (7)
-    // and test/212-card-browser-wiring.test.ts (6) — but `evidence.commit` has
-    // to be a real sha, and this is not committed yet. Flip to `done` with the
-    // sha and those three guards when it lands; the backlog's own test is what
-    // stops that being written ahead of time.
+    // Carried as `active` until 4d1b554 existed, because `evidence.commit` has to
+    // be a real sha and this file's own test refuses a placeholder — which is
+    // exactly the check that stops a backlog claiming credit ahead of the work.
+    evidence: {
+      commit: '4d1b554',
+      guards: [
+        'digital-client/engine/test/210-cardsearch.test.ts',
+        'digital-client/engine/test/211-card-audit.test.ts',
+        'digital-client/engine/test/212-card-browser-wiring.test.ts',
+      ],
+    },
   },
 ];
